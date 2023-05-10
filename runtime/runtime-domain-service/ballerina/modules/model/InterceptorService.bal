@@ -1,7 +1,7 @@
 //
-// Copyright (c) 2023, WSO2 LLC (http://www.wso2.com).
+// Copyright (c) 2022, WSO2 LLC. (http://www.wso2.com).
 //
-// WSO2 LLC licenses this file to you under the Apache License,
+// WSO2 LLC. licenses this file to you under the Apache License,
 // Version 2.0 (the "License"); you may not use this file except
 // in compliance with the License.
 // You may obtain a copy of the License at
@@ -15,32 +15,36 @@
 // specific language governing permissions and limitations
 // under the License.
 //
-public type APIPolicy record {|
+
+public type InterceptorService record {
+    string kind = "InterceptorService";
     string apiVersion = "dp.wso2.com/v1alpha1";
-    string kind = "APIPolicy";
     Metadata metadata;
-    APIPolicySpec spec;
-|};
-
-public type APIPolicySpec record {|
-    APIPolicyData default?;
-    APIPolicyData override?;
-    TargetRef targetRef;
-|};
-
-public type APIPolicyData record {
-    InterceptorReference[] requestInterceptors?;
-    InterceptorReference[] responseInterceptors?;
+    InterceptorServiceSpec spec;
+    InterceptorServiceStatus? status = ();
 };
 
-public type InterceptorReference record {
+public type InterceptorServiceSpec record {
+    InterceptorBackendRef backendRef;
+    string[] includes?;
+};
+
+public type InterceptorServiceStatus record {
+    boolean accepted;
+    string[] events;
+    string message;
+    string status;
+    string transitionTime;
+};
+
+public type InterceptorBackendRef record {
     string name;
     string namespace;
 };
 
-public type APIPolicyList record {
+public type InterceptorServiceList record {
     string apiVersion = "dp.wso2.com/v1alpha1";
-    string kind = "APIPolicyList";
+    string kind = "InterceptorServiceList";
+    InterceptorService[] items;
     ListMeta metadata;
-    APIPolicy[] items;
 };

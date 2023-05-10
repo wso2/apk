@@ -2055,7 +2055,7 @@ function validateExistenceDataProvider() returns map<[string, anydata]> {
 }
 
 @test:Config {dataProvider: createApiFromServiceDataProvider}
-function testCreateAPIFromService(string serviceUUId, string apiUUID, [model:ConfigMap, any] configmapResponse, [model:Httproute, any] httproute, [model:K8sServiceMapping, any] servicemapping, [model:API, any] k8sAPI, [model:RuntimeAPI, any] runtimeAPI, API api, string k8sapiUUID, [model:Backend, any][] backendServices, [model:RateLimitPolicy?, any] rateLimitPolicy, [model:APIPolicy?, any] apiPolicy, anydata expected) returns error? {
+function testCreateAPIFromService(string serviceUUId, string apiUUID, [model:ConfigMap, any] configmapResponse, [model:Httproute, any] httproute, [model:K8sServiceMapping, any] servicemapping, [model:API, any] k8sAPI, [model:RuntimeAPI, any] runtimeAPI, API api, string k8sapiUUID, [model:Backend, any][] backendServices, [model:RateLimitPolicy?, any] rateLimitPolicy, [model:APIPolicy?, any] apiPolicy, [model:InterceptorService, any][] interceptorServices, anydata expected) returns error? {
     APIClient apiClient = new;
     string username = "apkUser";
     http:Response configmapResponse404 = new;
@@ -2068,6 +2068,7 @@ function testCreateAPIFromService(string serviceUUId, string apiUUID, [model:Con
     model:ScopeList scopeList = {metadata: {}, items: []};
     model:RateLimitPolicyList rateLimitPolicyList = {metadata: {}, items: []};
     model:APIPolicyList apiPolicyList = {metadata: {}, items: []};
+    model:InterceptorServiceList interceptorServiceList = {metadata: {}, items: []};
     http:Response internalAPIDeletionResponse = new;
     internalAPIDeletionResponse.statusCode = 200;
 
@@ -2080,8 +2081,13 @@ function testCreateAPIFromService(string serviceUUId, string apiUUID, [model:Con
     if apiPolicy[0] is model:APIPolicy {
         test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apipolicies", apiPolicy[0]).thenReturn(apiPolicy[1]);
     }
+    foreach [model:InterceptorService, any] [interceptorService, interceptorServiceResponse] in interceptorServices {
+        test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/interceptorservices", interceptorService).thenReturn(interceptorServiceResponse);
+    }
+
     test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/ratelimitpolicies?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version, organiztion1)).thenReturn(rateLimitPolicyList);
     test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apipolicies?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version, organiztion1)).thenReturn(apiPolicyList);
+    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/interceptorservices?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version, organiztion1)).thenReturn(interceptorServiceList);
     test:prepare(k8sApiServerEp).when("post").withArguments("/api/v1/namespaces/apk-platform/configmaps", configmapResponse[0]).thenReturn(configmapResponse[1]);
     test:prepare(k8sApiServerEp).when("post").withArguments("/apis/gateway.networking.k8s.io/v1beta1/namespaces/apk-platform/httproutes", httproute[0]).thenReturn(httproute[1]);
     test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/servicemappings", servicemapping[0]).thenReturn(servicemapping[1]);
@@ -2105,7 +2111,7 @@ function testCreateAPIFromService(string serviceUUId, string apiUUID, [model:Con
     }
 }
 
-function createApiFromServiceDataProvider() returns map<[string, string, [model:ConfigMap, any], [model:Httproute, any], [model:K8sServiceMapping, any], [model:API, any], [model:RuntimeAPI, any], API, string, [model:Backend, any][], [model:RateLimitPolicy?, any], [model:APIPolicy?, any], anydata]> {
+function createApiFromServiceDataProvider() returns map<[string, string, [model:ConfigMap, any], [model:Httproute, any], [model:K8sServiceMapping, any], [model:API, any], [model:RuntimeAPI, any], API, string, [model:Backend, any][], [model:RateLimitPolicy?, any], [model:APIPolicy?, any], [model:InterceptorService, any][], anydata]> {
     do {
 
         string k8sAPIUUID1 = uuid:createType1AsString();
@@ -2453,8 +2459,8 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
             ]
         };
         string backenduuid = getBackendServiceUid(api, (), PRODUCTION_TYPE, organiztion1);
-        string interceptorBackenduuid1 = getInterceptorServiceUid(api, INTERCEPTOR_TYPE, organiztion1, "http://interceptor-backend1.interceptor:9082");
-        string interceptorBackenduuid2 = getInterceptorServiceUid(api, INTERCEPTOR_TYPE, organiztion1, "http://interceptor-backend2.interceptor:9083");
+        string interceptorBackenduuid1 = getInterceptorBackendUid(api, INTERCEPTOR_TYPE, organiztion1, "http://interceptor-backend1.interceptor:9082");
+        string interceptorBackenduuid2 = getInterceptorBackendUid(api, INTERCEPTOR_TYPE, organiztion1, "http://interceptor-backend2.interceptor:9083");
         model:Backend backendService = {
             metadata: {name: backenduuid, namespace: "apk-platform", labels: getLabels(api, organiztion1)},
             spec: {services: [{host: string:'join(".", 'serviceRecord.name, 'serviceRecord.namespace, "svc.cluster.local"), port: 80}], protocol: "http"}
@@ -2474,6 +2480,18 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
         services.push([backendService, backendServiceResponse]);
         services.push([interceptorBackendService1, interceptorBackendServiceResponse1]);
         services.push([interceptorBackendService2, interceptorBackendServiceResponse2]);
+
+        [model:InterceptorService, any][] interceptorServices = [];
+        string interceptorBackendUrl1 =  "http://interceptor-backend1.interceptor:9082";
+        string interceptorBackendUrl2 =  "http://interceptor-backend2.interceptor:9083";
+        string[] requestIncludes = ["request_headers", "invocation_context"];
+        string[] responseIncludes = ["response_body", "invocation_context"];
+        model:InterceptorService requestInterceptorService = getMockInterceptorService(check apiWithAPILevelInterceptorPolicy.cloneWithType(API), organiztion1, apiUUID, "request", requestIncludes, interceptorBackendUrl1);
+        http:Response requestInterceptorServiceResponse = getMockInterceptorServiceResponse(getMockInterceptorService(check apiWithAPILevelInterceptorPolicy.cloneWithType(API), organiztion1, apiUUID, "request", requestIncludes, interceptorBackendUrl1).clone());
+        interceptorServices.push([requestInterceptorService, requestInterceptorServiceResponse]);
+        model:InterceptorService responseInterceptorService = getMockInterceptorService(check apiWithAPILevelInterceptorPolicy.cloneWithType(API), organiztion1, apiUUID, "response", responseIncludes, interceptorBackendUrl2);
+        http:Response responseInterceptorServiceResponse = getMockInterceptorServiceResponse(getMockInterceptorService(check apiWithAPILevelInterceptorPolicy.cloneWithType(API), organiztion1, apiUUID, "response", responseIncludes, interceptorBackendUrl2).clone());
+        interceptorServices.push([responseInterceptorService, responseInterceptorServiceResponse]);
 
         model:RuntimeAPI mockRuntimeAPI = getMockRuntimeAPI(api, apiUUID, organiztion1, serviceRecord);
         http:Response mockRuntimeResponse = getMockRuntimeAPIResponse(mockRuntimeAPI.clone());
@@ -2688,11 +2706,11 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
             }
         };
 
-        map<[string, string, [model:ConfigMap, any], [model:Httproute, any], [model:K8sServiceMapping, any], [model:API, any], [model:RuntimeAPI, any], API, string, [model:Backend, any][], [model:RateLimitPolicy|(), any], [model:APIPolicy|(), any], anydata]> data = {
-            "1": ["275b00d1-722c-4df2-b65a-9b14677abe4b", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], [mockRuntimeAPI, mockRuntimeResponse], api, k8sAPIUUID1, services, [(), ()], [(), ()], createdAPI.toBalString()],
-            "2": ["275b00d1-722c-4df2-b65a-9b14677abe4b", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], [mockRuntimeAPI, mockRuntimeResponse], alreadyNameExist, k8sAPIUUID1, services, [(), ()], [(), ()], nameAlreadyExistError.toBalString()],
-            "3": ["275b00d1-722c-4df2-b65a-9b14677abe4b", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], [mockRuntimeAPI, mockRuntimeResponse], contextAlreadyExist, k8sAPIUUID1, services, [(), ()], [(), ()], contextAlreadyExistError.toBalString()],
-            "4": ["275b00d1-722c-4df2-b65a-9b14677abe4a", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], [mockRuntimeAPI, mockRuntimeResponse], api, k8sAPIUUID1, services, [(), ()], [(), ()], serviceNotExist.toBalString()],
+        map<[string, string, [model:ConfigMap, any], [model:Httproute, any], [model:K8sServiceMapping, any], [model:API, any], [model:RuntimeAPI, any], API, string, [model:Backend, any][], [model:RateLimitPolicy|(), any], [model:APIPolicy|(), any], [model:InterceptorService, any][], anydata]> data = {
+            "1": ["275b00d1-722c-4df2-b65a-9b14677abe4b", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], [mockRuntimeAPI, mockRuntimeResponse], api, k8sAPIUUID1, services, [(), ()], [(), ()], [], createdAPI.toBalString()],
+            "2": ["275b00d1-722c-4df2-b65a-9b14677abe4b", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], [mockRuntimeAPI, mockRuntimeResponse], alreadyNameExist, k8sAPIUUID1, services, [(), ()], [(), ()], [], nameAlreadyExistError.toBalString()],
+            "3": ["275b00d1-722c-4df2-b65a-9b14677abe4b", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], [mockRuntimeAPI, mockRuntimeResponse], contextAlreadyExist, k8sAPIUUID1, services, [(), ()], [(), ()], [], contextAlreadyExistError.toBalString()],
+            "4": ["275b00d1-722c-4df2-b65a-9b14677abe4a", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], [mockRuntimeAPI, mockRuntimeResponse], api, k8sAPIUUID1, services, [(), ()], [(), ()], [], serviceNotExist.toBalString()],
             "5": [
                 "275b00d1-722c-4df2-b65a-9b14677abe4b",
                 apiUUID,
@@ -2706,6 +2724,7 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
                 services,
                 [(), ()],
                 [(), ()],
+                [],
                 createdAPIWithPolicies.toBalString()
             ],
             "6": [
@@ -2721,6 +2740,7 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
                 services,
                 [(), ()],
                 [(), ()],
+                [],
                 invalidPolicyNameError.toBalString()
             ],
             "7": [
@@ -2736,6 +2756,7 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
                 services,
                 [getMockResourceRateLimitPolicy(apiWithOperationRateLimits, organiztion1, apiUUID), getMockRateLimitResponse(getMockResourceRateLimitPolicy(apiWithOperationRateLimits, organiztion1, apiUUID).clone())],
                 [(), ()],
+                [],
                 createdAPIWithOperationRateLimits.toBalString()
             ],
             "8": [
@@ -2751,6 +2772,7 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
                 services,
                 [getMockAPIRateLimitPolicy(apiWithAPIRateLimits, organiztion1, apiUUID), getMockRateLimitResponse(getMockAPIRateLimitPolicy(apiWithAPIRateLimits, organiztion1, apiUUID).clone())],
                 [(), ()],
+                [],
                 createdAPIWithAPIRateLimits.toBalString()
             ],
             "9": [
@@ -2766,6 +2788,7 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
                 services,
                 [getMockAPIRateLimitPolicy(apiWithAPIRateLimits, organiztion1, apiUUID), getMockRateLimitResponse(getMockAPIRateLimitPolicy(apiWithAPIRateLimits, organiztion1, apiUUID).clone())],
                 [(), ()],
+                [],
                 bothRateLimitsPresentError.toBalString()
             ],
             "10": [
@@ -2781,6 +2804,7 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
                 services,
                 [(), ()],
                 [getMockResourceLevelPolicy(check apiWithOperationLevelInterceptorPolicy.cloneWithType(API), organiztion1, apiUUID), getMockAPIPolicyResponse(getMockResourceLevelPolicy(check apiWithOperationLevelInterceptorPolicy.cloneWithType(API), organiztion1, apiUUID).clone())],
+                interceptorServices,
                 createdAPIWithOperationLevelInterceptorPolicy.toBalString()
             ],
             "11": [
@@ -2796,6 +2820,7 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
                 services,
                 [(), ()],
                 [getMockAPILevelPolicy(check apiWithAPILevelInterceptorPolicy.cloneWithType(API), organiztion1, apiUUID), getMockAPIPolicyResponse(getMockAPILevelPolicy(check apiWithAPILevelInterceptorPolicy.cloneWithType(API), organiztion1, apiUUID).clone())],
+                interceptorServices,
                 createdAPIWithAPILevelInterceptorPolicy.toBalString()
             ]
         };
@@ -3615,7 +3640,8 @@ function testCreateAPI(string apiUUID, string backenduuid, API api, model:Config
         [model:Backend, any][] backendServices,
         model:API k8sApi, any k8sapiResponse, model:RuntimeAPI runtimeAPI, any runtimeAPIResponse,
         model:RateLimitPolicy? rateLimitPolicy, any rateLimitPolicyResponse,
-        model:APIPolicy? apiPolicy, any apiPolicyResponse
+        model:APIPolicy? apiPolicy, any apiPolicyResponse,
+        [model:InterceptorService, any][] interceptorServices
 , string k8sapiUUID, anydata expected) returns error? {
     APIClient apiClient = new;
     string userName = "apkUser";
@@ -3632,7 +3658,9 @@ function testCreateAPI(string apiUUID, string backenduuid, API api, model:Config
     if apiPolicy is model:APIPolicy {
         test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apipolicies", apiPolicy).thenReturn(apiPolicyResponse);
     }
-
+    foreach [model:InterceptorService, any] [interceptorService, interceptorServiceResponse] in interceptorServices {
+        test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/interceptorservices", interceptorService).thenReturn(interceptorServiceResponse);
+    }
     foreach [model:Backend, any] backend in backendServices {
         test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/backends", backend[0]).thenReturn(backend[1]);
     }
@@ -3648,8 +3676,10 @@ function testCreateAPI(string apiUUID, string backenduuid, API api, model:Config
     model:ScopeList scopeList = {metadata: {}, items: []};
     model:RateLimitPolicyList rateLimitPolicyList = {metadata: {}, items: []};
     model:APIPolicyList apiPolicyList = {metadata: {}, items: []};
+    model:InterceptorServiceList interceptorServiceList = {metadata: {}, items: []};
     test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/ratelimitpolicies?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version, organiztion1)).thenReturn(rateLimitPolicyList);
     test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apipolicies?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version, organiztion1)).thenReturn(apiPolicyList);
+    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/interceptorservices?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version, organiztion1)).thenReturn(interceptorServiceList);
     test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/scopes?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version, organiztion1)).thenReturn(scopeList);
     test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apis", k8sApi).thenReturn(k8sapiResponse);
     test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/runtimeapis", runtimeAPI).thenReturn(runtimeAPIResponse);
@@ -3677,14 +3707,16 @@ function testCreateAPIWithRatelimitPolicy(string apiUUID, string backenduuid, AP
         [model:Backend, any][] backendServices,
         model:API k8sApi, any k8sapiResponse, model:RuntimeAPI runtimeAPI, any runtimeAPIResponse,
         model:RateLimitPolicy? rateLimitPolicy, any rateLimitPolicyResponse,
-        model:APIPolicy? apiPolicy, any apiPolicyResponse
+        model:APIPolicy? apiPolicy, any apiPolicyResponse,
+        [model:InterceptorService, any][] interceptorServices
 , string k8sapiUUID, anydata expected) returns error? {
     return testCreateAPI(apiUUID, backenduuid, api, configmap, configmapDeployingResponse, prodhttpRoute, prodhttpResponse,
             sandHttpRoute, sandhttpResponse, backendServices, k8sApi, k8sapiResponse, runtimeAPI, runtimeAPIResponse,
-            rateLimitPolicy, rateLimitPolicyResponse, apiPolicy, apiPolicyResponse, k8sapiUUID, expected);
+            rateLimitPolicy, rateLimitPolicyResponse, apiPolicy, apiPolicyResponse, interceptorServices,
+            k8sapiUUID, expected);
 }
 
-function createAPIRateLimitPolicyProvider() returns map<[string, string, API, model:ConfigMap, any, model:Httproute?, any, model:Httproute?, any, [model:Backend, any][], model:API, any, model:RuntimeAPI, any, model:RateLimitPolicy?, any, model:APIPolicy?, any, string, anydata]> {
+function createAPIRateLimitPolicyProvider() returns map<[string, string, API, model:ConfigMap, any, model:Httproute?, any, model:Httproute?, any, [model:Backend, any][], model:API, any, model:RuntimeAPI, any, model:RateLimitPolicy?, any, model:APIPolicy?, any, [model:InterceptorService, any][], string, anydata]> {
     do {
         API api = {
             name: "PizzaAPI",
@@ -3797,8 +3829,8 @@ function createAPIRateLimitPolicyProvider() returns map<[string, string, API, mo
         string apiUUID = getUniqueIdForAPI(api.name, api.'version, organiztion1);
         string backenduuid = getBackendServiceUid(api, (), PRODUCTION_TYPE, organiztion1);
         string backenduuid1 = getBackendServiceUid(api, (), SANDBOX_TYPE, organiztion1);
-        string interceptorBackenduuid1 = getInterceptorServiceUid(api, INTERCEPTOR_TYPE, organiztion1, "http://interceptor-backend1.interceptor:9082");
-        string interceptorBackenduuid2 = getInterceptorServiceUid(api, INTERCEPTOR_TYPE, organiztion1, "http://interceptor-backend2.interceptor:9083");
+        string interceptorBackenduuid1 = getInterceptorBackendUid(api, INTERCEPTOR_TYPE, organiztion1, "http://interceptor-backend1.interceptor:9082");
+        string interceptorBackenduuid2 = getInterceptorBackendUid(api, INTERCEPTOR_TYPE, organiztion1, "http://interceptor-backend2.interceptor:9083");
         string k8sapiUUID = uuid:createType1AsString();
         model:Backend backendService = {
             metadata: {name: backenduuid, namespace: "apk-platform", labels: getLabels(api, organiztion1)},
@@ -3840,7 +3872,7 @@ function createAPIRateLimitPolicyProvider() returns map<[string, string, API, mo
         map<[string, string, API, model:ConfigMap,
     any, model:Httproute|(), any, model:Httproute|(),
     any, [model:Backend, any][], model:API, any, model:RuntimeAPI, any,
-    model:RateLimitPolicy|(), any, model:APIPolicy|(), any, string,
+    model:RateLimitPolicy|(), any, model:APIPolicy|(), any, [model:InterceptorService, any][], string,
     anydata]> data = {
             "1": [
                 apiUUID,
@@ -3861,6 +3893,7 @@ function createAPIRateLimitPolicyProvider() returns map<[string, string, API, mo
                 (),
                 (),
                 (),
+                [],
                 k8sapiUUID,
                 bothRateLimitsPresentError.toBalString()
             ]
@@ -3884,6 +3917,7 @@ function createAPIRateLimitPolicyProvider() returns map<[string, string, API, mo
                 getMockRateLimitResponse(getMockResourceRateLimitPolicy(apiWithOperationRateLimits, organiztion1, apiUUID).clone()),
                 (),
                 (),
+                [],
                 k8sapiUUID,
                 CreatedAPIWithOperationRateLimits.toBalString()
             ]
@@ -3907,6 +3941,7 @@ function createAPIRateLimitPolicyProvider() returns map<[string, string, API, mo
                 getMockRateLimitResponse(getMockAPIRateLimitPolicy(apiWithAPIRateLimits, organiztion1, apiUUID).clone()),
                 (),
                 (),
+                [],
                 k8sapiUUID,
                 CreatedAPIWithAPIRateLimits.toBalString()
             ]
@@ -3924,14 +3959,16 @@ function testCreateAPIWithOperationPolicy(string apiUUID, string backenduuid, AP
         [model:Backend, any][] backendServices,
         model:API k8sApi, any k8sapiResponse, model:RuntimeAPI runtimeAPI, any runtimeAPIResponse,
         model:RateLimitPolicy? rateLimitPolicy, any rateLimitPolicyResponse,
-        model:APIPolicy? apiPolicy, any apiPolicyResponse
+        model:APIPolicy? apiPolicy, any apiPolicyResponse,
+        [model:InterceptorService, any][] interceptorServices
 , string k8sapiUUID, anydata expected) returns error? {
     return testCreateAPI(apiUUID, backenduuid, api, configmap, configmapDeployingResponse, prodhttpRoute, prodhttpResponse,
             sandHttpRoute, sandhttpResponse, backendServices, k8sApi, k8sapiResponse, runtimeAPI, runtimeAPIResponse,
-            rateLimitPolicy, rateLimitPolicyResponse, apiPolicy, apiPolicyResponse, k8sapiUUID, expected);
+            rateLimitPolicy, rateLimitPolicyResponse, apiPolicy, apiPolicyResponse, interceptorServices,
+            k8sapiUUID, expected);
 }
 
-function createAPIWithOperationPolicyProvider() returns map<[string, string, API, model:ConfigMap, any, model:Httproute?, any, model:Httproute?, any, [model:Backend, any][], model:API, any, model:RuntimeAPI, any, model:RateLimitPolicy?, any, model:APIPolicy?, any, string, anydata]> {
+function createAPIWithOperationPolicyProvider() returns map<[string, string, API, model:ConfigMap, any, model:Httproute?, any, model:Httproute?, any, [model:Backend, any][], model:API, any, model:RuntimeAPI, any, model:RateLimitPolicy?, any, model:APIPolicy?, any, [model:InterceptorService, any][], string, anydata]> {
     do {
         API api = {
             name: "PizzaAPI",
@@ -4284,8 +4321,8 @@ function createAPIWithOperationPolicyProvider() returns map<[string, string, API
         string apiUUID = getUniqueIdForAPI(api.name, api.'version, organiztion1);
         string backenduuid = getBackendServiceUid(api, (), PRODUCTION_TYPE, organiztion1);
         string backenduuid1 = getBackendServiceUid(api, (), SANDBOX_TYPE, organiztion1);
-        string interceptorBackenduuid1 = getInterceptorServiceUid(api, INTERCEPTOR_TYPE, organiztion1, "http://interceptor-backend1.interceptor:9082");
-        string interceptorBackenduuid2 = getInterceptorServiceUid(api, INTERCEPTOR_TYPE, organiztion1, "http://interceptor-backend2.interceptor:9083");
+        string interceptorBackenduuid1 = getInterceptorBackendUid(api, INTERCEPTOR_TYPE, organiztion1, "http://interceptor-backend1.interceptor:9082");
+        string interceptorBackenduuid2 = getInterceptorBackendUid(api, INTERCEPTOR_TYPE, organiztion1, "http://interceptor-backend2.interceptor:9083");
         string k8sapiUUID = uuid:createType1AsString();
         model:Backend backendService = {
             metadata: {name: backenduuid, namespace: "apk-platform", labels: getLabels(api, organiztion1)},
@@ -4316,6 +4353,19 @@ function createAPIWithOperationPolicyProvider() returns map<[string, string, API
         services.push([interceptorBackendService2, interceptorBackendServiceResponse2]);
         [model:Backend, any][] servicesError = [];
         servicesError.push([backendService, backendServiceErrorResponse]);
+        
+        [model:InterceptorService, any][] interceptorServices = [];
+        string interceptorBackendUrl1 =  "http://interceptor-backend1.interceptor:9082";
+        string interceptorBackendUrl2 =  "http://interceptor-backend2.interceptor:9083";
+        string[] requestIncludes = ["request_headers", "invocation_context"];
+        string[] responseIncludes = ["response_body", "invocation_context"];
+        model:InterceptorService requestInterceptorService = getMockInterceptorService(check apiWithAPILevelInterceptorPolicy.cloneWithType(API), organiztion1, apiUUID, "request", requestIncludes, interceptorBackendUrl1);
+        http:Response requestInterceptorServiceResponse = getMockInterceptorServiceResponse(getMockInterceptorService(check apiWithAPILevelInterceptorPolicy.cloneWithType(API), organiztion1, apiUUID, "request", requestIncludes, interceptorBackendUrl1).clone());
+        interceptorServices.push([requestInterceptorService, requestInterceptorServiceResponse]);
+        model:InterceptorService responseInterceptorService = getMockInterceptorService(check apiWithAPILevelInterceptorPolicy.cloneWithType(API), organiztion1, apiUUID, "response", responseIncludes, interceptorBackendUrl2);
+        http:Response responseInterceptorServiceResponse = getMockInterceptorServiceResponse(getMockInterceptorService(check apiWithAPILevelInterceptorPolicy.cloneWithType(API), organiztion1, apiUUID, "response", responseIncludes, interceptorBackendUrl2).clone());
+        interceptorServices.push([responseInterceptorService, responseInterceptorServiceResponse]);
+
         model:ConfigMap configmap = check getMockConfigMap1(apiUUID, api);
         model:Httproute prodhttpRoute = getMockHttpRouteWithBackend(api, apiUUID, backenduuid, PRODUCTION_TYPE, organiztion1);
         model:Httproute prodhttpRouteWithOperationPolicies = getMockHttpRouteWithOperationPolicies(api, apiUUID, backenduuid, PRODUCTION_TYPE, organiztion1);
@@ -4331,7 +4381,7 @@ function createAPIWithOperationPolicyProvider() returns map<[string, string, API
         map<[string, string, API, model:ConfigMap,
     any, model:Httproute|(), any, model:Httproute|(),
     any, [model:Backend, any][], model:API, any, model:RuntimeAPI, any,
-    model:RateLimitPolicy|(), any, model:APIPolicy|(), any, string,
+    model:RateLimitPolicy|(), any, model:APIPolicy|(), any, [model:InterceptorService, any][], string,
     anydata]> data = {
 
             "1": [
@@ -4353,6 +4403,7 @@ function createAPIWithOperationPolicyProvider() returns map<[string, string, API
                 (),
                 (),
                 (),
+                [],
                 k8sapiUUID,
                 bothPoliciesPresentError.toBalString()
             ]
@@ -4376,6 +4427,7 @@ function createAPIWithOperationPolicyProvider() returns map<[string, string, API
                 (),
                 (),
                 (),
+                [],
                 k8sapiUUID,
                 invalidPolicyNameError.toBalString()
             ]
@@ -4399,6 +4451,7 @@ function createAPIWithOperationPolicyProvider() returns map<[string, string, API
                 (),
                 (),
                 (),
+                [],
                 k8sapiUUID,
                 invalidPolicyParametersError.toBalString()
             ]
@@ -4422,6 +4475,7 @@ function createAPIWithOperationPolicyProvider() returns map<[string, string, API
                 (),
                 (),
                 (),
+                [],
                 k8sapiUUID,
                 CreatedAPIWithOperationPolicies.toBalString()
             ]
@@ -4445,6 +4499,7 @@ function createAPIWithOperationPolicyProvider() returns map<[string, string, API
                 (),
                 (),
                 (),
+                [],
                 k8sapiUUID,
                 CreatedAPIWithAPIPolicies.toBalString()
             ]
@@ -4468,6 +4523,7 @@ function createAPIWithOperationPolicyProvider() returns map<[string, string, API
                 (),
                 getMockResourceLevelPolicy(check apiWithOperationLevelInterceptorPolicy.cloneWithType(API), organiztion1, apiUUID),
                 getMockAPIPolicyResponse(getMockResourceLevelPolicy(check apiWithOperationLevelInterceptorPolicy.cloneWithType(API), organiztion1, apiUUID).clone()),
+                interceptorServices,
                 k8sapiUUID,
                 CreatedAPIWithOperationLevelInterceptorPolicy.toBalString()
             ]
@@ -4491,6 +4547,7 @@ function createAPIWithOperationPolicyProvider() returns map<[string, string, API
                 (),
                 getMockAPILevelPolicy(check apiWithAPILevelInterceptorPolicy.cloneWithType(API), organiztion1, apiUUID),
                 getMockAPIPolicyResponse(getMockAPILevelPolicy(check apiWithAPILevelInterceptorPolicy.cloneWithType(API), organiztion1, apiUUID).clone()),
+                interceptorServices,
                 k8sapiUUID,
                 CreatedAPIWithAPILevelInterceptorPolicy.toBalString()
             ]
@@ -5573,20 +5630,19 @@ function getMockResourceLevelPolicy(API api, commons:Organization organiztion, s
         "metadata": {"name": "api-policy-ref-name", "namespace": "apk-platform", "labels": getLabels(api, organiztion)},
         "spec": {
             "default": {
-                "requestInterceptor": {
-                    "backendRef": {
-                        "name": getInterceptorServiceUid(api, INTERCEPTOR_TYPE, organiztion, "http://interceptor-backend1.interceptor:9082"),
+               "requestInterceptors": [
+                    {
+                        "name": getInterceptorServiceUid(api, organiztion, "request", 0),
                         "namespace": "apk-platform"
-                    },
-                    "includes": ["request_headers", "invocation_context"]
-                },
-                "responseInterceptor": {
-                    "backendRef": {
-                        "name": getInterceptorServiceUid(api, INTERCEPTOR_TYPE, organiztion, "http://interceptor-backend2.interceptor:9083"),
+                    }
+                    
+                ],
+                "responseInterceptors": [
+                   {
+                        "name": getInterceptorServiceUid(api, organiztion, "response", 0),
                         "namespace": "apk-platform"
-                    },
-                    "includes": ["response_body", "invocation_context"]
-                }
+                    }
+                ]
             },
             "targetRef": {
                 "group": "dp.wso2.com",
@@ -5605,20 +5661,19 @@ function getMockAPILevelPolicy(API api, commons:Organization organiztion, string
         "metadata": {"name": "api-policy-ref-name", "namespace": "apk-platform", "labels": getLabels(api, organiztion)},
         "spec": {
             "default": {
-                "requestInterceptor": {
-                    "backendRef": {
-                        "name": getInterceptorServiceUid(api, INTERCEPTOR_TYPE, organiztion, "http://interceptor-backend1.interceptor:9082"),
+                "requestInterceptors": [
+                    {
+                        "name": getInterceptorServiceUid(api, organiztion, "request", 0),
                         "namespace": "apk-platform"
-                    },
-                    "includes": ["request_headers", "invocation_context"]
-                },
-                "responseInterceptor": {
-                    "backendRef": {
-                        "name": getInterceptorServiceUid(api, INTERCEPTOR_TYPE, organiztion, "http://interceptor-backend2.interceptor:9083"),
+                    }
+                    
+                ],
+                "responseInterceptors": [
+                   {
+                        "name": getInterceptorServiceUid(api, organiztion, "response", 0),
                         "namespace": "apk-platform"
-                    },
-                    "includes": ["response_body", "invocation_context"]
-                }
+                    }
+                ]
             },
             "targetRef": {
                 "group": "dp.wso2.com",
@@ -5638,7 +5693,30 @@ function getMockAPIPolicyResponse(model:APIPolicy request) returns http:Response
     return response;
 }
 
-function createAPIDataProvider() returns map<[string, string, API, model:ConfigMap, any, model:Httproute?, any, model:Httproute?, any, [model:Backend, any][], model:API, any, model:RuntimeAPI, any, model:RateLimitPolicy?, any, model:APIPolicy?, any, string, anydata]> {
+function getMockInterceptorService(API api, commons:Organization organiztion, string apiUUID, string flow, string[] includes, string backendUrl) returns model:InterceptorService {
+    return {
+            "apiVersion": "dp.wso2.com/v1alpha1",
+            "kind": "InterceptorService",
+            "metadata": {"name": getInterceptorServiceUid(api, organiztion, flow, 0), "namespace": "apk-platform", "labels": getLabels(api, organiztion)},
+            "spec": {
+                "backendRef": {
+                    "name": getInterceptorBackendUid(api, INTERCEPTOR_TYPE, organiztion, backendUrl),
+                    "namespace": "apk-platform"
+                },
+                "includes": includes
+            }
+        };
+}
+
+function getMockInterceptorServiceResponse(model:InterceptorService request) returns http:Response {
+    http:Response response = new;
+    response.statusCode = 201;
+    request.metadata.uid = uuid:createType1AsString();
+    response.setJsonPayload(request.toJson());
+    return response;
+}
+
+function createAPIDataProvider() returns map<[string, string, API, model:ConfigMap, any, model:Httproute?, any, model:Httproute?, any, [model:Backend, any][], model:API, any, model:RuntimeAPI, any, model:RateLimitPolicy?, any, model:APIPolicy?, any, [model:InterceptorService, any][], string, anydata]> {
     do {
         API api = {
             name: "PizzaAPI",
@@ -5691,8 +5769,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
         string apiUUID = getUniqueIdForAPI(api.name, api.'version, organiztion1);
         string backenduuid = getBackendServiceUid(api, (), PRODUCTION_TYPE, organiztion1);
         string backenduuid1 = getBackendServiceUid(api, (), SANDBOX_TYPE, organiztion1);
-        string interceptorBackenduuid1 = getInterceptorServiceUid(api, INTERCEPTOR_TYPE, organiztion1, "http://interceptor-backend1.interceptor:9082");
-        string interceptorBackenduuid2 = getInterceptorServiceUid(api, INTERCEPTOR_TYPE, organiztion1, "http://interceptor-backend2.interceptor:9083");
+        string interceptorBackenduuid1 = getInterceptorBackendUid(api, INTERCEPTOR_TYPE, organiztion1, "http://interceptor-backend1.interceptor:9082");
+        string interceptorBackenduuid2 = getInterceptorBackendUid(api, INTERCEPTOR_TYPE, organiztion1, "http://interceptor-backend2.interceptor:9083");
         string k8sapiUUID = uuid:createType1AsString();
         model:Backend backendService = {
             metadata: {name: backenduuid, namespace: "apk-platform", labels: getLabels(api, organiztion1)},
@@ -5761,7 +5839,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
         map<[string, string, API, model:ConfigMap,
     any, model:Httproute|(), any, model:Httproute|(),
     any, [model:Backend, any][], model:API, any, model:RuntimeAPI, any,
-    model:RateLimitPolicy|(), any, model:APIPolicy|(), any, string,
+    model:RateLimitPolicy|(), any, model:APIPolicy|(), any, [model:InterceptorService, any][], string,
     anydata]> data = {
             "1": [
                 apiUUID,
@@ -5782,6 +5860,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 (),
                 (),
                 (),
+                [],
                 k8sapiUUID,
                 createdAPI.toBalString()
             ]
@@ -5805,6 +5884,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 (),
                 (),
                 (),
+                [],
                 k8sapiUUID,
                 nameAlreadyExistError.toBalString()
             ],
@@ -5827,6 +5907,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 (),
                 (),
                 (),
+                [],
                 k8sapiUUID,
                 contextAlreadyExistError.toBalString()
             ],
@@ -5849,6 +5930,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 (),
                 (),
                 (),
+                [],
                 k8sapiUUID,
                 createdSandboxOnlyAPI.toBalString()
             ]
@@ -5872,6 +5954,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 (),
                 (),
                 (),
+                [],
                 k8sapiUUID,
                 productionEndpointNotSpecifiedError.toBalString()
             ],
@@ -5894,6 +5977,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 (),
                 (),
                 (),
+                [],
                 k8sapiUUID,
                 sandboxEndpointNotSpecifiedError.toBalString()
             ]
@@ -5917,6 +6001,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 (),
                 (),
                 (),
+                [],
                 k8sapiUUID,
                 k8sLevelError1.toBalString()
             ]
@@ -5940,6 +6025,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 (),
                 (),
                 (),
+                [],
                 k8sapiUUID,
                 k8sLevelError1.toBalString()
             ]
@@ -5963,6 +6049,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 (),
                 (),
                 (),
+                [],
                 k8sapiUUID,
                 k8sLevelError1.toBalString()
             ]
@@ -5986,6 +6073,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 (),
                 (),
                 (),
+                [],
                 k8sapiUUID,
                 k8sLevelError.toBalString()
             ]
@@ -6009,6 +6097,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 (),
                 (),
                 (),
+                [],
                 k8sapiUUID,
                 k8sLevelError.toBalString()
             ]
@@ -6032,6 +6121,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 (),
                 (),
                 (),
+                [],
                 k8sapiUUID,
                 invalidAPINameError.toBalString()
             ]

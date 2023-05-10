@@ -175,6 +175,7 @@ public class APIClient {
                 _ = check self.deleteBackends(api, organization);
                 _ = check self.deleteEndpointCertificates(api, organization);
                 _ = check self.deleteAPIPolicyCRs(api, organization);
+                _ = check self.deleteInterceptorServiceCRs(api, organization);
                 _ = check self.deleteInternalAPI(api.metadata.name, api.metadata.namespace);
             } else {
                 return e909001(id);
@@ -996,6 +997,7 @@ public class APIClient {
                 check self.deleteBackends(api, organization);
                 check self.deleteRateLimitPolicyCRs(api, organization);
                 check self.deleteAPIPolicyCRs(api, organization);
+                check self.deleteInterceptorServiceCRs(api, organization);
                 check self.deleteInternalAPI(api.metadata.name, api.metadata.namespace);
             }
             check self.deployScopeCrs(apiArtifact);
@@ -1004,6 +1006,7 @@ public class APIClient {
             check self.deployAuthneticationCRs(apiArtifact);
             check self.deployRateLimitPolicyCRs(apiArtifact);
             check self.deployAPIPolicyCRs(apiArtifact);
+            check self.deployInterceptorServiceCRs(apiArtifact);
             check self.deployHttpRoutes(apiArtifact.productionRoute);
             check self.deployHttpRoutes(apiArtifact.sandboxRoute);
             check self.deployServiceMappings(apiArtifact);
@@ -1401,6 +1404,43 @@ public class APIClient {
         }
     }
 
+    private isolated function deployInterceptorServiceCRs(model:APIArtifact apiArtifact) returns error? {
+        foreach model:InterceptorService interceptorService in apiArtifact.interceptorServices {
+            http:Response deployAPIPolicyResult = check deployInterceptorServiceCR(interceptorService, getNameSpace(runtimeConfiguration.apiCreationNamespace));
+            if deployAPIPolicyResult.statusCode == http:STATUS_CREATED {
+                log:printDebug("Deployed InterceptorService Successfully" + interceptorService.toString());
+            } else {
+                json responsePayLoad = check deployAPIPolicyResult.getJsonPayload();
+                model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+                check self.handleK8sTimeout(statusResponse);
+            }
+        }
+    }
+
+    private isolated function deleteInterceptorServiceCRs(model:API api, commons:Organization organization) returns commons:APKError? {
+        do {
+            model:InterceptorServiceList|http:ClientError interceptorServiceListResponse = check getInterceptorServiceCRsForAPI(api.spec.apiDisplayName, api.spec.apiVersion, api.metadata.namespace, organization);
+            if interceptorServiceListResponse is model:InterceptorServiceList {
+                foreach model:InterceptorService item in interceptorServiceListResponse.items {
+                    http:Response|http:ClientError interceptorServiceCRDeletionResponse = deleteInterceptorServiceCR(item.metadata.name, item.metadata.namespace);
+                    if interceptorServiceCRDeletionResponse is http:Response {
+                        if interceptorServiceCRDeletionResponse.statusCode != http:STATUS_OK {
+                            json responsePayLoad = check interceptorServiceCRDeletionResponse.getJsonPayload();
+                            model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+                            check self.handleK8sTimeout(statusResponse);
+                        }
+                    } else {
+                        log:printError("Error occured while deleting Interceptor Service");
+                    }
+                }
+                return;
+            }
+        } on fail var e {
+            log:printError("Error occured deleting Interceptor Service", e);
+            return error("Error occured deleting Interceptor Service", message = "Internal Server Error", code = 909000, description = "Internal Server Error", statusCode = 500);
+        }
+    }
+
     private isolated function retrieveGeneratedConfigmapForDefinition(model:APIArtifact apiArtifact, API api, json generatedSwaggerDefinition, string uniqueId, commons:Organization organization) returns error? {
         byte[]|javaio:IOException compressedContent = check runtimeUtil:GzipUtil_compressGzipFile(generatedSwaggerDefinition.toJsonString().toBytes());
         if compressedContent is byte[] {
@@ -1634,14 +1674,14 @@ public class APIClient {
     private isolated function generateAPIPolicyAndBackendCR(model:APIArtifact apiArtifact, API api, APIOperations? operations, APIOperationPolicies? policies, commons:Organization organization, string targetRefName) returns model:APIPolicy? {
         model:APIPolicyData defaultSpecData = {};
         OperationPolicy[]? request = policies?.request;
-        model:APIPolicyDetails? requestInterceptor = self.retrieveAPIPolicyDetails(apiArtifact, api, operations, organization, request, "request");
-        if requestInterceptor is model:APIPolicyDetails {
-            defaultSpecData.requestInterceptor = requestInterceptor;
+        model:InterceptorReference? requestInterceptor = self.retrieveAPIPolicyDetails(apiArtifact, api, operations, organization, request, "request");
+        if requestInterceptor is model:InterceptorReference {
+            defaultSpecData.requestInterceptors = [requestInterceptor];
         }
         OperationPolicy[]? response = policies?.response;
-        model:APIPolicyDetails? responseInterceptor = self.retrieveAPIPolicyDetails(apiArtifact, api, operations, organization, response, "response");
-        if responseInterceptor is model:APIPolicyDetails {
-            defaultSpecData.responseInterceptor = responseInterceptor;
+        model:InterceptorReference? responseInterceptor = self.retrieveAPIPolicyDetails(apiArtifact, api, operations, organization, response, "response");
+        if responseInterceptor is model:InterceptorReference {
+            defaultSpecData.responseInterceptors = [responseInterceptor];
         }
         if defaultSpecData != {} {
             model:APIPolicy? apiPolicyCR = self.generateAPIPolicyCR(api, targetRefName, operations, organization, defaultSpecData);
@@ -2292,7 +2332,7 @@ public class APIClient {
             }
         };
         if endpointType == INTERCEPTOR_TYPE {
-            backendService.metadata.name = getInterceptorServiceUid(api, endpointType, organization, url);
+            backendService.metadata.name = getInterceptorBackendUid(api, endpointType, organization, url);
         }
         if <boolean>endpointSecurity?.enabled {
             backendService.spec.security = [securityConfig];
@@ -2366,7 +2406,7 @@ public class APIClient {
         return apiPolicyCR;
     }
 
-    isolated function retrieveAPIPolicyDetails(model:APIArtifact apiArtifact, API api, APIOperations? operations, commons:Organization organization, OperationPolicy[]? policies, string flow) returns model:APIPolicyDetails? {
+    isolated function retrieveAPIPolicyDetails(model:APIArtifact apiArtifact, API api, APIOperations? operations, commons:Organization organization, OperationPolicy[]? policies, string flow) returns model:InterceptorReference? {
         if policies is OperationPolicy[] {
             foreach OperationPolicy policy in policies {
                 string policyName = policy.policyName;
@@ -2376,13 +2416,21 @@ public class APIClient {
                         string backendUrl = <string>policyParameters.get("backendUrl");
                         model:EndpointSecurity backendSecurity = {};
                         model:Backend|error backendService = self.createBackendService(api, operations, INTERCEPTOR_TYPE, organization, backendUrl, backendSecurity);
+                        string backendServiceName = "";
                         if backendService is model:Backend {
                             apiArtifact.backendServices[backendService.metadata.name] = (backendService);
-                            model:APIPolicyDetails? interceptorSpec = self.retrieveAPIPolicyData(policyParameters, backendService.metadata.name, flow);
-                            if interceptorSpec is model:APIPolicyDetails {
-                                return interceptorSpec;
-                            }
+                            backendServiceName = backendService.metadata.name;
                         }
+                        model:InterceptorService? interceptorService =  self.generateInterceptorServiceCR(policyParameters, backendServiceName, flow, api, organization);
+                        model:InterceptorReference? interceptorReference = ();
+                        if interceptorService is model:InterceptorService { 
+                            apiArtifact.interceptorServices[interceptorService.metadata.name] = (interceptorService);
+                            interceptorReference = {
+                                name: interceptorService.metadata.name,
+                                namespace: interceptorService.metadata.namespace
+                            };
+                        }
+                        return interceptorReference;
                     }
                 }
             }
@@ -2390,13 +2438,26 @@ public class APIClient {
         return ();
     }
 
-    isolated function retrieveAPIPolicyData(record {} parameters, string interceptorBackend, string flow) returns model:APIPolicyDetails? {
-        model:APIPolicyDetails apiPolicyDetails = {
-            backendRef: {
-                name: interceptorBackend,
-                namespace: currentNameSpace
+    isolated function generateInterceptorServiceCR(record {} parameters, string interceptorBackend, string flow, API api, commons:Organization organization) returns model:InterceptorService? {
+        model:InterceptorService? interceptorServiceCR = ();
+        interceptorServiceCR = {
+            metadata: {
+                name: getInterceptorServiceUid(api, organization, flow, 0),
+                namespace: currentNameSpace,
+                labels: self.getLabels(api, organization)
+            },
+            spec: {
+                backendRef: {
+                    name: interceptorBackend,
+                    namespace: currentNameSpace
+                },
+                includes: self.getInterceptorIncludes(parameters, flow)
             }
         };
+        return interceptorServiceCR;
+    }
+
+    isolated function getInterceptorIncludes(record {} parameters, string flow) returns string[] {
         string[] includes = [];
         if flow == "request" {
             anydata headersEnabled = parameters["headersEnabled"];
@@ -2434,10 +2495,7 @@ public class APIClient {
                 includes.push("invocation_context");
             }
         }
-        if includes.length() > 0 {
-            apiPolicyDetails.includes = includes;
-        }
-        return apiPolicyDetails;
+        return includes;
     }
 
     public isolated function retrieveDefaultDefinition(model:API api) returns json {
@@ -2983,18 +3041,22 @@ public class APIClient {
         model:APIPolicyData? interceptorPolicy = apiPolicyCR.spec.default;
         if interceptorPolicy is model:APIPolicyData {
             string[] backendServicesToRemove = [];
-            model:APIPolicyDetails? requestInterceptor = interceptorPolicy.requestInterceptor;
-            if requestInterceptor is model:APIPolicyDetails {
-                string? backendRefName = self.extractExistingBackendRefs(apiArtifact, requestInterceptor, newAPI, organization);
-                if backendRefName is string {
-                    backendServicesToRemove.push(backendRefName);
+            model:InterceptorReference[]? requestInterceptors = interceptorPolicy.requestInterceptors;
+            if requestInterceptors is model:InterceptorReference[] {
+                foreach model:InterceptorReference requestInterceptor in requestInterceptors {
+                    string? backendRefName = self.extractExistingBackendRefs(apiArtifact, requestInterceptor, newAPI, organization);
+                    if backendRefName is string {
+                        backendServicesToRemove.push(backendRefName);
+                    }
                 }
             }
-            model:APIPolicyDetails? responseInterceptor = interceptorPolicy.responseInterceptor;
-            if responseInterceptor is model:APIPolicyDetails {
-                string? backendRefName = self.extractExistingBackendRefs(apiArtifact, responseInterceptor, newAPI, organization);
-                if backendRefName is string {
-                    backendServicesToRemove.push(backendRefName);
+            model:InterceptorReference[]? responseInterceptors = interceptorPolicy.responseInterceptors;
+            if responseInterceptors is model:InterceptorReference[] {
+                foreach model:InterceptorReference responseInterceptor in responseInterceptors {
+                    string? backendRefName = self.extractExistingBackendRefs(apiArtifact, responseInterceptor, newAPI, organization);
+                    if backendRefName is string {
+                        backendServicesToRemove.push(backendRefName);
+                    }
                 }
             }
             foreach string backendRefName in backendServicesToRemove {
@@ -3005,15 +3067,20 @@ public class APIClient {
         }
     }
 
-    private isolated function extractExistingBackendRefs(model:APIArtifact apiArtifact, model:APIPolicyDetails? interceptor, API newAPI, commons:Organization organization) returns string? {
-        if interceptor is model:APIPolicyDetails {
-            string backendRefName = interceptor.backendRef.name;
-            if apiArtifact.backendServices.hasKey(backendRefName) {
-                model:Backend backend = apiArtifact.backendServices.get(backendRefName).clone();
-                model:Backend newBackend = self.prepareInterceptorBackendCR(newAPI, backend, organization, backend.spec);
-                apiArtifact.backendServices[newBackend.metadata.name] = newBackend;
-                interceptor.backendRef.name = newBackend.metadata.name;
-                return backendRefName;
+    private isolated function extractExistingBackendRefs(model:APIArtifact apiArtifact, model:InterceptorReference? interceptorRef, API newAPI, commons:Organization organization) returns string? {
+        if interceptorRef is model:InterceptorReference {
+            if apiArtifact.interceptorServices.hasKey(interceptorRef.name) {
+                model:InterceptorService interceptorService = apiArtifact.interceptorServices.get(interceptorRef.name);
+                if interceptorService is model:InterceptorService {
+                   string backendRefName = interceptorService.spec.backendRef.name;
+                   if apiArtifact.backendServices.hasKey(backendRefName) {
+                        model:Backend backend = apiArtifact.backendServices.get(backendRefName).clone();
+                        model:Backend newBackend = self.prepareInterceptorBackendCR(newAPI, backend, organization, backend.spec);
+                        apiArtifact.backendServices[newBackend.metadata.name] = newBackend;
+                        interceptorService.spec.backendRef.name = newBackend.metadata.name;
+                        return backendRefName;
+                    }
+                }
             }
         }
         return ();
@@ -3048,7 +3115,7 @@ public class APIClient {
 
     private isolated function prepareInterceptorBackendCR(API api, model:Backend backend, commons:Organization organization, model:BackendSpec spec) returns model:Backend {
         string backendUrl = self.constructURLFromBackendSpec(spec);
-        backend.metadata.name = getInterceptorServiceUid(api, INTERCEPTOR_TYPE, organization, backendUrl);
+        backend.metadata.name = getInterceptorBackendUid(api, INTERCEPTOR_TYPE, organization, backendUrl);
         backend.metadata.labels = self.getLabels(api, organization);
         return backend;
     }
@@ -3439,6 +3506,9 @@ public class APIClient {
                     }
                     foreach model:APIPolicy apiPolicy in apiArtifact.apiPolicies {
                         _ = check self.convertAndStoreYamlFile(apiPolicy.toJsonString(), apiPolicy.metadata.name, zipDir, "policies/apipolicies");
+                    }
+                    foreach model:InterceptorService interceptorService in apiArtifact.interceptorServices {
+                        _ = check self.convertAndStoreYamlFile(interceptorService.toJsonString(), interceptorService.metadata.name, zipDir, "policies/apipolicies/interceptorservices");
                     }
                     model:RuntimeAPI? runtimeAPI = apiArtifact.runtimeAPI;
                     if runtimeAPI is model:RuntimeAPI {
@@ -4082,7 +4152,14 @@ public isolated function getBackendServiceUid(API api, APIOperations? apiOperati
     }
 }
 
-public isolated function getInterceptorServiceUid(API api, string endpointType, commons:Organization organization, string backendUrl) returns string {
+public isolated function getInterceptorServiceUid(API api, commons:Organization organization, string flow, int interceptorIndex) returns string {
+    string concatanatedString = string:'join("-", organization.uuid, api.name, 'api.'version);
+    byte[] hashedValue = crypto:hashSha1(concatanatedString.toBytes());
+    concatanatedString = hashedValue.toBase16();
+    return flow + "-interceptor-service-" + interceptorIndex.toString() + "-" + concatanatedString + "-resource";
+}
+
+public isolated function getInterceptorBackendUid(API api, string endpointType, commons:Organization organization, string backendUrl) returns string {
     string concatanatedString = string:'join("-", organization.uuid, api.name, 'api.'version, endpointType, backendUrl);
     byte[] hashedValue = crypto:hashSha1(concatanatedString.toBytes());
     concatanatedString = hashedValue.toBase16();

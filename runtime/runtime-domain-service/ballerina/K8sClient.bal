@@ -304,6 +304,21 @@ isolated function getAPIPolicyCRsForAPI(string apiName, string apiVersion, strin
     return k8sApiServerEp->get(endpoint, targetType = model:APIPolicyList);
 }
 
+isolated function deployInterceptorServiceCR(model:InterceptorService interceptorService, string namespace) returns http:Response|http:ClientError {
+    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/interceptorservices";
+    return k8sApiServerEp->post(endpoint, interceptorService, targetType = http:Response);
+}
+
+isolated function deleteInterceptorServiceCR(string name, string namespace) returns http:Response|http:ClientError {
+    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/interceptorservices/" + name;
+    return k8sApiServerEp->delete(endpoint, targetType = http:Response);
+}
+
+isolated function getInterceptorServiceCRsForAPI(string apiName, string apiVersion, string namespace, commons:Organization organization) returns model:InterceptorServiceList|http:ClientError|error {
+    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/interceptorservices?labelSelector=" + check generateUrlEncodedLabelSelector(apiName, apiVersion, organization);
+    return k8sApiServerEp->get(endpoint, targetType = model:InterceptorServiceList);
+}
+
 public function retrieveAllOrganizations(string? continueToken) returns model:OrganizationList|http:ClientError {
     string? continueTokenValue = continueToken;
     string endpoint = "/apis/cp.wso2.com/v1alpha1/namespaces/" + currentNameSpace + "/organizations";
