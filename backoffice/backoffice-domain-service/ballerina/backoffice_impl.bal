@@ -364,7 +364,6 @@ isolated function updateThumbnail(string apiId, http:Request message) returns Fi
                     resourceContent: fileName,
                     resourceBinaryValue: fileContent
                 };
-
                 Resource|boolean|commons:APKError thumbnail = db_getResourceByResourceCategory(apiId, thumbnailCategoryId);
                 if thumbnail is Resource {
                     thumbnailResource.resourceUUID = thumbnail.resourceUUID;

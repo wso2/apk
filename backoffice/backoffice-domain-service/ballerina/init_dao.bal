@@ -42,10 +42,10 @@ isolated function db_addCategory(string categoryName) returns int|commons:APKErr
             if result2 is sql:ExecutionResult {
                 log:printDebug("Resource category added successfully");
             } else {
-                return e909618(result2);
+                return e909627(result2);
             }
         } else if result1 is sql:Error {
-            return e909618(result1);
+            return e909628(result1);
         }
     }
 }

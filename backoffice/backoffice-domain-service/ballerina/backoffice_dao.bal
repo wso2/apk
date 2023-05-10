@@ -435,9 +435,7 @@ isolated function db_getResourceByResourceId(string resourceId) returns Resource
         FROM API_RESOURCES where UUID = `;
         sql:ParameterizedQuery values = `${resourceId}`;
         sql:ParameterizedQuery sqlQuery = sql:queryConcat(GET_RESOURCE_Prefix, values);
-
         Resource|sql:Error result =  db_Client->queryRow(sqlQuery);
-        
         if result is Resource {
             return result;
         } else {
@@ -463,13 +461,9 @@ isolated function db_addResource(Resource resourceItem) returns Resource|commons
                                         'apkuser',
                                         ${utc}
                                     )`;
-
         sql:ParameterizedQuery ADD_THUMBNAIL_Prefix = `INSERT INTO API_RESOURCES (UUID, API_UUID, RESOURCE_CATEGORY_ID, DATA_TYPE, RESOURCE_CONTENT, RESOURCE_BINARY_VALUE, CREATED_BY, CREATED_TIME, UPDATED_BY, LAST_UPDATED_TIME) VALUES (`;
-
         sql:ParameterizedQuery sqlQuery = sql:queryConcat(ADD_THUMBNAIL_Prefix, values);
-
         sql:ExecutionResult | sql:Error result = dbClient->execute(sqlQuery);
-        
         if result is sql:ExecutionResult {
             log:printDebug("Resource added successfully");
             return resourceItem;
@@ -490,9 +484,7 @@ isolated function db_updateResource(Resource resourceItem) returns Resource|comm
         sql:ParameterizedQuery values = ` API_UUID= ${resourceItem.apiUuid}, RESOURCE_CATEGORY_ID = ${resourceItem.resourceCategoryId}, DATA_TYPE = ${resourceItem.dataType}, RESOURCE_CONTENT = to_tsvector(${resourceItem.resourceContent}),
         RESOURCE_BINARY_VALUE = bytea(${resourceItem.resourceBinaryValue}), UPDATED_BY =${user}, LAST_UPDATED_TIME =${utc} WHERE UUID = ${resourceItem.resourceUUID}`;
         sql:ParameterizedQuery sqlQuery = sql:queryConcat(UPDATE_RESOURCE_Suffix, values);
-
         sql:ExecutionResult | sql:Error result = dbClient->execute(sqlQuery);
-        
         if result is sql:ExecutionResult {
             return resourceItem;
         } else {
@@ -510,7 +502,6 @@ isolated function db_getResourceCategoryIdByCategoryType(string resourceType) re
         sql:ParameterizedQuery values = `${resourceType}`;
         sql:ParameterizedQuery sqlQuery = sql:queryConcat(GET_RESOURCE_CATEGORY_Prefix, values);
         int|sql:Error result =  db_Client->queryRow(sqlQuery);
-        
         if result is int {
             return result;
         } else {

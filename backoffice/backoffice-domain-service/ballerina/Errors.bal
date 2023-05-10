@@ -254,3 +254,21 @@ public isolated function e909626(error e) returns commons:APKError {
         description = "Error while getting a resource from Database"
     ); 
 }
+
+public isolated function e909627(error e) returns commons:APKError {
+    return error commons:APKError( "Error while adding resource category data into Database", e,
+        code = 909627,
+        message = "Error while adding resource category data into Database",
+        statusCode = 500,
+        description = "Error while adding resource category data into Database"
+    ); 
+}
+
+public isolated function e909628(error e) returns commons:APKError {
+    return error commons:APKError( "Error while getting resource category data into Database", e,
+        code = 909628,
+        message = "Error while getting resource category data into Database",
+        statusCode = 500,
+        description = "Error while getting resource category data into Database"
+    ); 
+}
