@@ -43,7 +43,7 @@ var ALLHTTPMethodsForWildCard = suite.IntegrationTest{
 			{
 				Request: http.Request{
 					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
-					Path:   "/all-http-methods-for-wildcard/v1.0.0/",
+					Path:   "/all-http-methods-for-wildcard/v1.0.0",
 					Method: "GET",
 				},
 				ExpectedRequest: &http.ExpectedRequest{
