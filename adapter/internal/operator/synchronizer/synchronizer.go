@@ -28,12 +28,14 @@ import (
 
 	"github.com/wso2/apk/adapter/internal/discovery/xds"
 	client "github.com/wso2/apk/adapter/internal/management-server/grpc-client"
+	"k8s.io/apimachinery/pkg/types"
 
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/loggers"
 	model "github.com/wso2/apk/adapter/internal/oasparser/model"
 	"github.com/wso2/apk/adapter/internal/operator/constants"
 	"github.com/wso2/apk/adapter/internal/operator/services/runtime"
+	"github.com/wso2/apk/adapter/internal/operator/utils"
 	apiProtos "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/apkmgt"
 	"github.com/wso2/apk/adapter/pkg/logging"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
@@ -43,8 +45,16 @@ import (
 // lifecycle events from controller go routine to synchronizer
 // go routine.
 type APIEvent struct {
-	EventType string
-	Event     APIState
+	EventType     string
+	Event         APIState
+	UpdatedEvents []string
+}
+
+// SuccessEvent holds the data structure used for aknowledgement of a successful API deployment
+type SuccessEvent struct {
+	APINamespacedName types.NamespacedName
+	State             string
+	Events            []string
 }
 
 var (
@@ -59,7 +69,7 @@ func init() {
 }
 
 // HandleAPILifeCycleEvents handles the API events generated from OperatorDataStore
-func HandleAPILifeCycleEvents(ch *chan APIEvent) {
+func HandleAPILifeCycleEvents(ch *chan APIEvent, successChannel *chan SuccessEvent) {
 	loggers.LoggerAPKOperator.Info("Operator synchronizer listening for API lifecycle events...")
 	for event := range *ch {
 		if event.Event.APIDefinition == nil {
@@ -78,6 +88,11 @@ func HandleAPILifeCycleEvents(ch *chan APIEvent) {
 		if err != nil {
 			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2629, event.EventType, err))
 		} else {
+			*successChannel <- SuccessEvent{
+				APINamespacedName: utils.NamespacedName(event.Event.APIDefinition),
+				State:             event.EventType,
+				Events:            event.UpdatedEvents,
+			}
 			if config.ReadConfigs().ManagementServer.Enabled {
 				mgtServerCh <- event
 			}

@@ -110,6 +110,7 @@ func InitOperator() {
 
 	// TODO: Decide on a buffer size and add to config.
 	ch := make(chan synchronizer.APIEvent, 10)
+	successChannel := make(chan synchronizer.SuccessEvent, 10)
 
 	gatewaych := make(chan synchronizer.GatewayEvent, 10)
 
@@ -122,7 +123,7 @@ func InitOperator() {
 		loggers.LoggerAPKOperator.Errorf("Error creating Gateway controller: %v", err)
 	}
 
-	if err := dpcontrollers.NewAPIController(mgr, operatorDataStore, updateHandler, &ch); err != nil {
+	if err := dpcontrollers.NewAPIController(mgr, operatorDataStore, updateHandler, &ch, &successChannel); err != nil {
 		loggers.LoggerAPKOperator.Errorf("Error creating API controller: %v", err)
 	}
 
@@ -153,7 +154,7 @@ func InitOperator() {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2603, err))
 	}
 
-	go synchronizer.HandleAPILifeCycleEvents(&ch)
+	go synchronizer.HandleAPILifeCycleEvents(&ch, &successChannel)
 	go synchronizer.HandleGatewayLifeCycleEvents(&gatewaych)
 	if config.ReadConfigs().ManagementServer.Enabled {
 		go xds.InitApkMgtXDSClient()
