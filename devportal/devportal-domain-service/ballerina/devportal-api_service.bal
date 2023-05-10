@@ -153,8 +153,9 @@ service /api/am/devportal on ep0 {
     # http:NotModified (Not Modified. Empty body because the client has already the latest version of the requested resource.)
     # NotFoundError (Not Found. The specified resource does not exist.)
     # NotAcceptableError (Not Acceptable. The requested media type is not supported.)
-    // resource function get apis/[string apiId]/thumbnail(@http:Header string? 'x\-wso2\-tenant, @http:Header string? 'if\-none\-match) returns http:Ok|http:NotModified|NotFoundError|NotAcceptableError {
-    // }
+    resource function get apis/[string apiId]/thumbnail(@http:Header string? 'x\-wso2\-tenant, @http:Header string? 'if\-none\-match) returns http:Response|APKError {
+        return getThumbnail(apiId);
+    }
     # Retrieve API Ratings
     #
     # + apiId - **API ID** consisting of the **UUID** of the API. 

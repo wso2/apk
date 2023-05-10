@@ -146,3 +146,22 @@ function readMap(javautil:Map sdkMap, string key) returns string{
         return "";
     }
 }
+
+isolated function getThumbnail(string apiId) returns http:Response|APKError {
+
+    int|APKError thumbnailCategoryId = db_getResourceCategoryIdByCategoryType(RESOURCE_TYPE_THUMBNAIL);
+    if thumbnailCategoryId is int {
+        Resource|boolean|APKError thumbnail = db_getResourceByResourceCategory(apiId, thumbnailCategoryId);
+        if thumbnail is Resource {
+            http:Response outResponse = new;
+            outResponse.setBinaryPayload(thumbnail.resourceBinaryValue, thumbnail.dataType);
+            return outResponse;
+        } else if thumbnail is boolean {
+            string msg = "Thumbnail is not available for the API";
+            return error(msg, (), message = msg, description = msg, code = 909000, statusCode = "404");
+        } else {
+            return thumbnail;
+        }
+    }
+    return thumbnailCategoryId;
+}
