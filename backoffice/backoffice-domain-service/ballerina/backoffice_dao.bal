@@ -24,6 +24,7 @@ import ballerina/io;
 import wso2/apk_common_lib as commons;
 import ballerina/log;
 
+
 isolated function db_getAPIsDAO(string organization) returns API[]|commons:APKError {
     postgresql:Client | error db_Client  = getConnection();
     if db_Client is error {
@@ -400,6 +401,120 @@ public isolated function getBusinessPlansDAO(string org) returns BusinessPlan[]|
             return businessPlans;
         } on fail var e {
             return e909620(e);
+        }
+    }
+}
+
+isolated function db_getResourceByResourceCategory(string apiId, int resourceCategoryId) returns Resource|boolean|commons:APKError {
+    postgresql:Client | error db_Client  = getConnection();
+    if db_Client is error {
+        return e909601(db_Client);
+    } else {
+        sql:ParameterizedQuery sqlQuery = `SELECT UUID AS resourceUUID, API_UUID AS apiUuid, RESOURCE_CATEGORY_ID AS resourceCategoryId, DATA_TYPE AS dataType,
+        RESOURCE_CONTENT AS resourceContent,  RESOURCE_BINARY_VALUE AS resourceBinaryValue  
+        FROM API_RESOURCES where API_UUID = ${apiId} AND RESOURCE_CATEGORY_ID = ${resourceCategoryId}`;
+        Resource|sql:Error result =  db_Client->queryRow(sqlQuery);
+        
+        if result is sql:NoRowsError {
+            return false;
+        } else if result is Resource {
+            return result;
+        } else {
+            return e909626(result);
+        }
+    }
+}
+
+isolated function db_getResourceByResourceId(string resourceId) returns Resource|commons:APKError {
+    postgresql:Client | error db_Client  = getConnection();
+    if db_Client is error {
+        return e909601(db_Client);
+    } else {
+        sql:ParameterizedQuery GET_RESOURCE_Prefix = `SELECT UUID AS resourceUUID, API_UUID AS apiUuid, RESOURCE_CATEGORY_ID AS resourceCategoryId, DATA_TYPE AS dataType,
+        RESOURCE_CONTENT AS resourceContent,  RESOURCE_BINARY_VALUE AS resourceBinaryValue  
+        FROM API_RESOURCES where UUID = `;
+        sql:ParameterizedQuery values = `${resourceId}`;
+        sql:ParameterizedQuery sqlQuery = sql:queryConcat(GET_RESOURCE_Prefix, values);
+
+        Resource|sql:Error result =  db_Client->queryRow(sqlQuery);
+        
+        if result is Resource {
+            return result;
+        } else {
+            return e909626(result);
+        }
+    }
+}
+
+isolated function db_addResource(Resource resourceItem) returns Resource|commons:APKError {
+    postgresql:Client | error dbClient  = getConnection();
+    if dbClient is error {
+        return e909601(dbClient);
+    } else {
+        time:Utc utc = time:utcNow();
+        sql:ParameterizedQuery values = `${resourceItem.resourceUUID},
+                                        ${resourceItem.apiUuid},
+                                        ${resourceItem.resourceCategoryId},
+                                        ${resourceItem.dataType},
+                                       to_tsvector(${resourceItem.resourceContent}),
+                                        bytea(${resourceItem.resourceBinaryValue}),
+                                        'apkuser',
+                                        ${utc},
+                                        'apkuser',
+                                        ${utc}
+                                    )`;
+
+        sql:ParameterizedQuery ADD_THUMBNAIL_Prefix = `INSERT INTO API_RESOURCES (UUID, API_UUID, RESOURCE_CATEGORY_ID, DATA_TYPE, RESOURCE_CONTENT, RESOURCE_BINARY_VALUE, CREATED_BY, CREATED_TIME, UPDATED_BY, LAST_UPDATED_TIME) VALUES (`;
+
+        sql:ParameterizedQuery sqlQuery = sql:queryConcat(ADD_THUMBNAIL_Prefix, values);
+
+        sql:ExecutionResult | sql:Error result = dbClient->execute(sqlQuery);
+        
+        if result is sql:ExecutionResult {
+            log:printDebug("Resource added successfully");
+            return resourceItem;
+        } else {
+            return e909624(result);
+        }
+    }
+}
+
+isolated function db_updateResource(Resource resourceItem) returns Resource|commons:APKError {
+    postgresql:Client | error dbClient  = getConnection();
+    if dbClient is error {
+        return e909601(dbClient);
+    } else {
+        time:Utc utc = time:utcNow();
+        string user = "apkuser";
+        sql:ParameterizedQuery UPDATE_RESOURCE_Suffix = `UPDATE API_RESOURCES SET`;
+        sql:ParameterizedQuery values = ` API_UUID= ${resourceItem.apiUuid}, RESOURCE_CATEGORY_ID = ${resourceItem.resourceCategoryId}, DATA_TYPE = ${resourceItem.dataType}, RESOURCE_CONTENT = to_tsvector(${resourceItem.resourceContent}),
+        RESOURCE_BINARY_VALUE = bytea(${resourceItem.resourceBinaryValue}), UPDATED_BY =${user}, LAST_UPDATED_TIME =${utc} WHERE UUID = ${resourceItem.resourceUUID}`;
+        sql:ParameterizedQuery sqlQuery = sql:queryConcat(UPDATE_RESOURCE_Suffix, values);
+
+        sql:ExecutionResult | sql:Error result = dbClient->execute(sqlQuery);
+        
+        if result is sql:ExecutionResult {
+            return resourceItem;
+        } else {
+            return e909625(result);
+        }
+    }
+}
+
+isolated function db_getResourceCategoryIdByCategoryType(string resourceType) returns int|commons:APKError {
+    postgresql:Client | error db_Client  = getConnection();
+    if db_Client is error {
+        return e909601(db_Client);
+    } else {
+        sql:ParameterizedQuery GET_RESOURCE_CATEGORY_Prefix = `SELECT RESOURCE_CATEGORY_ID FROM RESOURCE_CATEGORIES where RESOURCE_CATEGORY = `; 
+        sql:ParameterizedQuery values = `${resourceType}`;
+        sql:ParameterizedQuery sqlQuery = sql:queryConcat(GET_RESOURCE_CATEGORY_Prefix, values);
+        int|sql:Error result =  db_Client->queryRow(sqlQuery);
+        
+        if result is int {
+            return result;
+        } else {
+            return e909626(result);
         }
     }
 }

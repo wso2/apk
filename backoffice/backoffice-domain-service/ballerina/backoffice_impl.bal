@@ -21,11 +21,13 @@ import ballerina/log;
 import ballerina/time;
 import ballerina/uuid;
 import wso2/notification_grpc_client as notification;
+import ballerina/http;
+import ballerina/mime;
 
 # This function used to get API from database
 #
 # + return - Return Value string?|APIList|error
-isolated function getAPIList(int 'limit, int  offset, string? query, string organization) returns APIList|commons:APKError {
+isolated function getAPIList(int 'limit, int offset, string? query, string organization) returns APIList|commons:APKError {
     if query !is string {
         API[]|commons:APKError apis = db_getAPIsDAO(organization);
         if apis is API[] {
@@ -37,7 +39,7 @@ isolated function getAPIList(int 'limit, int  offset, string? query, string orga
                     }
                 }
             }
-            APIList apisList = {count: limitSet.length(), list: limitSet,pagination: {total: apis.length(), 'limit: 'limit, offset: offset}};
+            APIList apisList = {count: limitSet.length(), list: limitSet, pagination: {total: apis.length(), 'limit: 'limit, offset: offset}};
             return apisList;
         } else {
             return apis;
@@ -47,8 +49,8 @@ isolated function getAPIList(int 'limit, int  offset, string? query, string orga
         if hasPrefix {
             int? index = query.indexOf(":");
             if index is int {
-                string modifiedQuery = "%" + query.substring(index+1) +"%";
-                API[]|commons:APKError apis = getAPIsByQueryDAO(modifiedQuery,organization);
+                string modifiedQuery = "%" + query.substring(index + 1) + "%";
+                API[]|commons:APKError apis = getAPIsByQueryDAO(modifiedQuery, organization);
                 if apis is API[] {
                     API[] limitSet = [];
                     if apis.length() > offset {
@@ -58,7 +60,7 @@ isolated function getAPIList(int 'limit, int  offset, string? query, string orga
                             }
                         }
                     }
-                    APIList apisList = {count: limitSet.length(), list: limitSet,pagination: {total: apis.length(), 'limit: 'limit, offset: offset}};
+                    APIList apisList = {count: limitSet.length(), list: limitSet, pagination: {total: apis.length(), 'limit: 'limit, offset: offset}};
                     return apisList;
                 } else {
                     return apis;
@@ -83,22 +85,22 @@ isolated function changeLifeCyleState(string targetState, string apiId, string o
     transaction {
         string|error lcState = db_changeLCState(targetState, apiId);
         if lcState is string {
-                string newvLCState = check db_getCurrentLCStatus(apiId);
-                string|error lcEvent = db_AddLCEvent(apiId, prevLCState, newvLCState, organization);
-                if lcEvent is string {
-                    check commit;
-                    json lcPayload = check getTransitionsFromState(targetState);
-                    LifecycleState lcCr = check lcPayload.cloneWithType(LifecycleState);
-                    return lcCr;
-                } else {
-                    rollback;
-                    return error("error while adding LC event" + lcEvent.message());
-                }
+            string newvLCState = check db_getCurrentLCStatus(apiId);
+            string|error lcEvent = db_AddLCEvent(apiId, prevLCState, newvLCState, organization);
+            if lcEvent is string {
+                check commit;
+                json lcPayload = check getTransitionsFromState(targetState);
+                LifecycleState lcCr = check lcPayload.cloneWithType(LifecycleState);
+                return lcCr;
+            } else {
+                rollback;
+                return error("error while adding LC event" + lcEvent.message());
+            }
         } else {
             rollback;
             return error("error while updating LC state" + lcState.message());
         }
-    } 
+    }
 }
 
 # This function used to get current state of the API.
@@ -109,8 +111,8 @@ isolated function changeLifeCyleState(string targetState, string apiId, string o
 isolated function getLifeCyleState(string apiId) returns LifecycleState|error {
     string|error currentLCState = db_getCurrentLCStatus(apiId);
     if currentLCState is string {
-        json lcPayload =  check getTransitionsFromState(currentLCState);
-        LifecycleState|error lcGet =  lcPayload.cloneWithType(LifecycleState);
+        json lcPayload = check getTransitionsFromState(currentLCState);
+        LifecycleState|error lcGet = lcPayload.cloneWithType(LifecycleState);
         if lcGet is error {
             return e909601(lcGet);
         }
@@ -125,20 +127,20 @@ isolated function getLifeCyleState(string apiId) returns LifecycleState|error {
 # + v - any parameter object
 # + return - Return LC state
 isolated function actionToLCState(any v) returns string {
-    if(v.toString().equalsIgnoreCaseAscii("published")){
+    if (v.toString().equalsIgnoreCaseAscii("published")) {
         return "PUBLISHED";
-    } else if(v.toString().equalsIgnoreCaseAscii("created")){
+    } else if (v.toString().equalsIgnoreCaseAscii("created")) {
         return "CREATED";
-    } else if(v.toString().equalsIgnoreCaseAscii("blocked")){
+    } else if (v.toString().equalsIgnoreCaseAscii("blocked")) {
         return "BLOCKED";
-    } else if(v.toString().equalsIgnoreCaseAscii("deprecated")){
+    } else if (v.toString().equalsIgnoreCaseAscii("deprecated")) {
         return "DEPRECATED";
-    } else if(v.toString().equalsIgnoreCaseAscii("prototyped")){
+    } else if (v.toString().equalsIgnoreCaseAscii("prototyped")) {
         return "PROTOTYPED";
-    } else if(v.toString().equalsIgnoreCaseAscii("retired")){
+    } else if (v.toString().equalsIgnoreCaseAscii("retired")) {
         return "RETIRED";
     } else {
-        return "any";   
+        return "any";
     }
 }
 
@@ -147,13 +149,13 @@ isolated function actionToLCState(any v) returns string {
 # + state - state parameter
 # + return - Return Value jsons
 isolated function getTransitionsFromState(string state) returns json|error {
-    StatesList c =  check lifeCycleStateTransitions.cloneWithType(StatesList);
+    StatesList c = check lifeCycleStateTransitions.cloneWithType(StatesList);
     foreach States x in c.States {
-        if(state.equalsIgnoreCaseAscii(x.State)) {
+        if (state.equalsIgnoreCaseAscii(x.State)) {
             return x.toJson();
         }
     }
-    
+
 }
 
 # This function used to connect API create service to database
@@ -171,20 +173,17 @@ isolated function getLcEventHistory(string apiId) returns LifecycleHistory|commo
     }
 }
 
-
-
 isolated function getSubscriptions(string? apiId) returns SubscriptionList|commons:APKError {
     Subscription[]|commons:APKError subcriptions;
-        subcriptions = check db_getSubscriptionsForAPI(apiId.toString());
-        if subcriptions is Subscription[] {
-            int count = subcriptions.length();
-            SubscriptionList subsList = {count: count, list: subcriptions};
-            return subsList;
-        } else {
-            return subcriptions;
-        } 
+    subcriptions = check db_getSubscriptionsForAPI(apiId.toString());
+    if subcriptions is Subscription[] {
+        int count = subcriptions.length();
+        SubscriptionList subsList = {count: count, list: subcriptions};
+        return subsList;
+    } else {
+        return subcriptions;
+    }
 }
-
 
 isolated function blockSubscription(string subscriptionId, string blockState) returns string|commons:APKError {
     if ("blocked".equalsIgnoreCaseAscii(blockState) || "prod_only_blocked".equalsIgnoreCaseAscii(blockState)) {
@@ -199,15 +198,23 @@ isolated function blockSubscription(string subscriptionId, string blockState) re
                     string eventId = uuid:createType1AsString();
                     time:Utc currTime = time:utcNow();
                     string date = time:utcToString(currTime);
-                    SubscriptionGRPC updateSubscriptionRequest = {eventId: eventId, applicationRef: updatedSub.applicationId, 
-                    apiRef: <string>updatedSub.apiId, policyId: updatedSub.throttlingPolicy, subStatus:<string>updatedSub.status,
-                    subscriber: "user", uuid: subscriptionId, timeStamp: date, organization: "org"};
+                    SubscriptionGRPC updateSubscriptionRequest = {
+                        eventId: eventId,
+                        applicationRef: updatedSub.applicationId,
+                        apiRef: <string>updatedSub.apiId,
+                        policyId: updatedSub.throttlingPolicy,
+                        subStatus: <string>updatedSub.status,
+                        subscriber: "user",
+                        uuid: subscriptionId,
+                        timeStamp: date,
+                        organization: "org"
+                    };
                     string backofficePubCert = <string>keyStores.tls.certFilePath;
                     string backofficeKeyCert = <string>keyStores.tls.keyFilePath;
                     string pubCertPath = managementServerConfig.certPath;
                     foreach string host in hostList {
                         NotificationResponse|error subscriptionNotification = notification:updateSubscription(updateSubscriptionRequest,
-                        "https://" + host + ":8766",pubCertPath,backofficePubCert,backofficeKeyCert);
+                        "https://" + host + ":8766", pubCertPath, backofficePubCert, backofficeKeyCert);
                         if subscriptionNotification is error {
                             string message = "Error while sending subscription update grpc event";
                             log:printError(subscriptionNotification.toString());
@@ -224,14 +231,14 @@ isolated function blockSubscription(string subscriptionId, string blockState) re
             return blockSub;
         }
     } else {
-        return e909623();    
+        return e909623();
     }
 }
 
 isolated function unblockSubscription(string subscriptionId) returns string|commons:APKError {
     commons:APKError|string unblockSub = db_unblockSubscription(subscriptionId);
     if unblockSub is commons:APKError {
-            return unblockSub;
+        return unblockSub;
     } else {
         SubscriptionInternal|commons:APKError updatedSub = getSubscriptionByIdDAO(subscriptionId);
         if updatedSub is SubscriptionInternal {
@@ -240,15 +247,23 @@ isolated function unblockSubscription(string subscriptionId) returns string|comm
                 string eventId = uuid:createType1AsString();
                 time:Utc currTime = time:utcNow();
                 string date = time:utcToString(currTime);
-                SubscriptionGRPC updateSubscriptionRequest = {eventId: eventId, applicationRef: updatedSub.applicationId, 
-                apiRef: <string>updatedSub.apiId, policyId: updatedSub.throttlingPolicy, subStatus:<string>updatedSub.status,
-                subscriber: "user", uuid: subscriptionId, timeStamp: date, organization: "org"};
+                SubscriptionGRPC updateSubscriptionRequest = {
+                    eventId: eventId,
+                    applicationRef: updatedSub.applicationId,
+                    apiRef: <string>updatedSub.apiId,
+                    policyId: updatedSub.throttlingPolicy,
+                    subStatus: <string>updatedSub.status,
+                    subscriber: "user",
+                    uuid: subscriptionId,
+                    timeStamp: date,
+                    organization: "org"
+                };
                 string backofficePubCert = <string>keyStores.tls.certFilePath;
                 string backofficeKeyCert = <string>keyStores.tls.keyFilePath;
                 string pubCertPath = managementServerConfig.certPath;
                 foreach string host in hostList {
                     NotificationResponse|error subscriptionNotification = notification:updateSubscription(updateSubscriptionRequest,
-                    "https://" + host + ":8766",pubCertPath,backofficePubCert,backofficeKeyCert);
+                    "https://" + host + ":8766", pubCertPath, backofficePubCert, backofficeKeyCert);
                     if subscriptionNotification is error {
                         string message = "Error while sending subscription update grpc event";
                         log:printError(subscriptionNotification.toString());
@@ -268,14 +283,13 @@ isolated function unblockSubscription(string subscriptionId) returns string|comm
 
 isolated function getAPI(string apiId) returns API|commons:APKError {
     API|commons:APKError getAPI = check db_getAPI(apiId);
-    return  getAPI;
+    return getAPI;
 }
 
 isolated function getAPIDefinition(string apiId) returns APIDefinition|commons:APKError {
     APIDefinition|commons:APKError apiDefinition = db_getAPIDefinition(apiId);
     return apiDefinition;
 }
-
 
 isolated function updateAPI(string apiId, ModifiableAPI payload) returns API|commons:APKError {
     API|commons:APKError api = db_updateAPI(apiId, payload);
@@ -309,6 +323,83 @@ isolated function retrieveManagementServerHostsList() returns string[]|commons:A
     string managementServerNamespace = managementServerConfig.namespace;
     log:printDebug("Service:" + managementServerServiceName);
     log:printDebug("Namespace:" + managementServerNamespace);
-    string[]|commons:APKError hostList = getPodFromNameAndNamespace(managementServerServiceName,managementServerNamespace);
+    string[]|commons:APKError hostList = getPodFromNameAndNamespace(managementServerServiceName, managementServerNamespace);
     return hostList;
- }
+}
+
+isolated function updateThumbnail(string apiId, http:Request message) returns FileInfo|commons:APKError|error {
+    API|commons:APKError getApi = check db_getAPI(apiId);
+    if getApi is commons:APKError|NotFoundError {
+        return getApi;
+    } else if getApi is API {
+        string|() fileName = ();
+        byte[]|() fileContent = ();
+        string imageType = "";
+        mime:Entity[]|http:ClientError payLoadParts = message.getBodyParts();
+        if payLoadParts is mime:Entity[] {
+            foreach mime:Entity payLoadPart in payLoadParts {
+                mime:ContentDisposition contentDisposition = payLoadPart.getContentDisposition();
+                string fieldName = contentDisposition.name;
+                if fieldName == "file" {
+                    fileName = contentDisposition.fileName;
+                    fileContent = check payLoadPart.getByteArray();
+                    imageType = payLoadPart.getContentType();
+                }
+            }
+        }
+        if fileName is () || fileContent is () {
+            string msg = "Image file is not provided";
+            commons:APKError e = error(msg, (), message = msg, description = msg, code = 909000, statusCode = 500);
+            return e;
+        } else {
+            // ToDo: check file type and size
+            // ToDo: validateFileType(fileName);
+            int|commons:APKError thumbnailCategoryId = db_getResourceCategoryIdByCategoryType(RESOURCE_TYPE_THUMBNAIL);
+            if thumbnailCategoryId is int {
+                Resource thumbnailResource = {
+                    resourceUUID: "",
+                    apiUuid: apiId,
+                    resourceCategoryId: thumbnailCategoryId,
+                    dataType: imageType,
+                    resourceContent: fileName,
+                    resourceBinaryValue: fileContent
+                };
+
+                Resource|boolean|commons:APKError thumbnail = db_getResourceByResourceCategory(apiId, thumbnailCategoryId);
+                if thumbnail is Resource {
+                    thumbnailResource.resourceUUID = thumbnail.resourceUUID;
+                    Resource|commons:APKError updatedThumbnail = db_updateResource(thumbnailResource);
+                    return updatedThumbnail;
+                } else if thumbnail is boolean {
+                    string resourceUUID = uuid:createType1AsString();
+                    thumbnailResource.resourceUUID = resourceUUID;
+                    Resource|commons:APKError addedThumbnail = db_addResource(thumbnailResource);
+                    return addedThumbnail;
+                } else {
+                    return thumbnail;
+                }
+            }
+        }
+        return {mediaType: imageType};
+    }
+}
+
+isolated function getThumbnail(string apiId) returns http:Response|commons:APKError {
+
+    int|commons:APKError thumbnailCategoryId = db_getResourceCategoryIdByCategoryType(RESOURCE_TYPE_THUMBNAIL);
+    if thumbnailCategoryId is int {
+        Resource|boolean|commons:APKError thumbnail = db_getResourceByResourceCategory(apiId, thumbnailCategoryId);
+        if thumbnail is Resource {
+            http:Response outResponse = new;
+            outResponse.setBinaryPayload(thumbnail.resourceBinaryValue, thumbnail.dataType);
+            return outResponse;
+        } else if thumbnail is boolean {
+            string msg = "Thumbnail is not available for the API";
+            commons:APKError e = error(msg, (), message = msg, description = msg, code = 909000, statusCode = 404);
+            return e;
+        } else {
+            return thumbnail;
+        }
+    }
+    return thumbnailCategoryId;
+}

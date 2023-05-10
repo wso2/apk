@@ -227,3 +227,30 @@ public isolated function e909623() returns commons:APKError {
         description = "Invalid blockState provided"
     ); 
 }
+
+public isolated function e909624(error e) returns commons:APKError {
+    return error commons:APKError( "Error while adding resource data into Database", e,
+        code = 909624,
+        message = "Error while adding resource data into Database",
+        statusCode = 500,
+        description = "Error while adding resource data into Database"
+    ); 
+}
+
+public isolated function e909625(error e) returns commons:APKError {
+    return error commons:APKError( "Error while updating resource data into Database", e,
+        code = 909625,
+        message = "Error while updating resource data into Database",
+        statusCode = 500,
+        description = "Error while updating resource data into Database"
+    ); 
+}
+
+public isolated function e909626(error e) returns commons:APKError {
+    return error commons:APKError( "Error while getting a resource from Database", e,
+        code = 909626,
+        message = "Error while getting a resource from Database",
+        statusCode = 400,
+        description = "Error while getting a resource from Database"
+    ); 
+}
