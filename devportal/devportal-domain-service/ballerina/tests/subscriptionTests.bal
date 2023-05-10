@@ -20,8 +20,8 @@ import ballerina/test;
 import ballerina/log;
 import ballerina/uuid;
 
-Subscription sub = { apiId: "01ed75e2-b30b-18c8-wwf2-25da7edd2231",applicationId: "21212",throttlingPolicy: "MyBusinessPlan"};
-Application applicationNew  ={name:"sampleAppNew",throttlingPolicy:"25PerMin",description: "sample application"};
+Subscription sub = { apiId: "01ed75e2-b30b-18c8-wwf2-25da7edd2231",applicationId: "21212"};
+Application applicationNew  ={name:"sampleAppNew",description: "sample application"};
 
 
 @test:Mock { functionName: "retrieveManagementServerHostsList" }
@@ -56,7 +56,7 @@ test:MockFunction retrieveManagementServerHostsListMock = new();
 function beforeFunc2() {
     string[] testHosts= ["http://localhost:9090"];
     test:when(retrieveManagementServerHostsListMock).thenReturn(testHosts);
-    Application payload = {name:"sampleAppNew",throttlingPolicy:"25PerMin",description: "sample application"};
+    Application payload = {name:"sampleAppNew",description: "sample application"};
     NotFoundError|Application|APKError createdApplication = addApplication(payload, organiztion, "apkuser");
     if createdApplication is Application {
         test:assertTrue(true, "Successfully added the application");
@@ -91,7 +91,7 @@ function beforeFunc2() {
 function addSubscriptionTest() {
     string? appId = applicationNew.applicationId;
     if appId is string {
-        Subscription payload = { apiId: "01ed75e2-b30b-18c8-wwf2-25da7edd2231",applicationId: appId,throttlingPolicy: "MyBusinessPlan3"};
+        Subscription payload = { apiId: "01ed75e2-b30b-18c8-wwf2-25da7edd2231",applicationId: appId};
         Subscription|APKError|NotFoundError|error subscription = addSubscription(payload, organiztion, "apkuser");
         if subscription is Subscription {
             test:assertTrue(true, "Succesfully added a subscription");
@@ -113,7 +113,7 @@ function addSubscriptionNegativeTest1() {
     // API ID is not found or API Id is not returned
     string? appId = applicationNew.applicationId;
     if appId is string {
-        Subscription payload = { apiId: "8e3a1ca4-b649-4e57-9a57-e43b6b545af0",applicationId: appId,throttlingPolicy: "MyBusinessPlan3"};
+        Subscription payload = { apiId: "8e3a1ca4-b649-4e57-9a57-e43b6b545af0",applicationId: appId};
         Subscription|APKError|NotFoundError|error subscription = addSubscription(payload, organiztion, "apkuser");
         if subscription is Subscription {
             test:assertFail("Succesfully added a subscription for a invalid API");
@@ -128,7 +128,7 @@ function addSubscriptionNegativeTest1() {
 @test:Config  {dependsOn: [addSubscriptionNegativeTest1]}
 function addSubscriptionNegativeTest2() {
     // APP ID is not found or APP Id is not returned
-    Subscription payload = { apiId: "01ed75e2-b30b-18c8-wwf2-25da7edd2231",applicationId: "01ed716f-9f85-1ade-b634-be97dee7ceb4",throttlingPolicy: "MyBusinessPlan3"};
+    Subscription payload = { apiId: "01ed75e2-b30b-18c8-wwf2-25da7edd2231",applicationId: "01ed716f-9f85-1ade-b634-be97dee7ceb4"};
     Subscription|APKError|NotFoundError|error subscription = addSubscription(payload, organiztion, "apkuser");
     if subscription is Subscription {
         test:assertFail("Succesfully added a subscription for a invalid Application");
@@ -142,7 +142,7 @@ function addSubscriptionNegativeTest3() {
     // Policy Not Found
     string? appId = applicationNew.applicationId;
     if appId is string {
-        Subscription payload = { apiId: "01ed75e2-b30b-18c8-wwf2-25da7edd2231",applicationId: appId,throttlingPolicy: "MySubPol5"};
+        Subscription payload = { apiId: "01ed75e2-b30b-18c8-wwf2-25da7edd2231",applicationId: appId};
         Subscription|APKError|NotFoundError|error subscription = addSubscription(payload, organiztion, "apkuser");
         if subscription is Subscription {
             test:assertFail("Succesfully added a subscription for a invalid Policy");
@@ -159,7 +159,7 @@ function addMultipleSubscriptionsTest() {
     // Add 2 new app
     string? newappId1 = "";
     string? newappId2 = "";
-    Application payload = {name:"sampleAppNew1",throttlingPolicy:"25PerMin",description: "sample application"};
+    Application payload = {name:"sampleAppNew1",description: "sample application"};
     NotFoundError|Application|APKError createdApplication = addApplication(payload, organiztion, "apkuser");
     if createdApplication is Application {
         test:assertTrue(true, "Successfully added the application");
@@ -167,7 +167,7 @@ function addMultipleSubscriptionsTest() {
     } else if createdApplication is error {
         test:assertFail("Error occured while adding application");
     }
-    Application payload2 = {name:"sampleAppNew2",throttlingPolicy:"25PerMin",description: "sample application"};
+    Application payload2 = {name:"sampleAppNew2",description: "sample application"};
     NotFoundError|Application|APKError createdApplication2 = addApplication(payload2, organiztion, "apkuser");
     if createdApplication2 is Application {
         test:assertTrue(true, "Successfully added the application");
@@ -177,8 +177,8 @@ function addMultipleSubscriptionsTest() {
     }
 
     if newappId1 is string && newappId2 is string {
-        Subscription[] multiSub = [{ apiId: "01ed75e2-b30b-18c8-wwf2-25da7edd2231",applicationId: newappId1,throttlingPolicy: "MyBusinessPlan3"},
-        { apiId: "01ed75e2-b30b-18c8-wwf2-25da7edd2231",applicationId: newappId2,throttlingPolicy: "MyBusinessPlan3"}];
+        Subscription[] multiSub = [{ apiId: "01ed75e2-b30b-18c8-wwf2-25da7edd2231",applicationId: newappId1},
+        { apiId: "01ed75e2-b30b-18c8-wwf2-25da7edd2231",applicationId: newappId2}];
 
         Subscription[]|APKError|NotFoundError|error subscriptions = addMultipleSubscriptions(multiSub, organiztion, "apkuser");
         if subscriptions is Subscription[] {
@@ -233,7 +233,7 @@ function updateSubscriptionTest() {
         string? subId = sub.subscriptionId;
         if appId is string && subId is string {
             // Use new policy
-            Subscription payload = { apiId: "01ed75e2-b30b-18c8-wwf2-25da7edd2231",applicationId: appId,throttlingPolicy: "MyBusinessPlan2"};
+            Subscription payload = { apiId: "01ed75e2-b30b-18c8-wwf2-25da7edd2231",applicationId: appId};
             string?|Subscription|NotFoundError|error subscription = updateSubscription(subId, payload, organiztion, "apkuser");
             if subscription is Subscription {
                 test:assertTrue(true, "Succesfully updated the subscription");

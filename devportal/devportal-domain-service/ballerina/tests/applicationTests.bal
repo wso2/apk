@@ -35,7 +35,7 @@ public isolated function deleteApplicationMock(ApplicationGRPC deleteApplication
     return noti;
 }
 
-Application application  ={name:"sampleApp",throttlingPolicy:"30PerMin",description: "sample application"};
+Application application  ={name:"sampleApp",description: "sample application"};
 
 @test:BeforeSuite
 function beforeFunc1() {
@@ -90,7 +90,7 @@ function beforeFunc1() {
 function addApplicationTest() {
     string[] testHosts= ["http://localhost:9090"];
     test:when(retrieveManagementServerHostsListMock).thenReturn(testHosts);
-    Application payload = {name:"sampleApp",throttlingPolicy:"25PerMin",description: "sample application"};
+    Application payload = {name:"sampleApp",description: "sample application"};
     NotFoundError|Application|APKError createdApplication = addApplication(payload, organiztion, "apkuser");
     if createdApplication is Application {
         test:assertTrue(true, "Successfully added the application");
@@ -129,7 +129,7 @@ function getApplicationListTest(){
 function updateApplicationTest() {
     string[] testHosts= ["http://localhost:9090"];
     test:when(retrieveManagementServerHostsListMock).thenReturn(testHosts);
-    Application payload = {name:"sampleApp",throttlingPolicy:"25PerMin",description: "sample application updated"};
+    Application payload = {name:"sampleApp",description: "sample application updated"};
     string? appId = application.applicationId;
     if appId is string {
         NotFoundError|Application|APKError createdApplication = updateApplication(appId,payload, organiztion, "apkuser");

@@ -87,7 +87,6 @@ isolated function createApplicationJSON(Application app) returns json {
     string? uuid = app.applicationId;
     int? id = app.id;
     string? owner = app.owner;
-    string? tier = app.throttlingPolicy;
     application["name"] = app.name;
     if uuid is string{
         application["uuid"] = uuid;
@@ -97,9 +96,6 @@ isolated function createApplicationJSON(Application app) returns json {
     }
     if owner is string {
         application["owner"] = owner;
-    }
-    if tier is string {
-        application["tier"] = tier;
     }
     application["tierQuotaType"] = "";
     return application;

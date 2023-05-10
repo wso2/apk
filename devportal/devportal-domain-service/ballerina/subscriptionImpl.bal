@@ -53,14 +53,15 @@ isolated function addSubscription(Subscription payload, commons:Organization org
             appId = check j.applicationId.ensureType();
         }
     }
-    string? businessPlan = payload.throttlingPolicy;
-    if businessPlan is string {
-        string|APKError|NotFoundError businessPlanID = getBusinessPlanByName(businessPlan, org);
-        if businessPlanID is APKError|NotFoundError {
-            return businessPlanID;
-        }
-        payload.requestedThrottlingPolicy = businessPlan;
-    }
+    // TODO: Removed Validate the policy name
+    // string? businessPlan = payload.throttlingPolicy;
+    // if businessPlan is string {
+    //     string|APKError|NotFoundError businessPlanID = getBusinessPlanByName(businessPlan, org);
+    //     if businessPlanID is APKError|NotFoundError {
+    //         return businessPlanID;
+    //     }
+    //     payload.requestedThrottlingPolicy = businessPlan;
+    // }
     string subscriptionId = uuid:createType1AsString();
     payload.subscriptionId = subscriptionId;
     payload.status = "UNBLOCKED";
@@ -72,7 +73,7 @@ isolated function addSubscription(Subscription payload, commons:Organization org
             time:Utc currTime = time:utcNow();
             string date = time:utcToString(currTime);
             SubscriptionGRPC createSubscriptionRequest = {eventId: eventId, applicationRef: createdSub.applicationId,
-            apiRef: <string>createdSub.apiId, policyId: createdSub.throttlingPolicy, subStatus:<string>createdSub.status,
+            apiRef: <string>createdSub.apiId, policyId: "unlimited", subStatus:<string>createdSub.status,
             subscriber: user, uuid: subscriptionId, timeStamp: date, organization: org.uuid};
             string devportalPubCert = <string>keyStores.tls.certFilePath;
             string devportalKeyCert = <string>keyStores.tls.keyFilePath;
@@ -188,14 +189,15 @@ isolated function updateSubscription(string subId, Subscription payload, commons
             appId = check j.applicationId.ensureType();
         }
     }
-    string? businessPlan = payload.throttlingPolicy;
-    if businessPlan is string {
-        string|APKError|NotFoundError businessPlanID = getBusinessPlanByName(businessPlan, org);
-        if businessPlanID is APKError|NotFoundError {
-            return businessPlanID;
-        }
-        payload.requestedThrottlingPolicy = businessPlan;
-    }
+    // TODO: Removed Validate the policy name
+    // string? businessPlan = payload.throttlingPolicy;
+    // if businessPlan is string {
+    //     string|APKError|NotFoundError businessPlanID = getBusinessPlanByName(businessPlan, org);
+    //     if businessPlanID is APKError|NotFoundError {
+    //         return businessPlanID;
+    //     }
+    //     payload.requestedThrottlingPolicy = businessPlan;
+    // }
     payload.status = "UNBLOCKED";
     Subscription|APKError createdSub = updateSubscriptionDAO(payload,user,apiId,appId);
     if createdSub is Subscription {
@@ -205,7 +207,7 @@ isolated function updateSubscription(string subId, Subscription payload, commons
             time:Utc currTime = time:utcNow();
             string date = time:utcToString(currTime);
             SubscriptionGRPC updateSubscriptionRequest = {eventId: eventId, applicationRef: createdSub.applicationId,
-            apiRef: <string>createdSub.apiId, policyId: createdSub.throttlingPolicy, subStatus:<string>createdSub.status,
+            apiRef: <string>createdSub.apiId, policyId: "unlimited", subStatus:<string>createdSub.status,
             subscriber: user, uuid: subId, timeStamp: date, organization: org.uuid};
             string devportalPubCert = <string>keyStores.tls.certFilePath;
             string devportalKeyCert = <string>keyStores.tls.keyFilePath;

@@ -68,12 +68,13 @@ isolated function addSubscriptionDAO(Subscription sub, string user, string apiId
             string message = "Error while checking exisiting subscriptions";
             return error(message, existingCheckResult, message = message, description = message, code = 909000, statusCode = "500");
         }
+        var Tier_ID = "unlimited";
 
         // Insert into SUBSCRIPTION table
         sql:ParameterizedQuery query = `INSERT INTO SUBSCRIPTION (TIER_ID,API_UUID,APPLICATION_UUID,
         SUB_STATUS,CREATED_BY,UUID, TIER_ID_PENDING) 
-        VALUES (${sub.throttlingPolicy},${apiId},${appId},
-        ${sub.status},${user},${sub.subscriptionId},${sub.requestedThrottlingPolicy})`;
+        VALUES (${Tier_ID},${apiId},${appId},
+        ${sub.status},${user},${sub.subscriptionId},${Tier_ID})`;
         sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
         if result is sql:ExecutionResult {
             log:printDebug(result.toString());
@@ -148,9 +149,10 @@ isolated function updateSubscriptionDAO(Subscription sub, string user, string ap
         string message = "Error while retrieving connection";
         return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
     } else {
+        var Tier_ID = "unlimited";
         // Update Policy of a subscription in SUBSCRIPTION table
-        sql:ParameterizedQuery query = ` UPDATE SUBSCRIPTION SET TIER_ID_PENDING = ${sub.requestedThrottlingPolicy} 
-        , TIER_ID = ${sub.throttlingPolicy} , SUB_STATUS = ${sub.status}
+        sql:ParameterizedQuery query = ` UPDATE SUBSCRIPTION SET TIER_ID_PENDING = ${Tier_ID}
+        , TIER_ID = ${Tier_ID} , SUB_STATUS = ${sub.status}
         WHERE UUID = ${sub.subscriptionId}`;
         sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
         if result is sql:ExecutionResult {

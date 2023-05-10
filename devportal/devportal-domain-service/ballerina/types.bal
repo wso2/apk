@@ -24,21 +24,6 @@ public type AcceptedWorkflowResponse record {|
     WorkflowResponse body;
 |};
 
-public type NotAcceptableError record {|
-    *http:NotAcceptable;
-    Error body;
-|};
-
-public type CreatedSubscription record {|
-    *http:Created;
-    Subscription body;
-|};
-
-public type UnsupportedMediaTypeError record {|
-    *http:UnsupportedMediaType;
-    Error body;
-|};
-
 public type InternalServerErrorError record {|
     *http:InternalServerError;
     Error body;
@@ -49,19 +34,14 @@ public type ConflictError record {|
     Error body;
 |};
 
-public type PreconditionFailedError record {|
-    *http:PreconditionFailed;
-    Error body;
-|};
-
-public type CreatedComment record {|
-    *http:Created;
-    Comment body;
-|};
-
 public type NotFoundError record {|
     *http:NotFound;
     Error body;
+|};
+
+public type OkApplicationKey record {|
+    *http:Ok;
+    ApplicationKey body;
 |};
 
 public type BadRequestError record {|
@@ -72,6 +52,51 @@ public type BadRequestError record {|
 public type UnauthorizedError record {|
     *http:Unauthorized;
     Error body;
+|};
+
+public type OkAPIKey record {|
+    *http:Ok;
+    APIKey body;
+|};
+
+public type OkSubscription record {|
+    *http:Ok;
+    Subscription[] body;
+|};
+
+public type NotAcceptableError record {|
+    *http:NotAcceptable;
+    Error body;
+|};
+
+public type OkApplicationToken record {|
+    *http:Ok;
+    ApplicationToken body;
+|};
+
+public type UnsupportedMediaTypeError record {|
+    *http:UnsupportedMediaType;
+    Error body;
+|};
+
+public type PreconditionFailedError record {|
+    *http:PreconditionFailed;
+    Error body;
+|};
+
+public type OkApplicationKeyReGenerateResponse record {|
+    *http:Ok;
+    ApplicationKeyReGenerateResponse body;
+|};
+
+public type OkApplicationInfo record {|
+    *http:Ok;
+    ApplicationInfo body;
+|};
+
+public type CreatedSubscription record {|
+    *http:Created;
+    Subscription body;
 |};
 
 public type CreatedApplication record {|
@@ -123,6 +148,12 @@ public type GraphQLSchemaType record {
     string[] fieldList?;
 };
 
+public type APIInfo_additionalProperties record {
+    string name?;
+    string value?;
+    boolean display?;
+};
+
 public type ApplicationKeyGenerateRequest record {
     string keyType;
     # key Manager to Generate Keys
@@ -131,8 +162,6 @@ public type ApplicationKeyGenerateRequest record {
     string[] grantTypesToBeSupported;
     # Callback URL
     string callbackUrl?;
-    # Allowed scopes for the access token
-    string[] scopes?;
     string validityTime?;
     # Client ID for generating access token.
     string clientId?;
@@ -169,18 +198,9 @@ public type Pagination record {
     string previous?;
 };
 
-public type ApiTiers record {
-    string tierName?;
-    string tierPlan?;
-    ApiMonetizationattributes monetizationAttributes?;
-};
-
-public type AdditionalsubscriptioninfoSolacedeployedenvironments record {
-    string environmentName?;
-    string environmentDisplayName?;
-    string organizationName?;
-    AdditionalsubscriptioninfoSolaceurls[] solaceURLs?;
-    AdditionalsubscriptioninfoSolacetopicsobject SolaceTopicsObject?;
+public type AdditionalSubscriptionInfo_solaceURLs record {
+    string protocol?;
+    string endpointURL?;
 };
 
 public type RatingList record {
@@ -222,7 +242,7 @@ public type CurrentAndNewPasswords record {
 public type ApplicationToken record {
     # Access token
     string accessToken?;
-    # Valid comma seperated scopes for the access token
+    # Valid comma separated scopes for the access token
     string[] tokenScopes?;
     # Maximum validity time for the access token
     int validityTime?;
@@ -230,7 +250,7 @@ public type ApplicationToken record {
 
 public type APIMonetizationUsage record {
     # Map of custom properties related to monetization usage
-    record {} properties?;
+    record {|string...;|} properties?;
 };
 
 public type Subscription record {
@@ -242,31 +262,23 @@ public type Subscription record {
     string apiId?;
     APIInfo apiInfo?;
     ApplicationInfo applicationInfo?;
-    string throttlingPolicy;
-    string requestedThrottlingPolicy?;
     string status?;
     # A url and other parameters the subscriber can be redirected.
     string redirectionParams?;
 };
 
-public type ApplicationsImportBody record {
-    # Zip archive consisting of exported Application Configuration.
-    string file;
-};
-
 public type Settings record {
     string[] grantTypes?;
-    string[] scopes?;
     boolean applicationSharingEnabled?;
     boolean mapExistingAuthApps?;
     string apiGatewayEndpoint?;
     boolean monetizationEnabled?;
     boolean recommendationEnabled?;
     boolean IsUnlimitedTierPaid?;
-    SettingsIdentityprovider identityProvider?;
+    Settings_identityProvider identityProvider?;
     boolean IsAnonymousModeEnabled?;
     boolean IsPasswordChangeEnabled?;
-    # The 'PasswordJavaRegEx' cofigured in the UserStoreManager
+    # The 'PasswordJavaRegEx' configured in the UserStoreManager
     string userStorePasswordPattern?;
     # The regex configured in the Password Policy property 'passwordPolicy.pattern'
     string passwordPolicyPattern?;
@@ -276,27 +288,18 @@ public type Settings record {
     int passwordPolicyMaxLength?;
 };
 
-public type ApiinfoAdditionalproperties record {
-    string name?;
-    string value?;
-    boolean display?;
-};
-
 public type ThrottlingPolicyPermissionInfo record {
     string 'type?;
     # roles for this permission
     string[] roles?;
 };
 
-public type ApiDefaultversionurls record {
-    # HTTP environment default URL
-    string http?;
-    # HTTPS environment default URL
-    string https?;
-    # WS environment default URL
-    string ws?;
-    # WSS environment default URL
-    string wss?;
+public type AdditionalSubscriptionInfo_solaceDeployedEnvironments record {
+    string environmentName?;
+    string environmentDisplayName?;
+    string organizationName?;
+    AdditionalSubscriptionInfo_solaceURLs[] solaceURLs?;
+    AdditionalSubscriptionInfo_SolaceTopicsObject SolaceTopicsObject?;
 };
 
 public type APIMonetizationInfo record {
@@ -323,8 +326,8 @@ public type APISearchResult record {
     # A string that represents the context of the user's request
     string context?;
     # The version of the API
-    string 'version?;
-    # If the provider value is notgiven, the user invoking the API will be used as the provider.
+    string version?;
+    # If the provider value is not given, the user invoking the API will be used as the provider.
     string provider?;
     # This describes in which status of the lifecycle the API is
     string status?;
@@ -340,10 +343,6 @@ public type ApplicationAttributeList record {
     ApplicationAttribute[] list?;
 };
 
-public type SettingsIdentityprovider record {
-    boolean 'external?;
-};
-
 public type ThrottlingPolicyList record {
     # Number of Throttling Policies returned.
     int count?;
@@ -351,17 +350,8 @@ public type ThrottlingPolicyList record {
     Pagination pagination?;
 };
 
-public type ApiEndpointurls record {
-    string environmentName?;
-    string environmentDisplayName?;
-    string environmentType?;
-    ApiUrls URLs?;
-    ApiDefaultversionurls defaultVersionURLs?;
-};
-
-public type AdditionalsubscriptioninfoSolacetopicsobject record {
-    SolaceTopics defaultSyntax?;
-    SolaceTopics mqttSyntax?;
+public type Settings_identityProvider record {
+    boolean 'external?;
 };
 
 public type ApplicationKeyList record {
@@ -381,6 +371,11 @@ public type CommenterInfo record {
     string fullName?;
 };
 
+public type Applications_import_body record {
+    # Zip archive consisting of exported Application Configuration.
+    record {byte[] fileContent; string fileName;} file;
+};
+
 public type AdvertiseInfo record {
     boolean advertised?;
     string apiExternalProductionEndpoint?;
@@ -397,13 +392,22 @@ public type CommentList record {
     Pagination pagination?;
 };
 
+public type API_URLs record {
+    # HTTP environment URL
+    string http?;
+    # HTTPS environment URL
+    string https?;
+    # WS environment URL
+    string ws?;
+    # WSS environment URL
+    string wss?;
+};
+
 public type Application record {
     string applicationId?;
     int id?;
     @constraint:String {maxLength: 100, minLength: 1}
     string name;
-    @constraint:String {minLength: 1}
-    string throttlingPolicy;
     @constraint:String {maxLength: 512}
     string description?;
     # Type of the access token generated for this application.
@@ -415,7 +419,7 @@ public type Application record {
     string[] groups?;
     int subscriptionCount?;
     ApplicationKey[] keys?;
-    record {} attributes?;
+    record {|string...;|} attributes?;
     ScopeInfo[] subscriptionScopes?;
     # Application created user
     string owner?;
@@ -440,19 +444,28 @@ public type AdditionalSubscriptionInfoList record {
     Pagination pagination?;
 };
 
-public type ApiMonetizationattributes record {
-    string fixedPrice?;
-    string pricePerRequest?;
-    string currencyType?;
-    string billingCycle?;
-};
-
 public type User record {
     string username;
     string password;
     string firstName;
     string lastName;
     string email;
+};
+
+public type API_defaultVersionURLs record {
+    # HTTP environment default URL
+    string http?;
+    # HTTPS environment default URL
+    string https?;
+    # WS environment default URL
+    string ws?;
+    # WSS environment default URL
+    string wss?;
+};
+
+public type AdditionalSubscriptionInfo_SolaceTopicsObject record {
+    SolaceTopics defaultSyntax?;
+    SolaceTopics mqttSyntax?;
 };
 
 public type ErrorListItem record {
@@ -490,7 +503,7 @@ public type ApplicationInfo record {
 };
 
 public type ApplicationKeyReGenerateResponse record {
-    # The consumer key associated with the application, used to indetify the client
+    # The consumer key associated with the application, used to identify the client
     string consumerKey?;
     # The client secret that is used to authenticate the client with the authentication server
     string consumerSecret?;
@@ -570,6 +583,12 @@ public type TagList record {
     Pagination pagination?;
 };
 
+public type API_tiers record {
+    string tierName?;
+    string tierPlan?;
+    API_monetizationAttributes monetizationAttributes?;
+};
+
 public type TenantList record {
     # Number of tenants returned.
     int count?;
@@ -585,11 +604,6 @@ public type ApplicationKeyMappingRequest record {
     # Key Manager Name
     string keyManager?;
     string keyType;
-};
-
-public type AdditionalsubscriptioninfoSolaceurls record {
-    string protocol?;
-    string endpointURL?;
 };
 
 public type Topic record {
@@ -624,8 +638,6 @@ public type ApplicationTokenGenerateRequest record {
     string consumerSecret?;
     # Token validity period
     int validityPeriod?;
-    # Allowed scopes (space seperated) for the access token
-    string[] scopes?;
     # Token to be revoked, if any
     string revokeToken?;
     string grantType?;
@@ -673,7 +685,7 @@ public type APIInfo record {
     string name?;
     string description?;
     string context?;
-    string 'version?;
+    string version?;
     string 'type?;
     string createdTime?;
     # If the provider value is not given, the user invoking the API will be used as the provider.
@@ -690,7 +702,7 @@ public type APIInfo record {
     string monetizationLabel?;
     string gatewayVendor?;
     # Custom(user defined) properties of API
-    ApiinfoAdditionalproperties[] additionalProperties?;
+    APIInfo_additionalProperties[] additionalProperties?;
 };
 
 public type Error record {
@@ -735,10 +747,10 @@ public type ThrottlingPolicy record {
     string description?;
     string policyLevel?;
     # Custom attributes added to the throttling policy
-    record {} attributes?;
+    record {|string...;|} attributes?;
     # Maximum number of requests which can be sent within a provided unit time
     int requestCount;
-    # Unit of data allowed to be transfered. Allowed values are "KB", "MB" and "GB"
+    # Unit of data allowed to be transferred. Allowed values are "KB", "MB" and "GB"
     string dataUnit?;
     int unitTime;
     string timeUnit?;
@@ -750,7 +762,7 @@ public type ThrottlingPolicy record {
     string quotaPolicyType?;
     # This attribute declares whether this tier is available under commercial or free
     string tierPlan;
-    # If this attribute is set to false, you are capabale of sending requests
+    # If this attribute is set to false, you are capable of sending requests
     # even if the request count exceeded within a unit time
     boolean stopOnQuotaReach;
     MonetizationInfo monetizationAttributes?;
@@ -827,10 +839,10 @@ public type API record {
     string name;
     # A brief description about the API
     string description?;
-    # A string that represents thecontext of the user's request
+    # A string that represents the context of the user's request
     string context;
     # The version of the API
-    string 'version;
+    string version;
     # Swagger definition of the API which contains details about URI templates and scopes
     string apiDefinition?;
     # WSDL URL if the API is based on a WSDL endpoint
@@ -851,12 +863,12 @@ public type API record {
     # Search keywords related to the API
     string[] tags?;
     # The subscription tiers selected for the particular API
-    ApiTiers[] tiers?;
+    API_tiers[] tiers?;
     boolean hasThumbnail = false;
     # Custom(user defined) properties of API
-    ApiinfoAdditionalproperties[] additionalProperties?;
+    APIInfo_additionalProperties[] additionalProperties?;
     APIMonetizationInfo monetization?;
-    ApiEndpointurls[] endpointURLs?;
+    API_endpointURLs[] endpointURLs?;
     APIBusinessInformation businessInformation?;
     # The environment list configured with non empty endpoint URLs for the particular API.
     string[] environmentList?;
@@ -874,8 +886,16 @@ public type API record {
     string createdTime?;
     string lastUpdatedTime?;
     string gatewayVendor?;
-    # Supported transports for the aync API.
+    # Supported transports for the Async API.
     string[] asyncTransportProtocols?;
+};
+
+public type API_endpointURLs record {
+    string environmentName?;
+    string environmentDisplayName?;
+    string environmentType?;
+    API_URLs URLs?;
+    API_defaultVersionURLs defaultVersionURLs?;
 };
 
 public type Tag record {
@@ -902,7 +922,7 @@ public type AdditionalSubscriptionInfo record {
     string apiId?;
     boolean isSolaceAPI?;
     string solaceOrganization?;
-    AdditionalsubscriptioninfoSolacedeployedenvironments[] solaceDeployedEnvironments?;
+    AdditionalSubscriptionInfo_solaceDeployedEnvironments[] solaceDeployedEnvironments?;
 };
 
 public type APIInfoList record {
@@ -917,13 +937,9 @@ public type APICategory record {
     string description?;
 };
 
-public type ApiUrls record {
-    # HTTP environment URL
-    string http?;
-    # HTTPS environment URL
-    string https?;
-    # WS environment URL
-    string ws?;
-    # WSS environment URL
-    string wss?;
+public type API_monetizationAttributes record {
+    string fixedPrice?;
+    string pricePerRequest?;
+    string currencyType?;
+    string billingCycle?;
 };
