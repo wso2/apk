@@ -348,12 +348,16 @@ isolated function updateThumbnail(string apiId, http:Request message) returns Fi
             }
         }
         if fileName is () || fileContent is () {
-            string msg = "Image file is not provided";
+            string msg = "Thumbnail is not provided";
             commons:APKError e = error(msg, (), message = msg, description = msg, code = 909000, statusCode = 500);
             return e;
         } else {
-            // ToDo: check file type and size
             // ToDo: validateFileType(fileName);
+            if isFileSizeGreaterThan1MB(fileContent) {
+                string msg = "Thumbnail size should be less than 1MB";
+                commons:APKError e = error(msg, (), message = msg, description = msg, code = 909000, statusCode = 500);
+                return e;
+            }
             int|commons:APKError thumbnailCategoryId = db_getResourceCategoryIdByCategoryType(RESOURCE_TYPE_THUMBNAIL);
             if thumbnailCategoryId is int {
                 Resource thumbnailResource = {
