@@ -355,6 +355,7 @@ func concatAuthSchemes(schemeUp *dpv1alpha1.Authentication, schemeDown *dpv1alph
 
 	finalAuth := dpv1alpha1.Authentication{}
 	var jwtConfigured bool
+	var apiKeyConfigured bool
 
 	finalAuth.Spec.Override.ExternalService.Disabled = schemeUp.Spec.Override.ExternalService.Disabled
 	for _, auth := range schemeUp.Spec.Override.ExternalService.AuthTypes {
@@ -362,6 +363,9 @@ func concatAuthSchemes(schemeUp *dpv1alpha1.Authentication, schemeDown *dpv1alph
 		case constants.JWTAuth:
 			finalAuth.Spec.Override.ExternalService.AuthTypes = append(finalAuth.Spec.Override.ExternalService.AuthTypes, auth)
 			jwtConfigured = true
+		case constants.APIKeyTypeInOAS:
+			finalAuth.Spec.Override.ExternalService.AuthTypes = append(finalAuth.Spec.Override.ExternalService.AuthTypes, auth)
+			apiKeyConfigured = true
 		}
 	}
 
@@ -374,6 +378,11 @@ func concatAuthSchemes(schemeUp *dpv1alpha1.Authentication, schemeDown *dpv1alph
 			if !jwtConfigured {
 				finalAuth.Spec.Override.ExternalService.AuthTypes = append(finalAuth.Spec.Override.ExternalService.AuthTypes, auth)
 				jwtConfigured = true
+			}
+		case constants.APIKeyTypeInOAS:
+			if !apiKeyConfigured {
+				finalAuth.Spec.Override.ExternalService.AuthTypes = append(finalAuth.Spec.Override.ExternalService.AuthTypes, auth)
+				apiKeyConfigured = true
 			}
 		}
 	}
@@ -388,6 +397,11 @@ func concatAuthSchemes(schemeUp *dpv1alpha1.Authentication, schemeDown *dpv1alph
 				finalAuth.Spec.Override.ExternalService.AuthTypes = append(finalAuth.Spec.Override.ExternalService.AuthTypes, auth)
 				jwtConfigured = true
 			}
+		case constants.APIKeyTypeInOAS:
+			if !apiKeyConfigured {
+				finalAuth.Spec.Override.ExternalService.AuthTypes = append(finalAuth.Spec.Override.ExternalService.AuthTypes, auth)
+				apiKeyConfigured = true
+			}
 		}
 	}
 
@@ -401,8 +415,14 @@ func concatAuthSchemes(schemeUp *dpv1alpha1.Authentication, schemeDown *dpv1alph
 				finalAuth.Spec.Override.ExternalService.AuthTypes = append(finalAuth.Spec.Override.ExternalService.AuthTypes, auth)
 				jwtConfigured = true
 			}
+		case constants.APIKeyTypeInOAS:
+			if !apiKeyConfigured {
+				finalAuth.Spec.Override.ExternalService.AuthTypes = append(finalAuth.Spec.Override.ExternalService.AuthTypes, auth)
+				apiKeyConfigured = true
+			}
 		}
 	}
+	loggers.LoggerOasparser.Debug("Schemes Final auth: %v", &finalAuth)
 	return &finalAuth
 }
 
@@ -438,12 +458,16 @@ func concatAuthScheme(scheme *dpv1alpha1.Authentication) *dpv1alpha1.Authenticat
 	}
 	finalAuth := dpv1alpha1.Authentication{}
 	var jwtConfigured bool
+	var apiKeyConfigured bool
 	finalAuth.Spec.Override.ExternalService.Disabled = scheme.Spec.Override.ExternalService.Disabled
 	for _, auth := range scheme.Spec.Override.ExternalService.AuthTypes {
 		switch auth.AuthType {
 		case constants.JWTAuth:
 			finalAuth.Spec.Override.ExternalService.AuthTypes = append(finalAuth.Spec.Override.ExternalService.AuthTypes, auth)
 			jwtConfigured = true
+		case constants.APIKeyTypeInOAS:
+			finalAuth.Spec.Override.ExternalService.AuthTypes = append(finalAuth.Spec.Override.ExternalService.AuthTypes, auth)
+			apiKeyConfigured = true
 		}
 	}
 	if !finalAuth.Spec.Override.ExternalService.Disabled {
@@ -456,8 +480,14 @@ func concatAuthScheme(scheme *dpv1alpha1.Authentication) *dpv1alpha1.Authenticat
 				finalAuth.Spec.Override.ExternalService.AuthTypes = append(finalAuth.Spec.Override.ExternalService.AuthTypes, auth)
 				jwtConfigured = true
 			}
+		case constants.APIKeyTypeInOAS:
+			if !apiKeyConfigured {
+				finalAuth.Spec.Override.ExternalService.AuthTypes = append(finalAuth.Spec.Override.ExternalService.AuthTypes, auth)
+				apiKeyConfigured = true
+			}
 		}
 	}
+	loggers.LoggerOasparser.Debug("Final auth: %v", &finalAuth)
 	return &finalAuth
 }
 
@@ -475,9 +505,16 @@ func getSecurity(authScheme *dpv1alpha1.Authentication, scopes []string) ([]map[
 		for _, auth := range authScheme.Spec.Override.ExternalService.AuthTypes {
 			switch auth.AuthType {
 			case constants.JWTAuth:
+				loggers.LoggerOasparser.Debug("Inside JWT auth")
 				securityName := fmt.Sprintf("%s_%v", constants.JWTAuth, rand.Intn(999999999))
 				authSecurities = append(authSecurities, map[string][]string{securityName: scopes})
 				securitySchemes = append(securitySchemes, SecurityScheme{DefinitionName: securityName, Type: constants.Oauth2TypeInOAS})
+			case constants.APIKeyTypeInOAS:
+				loggers.LoggerOasparser.Debug("Inside API Key auth")
+				securityName := fmt.Sprintf("%s_%v", constants.APIKeyTypeInOAS, rand.Intn(999999999))
+				authSecurities = append(authSecurities, map[string][]string{securityName: scopes})
+				securitySchemes = append(securitySchemes, SecurityScheme{DefinitionName: securityName,
+					Type: constants.APIKeyTypeInOAS, In: constants.APIKeyInHeaderOAS, Name: constants.APIKeyNameWithApim})
 			}
 		}
 	} else {

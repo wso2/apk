@@ -196,7 +196,7 @@ func GetEnforcerAPI(adapterInternalAPI model.AdapterInternalAPI, vhost string) *
 	}
 
 	return &api.Api{
-		Id:                  adapterInternalAPI.GetID(),
+		Id:                  adapterInternalAPI.UUID,
 		Title:               adapterInternalAPI.GetTitle(),
 		BasePath:            adapterInternalAPI.GetXWso2Basepath(),
 		Version:             adapterInternalAPI.GetVersion(),

@@ -69,7 +69,7 @@ public class AuthFilter implements Filter {
         boolean isOAuthProtected = true;
         boolean isMutualSSLProtected = false;
         boolean isBasicAuthProtected = false;
-        boolean isApiKeyProtected = false;
+        boolean isApiKeyProtected = true;
         isMutualSSLMandatory = false;
         isOAuthBasicAuthMandatory = false;
 

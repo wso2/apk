@@ -6,7 +6,15 @@ spec:
   override:
     type: ext
     ext:
-      disabled: true            
+      disabled: false
+      serviceRef:
+        group: wso2/v1alpha2
+        kind: Backend
+        name: ext_authz-server
+        port: 1234
+      authTypes:
+        - type: jwt
+        - type: apiKey
   default:
     type: ext
     ext:
@@ -17,6 +25,7 @@ spec:
         port: 1234
       authTypes:
         - type: jwt
+        - type: apiKey
   targetRef:
     kind: Resource
     name: http-bin-api #provide API ref name

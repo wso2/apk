@@ -45,6 +45,7 @@ import (
 	"github.com/wso2/apk/adapter/internal/oasparser/envoyconf"
 	"github.com/wso2/apk/adapter/internal/oasparser/model"
 	operatorconsts "github.com/wso2/apk/adapter/internal/operator/constants"
+	disc_api "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/api"
 	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/subscription"
 	wso2_cache "github.com/wso2/apk/adapter/pkg/discovery/protocol/cache/v3"
 	wso2_resource "github.com/wso2/apk/adapter/pkg/discovery/protocol/resource/v3"
@@ -578,6 +579,23 @@ func UpdateEnforcerApis(label string, apis []types.Resource, version string) {
 		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1414, errSetSnap.Error()))
 	}
 	logger.LoggerXds.Infof("New API cache update for the label: " + label + " version: " + fmt.Sprint(version))
+
+	subAPIs := []*subscription.APIs{}
+	for _, api := range apis {
+		subAPI := subscription.APIs{}
+		subAPI.ApiId = api.(*disc_api.Api).GetId()
+		subAPI.Name = api.(*disc_api.Api).GetTitle()
+		subAPI.Version = api.(*disc_api.Api).GetVersion()
+		subAPI.Context = api.(*disc_api.Api).GetBasePath()
+		subAPI.Policy = api.(*disc_api.Api).GetTier()
+		subAPI.ApiType = api.(*disc_api.Api).GetApiType()
+		subAPI.Uuid = api.(*disc_api.Api).GetId()
+		subAPIs = append(subAPIs, &subAPI)
+	}
+	subAPIList := &subscription.APIList{
+		List: subAPIs,
+	}
+	UpdateEnforcerAPIList(label, subAPIList)
 }
 
 // UpdateEnforcerSubscriptions sets new update to the enforcer's Subscriptions
@@ -629,6 +647,7 @@ func UpdateEnforcerAPIList(label string, apis *subscription.APIList) {
 	logger.LoggerXds.Debug("Updating Enforcer API Cache")
 	apiList := enforcerAPIListMap[label]
 	apiList = append(apiList, apis)
+	logger.LoggerXds.Debug("subAPIs: %v", apis)
 
 	version := rand.Intn(maxRandomInt)
 	snap, _ := wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
