@@ -5,14 +5,9 @@ metadata:
   namespace: apk-release
 spec:
   override:
-    requestInterceptor:
-      backendRef:
-        name: interceptor-backend-v1
-        namespace: apk-release
-      includes:
-        - request_body
-        - request_headers
-        - invocation_context
+    requestInterceptors:
+    - name: interceptor-service-gateway-level
+      namespace: apk-release
   targetRef:
     group: gateway.networking.k8s.io
     kind: Gateway
@@ -55,7 +50,20 @@ spec:
       hqus
       -----END CERTIFICATE-----
 ---
-
+apiVersion: dp.wso2.com/v1alpha1
+kind: InterceptorService
+metadata:
+  name: interceptor-service-gateway-level
+  namespace: apk-release
+spec:
+  backendRef:
+    name: interceptor-backend-v1
+    namespace: apk-release
+  includes:
+    - request_body
+    - request_headers
+    - invocation_context
+---
 apiVersion: dp.wso2.com/v1alpha1
 kind: RateLimitPolicy
 metadata:
