@@ -23,7 +23,6 @@ import ballerina/io;
 import wso2/apk_common_lib as commons;
 import ballerina/log;
 
-
 isolated function db_getAPIsDAO(string organization) returns API[]|commons:APKError {
     postgresql:Client | error db_Client  = getConnection();
     if db_Client is error {

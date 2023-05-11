@@ -24,4 +24,3 @@ isolated function isFileSizeGreaterThan1MB(byte[] data) returns boolean {
     log:printInfo("fileSizeInMB: " + fileSizeInMB.toBalString());
     return fileSizeInMB > 1;
 }
-    

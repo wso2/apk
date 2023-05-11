@@ -139,7 +139,7 @@ isolated function db_getResourceCategoryIdByCategoryType(string resourceType) re
     }
 }
 
-isolated function db_getResourceByResourceCategory(string apiId, int resourceCategoryId) returns Resource|boolean|APKError {
+isolated function db_getResourceByResourceCategory(string apiId, int resourceCategoryId) returns Resource|NotFoundError|APKError {
     postgresql:Client | error db_Client  = getConnection();
     if db_Client is error {
         string message = "Error while retrieving connection";
@@ -151,7 +151,9 @@ isolated function db_getResourceByResourceCategory(string apiId, int resourceCat
         Resource|sql:Error result =  db_Client->queryRow(sqlQuery);
         
         if result is sql:NoRowsError {
-            return false;
+            log:printDebug(result.toString());
+            NotFoundError nfe = {body:{code: 90915, message: "Thumbnail Not Found for provided API ID"}};
+            return nfe;
         } else if result is Resource {
             return result;
         } else {

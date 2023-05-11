@@ -28,7 +28,7 @@ isolated function getAPIByAPIId(string apiId) returns API|NotFoundError|APKError
     return api;
 }
 
-isolated function getAPIList(int 'limit, int  offset, string? query, commons:Organization organization) returns APIList|APKError {
+isolated function getAPIList(int 'limit, int offset, string? query, commons:Organization organization) returns APIList|APKError {
     if query !is string {
         API[]|APKError apis = getAPIsDAO(organization.uuid);
         if apis is API[] {
@@ -40,7 +40,7 @@ isolated function getAPIList(int 'limit, int  offset, string? query, commons:Org
                     }
                 }
             }
-            APIList apisList = {count: limitSet.length(), list: limitSet,pagination: {total: apis.length(), 'limit: 'limit, offset: offset}};
+            APIList apisList = {count: limitSet.length(), list: limitSet, pagination: {total: apis.length(), 'limit: 'limit, offset: offset}};
             return apisList;
         } else {
             return apis;
@@ -50,7 +50,7 @@ isolated function getAPIList(int 'limit, int  offset, string? query, commons:Org
         if hasPrefix {
             int? index = query.indexOf(":");
             if index is int {
-                string modifiedQuery = "%" + query.substring(index+1) +"%";
+                string modifiedQuery = "%" + query.substring(index + 1) + "%";
                 API[]|APKError apis = getAPIsByQueryDAO(modifiedQuery, organization.uuid);
                 if apis is API[] {
                     API[] limitSet = [];
@@ -61,7 +61,7 @@ isolated function getAPIList(int 'limit, int  offset, string? query, commons:Org
                             }
                         }
                     }
-                    APIList apisList = {count: limitSet.length(), list: limitSet,pagination: {total: apis.length(), 'limit: 'limit, offset: offset}};
+                    APIList apisList = {count: limitSet.length(), list: limitSet, pagination: {total: apis.length(), 'limit: 'limit, offset: offset}};
                     return apisList;
                 } else {
                     return apis;
@@ -96,14 +96,14 @@ function generateSDKImpl(string apiId, string language) returns http:Response|sd
         if apiDefinition is APIDefinition {
             string? schema = apiDefinition.schemaDefinition;
             if schema is string {
-                javautil:Map|sdk:APIClientGenerationException sdkMap = sdkClient.generateSDK(language,apiName,apiVersion,schema,
+                javautil:Map|sdk:APIClientGenerationException sdkMap = sdkClient.generateSDK(language, apiName, apiVersion, schema,
                 sdkConfig.groupId, sdkConfig.artifactId, sdkConfig.modelPackage, sdkConfig.apiPackage);
                 if sdkMap is javautil:Map {
-                    string path = readMap(sdkMap,"zipFilePath");
-                    string fileName = readMap(sdkMap,"zipFileName");
+                    string path = readMap(sdkMap, "zipFilePath");
+                    string fileName = readMap(sdkMap, "zipFileName");
                     http:Response response = new;
                     response.setFileAsPayload(path);
-                    response.addHeader("Content-Disposition","attachment; filename=" + fileName);
+                    response.addHeader("Content-Disposition", "attachment; filename=" + fileName);
                     return response;
                 } else {
                     return sdkMap;
@@ -132,7 +132,7 @@ isolated function newSDKClient() returns handle = @java:Constructor {
     'class: "org.wso2.apk.devportal.sdk.APIClientGenerationManager"
 } external;
 
-function readMap(javautil:Map sdkMap, string key) returns string{
+function readMap(javautil:Map sdkMap, string key) returns string {
     handle keyAsJavaStr = java:fromString(key);
     javalang:Object keyAsObj = new (keyAsJavaStr);
     javalang:Object value = sdkMap.get(keyAsObj);
@@ -147,21 +147,25 @@ function readMap(javautil:Map sdkMap, string key) returns string{
     }
 }
 
-isolated function getThumbnail(string apiId) returns http:Response|APKError {
-
-    int|APKError thumbnailCategoryId = db_getResourceCategoryIdByCategoryType(RESOURCE_TYPE_THUMBNAIL);
-    if thumbnailCategoryId is int {
-        Resource|boolean|APKError thumbnail = db_getResourceByResourceCategory(apiId, thumbnailCategoryId);
-        if thumbnail is Resource {
-            http:Response outResponse = new;
-            outResponse.setBinaryPayload(thumbnail.resourceBinaryValue, thumbnail.dataType);
-            return outResponse;
-        } else if thumbnail is boolean {
-            string msg = "Thumbnail is not available for the API";
-            return error(msg, (), message = msg, description = msg, code = 909000, statusCode = "404");
-        } else {
-            return thumbnail;
+isolated function getThumbnail(string apiId) returns http:Response|NotFoundError|APKError {
+    API|NotFoundError|APKError api = getAPIByAPIId(apiId);
+    if api is API {
+        int|APKError thumbnailCategoryId = db_getResourceCategoryIdByCategoryType(RESOURCE_TYPE_THUMBNAIL);
+        if thumbnailCategoryId is int {
+            Resource|NotFoundError|APKError thumbnail = db_getResourceByResourceCategory(apiId, thumbnailCategoryId);
+            if thumbnail is Resource {
+                http:Response outResponse = new;
+                outResponse.setBinaryPayload(thumbnail.resourceBinaryValue, thumbnail.dataType);
+                return outResponse;
+            } else {
+                return thumbnail;
+            }
         }
+        return thumbnailCategoryId;
+    } else if api is NotFoundError|APKError {
+        return api;
     }
-    return thumbnailCategoryId;
+    string message = "Unable to retrieve Thumbnail";
+    APKError e = error(message, message = message, description = message, code = 90911, statusCode = "500");
+    return e;
 }

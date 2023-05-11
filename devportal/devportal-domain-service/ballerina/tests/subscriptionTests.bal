@@ -53,7 +53,7 @@ test:MockFunction retrieveManagementServerHostsListMock = new();
  }
 
 @test:BeforeSuite
-function beforeFunc2() {
+function beforeFunc3() {
     string[] testHosts= ["http://localhost:9090"];
     test:when(retrieveManagementServerHostsListMock).thenReturn(testHosts);
     Application payload = {name:"sampleAppNew",description: "sample application"};
