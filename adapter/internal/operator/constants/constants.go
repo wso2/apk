@@ -27,21 +27,15 @@ const (
 
 // API events related constants
 const (
-	Create string = "CREATE"
-	Update string = "UPDATE"
-	Delete string = "DELETE"
+	Create string = "CREATED"
+	Update string = "UPDATED"
+	Delete string = "DELETED"
 )
 
 // Environment variable names and default values
 const (
 	OperatorPodNamespace             string = "OPERATOR_POD_NAMESPACE"
 	OperatorPodNamespaceDefaultValue string = "default"
-)
-
-// CR Statuses
-const (
-	DeployedState = "Deployed"
-	UpdatedState  = "Updated"
 )
 
 // CRD Kinds
