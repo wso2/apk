@@ -21,6 +21,7 @@ import ballerinax/postgresql;
 import ballerina/sql;
 import ballerina/http;
 import wso2/apk_common_lib as commons;
+import wso2/apk_keymanager_libs as keymanager;
 
 configurable commons:DatasourceConfiguration datasourceConfiguration = ?;
 final postgresql:Client|sql:Error dbClient;
@@ -35,6 +36,7 @@ commons:DBBasedOrgResolver organizationResolver = new (datasourceConfiguration);
 commons:JWTValidationInterceptor jwtValidationInterceptor = new (idpConfiguration, organizationResolver);
 commons:RequestErrorInterceptor requestErrorInterceptor = new;
 commons:ResponseErrorInterceptor responseErrorInterceptor = new;
+final keymanager:KeyManagerTypeInitializer keyManagerInitializer = new;
 listener http:Listener ep0 = new (9443, secureSocket = {
     'key: {
         certFile: <string>keyStores.tls.certFilePath,
@@ -47,17 +49,18 @@ listener http:Listener internalAdminEp = new (9444, secureSocket = {
         keyFile: <string>keyStores.tls.keyFilePath
     }
 }, interceptors = [requestErrorInterceptor, responseErrorInterceptor]);
-
-function init() {
+configurable string keyManagerConntectorConfigurationFilePath = "/home/wso2apk/admin/keymanager";
+function init() returns error? {
+    _ = check keyManagerInitializer.initialize(keyManagerConntectorConfigurationFilePath);
     log:printInfo("Starting APK Admin Domain Service...");
     dbClient =
         new (host = datasourceConfiguration.host,
-    username = datasourceConfiguration.username,
-    password = datasourceConfiguration.password,
-    database = datasourceConfiguration.databaseName,
-    port = datasourceConfiguration.port,
+        username = datasourceConfiguration.username,
+        password = datasourceConfiguration.password,
+        database = datasourceConfiguration.databaseName,
+        port = datasourceConfiguration.port,
         connectionPool = {maxOpenConnections: datasourceConfiguration.maxPoolSize}
-            );
+    );
     if dbClient is error {
         return log:printError("Error while connecting to database");
     }

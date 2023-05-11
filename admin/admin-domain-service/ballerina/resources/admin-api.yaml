@@ -2679,38 +2679,6 @@ components:
           description: |
             Well-Known Endpoint of Identity Provider.
           example: ""
-        introspectionEndpoint:
-          type: string
-          example: https://localhost:9444/oauth2/introspect
-          deprecated: true
-        clientRegistrationEndpoint:
-          type: string
-          example: https://localhost:9444/keymanager-operations/dcr/register
-          deprecated: true
-        tokenEndpoint:
-          type: string
-          example: https://localhost:9444/oauth2/token
-          deprecated: true
-        displayTokenEndpoint:
-          type: string
-          example: https://localhost:9444/oauth2/token
-          deprecated: true
-        revokeEndpoint:
-          type: string
-          example: https://localhost:9444/oauth2/revoke
-          deprecated: true
-        displayRevokeEndpoint:
-          type: string
-          example: https://localhost:9444/oauth2/revoke
-          deprecated: true
-        userInfoEndpoint:
-          type: string
-          example: https://localhost:9444/oauth2/userinfo?schema=openid
-          deprecated: true
-        authorizeEndpoint:
-          type: string
-          example: https://localhost:9444/oauth2/authorize
-          deprecated: true
         endpoints:
           type: array
           items:
@@ -2728,16 +2696,6 @@ components:
         issuer:
           type: string
           example: https://localhost:9444/services
-        alias:
-          type: string
-          description: |
-            The alias of Identity Provider.
-            If the tokenType is EXCHANGED, the alias value should be inclusive in the audience values of the JWT token
-          example: https://localhost:9443/oauth2/token
-        scopeManagementEndpoint:
-          type: string
-          example: https://wso2is.com:9444/api/identity/oauth2/v1.0/scopes
-          deprecated: true
         availableGrantTypes:
           type: array
           items:
@@ -2762,44 +2720,21 @@ components:
           type: boolean
           example: false
           default: false
-        enableSelfValidationJWT:
-          type: boolean
-          example: true
-          default: true
-        claimMapping:
-          type: array
-          items:
-            $ref: '#/components/schemas/ClaimMappingEntry'
         consumerKeyClaim:
           type: string
           example: azp
         scopesClaim:
           type: string
           example: scp
-        tokenValidation:
-          type: array
-          items:
-            $ref: '#/components/schemas/TokenValidation'
         enabled:
           type: boolean
           example: true
         additionalProperties:
           type: object
-          properties: {}
           example:
             self_validate_jwt: true
             Username: admin
             Password: admin
-        tokenType:
-          type: string
-          description: The type of the tokens to be used (exchanged or without exchanged).
-            Accepted values are EXCHANGED, DIRECT and BOTH.
-          example: EXCHANGED
-          default: DIRECT
-          enum:
-            - EXCHANGED
-            - DIRECT
-            - BOTH
 
     KeyManagerEndpoint:
       title: Key Manager Endpoint.
@@ -2836,16 +2771,6 @@ components:
         enabled:
           type: boolean
           example: true
-        tokenType:
-          type: string
-          description: The type of the tokens to be used (exchanged or without exchanged).
-            Accepted values are EXCHANGED, DIRECT and BOTH.
-          example: EXCHANGED
-          default: DIRECT
-          enum:
-            - EXCHANGED
-            - DIRECT
-            - BOTH
     KeyManagerConfiguration:
       title: Key Manager Configuration
       type: object
@@ -2872,14 +2797,12 @@ components:
           type: string
           example: Enter username to connect to key manager
         default:
-          type: object
-          properties: {}
+          type: string
           example: admin
         values:
           type: array
           items:
-            type: object
-            properties: {}
+            type: string
     KeyManagerList:
       title: Key Manager List
       type: object

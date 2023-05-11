@@ -177,7 +177,7 @@ service /api/am/admin on ep0 {
     # + return - returns can be any of following types
     # http:Ok (OK. Resource successfully deleted.)
     # NotFoundError (Not Found. The specified resource does not exist.)
-    isolated resource function delete 'business\-plans/[string planId](http:RequestContext requestContext) returns http:Ok|commons:APKError{
+    isolated resource function delete 'business\-plans/[string planId](http:RequestContext requestContext) returns http:Ok|commons:APKError {
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
         string|commons:APKError ex = removeBusinessPlan(planId, organization);
@@ -436,21 +436,37 @@ service /api/am/admin on ep0 {
     # + return - returns can be any of following types
     # Settings (OK. Settings returned)
     # NotFoundError (Not Found. The specified resource does not exist.)
-    // resource function get settings() returns Settings|NotFoundError {
-    // }
+    resource function get settings(http:RequestContext requestContext) returns Settings|NotFoundError|commons:APKError {
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+
+        SettingsClient settingsClient = new;
+        return settingsClient.getSettings(organization);
+    }
     # Get all Key managers
     #
     # + return - OK. KeyManagers returned 
-    // resource function get 'key\-managers() returns KeyManagerList {
-    // }
+    isolated resource function get 'key\-managers(http:RequestContext requestContext) returns KeyManagerList|commons:APKError {
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+
+        KeyManagerClient keyManagerClient = new ();
+        return keyManagerClient.getAllKeyManagersByOrganization(organization);
+
+    }
     # Add a new API Key Manager
     #
     # + payload - Key Manager object that should to be added 
     # + return - returns can be any of following types
     # KeyManager (Created. Successful response with the newly created object as entity in the body.)
     # BadRequestError (Bad Request. Invalid request or validation error.)
-    // resource function post 'key\-managers(@http:Payload KeyManager payload) returns KeyManager|BadRequestError {
-    // }
+    isolated resource function post 'key\-managers(@http:Payload KeyManager payload, http:RequestContext requestContext) returns KeyManager|BadRequestError|commons:APKError {
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+
+        KeyManagerClient keyManagerClient = new ();
+        return check keyManagerClient.addKeyManagerEntryToOrganization(payload, organization);
+    }
     # Get a Key Manager Configuration
     #
     # + keyManagerId - Key Manager UUID 
@@ -458,8 +474,12 @@ service /api/am/admin on ep0 {
     # KeyManager (OK. KeyManager Configuration returned)
     # NotFoundError (Not Found. The specified resource does not exist.)
     # NotAcceptableError (Not Acceptable. The requested media type is not supported.)
-    // resource function get 'key\-managers/[string keyManagerId]() returns KeyManager|NotFoundError|NotAcceptableError {
-    // }
+    isolated resource function get 'key\-managers/[string keyManagerId](http:RequestContext requestContext) returns KeyManager|NotFoundError|NotAcceptableError|commons:APKError {
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        KeyManagerClient keyManagerClient = new ();
+        return check keyManagerClient.getKeyManagerById(keyManagerId, organization);
+    }
     # Update a Key Manager
     #
     # + keyManagerId - Key Manager UUID 
@@ -468,16 +488,27 @@ service /api/am/admin on ep0 {
     # KeyManager (OK. Label updated.)
     # BadRequestError (Bad Request. Invalid request or validation error.)
     # NotFoundError (Not Found. The specified resource does not exist.)
-    // resource function put 'key\-managers/[string keyManagerId](@http:Payload KeyManager payload) returns KeyManager|BadRequestError|NotFoundError {
-    // }
+    isolated resource function put 'key\-managers/[string keyManagerId](@http:Payload KeyManager payload, http:RequestContext requestContext) returns KeyManager|BadRequestError|NotFoundError|commons:APKError {
+
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        KeyManagerClient keyManagerClient = new ();
+        return check keyManagerClient.updateKeyManager(keyManagerId, payload, organization);
+    }
     # Delete a Key Manager
     #
     # + keyManagerId - Key Manager UUID 
     # + return - returns can be any of following types
     # http:Ok (OK. Key Manager successfully deleted.)
     # NotFoundError (Not Found. The specified resource does not exist.)
-    // resource function delete 'key\-managers/[string keyManagerId]() returns http:Ok|NotFoundError {
-    // }
+    isolated resource function delete 'key\-managers/[string keyManagerId](http:RequestContext requestContext) returns http:Ok|NotFoundError|commons:APKError {
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        KeyManagerClient keyManagerClient = new ();
+        check keyManagerClient.deleteKeyManager(keyManagerId, organization);
+        http:Ok okResponse = {};
+        return okResponse;
+    }
     # Retrieve Well-known information from Key Manager Well-known Endpoint
     #
     # + request - parameter description 

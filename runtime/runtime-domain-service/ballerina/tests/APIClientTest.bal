@@ -3582,7 +3582,7 @@ function getMockConfigMap1(string apiUniqueId, API api) returns model:ConfigMap|
 }
 
 public function getBase64EncodedGzipContent(byte[] content) returns string|error {
-    byte[]|io:IOException gzipUtilCompressGzipFile = check runtimeUtil:GzipUtil_compressGzipFile(content);
+    byte[]|io:IOException gzipUtilCompressGzipFile = check commons:GzipUtil_compressGzipFile(content);
     if gzipUtilCompressGzipFile is byte[] {
         byte[] encoderUtilEncodeBase64 = check runtimeUtil:EncoderUtil_encodeBase64(gzipUtilCompressGzipFile);
         return string:fromBytes(encoderUtilEncodeBase64);

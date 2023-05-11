@@ -1,3 +1,5 @@
+[wso2.admin_service]
+keyManagerConntectorConfigurationFilePath = "./tests/resources/keyManager-configs"
 [wso2.admin_service.datasourceConfiguration]
 description = "Database for admin"
 url = "jdbc:postgresql://localhost:10320/WSO2AM_DB"

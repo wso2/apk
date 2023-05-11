@@ -20,8 +20,7 @@ import ballerina/test;
 import runtime_domain_service.model;
 import runtime_domain_service.java.lang;
 import ballerina/log;
-import runtime_domain_service.org.wso2.apk.runtime as runtimeUtil;
-
+import wso2/apk_common_lib as commons;
 public function getMockAPIList() returns model:APIList {
     model:EnvConfig[]? pizzashackAPIEndpoint = [{httpRouteRefs: ["01ed7aca-eb6b-1178-a200-f604a4ce114a-production"]}];
     model:EnvConfig[]? pizzashackAPI1Endpoint = [{httpRouteRefs: ["01ed7b08-f2b1-1166-82d5-649ae706d29d-production"]}];
@@ -480,8 +479,8 @@ public function mockOpenAPIJson() returns json {
 }
 
 public function convertJsonToYaml(string jsonString) returns string|error {
-    runtimeUtil:YamlUtil yamlUtil = runtimeUtil:newYamlUtil1();
-     string|lang:Exception unionResult = yamlUtil.fromJsonStringToYaml(jsonString) ?: "";
+    commons:YamlUtil yamlUtil = commons:newYamlUtil1();
+     string|lang:Exception unionResult = check yamlUtil.fromJsonStringToYaml(jsonString) ?: "";
      if unionResult is string {
             return unionResult;
      } else {

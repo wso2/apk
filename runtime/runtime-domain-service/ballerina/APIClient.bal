@@ -51,15 +51,17 @@ public class APIClient {
                         response.statusCode = 200;
                         return response;
                     } else if accept == APPLICATION_YAML_MEDIA_TYPE {
-                        runtimeUtil:YamlUtil yamlUtil = runtimeUtil:newYamlUtil1();
-                        string?|lang:Exception convertedYaml = yamlUtil.fromJsonStringToYaml(definition.toString());
+                        string?|error convertedYaml = commons:fromJsonStringToYaml(definition.toString());
                         if convertedYaml is string {
                             response.setTextPayload(convertedYaml);
                             response.setHeader("Content-Type", APPLICATION_YAML_MEDIA_TYPE);
                             response.statusCode = 200;
                             return response;
-                        } else if convertedYaml is lang:Exception {
+                        } else if convertedYaml is error{
                             log:printError("Error while converting json to yaml:" + convertedYaml.toString());
+                            return e909040();
+                        }else{
+                            log:printError("Error while converting json to yaml,converted yaml is empty");
                             return e909040();
                         }
                     } else {
@@ -107,7 +109,7 @@ public class APIClient {
             }
             if content is string {
                 byte[] base64DecodedGzipContent = check runtimeUtil:EncoderUtil_decodeBase64(content.toBytes());
-                byte[]|javaio:IOException gzipUnCompressedContent = check runtimeUtil:GzipUtil_decompressGzipFile(base64DecodedGzipContent);
+                byte[]|javaio:IOException gzipUnCompressedContent = check commons:GzipUtil_decompressGzipFile(base64DecodedGzipContent);
                 if gzipUnCompressedContent is byte[] {
                     string definition = check string:fromBytes(gzipUnCompressedContent);
                     return value:fromJsonString(definition);
@@ -1024,19 +1026,19 @@ public class APIClient {
         }
     }
     private isolated function deleteEndpointCertificates(model:API api, commons:Organization organization) returns commons:APKError? {
-        do{
-        model:ConfigMap[] endpointCertificates = check getConfigMapsForAPICertificate(api.spec.apiDisplayName, api.spec.apiVersion, organization);
-        foreach model:ConfigMap endpointCertificate in endpointCertificates {
-            http:Response deleteEndpointCertificateResult = check deleteConfigMap(endpointCertificate.metadata.name, endpointCertificate.metadata.namespace);
-            if deleteEndpointCertificateResult.statusCode == http:STATUS_OK {
-                log:printDebug("Deleted Endpoint Certificate Successfully" + endpointCertificate.toString());
-            } else {
-                json responsePayLoad = check deleteEndpointCertificateResult.getJsonPayload();
-                model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
-                check self.handleK8sTimeout(statusResponse);
+        do {
+            model:ConfigMap[] endpointCertificates = check getConfigMapsForAPICertificate(api.spec.apiDisplayName, api.spec.apiVersion, organization);
+            foreach model:ConfigMap endpointCertificate in endpointCertificates {
+                http:Response deleteEndpointCertificateResult = check deleteConfigMap(endpointCertificate.metadata.name, endpointCertificate.metadata.namespace);
+                if deleteEndpointCertificateResult.statusCode == http:STATUS_OK {
+                    log:printDebug("Deleted Endpoint Certificate Successfully" + endpointCertificate.toString());
+                } else {
+                    json responsePayLoad = check deleteEndpointCertificateResult.getJsonPayload();
+                    model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+                    check self.handleK8sTimeout(statusResponse);
+                }
             }
-        }
-        }on fail var e{
+        } on fail var e {
             if e is commons:APKError {
                 return e;
             }
@@ -1351,8 +1353,6 @@ public class APIClient {
             }
         };
 
-        model:K8sSecret data = check getK8sSecret(uniqueSecretName, nameSpace);
-        if data is model:K8sSecret {
             http:Response updateK8sResult = check updateK8sSecret(uniqueSecretName, k8sSecret, nameSpace);
             if updateK8sResult.statusCode == http:STATUS_OK {
                 log:printDebug("Updated K8s Secret Successfully" + k8sSecret.toString());
@@ -1362,7 +1362,6 @@ public class APIClient {
                 check self.handleK8sTimeout(statusResponse);
             }
         }
-    }
 
     private isolated function deployAPIPolicyCRs(model:APIArtifact apiArtifact) returns error? {
         foreach model:APIPolicy apiPolicy in apiArtifact.apiPolicies {
@@ -1402,7 +1401,7 @@ public class APIClient {
     }
 
     private isolated function retrieveGeneratedConfigmapForDefinition(model:APIArtifact apiArtifact, API api, json generatedSwaggerDefinition, string uniqueId, commons:Organization organization) returns error? {
-        byte[]|javaio:IOException compressedContent = check runtimeUtil:GzipUtil_compressGzipFile(generatedSwaggerDefinition.toJsonString().toBytes());
+        byte[]|javaio:IOException compressedContent = check commons:GzipUtil_compressGzipFile(generatedSwaggerDefinition.toJsonString().toBytes());
         if compressedContent is byte[] {
             byte[] base64EncodedContent = check runtimeUtil:EncoderUtil_encodeBase64(compressedContent);
             model:ConfigMap configMap = {
@@ -3114,10 +3113,8 @@ public class APIClient {
                 oldSecretRefName = <string>backendSecurity.generatedSecretRefName;
             }
             model:K8sSecret k8SecretCopy = check getK8sSecret(oldSecretRefName, getNameSpace(runtimeConfiguration.apiCreationNamespace));
-            if k8SecretCopy is model:K8sSecret {
                 check self.createK8sSecretFromSecretRef(newUniqueSecretName, k8SecretCopy);
                 self.setBackendSecurity(backendSecurity, (), newUniqueSecretName, (), endpointConfig, endpointType);
-            }
             newAPI.endpointConfig = endpointConfig;
         }
     }
@@ -3461,7 +3458,7 @@ public class APIClient {
     }
 
     private isolated function convertAndStoreYamlFile(string jsonString, string fileName, string directroy, string? subDirectory) returns error? {
-        runtimeUtil:YamlUtil yamlUtil = runtimeUtil:newYamlUtil1();
+        commons:YamlUtil yamlUtil = commons:newYamlUtil1();
         string|() convertedYaml = check yamlUtil.fromJsonStringToYaml(jsonString);
         string fullPath = directroy;
         if convertedYaml is string {
@@ -3477,7 +3474,7 @@ public class APIClient {
     private isolated function zipDirectory(string apiId, string directoryPath) returns [string, string]|error {
         string zipName = apiId + ZIP_FILE_EXTENSTION;
         string zipPath = directoryPath + ZIP_FILE_EXTENSTION;
-        _ = check runtimeUtil:ZIPUtils_zipDir(directoryPath, zipPath);
+        _ = check commons:ZIPUtils_zipDir(directoryPath, zipPath);
         return [zipName, zipPath];
     }
 
