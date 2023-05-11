@@ -136,7 +136,7 @@ public type API_additionalProperties record {
 
 public type FileInfo record {
     # relative location of the file (excluding the base context and host of the Publisher API)
-    string relativePath?;
+    string fileName?;
     # media-type of the file
     string mediaType?;
 };

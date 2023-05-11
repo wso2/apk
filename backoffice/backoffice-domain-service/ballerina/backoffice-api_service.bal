@@ -62,17 +62,15 @@ service /api/am/backoffice on ep0 {
         }
         return apiDefinition;
     }
-
-    isolated resource function get apis/[string apiId]/thumbnail(@http:Header string? 'if\-none\-match, @http:Header string? accept = "application/json") returns http:Response|commons:APKError {
+    // resource function get apis/[string apiId]/'resource\-paths(@http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0) returns ResourcePathList|http:NotModified|NotFoundError|NotAcceptableError {
+    // }
+    isolated resource function get apis/[string apiId]/thumbnail(@http:Header string? 'if\-none\-match, @http:Header string? accept = "application/json") returns http:Response|http:NotModified|NotFoundError|NotAcceptableError|commons:APKError {
         return getThumbnail(apiId);
     }
-    isolated resource function put apis/[string apiId]/thumbnail(@http:Header string? 'if\-match, http:Request message) returns FileInfo|commons:APKError|error {
+    isolated resource function put apis/[string apiId]/thumbnail(@http:Header string? 'if\-match, http:Request message) returns FileInfo|BadRequestError|NotFoundError|PreconditionFailedError|commons:APKError|error {
        log:printInfo("Received thumbnail upload request for apiId: " + apiId);
        return updateThumbnail(apiId, message);
     }
-    // resource function get apis/[string apiId]/'resource\-paths(@http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0) returns ResourcePathList|http:NotModified|NotFoundError|NotAcceptableError {
-    // }
-
     // resource function get apis/[string apiId]/documents(@http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0, @http:Header string? accept = "application/json") returns DocumentList|http:NotModified|NotFoundError|NotAcceptableError {
     // }
     // resource function post apis/[string apiId]/documents(@http:Payload Document payload) returns CreatedDocument|BadRequestError|UnsupportedMediaTypeError {

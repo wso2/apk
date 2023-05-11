@@ -327,7 +327,7 @@ isolated function retrieveManagementServerHostsList() returns string[]|commons:A
     return hostList;
 }
 
-isolated function updateThumbnail(string apiId, http:Request message) returns FileInfo|commons:APKError|error {
+isolated function updateThumbnail(string apiId, http:Request message) returns FileInfo|NotFoundError|commons:APKError|error {
     API|commons:APKError getApi = check db_getAPI(apiId);
     if getApi is commons:APKError|NotFoundError {
         return getApi;
@@ -368,41 +368,50 @@ isolated function updateThumbnail(string apiId, http:Request message) returns Fi
                     resourceContent: fileName,
                     resourceBinaryValue: fileContent
                 };
-                Resource|boolean|commons:APKError thumbnail = db_getResourceByResourceCategory(apiId, thumbnailCategoryId);
+                Resource|NotFoundError|commons:APKError thumbnail = db_getResourceByResourceCategory(apiId, thumbnailCategoryId);
                 if thumbnail is Resource {
                     thumbnailResource.resourceUUID = thumbnail.resourceUUID;
                     Resource|commons:APKError updatedThumbnail = db_updateResource(thumbnailResource);
-                    return updatedThumbnail;
-                } else if thumbnail is boolean {
+                    if updatedThumbnail is Resource {
+                        return {fileName: updatedThumbnail.resourceContent, mediaType: updatedThumbnail.dataType};
+                    } else {
+                        return updatedThumbnail;
+                    }
+                } else if thumbnail is NotFoundError {
                     string resourceUUID = uuid:createType1AsString();
                     thumbnailResource.resourceUUID = resourceUUID;
                     Resource|commons:APKError addedThumbnail = db_addResource(thumbnailResource);
-                    return addedThumbnail;
+                    if addedThumbnail is Resource {
+                        return {fileName: addedThumbnail.resourceContent, mediaType: addedThumbnail.dataType};
+                    } else {
+                        return addedThumbnail;
+                    }
                 } else {
                     return thumbnail;
                 }
+            } else {
+                return thumbnailCategoryId;
             }
         }
-        return {mediaType: imageType};
     }
 }
 
-isolated function getThumbnail(string apiId) returns http:Response|commons:APKError {
-
-    int|commons:APKError thumbnailCategoryId = db_getResourceCategoryIdByCategoryType(RESOURCE_TYPE_THUMBNAIL);
-    if thumbnailCategoryId is int {
-        Resource|boolean|commons:APKError thumbnail = db_getResourceByResourceCategory(apiId, thumbnailCategoryId);
-        if thumbnail is Resource {
-            http:Response outResponse = new;
-            outResponse.setBinaryPayload(thumbnail.resourceBinaryValue, thumbnail.dataType);
-            return outResponse;
-        } else if thumbnail is boolean {
-            string msg = "Thumbnail is not available for the API";
-            commons:APKError e = error(msg, (), message = msg, description = msg, code = 909000, statusCode = 404);
-            return e;
-        } else {
-            return thumbnail;
+isolated function getThumbnail(string apiId) returns http:Response|NotFoundError|commons:APKError {
+    API|commons:APKError getApi = check db_getAPI(apiId);
+    if getApi is API {
+        int|commons:APKError thumbnailCategoryId = db_getResourceCategoryIdByCategoryType(RESOURCE_TYPE_THUMBNAIL);
+        if thumbnailCategoryId is int {
+            Resource|NotFoundError|commons:APKError thumbnail = db_getResourceByResourceCategory(apiId, thumbnailCategoryId);
+            if thumbnail is Resource {
+                http:Response outResponse = new;
+                outResponse.setBinaryPayload(thumbnail.resourceBinaryValue, thumbnail.dataType);
+                return outResponse;
+            } else {
+                return thumbnail;
+            }
         }
+        return thumbnailCategoryId;
+    } else {
+        return getApi;
     }
-    return thumbnailCategoryId;
 }

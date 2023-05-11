@@ -157,11 +157,11 @@ public isolated function e909615(error e) returns commons:APKError {
 }
 
 public isolated function e909616(error e) returns commons:APKError {
-    return error commons:APKError( "Error while retriving API", e,
+    return error commons:APKError( "Error while retrieving API", e,
         code = 909616,
-        message = "Error while retriving API",
+        message = "Error while retrieving API",
         statusCode = 500,
-        description = "Error while retriving API"
+        description = "Error while retrieving API"
     ); 
 }
 

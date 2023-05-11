@@ -404,7 +404,7 @@ public isolated function getBusinessPlansDAO(string org) returns BusinessPlan[]|
     }
 }
 
-isolated function db_getResourceByResourceCategory(string apiId, int resourceCategoryId) returns Resource|boolean|commons:APKError {
+isolated function db_getResourceByResourceCategory(string apiId, int resourceCategoryId) returns Resource|NotFoundError|commons:APKError {
     postgresql:Client | error db_Client  = getConnection();
     if db_Client is error {
         return e909601(db_Client);
@@ -415,7 +415,9 @@ isolated function db_getResourceByResourceCategory(string apiId, int resourceCat
         Resource|sql:Error result =  db_Client->queryRow(sqlQuery);
         
         if result is sql:NoRowsError {
-            return false;
+            log:printDebug(result.toString());
+            NotFoundError nfe = {body:{code: 90915, message: "Thumbnail Not Found for provided API ID"}};
+            return nfe;
         } else if result is Resource {
             return result;
         } else {
