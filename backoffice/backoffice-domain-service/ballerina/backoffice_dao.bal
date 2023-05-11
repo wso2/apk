@@ -20,7 +20,6 @@ import ballerina/sql;
 import ballerina/time;
 import ballerinax/postgresql;
 import ballerina/io;
-
 import wso2/apk_common_lib as commons;
 import ballerina/log;
 

@@ -343,6 +343,10 @@ GRANT ALL PRIVILEGES ON DATABASE "WSO2AM_DB" TO wso2carbon;
         GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO wso2carbon;
         GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO wso2carbon;
         GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public TO wso2carbon;
+
+        -- Insert Initial APK data ---
+        INSERT INTO RESOURCE_CATEGORIES (RESOURCE_CATEGORY) VALUES ('Thumbnail');
+        -- End Insert Initial APK data        
     
         -- Insert Demo APK data ---
         INSERT INTO INTERNAL_USER(uuid, IDP_USER_NAME) VALUES ( 'apkuser', 'apkuser');

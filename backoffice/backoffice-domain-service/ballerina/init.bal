@@ -38,7 +38,7 @@ commons:JWTValidationInterceptor jwtValidationInterceptor = new (idpConfiguratio
 commons:RequestErrorInterceptor requestErrorInterceptor = new;
 commons:ResponseErrorInterceptor responseErrorInterceptor = new;
 
-function init() returns error? {
+function init() {
     log:printInfo("Starting APK Backoffice Domain Service...");
 
     dbClient =
@@ -49,21 +49,8 @@ function init() returns error? {
         port = datasourceConfiguration.port,
         connectionPool = {maxOpenConnections: datasourceConfiguration.maxPoolSize}
     );
-
-    check db_initialiseResourceCategories();
 }
 
 public isolated function getConnection() returns postgresql:Client|error {
     return dbClient;
-}
-
-isolated function db_initialiseResourceCategories() returns error? {
-    string[] catrgoryList = [RESOURCE_TYPE_THUMBNAIL];
-    foreach string category in catrgoryList {
-        int|commons:APKError result = db_addCategory(category);
-        if result is commons:APKError {
-            log:printDebug("Error while adding category: " + category);
-            return result;
-        }
-    }
 }
