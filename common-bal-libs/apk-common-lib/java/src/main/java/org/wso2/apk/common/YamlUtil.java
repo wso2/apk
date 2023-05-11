@@ -16,11 +16,12 @@
  * under the License.
  */
 
-package org.wso2.apk.runtime;
+package org.wso2.apk.common;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 
 /**
@@ -30,6 +31,7 @@ public class YamlUtil {
 
     /**
      * This method used to convert jsonString to yaml string.
+     *
      * @param jsonString string representation of Json.
      * @return string representation of yaml.
      * @throws Exception
@@ -37,10 +39,21 @@ public class YamlUtil {
     public String fromJsonStringToYaml(String jsonString) throws Exception {
         try {
 
-        JsonNode jsonNodeTree = new ObjectMapper().readTree(jsonString);
-        return new YAMLMapper().writeValueAsString(jsonNodeTree);
-        } catch (JsonProcessingException e){
-            throw new Exception("Error occurred while converting json to yaml" + e);
+            JsonNode jsonNodeTree = new ObjectMapper().readTree(jsonString);
+            return new YAMLMapper().writeValueAsString(jsonNodeTree);
+        } catch (JsonProcessingException e) {
+            throw new Exception("Error occurred while converting json to yaml" + e, e);
         }
+    }
+
+    public String fromYamlStringToJson(String yamlString) throws Exception {
+        try {
+            ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
+            Object yamlObject = yamlMapper.readValue(yamlString, Object.class);
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(yamlObject);
+        } catch (JsonProcessingException e) {
+            throw new Exception("Error occured converting yaml to json", e);
+        }
+
     }
 }

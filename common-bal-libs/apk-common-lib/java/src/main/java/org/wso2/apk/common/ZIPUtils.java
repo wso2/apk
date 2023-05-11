@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.apk.runtime;
+package org.wso2.apk.common;
 
 import java.io.File;
 import java.io.FileInputStream;

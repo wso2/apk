@@ -81,6 +81,14 @@ spec:
             {{- else }}
               subPath: tls.crt
             {{- end }}
+            - name: keymanager-connetor--nonprodidp
+              mountPath: /home/wso2apk/admin/keymanager/nonprodidp.yaml
+              subPath: nonprodidp.yaml
+            {{- range $index, $val := $.Values.wso2.apk.cp.keyManagerConnectors}}
+            - name: keyManagerConnectors-$val.type
+              mountPath: /home/wso2apk/admin/keymanager/$val.fileName
+              subPath: $val.fileName
+            {{- end }}
           env:
             - name: DB_PASSWORD
               valueFrom:
@@ -111,4 +119,14 @@ spec:
        {{ else }}
             secretName: {{ template "apk-helm.resource.prefix" . }}-admin-ds-server-cert
        {{ end }}
+        - name: keymanager-connetor--nonprodidp
+          configMap:
+            name: {{ template "apk-helm.resource.prefix" . }}-nonprodidp-config
+       {{if .Values.wso2.apk.cp.keyManagerConnectors }}
+       {{- range $name, $val := $.Values.wso2.apk.cp.keyManagerConnectors}}
+        - name: keyManagerConnectors-$val.type
+          configMap:
+            name: $val.name
+       {{- end }}
+       {{end}}
 {{- end -}}

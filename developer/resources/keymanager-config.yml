@@ -1,0 +1,239 @@
+# Copyright (c) 2023, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+openapi: 3.0.0
+info:
+  title: Key Manager Proxy Service
+  description: Key Manager Proxy Service
+  version: v1
+  contact:
+    name: WSO2
+    url: http://wso2.com/products/api-manager/
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+tags:
+  - name: key manageent
+    description: key manageent
+paths:
+  "/initialize":
+    post:
+      tags:
+        - Configurations
+      summary: Initialize Key Manager
+      operationId: initializeKeyManager
+      requestBody:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConfigurationInitialization"
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                properties:
+                  initialized:
+                    type: boolean
+                    example: true
+    head:
+      tags:
+        - Configurations
+      summary: Check Key Manager initialized
+      operationId: checkInitialized
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                properties:
+                  initialized:
+                    type: boolean
+                    example: true
+
+  "/register":
+    post:
+      tags:
+        - Client Registration
+      summary: Register Client.
+      operationId: registerClient
+      requestBody:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegistrationRequest"
+      responses:
+        201:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientRegistrationResponse"  
+
+
+  "/register/{clientId}":
+    get:
+      tags:
+        - "Client Registration"
+      summary: Get Client. 
+      operationId: getClient
+      parameters:
+        - name: clientId
+          in: path
+          description: Client Id
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientRegistrationResponse"
+    put:
+      tags:
+        - Client Registration
+      summary: Update Client
+      operationId: updateClient
+      parameters:
+        - name: clientId
+          in: path
+          description: Client Id
+          required: true
+          schema:
+            type: string
+      requestBody:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientUpdateRequest"
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientRegistrationResponse"  
+    delete:
+      tags:
+        - Client Registration
+      summary: Delete Client.
+      operationId: deleteClient
+      parameters:
+        - name: clientId
+          in: path
+          description: Client Id
+          required: true
+          schema:
+            type: string
+      responses:
+        204:
+          description: Successful operation
+
+
+components:
+  schemas:
+    RegistrationRequest:
+      title: Client Registration Request
+      type: object
+      properties:
+        redirect_uris:
+          type: array
+          items:
+            type: string
+            example: "https://localhost:9443/callback"
+        response_types:
+          type: array
+          items:
+            type: string
+            example: "code"
+        grant_types:
+          type: array
+          items:
+            type: string
+            example: "authorization_code"
+        application_type:
+          type: string
+          example: "web"
+        client_name:
+          type: string
+          example: "test"
+        logo_uri:
+          type: string
+          example: "https://localhost:9443/logo.png"
+        client_uri:
+          type: string
+          example: "https://localhost:9443"
+        policy_uri:
+          type: string
+          example: "https://localhost:9443/policy"
+        tos_uri:
+          type: string
+          example: "https://localhost:9443/tos"
+        jwks_uri:
+          type: string
+          example: "https://localhost:9443/jwks"
+        subject_type:
+          type: string
+          example: "public"
+        token_endpoint_auth_method:
+          type: string
+          example: "client_secret_basic"
+        additional_properties:
+          type: object
+          example: {}
+    ClientRegistrationResponse:
+      title: Client Registration Response
+      allOf:
+        - $ref: "#/components/schemas/RegistrationRequest"
+        - type: object
+          properties:
+            client_secret:
+              type: string
+              example: "test"
+            client_id:
+              type: string
+              example: "test"
+            client_secret_expires_at:
+              type: integer
+              format: int64
+              example: 1577858400
+            registration_access_token:
+              type: string
+              example: "test"
+                
+    ClientUpdateRequest:
+      title: Client Update Request
+      allOf:
+        - $ref: "#/components/schemas/RegistrationRequest"
+        - type: object
+          properties:
+            client_secret:
+              type: string
+              example: "test"
+            client_id:
+              type: string
+              example: "test"      
+
+    ConfigurationInitialization:
+      title: Key Manager Configuration Initialization
+      type: object
+      properties:
+        endpoints:
+          type: object
+        configurations:
+          type: object

@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
-apply from: "$rootDir/../common-gradle-scripts/ballerina.gradle"
+apply from: "$rootDir/../../common-gradle-scripts/ballerina.gradle"
 
 tasks.register('build_only') {
     group 'build'

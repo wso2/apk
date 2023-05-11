@@ -14,33 +14,7 @@
  * limitations under the License.
  *
  */
- apply from: "$rootDir/../common-gradle-scripts/ballerina.gradle"
 
-tasks.register('build_only') {
-    group 'build'
-    description 'Build ballerina component'
-    dependsOn 'bal_build'
-}
-tasks.register('pack') {
-    group 'build'
-    description 'Build ballerina component'
-    dependsOn 'bal_pack'
-}
-tasks.register('push') {
-    group 'build'
-    description 'Build ballerina component'
-    dependsOn 'bal_push'
-}
-tasks.register('build') {
-    group 'build'
-    description 'Test, Build, Pack and Push ballerina component'
-    dependsOn 'bal_push'
-}
-tasks.register('test') {
-    group 'test'
-    description 'Test ballerina component'
-    dependsOn 'bal_test'
-}
-task clean{
-    dependsOn 'bal_clean'
+task build{
+ dependsOn(":ballerina:build")
 }

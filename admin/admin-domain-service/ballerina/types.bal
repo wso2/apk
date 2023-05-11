@@ -172,36 +172,19 @@ public type KeyManager record {
     string description?;
     # Well-Known Endpoint of Identity Provider.
     string wellKnownEndpoint?;
-    string introspectionEndpoint?;
-    string clientRegistrationEndpoint?;
-    string tokenEndpoint?;
-    string displayTokenEndpoint?;
-    string revokeEndpoint?;
-    string displayRevokeEndpoint?;
-    string userInfoEndpoint?;
-    string authorizeEndpoint?;
     KeyManagerEndpoint[] endpoints?;
     KeyManager_certificates certificates?;
     string issuer?;
-    # The alias of Identity Provider.
-    # If the tokenType is EXCHANGED, the alias value should be inclusive in the audience values of the JWT token
-    string alias?;
-    string scopeManagementEndpoint?;
     string[] availableGrantTypes?;
     boolean enableTokenGeneration?;
     boolean enableTokenEncryption = false;
     boolean enableTokenHashing = false;
     boolean enableMapOAuthConsumerApps = false;
     boolean enableOAuthAppCreation = false;
-    boolean enableSelfValidationJWT = true;
-    ClaimMappingEntry[] claimMapping?;
     string consumerKeyClaim?;
     string scopesClaim?;
-    TokenValidation[] tokenValidation?;
     boolean enabled?;
     record {} additionalProperties?;
-    # The type of the tokens to be used (exchanged or without exchanged). Accepted values are EXCHANGED, DIRECT and BOTH.
-    string tokenType = "DIRECT";
 };
 
 public type CustomUrlInfo_devPortal record {
@@ -223,8 +206,8 @@ public type KeyManagerConfiguration record {
     boolean mask?;
     boolean multiple?;
     string tooltip?;
-    record {} default?;
-    record {}[] values?;
+    string default?;
+    string[] values?;
 };
 
 public type BusinessPlanList record {
@@ -449,8 +432,6 @@ public type KeyManagerInfo record {
     string 'type;
     string description?;
     boolean enabled?;
-    # The type of the tokens to be used (exchanged or without exchanged). Accepted values are EXCHANGED, DIRECT and BOTH.
-    string tokenType = "DIRECT";
 };
 
 public type ExportPolicy record {

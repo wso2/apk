@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "302f3120-cc24-48bd-8f24-44f94180ea60",
+		"_postman_id": "f62909ef-30b0-498d-b014-edf9b0612fc5",
 		"name": "Test Admin API Operations",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -935,6 +935,454 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "AdminAPI List KeyManagers",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"No of keymanagers equal to 0\",function(){",
+							"const response = pm.response.json();",
+							"pm.expect(response.count).equals(0);",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/admin/key-managers",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"admin",
+						"key-managers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "AdminAPI Create KeyManager",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"  pm.response.to.have.status(201);",
+							"});",
+							"const response = pm.response.json();",
+							"pm.collectionVariables.set(\"keymanager-uuid\",response.id);",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"nonprod-idp\",\n  \"displayName\": \"Non production IDP\",\n  \"type\": \"nonProdIdp\",\n  \"description\": \"This is a key manager for Developers\",\n  \"endpoints\": [\n    {\n      \"name\": \"token_endpoint\",\n      \"value\": \"https://localhost:9443/oauth2/token\"\n    },\n    {\n        \"name\":\"dcr_endpoint\",\n        \"value\":\"https://localhost:9443/oauth2/jwks\"\n    }\n  ],\n  \"certificates\": {\n    \"type\": \"JWKS\",\n    \"value\": \"https://localhost:9443/oauth2/jwks\"\n  },\n  \"issuer\": \"https://localhost:9444/services\",\n  \"availableGrantTypes\": [\n    \"client_credentials\"\n  ],\n  \"enableTokenGeneration\": true,\n  \"enableMapOAuthConsumerApps\": true,\n  \"enableOAuthAppCreation\": true,\n  \"consumerKeyClaim\": \"azp\",\n  \"scopesClaim\": \"scopes\",\n  \"enabled\": true,\n  \"additionalProperties\": {\n    \"username\": \"admin\",\n    \"password\": \"admin\"\n  }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/admin/key-managers",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"admin",
+						"key-managers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "AdminAPI Get KeyManager by id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							"const response = pm.response.json();",
+							"pm.test(\"varify payload\",function(){",
+							"pm.expect(response.name,\"nonprod-idp\");",
+							"pm.expect(response.type,\"nonProdIdp\");",
+							"pm.expect(response.issuer,\"https://localhost:9444/services\");",
+							"pm.expect(response.enabled,true);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/admin/key-managers/{{keymanager-uuid}}",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"admin",
+						"key-managers",
+						"{{keymanager-uuid}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "AdminAPI Update Keymanager byid",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							"const response = pm.response.json();",
+							"pm.test(\"varify payload\",function(){",
+							"pm.expect(response.name,\"nonprod-idp\");",
+							"pm.expect(response.issuer,\"https://localhost:9444/services\");",
+							"pm.expect(response.enabled,true);",
+							"pm.expect(response.enableTokenGeneration,false);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\"id\":\"{{keymanager-uuid}}\",\n  \"name\": \"nonprod-idp\",\n  \"displayName\": \"Non production IDP\",\n  \"type\": \"nonProdIdp\",\n  \"description\": \"This is a key manager for Developers\",\n  \"endpoints\": [\n    {\n      \"name\": \"token_endpoint\",\n      \"value\": \"https://localhost:9443/oauth2/token\"\n    },\n    {\n        \"name\":\"dcr_endpoint\",\n        \"value\":\"https://localhost:9443/oauth2/jwks\"\n    }\n  ],\n  \"certificates\": {\n    \"type\": \"JWKS\",\n    \"value\": \"https://localhost:9443/oauth2/jwks\"\n  },\n  \"issuer\": \"https://localhost:9444/services\",\n  \"availableGrantTypes\": [\n    \"client_credentials\"\n  ],\n  \"enableTokenGeneration\": false,\n  \"enableMapOAuthConsumerApps\": true,\n  \"enableOAuthAppCreation\": true,\n  \"consumerKeyClaim\": \"azp\",\n  \"scopesClaim\": \"scopes\",\n  \"enabled\": true,\n  \"additionalProperties\": {\n    \"username\": \"admin\",\n    \"password\": \"admin\"\n  }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/admin/key-managers/{{keymanager-uuid}}",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"admin",
+						"key-managers",
+						"{{keymanager-uuid}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "AdminAPI Delete KeyManager By id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\"id\":\"{{keymanager-uuid}}\",\n  \"name\": \"nonprod-idp\",\n  \"displayName\": \"Non production IDP\",\n  \"type\": \"nonProdIdp\",\n  \"description\": \"This is a key manager for Developers\",\n  \"endpoints\": [\n    {\n      \"name\": \"token_endpoint\",\n      \"value\": \"https://localhost:9443/oauth2/token\"\n    },\n    {\n        \"name\":\"dcr_endpoint\",\n        \"value\":\"https://localhost:9443/oauth2/jwks\"\n    }\n  ],\n  \"certificates\": {\n    \"type\": \"JWKS\",\n    \"value\": \"https://localhost:9443/oauth2/jwks\"\n  },\n  \"issuer\": \"https://localhost:9444/services\",\n  \"availableGrantTypes\": [\n    \"client_credentials\"\n  ],\n  \"enableTokenGeneration\": false,\n  \"enableMapOAuthConsumerApps\": true,\n  \"enableOAuthAppCreation\": true,\n  \"consumerKeyClaim\": \"azp\",\n  \"scopesClaim\": \"scopes\",\n  \"enabled\": true,\n  \"additionalProperties\": {\n    \"username\": \"admin\",\n    \"password\": \"admin\"\n  }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/admin/key-managers/{{keymanager-uuid}}",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"admin",
+						"key-managers",
+						"{{keymanager-uuid}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "AdminAPI Get KeyManager by id after deletion",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"AdminAPI Get KeyManager by id after deletion\", function () {",
+							"  pm.response.to.have.status(404);",
+							"  const response = pm.response.json();",
+							"  pm.expect(response.code).equals(909439);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/admin/key-managers/{{keymanager-uuid}}",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"admin",
+						"key-managers",
+						"{{keymanager-uuid}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "AdminAPI Get settings",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"AdminAPI Get KeyManager by id after deletion\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/admin/settings",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"admin",
+						"settings"
+					]
+				}
+			},
+			"response": []
 		}
 	],
 	"event": [
@@ -1086,6 +1534,10 @@
 			"key": "organizationId",
 			"value": "",
 			"type": "default"
+		},
+		{
+			"key": "keymanager-uuid",
+			"value": ""
 		}
 	]
 }

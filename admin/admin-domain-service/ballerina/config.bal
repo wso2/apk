@@ -22,7 +22,6 @@ type ThrottlingConfiguration record {
 };
 
 
-
 public type KeyStores record {|
     commons:KeyStore tls;
 |};

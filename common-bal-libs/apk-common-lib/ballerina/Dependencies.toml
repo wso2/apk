@@ -105,6 +105,20 @@ dependencies = [
 org = "ballerina"
 name = "jballerina.java"
 version = "0.0.0"
+modules = [
+	{org = "ballerina", packageName = "jballerina.java", moduleName = "jballerina.java"}
+]
+
+[[package]]
+org = "ballerina"
+name = "jballerina.java.arrays"
+version = "1.2.3"
+dependencies = [
+	{org = "ballerina", name = "jballerina.java"}
+]
+modules = [
+	{org = "ballerina", packageName = "jballerina.java.arrays", moduleName = "jballerina.java.arrays"}
+]
 
 [[package]]
 org = "ballerina"
@@ -342,6 +356,8 @@ name = "apk_common_lib"
 version = "0.0.1-SNAPSHOT"
 dependencies = [
 	{org = "ballerina", name = "http"},
+	{org = "ballerina", name = "jballerina.java"},
+	{org = "ballerina", name = "jballerina.java.arrays"},
 	{org = "ballerina", name = "jwt"},
 	{org = "ballerina", name = "lang.value"},
 	{org = "ballerina", name = "log"},
@@ -351,6 +367,8 @@ dependencies = [
 	{org = "ballerinax", name = "postgresql"}
 ]
 modules = [
-	{org = "wso2", packageName = "apk_common_lib", moduleName = "apk_common_lib"}
+	{org = "wso2", packageName = "apk_common_lib", moduleName = "apk_common_lib"},
+	{org = "wso2", packageName = "apk_common_lib", moduleName = "apk_common_lib.java.io"},
+	{org = "wso2", packageName = "apk_common_lib", moduleName = "apk_common_lib.java.lang"}
 ]
 
