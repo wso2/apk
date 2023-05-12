@@ -19,6 +19,7 @@
 import ballerina/log;
 import ballerinax/postgresql;
 import ballerina/sql;
+import ballerina/time;
 
 # Add API details to the database
 #
@@ -148,3 +149,36 @@ public isolated function addBusinessPlanDAO(BusinessPlan stp, string org) return
         }
     }
 }
+
+isolated function addResourceDAO(Resource resourceItem) returns Resource|APKError {
+    postgresql:Client | error dbClient  = getConnection();
+    if dbClient is error {
+        string message = "Error while retrieving connection";
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+    } else {
+        time:Utc utc = time:utcNow();
+        sql:ParameterizedQuery values = `${resourceItem.resourceUUID},
+                                        ${resourceItem.apiUuid},
+                                        ${resourceItem.resourceCategoryId},
+                                        ${resourceItem.dataType},
+                                       to_tsvector(${resourceItem.resourceContent}),
+                                        bytea(${resourceItem.resourceBinaryValue}),
+                                        'apkuser',
+                                        ${utc},
+                                        'apkuser',
+                                        ${utc}
+                                    )`;
+        sql:ParameterizedQuery ADD_THUMBNAIL_Prefix = `INSERT INTO API_RESOURCES (UUID, API_UUID, RESOURCE_CATEGORY_ID, DATA_TYPE, RESOURCE_CONTENT, RESOURCE_BINARY_VALUE, CREATED_BY, CREATED_TIME, UPDATED_BY, LAST_UPDATED_TIME) VALUES (`;
+        sql:ParameterizedQuery sqlQuery = sql:queryConcat(ADD_THUMBNAIL_Prefix, values);
+        sql:ExecutionResult | sql:Error result = dbClient->execute(sqlQuery);
+        if result is sql:ExecutionResult {
+            log:printDebug("Resource added successfully");
+            return resourceItem;
+        } else {
+            log:printError(result.toString());
+            string message = "Error while inserting data into Database";
+            return error(message, result, message = message, description = message, code = 909000, statusCode = "500");
+        }
+    }
+}
+

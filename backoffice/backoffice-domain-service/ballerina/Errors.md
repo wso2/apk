@@ -19,7 +19,7 @@ These are the backoffice domain service errors and their respective error codes.
 | 909613  | 500 | Internal Error while geting subscription infomation |
 | 909614  | 500 | Internal Error while geting API for provided apiId **apiId** |
 | 909615  | 500 | Error while changing status of the subscription in the Database |
-| 909616  | 500 | Error while retriving API |
+| 909616  | 500 | Error while retrieving API |
 | 909617  | 500 | Internal Error while retrieving API Definition |
 | 909618  | 500 | Error while updating API data into Database |
 | 909619  | 500 | Internal Error occured while retrieving API Categories |

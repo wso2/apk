@@ -21,6 +21,7 @@ import ballerina/test;
 import devportal_service.org.wso2.apk.devportal.sdk as sdk;
 import ballerina/http;
 import wso2/apk_common_lib as commons;
+import ballerina/io;
 
 commons:Organization organiztion = {
     name: "org1",
@@ -102,6 +103,31 @@ function beforeFunc() {
         test:assertFail("Error occured while creating API");
     }
 
+}
+
+
+@test:BeforeSuite
+function beforeFunc2() returns error? {
+     // Add thumbnail
+    int|APKError thumbnailCategoryId = db_getResourceCategoryIdByCategoryType(RESOURCE_TYPE_THUMBNAIL);
+    if thumbnailCategoryId is int {
+        Resource thumbnail = {
+            resourceUUID: "02ad95e2-b30b-10c8-wwf2-65da7edd2219",
+            apiUuid: "01ed75e2-b30b-18c8-wwf2-25da7edd2231",
+            resourceCategoryId: thumbnailCategoryId,
+            dataType: "image/png",
+            resourceContent: "thumbnail.png",
+            resourceBinaryValue: check io:fileReadBytes("./tests/resources/thumbnail.png")
+
+        };
+        Resource|APKError addedThumbnail = addResourceDAO(thumbnail);
+       if addedThumbnail is Resource {
+            test:assertTrue(true, "Successfully added Thumbnail");
+        } else if addedThumbnail is APKError {
+            log:printError(addedThumbnail.toString());
+            test:assertFail("Error occured while adding Thumbnail");
+        }
+    }
 }
 
 @test:Config {}
@@ -198,5 +224,15 @@ function generateSDKImplTestNegative(){
         test:assertFail("Successfully generated API SDK");
     } else if sdk is sdk:APIClientGenerationException|APKError {
         test:assertTrue(true,"Error while generating API SDK");
+    }
+}
+
+@test:Config {}
+function gethumbnailTest() {
+    http:Response|NotFoundError|APKError thumbnail = getThumbnail("01ed75e2-b30b-18c8-wwf2-25da7edd2231");
+    if thumbnail is http:Response {
+        test:assertTrue(true, "Successfully getting the thumbnail");
+    } else {
+        test:assertFail("Error occured while getting the thumbnail");
     }
 }

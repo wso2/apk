@@ -157,11 +157,11 @@ public isolated function e909615(error e) returns commons:APKError {
 }
 
 public isolated function e909616(error e) returns commons:APKError {
-    return error commons:APKError( "Error while retriving API", e,
+    return error commons:APKError( "Error while retrieving API", e,
         code = 909616,
-        message = "Error while retriving API",
+        message = "Error while retrieving API",
         statusCode = 500,
-        description = "Error while retriving API"
+        description = "Error while retrieving API"
     ); 
 }
 
@@ -225,5 +225,50 @@ public isolated function e909623() returns commons:APKError {
         message = "Invalid blockState provided",
         statusCode = 400,
         description = "Invalid blockState provided"
+    ); 
+}
+
+public isolated function e909624(error e) returns commons:APKError {
+    return error commons:APKError( "Error while adding resource data into Database", e,
+        code = 909624,
+        message = "Error while adding resource data into Database",
+        statusCode = 500,
+        description = "Error while adding resource data into Database"
+    ); 
+}
+
+public isolated function e909625(error e) returns commons:APKError {
+    return error commons:APKError( "Error while updating resource data into Database", e,
+        code = 909625,
+        message = "Error while updating resource data into Database",
+        statusCode = 500,
+        description = "Error while updating resource data into Database"
+    ); 
+}
+
+public isolated function e909626(error e) returns commons:APKError {
+    return error commons:APKError( "Error while getting a resource from Database", e,
+        code = 909626,
+        message = "Error while getting a resource from Database",
+        statusCode = 400,
+        description = "Error while getting a resource from Database"
+    ); 
+}
+
+public isolated function e909627(error e) returns commons:APKError {
+    return error commons:APKError( "Error while adding resource category data into Database", e,
+        code = 909627,
+        message = "Error while adding resource category data into Database",
+        statusCode = 500,
+        description = "Error while adding resource category data into Database"
+    ); 
+}
+
+public isolated function e909628(error e) returns commons:APKError {
+    return error commons:APKError( "Error while getting resource category data into Database", e,
+        code = 909628,
+        message = "Error while getting resource category data into Database",
+        statusCode = 500,
+        description = "Error while getting resource category data into Database"
     ); 
 }

@@ -118,3 +118,48 @@ isolated function getAPIDefinitionDAO(string apiId) returns APIDefinition|NotFou
         }
     }
 }
+
+isolated function db_getResourceCategoryIdByCategoryType(string resourceType) returns int|APKError {
+    postgresql:Client | error db_Client  = getConnection();
+    if db_Client is error {
+        string message = "Error while retrieving connection";
+        return error(message, db_Client, message = message, description = message, code = 909000, statusCode = "500");
+    } else {
+        sql:ParameterizedQuery GET_RESOURCE_CATEGORY_Prefix = `SELECT RESOURCE_CATEGORY_ID FROM RESOURCE_CATEGORIES where RESOURCE_CATEGORY = `; 
+        sql:ParameterizedQuery values = `${resourceType}`;
+        sql:ParameterizedQuery sqlQuery = sql:queryConcat(GET_RESOURCE_CATEGORY_Prefix, values);
+        int|sql:Error result =  db_Client->queryRow(sqlQuery);
+        if result is int {
+            return result;
+        } else {
+            log:printError(result.toString());
+            string message = "Internal Error while retrieving resource category";
+            return error(message, result, message = message, description = message, code = 909001, statusCode = "500");
+        }
+    }
+}
+
+isolated function db_getResourceByResourceCategory(string apiId, int resourceCategoryId) returns Resource|NotFoundError|APKError {
+    postgresql:Client | error db_Client  = getConnection();
+    if db_Client is error {
+        string message = "Error while retrieving connection";
+        return error(message, db_Client, message = message, description = message, code = 909000, statusCode = "500");
+    } else {
+        sql:ParameterizedQuery sqlQuery = `SELECT UUID AS resourceUUID, API_UUID AS apiUuid, RESOURCE_CATEGORY_ID AS resourceCategoryId, DATA_TYPE AS dataType,
+        RESOURCE_CONTENT AS resourceContent,  RESOURCE_BINARY_VALUE AS resourceBinaryValue  
+        FROM API_RESOURCES where API_UUID = ${apiId} AND RESOURCE_CATEGORY_ID = ${resourceCategoryId}`;
+        Resource|sql:Error result =  db_Client->queryRow(sqlQuery);
+        
+        if result is sql:NoRowsError {
+            log:printDebug(result.toString());
+            NotFoundError nfe = {body:{code: 90915, message: "Thumbnail Not Found for provided API ID"}};
+            return nfe;
+        } else if result is Resource {
+            return result;
+        } else {
+            log:printError(result.toString());
+            string message = "Internal Error while retrieving resource";
+            return error(message, result, message = message, description = message, code = 909001, statusCode = "500");
+        }
+    }
+}

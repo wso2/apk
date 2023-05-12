@@ -43,12 +43,12 @@ function init() {
 
     dbClient =
         new (host = datasourceConfiguration.host,
-    username = datasourceConfiguration.username,
-    password = datasourceConfiguration.password,
-    database = datasourceConfiguration.databaseName,
-    port = datasourceConfiguration.port,
+        username = datasourceConfiguration.username,
+        password = datasourceConfiguration.password,
+        database = datasourceConfiguration.databaseName,
+        port = datasourceConfiguration.port,
         connectionPool = {maxOpenConnections: datasourceConfiguration.maxPoolSize}
-            );
+    );
 }
 
 public isolated function getConnection() returns postgresql:Client|error {
