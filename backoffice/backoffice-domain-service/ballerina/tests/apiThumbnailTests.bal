@@ -22,9 +22,9 @@ import wso2/apk_common_lib as commons;
 
 @test:Config {dependsOn: [createAPITest]}
 function addThumbnailTest() {
-    http:Request|error request = createRequestWithImageFormData("thumbnail.png");
+    http:Request|error request = createRequestWithImageFormData("thumbnail.png", RESOURCE_DATA_TYPE_PNG_IMAGE);
     if request is http:Request {
-        FileInfo|NotFoundError|commons:APKError|error thumbnail = updateThumbnail("01ed75e2-b30b-18c8-wwf2-25da7edd2231", request);
+        FileInfo|NotFoundError|PreconditionFailedError|commons:APKError|error thumbnail = updateThumbnail("01ed75e2-b30b-18c8-wwf2-25da7edd2231", request);
         if thumbnail is FileInfo {
             test:assertTrue(true, "Successfully added the thumbnail");
         } else {
@@ -35,9 +35,9 @@ function addThumbnailTest() {
 
 @test:Config {dependsOn: [createAPITest, addThumbnailTest]}
 function updateThumbnailTest() {
-     http:Request|error request = createRequestWithImageFormData("IMG-96212.JPG");
+     http:Request|error request = createRequestWithImageFormData("thumbnail.png", RESOURCE_DATA_TYPE_PNG_IMAGE);
     if request is http:Request {
-        FileInfo|NotFoundError|commons:APKError|error thumbnail = updateThumbnail("01ed75e2-b30b-18c8-wwf2-25da7edd2231", request);
+        FileInfo|NotFoundError|PreconditionFailedError|commons:APKError|error thumbnail = updateThumbnail("01ed75e2-b30b-18c8-wwf2-25da7edd2231", request);
         if thumbnail is FileInfo {
             test:assertTrue(true, "Successfully updated the thumbnail");
         } else {
@@ -48,13 +48,26 @@ function updateThumbnailTest() {
 
 @test:Config {dependsOn: [createAPITest, addThumbnailTest]}
 function addThumbnaiGreaterThan1MB() {
-     http:Request|error request = createRequestWithImageFormData("largeThumbnail.jpg");
+     http:Request|error request = createRequestWithImageFormData("largeThumbnail.jpg", RESOURCE_DATA_TYPE_JPG_IMAGE);
     if request is http:Request {
-        FileInfo|NotFoundError|commons:APKError|error thumbnail = updateThumbnail("01ed75e2-b30b-18c8-wwf2-25da7edd2231", request);
-        if thumbnail is commons:APKError {
-            test:assertEquals(thumbnail.message(), "Thumbnail size should be less than 1MB");
+        FileInfo|NotFoundError|PreconditionFailedError|commons:APKError|error thumbnail = updateThumbnail("01ed75e2-b30b-18c8-wwf2-25da7edd2231", request);
+        if thumbnail is PreconditionFailedError {
+            test:assertEquals(thumbnail.body.message, "Thumbnail size should be less than 1MB");
         } else {
             test:assertFail("Thumbnail size which is greater than 1MB is added");
+        }
+    }
+}
+
+@test:Config {dependsOn: [createAPITest, addThumbnailTest]}
+function addInvalidThumbnaiFileFormat() {
+     http:Request|error request = createRequestWithImageFormData("invalidThumbnail.pdf", "application/pdf");
+    if request is http:Request {
+        FileInfo|NotFoundError|PreconditionFailedError|commons:APKError|error thumbnail = updateThumbnail("01ed75e2-b30b-18c8-wwf2-25da7edd2231", request);
+        if thumbnail is PreconditionFailedError {
+            test:assertEquals(thumbnail.body.message, "Thumbnail file extension is not allowed. Supported extensions are .jpg, .png, .jpeg .svg and .gif");
+        } else {
+            test:assertFail("Thumbnail which has invalid file format is added");
         }
     }
 }

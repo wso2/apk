@@ -23,12 +23,13 @@ import ballerina/io;
 # Create http request including image form data
 #
 # + thumnailImageName - image name
+# + imageContentType - image content type
 # + return - http:Request | error
-isolated function createRequestWithImageFormData(string thumnailImageName) returns http:Request|error {
+isolated function createRequestWithImageFormData(string thumnailImageName, string imageContentType) returns http:Request|error {
     mime:Entity imageBodyPart = new;
     byte[] imageBytes = check io:fileReadBytes("./tests/resources/" + thumnailImageName);
     imageBodyPart.setByteArray(imageBytes);
-    mime:InvalidContentTypeError? contentType = imageBodyPart.setContentType(mime:IMAGE_PNG);
+    mime:InvalidContentTypeError? contentType = imageBodyPart.setContentType(imageContentType);
     if contentType is mime:InvalidContentTypeError {
         return contentType;
     }
