@@ -268,12 +268,9 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 	if len(api.Spec.Sandbox) > 0 {
 		sandHTTPRouteRef = api.Spec.Sandbox[0].HTTPRouteRefs
 	}
-	prodHTTPRoute := &synchronizer.HTTPRouteState{
-		HTTPRoute: &gwapiv1b1.HTTPRoute{},
-	}
-	sandHTTPRoute := &synchronizer.HTTPRouteState{
-		HTTPRoute: &gwapiv1b1.HTTPRoute{},
-	}
+	var prodHTTPRoute *synchronizer.HTTPRouteState
+	var sandHTTPRoute *synchronizer.HTTPRouteState
+
 	// Resolve API level policies
 	var authentications map[string]dpv1alpha1.Authentication
 	var rateLimitPolicies map[string]dpv1alpha1.RateLimitPolicy
@@ -315,13 +312,15 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 	}
 
 	if len(prodHTTPRouteRef) > 0 {
-		prodHTTPRoute.Authentications = authentications
-		prodHTTPRoute.RateLimitPolicies = rateLimitPolicies
-		prodHTTPRoute.ResourceAuthentications = resourceAuthentications
-		prodHTTPRoute.ResourceRateLimitPolicies = resourceRateLimitPolicies
-		prodHTTPRoute.ResourceAPIPolicies = resourceAPIPolicies
-		prodHTTPRoute.APIPolicies = apiPolicies
-		prodHTTPRoute.InterceptorServiceMapping = interceptorServices
+		prodHTTPRoute = &synchronizer.HTTPRouteState{
+			Authentications:           authentications,
+			RateLimitPolicies:         rateLimitPolicies,
+			ResourceAuthentications:   resourceAuthentications,
+			ResourceRateLimitPolicies: resourceRateLimitPolicies,
+			ResourceAPIPolicies:       resourceAPIPolicies,
+			APIPolicies:               apiPolicies,
+      InterceptorServiceMapping: interceptorServices,
+		}
 		if prodHTTPRoute, err = apiReconciler.resolveHTTPRouteRefs(ctx, prodHTTPRoute, prodHTTPRouteRef, namespace, apiRef.String(), apiPolicies); err != nil {
 			return nil, fmt.Errorf("error while resolving production httpRouteref %s in namespace :%s has not found. %s",
 				prodHTTPRouteRef, namespace, err.Error())
@@ -336,13 +335,15 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 	}
 
 	if len(sandHTTPRouteRef) > 0 {
-		sandHTTPRoute.Authentications = authentications
-		sandHTTPRoute.RateLimitPolicies = rateLimitPolicies
-		sandHTTPRoute.ResourceAuthentications = resourceAuthentications
-		sandHTTPRoute.ResourceRateLimitPolicies = resourceRateLimitPolicies
-		sandHTTPRoute.ResourceAPIPolicies = resourceAPIPolicies
-		sandHTTPRoute.APIPolicies = apiPolicies
-		sandHTTPRoute.InterceptorServiceMapping = interceptorServices
+		sandHTTPRoute = &synchronizer.HTTPRouteState{
+			Authentications:           authentications,
+			RateLimitPolicies:         rateLimitPolicies,
+			ResourceAuthentications:   resourceAuthentications,
+			ResourceRateLimitPolicies: resourceRateLimitPolicies,
+			ResourceAPIPolicies:       resourceAPIPolicies,
+			APIPolicies:               apiPolicies,
+      InterceptorServiceMapping:  interceptorServices,
+		}
 		if sandHTTPRoute, err = apiReconciler.resolveHTTPRouteRefs(ctx, sandHTTPRoute, sandHTTPRouteRef, namespace, apiRef.String(), apiPolicies); err != nil {
 			return nil, fmt.Errorf("error while resolving sandbox httpRouteref %s in namespace :%s has not found. %s",
 				sandHTTPRouteRef, namespace, err.Error())

@@ -89,12 +89,16 @@ func (ods *OperatorDataStore) processAPIState(apiDef *dpv1alpha1.API, prodHTTPRo
 			updated = true
 			events = append(events, routeEvents...)
 		}
+	} else {
+		cachedAPI.ProdHTTPRoute = nil
 	}
 	if sandHTTPRoute != nil {
 		if routeEvents, routesUpdated := updateHTTPRoute(sandHTTPRoute, cachedAPI.SandHTTPRoute, "Sandbox"); routesUpdated {
 			updated = true
 			events = append(events, routeEvents...)
 		}
+	} else {
+		cachedAPI.SandHTTPRoute = nil
 	}
 
 	return *cachedAPI, events, updated
