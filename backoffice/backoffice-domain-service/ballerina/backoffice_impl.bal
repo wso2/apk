@@ -327,7 +327,7 @@ isolated function retrieveManagementServerHostsList() returns string[]|commons:A
     return hostList;
 }
 
-isolated function updateThumbnail(string apiId, http:Request message) returns FileInfo|NotFoundError|commons:APKError|error {
+isolated function updateThumbnail(string apiId, http:Request message) returns FileInfo|NotFoundError|PreconditionFailedError|commons:APKError|error {
     API|commons:APKError getApi = check db_getAPI(apiId);
     if getApi is commons:APKError|NotFoundError {
         return getApi;
@@ -352,11 +352,18 @@ isolated function updateThumbnail(string apiId, http:Request message) returns Fi
             commons:APKError e = error(msg, (), message = msg, description = msg, code = 909000, statusCode = 500);
             return e;
         } else {
-            // ToDo: validateFileType(fileName);
+            if !isThumbnailHasValidFileExtention(imageType) {
+                PreconditionFailedError pfe = {
+                    body: {
+                        code: 90915,
+                        message: "Thumbnail file extension is not allowed. Supported extensions are .jpg, .png, .jpeg .svg and .gif"
+                    }
+                };
+                return pfe;
+            }
             if isFileSizeGreaterThan1MB(fileContent) {
-                string msg = "Thumbnail size should be less than 1MB";
-                commons:APKError e = error(msg, (), message = msg, description = msg, code = 909000, statusCode = 500);
-                return e;
+                PreconditionFailedError pfe = {body: {code: 90915, message: "Thumbnail size should be less than 1MB"}};
+                return pfe;
             }
             int|commons:APKError thumbnailCategoryId = db_getResourceCategoryIdByCategoryType(RESOURCE_TYPE_THUMBNAIL);
             if thumbnailCategoryId is int {

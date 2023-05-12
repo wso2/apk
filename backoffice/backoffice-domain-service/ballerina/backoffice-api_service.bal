@@ -68,7 +68,6 @@ service /api/am/backoffice on ep0 {
         return getThumbnail(apiId);
     }
     isolated resource function put apis/[string apiId]/thumbnail(@http:Header string? 'if\-match, http:Request message) returns FileInfo|BadRequestError|NotFoundError|PreconditionFailedError|commons:APKError|error {
-       log:printInfo("Received thumbnail upload request for apiId: " + apiId);
        return updateThumbnail(apiId, message);
     }
     // resource function get apis/[string apiId]/documents(@http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0, @http:Header string? accept = "application/json") returns DocumentList|http:NotModified|NotFoundError|NotAcceptableError {

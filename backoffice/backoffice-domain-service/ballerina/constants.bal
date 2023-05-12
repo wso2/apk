@@ -16,4 +16,11 @@
 // under the License.
 //
 
+import ballerina/mime;
+
 const string RESOURCE_TYPE_THUMBNAIL = "Thumbnail";
+const string RESOURCE_DATA_TYPE_JPG_IMAGE = mime:IMAGE_JPEG;
+const string RESOURCE_DATA_TYPE_PNG_IMAGE = mime:IMAGE_PNG;
+const string RESOURCE_DATA_TYPE_GIF_IMAGE = mime:IMAGE_GIF;
+const string RESOURCE_DATA_TYPE_SVG_IMAGE = "image/svg+xml";
+

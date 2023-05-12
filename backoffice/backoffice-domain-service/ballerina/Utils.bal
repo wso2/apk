@@ -20,7 +20,18 @@ import ballerina/log;
 isolated function isFileSizeGreaterThan1MB(byte[] data) returns boolean {
     int fileSizeInBytes = data.length();
     int fileSizeInMB = fileSizeInBytes / (1024 * 1024);
-    log:printInfo("fileSizeInBytes: " + fileSizeInBytes.toBalString());
-    log:printInfo("fileSizeInMB: " + fileSizeInMB.toBalString());
-    return fileSizeInMB > 1;
+    if fileSizeInMB > 1 {
+        log:printDebug("File is greater than 1MB");
+        return true;
+    }
+    return false;
+}
+
+isolated function isThumbnailHasValidFileExtention(string contentType) returns boolean {
+    if (contentType == RESOURCE_DATA_TYPE_JPG_IMAGE || contentType == RESOURCE_DATA_TYPE_PNG_IMAGE ||
+    contentType == RESOURCE_DATA_TYPE_GIF_IMAGE || contentType == RESOURCE_DATA_TYPE_SVG_IMAGE) {
+        return true;
+    } else {
+        return false;
+    }
 }
