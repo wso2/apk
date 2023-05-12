@@ -87,6 +87,10 @@ type Response struct {
 	AbsentHeaders []string
 }
 
+const (
+	backendJWTHeader = "X-Jwt-Assertion"
+)
+
 // MakeRequestAndExpectEventuallyConsistentResponse makes a request with the given parameters,
 // understanding that the request may fail for some amount of time.
 //
@@ -136,6 +140,7 @@ func MakeRequest(t *testing.T, expected *ExpectedResponse, gwAddr, protocol, sch
 	for name, val := range expected.BackendSetResponseHeaders {
 		backendSetHeaders = append(backendSetHeaders, name+":"+val)
 	}
+
 	req.Headers["X-Echo-Set-Header"] = []string{strings.Join(backendSetHeaders, ",")}
 
 	return req
@@ -238,6 +243,12 @@ func CompareRequest(req *roundtripper.Request, cReq *roundtripper.CapturedReques
 			}
 			for name, expectedVal := range expected.ExpectedRequest.Headers {
 				actualVal, ok := cReq.Headers[strings.ToLower(name)]
+				if strings.EqualFold(name, backendJWTHeader) {
+					if !ok {
+						return fmt.Errorf("expected %s header to be set by the enforcer", name)
+					}
+					continue
+				}
 				if !ok {
 					return fmt.Errorf("expected %s header to be set, actual headers: %v", name, cReq.Headers)
 				} else if strings.Join(actualVal, ",") != expectedVal {
@@ -276,6 +287,7 @@ func CompareRequest(req *roundtripper.Request, cReq *roundtripper.CapturedReques
 					return fmt.Errorf("expected %s header to not be set, got %s", name, val)
 				}
 			}
+
 		}
 
 		// Verify that headers expected *not* to be present on the

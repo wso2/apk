@@ -32,6 +32,7 @@ import org.wso2.apk.enforcer.commons.model.ResourceConfig;
 import org.wso2.apk.enforcer.commons.model.RetryConfig;
 import org.wso2.apk.enforcer.commons.model.SecuritySchemaConfig;
 import org.wso2.apk.enforcer.config.ConfigHolder;
+import org.wso2.apk.enforcer.config.EnforcerConfig;
 import org.wso2.apk.enforcer.constants.APIConstants;
 import org.wso2.apk.enforcer.constants.AdapterConstants;
 import org.wso2.apk.enforcer.constants.InterceptorConstants;
@@ -112,17 +113,21 @@ public class AuthFilter implements Filter {
             authenticators.add(mtlsAuthenticator);
         }
 
-        if (isOAuthProtected) {
-            Authenticator jwtAuthenticator = new JWTAuthenticator();
+        // check whether the backend JWT token is enabled
+        EnforcerConfig enforcerConfig = ConfigHolder.getInstance().getConfig();
+        boolean isGatewayTokenCacheEnabled =  enforcerConfig.getCacheDto().isEnabled();
+        boolean isBackendJWTEnabled = apiConfig.getJwtConfigurationDto().isEnabled() || enforcerConfig.getJwtConfigurationDto().isEnabled();
+        if(isOAuthProtected) {
+            Authenticator jwtAuthenticator = new JWTAuthenticator(isBackendJWTEnabled, isGatewayTokenCacheEnabled);
             authenticators.add(jwtAuthenticator);
         }
 
         if (isApiKeyProtected) {
-            APIKeyAuthenticator apiKeyAuthenticator = new APIKeyAuthenticator();
+            APIKeyAuthenticator apiKeyAuthenticator = new APIKeyAuthenticator(isBackendJWTEnabled);
             authenticators.add(apiKeyAuthenticator);
         }
 
-        Authenticator authenticator = new InternalAPIKeyAuthenticator(
+        Authenticator authenticator = new InternalAPIKeyAuthenticator(isBackendJWTEnabled,
                 ConfigHolder.getInstance().getConfig().getAuthHeader().getTestConsoleHeaderName().toLowerCase());
         authenticators.add(authenticator);
 
