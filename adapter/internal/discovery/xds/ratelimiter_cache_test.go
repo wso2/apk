@@ -275,19 +275,11 @@ func testDeleteAPILevelRateLimitPolicies(t *testing.T) {
 func TestGenerateRateLimitConfig(t *testing.T) {
 	tests := []struct {
 		desc                      string
-		orgIDOpenAPIEnvoyMap      map[string]map[string][]string
 		apiLevelRateLimitPolicies map[string]map[string]map[string][]*rls_config.RateLimitDescriptor
 		rlsConfig                 *rls_config.RateLimitConfig
 	}{
 		{
 			desc: "Test config with multiple labels",
-			orgIDOpenAPIEnvoyMap: map[string]map[string][]string{
-				"org1": {
-					"vhost1:2": []string{"Default"},
-					"vhost1:3": []string{"Dev"},
-					"vhost1:5": []string{"Default"},
-				},
-			},
 			apiLevelRateLimitPolicies: map[string]map[string]map[string][]*rls_config.RateLimitDescriptor{
 				"org1": {"vhost1": {
 					"vhost1:2": {&rls_config.RateLimitDescriptor{
@@ -431,7 +423,19 @@ func TestGenerateRateLimitConfig(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.desc, func(t *testing.T) {
-			orgIDOpenAPIEnvoyMap = test.orgIDOpenAPIEnvoyMap
+			orgAPIMap = map[string]map[string]EnvoyInternalAPI{
+				"org1": {
+					"vhost1:2": EnvoyInternalAPI{
+						envoyLabels: []string{"Default"},
+					},
+					"vhost1:3": EnvoyInternalAPI{
+						envoyLabels: []string{"Dev"},
+					},
+					"vhost1:5": EnvoyInternalAPI{
+						envoyLabels: []string{"Default"},
+					},
+				},
+			}
 			c := &rateLimitPolicyCache{
 				apiLevelRateLimitPolicies: test.apiLevelRateLimitPolicies,
 			}
