@@ -46,6 +46,7 @@ kubectl logs $POD -n apk-integration-test
 IP=$(kubectl get svc apk-test-setup-wso2-apk-router-service -n apk-integration-test --output jsonpath='{.status.loadBalancer.ingress[0].ip}')
 sudo echo "$IP localhost" | sudo tee -a /etc/hosts
 sudo echo "$IP all-http-methods-for-wildcard.test.gw.wso2.com" | sudo tee -a /etc/hosts
+sudo echo "$IP api-policy-with-jwt-generator.test.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "$IP backend-base-path.test.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "$IP path-param-api.test.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "$IP gateway-integration-test-infra.test.gw.wso2.com" | sudo tee -a /etc/hosts

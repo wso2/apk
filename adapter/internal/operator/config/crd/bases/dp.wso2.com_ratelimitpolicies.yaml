@@ -62,6 +62,7 @@ spec:
                     properties:
                       key:
                         description: Key is the key of the custom policy
+                        minLength: 1
                         type: string
                       rateLimit:
                         description: RateLimit is the rate limit for the API
@@ -122,6 +123,7 @@ spec:
                     properties:
                       key:
                         description: Key is the key of the custom policy
+                        minLength: 1
                         type: string
                       rateLimit:
                         description: RateLimit is the rate limit for the API

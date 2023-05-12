@@ -38,6 +38,12 @@ spec:
               default:
                 description: RequestQueryModifier support request query modifications
                 properties:
+                  backendJwtToken:
+                    description: BackendJWTToken holds backend JWT token information
+                    properties:
+                      isEnabled:
+                        type: boolean
+                    type: object
                   requestInterceptors:
                     items:
                       description: InterceptorReference holds InterceptorService reference
@@ -114,6 +120,12 @@ spec:
               override:
                 description: PolicySpec contains API policies
                 properties:
+                  backendJwtToken:
+                    description: BackendJWTToken holds backend JWT token information
+                    properties:
+                      isEnabled:
+                        type: boolean
+                    type: object
                   requestInterceptors:
                     items:
                       description: InterceptorReference holds InterceptorService reference

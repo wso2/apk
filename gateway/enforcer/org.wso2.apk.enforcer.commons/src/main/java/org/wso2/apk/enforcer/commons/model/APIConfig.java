@@ -17,6 +17,8 @@
  */
 package org.wso2.apk.enforcer.commons.model;
 
+import org.wso2.apk.enforcer.commons.dto.JWTConfigurationDto;
+
 import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -50,6 +52,7 @@ public class APIConfig {
     private String mutualSSL;
     private boolean applicationSecurity;
     private GraphQLSchemaDTO graphQLSchemaDTO;
+    private JWTConfigurationDto jwtConfigurationDto;
     private boolean systemAPI;
     /**
      * getApiType returns the API type. This could be one of the following.
@@ -240,6 +243,10 @@ public class APIConfig {
         return systemAPI;
     }
 
+    public JWTConfigurationDto getJwtConfigurationDto() {
+        return jwtConfigurationDto;
+    }
+
     /**
      * Implements builder pattern to build an API Config object.
      */
@@ -267,6 +274,7 @@ public class APIConfig {
         private boolean applicationSecurity;
         private GraphQLSchemaDTO graphQLSchemaDTO;
         private boolean systemAPI;
+        private JWTConfigurationDto jwtConfigurationDto = new JWTConfigurationDto();
         public Builder(String name) {
             this.name = name;
         }
@@ -373,6 +381,11 @@ public class APIConfig {
             this.systemAPI = systemAPI;
             return this;
         }
+
+        public Builder jwtConfigurationDto(boolean isBackendJWTEnabled) {
+            this.jwtConfigurationDto.setEnabled(isBackendJWTEnabled);
+            return this;
+        }
         public APIConfig build() {
             APIConfig apiConfig = new APIConfig();
             apiConfig.name = this.name;
@@ -397,6 +410,7 @@ public class APIConfig {
             apiConfig.applicationSecurity = this.applicationSecurity;
             apiConfig.graphQLSchemaDTO = this.graphQLSchemaDTO;
             apiConfig.systemAPI  = this.systemAPI;
+            apiConfig.jwtConfigurationDto = this.jwtConfigurationDto;
             return apiConfig;
         }
     }

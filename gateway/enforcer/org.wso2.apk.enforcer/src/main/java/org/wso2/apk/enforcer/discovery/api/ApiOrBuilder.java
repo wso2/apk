@@ -297,4 +297,10 @@ public interface ApiOrBuilder extends
    * @return The systemAPI.
    */
   boolean getSystemAPI();
+
+  /**
+   * <code>bool isBackendJWTEnabled = 25;</code>
+   * @return The isBackendJWTEnabled.
+   */
+  boolean getIsBackendJWTEnabled();
 }
