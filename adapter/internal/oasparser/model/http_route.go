@@ -62,6 +62,7 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 	if outputAPIPolicy != nil {
 		apiPolicy = *outputAPIPolicy
 	}
+
 	var ratelimitPolicy *dpv1alpha1.RateLimitPolicy
 	if outputRatelimitPolicy != nil {
 		ratelimitPolicy = concatRateLimitPolicies(*outputRatelimitPolicy, nil)
@@ -256,7 +257,14 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 	}
 	swagger.RateLimitPolicy = parseRateLimitPolicyToInternal(ratelimitPolicy)
 	swagger.resources = resources
+	apiPolicySelected := concatAPIPolicies(apiPolicy, nil)
 	swagger.securityScheme = securitySchemes
+
+	// Check whether the API has a backend JWT token
+	if apiPolicySelected != nil && apiPolicySelected.Spec.Override != nil && apiPolicySelected.Spec.Override.BackendJWTToken != nil {
+		loggers.LoggerOasparser.Info("Setting API Level Backend JWT Token Enable/Disable property")
+		swagger.IsBackendJWTEnabled = apiPolicySelected.Spec.Override.BackendJWTToken.IsEnabled
+	}
 	return nil
 }
 

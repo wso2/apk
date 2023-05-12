@@ -172,11 +172,11 @@ func (gatewayReconciler *GatewayReconciler) Reconcile(ctx context.Context, req c
 	if gwCondition[0].Type != "Accepted" {
 		gatewayState := gatewayReconciler.ods.AddGatewayState(gatewayDef, gatewayStateData)
 		*gatewayReconciler.ch <- synchronizer.GatewayEvent{EventType: constants.Create, Event: gatewayState}
-		gatewayReconciler.handleGatewayStatus(req.NamespacedName, constants.DeployedState, []string{})
+		gatewayReconciler.handleGatewayStatus(req.NamespacedName, constants.Create, []string{})
 	} else if cachedGateway, events, updated :=
 		gatewayReconciler.ods.UpdateGatewayState(&gatewayDef, gatewayStateData); updated {
 		*gatewayReconciler.ch <- synchronizer.GatewayEvent{EventType: constants.Update, Event: cachedGateway}
-		gatewayReconciler.handleGatewayStatus(req.NamespacedName, constants.UpdatedState, events)
+		gatewayReconciler.handleGatewayStatus(req.NamespacedName, constants.Update, events)
 	}
 	return ctrl.Result{}, nil
 }
@@ -398,10 +398,10 @@ func (gatewayReconciler *GatewayReconciler) handleGatewayStatus(gatewayKey types
 	//event := ""
 
 	switch state {
-	case constants.DeployedState:
+	case constants.Create:
 		accept = true
 		message = "Gateway is deployed successfully"
-	case constants.UpdatedState:
+	case constants.Update:
 		accept = true
 		message = fmt.Sprintf("Gateway update is deployed successfully. %v Updated", events)
 	}

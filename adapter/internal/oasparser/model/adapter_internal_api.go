@@ -63,6 +63,7 @@ type AdapterInternalAPI struct {
 	xWso2MutualSSL           string
 	xWso2ApplicationSecurity bool
 	EnvType                  string
+	IsBackendJWTEnabled      bool
 	// GraphQLSchema              string
 	// GraphQLComplexities        GraphQLComplexityYaml
 	IsSystemAPI     bool

@@ -81,22 +81,24 @@ var (
 
 // APIReconciler reconciles a API object
 type APIReconciler struct {
-	client        k8client.Client
-	ods           *synchronizer.OperatorDataStore
-	ch            *chan synchronizer.APIEvent
-	statusUpdater *status.UpdateHandler
-	mgr           manager.Manager
+	client         k8client.Client
+	ods            *synchronizer.OperatorDataStore
+	ch             *chan synchronizer.APIEvent
+	successChannel *chan synchronizer.SuccessEvent
+	statusUpdater  *status.UpdateHandler
+	mgr            manager.Manager
 }
 
 // NewAPIController creates a new API controller instance. API Controllers watches for dpv1alpha1.API and gwapiv1b1.HTTPRoute.
 func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.OperatorDataStore, statusUpdater *status.UpdateHandler,
-	ch *chan synchronizer.APIEvent) error {
+	ch *chan synchronizer.APIEvent, successChannel *chan synchronizer.SuccessEvent) error {
 	apiReconciler := &APIReconciler{
-		client:        mgr.GetClient(),
-		ods:           operatorDataStore,
-		ch:            ch,
-		statusUpdater: statusUpdater,
-		mgr:           mgr,
+		client:         mgr.GetClient(),
+		ods:            operatorDataStore,
+		ch:             ch,
+		successChannel: successChannel,
+		statusUpdater:  statusUpdater,
+		mgr:            mgr,
 	}
 	ctx := context.Background()
 
@@ -180,6 +182,7 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 	}
 
 	loggers.LoggerAPKOperator.Info("API Controller successfully started. Watching API Objects....")
+	go apiReconciler.handleStatus()
 	return nil
 }
 
@@ -357,13 +360,10 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 
 	if !api.Status.Accepted {
 		apiState := apiReconciler.ods.AddAPIState(api, prodHTTPRoute, sandHTTPRoute)
-		//TODO(amali) update status only after deployed without errors
-		apiReconciler.handleStatus(apiRef, constants.DeployedState, []string{})
-		return &synchronizer.APIEvent{EventType: constants.Create, Event: apiState}, nil
+		return &synchronizer.APIEvent{EventType: constants.Create, Event: apiState, UpdatedEvents: []string{}}, nil
 	} else if cachedAPI, events, updated :=
 		apiReconciler.ods.UpdateAPIState(&api, prodHTTPRoute, sandHTTPRoute); updated {
-		apiReconciler.handleStatus(apiRef, constants.UpdatedState, events)
-		return &synchronizer.APIEvent{EventType: constants.Update, Event: cachedAPI}, nil
+		return &synchronizer.APIEvent{EventType: constants.Update, Event: cachedAPI, UpdatedEvents: events}, nil
 	}
 
 	return nil, nil
@@ -1216,37 +1216,39 @@ func setIndexScopeForAPI(ctx context.Context, mgr manager.Manager, scope *dpv1al
 }
 
 // handleStatus updates the API CR update
-func (apiReconciler *APIReconciler) handleStatus(apiKey types.NamespacedName, state string, events []string) {
-	accept := false
-	message := ""
-	event := ""
+func (apiReconciler *APIReconciler) handleStatus() {
+	for successEvent := range *apiReconciler.successChannel {
+		accept := false
+		message := ""
+		event := ""
 
-	switch state {
-	case constants.DeployedState:
-		accept = true
-		message = "API is deployed to the gateway."
-	case constants.UpdatedState:
-		accept = true
-		message = fmt.Sprintf("API update is deployed to the gateway. %v Updated", events)
+		switch successEvent.State {
+		case constants.Create:
+			accept = true
+			message = "API is deployed to the gateway."
+		case constants.Update:
+			accept = true
+			message = fmt.Sprintf("API update is deployed to the gateway. %v were Updated", successEvent.Events)
+		}
+		timeNow := metav1.Now()
+		event = fmt.Sprintf("[%s] %s", timeNow.String(), message)
+
+		apiReconciler.statusUpdater.Send(status.Update{
+			NamespacedName: successEvent.APINamespacedName,
+			Resource:       new(dpv1alpha1.API),
+			UpdateStatus: func(obj k8client.Object) k8client.Object {
+				h, ok := obj.(*dpv1alpha1.API)
+				if !ok {
+					loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2626, obj))
+				}
+				hCopy := h.DeepCopy()
+				hCopy.Status.Status = successEvent.State
+				hCopy.Status.Accepted = accept
+				hCopy.Status.Message = message
+				hCopy.Status.Events = append(hCopy.Status.Events, event)
+				hCopy.Status.TransitionTime = &timeNow
+				return hCopy
+			},
+		})
 	}
-	timeNow := metav1.Now()
-	event = fmt.Sprintf("[%s] %s", timeNow.String(), message)
-
-	apiReconciler.statusUpdater.Send(status.Update{
-		NamespacedName: apiKey,
-		Resource:       new(dpv1alpha1.API),
-		UpdateStatus: func(obj k8client.Object) k8client.Object {
-			h, ok := obj.(*dpv1alpha1.API)
-			if !ok {
-				loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2626, obj))
-			}
-			hCopy := h.DeepCopy()
-			hCopy.Status.Status = state
-			hCopy.Status.Accepted = accept
-			hCopy.Status.Message = message
-			hCopy.Status.Events = append(hCopy.Status.Events, event)
-			hCopy.Status.TransitionTime = &timeNow
-			return hCopy
-		},
-	})
 }

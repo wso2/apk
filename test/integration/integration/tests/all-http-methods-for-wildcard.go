@@ -41,6 +41,7 @@ var ALLHTTPMethodsForWildCard = suite.IntegrationTest{
 		testCases := []http.ExpectedResponse{
 			// test path with trailing slash for GET
 			{
+				// TODO{Amila}: Fix issue with trailing slash #758
 				Request: http.Request{
 					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
 					Path:   "/all-http-methods-for-wildcard/v1.0.0/",

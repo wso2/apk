@@ -80,7 +80,7 @@ func (r *RateLimitPolicy) ValidatePolicies() error {
 				r.Spec.Override.Type, "requestsPerUnit and unit are required for Api type"))
 		}
 
-		if r.Spec.Override.Type == "Custom" && (r.Spec.Override.Custom.RateLimit.RequestsPerUnit == 0 || 
+		if r.Spec.Override.Type == "Custom" && (r.Spec.Override.Custom.RateLimit.RequestsPerUnit == 0 ||
 			r.Spec.Override.Custom.RateLimit.Unit == "" || r.Spec.Override.Organization == "") {
 			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("override").Child("custom"),
 				r.Spec.Override.Type, "requestsPerUnit, unit and organization are required for Custom type"))
@@ -93,7 +93,7 @@ func (r *RateLimitPolicy) ValidatePolicies() error {
 				r.Spec.Default.Type, "requestsPerUnit and unit are required for Api type"))
 		}
 
-		if r.Spec.Default.Type == "Custom" && (r.Spec.Default.Custom.RateLimit.RequestsPerUnit == 0 || 
+		if r.Spec.Default.Type == "Custom" && (r.Spec.Default.Custom.RateLimit.RequestsPerUnit == 0 ||
 			r.Spec.Default.Custom.RateLimit.Unit == "" || r.Spec.Default.Organization == "") {
 			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("override").Child("custom"),
 				r.Spec.Override.Type, "requestsPerUnit, unit and organization are required for Custom type"))

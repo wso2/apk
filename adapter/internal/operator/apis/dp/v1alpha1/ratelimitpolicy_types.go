@@ -48,9 +48,8 @@ type RateLimitAPIPolicy struct {
 
 	// Organization is the organization of the policy
 	//
-	// +optional 
+	// +optional
 	Organization string `json:"organization,omitempty"`
-
 }
 
 // RateLimit is the rate limit value for the applied policy
@@ -81,10 +80,12 @@ type CustomRateLimitPolicy struct {
 
 	// Key is the key of the custom policy
 	//
+	// +kubebuilder:validation:MinLength=1
 	Key string `json:"key,omitempty"`
 
 	// Value is the value of the custom policy
 	//
+	// +optional
 	Value string `json:"value,omitempty"`
 }
 
