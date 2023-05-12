@@ -138,6 +138,32 @@ rules:
 - apiGroups:
   - dp.wso2.com
   resources:
+  - gateways
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - dp.wso2.com
+  resources:
+  - gateways/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - dp.wso2.com
+  resources:
+  - gateways/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - dp.wso2.com
+  resources:
   - httproutes
   verbs:
   - create
