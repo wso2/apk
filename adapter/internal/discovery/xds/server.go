@@ -64,6 +64,15 @@ type EnvoyInternalAPI struct {
 	enforcerAPI        types.Resource
 }
 
+// EnvoyGatewayConfig struct use to hold envoy gateway resources
+type EnvoyGatewayConfig struct {
+	listener                *listenerv3.Listener
+	routeConfig             *routev3.RouteConfiguration
+	clusters                []*clusterv3.Cluster
+	endpoints               []*corev3.Address
+	customRateLimitPolicies []*model.CustomRateLimitPolicy
+}
+
 // EnforcerInternalAPI struct use to hold enforcer resources
 type EnforcerInternalAPI struct {
 	configs                []types.Resource
@@ -100,11 +109,7 @@ var (
 	orgIDAPIvHostsMap     map[string]map[string][]string // organizationID -> UUID -> prod/sand -> Envoy Vhost Array map
 
 	// Envoy Label as map key
-	envoyListenerConfigMap     map[string]*listenerv3.Listener           // GW-Label -> Listener Configuration map
-	envoyRouteConfigMap        map[string]*routev3.RouteConfiguration    // GW-Label -> Routes Configuration map
-	envoyClusterConfigMap      map[string][]*clusterv3.Cluster           // GW-Label -> Global Cluster Configuration map
-	envoyEndpointConfigMap     map[string][]*corev3.Address              // GW-Label -> Global Endpoint Configuration map
-	customRateLimitPoliciesMap map[string][]*model.CustomRateLimitPolicy // GW-Label -> Custom Rate Limit Policies map
+	gatewayLabelConfigMap map[string]*EnvoyGatewayConfig // GW-Label -> EnvoyGatewayConfig struct map
 
 	// Listener as map key
 	listenerToRouteArrayMap map[string][]*routev3.Route // Listener -> Routes map
@@ -155,13 +160,8 @@ func init() {
 	enforcerRevokedTokensCache = wso2_cache.NewSnapshotCache(false, IDHash{}, nil)
 	enforcerThrottleDataCache = wso2_cache.NewSnapshotCache(false, IDHash{}, nil)
 
-	envoyListenerConfigMap = make(map[string]*listenerv3.Listener)
-	envoyRouteConfigMap = make(map[string]*routev3.RouteConfiguration)
-	envoyClusterConfigMap = make(map[string][]*clusterv3.Cluster)
-	envoyEndpointConfigMap = make(map[string][]*corev3.Address)
+	gatewayLabelConfigMap = make(map[string]*EnvoyGatewayConfig)
 	listenerToRouteArrayMap = make(map[string][]*routev3.Route)
-	customRateLimitPoliciesMap = make(map[string][]*model.CustomRateLimitPolicy)
-
 	orgAPIMap = make(map[string]map[string]*EnvoyInternalAPI)
 	orgIDAPIvHostsMap = make(map[string]map[string][]string) // organizationID -> UUID-prod/sand -> Envoy Vhost Array map
 	orgIDvHostBasepathMap = make(map[string]map[string]string)
@@ -418,32 +418,30 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 		vhostToRouteArrayMap[systemHost] = append(vhostToRouteArrayMap[systemHost], readynessEndpoint)
 	}
 
-	var listener *listenerv3.Listener
-	var routesConfig *routev3.RouteConfiguration
-
-	listener, listenerFound := envoyListenerConfigMap[gatewayName]
-	if listenerFound {
-		logger.LoggerXds.Debugf("Listener : %v", listener)
-		routesFromListener := listenerToRouteArrayMap[listener.Name]
-		logger.LoggerXds.Debugf("Routes from listener : %v", routesFromListener)
-		var vhostToRouteArrayFilteredMap = make(map[string][]*routev3.Route)
-		for vhost, routes := range vhostToRouteArrayMap {
-			logger.LoggerXds.Debugf("Routes from Vhost Map : %v", routes)
-			if vhost == systemHost || checkRoutes(routes, routesFromListener) {
-				logger.LoggerXds.Debugf("Equal routes : %v", routes)
-				vhostToRouteArrayFilteredMap[vhost] = routes
-			}
-		}
-		routesConfig = oasParser.GetRouteConfigs(vhostToRouteArrayFilteredMap, listener.Name, customRateLimitPoliciesMap[gatewayName])
-		envoyRouteConfigMap[gatewayName] = routesConfig
-		logger.LoggerXds.Debugf("Listener : %v and routes %v", listener, routesConfig)
-	} else {
+	envoyGatewayConfig, gwFound := gatewayLabelConfigMap[gatewayName]
+	if !gwFound {
 		return nil, nil, nil, nil, nil
 	}
 
+	listener := envoyGatewayConfig.listener
+	logger.LoggerXds.Debugf("Listener : %v", listener)
+	routesFromListener := listenerToRouteArrayMap[listener.Name]
+	logger.LoggerXds.Debugf("Routes from listener : %v", routesFromListener)
+	var vhostToRouteArrayFilteredMap = make(map[string][]*routev3.Route)
+	for vhost, routes := range vhostToRouteArrayMap {
+		logger.LoggerXds.Debugf("Routes from Vhost Map : %v", routes)
+		if vhost == systemHost || checkRoutes(routes, routesFromListener) {
+			logger.LoggerXds.Debugf("Equal routes : %v", routes)
+			vhostToRouteArrayFilteredMap[vhost] = routes
+		}
+	}
+	routesConfig := oasParser.GetRouteConfigs(vhostToRouteArrayFilteredMap, listener.Name, envoyGatewayConfig.customRateLimitPolicies)
+	envoyGatewayConfig.routeConfig = routesConfig
+	logger.LoggerXds.Debugf("Listener : %v and routes %v", listener, routesConfig)
+
 	logger.LoggerXds.Debugf("Routes Config : %v", routesConfig)
-	clusterArray = append(clusterArray, envoyClusterConfigMap[gatewayName]...)
-	endpointArray = append(endpointArray, envoyEndpointConfigMap[gatewayName]...)
+	clusterArray = append(clusterArray, gatewayLabelConfigMap[gatewayName].clusters...)
+	endpointArray = append(endpointArray, gatewayLabelConfigMap[gatewayName].endpoints...)
 	endpoints, clusters, listeners, routeConfigs := oasParser.GetCacheResources(endpointArray, clusterArray, listener, routesConfig)
 	logger.LoggerXds.Debugf("Routes Config After Get cache : %v", routeConfigs)
 	return endpoints, clusters, listeners, routeConfigs, apis
@@ -468,15 +466,18 @@ func checkRoutes(routes []*routev3.Route, routesFromListener []*routev3.Route) b
 // GenerateGlobalClusters generates the globally available clusters and endpoints.
 func GenerateGlobalClusters(label string) {
 	clusters, endpoints := oasParser.GetGlobalClusters()
-	envoyClusterConfigMap[label] = clusters
-	envoyEndpointConfigMap[label] = endpoints
+	gatewayLabelConfigMap[label] = &EnvoyGatewayConfig{
+		clusters:  clusters,
+		endpoints: endpoints,
+	}
 }
 
-// GenerateGlobalClustersWithInterceptors generates the globally available clusters and endpoints with interceptors.
-func GenerateGlobalClustersWithInterceptors(label string,
+// GenerateInterceptorClusters generates the globally available clusters and endpoints with interceptors.
+func GenerateInterceptorClusters(label string,
 	gwReqICluster *clusterv3.Cluster, gwReqIAddresses []*corev3.Address,
 	gwResICluster *clusterv3.Cluster, gwResIAddresses []*corev3.Address) {
-	clusters, endpoints := oasParser.GetGlobalClusters()
+	var clusters []*clusterv3.Cluster
+	var endpoints []*corev3.Address
 
 	if gwReqICluster != nil && len(gwReqIAddresses) > 0 {
 		clusters = append(clusters, gwReqICluster)
@@ -488,8 +489,8 @@ func GenerateGlobalClustersWithInterceptors(label string,
 		endpoints = append(endpoints, gwResIAddresses...)
 	}
 
-	envoyClusterConfigMap[label] = clusters
-	envoyEndpointConfigMap[label] = endpoints
+	gatewayLabelConfigMap[label].clusters = append(gatewayLabelConfigMap[label].clusters, clusters...)
+	gatewayLabelConfigMap[label].endpoints = append(gatewayLabelConfigMap[label].endpoints, endpoints...)
 }
 
 // use UpdateXdsCacheWithLock to avoid race conditions
@@ -542,7 +543,9 @@ func UpdateEnforcerConfig(configFile *config.Config) {
 		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1414, errSetSnap.Error()))
 	}
 
-	enforcerLabelMap[label].configs = configs
+	enforcerLabelMap[label] = &EnforcerInternalAPI{
+		configs: configs,
+	}
 	logger.LoggerXds.Infof("New Config cache update for the label: " + label + " version: " + fmt.Sprint(version))
 }
 
@@ -878,10 +881,10 @@ func UpdateAPICache(vHosts []string, newLabels []string, newlistenersForRoutes [
 func UpdateGatewayCache(gateway *gwapiv1b1.Gateway, resolvedListenerCerts map[string]map[string][]byte,
 	gwLuaScript string, customRateLimitPolicies []*model.CustomRateLimitPolicy) error {
 	listener := oasParser.GetProductionListener(gateway, resolvedListenerCerts, gwLuaScript)
-	envoyListenerConfigMap[gateway.Name] = listener
+	gatewayLabelConfigMap[gateway.Name].listener = listener
 	conf := config.ReadConfigs()
 	if conf.Envoy.RateLimit.Enabled {
-		customRateLimitPoliciesMap[gateway.Name] = customRateLimitPolicies
+		gatewayLabelConfigMap[gateway.Name].customRateLimitPolicies = customRateLimitPolicies
 	}
 	return nil
 }
