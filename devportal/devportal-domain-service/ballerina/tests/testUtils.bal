@@ -19,6 +19,7 @@
 import ballerina/log;
 import ballerinax/postgresql;
 import ballerina/sql;
+import wso2/apk_common_lib as commons;
 import ballerina/time;
 
 # Add API details to the database
@@ -26,11 +27,11 @@ import ballerina/time;
 # + apiBody - API Parameter
 # + organization - organization
 # + return - API | error
-isolated function createAPIDAO(APIBody apiBody, string organization) returns API | APKError {
+isolated function createAPIDAO(APIBody apiBody, string organization) returns API | commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
-        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = 500);
     } else {
         postgresql:JsonBinaryValue artifact = new (createArtifact(apiBody.apiProperties.id, apiBody.apiProperties));
         sql:ParameterizedQuery ADD_API_Suffix = `INSERT INTO api(uuid, api_name, api_version,context,status,organization,artifact) VALUES (`;
@@ -50,7 +51,7 @@ isolated function createAPIDAO(APIBody apiBody, string organization) returns API
         } else {
             log:printDebug(result.toString());
             string message = "Error while inserting data into Database";
-            return error(message, result, message = message, description = message, code = 909000, statusCode = "500"); 
+            return error(message, result, message = message, description = message, code = 909000, statusCode = 500);
         }
     }
 }
@@ -77,11 +78,11 @@ isolated function createArtifact(string? apiID, API api) returns json {
 # + apiBody - API Parameter
 # + organization - organization
 # + return - API | error
-isolated function addDefinitionDAO(APIBody apiBody, string organization) returns API | APKError {
+isolated function addDefinitionDAO(APIBody apiBody, string organization) returns API | commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
-        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = 500);
     } else {
         sql:ParameterizedQuery ADD_API_DEFINITION_Suffix = `INSERT INTO api_artifact(organization, api_uuid, api_definition,media_type) VALUES (`;
         sql:ParameterizedQuery values = `${organization},
@@ -98,16 +99,16 @@ isolated function addDefinitionDAO(APIBody apiBody, string organization) returns
         } else {
             log:printDebug(result.toString());
             string message = "Error while inserting data into Database";
-            return error(message, result, message = message, description = message, code = 909000, statusCode = "500"); 
+            return error(message, result, message = message, description = message, code = 909000, statusCode = 500);
         }
     }
 }
 
-public isolated function addApplicationUsagePlanDAO(ApplicationRatePlan atp, string org) returns ApplicationRatePlan|APKError {
+public isolated function addApplicationUsagePlanDAO(ApplicationRatePlan atp, string org) returns ApplicationRatePlan|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
-        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = 500);
     } else {
         sql:ParameterizedQuery query = `INSERT INTO APPLICATION_USAGE_PLAN (NAME, DISPLAY_NAME, 
         ORGANIZATION, DESCRIPTION, QUOTA_TYPE, QUOTA, UNIT_TIME, TIME_UNIT, IS_DEPLOYED, UUID) 
@@ -120,16 +121,16 @@ public isolated function addApplicationUsagePlanDAO(ApplicationRatePlan atp, str
         } else if result is sql:Error {
             log:printDebug(result.toString());
             string message = "Error while inserting data into Database";
-            return error(message, result, message = message, description = message, code = 909000, statusCode = "500"); 
+            return error(message, result, message = message, description = message, code = 909000, statusCode = 500);
         }
     }
 }
 
-public isolated function addBusinessPlanDAO(BusinessPlan stp, string org) returns BusinessPlan|APKError {
+public isolated function addBusinessPlanDAO(BusinessPlan stp, string org) returns BusinessPlan|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
-        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = 500);
     } else {
         sql:ParameterizedQuery query = `INSERT INTO BUSINESS_PLAN (NAME, DISPLAY_NAME, ORGANIZATION, DESCRIPTION, 
         QUOTA_TYPE, QUOTA, UNIT_TIME, TIME_UNIT, IS_DEPLOYED, UUID, 
@@ -145,7 +146,7 @@ public isolated function addBusinessPlanDAO(BusinessPlan stp, string org) return
         } else { 
             log:printError(result.toString());
             string message = "Error while inserting data into Database";
-            return error(message, result, message = message, description = message, code = 909000, statusCode = "500");
+            return error(message, result, message = message, description = message, code = 909000, statusCode = 500);
         }
     }
 }

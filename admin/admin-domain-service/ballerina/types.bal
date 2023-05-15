@@ -173,17 +173,17 @@ public type KeyManager record {
     # Well-Known Endpoint of Identity Provider.
     string wellKnownEndpoint?;
     KeyManagerEndpoint[] endpoints?;
-    KeyManager_certificates certificates?;
-    string issuer?;
+    KeyManager_signingCertificate signingCertificate?;
+    # PEM type certificate
+    string tlsCertficate?;
+    string issuer;
     string[] availableGrantTypes?;
     boolean enableTokenGeneration?;
-    boolean enableTokenEncryption = false;
-    boolean enableTokenHashing = false;
     boolean enableMapOAuthConsumerApps = false;
-    boolean enableOAuthAppCreation = false;
+    boolean enableOAuthAppCreation = true;
     string consumerKeyClaim?;
     string scopesClaim?;
-    boolean enabled?;
+    boolean enabled = true;
     record {} additionalProperties?;
 };
 
@@ -266,6 +266,11 @@ public type Environment record {
     VHost[] vhosts;
     GatewayEnvironmentProtocolURI[] endpointURIs?;
     AdditionalProperty[] additionalProperties?;
+};
+
+public type KeyManager_signingCertificate record {
+    string 'type?;
+    string value?;
 };
 
 public type BusinessPlanPermission record {
@@ -419,11 +424,6 @@ public type RequestCountLimit record {
     *ThrottleLimitBase;
     # Maximum number of requests allowed
     int requestCount;
-};
-
-public type KeyManager_certificates record {
-    string 'type?;
-    string value?;
 };
 
 public type KeyManagerInfo record {

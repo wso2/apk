@@ -18,24 +18,25 @@
 
 import ballerina/test;
 import ballerina/log;
+import wso2/apk_common_lib as commons;
 import ballerina/uuid;
 
-@test:Mock { functionName: "generateToken" }
-test:MockFunction generateTokenMock = new();
+@test:Mock {functionName: "generateToken"}
+test:MockFunction generateTokenMock = new ();
 
-@test:Mock { functionName: "updateApplication",moduleName: "wso2/notification_grpc_client" }
+@test:Mock {functionName: "updateApplication", moduleName: "wso2/notification_grpc_client"}
 public isolated function updateApplicationMock(ApplicationGRPC updateApplicationRequest, string endpoint, string pubCert, string devCert, string devKey) returns error|NotificationResponse {
-    NotificationResponse noti= {code: "OK"};
+    NotificationResponse noti = {code: "OK"};
     return noti;
 }
 
-@test:Mock { functionName: "deleteApplication",moduleName: "wso2/notification_grpc_client" }
+@test:Mock {functionName: "deleteApplication", moduleName: "wso2/notification_grpc_client"}
 public isolated function deleteApplicationMock(ApplicationGRPC deleteApplicationRequest, string endpoint, string pubCert, string devCert, string devKey) returns error|NotificationResponse {
-    NotificationResponse noti= {code: "OK"};
+    NotificationResponse noti = {code: "OK"};
     return noti;
 }
 
-Application application  ={name:"sampleApp",description: "sample application"};
+Application application = {name: "sampleApp", description: "sample application"};
 
 @test:BeforeSuite
 function beforeFunc1() {
@@ -46,17 +47,17 @@ function beforeFunc1() {
         "defaultLimit": {
             "type": "REQUESTCOUNTLIMIT",
             "requestCount": {
-            "requestCount": 25,
-            "timeUnit": "min",
-            "unitTime": 1
+                "requestCount": 25,
+                "timeUnit": "min",
+                "unitTime": 1
             }
         }
     };
     string applicationUsagePlanId = uuid:createType1AsString();
     payload.planId = applicationUsagePlanId;
-    ApplicationRatePlan|APKError createdAppPol = addApplicationUsagePlanDAO(payload, organiztion.uuid);
+    ApplicationRatePlan|commons:APKError createdAppPol = addApplicationUsagePlanDAO(payload, organiztion.uuid);
     if createdAppPol is ApplicationRatePlan {
-        test:assertTrue(true,"Application usage plan added successfully");
+        test:assertTrue(true, "Application usage plan added successfully");
         BusinessPlan payloadbp = {
             "planName": "MyBusinessPlan",
             "displayName": "MyBusinessPlan",
@@ -64,9 +65,9 @@ function beforeFunc1() {
             "defaultLimit": {
                 "type": "REQUESTCOUNTLIMIT",
                 "requestCount": {
-                "requestCount": 20,
-                "timeUnit": "min",
-                "unitTime": 1
+                    "requestCount": 20,
+                    "timeUnit": "min",
+                    "unitTime": 1
                 }
             },
             "rateLimitCount": 10,
@@ -74,13 +75,13 @@ function beforeFunc1() {
             "customAttributes": []
         };
         payloadbp.planId = uuid:createType1AsString();
-        BusinessPlan|APKError createdBusinessPlan = addBusinessPlanDAO(payloadbp, organiztion.uuid);
+        BusinessPlan|commons:APKError createdBusinessPlan = addBusinessPlanDAO(payloadbp, organiztion.uuid);
         if createdBusinessPlan is BusinessPlan {
-            test:assertTrue(true,"Business Plan added successfully");
-        } else if createdBusinessPlan is APKError {
+            test:assertTrue(true, "Business Plan added successfully");
+        } else if createdBusinessPlan is commons:APKError {
             test:assertFail("Error occured while adding Business Plan");
         }
-    } else if createdAppPol is APKError {
+    } else if createdAppPol is commons:APKError {
         log:printError(createdAppPol.toString());
         test:assertFail("Error occured while adding Application Usage Plan");
     }
@@ -88,10 +89,10 @@ function beforeFunc1() {
 
 @test:Config {}
 function addApplicationTest() {
-    string[] testHosts= ["http://localhost:9090"];
+    string[] testHosts = ["http://localhost:9090"];
     test:when(retrieveManagementServerHostsListMock).thenReturn(testHosts);
-    Application payload = {name:"sampleApp",description: "sample application"};
-    NotFoundError|Application|APKError createdApplication = addApplication(payload, organiztion, "apkuser");
+    Application payload = {name: "sampleApp", description: "sample application"};
+    NotFoundError|Application|commons:APKError createdApplication = addApplication(payload, organiztion, "apkuser");
     if createdApplication is Application {
         test:assertTrue(true, "Successfully added the application");
         application.applicationId = createdApplication.applicationId;
@@ -101,13 +102,13 @@ function addApplicationTest() {
 }
 
 @test:Config {dependsOn: [addApplicationTest]}
-function getApplicationByIdTest(){
+function getApplicationByIdTest() {
     string? appId = application.applicationId;
     if appId is string {
-        Application|APKError|NotFoundError returnedResponse = getApplicationById(appId, organiztion);
+        Application|commons:APKError|NotFoundError returnedResponse = getApplicationById(appId, organiztion);
         if returnedResponse is Application {
-        test:assertTrue(true, "Successfully retrieved application");
-        } else if returnedResponse is  APKError|NotFoundError {
+            test:assertTrue(true, "Successfully retrieved application");
+        } else if returnedResponse is commons:APKError|NotFoundError {
             test:assertFail("Error occured while retrieving application");
         }
     } else {
@@ -116,27 +117,27 @@ function getApplicationByIdTest(){
 }
 
 @test:Config {dependsOn: [getApplicationByIdTest]}
-function getApplicationListTest(){
-    ApplicationList|APKError applicationList = getApplicationList("","","","",0,0,organiztion);
+function getApplicationListTest() {
+    ApplicationList|commons:APKError applicationList = getApplicationList("", "", "", "", 0, 0, organiztion);
     if applicationList is ApplicationList {
-    test:assertTrue(true, "Successfully retrieved all applications");
-    } else if applicationList is APKError {
+        test:assertTrue(true, "Successfully retrieved all applications");
+    } else if applicationList is commons:APKError {
         test:assertFail("Error occured while retrieving all applications");
     }
 }
 
 @test:Config {dependsOn: [getApplicationListTest]}
 function updateApplicationTest() {
-    string[] testHosts= ["http://localhost:9090"];
+    string[] testHosts = ["http://localhost:9090"];
     test:when(retrieveManagementServerHostsListMock).thenReturn(testHosts);
-    Application payload = {name:"sampleApp",description: "sample application updated"};
+    Application payload = {name: "sampleApp", description: "sample application updated"};
     string? appId = application.applicationId;
     if appId is string {
-        NotFoundError|Application|APKError createdApplication = updateApplication(appId,payload, organiztion, "apkuser");
+        NotFoundError|Application|commons:APKError createdApplication = updateApplication(appId, payload, organiztion, "apkuser");
         if createdApplication is Application {
             test:assertTrue(true, "Successfully added the application");
             application.applicationId = createdApplication.applicationId;
-        } else if createdApplication is APKError {
+        } else if createdApplication is commons:APKError {
             test:assertFail("Error occured while updating application");
         }
     } else {
@@ -144,14 +145,13 @@ function updateApplicationTest() {
     }
 }
 
-
 @test:Config {dependsOn: [updateApplicationTest]}
-function generateAPIKeyTest(){
+function generateAPIKeyTest() {
     APIKeyGenerateRequest payload = {
         validityPeriod: 3600,
         additionalProperties: {}
     };
-     string token = "eyJhbGciOiJSUzI1NiIsICJ0eXAiOiJKV1QiLCAia2lkIjoiZ2F0ZXdheV9jZXJ0aWZpY2F0ZV9hbGlhcyJ9." +
+    string token = "eyJhbGciOiJSUzI1NiIsICJ0eXAiOiJKV1QiLCAia2lkIjoiZ2F0ZXdheV9jZXJ0aWZpY2F0ZV9hbGlhcyJ9." +
     "eyJpc3MiOiJodHRwczovL2FwaW0ud3NvMi5jb20vb2F1dGgyL3Rva2VuIiwgInN1YiI6IiIsICJhdWQiOiJodHRwczovL2FwaW0u" +
     "d3NvMi5jb20vb2F1dGgyL3Rva2VuIiwgImV4cCI6MTY3MTA5MDg0NCwgIm5iZiI6MTY3MTA4NzI0NCwgImlhdCI6MTY3MTA4NzI0NCw" +
     "gImp0aSI6IjAxZWQ3YzQ1LTQzMmQtMThlMC05MzBmLTUyN2I4ODM0NDM3MyIsICJrZXl0eXBlIjoiUFJPRFVDVElPTiIsICJwZXJtaXR0" +
@@ -166,7 +166,7 @@ function generateAPIKeyTest(){
     test:when(generateTokenMock).thenReturn(token);
     string? appId = application.applicationId;
     if appId is string {
-        APIKey|APKError|NotFoundError key = generateAPIKey(payload, appId, "PRODUCTION", "apkuser", organiztion);
+        APIKey|commons:APKError|NotFoundError key = generateAPIKey(payload, appId, "PRODUCTION", "apkuser", organiztion);
         if key is APIKey {
             test:assertTrue(true, "API Key Successfully Generated");
         } else {
@@ -181,10 +181,10 @@ function generateAPIKeyTest(){
 function deleteApplicationTest() {
     string? appId = application.applicationId;
     if appId is string {
-        error?|string status = deleteApplication(appId, organiztion);
-        if status is string {
+        error?|boolean status = deleteApplication(appId, organiztion);
+        if status is boolean {
             test:assertTrue(true, "Successfully deleted application");
-        } else if status is  error {
+        } else if status is error {
             test:assertFail("Error occured while deleting application");
         }
     } else {

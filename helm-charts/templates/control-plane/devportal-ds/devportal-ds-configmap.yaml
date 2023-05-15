@@ -62,4 +62,7 @@ data:
     serviceName = "{{ template "apk-helm.resource.prefix" . }}-management-server"
     namespace = "{{ .Release.Namespace }}"
     certPath = "/home/wso2apk/devportal/security/truststore/management-server.pem"
+    [[wso2.devportal_service.keyManagerConfigs]]
+    type = "nonprodidp"
+    serviceUrl = "http://localhost:9445/nonprodidp"
 {{- end -}}

@@ -22,7 +22,7 @@ public function addKeyManager() {
             "client_id": "abcde",
             "client_secret": "abcde"
         },
-        certificates: {'type: "JWKS",value: "https://localhost:9443/oauth2/jwks"}
+        signingCertificate: {'type: "JWKS",value: "https://localhost:9443/oauth2/jwks"}
     };
     KeyManager|commons:APKError keyManagerEntryToOrganization = keyManagerClient.addKeyManagerEntryToOrganization(keyManager, organization);
     if keyManagerEntryToOrganization is KeyManager {
@@ -86,3 +86,5 @@ public function addKeyManagerNegative() {
         test:assertEquals(keyManagerEntryToOrganization.detail().code, 909437);
     }
 }
+
+ 

@@ -18,10 +18,9 @@
 
 import ballerina/http;
 import ballerina/log;
-import devportal_service.org.wso2.apk.devportal.sdk as sdk;
 import wso2/apk_common_lib as commons;
 
-service /api/am/devportal on ep0 {
+isolated service /api/am/devportal on ep0 {
     # Retrieve/Search APIs
     #
     # + 'limit - Maximum size of resource array to return. 
@@ -35,13 +34,9 @@ service /api/am/devportal on ep0 {
     isolated resource function get apis(http:RequestContext requestContext, @http:Header string? 'x\-wso2\-tenant, string? query, @http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0) returns APIList|BadRequestError|InternalServerErrorError|commons:APKError {
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
-        APIList|APKError apiList = getAPIList('limit, offset, query, organization);
-        if apiList is APIList {
-            log:printDebug(apiList.toString());
-            return apiList;
-        } else {
-            return handleAPKError(apiList);
-        }
+        APIList apiList = check getAPIList('limit, offset, query, organization);
+        log:printDebug(apiList.toString());
+        return apiList;
     }
     # Get Details of an API
     #
@@ -53,14 +48,10 @@ service /api/am/devportal on ep0 {
     # http:NotModified (Not Modified. Empty body because the client has already the latest version of the requested resource.)
     # NotFoundError (Not Found. The specified resource does not exist.)
     # NotAcceptableError (Not Acceptable. The requested media type is not supported.)
-    isolated resource function get apis/[string apiId](@http:Header string? 'x\-wso2\-tenant, @http:Header string? 'if\-none\-match) returns API|http:NotModified|NotFoundError|BadRequestError|InternalServerErrorError|json {
-        API|NotFoundError|APKError api = getAPIByAPIId(apiId);
-        if api is API|NotFoundError {
-            log:printDebug(api.toString());
-            return api;
-        } else {
-            return handleAPKError(api);
-        }
+    isolated resource function get apis/[string apiId](@http:Header string? 'x\-wso2\-tenant, @http:Header string? 'if\-none\-match) returns API|http:NotModified|NotFoundError|BadRequestError|InternalServerErrorError|json|commons:APKError {
+        API|NotFoundError api = check getAPIByAPIId(apiId);
+        log:printDebug(api.toString());
+        return api;
     }
     # Get the API Definition
     #
@@ -71,15 +62,11 @@ service /api/am/devportal on ep0 {
     # http:NotModified (Not Modified. Empty body because the client has already the latest version of the requested resource.)
     # NotFoundError (Not Found. The specified resource does not exist.)
     # NotAcceptableError (Not Acceptable. The requested media type is not supported.)
-    isolated resource function get apis/[string apiId]/definition(@http:Header string? 'if\-none\-match) returns APIDefinition|http:NotModified|NotFoundError|BadRequestError|InternalServerErrorError {
+    isolated resource function get apis/[string apiId]/definition(@http:Header string? 'if\-none\-match) returns APIDefinition|http:NotModified|NotFoundError|BadRequestError|InternalServerErrorError|commons:APKError {
 
-        APIDefinition|NotFoundError|APKError apiDefinition = getAPIDefinition(apiId);
-        if apiDefinition is APIDefinition|NotFoundError {
-            log:printDebug(apiDefinition.toString());
-            return apiDefinition;
-        } else {
-            return handleAPKError(apiDefinition);
-        }
+        APIDefinition|NotFoundError apiDefinition = check getAPIDefinition(apiId);
+        log:printDebug(apiDefinition.toString());
+        return apiDefinition;
     }
     # Generate a SDK for an API
     #
@@ -91,16 +78,8 @@ service /api/am/devportal on ep0 {
     # BadRequestError (Bad Request. Invalid request or validation error.)
     # NotFoundError (Not Found. The specified resource does not exist.)
     # InternalServerErrorError (Internal Server Error.)
-    resource function get apis/[string apiId]/sdks/[string language](@http:Header string? 'x\-wso2\-tenant) returns http:Response|json|BadRequestError|NotFoundError|InternalServerErrorError {
-        NotFoundError|http:Response|sdk:APIClientGenerationException|APKError sdk = generateSDKImpl(apiId,language);
-        if sdk is http:Response {
-            return sdk;
-        } else if sdk is sdk:APIClientGenerationException {
-            InternalServerErrorError internalError = {body: {code: 90931, message: "Internal Error while generating client SDK for given language:" + language + ". Error: " + sdk.message()}};
-            return internalError;
-        } else if sdk is APKError {
-            return handleAPKError(sdk);
-        }
+    isolated resource function get apis/[string apiId]/sdks/[string language](@http:Header string? 'x\-wso2\-tenant) returns NotFoundError|http:Response|commons:APKError|InternalServerErrorError {
+        return check generateSDKImpl(apiId, language);
     }
     # Get a List of Documents of an API
     #
@@ -116,7 +95,7 @@ service /api/am/devportal on ep0 {
     # NotAcceptableError (Not Acceptable. The requested media type is not supported.)
     // resource function get apis/[string apiId]/documents(@http:Header string? 'x\-wso2\-tenant, @http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0) returns DocumentList|http:NotModified|NotFoundError|NotAcceptableError {
     // }
-     # Get a Document of an API
+    # Get a Document of an API
     #
     # + apiId - **API ID** consisting of the **UUID** of the API. 
     # + documentId - Document Identifier 
@@ -327,13 +306,9 @@ service /api/am/devportal on ep0 {
     isolated resource function get applications(http:RequestContext requestContext, string? groupId, string? query, string? sortBy, string? sortOrder, @http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0) returns ApplicationList|http:NotModified|BadRequestError|NotAcceptableError|InternalServerErrorError|commons:APKError {
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
-        ApplicationList|APKError applicationList = getApplicationList(sortBy, groupId, query, sortOrder, 'limit, offset, organization);
-        if applicationList is ApplicationList {
-            log:printDebug(applicationList.toString());
-            return applicationList;
-        } else {
-            return handleAPKError(applicationList);
-        }
+        ApplicationList applicationList = check getApplicationList(sortBy, groupId, query, sortOrder, 'limit, offset, organization);
+        log:printDebug(applicationList.toString());
+        return applicationList;
     }
     # Create a New Application
     #
@@ -344,20 +319,16 @@ service /api/am/devportal on ep0 {
     # BadRequestError (Bad Request. Invalid request or validation error.)
     # ConflictError (Conflict. Specified resource already exists.)
     # UnsupportedMediaTypeError (Unsupported Media Type. The entity of the request was not in a supported format.)
-    isolated resource function post applications(http:RequestContext requestContext, @http:Payload Application payload) returns CreatedApplication|AcceptedWorkflowResponse|BadRequestError|ConflictError|NotFoundError|InternalServerErrorError|error|json|commons:APKError {
+    isolated resource function post applications(http:RequestContext requestContext, @http:Payload Application payload) returns CreatedApplication|AcceptedWorkflowResponse|BadRequestError|ConflictError|NotFoundError|InternalServerErrorError|commons:APKError {
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
-        Application|NotFoundError|APKError application = addApplication(payload, organization, <string>authenticatedUserContext.userId);
+        Application|NotFoundError application = check addApplication(payload, organization, <string>authenticatedUserContext.userId);
         if application is Application {
-            CreatedApplication createdApp = {body: check application.cloneWithType(Application)};
+            CreatedApplication createdApp = {body: application};
             log:printDebug(application.toString());
             return createdApp;
-        } else if application is NotFoundError {
-            return application;
-        } else if application is APKError {
-            return handleAPKError(application);
         } else {
-            return {};
+            return <NotFoundError>application;
         }
     }
     # Get Details of an Application
@@ -373,13 +344,7 @@ service /api/am/devportal on ep0 {
     isolated resource function get applications/[string applicationId](http:RequestContext requestContext, @http:Header string? 'if\-none\-match, @http:Header string? 'x\-wso2\-tenant) returns Application|http:NotModified|NotFoundError|BadRequestError|InternalServerErrorError|commons:APKError {
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
-        Application|APKError|NotFoundError application = getApplicationById(applicationId, organization);
-        if application is Application|NotFoundError {
-            log:printDebug(application.toString());
-            return application;
-        } else {
-            return handleAPKError(application);
-        }
+        return getApplicationById(applicationId, organization);
     }
     # Update an Application
     #
@@ -394,12 +359,10 @@ service /api/am/devportal on ep0 {
     isolated resource function put applications/[string applicationId](http:RequestContext requestContext, @http:Header string? 'if\-match, @http:Payload Application payload) returns Application|BadRequestError|NotFoundError|PreconditionFailedError|InternalServerErrorError|commons:APKError {
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
-        Application|NotFoundError|APKError application = updateApplication(applicationId, payload, organization, <string>authenticatedUserContext.userId);
+        Application|NotFoundError application = check updateApplication(applicationId, payload, organization, <string>authenticatedUserContext.userId);
         if application is Application|NotFoundError {
             log:printDebug(application.toString());
             return application;
-        } else {
-            return handleAPKError(application);
         }
     }
     # Remove an Application
@@ -414,13 +377,10 @@ service /api/am/devportal on ep0 {
     isolated resource function delete applications/[string applicationId](http:RequestContext requestContext, @http:Header string? 'if\-match) returns http:Ok|AcceptedWorkflowResponse|NotFoundError|BadRequestError|PreconditionFailedError|InternalServerErrorError|commons:APKError {
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
-        string|APKError response = deleteApplication(applicationId, organization);
-        if response is APKError {
-            return handleAPKError(response);
-        } else {
-            return http:OK;
-        }
+        _ = check deleteApplication(applicationId, organization);
+        return http:OK;
     }
+
     # Generate Application Keys
     #
     # + applicationId - Application Identifier consisting of the UUID of the Application. 
@@ -431,7 +391,14 @@ service /api/am/devportal on ep0 {
     # BadRequestError (Bad Request. Invalid request or validation error.)
     # NotFoundError (Not Found. The specified resource does not exist.)
     # PreconditionFailedError (Precondition Failed. The request has not been performed because one of the preconditions is not met.)
-    // resource function post applications/[string applicationId]/'generate\-keys(@http:Header string? 'x\-wso2\-tenant, @http:Payload ApplicationKeyGenerateRequest payload) returns OkApplicationKey|BadRequestError|NotFoundError|PreconditionFailedError {
+    // resource function post applications/[string applicationId]/'generate\-keys(@http:Header string? 'x\-wso2\-tenant, @http:Payload ApplicationKeyGenerateRequest payload, http:RequestContext requestContext) returns OkApplicationKey|BadRequestError|NotFoundError|PreconditionFailedError|commons:APKError {
+    //     commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+    //     commons:Organization organization = authenticatedUserContext.organization;
+    //     Application|NotFoundError applicationById = check getApplicationById(applicationId, organization);
+    //     if applicationById is NotFoundError {
+    //         return applicationById;
+    //     }
+    //     // generateKeysForApplication(<Application>applicationById, payload, organization);
     // }
     # Map Application Keys
     #
@@ -600,12 +567,8 @@ service /api/am/devportal on ep0 {
     isolated resource function post applications/[string applicationId]/'api\-keys/[string keyType]/generate(http:RequestContext requestContext, @http:Header string? 'if\-match, @http:Payload APIKeyGenerateRequest payload) returns APIKey|BadRequestError|NotFoundError|PreconditionFailedError|InternalServerErrorError|commons:APKError {
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
-        APIKey|APKError|NotFoundError apiKey = generateAPIKey(payload, applicationId, keyType, <string>authenticatedUserContext.userId, organization);
-        if apiKey is APIKey|NotFoundError {
-            return apiKey;
-        } else {
-            return handleAPKError(apiKey);
-        }
+        APIKey|NotFoundError apiKey = check generateAPIKey(payload, applicationId, keyType, <string>authenticatedUserContext.userId, organization);
+        return apiKey;
     }
     # Revoke API Key
     #
@@ -662,13 +625,9 @@ service /api/am/devportal on ep0 {
     isolated resource function get subscriptions(http:RequestContext requestContext, string? apiId, string? applicationId, string? groupId, @http:Header string? 'x\-wso2\-tenant, @http:Header string? 'if\-none\-match, int offset = 0, int 'limit = 25) returns SubscriptionList|http:NotModified|NotFoundError|BadRequestError|InternalServerErrorError|commons:APKError {
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
-        SubscriptionList|APKError|NotFoundError subscriptionList = getSubscriptions(apiId, applicationId, groupId, offset, 'limit, organization);
-        if subscriptionList is SubscriptionList|NotFoundError {
-            log:printDebug(subscriptionList.toString());
-            return subscriptionList;
-        } else {
-            return handleAPKError(subscriptionList);
-        }
+        SubscriptionList|NotFoundError subscriptionList = check getSubscriptions(apiId, applicationId, groupId, offset, 'limit, organization);
+        log:printDebug(subscriptionList.toString());
+        return subscriptionList;
     }
     # Add a New Subscription
     #
@@ -679,23 +638,19 @@ service /api/am/devportal on ep0 {
     # AcceptedWorkflowResponse (Accepted. The request has been accepted.)
     # BadRequestError (Bad Request. Invalid request or validation error.)
     # UnsupportedMediaTypeError (Unsupported Media Type. The entity of the request was not in a supported format.)
-    isolated resource function post subscriptions(http:RequestContext requestContext, @http:Header string? 'x\-wso2\-tenant, @http:Payload Subscription payload) returns CreatedSubscription|AcceptedWorkflowResponse|BadRequestError|NotFoundError|InternalServerErrorError|error|json|commons:APKError {
+    isolated resource function post subscriptions(http:RequestContext requestContext, @http:Header string? 'x\-wso2\-tenant, @http:Payload Subscription payload) returns CreatedSubscription|AcceptedWorkflowResponse|BadRequestError|NotFoundError|InternalServerErrorError|json|commons:APKError {
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
-        Subscription|APKError|NotFoundError|error subscription = addSubscription(payload, organization, <string>authenticatedUserContext.userId);
-        if subscription is APKError {
-            return handleAPKError(subscription);
-        } else {
-            if subscription is Subscription {
-            CreatedSubscription createdSub = {body: check subscription.cloneWithType(Subscription)};
+        Subscription|NotFoundError subscription = check addSubscription(payload, organization, <string>authenticatedUserContext.userId);
+        if subscription is Subscription {
+            CreatedSubscription createdSub = {body: subscription};
             log:printDebug(subscription.toString());
             return createdSub;
-            } else if subscription is NotFoundError|error {
-                return subscription;
-            }
+        } else if subscription is NotFoundError {
+            return subscription;
         }
-        return {};
     }
+
     # Add New Subscriptions
     #
     # + 'x\-wso2\-tenant - For cross-tenant invocations, this is used to specify the tenant/organization domain, where the resource need to be   retrieved from. 
@@ -704,16 +659,12 @@ service /api/am/devportal on ep0 {
     # OkSubscription (OK. Successful response with the newly created objects as entity in the body.)
     # BadRequestError (Bad Request. Invalid request or validation error.)
     # UnsupportedMediaTypeError (Unsupported Media Type. The entity of the request was not in a supported format.)
-    isolated resource function post subscriptions/multiple(http:RequestContext requestContext, @http:Header string? 'x\-wso2\-tenant, @http:Payload Subscription[] payload) returns Subscription[]|BadRequestError|UnsupportedMediaTypeError|NotFoundError|InternalServerErrorError|commons:APKError|error {
+    isolated resource function post subscriptions/multiple(http:RequestContext requestContext, @http:Header string? 'x\-wso2\-tenant, @http:Payload Subscription[] payload) returns Subscription[]|BadRequestError|UnsupportedMediaTypeError|NotFoundError|InternalServerErrorError|commons:APKError {
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
-        Subscription[]|APKError|NotFoundError subscriptions = check addMultipleSubscriptions(payload, organization, <string>authenticatedUserContext.userId);
-        if subscriptions is Subscription[]|NotFoundError  {
-            log:printDebug(subscriptions.toString());
-            return subscriptions;
-        } else {
-            return handleAPKError(subscriptions);
-        }
+        Subscription[]|NotFoundError subscriptions = check addMultipleSubscriptions(payload, organization, <string>authenticatedUserContext.userId);
+        log:printDebug(subscriptions.toString());
+        return subscriptions;
     }
     # Get Additional Information of subscriptions attached to an API.
     #
@@ -736,16 +687,12 @@ service /api/am/devportal on ep0 {
     # Subscription (OK. Subscription returned)
     # http:NotModified (Not Modified. Empty body because the client has already the latest version of the requested resource.)
     # NotFoundError (Not Found. The specified resource does not exist.)
-    isolated resource function get subscriptions/[string subscriptionId](http:RequestContext requestContext, @http:Header string? 'if\-none\-match) returns Subscription|http:NotModified|NotFoundError|BadRequestError|InternalServerErrorError|error {
+    isolated resource function get subscriptions/[string subscriptionId](http:RequestContext requestContext, @http:Header string? 'if\-none\-match) returns Subscription|http:NotModified|NotFoundError|BadRequestError|InternalServerErrorError|commons:APKError {
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
-        Subscription|APKError|NotFoundError subscription = getSubscriptionById(subscriptionId, organization);
-        if subscription is Subscription|NotFoundError {
-            log:printDebug(subscription.toString());
-            return subscription;
-        } else {
-            return handleAPKError(subscription);
-        }
+        Subscription|NotFoundError subscription = check getSubscriptionById(subscriptionId, organization);
+        log:printDebug(subscription.toString());
+        return subscription;
     }
     # Update Existing Subscription
     #
@@ -759,16 +706,12 @@ service /api/am/devportal on ep0 {
     # BadRequestError (Bad Request. Invalid request or validation error.)
     # http:NotFound (Not Found. Requested Subscription does not exist.)
     # http:UnsupportedMediaType (Unsupported media type. The entity of the request was in a not supported format.)
-    isolated resource function put subscriptions/[string subscriptionId](http:RequestContext requestContext, @http:Header string? 'x\-wso2\-tenant, @http:Payload Subscription payload) returns Subscription|AcceptedWorkflowResponse|http:NotModified|BadRequestError|NotFoundError|http:UnsupportedMediaType|InternalServerErrorError|json|commons:APKError|error {
+    isolated resource function put subscriptions/[string subscriptionId](http:RequestContext requestContext, @http:Header string? 'x\-wso2\-tenant, @http:Payload Subscription payload) returns Subscription|AcceptedWorkflowResponse|http:NotModified|BadRequestError|NotFoundError|http:UnsupportedMediaType|InternalServerErrorError|json|commons:APKError {
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
-        Subscription|NotFoundError|APKError|error subscription = check updateSubscription(subscriptionId, payload, organization, <string>authenticatedUserContext.userId);
-        if subscription is Subscription|NotFoundError  {
-            log:printDebug(subscription.toString());
-            return subscription;
-        } else if subscription is APKError {
-            return handleAPKError(subscription);
-        }
+        Subscription|NotFoundError subscription = check updateSubscription(subscriptionId, payload, organization, <string>authenticatedUserContext.userId);
+        log:printDebug(subscription.toString());
+        return subscription;
     }
     # Remove a Subscription
     #
@@ -779,15 +722,11 @@ service /api/am/devportal on ep0 {
     # AcceptedWorkflowResponse (Accepted. The request has been accepted.)
     # NotFoundError (Not Found. The specified resource does not exist.)
     # PreconditionFailedError (Precondition Failed. The request has not been performed because one of the preconditions is not met.)
-    isolated resource function delete subscriptions/[string subscriptionId](http:RequestContext requestContext, @http:Header string? 'if\-match) returns http:Ok|AcceptedWorkflowResponse|NotFoundError|PreconditionFailedError|BadRequestError|InternalServerErrorError|commons:APKError|APKError {
+    isolated resource function delete subscriptions/[string subscriptionId](http:RequestContext requestContext, @http:Header string? 'if\-match) returns http:Ok|AcceptedWorkflowResponse|NotFoundError|PreconditionFailedError|BadRequestError|InternalServerErrorError|commons:APKError {
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
-        string|APKError response = deleteSubscription(subscriptionId,organization);
-        if response is APKError {
-            return handleAPKError(response);
-        } else {
-            return http:OK;
-        }
+        string response = check deleteSubscription(subscriptionId, organization);
+        return http:OK;
     }
     # Get Details of a Pending Invoice for a Monetized Subscription with Metered Billing.
     #
@@ -856,13 +795,9 @@ service /api/am/devportal on ep0 {
     # json (OK. List of supported languages for generating SDKs.)
     # NotFoundError (Not Found. The specified resource does not exist.)
     # InternalServerErrorError (Internal Server Error.)
-    isolated resource function get 'sdk\-gen/languages() returns json|NotFoundError|InternalServerErrorError|BadRequestError|APKError {
-        string|json|APKError sdkLanguages = check getSDKLanguages();
-        if sdkLanguages is string|json {
-            return sdkLanguages;
-        } else {
-            return handleAPKError(sdkLanguages);
-        }
+    isolated resource function get 'sdk\-gen/languages() returns json|NotFoundError|InternalServerErrorError|BadRequestError|commons:APKError {
+        string|json sdkLanguages = check getSDKLanguages();
+        return sdkLanguages;
     }
     # Get available web hook subscriptions for a given application.
     #
@@ -949,14 +884,4 @@ service /api/am/devportal on ep0 {
         return badRequest;
     }
 
-}
-
-isolated function handleAPKError(APKError errorDetail) returns InternalServerErrorError|BadRequestError {
-    ErrorHandler & readonly detail = errorDetail.detail();
-    if detail.statusCode=="400" {
-        BadRequestError badRequest = {body: {code: detail.code, message: detail.message}};
-        return badRequest;
-    }
-    InternalServerErrorError internalServerError = {body: {code: detail.code, message: detail.message}};
-    return internalServerError;
 }

@@ -19,45 +19,44 @@
 import ballerina/test;
 import ballerina/log;
 import ballerina/uuid;
+import wso2/apk_common_lib as commons;
 
-Subscription sub = { apiId: "01ed75e2-b30b-18c8-wwf2-25da7edd2231",applicationId: "21212"};
-Application applicationNew  ={name:"sampleAppNew",description: "sample application"};
+Subscription sub = {apiId: "01ed75e2-b30b-18c8-wwf2-25da7edd2231", applicationId: "21212"};
+Application applicationNew = {name: "sampleAppNew", description: "sample application"};
 
+@test:Mock {functionName: "retrieveManagementServerHostsList"}
+test:MockFunction retrieveManagementServerHostsListMock = new ();
 
-@test:Mock { functionName: "retrieveManagementServerHostsList" }
-test:MockFunction retrieveManagementServerHostsListMock = new();
+@test:Mock {functionName: "createApplication", moduleName: "wso2/notification_grpc_client"}
+public isolated function createApplicationMock(ApplicationGRPC createApplicationRequest, string endpoint, string pubCert, string devCert, string devKey) returns error|NotificationResponse {
+    NotificationResponse noti = {code: "OK"};
+    return noti;
+}
 
+@test:Mock {functionName: "createSubscription", moduleName: "wso2/notification_grpc_client"}
+public isolated function createSubscriptionMock(SubscriptionGRPC createSubscriptionRequest, string endpoint, string pubCert, string devCert, string devKey) returns error|NotificationResponse {
+    NotificationResponse noti = {code: "OK"};
+    return noti;
+}
 
- @test:Mock { functionName: "createApplication",moduleName: "wso2/notification_grpc_client" }
- public isolated function createApplicationMock(ApplicationGRPC createApplicationRequest, string endpoint, string pubCert, string devCert, string devKey) returns error|NotificationResponse {
-     NotificationResponse noti= {code: "OK"};
-     return noti;
- }
+@test:Mock {functionName: "updateSubscription", moduleName: "wso2/notification_grpc_client"}
+public isolated function updateSubscriptionMock(SubscriptionGRPC updateSubscriptionRequest, string endpoint, string pubCert, string devCert, string devKey) returns error|NotificationResponse {
+    NotificationResponse noti = {code: "OK"};
+    return noti;
+}
 
- @test:Mock { functionName: "createSubscription",moduleName: "wso2/notification_grpc_client" }
- public isolated function createSubscriptionMock(SubscriptionGRPC createSubscriptionRequest, string endpoint, string pubCert, string devCert, string devKey) returns error|NotificationResponse {
-     NotificationResponse noti= {code: "OK"};
-     return noti;
- }
-
- @test:Mock { functionName: "updateSubscription",moduleName: "wso2/notification_grpc_client" }
- public isolated function updateSubscriptionMock(SubscriptionGRPC updateSubscriptionRequest, string endpoint, string pubCert, string devCert, string devKey) returns error|NotificationResponse {
-     NotificationResponse noti= {code: "OK"};
-     return noti;
- }
-
- @test:Mock { functionName: "deleteSubscription",moduleName: "wso2/notification_grpc_client" }
- public isolated function deleteSubscriptionMock(SubscriptionGRPC deleteSubscriptionRequest, string endpoint, string pubCert, string devCert, string devKey) returns error|NotificationResponse {
-     NotificationResponse noti= {code: "OK"};
-     return noti;
- }
+@test:Mock {functionName: "deleteSubscription", moduleName: "wso2/notification_grpc_client"}
+public isolated function deleteSubscriptionMock(SubscriptionGRPC deleteSubscriptionRequest, string endpoint, string pubCert, string devCert, string devKey) returns error|NotificationResponse {
+    NotificationResponse noti = {code: "OK"};
+    return noti;
+}
 
 @test:BeforeSuite
 function beforeFunc3() {
-    string[] testHosts= ["http://localhost:9090"];
+    string[] testHosts = ["http://localhost:9090"];
     test:when(retrieveManagementServerHostsListMock).thenReturn(testHosts);
-    Application payload = {name:"sampleAppNew",description: "sample application"};
-    NotFoundError|Application|APKError createdApplication = addApplication(payload, organiztion, "apkuser");
+    Application payload = {name: "sampleAppNew", description: "sample application"};
+    NotFoundError|Application|commons:APKError createdApplication = addApplication(payload, organiztion, "apkuser");
     if createdApplication is Application {
         test:assertTrue(true, "Successfully added the application");
         applicationNew.applicationId = createdApplication.applicationId;
@@ -68,9 +67,9 @@ function beforeFunc3() {
             "defaultLimit": {
                 "type": "REQUESTCOUNTLIMIT",
                 "requestCount": {
-                "requestCount": 20,
-                "timeUnit": "min",
-                "unitTime": 1
+                    "requestCount": 20,
+                    "timeUnit": "min",
+                    "unitTime": 1
                 }
             },
             "rateLimitCount": 10,
@@ -78,8 +77,8 @@ function beforeFunc3() {
             "customAttributes": []
         };
         payloadbp.planId = uuid:createType1AsString();
-        BusinessPlan|APKError createdBusinessPlan = addBusinessPlanDAO(payloadbp, organiztion.uuid);
-        if createdBusinessPlan is APKError {
+        BusinessPlan|commons:APKError createdBusinessPlan = addBusinessPlanDAO(payloadbp, organiztion.uuid);
+        if createdBusinessPlan is commons:APKError {
             test:assertFail("Error occured while adding Business Plan");
         }
     } else if createdApplication is error {
@@ -91,12 +90,12 @@ function beforeFunc3() {
 function addSubscriptionTest() {
     string? appId = applicationNew.applicationId;
     if appId is string {
-        Subscription payload = { apiId: "01ed75e2-b30b-18c8-wwf2-25da7edd2231",applicationId: appId};
-        Subscription|APKError|NotFoundError|error subscription = addSubscription(payload, organiztion, "apkuser");
+        Subscription payload = {apiId: "01ed75e2-b30b-18c8-wwf2-25da7edd2231", applicationId: appId};
+        Subscription|commons:APKError|NotFoundError subscription = addSubscription(payload, organiztion, "apkuser");
         if subscription is Subscription {
             test:assertTrue(true, "Succesfully added a subscription");
             sub.subscriptionId = subscription.subscriptionId;
-        } else if subscription is APKError {
+        } else if subscription is commons:APKError {
             log:printError(subscription.toString());
             test:assertFail("Error occured while adding subscription");
         } else if subscription is NotFoundError {
@@ -113,8 +112,8 @@ function addSubscriptionNegativeTest1() {
     // API ID is not found or API Id is not returned
     string? appId = applicationNew.applicationId;
     if appId is string {
-        Subscription payload = { apiId: "8e3a1ca4-b649-4e57-9a57-e43b6b545af0",applicationId: appId};
-        Subscription|APKError|NotFoundError|error subscription = addSubscription(payload, organiztion, "apkuser");
+        Subscription payload = {apiId: "8e3a1ca4-b649-4e57-9a57-e43b6b545af0", applicationId: appId};
+        Subscription|commons:APKError|NotFoundError subscription = addSubscription(payload, organiztion, "apkuser");
         if subscription is Subscription {
             test:assertFail("Succesfully added a subscription for a invalid API");
         } else {
@@ -125,11 +124,11 @@ function addSubscriptionNegativeTest1() {
     }
 }
 
-@test:Config  {dependsOn: [addSubscriptionNegativeTest1]}
+@test:Config {dependsOn: [addSubscriptionNegativeTest1]}
 function addSubscriptionNegativeTest2() {
     // APP ID is not found or APP Id is not returned
-    Subscription payload = { apiId: "01ed75e2-b30b-18c8-wwf2-25da7edd2231",applicationId: "01ed716f-9f85-1ade-b634-be97dee7ceb4"};
-    Subscription|APKError|NotFoundError|error subscription = addSubscription(payload, organiztion, "apkuser");
+    Subscription payload = {apiId: "01ed75e2-b30b-18c8-wwf2-25da7edd2231", applicationId: "01ed716f-9f85-1ade-b634-be97dee7ceb4"};
+    Subscription|commons:APKError|NotFoundError subscription = addSubscription(payload, organiztion, "apkuser");
     if subscription is Subscription {
         test:assertFail("Succesfully added a subscription for a invalid Application");
     } else {
@@ -142,8 +141,8 @@ function addSubscriptionNegativeTest3() {
     // Policy Not Found
     string? appId = applicationNew.applicationId;
     if appId is string {
-        Subscription payload = { apiId: "01ed75e2-b30b-18c8-wwf2-25da7edd2231",applicationId: appId};
-        Subscription|APKError|NotFoundError|error subscription = addSubscription(payload, organiztion, "apkuser");
+        Subscription payload = {apiId: "01ed75e2-b30b-18c8-wwf2-25da7edd2231", applicationId: appId};
+        Subscription|commons:APKError|NotFoundError subscription = addSubscription(payload, organiztion, "apkuser");
         if subscription is Subscription {
             test:assertFail("Succesfully added a subscription for a invalid Policy");
         } else {
@@ -159,16 +158,16 @@ function addMultipleSubscriptionsTest() {
     // Add 2 new app
     string? newappId1 = "";
     string? newappId2 = "";
-    Application payload = {name:"sampleAppNew1",description: "sample application"};
-    NotFoundError|Application|APKError createdApplication = addApplication(payload, organiztion, "apkuser");
+    Application payload = {name: "sampleAppNew1", description: "sample application"};
+    NotFoundError|Application|commons:APKError createdApplication = addApplication(payload, organiztion, "apkuser");
     if createdApplication is Application {
         test:assertTrue(true, "Successfully added the application");
         newappId1 = createdApplication.applicationId;
     } else if createdApplication is error {
         test:assertFail("Error occured while adding application");
     }
-    Application payload2 = {name:"sampleAppNew2",description: "sample application"};
-    NotFoundError|Application|APKError createdApplication2 = addApplication(payload2, organiztion, "apkuser");
+    Application payload2 = {name: "sampleAppNew2", description: "sample application"};
+    NotFoundError|Application|commons:APKError createdApplication2 = addApplication(payload2, organiztion, "apkuser");
     if createdApplication2 is Application {
         test:assertTrue(true, "Successfully added the application");
         newappId2 = createdApplication2.applicationId;
@@ -177,12 +176,14 @@ function addMultipleSubscriptionsTest() {
     }
 
     if newappId1 is string && newappId2 is string {
-        Subscription[] multiSub = [{ apiId: "01ed75e2-b30b-18c8-wwf2-25da7edd2231",applicationId: newappId1},
-        { apiId: "01ed75e2-b30b-18c8-wwf2-25da7edd2231",applicationId: newappId2}];
+        Subscription[] multiSub = [
+            {apiId: "01ed75e2-b30b-18c8-wwf2-25da7edd2231", applicationId: newappId1},
+            {apiId: "01ed75e2-b30b-18c8-wwf2-25da7edd2231", applicationId: newappId2}
+        ];
 
-        Subscription[]|APKError|NotFoundError|error subscriptions = addMultipleSubscriptions(multiSub, organiztion, "apkuser");
+        Subscription[]|commons:APKError|NotFoundError subscriptions = addMultipleSubscriptions(multiSub, organiztion, "apkuser");
         if subscriptions is Subscription[] {
-            test:assertTrue(true,"Succesfully added multiple subscriptions");
+            test:assertTrue(true, "Succesfully added multiple subscriptions");
         } else {
             test:assertFail("Error occured while adding multiple subscriptions");
         }
@@ -195,7 +196,7 @@ function addMultipleSubscriptionsTest() {
 function getSubscriptionByIdTest() {
     string? subId = sub.subscriptionId;
     if subId is string {
-        Subscription|APKError|NotFoundError returnedResponse = getSubscriptionById(subId, organiztion);
+        Subscription|commons:APKError|NotFoundError returnedResponse = getSubscriptionById(subId, organiztion);
         if returnedResponse is Subscription {
             test:assertTrue(true, "Successfully retrieved subscription");
         } else {
@@ -216,9 +217,9 @@ function updateSubscriptionTest() {
         "defaultLimit": {
             "type": "REQUESTCOUNTLIMIT",
             "requestCount": {
-            "requestCount": 20,
-            "timeUnit": "min",
-            "unitTime": 1
+                "requestCount": 20,
+                "timeUnit": "min",
+                "unitTime": 1
             }
         },
         "rateLimitCount": 10,
@@ -226,14 +227,14 @@ function updateSubscriptionTest() {
         "customAttributes": []
     };
     payloadbp.planId = uuid:createType1AsString();
-    BusinessPlan|APKError createdBusinessPlan = addBusinessPlanDAO(payloadbp, organiztion.uuid);
+    BusinessPlan|commons:APKError createdBusinessPlan = addBusinessPlanDAO(payloadbp, organiztion.uuid);
     if createdBusinessPlan is BusinessPlan {
-        test:assertTrue(true,"Business Plan added successfully");
+        test:assertTrue(true, "Business Plan added successfully");
         string? appId = applicationNew.applicationId;
         string? subId = sub.subscriptionId;
         if appId is string && subId is string {
             // Use new policy
-            Subscription payload = { apiId: "01ed75e2-b30b-18c8-wwf2-25da7edd2231",applicationId: appId};
+            Subscription payload = {apiId: "01ed75e2-b30b-18c8-wwf2-25da7edd2231", applicationId: appId};
             string?|Subscription|NotFoundError|error subscription = updateSubscription(subId, payload, organiztion, "apkuser");
             if subscription is Subscription {
                 test:assertTrue(true, "Succesfully updated the subscription");
@@ -243,7 +244,7 @@ function updateSubscriptionTest() {
         } else {
             test:assertFail("App ID isn't a string");
         }
-    } else if createdBusinessPlan is APKError {
+    } else if createdBusinessPlan is commons:APKError {
         test:assertFail("Error occured while adding Business Plan");
     }
 }
@@ -253,9 +254,9 @@ function getSubscriptionListTest1() {
     // Providing both API ID and App Id
     string? appId = applicationNew.applicationId;
     if appId is string {
-        SubscriptionList|APKError|NotFoundError subscriptionList = getSubscriptions("01ed75e2-b30b-18c8-wwf2-25da7edd2231",appId,"",0,0,organiztion);
+        SubscriptionList|commons:APKError|NotFoundError subscriptionList = getSubscriptions("01ed75e2-b30b-18c8-wwf2-25da7edd2231", appId, "", 0, 0, organiztion);
         if subscriptionList is ApplicationList {
-        test:assertTrue(true, "Successfully retrieved all subscriptions by API ID and App ID");
+            test:assertTrue(true, "Successfully retrieved all subscriptions by API ID and App ID");
         } else {
             test:assertFail("Error occured while retrieving all subscriptions");
         }
@@ -267,9 +268,9 @@ function getSubscriptionListTest1() {
 @test:Config {dependsOn: [getSubscriptionListTest1]}
 function getSubscriptionListTest2() {
     // Providing only API ID
-    SubscriptionList|APKError|NotFoundError subscriptionList = getSubscriptions("01ed75e2-b30b-18c8-wwf2-25da7edd2231",null,"",0,0,organiztion);
+    SubscriptionList|commons:APKError|NotFoundError subscriptionList = getSubscriptions("01ed75e2-b30b-18c8-wwf2-25da7edd2231", null, "", 0, 0, organiztion);
     if subscriptionList is ApplicationList {
-    test:assertTrue(true, "Successfully retrieved all subscriptions by API ID and App ID");
+        test:assertTrue(true, "Successfully retrieved all subscriptions by API ID and App ID");
     } else {
         test:assertFail("Error occured while retrieving all subscriptions");
     }
@@ -280,9 +281,9 @@ function getSubscriptionListTest3() {
     // Providing only App ID
     string? appId = applicationNew.applicationId;
     if appId is string {
-        SubscriptionList|APKError|NotFoundError subscriptionList = getSubscriptions(null,appId,"",0,0,organiztion);
+        SubscriptionList|commons:APKError|NotFoundError subscriptionList = getSubscriptions(null, appId, "", 0, 0, organiztion);
         if subscriptionList is ApplicationList {
-        test:assertTrue(true, "Successfully retrieved all subscriptions by API ID and App ID");
+            test:assertTrue(true, "Successfully retrieved all subscriptions by API ID and App ID");
         } else {
             test:assertFail("Error occured while retrieving all subscriptions");
         }
@@ -294,9 +295,9 @@ function getSubscriptionListTest3() {
 @test:Config {dependsOn: [getSubscriptionListTest3]}
 function getSubscriptionListTest4() {
     // Providing nothing and retrieving all subscriptions
-    SubscriptionList|APKError|NotFoundError subscriptionList = getSubscriptions(null,null,"",0,0,organiztion);
+    SubscriptionList|commons:APKError|NotFoundError subscriptionList = getSubscriptions(null, null, "", 0, 0, organiztion);
     if subscriptionList is ApplicationList {
-    test:assertTrue(true, "Successfully retrieved all subscriptions by API ID and App ID");
+        test:assertTrue(true, "Successfully retrieved all subscriptions by API ID and App ID");
     } else {
         test:assertFail("Error occured while retrieving all subscriptions");
     }
@@ -306,10 +307,10 @@ function getSubscriptionListTest4() {
 function deleteSubscriptionTest() {
     string? subId = sub.subscriptionId;
     if subId is string {
-        APKError|string status = deleteSubscription(subId, organiztion);
+        commons:APKError|string status = deleteSubscription(subId, organiztion);
         if status is string {
-        test:assertTrue(true, "Successfully deleted subscription");
-        } else if status is  APKError {
+            test:assertTrue(true, "Successfully deleted subscription");
+        } else if status is commons:APKError {
             test:assertFail("Error occured while deleting subscription");
         }
     } else {

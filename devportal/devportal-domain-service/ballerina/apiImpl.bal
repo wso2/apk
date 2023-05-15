@@ -23,14 +23,14 @@ import devportal_service.java.lang as javalang;
 import ballerina/http;
 import wso2/apk_common_lib as commons;
 
-isolated function getAPIByAPIId(string apiId) returns API|NotFoundError|APKError {
-    API|APKError|NotFoundError api = getAPIByIdDAO(apiId);
+isolated function getAPIByAPIId(string apiId) returns API|NotFoundError|commons:APKError {
+    API|commons:APKError|NotFoundError api = getAPIByIdDAO(apiId);
     return api;
 }
 
-isolated function getAPIList(int 'limit, int offset, string? query, commons:Organization organization) returns APIList|APKError {
+isolated function getAPIList(int 'limit, int offset, string? query, commons:Organization organization) returns APIList|commons:APKError {
     if query !is string {
-        API[]|APKError apis = getAPIsDAO(organization.uuid);
+        API[]|commons:APKError apis = getAPIsDAO(organization.uuid);
         if apis is API[] {
             API[] limitSet = [];
             if apis.length() > offset {
@@ -51,7 +51,7 @@ isolated function getAPIList(int 'limit, int offset, string? query, commons:Orga
             int? index = query.indexOf(":");
             if index is int {
                 string modifiedQuery = "%" + query.substring(index + 1) + "%";
-                API[]|APKError apis = getAPIsByQueryDAO(modifiedQuery, organization.uuid);
+                API[]|commons:APKError apis = getAPIsByQueryDAO(modifiedQuery, organization.uuid);
                 if apis is API[] {
                     API[] limitSet = [];
                     if apis.length() > offset {
@@ -68,31 +68,31 @@ isolated function getAPIList(int 'limit, int offset, string? query, commons:Orga
                 }
             } else {
                 string message = "Invalid Content Search Text Provided. Missing :";
-                APKError e = error(message, message = message, description = message, code = 90911, statusCode = "400");
+                commons:APKError e = error(message, message = message, description = message, code = 90911, statusCode = 400);
                 return e;
             }
         } else {
             string message = "Invalid Content Search Text Provided. Missing content keyword";
-            APKError e = error(message, message = message, description = message, code = 90911, statusCode = "400");
+            commons:APKError e = error(message, message = message, description = message, code = 90911, statusCode = 400);
             return e;
         }
     }
 }
 
-isolated function getAPIDefinition(string apiId) returns APIDefinition|NotFoundError|APKError {
-    APIDefinition|NotFoundError|APKError apiDefinition = getAPIDefinitionDAO(apiId);
+isolated function getAPIDefinition(string apiId) returns APIDefinition|NotFoundError|commons:APKError {
+    APIDefinition|NotFoundError|commons:APKError apiDefinition = getAPIDefinitionDAO(apiId);
     return apiDefinition;
 }
 
-function generateSDKImpl(string apiId, string language) returns http:Response|sdk:APIClientGenerationException|NotFoundError|APKError {
+isolated function generateSDKImpl(string apiId, string language) returns http:Response|NotFoundError|commons:APKError {
     sdk:APIClientGenerationManager sdkClient = new sdk:APIClientGenerationManager(newSDKClient());
     string apiName;
     string apiVersion;
-    API|NotFoundError|APKError api = getAPIByAPIId(apiId);
+    API|NotFoundError api = check getAPIByAPIId(apiId);
     if api is API {
         apiName = api.name;
         apiVersion = api.'version;
-        APIDefinition|NotFoundError|APKError apiDefinition = getAPIDefinition(apiId);
+        APIDefinition|NotFoundError|commons:APKError apiDefinition = getAPIDefinition(apiId);
         if apiDefinition is APIDefinition {
             string? schema = apiDefinition.schemaDefinition;
             if schema is string {
@@ -106,23 +106,24 @@ function generateSDKImpl(string apiId, string language) returns http:Response|sd
                     response.addHeader("Content-Disposition", "attachment; filename=" + fileName);
                     return response;
                 } else {
-                    return sdkMap;
+                    commons:APKError e = error("Unable to generate SDK", message = "Unable to generate SDK", description = "Unable to generate SDK", code = 90911, statusCode = 500);
+                    return e;
                 }
             } else {
                 string message = "Unable to retrieve schema mediation";
-                APKError e = error(message, message = message, description = message, code = 90911, statusCode = "500");
+                commons:APKError e = error(message, message = message, description = message, code = 90911, statusCode = 500);
                 return e;
             }
         }
-    } else if api is NotFoundError|APKError {
+    } else if api is NotFoundError|commons:APKError {
         return api;
     }
     string message = "Unable to generate SDK";
-    APKError e = error(message, message = message, description = message, code = 90911, statusCode = "500");
+    commons:APKError e = error(message, message = message, description = message, code = 90911, statusCode = 500);
     return e;
 }
 
-isolated function getSDKLanguages() returns string|json|APKError {
+isolated function getSDKLanguages() returns string|json|commons:APKError {
     sdk:APIClientGenerationManager sdkClient = new sdk:APIClientGenerationManager(newSDKClient());
     string? sdkLanguages = sdkClient.getSupportedSDKLanguages();
     return sdkLanguages;
@@ -132,7 +133,7 @@ isolated function newSDKClient() returns handle = @java:Constructor {
     'class: "org.wso2.apk.devportal.sdk.APIClientGenerationManager"
 } external;
 
-function readMap(javautil:Map sdkMap, string key) returns string {
+isolated function readMap(javautil:Map sdkMap, string key) returns string {
     handle keyAsJavaStr = java:fromString(key);
     javalang:Object keyAsObj = new (keyAsJavaStr);
     javalang:Object value = sdkMap.get(keyAsObj);

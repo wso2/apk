@@ -15,7 +15,7 @@ public distinct class Map {
     # The init function of the Ballerina class mapping the `java.util.Map` Java interface.
     #
     # + obj - The `handle` value containing the Java reference of the object.
-    public function init(handle obj) {
+    public isolated function init(handle obj) {
         self.jObj = obj;
     }
 
@@ -107,7 +107,7 @@ public distinct class Map {
     #
     # + arg0 - The `javalang:Object` value required to map with the Java method parameter.
     # + return - The `javalang:Object` value returning from the Java mapping.
-    public function get(javalang:Object arg0) returns javalang:Object {
+    public isolated function get(javalang:Object arg0) returns javalang:Object {
         handle externalObj = java_util_Map_get(self.jObj, arg0.jObj);
         javalang:Object newObj = new (externalObj);
         return newObj;
@@ -559,7 +559,7 @@ function java_util_Map_forEach(handle receiver, handle arg0) = @java:Method {
     paramTypes: ["java.util.function.BiConsumer"]
 } external;
 
-function java_util_Map_get(handle receiver, handle arg0) returns handle = @java:Method {
+isolated function java_util_Map_get(handle receiver, handle arg0) returns handle = @java:Method {
     name: "get",
     'class: "java.util.Map",
     paramTypes: ["java.lang.Object"]

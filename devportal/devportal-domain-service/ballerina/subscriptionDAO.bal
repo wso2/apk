@@ -19,16 +19,16 @@
 import ballerina/log;
 import ballerinax/postgresql;
 import ballerina/sql;
-
+import wso2/apk_common_lib as commons;
 #  DAO for GET Subscription plan
 #
 # + policyName -   Policy Name
 # + return -      Policy ID
-public isolated function getBusinessPlanByNameDAO(string policyName, string org) returns string|APKError|NotFoundError {
+public isolated function getBusinessPlanByNameDAO(string policyName, string org) returns string|commons:APKError|NotFoundError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
-        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode =500);
     } else {
         sql:ParameterizedQuery query = `SELECT UUID FROM BUSINESS_PLAN WHERE NAME =${policyName} AND ORGANIZATION =${org}`;
         string| sql:Error result =  dbClient->queryRow(query);
@@ -42,16 +42,16 @@ public isolated function getBusinessPlanByNameDAO(string policyName, string org)
         } else {
             log:printDebug(result.toString());
             string message = "Error while retrieving Business Plan";
-            return error(message, result, message = message, description = message, code = 909000, statusCode = "500");
+            return error(message, result, message = message, description = message, code = 909000, statusCode = 500);
         }
     }
 }
 
-isolated function addSubscriptionDAO(Subscription sub, string user, string apiId, string appId) returns Subscription|APKError {
+isolated function addSubscriptionDAO(Subscription sub, string user, string apiId, string appId) returns Subscription|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
-        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = 500);
     } else {
         // check existing subscriptions
         sql:ParameterizedQuery existingCheckQuery = `SELECT SUB_STATUS, SUBS_CREATE_STATE FROM SUBSCRIPTION 
@@ -62,11 +62,11 @@ isolated function addSubscriptionDAO(Subscription sub, string user, string apiId
         } else if existingCheckResult is Subscription {
             log:printDebug(existingCheckResult.toString());
             string message = "Subscription Already exists";
-            return error(message, message = message, description = message, code = 909000, statusCode = "500");
+            return error(message, message = message, description = message, code = 909000, statusCode = 500);
         } else {
             log:printDebug(existingCheckResult.toString());
             string message = "Error while checking exisiting subscriptions";
-            return error(message, existingCheckResult, message = message, description = message, code = 909000, statusCode = "500");
+            return error(message, existingCheckResult, message = message, description = message, code = 909000, statusCode = 500);
         }
         var Tier_ID = "unlimited";
 
@@ -82,16 +82,16 @@ isolated function addSubscriptionDAO(Subscription sub, string user, string apiId
         } else {
             log:printDebug(result.toString());
             string message = "Error while inserting data into Database";
-            return error(message, result, message = message, description = message, code = 909000, statusCode = "500");
+            return error(message, result, message = message, description = message, code = 909000, statusCode = 500);
         }
     }
 }
 
-isolated function getSubscriptionByIdDAO(string subId, string org) returns Subscription|NotFoundError|APKError {
+isolated function getSubscriptionByIdDAO(string subId, string org) returns Subscription|NotFoundError|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
-        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = 500);
     } else {
         sql:ParameterizedQuery query = `SELECT 
         SUBS.UUID AS SUBSCRIPTION_ID, 
@@ -120,16 +120,16 @@ isolated function getSubscriptionByIdDAO(string subId, string org) returns Subsc
         } else {
             log:printDebug(result.toString());
             string message = "Error while retrieving Subscription";
-            return error(message, result, message = message, description = message, code = 909000, statusCode = "500");
+            return error(message, result, message = message, description = message, code = 909000, statusCode = 500);
         }
     }
 }
 
-isolated function deleteSubscriptionDAO(string subId, string org) returns APKError|string {
+isolated function deleteSubscriptionDAO(string subId, string org) returns commons:APKError|string {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
-        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = 500);
     } else {
         sql:ParameterizedQuery query = `DELETE FROM SUBSCRIPTION WHERE UUID = ${subId}`;
         sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
@@ -138,16 +138,16 @@ isolated function deleteSubscriptionDAO(string subId, string org) returns APKErr
         } else {
             log:printDebug(result.toString());
             string message = "Error while deleting data record in the Database";
-            return error(message, result, message = message, description = message, code = 909000, statusCode = "500");
+            return error(message, result, message = message, description = message, code = 909000, statusCode = 500);
         }
     }
 }
 
-isolated function updateSubscriptionDAO(Subscription sub, string user, string apiId, string appId) returns Subscription|APKError {
+isolated function updateSubscriptionDAO(Subscription sub, string user, string apiId, string appId) returns Subscription|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
-        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = 500);
     } else {
         var Tier_ID = "unlimited";
         // Update Policy of a subscription in SUBSCRIPTION table
@@ -161,16 +161,16 @@ isolated function updateSubscriptionDAO(Subscription sub, string user, string ap
         } else {
             log:printError(result.toString());
             string message = "Error while updating data record in Database";
-            return error(message, result, message = message, description = message, code = 909000, statusCode = "500");
+            return error(message, result, message = message, description = message, code = 909000, statusCode = 500);
         }
     }
 }
 
-isolated function getSubscriptionByAPIandAppIdDAO(string apiId, string appId, string org) returns Subscription|APKError|NotFoundError {
+isolated function getSubscriptionByAPIandAppIdDAO(string apiId, string appId, string org) returns Subscription|commons:APKError|NotFoundError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
-        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = 500);
     } else {
         sql:ParameterizedQuery query = `SELECT 
         SUBS.UUID AS SUBSCRIPTION_ID, 
@@ -199,16 +199,16 @@ isolated function getSubscriptionByAPIandAppIdDAO(string apiId, string appId, st
         } else {
             log:printDebug(result.toString());
             string message = "Error while retrieving Subscription";
-            return error(message, result, message = message, description = message, code = 909007, statusCode = "500");
+            return error(message, result, message = message, description = message, code = 909007, statusCode = 500);
         }
     }
 }
 
-isolated function getSubscriptionsByAPIIdDAO(string apiId, string org) returns Subscription[]|APKError {
+isolated function getSubscriptionsByAPIIdDAO(string apiId, string org) returns Subscription[]|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
-        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = 500);
     } else {
         do {
             sql:ParameterizedQuery query = `SELECT 
@@ -233,16 +233,16 @@ isolated function getSubscriptionsByAPIIdDAO(string apiId, string org) returns S
             return subscriptions;
         } on fail var e {
             string message = "Internal Error occured while retrieving Subscription By API Id";
-            return error(message, e, message = message, description = message, code = 909001, statusCode = "500");
+            return error(message, e, message = message, description = message, code = 909001, statusCode = 500);
         }     
     }
 }
 
-isolated function getSubscriptionsByAPPIdDAO(string appId, string org) returns Subscription[]|APKError {
+isolated function getSubscriptionsByAPPIdDAO(string appId, string org) returns Subscription[]|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
-        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = 500);
     } else {
         do {
             sql:ParameterizedQuery query = `SELECT 
@@ -267,16 +267,16 @@ isolated function getSubscriptionsByAPPIdDAO(string appId, string org) returns S
             return subscriptions;
         } on fail var e {
             string message = "Internal Error occured while retrieving Subscription By Application Id";
-            return error(message, e, message = message, description = message, code = 909001, statusCode = "500");
+            return error(message, e, message = message, description = message, code = 909001, statusCode = 500);
         }  
     }
 }
 
-isolated function getSubscriptionsList(string org) returns Subscription[]|APKError {
+isolated function getSubscriptionsList(string org) returns Subscription[]|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
-        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = 500);
     } else {
         do {
             sql:ParameterizedQuery query = `SELECT 
@@ -302,7 +302,7 @@ isolated function getSubscriptionsList(string org) returns Subscription[]|APKErr
             return subscriptions;
         } on fail var e {
             string message = "Internal Error occured while retrieving Subscriptions";
-            return error(message, e, message = message, description = message, code = 909001, statusCode = "500");
+            return error(message, e, message = message, description = message, code = 909001, statusCode = 500);
         }  
     }
 }

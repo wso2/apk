@@ -1,6 +1,7 @@
 import apk_keymanager_libs;
 import ballerina/uuid;
 import ballerina/lang.value;
+import ballerina/log;
 import wso2/apk_common_lib as commons;
 
 public class KeyManagerClient {
@@ -23,72 +24,83 @@ public class KeyManagerClient {
             return e909437();
         }
         // add key manager entry.
-        KeyManagerDaoEntry keyManagerDtoToInsert = self.fromKeyManagerModelToKeyManagerDaoEntry(keyManager);
+        KeyManagerDaoEntry keyManagerDtoToInsert = check self.fromKeyManagerModelToKeyManagerDaoEntry(keyManager);
         _ = check addKeyManagerEntry(keyManagerDtoToInsert, organization);
         return check self.getKeyManagerById(<string>keyManagerDtoToInsert.uuid, organization);
     }
-    private isolated function fromKeyManagerModelToKeyManagerDaoEntry(KeyManager keyManager) returns KeyManagerDaoEntry {
-
-        KeyManagerDaoEntry keyManagerDTO = {
-            name: keyManager.name,
-            'type: keyManager.'type,
-            issuer: <string>keyManager.issuer,
-            enabled: keyManager.enabled ?: true,
-            description: keyManager.description
-        };
-        if keyManager.id is () {
-            keyManagerDTO.uuid = uuid:createType1AsString();
-        } else {
-            keyManagerDTO.uuid = keyManager.id;
-        }
-        record {} additionalProperties = {};
-        additionalProperties = keyManager.additionalProperties.clone() ?: {};
-        KeyManagerEndpoint[]? endpoints = keyManager.endpoints;
-        if endpoints is KeyManagerEndpoint[] {
-            foreach KeyManagerEndpoint item in endpoints {
-                record {} defineEndpoints = {};
-                if (additionalProperties.hasKey("endpoints")) {
-                    defineEndpoints = <record {|anydata...;|}>additionalProperties.get("endpoints");
-                }else{
-                    additionalProperties["endpoints"] = defineEndpoints;
+    private isolated function fromKeyManagerModelToKeyManagerDaoEntry(KeyManager keyManager) returns KeyManagerDaoEntry|commons:APKError {
+        do {
+            KeyManagerDaoEntry keyManagerDTO = {
+                name: keyManager.name,
+                'type: keyManager.'type,
+                issuer: <string>keyManager.issuer,
+                enabled: keyManager.enabled,
+                description: keyManager.description
+            };
+            if keyManager.id is () {
+                keyManagerDTO.uuid = uuid:createType1AsString();
+            } else {
+                keyManagerDTO.uuid = keyManager.id;
+            }
+            record {} additionalProperties = {};
+            additionalProperties = keyManager.additionalProperties.clone() ?: {};
+            KeyManagerEndpoint[]? endpoints = keyManager.endpoints;
+            if endpoints is KeyManagerEndpoint[] {
+                foreach KeyManagerEndpoint item in endpoints {
+                    record {} defineEndpoints = {};
+                    if (additionalProperties.hasKey("endpoints")) {
+                        defineEndpoints = <record {|anydata...;|}>additionalProperties.get("endpoints");
+                    } else {
+                        additionalProperties["endpoints"] = defineEndpoints;
+                    }
+                    defineEndpoints[item.name] = item.value;
                 }
-                defineEndpoints[item.name] = item.value;
             }
-        }
-        string[]? availableGrantTypes = keyManager.availableGrantTypes;
-        if availableGrantTypes is string[] {
-            foreach string grantType in availableGrantTypes {
-                string[] grantTypes = [];
-                if (additionalProperties.hasKey("grantTypes")) {
-                    grantTypes = <string[]>additionalProperties.get("grantTypes");
+            string[]? availableGrantTypes = keyManager.availableGrantTypes;
+            if availableGrantTypes is string[] {
+                foreach string grantType in availableGrantTypes {
+                    string[] grantTypes = [];
+                    if (additionalProperties.hasKey("grantTypes")) {
+                        grantTypes = <string[]>additionalProperties.get("grantTypes");
+                    }
+                    grantTypes.push(grantType);
                 }
-                grantTypes.push(grantType);
             }
-        }
-        if keyManager.consumerKeyClaim is string {
-            additionalProperties["consumerKeyClaim"] = keyManager.consumerKeyClaim;
-        }
-        if keyManager.scopesClaim is string {
-            additionalProperties["scopesClaim"] = keyManager.scopesClaim;
-        }
-        KeyManager_certificates? certificates = keyManager.certificates;
-        if certificates is KeyManager_certificates {
-            if certificates.'type is string {
-                additionalProperties["certificate_type"] = certificates.'type;
+            if keyManager.consumerKeyClaim is string {
+                additionalProperties["consumerKeyClaim"] = keyManager.consumerKeyClaim;
             }
-            if certificates.value is string {
-                additionalProperties["certificate_value"] = certificates.value;
+            if keyManager.scopesClaim is string {
+                additionalProperties["scopesClaim"] = keyManager.scopesClaim;
             }
+            KeyManager_signingCertificate? certificates = keyManager.signingCertificate;
+            if certificates is KeyManager_signingCertificate {
+                if certificates.'type is string {
+                    additionalProperties["signing_certificate_type"] = certificates.'type;
+                }
+                string? certificateValue = certificates.value;
+                if certificateValue is string {
+                    if certificates.'type == "JWKS" {
+                        additionalProperties["signing_certificate_value"] = certificateValue;
+                    } else {
+                        byte[] encodedBytes = check commons:EncoderUtil_encodeBase64(certificateValue.toBytes());
+                        additionalProperties["signing_certificate_value"] = check string:fromBytes(encodedBytes);
+                    }
+                    additionalProperties["signing_certificate_value"] = certificateValue;
+                }
+            }
+            additionalProperties["mapOAuthConsumerApps"] = keyManager.enableMapOAuthConsumerApps;
+            additionalProperties["enableTokenGeneration"] = keyManager.enableTokenGeneration;
+            additionalProperties["enableOauthAppCreation"] = keyManager.enableOAuthAppCreation;
+            keyManagerDTO.configuration = additionalProperties.toJsonString().toBytes();
+            return keyManagerDTO;
+        } on fail var e {
+            log:printError("Error while converting key manager model to key manager dto: " + e.message());
+            return e909438(e);
         }
-        additionalProperties["mapOAuthConsumerApps"] = keyManager.enableMapOAuthConsumerApps is boolean ? keyManager.enableMapOAuthConsumerApps : true;
-        additionalProperties["enableTokenGeneration"] = keyManager.enableTokenGeneration is boolean ? keyManager.enableTokenGeneration : true;
-        additionalProperties["enableOauthAppCreation"] = keyManager.enableOAuthAppCreation is boolean ? keyManager.enableOAuthAppCreation : true;
-        keyManagerDTO.configuration = additionalProperties.toJsonString().toBytes();
-        return keyManagerDTO;
     }
     private isolated function validateKeyManagerConfigurations(KeyManager keyManagerConfiguration, apk_keymanager_libs:KeyManagerConfigurations keyManagerConnectorConfigurations) returns boolean {
-        KeyManager_certificates? certificates = keyManagerConfiguration.certificates;
-        if certificates is KeyManager_certificates {
+        KeyManager_signingCertificate? certificates = keyManagerConfiguration.signingCertificate;
+        if certificates is KeyManager_signingCertificate {
             if certificates.'type is () || certificates.value is () {
                 return false;
             }
@@ -166,14 +178,14 @@ public class KeyManagerClient {
         return self.fromKeyManagerDaoEntryToKeyManagerModel(keyManagerEntry);
     }
     public isolated function updateKeyManager(string id, KeyManager updatedKeyManager, commons:Organization organization) returns KeyManager|commons:APKError {
-        KeyManagerDaoEntry keyManagerEntry = check getKeyManagerById(id,organization);
-        KeyManagerDaoEntry updatedKeyManagerEntry = self.fromKeyManagerModelToKeyManagerDaoEntry(updatedKeyManager);
-        check updateKeyManager(id,updatedKeyManagerEntry, organization);
+        KeyManagerDaoEntry keyManagerEntry = check getKeyManagerById(id, organization);
+        KeyManagerDaoEntry updatedKeyManagerEntry = check self.fromKeyManagerModelToKeyManagerDaoEntry(updatedKeyManager);
+        check updateKeyManager(id, updatedKeyManagerEntry, organization);
         return self.getKeyManagerById(id, organization);
     }
-    public isolated function deleteKeyManager(string id,commons:Organization organization) returns commons:APKError?{
-        KeyManagerDaoEntry keyManagerEntry = check getKeyManagerById(id,organization);
-        check deleteKeyManager(id,organization);
+    public isolated function deleteKeyManager(string id, commons:Organization organization) returns commons:APKError? {
+        KeyManagerDaoEntry keyManagerEntry = check getKeyManagerById(id, organization);
+        check deleteKeyManager(id, organization);
     }
     private isolated function fromKeyManagerDaoEntryToKeyManagerModel(KeyManagerDaoEntry keyManagerDaoEntry) returns KeyManager|commons:APKError {
         do {
@@ -214,18 +226,29 @@ public class KeyManagerClient {
                 keymanager.scopesClaim = <string>additionalProperties.get("scopesClaim");
                 _ = additionalProperties.removeIfHasKey("scopesClaim");
             }
-            if additionalProperties.hasKey("certificate_type") {
-                string certificateType = <string>additionalProperties.get("certificate_type");
-                if additionalProperties.hasKey("certificate_value") {
-                    string certificateValue = <string>additionalProperties.get("certificate_value");
-                    KeyManager_certificates certificates = {
+            if additionalProperties.hasKey("signing_certificate_type") {
+                string certificateType = <string>additionalProperties.get("signing_certificate_type");
+                if additionalProperties.hasKey("signing_certificate_value") {
+                    string certificateValue = <string>additionalProperties.get("signing_certificate_value");
+                    if certificateType == "PEM" {
+                        byte[] encodedBytes = check commons:EncoderUtil_decodeBase64(certificateValue.toBytes());
+                        certificateValue = check string:fromBytes(encodedBytes);
+                    }
+                    KeyManager_signingCertificate certificates = {
                         'type: certificateType,
                         value: certificateValue
                     };
-                    keymanager.certificates = certificates;
-                    _ = additionalProperties.removeIfHasKey("certificate_type");
-                    _ = additionalProperties.removeIfHasKey("certificate_value");
+                    keymanager.signingCertificate = certificates;
                 }
+                _ = additionalProperties.removeIfHasKey("signing_certificate_type");
+                _ = additionalProperties.removeIfHasKey("signing_certificate_value");
+            }
+            if additionalProperties.hasKey("tls_certificate") {
+                _ = additionalProperties.removeIfHasKey("tls_certificate");
+                string certificateValue = <string>additionalProperties.get("tls_certificate");
+                byte[] encodedBytes = check commons:EncoderUtil_decodeBase64(certificateValue.toBytes());
+                certificateValue = check string:fromBytes(encodedBytes);
+                keymanager.tlsCertficate = certificateValue;
             }
             if additionalProperties.hasKey("mapOAuthConsumerApps") {
                 keymanager.enableMapOAuthConsumerApps = <boolean>additionalProperties.get("mapOAuthConsumerApps");
@@ -245,6 +268,5 @@ public class KeyManagerClient {
             return e909438(e);
         }
     }
-
 }
 
