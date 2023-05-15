@@ -64,6 +64,19 @@ type EnvoyInternalAPI struct {
 	enforcerAPI        types.Resource
 }
 
+// EnforcerInternalAPI struct use to hold enforcer resources
+type EnforcerInternalAPI struct {
+	configs                []types.Resource
+	keyManagers            []types.Resource
+	subscriptions          []types.Resource
+	applications           []types.Resource
+	apiList                []types.Resource
+	applicationPolicies    []types.Resource
+	subscriptionPolicies   []types.Resource
+	applicationKeyMappings []types.Resource
+	revokedTokens          []types.Resource
+}
+
 var (
 	// TODO: (VirajSalaka) Remove Unused mutexes.
 	mutexForXdsUpdate         sync.Mutex
@@ -81,7 +94,7 @@ var (
 	enforcerRevokedTokensCache         wso2_cache.SnapshotCache
 	enforcerThrottleDataCache          wso2_cache.SnapshotCache
 
-	orgAPIMap map[string]map[string]EnvoyInternalAPI // organizationID -> Vhost:API_UUID -> EnvoyInternalAPI struct map
+	orgAPIMap map[string]map[string]*EnvoyInternalAPI // organizationID -> Vhost:API_UUID -> EnvoyInternalAPI struct map
 
 	orgIDvHostBasepathMap map[string]map[string]string   // organizationID -> Vhost:basepath -> Vhost:API_UUID
 	orgIDAPIvHostsMap     map[string]map[string][]string // organizationID -> UUID -> prod/sand -> Envoy Vhost Array map
@@ -97,15 +110,8 @@ var (
 	listenerToRouteArrayMap map[string][]*routev3.Route // Listener -> Routes map
 
 	// Common Enforcer Label as map key
-	enforcerConfigMap                map[string][]types.Resource
-	enforcerKeyManagerMap            map[string][]types.Resource
-	enforcerSubscriptionMap          map[string][]types.Resource
-	enforcerApplicationMap           map[string][]types.Resource
-	enforcerAPIListMap               map[string][]types.Resource
-	enforcerApplicationPolicyMap     map[string][]types.Resource
-	enforcerSubscriptionPolicyMap    map[string][]types.Resource
-	enforcerApplicationKeyMappingMap map[string][]types.Resource
-	enforcerRevokedTokensMap         map[string][]types.Resource
+	// TODO(amali) This doesn't have a usage yet. It will be used to handle multiple enforcer labels in future.
+	enforcerLabelMap map[string]*EnforcerInternalAPI // Enforcer Label -> EnforcerInternalAPI struct map
 
 	// KeyManagerList to store data
 	KeyManagerList = make([]eventhubTypes.KeyManager, 0)
@@ -156,19 +162,11 @@ func init() {
 	listenerToRouteArrayMap = make(map[string][]*routev3.Route)
 	customRateLimitPoliciesMap = make(map[string][]*model.CustomRateLimitPolicy)
 
-	orgAPIMap = make(map[string]map[string]EnvoyInternalAPI)
+	orgAPIMap = make(map[string]map[string]*EnvoyInternalAPI)
 	orgIDAPIvHostsMap = make(map[string]map[string][]string) // organizationID -> UUID-prod/sand -> Envoy Vhost Array map
 	orgIDvHostBasepathMap = make(map[string]map[string]string)
 
-	enforcerConfigMap = make(map[string][]types.Resource)
-	enforcerKeyManagerMap = make(map[string][]types.Resource)
-	enforcerSubscriptionMap = make(map[string][]types.Resource)
-	enforcerApplicationMap = make(map[string][]types.Resource)
-	enforcerAPIListMap = make(map[string][]types.Resource)
-	enforcerApplicationPolicyMap = make(map[string][]types.Resource)
-	enforcerSubscriptionPolicyMap = make(map[string][]types.Resource)
-	enforcerApplicationKeyMappingMap = make(map[string][]types.Resource)
-	enforcerRevokedTokensMap = make(map[string][]types.Resource)
+	enforcerLabelMap = make(map[string]*EnforcerInternalAPI)
 	rand.Seed(time.Now().UnixNano())
 	// go watchEnforcerResponse()
 }
@@ -274,9 +272,7 @@ func deleteAPI(apiIdentifier string, environments []string, organizationID strin
 		isAllowedToDelete := stringutils.StringInSlice(val, existingLabels)
 		if isAllowedToDelete {
 			// do not delete from all environments, hence do not clear routes, clusters, endpoints, enforcerAPIs
-			orgAPI := orgAPIMap[organizationID][apiIdentifier]
-			orgAPI.envoyLabels = toBeKeptEnvs
-			orgAPIMap[organizationID][apiIdentifier] = orgAPI
+			orgAPIMap[organizationID][apiIdentifier].envoyLabels = toBeKeptEnvs
 			updateXdsCacheOnAPIChange(toBeDelEnvs, []string{})
 			if len(toBeKeptEnvs) != 0 {
 				return nil
@@ -484,16 +480,12 @@ func GenerateGlobalClustersWithInterceptors(label string,
 
 	if gwReqICluster != nil && len(gwReqIAddresses) > 0 {
 		clusters = append(clusters, gwReqICluster)
-		for _, ep := range gwReqIAddresses {
-			endpoints = append(endpoints, ep)
-		}
+		endpoints = append(endpoints, gwReqIAddresses...)
 	}
 
 	if gwResICluster != nil && len(gwResIAddresses) > 0 {
 		clusters = append(clusters, gwResICluster)
-		for _, ep := range gwResIAddresses {
-			endpoints = append(endpoints, ep)
-		}
+		endpoints = append(endpoints, gwResIAddresses...)
 	}
 
 	envoyClusterConfigMap[label] = clusters
@@ -550,7 +542,7 @@ func UpdateEnforcerConfig(configFile *config.Config) {
 		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1414, errSetSnap.Error()))
 	}
 
-	enforcerConfigMap[label] = configs
+	enforcerLabelMap[label].configs = configs
 	logger.LoggerXds.Infof("New Config cache update for the label: " + label + " version: " + fmt.Sprint(version))
 }
 
@@ -595,8 +587,7 @@ func UpdateEnforcerSubscriptions(subscriptions *subscription.SubscriptionList) {
 	//TODO: (Dinusha) check this hardcoded value
 	logger.LoggerXds.Debug("Updating Enforcer Subscription Cache")
 	label := commonEnforcerLabel
-	subscriptionList := enforcerSubscriptionMap[label]
-	subscriptionList = append(subscriptionList, subscriptions)
+	subscriptionList := append(enforcerLabelMap[label].subscriptions, subscriptions)
 
 	// TODO: (VirajSalaka) Decide if a map is required to keep version (just to avoid having the same version)
 	version := rand.Intn(maxRandomInt)
@@ -609,7 +600,7 @@ func UpdateEnforcerSubscriptions(subscriptions *subscription.SubscriptionList) {
 	if errSetSnap != nil {
 		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1414, errSetSnap.Error()))
 	}
-	enforcerSubscriptionMap[label] = subscriptionList
+	enforcerLabelMap[label].subscriptions = subscriptionList
 	logger.LoggerXds.Infof("New Subscription cache update for the label: " + label + " version: " + fmt.Sprint(version))
 }
 
@@ -617,8 +608,7 @@ func UpdateEnforcerSubscriptions(subscriptions *subscription.SubscriptionList) {
 func UpdateEnforcerApplications(applications *subscription.ApplicationList) {
 	logger.LoggerXds.Debug("Updating Enforcer Application Cache")
 	label := commonEnforcerLabel
-	applicationList := enforcerApplicationMap[label]
-	applicationList = append(applicationList, applications)
+	applicationList := append(enforcerLabelMap[label].applications, applications)
 
 	version := rand.Intn(maxRandomInt)
 	snap, _ := wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
@@ -630,16 +620,14 @@ func UpdateEnforcerApplications(applications *subscription.ApplicationList) {
 	if errSetSnap != nil {
 		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1414, errSetSnap.Error()))
 	}
-	enforcerApplicationMap[label] = applicationList
+	enforcerLabelMap[label].applications = applicationList
 	logger.LoggerXds.Infof("New Application cache update for the label: " + label + " version: " + fmt.Sprint(version))
 }
 
 // UpdateEnforcerAPIList sets new update to the enforcer's Apis
 func UpdateEnforcerAPIList(label string, apis *subscription.APIList) {
 	logger.LoggerXds.Debug("Updating Enforcer API Cache")
-	apiList := enforcerAPIListMap[label]
-	apiList = append(apiList, apis)
-	logger.LoggerXds.Debug("subAPIs: %v", apis)
+	apiList := append(enforcerLabelMap[label].apiList, apis)
 
 	version := rand.Intn(maxRandomInt)
 	snap, _ := wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
@@ -651,7 +639,7 @@ func UpdateEnforcerAPIList(label string, apis *subscription.APIList) {
 	if errSetSnap != nil {
 		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1414, errSetSnap.Error()))
 	}
-	enforcerAPIListMap[label] = apiList
+	enforcerLabelMap[label].apiList = apiList
 	logger.LoggerXds.Infof("New API List cache update for the label: " + label + " version: " + fmt.Sprint(version))
 }
 
@@ -659,8 +647,7 @@ func UpdateEnforcerAPIList(label string, apis *subscription.APIList) {
 func UpdateEnforcerApplicationPolicies(applicationPolicies *subscription.ApplicationPolicyList) {
 	logger.LoggerXds.Debug("Updating Enforcer Application Policy Cache")
 	label := commonEnforcerLabel
-	applicationPolicyList := enforcerApplicationPolicyMap[label]
-	applicationPolicyList = append(applicationPolicyList, applicationPolicies)
+	applicationPolicyList := append(enforcerLabelMap[label].applicationPolicies, applicationPolicies)
 
 	version := rand.Intn(maxRandomInt)
 	snap, _ := wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
@@ -672,7 +659,7 @@ func UpdateEnforcerApplicationPolicies(applicationPolicies *subscription.Applica
 	if errSetSnap != nil {
 		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1414, errSetSnap.Error()))
 	}
-	enforcerApplicationPolicyMap[label] = applicationPolicyList
+	enforcerLabelMap[label].subscriptionPolicies = applicationPolicyList
 	logger.LoggerXds.Infof("New Application Policy cache update for the label: " + label + " version: " + fmt.Sprint(version))
 }
 
@@ -680,8 +667,7 @@ func UpdateEnforcerApplicationPolicies(applicationPolicies *subscription.Applica
 func UpdateEnforcerSubscriptionPolicies(subscriptionPolicies *subscription.SubscriptionPolicyList) {
 	logger.LoggerXds.Debug("Updating Enforcer Subscription Policy Cache")
 	label := commonEnforcerLabel
-	subscriptionPolicyList := enforcerSubscriptionPolicyMap[label]
-	subscriptionPolicyList = append(subscriptionPolicyList, subscriptionPolicies)
+	subscriptionPolicyList := append(enforcerLabelMap[label].subscriptionPolicies, subscriptionPolicies)
 
 	version := rand.Intn(maxRandomInt)
 	snap, _ := wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
@@ -693,7 +679,7 @@ func UpdateEnforcerSubscriptionPolicies(subscriptionPolicies *subscription.Subsc
 	if errSetSnap != nil {
 		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1414, errSetSnap.Error()))
 	}
-	enforcerSubscriptionPolicyMap[label] = subscriptionPolicyList
+	enforcerLabelMap[label].subscriptionPolicies = subscriptionPolicyList
 	logger.LoggerXds.Infof("New Subscription Policy cache update for the label: " + label + " version: " + fmt.Sprint(version))
 }
 
@@ -701,8 +687,7 @@ func UpdateEnforcerSubscriptionPolicies(subscriptionPolicies *subscription.Subsc
 func UpdateEnforcerApplicationKeyMappings(applicationKeyMappings *subscription.ApplicationKeyMappingList) {
 	logger.LoggerXds.Debug("Updating Application Key Mapping Cache")
 	label := commonEnforcerLabel
-	applicationKeyMappingList := enforcerApplicationKeyMappingMap[label]
-	applicationKeyMappingList = append(applicationKeyMappingList, applicationKeyMappings)
+	applicationKeyMappingList := append(enforcerLabelMap[label].applicationKeyMappings, applicationKeyMappings)
 
 	version := rand.Intn(maxRandomInt)
 	snap, _ := wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
@@ -714,7 +699,7 @@ func UpdateEnforcerApplicationKeyMappings(applicationKeyMappings *subscription.A
 	if errSetSnap != nil {
 		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1414, errSetSnap.Error()))
 	}
-	enforcerApplicationKeyMappingMap[label] = applicationKeyMappingList
+	enforcerLabelMap[label].applicationKeyMappings = applicationKeyMappingList
 	logger.LoggerXds.Infof("New Application Key Mapping cache update for the label: " + label + " version: " + fmt.Sprint(version))
 }
 
@@ -789,7 +774,7 @@ func UpdateEnforcerKeyManagers(keyManagerConfigList []types.Resource) {
 	if errSetSnap != nil {
 		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1414, errSetSnap.Error()))
 	}
-	enforcerKeyManagerMap[label] = keyManagerConfigList
+	enforcerLabelMap[label].keyManagers = keyManagerConfigList
 	logger.LoggerXds.Infof("New key manager cache update for the label: " + label + " version: " + fmt.Sprint(version))
 }
 
@@ -798,8 +783,7 @@ func UpdateEnforcerKeyManagers(keyManagerConfigList []types.Resource) {
 func UpdateEnforcerRevokedTokens(revokedTokens []types.Resource) {
 	logger.LoggerXds.Debug("Updating enforcer cache for revoked tokens")
 	label := commonEnforcerLabel
-	tokens := enforcerRevokedTokensMap[label]
-	tokens = append(tokens, revokedTokens...)
+	tokens := append(enforcerLabelMap[label].revokedTokens, revokedTokens...)
 
 	version := rand.Intn(maxRandomInt)
 	snap, _ := wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
@@ -811,7 +795,7 @@ func UpdateEnforcerRevokedTokens(revokedTokens []types.Resource) {
 	if errSetSnap != nil {
 		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1414, errSetSnap.Error()))
 	}
-	enforcerRevokedTokensMap[label] = tokens
+	enforcerLabelMap[label].revokedTokens = tokens
 	logger.LoggerXds.Infof("New Revoked token cache update for the label: " + label + " version: " + fmt.Sprint(version))
 }
 
@@ -854,7 +838,10 @@ func UpdateAPICache(vHosts []string, newLabels []string, newlistenersForRoutes [
 	// Create internal mappigs for new vHosts
 	for _, vHost := range vHosts {
 		apiIdentifier := GenerateIdentifierForAPIWithUUID(vHost, adapterInternalAPI.UUID)
-		oldLabels := orgAPIMap[adapterInternalAPI.GetOrganizationID()][apiIdentifier].envoyLabels
+		var oldLabels []string
+		if orgAPIMap[adapterInternalAPI.GetOrganizationID()][apiIdentifier] != nil {
+			oldLabels = orgAPIMap[adapterInternalAPI.GetOrganizationID()][apiIdentifier].envoyLabels
+		}
 
 		routes, clusters, endpoints, err := oasParser.GetRoutesClustersEndpoints(adapterInternalAPI, nil,
 			vHost, adapterInternalAPI.GetOrganizationID())
@@ -864,9 +851,9 @@ func UpdateAPICache(vHosts []string, newLabels []string, newlistenersForRoutes [
 				adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), adapterInternalAPI.GetOrganizationID(), err.Error())
 		}
 		if _, ok := orgAPIMap[adapterInternalAPI.OrganizationID]; !ok {
-			orgAPIMap[adapterInternalAPI.GetOrganizationID()] = make(map[string]EnvoyInternalAPI)
+			orgAPIMap[adapterInternalAPI.GetOrganizationID()] = make(map[string]*EnvoyInternalAPI)
 		}
-		orgAPIMap[adapterInternalAPI.GetOrganizationID()][apiIdentifier] = EnvoyInternalAPI{
+		orgAPIMap[adapterInternalAPI.GetOrganizationID()][apiIdentifier] = &EnvoyInternalAPI{
 			adapterInternalAPI: adapterInternalAPI,
 			envoyLabels:        newLabels,
 			routes:             routes,

@@ -423,15 +423,15 @@ func TestGenerateRateLimitConfig(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.desc, func(t *testing.T) {
-			orgAPIMap = map[string]map[string]EnvoyInternalAPI{
+			orgAPIMap = map[string]map[string]*EnvoyInternalAPI{
 				"org1": {
-					"vhost1:2": EnvoyInternalAPI{
+					"vhost1:2": &EnvoyInternalAPI{
 						envoyLabels: []string{"Default"},
 					},
-					"vhost1:3": EnvoyInternalAPI{
+					"vhost1:3": &EnvoyInternalAPI{
 						envoyLabels: []string{"Dev"},
 					},
-					"vhost1:5": EnvoyInternalAPI{
+					"vhost1:5": &EnvoyInternalAPI{
 						envoyLabels: []string{"Default"},
 					},
 				},
