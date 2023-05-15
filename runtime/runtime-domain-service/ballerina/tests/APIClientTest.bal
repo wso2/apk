@@ -22,7 +22,6 @@ import ballerina/http;
 import runtime_domain_service.model as model;
 import wso2/apk_common_lib as commons;
 import runtime_domain_service.java.io;
-import runtime_domain_service.org.wso2.apk.runtime as runtimeUtil;
 
 commons:Organization organiztion1 = {
     name: "org1",
@@ -3609,7 +3608,7 @@ function getMockConfigMap1(string apiUniqueId, API api) returns model:ConfigMap|
 public function getBase64EncodedGzipContent(byte[] content) returns string|error {
     byte[]|io:IOException gzipUtilCompressGzipFile = check commons:GzipUtil_compressGzipFile(content);
     if gzipUtilCompressGzipFile is byte[] {
-        byte[] encoderUtilEncodeBase64 = check runtimeUtil:EncoderUtil_encodeBase64(gzipUtilCompressGzipFile);
+        byte[] encoderUtilEncodeBase64 = check commons:EncoderUtil_encodeBase64(gzipUtilCompressGzipFile);
         return string:fromBytes(encoderUtilEncodeBase64);
     } else {
         return error("Error while encoding the content");

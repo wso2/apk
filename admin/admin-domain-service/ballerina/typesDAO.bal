@@ -32,15 +32,3 @@ public type BusinessPlanDAO record {
     CustomAttribute[] customAttributes?;
     BusinessPlanPermission permissions?;
 };
-
-public type KeyManagerDTO record {
-    string id?;
-    string name;
-    string displayName?;
-    string 'type;
-    string description?;
-    KeyManager_certificates certificates?;
-    string issuer?;
-    boolean enabled?;
-    record{} additionalProperties?;
-};

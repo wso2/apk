@@ -108,7 +108,7 @@ public class APIClient {
                 }
             }
             if content is string {
-                byte[] base64DecodedGzipContent = check runtimeUtil:EncoderUtil_decodeBase64(content.toBytes());
+                byte[] base64DecodedGzipContent = check commons:EncoderUtil_decodeBase64(content.toBytes());
                 byte[]|javaio:IOException gzipUnCompressedContent = check commons:GzipUtil_decompressGzipFile(base64DecodedGzipContent);
                 if gzipUnCompressedContent is byte[] {
                     string definition = check string:fromBytes(gzipUnCompressedContent);
@@ -1443,7 +1443,8 @@ public class APIClient {
     private isolated function retrieveGeneratedConfigmapForDefinition(model:APIArtifact apiArtifact, API api, json generatedSwaggerDefinition, string uniqueId, commons:Organization organization) returns error? {
         byte[]|javaio:IOException compressedContent = check commons:GzipUtil_compressGzipFile(generatedSwaggerDefinition.toJsonString().toBytes());
         if compressedContent is byte[] {
-            byte[] base64EncodedContent = check runtimeUtil:EncoderUtil_encodeBase64(compressedContent);
+            
+            byte[] base64EncodedContent = check commons:EncoderUtil_encodeBase64(compressedContent);
             model:ConfigMap configMap = {
                 metadata: {
                     name: self.retrieveDefinitionName(uniqueId),

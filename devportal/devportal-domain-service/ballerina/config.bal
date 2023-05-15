@@ -69,3 +69,8 @@ public type ManagementServerConfiguration record {|
     string namespace = "apk";
     string certPath = "/home/wso2apk/devportal/security/truststore/management-server.pem";
 |};
+public type KeyManagerConfigs record {|
+    string serviceUrl = "";
+    string 'type;
+    string certPath?;
+    |};

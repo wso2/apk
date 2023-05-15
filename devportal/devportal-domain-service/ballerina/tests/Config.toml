@@ -1,5 +1,6 @@
 [wso2.devportal_service]
 DEVPORTAL_PORT = 9443
+keyManagerConntectorConfigurationFilePath = "tests/resources/keyManager-configs"
 
 [wso2.devportal_service.k8sConfig]
 host = "localhost:9090"

@@ -19,7 +19,7 @@
 import ballerina/io;
 import ballerina/http;
 import ballerina/log;
-
+import wso2/apk_common_lib as commons;
 const string K8S_API_ENDPOINT = "/api/v1";
 final string token = check io:fileReadString(k8sConfig.serviceAccountPath + "/token");
 final string caCertPath = k8sConfig.serviceAccountPath + "/ca.crt";
@@ -47,7 +47,7 @@ public function initializeK8sClient() returns http:Client|error {
 # + name - Name of Pod  
 # + namespace - Namespace of Pod
 # + return - Return Pod value for a given name and namespace
-isolated function getPodFromNameAndNamespace(string name, string namespace) returns string[]|APKError {
+isolated function getPodFromNameAndNamespace(string name, string namespace) returns string[]|commons:APKError {
     string endpoint = "/api/v1/namespaces/" + namespace + "/endpoints/" + name;
     http:Response|error response = k8sApiServerEp->get(endpoint, targetType = http:Response);
     if response is http:Response {
@@ -67,16 +67,16 @@ isolated function getPodFromNameAndNamespace(string name, string namespace) retu
             } on fail var e {
                 string message ="Error while retrieving host. Error while retrieving pod information for pod: " + name;
                 log:printError(message + e.toBalString());
-                return error(message,e, message = message, description = message, code = 909000, statusCode = "500");
+                return error(message,e, message = message, description = message, code = 909000, statusCode = 500);
             }
         } else {
             string message ="Response isn't a json. Error while retrieving pod information for pod: " + name;
             log:printError(message);
-            return error(message, message = message, description = message, code = 909000, statusCode = "500");
+            return error(message, message = message, description = message, code = 909000, statusCode = 500);
         }
     } else {
         string message ="Error while retrieving pod information for pod" + name;
         log:printError(message);
-        return error(message, message = message, description = message, code = 909000, statusCode = "500");
+        return error(message, message = message, description = message, code = 909000, statusCode = 500);
     }
 }

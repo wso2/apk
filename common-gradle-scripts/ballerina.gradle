@@ -74,7 +74,7 @@ task bal_pack(type: Exec) {
     group 'ballerina'
     description 'Pack ballerina code'
     commandLine 'bal', 'pack', '--sticky'
-    dependsOn 'bal_build'
+    // dependsOn 'bal_build'
 }
 task bal_push(type: Exec) {
     group 'ballerina'

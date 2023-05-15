@@ -51,7 +51,7 @@ public distinct class APIClientGenerationManager {
     # + arg6 - The `string` value required to map with the Java method parameter.
     # + arg7 - The `string` value required to map with the Java method parameter.
     # + return - The `javautil:Map` or the `APIClientGenerationException` value returning from the Java mapping.
-    public function generateSDK(string arg0, string arg1, string arg2, string arg3, string arg4, string arg5, string arg6, string arg7) returns javautil:Map|APIClientGenerationException {
+    public isolated function generateSDK(string arg0, string arg1, string arg2, string arg3, string arg4, string arg5, string arg6, string arg7) returns javautil:Map|APIClientGenerationException {
         handle|error externalObj = org_wso2_apk_devportal_sdk_APIClientGenerationManager_generateSDK(self.jObj, java:fromString(arg0), java:fromString(arg1), java:fromString(arg2), java:fromString(arg3), java:fromString(arg4), java:fromString(arg5), java:fromString(arg6), java:fromString(arg7));
         if (externalObj is error) {
             APIClientGenerationException e = error APIClientGenerationException(APICLIENTGENERATIONEXCEPTION, externalObj, message = externalObj.message());
@@ -154,7 +154,7 @@ function org_wso2_apk_devportal_sdk_APIClientGenerationManager_equals(handle rec
     paramTypes: ["java.lang.Object"]
 } external;
 
-function org_wso2_apk_devportal_sdk_APIClientGenerationManager_generateSDK(handle receiver, handle arg0, handle arg1, handle arg2, handle arg3, handle arg4, handle arg5, handle arg6, handle arg7) returns handle|error = @java:Method {
+isolated function org_wso2_apk_devportal_sdk_APIClientGenerationManager_generateSDK(handle receiver, handle arg0, handle arg1, handle arg2, handle arg3, handle arg4, handle arg5, handle arg6, handle arg7) returns handle|error = @java:Method {
     name: "generateSDK",
     'class: "org.wso2.apk.devportal.sdk.APIClientGenerationManager",
     paramTypes: ["java.lang.String", "java.lang.String", "java.lang.String", "java.lang.String", "java.lang.String", "java.lang.String", "java.lang.String", "java.lang.String"]

@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.apk.runtime;
+package org.wso2.apk.common;
 
 /**
  * This class is used to encode and decode the base64 strings.

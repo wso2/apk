@@ -88,17 +88,17 @@ function beforeFunc() {
         }
         }
     };
-    API|APKError createdAPI = createAPIDAO(body,organiztion.uuid);
+    API|commons:APKError createdAPI = createAPIDAO(body,organiztion.uuid);
     if createdAPI is API {
     test:assertTrue(true, "Successfully created API");
-        API|APKError createdAPIDefinition = addDefinitionDAO(body,organiztion.uuid);
+        API|commons:APKError createdAPIDefinition = addDefinitionDAO(body,organiztion.uuid);
         if createdAPIDefinition is API {
         test:assertTrue(true, "Successfully created API");
-        } else if createdAPIDefinition is  APKError {
+        } else if createdAPIDefinition is  commons:APKError {
             log:printError(createdAPIDefinition.toString());
             test:assertFail("Error occured while creating API");
         }
-    } else if createdAPI is  APKError {
+    } else if createdAPI is  commons:APKError {
         log:printError(createdAPI.toString());
         test:assertFail("Error occured while creating API");
     }
@@ -132,30 +132,30 @@ function beforeFunc2() returns error? {
 
 @test:Config {}
 function getAPIByIdTest(){
-    API|APKError|NotFoundError apiResponse = getAPIByAPIId("01ed75e2-b30b-18c8-wwf2-25da7edd2231");
+    API|commons:APKError|NotFoundError apiResponse =getAPIByAPIId("01ed75e2-b30b-18c8-wwf2-25da7edd2231");
     if apiResponse is API {
         test:assertTrue(true, "Successfully retrieved API");
-    } else if apiResponse is  APKError {
+    } else if apiResponse is  commons:APKError {
         test:assertFail("Error occured while retrieving API");
     }
 }
 
 @test:Config {}
 function getAPIListTest(){
-    APIList | APKError apiListReturned = getAPIList(25, 0, null, organiztion);
+    APIList | commons:APKError apiListReturned = getAPIList(25, 0, null, organiztion);
     if apiListReturned is APIList {
         test:assertTrue(true, "Successfully retrieved all APIs");
-    } else if apiListReturned is  APKError {
+    } else if apiListReturned is  commons:APKError {
         test:assertFail("Error occured while retrieving all APIs");
     }
 }
 
 @test:Config {}
 function getAPIListContentSearchTest1(){
-    APIList | APKError apiListReturned = getAPIList(25, 0, "content:pizza", organiztion);
+    APIList | commons:APKError apiListReturned = getAPIList(25, 0, "content:pizza", organiztion);
     if apiListReturned is APIList {
         test:assertTrue(true, "Successfully retrieved all APIs");
-    } else if apiListReturned is  APKError {
+    } else if apiListReturned is  commons:APKError {
         test:assertFail("Error occured while retrieving all APIs");
     }
 }
@@ -163,10 +163,10 @@ function getAPIListContentSearchTest1(){
 @test:Config {}
 function getAPIListContentSearchTest2(){
     //Invalid Search Query without "content:" keyword
-    APIList | APKError apiListReturned = getAPIList(25, 0, "pizza", organiztion);
+    APIList | commons:APKError apiListReturned = getAPIList(25, 0, "pizza", organiztion);
     if apiListReturned is APIList {
         test:assertFail("Successfully retrieved all APIs");
-    } else if apiListReturned is  APKError {
+    } else if apiListReturned is  commons:APKError {
         test:assertTrue(true,"Successfully Error occured while retrieving all APIs");
     }
 }
@@ -174,20 +174,20 @@ function getAPIListContentSearchTest2(){
 @test:Config {}
 function getAPIListContentSearchTest3(){
     //Invalid Search Query without ":" 
-    APIList | APKError apiListReturned = getAPIList(25, 0, "contentpizza", organiztion);
+    APIList | commons:APKError apiListReturned = getAPIList(25, 0, "contentpizza", organiztion);
     if apiListReturned is APIList {
         test:assertFail("Successfully retrieved all APIs");
-    } else if apiListReturned is  APKError {
+    } else if apiListReturned is  commons:APKError {
         test:assertTrue(true,"Successfully Error occured while retrieving all APIs");
     }
 }
 
 @test:Config {}
 function getAPIDefinitionByIdTest(){
-    APIDefinition|NotFoundError|APKError apiDefResponse = getAPIDefinition("01ed75e2-b30b-18c8-wwf2-25da7edd2231");
+    APIDefinition|NotFoundError|commons:APKError apiDefResponse = getAPIDefinition("01ed75e2-b30b-18c8-wwf2-25da7edd2231");
     if apiDefResponse is APIDefinition {
         test:assertTrue(true, "Successfully retrieved API Definition");
-    } else if apiDefResponse is  APKError {
+    } else if apiDefResponse is  commons:APKError {
         log:printError(apiDefResponse.toString());
         test:assertFail("Error occured while retrieving API");
     } else if apiDefResponse is  NotFoundError {
@@ -197,10 +197,10 @@ function getAPIDefinitionByIdTest(){
 
 @test:Config {}
 function getAPIDefinitionByIdNegativeTest(){
-    APIDefinition|NotFoundError|APKError apiDefResponse = getAPIDefinition("12sqwsqadasd");
+    APIDefinition|NotFoundError|commons:APKError apiDefResponse = getAPIDefinition("12sqwsqadasd");
     if apiDefResponse is APIDefinition {
         test:assertFail("Successfully retrieved API Definition");
-    } else if apiDefResponse is  APKError {
+    } else if apiDefResponse is  commons:APKError {
         test:assertFail("Error occured while retrieving API");
     } else if apiDefResponse is  NotFoundError {
         test:assertTrue(true,"Definition Not Found Error");
@@ -209,20 +209,20 @@ function getAPIDefinitionByIdNegativeTest(){
 
 @test:Config {}
 function generateSDKImplTest(){
-    http:Response|sdk:APIClientGenerationException|NotFoundError|APKError sdk = generateSDKImpl("01ed75e2-b30b-18c8-wwf2-25da7edd2231","java");
+    http:Response|sdk:APIClientGenerationException|NotFoundError|commons:APKError sdk = generateSDKImpl("01ed75e2-b30b-18c8-wwf2-25da7edd2231","java");
     if sdk is http:Response {
         test:assertTrue(true, "Successfully generated API SDK");
-    } else if sdk is sdk:APIClientGenerationException|APKError{
+    } else if sdk is sdk:APIClientGenerationException|commons:APKError{
         test:assertFail("Error while generating API SDK");
     }
 }
 
 @test:Config {}
 function generateSDKImplTestNegative(){
-    http:Response|sdk:APIClientGenerationException|NotFoundError|APKError sdk = generateSDKImpl("12sqwsqadasd","java");
+    http:Response|sdk:APIClientGenerationException|NotFoundError|commons:APKError sdk = generateSDKImpl("12sqwsqadasd","java");
     if sdk is http:Response {
         test:assertFail("Successfully generated API SDK");
-    } else if sdk is sdk:APIClientGenerationException|APKError {
+    } else if sdk is sdk:APIClientGenerationException|commons:APKError {
         test:assertTrue(true,"Error while generating API SDK");
     }
 }

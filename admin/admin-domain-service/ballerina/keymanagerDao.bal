@@ -62,7 +62,7 @@ isolated function getKeyManagerById(string id, commons:Organization organization
         KeyManagerDaoEntry|sql:Error result = dbClient->queryRow(query);
         if result is sql:NoRowsError {
             return e909439(id, organization.uuid);
-        } else if result is KeyManagerDTO {
+        } else if result is KeyManagerDaoEntry {
             return result;
         } else {
             log:printError("Error while getting key manager by id", result);

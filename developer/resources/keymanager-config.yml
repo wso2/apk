@@ -33,6 +33,8 @@ paths:
         - Configurations
       summary: Initialize Key Manager
       operationId: initializeKeyManager
+      parameters:
+        - $ref: "#/components/parameters/X-OrganizationId"
       requestBody:
           content:
             application/json:
@@ -48,11 +50,15 @@ paths:
                   initialized:
                     type: boolean
                     example: true
+        500:
+          $ref: "#/components/responses/InternalServerError"
     head:
       tags:
         - Configurations
       summary: Check Key Manager initialized
       operationId: checkInitialized
+      parameters:
+        - $ref: "#/components/parameters/X-OrganizationId"
       responses:
         200:
           description: Successful operation
@@ -63,6 +69,8 @@ paths:
                   initialized:
                     type: boolean
                     example: true
+        500:
+          $ref: "#/components/responses/InternalServerError"
 
   "/register":
     post:
@@ -70,11 +78,13 @@ paths:
         - Client Registration
       summary: Register Client.
       operationId: registerClient
+      parameters:
+        - $ref: "#/components/parameters/X-OrganizationId"
       requestBody:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/RegistrationRequest"
+                $ref: "#/components/schemas/ClientRegistrationRequest"
       responses:
         201:
           description: Successful operation
@@ -83,6 +93,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/ClientRegistrationResponse"  
 
+        500:
+          $ref: "#/components/responses/InternalServerError"
 
   "/register/{clientId}":
     get:
@@ -91,12 +103,8 @@ paths:
       summary: Get Client. 
       operationId: getClient
       parameters:
-        - name: clientId
-          in: path
-          description: Client Id
-          required: true
-          schema:
-            type: string
+        - $ref: "#/components/parameters/X-OrganizationId"
+        - $ref: "#/components/parameters/client_id"
       responses:
         200:
           description: Successful operation
@@ -104,18 +112,17 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ClientRegistrationResponse"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+
     put:
       tags:
         - Client Registration
       summary: Update Client
       operationId: updateClient
       parameters:
-        - name: clientId
-          in: path
-          description: Client Id
-          required: true
-          schema:
-            type: string
+        - $ref: "#/components/parameters/X-OrganizationId"
+        - $ref: "#/components/parameters/client_id"
       requestBody:
           content:
             application/json:
@@ -128,26 +135,42 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ClientRegistrationResponse"  
+        500:
+          $ref: "#/components/responses/InternalServerError"
+
     delete:
       tags:
         - Client Registration
       summary: Delete Client.
       operationId: deleteClient
       parameters:
-        - name: clientId
-          in: path
-          description: Client Id
-          required: true
-          schema:
-            type: string
+        - $ref: "#/components/parameters/X-OrganizationId"
+        - $ref: "#/components/parameters/client_id"
       responses:
         204:
           description: Successful operation
-
-
+        500:
+          $ref: "#/components/responses/InternalServerError"
 components:
+  parameters:
+    client_id:
+      name: client_id
+      in: query
+      description: Client Id
+      required: true
+      schema:
+        type: string
+        example: "test"
+    X-OrganizationId:
+      name: X-OrganizationId
+      in: header
+      description: Organization Id
+      required: true
+      schema:
+        type: string
+        example: "a3b58ccf-6ecc-4557-b5bb-0a35cce38256"
   schemas:
-    RegistrationRequest:
+    ClientRegistrationRequest:
       title: Client Registration Request
       type: object
       properties:
@@ -199,7 +222,7 @@ components:
     ClientRegistrationResponse:
       title: Client Registration Response
       allOf:
-        - $ref: "#/components/schemas/RegistrationRequest"
+        - $ref: "#/components/schemas/ClientRegistrationRequest"
         - type: object
           properties:
             client_secret:
@@ -219,7 +242,7 @@ components:
     ClientUpdateRequest:
       title: Client Update Request
       allOf:
-        - $ref: "#/components/schemas/RegistrationRequest"
+        - $ref: "#/components/schemas/ClientRegistrationRequest"
         - type: object
           properties:
             client_secret:
@@ -237,3 +260,60 @@ components:
           type: object
         configurations:
           type: object
+    Error:
+      title: Error object returned with 4XX HTTP status
+      required:
+        - code
+        - message
+      type: object
+      properties:
+        code:
+          type: integer
+          description: Error code
+          format: int64
+        message:
+          type: string
+          description: Error message.
+        description:
+          type: string
+          description: |
+            A detail description about the error message.
+        moreInfo:
+          type: string
+          description: |
+            Preferably an url with more details about the error.
+        error:
+          type: array
+          description: |
+            If there are more than one error list them out.
+            For example, list out validation errors by each field.
+          items:
+            $ref: '#/components/schemas/ErrorListItem'
+    ErrorListItem:
+      title: Description of individual errors that may have occurred during a request.
+      required:
+        - code
+        - message
+      type: object
+      properties:
+        code:
+          type: string
+          description: Error code
+        message:
+          type: string
+          description: |
+            Description about individual errors occurred
+  responses:
+    InternalServerError:
+      description: Internal Server Error.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 500
+            message: Internal Server Error
+            description: The server encountered an internal error. Please contact
+              administrator.
+            moreInfo: ""
+            error: []
