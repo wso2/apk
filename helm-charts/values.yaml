@@ -79,7 +79,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/devportal-domain-service:0.0.1-m9
+          image: wso2/devportal-domain-service:latest
       admin:
         deployment:
           resources:
@@ -100,7 +100,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/admin-domain-service:0.0.1-m9
+          image: wso2/admin-domain-service:latest
       backoffice:
         deployment:
           resources:
@@ -121,7 +121,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/backoffice-domain-service:0.0.1-m9
+          image: wso2/backoffice-domain-service:latest
       managementServer:
         deployment:
           resources:
@@ -223,7 +223,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/adapter:0.0.1-m9
+          image: wso2/adapter:latest
           security:
             sslHostname: "adapter"
         # configs:
@@ -284,7 +284,7 @@ wso2:
               failureThreshold: 5
             strategy: Recreate
             imagePullPolicy: Always
-            image: wso2/router:0.0.1-m9
+            image: wso2/router:latest
             # configs:
             #   tls:
             #     secretName: "router-cert"
@@ -308,7 +308,7 @@ wso2:
               failureThreshold: 5
             strategy: Recreate
             imagePullPolicy: Always
-            image: wso2/enforcer:0.0.1-m9
+            image: wso2/enforcer:latest
             security:
               sslHostname: "enforcer"
             # configs:
