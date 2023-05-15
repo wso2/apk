@@ -216,10 +216,9 @@ public class APIKeyAuthenticator extends APIKeyHandler {
                 }
                 validateAPIKeyRestrictions(payload, requestContext, apiContext, apiVersion);
                 APIKeyValidationInfoDTO validationInfoDto;
-                // todo(amali) check if the apikey should be validated against the subscription store
-//                    log.debug("Validating subscription for API Key against subscription store."
-//                            + " context: {} version: {}", apiContext, apiVersion);
-//                    validationInfoDto = KeyValidator.validateSubscription(apiUuid, apiContext, payload, envType);
+                log.debug("Validating subscription for API Key against subscription store."
+                        + " context: {} version: {}", apiContext, apiVersion);
+                validationInfoDto = KeyValidator.validateSubscription(apiUuid, apiContext, payload, envType);
                 if (apiKeySubValidationEnabled && !requestContext.getMatchedAPI().isSystemAPI()) {
                     log.debug("Validating subscription for API Key using JWT claims against invoked API info."
                             + " context: {} version: {}", apiContext, apiVersion);
@@ -320,12 +319,11 @@ public class APIKeyAuthenticator extends APIKeyHandler {
         validationInfoDTO.setType(requestContext.getMatchedAPI().getEnvType());
 
         if (app != null) {
-            validationInfoDTO.setApplicationId(app.getAsNumber(APIConstants.JwtTokenConstants.APPLICATION_ID)
-                    .intValue());
+            //validationInfoDTO.setApplicationId(app.getAsNumber(APIConstants.JwtTokenConstants.APPLICATION_ID).intValue());
             validationInfoDTO.setApplicationUUID(app.getAsString(APIConstants.JwtTokenConstants.APPLICATION_UUID));
             validationInfoDTO.setApplicationName(app.getAsString(APIConstants.JwtTokenConstants.APPLICATION_NAME));
             validationInfoDTO.setApplicationTier(app.getAsString(APIConstants.JwtTokenConstants.APPLICATION_TIER));
-            validationInfoDTO.setSubscriber(app.getAsString(APIConstants.JwtTokenConstants.APPLICATION_OWNER));
+            //validationInfoDTO.setSubscriber(app.getAsString(APIConstants.JwtTokenConstants.APPLICATION_OWNER));
         }
 
         // Check whether name is assigned correctly (This was not populated in JWTAuthenticator)

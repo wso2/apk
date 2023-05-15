@@ -168,8 +168,9 @@ public class KeyValidator {
         if (datastore != null) {
             api = datastore.getApiByContextAndVersion(uuid);
             if (api != null) {
-                key = datastore.getKeyMappingByKeyAndKeyManager(consumerKey, keyManager);
-                if (key != null) {
+                // TODO: (Sampath) Handle the scenario when App keys are generated properly and sent
+//                key = datastore.getKeyMappingByKeyAndKeyManager(consumerKey, keyManager);
+//                if (key != null) {
                     app = datastore.getApplicationById(key.getApplicationUUID());
                     if (app != null) {
                         sub = datastore.getSubscriptionById(app.getUUID(), api.getApiUUID());
@@ -184,9 +185,9 @@ public class KeyValidator {
                     } else {
                         log.info("Application not found in the data store for uuid " + key.getApplicationUUID());
                     }
-                } else {
-                    log.info("Application key mapping not found in the data store for id consumerKey " + consumerKey);
-                }
+//                } else {
+//                    log.info("Application key mapping not found in the data store for id consumerKey " + consumerKey);
+//                }
             } else {
                 log.info("API not found in the data store for API UUID :" + uuid);
             }
@@ -297,53 +298,51 @@ public class KeyValidator {
         }
         infoDTO.setTier(sub.getPolicyId());
         infoDTO.setSubscriber(app.getSubName());
-        infoDTO.setApplicationId(app.getId());
+        //infoDTO.setApplicationId(app.getId());
         infoDTO.setApplicationUUID(app.getUUID());
         infoDTO.setApiName(api.getApiName());
         infoDTO.setApiVersion(api.getApiVersion());
         infoDTO.setApiPublisher(api.getApiProvider());
         infoDTO.setApplicationName(app.getName());
         infoDTO.setApplicationTier(app.getPolicy());
-        infoDTO.setApplicationUUID(app.getUUID());
         infoDTO.setAppAttributes(app.getAttributes());
         infoDTO.setApiUUID(api.getApiUUID());
         infoDTO.setType(keyType);
         infoDTO.setSubscriberTenantDomain(app.getTenantDomain());
 
-        ApplicationPolicy appPolicy = datastore.getApplicationPolicyByName(app.getPolicy());
-        SubscriptionPolicy subPolicy = datastore.getSubscriptionPolicyByName(sub.getPolicyId());
-        ApiPolicy apiPolicy = datastore.getApiPolicyByName(api.getApiTier());
-        boolean isContentAware = appPolicy.isContentAware() || subPolicy.isContentAware() ||
-                (apiPolicy != null && apiPolicy.isContentAware());
-        infoDTO.setContentAware(isContentAware);
-
-        // TODO this must implement as a part of throttling implementation.
-        int spikeArrest = 0;
-        String apiLevelThrottlingKey = "api_level_throttling_key";
-
-        if (subPolicy.getRateLimitCount() > 0) {
-            spikeArrest = subPolicy.getRateLimitCount();
-        }
-
-        String spikeArrestUnit = null;
-
-        if (subPolicy.getRateLimitTimeUnit() != null) {
-            spikeArrestUnit = subPolicy.getRateLimitTimeUnit();
-        }
-        boolean stopOnQuotaReach = subPolicy.isStopOnQuotaReach();
-        int graphQLMaxDepth = Math.max(subPolicy.getGraphQLMaxDepth(), 0);
-        int graphQLMaxComplexity = Math.max(subPolicy.getGraphQLMaxComplexity(), 0);
-        List<String> list = new ArrayList<>();
-        list.add(apiLevelThrottlingKey);
-        infoDTO.setSpikeArrestLimit(spikeArrest);
-        infoDTO.setSpikeArrestUnit(spikeArrestUnit);
-        infoDTO.setStopOnQuotaReach(stopOnQuotaReach);
-        infoDTO.setGraphQLMaxDepth(graphQLMaxDepth);
-        infoDTO.setGraphQLMaxComplexity(graphQLMaxComplexity);
-        // We also need to set throttling data list associated with given API. This need to have
-        // policy id and
-        // condition id list for all throttling tiers associated with this API.
-        infoDTO.setThrottlingDataList(list);
+        // Todo: (Sampath) This must be implemented as a part rate plans implementation.
+//        ApplicationPolicy appPolicy = datastore.getApplicationPolicyByName(app.getPolicy());
+//        SubscriptionPolicy subPolicy = datastore.getSubscriptionPolicyByName(sub.getPolicyId());
+//        ApiPolicy apiPolicy = datastore.getApiPolicyByName(api.getApiTier());
+//        boolean isContentAware = appPolicy.isContentAware() || subPolicy.isContentAware() ||
+//                (apiPolicy != null && apiPolicy.isContentAware());
+//        infoDTO.setContentAware(isContentAware);
+//        int spikeArrest = 0;
+//        String apiLevelThrottlingKey = "api_level_throttling_key";
+//
+//        if (subPolicy.getRateLimitCount() > 0) {
+//            spikeArrest = subPolicy.getRateLimitCount();
+//        }
+//
+//        String spikeArrestUnit = null;
+//
+//        if (subPolicy.getRateLimitTimeUnit() != null) {
+//            spikeArrestUnit = subPolicy.getRateLimitTimeUnit();
+//        }
+//        boolean stopOnQuotaReach = subPolicy.isStopOnQuotaReach();
+//        int graphQLMaxDepth = Math.max(subPolicy.getGraphQLMaxDepth(), 0);
+//        int graphQLMaxComplexity = Math.max(subPolicy.getGraphQLMaxComplexity(), 0);
+//        List<String> list = new ArrayList<>();
+//        list.add(apiLevelThrottlingKey);
+//        infoDTO.setSpikeArrestLimit(spikeArrest);
+//        infoDTO.setSpikeArrestUnit(spikeArrestUnit);
+//        infoDTO.setStopOnQuotaReach(stopOnQuotaReach);
+//        infoDTO.setGraphQLMaxDepth(graphQLMaxDepth);
+//        infoDTO.setGraphQLMaxComplexity(graphQLMaxComplexity);
+//        // We also need to set throttling data list associated with given API. This need to have
+//        // policy id and
+//        // condition id list for all throttling tiers associated with this API.
+//        infoDTO.setThrottlingDataList(list);
         infoDTO.setAuthorized(true);
     }
 }
