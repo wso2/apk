@@ -195,7 +195,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/runtime-domain-service:0.0.1-m9
+          image: wso2/runtime-domain-service:latest
           # configs:
           #   authrorization: true
           #   baseUrl: "https://api.am.wso2.com:9095/api/am/runtime"
