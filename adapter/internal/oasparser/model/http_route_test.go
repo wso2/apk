@@ -44,7 +44,7 @@ func TestConcatRateLimitPolicies(t *testing.T) {
 					API: dpv1alpha1.APIRateLimitPolicy{
 						RateLimit: dpv1alpha1.RateLimit{
 							RequestsPerUnit: 10,
-							Unit:           "Minute",
+							Unit:            "Minute",
 						},
 					},
 				},
@@ -55,7 +55,7 @@ func TestConcatRateLimitPolicies(t *testing.T) {
 					API: dpv1alpha1.APIRateLimitPolicy{
 						RateLimit: dpv1alpha1.RateLimit{
 							RequestsPerUnit: 20,
-							Unit:           "Day",
+							Unit:            "Day",
 						},
 					},
 				},
@@ -66,7 +66,7 @@ func TestConcatRateLimitPolicies(t *testing.T) {
 					API: dpv1alpha1.APIRateLimitPolicy{
 						RateLimit: dpv1alpha1.RateLimit{
 							RequestsPerUnit: 10,
-							Unit:           "Minute",
+							Unit:            "Minute",
 						},
 					},
 				},
@@ -80,7 +80,7 @@ func TestConcatRateLimitPolicies(t *testing.T) {
 					API: dpv1alpha1.APIRateLimitPolicy{
 						RateLimit: dpv1alpha1.RateLimit{
 							RequestsPerUnit: 10,
-							Unit:           "Minute",
+							Unit:            "Minute",
 						},
 					},
 				},
@@ -91,7 +91,7 @@ func TestConcatRateLimitPolicies(t *testing.T) {
 					API: dpv1alpha1.APIRateLimitPolicy{
 						RateLimit: dpv1alpha1.RateLimit{
 							RequestsPerUnit: 20,
-							Unit:           "Day",
+							Unit:            "Day",
 						},
 					},
 				},
@@ -102,7 +102,7 @@ func TestConcatRateLimitPolicies(t *testing.T) {
 					API: dpv1alpha1.APIRateLimitPolicy{
 						RateLimit: dpv1alpha1.RateLimit{
 							RequestsPerUnit: 10,
-							Unit:           "Minute",
+							Unit:            "Minute",
 						},
 					},
 				},
@@ -116,7 +116,7 @@ func TestConcatRateLimitPolicies(t *testing.T) {
 					API: dpv1alpha1.APIRateLimitPolicy{
 						RateLimit: dpv1alpha1.RateLimit{
 							RequestsPerUnit: 10,
-							Unit:           "Minute",
+							Unit:            "Minute",
 						},
 					},
 				},
@@ -127,7 +127,7 @@ func TestConcatRateLimitPolicies(t *testing.T) {
 					API: dpv1alpha1.APIRateLimitPolicy{
 						RateLimit: dpv1alpha1.RateLimit{
 							RequestsPerUnit: 20,
-							Unit:           "Day",
+							Unit:            "Day",
 						},
 					},
 				},
@@ -138,7 +138,7 @@ func TestConcatRateLimitPolicies(t *testing.T) {
 					API: dpv1alpha1.APIRateLimitPolicy{
 						RateLimit: dpv1alpha1.RateLimit{
 							RequestsPerUnit: 20,
-							Unit:           "Day",
+							Unit:            "Day",
 						},
 					},
 				},
@@ -152,7 +152,7 @@ func TestConcatRateLimitPolicies(t *testing.T) {
 					API: dpv1alpha1.APIRateLimitPolicy{
 						RateLimit: dpv1alpha1.RateLimit{
 							RequestsPerUnit: 10,
-							Unit:           "Minute",
+							Unit:            "Minute",
 						},
 					},
 				},
@@ -163,7 +163,7 @@ func TestConcatRateLimitPolicies(t *testing.T) {
 					API: dpv1alpha1.APIRateLimitPolicy{
 						RateLimit: dpv1alpha1.RateLimit{
 							RequestsPerUnit: 20,
-							Unit:           "Day",
+							Unit:            "Day",
 						},
 					},
 				},
@@ -174,7 +174,7 @@ func TestConcatRateLimitPolicies(t *testing.T) {
 					API: dpv1alpha1.APIRateLimitPolicy{
 						RateLimit: dpv1alpha1.RateLimit{
 							RequestsPerUnit: 20,
-							Unit:           "Day",
+							Unit:            "Day",
 						},
 					},
 				},
@@ -188,7 +188,7 @@ func TestConcatRateLimitPolicies(t *testing.T) {
 					API: dpv1alpha1.APIRateLimitPolicy{
 						RateLimit: dpv1alpha1.RateLimit{
 							RequestsPerUnit: 10,
-							Unit:           "Minute",
+							Unit:            "Minute",
 						},
 					},
 				},
@@ -197,7 +197,7 @@ func TestConcatRateLimitPolicies(t *testing.T) {
 					API: dpv1alpha1.APIRateLimitPolicy{
 						RateLimit: dpv1alpha1.RateLimit{
 							RequestsPerUnit: 20,
-							Unit:           "Second",
+							Unit:            "Second",
 						},
 					},
 				},
@@ -208,7 +208,7 @@ func TestConcatRateLimitPolicies(t *testing.T) {
 					API: dpv1alpha1.APIRateLimitPolicy{
 						RateLimit: dpv1alpha1.RateLimit{
 							RequestsPerUnit: 30,
-							Unit:           "Day",
+							Unit:            "Day",
 						},
 					},
 				},
@@ -217,7 +217,7 @@ func TestConcatRateLimitPolicies(t *testing.T) {
 					API: dpv1alpha1.APIRateLimitPolicy{
 						RateLimit: dpv1alpha1.RateLimit{
 							RequestsPerUnit: 40,
-							Unit:           "Hour",
+							Unit:            "Hour",
 						},
 					},
 				},
@@ -228,7 +228,7 @@ func TestConcatRateLimitPolicies(t *testing.T) {
 					API: dpv1alpha1.APIRateLimitPolicy{
 						RateLimit: dpv1alpha1.RateLimit{
 							RequestsPerUnit: 20,
-							Unit:           "Second",
+							Unit:            "Second",
 						},
 					},
 				},
@@ -457,63 +457,49 @@ func TestConcatAPIPolicies(t *testing.T) {
 		{
 			schemeUpSpec: dpv1alpha1.APIPolicySpec{
 				Override: &dpv1alpha1.PolicySpec{
-					RequestInterceptor: &dpv1alpha1.InterceptorConfig{
-						BackendRef: dpv1alpha1.BackendReference{
-							Name: "up-request-interceptor",
-						},
-					},
-				},
-				Default: &dpv1alpha1.PolicySpec{
-					ResponseInterceptor: &dpv1alpha1.InterceptorConfig{
-						BackendRef: dpv1alpha1.BackendReference{
-							Name: "up-response-interceptor",
-						},
-						Includes: []dpv1alpha1.InterceptorInclusion{
-							dpv1alpha1.InterceptorInclusionResponseBody,
-							dpv1alpha1.InterceptorInclusionRequestTrailers,
+					RequestInterceptors: []dpv1alpha1.InterceptorReference{
+						{
+							Name:      "up-request-interceptor",
+							Namespace: "up-request-interceptor-ns",
 						},
 					},
 				},
 			},
 			schemeDownSpec: dpv1alpha1.APIPolicySpec{
 				Override: &dpv1alpha1.PolicySpec{
-					RequestInterceptor: &dpv1alpha1.InterceptorConfig{
-						BackendRef: dpv1alpha1.BackendReference{
+					RequestInterceptors: []dpv1alpha1.InterceptorReference{
+						{
 							Name:      "down-request-interceptor",
 							Namespace: "down-request-interceptor-ns",
 						},
-						Includes: []dpv1alpha1.InterceptorInclusion{
-							dpv1alpha1.InterceptorInclusionRequestBody,
+					},
+				},
+				Default: &dpv1alpha1.PolicySpec{
+					ResponseInterceptors: []dpv1alpha1.InterceptorReference{
+						{
+							Name:      "down-response-interceptor",
+							Namespace: "down-response-interceptor-ns",
 						},
 					},
 				},
 			},
 			result: dpv1alpha1.APIPolicySpec{
 				Override: &dpv1alpha1.PolicySpec{
-					RequestInterceptor: &dpv1alpha1.InterceptorConfig{
-						BackendRef: dpv1alpha1.BackendReference{
+					RequestInterceptors: []dpv1alpha1.InterceptorReference{
+						{
 							Name:      "up-request-interceptor",
-							Namespace: "down-request-interceptor-ns",
-						},
-						Includes: []dpv1alpha1.InterceptorInclusion{
-							dpv1alpha1.InterceptorInclusionRequestBody,
+							Namespace: "up-request-interceptor-ns",
 						},
 					},
-					ResponseInterceptor: &dpv1alpha1.InterceptorConfig{
-						BackendRef: dpv1alpha1.BackendReference{
-							Name: "up-response-interceptor",
-						},
-						Includes: []dpv1alpha1.InterceptorInclusion{
-							dpv1alpha1.InterceptorInclusionResponseBody,
-							dpv1alpha1.InterceptorInclusionRequestTrailers,
+					ResponseInterceptors: []dpv1alpha1.InterceptorReference{
+						{
+							Name:      "down-response-interceptor",
+							Namespace: "down-response-interceptor-ns",
 						},
 					},
 				},
 			},
-			message: `up scheme backend name should override down scheme backend name, 
-			down scheme namespace should be used since up scheme namespace is not specified, 
-			includes in down scheme should be used since up scheme has unspecified includes
-			up scheme response interceptor should be used`,
+			message: `not expected result for request interceptor or response interceptor`,
 		},
 	}
 	for _, item := range dataItems {

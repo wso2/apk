@@ -36,6 +36,8 @@ import (
 	"github.com/wso2/apk/adapter/internal/operator/status"
 	"github.com/wso2/apk/adapter/internal/operator/synchronizer"
 	"github.com/wso2/apk/adapter/internal/operator/utils"
+	ctrl "sigs.k8s.io/controller-runtime"
+	k8client "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -43,9 +45,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
-
-	ctrl "sigs.k8s.io/controller-runtime"
-	k8client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const (
@@ -102,6 +101,12 @@ func NewGatewayController(mgr manager.Manager, operatorDataStore *synchronizer.O
 	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.APIPolicy{}}, handler.EnqueueRequestsFromMapFunc(r.getGatewaysForAPIPolicy),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3101, err))
+		return err
+	}
+
+	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.InterceptorService{}}, handler.EnqueueRequestsFromMapFunc(r.getAPIsForInterceptorService),
+		predicates...); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3110, err))
 		return err
 	}
 
@@ -208,6 +213,9 @@ func (gatewayReconciler *GatewayReconciler) resolveGatewayState(ctx context.Cont
 	if gatewayState.GatewayAPIPolicies, err = gatewayReconciler.getAPIPoliciesForGateway(ctx, &gateway); err != nil {
 		return nil, fmt.Errorf("error while getting gateway apipolicy for gateway: %s, %s", utils.NamespacedName(&gateway).String(), err.Error())
 	}
+	if gatewayState.GatewayInterceptorServiceMapping, err = gatewayReconciler.getInterceptorServicesForGateway(ctx, gatewayState.GatewayAPIPolicies); err != nil {
+		return nil, fmt.Errorf("error while getting interceptor service for gateway: %s, %s", utils.NamespacedName(&gateway).String(), err.Error())
+	}
 	customRateLimitPolicies, err := gatewayReconciler.getCustomRateLimitPoliciesForGateway(utils.NamespacedName(&gateway))
 	if err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2650, err))
@@ -232,32 +240,50 @@ func (gatewayReconciler *GatewayReconciler) getAPIPoliciesForGateway(ctx context
 	return apiPolicies, nil
 }
 
-func (gatewayReconciler *GatewayReconciler) getResolvedBackendsMapping(ctx context.Context,
-	gatewayStateData *synchronizer.GatewayStateData) dpv1alpha1.BackendMapping {
-	backendMapping := make(dpv1alpha1.BackendMapping)
-
-	if gatewayStateData.GatewayAPIPolicies != nil {
-		allAPIPolicies := maps.Values(gatewayStateData.GatewayAPIPolicies)
-		for _, apiPolicy := range allAPIPolicies {
-			if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.RequestInterceptor != nil {
-				utils.ResolveAndAddBackendToMapping(ctx, gatewayReconciler.client, backendMapping,
-					apiPolicy.Spec.Default.RequestInterceptor.BackendRef, apiPolicy.Namespace)
+// getInterceptorServicesForGateway returns the list of interceptor services for the given gateway
+func (gatewayReconciler *GatewayReconciler) getInterceptorServicesForGateway(ctx context.Context,
+	gatewayAPIPolicies map[string]dpv1alpha1.APIPolicy) (map[string]dpv1alpha1.InterceptorService, error) {
+	allGatewayAPIPolicies := maps.Values(gatewayAPIPolicies)
+	interceptorServices := make(map[string]dpv1alpha1.InterceptorService)
+	for _, apiPolicy := range allGatewayAPIPolicies {
+		if apiPolicy.Spec.Default != nil && len(apiPolicy.Spec.Default.RequestInterceptors) > 0 {
+			interceptorPtr := utils.GetInterceptorService(ctx, gatewayReconciler.client, &apiPolicy.Spec.Default.RequestInterceptors[0])
+			if interceptorPtr != nil {
+				interceptorServices[utils.NamespacedName(interceptorPtr).String()] = *interceptorPtr
 			}
-			if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.RequestInterceptor != nil {
-				utils.ResolveAndAddBackendToMapping(ctx, gatewayReconciler.client, backendMapping,
-					apiPolicy.Spec.Override.RequestInterceptor.BackendRef, apiPolicy.Namespace)
+		}
+		if apiPolicy.Spec.Default != nil && len(apiPolicy.Spec.Default.ResponseInterceptors) > 0 {
+			interceptorPtr := utils.GetInterceptorService(ctx, gatewayReconciler.client, &apiPolicy.Spec.Default.ResponseInterceptors[0])
+			if interceptorPtr != nil {
+				interceptorServices[utils.NamespacedName(interceptorPtr).String()] = *interceptorPtr
 			}
-			if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.ResponseInterceptor != nil {
-				utils.ResolveAndAddBackendToMapping(ctx, gatewayReconciler.client, backendMapping,
-					apiPolicy.Spec.Default.ResponseInterceptor.BackendRef, apiPolicy.Namespace)
+		}
+		if apiPolicy.Spec.Override != nil && len(apiPolicy.Spec.Override.RequestInterceptors) > 0 {
+			interceptorPtr := utils.GetInterceptorService(ctx, gatewayReconciler.client, &apiPolicy.Spec.Override.RequestInterceptors[0])
+			if interceptorPtr != nil {
+				interceptorServices[utils.NamespacedName(interceptorPtr).String()] = *interceptorPtr
 			}
-			if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.ResponseInterceptor != nil {
-				utils.ResolveAndAddBackendToMapping(ctx, gatewayReconciler.client, backendMapping,
-					apiPolicy.Spec.Override.ResponseInterceptor.BackendRef, apiPolicy.Namespace)
+		}
+		if apiPolicy.Spec.Override != nil && len(apiPolicy.Spec.Override.ResponseInterceptors) > 0 {
+			interceptorPtr := utils.GetInterceptorService(ctx, gatewayReconciler.client, &apiPolicy.Spec.Override.ResponseInterceptors[0])
+			if interceptorPtr != nil {
+				interceptorServices[utils.NamespacedName(interceptorPtr).String()] = *interceptorPtr
 			}
 		}
 	}
+	return interceptorServices, nil
+}
 
+func (gatewayReconciler *GatewayReconciler) getResolvedBackendsMapping(ctx context.Context,
+	gatewayStateData *synchronizer.GatewayStateData) dpv1alpha1.BackendMapping {
+	backendMapping := make(dpv1alpha1.BackendMapping)
+	if gatewayStateData.GatewayInterceptorServiceMapping != nil {
+		interceptorServices := maps.Values(gatewayStateData.GatewayInterceptorServiceMapping)
+		for _, interceptorService := range interceptorServices {
+			utils.ResolveAndAddBackendToMapping(ctx, gatewayReconciler.client, backendMapping,
+				interceptorService.Spec.BackendRef, interceptorService.Namespace)
+		}
+	}
 	return backendMapping
 }
 
@@ -273,11 +299,38 @@ func (gatewayReconciler *GatewayReconciler) getGatewaysForBackend(obj k8client.O
 
 	requests := []reconcile.Request{}
 
-	apiPolicyList := &dpv1alpha1.APIPolicyList{}
-	if err := gatewayReconciler.client.List(ctx, apiPolicyList, &k8client.ListOptions{
-		FieldSelector: fields.OneTermEqualSelector(backendAPIPolicyIndex, utils.NamespacedName(backend).String()),
+	interceptorServiceList := &dpv1alpha1.InterceptorServiceList{}
+	if err := gatewayReconciler.client.List(ctx, interceptorServiceList, &k8client.ListOptions{
+		FieldSelector: fields.OneTermEqualSelector(backendInterceptorServiceIndex, utils.NamespacedName(backend).String()),
 	}); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2649, utils.NamespacedName(backend).String()))
+		return []reconcile.Request{}
+	}
+
+	for _, interceptorService := range interceptorServiceList.Items {
+		requests = append(requests, gatewayReconciler.getAPIsForInterceptorService(&interceptorService)...)
+	}
+
+	return requests
+}
+
+// getAPIsForInterceptorService triggers the Gateway controller reconcile method based on the changes detected
+// in InterceptorService resources.
+func (gatewayReconciler *GatewayReconciler) getAPIsForInterceptorService(obj k8client.Object) []reconcile.Request {
+	ctx := context.Background()
+	interceptorService, ok := obj.(*dpv1alpha1.InterceptorService)
+	if !ok {
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3107, interceptorService))
+		return []reconcile.Request{}
+	}
+
+	requests := []reconcile.Request{}
+
+	apiPolicyList := &dpv1alpha1.APIPolicyList{}
+	if err := gatewayReconciler.client.List(ctx, apiPolicyList, &k8client.ListOptions{
+		FieldSelector: fields.OneTermEqualSelector(interceptorServiceAPIPolicyIndex, utils.NamespacedName(interceptorService).String()),
+	}); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2649, utils.NamespacedName(interceptorService).String()))
 		return []reconcile.Request{}
 	}
 

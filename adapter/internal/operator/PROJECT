@@ -93,4 +93,16 @@ resources:
   group: dp
   kind: Gateway
   version: v1alpha1
+- api:
+    crdVersion: v1
+    namespaced: true
+  domain: wso2.com
+  group: dp
+  kind: InterceptorService
+  path: github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1
+  version: v1alpha1
+  webhooks:
+    defaulting: true
+    validation: true
+    webhookVersion: v1
 version: "3"

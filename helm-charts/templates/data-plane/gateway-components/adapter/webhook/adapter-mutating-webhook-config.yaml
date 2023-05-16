@@ -70,6 +70,26 @@ webhooks:
       resources:
         - apipolicies
   sideEffects: None
+- admissionReviewVersions:
+    - v1
+  clientConfig:
+    service:
+      name: {{ template "apk-helm.resource.prefix" . }}-adapter-service
+      namespace: {{ .Release.Namespace }}
+      path: /mutate-dp-wso2-com-v1alpha1-interceptorservice
+  failurePolicy: Fail
+  name: minterceptorservice.kb.io
+  rules:
+  - apiGroups:
+    - dp.wso2.com
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - interceptorservices
+  sideEffects: None
 {{ if .Values.wso2.apk.dp.ratelimiter.enabled }}
 - admissionReviewVersions:
     - v1

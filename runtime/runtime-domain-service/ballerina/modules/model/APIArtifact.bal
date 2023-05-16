@@ -11,6 +11,7 @@ public type APIArtifact record {|
     map<Scope> scopes = {};
     map<RateLimitPolicy> rateLimitPolicies = {};
     map<APIPolicy> apiPolicies = {};
+    map<InterceptorService> interceptorServices = {};
     boolean sandboxEndpointAvailable = false;
     string productionUrl?;
     string sandboxUrl?;

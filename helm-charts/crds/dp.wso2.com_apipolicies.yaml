@@ -60,34 +60,23 @@ spec:
                       isEnabled:
                         type: boolean
                     type: object
-                  requestInterceptor:
-                    description: InterceptorConfig holds interceptor service information
-                    properties:
-                      backendRef:
-                        description: BackendReference refers to a Backend resource
-                          as the interceptor service.
-                        properties:
-                          name:
-                            description: Name is the name of the Backend resource.
-                            type: string
-                          namespace:
-                            description: Namespace is the namespace of the Backend
-                              resource.
-                            type: string
-                        required:
-                        - name
-                        type: object
-                      includes:
-                        items:
-                          description: InterceptorInclusion defines the type of data
-                            which can be included in the interceptor request/response
-                            path
+                  requestInterceptors:
+                    items:
+                      description: InterceptorReference holds InterceptorService reference
+                        using name and namespace
+                      properties:
+                        name:
+                          description: Name is the name of the InterceptorService
+                            resource.
                           type: string
-                        maxItems: 4
-                        type: array
-                    required:
-                    - backendRef
-                    type: object
+                        namespace:
+                          description: Namespace is the namespace of the InterceptorService
+                            resource.
+                          type: string
+                      required:
+                      - name
+                      type: object
+                    type: array
                   requestQueryModifier:
                     description: RequestQueryModifier allows to modify request query
                       params
@@ -126,34 +115,23 @@ spec:
                       removeAll:
                         type: string
                     type: object
-                  responseInterceptor:
-                    description: InterceptorConfig holds interceptor service information
-                    properties:
-                      backendRef:
-                        description: BackendReference refers to a Backend resource
-                          as the interceptor service.
-                        properties:
-                          name:
-                            description: Name is the name of the Backend resource.
-                            type: string
-                          namespace:
-                            description: Namespace is the namespace of the Backend
-                              resource.
-                            type: string
-                        required:
-                        - name
-                        type: object
-                      includes:
-                        items:
-                          description: InterceptorInclusion defines the type of data
-                            which can be included in the interceptor request/response
-                            path
+                  responseInterceptors:
+                    items:
+                      description: InterceptorReference holds InterceptorService reference
+                        using name and namespace
+                      properties:
+                        name:
+                          description: Name is the name of the InterceptorService
+                            resource.
                           type: string
-                        maxItems: 4
-                        type: array
-                    required:
-                    - backendRef
-                    type: object
+                        namespace:
+                          description: Namespace is the namespace of the InterceptorService
+                            resource.
+                          type: string
+                      required:
+                      - name
+                      type: object
+                    type: array
                 type: object
               override:
                 description: PolicySpec contains API policies
@@ -164,34 +142,23 @@ spec:
                       isEnabled:
                         type: boolean
                     type: object
-                  requestInterceptor:
-                    description: InterceptorConfig holds interceptor service information
-                    properties:
-                      backendRef:
-                        description: BackendReference refers to a Backend resource
-                          as the interceptor service.
-                        properties:
-                          name:
-                            description: Name is the name of the Backend resource.
-                            type: string
-                          namespace:
-                            description: Namespace is the namespace of the Backend
-                              resource.
-                            type: string
-                        required:
-                        - name
-                        type: object
-                      includes:
-                        items:
-                          description: InterceptorInclusion defines the type of data
-                            which can be included in the interceptor request/response
-                            path
+                  requestInterceptors:
+                    items:
+                      description: InterceptorReference holds InterceptorService reference
+                        using name and namespace
+                      properties:
+                        name:
+                          description: Name is the name of the InterceptorService
+                            resource.
                           type: string
-                        maxItems: 4
-                        type: array
-                    required:
-                    - backendRef
-                    type: object
+                        namespace:
+                          description: Namespace is the namespace of the InterceptorService
+                            resource.
+                          type: string
+                      required:
+                      - name
+                      type: object
+                    type: array
                   requestQueryModifier:
                     description: RequestQueryModifier allows to modify request query
                       params
@@ -230,34 +197,23 @@ spec:
                       removeAll:
                         type: string
                     type: object
-                  responseInterceptor:
-                    description: InterceptorConfig holds interceptor service information
-                    properties:
-                      backendRef:
-                        description: BackendReference refers to a Backend resource
-                          as the interceptor service.
-                        properties:
-                          name:
-                            description: Name is the name of the Backend resource.
-                            type: string
-                          namespace:
-                            description: Namespace is the namespace of the Backend
-                              resource.
-                            type: string
-                        required:
-                        - name
-                        type: object
-                      includes:
-                        items:
-                          description: InterceptorInclusion defines the type of data
-                            which can be included in the interceptor request/response
-                            path
+                  responseInterceptors:
+                    items:
+                      description: InterceptorReference holds InterceptorService reference
+                        using name and namespace
+                      properties:
+                        name:
+                          description: Name is the name of the InterceptorService
+                            resource.
                           type: string
-                        maxItems: 4
-                        type: array
-                    required:
-                    - backendRef
-                    type: object
+                        namespace:
+                          description: Namespace is the namespace of the InterceptorService
+                            resource.
+                          type: string
+                      required:
+                      - name
+                      type: object
+                    type: array
                 type: object
               targetRef:
                 description: PolicyTargetReference identifies an API object to apply

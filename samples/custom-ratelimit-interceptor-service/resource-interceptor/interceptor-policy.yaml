@@ -19,16 +19,10 @@ metadata:
   name: interceptor-policy-resource-level
 spec:
   override:
-    requestInterceptor:
-      backendRef:
-        name: interceptor-backend-v1
-        namespace: apk
-      includes:
-        - request_body
-        - request_headers
-        - invocation_context
+    requestInterceptors:
+    - name: interceptor-service-resource-level
+      namespace: apk
   targetRef:
     group: dp.wso2.com
     kind: Resource
     name: http-bin-api-basic
-

@@ -139,6 +139,10 @@ func InitOperator() {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2638, err))
 	}
 
+	if err = (&dpv1alpha1.InterceptorService{}).SetupWebhookWithManager(mgr); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2652, err))
+	}
+
 	if err := cpcontrollers.NewApplicationController(mgr); err != nil {
 		loggers.LoggerAPKOperator.Errorf("Error creating Application controller: %v", err)
 	}

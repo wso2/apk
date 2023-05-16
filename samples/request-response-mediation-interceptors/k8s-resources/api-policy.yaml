@@ -21,20 +21,12 @@ metadata:
   namespace: interceptor
 spec:
   override:
-    requestInterceptor:
-      backendRef:
-         name: interceptor-backend
-      includes:
-      - request_body
-      - request_headers
-      - invocation_context
-    responseInterceptor:
-      backendRef:
-         name: interceptor-backend
-      includes:
-      - response_headers
-      - response_body
-      - invocation_context
+    requestInterceptors:
+    - name: req-interceptor-service
+      namespace: interceptor
+    responseInterceptors:
+    - name: res-interceptor-service
+      namespace: interceptor
   targetRef:
     group: dp.wso2.com
     kind: API

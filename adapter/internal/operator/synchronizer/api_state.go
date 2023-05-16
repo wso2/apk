@@ -40,6 +40,7 @@ type HTTPRouteState struct {
 	ResourceAuthentications   map[string]v1alpha1.Authentication
 	APIPolicies               map[string]v1alpha1.APIPolicy
 	ResourceAPIPolicies       map[string]v1alpha1.APIPolicy
+	InterceptorServiceMapping map[string]v1alpha1.InterceptorService
 	BackendMapping            v1alpha1.BackendMapping
 	Scopes                    map[string]v1alpha1.Scope
 	RateLimitPolicies         map[string]v1alpha1.RateLimitPolicy

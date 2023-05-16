@@ -282,11 +282,11 @@ func getSecretValue(ctx context.Context, client client.Client,
 // ResolveAndAddBackendToMapping resolves backend from reference and adds it to the backendMapping.
 func ResolveAndAddBackendToMapping(ctx context.Context, client k8client.Client,
 	backendMapping dpv1alpha1.BackendMapping,
-	backendRef dpv1alpha1.BackendReference, apiPolicyNamespace string) {
+	backendRef dpv1alpha1.BackendReference, interceptorServiceNamespace string) {
 	namespace := gwapiv1b1.Namespace(backendRef.Namespace)
 	backendName := types.NamespacedName{
 		Name:      backendRef.Name,
-		Namespace: GetNamespace(&namespace, apiPolicyNamespace),
+		Namespace: GetNamespace(&namespace, interceptorServiceNamespace),
 	}
 	backend := GetResolvedBackend(ctx, client, backendName)
 	backendMapping[backendName] = backend
@@ -392,4 +392,20 @@ func RetrieveNamespaceListOptions(namespaces []string) client.ListOptions {
 		listOptions = client.ListOptions{FieldSelector: fields.SelectorFromSet(fields.Set{"metadata.namespace": strings.Join(namespaces, ",")})}
 	}
 	return listOptions
+}
+
+// GetInterceptorService reads InterceptorService when interceptorReference is given
+func GetInterceptorService(ctx context.Context, client k8client.Client,
+	interceptorReference *dpv1alpha1.InterceptorReference) *dpv1alpha1.InterceptorService {
+	interceptorService := &dpv1alpha1.InterceptorService{}
+	interceptorRef := types.NamespacedName{
+		Namespace: interceptorReference.Namespace,
+		Name:      interceptorReference.Name,
+	}
+	if err := client.Get(ctx, interceptorRef, interceptorService); err != nil {
+		if !apierrors.IsNotFound(err) {
+			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2651, interceptorRef, err.Error()))
+		}
+	}
+	return interceptorService
 }

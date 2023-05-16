@@ -59,6 +59,7 @@ const (
 	error2637 = 2637
 	error2638 = 2638
 	error2639 = 2639
+	error2640 = 2640
 	error2641 = 2641
 	error2642 = 2642
 	error2643 = 2643
@@ -69,6 +70,8 @@ const (
 	error2648 = 2648
 	error2649 = 2649
 	error2650 = 2650
+	error2651 = 2651
+	error2652 = 2652
 )
 
 // Error Log Pkg auth(3001-3099) Config Constants
@@ -89,6 +92,7 @@ const (
 	error3107 = 3107
 	error3108 = 3108
 	error3109 = 3109
+	error3110 = 3110
 )
 
 // Mapper used to keep error details for error logs
@@ -279,6 +283,11 @@ var Mapper = map[int]ErrorDetails{
 		Message:   "Error watching Ratelimit resources: %v",
 		Severity:  BLOCKER,
 	},
+	error2640: {
+		ErrorCode: error2640,
+		Message:   "Error watching InterceptorService resources: %v",
+		Severity:  BLOCKER,
+	},
 	error2621: {
 		ErrorCode: error2621,
 		Message:   "Unable to find associated Backends for Secret: %s",
@@ -339,6 +348,16 @@ var Mapper = map[int]ErrorDetails{
 		Message:   "Error while getting custom rate limit policies: %s",
 		Severity:  MAJOR,
 	},
+	error2651: {
+		ErrorCode: error2651,
+		Message:   "Error while getting interceptor service %s, %s",
+		Severity:  CRITICAL,
+	},
+	error2652: {
+		ErrorCode: error2652,
+		Message:   "Unable to create webhook for InterceptorService: %v",
+		Severity:  BLOCKER,
+	},
 	error3001: {
 		ErrorCode: error3001,
 		Message:   "Error reading ssh key file: %s",
@@ -397,6 +416,11 @@ var Mapper = map[int]ErrorDetails{
 	error3109: {
 		ErrorCode: error3109,
 		Message:   "Error while updating Gateway status %v",
+		Severity:  BLOCKER,
+	},
+	error3110: {
+		ErrorCode: error3110,
+		Message:   "Error watching InterceptorService resources: %v",
 		Severity:  BLOCKER,
 	},
 }
