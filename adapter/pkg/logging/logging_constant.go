@@ -351,7 +351,7 @@ var Mapper = map[int]ErrorDetails{
 	error2651: {
 		ErrorCode: error2651,
 		Message:   "Error while getting interceptor service %s, %s",
-		Severity:  BLOCKER,
+		Severity:  CRITICAL,
 	},
 	error2652: {
 		ErrorCode: error2652,
