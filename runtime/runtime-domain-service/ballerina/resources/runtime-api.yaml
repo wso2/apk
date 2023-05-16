@@ -13,8 +13,7 @@ paths:
       summary: |
         Retrieve/Search APIs
       description: |
-        This operation provides you a list of available APIs qualifying under a given search condition.
-        Each retrieved API is represented with a minimal amount of attributes. If you want to get complete details of an API, you need to use **Get details of an API** operation.
+        This operation provides you a list of available APIs qualifying under a given search condition. Each retrieved API is represented with a minimal amount of attributes. If you want to get complete details of an API, you need to use **Get details of an API** operation.
       operationId: getAllAPIs
       parameters:
         - name: limit
@@ -73,8 +72,7 @@ paths:
       responses:
         "200":
           description: |
-            OK.
-            List of qualifying APIs is returned.
+            OK. List of qualifying APIs is returned.
           headers:
             Content-Type:
               description: The content type of the body.
@@ -107,9 +105,7 @@ paths:
       responses:
         "201":
           description: |
-            Created.
-            Successful response with the newly created object as entity in the body.
-            Location header contains URL of newly created entity.
+            Created. Successful response with the newly created object as entity in the body. Location header contains URL of newly created entity.
           headers:
             Location:
               description: |
@@ -154,8 +150,7 @@ paths:
       responses:
         "200":
           description: |
-            OK.
-            Requested API is returned
+            OK. Requested API is returned
           headers:
             Content-Type:
               description: |
@@ -199,8 +194,7 @@ paths:
       responses:
         "200":
           description: |
-            OK.
-            Successful response with updated API object
+            OK. Successful response with updated API object
           headers:
             Content-Type:
               description: |
@@ -242,8 +236,7 @@ paths:
       responses:
         "200":
           description: |
-            OK.
-            Resource successfully deleted.
+            OK. Resource successfully deleted.
           content: {}
         "403":
           $ref: "#/components/responses/Forbidden"
@@ -264,8 +257,7 @@ paths:
       responses:
         200:
           description: |
-            OK.
-            apikey generated.
+            OK. apikey generated.
           content:
             application/json:
               schema:
@@ -303,9 +295,7 @@ paths:
       responses:
         "201":
           description: |
-            Created.
-            Successful response with the newly created object as entity in the body.
-            Location header contains the URL of the newly created entity.
+            Created. Successful response with the newly created object as entity in the body. Location header contains the URL of the newly created entity.
           headers:
             Location:
               description: |
@@ -336,10 +326,7 @@ paths:
         - Service or Schema Import
       summary: Import an API Definition
       description: |
-        This operation can be used to create an API from an API definition. Provide either `url` or `file`
-        to specify the definition.
-
-        Specify additionalProperties with **at least** API's name, version, context and endpointConfig.
+        This operation can be used to create an API from an API definition. Provide either `url` or `file` to specify the definition. Specify additionalProperties with **at least** API's name, version, context and endpointConfig.
       operationId: importAPIDefinition
       requestBody:
         content:
@@ -349,9 +336,7 @@ paths:
       responses:
         "201":
           description: |
-            Created.
-            Successful response with the newly created object as entity in the body.
-            Location header contains URL of newly created entity.
+            Created. Successful response with the newly created object as entity in the body. Location header contains URL of newly created entity.
           headers:
             Location:
               description: |
@@ -382,15 +367,13 @@ paths:
         - Validation
       summary: Validate an OpenAPI Definition
       description: |
-        This operation can be used to validate an OpenAPI definition and retrieve a summary. Provide either `url`
-        or `file` to specify the definition.
+        This operation can be used to validate an OpenAPI definition and retrieve a summary. Provide either `url` or `file` to specify the definition.
       operationId: validateOpenAPIDefinition
       parameters:
         - name: returnContent
           in: query
           description: |
-            Specify whether to return the full content of the OpenAPI definition in the response. This is only
-            applicable when using url based validation
+            Specify whether to return the full content of the OpenAPI definition in the response. This is only applicable when using url based validation
           required: false
           style: form
           explode: true
@@ -405,8 +388,7 @@ paths:
       responses:
         "200":
           description: |
-            OK.
-            API definition validation information is returned
+            OK. API definition validation information is returned
           headers:
             Content-Type:
               description: |
@@ -435,21 +417,14 @@ paths:
       - name: query
         in: query
         description: |
-          **Search condition**.
-          You can search in attributes by using an **"<attribute>:"** modifier.
-          Eg.
-          "name:wso2" will match an API if the provider of the API is exactly "wso2".
-          Supported attribute modifiers are [** version, context, name **]
-          If no advanced attribute modifier has been specified, search will match the
-          given query string against API Name.
+          You can search in attributes by using an **"<attribute>:"** modifier. Eg."name:wso2" will match an API if the provider of the API is exactly "wso2". Supported attribute modifiers are [** version, context, name **]. If no advanced attribute modifier has been specified, search will match the given query string against API Name.
         required: true
         schema:
           type: string
       responses:
         "200":
           description: |
-            OK.
-            API definition validation information is returned
+            OK. API definition validation information is returned
           headers:
             Content-Type:
               description: |
@@ -497,8 +472,7 @@ paths:
       responses:
         "200":
           description: |
-            OK.
-            Requested definition document of the API is returned
+            OK. Requested definition document of the API is returned
           headers:
             Content-Type:
               description: |
@@ -542,8 +516,7 @@ paths:
       responses:
         "200":
           description: |
-            OK.
-            Successful response with updated Swagger definition
+            OK. Successful response with updated Swagger definition
           headers:
             Content-Type:
               description: |
@@ -646,8 +619,7 @@ paths:
       responses:
         200:
           description: |
-            OK.
-            The Certificate added successfully.
+            OK. The Certificate added successfully.
           headers:
             Location:
               description: |
@@ -691,8 +663,7 @@ paths:
           type: string
       responses:
         200:
-          description: |
-            OK.
+          description: OK.
           headers:
             Content-Type:
               description: |
@@ -715,8 +686,7 @@ paths:
       tags:
         - Endpoint Certificates
       summary: Update a certificate.
-      description: |
-        This operation can be used to update an uploaded certificate.
+      description: This operation can be used to update an uploaded certificate.
       parameters:
       - name: apiId
         in: path
@@ -744,8 +714,7 @@ paths:
       responses:
         200:
           description: |
-            OK.
-            The Certificate updated successfully.
+            OK. The Certificate updated successfully.
           headers:
             Content-Type:
               description: |
@@ -785,8 +754,7 @@ paths:
       responses:
         200:
           description: |
-            OK.
-            The Certificate deleted successfully.
+            OK. The Certificate deleted successfully.
           headers:
             Content-Type:
               description: |
@@ -889,8 +857,7 @@ paths:
       responses:
         "200":
           description: |
-            OK.
-            Export Successful.
+            OK. Export Successful.
           headers:
             Content-Type:
               description: |
@@ -933,8 +900,7 @@ paths:
       responses:
         201:
           description: |
-            Created.
-            Successful response with the newly created API as entity in the body. Location header contains URL of newly created API.
+            Created. Successful response with the newly created API as entity in the body. Location header contains URL of newly created API.
           headers:
             Location:
               description: |
@@ -1216,8 +1182,7 @@ paths:
       responses:
         "200":
           description: |
-            OK.
-            List of qualifying policies is returned.
+            OK. List of qualifying policies is returned.
           headers:
             Content-Type:
               description: The content type of the body.
@@ -1253,8 +1218,7 @@ paths:
       responses:
         "200":
           description: |
-            OK.
-            Mediation policy returned.
+            OK. Mediation policy returned.
           headers:
             Content-Type:
               description: |
@@ -1423,6 +1387,11 @@ components:
           optional: true
         apiRateLimit:
           $ref: "#/components/schemas/APIRateLimit"
+        securityScheme:
+          type: array
+          example: ["oauth2, basic_auth, mutualssl, api_key, jwt"]
+          items:
+            type: string
         createdTime:
           type: string
           readOnly: true
