@@ -193,8 +193,14 @@ func getVhostsForAPI(httpRoute *gwapiv1b1.HTTPRoute) []string {
 // getLabelsForAPI returns the labels related to an API.
 func getLabelsForAPI(httpRoute *gwapiv1b1.HTTPRoute) []string {
 	var labels []string
+	var err error
 	for _, parentRef := range httpRoute.Spec.ParentRefs {
-		labels = append(labels, string(parentRef.Name))
+		err = xds.SanitizeGateway(string(parentRef.Name), false)
+		if err != nil {
+			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2653, string(parentRef.Name)))
+		} else {
+			labels = append(labels, string(parentRef.Name))
+		}
 	}
 	return labels
 }

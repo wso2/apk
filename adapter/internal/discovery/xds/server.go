@@ -167,6 +167,9 @@ func init() {
 	orgIDvHostBasepathMap = make(map[string]map[string]string)
 
 	enforcerLabelMap = make(map[string]*EnforcerInternalAPI)
+	//TODO(amali) currently subscriptions, configs, applications, applicationPolicies, subscriptionPolicies,
+	// applicationKeyMappings, keyManagerConfigList, revokedTokens are supported with the hard coded label for Enforcer
+	enforcerLabelMap[commonEnforcerLabel] = &EnforcerInternalAPI{}
 	rand.Seed(time.Now().UnixNano())
 	// go watchEnforcerResponse()
 }
@@ -544,9 +547,7 @@ func UpdateEnforcerConfig(configFile *config.Config) {
 		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1414, errSetSnap.Error()))
 	}
 
-	enforcerLabelMap[label] = &EnforcerInternalAPI{
-		configs: configs,
-	}
+	enforcerLabelMap[label].configs = configs
 	logger.LoggerXds.Infof("New Config cache update for the label: " + label + " version: " + fmt.Sprint(version))
 }
 
@@ -886,6 +887,21 @@ func UpdateGatewayCache(gateway *gwapiv1b1.Gateway, resolvedListenerCerts map[st
 	conf := config.ReadConfigs()
 	if conf.Envoy.RateLimit.Enabled {
 		gatewayLabelConfigMap[gateway.Name].customRateLimitPolicies = customRateLimitPolicies
+	}
+	return nil
+}
+
+// SanitizeGateway method sanitizes the gateway name
+func SanitizeGateway(gatewayName string, create bool) error {
+	if _, exists := enforcerLabelMap[gatewayName]; !exists && create {
+		enforcerLabelMap[gatewayName] = &EnforcerInternalAPI{}
+	} else if !exists {
+		return fmt.Errorf("gateway %v does not exist in enforcerLabelMap", gatewayName)
+	}
+	if _, exists := gatewayLabelConfigMap[gatewayName]; !exists && create {
+		gatewayLabelConfigMap[gatewayName] = &EnvoyGatewayConfig{}
+	} else if !exists {
+		return fmt.Errorf("gateway %v does not exist in gatewayLabelConfigMap", gatewayName)
 	}
 	return nil
 }

@@ -105,6 +105,9 @@ func TestUpdateAPICache(t *testing.T) {
 			switch test.action {
 			case "CREATE":
 			case "UPDATE":
+				for _, label := range test.labels {
+					SanitizeGateway(label, true)
+				}
 				UpdateAPICache(test.vHosts, test.labels, test.listeners, test.adapterInternalAPI)
 				identifier := GetvHostsIdentifier(test.adapterInternalAPI.UUID, "prod")
 				actualvHosts, ok := orgIDAPIvHostsMap[test.adapterInternalAPI.OrganizationID][identifier]
