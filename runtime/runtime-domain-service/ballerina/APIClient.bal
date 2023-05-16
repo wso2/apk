@@ -460,6 +460,13 @@ public class APIClient {
             if endpointConfig is record {} {
                 createdEndpoints = check self.createAndAddBackendServics(apiArtifact, api, endpointConfig, (), (), organization);
             }
+            
+            string[]? authTypeNames = api.securityScheme;
+            if authTypeNames is string[] {
+                log:printDebug("Auth Types Names:"+ authTypeNames.toString());
+                self.populateAuthenticationMap(apiArtifact, api, authTypeNames, createdEndpoints, organization);
+            }
+
             _ = check self.setHttpRoute(apiArtifact, api, createdEndpoints.hasKey(PRODUCTION_TYPE) ? createdEndpoints.get(PRODUCTION_TYPE) : (), uniqueId, PRODUCTION_TYPE, organization);
             _ = check self.setHttpRoute(apiArtifact, api, createdEndpoints.hasKey(SANDBOX_TYPE) ? createdEndpoints.get(SANDBOX_TYPE) : (), uniqueId, SANDBOX_TYPE, organization);
             json generatedSwagger = check self.retrieveGeneratedSwaggerDefinition(api, definition);
@@ -690,6 +697,12 @@ public class APIClient {
             model:RateLimit rateLimit = {...rateLimitPolicy};
             runtimeAPI.spec.apiRateLimit = rateLimit;
         }
+        string[]? securityScheme = api.securityScheme;
+
+        if securityScheme is string[] {
+            log:printDebug("securityScheme: " + securityScheme.toString());
+            runtimeAPI.spec.securityScheme = securityScheme;
+        }
         if serviceEntry is Service {
             runtimeAPI.spec.serviceInfo = {
                 name: serviceEntry.name,
@@ -697,6 +710,7 @@ public class APIClient {
                 endpointSecurity: serviceEntry.endpointSecurity
             };
         }
+        log:printDebug("RuntimeAPI: " + runtimeAPI.toString());
         return runtimeAPI;
     }
 
@@ -959,6 +973,13 @@ public class APIClient {
                     name: backendService.metadata.name,
                     serviceEntry: true
                 };
+                string[]? authTypeNames = api.securityScheme;
+                if authTypeNames is string[] {
+                    map<model:Endpoint|()> createdEndpoints = {};
+                    createdEndpoints[PRODUCTION_TYPE] = endpoint;
+                    log:printDebug("Auth Types Names:"+ authTypeNames.toString());
+                    self.populateAuthenticationMap(apiArtifact, api, authTypeNames, createdEndpoints, organization);
+                }
                 check self.setHttpRoute(apiArtifact, api, endpoint, uniqueId, PRODUCTION_TYPE, organization);
                 json generatedSwaggerDefinition = check self.retrieveGeneratedSwaggerDefinition(api, ());
                 check self.retrieveGeneratedConfigmapForDefinition(apiArtifact, api, generatedSwaggerDefinition, uniqueId, organization);
@@ -1165,12 +1186,15 @@ public class APIClient {
     }
     private isolated function deployAuthneticationCRs(model:APIArtifact apiArtifact) returns error? {
         string[] keys = apiArtifact.authenticationMap.keys();
+        log:printDebug("Inside Deploy Authentication CRs" + keys.toString());
         foreach string authenticationCrName in keys {
             model:Authentication authenticationCr = apiArtifact.authenticationMap.get(authenticationCrName);
+            log:printDebug("Authentication CR:" + authenticationCr.toString());
             http:Response authenticationCrDeployResponse = check deployAuthenticationCR(authenticationCr, getNameSpace(runtimeConfiguration.apiCreationNamespace));
             if authenticationCrDeployResponse.statusCode == http:STATUS_CREATED {
-                log:printDebug("Deployed HttpRoute Successfully" + authenticationCr.toString());
+                log:printInfo("Deployed Authentication Successfully" + authenticationCr.toString());
             } else {
+                log:printError("Error Deploying Authentication" + authenticationCr.toString());
                 json responsePayLoad = check authenticationCrDeployResponse.getJsonPayload();
                 model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
                 check self.handleK8sTimeout(statusResponse);
@@ -1494,6 +1518,48 @@ public class APIClient {
         }
     }
 
+    private isolated function populateAuthenticationMap(model:APIArtifact apiArtifact, API api, string[] authTypeNames, 
+    map<model:Endpoint|()> createdEndpointMap, commons:Organization organization) {
+        map<model:Authentication> authenticationMap = {};
+        model:AuthenticationExtenstionType[] authTypes = [];
+        foreach string authTypeName in authTypeNames {
+            model:AuthenticationExtenstionType authType = {'type:authTypeName};
+            authTypes.push(authType);
+        }
+        log:printDebug("Auth Types:"+ authTypes.toString());
+        string[] keys = createdEndpointMap.keys();
+        log:printDebug("createdEndpointMap.keys:"+ createdEndpointMap.keys().toString());
+        foreach string endpointType in keys{
+            string disableAuthenticationRefName = self.retrieveDisableAuthenticationRefName(api, endpointType, organization);
+            log:printDebug("disableAuthenticationRefName:"+ disableAuthenticationRefName);
+            model:Authentication authentication = {
+                metadata: {
+                    name: disableAuthenticationRefName,
+                    namespace: currentNameSpace,
+                    labels: self.getLabels(api, organization)}, 
+                spec: {
+                    override: {
+                        'type: "ext",
+                        ext: {
+                            disabled: false,
+                            authTypes: authTypes
+                        }
+                    },
+                    targetRef: {
+                        group:  "gateway.networking.k8s.io",
+                        kind:  "Resource",
+                        name: apiArtifact.uniqueId,
+                        namespace: currentNameSpace
+                    }
+                }
+            };
+            log:printDebug("Authentication CR:"+ authentication.toString());
+            authenticationMap[disableAuthenticationRefName] = authentication;
+        }
+        log:printDebug("Authentication Map:"+ authenticationMap.toString());
+        apiArtifact.authenticationMap = authenticationMap;
+    }
+
     private isolated function generateAndSetAPICRArtifact(model:APIArtifact apiArtifact, API api, commons:Organization organization, string userName) {
         model:API k8sAPI = {
             metadata: {
@@ -1626,14 +1692,17 @@ public class APIClient {
                         filters = [];
                         httpRouteRule.filters = filters;
                     }
+                    string disableAuthenticationRefName = self.retrieveDisableAuthenticationRefName(api, endpointType, organization);
                     if !(operation.authTypeEnabled ?: true) {
-                        string disableAuthenticationRefName = self.retrieveDisableAuthenticationRefName(api, endpointType, organization);
                         if !apiArtifact.authenticationMap.hasKey(disableAuthenticationRefName) {
                             model:Authentication generateDisableAuthenticationCR = self.generateDisableAuthenticationCR(apiArtifact, api, endpointType, organization);
                             apiArtifact.authenticationMap[disableAuthenticationRefName] = generateDisableAuthenticationCR;
                         }
                         model:HTTPRouteFilter disableAuthenticationFilter = {'type: "ExtensionRef", extensionRef: {group: "dp.wso2.com", kind: "Authentication", name: disableAuthenticationRefName}};
                         (<model:HTTPRouteFilter[]>filters).push(disableAuthenticationFilter);
+                    } else if apiArtifact.authenticationMap.hasKey(disableAuthenticationRefName) {
+                        model:HTTPRouteFilter authenticationFilter = {'type: "ExtensionRef", extensionRef: {group: "dp.wso2.com", kind: "Authentication", name: disableAuthenticationRefName}};
+                        (<model:HTTPRouteFilter[]>filters).push(authenticationFilter);
                     }
                     string[]? scopes = operation.scopes;
                     if scopes is string[] {
@@ -3096,6 +3165,16 @@ public class APIClient {
         authentication.metadata.name = self.retrieveDisableAuthenticationRefName(api, endpointType, organization);
         authentication.metadata.labels = self.getLabels(api, organization);
         authentication.spec.targetRef.name = getUniqueIdForAPI(api.name, api.'version, organization);
+        authentication.spec.override.ext.disabled = false;
+        model:AuthenticationExtenstionType[] authTypes = [];
+        string[]? authTypeNames = api.securityScheme;
+        if authTypeNames is string[] {
+            foreach string authTypeName in authTypeNames {
+                model:AuthenticationExtenstionType authType = {'type:authTypeName};
+                authTypes.push(authType);
+            }
+        }
+        authentication.spec.override.ext.authTypes = authTypes;
         return authentication;
     }
 

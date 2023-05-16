@@ -18,6 +18,7 @@
 import runtime_domain_service.model;
 import wso2/apk_common_lib as commons;
 import ballerina/http;
+import ballerina/log;
 
 isolated function convertK8sAPItoAPI(model:API api, boolean lightWeight) returns API|commons:APKError {
     API convertedModel = {
@@ -62,6 +63,11 @@ isolated function convertK8sAPItoAPI(model:API api, boolean lightWeight) returns
             model:RateLimit? apiRateLimit = internalAPI.spec.apiRateLimit;
             if apiRateLimit is model:RateLimit {
                 convertedModel.apiRateLimit = {requestsPerUnit: apiRateLimit.requestsPerUnit, unit: apiRateLimit.unit};
+            }
+            string[]? securitySchemes = internalAPI.spec.securityScheme;
+            if securitySchemes is string[] {
+                log:printDebug("securitySchemes: " + securitySchemes.toString());
+                convertedModel.securityScheme = securitySchemes;
             }
             model:ServiceInfo? serviceInfo = internalAPI.spec.serviceInfo;
             if serviceInfo is model:ServiceInfo {

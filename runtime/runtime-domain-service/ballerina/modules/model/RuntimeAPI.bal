@@ -21,6 +21,7 @@ public type RuntimeAPISpec record {|
     Operations[] operations?;
     OperationPolicies apiPolicies?;
     RateLimit apiRateLimit?;
+    string[] securityScheme?;
     ServiceInfo serviceInfo?;
 |};
 

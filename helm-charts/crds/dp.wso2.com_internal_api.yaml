@@ -229,6 +229,11 @@ spec:
                       type: integer
                     unit:
                       type: string
+                securityScheme:
+                  type: array
+                  example: []
+                  items:
+                    type: string
                 serviceInfo:
                   type: object
                   properties:
