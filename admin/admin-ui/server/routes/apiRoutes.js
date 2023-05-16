@@ -76,5 +76,108 @@ router.get('/', async function (req, res, next) {
 
 });
 
+router.get('/am/admin/api-categories', async function (req, res, next) {
+    const accessToken = req.cookies.access_token;
+
+    const instance = axios.create({
+        httpsAgent: new https.Agent({
+            rejectUnauthorized: false
+        })
+    });
+    const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
+        'Host': 'api.am.wso2.com'
+    };
+    try {
+        const response = await instance.get(`${Settings.app.rest_api}/api-categories`, {
+            headers: headers
+        });
+        const data = response.data;
+        res.status(200).json(data);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+router.post('/am/admin/api-categories', async function (req, res, next) {
+    const accessToken = req.cookies.access_token;
+
+    const instance = axios.create({
+        httpsAgent: new https.Agent({
+            rejectUnauthorized: false
+        })
+    });
+    const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
+        'Host': 'api.am.wso2.com'
+    };
+
+    try {
+        const response = await instance.post(`${Settings.app.rest_api}/api-categories`, req.body, {
+            headers: headers
+        });
+        const data = response.data;
+        res.status(201).json(data);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ code: error.code, error: error.message });
+    }
+});
+
+router.put('/am/admin/api-categories/:categoryId', async function (req, res, next) {
+    const categoryId = req.params.categoryId;
+    const accessToken = req.cookies.access_token;
+
+    const instance = axios.create({
+        httpsAgent: new https.Agent({
+            rejectUnauthorized: false
+        })
+    });
+    const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
+        'Host': 'api.am.wso2.com'
+    };
+
+    try {
+        const response = await instance.put(`${Settings.app.rest_api}/api-categories/${categoryId}`, req.body, {
+            headers: headers
+        });
+        const data = response.data;
+        res.status(200).json(data);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ code: error.code, error: error.message });
+    }
+});
+
+router.delete('/am/admin/api-categories/:categoryId', async function (req, res, next) {
+    const categoryId = req.params.categoryId;
+    const accessToken = req.cookies.access_token;
+
+    const instance = axios.create({
+        httpsAgent: new https.Agent({
+            rejectUnauthorized: false
+        })
+    });
+    const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
+        'Host': 'api.am.wso2.com'
+    };
+
+    try {
+        const response = await instance.delete(`${Settings.app.rest_api}/api-categories/${categoryId}`, {
+            headers: headers
+        });
+        res.status(200).json({ message: "Successfully deleted" });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ code: error.code, error: error.message });
+    }
+});
 
 module.exports = router;
