@@ -375,24 +375,25 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 					continue
 				}
 				isDefaultVersion := false
-				if orgAPI, ok := orgAPIMap[organizationID][apiKey]; ok {
-					isDefaultVersion = orgAPI.adapterInternalAPI.IsDefaultVersion
-				} else {
+				var orgAPI *EnvoyInternalAPI
+				var ok bool
+				if orgAPI, ok = orgAPIMap[organizationID][apiKey]; !ok {
 					// If the adapterInternalAPI is not found, proceed with other APIs. (Unreachable condition at this point)
 					// If that happens, there is no purpose in processing clusters too.
 					continue
 				}
+				isDefaultVersion = orgAPI.adapterInternalAPI.IsDefaultVersion
 				// If it is a default versioned API, the routes are added to the end of the existing array.
 				// Otherwise the routes would be added to the front.
 				// /fooContext/2.0.0/* resource path should be matched prior to the /fooContext/* .
 				if isDefaultVersion {
-					vhostToRouteArrayMap[vhost] = append(vhostToRouteArrayMap[vhost], orgAPIMap[organizationID][apiKey].routes...)
+					vhostToRouteArrayMap[vhost] = append(vhostToRouteArrayMap[vhost], orgAPI.routes...)
 				} else {
-					vhostToRouteArrayMap[vhost] = append(orgAPIMap[organizationID][apiKey].routes, vhostToRouteArrayMap[vhost]...)
+					vhostToRouteArrayMap[vhost] = append(orgAPI.routes, vhostToRouteArrayMap[vhost]...)
 				}
-				clusterArray = append(clusterArray, orgAPIMap[organizationID][apiKey].clusters...)
-				endpointArray = append(endpointArray, orgAPIMap[organizationID][apiKey].endpointAddresses...)
-				apis = append(apis, orgAPIMap[organizationID][apiKey].enforcerAPI)
+				clusterArray = append(clusterArray, orgAPI.clusters...)
+				endpointArray = append(endpointArray, orgAPI.endpointAddresses...)
+				apis = append(apis, orgAPI.enforcerAPI)
 			}
 		}
 	}
