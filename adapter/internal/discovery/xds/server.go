@@ -262,9 +262,13 @@ func DeleteAPICREvent(labels []string, apiUUID string, organizationID string) er
 
 // deleteAPI deletes an API, its resources and updates the caches of given environments
 func deleteAPI(apiIdentifier string, environments []string, organizationID string) error {
-	_, exists := orgAPIMap[organizationID][apiIdentifier]
-	if !exists {
-		logger.LoggerXds.Infof("Unable to delete API: %v from Organization: %v. API Does not exist.", apiIdentifier, organizationID)
+	if _, orgExists := orgAPIMap[organizationID][apiIdentifier]; orgExists {
+		if _, apiExists := orgAPIMap[organizationID][apiIdentifier]; !apiExists {
+			logger.LoggerXds.Infof("Unable to delete API: %v from Organization: %v. API Does not exist.", apiIdentifier, organizationID)
+			return errors.New(constants.NotFound)
+		}
+	} else {
+		logger.LoggerXds.Infof("Unable to delete API: %v from Organization: %v. Organization Does not exist.", apiIdentifier, organizationID)
 		return errors.New(constants.NotFound)
 	}
 
@@ -295,7 +299,9 @@ func deleteAPI(apiIdentifier string, environments []string, organizationID strin
 }
 
 func cleanMapResources(apiIdentifier string, organizationID string, toBeDelEnvs []string) {
-	delete(orgAPIMap[organizationID], apiIdentifier)
+	if _, orgExists := orgAPIMap[organizationID]; orgExists {
+		delete(orgAPIMap[organizationID], apiIdentifier)
+	}
 	vHost, err := ExtractVhostFromAPIIdentifier(apiIdentifier)
 	if err != nil {
 		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1713, apiIdentifier, err))
@@ -315,11 +321,13 @@ func cleanMapResources(apiIdentifier string, organizationID string, toBeDelEnvs 
 
 func deleteBasepathForVHost(organizationID, apiIdentifier string) {
 	// Remove the basepath from map (that is used to avoid duplicate basepaths)
-	if oldOrgAPIAPI, ok := orgAPIMap[organizationID][apiIdentifier]; ok {
-		s := strings.Split(apiIdentifier, apiKeyFieldSeparator)
-		vHost := s[0]
-		oldBasepath := oldOrgAPIAPI.adapterInternalAPI.GetXWso2Basepath()
-		delete(orgIDvHostBasepathMap[organizationID], vHost+":"+oldBasepath)
+	if _, orgExists := orgAPIMap[organizationID]; orgExists {
+		if oldOrgAPIAPI, ok := orgAPIMap[organizationID][apiIdentifier]; ok {
+			s := strings.Split(apiIdentifier, apiKeyFieldSeparator)
+			vHost := s[0]
+			oldBasepath := oldOrgAPIAPI.adapterInternalAPI.GetXWso2Basepath()
+			delete(orgIDvHostBasepathMap[organizationID], vHost+":"+oldBasepath)
+		}
 	}
 }
 
@@ -379,10 +387,11 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 				}
 				isDefaultVersion := false
 				var orgAPI *EnvoyInternalAPI
-				var ok bool
-				if orgAPI, ok = orgAPIMap[organizationID][apiKey]; !ok {
-					// If the adapterInternalAPI is not found, proceed with other APIs. (Unreachable condition at this point)
-					// If that happens, there is no purpose in processing clusters too.
+				// If the adapterInternalAPI is not found, proceed with other APIs. (Unreachable condition at this point)
+				// If that happens, there is no purpose in processing clusters too.
+				if org, ok := orgAPIMap[organizationID]; !ok {
+					continue
+				} else if orgAPI, ok = org[apiKey]; !ok {
 					continue
 				}
 				isDefaultVersion = orgAPI.adapterInternalAPI.IsDefaultVersion
@@ -423,11 +432,11 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 	}
 
 	envoyGatewayConfig, gwFound := gatewayLabelConfigMap[gatewayName]
-	if !gwFound {
+	listener := envoyGatewayConfig.listener
+	if !gwFound || listener == nil {
 		return nil, nil, nil, nil, nil
 	}
 
-	listener := envoyGatewayConfig.listener
 	logger.LoggerXds.Debugf("Listener : %v", listener)
 	routesFromListener := listenerToRouteArrayMap[listener.Name]
 	logger.LoggerXds.Debugf("Routes from listener : %v", routesFromListener)
@@ -835,8 +844,13 @@ func UpdateAPICache(vHosts []string, newLabels []string, newlistenersForRoutes [
 	// Remove internal mappigs for old vHosts
 	for _, oldvhost := range oldvHosts {
 		apiIdentifier := GenerateIdentifierForAPIWithUUID(oldvhost, adapterInternalAPI.UUID)
-		oldLabels := orgAPIMap[adapterInternalAPI.GetOrganizationID()][apiIdentifier].envoyLabels
-		delete(orgAPIMap[adapterInternalAPI.GetOrganizationID()], apiIdentifier)
+		var oldLabels []string
+		if _, orgExists := orgAPIMap[adapterInternalAPI.GetOrganizationID()]; orgExists {
+			if _, apiExists := orgAPIMap[adapterInternalAPI.GetOrganizationID()][apiIdentifier]; apiExists {
+				oldLabels = orgAPIMap[adapterInternalAPI.GetOrganizationID()][apiIdentifier].envoyLabels
+				delete(orgAPIMap[adapterInternalAPI.GetOrganizationID()], apiIdentifier)
+			}
+		}
 		updateXdsCacheOnAPIChange(oldLabels, newLabels)
 	}
 
@@ -844,8 +858,11 @@ func UpdateAPICache(vHosts []string, newLabels []string, newlistenersForRoutes [
 	for _, vHost := range vHosts {
 		apiIdentifier := GenerateIdentifierForAPIWithUUID(vHost, adapterInternalAPI.UUID)
 		var oldLabels []string
-		if orgAPIMap[adapterInternalAPI.GetOrganizationID()][apiIdentifier] != nil {
-			oldLabels = orgAPIMap[adapterInternalAPI.GetOrganizationID()][apiIdentifier].envoyLabels
+		var orgExists bool
+		if _, orgExists = orgAPIMap[adapterInternalAPI.GetOrganizationID()]; orgExists {
+			if _, apiExists := orgAPIMap[adapterInternalAPI.GetOrganizationID()][apiIdentifier]; apiExists {
+				oldLabels = orgAPIMap[adapterInternalAPI.GetOrganizationID()][apiIdentifier].envoyLabels
+			}
 		}
 
 		routes, clusters, endpoints, err := oasParser.GetRoutesClustersEndpoints(adapterInternalAPI, nil,
@@ -855,7 +872,7 @@ func UpdateAPICache(vHosts []string, newLabels []string, newlistenersForRoutes [
 			return fmt.Errorf("error while deploying API. Name: %s Version: %s, OrgID: %s, Error: %s",
 				adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), adapterInternalAPI.GetOrganizationID(), err.Error())
 		}
-		if _, ok := orgAPIMap[adapterInternalAPI.OrganizationID]; !ok {
+		if !orgExists {
 			orgAPIMap[adapterInternalAPI.GetOrganizationID()] = make(map[string]*EnvoyInternalAPI)
 		}
 		orgAPIMap[adapterInternalAPI.GetOrganizationID()][apiIdentifier] = &EnvoyInternalAPI{
