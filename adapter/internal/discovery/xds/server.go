@@ -262,7 +262,7 @@ func DeleteAPICREvent(labels []string, apiUUID string, organizationID string) er
 
 // deleteAPI deletes an API, its resources and updates the caches of given environments
 func deleteAPI(apiIdentifier string, environments []string, organizationID string) error {
-	if _, orgExists := orgAPIMap[organizationID][apiIdentifier]; orgExists {
+	if _, orgExists := orgAPIMap[organizationID]; orgExists {
 		if _, apiExists := orgAPIMap[organizationID][apiIdentifier]; !apiExists {
 			logger.LoggerXds.Infof("Unable to delete API: %v from Organization: %v. API Does not exist.", apiIdentifier, organizationID)
 			return errors.New(constants.NotFound)
@@ -453,8 +453,8 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 	logger.LoggerXds.Debugf("Listener : %v and routes %v", listener, routesConfig)
 
 	logger.LoggerXds.Debugf("Routes Config : %v", routesConfig)
-	clusterArray = append(clusterArray, gatewayLabelConfigMap[gatewayName].clusters...)
-	endpointArray = append(endpointArray, gatewayLabelConfigMap[gatewayName].endpoints...)
+	clusterArray = append(clusterArray, envoyGatewayConfig.clusters...)
+	endpointArray = append(endpointArray, envoyGatewayConfig.endpoints...)
 	endpoints, clusters, listeners, routeConfigs := oasParser.GetCacheResources(endpointArray, clusterArray, listener, routesConfig)
 	logger.LoggerXds.Debugf("Routes Config After Get cache : %v", routeConfigs)
 	return endpoints, clusters, listeners, routeConfigs, apis
@@ -502,8 +502,10 @@ func GenerateInterceptorClusters(label string,
 		endpoints = append(endpoints, gwResIAddresses...)
 	}
 
-	gatewayLabelConfigMap[label].clusters = append(gatewayLabelConfigMap[label].clusters, clusters...)
-	gatewayLabelConfigMap[label].endpoints = append(gatewayLabelConfigMap[label].endpoints, endpoints...)
+	if _, ok := gatewayLabelConfigMap[label]; ok {
+		gatewayLabelConfigMap[label].clusters = append(gatewayLabelConfigMap[label].clusters, clusters...)
+		gatewayLabelConfigMap[label].endpoints = append(gatewayLabelConfigMap[label].endpoints, endpoints...)
+	}
 }
 
 // use UpdateXdsCacheWithLock to avoid race conditions
@@ -845,9 +847,9 @@ func UpdateAPICache(vHosts []string, newLabels []string, newlistenersForRoutes [
 	for _, oldvhost := range oldvHosts {
 		apiIdentifier := GenerateIdentifierForAPIWithUUID(oldvhost, adapterInternalAPI.UUID)
 		var oldLabels []string
-		if _, orgExists := orgAPIMap[adapterInternalAPI.GetOrganizationID()]; orgExists {
-			if _, apiExists := orgAPIMap[adapterInternalAPI.GetOrganizationID()][apiIdentifier]; apiExists {
-				oldLabels = orgAPIMap[adapterInternalAPI.GetOrganizationID()][apiIdentifier].envoyLabels
+		if orgMap, orgExists := orgAPIMap[adapterInternalAPI.GetOrganizationID()]; orgExists {
+			if _, apiExists := orgMap[apiIdentifier]; apiExists {
+				oldLabels = orgMap[apiIdentifier].envoyLabels
 				delete(orgAPIMap[adapterInternalAPI.GetOrganizationID()], apiIdentifier)
 			}
 		}

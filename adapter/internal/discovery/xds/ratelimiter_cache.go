@@ -179,8 +179,10 @@ func (r *rateLimitPolicyCache) generateRateLimitConfig(label string) *rls_config
 			for apiID, apiPolicies := range vHostPolicies {
 				// Configure API Level rate limit policies only if, the API is deployed to the gateway label
 				// Check API deployed to the gateway label
-				if envoyInternalAPI, exists := orgAPIMap[org][apiID]; exists && stringutils.StringInSlice(label, envoyInternalAPI.envoyLabels) {
-					apiDescriptors = append(apiDescriptors, apiPolicies...)
+				if _, exists := orgAPIMap[org]; exists {
+					if envoyInternalAPI, exists := orgAPIMap[org][apiID]; exists && stringutils.StringInSlice(label, envoyInternalAPI.envoyLabels) {
+						apiDescriptors = append(apiDescriptors, apiPolicies...)
+					}
 				}
 			}
 			vHostDescriptor := &rls_config.RateLimitDescriptor{

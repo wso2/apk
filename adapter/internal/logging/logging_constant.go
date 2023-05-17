@@ -211,7 +211,7 @@ var Mapper = map[int]logging.ErrorDetails{
 	error1414: {
 		ErrorCode: error1414,
 		Message:   "Error while setting the snapshot : %v",
-		Severity:  BLOCKER,
+		Severity:  MAJOR,
 	},
 	error1700: {
 		ErrorCode: error1700,
