@@ -1283,242 +1283,6 @@ paths:
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/applications/896658a0-b4ee-4535-bbfa-806c894a4015/map-keys"'
 
-  /applications/{applicationId}/keys:
-    get:
-      tags:
-        - Application Keys
-      summary: Retrieve All Application Keys
-      description: |
-        Retrieve keys (Consumer key/secret) of application
-      parameters:
-        - $ref: '#/components/parameters/applicationId'
-      responses:
-        200:
-          description: |
-            OK. Keys are returned.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApplicationKeyList'
-        400:
-          $ref: '#/components/responses/BadRequest'
-        404:
-          $ref: '#/components/responses/NotFound'
-        412:
-          $ref: '#/components/responses/PreconditionFailed'
-      deprecated: true
-      security:
-        - OAuth2Security:
-            - apk:subscribe
-            - apk:app_manage
-      x-code-samples:
-        - lang: Curl
-          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/devportal/applications/896658a0-b4ee-4535-bbfa-806c894a4015/keys"'
-
-  /applications/{applicationId}/keys/{keyType}:
-    get:
-      tags:
-        - Application Keys
-      summary: |
-        Get Key Details of a Given Type
-      description: |
-        This operation can be used to retrieve key details of an individual application specifying the key type in the URI.
-      parameters:
-        - $ref: '#/components/parameters/applicationId'
-        - $ref: '#/components/parameters/keyType'
-        - $ref: '#/components/parameters/groupId'
-      responses:
-        200:
-          description: |
-            OK. Keys of given type are returned.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApplicationKey'
-        400:
-          $ref: '#/components/responses/BadRequest'
-        404:
-          $ref: '#/components/responses/NotFound'
-        412:
-          $ref: '#/components/responses/PreconditionFailed'
-      deprecated: true
-      security:
-        - OAuth2Security:
-            - apk:subscribe
-            - apk:app_manage
-      x-code-samples:
-        - lang: Curl
-          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/devportal/applications/896658a0-b4ee-4535-bbfa-806c894a4015/keys/PRODUCTION"'
-
-    put:
-      tags:
-        - Application Keys
-      summary: |
-        Update Grant Types and Callback Url of an Application
-      description: |
-        This operation can be used to update grant types and callback url of an application. (Consumer Key and Consumer Secret are ignored) Upon successful you will retrieve the updated key details as the response.
-      parameters:
-        - $ref: '#/components/parameters/applicationId'
-        - $ref: '#/components/parameters/keyType'
-      requestBody:
-        description: |
-          Grant types/Callback URL update request object
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ApplicationKey'
-        required: true
-      responses:
-        200:
-          description: |
-            Ok. Grant types or/and callback url is/are updated.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApplicationKey'
-        400:
-          $ref: '#/components/responses/BadRequest'
-        404:
-          $ref: '#/components/responses/NotFound'
-        412:
-          $ref: '#/components/responses/PreconditionFailed'
-      deprecated: true
-      security:
-        - OAuth2Security:
-            - apk:subscribe
-            - apk:app_manage
-      x-code-samples:
-        - lang: Curl
-          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X PUT -d @data.json "https://localhost:9443/api/am/devportal/applications/896658a0-b4ee-4535-bbfa-806c894a4015/keys/PRODUCTION"'
-
-  /applications/{applicationId}/keys/{keyType}/regenerate-secret:
-    post:
-      tags:
-        - Application Keys
-      summary: |
-        Re-Generate Consumer Secret
-      description: |
-        This operation can be used to re generate consumer secret for an application for the give key type
-      parameters:
-        - $ref: '#/components/parameters/applicationId'
-        - $ref: '#/components/parameters/keyType'
-      responses:
-        200:
-          description: |
-            OK. Keys are re generated.
-          headers:
-            ETag:
-              description: |
-                Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).
-              schema:
-                type: string
-            Last-Modified:
-              description: |
-                Date and time the resource has been modified the last time. Used by caches, or in conditional requests (Will be supported in future).‚
-              schema:
-                type: string
-            Content-Type:
-              description: |
-                The content type of the body.
-              schema:
-                type: string
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApplicationKeyReGenerateResponse'
-        400:
-          $ref: '#/components/responses/BadRequest'
-        404:
-          $ref: '#/components/responses/NotFound'
-        412:
-          $ref: '#/components/responses/PreconditionFailed'
-      deprecated: true
-      security:
-        - OAuth2Security:
-            - apk:subscribe
-            - apk:app_manage
-      x-code-samples:
-        - lang: Curl
-          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X POST "https://localhost:9443/api/am/devportal/applications/896658a0-b4ee-4535-bbfa-806c894a4015/keys/PRODUCTION/regenerate-secret"'
-
-  /applications/{applicationId}/keys/{keyType}/clean-up:
-    post:
-      tags:
-        - Application Keys
-      summary: Clean-Up Application Keys
-      description: |
-        Clean up keys after failed key generation of an application
-      parameters:
-        - $ref: '#/components/parameters/applicationId'
-        - $ref: '#/components/parameters/keyType'
-        - $ref: '#/components/parameters/If-Match'
-      responses:
-        200:
-          description: |
-            OK. Clean up is performed
-          content: {}
-        400:
-          $ref: '#/components/responses/BadRequest'
-        404:
-          $ref: '#/components/responses/NotFound'
-        412:
-          $ref: '#/components/responses/PreconditionFailed'
-      deprecated: true
-      security:
-        - OAuth2Security:
-            - apk:subscribe
-            - apk:app_manage
-      x-code-samples:
-        - lang: Curl
-          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X POST "https://localhost:9443/api/am/devportal/applications/896658a0-b4ee-4535-bbfa-806c894a4015/keys/PRODUCTION/clean-up"'
-
-  /applications/{applicationId}/keys/{keyType}/generate-token:
-    post:
-      tags:
-        - Application Tokens
-      summary: Generate Application Token
-      description: |
-        Generate an access token for application by client_credentials grant type
-      parameters:
-        - $ref: '#/components/parameters/applicationId'
-        - $ref: '#/components/parameters/keyType'
-        - $ref: '#/components/parameters/If-Match'
-      requestBody:
-        description: |
-          Application token generation request object
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ApplicationTokenGenerateRequest'
-        required: true
-      responses:
-        200:
-          description: |
-            OK. Token is generated.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApplicationToken'
-        400:
-          $ref: '#/components/responses/BadRequest'
-        404:
-          $ref: '#/components/responses/NotFound'
-        412:
-          $ref: '#/components/responses/PreconditionFailed'
-      deprecated: true
-      security:
-        - OAuth2Security:
-            - apk:subscribe
-            - apk:app_manage
-      x-code-samples:
-        - lang: Curl
-          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/applications/16cd2684-9657-4a01-a956-4efd89e96077/keys/PRODUCTION/generate-token"'
 
   /applications/{applicationId}/oauth-keys:
     get:
@@ -1564,7 +1328,6 @@ paths:
       parameters:
         - $ref: '#/components/parameters/applicationId'
         - $ref: '#/components/parameters/keyMappingId'
-        - $ref: '#/components/parameters/groupId'
       responses:
         200:
           description: |
@@ -3446,18 +3209,6 @@ components:
           maxLength: 512
           type: string
           example: Sample calculator application
-        tokenType:
-          type: string
-          description: |
-            Type of the access token generated for this application.
-
-            **OAUTH:** A UUID based access token
-            **JWT:** A self-contained, signed JWT based access token which is issued by default.
-          example: JWT
-          default: JWT
-          enum:
-            - OAUTH
-            - JWT
         status:
           type: string
           readOnly: true
@@ -3471,32 +3222,17 @@ components:
         subscriptionCount:
           type: integer
           readOnly: true
-        keys:
-          type: array
-          readOnly: true
-          example: []
-          items:
-            $ref: '#/components/schemas/ApplicationKey'
         attributes:
           type: object
           additionalProperties:
             type: string
           example: {}
-        subscriptionScopes:
-          type: array
-          example: []
-          items:
-            $ref: '#/components/schemas/ScopeInfo'
         owner:
           type: string
           description: |
             Application created user
           readOnly: true
           example: admin
-        hashEnabled:
-          type: boolean
-          readOnly: true
-          example: false
         createdTime:
           type: string
           readOnly: true
@@ -4073,10 +3809,13 @@ components:
             - password
           items:
             type: string
-        callbackUrl:
-          type: string
-          description: Callback URL
-          example: http://sample.com/callback/url
+        callbackUrls:
+          type: array
+          description: Callback URLs of the application
+          items:
+            type: string
+          example:
+            - http://sample.com/callback/url
         keyState:
           type: string
           description: Describes the state of the key generation.
@@ -4095,10 +3834,6 @@ components:
           enum:
             - MAPPED
             - CREATED
-        groupId:
-          type: string
-          description: Application group id (if any).
-          example: "2"
         token:
           $ref: '#/components/schemas/ApplicationToken'
         additionalProperties:
@@ -4147,7 +3882,7 @@ components:
         keyManager:
           type: string
           description: key Manager to Generate Keys
-          example: Resident Key Manager
+          example: abcff4cf-24c5-4298-a7b4-39a1fbd34693
         grantTypesToBeSupported:
           type: array
           description: Grant types that should be supported by the application
@@ -4156,13 +3891,12 @@ components:
             - client_credentials
           items:
             type: string
-        callbackUrl:
-          type: string
-          description: Callback URL
-          example: http://sample.com/callback/url
-        validityTime:
-          type: string
-          example: "3600"
+        callbackUrls:
+          type: array
+          items:
+            type: string
+            description: Callback URL
+            example: http://sample.com/callback/url
         clientId:
           type: string
           description: Client ID for generating access token.
@@ -4226,6 +3960,13 @@ components:
           enum:
             - CLIENT_CREDENTIALS
             - TOKEN_EXCHANGE
+        scopes:
+          type: array
+          description: Scopes to be assigned to the access token
+          items:
+            type: string
+          example:
+            - scope2
         additionalProperties:
           type: object
           properties: {}

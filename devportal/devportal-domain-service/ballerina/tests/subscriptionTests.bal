@@ -307,10 +307,10 @@ function getSubscriptionListTest4() {
 function deleteSubscriptionTest() {
     string? subId = sub.subscriptionId;
     if subId is string {
-        commons:APKError|string status = deleteSubscription(subId, organiztion);
-        if status is string {
+        commons:APKError? status = deleteSubscription(subId, organiztion);
+        if status is () {
             test:assertTrue(true, "Successfully deleted subscription");
-        } else if status is commons:APKError {
+        } else {
             test:assertFail("Error occured while deleting subscription");
         }
     } else {

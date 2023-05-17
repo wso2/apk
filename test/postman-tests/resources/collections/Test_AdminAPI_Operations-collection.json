@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "f62909ef-30b0-498d-b014-edf9b0612fc5",
+		"_postman_id": "51b4a790-d2a5-4e67-aa01-8420c991af4e",
 		"name": "Test Admin API Operations",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -1042,7 +1042,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"name\": \"nonprod-idp\",\n  \"displayName\": \"Non production IDP\",\n  \"type\": \"nonProdIdp\",\n  \"description\": \"This is a key manager for Developers\",\n  \"endpoints\": [\n    {\n      \"name\": \"token_endpoint\",\n      \"value\": \"https://localhost:9443/oauth2/token\"\n    },\n    {\n        \"name\":\"dcr_endpoint\",\n        \"value\":\"https://localhost:9443/oauth2/jwks\"\n    }\n  ],\n  \"certificates\": {\n    \"type\": \"JWKS\",\n    \"value\": \"https://localhost:9443/oauth2/jwks\"\n  },\n  \"issuer\": \"https://localhost:9444/services\",\n  \"availableGrantTypes\": [\n    \"client_credentials\"\n  ],\n  \"enableTokenGeneration\": true,\n  \"enableMapOAuthConsumerApps\": true,\n  \"enableOAuthAppCreation\": true,\n  \"consumerKeyClaim\": \"azp\",\n  \"scopesClaim\": \"scopes\",\n  \"enabled\": true,\n  \"additionalProperties\": {\n    \"username\": \"admin\",\n    \"password\": \"admin\"\n  }\n}",
+					"raw": "{\n  \"name\": \"nonprod-idp\",\n  \"displayName\": \"Non production IDP\",\n  \"type\": \"nonProdIdp\",\n  \"description\": \"This is a key manager for Developers\",\n  \"endpoints\": [\n    {\n      \"name\": \"token_endpoint\",\n      \"value\": \"https://apk-release-wso2-apk-idp-ds-service:9443/oauth2/token\"\n    },\n    {\n        \"name\":\"dcr_endpoint\",\n        \"value\":\"https://apk-release-wso2-apk-idp-ds-service:9443/dcr\"\n    }\n  ],\n  \"signingCertificate\": {\n    \"type\": \"JWKS\",\n    \"value\": \"https://apk-release-wso2-apk-idp-ds-service:9443/oauth2/jwks\"\n  },\n  \"issuer\": \"https://idp.am.wso2.com/token\",\n  \"availableGrantTypes\": [\n    \"client_credentials\"\n  ],\n  \"enableTokenGeneration\": true,\n  \"enableMapOAuthConsumerApps\": true,\n  \"enableOAuthAppCreation\": true,\n  \"consumerKeyClaim\": \"azp\",\n  \"scopesClaim\": \"scopes\",\n  \"enabled\": true,\n  \"additionalProperties\": {\n    \"username\": \"admin\",\n    \"password\": \"admin\"\n  }\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -1076,7 +1076,7 @@
 							"});",
 							"const response = pm.response.json();",
 							"pm.test(\"varify payload\",function(){",
-							"pm.expect(response.name,\"nonprod-idp\");",
+							"pm.expect(response.name,\"nonprod-idp1\");",
 							"pm.expect(response.type,\"nonProdIdp\");",
 							"pm.expect(response.issuer,\"https://localhost:9444/services\");",
 							"pm.expect(response.enabled,true);",
@@ -1145,7 +1145,7 @@
 							"});",
 							"const response = pm.response.json();",
 							"pm.test(\"varify payload\",function(){",
-							"pm.expect(response.name,\"nonprod-idp\");",
+							"pm.expect(response.name,\"nonprod-idp1\");",
 							"pm.expect(response.issuer,\"https://localhost:9444/services\");",
 							"pm.expect(response.enabled,true);",
 							"pm.expect(response.enableTokenGeneration,false);",
@@ -1176,7 +1176,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\"id\":\"{{keymanager-uuid}}\",\n  \"name\": \"nonprod-idp\",\n  \"displayName\": \"Non production IDP\",\n  \"type\": \"nonProdIdp\",\n  \"description\": \"This is a key manager for Developers\",\n  \"endpoints\": [\n    {\n      \"name\": \"token_endpoint\",\n      \"value\": \"https://localhost:9443/oauth2/token\"\n    },\n    {\n        \"name\":\"dcr_endpoint\",\n        \"value\":\"https://localhost:9443/oauth2/jwks\"\n    }\n  ],\n  \"certificates\": {\n    \"type\": \"JWKS\",\n    \"value\": \"https://localhost:9443/oauth2/jwks\"\n  },\n  \"issuer\": \"https://localhost:9444/services\",\n  \"availableGrantTypes\": [\n    \"client_credentials\"\n  ],\n  \"enableTokenGeneration\": false,\n  \"enableMapOAuthConsumerApps\": true,\n  \"enableOAuthAppCreation\": true,\n  \"consumerKeyClaim\": \"azp\",\n  \"scopesClaim\": \"scopes\",\n  \"enabled\": true,\n  \"additionalProperties\": {\n    \"username\": \"admin\",\n    \"password\": \"admin\"\n  }\n}",
+					"raw": "{\n    \"id\": \"{{keymanager-uuid}}\",\n    \"name\": \"nonprod-idp1\",\n    \"displayName\": \"Non production IDP\",\n    \"type\": \"nonProdIdp\",\n    \"description\": \"This is a key manager for Developers\",\n    \"endpoints\": [\n        {\n            \"name\": \"token_endpoint\",\n            \"value\": \"https://apk-release-wso2-apk-idp-ds-service:9443/oauth2/token\"\n        },\n        {\n            \"name\": \"dcr_endpoint\",\n            \"value\": \"https://apk-release-wso2-apk-idp-ds-service:9443/dcr\"\n        }\n    ],\n    \"signingCertificate\": {\n        \"type\": \"JWKS\",\n        \"value\": \"https://apk-release-wso2-apk-idp-ds-service:9443/oauth2/jwks\"\n    },\n    \"issuer\": \"https://idp.am.wso2.com/token\",\n    \"availableGrantTypes\": [\n        \"client_credentials\"\n    ],\n    \"enableTokenGeneration\": true,\n    \"enableMapOAuthConsumerApps\": true,\n    \"enableOAuthAppCreation\": true,\n    \"consumerKeyClaim\": \"azp\",\n    \"scopesClaim\": \"scopes\",\n    \"enabled\": true,\n    \"additionalProperties\": {\n        \"username\": \"admin\",\n        \"password\": \"admin\"\n    }\n}",
 					"options": {
 						"raw": {
 							"language": "json"

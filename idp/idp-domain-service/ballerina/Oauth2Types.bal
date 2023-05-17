@@ -5,6 +5,11 @@ public type BadRequestTokenErrorResponse record {|
     TokenErrorResponse body;
 |};
 
+public type OkTokenResponse record {|
+    *http:Ok;
+    TokenResponse body;
+|};
+
 public type UnauthorizedTokenErrorResponse record {|
     *http:Unauthorized;
     TokenErrorResponse body;
@@ -23,8 +28,7 @@ public type TokenResponse record {
     string token_type;
     # The lifetime in seconds of the access token.
     decimal expires_in?;
-    # OPTIONAL.
-    # The refresh token, which can be used to obtain new access tokens.
+    # OPTIONAL.The refresh token, which can be used to obtain new access tokens.
     string refresh_token?;
     # The scope of the access token requested.
     string scope?;

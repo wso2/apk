@@ -26,7 +26,7 @@ import ballerina/time;
 
 public class TokenUtil {
 
-    public isolated function generateToken(string? authorization, Token_body payload) returns UnauthorizedTokenErrorResponse|BadRequestTokenErrorResponse|TokenResponse|error {
+    public isolated function generateToken(string? authorization, Token_body payload) returns UnauthorizedTokenErrorResponse|BadRequestTokenErrorResponse|OkTokenResponse|error {
         if (authorization is ()) || (authorization.toString().trim().length() == 0) || (!authorization.toString().startsWith("Basic ")) {
             UnauthorizedTokenErrorResponse unauthorized = {body: {'error: "access_denied", error_description: "Unauthorized"}};
             return unauthorized;
@@ -84,7 +84,7 @@ public class TokenUtil {
             }
         }
     }
-    public isolated function handleClientCredentialsGrant(Token_body payload, Application application) returns TokenResponse|BadRequestTokenErrorResponse|UnauthorizedTokenErrorResponse {
+    public isolated function handleClientCredentialsGrant(Token_body payload, Application application) returns OkTokenResponse|BadRequestTokenErrorResponse|UnauthorizedTokenErrorResponse {
         string[] scopeArray = self.filterScopes(payload.scope);
         string|jwt:Error tokenResult = self.issueToken(application, (), scopeArray, (), ACCESS_TOKEN_TYPE);
         if tokenResult is string {
@@ -94,7 +94,7 @@ public class TokenUtil {
                 expires_in: idpConfiguration.tokenIssuerConfiguration.expTime,
                 scope: string:'join(" ", ...scopeArray)
             };
-            return tokenResponse;
+            return {body: tokenResponse};
         }
         else {
             log:printError("Error on Generating token", tokenResult);
@@ -133,7 +133,7 @@ public class TokenUtil {
         issuerConfig.customClaims = customClaims;
         return jwt:issue(issuerConfig);
     }
-    public isolated function handleAuthorizationCodeGrant(Token_body payload, Application application) returns BadRequestTokenErrorResponse|TokenResponse|error {
+    public isolated function handleAuthorizationCodeGrant(Token_body payload, Application application) returns BadRequestTokenErrorResponse|OkTokenResponse|error {
         string? authorization_code = payload.code;
         string? redirectUri = payload.redirect_uri;
 
@@ -173,7 +173,7 @@ public class TokenUtil {
                 string accessToken = check self.issueToken(application, sub, scopesArray, organization, ACCESS_TOKEN_TYPE);
                 string refreshToken = check self.issueToken(application, sub, scopesArray, organization, REFRESH_TOKEN_TYPE);
                 TokenResponse token = {access_token: accessToken, refresh_token: refreshToken, expires_in: idpConfiguration.tokenIssuerConfiguration.expTime, token_type: TOKEN_TYPE_BEARER, scope: string:'join(" ", ...scopesArray)};
-                return token;
+                return {body: token};
             } on fail var e {
                 log:printInfo("Error on generating token", e);
                 return {"body": {'error: "server_error", error_description: "Server Error occured on generating token"}};
@@ -184,7 +184,7 @@ public class TokenUtil {
             return tokenError;
         }
     }
-    public isolated function hanleRefreshTokenGrant(Token_body payload, Application application) returns BadRequestTokenErrorResponse|TokenResponse {
+    public isolated function hanleRefreshTokenGrant(Token_body payload, Application application) returns BadRequestTokenErrorResponse|OkTokenResponse {
         string? refresh_token = payload.refresh_token;
 
         if (refresh_token is () || refresh_token.toString().trim().length() == 0) {
@@ -218,7 +218,7 @@ public class TokenUtil {
                 string accessToken = check self.issueToken(application, sub, scopesArray, organization, ACCESS_TOKEN_TYPE);
                 string refreshToken = check self.issueToken(application, sub, scopesArray, organization, REFRESH_TOKEN_TYPE);
                 TokenResponse token = {access_token: accessToken, refresh_token: refreshToken, expires_in: idpConfiguration.tokenIssuerConfiguration.expTime, token_type: TOKEN_TYPE_BEARER, scope: scopes};
-                return token;
+                return {body: token};
             } on fail var e {
                 log:printInfo("Error on generating token", e);
                 return {"body": {'error: "server_error", error_description: "Server Error occured on generating token"}};

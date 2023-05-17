@@ -2695,7 +2695,7 @@ components:
                 - PEM
             value:
               type: string
-        tlsCertficate:
+        tlsCertificate:
           type: string
           description: PEM type certificate
         issuer:
@@ -2709,10 +2709,15 @@ components:
         enableTokenGeneration:
           type: boolean
           example: true
+          default: true
         enableMapOAuthConsumerApps:
           type: boolean
           example: false
           default: false
+        enableOauthAppValidation:
+          type: boolean
+          example: false
+          default: true
         enableOAuthAppCreation:
           type: boolean
           example: false

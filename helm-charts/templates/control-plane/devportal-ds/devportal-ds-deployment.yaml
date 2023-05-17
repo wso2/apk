@@ -92,6 +92,9 @@ spec:
             {{- else }}
               subPath: tls.crt
             {{- end }}
+            - name: keymanager-connetor--nonprodidp
+              mountPath: /home/wso2apk/devportal/keymanager/nonprodidp.yaml
+              subPath: nonprodidp.yaml            
            {{if .Values.wso2.apk.cp.keyManagerConnectors }}
             {{- range $index, $val := $.Values.wso2.apk.cp.keyManagerConnectors}}
             - name: keyManagerConnectors-$val.type
@@ -139,6 +142,9 @@ spec:
         {{- else }}
             secretName: {{ template "apk-helm.resource.prefix" . }}-management-server-cert
         {{- end }}
+        - name: keymanager-connetor--nonprodidp
+          configMap:
+            name: {{ template "apk-helm.resource.prefix" . }}-nonprodidp-config
         {{if .Values.wso2.apk.cp.keyManagerConnectors }}
         {{- range $index, $val := $.Values.wso2.apk.cp.keyManagerConnectors}}
         - name: keyManagerConnectors-$val.type

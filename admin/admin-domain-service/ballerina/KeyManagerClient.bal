@@ -88,9 +88,15 @@ public class KeyManagerClient {
                     additionalProperties["signing_certificate_value"] = certificateValue;
                 }
             }
+            string? tlsCertificate = keyManager.tlsCertificate;
+            if tlsCertificate is string {
+                byte[] encodedBytes = check commons:EncoderUtil_encodeBase64(tlsCertificate.toBytes());
+                additionalProperties["tls_certificate"] = check string:fromBytes(encodedBytes);
+            }
             additionalProperties["mapOAuthConsumerApps"] = keyManager.enableMapOAuthConsumerApps;
             additionalProperties["enableTokenGeneration"] = keyManager.enableTokenGeneration;
             additionalProperties["enableOauthAppCreation"] = keyManager.enableOAuthAppCreation;
+            additionalProperties["enableOauthAppValidation"] = keyManager.enableOauthAppValidation;
             keyManagerDTO.configuration = additionalProperties.toJsonString().toBytes();
             return keyManagerDTO;
         } on fail var e {
@@ -244,11 +250,11 @@ public class KeyManagerClient {
                 _ = additionalProperties.removeIfHasKey("signing_certificate_value");
             }
             if additionalProperties.hasKey("tls_certificate") {
-                _ = additionalProperties.removeIfHasKey("tls_certificate");
                 string certificateValue = <string>additionalProperties.get("tls_certificate");
                 byte[] encodedBytes = check commons:EncoderUtil_decodeBase64(certificateValue.toBytes());
                 certificateValue = check string:fromBytes(encodedBytes);
-                keymanager.tlsCertficate = certificateValue;
+                keymanager.tlsCertificate = certificateValue;
+                _ = additionalProperties.removeIfHasKey("tls_certificate");
             }
             if additionalProperties.hasKey("mapOAuthConsumerApps") {
                 keymanager.enableMapOAuthConsumerApps = <boolean>additionalProperties.get("mapOAuthConsumerApps");
@@ -261,6 +267,10 @@ public class KeyManagerClient {
             if additionalProperties.hasKey("enableOauthAppCreation") {
                 keymanager.enableOAuthAppCreation = <boolean>additionalProperties.get("enableOauthAppCreation");
                 _ = additionalProperties.removeIfHasKey("enableOauthAppCreation");
+            }
+            if additionalProperties.hasKey("enableOauthAppValidation"){
+                keymanager.enableOauthAppValidation = <boolean>additionalProperties.get("enableOauthAppValidation");
+                _ = additionalProperties.removeIfHasKey("enableOauthAppValidation");
             }
             keymanager.additionalProperties = additionalProperties;
             return keymanager;
