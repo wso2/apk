@@ -109,7 +109,7 @@ function beforeFunc() {
 @test:BeforeSuite
 function beforeFunc2() returns error? {
      // Add thumbnail
-    int|APKError thumbnailCategoryId = db_getResourceCategoryIdByCategoryType(RESOURCE_TYPE_THUMBNAIL);
+    int|commons:APKError thumbnailCategoryId = db_getResourceCategoryIdByCategoryType(RESOURCE_TYPE_THUMBNAIL);
     if thumbnailCategoryId is int {
         Resource thumbnail = {
             resourceUUID: "02ad95e2-b30b-10c8-wwf2-65da7edd2219",
@@ -120,10 +120,10 @@ function beforeFunc2() returns error? {
             resourceBinaryValue: check io:fileReadBytes("./tests/resources/thumbnail.png")
 
         };
-        Resource|APKError addedThumbnail = addResourceDAO(thumbnail);
+        Resource|commons:APKError addedThumbnail = addResourceDAO(thumbnail);
        if addedThumbnail is Resource {
             test:assertTrue(true, "Successfully added Thumbnail");
-        } else if addedThumbnail is APKError {
+        } else if addedThumbnail is commons:APKError {
             log:printError(addedThumbnail.toString());
             test:assertFail("Error occured while adding Thumbnail");
         }
@@ -229,7 +229,7 @@ function generateSDKImplTestNegative(){
 
 @test:Config {}
 function gethumbnailTest() {
-    http:Response|NotFoundError|APKError thumbnail = getThumbnail("01ed75e2-b30b-18c8-wwf2-25da7edd2231");
+    http:Response|NotFoundError|commons:APKError thumbnail = getThumbnail("01ed75e2-b30b-18c8-wwf2-25da7edd2231");
     if thumbnail is http:Response {
         test:assertTrue(true, "Successfully getting the thumbnail");
     } else {

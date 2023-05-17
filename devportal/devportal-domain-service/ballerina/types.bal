@@ -94,16 +94,6 @@ public type OkApplicationInfo record {|
     ApplicationInfo body;
 |};
 
-public type CreatedSubscription record {|
-    *http:Created;
-    Subscription body;
-|};
-
-public type CreatedApplication record {|
-    *http:Created;
-    Application body;
-|};
-
 public type DocumentList record {
     # Number of Documents returned.
     int count?;
@@ -122,16 +112,14 @@ public type ApplicationKey record {
     string consumerSecret?;
     # The grant types that are supported by the application
     string[] supportedGrantTypes?;
-    # Callback URL
-    string callbackUrl?;
+    # Callback URLs of the application
+    string[] callbackUrls?;
     # Describes the state of the key generation.
     string keyState?;
     # Describes to which endpoint the key belongs
     string keyType?;
     # Describe the which mode Application Mapped.
     string mode?;
-    # Application group id (if any).
-    string groupId?;
     ApplicationToken token?;
     # additionalProperties (if any).
     record {} additionalProperties?;
@@ -160,9 +148,7 @@ public type ApplicationKeyGenerateRequest record {
     string keyManager?;
     # Grant types that should be supported by the application
     string[] grantTypesToBeSupported;
-    # Callback URL
-    string callbackUrl?;
-    string validityTime?;
+    string[] callbackUrls?;
     # Client ID for generating access token.
     string clientId?;
     # Client secret for generating access token. This is given together with the client Id.
@@ -259,7 +245,7 @@ public type Subscription record {
     # The UUID of the application
     string applicationId;
     # The unique identifier of the API.
-    string apiId?;
+    string apiId;
     APIInfo apiInfo?;
     ApplicationInfo applicationInfo?;
     string status?;
@@ -405,25 +391,16 @@ public type API_URLs record {
 
 public type Application record {
     string applicationId?;
-    int id?;
     @constraint:String {maxLength: 100, minLength: 1}
     string name;
     @constraint:String {maxLength: 512}
     string description?;
-    # Type of the access token generated for this application.
-    # 
-    # **OAUTH:** A UUID based access token
-    # **JWT:** A self-contained, signed JWT based access token which is issued by default.
-    string tokenType = "JWT";
     string status = "";
     string[] groups?;
     int subscriptionCount?;
-    ApplicationKey[] keys?;
     record {|string...;|} attributes?;
-    ScopeInfo[] subscriptionScopes?;
     # Application created user
     string owner?;
-    boolean hashEnabled?;
     string createdTime?;
     string updatedTime?;
 };
@@ -641,6 +618,7 @@ public type ApplicationTokenGenerateRequest record {
     # Token to be revoked, if any
     string revokeToken?;
     string grantType?;
+    string[] scopes?;
     # Additional parameters if Authorization server needs any
     record {} additionalProperties?;
 };

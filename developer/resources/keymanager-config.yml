@@ -27,59 +27,12 @@ tags:
   - name: key manageent
     description: key manageent
 paths:
-  "/initialize":
-    post:
-      tags:
-        - Configurations
-      summary: Initialize Key Manager
-      operationId: initializeKeyManager
-      parameters:
-        - $ref: "#/components/parameters/X-OrganizationId"
-      requestBody:
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ConfigurationInitialization"
-      responses:
-        200:
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                properties:
-                  initialized:
-                    type: boolean
-                    example: true
-        500:
-          $ref: "#/components/responses/InternalServerError"
-    head:
-      tags:
-        - Configurations
-      summary: Check Key Manager initialized
-      operationId: checkInitialized
-      parameters:
-        - $ref: "#/components/parameters/X-OrganizationId"
-      responses:
-        200:
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                properties:
-                  initialized:
-                    type: boolean
-                    example: true
-        500:
-          $ref: "#/components/responses/InternalServerError"
-
   "/register":
     post:
       tags:
         - Client Registration
       summary: Register Client.
       operationId: registerClient
-      parameters:
-        - $ref: "#/components/parameters/X-OrganizationId"
       requestBody:
           content:
             application/json:
@@ -103,7 +56,6 @@ paths:
       summary: Get Client. 
       operationId: getClient
       parameters:
-        - $ref: "#/components/parameters/X-OrganizationId"
         - $ref: "#/components/parameters/client_id"
       responses:
         200:
@@ -121,7 +73,6 @@ paths:
       summary: Update Client
       operationId: updateClient
       parameters:
-        - $ref: "#/components/parameters/X-OrganizationId"
         - $ref: "#/components/parameters/client_id"
       requestBody:
           content:
@@ -144,11 +95,30 @@ paths:
       summary: Delete Client.
       operationId: deleteClient
       parameters:
-        - $ref: "#/components/parameters/X-OrganizationId"
         - $ref: "#/components/parameters/client_id"
       responses:
         204:
           description: Successful operation
+        500:
+          $ref: "#/components/responses/InternalServerError"
+  "/token":
+    post:
+      tags:
+        - Token
+      summary: Get Token.
+      operationId: getToken
+      requestBody:
+          content:
+            application/x-www-form-urlencoded:
+              schema:
+                $ref: "#/components/schemas/TokenRequest"
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenResponse"  
         500:
           $ref: "#/components/responses/InternalServerError"
 components:
@@ -161,14 +131,6 @@ components:
       schema:
         type: string
         example: "test"
-    X-OrganizationId:
-      name: X-OrganizationId
-      in: header
-      description: Organization Id
-      required: true
-      schema:
-        type: string
-        example: "a3b58ccf-6ecc-4557-b5bb-0a35cce38256"
   schemas:
     ClientRegistrationRequest:
       title: Client Registration Request
@@ -252,14 +214,6 @@ components:
               type: string
               example: "test"      
 
-    ConfigurationInitialization:
-      title: Key Manager Configuration Initialization
-      type: object
-      properties:
-        endpoints:
-          type: object
-        configurations:
-          type: object
     Error:
       title: Error object returned with 4XX HTTP status
       required:
@@ -303,6 +257,47 @@ components:
           type: string
           description: |
             Description about individual errors occurred
+    TokenRequest:
+      title: Token Request
+      type: object
+      properties:
+        client_id:
+          type: string
+          example: "test"
+        client_secret:
+          type: string
+          example: "test"
+        scopes:
+          type: array
+          items:
+            type: string
+            example: "openid"
+    TokenResponse:
+      title: Token Response
+      type: object
+      properties:
+        access_token:
+          type: string
+          example: "test"
+        token_type:
+          type: string
+          example: "Bearer"
+        expires_in:
+          type: integer
+          format: int64
+          example: 3600
+        refresh_token:
+          type: string
+          example: "test"
+        scope:
+          type: string
+          example: "openid"
+        id_token:
+          type: string
+          example: "test"
+        additional_properties:
+          type: object
+          example: {}
   responses:
     InternalServerError:
       description: Internal Server Error.

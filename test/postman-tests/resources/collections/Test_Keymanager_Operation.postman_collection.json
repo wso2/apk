@@ -1,0 +1,1189 @@
+{
+	"info": {
+		"_postman_id": "5ee9efbf-7ab5-4bbb-8cd8-d8416045055f",
+		"name": "Test Keymanager Operation",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Generate Token",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var accessTokenResponse = pm.response.json();",
+							"pm.collectionVariables.set(\"access_token\",accessTokenResponse.access_token);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{client_secret}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "{{client_id}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Host",
+						"value": "idp.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "grant_type",
+							"value": "client_credentials",
+							"type": "default"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/oauth2/token",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"oauth2",
+						"token"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "AdminAPI Create KeyManager",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"  pm.response.to.have.status(201);",
+							"});",
+							"const response = pm.response.json();",
+							"pm.collectionVariables.set(\"keymanager-uuid\",response.id);",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"nonprod-idp\",\n  \"displayName\": \"Non production IDP\",\n  \"type\": \"nonProdIdp\",\n  \"description\": \"This is a key manager for Developers\",\n  \"endpoints\": [\n    {\n      \"name\": \"token_endpoint\",\n      \"value\": \"https://release-1-wso2-apk-idp-ds-service:9443/oauth2/token\"\n    },\n    {\n        \"name\":\"dcr_endpoint\",\n        \"value\":\"https://release-1-wso2-apk-idp-ds-service:9443/dcr\"\n    }\n  ],\n  \"signingCertificate\": {\n    \"type\": \"JWKS\",\n    \"value\": \"https://release-1-wso2-apk-idp-ds-service:9443/oauth2/jwks\"\n  },\n  \"issuer\": \"https://idp.am.wso2.com/token\",\n  \"availableGrantTypes\": [\n    \"client_credentials\"\n  ],\n  \"enableTokenGeneration\": true,\n  \"enableMapOAuthConsumerApps\": true,\n  \"enableOAuthAppCreation\": true,\n  \"consumerKeyClaim\": \"azp\",\n  \"scopesClaim\": \"scopes\",\n  \"enabled\": true,\n  \"additionalProperties\": {\n    \"username\": \"admin\",\n    \"password\": \"admin\"\n  }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/admin/key-managers",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"admin",
+						"key-managers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "AdminAPI Get KeyManager by id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							"const response = pm.response.json();",
+							"pm.test(\"varify payload\",function(){",
+							"pm.expect(response.name,\"nonprod-idp\");",
+							"pm.expect(response.type,\"nonProdIdp\");",
+							"pm.expect(response.issuer,\"https://localhost:9444/services\");",
+							"pm.expect(response.enabled,true);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/admin/key-managers/{{keymanager-uuid}}",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"admin",
+						"key-managers",
+						"{{keymanager-uuid}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DevportalAPI Application Create",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"  pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Assert Devportal Application creation\", () => {",
+							"    const responseJson = pm.response.json();",
+							"    ",
+							"    pm.collectionVariables.set(\"testApplicationID\",responseJson.applicationId)",
+							"    pm.expect(responseJson.name).equals(\"km-app1\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"km-app1\",\n  \"throttlingPolicy\": \"Unlimited\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/devportal/applications",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"devportal",
+						"applications"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DevportalAPI Application Generate Key  for Production",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Assert Generate keys for devportal km-app\", () => {",
+							"    const responseJson = pm.response.json();",
+							"    pm.collectionVariables.set(\"keymappingID-production\",responseJson.keyMappingId);",
+							"    pm.expect(responseJson.keyType).equals(\"PRODUCTION\");",
+							"    pm.expect(responseJson.mode).equals(\"CREATED\");",
+							"    pm.collectionVariables.set(\"consumerKey-production\",responseJson.consumerKey);",
+							"    pm.collectionVariables.set(\"consumerSecret-production\",responseJson.consumerSecret);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"keyType\": \"PRODUCTION\",\n  \"keyManager\": \"{{keymanager-uuid}}\",\n  \"grantTypesToBeSupported\": [\n    \"client_credentials\"\n  ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/devportal/applications/{{testApplicationID}}/generate-keys",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"devportal",
+						"applications",
+						"{{testApplicationID}}",
+						"generate-keys"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DevportalAPI Application Generate Key  for Sandbox",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Assert Generate keys for devportal km-app\", () => {",
+							"    const responseJson = pm.response.json();",
+							"    pm.collectionVariables.set(\"keymappingID-sandbox\",responseJson.keyMappingId);",
+							"    pm.collectionVariables.set(\"\")",
+							"    pm.expect(responseJson.keyType).equals(\"SANDBOX\");",
+							"    pm.expect(responseJson.mode).equals(\"CREATED\");",
+							"    pm.collectionVariables.set(\"consumerKey-sandbox\",responseJson.consumerKey);",
+							"    pm.collectionVariables.set(\"consumerSecret-sandbox\",responseJson.consumerSecret);",
+							"",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"keyType\": \"SANDBOX\",\n  \"keyManager\": \"{{keymanager-uuid}}\",\n  \"grantTypesToBeSupported\": [\n    \"client_credentials\"\n  ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/devportal/applications/{{testApplicationID}}/generate-keys",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"devportal",
+						"applications",
+						"{{testApplicationID}}",
+						"generate-keys"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DevportalAPI Application retrieve OauthKeys",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Assert devportal oauthkeys response\", () => {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.count).equals(2);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/devportal/applications/{{testApplicationID}}/oauth-keys",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"devportal",
+						"applications",
+						"{{testApplicationID}}",
+						"oauth-keys"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DevportalAPI Application retrieve OauthKeys for production KeyMapping Id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Assert Oauth Key for sandbox\", () => {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.consumerKey,pm.collectionVariables.get(\"consumerKey_production\"));",
+							"    pm.expect(responseJson.consumerSecret,pm.collectionVariables.get(\"consumerSecret_production\"));",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/devportal/applications/{{testApplicationID}}/oauth-keys/{{keymappingID-production}}",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"devportal",
+						"applications",
+						"{{testApplicationID}}",
+						"oauth-keys",
+						"{{keymappingID-production}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DevportalAPI Application retrieve OauthKeys for sandbox KeyMapping Id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Assert Oauth Key for sandbox\", () => {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.consumerKey,pm.collectionVariables.get(\"consumerKey_sandbox\"));",
+							"    pm.expect(responseJson.consumerSecret,pm.collectionVariables.get(\"consumerSecret_sandbox\"));",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/devportal/applications/{{testApplicationID}}/oauth-keys/{{keymappingID-sandbox}}",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"devportal",
+						"applications",
+						"{{testApplicationID}}",
+						"oauth-keys",
+						"{{keymappingID-sandbox}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DevportalAPI Application generate Access Token production",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Assert Devportal Generate Access Token\", () => {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.accessToken).not.eq(undefined);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"consumerSecret\": \"{{consumerSecret-production}}\",\n    \"scopes\": [\n        \"openid\"\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/devportal/applications/{{testApplicationID}}/oauth-keys/{{keymappingID-production}}/generate-token",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"devportal",
+						"applications",
+						"{{testApplicationID}}",
+						"oauth-keys",
+						"{{keymappingID-production}}",
+						"generate-token"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DevportalAPI Application generate Access Token sandbox",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Assert Devportal Generate Access Token\", () => {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.accessToken).not.eq(undefined);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"consumerSecret\": \"{{consumerSecret-sandbox}}\",\n    \"scopes\": [\n        \"openid\"\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/devportal/applications/{{testApplicationID}}/oauth-keys/{{keymappingID-sandbox}}/generate-token",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"devportal",
+						"applications",
+						"{{testApplicationID}}",
+						"oauth-keys",
+						"{{keymappingID-sandbox}}",
+						"generate-token"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DevportalAPI Applicatio Delete",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"km-app\",\n  \"throttlingPolicy\": \"Unlimited\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/devportal/applications/{{testApplicationID}}",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"devportal",
+						"applications",
+						"{{testApplicationID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Generate Token from deleted app production",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 401\", function () {",
+							"  pm.response.to.have.status(401);",
+							"});",
+							"",
+							"pm.test(\"validate payload direct token endpoint\", () => {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.error).eq(\"access_denied\");",
+							"    pm.expect(responseJson.error).eq(\"access_denied\");",
+							"",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{consumerSecret-production}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "{{consumerKey-production}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Host",
+						"value": "idp.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "grant_type",
+							"value": "client_credentials",
+							"type": "default"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/oauth2/token",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"oauth2",
+						"token"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Generate Token from deleted app sandbox",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 401\", function () {",
+							"  pm.response.to.have.status(401);",
+							"});",
+							"",
+							"pm.test(\"validate payload direct token endpoint\", () => {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.error).eq(\"access_denied\");",
+							"    pm.expect(responseJson.error_description).eq(\"Invalide Client Id/Secret\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{consumerSecret-sandbox}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "{{consumerKey-sandbox}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Host",
+						"value": "idp.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "grant_type",
+							"value": "client_credentials",
+							"type": "default"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/oauth2/token",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"oauth2",
+						"token"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "AdminAPI Delete KeyManager By id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\"id\":\"{{keymanager-uuid}}\",\n  \"name\": \"nonprod-idp\",\n  \"displayName\": \"Non production IDP\",\n  \"type\": \"nonProdIdp\",\n  \"description\": \"This is a key manager for Developers\",\n  \"endpoints\": [\n    {\n      \"name\": \"token_endpoint\",\n      \"value\": \"https://localhost:9443/oauth2/token\"\n    },\n    {\n        \"name\":\"dcr_endpoint\",\n        \"value\":\"https://localhost:9443/oauth2/jwks\"\n    }\n  ],\n  \"certificates\": {\n    \"type\": \"JWKS\",\n    \"value\": \"https://localhost:9443/oauth2/jwks\"\n  },\n  \"issuer\": \"https://localhost:9444/services\",\n  \"availableGrantTypes\": [\n    \"client_credentials\"\n  ],\n  \"enableTokenGeneration\": false,\n  \"enableMapOAuthConsumerApps\": true,\n  \"enableOAuthAppCreation\": true,\n  \"consumerKeyClaim\": \"azp\",\n  \"scopesClaim\": \"scopes\",\n  \"enabled\": true,\n  \"additionalProperties\": {\n    \"username\": \"admin\",\n    \"password\": \"admin\"\n  }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/admin/key-managers/{{keymanager-uuid}}",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"admin",
+						"key-managers",
+						"{{keymanager-uuid}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "applicationRatePlanName",
+			"value": "95PerMinPlan",
+			"type": "string"
+		},
+		{
+			"key": "applicationRatePlanDisplayName",
+			"value": "95 Requests per Minutes",
+			"type": "string"
+		},
+		{
+			"key": "applicationRatePlanDescription",
+			"value": "95 Requests per Minutes",
+			"type": "string"
+		},
+		{
+			"key": "applicationRatePlanType",
+			"value": "ApplicationThrottlePolicy",
+			"type": "string"
+		},
+		{
+			"key": "applicationRatePlanRequestCount",
+			"value": "95",
+			"type": "string"
+		},
+		{
+			"key": "applicationRatePlanTimeUnit",
+			"value": "min",
+			"type": "string"
+		},
+		{
+			"key": "applicationRatePlanTime",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "applicationRatePlanID",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "applicationRatePlanName2",
+			"value": "93PerMinPlan",
+			"type": "string"
+		},
+		{
+			"key": "applicationRatePlanDisplayName2",
+			"value": "93 Requests per Minutes",
+			"type": "string"
+		},
+		{
+			"key": "applicationRatePlanDescription2",
+			"value": "93 Requests per Minutes",
+			"type": "string"
+		},
+		{
+			"key": "applicationRatePlanType2",
+			"value": "ApplicationThrottlePolicy",
+			"type": "string"
+		},
+		{
+			"key": "applicationRatePlanRequestCount2",
+			"value": "93",
+			"type": "string"
+		},
+		{
+			"key": "applicationRatePlanTimeUnit2",
+			"value": "min",
+			"type": "string"
+		},
+		{
+			"key": "applicationRatePlanTime2",
+			"value": "15",
+			"type": "string"
+		},
+		{
+			"key": "denyPolicyConditionTypeApplication",
+			"value": "APPLICATION",
+			"type": "string"
+		},
+		{
+			"key": "denyPolicyConditionValueApplication",
+			"value": "admin:MyApp3",
+			"type": "string"
+		},
+		{
+			"key": "denyPolicyConditionStateApplication",
+			"value": "true",
+			"type": "string"
+		},
+		{
+			"key": "applicationDenyPolicyID",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "access_token",
+			"value": ""
+		},
+		{
+			"key": "organizationName",
+			"value": "Finance",
+			"type": "default"
+		},
+		{
+			"key": "organizationDisplayName",
+			"value": "Finance",
+			"type": "default"
+		},
+		{
+			"key": "organizationClaimValue",
+			"value": "0123-456-789-101",
+			"type": "default"
+		},
+		{
+			"key": "serviceNamespace",
+			"value": "Test",
+			"type": "default"
+		},
+		{
+			"key": "organizationDisplayNameUpdate",
+			"value": "FinanceMarketing",
+			"type": "default"
+		},
+		{
+			"key": "organizationId",
+			"value": "",
+			"type": "default"
+		},
+		{
+			"key": "keymanager-uuid",
+			"value": ""
+		},
+		{
+			"key": "testApplicationID",
+			"value": ""
+		},
+		{
+			"key": "keymappingID-production",
+			"value": ""
+		},
+		{
+			"key": "keymappingID-sandbox",
+			"value": ""
+		},
+		{
+			"value": ""
+		},
+		{
+			"key": "consumerKey-production",
+			"value": ""
+		},
+		{
+			"key": "consumerSecret-production",
+			"value": ""
+		},
+		{
+			"key": "consumerKey-sandbox",
+			"value": ""
+		},
+		{
+			"key": "consumerSecret-sandbox",
+			"value": ""
+		}
+	]
+}

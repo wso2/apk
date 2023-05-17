@@ -132,7 +132,7 @@ isolated service /api/am/devportal on ep0 {
     # http:NotModified (Not Modified. Empty body because the client has already the latest version of the requested resource.)
     # NotFoundError (Not Found. The specified resource does not exist.)
     # NotAcceptableError (Not Acceptable. The requested media type is not supported.)
-    resource function get apis/[string apiId]/thumbnail(@http:Header string? 'x\-wso2\-tenant, @http:Header string? 'if\-none\-match) returns http:Response|http:NotModified|NotFoundError|NotAcceptableError|APKError {
+    resource function get apis/[string apiId]/thumbnail(@http:Header string? 'x\-wso2\-tenant, @http:Header string? 'if\-none\-match) returns http:Response|http:NotModified|NotFoundError|NotAcceptableError|commons:APKError {
         return getThumbnail(apiId);
     }
     # Retrieve API Ratings
@@ -319,17 +319,10 @@ isolated service /api/am/devportal on ep0 {
     # BadRequestError (Bad Request. Invalid request or validation error.)
     # ConflictError (Conflict. Specified resource already exists.)
     # UnsupportedMediaTypeError (Unsupported Media Type. The entity of the request was not in a supported format.)
-    isolated resource function post applications(http:RequestContext requestContext, @http:Payload Application payload) returns CreatedApplication|AcceptedWorkflowResponse|BadRequestError|ConflictError|NotFoundError|InternalServerErrorError|commons:APKError {
+    isolated resource function post applications(http:RequestContext requestContext, @http:Payload Application payload) returns Application|AcceptedWorkflowResponse|BadRequestError|ConflictError|NotFoundError|InternalServerErrorError|commons:APKError {
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
-        Application|NotFoundError application = check addApplication(payload, organization, <string>authenticatedUserContext.userId);
-        if application is Application {
-            CreatedApplication createdApp = {body: application};
-            log:printDebug(application.toString());
-            return createdApp;
-        } else {
-            return <NotFoundError>application;
-        }
+        return check addApplication(payload, organization, <string>authenticatedUserContext.userId);
     }
     # Get Details of an Application
     #
@@ -391,15 +384,15 @@ isolated service /api/am/devportal on ep0 {
     # BadRequestError (Bad Request. Invalid request or validation error.)
     # NotFoundError (Not Found. The specified resource does not exist.)
     # PreconditionFailedError (Precondition Failed. The request has not been performed because one of the preconditions is not met.)
-    // resource function post applications/[string applicationId]/'generate\-keys(@http:Header string? 'x\-wso2\-tenant, @http:Payload ApplicationKeyGenerateRequest payload, http:RequestContext requestContext) returns OkApplicationKey|BadRequestError|NotFoundError|PreconditionFailedError|commons:APKError {
-    //     commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
-    //     commons:Organization organization = authenticatedUserContext.organization;
-    //     Application|NotFoundError applicationById = check getApplicationById(applicationId, organization);
-    //     if applicationById is NotFoundError {
-    //         return applicationById;
-    //     }
-    //     // generateKeysForApplication(<Application>applicationById, payload, organization);
-    // }
+    isolated resource function post applications/[string applicationId]/'generate\-keys(@http:Header string? 'x\-wso2\-tenant, @http:Payload ApplicationKeyGenerateRequest payload, http:RequestContext requestContext) returns OkApplicationKey|BadRequestError|NotFoundError|PreconditionFailedError|commons:APKError {
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        Application|NotFoundError applicationById = check getApplicationById(applicationId, organization);
+        if applicationById is NotFoundError {
+            return applicationById;
+        }
+        return check generateKeysForApplication(<Application>applicationById, payload, organization);
+    }
     # Map Application Keys
     #
     # + applicationId - Application Identifier consisting of the UUID of the Application. 
@@ -410,78 +403,15 @@ isolated service /api/am/devportal on ep0 {
     # BadRequestError (Bad Request. Invalid request or validation error.)
     # NotFoundError (Not Found. The specified resource does not exist.)
     # PreconditionFailedError (Precondition Failed. The request has not been performed because one of the preconditions is not met.)
-    // resource function post applications/[string applicationId]/'map\-keys(@http:Header string? 'x\-wso2\-tenant, @http:Payload ApplicationKeyMappingRequest payload) returns OkApplicationKey|BadRequestError|NotFoundError|PreconditionFailedError {
-    // }
-    # Retrieve All Application Keys
-    #
-    # + applicationId - Application Identifier consisting of the UUID of the Application. 
-    # + return - returns can be any of following types
-    # ApplicationKeyList (OK. Keys are returned.)
-    # BadRequestError (Bad Request. Invalid request or validation error.)
-    # NotFoundError (Not Found. The specified resource does not exist.)
-    # PreconditionFailedError (Precondition Failed. The request has not been performed because one of the preconditions is not met.)
-    // resource function get applications/[string applicationId]/keys() returns ApplicationKeyList|BadRequestError|NotFoundError|PreconditionFailedError {
-    // }
-    # Get Key Details of a Given Type
-    #
-    # + applicationId - Application Identifier consisting of the UUID of the Application. 
-    # + keyType - **Application Key Type** standing for the type of the keys (i.e. Production or Sandbox). 
-    # + groupId - Application Group Id 
-    # + return - returns can be any of following types
-    # ApplicationKey (OK. Keys of given type are returned.)
-    # BadRequestError (Bad Request. Invalid request or validation error.)
-    # NotFoundError (Not Found. The specified resource does not exist.)
-    # PreconditionFailedError (Precondition Failed. The request has not been performed because one of the preconditions is not met.)
-    // resource function get applications/[string applicationId]/keys/[string keyType](string? groupId) returns ApplicationKey|BadRequestError|NotFoundError|PreconditionFailedError {
-    // }
-    # Update Grant Types and Callback Url of an Application
-    #
-    # + applicationId - Application Identifier consisting of the UUID of the Application. 
-    # + keyType - **Application Key Type** standing for the type of the keys (i.e. Production or Sandbox). 
-    # + payload - Grant types/Callback URL update request object 
-    # + return - returns can be any of following types
-    # ApplicationKey (Ok. Grant types or/and callback url is/are updated.)
-    # BadRequestError (Bad Request. Invalid request or validation error.)
-    # NotFoundError (Not Found. The specified resource does not exist.)
-    # PreconditionFailedError (Precondition Failed. The request has not been performed because one of the preconditions is not met.)
-    // resource function put applications/[string applicationId]/keys/[string keyType](@http:Payload ApplicationKey payload) returns ApplicationKey|BadRequestError|NotFoundError|PreconditionFailedError {
-    // }
-    # Re-Generate Consumer Secret
-    #
-    # + applicationId - Application Identifier consisting of the UUID of the Application. 
-    # + keyType - **Application Key Type** standing for the type of the keys (i.e. Production or Sandbox). 
-    # + return - returns can be any of following types
-    # OkApplicationKeyReGenerateResponse (OK. Keys are re generated.)
-    # BadRequestError (Bad Request. Invalid request or validation error.)
-    # NotFoundError (Not Found. The specified resource does not exist.)
-    # PreconditionFailedError (Precondition Failed. The request has not been performed because one of the preconditions is not met.)
-    // resource function post applications/[string applicationId]/keys/[string keyType]/'regenerate\-secret() returns OkApplicationKeyReGenerateResponse|BadRequestError|NotFoundError|PreconditionFailedError {
-    // }
-    # Clean-Up Application Keys
-    #
-    # + applicationId - Application Identifier consisting of the UUID of the Application. 
-    # + keyType - **Application Key Type** standing for the type of the keys (i.e. Production or Sandbox). 
-    # + 'if\-match - Validator for conditional requests; based on ETag. 
-    # + return - returns can be any of following types
-    # http:Ok (OK. Clean up is performed)
-    # BadRequestError (Bad Request. Invalid request or validation error.)
-    # NotFoundError (Not Found. The specified resource does not exist.)
-    # PreconditionFailedError (Precondition Failed. The request has not been performed because one of the preconditions is not met.)
-    // resource function post applications/[string applicationId]/keys/[string keyType]/'clean\-up(@http:Header string? 'if\-match) returns http:Ok|BadRequestError|NotFoundError|PreconditionFailedError {
-    // }
-    # Generate Application Token
-    #
-    # + applicationId - Application Identifier consisting of the UUID of the Application. 
-    # + keyType - **Application Key Type** standing for the type of the keys (i.e. Production or Sandbox). 
-    # + 'if\-match - Validator for conditional requests; based on ETag. 
-    # + payload - Application token generation request object 
-    # + return - returns can be any of following types
-    # OkApplicationToken (OK. Token is generated.)
-    # BadRequestError (Bad Request. Invalid request or validation error.)
-    # NotFoundError (Not Found. The specified resource does not exist.)
-    # PreconditionFailedError (Precondition Failed. The request has not been performed because one of the preconditions is not met.)
-    // resource function post applications/[string applicationId]/keys/[string keyType]/'generate\-token(@http:Header string? 'if\-match, @http:Payload ApplicationTokenGenerateRequest payload) returns OkApplicationToken|BadRequestError|NotFoundError|PreconditionFailedError {
-    // }
+    resource function post applications/[string applicationId]/'map\-keys(@http:Header string? 'x\-wso2\-tenant, @http:Payload ApplicationKeyMappingRequest payload, http:RequestContext requestContext) returns OkApplicationKey|BadRequestError|NotFoundError|PreconditionFailedError|commons:APKError {
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        Application|NotFoundError applicationById = check getApplicationById(applicationId, organization);
+        if applicationById is NotFoundError {
+            return applicationById;
+        }
+        return check mapKeys(<Application>applicationById, payload, organization);
+    }
     # Retrieve All Application Keys
     #
     # + applicationId - Application Identifier consisting of the UUID of the Application. 
@@ -491,20 +421,34 @@ isolated service /api/am/devportal on ep0 {
     # BadRequestError (Bad Request. Invalid request or validation error.)
     # NotFoundError (Not Found. The specified resource does not exist.)
     # PreconditionFailedError (Precondition Failed. The request has not been performed because one of the preconditions is not met.)
-    // resource function get applications/[string applicationId]/'oauth\-keys(@http:Header string? 'x\-wso2\-tenant) returns ApplicationKeyList|BadRequestError|NotFoundError|PreconditionFailedError {
-    // }
+    resource function get applications/[string applicationId]/'oauth\-keys(@http:Header string? 'x\-wso2\-tenant, http:RequestContext requestContext) returns ApplicationKeyList|BadRequestError|NotFoundError|PreconditionFailedError|commons:APKError {
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        Application|NotFoundError applicationById = check getApplicationById(applicationId, organization);
+        if applicationById is NotFoundError {
+            return applicationById;
+        }
+
+        return check oauthKeys(<Application>applicationById, organization);
+    }
     # Get Key Details of a Given Type
     #
     # + applicationId - Application Identifier consisting of the UUID of the Application. 
     # + keyMappingId - OAuth Key Identifier consisting of the UUID of the Oauth Key Mapping. 
-    # + groupId - Application Group Id 
     # + return - returns can be any of following types
     # ApplicationKey (OK. Keys of given type are returned.)
     # BadRequestError (Bad Request. Invalid request or validation error.)
     # NotFoundError (Not Found. The specified resource does not exist.)
     # PreconditionFailedError (Precondition Failed. The request has not been performed because one of the preconditions is not met.)
-    // resource function get applications/[string applicationId]/'oauth\-keys/[string keyMappingId](string? groupId) returns ApplicationKey|BadRequestError|NotFoundError|PreconditionFailedError {
-    // }
+    isolated resource function get applications/[string applicationId]/'oauth\-keys/[string keyMappingId](http:RequestContext requestContext) returns ApplicationKey|BadRequestError|NotFoundError|PreconditionFailedError|commons:APKError {
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        Application|NotFoundError applicationById = check getApplicationById(applicationId, organization);
+        if applicationById is NotFoundError {
+            return applicationById;
+        }
+        return check oauthKeyByMappingId(<Application>applicationById, keyMappingId, organization);
+    }
     # Update Grant Types and Callback URL of an Application
     #
     # + applicationId - Application Identifier consisting of the UUID of the Application. 
@@ -515,8 +459,15 @@ isolated service /api/am/devportal on ep0 {
     # BadRequestError (Bad Request. Invalid request or validation error.)
     # NotFoundError (Not Found. The specified resource does not exist.)
     # PreconditionFailedError (Precondition Failed. The request has not been performed because one of the preconditions is not met.)
-    // resource function put applications/[string applicationId]/'oauth\-keys/[string keyMappingId](@http:Payload ApplicationKey payload) returns ApplicationKey|BadRequestError|NotFoundError|PreconditionFailedError {
-    // }
+    isolated resource function put applications/[string applicationId]/'oauth\-keys/[string keyMappingId](@http:Payload ApplicationKey payload,http:RequestContext requestContext) returns ApplicationKey|BadRequestError|NotFoundError|PreconditionFailedError|commons:APKError {
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        Application|NotFoundError applicationById = check getApplicationById(applicationId, organization);
+        if applicationById is NotFoundError {
+            return applicationById;
+        }
+        return check updateOauthApp(<Application>applicationById,keyMappingId,payload,organization);
+    }
     # Re-Generate Consumer Secret
     #
     # + applicationId - Application Identifier consisting of the UUID of the Application. 
@@ -551,8 +502,15 @@ isolated service /api/am/devportal on ep0 {
     # BadRequestError (Bad Request. Invalid request or validation error.)
     # NotFoundError (Not Found. The specified resource does not exist.)
     # PreconditionFailedError (Precondition Failed. The request has not been performed because one of the preconditions is not met.)
-    // resource function post applications/[string applicationId]/'oauth\-keys/[string keyMappingId]/'generate\-token(@http:Header string? 'if\-match, @http:Payload ApplicationTokenGenerateRequest payload) returns OkApplicationToken|BadRequestError|NotFoundError|PreconditionFailedError {
-    // }
+    isolated resource function post applications/[string applicationId]/'oauth\-keys/[string keyMappingId]/'generate\-token(@http:Header string? 'if\-match, @http:Payload ApplicationTokenGenerateRequest payload, http:RequestContext requestContext) returns OkApplicationToken|BadRequestError|NotFoundError|PreconditionFailedError|commons:APKError {
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        Application|NotFoundError applicationById = check getApplicationById(applicationId, organization);
+        if applicationById is NotFoundError {
+            return applicationById;
+        }
+        return generateApplicationToken(<Application>applicationById, keyMappingId, payload, organization);
+    }
     # Generate API Key
     #
     # + applicationId - Application Identifier consisting of the UUID of the Application. 
@@ -638,19 +596,11 @@ isolated service /api/am/devportal on ep0 {
     # AcceptedWorkflowResponse (Accepted. The request has been accepted.)
     # BadRequestError (Bad Request. Invalid request or validation error.)
     # UnsupportedMediaTypeError (Unsupported Media Type. The entity of the request was not in a supported format.)
-    isolated resource function post subscriptions(http:RequestContext requestContext, @http:Header string? 'x\-wso2\-tenant, @http:Payload Subscription payload) returns CreatedSubscription|AcceptedWorkflowResponse|BadRequestError|NotFoundError|InternalServerErrorError|json|commons:APKError {
+    isolated resource function post subscriptions(http:RequestContext requestContext, @http:Header string? 'x\-wso2\-tenant, @http:Payload Subscription payload) returns Subscription|AcceptedWorkflowResponse|BadRequestError|NotFoundError|InternalServerErrorError|json|commons:APKError {
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
-        Subscription|NotFoundError subscription = check addSubscription(payload, organization, <string>authenticatedUserContext.userId);
-        if subscription is Subscription {
-            CreatedSubscription createdSub = {body: subscription};
-            log:printDebug(subscription.toString());
-            return createdSub;
-        } else if subscription is NotFoundError {
-            return subscription;
-        }
+        return check addSubscription(payload, organization, <string>authenticatedUserContext.userId);
     }
-
     # Add New Subscriptions
     #
     # + 'x\-wso2\-tenant - For cross-tenant invocations, this is used to specify the tenant/organization domain, where the resource need to be   retrieved from. 
@@ -725,7 +675,7 @@ isolated service /api/am/devportal on ep0 {
     isolated resource function delete subscriptions/[string subscriptionId](http:RequestContext requestContext, @http:Header string? 'if\-match) returns http:Ok|AcceptedWorkflowResponse|NotFoundError|PreconditionFailedError|BadRequestError|InternalServerErrorError|commons:APKError {
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
-        string response = check deleteSubscription(subscriptionId, organization);
+        check deleteSubscription(subscriptionId, organization);
         return http:OK;
     }
     # Get Details of a Pending Invoice for a Monetized Subscription with Metered Billing.

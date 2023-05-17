@@ -175,12 +175,13 @@ public type KeyManager record {
     KeyManagerEndpoint[] endpoints?;
     KeyManager_signingCertificate signingCertificate?;
     # PEM type certificate
-    string tlsCertficate?;
+    string tlsCertificate?;
     string issuer;
     string[] availableGrantTypes?;
-    boolean enableTokenGeneration?;
+    boolean enableTokenGeneration = true;
     boolean enableMapOAuthConsumerApps = false;
     boolean enableOAuthAppCreation = true;
+    boolean enableOauthAppValidation = true;
     string consumerKeyClaim?;
     string scopesClaim?;
     boolean enabled = true;

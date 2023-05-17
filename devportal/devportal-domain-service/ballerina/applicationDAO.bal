@@ -29,9 +29,9 @@ isolated function addApplicationDAO(Application application, string subscriberId
     } else {
         sql:ParameterizedQuery query = `INSERT INTO APPLICATION (NAME, USER_UUID,
         DESCRIPTION, APPLICATION_STATUS, GROUP_ID, CREATED_BY, CREATED_TIME, UPDATED_TIME,
-        UUID, TOKEN_TYPE, ORGANIZATION) VALUES (${application.name},${subscriberId},
+        UUID, ORGANIZATION) VALUES (${application.name},${subscriberId},
         ${application.description},${application.status},${application.groups},${application.owner},${application.createdTime},
-        ${application.updatedTime},${application.applicationId},${application.tokenType},${org})`;
+        ${application.updatedTime},${application.applicationId},${org})`;
         sql:ExecutionResult|sql:Error result = dbClient->execute(query);
         if result is sql:ExecutionResult {
             return application;
@@ -140,7 +140,7 @@ isolated function updateApplicationDAO(Application application, string subscribe
         sql:ParameterizedQuery query = `UPDATE APPLICATION SET NAME = ${application.name},
          DESCRIPTION = ${application.description}, USER_UUID = ${subscriberId},
          APPLICATION_STATUS = ${application.status}, GROUP_ID = ${application.groups},CREATED_BY = ${application.owner},
-         CREATED_TIME = ${application.createdTime}, UPDATED_TIME = ${application.updatedTime}, TOKEN_TYPE = ${application.tokenType} 
+         CREATED_TIME = ${application.createdTime}, UPDATED_TIME = ${application.updatedTime}
          WHERE UUID = ${application.applicationId} AND ORGANIZATION = ${org}`;
         sql:ExecutionResult|sql:Error result = dbClient->execute(query);
         if result is sql:ExecutionResult {

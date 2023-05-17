@@ -148,12 +148,12 @@ isolated function readMap(javautil:Map sdkMap, string key) returns string {
     }
 }
 
-isolated function getThumbnail(string apiId) returns http:Response|NotFoundError|APKError {
-    API|NotFoundError|APKError api = getAPIByAPIId(apiId);
+isolated function getThumbnail(string apiId) returns http:Response|NotFoundError|commons:APKError {
+    API|NotFoundError|commons:APKError api = getAPIByAPIId(apiId);
     if api is API {
-        int|APKError thumbnailCategoryId = db_getResourceCategoryIdByCategoryType(RESOURCE_TYPE_THUMBNAIL);
+        int|commons:APKError thumbnailCategoryId = db_getResourceCategoryIdByCategoryType(RESOURCE_TYPE_THUMBNAIL);
         if thumbnailCategoryId is int {
-            Resource|NotFoundError|APKError thumbnail = db_getResourceByResourceCategory(apiId, thumbnailCategoryId);
+            Resource|NotFoundError|commons:APKError thumbnail = db_getResourceByResourceCategory(apiId, thumbnailCategoryId);
             if thumbnail is Resource {
                 http:Response outResponse = new;
                 outResponse.setBinaryPayload(thumbnail.resourceBinaryValue, thumbnail.dataType);
@@ -163,10 +163,10 @@ isolated function getThumbnail(string apiId) returns http:Response|NotFoundError
             }
         }
         return thumbnailCategoryId;
-    } else if api is NotFoundError|APKError {
+    } else if api is NotFoundError|commons:APKError {
         return api;
     }
     string message = "Unable to retrieve Thumbnail";
-    APKError e = error(message, message = message, description = message, code = 90911, statusCode = "500");
+    commons:APKError e = error(message, message = message, description = message, code = 90911, statusCode = 500);
     return e;
 }

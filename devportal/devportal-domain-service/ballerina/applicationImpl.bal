@@ -20,6 +20,8 @@ import ballerina/log;
 import ballerina/uuid;
 import wso2/apk_common_lib as commons;
 import wso2/notification_grpc_client;
+import devportal_service.types;
+import devportal_service.kmclient;
 import ballerina/time;
 
 isolated function addApplication(Application application, commons:Organization org, string user) returns NotFoundError|Application|commons:APKError {
@@ -145,6 +147,7 @@ isolated function updateApplication(string appId, Application application, commo
 }
 
 isolated function deleteApplication(string appId, commons:Organization organization) returns boolean|commons:APKError {
+    check deleteOauthApps(appId, organization);
     boolean status = check deleteApplicationDAO(appId, organization.uuid);
     string[] hostList = check retrieveManagementServerHostsList();
     string eventId = uuid:createType1AsString();
@@ -164,6 +167,18 @@ isolated function deleteApplication(string appId, commons:Organization organizat
         }
     }
     return status;
+}
+
+isolated function deleteOauthApps(string appId, commons:Organization organization) returns commons:APKError? {
+    types:KeyMappingDaoEntry[] keyMappingEntriesByApplication = check getKeyMappingEntriesByApplication(appId);
+    foreach types:KeyMappingDaoEntry item in keyMappingEntriesByApplication {
+        KeyManagerDaoEntry keyManagerById = check getKeyManagerById(item.key_manager_uuid, organization);
+        types:KeyManager keyManagerConfig = check fromKeyManagerDaoEntryToKeyManagerModel(keyManagerById);
+        if keyManagerConfig.enabled && item.create_mode == "CREATED" {
+            kmclient:KeyManagerClient kmClient = check getKmClient(keyManagerConfig);
+            boolean _ = check kmClient.deleteOauthApplication(item.consumer_key);
+        }
+    }
 }
 
 isolated function generateAPIKey(APIKeyGenerateRequest payload, string appId, string keyType, string user, commons:Organization org) returns APIKey|commons:APKError|NotFoundError {
@@ -254,35 +269,263 @@ isolated function retrieveManagementServerHostsList() returns string[]|commons:A
     return hostList;
 }
 
-// # Description
-// #
-// # + application - Parameter Description  
-// # + applicationKeyGenRequest - Parameter Description  
-// # + organization - Parameter Description
-// # + return - Return Value Description
-// public isolated function generateKeysForApplication(Application application, ApplicationKeyGenerateRequest applicationKeyGenRequest, commons:Organization organization) returns commons:APKError {
-//     string? keyManager = applicationKeyGenRequest.keyManager;
-//     if keyManager is string {
-//         KeyManagerDaoEntry keyManagerById = check getKeyManagerById(keyManager, organization);
-//         KeyManager keyManagerEntry = check fromKeyManagerDaoEntryToKeyManagerModel(keyManagerById);
-//         if !keyManagerEntry.enabled {
-//             return error("Key Manager is disabled", message = "Key Manager is disabled", description = "Key Manager is disabled", code = 900951, statusCode = 400);
-//         }
-//         if !keyManagerEntry.enableOAuthAppCreation {
-//             return error("OAuth App Creation is disabled for keyManager " + keyManagerEntry.name + " in organization " + organization.uuid, message = "OAuth App Creation is disabled for keyManager " + keyManagerEntry.name + " in organization " + organization.uuid, description = "OAuth App Creation is disabled for keyManager " + keyManagerEntry.name + " in organization " + organization.uuid, code = 900952, statusCode = 400);
-//         }
-//         string[]? availableGrantTypes = keyManagerEntry.availableGrantTypes;
-//         if availableGrantTypes is string[] {
-//             foreach string item in applicationKeyGenRequest.grantTypesToBeSupported {
-//                 if availableGrantTypes.indexOf(item) is () {
-//                     return error("Grant Type " + item + " is not supported by keyManager " + keyManagerEntry.name + " in organization " + organization.uuid, message = "Grant Type " + item + " is not supported by keyManager " + keyManagerEntry.name + " in organization " + organization.uuid, description = "Grant Type " + item + " is not supported by keyManager " + keyManagerEntry.name + " in organization " + organization.uuid, code = 900953, statusCode = 400);
-//                 }
-//             }
-//         } else {
+# Description
+#
+# + application - Parameter Description  
+# + applicationKeyGenRequest - Parameter Description  
+# + organization - Parameter Description
+# + return - Return Value Description
+public isolated function generateKeysForApplication(Application application, ApplicationKeyGenerateRequest applicationKeyGenRequest, commons:Organization organization) returns OkApplicationKey|commons:APKError {
+    string? keyManager = applicationKeyGenRequest.keyManager;
+    if keyManager is string {
+        if check isKeyMappingEntryByApplicationAndKeyManagerExist(<string>application.applicationId, keyManager,applicationKeyGenRequest.keyType) {
+            return error("Key Mapping Entry already exists for application " + application.name + " and keyManager " + keyManager, message = "Key Mapping Entry already exists for application " + application.name + " and keyManager " + keyManager, description = "Key Mapping Entry already exists for application " + application.name + " and keyManager " + keyManager, code = 900950, statusCode = 400);
+        }
+        KeyManagerDaoEntry keyManagerById = check getKeyManagerById(keyManager, organization);
+        types:KeyManager keyManagerEntry = check fromKeyManagerDaoEntryToKeyManagerModel(keyManagerById);
+        if !keyManagerEntry.enabled {
+            return error("Key Manager is disabled", message = "Key Manager is disabled", description = "Key Manager is disabled", code = 900951, statusCode = 400);
+        }
+        if !keyManagerEntry.enableOAuthAppCreation {
+            return error("OAuth App Creation is disabled for keyManager " + keyManagerEntry.name + " in organization " + organization.uuid, message = "OAuth App Creation is disabled for keyManager " + keyManagerEntry.name + " in organization " + organization.uuid, description = "OAuth App Creation is disabled for keyManager " + keyManagerEntry.name + " in organization " + organization.uuid, code = 900952, statusCode = 400);
+        }
+        string[]? availableGrantTypes = keyManagerEntry.availableGrantTypes;
+        if availableGrantTypes is string[] {
+            foreach string item in applicationKeyGenRequest.grantTypesToBeSupported {
+                if availableGrantTypes.indexOf(item) is () {
+                    return error("Grant Type " + item + " is not supported by keyManager " + keyManagerEntry.name + " in organization " + organization.uuid, message = "Grant Type " + item + " is not supported by keyManager " + keyManagerEntry.name + " in organization " + organization.uuid, description = "Grant Type " + item + " is not supported by keyManager " + keyManagerEntry.name + " in organization " + organization.uuid, code = 900953, statusCode = 400);
+                }
+            }
+        }
+        kmclient:KeyManagerClient kmClient = check getKmClient(keyManagerEntry);
+        kmclient:ClientRegistrationResponse oauthApplicationCreationResponse = check registerOauthApplication(kmClient, application, applicationKeyGenRequest);
+        types:KeyMappingDaoEntry keyMappingDaoEntry = {
+            application_uuid: <string>application.applicationId,
+            consumer_key: <string>oauthApplicationCreationResponse.client_id,
+            key_manager_uuid: keyManager,
+            key_type: applicationKeyGenRequest.keyType,
+            uuid: uuid:createType1AsString(),
+            app_info: oauthApplicationCreationResponse.toJsonString().toBytes(),
+            create_mode: "CREATED"
+        };
+        check addKeyMappingEntryForApplication(keyMappingDaoEntry);
+        OkApplicationKey okApplicationKey = {
+            body: {
+                consumerKey: oauthApplicationCreationResponse.client_id,
+                consumerSecret: oauthApplicationCreationResponse.client_secret,
+                callbackUrls: oauthApplicationCreationResponse.redirect_uris,
+                supportedGrantTypes: oauthApplicationCreationResponse.grant_types,
+                keyManager: keyManager,
+                keyMappingId: keyMappingDaoEntry.uuid,
+                keyType: applicationKeyGenRequest.keyType,
+                keyState: "CREATED",
+                mode: "CREATED",
+                additionalProperties: oauthApplicationCreationResponse.additional_properties
+            }
+        };
+        return okApplicationKey;
+    } else {
+        return error("Key Manager is not provided", message = "Key Manager is not provided", description = "Key Manager is not provided", code = 900953, statusCode = 400);
+    }
+}
 
-//         }
-//     } else {
-//         return error("Key Manager is not provided", message = "Key Manager is not provided", description = "Key Manager is not provided", code = 900953, statusCode = 400);
-//     }
-// }
+isolated function registerOauthApplication(kmclient:KeyManagerClient keyManagerClient, Application application, ApplicationKeyGenerateRequest oauthAppRegistrationRequest) returns kmclient:ClientRegistrationResponse|commons:APKError {
+    kmclient:ClientRegistrationRequest clientRegistrationRequest = {
+        client_name: application.name,
+        grant_types: oauthAppRegistrationRequest.grantTypesToBeSupported,
+        redirect_uris: oauthAppRegistrationRequest.callbackUrls
+    };
+    return keyManagerClient.registerOauthApplication(clientRegistrationRequest);
+}
 
+public isolated function mapKeys(Application application, ApplicationKeyMappingRequest applicationKeyMappingRequest, commons:Organization organization) returns OkApplicationKey|commons:APKError {
+    string? keyManager = applicationKeyMappingRequest.keyManager;
+    if keyManager is string {
+        KeyManagerDaoEntry keyManagerById = check getKeyManagerById(keyManager, organization);
+        types:KeyManager keyManagerEntry = check fromKeyManagerDaoEntryToKeyManagerModel(keyManagerById);
+        if !keyManagerEntry.enabled {
+            commons:APKError e = error("Key Manager is disabled", message = "Key Manager is disabled", description = "Key Manager is disabled", code = 900951, statusCode = 400);
+            return e;
+        }
+        if !keyManagerEntry.enableMapOAuthConsumerApps {
+            commons:APKError e = error("OAuth App Mapping is disabled for keyManager " + keyManagerEntry.name + " in organization " + organization.uuid, message = "OAuth App Mapping is disabled for keyManager " + keyManagerEntry.name + " in organization " + organization.uuid, description = "OAuth App Mapping is disabled for keyManager " + keyManagerEntry.name + " in organization " + organization.uuid, code = 900952, statusCode = 400);
+            return e;
+        }
+        if keyManagerEntry.enableOauthAppValidation {
+            kmclient:KeyManagerClient kmClient = check getKmClient(keyManagerEntry);
+            kmclient:ClientRegistrationResponse|commons:APKError retrievedOauthApp = kmClient.retrieveOauthApplicationByClientId(applicationKeyMappingRequest.consumerKey);
+            if retrievedOauthApp is kmclient:ClientRegistrationResponse {
+                if retrievedOauthApp.client_secret != applicationKeyMappingRequest.consumerSecret {
+                    commons:APKError e = error("Consumer Secret is not valid", message = "Consumer Secret is not valid", description = "Consumer Secret is not valid", code = 900953, statusCode = 400);
+                    return e;
+                }
+            } else {
+                commons:APKError e = error("Consumer Key is not valid", message = "Consumer Key is not valid", description = "Consumer Key is not valid", code = 900953, statusCode = 400);
+                return e;
+            }
+        }
+        types:KeyMappingDaoEntry keyMappingDaoEntry = {
+            application_uuid: <string>application.applicationId,
+            consumer_key: <string>applicationKeyMappingRequest.consumerKey,
+            key_manager_uuid: keyManager,
+            key_type: applicationKeyMappingRequest.keyType,
+            uuid: uuid:createType1AsString(),
+            app_info: "".toBytes(),
+            create_mode: "MAPPED"
+        };
+        check addKeyMappingEntryForApplication(keyMappingDaoEntry);
+        OkApplicationKey okApplicationKey = {
+            body: {
+                consumerKey: applicationKeyMappingRequest.consumerKey,
+                consumerSecret: applicationKeyMappingRequest.consumerSecret,
+                keyManager: keyManager,
+                keyMappingId: keyMappingDaoEntry.uuid,
+                keyType: applicationKeyMappingRequest.keyType,
+                keyState: "CREATED",
+                mode: "MAPPED"
+            }
+        };
+        return okApplicationKey;
+    } else {
+        commons:APKError e = error("Key Manager is not provided", message = "Key Manager is not provided", description = "Key Manager is not provided", code = 900953, statusCode = 400);
+        return e;
+    }
+}
+
+public isolated function oauthKeys(Application application, commons:Organization organization) returns ApplicationKeyList|commons:APKError {
+    types:KeyMappingDaoEntry[] keyMAppingEntries = check getKeyMappingEntriesByApplication(<string>application.applicationId);
+    ApplicationKeyList applicationKeyList = {};
+    ApplicationKey[] applicationKeys = [];
+    foreach types:KeyMappingDaoEntry item in keyMAppingEntries {
+        applicationKeys.push(fromKeyMappingDaoEntryToApplicationKey(item, ()));
+    }
+    applicationKeyList.list = applicationKeys;
+    applicationKeyList.count = applicationKeys.length();
+    return applicationKeyList;
+}
+
+public isolated function oauthKeyByMappingId(Application application, string keyMappingId, commons:Organization organization) returns ApplicationKey|commons:APKError {
+    types:KeyMappingDaoEntry keyMappingEntry = check getKeyMappingEntryByApplicationAndKeyMappingId(<string>application.applicationId, keyMappingId);
+    types:KeyManager keyManagerEntry = check getKeymanagerByKeyManagerUUID(keyMappingEntry.key_manager_uuid, organization);
+    if keyMappingEntry.create_mode == "CREATED" {
+        kmclient:KeyManagerClient keyManagerClient = check getKmClient(keyManagerEntry);
+        kmclient:ClientRegistrationResponse|commons:APKError retrieveOauthApplicationByClientId = keyManagerClient.retrieveOauthApplicationByClientId(keyMappingEntry.consumer_key);
+        if retrieveOauthApplicationByClientId is kmclient:ClientRegistrationResponse {
+            return fromKeyMappingDaoEntryToApplicationKey(keyMappingEntry, retrieveOauthApplicationByClientId);
+        }
+    }
+    return fromKeyMappingDaoEntryToApplicationKey(keyMappingEntry, ());
+}
+
+isolated function fromKeyMappingDaoEntryToApplicationKey(types:KeyMappingDaoEntry item, kmclient:ClientRegistrationResponse? oauthAppResponse) returns ApplicationKey {
+    ApplicationKey applicationKey = {
+        keyMappingId: item.uuid,
+        consumerKey: item.consumer_key,
+        keyManager: item.key_manager_uuid,
+        keyType: item.key_type,
+        mode: item.create_mode,
+        keyState: "CREATED"
+    };
+    if oauthAppResponse is kmclient:ClientRegistrationResponse {
+        applicationKey.consumerSecret = oauthAppResponse.client_secret;
+        applicationKey.supportedGrantTypes = oauthAppResponse.grant_types;
+        applicationKey.callbackUrls = oauthAppResponse.redirect_uris;
+        applicationKey.additionalProperties = oauthAppResponse.additional_properties;
+    }
+    return applicationKey;
+}
+
+public isolated function generateApplicationToken(Application application, string keyMappingId, ApplicationTokenGenerateRequest payload, commons:Organization organization) returns OkApplicationToken|commons:APKError {
+    types:KeyMappingDaoEntry keyMappingEntry = check getKeyMappingEntryByApplicationAndKeyMappingId(<string>application.applicationId, keyMappingId);
+    types:KeyManager keyManagerEntry = check getKeymanagerByKeyManagerUUID(keyMappingEntry.key_manager_uuid, organization);
+    if <boolean>keyManagerEntry.enabled && <boolean>keyManagerEntry.enableTokenGeneration {
+        kmclient:KeyManagerClient kmClient = check getKmClient(keyManagerEntry);
+        kmclient:TokenRequest tokenRequest = {client_id: keyMappingEntry.consumer_key, client_secret: payload.consumerSecret, scopes: payload.scopes};
+        kmclient:TokenResponse generateAccessToken = check kmClient.generateAccessToken(tokenRequest);
+        OkApplicationToken applicationToken = {body: {accessToken: generateAccessToken.access_token, tokenScopes: generateAccessToken.scopes, validityTime: generateAccessToken.expires_in}};
+        return applicationToken;
+    } else {
+        return error("Key Manager is disabled", message = "Key Manager is disabled", description = "Key Manager is disabled", code = 900951, statusCode = 400);
+    }
+}
+
+isolated function getKeymanagerByKeyManagerUUID(string uuid, commons:Organization organization) returns types:KeyManager|commons:APKError {
+    KeyManagerDaoEntry keyManagerById = check getKeyManagerById(uuid, organization);
+    return check fromKeyManagerDaoEntryToKeyManagerModel(keyManagerById);
+}
+
+public isolated function updateOauthApp(Application application, string keyMappingId, ApplicationKey payload, commons:Organization organization) returns ApplicationKey|commons:APKError {
+    do {
+        types:KeyMappingDaoEntry keyMappingEntry = check getKeyMappingEntryByApplicationAndKeyMappingId(<string>application.applicationId, keyMappingId);
+        types:KeyManager keyManagerEntry = check getKeymanagerByKeyManagerUUID(keyMappingEntry.key_manager_uuid, organization);
+        if keyManagerEntry.enabled {
+            kmclient:KeyManagerClient kmClient = check getKmClient(keyManagerEntry);
+            kmclient:ClientRegistrationResponse retrieveOauthApplicationByClientId = check kmClient.retrieveOauthApplicationByClientId(keyMappingEntry.consumer_key);
+            kmclient:ClientUpdateRequest clientUpDateRquest = {...retrieveOauthApplicationByClientId};
+            clientUpDateRquest.client_id = payload.consumerKey;
+            clientUpDateRquest.client_secret = payload.consumerSecret;
+            clientUpDateRquest.grant_types = payload.supportedGrantTypes;
+            clientUpDateRquest.redirect_uris = payload.callbackUrls;
+            record {}? additionalProperties = payload.additionalProperties;
+            if additionalProperties is record {} {
+                if additionalProperties.hasKey("application_type") {
+                    clientUpDateRquest.application_type = <string>additionalProperties["application_type"];
+                    _ = additionalProperties.removeIfHasKey("application_type");
+                }
+                if additionalProperties.hasKey("client_name") {
+                    clientUpDateRquest.client_name = <string>additionalProperties["client_name"];
+                    _ = additionalProperties.removeIfHasKey("client_name");
+                }
+                if additionalProperties.hasKey("logo_uri") {
+                    clientUpDateRquest.logo_uri = <string>additionalProperties["logo_uri"];
+                    _ = additionalProperties.removeIfHasKey("logo_uri");
+                }
+                if additionalProperties.hasKey("client_uri") {
+                    clientUpDateRquest.client_uri = <string>additionalProperties["client_uri"];
+                    _ = additionalProperties.removeIfHasKey("client_uri");
+                }
+                if additionalProperties.hasKey("policy_uri") {
+                    clientUpDateRquest.policy_uri = <string>additionalProperties["policy_uri"];
+                    _ = additionalProperties.removeIfHasKey("policy_uri");
+                }
+                if additionalProperties.hasKey("tos_uri") {
+                    clientUpDateRquest.tos_uri = <string>additionalProperties["tos_uri"];
+                    _ = additionalProperties.removeIfHasKey("tos_uri");
+                }
+                if additionalProperties.hasKey("jwks_uri") {
+                    clientUpDateRquest.jwks_uri = <string>additionalProperties["jwks_uri"];
+                    _ = additionalProperties.removeIfHasKey("jwks_uri");
+                }
+                if additionalProperties.hasKey("subject_type") {
+                    clientUpDateRquest.subject_type = <string>additionalProperties["subject_type"];
+                    _ = additionalProperties.removeIfHasKey("subject_type");
+                }
+                if additionalProperties.hasKey("token_endpoint_auth_method") {
+                    clientUpDateRquest.token_endpoint_auth_method = <string>additionalProperties["token_endpoint_auth_method"];
+                    _ = additionalProperties.removeIfHasKey("token_endpoint_auth_method");
+                }
+                clientUpDateRquest.additional_properties = additionalProperties;
+            }
+            kmclient:ClientRegistrationResponse oauthApplicationByClientId = check kmClient.updateOauthApplicationByClientId(keyMappingEntry.consumer_key, clientUpDateRquest);
+            types:KeyMappingDaoEntry updatedKeyMappingentry = keyMappingEntry.clone();
+            updatedKeyMappingentry.app_info = oauthApplicationByClientId.toJsonString().toBytes();
+            check updateKeyMappingEntry(updatedKeyMappingentry);
+            return {
+                keyMappingId: keyMappingEntry.uuid,
+                consumerKey: oauthApplicationByClientId.client_id,
+                consumerSecret: oauthApplicationByClientId.client_secret,
+                keyManager: keyMappingEntry.key_manager_uuid,
+                keyType: keyMappingEntry.key_type,
+                mode: keyMappingEntry.create_mode,
+                keyState: "CREATED",
+                callbackUrls: oauthApplicationByClientId.redirect_uris,
+                supportedGrantTypes: oauthApplicationByClientId.grant_types,
+                additionalProperties: oauthApplicationByClientId.additional_properties
+            };
+        } else {
+            return error("Key Manager is disabled", message = "Key Manager is disabled", description = "Key Manager is disabled", code = 900951, statusCode = 400);
+        }
+    } on fail var e {
+        return error("Internal Server Error", e, message = "Internal Server Error", description = "Internal Server Error", code = 900952, statusCode = 500);
+    }
+}

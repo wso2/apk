@@ -30,7 +30,7 @@ configurable KeyStores & readonly keyStores = {
     tls: {certFilePath: "/home/wso2apk/devportal/security/devportal.pem", keyFilePath: "/home/wso2apk/devportal/security/devportal.key"},
     signing: {keyFilePath: "/home/wso2apk/devportal/security/mg.pem"}
 };
-configurable SDKConfiguration&readonly sdkConfig = ?;
+configurable SDKConfiguration & readonly sdkConfig = ?;
 configurable K8sConfiguration k8sConfig = ?;
 configurable ManagementServerConfiguration & readonly managementServerConfig = ?;
 
@@ -43,6 +43,7 @@ configurable KeyManagerConfigs[] keyManagerConfigs = [];
 commons:DBBasedOrgResolver organizationResolver = new (datasourceConfiguration);
 commons:JWTValidationInterceptor jwtValidationInterceptor = new (idpConfiguration, organizationResolver);
 commons:RequestErrorInterceptor requestErrorInterceptor = new;
+commons:ResponseErrorInterceptor responseErrorInterceptor = new;
 apk_keymanager_libs:KeyManagerTypeInitializer keyManagerTypeInitializer = new ();
 commons:UserRegistrationInterceptor userRegistrationInterceptor = new (datasourceConfiguration);
 listener http:Listener ep0 = new (DEVPORTAL_PORT, secureSocket = {
@@ -50,7 +51,7 @@ listener http:Listener ep0 = new (DEVPORTAL_PORT, secureSocket = {
         certFile: <string>keyStores.tls.certFilePath,
         keyFile: <string>keyStores.tls.keyFilePath
     }
-}, interceptors = [jwtValidationInterceptor, userRegistrationInterceptor, requestErrorInterceptor]);
+}, interceptors = [jwtValidationInterceptor, userRegistrationInterceptor, requestErrorInterceptor, responseErrorInterceptor]);
 configurable string keyManagerConntectorConfigurationFilePath = "/home/wso2apk/devportal/keymanager";
 listener http:Listener keyManagerConnectorListener = new (9445);
 
@@ -69,7 +70,6 @@ function init() returns error? {
         return log:printError("Error while connecting to database");
     }
 }
-
 
 public isolated function getConnection() returns postgresql:Client|error {
     return dbClient;

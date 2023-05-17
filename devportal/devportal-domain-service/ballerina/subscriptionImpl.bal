@@ -124,8 +124,8 @@ isolated function getSubscriptionById(string subId, commons:Organization org) re
     return subscription;
 }
 
-isolated function deleteSubscription(string subId, commons:Organization organization) returns string|commons:APKError {
-    string status = check deleteSubscriptionDAO(subId, organization.uuid);
+isolated function deleteSubscription(string subId, commons:Organization organization) returns commons:APKError? {
+    check deleteSubscriptionDAO(subId, organization.uuid);
     string[] hostList = check retrieveManagementServerHostsList();
     string eventId = uuid:createType1AsString();
     time:Utc currTime = time:utcNow();
@@ -143,7 +143,6 @@ isolated function deleteSubscription(string subId, commons:Organization organiza
             return error(message, subscriptionNotification, message = message, description = message, code = 909000, statusCode = 500);
         }
     }
-    return status;
 }
 
 isolated function updateSubscription(string subId, Subscription payload, commons:Organization org, string user) returns Subscription|NotFoundError|commons:APKError {

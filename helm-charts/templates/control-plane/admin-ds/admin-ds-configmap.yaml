@@ -22,6 +22,10 @@ metadata:
   namespace: {{ .Release.Namespace }}
 data:
   Config.toml: |
+    [ballerina.log]
+    level = "DEBUG"
+    [ballerina.http]
+    traceLogConsole = true
     # Sample configurations
     [wso2.admin_service.datasourceConfiguration]
     description = "Database for admin"

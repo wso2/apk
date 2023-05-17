@@ -40,8 +40,7 @@ paths:
           type: string
       - name: state
         in: query
-        description: Opaque value used by the client to maintain state between the
-          request and callback
+        description: Opaque value used by the client to maintain state between the request and callback
         schema:
           type: string
       responses:
@@ -93,8 +92,7 @@ paths:
                   description: Required OAuth grant type
                 code:
                   type: string
-                  description: Authorization code to be sent for authorization grant
-                    type
+                  description: Authorization code to be sent for authorization grant type
                 redirect_uri:
                   type: string
                   description: Clients redirection endpoint
@@ -123,13 +121,10 @@ paths:
         required: true
       responses:
         200:
-          description: |
-            OK.
-            Successful response from token endpoint.
+          description: OK.Successful response from token endpoint.
           headers:
             Content-Type:
-              description: |
-                The content type of the body.
+              description: The content type of the body.
               schema:
                 type: string
           content:
@@ -137,13 +132,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/TokenResponse'
         400:
-          description: |
-            Bad Request.
-            Error response from token endpoint due to malformed request.
+          description: Bad Request,Error response from token endpoint due to malformed request.
           headers:
             Content-Type:
-              description: |
-                The content type of the body.
+              description: The content type of the body.
               schema:
                 type: string
           content:
@@ -151,13 +143,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/TokenErrorResponse'
         401:
-          description: |
-            Unauthorized.
-            Error response from token endpoint due to client authentication failure.
+          description: Unauthorized. Error response from token endpoint due to client authentication failure.
           headers:
             Content-Type:
-              description: |
-                The content type of the body.
+              description: The content type of the body.
               schema:
                 type: string
           content:
@@ -186,25 +175,19 @@ components:
       properties:
         access_token:
           type: string
-          description: |
-            OAuth access tokn issues by authorization server.
+          description: OAuth access tokn issues by authorization server.
         token_type:
           type: string
-          description: |
-            The type of the token issued.
+          description: The type of the token issued.
         expires_in:
           type: number
-          description: |
-            The lifetime in seconds of the access token.
+          description: The lifetime in seconds of the access token.
         refresh_token:
           type: string
-          description: |
-            OPTIONAL.
-            The refresh token, which can be used to obtain new access tokens.
+          description: OPTIONAL.The refresh token, which can be used to obtain new access tokens.
         scope:
           type: string
-          description: |
-            The scope of the access token requested.
+          description: The scope of the access token requested.
     TokenErrorResponse:
       title: Error response sent for OAuth token request.
       required:

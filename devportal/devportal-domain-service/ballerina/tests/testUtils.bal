@@ -151,11 +151,11 @@ public isolated function addBusinessPlanDAO(BusinessPlan stp, string org) return
     }
 }
 
-isolated function addResourceDAO(Resource resourceItem) returns Resource|APKError {
+isolated function addResourceDAO(Resource resourceItem) returns Resource|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
-        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = 500);
     } else {
         time:Utc utc = time:utcNow();
         sql:ParameterizedQuery values = `${resourceItem.resourceUUID},
@@ -178,7 +178,7 @@ isolated function addResourceDAO(Resource resourceItem) returns Resource|APKErro
         } else {
             log:printError(result.toString());
             string message = "Error while inserting data into Database";
-            return error(message, result, message = message, description = message, code = 909000, statusCode = "500");
+            return error(message, result, message = message, description = message, code = 909000, statusCode = 500);
         }
     }
 }

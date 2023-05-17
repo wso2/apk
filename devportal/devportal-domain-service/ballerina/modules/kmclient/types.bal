@@ -56,6 +56,16 @@ public type ProxyConfig record {|
     string password = "";
 |};
 
+public type TokenResponse record {
+    string access_token?;
+    string token_type?;
+    int expires_in?;
+    string refresh_token?;
+    string[] scopes?;
+    string id_token?;
+    record {} additional_properties?;
+};
+
 public type ErrorListItem record {
     # Error code
     string code;
@@ -71,9 +81,10 @@ public type ClientRegistrationResponse record {
     string registration_access_token?;
 };
 
-public type ConfigurationInitialization record {
-    record {} endpoints?;
-    record {} configurations?;
+public type TokenRequest record {
+    string client_id?;
+    string client_secret?;
+    string[] scopes?;
 };
 
 public type Error record {
@@ -110,8 +121,4 @@ public type ClientUpdateRequest record {
     *ClientRegistrationRequest;
     string client_secret?;
     string client_id?;
-};
-
-public type Inline_response_200 record {
-    boolean initialized?;
 };
