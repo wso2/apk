@@ -95,8 +95,7 @@ public class BackendJwtUtils {
     private static String generateToken(AbstractAPIMgtGatewayJWTGenerator jwtGenerator, JWTInfoDto jwtInfoDto,
                    boolean isGatewayTokenCacheEnabled, String jwtTokenCacheKey) throws APISecurityException {
         String endUserToken;
-        JWTConfigurationDto jwtConfigurationDto = ConfigHolder.getInstance().getConfig().
-                getJwtConfigurationDto();
+        JWTConfigurationDto jwtConfigurationDto = jwtGenerator.getJWTConfigurationDto();
         jwtGenerator.setJWTConfigurationDto(jwtConfigurationDto);
         try {
             endUserToken = jwtGenerator.generateToken(jwtInfoDto);
@@ -114,11 +113,11 @@ public class BackendJwtUtils {
 
     /**
      * Load the specified backend JWT Generator.
-     *
+     * @param jwtConfigurationDtoFromAPI jwt configuration dto from api
      * @return an instance of the JWT Generator given in the config
      */
-    public static AbstractAPIMgtGatewayJWTGenerator getApiMgtGatewayJWTGenerator() {
-        JWTConfigurationDto jwtConfigurationDto = ConfigHolder.getInstance().getConfig().getJwtConfigurationDto();
+    public static AbstractAPIMgtGatewayJWTGenerator getApiMgtGatewayJWTGenerator(final JWTConfigurationDto jwtConfigurationDtoFromAPI) {
+        JWTConfigurationDto jwtConfigurationDto = jwtConfigurationDtoFromAPI;
         String classNameInConfig = jwtConfigurationDto.getGatewayJWTGeneratorImpl();
         AbstractAPIMgtGatewayJWTGenerator jwtGenerator = null;
 
@@ -133,7 +132,7 @@ public class BackendJwtUtils {
                 Constructor<AbstractAPIMgtGatewayJWTGenerator> constructor = clazz.getConstructor();
                 jwtGenerator = constructor.newInstance();
             } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException
-                    | InstantiationException | InvocationTargetException | ClassCastException e) {
+                     | InstantiationException | InvocationTargetException | ClassCastException e) {
                 log.error("Error while generating AbstractAPIMgtGatewayJWTGenerator from the class", e);
             }
         }

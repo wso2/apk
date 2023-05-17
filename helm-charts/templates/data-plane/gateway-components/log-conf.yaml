@@ -91,12 +91,6 @@ data:
       validateSubscription = true
       certificateFilePath = "/home/wso2/security/truststore/wso2carbon.pem"
     [enforcer.jwtGenerator]
-    enabled = true
-    encoding = "base64" # base64,base64url
-    claimDialect = "http://wso2.org/claims"
-    header = "X-JWT-Assertion"
-    signingAlgorithm = "SHA256withRSA"
-    gatewayGeneratorImpl = "org.wso2.apk.enforcer.commons.jwtgenerator.APIMgtGatewayJWTGeneratorImpl"
     publicCertificatePath = "/home/wso2/security/truststore/mg.pem"
     privateKeyPath = "/home/wso2/security/keystore/mg.key"
 
@@ -422,27 +416,6 @@ data:
 
     # The configuration of the backend jwt generation in the Choreo Connect
     [enforcer.jwtGenerator]
-    # Enable/Disable backend JWT generation
-    enabled = false
-    # Encoding of the JWT
-    encoding = "base64" # base64,base64url
-    # The JWT access token contains all claims that are defined in the enforcer.jwtGenerator.claimDialect element
-    # The default value of this element is http://wso2.org/claims
-    # To get the list of a specific user's claims that need to be included in the JWT, uncomment this element after enabling the JWT
-    # It will include all claims in http://wso2.org/claims to the JWT access token
-    claimDialect = "http://wso2.org/claims"
-    # Remap the OIDC claims into the configured dialect
-    convertDialect = false
-    # The name of the HTTP header to which the JWT is attached
-    header = "X-JWT-Assertion"
-    # The signing algorithm is used to sign the JWT
-    signingAlgorithm = "SHA256withRSA"
-    # Enable/Disable user claims
-    enableUserClaims = false
-    # Custom JWT generator
-    gatewayGeneratorImpl = "org.wso2.apk.enforcer.commons.jwtgenerator.APIMgtGatewayJWTGeneratorImpl"
-    # Custom Claim Retriever to add custom claims into JWT
-    claimsExtractorImpl = "org.wso2.carbon.apimgt.impl.token.ExtendedDefaultClaimsRetriever"
     # Public certificate for generated JWT
     publicCertificatePath = "/home/wso2/security/truststore/mg.pem"
     # Private key path used for JWT generation

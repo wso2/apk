@@ -389,13 +389,6 @@ public class ConfigHolder {
 
     private void populateJWTGeneratorConfigurations(JWTGenerator jwtGenerator) {
         JWTConfigurationDto jwtConfigurationDto = new JWTConfigurationDto();
-        jwtConfigurationDto.setEnabled(jwtGenerator.getEnable());
-        jwtConfigurationDto.setJwtHeader(jwtGenerator.getHeader());
-        jwtConfigurationDto.setConsumerDialectUri(jwtGenerator.getClaimDialect());
-        jwtConfigurationDto.setSignatureAlgorithm(jwtGenerator.getSigningAlgorithm());
-        jwtConfigurationDto.setEnableUserClaims(jwtGenerator.getEnableUserClaims());
-        jwtConfigurationDto.setGatewayJWTGeneratorImpl(jwtGenerator.getGatewayGeneratorImpl());
-        jwtConfigurationDto.setTtl(jwtGenerator.getTokenTtl());
         try {
             jwtConfigurationDto.setPublicCert(TLSUtils.getCertificate(jwtGenerator.getPublicCertificatePath()));
             jwtConfigurationDto.setPrivateKey(JWTUtils.getPrivateKey(jwtGenerator.getPrivateKeyPath()));

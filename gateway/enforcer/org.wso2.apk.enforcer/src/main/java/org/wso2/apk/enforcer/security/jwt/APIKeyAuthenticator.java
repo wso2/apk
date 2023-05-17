@@ -71,12 +71,12 @@ public class APIKeyAuthenticator extends APIKeyHandler {
     private static final int IPV4_ADDRESS_BIT_LENGTH = 32;
     private static final int IPV6_ADDRESS_BIT_LENGTH = 128;
 
-    public APIKeyAuthenticator(final boolean isBackendJWTEnabled) {
+    public APIKeyAuthenticator(final JWTConfigurationDto jwtConfigurationDto) {
         log.debug("API key authenticator initialized.");
         EnforcerConfig enforcerConfig = ConfigHolder.getInstance().getConfig();
         this.isGatewayTokenCacheEnabled = enforcerConfig.getCacheDto().isEnabled();
-        if (isBackendJWTEnabled) {
-            this.jwtGenerator = BackendJwtUtils.getApiMgtGatewayJWTGenerator();
+        if (jwtConfigurationDto.isEnabled()) {
+            this.jwtGenerator = BackendJwtUtils.getApiMgtGatewayJWTGenerator(jwtConfigurationDto);
         }
         for (ExtendedTokenIssuerDto tokenIssuer : enforcerConfig.getIssuersMap().values()) {
             if (APIConstants.KeyManager.APIM_APIKEY_ISSUER.equals(tokenIssuer.getName())) {

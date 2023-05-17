@@ -20,7 +20,11 @@ package org.wso2.apk.enforcer.api;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.wso2.apk.enforcer.commons.dto.JWTConfigurationDto;
+import org.wso2.apk.enforcer.commons.exception.EnforcerException;
+import org.wso2.apk.enforcer.config.EnforcerConfig;
 import org.wso2.apk.enforcer.discovery.api.Api;
+import org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo;
 import org.wso2.apk.enforcer.discovery.api.Certificate;
 import org.wso2.apk.enforcer.discovery.api.Operation;
 import org.wso2.apk.enforcer.discovery.api.Resource;
@@ -47,10 +51,14 @@ import org.wso2.apk.enforcer.interceptor.MediationPolicyFilter;
 import org.wso2.apk.enforcer.security.AuthFilter;
 import org.wso2.apk.enforcer.security.mtls.MtlsUtils;
 import org.wso2.apk.enforcer.util.FilterUtils;
+import org.wso2.apk.enforcer.util.JWTUtils;
 import org.wso2.apk.enforcer.util.MockImplUtils;
+import org.wso2.apk.enforcer.util.TLSUtils;
 
+import java.io.IOException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
+import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -137,6 +145,19 @@ public class RestAPI implements API {
             mtlsCertificateTiers.put(certificate.getAlias(), certificate.getTier());
         }
 
+        BackendJWTTokenInfo backendJWTTokenInfo = api.getBackendJWTTokenInfo();
+        JWTConfigurationDto jwtConfigurationDto = new JWTConfigurationDto();
+
+        // If backendJWTTokeInfo is available
+        if(api.hasBackendJWTTokenInfo()) {
+            EnforcerConfig enforcerConfig = ConfigHolder.getInstance().getConfig();
+            jwtConfigurationDto.populateConfigValues(backendJWTTokenInfo.getEnabled(),
+                    backendJWTTokenInfo.getHeader(), backendJWTTokenInfo.getSigningAlgorithm(),
+                    backendJWTTokenInfo.getEncoding(), enforcerConfig.getJwtConfigurationDto().getPublicCert(),
+                    enforcerConfig.getJwtConfigurationDto().getPrivateKey(), backendJWTTokenInfo.getTokenTTL(),
+                    backendJWTTokenInfo.getCustomClaimsMap());
+        }
+
         this.apiLifeCycleState = api.getApiLifeCycleState();
         this.apiConfig = new APIConfig.Builder(name).uuid(api.getId()).vhost(vhost).basePath(basePath).version(version)
                 .resources(resources).apiType(apiType).apiLifeCycleState(apiLifeCycleState).tier(api.getTier())
@@ -145,7 +166,7 @@ public class RestAPI implements API {
                 .envType(api.getEnvType())
                 .trustStore(trustStore).organizationId(api.getOrganizationId())
                 .mtlsCertificateTiers(mtlsCertificateTiers).mutualSSL(mutualSSL).systemAPI(api.getSystemAPI())
-                .applicationSecurity(applicationSecurity).jwtConfigurationDto(api.getIsBackendJWTEnabled()).build();
+                .applicationSecurity(applicationSecurity).jwtConfigurationDto(jwtConfigurationDto).build();
 
         initFilters();
         return basePath;

@@ -247,6 +247,9 @@ func CompareRequest(req *roundtripper.Request, cReq *roundtripper.CapturedReques
 					if !ok {
 						return fmt.Errorf("expected %s header to be set by the enforcer", name)
 					}
+					if actualVal == nil || actualVal[0] == "" {
+						return fmt.Errorf("expected %s header value should not be null", name)
+					}
 					continue
 				}
 				if !ok {

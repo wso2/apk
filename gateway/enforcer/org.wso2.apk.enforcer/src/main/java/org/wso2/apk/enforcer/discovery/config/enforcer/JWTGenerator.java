@@ -20,12 +20,6 @@ private static final long serialVersionUID = 0L;
     super(builder);
   }
   private JWTGenerator() {
-    encoding_ = "";
-    claimDialect_ = "";
-    header_ = "";
-    signingAlgorithm_ = "";
-    gatewayGeneratorImpl_ = "";
-    claimsExtractorImpl_ = "";
     publicCertificatePath_ = "";
     privateKeyPath_ = "";
   }
@@ -60,72 +54,16 @@ private static final long serialVersionUID = 0L;
           case 0:
             done = true;
             break;
-          case 8: {
-
-            enable_ = input.readBool();
-            break;
-          }
-          case 18: {
-            java.lang.String s = input.readStringRequireUtf8();
-
-            encoding_ = s;
-            break;
-          }
-          case 26: {
-            java.lang.String s = input.readStringRequireUtf8();
-
-            claimDialect_ = s;
-            break;
-          }
-          case 32: {
-
-            convertDialect_ = input.readBool();
-            break;
-          }
-          case 42: {
-            java.lang.String s = input.readStringRequireUtf8();
-
-            header_ = s;
-            break;
-          }
-          case 50: {
-            java.lang.String s = input.readStringRequireUtf8();
-
-            signingAlgorithm_ = s;
-            break;
-          }
-          case 56: {
-
-            enableUserClaims_ = input.readBool();
-            break;
-          }
-          case 66: {
-            java.lang.String s = input.readStringRequireUtf8();
-
-            gatewayGeneratorImpl_ = s;
-            break;
-          }
-          case 74: {
-            java.lang.String s = input.readStringRequireUtf8();
-
-            claimsExtractorImpl_ = s;
-            break;
-          }
-          case 82: {
+          case 10: {
             java.lang.String s = input.readStringRequireUtf8();
 
             publicCertificatePath_ = s;
             break;
           }
-          case 90: {
+          case 18: {
             java.lang.String s = input.readStringRequireUtf8();
 
             privateKeyPath_ = s;
-            break;
-          }
-          case 96: {
-
-            tokenTtl_ = input.readInt32();
             break;
           }
           default: {
@@ -160,271 +98,10 @@ private static final long serialVersionUID = 0L;
             org.wso2.apk.enforcer.discovery.config.enforcer.JWTGenerator.class, org.wso2.apk.enforcer.discovery.config.enforcer.JWTGenerator.Builder.class);
   }
 
-  public static final int ENABLE_FIELD_NUMBER = 1;
-  private boolean enable_;
-  /**
-   * <code>bool enable = 1;</code>
-   * @return The enable.
-   */
-  @java.lang.Override
-  public boolean getEnable() {
-    return enable_;
-  }
-
-  public static final int ENCODING_FIELD_NUMBER = 2;
-  private volatile java.lang.Object encoding_;
-  /**
-   * <code>string encoding = 2;</code>
-   * @return The encoding.
-   */
-  @java.lang.Override
-  public java.lang.String getEncoding() {
-    java.lang.Object ref = encoding_;
-    if (ref instanceof java.lang.String) {
-      return (java.lang.String) ref;
-    } else {
-      com.google.protobuf.ByteString bs = 
-          (com.google.protobuf.ByteString) ref;
-      java.lang.String s = bs.toStringUtf8();
-      encoding_ = s;
-      return s;
-    }
-  }
-  /**
-   * <code>string encoding = 2;</code>
-   * @return The bytes for encoding.
-   */
-  @java.lang.Override
-  public com.google.protobuf.ByteString
-      getEncodingBytes() {
-    java.lang.Object ref = encoding_;
-    if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
-          com.google.protobuf.ByteString.copyFromUtf8(
-              (java.lang.String) ref);
-      encoding_ = b;
-      return b;
-    } else {
-      return (com.google.protobuf.ByteString) ref;
-    }
-  }
-
-  public static final int CLAIM_DIALECT_FIELD_NUMBER = 3;
-  private volatile java.lang.Object claimDialect_;
-  /**
-   * <code>string claim_dialect = 3;</code>
-   * @return The claimDialect.
-   */
-  @java.lang.Override
-  public java.lang.String getClaimDialect() {
-    java.lang.Object ref = claimDialect_;
-    if (ref instanceof java.lang.String) {
-      return (java.lang.String) ref;
-    } else {
-      com.google.protobuf.ByteString bs = 
-          (com.google.protobuf.ByteString) ref;
-      java.lang.String s = bs.toStringUtf8();
-      claimDialect_ = s;
-      return s;
-    }
-  }
-  /**
-   * <code>string claim_dialect = 3;</code>
-   * @return The bytes for claimDialect.
-   */
-  @java.lang.Override
-  public com.google.protobuf.ByteString
-      getClaimDialectBytes() {
-    java.lang.Object ref = claimDialect_;
-    if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
-          com.google.protobuf.ByteString.copyFromUtf8(
-              (java.lang.String) ref);
-      claimDialect_ = b;
-      return b;
-    } else {
-      return (com.google.protobuf.ByteString) ref;
-    }
-  }
-
-  public static final int CONVERT_DIALECT_FIELD_NUMBER = 4;
-  private boolean convertDialect_;
-  /**
-   * <code>bool convert_dialect = 4;</code>
-   * @return The convertDialect.
-   */
-  @java.lang.Override
-  public boolean getConvertDialect() {
-    return convertDialect_;
-  }
-
-  public static final int HEADER_FIELD_NUMBER = 5;
-  private volatile java.lang.Object header_;
-  /**
-   * <code>string header = 5;</code>
-   * @return The header.
-   */
-  @java.lang.Override
-  public java.lang.String getHeader() {
-    java.lang.Object ref = header_;
-    if (ref instanceof java.lang.String) {
-      return (java.lang.String) ref;
-    } else {
-      com.google.protobuf.ByteString bs = 
-          (com.google.protobuf.ByteString) ref;
-      java.lang.String s = bs.toStringUtf8();
-      header_ = s;
-      return s;
-    }
-  }
-  /**
-   * <code>string header = 5;</code>
-   * @return The bytes for header.
-   */
-  @java.lang.Override
-  public com.google.protobuf.ByteString
-      getHeaderBytes() {
-    java.lang.Object ref = header_;
-    if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
-          com.google.protobuf.ByteString.copyFromUtf8(
-              (java.lang.String) ref);
-      header_ = b;
-      return b;
-    } else {
-      return (com.google.protobuf.ByteString) ref;
-    }
-  }
-
-  public static final int SIGNING_ALGORITHM_FIELD_NUMBER = 6;
-  private volatile java.lang.Object signingAlgorithm_;
-  /**
-   * <code>string signing_algorithm = 6;</code>
-   * @return The signingAlgorithm.
-   */
-  @java.lang.Override
-  public java.lang.String getSigningAlgorithm() {
-    java.lang.Object ref = signingAlgorithm_;
-    if (ref instanceof java.lang.String) {
-      return (java.lang.String) ref;
-    } else {
-      com.google.protobuf.ByteString bs = 
-          (com.google.protobuf.ByteString) ref;
-      java.lang.String s = bs.toStringUtf8();
-      signingAlgorithm_ = s;
-      return s;
-    }
-  }
-  /**
-   * <code>string signing_algorithm = 6;</code>
-   * @return The bytes for signingAlgorithm.
-   */
-  @java.lang.Override
-  public com.google.protobuf.ByteString
-      getSigningAlgorithmBytes() {
-    java.lang.Object ref = signingAlgorithm_;
-    if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
-          com.google.protobuf.ByteString.copyFromUtf8(
-              (java.lang.String) ref);
-      signingAlgorithm_ = b;
-      return b;
-    } else {
-      return (com.google.protobuf.ByteString) ref;
-    }
-  }
-
-  public static final int ENABLE_USER_CLAIMS_FIELD_NUMBER = 7;
-  private boolean enableUserClaims_;
-  /**
-   * <code>bool enable_user_claims = 7;</code>
-   * @return The enableUserClaims.
-   */
-  @java.lang.Override
-  public boolean getEnableUserClaims() {
-    return enableUserClaims_;
-  }
-
-  public static final int GATEWAY_GENERATOR_IMPL_FIELD_NUMBER = 8;
-  private volatile java.lang.Object gatewayGeneratorImpl_;
-  /**
-   * <code>string gateway_generator_impl = 8;</code>
-   * @return The gatewayGeneratorImpl.
-   */
-  @java.lang.Override
-  public java.lang.String getGatewayGeneratorImpl() {
-    java.lang.Object ref = gatewayGeneratorImpl_;
-    if (ref instanceof java.lang.String) {
-      return (java.lang.String) ref;
-    } else {
-      com.google.protobuf.ByteString bs = 
-          (com.google.protobuf.ByteString) ref;
-      java.lang.String s = bs.toStringUtf8();
-      gatewayGeneratorImpl_ = s;
-      return s;
-    }
-  }
-  /**
-   * <code>string gateway_generator_impl = 8;</code>
-   * @return The bytes for gatewayGeneratorImpl.
-   */
-  @java.lang.Override
-  public com.google.protobuf.ByteString
-      getGatewayGeneratorImplBytes() {
-    java.lang.Object ref = gatewayGeneratorImpl_;
-    if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
-          com.google.protobuf.ByteString.copyFromUtf8(
-              (java.lang.String) ref);
-      gatewayGeneratorImpl_ = b;
-      return b;
-    } else {
-      return (com.google.protobuf.ByteString) ref;
-    }
-  }
-
-  public static final int CLAIMS_EXTRACTOR_IMPL_FIELD_NUMBER = 9;
-  private volatile java.lang.Object claimsExtractorImpl_;
-  /**
-   * <code>string claims_extractor_impl = 9;</code>
-   * @return The claimsExtractorImpl.
-   */
-  @java.lang.Override
-  public java.lang.String getClaimsExtractorImpl() {
-    java.lang.Object ref = claimsExtractorImpl_;
-    if (ref instanceof java.lang.String) {
-      return (java.lang.String) ref;
-    } else {
-      com.google.protobuf.ByteString bs = 
-          (com.google.protobuf.ByteString) ref;
-      java.lang.String s = bs.toStringUtf8();
-      claimsExtractorImpl_ = s;
-      return s;
-    }
-  }
-  /**
-   * <code>string claims_extractor_impl = 9;</code>
-   * @return The bytes for claimsExtractorImpl.
-   */
-  @java.lang.Override
-  public com.google.protobuf.ByteString
-      getClaimsExtractorImplBytes() {
-    java.lang.Object ref = claimsExtractorImpl_;
-    if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
-          com.google.protobuf.ByteString.copyFromUtf8(
-              (java.lang.String) ref);
-      claimsExtractorImpl_ = b;
-      return b;
-    } else {
-      return (com.google.protobuf.ByteString) ref;
-    }
-  }
-
-  public static final int PUBLIC_CERTIFICATE_PATH_FIELD_NUMBER = 10;
+  public static final int PUBLIC_CERTIFICATE_PATH_FIELD_NUMBER = 1;
   private volatile java.lang.Object publicCertificatePath_;
   /**
-   * <code>string public_certificate_path = 10;</code>
+   * <code>string public_certificate_path = 1;</code>
    * @return The publicCertificatePath.
    */
   @java.lang.Override
@@ -441,7 +118,7 @@ private static final long serialVersionUID = 0L;
     }
   }
   /**
-   * <code>string public_certificate_path = 10;</code>
+   * <code>string public_certificate_path = 1;</code>
    * @return The bytes for publicCertificatePath.
    */
   @java.lang.Override
@@ -459,10 +136,10 @@ private static final long serialVersionUID = 0L;
     }
   }
 
-  public static final int PRIVATE_KEY_PATH_FIELD_NUMBER = 11;
+  public static final int PRIVATE_KEY_PATH_FIELD_NUMBER = 2;
   private volatile java.lang.Object privateKeyPath_;
   /**
-   * <code>string private_key_path = 11;</code>
+   * <code>string private_key_path = 2;</code>
    * @return The privateKeyPath.
    */
   @java.lang.Override
@@ -479,7 +156,7 @@ private static final long serialVersionUID = 0L;
     }
   }
   /**
-   * <code>string private_key_path = 11;</code>
+   * <code>string private_key_path = 2;</code>
    * @return The bytes for privateKeyPath.
    */
   @java.lang.Override
@@ -497,17 +174,6 @@ private static final long serialVersionUID = 0L;
     }
   }
 
-  public static final int TOKEN_TTL_FIELD_NUMBER = 12;
-  private int tokenTtl_;
-  /**
-   * <code>int32 token_ttl = 12;</code>
-   * @return The tokenTtl.
-   */
-  @java.lang.Override
-  public int getTokenTtl() {
-    return tokenTtl_;
-  }
-
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -522,41 +188,11 @@ private static final long serialVersionUID = 0L;
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output)
                       throws java.io.IOException {
-    if (enable_ != false) {
-      output.writeBool(1, enable_);
-    }
-    if (!getEncodingBytes().isEmpty()) {
-      com.google.protobuf.GeneratedMessageV3.writeString(output, 2, encoding_);
-    }
-    if (!getClaimDialectBytes().isEmpty()) {
-      com.google.protobuf.GeneratedMessageV3.writeString(output, 3, claimDialect_);
-    }
-    if (convertDialect_ != false) {
-      output.writeBool(4, convertDialect_);
-    }
-    if (!getHeaderBytes().isEmpty()) {
-      com.google.protobuf.GeneratedMessageV3.writeString(output, 5, header_);
-    }
-    if (!getSigningAlgorithmBytes().isEmpty()) {
-      com.google.protobuf.GeneratedMessageV3.writeString(output, 6, signingAlgorithm_);
-    }
-    if (enableUserClaims_ != false) {
-      output.writeBool(7, enableUserClaims_);
-    }
-    if (!getGatewayGeneratorImplBytes().isEmpty()) {
-      com.google.protobuf.GeneratedMessageV3.writeString(output, 8, gatewayGeneratorImpl_);
-    }
-    if (!getClaimsExtractorImplBytes().isEmpty()) {
-      com.google.protobuf.GeneratedMessageV3.writeString(output, 9, claimsExtractorImpl_);
-    }
     if (!getPublicCertificatePathBytes().isEmpty()) {
-      com.google.protobuf.GeneratedMessageV3.writeString(output, 10, publicCertificatePath_);
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 1, publicCertificatePath_);
     }
     if (!getPrivateKeyPathBytes().isEmpty()) {
-      com.google.protobuf.GeneratedMessageV3.writeString(output, 11, privateKeyPath_);
-    }
-    if (tokenTtl_ != 0) {
-      output.writeInt32(12, tokenTtl_);
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 2, privateKeyPath_);
     }
     unknownFields.writeTo(output);
   }
@@ -567,45 +203,11 @@ private static final long serialVersionUID = 0L;
     if (size != -1) return size;
 
     size = 0;
-    if (enable_ != false) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeBoolSize(1, enable_);
-    }
-    if (!getEncodingBytes().isEmpty()) {
-      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, encoding_);
-    }
-    if (!getClaimDialectBytes().isEmpty()) {
-      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, claimDialect_);
-    }
-    if (convertDialect_ != false) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeBoolSize(4, convertDialect_);
-    }
-    if (!getHeaderBytes().isEmpty()) {
-      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(5, header_);
-    }
-    if (!getSigningAlgorithmBytes().isEmpty()) {
-      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(6, signingAlgorithm_);
-    }
-    if (enableUserClaims_ != false) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeBoolSize(7, enableUserClaims_);
-    }
-    if (!getGatewayGeneratorImplBytes().isEmpty()) {
-      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(8, gatewayGeneratorImpl_);
-    }
-    if (!getClaimsExtractorImplBytes().isEmpty()) {
-      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(9, claimsExtractorImpl_);
-    }
     if (!getPublicCertificatePathBytes().isEmpty()) {
-      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(10, publicCertificatePath_);
+      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, publicCertificatePath_);
     }
     if (!getPrivateKeyPathBytes().isEmpty()) {
-      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(11, privateKeyPath_);
-    }
-    if (tokenTtl_ != 0) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeInt32Size(12, tokenTtl_);
+      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, privateKeyPath_);
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -622,30 +224,10 @@ private static final long serialVersionUID = 0L;
     }
     org.wso2.apk.enforcer.discovery.config.enforcer.JWTGenerator other = (org.wso2.apk.enforcer.discovery.config.enforcer.JWTGenerator) obj;
 
-    if (getEnable()
-        != other.getEnable()) return false;
-    if (!getEncoding()
-        .equals(other.getEncoding())) return false;
-    if (!getClaimDialect()
-        .equals(other.getClaimDialect())) return false;
-    if (getConvertDialect()
-        != other.getConvertDialect()) return false;
-    if (!getHeader()
-        .equals(other.getHeader())) return false;
-    if (!getSigningAlgorithm()
-        .equals(other.getSigningAlgorithm())) return false;
-    if (getEnableUserClaims()
-        != other.getEnableUserClaims()) return false;
-    if (!getGatewayGeneratorImpl()
-        .equals(other.getGatewayGeneratorImpl())) return false;
-    if (!getClaimsExtractorImpl()
-        .equals(other.getClaimsExtractorImpl())) return false;
     if (!getPublicCertificatePath()
         .equals(other.getPublicCertificatePath())) return false;
     if (!getPrivateKeyPath()
         .equals(other.getPrivateKeyPath())) return false;
-    if (getTokenTtl()
-        != other.getTokenTtl()) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -657,33 +239,10 @@ private static final long serialVersionUID = 0L;
     }
     int hash = 41;
     hash = (19 * hash) + getDescriptor().hashCode();
-    hash = (37 * hash) + ENABLE_FIELD_NUMBER;
-    hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
-        getEnable());
-    hash = (37 * hash) + ENCODING_FIELD_NUMBER;
-    hash = (53 * hash) + getEncoding().hashCode();
-    hash = (37 * hash) + CLAIM_DIALECT_FIELD_NUMBER;
-    hash = (53 * hash) + getClaimDialect().hashCode();
-    hash = (37 * hash) + CONVERT_DIALECT_FIELD_NUMBER;
-    hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
-        getConvertDialect());
-    hash = (37 * hash) + HEADER_FIELD_NUMBER;
-    hash = (53 * hash) + getHeader().hashCode();
-    hash = (37 * hash) + SIGNING_ALGORITHM_FIELD_NUMBER;
-    hash = (53 * hash) + getSigningAlgorithm().hashCode();
-    hash = (37 * hash) + ENABLE_USER_CLAIMS_FIELD_NUMBER;
-    hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
-        getEnableUserClaims());
-    hash = (37 * hash) + GATEWAY_GENERATOR_IMPL_FIELD_NUMBER;
-    hash = (53 * hash) + getGatewayGeneratorImpl().hashCode();
-    hash = (37 * hash) + CLAIMS_EXTRACTOR_IMPL_FIELD_NUMBER;
-    hash = (53 * hash) + getClaimsExtractorImpl().hashCode();
     hash = (37 * hash) + PUBLIC_CERTIFICATE_PATH_FIELD_NUMBER;
     hash = (53 * hash) + getPublicCertificatePath().hashCode();
     hash = (37 * hash) + PRIVATE_KEY_PATH_FIELD_NUMBER;
     hash = (53 * hash) + getPrivateKeyPath().hashCode();
-    hash = (37 * hash) + TOKEN_TTL_FIELD_NUMBER;
-    hash = (53 * hash) + getTokenTtl();
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -821,29 +380,9 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public Builder clear() {
       super.clear();
-      enable_ = false;
-
-      encoding_ = "";
-
-      claimDialect_ = "";
-
-      convertDialect_ = false;
-
-      header_ = "";
-
-      signingAlgorithm_ = "";
-
-      enableUserClaims_ = false;
-
-      gatewayGeneratorImpl_ = "";
-
-      claimsExtractorImpl_ = "";
-
       publicCertificatePath_ = "";
 
       privateKeyPath_ = "";
-
-      tokenTtl_ = 0;
 
       return this;
     }
@@ -871,18 +410,8 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public org.wso2.apk.enforcer.discovery.config.enforcer.JWTGenerator buildPartial() {
       org.wso2.apk.enforcer.discovery.config.enforcer.JWTGenerator result = new org.wso2.apk.enforcer.discovery.config.enforcer.JWTGenerator(this);
-      result.enable_ = enable_;
-      result.encoding_ = encoding_;
-      result.claimDialect_ = claimDialect_;
-      result.convertDialect_ = convertDialect_;
-      result.header_ = header_;
-      result.signingAlgorithm_ = signingAlgorithm_;
-      result.enableUserClaims_ = enableUserClaims_;
-      result.gatewayGeneratorImpl_ = gatewayGeneratorImpl_;
-      result.claimsExtractorImpl_ = claimsExtractorImpl_;
       result.publicCertificatePath_ = publicCertificatePath_;
       result.privateKeyPath_ = privateKeyPath_;
-      result.tokenTtl_ = tokenTtl_;
       onBuilt();
       return result;
     }
@@ -931,39 +460,6 @@ private static final long serialVersionUID = 0L;
 
     public Builder mergeFrom(org.wso2.apk.enforcer.discovery.config.enforcer.JWTGenerator other) {
       if (other == org.wso2.apk.enforcer.discovery.config.enforcer.JWTGenerator.getDefaultInstance()) return this;
-      if (other.getEnable() != false) {
-        setEnable(other.getEnable());
-      }
-      if (!other.getEncoding().isEmpty()) {
-        encoding_ = other.encoding_;
-        onChanged();
-      }
-      if (!other.getClaimDialect().isEmpty()) {
-        claimDialect_ = other.claimDialect_;
-        onChanged();
-      }
-      if (other.getConvertDialect() != false) {
-        setConvertDialect(other.getConvertDialect());
-      }
-      if (!other.getHeader().isEmpty()) {
-        header_ = other.header_;
-        onChanged();
-      }
-      if (!other.getSigningAlgorithm().isEmpty()) {
-        signingAlgorithm_ = other.signingAlgorithm_;
-        onChanged();
-      }
-      if (other.getEnableUserClaims() != false) {
-        setEnableUserClaims(other.getEnableUserClaims());
-      }
-      if (!other.getGatewayGeneratorImpl().isEmpty()) {
-        gatewayGeneratorImpl_ = other.gatewayGeneratorImpl_;
-        onChanged();
-      }
-      if (!other.getClaimsExtractorImpl().isEmpty()) {
-        claimsExtractorImpl_ = other.claimsExtractorImpl_;
-        onChanged();
-      }
       if (!other.getPublicCertificatePath().isEmpty()) {
         publicCertificatePath_ = other.publicCertificatePath_;
         onChanged();
@@ -971,9 +467,6 @@ private static final long serialVersionUID = 0L;
       if (!other.getPrivateKeyPath().isEmpty()) {
         privateKeyPath_ = other.privateKeyPath_;
         onChanged();
-      }
-      if (other.getTokenTtl() != 0) {
-        setTokenTtl(other.getTokenTtl());
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -1004,558 +497,9 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    private boolean enable_ ;
-    /**
-     * <code>bool enable = 1;</code>
-     * @return The enable.
-     */
-    @java.lang.Override
-    public boolean getEnable() {
-      return enable_;
-    }
-    /**
-     * <code>bool enable = 1;</code>
-     * @param value The enable to set.
-     * @return This builder for chaining.
-     */
-    public Builder setEnable(boolean value) {
-      
-      enable_ = value;
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>bool enable = 1;</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearEnable() {
-      
-      enable_ = false;
-      onChanged();
-      return this;
-    }
-
-    private java.lang.Object encoding_ = "";
-    /**
-     * <code>string encoding = 2;</code>
-     * @return The encoding.
-     */
-    public java.lang.String getEncoding() {
-      java.lang.Object ref = encoding_;
-      if (!(ref instanceof java.lang.String)) {
-        com.google.protobuf.ByteString bs =
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        encoding_ = s;
-        return s;
-      } else {
-        return (java.lang.String) ref;
-      }
-    }
-    /**
-     * <code>string encoding = 2;</code>
-     * @return The bytes for encoding.
-     */
-    public com.google.protobuf.ByteString
-        getEncodingBytes() {
-      java.lang.Object ref = encoding_;
-      if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        encoding_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
-    }
-    /**
-     * <code>string encoding = 2;</code>
-     * @param value The encoding to set.
-     * @return This builder for chaining.
-     */
-    public Builder setEncoding(
-        java.lang.String value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  
-      encoding_ = value;
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>string encoding = 2;</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearEncoding() {
-      
-      encoding_ = getDefaultInstance().getEncoding();
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>string encoding = 2;</code>
-     * @param value The bytes for encoding to set.
-     * @return This builder for chaining.
-     */
-    public Builder setEncodingBytes(
-        com.google.protobuf.ByteString value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-      
-      encoding_ = value;
-      onChanged();
-      return this;
-    }
-
-    private java.lang.Object claimDialect_ = "";
-    /**
-     * <code>string claim_dialect = 3;</code>
-     * @return The claimDialect.
-     */
-    public java.lang.String getClaimDialect() {
-      java.lang.Object ref = claimDialect_;
-      if (!(ref instanceof java.lang.String)) {
-        com.google.protobuf.ByteString bs =
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        claimDialect_ = s;
-        return s;
-      } else {
-        return (java.lang.String) ref;
-      }
-    }
-    /**
-     * <code>string claim_dialect = 3;</code>
-     * @return The bytes for claimDialect.
-     */
-    public com.google.protobuf.ByteString
-        getClaimDialectBytes() {
-      java.lang.Object ref = claimDialect_;
-      if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        claimDialect_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
-    }
-    /**
-     * <code>string claim_dialect = 3;</code>
-     * @param value The claimDialect to set.
-     * @return This builder for chaining.
-     */
-    public Builder setClaimDialect(
-        java.lang.String value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  
-      claimDialect_ = value;
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>string claim_dialect = 3;</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearClaimDialect() {
-      
-      claimDialect_ = getDefaultInstance().getClaimDialect();
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>string claim_dialect = 3;</code>
-     * @param value The bytes for claimDialect to set.
-     * @return This builder for chaining.
-     */
-    public Builder setClaimDialectBytes(
-        com.google.protobuf.ByteString value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-      
-      claimDialect_ = value;
-      onChanged();
-      return this;
-    }
-
-    private boolean convertDialect_ ;
-    /**
-     * <code>bool convert_dialect = 4;</code>
-     * @return The convertDialect.
-     */
-    @java.lang.Override
-    public boolean getConvertDialect() {
-      return convertDialect_;
-    }
-    /**
-     * <code>bool convert_dialect = 4;</code>
-     * @param value The convertDialect to set.
-     * @return This builder for chaining.
-     */
-    public Builder setConvertDialect(boolean value) {
-      
-      convertDialect_ = value;
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>bool convert_dialect = 4;</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearConvertDialect() {
-      
-      convertDialect_ = false;
-      onChanged();
-      return this;
-    }
-
-    private java.lang.Object header_ = "";
-    /**
-     * <code>string header = 5;</code>
-     * @return The header.
-     */
-    public java.lang.String getHeader() {
-      java.lang.Object ref = header_;
-      if (!(ref instanceof java.lang.String)) {
-        com.google.protobuf.ByteString bs =
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        header_ = s;
-        return s;
-      } else {
-        return (java.lang.String) ref;
-      }
-    }
-    /**
-     * <code>string header = 5;</code>
-     * @return The bytes for header.
-     */
-    public com.google.protobuf.ByteString
-        getHeaderBytes() {
-      java.lang.Object ref = header_;
-      if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        header_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
-    }
-    /**
-     * <code>string header = 5;</code>
-     * @param value The header to set.
-     * @return This builder for chaining.
-     */
-    public Builder setHeader(
-        java.lang.String value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  
-      header_ = value;
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>string header = 5;</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearHeader() {
-      
-      header_ = getDefaultInstance().getHeader();
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>string header = 5;</code>
-     * @param value The bytes for header to set.
-     * @return This builder for chaining.
-     */
-    public Builder setHeaderBytes(
-        com.google.protobuf.ByteString value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-      
-      header_ = value;
-      onChanged();
-      return this;
-    }
-
-    private java.lang.Object signingAlgorithm_ = "";
-    /**
-     * <code>string signing_algorithm = 6;</code>
-     * @return The signingAlgorithm.
-     */
-    public java.lang.String getSigningAlgorithm() {
-      java.lang.Object ref = signingAlgorithm_;
-      if (!(ref instanceof java.lang.String)) {
-        com.google.protobuf.ByteString bs =
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        signingAlgorithm_ = s;
-        return s;
-      } else {
-        return (java.lang.String) ref;
-      }
-    }
-    /**
-     * <code>string signing_algorithm = 6;</code>
-     * @return The bytes for signingAlgorithm.
-     */
-    public com.google.protobuf.ByteString
-        getSigningAlgorithmBytes() {
-      java.lang.Object ref = signingAlgorithm_;
-      if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        signingAlgorithm_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
-    }
-    /**
-     * <code>string signing_algorithm = 6;</code>
-     * @param value The signingAlgorithm to set.
-     * @return This builder for chaining.
-     */
-    public Builder setSigningAlgorithm(
-        java.lang.String value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  
-      signingAlgorithm_ = value;
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>string signing_algorithm = 6;</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearSigningAlgorithm() {
-      
-      signingAlgorithm_ = getDefaultInstance().getSigningAlgorithm();
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>string signing_algorithm = 6;</code>
-     * @param value The bytes for signingAlgorithm to set.
-     * @return This builder for chaining.
-     */
-    public Builder setSigningAlgorithmBytes(
-        com.google.protobuf.ByteString value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-      
-      signingAlgorithm_ = value;
-      onChanged();
-      return this;
-    }
-
-    private boolean enableUserClaims_ ;
-    /**
-     * <code>bool enable_user_claims = 7;</code>
-     * @return The enableUserClaims.
-     */
-    @java.lang.Override
-    public boolean getEnableUserClaims() {
-      return enableUserClaims_;
-    }
-    /**
-     * <code>bool enable_user_claims = 7;</code>
-     * @param value The enableUserClaims to set.
-     * @return This builder for chaining.
-     */
-    public Builder setEnableUserClaims(boolean value) {
-      
-      enableUserClaims_ = value;
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>bool enable_user_claims = 7;</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearEnableUserClaims() {
-      
-      enableUserClaims_ = false;
-      onChanged();
-      return this;
-    }
-
-    private java.lang.Object gatewayGeneratorImpl_ = "";
-    /**
-     * <code>string gateway_generator_impl = 8;</code>
-     * @return The gatewayGeneratorImpl.
-     */
-    public java.lang.String getGatewayGeneratorImpl() {
-      java.lang.Object ref = gatewayGeneratorImpl_;
-      if (!(ref instanceof java.lang.String)) {
-        com.google.protobuf.ByteString bs =
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        gatewayGeneratorImpl_ = s;
-        return s;
-      } else {
-        return (java.lang.String) ref;
-      }
-    }
-    /**
-     * <code>string gateway_generator_impl = 8;</code>
-     * @return The bytes for gatewayGeneratorImpl.
-     */
-    public com.google.protobuf.ByteString
-        getGatewayGeneratorImplBytes() {
-      java.lang.Object ref = gatewayGeneratorImpl_;
-      if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        gatewayGeneratorImpl_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
-    }
-    /**
-     * <code>string gateway_generator_impl = 8;</code>
-     * @param value The gatewayGeneratorImpl to set.
-     * @return This builder for chaining.
-     */
-    public Builder setGatewayGeneratorImpl(
-        java.lang.String value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  
-      gatewayGeneratorImpl_ = value;
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>string gateway_generator_impl = 8;</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearGatewayGeneratorImpl() {
-      
-      gatewayGeneratorImpl_ = getDefaultInstance().getGatewayGeneratorImpl();
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>string gateway_generator_impl = 8;</code>
-     * @param value The bytes for gatewayGeneratorImpl to set.
-     * @return This builder for chaining.
-     */
-    public Builder setGatewayGeneratorImplBytes(
-        com.google.protobuf.ByteString value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-      
-      gatewayGeneratorImpl_ = value;
-      onChanged();
-      return this;
-    }
-
-    private java.lang.Object claimsExtractorImpl_ = "";
-    /**
-     * <code>string claims_extractor_impl = 9;</code>
-     * @return The claimsExtractorImpl.
-     */
-    public java.lang.String getClaimsExtractorImpl() {
-      java.lang.Object ref = claimsExtractorImpl_;
-      if (!(ref instanceof java.lang.String)) {
-        com.google.protobuf.ByteString bs =
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        claimsExtractorImpl_ = s;
-        return s;
-      } else {
-        return (java.lang.String) ref;
-      }
-    }
-    /**
-     * <code>string claims_extractor_impl = 9;</code>
-     * @return The bytes for claimsExtractorImpl.
-     */
-    public com.google.protobuf.ByteString
-        getClaimsExtractorImplBytes() {
-      java.lang.Object ref = claimsExtractorImpl_;
-      if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        claimsExtractorImpl_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
-    }
-    /**
-     * <code>string claims_extractor_impl = 9;</code>
-     * @param value The claimsExtractorImpl to set.
-     * @return This builder for chaining.
-     */
-    public Builder setClaimsExtractorImpl(
-        java.lang.String value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  
-      claimsExtractorImpl_ = value;
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>string claims_extractor_impl = 9;</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearClaimsExtractorImpl() {
-      
-      claimsExtractorImpl_ = getDefaultInstance().getClaimsExtractorImpl();
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>string claims_extractor_impl = 9;</code>
-     * @param value The bytes for claimsExtractorImpl to set.
-     * @return This builder for chaining.
-     */
-    public Builder setClaimsExtractorImplBytes(
-        com.google.protobuf.ByteString value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-      
-      claimsExtractorImpl_ = value;
-      onChanged();
-      return this;
-    }
-
     private java.lang.Object publicCertificatePath_ = "";
     /**
-     * <code>string public_certificate_path = 10;</code>
+     * <code>string public_certificate_path = 1;</code>
      * @return The publicCertificatePath.
      */
     public java.lang.String getPublicCertificatePath() {
@@ -1571,7 +515,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>string public_certificate_path = 10;</code>
+     * <code>string public_certificate_path = 1;</code>
      * @return The bytes for publicCertificatePath.
      */
     public com.google.protobuf.ByteString
@@ -1588,7 +532,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>string public_certificate_path = 10;</code>
+     * <code>string public_certificate_path = 1;</code>
      * @param value The publicCertificatePath to set.
      * @return This builder for chaining.
      */
@@ -1603,7 +547,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>string public_certificate_path = 10;</code>
+     * <code>string public_certificate_path = 1;</code>
      * @return This builder for chaining.
      */
     public Builder clearPublicCertificatePath() {
@@ -1613,7 +557,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>string public_certificate_path = 10;</code>
+     * <code>string public_certificate_path = 1;</code>
      * @param value The bytes for publicCertificatePath to set.
      * @return This builder for chaining.
      */
@@ -1631,7 +575,7 @@ private static final long serialVersionUID = 0L;
 
     private java.lang.Object privateKeyPath_ = "";
     /**
-     * <code>string private_key_path = 11;</code>
+     * <code>string private_key_path = 2;</code>
      * @return The privateKeyPath.
      */
     public java.lang.String getPrivateKeyPath() {
@@ -1647,7 +591,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>string private_key_path = 11;</code>
+     * <code>string private_key_path = 2;</code>
      * @return The bytes for privateKeyPath.
      */
     public com.google.protobuf.ByteString
@@ -1664,7 +608,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>string private_key_path = 11;</code>
+     * <code>string private_key_path = 2;</code>
      * @param value The privateKeyPath to set.
      * @return This builder for chaining.
      */
@@ -1679,7 +623,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>string private_key_path = 11;</code>
+     * <code>string private_key_path = 2;</code>
      * @return This builder for chaining.
      */
     public Builder clearPrivateKeyPath() {
@@ -1689,7 +633,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>string private_key_path = 11;</code>
+     * <code>string private_key_path = 2;</code>
      * @param value The bytes for privateKeyPath to set.
      * @return This builder for chaining.
      */
@@ -1701,37 +645,6 @@ private static final long serialVersionUID = 0L;
   checkByteStringIsUtf8(value);
       
       privateKeyPath_ = value;
-      onChanged();
-      return this;
-    }
-
-    private int tokenTtl_ ;
-    /**
-     * <code>int32 token_ttl = 12;</code>
-     * @return The tokenTtl.
-     */
-    @java.lang.Override
-    public int getTokenTtl() {
-      return tokenTtl_;
-    }
-    /**
-     * <code>int32 token_ttl = 12;</code>
-     * @param value The tokenTtl to set.
-     * @return This builder for chaining.
-     */
-    public Builder setTokenTtl(int value) {
-      
-      tokenTtl_ = value;
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>int32 token_ttl = 12;</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearTokenTtl() {
-      
-      tokenTtl_ = 0;
       onChanged();
       return this;
     }

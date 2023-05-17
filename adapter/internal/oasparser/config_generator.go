@@ -195,6 +195,25 @@ func GetEnforcerAPI(adapterInternalAPI model.AdapterInternalAPI, vhost string) *
 		clientCertificates = append(clientCertificates, certificate)
 	}
 
+	var backendJWTTokenInfo *api.BackendJWTTokenInfo
+
+	backendJWTTokenInfoFromInternalAPI := adapterInternalAPI.GetBackendJWTTokenInfo()
+
+	if backendJWTTokenInfoFromInternalAPI != nil {
+		customClaims := make(map[string]string)
+		for _, claim := range backendJWTTokenInfoFromInternalAPI.CustomClaims {
+			customClaims[claim.Claim] = claim.Value
+		}
+		backendJWTTokenInfo = &api.BackendJWTTokenInfo{
+			Enabled:          backendJWTTokenInfoFromInternalAPI.Enabled,
+			Encoding:         backendJWTTokenInfoFromInternalAPI.Encoding,
+			Header:           backendJWTTokenInfoFromInternalAPI.Header,
+			SigningAlgorithm: backendJWTTokenInfoFromInternalAPI.SigningAlgorithm,
+			TokenTTL:         int32(backendJWTTokenInfoFromInternalAPI.TokenTTL),
+			CustomClaims:     customClaims,
+		}
+	}
+
 	return &api.Api{
 		Id:                  adapterInternalAPI.UUID,
 		Title:               adapterInternalAPI.GetTitle(),
@@ -211,7 +230,7 @@ func GetEnforcerAPI(adapterInternalAPI model.AdapterInternalAPI, vhost string) *
 		OrganizationId:      adapterInternalAPI.OrganizationID,
 		Vhost:               vhost,
 		EnvType:             adapterInternalAPI.EnvType,
-		IsBackendJWTEnabled: adapterInternalAPI.IsBackendJWTEnabled,
+		BackendJWTTokenInfo: backendJWTTokenInfo,
 		// IsMockedApi:         isMockedAPI,
 		ClientCertificates:  clientCertificates,
 		MutualSSL:           adapterInternalAPI.GetXWSO2MutualSSL(),

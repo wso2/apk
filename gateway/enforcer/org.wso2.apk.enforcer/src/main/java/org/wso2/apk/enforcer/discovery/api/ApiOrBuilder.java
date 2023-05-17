@@ -299,8 +299,17 @@ public interface ApiOrBuilder extends
   boolean getSystemAPI();
 
   /**
-   * <code>bool isBackendJWTEnabled = 25;</code>
-   * @return The isBackendJWTEnabled.
+   * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 25;</code>
+   * @return Whether the backendJWTTokenInfo field is set.
    */
-  boolean getIsBackendJWTEnabled();
+  boolean hasBackendJWTTokenInfo();
+  /**
+   * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 25;</code>
+   * @return The backendJWTTokenInfo.
+   */
+  org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo getBackendJWTTokenInfo();
+  /**
+   * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 25;</code>
+   */
+  org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfoOrBuilder getBackendJWTTokenInfoOrBuilder();
 }
