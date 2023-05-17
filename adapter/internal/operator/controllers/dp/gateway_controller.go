@@ -15,7 +15,7 @@
  *
  */
 
-package controllers
+package dp
 
 import (
 	"context"

@@ -15,7 +15,7 @@
  *
  */
 
-package controllers
+package dp
 
 import (
 	"context"
@@ -319,7 +319,7 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 			ResourceRateLimitPolicies: resourceRateLimitPolicies,
 			ResourceAPIPolicies:       resourceAPIPolicies,
 			APIPolicies:               apiPolicies,
-      InterceptorServiceMapping: interceptorServices,
+			InterceptorServiceMapping: interceptorServices,
 		}
 		if prodHTTPRoute, err = apiReconciler.resolveHTTPRouteRefs(ctx, prodHTTPRoute, prodHTTPRouteRef, namespace, apiRef.String(), apiPolicies); err != nil {
 			return nil, fmt.Errorf("error while resolving production httpRouteref %s in namespace :%s has not found. %s",
@@ -342,7 +342,7 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 			ResourceRateLimitPolicies: resourceRateLimitPolicies,
 			ResourceAPIPolicies:       resourceAPIPolicies,
 			APIPolicies:               apiPolicies,
-      InterceptorServiceMapping:  interceptorServices,
+			InterceptorServiceMapping: interceptorServices,
 		}
 		if sandHTTPRoute, err = apiReconciler.resolveHTTPRouteRefs(ctx, sandHTTPRoute, sandHTTPRouteRef, namespace, apiRef.String(), apiPolicies); err != nil {
 			return nil, fmt.Errorf("error while resolving sandbox httpRouteref %s in namespace :%s has not found. %s",
