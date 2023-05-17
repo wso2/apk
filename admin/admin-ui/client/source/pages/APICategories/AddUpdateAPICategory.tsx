@@ -35,8 +35,8 @@ export default function AddUpdateAPICategory({ id, nameProp, descriptionProp, up
     }
   }, []);
 
-  const hasErrors = (fieldName, value) => {
-    let error;
+  const hasErrors = (fieldName: string, value: string) => {
+    let error: string | boolean = false;
     switch (fieldName) {
       case 'name':
         if (value === undefined) {
@@ -67,9 +67,9 @@ export default function AddUpdateAPICategory({ id, nameProp, descriptionProp, up
   };
 
   const getAllFormErrors = () => {
-    let errorText = '';
-    let NameErrors;
-    let DescriptionErrors;
+    let errorText: string = '';
+    let NameErrors: string | boolean = false;
+    let DescriptionErrors: string | boolean = false;
 
     if (APICategory.name === undefined) {
       NameErrors = hasErrors('name', '');
