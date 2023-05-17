@@ -12,27 +12,7 @@ option java_multiple_files = true;
 // JWT Generator model
 message JWTGenerator {
 
-    bool enable = 1;
+    string public_certificate_path = 1;
 
-    string encoding = 2;
-
-    string claim_dialect = 3;
-
-    bool convert_dialect = 4;
-
-    string header = 5;
-
-    string signing_algorithm = 6;
-
-    bool enable_user_claims = 7;
-
-    string gateway_generator_impl = 8;
-
-    string claims_extractor_impl = 9;
-
-    string public_certificate_path = 10;
-
-    string private_key_path = 11;
-
-    int32 token_ttl = 12;
+    string private_key_path = 2;
 }

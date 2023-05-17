@@ -67,12 +67,12 @@ public class InternalAPIKeyAuthenticator extends APIKeyHandler {
     private AbstractAPIMgtGatewayJWTGenerator jwtGenerator;
     private final boolean isGatewayTokenCacheEnabled;
 
-    public InternalAPIKeyAuthenticator(final boolean isBackendJWTEnabled,  String securityParam) {
+    public InternalAPIKeyAuthenticator(final JWTConfigurationDto jwtConfigurationDto, String securityParam) {
         this.securityParam = securityParam;
         EnforcerConfig enforcerConfig = ConfigHolder.getInstance().getConfig();
         this.isGatewayTokenCacheEnabled = enforcerConfig.getCacheDto().isEnabled();
-        if (isBackendJWTEnabled) {
-            this.jwtGenerator = BackendJwtUtils.getApiMgtGatewayJWTGenerator();
+        if (jwtConfigurationDto.isEnabled()) {
+            this.jwtGenerator = BackendJwtUtils.getApiMgtGatewayJWTGenerator(jwtConfigurationDto);
         }
         for (ExtendedTokenIssuerDto tokenIssuer : enforcerConfig.getIssuersMap().values()) {
             if (APIConstants.KeyManager.APIM_PUBLISHER_ISSUER.equals(tokenIssuer.getName())) {

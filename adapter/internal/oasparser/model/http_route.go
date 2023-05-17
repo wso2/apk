@@ -263,9 +263,32 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 	// Check whether the API has a backend JWT token
 	if apiPolicySelected != nil && apiPolicySelected.Spec.Override != nil && apiPolicySelected.Spec.Override.BackendJWTToken != nil {
 		loggers.LoggerOasparser.Info("Setting API Level Backend JWT Token Enable/Disable property")
-		swagger.IsBackendJWTEnabled = apiPolicySelected.Spec.Override.BackendJWTToken.IsEnabled
+		swagger.backendJWTTokenInfo = parseBackendJWTTokenToInternal(apiPolicySelected.Spec.Override.BackendJWTToken)
+		fmt.Println("CLAIMS::::  ", swagger.backendJWTTokenInfo.CustomClaims)
 	}
 	return nil
+}
+
+func parseBackendJWTTokenToInternal(backendJWTToken *dpv1alpha1.BackendJWTToken) *BackendJWTTokenInfo {
+	var customClaims []ClaimMapping
+	for _, value := range backendJWTToken.CustomClaims {
+		claim := value.Claim
+		value := value.Value
+		claimMapping := ClaimMapping{
+			Claim: claim,
+			Value: value,
+		}
+		customClaims = append(customClaims, claimMapping)
+	}
+	backendJWTTokenInternal := &BackendJWTTokenInfo{
+		Enabled:          backendJWTToken.Enabled,
+		Encoding:         backendJWTToken.Encoding,
+		Header:           backendJWTToken.Header,
+		SigningAlgorithm: backendJWTToken.SigningAlgorithm,
+		CustomClaims:     customClaims,
+		TokenTTL:         backendJWTToken.TokenTTL,
+	}
+	return backendJWTTokenInternal
 }
 
 func parseRateLimitPolicyToInternal(ratelimitPolicy *dpv1alpha1.RateLimitPolicy) *RateLimitPolicy {

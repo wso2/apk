@@ -18,13 +18,44 @@
 package tests
 
 import (
+	"fmt"
+	"io/ioutil"
+	"os"
+	"strings"
 	"testing"
 
 	"github.com/wso2/apk/test/integration/integration/utils/http"
 	"github.com/wso2/apk/test/integration/integration/utils/suite"
+	testtypes "github.com/wso2/apk/test/integration/integration/utils/testtypes"
+	"gopkg.in/yaml.v2"
 )
 
+var apiPolicy testtypes.APIPolicy
+var isBackendJWTEnabled bool
+var filePathToResource string
+
 func init() {
+
+	// Get the file path for the resource file
+	path, err := os.Getwd()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	paths := strings.Split(path, string(os.PathSeparator))
+	if paths[len(paths)-1] == "integration" && paths[len(paths)-2] == "integration" {
+		filePathToResource = path + "/tests/resources/tests/api-policy-with-jwt-generator.yaml"
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+	} else if paths[len(paths)-1] == "integration" {
+		filePathToResource = path + "/integration/tests/resources/tests/api-policy-with-jwt-generator.yaml"
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+	}
 	IntegrationTests = append(IntegrationTests, BackendJWTGenerationPolicy)
 }
 
@@ -38,6 +69,29 @@ var BackendJWTGenerationPolicy = suite.IntegrationTest{
 		gwAddr := "api-policy-with-jwt-generator.test.gw.wso2.com:9095"
 		token := http.GetTestToken(t)
 
+		yamlFile, err := ioutil.ReadFile(filePathToResource)
+
+		if err != nil {
+			t.Error(err)
+		}
+		err = yaml.Unmarshal(yamlFile, &apiPolicy)
+		if err != nil {
+			t.Error(err)
+		}
+
+		if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.BackendJWTToken != nil {
+			isBackendJWTEnabled = apiPolicy.Spec.Default.BackendJWTToken.Enabled
+		}
+
+		if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.BackendJWTToken != nil {
+			isBackendJWTEnabled = apiPolicy.Spec.Override.BackendJWTToken.Enabled
+		}
+
+		var headers map[string]string = nil
+		if isBackendJWTEnabled {
+			headers = map[string]string{"X-JWT-Assertion": ""}
+		}
+
 		testCases := []http.ExpectedResponse{
 			{
 				Request: http.Request{
@@ -50,10 +104,8 @@ var BackendJWTGenerationPolicy = suite.IntegrationTest{
 				},
 				ExpectedRequest: &http.ExpectedRequest{
 					Request: http.Request{
-						Path: "/v2/echo-full",
-						Headers: map[string]string{
-							"X-Jwt-Assertion": "",
-						},
+						Path:    "/v2/echo-full",
+						Headers: headers,
 					},
 				},
 				Backend:   "infra-backend-v1",

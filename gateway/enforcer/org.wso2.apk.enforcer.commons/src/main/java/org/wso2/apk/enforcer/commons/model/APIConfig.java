@@ -274,7 +274,7 @@ public class APIConfig {
         private boolean applicationSecurity;
         private GraphQLSchemaDTO graphQLSchemaDTO;
         private boolean systemAPI;
-        private JWTConfigurationDto jwtConfigurationDto = new JWTConfigurationDto();
+        private JWTConfigurationDto jwtConfigurationDto;
         public Builder(String name) {
             this.name = name;
         }
@@ -382,8 +382,8 @@ public class APIConfig {
             return this;
         }
 
-        public Builder jwtConfigurationDto(boolean isBackendJWTEnabled) {
-            this.jwtConfigurationDto.setEnabled(isBackendJWTEnabled);
+        public Builder jwtConfigurationDto(JWTConfigurationDto jwtConfigurationDto) {
+            this.jwtConfigurationDto = jwtConfigurationDto;
             return this;
         }
         public APIConfig build() {

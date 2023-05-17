@@ -167,18 +167,8 @@ func MarshalConfig(config *config.Config) *enforcer.Config {
 
 	return &enforcer.Config{
 		JwtGenerator: &enforcer.JWTGenerator{
-			Enable:                config.Enforcer.JwtGenerator.Enabled,
-			Encoding:              config.Enforcer.JwtGenerator.Encoding,
-			ClaimDialect:          config.Enforcer.JwtGenerator.ClaimDialect,
-			ConvertDialect:        config.Enforcer.JwtGenerator.ConvertDialect,
-			Header:                config.Enforcer.JwtGenerator.Header,
-			SigningAlgorithm:      config.Enforcer.JwtGenerator.SigningAlgorithm,
-			EnableUserClaims:      config.Enforcer.JwtGenerator.EnableUserClaims,
-			GatewayGeneratorImpl:  config.Enforcer.JwtGenerator.GatewayGeneratorImpl,
-			ClaimsExtractorImpl:   config.Enforcer.JwtGenerator.ClaimsExtractorImpl,
 			PublicCertificatePath: config.Enforcer.JwtGenerator.PublicCertificatePath,
 			PrivateKeyPath:        config.Enforcer.JwtGenerator.PrivateKeyPath,
-			TokenTtl:              config.Enforcer.JwtGenerator.TokenTTL,
 		},
 		JwtIssuer: &enforcer.JWTIssuer{
 			Enabled:               config.Enforcer.JwtIssuer.Enabled,

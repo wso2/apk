@@ -6,7 +6,14 @@ metadata:
 spec:
   override:
     backendJwtToken:
-      isEnabled: true
+      enabled: true
+      encoding: "base64"
+      signingAlgorithm: "SHA256withRSA"
+      header: "X-JWT-Assertion"
+      tokenTTL: 3600
+      customClaims:
+        - claim: "admin"
+          value: "http://wso2.org/claims/enduser"
   targetRef:
     group: gateway.networking.k8s.io
     kind: API

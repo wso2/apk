@@ -68,9 +68,11 @@ public abstract class AbstractAPIMgtGatewayJWTGenerator {
                 || SHA256_WITH_RSA.equals(signatureAlgorithm))) {
             signatureAlgorithm = SHA256_WITH_RSA;
         }
-
     }
 
+    public JWTConfigurationDto getJWTConfigurationDto() {
+        return jwtConfigurationDto;
+    }
     public String generateToken(JWTInfoDto jwtInfoDto) throws JWTGeneratorException {
 
         String jwtHeader = buildHeader();
@@ -140,6 +142,7 @@ public abstract class AbstractAPIMgtGatewayJWTGenerator {
 
         try {
             Certificate publicCert = jwtConfigurationDto.getPublicCert();
+            // TODO(benura) populate useKid accordingly, currently it's always false
             return JWTUtil.generateHeader(publicCert, signatureAlgorithm, jwtConfigurationDto.useKid());
         } catch (Exception e) {
             String error = "Error in obtaining keystore";

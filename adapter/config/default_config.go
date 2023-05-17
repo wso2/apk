@@ -227,18 +227,8 @@ var defaultConfig = &Config{
 			},
 		},
 		JwtGenerator: jwtGenerator{
-			Enabled:               false,
-			Encoding:              "base64",
-			ClaimDialect:          "http://wso2.org/claims",
-			ConvertDialect:        false,
-			Header:                "X-JWT-Assertion",
-			SigningAlgorithm:      "SHA256withRSA",
-			EnableUserClaims:      false,
-			GatewayGeneratorImpl:  "org.wso2.apk.enforcer.commons.jwtgenerator.APIMgtGatewayJWTGeneratorImpl",
-			ClaimsExtractorImpl:   "org.wso2.carbon.apimgt.impl.token.ExtendedDefaultClaimsRetriever",
 			PublicCertificatePath: "/home/wso2/security/truststore/mg.pem",
 			PrivateKeyPath:        "/home/wso2/security/keystore/mg.key",
-			TokenTTL:              3600,
 		},
 		Cache: cache{
 			Enabled:     true,

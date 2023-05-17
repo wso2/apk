@@ -41,8 +41,26 @@ spec:
                   backendJwtToken:
                     description: BackendJWTToken holds backend JWT token information
                     properties:
-                      isEnabled:
+                      customClaims:
+                        items:
+                          description: CustomClaim holds custom claim information
+                          properties:
+                            claim:
+                              type: string
+                            value:
+                              type: string
+                          type: object
+                        type: array
+                      enabled:
                         type: boolean
+                      encoding:
+                        type: string
+                      header:
+                        type: string
+                      signingAlgorithm:
+                        type: string
+                      tokenTTL:
+                        type: integer
                     type: object
                   requestInterceptors:
                     items:
@@ -123,8 +141,26 @@ spec:
                   backendJwtToken:
                     description: BackendJWTToken holds backend JWT token information
                     properties:
-                      isEnabled:
+                      customClaims:
+                        items:
+                          description: CustomClaim holds custom claim information
+                          properties:
+                            claim:
+                              type: string
+                            value:
+                              type: string
+                          type: object
+                        type: array
+                      enabled:
                         type: boolean
+                      encoding:
+                        type: string
+                      header:
+                        type: string
+                      signingAlgorithm:
+                        type: string
+                      tokenTTL:
+                        type: integer
                     type: object
                   requestInterceptors:
                     items:

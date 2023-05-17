@@ -63,11 +63,27 @@ type AdapterInternalAPI struct {
 	xWso2MutualSSL           string
 	xWso2ApplicationSecurity bool
 	EnvType                  string
-	IsBackendJWTEnabled      bool
+	backendJWTTokenInfo      *BackendJWTTokenInfo
 	// GraphQLSchema              string
 	// GraphQLComplexities        GraphQLComplexityYaml
 	IsSystemAPI     bool
 	RateLimitPolicy *RateLimitPolicy
+}
+
+// BackendJWTTokenInfo represents the object structure holding the information related to the JWT Generator
+type BackendJWTTokenInfo struct {
+	Enabled          bool
+	Encoding         string
+	Header           string
+	SigningAlgorithm string
+	TokenTTL         int
+	CustomClaims     []ClaimMapping
+}
+
+// ClaimMapping represents the object structure holding the information related to the JWT Generator Claims
+type ClaimMapping struct {
+	Claim string
+	Value string
 }
 
 // RateLimitPolicy information related to the rate limiting policy
@@ -183,6 +199,11 @@ type Certificate struct {
 	Alias   string
 	Tier    string
 	Content []byte
+}
+
+// GetBackendJWTTokenInfo returns the BackendJWTTokenInfo Object.
+func (swagger *AdapterInternalAPI) GetBackendJWTTokenInfo() *BackendJWTTokenInfo {
+	return swagger.backendJWTTokenInfo
 }
 
 // GetCorsConfig returns the CorsConfiguration Object.

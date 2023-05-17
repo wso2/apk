@@ -34,15 +34,32 @@ public class JWTConfigurationDto {
     private String jwtHeader = "X-JWT-Assertion";
     private String consumerDialectUri = "http://wso2.org/claims";
     private String signatureAlgorithm = "SHA256withRSA";
-    private boolean enableUserClaims;
-    private String gatewayJWTGeneratorImpl;
+    private String encoding = "base64";
+    private String gatewayJWTGeneratorImpl = "org.wso2.apk.enforcer.commons.jwtgenerator.APIMgtGatewayJWTGeneratorImpl";
     private Map<String, TokenIssuerDto> tokenIssuerDtoMap = new HashMap();
     private Set<String> jwtExcludedClaims = new HashSet<>();
     private Certificate publicCert;
     private PrivateKey privateKey;
     private long ttl;
+    private Map<String, String> customClaims = new HashMap<>();
 
     private boolean useKid;
+
+    public JWTConfigurationDto() {
+
+    }
+
+    public JWTConfigurationDto(final boolean enabled, final String jwtHeader,
+            final String signatureAlgorithm, final String encoding,
+            final Certificate publicCert, final PrivateKey privateKey, final long ttl) {
+        this.enabled = enabled;
+        this.jwtHeader = jwtHeader;
+        this.signatureAlgorithm = signatureAlgorithm;
+        this.encoding = encoding;
+        this.publicCert = publicCert;
+        this.privateKey = privateKey;
+        this.ttl = ttl;
+    }
 
     public boolean useKid() {
         return useKid;
@@ -50,23 +67,6 @@ public class JWTConfigurationDto {
 
     public void setUseKid(boolean useKid) {
         this.useKid = useKid;
-    }
-
-    public JWTConfigurationDto(JWTConfigurationDto jwtConfigurationDto) {
-
-        this.enabled = jwtConfigurationDto.enabled;
-        this.jwtHeader = jwtConfigurationDto.jwtHeader;
-        this.consumerDialectUri = jwtConfigurationDto.consumerDialectUri;
-        this.signatureAlgorithm = jwtConfigurationDto.signatureAlgorithm;
-        this.enableUserClaims = jwtConfigurationDto.enableUserClaims;
-        this.gatewayJWTGeneratorImpl = jwtConfigurationDto.gatewayJWTGeneratorImpl;
-        this.tokenIssuerDtoMap = jwtConfigurationDto.tokenIssuerDtoMap;
-        this.jwtExcludedClaims = jwtConfigurationDto.jwtExcludedClaims;
-        this.ttl = jwtConfigurationDto.ttl;
-    }
-
-    public JWTConfigurationDto() {
-
     }
 
     public boolean isEnabled() {
@@ -104,6 +104,11 @@ public class JWTConfigurationDto {
         return signatureAlgorithm;
     }
 
+    public String getEncoding() {
+
+        return encoding;
+    }
+
     public void setSignatureAlgorithm(String signatureAlgorithm) {
 
         this.signatureAlgorithm = signatureAlgorithm;
@@ -119,35 +124,14 @@ public class JWTConfigurationDto {
         this.gatewayJWTGeneratorImpl = gatewayJWTGeneratorImpl;
     }
 
-    public Map<String, TokenIssuerDto> getTokenIssuerDtoMap() {
+    public void setEncoding(String encoding) {
 
-        return tokenIssuerDtoMap;
-    }
-
-    public void setTokenIssuerDtoMap(
-            Map<String, TokenIssuerDto> tokenIssuerDtoMap) {
-
-        this.tokenIssuerDtoMap = tokenIssuerDtoMap;
+        this.encoding = encoding;
     }
 
     public Set<String> getJWTExcludedClaims() {
 
         return jwtExcludedClaims;
-    }
-
-    public void setJwtExcludedClaims(Set<String> jwtClaims) {
-
-        this.jwtExcludedClaims = jwtClaims;
-    }
-
-    public boolean isEnableUserClaims() {
-
-        return enableUserClaims;
-    }
-
-    public void setEnableUserClaims(boolean enableUserClaims) {
-
-        this.enableUserClaims = enableUserClaims;
     }
 
     public Certificate getPublicCert() {
@@ -175,9 +159,27 @@ public class JWTConfigurationDto {
         this.ttl = ttl;
     }
 
+    public Map<String, String> getCustomClaims() {
+
+        return customClaims;
+    }
+
     public long getTTL() {
 
         return ttl;
+    }
+
+    public void populateConfigValues(final boolean enabled, final String jwtHeader,
+            final String signatureAlgorithm, final String encoding,
+            final Certificate publicCert, final PrivateKey privateKey, final long ttl, final Map<String, String> customClaims) {
+        this.enabled = enabled;
+        this.jwtHeader = jwtHeader;
+        this.signatureAlgorithm = signatureAlgorithm;
+        this.encoding = encoding;
+        this.publicCert = publicCert;
+        this.privateKey = privateKey;
+        this.ttl = ttl;
+        this.customClaims = customClaims;
     }
 
 }

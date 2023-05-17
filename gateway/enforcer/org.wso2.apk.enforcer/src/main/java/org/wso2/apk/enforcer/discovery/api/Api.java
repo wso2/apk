@@ -36,7 +36,6 @@ private static final long serialVersionUID = 0L;
     organizationId_ = "";
     clientCertificates_ = java.util.Collections.emptyList();
     mutualSSL_ = "";
-    isBackendJWTEnabled_ = false;
   }
 
   @java.lang.Override
@@ -193,9 +192,17 @@ private static final long serialVersionUID = 0L;
             systemAPI_ = input.readBool();
             break;
           }
-          case 200: {
+          case 202: {
+            org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo.Builder subBuilder = null;
+            if (backendJWTTokenInfo_ != null) {
+              subBuilder = backendJWTTokenInfo_.toBuilder();
+            }
+            backendJWTTokenInfo_ = input.readMessage(org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo.parser(), extensionRegistry);
+            if (subBuilder != null) {
+              subBuilder.mergeFrom(backendJWTTokenInfo_);
+              backendJWTTokenInfo_ = subBuilder.buildPartial();
+            }
 
-            isBackendJWTEnabled_ = input.readBool();
             break;
           }
           default: {
@@ -924,15 +931,30 @@ private static final long serialVersionUID = 0L;
     return systemAPI_;
   }
 
-  public static final int ISBACKENDJWTENABLED_FIELD_NUMBER = 25;
-  private boolean isBackendJWTEnabled_;
+  public static final int BACKENDJWTTOKENINFO_FIELD_NUMBER = 25;
+  private org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo_;
   /**
-   * <code>bool isBackendJWTEnabled = 25;</code>
-   * @return The isBackendJWTEnabled.
+   * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 25;</code>
+   * @return Whether the backendJWTTokenInfo field is set.
    */
   @java.lang.Override
-  public boolean getIsBackendJWTEnabled() {
-    return isBackendJWTEnabled_;
+  public boolean hasBackendJWTTokenInfo() {
+    return backendJWTTokenInfo_ != null;
+  }
+  /**
+   * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 25;</code>
+   * @return The backendJWTTokenInfo.
+   */
+  @java.lang.Override
+  public org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo getBackendJWTTokenInfo() {
+    return backendJWTTokenInfo_ == null ? org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo.getDefaultInstance() : backendJWTTokenInfo_;
+  }
+  /**
+   * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 25;</code>
+   */
+  @java.lang.Override
+  public org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfoOrBuilder getBackendJWTTokenInfoOrBuilder() {
+    return getBackendJWTTokenInfo();
   }
 
   private byte memoizedIsInitialized = -1;
@@ -1006,8 +1028,8 @@ private static final long serialVersionUID = 0L;
     if (systemAPI_ != false) {
       output.writeBool(24, systemAPI_);
     }
-    if (isBackendJWTEnabled_ != false) {
-      output.writeBool(25, isBackendJWTEnabled_);
+    if (backendJWTTokenInfo_ != null) {
+      output.writeMessage(25, getBackendJWTTokenInfo());
     }
     unknownFields.writeTo(output);
   }
@@ -1082,9 +1104,9 @@ private static final long serialVersionUID = 0L;
       size += com.google.protobuf.CodedOutputStream
         .computeBoolSize(24, systemAPI_);
     }
-    if (isBackendJWTEnabled_ != false) {
+    if (backendJWTTokenInfo_ != null) {
       size += com.google.protobuf.CodedOutputStream
-        .computeBoolSize(25, isBackendJWTEnabled_);
+        .computeMessageSize(25, getBackendJWTTokenInfo());
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -1139,8 +1161,11 @@ private static final long serialVersionUID = 0L;
         != other.getApplicationSecurity()) return false;
     if (getSystemAPI()
         != other.getSystemAPI()) return false;
-    if (getIsBackendJWTEnabled()
-        != other.getIsBackendJWTEnabled()) return false;
+    if (hasBackendJWTTokenInfo() != other.hasBackendJWTTokenInfo()) return false;
+    if (hasBackendJWTTokenInfo()) {
+      if (!getBackendJWTTokenInfo()
+          .equals(other.getBackendJWTTokenInfo())) return false;
+    }
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -1201,9 +1226,10 @@ private static final long serialVersionUID = 0L;
     hash = (37 * hash) + SYSTEMAPI_FIELD_NUMBER;
     hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
         getSystemAPI());
-    hash = (37 * hash) + ISBACKENDJWTENABLED_FIELD_NUMBER;
-    hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
-        getIsBackendJWTEnabled());
+    if (hasBackendJWTTokenInfo()) {
+      hash = (37 * hash) + BACKENDJWTTOKENINFO_FIELD_NUMBER;
+      hash = (53 * hash) + getBackendJWTTokenInfo().hashCode();
+    }
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -1399,8 +1425,12 @@ private static final long serialVersionUID = 0L;
 
       systemAPI_ = false;
 
-      isBackendJWTEnabled_ = false;
-
+      if (backendJWTTokenInfoBuilder_ == null) {
+        backendJWTTokenInfo_ = null;
+      } else {
+        backendJWTTokenInfo_ = null;
+        backendJWTTokenInfoBuilder_ = null;
+      }
       return this;
     }
 
@@ -1479,7 +1509,11 @@ private static final long serialVersionUID = 0L;
       result.mutualSSL_ = mutualSSL_;
       result.applicationSecurity_ = applicationSecurity_;
       result.systemAPI_ = systemAPI_;
-      result.isBackendJWTEnabled_ = isBackendJWTEnabled_;
+      if (backendJWTTokenInfoBuilder_ == null) {
+        result.backendJWTTokenInfo_ = backendJWTTokenInfo_;
+      } else {
+        result.backendJWTTokenInfo_ = backendJWTTokenInfoBuilder_.build();
+      }
       onBuilt();
       return result;
     }
@@ -1689,8 +1723,8 @@ private static final long serialVersionUID = 0L;
       if (other.getSystemAPI() != false) {
         setSystemAPI(other.getSystemAPI());
       }
-      if (other.getIsBackendJWTEnabled() != false) {
-        setIsBackendJWTEnabled(other.getIsBackendJWTEnabled());
+      if (other.hasBackendJWTTokenInfo()) {
+        mergeBackendJWTTokenInfo(other.getBackendJWTTokenInfo());
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -3794,35 +3828,123 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    private boolean isBackendJWTEnabled_ ;
+    private org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+        org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo, org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo.Builder, org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfoOrBuilder> backendJWTTokenInfoBuilder_;
     /**
-     * <code>bool isBackendJWTEnabled = 25;</code>
-     * @return The isBackendJWTEnabled.
+     * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 25;</code>
+     * @return Whether the backendJWTTokenInfo field is set.
      */
-    @java.lang.Override
-    public boolean getIsBackendJWTEnabled() {
-      return isBackendJWTEnabled_;
+    public boolean hasBackendJWTTokenInfo() {
+      return backendJWTTokenInfoBuilder_ != null || backendJWTTokenInfo_ != null;
     }
     /**
-     * <code>bool isBackendJWTEnabled = 25;</code>
-     * @param value The isBackendJWTEnabled to set.
-     * @return This builder for chaining.
+     * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 25;</code>
+     * @return The backendJWTTokenInfo.
      */
-    public Builder setIsBackendJWTEnabled(boolean value) {
-      
-      isBackendJWTEnabled_ = value;
-      onChanged();
+    public org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo getBackendJWTTokenInfo() {
+      if (backendJWTTokenInfoBuilder_ == null) {
+        return backendJWTTokenInfo_ == null ? org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo.getDefaultInstance() : backendJWTTokenInfo_;
+      } else {
+        return backendJWTTokenInfoBuilder_.getMessage();
+      }
+    }
+    /**
+     * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 25;</code>
+     */
+    public Builder setBackendJWTTokenInfo(org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo value) {
+      if (backendJWTTokenInfoBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        backendJWTTokenInfo_ = value;
+        onChanged();
+      } else {
+        backendJWTTokenInfoBuilder_.setMessage(value);
+      }
+
       return this;
     }
     /**
-     * <code>bool isBackendJWTEnabled = 25;</code>
-     * @return This builder for chaining.
+     * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 25;</code>
      */
-    public Builder clearIsBackendJWTEnabled() {
-      
-      isBackendJWTEnabled_ = false;
-      onChanged();
+    public Builder setBackendJWTTokenInfo(
+        org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo.Builder builderForValue) {
+      if (backendJWTTokenInfoBuilder_ == null) {
+        backendJWTTokenInfo_ = builderForValue.build();
+        onChanged();
+      } else {
+        backendJWTTokenInfoBuilder_.setMessage(builderForValue.build());
+      }
+
       return this;
+    }
+    /**
+     * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 25;</code>
+     */
+    public Builder mergeBackendJWTTokenInfo(org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo value) {
+      if (backendJWTTokenInfoBuilder_ == null) {
+        if (backendJWTTokenInfo_ != null) {
+          backendJWTTokenInfo_ =
+            org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo.newBuilder(backendJWTTokenInfo_).mergeFrom(value).buildPartial();
+        } else {
+          backendJWTTokenInfo_ = value;
+        }
+        onChanged();
+      } else {
+        backendJWTTokenInfoBuilder_.mergeFrom(value);
+      }
+
+      return this;
+    }
+    /**
+     * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 25;</code>
+     */
+    public Builder clearBackendJWTTokenInfo() {
+      if (backendJWTTokenInfoBuilder_ == null) {
+        backendJWTTokenInfo_ = null;
+        onChanged();
+      } else {
+        backendJWTTokenInfo_ = null;
+        backendJWTTokenInfoBuilder_ = null;
+      }
+
+      return this;
+    }
+    /**
+     * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 25;</code>
+     */
+    public org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo.Builder getBackendJWTTokenInfoBuilder() {
+      
+      onChanged();
+      return getBackendJWTTokenInfoFieldBuilder().getBuilder();
+    }
+    /**
+     * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 25;</code>
+     */
+    public org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfoOrBuilder getBackendJWTTokenInfoOrBuilder() {
+      if (backendJWTTokenInfoBuilder_ != null) {
+        return backendJWTTokenInfoBuilder_.getMessageOrBuilder();
+      } else {
+        return backendJWTTokenInfo_ == null ?
+            org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo.getDefaultInstance() : backendJWTTokenInfo_;
+      }
+    }
+    /**
+     * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 25;</code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+        org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo, org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo.Builder, org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfoOrBuilder> 
+        getBackendJWTTokenInfoFieldBuilder() {
+      if (backendJWTTokenInfoBuilder_ == null) {
+        backendJWTTokenInfoBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+            org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo, org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo.Builder, org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfoOrBuilder>(
+                getBackendJWTTokenInfo(),
+                getParentForChildren(),
+                isClean());
+        backendJWTTokenInfo_ = null;
+      }
+      return backendJWTTokenInfoBuilder_;
     }
     @java.lang.Override
     public final Builder setUnknownFields(
