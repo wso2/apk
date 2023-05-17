@@ -53,15 +53,6 @@ var defaultConfig = &Config{
 			CertPath: "/home/wso2/security/keystore/mg.pem",
 		},
 		SystemHost: "localhost",
-		Cors: globalCors{
-			Enabled:      true,
-			AllowOrigins: []string{"*"},
-			AllowMethods: []string{"GET", "PUT", "POST", "DELETE", "PATCH", "OPTIONS"},
-			AllowHeaders: []string{"authorization", "Access-Control-Allow-Origin", "Content-Type", "SOAPAction", "apikey",
-				"testKey", "Internal-Key"},
-			AllowCredentials: false,
-			ExposeHeaders:    []string{},
-		},
 		Upstream: envoyUpstream{
 			TLS: upstreamTLS{
 				MinimumProtocolVersion: "TLS1_1",

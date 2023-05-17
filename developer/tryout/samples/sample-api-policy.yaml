@@ -2,7 +2,6 @@ apiVersion: dp.wso2.com/v1alpha1
 kind: APIPolicy
 metadata:
   name: backend-jwt-token-policy
-  namespace: apk
 spec:
   override:
     backendJwtToken:
@@ -14,6 +13,18 @@ spec:
       customClaims:
         - claim: "admin"
           value: "http://wso2.org/claims/enduser"
+    cORSPolicy:
+      enabled: true
+      accessControlAllowCredentials: false
+      accessControlAllowOrigins:
+        - "*"
+      accessControlAllowHeaders:
+        - authorization
+      accessControlAllowMethods:
+        - GET
+        - POST
+      accessControlExposeHeaders:
+        - "*"
   targetRef:
     group: gateway.networking.k8s.io
     kind: API
