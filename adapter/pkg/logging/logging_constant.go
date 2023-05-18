@@ -72,6 +72,7 @@ const (
 	error2650 = 2650
 	error2651 = 2651
 	error2652 = 2652
+	error2653 = 2653
 )
 
 // Error Log Pkg auth(3001-3099) Config Constants
@@ -287,6 +288,11 @@ var Mapper = map[int]ErrorDetails{
 		ErrorCode: error2640,
 		Message:   "Error watching InterceptorService resources: %v",
 		Severity:  BLOCKER,
+	},
+	error2653: {
+		ErrorCode: error2653,
+		Message:   "Gateway Label is invalid: %s",
+		Severity:  CRITICAL,
 	},
 	error2621: {
 		ErrorCode: error2621,

@@ -38,8 +38,8 @@ const (
 )
 
 func startConsulServiceDiscovery(organizationID string) {
-	for apiKey, clusterList := range orgIDOpenAPIClustersMap[organizationID] {
-		for _, cluster := range clusterList {
+	for apiKey, envoyInternalAPI := range orgAPIMap[organizationID] {
+		for _, cluster := range envoyInternalAPI.clusters {
 			if consulSyntax, ok := svcdiscovery.ClusterConsulKeyMap[cluster.Name]; ok {
 				svcdiscovery.InitConsul() //initialize consul client and load certs
 				onceUpdateMeshCerts.Do(func() {
@@ -71,8 +71,8 @@ func listenForMeshCertUpdates(organizationID string) {
 
 func updateCertsForServiceMesh(organizationID string) {
 	//update each cluster with new certs
-	for _, clusters := range orgIDOpenAPIClustersMap[organizationID] {
-		for _, cluster := range clusters { //iterate through all clusters
+	for _, envoyInternalAPI := range orgAPIMap[organizationID] {
+		for _, cluster := range envoyInternalAPI.clusters { //iterate through all clusters
 
 			if svcdiscovery.MeshCACert == "" || svcdiscovery.MeshServiceKey == "" || svcdiscovery.MeshServiceCert == "" {
 				logger.LoggerXds.Warn("Mesh certs are empty")
@@ -99,7 +99,7 @@ func updateCertsForServiceMesh(organizationID string) {
 	}
 
 	//send the update to Router
-	for apiKey := range orgIDOpenAPIClustersMap[organizationID] {
+	for apiKey := range orgAPIMap[organizationID] {
 		updateXDSClusterCache(apiKey, organizationID)
 	}
 }
@@ -116,7 +116,7 @@ func getServiceDiscoveryData(query svcdiscovery.Query, clusterName string, apiKe
 				return
 			}
 			//stop the process when API is deleted
-			if _, clusterExists := orgIDOpenAPIClustersMap[organizationID][apiKey]; !clusterExists {
+			if _, apiExists := orgAPIMap[organizationID][apiKey]; !apiExists {
 				logger.LoggerXds.Debugln("Consul service discovery stopped for cluster ", clusterName, " in API ",
 					apiKey, " upon API removal")
 				stopConsulDiscoveryFor(clusterName)
@@ -143,9 +143,9 @@ func getServiceDiscoveryData(query svcdiscovery.Query, clusterName string, apiKe
 }
 
 func updateCluster(apiKey string, clusterName string, organizationID string, queryResultsList []svcdiscovery.Upstream) {
-	if clusterList, available := orgIDOpenAPIClustersMap[organizationID][apiKey]; available {
-		for i := range clusterList {
-			if clusterList[i].Name == clusterName {
+	if envoyInternalAPI, available := orgAPIMap[organizationID][apiKey]; available {
+		for _, cluster := range envoyInternalAPI.clusters {
+			if cluster.Name == clusterName {
 				var lbEndpointList []*endpointv3.LbEndpoint
 				for _, result := range queryResultsList {
 					address := &corev3.Address{Address: &corev3.Address_SocketAddress{
@@ -167,7 +167,7 @@ func updateCluster(apiKey string, clusterName string, organizationID string, que
 					}
 					lbEndpointList = append(lbEndpointList, lbEndPoint)
 				}
-				clusterList[i].LoadAssignment = &endpointv3.ClusterLoadAssignment{
+				cluster.LoadAssignment = &endpointv3.ClusterLoadAssignment{
 					ClusterName: clusterName,
 					Endpoints: []*endpointv3.LocalityLbEndpoints{
 						{
@@ -182,9 +182,9 @@ func updateCluster(apiKey string, clusterName string, organizationID string, que
 }
 
 func updateXDSClusterCache(apiKey string, organizationID string) {
-	for key, envoyLabelList := range orgIDOpenAPIEnvoyMap[organizationID] {
+	for key, envoyInternalAPI := range orgAPIMap[organizationID] {
 		if key == apiKey {
-			for _, label := range envoyLabelList {
+			for _, label := range envoyInternalAPI.envoyLabels {
 				listeners, clusters, routes, endpoints, _ := GenerateEnvoyResoucesForGateway(label)
 				UpdateXdsCacheWithLock(label, endpoints, clusters, routes, listeners)
 				logger.LoggerXds.Info("Updated XDS cache by consul service discovery for API: ", apiKey)

@@ -88,6 +88,7 @@ func undeployGateway(gatewayState GatewayState) error {
 // AddOrUpdateGateway adds/update a Gateway to the XDS server.
 func AddOrUpdateGateway(gatewayState GatewayState, state string) (string, error) {
 	gateway := gatewayState.GatewayDefinition
+	xds.SanitizeGateway(gateway.Name, true)
 	resolvedListenerCerts := gatewayState.GatewayStateData.GatewayResolvedListenerCerts
 	customRateLimitPolicies := getCustomRateLimitPolicies(gatewayState.GatewayStateData.GatewayCustomRateLimitPolicies)
 	gatewayAPIPolicies := gatewayState.GatewayStateData.GatewayAPIPolicies
@@ -98,13 +99,10 @@ func AddOrUpdateGateway(gatewayState GatewayState, state string) (string, error)
 		generateGlobalInterceptorResource(gatewayAPIPolicies, gatewayInterceptorServiceMapping, gatewayBackendMapping)
 
 	if state == constants.Create {
-		xds.GenerateGlobalClusters(gatewayState.GatewayDefinition.Name)
+		xds.GenerateGlobalClusters(gateway.Name)
 	}
 
-	xds.GenerateGlobalClustersWithInterceptors(gateway.Name,
-		gwReqICluster, gwReqIAddresses,
-		gwResICluster, gwResIAddresses)
-
+	xds.GenerateInterceptorClusters(gateway.Name, gwReqICluster, gwReqIAddresses, gwResICluster, gwResIAddresses)
 	xds.UpdateGatewayCache(gateway, resolvedListenerCerts, gwLuaScript, customRateLimitPolicies)
 	listeners, clusters, routes, endpoints, apis := xds.GenerateEnvoyResoucesForGateway(gateway.Name)
 	loggers.LoggerAPKOperator.Debugf("listeners: %v", listeners)

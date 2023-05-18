@@ -105,6 +105,9 @@ func TestUpdateAPICache(t *testing.T) {
 			switch test.action {
 			case "CREATE":
 			case "UPDATE":
+				for _, label := range test.labels {
+					SanitizeGateway(label, true)
+				}
 				UpdateAPICache(test.vHosts, test.labels, test.listeners, test.adapterInternalAPI)
 				identifier := GetvHostsIdentifier(test.adapterInternalAPI.UUID, "prod")
 				actualvHosts, ok := orgIDAPIvHostsMap[test.adapterInternalAPI.OrganizationID][identifier]
@@ -115,15 +118,7 @@ func TestUpdateAPICache(t *testing.T) {
 				assert.Equal(t, actualvHosts, test.vHosts, "Not expected vHosts found, expected: %v but found: %v",
 					test.vHosts, actualvHosts)
 				for _, vhsot := range actualvHosts {
-					testExistsInMapping(t, orgIDAPIAdapterInternalAPIMap[test.adapterInternalAPI.OrganizationID],
-						GenerateIdentifierForAPIWithUUID(vhsot, test.adapterInternalAPI.UUID), true)
-					testExistsInMapping(t, orgIDOpenAPIRoutesMap[test.adapterInternalAPI.OrganizationID],
-						GenerateIdentifierForAPIWithUUID(vhsot, test.adapterInternalAPI.UUID), true)
-					testExistsInMapping(t, orgIDOpenAPIClustersMap[test.adapterInternalAPI.OrganizationID],
-						GenerateIdentifierForAPIWithUUID(vhsot, test.adapterInternalAPI.UUID), true)
-					testExistsInMapping(t, orgIDOpenAPIEndpointsMap[test.adapterInternalAPI.OrganizationID],
-						GenerateIdentifierForAPIWithUUID(vhsot, test.adapterInternalAPI.UUID), true)
-					testExistsInMapping(t, orgIDOpenAPIEnforcerApisMap[test.adapterInternalAPI.OrganizationID],
+					testExistsInMapping(t, orgAPIMap[test.adapterInternalAPI.OrganizationID],
 						GenerateIdentifierForAPIWithUUID(vhsot, test.adapterInternalAPI.UUID), true)
 				}
 			case "DELETE":
@@ -139,15 +134,7 @@ func TestUpdateAPICache(t *testing.T) {
 					t.Errorf("orgIDAPIvHostsMap has a mapping for sand after api deletion")
 				}
 				for _, vhsot := range test.deletedvHosts {
-					testExistsInMapping(t, orgIDAPIAdapterInternalAPIMap[test.adapterInternalAPI.OrganizationID],
-						GenerateIdentifierForAPIWithUUID(vhsot, test.adapterInternalAPI.UUID), false)
-					testExistsInMapping(t, orgIDOpenAPIRoutesMap[test.adapterInternalAPI.OrganizationID],
-						GenerateIdentifierForAPIWithUUID(vhsot, test.adapterInternalAPI.UUID), false)
-					testExistsInMapping(t, orgIDOpenAPIClustersMap[test.adapterInternalAPI.OrganizationID],
-						GenerateIdentifierForAPIWithUUID(vhsot, test.adapterInternalAPI.UUID), false)
-					testExistsInMapping(t, orgIDOpenAPIEndpointsMap[test.adapterInternalAPI.OrganizationID],
-						GenerateIdentifierForAPIWithUUID(vhsot, test.adapterInternalAPI.UUID), false)
-					testExistsInMapping(t, orgIDOpenAPIEnforcerApisMap[test.adapterInternalAPI.OrganizationID],
+					testExistsInMapping(t, orgAPIMap[test.adapterInternalAPI.OrganizationID],
 						GenerateIdentifierForAPIWithUUID(vhsot, test.adapterInternalAPI.UUID), false)
 				}
 			}
