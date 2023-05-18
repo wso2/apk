@@ -369,7 +369,7 @@ idp:
       strategy: Recreate
       replicas: 1
       imagePullPolicy: Always
-      image: wso2/idp-domain-service:0.0.1-m9
+      image: wso2/idp-domain-service:latest
   idpui:
     deployment:
       resources:
