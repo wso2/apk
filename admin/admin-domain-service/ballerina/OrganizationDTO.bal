@@ -25,6 +25,7 @@
 # + claimKey -  Org Claim Key 
 # + production -  Org Production
 # + sandbox -  Org Sandbox
+# + workflows -  Org Workflows
 # + serviceNamespaces -  Org Service Namespaces
 # + claimValue -    Org Claim Value
 public type Organizations record {
@@ -35,6 +36,7 @@ public type Organizations record {
     string[] serviceNamespaces;
     string claimKey;
     string production;
+    string workflows;
     string sandbox;
     string claimValue;
 };
@@ -49,6 +51,7 @@ public type Internal_Organization record {
     string[] production?;
     string[] sandbox?;
     OrganizationClaim[] claimList;
+    WorkflowProperties[] workflows?;
 };
 
 public type OrganizationClaim record {

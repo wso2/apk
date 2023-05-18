@@ -28,8 +28,8 @@ isolated function addOrganizationDAO(Internal_Organization payload) returns Inte
     } else {
         postgresql:JsonBinaryValue namespace = new (payload.serviceNamespaces.toJson());
         sql:ParameterizedQuery query = `INSERT INTO ORGANIZATION(UUID, NAME, 
-        DISPLAY_NAME,STATUS,NAMESPACE) VALUES (${payload.id},${payload.name},
-        ${payload.displayName},${payload.enabled},${namespace})`;
+        DISPLAY_NAME,STATUS,NAMESPACE,WORKFLOWS) VALUES (${payload.id},${payload.name},
+        ${payload.displayName},${payload.enabled},${namespace}, ${payload.workflows.toString().toBytes()})`;
         sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
         if result is sql:ExecutionResult && result.affectedRowCount == 1 {
             boolean isVhostAdded = addVhostsDAO(dbClient, payload);
@@ -125,7 +125,8 @@ isolated function updateOrganizationDAO(string id, Internal_Organization payload
     } else {
         postgresql:JsonBinaryValue namespace = new (payload.serviceNamespaces.toJson());
         sql:ParameterizedQuery query = `UPDATE ORGANIZATION SET NAME =${payload.name},
-         DISPLAY_NAME = ${payload.displayName}, STATUS=${payload.enabled}, NAMESPACE=${namespace} WHERE UUID = ${id}`;
+         DISPLAY_NAME = ${payload.displayName}, STATUS=${payload.enabled}, NAMESPACE=${namespace}, WORKFLOWS=${payload.workflows.toString().toBytes()}
+         WHERE UUID = ${id}`;
         sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
         if result is sql:ExecutionResult && result.affectedRowCount == 1 {
             boolean isVhostAdded = updateVhostsDAO(dbClient, payload.id, payload);
@@ -199,16 +200,16 @@ public isolated function getAllOrganizationDAO() returns Internal_Organization[]
     } else {
         do {
             map<Internal_Organization> organization = {};
-            sql:ParameterizedQuery query = `SELECT ORGANIZATION.UUID as id, NAME as name, DISPLAY_NAME as displayName, STATUS as enabled, claim_key as claimKey, claim_value as claimValue FROM ORGANIZATION, ORGANIZATION_CLAIM_MAPPING where ORGANIZATION.UUID = ORGANIZATION_CLAIM_MAPPING.UUID`;
+            sql:ParameterizedQuery query = `SELECT ORGANIZATION.UUID as id, NAME as name, DISPLAY_NAME as displayName, STATUS as enabled,
+            encode(WORKFLOWS, 'escape')::text AS workflows, claim_key as claimKey, claim_value as claimValue FROM ORGANIZATION, ORGANIZATION_CLAIM_MAPPING where ORGANIZATION.UUID = ORGANIZATION_CLAIM_MAPPING.UUID`;
             stream<Organizations, sql:Error?> orgStream = dbClient->query(query);
-            
             check from Organizations org in orgStream do {
                 if organization.hasKey(org.id) {
                     OrganizationClaim claim = {claimKey: org.claimKey, claimValue: org.claimValue};
                     organization.get(org.id).claimList.push(claim);
                 } else {
                     OrganizationClaim claim = {claimKey: org.claimKey, claimValue: org.claimValue};
-                    Internal_Organization organizationData = {id: org.id, name: org.name, displayName: org.displayName, enabled: check boolean:fromString(org.enabled), serviceNamespaces: ["*"],  claimList: [claim]};
+                    Internal_Organization organizationData = {id: org.id, name: org.name, displayName: org.displayName, enabled: check boolean:fromString(org.enabled), serviceNamespaces: ["*"],  claimList: [claim], workflows: check org.workflows.fromJsonStringWithType()};
                     organization[org.id] = organizationData;
                 }
             };
@@ -256,7 +257,7 @@ isolated function getOrganizationByIdDAO(string id) returns Internal_Organizatio
     } else {
         do {
             sql:ParameterizedQuery query = `SELECT ORGANIZATION.UUID as id, NAME as name, DISPLAY_NAME as displayName, STATUS as enabled, claim_key as claimKey, 
-                    claim_value as claimValue, string_to_array(NAMESPACE::text,',')::text[] AS serviceNamespaces
+                    claim_value as claimValue, string_to_array(NAMESPACE::text,',')::text[] AS serviceNamespaces, encode(WORKFLOWS, 'escape')::text AS workflows
                     FROM ORGANIZATION, ORGANIZATION_CLAIM_MAPPING where ORGANIZATION.UUID = ORGANIZATION_CLAIM_MAPPING.UUID and ORGANIZATION.UUID =${id}`;
             stream<Organizations, sql:Error?> orgStream = dbClient->query(query);
             Internal_Organization organization1 = {
@@ -265,6 +266,7 @@ isolated function getOrganizationByIdDAO(string id) returns Internal_Organizatio
                 displayName: "",
                 enabled: true,
                 serviceNamespaces: ["*"],
+                workflows: [],
                 production: [],
                 sandbox: [],
                 claimList: []
@@ -277,6 +279,7 @@ isolated function getOrganizationByIdDAO(string id) returns Internal_Organizatio
                         displayName:org.displayName,
                         enabled: check boolean:fromString(org.enabled),
                         serviceNamespaces: org.serviceNamespaces,
+                        workflows: check org.workflows.fromJsonStringWithType(),
                         claimList:[{
                             claimKey:org.claimKey,
                             claimValue: org.claimValue
@@ -364,7 +367,7 @@ isolated function getOrganizationByNameDAO(string name) returns Internal_Organiz
     } else {
         do {
             sql:ParameterizedQuery query = `SELECT ORGANIZATION.UUID as id, NAME as name, DISPLAY_NAME as displayName,STATUS as enabled, claim_key as claimKey, 
-                    claim_value as claimValue, string_to_array(NAMESPACE::text,',')::text[] AS serviceNamespaces
+                    claim_value as claimValue, string_to_array(NAMESPACE::text,',')::text[] AS serviceNamespaces, encode(WORKFLOWS, 'escape')::text AS workflows
                     FROM ORGANIZATION, ORGANIZATION_CLAIM_MAPPING where ORGANIZATION.UUID = ORGANIZATION_CLAIM_MAPPING.UUID and ORGANIZATION.NAME =${name}`;
             stream<Organizations, sql:Error?> orgStream = dbClient->query(query);
             Internal_Organization organization1 = {
@@ -374,6 +377,7 @@ isolated function getOrganizationByNameDAO(string name) returns Internal_Organiz
                 enabled: true,
                 serviceNamespaces: ["*"],
                 production: [],
+                workflows: [],
                 sandbox: [],
                 claimList: []
             };
@@ -385,6 +389,7 @@ isolated function getOrganizationByNameDAO(string name) returns Internal_Organiz
                         displayName:org.displayName,
                         enabled: check boolean:fromString(org.enabled),
                         serviceNamespaces: org.serviceNamespaces,
+                        workflows: check org.workflows.fromJsonStringWithType(),
                         claimList:[{
                             claimKey:org.claimKey,
                             claimValue: org.claimValue

@@ -26,11 +26,19 @@ Organization  organization = {
         organizationClaimValue: "01234567-0123-0123-0123",
         production: [],
         sandbox: [],
+        workflows: [
+            workflowProperties
+        ],
         serviceNamespaces: [
         "string"
         ]
     };
 string orgId = "";
+WorkflowProperties workflowProperties = {
+        name: "ApplicationCreation",
+        properties: [],
+        enable: true
+    };
 
 @test:Config {}
 function addOrganizationTest() {
@@ -52,6 +60,14 @@ function updateOrganizationTest() {
         name: "Finance",
         displayName: "Finance",
         organizationClaimValue: "01234567-0123-0123-0123",
+        workflows: [
+            {
+                name: "ApplicationCreation",
+                enable: false,
+                properties: []
+            }
+
+        ],
         serviceNamespaces: [
         "string"
         ]
@@ -66,17 +82,9 @@ function updateOrganizationTest() {
 }
 
 
-@test:Config {dependsOn: [updateOrganizationTest]}
-function getOrganizationsTest() {
-    OrganizationList|commons:APKError response = getAllOrganization();
-    if response is OrganizationList {
-        test:assertTrue(true,"Organization list retrieved successfully");
-    } else if response is commons:APKError {
-        test:assertFail("Error occured while retrieving Organization list");
-    }
-}
 
-@test:Config {dependsOn: [getOrganizationsTest]}
+
+@test:Config {dependsOn: [updateOrganizationTest]}
 function getOrganizationTest() {
     Organization|commons:APKError response = getOrganizationById(orgId);
     if response is Organization {

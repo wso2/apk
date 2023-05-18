@@ -2539,6 +2539,10 @@ components:
             type: string
           default:
             - "*"
+        workflows:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkflowProperties'
         production:
           type: array
           items:
@@ -2560,6 +2564,23 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Organization'
+    WorkflowProperties:
+      title: workflow properties
+      type: object
+      properties:
+        name:
+          type: string
+          enum:
+            - APPLICATION_CREATION
+            - KEY_GENERATION
+            - SUBSCRIPTION_CREATION
+            - LIFECYCLE_CHANGE
+        enable:
+          type: boolean
+        properties:
+          type: array
+          items:
+            type: string
     APICategory:
       title: API Category
       required:

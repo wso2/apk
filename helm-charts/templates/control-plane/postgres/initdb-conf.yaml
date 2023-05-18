@@ -314,6 +314,7 @@ data:
         DISPLAY_NAME VARCHAR(255),
         STATUS BOOLEAN NOT NULL DEFAULT 'TRUE',
         NAMESPACE JSONB,
+        WORKFLOWS BYTEA,
         UNIQUE(NAME),
         PRIMARY KEY(UUID)
         );

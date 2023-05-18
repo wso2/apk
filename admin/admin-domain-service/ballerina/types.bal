@@ -82,6 +82,12 @@ public type BlockingCondition record {
     boolean conditionStatus?;
 };
 
+public type WorkflowProperties record {
+    string name?;
+    boolean enable?;
+    string[] properties?;
+};
+
 public type ApplicationRatePlan record {
     *Policy;
     ThrottleLimit defaultLimit;
@@ -318,6 +324,7 @@ public type Organization record {
     string organizationClaimValue?;
     boolean enabled = true;
     string[] serviceNamespaces = ["*"];
+    WorkflowProperties[] workflows?;
     string[] production?;
     string[] sandbox?;
 };
