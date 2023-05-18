@@ -215,7 +215,7 @@ public isolated function getAllOrganizationDAO() returns Internal_Organization[]
                         displayName: org.displayName, 
                         enabled: check boolean:fromString(org.enabled), 
                         serviceNamespaces: ["*"], 
-                        workflows: org.workflows !is string ? check org.workflows.fromJsonStringWithType() : [],
+                        workflows: org.workflows.length() > 0 ? check org.workflows.fromJsonStringWithType() : [],
                         claimList: [claim]
                     };
                     organization[org.id] = organizationData;
@@ -288,7 +288,7 @@ isolated function getOrganizationByIdDAO(string id) returns Internal_Organizatio
                         displayName:org.displayName,
                         enabled: check boolean:fromString(org.enabled),
                         serviceNamespaces: org.serviceNamespaces,
-                        workflows: org.workflows !is string ? check org.workflows.fromJsonStringWithType() : [],
+                        workflows: org.workflows.length() > 0 ? check org.workflows.fromJsonStringWithType() : [],
                         claimList:[{
                             claimKey:org.claimKey,
                             claimValue: org.claimValue
@@ -398,7 +398,7 @@ isolated function getOrganizationByNameDAO(string name) returns Internal_Organiz
                         displayName:org.displayName,
                         enabled: check boolean:fromString(org.enabled),
                         serviceNamespaces: org.serviceNamespaces,
-                        workflows: org.workflows !is string ? check org.workflows.fromJsonStringWithType() : [],
+                        workflows: org.workflows is string ? check org.workflows.fromJsonStringWithType() : [],
                         claimList:[{
                             claimKey:org.claimKey,
                             claimValue: org.claimValue
