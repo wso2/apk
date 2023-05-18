@@ -54,6 +54,16 @@ function addOrganizationTest() {
 }
 
 @test:Config {dependsOn: [addOrganizationTest]}
+function getOrganizationsTest() {
+    OrganizationList|commons:APKError response = getAllOrganization();
+    if response is OrganizationList {
+        test:assertTrue(true,"Organization list retrieved successfully");
+    } else if response is commons:APKError {
+        test:assertFail("Error occured while retrieving Organization list"+response.message());
+    }
+}
+
+@test:Config {dependsOn: [getOrganizationsTest]}
 function updateOrganizationTest() {
     Organization  updateOrganization = {
         id: "01234567-0123-0123-0123-012345678901",
