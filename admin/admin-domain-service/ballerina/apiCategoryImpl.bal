@@ -44,8 +44,6 @@ isolated function getAllCategoryList(commons:Organization org) returns APICatego
         int count = categories.length();
         if (count > 0) {
             foreach APICategory apiCategory in categories {
-                //TODO:(Sampath) need to properly retrieve attached api count per category 
-                //int count = isCategoryAttached(apiCategory.name);
                 int|commons:APKError apiCount = getAPICountOfAPICategoryDAO(apiCategory.name);
                 if apiCount is int {
                     apiCategory.numberOfAPIs = apiCount;
