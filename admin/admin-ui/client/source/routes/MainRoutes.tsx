@@ -13,7 +13,7 @@ import MainLayout from 'layout/MainLayout';
 const SamplePage = Loadable(lazy(() => import('pages/sample/SamplePage')));
 const ApplicationRatePlans = Loadable(lazy(() => import('pages/ApplicationRatePlans/ListApplicationRatePlans')));
 const APICategories = Loadable(lazy(() => import('pages/APICategories/ListAPICategories')));
-const OrganizationsPage = Loadable(lazy(() => import('pages/Organizations/OrganizationsCard')));
+const OrganizationsPage = Loadable(lazy(() => import('pages/Organizations/ListOrganizations')));
 
 // ==============================|| MAIN ROUTING ||============================== //
 export default function MainRoutes() {

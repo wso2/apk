@@ -39,48 +39,49 @@ const menuItems = {
                 icon: () => <FontAwesomeIcon icon={faGaugeSimple} />,
             }
         ]
-    }, {
-        id: 'rate-limiting-policies',
-        title: 'Rate Limiting Policies',
-        type: 'group',
-        children: [
-            {
-                id: 'advanced-policies',
-                title: 'Advanced Policies',
-                type: 'item',
-                url: '/advanced-policies',
-                icon: () => <FontAwesomeIcon icon={faShieldAlt} />,
-            },
-            {
-                id: 'application-rate-plans',
-                title: 'Application Rate Plans',
-                type: 'item',
-                url: '/application-rate-plans',
-                icon: () => <FontAwesomeIcon icon={faBuildingShield} />,
-            }, 
-            {
-                id: 'business-plans',
-                title: 'Business Plans',
-                type: 'item',
-                url: '/business-plans',
-                icon: () => <FontAwesomeIcon icon={faRssSquare} />,
-            }, 
-            // {
-            //     id: 'custom-policies',
-            //     title: 'Custom Policies',
-            //     type: 'item',
-            //     url: '/custom-policies',
-            //     icon: () => <FontAwesomeIcon icon={faFilePen} />,
-            // }, 
-            {
-                id: 'deny-policies',
-                title: 'Deny Policies',
-                type: 'item',
-                url: '/deny-policies',
-                icon: () => <FontAwesomeIcon icon={faBan} />,
-            }
-        ]
     }, 
+    // {
+    //     id: 'rate-limiting-policies',
+    //     title: 'Rate Limiting Policies',
+    //     type: 'group',
+    //     children: [
+    //         {
+    //             id: 'advanced-policies',
+    //             title: 'Advanced Policies',
+    //             type: 'item',
+    //             url: '/advanced-policies',
+    //             icon: () => <FontAwesomeIcon icon={faShieldAlt} />,
+    //         },
+    //         {
+    //             id: 'application-rate-plans',
+    //             title: 'Application Rate Plans',
+    //             type: 'item',
+    //             url: '/application-rate-plans',
+    //             icon: () => <FontAwesomeIcon icon={faBuildingShield} />,
+    //         }, 
+    //         {
+    //             id: 'business-plans',
+    //             title: 'Business Plans',
+    //             type: 'item',
+    //             url: '/business-plans',
+    //             icon: () => <FontAwesomeIcon icon={faRssSquare} />,
+    //         }, 
+    //         // {
+    //         //     id: 'custom-policies',
+    //         //     title: 'Custom Policies',
+    //         //     type: 'item',
+    //         //     url: '/custom-policies',
+    //         //     icon: () => <FontAwesomeIcon icon={faFilePen} />,
+    //         // }, 
+    //         {
+    //             id: 'deny-policies',
+    //             title: 'Deny Policies',
+    //             type: 'item',
+    //             url: '/deny-policies',
+    //             icon: () => <FontAwesomeIcon icon={faBan} />,
+    //         }
+    //     ]
+    // }, 
     // {
     //     id: 'gateways',
     //     title: '',

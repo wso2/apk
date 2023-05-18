@@ -90,11 +90,6 @@ const Breadcrumbs = ({ navigation, title, ...others }: BreadcrumbsProps) => {
                                 {itemContent}
                             </MuiBreadcrumbs>
                         </Grid>
-                        {title && (
-                            <Grid item sx={{ mt: 2, mb: 2 }}>
-                                <Typography variant="h3">{item.title}</Typography>
-                            </Grid>
-                        )}
                     </Grid>
                 </MainCard>
             );

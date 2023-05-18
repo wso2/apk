@@ -23,7 +23,7 @@ import Item from '@mui/material/Grid';
 import APICategoriesCard from './APICategoriesCard';
 import RateLimitingCard from './RateLimitingCard';
 import TasksWorkflowCard from './TasksWorkflowCard';
-import OrganizationsCard from '../Organizations/OrganizationsCard';
+import OrganizationsCard from '../Organizations/ListOrganizations';
 import { useAppContext } from 'context/AppContext';
 
 /**
