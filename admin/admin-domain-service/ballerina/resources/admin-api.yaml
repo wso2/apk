@@ -1832,7 +1832,7 @@ paths:
         - name: workflowType
           in: query
           description: |
-            We need to show the values of each workflow process separately .for that we use workflow type.
+            We need to show the values of each workflow process separately.For that we use workflow type.
             Workflow type can be APPLICATION_CREATION, SUBSCRIPTION_CREATION etc.
           schema:
             type: string
