@@ -26,20 +26,21 @@ import { faGaugeSimple, faShieldAlt,
 // ==============================|| MENU ITEMS ||============================== //
 
 const menuItems = {
-    items: [{
-        id: 'group-dashboard',
-        title: '',
-        type: 'group',
-        children: [
-            {
-                id: 'dashboard',
-                title: 'Dashboard',
-                type: 'item',
-                url: '/dashboard',
-                icon: () => <FontAwesomeIcon icon={faGaugeSimple} />,
-            }
-        ]
-    }, 
+    items: [
+    //     {
+    //     id: 'group-dashboard',
+    //     title: '',
+    //     type: 'group',
+    //     children: [
+    //         {
+    //             id: 'dashboard',
+    //             title: 'Dashboard',
+    //             type: 'item',
+    //             url: '/dashboard',
+    //             icon: () => <FontAwesomeIcon icon={faGaugeSimple} />,
+    //         }
+    //     ]
+    // }, 
     // {
     //     id: 'rate-limiting-policies',
     //     title: 'Rate Limiting Policies',
@@ -138,29 +139,30 @@ const menuItems = {
     //         }
     //     ]
     // },
-    {
-        id: 'settings',
-        title: 'Settings',
-        type: 'group',
-        children: [
-            {
-                id: 'applications',
-                title: 'Applications',
-                type: 'item',
-                url: '/applications',
-                icon: () => <FontAwesomeIcon icon={faScrewdriverWrench} />,
-            },
-            // {
-            //     id: 'scope-assignments',
-            //     title: 'Documentation',
-            //     type: 'item',
-            //     url: '/scope-assignments',
-            //     icon: StarOutlined,
-            //     external: true,
-            //     target: true
-            // }
-        ]
-    }]
+    // {
+    //     id: 'settings',
+    //     title: 'Settings',
+    //     type: 'group',
+    //     children: [
+    //         {
+    //             id: 'applications',
+    //             title: 'Applications',
+    //             type: 'item',
+    //             url: '/applications',
+    //             icon: () => <FontAwesomeIcon icon={faScrewdriverWrench} />,
+    //         },
+    //         // {
+    //         //     id: 'scope-assignments',
+    //         //     title: 'Documentation',
+    //         //     type: 'item',
+    //         //     url: '/scope-assignments',
+    //         //     icon: StarOutlined,
+    //         //     external: true,
+    //         //     target: true
+    //         // }
+    //     ]
+    // }
+]
 };
 
 export default menuItems;
