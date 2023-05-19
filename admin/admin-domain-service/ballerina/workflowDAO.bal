@@ -1,0 +1,44 @@
+//
+// Copyright (c) 2022, WSO2 LLC. (http://www.wso2.com).
+//
+// WSO2 LLC. licenses this file to you under the Apache License,
+// Version 2.0 (the "License"); you may not use this file except
+// in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
+//
+
+
+import wso2/apk_common_lib as commons;
+import ballerinax/postgresql;
+import ballerina/sql;
+
+//This function is used to retrive the pending workflow requests 
+// Using Workflow table
+isolated function getWOrkflowListDAO(string? workflowType ) returns WorkflowInfo[]|commons:APKError {
+    postgresql:Client | error dbClient  = getConnection();
+    if dbClient is error {
+        return e909401(dbClient);
+    } else {
+        do {
+            WorkflowInfo[] workflowList = [];
+            sql:ParameterizedQuery query = 
+                `SELECT  FROM WORKFLOW WHERE STATUS = created AND WORKFLOW_TYPE = ${workflowType};`;
+            stream<WorkflowInfo, sql:Error?> workFlowStream = dbClient->query(query);
+            check from WorkflowInfo workflow in workFlowStream do {
+                workflowList.push(workflow);
+            };
+            return workflowList;
+        } on fail var e {
+            return e909400(e);
+        }
+    }
+}
