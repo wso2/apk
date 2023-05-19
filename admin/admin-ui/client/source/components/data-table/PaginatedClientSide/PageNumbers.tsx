@@ -65,12 +65,12 @@ export default function PageNumbers({
                 />
             </Box>
             <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
-                <InputLabel id="demo-select-small">Age</InputLabel>
+                <InputLabel id="demo-select-small">No of Items</InputLabel>
                 <Select
                     labelId="demo-select-small"
                     id="demo-select-small"
                     value={pageSize}
-                    label="Age"
+                    label="No of Items"
                     onChange={e => {
                         setPageSize(Number(e.target.value))
                     }}

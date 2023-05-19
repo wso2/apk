@@ -20,66 +20,69 @@ import { faGaugeSimple, faShieldAlt,
     faPenToSquare,
     faScrewdriverWrench,
     faShapes,
-    faGears} from '@fortawesome/free-solid-svg-icons';
+    faGears,
+    faSitemap} from '@fortawesome/free-solid-svg-icons';
 
 // ==============================|| MENU ITEMS ||============================== //
 
 const menuItems = {
-    items: [{
-        id: 'group-dashboard',
-        title: '',
-        type: 'group',
-        children: [
-            {
-                id: 'dashboard',
-                title: 'Dashboard',
-                type: 'item',
-                url: '/dashboard',
-                icon: () => <FontAwesomeIcon icon={faGaugeSimple} />,
-            }
-        ]
-    }, {
-        id: 'rate-limiting-policies',
-        title: 'Rate Limiting Policies',
-        type: 'group',
-        children: [
-            {
-                id: 'advanced-policies',
-                title: 'Advanced Policies',
-                type: 'item',
-                url: '/advanced-policies',
-                icon: () => <FontAwesomeIcon icon={faShieldAlt} />,
-            },
-            {
-                id: 'application-rate-plans',
-                title: 'Application Rate Plans',
-                type: 'item',
-                url: '/application-rate-plans',
-                icon: () => <FontAwesomeIcon icon={faBuildingShield} />,
-            }, 
-            {
-                id: 'business-plans',
-                title: 'Business Plans',
-                type: 'item',
-                url: '/business-plans',
-                icon: () => <FontAwesomeIcon icon={faRssSquare} />,
-            }, 
-            // {
-            //     id: 'custom-policies',
-            //     title: 'Custom Policies',
-            //     type: 'item',
-            //     url: '/custom-policies',
-            //     icon: () => <FontAwesomeIcon icon={faFilePen} />,
-            // }, 
-            {
-                id: 'deny-policies',
-                title: 'Deny Policies',
-                type: 'item',
-                url: '/deny-policies',
-                icon: () => <FontAwesomeIcon icon={faBan} />,
-            }
-        ]
-    }, 
+    items: [
+    //     {
+    //     id: 'group-dashboard',
+    //     title: '',
+    //     type: 'group',
+    //     children: [
+    //         {
+    //             id: 'dashboard',
+    //             title: 'Dashboard',
+    //             type: 'item',
+    //             url: '/dashboard',
+    //             icon: () => <FontAwesomeIcon icon={faGaugeSimple} />,
+    //         }
+    //     ]
+    // }, 
+    // {
+    //     id: 'rate-limiting-policies',
+    //     title: 'Rate Limiting Policies',
+    //     type: 'group',
+    //     children: [
+    //         {
+    //             id: 'advanced-policies',
+    //             title: 'Advanced Policies',
+    //             type: 'item',
+    //             url: '/advanced-policies',
+    //             icon: () => <FontAwesomeIcon icon={faShieldAlt} />,
+    //         },
+    //         {
+    //             id: 'application-rate-plans',
+    //             title: 'Application Rate Plans',
+    //             type: 'item',
+    //             url: '/application-rate-plans',
+    //             icon: () => <FontAwesomeIcon icon={faBuildingShield} />,
+    //         }, 
+    //         {
+    //             id: 'business-plans',
+    //             title: 'Business Plans',
+    //             type: 'item',
+    //             url: '/business-plans',
+    //             icon: () => <FontAwesomeIcon icon={faRssSquare} />,
+    //         }, 
+    //         // {
+    //         //     id: 'custom-policies',
+    //         //     title: 'Custom Policies',
+    //         //     type: 'item',
+    //         //     url: '/custom-policies',
+    //         //     icon: () => <FontAwesomeIcon icon={faFilePen} />,
+    //         // }, 
+    //         {
+    //             id: 'deny-policies',
+    //             title: 'Deny Policies',
+    //             type: 'item',
+    //             url: '/deny-policies',
+    //             icon: () => <FontAwesomeIcon icon={faBan} />,
+    //         }
+    //     ]
+    // }, 
     // {
     //     id: 'gateways',
     //     title: '',
@@ -94,6 +97,20 @@ const menuItems = {
     //         }
     //     ]
     // },
+    {
+        id: 'organizations',
+        title: '',
+        type: 'group',
+        children: [
+            {
+                id: 'organizations',
+                title: 'Organizations',
+                type: 'item',
+                url: '/organizations',
+                icon: () => <FontAwesomeIcon icon={faSitemap} />,
+            }
+        ]
+    },
     {
         id: 'api-categories',
         title: '',
@@ -122,29 +139,30 @@ const menuItems = {
     //         }
     //     ]
     // },
-    {
-        id: 'settings',
-        title: 'Settings',
-        type: 'group',
-        children: [
-            {
-                id: 'applications',
-                title: 'Applications',
-                type: 'item',
-                url: '/applications',
-                icon: () => <FontAwesomeIcon icon={faScrewdriverWrench} />,
-            },
-            // {
-            //     id: 'scope-assignments',
-            //     title: 'Documentation',
-            //     type: 'item',
-            //     url: '/scope-assignments',
-            //     icon: StarOutlined,
-            //     external: true,
-            //     target: true
-            // }
-        ]
-    }]
+    // {
+    //     id: 'settings',
+    //     title: 'Settings',
+    //     type: 'group',
+    //     children: [
+    //         {
+    //             id: 'applications',
+    //             title: 'Applications',
+    //             type: 'item',
+    //             url: '/applications',
+    //             icon: () => <FontAwesomeIcon icon={faScrewdriverWrench} />,
+    //         },
+    //         // {
+    //         //     id: 'scope-assignments',
+    //         //     title: 'Documentation',
+    //         //     type: 'item',
+    //         //     url: '/scope-assignments',
+    //         //     icon: StarOutlined,
+    //         //     external: true,
+    //         //     target: true
+    //         // }
+    //     ]
+    // }
+]
 };
 
 export default menuItems;
