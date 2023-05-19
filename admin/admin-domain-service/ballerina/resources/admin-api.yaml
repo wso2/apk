@@ -1814,6 +1814,96 @@ paths:
           "https://127.0.0.1:9443/api/am/admin/organization-info/0a043c2b-ee75-4ef3-9e1c-fc2610ccfa8b"'
       operationId: getOrganizationByClaimValue
 
+  ######################################################
+  # The "Workflow Collection" resource APIs
+  ######################################################
+  /workflows:
+    get:
+      tags:
+        - Workflow (Collection)
+      summary: |
+        Retrieve All Pending Workflow Processes
+      description: |
+        This operation can be used to retrieve list of workflow pending processes.
+      parameters:
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/Accept'
+        - name: workflowType
+          in: query
+          description: |
+            We need to show the values of each workflow process separately.For that we use workflow type.
+            Workflow type can be APPLICATION_CREATION, SUBSCRIPTION_CREATION etc.
+          schema:
+            type: string
+            enum:
+              - APPLICATION_CREATION
+              - KEY_GENERATION
+              - SUBSCRIPTION_CREATION
+              - LIFECYCLE_CHANGE
+      responses:
+        200:
+          description: |
+            OK. Workflow pendding process list returned.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowList'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        406:
+          $ref: '#/components/responses/NotAcceptable'
+      security:
+        - OAuth2Security:
+            - apk:workflow_manage
+
+  /workflows/update-workflow-status:
+    post:
+      tags:
+        - Workflows (Individual)
+      summary: Update Workflow Status
+      description: |
+        This operation can be used to approve or reject a workflow task.
+      parameters:
+        - $ref: '#/components/parameters/workflowReferenceId-Q'
+      requestBody:
+        description: |
+          Workflow event that need to be updated
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkflowInfo'
+        required: true
+      responses:
+        200:
+          description: |
+            OK. Workflow request information is returned.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowInfo'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+      security:
+        - OAuth2Security:
+            - apk:workflow_manage
+            
 components:
   schemas:
     Error:
@@ -2539,6 +2629,10 @@ components:
             type: string
           default:
             - "*"
+        workflows:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkflowProperties'
         production:
           type: array
           items:
@@ -2560,6 +2654,106 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Organization'
+    WorkflowList:
+      title: WorkflowList
+      type: object
+      properties:
+        count:
+          type: integer
+          description: |
+            Number of workflow processes returned.
+          example: 1
+        next:
+          type: string
+          description: |
+            Link to the next subset of resources qualified.
+            Empty if no more resources are to be returned.
+          example: /workflows?limit=1&offset=2&user=
+        previous:
+          type: string
+          description: |
+            Link to the previous subset of resources qualified.
+            Empty if current subset is the first subset returned.
+          example: /workflows?limit=1&offset=0&user=
+        list:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkflowInfo'
+    WorkflowProperties:
+      title: workflow properties
+      type: object
+      properties:
+        name:
+          type: string
+          enum:
+            - APPLICATION_CREATION
+            - KEY_GENERATION
+            - SUBSCRIPTION_CREATION
+            - LIFECYCLE_CHANGE
+        enable:
+          type: boolean
+        properties:
+          type: array
+          items:
+            type: string
+    WorkflowInfo:
+      title: Workflow info object with basic workflow details
+      type: object
+      properties:
+        workflowType:
+          type: string
+          description: |
+            Type of the Workflow Request. It shows which type of request is it.
+          example: APPLICATION_CREATION
+          enum:
+            - APPLICATION_CREATION
+            - KEY_GENERATION
+            - SUBSCRIPTION_CREATION
+            - LIFECYCLE_CHANGE
+        workflowStatus:
+          type: string
+          description: |
+            Show the Status of the the workflow request whether it is approved or created.
+          example: APPROVED
+          enum:
+            - APPROVED
+            - CREATED
+        createdTime:
+          type: string
+          description: |
+            Time of the the workflow request created.
+          example: 2020-02-10 10:10:19.704
+        updatedTime:
+          type: string
+          description: |
+            Time of the the workflow request updated.
+          example: 2020-02-10 10:10:19.704
+        description:
+          type: string
+          description: |
+            description is a message with basic details about the workflow request.
+          example: Approve application [APP1] creation request from application creator
+            - admin with throttling tier - 10MinPer
+    WorkflowResponse:
+      title: workflow Response
+      required:
+        - workflowStatus
+      type: object
+      properties:
+        workflowStatus:
+          type: string
+          description: |
+            This attribute declares whether this workflow task is approved or rejected.
+          example: APPROVED
+          enum:
+            - CREATED
+            - APPROVED
+            - REJECTED
+            - REGISTERED
+        jsonPayload:
+          type: string
+          description: |
+            Attributes that returned after the workflow execution
     APICategory:
       title: API Category
       required:
@@ -2848,26 +3042,6 @@ components:
         value:
           type: object
           properties: {}
-    WorkflowResponse:
-      title: workflow Response
-      required:
-        - workflowStatus
-      type: object
-      properties:
-        workflowStatus:
-          type: string
-          description: |
-            This attribute declares whether this workflow task is approved or rejected.
-          example: APPROVED
-          enum:
-            - CREATED
-            - APPROVED
-            - REJECTED
-            - REGISTERED
-        jsonPayload:
-          type: string
-          description: |
-            Attributes that returned after the workflow execution
     Pagination:
       title: Pagination
       type: object
@@ -3217,4 +3391,6 @@ components:
             apk:keymanager_operations: Manage Key Managers related
               operations
             apk:admin_application_manage: Manage All Applications
+            apk:workflow_manage: manage All Workflows
+            
             

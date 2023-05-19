@@ -515,6 +515,32 @@ service /api/am/admin on ep0 {
     # + return - OK. KeyManagers returned 
     // resource function post 'key\-managers/discover(http:Request request) returns OkKeyManagerWellKnownResponse {
     // }
+
+
+    # Retrieve All Pending Workflow Processes
+    #
+    # + 'limit - Maximum size of resource array to return. 
+    # + offset - Starting point within the complete list of items qualified. 
+    # + accept - Media types acceptable for the response. Default is application/json. 
+    # + workflowType - We need to show the values of each workflow process separately .for that we use workflow type. Workflow type can be APPLICATION_CREATION, SUBSCRIPTION_CREATION etc. 
+    # + return - returns can be any of following types
+    # WorkflowList (OK. Workflow pendding process list returned.)
+    # BadRequestError (Bad Request. Invalid request or validation error.)
+    # NotFoundError (Not Found. The specified resource does not exist.)
+    # NotAcceptableError (Not Acceptable. The requested media type is not supported.)
+    // resource function get workflows(string? workflowType, int 'limit = 25, int offset = 0, @http:Header string? accept = "application/json") returns WorkflowList|BadRequestError|NotFoundError|NotAcceptableError {
+    // }
+    # Update Workflow Status
+    #
+    # + workflowReferenceId - Workflow reference id 
+    # + payload - Workflow event that need to be updated 
+    # + return - returns can be any of following types
+    # OkWorkflowInfo (OK. Workflow request information is returned.)
+    # BadRequestError (Bad Request. Invalid request or validation error.)
+    # NotFoundError (Not Found. The specified resource does not exist.)
+    // resource function post workflows/'update\-workflow\-status(string workflowReferenceId, @http:Payload WorkflowInfo payload) returns OkWorkflowInfo|BadRequestError|NotFoundError {
+    // }
+
     # Get all Organization
     #
     # + return - OK. Organization returned 

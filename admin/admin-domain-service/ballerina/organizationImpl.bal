@@ -31,6 +31,7 @@ isolated function createInternalFromOrganization(Organization payload) returns I
         displayName: payload.displayName,
         enabled: payload.enabled,
         serviceNamespaces: payload.serviceNamespaces,
+        workflows: payload.workflows,
         production: payload.production,
         sandbox: payload.sandbox,
         claimList: [ orgClaim ]
@@ -47,6 +48,7 @@ isolated function createOrganizationFromInternal(Internal_Organization payload) 
         serviceNamespaces: payload.serviceNamespaces,
         production: payload.production,
         sandbox: payload.sandbox,
+        workflows: payload.workflows,
         organizationClaimValue: payload.claimList[0].claimValue
     };
     return organization;

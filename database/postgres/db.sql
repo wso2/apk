@@ -289,6 +289,7 @@ GRANT ALL PRIVILEGES ON DATABASE "WSO2AM_DB" TO wso2carbon;
 		DISPLAY_NAME VARCHAR(255),
 	 	STATUS BOOLEAN NOT NULL DEFAULT 'TRUE',
         NAMESPACE JSONB,
+        WORKFLOWS BYTEA,
 	 	UNIQUE(NAME),
         PRIMARY KEY(UUID)
         );
@@ -307,6 +308,17 @@ GRANT ALL PRIVILEGES ON DATABASE "WSO2AM_DB" TO wso2carbon;
 	    TYPE VARCHAR(50),
         FOREIGN KEY(UUID) REFERENCES ORGANIZATION(UUID) ON UPDATE CASCADE ON DELETE CASCADE,
         UNIQUE(UUID, VHOST, TYPE)
+        );
+
+        CREATE TABLE IF NOT EXISTS WORKFLOWS(
+        UUID VARCHAR(255) NOT NULL ,
+        WF_REFERENCE VARCHAR(255) NOT NULL,
+        WF_TYPE VARCHAR(255) NOT NULL,
+        WF_STATUS VARCHAR(255) NOT NULL,
+        WF_CREATED_TIME TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        WF_UPDATED_TIME TIMESTAMP DEFAULT CURRENT_TIMESTAMP ,
+        ORGANIZATION VARCHAR(255),
+        PRIMARY KEY (UUID)
         );
         
         CREATE TABLE IF NOT EXISTS KEY_MANAGER (
@@ -348,7 +360,7 @@ GRANT ALL PRIVILEGES ON DATABASE "WSO2AM_DB" TO wso2carbon;
     
         -- Insert Demo APK data ---
         INSERT INTO INTERNAL_USER(uuid, IDP_USER_NAME) VALUES ( 'apkuser', 'apkuser');
-        INSERT INTO organization(uuid, name, display_name, status) VALUES ( 'a3b58ccf-6ecc-4557-b5bb-0a35cce38256', 'default', 'default', true);
+        INSERT INTO organization(uuid, name, display_name, status, workflows) VALUES ( 'a3b58ccf-6ecc-4557-b5bb-0a35cce38256', 'default', 'default', true, '');
         INSERT INTO organization_claim_mapping(uuid, claim_key, claim_value) VALUES ( 'a3b58ccf-6ecc-4557-b5bb-0a35cce38256', 'organizationClaimValue', 'default');
         -- End Insert Demo APK data        
         commit;

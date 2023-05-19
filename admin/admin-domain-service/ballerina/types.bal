@@ -36,6 +36,11 @@ public type ConflictError record {|
     Error body;
 |};
 
+public type OkWorkflowInfo record {|
+    *http:Ok;
+    WorkflowInfo body;
+|};
+
 public type NotFoundError record {|
     *http:NotFound;
     Error body;
@@ -80,6 +85,12 @@ public type BlockingCondition record {
     string conditionValue;
     # Status of the blocking condition
     boolean conditionStatus?;
+};
+
+public type WorkflowProperties record {
+    string name?;
+    boolean enable?;
+    string[] properties?;
 };
 
 public type ApplicationRatePlan record {
@@ -180,8 +191,8 @@ public type KeyManager record {
     string[] availableGrantTypes?;
     boolean enableTokenGeneration = true;
     boolean enableMapOAuthConsumerApps = false;
-    boolean enableOAuthAppCreation = true;
     boolean enableOauthAppValidation = true;
+    boolean enableOAuthAppCreation = true;
     string consumerKeyClaim?;
     string scopesClaim?;
     boolean enabled = true;
@@ -318,6 +329,7 @@ public type Organization record {
     string organizationClaimValue?;
     boolean enabled = true;
     string[] serviceNamespaces = ["*"];
+    WorkflowProperties[] workflows?;
     string[] production?;
     string[] sandbox?;
 };
@@ -407,6 +419,18 @@ public type Settings_keyManagerConfiguration record {
     KeyManagerConfiguration[] endpointConfigurations?;
 };
 
+public type WorkflowList record {
+    # Number of workflow processes returned.
+    int count?;
+    # Link to the next subset of resources qualified.
+    # Empty if no more resources are to be returned.
+    string next?;
+    # Link to the previous subset of resources qualified.
+    # Empty if current subset is the first subset returned.
+    string previous?;
+    WorkflowInfo[] list?;
+};
+
 public type ApplicationList record {
     # Number of applications returned.
     int count?;
@@ -433,6 +457,19 @@ public type KeyManagerInfo record {
     string 'type;
     string description?;
     boolean enabled?;
+};
+
+public type WorkflowInfo record {
+    # Type of the Workflow Request. It shows which type of request is it.
+    string workflowType?;
+    # Show the Status of the the workflow request whether it is approved or created.
+    string workflowStatus?;
+    # Time of the the workflow request created.
+    string createdTime?;
+    # Time of the the workflow request updated.
+    string updatedTime?;
+    # description is a message with basic details about the workflow request.
+    string description?;
 };
 
 public type ExportPolicy record {
