@@ -16,15 +16,26 @@
  * under the License.
  */
 
-import React, { useState } from 'react';
+import React from 'react';
 import TextField from '@mui/material/TextField';
-import Autocomplete from '@mui/material/Autocomplete';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Grid from '@mui/material/Grid';
 import SearchIcon from '@mui/icons-material/Search';
 
-export default function SearchTable({filter, setFilter, searchProps: {searchPlaceholder} }) {
+interface SearchTableProps {
+    filter: string;
+    setFilter: (filter: string) => void;
+    searchProps: {
+        searchPlaceholder: string;
+    };
+}
+
+export default function SearchTable({ filter, setFilter, searchProps: { searchPlaceholder } }: SearchTableProps) {
+
+    const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setFilter(e.target.value);
+    };
 
     return (
         <AppBar position='static' color='default' elevation={0}>
@@ -40,7 +51,7 @@ export default function SearchTable({filter, setFilter, searchProps: {searchPlac
                             <TextField
                                 fullWidth
                                 placeholder={searchPlaceholder}
-                                onChange={(e) => setFilter(e.target.value)}
+                                onChange={handleFilterChange}
                                 value={filter || ''}
                             />
                         }
