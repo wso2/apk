@@ -309,8 +309,12 @@ func GetResolvedBackend(ctx context.Context, client k8client.Client,
 	resolvedBackend.Services = backend.Spec.Services
 	resolvedBackend.Protocol = backend.Spec.Protocol
 	if backend.Spec.TLS != nil {
-		resolvedTLSConfig.ResolvedCertificate = resolveCertificate(ctx, client,
+		resolvedTLSConfig.ResolvedCertificate, err = ResolveCertificate(ctx, client,
 			backend.Namespace, *backend.Spec.TLS)
+		if err != nil || resolvedTLSConfig.ResolvedCertificate == "" {
+			loggers.LoggerAPKOperator.Errorf("Error resolving certificate for JWKS %v", err)
+			return nil
+		}
 		resolvedTLSConfig.AllowedSANs = backend.Spec.TLS.AllowedSANs
 		resolvedBackend.TLS = resolvedTLSConfig
 	}
@@ -350,9 +354,9 @@ func getResolvedBackendSecurity(ctx context.Context, client k8client.Client,
 	return resolvedSecurity
 }
 
-// resolveCertificate reads the certificate from TLSConfig, first checks the certificateInline field,
+// ResolveCertificate reads the certificate from TLSConfig, first checks the certificateInline field,
 // if no value then load the certificate from secretRef using util function called getSecretValue
-func resolveCertificate(ctx context.Context, client k8client.Client, namespace string, tlsConfig dpv1alpha1.TLSConfig) string {
+func ResolveCertificate(ctx context.Context, client k8client.Client, namespace string, tlsConfig dpv1alpha1.TLSConfig) (string, error) {
 	var certificate string
 	var err error
 	if len(tlsConfig.CertificateInline) > 0 {
@@ -368,19 +372,22 @@ func resolveCertificate(ctx context.Context, client k8client.Client, namespace s
 			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2643, tlsConfig.ConfigMapRef))
 		}
 	}
+	if err != nil {
+		return "", err
+	}
 	if len(certificate) > 0 {
 		block, _ := pem.Decode([]byte(certificate))
 		if block == nil {
 			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2627))
-			return ""
+			return "", nil
 		}
 		_, err = x509.ParseCertificate(block.Bytes)
 		if err != nil {
 			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2641, err.Error()))
-			return ""
+			return "", err
 		}
 	}
-	return certificate
+	return certificate, nil
 }
 
 // RetrieveNamespaceListOptions retrieve namespace list options for the given namespaces

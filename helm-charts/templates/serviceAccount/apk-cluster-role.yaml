@@ -113,4 +113,13 @@ rules:
   - apiGroups: [ "coordination.k8s.io" ]
     resources: [ "leases" ]
     verbs: [ "get","list","watch","update","patch","create","delete" ]
+  - apiGroups: ["dp.wso2.com"]
+    resources: ["jwtissuers"]
+    verbs: ["get","list","watch","update","delete","create"]
+  - apiGroups: ["dp.wso2.com"]
+    resources: ["jwtissuers/finalizers"]
+    verbs: ["update"]
+  - apiGroups: ["dp.wso2.com"]
+    resources: ["jwtissuers/status"]
+    verbs: ["get","patch","update"]
 {{- end -}}

@@ -23,6 +23,7 @@ const (
 	GatewayController      string = "GatewayController"
 	ApplicationController  string = "ApplicationController"
 	SubscriptionController string = "SubscriptionController"
+	JWTIssuerReconciler    string = "JWTIssuerReconciler"
 )
 
 // API events related constants
