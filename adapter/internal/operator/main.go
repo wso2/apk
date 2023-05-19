@@ -113,7 +113,6 @@ func InitOperator() {
 	successChannel := make(chan synchronizer.SuccessEvent, 10)
 
 	gatewaych := make(chan synchronizer.GatewayEvent, 10)
-
 	updateHandler := status.NewUpdateHandler(mgr.GetClient())
 	if err := mgr.Add(updateHandler); err != nil {
 		loggers.LoggerAPKOperator.Errorf("Failed to add status update handler %v", err)
@@ -150,7 +149,9 @@ func InitOperator() {
 	if err := cpcontrollers.NewSubscriptionController(mgr); err != nil {
 		loggers.LoggerAPKOperator.Errorf("Error creating Subscription controller: %v", err)
 	}
-
+	if err := dpcontrollers.NewJWTIssuerReconciler(mgr); err != nil {
+		loggers.LoggerAPKOperator.Errorf("Error creating JWT Issuer controller: %v", err)
+	}
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2602, err))
 	}

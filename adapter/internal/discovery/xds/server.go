@@ -84,6 +84,7 @@ type EnforcerInternalAPI struct {
 	subscriptionPolicies   []types.Resource
 	applicationKeyMappings []types.Resource
 	revokedTokens          []types.Resource
+	jwtIssuers             []types.Resource
 }
 
 var (
@@ -93,6 +94,7 @@ var (
 
 	cache                              envoy_cachev3.SnapshotCache
 	enforcerCache                      wso2_cache.SnapshotCache
+	enforcerJwtIssuerCache             wso2_cache.SnapshotCache
 	enforcerSubscriptionCache          wso2_cache.SnapshotCache
 	enforcerApplicationCache           wso2_cache.SnapshotCache
 	enforcerAPICache                   wso2_cache.SnapshotCache
@@ -159,7 +161,7 @@ func init() {
 	enforcerKeyManagerCache = wso2_cache.NewSnapshotCache(false, IDHash{}, nil)
 	enforcerRevokedTokensCache = wso2_cache.NewSnapshotCache(false, IDHash{}, nil)
 	enforcerThrottleDataCache = wso2_cache.NewSnapshotCache(false, IDHash{}, nil)
-
+	enforcerJwtIssuerCache = wso2_cache.NewSnapshotCache(false, IDHash{}, nil)
 	gatewayLabelConfigMap = make(map[string]*EnvoyGatewayConfig)
 	listenerToRouteArrayMap = make(map[string][]*routev3.Route)
 	orgAPIMap = make(map[string]map[string]*EnvoyInternalAPI)
@@ -638,6 +640,26 @@ func UpdateEnforcerApplications(applications *subscription.ApplicationList) {
 	}
 	enforcerLabelMap[label].applications = applicationList
 	logger.LoggerXds.Infof("New Application cache update for the label: " + label + " version: " + fmt.Sprint(version))
+}
+
+// UpdateEnforcerJWTIssuers sets new update to the enforcer's Applications
+func UpdateEnforcerJWTIssuers(jwtIssuers *subscription.JWTIssuerList) {
+	logger.LoggerXds.Debug("Updating Enforcer JWT Issuer Cache")
+	label := commonEnforcerLabel
+	jwtIssuerList := append(enforcerLabelMap[label].jwtIssuers, jwtIssuers)
+
+	version := rand.Intn(maxRandomInt)
+	snap, _ := wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
+		wso2_resource.JWTIssuerListType: jwtIssuerList,
+	})
+	snap.Consistent()
+
+	errSetSnap := enforcerJwtIssuerCache.SetSnapshot(context.Background(), label, snap)
+	if errSetSnap != nil {
+		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1414, errSetSnap.Error()))
+	}
+	enforcerLabelMap[label].jwtIssuers = jwtIssuerList
+	logger.LoggerXds.Infof("New JWTIssuer cache update for the label: " + label + " version: " + fmt.Sprint(version))
 }
 
 // UpdateEnforcerAPIList sets new update to the enforcer's Apis
