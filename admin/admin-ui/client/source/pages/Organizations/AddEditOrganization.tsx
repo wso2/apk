@@ -165,6 +165,9 @@ const AddEditOrganization: React.FC<Props> = ({
             setSandbox({ sandbox: [] })
             setDialogTitle('Add Organization');
         }
+        setErrors((prevErrors) => ({ ...prevErrors, name: '' }));
+        setErrors((prevErrors) => ({ ...prevErrors, displayName: '' }));
+        setErrors((prevErrors) => ({ ...prevErrors, claimValue: '' }));
     }, [open]);
 
     return (
@@ -199,6 +202,7 @@ const AddEditOrganization: React.FC<Props> = ({
                             )}
                             helperText={errors?.name ? errors.name : 'Name of the Organization'}
                             error={!!errors?.name}
+                            style={{ marginTop: '15px' }}
                         />
                         <TextField
                             margin='dense'
@@ -216,6 +220,7 @@ const AddEditOrganization: React.FC<Props> = ({
                             helperText={errors?.displayName ? errors.displayName : 'Display Name of the Organization'}
                             error={!!errors?.displayName}
                             variant='outlined'
+                            style={{ marginTop: '15px' }}
                         />
                         <TextField
                             margin='dense'
@@ -233,6 +238,7 @@ const AddEditOrganization: React.FC<Props> = ({
                             helperText={errors?.claimValue ? errors.claimValue : 'Claim Value of the Organization'}
                             error={!!errors?.claimValue}
                             variant='outlined'
+                            style={{ marginTop: '15px' }}
                         />
                         <StyledChipsInput
                             fullWidth
@@ -241,6 +247,7 @@ const AddEditOrganization: React.FC<Props> = ({
                             onChange={handleSeriveNamespacesChipChange}
                             hideClearAll
                             helperText={'Service Namespaces of the Organization'}
+                            style={{ marginTop: '15px' }}
                         />
                         <StyledChipsInput
                             fullWidth
@@ -248,7 +255,8 @@ const AddEditOrganization: React.FC<Props> = ({
                             value={orgProduction}
                             onChange={handleProductionChipChange}
                             hideClearAll
-                            helperText={'Production Endppints of the Organization'}
+                            helperText={'Production Endpoints of the Organization'}
+                            style={{ marginTop: '15px' }}
                         />
                         <StyledChipsInput
                             fullWidth
@@ -256,7 +264,8 @@ const AddEditOrganization: React.FC<Props> = ({
                             value={orgSandbox}
                             onChange={handleSandboxChipChange}
                             hideClearAll
-                            helperText={'Sandbox Endppints of the Organization'}
+                            helperText={'Sandbox Endpoints of the Organization'}
+                            style={{ marginTop: '15px' }}
                         />
                     </>
                 </DialogContent>
