@@ -131,16 +131,9 @@ const Profile = () => {
                                                         <Avatar alt="profile user" sx={{ width: 32, height: 32 }} />
                                                         <Stack>
                                                             <Typography variant="h6">{user.user}</Typography>
-                                                            <Typography variant="body2" color="textSecondary">
-                                                                Org1
-                                                            </Typography>
+                                                            {/* Here relevant organization name should be added */}
                                                         </Stack>
                                                     </Stack>
-                                                </Grid>
-                                                <Grid item>
-                                                    <IconButton size="large" color="secondary" onClick={logout}>
-                                                        <LogoutOutlined />
-                                                    </IconButton>
                                                 </Grid>
                                             </Grid>
                                         </CardContent>
