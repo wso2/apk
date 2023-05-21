@@ -137,11 +137,10 @@ isolated function getAPICountOfAPICategoryDAO(string apiCategory) returns int|co
     } else {
         sql:ParameterizedQuery query = `SELECT COUNT(uuid) FROM API WHERE categories ?? ${apiCategory}`;
         int|sql:Error result = dbClient->queryRow(query);
-        if result is int {
-            return result;
-        } else {
-            log:printError(result.toString());
-            return e909404(result);
-        }
+    if result is sql:Error {
+        log:printError(result.toString());
+        return e909404(result);
+    } 
+    return result;
     }
 }
