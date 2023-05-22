@@ -322,4 +322,25 @@ spec:
 #     - host: interceptor-backend-v1.apk
 #       port: 9081
 # ---
+---
+apiVersion: dp.wso2.com/v1alpha1
+kind: JWTIssuer
+metadata:
+  name: testkey-idp
+  namespace: apk-integration-test
+spec:
+  consumerKeyClaim: azp
+  issuer: https://prod.gw.wso2.com/testkey
+  name: TestKey-idp
+  organization: carbon.super
+  scopesClaim: scope
+  signatureValidation:
+    certificate:
+      secretRef:
+        key: "mg.pem"
+        name: "apk-test-setup-wso2-apk-enforcer-keystore-secret"
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: default
 
