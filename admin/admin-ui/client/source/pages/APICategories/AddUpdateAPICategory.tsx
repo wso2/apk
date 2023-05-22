@@ -15,6 +15,7 @@
  *
  */
 
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import EditIcon from '@mui/icons-material/Edit';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -29,11 +30,6 @@ import Alert from "components/Alert";
 import PropTypes from 'prop-types';
 import React, { useEffect, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
-import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
-
-import AddCircleOutlineRoundedIcon from '@mui/icons-material/AddCircleOutlineRounded';
-
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 
 export default function AddUpdateAPICategory({ id, nameProp, descriptionProp, updateList }) {
   // This component has been used to add API category when id is undefined and edit API category when id is defined

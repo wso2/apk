@@ -18,7 +18,6 @@
 import { Grid, Typography } from '@mui/material';
 import { default as Alert, default as MuiAlert } from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
-import Card from '@mui/material/Card';
 import Snackbar from '@mui/material/Snackbar';
 import Stack from '@mui/material/Stack';
 import axios from 'axios';
@@ -108,49 +107,6 @@ export default function ListAPICategories() {
   if (loading) {
     return <Loader />;
   }
-  if (error || data === null || data === undefined) {
-    return (
-      <>
-        <Typography variant='h3'>API Categories</Typography>
-        <br />
-        <Alert severity='error'>
-          <AlertTitle>Error</AlertTitle>
-          There's an error when fetching API Categories — <strong>check it out!</strong>
-        </Alert>
-      </>
-    );
-  }
-  if (data && data.count === 0) {
-    return (
-      <div>
-        <div>
-          <Grid container direction='row' justifyContent='space-between'>
-            <Grid item sx={{ mt: 2, mb: 2 }}>
-              <Typography variant='h3'>API Categories</Typography>
-            </Grid>
-            <Grid item display='grid'>
-              <AddUpdateAPICategory
-                id={undefined}
-                nameProp={undefined}
-                descriptionProp={undefined}
-                updateList={fetchData}
-              />
-            </Grid>
-          </Grid>
-        </div>
-        <Snackbar open={snackbarOpen} autoHideDuration={10000} onClose={() => setSnackbarOpen(false)}>
-          <MuiAlert onClose={() => setSnackbarOpen(false)} severity='success' sx={{ width: '100%' }}>
-            {
-              <FormattedMessage
-                id={formattedMessage.id}
-                defaultMessage={formattedMessage.defaultMessage}
-              />
-            }
-          </MuiAlert>
-        </Snackbar>
-      </div>
-    );
-  }
   return (
     <div>
       <div>
@@ -167,9 +123,18 @@ export default function ListAPICategories() {
             />
           </Grid>
         </Grid>
-      </div>
-      <div>
-        <PaginatedClientSide data={data.list} columns={columns} searchProps={searchProps} />
+        {(error || data === null || data === undefined) &&
+          <Alert severity='error'>
+            <AlertTitle>Error</AlertTitle>
+            There's an error when fetching API Categories — <strong>check it out!</strong>
+          </Alert>
+        }
+
+        {data && data.count > 0 &&
+          <div>
+            <PaginatedClientSide data={data.list} columns={columns} searchProps={searchProps} />
+          </div>
+        }
       </div>
       <Snackbar open={snackbarOpen} autoHideDuration={10000} onClose={() => setSnackbarOpen(false)}>
         <MuiAlert onClose={() => setSnackbarOpen(false)} severity='success' sx={{ width: '100%' }}>
@@ -182,5 +147,5 @@ export default function ListAPICategories() {
         </MuiAlert>
       </Snackbar>
     </div>
-  )
+  );
 }
