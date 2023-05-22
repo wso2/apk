@@ -18,9 +18,9 @@
 
 package org.wso2.apk.enforcer.commons.dto;
 
+import java.security.cert.Certificate;
 import java.util.HashMap;
 import java.util.Map;
-import javax.security.cert.Certificate;
 
 /**
  * Holds data related to token issuers.

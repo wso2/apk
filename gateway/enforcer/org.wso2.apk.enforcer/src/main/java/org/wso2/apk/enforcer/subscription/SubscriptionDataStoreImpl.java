@@ -21,29 +21,23 @@ package org.wso2.apk.enforcer.subscription;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.wso2.apk.enforcer.commons.dto.JWKSConfigurationDTO;
+import org.wso2.apk.enforcer.commons.exception.EnforcerException;
+import org.wso2.apk.enforcer.config.dto.ExtendedTokenIssuerDto;
+import org.wso2.apk.enforcer.discovery.*;
 import org.wso2.apk.enforcer.discovery.subscription.APIs;
-import org.wso2.apk.enforcer.constants.APIConstants;
-import org.wso2.apk.enforcer.discovery.ApiListDiscoveryClient;
-import org.wso2.apk.enforcer.discovery.ApplicationDiscoveryClient;
-import org.wso2.apk.enforcer.discovery.ApplicationKeyMappingDiscoveryClient;
-import org.wso2.apk.enforcer.discovery.ApplicationPolicyDiscoveryClient;
-import org.wso2.apk.enforcer.discovery.SubscriptionDiscoveryClient;
-import org.wso2.apk.enforcer.discovery.SubscriptionPolicyDiscoveryClient;
-import org.wso2.apk.enforcer.models.API;
-import org.wso2.apk.enforcer.models.ApiPolicy;
-import org.wso2.apk.enforcer.models.Application;
-import org.wso2.apk.enforcer.models.ApplicationKeyMapping;
-import org.wso2.apk.enforcer.models.ApplicationKeyMappingCacheKey;
-import org.wso2.apk.enforcer.models.ApplicationPolicy;
-import org.wso2.apk.enforcer.models.Subscription;
-import org.wso2.apk.enforcer.models.SubscriptionPolicy;
+import org.wso2.apk.enforcer.discovery.subscription.Certificate;
+import org.wso2.apk.enforcer.discovery.subscription.JWTIssuer;
+import org.wso2.apk.enforcer.models.*;
+import org.wso2.apk.enforcer.security.jwt.validator.JWTValidator;
+import org.wso2.apk.enforcer.util.TLSUtils;
 
+import java.io.IOException;
+import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 /**
  * Implementation of the subscription data store.
@@ -51,7 +45,7 @@ import java.util.stream.Collectors;
 public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
 
     private static final Logger log = LogManager.getLogger(SubscriptionDataStoreImpl.class);
-    private static SubscriptionDataStoreImpl instance = new SubscriptionDataStoreImpl();
+    private static final SubscriptionDataStoreImpl instance = new SubscriptionDataStoreImpl();
 
     /**
      * ENUM to hold type of policies.
@@ -72,7 +66,8 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
     private Map<String, SubscriptionPolicy> subscriptionPolicyMap;
     private Map<String, ApplicationPolicy> appPolicyMap;
     private Map<String, Subscription> subscriptionMap;
-    private String tenantDomain = APIConstants.SUPER_TENANT_DOMAIN_NAME;
+
+    private Map<String, JWTValidator> jwtValidatorMap;
 
     SubscriptionDataStoreImpl() {
     }
@@ -90,6 +85,7 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
         this.appPolicyMap = new ConcurrentHashMap<>();
         this.apiPolicyMap = new ConcurrentHashMap<>();
         this.subscriptionMap = new ConcurrentHashMap<>();
+        this.jwtValidatorMap = new ConcurrentHashMap<>();
         initializeLoadingTasks();
     }
 
@@ -100,43 +96,14 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
     }
 
     @Override
-    public ApplicationKeyMapping getKeyMappingByKeyAndKeyManager(String key, String keyManager) {
-        return applicationKeyMappingMap.get(new ApplicationKeyMappingCacheKey(key, keyManager));
-    }
-
-    @Override
     public API getApiByContextAndVersion(String uuid) {
         return apiMap.get(uuid);
-    }
-
-    @Override
-    public SubscriptionPolicy getSubscriptionPolicyByName(String policyName) {
-
-        String key = PolicyType.SUBSCRIPTION +
-                SubscriptionDataStoreUtil.getPolicyCacheKey(policyName);
-        return subscriptionPolicyMap.get(key);
-    }
-
-    @Override
-    public ApplicationPolicy getApplicationPolicyByName(String policyName) {
-
-        String key = PolicyType.APPLICATION + DELEM_PERIOD +
-                SubscriptionDataStoreUtil.getPolicyCacheKey(policyName);
-        return appPolicyMap.get(key);
     }
 
     @Override
     public Subscription getSubscriptionById(String appId, String apiId) {
 
         return subscriptionMap.get(SubscriptionDataStoreUtil.getSubscriptionCacheKey(appId, apiId));
-    }
-
-    @Override
-    public ApiPolicy getApiPolicyByName(String policyName) {
-
-        String key = PolicyType.API + DELEM_PERIOD +
-                SubscriptionDataStoreUtil.getPolicyCacheKey(policyName);
-        return apiPolicyMap.get(key);
     }
 
     private void initializeLoadingTasks() {
@@ -146,6 +113,7 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
         ApplicationPolicyDiscoveryClient.getInstance().watchApplicationPolicies();
         SubscriptionPolicyDiscoveryClient.getInstance().watchSubscriptionPolicies();
         ApplicationKeyMappingDiscoveryClient.getInstance().watchApplicationKeyMappings();
+        JWTIssuerDiscoveryClient.getInstance().watchJWTIssuers();
     }
 
     public void addSubscriptions(List<org.wso2.apk.enforcer.discovery.subscription.Subscription> subscriptionList) {
@@ -279,113 +247,6 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
     }
 
     @Override
-    public void addOrUpdateSubscription(Subscription subscription) {
-
-        synchronized (subscriptionMap) {
-            Subscription retrievedSubscription = subscriptionMap.get(subscription.getCacheKey());
-            if (retrievedSubscription == null) {
-                subscriptionMap.put(subscription.getCacheKey(), subscription);
-            } else {
-                if (subscription.getTimeStamp() < retrievedSubscription.getTimeStamp()) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Drop the Event " + subscription.toString() + " since the event timestamp was old");
-                    }
-                } else {
-                    subscriptionMap.put(subscription.getCacheKey(), subscription);
-                }
-            }
-        }
-    }
-
-    @Override
-    public void removeSubscription(Subscription subscription) {
-        subscriptionMap.remove(subscription.getCacheKey());
-    }
-
-    @Override
-    public void addOrUpdateAPI(API api) {
-        apiMap.put(api.getCacheKey(), api);
-    }
-
-    @Override
-    public void addOrUpdateAPIWithUrlTemplates(API api) {
-    }
-
-    @Override
-    public void removeAPI(API api) {
-        apiMap.remove(api.getCacheKey());
-    }
-
-    @Override
-    public void addOrUpdateApplicationKeyMapping(ApplicationKeyMapping applicationKeyMapping) {
-
-        applicationKeyMappingMap.remove(applicationKeyMapping.getCacheKey());
-        applicationKeyMappingMap.put(applicationKeyMapping.getCacheKey(), applicationKeyMapping);
-    }
-
-    @Override
-    public void removeApplicationKeyMapping(ApplicationKeyMapping applicationKeyMapping) {
-        applicationKeyMappingMap.remove(applicationKeyMapping.getCacheKey());
-    }
-
-    @Override
-    public void addOrUpdateSubscriptionPolicy(SubscriptionPolicy subscriptionPolicy) {
-        subscriptionPolicyMap.remove(subscriptionPolicy.getCacheKey());
-        subscriptionPolicyMap.put(subscriptionPolicy.getCacheKey(), subscriptionPolicy);
-    }
-
-    @Override
-    public void addOrUpdateApplicationPolicy(ApplicationPolicy applicationPolicy) {
-        appPolicyMap.remove(applicationPolicy.getCacheKey());
-        appPolicyMap.put(applicationPolicy.getCacheKey(), applicationPolicy);
-    }
-
-    @Override
-    public void removeApplicationPolicy(ApplicationPolicy applicationPolicy) {
-        appPolicyMap.remove(applicationPolicy.getCacheKey());
-    }
-
-    @Override
-    public void removeSubscriptionPolicy(SubscriptionPolicy subscriptionPolicy) {
-        subscriptionPolicyMap.remove(subscriptionPolicy.getCacheKey());
-    }
-
-    @Override
-    public void addOrUpdateApplication(Application application) {
-        applicationMap.remove(application.getId());
-        applicationMap.put(application.getCacheKey(), application);
-    }
-
-    @Override
-    public void removeApplication(Application application) {
-        applicationMap.remove(application.getId());
-    }
-
-    @Override
-    public void addOrUpdateApiPolicy(ApiPolicy apiPolicy) {
-    }
-
-    @Override
-    public void removeApiPolicy(ApiPolicy apiPolicy) {
-        apiPolicyMap.remove(apiPolicy.getCacheKey());
-    }
-
-    @Override
-    public API getDefaultApiByContext(String context) {
-        Set<String> set = apiMap.keySet()
-                .stream()
-                .filter(s -> s.startsWith(context))
-                .collect(Collectors.toSet());
-        for (String key : set) {
-            API api = apiMap.get(key);
-            if (api.isDefaultVersion() && (api.getContext().replace("/" + api.getApiVersion(), "")).equals(context)) {
-                return api;
-            }
-        }
-        return null;
-    }
-
-    @Override
     public List<API> getMatchingAPIs(String name, String context, String version, String uuid) {
         List<API> apiList = new ArrayList<>();
         for (API api : apiMap.values()) {
@@ -493,27 +354,38 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
     }
 
     @Override
-    // Add org id
-    public List<ApplicationPolicy> getMatchingApplicationPolicies(String policyName) {
-        List<ApplicationPolicy> applicationPolicies = new ArrayList<>();
-        if (StringUtils.isEmpty(policyName)) {
-            applicationPolicies.addAll(this.appPolicyMap.values());
-        } else {
-            ApplicationPolicy policy = this.getApplicationPolicyByName(policyName);
-            applicationPolicies.add(policy);
+    public void addJWTIssuers(List<JWTIssuer> jwtIssuers) {
+        for (JWTIssuer jwtIssuer : jwtIssuers) {
+            try {
+                ExtendedTokenIssuerDto tokenIssuerDto = new ExtendedTokenIssuerDto(jwtIssuer.getIssuer());
+                tokenIssuerDto.setName(jwtIssuer.getName());
+                tokenIssuerDto.setConsumerKeyClaim(jwtIssuer.getConsumerKeyClaim());
+                tokenIssuerDto.setScopesClaim(jwtIssuer.getScopesClaim());
+                Certificate certificate = jwtIssuer.getCertificate();
+                if (StringUtils.isNotEmpty(certificate.getJwks().getUrl())) {
+                    JWKSConfigurationDTO jwksConfigurationDTO = new JWKSConfigurationDTO();
+                    if (StringUtils.isNotEmpty(certificate.getJwks().getTls())) {
+                        java.security.cert.Certificate tlsCertificate =
+                                TLSUtils.getCertificateFromContent(certificate.getJwks().getTls());
+                        jwksConfigurationDTO.setCertificate(tlsCertificate);
+                    }
+                    tokenIssuerDto.setJwksConfigurationDTO(jwksConfigurationDTO);
+                }
+                if (StringUtils.isNotEmpty(certificate.getCertificate())) {
+                    java.security.cert.Certificate signingCertificate =
+                            TLSUtils.getCertificateFromContent(certificate.getCertificate());
+                    tokenIssuerDto.setCertificate(signingCertificate);
+                }
+                JWTValidator jwtValidator = new JWTValidator(tokenIssuerDto);
+                jwtValidatorMap.put(jwtIssuer.getIssuer(),jwtValidator);
+            } catch (EnforcerException | CertificateException | IOException e) {
+                log.error("Error occurred while configuring JWT Validator for issuer " + jwtIssuer.getIssuer(), e);
+            }
         }
-        return applicationPolicies;
     }
 
     @Override
-    public List<SubscriptionPolicy> getMatchingSubscriptionPolicies(String policyName) {
-        List<SubscriptionPolicy> subscriptionPolicies = new ArrayList<>();
-        if (StringUtils.isEmpty(policyName)) {
-            subscriptionPolicies.addAll(this.subscriptionPolicyMap.values());
-        } else {
-            SubscriptionPolicy policy = this.getSubscriptionPolicyByName(policyName);
-            subscriptionPolicies.add(policy);
-        }
-        return subscriptionPolicies;
+    public JWTValidator getJWTValidatorByIssuer(String issuer) {
+        return jwtValidatorMap.get(issuer);
     }
 }

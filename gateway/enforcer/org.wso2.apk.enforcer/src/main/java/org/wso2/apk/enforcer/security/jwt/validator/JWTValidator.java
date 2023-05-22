@@ -37,17 +37,16 @@ import org.wso2.apk.enforcer.config.ConfigHolder;
 import org.wso2.apk.enforcer.config.dto.ExtendedTokenIssuerDto;
 import org.wso2.apk.enforcer.constants.APIConstants;
 import org.wso2.apk.enforcer.security.jwt.SignedJWTInfo;
+import org.wso2.apk.enforcer.util.JWKSClient;
 import org.wso2.apk.enforcer.util.JWTUtils;
 
 import java.io.IOException;
 import java.security.PublicKey;
+import java.security.cert.Certificate;
 import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.text.ParseException;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Class responsible to validate jwt. This should validate the JWT signature, expiry time.
@@ -56,34 +55,34 @@ import java.util.Map;
 public class JWTValidator {
     private static final Logger logger = LogManager.getLogger(JWTValidator.class);
     private JWKSet jwkSet;
+    JWTTransformer jwtTransformer;
+    ExtendedTokenIssuerDto tokenIssuer;
+    JWKSClient jwksClient;
 
-    public JWTValidator() {
+    public JWTValidator(ExtendedTokenIssuerDto tokenIssuer) throws EnforcerException {
+        jwtTransformer = ConfigHolder.getInstance().getConfig().getJwtTransformer(tokenIssuer.getIssuer());
+        jwtTransformer.loadConfiguration(tokenIssuer);
+        this.tokenIssuer = tokenIssuer;
+        if(tokenIssuer.getJwksConfigurationDTO()!= null && tokenIssuer.getJwksConfigurationDTO().isEnabled() && StringUtils.isNotEmpty(tokenIssuer.getJwksConfigurationDTO().getUrl())){
+            Certificate certificate = tokenIssuer.getJwksConfigurationDTO().getCertificate();
+            if (certificate != null){
+                jwksClient = new JWKSClient(tokenIssuer.getJwksConfigurationDTO().getUrl(),Arrays.asList(certificate));
+            }else{
+                jwksClient = new JWKSClient(tokenIssuer.getJwksConfigurationDTO().getUrl(), Collections.emptyList());
+            }
+        }
     }
 
 
     public JWTValidationInfo validateJWTToken(SignedJWTInfo signedJWTInfo) throws EnforcerException {
-        JWTValidationInfo jwtValidationInfo = new JWTValidationInfo();
-        String issuer = signedJWTInfo.getJwtClaimsSet().getIssuer();
-        Map<String, ExtendedTokenIssuerDto> tokenIssuers = ConfigHolder.getInstance().getConfig().getIssuersMap();
-
-        if (StringUtils.isNotEmpty(issuer) && tokenIssuers.containsKey(issuer)) {
-            ExtendedTokenIssuerDto tokenIssuer = tokenIssuers.get(issuer);
-            JWTTransformer jwtTransformer = ConfigHolder.getInstance().getConfig().getJwtTransformer(issuer);
-            jwtTransformer.loadConfiguration(tokenIssuer);
-            return validateToken(signedJWTInfo, tokenIssuer, jwtTransformer);
-        }
-        jwtValidationInfo.setValid(false);
-        jwtValidationInfo.setValidationCode(APIConstants.KeyValidationStatus.API_AUTH_INVALID_CREDENTIALS);
-        logger.info("No matching issuer found for the token with issuer : " + issuer);
-        return jwtValidationInfo;
+            return validateToken(signedJWTInfo);
     }
 
-    private JWTValidationInfo validateToken(SignedJWTInfo signedJWTInfo, ExtendedTokenIssuerDto tokenIssuer,
-                                            JWTTransformer jwtTransformer) throws EnforcerException {
+    private JWTValidationInfo validateToken(SignedJWTInfo signedJWTInfo) throws EnforcerException {
         JWTValidationInfo jwtValidationInfo = new JWTValidationInfo();
         boolean state;
         try {
-            state = validateSignature(signedJWTInfo.getSignedJWT(), tokenIssuer);
+            state = validateSignature(signedJWTInfo.getSignedJWT());
             if (state) {
                 JWTClaimsSet jwtClaimsSet = signedJWTInfo.getJwtClaimsSet();
                 state = validateTokenExpiry(jwtClaimsSet);
@@ -110,49 +109,44 @@ public class JWTValidator {
         }
     }
 
-    protected boolean validateSignature(SignedJWT signedJWT, ExtendedTokenIssuerDto tokenIssuer)
+    protected boolean validateSignature(SignedJWT signedJWT)
             throws EnforcerException {
         try {
-            String certificateAlias = tokenIssuer.getCertificateAlias();
             String keyID = signedJWT.getHeader().getKeyID();
-            if (StringUtils.isNotEmpty(keyID)) {
-                if (tokenIssuer.getJwksConfigurationDTO().isEnabled() && StringUtils
-                        .isNotEmpty(tokenIssuer.getJwksConfigurationDTO().getUrl())) {
-                    // Check JWKSet Available in Cache
-                    if (jwkSet == null) {
-                        jwkSet = retrieveJWKSet(tokenIssuer);
+            if (jwksClient != null) {
+                // Check JWKSet Available in Cache
+                if (jwkSet == null) {
+                    jwkSet = jwksClient.getJWKSet();
+                }
+                JWK jwkSetKeyByKeyId = jwkSet.getKeyByKeyId(keyID);
+                if (jwkSetKeyByKeyId == null) {
+                    jwkSet = jwksClient.getJWKSet();
+                }
+                jwkSetKeyByKeyId = jwkSet.getKeyByKeyId(keyID);
+                if (jwkSetKeyByKeyId instanceof RSAKey) {
+                    RSAKey keyByKeyId = (RSAKey) jwkSetKeyByKeyId;
+                    RSAPublicKey rsaPublicKey = keyByKeyId.toRSAPublicKey();
+                    if (rsaPublicKey != null) {
+                        return JWTUtils.verifyTokenSignature(signedJWT, rsaPublicKey);
                     }
-                    JWK jwkSetKeyByKeyId = jwkSet.getKeyByKeyId(keyID);
-                    if (jwkSetKeyByKeyId == null) {
-                        jwkSet = retrieveJWKSet(tokenIssuer);
+                } else if (jwkSetKeyByKeyId instanceof ECKey) {
+                    ECKey keyByKeyId = (ECKey) jwkSetKeyByKeyId;
+                    ECPublicKey ecPublicKey = keyByKeyId.toECPublicKey();
+                    if (ecPublicKey != null) {
+                        return JWTUtils.verifyTokenSignature(signedJWT, ecPublicKey);
                     }
-                    jwkSetKeyByKeyId = jwkSet.getKeyByKeyId(keyID);
-                    if (jwkSetKeyByKeyId instanceof RSAKey) {
-                        RSAKey keyByKeyId = (RSAKey) jwkSetKeyByKeyId;
-                        RSAPublicKey rsaPublicKey = keyByKeyId.toRSAPublicKey();
-                        if (rsaPublicKey != null) {
-                            return JWTUtils.verifyTokenSignature(signedJWT, rsaPublicKey);
-                        }
-                    } else if (jwkSetKeyByKeyId instanceof ECKey) {
-                        ECKey keyByKeyId = (ECKey) jwkSetKeyByKeyId;
-                        ECPublicKey ecPublicKey = keyByKeyId.toECPublicKey();
-                        if (ecPublicKey != null) {
-                            return JWTUtils.verifyTokenSignature(signedJWT, ecPublicKey);
-                        }
-                    } else {
-                        throw new EnforcerException("Key Algorithm not supported");
-                    }
-                } else if (tokenIssuer.getCertificate() != null) {
-                    logger.debug("Retrieve certificate from Token issuer and validating");
-                    PublicKey publicKey = tokenIssuer.getCertificate().getPublicKey();
-                    return JWTUtils.verifyTokenSignature(signedJWT, publicKey);
                 } else {
-                    //TODO: (VirajSalaka) Come up with a fix
-                    return JWTUtils.verifyTokenSignature(signedJWT, keyID);
+                    throw new EnforcerException("Key Algorithm not supported");
                 }
             }
-            return JWTUtils.verifyTokenSignature(signedJWT, certificateAlias);
-        } catch (ParseException | JOSEException | IOException e) {
+            if (tokenIssuer.getCertificate() != null) {
+                logger.debug("Retrieve certificate from Token issuer and validating");
+                PublicKey publicKey = tokenIssuer.getCertificate().getPublicKey();
+                return JWTUtils.verifyTokenSignature(signedJWT, publicKey);
+            } else {
+                throw new EnforcerException("Certificate not found for validation");
+            }
+        } catch (JOSEException e) {
             throw new EnforcerException("JWT Signature verification failed", e);
         }
     }
@@ -163,12 +157,6 @@ public class JWTValidator {
         Date now = new Date();
         Date exp = jwtClaimsSet.getExpirationTime();
         return exp == null || DateUtils.isAfter(exp, now, timestampSkew);
-    }
-
-    private JWKSet retrieveJWKSet(ExtendedTokenIssuerDto tokenIssuer) throws IOException, ParseException {
-        String jwksInfo = JWTUtils.retrieveJWKSConfiguration(tokenIssuer.getJwksConfigurationDTO().getUrl());
-        jwkSet = JWKSet.parse(jwksInfo);
-        return jwkSet;
     }
 
     private void createJWTValidationInfoFromJWT(JWTValidationInfo jwtValidationInfo, JWTClaimsSet jwtClaimsSet)

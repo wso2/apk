@@ -40,6 +40,8 @@ func GetResponseType(typeURL string) types.ResponseType {
 		return types.APIList
 	case resource.ApplicationListType:
 		return types.ApplicationList
+	case resource.JWTIssuerListType:
+		return types.JWTIssuerList
 	case resource.ApplicationPolicyListType:
 		return types.ApplicationPolicyList
 	case resource.SubscriptionPolicyListType:
@@ -58,6 +60,8 @@ func GetResponseType(typeURL string) types.ResponseType {
 		return types.Application
 	case resource.SubscriptionType:
 		return types.Subscription
+	case resource.JWTIssuerType:
+		return types.JWTIssuer
 	}
 	return types.UnknownType
 }
@@ -76,6 +80,8 @@ func GetResourceName(res envoy_types.Resource) string {
 		return "Subscription"
 	case *subscription.ApplicationList:
 		return "Application"
+	case *subscription.JWTIssuerList:
+		return "JWTIssuer"
 	case *subscription.ApplicationKeyMappingList:
 		return "ApplicationKeyMapping"
 	case *subscription.APIList:
@@ -94,6 +100,8 @@ func GetResourceName(res envoy_types.Resource) string {
 		return fmt.Sprint(v.Uuid)
 	case *subscription.Subscription:
 		return fmt.Sprint(v.Uuid)
+	case *subscription.JWTIssuer:
+		return fmt.Sprint(v.Name)
 	default:
 		return ""
 	}

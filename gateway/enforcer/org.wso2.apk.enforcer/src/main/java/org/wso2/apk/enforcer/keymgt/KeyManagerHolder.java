@@ -147,7 +147,7 @@ public class KeyManagerHolder {
                             InputStream is = new ByteArrayInputStream(certBytes);
                             Certificate certificate = CertificateFactory.getInstance(X509)
                                     .generateCertificate(is);
-                            tokenIssuerDto.setCertificate(TLSUtils.convertCertificate(certificate));
+                            tokenIssuerDto.setCertificate(certificate);
                         } catch (CertificateException e) {
                             logger.error("Error reading the certificate for issuer " + issuer + ". Error cause: " +
                                     e.getMessage(), ErrorDetails.errorLog(LoggingConstants.Severity.MAJOR, 6200));

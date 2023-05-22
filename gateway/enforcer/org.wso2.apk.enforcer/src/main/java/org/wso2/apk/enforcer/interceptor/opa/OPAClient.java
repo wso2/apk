@@ -140,7 +140,7 @@ public class OPAClient {
             URL url = new URL(serverEp);
             KeyStore opaKeyStore = ConfigHolder.getInstance().getOpaKeyStore();
             try (CloseableHttpClient httpClient = (CloseableHttpClient) FilterUtils.getHttpClient(url.getProtocol(),
-                    opaKeyStore, clientOptions)) {
+                    opaKeyStore,null, clientOptions)) {
                 HttpPost httpPost = new HttpPost(serverEp);
                 HttpEntity reqEntity = new ByteArrayEntity(payload.getBytes(Charset.defaultCharset()));
                 httpPost.setEntity(reqEntity);

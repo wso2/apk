@@ -176,22 +176,31 @@ func UpdateEnforcerJWTIssuers(jwtIssuerMapping v1alpha1.JWTIssuerMapping) {
 func marshalJWTIssuerList(jwtIssuerMapping v1alpha1.JWTIssuerMapping) *subscription.JWTIssuerList {
 	jwtIssuers := []*subscription.JWTIssuer{}
 	for _, internalJWTIssuer := range jwtIssuerMapping {
+		certificate := &subscription.Certificate{}
 		jwtIssuer := &subscription.JWTIssuer{
 			Name:             internalJWTIssuer.Name,
 			Organization:     internalJWTIssuer.Organization,
 			Issuer:           internalJWTIssuer.Issuer,
 			ConsumerKeyClaim: internalJWTIssuer.ConsumerKeyClaim,
 			ScopesClaim:      internalJWTIssuer.ScopesClaim,
-			Certificate: &subscription.Certificate{
-				Certificate: internalJWTIssuer.SignatureValidation.Certificate.ResolvedCertificate,
-				Jwks:        &subscription.JWKS{Url: internalJWTIssuer.SignatureValidation.JWKS.URL, Tls: internalJWTIssuer.SignatureValidation.JWKS.TLS.ResolvedCertificate},
-			},
 		}
+		if internalJWTIssuer.SignatureValidation.Certificate != nil && internalJWTIssuer.SignatureValidation.Certificate.ResolvedCertificate != "" {
+			certificate.Certificate = internalJWTIssuer.SignatureValidation.Certificate.ResolvedCertificate
+		}
+		if internalJWTIssuer.SignatureValidation.JWKS != nil {
+			jwks := &subscription.JWKS{}
+			jwks.Url = internalJWTIssuer.SignatureValidation.JWKS.URL
+			if internalJWTIssuer.SignatureValidation.JWKS.TLS != nil && internalJWTIssuer.SignatureValidation.JWKS.TLS.ResolvedCertificate != "" {
+				jwks.Tls = internalJWTIssuer.SignatureValidation.JWKS.TLS.ResolvedCertificate
+			}
+			certificate.Jwks = jwks
+		}
+		jwtIssuer.Certificate = certificate
 		jwtIssuers = append(jwtIssuers, jwtIssuer)
-		jwtIssuersJSON, _ := json.Marshal(jwtIssuer)
-		loggers.LoggerAPKOperator.Debugf("JwtIssuer Data: %v", string(jwtIssuersJSON))
 
 	}
+	jwtIssuersJSON, _ := json.Marshal(jwtIssuers)
+	loggers.LoggerAPKOperator.Debugf("JwtIssuer Data: %v", string(jwtIssuersJSON))
 	return &subscription.JWTIssuerList{List: jwtIssuers}
 }
 
@@ -218,10 +227,9 @@ func getJWTIssuers(ctx context.Context, client client.Client, namespace types.Na
 					loggers.LoggerAPKOperator.Errorf("Error resolving certificate for JWKS %v", err)
 					continue
 				}
-				jwks.TLS.ResolvedCertificate = tlsCertificate
+				jwks.TLS = &dpv1alpha1.ResolvedTLSConfig{ResolvedCertificate: tlsCertificate}
 			}
-
-			signatureValidation.JWKS = *jwks
+			signatureValidation.JWKS = jwks
 		}
 		if jwtIssuer.Spec.SignatureValidation.Certificate != nil {
 			tlsCertificate, err := utils.ResolveCertificate(ctx, client, jwtIssuer.ObjectMeta.Namespace, *jwtIssuer.Spec.SignatureValidation.Certificate)
@@ -229,7 +237,7 @@ func getJWTIssuers(ctx context.Context, client client.Client, namespace types.Na
 				loggers.LoggerAPKOperator.Errorf("Error resolving certificate for JWKS %v", err)
 				return nil, err
 			}
-			signatureValidation.Certificate.ResolvedCertificate = tlsCertificate
+			signatureValidation.Certificate = &dpv1alpha1.ResolvedTLSConfig{ResolvedCertificate: tlsCertificate}
 		}
 		resolvedJwtIssuer.SignatureValidation = signatureValidation
 		jwtIssuerMappingName := types.NamespacedName{

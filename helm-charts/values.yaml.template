@@ -46,12 +46,12 @@ wso2:
       tokenEndpoint: "https://idp.am.wso2.com:9095/oauth2/token"
       # -- IDP revoke endpoint
       revokeEndpoint: "https://idp.am.wso2.com:9095/oauth2/revoke"
-      # -- IDP jwks endpoint (optional)
-      jwksEndpoint: ""
       # -- Optionally configure username Claim in JWT.
       usernameClaim: "sub"
       # -- Optionally configure groups Claim in JWT.
       groupClaim: "groups"
+      # -- Optionally configure scope Claim in JWT.
+      scopeClaim: "scope"
       # -- Optionally configure organization Claim in JWT.
       organizationClaim: "organization"
       # -- Optionally configure organization Resolution method for APK (controlPlane/none)).
@@ -60,11 +60,17 @@ wso2:
       # -- IDP credentials secret name to be configured with 
         secretName: ""
       tls:
+        # -- IDP public certificate configmap name
+        configMapName: ""
         # --  IDP public certificate secret name
         secretName: ""
         # -- IDP public certificate file name
         fileName: ""
       signing:
+        # -- IDP jwks endpoint (optional)
+        jwksEndpoint: ""
+        # -- IDP jwt signing certificate configmap name
+        configMapName: ""
         # -- IDP jwt signing certificate secret name
         secretName: ""
         # -- IDP jwt signing certificate file name

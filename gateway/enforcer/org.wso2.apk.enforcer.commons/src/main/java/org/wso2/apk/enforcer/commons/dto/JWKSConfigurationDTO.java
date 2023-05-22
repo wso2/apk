@@ -18,12 +18,16 @@
 
 package org.wso2.apk.enforcer.commons.dto;
 
+
+import java.security.cert.Certificate;
+
 /**
  * Holds configurations related to JWKS.
  */
 public class JWKSConfigurationDTO {
     private String url;
     private boolean enabled;
+    private Certificate certificate;
 
     public String getUrl() {
 
@@ -53,5 +57,13 @@ public class JWKSConfigurationDTO {
 
     public JWKSConfigurationDTO() {
 
+    }
+
+    public Certificate getCertificate() {
+        return certificate;
+    }
+
+    public void setCertificate(Certificate certificate) {
+        this.certificate = certificate;
     }
 }

@@ -43,6 +43,7 @@ type Server interface {
 	subscription.ApplicationDiscoveryServiceServer
 	subscription.ApiListDiscoveryServiceServer
 	subscription.ApplicationPolicyDiscoveryServiceServer
+	subscription.JWTIssuerDiscoveryServiceServer
 	subscription.SubscriptionPolicyDiscoveryServiceServer
 	subscription.ApplicationKeyMappingDiscoveryServiceServer
 	keymgt.KMDiscoveryServiceServer
@@ -70,6 +71,7 @@ type server struct {
 	api.UnimplementedApiDiscoveryServiceServer
 	subscription.UnimplementedSubscriptionDiscoveryServiceServer
 	subscription.UnimplementedApplicationDiscoveryServiceServer
+	subscription.UnimplementedJWTIssuerDiscoveryServiceServer
 	subscription.UnimplementedApiListDiscoveryServiceServer
 	subscription.UnimplementedApplicationPolicyDiscoveryServiceServer
 	subscription.UnimplementedSubscriptionPolicyDiscoveryServiceServer
@@ -128,6 +130,9 @@ func (s *server) StreamTokens(stream keymgt.RevokedTokenDiscoveryService_StreamT
 
 func (s *server) StreamAPKMgtApplications(stream apkmgt.APKMgtDiscoveryService_StreamAPKMgtApplicationsServer) error {
 	return s.StreamHandler(stream, resource.APKMgtApplicationType)
+}
+func (s *server)StreamJWTIssuers(stream subscription.JWTIssuerDiscoveryService_StreamJWTIssuersServer) error {
+	return s.StreamHandler(stream, resource.JWTIssuerListType)
 }
 
 // Fetch is the universal fetch method.

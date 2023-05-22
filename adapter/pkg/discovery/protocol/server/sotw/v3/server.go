@@ -54,6 +54,7 @@ type watches struct {
 	applicationList           chan cache.Response
 	apiList                   chan cache.Response
 	applicationPolicyList     chan cache.Response
+	jwtIssuerList             chan cache.Response
 	subscriptionPolicyList    chan cache.Response
 	applicationKeyMappingList chan cache.Response
 	keyManagers               chan cache.Response
@@ -65,6 +66,7 @@ type watches struct {
 	apiCancel                       func()
 	subscriptionListCancel          func()
 	applicationListCancel           func()
+	jwtIssuerListCancel             func()
 	apiListCancel                   func()
 	applicationPolicyListCancel     func()
 	subscriptionPolicyListCancel    func()
@@ -78,6 +80,7 @@ type watches struct {
 	apiNonce                       string
 	subscriptionListNonce          string
 	applicationListNonce           string
+	jwtIssuerListNonce             string
 	apiListNonce                   string
 	applicationPolicyListNonce     string
 	subscriptionPolicyListNonce    string
@@ -126,6 +129,9 @@ func (values *watches) Cancel() {
 	}
 	if values.applicationListCancel != nil {
 		values.applicationListCancel()
+	}
+	if values.jwtIssuerListCancel != nil {
+		values.jwtIssuerListCancel()
 	}
 	if values.apiListCancel != nil {
 		values.apiListCancel()
@@ -219,7 +225,6 @@ func (s *server) process(stream streamv3.Stream, reqCh <-chan *discovery.Discove
 		}
 	}
 
-
 	for {
 		select {
 		case <-s.ctx.Done():
@@ -274,6 +279,16 @@ func (s *server) process(stream streamv3.Stream, reqCh <-chan *discovery.Discove
 				return err
 			}
 			values.applicationListNonce = nonce
+
+		case resp, more := <-values.jwtIssuerList:
+			if !more {
+				return status.Errorf(codes.Unavailable, "jwtIssuerList watch failed")
+			}
+			nonce, err := send(resp)
+			if err != nil {
+				return err
+			}
+			values.jwtIssuerListNonce = nonce
 
 		case resp, more := <-values.applicationPolicyList:
 			if !more {
@@ -438,6 +453,14 @@ func (s *server) process(stream streamv3.Stream, reqCh <-chan *discovery.Discove
 					}
 					values.applicationList = make(chan cache.Response, 1)
 					values.applicationListCancel = s.cache.CreateWatch(req, streamState, values.applicationList)
+				}
+			case req.TypeUrl == resource.JWTIssuerListType:
+				if values.jwtIssuerListNonce == "" || values.jwtIssuerListNonce == nonce {
+					if values.jwtIssuerListCancel != nil {
+						values.jwtIssuerListCancel()
+					}
+					values.jwtIssuerList = make(chan cache.Response, 1)
+					values.jwtIssuerListCancel = s.cache.CreateWatch(req, streamState, values.jwtIssuerList)
 				}
 			case req.TypeUrl == resource.ApplicationPolicyListType:
 				if values.applicationPolicyListNonce == "" || values.applicationPolicyListNonce == nonce {
