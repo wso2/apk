@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2022, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
+ *  Copyright (c) 2023, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -37,7 +37,6 @@ import (
 	k8client "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
-	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -70,7 +69,6 @@ type JWTIssuerReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.13.0/pkg/reconcile
 func (r *JWTIssuerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	_ = log.FromContext(ctx)
 	var err error
 
 	loggers.LoggerAPKOperator.Debugf("Reconciling jwtIssuer: %v", req.NamespacedName.String())
@@ -81,10 +79,9 @@ func (r *JWTIssuerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		return reconcile.Result{}, fmt.Errorf("failed to get jwtIssuer %s/%s",
 			jwtKey.Namespace, jwtKey.Name)
 	}
-	jwtIssuerMapping := make(dpv1alpha1.JWTIssuerMapping)
-	jwtIssuerMapping, err = getJWTIssuers(ctx, r.client, jwtKey)
+	jwtIssuerMapping, err := getJWTIssuers(ctx, r.client, jwtKey)
 	if err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2606, err.Error()))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3111, err.Error()))
 		return ctrl.Result{}, err
 	}
 	UpdateEnforcerJWTIssuers(jwtIssuerMapping)
@@ -99,18 +96,18 @@ func NewJWTIssuerReconciler(mgr manager.Manager) error {
 	ctx := context.Background()
 
 	if err := addJWTIssuerIndexes(ctx, mgr); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2612, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3112, err))
 		return err
 	}
 	c, err := controller.New(constants.JWTIssuerReconciler, mgr, controller.Options{Reconciler: r})
 	if err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2606, err.Error()))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3111, err.Error()))
 		return err
 	}
 
 	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.JWTIssuer{}}, &handler.EnqueueRequestForObject{},
 		predicate.NewPredicateFuncs(utils.FilterByNamespaces([]string{utils.GetOperatorPodNamespace()}))); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2607, err.Error()))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3112, err.Error()))
 		return err
 	}
 
@@ -222,9 +219,9 @@ func getJWTIssuers(ctx context.Context, client client.Client, namespace types.Na
 			jwks := &dpv1alpha1.ResolvedJWKS{}
 			jwks.URL = jwtIssuer.Spec.SignatureValidation.JWKS.URL
 			if jwtIssuer.Spec.SignatureValidation.JWKS.TLS != nil {
-				tlsCertificate, err := utils.ResolveCertificate(ctx, client, jwtIssuer.ObjectMeta.Namespace, *jwtIssuer.Spec.SignatureValidation.JWKS.TLS)
+				tlsCertificate, err := utils.ResolveCertificate(ctx, client, jwtIssuer.ObjectMeta.Namespace, *&jwtIssuer.Spec.SignatureValidation.JWKS.TLS.CertificateInline, *&jwtIssuer.Spec.SignatureValidation.JWKS.TLS.ConfigMapRef, *&jwtIssuer.Spec.SignatureValidation.JWKS.TLS.SecretRef)
 				if err != nil || tlsCertificate == "" {
-					loggers.LoggerAPKOperator.Errorf("Error resolving certificate for JWKS %v", err)
+					loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3113, err.Error()))
 					continue
 				}
 				jwks.TLS = &dpv1alpha1.ResolvedTLSConfig{ResolvedCertificate: tlsCertificate}
@@ -232,9 +229,9 @@ func getJWTIssuers(ctx context.Context, client client.Client, namespace types.Na
 			signatureValidation.JWKS = jwks
 		}
 		if jwtIssuer.Spec.SignatureValidation.Certificate != nil {
-			tlsCertificate, err := utils.ResolveCertificate(ctx, client, jwtIssuer.ObjectMeta.Namespace, *jwtIssuer.Spec.SignatureValidation.Certificate)
+			tlsCertificate, err := utils.ResolveCertificate(ctx, client, jwtIssuer.ObjectMeta.Namespace, jwtIssuer.Spec.SignatureValidation.Certificate.CertificateInline, *&jwtIssuer.Spec.SignatureValidation.Certificate.ConfigMapRef, *&jwtIssuer.Spec.SignatureValidation.Certificate.SecretRef)
 			if err != nil || tlsCertificate == "" {
-				loggers.LoggerAPKOperator.Errorf("Error resolving certificate for JWKS %v", err)
+				loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3113, err.Error()))
 				return nil, err
 			}
 			signatureValidation.Certificate = &dpv1alpha1.ResolvedTLSConfig{ResolvedCertificate: tlsCertificate}

@@ -77,7 +77,7 @@ public class JWTAuthenticator implements Authenticator {
 
     public JWTAuthenticator(final JWTConfigurationDto jwtConfigurationDto, final boolean isGatewayTokenCacheEnabled) {
         this.isGatewayTokenCacheEnabled = isGatewayTokenCacheEnabled;
-        if(jwtConfigurationDto.isEnabled()) {
+        if (jwtConfigurationDto.isEnabled()) {
             this.jwtGenerator = BackendJwtUtils.getApiMgtGatewayJWTGenerator(jwtConfigurationDto);
             this.jwtGenerator.setJWTConfigurationDto(jwtConfigurationDto);
         }
@@ -202,6 +202,7 @@ public class JWTAuthenticator implements Authenticator {
                     APIKeyValidationInfoDTO apiKeyValidationInfoDTO = new APIKeyValidationInfoDTO();
                     Scope validateSubscriptionSpanScope = null;
                     try {
+                        // TODO(TharinduD) revisit when subscription validation is enabled
                         if (false) {
                             if (Utils.tracingEnabled()) {
                                 validateSubscriptionSpan = Utils

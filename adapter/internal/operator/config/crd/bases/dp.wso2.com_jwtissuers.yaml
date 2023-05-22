@@ -36,32 +36,41 @@ spec:
             description: JWTIssuerSpec defines the desired state of JWTIssuer
             properties:
               consumerKeyClaim:
+                description: ConsumerKeyClaim denotes the claim key of the consumer
+                  key.
+                minLength: 1
                 type: string
               issuer:
+                description: Issuer denotes the issuer of the JWT Issuer.
+                minLength: 1
                 type: string
               name:
-                description: Foo is an example field of JWTIssuer. Edit jwtissuer_types.go
-                  to remove/update
+                description: Name is the unique name of the JWT Issuer in the Organization
+                  defined . "Organization/Name" can be used to uniquely identify an
+                  Issuer.
+                minLength: 1
                 type: string
               organization:
+                description: Organization denotes the organization of the JWT Issuer.
+                minLength: 1
                 type: string
               scopesClaim:
+                description: ScopesClaim denotes the claim key of the scopes.
+                minLength: 1
                 type: string
               signatureValidation:
-                description: SignatureValidation defines the signature validation
-                  method
+                description: SignatureValidation denotes the signature validation
+                  method of jwt
                 properties:
                   certificate:
-                    description: TLSConfig defines enpoint TLS configurations
+                    description: CERTConfig defines the certificate configuration
                     properties:
-                      allowedSANs:
-                        items:
-                          type: string
-                        type: array
                       certificateInline:
+                        description: CertificateInline is the Inline Certificate entry
                         type: string
                       configMapRef:
-                        description: RefConfig holds a config for a secret or a configmap
+                        description: ConfigMapRef denotes the reference to the ConfigMap
+                          that contains the Certificate
                         properties:
                           key:
                             type: string
@@ -72,7 +81,8 @@ spec:
                         - name
                         type: object
                       secretRef:
-                        description: RefConfig holds a config for a secret or a configmap
+                        description: SecretRef denotes the reference to the Secret
+                          that contains the Certificate
                         properties:
                           key:
                             type: string
@@ -87,17 +97,15 @@ spec:
                     description: JWKS defines the JWKS endpoint
                     properties:
                       tls:
-                        description: TLSConfig defines enpoint TLS configurations
+                        description: CERTConfig defines the certificate configuration
                         properties:
-                          allowedSANs:
-                            items:
-                              type: string
-                            type: array
                           certificateInline:
+                            description: CertificateInline is the Inline Certificate
+                              entry
                             type: string
                           configMapRef:
-                            description: RefConfig holds a config for a secret or
-                              a configmap
+                            description: ConfigMapRef denotes the reference to the
+                              ConfigMap that contains the Certificate
                             properties:
                               key:
                                 type: string
@@ -108,8 +116,8 @@ spec:
                             - name
                             type: object
                           secretRef:
-                            description: RefConfig holds a config for a secret or
-                              a configmap
+                            description: SecretRef denotes the reference to the Secret
+                              that contains the Certificate
                             properties:
                               key:
                                 type: string
@@ -121,6 +129,7 @@ spec:
                             type: object
                         type: object
                       url:
+                        description: URL is the URL of the JWKS endpoint
                         type: string
                     required:
                     - url

@@ -150,7 +150,7 @@ func InitOperator() {
 		loggers.LoggerAPKOperator.Errorf("Error creating Subscription controller: %v", err)
 	}
 	if err := dpcontrollers.NewJWTIssuerReconciler(mgr); err != nil {
-		loggers.LoggerAPKOperator.Errorf("Error creating JWT Issuer controller: %v", err)
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3114, err))
 	}
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2602, err))
