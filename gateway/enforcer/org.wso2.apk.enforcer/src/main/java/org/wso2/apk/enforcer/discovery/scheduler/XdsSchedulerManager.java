@@ -19,7 +19,17 @@
 package org.wso2.apk.enforcer.discovery.scheduler;
 
 import org.wso2.apk.enforcer.config.EnvVarConfig;
-import org.wso2.apk.enforcer.discovery.*;
+import org.wso2.apk.enforcer.discovery.ApiDiscoveryClient;
+import org.wso2.apk.enforcer.discovery.ApiListDiscoveryClient;
+import org.wso2.apk.enforcer.discovery.ApplicationDiscoveryClient;
+import org.wso2.apk.enforcer.discovery.ApplicationKeyMappingDiscoveryClient;
+import org.wso2.apk.enforcer.discovery.ApplicationPolicyDiscoveryClient;
+import org.wso2.apk.enforcer.discovery.ConfigDiscoveryClient;
+import org.wso2.apk.enforcer.discovery.JWTIssuerDiscoveryClient;
+import org.wso2.apk.enforcer.discovery.KeyManagerDiscoveryClient;
+import org.wso2.apk.enforcer.discovery.RevokedTokenDiscoveryClient;
+import org.wso2.apk.enforcer.discovery.SubscriptionDiscoveryClient;
+import org.wso2.apk.enforcer.discovery.SubscriptionPolicyDiscoveryClient;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
