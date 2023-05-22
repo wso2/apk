@@ -71,10 +71,14 @@ type Service struct {
 
 // TLSConfig defines enpoint TLS configurations
 type TLSConfig struct {
-	CertificateInline string     `json:"certificateInline,omitempty"`
-	SecretRef         *RefConfig `json:"secretRef,omitempty"`
-	ConfigMapRef      *RefConfig `json:"configMapRef,omitempty"`
-	AllowedSANs       []string   `json:"allowedSANs,omitempty"`
+	// CertificateInline is the Inline Certificate entry
+	CertificateInline *string `json:"certificateInline,omitempty"`
+	// SecretRef denotes the reference to the Secret that contains the Certificate
+	SecretRef *RefConfig `json:"secretRef,omitempty"`
+	// ConfigMapRef denotes the reference to the ConfigMap that contains the Certificate
+	ConfigMapRef *RefConfig `json:"configMapRef,omitempty"`
+	// AllowedCNs is the list of allowed Subject Alternative Names (SANs)
+	AllowedSANs []string `json:"allowedSANs,omitempty"`
 }
 
 // RefConfig holds a config for a secret or a configmap

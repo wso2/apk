@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2022, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
+ *  Copyright (c) 2023, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -30,26 +30,49 @@ type JWTIssuerSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// Foo is an example field of JWTIssuer. Edit jwtissuer_types.go to remove/update
-	Name                string                           `json:"name"`
-	Organization        string                           `json:"organization"`
-	Issuer              string                           `json:"issuer"`
-	ConsumerKeyClaim    string                           `json:"consumerKeyClaim"`
-	ScopesClaim         string                           `json:"scopesClaim"`
+	// Name is the unique name of the JWT Issuer in
+	// the Organization defined . "Organization/Name" can
+	// be used to uniquely identify an Issuer.
+	// +kubebuilder:validation:MinLength=1
+	Name string `json:"name"`
+	// Organization denotes the organization of the JWT Issuer.
+	// +kubebuilder:validation:MinLength=1
+	Organization string `json:"organization"`
+	// Issuer denotes the issuer of the JWT Issuer.
+	// +kubebuilder:validation:MinLength=1
+	Issuer string `json:"issuer"`
+	// ConsumerKeyClaim denotes the claim key of the consumer key.
+	// +kubebuilder:validation:MinLength=1
+	ConsumerKeyClaim string `json:"consumerKeyClaim"`
+	// ScopesClaim denotes the claim key of the scopes.
+	// +kubebuilder:validation:MinLength=1
+	ScopesClaim string `json:"scopesClaim"`
+	// SignatureValidation denotes the signature validation method of jwt
 	SignatureValidation *SignatureValidation             `json:"signatureValidation"`
 	TargetRef           *gwapiv1b1.PolicyTargetReference `json:"targetRef,omitempty"`
 }
 
 // SignatureValidation defines the signature validation method
 type SignatureValidation struct {
-	JWKS        *JWKS      `json:"jwks,omitempty"`
-	Certificate *TLSConfig `json:"certificate,omitempty"`
+	JWKS        *JWKS       `json:"jwks,omitempty"`
+	Certificate *CERTConfig `json:"certificate,omitempty"`
 }
 
 // JWKS defines the JWKS endpoint
 type JWKS struct {
-	URL string     `json:"url"`
-	TLS *TLSConfig `json:"tls,omitempty"`
+	// URL is the URL of the JWKS endpoint
+	URL string      `json:"url"`
+	TLS *CERTConfig `json:"tls,omitempty"`
+}
+
+// CERTConfig defines the certificate configuration
+type CERTConfig struct {
+	// CertificateInline is the Inline Certificate entry
+	CertificateInline *string `json:"certificateInline,omitempty"`
+	// SecretRef denotes the reference to the Secret that contains the Certificate
+	SecretRef *RefConfig `json:"secretRef,omitempty"`
+	// ConfigMapRef denotes the reference to the ConfigMap that contains the Certificate
+	ConfigMapRef *RefConfig `json:"configMapRef,omitempty"`
 }
 
 // JWTIssuerStatus defines the observed state of JWTIssuer

@@ -310,9 +310,13 @@ func GetResolvedBackend(ctx context.Context, client k8client.Client,
 	resolvedBackend.Protocol = backend.Spec.Protocol
 	if backend.Spec.TLS != nil {
 		resolvedTLSConfig.ResolvedCertificate, err = ResolveCertificate(ctx, client,
-			backend.Namespace, *backend.Spec.TLS)
-		if err != nil || resolvedTLSConfig.ResolvedCertificate == "" {
-			loggers.LoggerAPKOperator.Errorf("Error resolving certificate for JWKS %v", err)
+			backend.Namespace, backend.Spec.TLS.CertificateInline, backend.Spec.TLS.ConfigMapRef, backend.Spec.TLS.SecretRef)
+		if err != nil {
+			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2654, err.Error()))
+			return nil
+		}
+		if resolvedTLSConfig.ResolvedCertificate == "" {
+			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2654, "resolved certificate is empty"))
 			return nil
 		}
 		resolvedTLSConfig.AllowedSANs = backend.Spec.TLS.AllowedSANs
@@ -356,20 +360,20 @@ func getResolvedBackendSecurity(ctx context.Context, client k8client.Client,
 
 // ResolveCertificate reads the certificate from TLSConfig, first checks the certificateInline field,
 // if no value then load the certificate from secretRef using util function called getSecretValue
-func ResolveCertificate(ctx context.Context, client k8client.Client, namespace string, tlsConfig dpv1alpha1.TLSConfig) (string, error) {
+func ResolveCertificate(ctx context.Context, client k8client.Client, namespace string, certificateInline *string, configMapRef *dpv1alpha1.RefConfig, secretRef *dpv1alpha1.RefConfig) (string, error) {
 	var certificate string
 	var err error
-	if len(tlsConfig.CertificateInline) > 0 {
-		certificate = tlsConfig.CertificateInline
-	} else if tlsConfig.SecretRef != nil {
+	if certificateInline != nil && len(*certificateInline) > 0 {
+		certificate = *certificateInline
+	} else if secretRef != nil {
 		if certificate, err = getSecretValue(ctx, client,
-			namespace, tlsConfig.SecretRef.Name, tlsConfig.SecretRef.Key); err != nil {
-			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2642, tlsConfig.SecretRef))
+			namespace, secretRef.Name, secretRef.Key); err != nil {
+			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2642, secretRef))
 		}
-	} else if tlsConfig.ConfigMapRef != nil {
+	} else if configMapRef != nil {
 		if certificate, err = getConfigMapValue(ctx, client,
-			namespace, tlsConfig.ConfigMapRef.Name, tlsConfig.ConfigMapRef.Key); err != nil {
-			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2643, tlsConfig.ConfigMapRef))
+			namespace, configMapRef.Name, configMapRef.Key); err != nil {
+			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2643, configMapRef))
 		}
 	}
 	if err != nil {

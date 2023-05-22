@@ -73,6 +73,7 @@ const (
 	error2651 = 2651
 	error2652 = 2652
 	error2653 = 2653
+	error2654 = 2654
 )
 
 // Error Log Pkg auth(3001-3099) Config Constants
@@ -94,6 +95,12 @@ const (
 	error3108 = 3108
 	error3109 = 3109
 	error3110 = 3110
+)
+const (
+	error3111 = 3111
+	error3112 = 3112
+	error3113 = 3113
+	error3114 = 3114
 )
 
 // Mapper used to keep error details for error logs
@@ -294,6 +301,11 @@ var Mapper = map[int]ErrorDetails{
 		Message:   "Gateway Label is invalid: %s",
 		Severity:  CRITICAL,
 	},
+	error2654: {
+		ErrorCode: error2654,
+		Message:   "Error resolving certificate for Backend %v",
+		Severity:  BLOCKER,
+	},
 	error2621: {
 		ErrorCode: error2621,
 		Message:   "Unable to find associated Backends for Secret: %s",
@@ -427,6 +439,26 @@ var Mapper = map[int]ErrorDetails{
 	error3110: {
 		ErrorCode: error3110,
 		Message:   "Error watching InterceptorService resources: %v",
+		Severity:  BLOCKER,
+	},
+	error3111: {
+		ErrorCode: error3111,
+		Message:   "Error creating JWTIssuer controller: %v",
+		Severity:  BLOCKER,
+	},
+	error3112: {
+		ErrorCode: error3112,
+		Message:   "Error adding indexes: %v",
+		Severity:  BLOCKER,
+	},
+	error3113: {
+		ErrorCode: error3113,
+		Message:   "Error resolving certificate for JWKS %v",
+		Severity:  BLOCKER,
+	},
+	error3114: {
+		ErrorCode: error3114,
+		Message:   "Error creating JWT Issuer controller: %v",
 		Severity:  BLOCKER,
 	},
 }

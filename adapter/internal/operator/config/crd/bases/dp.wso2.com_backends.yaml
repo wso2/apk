@@ -91,13 +91,17 @@ spec:
                 description: TLSConfig defines enpoint TLS configurations
                 properties:
                   allowedSANs:
+                    description: AllowedCNs is the list of allowed Subject Alternative
+                      Names (SANs)
                     items:
                       type: string
                     type: array
                   certificateInline:
+                    description: CertificateInline is the Inline Certificate entry
                     type: string
                   configMapRef:
-                    description: RefConfig holds a config for a secret or a configmap
+                    description: ConfigMapRef denotes the reference to the ConfigMap
+                      that contains the Certificate
                     properties:
                       key:
                         type: string
@@ -108,7 +112,8 @@ spec:
                     - name
                     type: object
                   secretRef:
-                    description: RefConfig holds a config for a secret or a configmap
+                    description: SecretRef denotes the reference to the Secret that
+                      contains the Certificate
                     properties:
                       key:
                         type: string
