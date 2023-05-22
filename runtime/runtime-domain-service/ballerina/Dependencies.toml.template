@@ -290,7 +290,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "regex"
-version = "1.4.2"
+version = "1.4.3"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "lang.string"}
