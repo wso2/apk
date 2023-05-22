@@ -49,7 +49,6 @@ import org.wso2.apk.enforcer.security.Authenticator;
 import org.wso2.apk.enforcer.security.KeyValidator;
 import org.wso2.apk.enforcer.security.TokenValidationContext;
 import org.wso2.apk.enforcer.security.jwt.validator.JWTConstants;
-import org.wso2.apk.enforcer.security.jwt.validator.JWTValidator;
 import org.wso2.apk.enforcer.security.jwt.validator.RevokedJWTDataHolder;
 import org.wso2.apk.enforcer.tracing.TracingConstants;
 import org.wso2.apk.enforcer.tracing.TracingSpan;
@@ -73,7 +72,6 @@ import java.util.Set;
 public class JWTAuthenticator implements Authenticator {
 
     private static final Logger log = LogManager.getLogger(JWTAuthenticator.class);
-    private final JWTValidator jwtValidator = new JWTValidator();
     private final boolean isGatewayTokenCacheEnabled;
     private AbstractAPIMgtGatewayJWTGenerator jwtGenerator;
 
@@ -567,7 +565,7 @@ public class JWTAuthenticator implements Authenticator {
         if (jwtValidationInfo == null) {
 
             try {
-                jwtValidationInfo = jwtValidator.validateJWTToken(signedJWTInfo);
+                jwtValidationInfo = JWTUtils.validateJWTToken(signedJWTInfo);
                 signedJWTInfo.setValidationStatus(jwtValidationInfo.isValid() ?
                         SignedJWTInfo.ValidationStatus.VALID : SignedJWTInfo.ValidationStatus.INVALID);
                 if (isGatewayTokenCacheEnabled) {

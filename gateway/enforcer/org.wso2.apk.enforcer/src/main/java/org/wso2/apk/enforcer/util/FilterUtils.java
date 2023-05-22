@@ -104,18 +104,18 @@ public class FilterUtils {
      * @return HTTP client
      */
     public static HttpClient getHttpClient(String protocol) {
-        return getHttpClient(protocol, null, null);
+        return getHttpClient(protocol, null, null, null);
     }
 
     /**
      * Return a http client instance.
      *
-     * @param protocol - service endpoint protocol http/https
+     * @param protocol       - service endpoint protocol http/https
      * @param clientKeyStore - keystore with key and cert for client
-     * @param options - HTTP client options
+     * @param options        - HTTP client options
      * @return HTTP client
      */
-    public static HttpClient getHttpClient(String protocol, KeyStore clientKeyStore, Map<String, String> options) {
+    public static HttpClient getHttpClient(String protocol, KeyStore clientKeyStore, KeyStore clientTrustStore, Map<String, String> options) {
 
         //        APIManagerConfiguration configuration = ServiceReferenceHolder.getInstance().
         //                getAPIManagerConfigurationService().getAPIManagerConfiguration();
@@ -129,7 +129,7 @@ public class FilterUtils {
 
         PoolingHttpClientConnectionManager pool = null;
         try {
-            pool = getPoolingHttpClientConnectionManager(protocol, clientKeyStore);
+            pool = getPoolingHttpClientConnectionManager(protocol, clientKeyStore, clientTrustStore);
             pool.setMaxTotal(Integer.parseInt(options.getOrDefault(HTTPClientOptions.MAX_OPEN_CONNECTIONS,
                     maxTotal)));
             pool.setDefaultMaxPerRoute(Integer.parseInt(options.getOrDefault(HTTPClientOptions.MAX_PER_ROUTE,
@@ -160,7 +160,7 @@ public class FilterUtils {
             keyMgrFactory.init(opaKeyStore, null);
             return opaKeyStore;
         } catch (KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException | EnforcerException
-                | UnrecoverableKeyException e) {
+                 | UnrecoverableKeyException e) {
             log.error("Error creating client KeyStore by loading cert and key from file",
                     ErrorDetails.errorLog(LoggingConstants.Severity.MAJOR, 7100), e);
             return null;
@@ -174,11 +174,11 @@ public class FilterUtils {
      * @return PoolManager
      */
     private static PoolingHttpClientConnectionManager getPoolingHttpClientConnectionManager(
-            String protocol, KeyStore clientKeyStore) throws EnforcerException {
+            String protocol, KeyStore clientKeyStore, KeyStore clientTrustStore) throws EnforcerException {
 
         PoolingHttpClientConnectionManager poolManager;
         if (APIConstants.HTTPS_PROTOCOL.equals(protocol)) {
-            SSLConnectionSocketFactory socketFactory = createSocketFactory(clientKeyStore);
+            SSLConnectionSocketFactory socketFactory = createSocketFactory(clientKeyStore, clientTrustStore);
             org.apache.http.config.Registry<ConnectionSocketFactory> socketFactoryRegistry =
                     RegistryBuilder.<ConnectionSocketFactory>create()
                             .register(APIConstants.HTTPS_PROTOCOL, socketFactory).build();
@@ -189,10 +189,14 @@ public class FilterUtils {
         return poolManager;
     }
 
-    private static SSLConnectionSocketFactory createSocketFactory(KeyStore clientKeyStore) throws EnforcerException {
+    private static SSLConnectionSocketFactory createSocketFactory(KeyStore clientKeyStore, KeyStore clientTrustStore)
+            throws EnforcerException {
         SSLContext sslContext;
         try {
             KeyStore trustStore = ConfigHolder.getInstance().getTrustStore();
+            if (clientTrustStore != null) {
+                trustStore = clientTrustStore;
+            }
             SSLContextBuilder sslContextBuilder = SSLContexts.custom().loadTrustMaterial(trustStore);
             if (clientKeyStore != null) {
                 sslContextBuilder.loadKeyMaterial(clientKeyStore, null);
@@ -345,10 +349,11 @@ public class FilterUtils {
 
     /**
      * Generates Authentication Context for the Internal Key Authenticator.
+     *
      * @param tokenIdentifier
      * @param payload
      * @param api
-     * @param rawToken Raw token used to authenticate the request
+     * @param rawToken        Raw token used to authenticate the request
      * @return
      * @throws java.text.ParseException
      */
@@ -461,7 +466,7 @@ public class FilterUtils {
      * details when enforcer filters returns an error.
      *
      * @param requestContext - The context object holds details about the specific request.
-     * @param e - APISecurityException thrown when validation failure happens at filter level.
+     * @param e              - APISecurityException thrown when validation failure happens at filter level.
      */
     public static void setErrorToContext(RequestContext requestContext, APISecurityException e) {
         Map<String, Object> requestContextProperties = requestContext.getProperties();
@@ -484,11 +489,11 @@ public class FilterUtils {
     /**
      * Set error related details to the {@link RequestContext}.
      *
-     * @param context request context object to set the details.
-     * @param errorCode internal wso2 throttle error code.
+     * @param context    request context object to set the details.
+     * @param errorCode  internal wso2 throttle error code.
      * @param statusCode HTTP status code.
-     * @param message message of error.
-     * @param desc description of error.
+     * @param message    message of error.
+     * @param desc       description of error.
      */
     public static void setErrorToContext(RequestContext context, int errorCode, int statusCode, String message,
                                          String desc) {
@@ -540,7 +545,8 @@ public class FilterUtils {
 
     /**
      * Append the username with tenant domain if not appended already.
-     * @param username username
+     *
+     * @param username     username
      * @param tenantDomain tenant domain
      * @return tenant domain appended username
      */
@@ -599,7 +605,7 @@ public class FilterUtils {
      */
     public static List<String> getAPIKeyDefinitionNames(Map<String, SecuritySchemaConfig> securitySchemeDefinitions) {
         List<String> apiKeyArbitraryNames = new ArrayList<>();
-        for (SecuritySchemaConfig config: securitySchemeDefinitions.values()) {
+        for (SecuritySchemaConfig config : securitySchemeDefinitions.values()) {
             if (config.getType().equalsIgnoreCase(APIConstants.SWAGGER_API_KEY_AUTH_TYPE_NAME)) {
                 apiKeyArbitraryNames.add(config.getDefinitionName());
             }
@@ -609,6 +615,7 @@ public class FilterUtils {
 
     /**
      * Check whether the fault event is a one that should be published to analytics server.
+     *
      * @param errorCode The error code returned during the filter process
      * @return whether the fault scenario should be skipped from publishing to analytics server.
      */
@@ -628,7 +635,7 @@ public class FilterUtils {
     }
 
     /**
-     * HTTP client option constants that is used with the util function {@link #getHttpClient(String, KeyStore, Map)
+     * HTTP client option constants that is used with the util function {@link #getHttpClient(String, KeyStore, KeyStore, Map)
      * getHttpClient}
      */
     public static class HTTPClientOptions {

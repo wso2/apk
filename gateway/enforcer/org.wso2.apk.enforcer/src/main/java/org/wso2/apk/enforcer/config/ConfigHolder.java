@@ -18,54 +18,24 @@
 
 package org.wso2.apk.enforcer.config;
 
-import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.wso2.apk.enforcer.commons.dto.ClaimMappingDto;
 import org.wso2.apk.enforcer.commons.dto.JWKSConfigurationDTO;
 import org.wso2.apk.enforcer.commons.dto.JWTConfigurationDto;
-import org.wso2.apk.enforcer.discovery.config.enforcer.Analytics;
-import org.wso2.apk.enforcer.discovery.config.enforcer.AuthHeader;
-import org.wso2.apk.enforcer.discovery.config.enforcer.Cache;
-import org.wso2.apk.enforcer.discovery.config.enforcer.ClaimMapping;
-import org.wso2.apk.enforcer.discovery.config.enforcer.Config;
-import org.wso2.apk.enforcer.discovery.config.enforcer.Filter;
-import org.wso2.apk.enforcer.discovery.config.enforcer.Issuer;
-import org.wso2.apk.enforcer.discovery.config.enforcer.JWTGenerator;
-import org.wso2.apk.enforcer.discovery.config.enforcer.JWTIssuer;
-import org.wso2.apk.enforcer.discovery.config.enforcer.Management;
-import org.wso2.apk.enforcer.discovery.config.enforcer.Metrics;
-import org.wso2.apk.enforcer.discovery.config.enforcer.MutualSSL;
-import org.wso2.apk.enforcer.discovery.config.enforcer.RestServer;
-import org.wso2.apk.enforcer.discovery.config.enforcer.Service;
-import org.wso2.apk.enforcer.discovery.config.enforcer.Soap;
-import org.wso2.apk.enforcer.discovery.config.enforcer.Tracing;
 import org.wso2.apk.enforcer.commons.exception.EnforcerException;
-import org.wso2.apk.enforcer.config.dto.AdminRestServerDto;
-import org.wso2.apk.enforcer.config.dto.AnalyticsDTO;
-import org.wso2.apk.enforcer.config.dto.AnalyticsReceiverConfigDTO;
-import org.wso2.apk.enforcer.config.dto.AuthHeaderDto;
-import org.wso2.apk.enforcer.config.dto.AuthServiceConfigurationDto;
-import org.wso2.apk.enforcer.config.dto.CacheDto;
-import org.wso2.apk.enforcer.config.dto.CredentialDto;
-import org.wso2.apk.enforcer.config.dto.ExtendedTokenIssuerDto;
-import org.wso2.apk.enforcer.config.dto.FilterDTO;
-import org.wso2.apk.enforcer.config.dto.JWTIssuerConfigurationDto;
-import org.wso2.apk.enforcer.config.dto.ManagementCredentialsDto;
-import org.wso2.apk.enforcer.config.dto.MetricsDTO;
-import org.wso2.apk.enforcer.config.dto.MutualSSLDto;
-import org.wso2.apk.enforcer.config.dto.SoapErrorResponseConfigDto;
-import org.wso2.apk.enforcer.config.dto.ThreadPoolConfig;
-import org.wso2.apk.enforcer.config.dto.TracingDTO;
+import org.wso2.apk.enforcer.config.dto.*;
 import org.wso2.apk.enforcer.constants.APIConstants;
 import org.wso2.apk.enforcer.constants.Constants;
+import org.wso2.apk.enforcer.discovery.config.enforcer.*;
 import org.wso2.apk.enforcer.jmx.MBeanRegistrator;
 import org.wso2.apk.enforcer.util.BackendJwtUtils;
 import org.wso2.apk.enforcer.util.FilterUtils;
 import org.wso2.apk.enforcer.util.JWTUtils;
 import org.wso2.apk.enforcer.util.TLSUtils;
 
+import javax.net.ssl.TrustManagerFactory;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.security.KeyStore;
@@ -73,17 +43,11 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
-import javax.net.ssl.X509TrustManager;
 
 /**
  * Configuration holder class for Microgateway.
@@ -94,7 +58,7 @@ public class ConfigHolder {
     private static final Logger logger = LogManager.getLogger(ConfigHolder.class);
 
     private static ConfigHolder configHolder;
-    private EnvVarConfig envVarConfig = EnvVarConfig.getInstance();
+    private final EnvVarConfig envVarConfig = EnvVarConfig.getInstance();
     EnforcerConfig config = new EnforcerConfig();
     private KeyStore trustStore = null;
     private KeyStore trustStoreForJWT = null;
@@ -270,7 +234,7 @@ public class ConfigHolder {
                     getTrustStoreForJWT().setCertificateEntry(certificateAlias, cert);
                     TLSUtils.convertCertificate(cert);
                     // Convert the certificate to a javax.security.cert.Certificate and set to issuerDto.
-                    issuerDto.setCertificate(TLSUtils.convertCertificate(cert));
+                    issuerDto.setCertificate(cert);
                 } catch (KeyStoreException | CertificateException | IOException | EnforcerException e) {
                     logger.error("Error while adding certificates to the JWT related Truststore", e);
                     // Continue to avoid making a invalid issuer.
@@ -317,7 +281,7 @@ public class ConfigHolder {
             trustStore.load(null);
 
             if (getEnvVarConfig().isTrustDefaultCerts()) {
-                loadDefaultCertsToTrustStore();
+                TLSUtils.loadDefaultCertsToTrustStore(trustStore);
             }
             loadTrustedCertsToTrustStore();
 
@@ -334,57 +298,11 @@ public class ConfigHolder {
         TLSUtils.addCertsToTruststore(trustStore, truststoreFilePath);
     }
 
-    private void loadDefaultCertsToTrustStore() throws NoSuchAlgorithmException, KeyStoreException {
-        TrustManagerFactory tmf = TrustManagerFactory
-                .getInstance(TrustManagerFactory.getDefaultAlgorithm());
-        // Using null here initialises the TMF with the default trust store.
-        tmf.init((KeyStore) null);
-
-        // Get hold of the default trust manager
-        X509TrustManager defaultTm = null;
-        for (TrustManager tm : tmf.getTrustManagers()) {
-            if (tm instanceof X509TrustManager) {
-                defaultTm = (X509TrustManager) tm;
-                break;
-            }
-        }
-
-        // Get the certs from defaultTm and add them to our trustStore
-        if (defaultTm != null) {
-            X509Certificate[] trustedCerts = defaultTm.getAcceptedIssuers();
-            Arrays.stream(trustedCerts)
-                    .forEach(cert -> {
-                        try {
-                            trustStore.setCertificateEntry(RandomStringUtils.random(10, true, false),
-                                    cert);
-                        } catch (KeyStoreException e) {
-                            logger.error("Error while adding default trusted ca cert", e);
-                        }
-                    });
-        }
-    }
 
     private void loadOpaClientKeyStore() {
         String certPath = getEnvVarConfig().getOpaClientPublicKeyPath();
         String keyPath = getEnvVarConfig().getOpaClientPrivateKeyPath();
         opaKeyStore = FilterUtils.createClientKeyStore(certPath, keyPath);
-    }
-
-    private String processSingleURLGroup(List<String> urlArray, String urlType) {
-        StringBuilder concatenatedURLString = new StringBuilder("{");
-        for (String url : urlArray) {
-            if (Constants.LOADBALANCE.equalsIgnoreCase(urlType)) {
-                concatenatedURLString.append(url).append(Constants.TM_BINARY_LOADBALANCE_SEPARATOR);
-            } else if (Constants.FAILOVER.equalsIgnoreCase(urlType)) {
-                concatenatedURLString.append(url).append(Constants.TM_BINARY_FAILOVER_SEPARATOR);
-            } else {
-                concatenatedURLString.append(url).append(Constants.TM_BINARY_FAILOVER_SEPARATOR);
-            }
-        }
-        //to remove the trailing '|' or ','
-        concatenatedURLString = new StringBuilder(
-                concatenatedURLString.substring(0, concatenatedURLString.length() - 1) + "}");
-        return concatenatedURLString.toString();
     }
 
     private void populateJWTGeneratorConfigurations(JWTGenerator jwtGenerator) {
@@ -437,7 +355,6 @@ public class ConfigHolder {
      * @param config - Enforcer config object.
      */
     private void resolveConfigsWithEnvs(Object config) {
-        List<Field> classFields = Arrays.asList(config.getClass().getDeclaredFields());
         //extended config class env variables should also be resolved
         if (config.getClass().getSuperclass() != null && (
                 config.getClass().getSuperclass().getPackageName().contains(dtoPackageName))) {
@@ -578,10 +495,6 @@ public class ConfigHolder {
         return trustManagerFactory;
     }
 
-    public void setTrustManagerFactory(TrustManagerFactory trustManagerFactory) {
-        this.trustManagerFactory = trustManagerFactory;
-    }
-
     public EnvVarConfig getEnvVarConfig() {
         return envVarConfig;
     }
@@ -590,7 +503,4 @@ public class ConfigHolder {
         return configIssuerList;
     }
 
-    public void setConfigIssuerList(ArrayList<ExtendedTokenIssuerDto> configIssuerList) {
-        this.configIssuerList = configIssuerList;
-    }
 }

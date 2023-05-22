@@ -31,6 +31,7 @@ const (
 	APKMgtApplicationType         = apiTypePrefix + "wso2.discovery.apkmgt.Application"
 	ApplicationType               = apiTypePrefix + "wso2.discovery.subscription.Application"
 	SubscriptionType              = apiTypePrefix + "wso2.discovery.subscription.Subscription"
+	JWTIssuerType                 = apiTypePrefix + "wso2.discovery.subscription.JWTIssuer"
 	JWTIssuerListType             = apiTypePrefix + "wso2.discovery.subscription.JWTIssuerList"
 	// AnyType is used only by ADS
 	AnyType = ""

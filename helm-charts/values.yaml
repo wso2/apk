@@ -33,9 +33,7 @@ wso2:
       authorizeEndpoint: "https://idp.am.wso2.com:9095/oauth2/authorize"
       tokenEndpoint: "https://idp.am.wso2.com:9095/oauth2/token"
       revokeEndpoint: "https://idp.am.wso2.com:9095/oauth2/revoke"
-      # jwksEndpoint: ""
       usernameClaim: "sub"
-      groupClaim: "groups"
       organizationClaim: "organization"
       # organizationResolver: "controlPlane" # controlplane,none
       credentials:
@@ -44,6 +42,7 @@ wso2:
       #   secretName: "wso2apk-idp-certificates"
       #   fileName: "idp.crt"
       # signing:
+      #   jwksEndpoint: "https://idp.am.wso2.com:9095/oauth2/jwks"
       #   secretName: "wso2apk-idp-signing"
       #   fileName: "idp.crt"
     cp:
@@ -222,8 +221,8 @@ wso2:
             failureThreshold: 5
           strategy: Recreate
           replicas: 1
-          imagePullPolicy: Always
-          image: wso2/adapter:latest
+          imagePullPolicy: IfNotPresent
+          image: adapter:0.0.1-SNAPSHOT
           security:
             sslHostname: "adapter"
         # configs:
@@ -307,8 +306,8 @@ wso2:
               periodSeconds: 20
               failureThreshold: 5
             strategy: Recreate
-            imagePullPolicy: Always
-            image: wso2/enforcer:latest
+            imagePullPolicy: IfNotPresent
+            image: enforcer:0.0.1-SNAPSHOT
             security:
               sslHostname: "enforcer"
             # configs:

@@ -19,16 +19,7 @@
 package org.wso2.apk.enforcer.discovery.scheduler;
 
 import org.wso2.apk.enforcer.config.EnvVarConfig;
-import org.wso2.apk.enforcer.discovery.ApiDiscoveryClient;
-import org.wso2.apk.enforcer.discovery.ApiListDiscoveryClient;
-import org.wso2.apk.enforcer.discovery.ApplicationDiscoveryClient;
-import org.wso2.apk.enforcer.discovery.ApplicationKeyMappingDiscoveryClient;
-import org.wso2.apk.enforcer.discovery.ApplicationPolicyDiscoveryClient;
-import org.wso2.apk.enforcer.discovery.ConfigDiscoveryClient;
-import org.wso2.apk.enforcer.discovery.KeyManagerDiscoveryClient;
-import org.wso2.apk.enforcer.discovery.RevokedTokenDiscoveryClient;
-import org.wso2.apk.enforcer.discovery.SubscriptionDiscoveryClient;
-import org.wso2.apk.enforcer.discovery.SubscriptionPolicyDiscoveryClient;
+import org.wso2.apk.enforcer.discovery.*;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -45,6 +36,8 @@ public class XdsSchedulerManager {
     private ScheduledFuture<?> apiDiscoveryScheduledFuture;
     private ScheduledFuture<?> apiDiscoveryListScheduledFuture;
     private ScheduledFuture<?> applicationDiscoveryScheduledFuture;
+    private ScheduledFuture<?> jwtIssuerDiscoveryScheduledFuture;
+
     private ScheduledFuture<?> applicationKeyMappingDiscoveryScheduledFuture;
     private ScheduledFuture<?> keyManagerDiscoveryScheduledFuture;
     private ScheduledFuture<?> revokedTokenDiscoveryScheduledFuture;
@@ -99,10 +92,22 @@ public class XdsSchedulerManager {
                     .scheduleWithFixedDelay(ApplicationDiscoveryClient.getInstance(), 1, retryPeriod, TimeUnit.SECONDS);
         }
     }
+    public synchronized void startJWTIssuerDiscoveryScheduling(){
+        if (jwtIssuerDiscoveryScheduledFuture == null || jwtIssuerDiscoveryScheduledFuture.isDone()) {
+            jwtIssuerDiscoveryScheduledFuture = discoveryClientScheduler
+                    .scheduleWithFixedDelay(JWTIssuerDiscoveryClient.getInstance(), 1, retryPeriod, TimeUnit.SECONDS);
+        }
+    }
 
     public synchronized void stopApplicationDiscoveryScheduling() {
         if (applicationDiscoveryScheduledFuture != null && !applicationDiscoveryScheduledFuture.isDone()) {
             applicationDiscoveryScheduledFuture.cancel(false);
+        }
+    }
+
+    public synchronized void stopJWTIssuerDiscoveryScheduling() {
+        if (jwtIssuerDiscoveryScheduledFuture != null && !jwtIssuerDiscoveryScheduledFuture.isDone()) {
+            jwtIssuerDiscoveryScheduledFuture.cancel(false);
         }
     }
 

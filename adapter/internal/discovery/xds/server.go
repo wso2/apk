@@ -201,6 +201,11 @@ func GetEnforcerApplicationCache() wso2_cache.SnapshotCache {
 	return enforcerApplicationCache
 }
 
+// GetEnforcerJWTIssuerCache returns xds server cache.
+func GetEnforcerJWTIssuerCache() wso2_cache.SnapshotCache {
+	return enforcerJwtIssuerCache
+}
+
 // GetEnforcerAPICache returns xds server cache.
 func GetEnforcerAPICache() wso2_cache.SnapshotCache {
 	return enforcerAPICache

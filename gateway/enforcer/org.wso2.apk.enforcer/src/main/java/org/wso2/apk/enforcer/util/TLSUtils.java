@@ -21,31 +21,31 @@ package org.wso2.apk.enforcer.util;
 import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.shaded.io.netty.handler.ssl.ClientAuth;
 import io.grpc.netty.shaded.io.netty.handler.ssl.SslContext;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.wso2.apk.enforcer.commons.exception.EnforcerException;
 import org.wso2.apk.enforcer.config.ConfigHolder;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import javax.net.ssl.SSLException;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-
-import javax.net.ssl.SSLException;
 
 /**
  * Utility Functions related to TLS Certificates.
@@ -109,6 +109,17 @@ public class TLSUtils {
         }
     }
 
+    public static void convertAndAddCertificatesToTrustStore(KeyStore trustStore, List<Certificate> certificates) {
+        for (Certificate certificate : certificates) {
+            try {
+                trustStore.setCertificateEntry(RandomStringUtils.random(10, true, false),
+                        certificate);
+            } catch (KeyStoreException e) {
+                log.error("Error while adding the trusted certificates to the trustStore.", e);
+            }
+        }
+    }
+
     private static List<Certificate> getCertsFromFile(String filepath, boolean restrictToOne)
             throws CertificateException, IOException, EnforcerException {
         String content = new String(Files.readAllBytes(Paths.get(filepath)));
@@ -130,10 +141,10 @@ public class TLSUtils {
         int count = 1;
         while (bufferedInputStream.available() > 0) {
             if (count > 1 && restrictToOne) {
-                    log.warn("Provided PEM file " + filepath +
-                            "contains more than one certificate. Hence proceeding with" +
-                            "the first certificate in the File for the JWT configuraion related certificate.");
-                    return certList;
+                log.warn("Provided PEM file " + filepath +
+                        "contains more than one certificate. Hence proceeding with" +
+                        "the first certificate in the File for the JWT configuraion related certificate.");
+                return certList;
             }
             Certificate cert = cf.generateCertificate(bufferedInputStream);
             certList.add(cert);
@@ -142,7 +153,7 @@ public class TLSUtils {
         return certList;
     }
 
-    private static void updateTruststoreWithMultipleCertPem (KeyStore trustStore, String filePath) {
+    private static void updateTruststoreWithMultipleCertPem(KeyStore trustStore, String filePath) {
         try {
             List<Certificate> certificateList = getCertsFromFile(filePath, false);
             certificateList.forEach(certificate -> {
@@ -160,16 +171,23 @@ public class TLSUtils {
     }
 
     public static Certificate getCertificate(String filePath) throws CertificateException, IOException {
-        Certificate certificate = null;
+        try (FileInputStream fileInputStream = new FileInputStream(filePath)) {
+            String content = IOUtils.toString(fileInputStream);
+            return getCertificateFromContent(content);
+        }
+    }
+
+    public static Certificate getCertificateFromContent(String content) throws CertificateException, IOException {
         CertificateFactory fact = CertificateFactory.getInstance(X509);
-        FileInputStream is = new FileInputStream(filePath);
-        X509Certificate cert = (X509Certificate) fact.generateCertificate(is);
-        certificate = (Certificate) cert;
-        return certificate;
+        try (InputStream is = new ByteArrayInputStream(content.getBytes())) {
+            X509Certificate cert = (X509Certificate) fact.generateCertificate(is);
+            return cert;
+        }
     }
 
     /**
      * Generate the gRPC Server SSL Context where the mutual SSL is also enabled.
+     *
      * @return {@code SsLContext} generated SSL Context
      * @throws SSLException
      */
@@ -196,5 +214,48 @@ public class TLSUtils {
             log.debug("Error in loading certificate");
         }
         return certificate;
+    }
+
+    public static KeyStore getDefaultCertTrustStore() throws EnforcerException {
+        try {
+
+            KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
+            trustStore.load(null);
+            loadDefaultCertsToTrustStore(trustStore);
+            return trustStore;
+        } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException e) {
+            throw new EnforcerException("Error while generating Default trustStore", e);
+        }
+    }
+
+    public static void loadDefaultCertsToTrustStore(KeyStore trustStore) throws
+            NoSuchAlgorithmException, KeyStoreException {
+        TrustManagerFactory tmf = TrustManagerFactory
+                .getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        // Using null here initialises the TMF with the default trust store.
+        tmf.init((KeyStore) null);
+
+        // Get hold of the default trust manager
+        X509TrustManager defaultTm = null;
+        for (TrustManager tm : tmf.getTrustManagers()) {
+            if (tm instanceof X509TrustManager) {
+                defaultTm = (X509TrustManager) tm;
+                break;
+            }
+        }
+
+        // Get the certs from defaultTm and add them to our trustStore
+        if (defaultTm != null) {
+            X509Certificate[] trustedCerts = defaultTm.getAcceptedIssuers();
+            Arrays.stream(trustedCerts)
+                    .forEach(cert -> {
+                        try {
+                            trustStore.setCertificateEntry(RandomStringUtils.random(10, true, false),
+                                    cert);
+                        } catch (KeyStoreException e) {
+                            log.error("Error while adding default trusted ca cert", e);
+                        }
+                    });
+        }
     }
 }

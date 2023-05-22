@@ -34,12 +34,12 @@ type ResolvedJWTIssuer struct {
 
 // ResolvedSignatureValidation holds the resolved properties of SignatureValidation
 type ResolvedSignatureValidation struct {
-	JWKS        ResolvedJWKS
-	Certificate ResolvedTLSConfig
+	JWKS        *ResolvedJWKS
+	Certificate *ResolvedTLSConfig
 }
 
 // ResolvedJWKS holds the resolved properties of JWKS
 type ResolvedJWKS struct {
 	URL string
-	TLS ResolvedTLSConfig
+	TLS *ResolvedTLSConfig
 }

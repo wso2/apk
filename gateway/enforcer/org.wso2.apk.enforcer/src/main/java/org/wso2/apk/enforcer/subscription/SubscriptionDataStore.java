@@ -19,13 +19,9 @@
 package org.wso2.apk.enforcer.subscription;
 
 import org.wso2.apk.enforcer.discovery.subscription.APIs;
-import org.wso2.apk.enforcer.models.API;
-import org.wso2.apk.enforcer.models.ApiPolicy;
-import org.wso2.apk.enforcer.models.Application;
-import org.wso2.apk.enforcer.models.ApplicationKeyMapping;
-import org.wso2.apk.enforcer.models.ApplicationPolicy;
-import org.wso2.apk.enforcer.models.Subscription;
-import org.wso2.apk.enforcer.models.SubscriptionPolicy;
+import org.wso2.apk.enforcer.discovery.subscription.JWTIssuer;
+import org.wso2.apk.enforcer.models.*;
+import org.wso2.apk.enforcer.security.jwt.validator.JWTValidator;
 
 import java.util.List;
 
@@ -35,21 +31,12 @@ import java.util.List;
 public interface SubscriptionDataStore {
 
     /**
-     * Gets an {@link Application} by Id.
+     * Gets an {@link Application} by appUUID.
      *
-     * @param appUUID Id of the Application
+     * @param appUUID of the Application
      * @return {@link Application} with the appId
      */
     Application getApplicationById(String appUUID);
-
-    /**
-     * Gets the {@link ApplicationKeyMapping} entry by Key.
-     *
-     * @param key        <ApplicationIs>.<keyType>
-     * @param keyManager Keymanager Name
-     * @return {@link ApplicationKeyMapping} entry
-     */
-    ApplicationKeyMapping getKeyMappingByKeyAndKeyManager(String key, String keyManager);
 
     /**
      * Get API by Context and Version.
@@ -68,30 +55,6 @@ public interface SubscriptionDataStore {
      */
     Subscription getSubscriptionById(String appUUID, String apiUUID);
 
-    /**
-     * Gets API Throttling Policy by the name and Tenant Id.
-     *
-     * @param policyName Name of the Throttling Policy
-     * @return API Throttling Policy
-     */
-    ApiPolicy getApiPolicyByName(String policyName);
-
-    /**
-     * Gets Subscription Throttling Policy by the name and Tenant Id.
-     *
-     * @param policyName Name of the Throttling Policy
-     * @return Subscription Throttling Policy
-     */
-    SubscriptionPolicy getSubscriptionPolicyByName(String policyName);
-
-    /**
-     * Gets Application Throttling Policy by the name and Tenant Id.
-     *
-     * @param policyName Name of the Throttling Policy
-     * @return Application Throttling Policy
-     */
-    ApplicationPolicy getApplicationPolicyByName(String policyName);
-
     void addSubscriptions(List<org.wso2.apk.enforcer.discovery.subscription.Subscription> subscriptionList);
 
     void addApplications(List<org.wso2.apk.enforcer.discovery.subscription.Application> applicationList);
@@ -106,38 +69,6 @@ public interface SubscriptionDataStore {
 
     void addApplicationKeyMappings(
             List<org.wso2.apk.enforcer.discovery.subscription.ApplicationKeyMapping> applicationKeyMappingList);
-
-    void addOrUpdateApplication(Application application);
-
-    void addOrUpdateSubscription(Subscription subscription);
-
-    void addOrUpdateAPI(API api);
-
-    void addOrUpdateAPIWithUrlTemplates(API api);
-
-    void addOrUpdateApplicationKeyMapping(ApplicationKeyMapping applicationKeyMapping);
-
-    void addOrUpdateSubscriptionPolicy(SubscriptionPolicy subscriptionPolicy);
-
-    void addOrUpdateApplicationPolicy(ApplicationPolicy applicationPolicy);
-
-    void addOrUpdateApiPolicy(ApiPolicy apiPolicy);
-
-    void removeApplication(Application application);
-
-    void removeAPI(API api);
-
-    void removeSubscription(Subscription subscription);
-
-    void removeApplicationKeyMapping(ApplicationKeyMapping applicationKeyMapping);
-
-    void removeSubscriptionPolicy(SubscriptionPolicy subscriptionPolicy);
-
-    void removeApplicationPolicy(ApplicationPolicy applicationPolicy);
-
-    void removeApiPolicy(ApiPolicy apiPolicy);
-
-    API getDefaultApiByContext(String context);
 
     /**
      * Filter the API map according to the provided parameters
@@ -186,18 +117,12 @@ public interface SubscriptionDataStore {
      */
     List<Subscription> getMatchingSubscriptions(String applicationUUID, String apiUUID, String state);
 
-    /**
-     * Returns the list of application policies which matches the given policy name
-     * @param policyName The name of the policy
-     * @return
-     */
-    List<ApplicationPolicy> getMatchingApplicationPolicies(String policyName);
+    void addJWTIssuers(List<JWTIssuer> jwtIssuers);
 
     /**
-     *  Returns the list of subscription policies which matches the given policy name
-     * @param policyName The name of the policy
-     * @return
+     * Returns the JWTValidator based on Issuer
+     * @param issuer issuer in JWT
+     * @return JWTValidator Implementation
      */
-    List<SubscriptionPolicy> getMatchingSubscriptionPolicies(String policyName);
-
+    JWTValidator getJWTValidatorByIssuer(String issuer);
 }

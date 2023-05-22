@@ -27,6 +27,7 @@ import com.nimbusds.jose.crypto.RSASSAVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -34,13 +35,18 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.wso2.apk.enforcer.common.CacheProvider;
+import org.wso2.apk.enforcer.commons.dto.JWTValidationInfo;
 import org.wso2.apk.enforcer.commons.exception.EnforcerException;
+import org.wso2.apk.enforcer.commons.jwttransformer.JWTTransformer;
 import org.wso2.apk.enforcer.config.ConfigHolder;
+import org.wso2.apk.enforcer.config.dto.ExtendedTokenIssuerDto;
 import org.wso2.apk.enforcer.constants.APIConstants;
 import org.wso2.apk.enforcer.constants.Constants;
 import org.wso2.apk.enforcer.constants.JwtConstants;
 import org.wso2.apk.enforcer.dto.APIKeyValidationInfoDTO;
 import org.wso2.apk.enforcer.security.jwt.SignedJWTInfo;
+import org.wso2.apk.enforcer.security.jwt.validator.JWTValidator;
+import org.wso2.apk.enforcer.subscription.SubscriptionDataStoreImpl;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -58,6 +64,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.text.ParseException;
 import java.util.Base64;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -251,5 +258,19 @@ public class JWTUtils {
         apiKeyValidationInfoDTO.setApplicationId(-1);
         apiKeyValidationInfoDTO.setApplicationUUID(UUID.nameUUIDFromBytes(applicationRef.getBytes(StandardCharsets.UTF_8)).toString());
         apiKeyValidationInfoDTO.setApplicationTier(APIConstants.UNLIMITED_TIER);
+    }
+
+    public static JWTValidationInfo validateJWTToken(SignedJWTInfo signedJWTInfo) throws EnforcerException {
+        JWTValidationInfo jwtValidationInfo = new JWTValidationInfo();
+        String issuer = signedJWTInfo.getJwtClaimsSet().getIssuer();
+        JWTValidator jwtValidator = SubscriptionDataStoreImpl.getInstance().getJWTValidatorByIssuer(issuer);
+        if (jwtValidator != null) {
+            return jwtValidator.validateJWTToken(signedJWTInfo);
+        }
+        jwtValidationInfo.setValid(false);
+        jwtValidationInfo.setValidationCode(APIConstants.KeyValidationStatus.API_AUTH_INVALID_CREDENTIALS);
+        log.info("No matching issuer found for the token with issuer : " + issuer);
+        return jwtValidationInfo;
+
     }
 }

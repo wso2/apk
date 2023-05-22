@@ -29,6 +29,9 @@ public class Constants {
     public static final String API_LIST_TYPE_URL = "type.googleapis.com/wso2.discovery.subscription.APIList";
     public static final String APPLICATION_LIST_TYPE_URL =
             "type.googleapis.com/wso2.discovery.subscription.ApplicationList";
+    public static final String JWT_ISSUER_LIST_TYPE_URL =
+            "type.googleapis.com/wso2.discovery.subscription.JWTIssuerList";
+
     public static final String APPLICATION_POLICY_LIST_TYPE_URL =
             "type.googleapis.com/wso2.discovery.subscription.ApplicationPolicyList";
     public static final String SUBSCRIPTION_POLICY_LIST_TYPE_URL =

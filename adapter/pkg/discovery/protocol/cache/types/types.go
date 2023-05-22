@@ -23,6 +23,7 @@ const (
 	API
 	SubscriptionList
 	ApplicationList
+	JWTIssuerList
 	APIList
 	ApplicationPolicyList
 	SubscriptionPolicyList
@@ -33,5 +34,6 @@ const (
 	APKMgtApplicationList
 	Application
 	Subscription
+	JWTIssuer
 	UnknownType // token to count the total number of supported types
 )
