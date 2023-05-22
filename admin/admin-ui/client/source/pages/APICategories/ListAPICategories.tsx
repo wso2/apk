@@ -123,6 +123,7 @@ export default function ListAPICategories() {
             />
           </Grid>
         </Grid>
+
         {(error || data === null || data === undefined) &&
           <Alert severity='error'>
             <AlertTitle>Error</AlertTitle>
@@ -130,7 +131,7 @@ export default function ListAPICategories() {
           </Alert>
         }
 
-        {data && data.count > 0 &&
+        {data && data.count > 0 && !error &&
           <div>
             <PaginatedClientSide data={data.list} columns={columns} searchProps={searchProps} />
           </div>
