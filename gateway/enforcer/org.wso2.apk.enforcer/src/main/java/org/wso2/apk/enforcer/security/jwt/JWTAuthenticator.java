@@ -200,11 +200,9 @@ public class JWTAuthenticator implements Authenticator {
 
                     // Validate subscriptions
                     APIKeyValidationInfoDTO apiKeyValidationInfoDTO = new APIKeyValidationInfoDTO();
-                    EnforcerConfig configuration = ConfigHolder.getInstance().getConfig();
-                    ExtendedTokenIssuerDto issuerDto = configuration.getIssuersMap().get(validationInfo.getIssuer());
                     Scope validateSubscriptionSpanScope = null;
                     try {
-                        if (issuerDto.isValidateSubscriptions() && !requestContext.getMatchedAPI().isSystemAPI() ) {
+                        if (false) {
                             if (Utils.tracingEnabled()) {
                                 validateSubscriptionSpan = Utils
                                         .startSpan(TracingConstants.SUBSCRIPTION_VALIDATION_SPAN, tracer);
@@ -271,7 +269,7 @@ public class JWTAuthenticator implements Authenticator {
                             // Since application notion becomes less meaningful with subscription validation disabled,
                             // the application name would be populated under the convention "anon:<KM Reference>"
                             JWTUtils.updateApplicationNameForSubscriptionDisabledKM(apiKeyValidationInfoDTO,
-                                    issuerDto.getName());
+                                    validationInfo.getKeyManager());
                         }
                     } finally {
                         if (Utils.tracingEnabled()) {
