@@ -61,8 +61,6 @@ const DeleteOrganization: React.FC<DeleteProps> = ({ orgId, updateList }) => {
             .delete(`/api/am/admin/organizations/${orgId}`, {
                 withCredentials: true,
             })
-            .then(() => {
-            })
             .catch((error) => {
                 throw error.response.body.description;
             })

@@ -42,6 +42,6 @@ export default function ListApplicationRatePlans({ }: Props) {
     return <div>No data</div>;
   }
   return (
-    <PaginatedClientSide data={data.list} columns={columns} />
+    <PaginatedClientSide data={data.list} columns={columns} searchProps={''} />
   )
 }

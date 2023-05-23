@@ -130,7 +130,7 @@ const AddEditOrganization: React.FC<Props> = ({
     const { sandbox: orgSandbox } = sandbox;
 
     const validateOrganizationForm = (): { name?: string; orgClaimValue?: string } => {
-        let newErrors: { name?: string; claimValue?: string; displayName?: string } = {};
+        const newErrors: { name?: string; claimValue?: string; displayName?: string } = {};
 
         if (!orgName) {
             newErrors.name = 'Organization name should not be empty';
@@ -145,7 +145,7 @@ const AddEditOrganization: React.FC<Props> = ({
         return newErrors;
     };
 
-    const StyledChipsInput = styled(MuiChipsInput)(({ }) => ({
+    const StyledChipsInput = styled(MuiChipsInput)(() => ({
         '& .MuiChipsInput-Chip': {
             borderRadius: '25px',
         }

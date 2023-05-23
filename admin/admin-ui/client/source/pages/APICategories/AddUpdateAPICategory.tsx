@@ -100,7 +100,7 @@ export default function AddUpdateAPICategory({ id, nameProp, descriptionProp, up
   };
 
   const getAllFormErrors = () => {
-    let errorText: string = '';
+    let errorText = '';
     let NameErrors: string | boolean = false;
     let DescriptionErrors: string | boolean = false;
 
@@ -121,7 +121,7 @@ export default function AddUpdateAPICategory({ id, nameProp, descriptionProp, up
     return errorText;
   };
 
-  const formSaveCallback = () => {
+  const formSaveCallback = (): (Promise<any> | undefined | boolean) => {
     const formErrors = getAllFormErrors();
     if (formErrors !== '') {
       console.log(formErrors);
@@ -129,7 +129,7 @@ export default function AddUpdateAPICategory({ id, nameProp, descriptionProp, up
       return false;
     } else {
       if (id !== undefined) {
-        axios.put('/api/am/admin/api-categories/' + id, { 'name': APICategory.name, 'description': APICategory.description }, {
+        return axios.put('/api/am/admin/api-categories/' + id, { 'name': APICategory.name, 'description': APICategory.description }, {
           withCredentials: true,
         }).then(() => {
           return (
@@ -144,7 +144,7 @@ export default function AddUpdateAPICategory({ id, nameProp, descriptionProp, up
           updateList();
         });
       } else {
-        axios.post('/api/am/admin/api-categories/', { 'name': APICategory.name, 'description': APICategory.description }, {
+        return axios.post('/api/am/admin/api-categories/', { 'name': APICategory.name, 'description': APICategory.description }, {
           withCredentials: true,
         }).then(() => {
           return (
