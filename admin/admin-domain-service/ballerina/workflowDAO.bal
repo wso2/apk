@@ -23,7 +23,7 @@ import ballerina/sql;
 
 //This function is used to retrive the pending workflow requests 
 // Using Workflow table
-isolated function getWOrkflowListDAO(string? workflowType ) returns WorkflowInfo[]|commons:APKError {
+isolated function getWorkflowListDAO(string? workflowType) returns WorkflowInfo[]|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return e909401(dbClient);
@@ -31,12 +31,32 @@ isolated function getWOrkflowListDAO(string? workflowType ) returns WorkflowInfo
         do {
             WorkflowInfo[] workflowList = [];
             sql:ParameterizedQuery query = 
-                `SELECT  FROM WORKFLOW WHERE STATUS = created AND WORKFLOW_TYPE = ${workflowType};`;
+                `SELECT wf_reference as workflowReferenceId, wf_type as workflowType, wf_status as workflowStatus, wf_created_time as createdTime, wf_updated_time as updatedTime
+                 FROM WORKFLOWS WHERE wf_status = 'CREATED' AND wf_type = ${workflowType};`;
             stream<WorkflowInfo, sql:Error?> workFlowStream = dbClient->query(query);
             check from WorkflowInfo workflow in workFlowStream do {
                 workflowList.push(workflow);
             };
             return workflowList;
+        } on fail var e {
+            return e909400(e);
+        }
+    }
+}
+
+isolated function getWorkflowDAO(string workflowReferenceId, WorkflowInfo payload) returns WorkflowInfo|commons:APKError {
+    postgresql:Client | error dbClient  = getConnection();
+    if dbClient is error {
+        return e909401(dbClient);
+    } else {
+        do {
+            sql:ParameterizedQuery query = `Update WORKFLOWS SET wf_status = 'COMPLETED' WHERE wf_reference = ${workflowReferenceId};`;
+            sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
+            if result is sql:ExecutionResult {
+                return payload;
+            } else {
+                return e909400(result);
+            }
         } on fail var e {
             return e909400(e);
         }

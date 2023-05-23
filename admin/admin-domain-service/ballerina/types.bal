@@ -460,6 +460,7 @@ public type KeyManagerInfo record {
 };
 
 public type WorkflowInfo record {
+    string workflowReferenceId?;
     # Type of the Workflow Request. It shows which type of request is it.
     string workflowType?;
     # Show the Status of the the workflow request whether it is approved or created.

@@ -21,7 +21,7 @@ import wso2/apk_common_lib as commons;
 
 //This function return the pending workflow list
 isolated function getWorkflowList(string? workflowType, int 'limit, int offset, string? accept) returns WorkflowList|commons:APKError{
-    WorkflowInfo[]|commons:APKError workflowList = getWOrkflowListDAO(workflowType);
+    WorkflowInfo[]|commons:APKError workflowList = getWorkflowListDAO(workflowType);
     if workflowList is WorkflowInfo[] {
         WorkflowList workflowListResponse = {};
         workflowListResponse.list = workflowList;
@@ -29,4 +29,20 @@ isolated function getWorkflowList(string? workflowType, int 'limit, int offset, 
     } else {
         return workflowList;
     }
+}
+
+// This function approvel/reject workflow request
+isolated function updateWorkflowStatus(string workflowReferenceId, WorkflowInfo payload) returns OkWorkflowInfo|commons:APKError {
+    WorkflowInfo|commons:APKError workflowInfo = getWorkflowDAO(workflowReferenceId, payload);
+    OkWorkflowInfo okWorkflowInfo;
+    if workflowInfo is WorkflowInfo {
+        okWorkflowInfo = {
+                body: {
+                    workflowReferenceId: workflowInfo.workflowReferenceId
+                }
+            };
+        return okWorkflowInfo;
+    } else {
+        return e909400(workflowInfo);
+    }  
 }
