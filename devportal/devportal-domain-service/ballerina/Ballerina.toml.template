@@ -24,6 +24,12 @@ name = "notification_grpc_client"
 version = "0.0.1-SNAPSHOT"
 repository = "local"
 
+[[dependency]]
+org= "wso2"
+name = "apk_keymanager_libs"
+version = "0.0.1-SNAPSHOT"
+repository="local"
+
 [[platform.java11.dependency]]
 groupId = "org.wso2.apk"
 artifactId = "org.wso2.apk.devportal"
