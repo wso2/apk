@@ -41,7 +41,8 @@ type PolicySpec struct {
 	RequestQueryModifier RequestQueryModifier   `json:"requestQueryModifier,omitempty"`
 	RequestInterceptors  []InterceptorReference `json:"requestInterceptors,omitempty"`
 	ResponseInterceptors []InterceptorReference `json:"responseInterceptors,omitempty"`
-	BackendJWTToken      *BackendJWTToken     `json:"backendJwtToken,omitempty"`
+	BackendJWTToken      *BackendJWTToken       `json:"backendJwtToken,omitempty"`
+	CORSPolicy           *CORSPolicy            `json:"cORSPolicy,omitempty"`
 }
 
 // BackendJWTToken holds backend JWT token information
@@ -65,6 +66,16 @@ type RequestQueryModifier struct {
 	Add       []HTTPQuery `json:"add,omitempty"`
 	Remove    []string    `json:"remove,omitempty"`
 	RemoveAll string      `json:"removeAll,omitempty"`
+}
+
+// CORSPolicy holds CORS policy information
+type CORSPolicy struct {
+	Enabled                       bool     `json:"enabled,omitempty"`
+	AccessControlAllowCredentials bool     `json:"accessControlAllowCredentials,omitempty"`
+	AccessControlAllowHeaders     []string `json:"accessControlAllowHeaders,omitempty"`
+	AccessControlAllowMethods     []string `json:"accessControlAllowMethods,omitempty"`
+	AccessControlAllowOrigins     []string `json:"accessControlAllowOrigins,omitempty"`
+	AccessControlExposeHeaders    []string `json:"accessControlExposeHeaders,omitempty"`
 }
 
 // InterceptorReference holds InterceptorService reference using name and namespace

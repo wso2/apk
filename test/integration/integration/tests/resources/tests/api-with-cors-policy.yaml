@@ -1,0 +1,85 @@
+# Copyright (c) 2023, WSO2 LLC. (https://www.wso2.com) All Rights Reserved.
+#
+# WSO2 LLC. licenses this file to you under the Apache License,
+# Version 2.0 (the "License"); you may not use this file except
+# in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+apiVersion: dp.wso2.com/v1alpha1
+kind: API
+metadata:
+  name: cors-policy-api
+  namespace: gateway-integration-test-infra
+spec:
+  apiDisplayName: API with CORS Policy
+  apiType: REST
+  apiVersion: 1.0.0
+  context: /cors-policy-api/1.0.0
+  definitionFileRef: definition-file
+  production:
+    - httpRouteRefs:
+      - cors-policy-httproute
+  organization: wso2-org
+---
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: HTTPRoute
+metadata:
+  name: cors-policy-httproute
+  namespace: gateway-integration-test-infra
+spec:
+  hostnames:
+  - cors-policy.test.gw.wso2.com
+  parentRefs:
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    name: default
+    namespace: apk-integration-test
+    sectionName: httpslistener
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /cors-policy-api/1.0.0/options
+    filters:
+    - type: URLRewrite
+      urlRewrite:
+        path:
+          type: ReplacePrefixMatch
+          replacePrefixMatch: /v2/echo-full
+    backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: infra-backend-v1
+---
+apiVersion: dp.wso2.com/v1alpha1
+kind: APIPolicy
+metadata:
+  name: cors-policy
+  namespace: gateway-integration-test-infra
+spec:
+  override:
+    cORSPolicy:
+      enabled: true
+      accessControlAllowCredentials: true
+      accessControlAllowOrigins:
+      - "*.wso2.com"
+      accessControlAllowHeaders:
+      - authorization
+      accessControlAllowMethods:
+      - GET
+      - POST
+      accessControlExposeHeaders:
+      - "*"
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: API
+    name: cors-policy-api

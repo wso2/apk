@@ -78,6 +78,30 @@ spec:
                       tokenTTL:
                         type: integer
                     type: object
+                  cORSPolicy:
+                    description: CORSPolicy holds CORS policy information
+                    properties:
+                      accessControlAllowCredentials:
+                        type: boolean
+                      accessControlAllowHeaders:
+                        items:
+                          type: string
+                        type: array
+                      accessControlAllowMethods:
+                        items:
+                          type: string
+                        type: array
+                      accessControlAllowOrigins:
+                        items:
+                          type: string
+                        type: array
+                      accessControlExposeHeaders:
+                        items:
+                          type: string
+                        type: array
+                      enabled:
+                        type: boolean
+                    type: object
                   requestInterceptors:
                     items:
                       description: InterceptorReference holds InterceptorService reference
@@ -177,6 +201,30 @@ spec:
                         type: string
                       tokenTTL:
                         type: integer
+                    type: object
+                  cORSPolicy:
+                    description: CORSPolicy holds CORS policy information
+                    properties:
+                      accessControlAllowCredentials:
+                        type: boolean
+                      accessControlAllowHeaders:
+                        items:
+                          type: string
+                        type: array
+                      accessControlAllowMethods:
+                        items:
+                          type: string
+                        type: array
+                      accessControlAllowOrigins:
+                        items:
+                          type: string
+                        type: array
+                      accessControlExposeHeaders:
+                        items:
+                          type: string
+                        type: array
+                      enabled:
+                        type: boolean
                     type: object
                   requestInterceptors:
                     items:

@@ -103,7 +103,6 @@ type envoy struct {
 	EnforcerResponseTimeoutInSeconds time.Duration `default:"20"`
 	KeyStore                         keystore
 	SystemHost                       string `default:"localhost"`
-	Cors                             globalCors
 	Upstream                         envoyUpstream
 	Downstream                       envoyDownstream
 	Connection                       connection
@@ -175,16 +174,6 @@ type consul struct {
 	CertFile string
 	// KeyFile path to the key file(PEM encoded) required for tls connection between adapter and a consul client
 	KeyFile string
-}
-
-// Global CORS configurations
-type globalCors struct {
-	Enabled          bool
-	AllowOrigins     []string
-	AllowMethods     []string
-	AllowHeaders     []string
-	AllowCredentials bool
-	ExposeHeaders    []string
 }
 
 // Router to enforcer request body passing configurations

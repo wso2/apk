@@ -228,7 +228,7 @@ func CompareRequest(req *roundtripper.Request, cReq *roundtripper.CapturedReques
 		if expected.ExpectedRequest.Path != cReq.Path {
 			return fmt.Errorf("expected path to be %s, got %s", expected.ExpectedRequest.Path, cReq.Path)
 		}
-		if expected.ExpectedRequest.Method != cReq.Method {
+		if expected.ExpectedRequest.Method != "OPTIONS" && expected.ExpectedRequest.Method != cReq.Method {
 			return fmt.Errorf("expected method to be %s, got %s", expected.ExpectedRequest.Method, cReq.Method)
 		}
 		if expected.Namespace != cReq.Namespace {

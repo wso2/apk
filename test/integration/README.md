@@ -40,10 +40,10 @@ If you have setup `Kind` and wish to run the integration tests using Gradle, the
     kubectl port-forward svc/apk-test-wso2-apk-router-service -n apk-integration-test 9095:9095
     ```
 
-4. Go to the `apk/integration` directory and run following command to apply test resources.
+4. Go to the `apk/test/integration` directory and run following command to apply test resources.
 
     ```bash
-    kubectl apply -f integration/tests/resources/base/manifests.yaml -n apk-integration-test
+    kubectl apply -f integration/tests/resources/base/manifests.yaml
     ```
 
 5. Add all DNS mappings to `/etc/hosts` file. Refer to `scripts/run-tests.sh` file for the domain names.
@@ -63,7 +63,7 @@ If you have setup `Kind` and wish to run the integration tests using Gradle, the
     > + cSuite.Run(t, []suite.IntegrationTest{tests.<TestName>})
     > ```
 
-    - Run following command from `apk/integration` directory to run the integration tests.
+    - Run following command from `apk/test/integration` directory to run the integration tests.
 
         ```bash
         go test -v integration_test.go
