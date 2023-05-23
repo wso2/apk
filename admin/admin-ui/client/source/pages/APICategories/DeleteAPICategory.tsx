@@ -16,16 +16,33 @@
  */
 
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, IconButton } from '@mui/material';
 import DialogContentText from '@mui/material/DialogContentText';
 import axios from 'axios';
 import PropTypes from 'prop-types';
-import React from 'react';
+import React, { useState } from 'react';
 import { FormattedMessage } from 'react-intl';
-import FormDialogBase from '../../components/@extended/FormDialogBase';
 
 export default function DeleteAPICategory({ id, updateList }) {
 
-    const formSaveCallback = () => {
+    const [open, setOpen] = useState(false);
+    const [saving, setSaving] = useState(false);
+
+    const handleClickOpen = () => {
+        setOpen(true);
+    };
+
+    const handleClose = () => {
+        setOpen(false);
+    };
+
+    const saveTriggered = () => {
+        setSaving(true);
+        deleteOrganization();
+        handleClose();
+    };
+
+    const deleteOrganization = () => {
         axios.delete('/api/am/admin/api-categories/' + id, {
             withCredentials: true,
         }).then(() => {
@@ -39,18 +56,29 @@ export default function DeleteAPICategory({ id, updateList }) {
             throw error.response.body.description;
         }).finally(() => {
             updateList();
+            setSaving(false);
         });
     };
 
     return (
-        <FormDialogBase
-            title='Delete API category?'
-            saveButtonText='Delete'
-            icon={<DeleteForeverIcon />}
-            formSaveCallback={formSaveCallback}
-        >
-            <DialogContentText>Are you sure you want to delete this API Category?</DialogContentText>
-        </FormDialogBase>
+        <>
+            <IconButton onClick={handleClickOpen} color='primary' size='small'>
+                <DeleteForeverIcon fontSize='small' />
+            </IconButton>
+
+            <Dialog open={open} onClose={handleClose} aria-labelledby='form-dialog-title'>
+                <DialogTitle id='form-dialog-title'>Delete API category?</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>Are you sure you want to delete this API Category?</DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleClose}>Cancel</Button>
+                    <Button onClick={saveTriggered} color='primary' variant='contained' disabled={saving}>
+                        {saving ? <CircularProgress size={16} /> : <>Delete</>}
+                    </Button>
+                </DialogActions>
+            </Dialog>
+        </>
     );
 }
 

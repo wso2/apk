@@ -15,20 +15,53 @@
  *
  */
 
-import AddCircleOutlineRoundedIcon from '@mui/icons-material/AddCircleOutlineRounded';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import EditIcon from '@mui/icons-material/Edit';
+import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import IconButton from '@mui/material/IconButton';
 import TextField from '@mui/material/TextField';
 import axios from 'axios';
 import Alert from "components/Alert";
 import PropTypes from 'prop-types';
 import React, { useEffect, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
-import FormDialogBase from '../../components/@extended/FormDialogBase';
 
 export default function AddUpdateAPICategory({ id, nameProp, descriptionProp, updateList }) {
   // This component has been used to add API category when id is undefined and edit API category when id is defined
   const [APICategory, setAPICategory] = useState<{ name: string; description: string }>({ name: "", description: "" });
+  const [open, setOpen] = useState<boolean>(false);
+  const [saving, setSaving] = useState<boolean>(false);
 
+  const handleClickOpen = () => {
+    // dialogOpenCallback();
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  const saveTriggerd = () => {
+    const savedPromise = formSaveCallback;
+    if (typeof savedPromise === 'function') {
+      savedPromise();
+    } else if (savedPromise) {
+      setSaving(true);
+      savedPromise.then((data) => {
+        Alert.success(data);
+      }).catch((e) => {
+        Alert.error(e);
+      }).finally(() => {
+        setSaving(false);
+        handleClose();
+      });
+    }
+  };
   useEffect(() => {
     if (id !== undefined) {
       setAPICategory({ name: nameProp, description: descriptionProp });
@@ -127,7 +160,6 @@ export default function AddUpdateAPICategory({ id, nameProp, descriptionProp, up
         });
       }
     }
-
   };
 
   const onChange = (e) => {
@@ -136,48 +168,63 @@ export default function AddUpdateAPICategory({ id, nameProp, descriptionProp, up
 
   return (
     <>
-      <FormDialogBase
-        title={id !== undefined ? 'Edit API Category' : 'Add API Category'}
-        saveButtonText={id !== undefined ? 'Save' : 'Add'}
-        icon={id !== undefined ? <EditIcon /> : <AddCircleOutlineRoundedIcon fontSize='large' />}
-        formSaveCallback={formSaveCallback}
-      >
-        <>
-          <TextField
-            autoFocus
-            margin='dense'
-            name='name'
-            value={APICategory.name}
-            onChange={onChange}
-            fullWidth
-            variant='outlined'
-            disabled={id !== undefined}
-            label={(
-              <span>
-                <FormattedMessage id='AdminPages.ApiCategories.AddEdit.form.name' defaultMessage='Name' />
-                <span>*</span>
-              </span>
-            )}
-            helperText={'Name of the API category'}
-          />
-          <TextField
-            margin='dense'
-            name='description'
-            value={APICategory.description}
-            onChange={onChange}
-            fullWidth
-            variant='outlined'
-            multiline
-            label={(
-              <span>
-                <FormattedMessage id='AdminPages.ApiCategories.AddEdit.form.description' defaultMessage='Description' />
-                <span>*</span>
-              </span>
-            )}
-            helperText={'Description of the API category'}
-          />
-        </>
-      </FormDialogBase>
+      {id !== undefined ? <IconButton onClick={handleClickOpen} color='primary' size='small'> <EditIcon fontSize='small' /> </IconButton> :
+        <Button onClick={handleClickOpen} variant='contained' style={{ margin: 'auto' }} startIcon={<AddCircleOutlineIcon />}>Add API Category</Button>}
+
+      <Dialog open={open} onClose={handleClose} aria-labelledby='form-dialog-title'>
+        <DialogTitle id='form-dialog-title'>{id !== undefined ? 'Edit API Category' : 'Add API Category'}</DialogTitle>
+        <DialogContent>
+          <>
+            <TextField
+              autoFocus
+              margin='dense'
+              name='name'
+              value={APICategory.name}
+              onChange={onChange}
+              fullWidth
+              variant='outlined'
+              disabled={id !== undefined}
+              label={(
+                <span>
+                  <FormattedMessage id='AdminPages.ApiCategories.AddEdit.form.name' defaultMessage='Name' />
+                  <span>*</span>
+                </span>
+              )}
+              helperText={'Name of the API category'}
+            />
+            <TextField
+              margin='dense'
+              name='description'
+              value={APICategory.description}
+              onChange={onChange}
+              fullWidth
+              variant='outlined'
+              multiline
+              label={(
+                <span>
+                  <FormattedMessage id='AdminPages.ApiCategories.AddEdit.form.description' defaultMessage='Description' />
+                  <span>*</span>
+                </span>
+              )}
+              helperText={'Description of the API category'}
+            />
+          </>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose}>
+            Cancel
+          </Button>
+          <Button
+            onClick={saveTriggerd}
+            color='primary'
+            variant='contained'
+            disabled={saving}
+            data-testid={id !== undefined ? 'Save' : 'Add' + '-btn'}
+          >
+            {saving ? (<CircularProgress size={16} />) : (<>{id !== undefined ? 'Save' : 'Add'}</>)}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }
