@@ -66,23 +66,6 @@ dependencies = [
 
 [[package]]
 org = "ballerina"
-name = "grpc"
-version = "1.7.0"
-dependencies = [
-	{org = "ballerina", name = "auth"},
-	{org = "ballerina", name = "crypto"},
-	{org = "ballerina", name = "jballerina.java"},
-	{org = "ballerina", name = "jwt"},
-	{org = "ballerina", name = "lang.runtime"},
-	{org = "ballerina", name = "log"},
-	{org = "ballerina", name = "oauth2"},
-	{org = "ballerina", name = "protobuf"},
-	{org = "ballerina", name = "regex"},
-	{org = "ballerina", name = "time"}
-]
-
-[[package]]
-org = "ballerina"
 name = "http"
 version = "2.7.0"
 dependencies = [
@@ -285,15 +268,6 @@ dependencies = [
 
 [[package]]
 org = "ballerina"
-name = "protobuf"
-version = "1.3.2"
-dependencies = [
-	{org = "ballerina", name = "jballerina.java"},
-	{org = "ballerina", name = "time"}
-]
-
-[[package]]
-org = "ballerina"
 name = "regex"
 version = "1.4.2"
 dependencies = [
@@ -366,9 +340,6 @@ dependencies = [
 	{org = "ballerina", name = "regex"},
 	{org = "ballerina", name = "time"}
 ]
-modules = [
-	{org = "ballerina", packageName = "uuid", moduleName = "uuid"}
-]
 
 [[package]]
 org = "ballerinai"
@@ -429,7 +400,6 @@ dependencies = [
 	{org = "ballerina", name = "log"},
 	{org = "ballerina", name = "os"},
 	{org = "ballerina", name = "sql"},
-	{org = "ballerina", name = "uuid"},
 	{org = "ballerinax", name = "postgresql"}
 ]
 modules = [
@@ -439,7 +409,7 @@ modules = [
 [[package]]
 org = "wso2"
 name = "backoffice_service"
-version = "0.0.1-SNAPSHOT"
+version = "0.0.1-m10"
 dependencies = [
 	{org = "ballerina", name = "constraint"},
 	{org = "ballerina", name = "http"},
@@ -449,29 +419,13 @@ dependencies = [
 	{org = "ballerina", name = "sql"},
 	{org = "ballerina", name = "test"},
 	{org = "ballerina", name = "time"},
-	{org = "ballerina", name = "uuid"},
 	{org = "ballerinai", name = "observe"},
 	{org = "ballerinai", name = "transaction"},
 	{org = "ballerinax", name = "postgresql"},
-	{org = "wso2", name = "apk_common_lib"},
-	{org = "wso2", name = "notification_grpc_client"}
+	{org = "wso2", name = "apk_common_lib"}
 ]
 modules = [
 	{org = "wso2", packageName = "backoffice_service", moduleName = "backoffice_service"},
 	{org = "wso2", packageName = "backoffice_service", moduleName = "backoffice_service.backoffice"}
-]
-
-[[package]]
-org = "wso2"
-name = "notification_grpc_client"
-version = "0.0.1-SNAPSHOT"
-dependencies = [
-	{org = "ballerina", name = "grpc"},
-	{org = "ballerina", name = "io"},
-	{org = "ballerina", name = "log"},
-	{org = "ballerina", name = "protobuf"}
-]
-modules = [
-	{org = "wso2", packageName = "notification_grpc_client", moduleName = "notification_grpc_client"}
 ]
 
