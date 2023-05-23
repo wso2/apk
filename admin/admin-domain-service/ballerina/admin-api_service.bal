@@ -539,8 +539,9 @@ service /api/am/admin on ep0 {
     # OkWorkflowInfo (OK. Workflow request information is returned.)
     # BadRequestError (Bad Request. Invalid request or validation error.)
     # NotFoundError (Not Found. The specified resource does not exist.)
-    // resource function post workflows/'update\-workflow\-status(string workflowReferenceId, @http:Payload WorkflowInfo payload) returns OkWorkflowInfo|BadRequestError|NotFoundError {
-    // }
+    resource function post workflows/'update\-workflow\-status(string workflowReferenceId, @http:Payload WorkflowInfo payload) returns OkWorkflowInfo|commons:APKError {
+        return updateWorkflowStatus(workflowReferenceId, payload);
+    }
 
     # Get all Organization
     #
