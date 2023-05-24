@@ -24,7 +24,7 @@ import wso2/apk_common_lib as commons;
 import ballerina/log;
 
 isolated function db_getAPIsDAO(string organization) returns API[]|commons:APKError {
-    postgresql:Client | error db_Client  = getConnection();
+    postgresql:Client|error db_Client = getConnection();
     if db_Client is error {
         return e909601(db_Client);
     } else {
@@ -33,7 +33,8 @@ isolated function db_getAPIsDAO(string organization) returns API[]|commons:APKEr
             API_NAME as NAME, API_VERSION as VERSION,CONTEXT, ORGANIZATION, STATUS as STATE, string_to_array(SDK::text,',')::text[] AS SDK,string_to_array(API_TIER::text,',') AS POLICIES, ARTIFACT as ARTIFACT
             FROM API where ORGANIZATION = ${organization}`;
             stream<API, sql:Error?> apisStream = db_Client->query(GET_API);
-            API[] apis = check from API api in apisStream select api;
+            API[] apis = check from API api in apisStream
+                select api;
             check apisStream.close();
             return apis;
         } on fail var e {
@@ -43,7 +44,7 @@ isolated function db_getAPIsDAO(string organization) returns API[]|commons:APKEr
 }
 
 isolated function db_changeLCState(string targetState, string apiId) returns string|commons:APKError {
-    postgresql:Client | error db_Client  = getConnection();
+    postgresql:Client|error db_Client = getConnection();
     if db_Client is error {
         return e909601(db_Client);
     } else {
@@ -56,8 +57,8 @@ isolated function db_changeLCState(string targetState, string apiId) returns str
         WHERE uuid = ${apiId}`;
         sql:ParameterizedQuery sqlQuery = sql:queryConcat(UPDATE_API_LifeCycle_Prefix, values);
 
-        sql:ExecutionResult | sql:Error result = db_Client->execute(sqlQuery);
-        
+        sql:ExecutionResult|sql:Error result = db_Client->execute(sqlQuery);
+
         if result is sql:ExecutionResult {
             return targetState;
         } else {
@@ -67,7 +68,7 @@ isolated function db_changeLCState(string targetState, string apiId) returns str
 }
 
 isolated function db_getCurrentLCStatus(string apiId) returns string|commons:APKError {
-    postgresql:Client | error db_Client  = getConnection();
+    postgresql:Client|error db_Client = getConnection();
     if db_Client is error {
         return e909601(db_Client);
     } else {
@@ -75,8 +76,8 @@ isolated function db_getCurrentLCStatus(string apiId) returns string|commons:APK
         sql:ParameterizedQuery values = `${apiId}`;
         sql:ParameterizedQuery sqlQuery = sql:queryConcat(GET_API_LifeCycle_Prefix, values);
 
-        string | sql:Error result =  db_Client->queryRow(sqlQuery);
-        
+        string|sql:Error result = db_Client->queryRow(sqlQuery);
+
         if result is string {
             return result;
         } else {
@@ -93,7 +94,7 @@ isolated function db_getCurrentLCStatus(string apiId) returns string|commons:APK
 # + new_state - new_state
 # + return - API | error
 isolated function db_AddLCEvent(string? apiId, string? prev_state, string? new_state, string organization) returns string|commons:APKError {
-    postgresql:Client | error db_client  = getConnection();
+    postgresql:Client|error db_client = getConnection();
     time:Utc utc = time:utcNow();
     if db_client is error {
         return e909601(db_client);
@@ -108,8 +109,8 @@ isolated function db_AddLCEvent(string? apiId, string? prev_state, string? new_s
         sql:ParameterizedQuery ADD_LC_EVENT_Prefix = `INSERT INTO api_lc_event (api_uuid,previous_state,new_state,user_uuid,organization,event_date) VALUES (`;
         sql:ParameterizedQuery sqlQuery = sql:queryConcat(ADD_LC_EVENT_Prefix, values);
 
-        sql:ExecutionResult | sql:Error result = db_client->execute(sqlQuery);
-        
+        sql:ExecutionResult|sql:Error result = db_client->execute(sqlQuery);
+
         if result is sql:ExecutionResult {
             return result.toString();
         } else {
@@ -119,14 +120,15 @@ isolated function db_AddLCEvent(string? apiId, string? prev_state, string? new_s
 }
 
 isolated function db_getLCEventHistory(string apiId) returns LifecycleHistoryItem[]|commons:APKError {
-    postgresql:Client | error dbClient  = getConnection();
+    postgresql:Client|error dbClient = getConnection();
     if dbClient is error {
         return e909601(dbClient);
     } else {
-        do{
+        do {
             sql:ParameterizedQuery query = `SELECT previous_state, new_state, user_uuid, event_date FROM api_lc_event WHERE api_uuid =${apiId}`;
             stream<LifecycleHistoryItem, sql:Error?> lcStream = dbClient->query(query);
-            LifecycleHistoryItem[] lcItems = check from LifecycleHistoryItem lcitem in lcStream select lcitem;
+            LifecycleHistoryItem[] lcItems = check from LifecycleHistoryItem lcitem in lcStream
+                select lcitem;
             check lcStream.close();
             return lcItems;
         } on fail var e {
@@ -135,15 +137,14 @@ isolated function db_getLCEventHistory(string apiId) returns LifecycleHistoryIte
     }
 }
 
-
 isolated function db_getSubscriptionsForAPI(string apiId) returns Subscription[]|commons:APKError {
-    postgresql:Client | error dbClient  = getConnection();
+    postgresql:Client|error dbClient = getConnection();
     if dbClient is error {
         return e909601(dbClient);
     } else {
-        
+
         sql:ParameterizedQuery query = `SELECT uuid as api_id FROM api WHERE uuid =${apiId}`;
-        string | sql:Error result =  dbClient->queryRow(query);
+        string|sql:Error result = dbClient->queryRow(query);
         if result is string {
             do {
                 sql:ParameterizedQuery query1 = `SELECT 
@@ -154,17 +155,18 @@ isolated function db_getSubscriptionsForAPI(string apiId) returns Subscription[]
                     SUBS.sub_status AS subscriptionStatus
                     FROM SUBSCRIPTION SUBS, API API, APPLICATION APP 
                     WHERE APP.UUID=SUBS.APPLICATION_UUID AND API.UUID = SUBS.API_UUID AND API.UUID = ${apiId}`;
-                stream<Subscriptions, sql:Error?> result1 =  dbClient->query(query1);
+                stream<Subscriptions, sql:Error?> result1 = dbClient->query(query1);
                 Subscription[] subsList = [];
-                check from Subscriptions subitem in result1 do {
-                    Subscription sub = {applicationInfo: {},subscriptionId: "",subscriptionStatus: "",usagePlan: ""};
-                    sub.subscriptionId =subitem.subscriptionId;
-                    sub.subscriptionStatus = subitem.subscriptionStatus;
-                    sub.applicationInfo.applicationId = subitem.applicationId;
-                    sub.usagePlan = subitem.usagePlan;
-                    sub.applicationInfo.name = subitem.name;
-                    subsList.push(sub);
-                };
+                check from Subscriptions subitem in result1
+                    do {
+                        Subscription sub = {applicationInfo: {}, subscriptionId: "", subscriptionStatus: "", usagePlan: ""};
+                        sub.subscriptionId = subitem.subscriptionId;
+                        sub.subscriptionStatus = subitem.subscriptionStatus;
+                        sub.applicationInfo.applicationId = subitem.applicationId;
+                        sub.usagePlan = subitem.usagePlan;
+                        sub.applicationInfo.name = subitem.name;
+                        subsList.push(sub);
+                    };
                 return subsList;
             } on fail var e {
                 return e909613(e);
@@ -175,9 +177,8 @@ isolated function db_getSubscriptionsForAPI(string apiId) returns Subscription[]
     }
 }
 
-
-isolated function getSubscriptionByIdDAO(string subId) returns SubscriptionInternal|commons:APKError{
-    postgresql:Client | error dbClient  = getConnection();
+isolated function getSubscriptionByIdDAO(string subId) returns SubscriptionInternal|commons:APKError {
+    postgresql:Client|error dbClient = getConnection();
     if dbClient is error {
         return e909601(dbClient);
     } else {
@@ -198,7 +199,7 @@ isolated function getSubscriptionByIdDAO(string subId) returns SubscriptionInter
         API.UUID AS APIID
         FROM SUBSCRIPTION SUBS, API API, APPLICATION APP 
         WHERE APP.UUID=SUBS.APPLICATION_UUID AND API.UUID = SUBS.API_UUID AND SUBS.UUID =${subId}`;
-        SubscriptionInternal | sql:Error result =  dbClient->queryRow(query);
+        SubscriptionInternal|sql:Error result = dbClient->queryRow(query);
         if result is sql:NoRowsError {
             log:printDebug(result.toString());
             string message = "Subscription Not Found for provided ID";
@@ -214,17 +215,16 @@ isolated function getSubscriptionByIdDAO(string subId) returns SubscriptionInter
     }
 }
 
-
 isolated function db_blockSubscription(string subscriptionId, string blockState) returns string|commons:APKError {
-    postgresql:Client | error db_client  = getConnection();
+    postgresql:Client|error db_client = getConnection();
     if db_client is error {
         return e909601(db_client);
     } else {
-        sql:ParameterizedQuery SUBSCRIPTION_BLOCK_Prefix = `UPDATE subscription set sub_status = `; 
+        sql:ParameterizedQuery SUBSCRIPTION_BLOCK_Prefix = `UPDATE subscription set sub_status = `;
         sql:ParameterizedQuery values = `${blockState} where uuid = ${subscriptionId}`;
         sql:ParameterizedQuery sqlQuery = sql:queryConcat(SUBSCRIPTION_BLOCK_Prefix, values);
-        sql:ExecutionResult | sql:Error result =  db_client->execute(sqlQuery);
-        
+        sql:ExecutionResult|sql:Error result = db_client->execute(sqlQuery);
+
         if result is sql:ExecutionResult {
             return "blocked";
         } else {
@@ -234,15 +234,15 @@ isolated function db_blockSubscription(string subscriptionId, string blockState)
 }
 
 isolated function db_unblockSubscription(string subscriptionId) returns string|commons:APKError {
-    postgresql:Client | error db_client  = getConnection();
+    postgresql:Client|error db_client = getConnection();
     if db_client is error {
         return e909601(db_client);
     } else {
-        sql:ParameterizedQuery SUBSCRIPTION_UNBLOCK_Prefix = `UPDATE subscription set sub_status = 'UNBLOCKED'`; 
+        sql:ParameterizedQuery SUBSCRIPTION_UNBLOCK_Prefix = `UPDATE subscription set sub_status = 'UNBLOCKED'`;
         sql:ParameterizedQuery values = ` where uuid = ${subscriptionId}`;
         sql:ParameterizedQuery sqlQuery = sql:queryConcat(SUBSCRIPTION_UNBLOCK_Prefix, values);
-        sql:ExecutionResult | sql:Error result =  db_client->execute(sqlQuery);
-        
+        sql:ExecutionResult|sql:Error result = db_client->execute(sqlQuery);
+
         if result is sql:ExecutionResult {
             return "Unblocked";
         } else {
@@ -252,7 +252,7 @@ isolated function db_unblockSubscription(string subscriptionId) returns string|c
 }
 
 isolated function db_getAPI(string apiId) returns API|commons:APKError {
-    postgresql:Client | error db_Client  = getConnection();
+    postgresql:Client|error db_Client = getConnection();
     if db_Client is error {
         return e909601(db_Client);
     } else {
@@ -262,8 +262,8 @@ isolated function db_getAPI(string apiId) returns API|commons:APKError {
         sql:ParameterizedQuery values = `${apiId}`;
         sql:ParameterizedQuery sqlQuery = sql:queryConcat(GET_API_Prefix, values);
 
-        API | sql:Error result =  db_Client->queryRow(sqlQuery);
-        
+        API|sql:Error result = db_Client->queryRow(sqlQuery);
+
         if result is API {
             return result;
         } else {
@@ -273,13 +273,13 @@ isolated function db_getAPI(string apiId) returns API|commons:APKError {
 }
 
 isolated function db_getAPIDefinition(string apiId) returns APIDefinition|commons:APKError {
-    postgresql:Client | error dbClient  = getConnection();
+    postgresql:Client|error dbClient = getConnection();
     if dbClient is error {
         return e909601(dbClient);
     } else {
         sql:ParameterizedQuery query = `SELECT encode(API_DEFINITION, 'escape')::text AS schemaDefinition, MEDIA_TYPE as type
         FROM API_ARTIFACT WHERE API_UUID =${apiId}`;
-        APIDefinition | sql:Error result =  dbClient->queryRow(query);
+        APIDefinition|sql:Error result = dbClient->queryRow(query);
         if result is sql:NoRowsError {
             return e909602();
         } else if result is APIDefinition {
@@ -291,7 +291,7 @@ isolated function db_getAPIDefinition(string apiId) returns APIDefinition|common
 }
 
 isolated function db_updateAPI(string apiId, ModifiableAPI payload) returns API|commons:APKError {
-    postgresql:Client | error dbClient  = getConnection();
+    postgresql:Client|error dbClient = getConnection();
     if dbClient is error {
         return e909601(dbClient);
     } else {
@@ -303,8 +303,8 @@ isolated function db_updateAPI(string apiId, ModifiableAPI payload) returns API|
         categories = ${categories}, api_tier=${businessPlans} WHERE uuid = ${apiId}`;
         sql:ParameterizedQuery sqlQuery = sql:queryConcat(UPDATE_API_Suffix, values);
 
-        sql:ExecutionResult | sql:Error result = dbClient->execute(sqlQuery);
-        
+        sql:ExecutionResult|sql:Error result = dbClient->execute(sqlQuery);
+
         if result is sql:ExecutionResult {
             return db_getAPI(apiId);
         } else {
@@ -313,9 +313,8 @@ isolated function db_updateAPI(string apiId, ModifiableAPI payload) returns API|
     }
 }
 
-
 isolated function getAPICategoriesDAO(string org) returns APICategory[]|commons:APKError {
-    postgresql:Client | error dbClient  = getConnection();
+    postgresql:Client|error dbClient = getConnection();
     if dbClient is error {
         return e909601(dbClient);
     } else {
@@ -323,7 +322,8 @@ isolated function getAPICategoriesDAO(string org) returns APICategory[]|commons:
             sql:ParameterizedQuery query = `SELECT UUID as ID, NAME, DESCRIPTION 
             FROM API_CATEGORIES WHERE ORGANIZATION =${org} ORDER BY NAME`;
             stream<APICategory, sql:Error?> apiCategoryStream = dbClient->query(query);
-            APICategory[] apiCategoryList = check from APICategory apiCategory in apiCategoryStream select apiCategory;
+            APICategory[] apiCategoryList = check from APICategory apiCategory in apiCategoryStream
+                select apiCategory;
             check apiCategoryStream.close();
             return apiCategoryList;
         } on fail var e {
@@ -333,7 +333,7 @@ isolated function getAPICategoriesDAO(string org) returns APICategory[]|commons:
 }
 
 isolated function getAPIsByQueryDAO(string payload, string org) returns API[]|commons:APKError {
-    postgresql:Client | error dbClient  = getConnection();
+    postgresql:Client|error dbClient = getConnection();
     if dbClient is error {
         return e909601(dbClient);
     } else {
@@ -343,7 +343,8 @@ isolated function getAPIsByQueryDAO(string payload, string org) returns API[]|co
             ARTIFACT as ARTIFACT FROM API JOIN JSONB_EACH_TEXT(ARTIFACT) e ON true 
             WHERE e.value LIKE ${payload} AND ORGANIZATION = ${org}`;
             stream<API, sql:Error?> apisStream = dbClient->query(query);
-            API[] apis = check from API api in apisStream select api;
+            API[] apis = check from API api in apisStream
+                select api;
             check apisStream.close();
             return apis;
         } on fail var e {
@@ -354,7 +355,7 @@ isolated function getAPIsByQueryDAO(string payload, string org) returns API[]|co
 }
 
 public isolated function getBusinessPlansDAO(string org) returns BusinessPlan[]|commons:APKError {
-    postgresql:Client | error dbClient  = getConnection();
+    postgresql:Client|error dbClient = getConnection();
     if dbClient is error {
         return e909601(dbClient);
     } else {
@@ -364,34 +365,59 @@ public isolated function getBusinessPlansDAO(string org) returns BusinessPlan[]|
             QUOTA_TYPE as DefaulLimitType, QUOTA , TIME_UNIT as TIMEUNIT, UNIT_TIME as 
             UNITTIME, RATE_LIMIT_COUNT as RATELIMITCOUNT, RATE_LIMIT_TIME_UNIT as RATELIMITTIMEUNIT FROM BUSINESS_PLAN WHERE ORGANIZATION =${org}`;
             stream<BusinessPlanDAO, sql:Error?> businessPlanStream = dbClient->query(query);
-            BusinessPlanDAO[] businessPlansDAO = check from BusinessPlanDAO businessPlan in businessPlanStream select businessPlan;
+            BusinessPlanDAO[] businessPlansDAO = check from BusinessPlanDAO businessPlan in businessPlanStream
+                select businessPlan;
             check businessPlanStream.close();
-            BusinessPlan[] businessPlans =[];
+            BusinessPlan[] businessPlans = [];
             if businessPlansDAO is BusinessPlanDAO[] {
                 foreach BusinessPlanDAO result in businessPlansDAO {
                     if result.defaulLimitType == "requestCount" {
-                        BusinessPlan bp = {planName: result.planName, displayName: result.displayName, 
-                        description: result.description, planId: result.planId, isDeployed: result.isDeployed, 
-                        rateLimitCount: result.rateLimitCount, rateLimitTimeUnit: result.rateLimitTimeUnit,
-                        defaultLimit: {'type: result.defaulLimitType, requestCount: 
+                        BusinessPlan bp = {
+                            planName: result.planName,
+                            displayName: result.displayName,
+                            description: result.description,
+                            planId: result.planId,
+                            isDeployed: result.isDeployed,
+                            rateLimitCount: result.rateLimitCount,
+                            rateLimitTimeUnit: result.rateLimitTimeUnit,
+                            defaultLimit: {
+                                'type: result.defaulLimitType,
+                                requestCount:
                         {requestCount: result.quota, timeUnit: result.timeUnit, unitTime: result.unitTime}
-                        }};
+                            }
+                        };
                         businessPlans.push(bp);
                     } else if result.defaulLimitType == "bandwidth" {
-                        BusinessPlan bp = {planName: result.planName, displayName: result.displayName, 
-                        description: result.description, planId: result.planId, isDeployed: result.isDeployed, 
-                        rateLimitCount: result.rateLimitCount, rateLimitTimeUnit: result.rateLimitTimeUnit,
-                        defaultLimit: {'type: result.defaulLimitType, bandwidth: 
+                        BusinessPlan bp = {
+                            planName: result.planName,
+                            displayName: result.displayName,
+                            description: result.description,
+                            planId: result.planId,
+                            isDeployed: result.isDeployed,
+                            rateLimitCount: result.rateLimitCount,
+                            rateLimitTimeUnit: result.rateLimitTimeUnit,
+                            defaultLimit: {
+                                'type: result.defaulLimitType,
+                                bandwidth:
                         {dataAmount: result.quota, dataUnit: <string>result.dataUnit, timeUnit: result.timeUnit, unitTime: result.unitTime}
-                        }};
+                            }
+                        };
                         businessPlans.push(bp);
                     } else {
-                        BusinessPlan bp = {planName: result.planName, displayName: result.displayName, 
-                        description: result.description, planId: result.planId, isDeployed: result.isDeployed, 
-                        rateLimitCount: result.rateLimitCount, rateLimitTimeUnit: result.rateLimitTimeUnit,
-                        defaultLimit: {'type: result.defaulLimitType, eventCount: 
-                        {eventCount:result.quota, timeUnit: result.timeUnit, unitTime: result.unitTime}
-                        }};
+                        BusinessPlan bp = {
+                            planName: result.planName,
+                            displayName: result.displayName,
+                            description: result.description,
+                            planId: result.planId,
+                            isDeployed: result.isDeployed,
+                            rateLimitCount: result.rateLimitCount,
+                            rateLimitTimeUnit: result.rateLimitTimeUnit,
+                            defaultLimit: {
+                                'type: result.defaulLimitType,
+                                eventCount:
+                        {eventCount: result.quota, timeUnit: result.timeUnit, unitTime: result.unitTime}
+                            }
+                        };
                         businessPlans.push(bp);
                     }
                 }
@@ -404,18 +430,18 @@ public isolated function getBusinessPlansDAO(string org) returns BusinessPlan[]|
 }
 
 isolated function db_getResourceByResourceCategory(string apiId, int resourceCategoryId) returns Resource|NotFoundError|commons:APKError {
-    postgresql:Client | error db_Client  = getConnection();
+    postgresql:Client|error db_Client = getConnection();
     if db_Client is error {
         return e909601(db_Client);
     } else {
         sql:ParameterizedQuery sqlQuery = `SELECT UUID AS resourceUUID, API_UUID AS apiUuid, RESOURCE_CATEGORY_ID AS resourceCategoryId, DATA_TYPE AS dataType,
         RESOURCE_CONTENT AS resourceContent,  RESOURCE_BINARY_VALUE AS resourceBinaryValue  
         FROM API_RESOURCES where API_UUID = ${apiId} AND RESOURCE_CATEGORY_ID = ${resourceCategoryId}`;
-        Resource|sql:Error result =  db_Client->queryRow(sqlQuery);
-        
+        Resource|sql:Error result = db_Client->queryRow(sqlQuery);
+
         if result is sql:NoRowsError {
             log:printDebug(result.toString());
-            NotFoundError nfe = {body:{code: 90915, message: "Thumbnail Not Found for provided API ID"}};
+            NotFoundError nfe = {body: {code: 90915, message: "Thumbnail Not Found for provided API ID"}};
             return nfe;
         } else if result is Resource {
             return result;
@@ -426,7 +452,7 @@ isolated function db_getResourceByResourceCategory(string apiId, int resourceCat
 }
 
 isolated function db_getResourceByResourceId(string resourceId) returns Resource|commons:APKError {
-    postgresql:Client | error db_Client  = getConnection();
+    postgresql:Client|error db_Client = getConnection();
     if db_Client is error {
         return e909601(db_Client);
     } else {
@@ -435,7 +461,7 @@ isolated function db_getResourceByResourceId(string resourceId) returns Resource
         FROM API_RESOURCES where UUID = `;
         sql:ParameterizedQuery values = `${resourceId}`;
         sql:ParameterizedQuery sqlQuery = sql:queryConcat(GET_RESOURCE_Prefix, values);
-        Resource|sql:Error result =  db_Client->queryRow(sqlQuery);
+        Resource|sql:Error result = db_Client->queryRow(sqlQuery);
         if result is Resource {
             return result;
         } else {
@@ -445,7 +471,7 @@ isolated function db_getResourceByResourceId(string resourceId) returns Resource
 }
 
 isolated function db_addResource(Resource resourceItem) returns Resource|commons:APKError {
-    postgresql:Client | error dbClient  = getConnection();
+    postgresql:Client|error dbClient = getConnection();
     if dbClient is error {
         return e909601(dbClient);
     } else {
@@ -463,7 +489,7 @@ isolated function db_addResource(Resource resourceItem) returns Resource|commons
                                     )`;
         sql:ParameterizedQuery ADD_THUMBNAIL_Prefix = `INSERT INTO API_RESOURCES (UUID, API_UUID, RESOURCE_CATEGORY_ID, DATA_TYPE, RESOURCE_CONTENT, RESOURCE_BINARY_VALUE, CREATED_BY, CREATED_TIME, UPDATED_BY, LAST_UPDATED_TIME) VALUES (`;
         sql:ParameterizedQuery sqlQuery = sql:queryConcat(ADD_THUMBNAIL_Prefix, values);
-        sql:ExecutionResult | sql:Error result = dbClient->execute(sqlQuery);
+        sql:ExecutionResult|sql:Error result = dbClient->execute(sqlQuery);
         if result is sql:ExecutionResult {
             log:printDebug("Resource added successfully");
             return resourceItem;
@@ -474,17 +500,18 @@ isolated function db_addResource(Resource resourceItem) returns Resource|commons
 }
 
 isolated function db_updateResource(Resource resourceItem) returns Resource|commons:APKError {
-    postgresql:Client | error dbClient  = getConnection();
+    postgresql:Client|error dbClient = getConnection();
     if dbClient is error {
         return e909601(dbClient);
     } else {
         time:Utc utc = time:utcNow();
         string user = "apkuser";
         sql:ParameterizedQuery UPDATE_RESOURCE_Suffix = `UPDATE API_RESOURCES SET`;
-        sql:ParameterizedQuery values = ` API_UUID= ${resourceItem.apiUuid}, RESOURCE_CATEGORY_ID = ${resourceItem.resourceCategoryId}, DATA_TYPE = ${resourceItem.dataType}, RESOURCE_CONTENT = to_tsvector(${resourceItem.resourceContent}),
+        sql:ParameterizedQuery values = ` API_UUID= ${resourceItem.apiUuid}, RESOURCE_CATEGORY_ID = ${resourceItem.resourceCategoryId}, DATA_TYPE = ${resourceItem.dataType}, 
+        RESOURCE_CONTENT = to_tsvector(${resourceItem.resourceContent}),
         RESOURCE_BINARY_VALUE = bytea(${resourceItem.resourceBinaryValue}), UPDATED_BY =${user}, LAST_UPDATED_TIME =${utc} WHERE UUID = ${resourceItem.resourceUUID}`;
         sql:ParameterizedQuery sqlQuery = sql:queryConcat(UPDATE_RESOURCE_Suffix, values);
-        sql:ExecutionResult | sql:Error result = dbClient->execute(sqlQuery);
+        sql:ExecutionResult|sql:Error result = dbClient->execute(sqlQuery);
         if result is sql:ExecutionResult {
             return resourceItem;
         } else {
@@ -494,15 +521,123 @@ isolated function db_updateResource(Resource resourceItem) returns Resource|comm
 }
 
 isolated function db_getResourceCategoryIdByCategoryType(string resourceType) returns int|commons:APKError {
-    postgresql:Client | error db_Client  = getConnection();
+    postgresql:Client|error db_Client = getConnection();
     if db_Client is error {
         return e909601(db_Client);
     } else {
-        sql:ParameterizedQuery GET_RESOURCE_CATEGORY_Prefix = `SELECT RESOURCE_CATEGORY_ID FROM RESOURCE_CATEGORIES where RESOURCE_CATEGORY = `; 
+        sql:ParameterizedQuery GET_RESOURCE_CATEGORY_Prefix = `SELECT RESOURCE_CATEGORY_ID FROM RESOURCE_CATEGORIES where RESOURCE_CATEGORY = `;
         sql:ParameterizedQuery values = `${resourceType}`;
         sql:ParameterizedQuery sqlQuery = sql:queryConcat(GET_RESOURCE_CATEGORY_Prefix, values);
-        int|sql:Error result =  db_Client->queryRow(sqlQuery);
+        int|sql:Error result = db_Client->queryRow(sqlQuery);
         if result is int {
+            return result;
+        } else {
+            return e909626(result);
+        }
+    }
+}
+
+isolated function db_addDocumentMetaData(DocumentMetaData documentMetaData) returns DocumentMetaData|commons:APKError {
+    postgresql:Client|error dbClient = getConnection();
+    if dbClient is error {
+        return e909601(dbClient);
+    } else {
+        time:Utc utc = time:utcNow();
+        sql:ParameterizedQuery values = `${documentMetaData.documentId},
+                                        ${documentMetaData.resourceId},
+                                        ${documentMetaData.name},
+                                        ${documentMetaData.summary},
+                                        ${documentMetaData.documentType},
+                                        ${documentMetaData.otherTypeName},
+                                        ${documentMetaData.sourceUrl},
+                                        ${documentMetaData.fileName},
+                                        ${documentMetaData.sourceType},
+                                        ${documentMetaData.visibility},
+                                        'apkuser',
+                                        ${utc},
+                                        'apkuser',
+                                        ${utc}
+                                    )`;
+        sql:ParameterizedQuery ADD_THUMBNAIL_Prefix = `INSERT INTO API_DOC_META_DATA (UUID, RESOURCE_UUID, NAME, SUMMARY, TYPE, OTHER_TYPE_NAME, SOURCE_URL, FILE_NAME, SOURCE_TYPE,
+         VISIBILITY, CREATED_BY, CREATED_TIME, UPDATED_BY, LAST_UPDATED_TIME) VALUES (`;
+        sql:ParameterizedQuery sqlQuery = sql:queryConcat(ADD_THUMBNAIL_Prefix, values);
+        sql:ExecutionResult|sql:Error result = dbClient->execute(sqlQuery);
+        if result is sql:ExecutionResult {
+            log:printDebug("Resource added successfully");
+            return documentMetaData;
+        } else {
+            return e909624(result);
+        }
+    }
+}
+
+isolated function db_updateDocumentMetaData(DocumentMetaData documentMetaData) returns DocumentMetaData|commons:APKError {
+    postgresql:Client|error dbClient = getConnection();
+    if dbClient is error {
+        return e909601(dbClient);
+    } else {
+        time:Utc utc = time:utcNow();
+        string user = "apkuser";
+        sql:ParameterizedQuery UPDATE_RESOURCE_Suffix = `UPDATE API_DOC_META_DATA SET`;
+        sql:ParameterizedQuery values = ` NAME= ${documentMetaData.name}, SUMMARY = ${documentMetaData.summary}, TYPE = ${documentMetaData.documentType}, 
+        OTHER_TYPE_NAME = ${documentMetaData.otherTypeName}, SOURCE_URL = ${documentMetaData.sourceUrl}, FILE_NAME = ${documentMetaData.fileName}, SOURCE_TYPE = ${documentMetaData.sourceType},
+        VISIBILITY = ${documentMetaData.visibility}, UPDATED_BY =${user}, LAST_UPDATED_TIME =${utc} WHERE UUID = ${documentMetaData.documentId}`;
+        sql:ParameterizedQuery sqlQuery = sql:queryConcat(UPDATE_RESOURCE_Suffix, values);
+        sql:ExecutionResult|sql:Error result = dbClient->execute(sqlQuery);
+        if result is sql:ExecutionResult {
+            return documentMetaData;
+        } else {
+            return e909625(result);
+        }
+    }
+}
+
+isolated function db_getResourceIdByDocumentId(string documentId) returns string|commons:APKError {
+    postgresql:Client|error db_Client = getConnection();
+    if db_Client is error {
+        return e909601(db_Client);
+    } else {
+        sql:ParameterizedQuery GET_RESOURCE_ID_Prefix = `SELECT RESOURCE_UUID FROM API_DOC_META_DATA where UUID = `;
+        sql:ParameterizedQuery values = `${documentId}`;
+        sql:ParameterizedQuery sqlQuery = sql:queryConcat(GET_RESOURCE_ID_Prefix, values);
+        string|sql:Error result = db_Client->queryRow(sqlQuery);
+        if result is string {
+            return result;
+        } else {
+            return e909626(result);
+        }
+    }
+}
+
+isolated function db_deleteDocumentMetaData(string documentId) returns string|commons:APKError {
+    postgresql:Client|error db_Client = getConnection();
+    if db_Client is error {
+        return e909601(db_Client);
+    } else {
+        sql:ParameterizedQuery DELETE_DOCUMENT_Prefix = `DELETE FROM API_DOC_META_DATA WHERE UUID = `;
+        sql:ParameterizedQuery values = `${documentId}`;
+        sql:ParameterizedQuery sqlQuery = sql:queryConcat(DELETE_DOCUMENT_Prefix, values);
+        sql:ExecutionResult | sql:Error result =  db_Client->execute(sqlQuery);
+        if result is sql:ExecutionResult {
+            return "deleted";
+        } else {
+            return e909626(result);
+        }
+    }
+}
+
+isolated function db_getDocumentByDocumentId(string documentId) returns DocumentMetaData|commons:APKError {
+    postgresql:Client|error db_Client = getConnection();
+    if db_Client is error {
+        return e909601(db_Client);
+    } else {
+        sql:ParameterizedQuery GET_DOCUMENT_Prefix = `SELECT UUID AS documentId, RESOURCE_UUID AS resourceId, NAME AS name, SUMMARY AS summary,
+        TYPE AS documentType, OTHER_TYPE_NAME AS otherTypeName, SOURCE_URL AS sourceUrl, FILE_NAME AS resourceBinaryValue,
+        SOURCE_TYPE AS sourceType, VISIBILITY AS visibility FROM API_DOC_META_DATA where UUID = `;
+        sql:ParameterizedQuery values = `${documentId}`;
+        sql:ParameterizedQuery sqlQuery = sql:queryConcat(GET_DOCUMENT_Prefix, values);
+        DocumentMetaData|sql:Error result = db_Client->queryRow(sqlQuery);
+        if result is DocumentMetaData {
             return result;
         } else {
             return e909626(result);
