@@ -29,3 +29,17 @@ type Thumbnail record {|
     string imageType;
     byte[] imageContent;
 |};
+
+type DocumentMetaData record {|
+    string documentId?;
+    string resourceId?;
+    string name;
+    string documentType;
+    string summary?;
+    string sourceType;
+    string sourceUrl?;
+    string fileName?;
+    string inlineContent?;
+    string otherTypeName?;
+    string visibility;
+|};
