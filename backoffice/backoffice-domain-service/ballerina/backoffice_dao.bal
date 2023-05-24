@@ -537,7 +537,7 @@ isolated function db_getResourceCategoryIdByCategoryType(string resourceType) re
     }
 }
 
-isolated function db_addDocumentMetaData(DocumentMetaData documentMetaData) returns DocumentMetaData|commons:APKError {
+isolated function db_addDocumentMetaData(DocumentMetaData documentMetaData, string apiId) returns DocumentMetaData|commons:APKError {
     postgresql:Client|error dbClient = getConnection();
     if dbClient is error {
         return e909601(dbClient);
@@ -545,6 +545,7 @@ isolated function db_addDocumentMetaData(DocumentMetaData documentMetaData) retu
         time:Utc utc = time:utcNow();
         sql:ParameterizedQuery values = `${documentMetaData.documentId},
                                         ${documentMetaData.resourceId},
+                                        ${apiId},
                                         ${documentMetaData.name},
                                         ${documentMetaData.summary},
                                         ${documentMetaData.documentType},
@@ -558,7 +559,7 @@ isolated function db_addDocumentMetaData(DocumentMetaData documentMetaData) retu
                                         'apkuser',
                                         ${utc}
                                     )`;
-        sql:ParameterizedQuery ADD_THUMBNAIL_Prefix = `INSERT INTO API_DOC_META_DATA (UUID, RESOURCE_UUID, NAME, SUMMARY, TYPE, OTHER_TYPE_NAME, SOURCE_URL, FILE_NAME, SOURCE_TYPE,
+        sql:ParameterizedQuery ADD_THUMBNAIL_Prefix = `INSERT INTO API_DOC_META_DATA (UUID, RESOURCE_UUID, API_UUID, NAME, SUMMARY, TYPE, OTHER_TYPE_NAME, SOURCE_URL, FILE_NAME, SOURCE_TYPE,
          VISIBILITY, CREATED_BY, CREATED_TIME, UPDATED_BY, LAST_UPDATED_TIME) VALUES (`;
         sql:ParameterizedQuery sqlQuery = sql:queryConcat(ADD_THUMBNAIL_Prefix, values);
         sql:ExecutionResult|sql:Error result = dbClient->execute(sqlQuery);
@@ -571,7 +572,7 @@ isolated function db_addDocumentMetaData(DocumentMetaData documentMetaData) retu
     }
 }
 
-isolated function db_updateDocumentMetaData(DocumentMetaData documentMetaData) returns DocumentMetaData|commons:APKError {
+isolated function db_updateDocumentMetaData(DocumentMetaData documentMetaData, string apiId) returns DocumentMetaData|commons:APKError {
     postgresql:Client|error dbClient = getConnection();
     if dbClient is error {
         return e909601(dbClient);
@@ -581,7 +582,7 @@ isolated function db_updateDocumentMetaData(DocumentMetaData documentMetaData) r
         sql:ParameterizedQuery UPDATE_RESOURCE_Suffix = `UPDATE API_DOC_META_DATA SET`;
         sql:ParameterizedQuery values = ` NAME= ${documentMetaData.name}, SUMMARY = ${documentMetaData.summary}, TYPE = ${documentMetaData.documentType}, 
         OTHER_TYPE_NAME = ${documentMetaData.otherTypeName}, SOURCE_URL = ${documentMetaData.sourceUrl}, FILE_NAME = ${documentMetaData.fileName}, SOURCE_TYPE = ${documentMetaData.sourceType},
-        VISIBILITY = ${documentMetaData.visibility}, UPDATED_BY =${user}, LAST_UPDATED_TIME =${utc} WHERE UUID = ${documentMetaData.documentId}`;
+        VISIBILITY = ${documentMetaData.visibility}, UPDATED_BY =${user}, LAST_UPDATED_TIME =${utc} WHERE UUID = ${documentMetaData.documentId} AND API_UUID = ${apiId}`;
         sql:ParameterizedQuery sqlQuery = sql:queryConcat(UPDATE_RESOURCE_Suffix, values);
         sql:ExecutionResult|sql:Error result = dbClient->execute(sqlQuery);
         if result is sql:ExecutionResult {
@@ -609,15 +610,13 @@ isolated function db_getResourceIdByDocumentId(string documentId) returns string
     }
 }
 
-isolated function db_deleteDocumentMetaData(string documentId) returns string|commons:APKError {
+isolated function db_deleteDocumentMetaData(string documentId, string apiId) returns string|commons:APKError {
     postgresql:Client|error db_Client = getConnection();
     if db_Client is error {
         return e909601(db_Client);
     } else {
-        sql:ParameterizedQuery DELETE_DOCUMENT_Prefix = `DELETE FROM API_DOC_META_DATA WHERE UUID = `;
-        sql:ParameterizedQuery values = `${documentId}`;
-        sql:ParameterizedQuery sqlQuery = sql:queryConcat(DELETE_DOCUMENT_Prefix, values);
-        sql:ExecutionResult | sql:Error result =  db_Client->execute(sqlQuery);
+        sql:ParameterizedQuery sqlQuery = `DELETE FROM API_DOC_META_DATA WHERE UUID = ${documentId} AND API_UUID = ${apiId}`;
+        sql:ExecutionResult|sql:Error result = db_Client->execute(sqlQuery);
         if result is sql:ExecutionResult {
             return "deleted";
         } else {
@@ -626,21 +625,62 @@ isolated function db_deleteDocumentMetaData(string documentId) returns string|co
     }
 }
 
-isolated function db_getDocumentByDocumentId(string documentId) returns DocumentMetaData|commons:APKError {
+isolated function db_getDocumentByDocumentId(string documentId, string apiId) returns DocumentMetaData|NotFoundError|commons:APKError {
     postgresql:Client|error db_Client = getConnection();
     if db_Client is error {
         return e909601(db_Client);
     } else {
         sql:ParameterizedQuery GET_DOCUMENT_Prefix = `SELECT UUID AS documentId, RESOURCE_UUID AS resourceId, NAME AS name, SUMMARY AS summary,
-        TYPE AS documentType, OTHER_TYPE_NAME AS otherTypeName, SOURCE_URL AS sourceUrl, FILE_NAME AS resourceBinaryValue,
+        TYPE AS documentType, OTHER_TYPE_NAME AS otherTypeName, SOURCE_URL AS sourceUrl, FILE_NAME AS fileName,
         SOURCE_TYPE AS sourceType, VISIBILITY AS visibility FROM API_DOC_META_DATA where UUID = `;
         sql:ParameterizedQuery values = `${documentId}`;
         sql:ParameterizedQuery sqlQuery = sql:queryConcat(GET_DOCUMENT_Prefix, values);
         DocumentMetaData|sql:Error result = db_Client->queryRow(sqlQuery);
-        if result is DocumentMetaData {
+        if result is sql:NoRowsError {
+            log:printDebug(result.toString());
+            NotFoundError nfe = {body: {code: 90915, message: "Document Not Found for provided Document ID"}};
+            return nfe;
+        } else if result is DocumentMetaData {
             return result;
         } else {
+            return e909629(result);
+        }
+    }
+}
+
+isolated function db_deleteResource(string resourceId) returns string|commons:APKError {
+    postgresql:Client|error db_Client = getConnection();
+    if db_Client is error {
+        return e909601(db_Client);
+    } else {
+        sql:ParameterizedQuery DELETE_DOCUMENT_Prefix = `DELETE FROM API_RESOURCES WHERE UUID = `;
+        sql:ParameterizedQuery values = `${resourceId}`;
+        sql:ParameterizedQuery sqlQuery = sql:queryConcat(DELETE_DOCUMENT_Prefix, values);
+        sql:ExecutionResult|sql:Error result = db_Client->execute(sqlQuery);
+        if result is sql:ExecutionResult {
+            return "deleted";
+        } else {
             return e909626(result);
+        }
+    }
+}
+
+isolated function db_getDocuments(string apiId) returns Document[]|commons:APKError {
+    postgresql:Client|error db_Client = getConnection();
+    if db_Client is error {
+        return e909601(db_Client);
+    } else {
+        do {
+            sql:ParameterizedQuery GET_DOCUMENTS_Prefix = `SELECT UUID AS documentId, RESOURCE_UUID AS resourceId, NAME AS name, SUMMARY AS summary,
+        TYPE AS 'type, OTHER_TYPE_NAME AS otherTypeName, SOURCE_URL AS sourceUrl, FILE_NAME AS fileName,
+        SOURCE_TYPE AS sourceType, VISIBILITY AS visibility FROM API_DOC_META_DATA where API_UUID = `;
+            stream<Document, sql:Error?> documentStream = db_Client->query(GET_DOCUMENTS_Prefix);
+            Document[] documents = check from Document document in documentStream
+                select document;
+            check documentStream.close();
+            return documents;
+        } on fail var e {
+            return e909630(e);
         }
     }
 }

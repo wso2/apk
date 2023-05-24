@@ -455,7 +455,7 @@ isolated function createDocument(string apiId, Document documentPayload) returns
                     visibility: documentPayload.visibility,
                     inlineContent: documentPayload.inlineContent
                 };
-                DocumentMetaData|commons:APKError addedDocMetaData = db_addDocumentMetaData(documentMetaData);
+                DocumentMetaData|commons:APKError addedDocMetaData = db_addDocumentMetaData(documentMetaData, apiId);
                 if addedDocMetaData is DocumentMetaData {
                     Document document = {
                         documentId: addedDocMetaData.documentId,
@@ -500,7 +500,7 @@ isolated function UpdateDocumentMetaData(string apiId, string documentId, Docume
             visibility: documentPayload.visibility,
             inlineContent: documentPayload.inlineContent
         };
-        DocumentMetaData|commons:APKError updatedDocMetaData = db_updateDocumentMetaData(documentMetaData);
+        DocumentMetaData|commons:APKError updatedDocMetaData = db_updateDocumentMetaData(documentMetaData, apiId);
         if updatedDocMetaData is DocumentMetaData {
             //convert documentMetadata object to Document object
             Document document = {
@@ -567,7 +567,26 @@ isolated function addDocumentContent(string apiId, string documentId, http:Reque
                 } else {
                     return resourceId;
                 }
-                // } else if inlineContent is string {
+            } else if inlineContent is string {
+                string|commons:APKError resourceId = db_getResourceIdByDocumentId(documentId);
+                if resourceId is string {
+                    Resource documentResource = {
+                        resourceUUID: resourceId,
+                        apiUuid: apiId,
+                        resourceCategoryId: documentCategoryId,
+                        dataType: "inlineContent",
+                        resourceContent: inlineContent,
+                        resourceBinaryValue: []
+                    };
+                    Resource|commons:APKError updatedDcoumentResource = db_updateResource(documentResource);
+                    if updatedDcoumentResource is Resource {
+                        return updatedDcoumentResource;
+                    } else {
+                        return updatedDcoumentResource;
+                    }
+                } else {
+                    return resourceId;
+                }
             } else {
                 string msg = "Content is not provided";
                 commons:APKError e = error(msg, (), message = msg, description = msg, code = 909000, statusCode = 500);
@@ -624,7 +643,26 @@ isolated function updateDocumentContent(string apiId, string documentId, http:Re
                 } else {
                     return resourceId;
                 }
-            // } else if inlineContent is string {
+            } else if inlineContent is string {
+                string|commons:APKError resourceId = db_getResourceIdByDocumentId(documentId);
+                if resourceId is string {
+                    Resource documentResource = {
+                        resourceUUID: resourceId,
+                        apiUuid: apiId,
+                        resourceCategoryId: documentCategoryId,
+                        dataType: "inlineContent",
+                        resourceContent: inlineContent,
+                        resourceBinaryValue: []
+                    };
+                    Resource|commons:APKError updatedDcoumentResource = db_updateResource(documentResource);
+                    if updatedDcoumentResource is Resource {
+                        return updatedDcoumentResource;
+                    } else {
+                        return updatedDcoumentResource;
+                    }
+                } else {
+                    return resourceId;
+                }
 
             } else {
                 string msg = "Content is not provided";
@@ -642,7 +680,7 @@ isolated function updateDocumentContent(string apiId, string documentId, http:Re
 isolated function getDocumentMetaData(string apiId, string documentId) returns Document|NotFoundError|commons:APKError {
     API|commons:APKError getApi = check db_getAPI(apiId);
     if getApi is API {
-        DocumentMetaData|commons:APKError getDocumentMetaData = db_getDocumentByDocumentId(documentId);
+        DocumentMetaData|NotFoundError|commons:APKError getDocumentMetaData = db_getDocumentByDocumentId(documentId, apiId);
         if getDocumentMetaData is DocumentMetaData {
             //convert documentMetadata object to Document object
             Document document = {
@@ -669,7 +707,7 @@ isolated function getDocumentMetaData(string apiId, string documentId) returns D
 isolated function getDocumentContent(string apiId, string documentId) returns http:Response|NotFoundError|commons:APKError {
     API|commons:APKError getApi = check db_getAPI(apiId);
     if getApi is API {
-        DocumentMetaData|commons:APKError getDocumentMetaData = db_getDocumentByDocumentId(documentId);
+        DocumentMetaData|NotFoundError|commons:APKError getDocumentMetaData = db_getDocumentByDocumentId(documentId, apiId);
         if getDocumentMetaData is DocumentMetaData {
             Resource|commons:APKError getDocumentResource = db_getResourceByResourceId(<string>getDocumentMetaData.resourceId);
             if getDocumentResource is Resource {
@@ -687,13 +725,37 @@ isolated function getDocumentContent(string apiId, string documentId) returns ht
     }
 }
 
-isolated function deleteDocument(string apiId, string documentId) returns string|commons:APKError {
+isolated function getDocumentList(int 'limit, int offset, string apiId) returns DocumentList|commons:APKError {
     API|commons:APKError getApi = check db_getAPI(apiId);
     if getApi is API {
-        DocumentMetaData|commons:APKError getDocumentMetaData = db_getDocumentByDocumentId(documentId);
+        Document[]|commons:APKError documents = db_getDocuments(apiId);
+        if documents is Document[] {
+            Document[] limitSet = [];
+            if documents.length() > offset {
+                foreach int i in offset ... (documents.length() - 1) {
+                    if limitSet.length() < 'limit {
+                        limitSet.push(documents[i]);
+                    }
+                }
+            }
+            DocumentList documentList = {count: limitSet.length(), list: limitSet, pagination: {total: documents.length(), 'limit: 'limit, offset: offset}};
+            return documentList;
+        } else {
+            return documents;
+        }
+    } else {
+        return getApi;
+    }
+}
+
+isolated function deleteDocument(string apiId, string documentId) returns string|NotFoundError|commons:APKError {
+    API|commons:APKError getApi = check db_getAPI(apiId);
+    if getApi is API {
+        DocumentMetaData|NotFoundError|commons:APKError getDocumentMetaData = db_getDocumentByDocumentId(documentId, apiId);
         if getDocumentMetaData is DocumentMetaData {
-            string|commons:APKError deletedDocMetaData = db_deleteDocumentMetaData(documentId);
-            if deletedDocMetaData is string {
+            string|commons:APKError deletedDocMetaData = db_deleteDocumentMetaData(documentId, apiId);
+            string|commons:APKError deletedDocResource = db_deleteResource(<string>getDocumentMetaData.resourceId);
+            if deletedDocMetaData is string && deletedDocResource is string {
                 return deletedDocMetaData;
             } else {
                 return deletedDocMetaData;
@@ -701,7 +763,6 @@ isolated function deleteDocument(string apiId, string documentId) returns string
         } else {
             return getDocumentMetaData;
         }
-
     } else {
         return getApi;
     }

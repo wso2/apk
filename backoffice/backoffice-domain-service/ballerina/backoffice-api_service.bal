@@ -70,38 +70,43 @@ service /api/am/backoffice on ep0 {
     isolated resource function put apis/[string apiId]/thumbnail(@http:Header string? 'if\-match, http:Request message) returns FileInfo|BadRequestError|NotFoundError|PreconditionFailedError|commons:APKError|error {
        return updateThumbnail(apiId, message);
     }
-    // resource function get apis/[string apiId]/documents(@http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0, @http:Header string? accept = "application/json") returns DocumentList|http:NotModified|NotFoundError|NotAcceptableError {
-    // }
+    resource function get apis/[string apiId]/documents(@http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0, @http:Header string? accept = "application/json") returns DocumentList|http:NotModified|NotFoundError|NotAcceptableError|commons:APKError {
+        return getDocumentList('limit, offset, apiId);
+    }
     isolated resource function post apis/[string apiId]/documents(@http:Payload Document payload) returns CreatedDocument|BadRequestError|UnsupportedMediaTypeError|commons:APKError|error {
         Document documentBody = check payload.cloneWithType(Document);
 
-        Document|commons:APKError|error? createdDocument = createDocument(apiId, documentBody);
+        Document|commons:APKError createdDocument = createDocument(apiId, documentBody);
         if createdDocument is Document {
             CreatedDocument createdDoc = {
                 body: createdDocument
             };
             return createdDoc;
-        } else if (createdDocument is commons:APKError) {
+        } else {
             return createdDocument;
         }
-        return error("Error while creating the Document");
     }
     resource function get apis/[string apiId]/documents/[string documentId](@http:Header string? 'if\-none\-match, @http:Header string? accept = "application/json") returns Document|http:NotModified|NotFoundError|NotAcceptableError|commons:APKError {
         return getDocumentMetaData(apiId, documentId);
     }
-    // resource function put apis/[string apiId]/documents/[string documentId](@http:Header string? 'if\-match, @http:Payload Document payload) returns Document|BadRequestError|NotFoundError|PreconditionFailedError|commons:APKError {
-    //     Document documentBody = check payload.cloneWithType(Document);
-    //     return UpdateDocumentMetaData(apiId, documentId, documentBody);
-    // }
-    resource function delete apis/[string apiId]/documents/[string documentId](@http:Header string? 'if\-match) returns string|http:Ok|NotFoundError|PreconditionFailedError|commons:APKError {
-        return deleteDocument(apiId, documentId);
+    resource function put apis/[string apiId]/documents/[string documentId](@http:Header string? 'if\-match, @http:Payload Document payload) returns Document|BadRequestError|NotFoundError|PreconditionFailedError|commons:APKError|error {
+        Document documentBody = check payload.cloneWithType(Document);
+        return UpdateDocumentMetaData(apiId, documentId, documentBody);
+    }
+    resource function delete apis/[string apiId]/documents/[string documentId](@http:Header string? 'if\-match) returns http:Ok|NotFoundError|PreconditionFailedError|commons:APKError {
+        string|NotFoundError|commons:APKError deletedDocument =  deleteDocument(apiId, documentId);
+        if deletedDocument is string {
+            return http:OK;
+        } else {
+            return deletedDocument;
+        }
     }
     resource function get apis/[string apiId]/documents/[string documentId]/content(@http:Header string? 'if\-none\-match, @http:Header string? accept = "application/json") returns http:Response|http:SeeOther|http:NotModified|NotFoundError|NotAcceptableError|commons:APKError {
         return getDocumentContent(apiId, documentId);
     }
-    // resource function post apis/[string apiId]/documents/[string documentId]/content(@http:Header string? 'if\-match, @http:Payload json payload, http:Request message) returns Document|BadRequestError|NotFoundError|PreconditionFailedError|commons:APKError {
-    //     return addDocumentContent(apiId, documentId, message);
-    // }
+    resource function post apis/[string apiId]/documents/[string documentId]/content(@http:Header string? 'if\-match, @http:Payload json payload, http:Request message) returns Resource|commons:APKError|error {
+        return addDocumentContent(apiId, documentId, message);
+    }
     // resource function get apis/[string apiId]/comments(int 'limit = 25, int offset = 0, boolean includeCommenterInfo = false) returns CommentList|NotFoundError|InternalServerErrorError {
     // }
     // resource function post apis/[string apiId]/comments(string? replyTo, @http:Payload 'postRequestBody payload) returns CreatedComment|BadRequestError|UnauthorizedError|NotFoundError|UnsupportedMediaTypeError|InternalServerErrorError {
