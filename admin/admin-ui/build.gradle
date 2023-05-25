@@ -16,15 +16,26 @@
  */
 
 plugins {
-    id 'net.researchgate.release' version '3.0.2'
+    id 'net.researchgate.release' version '2.8.0'
 }
 
 apply from: "$rootDir/../../common-gradle-scripts/docker.gradle"
 
-release {
-    // TODO: finalize release version and rules
-    // failOnCommitNeeded = false
-    // failOnUpdateNeeded = false
-    tagTemplate = '${project.name}-${project.version}'
+allprojects {
+    group = project.group
+    version = project.version
 }
 
+release {
+    tagTemplate = 'admin-ui-$version'
+
+    git {
+        requireBranch= "main"
+        pushToRemote= "origin"
+    }
+}
+task build{
+    dependsOn docker_build
+}
+
+afterReleaseBuild.dependsOn "docker_push"
