@@ -392,6 +392,485 @@
 			"response": []
 		},
 		{
+			"name": "BackOffice Add Document",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"  pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Assert BackOffice Add Document to the API \", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const document1 = pm.response.json();",
+							"    pm.collectionVariables.set(\"backOfficeDocumentUUID\",document1.documentId);",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"NewDoc\",\n    \"documentType\": \"HOWTO\",\n    \"summary\": \"Doc summary\",\n    \"sourceType\": \"INLINE\",\n    \"visibility\": \"API_LEVEL\",\n    \"sourceUrl\": \"\",\n    \"otherTypeName\": \"\",\n    \"inlineContent\": \"\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/backoffice/apis/{{backOfficeApiUUID}}/documents",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"backoffice",
+						"apis",
+						"{{backOfficeApiUUID}}",
+						"documents"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "BackOffice Update Document",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Assert BackOffice Update Document\", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const document2 = pm.response.json();",
+							"    pm.expect(document2.summary === \"my doc Updated\");",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"NewDoc\",\n    \"documentType\": \"HOWTO\",\n    \"summary\": \"my doc Updated\",\n    \"sourceType\": \"INLINE\",\n    \"visibility\": \"API_LEVEL\",\n    \"sourceUrl\": \"\",\n    \"otherTypeName\": \"\",\n    \"inlineContent\": \"\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/backoffice/apis/{{backOfficeApiUUID}}/documents/{{backOfficeDocumentUUID}}",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"backoffice",
+						"apis",
+						"{{backOfficeApiUUID}}",
+						"documents",
+						"{{backOfficeDocumentUUID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "BackOffice Add Document Content",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Assert BackOffice Add Document Content\", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const document2 = pm.response.json();",
+							"    pm.expect(document2.summary === \"my doc Updated\");",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "/Users/chashika/Documents/WSO2/APK/apk/backoffice/backoffice-domain-service/ballerina/tests/resources/invalidThumbnail.pdf"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/backoffice/apis/{{backOfficeApiUUID}}/documents/{{backOfficeDocumentUUID}}/content",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"backoffice",
+						"apis",
+						"{{backOfficeApiUUID}}",
+						"documents",
+						"{{backOfficeDocumentUUID}}",
+						"content"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "BackOffice GET Document",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Assert BackOffice Update Document\", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const document2 = pm.response.json();",
+							"    pm.expect(document2.summary === \"my doc Updated\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"NewDoc\",\n    \"type\": \"HOWTO\",\n    \"summary\": \"my doc\",\n    \"sourceType\": \"INLINE\",\n    \"visibility\": \"API_LEVEL\",\n    \"sourceUrl\": \"\",\n    \"otherTypeName\": \"assa\",\n    \"inlineContent\": \"\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/backoffice/apis/{{backOfficeApiUUID}}/documents/{{backOfficeDocumentUUID}}",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"backoffice",
+						"apis",
+						"{{backOfficeApiUUID}}",
+						"documents",
+						"{{backOfficeDocumentUUID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "BackOffice GET Document Content",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Assert BackOffice GET Document\", () => {",
+							"    //parse the response JSON and test three properties",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"NewDoc\",\n    \"type\": \"HOWTO\",\n    \"summary\": \"my doc\",\n    \"sourceType\": \"INLINE\",\n    \"visibility\": \"API_LEVEL\",\n    \"sourceUrl\": \"\",\n    \"otherTypeName\": \"assa\",\n    \"inlineContent\": \"\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/backoffice/apis/{{backOfficeApiUUID}}/documents/{{backOfficeDocumentUUID}}/content",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"backoffice",
+						"apis",
+						"{{backOfficeApiUUID}}",
+						"documents",
+						"{{backOfficeDocumentUUID}}",
+						"content"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "BackOffice GET Document List",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							"",
+							"",
+							"pm.test(\"Assert BackOffice GET Document List\", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.list.length).to.be.above(1);",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"NewDoc\",\n    \"type\": \"HOWTO\",\n    \"summary\": \"my doc\",\n    \"sourceType\": \"INLINE\",\n    \"visibility\": \"API_LEVEL\",\n    \"sourceUrl\": \"\",\n    \"otherTypeName\": \"assa\",\n    \"inlineContent\": \"\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/backoffice/apis/{{backOfficeApiUUID}}/documents",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"backoffice",
+						"apis",
+						"{{backOfficeApiUUID}}",
+						"documents"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "BackOffice Delete Document",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"NewDoc\",\n    \"type\": \"HOWTO\",\n    \"summary\": \"my doc\",\n    \"sourceType\": \"INLINE\",\n    \"visibility\": \"API_LEVEL\",\n    \"sourceUrl\": \"\",\n    \"otherTypeName\": \"assa\",\n    \"inlineContent\": \"\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/backoffice/apis/{{backOfficeApiUUID}}/documents/{{backOfficeDocumentUUID}}",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"backoffice",
+						"apis",
+						"{{backOfficeApiUUID}}",
+						"documents",
+						"{{backOfficeDocumentUUID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "RuntimeAPI Delete API",
 			"event": [
 				{
@@ -590,6 +1069,10 @@
 		},
 		{
 			"key": "runtimeAPIUUID",
+			"value": ""
+		},
+		{
+			"key": "backOfficeDocumentUUID",
 			"value": ""
 		}
 	]
