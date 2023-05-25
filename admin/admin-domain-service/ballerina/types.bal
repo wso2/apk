@@ -465,6 +465,7 @@ public type WorkflowInfo record {
     string workflowType?;
     # Show the Status of the the workflow request whether it is approved or created.
     string workflowStatus?;
+    string[] workflowProperties?;
     # Time of the the workflow request created.
     string createdTime?;
     # Time of the the workflow request updated.

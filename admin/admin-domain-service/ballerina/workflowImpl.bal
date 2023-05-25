@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2022, WSO2 LLC. (http://www.wso2.com).
+// Copyright (c) 2023, WSO2 LLC. (http://www.wso2.com).
 //
 // WSO2 LLC. licenses this file to you under the Apache License,
 // Version 2.0 (the "License"); you may not use this file except
@@ -34,8 +34,8 @@ isolated function getWorkflowList(string? workflowType, commons:Organization org
                 workFlowInfo.workflowStatus = appWorkflow.workflowStatus;
                 workFlowInfo.createdTime = appWorkflow.createdTime;
                 workFlowInfo.updatedTime = appWorkflow.updatedTime;
-                applicationProperty.push(appWorkflow.applicationName);
-                applicationProperty.push(appWorkflow.createdBy);
+                applicationProperty.push("applicationName:",appWorkflow.applicationName);
+                applicationProperty.push("applicationOwner:",appWorkflow.createdBy);
                 workFlowInfo.workflowProperties = applicationProperty;
                 workFlowInfoList.push(workFlowInfo);
             }
@@ -53,9 +53,9 @@ isolated function getWorkflowList(string? workflowType, commons:Organization org
                 workFlowInfo.workflowStatus = subWorkflow.workflowStatus;
                 workFlowInfo.createdTime = subWorkflow.createdTime;
                 workFlowInfo.updatedTime = subWorkflow.updatedTime;
-                subscriptionProperty.push(subWorkflow.applicationName);
-                subscriptionProperty.push(subWorkflow.apiName);
-                subscriptionProperty.push(subWorkflow.createdBy);
+                subscriptionProperty.push("applicationName",subWorkflow.applicationName);
+                subscriptionProperty.push("apiName",subWorkflow.apiName);
+                subscriptionProperty.push("subscriber",subWorkflow.createdBy);
                 workFlowInfo.workflowProperties = subscriptionProperty;
                 workFlowInfoList.push(workFlowInfo);
             }
