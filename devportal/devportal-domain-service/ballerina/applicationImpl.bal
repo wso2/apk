@@ -36,6 +36,20 @@ isolated function addApplication(Application application, commons:Organization o
     // }
     string|NotFoundError subscriberId = check getSubscriberIdDAO(user, org.uuid);
     if subscriberId is string {
+        boolean|error isApplicationWorkflowEnable = isApplicationWorkflowEnabled(org.uuid);
+        if isApplicationWorkflowEnable is error {
+            string message = "Error while checking application workflow";
+            return error(message, message = message, description = message, code = 909000, statusCode = 500);
+        } else if (isApplicationWorkflowEnable) {
+            string|error appworkflow = addApplicationCreationWorkflow(applicationId, org.uuid);
+            if appworkflow is error {
+                string message = "Error while creating application workflow";
+                return error(message, appworkflow, message = message, description = message, code = 909000, statusCode = 500);
+            }
+            application.status = "CREATED";
+        } else {
+            application.status = "APPROVED";
+        }
         Application createdApp = check addApplicationDAO(application, subscriberId, org.uuid);
         string[] hostList = check retrieveManagementServerHostsList();
         string eventId = uuid:createType1AsString();
