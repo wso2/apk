@@ -528,8 +528,11 @@ service /api/am/admin on ep0 {
     # BadRequestError (Bad Request. Invalid request or validation error.)
     # NotFoundError (Not Found. The specified resource does not exist.)
     # NotAcceptableError (Not Acceptable. The requested media type is not supported.)
-    // resource function get workflows(string? workflowType, int 'limit = 25, int offset = 0, @http:Header string? accept = "application/json") returns WorkflowList|BadRequestError|NotFoundError|NotAcceptableError {
-    // }
+    isolated resource function get workflows(http:RequestContext requestContext, string? workflowType, int 'limit = 25, int offset = 0, @http:Header string? accept = "application/json") returns WorkflowList|commons:APKError {
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        return getWorkflowList(workflowType, organization, 'limit, offset, accept);
+    }
     # Update Workflow Status
     #
     # + workflowReferenceId - Workflow reference id 
@@ -538,8 +541,11 @@ service /api/am/admin on ep0 {
     # OkWorkflowInfo (OK. Workflow request information is returned.)
     # BadRequestError (Bad Request. Invalid request or validation error.)
     # NotFoundError (Not Found. The specified resource does not exist.)
-    // resource function post workflows/'update\-workflow\-status(string workflowReferenceId, @http:Payload WorkflowInfo payload) returns OkWorkflowInfo|BadRequestError|NotFoundError {
-    // }
+    resource function post workflows/'update\-workflow\-status(http:RequestContext requestContext, string workflowReferenceId, @http:Payload WorkflowInfo payload) returns OkWorkflowInfo|commons:APKError {
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        return updateWorkflowStatus(workflowReferenceId, payload, organization);
+    }
 
     # Get all Organization
     #
