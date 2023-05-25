@@ -100,6 +100,21 @@ wso2:
           replicas: 1
           imagePullPolicy: Always
           image: wso2/admin-domain-service:0.0.1-m10
+      adminui:
+        appName: "admin-ui"
+        deployment:
+          npi: admin-ui-npi
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "1028Mi"
+              cpu: "1000m"
+          strategy: Recreate
+          replicas: 1
+          imagePullPolicy: Always
+          image: wso2/admin-ui:latest
       backoffice:
         deployment:
           resources:
