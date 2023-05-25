@@ -48,11 +48,10 @@ type AdapterInternalAPI struct {
 	xWso2Basepath            string
 	xWso2HTTP2BackendEnabled bool
 	xWso2Cors                *CorsConfig
-	securityScheme           []SecurityScheme
-	security                 []map[string][]string
 	xWso2ThrottlingTier      string
 	xWso2AuthHeader          string
-	disableSecurity          bool
+	disableAuthentications   bool
+	disableScopes            bool
 	OrganizationID           string
 	IsPrototyped             bool
 	EndpointType             string
@@ -262,9 +261,14 @@ func (swagger *AdapterInternalAPI) GetXWso2ThrottlingTier() string {
 	return swagger.xWso2ThrottlingTier
 }
 
-// GetDisableSecurity returns the authType via the vendor extension.
-func (swagger *AdapterInternalAPI) GetDisableSecurity() bool {
-	return swagger.disableSecurity
+// GetDisableAuthentications returns the authType via the vendor extension.
+func (swagger *AdapterInternalAPI) GetDisableAuthentications() bool {
+	return swagger.disableAuthentications
+}
+
+// GetDisableScopes returns the authType via the vendor extension.
+func (swagger *AdapterInternalAPI) GetDisableScopes() bool {
+	return swagger.disableScopes
 }
 
 // GetID returns the Id of the API
@@ -298,23 +302,6 @@ func (swagger *AdapterInternalAPI) SetName(name string) {
 	swagger.title = name
 }
 
-// SetSecurityScheme sets the securityschemes of the API
-func (swagger *AdapterInternalAPI) SetSecurityScheme(securityScheme []SecurityScheme) {
-	swagger.securityScheme = securityScheme
-}
-
-// SetSecurity sets the API level security of the API. These refer to the security schemes
-// defined for the same API and would have the structure given below,
-//
-// security:
-//   - PetstoreAuth:
-//   - 'write:pets'
-//   - 'read:pets'
-//   - ApiKeyAuth: []
-func (swagger *AdapterInternalAPI) SetSecurity(security []map[string][]string) {
-	swagger.security = security
-}
-
 // SetVersion sets the version of the API
 func (swagger *AdapterInternalAPI) SetVersion(version string) {
 	swagger.version = version
@@ -330,16 +317,6 @@ func (swagger *AdapterInternalAPI) SetXWso2AuthHeader(authHeader string) {
 // GetXWSO2AuthHeader returns the auth header set via the vendor extension.
 func (swagger *AdapterInternalAPI) GetXWSO2AuthHeader() string {
 	return swagger.xWso2AuthHeader
-}
-
-// GetSecurityScheme returns the securitySchemes of the API
-func (swagger *AdapterInternalAPI) GetSecurityScheme() []SecurityScheme {
-	return swagger.securityScheme
-}
-
-// GetSecurity returns the API level security of the API
-func (swagger *AdapterInternalAPI) GetSecurity() []map[string][]string {
-	return swagger.security
 }
 
 // SetXWSO2MutualSSL sets the optional or mandatory mTLS

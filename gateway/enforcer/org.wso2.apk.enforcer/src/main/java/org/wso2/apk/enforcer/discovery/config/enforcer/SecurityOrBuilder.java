@@ -38,21 +38,6 @@ public interface SecurityOrBuilder extends
   org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcerOrBuilder getRuntimeTokenOrBuilder();
 
   /**
-   * <code>.wso2.discovery.config.enforcer.AuthHeader authHeader = 3;</code>
-   * @return Whether the authHeader field is set.
-   */
-  boolean hasAuthHeader();
-  /**
-   * <code>.wso2.discovery.config.enforcer.AuthHeader authHeader = 3;</code>
-   * @return The authHeader.
-   */
-  org.wso2.apk.enforcer.discovery.config.enforcer.AuthHeader getAuthHeader();
-  /**
-   * <code>.wso2.discovery.config.enforcer.AuthHeader authHeader = 3;</code>
-   */
-  org.wso2.apk.enforcer.discovery.config.enforcer.AuthHeaderOrBuilder getAuthHeaderOrBuilder();
-
-  /**
    * <code>.wso2.discovery.config.enforcer.MutualSSL mutualSSL = 4;</code>
    * @return Whether the mutualSSL field is set.
    */

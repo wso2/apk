@@ -44,9 +44,7 @@ import org.wso2.apk.enforcer.commons.logging.ErrorDetails;
 import org.wso2.apk.enforcer.commons.logging.LoggingConstants;
 import org.wso2.apk.enforcer.commons.model.AuthenticationContext;
 import org.wso2.apk.enforcer.commons.model.RequestContext;
-import org.wso2.apk.enforcer.commons.model.SecuritySchemaConfig;
 import org.wso2.apk.enforcer.config.ConfigHolder;
-import org.wso2.apk.enforcer.config.dto.AuthHeaderDto;
 import org.wso2.apk.enforcer.config.dto.MutualSSLDto;
 import org.wso2.apk.enforcer.constants.APIConstants;
 import org.wso2.apk.enforcer.constants.APISecurityConstants;
@@ -576,17 +574,17 @@ public class FilterUtils {
         return clientIp;
     }
 
-    public static String getAuthHeaderName(RequestContext requestContext) {
-        AuthHeaderDto authHeader = ConfigHolder.getInstance().getConfig().getAuthHeader();
-        String authHeaderName = requestContext.getMatchedAPI().getAuthHeader();
-        if (StringUtils.isEmpty(authHeaderName)) {
-            authHeaderName = authHeader.getAuthorizationHeader();
-        }
-        if (StringUtils.isEmpty(authHeaderName)) {
-            authHeaderName = APIConstants.AUTHORIZATION_HEADER_DEFAULT;
-        }
-        return authHeaderName.toLowerCase();
-    }
+//    public static String getAuthHeaderName(RequestContext requestContext) {
+//        AuthHeaderDto authHeader = ConfigHolder.getInstance().getConfig().getAuthHeader();
+//        String authHeaderName = requestContext.getMatchedAPI().getAuthHeader();
+//        if (StringUtils.isEmpty(authHeaderName)) {
+//            authHeaderName = authHeader.getAuthorizationHeader();
+//        }
+//        if (StringUtils.isEmpty(authHeaderName)) {
+//            authHeaderName = APIConstants.AUTHORIZATION_HEADER_DEFAULT;
+//        }
+//        return authHeaderName.toLowerCase();
+//    }
 
     public static String getCertificateHeaderName() {
         MutualSSLDto mtlsInfo = ConfigHolder.getInstance().getConfig().getMtlsInfo();
@@ -595,22 +593,6 @@ public class FilterUtils {
             certificateHeaderName = APIConstants.CLIENT_CERTIFICATE_HEADER_DEFAULT;
         }
         return certificateHeaderName.toLowerCase();
-    }
-
-    /**
-     * Provides list of arbitrary names used to define API keys.
-     *
-     * @param securitySchemeDefinitions Security scheme definitions relevant to the API
-     * @return List of arbitrary names used to define API keys
-     */
-    public static List<String> getAPIKeyDefinitionNames(Map<String, SecuritySchemaConfig> securitySchemeDefinitions) {
-        List<String> apiKeyArbitraryNames = new ArrayList<>();
-        for (SecuritySchemaConfig config : securitySchemeDefinitions.values()) {
-            if (config.getType().equalsIgnoreCase(APIConstants.SWAGGER_API_KEY_AUTH_TYPE_NAME)) {
-                apiKeyArbitraryNames.add(config.getDefinitionName());
-            }
-        }
-        return apiKeyArbitraryNames;
     }
 
     /**

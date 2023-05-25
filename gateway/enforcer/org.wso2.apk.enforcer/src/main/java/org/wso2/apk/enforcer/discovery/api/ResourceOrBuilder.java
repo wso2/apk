@@ -56,100 +56,41 @@ public interface ResourceOrBuilder extends
       int index);
 
   /**
-   * <code>.wso2.discovery.api.EndpointCluster endpoints = 6;</code>
+   * <code>.wso2.discovery.api.EndpointCluster endpoints = 4;</code>
    * @return Whether the endpoints field is set.
    */
   boolean hasEndpoints();
   /**
-   * <code>.wso2.discovery.api.EndpointCluster endpoints = 6;</code>
+   * <code>.wso2.discovery.api.EndpointCluster endpoints = 4;</code>
    * @return The endpoints.
    */
   org.wso2.apk.enforcer.discovery.api.EndpointCluster getEndpoints();
   /**
-   * <code>.wso2.discovery.api.EndpointCluster endpoints = 6;</code>
+   * <code>.wso2.discovery.api.EndpointCluster endpoints = 4;</code>
    */
   org.wso2.apk.enforcer.discovery.api.EndpointClusterOrBuilder getEndpointsOrBuilder();
 
   /**
-   * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+   * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 5;</code>
    */
   java.util.List<org.wso2.apk.enforcer.discovery.api.SecurityInfo> 
       getEndpointSecurityList();
   /**
-   * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+   * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 5;</code>
    */
   org.wso2.apk.enforcer.discovery.api.SecurityInfo getEndpointSecurity(int index);
   /**
-   * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+   * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 5;</code>
    */
   int getEndpointSecurityCount();
   /**
-   * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+   * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 5;</code>
    */
   java.util.List<? extends org.wso2.apk.enforcer.discovery.api.SecurityInfoOrBuilder> 
       getEndpointSecurityOrBuilderList();
   /**
-   * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+   * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 5;</code>
    */
   org.wso2.apk.enforcer.discovery.api.SecurityInfoOrBuilder getEndpointSecurityOrBuilder(
       int index);
-
-  /**
-   * <code>map&lt;string, string&gt; security = 8;</code>
-   */
-  int getSecurityCount();
-  /**
-   * <code>map&lt;string, string&gt; security = 8;</code>
-   */
-  boolean containsSecurity(
-      java.lang.String key);
-  /**
-   * Use {@link #getSecurityMap()} instead.
-   */
-  @java.lang.Deprecated
-  java.util.Map<java.lang.String, java.lang.String>
-  getSecurity();
-  /**
-   * <code>map&lt;string, string&gt; security = 8;</code>
-   */
-  java.util.Map<java.lang.String, java.lang.String>
-  getSecurityMap();
-  /**
-   * <code>map&lt;string, string&gt; security = 8;</code>
-   */
-
-  java.lang.String getSecurityOrDefault(
-      java.lang.String key,
-      java.lang.String defaultValue);
-  /**
-   * <code>map&lt;string, string&gt; security = 8;</code>
-   */
-
-  java.lang.String getSecurityOrThrow(
-      java.lang.String key);
-
-  /**
-   * <code>repeated string schemes = 10;</code>
-   * @return A list containing the schemes.
-   */
-  java.util.List<java.lang.String>
-      getSchemesList();
-  /**
-   * <code>repeated string schemes = 10;</code>
-   * @return The count of schemes.
-   */
-  int getSchemesCount();
-  /**
-   * <code>repeated string schemes = 10;</code>
-   * @param index The index of the element to return.
-   * @return The schemes at the given index.
-   */
-  java.lang.String getSchemes(int index);
-  /**
-   * <code>repeated string schemes = 10;</code>
-   * @param index The index of the value to return.
-   * @return The bytes of the schemes at the given index.
-   */
-  com.google.protobuf.ByteString
-      getSchemesBytes(int index);
 }

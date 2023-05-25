@@ -24,7 +24,6 @@ private static final long serialVersionUID = 0L;
     path_ = "";
     methods_ = java.util.Collections.emptyList();
     endpointSecurity_ = java.util.Collections.emptyList();
-    schemes_ = com.google.protobuf.LazyStringArrayList.EMPTY;
   }
 
   @java.lang.Override
@@ -79,7 +78,7 @@ private static final long serialVersionUID = 0L;
                 input.readMessage(org.wso2.apk.enforcer.discovery.api.Operation.parser(), extensionRegistry));
             break;
           }
-          case 50: {
+          case 34: {
             org.wso2.apk.enforcer.discovery.api.EndpointCluster.Builder subBuilder = null;
             if (endpoints_ != null) {
               subBuilder = endpoints_.toBuilder();
@@ -92,35 +91,13 @@ private static final long serialVersionUID = 0L;
 
             break;
           }
-          case 58: {
+          case 42: {
             if (!((mutable_bitField0_ & 0x00000002) != 0)) {
               endpointSecurity_ = new java.util.ArrayList<org.wso2.apk.enforcer.discovery.api.SecurityInfo>();
               mutable_bitField0_ |= 0x00000002;
             }
             endpointSecurity_.add(
                 input.readMessage(org.wso2.apk.enforcer.discovery.api.SecurityInfo.parser(), extensionRegistry));
-            break;
-          }
-          case 66: {
-            if (!((mutable_bitField0_ & 0x00000004) != 0)) {
-              security_ = com.google.protobuf.MapField.newMapField(
-                  SecurityDefaultEntryHolder.defaultEntry);
-              mutable_bitField0_ |= 0x00000004;
-            }
-            com.google.protobuf.MapEntry<java.lang.String, java.lang.String>
-            security__ = input.readMessage(
-                SecurityDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
-            security_.getMutableMap().put(
-                security__.getKey(), security__.getValue());
-            break;
-          }
-          case 82: {
-            java.lang.String s = input.readStringRequireUtf8();
-            if (!((mutable_bitField0_ & 0x00000008) != 0)) {
-              schemes_ = new com.google.protobuf.LazyStringArrayList();
-              mutable_bitField0_ |= 0x00000008;
-            }
-            schemes_.add(s);
             break;
           }
           default: {
@@ -144,9 +121,6 @@ private static final long serialVersionUID = 0L;
       if (((mutable_bitField0_ & 0x00000002) != 0)) {
         endpointSecurity_ = java.util.Collections.unmodifiableList(endpointSecurity_);
       }
-      if (((mutable_bitField0_ & 0x00000008) != 0)) {
-        schemes_ = schemes_.getUnmodifiableView();
-      }
       this.unknownFields = unknownFields.build();
       makeExtensionsImmutable();
     }
@@ -156,18 +130,6 @@ private static final long serialVersionUID = 0L;
     return org.wso2.apk.enforcer.discovery.api.ResourceProto.internal_static_wso2_discovery_api_Resource_descriptor;
   }
 
-  @SuppressWarnings({"rawtypes"})
-  @java.lang.Override
-  protected com.google.protobuf.MapField internalGetMapField(
-      int number) {
-    switch (number) {
-      case 8:
-        return internalGetSecurity();
-      default:
-        throw new RuntimeException(
-            "Invalid map field number: " + number);
-    }
-  }
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internalGetFieldAccessorTable() {
@@ -292,10 +254,10 @@ private static final long serialVersionUID = 0L;
     return methods_.get(index);
   }
 
-  public static final int ENDPOINTS_FIELD_NUMBER = 6;
+  public static final int ENDPOINTS_FIELD_NUMBER = 4;
   private org.wso2.apk.enforcer.discovery.api.EndpointCluster endpoints_;
   /**
-   * <code>.wso2.discovery.api.EndpointCluster endpoints = 6;</code>
+   * <code>.wso2.discovery.api.EndpointCluster endpoints = 4;</code>
    * @return Whether the endpoints field is set.
    */
   @java.lang.Override
@@ -303,7 +265,7 @@ private static final long serialVersionUID = 0L;
     return endpoints_ != null;
   }
   /**
-   * <code>.wso2.discovery.api.EndpointCluster endpoints = 6;</code>
+   * <code>.wso2.discovery.api.EndpointCluster endpoints = 4;</code>
    * @return The endpoints.
    */
   @java.lang.Override
@@ -311,24 +273,24 @@ private static final long serialVersionUID = 0L;
     return endpoints_ == null ? org.wso2.apk.enforcer.discovery.api.EndpointCluster.getDefaultInstance() : endpoints_;
   }
   /**
-   * <code>.wso2.discovery.api.EndpointCluster endpoints = 6;</code>
+   * <code>.wso2.discovery.api.EndpointCluster endpoints = 4;</code>
    */
   @java.lang.Override
   public org.wso2.apk.enforcer.discovery.api.EndpointClusterOrBuilder getEndpointsOrBuilder() {
     return getEndpoints();
   }
 
-  public static final int ENDPOINTSECURITY_FIELD_NUMBER = 7;
+  public static final int ENDPOINTSECURITY_FIELD_NUMBER = 5;
   private java.util.List<org.wso2.apk.enforcer.discovery.api.SecurityInfo> endpointSecurity_;
   /**
-   * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+   * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 5;</code>
    */
   @java.lang.Override
   public java.util.List<org.wso2.apk.enforcer.discovery.api.SecurityInfo> getEndpointSecurityList() {
     return endpointSecurity_;
   }
   /**
-   * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+   * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 5;</code>
    */
   @java.lang.Override
   public java.util.List<? extends org.wso2.apk.enforcer.discovery.api.SecurityInfoOrBuilder> 
@@ -336,142 +298,26 @@ private static final long serialVersionUID = 0L;
     return endpointSecurity_;
   }
   /**
-   * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+   * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 5;</code>
    */
   @java.lang.Override
   public int getEndpointSecurityCount() {
     return endpointSecurity_.size();
   }
   /**
-   * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+   * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 5;</code>
    */
   @java.lang.Override
   public org.wso2.apk.enforcer.discovery.api.SecurityInfo getEndpointSecurity(int index) {
     return endpointSecurity_.get(index);
   }
   /**
-   * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+   * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 5;</code>
    */
   @java.lang.Override
   public org.wso2.apk.enforcer.discovery.api.SecurityInfoOrBuilder getEndpointSecurityOrBuilder(
       int index) {
     return endpointSecurity_.get(index);
-  }
-
-  public static final int SECURITY_FIELD_NUMBER = 8;
-  private static final class SecurityDefaultEntryHolder {
-    static final com.google.protobuf.MapEntry<
-        java.lang.String, java.lang.String> defaultEntry =
-            com.google.protobuf.MapEntry
-            .<java.lang.String, java.lang.String>newDefaultInstance(
-                org.wso2.apk.enforcer.discovery.api.ResourceProto.internal_static_wso2_discovery_api_Resource_SecurityEntry_descriptor, 
-                com.google.protobuf.WireFormat.FieldType.STRING,
-                "",
-                com.google.protobuf.WireFormat.FieldType.STRING,
-                "");
-  }
-  private com.google.protobuf.MapField<
-      java.lang.String, java.lang.String> security_;
-  private com.google.protobuf.MapField<java.lang.String, java.lang.String>
-  internalGetSecurity() {
-    if (security_ == null) {
-      return com.google.protobuf.MapField.emptyMapField(
-          SecurityDefaultEntryHolder.defaultEntry);
-    }
-    return security_;
-  }
-
-  public int getSecurityCount() {
-    return internalGetSecurity().getMap().size();
-  }
-  /**
-   * <code>map&lt;string, string&gt; security = 8;</code>
-   */
-
-  @java.lang.Override
-  public boolean containsSecurity(
-      java.lang.String key) {
-    if (key == null) { throw new java.lang.NullPointerException(); }
-    return internalGetSecurity().getMap().containsKey(key);
-  }
-  /**
-   * Use {@link #getSecurityMap()} instead.
-   */
-  @java.lang.Override
-  @java.lang.Deprecated
-  public java.util.Map<java.lang.String, java.lang.String> getSecurity() {
-    return getSecurityMap();
-  }
-  /**
-   * <code>map&lt;string, string&gt; security = 8;</code>
-   */
-  @java.lang.Override
-
-  public java.util.Map<java.lang.String, java.lang.String> getSecurityMap() {
-    return internalGetSecurity().getMap();
-  }
-  /**
-   * <code>map&lt;string, string&gt; security = 8;</code>
-   */
-  @java.lang.Override
-
-  public java.lang.String getSecurityOrDefault(
-      java.lang.String key,
-      java.lang.String defaultValue) {
-    if (key == null) { throw new java.lang.NullPointerException(); }
-    java.util.Map<java.lang.String, java.lang.String> map =
-        internalGetSecurity().getMap();
-    return map.containsKey(key) ? map.get(key) : defaultValue;
-  }
-  /**
-   * <code>map&lt;string, string&gt; security = 8;</code>
-   */
-  @java.lang.Override
-
-  public java.lang.String getSecurityOrThrow(
-      java.lang.String key) {
-    if (key == null) { throw new java.lang.NullPointerException(); }
-    java.util.Map<java.lang.String, java.lang.String> map =
-        internalGetSecurity().getMap();
-    if (!map.containsKey(key)) {
-      throw new java.lang.IllegalArgumentException();
-    }
-    return map.get(key);
-  }
-
-  public static final int SCHEMES_FIELD_NUMBER = 10;
-  private com.google.protobuf.LazyStringList schemes_;
-  /**
-   * <code>repeated string schemes = 10;</code>
-   * @return A list containing the schemes.
-   */
-  public com.google.protobuf.ProtocolStringList
-      getSchemesList() {
-    return schemes_;
-  }
-  /**
-   * <code>repeated string schemes = 10;</code>
-   * @return The count of schemes.
-   */
-  public int getSchemesCount() {
-    return schemes_.size();
-  }
-  /**
-   * <code>repeated string schemes = 10;</code>
-   * @param index The index of the element to return.
-   * @return The schemes at the given index.
-   */
-  public java.lang.String getSchemes(int index) {
-    return schemes_.get(index);
-  }
-  /**
-   * <code>repeated string schemes = 10;</code>
-   * @param index The index of the value to return.
-   * @return The bytes of the schemes at the given index.
-   */
-  public com.google.protobuf.ByteString
-      getSchemesBytes(int index) {
-    return schemes_.getByteString(index);
   }
 
   private byte memoizedIsInitialized = -1;
@@ -498,19 +344,10 @@ private static final long serialVersionUID = 0L;
       output.writeMessage(3, methods_.get(i));
     }
     if (endpoints_ != null) {
-      output.writeMessage(6, getEndpoints());
+      output.writeMessage(4, getEndpoints());
     }
     for (int i = 0; i < endpointSecurity_.size(); i++) {
-      output.writeMessage(7, endpointSecurity_.get(i));
-    }
-    com.google.protobuf.GeneratedMessageV3
-      .serializeStringMapTo(
-        output,
-        internalGetSecurity(),
-        SecurityDefaultEntryHolder.defaultEntry,
-        8);
-    for (int i = 0; i < schemes_.size(); i++) {
-      com.google.protobuf.GeneratedMessageV3.writeString(output, 10, schemes_.getRaw(i));
+      output.writeMessage(5, endpointSecurity_.get(i));
     }
     unknownFields.writeTo(output);
   }
@@ -533,29 +370,11 @@ private static final long serialVersionUID = 0L;
     }
     if (endpoints_ != null) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(6, getEndpoints());
+        .computeMessageSize(4, getEndpoints());
     }
     for (int i = 0; i < endpointSecurity_.size(); i++) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(7, endpointSecurity_.get(i));
-    }
-    for (java.util.Map.Entry<java.lang.String, java.lang.String> entry
-         : internalGetSecurity().getMap().entrySet()) {
-      com.google.protobuf.MapEntry<java.lang.String, java.lang.String>
-      security__ = SecurityDefaultEntryHolder.defaultEntry.newBuilderForType()
-          .setKey(entry.getKey())
-          .setValue(entry.getValue())
-          .build();
-      size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(8, security__);
-    }
-    {
-      int dataSize = 0;
-      for (int i = 0; i < schemes_.size(); i++) {
-        dataSize += computeStringSizeNoTag(schemes_.getRaw(i));
-      }
-      size += dataSize;
-      size += 1 * getSchemesList().size();
+        .computeMessageSize(5, endpointSecurity_.get(i));
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -585,10 +404,6 @@ private static final long serialVersionUID = 0L;
     }
     if (!getEndpointSecurityList()
         .equals(other.getEndpointSecurityList())) return false;
-    if (!internalGetSecurity().equals(
-        other.internalGetSecurity())) return false;
-    if (!getSchemesList()
-        .equals(other.getSchemesList())) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -615,14 +430,6 @@ private static final long serialVersionUID = 0L;
     if (getEndpointSecurityCount() > 0) {
       hash = (37 * hash) + ENDPOINTSECURITY_FIELD_NUMBER;
       hash = (53 * hash) + getEndpointSecurityList().hashCode();
-    }
-    if (!internalGetSecurity().getMap().isEmpty()) {
-      hash = (37 * hash) + SECURITY_FIELD_NUMBER;
-      hash = (53 * hash) + internalGetSecurity().hashCode();
-    }
-    if (getSchemesCount() > 0) {
-      hash = (37 * hash) + SCHEMES_FIELD_NUMBER;
-      hash = (53 * hash) + getSchemesList().hashCode();
     }
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
@@ -735,28 +542,6 @@ private static final long serialVersionUID = 0L;
       return org.wso2.apk.enforcer.discovery.api.ResourceProto.internal_static_wso2_discovery_api_Resource_descriptor;
     }
 
-    @SuppressWarnings({"rawtypes"})
-    protected com.google.protobuf.MapField internalGetMapField(
-        int number) {
-      switch (number) {
-        case 8:
-          return internalGetSecurity();
-        default:
-          throw new RuntimeException(
-              "Invalid map field number: " + number);
-      }
-    }
-    @SuppressWarnings({"rawtypes"})
-    protected com.google.protobuf.MapField internalGetMutableMapField(
-        int number) {
-      switch (number) {
-        case 8:
-          return internalGetMutableSecurity();
-        default:
-          throw new RuntimeException(
-              "Invalid map field number: " + number);
-      }
-    }
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
@@ -807,9 +592,6 @@ private static final long serialVersionUID = 0L;
       } else {
         endpointSecurityBuilder_.clear();
       }
-      internalGetMutableSecurity().clear();
-      schemes_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-      bitField0_ = (bitField0_ & ~0x00000008);
       return this;
     }
 
@@ -862,13 +644,6 @@ private static final long serialVersionUID = 0L;
       } else {
         result.endpointSecurity_ = endpointSecurityBuilder_.build();
       }
-      result.security_ = internalGetSecurity();
-      result.security_.makeImmutable();
-      if (((bitField0_ & 0x00000008) != 0)) {
-        schemes_ = schemes_.getUnmodifiableView();
-        bitField0_ = (bitField0_ & ~0x00000008);
-      }
-      result.schemes_ = schemes_;
       onBuilt();
       return result;
     }
@@ -979,18 +754,6 @@ private static final long serialVersionUID = 0L;
             endpointSecurityBuilder_.addAllMessages(other.endpointSecurity_);
           }
         }
-      }
-      internalGetMutableSecurity().mergeFrom(
-          other.internalGetSecurity());
-      if (!other.schemes_.isEmpty()) {
-        if (schemes_.isEmpty()) {
-          schemes_ = other.schemes_;
-          bitField0_ = (bitField0_ & ~0x00000008);
-        } else {
-          ensureSchemesIsMutable();
-          schemes_.addAll(other.schemes_);
-        }
-        onChanged();
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -1418,14 +1181,14 @@ private static final long serialVersionUID = 0L;
     private com.google.protobuf.SingleFieldBuilderV3<
         org.wso2.apk.enforcer.discovery.api.EndpointCluster, org.wso2.apk.enforcer.discovery.api.EndpointCluster.Builder, org.wso2.apk.enforcer.discovery.api.EndpointClusterOrBuilder> endpointsBuilder_;
     /**
-     * <code>.wso2.discovery.api.EndpointCluster endpoints = 6;</code>
+     * <code>.wso2.discovery.api.EndpointCluster endpoints = 4;</code>
      * @return Whether the endpoints field is set.
      */
     public boolean hasEndpoints() {
       return endpointsBuilder_ != null || endpoints_ != null;
     }
     /**
-     * <code>.wso2.discovery.api.EndpointCluster endpoints = 6;</code>
+     * <code>.wso2.discovery.api.EndpointCluster endpoints = 4;</code>
      * @return The endpoints.
      */
     public org.wso2.apk.enforcer.discovery.api.EndpointCluster getEndpoints() {
@@ -1436,7 +1199,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.wso2.discovery.api.EndpointCluster endpoints = 6;</code>
+     * <code>.wso2.discovery.api.EndpointCluster endpoints = 4;</code>
      */
     public Builder setEndpoints(org.wso2.apk.enforcer.discovery.api.EndpointCluster value) {
       if (endpointsBuilder_ == null) {
@@ -1452,7 +1215,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.wso2.discovery.api.EndpointCluster endpoints = 6;</code>
+     * <code>.wso2.discovery.api.EndpointCluster endpoints = 4;</code>
      */
     public Builder setEndpoints(
         org.wso2.apk.enforcer.discovery.api.EndpointCluster.Builder builderForValue) {
@@ -1466,7 +1229,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.wso2.discovery.api.EndpointCluster endpoints = 6;</code>
+     * <code>.wso2.discovery.api.EndpointCluster endpoints = 4;</code>
      */
     public Builder mergeEndpoints(org.wso2.apk.enforcer.discovery.api.EndpointCluster value) {
       if (endpointsBuilder_ == null) {
@@ -1484,7 +1247,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.wso2.discovery.api.EndpointCluster endpoints = 6;</code>
+     * <code>.wso2.discovery.api.EndpointCluster endpoints = 4;</code>
      */
     public Builder clearEndpoints() {
       if (endpointsBuilder_ == null) {
@@ -1498,7 +1261,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.wso2.discovery.api.EndpointCluster endpoints = 6;</code>
+     * <code>.wso2.discovery.api.EndpointCluster endpoints = 4;</code>
      */
     public org.wso2.apk.enforcer.discovery.api.EndpointCluster.Builder getEndpointsBuilder() {
       
@@ -1506,7 +1269,7 @@ private static final long serialVersionUID = 0L;
       return getEndpointsFieldBuilder().getBuilder();
     }
     /**
-     * <code>.wso2.discovery.api.EndpointCluster endpoints = 6;</code>
+     * <code>.wso2.discovery.api.EndpointCluster endpoints = 4;</code>
      */
     public org.wso2.apk.enforcer.discovery.api.EndpointClusterOrBuilder getEndpointsOrBuilder() {
       if (endpointsBuilder_ != null) {
@@ -1517,7 +1280,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.wso2.discovery.api.EndpointCluster endpoints = 6;</code>
+     * <code>.wso2.discovery.api.EndpointCluster endpoints = 4;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
         org.wso2.apk.enforcer.discovery.api.EndpointCluster, org.wso2.apk.enforcer.discovery.api.EndpointCluster.Builder, org.wso2.apk.enforcer.discovery.api.EndpointClusterOrBuilder> 
@@ -1546,7 +1309,7 @@ private static final long serialVersionUID = 0L;
         org.wso2.apk.enforcer.discovery.api.SecurityInfo, org.wso2.apk.enforcer.discovery.api.SecurityInfo.Builder, org.wso2.apk.enforcer.discovery.api.SecurityInfoOrBuilder> endpointSecurityBuilder_;
 
     /**
-     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 5;</code>
      */
     public java.util.List<org.wso2.apk.enforcer.discovery.api.SecurityInfo> getEndpointSecurityList() {
       if (endpointSecurityBuilder_ == null) {
@@ -1556,7 +1319,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 5;</code>
      */
     public int getEndpointSecurityCount() {
       if (endpointSecurityBuilder_ == null) {
@@ -1566,7 +1329,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 5;</code>
      */
     public org.wso2.apk.enforcer.discovery.api.SecurityInfo getEndpointSecurity(int index) {
       if (endpointSecurityBuilder_ == null) {
@@ -1576,7 +1339,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 5;</code>
      */
     public Builder setEndpointSecurity(
         int index, org.wso2.apk.enforcer.discovery.api.SecurityInfo value) {
@@ -1593,7 +1356,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 5;</code>
      */
     public Builder setEndpointSecurity(
         int index, org.wso2.apk.enforcer.discovery.api.SecurityInfo.Builder builderForValue) {
@@ -1607,7 +1370,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 5;</code>
      */
     public Builder addEndpointSecurity(org.wso2.apk.enforcer.discovery.api.SecurityInfo value) {
       if (endpointSecurityBuilder_ == null) {
@@ -1623,7 +1386,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 5;</code>
      */
     public Builder addEndpointSecurity(
         int index, org.wso2.apk.enforcer.discovery.api.SecurityInfo value) {
@@ -1640,7 +1403,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 5;</code>
      */
     public Builder addEndpointSecurity(
         org.wso2.apk.enforcer.discovery.api.SecurityInfo.Builder builderForValue) {
@@ -1654,7 +1417,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 5;</code>
      */
     public Builder addEndpointSecurity(
         int index, org.wso2.apk.enforcer.discovery.api.SecurityInfo.Builder builderForValue) {
@@ -1668,7 +1431,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 5;</code>
      */
     public Builder addAllEndpointSecurity(
         java.lang.Iterable<? extends org.wso2.apk.enforcer.discovery.api.SecurityInfo> values) {
@@ -1683,7 +1446,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 5;</code>
      */
     public Builder clearEndpointSecurity() {
       if (endpointSecurityBuilder_ == null) {
@@ -1696,7 +1459,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 5;</code>
      */
     public Builder removeEndpointSecurity(int index) {
       if (endpointSecurityBuilder_ == null) {
@@ -1709,14 +1472,14 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 5;</code>
      */
     public org.wso2.apk.enforcer.discovery.api.SecurityInfo.Builder getEndpointSecurityBuilder(
         int index) {
       return getEndpointSecurityFieldBuilder().getBuilder(index);
     }
     /**
-     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 5;</code>
      */
     public org.wso2.apk.enforcer.discovery.api.SecurityInfoOrBuilder getEndpointSecurityOrBuilder(
         int index) {
@@ -1726,7 +1489,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 5;</code>
      */
     public java.util.List<? extends org.wso2.apk.enforcer.discovery.api.SecurityInfoOrBuilder> 
          getEndpointSecurityOrBuilderList() {
@@ -1737,14 +1500,14 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 5;</code>
      */
     public org.wso2.apk.enforcer.discovery.api.SecurityInfo.Builder addEndpointSecurityBuilder() {
       return getEndpointSecurityFieldBuilder().addBuilder(
           org.wso2.apk.enforcer.discovery.api.SecurityInfo.getDefaultInstance());
     }
     /**
-     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 5;</code>
      */
     public org.wso2.apk.enforcer.discovery.api.SecurityInfo.Builder addEndpointSecurityBuilder(
         int index) {
@@ -1752,7 +1515,7 @@ private static final long serialVersionUID = 0L;
           index, org.wso2.apk.enforcer.discovery.api.SecurityInfo.getDefaultInstance());
     }
     /**
-     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 5;</code>
      */
     public java.util.List<org.wso2.apk.enforcer.discovery.api.SecurityInfo.Builder> 
          getEndpointSecurityBuilderList() {
@@ -1771,244 +1534,6 @@ private static final long serialVersionUID = 0L;
         endpointSecurity_ = null;
       }
       return endpointSecurityBuilder_;
-    }
-
-    private com.google.protobuf.MapField<
-        java.lang.String, java.lang.String> security_;
-    private com.google.protobuf.MapField<java.lang.String, java.lang.String>
-    internalGetSecurity() {
-      if (security_ == null) {
-        return com.google.protobuf.MapField.emptyMapField(
-            SecurityDefaultEntryHolder.defaultEntry);
-      }
-      return security_;
-    }
-    private com.google.protobuf.MapField<java.lang.String, java.lang.String>
-    internalGetMutableSecurity() {
-      onChanged();;
-      if (security_ == null) {
-        security_ = com.google.protobuf.MapField.newMapField(
-            SecurityDefaultEntryHolder.defaultEntry);
-      }
-      if (!security_.isMutable()) {
-        security_ = security_.copy();
-      }
-      return security_;
-    }
-
-    public int getSecurityCount() {
-      return internalGetSecurity().getMap().size();
-    }
-    /**
-     * <code>map&lt;string, string&gt; security = 8;</code>
-     */
-
-    @java.lang.Override
-    public boolean containsSecurity(
-        java.lang.String key) {
-      if (key == null) { throw new java.lang.NullPointerException(); }
-      return internalGetSecurity().getMap().containsKey(key);
-    }
-    /**
-     * Use {@link #getSecurityMap()} instead.
-     */
-    @java.lang.Override
-    @java.lang.Deprecated
-    public java.util.Map<java.lang.String, java.lang.String> getSecurity() {
-      return getSecurityMap();
-    }
-    /**
-     * <code>map&lt;string, string&gt; security = 8;</code>
-     */
-    @java.lang.Override
-
-    public java.util.Map<java.lang.String, java.lang.String> getSecurityMap() {
-      return internalGetSecurity().getMap();
-    }
-    /**
-     * <code>map&lt;string, string&gt; security = 8;</code>
-     */
-    @java.lang.Override
-
-    public java.lang.String getSecurityOrDefault(
-        java.lang.String key,
-        java.lang.String defaultValue) {
-      if (key == null) { throw new java.lang.NullPointerException(); }
-      java.util.Map<java.lang.String, java.lang.String> map =
-          internalGetSecurity().getMap();
-      return map.containsKey(key) ? map.get(key) : defaultValue;
-    }
-    /**
-     * <code>map&lt;string, string&gt; security = 8;</code>
-     */
-    @java.lang.Override
-
-    public java.lang.String getSecurityOrThrow(
-        java.lang.String key) {
-      if (key == null) { throw new java.lang.NullPointerException(); }
-      java.util.Map<java.lang.String, java.lang.String> map =
-          internalGetSecurity().getMap();
-      if (!map.containsKey(key)) {
-        throw new java.lang.IllegalArgumentException();
-      }
-      return map.get(key);
-    }
-
-    public Builder clearSecurity() {
-      internalGetMutableSecurity().getMutableMap()
-          .clear();
-      return this;
-    }
-    /**
-     * <code>map&lt;string, string&gt; security = 8;</code>
-     */
-
-    public Builder removeSecurity(
-        java.lang.String key) {
-      if (key == null) { throw new java.lang.NullPointerException(); }
-      internalGetMutableSecurity().getMutableMap()
-          .remove(key);
-      return this;
-    }
-    /**
-     * Use alternate mutation accessors instead.
-     */
-    @java.lang.Deprecated
-    public java.util.Map<java.lang.String, java.lang.String>
-    getMutableSecurity() {
-      return internalGetMutableSecurity().getMutableMap();
-    }
-    /**
-     * <code>map&lt;string, string&gt; security = 8;</code>
-     */
-    public Builder putSecurity(
-        java.lang.String key,
-        java.lang.String value) {
-      if (key == null) { throw new java.lang.NullPointerException(); }
-      if (value == null) { throw new java.lang.NullPointerException(); }
-      internalGetMutableSecurity().getMutableMap()
-          .put(key, value);
-      return this;
-    }
-    /**
-     * <code>map&lt;string, string&gt; security = 8;</code>
-     */
-
-    public Builder putAllSecurity(
-        java.util.Map<java.lang.String, java.lang.String> values) {
-      internalGetMutableSecurity().getMutableMap()
-          .putAll(values);
-      return this;
-    }
-
-    private com.google.protobuf.LazyStringList schemes_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-    private void ensureSchemesIsMutable() {
-      if (!((bitField0_ & 0x00000008) != 0)) {
-        schemes_ = new com.google.protobuf.LazyStringArrayList(schemes_);
-        bitField0_ |= 0x00000008;
-       }
-    }
-    /**
-     * <code>repeated string schemes = 10;</code>
-     * @return A list containing the schemes.
-     */
-    public com.google.protobuf.ProtocolStringList
-        getSchemesList() {
-      return schemes_.getUnmodifiableView();
-    }
-    /**
-     * <code>repeated string schemes = 10;</code>
-     * @return The count of schemes.
-     */
-    public int getSchemesCount() {
-      return schemes_.size();
-    }
-    /**
-     * <code>repeated string schemes = 10;</code>
-     * @param index The index of the element to return.
-     * @return The schemes at the given index.
-     */
-    public java.lang.String getSchemes(int index) {
-      return schemes_.get(index);
-    }
-    /**
-     * <code>repeated string schemes = 10;</code>
-     * @param index The index of the value to return.
-     * @return The bytes of the schemes at the given index.
-     */
-    public com.google.protobuf.ByteString
-        getSchemesBytes(int index) {
-      return schemes_.getByteString(index);
-    }
-    /**
-     * <code>repeated string schemes = 10;</code>
-     * @param index The index to set the value at.
-     * @param value The schemes to set.
-     * @return This builder for chaining.
-     */
-    public Builder setSchemes(
-        int index, java.lang.String value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  ensureSchemesIsMutable();
-      schemes_.set(index, value);
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>repeated string schemes = 10;</code>
-     * @param value The schemes to add.
-     * @return This builder for chaining.
-     */
-    public Builder addSchemes(
-        java.lang.String value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  ensureSchemesIsMutable();
-      schemes_.add(value);
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>repeated string schemes = 10;</code>
-     * @param values The schemes to add.
-     * @return This builder for chaining.
-     */
-    public Builder addAllSchemes(
-        java.lang.Iterable<java.lang.String> values) {
-      ensureSchemesIsMutable();
-      com.google.protobuf.AbstractMessageLite.Builder.addAll(
-          values, schemes_);
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>repeated string schemes = 10;</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearSchemes() {
-      schemes_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-      bitField0_ = (bitField0_ & ~0x00000008);
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>repeated string schemes = 10;</code>
-     * @param value The bytes of the schemes to add.
-     * @return This builder for chaining.
-     */
-    public Builder addSchemesBytes(
-        com.google.protobuf.ByteString value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-      ensureSchemesIsMutable();
-      schemes_.add(value);
-      onChanged();
-      return this;
     }
     @java.lang.Override
     public final Builder setUnknownFields(

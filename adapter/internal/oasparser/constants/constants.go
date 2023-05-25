@@ -50,7 +50,7 @@ const (
 const (
 	APIMAPIKeyType                       string = "api_key"
 	APIKeyNameWithApim                   string = "apikey"
-	APIKeyTypeInOAS                      string = "apiKey"
+	APIKeyTypeInOAS                      string = "APIKey"
 	Oauth2TypeInOAS                      string = "oauth2"
 	APIMDefaultOauth2Security            string = "default"
 	APIKeyInHeaderOAS                    string = "header"
@@ -61,6 +61,7 @@ const (
 	APIMMutualSSLMandatoryType           string = "mutualssl_mandatory"
 	APIOauthBasicAuthAPIKeyMandatoryType string = "oauth_basic_auth_api_key_mandatory"
 	JWTAuth                              string = "JWT"
+	AuthorizationHeader                  string = "Authorization"
 )
 
 // sub-property keys mentioned under x-wso2-request-interceptor and x-wso2-response-interceptor

@@ -33,6 +33,7 @@ import org.wso2.apk.enforcer.commons.jwtgenerator.AbstractAPIMgtGatewayJWTGenera
 import org.wso2.apk.enforcer.commons.logging.ErrorDetails;
 import org.wso2.apk.enforcer.commons.logging.LoggingConstants;
 import org.wso2.apk.enforcer.commons.model.AuthenticationContext;
+import org.wso2.apk.enforcer.commons.model.InternalKeyConfig;
 import org.wso2.apk.enforcer.commons.model.RequestContext;
 import org.wso2.apk.enforcer.config.ConfigHolder;
 import org.wso2.apk.enforcer.config.EnforcerConfig;
@@ -62,13 +63,10 @@ public class InternalAPIKeyAuthenticator extends APIKeyHandler {
 
     private static final Logger log = LogManager.getLogger(InternalAPIKeyAuthenticator.class);
 
-    private String securityParam;
     private AbstractAPIMgtGatewayJWTGenerator jwtGenerator;
     private final boolean isGatewayTokenCacheEnabled;
 
-    public InternalAPIKeyAuthenticator(final JWTConfigurationDto jwtConfigurationDto, String securityParam) {
-
-        this.securityParam = securityParam;
+    public InternalAPIKeyAuthenticator(final JWTConfigurationDto jwtConfigurationDto) {
         EnforcerConfig enforcerConfig = ConfigHolder.getInstance().getConfig();
         this.isGatewayTokenCacheEnabled = enforcerConfig.getCacheDto().isEnabled();
         if (jwtConfigurationDto.isEnabled()) {
@@ -78,10 +76,13 @@ public class InternalAPIKeyAuthenticator extends APIKeyHandler {
 
     @Override
     public boolean canAuthenticate(RequestContext requestContext) {
-
-        String internalKey = requestContext.getHeaders().get(
-                ConfigHolder.getInstance().getConfig().getAuthHeader().getTestConsoleHeaderName().toLowerCase());
-        return isAPIKey(internalKey);
+        InternalKeyConfig internalKeyConfig = requestContext.getMatchedResourcePaths().get(0)
+                .getAuthenticationConfig().getInternalKeyConfig();
+        if (internalKeyConfig != null) {
+            String internalKey = internalKeyConfig.getHeader();
+            return isAPIKey(internalKey);
+        }
+        return false;
     }
 
     @Override
@@ -106,7 +107,8 @@ public class InternalAPIKeyAuthenticator extends APIKeyHandler {
                             ThreadContext.get(APIConstants.LOG_TRACE_ID));
                 }
                 // Extract internal from the request while removing it from the msg context.
-                String internalKey = extractInternalKey(requestContext);
+                String internalKey = requestContext.getMatchedResourcePaths().get(0)
+                        .getAuthenticationConfig().getInternalKeyConfig().getHeader();
 
                 String[] splitToken = internalKey.split("\\.");
                 SignedJWT signedJWT = SignedJWT.parse(internalKey);
@@ -193,7 +195,7 @@ public class InternalAPIKeyAuthenticator extends APIKeyHandler {
                             if (verifyTokenWithoutCacheSpanScope != null) {
                                 verifyTokenWithoutCacheSpanScope.close();
                             }
-                            if (verifyTokenWithoutCacheSpan != null){
+                            if (verifyTokenWithoutCacheSpan != null) {
                                 Utils.finishSpan(verifyTokenWithoutCacheSpan);
                             }
                         }
@@ -321,15 +323,6 @@ public class InternalAPIKeyAuthenticator extends APIKeyHandler {
     public String getName() {
 
         return "Internal Key";
-    }
-
-    private String extractInternalKey(RequestContext requestContext) {
-
-        String internalKey = requestContext.getHeaders().get(securityParam);
-        if (internalKey != null) {
-            return internalKey.trim();
-        }
-        return null;
     }
 
     @Override

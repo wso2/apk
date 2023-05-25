@@ -26,8 +26,8 @@ import (
 
 // AuthenticationSpec defines the desired state of Authentication
 type AuthenticationSpec struct {
-	Default   AuthSpec                        `json:"default,omitempty"`
-	Override  AuthSpec                        `json:"override,omitempty"`
+	Default   *AuthSpec                       `json:"default,omitempty"`
+	Override  *AuthSpec                       `json:"override,omitempty"`
 	TargetRef gwapiv1b1.PolicyTargetReference `json:"targetRef,omitempty"`
 }
 
@@ -40,8 +40,11 @@ type AuthSpec struct {
 // ExtAuthService external authentication related information
 type ExtAuthService struct {
 	ServiceRef ServiceRef `json:"serviceRef,omitempty"`
-	Disabled   bool       `json:"disabled,omitempty"`
-	AuthTypes  []Auth     `json:"authTypes,omitempty"`
+	// Disabled is to disable all authentications
+	//
+	// +nullable
+	Disabled  *bool    `json:"disabled,omitempty"`
+	AuthTypes *APIAuth `json:"authTypes,omitempty"`
 }
 
 // ServiceRef service using for Authentication
@@ -52,16 +55,43 @@ type ServiceRef struct {
 	Port  int32  `json:"port,omitempty"`
 }
 
-// Auth Authentication scheme type and details
-type Auth struct {
-	// AuthType is an enum {"jwt", "apikey", "basic", "mtls"}
-	AuthType string  `json:"type,omitempty"`
-	JWT      JWTAuth `json:"jwt,omitempty"`
+// APIAuth Authentication scheme type and details
+type APIAuth struct {
+	JWT            JWTAuth            `json:"jwt,omitempty"`
+	APIKey         []APIKeyAuth       `json:"apiKey,omitempty"`
+	TestConsoleKey TestConsoleKeyAuth `json:"testConsoleKey,omitempty"`
+}
+
+// TestConsoleKeyAuth Test Console Key Authentication scheme details
+type TestConsoleKeyAuth struct {
+	// Header is the header name used to pass the Test Console Key
+	//
+	// +kubebuilder:default:=Internal-Key
+	Header              string `json:"header,omitempty"`
+	SendTokenToUpstream bool   `json:"sendTokenToUpstream,omitempty"`
 }
 
 // JWTAuth JWT Authentication scheme details
 type JWTAuth struct {
-	AuthorizationHeader string `json:"authorizationHeader,omitempty"`
+	// Header is the header name used to pass the JWT token
+	//
+	// +kubebuilder:default:=Authorization
+	Header              string `json:"header,omitempty"`
+	SendTokenToUpstream bool   `json:"sendTokenToUpstream,omitempty"`
+}
+
+// APIKeyAuth APIKey Authentication scheme details
+type APIKeyAuth struct {
+	//	In is to specify how the APIKey is passed to the request
+	//
+	// +kubebuilder:validation:Enum=Header;Query
+	// +kubebuilder:validation:MinLength=1
+	In string `json:"in,omitempty"`
+
+	// Name is the name of the header or query parameter to be used
+	// +kubebuilder:validation:MinLength=1
+	Name                string `json:"name,omitempty"`
+	SendTokenToUpstream bool   `json:"sendTokenToUpstream,omitempty"`
 }
 
 // AuthenticationStatus defines the observed state of Authentication

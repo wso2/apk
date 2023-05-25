@@ -49,8 +49,8 @@ public class APIConstants {
     public static final String API_SECURITY_OAUTH2 = "oauth2";
     public static final String API_SECURITY_BASIC_AUTH = "basic_auth";
     public static final String SWAGGER_API_KEY_AUTH_TYPE_NAME = "apiKey";
-    public static final String SWAGGER_API_KEY_IN_HEADER = "header";
-    public static final String SWAGGER_API_KEY_IN_QUERY = "query";
+    public static final String SWAGGER_API_KEY_IN_HEADER = "Header";
+    public static final String SWAGGER_API_KEY_IN_QUERY = "Query";
     public static final String API_SECURITY_MUTUAL_SSL_NAME = "mtls";
     public static final String CLIENT_CERTIFICATE_HEADER_DEFAULT = "X-WSO2-CLIENT-CERTIFICATE";
     public static final String WWW_AUTHENTICATE = "WWW-Authenticate";

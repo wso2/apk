@@ -19,7 +19,6 @@ package model
 
 import (
 	"fmt"
-	"math/rand"
 
 	"github.com/google/uuid"
 	"github.com/wso2/apk/adapter/internal/loggers"
@@ -48,15 +47,20 @@ type HTTPRouteParams struct {
 // are used to create resources and httpRoute.Spec.Rules.BackendRefs are used to create EndpointClusters.
 func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, httpRouteParams HTTPRouteParams) error {
 	var resources []*Resource
-	var securitySchemes []SecurityScheme
 	//TODO(amali) add gateway level securities after gateway crd has implemented
 	outputAuthScheme := utils.TieBreaker(utils.GetPtrSlice(maps.Values(httpRouteParams.AuthSchemes)))
 	outputAPIPolicy := utils.TieBreaker(utils.GetPtrSlice(maps.Values(httpRouteParams.APIPolicies)))
 	outputRatelimitPolicy := utils.TieBreaker(utils.GetPtrSlice(maps.Values(httpRouteParams.RateLimitPolicies)))
 
+	disableScopes := true
+	disableAuthentications := false
+
 	var authScheme *dpv1alpha1.Authentication
 	if outputAuthScheme != nil {
 		authScheme = *outputAuthScheme
+		if authScheme.Spec.Override != nil && authScheme.Spec.Override.ExternalService.Disabled != nil {
+			disableAuthentications = *authScheme.Spec.Override.ExternalService.Disabled
+		}
 	}
 	var apiPolicy *dpv1alpha1.APIPolicy
 	if outputAPIPolicy != nil {
@@ -72,7 +76,7 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 		var endPoints []Endpoint
 		var policies = OperationPolicies{}
 		resourceAuthScheme := authScheme
-		resourceAPIPolicy := concatAPIPolicies(apiPolicy, nil)
+		resourceAPIPolicy := apiPolicy
 		var resourceRatelimitPolicy *dpv1alpha1.RateLimitPolicy
 		hasPolicies := false
 		var scopes []string
@@ -125,6 +129,7 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 						Namespace: httpRoute.Namespace,
 					}.String()]; found {
 						scopes = ref.Spec.Names
+						disableScopes = false
 					} else {
 						return fmt.Errorf("scope: %s has not been resolved in namespace %s", filter.ExtensionRef.Name, httpRoute.Namespace)
 					}
@@ -212,8 +217,7 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 		addOperationLevelInterceptors(&policies, resourceAPIPolicy, httpRouteParams.InterceptorServiceMapping, httpRouteParams.BackendMapping)
 
 		loggers.LoggerOasparser.Debug("Calculating auths for API ...")
-		securities, securityDefinitions, disabledSecurity := getSecurity(concatAuthScheme(resourceAuthScheme), scopes)
-		securitySchemes = append(securitySchemes, securityDefinitions...)
+		apiAuth := getSecurity(resourceAuthScheme, scopes)
 		if len(rule.BackendRefs) < 1 {
 			return fmt.Errorf("no backendref were provided")
 		}
@@ -242,7 +246,7 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 		for _, match := range rule.Matches {
 			resourcePath := *match.Path.Value
 			resource := &Resource{path: resourcePath,
-				methods: getAllowedOperations(match.Method, policies, resourceAuthScheme, securities, disabledSecurity,
+				methods: getAllowedOperations(match.Method, policies, apiAuth,
 					parseRateLimitPolicyToInternal(resourceRatelimitPolicy)),
 				pathMatchType: *match.Path.Type,
 				hasPolicies:   hasPolicies,
@@ -259,7 +263,8 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 	swagger.RateLimitPolicy = parseRateLimitPolicyToInternal(ratelimitPolicy)
 	swagger.resources = resources
 	apiPolicySelected := concatAPIPolicies(apiPolicy, nil)
-	swagger.securityScheme = securitySchemes
+	swagger.disableAuthentications = disableAuthentications
+	swagger.disableScopes = disableScopes
 
 	// Check whether the API has a backend JWT token
 	if apiPolicySelected != nil && apiPolicySelected.Spec.Override != nil && apiPolicySelected.Spec.Override.BackendJWTToken != nil {
@@ -391,90 +396,6 @@ func GetEndpoints(backendName types.NamespacedName, backendMapping dpv1alpha1.Ba
 	return endpoints
 }
 
-// concatAuthSchemes concatinate override and default authentication rules to a one authentication override rule
-// folowing the hierarchy described in the https://gateway-api.sigs.k8s.io/references/policy-attachment/#hierarchy
-func concatAuthSchemes(schemeUp *dpv1alpha1.Authentication, schemeDown *dpv1alpha1.Authentication) *dpv1alpha1.Authentication {
-	if schemeUp == nil && schemeDown == nil {
-		return nil
-	} else if schemeUp == nil {
-		return schemeDown
-	} else if schemeDown == nil {
-		return schemeUp
-	}
-
-	finalAuth := dpv1alpha1.Authentication{}
-	var jwtConfigured bool
-	var apiKeyConfigured bool
-
-	finalAuth.Spec.Override.ExternalService.Disabled = schemeUp.Spec.Override.ExternalService.Disabled
-	for _, auth := range schemeUp.Spec.Override.ExternalService.AuthTypes {
-		switch auth.AuthType {
-		case constants.JWTAuth:
-			finalAuth.Spec.Override.ExternalService.AuthTypes = append(finalAuth.Spec.Override.ExternalService.AuthTypes, auth)
-			jwtConfigured = true
-		case constants.APIKeyTypeInOAS:
-			finalAuth.Spec.Override.ExternalService.AuthTypes = append(finalAuth.Spec.Override.ExternalService.AuthTypes, auth)
-			apiKeyConfigured = true
-		}
-	}
-
-	if !finalAuth.Spec.Override.ExternalService.Disabled {
-		finalAuth.Spec.Override.ExternalService.Disabled = schemeDown.Spec.Override.ExternalService.Disabled
-	}
-	for _, auth := range schemeDown.Spec.Override.ExternalService.AuthTypes {
-		switch auth.AuthType {
-		case constants.JWTAuth:
-			if !jwtConfigured {
-				finalAuth.Spec.Override.ExternalService.AuthTypes = append(finalAuth.Spec.Override.ExternalService.AuthTypes, auth)
-				jwtConfigured = true
-			}
-		case constants.APIKeyTypeInOAS:
-			if !apiKeyConfigured {
-				finalAuth.Spec.Override.ExternalService.AuthTypes = append(finalAuth.Spec.Override.ExternalService.AuthTypes, auth)
-				apiKeyConfigured = true
-			}
-		}
-	}
-
-	if !finalAuth.Spec.Override.ExternalService.Disabled {
-		finalAuth.Spec.Override.ExternalService.Disabled = schemeDown.Spec.Default.ExternalService.Disabled
-	}
-	for _, auth := range schemeDown.Spec.Default.ExternalService.AuthTypes {
-		switch auth.AuthType {
-		case constants.JWTAuth:
-			if !jwtConfigured {
-				finalAuth.Spec.Override.ExternalService.AuthTypes = append(finalAuth.Spec.Override.ExternalService.AuthTypes, auth)
-				jwtConfigured = true
-			}
-		case constants.APIKeyTypeInOAS:
-			if !apiKeyConfigured {
-				finalAuth.Spec.Override.ExternalService.AuthTypes = append(finalAuth.Spec.Override.ExternalService.AuthTypes, auth)
-				apiKeyConfigured = true
-			}
-		}
-	}
-
-	if !finalAuth.Spec.Override.ExternalService.Disabled {
-		finalAuth.Spec.Override.ExternalService.Disabled = schemeUp.Spec.Default.ExternalService.Disabled
-	}
-	for _, auth := range schemeUp.Spec.Default.ExternalService.AuthTypes {
-		switch auth.AuthType {
-		case constants.JWTAuth:
-			if !jwtConfigured {
-				finalAuth.Spec.Override.ExternalService.AuthTypes = append(finalAuth.Spec.Override.ExternalService.AuthTypes, auth)
-				jwtConfigured = true
-			}
-		case constants.APIKeyTypeInOAS:
-			if !apiKeyConfigured {
-				finalAuth.Spec.Override.ExternalService.AuthTypes = append(finalAuth.Spec.Override.ExternalService.AuthTypes, auth)
-				apiKeyConfigured = true
-			}
-		}
-	}
-	loggers.LoggerOasparser.Debug("Schemes Final auth: %v", &finalAuth)
-	return &finalAuth
-}
-
 func concatRateLimitPolicies(schemeUp *dpv1alpha1.RateLimitPolicy, schemeDown *dpv1alpha1.RateLimitPolicy) *dpv1alpha1.RateLimitPolicy {
 	finalRateLimit := dpv1alpha1.RateLimitPolicy{}
 	if schemeUp != nil && schemeDown != nil {
@@ -499,106 +420,74 @@ func concatAPIPolicies(schemeUp *dpv1alpha1.APIPolicy, schemeDown *dpv1alpha1.AP
 	return &apiPolicy
 }
 
-// concatAuthScheme concat override and default auth policies of an authentication CR
-// folowing the hierarchy described in the https://gateway-api.sigs.k8s.io/references/policy-attachment/#hierarchy
-func concatAuthScheme(scheme *dpv1alpha1.Authentication) *dpv1alpha1.Authentication {
-	if scheme == nil || (!scheme.Spec.Default.ExternalService.Disabled && len(scheme.Spec.Default.ExternalService.AuthTypes) < 1) {
-		return scheme
-	}
+func concatAuthSchemes(schemeUp *dpv1alpha1.Authentication, schemeDown *dpv1alpha1.Authentication) *dpv1alpha1.Authentication {
 	finalAuth := dpv1alpha1.Authentication{}
-	var jwtConfigured bool
-	var apiKeyConfigured bool
-	finalAuth.Spec.Override.ExternalService.Disabled = scheme.Spec.Override.ExternalService.Disabled
-	for _, auth := range scheme.Spec.Override.ExternalService.AuthTypes {
-		switch auth.AuthType {
-		case constants.JWTAuth:
-			finalAuth.Spec.Override.ExternalService.AuthTypes = append(finalAuth.Spec.Override.ExternalService.AuthTypes, auth)
-			jwtConfigured = true
-		case constants.APIKeyTypeInOAS:
-			finalAuth.Spec.Override.ExternalService.AuthTypes = append(finalAuth.Spec.Override.ExternalService.AuthTypes, auth)
-			apiKeyConfigured = true
-		}
+	finalAuth.Spec.Override = &dpv1alpha1.AuthSpec{}
+	finalAuth.Spec.Override.ExternalService = dpv1alpha1.ExtAuthService{}
+	if schemeUp != nil && schemeDown != nil {
+		finalAuth.Spec.Override.ExternalService.Disabled = utils.SelectPolicy(&schemeUp.Spec.Override.ExternalService.Disabled, &schemeUp.Spec.Default.ExternalService.Disabled, &schemeDown.Spec.Override.ExternalService.Disabled, &schemeDown.Spec.Default.ExternalService.Disabled)
+		finalAuth.Spec.Override.ExternalService.AuthTypes = utils.SelectPolicy(&schemeUp.Spec.Override.ExternalService.AuthTypes, &schemeUp.Spec.Default.ExternalService.AuthTypes, &schemeDown.Spec.Override.ExternalService.AuthTypes, &schemeDown.Spec.Default.ExternalService.AuthTypes)
+	} else if schemeUp != nil {
+		finalAuth.Spec.Override.ExternalService.Disabled = utils.SelectPolicy(&schemeUp.Spec.Override.ExternalService.Disabled, &schemeUp.Spec.Default.ExternalService.Disabled, nil, nil)
+		finalAuth.Spec.Override.ExternalService.AuthTypes = utils.SelectPolicy(&schemeUp.Spec.Override.ExternalService.AuthTypes, &schemeUp.Spec.Default.ExternalService.AuthTypes, nil, nil)
+	} else if schemeDown != nil {
+		finalAuth.Spec.Override.ExternalService.Disabled = utils.SelectPolicy(nil, nil, &schemeDown.Spec.Override.ExternalService.Disabled, &schemeDown.Spec.Default.ExternalService.Disabled)
+		finalAuth.Spec.Override.ExternalService.AuthTypes = utils.SelectPolicy(nil, nil, &schemeDown.Spec.Override.ExternalService.AuthTypes, &schemeDown.Spec.Default.ExternalService.AuthTypes)
 	}
-	if !finalAuth.Spec.Override.ExternalService.Disabled {
-		finalAuth.Spec.Override.ExternalService.Disabled = scheme.Spec.Default.ExternalService.Disabled
-	}
-	for _, auth := range scheme.Spec.Default.ExternalService.AuthTypes {
-		switch auth.AuthType {
-		case constants.JWTAuth:
-			if !jwtConfigured {
-				finalAuth.Spec.Override.ExternalService.AuthTypes = append(finalAuth.Spec.Override.ExternalService.AuthTypes, auth)
-				jwtConfigured = true
-			}
-		case constants.APIKeyTypeInOAS:
-			if !apiKeyConfigured {
-				finalAuth.Spec.Override.ExternalService.AuthTypes = append(finalAuth.Spec.Override.ExternalService.AuthTypes, auth)
-				apiKeyConfigured = true
-			}
-		}
-	}
-	loggers.LoggerOasparser.Debug("Final auth: %v", &finalAuth)
 	return &finalAuth
 }
 
 // getSecurity returns security schemes and it's definitions with flag to indicate if security is disabled
 // make sure authscheme only has external service override values. (i.e. empty default values)
 // tip: use concatScheme method
-func getSecurity(authScheme *dpv1alpha1.Authentication, scopes []string) ([]map[string][]string, []SecurityScheme, bool) {
-	authSecurities := []map[string][]string{}
-	securitySchemes := []SecurityScheme{}
-	if authScheme != nil {
-		if authScheme.Spec.Override.ExternalService.Disabled {
-			loggers.LoggerOasparser.Debug("Disabled security")
-			return authSecurities, securitySchemes, true
-		}
-		for _, auth := range authScheme.Spec.Override.ExternalService.AuthTypes {
-			switch auth.AuthType {
-			case constants.JWTAuth:
-				loggers.LoggerOasparser.Debug("Inside JWT auth")
-				securityName := fmt.Sprintf("%s_%v", constants.JWTAuth, rand.Intn(999999999))
-				authSecurities = append(authSecurities, map[string][]string{securityName: scopes})
-				securitySchemes = append(securitySchemes, SecurityScheme{DefinitionName: securityName, Type: constants.Oauth2TypeInOAS})
-			case constants.APIKeyTypeInOAS:
-				loggers.LoggerOasparser.Debug("Inside API Key auth")
-				securityName := fmt.Sprintf("%s_%v", constants.APIKeyTypeInOAS, rand.Intn(999999999))
-				authSecurities = append(authSecurities, map[string][]string{securityName: scopes})
-				securitySchemes = append(securitySchemes, SecurityScheme{DefinitionName: securityName,
-					Type: constants.APIKeyTypeInOAS, In: constants.APIKeyInHeaderOAS, Name: constants.APIKeyNameWithApim})
-			}
-		}
-	} else {
-		loggers.LoggerOasparser.Debug("No auths were provided")
-		//todo(amali) remove this default security after scope remodelling is done.
-		// apply default security
-		securityName := fmt.Sprintf("%s_%v", constants.JWTAuth, rand.Intn(999999999))
-		authSecurities = append(authSecurities, map[string][]string{securityName: scopes})
-		securitySchemes = append(securitySchemes, SecurityScheme{DefinitionName: securityName, Type: constants.Oauth2TypeInOAS})
+func getSecurity(authScheme *dpv1alpha1.Authentication, scopes []string) *Authentication {
+	auth := &Authentication{Disabled: false,
+		JWT:            &JWT{Header: constants.AuthorizationHeader},
+		TestConsoleKey: &TestConsoleKey{Header: constants.AuthorizationHeader},
 	}
-	return authSecurities, securitySchemes, false
+	//todo(amali) jwt disable apikey enable handle
+	// todo(amali) handle disabled auth
+	if authScheme != nil {
+		if authScheme.Spec.Override.ExternalService.Disabled != nil && *authScheme.Spec.Override.ExternalService.Disabled {
+			loggers.LoggerOasparser.Debug("Disabled security")
+			return &Authentication{Disabled: true}
+		}
+		if authScheme.Spec.Override.ExternalService.AuthTypes.APIKey != nil {
+			var apiKeys []APIKey
+			for _, apiKey := range authScheme.Spec.Override.ExternalService.AuthTypes.APIKey {
+				apiKeys = append(apiKeys, APIKey{
+					Name: apiKey.Name,
+					In:   apiKey.In,
+				})
+			}
+			auth.APIKey = apiKeys
+		}
+	}
+	loggers.LoggerOasparser.Debug("No auths were provided")
+	return auth
 }
 
 // getAllowedOperations retuns a list of allowed operatons, if httpMethod is not specified then all methods are allowed.
-func getAllowedOperations(httpMethod *gwapiv1b1.HTTPMethod, policies OperationPolicies,
-	authScheme *dpv1alpha1.Authentication, securities []map[string][]string, disableSecurity bool,
+func getAllowedOperations(httpMethod *gwapiv1b1.HTTPMethod, policies OperationPolicies, auth *Authentication,
 	ratelimitPolicy *RateLimitPolicy) []*Operation {
 	if httpMethod != nil {
 		return []*Operation{{iD: uuid.New().String(), method: string(*httpMethod), policies: policies,
-			disableSecurity: disableSecurity, security: securities, RateLimitPolicy: ratelimitPolicy}}
+			auth: auth, RateLimitPolicy: ratelimitPolicy}}
 	}
 	return []*Operation{{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodGet), policies: policies,
-		disableSecurity: disableSecurity, security: securities, RateLimitPolicy: ratelimitPolicy},
+		auth: auth, RateLimitPolicy: ratelimitPolicy},
 		{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodPost), policies: policies,
-			disableSecurity: disableSecurity, security: securities, RateLimitPolicy: ratelimitPolicy},
+			auth: auth, RateLimitPolicy: ratelimitPolicy},
 		{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodDelete), policies: policies,
-			disableSecurity: disableSecurity, security: securities, RateLimitPolicy: ratelimitPolicy},
+			auth: auth, RateLimitPolicy: ratelimitPolicy},
 		{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodPatch), policies: policies,
-			disableSecurity: disableSecurity, security: securities, RateLimitPolicy: ratelimitPolicy},
+			auth: auth, RateLimitPolicy: ratelimitPolicy},
 		{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodPut), policies: policies,
-			disableSecurity: disableSecurity, security: securities, RateLimitPolicy: ratelimitPolicy},
+			auth: auth, RateLimitPolicy: ratelimitPolicy},
 		{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodHead), policies: policies,
-			disableSecurity: disableSecurity, security: securities, RateLimitPolicy: ratelimitPolicy},
+			auth: auth, RateLimitPolicy: ratelimitPolicy},
 		{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodOptions), policies: policies,
-			disableSecurity: disableSecurity, security: securities, RateLimitPolicy: ratelimitPolicy}}
+			auth: auth, RateLimitPolicy: ratelimitPolicy}}
 }
 
 // SetInfoAPICR populates ID, ApiType, Version and XWso2BasePath of adapterInternalAPI.

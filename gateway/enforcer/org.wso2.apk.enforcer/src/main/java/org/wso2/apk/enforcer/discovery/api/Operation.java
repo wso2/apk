@@ -21,8 +21,8 @@ private static final long serialVersionUID = 0L;
   }
   private Operation() {
     method_ = "";
-    security_ = java.util.Collections.emptyList();
     tier_ = "";
+    scopes_ = com.google.protobuf.LazyStringArrayList.EMPTY;
   }
 
   @java.lang.Override
@@ -63,12 +63,16 @@ private static final long serialVersionUID = 0L;
             break;
           }
           case 18: {
-            if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-              security_ = new java.util.ArrayList<org.wso2.apk.enforcer.discovery.api.SecurityList>();
-              mutable_bitField0_ |= 0x00000001;
+            org.wso2.apk.enforcer.discovery.api.APIAuthentication.Builder subBuilder = null;
+            if (apiAuthentication_ != null) {
+              subBuilder = apiAuthentication_.toBuilder();
             }
-            security_.add(
-                input.readMessage(org.wso2.apk.enforcer.discovery.api.SecurityList.parser(), extensionRegistry));
+            apiAuthentication_ = input.readMessage(org.wso2.apk.enforcer.discovery.api.APIAuthentication.parser(), extensionRegistry);
+            if (subBuilder != null) {
+              subBuilder.mergeFrom(apiAuthentication_);
+              apiAuthentication_ = subBuilder.buildPartial();
+            }
+
             break;
           }
           case 26: {
@@ -77,12 +81,7 @@ private static final long serialVersionUID = 0L;
             tier_ = s;
             break;
           }
-          case 32: {
-
-            disableSecurity_ = input.readBool();
-            break;
-          }
-          case 42: {
+          case 34: {
             org.wso2.apk.enforcer.discovery.api.OperationPolicies.Builder subBuilder = null;
             if (policies_ != null) {
               subBuilder = policies_.toBuilder();
@@ -93,6 +92,15 @@ private static final long serialVersionUID = 0L;
               policies_ = subBuilder.buildPartial();
             }
 
+            break;
+          }
+          case 42: {
+            java.lang.String s = input.readStringRequireUtf8();
+            if (!((mutable_bitField0_ & 0x00000001) != 0)) {
+              scopes_ = new com.google.protobuf.LazyStringArrayList();
+              mutable_bitField0_ |= 0x00000001;
+            }
+            scopes_.add(s);
             break;
           }
           default: {
@@ -111,7 +119,7 @@ private static final long serialVersionUID = 0L;
           e).setUnfinishedMessage(this);
     } finally {
       if (((mutable_bitField0_ & 0x00000001) != 0)) {
-        security_ = java.util.Collections.unmodifiableList(security_);
+        scopes_ = scopes_.getUnmodifiableView();
       }
       this.unknownFields = unknownFields.build();
       makeExtensionsImmutable();
@@ -168,44 +176,30 @@ private static final long serialVersionUID = 0L;
     }
   }
 
-  public static final int SECURITY_FIELD_NUMBER = 2;
-  private java.util.List<org.wso2.apk.enforcer.discovery.api.SecurityList> security_;
+  public static final int APIAUTHENTICATION_FIELD_NUMBER = 2;
+  private org.wso2.apk.enforcer.discovery.api.APIAuthentication apiAuthentication_;
   /**
-   * <code>repeated .wso2.discovery.api.SecurityList security = 2;</code>
+   * <code>.wso2.discovery.api.APIAuthentication apiAuthentication = 2;</code>
+   * @return Whether the apiAuthentication field is set.
    */
   @java.lang.Override
-  public java.util.List<org.wso2.apk.enforcer.discovery.api.SecurityList> getSecurityList() {
-    return security_;
+  public boolean hasApiAuthentication() {
+    return apiAuthentication_ != null;
   }
   /**
-   * <code>repeated .wso2.discovery.api.SecurityList security = 2;</code>
+   * <code>.wso2.discovery.api.APIAuthentication apiAuthentication = 2;</code>
+   * @return The apiAuthentication.
    */
   @java.lang.Override
-  public java.util.List<? extends org.wso2.apk.enforcer.discovery.api.SecurityListOrBuilder> 
-      getSecurityOrBuilderList() {
-    return security_;
+  public org.wso2.apk.enforcer.discovery.api.APIAuthentication getApiAuthentication() {
+    return apiAuthentication_ == null ? org.wso2.apk.enforcer.discovery.api.APIAuthentication.getDefaultInstance() : apiAuthentication_;
   }
   /**
-   * <code>repeated .wso2.discovery.api.SecurityList security = 2;</code>
+   * <code>.wso2.discovery.api.APIAuthentication apiAuthentication = 2;</code>
    */
   @java.lang.Override
-  public int getSecurityCount() {
-    return security_.size();
-  }
-  /**
-   * <code>repeated .wso2.discovery.api.SecurityList security = 2;</code>
-   */
-  @java.lang.Override
-  public org.wso2.apk.enforcer.discovery.api.SecurityList getSecurity(int index) {
-    return security_.get(index);
-  }
-  /**
-   * <code>repeated .wso2.discovery.api.SecurityList security = 2;</code>
-   */
-  @java.lang.Override
-  public org.wso2.apk.enforcer.discovery.api.SecurityListOrBuilder getSecurityOrBuilder(
-      int index) {
-    return security_.get(index);
+  public org.wso2.apk.enforcer.discovery.api.APIAuthenticationOrBuilder getApiAuthenticationOrBuilder() {
+    return getApiAuthentication();
   }
 
   public static final int TIER_FIELD_NUMBER = 3;
@@ -246,25 +240,10 @@ private static final long serialVersionUID = 0L;
     }
   }
 
-  public static final int DISABLESECURITY_FIELD_NUMBER = 4;
-  private boolean disableSecurity_;
-  /**
-   * <code>bool disableSecurity = 4;</code>
-   * @return The disableSecurity.
-   */
-  @java.lang.Override
-  public boolean getDisableSecurity() {
-    return disableSecurity_;
-  }
-
-  public static final int POLICIES_FIELD_NUMBER = 5;
+  public static final int POLICIES_FIELD_NUMBER = 4;
   private org.wso2.apk.enforcer.discovery.api.OperationPolicies policies_;
   /**
-   * <pre>
-   * MockedApiConfig mockedApiConfig = 6;
-   * </pre>
-   *
-   * <code>.wso2.discovery.api.OperationPolicies policies = 5;</code>
+   * <code>.wso2.discovery.api.OperationPolicies policies = 4;</code>
    * @return Whether the policies field is set.
    */
   @java.lang.Override
@@ -272,11 +251,7 @@ private static final long serialVersionUID = 0L;
     return policies_ != null;
   }
   /**
-   * <pre>
-   * MockedApiConfig mockedApiConfig = 6;
-   * </pre>
-   *
-   * <code>.wso2.discovery.api.OperationPolicies policies = 5;</code>
+   * <code>.wso2.discovery.api.OperationPolicies policies = 4;</code>
    * @return The policies.
    */
   @java.lang.Override
@@ -284,15 +259,62 @@ private static final long serialVersionUID = 0L;
     return policies_ == null ? org.wso2.apk.enforcer.discovery.api.OperationPolicies.getDefaultInstance() : policies_;
   }
   /**
-   * <pre>
-   * MockedApiConfig mockedApiConfig = 6;
-   * </pre>
-   *
-   * <code>.wso2.discovery.api.OperationPolicies policies = 5;</code>
+   * <code>.wso2.discovery.api.OperationPolicies policies = 4;</code>
    */
   @java.lang.Override
   public org.wso2.apk.enforcer.discovery.api.OperationPoliciesOrBuilder getPoliciesOrBuilder() {
     return getPolicies();
+  }
+
+  public static final int SCOPES_FIELD_NUMBER = 5;
+  private com.google.protobuf.LazyStringList scopes_;
+  /**
+   * <pre>
+   * MockedApiConfig mockedApiConfig = 6;
+   * </pre>
+   *
+   * <code>repeated string scopes = 5;</code>
+   * @return A list containing the scopes.
+   */
+  public com.google.protobuf.ProtocolStringList
+      getScopesList() {
+    return scopes_;
+  }
+  /**
+   * <pre>
+   * MockedApiConfig mockedApiConfig = 6;
+   * </pre>
+   *
+   * <code>repeated string scopes = 5;</code>
+   * @return The count of scopes.
+   */
+  public int getScopesCount() {
+    return scopes_.size();
+  }
+  /**
+   * <pre>
+   * MockedApiConfig mockedApiConfig = 6;
+   * </pre>
+   *
+   * <code>repeated string scopes = 5;</code>
+   * @param index The index of the element to return.
+   * @return The scopes at the given index.
+   */
+  public java.lang.String getScopes(int index) {
+    return scopes_.get(index);
+  }
+  /**
+   * <pre>
+   * MockedApiConfig mockedApiConfig = 6;
+   * </pre>
+   *
+   * <code>repeated string scopes = 5;</code>
+   * @param index The index of the value to return.
+   * @return The bytes of the scopes at the given index.
+   */
+  public com.google.protobuf.ByteString
+      getScopesBytes(int index) {
+    return scopes_.getByteString(index);
   }
 
   private byte memoizedIsInitialized = -1;
@@ -312,17 +334,17 @@ private static final long serialVersionUID = 0L;
     if (!getMethodBytes().isEmpty()) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 1, method_);
     }
-    for (int i = 0; i < security_.size(); i++) {
-      output.writeMessage(2, security_.get(i));
+    if (apiAuthentication_ != null) {
+      output.writeMessage(2, getApiAuthentication());
     }
     if (!getTierBytes().isEmpty()) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 3, tier_);
     }
-    if (disableSecurity_ != false) {
-      output.writeBool(4, disableSecurity_);
-    }
     if (policies_ != null) {
-      output.writeMessage(5, getPolicies());
+      output.writeMessage(4, getPolicies());
+    }
+    for (int i = 0; i < scopes_.size(); i++) {
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 5, scopes_.getRaw(i));
     }
     unknownFields.writeTo(output);
   }
@@ -336,20 +358,24 @@ private static final long serialVersionUID = 0L;
     if (!getMethodBytes().isEmpty()) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, method_);
     }
-    for (int i = 0; i < security_.size(); i++) {
+    if (apiAuthentication_ != null) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(2, security_.get(i));
+        .computeMessageSize(2, getApiAuthentication());
     }
     if (!getTierBytes().isEmpty()) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, tier_);
     }
-    if (disableSecurity_ != false) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeBoolSize(4, disableSecurity_);
-    }
     if (policies_ != null) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(5, getPolicies());
+        .computeMessageSize(4, getPolicies());
+    }
+    {
+      int dataSize = 0;
+      for (int i = 0; i < scopes_.size(); i++) {
+        dataSize += computeStringSizeNoTag(scopes_.getRaw(i));
+      }
+      size += dataSize;
+      size += 1 * getScopesList().size();
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -368,17 +394,20 @@ private static final long serialVersionUID = 0L;
 
     if (!getMethod()
         .equals(other.getMethod())) return false;
-    if (!getSecurityList()
-        .equals(other.getSecurityList())) return false;
+    if (hasApiAuthentication() != other.hasApiAuthentication()) return false;
+    if (hasApiAuthentication()) {
+      if (!getApiAuthentication()
+          .equals(other.getApiAuthentication())) return false;
+    }
     if (!getTier()
         .equals(other.getTier())) return false;
-    if (getDisableSecurity()
-        != other.getDisableSecurity()) return false;
     if (hasPolicies() != other.hasPolicies()) return false;
     if (hasPolicies()) {
       if (!getPolicies()
           .equals(other.getPolicies())) return false;
     }
+    if (!getScopesList()
+        .equals(other.getScopesList())) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -392,18 +421,19 @@ private static final long serialVersionUID = 0L;
     hash = (19 * hash) + getDescriptor().hashCode();
     hash = (37 * hash) + METHOD_FIELD_NUMBER;
     hash = (53 * hash) + getMethod().hashCode();
-    if (getSecurityCount() > 0) {
-      hash = (37 * hash) + SECURITY_FIELD_NUMBER;
-      hash = (53 * hash) + getSecurityList().hashCode();
+    if (hasApiAuthentication()) {
+      hash = (37 * hash) + APIAUTHENTICATION_FIELD_NUMBER;
+      hash = (53 * hash) + getApiAuthentication().hashCode();
     }
     hash = (37 * hash) + TIER_FIELD_NUMBER;
     hash = (53 * hash) + getTier().hashCode();
-    hash = (37 * hash) + DISABLESECURITY_FIELD_NUMBER;
-    hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
-        getDisableSecurity());
     if (hasPolicies()) {
       hash = (37 * hash) + POLICIES_FIELD_NUMBER;
       hash = (53 * hash) + getPolicies().hashCode();
+    }
+    if (getScopesCount() > 0) {
+      hash = (37 * hash) + SCOPES_FIELD_NUMBER;
+      hash = (53 * hash) + getScopesList().hashCode();
     }
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
@@ -537,7 +567,6 @@ private static final long serialVersionUID = 0L;
     private void maybeForceBuilderInitialization() {
       if (com.google.protobuf.GeneratedMessageV3
               .alwaysUseFieldBuilders) {
-        getSecurityFieldBuilder();
       }
     }
     @java.lang.Override
@@ -545,15 +574,13 @@ private static final long serialVersionUID = 0L;
       super.clear();
       method_ = "";
 
-      if (securityBuilder_ == null) {
-        security_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000001);
+      if (apiAuthenticationBuilder_ == null) {
+        apiAuthentication_ = null;
       } else {
-        securityBuilder_.clear();
+        apiAuthentication_ = null;
+        apiAuthenticationBuilder_ = null;
       }
       tier_ = "";
-
-      disableSecurity_ = false;
 
       if (policiesBuilder_ == null) {
         policies_ = null;
@@ -561,6 +588,8 @@ private static final long serialVersionUID = 0L;
         policies_ = null;
         policiesBuilder_ = null;
       }
+      scopes_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      bitField0_ = (bitField0_ & ~0x00000001);
       return this;
     }
 
@@ -589,22 +618,22 @@ private static final long serialVersionUID = 0L;
       org.wso2.apk.enforcer.discovery.api.Operation result = new org.wso2.apk.enforcer.discovery.api.Operation(this);
       int from_bitField0_ = bitField0_;
       result.method_ = method_;
-      if (securityBuilder_ == null) {
-        if (((bitField0_ & 0x00000001) != 0)) {
-          security_ = java.util.Collections.unmodifiableList(security_);
-          bitField0_ = (bitField0_ & ~0x00000001);
-        }
-        result.security_ = security_;
+      if (apiAuthenticationBuilder_ == null) {
+        result.apiAuthentication_ = apiAuthentication_;
       } else {
-        result.security_ = securityBuilder_.build();
+        result.apiAuthentication_ = apiAuthenticationBuilder_.build();
       }
       result.tier_ = tier_;
-      result.disableSecurity_ = disableSecurity_;
       if (policiesBuilder_ == null) {
         result.policies_ = policies_;
       } else {
         result.policies_ = policiesBuilder_.build();
       }
+      if (((bitField0_ & 0x00000001) != 0)) {
+        scopes_ = scopes_.getUnmodifiableView();
+        bitField0_ = (bitField0_ & ~0x00000001);
+      }
+      result.scopes_ = scopes_;
       onBuilt();
       return result;
     }
@@ -657,41 +686,25 @@ private static final long serialVersionUID = 0L;
         method_ = other.method_;
         onChanged();
       }
-      if (securityBuilder_ == null) {
-        if (!other.security_.isEmpty()) {
-          if (security_.isEmpty()) {
-            security_ = other.security_;
-            bitField0_ = (bitField0_ & ~0x00000001);
-          } else {
-            ensureSecurityIsMutable();
-            security_.addAll(other.security_);
-          }
-          onChanged();
-        }
-      } else {
-        if (!other.security_.isEmpty()) {
-          if (securityBuilder_.isEmpty()) {
-            securityBuilder_.dispose();
-            securityBuilder_ = null;
-            security_ = other.security_;
-            bitField0_ = (bitField0_ & ~0x00000001);
-            securityBuilder_ = 
-              com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
-                 getSecurityFieldBuilder() : null;
-          } else {
-            securityBuilder_.addAllMessages(other.security_);
-          }
-        }
+      if (other.hasApiAuthentication()) {
+        mergeApiAuthentication(other.getApiAuthentication());
       }
       if (!other.getTier().isEmpty()) {
         tier_ = other.tier_;
         onChanged();
       }
-      if (other.getDisableSecurity() != false) {
-        setDisableSecurity(other.getDisableSecurity());
-      }
       if (other.hasPolicies()) {
         mergePolicies(other.getPolicies());
+      }
+      if (!other.scopes_.isEmpty()) {
+        if (scopes_.isEmpty()) {
+          scopes_ = other.scopes_;
+          bitField0_ = (bitField0_ & ~0x00000001);
+        } else {
+          ensureScopesIsMutable();
+          scopes_.addAll(other.scopes_);
+        }
+        onChanged();
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -799,244 +812,123 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    private java.util.List<org.wso2.apk.enforcer.discovery.api.SecurityList> security_ =
-      java.util.Collections.emptyList();
-    private void ensureSecurityIsMutable() {
-      if (!((bitField0_ & 0x00000001) != 0)) {
-        security_ = new java.util.ArrayList<org.wso2.apk.enforcer.discovery.api.SecurityList>(security_);
-        bitField0_ |= 0x00000001;
-       }
+    private org.wso2.apk.enforcer.discovery.api.APIAuthentication apiAuthentication_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+        org.wso2.apk.enforcer.discovery.api.APIAuthentication, org.wso2.apk.enforcer.discovery.api.APIAuthentication.Builder, org.wso2.apk.enforcer.discovery.api.APIAuthenticationOrBuilder> apiAuthenticationBuilder_;
+    /**
+     * <code>.wso2.discovery.api.APIAuthentication apiAuthentication = 2;</code>
+     * @return Whether the apiAuthentication field is set.
+     */
+    public boolean hasApiAuthentication() {
+      return apiAuthenticationBuilder_ != null || apiAuthentication_ != null;
     }
+    /**
+     * <code>.wso2.discovery.api.APIAuthentication apiAuthentication = 2;</code>
+     * @return The apiAuthentication.
+     */
+    public org.wso2.apk.enforcer.discovery.api.APIAuthentication getApiAuthentication() {
+      if (apiAuthenticationBuilder_ == null) {
+        return apiAuthentication_ == null ? org.wso2.apk.enforcer.discovery.api.APIAuthentication.getDefaultInstance() : apiAuthentication_;
+      } else {
+        return apiAuthenticationBuilder_.getMessage();
+      }
+    }
+    /**
+     * <code>.wso2.discovery.api.APIAuthentication apiAuthentication = 2;</code>
+     */
+    public Builder setApiAuthentication(org.wso2.apk.enforcer.discovery.api.APIAuthentication value) {
+      if (apiAuthenticationBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        apiAuthentication_ = value;
+        onChanged();
+      } else {
+        apiAuthenticationBuilder_.setMessage(value);
+      }
 
-    private com.google.protobuf.RepeatedFieldBuilderV3<
-        org.wso2.apk.enforcer.discovery.api.SecurityList, org.wso2.apk.enforcer.discovery.api.SecurityList.Builder, org.wso2.apk.enforcer.discovery.api.SecurityListOrBuilder> securityBuilder_;
+      return this;
+    }
+    /**
+     * <code>.wso2.discovery.api.APIAuthentication apiAuthentication = 2;</code>
+     */
+    public Builder setApiAuthentication(
+        org.wso2.apk.enforcer.discovery.api.APIAuthentication.Builder builderForValue) {
+      if (apiAuthenticationBuilder_ == null) {
+        apiAuthentication_ = builderForValue.build();
+        onChanged();
+      } else {
+        apiAuthenticationBuilder_.setMessage(builderForValue.build());
+      }
 
-    /**
-     * <code>repeated .wso2.discovery.api.SecurityList security = 2;</code>
-     */
-    public java.util.List<org.wso2.apk.enforcer.discovery.api.SecurityList> getSecurityList() {
-      if (securityBuilder_ == null) {
-        return java.util.Collections.unmodifiableList(security_);
-      } else {
-        return securityBuilder_.getMessageList();
-      }
+      return this;
     }
     /**
-     * <code>repeated .wso2.discovery.api.SecurityList security = 2;</code>
+     * <code>.wso2.discovery.api.APIAuthentication apiAuthentication = 2;</code>
      */
-    public int getSecurityCount() {
-      if (securityBuilder_ == null) {
-        return security_.size();
-      } else {
-        return securityBuilder_.getCount();
-      }
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.SecurityList security = 2;</code>
-     */
-    public org.wso2.apk.enforcer.discovery.api.SecurityList getSecurity(int index) {
-      if (securityBuilder_ == null) {
-        return security_.get(index);
-      } else {
-        return securityBuilder_.getMessage(index);
-      }
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.SecurityList security = 2;</code>
-     */
-    public Builder setSecurity(
-        int index, org.wso2.apk.enforcer.discovery.api.SecurityList value) {
-      if (securityBuilder_ == null) {
-        if (value == null) {
-          throw new NullPointerException();
+    public Builder mergeApiAuthentication(org.wso2.apk.enforcer.discovery.api.APIAuthentication value) {
+      if (apiAuthenticationBuilder_ == null) {
+        if (apiAuthentication_ != null) {
+          apiAuthentication_ =
+            org.wso2.apk.enforcer.discovery.api.APIAuthentication.newBuilder(apiAuthentication_).mergeFrom(value).buildPartial();
+        } else {
+          apiAuthentication_ = value;
         }
-        ensureSecurityIsMutable();
-        security_.set(index, value);
         onChanged();
       } else {
-        securityBuilder_.setMessage(index, value);
+        apiAuthenticationBuilder_.mergeFrom(value);
       }
+
       return this;
     }
     /**
-     * <code>repeated .wso2.discovery.api.SecurityList security = 2;</code>
+     * <code>.wso2.discovery.api.APIAuthentication apiAuthentication = 2;</code>
      */
-    public Builder setSecurity(
-        int index, org.wso2.apk.enforcer.discovery.api.SecurityList.Builder builderForValue) {
-      if (securityBuilder_ == null) {
-        ensureSecurityIsMutable();
-        security_.set(index, builderForValue.build());
+    public Builder clearApiAuthentication() {
+      if (apiAuthenticationBuilder_ == null) {
+        apiAuthentication_ = null;
         onChanged();
       } else {
-        securityBuilder_.setMessage(index, builderForValue.build());
+        apiAuthentication_ = null;
+        apiAuthenticationBuilder_ = null;
       }
+
       return this;
     }
     /**
-     * <code>repeated .wso2.discovery.api.SecurityList security = 2;</code>
+     * <code>.wso2.discovery.api.APIAuthentication apiAuthentication = 2;</code>
      */
-    public Builder addSecurity(org.wso2.apk.enforcer.discovery.api.SecurityList value) {
-      if (securityBuilder_ == null) {
-        if (value == null) {
-          throw new NullPointerException();
-        }
-        ensureSecurityIsMutable();
-        security_.add(value);
-        onChanged();
+    public org.wso2.apk.enforcer.discovery.api.APIAuthentication.Builder getApiAuthenticationBuilder() {
+      
+      onChanged();
+      return getApiAuthenticationFieldBuilder().getBuilder();
+    }
+    /**
+     * <code>.wso2.discovery.api.APIAuthentication apiAuthentication = 2;</code>
+     */
+    public org.wso2.apk.enforcer.discovery.api.APIAuthenticationOrBuilder getApiAuthenticationOrBuilder() {
+      if (apiAuthenticationBuilder_ != null) {
+        return apiAuthenticationBuilder_.getMessageOrBuilder();
       } else {
-        securityBuilder_.addMessage(value);
-      }
-      return this;
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.SecurityList security = 2;</code>
-     */
-    public Builder addSecurity(
-        int index, org.wso2.apk.enforcer.discovery.api.SecurityList value) {
-      if (securityBuilder_ == null) {
-        if (value == null) {
-          throw new NullPointerException();
-        }
-        ensureSecurityIsMutable();
-        security_.add(index, value);
-        onChanged();
-      } else {
-        securityBuilder_.addMessage(index, value);
-      }
-      return this;
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.SecurityList security = 2;</code>
-     */
-    public Builder addSecurity(
-        org.wso2.apk.enforcer.discovery.api.SecurityList.Builder builderForValue) {
-      if (securityBuilder_ == null) {
-        ensureSecurityIsMutable();
-        security_.add(builderForValue.build());
-        onChanged();
-      } else {
-        securityBuilder_.addMessage(builderForValue.build());
-      }
-      return this;
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.SecurityList security = 2;</code>
-     */
-    public Builder addSecurity(
-        int index, org.wso2.apk.enforcer.discovery.api.SecurityList.Builder builderForValue) {
-      if (securityBuilder_ == null) {
-        ensureSecurityIsMutable();
-        security_.add(index, builderForValue.build());
-        onChanged();
-      } else {
-        securityBuilder_.addMessage(index, builderForValue.build());
-      }
-      return this;
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.SecurityList security = 2;</code>
-     */
-    public Builder addAllSecurity(
-        java.lang.Iterable<? extends org.wso2.apk.enforcer.discovery.api.SecurityList> values) {
-      if (securityBuilder_ == null) {
-        ensureSecurityIsMutable();
-        com.google.protobuf.AbstractMessageLite.Builder.addAll(
-            values, security_);
-        onChanged();
-      } else {
-        securityBuilder_.addAllMessages(values);
-      }
-      return this;
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.SecurityList security = 2;</code>
-     */
-    public Builder clearSecurity() {
-      if (securityBuilder_ == null) {
-        security_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000001);
-        onChanged();
-      } else {
-        securityBuilder_.clear();
-      }
-      return this;
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.SecurityList security = 2;</code>
-     */
-    public Builder removeSecurity(int index) {
-      if (securityBuilder_ == null) {
-        ensureSecurityIsMutable();
-        security_.remove(index);
-        onChanged();
-      } else {
-        securityBuilder_.remove(index);
-      }
-      return this;
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.SecurityList security = 2;</code>
-     */
-    public org.wso2.apk.enforcer.discovery.api.SecurityList.Builder getSecurityBuilder(
-        int index) {
-      return getSecurityFieldBuilder().getBuilder(index);
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.SecurityList security = 2;</code>
-     */
-    public org.wso2.apk.enforcer.discovery.api.SecurityListOrBuilder getSecurityOrBuilder(
-        int index) {
-      if (securityBuilder_ == null) {
-        return security_.get(index);  } else {
-        return securityBuilder_.getMessageOrBuilder(index);
+        return apiAuthentication_ == null ?
+            org.wso2.apk.enforcer.discovery.api.APIAuthentication.getDefaultInstance() : apiAuthentication_;
       }
     }
     /**
-     * <code>repeated .wso2.discovery.api.SecurityList security = 2;</code>
+     * <code>.wso2.discovery.api.APIAuthentication apiAuthentication = 2;</code>
      */
-    public java.util.List<? extends org.wso2.apk.enforcer.discovery.api.SecurityListOrBuilder> 
-         getSecurityOrBuilderList() {
-      if (securityBuilder_ != null) {
-        return securityBuilder_.getMessageOrBuilderList();
-      } else {
-        return java.util.Collections.unmodifiableList(security_);
-      }
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.SecurityList security = 2;</code>
-     */
-    public org.wso2.apk.enforcer.discovery.api.SecurityList.Builder addSecurityBuilder() {
-      return getSecurityFieldBuilder().addBuilder(
-          org.wso2.apk.enforcer.discovery.api.SecurityList.getDefaultInstance());
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.SecurityList security = 2;</code>
-     */
-    public org.wso2.apk.enforcer.discovery.api.SecurityList.Builder addSecurityBuilder(
-        int index) {
-      return getSecurityFieldBuilder().addBuilder(
-          index, org.wso2.apk.enforcer.discovery.api.SecurityList.getDefaultInstance());
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.SecurityList security = 2;</code>
-     */
-    public java.util.List<org.wso2.apk.enforcer.discovery.api.SecurityList.Builder> 
-         getSecurityBuilderList() {
-      return getSecurityFieldBuilder().getBuilderList();
-    }
-    private com.google.protobuf.RepeatedFieldBuilderV3<
-        org.wso2.apk.enforcer.discovery.api.SecurityList, org.wso2.apk.enforcer.discovery.api.SecurityList.Builder, org.wso2.apk.enforcer.discovery.api.SecurityListOrBuilder> 
-        getSecurityFieldBuilder() {
-      if (securityBuilder_ == null) {
-        securityBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-            org.wso2.apk.enforcer.discovery.api.SecurityList, org.wso2.apk.enforcer.discovery.api.SecurityList.Builder, org.wso2.apk.enforcer.discovery.api.SecurityListOrBuilder>(
-                security_,
-                ((bitField0_ & 0x00000001) != 0),
+    private com.google.protobuf.SingleFieldBuilderV3<
+        org.wso2.apk.enforcer.discovery.api.APIAuthentication, org.wso2.apk.enforcer.discovery.api.APIAuthentication.Builder, org.wso2.apk.enforcer.discovery.api.APIAuthenticationOrBuilder> 
+        getApiAuthenticationFieldBuilder() {
+      if (apiAuthenticationBuilder_ == null) {
+        apiAuthenticationBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+            org.wso2.apk.enforcer.discovery.api.APIAuthentication, org.wso2.apk.enforcer.discovery.api.APIAuthentication.Builder, org.wso2.apk.enforcer.discovery.api.APIAuthenticationOrBuilder>(
+                getApiAuthentication(),
                 getParentForChildren(),
                 isClean());
-        security_ = null;
+        apiAuthentication_ = null;
       }
-      return securityBuilder_;
+      return apiAuthenticationBuilder_;
     }
 
     private java.lang.Object tier_ = "";
@@ -1115,57 +1007,18 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    private boolean disableSecurity_ ;
-    /**
-     * <code>bool disableSecurity = 4;</code>
-     * @return The disableSecurity.
-     */
-    @java.lang.Override
-    public boolean getDisableSecurity() {
-      return disableSecurity_;
-    }
-    /**
-     * <code>bool disableSecurity = 4;</code>
-     * @param value The disableSecurity to set.
-     * @return This builder for chaining.
-     */
-    public Builder setDisableSecurity(boolean value) {
-      
-      disableSecurity_ = value;
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>bool disableSecurity = 4;</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearDisableSecurity() {
-      
-      disableSecurity_ = false;
-      onChanged();
-      return this;
-    }
-
     private org.wso2.apk.enforcer.discovery.api.OperationPolicies policies_;
     private com.google.protobuf.SingleFieldBuilderV3<
         org.wso2.apk.enforcer.discovery.api.OperationPolicies, org.wso2.apk.enforcer.discovery.api.OperationPolicies.Builder, org.wso2.apk.enforcer.discovery.api.OperationPoliciesOrBuilder> policiesBuilder_;
     /**
-     * <pre>
-     * MockedApiConfig mockedApiConfig = 6;
-     * </pre>
-     *
-     * <code>.wso2.discovery.api.OperationPolicies policies = 5;</code>
+     * <code>.wso2.discovery.api.OperationPolicies policies = 4;</code>
      * @return Whether the policies field is set.
      */
     public boolean hasPolicies() {
       return policiesBuilder_ != null || policies_ != null;
     }
     /**
-     * <pre>
-     * MockedApiConfig mockedApiConfig = 6;
-     * </pre>
-     *
-     * <code>.wso2.discovery.api.OperationPolicies policies = 5;</code>
+     * <code>.wso2.discovery.api.OperationPolicies policies = 4;</code>
      * @return The policies.
      */
     public org.wso2.apk.enforcer.discovery.api.OperationPolicies getPolicies() {
@@ -1176,11 +1029,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <pre>
-     * MockedApiConfig mockedApiConfig = 6;
-     * </pre>
-     *
-     * <code>.wso2.discovery.api.OperationPolicies policies = 5;</code>
+     * <code>.wso2.discovery.api.OperationPolicies policies = 4;</code>
      */
     public Builder setPolicies(org.wso2.apk.enforcer.discovery.api.OperationPolicies value) {
       if (policiesBuilder_ == null) {
@@ -1196,11 +1045,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <pre>
-     * MockedApiConfig mockedApiConfig = 6;
-     * </pre>
-     *
-     * <code>.wso2.discovery.api.OperationPolicies policies = 5;</code>
+     * <code>.wso2.discovery.api.OperationPolicies policies = 4;</code>
      */
     public Builder setPolicies(
         org.wso2.apk.enforcer.discovery.api.OperationPolicies.Builder builderForValue) {
@@ -1214,11 +1059,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <pre>
-     * MockedApiConfig mockedApiConfig = 6;
-     * </pre>
-     *
-     * <code>.wso2.discovery.api.OperationPolicies policies = 5;</code>
+     * <code>.wso2.discovery.api.OperationPolicies policies = 4;</code>
      */
     public Builder mergePolicies(org.wso2.apk.enforcer.discovery.api.OperationPolicies value) {
       if (policiesBuilder_ == null) {
@@ -1236,11 +1077,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <pre>
-     * MockedApiConfig mockedApiConfig = 6;
-     * </pre>
-     *
-     * <code>.wso2.discovery.api.OperationPolicies policies = 5;</code>
+     * <code>.wso2.discovery.api.OperationPolicies policies = 4;</code>
      */
     public Builder clearPolicies() {
       if (policiesBuilder_ == null) {
@@ -1254,11 +1091,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <pre>
-     * MockedApiConfig mockedApiConfig = 6;
-     * </pre>
-     *
-     * <code>.wso2.discovery.api.OperationPolicies policies = 5;</code>
+     * <code>.wso2.discovery.api.OperationPolicies policies = 4;</code>
      */
     public org.wso2.apk.enforcer.discovery.api.OperationPolicies.Builder getPoliciesBuilder() {
       
@@ -1266,11 +1099,7 @@ private static final long serialVersionUID = 0L;
       return getPoliciesFieldBuilder().getBuilder();
     }
     /**
-     * <pre>
-     * MockedApiConfig mockedApiConfig = 6;
-     * </pre>
-     *
-     * <code>.wso2.discovery.api.OperationPolicies policies = 5;</code>
+     * <code>.wso2.discovery.api.OperationPolicies policies = 4;</code>
      */
     public org.wso2.apk.enforcer.discovery.api.OperationPoliciesOrBuilder getPoliciesOrBuilder() {
       if (policiesBuilder_ != null) {
@@ -1281,11 +1110,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <pre>
-     * MockedApiConfig mockedApiConfig = 6;
-     * </pre>
-     *
-     * <code>.wso2.discovery.api.OperationPolicies policies = 5;</code>
+     * <code>.wso2.discovery.api.OperationPolicies policies = 4;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
         org.wso2.apk.enforcer.discovery.api.OperationPolicies, org.wso2.apk.enforcer.discovery.api.OperationPolicies.Builder, org.wso2.apk.enforcer.discovery.api.OperationPoliciesOrBuilder> 
@@ -1299,6 +1124,152 @@ private static final long serialVersionUID = 0L;
         policies_ = null;
       }
       return policiesBuilder_;
+    }
+
+    private com.google.protobuf.LazyStringList scopes_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+    private void ensureScopesIsMutable() {
+      if (!((bitField0_ & 0x00000001) != 0)) {
+        scopes_ = new com.google.protobuf.LazyStringArrayList(scopes_);
+        bitField0_ |= 0x00000001;
+       }
+    }
+    /**
+     * <pre>
+     * MockedApiConfig mockedApiConfig = 6;
+     * </pre>
+     *
+     * <code>repeated string scopes = 5;</code>
+     * @return A list containing the scopes.
+     */
+    public com.google.protobuf.ProtocolStringList
+        getScopesList() {
+      return scopes_.getUnmodifiableView();
+    }
+    /**
+     * <pre>
+     * MockedApiConfig mockedApiConfig = 6;
+     * </pre>
+     *
+     * <code>repeated string scopes = 5;</code>
+     * @return The count of scopes.
+     */
+    public int getScopesCount() {
+      return scopes_.size();
+    }
+    /**
+     * <pre>
+     * MockedApiConfig mockedApiConfig = 6;
+     * </pre>
+     *
+     * <code>repeated string scopes = 5;</code>
+     * @param index The index of the element to return.
+     * @return The scopes at the given index.
+     */
+    public java.lang.String getScopes(int index) {
+      return scopes_.get(index);
+    }
+    /**
+     * <pre>
+     * MockedApiConfig mockedApiConfig = 6;
+     * </pre>
+     *
+     * <code>repeated string scopes = 5;</code>
+     * @param index The index of the value to return.
+     * @return The bytes of the scopes at the given index.
+     */
+    public com.google.protobuf.ByteString
+        getScopesBytes(int index) {
+      return scopes_.getByteString(index);
+    }
+    /**
+     * <pre>
+     * MockedApiConfig mockedApiConfig = 6;
+     * </pre>
+     *
+     * <code>repeated string scopes = 5;</code>
+     * @param index The index to set the value at.
+     * @param value The scopes to set.
+     * @return This builder for chaining.
+     */
+    public Builder setScopes(
+        int index, java.lang.String value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureScopesIsMutable();
+      scopes_.set(index, value);
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * MockedApiConfig mockedApiConfig = 6;
+     * </pre>
+     *
+     * <code>repeated string scopes = 5;</code>
+     * @param value The scopes to add.
+     * @return This builder for chaining.
+     */
+    public Builder addScopes(
+        java.lang.String value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureScopesIsMutable();
+      scopes_.add(value);
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * MockedApiConfig mockedApiConfig = 6;
+     * </pre>
+     *
+     * <code>repeated string scopes = 5;</code>
+     * @param values The scopes to add.
+     * @return This builder for chaining.
+     */
+    public Builder addAllScopes(
+        java.lang.Iterable<java.lang.String> values) {
+      ensureScopesIsMutable();
+      com.google.protobuf.AbstractMessageLite.Builder.addAll(
+          values, scopes_);
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * MockedApiConfig mockedApiConfig = 6;
+     * </pre>
+     *
+     * <code>repeated string scopes = 5;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearScopes() {
+      scopes_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      bitField0_ = (bitField0_ & ~0x00000001);
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * MockedApiConfig mockedApiConfig = 6;
+     * </pre>
+     *
+     * <code>repeated string scopes = 5;</code>
+     * @param value The bytes of the scopes to add.
+     * @return This builder for chaining.
+     */
+    public Builder addScopesBytes(
+        com.google.protobuf.ByteString value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+      ensureScopesIsMutable();
+      scopes_.add(value);
+      onChanged();
+      return this;
     }
     @java.lang.Override
     public final Builder setUnknownFields(

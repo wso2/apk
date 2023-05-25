@@ -17,20 +17,20 @@
  */
 package org.wso2.apk.enforcer.api;
 
-import org.apache.commons.lang3.StringUtils;
+import java.util.Objects;
+import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.wso2.apk.enforcer.commons.dto.JWTConfigurationDto;
-import org.wso2.apk.enforcer.commons.exception.EnforcerException;
+import org.wso2.apk.enforcer.commons.model.APIKeyAuthenticationConfig;
+import org.wso2.apk.enforcer.commons.model.InternalKeyConfig;
+import org.wso2.apk.enforcer.commons.model.JWTAuthenticationConfig;
 import org.wso2.apk.enforcer.config.EnforcerConfig;
 import org.wso2.apk.enforcer.discovery.api.Api;
 import org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo;
 import org.wso2.apk.enforcer.discovery.api.Certificate;
 import org.wso2.apk.enforcer.discovery.api.Operation;
 import org.wso2.apk.enforcer.discovery.api.Resource;
-import org.wso2.apk.enforcer.discovery.api.Scopes;
-import org.wso2.apk.enforcer.discovery.api.SecurityList;
-import org.wso2.apk.enforcer.discovery.api.SecurityScheme;
 import org.wso2.apk.enforcer.analytics.AnalyticsFilter;
 import org.wso2.apk.enforcer.commons.Filter;
 import org.wso2.apk.enforcer.commons.model.APIConfig;
@@ -40,7 +40,6 @@ import org.wso2.apk.enforcer.commons.model.MockedHeaderConfig;
 import org.wso2.apk.enforcer.commons.model.MockedResponseConfig;
 import org.wso2.apk.enforcer.commons.model.RequestContext;
 import org.wso2.apk.enforcer.commons.model.ResourceConfig;
-import org.wso2.apk.enforcer.commons.model.SecuritySchemaConfig;
 import org.wso2.apk.enforcer.config.ConfigHolder;
 import org.wso2.apk.enforcer.config.dto.FilterDTO;
 import org.wso2.apk.enforcer.config.dto.MutualSSLDto;
@@ -88,44 +87,16 @@ public class RestAPI implements API {
         String name = api.getTitle();
         String version = api.getVersion();
         String apiType = api.getApiType();
-        Map<String, SecuritySchemaConfig> securitySchemeDefinitions = new HashMap<>();
         Map<String, List<String>> securityScopesMap = new HashMap<>();
         List<ResourceConfig> resources = new ArrayList<>();
         Map<String, String> mtlsCertificateTiers = new HashMap<>();
         String mutualSSL = api.getMutualSSL();
         boolean applicationSecurity = api.getApplicationSecurity();
 
-        for (SecurityScheme securityScheme : api.getSecuritySchemeList()) {
-            if (securityScheme.getType() != null) {
-                String definitionName = securityScheme.getDefinitionName();
-                SecuritySchemaConfig securitySchemaConfig = new SecuritySchemaConfig();
-                securitySchemaConfig.setDefinitionName(definitionName);
-                securitySchemaConfig.setType(securityScheme.getType());
-                securitySchemaConfig.setName(securityScheme.getName());
-                securitySchemaConfig.setIn(securityScheme.getIn());
-                securitySchemeDefinitions.put(definitionName, securitySchemaConfig);
-            }
-        }
-
-        for (SecurityList securityList : api.getSecurityList()) {
-            for (Map.Entry<String, Scopes> entry : securityList.getScopeListMap().entrySet()) {
-                securityScopesMap.put(entry.getKey(), new ArrayList<>());
-                if (entry.getValue() != null && entry.getValue().getScopesList().size() > 0) {
-                    List<String> scopeList = new ArrayList<>(entry.getValue().getScopesList());
-                    securityScopesMap.replace(entry.getKey(), scopeList);
-                }
-                // only supports security scheme OR combinations. Example -
-                // Security:
-                // - api_key: []
-                //   oauth: [] <-- AND operation is not supported hence ignoring oauth here.
-                break;
-            }
-        }
-
         for (Resource res : api.getResourcesList()) {
             for (Operation operation : res.getMethodsList()) {
-                ResourceConfig resConfig = Utils.buildResource(operation, res.getPath(), securityScopesMap,
-                APIProcessUtils.convertProtoEndpointSecurity(res.getEndpointSecurityList()));
+                ResourceConfig resConfig = Utils.buildResource(operation, res.getPath(),
+                        APIProcessUtils.convertProtoEndpointSecurity(res.getEndpointSecurityList()));
                 resConfig.setPolicyConfig(Utils.genPolicyConfig(operation.getPolicies()));
                 resConfig.setEndpoints(Utils.processEndpoints(res.getEndpoints()));
 //                resConfig.setMockApiConfig(getMockedApiOperationConfig(operation.getMockedApiConfig(),
@@ -161,14 +132,13 @@ public class RestAPI implements API {
         this.apiLifeCycleState = api.getApiLifeCycleState();
         this.apiConfig = new APIConfig.Builder(name).uuid(api.getId()).vhost(vhost).basePath(basePath).version(version)
                 .resources(resources).apiType(apiType).apiLifeCycleState(apiLifeCycleState).tier(api.getTier())
-                .apiSecurity(securityScopesMap).securitySchemeDefinitions(securitySchemeDefinitions)
-                .disableSecurity(api.getDisableSecurity()).authHeader(api.getAuthorizationHeader())
-                .envType(api.getEnvType())
+                .apiSecurity(securityScopesMap).envType(api.getEnvType())
+                .disableAuthentication(api.getDisableAuthentications()).disableScopes(api.getDisableScopes())
                 .trustStore(trustStore).organizationId(api.getOrganizationId())
                 .mtlsCertificateTiers(mtlsCertificateTiers).mutualSSL(mutualSSL).systemAPI(api.getSystemAPI())
                 .applicationSecurity(applicationSecurity).jwtConfigurationDto(jwtConfigurationDto).build();
 
-        initFilters();
+        initFilters(api.getDisableAuthentications());
         return basePath;
     }
 
@@ -282,12 +252,14 @@ public class RestAPI implements API {
         return configData;
     }
 
-    private void initFilters() {
-        AuthFilter authFilter = new AuthFilter();
-        authFilter.init(apiConfig, null);
-        this.filters.add(authFilter);
+    private void initFilters(boolean disableAuthentication) {
+        if (!disableAuthentication) {
+            AuthFilter authFilter = new AuthFilter();
+            authFilter.init(apiConfig, null);
+            this.filters.add(authFilter);
+        }
 
-        if (!apiConfig.isSystemAPI()){
+        if (!apiConfig.isSystemAPI()) {
             loadCustomFilters(apiConfig);
             MediationPolicyFilter mediationPolicyFilter = new MediationPolicyFilter();
             this.filters.add(mediationPolicyFilter);
@@ -296,8 +268,6 @@ public class RestAPI implements API {
         // CORS filter is added as the first filter, and it is not customizable.
         CorsFilter corsFilter = new CorsFilter();
         this.filters.add(0, corsFilter);
-
-
     }
 
     private void loadCustomFilters(APIConfig apiConfig) {
@@ -330,26 +300,53 @@ public class RestAPI implements API {
     }
 
     private void populateRemoveAndProtectedHeaders(RequestContext requestContext) {
-        Map<String, SecuritySchemaConfig> securitySchemeDefinitions =
-                requestContext.getMatchedAPI().getSecuritySchemeDefinitions();
-        // API key headers are considered to be protected headers, such that the header would not be sent
-        // to backend and traffic manager.
-        // This would prevent leaking credentials, even if user is invoking unsecured resource with some
-        // credentials.
-        for (Map.Entry<String, SecuritySchemaConfig> entry : securitySchemeDefinitions.entrySet()) {
-            SecuritySchemaConfig schema = entry.getValue();
-            if (APIConstants.SWAGGER_API_KEY_AUTH_TYPE_NAME.equalsIgnoreCase(schema.getType())) {
-                if (APIConstants.SWAGGER_API_KEY_IN_HEADER.equals(schema.getIn())) {
-                    String header = StringUtils.lowerCase(schema.getName());
-                    requestContext.getProtectedHeaders().add(header);
-                    requestContext.getRemoveHeaders().add(header);
-                    continue;
-                }
-                if (APIConstants.SWAGGER_API_KEY_IN_QUERY.equals(schema.getIn())) {
-                    requestContext.getQueryParamsToRemove().add(schema.getName());
-                }
+//        Map<String, SecuritySchemaConfig> securitySchemeDefinitions =
+//                requestContext.getMatchedAPI().getSecuritySchemeDefinitions();
+//        // API key headers are considered to be protected headers, such that the header would not be sent
+//        // to backend and traffic manager.
+//        // This would prevent leaking credentials, even if user is invoking unsecured resource with some
+//        // credentials.
+//        for (Map.Entry<String, SecuritySchemaConfig> entry : securitySchemeDefinitions.entrySet()) {
+//            SecuritySchemaConfig schema = entry.getValue();
+//            if (APIConstants.SWAGGER_API_KEY_AUTH_TYPE_NAME.equalsIgnoreCase(schema.getType())) {
+//                if (APIConstants.SWAGGER_API_KEY_IN_HEADER.equals(schema.getIn())) {
+//                    String header = StringUtils.lowerCase(schema.getName());
+//                    requestContext.getProtectedHeaders().add(header);
+//                    requestContext.getRemoveHeaders().add(header);
+//                    continue;
+//                }
+//                if (APIConstants.SWAGGER_API_KEY_IN_QUERY.equals(schema.getIn())) {
+//                    requestContext.getQueryParamsToRemove().add(schema.getName());
+//                }
+//            }
+//        }
+
+        requestContext.getMatchedResourcePaths().forEach(resourcePath -> {
+            JWTAuthenticationConfig jwtAuthenticationConfig =
+                    resourcePath.getAuthenticationConfig().getJwtAuthenticationConfig();
+            InternalKeyConfig internalKeyConfig =
+                    resourcePath.getAuthenticationConfig().getInternalKeyConfig();
+            List<APIKeyAuthenticationConfig> apiKeyAuthenticationConfig =
+                    resourcePath.getAuthenticationConfig().getApiKeyAuthenticationConfigs();
+            if (jwtAuthenticationConfig != null && !jwtAuthenticationConfig.isSendTokenToUpstream()) {
+                requestContext.getProtectedHeaders().add(jwtAuthenticationConfig.getHeader());
+                requestContext.getRemoveHeaders().add(jwtAuthenticationConfig.getHeader());
             }
-        }
+            if (internalKeyConfig != null && !internalKeyConfig.isSendTokenToUpstream()) {
+                requestContext.getProtectedHeaders().add(internalKeyConfig.getHeader());
+                requestContext.getRemoveHeaders().add(internalKeyConfig.getHeader());
+            }
+            if (apiKeyAuthenticationConfig != null && !apiKeyAuthenticationConfig.isEmpty()) {
+                requestContext.getQueryParamsToRemove().addAll(apiKeyAuthenticationConfig.stream()
+                        .filter(apiKeyAuthenticationConfig1 -> !apiKeyAuthenticationConfig1.isSendTokenToUpstream()
+                                && Objects.equals(apiKeyAuthenticationConfig1.getIn(), "In"))
+                        .map(APIKeyAuthenticationConfig::getName).collect(Collectors.toList()));
+                requestContext.getProtectedHeaders().addAll(apiKeyAuthenticationConfig.stream()
+                        .filter(apiKeyAuthenticationConfig1 -> !apiKeyAuthenticationConfig1.isSendTokenToUpstream()
+                                && Objects.equals(apiKeyAuthenticationConfig1.getIn(), "Header"))
+                        .map(APIKeyAuthenticationConfig::getName).collect(Collectors.toList()));
+            }
+        });
 
         Utils.removeCommonAuthHeaders(requestContext);
 

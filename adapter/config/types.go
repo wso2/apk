@@ -247,7 +247,6 @@ type upstreamRetry struct {
 type security struct {
 	InternalKey internalKey
 	APIkey      apiKey
-	AuthHeader  authHeader
 	MutualSSL   mutualSSL
 }
 type internalKey struct {
@@ -385,12 +384,6 @@ type analyticsEnforcer struct {
 	// TODO: (VirajSalaka) convert it to map[string]{}interface
 	ConfigProperties map[string]string
 	LogReceiver      authService
-}
-
-type authHeader struct {
-	EnableOutboundAuthHeader bool
-	AuthorizationHeader      string
-	TestConsoleHeaderName    string
 }
 
 type jwtIssuer struct {

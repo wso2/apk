@@ -31,7 +31,6 @@ import org.wso2.apk.enforcer.commons.model.EndpointCluster;
 import org.wso2.apk.enforcer.commons.model.RequestContext;
 import org.wso2.apk.enforcer.commons.model.ResourceConfig;
 import org.wso2.apk.enforcer.commons.model.RetryConfig;
-import org.wso2.apk.enforcer.commons.model.SecuritySchemaConfig;
 import org.wso2.apk.enforcer.config.ConfigHolder;
 import org.wso2.apk.enforcer.config.EnforcerConfig;
 import org.wso2.apk.enforcer.constants.APIConstants;
@@ -67,17 +66,11 @@ public class AuthFilter implements Filter {
 
     private void initializeAuthenticators(APIConfig apiConfig) {
         //TODO: Check security schema and add relevant authenticators.
-        boolean isOAuthProtected = true;
         boolean isMutualSSLProtected = false;
-        boolean isBasicAuthProtected = false;
-        boolean isApiKeyProtected = true;
         isMutualSSLMandatory = false;
-        isOAuthBasicAuthMandatory = false;
 
         // Set security conditions
-        if (apiConfig.getApplicationSecurity()) {
-            isOAuthBasicAuthMandatory = true;
-        }
+        isOAuthBasicAuthMandatory = apiConfig.getApplicationSecurity();
 
         if (!Objects.isNull(apiConfig.getMutualSSL())) {
             if (apiConfig.getMutualSSL().equalsIgnoreCase(APIConstants.Optionality.MANDATORY)) {
@@ -85,22 +78,6 @@ public class AuthFilter implements Filter {
                 isMutualSSLMandatory = true;
             } else if (apiConfig.getMutualSSL().equalsIgnoreCase(APIConstants.Optionality.OPTIONAL)) {
                 isMutualSSLProtected = true;
-            }
-        }
-
-        if (apiConfig.getSecuritySchemeDefinitions() == null) {
-            isOAuthProtected = true;
-        } else {
-            for (Map.Entry<String, SecuritySchemaConfig> securityDefinition :
-                    apiConfig.getSecuritySchemeDefinitions().entrySet()) {
-                String apiSecurityLevel = securityDefinition.getValue().getType();
-                if (apiSecurityLevel.trim().equalsIgnoreCase(APIConstants.API_SECURITY_OAUTH2)) {
-                    isOAuthProtected = true;
-                } else if (apiSecurityLevel.trim().equalsIgnoreCase(APIConstants.API_SECURITY_BASIC_AUTH)) {
-                    isBasicAuthProtected = true;
-                } else if (apiSecurityLevel.trim().equalsIgnoreCase(APIConstants.SWAGGER_API_KEY_AUTH_TYPE_NAME)) {
-                    isApiKeyProtected = true;
-                }
             }
         }
 
@@ -116,32 +93,21 @@ public class AuthFilter implements Filter {
 
         // check whether the backend JWT token is enabled
         EnforcerConfig enforcerConfig = ConfigHolder.getInstance().getConfig();
-        boolean isGatewayTokenCacheEnabled =  enforcerConfig.getCacheDto().isEnabled();
+        boolean isGatewayTokenCacheEnabled = enforcerConfig.getCacheDto().isEnabled();
         JWTConfigurationDto jwtConfigurationDto = apiConfig.getJwtConfigurationDto();
 
-        if(isOAuthProtected) {
-            Authenticator jwtAuthenticator = new JWTAuthenticator(jwtConfigurationDto, isGatewayTokenCacheEnabled);
-            authenticators.add(jwtAuthenticator);
-        }
+        Authenticator jwtAuthenticator = new JWTAuthenticator(jwtConfigurationDto, isGatewayTokenCacheEnabled);
+        authenticators.add(jwtAuthenticator);
+        APIKeyAuthenticator apiKeyAuthenticator = new APIKeyAuthenticator(jwtConfigurationDto);
+        authenticators.add(apiKeyAuthenticator);
 
-        if (isApiKeyProtected) {
-            APIKeyAuthenticator apiKeyAuthenticator = new APIKeyAuthenticator(jwtConfigurationDto);
-            authenticators.add(apiKeyAuthenticator);
-        }
-
-        Authenticator authenticator = new InternalAPIKeyAuthenticator(jwtConfigurationDto,
-                ConfigHolder.getInstance().getConfig().getAuthHeader().getTestConsoleHeaderName().toLowerCase());
+        Authenticator authenticator = new InternalAPIKeyAuthenticator(jwtConfigurationDto);
         authenticators.add(authenticator);
 
         Authenticator unsecuredAPIAuthenticator = new UnsecuredAPIAuthenticator();
         authenticators.add(unsecuredAPIAuthenticator);
 
-        authenticators.sort(new Comparator<Authenticator>() {
-            @Override
-            public int compare(Authenticator o1, Authenticator o2) {
-                return (o1.getPriority() - o2.getPriority());
-            }
-        });
+        authenticators.sort(Comparator.comparingInt(Authenticator::getPriority));
     }
 
     @Override
@@ -341,7 +307,7 @@ public class AuthFilter implements Filter {
         requestContext.addMetadataToMap(InterceptorConstants.APIMetadataFields.API_BASE_PATH,
                 Objects.toString(requestContext.getMatchedAPI().getBasePath(), ""));
         requestContext.addMetadataToMap(InterceptorConstants.APIMetadataFields.API_VERSION,
-                Objects.toString(requestContext.getMatchedAPI().getVersion() , ""));
+                Objects.toString(requestContext.getMatchedAPI().getVersion(), ""));
         requestContext.addMetadataToMap(InterceptorConstants.APIMetadataFields.API_NAME,
                 Objects.toString(requestContext.getMatchedAPI().getName(), ""));
         requestContext.addMetadataToMap(InterceptorConstants.APIMetadataFields.API_VHOST,
