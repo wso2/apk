@@ -102,4 +102,4 @@ jobs:
         with:
           verbose: true # optional (default = false)
           directory: apk-repo/admin/admin-ui
-          flags: admin-ui                                   
+          flags: admin-ui
