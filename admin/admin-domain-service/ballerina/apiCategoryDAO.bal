@@ -129,3 +129,17 @@ isolated function deleteAPICategoryDAO(string id, string org) returns commons:AP
         }
     }
 }
+
+isolated function getAPICountOfAPICategoryDAO(string apiCategory) returns int|commons:APKError {
+    postgresql:Client|error dbClient = getConnection();
+    if dbClient is error {
+        return e909401(dbClient);
+    }
+    sql:ParameterizedQuery query = `SELECT COUNT(uuid) FROM API WHERE categories ?? ${apiCategory}`;
+    int|sql:Error result = dbClient->queryRow(query);
+    if result is sql:Error {
+        log:printError(result.toString());
+        return e909404(result);
+    } 
+    return result;
+}

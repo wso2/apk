@@ -44,10 +44,10 @@ isolated function getAllCategoryList(commons:Organization org) returns APICatego
         int count = categories.length();
         if (count > 0) {
             foreach APICategory apiCategory in categories {
-                //TODO:(Sampath) need to properly retrieve attached api count per category 
-                //int count = isCategoryAttached(apiCategory.name);
-                int apiCount = 0;
-                apiCategory.numberOfAPIs = apiCount;
+                int|commons:APKError apiCount = getAPICountOfAPICategoryDAO(apiCategory.name);
+                if apiCount is int {
+                    apiCategory.numberOfAPIs = apiCount;
+                }
             }
         }
         APICategoryList apiCategoriesList = {count: count, list: categories};
@@ -73,7 +73,7 @@ isolated function updateAPICategory(string id, APICategory body, commons:Organiz
             if existingCategory is true {
                 return e909425(body.name);
             }
-        } 
+        }
     }
     APICategory|commons:APKError response = updateAPICategoryDAO(body, org.uuid);
     if response is APICategory {
