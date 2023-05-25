@@ -485,39 +485,44 @@ isolated function createDocument(string apiId, Document documentPayload) returns
     }
 }
 
-isolated function UpdateDocumentMetaData(string apiId, string documentId, Document documentPayload) returns Document|commons:APKError {
+isolated function UpdateDocumentMetaData(string apiId, string documentId, Document documentPayload) returns Document|NotFoundError|commons:APKError|error {
     API|commons:APKError getApi = check db_getAPI(apiId);
     if getApi is API {
-        DocumentMetaData documentMetaData = {
-            documentId: documentId,
-            name: documentPayload.name,
-            summary: documentPayload.summary,
-            sourceType: documentPayload.sourceType,
-            sourceUrl: documentPayload.sourceUrl,
-            fileName: documentPayload.fileName,
-            documentType: documentPayload.documentType,
-            otherTypeName: documentPayload.otherTypeName,
-            visibility: documentPayload.visibility,
-            inlineContent: documentPayload.inlineContent
-        };
-        DocumentMetaData|commons:APKError updatedDocMetaData = db_updateDocumentMetaData(documentMetaData, apiId);
-        if updatedDocMetaData is DocumentMetaData {
-            //convert documentMetadata object to Document object
-            Document document = {
-                documentId: updatedDocMetaData.documentId,
-                name: updatedDocMetaData.name,
-                summary: updatedDocMetaData.summary,
-                sourceType: updatedDocMetaData.sourceType,
-                sourceUrl: updatedDocMetaData.sourceUrl,
-                fileName: updatedDocMetaData.fileName,
-                documentType: updatedDocMetaData.documentType,
-                otherTypeName: updatedDocMetaData.otherTypeName,
-                visibility: updatedDocMetaData.visibility,
-                inlineContent: updatedDocMetaData.inlineContent
+        DocumentMetaData|NotFoundError|commons:APKError getDocumentMetaData = db_getDocumentByDocumentId(documentId, apiId);
+        if getDocumentMetaData is DocumentMetaData {
+            DocumentMetaData documentMetaData = {
+                documentId: documentId,
+                name: documentPayload.name,
+                summary: documentPayload.summary,
+                sourceType: documentPayload.sourceType,
+                sourceUrl: documentPayload.sourceUrl,
+                fileName: documentPayload.fileName,
+                documentType: documentPayload.documentType,
+                otherTypeName: documentPayload.otherTypeName,
+                visibility: documentPayload.visibility,
+                inlineContent: documentPayload.inlineContent
             };
-            return document;
+            DocumentMetaData|commons:APKError updatedDocMetaData = db_updateDocumentMetaData(documentMetaData, apiId);
+            if updatedDocMetaData is DocumentMetaData {
+                // Convert documentMetadata object to Document object
+                Document document = {
+                    documentId: updatedDocMetaData.documentId,
+                    name: updatedDocMetaData.name,
+                    summary: updatedDocMetaData.summary,
+                    sourceType: updatedDocMetaData.sourceType,
+                    sourceUrl: updatedDocMetaData.sourceUrl,
+                    fileName: updatedDocMetaData.fileName,
+                    documentType: updatedDocMetaData.documentType,
+                    otherTypeName: updatedDocMetaData.otherTypeName,
+                    visibility: updatedDocMetaData.visibility,
+                    inlineContent: updatedDocMetaData.inlineContent
+                };
+                return document;
+            } else {
+                return updatedDocMetaData;
+            }
         } else {
-            return updatedDocMetaData;
+            return getDocumentMetaData;
         }
     } else {
         return getApi;
@@ -616,84 +621,6 @@ isolated function addDocumentContent(string apiId, string documentId, http:Reque
     }
 }
 
-isolated function updateDocumentContent(string apiId, string documentId, http:Request message) returns Resource|commons:APKError|error {
-    API|commons:APKError getApi = check db_getAPI(apiId);
-    if getApi is API {
-        string|() resourceContent = ();
-        byte[]|() fileContent = ();
-        string fileType = "";
-        string|() inlineContent = ();
-        mime:Entity[]|http:ClientError payLoadParts = message.getBodyParts();
-        if payLoadParts is mime:Entity[] {
-            foreach mime:Entity payLoadPart in payLoadParts {
-                mime:ContentDisposition contentDisposition = payLoadPart.getContentDisposition();
-                string fieldName = contentDisposition.name;
-                if fieldName == "file" {
-                    resourceContent = contentDisposition.fileName;
-                    fileContent = check payLoadPart.getByteArray();
-                    fileType = payLoadPart.getContentType();
-                } else if fieldName == "inlineContent" {
-                    inlineContent = check payLoadPart.getText();
-                    resourceContent = inlineContent;
-                }
-            }
-        }
-        int|commons:APKError documentCategoryId = db_getResourceCategoryIdByCategoryType(RESOURCE_TYPE_DOCUMENT);
-        if documentCategoryId is int {
-            if resourceContent is string && fileContent is byte[] {
-                string|commons:APKError resourceId = db_getResourceIdByDocumentId(documentId);
-                if resourceId is string {
-                    Resource documentResource = {
-                        resourceUUID: resourceId,
-                        apiUuid: apiId,
-                        resourceCategoryId: documentCategoryId,
-                        dataType: fileType,
-                        resourceContent: <string>resourceContent,
-                        resourceBinaryValue: fileContent
-                    };
-                    Resource|commons:APKError updatedDcoumentResource = db_updateResource(documentResource);
-                    if updatedDcoumentResource is Resource {
-                        return updatedDcoumentResource;
-                    } else {
-                        return updatedDcoumentResource;
-                    }
-                } else {
-                    return resourceId;
-                }
-            } else if inlineContent is string {
-                string|commons:APKError resourceId = db_getResourceIdByDocumentId(documentId);
-                if resourceId is string {
-                    Resource documentResource = {
-                        resourceUUID: resourceId,
-                        apiUuid: apiId,
-                        resourceCategoryId: documentCategoryId,
-                        dataType: "inlineContent",
-                        resourceContent: inlineContent,
-                        resourceBinaryValue: []
-                    };
-                    Resource|commons:APKError updatedDcoumentResource = db_updateResource(documentResource);
-                    if updatedDcoumentResource is Resource {
-                        return updatedDcoumentResource;
-                    } else {
-                        return updatedDcoumentResource;
-                    }
-                } else {
-                    return resourceId;
-                }
-
-            } else {
-                string msg = "Content is not provided";
-                commons:APKError e = error(msg, (), message = msg, description = msg, code = 909000, statusCode = 500);
-                return e;
-            }
-        } else {
-            return documentCategoryId;
-        }
-    } else {
-        return getApi;
-    }
-}
-
 isolated function getDocumentMetaData(string apiId, string documentId) returns Document|NotFoundError|commons:APKError {
     API|commons:APKError getApi = check db_getAPI(apiId);
     if getApi is API {
@@ -748,7 +675,7 @@ isolated function getDocumentContent(string apiId, string documentId) returns ht
     }
 }
 
-isolated function getDocumentList(int 'limit, int offset, string apiId) returns DocumentList|commons:APKError {
+isolated function getDocumentList(string apiId, int 'limit, int offset) returns DocumentList|commons:APKError {
     API|commons:APKError getApi = check db_getAPI(apiId);
     if getApi is API {
         Document[]|commons:APKError documents = db_getDocuments(apiId);

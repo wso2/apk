@@ -71,7 +71,7 @@ service /api/am/backoffice on ep0 {
        return updateThumbnail(apiId, message);
     }
     resource function get apis/[string apiId]/documents(@http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0, @http:Header string? accept = "application/json") returns DocumentList|http:NotModified|NotFoundError|NotAcceptableError|commons:APKError {
-        return getDocumentList('limit, offset, apiId);
+        return getDocumentList(apiId, 'limit, offset);
     }
     isolated resource function post apis/[string apiId]/documents(@http:Payload Document payload) returns CreatedDocument|BadRequestError|UnsupportedMediaTypeError|commons:APKError|error {
         Document documentBody = check payload.cloneWithType(Document);

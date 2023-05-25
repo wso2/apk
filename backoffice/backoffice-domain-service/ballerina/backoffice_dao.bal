@@ -552,7 +552,6 @@ isolated function db_addDocumentMetaData(DocumentMetaData documentMetaData, stri
                                         ${documentMetaData.otherTypeName},
                                         ${documentMetaData.sourceUrl},
                                         ${documentMetaData.fileName},
-                                        ${documentMetaData.inlineContent},
                                         ${documentMetaData.sourceType},
                                         ${documentMetaData.visibility},
                                         'apkuser',
