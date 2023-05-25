@@ -78,7 +78,7 @@ public type Document record {
     string documentId?;
     @constraint:String {maxLength: 60, minLength: 1}
     string name;
-    string 'type;
+    string documentType;
     @constraint:String {maxLength: 32766, minLength: 1}
     string summary?;
     string sourceType;

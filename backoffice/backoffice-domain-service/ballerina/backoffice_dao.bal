@@ -552,6 +552,7 @@ isolated function db_addDocumentMetaData(DocumentMetaData documentMetaData, stri
                                         ${documentMetaData.otherTypeName},
                                         ${documentMetaData.sourceUrl},
                                         ${documentMetaData.fileName},
+                                        ${documentMetaData.inlineContent},
                                         ${documentMetaData.sourceType},
                                         ${documentMetaData.visibility},
                                         'apkuser',
@@ -559,7 +560,7 @@ isolated function db_addDocumentMetaData(DocumentMetaData documentMetaData, stri
                                         'apkuser',
                                         ${utc}
                                     )`;
-        sql:ParameterizedQuery ADD_THUMBNAIL_Prefix = `INSERT INTO API_DOC_META_DATA (UUID, RESOURCE_UUID, API_UUID, NAME, SUMMARY, TYPE, OTHER_TYPE_NAME, SOURCE_URL, FILE_NAME, SOURCE_TYPE,
+        sql:ParameterizedQuery ADD_THUMBNAIL_Prefix = `INSERT INTO API_DOC_META_DATA (UUID, RESOURCE_UUID, API_UUID, NAME, SUMMARY, TYPE, OTHER_TYPE_NAME, SOURCE_URL, FILE_NAME,  SOURCE_TYPE,
          VISIBILITY, CREATED_BY, CREATED_TIME, UPDATED_BY, LAST_UPDATED_TIME) VALUES (`;
         sql:ParameterizedQuery sqlQuery = sql:queryConcat(ADD_THUMBNAIL_Prefix, values);
         sql:ExecutionResult|sql:Error result = dbClient->execute(sqlQuery);
@@ -671,10 +672,12 @@ isolated function db_getDocuments(string apiId) returns Document[]|commons:APKEr
         return e909601(db_Client);
     } else {
         do {
-            sql:ParameterizedQuery GET_DOCUMENTS_Prefix = `SELECT UUID AS documentId, RESOURCE_UUID AS resourceId, NAME AS name, SUMMARY AS summary,
-        TYPE AS 'type, OTHER_TYPE_NAME AS otherTypeName, SOURCE_URL AS sourceUrl, FILE_NAME AS fileName,
+            sql:ParameterizedQuery GET_DOCUMENTS_Prefix = `SELECT UUID AS documentId, NAME AS name, SUMMARY AS summary,
+        TYPE AS documentType, OTHER_TYPE_NAME AS otherTypeName, SOURCE_URL AS sourceUrl, FILE_NAME AS fileName,
         SOURCE_TYPE AS sourceType, VISIBILITY AS visibility FROM API_DOC_META_DATA where API_UUID = `;
-            stream<Document, sql:Error?> documentStream = db_Client->query(GET_DOCUMENTS_Prefix);
+        sql:ParameterizedQuery values = `${apiId}`;
+        sql:ParameterizedQuery sqlQuery = sql:queryConcat(GET_DOCUMENTS_Prefix, values);
+            stream<Document, sql:Error?> documentStream = db_Client->query(sqlQuery);
             Document[] documents = check from Document document in documentStream
                 select document;
             check documentStream.close();

@@ -22,7 +22,8 @@ type Resource record {|
     int resourceCategoryId;
     string dataType;
     string resourceContent;
-    byte[] resourceBinaryValue;
+    byte[] resourceBinaryValue?;
+    json respurceJsonValue?;
 |};
 
 type Thumbnail record {|

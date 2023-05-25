@@ -411,7 +411,7 @@ isolated function getThumbnail(string apiId) returns http:Response|NotFoundError
             Resource|NotFoundError|commons:APKError thumbnail = db_getResourceByResourceCategory(apiId, thumbnailCategoryId);
             if thumbnail is Resource {
                 http:Response outResponse = new;
-                outResponse.setBinaryPayload(thumbnail.resourceBinaryValue, thumbnail.dataType);
+                outResponse.setBinaryPayload(<byte[]>thumbnail.resourceBinaryValue, thumbnail.dataType);
                 return outResponse;
             } else {
                 return thumbnail;
@@ -450,7 +450,7 @@ isolated function createDocument(string apiId, Document documentPayload) returns
                     sourceType: documentPayload.sourceType,
                     sourceUrl: documentPayload.sourceUrl,
                     fileName: documentPayload.fileName,
-                    documentType: documentPayload.'type,
+                    documentType: documentPayload.documentType,
                     otherTypeName: documentPayload.otherTypeName,
                     visibility: documentPayload.visibility,
                     inlineContent: documentPayload.inlineContent
@@ -464,7 +464,7 @@ isolated function createDocument(string apiId, Document documentPayload) returns
                         sourceType: addedDocMetaData.sourceType,
                         sourceUrl: addedDocMetaData.sourceUrl,
                         fileName: addedDocMetaData.fileName,
-                        'type: addedDocMetaData.documentType,
+                        documentType: addedDocMetaData.documentType,
                         otherTypeName: addedDocMetaData.otherTypeName,
                         visibility: addedDocMetaData.visibility,
                         inlineContent: addedDocMetaData.inlineContent
@@ -495,7 +495,7 @@ isolated function UpdateDocumentMetaData(string apiId, string documentId, Docume
             sourceType: documentPayload.sourceType,
             sourceUrl: documentPayload.sourceUrl,
             fileName: documentPayload.fileName,
-            documentType: documentPayload.'type,
+            documentType: documentPayload.documentType,
             otherTypeName: documentPayload.otherTypeName,
             visibility: documentPayload.visibility,
             inlineContent: documentPayload.inlineContent
@@ -510,7 +510,7 @@ isolated function UpdateDocumentMetaData(string apiId, string documentId, Docume
                 sourceType: updatedDocMetaData.sourceType,
                 sourceUrl: updatedDocMetaData.sourceUrl,
                 fileName: updatedDocMetaData.fileName,
-                'type: updatedDocMetaData.documentType,
+                documentType: updatedDocMetaData.documentType,
                 otherTypeName: updatedDocMetaData.otherTypeName,
                 visibility: updatedDocMetaData.visibility,
                 inlineContent: updatedDocMetaData.inlineContent
@@ -524,63 +524,81 @@ isolated function UpdateDocumentMetaData(string apiId, string documentId, Docume
     }
 }
 
-isolated function addDocumentContent(string apiId, string documentId, http:Request message) returns Resource|commons:APKError|error {
+isolated function addDocumentContent(string apiId, string documentId, http:Request message) returns Document|NotFoundError|commons:APKError|error {
     API|commons:APKError getApi = check db_getAPI(apiId);
     if getApi is API {
-        string|() fileName = ();
-        byte[]|() fileContent = ();
-        string fileType = "";
-        string|() inlineContent = ();
-        mime:Entity[]|http:ClientError payLoadParts = message.getBodyParts();
-        if payLoadParts is mime:Entity[] {
-            foreach mime:Entity payLoadPart in payLoadParts {
-                mime:ContentDisposition contentDisposition = payLoadPart.getContentDisposition();
-                string fieldName = contentDisposition.name;
-                if fieldName == "file" {
-                    fileName = contentDisposition.fileName;
-                    fileContent = check payLoadPart.getByteArray();
-                    fileType = payLoadPart.getContentType();
-                } else if fieldName == "inlineContent" {
-                    inlineContent = check payLoadPart.getText();
+        DocumentMetaData|NotFoundError|commons:APKError getDocumentMetaData = db_getDocumentByDocumentId(documentId, apiId);
+        if getDocumentMetaData is DocumentMetaData {
+            //convert documentMetadata object to Document object
+            Document document = {
+                documentId: getDocumentMetaData.documentId,
+                name: getDocumentMetaData.name,
+                summary: getDocumentMetaData.summary,
+                sourceType: getDocumentMetaData.sourceType,
+                sourceUrl: getDocumentMetaData.sourceUrl,
+                fileName: getDocumentMetaData.fileName,
+                documentType: getDocumentMetaData.documentType,
+                otherTypeName: getDocumentMetaData.otherTypeName,
+                visibility: getDocumentMetaData.visibility,
+                inlineContent: getDocumentMetaData.inlineContent
+            };
+
+            string|() fileName = ();
+            byte[]|() fileContent = ();
+            string baseType = "";
+            string inlineContent = "";
+            mime:Entity[]|http:ClientError payLoadParts = message.getBodyParts();
+            if payLoadParts is mime:Entity[] {
+                foreach mime:Entity payLoadPart in payLoadParts {
+                    mime:ContentDisposition contentDisposition = payLoadPart.getContentDisposition();
+                    baseType = getContentBaseType(payLoadPart.getContentType());
+                    if mime:APPLICATION_XML == baseType || mime:TEXT_XML == baseType {
+                        var payload = payLoadPart.getXml();
+                        if payload is xml {
+                            inlineContent = payload.toString();
+                            fileContent = check payLoadPart.getByteArray();
+                            log:printInfo("XML data: " + payload.toString());
+                        } else {
+                            log:printError("Error in parsing XML data", 'error = payload);
+                        }
+                    } else if mime:APPLICATION_JSON == baseType {
+                        var payload = payLoadPart.getJson();
+                        if payload is json {
+                            inlineContent = payload.toJsonString();
+                            fileContent = check payLoadPart.getByteArray();
+                            log:printInfo("JSON data: " + payload.toJsonString());
+                        } else {
+                            log:printError("Error in parsing JSON data", 'error = payload);
+                        }
+                    } else if mime:TEXT_PLAIN == baseType {
+                        var payload = payLoadPart.getText();
+                        if payload is string {
+                            inlineContent = payload;
+                            log:printInfo("Text data: " + payload);
+                        } else {
+                            log:printError("Error in parsing text data", 'error = payload);
+                        }
+                    } else if mime:APPLICATION_PDF == baseType {
+                        fileContent = check payLoadPart.getByteArray();
+                        inlineContent = contentDisposition.fileName;
+                    }
                 }
             }
-        }
-        int|commons:APKError documentCategoryId = db_getResourceCategoryIdByCategoryType(RESOURCE_TYPE_DOCUMENT);
-        if documentCategoryId is int {
-            if fileName is string && fileContent is byte[] {
+            int|commons:APKError documentCategoryId = db_getResourceCategoryIdByCategoryType(RESOURCE_TYPE_DOCUMENT);
+            if documentCategoryId is int {
                 string|commons:APKError resourceId = db_getResourceIdByDocumentId(documentId);
                 if resourceId is string {
                     Resource documentResource = {
                         resourceUUID: resourceId,
                         apiUuid: apiId,
                         resourceCategoryId: documentCategoryId,
-                        dataType: fileType,
-                        resourceContent: fileName,
+                        dataType: baseType,
+                        resourceContent: inlineContent,
                         resourceBinaryValue: fileContent
                     };
                     Resource|commons:APKError updatedDcoumentResource = db_updateResource(documentResource);
                     if updatedDcoumentResource is Resource {
-                        return updatedDcoumentResource;
-                    } else {
-                        return updatedDcoumentResource;
-                    }
-                } else {
-                    return resourceId;
-                }
-            } else if inlineContent is string {
-                string|commons:APKError resourceId = db_getResourceIdByDocumentId(documentId);
-                if resourceId is string {
-                    Resource documentResource = {
-                        resourceUUID: resourceId,
-                        apiUuid: apiId,
-                        resourceCategoryId: documentCategoryId,
-                        dataType: "inlineContent",
-                        resourceContent: inlineContent,
-                        resourceBinaryValue: []
-                    };
-                    Resource|commons:APKError updatedDcoumentResource = db_updateResource(documentResource);
-                    if updatedDcoumentResource is Resource {
-                        return updatedDcoumentResource;
+                        return document;
                     } else {
                         return updatedDcoumentResource;
                     }
@@ -588,12 +606,10 @@ isolated function addDocumentContent(string apiId, string documentId, http:Reque
                     return resourceId;
                 }
             } else {
-                string msg = "Content is not provided";
-                commons:APKError e = error(msg, (), message = msg, description = msg, code = 909000, statusCode = 500);
-                return e;
+                return documentCategoryId;
             }
         } else {
-            return documentCategoryId;
+            return getDocumentMetaData;
         }
     } else {
         return getApi;
@@ -603,7 +619,7 @@ isolated function addDocumentContent(string apiId, string documentId, http:Reque
 isolated function updateDocumentContent(string apiId, string documentId, http:Request message) returns Resource|commons:APKError|error {
     API|commons:APKError getApi = check db_getAPI(apiId);
     if getApi is API {
-        string|() fileName = ();
+        string|() resourceContent = ();
         byte[]|() fileContent = ();
         string fileType = "";
         string|() inlineContent = ();
@@ -613,17 +629,18 @@ isolated function updateDocumentContent(string apiId, string documentId, http:Re
                 mime:ContentDisposition contentDisposition = payLoadPart.getContentDisposition();
                 string fieldName = contentDisposition.name;
                 if fieldName == "file" {
-                    fileName = contentDisposition.fileName;
+                    resourceContent = contentDisposition.fileName;
                     fileContent = check payLoadPart.getByteArray();
                     fileType = payLoadPart.getContentType();
                 } else if fieldName == "inlineContent" {
                     inlineContent = check payLoadPart.getText();
+                    resourceContent = inlineContent;
                 }
             }
         }
         int|commons:APKError documentCategoryId = db_getResourceCategoryIdByCategoryType(RESOURCE_TYPE_DOCUMENT);
         if documentCategoryId is int {
-            if fileName is string && fileContent is byte[] {
+            if resourceContent is string && fileContent is byte[] {
                 string|commons:APKError resourceId = db_getResourceIdByDocumentId(documentId);
                 if resourceId is string {
                     Resource documentResource = {
@@ -631,7 +648,7 @@ isolated function updateDocumentContent(string apiId, string documentId, http:Re
                         apiUuid: apiId,
                         resourceCategoryId: documentCategoryId,
                         dataType: fileType,
-                        resourceContent: fileName,
+                        resourceContent: <string>resourceContent,
                         resourceBinaryValue: fileContent
                     };
                     Resource|commons:APKError updatedDcoumentResource = db_updateResource(documentResource);
@@ -690,7 +707,7 @@ isolated function getDocumentMetaData(string apiId, string documentId) returns D
                 sourceType: getDocumentMetaData.sourceType,
                 sourceUrl: getDocumentMetaData.sourceUrl,
                 fileName: getDocumentMetaData.fileName,
-                'type: getDocumentMetaData.documentType,
+                documentType: getDocumentMetaData.documentType,
                 otherTypeName: getDocumentMetaData.otherTypeName,
                 visibility: getDocumentMetaData.visibility,
                 inlineContent: getDocumentMetaData.inlineContent
@@ -711,9 +728,15 @@ isolated function getDocumentContent(string apiId, string documentId) returns ht
         if getDocumentMetaData is DocumentMetaData {
             Resource|commons:APKError getDocumentResource = db_getResourceByResourceId(<string>getDocumentMetaData.resourceId);
             if getDocumentResource is Resource {
-                http:Response outResponse = new;
-                outResponse.setBinaryPayload(getDocumentResource.resourceBinaryValue, getDocumentResource.dataType);
-                return outResponse;
+                if getDocumentMetaData.sourceType == "FILE" {
+                    http:Response outResponse = new;
+                    outResponse.setBinaryPayload(<byte[]>getDocumentResource.resourceBinaryValue, getDocumentResource.dataType);
+                    return outResponse;
+                } else {
+                    http:Response outResponse = new;
+                    outResponse.setTextPayload(getDocumentResource.resourceContent, getDocumentResource.dataType);
+                    return outResponse;
+                }
             } else {
                 return getDocumentResource;
             }
@@ -748,18 +771,21 @@ isolated function getDocumentList(int 'limit, int offset, string apiId) returns 
     }
 }
 
-isolated function deleteDocument(string apiId, string documentId) returns string|NotFoundError|commons:APKError {
+isolated function deleteDocument(string apiId, string documentId) returns http:Ok|NotFoundError|commons:APKError {
     API|commons:APKError getApi = check db_getAPI(apiId);
     if getApi is API {
         DocumentMetaData|NotFoundError|commons:APKError getDocumentMetaData = db_getDocumentByDocumentId(documentId, apiId);
         if getDocumentMetaData is DocumentMetaData {
             string|commons:APKError deletedDocMetaData = db_deleteDocumentMetaData(documentId, apiId);
             string|commons:APKError deletedDocResource = db_deleteResource(<string>getDocumentMetaData.resourceId);
-            if deletedDocMetaData is string && deletedDocResource is string {
-                return deletedDocMetaData;
-            } else {
+            if deletedDocMetaData is commons:APKError {
                 return deletedDocMetaData;
             }
+            if deletedDocResource is commons:APKError {
+                return deletedDocResource;
+            }
+            http:Ok okResponse = {body: "Document deleted successfully"};
+            return okResponse;
         } else {
             return getDocumentMetaData;
         }

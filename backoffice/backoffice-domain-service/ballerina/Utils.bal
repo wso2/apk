@@ -16,6 +16,7 @@
 // under the License.
 //
 import ballerina/log;
+import ballerina/mime;
 
 isolated function isFileSizeGreaterThan1MB(byte[] data) returns boolean {
     int fileSizeInBytes = data.length();
@@ -34,4 +35,12 @@ isolated function isThumbnailHasValidFileExtention(string contentType) returns b
     } else {
         return false;
     }
+}
+
+isolated function getContentBaseType(string contentType) returns string {
+    var result = mime:getMediaType(contentType);
+    if result is mime:MediaType {
+        return result.getBaseType();
+    }
+    panic result;
 }

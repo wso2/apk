@@ -94,17 +94,13 @@ service /api/am/backoffice on ep0 {
         return UpdateDocumentMetaData(apiId, documentId, documentBody);
     }
     resource function delete apis/[string apiId]/documents/[string documentId](@http:Header string? 'if\-match) returns http:Ok|NotFoundError|PreconditionFailedError|commons:APKError {
-        string|NotFoundError|commons:APKError deletedDocument =  deleteDocument(apiId, documentId);
-        if deletedDocument is string {
-            return http:OK;
-        } else {
-            return deletedDocument;
-        }
+        http:Ok|NotFoundError|commons:APKError deletedDocument =  deleteDocument(apiId, documentId);
+        return deletedDocument;
     }
     resource function get apis/[string apiId]/documents/[string documentId]/content(@http:Header string? 'if\-none\-match, @http:Header string? accept = "application/json") returns http:Response|http:SeeOther|http:NotModified|NotFoundError|NotAcceptableError|commons:APKError {
         return getDocumentContent(apiId, documentId);
     }
-    resource function post apis/[string apiId]/documents/[string documentId]/content(@http:Header string? 'if\-match, @http:Payload json payload, http:Request message) returns Resource|commons:APKError|error {
+    resource function post apis/[string apiId]/documents/[string documentId]/content(@http:Header string? 'if\-match, http:Request message) returns Document|BadRequestError|NotFoundError|PreconditionFailedError|commons:APKError|error {
         return addDocumentContent(apiId, documentId, message);
     }
     // resource function get apis/[string apiId]/comments(int 'limit = 25, int offset = 0, boolean includeCommenterInfo = false) returns CommentList|NotFoundError|InternalServerErrorError {
