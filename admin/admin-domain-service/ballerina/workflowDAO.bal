@@ -20,40 +20,107 @@
 import wso2/apk_common_lib as commons;
 import ballerinax/postgresql;
 import ballerina/sql;
+import ballerina/time;
 
 //This function is used to retrive the pending workflow requests 
 // Using Workflow table
-isolated function getWorkflowListDAO(string? workflowType) returns WorkflowInfo[]|commons:APKError {
+isolated function getApplicationCreationWorkflowListDAO(string? workflowType, commons:Organization organization) returns ApplciationWorkflowDTO[]|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return e909401(dbClient);
     } else {
         do {
-            WorkflowInfo[] workflowList = [];
+            ApplciationWorkflowDTO[] appWorkflowList = [];
             sql:ParameterizedQuery query = 
-                `SELECT wf_reference as workflowReferenceId, wf_type as workflowType, wf_status as workflowStatus, wf_created_time as createdTime, wf_updated_time as updatedTime
-                 FROM WORKFLOWS WHERE wf_status = 'CREATED' AND wf_type = ${workflowType};`;
-            stream<WorkflowInfo, sql:Error?> workFlowStream = dbClient->query(query);
-            check from WorkflowInfo workflow in workFlowStream do {
-                workflowList.push(workflow);
+                `SELECT app.name as applicationName, app.created_by as createdBy, wf.wf_reference as workflowReferenceId, wf.wf_type as workflowType,
+                 wf.wf_status as workflowStatus, wf.wf_created_time as createdTime, wf.wf_updated_time as updatedTime
+                 FROM WORKFLOWS as wf, APPLICATION as app
+                 WHERE wf.wf_status = 'CREATED' AND wf.wf_type = ${workflowType}
+                 AND wf.wf_reference = app.uuid
+                 AND wf.organization = ${organization.uuid};`;
+            stream<ApplciationWorkflowDTO, sql:Error?> workFlowStream = dbClient->query(query);
+            check from ApplciationWorkflowDTO appworkflow in workFlowStream do {
+                appWorkflowList.push(appworkflow);
             };
-            return workflowList;
+            return appWorkflowList;
         } on fail var e {
             return e909400(e);
         }
     }
 }
 
-isolated function getWorkflowDAO(string workflowReferenceId, WorkflowInfo payload) returns WorkflowInfo|commons:APKError {
+isolated function getSubscriptionCreationWorkflowListDAO(string? workflowType, commons:Organization organization) returns SubscriptionWorkflowDTO[]|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return e909401(dbClient);
     } else {
         do {
-            sql:ParameterizedQuery query = `Update WORKFLOWS SET wf_status = 'COMPLETED' WHERE wf_reference = ${workflowReferenceId};`;
+            SubscriptionWorkflowDTO[] subWorkflowList = [];
+            sql:ParameterizedQuery query = 
+                `SELECT api.api_name as apiName, app.name as applicationName, sub.created_by as createdBy, wf.wf_reference as workflowReferenceId, wf.wf_type as workflowType,
+                 wf.wf_status as workflowStatus, wf.wf_created_time as createdTime, wf.wf_updated_time as updatedTime
+                 FROM WORKFLOWS as wf, SUBSCRIPTION as sub, APPLICATION as app, API as api
+                 WHERE wf.wf_status = 'CREATED' AND wf.wf_type = ${workflowType}
+                 AND wf.wf_reference = sub.uuid
+                 AND wf.organization = ${organization.uuid}
+				 AND sub.application_uuid = app.uuid
+				 AND sub.api_uuid = api.uuid;`;
+            stream<SubscriptionWorkflowDTO, sql:Error?> workFlowStream = dbClient->query(query);
+            check from SubscriptionWorkflowDTO subworkflow in workFlowStream do {
+                subWorkflowList.push(subworkflow);
+            };
+            return subWorkflowList;
+        } on fail var e {
+            return e909400(e);
+        }
+    }
+}
+
+isolated function updateApplciationWorkflowStatusDAO(string workflowReferenceId, WorkflowInfo payload, commons:Organization organization) returns WorkflowInfo|commons:APKError {
+    postgresql:Client | error dbClient  = getConnection();
+    if dbClient is error {
+        return e909401(dbClient);
+    } else {
+        do {
+            sql:ParameterizedQuery query = `Update WORKFLOWS SET wf_status = 'COMPLETED', wf_updated_time = ${time:utcNow()} 
+            WHERE wf_reference = ${workflowReferenceId} AND organization = ${organization.uuid};`;
             sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
             if result is sql:ExecutionResult {
-                return payload;
+                sql:ParameterizedQuery query2 = `Update APPLICATION SET status = 'APPROVED' 
+                WHERE uuid = ${workflowReferenceId} AND organization = ${organization};`;
+                sql:ExecutionResult | sql:Error result2 =  dbClient->execute(query2);
+                if result2 is sql:ExecutionResult {
+                    return payload;
+                } else {
+                    return e909400(result2);
+                }
+            } else {
+                return e909400(result);
+            }
+        } on fail var e {
+            return e909400(e);
+        }
+    }
+}
+
+isolated function updateSubscriptionWorkflowStatusDAO(string workflowReferenceId, WorkflowInfo payload, commons:Organization organization) returns WorkflowInfo|commons:APKError {
+    postgresql:Client | error dbClient  = getConnection();
+    if dbClient is error {
+        return e909401(dbClient);
+    } else {
+        do {
+            sql:ParameterizedQuery query = `Update WORKFLOWS SET wf_status = 'COMPLETED', wf_updated_time = ${time:utcNow()} 
+            WHERE wf_reference = ${workflowReferenceId} AND organization = ${organization};`;
+            sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
+            if result is sql:ExecutionResult {
+                sql:ParameterizedQuery query2 = `Update SUBSCRIPTION SET status = 'APPROVED' 
+                WHERE uuid = ${workflowReferenceId} AND organization = ${organization.uuid};`;
+                sql:ExecutionResult | sql:Error result2 =  dbClient->execute(query2);
+                if result2 is sql:ExecutionResult {
+                    return payload;
+                } else {
+                    return e909400(result2);
+                }
             } else {
                 return e909400(result);
             }
