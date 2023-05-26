@@ -31,28 +31,23 @@ If you have setup `Kind` and wish to run the integration tests using Gradle, the
     helm repo add bitnami https://charts.bitnami.com/bitnami
     helm repo add jetstack https://charts.jetstack.io
     helm dependency build
-    helm install apk-test . -n apk-integration-test
+    helm install apk-test-setup . -n apk-integration-test
     ```
 
 3. Port forward router-service to use localhost.
 
     ```bash
-    kubectl port-forward svc/apk-test-wso2-apk-router-service -n apk-integration-test 9095:9095
+    kubectl port-forward svc/apk-test-setup-wso2-apk-router-service -n apk-integration-test 9095:9095
     ```
 
-4. Go to the `apk/test/integration` directory and run following command to apply test resources.
+4. Add all DNS mappings to `/etc/hosts` file. Refer to `scripts/run-tests.sh` file for the domain names.
 
     ```bash
-    kubectl apply -f integration/tests/resources/base/manifests.yaml
+    IP=127.0.0.1
+    sudo echo "$IP <DomainName>" | sudo tee -a /etc/hosts
     ```
 
-5. Add all DNS mappings to `/etc/hosts` file. Refer to `scripts/run-tests.sh` file for the domain names.
-
-    ```bash
-    sudo echo "127.0.0.1 <DomainName>" | sudo tee -a /etc/hosts
-    ```
-
-6. Run or debug integration tests.
+5. Run or debug integration tests.
 
     > **Note**
     >
