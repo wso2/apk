@@ -51,6 +51,7 @@ message Api {
 	bool applicationSecurity = 16;
 	/// string graphQLSchema = 22;
 	// repeated GraphqlComplexity graphqlComplexityInfo = 23;
-	bool systemAPI = 17;
-	BackendJWTTokenInfo backendJWTTokenInfo = 18;
+	bool systemAPI = 24;
+	BackendJWTTokenInfo backendJWTTokenInfo = 25;
+	bytes apiDefinitionFile = 26;
 }

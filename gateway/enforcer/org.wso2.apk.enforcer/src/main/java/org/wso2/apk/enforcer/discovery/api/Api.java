@@ -33,6 +33,7 @@ private static final long serialVersionUID = 0L;
     organizationId_ = "";
     clientCertificates_ = java.util.Collections.emptyList();
     mutualSSL_ = "";
+    apiDefinitionFile_ = com.google.protobuf.ByteString.EMPTY;
   }
 
   @java.lang.Override
@@ -181,6 +182,11 @@ private static final long serialVersionUID = 0L;
               backendJWTTokenInfo_ = subBuilder.buildPartial();
             }
 
+            break;
+          }
+          case 210: {
+
+            apiDefinitionFile_ = input.readBytes();
             break;
           }
           default: {
@@ -814,6 +820,17 @@ private static final long serialVersionUID = 0L;
     return getBackendJWTTokenInfo();
   }
 
+  public static final int APIDEFINITIONFILE_FIELD_NUMBER = 26;
+  private com.google.protobuf.ByteString apiDefinitionFile_;
+  /**
+   * <code>bytes apiDefinitionFile = 26;</code>
+   * @return The apiDefinitionFile.
+   */
+  @java.lang.Override
+  public com.google.protobuf.ByteString getApiDefinitionFile() {
+    return apiDefinitionFile_;
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -881,6 +898,9 @@ private static final long serialVersionUID = 0L;
     }
     if (backendJWTTokenInfo_ != null) {
       output.writeMessage(18, getBackendJWTTokenInfo());
+    }
+    if (!apiDefinitionFile_.isEmpty()) {
+      output.writeBytes(26, apiDefinitionFile_);
     }
     unknownFields.writeTo(output);
   }
@@ -952,6 +972,10 @@ private static final long serialVersionUID = 0L;
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(18, getBackendJWTTokenInfo());
     }
+    if (!apiDefinitionFile_.isEmpty()) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeBytesSize(26, apiDefinitionFile_);
+    }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
     return size;
@@ -1006,6 +1030,8 @@ private static final long serialVersionUID = 0L;
       if (!getBackendJWTTokenInfo()
           .equals(other.getBackendJWTTokenInfo())) return false;
     }
+    if (!getApiDefinitionFile()
+        .equals(other.getApiDefinitionFile())) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -1063,6 +1089,8 @@ private static final long serialVersionUID = 0L;
       hash = (37 * hash) + BACKENDJWTTOKENINFO_FIELD_NUMBER;
       hash = (53 * hash) + getBackendJWTTokenInfo().hashCode();
     }
+    hash = (37 * hash) + APIDEFINITIONFILE_FIELD_NUMBER;
+    hash = (53 * hash) + getApiDefinitionFile().hashCode();
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -1250,6 +1278,8 @@ private static final long serialVersionUID = 0L;
         backendJWTTokenInfo_ = null;
         backendJWTTokenInfoBuilder_ = null;
       }
+      apiDefinitionFile_ = com.google.protobuf.ByteString.EMPTY;
+
       return this;
     }
 
@@ -1315,6 +1345,7 @@ private static final long serialVersionUID = 0L;
       } else {
         result.backendJWTTokenInfo_ = backendJWTTokenInfoBuilder_.build();
       }
+      result.apiDefinitionFile_ = apiDefinitionFile_;
       onBuilt();
       return result;
     }
@@ -1473,6 +1504,9 @@ private static final long serialVersionUID = 0L;
       }
       if (other.hasBackendJWTTokenInfo()) {
         mergeBackendJWTTokenInfo(other.getBackendJWTTokenInfo());
+      }
+      if (other.getApiDefinitionFile() != com.google.protobuf.ByteString.EMPTY) {
+        setApiDefinitionFile(other.getApiDefinitionFile());
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -3148,6 +3182,40 @@ private static final long serialVersionUID = 0L;
         backendJWTTokenInfo_ = null;
       }
       return backendJWTTokenInfoBuilder_;
+    }
+
+    private com.google.protobuf.ByteString apiDefinitionFile_ = com.google.protobuf.ByteString.EMPTY;
+    /**
+     * <code>bytes apiDefinitionFile = 26;</code>
+     * @return The apiDefinitionFile.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString getApiDefinitionFile() {
+      return apiDefinitionFile_;
+    }
+    /**
+     * <code>bytes apiDefinitionFile = 26;</code>
+     * @param value The apiDefinitionFile to set.
+     * @return This builder for chaining.
+     */
+    public Builder setApiDefinitionFile(com.google.protobuf.ByteString value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  
+      apiDefinitionFile_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>bytes apiDefinitionFile = 26;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearApiDefinitionFile() {
+      
+      apiDefinitionFile_ = getDefaultInstance().getApiDefinitionFile();
+      onChanged();
+      return this;
     }
     @java.lang.Override
     public final Builder setUnknownFields(

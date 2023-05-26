@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: swagger-definition-http-bin-api
+data:
+  swagger.yaml: |
+    swagger: "2.0"
+    info:
+      description: "This is a sample server Petstore server."
+      version: 1.0.6
+      title: Swagger Petstore
+      license:
+        name: Apache 2.0
+        url: http://www.apache.org/licenses/LICENSE-2.0.html
+    host: petstore.swagger.io
+    basePath: /v2
+    schemes:
+     - https
+     - http
+    security:
+     -
+      default: []
+    paths:
+      /pet/findByStatus:
+        Get:
+          parameters:
+           -
+            name: status
+            in: query
+            required: true
+            type: array
+            items:
+              type: string
+              default: available
+              enum:
+               - available
+               - pending
+               - sold
+            collectionFormat: multi
+          responses:
+            "200":
+              description: successful operation
+            "400":
+              description: Invalid status value
+          security:
+           -
+            petstore_auth:
+             - write:pets
+             - read:pets
+           -
+            default:
+             - write:pets
+             - read:pets

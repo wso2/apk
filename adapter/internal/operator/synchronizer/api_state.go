@@ -26,9 +26,10 @@ import (
 // the state of the Kubernetes controller cache to detect updates.
 // +k8s:deepcopy-gen=true
 type APIState struct {
-	APIDefinition *v1alpha1.API
-	ProdHTTPRoute *HTTPRouteState
-	SandHTTPRoute *HTTPRouteState
+	APIDefinition     *v1alpha1.API
+	ProdHTTPRoute     *HTTPRouteState
+	SandHTTPRoute     *HTTPRouteState
+	APIDefinitionFile []byte
 }
 
 // HTTPRouteState holds the state of the deployed httpRoutes. This state is compared with

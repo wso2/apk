@@ -146,6 +146,7 @@ func deployAPIInGateway(apiState APIState) error {
 func GenerateAdapterInternalAPI(apiState APIState, httpRoute *HTTPRouteState, envType string) (*model.AdapterInternalAPI, error) {
 	var adapterInternalAPI model.AdapterInternalAPI
 	adapterInternalAPI.SetInfoAPICR(*apiState.APIDefinition)
+	adapterInternalAPI.SetAPIDefinitionFile(apiState.APIDefinitionFile)
 	adapterInternalAPI.EnvType = envType
 	httpRouteParams := model.HTTPRouteParams{
 		AuthSchemes:               httpRoute.Authentications,

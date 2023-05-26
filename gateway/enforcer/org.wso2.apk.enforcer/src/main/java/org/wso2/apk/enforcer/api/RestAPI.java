@@ -119,13 +119,20 @@ public class RestAPI implements API {
                     backendJWTTokenInfo.getCustomClaimsMap());
         }
 
+        byte[] apiDefinition = null;
+        if(api.getApiDefinitionFile() != null) {
+            apiDefinition = api.getApiDefinitionFile().toByteArray();
+            System.out.println("API Definition: " + apiDefinition.length);
+        }
+
         this.apiLifeCycleState = api.getApiLifeCycleState();
         this.apiConfig = new APIConfig.Builder(name).uuid(api.getId()).vhost(vhost).basePath(basePath).version(version)
                 .resources(resources).apiType(apiType).apiLifeCycleState(apiLifeCycleState).tier(api.getTier())
                 .envType(api.getEnvType()).disableAuthentication(api.getDisableAuthentications())
                 .disableScopes(api.getDisableScopes()).trustStore(trustStore).organizationId(api.getOrganizationId())
                 .mtlsCertificateTiers(mtlsCertificateTiers).mutualSSL(mutualSSL).systemAPI(api.getSystemAPI())
-                .applicationSecurity(applicationSecurity).jwtConfigurationDto(jwtConfigurationDto).build();
+                .applicationSecurity(applicationSecurity).jwtConfigurationDto(jwtConfigurationDto)
+                .apiDefinition(apiDefinition).build();
 
         initFilters();
         return basePath;

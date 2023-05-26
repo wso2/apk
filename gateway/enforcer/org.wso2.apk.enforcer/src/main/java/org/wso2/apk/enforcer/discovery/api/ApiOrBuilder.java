@@ -250,4 +250,10 @@ public interface ApiOrBuilder extends
    * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 18;</code>
    */
   org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfoOrBuilder getBackendJWTTokenInfoOrBuilder();
+
+  /**
+   * <code>bytes apiDefinitionFile = 26;</code>
+   * @return The apiDefinitionFile.
+   */
+  com.google.protobuf.ByteString getApiDefinitionFile();
 }
