@@ -137,7 +137,7 @@ func TestCreateRoutesWithClustersWithExactAndRegularExpressionRules(t *testing.T
 	adapterInternalAPI, err := synchronizer.GenerateAdapterInternalAPI(apiState, &httpRouteState, constants.Production)
 	assert.Nil(t, err, "Error should not be present when apiState is converted to a AdapterInternalAPI object")
 	routes, clusters, _, _ := envoy.CreateRoutesWithClusters(*adapterInternalAPI, nil, "prod.gw.wso2.com", "carbon.super")
-	assert.Equal(t, 2, len(clusters), "Number of production clusters created is incorrect.")
+	assert.Equal(t, 3, len(clusters), "Number of production clusters created is incorrect.")
 
 	exactPathCluster := clusters[0]
 	clusterName := strings.Split(exactPathCluster.GetName(), "_")
@@ -173,7 +173,7 @@ func TestCreateRoutesWithClustersWithExactAndRegularExpressionRules(t *testing.T
 	assert.Equal(t, uint32(7002), regexPathClusterPort, "Regex path cluster's assigned host is incorrect.")
 	assert.Equal(t, uint32(0), regexPathClusterPriority, "Regex path cluster's assigned priority is incorrect.")
 
-	assert.Equal(t, 2, len(routes), "Created number of routes are incorrect.")
+	assert.Equal(t, 3, len(routes), "Created number of routes are incorrect.")
 	assert.Contains(t, []string{"^/exact-path-api/2\\.0\\.0/\\(\\.\\*\\)/exact-path([/]{0,1})"}, routes[0].GetMatch().GetSafeRegex().Regex)
 	assert.Contains(t, []string{"^/regex-path/2.0.0/userId/([^/]+)/orderId/([^/]+)([/]{0,1})"}, routes[1].GetMatch().GetSafeRegex().Regex)
 	assert.NotEqual(t, routes[0].GetMatch().GetSafeRegex().Regex, routes[1].GetMatch().GetSafeRegex().Regex,
@@ -287,7 +287,7 @@ func TestCreateRoutesWithClustersWithMultiplePathPrefixRules(t *testing.T) {
 	adapterInternalAPI, err := synchronizer.GenerateAdapterInternalAPI(apiState, &httpRouteState, constants.Production)
 	assert.Nil(t, err, "Error should not be present when apiState is converted to a AdapterInternalAPI object")
 	routes, clusters, _, _ := envoy.CreateRoutesWithClusters(*adapterInternalAPI, nil, "prod.gw.wso2.com", "carbon.super")
-	assert.Equal(t, 2, len(clusters), "Number of production clusters created is incorrect.")
+	assert.Equal(t, 3, len(clusters), "Number of production clusters created is incorrect.")
 
 	orderServiceCluster := clusters[0]
 	clusterName := strings.Split(orderServiceCluster.GetName(), "_")
@@ -345,7 +345,7 @@ func TestCreateRoutesWithClustersWithMultiplePathPrefixRules(t *testing.T) {
 	assert.Equal(t, uint32(8081), userServiceClusterPort1, "User Service Cluster's second endpoint port is incorrect.")
 	assert.Equal(t, uint32(0), userServiceClusterPriority1, "API Level Cluster's second endpoint Priority is incorrect.")
 
-	assert.Equal(t, 14, len(routes), "Created number of routes are incorrect.")
+	assert.Equal(t, 15, len(routes), "Created number of routes are incorrect.")
 	assert.Contains(t, []string{"^/test-api/1\\.0\\.0/orders((?:/.*)*)"}, routes[0].GetMatch().GetSafeRegex().Regex)
 	assert.Contains(t, []string{"^/test-api/1\\.0\\.0/users((?:/.*)*)"}, routes[7].GetMatch().GetSafeRegex().Regex)
 	assert.NotEqual(t, routes[0].GetMatch().GetSafeRegex().Regex, routes[7].GetMatch().GetSafeRegex().Regex,
@@ -432,7 +432,7 @@ func TestCreateRoutesWithClustersWithBackendTLSConfigs(t *testing.T) {
 	adapterInternalAPI, err := synchronizer.GenerateAdapterInternalAPI(apiState, &httpRouteState, constants.Production)
 	assert.Nil(t, err, "Error should not be present when apiState is converted to a AdapterInternalAPI object")
 	_, clusters, _, _ := envoy.CreateRoutesWithClusters(*adapterInternalAPI, nil, "prod.gw.wso2.com", "carbon.super")
-	assert.Equal(t, 1, len(clusters), "Number of production clusters created is incorrect.")
+	assert.Equal(t, 2, len(clusters), "Number of production clusters created is incorrect.")
 
 	exactPathCluster := clusters[0]
 
@@ -782,7 +782,7 @@ func TestCreateRoutesWithClustersDifferentBackendRefs(t *testing.T) {
 	adapterInternalAPI, err := synchronizer.GenerateAdapterInternalAPI(apiState, &httpRouteState, constants.Production)
 	assert.Nil(t, err, "Error should not be present when apiState is converted to a AdapterInternalAPI object")
 	_, clusters, _, _ := envoy.CreateRoutesWithClusters(*adapterInternalAPI, nil, "prod.gw.wso2.com", "carbon.super")
-	assert.Equal(t, 2, len(clusters), "Number of production clusters created is incorrect.")
+	assert.Equal(t, 3, len(clusters), "Number of production clusters created is incorrect.")
 }
 
 func TestCreateRoutesWithClustersSameBackendRefs(t *testing.T) {
@@ -890,5 +890,5 @@ func TestCreateRoutesWithClustersSameBackendRefs(t *testing.T) {
 	adapterInternalAPI, err := synchronizer.GenerateAdapterInternalAPI(apiState, &httpRouteState, constants.Production)
 	assert.Nil(t, err, "Error should not be present when apiState is converted to a AdapterInternalAPI object")
 	_, clusters, _, _ := envoy.CreateRoutesWithClusters(*adapterInternalAPI, nil, "prod.gw.wso2.com", "carbon.super")
-	assert.Equal(t, 1, len(clusters), "Number of production clusters created is incorrect.")
+	assert.Equal(t, 2, len(clusters), "Number of production clusters created is incorrect.")
 }

@@ -82,6 +82,7 @@ const (
 	DescriptorValueForOperationMethod  = ":method"
 	MetadataNamespaceForCustomPolicies = "apk.ratelimit.metadata"
 	MetadataNamespaceForWSO2Policies   = "envoy.filters.http.ext_authz"
+	swaggerRoutePath                   = "/(.*)?swagger.json"
 )
 
 // CreateRoutesWithClusters creates envoy routes along with clusters and endpoint instances.
@@ -113,6 +114,7 @@ func CreateRoutesWithClusters(adapterInternalAPI model.AdapterInternalAPI, inter
 	// Maintain a clusterName-EndpointCluster mapping to prevent duplicate
 	// creation of clusters.
 	processedEndpoints := map[string]model.EndpointCluster{}
+	fmt.Println("Is System API::: ", adapterInternalAPI.IsSystemAPI)
 
 	for _, resource := range adapterInternalAPI.GetResources() {
 		var clusterName string
@@ -120,6 +122,18 @@ func CreateRoutesWithClusters(adapterInternalAPI model.AdapterInternalAPI, inter
 		endpoint := resource.GetEndpoints()
 		basePath := strings.TrimSuffix(endpoint.Endpoints[0].Basepath, "/")
 		existingClusterName := getExistingClusterName(*endpoint, processedEndpoints)
+
+		if !adapterInternalAPI.IsSystemAPI {
+			fmt.Println("Resource Path: ", resourcePath)
+		}
+
+		if !adapterInternalAPI.IsSystemAPI {
+			fmt.Println("Endpoint: ", endpoint)
+		}
+
+		if !adapterInternalAPI.IsSystemAPI {
+			fmt.Println("Base Path: ", basePath)
+		}
 
 		if existingClusterName == "" {
 			clusterName = getClusterName(endpoint.EndpointPrefix, organizationID, vHost, adapterInternalAPI.GetTitle(), apiVersion, resource.GetID())
@@ -145,6 +159,9 @@ func CreateRoutesWithClusters(adapterInternalAPI model.AdapterInternalAPI, inter
 			return nil, nil, nil, fmt.Errorf("error while creating routes. %v", err)
 		}
 		routes = append(routes, routeP...)
+		if resourcePath == "/(.*)?swagger.json" {
+			fmt.Println("Route: ", routeP)
+		}
 	}
 
 	return routes, clusters, endpoints, nil
@@ -668,22 +685,22 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 	// to validate the key type component in the token.
 	contextExtensions[clusterNameContextExtension] = clusterName
 
-	extAuthPerFilterConfig := extAuthService.ExtAuthzPerRoute{
-		Override: &extAuthService.ExtAuthzPerRoute_CheckSettings{
+	var extAuthPerFilterConfig extAuthService.ExtAuthzPerRoute
+	var extAuthzFilter any.Any
+
+	if !strings.EqualFold(swaggerRoutePath, resource.GetPath()) {
+		extAuthPerFilterConfig.Override = &extAuthService.ExtAuthzPerRoute_CheckSettings{
 			CheckSettings: &extAuthService.CheckSettings{
 				ContextExtensions: contextExtensions,
 				// negation is performing to match the envoy config name (disable_request_body_buffering)
 				DisableRequestBodyBuffering: !params.passRequestPayloadToEnforcer,
 			},
-		},
-	}
-
-	b := proto.NewBuffer(nil)
-	b.SetDeterministic(true)
-	_ = b.Marshal(&extAuthPerFilterConfig)
-	extAuthzFilter := &any.Any{
-		TypeUrl: extAuthzPerRouteName,
-		Value:   b.Bytes(),
+		}
+		b := proto.NewBuffer(nil)
+		b.SetDeterministic(true)
+		_ = b.Marshal(&extAuthPerFilterConfig)
+		extAuthzFilter.TypeUrl = extAuthzPerRouteName
+		extAuthzFilter.Value = b.Bytes()
 	}
 
 	var luaPerFilterConfig lua.LuaPerRoute
@@ -756,10 +773,14 @@ end`
 
 	corsFilter, _ := anypb.New(corsPolicy)
 
-	perRouteFilterConfigs := map[string]*any.Any{
-		wellknown.HTTPExternalAuthorization: extAuthzFilter,
-		LuaLocal:                            luaFilter,
-		wellknown.CORS:                      corsFilter,
+	var perRouteFilterConfigs map[string]*any.Any
+
+	if !strings.EqualFold(swaggerRoutePath, resource.GetPath()) {
+		perRouteFilterConfigs = map[string]*any.Any{
+			wellknown.HTTPExternalAuthorization: &extAuthzFilter,
+			LuaLocal:                            luaFilter,
+			wellknown.CORS:                      corsFilter,
+		}
 	}
 
 	logger.LoggerOasparser.Debugf("adding route : %s for API : %s", resourcePath, title)
