@@ -290,3 +290,12 @@ public isolated function e909630(error e) returns commons:APKError {
         description = "Internal Error occured while retrieving Documents"
     ); 
 }
+
+public isolated function e909631(error e, string contentType) returns commons:APKError {
+    return error commons:APKError("Error in parsing " + contentType + " XML data", e,
+        code = 909607,
+        message = "Error in parsing " + contentType + " XML data",
+        statusCode = 500,
+        description = "Error in parsing " + contentType + " XML data"
+    ); 
+}

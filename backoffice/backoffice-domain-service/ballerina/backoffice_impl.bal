@@ -546,8 +546,6 @@ isolated function addDocumentContent(string apiId, string documentId, http:Reque
                 visibility: getDocumentMetaData.visibility,
                 inlineContent: getDocumentMetaData.inlineContent
             };
-
-            string|() fileName = ();
             byte[]|() fileContent = ();
             string baseType = "";
             string inlineContent = "";
@@ -563,6 +561,7 @@ isolated function addDocumentContent(string apiId, string documentId, http:Reque
                             fileContent = check payLoadPart.getByteArray();
                         } else {
                             log:printError("Error in parsing XML data", 'error = payload);
+                            return e909631(payload, "XML");
                         }
                     } else if mime:APPLICATION_JSON == baseType {
                         var payload = payLoadPart.getJson();
@@ -571,13 +570,16 @@ isolated function addDocumentContent(string apiId, string documentId, http:Reque
                             fileContent = check payLoadPart.getByteArray();
                         } else {
                             log:printError("Error in parsing JSON data", 'error = payload);
+                            return e909631(payload, "JSON");
                         }
                     } else if mime:TEXT_PLAIN == baseType {
                         var payload = payLoadPart.getText();
                         if payload is string {
                             inlineContent = payload;
+                            fileContent = check payLoadPart.getByteArray();
                         } else {
                             log:printError("Error in parsing text data", 'error = payload);
+                            return e909631(payload, "text");
                         }
                     } else if mime:APPLICATION_PDF == baseType {
                         fileContent = check payLoadPart.getByteArray();
@@ -651,15 +653,9 @@ isolated function getDocumentContent(string apiId, string documentId) returns ht
         if getDocumentMetaData is DocumentMetaData {
             Resource|commons:APKError getDocumentResource = db_getResourceByResourceId(<string>getDocumentMetaData.resourceId);
             if getDocumentResource is Resource {
-                if getDocumentMetaData.sourceType == "FILE" {
                     http:Response outResponse = new;
                     outResponse.setBinaryPayload(<byte[]>getDocumentResource.resourceBinaryValue, getDocumentResource.dataType);
                     return outResponse;
-                } else {
-                    http:Response outResponse = new;
-                    outResponse.setTextPayload(getDocumentResource.resourceContent, getDocumentResource.dataType);
-                    return outResponse;
-                }
             } else {
                 return getDocumentResource;
             }
