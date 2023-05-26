@@ -559,9 +559,9 @@ isolated function db_addDocumentMetaData(DocumentMetaData documentMetaData, stri
                                         'apkuser',
                                         ${utc}
                                     )`;
-        sql:ParameterizedQuery ADD_THUMBNAIL_Prefix = `INSERT INTO API_DOC_META_DATA (UUID, RESOURCE_UUID, API_UUID, NAME, SUMMARY, TYPE, OTHER_TYPE_NAME, SOURCE_URL, FILE_NAME,  SOURCE_TYPE,
+        sql:ParameterizedQuery ADD_DOCUMENT_Prefix = `INSERT INTO API_DOC_META_DATA (UUID, RESOURCE_UUID, API_UUID, NAME, SUMMARY, TYPE, OTHER_TYPE_NAME, SOURCE_URL, FILE_NAME,  SOURCE_TYPE,
          VISIBILITY, CREATED_BY, CREATED_TIME, UPDATED_BY, LAST_UPDATED_TIME) VALUES (`;
-        sql:ParameterizedQuery sqlQuery = sql:queryConcat(ADD_THUMBNAIL_Prefix, values);
+        sql:ParameterizedQuery sqlQuery = sql:queryConcat(ADD_DOCUMENT_Prefix, values);
         sql:ExecutionResult|sql:Error result = dbClient->execute(sqlQuery);
         if result is sql:ExecutionResult {
             log:printDebug("Resource added successfully");

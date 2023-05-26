@@ -440,7 +440,7 @@ isolated function createDocument(string apiId, Document documentPayload) returns
             documentResource.resourceUUID = resourceUUID;
             Resource|commons:APKError addedDocResource = db_addResource(documentResource);
             if addedDocResource is Resource {
-                // Add doc metaData
+                // Add document metaData
                 string documentUUID = uuid:createType1AsString();
                 DocumentMetaData documentMetaData = {
                     documentId: documentUUID,
@@ -473,7 +473,6 @@ isolated function createDocument(string apiId, Document documentPayload) returns
                 } else {
                     return addedDocMetaData;
                 }
-                //
             } else {
                 return addedDocResource;
             }
@@ -534,7 +533,7 @@ isolated function addDocumentContent(string apiId, string documentId, http:Reque
     if getApi is API {
         DocumentMetaData|NotFoundError|commons:APKError getDocumentMetaData = db_getDocumentByDocumentId(documentId, apiId);
         if getDocumentMetaData is DocumentMetaData {
-            //convert documentMetadata object to Document object
+            // Convert documentMetadata object to Document object
             Document document = {
                 documentId: getDocumentMetaData.documentId,
                 name: getDocumentMetaData.name,
@@ -562,7 +561,6 @@ isolated function addDocumentContent(string apiId, string documentId, http:Reque
                         if payload is xml {
                             inlineContent = payload.toString();
                             fileContent = check payLoadPart.getByteArray();
-                            log:printInfo("XML data: " + payload.toString());
                         } else {
                             log:printError("Error in parsing XML data", 'error = payload);
                         }
@@ -571,7 +569,6 @@ isolated function addDocumentContent(string apiId, string documentId, http:Reque
                         if payload is json {
                             inlineContent = payload.toJsonString();
                             fileContent = check payLoadPart.getByteArray();
-                            log:printInfo("JSON data: " + payload.toJsonString());
                         } else {
                             log:printError("Error in parsing JSON data", 'error = payload);
                         }
@@ -579,7 +576,6 @@ isolated function addDocumentContent(string apiId, string documentId, http:Reque
                         var payload = payLoadPart.getText();
                         if payload is string {
                             inlineContent = payload;
-                            log:printInfo("Text data: " + payload);
                         } else {
                             log:printError("Error in parsing text data", 'error = payload);
                         }
@@ -626,7 +622,7 @@ isolated function getDocumentMetaData(string apiId, string documentId) returns D
     if getApi is API {
         DocumentMetaData|NotFoundError|commons:APKError getDocumentMetaData = db_getDocumentByDocumentId(documentId, apiId);
         if getDocumentMetaData is DocumentMetaData {
-            //convert documentMetadata object to Document object
+            // Convert documentMetadata object to Document object
             Document document = {
                 documentId: getDocumentMetaData.documentId,
                 name: getDocumentMetaData.name,

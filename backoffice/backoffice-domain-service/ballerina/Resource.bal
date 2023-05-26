@@ -23,7 +23,7 @@ type Resource record {|
     string dataType;
     string resourceContent;
     byte[] resourceBinaryValue?;
-    json respurceJsonValue?;
+    json resourceJsonValue?;
 |};
 
 type Thumbnail record {|
