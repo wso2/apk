@@ -47,39 +47,41 @@ isolated function addApplication(Application application, commons:Organization o
                 return error(message, appworkflow, message = message, description = message, code = 909000, statusCode = 500);
             }
             application.status = "CREATED";
+            Application createdApp = check addApplicationDAO(application, subscriberId, org.uuid);
+            return createdApp;
         } else {
             application.status = "APPROVED";
-        }
-        Application createdApp = check addApplicationDAO(application, subscriberId, org.uuid);
-        string[] hostList = check retrieveManagementServerHostsList();
-        string eventId = uuid:createType1AsString();
-        time:Utc currTime = time:utcNow();
-        string date = time:utcToString(currTime);
-        ApplicationGRPC createApplicationRequest = {
-            eventId: eventId,
-            name: createdApp.name,
-            uuid: applicationId,
-            owner: user,
-            policy: "unlimited",
-            keys: [],
-            attributes: [],
-            timeStamp: date,
-            organization: org.uuid
-        };
-        foreach string host in hostList {
-            log:printDebug("Retrieved Mgt Host:" + host);
-            string devportalPubCert = <string>keyStores.tls.certFilePath;
-            string devportalKeyCert = <string>keyStores.tls.keyFilePath;
-            string pubCertPath = managementServerConfig.certPath;
-            NotificationResponse|error applicationNotification = notification_grpc_client:createApplication(createApplicationRequest,
-                    "https://" + host + ":8766", pubCertPath, devportalPubCert, devportalKeyCert);
-            if applicationNotification is error {
-                string message = "Error while sending application create grpc event";
-                log:printError(applicationNotification.toString());
-                return error(message, applicationNotification, message = message, description = message, code = 909000, statusCode = 500);
+            Application createdApp = check addApplicationDAO(application, subscriberId, org.uuid);
+            string[] hostList = check retrieveManagementServerHostsList();
+            string eventId = uuid:createType1AsString();
+            time:Utc currTime = time:utcNow();
+            string date = time:utcToString(currTime);
+            ApplicationGRPC createApplicationRequest = {
+                eventId: eventId,
+                name: createdApp.name,
+                uuid: applicationId,
+                owner: user,
+                policy: "unlimited",
+                keys: [],
+                attributes: [],
+                timeStamp: date,
+                organization: org.uuid
+            };
+            foreach string host in hostList {
+                log:printDebug("Retrieved Mgt Host:" + host);
+                string devportalPubCert = <string>keyStores.tls.certFilePath;
+                string devportalKeyCert = <string>keyStores.tls.keyFilePath;
+                string pubCertPath = managementServerConfig.certPath;
+                NotificationResponse|error applicationNotification = notification_grpc_client:createApplication(createApplicationRequest,
+                        "https://" + host + ":8766", pubCertPath, devportalPubCert, devportalKeyCert);
+                if applicationNotification is error {
+                    string message = "Error while sending application create grpc event";
+                    log:printError(applicationNotification.toString());
+                    return error(message, applicationNotification, message = message, description = message, code = 909000, statusCode = 500);
+                }
             }
+            return application;
         }
-        return application;
     } else {
         return subscriberId;
     }

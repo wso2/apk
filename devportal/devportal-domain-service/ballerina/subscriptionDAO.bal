@@ -73,9 +73,9 @@ isolated function addSubscriptionDAO(Subscription sub, string user, string apiId
 
         // Insert into SUBSCRIPTION table
         sql:ParameterizedQuery query = `INSERT INTO SUBSCRIPTION (TIER_ID,API_UUID,APPLICATION_UUID,
-        SUB_STATUS,CREATED_BY,UUID, TIER_ID_PENDING) 
+        SUB_STATUS,SUBS_CREATE_STATE,CREATED_BY,UUID, TIER_ID_PENDING) 
         VALUES (${Tier_ID},${apiId},${appId},
-        ${sub.status},${user},${sub.subscriptionId},${Tier_ID})`;
+        ${sub.status},${sub.subscriptionCreateState},${user},${sub.subscriptionId},${Tier_ID})`;
         sql:ExecutionResult|sql:Error result = dbClient->execute(query);
         if result is sql:ExecutionResult {
             log:printDebug(result.toString());

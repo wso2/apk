@@ -63,37 +63,53 @@ isolated function addSubscription(Subscription payload, commons:Organization org
         //     payload.requestedThrottlingPolicy = businessPlan;
         // }
         string subscriptionId = uuid:createType1AsString();
-        payload.subscriptionId = subscriptionId;
-        payload.status = "UNBLOCKED";
-        Subscription createdSub = check addSubscriptionDAO(payload, user, apiId, appId);
-        string[] hostList = check retrieveManagementServerHostsList();
-        string eventId = uuid:createType1AsString();
-        time:Utc currTime = time:utcNow();
-        string date = time:utcToString(currTime);
-        SubscriptionGRPC createSubscriptionRequest = {
-            eventId: eventId,
-            applicationRef: createdSub.applicationId,
-            apiRef: <string>createdSub.apiId,
-            policyId: "unlimited",
-            subStatus: <string>createdSub.status,
-            subscriber: user,
-            uuid: subscriptionId,
-            timeStamp: date,
-            organization: org.uuid
-        };
-        string devportalPubCert = <string>keyStores.tls.certFilePath;
-        string devportalKeyCert = <string>keyStores.tls.keyFilePath;
-        string pubCertPath = managementServerConfig.certPath;
-        foreach string host in hostList {
-            NotificationResponse|error subscriptionNotification = notification_grpc_client:createSubscription(createSubscriptionRequest,
-                "https://" + host + ":8766", pubCertPath, devportalPubCert, devportalKeyCert);
-            if subscriptionNotification is error {
-                string message = "Error while sending subscription create grpc event";
-                log:printError(subscriptionNotification.toString());
-                return error(message, subscriptionNotification, message = message, description = message, code = 909000, statusCode = 500);
+        boolean|error isSubscriptionWorkflowEnable = isSubsciptionWorkflowEnabled(org.uuid);
+        if isSubscriptionWorkflowEnable is error {
+            string message = "Error while checking subscription workflow";
+            return error(message, message = message, description = message, code = 909000, statusCode = 500);
+        } else if (isSubscriptionWorkflowEnable) {
+            string|error subworkflow = addSubscriptionCreationWorkflow(subscriptionId, org.uuid);
+            if subworkflow is error {
+                string message = "Error while creating subscription workflow";
+                return error(message, subworkflow, message = message, description = message, code = 909000, statusCode = 500);
             }
+            payload.subscriptionCreateState = "CREATED";
+            Subscription createdSub = check addSubscriptionDAO(payload, user, apiId, appId);
+            return createdSub;
+        } else {
+            payload.subscriptionCreateState = "APPROVED";
+            payload.subscriptionId = subscriptionId;
+            payload.status = "UNBLOCKED";
+            Subscription createdSub = check addSubscriptionDAO(payload, user, apiId, appId);
+            string[] hostList = check retrieveManagementServerHostsList();
+            string eventId = uuid:createType1AsString();
+            time:Utc currTime = time:utcNow();
+            string date = time:utcToString(currTime);
+            SubscriptionGRPC createSubscriptionRequest = {
+                eventId: eventId,
+                applicationRef: createdSub.applicationId,
+                apiRef: <string>createdSub.apiId,
+                policyId: "unlimited",
+                subStatus: <string>createdSub.status,
+                subscriber: user,
+                uuid: subscriptionId,
+                timeStamp: date,
+                organization: org.uuid
+            };
+            string devportalPubCert = <string>keyStores.tls.certFilePath;
+            string devportalKeyCert = <string>keyStores.tls.keyFilePath;
+            string pubCertPath = managementServerConfig.certPath;
+            foreach string host in hostList {
+                NotificationResponse|error subscriptionNotification = notification_grpc_client:createSubscription(createSubscriptionRequest,
+                    "https://" + host + ":8766", pubCertPath, devportalPubCert, devportalKeyCert);
+                if subscriptionNotification is error {
+                    string message = "Error while sending subscription create grpc event";
+                    log:printError(subscriptionNotification.toString());
+                    return error(message, subscriptionNotification, message = message, description = message, code = 909000, statusCode = 500);
+                }
+            }
+            return createdSub;
         }
-        return createdSub;
     } on fail var e {
         return error("Internal Error", e, code = 900900, description = "Internal Error", statusCode = 500, message = "Internal Error");
     }

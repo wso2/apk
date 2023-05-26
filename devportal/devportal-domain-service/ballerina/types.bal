@@ -249,6 +249,7 @@ public type Subscription record {
     APIInfo apiInfo?;
     ApplicationInfo applicationInfo?;
     string status?;
+    string subscriptionCreateState?;
     # A url and other parameters the subscriber can be redirected.
     string redirectionParams?;
 };

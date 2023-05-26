@@ -111,6 +111,26 @@ isolated function addApplicationCreationWorkflow(string applicationID, string or
     }   
 }
 
+isolated function addSubscriptionCreationWorkflow(string subcriptionID, string organization) returns string|error {
+    postgresql:Client | error dbClient  = getConnection();
+    string uuid = uuid:createType1AsString();
+    if dbClient is error {
+        string message = "Error while retrieving connection";
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = 500);
+    }
+    do {
+        sql:ParameterizedQuery query = `INSERT INTO WORKFLOWS(uuid, wf_reference, wf_type, wf_status,
+                wf_created_time, wf_updated_time, organization) VALUES (${uuid}, ${subcriptionID}, 'SUBSCRIPTION_CREATION', 
+                'CREATED', ${time:utcNow()}, ${time:utcNow()} , ${organization})`;
+        sql:ExecutionResult|sql:Error result = dbClient->execute(query);
+        if(result is sql:Error) {
+            string message = "Error while adding subscription creation workflow";
+            return error(message, result, message = message, description = message, code = 909000, statusCode = 500);
+        } 
+        return uuid;
+    }   
+}
+
 public type WorkflowProperties record {
     string name;
     boolean enabled;
