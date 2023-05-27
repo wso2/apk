@@ -571,9 +571,9 @@
 					"mode": "formdata",
 					"formdata": [
 						{
-							"key": "file",
-							"type": "file",
-							"src": "/Users/chashika/Documents/WSO2/APK/apk/backoffice/backoffice-domain-service/ballerina/tests/resources/invalidThumbnail.pdf"
+							"key": "inlineContent",
+							"value": "Document content",
+							"type": "text"
 						}
 					]
 				},
@@ -679,6 +679,8 @@
 							"",
 							"pm.test(\"Assert BackOffice GET Document\", () => {",
 							"    //parse the response JSON and test three properties",
+							"    const documentContent = pm.response.text;",
+							"    pm.expect(documentContent === \"Document content\");",
 							"});",
 							""
 						],
