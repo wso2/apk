@@ -500,6 +500,7 @@ isolated function db_addResource(Resource resourceItem) returns Resource|commons
 }
 
 isolated function db_updateResource(Resource resourceItem) returns Resource|commons:APKError {
+    log:printInfo(resourceItem.toBalString());
     postgresql:Client|error dbClient = getConnection();
     if dbClient is error {
         return e909601(dbClient);

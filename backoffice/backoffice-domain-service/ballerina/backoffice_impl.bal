@@ -547,13 +547,13 @@ isolated function addDocumentContent(string apiId, string documentId, http:Reque
                 inlineContent: getDocumentMetaData.inlineContent
             };
             byte[]|() fileContent = ();
-            string baseType = "";
+            string baseType = mime:TEXT_PLAIN;
             string inlineContent = "";
             mime:Entity[]|http:ClientError payLoadParts = message.getBodyParts();
             if payLoadParts is mime:Entity[] {
                 foreach mime:Entity payLoadPart in payLoadParts {
                     mime:ContentDisposition contentDisposition = payLoadPart.getContentDisposition();
-                    baseType = getContentBaseType(payLoadPart.getContentType());
+                    baseType = payLoadPart.getContentType();
                     if mime:APPLICATION_XML == baseType || mime:TEXT_XML == baseType {
                         var payload = payLoadPart.getXml();
                         if payload is xml {
@@ -576,7 +576,7 @@ isolated function addDocumentContent(string apiId, string documentId, http:Reque
                         var payload = payLoadPart.getText();
                         if payload is string {
                             inlineContent = payload;
-                            fileContent = check payLoadPart.getByteArray();
+                            fileContent = payload.toBytes();
                         } else {
                             log:printError("Error in parsing text data", 'error = payload);
                             return e909631(payload, "text");
@@ -584,6 +584,10 @@ isolated function addDocumentContent(string apiId, string documentId, http:Reque
                     } else if mime:APPLICATION_PDF == baseType {
                         fileContent = check payLoadPart.getByteArray();
                         inlineContent = contentDisposition.fileName;
+                    } else {
+                        baseType = mime:TEXT_PLAIN;
+                        inlineContent = check payLoadPart.getText();
+                        fileContent = inlineContent.toBytes();
                     }
                 }
             }
