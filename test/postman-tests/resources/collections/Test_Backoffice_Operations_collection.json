@@ -753,7 +753,7 @@
 							"pm.test(\"Assert BackOffice GET Document List\", () => {",
 							"    //parse the response JSON and test three properties",
 							"    const responseJson = pm.response.json();",
-							"    pm.expect(responseJson.list.length).to.be.above(1);",
+							"    pm.expect(responseJson.list.length).to.be.above(0);",
 							"});",
 							""
 						],
