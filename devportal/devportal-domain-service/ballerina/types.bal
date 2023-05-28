@@ -160,7 +160,7 @@ public type ApplicationKeyGenerateRequest record {
 public type Document record {
     string documentId?;
     string name;
-    string 'type;
+    string documentType;
     string summary?;
     string sourceType;
     string sourceUrl?;

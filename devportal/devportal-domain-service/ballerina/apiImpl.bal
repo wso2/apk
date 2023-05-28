@@ -151,9 +151,9 @@ isolated function readMap(javautil:Map sdkMap, string key) returns string {
 isolated function getThumbnail(string apiId) returns http:Response|NotFoundError|commons:APKError {
     API|NotFoundError|commons:APKError api = getAPIByAPIId(apiId);
     if api is API {
-        int|commons:APKError thumbnailCategoryId = db_getResourceCategoryIdByCategoryType(RESOURCE_TYPE_THUMBNAIL);
+        int|commons:APKError thumbnailCategoryId = getResourceCategoryIdByCategoryTypeDAO(RESOURCE_TYPE_THUMBNAIL);
         if thumbnailCategoryId is int {
-            Resource|NotFoundError|commons:APKError thumbnail = db_getResourceByResourceCategory(apiId, thumbnailCategoryId);
+            Resource|NotFoundError|commons:APKError thumbnail = getResourceByResourceCategoryDAO(apiId, thumbnailCategoryId);
             if thumbnail is Resource {
                 http:Response outResponse = new;
                 outResponse.setBinaryPayload(thumbnail.resourceBinaryValue, thumbnail.dataType);
@@ -166,7 +166,82 @@ isolated function getThumbnail(string apiId) returns http:Response|NotFoundError
     } else if api is NotFoundError|commons:APKError {
         return api;
     }
-    string message = "Unable to retrieve Thumbnail";
+    string message = "Unable to get the thumbnail";
     commons:APKError e = error(message, message = message, description = message, code = 90911, statusCode = 500);
     return e;
+}
+
+isolated function getDocumentMetaData(string apiId, string documentId) returns Document|NotFoundError|commons:APKError {
+    API|NotFoundError|commons:APKError api = getAPIByAPIId(apiId);
+    if api is API {
+        DocumentMetaData|NotFoundError|commons:APKError getDocumentMetaData = getDocumentByDocumentIdDAO(documentId, apiId);
+        if getDocumentMetaData is DocumentMetaData {
+            // Convert documentMetadata object to Document object
+            Document document = {
+                documentId: getDocumentMetaData.documentId,
+                name: getDocumentMetaData.name,
+                summary: getDocumentMetaData.summary,
+                sourceType: getDocumentMetaData.sourceType,
+                sourceUrl: getDocumentMetaData.sourceUrl,
+                documentType: getDocumentMetaData.documentType,
+                otherTypeName: getDocumentMetaData.otherTypeName
+            };
+            return document;
+        } else {
+            return getDocumentMetaData;
+        }
+    } else if api is NotFoundError|commons:APKError {
+        return api;
+    }
+    string message = "Unable to get the Document meta data";
+    commons:APKError e = error(message, message = message, description = message, code = 90911, statusCode = 500);
+    return e;
+}
+
+
+isolated function getDocumentContent(string apiId, string documentId) returns http:Response|NotFoundError|commons:APKError {
+    API|NotFoundError|commons:APKError api = getAPIByAPIId(apiId);
+    if api is API {
+        DocumentMetaData|NotFoundError|commons:APKError getDocumentMetaData = getDocumentByDocumentIdDAO(documentId, apiId);
+        if getDocumentMetaData is DocumentMetaData {
+            Resource|commons:APKError getDocumentResource = getResourceByResourceIdDAO(<string>getDocumentMetaData.resourceId);
+            if getDocumentResource is Resource {
+                    http:Response outResponse = new;
+                    outResponse.setBinaryPayload(<byte[]>getDocumentResource.resourceBinaryValue, getDocumentResource.dataType);
+                    return outResponse;
+            } else {
+                return getDocumentResource;
+            }
+        } else {
+            return getDocumentMetaData;
+        }
+    } else if api is NotFoundError|commons:APKError {
+        return api;
+    }
+    string message = "Unable to get the Document content";
+    commons:APKError e = error(message, message = message, description = message, code = 90911, statusCode = 500);
+    return e;
+}
+
+isolated function getDocumentList(string apiId, int 'limit, int offset) returns DocumentList|NotFoundError|commons:APKError {
+    API|NotFoundError|commons:APKError api = getAPIByAPIId(apiId);
+    if api is API {
+        Document[]|commons:APKError documents = getDocumentsDAO(apiId);
+        if documents is Document[] {
+            Document[] limitSet = [];
+            if documents.length() > offset {
+                foreach int i in offset ... (documents.length() - 1) {
+                    if limitSet.length() < 'limit {
+                        limitSet.push(documents[i]);
+                    }
+                }
+            }
+            DocumentList documentList = {count: limitSet.length(), list: limitSet, pagination: {total: documents.length(), 'limit: 'limit, offset: offset}};
+            return documentList;
+        } else {
+            return documents;
+        }
+    } else {
+        return api;
+    }
 }

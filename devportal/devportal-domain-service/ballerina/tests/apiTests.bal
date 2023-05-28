@@ -109,7 +109,7 @@ function beforeFunc() {
 @test:BeforeSuite
 function beforeFunc2() returns error? {
      // Add thumbnail
-    int|commons:APKError thumbnailCategoryId = db_getResourceCategoryIdByCategoryType(RESOURCE_TYPE_THUMBNAIL);
+    int|commons:APKError thumbnailCategoryId = getResourceCategoryIdByCategoryTypeDAO(RESOURCE_TYPE_THUMBNAIL);
     if thumbnailCategoryId is int {
         Resource thumbnail = {
             resourceUUID: "02ad95e2-b30b-10c8-wwf2-65da7edd2219",
