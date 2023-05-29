@@ -43,6 +43,7 @@ type PolicySpec struct {
 	ResponseInterceptors []InterceptorReference `json:"responseInterceptors,omitempty"`
 	BackendJWTToken      *BackendJWTToken       `json:"backendJwtToken,omitempty"`
 	CORSPolicy           *CORSPolicy            `json:"cORSPolicy,omitempty"`
+	OPAPolicy            *OPAPolicy             `json:"oPAPolicy,omitempty"`
 }
 
 // BackendJWTToken holds backend JWT token information
@@ -76,6 +77,33 @@ type CORSPolicy struct {
 	AccessControlAllowMethods     []string `json:"accessControlAllowMethods,omitempty"`
 	AccessControlAllowOrigins     []string `json:"accessControlAllowOrigins,omitempty"`
 	AccessControlExposeHeaders    []string `json:"accessControlExposeHeaders,omitempty"`
+}
+
+// OPAPolicy holds OPA policy information
+type OPAPolicy struct {
+	// ServerURL is the URL of the OPA server
+	ServerURL string `json:"serverURL,omitempty"`
+
+	// Policy is the policy name of the OPA policy
+	Policy string `json:"policy,omitempty"`
+
+	// +optional
+	Rule string `json:"rule,omitempty"`
+
+	// +optional
+	AccessToken string `json:"accessToken,omitempty"`
+
+	// +optional
+	SendAccessToken bool `json:"sendAccessToken,omitempty"`
+
+	// +optional
+	AdditionalProperties []string `json:"additionalProperties,omitempty"`
+
+	// +optional
+	MaxOpenConnections int `json:"maxOpenConnections,omitempty"`
+
+	// +optional
+	ConnectionTimeout int `json:"connectionTimeout,omitempty"`
 }
 
 // InterceptorReference holds InterceptorService reference using name and namespace

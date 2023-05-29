@@ -29,4 +29,8 @@ public class OPAConstants {
         public static final String ADDITIONAL_PROPERTIES = "additionalProperties";
         public static final String SEND_ACCESS_TOKEN = "sendAccessToken";
     }
+
+    public static final String EMPTY_OPA_RESPONSE = "{}";
+    public static final String OPA_RESPONSE_RESULT_KEY = "result";
+    public static final String OPA_RESPONSE_DEFAULT_RULE = "allow";
 }

@@ -50,11 +50,8 @@ var supportedPoliciesMap = map[string]policyLayout{
 		RequiredParams:   []string{constants.RewritePathResourcePath, constants.IncludeQueryParams},
 		IsPassToEnforcer: true,
 	},
-	"OPA": {
-		// Following parameters are not required (optional)
-		// "rule", token", "additionalProperties", "sendAccessToken", "maxOpenConnections", "maxPerRoute"
-		// "connectionTimeout", "requestGenerator"
-		RequiredParams:   []string{"serverURL", "policy"},
+	constants.ActionOPA: {
+		RequiredParams:   []string{constants.ServerURL, constants.Policy},
 		IsPassToEnforcer: true,
 	},
 }

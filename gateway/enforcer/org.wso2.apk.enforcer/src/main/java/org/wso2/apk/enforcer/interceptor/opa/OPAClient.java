@@ -154,7 +154,9 @@ public class OPAClient {
                     if (statusCode == 200) {
                         HttpEntity entity = response.getEntity();
                         try (InputStream content = entity.getContent()) {
-                            return IOUtils.toString(content, String.valueOf(Charset.defaultCharset()));
+                            String stringContent = IOUtils.toString(content, String.valueOf(Charset.defaultCharset()));
+                            log.debug("Response from the OPA server: " + stringContent);
+                            return stringContent.strip();
                         }
                     } else {
                         log.error("Unexpected HTTP response code responded by the OPA server, HTTP code: {} {}",

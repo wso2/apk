@@ -210,6 +210,7 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 		}
 
 		addOperationLevelInterceptors(&policies, resourceAPIPolicy, httpRouteParams.InterceptorServiceMapping, httpRouteParams.BackendMapping)
+		addOPAPolicy(&policies, resourceAPIPolicy)
 
 		loggers.LoggerOasparser.Debug("Calculating auths for API ...")
 		securities, securityDefinitions, disabledSecurity := getSecurity(concatAuthScheme(resourceAuthScheme), scopes)
@@ -367,6 +368,29 @@ func addOperationLevelInterceptors(policies *OperationPolicies, apiPolicy *dpv1a
 					Parameters: policyParameters,
 				})
 			}
+		}
+	}
+}
+
+// addOPAPolicy adds the OPA policy to the policies
+func addOPAPolicy(policies *OperationPolicies, apiPolicy *dpv1alpha1.APIPolicy) {
+	if apiPolicy != nil && apiPolicy.Spec.Override != nil {
+		if apiPolicy.Spec.Override.OPAPolicy != nil {
+			policyParameters := make(map[string]interface{})
+			policyParameters[constants.ServerURL] = apiPolicy.Spec.Override.OPAPolicy.ServerURL
+			policyParameters[constants.Policy] = apiPolicy.Spec.Override.OPAPolicy.Policy
+			policyParameters[constants.Rule] = apiPolicy.Spec.Override.OPAPolicy.Rule
+			policyParameters[constants.AccessToken] = apiPolicy.Spec.Override.OPAPolicy.AccessToken
+			policyParameters[constants.SendAccessToken] = apiPolicy.Spec.Override.OPAPolicy.SendAccessToken
+			policyParameters[constants.AdditionalProperties] = apiPolicy.Spec.Override.OPAPolicy.AdditionalProperties
+			policyParameters[constants.MaxOpenConnections] = apiPolicy.Spec.Override.OPAPolicy.MaxOpenConnections
+			policyParameters[constants.ConnectionTimeout] = apiPolicy.Spec.Override.OPAPolicy.ConnectionTimeout
+			policies.Request = append(policies.Request, Policy{
+				PolicyName:       constants.PolicyOPA,
+				Action:           constants.ActionOPA,
+				Parameters:       policyParameters,
+				IsPassToEnforcer: true,
+			})
 		}
 	}
 }

@@ -322,7 +322,6 @@ spec:
 #     - host: interceptor-backend-v1.apk
 #       port: 9081
 # ---
----
 apiVersion: dp.wso2.com/v1alpha1
 kind: JWTIssuer
 metadata:
@@ -343,4 +342,81 @@ spec:
     group: gateway.networking.k8s.io
     kind: Gateway
     name: default
-
+---
+apiVersion: dp.wso2.com/v1alpha1
+kind: Backend
+metadata:
+  name: opa-backend
+  namespace: gateway-integration-test-infra
+spec:
+  services:
+  - host: opa-svc.gateway-integration-test-infra
+    port: 8181
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: opa-svc
+  namespace: gateway-integration-test-infra
+spec:
+  type: NodePort
+  selector:
+    app: opa-server
+  ports:
+    - protocol: TCP
+      port: 8181
+      targetPort: 8181
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: opa-server
+  namespace: gateway-integration-test-infra
+  labels:
+    app: opa-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: opa-server
+  template:
+    metadata:
+      labels:
+        app: opa-server
+    spec:
+      containers:
+      - name: opa-container
+        image: openpolicyagent/opa:0.52.0
+        ports:
+        - name: http
+          containerPort: 8181
+        args:
+        - "run"
+        - "--ignore=.*"
+        - "--server"
+        - "/policies"
+        volumeMounts:
+        - readOnly: true
+          mountPath: /policies
+          name: opa-volume
+      volumes:
+      - name: opa-volume
+        configMap:
+          name: opa-configmap
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: opa-configmap
+  namespace: gateway-integration-test-infra
+data:
+  policy.rego: |
+    package opa.test
+    import future.keywords.if
+    default allow := false
+    allow if {
+        is_get
+    }
+    is_get if {
+        input.method == "GET"
+    }

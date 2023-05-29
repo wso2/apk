@@ -96,15 +96,28 @@ public class OPADefaultRequestGenerator implements OPARequestGenerator {
     public boolean handleResponse(String policyName, String rule, String opaResponse,
                                   Map<String, String> additionalParameters, RequestContext requestContext)
             throws OPASecurityException {
-        try {
-            JSONObject response = new JSONObject(opaResponse);
-            return response.getBoolean("result");
-        } catch (JSONException e) {
-            log.error("Error parsing OPA JSON response, the field \"result\" not found or not a Boolean, " +
-                            "response: {} {} {}", opaResponse,
-                    ErrorDetails.errorLog(LoggingConstants.Severity.MINOR, 6104), e.getMessage());
+
+        if (OPAConstants.EMPTY_OPA_RESPONSE.equals(opaResponse)) {
+            log.error("Empty result received for the OPA policy " + policyName);
             throw new OPASecurityException(APIConstants.StatusCodes.INTERNAL_SERVER_ERROR.getCode(),
-                    APISecurityConstants.OPA_RESPONSE_FAILURE, e);
+                    APISecurityConstants.OPA_RESPONSE_FAILURE,
+                    "Empty result received for the OPA policy " + policyName);
+        } else {
+            try {
+                JSONObject response = new JSONObject(opaResponse);
+                if (rule.isEmpty()) {
+                    JSONObject result = (JSONObject) response.get(OPAConstants.OPA_RESPONSE_RESULT_KEY);
+                    return result.getBoolean(OPAConstants.OPA_RESPONSE_DEFAULT_RULE);
+                } else {
+                    return response.getBoolean(OPAConstants.OPA_RESPONSE_RESULT_KEY);
+                }
+            } catch (JSONException e) {
+                log.error("Error parsing OPA JSON response, the field \"result\" not found or rule is not a " +
+                                "Boolean, response: {} {} {}", opaResponse,
+                        ErrorDetails.errorLog(LoggingConstants.Severity.MINOR, 6104), e.getMessage());
+                throw new OPASecurityException(APIConstants.StatusCodes.INTERNAL_SERVER_ERROR.getCode(),
+                        APISecurityConstants.OPA_RESPONSE_FAILURE, e);
+            }
         }
     }
 }

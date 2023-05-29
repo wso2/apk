@@ -87,9 +87,11 @@ const (
 	ActionRewriteMethod      string = "REWRITE_RESOURCE_METHOD"
 	ActionInterceptorService string = "CALL_INTERCEPTOR_SERVICE"
 	ActionRewritePath        string = "REWRITE_RESOURCE_PATH"
+	ActionOPA                string = "OPA"
 
 	PolicyRequestInterceptor  string = "PolicyRequestInterceptor"
 	PolicyResponseInterceptor string = "PolicyResponseInterceptor"
+	PolicyOPA                 string = "PolicyOPA"
 
 	RewritePathResourcePath    string = "resourcePath"
 	RewritePathType            string = "rewritePathType"
@@ -101,6 +103,15 @@ const (
 	HeaderValue                string = "headerValue"
 	CurrentMethod              string = "currentMethod"
 	UpdatedMethod              string = "updatedMethod"
+
+	ServerURL            string = "serverURL"
+	Policy               string = "policy"
+	Rule                 string = "rule"
+	AccessToken          string = "accessToken"
+	SendAccessToken      string = "sendAccessToken"
+	AdditionalProperties string = "additionalProperties"
+	MaxOpenConnections   string = "maxOpenConnections"
+	ConnectionTimeout    string = "connectionTimeout"
 )
 
 // API Type Constants

@@ -86,6 +86,30 @@ spec:
                       enabled:
                         type: boolean
                     type: object
+                  oPAPolicy:
+                    description: OPAPolicy holds OPA policy information
+                    properties:
+                      accessToken:
+                        type: string
+                      additionalProperties:
+                        items:
+                          type: string
+                        type: array
+                      connectionTimeout:
+                        type: integer
+                      maxOpenConnections:
+                        type: integer
+                      policy:
+                        description: Policy is the policy name of the OPA policy
+                        type: string
+                      rule:
+                        type: string
+                      sendAccessToken:
+                        type: boolean
+                      serverURL:
+                        description: ServerURL is the URL of the OPA server
+                        type: string
+                    type: object
                   requestInterceptors:
                     items:
                       description: InterceptorReference holds InterceptorService reference
@@ -209,6 +233,30 @@ spec:
                         type: array
                       enabled:
                         type: boolean
+                    type: object
+                  oPAPolicy:
+                    description: OPAPolicy holds OPA policy information
+                    properties:
+                      accessToken:
+                        type: string
+                      additionalProperties:
+                        items:
+                          type: string
+                        type: array
+                      connectionTimeout:
+                        type: integer
+                      maxOpenConnections:
+                        type: integer
+                      policy:
+                        description: Policy is the policy name of the OPA policy
+                        type: string
+                      rule:
+                        type: string
+                      sendAccessToken:
+                        type: boolean
+                      serverURL:
+                        description: ServerURL is the URL of the OPA server
+                        type: string
                     type: object
                   requestInterceptors:
                     items:
