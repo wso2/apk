@@ -1509,7 +1509,7 @@ components:
         operations:
           type: array
           items:
-            $ref: "#/components/schemas/APIOperations"
+            $ref: "#/components/schemas/APIOperations-NEW"
         serviceInfo:
           $ref: "#/components/schemas/API_serviceInfo"
         apiPolicies:
@@ -1577,6 +1577,27 @@ components:
     EndpointTimeout:
       type: object
       properties: {}
+    APIOperations-NEW:
+      title: Operation
+      type: object
+      properties:
+        target:
+          type: string
+          example: /order/{orderId}
+        verb:
+          type: string
+          example: POST
+        authTypeEnabled:
+          type: boolean
+          example: true
+          default: true
+          description: Authentication mode for resource (true/false)
+        endpointConfig:
+          $ref: "#/components/schemas/EndpointConfig"
+        operationPolicies:
+          $ref: "#/components/schemas/APIOperationPolicies"
+        operationRateLimit:
+          $ref: "#/components/schemas/APIRateLimit"
     APIOperationPolicies:
       title: API Operation Level Policies
       properties:
@@ -2453,3 +2474,4 @@ components:
       schema:
         type: string
       example: ratelimit
+      
