@@ -84,10 +84,10 @@ spec:
                       {
                         "endpoint_type": "http",
                         "sandbox_endpoints":       {
-                          "url": "https://pizzashack-service:8080/am/sample/pizzashack/v3/api/"
+                          "url": "https://pizzashack-service:8080/sample/pizzashack/v3/api/"
                         },
                         "production_endpoints":       {
-                          "url": "https://pizzashack-service:8080/am/sample/pizzashack/v3/api/"
+                          "url": "https://pizzashack-service:8080/sample/pizzashack/v3/api/"
                         },
                         "endpoint_security": {
                           "production": {
@@ -104,9 +104,9 @@ spec:
                   example:
                     endpoint_type: http
                     sandbox_endpoints:
-                      url: https://pizzashack-service:8080/am/sample/pizzashack/v3/api/
+                      url: https://pizzashack-service:8080/sample/pizzashack/v3/api/
                     production_endpoints:
-                      url: https://pizzashack-service:8080/am/sample/pizzashack/v3/api/
+                      url: https://pizzashack-service:8080/sample/pizzashack/v3/api/
                     endpoint_security:
                       production:
                         enabled: true
@@ -150,10 +150,10 @@ spec:
                             {
                               "endpoint_type": "http",
                               "sandbox_endpoints":       {
-                                "url": "https://pizzashack-service:8080/am/sample/pizzashack/v3/api/"
+                                "url": "https://pizzashack-service:8080/sample/pizzashack/v3/api/"
                               },
                               "production_endpoints":       {
-                                "url": "https://pizzashack-service:8080/am/sample/pizzashack/v3/api/"
+                                "url": "https://pizzashack-service:8080/sample/pizzashack/v3/api/"
                               },
                               "endpoint_security": {
                                 "production": {
@@ -170,9 +170,9 @@ spec:
                         example:
                           endpoint_type: http
                           sandbox_endpoints:
-                            url: https://pizzashack-service:8080/am/sample/pizzashack/v3/api/
+                            url: https://pizzashack-service:8080/sample/pizzashack/v3/api/
                           production_endpoints:
-                            url: https://pizzashack-service:8080/am/sample/pizzashack/v3/api/
+                            url: https://pizzashack-service:8080/sample/pizzashack/v3/api/
                           endpoint_security:
                             production:
                               enabled: true

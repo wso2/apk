@@ -47,6 +47,6 @@ var defaultConfig = &Config{
 	BackOffice: backOffice{
 		Host:            "localhost",
 		Port:            9443,
-		ServiceBasePath: "/api/am/backoffice/internal/apis",
+		ServiceBasePath: "/api/backoffice/internal/apis",
 	},
 }

@@ -26,7 +26,7 @@ spec:
   apiDisplayName: "Runtime Domain Service API"
   apiType: "REST"
   apiVersion: "1.0.0"
-  context: "/api/am/runtime/1.0.0"
+  context: "/api/runtime/1.0.0"
   organization: "carbon.super"
   definitionFileRef: ""
   production:

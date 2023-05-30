@@ -25,7 +25,7 @@ info:
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   version: v1
 servers:
-  - url: https://apis.wso2.com/api/am/backoffice/
+  - url: https://apis.wso2.com/api/backoffice/
 
 paths:
   ######################################################
@@ -108,7 +108,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://api.am.wso2.com:9095/api/am/backoffice/v1/apis"'
+          "https://api.am.wso2.com:9095/api/backoffice/v1/apis"'
       operationId: getAllAPIs
 
   ######################################################
@@ -165,7 +165,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://api.am.wso2.com:9095/api/am/backoffice/v1/apis/01234567-0123-0123-0123-012345678901"'
+          "https://api.am.wso2.com:9095/api/backoffice/v1/apis/01234567-0123-0123-0123-012345678901"'
       operationId: getAPI
     put:
       tags:
@@ -230,7 +230,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -d @data.json "https://api.am.wso2.com:9095/api/am/backoffice/v1/apis/01234567-0123-0123-0123-012345678901"'
+          -H "Content-Type: application/json" -d @data.json "https://api.am.wso2.com:9095/api/backoffice/v1/apis/01234567-0123-0123-0123-012345678901"'
       operationId: updateAPI
 
   /apis/{apiId}/definition:
@@ -285,7 +285,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://api.am.wso2.com:9095/api/am/backoffice/v1/apis/01234567-0123-0123-0123-012345678901/definition"'
+          "https://api.am.wso2.com:9095/api/backoffice/v1/apis/01234567-0123-0123-0123-012345678901/definition"'
       operationId: getAPIDefinition
 
   /apis/{apiId}/resource-paths:
@@ -343,7 +343,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://api.am.wso2.com:9095/api/am/backoffice/v1/apis/01234567-0123-0123-0123-012345678901/resource-paths"'
+          "https://api.am.wso2.com:9095/api/backoffice/v1/apis/01234567-0123-0123-0123-012345678901/resource-paths"'
       operationId: getAPIResourcePaths
 
   /apis/{apiId}/thumbnail:
@@ -398,7 +398,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://api.am.wso2.com:9095/api/am/backoffice/v1/apis/01234567-0123-0123-0123-012345678901/thumbnail"
+          "https://api.am.wso2.com:9095/api/backoffice/v1/apis/01234567-0123-0123-0123-012345678901/thumbnail"
           > image.jpeg'
       operationId: getAPIThumbnail
 
@@ -468,7 +468,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: multipart/form-data" -F file=@image.jpeg "https://api.am.wso2.com:9095/api/am/backoffice/v1/apis/01234567-0123-0123-0123-012345678901/thumbnail"'
+          -H "Content-Type: multipart/form-data" -F file=@image.jpeg "https://api.am.wso2.com:9095/api/backoffice/v1/apis/01234567-0123-0123-0123-012345678901/thumbnail"'
       operationId: updateAPIThumbnail
 
   /apis/{apiId}/documents:
@@ -520,7 +520,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://api.am.wso2.com:9095/api/am/backoffice/v1/apis/01234567-0123-0123-0123-012345678901/documents"'
+          "https://api.am.wso2.com:9095/api/backoffice/v1/apis/01234567-0123-0123-0123-012345678901/documents"'
       operationId: getAPIDocuments
 
     post:
@@ -576,7 +576,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -d @data.json "https://api.am.wso2.com:9095/api/am/backoffice/v1/apis/01234567-0123-0123-0123-012345678901/documents"'
+          -H "Content-Type: application/json" -d @data.json "https://api.am.wso2.com:9095/api/backoffice/v1/apis/01234567-0123-0123-0123-012345678901/documents"'
       operationId: addAPIDocument
 
   /apis/{apiId}/documents/{documentId}:
@@ -634,7 +634,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://api.am.wso2.com:9095/api/am/backoffice/v1/apis/01234567-0123-0123-0123-012345678901/documents/83312daf-0d8a-427b-8f72-12755b7901d3"'
+          "https://api.am.wso2.com:9095/api/backoffice/v1/apis/01234567-0123-0123-0123-012345678901/documents/83312daf-0d8a-427b-8f72-12755b7901d3"'
       operationId: getAPIDocument
 
     put:
@@ -699,7 +699,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -d @data.json "https://api.am.wso2.com:9095/api/am/backoffice/v1/apis/01234567-0123-0123-0123-012345678901/documents/83312daf-0d8a-427b-8f72-12755b7901d3"'
+          -H "Content-Type: application/json" -d @data.json "https://api.am.wso2.com:9095/api/backoffice/v1/apis/01234567-0123-0123-0123-012345678901/documents/83312daf-0d8a-427b-8f72-12755b7901d3"'
       operationId: updateAPIDocument
 
     delete:
@@ -729,7 +729,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://api.am.wso2.com:9095/api/am/backoffice/v1/apis/01234567-0123-0123-0123-012345678901/documents/83312daf-0d8a-427b-8f72-12755b7901d3"'
+          "https://api.am.wso2.com:9095/api/backoffice/v1/apis/01234567-0123-0123-0123-012345678901/documents/83312daf-0d8a-427b-8f72-12755b7901d3"'
       operationId: deleteAPIDocument
 
   /apis/{apiId}/documents/{documentId}/content:
@@ -745,7 +745,7 @@ paths:
         1. **Inline type**:
            The content of the document will be retrieved in `text/plain` content type
 
-           _Sample cURL_ : `curl -k -H "Authorization:Bearer 579f0af4-37be-35c7-81a4-f1f1e9ee7c51" -F inlineContent=@"docs.txt" -X POST "https://api.am.wso2.com:9095/api/am/backoffice/v1/apis/01234567-0123-0123-0123-012345678901/documents/43c2bcce-60e7-405f-bc36-e39c0c5e189e/content`
+           _Sample cURL_ : `curl -k -H "Authorization:Bearer 579f0af4-37be-35c7-81a4-f1f1e9ee7c51" -F inlineContent=@"docs.txt" -X POST "https://api.am.wso2.com:9095/api/backoffice/v1/apis/01234567-0123-0123-0123-012345678901/documents/43c2bcce-60e7-405f-bc36-e39c0c5e189e/content`
         2. **FILE type**:
            The file will be downloaded with the related content type (eg. `application/pdf`)
         3. **URL type**:
@@ -806,7 +806,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://api.am.wso2.com:9095/api/am/backoffice/v1/apis/01234567-0123-0123-0123-012345678901/documents/83312daf-0d8a-427b-8f72-12755b7901d3/content"'
+          "https://api.am.wso2.com:9095/api/backoffice/v1/apis/01234567-0123-0123-0123-012345678901/documents/83312daf-0d8a-427b-8f72-12755b7901d3/content"'
       operationId: getAPIDocumentContent
 
     post:
@@ -881,7 +881,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: multipart/form-data" -F file=@sample.pdf "https://api.am.wso2.com:9095/api/am/backoffice/v1/apis/01234567-0123-0123-0123-012345678901/documents/83312daf-0d8a-427b-8f72-12755b7901d3/content"'
+          -H "Content-Type: multipart/form-data" -F file=@sample.pdf "https://api.am.wso2.com:9095/api/backoffice/v1/apis/01234567-0123-0123-0123-012345678901/documents/83312daf-0d8a-427b-8f72-12755b7901d3/content"'
       operationId: addAPIDocumentContent
 
   /apis/{apiId}/comments:
@@ -1226,10 +1226,10 @@ paths:
         This operation can be used to retrieve a list of subscriptions of the user associated with the provided access token. This operation is capable of
 
         1. Retrieving all subscriptions for the user's APIs.
-        `GET https://api.am.wso2.com:9095/api/am/backoffice/v1/subscriptions`
+        `GET https://api.am.wso2.com:9095/api/backoffice/v1/subscriptions`
 
         2. Retrieving subscriptions for a specific API.
-        `GET https://api.am.wso2.com:9095/api/am/backoffice/v1/subscriptions?apiId=01234567-0123-0123-0123-012345678901`
+        `GET https://api.am.wso2.com:9095/api/backoffice/v1/subscriptions?apiId=01234567-0123-0123-0123-012345678901`
       parameters:
         - $ref: '#/components/parameters/apiId-Q-Opt'
         - $ref: '#/components/parameters/limit'
@@ -1277,7 +1277,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://api.am.wso2.com:9095/api/am/backoffice/v1/subscriptions?apiId=01234567-0123-0123-0123-012345678901"'
+          "https://api.am.wso2.com:9095/api/backoffice/v1/subscriptions?apiId=01234567-0123-0123-0123-012345678901"'
       operationId: getSubscriptions
 
   /subscriptions/{subscriptionId}/subscriber-info:
@@ -1308,7 +1308,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://api.am.wso2.com:9095/api/am/backoffice/v1/subscriptions/64eca60b-2e55-4c38-8603-e9e6bad7d809/subscriber-info"'
+          "https://api.am.wso2.com:9095/api/backoffice/v1/subscriptions/64eca60b-2e55-4c38-8603-e9e6bad7d809/subscriber-info"'
       operationId: getSubscriberInfoBySubscriptionId
 
   /subscriptions/block-subscription:
@@ -1366,7 +1366,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://api.am.wso2.com:9095/api/am/backoffice/v1/subscriptions/block-subscription?subscriptionId=64eca60b-2e55-4c38-8603-e9e6bad7d809&blockState=PROD_ONLY_BLOCKED"'
+          "https://api.am.wso2.com:9095/api/backoffice/v1/subscriptions/block-subscription?subscriptionId=64eca60b-2e55-4c38-8603-e9e6bad7d809&blockState=PROD_ONLY_BLOCKED"'
       operationId: blockSubscription
 
   /subscriptions/unblock-subscription:
@@ -1411,7 +1411,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://api.am.wso2.com:9095/api/am/backoffice/v1/subscriptions/unblock-subscription?subscriptionId=64eca60b-2e55-4c38-8603-e9e6bad7d809"'
+          "https://api.am.wso2.com:9095/api/backoffice/v1/subscriptions/unblock-subscription?subscriptionId=64eca60b-2e55-4c38-8603-e9e6bad7d809"'
       operationId: unBlockSubscription
 
 
@@ -1464,7 +1464,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://api.am.wso2.com:9095/api/am/backoffice/v1/usage-plans"'
+          "https://api.am.wso2.com:9095/api/backoffice/v1/usage-plans"'
 
   ######################################################
   # The "Content Search Results" resource APIs
@@ -1522,7 +1522,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://api.am.wso2.com:9095/api/am/backoffice/v1/search?query=pizza"'
+          "https://api.am.wso2.com:9095/api/backoffice/v1/search?query=pizza"'
       operationId: search
 
   ######################################################
@@ -1553,7 +1553,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://api.am.wso2.com:9095/api/am/backoffice/v1/settings"'
+          "https://api.am.wso2.com:9095/api/backoffice/v1/settings"'
       operationId: getSettings
 
   ######################################################
@@ -1582,7 +1582,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://api.am.wso2.com:9095/api/am/backoffice/v1/api-categories"'
+          "https://api.am.wso2.com:9095/api/backoffice/v1/api-categories"'
       operationId: getAllAPICategories
 
   /apis/change-lifecycle:
@@ -1638,7 +1638,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://api.am.wso2.com:9095/api/am/backoffice/v1/apis/change-lifecycle?apiId=01234567-0123-0123-0123-012345678901&action=Publish"'
+          "https://api.am.wso2.com:9095/api/backoffice/v1/apis/change-lifecycle?apiId=01234567-0123-0123-0123-012345678901&action=Publish"'
       operationId: changeAPILifecycle
 
   /apis/{apiId}/lifecycle-history:
@@ -1673,7 +1673,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://api.am.wso2.com:9095/api/am/backoffice/v1/apis/01234567-0123-0123-0123-012345678901/lifecycle-history"'
+          "https://api.am.wso2.com:9095/api/backoffice/v1/apis/01234567-0123-0123-0123-012345678901/lifecycle-history"'
       operationId: getAPILifecycleHistory
 
   /apis/{apiId}/lifecycle-state:
@@ -1709,7 +1709,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://api.am.wso2.com:9095/api/am/backoffice/v1/apis/01234567-0123-0123-0123-012345678901/lifecycle-state"'
+          "https://api.am.wso2.com:9095/api/backoffice/v1/apis/01234567-0123-0123-0123-012345678901/lifecycle-state"'
       operationId: getAPILifecycleState
 ######################################################
 # The "Business Plans Collection" resource API
@@ -1747,7 +1747,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://api.am.wso2.com:9095/api/am/backoffice/v1/business-plans"'
+          "https://api.am.wso2.com:9095/api/backoffice/v1/business-plans"'
       operationId: getAllBusinessPlans
 components:
   schemas:

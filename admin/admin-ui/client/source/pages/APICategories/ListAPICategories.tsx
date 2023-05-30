@@ -43,7 +43,7 @@ export default function ListAPICategories() {
 
   const fetchData = () => {
     setLoading(true);
-    axios('/api/am/admin/api-categories', {
+    axios('/api/admin/api-categories', {
       method: 'GET',
       withCredentials: true,
     }).then((res) => {

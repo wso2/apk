@@ -99,7 +99,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/admin-domain-service:0.0.1-m10
+          image: wso2/admin-domain-service:latest
       backoffice:
         deployment:
           resources:
@@ -155,7 +155,7 @@ wso2:
           # secretName: "idp-tls"
       # controlPlane:
         # enabled: true
-        # serviceUrl: "http://control-plane-wso2-apk-admin-ds-service.control-plane.svc.cluster.local:9444/api/am/internal/v1"
+        # serviceUrl: "http://control-plane-wso2-apk-admin-ds-service.control-plane.svc.cluster.local:9444/api/internal/v1"
         # enableHostNameVerification: true
         # tls:
         #   secretName: "organization-managetment-server-cert"
@@ -172,7 +172,7 @@ wso2:
       # partitionServer:
       #   enabled: false
       #   host: "https://control-plane-wso2-apk-partition-server.control-plane.svc.cluster.local"
-      #   serviceBasePath: "/api/am/publisher/v1"
+      #   serviceBasePath: "/api/publisher/v1"
       #   partitionName: "default"
       runtime:
         deployment:
@@ -197,7 +197,7 @@ wso2:
           image: wso2/runtime-domain-service:0.0.1-m10
           # configs:
           #   authrorization: true
-          #   baseUrl: "https://api.am.wso2.com:9095/api/am/runtime"
+          #   baseUrl: "https://api.am.wso2.com:9095/api/runtime"
           #   tls:
           #     secretName: "my-secret"
           #     certKeyFilename: "tls.key"
@@ -222,7 +222,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/adapter:0.0.1-m10
+          image: wso2/adapter:latest
           security:
             sslHostname: "adapter"
         # configs:
@@ -307,7 +307,7 @@ wso2:
               failureThreshold: 5
             strategy: Recreate
             imagePullPolicy: Always
-            image: wso2/enforcer:0.0.1-m10
+            image: wso2/enforcer:latest
             security:
               sslHostname: "enforcer"
             # configs:

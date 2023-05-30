@@ -29,7 +29,7 @@ const Settings = {
         pkce: false,
     },
     app: {
-        rest_api: 'https://127.0.0.1:9095/api/am/admin',
+        rest_api: 'https://127.0.0.1:9095/api/admin',
     }
 };
 

@@ -43,7 +43,7 @@ export default function DeleteAPICategory({ id, updateList }) {
     };
 
     const deleteOrganization = () => {
-        axios.delete('/api/am/admin/api-categories/' + id, {
+        axios.delete('/api/admin/api-categories/' + id, {
             withCredentials: true,
         }).then(() => {
             return (

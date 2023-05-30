@@ -134,13 +134,12 @@
 					"raw": "{\n    \"context\": \"{{contextTest1}}\",\n    \"name\": \"{{APINameTest1}}\",\n    \"version\": \"{{versionTest1}}\",\n    \"type\": \"REST\",\n    \"operations\": [\n        {\n            \"target\": \"/get\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"endpointConfig\": {\n                \"endpoint_type\": \"http\",\n                \"production_endpoints\": {\n                    \"url\": \"http://httpbin.org\"\n                }\n            }\n        },\n        {\n            \"target\": \"/headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"endpointConfig\": {\n                \"endpoint_type\": \"http\",\n                \"production_endpoints\": {\n                    \"url\": \"http://httpbin.org\"\n                }\n            }\n        }\n    ]\n}"
 				},
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis",
+					"raw": "{{gatewayBaseURl}}/api/runtime/apis",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
-						"am",
 						"runtime",
 						"apis"
 					]
@@ -192,13 +191,12 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/backoffice/apis",
+					"raw": "{{gatewayBaseURl}}/api/backoffice/apis",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
-						"am",
 						"backoffice",
 						"apis"
 					]
@@ -247,13 +245,12 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/backoffice/apis/change-lifecycle?apiId={{backOfficeApiUUID}}&targetState={{lifeCycleStatusTest2}}",
+					"raw": "{{gatewayBaseURl}}/api/backoffice/apis/change-lifecycle?apiId={{backOfficeApiUUID}}&targetState={{lifeCycleStatusTest2}}",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
-						"am",
 						"backoffice",
 						"apis",
 						"change-lifecycle"
@@ -313,13 +310,12 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/backoffice/apis/{{backOfficeApiUUID}}/lifecycle-state",
+					"raw": "{{gatewayBaseURl}}/api/backoffice/apis/{{backOfficeApiUUID}}/lifecycle-state",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
-						"am",
 						"backoffice",
 						"apis",
 						"{{backOfficeApiUUID}}",
@@ -375,13 +371,12 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/backoffice/apis/{{backOfficeApiUUID}}/lifecycle-history",
+					"raw": "{{gatewayBaseURl}}/api/backoffice/apis/{{backOfficeApiUUID}}/lifecycle-history",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
-						"am",
 						"backoffice",
 						"apis",
 						"{{backOfficeApiUUID}}",
@@ -438,13 +433,12 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{runtimeAPIUUID}}",
+					"raw": "{{gatewayBaseURl}}/api/runtime/apis/{{runtimeAPIUUID}}",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
-						"am",
 						"runtime",
 						"apis",
 						"{{runtimeAPIUUID}}"

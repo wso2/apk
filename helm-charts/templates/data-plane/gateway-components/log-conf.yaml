@@ -83,7 +83,7 @@ data:
     [runtime]
       host = "{{ template "apk-helm.resource.prefix" . }}-runtime-ds-service.{{ .Release.Namespace }}.svc"
       port = 9444
-      serviceBasePath = "/api/am/internal/runtime"
+      serviceBasePath = "/api/internal/runtime"
     
     [managementServer]
     {{ if .Values.wso2.apk.dp.managementServer }}

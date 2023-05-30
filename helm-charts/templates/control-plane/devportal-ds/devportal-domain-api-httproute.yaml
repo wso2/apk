@@ -29,14 +29,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/apis"
+        value: "/api/devportal/apis"
       method: "GET"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/apis"
+          replaceFullPath: "/api/devportal/apis"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -44,14 +44,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/apis/(.*)"
+        value: "/api/devportal/apis/(.*)"
       method: "GET"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/apis/\\1"
+          replaceFullPath: "/api/devportal/apis/\\1"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -59,14 +59,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/apis/(.*)/definition"
+        value: "/api/devportal/apis/(.*)/definition"
       method: "GET"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/apis/\\1/definition"
+          replaceFullPath: "/api/devportal/apis/\\1/definition"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -74,14 +74,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/apis/(.*)/sdks/(.*)"
+        value: "/api/devportal/apis/(.*)/sdks/(.*)"
       method: "GET"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/apis/\\1/sdks/\\2"
+          replaceFullPath: "/api/devportal/apis/\\1/sdks/\\2"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -89,14 +89,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/apis/(.*)/documents"
+        value: "/api/devportal/apis/(.*)/documents"
       method: "GET"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/apis/\\1/documents"
+          replaceFullPath: "/api/devportal/apis/\\1/documents"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -104,14 +104,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/apis/(.*)/documents/(.*)"
+        value: "/api/devportal/apis/(.*)/documents/(.*)"
       method: "GET"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/apis/\\1/documents/\\2"
+          replaceFullPath: "/api/devportal/apis/\\1/documents/\\2"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -119,14 +119,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/apis/(.*)/documents/(.*)/content"
+        value: "/api/devportal/apis/(.*)/documents/(.*)/content"
       method: "GET"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/apis/\\1/documents/\\2/content"
+          replaceFullPath: "/api/devportal/apis/\\1/documents/\\2/content"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -134,14 +134,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/apis/(.*)/thumbnail"
+        value: "/api/devportal/apis/(.*)/thumbnail"
       method: "GET"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/apis/\\1/thumbnail"
+          replaceFullPath: "/api/devportal/apis/\\1/thumbnail"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -149,14 +149,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/apis/(.*)/ratings"
+        value: "/api/devportal/apis/(.*)/ratings"
       method: "GET"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/apis/\\1/ratings"
+          replaceFullPath: "/api/devportal/apis/\\1/ratings"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -164,14 +164,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/apis/(.*)/user-rating"
+        value: "/api/devportal/apis/(.*)/user-rating"
       method: "GET"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/apis/\\1/user-rating"
+          replaceFullPath: "/api/devportal/apis/\\1/user-rating"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -179,14 +179,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/apis/(.*)/user-rating"
+        value: "/api/devportal/apis/(.*)/user-rating"
       method: "PUT"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/apis/\\1/user-rating"
+          replaceFullPath: "/api/devportal/apis/\\1/user-rating"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -194,14 +194,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/apis/(.*)/user-rating"
+        value: "/api/devportal/apis/(.*)/user-rating"
       method: "DELETE"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/apis/\\1/user-rating"
+          replaceFullPath: "/api/devportal/apis/\\1/user-rating"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -209,14 +209,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/apis/(.*)/comments"
+        value: "/api/devportal/apis/(.*)/comments"
       method: "GET"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/apis/\\1/comments"
+          replaceFullPath: "/api/devportal/apis/\\1/comments"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -224,14 +224,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/apis/(.*)/comments"
+        value: "/api/devportal/apis/(.*)/comments"
       method: "POST"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/apis/\\1/comments"
+          replaceFullPath: "/api/devportal/apis/\\1/comments"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -239,14 +239,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/apis/(.*)/comments/(.*)"
+        value: "/api/devportal/apis/(.*)/comments/(.*)"
       method: "GET"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/apis/\\1/comments/\\2"
+          replaceFullPath: "/api/devportal/apis/\\1/comments/\\2"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -254,14 +254,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/apis/(.*)/comments/(.*)"
+        value: "/api/devportal/apis/(.*)/comments/(.*)"
       method: "DELETE"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/apis/\\1/comments/\\2"
+          replaceFullPath: "/api/devportal/apis/\\1/comments/\\2"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -269,14 +269,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/apis/(.*)/comments/(.*)"
+        value: "/api/devportal/apis/(.*)/comments/(.*)"
       method: "PATCH"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/apis/\\1/comments/\\2"
+          replaceFullPath: "/api/devportal/apis/\\1/comments/\\2"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -284,14 +284,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/apis/(.*)/comments/(.*)/replies"
+        value: "/api/devportal/apis/(.*)/comments/(.*)/replies"
       method: "GET"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/apis/\\1/comments/\\2/replies"
+          replaceFullPath: "/api/devportal/apis/\\1/comments/\\2/replies"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -299,14 +299,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/apis/(.*)/topics"
+        value: "/api/devportal/apis/(.*)/topics"
       method: "GET"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/apis/\\1/topics"
+          replaceFullPath: "/api/devportal/apis/\\1/topics"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -314,14 +314,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/apis/(.*)/subscription-policies"
+        value: "/api/devportal/apis/(.*)/subscription-policies"
       method: "GET"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/apis/\\1/subscription-policies"
+          replaceFullPath: "/api/devportal/apis/\\1/subscription-policies"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -329,14 +329,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/applications"
+        value: "/api/devportal/applications"
       method: "GET"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/applications"
+          replaceFullPath: "/api/devportal/applications"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -344,14 +344,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/applications"
+        value: "/api/devportal/applications"
       method: "POST"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/applications"
+          replaceFullPath: "/api/devportal/applications"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -359,14 +359,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/applications/(.*)"
+        value: "/api/devportal/applications/(.*)"
       method: "GET"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/applications/\\1"
+          replaceFullPath: "/api/devportal/applications/\\1"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -374,14 +374,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/applications/(.*)"
+        value: "/api/devportal/applications/(.*)"
       method: "PUT"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/applications/\\1"
+          replaceFullPath: "/api/devportal/applications/\\1"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -389,14 +389,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/applications/(.*)"
+        value: "/api/devportal/applications/(.*)"
       method: "DELETE"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/applications/\\1"
+          replaceFullPath: "/api/devportal/applications/\\1"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -404,14 +404,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/applications/(.*)/generate-keys"
+        value: "/api/devportal/applications/(.*)/generate-keys"
       method: "POST"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/applications/\\1/generate-keys"
+          replaceFullPath: "/api/devportal/applications/\\1/generate-keys"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -419,14 +419,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/applications/(.*)/map-keys"
+        value: "/api/devportal/applications/(.*)/map-keys"
       method: "POST"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/applications/\\1/map-keys"
+          replaceFullPath: "/api/devportal/applications/\\1/map-keys"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -434,14 +434,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/applications/(.*)/keys"
+        value: "/api/devportal/applications/(.*)/keys"
       method: "GET"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/applications/\\1/keys"
+          replaceFullPath: "/api/devportal/applications/\\1/keys"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -449,14 +449,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/applications/(.*)/keys/(.*)"
+        value: "/api/devportal/applications/(.*)/keys/(.*)"
       method: "GET"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/applications/\\1/keys/\\2"
+          replaceFullPath: "/api/devportal/applications/\\1/keys/\\2"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -464,14 +464,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/applications/(.*)/keys/(.*)"
+        value: "/api/devportal/applications/(.*)/keys/(.*)"
       method: "PUT"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/applications/\\1/keys/\\2"
+          replaceFullPath: "/api/devportal/applications/\\1/keys/\\2"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -479,14 +479,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/applications/(.*)/keys/(.*)/regenerate-secret"
+        value: "/api/devportal/applications/(.*)/keys/(.*)/regenerate-secret"
       method: "POST"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/applications/\\1/keys/\\2/regenerate-secret"
+          replaceFullPath: "/api/devportal/applications/\\1/keys/\\2/regenerate-secret"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -494,14 +494,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/applications/(.*)/keys/(.*)/clean-up"
+        value: "/api/devportal/applications/(.*)/keys/(.*)/clean-up"
       method: "POST"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/applications/\\1/keys/\\2/clean-up"
+          replaceFullPath: "/api/devportal/applications/\\1/keys/\\2/clean-up"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -509,14 +509,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/applications/(.*)/keys/(.*)/generate-token"
+        value: "/api/devportal/applications/(.*)/keys/(.*)/generate-token"
       method: "POST"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/applications/\\1/keys/\\2/generate-token"
+          replaceFullPath: "/api/devportal/applications/\\1/keys/\\2/generate-token"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -524,14 +524,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/applications/(.*)/oauth-keys"
+        value: "/api/devportal/applications/(.*)/oauth-keys"
       method: "GET"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/applications/\\1/oauth-keys"
+          replaceFullPath: "/api/devportal/applications/\\1/oauth-keys"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -539,14 +539,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/applications/(.*)/oauth-keys/(.*)"
+        value: "/api/devportal/applications/(.*)/oauth-keys/(.*)"
       method: "GET"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/applications/\\1/oauth-keys/\\2"
+          replaceFullPath: "/api/devportal/applications/\\1/oauth-keys/\\2"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -554,14 +554,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/applications/(.*)/oauth-keys/(.*)"
+        value: "/api/devportal/applications/(.*)/oauth-keys/(.*)"
       method: "PUT"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/applications/\\1/oauth-keys/\\2"
+          replaceFullPath: "/api/devportal/applications/\\1/oauth-keys/\\2"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -569,14 +569,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/applications/(.*)/oauth-keys/(.*)/regenerate-secret"
+        value: "/api/devportal/applications/(.*)/oauth-keys/(.*)/regenerate-secret"
       method: "POST"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/applications/\\1/oauth-keys/\\2/regenerate-secret"
+          replaceFullPath: "/api/devportal/applications/\\1/oauth-keys/\\2/regenerate-secret"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -584,14 +584,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/applications/(.*)/oauth-keys/(.*)/clean-up"
+        value: "/api/devportal/applications/(.*)/oauth-keys/(.*)/clean-up"
       method: "POST"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/applications/\\1/oauth-keys/\\2/clean-up"
+          replaceFullPath: "/api/devportal/applications/\\1/oauth-keys/\\2/clean-up"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -599,14 +599,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/applications/(.*)/oauth-keys/(.*)/generate-token"
+        value: "/api/devportal/applications/(.*)/oauth-keys/(.*)/generate-token"
       method: "POST"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/applications/\\1/oauth-keys/\\2/generate-token"
+          replaceFullPath: "/api/devportal/applications/\\1/oauth-keys/\\2/generate-token"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -614,14 +614,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/applications/(.*)/api-keys/(.*)/generate"
+        value: "/api/devportal/applications/(.*)/api-keys/(.*)/generate"
       method: "POST"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/applications/\\1/api-keys/\\2/generate"
+          replaceFullPath: "/api/devportal/applications/\\1/api-keys/\\2/generate"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -629,14 +629,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/applications/(.*)/api-keys/(.*)/revoke"
+        value: "/api/devportal/applications/(.*)/api-keys/(.*)/revoke"
       method: "POST"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/applications/\\1/api-keys/\\2/revoke"
+          replaceFullPath: "/api/devportal/applications/\\1/api-keys/\\2/revoke"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -644,14 +644,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/applications/export"
+        value: "/api/devportal/applications/export"
       method: "GET"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/applications/export"
+          replaceFullPath: "/api/devportal/applications/export"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -659,14 +659,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/applications/import"
+        value: "/api/devportal/applications/import"
       method: "POST"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/applications/import"
+          replaceFullPath: "/api/devportal/applications/import"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -674,14 +674,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/subscriptions"
+        value: "/api/devportal/subscriptions"
       method: "GET"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/subscriptions"
+          replaceFullPath: "/api/devportal/subscriptions"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -689,14 +689,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/subscriptions"
+        value: "/api/devportal/subscriptions"
       method: "POST"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/subscriptions"
+          replaceFullPath: "/api/devportal/subscriptions"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -704,14 +704,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/subscriptions/multiple"
+        value: "/api/devportal/subscriptions/multiple"
       method: "POST"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/subscriptions/multiple"
+          replaceFullPath: "/api/devportal/subscriptions/multiple"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -719,14 +719,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/subscriptions/(.*)/additionalInfo"
+        value: "/api/devportal/subscriptions/(.*)/additionalInfo"
       method: "GET"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/subscriptions/\\1/additionalInfo"
+          replaceFullPath: "/api/devportal/subscriptions/\\1/additionalInfo"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -734,14 +734,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/subscriptions/(.*)"
+        value: "/api/devportal/subscriptions/(.*)"
       method: "GET"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/subscriptions/\\1"
+          replaceFullPath: "/api/devportal/subscriptions/\\1"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -749,14 +749,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/subscriptions/(.*)"
+        value: "/api/devportal/subscriptions/(.*)"
       method: "PUT"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/subscriptions/\\1"
+          replaceFullPath: "/api/devportal/subscriptions/\\1"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -764,14 +764,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/subscriptions/(.*)"
+        value: "/api/devportal/subscriptions/(.*)"
       method: "DELETE"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/subscriptions/\\1"
+          replaceFullPath: "/api/devportal/subscriptions/\\1"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -779,14 +779,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/subscriptions/(.*)/usage"
+        value: "/api/devportal/subscriptions/(.*)/usage"
       method: "GET"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/subscriptions/\\1/usage"
+          replaceFullPath: "/api/devportal/subscriptions/\\1/usage"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -794,14 +794,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/throttling-policies/(.*)"
+        value: "/api/devportal/throttling-policies/(.*)"
       method: "GET"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/throttling-policies/\\1"
+          replaceFullPath: "/api/devportal/throttling-policies/\\1"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -809,14 +809,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/throttling-policies/(.*)/(.*)"
+        value: "/api/devportal/throttling-policies/(.*)/(.*)"
       method: "GET"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/throttling-policies/\\1/\\2"
+          replaceFullPath: "/api/devportal/throttling-policies/\\1/\\2"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -824,14 +824,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/tags"
+        value: "/api/devportal/tags"
       method: "GET"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/tags"
+          replaceFullPath: "/api/devportal/tags"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -839,14 +839,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/search"
+        value: "/api/devportal/search"
       method: "GET"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/search"
+          replaceFullPath: "/api/devportal/search"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -854,14 +854,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/sdk-gen/languages"
+        value: "/api/devportal/sdk-gen/languages"
       method: "GET"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/sdk-gen/languages"
+          replaceFullPath: "/api/devportal/sdk-gen/languages"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -869,14 +869,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/webhooks/subscriptions"
+        value: "/api/devportal/webhooks/subscriptions"
       method: "GET"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/webhooks/subscriptions"
+          replaceFullPath: "/api/devportal/webhooks/subscriptions"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -884,14 +884,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/settings"
+        value: "/api/devportal/settings"
       method: "GET"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/settings"
+          replaceFullPath: "/api/devportal/settings"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -899,14 +899,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/settings/application-attributes"
+        value: "/api/devportal/settings/application-attributes"
       method: "GET"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/settings/application-attributes"
+          replaceFullPath: "/api/devportal/settings/application-attributes"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -914,14 +914,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/tenants"
+        value: "/api/devportal/tenants"
       method: "GET"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/tenants"
+          replaceFullPath: "/api/devportal/tenants"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -929,14 +929,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/recommendations"
+        value: "/api/devportal/recommendations"
       method: "GET"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/recommendations"
+          replaceFullPath: "/api/devportal/recommendations"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -944,14 +944,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/api-categories"
+        value: "/api/devportal/api-categories"
       method: "GET"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/api-categories"
+          replaceFullPath: "/api/devportal/api-categories"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -959,14 +959,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/key-managers"
+        value: "/api/devportal/key-managers"
       method: "GET"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/key-managers"
+          replaceFullPath: "/api/devportal/key-managers"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -974,14 +974,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/apis/(.*)/graphql-policies/complexity"
+        value: "/api/devportal/apis/(.*)/graphql-policies/complexity"
       method: "GET"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/apis/\\1/graphql-policies/complexity"
+          replaceFullPath: "/api/devportal/apis/\\1/graphql-policies/complexity"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -989,14 +989,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/apis/(.*)/graphql-policies/complexity/types"
+        value: "/api/devportal/apis/(.*)/graphql-policies/complexity/types"
       method: "GET"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/apis/\\1/graphql-policies/complexity/types"
+          replaceFullPath: "/api/devportal/apis/\\1/graphql-policies/complexity/types"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -1004,14 +1004,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/am/devportal/me/change-password"
+        value: "/api/devportal/me/change-password"
       method: "POST"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/am/devportal/me/change-password"
+          replaceFullPath: "/api/devportal/me/change-password"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend

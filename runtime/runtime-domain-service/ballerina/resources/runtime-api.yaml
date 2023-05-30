@@ -1332,11 +1332,11 @@ components:
               {
                 "endpoint_type": "http",
                 "sandbox_endpoints":       {
-                   "url": "https://pizzashack-service:8080/am/sample/pizzashack/v3/api/",
+                   "url": "https://pizzashack-service:8080/sample/pizzashack/v3/api/",
                    "certificate"
                 },
                 "production_endpoints":       {
-                   "url": "https://pizzashack-service:8080/am/sample/pizzashack/v3/api/"
+                   "url": "https://pizzashack-service:8080/sample/pizzashack/v3/api/"
                 },
                 "endpoint_security": {
                     "production": {
@@ -1353,9 +1353,9 @@ components:
           example:
             endpoint_type: http
             sandbox_endpoints:
-              url: https://pizzashack-service:8080/am/sample/pizzashack/v3/api/
+              url: https://pizzashack-service:8080/sample/pizzashack/v3/api/
             production_endpoints:
-              url: https://pizzashack-service:8080/am/sample/pizzashack/v3/api/
+              url: https://pizzashack-service:8080/sample/pizzashack/v3/api/
             endpoint_security:
               production:
                 enabled: true
@@ -1423,10 +1423,10 @@ components:
               {
                 "endpoint_type": "http",
                 "sandbox_endpoints":       {
-                   "url": "https://pizzashack-service:8080/am/sample/pizzashack/v3/api/"
+                   "url": "https://pizzashack-service:8080/sample/pizzashack/v3/api/"
                 },
                 "production_endpoints":       {
-                   "url": "https://pizzashack-service:8080/am/sample/pizzashack/v3/api/"
+                   "url": "https://pizzashack-service:8080/sample/pizzashack/v3/api/"
                 },
                 "endpoint_security": {
                     "production": {
@@ -1443,9 +1443,9 @@ components:
           example:
             endpoint_type: http
             sandbox_endpoints:
-              url: https://pizzashack-service:8080/am/sample/pizzashack/v3/api/
+              url: https://pizzashack-service:8080/sample/pizzashack/v3/api/
             production_endpoints:
-              url: https://pizzashack-service:8080/am/sample/pizzashack/v3/api/
+              url: https://pizzashack-service:8080/sample/pizzashack/v3/api/
             endpoint_security:
               production:
                 enabled: true
@@ -2031,7 +2031,7 @@ components:
             contains host/servers specified in the API definition file/URL
           items:
             type: string
-            example: https://localhost:9443/am/sample/pizzashack/v3/api/
+            example: https://localhost:9443/sample/pizzashack/v3/api/
     APIKey:
       title: API Key details to invoke APIs
       type: object

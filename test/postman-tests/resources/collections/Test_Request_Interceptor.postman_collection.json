@@ -116,13 +116,12 @@
 					}
 				},
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis",
+					"raw": "{{gatewayBaseURl}}/api/runtime/apis",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
-						"am",
 						"runtime",
 						"apis"
 					]
@@ -195,13 +194,12 @@
 					"raw": ""
 				},
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID}}/generate-key",
+					"raw": "{{gatewayBaseURl}}/api/runtime/apis/{{APIUUID}}/generate-key",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
-						"am",
 						"runtime",
 						"apis",
 						"{{APIUUID}}",
@@ -308,13 +306,12 @@
 					}
 				},
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID}}",
+					"raw": "{{gatewayBaseURl}}/api/runtime/apis/{{APIUUID}}",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
-						"am",
 						"runtime",
 						"apis",
 						"{{APIUUID}}"
@@ -474,13 +471,12 @@
 					}
 				},
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID}}",
+					"raw": "{{gatewayBaseURl}}/api/runtime/apis/{{APIUUID}}",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
-						"am",
 						"runtime",
 						"apis",
 						"{{APIUUID}}"
@@ -639,13 +635,12 @@
 					}
 				},
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID}}",
+					"raw": "{{gatewayBaseURl}}/api/runtime/apis/{{APIUUID}}",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
-						"am",
 						"runtime",
 						"apis",
 						"{{APIUUID}}"
@@ -804,13 +799,12 @@
 					}
 				},
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID}}",
+					"raw": "{{gatewayBaseURl}}/api/runtime/apis/{{APIUUID}}",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
-						"am",
 						"runtime",
 						"apis",
 						"{{APIUUID}}"
@@ -969,13 +963,12 @@
 					}
 				},
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID}}",
+					"raw": "{{gatewayBaseURl}}/api/runtime/apis/{{APIUUID}}",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
-						"am",
 						"runtime",
 						"apis",
 						"{{APIUUID}}"
@@ -1093,13 +1086,12 @@
 					}
 				},
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID}}/endpoint-certificates",
+					"raw": "{{gatewayBaseURl}}/api/runtime/apis/{{APIUUID}}/endpoint-certificates",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
-						"am",
 						"runtime",
 						"apis",
 						"{{APIUUID}}",
@@ -1174,13 +1166,12 @@
 					}
 				},
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID}}/endpoint-certificates",
+					"raw": "{{gatewayBaseURl}}/api/runtime/apis/{{APIUUID}}/endpoint-certificates",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
-						"am",
 						"runtime",
 						"apis",
 						"{{APIUUID}}",
@@ -1259,13 +1250,12 @@
 					}
 				},
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID}}/endpoint-certificates/{{CERTIFICATE_ID}}",
+					"raw": "{{gatewayBaseURl}}/api/runtime/apis/{{APIUUID}}/endpoint-certificates/{{CERTIFICATE_ID}}",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
-						"am",
 						"runtime",
 						"apis",
 						"{{APIUUID}}",
@@ -1338,13 +1328,12 @@
 					}
 				},
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID}}/endpoint-certificates/{{CERTIFICATE_ID}}/content",
+					"raw": "{{gatewayBaseURl}}/api/runtime/apis/{{APIUUID}}/endpoint-certificates/{{CERTIFICATE_ID}}/content",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
-						"am",
 						"runtime",
 						"apis",
 						"{{APIUUID}}",
@@ -1400,13 +1389,12 @@
 					}
 				},
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID}}",
+					"raw": "{{gatewayBaseURl}}/api/runtime/apis/{{APIUUID}}",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
-						"am",
 						"runtime",
 						"apis",
 						"{{APIUUID}}"
@@ -1681,13 +1669,12 @@
 					}
 				},
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID}}",
+					"raw": "{{gatewayBaseURl}}/api/runtime/apis/{{APIUUID}}",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
-						"am",
 						"runtime",
 						"apis",
 						"{{APIUUID}}"
@@ -1743,13 +1730,12 @@
 					}
 				},
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID}}",
+					"raw": "{{gatewayBaseURl}}/api/runtime/apis/{{APIUUID}}",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
-						"am",
 						"runtime",
 						"apis",
 						"{{APIUUID}}"

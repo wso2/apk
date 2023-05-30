@@ -76,7 +76,7 @@ router.get('/', async function (req, res, next) {
 
 });
 
-router.get('/am/admin/api-categories', async function (req, res, next) {
+router.get('/admin/api-categories', async function (req, res, next) {
     const accessToken = req.cookies.access_token;
 
     const instance = axios.create({
@@ -101,7 +101,7 @@ router.get('/am/admin/api-categories', async function (req, res, next) {
     }
 });
 
-router.post('/am/admin/api-categories', async function (req, res, next) {
+router.post('/admin/api-categories', async function (req, res, next) {
     const accessToken = req.cookies.access_token;
 
     const instance = axios.create({
@@ -127,7 +127,7 @@ router.post('/am/admin/api-categories', async function (req, res, next) {
     }
 });
 
-router.put('/am/admin/api-categories/:categoryId', async function (req, res, next) {
+router.put('/admin/api-categories/:categoryId', async function (req, res, next) {
     const categoryId = req.params.categoryId;
     const accessToken = req.cookies.access_token;
 
@@ -154,7 +154,7 @@ router.put('/am/admin/api-categories/:categoryId', async function (req, res, nex
     }
 });
 
-router.delete('/am/admin/api-categories/:categoryId', async function (req, res, next) {
+router.delete('/admin/api-categories/:categoryId', async function (req, res, next) {
     const categoryId = req.params.categoryId;
     const accessToken = req.cookies.access_token;
 
@@ -180,7 +180,7 @@ router.delete('/am/admin/api-categories/:categoryId', async function (req, res, 
     }
 });
 
-router.get('/am/admin/organizations', async function (req, res, next) {
+router.get('/admin/organizations', async function (req, res, next) {
     const accessToken = req.cookies.access_token;
 
     const instance = axios.create({
@@ -205,7 +205,7 @@ router.get('/am/admin/organizations', async function (req, res, next) {
     }
 });
 
-router.post('/am/admin/organizations', async function (req, res, next) {
+router.post('/admin/organizations', async function (req, res, next) {
     const accessToken = req.cookies.access_token;
 
     const instance = axios.create({
@@ -231,7 +231,7 @@ router.post('/am/admin/organizations', async function (req, res, next) {
     }
 });
 
-router.delete('/am/admin/organizations/:organizationId', async function (req, res, next) {
+router.delete('/admin/organizations/:organizationId', async function (req, res, next) {
     const organizationId = req.params.organizationId;
     const accessToken = req.cookies.access_token;
 
@@ -257,7 +257,7 @@ router.delete('/am/admin/organizations/:organizationId', async function (req, re
     }
 });
 
-router.put('/am/admin/organizations/:organizationId', async function (req, res, next) {
+router.put('/admin/organizations/:organizationId', async function (req, res, next) {
     const organizationId = req.params.organizationId;
     const accessToken = req.cookies.access_token;
 
@@ -284,7 +284,7 @@ router.put('/am/admin/organizations/:organizationId', async function (req, res, 
     }
 });
 
-router.get('/am/admin/organizations/:organizationId', async function (req, res, next) {
+router.get('/admin/organizations/:organizationId', async function (req, res, next) {
     const organizationId = req.params.organizationId;
     const accessToken = req.cookies.access_token;
 

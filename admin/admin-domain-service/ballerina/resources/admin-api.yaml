@@ -26,7 +26,7 @@ info:
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   version: v1
 servers:
-  - url: https://apis.wso2.com/api/am/admin/v1
+  - url: https://apis.wso2.com/api/admin/v1
 paths:
   ######################################################
   # The "Content Search Results" Throttling Policies
@@ -68,7 +68,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/v3/throttling/policies/search?query=type:sub"'
+          "https://127.0.0.1:9443/api/admin/v3/throttling/policies/search?query=type:sub"'
       operationId: policySearch
 
   ######################################################
@@ -105,7 +105,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/application-rate-plans"'
+          "https://127.0.0.1:9443/api/admin/application-rate-plans"'
       operationId: getApplicationRatePlans
 
     post:
@@ -165,7 +165,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/application-rate-plans"'
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/admin/application-rate-plans"'
       operationId: addApplicationRatePlan
 
   ######################################################
@@ -216,7 +216,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/application-rate-plans/4e098fff-7f94-459a-981f-d257332f69d0"'
+          "https://127.0.0.1:9443/api/admin/application-rate-plans/4e098fff-7f94-459a-981f-d257332f69d0"'
       operationId: getApplicationRatePlanById
 
     put:
@@ -277,7 +277,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/application-rate-plans/4e098fff-7f94-459a-981f-d257332f69d0"'
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/admin/application-rate-plans/4e098fff-7f94-459a-981f-d257332f69d0"'
       operationId: updateApplicationRatePlan
 
     delete:
@@ -301,7 +301,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/application-rate-plans/4e098fff-7f94-459a-981f-d257332f69d0"'
+          "https://127.0.0.1:9443/api/admin/application-rate-plans/4e098fff-7f94-459a-981f-d257332f69d0"'
       operationId: removeApplicationRatePlan
 
 
@@ -339,7 +339,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/business-plans"'
+          "https://127.0.0.1:9443/api/admin/business-plans"'
       operationId: getAllBusinessPlans
 
     post:
@@ -403,7 +403,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/business-plans"'
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/admin/business-plans"'
       operationId: addBusinessPlan
 
   ######################################################
@@ -458,7 +458,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/business-plans/c948c723-71dd-4d50-8c77-0a0e99c8cbb1"'
+          "https://127.0.0.1:9443/api/admin/business-plans/c948c723-71dd-4d50-8c77-0a0e99c8cbb1"'
       operationId: getBusinessPlanById
 
     put:
@@ -523,7 +523,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/business-plans/c948c723-71dd-4d50-8c77-0a0e99c8cbb1"'
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/admin/business-plans/c948c723-71dd-4d50-8c77-0a0e99c8cbb1"'
       operationId: updateBusinessPlan
 
     delete:
@@ -547,7 +547,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/business-plans/c948c723-71dd-4d50-8c77-0a0e99c8cbb1"'
+          "https://127.0.0.1:9443/api/admin/business-plans/c948c723-71dd-4d50-8c77-0a0e99c8cbb1"'
       operationId: removeBusinessPlan
 
   ######################################################
@@ -642,7 +642,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/v3/throttling/policies/export?policyId=96077508-fd01-4fae-bc64-5de0e2baf43c&name=Bronze&type=subscription&format=YAML"'
+          "https://127.0.0.1:9443/api/admin/v3/throttling/policies/export?policyId=96077508-fd01-4fae-bc64-5de0e2baf43c&name=Bronze&type=subscription&format=YAML"'
       operationId: exportThrottlingPolicy
   ####################################################################
   # Import Throttling Policy
@@ -692,7 +692,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/v3/throttling/policies/import?overwrite=True"'
+          "https://127.0.0.1:9443/api/admin/v3/throttling/policies/import?overwrite=True"'
       operationId: importThrottlingPolicy
   ######################################################
   # The "Deny Policy Collection" resource API
@@ -728,7 +728,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/v3/throttling/deny-policies"'
+          "https://127.0.0.1:9443/api/admin/v3/throttling/deny-policies"'
       operationId: getAllDenyPolicies
 
     post:
@@ -776,7 +776,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v3/throttling/deny-policies"'
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/admin/v3/throttling/deny-policies"'
       operationId: addDenyPolicy
 
   ######################################################
@@ -815,7 +815,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/v3/throttling/deny-policy/b513eb68-69e8-4c32-92cf-852c101363c"'
+          "https://127.0.0.1:9443/api/admin/v3/throttling/deny-policy/b513eb68-69e8-4c32-92cf-852c101363c"'
       operationId: getDenyPolicyById
 
     delete:
@@ -839,7 +839,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/v3/throttling/deny-policy/b513eb68-69e8-4c32-92cf-852c101363c"'
+          "https://127.0.0.1:9443/api/admin/v3/throttling/deny-policy/b513eb68-69e8-4c32-92cf-852c101363c"'
       operationId: removeDenyPolicy
 
     patch:
@@ -877,7 +877,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X PATCH -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v3/throttling/deny-policy/b513eb68-69e8-4c32-92cf-852c101363c"'
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/admin/v3/throttling/deny-policy/b513eb68-69e8-4c32-92cf-852c101363c"'
       operationId: updateDenyPolicy
 
   ######################################################
@@ -952,7 +952,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/v3/applications"'
+          "https://127.0.0.1:9443/api/admin/v3/applications"'
       operationId: getApplicationsByUser
 
   ######################################################
@@ -988,7 +988,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X GET -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/v3/applications/0a043c2b-ee75-4ef3-9e1c-fc2610ccfa8b"'
+          "https://127.0.0.1:9443/api/admin/v3/applications/0a043c2b-ee75-4ef3-9e1c-fc2610ccfa8b"'
       operationId: getApplicationById
 
     delete:
@@ -1026,7 +1026,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/v3/applications/0a043c2b-ee75-4ef3-9e1c-fc2610ccfa8b"'
+          "https://127.0.0.1:9443/api/admin/v3/applications/0a043c2b-ee75-4ef3-9e1c-fc2610ccfa8b"'
       operationId: removeApplication
 
   /applications/{applicationId}/change-owner:
@@ -1059,7 +1059,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/v3/applications/0a043c2b-ee75-4ef3-9e1c-fc2610ccfa8b/change-owner?owner=admin"'
+          "https://127.0.0.1:9443/api/admin/v3/applications/0a043c2b-ee75-4ef3-9e1c-fc2610ccfa8b/change-owner?owner=admin"'
       operationId: changeApplicationOwner
 
   ######################################################
@@ -1087,7 +1087,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/v3/environments"'
+          "https://127.0.0.1:9443/api/admin/v3/environments"'
       operationId: getEnvironments
 
     post:
@@ -1121,7 +1121,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v3/environments"'
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/admin/v3/environments"'
       operationId: addEnvironment
 
   ######################################################
@@ -1163,7 +1163,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v3/environments/d7cf8523-9180-4255-84fa-6cb171c1f779"'
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/admin/v3/environments/d7cf8523-9180-4255-84fa-6cb171c1f779"'
       operationId: updateEnvironment
 
     delete:
@@ -1188,7 +1188,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/v3/environments/d7cf8523-9180-4255-84fa-6cb171c1f779"'
+          "https://127.0.0.1:9443/api/admin/v3/environments/d7cf8523-9180-4255-84fa-6cb171c1f779"'
       operationId: removeEnvironment
 
 
@@ -1238,7 +1238,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/v3/tenant-info/john"'
+          "https://127.0.0.1:9443/api/admin/v3/tenant-info/john"'
 
   ######################################################
   # The Custom URL Info resource API
@@ -1285,7 +1285,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/v3/custom-urls/wso2.com"'
+          "https://127.0.0.1:9443/api/admin/v3/custom-urls/wso2.com"'
 
   ######################################################
   # The "Category Collection" resource API
@@ -1311,7 +1311,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/v3/api-categories"'
+          "https://127.0.0.1:9443/api/admin/v3/api-categories"'
       operationId: getAllCategories
 
     post:
@@ -1344,7 +1344,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v3/api-categories"'
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/admin/v3/api-categories"'
       operationId: addCategory
 
   ######################################################
@@ -1385,7 +1385,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v3/api-categories/d7cf8523-9180-4255-84fa-6cb171c1f779"'
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/admin/v3/api-categories/d7cf8523-9180-4255-84fa-6cb171c1f779"'
       operationId: updateCategory
 
     delete:
@@ -1409,7 +1409,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/v3/api-categories/d7cf8523-9180-4255-84fa-6cb171c1f779"'
+          "https://127.0.0.1:9443/api/admin/v3/api-categories/d7cf8523-9180-4255-84fa-6cb171c1f779"'
       operationId: removeCategory
 
   ######################################################
@@ -1435,7 +1435,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/v3/settings"'
+          "https://127.0.0.1:9443/api/admin/v3/settings"'
       operationId: getAdminSettings
 
   ######################################################
@@ -1462,7 +1462,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/v3/key-managers"'
+          "https://127.0.0.1:9443/api/admin/v3/key-managers"'
       operationId: getAllKeyManagers
 
     post:
@@ -1495,7 +1495,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v3/key-managers"'
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/admin/v3/key-managers"'
       operationId: addNewKeyManager
 
   ######################################################
@@ -1534,7 +1534,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/v3/key-managers/8d263942-a6df-4cc2-a804-7a2525501450"'
+          "https://127.0.0.1:9443/api/admin/v3/key-managers/8d263942-a6df-4cc2-a804-7a2525501450"'
       operationId: getKeyManagerConfiguration
 
     put:
@@ -1571,7 +1571,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v3/key-managers/8d263942-a6df-4cc2-a804-7a2525501450"'
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/admin/v3/key-managers/8d263942-a6df-4cc2-a804-7a2525501450"'
       operationId: updateKeyManager
 
     delete:
@@ -1595,7 +1595,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/v3/key-managers/8d263942-a6df-4cc2-a804-7a2525501450"'
+          "https://127.0.0.1:9443/api/admin/v3/key-managers/8d263942-a6df-4cc2-a804-7a2525501450"'
       operationId: removeKeyManager
 
   /key-managers/discover:
@@ -1632,7 +1632,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -F "type=WSO2-IS" "https://127.0.0.1:9443/api/am/admin/v3/key-managers/discover"'
+          -F "type=WSO2-IS" "https://127.0.0.1:9443/api/admin/v3/key-managers/discover"'
       operationId: getWellKnownInfoKeyManager
 
 ######################################################
@@ -1659,7 +1659,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/organizations"'
+          "https://127.0.0.1:9443/api/admin/organizations"'
       operationId: getAllOrganization
 
     post:
@@ -1692,7 +1692,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/organizations"'
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/admin/organizations"'
       operationId: addOrganization
   /organizations/{organizationId}:
     get:
@@ -1724,7 +1724,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X GET -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/organizations/0a043c2b-ee75-4ef3-9e1c-fc2610ccfa8b"'
+          "https://127.0.0.1:9443/api/admin/organizations/0a043c2b-ee75-4ef3-9e1c-fc2610ccfa8b"'
       operationId: getOrganizationById
     put:
       tags:
@@ -1760,7 +1760,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/organizations/d7cf8523-9180-4255-84fa-6cb171c1f779"'
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/admin/organizations/d7cf8523-9180-4255-84fa-6cb171c1f779"'
       operationId: updateOrganization
     delete:
       tags:
@@ -1783,7 +1783,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/organizations/d7cf8523-9180-4255-84fa-6cb171c1f779"'
+          "https://127.0.0.1:9443/api/admin/organizations/d7cf8523-9180-4255-84fa-6cb171c1f779"'
       operationId: removeOrganization
   /organization-info:
     get:
@@ -1811,7 +1811,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X GET -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/organization-info/0a043c2b-ee75-4ef3-9e1c-fc2610ccfa8b"'
+          "https://127.0.0.1:9443/api/admin/organization-info/0a043c2b-ee75-4ef3-9e1c-fc2610ccfa8b"'
       operationId: getOrganizationByClaimValue
 
   ######################################################

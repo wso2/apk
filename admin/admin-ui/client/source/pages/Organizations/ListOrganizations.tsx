@@ -54,7 +54,7 @@ export default function ListOrganizations() {
 
     const createOrganization = (organization) => {
         axios
-            .post('/api/am/admin/organizations/', {
+            .post('/api/admin/organizations/', {
                 ...organization
             }, {
                 withCredentials: true,
@@ -76,7 +76,7 @@ export default function ListOrganizations() {
 
     const updateOrganization = (organization) => {
         axios
-            .put('/api/am/admin/organizations/' + organization.id, {
+            .put('/api/admin/organizations/' + organization.id, {
                 ...organization
             }, {
                 withCredentials: true,

@@ -24,7 +24,7 @@ import wso2/apk_common_lib as commons;
     id: "runtime-api-service"
 }
 
-service /api/am/runtime on ep0 {
+service /api/runtime on ep0 {
     # Retrieve/Search APIs
     #
     # + 'limit - Maximum size of resource array to return. 

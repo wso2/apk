@@ -1,5 +1,5 @@
 [wso2.runtime_domain_service.runtimeConfiguration]
-baseURl = "https://api.am.wso2.com:9095/api/am/runtime"
+baseURl = "https://api.am.wso2.com:9095/api/runtime"
 [wso2.runtime_domain_service.runtimeConfiguration.k8sConfiguration]
 host = "192.168.49.2:8443"
 serviceAccountPath = "/media/tharindud/dev/satoken"
@@ -12,7 +12,7 @@ certFilePath = "/media/tharindud/dev/satoken/runtime.pem"
 [wso2.runtime_domain_service.runtimeConfiguration.idpConfiguration.publicKey]
 certFilePath = "/media/tharindud/dev/satoken/mg.pem"
 [wso2.runtime_domain_service.runtimeConfiguration.controlPlane]
-serviceBaseURl = "https://api.am.wso2.com:9095/api/am/internal/v1"
+serviceBaseURl = "https://api.am.wso2.com:9095/api/internal/v1"
 [wso2.runtime_domain_service.runtimeConfiguration.controlPlane.certificate]
 certFilePath = "/media/tharindud/dev/satoken/router.pem"
 [wso2.runtime_domain_service.runtimeConfiguration.gatewayConfiguration]

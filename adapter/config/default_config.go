@@ -244,7 +244,7 @@ var defaultConfig = &Config{
 	Runtime: runtime{
 		Host:            "runtime-service",
 		Port:            9443,
-		ServiceBasePath: "/api/am/runtime",
+		ServiceBasePath: "/api/runtime",
 	},
 	Analytics: analytics{
 		Enabled: false,
