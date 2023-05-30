@@ -1,0 +1,2286 @@
+openapi: 3.0.1
+info:
+  title: WSO2 API Platform for Kubernetes - Runtime Service API
+  description: |
+    This document specifies a **RESTful API** for WSO2 **API Platform for Kubernetes(APK)** - **Runtime Service**.
+  version: 1.0.0
+paths:
+  /apis:
+    get:
+      tags:
+        - APIs
+      summary: |
+        Retrieve/Search APIs
+      description: |
+        This operation provides you a list of available APIs qualifying under a given search condition. Each retrieved API is represented with a minimal amount of attributes. If you want to get complete details of an API, you need to use **Get details of an API** operation.
+      operationId: getAllAPIs
+      parameters:
+        - name: limit
+          in: query
+          description: |
+            Maximum size of resource array to return.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: integer
+            default: 25
+        - name: offset
+          in: query
+          description: |
+            Starting point within the complete list of items qualified.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: integer
+            default: 0
+        - name: sortBy
+          in: query
+          description: |
+            Criteria for sorting.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+            default: createdTime
+            enum:
+              - apiName
+              - createdTime
+        - name: sortOrder
+          in: query
+          description: |
+            Order of sorting(ascending/descending).
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+            default: desc
+            enum:
+              - asc
+              - desc
+        - name: query
+          in: query
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: |
+            OK. List of qualifying APIs is returned.
+          headers:
+            Content-Type:
+              description: The content type of the body.
+              style: simple
+              explode: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIList"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+    post:
+      tags:
+        - APIs
+      summary: Create a New API
+      description: |
+        This operation can be used to create a new API specifying the details of the API in the payload.
+      operationId: createAPI
+      requestBody:
+        description: API object that needs to be added
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/API"
+        required: true
+      responses:
+        "201":
+          description: |
+            Created. Successful response with the newly created object as entity in the body. Location header contains URL of newly created entity.
+          headers:
+            Location:
+              description: |
+                The URL of the newly created resource.
+              style: simple
+              explode: false
+              schema:
+                type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              style: simple
+              explode: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/API"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /apis/{apiId}:
+    get:
+      tags:
+        - APIs
+      summary: Get Details of an API
+      description: |
+        Using this operation, you can retrieve complete details of a single API. You need to provide the id of the API to retrieve it.
+      operationId: getAPI
+      parameters:
+        - name: apiId
+          in: path
+          description: |
+            **API ID** consisting of the **Name** of the API.
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: |
+            OK. Requested API is returned
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              style: simple
+              explode: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/API"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    put:
+      tags:
+        - APIs
+      summary: Update an API
+      description: |
+        This operation can be used to update an existing API. This operation will instruct runtime to update deployment.
+      operationId: updateAPI
+      parameters:
+        - name: apiId
+          in: path
+          description: |
+            **API ID** consisting of the **Name** of the API.
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      requestBody:
+        description: API object that needs to be added
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/API"
+        required: true
+      responses:
+        "200":
+          description: |
+            OK. Successful response with updated API object
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              style: simple
+              explode: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/API"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    delete:
+      tags:
+        - APIs
+      summary: Delete an API
+      description: |
+        This operation can be used to delete an existing API proving the Id of the API.
+      operationId: deleteAPI
+      parameters:
+        - name: apiId
+          in: path
+          description: |
+            **API ID** consisting of the **Name** of the API.
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: |
+            OK. Resource successfully deleted.
+          content: {}
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /apis/{apiId}/generate-key:
+    post:
+      tags:
+        - APIs
+      summary: Generate internal API Key to invoke APIS.
+      description: |
+        This operation can be used to generate internal API key which used to invoke API.
+      operationId: generateInternalAPIKey
+      parameters:
+        - $ref: "#/components/parameters/apiId"
+      responses:
+        200:
+          description: |
+            OK. apikey generated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIKey"
+        400:
+          $ref: "#/components/responses/BadRequest"
+        404:
+          $ref: "#/components/responses/NotFound"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /apis/import-service:
+    post:
+      tags:
+        - Service or Schema Import
+      summary: Create API from a Service
+      description: This operation can be used to create an API from available Service by providing service
+      operationId: importService
+      parameters:
+        - name: serviceKey
+          in: query
+          description: ID of service that should be imported from Service Catalog
+          required: true
+          style: form
+          explode: true
+          schema:
+            type: string
+          example: Pizzashack-1.0.0
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/API"
+      responses:
+        "201":
+          description: |
+            Created. Successful response with the newly created object as entity in the body. Location header contains the URL of the newly created entity.
+          headers:
+            Location:
+              description: |
+                The URL of the newly created resource.
+              style: simple
+              explode: false
+              schema:
+                type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              style: simple
+              explode: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/API"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /apis/import-definition:
+    post:
+      tags:
+        - Service or Schema Import
+      summary: Import an API Definition
+      description: |
+        This operation can be used to create an API from an API definition. Provide either `url` or `file` to specify the definition. Specify additionalProperties with **at least** API's name, version, context and endpointConfig.
+      operationId: importAPIDefinition
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/apis_importdefinition_body"
+      responses:
+        "201":
+          description: |
+            Created. Successful response with the newly created object as entity in the body. Location header contains URL of newly created entity.
+          headers:
+            Location:
+              description: |
+                The URL of the newly created resource.
+              style: simple
+              explode: false
+              schema:
+                type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              style: simple
+              explode: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/API"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /apis/validate-definition:
+    post:
+      tags:
+        - Validation
+      summary: Validate an OpenAPI Definition
+      description: |
+        This operation can be used to validate an OpenAPI definition and retrieve a summary. Provide either `url` or `file` to specify the definition.
+      operationId: validateOpenAPIDefinition
+      parameters:
+        - name: returnContent
+          in: query
+          description: |
+            Specify whether to return the full content of the OpenAPI definition in the response. This is only applicable when using url based validation
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: boolean
+            default: false
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/apis_validatedefinition_body"
+      responses:
+        "200":
+          description: |
+            OK. API definition validation information is returned
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              style: simple
+              explode: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIDefinitionValidationResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /apis/validate:
+    post:
+      tags:
+        - Validation
+      summary: Check Given API Context Name already Exists
+      description: |
+        Using this operation, you can check a given API context is already used. You need to provide the context name you want to check.
+      operationId: validateAPI
+      parameters:
+      - name: query
+        in: query
+        description: |
+          You can search in attributes by using an **"<attribute>:"** modifier. Eg."name:wso2" will match an API if the provider of the API is exactly "wso2". Supported attribute modifiers are [** version, context, name **]. If no advanced attribute modifier has been specified, search will match the given query string against API Name.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: |
+            OK. API definition validation information is returned
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              style: simple
+              explode: false
+              schema:
+                type: string
+          content: {}
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /apis/{apiId}/definition:
+    get:
+      tags:
+        - APIs
+      summary: Get API Definition
+      description: |
+        This operation can be used to retrieve the definition of an API.
+      operationId: getAPIDefinition
+      parameters:
+        - name: apiId
+          in: path
+          description: |
+            **API ID** consisting of the **Name** of the API.
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+        - name: Accept
+          in: header
+          description: |
+            Media types acceptable for the response. Default is application/json.
+          required: false
+          style: simple
+          explode: false
+          schema:
+            type: string
+            default: application/json
+      responses:
+        "200":
+          description: |
+            OK. Requested definition document of the API is returned
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              style: simple
+              explode: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: string
+                example: ""
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    put:
+      tags:
+        - APIs
+      summary: Update API Definition
+      description: |
+        This operation can be used to update the API definition of an existing API. API definition to be updated is passed as a form data parameter `apiDefinition`.
+      operationId: updateAPIDefinition
+      parameters:
+        - name: apiId
+          in: path
+          description: |
+            **API ID** consisting of the **Name** of the API.
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/apiId_definition_body"
+      responses:
+        "200":
+          description: |
+            OK. Successful response with updated Swagger definition
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              style: simple
+              explode: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: string
+                example: ""
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+######################################################
+  # The "Certificate Management" resource APIs
+  ######################################################
+  /apis/{apiId}/endpoint-certificates:
+    get:
+      tags:
+        - Endpoint Certificates
+      summary: Retrieve/Search Uploaded Certificates
+      description: |
+        This operation can be used to retrieve and search the uploaded certificates.
+      parameters:
+      - name: apiId
+        in: path
+        explode: true
+        required: true
+        schema:
+          type: string
+      - $ref: '#/components/parameters/limit'
+      - $ref: '#/components/parameters/offset'
+      - name: endpoint
+        in: query
+        description: Endpoint of which the certificate is uploaded
+        schema:
+          type: string
+      responses:
+        200:
+          description: |
+            OK. Successful response with the list of matching certificate information in the body.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Certificates'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+
+      operationId: getEndpointCertificates
+
+    post:
+      tags:
+        - Endpoint Certificates
+      summary: Upload a new Certificate.
+      description: |
+        This operation can be used to upload a new certificate for an endpoint.
+      parameters:
+      - name: apiId
+        in: path
+        explode: true
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              required:
+                - certificate
+                - host
+              properties:
+                certificate:
+                  type: string
+                  description: The certificate that needs to be uploaded.
+                  format: binary
+                host:
+                  type: string
+                  description: Host of the endpoint to which the certificate should be applied.
+        required: true
+      responses:
+        200:
+          description: |
+            OK. The Certificate added successfully.
+          headers:
+            Location:
+              description: |
+                The URL of the newly created resource.
+              schema:
+                type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CertMetadata'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+
+      operationId: addEndpointCertificate
+
+  /apis/{apiId}/endpoint-certificates/{certificateId}:
+    get:
+      tags:
+        - Endpoint Certificates
+      summary: Get the Certificate Information
+      description: |
+        This operation can be used to get the information about a certificate.
+      parameters:
+      - name: apiId
+        in: path
+        explode: true
+        required: true
+        schema:
+          type: string
+      - name: certificateId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: OK.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CertificateInfo'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+      operationId: getEndpointCertificateByAlias
+
+    put:
+      tags:
+        - Endpoint Certificates
+      summary: Update a certificate.
+      description: This operation can be used to update an uploaded certificate.
+      parameters:
+      - name: apiId
+        in: path
+        explode: true
+        required: true
+        schema:
+          type: string
+      - name: certificateId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              required:
+                - certificate
+              properties:
+                certificate:
+                  type: string
+                  description: The certificate that needs to be uploaded.
+                  format: binary
+        required: true
+      responses:
+        200:
+          description: |
+            OK. The Certificate updated successfully.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CertMetadata'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+      operationId: updateEndpointCertificateByAlias
+
+    delete:
+      tags:
+        - Endpoint Certificates
+      summary: Delete a certificate.
+      description: |
+        This operation can be used to delete an uploaded certificate.
+      parameters:
+        - name: apiId
+          in: path
+          explode: true
+          required: true
+          schema:
+            type: string
+        - name: certificateId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: |
+            OK. The Certificate deleted successfully.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content: {}
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+      operationId: deleteEndpointCertificateByAlias
+
+  /apis/{apiId}/endpoint-certificates/{certificateId}/content:
+    get:
+      tags:
+        - Endpoint Certificates
+      summary: Download a Certificate
+      description: |
+        This operation can be used to download a certificate which matches the given alias.
+      parameters:
+        - name: apiId
+          in: path
+          explode: true
+          required: true
+          schema:
+            type: string
+        - name: certificateId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: |
+            OK.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content: {}
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+      operationId: getEndpointCertificateContentByAlias
+  /apis/export:
+    get:
+      tags:
+        - Import Export
+      summary: Export an API
+      description: |
+        This operation can be used to export the details of a particular API as a zip file.
+      operationId: exportAPI
+      parameters:
+        - name: apiId
+          in: query
+          description: Name of the API
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: name
+          in: query
+          description: |
+            API Name
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: version
+          in: query
+          description: |
+            Version of the API
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: format
+          in: query
+          description: |
+            Format of output documents. Can be YAML or JSON.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+            enum:
+              - JSON
+              - YAML
+      responses:
+        "200":
+          description: |
+            OK. Export Successful.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              style: simple
+              explode: false
+              schema:
+                type: string
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /apis/copy-api:
+    post:
+      tags:
+        - APIs
+      summary: Create a New API Version
+      description: |
+        This operation can be used to create a new version of an existing API. The new version is specified as `newVersion` query parameter. New API will be in `CREATED` state.
+      parameters:
+        - name: newVersion
+          in: query
+          description: Version of the new API.
+          required: true
+          schema:
+            maxLength: 30
+            type: string
+        - name: serviceId
+          in: query
+          description: Version of the Service that will used in creating new version
+          schema:
+            type: string
+          required: false
+        - $ref: '#/components/parameters/apiId-Q'
+      responses:
+        201:
+          description: |
+            Created. Successful response with the newly created API as entity in the body. Location header contains URL of newly created API.
+          headers:
+            Location:
+              description: |
+                The URL of the newly created API.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/API'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+      operationId: createNewAPIVersion
+  /services:
+    get:
+      tags:
+        - Services
+      summary: Retrieve/search services
+      description: |
+        Retrieve or search services in the Cluster.
+      operationId: searchServices
+      parameters:
+        - name: query
+          in: query
+          description: Search K8s Services based on name or namespace.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: sortBy
+          in: query
+          description: |
+            Criteria for sorting.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+            default: createdTime
+            enum:
+              - serviceName
+              - createdTime
+        - name: sortOrder
+          in: query
+          description: |
+            Order of sorting(ascending/descending).
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+            default: desc
+            enum:
+              - asc
+              - desc
+        - name: limit
+          in: query
+          description: |
+            Maximum size of resource array to return.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: integer
+            default: 25
+        - name: offset
+          in: query
+          description: |
+            Starting point within the complete list of items qualified.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: integer
+            default: 0
+      responses:
+        "200":
+          description: |
+            Paginated matched list of services returned.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceList"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /services/{serviceId}:
+    get:
+      tags:
+        - Services
+      summary: Get details of a service
+      description: |
+        Get details of a service using the id of the service.
+      operationId: getServiceById
+      parameters:
+        - name: serviceId
+          in: path
+          description: UUID (unique across all namespaces) of the service
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: |
+            Requested service in the Service Catalog is returned.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Service"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /services/{serviceId}/usage:
+    get:
+      tags:
+        - Services
+      summary: Retrieve the usage of service
+      description: |
+        Retrieve usage
+      operationId: getServiceUsage
+      parameters:
+        - name: serviceId
+          in: path
+          description: UUID(unique id across cluster) of the service
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: |
+            Maximum size of resource array to return.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: integer
+            default: 25
+        - name: offset
+          in: query
+          description: |
+            Starting point within the complete list of items qualified.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: integer
+            default: 0
+        - name: sortBy
+          in: query
+          description: |
+            Criteria for sorting.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+            default: createdTime
+            enum:
+              - apiName
+              - createdTime
+        - name: sortOrder
+          in: query
+          description: |
+            Order of sorting(ascending/descending).
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+            default: desc
+            enum:
+              - asc
+              - desc
+        - name: query
+          in: query
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: |
+            List of APIs that uses the service in the Service Catalog is returned.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIList"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /policies:
+    get:
+      tags:
+        - Mediation Policies
+      summary: |
+        Get all common mediation policies to all the APIs
+      description: |
+        This operation provides you a list of available operation Policies that can be used by any API
+      operationId: getMediationPolicyList
+      parameters:
+        - name: limit
+          in: query
+          description: |
+            Maximum size of resource array to return.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: integer
+            default: 25
+        - name: offset
+          in: query
+          description: |
+            Starting point within the complete list of items qualified.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: integer
+            default: 0
+        - name: sortBy
+          in: query
+          description: |
+            Criteria for sorting.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+            default: createdTime
+            enum:
+              - policyName
+              - createdTime
+        - name: sortOrder
+          in: query
+          description: |
+            Order of sorting(ascending/descending).
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+            default: desc
+            enum:
+              - asc
+              - desc
+        - name: query
+          in: query
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: Accept
+          in: header
+          description: |
+            Media types acceptable for the response. Default is application/json.
+          required: false
+          style: simple
+          explode: false
+          schema:
+            type: string
+            default: application/json
+      responses:
+        "200":
+          description: |
+            OK. List of qualifying policies is returned.
+          headers:
+            Content-Type:
+              description: The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediationPolicyList'
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /policies/{policyId}:
+    get:
+      tags:
+        - Mediation Policies
+      summary: Get the details of a common mediation policy by providing mediation policy ID
+      description: |
+        This operation can be used to retrieve a particular common mediation policy.
+      operationId: getMediationPolicyByPolicyId
+      parameters:
+        - name: policyId
+          in: path
+          description: Mediation policy Id
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: |
+            OK. Mediation policy returned.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediationPolicy'
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+components:
+  schemas:
+    APIList:
+      title: API List
+      type: object
+      properties:
+        count:
+          type: integer
+          description: |
+            Number of APIs returned.
+          example: 1
+        list:
+          type: array
+          items:
+            $ref: "#/components/schemas/APIInfo"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+    APIInfo:
+      title: API Info object with basic API details.
+      type: object
+      properties:
+        id:
+          type: string
+          description: |
+            UUID of the API
+          readOnly: true
+          example: 01234567-0123-0123-0123-012345678901
+        name:
+          type: string
+          example: CalculatorAPI
+        context:
+          type: string
+          example: CalculatorAPI
+        version:
+          type: string
+          example: 1.0.0
+        type:
+          type: string
+          example: HTTP
+        createdTime:
+          type: string
+          example: 2021-02-11 09:57:25
+        updatedTime:
+          type: string
+          example: 2021-02-11 09:57:25
+    API:
+      title: API object
+      required:
+        - context
+        - name
+        - version
+      type: object
+      properties:
+        id:
+          type: string
+          description: |
+            UUID of the API
+          readOnly: true
+        name:
+          maxLength: 60
+          minLength: 1
+          type: string
+        context:
+          maxLength: 232
+          minLength: 1
+          type: string
+        version:
+          maxLength: 30
+          minLength: 1
+          pattern: ^[^~!@#;:%^*()+={}|\\<>"',&/$\[\]\s+\/]+$
+          type: string
+        provider:
+          type: string
+        type:
+          type: string
+          default: HTTP
+          enum:
+            - HTTP
+            - GRAPHQL
+            - GRPC
+        createdTime:
+          type: string
+          readOnly: true
+        lastUpdatedTime:
+          type: string
+          readOnly: true
+        endpointConfig:
+          $ref: "#/components/schemas/EndpointConfig"
+        operations:
+          type: array
+          items:
+            $ref: "#/components/schemas/APIOperations"
+        serviceInfo:
+          $ref: "#/components/schemas/API_serviceInfo"
+        apiPolicies:
+          $ref: "#/components/schemas/APIOperationPolicies"
+          optional: true
+        apiRateLimit:
+          $ref: "#/components/schemas/APIRateLimit"
+        securityScheme:
+          type: array
+          items:
+            type: string
+        AdditionalProperties:
+          type: array
+          description: Map of custom properties of API
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              value:
+                type: string
+  
+
+
+    APIOperations:
+      title: Operation
+      type: object
+      properties:
+        target:
+          type: string
+          example: /order/{orderId}
+        verb:
+          type: string
+          example: POST
+        authTypeEnabled:
+          type: boolean
+          example: true
+          default: true
+          description: Authentication mode for resource (true/false)
+        endpointConfig:
+          $ref: "#/components/schemas/EndpointConfig"
+        operationPolicies:
+          $ref: "#/components/schemas/APIOperationPolicies"
+        operationRateLimit:
+          $ref: "#/components/schemas/APIRateLimit"
+
+
+
+    APIOperationPolicies:
+      title: API Operation Level Policies
+      properties:
+        request:
+          type: array
+          items:
+            $ref: "#/components/schemas/OperationPolicy"
+        response:
+          type: array
+          items:
+            $ref: "#/components/schemas/OperationPolicy"
+     
+   
+    OperationPolicy:
+      title: API Operation Policy
+      required:
+        - policyName
+      type: object
+      properties:
+        policyName:
+          type: string
+        policyVersion:
+          type: string
+          default: v1
+        policyId:
+          type: string
+        parameters:
+          type: object
+          example: {"headerName":"header1"}
+
+
+    APIRateLimit:
+      title: API Rate Limit Details
+      type: object
+      required:
+        - requestsPerUnit
+        - unit
+      properties:
+        requestsPerUnit:
+          type: integer
+          description: Number of requests allowed per specified unit of time
+          example: 30
+        unit:
+          type: string
+          description: Unit of time
+          enum:
+          - Minute
+          - Hour
+          - Day
+          example: Minute
+    
+    
+    EndpointConfig:
+      title: Endpoint configs
+      properties:
+        production:
+          $ref: "#/components/schemas/ProductionEndpoint"
+        sandbox:
+          $ref: "#/components/schemas/SandboxEndpoint"
+      
+     
+    ProductionEndpoint:
+      required:
+        - endpointURL
+      type: object
+      properties:
+        endpointURL:
+          type: string
+        endpointSecurity:
+          $ref: "#/components/schemas/EndpointSecurity"
+        certification:
+          type: string
+        timeouts:
+          $ref: "#/components/schemas/EndpointTimeout"
+    
+    SandboxEndpoint:
+      required:
+        - endpointURL
+      type: object
+      properties:
+        endpointURL:
+          type: string
+        security:
+          $ref: "#/components/schemas/EndpointSecurity"
+        certification:
+          type: string
+        timeouts:
+          $ref: "#/components/schemas/EndpointTimeout"
+          
+    EndpointSecurity:
+      type: object
+      properties:
+        enable:
+          type: boolean
+        securityType:
+          type: string
+        securityProperties:
+          type: object
+          properties: {}
+          
+    EndpointTimeout:
+      type: object
+      properties: {}
+    
+    API_serviceInfo:
+      type: object
+      properties:
+        name:
+          type: string
+          example: pizzashack-service
+        namespace:
+          type: string
+          example: apk-platform
+        endpoint_security:
+          type: object
+          properties: {}
+    GraphQLSchema:
+      title: GraphQL Schema
+      required:
+        - name
+      type: object
+      properties:
+        name:
+          type: string
+          example: admin--HackerNewsAPI.graphql
+        schemaDefinition:
+          type: string
+    MediationPolicyList:
+      title: Paginated List of Policies
+      type: object
+      properties:
+        count:
+          type: integer
+          description: |
+            Number of mediation policies returned.
+          example: 1
+        list:
+          type: array
+          items:
+            $ref: '#/components/schemas/MediationPolicy'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+    MediationPolicy:
+      title: Mediation Policy Data
+      required:
+        - id
+        - name
+        - type
+      type: object
+      properties:
+        id:
+          type: string
+          example: 1
+        type:
+          type: string
+          example: RequestHeaderModifier
+        name:
+          type: string
+          example: addHeader
+        displayName:
+          type: string
+          example: Add Header
+        description:
+          type: string
+          example: With this policy, user can add a new header to the request
+        applicableFlows:
+          type: array
+          items:
+            type: string
+            example: request
+        supportedApiTypes:
+          type: array
+          items:
+            type: string
+            example: REST
+        policyAttributes:
+          type: array
+          items:
+            $ref: '#/components/schemas/MediationPolicySpecAttribute'
+    MediationPolicySpecAttribute:
+      title: Mediation Policy Attribute Specs
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the attribute
+          example: headerName
+        description:
+          type: string
+          description: Description of the attribute
+          example:  Name of the header to be added
+        required:
+          type: boolean
+          description: Is this option mandatory for the policy
+          example: true
+        validationRegex:
+          type: string
+          description: UI validation regex for the attribute
+          example: /^[A-Za-z]+$/ (only accepts alphabetic characters)
+        type:
+          type: string
+          description: Type of the attribute
+          example: string
+        defaultValue:
+          type: string
+          description: Default value for the attribute
+          example: true
+    Error:
+      title: Error object returned with 4XX HTTP Status
+      required:
+        - code
+        - message
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int64
+          example: 400
+        message:
+          type: string
+          description: Error message.
+          example: Bad Request
+        description:
+          type: string
+          description: |
+            A detail description about the error message.
+          example: The request is invalid or malformed.
+        moreInfo:
+          type: string
+          description: |
+            Preferably an url with more details about the error.
+        error:
+          type: array
+          description: |
+            If there are more than one error list them out.
+            For example, list out validation errors by each field.
+          items:
+            $ref: "#/components/schemas/ErrorListItem"
+    ErrorListItem:
+      title: Description of individual errors that may have occurred during a request.
+      required:
+        - code
+        - message
+      type: object
+      properties:
+        code:
+          type: string
+          example: "INVALID_REQUEST"
+        message:
+          type: string
+          example: "Request body is missing required field 'name'"
+          description: |
+            Description about individual errors occurred
+        description:
+          type: string
+          example: "Error occurred while processing the request" 
+          description: |
+            A detail description about the error message.
+    APIDefinitionValidationResponse:
+      title: API Definition Validation Response
+      required:
+        - isValid
+      type: object
+      properties:
+        isValid:
+          type: boolean
+          description: |
+            This attribute declares whether this definition is valid or not.
+          example: true
+        content:
+          type: string
+          description: |
+            OpenAPI definition content.
+          example: |
+            openapi: "3.0.0"
+            info:
+              title: My API
+              version: 1.0.0
+              description: This is a sample API definition
+            paths:
+              /hello:
+                get:
+                  summary: Hello World
+                  responses:
+                    '200':
+                      description: A successful response
+        info:
+          $ref: "#/components/schemas/APIDefinitionValidationResponse_info"
+        errors:
+          type: array
+          description: |
+            If there are more than one error list them out.
+            For example, list out validation errors by each field.
+          items:
+            $ref: "#/components/schemas/ErrorListItem"
+          example:
+            - code: "INVALID_FORMAT"
+              message: "The value provided for 'version' is not in the correct format."
+              description: "The 'version' field should be in the format X.Y.Z."
+            - code: "MISSING_FIELD"
+              message: "The 'description' field is required."
+              description: "The 'description' field is required for this operation."
+    SearchResult:
+      title: Search Result
+      required:
+        - name
+      type: object
+      properties:
+        id:
+          type: string
+          example: 01234567-0123-0123-0123-012345678901
+        name:
+          type: string
+          example: TestAPI
+        transportType:
+          type: string
+          description: Accepted values are HTTP, WS, GRAPHQL
+      discriminator:
+        propertyName: name
+    Pagination:
+      title: Pagination
+      type: object
+      properties:
+        offset:
+          type: integer
+          description: |
+            The starting index of the resources returned in the current subset.
+            This is usually used in conjunction with the `limit` parameter.
+          example: 0
+        limit:
+          type: integer
+          description: |
+            The maximum number of resources returned in the current subset.
+            This is usually used in conjunction with the `offset` parameter.
+          example: 10
+        total:
+          type: integer
+          description: |
+            The total number of resources available across all subsets.
+            This is usually returned in the first subset.
+          example: 100
+        next:
+          type: string
+          description: |
+            The URL to the next subset of resources.
+            Empty if no more resources are available.
+          example: "https://api.example.com/resources?offset=10&limit=10"
+        previous:
+          type: string
+          description: |
+            The URL to the previous subset of resources.
+            Empty if current subset is the first subset returned.
+          example: "https://api.example.com/resources?offset=0&limit=10"
+    ServiceList:
+      title: Paginated List of Services in Service Catalog
+      type: object
+      properties:
+        list:
+          title: List of Services in Service Catalog
+          type: array
+          items:
+            $ref: "#/components/schemas/Service"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+    Service:
+      title: The Service Object
+      required:
+        - id
+        - name
+        - namespace
+        - type
+      type: object
+      properties:
+        id:
+          type: string
+          minLength: 1
+          maxLength: 255
+          example: 11cd3fa3-c886-49f9-bf78-0ec349b1f4c1
+        name:
+          maxLength: 255
+          minLength: 1
+          type: string
+          example: pizzashack-service
+        namespace:
+          maxLength: 255
+          type: string
+          example: dev
+        type:
+          type: string
+          example: ClusterIP
+        portmapping:
+          title: List of PortMapping in the Service
+          type: array
+          items:
+            $ref: "#/components/schemas/PortMapping"
+        endpointSecurity:
+          type: object
+          properties: {}
+          description: |
+            Endpoint security of the API.
+
+            `Basic Auth Endpoint security`
+              {
+                "production":       {
+                   "enabled": true,
+                   "type": "Basic",
+                   "username": "admin",
+                   "password": "admin"
+
+                }
+              }
+          example:
+            production:
+              enabled: true
+              type: Basic
+              username: admin
+              password: admin
+        createdTime:
+          type: string
+          example: 2021-02-11 09:57:25
+
+    PortMapping:
+      title: The PortMapping Object
+      required:
+        - name
+        - port
+        - targetport
+      type: object
+      properties:
+        name:
+          maxLength: 255
+          minLength: 1
+          type: string
+          example: pizzashack-service
+        protocol:
+          type: string
+          example: tcp
+        targetport:
+          type: integer
+          format: int32
+          example: 8088
+        port:
+          type: integer
+          format: int32
+          example: 8080
+    GatewayList:
+      title: Paginated List of Gateways
+      type: object
+      properties:
+        list:
+          title: List of Gateways
+          type: array
+          items:
+            $ref: "#/components/schemas/Gateway"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+    Gateway:
+      title: Gateway object
+      required:
+        - name
+        - port
+        - protocol
+      type: object
+      properties:
+        name:
+          maxLength: 255
+          minLength: 1
+          type: string
+          description: Name of the Gateway
+          example: PizzaOrdersGateway
+        protocol:
+          maxLength: 50
+          minLength: 1
+          type: string
+          description: Protocol of the Listener
+          example: HTTP
+        port:
+          type: number
+          description: Port of the Listener
+          example: 8080
+    apis_importdefinition_body:
+      properties:
+        type:
+          type: string
+          description: Type of Definition.
+          format: string
+          example: "REST"
+        file:
+          type: string
+          description: Definition to upload as a file
+          format: binary
+          example: "file contents"
+        url:
+          type: string
+          description: Definition url
+          example: "https://example.com/api-definition.yaml"
+        additionalProperties:
+          type: string
+          description: Additional attributes specified as a stringified JSON with API's schema
+          example: '{"title": "My API", "version": "1.0.0"}'
+        inlineAPIDefinition:
+          type: string
+          description: Inline content of the API definition
+          example: "openapi: 3.0.0\ninfo:\n  title: My API\n  version: 1.0.0\npaths:\n  /hello:\n    get:\n      responses:\n        '200':\n          description: OK\n          content:\n            text/plain:\n              schema:\n                type: string\n                 example: 'Hello, world!'"
+    apis_validatedefinition_body:
+      properties:
+        url:
+          type: string
+          description: API definition definition url
+          example: https://example.com/api-definition.yaml
+        file:
+          type: string
+          description: API definition as a file
+          format: binary
+        type:
+          type: string
+          description: API definition type - REST/ASYNC/GRAPHQL
+          default: REST
+          example: REST
+        inlineAPIDefinition:
+          type: string
+          description: Inline content of the API definition
+          example: |
+            openapi: 3.0.0
+            info:
+              title: Example API
+              version: 1.0.0
+            paths:
+              /example:
+                get:
+                  summary: Get example
+                  responses:
+                    '200':
+                      description: Successful response
+    apiId_definition_body:
+      properties:
+        apiDefinition:
+          type: string
+          description: API definition of the API
+          example: |
+            openapi: 3.0.0
+            info:
+              title: Example API
+              version: 1.0.0
+            paths:
+              /example:
+                get:
+                  summary: Example endpoint
+                  responses:
+                    '200':
+                      description: OK
+                      content:
+                        application/json:
+                          schema:
+                            type: object
+                            properties:
+                              message:
+                                type: string
+                                example: Hello, world!
+        url:
+          type: string
+          description: API definition URL of the API
+          example: https://example.com/api.yaml
+        file:
+          type: string
+          description: API definition as a file
+          format: binary
+    APIDefinitionValidationResponse_info:
+      type: object
+      description: |
+        API definition information
+      properties:
+        name:
+          type: string
+          example: PetStore
+          description: |
+            Name of the API
+        version:
+          type: string
+          example: 1.0.0
+          description: |
+            Version of the API
+        context:
+          type: string
+          example: /petstore
+          description: |
+            Context of the API
+        description:
+          type: string
+          example: A sample API that uses a petstore as an example to demonstrate swagger-2.0 specification
+          description: |
+            Description of the API
+        openAPIVersion:
+          type: string
+          example: 3.0.0
+          description: |
+            OpenAPI Version.
+        endpoints:
+          type: array
+          description: |
+            contains host/servers specified in the API definition file/URL
+          items:
+            type: string
+            example: https://localhost:9443/am/sample/pizzashack/v3/api/
+    APIKey:
+      title: API Key details to invoke APIs
+      type: object
+      properties:
+        apikey:
+          type: string
+          description: API Key
+          example: eyJoZWxsbyI6IndvcmxkIn0=.eyJ3c28yIjoiYXBpbSJ9.eyJ3c28yIjoic2lnbmF0dXJlIn0=
+        validityTime:
+          type: integer
+          format: int32
+          example: 3600
+    Certificates:
+      title: Certificates
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 1
+        certificates:
+          type: array
+          items:
+            $ref: '#/components/schemas/CertMetadata'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+      description: Representation of a list of certificates
+    CertMetadata:
+      title: Certificate
+      type: object
+      properties:
+        certificateId:
+          type: string
+          example: 3e3a9a8e-7f8d-4a8e-8a8a-8d8d8d8d8d8d
+        endpoint:
+          type: string
+          example: www.abc.com
+      description: Representation of the details of a certificate
+    CertificateInfo:
+        title: Certificate information
+        type: object
+        properties:
+          status:
+            type: string
+            example: Active
+          validity:
+            $ref: '#/components/schemas/CertificateValidity'
+          version:
+            type: string
+            example: V3
+          subject:
+            type: string
+            example: CN=wso2.com, OU=wso2, O=wso2, L=Colombo, ST=Western, C=LK
+    CertificateValidity:
+      title: Certificate Valid period
+      type: object
+      properties:
+        from:
+          type: string
+          example: 12-12-2017
+        to:
+          type: string
+          example: 01-01-2019
+
+  responses:
+    BadRequest:
+      description: Bad Request. Invalid request or validation error.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: 400
+            message: Bad Request
+            description: Invalid request or validation error
+            moreInfo: ""
+            error: []
+    Conflict:
+      description: Conflict. Specified resource already exists.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: 409
+            message: Conflict
+            description: Specified resource already exists
+            moreInfo: ""
+            error: []
+    Forbidden:
+      description: Forbidden. The request must be conditional but no condition has been specified.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: 403
+            message: Forbidden
+            description: The request must be conditional but no condition has been specified
+            moreInfo: ""
+            error: []
+    InternalServerError:
+      description: Internal Server Error.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: 500
+            message: Internal Server Error
+            description: The server encountered an internal error. Please contact administrator.
+            moreInfo: ""
+            error: []
+    NotAcceptable:
+      description: Not Acceptable. The requested media type is not supported.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: 406
+            message: Not Acceptable
+            description: The requested media type is not supported
+            moreInfo: ""
+            error: []
+    NotFound:
+      description: Not Found. The specified resource does not exist.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: 404
+            message: Not Found
+            description: The specified resource does not exist
+            moreInfo: ""
+            error: []
+    PreconditionFailed:
+      description: Precondition Failed. The request has not been performed because one of the preconditions is not met.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: 412
+            message: Precondition Failed
+            description: The request has not been performed because one of the preconditions is not met
+            moreInfo: ""
+            error: []
+    Unauthorized:
+      description: Unauthorized. The user is not authorized.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: 401
+            message: Unauthorized
+            description: The user is not authorized
+            moreInfo: ""
+            error: []
+    UnsupportedMediaType:
+      description: Unsupported Media Type. The entity of the request was not in a supported format.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: 415
+            message: Unsupported media type
+            description: The entity of the request was not in a supported format
+            moreInfo: ""
+            error: []
+  parameters:
+    apiId:
+      name: apiId
+      in: path
+      description: |
+        **API ID** consisting of the **Name** of the API.
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    apiId-Q:
+      name: apiId
+      in: query
+      description: |
+        **API ID** consisting of the **UUID** of the API.
+        The combination of the provider of the API, name of the API and the version is also accepted as a valid API I.
+        Should be formatted as **provider-name-version**.
+      required: true
+      schema:
+        type: string
+    name:
+      name: name
+      in: path
+      description: |
+        Name of the API
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    version:
+      name: version
+      in: path
+      description: |
+        Version of the API
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    limit:
+      name: limit
+      in: query
+      description: |
+        Maximum size of resource array to return.
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: integer
+        default: 25
+    Accept:
+      name: Accept
+      in: header
+      description: |
+        Media types acceptable for the response. Default is application/json.
+      required: false
+      style: simple
+      explode: false
+      schema:
+        type: string
+        default: application/json
+    offset:
+      name: offset
+      in: query
+      description: |
+        Starting point within the complete list of items qualified.
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: integer
+        default: 0
+    sortBy:
+      name: sortBy
+      in: query
+      description: |
+        Criteria for sorting.
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: string
+        default: createdTime
+        enum:
+          - apiName
+          - version
+          - createdTime
+          - status
+    sortOrder:
+      name: sortOrder
+      in: query
+      description: |
+        Order of sorting (ascending/descending).
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: string
+        default: desc
+        enum:
+          - asc
+          - desc
+      example: desc
+    serviceId:
+      name: serviceId
+      in: path
+      description: Name of the service
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+      example: my-service
+    gatewayId:
+      name: gatewayId
+      in: path
+      description: Name of the gateway
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+      example: my-gateway
+    policyId:
+      name: policyId
+      in: path
+      description: Policy UUID
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+      example: ratelimit
+      
