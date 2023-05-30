@@ -266,8 +266,8 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 
 	var endpoints []Endpoint
 	endpoint := &Endpoint{
-		Host:    "enforcer.apk.svc.local",
-		Port:    8080,
+		Host:    "localhost",
+		Port:    9099,
 		URLType: "https",
 	}
 	endpoints = append(endpoints, *endpoint)

@@ -105,6 +105,11 @@ public class APIFactory {
 
         return apis.get(apiKey);
     }
+    public byte[] getAPIDefinition(final String basePath, final String version, final String vHost) {
+        String apiKey = getApiKey(vHost, basePath, version);
+        API api = apis.get(apiKey);
+        return api.getAPIConfig().getApiDefinition();
+    }
 
 //    public WebSocketAPI getMatchedAPI(WebSocketFrameRequest webSocketFrameRequest) {
 //        Map<String, String> extAuthMetadata = webSocketFrameRequest.getMetadata().getExtAuthzMetadataMap();

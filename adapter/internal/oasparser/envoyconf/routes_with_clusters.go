@@ -696,12 +696,16 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 				DisableRequestBodyBuffering: !params.passRequestPayloadToEnforcer,
 			},
 		}
-		b := proto.NewBuffer(nil)
-		b.SetDeterministic(true)
-		_ = b.Marshal(&extAuthPerFilterConfig)
-		extAuthzFilter.TypeUrl = extAuthzPerRouteName
-		extAuthzFilter.Value = b.Bytes()
+	} else {
+		extAuthPerFilterConfig.Override = &extAuthService.ExtAuthzPerRoute_Disabled{
+			Disabled: true,
+		}
 	}
+	b := proto.NewBuffer(nil)
+	b.SetDeterministic(true)
+	_ = b.Marshal(&extAuthPerFilterConfig)
+	extAuthzFilter.TypeUrl = extAuthzPerRouteName
+	extAuthzFilter.Value = b.Bytes()
 
 	var luaPerFilterConfig lua.LuaPerRoute
 	if len(requestInterceptor) < 1 && len(responseInterceptor) < 1 {
@@ -781,6 +785,11 @@ end`
 			LuaLocal:                            luaFilter,
 			wellknown.CORS:                      corsFilter,
 		}
+	} else {
+		perRouteFilterConfigs = map[string]*any.Any{
+			LuaLocal:       luaFilter,
+			wellknown.CORS: corsFilter,
+		}
 	}
 
 	logger.LoggerOasparser.Debugf("adding route : %s for API : %s", resourcePath, title)
@@ -809,7 +818,11 @@ end`
 		}
 	}
 
+	fmt.Println("Resource: ", resource)
+	fmt.Println("Has Policy: ", resource.HasPolicies())
+
 	if resource != nil && resource.HasPolicies() {
+		fmt.Println("Resource has policies: ", resource)
 		logger.LoggerOasparser.Debug("Start creating routes for resource with policies")
 
 		// Policies are per operation (HTTP method). Therefore, create route per HTTP method.
@@ -962,6 +975,7 @@ end`
 
 		}
 	} else {
+		fmt.Println("Resource with no policy")
 		logger.LoggerOasparser.Debugf("Creating routes for resource : %s that has no policies", resourcePath)
 		// No policies defined for the resource. Therefore, create one route for all operations.
 		methodRegex := strings.Join(resourceMethods, "|")
@@ -973,6 +987,11 @@ end`
 		action := generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria)
 		rewritePath := generateRoutePathForReWrite(basePath, resourcePath, pathMatchType)
 		action.Route.RegexRewrite = generateRegexMatchAndSubstitute(rewritePath, endpointBasepath, resourcePath, pathMatchType)
+		// Add API details to the substitution string
+		if strings.Contains(routePath, "?swagger.json") {
+			action.Route.RegexRewrite.Substitution = params.xWSO2BasePath + "/" + vHost + "/" + action.Route.RegexRewrite.Substitution
+		}
+		fmt.Println("Action Regex: ", action.Route.RegexRewrite)
 
 		route := generateRouteConfig(xWso2Basepath, match, action, nil, decorator, perRouteFilterConfigs,
 			nil, nil, nil, nil) // general headers to add and remove are included in this methods
@@ -1252,6 +1271,7 @@ func generateSubstitutionString(resourcePath string, pathMatchType gwapiv1b1.Pat
 	case gwapiv1b1.PathMatchRegularExpression:
 		resourceRegex = "\\1"
 	}
+	fmt.Println("resourceRegex: ", resourceRegex)
 	return resourceRegex
 }
 

@@ -122,8 +122,11 @@ public class RestAPI implements API {
         byte[] apiDefinition = null;
         if(api.getApiDefinitionFile() != null) {
             apiDefinition = api.getApiDefinitionFile().toByteArray();
-            System.out.println("API Definition: " + apiDefinition.length);
         }
+
+        System.out.println("API Name: " + name);
+        System.out.println("API Base Path: " + basePath);
+        System.out.println("API VHost: " + vhost);
 
         this.apiLifeCycleState = api.getApiLifeCycleState();
         this.apiConfig = new APIConfig.Builder(name).uuid(api.getId()).vhost(vhost).basePath(basePath).version(version)

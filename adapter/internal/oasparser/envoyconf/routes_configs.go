@@ -203,6 +203,8 @@ func generateRegexMatchAndSubstitute(routePath, endpointBasePath,
 	endpointResourcePath string, pathMatchType gwapiv1b1.PathMatchType) *envoy_type_matcherv3.RegexMatchAndSubstitute {
 
 	substitutionString := generateSubstitutionString(endpointResourcePath, pathMatchType)
+	fmt.Println("Route Path:: ", routePath)
+	fmt.Println("Substitution String:: ", substitutionString)
 
 	return &envoy_type_matcherv3.RegexMatchAndSubstitute{
 		Pattern: &envoy_type_matcherv3.RegexMatcher{
