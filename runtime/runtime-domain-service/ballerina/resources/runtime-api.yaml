@@ -1463,6 +1463,120 @@ components:
           $ref: "#/components/schemas/APIOperationPolicies"
         operationRateLimit:
           $ref: "#/components/schemas/APIRateLimit"
+    API-NEW:
+      title: API object
+      required:
+        - context
+        - name
+        - version
+      type: object
+      properties:
+        id:
+          type: string
+          description: |
+            UUID of the API
+          readOnly: true
+        name:
+          maxLength: 60
+          minLength: 1
+          type: string
+        context:
+          maxLength: 232
+          minLength: 1
+          type: string
+        version:
+          maxLength: 30
+          minLength: 1
+          pattern: ^[^~!@#;:%^*()+={}|\\<>"',&/$\[\]\s+\/]+$
+          type: string
+        provider:
+          type: string
+        type:
+          type: string
+          default: HTTP
+          enum:
+            - HTTP
+            - GRAPHQL
+            - GRPC
+        createdTime:
+          type: string
+          readOnly: true
+        lastUpdatedTime:
+          type: string
+          readOnly: true
+        endpointConfig:
+          $ref: "#/components/schemas/EndpointConfig"
+        operations:
+          type: array
+          items:
+            $ref: "#/components/schemas/APIOperations"
+        serviceInfo:
+          $ref: "#/components/schemas/API_serviceInfo"
+        apiPolicies:
+          $ref: "#/components/schemas/APIOperationPolicies"
+          optional: true
+        apiRateLimit:
+          $ref: "#/components/schemas/APIRateLimit"
+        securityScheme:
+          type: array
+          items:
+            type: string
+        AdditionalProperties:
+          type: array
+          description: Map of custom properties of API
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              value:
+                type: string
+    EndpointConfig:
+      title: Endpoint configs
+      properties:
+        production:
+          $ref: "#/components/schemas/ProductionEndpoint"
+        sandbox:
+          $ref: "#/components/schemas/SandboxEndpoint"
+    ProductionEndpoint:
+      required:
+        - endpointURL
+      type: object
+      properties:
+        endpointURL:
+          type: string
+        endpointSecurity:
+          $ref: "#/components/schemas/EndpointSecurity"
+        certification:
+          type: string
+        timeouts:
+          $ref: "#/components/schemas/EndpointTimeout"
+    SandboxEndpoint:
+      required:
+        - endpointURL
+      type: object
+      properties:
+        endpointURL:
+          type: string
+        security:
+          $ref: "#/components/schemas/EndpointSecurity"
+        certification:
+          type: string
+        timeouts:
+          $ref: "#/components/schemas/EndpointTimeout"
+    EndpointSecurity:
+      type: object
+      properties:
+        enable:
+          type: boolean
+        securityType:
+          type: string
+        securityProperties:
+          type: object
+          properties: {}
+    EndpointTimeout:
+      type: object
+      properties: {}
     APIOperationPolicies:
       title: API Operation Level Policies
       properties:
