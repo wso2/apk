@@ -245,9 +245,20 @@ type upstreamRetry struct {
 }
 
 type security struct {
-	TokenService []tokenService
-	AuthHeader   authHeader
-	MutualSSL    mutualSSL
+	InternalKey internalKey
+	APIkey      apiKey
+	AuthHeader  authHeader
+	MutualSSL   mutualSSL
+}
+type internalKey struct {
+	Enabled             bool
+	Issuer              string
+	CertificateFilePath string
+}
+type apiKey struct {
+	Enabled             bool
+	Issuer              string
+	CertificateFilePath string
 }
 
 type authService struct {
@@ -272,17 +283,6 @@ type keystore struct {
 
 type truststore struct {
 	Location string
-}
-
-type tokenService struct {
-	Name                 string
-	Issuer               string
-	CertificateAlias     string
-	JwksURL              string
-	ValidateSubscription bool
-	ConsumerKeyClaim     string
-	CertificateFilePath  string
-	ClaimMapping         []claimMapping
 }
 
 type binaryPublisher struct {

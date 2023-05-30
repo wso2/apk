@@ -8,56 +8,62 @@ public interface SecurityOrBuilder extends
     com.google.protobuf.MessageOrBuilder {
 
   /**
-   * <code>repeated .wso2.discovery.config.enforcer.Issuer tokenService = 1;</code>
+   * <code>.wso2.discovery.config.enforcer.APIKeyEnforcer apiKey = 1;</code>
+   * @return Whether the apiKey field is set.
    */
-  java.util.List<org.wso2.apk.enforcer.discovery.config.enforcer.Issuer> 
-      getTokenServiceList();
+  boolean hasApiKey();
   /**
-   * <code>repeated .wso2.discovery.config.enforcer.Issuer tokenService = 1;</code>
+   * <code>.wso2.discovery.config.enforcer.APIKeyEnforcer apiKey = 1;</code>
+   * @return The apiKey.
    */
-  org.wso2.apk.enforcer.discovery.config.enforcer.Issuer getTokenService(int index);
+  org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcer getApiKey();
   /**
-   * <code>repeated .wso2.discovery.config.enforcer.Issuer tokenService = 1;</code>
+   * <code>.wso2.discovery.config.enforcer.APIKeyEnforcer apiKey = 1;</code>
    */
-  int getTokenServiceCount();
-  /**
-   * <code>repeated .wso2.discovery.config.enforcer.Issuer tokenService = 1;</code>
-   */
-  java.util.List<? extends org.wso2.apk.enforcer.discovery.config.enforcer.IssuerOrBuilder> 
-      getTokenServiceOrBuilderList();
-  /**
-   * <code>repeated .wso2.discovery.config.enforcer.Issuer tokenService = 1;</code>
-   */
-  org.wso2.apk.enforcer.discovery.config.enforcer.IssuerOrBuilder getTokenServiceOrBuilder(
-      int index);
+  org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcerOrBuilder getApiKeyOrBuilder();
 
   /**
-   * <code>.wso2.discovery.config.enforcer.AuthHeader authHeader = 2;</code>
+   * <code>.wso2.discovery.config.enforcer.APIKeyEnforcer runtimeToken = 2;</code>
+   * @return Whether the runtimeToken field is set.
+   */
+  boolean hasRuntimeToken();
+  /**
+   * <code>.wso2.discovery.config.enforcer.APIKeyEnforcer runtimeToken = 2;</code>
+   * @return The runtimeToken.
+   */
+  org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcer getRuntimeToken();
+  /**
+   * <code>.wso2.discovery.config.enforcer.APIKeyEnforcer runtimeToken = 2;</code>
+   */
+  org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcerOrBuilder getRuntimeTokenOrBuilder();
+
+  /**
+   * <code>.wso2.discovery.config.enforcer.AuthHeader authHeader = 3;</code>
    * @return Whether the authHeader field is set.
    */
   boolean hasAuthHeader();
   /**
-   * <code>.wso2.discovery.config.enforcer.AuthHeader authHeader = 2;</code>
+   * <code>.wso2.discovery.config.enforcer.AuthHeader authHeader = 3;</code>
    * @return The authHeader.
    */
   org.wso2.apk.enforcer.discovery.config.enforcer.AuthHeader getAuthHeader();
   /**
-   * <code>.wso2.discovery.config.enforcer.AuthHeader authHeader = 2;</code>
+   * <code>.wso2.discovery.config.enforcer.AuthHeader authHeader = 3;</code>
    */
   org.wso2.apk.enforcer.discovery.config.enforcer.AuthHeaderOrBuilder getAuthHeaderOrBuilder();
 
   /**
-   * <code>.wso2.discovery.config.enforcer.MutualSSL mutualSSL = 3;</code>
+   * <code>.wso2.discovery.config.enforcer.MutualSSL mutualSSL = 4;</code>
    * @return Whether the mutualSSL field is set.
    */
   boolean hasMutualSSL();
   /**
-   * <code>.wso2.discovery.config.enforcer.MutualSSL mutualSSL = 3;</code>
+   * <code>.wso2.discovery.config.enforcer.MutualSSL mutualSSL = 4;</code>
    * @return The mutualSSL.
    */
   org.wso2.apk.enforcer.discovery.config.enforcer.MutualSSL getMutualSSL();
   /**
-   * <code>.wso2.discovery.config.enforcer.MutualSSL mutualSSL = 3;</code>
+   * <code>.wso2.discovery.config.enforcer.MutualSSL mutualSSL = 4;</code>
    */
   org.wso2.apk.enforcer.discovery.config.enforcer.MutualSSLOrBuilder getMutualSSLOrBuilder();
 }

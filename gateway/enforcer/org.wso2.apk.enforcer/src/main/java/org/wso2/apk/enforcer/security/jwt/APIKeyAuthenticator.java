@@ -25,13 +25,13 @@ import net.minidev.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.wso2.apk.enforcer.common.CacheProvider;
 import org.wso2.apk.enforcer.commons.constants.GraphQLConstants;
 import org.wso2.apk.enforcer.commons.dto.JWTConfigurationDto;
 import org.wso2.apk.enforcer.commons.dto.JWTInfoDto;
 import org.wso2.apk.enforcer.commons.dto.JWTValidationInfo;
-import org.wso2.apk.enforcer.commons.jwtgenerator.AbstractAPIMgtGatewayJWTGenerator;
-import org.wso2.apk.enforcer.common.CacheProvider;
 import org.wso2.apk.enforcer.commons.exception.APISecurityException;
+import org.wso2.apk.enforcer.commons.jwtgenerator.AbstractAPIMgtGatewayJWTGenerator;
 import org.wso2.apk.enforcer.commons.logging.ErrorDetails;
 import org.wso2.apk.enforcer.commons.logging.LoggingConstants;
 import org.wso2.apk.enforcer.commons.model.AuthenticationContext;
@@ -40,7 +40,7 @@ import org.wso2.apk.enforcer.commons.model.ResourceConfig;
 import org.wso2.apk.enforcer.commons.model.SecuritySchemaConfig;
 import org.wso2.apk.enforcer.config.ConfigHolder;
 import org.wso2.apk.enforcer.config.EnforcerConfig;
-import org.wso2.apk.enforcer.config.dto.ExtendedTokenIssuerDto;
+import org.wso2.apk.enforcer.config.dto.APIKeyIssuerDto;
 import org.wso2.apk.enforcer.constants.APIConstants;
 import org.wso2.apk.enforcer.constants.APISecurityConstants;
 import org.wso2.apk.enforcer.constants.GeneralErrorCodeConstants;
@@ -54,6 +54,7 @@ import org.wso2.apk.enforcer.util.JWTUtils;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.security.cert.Certificate;
 import java.text.ParseException;
 import java.util.Map;
 
@@ -64,41 +65,26 @@ public class APIKeyAuthenticator extends APIKeyHandler {
 
     private static final Logger log = LogManager.getLogger(APIKeyAuthenticator.class);
 
-    private static String certAlias;
-    private static boolean apiKeySubValidationEnabled;
+    private Certificate certificate;
     private AbstractAPIMgtGatewayJWTGenerator jwtGenerator;
     private final boolean isGatewayTokenCacheEnabled;
     private static final int IPV4_ADDRESS_BIT_LENGTH = 32;
     private static final int IPV6_ADDRESS_BIT_LENGTH = 128;
 
     public APIKeyAuthenticator(final JWTConfigurationDto jwtConfigurationDto) {
+
         log.debug("API key authenticator initialized.");
         EnforcerConfig enforcerConfig = ConfigHolder.getInstance().getConfig();
         this.isGatewayTokenCacheEnabled = enforcerConfig.getCacheDto().isEnabled();
         if (jwtConfigurationDto.isEnabled()) {
             this.jwtGenerator = BackendJwtUtils.getApiMgtGatewayJWTGenerator(jwtConfigurationDto);
         }
-        for (ExtendedTokenIssuerDto tokenIssuer : enforcerConfig.getIssuersMap().values()) {
-            if (APIConstants.KeyManager.APIM_APIKEY_ISSUER.equals(tokenIssuer.getName())) {
-                certAlias = tokenIssuer.getCertificateAlias();
-                apiKeySubValidationEnabled = tokenIssuer.isValidateSubscriptions();
-                break;
-            }
-        }
-
-        // For backward compatibility
-        if (StringUtils.isBlank(certAlias)) {
-            for (ExtendedTokenIssuerDto tokenIssuer : enforcerConfig.getIssuersMap().values()) {
-                if (APIConstants.KeyManager.APIM_PUBLISHER_ISSUER.equals(tokenIssuer.getName())) {
-                    certAlias = tokenIssuer.getCertificateAlias();
-                    apiKeySubValidationEnabled = tokenIssuer.isValidateSubscriptions();
-                    break;
-                }
-            }
-        }
-        if (StringUtils.isBlank(certAlias)) {
+        APIKeyIssuerDto apiKeyIssuerDto = ConfigHolder.getInstance().getConfig().getApiKeyIssuerDto();
+        if (apiKeyIssuerDto == null || !apiKeyIssuerDto.isEnabled()) {
             log.error("Could not properly initialize APIKeyAuthenticator. Empty certificate alias. {}",
                     ErrorDetails.errorLog(LoggingConstants.Severity.CRITICAL, 6604));
+        } else {
+            certificate = apiKeyIssuerDto.getPublicCertificate();
         }
     }
 
@@ -111,6 +97,7 @@ public class APIKeyAuthenticator extends APIKeyHandler {
 
     // Gets API key from request
     private static String getAPIKeyFromRequest(RequestContext requestContext, ResourceConfig resourceConfig) {
+
         Map<String, SecuritySchemaConfig> securitySchemaDefinitions = requestContext.getMatchedAPI().
                 getSecuritySchemeDefinitions();
         // loop over resource security and get definition for the matching security definition name
@@ -141,7 +128,8 @@ public class APIKeyAuthenticator extends APIKeyHandler {
 
     @Override
     public AuthenticationContext authenticate(RequestContext requestContext) throws APISecurityException {
-        if (StringUtils.isBlank(certAlias)) {
+
+        if (certificate == null) {
             log.error("APIKeyAuthenticator has not been properly initialized. Empty certificate alias.",
                     ErrorDetails.errorLog(LoggingConstants.Severity.CRITICAL, 6604));
             throw new APISecurityException(APIConstants.StatusCodes.INTERNAL_SERVER_ERROR.getCode(),
@@ -160,6 +148,7 @@ public class APIKeyAuthenticator extends APIKeyHandler {
 
     private AuthenticationContext processAPIKey(RequestContext requestContext, String apiKey)
             throws APISecurityException {
+
         try {
             String[] splitToken = apiKey.split("\\.");
 
@@ -193,7 +182,7 @@ public class APIKeyAuthenticator extends APIKeyHandler {
 
             // Verifies token when it is not found in cache
             if (!isVerified) {
-                isVerified = verifyTokenWhenNotInCache(certAlias, signedJWT, splitToken, payload, "API Key");
+                isVerified = verifyTokenWhenNotInCache(certificate, signedJWT, splitToken, payload, "API Key");
             }
 
             if (isVerified) {
@@ -219,7 +208,7 @@ public class APIKeyAuthenticator extends APIKeyHandler {
                 log.debug("Validating subscription for API Key against subscription store."
                         + " context: {} version: {}", apiContext, apiVersion);
                 validationInfoDto = KeyValidator.validateSubscription(apiUuid, apiContext, payload, envType);
-                if (apiKeySubValidationEnabled && !requestContext.getMatchedAPI().isSystemAPI()) {
+                if (!requestContext.getMatchedAPI().isSystemAPI()) {
                     log.debug("Validating subscription for API Key using JWT claims against invoked API info."
                             + " context: {} version: {}", apiContext, apiVersion);
                     validationInfoDto = getAPIKeyValidationDTO(requestContext, payload);
@@ -319,7 +308,6 @@ public class APIKeyAuthenticator extends APIKeyHandler {
         validationInfoDTO.setType(requestContext.getMatchedAPI().getEnvType());
 
         if (app != null) {
-            //validationInfoDTO.setApplicationId(app.getAsNumber(APIConstants.JwtTokenConstants.APPLICATION_ID).intValue());
             validationInfoDTO.setApplicationUUID(app.getAsString(APIConstants.JwtTokenConstants.APPLICATION_UUID));
             validationInfoDTO.setApplicationName(app.getAsString(APIConstants.JwtTokenConstants.APPLICATION_NAME));
             validationInfoDTO.setApplicationTier(app.getAsString(APIConstants.JwtTokenConstants.APPLICATION_TIER));
@@ -379,6 +367,7 @@ public class APIKeyAuthenticator extends APIKeyHandler {
 
     private void validateAPIKeyRestrictions(JWTClaimsSet payload, RequestContext requestContext, String apiContext,
                                             String apiVersion) throws APISecurityException {
+
         String permittedIPList = null;
         if (payload.getClaim(APIConstants.JwtTokenConstants.PERMITTED_IP) != null) {
             permittedIPList = (String) payload.getClaim(APIConstants.JwtTokenConstants.PERMITTED_IP);
@@ -428,12 +417,9 @@ public class APIKeyAuthenticator extends APIKeyHandler {
                         log.debug("Invocations to API: {}:{} is not permitted for referer: {}",
                                 apiContext, apiVersion, referer);
                     }
-                    throw new APISecurityException(APIConstants.StatusCodes.UNAUTHORIZED.getCode(),
-                            APISecurityConstants.API_AUTH_FORBIDDEN, APISecurityConstants.API_AUTH_FORBIDDEN_MESSAGE);
-                } else {
-                    throw new APISecurityException(APIConstants.StatusCodes.UNAUTHORIZED.getCode(),
-                            APISecurityConstants.API_AUTH_FORBIDDEN, APISecurityConstants.API_AUTH_FORBIDDEN_MESSAGE);
                 }
+                throw new APISecurityException(APIConstants.StatusCodes.UNAUTHORIZED.getCode(),
+                        APISecurityConstants.API_AUTH_FORBIDDEN, APISecurityConstants.API_AUTH_FORBIDDEN_MESSAGE);
             }
         }
     }
@@ -459,24 +445,18 @@ public class APIKeyAuthenticator extends APIKeyHandler {
 
             if (ip.contains(".")) {
                 // IPv4
-                if (netAddress.shiftRight(IPV4_ADDRESS_BIT_LENGTH - netBits)
+                return netAddress.shiftRight(IPV4_ADDRESS_BIT_LENGTH - netBits)
                         .shiftLeft(IPV4_ADDRESS_BIT_LENGTH - netBits).compareTo(
                                 givenIP.shiftRight(IPV4_ADDRESS_BIT_LENGTH - netBits)
-                                        .shiftLeft(IPV4_ADDRESS_BIT_LENGTH - netBits)) == 0) {
-                    return true;
-                }
+                                        .shiftLeft(IPV4_ADDRESS_BIT_LENGTH - netBits)) == 0;
             } else if (ip.contains(":")) {
                 // IPv6
-                if (netAddress.shiftRight(IPV6_ADDRESS_BIT_LENGTH - netBits)
+                return netAddress.shiftRight(IPV6_ADDRESS_BIT_LENGTH - netBits)
                         .shiftLeft(IPV6_ADDRESS_BIT_LENGTH - netBits).compareTo(
                                 givenIP.shiftRight(IPV6_ADDRESS_BIT_LENGTH - netBits)
-                                        .shiftLeft(IPV6_ADDRESS_BIT_LENGTH - netBits)) == 0) {
-                    return true;
-                }
+                                        .shiftLeft(IPV6_ADDRESS_BIT_LENGTH - netBits)) == 0;
             }
-        } else if (ip.equals(cidr)) {
-            return true;
-        }
+        } else return ip.equals(cidr);
         return false;
     }
 
@@ -501,16 +481,19 @@ public class APIKeyAuthenticator extends APIKeyHandler {
 
     @Override
     public String getChallengeString() {
+
         return "";
     }
 
     @Override
     public String getName() {
+
         return "API Key";
     }
 
     @Override
     public int getPriority() {
+
         return 30;
     }
 }

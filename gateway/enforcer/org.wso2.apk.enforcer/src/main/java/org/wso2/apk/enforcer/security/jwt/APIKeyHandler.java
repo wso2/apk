@@ -39,6 +39,8 @@ import org.wso2.apk.enforcer.security.jwt.validator.RevokedJWTDataHolder;
 import org.wso2.apk.enforcer.util.FilterUtils;
 import org.wso2.apk.enforcer.util.JWTUtils;
 
+import java.security.cert.Certificate;
+
 /**
  * An abstract class which can be used to handle API keys.
  */
@@ -139,18 +141,12 @@ public abstract class APIKeyHandler implements Authenticator {
      * @return verification status if API key not found in the cache
      * @throws APISecurityException if the given API key is not in the cache and able to verify
      */
-    public boolean verifyTokenWhenNotInCache(String alias, SignedJWT signedJWT, String[] splitToken,
+    public boolean verifyTokenWhenNotInCache(Certificate certificate, SignedJWT signedJWT, String[] splitToken,
                                              JWTClaimsSet payload, String apiKeyType) throws APISecurityException {
         boolean isVerified = false;
         log.debug("{} not found in the cache.", apiKeyType);
 
-        try {
-            isVerified = JWTUtils.verifyTokenSignature(signedJWT, alias) && !isJwtTokenExpired(payload, apiKeyType);
-        } catch (EnforcerException e) {
-            log.error(apiKeyType + " authentication failed. " +
-                    FilterUtils.getMaskedToken(splitToken[0]));
-            return false;
-        }
+        isVerified = JWTUtils.verifyTokenSignature(signedJWT, certificate.getPublicKey()) && !isJwtTokenExpired(payload, apiKeyType);
         return isVerified;
     }
 

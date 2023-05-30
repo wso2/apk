@@ -21,23 +21,22 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import io.opentelemetry.context.Scope;
 import net.minidev.json.JSONObject;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
+import org.wso2.apk.enforcer.common.CacheProvider;
 import org.wso2.apk.enforcer.commons.dto.JWTConfigurationDto;
 import org.wso2.apk.enforcer.commons.dto.JWTInfoDto;
 import org.wso2.apk.enforcer.commons.dto.JWTValidationInfo;
-import org.wso2.apk.enforcer.commons.jwtgenerator.AbstractAPIMgtGatewayJWTGenerator;
-import org.wso2.apk.enforcer.common.CacheProvider;
 import org.wso2.apk.enforcer.commons.exception.APISecurityException;
+import org.wso2.apk.enforcer.commons.jwtgenerator.AbstractAPIMgtGatewayJWTGenerator;
 import org.wso2.apk.enforcer.commons.logging.ErrorDetails;
 import org.wso2.apk.enforcer.commons.logging.LoggingConstants;
 import org.wso2.apk.enforcer.commons.model.AuthenticationContext;
 import org.wso2.apk.enforcer.commons.model.RequestContext;
 import org.wso2.apk.enforcer.config.ConfigHolder;
 import org.wso2.apk.enforcer.config.EnforcerConfig;
-import org.wso2.apk.enforcer.config.dto.ExtendedTokenIssuerDto;
+import org.wso2.apk.enforcer.config.dto.APIKeyIssuerDto;
 import org.wso2.apk.enforcer.constants.APIConstants;
 import org.wso2.apk.enforcer.constants.APISecurityConstants;
 import org.wso2.apk.enforcer.constants.GeneralErrorCodeConstants;
@@ -55,6 +54,7 @@ import org.wso2.apk.enforcer.util.FilterUtils;
 
 import java.text.ParseException;
 
+
 /**
  * Implements the authenticator interface to authenticate request using an Internal Key.
  */
@@ -62,28 +62,23 @@ public class InternalAPIKeyAuthenticator extends APIKeyHandler {
 
     private static final Logger log = LogManager.getLogger(InternalAPIKeyAuthenticator.class);
 
-    private static String certAlias;
     private String securityParam;
     private AbstractAPIMgtGatewayJWTGenerator jwtGenerator;
     private final boolean isGatewayTokenCacheEnabled;
 
     public InternalAPIKeyAuthenticator(final JWTConfigurationDto jwtConfigurationDto, String securityParam) {
+
         this.securityParam = securityParam;
         EnforcerConfig enforcerConfig = ConfigHolder.getInstance().getConfig();
         this.isGatewayTokenCacheEnabled = enforcerConfig.getCacheDto().isEnabled();
         if (jwtConfigurationDto.isEnabled()) {
             this.jwtGenerator = BackendJwtUtils.getApiMgtGatewayJWTGenerator(jwtConfigurationDto);
         }
-        for (ExtendedTokenIssuerDto tokenIssuer : enforcerConfig.getIssuersMap().values()) {
-            if (APIConstants.KeyManager.APIM_PUBLISHER_ISSUER.equals(tokenIssuer.getName())) {
-                certAlias = tokenIssuer.getCertificateAlias();
-                break;
-            }
-        }
     }
 
     @Override
     public boolean canAuthenticate(RequestContext requestContext) {
+
         String internalKey = requestContext.getHeaders().get(
                 ConfigHolder.getInstance().getConfig().getAuthHeader().getTestConsoleHeaderName().toLowerCase());
         return isAPIKey(internalKey);
@@ -91,6 +86,7 @@ public class InternalAPIKeyAuthenticator extends APIKeyHandler {
 
     @Override
     public AuthenticationContext authenticate(RequestContext requestContext) throws APISecurityException {
+
         TracingTracer tracer = null;
         TracingSpan apiKeyAuthenticatorSpan = null;
         Scope apiKeyAuthenticatorSpanScope = null;
@@ -181,8 +177,10 @@ public class InternalAPIKeyAuthenticator extends APIKeyHandler {
                                 ThreadContext.get(APIConstants.LOG_TRACE_ID));
                     }
                     try {
-                        if (!StringUtils.isBlank(certAlias)) {
-                            isVerified = verifyTokenWhenNotInCache(certAlias,
+                        APIKeyIssuerDto runtimeTokenIssuerDto =
+                                ConfigHolder.getInstance().getConfig().getRuntimeTokenIssuerDto();
+                        if (runtimeTokenIssuerDto != null && runtimeTokenIssuerDto.isEnabled()) {
+                            isVerified = verifyTokenWhenNotInCache(runtimeTokenIssuerDto.getPublicCertificate(),
                                     signedJWT, splitToken, payload, "InternalKey");
                         } else {
                             // Logs an error only if Internal Keys are used.
@@ -192,8 +190,12 @@ public class InternalAPIKeyAuthenticator extends APIKeyHandler {
                         }
                     } finally {
                         if (Utils.tracingEnabled()) {
-                            verifyTokenWithoutCacheSpanScope.close();
-                            Utils.finishSpan(verifyTokenWithoutCacheSpan);
+                            if (verifyTokenWithoutCacheSpanScope != null) {
+                                verifyTokenWithoutCacheSpanScope.close();
+                            }
+                            if (verifyTokenWithoutCacheSpan != null){
+                                Utils.finishSpan(verifyTokenWithoutCacheSpan);
+                            }
                         }
                     }
                 }
@@ -311,15 +313,18 @@ public class InternalAPIKeyAuthenticator extends APIKeyHandler {
 
     @Override
     public String getChallengeString() {
+
         return "";
     }
 
     @Override
     public String getName() {
+
         return "Internal Key";
     }
 
     private String extractInternalKey(RequestContext requestContext) {
+
         String internalKey = requestContext.getHeaders().get(securityParam);
         if (internalKey != null) {
             return internalKey.trim();
@@ -329,6 +334,7 @@ public class InternalAPIKeyAuthenticator extends APIKeyHandler {
 
     @Override
     public int getPriority() {
+
         return -10;
     }
 }

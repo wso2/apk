@@ -1,10 +1,9 @@
 syntax = "proto3";
 
 package wso2.discovery.config.enforcer;
-import "wso2/discovery/config/enforcer/issuer.proto";
 import "wso2/discovery/config/enforcer/auth_header.proto";
 import "wso2/discovery/config/enforcer/mutual_ssl.proto";
-
+import "wso2/discovery/config/enforcer/api_key_enforcer.proto";
 option go_package = "github.com/envoyproxy/go-control-plane/wso2/discovery/config/enforcer;enforcer";
 option java_package = "org.wso2.apk.enforcer.discovery.config.enforcer";
 option java_outer_classname = "SecurityProto";
@@ -14,9 +13,11 @@ option java_multiple_files = true;
 
 // Enforcer config model
 message Security {
-    repeated Issuer tokenService = 1;
+    APIKeyEnforcer apiKey = 1;
 
-    AuthHeader authHeader = 2;
+    APIKeyEnforcer runtimeToken = 2;
+
+    AuthHeader authHeader = 3;
     
-    MutualSSL mutualSSL = 3;
+    MutualSSL mutualSSL = 4;
 }

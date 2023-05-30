@@ -18,13 +18,11 @@
 
 package org.wso2.apk.enforcer.config;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.wso2.apk.enforcer.commons.dto.ClaimMappingDto;
-import org.wso2.apk.enforcer.commons.dto.JWKSConfigurationDTO;
 import org.wso2.apk.enforcer.commons.dto.JWTConfigurationDto;
 import org.wso2.apk.enforcer.commons.exception.EnforcerException;
+import org.wso2.apk.enforcer.config.dto.APIKeyIssuerDto;
 import org.wso2.apk.enforcer.config.dto.AdminRestServerDto;
 import org.wso2.apk.enforcer.config.dto.AnalyticsDTO;
 import org.wso2.apk.enforcer.config.dto.AnalyticsReceiverConfigDTO;
@@ -41,15 +39,13 @@ import org.wso2.apk.enforcer.config.dto.MutualSSLDto;
 import org.wso2.apk.enforcer.config.dto.SoapErrorResponseConfigDto;
 import org.wso2.apk.enforcer.config.dto.ThreadPoolConfig;
 import org.wso2.apk.enforcer.config.dto.TracingDTO;
-import org.wso2.apk.enforcer.constants.APIConstants;
 import org.wso2.apk.enforcer.constants.Constants;
+import org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcer;
 import org.wso2.apk.enforcer.discovery.config.enforcer.Analytics;
 import org.wso2.apk.enforcer.discovery.config.enforcer.AuthHeader;
 import org.wso2.apk.enforcer.discovery.config.enforcer.Cache;
-import org.wso2.apk.enforcer.discovery.config.enforcer.ClaimMapping;
 import org.wso2.apk.enforcer.discovery.config.enforcer.Config;
 import org.wso2.apk.enforcer.discovery.config.enforcer.Filter;
-import org.wso2.apk.enforcer.discovery.config.enforcer.Issuer;
 import org.wso2.apk.enforcer.discovery.config.enforcer.JWTGenerator;
 import org.wso2.apk.enforcer.discovery.config.enforcer.JWTIssuer;
 import org.wso2.apk.enforcer.discovery.config.enforcer.Management;
@@ -60,7 +56,6 @@ import org.wso2.apk.enforcer.discovery.config.enforcer.Service;
 import org.wso2.apk.enforcer.discovery.config.enforcer.Soap;
 import org.wso2.apk.enforcer.discovery.config.enforcer.Tracing;
 import org.wso2.apk.enforcer.jmx.MBeanRegistrator;
-import org.wso2.apk.enforcer.util.BackendJwtUtils;
 import org.wso2.apk.enforcer.util.FilterUtils;
 import org.wso2.apk.enforcer.util.JWTUtils;
 import org.wso2.apk.enforcer.util.TLSUtils;
@@ -71,7 +66,6 @@ import java.lang.reflect.Field;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.List;
@@ -94,15 +88,16 @@ public class ConfigHolder {
     private KeyStore trustStoreForJWT = null;
     private KeyStore opaKeyStore = null;
     private TrustManagerFactory trustManagerFactory = null;
-    private ArrayList<ExtendedTokenIssuerDto> configIssuerList;
     private static final String dtoPackageName = EnforcerConfig.class.getPackageName();
 
     private ConfigHolder() {
+
         loadTrustStore();
         loadOpaClientKeyStore();
     }
 
     public static ConfigHolder getInstance() {
+
         if (configHolder != null) {
             return configHolder;
         }
@@ -117,6 +112,7 @@ public class ConfigHolder {
      * @param cdsConfig configuration fetch from CDS
      */
     public static ConfigHolder load(Config cdsConfig) {
+
         configHolder.parseConfigs(cdsConfig);
         return configHolder;
     }
@@ -131,7 +127,6 @@ public class ConfigHolder {
         populateAuthService(config.getAuthService());
 
         // Read jwt token configuration
-        populateJWTIssuerConfiguration(config.getSecurity().getTokenServiceList());
 
         // Read backend jwt generation configurations
         populateJWTGeneratorConfigurations(config.getJwtGenerator());
@@ -164,24 +159,52 @@ public class ConfigHolder {
 
         // Populates the custom filter configurations applied along with enforcer filters.
         populateCustomFilters(config.getFiltersList());
-
+        populateAPIKeyIssuer(config.getSecurity().getApiKey());
+        populateInternalTokenIssuer(config.getSecurity().getRuntimeToken());
         // resolve string variables provided as environment variables.
         resolveConfigsWithEnvs(this.config);
     }
 
+    private void populateInternalTokenIssuer(APIKeyEnforcer runtimeToken) {
+
+        APIKeyIssuerDto apiKeyIssuerDto = new APIKeyIssuerDto();
+        apiKeyIssuerDto.setEnabled(runtimeToken.getEnabled());
+        try {
+            apiKeyIssuerDto.setPublicCertificate(TLSUtils.getCertificate(runtimeToken.getCertificateFilePath()));
+            config.setRuntimeTokenIssuerDto(apiKeyIssuerDto);
+        } catch (CertificateException | IOException e) {
+            logger.error("Error occurred while configuring RuntimeToken Issuer", e);
+        }
+    }
+
+    private void populateAPIKeyIssuer(APIKeyEnforcer apiKey) {
+
+        APIKeyIssuerDto apiKeyIssuerDto = new APIKeyIssuerDto();
+        apiKeyIssuerDto.setEnabled(apiKey.getEnabled());
+        try {
+            apiKeyIssuerDto.setPublicCertificate(TLSUtils.getCertificate(apiKey.getCertificateFilePath()));
+            config.setApiKeyIssuerDto(apiKeyIssuerDto);
+        } catch (CertificateException | IOException e) {
+            logger.error("Error occurred while configuring APIKey Issuer", e);
+        }
+    }
+
     private void populateSoapErrorResponseConfigs(Soap soap) {
+
         SoapErrorResponseConfigDto soapErrorResponseConfigDto = new SoapErrorResponseConfigDto();
         soapErrorResponseConfigDto.setEnable(soap.getSoapErrorInXMLEnabled());
         config.setSoapErrorResponseConfigDto(soapErrorResponseConfigDto);
     }
 
     private void populateRestServer(RestServer restServer) {
+
         AdminRestServerDto adminRestServerDto = new AdminRestServerDto();
         adminRestServerDto.setEnable(restServer.getEnable());
         config.setRestServer(adminRestServerDto);
     }
 
     private void populateManagementCredentials(Management management) {
+
         ManagementCredentialsDto managementCredentialsDto = new ManagementCredentialsDto();
         managementCredentialsDto.setPassword(management.getPassword().toCharArray());
         managementCredentialsDto.setUserName(management.getUsername());
@@ -189,6 +212,7 @@ public class ConfigHolder {
     }
 
     private void populateAuthHeaderConfigurations(AuthHeader authHeader) {
+
         AuthHeaderDto authHeaderDto = new AuthHeaderDto();
         authHeaderDto.setAuthorizationHeader(authHeader.getAuthorizationHeader());
         authHeaderDto.setEnableOutboundAuthHeader(authHeader.getEnableOutboundAuthHeader());
@@ -197,6 +221,7 @@ public class ConfigHolder {
     }
 
     private void populateMTLSConfigurations(MutualSSL mtlsInfo) {
+
         MutualSSLDto mutualSSLDto = new MutualSSLDto();
         mutualSSLDto.setCertificateHeader(mtlsInfo.getCertificateHeader());
         mutualSSLDto.setEnableClientValidation(mtlsInfo.getEnableClientValidation());
@@ -206,6 +231,7 @@ public class ConfigHolder {
     }
 
     private void populateAuthService(Service cdsAuth) {
+
         AuthServiceConfigurationDto authDto = new AuthServiceConfigurationDto();
         authDto.setKeepAliveTime(cdsAuth.getKeepAliveTime());
         authDto.setPort(cdsAuth.getPort());
@@ -224,72 +250,8 @@ public class ConfigHolder {
         config.setAuthService(authDto);
     }
 
-
-    private void populateJWTIssuerConfiguration(List<Issuer> cdsIssuers) {
-        configIssuerList = new ArrayList<>();
-        try {
-            setTrustStoreForJWT(KeyStore.getInstance(KeyStore.getDefaultType()));
-            getTrustStoreForJWT().load(null);
-        } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException e) {
-            logger.error("Error while initiating the truststore for JWT related public certificates", e);
-        }
-        for (Issuer jwtIssuer : cdsIssuers) {
-            ExtendedTokenIssuerDto issuerDto = new ExtendedTokenIssuerDto(jwtIssuer.getIssuer());
-
-            JWKSConfigurationDTO jwksConfigurationDTO = new JWKSConfigurationDTO();
-            jwksConfigurationDTO.setEnabled(StringUtils.isNotEmpty(jwtIssuer.getJwksURL()));
-            jwksConfigurationDTO.setUrl(jwtIssuer.getJwksURL());
-            issuerDto.setJwksConfigurationDTO(jwksConfigurationDTO);
-            List<ClaimMapping> claimMaps = jwtIssuer.getClaimMappingList();
-            for (ClaimMapping claimMap : claimMaps) {
-                ClaimMappingDto map = new ClaimMappingDto(claimMap.getRemoteClaim(), claimMap.getLocalClaim());
-                issuerDto.addClaimMapping(map);
-            }
-            // Load jwt transformers map.
-            config.setJwtTransformers(BackendJwtUtils.loadJWTTransformers());
-            String certificateAlias = jwtIssuer.getCertificateAlias();
-            if (certificateAlias.isBlank()) {
-                if (APIConstants.KeyManager.APIM_PUBLISHER_ISSUER.equals(jwtIssuer.getName())) {
-                    certificateAlias = APIConstants.PUBLISHER_CERTIFICATE_ALIAS;
-                } else if (APIConstants.KeyManager.DEFAULT_KEY_MANAGER.equals(jwtIssuer.getName())) {
-                    certificateAlias = APIConstants.WSO2_PUBLIC_CERTIFICATE_ALIAS;
-                } else if (APIConstants.KeyManager.APIM_APIKEY_ISSUER.equals(jwtIssuer.getName())) {
-                    certificateAlias = APIConstants.APIKEY_CERTIFICATE_ALIAS;
-                }
-            }
-            issuerDto.setCertificateAlias(certificateAlias);
-            if (!certificateAlias.isBlank()) {
-                try {
-                    Certificate cert = TLSUtils.getCertificateFromFile(jwtIssuer.getCertificateFilePath());
-                    getTrustStoreForJWT().setCertificateEntry(certificateAlias, cert);
-                    TLSUtils.convertCertificate(cert);
-                    // Convert the certificate to a javax.security.cert.Certificate and set to issuerDto.
-                    issuerDto.setCertificate(cert);
-                } catch (KeyStoreException | CertificateException | IOException | EnforcerException e) {
-                    logger.error("Error while adding certificates to the JWT related Truststore", e);
-                    // Continue to avoid making a invalid issuer.
-                    continue;
-                }
-            }
-
-            issuerDto.setName(jwtIssuer.getName());
-            issuerDto.setConsumerKeyClaim(jwtIssuer.getConsumerKeyClaim());
-            issuerDto.setValidateSubscriptions(jwtIssuer.getValidateSubscription());
-            if (APIConstants.KeyManager.APIM_APIKEY_ISSUER.equals(jwtIssuer.getName())) {
-                // Both API key and Internal key issuers are referred by issuer "name" instead of "issuer"
-                // since the "iss" value present in both are same as oauth tokens. Thus, we override the
-                // "issuer" in issuerDto to avoid conflicts (in case a user sets the same "issuer"
-                // to Resident Key Manager and any of the other issuers).
-                issuerDto.setIssuer(APIConstants.KeyManager.APIM_APIKEY_ISSUER_URL);
-                config.getIssuersMap().put(APIConstants.KeyManager.APIM_APIKEY_ISSUER_URL, issuerDto);
-            } else {
-                config.getIssuersMap().put(jwtIssuer.getIssuer(), issuerDto);
-            }
-            configIssuerList.add(issuerDto);
-        }
-    }
-
     private void populateTracingConfig(Tracing tracing) {
+
         TracingDTO tracingConfig = new TracingDTO();
         tracingConfig.setTracingEnabled(tracing.getEnabled());
         tracingConfig.setExporterType(tracing.getType());
@@ -298,6 +260,7 @@ public class ConfigHolder {
     }
 
     private void populateMetricsConfig(Metrics metrics) {
+
         MetricsDTO metricsConfig = new MetricsDTO();
         metricsConfig.setMetricsEnabled(metrics.getEnabled());
         metricsConfig.setMetricsType(metrics.getType());
@@ -305,6 +268,7 @@ public class ConfigHolder {
     }
 
     private void loadTrustStore() {
+
         try {
 
             trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
@@ -324,18 +288,20 @@ public class ConfigHolder {
     }
 
     private void loadTrustedCertsToTrustStore() throws IOException {
+
         String truststoreFilePath = getEnvVarConfig().getTrustedAdapterCertsPath();
         TLSUtils.addCertsToTruststore(trustStore, truststoreFilePath);
     }
 
-
     private void loadOpaClientKeyStore() {
+
         String certPath = getEnvVarConfig().getOpaClientPublicKeyPath();
         String keyPath = getEnvVarConfig().getOpaClientPrivateKeyPath();
         opaKeyStore = FilterUtils.createClientKeyStore(certPath, keyPath);
     }
 
     private void populateJWTGeneratorConfigurations(JWTGenerator jwtGenerator) {
+
         JWTConfigurationDto jwtConfigurationDto = new JWTConfigurationDto();
         try {
             jwtConfigurationDto.setPublicCert(TLSUtils.getCertificate(jwtGenerator.getPublicCertificatePath()));
@@ -347,6 +313,7 @@ public class ConfigHolder {
     }
 
     private void populateCacheConfigs(Cache cache) {
+
         CacheDto cacheDto = new CacheDto();
         cacheDto.setEnabled(cache.getEnable());
         cacheDto.setMaximumSize(cache.getMaximumSize());
@@ -377,6 +344,7 @@ public class ConfigHolder {
         config.setAnalyticsConfig(analyticsDTO);
 
     }
+
     /**
      * This method recursively looks for the string type config values in the {@link EnforcerConfig} object ,
      * which have the prefix `$env{` and reads the respective value from the environment variable and set it to
@@ -394,6 +362,7 @@ public class ConfigHolder {
     }
 
     private void processRecursiveObject(Object config, Field[] classFields) {
+
         for (Field field : classFields) {
             try {
                 field.setAccessible(true);
@@ -426,7 +395,8 @@ public class ConfigHolder {
                             field.set(config, getEnvValue(arrayObject));
                         }
                     }
-                } else if (field.getType().getPackageName().contains(dtoPackageName)) { //recursively call the dto objects in the same package
+                } else if (field.getType().getPackageName().contains(dtoPackageName)) { //recursively call the dto
+                    // objects in the same package
                     resolveConfigsWithEnvs(field.get(config));
                 }
             } catch (IllegalAccessException e) {
@@ -437,6 +407,7 @@ public class ConfigHolder {
     }
 
     private Object getEnvValue(Object configValue) {
+
         if (configValue instanceof String) {
             String value = (String) configValue;
             return replaceEnvRegex(value);
@@ -448,6 +419,7 @@ public class ConfigHolder {
     }
 
     private String replaceEnvRegex(String value) {
+
         Matcher m = Pattern.compile("\\$env\\{(.*?)\\}").matcher(value);
         if (value.contains(Constants.ENV_PREFIX)) {
             while (m.find()) {
@@ -461,6 +433,7 @@ public class ConfigHolder {
     }
 
     private void populateJWTIssuerConfigurations(JWTIssuer jwtIssuer) {
+
         JWTIssuerConfigurationDto jwtIssuerConfigurationDto = new JWTIssuerConfigurationDto();
         jwtIssuerConfigurationDto.setEnabled(jwtIssuer.getEnabled());
         jwtIssuerConfigurationDto.setIssuer(jwtIssuer.getIssuer());
@@ -484,6 +457,7 @@ public class ConfigHolder {
     }
 
     private void populateCustomFilters(List<Filter> filterList) {
+
         FilterDTO[] filterArray = new FilterDTO[filterList.size()];
         int index = 0;
         for (Filter filter : filterList) {
@@ -498,39 +472,38 @@ public class ConfigHolder {
     }
 
     public EnforcerConfig getConfig() {
+
         return config;
     }
 
     public void setConfig(EnforcerConfig config) {
+
         this.config = config;
     }
 
     public KeyStore getTrustStore() {
+
         return trustStore;
     }
 
     public KeyStore getTrustStoreForJWT() {
+
         return trustStoreForJWT;
     }
 
     public KeyStore getOpaKeyStore() {
+
         return opaKeyStore;
     }
 
-    public void setTrustStoreForJWT(KeyStore trustStoreForJWT) {
-        this.trustStoreForJWT = trustStoreForJWT;
-    }
-
     public TrustManagerFactory getTrustManagerFactory() {
+
         return trustManagerFactory;
     }
 
     public EnvVarConfig getEnvVarConfig() {
-        return envVarConfig;
-    }
 
-    public ArrayList<ExtendedTokenIssuerDto> getConfigIssuerList() {
-        return configIssuerList;
+        return envVarConfig;
     }
 
 }
