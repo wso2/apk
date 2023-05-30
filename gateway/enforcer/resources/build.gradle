@@ -25,7 +25,6 @@ tasks.register('copy_dependencies', Copy) {
     dependsOn create_lib
     from configurations.default
     into "$projectDir/lib"
-    println("$projectDir/lib has created.")
     finalizedBy build
 }
 
@@ -36,7 +35,6 @@ tasks.register('create_lib') {
 
 tasks.register('delete_lib', Delete) {
     delete "$projectDir/lib"
-    println("$projectDir/lib is deleted.")
     finalizedBy create_lib
 }
 

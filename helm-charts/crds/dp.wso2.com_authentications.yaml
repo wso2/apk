@@ -58,10 +58,10 @@ spec:
                       description: ExtAuthService external authentication related information
                       properties:
                         authTypes:
-                          items:
-                            description: Auth Authentication scheme type and details
-                            properties:
-                              apiKey:
+                          description: APIAuth Authentication scheme type and details
+                          properties:
+                            apiKey:
+                              items:
                                 description: APIKeyAuth APIKey Authentication scheme
                                   details
                                 properties:
@@ -71,28 +71,44 @@ spec:
                                     enum:
                                       - Header
                                       - Query
+                                    minLength: 1
                                     type: string
                                   name:
                                     description: Name is the name of the header or query
                                       parameter to be used
+                                    minLength: 1
                                     type: string
+                                  sendTokenToUpstream:
+                                    type: boolean
                                 type: object
-                              jwt:
-                                description: JWTAuth JWT Authentication scheme details
-                                properties:
-                                  authorizationHeader:
-                                    type: string
-                                type: object
-                              type:
-                                description: AuthType is an enum {"jwt", "apikey", "basic",
-                                  "mtls"}
-                                enum:
-                                  - JWT
-                                  - APIKey
-                                type: string
-                            type: object
-                          type: array
+                              type: array
+                            jwt:
+                              description: JWTAuth JWT Authentication scheme details
+                              properties:
+                                header:
+                                  default: Authorization
+                                  description: Header is the header name used to pass
+                                    the JWT token
+                                  type: string
+                                sendTokenToUpstream:
+                                  type: boolean
+                              type: object
+                            testConsoleKey:
+                              description: TestConsoleKeyAuth Test Console Key Authentication
+                                scheme details
+                              properties:
+                                header:
+                                  default: Internal-Key
+                                  description: Header is the header name used to pass
+                                    the Test Console Key
+                                  type: string
+                                sendTokenToUpstream:
+                                  type: boolean
+                              type: object
+                          type: object
                         disabled:
+                          description: Disabled is to disable all authentications
+                          nullable: true
                           type: boolean
                         serviceRef:
                           description: ServiceRef service using for Authentication
@@ -118,10 +134,10 @@ spec:
                       description: ExtAuthService external authentication related information
                       properties:
                         authTypes:
-                          items:
-                            description: Auth Authentication scheme type and details
-                            properties:
-                              apiKey:
+                          description: APIAuth Authentication scheme type and details
+                          properties:
+                            apiKey:
+                              items:
                                 description: APIKeyAuth APIKey Authentication scheme
                                   details
                                 properties:
@@ -131,28 +147,44 @@ spec:
                                     enum:
                                       - Header
                                       - Query
+                                    minLength: 1
                                     type: string
                                   name:
                                     description: Name is the name of the header or query
                                       parameter to be used
+                                    minLength: 1
                                     type: string
+                                  sendTokenToUpstream:
+                                    type: boolean
                                 type: object
-                              jwt:
-                                description: JWTAuth JWT Authentication scheme details
-                                properties:
-                                  authorizationHeader:
-                                    type: string
-                                type: object
-                              type:
-                                description: AuthType is an enum {"jwt", "apikey", "basic",
-                                  "mtls"}
-                                enum:
-                                  - JWT
-                                  - APIKey
-                                type: string
-                            type: object
-                          type: array
+                              type: array
+                            jwt:
+                              description: JWTAuth JWT Authentication scheme details
+                              properties:
+                                header:
+                                  default: Authorization
+                                  description: Header is the header name used to pass
+                                    the JWT token
+                                  type: string
+                                sendTokenToUpstream:
+                                  type: boolean
+                              type: object
+                            testConsoleKey:
+                              description: TestConsoleKeyAuth Test Console Key Authentication
+                                scheme details
+                              properties:
+                                header:
+                                  default: Internal-Key
+                                  description: Header is the header name used to pass
+                                    the Test Console Key
+                                  type: string
+                                sendTokenToUpstream:
+                                  type: boolean
+                              type: object
+                          type: object
                         disabled:
+                          description: Disabled is to disable all authentications
+                          nullable: true
                           type: boolean
                         serviceRef:
                           description: ServiceRef service using for Authentication

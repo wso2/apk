@@ -17,7 +17,6 @@
  */
 package org.wso2.apk.enforcer.security;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.wso2.apk.enforcer.commons.Filter;
@@ -27,10 +26,7 @@ import org.wso2.apk.enforcer.commons.logging.ErrorDetails;
 import org.wso2.apk.enforcer.commons.logging.LoggingConstants;
 import org.wso2.apk.enforcer.commons.model.APIConfig;
 import org.wso2.apk.enforcer.commons.model.AuthenticationContext;
-import org.wso2.apk.enforcer.commons.model.EndpointCluster;
 import org.wso2.apk.enforcer.commons.model.RequestContext;
-import org.wso2.apk.enforcer.commons.model.ResourceConfig;
-import org.wso2.apk.enforcer.commons.model.RetryConfig;
 import org.wso2.apk.enforcer.config.ConfigHolder;
 import org.wso2.apk.enforcer.config.EnforcerConfig;
 import org.wso2.apk.enforcer.constants.APIConstants;
@@ -41,7 +37,6 @@ import org.wso2.apk.enforcer.security.jwt.InternalAPIKeyAuthenticator;
 import org.wso2.apk.enforcer.security.jwt.JWTAuthenticator;
 import org.wso2.apk.enforcer.security.jwt.UnsecuredAPIAuthenticator;
 import org.wso2.apk.enforcer.security.mtls.MTLSAuthenticator;
-import org.wso2.apk.enforcer.util.EndpointSecurityUtils;
 import org.wso2.apk.enforcer.util.FilterUtils;
 
 import java.util.ArrayList;
@@ -186,9 +181,6 @@ public class AuthFilter implements Filter {
             if (authenticator.getName().contains(APIConstants.API_SECURITY_MUTUAL_SSL_NAME)) {
                 // This section is for mTLS authentication
                 if (authenticate.isAuthenticated()) {
-                    updateClusterHeaderAndCheckEnv(requestContext);
-                    // set backend security
-                    EndpointSecurityUtils.addEndpointSecurity(requestContext);
                     log.debug("mTLS authentication was passed for the request: {} , API: {}:{}, APIUUID: {} ",
                             requestContext.getMatchedResourcePaths().get(0).getPath(),
                             requestContext.getMatchedAPI().getName(), requestContext.getMatchedAPI().getVersion(),
@@ -212,12 +204,6 @@ public class AuthFilter implements Filter {
                     }
                 }
             } else if (authenticate.isAuthenticated()) {
-                // This section is for application level securities
-                if (!requestContext.getMatchedAPI().isMockedApi()) {
-                    updateClusterHeaderAndCheckEnv(requestContext);
-                    // set backend security
-                    EndpointSecurityUtils.addEndpointSecurity(requestContext);
-                }
                 return new AuthenticationResponse(true, isOAuthBasicAuthMandatory, false);
             }
         } catch (APISecurityException e) {
@@ -225,21 +211,6 @@ public class AuthFilter implements Filter {
             FilterUtils.setErrorToContext(requestContext, e);
         }
         return new AuthenticationResponse(false, isOAuthBasicAuthMandatory, true);
-    }
-
-    /**
-     * Update the cluster header based on the keyType and authenticate the token against its respective endpoint
-     * environment.
-     *
-     * @param requestContext request Context
-     * @throws APISecurityException if the environment and
-     */
-    private void updateClusterHeaderAndCheckEnv(RequestContext requestContext)
-            throws APISecurityException {
-        requestContext.addOrModifyHeaders(AdapterConstants.CLUSTER_HEADER,
-                requestContext.getClusterHeader());
-        requestContext.getRemoveHeaders().remove(AdapterConstants.CLUSTER_HEADER);
-        addRouterHttpHeaders(requestContext);
     }
 
     private String getAuthenticatorsChallengeString() {
@@ -250,44 +221,6 @@ public class AuthFilter implements Filter {
             }
         }
         return challengeString.toString().trim();
-    }
-
-    private void addRouterHttpHeaders(RequestContext requestContext) {
-        // requestContext.getMatchedResourcePaths() will only have one element for non GraphQL APIs.
-        // Also, GraphQL APIs doesn't have resource level endpoint configs
-        ResourceConfig resourceConfig = requestContext.getMatchedResourcePaths().get(0);
-        // In websockets case, the endpoints object becomes null. Hence it would result
-        // in a NPE, if it is not checked.
-        if (resourceConfig.getEndpoints() != null) {
-            EndpointCluster endpointCluster = resourceConfig.getEndpoints();
-            addRetryAndTimeoutConfigHeaders(requestContext, endpointCluster);
-            handleEmptyPathHeader(requestContext, endpointCluster.getBasePath());
-        }
-    }
-
-    private void addRetryAndTimeoutConfigHeaders(RequestContext requestContext, EndpointCluster endpointCluster) {
-        RetryConfig retryConfig = endpointCluster.getRetryConfig();
-        if (retryConfig != null) {
-            addRetryConfigHeaders(requestContext, retryConfig);
-        }
-        Integer timeout = endpointCluster.getRouteTimeoutInMillis();
-        if (timeout != null) {
-            addTimeoutHeaders(requestContext, timeout);
-        }
-    }
-
-    private void addRetryConfigHeaders(RequestContext requestContext, RetryConfig retryConfig) {
-        requestContext.addOrModifyHeaders(AdapterConstants.HttpRouterHeaders.RETRY_ON,
-                AdapterConstants.HttpRouterHeaderValues.RETRIABLE_STATUS_CODES);
-        requestContext.addOrModifyHeaders(AdapterConstants.HttpRouterHeaders.MAX_RETRIES,
-                Integer.toString(retryConfig.getCount()));
-        requestContext.addOrModifyHeaders(AdapterConstants.HttpRouterHeaders.RETRIABLE_STATUS_CODES,
-                StringUtils.join(retryConfig.getStatusCodes(), ","));
-    }
-
-    private void addTimeoutHeaders(RequestContext requestContext, Integer routeTimeoutInMillis) {
-        requestContext.addOrModifyHeaders(AdapterConstants.HttpRouterHeaders.UPSTREAM_REQ_TIMEOUT_MS,
-                Integer.toString(routeTimeoutInMillis));
     }
 
     private void setInterceptorAuthContextMetadata(Authenticator authenticator, RequestContext requestContext) {
@@ -316,25 +249,4 @@ public class AuthFilter implements Filter {
                 Objects.toString(requestContext.getMatchedAPI().getOrganizationId(), ""));
     }
 
-    /**
-     * This will fix sending upstream an empty path header issue.
-     *
-     * @param requestContext request context
-     * @param basePath       endpoint basepath
-     */
-    private void handleEmptyPathHeader(RequestContext requestContext, String basePath) {
-        if (StringUtils.isNotBlank(basePath)) {
-            return;
-        }
-        // remaining path after removing the context and the version from the invoked path.
-        String remainingPath = StringUtils.removeStartIgnoreCase(requestContext.getHeaders()
-                .get(APIConstants.PATH_HEADER).split("\\?")[0], requestContext.getMatchedAPI().getBasePath());
-        // if the :path will be empty after applying the route's substitution, then we have to add a "/" forcefully
-        // to avoid :path being empty.
-        if (StringUtils.isBlank(remainingPath)) {
-            String[] splittedPath = requestContext.getHeaders().get(APIConstants.PATH_HEADER).split("\\?");
-            String newPath = splittedPath.length > 1 ? splittedPath[0] + "/?" + splittedPath[1] : splittedPath[0] + "/";
-            requestContext.addOrModifyHeaders(APIConstants.PATH_HEADER, newPath);
-        }
-    }
 }

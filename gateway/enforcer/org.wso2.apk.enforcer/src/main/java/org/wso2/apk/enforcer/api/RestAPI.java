@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2020, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2020, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
  *
- * WSO2 Inc. licenses this file to you under the Apache License,
+ * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License.
  * You may obtain a copy of the License at
@@ -49,15 +49,12 @@ import org.wso2.apk.enforcer.cors.CorsFilter;
 import org.wso2.apk.enforcer.interceptor.MediationPolicyFilter;
 import org.wso2.apk.enforcer.security.AuthFilter;
 import org.wso2.apk.enforcer.security.mtls.MtlsUtils;
+import org.wso2.apk.enforcer.util.EndpointUtils;
 import org.wso2.apk.enforcer.util.FilterUtils;
-import org.wso2.apk.enforcer.util.JWTUtils;
 import org.wso2.apk.enforcer.util.MockImplUtils;
-import org.wso2.apk.enforcer.util.TLSUtils;
 
-import java.io.IOException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
-import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -120,7 +117,7 @@ public class RestAPI implements API {
         JWTConfigurationDto jwtConfigurationDto = new JWTConfigurationDto();
 
         // If backendJWTTokeInfo is available
-        if(api.hasBackendJWTTokenInfo()) {
+        if (api.hasBackendJWTTokenInfo()) {
             EnforcerConfig enforcerConfig = ConfigHolder.getInstance().getConfig();
             jwtConfigurationDto.populateConfigValues(backendJWTTokenInfo.getEnabled(),
                     backendJWTTokenInfo.getHeader(), backendJWTTokenInfo.getSigningAlgorithm(),
@@ -138,7 +135,7 @@ public class RestAPI implements API {
                 .mtlsCertificateTiers(mtlsCertificateTiers).mutualSSL(mutualSSL).systemAPI(api.getSystemAPI())
                 .applicationSecurity(applicationSecurity).jwtConfigurationDto(jwtConfigurationDto).build();
 
-        initFilters(api.getDisableAuthentications());
+        initFilters();
         return basePath;
     }
 
@@ -165,6 +162,7 @@ public class RestAPI implements API {
                     APIConstants.NOT_FOUND_DESCRIPTION);
         }
         if ((isExistsMatchedResourcePath || isOptionCall) && executeFilterChain(requestContext)) {
+            EndpointUtils.updateClusterHeaderAndCheckEnv(requestContext);
             responseObject.setOrganizationId(requestContext.getMatchedAPI().getOrganizationId());
             responseObject.setRemoveHeaderMap(requestContext.getRemoveHeaders());
             responseObject.setQueryParamsToRemove(requestContext.getQueryParamsToRemove());
@@ -252,12 +250,10 @@ public class RestAPI implements API {
         return configData;
     }
 
-    private void initFilters(boolean disableAuthentication) {
-        if (!disableAuthentication) {
-            AuthFilter authFilter = new AuthFilter();
-            authFilter.init(apiConfig, null);
-            this.filters.add(authFilter);
-        }
+    private void initFilters() {
+        AuthFilter authFilter = new AuthFilter();
+        authFilter.init(apiConfig, null);
+        this.filters.add(authFilter);
 
         if (!apiConfig.isSystemAPI()) {
             loadCustomFilters(apiConfig);
@@ -300,27 +296,6 @@ public class RestAPI implements API {
     }
 
     private void populateRemoveAndProtectedHeaders(RequestContext requestContext) {
-//        Map<String, SecuritySchemaConfig> securitySchemeDefinitions =
-//                requestContext.getMatchedAPI().getSecuritySchemeDefinitions();
-//        // API key headers are considered to be protected headers, such that the header would not be sent
-//        // to backend and traffic manager.
-//        // This would prevent leaking credentials, even if user is invoking unsecured resource with some
-//        // credentials.
-//        for (Map.Entry<String, SecuritySchemaConfig> entry : securitySchemeDefinitions.entrySet()) {
-//            SecuritySchemaConfig schema = entry.getValue();
-//            if (APIConstants.SWAGGER_API_KEY_AUTH_TYPE_NAME.equalsIgnoreCase(schema.getType())) {
-//                if (APIConstants.SWAGGER_API_KEY_IN_HEADER.equals(schema.getIn())) {
-//                    String header = StringUtils.lowerCase(schema.getName());
-//                    requestContext.getProtectedHeaders().add(header);
-//                    requestContext.getRemoveHeaders().add(header);
-//                    continue;
-//                }
-//                if (APIConstants.SWAGGER_API_KEY_IN_QUERY.equals(schema.getIn())) {
-//                    requestContext.getQueryParamsToRemove().add(schema.getName());
-//                }
-//            }
-//        }
-
         requestContext.getMatchedResourcePaths().forEach(resourcePath -> {
             JWTAuthenticationConfig jwtAuthenticationConfig =
                     resourcePath.getAuthenticationConfig().getJwtAuthenticationConfig();
@@ -341,10 +316,13 @@ public class RestAPI implements API {
                         .filter(apiKeyAuthenticationConfig1 -> !apiKeyAuthenticationConfig1.isSendTokenToUpstream()
                                 && Objects.equals(apiKeyAuthenticationConfig1.getIn(), "In"))
                         .map(APIKeyAuthenticationConfig::getName).collect(Collectors.toList()));
-                requestContext.getProtectedHeaders().addAll(apiKeyAuthenticationConfig.stream()
+                List<String> apikeyHeadersToRemove = apiKeyAuthenticationConfig.stream()
                         .filter(apiKeyAuthenticationConfig1 -> !apiKeyAuthenticationConfig1.isSendTokenToUpstream()
                                 && Objects.equals(apiKeyAuthenticationConfig1.getIn(), "Header"))
-                        .map(APIKeyAuthenticationConfig::getName).collect(Collectors.toList()));
+                        .map(APIKeyAuthenticationConfig::getName).collect(Collectors.toList());
+                //todo(amali) check on protected headers
+                requestContext.getProtectedHeaders().addAll(apikeyHeadersToRemove);
+                requestContext.getRemoveHeaders().addAll(apikeyHeadersToRemove);
             }
         });
 
