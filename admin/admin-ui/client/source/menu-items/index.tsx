@@ -125,20 +125,20 @@ const menuItems = {
             }
         ]
     },
-    // {
-    //     id: 'key-managers',
-    //     title: '',
-    //     type: 'group',
-    //     children: [
-    //         {
-    //             id: 'key-managers',
-    //             title: 'Key Managers',
-    //             type: 'item',
-    //             url: '/key-managers',
-    //             icon: () => <FontAwesomeIcon icon={faKey} />,
-    //         }
-    //     ]
-    // },
+    {
+        id: 'key-managers',
+        title: '',
+        type: 'group',
+        children: [
+            {
+                id: 'key-managers',
+                title: 'Key Managers',
+                type: 'item',
+                url: '/key-managers',
+                icon: () => <FontAwesomeIcon icon={faKey} />,
+            }
+        ]
+    },
     // {
     //     id: 'settings',
     //     title: 'Settings',
