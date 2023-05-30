@@ -30,36 +30,38 @@ public final class SecurityProto {
     java.lang.String[] descriptorData = {
       "\n-wso2/discovery/config/enforcer/securit" +
       "y.proto\022\036wso2.discovery.config.enforcer\032" +
-      "+wso2/discovery/config/enforcer/issuer.p" +
-      "roto\0320wso2/discovery/config/enforcer/aut" +
-      "h_header.proto\032/wso2/discovery/config/en" +
-      "forcer/mutual_ssl.proto\"\306\001\n\010Security\022<\n\014" +
-      "tokenService\030\001 \003(\0132&.wso2.discovery.conf" +
-      "ig.enforcer.Issuer\022>\n\nauthHeader\030\002 \001(\0132*" +
-      ".wso2.discovery.config.enforcer.AuthHead" +
-      "er\022<\n\tmutualSSL\030\003 \001(\0132).wso2.discovery.c" +
-      "onfig.enforcer.MutualSSLB\222\001\n/org.wso2.ap" +
-      "k.enforcer.discovery.config.enforcerB\rSe" +
-      "curityProtoP\001ZNgithub.com/envoyproxy/go-" +
-      "control-plane/wso2/discovery/config/enfo" +
-      "rcer;enforcerb\006proto3"
+      "0wso2/discovery/config/enforcer/auth_hea" +
+      "der.proto\032/wso2/discovery/config/enforce" +
+      "r/mutual_ssl.proto\0325wso2/discovery/confi" +
+      "g/enforcer/api_key_enforcer.proto\"\216\002\n\010Se" +
+      "curity\022>\n\006apiKey\030\001 \001(\0132..wso2.discovery." +
+      "config.enforcer.APIKeyEnforcer\022D\n\014runtim" +
+      "eToken\030\002 \001(\0132..wso2.discovery.config.enf" +
+      "orcer.APIKeyEnforcer\022>\n\nauthHeader\030\003 \001(\013" +
+      "2*.wso2.discovery.config.enforcer.AuthHe" +
+      "ader\022<\n\tmutualSSL\030\004 \001(\0132).wso2.discovery" +
+      ".config.enforcer.MutualSSLB\222\001\n/org.wso2." +
+      "apk.enforcer.discovery.config.enforcerB\r" +
+      "SecurityProtoP\001ZNgithub.com/envoyproxy/g" +
+      "o-control-plane/wso2/discovery/config/en" +
+      "forcer;enforcerb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
-          org.wso2.apk.enforcer.discovery.config.enforcer.IssuerProto.getDescriptor(),
           org.wso2.apk.enforcer.discovery.config.enforcer.AuthHeaderProto.getDescriptor(),
           org.wso2.apk.enforcer.discovery.config.enforcer.MutualSSLProto.getDescriptor(),
+          org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcerProto.getDescriptor(),
         });
     internal_static_wso2_discovery_config_enforcer_Security_descriptor =
       getDescriptor().getMessageTypes().get(0);
     internal_static_wso2_discovery_config_enforcer_Security_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_wso2_discovery_config_enforcer_Security_descriptor,
-        new java.lang.String[] { "TokenService", "AuthHeader", "MutualSSL", });
-    org.wso2.apk.enforcer.discovery.config.enforcer.IssuerProto.getDescriptor();
+        new java.lang.String[] { "ApiKey", "RuntimeToken", "AuthHeader", "MutualSSL", });
     org.wso2.apk.enforcer.discovery.config.enforcer.AuthHeaderProto.getDescriptor();
     org.wso2.apk.enforcer.discovery.config.enforcer.MutualSSLProto.getDescriptor();
+    org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcerProto.getDescriptor();
   }
 
   // @@protoc_insertion_point(outer_class_scope)

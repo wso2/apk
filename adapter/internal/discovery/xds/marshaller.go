@@ -62,29 +62,6 @@ const blockedStatus string = "BLOCKED"
 // MarshalConfig will marshal a Config struct - read from the config toml - to
 // enfocer's CDS resource representation.
 func MarshalConfig(config *config.Config) *enforcer.Config {
-	issuers := []*enforcer.Issuer{}
-
-	for _, issuer := range config.Enforcer.Security.TokenService {
-		claimMaps := []*enforcer.ClaimMapping{}
-		for _, claimMap := range issuer.ClaimMapping {
-			claim := &enforcer.ClaimMapping{
-				RemoteClaim: claimMap.RemoteClaim,
-				LocalClaim:  claimMap.LocalClaim,
-			}
-			claimMaps = append(claimMaps, claim)
-		}
-		jwtConfig := &enforcer.Issuer{
-			CertificateAlias:     issuer.CertificateAlias,
-			ConsumerKeyClaim:     issuer.ConsumerKeyClaim,
-			Issuer:               issuer.Issuer,
-			Name:                 issuer.Name,
-			ValidateSubscription: issuer.ValidateSubscription,
-			JwksURL:              issuer.JwksURL,
-			CertificateFilePath:  issuer.CertificateFilePath,
-			ClaimMapping:         claimMaps,
-		}
-		issuers = append(issuers, jwtConfig)
-	}
 
 	jwtUsers := []*enforcer.JWTUser{}
 	for _, user := range config.Enforcer.JwtIssuer.JwtUser {
@@ -183,7 +160,16 @@ func MarshalConfig(config *config.Config) *enforcer.Config {
 		},
 		AuthService: authService,
 		Security: &enforcer.Security{
-			TokenService: issuers,
+			ApiKey: &enforcer.APIKeyEnforcer{
+				Enabled:             config.Enforcer.Security.APIkey.Enabled,
+				Issuer:              config.Enforcer.Security.APIkey.Issuer,
+				CertificateFilePath: config.Enforcer.Security.APIkey.CertificateFilePath,
+			},
+			RuntimeToken: &enforcer.APIKeyEnforcer{
+				Enabled:             config.Enforcer.Security.InternalKey.Enabled,
+				Issuer:              config.Enforcer.Security.InternalKey.Issuer,
+				CertificateFilePath: config.Enforcer.Security.InternalKey.CertificateFilePath,
+			},
 			AuthHeader: &enforcer.AuthHeader{
 				EnableOutboundAuthHeader: config.Enforcer.Security.AuthHeader.EnableOutboundAuthHeader,
 				AuthorizationHeader:      config.Enforcer.Security.AuthHeader.AuthorizationHeader,

@@ -26,7 +26,6 @@ import org.wso2.apk.enforcer.discovery.ApplicationKeyMappingDiscoveryClient;
 import org.wso2.apk.enforcer.discovery.ApplicationPolicyDiscoveryClient;
 import org.wso2.apk.enforcer.discovery.ConfigDiscoveryClient;
 import org.wso2.apk.enforcer.discovery.JWTIssuerDiscoveryClient;
-import org.wso2.apk.enforcer.discovery.KeyManagerDiscoveryClient;
 import org.wso2.apk.enforcer.discovery.RevokedTokenDiscoveryClient;
 import org.wso2.apk.enforcer.discovery.SubscriptionDiscoveryClient;
 import org.wso2.apk.enforcer.discovery.SubscriptionPolicyDiscoveryClient;
@@ -137,18 +136,7 @@ public class XdsSchedulerManager {
         }
     }
 
-    public synchronized void startKeyManagerDiscoveryScheduling() {
-        if (keyManagerDiscoveryScheduledFuture == null || keyManagerDiscoveryScheduledFuture.isDone()) {
-            keyManagerDiscoveryScheduledFuture = discoveryClientScheduler
-                    .scheduleWithFixedDelay(KeyManagerDiscoveryClient.getInstance(), 1, retryPeriod, TimeUnit.SECONDS);
-        }
-    }
 
-    public synchronized void stopKeyManagerDiscoveryScheduling() {
-        if (keyManagerDiscoveryScheduledFuture != null && !keyManagerDiscoveryScheduledFuture.isDone()) {
-            keyManagerDiscoveryScheduledFuture.cancel(false);
-        }
-    }
 
     public synchronized void startRevokedTokenDiscoveryScheduling() {
         if (revokedTokenDiscoveryScheduledFuture == null || revokedTokenDiscoveryScheduledFuture.isDone()) {

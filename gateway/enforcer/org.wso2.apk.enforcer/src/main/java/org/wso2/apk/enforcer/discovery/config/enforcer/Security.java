@@ -20,7 +20,6 @@ private static final long serialVersionUID = 0L;
     super(builder);
   }
   private Security() {
-    tokenService_ = java.util.Collections.emptyList();
   }
 
   @java.lang.Override
@@ -43,7 +42,6 @@ private static final long serialVersionUID = 0L;
     if (extensionRegistry == null) {
       throw new java.lang.NullPointerException();
     }
-    int mutable_bitField0_ = 0;
     com.google.protobuf.UnknownFieldSet.Builder unknownFields =
         com.google.protobuf.UnknownFieldSet.newBuilder();
     try {
@@ -55,15 +53,32 @@ private static final long serialVersionUID = 0L;
             done = true;
             break;
           case 10: {
-            if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-              tokenService_ = new java.util.ArrayList<org.wso2.apk.enforcer.discovery.config.enforcer.Issuer>();
-              mutable_bitField0_ |= 0x00000001;
+            org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcer.Builder subBuilder = null;
+            if (apiKey_ != null) {
+              subBuilder = apiKey_.toBuilder();
             }
-            tokenService_.add(
-                input.readMessage(org.wso2.apk.enforcer.discovery.config.enforcer.Issuer.parser(), extensionRegistry));
+            apiKey_ = input.readMessage(org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcer.parser(), extensionRegistry);
+            if (subBuilder != null) {
+              subBuilder.mergeFrom(apiKey_);
+              apiKey_ = subBuilder.buildPartial();
+            }
+
             break;
           }
           case 18: {
+            org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcer.Builder subBuilder = null;
+            if (runtimeToken_ != null) {
+              subBuilder = runtimeToken_.toBuilder();
+            }
+            runtimeToken_ = input.readMessage(org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcer.parser(), extensionRegistry);
+            if (subBuilder != null) {
+              subBuilder.mergeFrom(runtimeToken_);
+              runtimeToken_ = subBuilder.buildPartial();
+            }
+
+            break;
+          }
+          case 26: {
             org.wso2.apk.enforcer.discovery.config.enforcer.AuthHeader.Builder subBuilder = null;
             if (authHeader_ != null) {
               subBuilder = authHeader_.toBuilder();
@@ -76,7 +91,7 @@ private static final long serialVersionUID = 0L;
 
             break;
           }
-          case 26: {
+          case 34: {
             org.wso2.apk.enforcer.discovery.config.enforcer.MutualSSL.Builder subBuilder = null;
             if (mutualSSL_ != null) {
               subBuilder = mutualSSL_.toBuilder();
@@ -104,9 +119,6 @@ private static final long serialVersionUID = 0L;
       throw new com.google.protobuf.InvalidProtocolBufferException(
           e).setUnfinishedMessage(this);
     } finally {
-      if (((mutable_bitField0_ & 0x00000001) != 0)) {
-        tokenService_ = java.util.Collections.unmodifiableList(tokenService_);
-      }
       this.unknownFields = unknownFields.build();
       makeExtensionsImmutable();
     }
@@ -124,50 +136,62 @@ private static final long serialVersionUID = 0L;
             org.wso2.apk.enforcer.discovery.config.enforcer.Security.class, org.wso2.apk.enforcer.discovery.config.enforcer.Security.Builder.class);
   }
 
-  public static final int TOKENSERVICE_FIELD_NUMBER = 1;
-  private java.util.List<org.wso2.apk.enforcer.discovery.config.enforcer.Issuer> tokenService_;
+  public static final int APIKEY_FIELD_NUMBER = 1;
+  private org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcer apiKey_;
   /**
-   * <code>repeated .wso2.discovery.config.enforcer.Issuer tokenService = 1;</code>
+   * <code>.wso2.discovery.config.enforcer.APIKeyEnforcer apiKey = 1;</code>
+   * @return Whether the apiKey field is set.
    */
   @java.lang.Override
-  public java.util.List<org.wso2.apk.enforcer.discovery.config.enforcer.Issuer> getTokenServiceList() {
-    return tokenService_;
+  public boolean hasApiKey() {
+    return apiKey_ != null;
   }
   /**
-   * <code>repeated .wso2.discovery.config.enforcer.Issuer tokenService = 1;</code>
+   * <code>.wso2.discovery.config.enforcer.APIKeyEnforcer apiKey = 1;</code>
+   * @return The apiKey.
    */
   @java.lang.Override
-  public java.util.List<? extends org.wso2.apk.enforcer.discovery.config.enforcer.IssuerOrBuilder> 
-      getTokenServiceOrBuilderList() {
-    return tokenService_;
+  public org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcer getApiKey() {
+    return apiKey_ == null ? org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcer.getDefaultInstance() : apiKey_;
   }
   /**
-   * <code>repeated .wso2.discovery.config.enforcer.Issuer tokenService = 1;</code>
+   * <code>.wso2.discovery.config.enforcer.APIKeyEnforcer apiKey = 1;</code>
    */
   @java.lang.Override
-  public int getTokenServiceCount() {
-    return tokenService_.size();
-  }
-  /**
-   * <code>repeated .wso2.discovery.config.enforcer.Issuer tokenService = 1;</code>
-   */
-  @java.lang.Override
-  public org.wso2.apk.enforcer.discovery.config.enforcer.Issuer getTokenService(int index) {
-    return tokenService_.get(index);
-  }
-  /**
-   * <code>repeated .wso2.discovery.config.enforcer.Issuer tokenService = 1;</code>
-   */
-  @java.lang.Override
-  public org.wso2.apk.enforcer.discovery.config.enforcer.IssuerOrBuilder getTokenServiceOrBuilder(
-      int index) {
-    return tokenService_.get(index);
+  public org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcerOrBuilder getApiKeyOrBuilder() {
+    return getApiKey();
   }
 
-  public static final int AUTHHEADER_FIELD_NUMBER = 2;
+  public static final int RUNTIMETOKEN_FIELD_NUMBER = 2;
+  private org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcer runtimeToken_;
+  /**
+   * <code>.wso2.discovery.config.enforcer.APIKeyEnforcer runtimeToken = 2;</code>
+   * @return Whether the runtimeToken field is set.
+   */
+  @java.lang.Override
+  public boolean hasRuntimeToken() {
+    return runtimeToken_ != null;
+  }
+  /**
+   * <code>.wso2.discovery.config.enforcer.APIKeyEnforcer runtimeToken = 2;</code>
+   * @return The runtimeToken.
+   */
+  @java.lang.Override
+  public org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcer getRuntimeToken() {
+    return runtimeToken_ == null ? org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcer.getDefaultInstance() : runtimeToken_;
+  }
+  /**
+   * <code>.wso2.discovery.config.enforcer.APIKeyEnforcer runtimeToken = 2;</code>
+   */
+  @java.lang.Override
+  public org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcerOrBuilder getRuntimeTokenOrBuilder() {
+    return getRuntimeToken();
+  }
+
+  public static final int AUTHHEADER_FIELD_NUMBER = 3;
   private org.wso2.apk.enforcer.discovery.config.enforcer.AuthHeader authHeader_;
   /**
-   * <code>.wso2.discovery.config.enforcer.AuthHeader authHeader = 2;</code>
+   * <code>.wso2.discovery.config.enforcer.AuthHeader authHeader = 3;</code>
    * @return Whether the authHeader field is set.
    */
   @java.lang.Override
@@ -175,7 +199,7 @@ private static final long serialVersionUID = 0L;
     return authHeader_ != null;
   }
   /**
-   * <code>.wso2.discovery.config.enforcer.AuthHeader authHeader = 2;</code>
+   * <code>.wso2.discovery.config.enforcer.AuthHeader authHeader = 3;</code>
    * @return The authHeader.
    */
   @java.lang.Override
@@ -183,17 +207,17 @@ private static final long serialVersionUID = 0L;
     return authHeader_ == null ? org.wso2.apk.enforcer.discovery.config.enforcer.AuthHeader.getDefaultInstance() : authHeader_;
   }
   /**
-   * <code>.wso2.discovery.config.enforcer.AuthHeader authHeader = 2;</code>
+   * <code>.wso2.discovery.config.enforcer.AuthHeader authHeader = 3;</code>
    */
   @java.lang.Override
   public org.wso2.apk.enforcer.discovery.config.enforcer.AuthHeaderOrBuilder getAuthHeaderOrBuilder() {
     return getAuthHeader();
   }
 
-  public static final int MUTUALSSL_FIELD_NUMBER = 3;
+  public static final int MUTUALSSL_FIELD_NUMBER = 4;
   private org.wso2.apk.enforcer.discovery.config.enforcer.MutualSSL mutualSSL_;
   /**
-   * <code>.wso2.discovery.config.enforcer.MutualSSL mutualSSL = 3;</code>
+   * <code>.wso2.discovery.config.enforcer.MutualSSL mutualSSL = 4;</code>
    * @return Whether the mutualSSL field is set.
    */
   @java.lang.Override
@@ -201,7 +225,7 @@ private static final long serialVersionUID = 0L;
     return mutualSSL_ != null;
   }
   /**
-   * <code>.wso2.discovery.config.enforcer.MutualSSL mutualSSL = 3;</code>
+   * <code>.wso2.discovery.config.enforcer.MutualSSL mutualSSL = 4;</code>
    * @return The mutualSSL.
    */
   @java.lang.Override
@@ -209,7 +233,7 @@ private static final long serialVersionUID = 0L;
     return mutualSSL_ == null ? org.wso2.apk.enforcer.discovery.config.enforcer.MutualSSL.getDefaultInstance() : mutualSSL_;
   }
   /**
-   * <code>.wso2.discovery.config.enforcer.MutualSSL mutualSSL = 3;</code>
+   * <code>.wso2.discovery.config.enforcer.MutualSSL mutualSSL = 4;</code>
    */
   @java.lang.Override
   public org.wso2.apk.enforcer.discovery.config.enforcer.MutualSSLOrBuilder getMutualSSLOrBuilder() {
@@ -230,14 +254,17 @@ private static final long serialVersionUID = 0L;
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output)
                       throws java.io.IOException {
-    for (int i = 0; i < tokenService_.size(); i++) {
-      output.writeMessage(1, tokenService_.get(i));
+    if (apiKey_ != null) {
+      output.writeMessage(1, getApiKey());
+    }
+    if (runtimeToken_ != null) {
+      output.writeMessage(2, getRuntimeToken());
     }
     if (authHeader_ != null) {
-      output.writeMessage(2, getAuthHeader());
+      output.writeMessage(3, getAuthHeader());
     }
     if (mutualSSL_ != null) {
-      output.writeMessage(3, getMutualSSL());
+      output.writeMessage(4, getMutualSSL());
     }
     unknownFields.writeTo(output);
   }
@@ -248,17 +275,21 @@ private static final long serialVersionUID = 0L;
     if (size != -1) return size;
 
     size = 0;
-    for (int i = 0; i < tokenService_.size(); i++) {
+    if (apiKey_ != null) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(1, tokenService_.get(i));
+        .computeMessageSize(1, getApiKey());
+    }
+    if (runtimeToken_ != null) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(2, getRuntimeToken());
     }
     if (authHeader_ != null) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(2, getAuthHeader());
+        .computeMessageSize(3, getAuthHeader());
     }
     if (mutualSSL_ != null) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(3, getMutualSSL());
+        .computeMessageSize(4, getMutualSSL());
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -275,8 +306,16 @@ private static final long serialVersionUID = 0L;
     }
     org.wso2.apk.enforcer.discovery.config.enforcer.Security other = (org.wso2.apk.enforcer.discovery.config.enforcer.Security) obj;
 
-    if (!getTokenServiceList()
-        .equals(other.getTokenServiceList())) return false;
+    if (hasApiKey() != other.hasApiKey()) return false;
+    if (hasApiKey()) {
+      if (!getApiKey()
+          .equals(other.getApiKey())) return false;
+    }
+    if (hasRuntimeToken() != other.hasRuntimeToken()) return false;
+    if (hasRuntimeToken()) {
+      if (!getRuntimeToken()
+          .equals(other.getRuntimeToken())) return false;
+    }
     if (hasAuthHeader() != other.hasAuthHeader()) return false;
     if (hasAuthHeader()) {
       if (!getAuthHeader()
@@ -298,9 +337,13 @@ private static final long serialVersionUID = 0L;
     }
     int hash = 41;
     hash = (19 * hash) + getDescriptor().hashCode();
-    if (getTokenServiceCount() > 0) {
-      hash = (37 * hash) + TOKENSERVICE_FIELD_NUMBER;
-      hash = (53 * hash) + getTokenServiceList().hashCode();
+    if (hasApiKey()) {
+      hash = (37 * hash) + APIKEY_FIELD_NUMBER;
+      hash = (53 * hash) + getApiKey().hashCode();
+    }
+    if (hasRuntimeToken()) {
+      hash = (37 * hash) + RUNTIMETOKEN_FIELD_NUMBER;
+      hash = (53 * hash) + getRuntimeToken().hashCode();
     }
     if (hasAuthHeader()) {
       hash = (37 * hash) + AUTHHEADER_FIELD_NUMBER;
@@ -442,17 +485,22 @@ private static final long serialVersionUID = 0L;
     private void maybeForceBuilderInitialization() {
       if (com.google.protobuf.GeneratedMessageV3
               .alwaysUseFieldBuilders) {
-        getTokenServiceFieldBuilder();
       }
     }
     @java.lang.Override
     public Builder clear() {
       super.clear();
-      if (tokenServiceBuilder_ == null) {
-        tokenService_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000001);
+      if (apiKeyBuilder_ == null) {
+        apiKey_ = null;
       } else {
-        tokenServiceBuilder_.clear();
+        apiKey_ = null;
+        apiKeyBuilder_ = null;
+      }
+      if (runtimeTokenBuilder_ == null) {
+        runtimeToken_ = null;
+      } else {
+        runtimeToken_ = null;
+        runtimeTokenBuilder_ = null;
       }
       if (authHeaderBuilder_ == null) {
         authHeader_ = null;
@@ -492,15 +540,15 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public org.wso2.apk.enforcer.discovery.config.enforcer.Security buildPartial() {
       org.wso2.apk.enforcer.discovery.config.enforcer.Security result = new org.wso2.apk.enforcer.discovery.config.enforcer.Security(this);
-      int from_bitField0_ = bitField0_;
-      if (tokenServiceBuilder_ == null) {
-        if (((bitField0_ & 0x00000001) != 0)) {
-          tokenService_ = java.util.Collections.unmodifiableList(tokenService_);
-          bitField0_ = (bitField0_ & ~0x00000001);
-        }
-        result.tokenService_ = tokenService_;
+      if (apiKeyBuilder_ == null) {
+        result.apiKey_ = apiKey_;
       } else {
-        result.tokenService_ = tokenServiceBuilder_.build();
+        result.apiKey_ = apiKeyBuilder_.build();
+      }
+      if (runtimeTokenBuilder_ == null) {
+        result.runtimeToken_ = runtimeToken_;
+      } else {
+        result.runtimeToken_ = runtimeTokenBuilder_.build();
       }
       if (authHeaderBuilder_ == null) {
         result.authHeader_ = authHeader_;
@@ -560,31 +608,11 @@ private static final long serialVersionUID = 0L;
 
     public Builder mergeFrom(org.wso2.apk.enforcer.discovery.config.enforcer.Security other) {
       if (other == org.wso2.apk.enforcer.discovery.config.enforcer.Security.getDefaultInstance()) return this;
-      if (tokenServiceBuilder_ == null) {
-        if (!other.tokenService_.isEmpty()) {
-          if (tokenService_.isEmpty()) {
-            tokenService_ = other.tokenService_;
-            bitField0_ = (bitField0_ & ~0x00000001);
-          } else {
-            ensureTokenServiceIsMutable();
-            tokenService_.addAll(other.tokenService_);
-          }
-          onChanged();
-        }
-      } else {
-        if (!other.tokenService_.isEmpty()) {
-          if (tokenServiceBuilder_.isEmpty()) {
-            tokenServiceBuilder_.dispose();
-            tokenServiceBuilder_ = null;
-            tokenService_ = other.tokenService_;
-            bitField0_ = (bitField0_ & ~0x00000001);
-            tokenServiceBuilder_ = 
-              com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
-                 getTokenServiceFieldBuilder() : null;
-          } else {
-            tokenServiceBuilder_.addAllMessages(other.tokenService_);
-          }
-        }
+      if (other.hasApiKey()) {
+        mergeApiKey(other.getApiKey());
+      }
+      if (other.hasRuntimeToken()) {
+        mergeRuntimeToken(other.getRuntimeToken());
       }
       if (other.hasAuthHeader()) {
         mergeAuthHeader(other.getAuthHeader());
@@ -620,260 +648,257 @@ private static final long serialVersionUID = 0L;
       }
       return this;
     }
-    private int bitField0_;
 
-    private java.util.List<org.wso2.apk.enforcer.discovery.config.enforcer.Issuer> tokenService_ =
-      java.util.Collections.emptyList();
-    private void ensureTokenServiceIsMutable() {
-      if (!((bitField0_ & 0x00000001) != 0)) {
-        tokenService_ = new java.util.ArrayList<org.wso2.apk.enforcer.discovery.config.enforcer.Issuer>(tokenService_);
-        bitField0_ |= 0x00000001;
-       }
-    }
-
-    private com.google.protobuf.RepeatedFieldBuilderV3<
-        org.wso2.apk.enforcer.discovery.config.enforcer.Issuer, org.wso2.apk.enforcer.discovery.config.enforcer.Issuer.Builder, org.wso2.apk.enforcer.discovery.config.enforcer.IssuerOrBuilder> tokenServiceBuilder_;
-
+    private org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcer apiKey_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+        org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcer, org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcer.Builder, org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcerOrBuilder> apiKeyBuilder_;
     /**
-     * <code>repeated .wso2.discovery.config.enforcer.Issuer tokenService = 1;</code>
+     * <code>.wso2.discovery.config.enforcer.APIKeyEnforcer apiKey = 1;</code>
+     * @return Whether the apiKey field is set.
      */
-    public java.util.List<org.wso2.apk.enforcer.discovery.config.enforcer.Issuer> getTokenServiceList() {
-      if (tokenServiceBuilder_ == null) {
-        return java.util.Collections.unmodifiableList(tokenService_);
+    public boolean hasApiKey() {
+      return apiKeyBuilder_ != null || apiKey_ != null;
+    }
+    /**
+     * <code>.wso2.discovery.config.enforcer.APIKeyEnforcer apiKey = 1;</code>
+     * @return The apiKey.
+     */
+    public org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcer getApiKey() {
+      if (apiKeyBuilder_ == null) {
+        return apiKey_ == null ? org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcer.getDefaultInstance() : apiKey_;
       } else {
-        return tokenServiceBuilder_.getMessageList();
+        return apiKeyBuilder_.getMessage();
       }
     }
     /**
-     * <code>repeated .wso2.discovery.config.enforcer.Issuer tokenService = 1;</code>
+     * <code>.wso2.discovery.config.enforcer.APIKeyEnforcer apiKey = 1;</code>
      */
-    public int getTokenServiceCount() {
-      if (tokenServiceBuilder_ == null) {
-        return tokenService_.size();
-      } else {
-        return tokenServiceBuilder_.getCount();
-      }
-    }
-    /**
-     * <code>repeated .wso2.discovery.config.enforcer.Issuer tokenService = 1;</code>
-     */
-    public org.wso2.apk.enforcer.discovery.config.enforcer.Issuer getTokenService(int index) {
-      if (tokenServiceBuilder_ == null) {
-        return tokenService_.get(index);
-      } else {
-        return tokenServiceBuilder_.getMessage(index);
-      }
-    }
-    /**
-     * <code>repeated .wso2.discovery.config.enforcer.Issuer tokenService = 1;</code>
-     */
-    public Builder setTokenService(
-        int index, org.wso2.apk.enforcer.discovery.config.enforcer.Issuer value) {
-      if (tokenServiceBuilder_ == null) {
+    public Builder setApiKey(org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcer value) {
+      if (apiKeyBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
         }
-        ensureTokenServiceIsMutable();
-        tokenService_.set(index, value);
+        apiKey_ = value;
         onChanged();
       } else {
-        tokenServiceBuilder_.setMessage(index, value);
+        apiKeyBuilder_.setMessage(value);
       }
+
       return this;
     }
     /**
-     * <code>repeated .wso2.discovery.config.enforcer.Issuer tokenService = 1;</code>
+     * <code>.wso2.discovery.config.enforcer.APIKeyEnforcer apiKey = 1;</code>
      */
-    public Builder setTokenService(
-        int index, org.wso2.apk.enforcer.discovery.config.enforcer.Issuer.Builder builderForValue) {
-      if (tokenServiceBuilder_ == null) {
-        ensureTokenServiceIsMutable();
-        tokenService_.set(index, builderForValue.build());
+    public Builder setApiKey(
+        org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcer.Builder builderForValue) {
+      if (apiKeyBuilder_ == null) {
+        apiKey_ = builderForValue.build();
         onChanged();
       } else {
-        tokenServiceBuilder_.setMessage(index, builderForValue.build());
+        apiKeyBuilder_.setMessage(builderForValue.build());
       }
+
       return this;
     }
     /**
-     * <code>repeated .wso2.discovery.config.enforcer.Issuer tokenService = 1;</code>
+     * <code>.wso2.discovery.config.enforcer.APIKeyEnforcer apiKey = 1;</code>
      */
-    public Builder addTokenService(org.wso2.apk.enforcer.discovery.config.enforcer.Issuer value) {
-      if (tokenServiceBuilder_ == null) {
-        if (value == null) {
-          throw new NullPointerException();
+    public Builder mergeApiKey(org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcer value) {
+      if (apiKeyBuilder_ == null) {
+        if (apiKey_ != null) {
+          apiKey_ =
+            org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcer.newBuilder(apiKey_).mergeFrom(value).buildPartial();
+        } else {
+          apiKey_ = value;
         }
-        ensureTokenServiceIsMutable();
-        tokenService_.add(value);
         onChanged();
       } else {
-        tokenServiceBuilder_.addMessage(value);
+        apiKeyBuilder_.mergeFrom(value);
       }
+
       return this;
     }
     /**
-     * <code>repeated .wso2.discovery.config.enforcer.Issuer tokenService = 1;</code>
+     * <code>.wso2.discovery.config.enforcer.APIKeyEnforcer apiKey = 1;</code>
      */
-    public Builder addTokenService(
-        int index, org.wso2.apk.enforcer.discovery.config.enforcer.Issuer value) {
-      if (tokenServiceBuilder_ == null) {
-        if (value == null) {
-          throw new NullPointerException();
-        }
-        ensureTokenServiceIsMutable();
-        tokenService_.add(index, value);
+    public Builder clearApiKey() {
+      if (apiKeyBuilder_ == null) {
+        apiKey_ = null;
         onChanged();
       } else {
-        tokenServiceBuilder_.addMessage(index, value);
+        apiKey_ = null;
+        apiKeyBuilder_ = null;
       }
+
       return this;
     }
     /**
-     * <code>repeated .wso2.discovery.config.enforcer.Issuer tokenService = 1;</code>
+     * <code>.wso2.discovery.config.enforcer.APIKeyEnforcer apiKey = 1;</code>
      */
-    public Builder addTokenService(
-        org.wso2.apk.enforcer.discovery.config.enforcer.Issuer.Builder builderForValue) {
-      if (tokenServiceBuilder_ == null) {
-        ensureTokenServiceIsMutable();
-        tokenService_.add(builderForValue.build());
-        onChanged();
+    public org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcer.Builder getApiKeyBuilder() {
+      
+      onChanged();
+      return getApiKeyFieldBuilder().getBuilder();
+    }
+    /**
+     * <code>.wso2.discovery.config.enforcer.APIKeyEnforcer apiKey = 1;</code>
+     */
+    public org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcerOrBuilder getApiKeyOrBuilder() {
+      if (apiKeyBuilder_ != null) {
+        return apiKeyBuilder_.getMessageOrBuilder();
       } else {
-        tokenServiceBuilder_.addMessage(builderForValue.build());
-      }
-      return this;
-    }
-    /**
-     * <code>repeated .wso2.discovery.config.enforcer.Issuer tokenService = 1;</code>
-     */
-    public Builder addTokenService(
-        int index, org.wso2.apk.enforcer.discovery.config.enforcer.Issuer.Builder builderForValue) {
-      if (tokenServiceBuilder_ == null) {
-        ensureTokenServiceIsMutable();
-        tokenService_.add(index, builderForValue.build());
-        onChanged();
-      } else {
-        tokenServiceBuilder_.addMessage(index, builderForValue.build());
-      }
-      return this;
-    }
-    /**
-     * <code>repeated .wso2.discovery.config.enforcer.Issuer tokenService = 1;</code>
-     */
-    public Builder addAllTokenService(
-        java.lang.Iterable<? extends org.wso2.apk.enforcer.discovery.config.enforcer.Issuer> values) {
-      if (tokenServiceBuilder_ == null) {
-        ensureTokenServiceIsMutable();
-        com.google.protobuf.AbstractMessageLite.Builder.addAll(
-            values, tokenService_);
-        onChanged();
-      } else {
-        tokenServiceBuilder_.addAllMessages(values);
-      }
-      return this;
-    }
-    /**
-     * <code>repeated .wso2.discovery.config.enforcer.Issuer tokenService = 1;</code>
-     */
-    public Builder clearTokenService() {
-      if (tokenServiceBuilder_ == null) {
-        tokenService_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000001);
-        onChanged();
-      } else {
-        tokenServiceBuilder_.clear();
-      }
-      return this;
-    }
-    /**
-     * <code>repeated .wso2.discovery.config.enforcer.Issuer tokenService = 1;</code>
-     */
-    public Builder removeTokenService(int index) {
-      if (tokenServiceBuilder_ == null) {
-        ensureTokenServiceIsMutable();
-        tokenService_.remove(index);
-        onChanged();
-      } else {
-        tokenServiceBuilder_.remove(index);
-      }
-      return this;
-    }
-    /**
-     * <code>repeated .wso2.discovery.config.enforcer.Issuer tokenService = 1;</code>
-     */
-    public org.wso2.apk.enforcer.discovery.config.enforcer.Issuer.Builder getTokenServiceBuilder(
-        int index) {
-      return getTokenServiceFieldBuilder().getBuilder(index);
-    }
-    /**
-     * <code>repeated .wso2.discovery.config.enforcer.Issuer tokenService = 1;</code>
-     */
-    public org.wso2.apk.enforcer.discovery.config.enforcer.IssuerOrBuilder getTokenServiceOrBuilder(
-        int index) {
-      if (tokenServiceBuilder_ == null) {
-        return tokenService_.get(index);  } else {
-        return tokenServiceBuilder_.getMessageOrBuilder(index);
+        return apiKey_ == null ?
+            org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcer.getDefaultInstance() : apiKey_;
       }
     }
     /**
-     * <code>repeated .wso2.discovery.config.enforcer.Issuer tokenService = 1;</code>
+     * <code>.wso2.discovery.config.enforcer.APIKeyEnforcer apiKey = 1;</code>
      */
-    public java.util.List<? extends org.wso2.apk.enforcer.discovery.config.enforcer.IssuerOrBuilder> 
-         getTokenServiceOrBuilderList() {
-      if (tokenServiceBuilder_ != null) {
-        return tokenServiceBuilder_.getMessageOrBuilderList();
-      } else {
-        return java.util.Collections.unmodifiableList(tokenService_);
-      }
-    }
-    /**
-     * <code>repeated .wso2.discovery.config.enforcer.Issuer tokenService = 1;</code>
-     */
-    public org.wso2.apk.enforcer.discovery.config.enforcer.Issuer.Builder addTokenServiceBuilder() {
-      return getTokenServiceFieldBuilder().addBuilder(
-          org.wso2.apk.enforcer.discovery.config.enforcer.Issuer.getDefaultInstance());
-    }
-    /**
-     * <code>repeated .wso2.discovery.config.enforcer.Issuer tokenService = 1;</code>
-     */
-    public org.wso2.apk.enforcer.discovery.config.enforcer.Issuer.Builder addTokenServiceBuilder(
-        int index) {
-      return getTokenServiceFieldBuilder().addBuilder(
-          index, org.wso2.apk.enforcer.discovery.config.enforcer.Issuer.getDefaultInstance());
-    }
-    /**
-     * <code>repeated .wso2.discovery.config.enforcer.Issuer tokenService = 1;</code>
-     */
-    public java.util.List<org.wso2.apk.enforcer.discovery.config.enforcer.Issuer.Builder> 
-         getTokenServiceBuilderList() {
-      return getTokenServiceFieldBuilder().getBuilderList();
-    }
-    private com.google.protobuf.RepeatedFieldBuilderV3<
-        org.wso2.apk.enforcer.discovery.config.enforcer.Issuer, org.wso2.apk.enforcer.discovery.config.enforcer.Issuer.Builder, org.wso2.apk.enforcer.discovery.config.enforcer.IssuerOrBuilder> 
-        getTokenServiceFieldBuilder() {
-      if (tokenServiceBuilder_ == null) {
-        tokenServiceBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-            org.wso2.apk.enforcer.discovery.config.enforcer.Issuer, org.wso2.apk.enforcer.discovery.config.enforcer.Issuer.Builder, org.wso2.apk.enforcer.discovery.config.enforcer.IssuerOrBuilder>(
-                tokenService_,
-                ((bitField0_ & 0x00000001) != 0),
+    private com.google.protobuf.SingleFieldBuilderV3<
+        org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcer, org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcer.Builder, org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcerOrBuilder> 
+        getApiKeyFieldBuilder() {
+      if (apiKeyBuilder_ == null) {
+        apiKeyBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+            org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcer, org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcer.Builder, org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcerOrBuilder>(
+                getApiKey(),
                 getParentForChildren(),
                 isClean());
-        tokenService_ = null;
+        apiKey_ = null;
       }
-      return tokenServiceBuilder_;
+      return apiKeyBuilder_;
+    }
+
+    private org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcer runtimeToken_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+        org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcer, org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcer.Builder, org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcerOrBuilder> runtimeTokenBuilder_;
+    /**
+     * <code>.wso2.discovery.config.enforcer.APIKeyEnforcer runtimeToken = 2;</code>
+     * @return Whether the runtimeToken field is set.
+     */
+    public boolean hasRuntimeToken() {
+      return runtimeTokenBuilder_ != null || runtimeToken_ != null;
+    }
+    /**
+     * <code>.wso2.discovery.config.enforcer.APIKeyEnforcer runtimeToken = 2;</code>
+     * @return The runtimeToken.
+     */
+    public org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcer getRuntimeToken() {
+      if (runtimeTokenBuilder_ == null) {
+        return runtimeToken_ == null ? org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcer.getDefaultInstance() : runtimeToken_;
+      } else {
+        return runtimeTokenBuilder_.getMessage();
+      }
+    }
+    /**
+     * <code>.wso2.discovery.config.enforcer.APIKeyEnforcer runtimeToken = 2;</code>
+     */
+    public Builder setRuntimeToken(org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcer value) {
+      if (runtimeTokenBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        runtimeToken_ = value;
+        onChanged();
+      } else {
+        runtimeTokenBuilder_.setMessage(value);
+      }
+
+      return this;
+    }
+    /**
+     * <code>.wso2.discovery.config.enforcer.APIKeyEnforcer runtimeToken = 2;</code>
+     */
+    public Builder setRuntimeToken(
+        org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcer.Builder builderForValue) {
+      if (runtimeTokenBuilder_ == null) {
+        runtimeToken_ = builderForValue.build();
+        onChanged();
+      } else {
+        runtimeTokenBuilder_.setMessage(builderForValue.build());
+      }
+
+      return this;
+    }
+    /**
+     * <code>.wso2.discovery.config.enforcer.APIKeyEnforcer runtimeToken = 2;</code>
+     */
+    public Builder mergeRuntimeToken(org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcer value) {
+      if (runtimeTokenBuilder_ == null) {
+        if (runtimeToken_ != null) {
+          runtimeToken_ =
+            org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcer.newBuilder(runtimeToken_).mergeFrom(value).buildPartial();
+        } else {
+          runtimeToken_ = value;
+        }
+        onChanged();
+      } else {
+        runtimeTokenBuilder_.mergeFrom(value);
+      }
+
+      return this;
+    }
+    /**
+     * <code>.wso2.discovery.config.enforcer.APIKeyEnforcer runtimeToken = 2;</code>
+     */
+    public Builder clearRuntimeToken() {
+      if (runtimeTokenBuilder_ == null) {
+        runtimeToken_ = null;
+        onChanged();
+      } else {
+        runtimeToken_ = null;
+        runtimeTokenBuilder_ = null;
+      }
+
+      return this;
+    }
+    /**
+     * <code>.wso2.discovery.config.enforcer.APIKeyEnforcer runtimeToken = 2;</code>
+     */
+    public org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcer.Builder getRuntimeTokenBuilder() {
+      
+      onChanged();
+      return getRuntimeTokenFieldBuilder().getBuilder();
+    }
+    /**
+     * <code>.wso2.discovery.config.enforcer.APIKeyEnforcer runtimeToken = 2;</code>
+     */
+    public org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcerOrBuilder getRuntimeTokenOrBuilder() {
+      if (runtimeTokenBuilder_ != null) {
+        return runtimeTokenBuilder_.getMessageOrBuilder();
+      } else {
+        return runtimeToken_ == null ?
+            org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcer.getDefaultInstance() : runtimeToken_;
+      }
+    }
+    /**
+     * <code>.wso2.discovery.config.enforcer.APIKeyEnforcer runtimeToken = 2;</code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+        org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcer, org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcer.Builder, org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcerOrBuilder> 
+        getRuntimeTokenFieldBuilder() {
+      if (runtimeTokenBuilder_ == null) {
+        runtimeTokenBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+            org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcer, org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcer.Builder, org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcerOrBuilder>(
+                getRuntimeToken(),
+                getParentForChildren(),
+                isClean());
+        runtimeToken_ = null;
+      }
+      return runtimeTokenBuilder_;
     }
 
     private org.wso2.apk.enforcer.discovery.config.enforcer.AuthHeader authHeader_;
     private com.google.protobuf.SingleFieldBuilderV3<
         org.wso2.apk.enforcer.discovery.config.enforcer.AuthHeader, org.wso2.apk.enforcer.discovery.config.enforcer.AuthHeader.Builder, org.wso2.apk.enforcer.discovery.config.enforcer.AuthHeaderOrBuilder> authHeaderBuilder_;
     /**
-     * <code>.wso2.discovery.config.enforcer.AuthHeader authHeader = 2;</code>
+     * <code>.wso2.discovery.config.enforcer.AuthHeader authHeader = 3;</code>
      * @return Whether the authHeader field is set.
      */
     public boolean hasAuthHeader() {
       return authHeaderBuilder_ != null || authHeader_ != null;
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.AuthHeader authHeader = 2;</code>
+     * <code>.wso2.discovery.config.enforcer.AuthHeader authHeader = 3;</code>
      * @return The authHeader.
      */
     public org.wso2.apk.enforcer.discovery.config.enforcer.AuthHeader getAuthHeader() {
@@ -884,7 +909,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.AuthHeader authHeader = 2;</code>
+     * <code>.wso2.discovery.config.enforcer.AuthHeader authHeader = 3;</code>
      */
     public Builder setAuthHeader(org.wso2.apk.enforcer.discovery.config.enforcer.AuthHeader value) {
       if (authHeaderBuilder_ == null) {
@@ -900,7 +925,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.AuthHeader authHeader = 2;</code>
+     * <code>.wso2.discovery.config.enforcer.AuthHeader authHeader = 3;</code>
      */
     public Builder setAuthHeader(
         org.wso2.apk.enforcer.discovery.config.enforcer.AuthHeader.Builder builderForValue) {
@@ -914,7 +939,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.AuthHeader authHeader = 2;</code>
+     * <code>.wso2.discovery.config.enforcer.AuthHeader authHeader = 3;</code>
      */
     public Builder mergeAuthHeader(org.wso2.apk.enforcer.discovery.config.enforcer.AuthHeader value) {
       if (authHeaderBuilder_ == null) {
@@ -932,7 +957,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.AuthHeader authHeader = 2;</code>
+     * <code>.wso2.discovery.config.enforcer.AuthHeader authHeader = 3;</code>
      */
     public Builder clearAuthHeader() {
       if (authHeaderBuilder_ == null) {
@@ -946,7 +971,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.AuthHeader authHeader = 2;</code>
+     * <code>.wso2.discovery.config.enforcer.AuthHeader authHeader = 3;</code>
      */
     public org.wso2.apk.enforcer.discovery.config.enforcer.AuthHeader.Builder getAuthHeaderBuilder() {
       
@@ -954,7 +979,7 @@ private static final long serialVersionUID = 0L;
       return getAuthHeaderFieldBuilder().getBuilder();
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.AuthHeader authHeader = 2;</code>
+     * <code>.wso2.discovery.config.enforcer.AuthHeader authHeader = 3;</code>
      */
     public org.wso2.apk.enforcer.discovery.config.enforcer.AuthHeaderOrBuilder getAuthHeaderOrBuilder() {
       if (authHeaderBuilder_ != null) {
@@ -965,7 +990,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.AuthHeader authHeader = 2;</code>
+     * <code>.wso2.discovery.config.enforcer.AuthHeader authHeader = 3;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
         org.wso2.apk.enforcer.discovery.config.enforcer.AuthHeader, org.wso2.apk.enforcer.discovery.config.enforcer.AuthHeader.Builder, org.wso2.apk.enforcer.discovery.config.enforcer.AuthHeaderOrBuilder> 
@@ -985,14 +1010,14 @@ private static final long serialVersionUID = 0L;
     private com.google.protobuf.SingleFieldBuilderV3<
         org.wso2.apk.enforcer.discovery.config.enforcer.MutualSSL, org.wso2.apk.enforcer.discovery.config.enforcer.MutualSSL.Builder, org.wso2.apk.enforcer.discovery.config.enforcer.MutualSSLOrBuilder> mutualSSLBuilder_;
     /**
-     * <code>.wso2.discovery.config.enforcer.MutualSSL mutualSSL = 3;</code>
+     * <code>.wso2.discovery.config.enforcer.MutualSSL mutualSSL = 4;</code>
      * @return Whether the mutualSSL field is set.
      */
     public boolean hasMutualSSL() {
       return mutualSSLBuilder_ != null || mutualSSL_ != null;
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.MutualSSL mutualSSL = 3;</code>
+     * <code>.wso2.discovery.config.enforcer.MutualSSL mutualSSL = 4;</code>
      * @return The mutualSSL.
      */
     public org.wso2.apk.enforcer.discovery.config.enforcer.MutualSSL getMutualSSL() {
@@ -1003,7 +1028,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.MutualSSL mutualSSL = 3;</code>
+     * <code>.wso2.discovery.config.enforcer.MutualSSL mutualSSL = 4;</code>
      */
     public Builder setMutualSSL(org.wso2.apk.enforcer.discovery.config.enforcer.MutualSSL value) {
       if (mutualSSLBuilder_ == null) {
@@ -1019,7 +1044,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.MutualSSL mutualSSL = 3;</code>
+     * <code>.wso2.discovery.config.enforcer.MutualSSL mutualSSL = 4;</code>
      */
     public Builder setMutualSSL(
         org.wso2.apk.enforcer.discovery.config.enforcer.MutualSSL.Builder builderForValue) {
@@ -1033,7 +1058,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.MutualSSL mutualSSL = 3;</code>
+     * <code>.wso2.discovery.config.enforcer.MutualSSL mutualSSL = 4;</code>
      */
     public Builder mergeMutualSSL(org.wso2.apk.enforcer.discovery.config.enforcer.MutualSSL value) {
       if (mutualSSLBuilder_ == null) {
@@ -1051,7 +1076,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.MutualSSL mutualSSL = 3;</code>
+     * <code>.wso2.discovery.config.enforcer.MutualSSL mutualSSL = 4;</code>
      */
     public Builder clearMutualSSL() {
       if (mutualSSLBuilder_ == null) {
@@ -1065,7 +1090,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.MutualSSL mutualSSL = 3;</code>
+     * <code>.wso2.discovery.config.enforcer.MutualSSL mutualSSL = 4;</code>
      */
     public org.wso2.apk.enforcer.discovery.config.enforcer.MutualSSL.Builder getMutualSSLBuilder() {
       
@@ -1073,7 +1098,7 @@ private static final long serialVersionUID = 0L;
       return getMutualSSLFieldBuilder().getBuilder();
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.MutualSSL mutualSSL = 3;</code>
+     * <code>.wso2.discovery.config.enforcer.MutualSSL mutualSSL = 4;</code>
      */
     public org.wso2.apk.enforcer.discovery.config.enforcer.MutualSSLOrBuilder getMutualSSLOrBuilder() {
       if (mutualSSLBuilder_ != null) {
@@ -1084,7 +1109,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.MutualSSL mutualSSL = 3;</code>
+     * <code>.wso2.discovery.config.enforcer.MutualSSL mutualSSL = 4;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
         org.wso2.apk.enforcer.discovery.config.enforcer.MutualSSL, org.wso2.apk.enforcer.discovery.config.enforcer.MutualSSL.Builder, org.wso2.apk.enforcer.discovery.config.enforcer.MutualSSLOrBuilder> 

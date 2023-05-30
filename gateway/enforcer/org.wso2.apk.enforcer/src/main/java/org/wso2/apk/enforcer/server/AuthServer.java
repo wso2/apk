@@ -41,7 +41,6 @@ import org.wso2.apk.enforcer.grpc.HealthService;
 import org.wso2.apk.enforcer.grpc.interceptors.AccessLogInterceptor;
 import org.wso2.apk.enforcer.grpc.interceptors.OpenTelemetryInterceptor;
 import org.wso2.apk.enforcer.jmx.JMXAgent;
-import org.wso2.apk.enforcer.keymgt.KeyManagerHolder;
 import org.wso2.apk.enforcer.metrics.MetricsManager;
 import org.wso2.apk.enforcer.security.jwt.validator.RevokedJWTDataHolder;
 import org.wso2.apk.enforcer.subscription.SubscriptionDataHolder;
@@ -129,7 +128,6 @@ public class AuthServer {
 
             //TODO: Get the tenant domain from config
             SubscriptionDataHolder.getInstance().getTenantSubscriptionStore().initializeStore();
-            KeyManagerHolder.getInstance().init();
             RevokedJWTDataHolder.getInstance().init();
 
             // Create a new server to listen on port 8082

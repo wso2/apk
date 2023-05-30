@@ -159,39 +159,15 @@ var defaultConfig = &Config{
 			Enable:  true,
 		},
 		Security: security{
-			TokenService: []tokenService{
-				{
-					Name:                 "Resident Key Manager",
-					Issuer:               "https://localhost:9443/oauth2/token",
-					CertificateAlias:     "wso2carbon",
-					JwksURL:              "",
-					ValidateSubscription: false,
-					ConsumerKeyClaim:     "azp",
-					CertificateFilePath:  "/home/wso2/security/truststore/wso2carbon.pem",
-				},
-				{
-					Name:                 "APK",
-					Issuer:               "https://localhost:9095/testkey",
-					CertificateAlias:     "apk",
-					JwksURL:              "",
-					ValidateSubscription: false,
-					ConsumerKeyClaim:     "",
-					CertificateFilePath:  "/home/wso2/security/truststore/mg.pem",
-				},
-				{
-					Name:                 "APIM Publisher",
-					Issuer:               "https://localhost:9443/publisher",
-					ValidateSubscription: true,
-					CertificateAlias:     "publisher_certificate_alias",
-					CertificateFilePath:  "/home/wso2/security/truststore/wso2carbon.pem",
-				},
-				{
-					Name:                 "APIM APIkey",
-					Issuer:               "",
-					ValidateSubscription: true,
-					CertificateAlias:     "apikey_certificate_alias",
-					CertificateFilePath:  "/home/wso2/security/truststore/wso2carbon.pem",
-				},
+			APIkey: apiKey{
+				Enabled:             true,
+				Issuer:              "",
+				CertificateFilePath: "/home/wso2/security/truststore/wso2carbon.pem",
+			},
+			InternalKey: internalKey{
+				Enabled:             true,
+				Issuer:              "https://localhost:9443/publisher",
+				CertificateFilePath: "/home/wso2/security/truststore/wso2carbon.pem",
 			},
 			AuthHeader: authHeader{
 				EnableOutboundAuthHeader: false,

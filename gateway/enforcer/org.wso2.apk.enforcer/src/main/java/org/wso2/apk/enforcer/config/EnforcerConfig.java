@@ -21,13 +21,13 @@ package org.wso2.apk.enforcer.config;
 import org.wso2.apk.enforcer.commons.dto.JWTConfigurationDto;
 import org.wso2.apk.enforcer.commons.jwttransformer.DefaultJWTTransformer;
 import org.wso2.apk.enforcer.commons.jwttransformer.JWTTransformer;
+import org.wso2.apk.enforcer.config.dto.APIKeyIssuerDto;
 import org.wso2.apk.enforcer.config.dto.AdminRestServerDto;
 import org.wso2.apk.enforcer.config.dto.AnalyticsDTO;
 import org.wso2.apk.enforcer.config.dto.AuthHeaderDto;
 import org.wso2.apk.enforcer.config.dto.AuthServiceConfigurationDto;
 import org.wso2.apk.enforcer.config.dto.CacheDto;
 import org.wso2.apk.enforcer.config.dto.CredentialDto;
-import org.wso2.apk.enforcer.config.dto.ExtendedTokenIssuerDto;
 import org.wso2.apk.enforcer.config.dto.FilterDTO;
 import org.wso2.apk.enforcer.config.dto.JWTIssuerConfigurationDto;
 import org.wso2.apk.enforcer.config.dto.ManagementCredentialsDto;
@@ -45,10 +45,12 @@ import java.util.Map;
 public class EnforcerConfig {
 
     private AuthServiceConfigurationDto authService;
-    private Map<String, ExtendedTokenIssuerDto> issuersMap = new HashMap<>();
     private TracingDTO tracingConfig;
     private MetricsDTO metricsConfig;
     private JWTConfigurationDto jwtConfigurationDto;
+
+    private APIKeyIssuerDto apiKeyIssuerDto;
+    private APIKeyIssuerDto runtimeTokenIssuerDto;
     private CacheDto cacheDto;
     private JWTIssuerConfigurationDto jwtIssuerConfigurationDto;
     private CredentialDto[] jwtUsersCredentials;
@@ -72,13 +74,7 @@ public class EnforcerConfig {
         this.authService = authService;
     }
 
-    public Map<String, ExtendedTokenIssuerDto> getIssuersMap() {
-        return issuersMap;
-    }
 
-    public void setIssuersMap(Map<String, ExtendedTokenIssuerDto> issuersMap) {
-        this.issuersMap = issuersMap;
-    }
 
     public void setTracingConfig(TracingDTO tracingConfig) {
         this.tracingConfig = tracingConfig;
@@ -218,6 +214,26 @@ public class EnforcerConfig {
 
     public void setCustomFilters(FilterDTO[] customFilters) {
         this.customFilters = customFilters;
+    }
+
+    public APIKeyIssuerDto getApiKeyIssuerDto() {
+
+        return apiKeyIssuerDto;
+    }
+
+    public void setApiKeyIssuerDto(APIKeyIssuerDto apiKeyIssuerDto) {
+
+        this.apiKeyIssuerDto = apiKeyIssuerDto;
+    }
+
+    public APIKeyIssuerDto getRuntimeTokenIssuerDto() {
+
+        return runtimeTokenIssuerDto;
+    }
+
+    public void setRuntimeTokenIssuerDto(APIKeyIssuerDto runtimeTokenIssuerDto) {
+
+        this.runtimeTokenIssuerDto = runtimeTokenIssuerDto;
     }
 }
 
