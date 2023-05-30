@@ -22,8 +22,8 @@ set -e
 #build and run runtime domain service then can build it alone and do deployment.
 
 # mkdir -p ballerina-dist
-# wget 'https://dist.ballerina.io/downloads/2201.5.0/ballerina-2201.5.0-swan-lake-linux-x64.deb' -P ballerina-dist
-# sudo dpkg -i ballerina-dist/ballerina-2201.5.0-swan-lake-linux-x64.deb
+# wget 'https://github.com/ballerina-platform/ballerina-distribution/releases/download/v2201.6.0-rc1/ballerina-2201.6.0-swan-lake-linux-x64.deb' -P ballerina-dist
+# sudo dpkg -i ballerina-dist/ballerina-2201.6.0-swan-lake-linux-x64.deb
 
 current_dir=$PWD;
 # cd $current_dir;
