@@ -129,7 +129,7 @@ export default function AddUpdateAPICategory({ id, nameProp, descriptionProp, up
       return false;
     } else {
       if (id !== undefined) {
-        axios.put('/api/am/admin/api-categories/' + id, { 'name': APICategory.name, 'description': APICategory.description }, {
+        axios.put('/api/admin/api-categories/' + id, { 'name': APICategory.name, 'description': APICategory.description }, {
           withCredentials: true,
         }).then(() => {
           return (
@@ -144,7 +144,7 @@ export default function AddUpdateAPICategory({ id, nameProp, descriptionProp, up
           updateList();
         });
       } else {
-        axios.post('/api/am/admin/api-categories/', { 'name': APICategory.name, 'description': APICategory.description }, {
+        axios.post('/api/admin/api-categories/', { 'name': APICategory.name, 'description': APICategory.description }, {
           withCredentials: true,
         }).then(() => {
           return (

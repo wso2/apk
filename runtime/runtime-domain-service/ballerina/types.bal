@@ -183,10 +183,10 @@ public type APIOperations record {|
     #   {
     #     "endpoint_type": "http",
     #     "sandbox_endpoints":       {
-    #        "url": "https://pizzashack-service:8080/am/sample/pizzashack/v3/api/"
+    #        "url": "https://pizzashack-service:8080/sample/pizzashack/v3/api/"
     #     },
     #     "production_endpoints":       {
-    #        "url": "https://pizzashack-service:8080/am/sample/pizzashack/v3/api/"
+    #        "url": "https://pizzashack-service:8080/sample/pizzashack/v3/api/"
     #     }
     #   }
     record {} endpointConfig?;
@@ -390,10 +390,10 @@ public type API record {|
     #   {
     #     "endpoint_type": "http",
     #     "sandbox_endpoints":       {
-    #        "url": "https://pizzashack-service:8080/am/sample/pizzashack/v3/api/"
+    #        "url": "https://pizzashack-service:8080/sample/pizzashack/v3/api/"
     #     },
     #     "production_endpoints":       {
-    #        "url": "https://pizzashack-service:8080/am/sample/pizzashack/v3/api/"
+    #        "url": "https://pizzashack-service:8080/sample/pizzashack/v3/api/"
     #     }
     #   }
     record {} endpointConfig?;

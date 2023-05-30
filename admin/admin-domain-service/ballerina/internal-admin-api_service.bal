@@ -18,7 +18,7 @@
 
 import wso2/apk_common_lib as commons;
 
-service /api/am/internal/v1 on internalAdminEp {
+service /api/internal/v1 on internalAdminEp {
     resource function get organizations(string? organizationName, string? organizationClaimValue) returns OrganizationList|error|commons:APKError {
         if organizationName is string && organizationClaimValue is () {
             Internal_Organization organizationByNameDAO = check getOrganizationByNameDAO(organizationName);

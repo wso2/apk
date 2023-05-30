@@ -16,7 +16,7 @@ const getOrganizations =  ({trigger, setTrigger} : orgProps ) => {
     const [error, setError] = useState<string>("");
 
     const viewData = () => {
-        axios('/api/am/admin/organizations', {
+        axios('/api/admin/organizations', {
             method: 'GET',
             withCredentials: true,
         })

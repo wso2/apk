@@ -155,14 +155,14 @@ Follow the instruction below to deploy an API using the `kubectl`.
 
 4. List the created API and retrieve API's `id`.
     ```bash
-    curl --location --request GET "https://{router_service}:9095/api/am/runtime/apis" \
+    curl --location --request GET "https://{router_service}:9095/api/runtime/apis" \
     --header "Host: api.am.wso2.com" \
     --header "Authorization: Bearer $ACCESS_TOKEN"
     ```
 
 5. Get a token to invoke the created API. Provide the API's `id` to `{api_id}` in below command.
     ```bash
-    INTERNAL_KEY=$(curl --location --request POST "https://{router_service}:9095/api/am/runtime/apis/{api_id}/generate-key" \
+    INTERNAL_KEY=$(curl --location --request POST "https://{router_service}:9095/api/runtime/apis/{api_id}/generate-key" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --header "Host: api.am.wso2.com" \

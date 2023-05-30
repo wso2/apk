@@ -26,7 +26,7 @@ info:
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   version: v1
 servers:
-  - url: https://apis.wso2.com/api/am/backoffice
+  - url: https://apis.wso2.com/api/backoffice
 paths:
   ######################################################
   # The "API Collection" resource APIs
@@ -80,7 +80,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -F file=@openapi.json -F additionalProperties=@data.json "https://127.0.0.1:9443/api/am/publisher/v3/apis/import-openapi"'
+          -F file=@openapi.json -F additionalProperties=@data.json "https://127.0.0.1:9443/api/publisher/v3/apis/import-openapi"'
 
   ######################################################
   # The "Individual API" resource APIs
@@ -195,7 +195,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/publisher/v3/apis/7a2298c4-c905-403f-8fac-38c73301631f"'
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/publisher/v3/apis/7a2298c4-c905-403f-8fac-38c73301631f"'
       operationId: updateAPI
 
     delete:
@@ -224,7 +224,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/publisher/v3/apis/7a2298c4-c905-403f-8fac-38c73301631f"'
+          "https://127.0.0.1:9443/api/publisher/v3/apis/7a2298c4-c905-403f-8fac-38c73301631f"'
       operationId: deleteAPI
 
   /apis/{apiId}/definition:
@@ -286,7 +286,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -F apiDefinition=@swagger.json "https://127.0.0.1:9443/api/am/publisher/v3/apis/96077508-fd01-4fae-bc64-5de0e2baf43c/swagger"'
+          -F apiDefinition=@swagger.json "https://127.0.0.1:9443/api/publisher/v3/apis/96077508-fd01-4fae-bc64-5de0e2baf43c/swagger"'
       operationId: updateAPISwagger
 
   
@@ -563,10 +563,10 @@ components:
               {
                 "endpoint_type": "http",
                 "sandbox_endpoints":       {
-                   "url": "https://localhost:9443/am/sample/pizzashack/v3/api/"
+                   "url": "https://localhost:9443/sample/pizzashack/v3/api/"
                 },
                 "production_endpoints":       {
-                   "url": "https://localhost:9443/am/sample/pizzashack/v3/api/"
+                   "url": "https://localhost:9443/sample/pizzashack/v3/api/"
                 }
               }
 
@@ -578,22 +578,22 @@ components:
                 "sessionManagement": "",
                 "sandbox_endpoints":       [
                             {
-                      "url": "https://localhost:9443/am/sample/pizzashack/v3/api/1"
+                      "url": "https://localhost:9443/sample/pizzashack/v3/api/1"
                    },
                             {
                       "endpoint_type": "http",
                       "template_not_supported": false,
-                      "url": "https://localhost:9443/am/sample/pizzashack/v3/api/2"
+                      "url": "https://localhost:9443/sample/pizzashack/v3/api/2"
                    }
                 ],
                 "production_endpoints":       [
                             {
-                      "url": "https://localhost:9443/am/sample/pizzashack/v3/api/3"
+                      "url": "https://localhost:9443/sample/pizzashack/v3/api/3"
                    },
                             {
                       "endpoint_type": "http",
                       "template_not_supported": false,
-                      "url": "https://localhost:9443/am/sample/pizzashack/v3/api/4"
+                      "url": "https://localhost:9443/sample/pizzashack/v3/api/4"
                    }
                 ],
                 "sessionTimeOut": "",
@@ -607,21 +607,21 @@ components:
                    {
                       "endpoint_type":"http",
                       "template_not_supported":false,
-                      "url":"https://localhost:9443/am/sample/pizzashack/v3/api/1"
+                      "url":"https://localhost:9443/sample/pizzashack/v3/api/1"
                    }
                 ],
                 "endpoint_type":"failover",
                 "sandbox_endpoints":{
-                   "url":"https://localhost:9443/am/sample/pizzashack/v3/api/2"
+                   "url":"https://localhost:9443/sample/pizzashack/v3/api/2"
                 },
                 "production_endpoints":{
-                   "url":"https://localhost:9443/am/sample/pizzashack/v3/api/3"
+                   "url":"https://localhost:9443/sample/pizzashack/v3/api/3"
                 },
                 "sandbox_failovers":[
                    {
                       "endpoint_type":"http",
                       "template_not_supported":false,
-                      "url":"https://localhost:9443/am/sample/pizzashack/v3/api/4"
+                      "url":"https://localhost:9443/sample/pizzashack/v3/api/4"
                    }
                 ]
               }
@@ -646,9 +646,9 @@ components:
           example:
             endpoint_type: http
             sandbox_endpoints:
-              url: https://localhost:9443/am/sample/pizzashack/v3/api/
+              url: https://localhost:9443/sample/pizzashack/v3/api/
             production_endpoints:
-              url: https://localhost:9443/am/sample/pizzashack/v3/api/
+              url: https://localhost:9443/sample/pizzashack/v3/api/
         endpointImplementationType:
           type: string
           example: INLINE

@@ -116,13 +116,12 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/services",
+					"raw": "{{gatewayBaseURl}}/api/runtime/services",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
-						"am",
 						"runtime",
 						"services"
 					]
@@ -207,13 +206,12 @@
 					"raw": "{\n    \"context\": \"{{rateLimitAPIContext}}\",\n    \"name\": \"{{rateLimitAPIName}}\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\",\n    \"operations\": [\n        {\n            \"target\": \"/get\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"operationRateLimit\": {\n                \"requestsPerUnit\": 5,\n                \"unit\": \"Minute\"\n            }\n        },\n        {\n            \"target\": \"/headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"operationRateLimit\": {\n                \"requestsPerUnit\": 5,\n                \"unit\": \"Minute\"\n            }\n        },\n        {\n            \"target\": \"/response-headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true\n        }\n    ]\n}"
 				},
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/import-service?serviceKey={{serviceUUID}}",
+					"raw": "{{gatewayBaseURl}}/api/runtime/apis/import-service?serviceKey={{serviceUUID}}",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
-						"am",
 						"runtime",
 						"apis",
 						"import-service"
@@ -288,13 +286,12 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis",
+					"raw": "{{gatewayBaseURl}}/api/runtime/apis",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
-						"am",
 						"runtime",
 						"apis"
 					]
@@ -335,13 +332,12 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID}}",
+					"raw": "{{gatewayBaseURl}}/api/runtime/apis/{{APIUUID}}",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
-						"am",
 						"runtime",
 						"apis",
 						"{{APIUUID}}"
@@ -415,13 +411,12 @@
 					"raw": "{\n    \"context\": \"{{rateLimitAPIContext}}\",\n    \"name\": \"{{rateLimitAPIName}}\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\"\n}\n"
 				},
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID}}/generate-key",
+					"raw": "{{gatewayBaseURl}}/api/runtime/apis/{{APIUUID}}/generate-key",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
-						"am",
 						"runtime",
 						"apis",
 						"{{APIUUID}}",
@@ -646,13 +641,12 @@
 					}
 				},
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID}}",
+					"raw": "{{gatewayBaseURl}}/api/runtime/apis/{{APIUUID}}",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
-						"am",
 						"runtime",
 						"apis",
 						"{{APIUUID}}"
@@ -866,13 +860,12 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/copy-api?apiId={{APIUUID}}&newVersion=2.0.0",
+					"raw": "{{gatewayBaseURl}}/api/runtime/apis/copy-api?apiId={{APIUUID}}&newVersion=2.0.0",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
-						"am",
 						"runtime",
 						"apis",
 						"copy-api"
@@ -946,13 +939,12 @@
 					}
 				},
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID}}",
+					"raw": "{{gatewayBaseURl}}/api/runtime/apis/{{APIUUID}}",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
-						"am",
 						"runtime",
 						"apis",
 						"{{APIUUID}}"
@@ -1083,13 +1075,12 @@
 					}
 				},
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID}}",
+					"raw": "{{gatewayBaseURl}}/api/runtime/apis/{{APIUUID}}",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
-						"am",
 						"runtime",
 						"apis",
 						"{{APIUUID}}"
@@ -1231,13 +1222,12 @@
 					"raw": ""
 				},
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIV2UUID}}/generate-key",
+					"raw": "{{gatewayBaseURl}}/api/runtime/apis/{{APIV2UUID}}/generate-key",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
-						"am",
 						"runtime",
 						"apis",
 						"{{APIV2UUID}}",
@@ -1361,13 +1351,12 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID}}",
+					"raw": "{{gatewayBaseURl}}/api/runtime/apis/{{APIUUID}}",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
-						"am",
 						"runtime",
 						"apis",
 						"{{APIUUID}}"
@@ -1421,13 +1410,12 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIV2UUID}}",
+					"raw": "{{gatewayBaseURl}}/api/runtime/apis/{{APIV2UUID}}",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
-						"am",
 						"runtime",
 						"apis",
 						"{{APIV2UUID}}"
@@ -1510,13 +1498,12 @@
 					"raw": "{\n    \"context\": \"{{rateLimitAPIContext}}\",\n    \"name\": \"{{rateLimitAPIName}}\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\",\n    \"operations\": [\n        {\n            \"target\": \"/get\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true\n        },\n        {\n            \"target\": \"/headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true\n        }\n    ],\n    \"apiRateLimit\": {\n        \"requestsPerUnit\": 10,\n        \"unit\": \"Minute\"\n    }\n}"
 				},
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/import-service?serviceKey={{serviceUUID}}",
+					"raw": "{{gatewayBaseURl}}/api/runtime/apis/import-service?serviceKey={{serviceUUID}}",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
-						"am",
 						"runtime",
 						"apis",
 						"import-service"
@@ -1603,13 +1590,12 @@
 					"raw": "{\n    \"context\": \"{{rateLimitAPIContext}}\",\n    \"name\": \"{{rateLimitAPIName}}\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\"\n}\n"
 				},
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID2}}/generate-key",
+					"raw": "{{gatewayBaseURl}}/api/runtime/apis/{{APIUUID2}}/generate-key",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
-						"am",
 						"runtime",
 						"apis",
 						"{{APIUUID2}}",
@@ -1790,13 +1776,12 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/copy-api?apiId={{APIUUID2}}&newVersion=2.0.0",
+					"raw": "{{gatewayBaseURl}}/api/runtime/apis/copy-api?apiId={{APIUUID2}}&newVersion=2.0.0",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
-						"am",
 						"runtime",
 						"apis",
 						"copy-api"
@@ -1887,13 +1872,12 @@
 					"raw": "{\n    \"context\": \"/rateLimitAPI/2.0.0\" ,\n    \"name\": \"{{rateLimitAPIName}}\" ,\n    \"version\": \"2.0.0\",\n    \"type\": \"REST\"\n}\n"
 				},
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIV2UUID2}}/generate-key",
+					"raw": "{{gatewayBaseURl}}/api/runtime/apis/{{APIV2UUID2}}/generate-key",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
-						"am",
 						"runtime",
 						"apis",
 						"{{APIV2UUID2}}",
@@ -2017,13 +2001,12 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIV2UUID2}}",
+					"raw": "{{gatewayBaseURl}}/api/runtime/apis/{{APIV2UUID2}}",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
-						"am",
 						"runtime",
 						"apis",
 						"{{APIV2UUID2}}"
@@ -2086,13 +2069,12 @@
 					}
 				},
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID2}}",
+					"raw": "{{gatewayBaseURl}}/api/runtime/apis/{{APIUUID2}}",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
-						"am",
 						"runtime",
 						"apis",
 						"{{APIUUID2}}"
@@ -2173,13 +2155,12 @@
 					"raw": "{\n    \"context\": \"{{rateLimitAPIContext}}\",\n    \"name\": \"{{rateLimitAPIName}}\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\"\n}\n"
 				},
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID2}}/generate-key",
+					"raw": "{{gatewayBaseURl}}/api/runtime/apis/{{APIUUID2}}/generate-key",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
-						"am",
 						"runtime",
 						"apis",
 						"{{APIUUID2}}",
@@ -2294,13 +2275,12 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID2}}",
+					"raw": "{{gatewayBaseURl}}/api/runtime/apis/{{APIUUID2}}",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
-						"am",
 						"runtime",
 						"apis",
 						"{{APIUUID2}}"
@@ -2383,13 +2363,12 @@
 					"raw": "{\n    \"context\": \"{{rateLimitAPIContextv3}}\",\n    \"name\": \"{{rateLimitAPINamev3}}\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\",\n    \"operations\": [\n        {\n            \"target\": \"/get\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true\n        },\n        {\n            \"target\": \"/headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true\n        }\n    ],\n    \"apiRateLimit\": {\n        \"requestsPerUnit\": 5,\n        \"unit\": \"Minute\"\n    }\n}"
 				},
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/import-service?serviceKey={{serviceUUID}}",
+					"raw": "{{gatewayBaseURl}}/api/runtime/apis/import-service?serviceKey={{serviceUUID}}",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
-						"am",
 						"runtime",
 						"apis",
 						"import-service"
@@ -2464,13 +2443,12 @@
 					}
 				},
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID3}}",
+					"raw": "{{gatewayBaseURl}}/api/runtime/apis/{{APIUUID3}}",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
-						"am",
 						"runtime",
 						"apis",
 						"{{APIUUID3}}"
@@ -2551,13 +2529,12 @@
 					"raw": ""
 				},
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID3}}/generate-key",
+					"raw": "{{gatewayBaseURl}}/api/runtime/apis/{{APIUUID3}}/generate-key",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
-						"am",
 						"runtime",
 						"apis",
 						"{{APIUUID3}}",
@@ -2679,13 +2656,12 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID3}}",
+					"raw": "{{gatewayBaseURl}}/api/runtime/apis/{{APIUUID3}}",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
-						"am",
 						"runtime",
 						"apis",
 						"{{APIUUID3}}"

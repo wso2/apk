@@ -9,7 +9,7 @@ data:
     [backOffice]
       host = "{{ template "apk-helm.resource.prefix" . }}-backoffice-ds-service.{{ .Release.Namespace }}.svc"
       port = 9444
-      serviceBasePath = "/api/am/backoffice/internal/apis"
+      serviceBasePath = "/api/backoffice/internal/apis"
     [managementServer.keystore]
       certPath = "/home/wso2/security/keystore/management-server.pem"
       keyPath = "/home/wso2/security/keystore/management-server.key"

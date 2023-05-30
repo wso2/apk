@@ -540,7 +540,7 @@ public function apiByIdDataProvider() returns map<[string, commons:Organization,
         context: "/pizzashack/1.0.0",
         'version: "1.0.0",
         'type: "REST",
-        endpointConfig: {"endpoint_type": "http", "sandbox_endpoints": {"url": "https://pizzashack-service:8080/am/sample/pizzashack/v3/api/"}, "production_endpoints": {"url": "https://pizzashack-service:8080/am/sample/pizzashack/v3/api/"}},
+        endpointConfig: {"endpoint_type": "http", "sandbox_endpoints": {"url": "https://pizzashack-service:8080/sample/pizzashack/v3/api/"}, "production_endpoints": {"url": "https://pizzashack-service:8080/sample/pizzashack/v3/api/"}},
         operations: [
             {target: "/*", verb: "GET", authTypeEnabled: true, "scopes": []},
             {target: "/*", verb: "PUT", authTypeEnabled: true, "scopes": []},
@@ -1631,13 +1631,13 @@ function testDataGeneratedSwaggerDefinition() returns map<[API, string?, json|co
                 },
                 "x-wso2-production-endpoints": {
                     "urls": [
-                        "https://localhost:9443/am/sample/pizzashack/v1/api/"
+                        "https://localhost:9443/sample/pizzashack/v1/api/"
                     ],
                     "type": "http"
                 },
                 "x-wso2-sandbox-endpoints": {
                     "urls": [
-                        "https://localhost:9443/am/sample/pizzashack/v1/api/"
+                        "https://localhost:9443/sample/pizzashack/v1/api/"
                     ],
                     "type": "http"
                 },
@@ -1991,13 +1991,13 @@ function testDataGeneratedSwaggerDefinition() returns map<[API, string?, json|co
                 },
                 "x-wso2-production-endpoints": {
                     "urls": [
-                        "https://localhost:9443/am/sample/pizzashack/v1/api/"
+                        "https://localhost:9443/sample/pizzashack/v1/api/"
                     ],
                     "type": "http"
                 },
                 "x-wso2-sandbox-endpoints": {
                     "urls": [
-                        "https://localhost:9443/am/sample/pizzashack/v1/api/"
+                        "https://localhost:9443/sample/pizzashack/v1/api/"
                     ],
                     "type": "http"
                 },

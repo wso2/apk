@@ -102,7 +102,7 @@ export const sendTokenRequest = (
 ): Promise<TokenResponseInterface> => {
 
     const tokenEndpoint = getTokenEndpoint();
-    // const stsEndoint = 'https://da59-203-94-95-4.in.ngrok.io/api/am/sts/v1/oauth2/token';
+    // const stsEndoint = 'https://da59-203-94-95-4.in.ngrok.io/api/sts/v1/oauth2/token';
 
     if (!tokenEndpoint || tokenEndpoint.trim().length === 0) {
         return Promise.reject(new Error("Invalid token endpoint found."));

@@ -58,7 +58,7 @@ const DeleteOrganization: React.FC<DeleteProps> = ({ orgId, updateList }) => {
 
     const deleteOrganization = () => {
         axios
-            .delete(`/api/am/admin/organizations/${orgId}`, {
+            .delete(`/api/admin/organizations/${orgId}`, {
                 withCredentials: true,
             })
             .then(() => {

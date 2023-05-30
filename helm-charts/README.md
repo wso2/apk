@@ -122,7 +122,7 @@ A Helm chart for APK components
 | wso2.apk.dp.managementServer.tls.fileName | string | `"certificate.crt"` | TLS certificate file name. |
 | wso2.apk.dp.partitionServer.enabled | bool | `false` | Enable partition server for Data Plane. |
 | wso2.apk.dp.partitionServer.host | string | `""` | Partition Server Service URL |
-| wso2.apk.dp.partitionServer.serviceBasePath | string | `"/api/am/publisher/v1"` | Partition Server Service Base Path. |
+| wso2.apk.dp.partitionServer.serviceBasePath | string | `"/api/publisher/v1"` | Partition Server Service Base Path. |
 | wso2.apk.dp.partitionServer.partitionName | string | `"default"` | Partition Name. |
 | wso2.apk.dp.partitionServer.tls.secretName | string | `"managetment-server-cert"` | TLS secret name for Partition Server Public Certificate. |
 | wso2.apk.dp.partitionServer.tls.fileName | string | `"certificate.crt"` | TLS certificate file name. |
@@ -141,7 +141,7 @@ A Helm chart for APK components
 | wso2.apk.dp.runtime.deployment.imagePullPolicy | string | `"Always"` | Image pull policy |
 | wso2.apk.dp.runtime.deployment.image | string | `"wso2/runtime-domain-service:latest"` | Image |
 | wso2.apk.dp.runtime.deployment.configs.authrorization | bool | `true` | Enable authorization for runtime api. |
-| wso2.apk.dp.runtime.deployment.configs.baseUrl | string | `"https://api.am.wso2.com:9095/api/am/runtime"` | Baseurl for runtime api. |
+| wso2.apk.dp.runtime.deployment.configs.baseUrl | string | `"https://api.am.wso2.com:9095/api/runtime"` | Baseurl for runtime api. |
 | wso2.apk.dp.runtime.deployment.configs.tls.secretName | string | `""` | TLS secret name for runtime public certificate. |
 | wso2.apk.dp.runtime.deployment.configs.tls.certKeyFilename | string | `""` | TLS certificate file name. |
 | wso2.apk.dp.runtime.deployment.configs.tls.certFilename | string | `""` | TLS certificate file name. |

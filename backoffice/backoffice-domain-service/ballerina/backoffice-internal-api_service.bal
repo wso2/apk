@@ -9,7 +9,7 @@ listener http:Listener ep1 = new (BACKOFFICE_PORT_INT, secureSocket = {
     }
 }, interceptors = [requestErrorInterceptor, responseErrorInterceptor]);
 
-service /api/am/backoffice/internal on ep1 {
+service /api/backoffice/internal on ep1 {
     isolated resource function post apis(@http:Payload json payload) returns CreatedAPI|error {
         APIBody apiBody = check payload.cloneWithType(APIBody);
 

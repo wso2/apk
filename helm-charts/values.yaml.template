@@ -288,7 +288,7 @@ wso2:
         # -- Partition Server Service URL
         host: ""
         # -- Partition Server Service Base Path.
-        serviceBasePath: "/api/am/publisher/v1"
+        serviceBasePath: "/api/publisher/v1"
         # -- Partition Name.
         partitionName: "default"
         tls:
@@ -335,7 +335,7 @@ wso2:
             # -- Enable authorization for runtime api.
             authrorization: true
             # -- Baseurl for runtime api.
-            baseUrl: "https://api.am.wso2.com:9095/api/am/runtime"
+            baseUrl: "https://api.am.wso2.com:9095/api/runtime"
             tls:
               # -- TLS secret name for runtime public certificate.
               secretName: ""

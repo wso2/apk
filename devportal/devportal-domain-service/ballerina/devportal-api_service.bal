@@ -20,7 +20,7 @@ import ballerina/http;
 import ballerina/log;
 import wso2/apk_common_lib as commons;
 
-isolated service /api/am/devportal on ep0 {
+isolated service /api/devportal on ep0 {
     # Retrieve/Search APIs
     #
     # + 'limit - Maximum size of resource array to return. 

@@ -20,7 +20,7 @@ import ballerina/http;
 import ballerina/log;
 import wso2/apk_common_lib as commons;
 
-service /api/am/admin on ep0 {
+service /api/admin on ep0 {
     # Retrieve/Search Policies
     #
     # + query - **Search**. You can search by providing a keyword. Allowed to search by type and name only. 

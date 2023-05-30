@@ -29,7 +29,7 @@ spec:
   - matches:
     - path:
         type: "PathPrefix"
-        value: "/api/am/internal/v1"
+        value: "/api/internal/v1"
       method: "GET"
     backendRefs:
     - group: dp.wso2.com

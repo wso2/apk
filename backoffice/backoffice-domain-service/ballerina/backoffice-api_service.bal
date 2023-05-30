@@ -40,7 +40,7 @@ listener http:Listener ep0 = new (BACKOFFICE_PORT, secureSocket = {
     }
 }
 
-service /api/am/backoffice on ep0 {
+service /api/backoffice on ep0 {
 
     isolated resource function get apis(http:RequestContext requestContext, string? query, @http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0, string sortBy = "createdTime", string sortOrder = "desc", @http:Header string? accept = "application/json") returns APIList|http:NotModified|commons:APKError {
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
