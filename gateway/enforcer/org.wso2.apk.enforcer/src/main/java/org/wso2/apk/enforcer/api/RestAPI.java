@@ -17,14 +17,9 @@
  */
 package org.wso2.apk.enforcer.api;
 
-import java.util.Objects;
-import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.wso2.apk.enforcer.commons.dto.JWTConfigurationDto;
-import org.wso2.apk.enforcer.commons.model.APIKeyAuthenticationConfig;
-import org.wso2.apk.enforcer.commons.model.InternalKeyConfig;
-import org.wso2.apk.enforcer.commons.model.JWTAuthenticationConfig;
 import org.wso2.apk.enforcer.config.EnforcerConfig;
 import org.wso2.apk.enforcer.discovery.api.Api;
 import org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo;
@@ -42,7 +37,6 @@ import org.wso2.apk.enforcer.commons.model.RequestContext;
 import org.wso2.apk.enforcer.commons.model.ResourceConfig;
 import org.wso2.apk.enforcer.config.ConfigHolder;
 import org.wso2.apk.enforcer.config.dto.FilterDTO;
-import org.wso2.apk.enforcer.config.dto.MutualSSLDto;
 import org.wso2.apk.enforcer.constants.APIConstants;
 import org.wso2.apk.enforcer.constants.HttpConstants;
 import org.wso2.apk.enforcer.cors.CorsFilter;
@@ -145,7 +139,7 @@ public class RestAPI implements API {
         responseObject.setRequestPath(requestContext.getRequestPath());
         boolean analyticsEnabled = ConfigHolder.getInstance().getConfig().getAnalyticsConfig().isEnabled();
 
-        populateRemoveAndProtectedHeaders(requestContext);
+        Utils.handleCommonHeaders(requestContext);
         boolean isExistsMatchedResourcePath = requestContext.getMatchedResourcePaths() != null &&
                 requestContext.getMatchedResourcePaths().size() > 0;
         // This flag is used to apply CORS filter
@@ -293,48 +287,5 @@ public class RestAPI implements API {
                         + filterDTO.getClassName());
             }
         }
-    }
-
-    private void populateRemoveAndProtectedHeaders(RequestContext requestContext) {
-        requestContext.getMatchedResourcePaths().forEach(resourcePath -> {
-            JWTAuthenticationConfig jwtAuthenticationConfig =
-                    resourcePath.getAuthenticationConfig().getJwtAuthenticationConfig();
-            InternalKeyConfig internalKeyConfig =
-                    resourcePath.getAuthenticationConfig().getInternalKeyConfig();
-            List<APIKeyAuthenticationConfig> apiKeyAuthenticationConfig =
-                    resourcePath.getAuthenticationConfig().getApiKeyAuthenticationConfigs();
-            if (jwtAuthenticationConfig != null && !jwtAuthenticationConfig.isSendTokenToUpstream()) {
-                requestContext.getProtectedHeaders().add(jwtAuthenticationConfig.getHeader());
-                requestContext.getRemoveHeaders().add(jwtAuthenticationConfig.getHeader());
-            }
-            if (internalKeyConfig != null && !internalKeyConfig.isSendTokenToUpstream()) {
-                requestContext.getProtectedHeaders().add(internalKeyConfig.getHeader());
-                requestContext.getRemoveHeaders().add(internalKeyConfig.getHeader());
-            }
-            if (apiKeyAuthenticationConfig != null && !apiKeyAuthenticationConfig.isEmpty()) {
-                requestContext.getQueryParamsToRemove().addAll(apiKeyAuthenticationConfig.stream()
-                        .filter(apiKeyAuthenticationConfig1 -> !apiKeyAuthenticationConfig1.isSendTokenToUpstream()
-                                && Objects.equals(apiKeyAuthenticationConfig1.getIn(), "In"))
-                        .map(APIKeyAuthenticationConfig::getName).collect(Collectors.toList()));
-                List<String> apikeyHeadersToRemove = apiKeyAuthenticationConfig.stream()
-                        .filter(apiKeyAuthenticationConfig1 -> !apiKeyAuthenticationConfig1.isSendTokenToUpstream()
-                                && Objects.equals(apiKeyAuthenticationConfig1.getIn(), "Header"))
-                        .map(APIKeyAuthenticationConfig::getName).collect(Collectors.toList());
-                //todo(amali) check on protected headers
-                requestContext.getProtectedHeaders().addAll(apikeyHeadersToRemove);
-                requestContext.getRemoveHeaders().addAll(apikeyHeadersToRemove);
-            }
-        });
-
-        Utils.removeCommonAuthHeaders(requestContext);
-
-        // Remove mTLS certificate header
-        MutualSSLDto mtlsInfo = ConfigHolder.getInstance().getConfig().getMtlsInfo();
-        String certificateHeaderName = FilterUtils.getCertificateHeaderName();
-        if (!mtlsInfo.isEnableOutboundCertificateHeader()) {
-            requestContext.getRemoveHeaders().add(certificateHeaderName);
-        }
-        // mTLS Certificate Header should not be included in the upstream request.
-        requestContext.getProtectedHeaders().add(certificateHeaderName);
     }
 }

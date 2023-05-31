@@ -113,8 +113,6 @@ spec:
         kind: Backend
         name: ext_authz-server
         port: 1234
-      authTypes:
-        - type: jwt
   targetRef:
     group: gateway.networking.k8s.io
     kind: API

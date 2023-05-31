@@ -51,10 +51,10 @@ public class OPADefaultRequestGenerator implements OPARequestGenerator {
 
         // following fields are the same fields sent from the synapse request generator
         JSONObject transportHeaders = new JSONObject();
-        // To avoid publishing user token to OPA. If "SEND_ACCESS_TOKEN" is enabled
-        // it is sent in auth context
+        // To avoid publishing user tokens to OPA.
+        // If "SEND_ACCESS_TOKEN" is enabled, it is sent in auth context only
         requestContext.getHeaders().keySet().stream()
-                .filter(header -> !requestContext.getProtectedHeaders().contains(header))
+                .filter(header -> !requestContext.getRemoveHeaders().contains(header))
                 .forEach(header -> transportHeaders.put(header, requestContext.getHeaders().get(header)));
         // changes this
         inputPayload.put("transportHeaders", transportHeaders);

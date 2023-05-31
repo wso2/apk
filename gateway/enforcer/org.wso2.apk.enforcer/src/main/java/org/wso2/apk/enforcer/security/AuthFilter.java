@@ -17,6 +17,7 @@
  */
 package org.wso2.apk.enforcer.security;
 
+import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.wso2.apk.enforcer.commons.Filter;
@@ -25,12 +26,15 @@ import org.wso2.apk.enforcer.commons.exception.APISecurityException;
 import org.wso2.apk.enforcer.commons.logging.ErrorDetails;
 import org.wso2.apk.enforcer.commons.logging.LoggingConstants;
 import org.wso2.apk.enforcer.commons.model.APIConfig;
+import org.wso2.apk.enforcer.commons.model.APIKeyAuthenticationConfig;
 import org.wso2.apk.enforcer.commons.model.AuthenticationContext;
+import org.wso2.apk.enforcer.commons.model.InternalKeyConfig;
+import org.wso2.apk.enforcer.commons.model.JWTAuthenticationConfig;
 import org.wso2.apk.enforcer.commons.model.RequestContext;
 import org.wso2.apk.enforcer.config.ConfigHolder;
 import org.wso2.apk.enforcer.config.EnforcerConfig;
+import org.wso2.apk.enforcer.config.dto.MutualSSLDto;
 import org.wso2.apk.enforcer.constants.APIConstants;
-import org.wso2.apk.enforcer.constants.AdapterConstants;
 import org.wso2.apk.enforcer.constants.InterceptorConstants;
 import org.wso2.apk.enforcer.security.jwt.APIKeyAuthenticator;
 import org.wso2.apk.enforcer.security.jwt.InternalAPIKeyAuthenticator;
@@ -107,6 +111,7 @@ public class AuthFilter implements Filter {
 
     @Override
     public boolean handleRequest(RequestContext requestContext) {
+        populateRemoveAndProtectedAuthHeaders(requestContext);
         // Set API metadata for interceptors
         setInterceptorAPIMetadata(requestContext);
 
@@ -114,10 +119,6 @@ public class AuthFilter implements Filter {
         if (APIConstants.PROTOTYPED_LIFE_CYCLE_STATUS.equals(
                 requestContext.getMatchedAPI().getApiLifeCycleState()) &&
                 !requestContext.getMatchedAPI().isMockedApi()) {
-            // For prototyped endpoints, only the production endpoints could be available.
-            requestContext.addOrModifyHeaders(AdapterConstants.CLUSTER_HEADER,
-                    requestContext.getClusterHeader());
-            requestContext.getRemoveHeaders().remove(AdapterConstants.CLUSTER_HEADER);
             return true;
         }
 
@@ -249,4 +250,38 @@ public class AuthFilter implements Filter {
                 Objects.toString(requestContext.getMatchedAPI().getOrganizationId(), ""));
     }
 
+    private void populateRemoveAndProtectedAuthHeaders(RequestContext requestContext) {
+        requestContext.getMatchedResourcePaths().forEach(resourcePath -> {
+            JWTAuthenticationConfig jwtAuthenticationConfig =
+                    resourcePath.getAuthenticationConfig().getJwtAuthenticationConfig();
+            InternalKeyConfig internalKeyConfig =
+                    resourcePath.getAuthenticationConfig().getInternalKeyConfig();
+            List<APIKeyAuthenticationConfig> apiKeyAuthenticationConfig =
+                    resourcePath.getAuthenticationConfig().getApiKeyAuthenticationConfigs();
+            if (jwtAuthenticationConfig != null && !jwtAuthenticationConfig.isSendTokenToUpstream()) {
+                requestContext.getRemoveHeaders().add(jwtAuthenticationConfig.getHeader());
+            }
+            if (internalKeyConfig != null && !internalKeyConfig.isSendTokenToUpstream()) {
+                requestContext.getRemoveHeaders().add(internalKeyConfig.getHeader());
+            }
+            if (apiKeyAuthenticationConfig != null && !apiKeyAuthenticationConfig.isEmpty()) {
+                requestContext.getQueryParamsToRemove().addAll(apiKeyAuthenticationConfig.stream()
+                        .filter(apiKeyAuthenticationConfig1 -> !apiKeyAuthenticationConfig1.isSendTokenToUpstream()
+                                && Objects.equals(apiKeyAuthenticationConfig1.getIn(), "In"))
+                        .map(APIKeyAuthenticationConfig::getName).collect(Collectors.toList()));
+                List<String> apikeyHeadersToRemove = apiKeyAuthenticationConfig.stream()
+                        .filter(apiKeyAuthenticationConfig1 -> !apiKeyAuthenticationConfig1.isSendTokenToUpstream()
+                                && Objects.equals(apiKeyAuthenticationConfig1.getIn(), "Header"))
+                        .map(APIKeyAuthenticationConfig::getName).collect(Collectors.toList());
+                requestContext.getRemoveHeaders().addAll(apikeyHeadersToRemove);
+            }
+        });
+
+        // Remove mTLS certificate header
+        MutualSSLDto mtlsInfo = ConfigHolder.getInstance().getConfig().getMtlsInfo();
+        String certificateHeaderName = FilterUtils.getCertificateHeaderName();
+        if (!mtlsInfo.isEnableOutboundCertificateHeader()) {
+            requestContext.getRemoveHeaders().add(certificateHeaderName);
+        }
+    }
 }

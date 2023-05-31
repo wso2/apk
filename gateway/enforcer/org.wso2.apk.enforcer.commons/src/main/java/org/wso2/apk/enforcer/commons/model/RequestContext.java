@@ -63,9 +63,6 @@ public class RequestContext {
     private ArrayList<String> queryParamsToRemove;
     private boolean removeAllQueryParams;
     private Map<String, String> queryParamsToAdd;
-    // This is used to keep protected headers like authorization header. The protected headers will not be
-    // sent to the Traffic Manager when header based rate limiting is enabled.
-    private ArrayList<String> protectedHeaders;
 
     // Request Timestamp is required for analytics
     private long requestTimeStamp;
@@ -362,18 +359,6 @@ public class RequestContext {
     }
 
     /**
-     * If there is a set of headers needs to be removed from the throttle publishing event, those headers should
-     * be added to the arrayList here.
-     * <p>
-     * Ex: Authorization Header
-     *
-     * @return header names which are not supposed to be published to the traffic manager.
-     */
-    public ArrayList<String> getProtectedHeaders() {
-        return protectedHeaders;
-    }
-
-    /**
      * Set the client certificate for the request.
      */
     public void setClientCertificate(String clientCertificate) {
@@ -487,7 +472,6 @@ public class RequestContext {
             requestContext.queryParamsToRemove = new ArrayList<>();
             requestContext.removeAllQueryParams = false;
             requestContext.queryParamsToAdd = new HashMap<>();
-            requestContext.protectedHeaders = new ArrayList<>();
             String[] queryParts = this.requestPath.split("\\?");
             String queryParamsString = queryParts.length > 1 ? queryParts[1] : "";
 

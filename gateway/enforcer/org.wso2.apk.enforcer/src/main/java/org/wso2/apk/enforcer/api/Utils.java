@@ -32,7 +32,6 @@ import org.wso2.apk.enforcer.commons.model.PolicyConfig;
 import org.wso2.apk.enforcer.commons.model.RequestContext;
 import org.wso2.apk.enforcer.commons.model.ResourceConfig;
 import org.wso2.apk.enforcer.commons.model.RetryConfig;
-import org.wso2.apk.enforcer.config.ConfigHolder;
 import org.wso2.apk.enforcer.constants.AdapterConstants;
 
 import java.util.ArrayList;
@@ -150,7 +149,7 @@ public class Utils {
      *
      * @param requestContext requestContext
      */
-    public static void removeCommonAuthHeaders(RequestContext requestContext) {
+    public static void handleCommonHeaders(RequestContext requestContext) {
         // not allow clients to set cluster header manually
         requestContext.getRemoveHeaders().add(AdapterConstants.CLUSTER_HEADER);
     }
