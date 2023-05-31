@@ -1895,6 +1895,7 @@ public class APIClient {
         int pathparamCount = 1;
         if (target == "/*") {
             generatedPath = "\\1";
+            return generatedPath;
         } else {
             foreach int i in 0 ..< splitValues.length() {
                 if splitValues[i].trim().length() > 0 {
