@@ -108,6 +108,7 @@ spec:
                         type: boolean
                       serverURL:
                         description: ServerURL is the URL of the OPA server
+                        pattern: /^https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)$/
                         type: string
                     type: object
                   requestInterceptors:
@@ -256,6 +257,7 @@ spec:
                         type: boolean
                       serverURL:
                         description: ServerURL is the URL of the OPA server
+                        pattern: /^https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)$/
                         type: string
                     type: object
                   requestInterceptors:

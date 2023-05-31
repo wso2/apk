@@ -82,6 +82,7 @@ type CORSPolicy struct {
 // OPAPolicy holds OPA policy information
 type OPAPolicy struct {
 	// ServerURL is the URL of the OPA server
+	// +kubebuilder:validation:Pattern=`/^https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)$/`
 	ServerURL string `json:"serverURL,omitempty"`
 
 	// Policy is the policy name of the OPA policy

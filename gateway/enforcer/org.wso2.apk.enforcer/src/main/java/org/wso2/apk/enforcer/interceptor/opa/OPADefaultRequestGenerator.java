@@ -108,9 +108,8 @@ public class OPADefaultRequestGenerator implements OPARequestGenerator {
                 if (rule.isEmpty()) {
                     JSONObject result = (JSONObject) response.get(OPAConstants.OPA_RESPONSE_RESULT_KEY);
                     return result.getBoolean(OPAConstants.OPA_RESPONSE_DEFAULT_RULE);
-                } else {
-                    return response.getBoolean(OPAConstants.OPA_RESPONSE_RESULT_KEY);
                 }
+                return response.getBoolean(OPAConstants.OPA_RESPONSE_RESULT_KEY);
             } catch (JSONException e) {
                 log.error("Error parsing OPA JSON response, the field \"result\" not found or rule is not a " +
                                 "Boolean, response: {} {} {}", opaResponse,
