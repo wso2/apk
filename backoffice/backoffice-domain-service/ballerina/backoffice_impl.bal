@@ -411,13 +411,307 @@ isolated function getThumbnail(string apiId) returns http:Response|NotFoundError
             Resource|NotFoundError|commons:APKError thumbnail = db_getResourceByResourceCategory(apiId, thumbnailCategoryId);
             if thumbnail is Resource {
                 http:Response outResponse = new;
-                outResponse.setBinaryPayload(thumbnail.resourceBinaryValue, thumbnail.dataType);
+                outResponse.setBinaryPayload(<byte[]>thumbnail.resourceBinaryValue, thumbnail.dataType);
                 return outResponse;
             } else {
                 return thumbnail;
             }
         }
         return thumbnailCategoryId;
+    } else {
+        return getApi;
+    }
+}
+
+isolated function createDocument(string apiId, Document documentPayload) returns Document|commons:APKError {
+    API|commons:APKError getApi = check db_getAPI(apiId);
+    if getApi is API {
+        int|commons:APKError documentCategoryId = db_getResourceCategoryIdByCategoryType(RESOURCE_TYPE_DOCUMENT);
+        if documentCategoryId is int {
+            Resource documentResource = {
+                resourceUUID: "",
+                apiUuid: apiId,
+                resourceCategoryId: documentCategoryId,
+                dataType: "",
+                resourceContent: "",
+                resourceBinaryValue: []
+            };
+            string resourceUUID = uuid:createType1AsString();
+            documentResource.resourceUUID = resourceUUID;
+            Resource|commons:APKError addedDocResource = db_addResource(documentResource);
+            if addedDocResource is Resource {
+                // Add document metaData
+                string documentUUID = uuid:createType1AsString();
+                DocumentMetaData documentMetaData = {
+                    documentId: documentUUID,
+                    resourceId: addedDocResource.resourceUUID,
+                    name: documentPayload.name,
+                    summary: documentPayload.summary,
+                    sourceType: documentPayload.sourceType,
+                    sourceUrl: documentPayload.sourceUrl,
+                    fileName: documentPayload.fileName,
+                    documentType: documentPayload.documentType,
+                    otherTypeName: documentPayload.otherTypeName,
+                    visibility: documentPayload.visibility,
+                    inlineContent: documentPayload.inlineContent
+                };
+                DocumentMetaData|commons:APKError addedDocMetaData = db_addDocumentMetaData(documentMetaData, apiId);
+                if addedDocMetaData is DocumentMetaData {
+                    Document document = {
+                        documentId: addedDocMetaData.documentId,
+                        name: addedDocMetaData.name,
+                        summary: addedDocMetaData.summary,
+                        sourceType: addedDocMetaData.sourceType,
+                        sourceUrl: addedDocMetaData.sourceUrl,
+                        fileName: addedDocMetaData.fileName,
+                        documentType: addedDocMetaData.documentType,
+                        otherTypeName: addedDocMetaData.otherTypeName,
+                        visibility: addedDocMetaData.visibility,
+                        inlineContent: addedDocMetaData.inlineContent
+                    };
+                    return document;
+                } else {
+                    return addedDocMetaData;
+                }
+            } else {
+                return addedDocResource;
+            }
+        } else {
+            return documentCategoryId;
+        }
+    } else {
+        return getApi;
+    }
+}
+
+isolated function UpdateDocumentMetaData(string apiId, string documentId, Document documentPayload) returns Document|NotFoundError|commons:APKError|error {
+    API|commons:APKError getApi = check db_getAPI(apiId);
+    if getApi is API {
+        DocumentMetaData|NotFoundError|commons:APKError getDocumentMetaData = db_getDocumentByDocumentId(documentId, apiId);
+        if getDocumentMetaData is DocumentMetaData {
+            DocumentMetaData documentMetaData = {
+                documentId: documentId,
+                name: documentPayload.name,
+                summary: documentPayload.summary,
+                sourceType: documentPayload.sourceType,
+                sourceUrl: documentPayload.sourceUrl,
+                fileName: documentPayload.fileName,
+                documentType: documentPayload.documentType,
+                otherTypeName: documentPayload.otherTypeName,
+                visibility: documentPayload.visibility,
+                inlineContent: documentPayload.inlineContent
+            };
+            DocumentMetaData|commons:APKError updatedDocMetaData = db_updateDocumentMetaData(documentMetaData, apiId);
+            if updatedDocMetaData is DocumentMetaData {
+                // Convert documentMetadata object to Document object
+                Document document = {
+                    documentId: updatedDocMetaData.documentId,
+                    name: updatedDocMetaData.name,
+                    summary: updatedDocMetaData.summary,
+                    sourceType: updatedDocMetaData.sourceType,
+                    sourceUrl: updatedDocMetaData.sourceUrl,
+                    fileName: updatedDocMetaData.fileName,
+                    documentType: updatedDocMetaData.documentType,
+                    otherTypeName: updatedDocMetaData.otherTypeName,
+                    visibility: updatedDocMetaData.visibility,
+                    inlineContent: updatedDocMetaData.inlineContent
+                };
+                return document;
+            } else {
+                return updatedDocMetaData;
+            }
+        } else {
+            return getDocumentMetaData;
+        }
+    } else {
+        return getApi;
+    }
+}
+
+isolated function addDocumentContent(string apiId, string documentId, http:Request message) returns Document|NotFoundError|commons:APKError|error {
+    API|commons:APKError getApi = check db_getAPI(apiId);
+    if getApi is API {
+        DocumentMetaData|NotFoundError|commons:APKError getDocumentMetaData = db_getDocumentByDocumentId(documentId, apiId);
+        if getDocumentMetaData is DocumentMetaData {
+            // Convert documentMetadata object to Document object
+            Document document = {
+                documentId: getDocumentMetaData.documentId,
+                name: getDocumentMetaData.name,
+                summary: getDocumentMetaData.summary,
+                sourceType: getDocumentMetaData.sourceType,
+                sourceUrl: getDocumentMetaData.sourceUrl,
+                fileName: getDocumentMetaData.fileName,
+                documentType: getDocumentMetaData.documentType,
+                otherTypeName: getDocumentMetaData.otherTypeName,
+                visibility: getDocumentMetaData.visibility,
+                inlineContent: getDocumentMetaData.inlineContent
+            };
+            byte[]|() fileContent = ();
+            string baseType = mime:TEXT_PLAIN;
+            string inlineContent = "";
+            mime:Entity[]|http:ClientError payLoadParts = message.getBodyParts();
+            if payLoadParts is mime:Entity[] {
+                foreach mime:Entity payLoadPart in payLoadParts {
+                    mime:ContentDisposition contentDisposition = payLoadPart.getContentDisposition();
+                    baseType = payLoadPart.getContentType();
+                    if mime:APPLICATION_XML == baseType || mime:TEXT_XML == baseType {
+                        var payload = payLoadPart.getXml();
+                        if payload is xml {
+                            inlineContent = payload.toString();
+                            fileContent = check payLoadPart.getByteArray();
+                        } else {
+                            log:printError("Error in parsing XML data", 'error = payload);
+                            return e909631(payload, "XML");
+                        }
+                    } else if mime:APPLICATION_JSON == baseType {
+                        var payload = payLoadPart.getJson();
+                        if payload is json {
+                            inlineContent = payload.toJsonString();
+                            fileContent = check payLoadPart.getByteArray();
+                        } else {
+                            log:printError("Error in parsing JSON data", 'error = payload);
+                            return e909631(payload, "JSON");
+                        }
+                    } else if mime:TEXT_PLAIN == baseType {
+                        var payload = payLoadPart.getText();
+                        if payload is string {
+                            inlineContent = payload;
+                            fileContent = payload.toBytes();
+                        } else {
+                            log:printError("Error in parsing text data", 'error = payload);
+                            return e909631(payload, "text");
+                        }
+                    } else if mime:APPLICATION_PDF == baseType {
+                        fileContent = check payLoadPart.getByteArray();
+                        inlineContent = contentDisposition.fileName;
+                    } else {
+                        baseType = mime:TEXT_PLAIN;
+                        inlineContent = check payLoadPart.getText();
+                        fileContent = inlineContent.toBytes();
+                    }
+                }
+            }
+            int|commons:APKError documentCategoryId = db_getResourceCategoryIdByCategoryType(RESOURCE_TYPE_DOCUMENT);
+            if documentCategoryId is int {
+                string|commons:APKError resourceId = db_getResourceIdByDocumentId(documentId);
+                if resourceId is string {
+                    Resource documentResource = {
+                        resourceUUID: resourceId,
+                        apiUuid: apiId,
+                        resourceCategoryId: documentCategoryId,
+                        dataType: baseType,
+                        resourceContent: inlineContent,
+                        resourceBinaryValue: fileContent
+                    };
+                    Resource|commons:APKError updatedDcoumentResource = db_updateResource(documentResource);
+                    if updatedDcoumentResource is Resource {
+                        return document;
+                    } else {
+                        return updatedDcoumentResource;
+                    }
+                } else {
+                    return resourceId;
+                }
+            } else {
+                return documentCategoryId;
+            }
+        } else {
+            return getDocumentMetaData;
+        }
+    } else {
+        return getApi;
+    }
+}
+
+isolated function getDocumentMetaData(string apiId, string documentId) returns Document|NotFoundError|commons:APKError {
+    API|commons:APKError getApi = check db_getAPI(apiId);
+    if getApi is API {
+        DocumentMetaData|NotFoundError|commons:APKError getDocumentMetaData = db_getDocumentByDocumentId(documentId, apiId);
+        if getDocumentMetaData is DocumentMetaData {
+            // Convert documentMetadata object to Document object
+            Document document = {
+                documentId: getDocumentMetaData.documentId,
+                name: getDocumentMetaData.name,
+                summary: getDocumentMetaData.summary,
+                sourceType: getDocumentMetaData.sourceType,
+                sourceUrl: getDocumentMetaData.sourceUrl,
+                fileName: getDocumentMetaData.fileName,
+                documentType: getDocumentMetaData.documentType,
+                otherTypeName: getDocumentMetaData.otherTypeName,
+                visibility: getDocumentMetaData.visibility,
+                inlineContent: getDocumentMetaData.inlineContent
+            };
+            return document;
+        } else {
+            return getDocumentMetaData;
+        }
+    } else {
+        return getApi;
+    }
+}
+
+isolated function getDocumentContent(string apiId, string documentId) returns http:Response|NotFoundError|commons:APKError {
+    API|commons:APKError getApi = check db_getAPI(apiId);
+    if getApi is API {
+        DocumentMetaData|NotFoundError|commons:APKError getDocumentMetaData = db_getDocumentByDocumentId(documentId, apiId);
+        if getDocumentMetaData is DocumentMetaData {
+            Resource|commons:APKError getDocumentResource = db_getResourceByResourceId(<string>getDocumentMetaData.resourceId);
+            if getDocumentResource is Resource {
+                    http:Response outResponse = new;
+                    outResponse.setBinaryPayload(<byte[]>getDocumentResource.resourceBinaryValue, getDocumentResource.dataType);
+                    return outResponse;
+            } else {
+                return getDocumentResource;
+            }
+        } else {
+            return getDocumentMetaData;
+        }
+    } else {
+        return getApi;
+    }
+}
+
+isolated function getDocumentList(string apiId, int 'limit, int offset) returns DocumentList|commons:APKError {
+    API|commons:APKError getApi = check db_getAPI(apiId);
+    if getApi is API {
+        Document[]|commons:APKError documents = db_getDocuments(apiId);
+        if documents is Document[] {
+            Document[] limitSet = [];
+            if documents.length() > offset {
+                foreach int i in offset ... (documents.length() - 1) {
+                    if limitSet.length() < 'limit {
+                        limitSet.push(documents[i]);
+                    }
+                }
+            }
+            DocumentList documentList = {count: limitSet.length(), list: limitSet, pagination: {total: documents.length(), 'limit: 'limit, offset: offset}};
+            return documentList;
+        } else {
+            return documents;
+        }
+    } else {
+        return getApi;
+    }
+}
+
+isolated function deleteDocument(string apiId, string documentId) returns http:Ok|NotFoundError|commons:APKError {
+    API|commons:APKError getApi = check db_getAPI(apiId);
+    if getApi is API {
+        DocumentMetaData|NotFoundError|commons:APKError getDocumentMetaData = db_getDocumentByDocumentId(documentId, apiId);
+        if getDocumentMetaData is DocumentMetaData {
+            string|commons:APKError deletedDocMetaData = db_deleteDocumentMetaData(documentId, apiId);
+            string|commons:APKError deletedDocResource = db_deleteResource(<string>getDocumentMetaData.resourceId);
+            if deletedDocMetaData is commons:APKError {
+                return deletedDocMetaData;
+            }
+            if deletedDocResource is commons:APKError {
+                return deletedDocResource;
+            }
+            http:Ok okResponse = {body: "Document deleted successfully"};
+            return okResponse;
+        } else {
+            return getDocumentMetaData;
+        }
     } else {
         return getApi;
     }

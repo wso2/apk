@@ -119,7 +119,7 @@ isolated function getAPIDefinitionDAO(string apiId) returns APIDefinition|NotFou
     }
 }
 
-isolated function db_getResourceCategoryIdByCategoryType(string resourceType) returns int|commons:APKError {
+isolated function getResourceCategoryIdByCategoryTypeDAO(string resourceType) returns int|commons:APKError {
     postgresql:Client | error db_Client  = getConnection();
     if db_Client is error {
         string message = "Error while retrieving connection";
@@ -139,7 +139,7 @@ isolated function db_getResourceCategoryIdByCategoryType(string resourceType) re
     }
 }
 
-isolated function db_getResourceByResourceCategory(string apiId, int resourceCategoryId) returns Resource|NotFoundError|commons:APKError {
+isolated function getResourceByResourceCategoryDAO(string apiId, int resourceCategoryId) returns Resource|NotFoundError|commons:APKError {
     postgresql:Client | error db_Client  = getConnection();
     if db_Client is error {
         string message = "Error while retrieving connection";
@@ -159,6 +159,83 @@ isolated function db_getResourceByResourceCategory(string apiId, int resourceCat
         } else {
             log:printError(result.toString());
             string message = "Internal Error while retrieving resource";
+            return error(message, result, message = message, description = message, code = 909001, statusCode = 500);
+        }
+    }
+}
+
+isolated function getDocumentByDocumentIdDAO(string documentId, string apiId) returns DocumentMetaData|NotFoundError|commons:APKError {
+    postgresql:Client|error db_Client = getConnection();
+    if db_Client is error {
+        string message = "Error while retrieving connection";
+        return error(message, db_Client, message = message, description = message, code = 909000, statusCode = 500);
+    } else {
+        sql:ParameterizedQuery GET_DOCUMENT_Prefix = `SELECT UUID AS documentId, RESOURCE_UUID AS resourceId, NAME AS name, SUMMARY AS summary,
+        TYPE AS documentType, OTHER_TYPE_NAME AS otherTypeName, SOURCE_URL AS sourceUrl,
+        SOURCE_TYPE AS sourceType FROM API_DOC_META_DATA where UUID = `;
+        sql:ParameterizedQuery values = `${documentId}`;
+        sql:ParameterizedQuery sqlQuery = sql:queryConcat(GET_DOCUMENT_Prefix, values);
+        DocumentMetaData|sql:Error result = db_Client->queryRow(sqlQuery);
+        if result is sql:NoRowsError {
+            log:printDebug(result.toString());
+            NotFoundError nfe = {body: {code: 90915, message: "Document Not Found for provided Document ID"}};
+            return nfe;
+        } else if result is DocumentMetaData {
+            return result;
+        } else {
+            log:printError(result.toString());
+            string message = "Internal Error while retrieving Document";
+            return error(message, result, message = message, description = message, code = 909001, statusCode = 500);
+        }
+    }
+}
+
+isolated function getDocumentsDAO(string apiId) returns Document[]|commons:APKError {
+    postgresql:Client|error db_Client = getConnection();
+    if db_Client is error {
+        string message = "Error while retrieving connection";
+        return error(message, db_Client, message = message, description = message, code = 909000, statusCode = 500);
+    } else {
+        do {
+            sql:ParameterizedQuery GET_DOCUMENTS_Query = `SELECT UUID AS documentId, NAME AS name, SUMMARY AS summary,
+        TYPE AS documentType, OTHER_TYPE_NAME AS otherTypeName, SOURCE_URL AS sourceUrl,
+        SOURCE_TYPE AS sourceType FROM API_DOC_META_DATA where API_UUID = ${apiId}`;
+            stream<Document, sql:Error?> documentStream = db_Client->query(GET_DOCUMENTS_Query);
+            Document[]|sql:Error documents = from Document document in documentStream
+                select document;
+            sql:Error?? close = documentStream.close();
+            if documents is sql:Error {
+                log:printError(documents.toString());
+                string message = "Internal Error while retrieving Document List";
+                return error(message, documents, message = message, description = message, code = 909001, statusCode = 500);
+            } else if close is sql:Error {
+                log:printError(close.toString());
+                string message = "Internal Error while retrieving Document List";
+                return error(message, close, message = message, description = message, code = 909001, statusCode = 500);
+            } else {
+                return documents;
+            }
+        }
+    }
+}
+
+isolated function getResourceByResourceIdDAO(string resourceId) returns Resource|commons:APKError {
+    postgresql:Client|error db_Client = getConnection();
+    if db_Client is error {
+        string message = "Error while retrieving connection";
+        return error(message, db_Client, message = message, description = message, code = 909000, statusCode = 500);
+    } else {
+        sql:ParameterizedQuery GET_RESOURCE_Prefix = `SELECT UUID AS resourceUUID, API_UUID AS apiUuid, RESOURCE_CATEGORY_ID AS resourceCategoryId, DATA_TYPE AS dataType,
+        RESOURCE_CONTENT AS resourceContent,  RESOURCE_BINARY_VALUE AS resourceBinaryValue  
+        FROM API_RESOURCES where UUID = `;
+        sql:ParameterizedQuery values = `${resourceId}`;
+        sql:ParameterizedQuery sqlQuery = sql:queryConcat(GET_RESOURCE_Prefix, values);
+        Resource|sql:Error result = db_Client->queryRow(sqlQuery);
+        if result is Resource {
+            return result;
+        } else {
+            log:printError(result.toString());
+            string message = "Internal Error while retrieving resource category";
             return error(message, result, message = message, description = message, code = 909001, statusCode = 500);
         }
     }

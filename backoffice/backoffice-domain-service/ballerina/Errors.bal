@@ -272,3 +272,30 @@ public isolated function e909628(error e) returns commons:APKError {
         description = "Error while getting resource category data into Database"
     ); 
 }
+
+public isolated function e909629(error e) returns commons:APKError {
+    return error commons:APKError( "Error while getting the document from Database", e,
+        code = 909626,
+        message = "Error while getting the document from Database",
+        statusCode = 400,
+        description = "Error while getting the document from Database"
+    ); 
+}
+
+public isolated function e909630(error e) returns commons:APKError {
+    return error commons:APKError( "Internal Error occured while retrieving Documents", e,
+        code = 909607,
+        message = "Internal Error occured while retrieving Documents",
+        statusCode = 500,
+        description = "Internal Error occured while retrieving Documents"
+    ); 
+}
+
+public isolated function e909631(error e, string contentType) returns commons:APKError {
+    return error commons:APKError("Error in parsing " + contentType + " XML data", e,
+        code = 909607,
+        message = "Error in parsing " + contentType + " XML data",
+        statusCode = 500,
+        description = "Error in parsing " + contentType + " XML data"
+    ); 
+}

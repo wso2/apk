@@ -93,8 +93,9 @@ isolated service /api/devportal on ep0 {
     # http:NotModified (Not Modified. Empty body because the client has already the latest version of the requested resource.)
     # NotFoundError (Not Found. The specified resource does not exist.)
     # NotAcceptableError (Not Acceptable. The requested media type is not supported.)
-    // resource function get apis/[string apiId]/documents(@http:Header string? 'x\-wso2\-tenant, @http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0) returns DocumentList|http:NotModified|NotFoundError|NotAcceptableError {
-    // }
+    resource function get apis/[string apiId]/documents(@http:Header string? 'x\-wso2\-tenant, @http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0) returns DocumentList|http:NotModified|NotFoundError|NotAcceptableError|commons:APKError {
+        return getDocumentList(apiId, 'limit, offset);
+    }
     # Get a Document of an API
     #
     # + apiId - **API ID** consisting of the **UUID** of the API. 
@@ -106,8 +107,9 @@ isolated service /api/devportal on ep0 {
     # http:NotModified (Not Modified. Empty body because the client has already the latest version of the requested resource.)
     # NotFoundError (Not Found. The specified resource does not exist.)
     # NotAcceptableError (Not Acceptable. The requested media type is not supported.)
-    // resource function get apis/[string apiId]/documents/[string documentId](@http:Header string? 'x\-wso2\-tenant, @http:Header string? 'if\-none\-match) returns Document|http:NotModified|NotFoundError|NotAcceptableError {
-    // }
+    resource function get apis/[string apiId]/documents/[string documentId](@http:Header string? 'x\-wso2\-tenant, @http:Header string? 'if\-none\-match) returns Document|http:NotModified|NotFoundError|NotAcceptableError|commons:APKError {
+        return getDocumentMetaData(apiId, documentId);
+    }
     # Get the Content of an API Document
     #
     # + apiId - **API ID** consisting of the **UUID** of the API. 
@@ -120,8 +122,9 @@ isolated service /api/devportal on ep0 {
     # http:NotModified (Not Modified. Empty body because the client has already the latest version of the requested resource.)
     # NotFoundError (Not Found. The specified resource does not exist.)
     # NotAcceptableError (Not Acceptable. The requested media type is not supported.)
-    // resource function get apis/[string apiId]/documents/[string documentId]/content(@http:Header string? 'x\-wso2\-tenant, @http:Header string? 'if\-none\-match) returns http:Ok|http:SeeOther|http:NotModified|NotFoundError|NotAcceptableError {
-    // }
+    resource function get apis/[string apiId]/documents/[string documentId]/content(@http:Header string? 'x\-wso2\-tenant, @http:Header string? 'if\-none\-match) returns http:Response|http:Ok|http:SeeOther|http:NotModified|NotFoundError|NotAcceptableError|commons:APKError {
+        return getDocumentContent(apiId, documentId);
+    }
     # Get Thumbnail Image
     #
     # + apiId - **API ID** consisting of the **UUID** of the API. 

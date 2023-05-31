@@ -3312,7 +3312,7 @@ components:
         name:
           type: string
           example: CalculatorDoc
-        type:
+        documentType:
           type: string
           example: HOWTO
           enum:

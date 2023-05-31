@@ -2349,7 +2349,7 @@ components:
           minLength: 1
           type: string
           example: PizzaShackDoc
-        type:
+        documentType:
           type: string
           example: HOWTO
           enum:

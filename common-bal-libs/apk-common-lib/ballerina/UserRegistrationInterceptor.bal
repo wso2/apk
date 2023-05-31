@@ -57,7 +57,6 @@ public isolated service class UserRegistrationInterceptor {
     isolated function RegisterUser(UserContext userContext) returns string|APKError {
         string|APKError|() userId = self.retrieveUserFromIDPClaim(userContext.username);
         if userId is string {
-             log:printDebug("User already in the DB " + userId);
             return userId;
         } else if userId is APKError {
                 APKError apkError = error("Error while registering user", userId, code = 900900, description = "Internal Server Error.", statusCode = 500, message = "Internal Server Error.");
