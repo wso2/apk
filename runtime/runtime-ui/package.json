@@ -1,0 +1,32 @@
+{
+  "name": "abc-language",
+  "displayName": "Abc language",
+  "description": "abc lnauage support",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.78.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [{
+      "id": "abc",
+      "aliases": ["Abc", "abc"],
+      "extensions": [".abc"],
+      "configuration": "./language-configuration.json",
+      "inherits": "yaml"
+    }],
+    "grammars": [{
+      "language": "abc",
+      "scopeName": "source.api.config",
+      "path": "./syntaxes/api.config.tmLanguage.json"
+    }],
+    "snippets": [
+      {
+        "language": "abc",
+        "path": "./config-snippets.json"
+      }
+    ]
+  }
+}
