@@ -310,6 +310,56 @@ router.get('/admin/organizations/:organizationId', async function (req, res, nex
     }
 });
 
+router.get('/am/admin/key-managers', async function (req, res, next) {
+    const accessToken = req.cookies.access_token;
+
+    const instance = axios.create({
+        httpsAgent: new https.Agent({
+            rejectUnauthorized: false
+        })
+    });
+    const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
+        'Host': 'api.am.wso2.com'
+    };
+    try {
+        const response = await instance.get(`${Settings.app.rest_api}/key-managers`, {
+            headers: headers
+        });
+        const data = response.data;
+        res.status(200).json(data);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+router.delete('/am/admin/key-managers/:keyManagerId', async function (req, res, next) {
+    const keyManagerId = req.params.keyManagerId;
+    const accessToken = req.cookies.access_token;
+
+    const instance = axios.create({
+        httpsAgent: new https.Agent({
+            rejectUnauthorized: false
+        })
+    });
+    const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
+        'Host': 'api.am.wso2.com'
+    };
+
+    try {
+        const response = await instance.delete(`${Settings.app.rest_api}/key-managers/${keyManagerId}`, {
+            headers: headers
+        });
+        res.status(200).json({ message: "Successfully deleted" });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ code: error.code, error: error.message });
+    }
+});
 
 
 module.exports = router;

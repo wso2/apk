@@ -14,6 +14,7 @@ const SamplePage = Loadable(lazy(() => import('pages/sample/SamplePage')));
 const ApplicationRatePlans = Loadable(lazy(() => import('pages/ApplicationRatePlans/ListApplicationRatePlans')));
 const APICategories = Loadable(lazy(() => import('pages/APICategories/ListAPICategories')));
 const OrganizationsPage = Loadable(lazy(() => import('pages/Organizations/ListOrganizations')));
+const KeyManagers = Loadable(lazy(() => import('pages/KeyManagers/ListKeyManagers')));
 
 // ==============================|| MAIN ROUTING ||============================== //
 export default function MainRoutes() {
@@ -30,6 +31,7 @@ export default function MainRoutes() {
                 {/* <Route path="gateways" element={<SamplePage />} /> */}
                 <Route path="api-categories" element={<APICategories />} />
                 <Route path="organizations" element={<OrganizationsPage />} />
+                <Route path="key-managers" element={<KeyManagers />} />
                 {/* <Route path="key-managers" element={<SamplePage />} /> */}
                 <Route path="advanced" element={<SamplePage />} />
             </Route>
