@@ -90,7 +90,7 @@ public class JWTAuthenticator implements Authenticator {
         JWTAuthenticationConfig jwtAuthenticationConfig = requestContext.getMatchedResourcePaths().get(0)
                 .getAuthenticationConfig().getJwtAuthenticationConfig();
         if (jwtAuthenticationConfig != null) {
-            String authHeaderValue = retrieveAuthHeaderValue(requestContext, jwtAuthenticationConfig);
+            String authHeaderValue = jwtAuthenticationConfig.getHeader();
 
             // Check keyword bearer in header to prevent conflicts with custom authentication
             // (that maybe added with custom filters / interceptors / opa)
@@ -123,8 +123,8 @@ public class JWTAuthenticator implements Authenticator {
                 Utils.setTag(jwtAuthenticatorInfoSpan, APIConstants.LOG_TRACE_ID,
                         ThreadContext.get(APIConstants.LOG_TRACE_ID));
             }
-            String jwtToken = retrieveAuthHeaderValue(requestContext, requestContext.getMatchedResourcePaths().get(0)
-                    .getAuthenticationConfig().getJwtAuthenticationConfig());
+            String jwtToken = requestContext.getMatchedResourcePaths().get(0)
+                    .getAuthenticationConfig().getJwtAuthenticationConfig().getHeader();
             String[] splitToken = jwtToken.split("\\s");
             // Extract the token when it is sent as bearer token. i.e Authorization: Bearer <token>
             if (splitToken.length > 1) {
@@ -334,12 +334,6 @@ public class JWTAuthenticator implements Authenticator {
     @Override
     public String getName() {
         return "JWT";
-    }
-
-    private String retrieveAuthHeaderValue(RequestContext requestContext,
-                                           JWTAuthenticationConfig jwtAuthenticationConfig) {
-        Map<String, String> headers = requestContext.getHeaders();
-        return headers.get(jwtAuthenticationConfig.getHeader());
     }
 
     @Override
