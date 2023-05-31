@@ -240,7 +240,6 @@ public class APIConfig {
         private String apiLifeCycleState;
         private String organizationId;
         private String uuid;
-        private Map<String, List<String>> apiSecurity = new HashMap<>();
         private String tier;
         private boolean disableAuthentication;
         private boolean disableScopes;
@@ -304,11 +303,6 @@ public class APIConfig {
 
         public Builder envType(String envType) {
             this.envType = envType;
-            return this;
-        }
-
-        public Builder apiSecurity(Map<String, List<String>> apiSecurity) {
-            this.apiSecurity = apiSecurity;
             return this;
         }
 

@@ -78,7 +78,6 @@ public class RestAPI implements API {
         String name = api.getTitle();
         String version = api.getVersion();
         String apiType = api.getApiType();
-        Map<String, List<String>> securityScopesMap = new HashMap<>();
         List<ResourceConfig> resources = new ArrayList<>();
         Map<String, String> mtlsCertificateTiers = new HashMap<>();
         String mutualSSL = api.getMutualSSL();
@@ -123,9 +122,8 @@ public class RestAPI implements API {
         this.apiLifeCycleState = api.getApiLifeCycleState();
         this.apiConfig = new APIConfig.Builder(name).uuid(api.getId()).vhost(vhost).basePath(basePath).version(version)
                 .resources(resources).apiType(apiType).apiLifeCycleState(apiLifeCycleState).tier(api.getTier())
-                .apiSecurity(securityScopesMap).envType(api.getEnvType())
-                .disableAuthentication(api.getDisableAuthentications()).disableScopes(api.getDisableScopes())
-                .trustStore(trustStore).organizationId(api.getOrganizationId())
+                .envType(api.getEnvType()).disableAuthentication(api.getDisableAuthentications())
+                .disableScopes(api.getDisableScopes()).trustStore(trustStore).organizationId(api.getOrganizationId())
                 .mtlsCertificateTiers(mtlsCertificateTiers).mutualSSL(mutualSSL).systemAPI(api.getSystemAPI())
                 .applicationSecurity(applicationSecurity).jwtConfigurationDto(jwtConfigurationDto).build();
 

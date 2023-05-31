@@ -574,18 +574,6 @@ public class FilterUtils {
         return clientIp;
     }
 
-//    public static String getAuthHeaderName(RequestContext requestContext) {
-//        AuthHeaderDto authHeader = ConfigHolder.getInstance().getConfig().getAuthHeader();
-//        String authHeaderName = requestContext.getMatchedAPI().getAuthHeader();
-//        if (StringUtils.isEmpty(authHeaderName)) {
-//            authHeaderName = authHeader.getAuthorizationHeader();
-//        }
-//        if (StringUtils.isEmpty(authHeaderName)) {
-//            authHeaderName = APIConstants.AUTHORIZATION_HEADER_DEFAULT;
-//        }
-//        return authHeaderName.toLowerCase();
-//    }
-
     public static String getCertificateHeaderName() {
         MutualSSLDto mtlsInfo = ConfigHolder.getInstance().getConfig().getMtlsInfo();
         String certificateHeaderName = mtlsInfo.getCertificateHeader();
