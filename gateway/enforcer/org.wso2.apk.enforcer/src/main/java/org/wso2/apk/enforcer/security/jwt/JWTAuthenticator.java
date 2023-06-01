@@ -39,8 +39,6 @@ import org.wso2.apk.enforcer.commons.model.JWTAuthenticationConfig;
 import org.wso2.apk.enforcer.commons.model.RequestContext;
 import org.wso2.apk.enforcer.commons.model.ResourceConfig;
 import org.wso2.apk.enforcer.config.ConfigHolder;
-import org.wso2.apk.enforcer.config.EnforcerConfig;
-import org.wso2.apk.enforcer.config.dto.ExtendedTokenIssuerDto;
 import org.wso2.apk.enforcer.constants.APIConstants;
 import org.wso2.apk.enforcer.constants.APISecurityConstants;
 import org.wso2.apk.enforcer.constants.GeneralErrorCodeConstants;
@@ -62,7 +60,6 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -90,7 +87,7 @@ public class JWTAuthenticator implements Authenticator {
         JWTAuthenticationConfig jwtAuthenticationConfig = requestContext.getMatchedResourcePaths().get(0)
                 .getAuthenticationConfig().getJwtAuthenticationConfig();
         if (jwtAuthenticationConfig != null) {
-            String authHeaderValue = jwtAuthenticationConfig.getHeader();
+            String authHeaderValue = retrieveAuthHeaderValue(requestContext, jwtAuthenticationConfig);
 
             // Check keyword bearer in header to prevent conflicts with custom authentication
             // (that maybe added with custom filters / interceptors / opa)
@@ -123,8 +120,8 @@ public class JWTAuthenticator implements Authenticator {
                 Utils.setTag(jwtAuthenticatorInfoSpan, APIConstants.LOG_TRACE_ID,
                         ThreadContext.get(APIConstants.LOG_TRACE_ID));
             }
-            String jwtToken = requestContext.getMatchedResourcePaths().get(0)
-                    .getAuthenticationConfig().getJwtAuthenticationConfig().getHeader();
+            String jwtToken = retrieveAuthHeaderValue(requestContext, requestContext.getMatchedResourcePaths().get(0)
+                    .getAuthenticationConfig().getJwtAuthenticationConfig());
             String[] splitToken = jwtToken.split("\\s");
             // Extract the token when it is sent as bearer token. i.e Authorization: Bearer <token>
             if (splitToken.length > 1) {
@@ -341,6 +338,11 @@ public class JWTAuthenticator implements Authenticator {
         return 10;
     }
 
+    private String retrieveAuthHeaderValue(RequestContext requestContext,
+                                           JWTAuthenticationConfig jwtAuthenticationConfig) {
+        Map<String, String> headers = requestContext.getHeaders();
+        return headers.get(jwtAuthenticationConfig.getHeader());
+    }
 
     /**
      * Validate scopes bound to the resource of the API being invoked against the scopes specified

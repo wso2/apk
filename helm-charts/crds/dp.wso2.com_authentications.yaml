@@ -86,7 +86,7 @@ spec:
                               description: JWTAuth JWT Authentication scheme details
                               properties:
                                 header:
-                                  default: Authorization
+                                  default: authorization
                                   description: Header is the header name used to pass
                                     the JWT token
                                   type: string
@@ -98,7 +98,7 @@ spec:
                                 scheme details
                               properties:
                                 header:
-                                  default: Internal-Key
+                                  default: internal-key
                                   description: Header is the header name used to pass
                                     the Test Console Key
                                   type: string
@@ -162,7 +162,7 @@ spec:
                               description: JWTAuth JWT Authentication scheme details
                               properties:
                                 header:
-                                  default: Authorization
+                                  default: authorization
                                   description: Header is the header name used to pass
                                     the JWT token
                                   type: string
@@ -174,7 +174,7 @@ spec:
                                 scheme details
                               properties:
                                 header:
-                                  default: Internal-Key
+                                  default: internal-key
                                   description: Header is the header name used to pass
                                     the Test Console Key
                                   type: string

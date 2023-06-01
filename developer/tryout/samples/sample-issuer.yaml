@@ -1,0 +1,19 @@
+apiVersion: dp.wso2.com/v1alpha1
+kind: JWTIssuer
+metadata:
+  name: testkey-idp
+spec:
+  consumerKeyClaim: azp
+  issuer: https://prod.gw.wso2.com/testkey
+  name: TestKey-idp
+  organization: 01edb285-6304-1b20-a090-4d02067ed56e
+  scopesClaim: scope
+  signatureValidation:
+    certificate:
+      secretRef:
+        key: "mg.pem"
+        name: "apk-test-wso2-apk-enforcer-keystore-secret"
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: default

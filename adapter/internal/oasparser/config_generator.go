@@ -20,6 +20,7 @@ package oasparser
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	clusterv3 "github.com/envoyproxy/go-control-plane/envoy/config/cluster/v3"
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
@@ -241,22 +242,26 @@ func castAPIAuthenticationsToEnforcerAPIAuthentications(authentication *model.Au
 	enforcerAuthentication.Disabled = authentication.Disabled
 	if authentication.JWT != nil {
 		enforcerAuthentication.Jwt = &api.JWT{
-			Header:              authentication.JWT.Header,
+			Header:              strings.ToLower(authentication.JWT.Header),
 			SendTokenToUpstream: authentication.JWT.SendTokenToUpstream,
 		}
 	}
 	var apiKeys []*api.APIKey
 	for _, apiKey := range authentication.APIKey {
+		name := apiKey.Name
+		if apiKey.In == "Header" {
+			name = strings.ToLower(name)
+		}
 		apiKeys = append(apiKeys, &api.APIKey{
 			In:                  apiKey.In,
-			Name:                apiKey.Name,
+			Name:                name,
 			SendTokenToUpstream: apiKey.SendTokenToUpstream,
 		})
 	}
 	enforcerAuthentication.Apikey = apiKeys
 	if authentication.TestConsoleKey != nil {
 		enforcerAuthentication.TestConsoleKey = &api.TestConsoleKey{
-			Header:              authentication.TestConsoleKey.Header,
+			Header:              strings.ToLower(authentication.TestConsoleKey.Header),
 			SendTokenToUpstream: authentication.TestConsoleKey.SendTokenToUpstream,
 		}
 	}

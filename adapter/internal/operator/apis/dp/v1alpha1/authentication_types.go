@@ -66,7 +66,7 @@ type APIAuth struct {
 type TestConsoleKeyAuth struct {
 	// Header is the header name used to pass the Test Console Key
 	//
-	// +kubebuilder:default:=Internal-Key
+	// +kubebuilder:default:=internal-key
 	Header              string `json:"header,omitempty"`
 	SendTokenToUpstream bool   `json:"sendTokenToUpstream,omitempty"`
 }
@@ -75,7 +75,7 @@ type TestConsoleKeyAuth struct {
 type JWTAuth struct {
 	// Header is the header name used to pass the JWT token
 	//
-	// +kubebuilder:default:=Authorization
+	// +kubebuilder:default:=authorization
 	Header              string `json:"header,omitempty"`
 	SendTokenToUpstream bool   `json:"sendTokenToUpstream,omitempty"`
 }

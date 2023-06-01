@@ -441,7 +441,7 @@ func concatAuthSchemes(schemeUp *dpv1alpha1.Authentication, schemeDown *dpv1alph
 func getSecurity(authScheme *dpv1alpha1.Authentication, scopes []string) *Authentication {
 	auth := &Authentication{Disabled: false,
 		JWT:            &JWT{Header: constants.AuthorizationHeader},
-		TestConsoleKey: &TestConsoleKey{Header: constants.AuthorizationHeader},
+		TestConsoleKey: &TestConsoleKey{Header: constants.TestConsoleKeyHeader},
 	}
 	//todo(amali) jwt disable apikey enable handle
 	// todo(amali) handle disabled auth
