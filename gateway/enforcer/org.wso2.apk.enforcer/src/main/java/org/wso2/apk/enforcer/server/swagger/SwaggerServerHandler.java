@@ -3,8 +3,12 @@ package org.wso2.apk.enforcer.server.swagger;
 import io.grpc.netty.shaded.io.netty.buffer.Unpooled;
 import io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext;
 import io.grpc.netty.shaded.io.netty.channel.ChannelInboundHandlerAdapter;
+import io.grpc.netty.shaded.io.netty.channel.SimpleChannelInboundHandler;
 import io.grpc.netty.shaded.io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.grpc.netty.shaded.io.netty.handler.codec.http.FullHttpMessage;
 import io.grpc.netty.shaded.io.netty.handler.codec.http.FullHttpResponse;
+import io.grpc.netty.shaded.io.netty.handler.codec.http.HttpObject;
+import io.grpc.netty.shaded.io.netty.handler.codec.http.HttpRequest;
 import io.grpc.netty.shaded.io.netty.handler.codec.http.HttpResponseStatus;
 import io.grpc.netty.shaded.io.netty.handler.codec.http.HttpVersion;
 import io.grpc.netty.shaded.io.netty.util.CharsetUtil;
@@ -18,22 +22,23 @@ import org.wso2.apk.enforcer.models.ResponsePayload;
 import org.wso2.apk.enforcer.subscription.SubscriptionDataHolder;
 import org.wso2.apk.enforcer.subscription.SubscriptionDataStore;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SwaggerServerHandler extends ChannelInboundHandlerAdapter {
+public class SwaggerServerHandler extends SimpleChannelInboundHandler<HttpObject> {
 
-    final SubscriptionDataStore dataStore = SubscriptionDataHolder.getInstance().getTenantSubscriptionStore();
+//    final SubscriptionDataStore dataStore = SubscriptionDataHolder.getInstance().getTenantSubscriptionStore();
     private final static APIFactory apiFactory = APIFactory.getInstance();
 
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        FullHttpRequest request;
+    public void channelRead0(ChannelHandlerContext ctx, HttpObject msg) throws Exception {
+        HttpRequest request;
         ResponsePayload responsePayload;
 
-        if(msg instanceof FullHttpRequest) {
-            request = (FullHttpRequest) msg;
+        if(msg instanceof HttpRequest) {
+            request = (HttpRequest) msg;
         } else {
             String error = AdminConstants.ErrorMessages.INTERNAL_SERVER_ERROR;
             responsePayload = new ResponsePayload();
@@ -43,27 +48,20 @@ public class SwaggerServerHandler extends ChannelInboundHandlerAdapter {
             buildAndSendResponse(ctx, responsePayload);
             return;
         }
-        // Check request uri and invoke correct handler
-        String[] uriSections = request.uri().split("\\?");
-        String[] params = null;
-        String baseURI = uriSections[0];
-        if (uriSections.length > 1) {
-            params = uriSections[1].split("&");
-        }
+
+        String [] params = request.uri().split("/");
         boolean isSwagger = Arrays.stream(params).anyMatch(param -> {
             if(APIDefinitionConstants.SWAGGER_DEFINITION.equalsIgnoreCase(param)) {
                 return true;
             }
             return false;
         });
-        System.out.println("API Base Path: " + params[0]);
+        final String basePath = "/" + params[1] + "/" + params[2];
         if(isSwagger){
             // load the corresponding swagger definition from the API name
-            byte[] apiDefinition = apiFactory.getAPIDefinition(params[0], params[1], params[2]);
-            System.out.println("API Base Path: " + params[0]);
-            System.out.println("API Definition: " + new String(apiDefinition));
-            Map<String, byte[]> map = new HashMap<>();
-            map.put("swagger.json", apiDefinition);
+            byte[] apiDefinition = apiFactory.getAPIDefinition(basePath, params[2], params[3]);
+            Map<String,String> map = new HashMap<>();
+            map.put("swagger.json", new String(apiDefinition, StandardCharsets.UTF_8));
             responsePayload = APIDefinitionUtils.buildResponsePayload(map, HttpResponseStatus.OK, false);
             buildAndSendResponse(ctx, responsePayload);
         }
@@ -81,9 +79,5 @@ public class SwaggerServerHandler extends ChannelInboundHandlerAdapter {
         httpResponse.headers().set(HTTP.CONTENT_TYPE, HttpConstants.APPLICATION_JSON);
         httpResponse.headers().set(HTTP.CONTENT_LEN, httpResponse.content().readableBytes());
         ctx.writeAndFlush(httpResponse);
-    }
-
-    private void getSwaggerDefinition() {
-
     }
 }

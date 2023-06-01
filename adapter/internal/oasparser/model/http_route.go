@@ -72,6 +72,27 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 		ratelimitPolicy = concatRateLimitPolicies(*outputRatelimitPolicy, nil)
 	}
 
+	// var endpoints []Endpoint
+	// endpoint := &Endpoint{
+	// 	Host:    "localhost",
+	// 	Port:    8084,
+	// 	URLType: "https",
+	// }
+	// path := swagger.xWso2Basepath + "/swagger.json"
+	// endpoints = append(endpoints, *endpoint)
+	// swaggerResource := &Resource{
+	// 	path: path,
+	// 	methods: []*Operation{{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodGet),
+	// 		disableSecurity: true, security: nil, RateLimitPolicy: nil}},
+	// 	pathMatchType: gwapiv1b1.PathMatchExact,
+	// 	iD:            uuid.New().String(),
+	// 	endpoints: &EndpointCluster{
+	// 		Endpoints: endpoints,
+	// 	},
+	// }
+	// resources = append(resources, swaggerResource)
+	// fmt.Println("swaggerResource", swaggerResource)
+
 	for _, rule := range httpRoute.Spec.Rules {
 		var endPoints []Endpoint
 		var policies = OperationPolicies{}
@@ -247,7 +268,6 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 		}
 		for _, match := range rule.Matches {
 			resourcePath := *match.Path.Value
-			fmt.Println("resourcePath::", resourcePath)
 			resource := &Resource{path: resourcePath,
 				methods: getAllowedOperations(match.Method, policies, apiAuth,
 					parseRateLimitPolicyToInternal(resourceRatelimitPolicy), scopes),
@@ -263,39 +283,6 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 		}
 	}
 	swagger.xWso2Cors = getCorsConfigFromAPIPolicy(apiPolicy)
-
-	var endpoints []Endpoint
-	endpoint := &Endpoint{
-		Host:    "localhost",
-		Port:    9099,
-		URLType: "https",
-	}
-	endpoints = append(endpoints, *endpoint)
-	swggerResource := &Resource{
-		path: "/(.*)?swagger.json",
-		methods: []*Operation{{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodGet),
-			disableSecurity: true, security: nil, RateLimitPolicy: nil},
-			{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodPost),
-				disableSecurity: true, security: nil, RateLimitPolicy: nil},
-			{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodDelete),
-				disableSecurity: true, security: nil, RateLimitPolicy: nil},
-			{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodPatch),
-				disableSecurity: true, security: nil, RateLimitPolicy: nil},
-			{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodPut),
-				disableSecurity: true, security: nil, RateLimitPolicy: nil},
-			{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodHead),
-				disableSecurity: true, security: nil, RateLimitPolicy: nil},
-			{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodOptions),
-				disableSecurity: true, security: nil, RateLimitPolicy: nil}},
-		pathMatchType: gwapiv1b1.PathMatchRegularExpression,
-		iD:            uuid.New().String(),
-		endpoints: &EndpointCluster{
-			Endpoints: endpoints,
-		},
-	}
-	resources = append(resources, swggerResource)
-
-	fmt.Println(swggerResource)
 
 	swagger.RateLimitPolicy = parseRateLimitPolicyToInternal(ratelimitPolicy)
 	swagger.resources = resources

@@ -85,8 +85,7 @@ public class RestServer {
                     .handler(new LoggingHandler(LogLevel.INFO))
                     .childHandler(new SwaggerServerInitializer(sslCtx));
             Channel swaggerChannel = swaggerServer.bind(8084).sync().channel();
-            swaggerChannel.closeFuture().sync();
-            logger.info("API Definition endpoint started Listening in port : " + 8085);
+            logger.info("API Definition endpoint started Listening in port : " + 8084);
 
             if (ConfigHolder.getInstance().getConfig().getRestServer().isEnable()) {
                 ServerBootstrap adminServer = new ServerBootstrap();
@@ -102,6 +101,7 @@ public class RestServer {
                 adminChannel.closeFuture().sync();
             }
 
+            swaggerChannel.closeFuture().sync();
             // Wait until server socket is closed
             tokenChannel.closeFuture().sync();
 

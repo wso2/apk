@@ -19,15 +19,12 @@ public class SwaggerServerInitializer extends ChannelInitializer<SocketChannel> 
     @Override
     public void initChannel(SocketChannel ch) {
         ChannelPipeline p = ch.pipeline();
-        System.out.println("SwaggerServerInitializer initChannel");
         if (sslCtx != null) {
             p.addLast(sslCtx.newHandler(ch.alloc()));
         }
         p.addLast(new HttpServerCodec());
         p.addLast(new HttpServerExpectContinueHandler());
         p.addLast(new HttpObjectAggregator(1048576));
-        p.addLast(new HttpRequestEncoder());
         p.addLast(new SwaggerServerHandler());
-        System.out.println("SwaggerServerInitializer initChannel2");
     }
 }

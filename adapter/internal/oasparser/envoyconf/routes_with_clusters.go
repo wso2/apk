@@ -114,7 +114,26 @@ func CreateRoutesWithClusters(adapterInternalAPI model.AdapterInternalAPI, inter
 	// Maintain a clusterName-EndpointCluster mapping to prevent duplicate
 	// creation of clusters.
 	processedEndpoints := map[string]model.EndpointCluster{}
-	fmt.Println("Is System API::: ", adapterInternalAPI.IsSystemAPI)
+
+	routeP := CreateAPIDefinitionRoute(adapterInternalAPI.GetXWso2Basepath(), vHost)
+	routes = append(routes, routeP)
+	var endpointForAPIDefinitions []model.Endpoint
+	endpoint := &model.Endpoint{
+		Host:    "localhost",
+		Port:    8084,
+		URLType: "https",
+	}
+	endpointForAPIDefinitions = append(endpointForAPIDefinitions, *endpoint)
+	endpointCluster := model.EndpointCluster{
+		Endpoints: endpointForAPIDefinitions,
+	}
+
+	cluster, address, err := processEndpoints("api_definition_cluster", &endpointCluster, timeout, "")
+	if err != nil {
+		logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(2239, apiTitle, apiVersion, apiDefinitionPath, err.Error()))
+	}
+	clusters = append(clusters, cluster)
+	endpoints = append(endpoints, address...)
 
 	for _, resource := range adapterInternalAPI.GetResources() {
 		var clusterName string
@@ -122,18 +141,6 @@ func CreateRoutesWithClusters(adapterInternalAPI model.AdapterInternalAPI, inter
 		endpoint := resource.GetEndpoints()
 		basePath := strings.TrimSuffix(endpoint.Endpoints[0].Basepath, "/")
 		existingClusterName := getExistingClusterName(*endpoint, processedEndpoints)
-
-		if !adapterInternalAPI.IsSystemAPI {
-			fmt.Println("Resource Path: ", resourcePath)
-		}
-
-		if !adapterInternalAPI.IsSystemAPI {
-			fmt.Println("Endpoint: ", endpoint)
-		}
-
-		if !adapterInternalAPI.IsSystemAPI {
-			fmt.Println("Base Path: ", basePath)
-		}
 
 		if existingClusterName == "" {
 			clusterName = getClusterName(endpoint.EndpointPrefix, organizationID, vHost, adapterInternalAPI.GetTitle(), apiVersion, resource.GetID())
@@ -153,15 +160,13 @@ func CreateRoutesWithClusters(adapterInternalAPI model.AdapterInternalAPI, inter
 			interceptorCerts, vHost, organizationID, apiRequestInterceptor, apiResponseInterceptor, resource)
 		clusters = append(clusters, clustersI...)
 		endpoints = append(endpoints, endpointsI...)
-		routeP, err := createRoutes(genRouteCreateParams(&adapterInternalAPI, resource, vHost, basePath, clusterName, *operationalReqInterceptors, *operationalRespInterceptorVal, organizationID, false))
+		routeP, err := createRoutes(genRouteCreateParams(&adapterInternalAPI, resource, vHost, basePath, clusterName, *operationalReqInterceptors, *operationalRespInterceptorVal, organizationID,
+			false))
 		if err != nil {
 			logger.LoggerXds.ErrorC(logging.GetErrorByCode(2231, adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), resource.GetPath(), err.Error()))
 			return nil, nil, nil, fmt.Errorf("error while creating routes. %v", err)
 		}
 		routes = append(routes, routeP...)
-		if resourcePath == "/(.*)?swagger.json" {
-			fmt.Println("Route: ", routeP)
-		}
 	}
 
 	return routes, clusters, endpoints, nil
@@ -685,27 +690,24 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 	// to validate the key type component in the token.
 	contextExtensions[clusterNameContextExtension] = clusterName
 
-	var extAuthPerFilterConfig extAuthService.ExtAuthzPerRoute
-	var extAuthzFilter any.Any
-
-	if !strings.EqualFold(swaggerRoutePath, resource.GetPath()) {
-		extAuthPerFilterConfig.Override = &extAuthService.ExtAuthzPerRoute_CheckSettings{
+	extAuthPerFilterConfig := extAuthService.ExtAuthzPerRoute{
+		Override: &extAuthService.ExtAuthzPerRoute_CheckSettings{
 			CheckSettings: &extAuthService.CheckSettings{
 				ContextExtensions: contextExtensions,
 				// negation is performing to match the envoy config name (disable_request_body_buffering)
 				DisableRequestBodyBuffering: !params.passRequestPayloadToEnforcer,
 			},
-		}
-	} else {
-		extAuthPerFilterConfig.Override = &extAuthService.ExtAuthzPerRoute_Disabled{
-			Disabled: true,
-		}
+		},
 	}
+
 	b := proto.NewBuffer(nil)
 	b.SetDeterministic(true)
 	_ = b.Marshal(&extAuthPerFilterConfig)
-	extAuthzFilter.TypeUrl = extAuthzPerRouteName
-	extAuthzFilter.Value = b.Bytes()
+
+	extAuthzFilter := &any.Any{
+		TypeUrl: extAuthzPerRouteName,
+		Value:   b.Bytes(),
+	}
 
 	var luaPerFilterConfig lua.LuaPerRoute
 	if len(requestInterceptor) < 1 && len(responseInterceptor) < 1 {
@@ -715,19 +717,19 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 		if logConf.WireLogs.Enable {
 
 			templateString := `
-local utils = require 'home.wso2.interceptor.lib.utils'
-local wire_log_config = {
-	log_body_enabled = {{ .LogConfig.LogBodyEnabled }},
-	log_headers_enabled = {{ .LogConfig.LogHeadersEnabled }},
-	log_trailers_enabled = {{ .LogConfig.LogTrailersEnabled }}
-}
-function envoy_on_request(request_handle)
-	utils.wire_log(request_handle, " >> request body >> ", " >> request headers >> ", " >> request trailers >> ", wire_log_config)
-end
-
-function envoy_on_response(response_handle)
-	utils.wire_log(response_handle, " << response body << ", " << response headers << ", " << response trailers << ", wire_log_config)
-end`
+ local utils = require 'home.wso2.interceptor.lib.utils'
+ local wire_log_config = {
+	 log_body_enabled = {{ .LogConfig.LogBodyEnabled }},
+	 log_headers_enabled = {{ .LogConfig.LogHeadersEnabled }},
+	 log_trailers_enabled = {{ .LogConfig.LogTrailersEnabled }}
+ }
+ function envoy_on_request(request_handle)
+	 utils.wire_log(request_handle, " >> request body >> ", " >> request headers >> ", " >> request trailers >> ", wire_log_config)
+ end
+ 
+ function envoy_on_response(response_handle)
+	 utils.wire_log(response_handle, " << response body << ", " << response headers << ", " << response trailers << ", wire_log_config)
+ end`
 			templateValues := WireLogValues{
 				LogConfig: config.GetWireLogConfig(),
 			}
@@ -777,19 +779,10 @@ end`
 
 	corsFilter, _ := anypb.New(corsPolicy)
 
-	var perRouteFilterConfigs map[string]*any.Any
-
-	if !strings.EqualFold(swaggerRoutePath, resource.GetPath()) {
-		perRouteFilterConfigs = map[string]*any.Any{
-			wellknown.HTTPExternalAuthorization: &extAuthzFilter,
-			LuaLocal:                            luaFilter,
-			wellknown.CORS:                      corsFilter,
-		}
-	} else {
-		perRouteFilterConfigs = map[string]*any.Any{
-			LuaLocal:       luaFilter,
-			wellknown.CORS: corsFilter,
-		}
+	perRouteFilterConfigs := map[string]*any.Any{
+		wellknown.HTTPExternalAuthorization: extAuthzFilter,
+		LuaLocal:                            luaFilter,
+		wellknown.CORS:                      corsFilter,
 	}
 
 	logger.LoggerOasparser.Debugf("adding route : %s for API : %s", resourcePath, title)
@@ -818,11 +811,7 @@ end`
 		}
 	}
 
-	fmt.Println("Resource: ", resource)
-	fmt.Println("Has Policy: ", resource.HasPolicies())
-
 	if resource != nil && resource.HasPolicies() {
-		fmt.Println("Resource has policies: ", resource)
 		logger.LoggerOasparser.Debug("Start creating routes for resource with policies")
 
 		// Policies are per operation (HTTP method). Therefore, create route per HTTP method.
@@ -975,7 +964,6 @@ end`
 
 		}
 	} else {
-		fmt.Println("Resource with no policy")
 		logger.LoggerOasparser.Debugf("Creating routes for resource : %s that has no policies", resourcePath)
 		// No policies defined for the resource. Therefore, create one route for all operations.
 		methodRegex := strings.Join(resourceMethods, "|")
@@ -987,11 +975,6 @@ end`
 		action := generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria)
 		rewritePath := generateRoutePathForReWrite(basePath, resourcePath, pathMatchType)
 		action.Route.RegexRewrite = generateRegexMatchAndSubstitute(rewritePath, endpointBasepath, resourcePath, pathMatchType)
-		// Add API details to the substitution string
-		if strings.Contains(routePath, "?swagger.json") {
-			action.Route.RegexRewrite.Substitution = params.xWSO2BasePath + "/" + vHost + "/" + action.Route.RegexRewrite.Substitution
-		}
-		fmt.Println("Action Regex: ", action.Route.RegexRewrite)
 
 		route := generateRouteConfig(xWso2Basepath, match, action, nil, decorator, perRouteFilterConfigs,
 			nil, nil, nil, nil) // general headers to add and remove are included in this methods
@@ -1110,6 +1093,82 @@ func CreateTokenRoute() *routev3.Route {
 
 	router = routev3.Route{
 		Name:      testKeyPath, //Categorize routes with same base path
+		Match:     match,
+		Action:    action,
+		Metadata:  nil,
+		Decorator: decorator,
+		TypedPerFilterConfig: map[string]*any.Any{
+			wellknown.HTTPExternalAuthorization: filter,
+		},
+	}
+	return &router
+}
+
+// CreateAPIDefinitionRoute generates a route for the jwt /testkey endpoint
+func CreateAPIDefinitionRoute(basePath string, vHost string) *routev3.Route {
+	path := basePath + apiDefinitionPath
+	rewritePath := basePath + "/" + vHost + apiDefinitionPath
+	// routePath := generateRoutePath(path, gwapiv1b1.PathMatchExact)
+
+	var (
+		router    routev3.Route
+		action    *routev3.Route_Route
+		match     *routev3.RouteMatch
+		decorator *routev3.Decorator
+	)
+
+	resourceMethods := []string{"GET"}
+	methodRegex := strings.Join(resourceMethods, "|")
+
+	match = &routev3.RouteMatch{
+		PathSpecifier: &routev3.RouteMatch_Path{
+			Path: path,
+		},
+		Headers: generateHTTPMethodMatcher(methodRegex, "api_definition_cluster"),
+	}
+
+	decorator = &routev3.Decorator{
+		Operation: path,
+	}
+
+	perFilterConfig := extAuthService.ExtAuthzPerRoute{
+		Override: &extAuthService.ExtAuthzPerRoute_Disabled{
+			Disabled: true,
+		},
+	}
+
+	b := proto.NewBuffer(nil)
+	b.SetDeterministic(true)
+	_ = b.Marshal(&perFilterConfig)
+	filter := &any.Any{
+		TypeUrl: extAuthzPerRouteName,
+		Value:   b.Bytes(),
+	}
+
+	directClusterSpecifier := &routev3.RouteAction_Cluster{
+		Cluster: "api_definition_cluster",
+	}
+
+	action = &routev3.Route_Route{
+		Route: &routev3.RouteAction{
+			HostRewriteSpecifier: &routev3.RouteAction_AutoHostRewrite{
+				AutoHostRewrite: &wrapperspb.BoolValue{
+					Value: true,
+				},
+			},
+			ClusterSpecifier: directClusterSpecifier,
+			PrefixRewrite:    rewritePath,
+			// RegexRewrite: &envoy_type_matcherv3.RegexMatchAndSubstitute{
+			// 	Pattern: &envoy_type_matcherv3.RegexMatcher{
+			// 		Regex: path,
+			// 	},
+			// 	Substitution: rewritePath,
+			// },
+		},
+	}
+
+	router = routev3.Route{
+		Name:      apiDefinitionPath,
 		Match:     match,
 		Action:    action,
 		Metadata:  nil,
@@ -1271,7 +1330,6 @@ func generateSubstitutionString(resourcePath string, pathMatchType gwapiv1b1.Pat
 	case gwapiv1b1.PathMatchRegularExpression:
 		resourceRegex = "\\1"
 	}
-	fmt.Println("resourceRegex: ", resourceRegex)
 	return resourceRegex
 }
 
