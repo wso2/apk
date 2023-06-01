@@ -12,33 +12,7 @@ The following should be installed in your dev machine.
 
 ## Setting up for debugging
 
-1. Create `enforcer-service.yaml` as follows and copy it to `helm-chart/templates/data-plane/gateway-components/gateway-runtime`.
-
-    ```yaml
-    {{ if or .Values.wso2.apk.dp.enabled .Values.wso2.apk.cp.enabled }}
-    apiVersion: v1
-    kind: Service
-    metadata:
-        name: {{ template "apk-helm.resource.prefix" . }}-enforcer-service
-        namespace : {{ .Release.Namespace }}
-    spec:
-    # label keys and values that must match in order to receive traffic for this service
-        selector:
-        {{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" .Values.wso2.apk.dp.gatewayRuntime.appName ) | indent 4}}
-        ports:
-        - name: endpoint1
-          protocol: TCP
-          port: 8081
-        - name: endpoint2
-          protocol: TCP
-          port: 9001
-        - name: debug
-          protocol: TCP
-          port: 5006
-    {{- end -}}
-    ```
-
-2. Make following changes to `helm-chart/templates/data-plane/gateway-components/gateway-runtime/gateway-runtime-deployment.yaml` file.
+1. Make following changes to `helm-chart/templates/data-plane/gateway-components/gateway-runtime/gateway-runtime-deployment.yaml` file.
 
     ```diff
     containers:
@@ -59,12 +33,12 @@ The following should be installed in your dev machine.
     +       value: -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5006 -Dhttpclient.hostnameVerifier=AllowAll -Xms512m -Xmx512m -XX:MaxRAMFraction=2
     ```
 
-3. Start WSO2 APK.
+2. Start WSO2 APK.
 
-4. Port forward the port 5006.
+3. Port forward the port 5006.
 
     ```bash
     kubectl port-forward <apk-gateway-runtime-deployment-pod-name> -n apk 5006:5006
     ```
 
-5. Start debugging from port 5006 in IntelliJ IDEA.
+4. Start debugging from port 5006 in IntelliJ IDEA.
