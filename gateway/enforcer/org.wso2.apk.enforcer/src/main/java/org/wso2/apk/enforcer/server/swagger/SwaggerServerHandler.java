@@ -65,6 +65,14 @@ public class SwaggerServerHandler extends SimpleChannelInboundHandler<HttpObject
             responsePayload = APIDefinitionUtils.buildResponsePayload(map, HttpResponseStatus.OK, false);
             buildAndSendResponse(ctx, responsePayload);
         }
+
+        // If the request is not for swagger definition, then send a bad request
+        String error = AdminConstants.ErrorMessages.BAD_REQUEST;
+        responsePayload = new ResponsePayload();
+        responsePayload.setError(true);
+        responsePayload.setStatus(HttpResponseStatus.BAD_REQUEST);
+        responsePayload.setContent(error);
+        buildAndSendResponse(ctx, responsePayload);
     }
 
     @Override
