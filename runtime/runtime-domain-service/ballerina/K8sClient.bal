@@ -35,9 +35,9 @@ final http:Client k8sApiServerEp = check initializeK8sClient();
 # + return - k8s http client
 public function initializeK8sClient() returns http:Client|error {
     http:Client k8sApiClient = check new ("https://" + runtimeConfiguration.k8sConfiguration.host,
-    auth = {
-        token: token
-    },
+        auth = {
+            token: token
+        },
         secureSocket = {
             cert: caCertPath
 

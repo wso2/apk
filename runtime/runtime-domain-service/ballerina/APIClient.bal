@@ -57,10 +57,10 @@ public class APIClient {
                             response.setHeader("Content-Type", APPLICATION_YAML_MEDIA_TYPE);
                             response.statusCode = 200;
                             return response;
-                        } else if convertedYaml is error{
+                        } else if convertedYaml is error {
                             log:printError("Error while converting json to yaml:" + convertedYaml.toString());
                             return e909040();
-                        }else{
+                        } else {
                             log:printError("Error while converting json to yaml,converted yaml is empty");
                             return e909040();
                         }
@@ -433,46 +433,11 @@ public class APIClient {
             if self.validateContextAndVersion(api.context, api.'version, organization) {
                 return e909012(api.context);
             }
-
             self.setDefaultOperationsIfNotExist(api);
             string uniqueId = getUniqueIdForAPI(api.name, api.'version, organization);
             model:APIArtifact apiArtifact = {uniqueId: uniqueId};
-            APIOperations[]? operations = api.operations;
-            if operations is APIOperations[] {
-                if operations.length() == 0 {
-                    return e909021();
-                }
-                // Validating operation policies.
-                commons:APKError|() apkError = self.validateOperationPolicies(api.apiPolicies, operations, organization);
-                if (apkError is commons:APKError) {
-                    return apkError;
-                }
-                // Validating rate limit.
-                commons:APKError|() invalidRateLimitError = self.validateRateLimit(api.apiRateLimit, operations);
-                if (invalidRateLimitError is commons:APKError) {
-                    return invalidRateLimitError;
-                }
-            } else {
-                return e909021();
-            }
-            record {}? endpointConfig = api.endpointConfig;
-            map<model:Endpoint|()> createdEndpoints = {};
-            if endpointConfig is record {} {
-                createdEndpoints = check self.createAndAddBackendServics(apiArtifact, api, endpointConfig, (), (), organization);
-            }
-            
-            string[]? authTypeNames = api.securityScheme;
-            if authTypeNames is string[] {
-                log:printDebug("Auth Types Names:"+ authTypeNames.toString());
-                self.populateAuthenticationMap(apiArtifact, api, authTypeNames, createdEndpoints, organization);
-            }
-
-            _ = check self.setHttpRoute(apiArtifact, api, createdEndpoints.hasKey(PRODUCTION_TYPE) ? createdEndpoints.get(PRODUCTION_TYPE) : (), uniqueId, PRODUCTION_TYPE, organization);
-            _ = check self.setHttpRoute(apiArtifact, api, createdEndpoints.hasKey(SANDBOX_TYPE) ? createdEndpoints.get(SANDBOX_TYPE) : (), uniqueId, SANDBOX_TYPE, organization);
-            json generatedSwagger = check self.retrieveGeneratedSwaggerDefinition(api, definition);
-            check self.retrieveGeneratedConfigmapForDefinition(apiArtifact, api, generatedSwagger, uniqueId, organization);
-            self.generateAndSetAPICRArtifact(apiArtifact, api, organization, userName);
-            self.generateAndSetPolicyCRArtifact(apiArtifact, api, organization);
+            APKConf apkConf = check fromAPIToAPKConf(api);
+            check self.generateK8sArtifacts(apiArtifact, apkConf, definition, organization, uniqueId, userName);
             self.generateAndSetRuntimeAPIArtifact(apiArtifact, api, (), organization, userName);
             model:API deployAPIToK8sResult = check self.deployAPIToK8s(apiArtifact, organization);
             string locationUrl = runtimeConfiguration.baseURl + "/apis/" + deployAPIToK8sResult.metadata.uid.toString();
@@ -486,9 +451,47 @@ public class APIClient {
             return e909022("Internal Error occured", e);
         }
     }
+    public isolated function generateK8sArtifacts(model:APIArtifact apiArtifact, APKConf apkConf, string? definition, commons:Organization organization, string uniqueId, string? userName) returns commons:APKError|error? {
+        APKOperation[]? operations = apkConf.operations;
+        if operations is APKOperation[] {
+            if operations.length() == 0 {
+                return e909021();
+            }
+            // Validating operation policies.
+            commons:APKError|() apkError = self.validateOperationPolicies(apkConf.apiPolicies, operations, organization);
+            if (apkError is commons:APKError) {
+                return apkError;
+            }
+            // Validating rate limit.
+            commons:APKError|() invalidRateLimitError = self.validateRateLimit(apkConf.apiRateLimit, operations);
+            if (invalidRateLimitError is commons:APKError) {
+                return invalidRateLimitError;
+            }
+        } else {
+            return e909021();
+        }
+        EndpointConfig? endpointConfig = apkConf.endpointConfig;
+        map<model:Endpoint|()> createdEndpoints = {};
+        if endpointConfig is EndpointConfig {
+            createdEndpoints = check self.createAndAddBackendServics(apiArtifact, apkConf, endpointConfig, (), (), organization);
+        }
 
-    isolated function validateOperationPolicies(APIOperationPolicies? apiPolicies, APIOperations[] operations, commons:Organization organization) returns commons:APKError|() {
-        foreach APIOperations operation in operations {
+        string[]? authTypeNames = apkConf.securityScheme;
+        if authTypeNames is string[] {
+            log:printDebug("Auth Types Names:" + authTypeNames.toString());
+            self.populateAuthenticationMap(apiArtifact, apkConf, authTypeNames, createdEndpoints, organization);
+        }
+
+        _ = check self.setHttpRoute(apiArtifact, apkConf, createdEndpoints.hasKey(PRODUCTION_TYPE) ? createdEndpoints.get(PRODUCTION_TYPE) : (), uniqueId, PRODUCTION_TYPE, organization);
+        _ = check self.setHttpRoute(apiArtifact, apkConf, createdEndpoints.hasKey(SANDBOX_TYPE) ? createdEndpoints.get(SANDBOX_TYPE) : (), uniqueId, SANDBOX_TYPE, organization);
+        json generatedSwagger = check self.retrieveGeneratedSwaggerDefinition(apkConf, definition);
+        check self.retrieveGeneratedConfigmapForDefinition(apiArtifact, apkConf, generatedSwagger, uniqueId, organization);
+        self.generateAndSetAPICRArtifact(apiArtifact, apkConf, organization, userName);
+        self.generateAndSetPolicyCRArtifact(apiArtifact, apkConf, organization);
+    }
+
+    isolated function validateOperationPolicies(APIOperationPolicies? apiPolicies, APKOperation[] operations, commons:Organization organization) returns commons:APKError|() {
+        foreach APKOperation operation in operations {
             APIOperationPolicies? operationPolicies = operation.operationPolicies;
             if (!self.isPolicyEmpty(operationPolicies)) {
                 if (self.isPolicyEmpty(apiPolicies)) {
@@ -578,11 +581,11 @@ public class APIClient {
         return ();
     }
 
-    isolated function validateRateLimit(APIRateLimit? apiRateLimit, APIOperations[] operations) returns commons:APKError|() {
+    isolated function validateRateLimit(APIRateLimit? apiRateLimit, APKOperation[] operations) returns commons:APKError|() {
         if (apiRateLimit == ()) {
             return ();
         } else {
-            foreach APIOperations operation in operations {
+            foreach APKOperation operation in operations {
                 APIRateLimit? operationRateLimit = operation.operationRateLimit;
                 if (operationRateLimit != ()) {
                     // Presence of both resource level and API level rate limits.
@@ -593,11 +596,11 @@ public class APIClient {
         return ();
     }
 
-    private isolated function generateAndSetRuntimeAPIArtifact(model:APIArtifact apiArtifact, API api, Service? serviceEntry, commons:Organization organization, string userName) {
+    private isolated function generateAndSetRuntimeAPIArtifact(model:APIArtifact apiArtifact, API api, Service? serviceEntry, commons:Organization organization, string? userName) {
 
         apiArtifact.runtimeAPI = self.generateRuntimeAPIArtifact(api, serviceEntry, organization, userName);
     }
-    public isolated function generateRuntimeAPIArtifact(API api, Service? serviceEntry, commons:Organization organization, string userName) returns model:RuntimeAPI {
+    public isolated function generateRuntimeAPIArtifact(API api, Service? serviceEntry, commons:Organization organization, string? userName) returns model:RuntimeAPI {
         model:RuntimeAPI runtimeAPI = {
             metadata: {
                 name: getUniqueIdForAPI(api.name, api.'version, organization),
@@ -636,10 +639,10 @@ public class APIClient {
                 response: runtimeAPIResponsePolicies
             };
         }
-        APIOperations[]? operations = api.operations;
-        if operations is APIOperations[] {
+        APKOperation[]? operations = api.operations;
+        if operations is APKOperation[] {
             model:Operations[] runtimeAPIOperations = [];
-            foreach APIOperations operation in operations {
+            foreach APKOperation operation in operations {
                 model:Operations runtimeAPIOperation = {
                     target: <string>operation.target,
                     verb: <string>operation.verb,
@@ -674,8 +677,8 @@ public class APIClient {
                     request: runtimeAPIRequestPolicies,
                     response: runtimeAPIResponsePolicies
                 };
-                record {|anydata...;|}? endpointConfig = api.endpointConfig;
-                if endpointConfig is record {} {
+                EndpointConfig? endpointConfig = api.endpointConfig;
+                if endpointConfig is EndpointConfig {
                     runtimeAPI.spec.endpointConfig = endpointConfig;
                 }
 
@@ -714,115 +717,53 @@ public class APIClient {
         return runtimeAPI;
     }
 
-    private isolated function createAndAddBackendServics(model:APIArtifact apiArtifact, API api, record {} endpointConfig, APIOperations? apiOperation, string? endpointType, commons:Organization organization) returns map<model:Endpoint>|commons:APKError|error {
+    private isolated function createAndAddBackendServics(model:APIArtifact apiArtifact, APKConf apkConf, EndpointConfig endpointConfig, APKOperation? apiOperation, string? endpointType, commons:Organization organization) returns map<model:Endpoint>|commons:APKError|error {
         map<model:Endpoint> endpointIdMap = {};
-        anydata|error sandboxEndpointConfig = trap endpointConfig.get("sandbox_endpoints");
-        anydata|error productionEndpointConfig = trap endpointConfig.get("production_endpoints");
+        Endpoint? productionEndpointConfig = endpointConfig.production;
+        Endpoint? sandboxEndpointConfig = endpointConfig.sandbox;
         if endpointType == () || (endpointType == SANDBOX_TYPE) {
-            if sandboxEndpointConfig is map<anydata> {
-                if sandboxEndpointConfig.hasKey("url") {
-                    anydata url = sandboxEndpointConfig.get("url");
-                    model:EndpointSecurity backendSecurity = check self.getBackendSecurity(endpointConfig, (), SANDBOX_TYPE);
-                    model:Backend backendService = check self.createBackendService(api, apiOperation, SANDBOX_TYPE, organization, <string>url, backendSecurity);
-                    if backendSecurity.enabled {
-                        self.setBackendSecurity(backendSecurity, backendService, (), (), endpointConfig, SANDBOX_TYPE);
-                    }
-                    if apiOperation == () {
-                        apiArtifact.sandboxEndpointAvailable = true;
-                        apiArtifact.sandboxUrl = <string?>url;
-                    }
-                    apiArtifact.backendServices[backendService.metadata.name] = (backendService);
-                    endpointIdMap[SANDBOX_TYPE] = {
-                        namespace: backendService.metadata.namespace,
-                        name: backendService.metadata.name,
-                        serviceEntry: false,
-                        url: <string?>url
-                    };
-                } else {
-                    return e909013();
+            if sandboxEndpointConfig is Endpoint {
+                anydata url = sandboxEndpointConfig.endpointURL;
+                model:EndpointSecurity backendSecurity = check getBackendSecurity(endpointConfig, (), SANDBOX_TYPE);
+                model:Backend backendService = check self.createBackendService(apiArtifact, apkConf, apiOperation, SANDBOX_TYPE, organization, sandboxEndpointConfig, backendSecurity);
+                if backendSecurity.enabled {
+                    self.setBackendSecurity(backendSecurity, backendService, (), (), endpointConfig, SANDBOX_TYPE);
                 }
+                if apiOperation == () {
+                    apiArtifact.sandboxEndpointAvailable = true;
+                    apiArtifact.sandboxUrl = <string?>url;
+                }
+                apiArtifact.backendServices[backendService.metadata.name] = (backendService);
+                endpointIdMap[SANDBOX_TYPE] = {
+                    namespace: backendService.metadata.namespace,
+                    name: backendService.metadata.name,
+                    serviceEntry: false,
+                    url: <string?>url
+                };
             }
         }
-        if endpointType == () || (endpointType == PRODUCTION_TYPE) {
-            if productionEndpointConfig is map<anydata> {
-                if productionEndpointConfig.hasKey("url") {
-                    anydata url = productionEndpointConfig.get("url");
-                    model:EndpointSecurity backendSecurity = check self.getBackendSecurity(endpointConfig, (), PRODUCTION_TYPE);
-                    model:Backend backendService = check self.createBackendService(api, apiOperation, PRODUCTION_TYPE, organization, <string>url, backendSecurity);
-                    if backendSecurity.enabled {
-                        self.setBackendSecurity(backendSecurity, backendService, (), (), endpointConfig, PRODUCTION_TYPE);
-                    }
-                    if apiOperation == () {
-                        apiArtifact.productionEndpointAvailable = true;
-                        apiArtifact.productionUrl = <string?>url;
-                    }
-                    apiArtifact.backendServices[backendService.metadata.name] = backendService;
-                    endpointIdMap[PRODUCTION_TYPE] = {
-                        namespace: backendService.metadata.namespace,
-                        name: backendService.metadata.name,
-                        serviceEntry: false,
-                        url: <string?>url
-                    };
-                } else {
-                    return e909014();
+        if (endpointType == () || endpointType == PRODUCTION_TYPE) {
+            if productionEndpointConfig is Endpoint {
+                anydata url = productionEndpointConfig.endpointURL;
+                model:EndpointSecurity backendSecurity = check getBackendSecurity(endpointConfig, (), PRODUCTION_TYPE);
+                model:Backend backendService = check self.createBackendService(apiArtifact, apkConf, apiOperation, PRODUCTION_TYPE, organization, productionEndpointConfig, backendSecurity);
+                if backendSecurity.enabled {
+                    self.setBackendSecurity(backendSecurity, backendService, (), (), endpointConfig, PRODUCTION_TYPE);
                 }
+                if apiOperation == () {
+                    apiArtifact.productionEndpointAvailable = true;
+                    apiArtifact.productionUrl = <string?>url;
+                }
+                apiArtifact.backendServices[backendService.metadata.name] = (backendService);
+                endpointIdMap[PRODUCTION_TYPE] = {
+                    namespace: backendService.metadata.namespace,
+                    name: backendService.metadata.name,
+                    serviceEntry: false,
+                    url: <string?>url
+                };
             }
         }
         return endpointIdMap;
-    }
-
-    private isolated function getBackendSecurity(record {}? endpointConfig, API_serviceInfo? serviceInfo, string endpointType) returns model:EndpointSecurity|commons:APKError|error {
-        model:EndpointSecurity endpointSecurity = {};
-        anydata|error endpointSecurityConfig = {};
-        if (endpointConfig is map<anydata>) {
-            endpointSecurityConfig = trap endpointConfig.get(ENDPOINT_SECURITY_FIELD);
-        } else if serviceInfo is API_serviceInfo {
-            endpointSecurityConfig = trap serviceInfo.endpoint_security;
-        }
-        if endpointSecurityConfig is map<anydata> {
-            anydata|error endpointSecurityEntry = trap endpointSecurityConfig.get(endpointType);
-            if endpointSecurityEntry is map<anydata> {
-                anydata|error endpointSecurityType = trap endpointSecurityEntry.get(ENDPOINT_SECURITY_TYPE);
-                anydata|error endpointSecurityEnabled = trap endpointSecurityEntry.get("enabled");
-                if endpointSecurityType is string && endpointSecurityEnabled is boolean {
-                    if endpointSecurityEnabled {
-                        if endpointSecurityType.toLowerAscii() == ENDPOINT_SECURITY_TYPE_BASIC {
-                            if endpointSecurityEntry.hasKey(ENDPOINT_SECURITY_SECRET_REFERENCE_NAME) {
-                                endpointSecurity = {
-                                    'type: ENDPOINT_SECURITY_TYPE_BASIC,
-                                    enabled: true,
-                                    secretRefName: <string>endpointSecurityEntry.get(ENDPOINT_SECURITY_SECRET_REFERENCE_NAME)
-                                };
-                            } else if endpointSecurityEntry.hasKey(ENDPOINT_SECURITY_GENERATED_SECRET_REFERENCE_NAME) {
-                                if endpointSecurityEntry.hasKey(ENDPOINT_SECURITY_USERNAME) && endpointSecurityEntry.hasKey(ENDPOINT_SECURITY_PASSWORD) {
-                                    endpointSecurity = {
-                                        'type: ENDPOINT_SECURITY_TYPE_BASIC,
-                                        enabled: true,
-                                        username: <string>endpointSecurityEntry.get(ENDPOINT_SECURITY_USERNAME),
-                                        password: <string>endpointSecurityEntry.get(ENDPOINT_SECURITY_PASSWORD),
-                                        generatedSecretRefName: <string>endpointSecurityEntry.get(ENDPOINT_SECURITY_GENERATED_SECRET_REFERENCE_NAME)
-                                    };
-                                } else {
-                                    return e909005("username or password");
-                                }
-                            } else {
-                                if endpointSecurityEntry.hasKey(ENDPOINT_SECURITY_USERNAME) && endpointSecurityEntry.hasKey(ENDPOINT_SECURITY_PASSWORD) {
-                                    endpointSecurity = {
-                                        'type: ENDPOINT_SECURITY_TYPE_BASIC,
-                                        enabled: true,
-                                        username: <string>endpointSecurityEntry.get(ENDPOINT_SECURITY_USERNAME),
-                                        password: <string>endpointSecurityEntry.get(ENDPOINT_SECURITY_PASSWORD)
-                                    };
-                                } else {
-                                    return e909005("username or password");
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return endpointSecurity;
     }
 
     private isolated function setBackendSecurity(model:EndpointSecurity backendSecurity, model:Backend? backendService, string? secretName, API_serviceInfo? serviceInfo,
@@ -871,7 +812,7 @@ public class APIClient {
         }
     }
 
-    isolated function getLabels(API api, commons:Organization organization) returns map<string> {
+    isolated function getLabels(APKConf api, commons:Organization organization) returns map<string> {
         string apiNameHash = crypto:hashSha1(api.name.toBytes()).toBase16();
         string apiVersionHash = crypto:hashSha1(api.'version.toBytes()).toBase16();
         string organizationHash = crypto:hashSha1(organization.uuid.toBytes()).toBase16();
@@ -940,15 +881,16 @@ public class APIClient {
                 return e909012(api.context);
             }
             self.setDefaultOperationsIfNotExist(api);
-            APIOperations[]? operations = api.operations;
-            if operations is APIOperations[] {
+            APKConf apkConf = check fromAPIToAPKConf(api);
+            APKOperation[]? operations = apkConf.operations;
+            if operations is APKOperation[] {
                 // Validating operation policies.
-                commons:APKError|() apkError = self.validateOperationPolicies(api.apiPolicies, operations, organization);
+                commons:APKError|() apkError = self.validateOperationPolicies(apkConf.apiPolicies, operations, organization);
                 if (apkError is commons:APKError) {
                     return apkError;
                 }
                 // Validating rate limit.
-                commons:APKError|() invalidRateLimitError = self.validateRateLimit(api.apiRateLimit, operations);
+                commons:APKError|() invalidRateLimitError = self.validateRateLimit(apkConf.apiRateLimit, operations);
                 if (invalidRateLimitError is commons:APKError) {
                     return invalidRateLimitError;
                 }
@@ -961,9 +903,10 @@ public class APIClient {
                 API_serviceInfo? serviceInfo = api.serviceInfo;
                 model:EndpointSecurity backendSecurity = {};
                 if serviceInfo is API_serviceInfo {
-                    backendSecurity = check self.getBackendSecurity(serviceInfo, (), PRODUCTION_TYPE);
+                    backendSecurity = check getBackendSecurity(serviceInfo, (), PRODUCTION_TYPE);
                 }
-                model:Backend backendService = check self.createBackendService(api, (), PRODUCTION_TYPE, organization, self.constructServiceURL(serviceRetrieved), backendSecurity);
+                Endpoint endpointConfig = {endpointURL: self.constructServiceURL(serviceRetrieved)};
+                model:Backend backendService = check self.createBackendService(apiArtifact, apkConf, (), PRODUCTION_TYPE, organization, endpointConfig, backendSecurity);
                 if backendSecurity.enabled {
                     self.setBackendSecurity(backendSecurity, backendService, (), serviceInfo, (), PRODUCTION_TYPE);
                 }
@@ -977,15 +920,15 @@ public class APIClient {
                 if authTypeNames is string[] {
                     map<model:Endpoint|()> createdEndpoints = {};
                     createdEndpoints[PRODUCTION_TYPE] = endpoint;
-                    log:printDebug("Auth Types Names:"+ authTypeNames.toString());
-                    self.populateAuthenticationMap(apiArtifact, api, authTypeNames, createdEndpoints, organization);
+                    log:printDebug("Auth Types Names:" + authTypeNames.toString());
+                    self.populateAuthenticationMap(apiArtifact, apkConf, authTypeNames, createdEndpoints, organization);
                 }
-                check self.setHttpRoute(apiArtifact, api, endpoint, uniqueId, PRODUCTION_TYPE, organization);
-                json generatedSwaggerDefinition = check self.retrieveGeneratedSwaggerDefinition(api, ());
-                check self.retrieveGeneratedConfigmapForDefinition(apiArtifact, api, generatedSwaggerDefinition, uniqueId, organization);
-                self.generateAndSetAPICRArtifact(apiArtifact, api, organization, userName);
-                self.generateAndSetPolicyCRArtifact(apiArtifact, api, organization);
-                self.generateAndSetK8sServiceMapping(apiArtifact, api, serviceRetrieved, getNameSpace(runtimeConfiguration.apiCreationNamespace), organization);
+                check self.setHttpRoute(apiArtifact, apkConf, endpoint, uniqueId, PRODUCTION_TYPE, organization);
+                json generatedSwaggerDefinition = check self.retrieveGeneratedSwaggerDefinition(apkConf, ());
+                check self.retrieveGeneratedConfigmapForDefinition(apiArtifact, apkConf, generatedSwaggerDefinition, uniqueId, organization);
+                self.generateAndSetAPICRArtifact(apiArtifact, apkConf, organization, userName);
+                self.generateAndSetPolicyCRArtifact(apiArtifact, apkConf, organization);
+                self.generateAndSetK8sServiceMapping(apiArtifact, apkConf, serviceRetrieved, getNameSpace(runtimeConfiguration.apiCreationNamespace), organization);
                 self.generateAndSetRuntimeAPIArtifact(apiArtifact, api, serviceRetrieved, organization, userName);
                 model:API deployAPIToK8sResult = check self.deployAPIToK8s(apiArtifact, organization);
                 string locationUrl = runtimeConfiguration.baseURl + "/apis/" + deployAPIToK8sResult.metadata.uid.toString();
@@ -1380,15 +1323,15 @@ public class APIClient {
             }
         };
 
-            http:Response updateK8sResult = check updateK8sSecret(uniqueSecretName, k8sSecret, nameSpace);
-            if updateK8sResult.statusCode == http:STATUS_OK {
-                log:printDebug("Updated K8s Secret Successfully" + k8sSecret.toString());
-            } else {
-                json responsePayLoad = check updateK8sResult.getJsonPayload();
-                model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
-                check self.handleK8sTimeout(statusResponse);
-            }
+        http:Response updateK8sResult = check updateK8sSecret(uniqueSecretName, k8sSecret, nameSpace);
+        if updateK8sResult.statusCode == http:STATUS_OK {
+            log:printDebug("Updated K8s Secret Successfully" + k8sSecret.toString());
+        } else {
+            json responsePayLoad = check updateK8sResult.getJsonPayload();
+            model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+            check self.handleK8sTimeout(statusResponse);
         }
+    }
 
     private isolated function deployAPIPolicyCRs(model:APIArtifact apiArtifact) returns error? {
         foreach model:APIPolicy apiPolicy in apiArtifact.apiPolicies {
@@ -1464,10 +1407,10 @@ public class APIClient {
         }
     }
 
-    private isolated function retrieveGeneratedConfigmapForDefinition(model:APIArtifact apiArtifact, API api, json generatedSwaggerDefinition, string uniqueId, commons:Organization organization) returns error? {
+    private isolated function retrieveGeneratedConfigmapForDefinition(model:APIArtifact apiArtifact, APKConf apkConf, json generatedSwaggerDefinition, string uniqueId, commons:Organization organization) returns error? {
         byte[]|javaio:IOException compressedContent = check commons:GzipUtil_compressGzipFile(generatedSwaggerDefinition.toJsonString().toBytes());
         if compressedContent is byte[] {
-            
+
             byte[] base64EncodedContent = check commons:EncoderUtil_encodeBase64(compressedContent);
             model:ConfigMap configMap = {
                 metadata: {
@@ -1475,7 +1418,7 @@ public class APIClient {
                     namespace: getNameSpace(runtimeConfiguration.apiCreationNamespace),
                     uid: (),
                     creationTimestamp: (),
-                    labels: self.getLabels(api, organization)
+                    labels: self.getLabels(apkConf, organization)
                 }
             };
             configMap.binaryData = {[CONFIGMAP_DEFINITION_KEY] : check string:fromBytes(base64EncodedContent)};
@@ -1503,40 +1446,41 @@ public class APIClient {
         }
     }
 
-    private isolated function generateAndSetPolicyCRArtifact(model:APIArtifact apiArtifact, API api, commons:Organization organization) {
-        if api.apiRateLimit != () {
-            model:RateLimitPolicy? rateLimitPolicyCR = self.generateRateLimitPolicyCR(api, api.apiRateLimit, apiArtifact.uniqueId, (), organization);
+    private isolated function generateAndSetPolicyCRArtifact(model:APIArtifact apiArtifact, APKConf apkConf, commons:Organization organization) {
+        if apkConf.apiRateLimit != () {
+            model:RateLimitPolicy? rateLimitPolicyCR = self.generateRateLimitPolicyCR(apkConf, apkConf.apiRateLimit, apiArtifact.uniqueId, (), organization);
             if rateLimitPolicyCR != () {
                 apiArtifact.rateLimitPolicies[rateLimitPolicyCR.metadata.name] = rateLimitPolicyCR;
             }
         }
-        if api.apiPolicies != () {
-            model:APIPolicy? apiPolicyCR = self.generateAPIPolicyAndBackendCR(apiArtifact, api, (), api.apiPolicies, organization, apiArtifact.uniqueId);
+        if apkConf.apiPolicies != () {
+            model:APIPolicy? apiPolicyCR = self.generateAPIPolicyAndBackendCR(apiArtifact, apkConf, (), apkConf.apiPolicies, organization, apiArtifact.uniqueId);
             if apiPolicyCR != () {
                 apiArtifact.apiPolicies[apiPolicyCR.metadata.name] = apiPolicyCR;
             }
         }
     }
 
-    private isolated function populateAuthenticationMap(model:APIArtifact apiArtifact, API api, string[] authTypeNames, 
-    map<model:Endpoint|()> createdEndpointMap, commons:Organization organization) {
+    private isolated function populateAuthenticationMap(model:APIArtifact apiArtifact, APKConf apkConf, string[] authTypeNames,
+            map<model:Endpoint|()> createdEndpointMap, commons:Organization organization) {
         map<model:Authentication> authenticationMap = {};
         model:AuthenticationExtenstionType[] authTypes = [];
         foreach string authTypeName in authTypeNames {
-            model:AuthenticationExtenstionType authType = {'type:authTypeName};
+            model:AuthenticationExtenstionType authType = {'type: authTypeName};
             authTypes.push(authType);
         }
-        log:printDebug("Auth Types:"+ authTypes.toString());
+        log:printDebug("Auth Types:" + authTypes.toString());
         string[] keys = createdEndpointMap.keys();
-        log:printDebug("createdEndpointMap.keys:"+ createdEndpointMap.keys().toString());
-        foreach string endpointType in keys{
-            string disableAuthenticationRefName = self.retrieveDisableAuthenticationRefName(api, endpointType, organization);
-            log:printDebug("disableAuthenticationRefName:"+ disableAuthenticationRefName);
+        log:printDebug("createdEndpointMap.keys:" + createdEndpointMap.keys().toString());
+        foreach string endpointType in keys {
+            string disableAuthenticationRefName = self.retrieveDisableAuthenticationRefName(apkConf, endpointType, organization);
+            log:printDebug("disableAuthenticationRefName:" + disableAuthenticationRefName);
             model:Authentication authentication = {
                 metadata: {
                     name: disableAuthenticationRefName,
                     namespace: currentNameSpace,
-                    labels: self.getLabels(api, organization)}, 
+                    labels: self.getLabels(apkConf, organization)
+                },
                 spec: {
                     override: {
                         'type: "ext",
@@ -1546,33 +1490,33 @@ public class APIClient {
                         }
                     },
                     targetRef: {
-                        group:  "gateway.networking.k8s.io",
-                        kind:  "Resource",
+                        group: "gateway.networking.k8s.io",
+                        kind: "Resource",
                         name: apiArtifact.uniqueId,
                         namespace: currentNameSpace
                     }
                 }
             };
-            log:printDebug("Authentication CR:"+ authentication.toString());
+            log:printDebug("Authentication CR:" + authentication.toString());
             authenticationMap[disableAuthenticationRefName] = authentication;
         }
-        log:printDebug("Authentication Map:"+ authenticationMap.toString());
+        log:printDebug("Authentication Map:" + authenticationMap.toString());
         apiArtifact.authenticationMap = authenticationMap;
     }
 
-    private isolated function generateAndSetAPICRArtifact(model:APIArtifact apiArtifact, API api, commons:Organization organization, string userName) {
+    private isolated function generateAndSetAPICRArtifact(model:APIArtifact apiArtifact, APKConf apkConf, commons:Organization organization, string? userName) {
         model:API k8sAPI = {
             metadata: {
                 name: apiArtifact.uniqueId,
                 namespace: getNameSpace(runtimeConfiguration.apiCreationNamespace),
-                labels: self.getLabels(api, organization)
+                labels: self.getLabels(apkConf, organization)
             },
             spec: {
-                apiDisplayName: api.name,
-                apiType: api.'type,
-                apiVersion: api.'version,
+                apiDisplayName: apkConf.name,
+                apiType: apkConf.'type,
+                apiVersion: apkConf.'version,
                 apiProvider: userName,
-                context: self.returnFullContext(api.context, api.'version),
+                context: self.returnFullContext(apkConf.context, apkConf.'version),
                 organization: organization.uuid
             }
         };
@@ -1598,8 +1542,8 @@ public class APIClient {
         if sandBoxHttpRoutes.length() > 0 {
             k8sAPI.spec.sandbox = [{httpRouteRefs: sandBoxHttpRoutes}];
         }
-        if api.id != () {
-            k8sAPI.metadata["annotations"] = {[API_UUID_ANNOTATION] : <string>api.id};
+        if apkConf.id != () {
+            k8sAPI.metadata["annotations"] = {[API_UUID_ANNOTATION] : <string>apkConf.id};
         }
         apiArtifact.api = k8sAPI;
     }
@@ -1608,16 +1552,16 @@ public class APIClient {
         return uniqueId + "-definition";
     }
 
-    private isolated function retrieveDisableAuthenticationRefName(API api, string 'type, commons:Organization organization) returns string {
-        return getUniqueIdForAPI(api.name, api.'version, organization) + "-" + 'type + "-authentication";
+    private isolated function retrieveDisableAuthenticationRefName(APKConf apkConf, string 'type, commons:Organization organization) returns string {
+        return getUniqueIdForAPI(apkConf.name, apkConf.'version, organization) + "-" + 'type + "-authentication";
     }
 
-    private isolated function setHttpRoute(model:APIArtifact apiArtifact, API api, model:Endpoint? endpoint, string uniqueId, string endpointType, commons:Organization organization) returns commons:APKError? {
-        APIOperations[] apiOperations = api.operations ?: [];
-        APIOperations[][] operationsArray = [];
+    private isolated function setHttpRoute(model:APIArtifact apiArtifact, APKConf apkConf, model:Endpoint? endpoint, string uniqueId, string endpointType, commons:Organization organization) returns commons:APKError? {
+        APKOperation[] apiOperations = apkConf.operations ?: [];
+        APKOperation[][] operationsArray = [];
         int row = 0;
         int column = 0;
-        foreach APIOperations item in apiOperations {
+        foreach APKOperation item in apiOperations {
             if column > 7 {
                 row = row + 1;
                 column = 0;
@@ -1625,14 +1569,14 @@ public class APIClient {
             operationsArray[row][column] = item;
             column = column + 1;
         }
-        foreach APIOperations[] item in operationsArray {
-            API clonedAPI = api.clone();
-            clonedAPI.operations = item.clone();
-            _ = check self.putHttpRouteForPartition(apiArtifact, clonedAPI, endpoint, uniqueId, endpointType, organization);
+        foreach APKOperation[] item in operationsArray {
+            APKConf clonedAPKConf = apkConf.clone();
+            clonedAPKConf.operations = item.clone();
+            _ = check self.putHttpRouteForPartition(apiArtifact, clonedAPKConf, endpoint, uniqueId, endpointType, organization);
         }
     }
-    private isolated function putHttpRouteForPartition(model:APIArtifact apiArtifact, API api, model:Endpoint? endpoint, string uniqueId, string endpointType, commons:Organization organization) returns commons:APKError? {
-        string httpRouteRefName = retrieveHttpRouteRefName(api, endpointType, organization);
+    private isolated function putHttpRouteForPartition(model:APIArtifact apiArtifact, APKConf apkConf, model:Endpoint? endpoint, string uniqueId, string endpointType, commons:Organization organization) returns commons:APKError? {
+        string httpRouteRefName = retrieveHttpRouteRefName(apkConf, endpointType, organization);
         model:Httproute httpRoute = {
             metadata:
                 {
@@ -1640,12 +1584,12 @@ public class APIClient {
                 namespace: getNameSpace(runtimeConfiguration.apiCreationNamespace),
                 uid: (),
                 creationTimestamp: (),
-                labels: self.getLabels(api, organization)
+                labels: self.getLabels(apkConf, organization)
             },
             spec: {
-                parentRefs: self.generateAndRetrieveParentRefs(api, uniqueId),
-                rules: check self.generateHttpRouteRules(apiArtifact, api, endpoint, endpointType, organization, httpRouteRefName),
-                hostnames: self.getHostNames(api, uniqueId, endpointType, organization)
+                parentRefs: self.generateAndRetrieveParentRefs(apkConf, uniqueId),
+                rules: check self.generateHttpRouteRules(apiArtifact, apkConf, endpoint, endpointType, organization, httpRouteRefName),
+                hostnames: self.getHostNames(apkConf, uniqueId, endpointType, organization)
             }
         };
         if endpointType == PRODUCTION_TYPE {
@@ -1656,7 +1600,7 @@ public class APIClient {
         return;
     }
 
-    private isolated function getHostNames(API api, string uniqueId, string endpointType, commons:Organization organization) returns string[] {
+    private isolated function getHostNames(APKConf apkConf, string uniqueId, string endpointType, commons:Organization organization) returns string[] {
         //todo: need to implement vhost feature
         Vhost[] vhosts = runtimeConfiguration.vhost;
         string[] hosts = [];
@@ -1671,7 +1615,7 @@ public class APIClient {
         return hosts;
     }
 
-    private isolated function generateAndRetrieveParentRefs(API api, string uniqueId) returns model:ParentReference[] {
+    private isolated function generateAndRetrieveParentRefs(APKConf apkConf, string uniqueId) returns model:ParentReference[] {
         string gatewayName = runtimeConfiguration.gatewayConfiguration.name;
         string listenerName = runtimeConfiguration.gatewayConfiguration.listenerName;
         model:ParentReference[] parentRefs = [];
@@ -1680,22 +1624,22 @@ public class APIClient {
         return parentRefs;
     }
 
-    private isolated function generateHttpRouteRules(model:APIArtifact apiArtifact, API api, model:Endpoint? endpoint, string endpointType, commons:Organization organization, string httpRouteRefName) returns model:HTTPRouteRule[]|commons:APKError {
+    private isolated function generateHttpRouteRules(model:APIArtifact apiArtifact, APKConf apkConf, model:Endpoint? endpoint, string endpointType, commons:Organization organization, string httpRouteRefName) returns model:HTTPRouteRule[]|commons:APKError {
         model:HTTPRouteRule[] httpRouteRules = [];
-        APIOperations[]? operations = api.operations;
-        if operations is APIOperations[] {
-            foreach APIOperations operation in operations {
-                model:HTTPRouteRule|() httpRouteRule = check self.generateHttpRouteRule(apiArtifact, api, endpoint, operation, endpointType, organization);
+        APKOperation[]? operations = apkConf.operations;
+        if operations is APKOperation[] {
+            foreach APKOperation operation in operations {
+                model:HTTPRouteRule|() httpRouteRule = check self.generateHttpRouteRule(apiArtifact, apkConf, endpoint, operation, endpointType, organization);
                 if httpRouteRule is model:HTTPRouteRule {
                     model:HTTPRouteFilter[]? filters = httpRouteRule.filters;
                     if filters is () {
                         filters = [];
                         httpRouteRule.filters = filters;
                     }
-                    string disableAuthenticationRefName = self.retrieveDisableAuthenticationRefName(api, endpointType, organization);
+                    string disableAuthenticationRefName = self.retrieveDisableAuthenticationRefName(apkConf, endpointType, organization);
                     if !(operation.authTypeEnabled ?: true) {
                         if !apiArtifact.authenticationMap.hasKey(disableAuthenticationRefName) {
-                            model:Authentication generateDisableAuthenticationCR = self.generateDisableAuthenticationCR(apiArtifact, api, endpointType, organization);
+                            model:Authentication generateDisableAuthenticationCR = self.generateDisableAuthenticationCR(apiArtifact, apkConf, endpointType, organization);
                             apiArtifact.authenticationMap[disableAuthenticationRefName] = generateDisableAuthenticationCR;
                         }
                         model:HTTPRouteFilter disableAuthenticationFilter = {'type: "ExtensionRef", extensionRef: {group: "dp.wso2.com", kind: "Authentication", name: disableAuthenticationRefName}};
@@ -1711,14 +1655,14 @@ public class APIClient {
                             if apiArtifact.scopes.hasKey(scope) {
                                 scopeCr = apiArtifact.scopes.get(scope);
                             } else {
-                                scopeCr = self.generateScopeCR(apiArtifact, api, organization, scope);
+                                scopeCr = self.generateScopeCR(apiArtifact, apkConf, organization, scope);
                             }
                             model:HTTPRouteFilter scopeFilter = {'type: "ExtensionRef", extensionRef: {group: "dp.wso2.com", kind: scopeCr.kind, name: scopeCr.metadata.name}};
                             (<model:HTTPRouteFilter[]>filters).push(scopeFilter);
                         }
                     }
                     if operation.operationRateLimit != () {
-                        model:RateLimitPolicy? rateLimitPolicyCR = self.generateRateLimitPolicyCR(api, operation.operationRateLimit, apiArtifact.uniqueId, operation, organization);
+                        model:RateLimitPolicy? rateLimitPolicyCR = self.generateRateLimitPolicyCR(apkConf, operation.operationRateLimit, apiArtifact.uniqueId, operation, organization);
                         if rateLimitPolicyCR != () {
                             apiArtifact.rateLimitPolicies[rateLimitPolicyCR.metadata.name] = rateLimitPolicyCR;
                             model:HTTPRouteFilter rateLimitPolicyFilter = {'type: "ExtensionRef", extensionRef: {group: "dp.wso2.com", kind: "RateLimitPolicy", name: rateLimitPolicyCR.metadata.name}};
@@ -1726,7 +1670,7 @@ public class APIClient {
                         }
                     }
                     if operation.operationPolicies != () {
-                        model:APIPolicy? apiPolicyCR = self.generateAPIPolicyAndBackendCR(apiArtifact, api, operation, operation.operationPolicies, organization, apiArtifact.uniqueId);
+                        model:APIPolicy? apiPolicyCR = self.generateAPIPolicyAndBackendCR(apiArtifact, apkConf, operation, operation.operationPolicies, organization, apiArtifact.uniqueId);
                         if apiPolicyCR != () {
                             apiArtifact.apiPolicies[apiPolicyCR.metadata.name] = apiPolicyCR;
                             model:HTTPRouteFilter apiPolicyFilter = {'type: "ExtensionRef", extensionRef: {group: "dp.wso2.com", kind: "APIPolicy", name: apiPolicyCR.metadata.name}};
@@ -1740,20 +1684,20 @@ public class APIClient {
         return httpRouteRules;
     }
 
-    private isolated function generateAPIPolicyAndBackendCR(model:APIArtifact apiArtifact, API api, APIOperations? operations, APIOperationPolicies? policies, commons:Organization organization, string targetRefName) returns model:APIPolicy? {
+    private isolated function generateAPIPolicyAndBackendCR(model:APIArtifact apiArtifact, APKConf apkConf, APKOperation? operations, APIOperationPolicies? policies, commons:Organization organization, string targetRefName) returns model:APIPolicy? {
         model:APIPolicyData defaultSpecData = {};
         OperationPolicy[]? request = policies?.request;
-        model:InterceptorReference? requestInterceptor = self.retrieveAPIPolicyDetails(apiArtifact, api, operations, organization, request, "request");
+        model:InterceptorReference? requestInterceptor = self.retrieveAPIPolicyDetails(apiArtifact, apkConf, operations, organization, request, "request");
         if requestInterceptor is model:InterceptorReference {
             defaultSpecData.requestInterceptors = [requestInterceptor];
         }
         OperationPolicy[]? response = policies?.response;
-        model:InterceptorReference? responseInterceptor = self.retrieveAPIPolicyDetails(apiArtifact, api, operations, organization, response, "response");
+        model:InterceptorReference? responseInterceptor = self.retrieveAPIPolicyDetails(apiArtifact, apkConf, operations, organization, response, "response");
         if responseInterceptor is model:InterceptorReference {
             defaultSpecData.responseInterceptors = [responseInterceptor];
         }
         if defaultSpecData != {} {
-            model:APIPolicy? apiPolicyCR = self.generateAPIPolicyCR(api, targetRefName, operations, organization, defaultSpecData);
+            model:APIPolicy? apiPolicyCR = self.generateAPIPolicyCR(apkConf, targetRefName, operations, organization, defaultSpecData);
             if apiPolicyCR != () {
                 return apiPolicyCR;
             }
@@ -1761,10 +1705,10 @@ public class APIClient {
         return ();
     }
 
-    private isolated function generateScopeCR(model:APIArtifact apiArtifact, API api, commons:Organization organization, string scope) returns model:Scope {
+    private isolated function generateScopeCR(model:APIArtifact apiArtifact, APKConf apkConf, commons:Organization organization, string scope) returns model:Scope {
         string scopeName = uuid:createType1AsString();
         model:Scope scopeCr = {
-            metadata: {name: scopeName, namespace: getNameSpace(runtimeConfiguration.apiCreationNamespace), labels: self.getLabels(api, organization)},
+            metadata: {name: scopeName, namespace: getNameSpace(runtimeConfiguration.apiCreationNamespace), labels: self.getLabels(apkConf, organization)},
             spec: {
                 names: [scope]
             }
@@ -1772,16 +1716,16 @@ public class APIClient {
         apiArtifact.scopes[scope] = scopeCr;
         return scopeCr;
     }
-    private isolated function generateDisableAuthenticationCR(model:APIArtifact apiArtifact, API api, string endpointType, commons:Organization organization) returns model:Authentication {
-        string retrieveDisableAuthenticationRefName = self.retrieveDisableAuthenticationRefName(api, endpointType, organization);
+    private isolated function generateDisableAuthenticationCR(model:APIArtifact apiArtifact, APKConf apkConf, string endpointType, commons:Organization organization) returns model:Authentication {
+        string retrieveDisableAuthenticationRefName = self.retrieveDisableAuthenticationRefName(apkConf, endpointType, organization);
         string nameSpace = getNameSpace(runtimeConfiguration.apiCreationNamespace);
         model:Authentication authentication = {
-            metadata: {name: retrieveDisableAuthenticationRefName, namespace: nameSpace, labels: self.getLabels(api, organization)},
+            metadata: {name: retrieveDisableAuthenticationRefName, namespace: nameSpace, labels: self.getLabels(apkConf, organization)},
             spec: {
                 targetRef: {
                     group: "",
                     kind: "Resource",
-                    name: getUniqueIdForAPI(api.name, api.'version, organization),
+                    name: getUniqueIdForAPI(apkConf.name, apkConf.'version, organization),
                     namespace: nameSpace
                 },
                 override: {
@@ -1793,13 +1737,13 @@ public class APIClient {
         return authentication;
     }
 
-    private isolated function generateHttpRouteRule(model:APIArtifact apiArtifact, API api, model:Endpoint? endpoint, APIOperations operation, string endpointType, commons:Organization organization) returns model:HTTPRouteRule|()|commons:APKError {
+    private isolated function generateHttpRouteRule(model:APIArtifact apiArtifact, APKConf apkConf, model:Endpoint? endpoint, APKOperation operation, string endpointType, commons:Organization organization) returns model:HTTPRouteRule|()|commons:APKError {
         do {
             record {}? endpointConfig = operation.endpointConfig;
             model:Endpoint? endpointToUse = ();
             if endpointConfig is record {} {
                 // endpointConfig presense at Operation Level.
-                map<model:Endpoint> operationalLevelBackend = check self.createAndAddBackendServics(apiArtifact, api, endpointConfig, operation, endpointType, organization);
+                map<model:Endpoint> operationalLevelBackend = check self.createAndAddBackendServics(apiArtifact, apkConf, endpointConfig, operation, endpointType, organization);
                 if operationalLevelBackend.hasKey(endpointType) {
                     endpointToUse = operationalLevelBackend.get(endpointType);
                 }
@@ -1809,7 +1753,7 @@ public class APIClient {
                 }
             }
             if endpointToUse != () {
-                model:HTTPRouteRule httpRouteRule = {matches: self.retrieveMatches(api, operation, organization), backendRefs: self.retrieveGeneratedBackend(api, endpointToUse, endpointType), filters: self.generateFilters(apiArtifact, api, endpointToUse, operation, endpointType, organization)};
+                model:HTTPRouteRule httpRouteRule = {matches: self.retrieveMatches(apkConf, operation, organization), backendRefs: self.retrieveGeneratedBackend(apkConf, endpointToUse, endpointType), filters: self.generateFilters(apiArtifact, apkConf, endpointToUse, operation, endpointType, organization)};
                 return httpRouteRule;
             } else {
                 return ();
@@ -1820,13 +1764,13 @@ public class APIClient {
         }
     }
 
-    private isolated function generateFilters(model:APIArtifact apiArtifact, API api, model:Endpoint endpoint, APIOperations operation, string endpointType, commons:Organization organization) returns model:HTTPRouteFilter[] {
+    private isolated function generateFilters(model:APIArtifact apiArtifact, APKConf apkConf, model:Endpoint endpoint, APKOperation operation, string endpointType, commons:Organization organization) returns model:HTTPRouteFilter[] {
         model:HTTPRouteFilter[] routeFilters = [];
-        model:HTTPRouteFilter replacePathFilter = {'type: "URLRewrite", urlRewrite: {path: {'type: "ReplaceFullPath", replaceFullPath: self.generatePrefixMatch(api, endpoint, operation, endpointType)}}};
+        model:HTTPRouteFilter replacePathFilter = {'type: "URLRewrite", urlRewrite: {path: {'type: "ReplaceFullPath", replaceFullPath: self.generatePrefixMatch(apkConf, endpoint, operation, endpointType)}}};
         routeFilters.push(replacePathFilter);
         APIOperationPolicies? operationPoliciesToUse = ();
-        if (api.apiPolicies is APIOperationPolicies) {
-            operationPoliciesToUse = api.apiPolicies;
+        if (apkConf.apiPolicies is APIOperationPolicies) {
+            operationPoliciesToUse = apkConf.apiPolicies;
         } else {
             operationPoliciesToUse = operation.operationPolicies;
         }
@@ -1888,7 +1832,7 @@ public class APIClient {
         return headerModifier;
     }
 
-    isolated function generatePrefixMatch(API api, model:Endpoint endpoint, APIOperations operation, string endpointType) returns string {
+    isolated function generatePrefixMatch(APKConf apkConf, model:Endpoint endpoint, APKOperation operation, string endpointType) returns string {
         string target = operation.target ?: "/*";
         string[] splitValues = regex:split(target, "/");
         string generatedPath = "";
@@ -1950,7 +1894,7 @@ public class APIClient {
         return generatedPath.trim();
     }
 
-    private isolated function retrieveGeneratedBackend(API api, model:Endpoint endpoint, string endpointType) returns model:HTTPBackendRef[] {
+    private isolated function retrieveGeneratedBackend(APKConf apkConf, model:Endpoint endpoint, string endpointType) returns model:HTTPBackendRef[] {
         model:HTTPBackendRef httpBackend = {
             namespace: <string>endpoint.namespace,
             kind: "Backend",
@@ -1971,25 +1915,25 @@ public class APIClient {
         return {port: 80, protocol: "http", name: "", targetport: 0};
     }
 
-    private isolated function retrieveMatches(API api, APIOperations apiOperation, commons:Organization organization) returns model:HTTPRouteMatch[] {
+    private isolated function retrieveMatches(APKConf apkConf, APKOperation apiOperation, commons:Organization organization) returns model:HTTPRouteMatch[] {
         model:HTTPRouteMatch[] httpRouteMatch = [];
-        model:HTTPRouteMatch httpRoute = self.retrieveHttpRouteMatch(api, apiOperation, organization);
+        model:HTTPRouteMatch httpRoute = self.retrieveHttpRouteMatch(apkConf, apiOperation, organization);
 
         httpRouteMatch.push(httpRoute);
         return httpRouteMatch;
     }
-    private isolated function retrieveHttpRouteMatch(API api, APIOperations apiOperation, commons:Organization organization) returns model:HTTPRouteMatch {
+    private isolated function retrieveHttpRouteMatch(APKConf apkConf, APKOperation apiOperation, commons:Organization organization) returns model:HTTPRouteMatch {
 
-        return {method: <string>apiOperation.verb, path: {'type: "RegularExpression", value: self.retrievePathPrefix(api.context, api.'version, apiOperation.target ?: "/*", organization)}};
+        return {method: <string>apiOperation.verb, path: {'type: "RegularExpression", value: self.retrievePathPrefix(apkConf.context, apkConf.'version, apiOperation.target ?: "/*", organization)}};
     }
-    isolated function retrieveGeneratedSwaggerDefinition(API api, string? definition) returns json|commons:APKError {
+    isolated function retrieveGeneratedSwaggerDefinition(APKConf apkConf, string? definition) returns json|commons:APKError {
         runtimeModels:API api1 = runtimeModels:newAPI1();
-        api1.setName(api.name);
-        api1.setType(api.'type);
-        api1.setVersion(api.'version);
+        api1.setName(apkConf.name);
+        api1.setType(apkConf.'type);
+        api1.setVersion(apkConf.'version);
         utilapis:Set uritemplatesSet = utilapis:newHashSet1();
-        if api.operations is APIOperations[] {
-            foreach APIOperations apiOperation in <APIOperations[]>api.operations {
+        if apkConf.operations is APKOperation[] {
+            foreach APKOperation apiOperation in <APKOperation[]>apkConf.operations {
                 runtimeModels:URITemplate uriTemplate = runtimeModels:newURITemplate1();
                 uriTemplate.setUriTemplate(<string>apiOperation.target);
                 string? verb = apiOperation.verb;
@@ -2088,7 +2032,7 @@ public class APIClient {
         }
     }
 
-    isolated function generateAndSetK8sServiceMapping(model:APIArtifact apiArtifact, API api, Service serviceEntry, string namespace, commons:Organization organization) {
+    isolated function generateAndSetK8sServiceMapping(model:APIArtifact apiArtifact, APKConf apkConf, Service serviceEntry, string namespace, commons:Organization organization) {
         model:API? k8sAPI = apiArtifact.api;
         if k8sAPI is model:API {
             model:K8sServiceMapping k8sServiceMapping = {
@@ -2097,7 +2041,7 @@ public class APIClient {
                     namespace: namespace,
                     uid: (),
                     creationTimestamp: (),
-                    labels: self.getLabels(api, organization)
+                    labels: self.getLabels(apkConf, organization)
                 },
                 spec: {
                     serviceRef: {
@@ -2351,11 +2295,11 @@ public class APIClient {
         return e909022("Internal server error", e = error("Internal server error"));
     }
 
-    isolated function createBackendService(API api, APIOperations? apiOperation, string endpointType, commons:Organization organization, string url,
+    isolated function createBackendService(model:APIArtifact apiArtifact, APKConf apkConf, APKOperation? apiOperation, string endpointType, commons:Organization organization, Endpoint endpointConfig,
             model:EndpointSecurity? endpointSecurity) returns model:Backend|error {
         string nameSpace = getNameSpace(runtimeConfiguration.apiCreationNamespace);
-        string host = self.gethost(url);
-        string|() configMapName = check getConfigMapNameByHostname(api, organization, host);
+        // string host = self.gethost(endpointConfig.endpointURL);
+        string|() configMapName = check getConfigMapNameByHostname(apiArtifact, apkConf, organization, endpointConfig);
         model:SecurityConfig securityConfig = {basic: {secretRef: {name: ""}}, 'type: ""};
         string uniqueSecretName;
 
@@ -2386,22 +2330,22 @@ public class APIClient {
 
         model:Backend backendService = {
             metadata: {
-                name: getBackendServiceUid(api, apiOperation, endpointType, organization),
+                name: getBackendServiceUid(apkConf, apiOperation, endpointType, organization),
                 namespace: nameSpace,
-                labels: self.getLabels(api, organization)
+                labels: self.getLabels(apkConf, organization)
             },
             spec: {
                 services: [
                     {
-                        host: self.gethost(url),
-                        port: check self.getPort(url)
+                        host: self.gethost(endpointConfig.endpointURL),
+                        port: check self.getPort(endpointConfig.endpointURL)
                     }
                 ],
-                protocol: url.startsWith("https:") ? "https" : "http"
+                protocol: endpointConfig.endpointURL.startsWith("https:") ? "https" : "http"
             }
         };
         if endpointType == INTERCEPTOR_TYPE {
-            backendService.metadata.name = getInterceptorBackendUid(api, endpointType, organization, url);
+            backendService.metadata.name = getInterceptorBackendUid(apkConf, endpointType, organization, endpointConfig.endpointURL);
         }
         if <boolean>endpointSecurity?.enabled {
             backendService.spec.security = [securityConfig];
@@ -2409,7 +2353,7 @@ public class APIClient {
         if configMapName is string && backendService.spec.protocol == "https" {
             backendService.spec.tls = {
                 configMapRef: {
-                    key: CERTIFICATE_KEY_CONFIG_MAP,
+                    key: endpointConfig.certification ?: CERTIFICATE_KEY_CONFIG_MAP,
                     name: configMapName
                 }
             };
@@ -2417,14 +2361,14 @@ public class APIClient {
         return backendService;
     }
 
-    public isolated function generateRateLimitPolicyCR(API api, APIRateLimit? rateLimit, string targetRefName, APIOperations? operation, commons:Organization organization) returns model:RateLimitPolicy? {
+    public isolated function generateRateLimitPolicyCR(APKConf apkConf, APIRateLimit? rateLimit, string targetRefName, APKOperation? operation, commons:Organization organization) returns model:RateLimitPolicy? {
         model:RateLimitPolicy? rateLimitPolicyCR = ();
         if rateLimit != () {
             rateLimitPolicyCR = {
                 metadata: {
                     name: retrieveRateLimitPolicyRefName(operation),
                     namespace: currentNameSpace,
-                    labels: self.getLabels(api, organization)
+                    labels: self.getLabels(apkConf, organization)
                 },
                 spec: {
                     default: self.retrieveRateLimitData(rateLimit, organization),
@@ -2454,13 +2398,13 @@ public class APIClient {
         return rateLimitData;
     }
 
-    public isolated function generateAPIPolicyCR(API api, string targetRefName, APIOperations? operation, commons:Organization organization, model:APIPolicyData policyData) returns model:APIPolicy? {
+    public isolated function generateAPIPolicyCR(APKConf apkConf, string targetRefName, APKOperation? operation, commons:Organization organization, model:APIPolicyData policyData) returns model:APIPolicy? {
         model:APIPolicy? apiPolicyCR = ();
         apiPolicyCR = {
             metadata: {
                 name: retrieveAPIPolicyRefName(),
                 namespace: currentNameSpace,
-                labels: self.getLabels(api, organization)
+                labels: self.getLabels(apkConf, organization)
             },
             spec: {
                 default: policyData,
@@ -2475,7 +2419,7 @@ public class APIClient {
         return apiPolicyCR;
     }
 
-    isolated function retrieveAPIPolicyDetails(model:APIArtifact apiArtifact, API api, APIOperations? operations, commons:Organization organization, OperationPolicy[]? policies, string flow) returns model:InterceptorReference? {
+    isolated function retrieveAPIPolicyDetails(model:APIArtifact apiArtifact, APKConf apkConf, APKOperation? operations, commons:Organization organization, OperationPolicy[]? policies, string flow) returns model:InterceptorReference? {
         if policies is OperationPolicy[] {
             foreach OperationPolicy policy in policies {
                 string policyName = policy.policyName;
@@ -2483,16 +2427,16 @@ public class APIClient {
                 if (policyParameters is record {}) {
                     if (policyName == "Interceptor") {
                         string backendUrl = <string>policyParameters.get("backendUrl");
-                        model:EndpointSecurity backendSecurity = {};
-                        model:Backend|error backendService = self.createBackendService(api, operations, INTERCEPTOR_TYPE, organization, backendUrl, backendSecurity);
+                        Endpoint endpointConfig = {endpointURL: backendUrl};
+                        model:Backend|error backendService = self.createBackendService(apiArtifact, apkConf, operations, INTERCEPTOR_TYPE, organization, endpointConfig, {});
                         string backendServiceName = "";
                         if backendService is model:Backend {
                             apiArtifact.backendServices[backendService.metadata.name] = (backendService);
                             backendServiceName = backendService.metadata.name;
                         }
-                        model:InterceptorService? interceptorService =  self.generateInterceptorServiceCR(policyParameters, backendServiceName, flow, api, organization);
+                        model:InterceptorService? interceptorService = self.generateInterceptorServiceCR(policyParameters, backendServiceName, flow, apkConf, organization);
                         model:InterceptorReference? interceptorReference = ();
-                        if interceptorService is model:InterceptorService { 
+                        if interceptorService is model:InterceptorService {
                             apiArtifact.interceptorServices[interceptorService.metadata.name] = (interceptorService);
                             interceptorReference = {
                                 name: interceptorService.metadata.name,
@@ -2507,13 +2451,13 @@ public class APIClient {
         return ();
     }
 
-    isolated function generateInterceptorServiceCR(record {} parameters, string interceptorBackend, string flow, API api, commons:Organization organization) returns model:InterceptorService? {
+    isolated function generateInterceptorServiceCR(record {} parameters, string interceptorBackend, string flow, APKConf apkConf, commons:Organization organization) returns model:InterceptorService? {
         model:InterceptorService? interceptorServiceCR = ();
         interceptorServiceCR = {
             metadata: {
-                name: getInterceptorServiceUid(api, organization, flow, 0),
+                name: getInterceptorServiceUid(apkConf, organization, flow, 0),
                 namespace: currentNameSpace,
-                labels: self.getLabels(api, organization)
+                labels: self.getLabels(apkConf, organization)
             },
             spec: {
                 backendRef: {
@@ -2944,11 +2888,14 @@ public class APIClient {
             operations: oldAPI.operations,
             apiRateLimit: oldAPI.apiRateLimit
         };
-        check self.prepareConfigMap(apiArtifact, oldAPI, newAPI, organization);
+        APKConf newApkConf = check fromAPIToAPKConf(newAPI);
+        APKConf oldAPKConf = check fromAPIToAPKConf(oldAPI);
+
+        check self.prepareConfigMap(apiArtifact, oldAPI, newApkConf, organization);
         check self.prepareHttpRoute(apiArtifact, serviceEntry, oldAPI, newAPI, PRODUCTION_TYPE, organization);
         check self.prepareHttpRoute(apiArtifact, serviceEntry, oldAPI, newAPI, SANDBOX_TYPE, organization);
-        self.prepareK8sServiceMapping(apiArtifact, serviceEntry, oldAPI, newAPI, organization);
-        self.prepareAPICr(apiArtifact, oldAPI, newAPI, organization);
+        check self.prepareK8sServiceMapping(apiArtifact, serviceEntry, oldAPI, newAPI, organization);
+        self.prepareAPICr(apiArtifact, oldAPKConf, newApkConf, organization);
         self.prepareBackendCertificateCR(apiArtifact, oldAPI, newAPI, organization);
         apiArtifact.runtimeAPI = self.generateRuntimeAPIArtifact(newAPI, serviceEntry, organization, userName);
 
@@ -2958,7 +2905,7 @@ public class APIClient {
         map<string> backendCertificateMapping = {};
         foreach model:ConfigMap backendCertificate in apiArtifact.endpointCertificates {
             string oldBackendCertificateName = backendCertificate.metadata.name.clone();
-            backendCertificate.metadata.labels = getLabelsForCertificates(newAPI, organization);
+            backendCertificate.metadata.labels = getLabelsForCertificates(newAPI.name, newAPI.version, organization);
             backendCertificate.metadata.name = uuid:createType1AsString();
             backendCertificateMapping[oldBackendCertificateName] = backendCertificate.metadata.name;
         }
@@ -2974,11 +2921,12 @@ public class APIClient {
             }
         }
     }
-    private isolated function prepareK8sServiceMapping(model:APIArtifact apiArtifact, Service? serviceEntry, API oldAPI, API newAPI, commons:Organization organization) {
+    private isolated function prepareK8sServiceMapping(model:APIArtifact apiArtifact, Service? serviceEntry, API oldAPI, API newAPI, commons:Organization organization) returns error? {
         model:K8sServiceMapping[] serviceMappings = apiArtifact.serviceMapping;
+        APKConf apkConf = check fromAPIToAPKConf(newAPI);
         foreach model:K8sServiceMapping serviceMapping in serviceMappings {
             serviceMapping.metadata.name = self.getServiceMappingEntryName(apiArtifact.uniqueId);
-            serviceMapping.metadata.labels = self.getLabels(newAPI, organization);
+            serviceMapping.metadata.labels = self.getLabels(apkConf, organization);
             serviceMapping.spec.apiRef.name = apiArtifact.uniqueId;
         }
     }
@@ -3004,9 +2952,12 @@ public class APIClient {
         if newId is string {
             newAPIName = newId;
         }
+        APKConf newAPKConf = check fromAPIToAPKConf(newAPI);
+        APKConf oldApkConf = check fromAPIToAPKConf(oldAPI);
+
         foreach model:Httproute httproute in httproutes {
-            httproute.metadata.name = retrieveHttpRouteRefName(newAPI, endpointType, organization);
-            httproute.metadata.labels = self.getLabels(newAPI, organization);
+            httproute.metadata.name = retrieveHttpRouteRefName(newAPKConf, endpointType, organization);
+            httproute.metadata.labels = self.getLabels(newAPKConf, organization);
             model:HTTPRouteRule[] routeRules = httproute.spec.rules;
             foreach model:HTTPRouteRule routeRule in routeRules {
                 model:HTTPBackendRef[]? backendRefs = routeRule.backendRefs;
@@ -3016,7 +2967,7 @@ public class APIClient {
                             string newServiceName = serviceMapping.get(backendRef.name);
                             backendRef.name = newServiceName;
                         } else {
-                            [string, string]? prepareBackendRefResult = check self.prepareBackendRef(backendRef, apiArtifact, serviceEntry, oldAPI, newAPI, endpointType, organization);
+                            [string, string]? prepareBackendRefResult = check self.prepareBackendRef(backendRef, apiArtifact, serviceEntry, oldApkConf, newAPKConf, endpointType, organization);
                             if prepareBackendRefResult is [string, string] {
                                 serviceMapping[prepareBackendRefResult[0]] = prepareBackendRefResult[1];
                             }
@@ -3043,7 +2994,7 @@ public class APIClient {
                             if extensionRef.kind == "Authentication" {
                                 if apiArtifact.authenticationMap.hasKey(extensionRef.name) {
                                     model:Authentication authentication = apiArtifact.authenticationMap.get(extensionRef.name).clone();
-                                    model:Authentication newAuthenticationCR = self.prepareAuthenticationCR(apiArtifact, newAPI, authentication, endpointType, organization);
+                                    model:Authentication newAuthenticationCR = self.prepareAuthenticationCR(apiArtifact, newAPKConf, authentication, endpointType, organization);
                                     _ = apiArtifact.authenticationMap.remove(extensionRef.name);
                                     apiArtifact.authenticationMap[newAuthenticationCR.metadata.name] = newAuthenticationCR;
                                     extenstionRefMappings[extensionRef.name] = newAuthenticationCR.metadata.name;
@@ -3052,7 +3003,7 @@ public class APIClient {
                             } else if extensionRef.kind == "Scope" {
                                 if apiArtifact.scopes.hasKey(extensionRef.name) {
                                     model:Scope scope = apiArtifact.scopes.get(extensionRef.name).clone();
-                                    model:Scope newScopeCR = self.prepareScopeCR(apiArtifact, newAPI, scope, organization);
+                                    model:Scope newScopeCR = self.prepareScopeCR(apiArtifact, newAPKConf, scope, organization);
                                     _ = apiArtifact.scopes.remove(extensionRef.name);
                                     apiArtifact.scopes[newScopeCR.metadata.name] = newScopeCR;
                                     extenstionRefMappings[extensionRef.name] = newScopeCR.metadata.name;
@@ -3061,7 +3012,7 @@ public class APIClient {
                             } else if extensionRef.kind == "RateLimitPolicy" {
                                 if apiArtifact.rateLimitPolicies.hasKey(extensionRef.name) {
                                     model:RateLimitPolicy rateLimitPolicyCR = apiArtifact.rateLimitPolicies.get(extensionRef.name).clone();
-                                    model:RateLimitPolicy newRateLimitPolicyCR = self.prepareRateLimitPolicyCR(newAPI, rateLimitPolicyCR, organization);
+                                    model:RateLimitPolicy newRateLimitPolicyCR = self.prepareRateLimitPolicyCR(newAPKConf, rateLimitPolicyCR, organization);
                                     _ = apiArtifact.rateLimitPolicies.remove(extensionRef.name);
                                     apiArtifact.rateLimitPolicies[newRateLimitPolicyCR.metadata.name] = newRateLimitPolicyCR;
                                     extenstionRefMappings[extensionRef.name] = newRateLimitPolicyCR.metadata.name;
@@ -3070,8 +3021,8 @@ public class APIClient {
                             } else if extensionRef.kind == "APIPolicy" {
                                 if apiArtifact.apiPolicies.hasKey(extensionRef.name) {
                                     model:APIPolicy apiPolicyCR = apiArtifact.apiPolicies.get(extensionRef.name).clone();
-                                    self.prepareInterceptorBackends(apiArtifact, apiPolicyCR, newAPI, organization);
-                                    model:APIPolicy newAPIPolicyCR = self.prepareAPIPolicyCR(newAPI, apiPolicyCR, httproute.metadata.name, organization);
+                                    self.prepareInterceptorBackends(apiArtifact, apiPolicyCR, newAPKConf, organization);
+                                    model:APIPolicy newAPIPolicyCR = self.prepareAPIPolicyCR(newAPKConf, apiPolicyCR, httproute.metadata.name, organization);
                                     _ = apiArtifact.apiPolicies.remove(extensionRef.name);
                                     apiArtifact.apiPolicies[newAPIPolicyCR.metadata.name] = newAPIPolicyCR;
                                     extenstionRefMappings[extensionRef.name] = newAPIPolicyCR.metadata.name;
@@ -3088,7 +3039,7 @@ public class APIClient {
         foreach string extensionRefName in rateLimitPolicies.keys() {
             model:RateLimitPolicy rateLimitPolicyCR = apiArtifact.rateLimitPolicies.get(extensionRefName).clone();
             if rateLimitPolicyCR.spec.targetRef.kind == "API" && rateLimitPolicyCR.spec.targetRef.name == oldAPIName {
-                model:RateLimitPolicy newRateLimitPolicyCR = self.prepareRateLimitPolicyCR(newAPI, rateLimitPolicyCR, organization);
+                model:RateLimitPolicy newRateLimitPolicyCR = self.prepareRateLimitPolicyCR(newAPKConf, rateLimitPolicyCR, organization);
                 _ = apiArtifact.rateLimitPolicies.remove(extensionRefName);
                 apiArtifact.rateLimitPolicies[newRateLimitPolicyCR.metadata.name] = newRateLimitPolicyCR;
             }
@@ -3098,22 +3049,22 @@ public class APIClient {
         foreach string extensionRefName in apiPolicies.keys() {
             model:APIPolicy apiPolicyCR = apiArtifact.apiPolicies.get(extensionRefName).clone();
             if apiPolicyCR.spec.targetRef.kind == "API" && apiPolicyCR.spec.targetRef.name == oldAPIName {
-                self.prepareInterceptorBackends(apiArtifact, apiPolicyCR, newAPI, organization);
-                model:APIPolicy newAPIPolicyCR = self.prepareAPIPolicyCR(newAPI, apiPolicyCR, newAPIName, organization);
+                self.prepareInterceptorBackends(apiArtifact, apiPolicyCR, newAPKConf, organization);
+                model:APIPolicy newAPIPolicyCR = self.prepareAPIPolicyCR(newAPKConf, apiPolicyCR, newAPIName, organization);
                 _ = apiArtifact.apiPolicies.remove(extensionRefName);
                 apiArtifact.apiPolicies[newAPIPolicyCR.metadata.name] = newAPIPolicyCR;
             }
         }
     }
 
-    private isolated function prepareInterceptorBackends(model:APIArtifact apiArtifact, model:APIPolicy apiPolicyCR, API newAPI, commons:Organization organization) {
+    private isolated function prepareInterceptorBackends(model:APIArtifact apiArtifact, model:APIPolicy apiPolicyCR, APKConf newAPKConf, commons:Organization organization) {
         model:APIPolicyData? interceptorPolicy = apiPolicyCR.spec.default;
         if interceptorPolicy is model:APIPolicyData {
             string[] backendServicesToRemove = [];
             model:InterceptorReference[]? requestInterceptors = interceptorPolicy.requestInterceptors;
             if requestInterceptors is model:InterceptorReference[] {
                 foreach model:InterceptorReference requestInterceptor in requestInterceptors {
-                    string? backendRefName = self.extractExistingBackendRefs(apiArtifact, requestInterceptor, newAPI, organization);
+                    string? backendRefName = self.extractExistingBackendRefs(apiArtifact, requestInterceptor, newAPKConf, organization);
                     if backendRefName is string {
                         backendServicesToRemove.push(backendRefName);
                     }
@@ -3122,7 +3073,7 @@ public class APIClient {
             model:InterceptorReference[]? responseInterceptors = interceptorPolicy.responseInterceptors;
             if responseInterceptors is model:InterceptorReference[] {
                 foreach model:InterceptorReference responseInterceptor in responseInterceptors {
-                    string? backendRefName = self.extractExistingBackendRefs(apiArtifact, responseInterceptor, newAPI, organization);
+                    string? backendRefName = self.extractExistingBackendRefs(apiArtifact, responseInterceptor, newAPKConf, organization);
                     if backendRefName is string {
                         backendServicesToRemove.push(backendRefName);
                     }
@@ -3136,15 +3087,15 @@ public class APIClient {
         }
     }
 
-    private isolated function extractExistingBackendRefs(model:APIArtifact apiArtifact, model:InterceptorReference? interceptorRef, API newAPI, commons:Organization organization) returns string? {
+    private isolated function extractExistingBackendRefs(model:APIArtifact apiArtifact, model:InterceptorReference? interceptorRef, APKConf newAPKConf, commons:Organization organization) returns string? {
         if interceptorRef is model:InterceptorReference {
             if apiArtifact.interceptorServices.hasKey(interceptorRef.name) {
                 model:InterceptorService interceptorService = apiArtifact.interceptorServices.get(interceptorRef.name);
                 if interceptorService is model:InterceptorService {
-                   string backendRefName = interceptorService.spec.backendRef.name;
-                   if apiArtifact.backendServices.hasKey(backendRefName) {
+                    string backendRefName = interceptorService.spec.backendRef.name;
+                    if apiArtifact.backendServices.hasKey(backendRefName) {
                         model:Backend backend = apiArtifact.backendServices.get(backendRefName).clone();
-                        model:Backend newBackend = self.prepareInterceptorBackendCR(newAPI, backend, organization, backend.spec);
+                        model:Backend newBackend = self.prepareInterceptorBackendCR(newAPKConf, backend, organization, backend.spec);
                         apiArtifact.backendServices[newBackend.metadata.name] = newBackend;
                         interceptorService.spec.backendRef.name = newBackend.metadata.name;
                         return backendRefName;
@@ -3155,22 +3106,22 @@ public class APIClient {
         return ();
     }
 
-    private isolated function prepareScopeCR(model:APIArtifact apiArtifact, API api, model:Scope scope, commons:Organization organization) returns model:Scope {
+    private isolated function prepareScopeCR(model:APIArtifact apiArtifact, APKConf apkConf, model:Scope scope, commons:Organization organization) returns model:Scope {
         scope.metadata.name = uuid:createType1AsString();
-        scope.metadata.labels = self.getLabels(api, organization);
+        scope.metadata.labels = self.getLabels(apkConf, organization);
         return scope;
     }
 
-    private isolated function prepareAuthenticationCR(model:APIArtifact apiArtifact, API api, model:Authentication authentication, string endpointType, commons:Organization organization) returns model:Authentication {
-        authentication.metadata.name = self.retrieveDisableAuthenticationRefName(api, endpointType, organization);
-        authentication.metadata.labels = self.getLabels(api, organization);
-        authentication.spec.targetRef.name = getUniqueIdForAPI(api.name, api.'version, organization);
+    private isolated function prepareAuthenticationCR(model:APIArtifact apiArtifact, APKConf apkConf, model:Authentication authentication, string endpointType, commons:Organization organization) returns model:Authentication {
+        authentication.metadata.name = self.retrieveDisableAuthenticationRefName(apkConf, endpointType, organization);
+        authentication.metadata.labels = self.getLabels(apkConf, organization);
+        authentication.spec.targetRef.name = getUniqueIdForAPI(apkConf.name, apkConf.'version, organization);
         authentication.spec.override.ext.disabled = false;
         model:AuthenticationExtenstionType[] authTypes = [];
-        string[]? authTypeNames = api.securityScheme;
+        string[]? authTypeNames = apkConf.securityScheme;
         if authTypeNames is string[] {
             foreach string authTypeName in authTypeNames {
-                model:AuthenticationExtenstionType authType = {'type:authTypeName};
+                model:AuthenticationExtenstionType authType = {'type: authTypeName};
                 authTypes.push(authType);
             }
         }
@@ -3178,69 +3129,70 @@ public class APIClient {
         return authentication;
     }
 
-    private isolated function prepareRateLimitPolicyCR(API api, model:RateLimitPolicy rateLimitPolicy, commons:Organization organization) returns model:RateLimitPolicy {
+    private isolated function prepareRateLimitPolicyCR(APKConf apkConf, model:RateLimitPolicy rateLimitPolicy, commons:Organization organization) returns model:RateLimitPolicy {
         rateLimitPolicy.metadata.name = uuid:createType1AsString();
-        rateLimitPolicy.metadata.labels = self.getLabels(api, organization);
-        rateLimitPolicy.spec.targetRef.name = getUniqueIdForAPI(api.name, api.'version, organization);
+        rateLimitPolicy.metadata.labels = self.getLabels(apkConf, organization);
+        rateLimitPolicy.spec.targetRef.name = getUniqueIdForAPI(apkConf.name, apkConf.'version, organization);
         return rateLimitPolicy;
     }
 
-    private isolated function prepareAPIPolicyCR(API api, model:APIPolicy apiPolicy, string targetRefName, commons:Organization organization) returns model:APIPolicy {
+    private isolated function prepareAPIPolicyCR(APKConf apkConf, model:APIPolicy apiPolicy, string targetRefName, commons:Organization organization) returns model:APIPolicy {
         apiPolicy.metadata.name = uuid:createType1AsString();
-        apiPolicy.metadata.labels = self.getLabels(api, organization);
-        apiPolicy.spec.targetRef.name = getUniqueIdForAPI(api.name, api.'version, organization);
+        apiPolicy.metadata.labels = self.getLabels(apkConf, organization);
+        apiPolicy.spec.targetRef.name = getUniqueIdForAPI(apkConf.name, apkConf.'version, organization);
         return apiPolicy;
     }
 
-    private isolated function prepareInterceptorBackendCR(API api, model:Backend backend, commons:Organization organization, model:BackendSpec spec) returns model:Backend {
+    private isolated function prepareInterceptorBackendCR(APKConf apkConf, model:Backend backend, commons:Organization organization, model:BackendSpec spec) returns model:Backend {
         string backendUrl = self.constructURLFromBackendSpec(spec);
-        backend.metadata.name = getInterceptorBackendUid(api, INTERCEPTOR_TYPE, organization, backendUrl);
-        backend.metadata.labels = self.getLabels(api, organization);
+        backend.metadata.name = getInterceptorBackendUid(apkConf, INTERCEPTOR_TYPE, organization, backendUrl);
+        backend.metadata.labels = self.getLabels(apkConf, organization);
         return backend;
     }
 
-    private isolated function prepareBackendRef(model:HTTPBackendRef backendRef, model:APIArtifact apiArtifact, Service? serviceEntry, API oldAPI, API newAPI, string endpointType, commons:Organization organization) returns [string, string]?|error {
+    private isolated function prepareBackendRef(model:HTTPBackendRef backendRef, model:APIArtifact apiArtifact, Service? serviceEntry, APKConf oldAPKConf, APKConf newAPKConf, string endpointType, commons:Organization organization) returns [string, string]?|error {
         if apiArtifact.serviceMapping.length() >= 1 {
             if serviceEntry is Service {
                 model:EndpointSecurity backendSecurity = {};
-                backendSecurity = check self.prepareBackendSecurityForServices(PRODUCTION_TYPE, oldAPI.serviceInfo, newAPI, organization);
-                model:Backend backendService = check self.createBackendService(newAPI, (), PRODUCTION_TYPE, organization, self.constructServiceURL(serviceEntry), backendSecurity);
+                backendSecurity = check self.prepareBackendSecurityForServices(PRODUCTION_TYPE, oldAPKConf.serviceInfo, newAPKConf, organization);
+                Endpoint endpointConfig = {endpointURL: self.constructServiceURL(serviceEntry)};
+                model:Backend backendService = check self.createBackendService(apiArtifact, newAPKConf, (), PRODUCTION_TYPE, organization, endpointConfig, backendSecurity);
                 backendRef.name = backendService.metadata.name;
                 backendRef.namespace = backendService.metadata.namespace;
                 apiArtifact.serviceMapping.removeAll();
                 apiArtifact.backendServices[backendService.metadata.name] = backendService;
-                string oldBackenServiceUUID = getBackendServiceUid(oldAPI, (), PRODUCTION_TYPE, organization);
+                string oldBackenServiceUUID = getBackendServiceUid(oldAPKConf, (), PRODUCTION_TYPE, organization);
                 _ = apiArtifact.backendServices.remove(oldBackenServiceUUID);
-                self.generateAndSetK8sServiceMapping(apiArtifact, newAPI, serviceEntry, getNameSpace(runtimeConfiguration.apiCreationNamespace), organization);
+                self.generateAndSetK8sServiceMapping(apiArtifact, newAPKConf, serviceEntry, getNameSpace(runtimeConfiguration.apiCreationNamespace), organization);
 
                 if backendSecurity.enabled {
-                    self.setBackendSecurity(backendSecurity, backendService, (), newAPI.serviceInfo, (), endpointType);
+                    self.setBackendSecurity(backendSecurity, backendService, (), newAPKConf.serviceInfo, (), endpointType);
                 }
                 return [oldBackenServiceUUID, backendService.metadata.name];
             } else {
-                return self.prepareBackendRefForAPIArtifact(backendRef, apiArtifact, newAPI, endpointType, organization);
+                return self.prepareBackendRefForAPIArtifact(backendRef, apiArtifact, newAPKConf, endpointType, organization);
             }
         } else {
-            return self.prepareBackendRefForAPIArtifact(backendRef, apiArtifact, newAPI, endpointType, organization);
+            return self.prepareBackendRefForAPIArtifact(backendRef, apiArtifact, newAPKConf, endpointType, organization);
         }
     }
 
-    private isolated function prepareBackendRefForAPIArtifact(model:HTTPBackendRef backendRef, model:APIArtifact apiArtifact, API newAPI, string endpointType, commons:Organization organization) returns [string, string]?|error {
+    private isolated function prepareBackendRefForAPIArtifact(model:HTTPBackendRef backendRef, model:APIArtifact apiArtifact, APKConf newAPKConf, string endpointType, commons:Organization organization) returns [string, string]?|error {
         map<model:Backend> backendServices = apiArtifact.backendServices;
         string oldBackendRefName = backendRef.name;
         if backendServices.hasKey(oldBackendRefName) {
             model:Backend 'service = backendServices.get(oldBackendRefName).clone();
             if 'service.metadata.name.includes("-api") {
-                'service.metadata.name = getBackendServiceUid(newAPI, (), endpointType, organization);
+                'service.metadata.name = getBackendServiceUid(newAPKConf, (), endpointType, organization);
             } else {
-                'service.metadata.name = getBackendServiceUid(newAPI, {}, endpointType, organization);
+                'service.metadata.name = getBackendServiceUid(newAPKConf, {}, endpointType, organization);
             }
             model:RuntimeAPI? runtimeAPI = apiArtifact.runtimeAPI;
             if runtimeAPI is model:RuntimeAPI {
                 record {}? endpointConfig = runtimeAPI.spec.endpointConfig.clone();
-                _ = check self.prepareBackendSecurityForEndpoints('service, endpointConfig, endpointType, newAPI, organization);
+                _ = check self.prepareBackendSecurityForEndpoints('service, endpointConfig, endpointType, newAPKConf, organization);
             }
-            'service.metadata.labels = self.getLabels(newAPI, organization);
+            'service.metadata.labels = self.getLabels(newAPKConf, organization);
             _ = backendServices.remove(oldBackendRefName);
             backendServices['service.metadata.name] = 'service;
             backendRef.name = 'service.metadata.name;
@@ -3249,27 +3201,27 @@ public class APIClient {
         return;
     }
 
-    private isolated function prepareBackendSecurityForEndpoints(model:Backend 'service, record {}? endpointConfig, string endpointType, API newAPI, commons:Organization organization) returns error? {
+    private isolated function prepareBackendSecurityForEndpoints(model:Backend 'service, record {}? endpointConfig, string endpointType, APKConf newAPKConf, commons:Organization organization) returns error? {
         if 'service.spec.security is model:SecurityConfig[] {
             string oldSecretRefName;
             string newUniqueSecretName = getBackendSecurityUid(endpointType, organization);
-            model:EndpointSecurity backendSecurity = check self.getBackendSecurity(endpointConfig, (), endpointType);
+            model:EndpointSecurity backendSecurity = check getBackendSecurity(endpointConfig, (), endpointType);
             if (backendSecurity.secretRefName is string) {
                 oldSecretRefName = <string>backendSecurity.secretRefName;
             } else {
                 oldSecretRefName = <string>backendSecurity.generatedSecretRefName;
             }
             model:K8sSecret k8SecretCopy = check getK8sSecret(oldSecretRefName, getNameSpace(runtimeConfiguration.apiCreationNamespace));
-                check self.createK8sSecretFromSecretRef(newUniqueSecretName, k8SecretCopy);
-                self.setBackendSecurity(backendSecurity, (), newUniqueSecretName, (), endpointConfig, endpointType);
-            newAPI.endpointConfig = endpointConfig;
+            check self.createK8sSecretFromSecretRef(newUniqueSecretName, k8SecretCopy);
+            self.setBackendSecurity(backendSecurity, (), newUniqueSecretName, (), endpointConfig, endpointType);
+            newAPKConf.endpointConfig = endpointConfig;
         }
     }
 
-    private isolated function prepareBackendSecurityForServices(string endpointType, API_serviceInfo? serviceInfo, API newAPI, commons:Organization organization) returns model:EndpointSecurity|error {
+    private isolated function prepareBackendSecurityForServices(string endpointType, API_serviceInfo? serviceInfo, APKConf newApkConf, commons:Organization organization) returns model:EndpointSecurity|error {
         string oldSecretRefName;
         string newUniqueSecretName = getBackendSecurityUid(endpointType, organization);
-        model:EndpointSecurity backendSecurity = check self.getBackendSecurity((), serviceInfo, endpointType);
+        model:EndpointSecurity backendSecurity = check getBackendSecurity((), serviceInfo, endpointType);
         if backendSecurity.enabled {
             if (backendSecurity.secretRefName is string) {
                 oldSecretRefName = <string>backendSecurity.secretRefName;
@@ -3286,19 +3238,19 @@ public class APIClient {
         return backendSecurity;
     }
 
-    private isolated function prepareAPICr(model:APIArtifact apiArtifact, API oldAPI, API newAPI, commons:Organization organization) {
+    private isolated function prepareAPICr(model:APIArtifact apiArtifact, APKConf oldAPKConf, APKConf newAPKConf, commons:Organization organization) {
         model:API? api = apiArtifact.api;
         string newAPIName = "";
-        string? newId = newAPI.id;
+        string? newId = newAPKConf.id;
         if newId is string {
             newAPIName = newId;
         }
         if api is model:API {
             string oldName = api.metadata.name;
-            api.spec.apiVersion = newAPI.'version;
+            api.spec.apiVersion = newAPKConf.'version;
             api.metadata.name = newAPIName;
-            api.metadata.labels = self.getLabels(newAPI, organization);
-            api.spec.context = newAPI.context;
+            api.metadata.labels = self.getLabels(newAPKConf, organization);
+            api.spec.context = newAPKConf.context;
             string[] prodHTTPRouteRefs = [];
             foreach model:Httproute httpRoute in apiArtifact.productionRoute {
                 prodHTTPRouteRefs.push(httpRoute.metadata.name);
@@ -3320,16 +3272,16 @@ public class APIClient {
         }
     }
 
-    private isolated function prepareConfigMap(model:APIArtifact apiArtifact, API oldAPI, API newAPI, commons:Organization organization) returns error? {
+    private isolated function prepareConfigMap(model:APIArtifact apiArtifact, API oldAPI, APKConf newApkConf, commons:Organization organization) returns error? {
         model:ConfigMap? definition = apiArtifact.definition;
         if definition is model:ConfigMap {
             json definitionJson = check self.getDefinitionFromConfigMap(definition);
             json info = check definitionJson.info;
             map<json> infoElement = <map<json>>info;
-            infoElement["version"] = newAPI.'version;
+            infoElement["version"] = newApkConf.'version;
             map<json> definitionMap = <map<json>>definitionJson;
             definitionMap["info"] = infoElement;
-            check self.retrieveGeneratedConfigmapForDefinition(apiArtifact, newAPI, definitionMap, apiArtifact.uniqueId, organization);
+            check self.retrieveGeneratedConfigmapForDefinition(apiArtifact, newApkConf, definitionMap, apiArtifact.uniqueId, organization);
         }
     }
 
@@ -3548,50 +3500,7 @@ public class APIClient {
                 API|commons:APKError api = check self.getAPIById(apiId, organization);
                 if api is API {
                     model:APIArtifact apiArtifact = check self.getApiArtifact(api, organization);
-                    string zipDir = check file:createTempDir(uuid:createType1AsString());
-                    model:API? k8sAPI = apiArtifact.api;
-                    if k8sAPI is model:API {
-                        _ = check self.convertAndStoreYamlFile(k8sAPI.toJsonString(), k8sAPI.metadata.name, zipDir, "api");
-                    }
-                    model:ConfigMap? definition = apiArtifact.definition;
-                    if definition is model:ConfigMap {
-                        _ = check self.convertAndStoreYamlFile(definition.toJsonString(), definition.metadata.name, zipDir, "definitions");
-                    }
-                    foreach model:Authentication authenticationCr in apiArtifact.authenticationMap {
-                        _ = check self.convertAndStoreYamlFile(authenticationCr.toJsonString(), authenticationCr.metadata.name, zipDir, "policies/authentications");
-                    }
-                    foreach model:Httproute httpRoute in apiArtifact.productionRoute {
-                        _ = check self.convertAndStoreYamlFile(httpRoute.toJsonString(), httpRoute.metadata.name, zipDir, "httproutes");
-                    }
-                    foreach model:Httproute httpRoute in apiArtifact.sandboxRoute {
-                        _ = check self.convertAndStoreYamlFile(httpRoute.toJsonString(), httpRoute.metadata.name, zipDir, "httproutes");
-                    }
-                    foreach model:K8sServiceMapping servicemapping in apiArtifact.serviceMapping {
-                        _ = check self.convertAndStoreYamlFile(servicemapping.toJsonString(), servicemapping.metadata.name, zipDir, "servicemappings");
-                    }
-                    foreach model:Backend backend in apiArtifact.backendServices {
-                        _ = check self.convertAndStoreYamlFile(backend.toJsonString(), backend.metadata.name, zipDir, "backends");
-                    }
-                    foreach model:Scope scope in apiArtifact.scopes {
-                        _ = check self.convertAndStoreYamlFile(scope.toJsonString(), scope.metadata.name, zipDir, "scopes");
-                    }
-                    foreach model:ConfigMap endpointCertificate in apiArtifact.endpointCertificates {
-                        _ = check self.convertAndStoreYamlFile(endpointCertificate.toJsonString(), endpointCertificate.metadata.name, zipDir, "endpoint-certificates");
-                    }
-                    foreach model:RateLimitPolicy rateLimitPolicy in apiArtifact.rateLimitPolicies {
-                        _ = check self.convertAndStoreYamlFile(rateLimitPolicy.toJsonString(), rateLimitPolicy.metadata.name, zipDir, "policies/ratelimits");
-                    }
-                    foreach model:APIPolicy apiPolicy in apiArtifact.apiPolicies {
-                        _ = check self.convertAndStoreYamlFile(apiPolicy.toJsonString(), apiPolicy.metadata.name, zipDir, "policies/apipolicies");
-                    }
-                    foreach model:InterceptorService interceptorService in apiArtifact.interceptorServices {
-                        _ = check self.convertAndStoreYamlFile(interceptorService.toJsonString(), interceptorService.metadata.name, zipDir, "policies/apipolicies/interceptorservices");
-                    }
-                    model:RuntimeAPI? runtimeAPI = apiArtifact.runtimeAPI;
-                    if runtimeAPI is model:RuntimeAPI {
-                        _ = check self.convertAndStoreYamlFile(runtimeAPI.toJsonString(), runtimeAPI.metadata.name, zipDir, "runtimeapi");
-                    }
-                    [string, string] zipName = check self.zipDirectory(apiId, zipDir);
+                    [string, string] zipName = check self.zipAPIArtifact(apiId, apiArtifact);
                     http:Response response = new;
                     response.setFileAsPayload(zipName[1]);
                     response.addHeader("Content-Disposition", "attachment; filename=" + zipName[0]);
@@ -3606,7 +3515,53 @@ public class APIClient {
             return e909003();
         }
     }
-
+    private isolated function zipAPIArtifact(string apiId, model:APIArtifact apiArtifact) returns [string, string]|error {
+        string zipDir = check file:createTempDir(uuid:createType1AsString());
+        model:API? k8sAPI = apiArtifact.api;
+        if k8sAPI is model:API {
+            _ = check self.convertAndStoreYamlFile(k8sAPI.toJsonString(), k8sAPI.metadata.name, zipDir, "api");
+        }
+        model:ConfigMap? definition = apiArtifact.definition;
+        if definition is model:ConfigMap {
+            _ = check self.convertAndStoreYamlFile(definition.toJsonString(), definition.metadata.name, zipDir, "definitions");
+        }
+        foreach model:Authentication authenticationCr in apiArtifact.authenticationMap {
+            _ = check self.convertAndStoreYamlFile(authenticationCr.toJsonString(), authenticationCr.metadata.name, zipDir, "policies/authentications");
+        }
+        foreach model:Httproute httpRoute in apiArtifact.productionRoute {
+            _ = check self.convertAndStoreYamlFile(httpRoute.toJsonString(), httpRoute.metadata.name, zipDir, "httproutes");
+        }
+        foreach model:Httproute httpRoute in apiArtifact.sandboxRoute {
+            _ = check self.convertAndStoreYamlFile(httpRoute.toJsonString(), httpRoute.metadata.name, zipDir, "httproutes");
+        }
+        foreach model:K8sServiceMapping servicemapping in apiArtifact.serviceMapping {
+            _ = check self.convertAndStoreYamlFile(servicemapping.toJsonString(), servicemapping.metadata.name, zipDir, "servicemappings");
+        }
+        foreach model:Backend backend in apiArtifact.backendServices {
+            _ = check self.convertAndStoreYamlFile(backend.toJsonString(), backend.metadata.name, zipDir, "backends");
+        }
+        foreach model:Scope scope in apiArtifact.scopes {
+            _ = check self.convertAndStoreYamlFile(scope.toJsonString(), scope.metadata.name, zipDir, "scopes");
+        }
+        foreach model:ConfigMap endpointCertificate in apiArtifact.endpointCertificates {
+            _ = check self.convertAndStoreYamlFile(endpointCertificate.toJsonString(), endpointCertificate.metadata.name, zipDir, "endpoint-certificates");
+        }
+        foreach model:RateLimitPolicy rateLimitPolicy in apiArtifact.rateLimitPolicies {
+            _ = check self.convertAndStoreYamlFile(rateLimitPolicy.toJsonString(), rateLimitPolicy.metadata.name, zipDir, "policies/ratelimits");
+        }
+        foreach model:APIPolicy apiPolicy in apiArtifact.apiPolicies {
+            _ = check self.convertAndStoreYamlFile(apiPolicy.toJsonString(), apiPolicy.metadata.name, zipDir, "policies/apipolicies");
+        }
+        foreach model:InterceptorService interceptorService in apiArtifact.interceptorServices {
+            _ = check self.convertAndStoreYamlFile(interceptorService.toJsonString(), interceptorService.metadata.name, zipDir, "policies/apipolicies/interceptorservices");
+        }
+        model:RuntimeAPI? runtimeAPI = apiArtifact.runtimeAPI;
+        if runtimeAPI is model:RuntimeAPI {
+            _ = check self.convertAndStoreYamlFile(runtimeAPI.toJsonString(), runtimeAPI.metadata.name, zipDir, "runtimeapi");
+        }
+        [string, string] zipName = check self.zipDirectory(apiId, zipDir);
+        return zipName;
+    }
     private isolated function convertAndStoreYamlFile(string jsonString, string fileName, string directroy, string? subDirectory) returns error? {
         commons:YamlUtil yamlUtil = commons:newYamlUtil1();
         string|() convertedYaml = check yamlUtil.fromJsonStringToYaml(jsonString);
@@ -3643,6 +3598,7 @@ public class APIClient {
                 }
                 payload.id = apiId;
                 self.setDefaultOperationsIfNotExist(payload);
+                APKConf apkConf = check fromAPIToAPKConf(payload);
                 string uniqueId = getUniqueIdForAPI(payload.name, payload.'version, organization);
                 model:APIArtifact apiArtifact = {uniqueId: uniqueId};
                 API_serviceInfo? serviceInfo = payload.serviceInfo;
@@ -3653,8 +3609,9 @@ public class APIClient {
                         ServiceClient serviceClient = new;
                         serviceEntry = serviceClient.getServiceByNameandNamespace(<string>serviceInfo.name, <string>serviceInfo.namespace);
                         if serviceEntry is Service {
-                            model:EndpointSecurity backendSecurity = check self.getBackendSecurity(serviceInfo, (), PRODUCTION_TYPE);
-                            model:Backend backend = check self.createBackendService(api, (), PRODUCTION_TYPE, organization, self.constructServiceURL(serviceEntry), backendSecurity);
+                            model:EndpointSecurity backendSecurity = check getBackendSecurity(serviceInfo, (), PRODUCTION_TYPE);
+                            Endpoint endpointConfig = {endpointURL: self.constructServiceURL(serviceEntry)};
+                            model:Backend backend = check self.createBackendService(apiArtifact, apkConf, (), PRODUCTION_TYPE, organization, endpointConfig, backendSecurity);
                             if backendSecurity.enabled {
                                 self.setBackendSecurity(backendSecurity, backend, (), serviceInfo, (), PRODUCTION_TYPE);
                             }
@@ -3672,7 +3629,7 @@ public class APIClient {
                         }
                     }
                 }
-                APIOperations[]? operations = payload.operations;
+                APKOperation[]? operations = apkConf.operations;
                 if operations is APIOperations[] {
                     if operations.length() == 0 {
                         return e909021();
@@ -3691,34 +3648,34 @@ public class APIClient {
                     return e909021();
                 }
                 if endpoint is model:Endpoint {
-                    _ = check self.setHttpRoute(apiArtifact, payload, endpoint, uniqueId, PRODUCTION_TYPE, organization);
+                    _ = check self.setHttpRoute(apiArtifact, apkConf, endpoint, uniqueId, PRODUCTION_TYPE, organization);
                 } else {
                     record {}? endpointConfig = payload.endpointConfig;
                     map<model:Endpoint|()> createdEndpoints = {};
                     if endpointConfig is record {} {
-                        createdEndpoints = check self.createAndAddBackendServics(apiArtifact, payload, endpointConfig, (), (), organization);
+                        createdEndpoints = check self.createAndAddBackendServics(apiArtifact, apkConf, endpointConfig, (), (), organization);
                     }
-                    _ = check self.setHttpRoute(apiArtifact, payload, createdEndpoints.hasKey(PRODUCTION_TYPE) ? createdEndpoints.get(PRODUCTION_TYPE) : (), uniqueId, PRODUCTION_TYPE, organization);
-                    _ = check self.setHttpRoute(apiArtifact, payload, createdEndpoints.hasKey(SANDBOX_TYPE) ? createdEndpoints.get(SANDBOX_TYPE) : (), uniqueId, SANDBOX_TYPE, organization);
+                    _ = check self.setHttpRoute(apiArtifact, apkConf, createdEndpoints.hasKey(PRODUCTION_TYPE) ? createdEndpoints.get(PRODUCTION_TYPE) : (), uniqueId, PRODUCTION_TYPE, organization);
+                    _ = check self.setHttpRoute(apiArtifact, apkConf, createdEndpoints.hasKey(SANDBOX_TYPE) ? createdEndpoints.get(SANDBOX_TYPE) : (), uniqueId, SANDBOX_TYPE, organization);
                 }
                 if definition is string {
-                    json generatedSwagger = check self.retrieveGeneratedSwaggerDefinition(payload, definition);
-                    check self.retrieveGeneratedConfigmapForDefinition(apiArtifact, payload, generatedSwagger, uniqueId, organization);
+                    json generatedSwagger = check self.retrieveGeneratedSwaggerDefinition(apkConf, definition);
+                    check self.retrieveGeneratedConfigmapForDefinition(apiArtifact, apkConf, generatedSwagger, apiArtifact.uniqueId, organization);
                 } else {
                     model:API? aPI = getAPI(apiId, organization);
                     if aPI is model:API {
                         json internalDefinition = check self.getDefinition(aPI);
-                        json generatedSwagger = check self.retrieveGeneratedSwaggerDefinition(payload, internalDefinition.toJsonString());
-                        check self.retrieveGeneratedConfigmapForDefinition(apiArtifact, payload, generatedSwagger, uniqueId, organization);
+                        json generatedSwagger = check self.retrieveGeneratedSwaggerDefinition(apkConf, internalDefinition.toJsonString());
+                        check self.retrieveGeneratedConfigmapForDefinition(apiArtifact, apkConf, generatedSwagger, apiArtifact.uniqueId, organization);
                     }
                 }
-                self.generateAndSetAPICRArtifact(apiArtifact, payload, organization, userName);
-                self.generateAndSetPolicyCRArtifact(apiArtifact, payload, organization);
+                self.generateAndSetAPICRArtifact(apiArtifact, apkConf, organization, userName);
+                self.generateAndSetPolicyCRArtifact(apiArtifact, apkConf, organization);
                 if serviceEntry is Service {
-                    self.generateAndSetK8sServiceMapping(apiArtifact, api, serviceEntry, getNameSpace(runtimeConfiguration.apiCreationNamespace), organization);
-                    self.generateAndSetRuntimeAPIArtifact(apiArtifact, payload, serviceEntry, organization, userName);
+                    self.generateAndSetK8sServiceMapping(apiArtifact, apkConf, serviceEntry, getNameSpace(runtimeConfiguration.apiCreationNamespace), organization);
+                    self.generateAndSetRuntimeAPIArtifact(apiArtifact, api, serviceEntry, organization, userName);
                 } else {
-                    self.generateAndSetRuntimeAPIArtifact(apiArtifact, payload, (), organization, userName);
+                    self.generateAndSetRuntimeAPIArtifact(apiArtifact, api, (), organization, userName);
                 }
                 model:API deployAPIToK8sResult = check self.deployAPIToK8s(apiArtifact, organization);
                 return check convertK8sAPItoAPI(deployAPIToK8sResult, false);
@@ -4028,7 +3985,8 @@ public class APIClient {
                 EndpointCertificateRequest endpointCertificate = check self.retrieveEndpointCertificateRequest(request);
                 [crypto:Certificate?, boolean] validateCertificateExpiryResult = check validateCertificateExpiry(endpointCertificate);
                 if (validateCertificateExpiryResult[1]) {
-                    model:ConfigMap certificateConfigMapEntry = check createCertificateConfigMapEntry(check convertK8sAPItoAPI(api, true), endpointCertificate, <crypto:Certificate>validateCertificateExpiryResult[0], organization);
+                    API restAPI = check convertK8sAPItoAPI(api, true);
+                    model:ConfigMap certificateConfigMapEntry = check createCertificateConfigMapEntry(restAPI.name, restAPI.version, endpointCertificate, <crypto:Certificate>validateCertificateExpiryResult[0], organization);
                     model:ConfigMap deployedConfigMap = check self.deployConfigMap(certificateConfigMapEntry);
                     string locationUrl = runtimeConfiguration.baseURl + "/apis/" + apiId + "/endpoint-certificates/" + deployedConfigMap.metadata.uid.toString();
                     OkCertMetadata okCertMetaData = {body: {certificateId: deployedConfigMap.metadata.uid, endpoint: endpointCertificate.host}, headers: {location: locationUrl}};
@@ -4115,7 +4073,8 @@ public class APIClient {
                     EndpointCertificateRequest endpointCertificate = check self.retrieveEndpointCertificateRequest(request);
                     [crypto:Certificate?, boolean] validateCertificateExpiryResult = check validateCertificateExpiry(endpointCertificate);
                     if (validateCertificateExpiryResult[1]) {
-                        model:ConfigMap certificateConfigMapEntry = check createCertificateConfigMapEntry(check convertK8sAPItoAPI(api, true), endpointCertificate, <crypto:Certificate>validateCertificateExpiryResult[0], organization);
+                        API restAPIModel = check convertK8sAPItoAPI(api, true);
+                        model:ConfigMap certificateConfigMapEntry = check createCertificateConfigMapEntry(restAPIModel.name, restAPIModel.version, endpointCertificate, <crypto:Certificate>validateCertificateExpiryResult[0], organization);
                         certificateConfigMapEntry.metadata.name = configMapById.metadata.name;
                         model:ConfigMap deployedConfigMap = check self.updateConfigMap(certificateConfigMapEntry);
                         string locationUrl = runtimeConfiguration.baseURl + "/apis/" + apiId + "/endpoint-certificates/" + deployedConfigMap.metadata.uid.toString();
@@ -4190,11 +4149,103 @@ public class APIClient {
             }
         }
     }
+    public isolated function handleGenerateArtifactRequest(http:Request request) returns http:Response|commons:APKError {
+        Generate_artifactBody generateArtifactBody = {};
+        do {
+            mime:Entity[] payload = check request.getBodyParts();
+            foreach mime:Entity payLoadPart in payload {
+                mime:ContentDisposition contentDisposition = payLoadPart.getContentDisposition();
+                string fieldName = contentDisposition.name;
+                if fieldName == "organization" {
+                    generateArtifactBody.organization = check payLoadPart.getText();
+                }
+                else if fieldName == "file" {
+                    generateArtifactBody.file = {
+                        fileName: contentDisposition.fileName,
+                        fileContent: check payLoadPart.getByteArray()
+                    };
+                }
+            }
+            model:APIArtifact apiArtifact = check self.prepareArtifact(generateArtifactBody);
+            [string, string] zipName = check self.zipAPIArtifact(apiArtifact.uniqueId, apiArtifact);
+            http:Response response = new;
+            response.setFileAsPayload(zipName[1]);
+            response.addHeader("Content-Disposition", "attachment; filename=" + zipName[0]);
+            return response;
+        } on fail var e {
+            return e909036(e);
+        }
+    }
+    private isolated function prepareArtifact(Generate_artifactBody artifactRequest) returns commons:APKError|model:APIArtifact|error {
+        do {
+            string tempDirectory = check file:createTempDir();
+            record {|byte[] fileContent; string fileName; anydata...;|}? file = artifactRequest.file;
+            if file is record {|byte[] fileContent; string fileName; anydata...;|} {
+                commons:APKException? result = check commons:ZIPUtils_unzip(file.fileContent, tempDirectory);
+                if result is commons:APKException {
+                    log:printError("Error occured while prepare artifact", result);
+                    return e909022("Error occured while prepare artifact", result);
+                }
+            } else {
+
+            }
+            string apkConfContent = check io:fileReadString(tempDirectory.concat(file:pathSeparator, "api.apk-conf"));
+            string|() convertedJson = check commons:newYamlUtil1().fromYamlStringToJson(apkConfContent);
+            if convertedJson is string {
+                APKConf apkConf = check value:fromJsonWithType(convertedJson, APKConf);
+                commons:Organization organization = {
+                    displayName: <string>artifactRequest.organization,
+                    name: <string>artifactRequest.organization,
+                    organizationClaimValue: "",
+                    uuid: <string>artifactRequest.organization,
+                    enabled: true
+                };
+                string uniqueId = getUniqueIdForAPI(apkConf.name, apkConf.'version, organization);
+                model:APIArtifact apiArtifact = {uniqueId: uniqueId};
+                string? apiDefinition = ();
+                if apkConf.'type == API_TYPE_REST {
+                    if check file:test(string:concat(tempDirectory, file:pathSeparator, "api.yaml"), file:EXISTS) {
+                        string fileContent = check io:fileReadString(string:concat(tempDirectory, file:pathSeparator, "api.yaml"));
+                        apiDefinition = check commons:newYamlUtil1().fromYamlStringToJson(fileContent);
+                    }
+                    if check file:test(string:concat(tempDirectory, file:pathSeparator, "openapi.json"), file:EXISTS) {
+                        apiDefinition = check io:fileReadString(string:concat(tempDirectory, file:pathSeparator, "openapi.json"));
+                    }
+                }
+                if check file:test(string:concat(tempDirectory, file:pathSeparator, "certificates"), file:IS_DIR) {
+                    file:MetaData[] & readonly certificateFileList = check file:readDir(string:concat(tempDirectory, file:pathSeparator, "certificates"));
+                    foreach file:MetaData item in certificateFileList {
+                        if !item.dir {
+                            byte[] & readonly certificate = check io:fileReadBytes(item.absPath);
+                            EndpointCertificateRequest endpointCertificate = {
+                                fileName: item.absPath.substring(item.absPath.lastIndexOf("/") ?: 0, item.absPath.length()),
+                                certificateFileContent: certificate
+                            };
+                            [crypto:Certificate?, boolean] validateCertificateExpiryResult = check validateCertificateExpiry(endpointCertificate);
+                            if validateCertificateExpiryResult[1] {
+                                model:ConfigMap certificateConfigMapEntry = check createCertificateConfigMapEntry(apkConf.name, apkConf.version, endpointCertificate, <crypto:Certificate>validateCertificateExpiryResult[0], organization);
+                                apiArtifact.endpointCertificates[certificateConfigMapEntry.metadata.name] = certificateConfigMapEntry;
+                                apiArtifact.certificateMap[endpointCertificate.fileName] = certificateConfigMapEntry.metadata.name;
+                            }
+                        }
+                    }
+                }
+                check self.generateK8sArtifacts(apiArtifact, apkConf, apiDefinition, organization, uniqueId, ());
+                return apiArtifact;
+            } else {
+                return e909022("Error occured while prepare artifact", ());
+            }
+        }
+        on fail var e {
+            log:printError("Error occured while prepare artifact", e);
+            return e909022("Error occured while prepare artifact", e);
+        }
+    }
 
 }
 
 public type EndpointCertificateRequest record {
-    string host;
+    string host?;
     string fileName;
     byte[] certificateFileContent;
 };
@@ -4217,27 +4268,27 @@ type DefinitionValidationRequest record {|
 
 |};
 
-public isolated function getBackendServiceUid(API api, APIOperations? apiOperation, string endpointType, commons:Organization organization) returns string {
+public isolated function getBackendServiceUid(APKConf apkConf, APKOperation? apiOperation, string endpointType, commons:Organization organization) returns string {
     string concatanatedString = uuid:createType1AsString();
     if (apiOperation is APIOperations) {
         return "backend-" + concatanatedString + "-resource";
     } else {
-        concatanatedString = string:'join("-", organization.uuid, api.name, 'api.'version, endpointType);
+        concatanatedString = string:'join("-", organization.uuid, apkConf.name, 'apkConf.'version, endpointType);
         byte[] hashedValue = crypto:hashSha1(concatanatedString.toBytes());
         concatanatedString = hashedValue.toBase16();
         return "backend-" + concatanatedString + "-api";
     }
 }
 
-public isolated function getInterceptorServiceUid(API api, commons:Organization organization, string flow, int interceptorIndex) returns string {
-    string concatanatedString = string:'join("-", organization.uuid, api.name, 'api.'version);
+public isolated function getInterceptorServiceUid(APKConf apkConf, commons:Organization organization, string flow, int interceptorIndex) returns string {
+    string concatanatedString = string:'join("-", organization.uuid, apkConf.name, 'apkConf.'version);
     byte[] hashedValue = crypto:hashSha1(concatanatedString.toBytes());
     concatanatedString = hashedValue.toBase16();
     return flow + "-interceptor-service-" + interceptorIndex.toString() + "-" + concatanatedString + "-resource";
 }
 
-public isolated function getInterceptorBackendUid(API api, string endpointType, commons:Organization organization, string backendUrl) returns string {
-    string concatanatedString = string:'join("-", organization.uuid, api.name, 'api.'version, endpointType, backendUrl);
+public isolated function getInterceptorBackendUid(APKConf apkConf, string endpointType, commons:Organization organization, string backendUrl) returns string {
+    string concatanatedString = string:'join("-", organization.uuid, apkConf.name, 'apkConf.'version, endpointType, backendUrl);
     byte[] hashedValue = crypto:hashSha1(concatanatedString.toBytes());
     concatanatedString = hashedValue.toBase16();
     return "backend-" + concatanatedString + "-interceptor";
@@ -4255,11 +4306,12 @@ public isolated function getBackendSecurityUid(string endpointType, commons:Orga
 
 public isolated function getUniqueIdForAPI(string name, string 'version, commons:Organization organization) returns string {
     string concatanatedString = string:'join("-", organization.uuid, name, 'version);
+    log:printInfo("concatanatedString====" + concatanatedString);
     byte[] hashedValue = crypto:hashSha1(concatanatedString.toBytes());
     return hashedValue.toBase16();
 }
 
-public isolated function retrieveHttpRouteRefName(API api, string 'type, commons:Organization organization) returns string {
+public isolated function retrieveHttpRouteRefName(APKConf apkConf, string 'type, commons:Organization organization) returns string {
     return uuid:createType1AsString();
 }
 
@@ -4271,10 +4323,70 @@ public isolated function retrieveInterceptorBackendRefName() returns string {
     return uuid:createType1AsString();
 }
 
-public isolated function retrieveRateLimitPolicyRefName(APIOperations? operation) returns string {
-    if operation is APIOperations {
+public isolated function retrieveRateLimitPolicyRefName(APKOperation? operation) returns string {
+    if operation is APKOperation {
         return uuid:createType1AsString();
     } else {
         return "api-" + uuid:createType1AsString();
     }
+}
+
+isolated function getBackendSecurity(EndpointConfig? endpointConfig, API_serviceInfo? serviceInfo, string endpointType) returns model:EndpointSecurity|commons:APKError {
+    model:EndpointSecurity endpointSecurity = {};
+    EndpointSecurity? endpointSecurityConfig = ();
+    Endpoint? endpoint = ();
+    if (endpointConfig is EndpointConfig) {
+        if endpointType == SANDBOX_TYPE {
+            endpoint = endpointConfig.sandbox;
+        } else if endpointType == PRODUCTION_TYPE {
+            endpoint = endpointConfig.production;
+        }
+        if endpoint is Endpoint {
+            endpointSecurityConfig = endpoint.endpointSecurity;
+        }
+    } else if serviceInfo is API_serviceInfo {
+        endpointSecurityConfig = serviceInfo.endpoint_security;
+    }
+    if endpointSecurityConfig is EndpointSecurity {
+        string? endpointSecurityType = endpointSecurityConfig.securityType;
+        boolean? endpointSecurityEnabled = endpointSecurityConfig.enable;
+        record {} securityProperties = endpointSecurityConfig.securityProperties ?: {};
+        if endpointSecurityType is string && endpointSecurityEnabled is boolean {
+            if endpointSecurityEnabled {
+                if endpointSecurityType.toLowerAscii() == ENDPOINT_SECURITY_TYPE_BASIC {
+                    if securityProperties.hasKey(ENDPOINT_SECURITY_SECRET_REFERENCE_NAME) {
+                        endpointSecurity = {
+                            'type: ENDPOINT_SECURITY_TYPE_BASIC,
+                            enabled: true,
+                            secretRefName: <string>securityProperties.get(ENDPOINT_SECURITY_SECRET_REFERENCE_NAME)
+                        };
+                    } else if securityProperties.hasKey(ENDPOINT_SECURITY_GENERATED_SECRET_REFERENCE_NAME) {
+                        if securityProperties.hasKey(ENDPOINT_SECURITY_USERNAME) && securityProperties.hasKey(ENDPOINT_SECURITY_PASSWORD) {
+                            endpointSecurity = {
+                                'type: ENDPOINT_SECURITY_TYPE_BASIC,
+                                enabled: true,
+                                username: <string>securityProperties.get(ENDPOINT_SECURITY_USERNAME),
+                                password: <string>securityProperties.get(ENDPOINT_SECURITY_PASSWORD),
+                                generatedSecretRefName: <string>securityProperties.get(ENDPOINT_SECURITY_GENERATED_SECRET_REFERENCE_NAME)
+                            };
+                        } else {
+                            return e909005("username or password");
+                        }
+                    } else {
+                        if securityProperties.hasKey(ENDPOINT_SECURITY_USERNAME) && securityProperties.hasKey(ENDPOINT_SECURITY_PASSWORD) {
+                            endpointSecurity = {
+                                'type: ENDPOINT_SECURITY_TYPE_BASIC,
+                                enabled: true,
+                                username: <string>securityProperties.get(ENDPOINT_SECURITY_USERNAME),
+                                password: <string>securityProperties.get(ENDPOINT_SECURITY_PASSWORD)
+                            };
+                        } else {
+                            return e909005("username or password");
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return endpointSecurity;
 }

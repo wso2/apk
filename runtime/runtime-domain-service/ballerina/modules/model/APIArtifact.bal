@@ -4,6 +4,7 @@ public type APIArtifact record {|
     Httproute[] sandboxRoute = [];
     ConfigMap definition?;
     map<ConfigMap> endpointCertificates = {};
+    map<string> certificateMap = {};
     K8sServiceMapping[] serviceMapping = [];
     RuntimeAPI runtimeAPI?;
     map<Backend> backendServices = {};

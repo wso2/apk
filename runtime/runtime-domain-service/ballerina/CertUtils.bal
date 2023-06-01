@@ -156,16 +156,15 @@ isolated function validateCertificateExpiry(EndpointCertificateRequest endpointC
     return [certificate, false];
 }
 
-isolated function createCertificateConfigMapEntry(API api, EndpointCertificateRequest endpointCertificateRequest, crypto:Certificate certificate, commons:Organization organization) returns model:ConfigMap|error {
+isolated function createCertificateConfigMapEntry(string apiName, string apiVersion, EndpointCertificateRequest endpointCertificateRequest, crypto:Certificate certificate, commons:Organization organization) returns model:ConfigMap|error {
     byte[] certificateFileContent = endpointCertificateRequest.certificateFileContent;
     string content = check string:fromBytes(certificateFileContent);
     model:ConfigMap configMap = {
         metadata: {
             name: uuid:createType1AsString(),
             namespace: currentNameSpace,
-            labels: getLabelsForCertificates(api, organization),
+            labels: getLabelsForCertificates(apiName, apiVersion, organization),
             annotations: {
-                [CERTIFICATE_HOSTS] : endpointCertificateRequest.host,
                 [CERTIFICATE_SERIAL_NUMBER] : certificate.serial.toString(),
                 [CERTIFICATE_ISSUER] : certificate.issuer,
                 [CERTIFICATE_SUBJECT] : certificate.subject,
@@ -178,12 +177,15 @@ isolated function createCertificateConfigMapEntry(API api, EndpointCertificateRe
             [CERTIFICATE_KEY_CONFIG_MAP] : content
         }
     };
+    if endpointCertificateRequest.host is string {
+        configMap.metadata.annotations[CERTIFICATE_HOSTS] = <string>endpointCertificateRequest.host;
+    }
     return configMap;
 }
 
-public isolated function getLabelsForCertificates(API api, commons:Organization organization) returns map<string> {
-    string apiNameHash = crypto:hashSha1(api.name.toBytes()).toBase16();
-    string apiVersionHash = crypto:hashSha1(api.'version.toBytes()).toBase16();
+public isolated function getLabelsForCertificates(string apiName, string apiVersion, commons:Organization organization) returns map<string> {
+    string apiNameHash = crypto:hashSha1(apiName.toBytes()).toBase16();
+    string apiVersionHash = crypto:hashSha1(apiVersion.toBytes()).toBase16();
     string organizationHash = crypto:hashSha1(organization.uuid.toBytes()).toBase16();
     map<string> labels = {
         [API_NAME_HASH_LABEL] : apiNameHash,
@@ -195,9 +197,9 @@ public isolated function getLabelsForCertificates(API api, commons:Organization 
     return labels;
 }
 
-public isolated function getLabels(API api, commons:Organization organization) returns map<string> {
-    string apiNameHash = crypto:hashSha1(api.name.toBytes()).toBase16();
-    string apiVersionHash = crypto:hashSha1(api.'version.toBytes()).toBase16();
+public isolated function getLabels(APKConf apkConf, commons:Organization organization) returns map<string> {
+    string apiNameHash = crypto:hashSha1(apkConf.name.toBytes()).toBase16();
+    string apiVersionHash = crypto:hashSha1(apkConf.'version.toBytes()).toBase16();
     string organizationHash = crypto:hashSha1(organization.uuid.toBytes()).toBase16();
     map<string> labels = {
         [API_NAME_HASH_LABEL] : apiNameHash,
@@ -208,22 +210,27 @@ public isolated function getLabels(API api, commons:Organization organization) r
     return labels;
 }
 
-public isolated function getConfigMapNameByHostname(API api, commons:Organization organization, string hostname) returns string|commons:APKError? {
+public isolated function getConfigMapNameByHostname(model:APIArtifact apiArtifact, APKConf apkConf, commons:Organization organization, Endpoint endpointConfig) returns string|commons:APKError? {
     do {
-        string apiNameHash = crypto:hashSha1(api.name.toBytes()).toBase16();
-        string apiVersionHash = crypto:hashSha1(api.'version.toBytes()).toBase16();
+        string apiNameHash = crypto:hashSha1(apkConf.name.toBytes()).toBase16();
+        string apiVersionHash = crypto:hashSha1(apkConf.'version.toBytes()).toBase16();
         string organizationHash = crypto:hashSha1(organization.uuid.toBytes()).toBase16();
         lock {
-            map<model:ConfigMap> & readonly readOnlyconfigMapList = configMapList.cloneReadOnly();
-            foreach model:ConfigMap & readonly item in readOnlyconfigMapList {
-                (map<string> & readonly) labels = item.metadata.labels ?: {};
+            map<model:ConfigMap> endpointCertificates = apiArtifact.endpointCertificates;
+            if endpointConfig.certification is string {
+                if apiArtifact.certificateMap.hasKey(<string>endpointConfig.certification) {
+                    return apiArtifact.certificateMap[<string>endpointConfig.certification];
+                }
+            }
+            foreach model:ConfigMap item in endpointCertificates {
+                map<string> labels = item.metadata.labels ?: {};
                 if (labels.hasKey(ORGANIZATION_HASH_LABEL) && labels.get(ORGANIZATION_HASH_LABEL) == organizationHash) {
                     if (labels.hasKey(API_NAME_HASH_LABEL) && labels.get(API_NAME_HASH_LABEL) == apiNameHash) {
                         if (labels.hasKey(API_VERSION_HASH_LABEL) && labels.get(API_VERSION_HASH_LABEL) == apiVersionHash) {
                             if (labels.hasKey(CONFIG_TYPE_LABEL) && labels.get(CONFIG_TYPE_LABEL) == CONFIG_TYPE_LABEL_VALUE) {
                                 map<string> annotations = item.metadata.annotations ?: {};
                                 string hosts = annotations.hasKey(CERTIFICATE_HOSTS) ? annotations.get(CERTIFICATE_HOSTS) : "";
-                                if regex:matches(hostname, hosts) {
+                                if regex:matches(endpointConfig.endpointURL, hosts) {
                                     return item.metadata.name;
                                 }
                             }

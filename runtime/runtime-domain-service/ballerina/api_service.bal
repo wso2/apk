@@ -178,7 +178,7 @@ service /api/runtime on ep0 {
     # string (OK. Requested definition document of the API is returned)
     # NotFoundError (Not Found. The specified resource does not exist.)
     # InternalServerErrorError (Internal Server Error.)
-    isolated resource function get apis/[string apiId]/definition(http:RequestContext requestContext,@http:Header string? accept = APPLICATION_JSON_MEDIA_TYPE) returns http:Response|NotFoundError|PreconditionFailedError|InternalServerErrorError|commons:APKError {
+    isolated resource function get apis/[string apiId]/definition(http:RequestContext requestContext, @http:Header string? accept = APPLICATION_JSON_MEDIA_TYPE) returns http:Response|NotFoundError|PreconditionFailedError|InternalServerErrorError|commons:APKError {
         final APIClient apiService = new ();
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
@@ -361,7 +361,7 @@ service /api/runtime on ep0 {
         final APIClient apiService = new ();
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
-        return apiService.getEndpointCertificateByID(apiId,certificateId, organization);
+        return apiService.getEndpointCertificateByID(apiId, certificateId, organization);
     }
     # Update a certificate.
     #
@@ -373,11 +373,11 @@ service /api/runtime on ep0 {
     # BadRequestError (Bad Request. Invalid request or validation error.)
     # NotFoundError (Not Found. The specified resource does not exist.)
     # InternalServerErrorError (Internal Server Error.)
-    resource function put apis/[string apiId]/'endpoint\-certificates/[string certificateId](http:RequestContext requestContext,http:Request request) returns OkCertMetadata|BadRequestError|NotFoundError|InternalServerErrorError|commons:APKError {
+    resource function put apis/[string apiId]/'endpoint\-certificates/[string certificateId](http:RequestContext requestContext, http:Request request) returns OkCertMetadata|BadRequestError|NotFoundError|InternalServerErrorError|commons:APKError {
         final APIClient apiService = new ();
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
-        return apiService.updateEndpointCertificate(apiId,certificateId, request, organization);
+        return apiService.updateEndpointCertificate(apiId, certificateId, request, organization);
     }
     # Delete a certificate.
     #
@@ -392,7 +392,7 @@ service /api/runtime on ep0 {
         final APIClient apiService = new ();
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
-        return apiService.deleteEndpointCertificate(apiId,certificateId, organization);
+        return apiService.deleteEndpointCertificate(apiId, certificateId, organization);
     }
     # Download a Certificate
     #
@@ -407,6 +407,18 @@ service /api/runtime on ep0 {
         final APIClient apiService = new ();
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
-        return apiService.getEndpointCertificateContent(apiId,certificateId, organization);
+        return apiService.getEndpointCertificateContent(apiId, certificateId, organization);
     }
+    # Import an API Definition
+    #
+    # + request - parameter description 
+    # + return - returns can be any of following types
+    # API (Created. Successful response with the newly created object as entity in the body. Location header contains URL of newly created entity.)
+    # BadRequestError (Bad Request. Invalid request or validation error.)
+    # InternalServerErrorError (Internal Server Error.)
+    resource function post apis/'generate\-artifact(http:Request request) returns http:Response|commons:APKError {
+        final APIClient apiService = new ();
+        return check apiService.handleGenerateArtifactRequest(request);
+    }
+
 }

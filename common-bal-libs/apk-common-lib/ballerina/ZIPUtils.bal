@@ -1,4 +1,5 @@
 import ballerina/jballerina.java;
+import ballerina/jballerina.java.arrays as jarrays;
 import apk_common_lib.java.lang as javalang;
 import apk_common_lib.java.io as javaio;
 
@@ -106,6 +107,32 @@ public isolated function newZIPUtils1() returns ZIPUtils {
     return newObj;
 }
 
+# The function that maps to the `unzip` method of `org.wso2.apk.common.ZIPUtils`.
+#
+# + arg0 - The `byte[]` value required to map with the Java method parameter.
+# + arg1 - The `string` value required to map with the Java method parameter.
+# + return - The `APKException` value returning from the Java mapping.
+public isolated function ZIPUtils_unzip(byte[] arg0, string arg1) returns APKException?|error? {
+    error|() externalObj = org_wso2_apk_common_ZIPUtils_unzip(check jarrays:toHandle(arg0, "byte"), java:fromString(arg1));
+    if (externalObj is error) {
+        APKException e = error APKException(APKEXCEPTION, externalObj, message = externalObj.message());
+        return e;
+    }
+}
+
+# The function that maps to the `unzip` method of `org.wso2.apk.common.ZIPUtils`.
+#
+# + arg0 - The `string` value required to map with the Java method parameter.
+# + arg1 - The `string` value required to map with the Java method parameter.
+# + return - The `APKException` value returning from the Java mapping.
+public isolated function ZIPUtils_unzip2(string arg0, string arg1) returns APKException? {
+    error|() externalObj = org_wso2_apk_common_ZIPUtils_unzip2(java:fromString(arg0), java:fromString(arg1));
+    if (externalObj is error) {
+        APKException e = error APKException(APKEXCEPTION, externalObj, message = externalObj.message());
+        return e;
+    }
+}
+
 # The function that maps to the `zipDir` method of `org.wso2.apk.common.ZIPUtils`.
 #
 # + arg0 - The `string` value required to map with the Java method parameter.
@@ -147,6 +174,18 @@ function org_wso2_apk_common_ZIPUtils_notifyAll(handle receiver) = @java:Method 
     name: "notifyAll",
     'class: "org.wso2.apk.common.ZIPUtils",
     paramTypes: []
+} external;
+
+isolated function org_wso2_apk_common_ZIPUtils_unzip(handle arg0, handle arg1) returns error? = @java:Method {
+    name: "unzip",
+    'class: "org.wso2.apk.common.ZIPUtils",
+    paramTypes: ["[B", "java.lang.String"]
+} external;
+
+isolated function org_wso2_apk_common_ZIPUtils_unzip2(handle arg0, handle arg1) returns error? = @java:Method {
+    name: "unzip",
+    'class: "org.wso2.apk.common.ZIPUtils",
+    paramTypes: ["java.lang.String", "java.lang.String"]
 } external;
 
 function org_wso2_apk_common_ZIPUtils_wait(handle receiver) returns error? = @java:Method {

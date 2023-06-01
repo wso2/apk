@@ -18,11 +18,19 @@
 
 package org.wso2.apk.common;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.cert.X509Certificate;
+import java.security.interfaces.RSAPublicKey;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 public class ZIPUtils {
@@ -30,18 +38,87 @@ public class ZIPUtils {
     /**
      * Creates a zip archive from the provided folder
      *
-     * @param dirName folder to zip
+     * @param dirName     folder to zip
      * @param nameZipFile absolute path to the zip file which needs to be created
      * @throws IOException when error occurred while creating the zip file
      */
     public static void zipDir(String dirName, String nameZipFile) throws IOException {
-        try (FileOutputStream fW = new FileOutputStream(nameZipFile); ZipOutputStream zip = new ZipOutputStream(fW)) {
+
+        try (FileOutputStream fW = new FileOutputStream(nameZipFile); ZipOutputStream zip =
+                new ZipOutputStream(fW)) {
             addFolderToZip("", dirName, zip);
         }
 
     }
 
+    public static void unzip(byte[] zipContent, String destDir) throws APKException {
+
+        File dir = new File(destDir);
+        // Create the destination directory if it doesn't exist
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+        try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(zipContent)) {
+            unzip(byteArrayInputStream, destDir);
+        } catch (IOException e) {
+            throw new APKException("Error occurred when extracting zip", e);
+        }
+    }
+
+    private static void unzip(InputStream inputStream, String destDir) throws APKException {
+
+        try (ZipInputStream zis = new ZipInputStream(inputStream)) {
+            ZipEntry entry = zis.getNextEntry();
+
+            while (entry != null) {
+                Path filePath = Paths.get(destDir, entry.getName());
+                if (!filePath.startsWith(destDir)) {
+                    throw new APKException("Invalid zip file");
+                }
+                if (!entry.isDirectory()) {
+                    // Create parent directories for the file
+                    filePath.getParent().toFile().mkdirs();
+                    extractFile(zis, filePath);
+                } else {
+                    // Create the directory
+                    filePath.toFile().mkdirs();
+                }
+
+                zis.closeEntry();
+                entry = zis.getNextEntry();
+            }
+        } catch (IOException e) {
+            throw new APKException("Error occurred when extracting zip", e);
+        }
+    }
+
+    public static void unzip(String zipFilePath, String destDir) throws APKException {
+
+        File dir = new File(destDir);
+        // Create the destination directory if it doesn't exist
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+        try (FileInputStream fis = new FileInputStream(zipFilePath)) {
+            unzip(fis, destDir);
+        } catch (IOException e) {
+            throw new APKException("Error occurred when extracting zip", e);
+        }
+    }
+
+    private static void extractFile(ZipInputStream zis, Path filePath) throws IOException {
+
+        try (FileOutputStream fos = new FileOutputStream(filePath.toFile())) {
+            byte[] buffer = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = zis.read(buffer)) != -1) {
+                fos.write(buffer, 0, bytesRead);
+            }
+        }
+    }
+
     private static void addFolderToZip(String path, String srcFolder, ZipOutputStream zip) throws IOException {
+
         File folder = new File(srcFolder);
         if (folder.list().length == 0) {
             addFileToZip(path, srcFolder, zip, true);
@@ -57,6 +134,7 @@ public class ZIPUtils {
     }
 
     private static void addFileToZip(String path, String srcFile, ZipOutputStream zip, boolean flag) throws IOException {
+
         File folder = new File(srcFile);
         if (flag) {
             zip.putNextEntry(new ZipEntry(path + "/" + folder.getName() + "/"));

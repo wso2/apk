@@ -120,7 +120,8 @@ isolated function convertPolicyModeltoPolicy(model:MediationPolicy mediationPoli
     };
     return mediationPolicyData;
 }
-public isolated function convertAPIListToAPIInfoList(API[] apiList) returns APIInfo[]{
+
+public isolated function convertAPIListToAPIInfoList(API[] apiList) returns APIInfo[] {
     APIInfo[] apiInfoList = [];
     foreach API api in apiList {
         APIInfo apiInfo = {
@@ -134,4 +135,104 @@ public isolated function convertAPIListToAPIInfoList(API[] apiList) returns APII
         apiInfoList.push(apiInfo);
     }
     return apiInfoList;
+}
+
+public isolated function fromAPIToAPKConf(API api) returns APKConf|error {
+    APKConf apkConf = {
+        id: api.id,
+        name: api.name,
+        context: api.context,
+        version: api.'version,
+        'type: api.'type,
+        apiPolicies: api.apiPolicies,
+        apiRateLimit: api.apiRateLimit,
+        securityScheme: api.securityScheme,
+        additionalProperties: [],
+        operations: check convetAPIOperations(api.operations),
+        serviceInfo: api.serviceInfo,
+        endpointConfig: check convertEndpointConfig(api.endpointConfig)
+    };
+
+    return apkConf;
+}
+
+isolated function convetAPIOperations(APIOperations[]? apiOperations) returns APKOperation[]|error {
+    APKOperation[] apkOperations = [];
+    if apiOperations is APIOperations[] {
+        foreach APIOperations apiOperation in apiOperations {
+            APKOperation apkOperation = {
+                authTypeEnabled: apiOperation.authTypeEnabled,
+                target: apiOperation.target,
+                verb: apiOperation.verb,
+                scopes: apiOperation.scopes,
+                operationPolicies: apiOperation.operationPolicies
+            };
+            if apiOperation.endpointConfig is record {} {
+                apkOperation.endpointConfig = check convertEndpointConfig(apiOperation.endpointConfig);
+            }
+            if apiOperation.operationRateLimit is APIRateLimit {
+                apkOperation.operationRateLimit = {
+                    requestsPerUnit: <int>apiOperation.operationRateLimit?.requestsPerUnit,
+                    unit: <string>apiOperation.operationRateLimit?.unit
+                };
+            }
+            apkOperations.push(apkOperation);
+        }
+    }
+    return apkOperations;
+}
+
+isolated function convertEndpointConfig(record {}? apiEndpointConfig) returns EndpointConfig|error {
+    EndpointConfig endpointConfig = {};
+    Endpoint? production = ();
+    Endpoint? sandbox = ();
+    if apiEndpointConfig is record {} {
+        anydata|error sandboxEndpointConfig = trap apiEndpointConfig.get("sandbox_endpoints");
+        anydata|error productionEndpointConfig = trap apiEndpointConfig.get("production_endpoints");
+        if sandboxEndpointConfig is map<anydata> {
+            if sandboxEndpointConfig.hasKey("url") {
+                anydata url = sandboxEndpointConfig.get("url");
+                model:EndpointSecurity backendSecurity = check getBackendSecurity(apiEndpointConfig, (), SANDBOX_TYPE);
+                sandbox = {
+                    endpointURL: <string>url,
+                    endpointSecurity: {
+                        enable: backendSecurity.enabled,
+                        securityType: backendSecurity.'type,
+                        securityProperties: {
+                            [ENDPOINT_BASIC_USER_NAME] : backendSecurity.username,
+                            [ENDPOINT_BASIC_PASSWORD] : backendSecurity.password,
+                            [ENDPOINT_BASIC_SECRET_REF] : backendSecurity.secretRefName
+                        }
+                    }
+                };
+            } else {
+                return e909013();
+            }
+        }
+        if productionEndpointConfig is map<anydata> {
+            if productionEndpointConfig.hasKey("url") {
+                anydata url = productionEndpointConfig.get("url");
+                model:EndpointSecurity backendSecurity = check getBackendSecurity(endpointConfig, (), PRODUCTION_TYPE);
+                production = {
+                    endpointURL: <string>url,
+                    endpointSecurity: {
+                        enable: backendSecurity.enabled,
+                        securityType: backendSecurity.'type,
+                        securityProperties: {
+                            [ENDPOINT_BASIC_USER_NAME] : backendSecurity.username,
+                            [ENDPOINT_BASIC_PASSWORD] : backendSecurity.password,
+                            [ENDPOINT_BASIC_SECRET_REF] : backendSecurity.secretRefName
+                        }
+                    }
+                };
+            } else {
+                return e909014();
+            }
+        }
+        endpointConfig = {
+            sandbox: sandbox,
+            production: production
+        };
+    }
+    return endpointConfig;
 }

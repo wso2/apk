@@ -69,6 +69,30 @@ public type OkAPIDefinitionValidationResponse record {|
     APIDefinitionValidationResponse body;
 |};
 
+public type APKConf record {|
+    # UUID of the API
+    string id?;
+    @constraint:String {maxLength: 60, minLength: 1}
+    string name;
+    @constraint:String {maxLength: 232, minLength: 1}
+    string context;
+    @constraint:String {maxLength: 30, minLength: 1}
+    string version;
+    string provider?;
+    string 'type = "REST";
+    string createdTime?;
+    string lastUpdatedTime?;
+    EndpointConfig endpointConfig?;
+    APKOperation[] operations?;
+    API_serviceInfo serviceInfo?;
+    APIOperationPolicies apiPolicies?;
+    APIRateLimit apiRateLimit?;
+    string[] securityScheme?;
+    # Map of custom properties of API
+    APKAdditionalProperies[] additionalProperties?;
+|};
+
+
 public type ErrorListItem record {|
     string code;
     # Description about individual errors occurred
@@ -112,6 +136,12 @@ public type Certificates record {|
     Pagination pagination?;
 |};
 
+public type EndpointSecurity record {
+    boolean enable?;
+    string securityType?;
+    record {} securityProperties?;
+};
+
 public type CertificateValidity record {|
     string 'from?;
     string to?;
@@ -130,7 +160,11 @@ public type Apis_validatedefinition_body record {|
 
 public type Pagination record {|
     int offset?;
+    # The maximum number of resources returned in the current subset.
+    # This is usually used in conjunction with the `offset` parameter.
     int 'limit?;
+    # The total number of resources available across all subsets.
+    # This is usually returned in the first subset.
     int total?;
     # Link to the next subset of resources qualified.
     # Empty if no more resources are to be returned.
@@ -145,6 +179,17 @@ public type GatewayList record {|
     Pagination pagination?;
 |};
 
+public type APKOperation record {
+    string target?;
+    string verb?;
+    # Authentication mode for resource (true/false)
+    boolean authTypeEnabled?;
+    EndpointConfig endpointConfig?;
+    APIOperationPolicies operationPolicies?;
+    APIRateLimit operationRateLimit?;
+    string[] scopes?;
+};
+
 public type ApiId_definition_body record {|
     # API definition of the API
     string apiDefinition?;
@@ -153,6 +198,13 @@ public type ApiId_definition_body record {|
     # API definition as a file
     string file?;
 |};
+
+public type Endpoint record {
+    string endpointURL;
+    EndpointSecurity endpointSecurity?;
+    string certification?;
+    EndpointTimeout timeouts?;
+};
 
 public type ApiId_endpointcertificates_body record {|
     # The certificate that needs to be uploaded.
@@ -187,6 +239,17 @@ public type APIOperations record {|
     #     },
     #     "production_endpoints":       {
     #        "url": "https://pizzashack-service:8080/sample/pizzashack/v3/api/"
+    #     },
+    #     "endpoint_security": {
+    #         "production": {
+    #             "enabled": true,
+    #             "type": "Basic",
+    #             "username": "admin",
+    #             "password": "admin"
+    #         },
+    #         "sandbox": {
+    #             "enabled": false
+    #         }
     #     }
     #   }
     record {} endpointConfig?;
@@ -216,6 +279,13 @@ public type MediationPolicySpecAttribute record {|
     string defaultValue?;
 |};
 
+public type Generate_artifactBody record {
+    # zip file of api artifact
+    record {byte[] fileContent; string fileName;} file?;
+    # Organization of the API
+    string organization?;
+};
+
 public type APIList record {|
     # Number of APIs returned.
     int count?;
@@ -236,6 +306,9 @@ public type CertificateInfo record {|
     string 'version?;
     string subject?;
 |};
+
+public type EndpointTimeout record {
+};
 
 public type PortMapping record {|
     @constraint:String {maxLength: 255, minLength: 1}
@@ -278,7 +351,19 @@ public type ServiceList record {|
 public type API_serviceInfo record {|
     string name?;
     string namespace?;
-    record {} endpoint_security?;
+    # Endpoint security of the API.
+    # 
+    # `Basic Auth Endpoint security`
+    #   {
+    #     "production":       {
+    #        "enabled": true,
+    #        "type": "Basic",
+    #        "username": "admin",
+    #        "password": "admin"
+    # 
+    #     }
+    #   }
+    EndpointSecurity endpoint_security?;
 |};
 
 public type APIInfo record {|
@@ -314,6 +399,18 @@ public type Service record {|
     string namespace;
     string 'type;
     PortMapping[] portmapping?;
+    # Endpoint security of the API.
+    # 
+    # `Basic Auth Endpoint security`
+    #   {
+    #     "production":       {
+    #        "enabled": true,
+    #        "type": "Basic",
+    #        "username": "admin",
+    #        "password": "admin"
+    # 
+    #     }
+    #   }
     record {} endpointSecurity?;
     string createdTime?;
 |};
@@ -324,6 +421,11 @@ public type SearchResult record {|
     # Accepted values are HTTP, WS, GRAPHQL
     string transportType?;
 |};
+
+public type APKAdditionalProperies record {
+    string name?;
+    string value?;
+};
 
 public type GraphQLSchema record {|
     string name;
@@ -367,11 +469,6 @@ public type OperationPolicy record {|
     record {} parameters?;
 |};
 
-public type Apis_import_body record {|
-    # Zip archive consisting on exported API configuration
-    string file;
-|};
-
 public type API record {|
     # UUID of the API
     string id?;
@@ -380,8 +477,7 @@ public type API record {|
     @constraint:String {maxLength: 232, minLength: 1}
     string context;
     @constraint:String {maxLength: 30, minLength: 1}
-    string 'version;
-    string provider?;
+    string version;
     # The api creation type to be used. Accepted values are REST, WS, GRAPHQL, WEBSUB, SSE, WEBHOOK, ASYNC
     string 'type = "REST";
     # Endpoint configuration of the API. This can be used to provide different types of endpoints including Simple REST Endpoints, Loadbalanced and Failover.
@@ -390,18 +486,35 @@ public type API record {|
     #   {
     #     "endpoint_type": "http",
     #     "sandbox_endpoints":       {
-    #        "url": "https://pizzashack-service:8080/sample/pizzashack/v3/api/"
+    #        "url": "https://pizzashack-service:8080/sample/pizzashack/v3/api/",
+    #        "certificate"
     #     },
     #     "production_endpoints":       {
     #        "url": "https://pizzashack-service:8080/sample/pizzashack/v3/api/"
+    #     },
+    #     "endpoint_security": {
+    #         "production": {
+    #             "enabled": true,
+    #             "type": "Basic",
+    #             "username": "admin",
+    #             "password": "admin"
+    #         },
+    #         "sandbox": {
+    #             "enabled": false
+    #         }
     #     }
     #   }
     record {} endpointConfig?;
     APIOperations[] operations?;
     API_serviceInfo serviceInfo?;
+    string provider?;
     APIOperationPolicies apiPolicies?;
     APIRateLimit apiRateLimit?;
     string[] securityScheme?;
     string createdTime?;
     string lastUpdatedTime?;
 |};
+public type EndpointConfig record {
+    Endpoint production?;
+    Endpoint sandbox?;
+};

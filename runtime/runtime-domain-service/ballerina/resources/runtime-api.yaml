@@ -361,6 +361,48 @@ paths:
 
         "500":
           $ref: "#/components/responses/InternalServerError"
+  /apis/generate-artifact:
+    post:
+      tags:
+        - APIs
+      summary: Import an API Definition
+      description: |
+        This operation can be used to create an API from an API definition. Provide either `url` or `file` to specify the definition. Specify additionalProperties with **at least** API's name, version, context and endpointConfig.
+      operationId: generateArtifact
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/generate_artifact-body"
+      responses:
+        "201":
+          description: |
+            Created. Successful response with the newly created object as entity in the body. Location header contains URL of newly created entity.
+          headers:
+            Location:
+              description: |
+                The URL of the newly created resource.
+              style: simple
+              explode: false
+              schema:
+                type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              style: simple
+              explode: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/API"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
   /apis/validate-definition:
     post:
       tags:
@@ -1535,10 +1577,10 @@ components:
       title: Endpoint configs
       properties:
         production:
-          $ref: "#/components/schemas/ProductionEndpoint"
+          $ref: "#/components/schemas/Endpoint"
         sandbox:
-          $ref: "#/components/schemas/SandboxEndpoint"
-    ProductionEndpoint:
+          $ref: "#/components/schemas/Endpoint"
+    Endpoint:
       required:
         - endpointURL
       type: object
@@ -1546,19 +1588,6 @@ components:
         endpointURL:
           type: string
         endpointSecurity:
-          $ref: "#/components/schemas/EndpointSecurity"
-        certification:
-          type: string
-        timeouts:
-          $ref: "#/components/schemas/EndpointTimeout"
-    SandboxEndpoint:
-      required:
-        - endpointURL
-      type: object
-      properties:
-        endpointURL:
-          type: string
-        security:
           $ref: "#/components/schemas/EndpointSecurity"
         certification:
           type: string
@@ -2229,7 +2258,17 @@ components:
         to:
           type: string
           example: 01-01-2019
-
+    generate_artifact-body:
+      properties:
+        file:
+          type: string
+          description: zip file of api artifact
+          format: binary
+          example: "api.zip"
+        organization:
+          type: string
+          description: Organization of the API
+          example: "wso2"
   responses:
     BadRequest:
       description: Bad Request. Invalid request or validation error.
