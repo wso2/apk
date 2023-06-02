@@ -552,6 +552,34 @@ wso2:
               level: DEBUG
               # -- Log file name
               logFile: logs/enforcer.log
+        # Tracing configurations for gateway runtime
+        tracing: 
+          # Enable/Disable tracing in gateway runtime
+          enabled: true
+          # Type of tracer exporter (e.g: azure, zipkin). Use zipkin type for Jaeger as well.
+          type: "zipkin"
+          # configurations for zipkin tracer type
+          configProperties: 
+            # Jaeger host
+            host: "jaeger"
+            # Jaeger port
+            port: "9411"
+            # Jaeger/Zipkin collector endpoint path
+            endpoint: "/api/v2/spans"
+            # Library Name to be tagged in traces (`otel.library.name`).
+            instrumentationName: "CHOREO-CONNECT"
+            # Maximum number of sampled traces per second string
+            maximumTracesPerSecond: "2"
+            # Maximum length of the request path to extract and include in the HttpUrl tag.
+            maxPathLength: "256"
+            # New Relic OTLP gRPC collector endpoint
+            connectionString: "https://otlp.nr-data.net"
+            # Auth header name
+            authHeaderName: "api-key"
+            # Auth header value
+            authHeaderValue: "<INGEST_LICENSE_KEY>"
+            # Connection timeout for the otlp service
+            connectionTimeout: "20"
     migration:
       # -- This flag should be enabled only in a migration scenario.
       # -- It is not recommended to run a production deployment with this flag enabled.
