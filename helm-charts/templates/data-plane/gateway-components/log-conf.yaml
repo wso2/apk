@@ -78,9 +78,9 @@ data:
       enabled = true
       type = "{{ .Values.wso2.apk.dp.gatewayRuntime.tracing.type }}"
       [tracing.configProperties]
-        host: "{{ .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.host }}"
-        port: "{{ .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.port }}"
-        endpoint: "{{ .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.endpoint }}"
+        host = "{{ .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.host }}"
+        port = "{{ .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.port }}"
+        endpoint = "{{ .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.endpoint }}"
         maxPathLength = "{{ .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.maxPathLength }}"
         connectionString = "{{ .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.connectionString }}"
         authHeaderName = "{{ .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.authHeaderName }}"
