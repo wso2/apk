@@ -346,7 +346,7 @@ wso2:
             maxPathLength: "256"
             connectionString: "https://otlp.nr-data.net"
             authHeaderName: "api-key"
-            authHeaderValue: "<INGEST_LICENSE_KEY>"
+            authHeaderValue: "INGEST_LICENSE_KEY"
             connectionTimeout: "20"
     migration:
       # -- This flag should be enabled only in a migration scenario.
