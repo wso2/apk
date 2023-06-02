@@ -334,6 +334,20 @@ wso2:
             #       properties:
             #         - name: filterConfig1
             #           value: filterConfig1
+        tracing: 
+          enabled: true
+          type: "zipkin"
+          configProperties: 
+            host: "jaeger"
+            port: "9411"
+            endpoint: "/api/v2/spans"
+            instrumentationName: "CHOREO-CONNECT"
+            maximumTracesPerSecond: "2"
+            maxPathLength: "256"
+            connectionString: "https://otlp.nr-data.net"
+            authHeaderName: "api-key"
+            authHeaderValue: "<INGEST_LICENSE_KEY>"
+            connectionTimeout: "20"
     migration:
       # -- This flag should be enabled only in a migration scenario.
       # -- It is not recommended to run a production deployment with this flag enabled.

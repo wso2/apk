@@ -73,7 +73,22 @@ data:
         [[enforcer.throttling.publisher.URLGroup]]
           receiverURLs = ["tcp://apim:9611"]
           authURLs = ["ssl://apim:9711"]
-
+    {{ if .Values.wso2.apk.dp.gatewayRuntime.tracing.enabled }}
+    [tracing]
+      enabled = true
+      type = "{{ .Values.wso2.apk.dp.gatewayRuntime.tracing.type }}"
+      [tracing.configProperties]
+        host: "{{ .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.host }}"
+        port: "{{ .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.port }}"
+        endpoint: "{{ .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.endpoint }}"
+        maxPathLength = "{{ .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.maxPathLength }}"
+        connectionString = "{{ .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.connectionString }}"
+        authHeaderName = "{{ .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.authHeaderName }}"
+        authHeaderValue = "{{ .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.authHeaderValue }}"
+        instrumentationName = "{{ .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.instrumentationName }}"
+        maximumTracesPerSecond = "{{ .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.maximumTracesPerSecond }}"
+        connectionTimeout = "{{ .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.connectionTimeout }}"
+    {{end}}
     [analytics]
       enabled = false
 
