@@ -73,5 +73,7 @@ public class AdminConstants {
                 "{\"error\": true, \"message\": \"No Authorization header provided\"}";
         public static final String BAD_REQUEST =
                 "{\"error\": true, \"message\": \"Invalid request for API Definition.\"}";
+        public static final String NOT_FOUND =
+                "{\"error\": true, \"message\": \"API Definition not found.\"}";
     }
 }

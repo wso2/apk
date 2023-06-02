@@ -82,7 +82,6 @@ const (
 	DescriptorValueForOperationMethod  = ":method"
 	MetadataNamespaceForCustomPolicies = "apk.ratelimit.metadata"
 	MetadataNamespaceForWSO2Policies   = "envoy.filters.http.ext_authz"
-	swaggerRoutePath                   = "/(.*)?swagger.json"
 )
 
 // CreateRoutesWithClusters creates envoy routes along with clusters and endpoint instances.

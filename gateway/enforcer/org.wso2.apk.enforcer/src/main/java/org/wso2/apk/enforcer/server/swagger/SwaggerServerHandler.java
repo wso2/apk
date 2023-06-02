@@ -60,6 +60,15 @@ public class SwaggerServerHandler extends SimpleChannelInboundHandler<HttpObject
         if(isSwagger){
             // load the corresponding swagger definition from the API name
             byte[] apiDefinition = apiFactory.getAPIDefinition(basePath, params[2], params[3]);
+            if (apiDefinition == null || apiDefinition.length == 0) {
+                String error = AdminConstants.ErrorMessages.NOT_FOUND;
+                responsePayload = new ResponsePayload();
+                responsePayload.setError(true);
+                responsePayload.setStatus(HttpResponseStatus.NOT_FOUND);
+                responsePayload.setContent(error);
+                buildAndSendResponse(ctx, responsePayload);
+                return;
+            }
             Map<String,String> map = new HashMap<>();
             map.put("swagger.json", new String(apiDefinition, StandardCharsets.UTF_8));
             responsePayload = APIDefinitionUtils.buildResponsePayload(map, HttpResponseStatus.OK, false);
