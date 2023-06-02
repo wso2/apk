@@ -24,7 +24,7 @@ spec:
   apiType: REST
   apiVersion: 1.0.0
   context: /test-api-with-path-params/v1.0.0
-  definitionFileRef: definition-file
+  #definitionFileRef: definition-file
   production:
     - httpRouteRefs:
       - test-api-with-path-params-httproute

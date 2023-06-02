@@ -71,7 +71,7 @@ spec:
   apiType: REST
   apiVersion: 1.0.8
   context: /http-bin-api/1.0.8
-  definitionFileRef: swagger-definition-http-bin-api
+  #definitionFileRef: swagger-definition-http-bin-api
   production:
     - httpRouteRefs:
       - prod-http-route-http-bin-api-basic

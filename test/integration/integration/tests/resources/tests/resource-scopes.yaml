@@ -24,7 +24,7 @@ spec:
   apiType: REST
   apiVersion: v1
   context: /resource-scopes/v1
-  definitionFileRef: definition-file
+  #definitionFileRef: definition-file
   production:
     - httpRouteRefs:
       - resource-scopes-httproute
