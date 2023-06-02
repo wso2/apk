@@ -231,6 +231,7 @@ func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		loggers.LoggerAPKOperator.Warnf("Error retrieving ref CRs for API in namespace : %s, %v", req.NamespacedName.String(), err)
 		return ctrl.Result{}, err
 	} else if apiState != nil {
+		loggers.LoggerAPKOperator.Infof("Ready to deploy CRs for API in namespace : %s, %v", req.NamespacedName.String(), err)
 		*apiReconciler.ch <- *apiState
 	}
 	return ctrl.Result{}, nil

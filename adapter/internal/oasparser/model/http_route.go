@@ -217,7 +217,7 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 		addOperationLevelInterceptors(&policies, resourceAPIPolicy, httpRouteParams.InterceptorServiceMapping, httpRouteParams.BackendMapping)
 
 		loggers.LoggerOasparser.Debug("Calculating auths for API ...")
-		apiAuth := getSecurity(resourceAuthScheme, scopes)
+		apiAuth := getSecurity(resourceAuthScheme)
 		if len(rule.BackendRefs) < 1 {
 			return fmt.Errorf("no backendref were provided")
 		}
@@ -241,13 +241,15 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 						})
 					}
 				}
+			} else {
+				return fmt.Errorf("backend: %s has not been resolved", backendName)
 			}
 		}
 		for _, match := range rule.Matches {
 			resourcePath := *match.Path.Value
 			resource := &Resource{path: resourcePath,
 				methods: getAllowedOperations(match.Method, policies, apiAuth,
-					parseRateLimitPolicyToInternal(resourceRatelimitPolicy)),
+					parseRateLimitPolicyToInternal(resourceRatelimitPolicy), scopes),
 				pathMatchType: *match.Path.Type,
 				hasPolicies:   hasPolicies,
 				iD:            uuid.New().String(),
@@ -438,7 +440,7 @@ func concatAuthSchemes(schemeUp *dpv1alpha1.Authentication, schemeDown *dpv1alph
 // getSecurity returns security schemes and it's definitions with flag to indicate if security is disabled
 // make sure authscheme only has external service override values. (i.e. empty default values)
 // tip: use concatScheme method
-func getSecurity(authScheme *dpv1alpha1.Authentication, scopes []string) *Authentication {
+func getSecurity(authScheme *dpv1alpha1.Authentication) *Authentication {
 	auth := &Authentication{Disabled: false,
 		JWT:            &JWT{Header: constants.AuthorizationHeader},
 		TestConsoleKey: &TestConsoleKey{Header: constants.TestConsoleKeyHeader},
@@ -467,25 +469,25 @@ func getSecurity(authScheme *dpv1alpha1.Authentication, scopes []string) *Authen
 
 // getAllowedOperations retuns a list of allowed operatons, if httpMethod is not specified then all methods are allowed.
 func getAllowedOperations(httpMethod *gwapiv1b1.HTTPMethod, policies OperationPolicies, auth *Authentication,
-	ratelimitPolicy *RateLimitPolicy) []*Operation {
+	ratelimitPolicy *RateLimitPolicy, scopes []string) []*Operation {
 	if httpMethod != nil {
 		return []*Operation{{iD: uuid.New().String(), method: string(*httpMethod), policies: policies,
-			auth: auth, RateLimitPolicy: ratelimitPolicy}}
+			auth: auth, RateLimitPolicy: ratelimitPolicy, scopes: scopes}}
 	}
 	return []*Operation{{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodGet), policies: policies,
-		auth: auth, RateLimitPolicy: ratelimitPolicy},
+		auth: auth, RateLimitPolicy: ratelimitPolicy, scopes: scopes},
 		{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodPost), policies: policies,
-			auth: auth, RateLimitPolicy: ratelimitPolicy},
+			auth: auth, RateLimitPolicy: ratelimitPolicy, scopes: scopes},
 		{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodDelete), policies: policies,
-			auth: auth, RateLimitPolicy: ratelimitPolicy},
+			auth: auth, RateLimitPolicy: ratelimitPolicy, scopes: scopes},
 		{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodPatch), policies: policies,
-			auth: auth, RateLimitPolicy: ratelimitPolicy},
+			auth: auth, RateLimitPolicy: ratelimitPolicy, scopes: scopes},
 		{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodPut), policies: policies,
-			auth: auth, RateLimitPolicy: ratelimitPolicy},
+			auth: auth, RateLimitPolicy: ratelimitPolicy, scopes: scopes},
 		{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodHead), policies: policies,
-			auth: auth, RateLimitPolicy: ratelimitPolicy},
+			auth: auth, RateLimitPolicy: ratelimitPolicy, scopes: scopes},
 		{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodOptions), policies: policies,
-			auth: auth, RateLimitPolicy: ratelimitPolicy}}
+			auth: auth, RateLimitPolicy: ratelimitPolicy, scopes: scopes}}
 }
 
 // SetInfoAPICR populates ID, ApiType, Version and XWso2BasePath of adapterInternalAPI.
