@@ -437,13 +437,12 @@
 					}
 				},
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/backoffice/apis/{{backOfficeApiUUID}}/documents",
+					"raw": "{{gatewayBaseURl}}/api/backoffice/apis/{{backOfficeApiUUID}}/documents",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
-						"am",
 						"backoffice",
 						"apis",
 						"{{backOfficeApiUUID}}",
@@ -504,13 +503,12 @@
 					}
 				},
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/backoffice/apis/{{backOfficeApiUUID}}/documents/{{backOfficeDocumentUUID}}",
+					"raw": "{{gatewayBaseURl}}/api/backoffice/apis/{{backOfficeApiUUID}}/documents/{{backOfficeDocumentUUID}}",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
-						"am",
 						"backoffice",
 						"apis",
 						"{{backOfficeApiUUID}}",
@@ -573,13 +571,12 @@
 					]
 				},
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/backoffice/apis/{{backOfficeApiUUID}}/documents/{{backOfficeDocumentUUID}}/content",
+					"raw": "{{gatewayBaseURl}}/api/backoffice/apis/{{backOfficeApiUUID}}/documents/{{backOfficeDocumentUUID}}/content",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
-						"am",
 						"backoffice",
 						"apis",
 						"{{backOfficeApiUUID}}",
@@ -644,13 +641,12 @@
 					}
 				},
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/backoffice/apis/{{backOfficeApiUUID}}/documents/{{backOfficeDocumentUUID}}",
+					"raw": "{{gatewayBaseURl}}/api/backoffice/apis/{{backOfficeApiUUID}}/documents/{{backOfficeDocumentUUID}}",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
-						"am",
 						"backoffice",
 						"apis",
 						"{{backOfficeApiUUID}}",
@@ -715,13 +711,12 @@
 					}
 				},
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/backoffice/apis/{{backOfficeApiUUID}}/documents/{{backOfficeDocumentUUID}}/content",
+					"raw": "{{gatewayBaseURl}}/api/backoffice/apis/{{backOfficeApiUUID}}/documents/{{backOfficeDocumentUUID}}/content",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
-						"am",
 						"backoffice",
 						"apis",
 						"{{backOfficeApiUUID}}",
@@ -788,13 +783,12 @@
 					}
 				},
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/backoffice/apis/{{backOfficeApiUUID}}/documents",
+					"raw": "{{gatewayBaseURl}}/api/backoffice/apis/{{backOfficeApiUUID}}/documents",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
-						"am",
 						"backoffice",
 						"apis",
 						"{{backOfficeApiUUID}}",
@@ -850,13 +844,12 @@
 					}
 				},
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/backoffice/apis/{{backOfficeApiUUID}}/documents/{{backOfficeDocumentUUID}}",
+					"raw": "{{gatewayBaseURl}}/api/backoffice/apis/{{backOfficeApiUUID}}/documents/{{backOfficeDocumentUUID}}",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
-						"am",
 						"backoffice",
 						"apis",
 						"{{backOfficeApiUUID}}",
