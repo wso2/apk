@@ -7,7 +7,6 @@ public class AuthenticationConfig {
     private List<APIKeyAuthenticationConfig> apiKeyAuthenticationConfigs;
     private InternalKeyConfig internalKeyConfig;
     private boolean Disabled;
-    private boolean sendTokenToUpstream;
 
     public JWTAuthenticationConfig getJwtAuthenticationConfig() {
         return jwtAuthenticationConfig;
@@ -31,14 +30,6 @@ public class AuthenticationConfig {
 
     public void setDisabled(boolean disabled) {
         Disabled = disabled;
-    }
-
-    public boolean isSendTokenToUpstream() {
-        return sendTokenToUpstream;
-    }
-
-    public void setSendTokenToUpstream(boolean sendTokenToUpstream) {
-        this.sendTokenToUpstream = sendTokenToUpstream;
     }
 
     public InternalKeyConfig getInternalKeyConfig() {

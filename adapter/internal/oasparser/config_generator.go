@@ -265,6 +265,13 @@ func castAPIAuthenticationsToEnforcerAPIAuthentications(authentication *model.Au
 			SendTokenToUpstream: authentication.TestConsoleKey.SendTokenToUpstream,
 		}
 	}
+	if authentication.TestConsoleKey != nil {
+		enforcerAuthentication.TestConsoleKey = &api.TestConsoleKey{
+			Header:              strings.ToLower(authentication.TestConsoleKey.Header),
+			SendTokenToUpstream: authentication.TestConsoleKey.SendTokenToUpstream,
+		}
+	}
+
 	return enforcerAuthentication
 }
 

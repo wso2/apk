@@ -113,6 +113,7 @@ public class Utils {
                 internalKeyConfig.setSendTokenToUpstream(operation.getApiAuthentication().getTestConsoleKey()
                         .getSendTokenToUpstream());
                 internalKeyConfig.setHeader(operation.getApiAuthentication().getTestConsoleKey().getHeader());
+                authenticationConfig.setInternalKeyConfig(internalKeyConfig);
             }
         }
         resource.setAuthenticationConfig(authenticationConfig);

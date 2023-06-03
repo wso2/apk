@@ -79,7 +79,7 @@ public class InternalAPIKeyAuthenticator extends APIKeyHandler {
         InternalKeyConfig internalKeyConfig = requestContext.getMatchedResourcePaths().get(0)
                 .getAuthenticationConfig().getInternalKeyConfig();
         if (internalKeyConfig != null) {
-            String internalKey = internalKeyConfig.getHeader();
+            String internalKey = requestContext.getHeaders().get(internalKeyConfig.getHeader());
             return isAPIKey(internalKey);
         }
         return false;
@@ -107,8 +107,8 @@ public class InternalAPIKeyAuthenticator extends APIKeyHandler {
                             ThreadContext.get(APIConstants.LOG_TRACE_ID));
                 }
                 // Extract internal from the request while removing it from the msg context.
-                String internalKey = requestContext.getMatchedResourcePaths().get(0)
-                        .getAuthenticationConfig().getInternalKeyConfig().getHeader();
+                String internalKey = requestContext.getHeaders().get(requestContext.getMatchedResourcePaths().get(0)
+                        .getAuthenticationConfig().getInternalKeyConfig().getHeader());
 
                 String[] splitToken = internalKey.split("\\.");
                 SignedJWT signedJWT = SignedJWT.parse(internalKey);
