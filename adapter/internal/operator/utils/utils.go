@@ -324,35 +324,33 @@ func GetResolvedBackend(ctx context.Context, client k8client.Client,
 	}
 	if backend.Spec.Security != nil {
 		resolvedBackend.Security = getResolvedBackendSecurity(ctx, client,
-			backend.Namespace, backend.Spec.Security)
+			backend.Namespace, *backend.Spec.Security)
 	}
 	return &resolvedBackend
 }
 
 // getResolvedBackendSecurity resolves backend security configurations.
 func getResolvedBackendSecurity(ctx context.Context, client k8client.Client,
-	namespace string, security []dpv1alpha1.SecurityConfig) []dpv1alpha1.ResolvedSecurityConfig {
-	resolvedSecurity := make([]dpv1alpha1.ResolvedSecurityConfig, len(security))
-	for _, sec := range security {
-		switch sec.Type {
-		case "Basic":
-			var err error
-			var username string
-			var password string
-			username, err = getSecretValue(ctx, client,
-				namespace, sec.Basic.SecretRef.Name, sec.Basic.SecretRef.UsernameKey)
-			password, err = getSecretValue(ctx, client,
-				namespace, sec.Basic.SecretRef.Name, sec.Basic.SecretRef.PasswordKey)
-			if err != nil {
-				loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2648, sec.Basic.SecretRef))
-			}
-			resolvedSecurity = append(resolvedSecurity, dpv1alpha1.ResolvedSecurityConfig{
-				Type: "Basic",
-				Basic: dpv1alpha1.ResolvedBasicSecurityConfig{
-					Username: username,
-					Password: password,
-				},
-			})
+	namespace string, security dpv1alpha1.SecurityConfig) dpv1alpha1.ResolvedSecurityConfig {
+	resolvedSecurity := dpv1alpha1.ResolvedSecurityConfig{}
+	switch security.Type {
+	case "Basic":
+		var err error
+		var username string
+		var password string
+		username, err = getSecretValue(ctx, client,
+			namespace, security.Basic.SecretRef.Name, security.Basic.SecretRef.UsernameKey)
+		password, err = getSecretValue(ctx, client,
+			namespace, security.Basic.SecretRef.Name, security.Basic.SecretRef.PasswordKey)
+		if err != nil {
+			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2648, security.Basic.SecretRef))
+		}
+		resolvedSecurity = dpv1alpha1.ResolvedSecurityConfig{
+			Type: "Basic",
+			Basic: dpv1alpha1.ResolvedBasicSecurityConfig{
+				Username: username,
+				Password: password,
+			},
 		}
 	}
 	return resolvedSecurity

@@ -1505,7 +1505,7 @@ components:
           $ref: "#/components/schemas/APIOperationPolicies"
         operationRateLimit:
           $ref: "#/components/schemas/APIRateLimit"
-    API-NEW:
+    APKConf:
       title: API object
       required:
         - context
@@ -1535,9 +1535,9 @@ components:
           type: string
         type:
           type: string
-          default: HTTP
+          default: REST
           enum:
-            - HTTP
+            - REST
             - GRAPHQL
             - GRPC
         createdTime:
@@ -1551,9 +1551,9 @@ components:
         operations:
           type: array
           items:
-            $ref: "#/components/schemas/APIOperations-NEW"
+            $ref: "#/components/schemas/APKOperations"
         serviceInfo:
-          $ref: "#/components/schemas/API_serviceInfo"
+          $ref: "#/components/schemas/APKServiceInfo"
         apiPolicies:
           $ref: "#/components/schemas/APIOperationPolicies"
           optional: true
@@ -1563,7 +1563,7 @@ components:
           type: array
           items:
             type: string
-        AdditionalProperties:
+        additionalProperties:
           type: array
           description: Map of custom properties of API
           items:
@@ -1589,7 +1589,7 @@ components:
           type: string
         endpointSecurity:
           $ref: "#/components/schemas/EndpointSecurity"
-        certification:
+        certificate:
           type: string
         timeouts:
           $ref: "#/components/schemas/EndpointTimeout"
@@ -1606,7 +1606,7 @@ components:
     EndpointTimeout:
       type: object
       properties: {}
-    APIOperations-NEW:
+    APKOperations:
       title: Operation
       type: object
       properties:
@@ -1627,6 +1627,29 @@ components:
           $ref: "#/components/schemas/APIOperationPolicies"
         operationRateLimit:
           $ref: "#/components/schemas/APIRateLimit"
+        scopes:
+          type: array
+          example: []
+          items:
+            type: string
+    APKServiceInfo:
+      type: object
+      properties:
+        name:
+          type: string
+          example: pizzashack-service
+        namespace:
+          type: string
+          example: apk-platform
+        port:
+          type: integer
+          example: 8080
+        protocol:
+          type: string
+          example: http
+        endpointSecurity:
+          $ref: "#/components/schemas/EndpointSecurity"
+
     APIOperationPolicies:
       title: API Operation Level Policies
       properties:
@@ -1635,10 +1658,6 @@ components:
           items:
             $ref: "#/components/schemas/OperationPolicy"
         response:
-          type: array
-          items:
-            $ref: "#/components/schemas/OperationPolicy"
-        fault:
           type: array
           items:
             $ref: "#/components/schemas/OperationPolicy"
@@ -2139,7 +2158,6 @@ components:
           example: apk-platform
         endpoint_security:
           type: object
-          properties: {}
           description: |
             Endpoint security of the API.
 

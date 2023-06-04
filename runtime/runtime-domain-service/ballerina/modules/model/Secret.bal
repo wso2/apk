@@ -22,5 +22,13 @@ public type K8sSecret record {|
     string apiVersion = "v1";
     Metadata metadata;
     map<string> data?;
+    map<string> stringData?;
     string 'type?;
+|};
+
+public type K8sSecretList record {|
+    string kind = "SecretList";
+    string apiVersion = "v1";
+    ListMeta metadata;
+    K8sSecret[] items;
 |};

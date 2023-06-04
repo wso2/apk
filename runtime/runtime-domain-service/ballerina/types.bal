@@ -69,30 +69,6 @@ public type OkAPIDefinitionValidationResponse record {|
     APIDefinitionValidationResponse body;
 |};
 
-public type APKConf record {|
-    # UUID of the API
-    string id?;
-    @constraint:String {maxLength: 60, minLength: 1}
-    string name;
-    @constraint:String {maxLength: 232, minLength: 1}
-    string context;
-    @constraint:String {maxLength: 30, minLength: 1}
-    string version;
-    string provider?;
-    string 'type = "REST";
-    string createdTime?;
-    string lastUpdatedTime?;
-    EndpointConfig endpointConfig?;
-    APKOperation[] operations?;
-    API_serviceInfo serviceInfo?;
-    APIOperationPolicies apiPolicies?;
-    APIRateLimit apiRateLimit?;
-    string[] securityScheme?;
-    # Map of custom properties of API
-    APKAdditionalProperies[] additionalProperties?;
-|};
-
-
 public type ErrorListItem record {|
     string code;
     # Description about individual errors occurred
@@ -179,7 +155,7 @@ public type GatewayList record {|
     Pagination pagination?;
 |};
 
-public type APKOperation record {
+public type APKOperations record {
     string target?;
     string verb?;
     # Authentication mode for resource (true/false)
@@ -202,7 +178,7 @@ public type ApiId_definition_body record {|
 public type Endpoint record {
     string endpointURL;
     EndpointSecurity endpointSecurity?;
-    string certification?;
+    string certificate?;
     EndpointTimeout timeouts?;
 };
 
@@ -261,7 +237,6 @@ public type APIOperations record {|
 public type APIOperationPolicies record {|
     OperationPolicy[] request?;
     OperationPolicy[] response?;
-    OperationPolicy[] fault?;
 |};
 
 public type MediationPolicySpecAttribute record {|
@@ -284,6 +259,11 @@ public type Generate_artifactBody record {
     record {byte[] fileContent; string fileName;} file?;
     # Organization of the API
     string organization?;
+};
+
+public type APKConf_additionalProperties record {
+    string name?;
+    string value?;
 };
 
 public type APIList record {|
@@ -343,6 +323,14 @@ public type CertMetadata record {|
     string endpoint?;
 |};
 
+public type APKServiceInfo record {
+    string name?;
+    string namespace?;
+    int port?;
+    string protocol?;
+    EndpointSecurity endpointSecurity?;
+};
+
 public type ServiceList record {|
     Service[] list?;
     Pagination pagination?;
@@ -363,7 +351,7 @@ public type API_serviceInfo record {|
     # 
     #     }
     #   }
-    EndpointSecurity endpoint_security?;
+    record {} endpoint_security?;
 |};
 
 public type APIInfo record {|
@@ -422,11 +410,6 @@ public type SearchResult record {|
     string transportType?;
 |};
 
-public type APKAdditionalProperies record {
-    string name?;
-    string value?;
-};
-
 public type GraphQLSchema record {|
     string name;
     string schemaDefinition?;
@@ -469,7 +452,30 @@ public type OperationPolicy record {|
     record {} parameters?;
 |};
 
-public type API record {|
+public type APKConf record {
+    # UUID of the API
+    string id?;
+    @constraint:String {maxLength: 60, minLength: 1}
+    string name;
+    @constraint:String {maxLength: 232, minLength: 1}
+    string context;
+    @constraint:String {maxLength: 30, minLength: 1}
+    string version;
+    string provider?;
+    string 'type = "REST";
+    string createdTime?;
+    string lastUpdatedTime?;
+    EndpointConfig endpointConfig?;
+    APKOperations[] operations?;
+    APKServiceInfo serviceInfo?;
+    APIOperationPolicies apiPolicies?;
+    APIRateLimit apiRateLimit?;
+    string[] securityScheme?;
+    # Map of custom properties of API
+    APKConf_additionalProperties[] additionalProperties?;
+};
+
+public type API record {
     # UUID of the API
     string id?;
     @constraint:String {maxLength: 60, minLength: 1}
@@ -513,7 +519,7 @@ public type API record {|
     string[] securityScheme?;
     string createdTime?;
     string lastUpdatedTime?;
-|};
+};
 public type EndpointConfig record {
     Endpoint production?;
     Endpoint sandbox?;

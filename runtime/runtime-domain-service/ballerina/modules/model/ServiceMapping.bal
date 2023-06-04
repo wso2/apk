@@ -35,7 +35,7 @@ public type ServiceReference record {
 
 public type APIReference record {
     string name;
-    string namespace;
+    string namespace?;
 };
 
 public type ServiceMappingList record {

@@ -489,3 +489,11 @@ public isolated function e909050() returns commons:APKError {
         description = "Version change not supported from update"
     );
 }
+public isolated function e909051() returns commons:APKError {
+    return error commons:APKError("Username and password should be provided for basic auth security type",
+        code = 909051,
+        message = "Username and password should be provided for basic auth security type",
+        statusCode = 400,
+        description = "Username and password should be provided for basic auth security type"
+    );
+}

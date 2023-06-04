@@ -34,11 +34,11 @@ isolated function convertK8sAPItoAPI(model:API api, boolean lightWeight) returns
         convertedModel.lastUpdatedTime = status.transitionTime;
     }
     if !lightWeight {
-        model:RuntimeAPI|http:ClientError internalAPI = getInternalAPI(api.metadata.name, api.metadata.namespace);
+        model:RuntimeAPI|http:ClientError internalAPI = getInternalAPI(api.metadata.name, <string>api.metadata.namespace);
         if internalAPI is model:RuntimeAPI {
             record {|anydata...;|}? endpointConfig = internalAPI.spec.endpointConfig.clone();
             if endpointConfig is record {} {
-                convertedModel.endpointConfig = endpointConfig;
+                convertedModel.endpointConfig = maskEndpointSecurityPassword(endpointConfig);
             }
             model:OperationPolicies? apiPolicies = internalAPI.spec.apiPolicies;
             if apiPolicies is model:OperationPolicies {
@@ -53,7 +53,7 @@ isolated function convertK8sAPItoAPI(model:API api, boolean lightWeight) returns
                         target: operation.target,
                         authTypeEnabled: operation.authTypeEnabled,
                         scopes: operation.scopes,
-                        endpointConfig: operation.endpointConfig,
+                        endpointConfig: maskEndpointSecurityPassword(operation.endpointConfig),
                         operationPolicies: convertOperationPolicies(operation.operationPolicies),
                         operationRateLimit: operation.operationRateLimit
                     });
@@ -86,6 +86,37 @@ isolated function convertK8sAPItoAPI(model:API api, boolean lightWeight) returns
         }
     }
     return convertedModel;
+}
+
+isolated function maskEndpointSecurityPassword(record {}? endpointConfig) returns record {}? {
+    if endpointConfig is record {} {
+        record {} clonedEndpointconfig = endpointConfig.clone();
+        anydata|error endpointSecurity = trap clonedEndpointconfig.get("endpoint_security");
+        if endpointSecurity is map<anydata> {
+            if endpointSecurity.hasKey(SANDBOX_TYPE) {
+                map<anydata> sandboxEndpointSecurity = <map<anydata>>endpointSecurity.get(SANDBOX_TYPE);
+                anydata|error endpointSecurityType = trap sandboxEndpointSecurity.get(ENDPOINT_SECURITY_TYPE);
+                if endpointSecurityType is string && endpointSecurityType == ENDPOINT_SECURITY_TYPE_BASIC_CASE {
+                    if sandboxEndpointSecurity.hasKey(ENDPOINT_SECURITY_PASSWORD) {
+                        sandboxEndpointSecurity[ENDPOINT_SECURITY_PASSWORD] = DEFAULT_MODIFIED_ENDPOINT_PASSWORD;
+                    }
+
+                }
+            }
+            if endpointSecurity.hasKey(PRODUCTION_TYPE) {
+                map<anydata> productionEndpoinySecurity = <map<anydata>>endpointSecurity.get(PRODUCTION_TYPE);
+                anydata|error endpointSecurityType = trap productionEndpoinySecurity.get(ENDPOINT_SECURITY_TYPE);
+                if endpointSecurityType is string && endpointSecurityType == ENDPOINT_SECURITY_TYPE_BASIC_CASE {
+                    if productionEndpoinySecurity.hasKey(ENDPOINT_SECURITY_PASSWORD) {
+                        productionEndpoinySecurity[ENDPOINT_SECURITY_PASSWORD] = DEFAULT_MODIFIED_ENDPOINT_PASSWORD;
+                    }
+
+                }
+            }
+        }
+        return clonedEndpointconfig;
+    }
+    return;
 }
 
 isolated function convertOperationPolicies(model:OperationPolicies? operation) returns APIOperationPolicies|() {
@@ -147,20 +178,36 @@ public isolated function fromAPIToAPKConf(API api) returns APKConf|error {
         apiPolicies: api.apiPolicies,
         apiRateLimit: api.apiRateLimit,
         securityScheme: api.securityScheme,
-        additionalProperties: [],
-        operations: check convetAPIOperations(api.operations),
-        serviceInfo: api.serviceInfo,
-        endpointConfig: check convertEndpointConfig(api.endpointConfig)
+        serviceInfo: convertApiServiceInfo(api.serviceInfo)
     };
-
+    if api.operations is APIOperations[] {
+        apkConf.operations = check convetAPIOperations(api.operations);
+    }
+    if api.endpointConfig is record {} {
+        apkConf.endpointConfig = check convertEndpointConfig(api.endpointConfig);
+    }
     return apkConf;
 }
 
-isolated function convetAPIOperations(APIOperations[]? apiOperations) returns APKOperation[]|error {
-    APKOperation[] apkOperations = [];
+isolated function convertApiServiceInfo(API_serviceInfo? serviceInfo) returns APKServiceInfo? {
+    if serviceInfo is API_serviceInfo {
+        APKServiceInfo apkServiceInfo = {
+            name: serviceInfo.name,
+            namespace: serviceInfo.namespace
+        };
+        if serviceInfo.endpoint_security is record {} {
+            apkServiceInfo.endpointSecurity = convertEndpointSecurity(<record {}>serviceInfo.endpoint_security, PRODUCTION_TYPE);
+        }
+        return apkServiceInfo;
+    }
+    return;
+}
+
+isolated function convetAPIOperations(APIOperations[]? apiOperations) returns APKOperations[]|error {
+    APKOperations[] apkOperations = [];
     if apiOperations is APIOperations[] {
         foreach APIOperations apiOperation in apiOperations {
-            APKOperation apkOperation = {
+            APKOperations apkOperation = {
                 authTypeEnabled: apiOperation.authTypeEnabled,
                 target: apiOperation.target,
                 verb: apiOperation.verb,
@@ -189,21 +236,17 @@ isolated function convertEndpointConfig(record {}? apiEndpointConfig) returns En
     if apiEndpointConfig is record {} {
         anydata|error sandboxEndpointConfig = trap apiEndpointConfig.get("sandbox_endpoints");
         anydata|error productionEndpointConfig = trap apiEndpointConfig.get("production_endpoints");
+        anydata|error endpoint_security = trap apiEndpointConfig.get("endpoint_security");
         if sandboxEndpointConfig is map<anydata> {
             if sandboxEndpointConfig.hasKey("url") {
                 anydata url = sandboxEndpointConfig.get("url");
-                model:EndpointSecurity backendSecurity = check getBackendSecurity(apiEndpointConfig, (), SANDBOX_TYPE);
+                EndpointSecurity? endpointSecurity = ();
+                if endpoint_security is record {} {
+                    endpointSecurity = convertEndpointSecurity(endpoint_security, SANDBOX_TYPE);
+                }
                 sandbox = {
                     endpointURL: <string>url,
-                    endpointSecurity: {
-                        enable: backendSecurity.enabled,
-                        securityType: backendSecurity.'type,
-                        securityProperties: {
-                            [ENDPOINT_BASIC_USER_NAME] : backendSecurity.username,
-                            [ENDPOINT_BASIC_PASSWORD] : backendSecurity.password,
-                            [ENDPOINT_BASIC_SECRET_REF] : backendSecurity.secretRefName
-                        }
-                    }
+                    endpointSecurity: endpointSecurity
                 };
             } else {
                 return e909013();
@@ -212,18 +255,13 @@ isolated function convertEndpointConfig(record {}? apiEndpointConfig) returns En
         if productionEndpointConfig is map<anydata> {
             if productionEndpointConfig.hasKey("url") {
                 anydata url = productionEndpointConfig.get("url");
-                model:EndpointSecurity backendSecurity = check getBackendSecurity(endpointConfig, (), PRODUCTION_TYPE);
+                EndpointSecurity? endpointSecurity = ();
+                if endpoint_security is record {} {
+                    endpointSecurity = convertEndpointSecurity(endpoint_security, PRODUCTION_TYPE);
+                }
                 production = {
                     endpointURL: <string>url,
-                    endpointSecurity: {
-                        enable: backendSecurity.enabled,
-                        securityType: backendSecurity.'type,
-                        securityProperties: {
-                            [ENDPOINT_BASIC_USER_NAME] : backendSecurity.username,
-                            [ENDPOINT_BASIC_PASSWORD] : backendSecurity.password,
-                            [ENDPOINT_BASIC_SECRET_REF] : backendSecurity.secretRefName
-                        }
-                    }
+                    endpointSecurity: endpointSecurity
                 };
             } else {
                 return e909014();
@@ -235,4 +273,26 @@ isolated function convertEndpointConfig(record {}? apiEndpointConfig) returns En
         };
     }
     return endpointConfig;
+}
+
+isolated function convertEndpointSecurity(record {} endpoint_security, string endpointType) returns EndpointSecurity? {
+    if endpoint_security.hasKey(endpointType) {
+        EndpointSecurity? endpointSecurity = ();
+        map<anydata> endpoinySecurityData = <map<anydata>>endpoint_security.get(endpointType);
+        map<string> securityProperties = {
+            [ENDPOINT_BASIC_USER_NAME] : endpoinySecurityData.hasKey(ENDPOINT_BASIC_USER_NAME) ? <string>endpoinySecurityData.get(ENDPOINT_BASIC_USER_NAME) : "",
+            [ENDPOINT_BASIC_PASSWORD] : endpoinySecurityData.hasKey(ENDPOINT_BASIC_PASSWORD) ? <string>endpoinySecurityData.get(ENDPOINT_BASIC_PASSWORD) : ""
+        };
+        if endpoinySecurityData.hasKey(ENDPOINT_BASIC_SECRET_REF) {
+            securityProperties[ENDPOINT_BASIC_SECRET_REF] = <string>endpoinySecurityData.get(ENDPOINT_BASIC_SECRET_REF);
+        }
+
+        endpointSecurity = {
+            enable: endpoinySecurityData.hasKey("enabled") ? <boolean>endpoinySecurityData.get("enabled") : false,
+            securityType: endpoinySecurityData.hasKey("type") ? <string>endpoinySecurityData.get("type") : "",
+            securityProperties: securityProperties
+        };
+        return endpointSecurity;
+    }
+    return;
 }

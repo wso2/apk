@@ -17,7 +17,7 @@
 //
 public type Metadata record {
     string name;
-    string namespace;
+    string namespace?;
     string uid?;
     string creationTimestamp?;
     string selfLink?;

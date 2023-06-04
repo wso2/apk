@@ -28,6 +28,26 @@ spec:
   rules:
   - matches:
     - path:
+        type: "RegularExpression"
+        value: "/api/runtime/apis/generate-artifact"
+      method: "POST"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/runtime/apis/generate-artifact"
+    - type: ExtensionRef
+      extensionRef:
+        group: dp.wso2.com
+        kind: Authentication
+        name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-no-authentication
+    backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
+  - matches:
+    - path:
         type: "Exact"
         value: "/api/runtime/apis"
       method: "GET"

@@ -1,6 +1,6 @@
 # apk-helm
 
-![Version: 0.0.1-m8](https://img.shields.io/badge/Version-0.0.1--m8-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.16.0](https://img.shields.io/badge/AppVersion-1.16.0-informational?style=flat-square)
+![Version: 0.0.1-m10](https://img.shields.io/badge/Version-0.0.1--m10-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.16.0](https://img.shields.io/badge/AppVersion-1.16.0-informational?style=flat-square)
 
 A Helm chart for APK components
 
@@ -27,14 +27,17 @@ A Helm chart for APK components
 | wso2.apk.idp.authorizeEndpoint | string | `"https://idp.am.wso2.com:9095/oauth2/authorize"` | IDP authorization endpoint |
 | wso2.apk.idp.tokenEndpoint | string | `"https://idp.am.wso2.com:9095/oauth2/token"` | IDP token endpoint |
 | wso2.apk.idp.revokeEndpoint | string | `"https://idp.am.wso2.com:9095/oauth2/revoke"` | IDP revoke endpoint |
-| wso2.apk.idp.jwksEndpoint | string | `""` | IDP jwks endpoint (optional) |
 | wso2.apk.idp.usernameClaim | string | `"sub"` | Optionally configure username Claim in JWT. |
 | wso2.apk.idp.groupClaim | string | `"groups"` | Optionally configure groups Claim in JWT. |
+| wso2.apk.idp.scopeClaim | string | `"scope"` | Optionally configure scope Claim in JWT. |
 | wso2.apk.idp.organizationClaim | string | `"organization"` | Optionally configure organization Claim in JWT. |
 | wso2.apk.idp.organizationResolver | string | `"controlPlane"` | Optionally configure organization Resolution method for APK (controlPlane/none)). |
 | wso2.apk.idp.credentials.secretName | string | `""` | IDP credentials secret name to be configured with  |
+| wso2.apk.idp.tls.configMapName | string | `""` | IDP public certificate configmap name |
 | wso2.apk.idp.tls.secretName | string | `""` | IDP public certificate secret name |
 | wso2.apk.idp.tls.fileName | string | `""` | IDP public certificate file name |
+| wso2.apk.idp.signing.jwksEndpoint | string | `""` | IDP jwks endpoint (optional) |
+| wso2.apk.idp.signing.configMapName | string | `""` | IDP jwt signing certificate configmap name |
 | wso2.apk.idp.signing.secretName | string | `""` | IDP jwt signing certificate secret name |
 | wso2.apk.idp.signing.fileName | string | `""` | IDP jwt signing certificate file name |
 | wso2.apk.cp.enabled | bool | `true` | Enabled control plane. |

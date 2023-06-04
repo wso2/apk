@@ -27,7 +27,7 @@ type ResolvedBackend struct {
 	Services []Service
 	Protocol BackendProtocolType
 	TLS      ResolvedTLSConfig
-	Security []ResolvedSecurityConfig
+	Security ResolvedSecurityConfig
 }
 
 // ResolvedTLSConfig defines enpoint TLS configurations

@@ -35,7 +35,7 @@ public type APIPolicyData record {
 
 public type InterceptorReference record {
     string name;
-    string namespace;
+    string namespace?;
 };
 
 public type APIPolicyList record {

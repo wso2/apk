@@ -151,7 +151,7 @@ isolated function retrieveAPIMappingsForService(Service serviceEntry, commons:Or
             model:ServiceReference serviceRef = serviceMapping.spec.serviceRef;
             if (serviceRef.name == serviceEntry.name && serviceRef.namespace == serviceEntry.namespace) {
                 model:APIReference apiRef = serviceMapping.spec.apiRef;
-                model:API? k8sAPI = check getAPIByNameAndNamespace(apiRef.name, apiRef.namespace, organization.clone());
+                model:API? k8sAPI = check getAPIByNameAndNamespace(apiRef.name, <string>(apiRef.namespace ?: serviceMapping.metadata.namespace), organization.clone());
                 if k8sAPI is model:API {
                     apis.push(k8sAPI);
                 }

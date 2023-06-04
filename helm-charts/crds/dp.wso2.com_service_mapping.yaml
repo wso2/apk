@@ -57,11 +57,8 @@ spec:
                   properties:
                     name:
                       type: string
-                    namespace:
-                      type: string
                   required:
                     - name
-                    - namespace
                   type: object
                 serviceRef:
                   description: Service

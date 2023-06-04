@@ -21,6 +21,7 @@ import ballerina/uuid;
 import ballerina/http;
 import runtime_domain_service.model as model;
 import wso2/apk_common_lib as commons;
+import ballerina/log;
 import runtime_domain_service.java.io;
 
 commons:Organization organiztion1 = {
@@ -53,7 +54,7 @@ function testRetrieveHttpRouteRefName(APKConf apkConf, string 'type, commons:Org
 }
 
 @test:Mock {functionName: "retrieveRateLimitPolicyRefName"}
-function testRetrieveRateLimitPolicyRefName(APKOperation? operaion) returns string {
+function testRetrieveRateLimitPolicyRefName(APKOperations? operaion) returns string {
     return "rate-limit-policy-ref-name";
 }
 
@@ -434,15 +435,15 @@ function apiIDDataprovider() returns map<[string, commons:Organization, anydata]
 }
 
 @test:Config {dataProvider: prefixMatchDataProvider}
-public function testGeneratePrefixMatch(API api, model:Endpoint endpoint, APKOperation apiOperation, string expected) returns error? {
+public function testGeneratePrefixMatch(API api, model:Endpoint endpoint, APKOperations apiOperation, string expected) returns error? {
     APIClient apiclient = new ();
     APKConf apkConf = check fromAPIToAPKConf(api);
     test:assertEquals(apiclient.generatePrefixMatch(apkConf, endpoint, apiOperation, PRODUCTION_TYPE), expected);
 
 }
 
-function prefixMatchDataProvider() returns map<[API, model:Endpoint, APKOperation, string]> {
-    map<[API, model:Endpoint, APKOperation, string]> dataSet = {
+function prefixMatchDataProvider() returns map<[API, model:Endpoint, APKOperations, string]> {
+    map<[API, model:Endpoint, APKOperations, string]> dataSet = {
         "1": [{name: "pizzaAPI", context: "/pizza1234", 'version: "1.0.0"}, {name: "service1", namespace: "apk-platform", serviceEntry: false, url: "https://run.mocky.io/v3/f77cc767"}, {target: "/order/{orderId}", verb: "POST"}, "/v3/f77cc767/order/\\1"],
         "2": [{name: "pizzaAPI", context: "/pizza1234", 'version: "1.0.0"}, {name: "service1", namespace: "apk-platform", serviceEntry: false, url: "https://run.mocky.io/v3/f77cc767"}, {target: "/menu", verb: "GET"}, "/v3/f77cc767/menu"],
         "3": [{name: "pizzaAPI", context: "/pizza1234", 'version: "1.0.0"}, {name: "service1", namespace: "apk-platform", serviceEntry: false, url: "https://run.mocky.io/v3/f77cc767/"}, {target: "/menu", verb: "GET"}, "/v3/f77cc767/menu"],
@@ -2071,7 +2072,7 @@ function testCreateAPIFromService(string serviceUUId, string apiUUID, [model:Con
     model:InterceptorServiceList interceptorServiceList = {metadata: {}, items: []};
     http:Response internalAPIDeletionResponse = new;
     internalAPIDeletionResponse.statusCode = 200;
-
+    model:K8sSecretList k8sSecretList = {metadata: {}, items: []};
     foreach [model:Backend, any] backend in backendServices {
         test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/backends", backend[0]).thenReturn(backend[1]);
     }
@@ -2084,7 +2085,6 @@ function testCreateAPIFromService(string serviceUUId, string apiUUID, [model:Con
     foreach [model:InterceptorService, any] [interceptorService, interceptorServiceResponse] in interceptorServices {
         test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/interceptorservices", interceptorService).thenReturn(interceptorServiceResponse);
     }
-
     test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/ratelimitpolicies?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version, organiztion1)).thenReturn(rateLimitPolicyList);
     test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apipolicies?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version, organiztion1)).thenReturn(apiPolicyList);
     test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/interceptorservices?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version, organiztion1)).thenReturn(interceptorServiceList);
@@ -2093,8 +2093,10 @@ function testCreateAPIFromService(string serviceUUId, string apiUUID, [model:Con
     test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/servicemappings", servicemapping[0]).thenReturn(servicemapping[1]);
     test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apis", k8sAPI[0]).thenReturn(k8sAPI[1]);
     test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/runtimeapis", runtimeAPI[0]).thenReturn(runtimeAPI[1]);
+    log:printInfo("inside test deploy Deploying RuntimeAPI " + runtimeAPI[0].toJsonString());
     test:prepare(k8sApiServerEp).when("get").withArguments("/api/v1/namespaces/apk-platform/configmaps/" + apiClient.retrieveDefinitionName(apiUUID)).thenReturn(configmapResponse404);
     test:prepare(k8sApiServerEp).when("get").withArguments("/apis/gateway.networking.k8s.io/v1beta1/namespaces/apk-platform/httproutes/?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version, organiztion1)).thenReturn(httpRouteList);
+    test:prepare(k8sApiServerEp).when("get").withArguments("/api/v1/namespaces/apk-platform/secrets?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version, organiztion1)).thenReturn(k8sSecretList);
     test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/servicemappings?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version, organiztion1)).thenReturn(serviceMappingList);
     test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/authentications?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version, organiztion1)).thenReturn(authenticationList);
     test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/backends?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version, organiztion1)).thenReturn(backendList);
@@ -2728,7 +2730,8 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
                 [(), ()],
                 [],
                 createdAPIWithPolicies.toBalString()
-            ],
+            ]
+            ,
             "6": [
                 "275b00d1-722c-4df2-b65a-9b14677abe4b",
                 apiUUID,
@@ -2792,7 +2795,8 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
                 [(), ()],
                 [],
                 bothRateLimitsPresentError.toBalString()
-            ],
+            ]
+            ,
             "10": [
                 "275b00d1-722c-4df2-b65a-9b14677abe4b",
                 apiUUID,
@@ -2876,6 +2880,7 @@ function getMockRuntimeAPI(API api, string apiUUID, commons:Organization organiz
     APIClient apiClient = new;
     string userName = "apkUser";
     model:RuntimeAPI runtimeAPI = apiClient.generateRuntimeAPIArtifact(api, serviceEntry, organization, userName);
+    runtimeAPI.metadata.namespace = "apk-platform";
     if api.operations is () {
         runtimeAPI.spec.operations = [
             {
@@ -2972,8 +2977,7 @@ function getMockHttpRoute(API api, string apiUUID, commons:Organization organizt
                         {
                             "group": "dp.wso2.com",
                             "kind": "Backend",
-                            "name": getBackendServiceUid(apkConf, (), PRODUCTION_TYPE, organiztion),
-                            "namespace": "apk-platform"
+                            "name": getBackendServiceUid(apkConf, (), PRODUCTION_TYPE, organiztion)
                         }
                     ]
                 },
@@ -2984,8 +2988,7 @@ function getMockHttpRoute(API api, string apiUUID, commons:Organization organizt
                         {
                             "group": "dp.wso2.com",
                             "kind": "Backend",
-                            "name": getBackendServiceUid(apkConf, (), PRODUCTION_TYPE, organiztion),
-                            "namespace": "apk-platform"
+                            "name": getBackendServiceUid(apkConf, (), PRODUCTION_TYPE, organiztion)
                         }
                     ]
                 },
@@ -2996,8 +2999,7 @@ function getMockHttpRoute(API api, string apiUUID, commons:Organization organizt
                         {
                             "group": "dp.wso2.com",
                             "kind": "Backend",
-                            "name": getBackendServiceUid(apkConf, (), PRODUCTION_TYPE, organiztion),
-                            "namespace": "apk-platform"
+                            "name": getBackendServiceUid(apkConf, (), PRODUCTION_TYPE, organiztion)
                         }
                     ]
                 },
@@ -3008,8 +3010,7 @@ function getMockHttpRoute(API api, string apiUUID, commons:Organization organizt
                         {
                             "group": "dp.wso2.com",
                             "kind": "Backend",
-                            "name": getBackendServiceUid(apkConf, (), PRODUCTION_TYPE, organiztion),
-                            "namespace": "apk-platform"
+                            "name": getBackendServiceUid(apkConf, (), PRODUCTION_TYPE, organiztion)
                         }
                     ]
                 },
@@ -3020,8 +3021,7 @@ function getMockHttpRoute(API api, string apiUUID, commons:Organization organizt
                         {
                             "group": "dp.wso2.com",
                             "kind": "Backend",
-                            "name": getBackendServiceUid(apkConf, (), PRODUCTION_TYPE, organiztion),
-                            "namespace": "apk-platform"
+                            "name": getBackendServiceUid(apkConf, (), PRODUCTION_TYPE, organiztion)
                         }
                     ]
                 }
@@ -3090,8 +3090,7 @@ function getMockHttpRouteWithOperationPolicies1(APKConf apkConf, string apiUUID,
                         {
                             "group": "dp.wso2.com",
                             "kind": "Backend",
-                            "name": getBackendServiceUid(apkConf, (), PRODUCTION_TYPE, organiztion),
-                            "namespace": "apk-platform"
+                            "name": getBackendServiceUid(apkConf, (), PRODUCTION_TYPE, organiztion)
                         }
                     ]
                 },
@@ -3120,8 +3119,7 @@ function getMockHttpRouteWithOperationPolicies1(APKConf apkConf, string apiUUID,
                         {
                             "group": "dp.wso2.com",
                             "kind": "Backend",
-                            "name": getBackendServiceUid(apkConf, (), PRODUCTION_TYPE, organiztion),
-                            "namespace": "apk-platform"
+                            "name": getBackendServiceUid(apkConf, (), PRODUCTION_TYPE, organiztion)
                         }
                     ]
                 },
@@ -3150,8 +3148,7 @@ function getMockHttpRouteWithOperationPolicies1(APKConf apkConf, string apiUUID,
                         {
                             "group": "dp.wso2.com",
                             "kind": "Backend",
-                            "name": getBackendServiceUid(apkConf, (), PRODUCTION_TYPE, organiztion),
-                            "namespace": "apk-platform"
+                            "name": getBackendServiceUid(apkConf, (), PRODUCTION_TYPE, organiztion)
                         }
                     ]
                 },
@@ -3180,8 +3177,7 @@ function getMockHttpRouteWithOperationPolicies1(APKConf apkConf, string apiUUID,
                         {
                             "group": "dp.wso2.com",
                             "kind": "Backend",
-                            "name": getBackendServiceUid(apkConf, (), PRODUCTION_TYPE, organiztion),
-                            "namespace": "apk-platform"
+                            "name": getBackendServiceUid(apkConf, (), PRODUCTION_TYPE, organiztion)
                         }
                     ]
                 },
@@ -3210,8 +3206,7 @@ function getMockHttpRouteWithOperationPolicies1(APKConf apkConf, string apiUUID,
                         {
                             "group": "dp.wso2.com",
                             "kind": "Backend",
-                            "name": getBackendServiceUid(apkConf, (), PRODUCTION_TYPE, organiztion),
-                            "namespace": "apk-platform"
+                            "name": getBackendServiceUid(apkConf, (), PRODUCTION_TYPE, organiztion)
                         }
                     ]
                 }
@@ -3271,8 +3266,7 @@ function getMockHttpRouteWithOperationRateLimits1(APKConf apkConf, string apiUUI
                         {
                             "group": "dp.wso2.com",
                             "kind": "Backend",
-                            "name": getBackendServiceUid(apkConf, (), PRODUCTION_TYPE, organiztion),
-                            "namespace": "apk-platform"
+                            "name": getBackendServiceUid(apkConf, (), PRODUCTION_TYPE, organiztion)
                         }
                     ]
                 },
@@ -3301,8 +3295,7 @@ function getMockHttpRouteWithOperationRateLimits1(APKConf apkConf, string apiUUI
                         {
                             "group": "dp.wso2.com",
                             "kind": "Backend",
-                            "name": getBackendServiceUid(apkConf, (), PRODUCTION_TYPE, organiztion),
-                            "namespace": "apk-platform"
+                            "name": getBackendServiceUid(apkConf, (), PRODUCTION_TYPE, organiztion)
                         }
                     ]
                 },
@@ -3331,8 +3324,7 @@ function getMockHttpRouteWithOperationRateLimits1(APKConf apkConf, string apiUUI
                         {
                             "group": "dp.wso2.com",
                             "kind": "Backend",
-                            "name": getBackendServiceUid(apkConf, (), PRODUCTION_TYPE, organiztion),
-                            "namespace": "apk-platform"
+                            "name": getBackendServiceUid(apkConf, (), PRODUCTION_TYPE, organiztion)
                         }
                     ]
                 },
@@ -3361,8 +3353,7 @@ function getMockHttpRouteWithOperationRateLimits1(APKConf apkConf, string apiUUI
                         {
                             "group": "dp.wso2.com",
                             "kind": "Backend",
-                            "name": getBackendServiceUid(apkConf, (), PRODUCTION_TYPE, organiztion),
-                            "namespace": "apk-platform"
+                            "name": getBackendServiceUid(apkConf, (), PRODUCTION_TYPE, organiztion)
                         }
                     ]
                 },
@@ -3391,8 +3382,7 @@ function getMockHttpRouteWithOperationRateLimits1(APKConf apkConf, string apiUUI
                         {
                             "group": "dp.wso2.com",
                             "kind": "Backend",
-                            "name": getBackendServiceUid(apkConf, (), PRODUCTION_TYPE, organiztion),
-                            "namespace": "apk-platform"
+                            "name": getBackendServiceUid(apkConf, (), PRODUCTION_TYPE, organiztion)
                         }
                     ]
                 }
@@ -3452,8 +3442,7 @@ function getMockHttpRouteWithOperationInterceptorPolicy1(APKConf apkConf, string
                         {
                             "group": "dp.wso2.com",
                             "kind": "Backend",
-                            "name": getBackendServiceUid(apkConf, (), PRODUCTION_TYPE, organiztion),
-                            "namespace": "apk-platform"
+                            "name": getBackendServiceUid(apkConf, (), PRODUCTION_TYPE, organiztion)
                         }
                     ]
                 },
@@ -3482,8 +3471,7 @@ function getMockHttpRouteWithOperationInterceptorPolicy1(APKConf apkConf, string
                         {
                             "group": "dp.wso2.com",
                             "kind": "Backend",
-                            "name": getBackendServiceUid(apkConf, (), PRODUCTION_TYPE, organiztion),
-                            "namespace": "apk-platform"
+                            "name": getBackendServiceUid(apkConf, (), PRODUCTION_TYPE, organiztion)
                         }
                     ]
                 },
@@ -3512,8 +3500,7 @@ function getMockHttpRouteWithOperationInterceptorPolicy1(APKConf apkConf, string
                         {
                             "group": "dp.wso2.com",
                             "kind": "Backend",
-                            "name": getBackendServiceUid(apkConf, (), PRODUCTION_TYPE, organiztion),
-                            "namespace": "apk-platform"
+                            "name": getBackendServiceUid(apkConf, (), PRODUCTION_TYPE, organiztion)
                         }
                     ]
                 },
@@ -3542,8 +3529,7 @@ function getMockHttpRouteWithOperationInterceptorPolicy1(APKConf apkConf, string
                         {
                             "group": "dp.wso2.com",
                             "kind": "Backend",
-                            "name": getBackendServiceUid(apkConf, (), PRODUCTION_TYPE, organiztion),
-                            "namespace": "apk-platform"
+                            "name": getBackendServiceUid(apkConf, (), PRODUCTION_TYPE, organiztion)
                         }
                     ]
                 },
@@ -3572,8 +3558,7 @@ function getMockHttpRouteWithOperationInterceptorPolicy1(APKConf apkConf, string
                         {
                             "group": "dp.wso2.com",
                             "kind": "Backend",
-                            "name": getBackendServiceUid(apkConf, (), PRODUCTION_TYPE, organiztion),
-                            "namespace": "apk-platform"
+                            "name": getBackendServiceUid(apkConf, (), PRODUCTION_TYPE, organiztion)
                         }
                     ]
                 }
@@ -3667,6 +3652,8 @@ function testCreateAPI(string apiUUID, string backenduuid, API api, model:Config
     foreach [model:Backend, any] backend in backendServices {
         test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/backends", backend[0]).thenReturn(backend[1]);
     }
+    model:K8sSecretList k8sSecretList = {metadata: {}, items: []};
+    test:prepare(k8sApiServerEp).when("get").withArguments("/api/v1/namespaces/apk-platform/secrets?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version, organiztion1)).thenReturn(k8sSecretList);
     http:Response configmapResponse = new;
     configmapResponse.statusCode = 404;
     http:ApplicationResponseError internalApiResponse = error("internal api not found", statusCode = 404, body = {}, headers = {});
@@ -4616,8 +4603,7 @@ function getMockHttpRouteWithBackend(APKConf apkConf, string apiUUID, string bac
                         {
                             "group": "dp.wso2.com",
                             "kind": "Backend",
-                            "name": backenduuid,
-                            "namespace": "apk-platform"
+                            "name": backenduuid
                         }
                     ]
                 },
@@ -4646,8 +4632,7 @@ function getMockHttpRouteWithBackend(APKConf apkConf, string apiUUID, string bac
                         {
                             "group": "dp.wso2.com",
                             "kind": "Backend",
-                            "name": backenduuid,
-                            "namespace": "apk-platform"
+                            "name": backenduuid
                         }
                     ]
                 },
@@ -4676,8 +4661,7 @@ function getMockHttpRouteWithBackend(APKConf apkConf, string apiUUID, string bac
                         {
                             "group": "dp.wso2.com",
                             "kind": "Backend",
-                            "name": backenduuid,
-                            "namespace": "apk-platform"
+                            "name": backenduuid
                         }
                     ]
                 },
@@ -4706,8 +4690,7 @@ function getMockHttpRouteWithBackend(APKConf apkConf, string apiUUID, string bac
                         {
                             "group": "dp.wso2.com",
                             "kind": "Backend",
-                            "name": backenduuid,
-                            "namespace": "apk-platform"
+                            "name": backenduuid
                         }
                     ]
                 },
@@ -4736,8 +4719,7 @@ function getMockHttpRouteWithBackend(APKConf apkConf, string apiUUID, string bac
                         {
                             "group": "dp.wso2.com",
                             "kind": "Backend",
-                            "name": backenduuid,
-                            "namespace": "apk-platform"
+                            "name": backenduuid
                         }
                     ]
                 }
@@ -4807,8 +4789,7 @@ function getMockHttpRouteWithOperationPolicies(APKConf apkConf, string apiUUID, 
                         {
                             "group": "dp.wso2.com",
                             "kind": "Backend",
-                            "name": backenduuid,
-                            "namespace": "apk-platform"
+                            "name": backenduuid
                         }
                     ]
                 },
@@ -4837,8 +4818,7 @@ function getMockHttpRouteWithOperationPolicies(APKConf apkConf, string apiUUID, 
                         {
                             "group": "dp.wso2.com",
                             "kind": "Backend",
-                            "name": backenduuid,
-                            "namespace": "apk-platform"
+                            "name": backenduuid
                         }
                     ]
                 },
@@ -4867,8 +4847,7 @@ function getMockHttpRouteWithOperationPolicies(APKConf apkConf, string apiUUID, 
                         {
                             "group": "dp.wso2.com",
                             "kind": "Backend",
-                            "name": backenduuid,
-                            "namespace": "apk-platform"
+                            "name": backenduuid
                         }
                     ]
                 },
@@ -4897,8 +4876,7 @@ function getMockHttpRouteWithOperationPolicies(APKConf apkConf, string apiUUID, 
                         {
                             "group": "dp.wso2.com",
                             "kind": "Backend",
-                            "name": backenduuid,
-                            "namespace": "apk-platform"
+                            "name": backenduuid
                         }
                     ]
                 },
@@ -4927,8 +4905,7 @@ function getMockHttpRouteWithOperationPolicies(APKConf apkConf, string apiUUID, 
                         {
                             "group": "dp.wso2.com",
                             "kind": "Backend",
-                            "name": backenduuid,
-                            "namespace": "apk-platform"
+                            "name": backenduuid
                         }
                     ]
                 }
@@ -4998,8 +4975,7 @@ function getMockHttpRouteWithAPIPolicies(APKConf apkConf, string apiUUID, string
                         {
                             "group": "dp.wso2.com",
                             "kind": "Backend",
-                            "name": backenduuid,
-                            "namespace": "apk-platform"
+                            "name": backenduuid
                         }
                     ]
                 },
@@ -5045,8 +5021,7 @@ function getMockHttpRouteWithAPIPolicies(APKConf apkConf, string apiUUID, string
                         {
                             "group": "dp.wso2.com",
                             "kind": "Backend",
-                            "name": backenduuid,
-                            "namespace": "apk-platform"
+                            "name": backenduuid
                         }
                     ]
                 },
@@ -5092,8 +5067,7 @@ function getMockHttpRouteWithAPIPolicies(APKConf apkConf, string apiUUID, string
                         {
                             "group": "dp.wso2.com",
                             "kind": "Backend",
-                            "name": backenduuid,
-                            "namespace": "apk-platform"
+                            "name": backenduuid
                         }
                     ]
                 },
@@ -5139,8 +5113,7 @@ function getMockHttpRouteWithAPIPolicies(APKConf apkConf, string apiUUID, string
                         {
                             "group": "dp.wso2.com",
                             "kind": "Backend",
-                            "name": backenduuid,
-                            "namespace": "apk-platform"
+                            "name": backenduuid
                         }
                     ]
                 },
@@ -5186,8 +5159,7 @@ function getMockHttpRouteWithAPIPolicies(APKConf apkConf, string apiUUID, string
                         {
                             "group": "dp.wso2.com",
                             "kind": "Backend",
-                            "name": backenduuid,
-                            "namespace": "apk-platform"
+                            "name": backenduuid
                         }
                     ]
                 }
@@ -5248,8 +5220,7 @@ function getMockHttpRouteWithOperationRateLimits(APKConf apkConf, string apiUUID
                         {
                             "group": "dp.wso2.com",
                             "kind": "Backend",
-                            "name": backenduuid,
-                            "namespace": "apk-platform"
+                            "name": backenduuid
                         }
                     ]
                 },
@@ -5278,8 +5249,7 @@ function getMockHttpRouteWithOperationRateLimits(APKConf apkConf, string apiUUID
                         {
                             "group": "dp.wso2.com",
                             "kind": "Backend",
-                            "name": backenduuid,
-                            "namespace": "apk-platform"
+                            "name": backenduuid
                         }
                     ]
                 },
@@ -5308,8 +5278,7 @@ function getMockHttpRouteWithOperationRateLimits(APKConf apkConf, string apiUUID
                         {
                             "group": "dp.wso2.com",
                             "kind": "Backend",
-                            "name": backenduuid,
-                            "namespace": "apk-platform"
+                            "name": backenduuid
                         }
                     ]
                 },
@@ -5338,8 +5307,7 @@ function getMockHttpRouteWithOperationRateLimits(APKConf apkConf, string apiUUID
                         {
                             "group": "dp.wso2.com",
                             "kind": "Backend",
-                            "name": backenduuid,
-                            "namespace": "apk-platform"
+                            "name": backenduuid
                         }
                     ]
                 },
@@ -5368,8 +5336,7 @@ function getMockHttpRouteWithOperationRateLimits(APKConf apkConf, string apiUUID
                         {
                             "group": "dp.wso2.com",
                             "kind": "Backend",
-                            "name": backenduuid,
-                            "namespace": "apk-platform"
+                            "name": backenduuid
                         }
                     ]
                 }
@@ -5430,8 +5397,7 @@ function getMockHttpRouteWithOperationInterceptorPolicy(APKConf apkConf, string 
                         {
                             "group": "dp.wso2.com",
                             "kind": "Backend",
-                            "name": backenduuid,
-                            "namespace": "apk-platform"
+                            "name": backenduuid
                         }
                     ]
                 },
@@ -5460,8 +5426,7 @@ function getMockHttpRouteWithOperationInterceptorPolicy(APKConf apkConf, string 
                         {
                             "group": "dp.wso2.com",
                             "kind": "Backend",
-                            "name": backenduuid,
-                            "namespace": "apk-platform"
+                            "name": backenduuid
                         }
                     ]
                 },
@@ -5490,8 +5455,7 @@ function getMockHttpRouteWithOperationInterceptorPolicy(APKConf apkConf, string 
                         {
                             "group": "dp.wso2.com",
                             "kind": "Backend",
-                            "name": backenduuid,
-                            "namespace": "apk-platform"
+                            "name": backenduuid
                         }
                     ]
                 },
@@ -5520,8 +5484,7 @@ function getMockHttpRouteWithOperationInterceptorPolicy(APKConf apkConf, string 
                         {
                             "group": "dp.wso2.com",
                             "kind": "Backend",
-                            "name": backenduuid,
-                            "namespace": "apk-platform"
+                            "name": backenduuid
                         }
                     ]
                 },
@@ -5550,8 +5513,7 @@ function getMockHttpRouteWithOperationInterceptorPolicy(APKConf apkConf, string 
                         {
                             "group": "dp.wso2.com",
                             "kind": "Backend",
-                            "name": backenduuid,
-                            "namespace": "apk-platform"
+                            "name": backenduuid
                         }
                     ]
                 }
@@ -5588,8 +5550,7 @@ function getMockResourceRateLimitPolicy(APKConf apkConf, commons:Organization or
             "targetRef": {
                 "group": "dp.wso2.com",
                 "kind": "Resource",
-                "name": apiUUID,
-                "namespace": "apk-platform"
+                "name": apiUUID
             }
         }
     };
@@ -5614,8 +5575,7 @@ function getMockAPIRateLimitPolicy(APKConf apkConf, commons:Organization organiz
             "targetRef": {
                 "group": "gateway.networking.k8s.io",
                 "kind": "API",
-                "name": apiUUID,
-                "namespace": "apk-platform"
+                "name": apiUUID
             }
         }
     };
@@ -5638,23 +5598,20 @@ function getMockResourceLevelPolicy(APKConf apkConf, commons:Organization organi
             "default": {
                 "requestInterceptors": [
                     {
-                        "name": getInterceptorServiceUid(apkConf, organiztion, "request", 0),
-                        "namespace": "apk-platform"
+                        "name": getInterceptorServiceUid(apkConf, organiztion, "request", 0)
                     }
 
                 ],
                 "responseInterceptors": [
                     {
-                        "name": getInterceptorServiceUid(apkConf, organiztion, "response", 0),
-                        "namespace": "apk-platform"
+                        "name": getInterceptorServiceUid(apkConf, organiztion, "response", 0)
                     }
                 ]
             },
             "targetRef": {
                 "group": "dp.wso2.com",
                 "kind": "Resource",
-                "name": apiUUID,
-                "namespace": "apk-platform"
+                "name": apiUUID
             }
         }
     };
@@ -5669,23 +5626,20 @@ function getMockAPILevelPolicy(APKConf apkConf, commons:Organization organiztion
             "default": {
                 "requestInterceptors": [
                     {
-                        "name": getInterceptorServiceUid(apkConf, organiztion, "request", 0),
-                        "namespace": "apk-platform"
+                        "name": getInterceptorServiceUid(apkConf, organiztion, "request", 0)
                     }
 
                 ],
                 "responseInterceptors": [
                     {
-                        "name": getInterceptorServiceUid(apkConf, organiztion, "response", 0),
-                        "namespace": "apk-platform"
+                        "name": getInterceptorServiceUid(apkConf, organiztion, "response", 0)
                     }
                 ]
             },
             "targetRef": {
                 "group": "dp.wso2.com",
                 "kind": "API",
-                "name": apiUUID,
-                "namespace": "apk-platform"
+                "name": apiUUID
             }
         }
     };
@@ -5706,8 +5660,7 @@ function getMockInterceptorService(APKConf apkConf, commons:Organization organiz
         "metadata": {"name": getInterceptorServiceUid(apkConf, organiztion, flow, 0), "namespace": "apk-platform", "labels": getLabels(apkConf, organiztion)},
         "spec": {
             "backendRef": {
-                "name": getInterceptorBackendUid(apkConf, INTERCEPTOR_TYPE, organiztion, backendUrl),
-                "namespace": "apk-platform"
+                "name": getInterceptorBackendUid(apkConf, INTERCEPTOR_TYPE, organiztion, backendUrl)
             },
             "includes": includes
         }

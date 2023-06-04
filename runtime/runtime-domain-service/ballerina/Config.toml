@@ -1,23 +1,38 @@
+[ballerina.log]
+level = "DEBUG"
+[ballerina.http]
+traceLogConsole = true
 [wso2.runtime_domain_service.runtimeConfiguration]
+orgResolver = "controlPlane"
 baseURl = "https://api.am.wso2.com:9095/api/runtime"
+migrationMode = false
 [wso2.runtime_domain_service.runtimeConfiguration.k8sConfiguration]
 host = "192.168.49.2:8443"
-serviceAccountPath = "/media/tharindud/dev/satoken"
-[wso2.runtime_domain_service.runtimeConfiguration.keyStores.signing]
-keyFilePath = "/media/tharindud/dev/satoken/wso2carbon.key"
-[wso2.runtime_domain_service.runtimeConfiguration.keyStores.tls]
-keyFilePath = "/media/tharindud/dev/satoken/runtime.key"
-certFilePath = "/media/tharindud/dev/satoken/runtime.pem"
-
+serviceAccountPath = "/media/tharindud/dev/satoken/runtime"
+[wso2.runtime_domain_service.runtimeConfiguration.idpConfiguration]
+organizationClaim = "organization"
+userClaim = "sub"
 [wso2.runtime_domain_service.runtimeConfiguration.idpConfiguration.publicKey]
-certFilePath = "/media/tharindud/dev/satoken/mg.pem"
-[wso2.runtime_domain_service.runtimeConfiguration.controlPlane]
-serviceBaseURl = "https://api.am.wso2.com:9095/api/internal/v1"
-[wso2.runtime_domain_service.runtimeConfiguration.controlPlane.certificate]
-certFilePath = "/media/tharindud/dev/satoken/router.pem"
+certFilePath = "/media/tharindud/dev/satoken/runtime/mg.pem"
+[wso2.runtime_domain_service.runtimeConfiguration.keyStores.tls]
+keyFilePath = "/media/tharindud/dev/satoken/runtime/runtime.key"
+certFilePath = "/media/tharindud/dev/satoken/runtime/runtime.pem"
+[wso2.runtime_domain_service.runtimeConfiguration.keyStores.signing]
+keyFilePath = "/media/tharindud/dev/satoken/runtime/wso2carbon.key"
 [wso2.runtime_domain_service.runtimeConfiguration.gatewayConfiguration]
 name = "default"
 listenerName = "httpslistener"
 
-[ballerina.http]
-traceLogConsole = true
+[wso2.runtime_domain_service.runtimeConfiguration.controlPlane]
+serviceBaseURl = "https://localhost:9445/api/internal/v1"
+enableHostNameVerification = false
+[wso2.runtime_domain_service.runtimeConfiguration.controlPlane.certificate]
+certFilePath = "/media/tharindud/dev/satoken/runtime/controlplane.pem"   
+[[wso2.runtime_domain_service.runtimeConfiguration.vhost]]
+name = "Default"
+type = "production"
+hosts = ["gw.wso2.com"]
+[[wso2.runtime_domain_service.runtimeConfiguration.vhost]]
+name = "Default"
+type = "sandbox"
+hosts = ["sandbox.gw.wso2.com"]

@@ -217,9 +217,9 @@ public isolated function getConfigMapNameByHostname(model:APIArtifact apiArtifac
         string organizationHash = crypto:hashSha1(organization.uuid.toBytes()).toBase16();
         lock {
             map<model:ConfigMap> endpointCertificates = apiArtifact.endpointCertificates;
-            if endpointConfig.certification is string {
-                if apiArtifact.certificateMap.hasKey(<string>endpointConfig.certification) {
-                    return apiArtifact.certificateMap[<string>endpointConfig.certification];
+            if endpointConfig.certificate is string {
+                if apiArtifact.certificateMap.hasKey(<string>endpointConfig.certificate) {
+                    return apiArtifact.certificateMap[<string>endpointConfig.certificate];
                 }
             }
             foreach model:ConfigMap item in endpointCertificates {

@@ -43,7 +43,7 @@ type BackendConfigs struct {
 	// +kubebuilder:validation:Enum=http;https;ws;wss
 	Protocol BackendProtocolType `json:"protocol"`
 	TLS      TLSConfig           `json:"tls,omitempty"`
-	Security []SecurityConfig    `json:"security,omitempty"`
+	Security SecurityConfig      `json:"security,omitempty"`
 }
 
 // BackendSpec defines the desired state of Backend
@@ -60,7 +60,7 @@ type BackendSpec struct {
 	TLS *TLSConfig `json:"tls,omitempty"`
 
 	// +optional
-	Security []SecurityConfig `json:"security,omitempty"`
+	Security *SecurityConfig `json:"security,omitempty"`
 }
 
 // Service holds host and port information for the service

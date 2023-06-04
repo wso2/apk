@@ -5,12 +5,3 @@ string name?;
 boolean serviceEntry = false;
 
 |};
-
-public type EndpointSecurity record {|
-    boolean enabled = false;
-    string 'type?;
-    string username?;
-    string password?;
-    string secretRefName?;
-    string generatedSecretRefName?;
-|};

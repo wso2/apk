@@ -97,6 +97,7 @@ public class KeyManagerClient {
             additionalProperties["enableTokenGeneration"] = keyManager.enableTokenGeneration;
             additionalProperties["enableOauthAppCreation"] = keyManager.enableOAuthAppCreation;
             additionalProperties["enableOauthAppValidation"] = keyManager.enableOauthAppValidation;
+            keyManagerDTO.configuration = additionalProperties.toJsonString().toBytes();
 
             return keyManagerDTO;
         } on fail var e {

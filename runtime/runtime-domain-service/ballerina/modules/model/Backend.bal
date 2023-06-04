@@ -26,7 +26,7 @@ public type BackendSpec record {|
     BackendService[] services;
     string protocol;
     TLSConfig tls?;
-    SecurityConfig[] security?;
+    SecurityConfig security?;
 |};
 
 public type BackendService record {

@@ -61,33 +61,31 @@ spec:
                 - wss
                 type: string
               security:
-                items:
-                  description: SecurityConfig defines enpoint security configurations
-                  properties:
-                    basic:
-                      description: BasicSecurityConfig defines basic security configurations
-                      properties:
-                        secretRef:
-                          description: SecretRef to credentials
-                          properties:
-                            name:
-                              type: string
-                            passwordKey:
-                              type: string
-                            usernameKey:
-                              type: string
-                          required:
-                          - name
-                          - passwordKey
-                          - usernameKey
-                          type: object
-                      required:
-                      - secretRef
-                      type: object
-                    type:
-                      type: string
-                  type: object
-                type: array
+                description: SecurityConfig defines enpoint security configurations
+                properties:
+                  basic:
+                    description: BasicSecurityConfig defines basic security configurations
+                    properties:
+                      secretRef:
+                        description: SecretRef to credentials
+                        properties:
+                          name:
+                            type: string
+                          passwordKey:
+                            type: string
+                          usernameKey:
+                            type: string
+                        required:
+                        - name
+                        - passwordKey
+                        - usernameKey
+                        type: object
+                    required:
+                    - secretRef
+                    type: object
+                  type:
+                    type: string
+                type: object
               services:
                 items:
                   description: Service holds host and port information for the service
