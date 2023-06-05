@@ -4,6 +4,7 @@ API:
     - context
     - name
     - version
+    - chanaka
   type: object
   properties:
     id:
@@ -16,6 +17,10 @@ API:
       minLength: 1
       type: string
     context:
+      maxLength: 232
+      minLength: 1
+      type: string
+    chanaka:
       maxLength: 232
       minLength: 1
       type: string

@@ -6,27 +6,48 @@
   "engines": {
     "vscode": "^1.78.0"
   },
+  "activationEvents": [
+    "*"
+  ],
+  "contributes": {
+    "yamlValidation": [
+      {
+        "fileMatch": [
+          "api-config.yaml",
+          "api-config.yml"
+        ],
+        "url": "./schemas/api-schema.json"
+      }
+    ]
+  },
   "categories": [
     "Programming Languages"
   ],
-  "contributes": {
-    "languages": [{
-      "id": "abc",
-      "aliases": ["Abc", "abc"],
-      "extensions": [".abc"],
-      "configuration": "./language-configuration.json",
-      "inherits": "yaml"
-    }],
-    "grammars": [{
-      "language": "abc",
-      "scopeName": "source.api.config",
-      "path": "./syntaxes/api.config.tmLanguage.json"
-    }],
-    "snippets": [
-      {
-        "language": "abc",
-        "path": "./config-snippets.json"
-      }
-    ]
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint \"src/**/*.ts\""
+  },
+  "devDependencies": {
+    "@types/ftp": "^0.3.33",
+    "@types/mkdirp": "^0.5.2",
+    "@types/node": "^16.11.7",
+    "@types/rimraf": "^2.0.2",
+    "@types/vscode": "^1.73.0",
+    "@typescript-eslint/eslint-plugin": "^5.42.0",
+    "@typescript-eslint/parser": "^5.42.0",
+    "eslint": "^8.26.0",
+    "typescript": "^5.0.2"
+  },
+  "dependencies": {
+    "ftp": "^0.3.10",
+    "jsonc-parser": "^0.4.2",
+    "minimist": "^1.2.6",
+    "mkdirp": "^0.5.1",
+    "rimraf": "^2.6.2",
+    "vscode-languageserver": "^8.1.0",
+    "yaml": "^2.3.1",
+    "yaml-language-server": "^1.13.0"
   }
 }

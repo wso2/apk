@@ -1,105 +1,13 @@
 {
   "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
   "name": "JSON Configuration Schema",
-  "scopeName": "source.api.config",
+  "scopeName": "source.apk_conf",
   "patterns": [
     {
-      "include": "#object"
+      "include": "source.yaml"
     }
   ],
-  "repository": {
-    "object": {
-      "patterns": [
-        {
-          "match": "\"\\$schema\"",
-          "name": "constant.language.schema",
-          "captures": {
-            "0": {
-              "name": "punctuation.definition.string.begin.json-config"
-            }
-          },
-          "push": "schema"
-        },
-        {
-          "match": "\"(\\w+)\":\\s*\\{",
-          "captures": {
-            "1": {
-              "name": "support.type.property-name.json-config"
-            }
-          },
-          "push": "object"
-        },
-        {
-          "match": "\"(\\w+)\":",
-          "captures": {
-            "1": {
-              "name": "support.type.property-name.json-config"
-            }
-          },
-          "push": "value"
-        }
-      ]
-    },
-    "schema": {
-      "patterns": [
-        {
-          "match": "\"(http|https)://(\\S+)\"",
-          "captures": {
-            "1": {
-              "name": "constant.language.url-scheme.json-config"
-            },
-            "2": {
-              "name": "constant.language.url-host.json-config"
-            }
-          }
-        }
-      ],
-      "pop": true
-    },
-    "value": {
-      "patterns": [
-        {
-          "match": ":\\s*\"(.+?)\"",
-          "captures": {
-            "1": {
-              "name": "string.quoted.double.json-config"
-            }
-          },
-          "pop": true
-        },
-        {
-          "match": ":\\s*(true|false|null)",
-          "name": "constant.language.json-config",
-          "pop": true
-        },
-        {
-          "match": ":\\s*-?\\d+\\.?\\d*(?:[eE][+-]?\\d+)?",
-          "name": "constant.numeric.json-config",
-          "pop": true
-        },
-        {
-          "match": ":\\s*\\{",
-          "name": "punctuation.section.object.begin.json-config",
-          "push": "object"
-        },
-        {
-          "match": ":\\s*\\[",
-          "name": "punctuation.section.array.begin.json-config",
-          "push": "array"
-        }
-      ]
-    },
-    "array": {
-      "patterns": [
-        {
-          "match": "\\s*\\]",
-          "name": "punctuation.section.array.end.json-config",
-          "pop": true
-        },
-        {
-          "include": "#value"
-        }
-      ]
-    }
-  }
+  "fileTypes": [
+    "apk-conf"
+  ]
 }
