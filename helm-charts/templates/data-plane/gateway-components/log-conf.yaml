@@ -78,16 +78,36 @@ data:
       enabled = true
       type = "{{ .Values.wso2.apk.dp.gatewayRuntime.tracing.type }}"
       [tracing.configProperties]
+        {{ if .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.host }}
         host = "{{ .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.host }}"
+        {{end}}
+        {{ if .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.port }}
         port = "{{ .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.port }}"
+        {{end}}
+        {{ if .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.endpoint }}
         endpoint = "{{ .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.endpoint }}"
+        {{end}}
+        {{ if .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.maxPathLength }}
         maxPathLength = "{{ .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.maxPathLength }}"
+        {{end}}
+        {{ if .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.connectionString }}
         connectionString = "{{ .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.connectionString }}"
+        {{end}}
+        {{ if .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.authHeaderName }}
         authHeaderName = "{{ .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.authHeaderName }}"
+        {{end}}
+        {{ if .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.authHeaderValue }}
         authHeaderValue = "{{ .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.authHeaderValue }}"
+        {{end}}
+        {{ if .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.instrumentationName }}
         instrumentationName = "{{ .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.instrumentationName }}"
+        {{end}}
+        {{ if .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.maximumTracesPerSecond }}
         maximumTracesPerSecond = "{{ .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.maximumTracesPerSecond }}"
+        {{end}}
+        {{ if .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.connectionTimeout }}
         connectionTimeout = "{{ .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.connectionTimeout }}"
+        {{end}}
     {{end}}
     [analytics]
       enabled = false
