@@ -1,0 +1,252 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "API object",
+    "required": [
+        "context",
+        "name",
+        "version",
+        "chanaka"
+    ],
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "string",
+            "description": "UUID of the API",
+            "readOnly": true
+        },
+        "name": {
+            "maxLength": 60,
+            "minLength": 1,
+            "type": "string"
+        },
+        "context": {
+            "maxLength": 232,
+            "minLength": 1,
+            "type": "string"
+        },
+        "chanaka": {
+            "maxLength": 232,
+            "minLength": 1,
+            "type": "string"
+        },
+        "version": {
+            "maxLength": 30,
+            "minLength": 1,
+            "pattern": "^[^~!@#;:%^*()+={}|\\\\<>\"',&/$\\[\\]\\s+\\/]+$",
+            "type": "string"
+        },
+        "provider": {
+            "type": "string"
+        },
+        "type": {
+            "type": "string",
+            "default": "HTTP",
+            "enum": [
+                "HTTP",
+                "GRAPHQL",
+                "GRPC"
+            ]
+        },
+        "endpointConfig": {
+            "$ref": "#/components/schemas/EndpointConfig"
+        },
+        "operations": {
+            "type": "array",
+            "items": {
+                "$ref": "#/components/schemas/APIOperations"
+            }
+        },
+        "serviceInfo": {
+            "$ref": "#/components/schemas/API_serviceInfo"
+        },
+        "apiPolicies": {
+            "$ref": "#/components/schemas/APIOperationPolicies",
+            "optional": true
+        },
+        "apiRateLimit": {
+            "$ref": "#/components/schemas/APIRateLimit"
+        },
+        "securityScheme": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "AdditionalProperties": {
+            "type": "array",
+            "description": "Map of custom properties of API",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "APIOperations": {
+            "title": "Operation",
+            "type": "object",
+            "properties": {
+                "target": {
+                    "type": "string",
+                    "example": "/order/{orderId}"
+                },
+                "verb": {
+                    "type": "string",
+                    "example": "POST"
+                },
+                "authTypeEnabled": {
+                    "type": "boolean",
+                    "example": true,
+                    "default": true,
+                    "description": "Authentication mode for resource (true/false)"
+                },
+                "endpointConfig": {
+                    "$ref": "#/components/schemas/EndpointConfig"
+                },
+                "operationPolicies": {
+                    "$ref": "#/components/schemas/APIOperationPolicies"
+                },
+                "operationRateLimit": {
+                    "$ref": "#/components/schemas/APIRateLimit"
+                }
+            }
+        },
+        "APIOperationPolicies": {
+            "title": "API Operation Level Policies",
+            "properties": {
+                "request": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/components/schemas/OperationPolicy"
+                    }
+                },
+                "response": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/components/schemas/OperationPolicy"
+                    }
+                }
+            }
+        },
+        "OperationPolicy": {
+            "title": "API Operation Policy",
+            "required": [
+                "policyName"
+            ],
+            "type": "object",
+            "properties": {
+                "policyName": {
+                    "type": "string"
+                },
+                "policyVersion": {
+                    "type": "string",
+                    "default": "v1"
+                },
+                "policyId": {
+                    "type": "string"
+                },
+                "parameters": {
+                    "type": "object",
+                    "example": "{\"headerName\":\"header1\"}"
+                }
+            }
+        },
+        "APIRateLimit": {
+            "title": "API Rate Limit Details",
+            "type": "object",
+            "required": [
+                "requestsPerUnit",
+                "unit"
+            ],
+            "properties": {
+                "requestsPerUnit": {
+                    "type": "integer",
+                    "description": "Number of requests allowed per specified unit of time",
+                    "example": 30
+                },
+                "unit": {
+                    "type": "string",
+                    "description": "Unit of time",
+                    "enum": [
+                        "Minute",
+                        "Hour",
+                        "Day"
+                    ],
+                    "example": "Minute"
+                }
+            }
+        },
+        "EndpointConfig": {
+            "title": "Endpoint configs",
+            "properties": {
+                "production": {
+                    "$ref": "#/components/schemas/Endpoint"
+                },
+                "sandbox": {
+                    "$ref": "#/components/schemas/Endpoint"
+                }
+            }
+        },
+        "Endpoint": {
+            "required": [
+                "endpointURL"
+            ],
+            "type": "object",
+            "properties": {
+                "endpointURL": {
+                    "type": "string"
+                },
+                "endpointSecurity": {
+                    "$ref": "#/components/schemas/EndpointSecurity"
+                },
+                "certification": {
+                    "type": "string"
+                },
+                "timeouts": {
+                    "$ref": "#/components/schemas/EndpointTimeout"
+                }
+            }
+        },
+        "EndpointSecurity": {
+            "type": "object",
+            "properties": {
+                "enable": {
+                    "type": "boolean"
+                },
+                "securityType": {
+                    "type": "string"
+                },
+                "securityProperties": {
+                    "type": "object",
+                    "properties": {}
+                }
+            }
+        },
+        "EndpointTimeout": {
+            "type": "object",
+            "properties": {}
+        },
+        "API_serviceInfo": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "example": "pizzashack-service"
+                },
+                "namespace": {
+                    "type": "string",
+                    "example": "apk-platform"
+                },
+                "endpoint_security": {
+                    "type": "object",
+                    "properties": {}
+                }
+            }
+        }
+    }
+}
