@@ -1517,10 +1517,10 @@ components:
           optional: true
         apiRateLimit:
           $ref: "#/components/schemas/APIRateLimit"
-        securityScheme:
+        authentication:
           type: array
           items:
-            type: string
+            $ref: "#/components/schemas/Authentication"
         AdditionalProperties:
           type: array
           description: Map of custom properties of API
@@ -1535,35 +1535,25 @@ components:
       title: Endpoint configs
       properties:
         production:
-          $ref: "#/components/schemas/ProductionEndpoint"
+          $ref: "#/components/schemas/Endpoint"
         sandbox:
-          $ref: "#/components/schemas/SandboxEndpoint"
-    ProductionEndpoint:
+          $ref: "#/components/schemas/Endpoint"
+    Endpoint:
       required:
         - endpointURL
       type: object
       properties:
         endpointURL:
-          type: string
+          type: object
+          oneOf:
+            - type: string
+            - $ref: "#/components/schemas/API_serviceInfo"
         endpointSecurity:
           $ref: "#/components/schemas/EndpointSecurity"
-        certification:
+        certificate:
           type: string
         timeouts:
-          $ref: "#/components/schemas/EndpointTimeout"
-    SandboxEndpoint:
-      required:
-        - endpointURL
-      type: object
-      properties:
-        endpointURL:
-          type: string
-        security:
-          $ref: "#/components/schemas/EndpointSecurity"
-        certification:
-          type: string
-        timeouts:
-          $ref: "#/components/schemas/EndpointTimeout"
+          $ref: "#/components/schemas/ResiliencyConfigs"
     EndpointSecurity:
       type: object
       properties:
@@ -1574,9 +1564,18 @@ components:
         securityProperties:
           type: object
           properties: {}
-    EndpointTimeout:
+    ResiliencyConfigs:
       type: object
       properties: {}
+    Authentication:
+      type: object
+      properties:
+        authType:
+          type: string
+          example: JWT
+        enabled:
+          type: boolean
+          example: true
     APIOperations-NEW:
       title: Operation
       type: object
@@ -1587,11 +1586,10 @@ components:
         verb:
           type: string
           example: POST
-        authTypeEnabled:
-          type: boolean
-          example: true
-          default: true
-          description: Authentication mode for resource (true/false)
+        authentication:
+          type: array
+          items:
+            $ref: "#/components/schemas/Authentication"
         endpointConfig:
           $ref: "#/components/schemas/EndpointConfig"
         operationPolicies:
