@@ -1,6 +1,6 @@
 # apk-helm
 
-![Version: 0.0.1-m8](https://img.shields.io/badge/Version-0.0.1--m8-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.16.0](https://img.shields.io/badge/AppVersion-1.16.0-informational?style=flat-square)
+![Version: 0.0.1-m10](https://img.shields.io/badge/Version-0.0.1--m10-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.16.0](https://img.shields.io/badge/AppVersion-1.16.0-informational?style=flat-square)
 
 A Helm chart for APK components
 
@@ -27,14 +27,17 @@ A Helm chart for APK components
 | wso2.apk.idp.authorizeEndpoint | string | `"https://idp.am.wso2.com:9095/oauth2/authorize"` | IDP authorization endpoint |
 | wso2.apk.idp.tokenEndpoint | string | `"https://idp.am.wso2.com:9095/oauth2/token"` | IDP token endpoint |
 | wso2.apk.idp.revokeEndpoint | string | `"https://idp.am.wso2.com:9095/oauth2/revoke"` | IDP revoke endpoint |
-| wso2.apk.idp.jwksEndpoint | string | `""` | IDP jwks endpoint (optional) |
 | wso2.apk.idp.usernameClaim | string | `"sub"` | Optionally configure username Claim in JWT. |
 | wso2.apk.idp.groupClaim | string | `"groups"` | Optionally configure groups Claim in JWT. |
+| wso2.apk.idp.scopeClaim | string | `"scope"` | Optionally configure scope Claim in JWT. |
 | wso2.apk.idp.organizationClaim | string | `"organization"` | Optionally configure organization Claim in JWT. |
 | wso2.apk.idp.organizationResolver | string | `"controlPlane"` | Optionally configure organization Resolution method for APK (controlPlane/none)). |
 | wso2.apk.idp.credentials.secretName | string | `""` | IDP credentials secret name to be configured with  |
+| wso2.apk.idp.tls.configMapName | string | `""` | IDP public certificate configmap name |
 | wso2.apk.idp.tls.secretName | string | `""` | IDP public certificate secret name |
 | wso2.apk.idp.tls.fileName | string | `""` | IDP public certificate file name |
+| wso2.apk.idp.signing.jwksEndpoint | string | `""` | IDP jwks endpoint (optional) |
+| wso2.apk.idp.signing.configMapName | string | `""` | IDP jwt signing certificate configmap name |
 | wso2.apk.idp.signing.secretName | string | `""` | IDP jwt signing certificate secret name |
 | wso2.apk.idp.signing.fileName | string | `""` | IDP jwt signing certificate file name |
 | wso2.apk.cp.enabled | bool | `true` | Enabled control plane. |
@@ -164,6 +167,9 @@ A Helm chart for APK components
 | wso2.apk.dp.adapter.configs.tls.secretName | string | `""` | TLS secret name for adapter public certificate. |
 | wso2.apk.dp.adapter.configs.tls.certKeyFilename | string | `""` | TLS certificate file name. |
 | wso2.apk.dp.adapter.configs.tls.certFilename | string | `""` | TLS certificate file name. |
+| wso2.apk.dp.adapter.logging.level | string | `"INFO"` | Optionally configure logging for adapter. LogLevels can be "DEBG", "FATL", "ERRO", "WARN", "INFO", "PANC" |
+| wso2.apk.dp.adapter.logging.logFile | string | `"logs/adapter.log"` | Log file name |
+| wso2.apk.dp.adapter.logging.logFormat | string | `"TEXT"` | Log format can be "JSON", "TEXT" |
 | wso2.apk.dp.ratelimiter.enabled | bool | `true` | Enable the deployment of the Rate Limiter |
 | wso2.apk.dp.ratelimiter.deployment.resources.requests.memory | string | `"128Mi"` | CPU request for the container |
 | wso2.apk.dp.ratelimiter.deployment.resources.requests.cpu | string | `"100m"` | Memory request for the container |
@@ -201,6 +207,10 @@ A Helm chart for APK components
 | wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls.secretName | string | `"router-cert"` | TLS secret name for router public certificate. |
 | wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls.certKeyFilename | string | `""` | TLS certificate file name. |
 | wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls.certFilename | string | `""` | TLS certificate file name. |
+| wso2.apk.dp.gatewayRuntime.deployment.router.logging.wireLogs | object | `{"enable":true}` | Optionally configure logging for router. |
+| wso2.apk.dp.gatewayRuntime.deployment.router.logging.wireLogs.enable | bool | `true` | Enable wire logs for router. |
+| wso2.apk.dp.gatewayRuntime.deployment.router.logging.accessLogs.enable | bool | `true` | Enable access logs for router. |
+| wso2.apk.dp.gatewayRuntime.deployment.router.logging.accessLogs.logfile | string | `"/tmp/envoy.access.log"` | Log file name |
 | wso2.apk.dp.gatewayRuntime.deployment.enforcer.resources.requests.memory | string | `"128Mi"` | CPU request for the container |
 | wso2.apk.dp.gatewayRuntime.deployment.enforcer.resources.requests.cpu | string | `"100m"` | Memory request for the container |
 | wso2.apk.dp.gatewayRuntime.deployment.enforcer.resources.limits.memory | string | `"1028Mi"` | CPU limit for the container |
@@ -218,6 +228,8 @@ A Helm chart for APK components
 | wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.tls.secretName | string | `""` | TLS secret name for enforcer public certificate. |
 | wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.tls.certKeyFilename | string | `""` | TLS certificate file name. |
 | wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.tls.certFilename | string | `""` | TLS certificate file name. |
+| wso2.apk.dp.gatewayRuntime.deployment.enforcer.logging.level | string | `"DEBUG"` | Log level can be one of DEBUG, INFO, WARN, ERROR, OFF |
+| wso2.apk.dp.gatewayRuntime.deployment.enforcer.logging.logFile | string | `"logs/enforcer.log"` | Log file name |
 | wso2.apk.migration.enabled | bool | `false` | It is not recommended to run a production deployment with this flag enabled. |
 | idp.enabled | bool | `true` | Enable Non production identity server |
 | idp.listener.hostname | string | `"idp.am.wso2.com"` | identity server hostname |

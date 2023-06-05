@@ -391,6 +391,14 @@ wso2:
             certKeyFilename: ""
             # -- TLS certificate file name.
             certFilename: ""
+        logging:
+          # -- Optionally configure logging for adapter.
+          # LogLevels can be "DEBG", "FATL", "ERRO", "WARN", "INFO", "PANC"
+          level: "INFO"
+          # -- Log file name
+          logFile: "logs/adapter.log"
+          # -- Log format can be "JSON", "TEXT"
+          logFormat: "TEXT"
       ratelimiter:
         # -- Enable the deployment of the Rate Limiter
         enabled: true
@@ -485,6 +493,16 @@ wso2:
                 certKeyFilename: ""
                 # -- TLS certificate file name.
                 certFilename: ""
+            logging:
+              # -- Optionally configure logging for router.
+              wireLogs:
+              # -- Enable wire logs for router.
+                enable: true
+              accessLogs:
+                # -- Enable access logs for router.
+                enable: true
+                # -- Log file name
+                logfile: "/tmp/envoy.access.log"
           enforcer:
             resources:
               requests:
@@ -528,6 +546,12 @@ wso2:
                 certKeyFilename: ""
                 # -- TLS certificate file name.
                 certFilename: ""
+            logging:
+              # -- Optionally configure logging for enforcer.
+              # -- Log level can be one of DEBUG, INFO, WARN, ERROR, OFF
+              level: DEBUG
+              # -- Log file name
+              logFile: logs/enforcer.log
     migration:
       # -- This flag should be enabled only in a migration scenario.
       # -- It is not recommended to run a production deployment with this flag enabled.

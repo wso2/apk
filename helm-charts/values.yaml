@@ -225,6 +225,10 @@ wso2:
           image: wso2/adapter:latest
           security:
             sslHostname: "adapter"
+#        logging:
+#          level: "INFO" # LogLevels can be "DEBG", "FATL", "ERRO", "WARN", "INFO", "PANC"
+#          logFile: "logs/adapter.log"
+#          logFormat: "TEXT" # Values can be "JSON", "TEXT"
         # configs:
         #   apiNamespaces:
         #     - "dataplane-1"
@@ -289,6 +293,12 @@ wso2:
             #     secretName: "router-cert"
             #     certKeyFilename: ""
             #     certFilename: ""
+#            logging:
+#              wireLogs:
+#                enable: true
+#              accessLogs:
+#                enable: true
+#                logfile: "/tmp/envoy.access.log"
           enforcer:
             resources:
               requests:
@@ -310,6 +320,9 @@ wso2:
             image: wso2/enforcer:latest
             security:
               sslHostname: "enforcer"
+#            logging:
+#              level: DEBUG
+#              logFile: logs/enforcer.log
             # configs:
             #   tls:
             #     secretName: "router-cert"
