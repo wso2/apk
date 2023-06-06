@@ -1,0 +1,7 @@
+apiVersion: dp.wso2.com/v1alpha1
+kind: APIProperty
+metadata:
+  name: api-property-1
+spec:
+  foo: "123"
+  bar: "456"
