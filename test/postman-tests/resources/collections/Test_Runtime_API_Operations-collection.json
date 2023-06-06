@@ -448,6 +448,71 @@
 			"response": []
 		},
 		{
+			"name": "RuntimeAPI GET API Definition",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Assert token generation response\", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.swagger.json).not.eql(undefined);",
+							"    pm.collectionVariables.set('APITestKey', responseJson.apikey);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/runtime/1.0.0/swagger.json",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"runtime",
+						"1.0.0",
+						"swagger.json"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "RuntimeAPI GET API definition by id",
 			"event": [
 				{
