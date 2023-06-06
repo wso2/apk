@@ -33,6 +33,7 @@ public class APIConstants {
     public static final String UNLIMITED_TIER = "Unlimited";
     public static final String UNAUTHENTICATED_TIER = "Unauthenticated";
     public static final String END_USER_ANONYMOUS = "anonymous";
+    public static final String END_USER_UNKNOWN = "unknown";
     public static final String ANONYMOUS_PREFIX = "anon:";
     public static final String PUBLISHER_CERTIFICATE_ALIAS = "publisher_certificate_alias";
     public static final String APIKEY_CERTIFICATE_ALIAS = "apikey_certificate_alias";
