@@ -157,6 +157,12 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 		return err
 	}
 
+	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.APIProperty{}}, handler.EnqueueRequestsFromMapFunc(apiReconciler.getAPIsForAPIProperty),
+		predicates...); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2617, err))
+		return err
+	}
+
 	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.RateLimitPolicy{}}, handler.EnqueueRequestsFromMapFunc(apiReconciler.getAPIsForRateLimitPolicy),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2639, err))
@@ -751,6 +757,17 @@ func (apiReconciler *APIReconciler) getAPIsForAPIPolicy(obj k8client.Object) []r
 	requests = append(requests, req)
 	loggers.LoggerAPKOperator.Infof("Adding reconcile request for API: %s/%s", string(apiPolicy.Spec.TargetRef.Name), namespace)
 
+	return requests
+}
+
+func (apiReconciler *APIReconciler) getAPIsForAPIProperty(obj k8client.Object) []reconcile.Request {
+	apiProperty, ok := obj.(*dpv1alpha1.APIProperty)
+	loggers.LoggerAPKOperator.Info("APIProperty changed")
+	if !ok {
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2624, apiProperty))
+		return []reconcile.Request{}
+	}
+	requests := []reconcile.Request{}
 	return requests
 }
 
