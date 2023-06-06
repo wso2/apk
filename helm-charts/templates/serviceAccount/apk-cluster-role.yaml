@@ -122,4 +122,13 @@ rules:
   - apiGroups: ["dp.wso2.com"]
     resources: ["jwtissuers/status"]
     verbs: ["get","patch","update"]
+  - apiGroups: ["dp.wso2.com"]
+    resources: ["apiproperties"]
+    verbs: ["get","list","watch","update","delete","create"]
+  - apiGroups: ["dp.wso2.com"]
+    resources: ["apiproperties/finalizers"]
+    verbs: ["update"]
+  - apiGroups: ["dp.wso2.com"]
+    resources: ["apiproperties/status"]
+    verbs: ["get","patch","update"]
 {{- end -}}

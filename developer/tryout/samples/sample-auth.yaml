@@ -6,7 +6,7 @@ spec:
   override:
     type: ext
     ext:
-      disabled: false
+      disabled: true
       serviceRef:
         group: wso2/v1alpha2
         kind: Backend
@@ -27,6 +27,6 @@ spec:
         - type: jwt
         - type: apiKey
   targetRef:
-    kind: Resource
+    kind: API
     name: http-bin-api #provide API ref name
     group: gateway.networking.k8s.io
