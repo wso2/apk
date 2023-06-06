@@ -1516,6 +1516,13 @@ public class APIClient {
                 apiArtifact.apiPolicies[apiPolicyCR.metadata.name] = apiPolicyCR;
             }
         }
+        CorsConfiguration? corsConfiguration = api.corsConfiguration;
+        if (corsConfiguration != ()) {
+            model:APIPolicy? apiPolicyCR = self.generateAPIPolicyCRForCors(api, corsConfiguration, organization, apiArtifact.uniqueId);
+            if apiPolicyCR != () {
+                apiArtifact.apiPolicies[apiPolicyCR.metadata.name] = apiPolicyCR;
+            }
+        }
     }
 
     private isolated function populateAuthenticationMap(model:APIArtifact apiArtifact, API api, string[] authTypeNames, 
@@ -1759,6 +1766,21 @@ public class APIClient {
             }
         }
         return ();
+    }
+
+    private isolated function generateAPIPolicyCRForCors(API api, CorsConfiguration corsConfiguration, commons:Organization organization, string targetRefName) returns model:APIPolicy? {
+        model:APIPolicyData defaultApiPolicyData = {};
+        model:CORSPolicy cORSPolicy = {
+            enabled: corsConfiguration.corsConfigurationEnabled,
+            accessControlAllowCredentials:corsConfiguration.accessControlAllowCredentials,
+            accessControlAllowHeaders: corsConfiguration.accessControlAllowHeaders,
+            accessControlAllowMethods: corsConfiguration.accessControlAllowMethods,
+            accessControlExposeHeaders: corsConfiguration.accessControlExposeHeaders,
+            accessControlAllowOrigins: corsConfiguration.accessControlAllowOrigins
+        };
+        defaultApiPolicyData.cORSPolicy = cORSPolicy;
+        model:APIPolicy? apiPolicyCR = self.generateAPIPolicyCR(api, targetRefName, (), organization, defaultApiPolicyData);
+        return apiPolicyCR;
     }
 
     private isolated function generateScopeCR(model:APIArtifact apiArtifact, API api, commons:Organization organization, string scope) returns model:Scope {

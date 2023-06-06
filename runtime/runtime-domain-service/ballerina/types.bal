@@ -270,6 +270,18 @@ public type CertMetadata record {|
     string endpoint?;
 |};
 
+public type CorsConfiguration record {
+    # Cors configuration enabled or not
+    boolean corsConfigurationEnabled = true;
+    string[] accessControlAllowOrigins = [];
+    string[] accessControlAllowMethods = [];
+    string[] accessControlExposeHeaders = [];
+    # Cors configuration allow credentials
+    boolean accessControlAllowCredentials = true;
+    string[] accessControlAllowHeaders = [];
+};
+
+
 public type ServiceList record {|
     Service[] list?;
     Pagination pagination?;
@@ -402,6 +414,7 @@ public type API record {|
     APIOperationPolicies apiPolicies?;
     APIRateLimit apiRateLimit?;
     string[] securityScheme?;
+    CorsConfiguration corsConfiguration?;
     string createdTime?;
     string lastUpdatedTime?;
 |};

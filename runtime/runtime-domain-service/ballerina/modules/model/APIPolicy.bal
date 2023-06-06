@@ -31,11 +31,21 @@ public type APIPolicySpec record {|
 public type APIPolicyData record {
     InterceptorReference[] requestInterceptors?;
     InterceptorReference[] responseInterceptors?;
+    CORSPolicy cORSPolicy?;
 };
 
 public type InterceptorReference record {
     string name;
     string namespace;
+};
+
+public type CORSPolicy record {
+    boolean enabled;
+    boolean accessControlAllowCredentials;
+    string[] accessControlAllowOrigins;
+    string[] accessControlAllowHeaders;
+    string[] accessControlAllowMethods;
+    string[] accessControlExposeHeaders;
 };
 
 public type APIPolicyList record {
