@@ -56,20 +56,24 @@ public interface ApiOrBuilder extends
       getApiTypeBytes();
 
   /**
-   * <pre>
-   * string description = 5;
-   * </pre>
-   *
-   * <code>string envType = 6;</code>
+   * <code>bool disableAuthentications = 5;</code>
+   * @return The disableAuthentications.
+   */
+  boolean getDisableAuthentications();
+
+  /**
+   * <code>bool disableScopes = 6;</code>
+   * @return The disableScopes.
+   */
+  boolean getDisableScopes();
+
+  /**
+   * <code>string envType = 7;</code>
    * @return The envType.
    */
   java.lang.String getEnvType();
   /**
-   * <pre>
-   * string description = 5;
-   * </pre>
-   *
-   * <code>string envType = 6;</code>
+   * <code>string envType = 7;</code>
    * @return The bytes for envType.
    */
   com.google.protobuf.ByteString
@@ -136,90 +140,24 @@ public interface ApiOrBuilder extends
       getApiLifeCycleStateBytes();
 
   /**
-   * <code>repeated .wso2.discovery.api.SecurityScheme securityScheme = 12;</code>
-   */
-  java.util.List<org.wso2.apk.enforcer.discovery.api.SecurityScheme> 
-      getSecuritySchemeList();
-  /**
-   * <code>repeated .wso2.discovery.api.SecurityScheme securityScheme = 12;</code>
-   */
-  org.wso2.apk.enforcer.discovery.api.SecurityScheme getSecurityScheme(int index);
-  /**
-   * <code>repeated .wso2.discovery.api.SecurityScheme securityScheme = 12;</code>
-   */
-  int getSecuritySchemeCount();
-  /**
-   * <code>repeated .wso2.discovery.api.SecurityScheme securityScheme = 12;</code>
-   */
-  java.util.List<? extends org.wso2.apk.enforcer.discovery.api.SecuritySchemeOrBuilder> 
-      getSecuritySchemeOrBuilderList();
-  /**
-   * <code>repeated .wso2.discovery.api.SecurityScheme securityScheme = 12;</code>
-   */
-  org.wso2.apk.enforcer.discovery.api.SecuritySchemeOrBuilder getSecuritySchemeOrBuilder(
-      int index);
-
-  /**
-   * <code>repeated .wso2.discovery.api.SecurityList security = 13;</code>
-   */
-  java.util.List<org.wso2.apk.enforcer.discovery.api.SecurityList> 
-      getSecurityList();
-  /**
-   * <code>repeated .wso2.discovery.api.SecurityList security = 13;</code>
-   */
-  org.wso2.apk.enforcer.discovery.api.SecurityList getSecurity(int index);
-  /**
-   * <code>repeated .wso2.discovery.api.SecurityList security = 13;</code>
-   */
-  int getSecurityCount();
-  /**
-   * <code>repeated .wso2.discovery.api.SecurityList security = 13;</code>
-   */
-  java.util.List<? extends org.wso2.apk.enforcer.discovery.api.SecurityListOrBuilder> 
-      getSecurityOrBuilderList();
-  /**
-   * <code>repeated .wso2.discovery.api.SecurityList security = 13;</code>
-   */
-  org.wso2.apk.enforcer.discovery.api.SecurityListOrBuilder getSecurityOrBuilder(
-      int index);
-
-  /**
-   * <code>string authorizationHeader = 14;</code>
-   * @return The authorizationHeader.
-   */
-  java.lang.String getAuthorizationHeader();
-  /**
-   * <code>string authorizationHeader = 14;</code>
-   * @return The bytes for authorizationHeader.
-   */
-  com.google.protobuf.ByteString
-      getAuthorizationHeaderBytes();
-
-  /**
-   * <code>bool disableSecurity = 15;</code>
-   * @return The disableSecurity.
-   */
-  boolean getDisableSecurity();
-
-  /**
-   * <code>string vhost = 16;</code>
+   * <code>string vhost = 12;</code>
    * @return The vhost.
    */
   java.lang.String getVhost();
   /**
-   * <code>string vhost = 16;</code>
+   * <code>string vhost = 12;</code>
    * @return The bytes for vhost.
    */
   com.google.protobuf.ByteString
       getVhostBytes();
 
   /**
-   * <code>string organizationId = 17;</code>
+   * <code>string organizationId = 13;</code>
    * @return The organizationId.
    */
   java.lang.String getOrganizationId();
   /**
-   * <code>string organizationId = 17;</code>
+   * <code>string organizationId = 13;</code>
    * @return The bytes for organizationId.
    */
   com.google.protobuf.ByteString
@@ -230,7 +168,7 @@ public interface ApiOrBuilder extends
    * bool isMockedApi = 18;
    * </pre>
    *
-   * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
+   * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 14;</code>
    */
   java.util.List<org.wso2.apk.enforcer.discovery.api.Certificate> 
       getClientCertificatesList();
@@ -239,7 +177,7 @@ public interface ApiOrBuilder extends
    * bool isMockedApi = 18;
    * </pre>
    *
-   * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
+   * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 14;</code>
    */
   org.wso2.apk.enforcer.discovery.api.Certificate getClientCertificates(int index);
   /**
@@ -247,7 +185,7 @@ public interface ApiOrBuilder extends
    * bool isMockedApi = 18;
    * </pre>
    *
-   * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
+   * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 14;</code>
    */
   int getClientCertificatesCount();
   /**
@@ -255,7 +193,7 @@ public interface ApiOrBuilder extends
    * bool isMockedApi = 18;
    * </pre>
    *
-   * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
+   * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 14;</code>
    */
   java.util.List<? extends org.wso2.apk.enforcer.discovery.api.CertificateOrBuilder> 
       getClientCertificatesOrBuilderList();
@@ -264,25 +202,25 @@ public interface ApiOrBuilder extends
    * bool isMockedApi = 18;
    * </pre>
    *
-   * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
+   * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 14;</code>
    */
   org.wso2.apk.enforcer.discovery.api.CertificateOrBuilder getClientCertificatesOrBuilder(
       int index);
 
   /**
-   * <code>string mutualSSL = 20;</code>
+   * <code>string mutualSSL = 15;</code>
    * @return The mutualSSL.
    */
   java.lang.String getMutualSSL();
   /**
-   * <code>string mutualSSL = 20;</code>
+   * <code>string mutualSSL = 15;</code>
    * @return The bytes for mutualSSL.
    */
   com.google.protobuf.ByteString
       getMutualSSLBytes();
 
   /**
-   * <code>bool applicationSecurity = 21;</code>
+   * <code>bool applicationSecurity = 16;</code>
    * @return The applicationSecurity.
    */
   boolean getApplicationSecurity();
@@ -293,23 +231,23 @@ public interface ApiOrBuilder extends
    * repeated GraphqlComplexity graphqlComplexityInfo = 23;
    * </pre>
    *
-   * <code>bool systemAPI = 24;</code>
+   * <code>bool systemAPI = 17;</code>
    * @return The systemAPI.
    */
   boolean getSystemAPI();
 
   /**
-   * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 25;</code>
+   * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 18;</code>
    * @return Whether the backendJWTTokenInfo field is set.
    */
   boolean hasBackendJWTTokenInfo();
   /**
-   * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 25;</code>
+   * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 18;</code>
    * @return The backendJWTTokenInfo.
    */
   org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo getBackendJWTTokenInfo();
   /**
-   * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 25;</code>
+   * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 18;</code>
    */
   org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfoOrBuilder getBackendJWTTokenInfoOrBuilder();
 }

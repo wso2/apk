@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2021, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2021, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
  *
- * WSO2 Inc. licenses this file to you under the Apache License,
+ * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License.
  * You may obtain a copy of the License at
@@ -35,12 +35,10 @@ import org.wso2.apk.enforcer.common.CacheProvider;
 import org.wso2.apk.enforcer.commons.exception.APISecurityException;
 import org.wso2.apk.enforcer.commons.exception.EnforcerException;
 import org.wso2.apk.enforcer.commons.model.AuthenticationContext;
+import org.wso2.apk.enforcer.commons.model.JWTAuthenticationConfig;
 import org.wso2.apk.enforcer.commons.model.RequestContext;
 import org.wso2.apk.enforcer.commons.model.ResourceConfig;
-import org.wso2.apk.enforcer.commons.model.SecuritySchemaConfig;
 import org.wso2.apk.enforcer.config.ConfigHolder;
-import org.wso2.apk.enforcer.config.EnforcerConfig;
-import org.wso2.apk.enforcer.config.dto.ExtendedTokenIssuerDto;
 import org.wso2.apk.enforcer.constants.APIConstants;
 import org.wso2.apk.enforcer.constants.APISecurityConstants;
 import org.wso2.apk.enforcer.constants.GeneralErrorCodeConstants;
@@ -62,7 +60,6 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -87,9 +84,10 @@ public class JWTAuthenticator implements Authenticator {
     public boolean canAuthenticate(RequestContext requestContext) {
         // only getting first operation is enough as all matched resource configs have the same security schemes
         // i.e. graphQL apis do not support resource level security yet
-        if (isJWTEnabled(requestContext.getMatchedAPI().getSecuritySchemeDefinitions(),
-                requestContext.getMatchedResourcePaths().get(0).getSecuritySchemas())) {
-            String authHeaderValue = retrieveAuthHeaderValue(requestContext);
+        JWTAuthenticationConfig jwtAuthenticationConfig = requestContext.getMatchedResourcePaths().get(0)
+                .getAuthenticationConfig().getJwtAuthenticationConfig();
+        if (jwtAuthenticationConfig != null) {
+            String authHeaderValue = retrieveAuthHeaderValue(requestContext, jwtAuthenticationConfig);
 
             // Check keyword bearer in header to prevent conflicts with custom authentication
             // (that maybe added with custom filters / interceptors / opa)
@@ -101,23 +99,6 @@ public class JWTAuthenticator implements Authenticator {
             return StringUtils.startsWithIgnoreCase(authHeaderValue, JWTConstants.BEARER) &&
                     authHeaderValue.trim().split("\\s+").length == 2 &&
                     authHeaderValue.split("\\.").length == 3;
-        }
-        return false;
-    }
-
-    private boolean isJWTEnabled(Map<String, SecuritySchemaConfig> securitySchemeDefinitions,
-                                 Map<String, List<String>> resourceSecuritySchemes) {
-        if (resourceSecuritySchemes.isEmpty()) {
-            // handle default security
-            return true;
-        }
-        for (String securityDefinitionName : resourceSecuritySchemes.keySet()) {
-            if (securitySchemeDefinitions.containsKey(securityDefinitionName)) {
-                SecuritySchemaConfig config = securitySchemeDefinitions.get(securityDefinitionName);
-                if (APIConstants.API_SECURITY_OAUTH2.equals(config.getType())) {
-                    return true;
-                }
-            }
         }
         return false;
     }
@@ -139,7 +120,8 @@ public class JWTAuthenticator implements Authenticator {
                 Utils.setTag(jwtAuthenticatorInfoSpan, APIConstants.LOG_TRACE_ID,
                         ThreadContext.get(APIConstants.LOG_TRACE_ID));
             }
-            String jwtToken = retrieveAuthHeaderValue(requestContext);
+            String jwtToken = retrieveAuthHeaderValue(requestContext, requestContext.getMatchedResourcePaths().get(0)
+                    .getAuthenticationConfig().getJwtAuthenticationConfig());
             String[] splitToken = jwtToken.split("\\s");
             // Extract the token when it is sent as bearer token. i.e Authorization: Bearer <token>
             if (splitToken.length > 1) {
@@ -351,16 +333,16 @@ public class JWTAuthenticator implements Authenticator {
         return "JWT";
     }
 
-    private String retrieveAuthHeaderValue(RequestContext requestContext) {
-        Map<String, String> headers = requestContext.getHeaders();
-        return headers.get(FilterUtils.getAuthHeaderName(requestContext));
-    }
-
     @Override
     public int getPriority() {
         return 10;
     }
 
+    private String retrieveAuthHeaderValue(RequestContext requestContext,
+                                           JWTAuthenticationConfig jwtAuthenticationConfig) {
+        Map<String, String> headers = requestContext.getHeaders();
+        return headers.get(jwtAuthenticationConfig.getHeader());
+    }
 
     /**
      * Validate scopes bound to the resource of the API being invoked against the scopes specified

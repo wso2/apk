@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2020, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2020, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
  *
- * WSO2 Inc. licenses this file to you under the Apache License,
+ * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,20 +17,15 @@
  */
 package org.wso2.apk.enforcer.api;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.wso2.apk.enforcer.commons.dto.JWTConfigurationDto;
-import org.wso2.apk.enforcer.commons.exception.EnforcerException;
 import org.wso2.apk.enforcer.config.EnforcerConfig;
 import org.wso2.apk.enforcer.discovery.api.Api;
 import org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo;
 import org.wso2.apk.enforcer.discovery.api.Certificate;
 import org.wso2.apk.enforcer.discovery.api.Operation;
 import org.wso2.apk.enforcer.discovery.api.Resource;
-import org.wso2.apk.enforcer.discovery.api.Scopes;
-import org.wso2.apk.enforcer.discovery.api.SecurityList;
-import org.wso2.apk.enforcer.discovery.api.SecurityScheme;
 import org.wso2.apk.enforcer.analytics.AnalyticsFilter;
 import org.wso2.apk.enforcer.commons.Filter;
 import org.wso2.apk.enforcer.commons.model.APIConfig;
@@ -40,25 +35,20 @@ import org.wso2.apk.enforcer.commons.model.MockedHeaderConfig;
 import org.wso2.apk.enforcer.commons.model.MockedResponseConfig;
 import org.wso2.apk.enforcer.commons.model.RequestContext;
 import org.wso2.apk.enforcer.commons.model.ResourceConfig;
-import org.wso2.apk.enforcer.commons.model.SecuritySchemaConfig;
 import org.wso2.apk.enforcer.config.ConfigHolder;
 import org.wso2.apk.enforcer.config.dto.FilterDTO;
-import org.wso2.apk.enforcer.config.dto.MutualSSLDto;
 import org.wso2.apk.enforcer.constants.APIConstants;
 import org.wso2.apk.enforcer.constants.HttpConstants;
 import org.wso2.apk.enforcer.cors.CorsFilter;
 import org.wso2.apk.enforcer.interceptor.MediationPolicyFilter;
 import org.wso2.apk.enforcer.security.AuthFilter;
 import org.wso2.apk.enforcer.security.mtls.MtlsUtils;
+import org.wso2.apk.enforcer.util.EndpointUtils;
 import org.wso2.apk.enforcer.util.FilterUtils;
-import org.wso2.apk.enforcer.util.JWTUtils;
 import org.wso2.apk.enforcer.util.MockImplUtils;
-import org.wso2.apk.enforcer.util.TLSUtils;
 
-import java.io.IOException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
-import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -88,44 +78,15 @@ public class RestAPI implements API {
         String name = api.getTitle();
         String version = api.getVersion();
         String apiType = api.getApiType();
-        Map<String, SecuritySchemaConfig> securitySchemeDefinitions = new HashMap<>();
-        Map<String, List<String>> securityScopesMap = new HashMap<>();
         List<ResourceConfig> resources = new ArrayList<>();
         Map<String, String> mtlsCertificateTiers = new HashMap<>();
         String mutualSSL = api.getMutualSSL();
         boolean applicationSecurity = api.getApplicationSecurity();
 
-        for (SecurityScheme securityScheme : api.getSecuritySchemeList()) {
-            if (securityScheme.getType() != null) {
-                String definitionName = securityScheme.getDefinitionName();
-                SecuritySchemaConfig securitySchemaConfig = new SecuritySchemaConfig();
-                securitySchemaConfig.setDefinitionName(definitionName);
-                securitySchemaConfig.setType(securityScheme.getType());
-                securitySchemaConfig.setName(securityScheme.getName());
-                securitySchemaConfig.setIn(securityScheme.getIn());
-                securitySchemeDefinitions.put(definitionName, securitySchemaConfig);
-            }
-        }
-
-        for (SecurityList securityList : api.getSecurityList()) {
-            for (Map.Entry<String, Scopes> entry : securityList.getScopeListMap().entrySet()) {
-                securityScopesMap.put(entry.getKey(), new ArrayList<>());
-                if (entry.getValue() != null && entry.getValue().getScopesList().size() > 0) {
-                    List<String> scopeList = new ArrayList<>(entry.getValue().getScopesList());
-                    securityScopesMap.replace(entry.getKey(), scopeList);
-                }
-                // only supports security scheme OR combinations. Example -
-                // Security:
-                // - api_key: []
-                //   oauth: [] <-- AND operation is not supported hence ignoring oauth here.
-                break;
-            }
-        }
-
         for (Resource res : api.getResourcesList()) {
             for (Operation operation : res.getMethodsList()) {
-                ResourceConfig resConfig = Utils.buildResource(operation, res.getPath(), securityScopesMap,
-                APIProcessUtils.convertProtoEndpointSecurity(res.getEndpointSecurityList()));
+                ResourceConfig resConfig = Utils.buildResource(operation, res.getPath(),
+                        APIProcessUtils.convertProtoEndpointSecurity(res.getEndpointSecurityList()));
                 resConfig.setPolicyConfig(Utils.genPolicyConfig(operation.getPolicies()));
                 resConfig.setEndpoints(Utils.processEndpoints(res.getEndpoints()));
 //                resConfig.setMockApiConfig(getMockedApiOperationConfig(operation.getMockedApiConfig(),
@@ -149,7 +110,7 @@ public class RestAPI implements API {
         JWTConfigurationDto jwtConfigurationDto = new JWTConfigurationDto();
 
         // If backendJWTTokeInfo is available
-        if(api.hasBackendJWTTokenInfo()) {
+        if (api.hasBackendJWTTokenInfo()) {
             EnforcerConfig enforcerConfig = ConfigHolder.getInstance().getConfig();
             jwtConfigurationDto.populateConfigValues(backendJWTTokenInfo.getEnabled(),
                     backendJWTTokenInfo.getHeader(), backendJWTTokenInfo.getSigningAlgorithm(),
@@ -161,10 +122,8 @@ public class RestAPI implements API {
         this.apiLifeCycleState = api.getApiLifeCycleState();
         this.apiConfig = new APIConfig.Builder(name).uuid(api.getId()).vhost(vhost).basePath(basePath).version(version)
                 .resources(resources).apiType(apiType).apiLifeCycleState(apiLifeCycleState).tier(api.getTier())
-                .apiSecurity(securityScopesMap).securitySchemeDefinitions(securitySchemeDefinitions)
-                .disableSecurity(api.getDisableSecurity()).authHeader(api.getAuthorizationHeader())
-                .envType(api.getEnvType())
-                .trustStore(trustStore).organizationId(api.getOrganizationId())
+                .envType(api.getEnvType()).disableAuthentication(api.getDisableAuthentications())
+                .disableScopes(api.getDisableScopes()).trustStore(trustStore).organizationId(api.getOrganizationId())
                 .mtlsCertificateTiers(mtlsCertificateTiers).mutualSSL(mutualSSL).systemAPI(api.getSystemAPI())
                 .applicationSecurity(applicationSecurity).jwtConfigurationDto(jwtConfigurationDto).build();
 
@@ -178,7 +137,7 @@ public class RestAPI implements API {
         responseObject.setRequestPath(requestContext.getRequestPath());
         boolean analyticsEnabled = ConfigHolder.getInstance().getConfig().getAnalyticsConfig().isEnabled();
 
-        populateRemoveAndProtectedHeaders(requestContext);
+        Utils.handleCommonHeaders(requestContext);
         boolean isExistsMatchedResourcePath = requestContext.getMatchedResourcePaths() != null &&
                 requestContext.getMatchedResourcePaths().size() > 0;
         // This flag is used to apply CORS filter
@@ -195,6 +154,7 @@ public class RestAPI implements API {
                     APIConstants.NOT_FOUND_DESCRIPTION);
         }
         if ((isExistsMatchedResourcePath || isOptionCall) && executeFilterChain(requestContext)) {
+            EndpointUtils.updateClusterHeaderAndCheckEnv(requestContext);
             responseObject.setOrganizationId(requestContext.getMatchedAPI().getOrganizationId());
             responseObject.setRemoveHeaderMap(requestContext.getRemoveHeaders());
             responseObject.setQueryParamsToRemove(requestContext.getQueryParamsToRemove());
@@ -287,7 +247,7 @@ public class RestAPI implements API {
         authFilter.init(apiConfig, null);
         this.filters.add(authFilter);
 
-        if (!apiConfig.isSystemAPI()){
+        if (!apiConfig.isSystemAPI()) {
             loadCustomFilters(apiConfig);
             MediationPolicyFilter mediationPolicyFilter = new MediationPolicyFilter();
             this.filters.add(mediationPolicyFilter);
@@ -296,8 +256,6 @@ public class RestAPI implements API {
         // CORS filter is added as the first filter, and it is not customizable.
         CorsFilter corsFilter = new CorsFilter();
         this.filters.add(0, corsFilter);
-
-
     }
 
     private void loadCustomFilters(APIConfig apiConfig) {
@@ -327,39 +285,5 @@ public class RestAPI implements API {
                         + filterDTO.getClassName());
             }
         }
-    }
-
-    private void populateRemoveAndProtectedHeaders(RequestContext requestContext) {
-        Map<String, SecuritySchemaConfig> securitySchemeDefinitions =
-                requestContext.getMatchedAPI().getSecuritySchemeDefinitions();
-        // API key headers are considered to be protected headers, such that the header would not be sent
-        // to backend and traffic manager.
-        // This would prevent leaking credentials, even if user is invoking unsecured resource with some
-        // credentials.
-        for (Map.Entry<String, SecuritySchemaConfig> entry : securitySchemeDefinitions.entrySet()) {
-            SecuritySchemaConfig schema = entry.getValue();
-            if (APIConstants.SWAGGER_API_KEY_AUTH_TYPE_NAME.equalsIgnoreCase(schema.getType())) {
-                if (APIConstants.SWAGGER_API_KEY_IN_HEADER.equals(schema.getIn())) {
-                    String header = StringUtils.lowerCase(schema.getName());
-                    requestContext.getProtectedHeaders().add(header);
-                    requestContext.getRemoveHeaders().add(header);
-                    continue;
-                }
-                if (APIConstants.SWAGGER_API_KEY_IN_QUERY.equals(schema.getIn())) {
-                    requestContext.getQueryParamsToRemove().add(schema.getName());
-                }
-            }
-        }
-
-        Utils.removeCommonAuthHeaders(requestContext);
-
-        // Remove mTLS certificate header
-        MutualSSLDto mtlsInfo = ConfigHolder.getInstance().getConfig().getMtlsInfo();
-        String certificateHeaderName = FilterUtils.getCertificateHeaderName();
-        if (!mtlsInfo.isEnableOutboundCertificateHeader()) {
-            requestContext.getRemoveHeaders().add(certificateHeaderName);
-        }
-        // mTLS Certificate Header should not be included in the upstream request.
-        requestContext.getProtectedHeaders().add(certificateHeaderName);
     }
 }

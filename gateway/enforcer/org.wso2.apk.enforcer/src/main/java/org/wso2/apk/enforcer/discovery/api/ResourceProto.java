@@ -20,11 +20,6 @@ public final class ResourceProto {
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_wso2_discovery_api_Resource_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_wso2_discovery_api_Resource_SecurityEntry_descriptor;
-  static final 
-    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_wso2_discovery_api_Resource_SecurityEntry_fieldAccessorTable;
-  static final com.google.protobuf.Descriptors.Descriptor
     internal_static_wso2_discovery_api_Operation_descriptor;
   static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
@@ -55,22 +50,19 @@ public final class ResourceProto {
     java.lang.String[] descriptorData = {
       "\n!wso2/discovery/api/Resource.proto\022\022wso" +
       "2.discovery.api\032)wso2/discovery/api/endp" +
-      "oint_cluster.proto\032(wso2/discovery/api/s" +
-      "ecurity_scheme.proto\032&wso2/discovery/api" +
-      "/security_info.proto\"\310\002\n\010Resource\022\n\n\002id\030" +
-      "\001 \001(\t\022\014\n\004path\030\002 \001(\t\022.\n\007methods\030\003 \003(\0132\035.w" +
-      "so2.discovery.api.Operation\0226\n\tendpoints" +
-      "\030\006 \001(\0132#.wso2.discovery.api.EndpointClus" +
-      "ter\022:\n\020endpointSecurity\030\007 \003(\0132 .wso2.dis" +
-      "covery.api.SecurityInfo\022<\n\010security\030\010 \003(" +
-      "\0132*.wso2.discovery.api.Resource.Security" +
-      "Entry\022\017\n\007schemes\030\n \003(\t\032/\n\rSecurityEntry\022" +
-      "\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001\"\257\001\n\tOper" +
-      "ation\022\016\n\006method\030\001 \001(\t\0222\n\010security\030\002 \003(\0132" +
-      " .wso2.discovery.api.SecurityList\022\014\n\004tie" +
-      "r\030\003 \001(\t\022\027\n\017disableSecurity\030\004 \001(\010\0227\n\010poli" +
-      "cies\030\005 \001(\0132%.wso2.discovery.api.Operatio" +
-      "nPolicies\"\231\001\n\021OperationPolicies\022+\n\007reque" +
+      "oint_cluster.proto\032+wso2/discovery/api/a" +
+      "pi_authentication.proto\032&wso2/discovery/" +
+      "api/security_info.proto\"\310\001\n\010Resource\022\n\n\002" +
+      "id\030\001 \001(\t\022\014\n\004path\030\002 \001(\t\022.\n\007methods\030\003 \003(\0132" +
+      "\035.wso2.discovery.api.Operation\0226\n\tendpoi" +
+      "nts\030\004 \001(\0132#.wso2.discovery.api.EndpointC" +
+      "luster\022:\n\020endpointSecurity\030\005 \003(\0132 .wso2." +
+      "discovery.api.SecurityInfo\"\264\001\n\tOperation" +
+      "\022\016\n\006method\030\001 \001(\t\022@\n\021apiAuthentication\030\002 " +
+      "\001(\0132%.wso2.discovery.api.APIAuthenticati" +
+      "on\022\014\n\004tier\030\003 \001(\t\0227\n\010policies\030\004 \001(\0132%.wso" +
+      "2.discovery.api.OperationPolicies\022\016\n\006sco" +
+      "pes\030\005 \003(\t\"\231\001\n\021OperationPolicies\022+\n\007reque" +
       "st\030\001 \003(\0132\032.wso2.discovery.api.Policy\022,\n\010" +
       "response\030\002 \003(\0132\032.wso2.discovery.api.Poli" +
       "cy\022)\n\005fault\030\003 \003(\0132\032.wso2.discovery.api.P" +
@@ -86,7 +78,7 @@ public final class ResourceProto {
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
           org.wso2.apk.enforcer.discovery.api.EndpointClusterProto.getDescriptor(),
-          org.wso2.apk.enforcer.discovery.api.SecuritySchemeProto.getDescriptor(),
+          org.wso2.apk.enforcer.discovery.api.APIAuthenticationProto.getDescriptor(),
           org.wso2.apk.enforcer.discovery.api.SecurityInfoProto.getDescriptor(),
         });
     internal_static_wso2_discovery_api_Resource_descriptor =
@@ -94,19 +86,13 @@ public final class ResourceProto {
     internal_static_wso2_discovery_api_Resource_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_wso2_discovery_api_Resource_descriptor,
-        new java.lang.String[] { "Id", "Path", "Methods", "Endpoints", "EndpointSecurity", "Security", "Schemes", });
-    internal_static_wso2_discovery_api_Resource_SecurityEntry_descriptor =
-      internal_static_wso2_discovery_api_Resource_descriptor.getNestedTypes().get(0);
-    internal_static_wso2_discovery_api_Resource_SecurityEntry_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_wso2_discovery_api_Resource_SecurityEntry_descriptor,
-        new java.lang.String[] { "Key", "Value", });
+        new java.lang.String[] { "Id", "Path", "Methods", "Endpoints", "EndpointSecurity", });
     internal_static_wso2_discovery_api_Operation_descriptor =
       getDescriptor().getMessageTypes().get(1);
     internal_static_wso2_discovery_api_Operation_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_wso2_discovery_api_Operation_descriptor,
-        new java.lang.String[] { "Method", "Security", "Tier", "DisableSecurity", "Policies", });
+        new java.lang.String[] { "Method", "ApiAuthentication", "Tier", "Policies", "Scopes", });
     internal_static_wso2_discovery_api_OperationPolicies_descriptor =
       getDescriptor().getMessageTypes().get(2);
     internal_static_wso2_discovery_api_OperationPolicies_fieldAccessorTable = new
@@ -126,7 +112,7 @@ public final class ResourceProto {
         internal_static_wso2_discovery_api_Policy_ParametersEntry_descriptor,
         new java.lang.String[] { "Key", "Value", });
     org.wso2.apk.enforcer.discovery.api.EndpointClusterProto.getDescriptor();
-    org.wso2.apk.enforcer.discovery.api.SecuritySchemeProto.getDescriptor();
+    org.wso2.apk.enforcer.discovery.api.APIAuthenticationProto.getDescriptor();
     org.wso2.apk.enforcer.discovery.api.SecurityInfoProto.getDescriptor();
   }
 

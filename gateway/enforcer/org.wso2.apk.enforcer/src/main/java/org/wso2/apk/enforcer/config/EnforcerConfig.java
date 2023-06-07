@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2021, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2021, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
  *
- * WSO2 Inc. licenses this file to you under the Apache License,
+ * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License.
  * You may obtain a copy of the License at
@@ -24,7 +24,6 @@ import org.wso2.apk.enforcer.commons.jwttransformer.JWTTransformer;
 import org.wso2.apk.enforcer.config.dto.APIKeyIssuerDto;
 import org.wso2.apk.enforcer.config.dto.AdminRestServerDto;
 import org.wso2.apk.enforcer.config.dto.AnalyticsDTO;
-import org.wso2.apk.enforcer.config.dto.AuthHeaderDto;
 import org.wso2.apk.enforcer.config.dto.AuthServiceConfigurationDto;
 import org.wso2.apk.enforcer.config.dto.CacheDto;
 import org.wso2.apk.enforcer.config.dto.CredentialDto;
@@ -58,7 +57,6 @@ public class EnforcerConfig {
     private String privateKeyPath = "";
     private AnalyticsDTO analyticsConfig;
     private final Map<String, JWTTransformer> jwtTransformerMap = new HashMap<>();
-    private AuthHeaderDto authHeader;
     private MutualSSLDto mtlsInfo;
     private ManagementCredentialsDto management;
     private AdminRestServerDto restServer;
@@ -167,15 +165,6 @@ public class EnforcerConfig {
     public void setJwtTransformers(Map<String, JWTTransformer> jwtTransformerMap) {
         this.jwtTransformerMap.putAll(jwtTransformerMap);
     }
-
-    public AuthHeaderDto getAuthHeader() {
-        return authHeader;
-    }
-
-    public void setAuthHeader(AuthHeaderDto authHeader) {
-        this.authHeader = authHeader;
-    }
-
     public MutualSSLDto getMtlsInfo() {
         return mtlsInfo;
     }

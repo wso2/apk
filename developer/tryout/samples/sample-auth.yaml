@@ -13,8 +13,9 @@ spec:
         name: ext_authz-server
         port: 1234
       authTypes:
-        - type: jwt
-        - type: apiKey
+        apiKey:
+          - in: Header
+            name: x-api-key
   default:
     type: ext
     ext:
@@ -24,8 +25,9 @@ spec:
         name: ext_authz-server
         port: 1234
       authTypes:
-        - type: jwt
-        - type: apiKey
+        apiKey:
+          - in: Header
+            name: x-api-key
   targetRef:
     kind: Resource
     name: http-bin-api #provide API ref name

@@ -169,11 +169,6 @@ var defaultConfig = &Config{
 				Issuer:              "https://localhost:9443/publisher",
 				CertificateFilePath: "/home/wso2/security/truststore/wso2carbon.pem",
 			},
-			AuthHeader: authHeader{
-				EnableOutboundAuthHeader: false,
-				AuthorizationHeader:      "authorization",
-				TestConsoleHeaderName:    "Internal-Key",
-			},
 			MutualSSL: mutualSSL{
 				CertificateHeader:               "X-WSO2-CLIENT-CERTIFICATE",
 				EnableClientValidation:          true,

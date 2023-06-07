@@ -20,6 +20,7 @@ package oasparser
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	clusterv3 "github.com/envoyproxy/go-control-plane/envoy/config/cluster/v3"
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
@@ -136,36 +137,8 @@ func UpdateRoutesConfig(routeConfig *routev3.RouteConfiguration, vhostToRouteArr
 // along with the vhost to deploy the API.
 func GetEnforcerAPI(adapterInternalAPI model.AdapterInternalAPI, vhost string) *api.Api {
 	resources := []*api.Resource{}
-	securitySchemes := []*api.SecurityScheme{}
-	securityList := []*api.SecurityList{}
 	isMockedAPI := false
 	clientCertificates := []*api.Certificate{}
-
-	logger.LoggerOasparser.Debugf("Security schemes in GetEnforcerAPI method : %s. %v",
-		adapterInternalAPI.GetTitle(), adapterInternalAPI.GetSecurityScheme())
-	for _, securityScheme := range adapterInternalAPI.GetSecurityScheme() {
-		scheme := &api.SecurityScheme{
-			DefinitionName: securityScheme.DefinitionName,
-			Type:           securityScheme.Type,
-			Name:           securityScheme.Name,
-			In:             securityScheme.In,
-		}
-		securitySchemes = append(securitySchemes, scheme)
-	}
-
-	for _, security := range adapterInternalAPI.GetSecurity() {
-		mapOfSecurity := make(map[string]*api.Scopes)
-		for key, scopes := range security {
-			scopeList := &api.Scopes{
-				Scopes: scopes,
-			}
-			mapOfSecurity[key] = scopeList
-		}
-		securityMap := &api.SecurityList{
-			ScopeList: mapOfSecurity,
-		}
-		securityList = append(securityList, securityMap)
-	}
 
 	for _, res := range adapterInternalAPI.GetResources() {
 		var operations = make([]*api.Operation, len(res.GetMethod()))
@@ -215,22 +188,20 @@ func GetEnforcerAPI(adapterInternalAPI model.AdapterInternalAPI, vhost string) *
 	}
 
 	return &api.Api{
-		Id:                  adapterInternalAPI.UUID,
-		Title:               adapterInternalAPI.GetTitle(),
-		BasePath:            adapterInternalAPI.GetXWso2Basepath(),
-		Version:             adapterInternalAPI.GetVersion(),
-		ApiType:             adapterInternalAPI.GetAPIType(),
-		Resources:           resources,
-		ApiLifeCycleState:   adapterInternalAPI.LifecycleStatus,
-		Tier:                adapterInternalAPI.GetXWso2ThrottlingTier(),
-		SecurityScheme:      securitySchemes,
-		Security:            securityList,
-		AuthorizationHeader: adapterInternalAPI.GetXWSO2AuthHeader(),
-		DisableSecurity:     adapterInternalAPI.GetDisableSecurity(),
-		OrganizationId:      adapterInternalAPI.OrganizationID,
-		Vhost:               vhost,
-		EnvType:             adapterInternalAPI.EnvType,
-		BackendJWTTokenInfo: backendJWTTokenInfo,
+		Id:                     adapterInternalAPI.UUID,
+		Title:                  adapterInternalAPI.GetTitle(),
+		BasePath:               adapterInternalAPI.GetXWso2Basepath(),
+		Version:                adapterInternalAPI.GetVersion(),
+		ApiType:                adapterInternalAPI.GetAPIType(),
+		Resources:              resources,
+		ApiLifeCycleState:      adapterInternalAPI.LifecycleStatus,
+		Tier:                   adapterInternalAPI.GetXWso2ThrottlingTier(),
+		DisableAuthentications: adapterInternalAPI.GetDisableAuthentications(),
+		DisableScopes:          adapterInternalAPI.GetDisableScopes(),
+		OrganizationId:         adapterInternalAPI.OrganizationID,
+		Vhost:                  vhost,
+		EnvType:                adapterInternalAPI.EnvType,
+		BackendJWTTokenInfo:    backendJWTTokenInfo,
 		// IsMockedApi:         isMockedAPI,
 		ClientCertificates:  clientCertificates,
 		MutualSSL:           adapterInternalAPI.GetXWSO2MutualSSL(),
@@ -243,20 +214,6 @@ func GetEnforcerAPI(adapterInternalAPI model.AdapterInternalAPI, vhost string) *
 
 // GetEnforcerAPIOperation builds the operation object expected by the proto definition
 func GetEnforcerAPIOperation(operation model.Operation, isMockedAPI bool) *api.Operation {
-	secSchemas := make([]*api.SecurityList, len(operation.GetSecurity()))
-	for i, security := range operation.GetSecurity() {
-		mapOfSecurity := make(map[string]*api.Scopes)
-		for key, scopes := range security {
-			scopeList := &api.Scopes{
-				Scopes: scopes,
-			}
-			mapOfSecurity[key] = scopeList
-		}
-		secSchema := &api.SecurityList{
-			ScopeList: mapOfSecurity,
-		}
-		secSchemas[i] = secSchema
-	}
 
 	// var mockedAPIConfig *api.MockedApiConfig
 	// if isMockedAPI {
@@ -269,14 +226,53 @@ func GetEnforcerAPIOperation(operation model.Operation, isMockedAPI bool) *api.O
 		Fault:    castPoliciesToEnforcerPolicies(operation.GetPolicies().Fault),
 	}
 	apiOperation := api.Operation{
-		Method:          operation.GetMethod(),
-		Security:        secSchemas,
-		Tier:            operation.GetTier(),
-		DisableSecurity: operation.GetDisableSecurity(),
-		Policies:        policies,
+		Method:            operation.GetMethod(),
+		Scopes:            operation.GetScopes(),
+		ApiAuthentication: castAPIAuthenticationsToEnforcerAPIAuthentications(operation.GetAuthentication()),
+		Tier:              operation.GetTier(),
+		Policies:          policies,
 		// MockedApiConfig: mockedAPIConfig,
 	}
 	return &apiOperation
+}
+
+// castAPIAuthenticationsToEnforcerAPIAuthentications casts the APIAuthentications to EnforcerAPIAuthentications
+func castAPIAuthenticationsToEnforcerAPIAuthentications(authentication *model.Authentication) *api.APIAuthentication {
+	enforcerAuthentication := &api.APIAuthentication{}
+	enforcerAuthentication.Disabled = authentication.Disabled
+	if authentication.JWT != nil {
+		enforcerAuthentication.Jwt = &api.JWT{
+			Header:              strings.ToLower(authentication.JWT.Header),
+			SendTokenToUpstream: authentication.JWT.SendTokenToUpstream,
+		}
+	}
+	var apiKeys []*api.APIKey
+	for _, apiKey := range authentication.APIKey {
+		name := apiKey.Name
+		if apiKey.In == "Header" {
+			name = strings.ToLower(name)
+		}
+		apiKeys = append(apiKeys, &api.APIKey{
+			In:                  apiKey.In,
+			Name:                name,
+			SendTokenToUpstream: apiKey.SendTokenToUpstream,
+		})
+	}
+	enforcerAuthentication.Apikey = apiKeys
+	if authentication.TestConsoleKey != nil {
+		enforcerAuthentication.TestConsoleKey = &api.TestConsoleKey{
+			Header:              strings.ToLower(authentication.TestConsoleKey.Header),
+			SendTokenToUpstream: authentication.TestConsoleKey.SendTokenToUpstream,
+		}
+	}
+	if authentication.TestConsoleKey != nil {
+		enforcerAuthentication.TestConsoleKey = &api.TestConsoleKey{
+			Header:              strings.ToLower(authentication.TestConsoleKey.Header),
+			SendTokenToUpstream: authentication.TestConsoleKey.SendTokenToUpstream,
+		}
+	}
+
+	return enforcerAuthentication
 }
 
 func castPoliciesToEnforcerPolicies(policies []model.Policy) []*api.Policy {

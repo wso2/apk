@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2020, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
  *
  * WSO2 Inc. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -17,7 +17,7 @@
  */
 package org.wso2.apk.enforcer.security;
 
-import org.apache.commons.lang3.StringUtils;
+import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.wso2.apk.enforcer.commons.Filter;
@@ -26,23 +26,21 @@ import org.wso2.apk.enforcer.commons.exception.APISecurityException;
 import org.wso2.apk.enforcer.commons.logging.ErrorDetails;
 import org.wso2.apk.enforcer.commons.logging.LoggingConstants;
 import org.wso2.apk.enforcer.commons.model.APIConfig;
+import org.wso2.apk.enforcer.commons.model.APIKeyAuthenticationConfig;
 import org.wso2.apk.enforcer.commons.model.AuthenticationContext;
-import org.wso2.apk.enforcer.commons.model.EndpointCluster;
+import org.wso2.apk.enforcer.commons.model.InternalKeyConfig;
+import org.wso2.apk.enforcer.commons.model.JWTAuthenticationConfig;
 import org.wso2.apk.enforcer.commons.model.RequestContext;
-import org.wso2.apk.enforcer.commons.model.ResourceConfig;
-import org.wso2.apk.enforcer.commons.model.RetryConfig;
-import org.wso2.apk.enforcer.commons.model.SecuritySchemaConfig;
 import org.wso2.apk.enforcer.config.ConfigHolder;
 import org.wso2.apk.enforcer.config.EnforcerConfig;
+import org.wso2.apk.enforcer.config.dto.MutualSSLDto;
 import org.wso2.apk.enforcer.constants.APIConstants;
-import org.wso2.apk.enforcer.constants.AdapterConstants;
 import org.wso2.apk.enforcer.constants.InterceptorConstants;
 import org.wso2.apk.enforcer.security.jwt.APIKeyAuthenticator;
 import org.wso2.apk.enforcer.security.jwt.InternalAPIKeyAuthenticator;
 import org.wso2.apk.enforcer.security.jwt.JWTAuthenticator;
 import org.wso2.apk.enforcer.security.jwt.UnsecuredAPIAuthenticator;
 import org.wso2.apk.enforcer.security.mtls.MTLSAuthenticator;
-import org.wso2.apk.enforcer.util.EndpointSecurityUtils;
 import org.wso2.apk.enforcer.util.FilterUtils;
 
 import java.util.ArrayList;
@@ -67,17 +65,11 @@ public class AuthFilter implements Filter {
 
     private void initializeAuthenticators(APIConfig apiConfig) {
         //TODO: Check security schema and add relevant authenticators.
-        boolean isOAuthProtected = true;
         boolean isMutualSSLProtected = false;
-        boolean isBasicAuthProtected = false;
-        boolean isApiKeyProtected = true;
         isMutualSSLMandatory = false;
-        isOAuthBasicAuthMandatory = false;
 
         // Set security conditions
-        if (apiConfig.getApplicationSecurity()) {
-            isOAuthBasicAuthMandatory = true;
-        }
+        isOAuthBasicAuthMandatory = apiConfig.getApplicationSecurity();
 
         if (!Objects.isNull(apiConfig.getMutualSSL())) {
             if (apiConfig.getMutualSSL().equalsIgnoreCase(APIConstants.Optionality.MANDATORY)) {
@@ -85,22 +77,6 @@ public class AuthFilter implements Filter {
                 isMutualSSLMandatory = true;
             } else if (apiConfig.getMutualSSL().equalsIgnoreCase(APIConstants.Optionality.OPTIONAL)) {
                 isMutualSSLProtected = true;
-            }
-        }
-
-        if (apiConfig.getSecuritySchemeDefinitions() == null) {
-            isOAuthProtected = true;
-        } else {
-            for (Map.Entry<String, SecuritySchemaConfig> securityDefinition :
-                    apiConfig.getSecuritySchemeDefinitions().entrySet()) {
-                String apiSecurityLevel = securityDefinition.getValue().getType();
-                if (apiSecurityLevel.trim().equalsIgnoreCase(APIConstants.API_SECURITY_OAUTH2)) {
-                    isOAuthProtected = true;
-                } else if (apiSecurityLevel.trim().equalsIgnoreCase(APIConstants.API_SECURITY_BASIC_AUTH)) {
-                    isBasicAuthProtected = true;
-                } else if (apiSecurityLevel.trim().equalsIgnoreCase(APIConstants.SWAGGER_API_KEY_AUTH_TYPE_NAME)) {
-                    isApiKeyProtected = true;
-                }
             }
         }
 
@@ -116,36 +92,26 @@ public class AuthFilter implements Filter {
 
         // check whether the backend JWT token is enabled
         EnforcerConfig enforcerConfig = ConfigHolder.getInstance().getConfig();
-        boolean isGatewayTokenCacheEnabled =  enforcerConfig.getCacheDto().isEnabled();
+        boolean isGatewayTokenCacheEnabled = enforcerConfig.getCacheDto().isEnabled();
         JWTConfigurationDto jwtConfigurationDto = apiConfig.getJwtConfigurationDto();
 
-        if(isOAuthProtected) {
-            Authenticator jwtAuthenticator = new JWTAuthenticator(jwtConfigurationDto, isGatewayTokenCacheEnabled);
-            authenticators.add(jwtAuthenticator);
-        }
+        Authenticator jwtAuthenticator = new JWTAuthenticator(jwtConfigurationDto, isGatewayTokenCacheEnabled);
+        authenticators.add(jwtAuthenticator);
+        APIKeyAuthenticator apiKeyAuthenticator = new APIKeyAuthenticator(jwtConfigurationDto);
+        authenticators.add(apiKeyAuthenticator);
 
-        if (isApiKeyProtected) {
-            APIKeyAuthenticator apiKeyAuthenticator = new APIKeyAuthenticator(jwtConfigurationDto);
-            authenticators.add(apiKeyAuthenticator);
-        }
-
-        Authenticator authenticator = new InternalAPIKeyAuthenticator(jwtConfigurationDto,
-                ConfigHolder.getInstance().getConfig().getAuthHeader().getTestConsoleHeaderName().toLowerCase());
+        Authenticator authenticator = new InternalAPIKeyAuthenticator(jwtConfigurationDto);
         authenticators.add(authenticator);
 
         Authenticator unsecuredAPIAuthenticator = new UnsecuredAPIAuthenticator();
         authenticators.add(unsecuredAPIAuthenticator);
 
-        authenticators.sort(new Comparator<Authenticator>() {
-            @Override
-            public int compare(Authenticator o1, Authenticator o2) {
-                return (o1.getPriority() - o2.getPriority());
-            }
-        });
+        authenticators.sort(Comparator.comparingInt(Authenticator::getPriority));
     }
 
     @Override
     public boolean handleRequest(RequestContext requestContext) {
+        populateRemoveAndProtectedAuthHeaders(requestContext);
         // Set API metadata for interceptors
         setInterceptorAPIMetadata(requestContext);
 
@@ -153,10 +119,6 @@ public class AuthFilter implements Filter {
         if (APIConstants.PROTOTYPED_LIFE_CYCLE_STATUS.equals(
                 requestContext.getMatchedAPI().getApiLifeCycleState()) &&
                 !requestContext.getMatchedAPI().isMockedApi()) {
-            // For prototyped endpoints, only the production endpoints could be available.
-            requestContext.addOrModifyHeaders(AdapterConstants.CLUSTER_HEADER,
-                    requestContext.getClusterHeader());
-            requestContext.getRemoveHeaders().remove(AdapterConstants.CLUSTER_HEADER);
             return true;
         }
 
@@ -220,9 +182,6 @@ public class AuthFilter implements Filter {
             if (authenticator.getName().contains(APIConstants.API_SECURITY_MUTUAL_SSL_NAME)) {
                 // This section is for mTLS authentication
                 if (authenticate.isAuthenticated()) {
-                    updateClusterHeaderAndCheckEnv(requestContext);
-                    // set backend security
-                    EndpointSecurityUtils.addEndpointSecurity(requestContext);
                     log.debug("mTLS authentication was passed for the request: {} , API: {}:{}, APIUUID: {} ",
                             requestContext.getMatchedResourcePaths().get(0).getPath(),
                             requestContext.getMatchedAPI().getName(), requestContext.getMatchedAPI().getVersion(),
@@ -246,12 +205,6 @@ public class AuthFilter implements Filter {
                     }
                 }
             } else if (authenticate.isAuthenticated()) {
-                // This section is for application level securities
-                if (!requestContext.getMatchedAPI().isMockedApi()) {
-                    updateClusterHeaderAndCheckEnv(requestContext);
-                    // set backend security
-                    EndpointSecurityUtils.addEndpointSecurity(requestContext);
-                }
                 return new AuthenticationResponse(true, isOAuthBasicAuthMandatory, false);
             }
         } catch (APISecurityException e) {
@@ -259,21 +212,6 @@ public class AuthFilter implements Filter {
             FilterUtils.setErrorToContext(requestContext, e);
         }
         return new AuthenticationResponse(false, isOAuthBasicAuthMandatory, true);
-    }
-
-    /**
-     * Update the cluster header based on the keyType and authenticate the token against its respective endpoint
-     * environment.
-     *
-     * @param requestContext request Context
-     * @throws APISecurityException if the environment and
-     */
-    private void updateClusterHeaderAndCheckEnv(RequestContext requestContext)
-            throws APISecurityException {
-        requestContext.addOrModifyHeaders(AdapterConstants.CLUSTER_HEADER,
-                requestContext.getClusterHeader());
-        requestContext.getRemoveHeaders().remove(AdapterConstants.CLUSTER_HEADER);
-        addRouterHttpHeaders(requestContext);
     }
 
     private String getAuthenticatorsChallengeString() {
@@ -284,44 +222,6 @@ public class AuthFilter implements Filter {
             }
         }
         return challengeString.toString().trim();
-    }
-
-    private void addRouterHttpHeaders(RequestContext requestContext) {
-        // requestContext.getMatchedResourcePaths() will only have one element for non GraphQL APIs.
-        // Also, GraphQL APIs doesn't have resource level endpoint configs
-        ResourceConfig resourceConfig = requestContext.getMatchedResourcePaths().get(0);
-        // In websockets case, the endpoints object becomes null. Hence it would result
-        // in a NPE, if it is not checked.
-        if (resourceConfig.getEndpoints() != null) {
-            EndpointCluster endpointCluster = resourceConfig.getEndpoints();
-            addRetryAndTimeoutConfigHeaders(requestContext, endpointCluster);
-            handleEmptyPathHeader(requestContext, endpointCluster.getBasePath());
-        }
-    }
-
-    private void addRetryAndTimeoutConfigHeaders(RequestContext requestContext, EndpointCluster endpointCluster) {
-        RetryConfig retryConfig = endpointCluster.getRetryConfig();
-        if (retryConfig != null) {
-            addRetryConfigHeaders(requestContext, retryConfig);
-        }
-        Integer timeout = endpointCluster.getRouteTimeoutInMillis();
-        if (timeout != null) {
-            addTimeoutHeaders(requestContext, timeout);
-        }
-    }
-
-    private void addRetryConfigHeaders(RequestContext requestContext, RetryConfig retryConfig) {
-        requestContext.addOrModifyHeaders(AdapterConstants.HttpRouterHeaders.RETRY_ON,
-                AdapterConstants.HttpRouterHeaderValues.RETRIABLE_STATUS_CODES);
-        requestContext.addOrModifyHeaders(AdapterConstants.HttpRouterHeaders.MAX_RETRIES,
-                Integer.toString(retryConfig.getCount()));
-        requestContext.addOrModifyHeaders(AdapterConstants.HttpRouterHeaders.RETRIABLE_STATUS_CODES,
-                StringUtils.join(retryConfig.getStatusCodes(), ","));
-    }
-
-    private void addTimeoutHeaders(RequestContext requestContext, Integer routeTimeoutInMillis) {
-        requestContext.addOrModifyHeaders(AdapterConstants.HttpRouterHeaders.UPSTREAM_REQ_TIMEOUT_MS,
-                Integer.toString(routeTimeoutInMillis));
     }
 
     private void setInterceptorAuthContextMetadata(Authenticator authenticator, RequestContext requestContext) {
@@ -341,7 +241,7 @@ public class AuthFilter implements Filter {
         requestContext.addMetadataToMap(InterceptorConstants.APIMetadataFields.API_BASE_PATH,
                 Objects.toString(requestContext.getMatchedAPI().getBasePath(), ""));
         requestContext.addMetadataToMap(InterceptorConstants.APIMetadataFields.API_VERSION,
-                Objects.toString(requestContext.getMatchedAPI().getVersion() , ""));
+                Objects.toString(requestContext.getMatchedAPI().getVersion(), ""));
         requestContext.addMetadataToMap(InterceptorConstants.APIMetadataFields.API_NAME,
                 Objects.toString(requestContext.getMatchedAPI().getName(), ""));
         requestContext.addMetadataToMap(InterceptorConstants.APIMetadataFields.API_VHOST,
@@ -350,25 +250,38 @@ public class AuthFilter implements Filter {
                 Objects.toString(requestContext.getMatchedAPI().getOrganizationId(), ""));
     }
 
-    /**
-     * This will fix sending upstream an empty path header issue.
-     *
-     * @param requestContext request context
-     * @param basePath       endpoint basepath
-     */
-    private void handleEmptyPathHeader(RequestContext requestContext, String basePath) {
-        if (StringUtils.isNotBlank(basePath)) {
-            return;
-        }
-        // remaining path after removing the context and the version from the invoked path.
-        String remainingPath = StringUtils.removeStartIgnoreCase(requestContext.getHeaders()
-                .get(APIConstants.PATH_HEADER).split("\\?")[0], requestContext.getMatchedAPI().getBasePath());
-        // if the :path will be empty after applying the route's substitution, then we have to add a "/" forcefully
-        // to avoid :path being empty.
-        if (StringUtils.isBlank(remainingPath)) {
-            String[] splittedPath = requestContext.getHeaders().get(APIConstants.PATH_HEADER).split("\\?");
-            String newPath = splittedPath.length > 1 ? splittedPath[0] + "/?" + splittedPath[1] : splittedPath[0] + "/";
-            requestContext.addOrModifyHeaders(APIConstants.PATH_HEADER, newPath);
+    private void populateRemoveAndProtectedAuthHeaders(RequestContext requestContext) {
+        requestContext.getMatchedResourcePaths().forEach(resourcePath -> {
+            JWTAuthenticationConfig jwtAuthenticationConfig =
+                    resourcePath.getAuthenticationConfig().getJwtAuthenticationConfig();
+            InternalKeyConfig internalKeyConfig =
+                    resourcePath.getAuthenticationConfig().getInternalKeyConfig();
+            List<APIKeyAuthenticationConfig> apiKeyAuthenticationConfig =
+                    resourcePath.getAuthenticationConfig().getApiKeyAuthenticationConfigs();
+            if (jwtAuthenticationConfig != null && !jwtAuthenticationConfig.isSendTokenToUpstream()) {
+                requestContext.getRemoveHeaders().add(jwtAuthenticationConfig.getHeader());
+            }
+            if (internalKeyConfig != null && !internalKeyConfig.isSendTokenToUpstream()) {
+                requestContext.getRemoveHeaders().add(internalKeyConfig.getHeader());
+            }
+            if (apiKeyAuthenticationConfig != null && !apiKeyAuthenticationConfig.isEmpty()) {
+                requestContext.getQueryParamsToRemove().addAll(apiKeyAuthenticationConfig.stream()
+                        .filter(apiKeyAuthenticationConfig1 -> !apiKeyAuthenticationConfig1.isSendTokenToUpstream()
+                                && Objects.equals(apiKeyAuthenticationConfig1.getIn(), "In"))
+                        .map(APIKeyAuthenticationConfig::getName).collect(Collectors.toList()));
+                List<String> apikeyHeadersToRemove = apiKeyAuthenticationConfig.stream()
+                        .filter(apiKeyAuthenticationConfig1 -> !apiKeyAuthenticationConfig1.isSendTokenToUpstream()
+                                && Objects.equals(apiKeyAuthenticationConfig1.getIn(), "Header"))
+                        .map(APIKeyAuthenticationConfig::getName).collect(Collectors.toList());
+                requestContext.getRemoveHeaders().addAll(apikeyHeadersToRemove);
+            }
+        });
+
+        // Remove mTLS certificate header
+        MutualSSLDto mtlsInfo = ConfigHolder.getInstance().getConfig().getMtlsInfo();
+        String certificateHeaderName = FilterUtils.getCertificateHeaderName();
+        if (!mtlsInfo.isEnableOutboundCertificateHeader()) {
+            requestContext.getRemoveHeaders().add(certificateHeaderName);
         }
     }
 }

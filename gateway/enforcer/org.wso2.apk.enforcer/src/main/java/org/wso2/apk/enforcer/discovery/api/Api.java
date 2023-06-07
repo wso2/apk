@@ -29,9 +29,6 @@ private static final long serialVersionUID = 0L;
     basePath_ = "";
     tier_ = "";
     apiLifeCycleState_ = "";
-    securityScheme_ = java.util.Collections.emptyList();
-    security_ = java.util.Collections.emptyList();
-    authorizationHeader_ = "";
     vhost_ = "";
     organizationId_ = "";
     clientCertificates_ = java.util.Collections.emptyList();
@@ -93,7 +90,17 @@ private static final long serialVersionUID = 0L;
             apiType_ = s;
             break;
           }
-          case 50: {
+          case 40: {
+
+            disableAuthentications_ = input.readBool();
+            break;
+          }
+          case 48: {
+
+            disableScopes_ = input.readBool();
+            break;
+          }
+          case 58: {
             java.lang.String s = input.readStringRequireUtf8();
 
             envType_ = s;
@@ -127,72 +134,43 @@ private static final long serialVersionUID = 0L;
             break;
           }
           case 98: {
-            if (!((mutable_bitField0_ & 0x00000002) != 0)) {
-              securityScheme_ = new java.util.ArrayList<org.wso2.apk.enforcer.discovery.api.SecurityScheme>();
-              mutable_bitField0_ |= 0x00000002;
-            }
-            securityScheme_.add(
-                input.readMessage(org.wso2.apk.enforcer.discovery.api.SecurityScheme.parser(), extensionRegistry));
-            break;
-          }
-          case 106: {
-            if (!((mutable_bitField0_ & 0x00000004) != 0)) {
-              security_ = new java.util.ArrayList<org.wso2.apk.enforcer.discovery.api.SecurityList>();
-              mutable_bitField0_ |= 0x00000004;
-            }
-            security_.add(
-                input.readMessage(org.wso2.apk.enforcer.discovery.api.SecurityList.parser(), extensionRegistry));
-            break;
-          }
-          case 114: {
-            java.lang.String s = input.readStringRequireUtf8();
-
-            authorizationHeader_ = s;
-            break;
-          }
-          case 120: {
-
-            disableSecurity_ = input.readBool();
-            break;
-          }
-          case 130: {
             java.lang.String s = input.readStringRequireUtf8();
 
             vhost_ = s;
             break;
           }
-          case 138: {
+          case 106: {
             java.lang.String s = input.readStringRequireUtf8();
 
             organizationId_ = s;
             break;
           }
-          case 154: {
-            if (!((mutable_bitField0_ & 0x00000008) != 0)) {
+          case 114: {
+            if (!((mutable_bitField0_ & 0x00000002) != 0)) {
               clientCertificates_ = new java.util.ArrayList<org.wso2.apk.enforcer.discovery.api.Certificate>();
-              mutable_bitField0_ |= 0x00000008;
+              mutable_bitField0_ |= 0x00000002;
             }
             clientCertificates_.add(
                 input.readMessage(org.wso2.apk.enforcer.discovery.api.Certificate.parser(), extensionRegistry));
             break;
           }
-          case 162: {
+          case 122: {
             java.lang.String s = input.readStringRequireUtf8();
 
             mutualSSL_ = s;
             break;
           }
-          case 168: {
+          case 128: {
 
             applicationSecurity_ = input.readBool();
             break;
           }
-          case 192: {
+          case 136: {
 
             systemAPI_ = input.readBool();
             break;
           }
-          case 202: {
+          case 146: {
             org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo.Builder subBuilder = null;
             if (backendJWTTokenInfo_ != null) {
               subBuilder = backendJWTTokenInfo_.toBuilder();
@@ -224,12 +202,6 @@ private static final long serialVersionUID = 0L;
         resources_ = java.util.Collections.unmodifiableList(resources_);
       }
       if (((mutable_bitField0_ & 0x00000002) != 0)) {
-        securityScheme_ = java.util.Collections.unmodifiableList(securityScheme_);
-      }
-      if (((mutable_bitField0_ & 0x00000004) != 0)) {
-        security_ = java.util.Collections.unmodifiableList(security_);
-      }
-      if (((mutable_bitField0_ & 0x00000008) != 0)) {
         clientCertificates_ = java.util.Collections.unmodifiableList(clientCertificates_);
       }
       this.unknownFields = unknownFields.build();
@@ -401,14 +373,32 @@ private static final long serialVersionUID = 0L;
     }
   }
 
-  public static final int ENVTYPE_FIELD_NUMBER = 6;
+  public static final int DISABLEAUTHENTICATIONS_FIELD_NUMBER = 5;
+  private boolean disableAuthentications_;
+  /**
+   * <code>bool disableAuthentications = 5;</code>
+   * @return The disableAuthentications.
+   */
+  @java.lang.Override
+  public boolean getDisableAuthentications() {
+    return disableAuthentications_;
+  }
+
+  public static final int DISABLESCOPES_FIELD_NUMBER = 6;
+  private boolean disableScopes_;
+  /**
+   * <code>bool disableScopes = 6;</code>
+   * @return The disableScopes.
+   */
+  @java.lang.Override
+  public boolean getDisableScopes() {
+    return disableScopes_;
+  }
+
+  public static final int ENVTYPE_FIELD_NUMBER = 7;
   private volatile java.lang.Object envType_;
   /**
-   * <pre>
-   * string description = 5;
-   * </pre>
-   *
-   * <code>string envType = 6;</code>
+   * <code>string envType = 7;</code>
    * @return The envType.
    */
   @java.lang.Override
@@ -425,11 +415,7 @@ private static final long serialVersionUID = 0L;
     }
   }
   /**
-   * <pre>
-   * string description = 5;
-   * </pre>
-   *
-   * <code>string envType = 6;</code>
+   * <code>string envType = 7;</code>
    * @return The bytes for envType.
    */
   @java.lang.Override
@@ -601,139 +587,10 @@ private static final long serialVersionUID = 0L;
     }
   }
 
-  public static final int SECURITYSCHEME_FIELD_NUMBER = 12;
-  private java.util.List<org.wso2.apk.enforcer.discovery.api.SecurityScheme> securityScheme_;
-  /**
-   * <code>repeated .wso2.discovery.api.SecurityScheme securityScheme = 12;</code>
-   */
-  @java.lang.Override
-  public java.util.List<org.wso2.apk.enforcer.discovery.api.SecurityScheme> getSecuritySchemeList() {
-    return securityScheme_;
-  }
-  /**
-   * <code>repeated .wso2.discovery.api.SecurityScheme securityScheme = 12;</code>
-   */
-  @java.lang.Override
-  public java.util.List<? extends org.wso2.apk.enforcer.discovery.api.SecuritySchemeOrBuilder> 
-      getSecuritySchemeOrBuilderList() {
-    return securityScheme_;
-  }
-  /**
-   * <code>repeated .wso2.discovery.api.SecurityScheme securityScheme = 12;</code>
-   */
-  @java.lang.Override
-  public int getSecuritySchemeCount() {
-    return securityScheme_.size();
-  }
-  /**
-   * <code>repeated .wso2.discovery.api.SecurityScheme securityScheme = 12;</code>
-   */
-  @java.lang.Override
-  public org.wso2.apk.enforcer.discovery.api.SecurityScheme getSecurityScheme(int index) {
-    return securityScheme_.get(index);
-  }
-  /**
-   * <code>repeated .wso2.discovery.api.SecurityScheme securityScheme = 12;</code>
-   */
-  @java.lang.Override
-  public org.wso2.apk.enforcer.discovery.api.SecuritySchemeOrBuilder getSecuritySchemeOrBuilder(
-      int index) {
-    return securityScheme_.get(index);
-  }
-
-  public static final int SECURITY_FIELD_NUMBER = 13;
-  private java.util.List<org.wso2.apk.enforcer.discovery.api.SecurityList> security_;
-  /**
-   * <code>repeated .wso2.discovery.api.SecurityList security = 13;</code>
-   */
-  @java.lang.Override
-  public java.util.List<org.wso2.apk.enforcer.discovery.api.SecurityList> getSecurityList() {
-    return security_;
-  }
-  /**
-   * <code>repeated .wso2.discovery.api.SecurityList security = 13;</code>
-   */
-  @java.lang.Override
-  public java.util.List<? extends org.wso2.apk.enforcer.discovery.api.SecurityListOrBuilder> 
-      getSecurityOrBuilderList() {
-    return security_;
-  }
-  /**
-   * <code>repeated .wso2.discovery.api.SecurityList security = 13;</code>
-   */
-  @java.lang.Override
-  public int getSecurityCount() {
-    return security_.size();
-  }
-  /**
-   * <code>repeated .wso2.discovery.api.SecurityList security = 13;</code>
-   */
-  @java.lang.Override
-  public org.wso2.apk.enforcer.discovery.api.SecurityList getSecurity(int index) {
-    return security_.get(index);
-  }
-  /**
-   * <code>repeated .wso2.discovery.api.SecurityList security = 13;</code>
-   */
-  @java.lang.Override
-  public org.wso2.apk.enforcer.discovery.api.SecurityListOrBuilder getSecurityOrBuilder(
-      int index) {
-    return security_.get(index);
-  }
-
-  public static final int AUTHORIZATIONHEADER_FIELD_NUMBER = 14;
-  private volatile java.lang.Object authorizationHeader_;
-  /**
-   * <code>string authorizationHeader = 14;</code>
-   * @return The authorizationHeader.
-   */
-  @java.lang.Override
-  public java.lang.String getAuthorizationHeader() {
-    java.lang.Object ref = authorizationHeader_;
-    if (ref instanceof java.lang.String) {
-      return (java.lang.String) ref;
-    } else {
-      com.google.protobuf.ByteString bs = 
-          (com.google.protobuf.ByteString) ref;
-      java.lang.String s = bs.toStringUtf8();
-      authorizationHeader_ = s;
-      return s;
-    }
-  }
-  /**
-   * <code>string authorizationHeader = 14;</code>
-   * @return The bytes for authorizationHeader.
-   */
-  @java.lang.Override
-  public com.google.protobuf.ByteString
-      getAuthorizationHeaderBytes() {
-    java.lang.Object ref = authorizationHeader_;
-    if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
-          com.google.protobuf.ByteString.copyFromUtf8(
-              (java.lang.String) ref);
-      authorizationHeader_ = b;
-      return b;
-    } else {
-      return (com.google.protobuf.ByteString) ref;
-    }
-  }
-
-  public static final int DISABLESECURITY_FIELD_NUMBER = 15;
-  private boolean disableSecurity_;
-  /**
-   * <code>bool disableSecurity = 15;</code>
-   * @return The disableSecurity.
-   */
-  @java.lang.Override
-  public boolean getDisableSecurity() {
-    return disableSecurity_;
-  }
-
-  public static final int VHOST_FIELD_NUMBER = 16;
+  public static final int VHOST_FIELD_NUMBER = 12;
   private volatile java.lang.Object vhost_;
   /**
-   * <code>string vhost = 16;</code>
+   * <code>string vhost = 12;</code>
    * @return The vhost.
    */
   @java.lang.Override
@@ -750,7 +607,7 @@ private static final long serialVersionUID = 0L;
     }
   }
   /**
-   * <code>string vhost = 16;</code>
+   * <code>string vhost = 12;</code>
    * @return The bytes for vhost.
    */
   @java.lang.Override
@@ -768,10 +625,10 @@ private static final long serialVersionUID = 0L;
     }
   }
 
-  public static final int ORGANIZATIONID_FIELD_NUMBER = 17;
+  public static final int ORGANIZATIONID_FIELD_NUMBER = 13;
   private volatile java.lang.Object organizationId_;
   /**
-   * <code>string organizationId = 17;</code>
+   * <code>string organizationId = 13;</code>
    * @return The organizationId.
    */
   @java.lang.Override
@@ -788,7 +645,7 @@ private static final long serialVersionUID = 0L;
     }
   }
   /**
-   * <code>string organizationId = 17;</code>
+   * <code>string organizationId = 13;</code>
    * @return The bytes for organizationId.
    */
   @java.lang.Override
@@ -806,14 +663,14 @@ private static final long serialVersionUID = 0L;
     }
   }
 
-  public static final int CLIENTCERTIFICATES_FIELD_NUMBER = 19;
+  public static final int CLIENTCERTIFICATES_FIELD_NUMBER = 14;
   private java.util.List<org.wso2.apk.enforcer.discovery.api.Certificate> clientCertificates_;
   /**
    * <pre>
    * bool isMockedApi = 18;
    * </pre>
    *
-   * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
+   * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 14;</code>
    */
   @java.lang.Override
   public java.util.List<org.wso2.apk.enforcer.discovery.api.Certificate> getClientCertificatesList() {
@@ -824,7 +681,7 @@ private static final long serialVersionUID = 0L;
    * bool isMockedApi = 18;
    * </pre>
    *
-   * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
+   * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 14;</code>
    */
   @java.lang.Override
   public java.util.List<? extends org.wso2.apk.enforcer.discovery.api.CertificateOrBuilder> 
@@ -836,7 +693,7 @@ private static final long serialVersionUID = 0L;
    * bool isMockedApi = 18;
    * </pre>
    *
-   * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
+   * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 14;</code>
    */
   @java.lang.Override
   public int getClientCertificatesCount() {
@@ -847,7 +704,7 @@ private static final long serialVersionUID = 0L;
    * bool isMockedApi = 18;
    * </pre>
    *
-   * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
+   * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 14;</code>
    */
   @java.lang.Override
   public org.wso2.apk.enforcer.discovery.api.Certificate getClientCertificates(int index) {
@@ -858,7 +715,7 @@ private static final long serialVersionUID = 0L;
    * bool isMockedApi = 18;
    * </pre>
    *
-   * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
+   * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 14;</code>
    */
   @java.lang.Override
   public org.wso2.apk.enforcer.discovery.api.CertificateOrBuilder getClientCertificatesOrBuilder(
@@ -866,10 +723,10 @@ private static final long serialVersionUID = 0L;
     return clientCertificates_.get(index);
   }
 
-  public static final int MUTUALSSL_FIELD_NUMBER = 20;
+  public static final int MUTUALSSL_FIELD_NUMBER = 15;
   private volatile java.lang.Object mutualSSL_;
   /**
-   * <code>string mutualSSL = 20;</code>
+   * <code>string mutualSSL = 15;</code>
    * @return The mutualSSL.
    */
   @java.lang.Override
@@ -886,7 +743,7 @@ private static final long serialVersionUID = 0L;
     }
   }
   /**
-   * <code>string mutualSSL = 20;</code>
+   * <code>string mutualSSL = 15;</code>
    * @return The bytes for mutualSSL.
    */
   @java.lang.Override
@@ -904,10 +761,10 @@ private static final long serialVersionUID = 0L;
     }
   }
 
-  public static final int APPLICATIONSECURITY_FIELD_NUMBER = 21;
+  public static final int APPLICATIONSECURITY_FIELD_NUMBER = 16;
   private boolean applicationSecurity_;
   /**
-   * <code>bool applicationSecurity = 21;</code>
+   * <code>bool applicationSecurity = 16;</code>
    * @return The applicationSecurity.
    */
   @java.lang.Override
@@ -915,7 +772,7 @@ private static final long serialVersionUID = 0L;
     return applicationSecurity_;
   }
 
-  public static final int SYSTEMAPI_FIELD_NUMBER = 24;
+  public static final int SYSTEMAPI_FIELD_NUMBER = 17;
   private boolean systemAPI_;
   /**
    * <pre>
@@ -923,7 +780,7 @@ private static final long serialVersionUID = 0L;
    * repeated GraphqlComplexity graphqlComplexityInfo = 23;
    * </pre>
    *
-   * <code>bool systemAPI = 24;</code>
+   * <code>bool systemAPI = 17;</code>
    * @return The systemAPI.
    */
   @java.lang.Override
@@ -931,10 +788,10 @@ private static final long serialVersionUID = 0L;
     return systemAPI_;
   }
 
-  public static final int BACKENDJWTTOKENINFO_FIELD_NUMBER = 25;
+  public static final int BACKENDJWTTOKENINFO_FIELD_NUMBER = 18;
   private org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo_;
   /**
-   * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 25;</code>
+   * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 18;</code>
    * @return Whether the backendJWTTokenInfo field is set.
    */
   @java.lang.Override
@@ -942,7 +799,7 @@ private static final long serialVersionUID = 0L;
     return backendJWTTokenInfo_ != null;
   }
   /**
-   * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 25;</code>
+   * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 18;</code>
    * @return The backendJWTTokenInfo.
    */
   @java.lang.Override
@@ -950,7 +807,7 @@ private static final long serialVersionUID = 0L;
     return backendJWTTokenInfo_ == null ? org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo.getDefaultInstance() : backendJWTTokenInfo_;
   }
   /**
-   * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 25;</code>
+   * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 18;</code>
    */
   @java.lang.Override
   public org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfoOrBuilder getBackendJWTTokenInfoOrBuilder() {
@@ -983,8 +840,14 @@ private static final long serialVersionUID = 0L;
     if (!getApiTypeBytes().isEmpty()) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 4, apiType_);
     }
+    if (disableAuthentications_ != false) {
+      output.writeBool(5, disableAuthentications_);
+    }
+    if (disableScopes_ != false) {
+      output.writeBool(6, disableScopes_);
+    }
     if (!getEnvTypeBytes().isEmpty()) {
-      com.google.protobuf.GeneratedMessageV3.writeString(output, 6, envType_);
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 7, envType_);
     }
     for (int i = 0; i < resources_.size(); i++) {
       output.writeMessage(8, resources_.get(i));
@@ -998,38 +861,26 @@ private static final long serialVersionUID = 0L;
     if (!getApiLifeCycleStateBytes().isEmpty()) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 11, apiLifeCycleState_);
     }
-    for (int i = 0; i < securityScheme_.size(); i++) {
-      output.writeMessage(12, securityScheme_.get(i));
-    }
-    for (int i = 0; i < security_.size(); i++) {
-      output.writeMessage(13, security_.get(i));
-    }
-    if (!getAuthorizationHeaderBytes().isEmpty()) {
-      com.google.protobuf.GeneratedMessageV3.writeString(output, 14, authorizationHeader_);
-    }
-    if (disableSecurity_ != false) {
-      output.writeBool(15, disableSecurity_);
-    }
     if (!getVhostBytes().isEmpty()) {
-      com.google.protobuf.GeneratedMessageV3.writeString(output, 16, vhost_);
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 12, vhost_);
     }
     if (!getOrganizationIdBytes().isEmpty()) {
-      com.google.protobuf.GeneratedMessageV3.writeString(output, 17, organizationId_);
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 13, organizationId_);
     }
     for (int i = 0; i < clientCertificates_.size(); i++) {
-      output.writeMessage(19, clientCertificates_.get(i));
+      output.writeMessage(14, clientCertificates_.get(i));
     }
     if (!getMutualSSLBytes().isEmpty()) {
-      com.google.protobuf.GeneratedMessageV3.writeString(output, 20, mutualSSL_);
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 15, mutualSSL_);
     }
     if (applicationSecurity_ != false) {
-      output.writeBool(21, applicationSecurity_);
+      output.writeBool(16, applicationSecurity_);
     }
     if (systemAPI_ != false) {
-      output.writeBool(24, systemAPI_);
+      output.writeBool(17, systemAPI_);
     }
     if (backendJWTTokenInfo_ != null) {
-      output.writeMessage(25, getBackendJWTTokenInfo());
+      output.writeMessage(18, getBackendJWTTokenInfo());
     }
     unknownFields.writeTo(output);
   }
@@ -1052,8 +903,16 @@ private static final long serialVersionUID = 0L;
     if (!getApiTypeBytes().isEmpty()) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, apiType_);
     }
+    if (disableAuthentications_ != false) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeBoolSize(5, disableAuthentications_);
+    }
+    if (disableScopes_ != false) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeBoolSize(6, disableScopes_);
+    }
     if (!getEnvTypeBytes().isEmpty()) {
-      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(6, envType_);
+      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(7, envType_);
     }
     for (int i = 0; i < resources_.size(); i++) {
       size += com.google.protobuf.CodedOutputStream
@@ -1068,45 +927,30 @@ private static final long serialVersionUID = 0L;
     if (!getApiLifeCycleStateBytes().isEmpty()) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(11, apiLifeCycleState_);
     }
-    for (int i = 0; i < securityScheme_.size(); i++) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(12, securityScheme_.get(i));
-    }
-    for (int i = 0; i < security_.size(); i++) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(13, security_.get(i));
-    }
-    if (!getAuthorizationHeaderBytes().isEmpty()) {
-      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(14, authorizationHeader_);
-    }
-    if (disableSecurity_ != false) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeBoolSize(15, disableSecurity_);
-    }
     if (!getVhostBytes().isEmpty()) {
-      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(16, vhost_);
+      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(12, vhost_);
     }
     if (!getOrganizationIdBytes().isEmpty()) {
-      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(17, organizationId_);
+      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(13, organizationId_);
     }
     for (int i = 0; i < clientCertificates_.size(); i++) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(19, clientCertificates_.get(i));
+        .computeMessageSize(14, clientCertificates_.get(i));
     }
     if (!getMutualSSLBytes().isEmpty()) {
-      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(20, mutualSSL_);
+      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(15, mutualSSL_);
     }
     if (applicationSecurity_ != false) {
       size += com.google.protobuf.CodedOutputStream
-        .computeBoolSize(21, applicationSecurity_);
+        .computeBoolSize(16, applicationSecurity_);
     }
     if (systemAPI_ != false) {
       size += com.google.protobuf.CodedOutputStream
-        .computeBoolSize(24, systemAPI_);
+        .computeBoolSize(17, systemAPI_);
     }
     if (backendJWTTokenInfo_ != null) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(25, getBackendJWTTokenInfo());
+        .computeMessageSize(18, getBackendJWTTokenInfo());
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -1131,6 +975,10 @@ private static final long serialVersionUID = 0L;
         .equals(other.getVersion())) return false;
     if (!getApiType()
         .equals(other.getApiType())) return false;
+    if (getDisableAuthentications()
+        != other.getDisableAuthentications()) return false;
+    if (getDisableScopes()
+        != other.getDisableScopes()) return false;
     if (!getEnvType()
         .equals(other.getEnvType())) return false;
     if (!getResourcesList()
@@ -1141,14 +989,6 @@ private static final long serialVersionUID = 0L;
         .equals(other.getTier())) return false;
     if (!getApiLifeCycleState()
         .equals(other.getApiLifeCycleState())) return false;
-    if (!getSecuritySchemeList()
-        .equals(other.getSecuritySchemeList())) return false;
-    if (!getSecurityList()
-        .equals(other.getSecurityList())) return false;
-    if (!getAuthorizationHeader()
-        .equals(other.getAuthorizationHeader())) return false;
-    if (getDisableSecurity()
-        != other.getDisableSecurity()) return false;
     if (!getVhost()
         .equals(other.getVhost())) return false;
     if (!getOrganizationId()
@@ -1185,6 +1025,12 @@ private static final long serialVersionUID = 0L;
     hash = (53 * hash) + getVersion().hashCode();
     hash = (37 * hash) + APITYPE_FIELD_NUMBER;
     hash = (53 * hash) + getApiType().hashCode();
+    hash = (37 * hash) + DISABLEAUTHENTICATIONS_FIELD_NUMBER;
+    hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+        getDisableAuthentications());
+    hash = (37 * hash) + DISABLESCOPES_FIELD_NUMBER;
+    hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+        getDisableScopes());
     hash = (37 * hash) + ENVTYPE_FIELD_NUMBER;
     hash = (53 * hash) + getEnvType().hashCode();
     if (getResourcesCount() > 0) {
@@ -1197,19 +1043,6 @@ private static final long serialVersionUID = 0L;
     hash = (53 * hash) + getTier().hashCode();
     hash = (37 * hash) + APILIFECYCLESTATE_FIELD_NUMBER;
     hash = (53 * hash) + getApiLifeCycleState().hashCode();
-    if (getSecuritySchemeCount() > 0) {
-      hash = (37 * hash) + SECURITYSCHEME_FIELD_NUMBER;
-      hash = (53 * hash) + getSecuritySchemeList().hashCode();
-    }
-    if (getSecurityCount() > 0) {
-      hash = (37 * hash) + SECURITY_FIELD_NUMBER;
-      hash = (53 * hash) + getSecurityList().hashCode();
-    }
-    hash = (37 * hash) + AUTHORIZATIONHEADER_FIELD_NUMBER;
-    hash = (53 * hash) + getAuthorizationHeader().hashCode();
-    hash = (37 * hash) + DISABLESECURITY_FIELD_NUMBER;
-    hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
-        getDisableSecurity());
     hash = (37 * hash) + VHOST_FIELD_NUMBER;
     hash = (53 * hash) + getVhost().hashCode();
     hash = (37 * hash) + ORGANIZATIONID_FIELD_NUMBER;
@@ -1363,8 +1196,6 @@ private static final long serialVersionUID = 0L;
       if (com.google.protobuf.GeneratedMessageV3
               .alwaysUseFieldBuilders) {
         getResourcesFieldBuilder();
-        getSecuritySchemeFieldBuilder();
-        getSecurityFieldBuilder();
         getClientCertificatesFieldBuilder();
       }
     }
@@ -1378,6 +1209,10 @@ private static final long serialVersionUID = 0L;
       version_ = "";
 
       apiType_ = "";
+
+      disableAuthentications_ = false;
+
+      disableScopes_ = false;
 
       envType_ = "";
 
@@ -1393,29 +1228,13 @@ private static final long serialVersionUID = 0L;
 
       apiLifeCycleState_ = "";
 
-      if (securitySchemeBuilder_ == null) {
-        securityScheme_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000002);
-      } else {
-        securitySchemeBuilder_.clear();
-      }
-      if (securityBuilder_ == null) {
-        security_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000004);
-      } else {
-        securityBuilder_.clear();
-      }
-      authorizationHeader_ = "";
-
-      disableSecurity_ = false;
-
       vhost_ = "";
 
       organizationId_ = "";
 
       if (clientCertificatesBuilder_ == null) {
         clientCertificates_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000008);
+        bitField0_ = (bitField0_ & ~0x00000002);
       } else {
         clientCertificatesBuilder_.clear();
       }
@@ -1462,6 +1281,8 @@ private static final long serialVersionUID = 0L;
       result.title_ = title_;
       result.version_ = version_;
       result.apiType_ = apiType_;
+      result.disableAuthentications_ = disableAuthentications_;
+      result.disableScopes_ = disableScopes_;
       result.envType_ = envType_;
       if (resourcesBuilder_ == null) {
         if (((bitField0_ & 0x00000001) != 0)) {
@@ -1475,32 +1296,12 @@ private static final long serialVersionUID = 0L;
       result.basePath_ = basePath_;
       result.tier_ = tier_;
       result.apiLifeCycleState_ = apiLifeCycleState_;
-      if (securitySchemeBuilder_ == null) {
-        if (((bitField0_ & 0x00000002) != 0)) {
-          securityScheme_ = java.util.Collections.unmodifiableList(securityScheme_);
-          bitField0_ = (bitField0_ & ~0x00000002);
-        }
-        result.securityScheme_ = securityScheme_;
-      } else {
-        result.securityScheme_ = securitySchemeBuilder_.build();
-      }
-      if (securityBuilder_ == null) {
-        if (((bitField0_ & 0x00000004) != 0)) {
-          security_ = java.util.Collections.unmodifiableList(security_);
-          bitField0_ = (bitField0_ & ~0x00000004);
-        }
-        result.security_ = security_;
-      } else {
-        result.security_ = securityBuilder_.build();
-      }
-      result.authorizationHeader_ = authorizationHeader_;
-      result.disableSecurity_ = disableSecurity_;
       result.vhost_ = vhost_;
       result.organizationId_ = organizationId_;
       if (clientCertificatesBuilder_ == null) {
-        if (((bitField0_ & 0x00000008) != 0)) {
+        if (((bitField0_ & 0x00000002) != 0)) {
           clientCertificates_ = java.util.Collections.unmodifiableList(clientCertificates_);
-          bitField0_ = (bitField0_ & ~0x00000008);
+          bitField0_ = (bitField0_ & ~0x00000002);
         }
         result.clientCertificates_ = clientCertificates_;
       } else {
@@ -1578,6 +1379,12 @@ private static final long serialVersionUID = 0L;
         apiType_ = other.apiType_;
         onChanged();
       }
+      if (other.getDisableAuthentications() != false) {
+        setDisableAuthentications(other.getDisableAuthentications());
+      }
+      if (other.getDisableScopes() != false) {
+        setDisableScopes(other.getDisableScopes());
+      }
       if (!other.getEnvType().isEmpty()) {
         envType_ = other.envType_;
         onChanged();
@@ -1620,65 +1427,6 @@ private static final long serialVersionUID = 0L;
         apiLifeCycleState_ = other.apiLifeCycleState_;
         onChanged();
       }
-      if (securitySchemeBuilder_ == null) {
-        if (!other.securityScheme_.isEmpty()) {
-          if (securityScheme_.isEmpty()) {
-            securityScheme_ = other.securityScheme_;
-            bitField0_ = (bitField0_ & ~0x00000002);
-          } else {
-            ensureSecuritySchemeIsMutable();
-            securityScheme_.addAll(other.securityScheme_);
-          }
-          onChanged();
-        }
-      } else {
-        if (!other.securityScheme_.isEmpty()) {
-          if (securitySchemeBuilder_.isEmpty()) {
-            securitySchemeBuilder_.dispose();
-            securitySchemeBuilder_ = null;
-            securityScheme_ = other.securityScheme_;
-            bitField0_ = (bitField0_ & ~0x00000002);
-            securitySchemeBuilder_ = 
-              com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
-                 getSecuritySchemeFieldBuilder() : null;
-          } else {
-            securitySchemeBuilder_.addAllMessages(other.securityScheme_);
-          }
-        }
-      }
-      if (securityBuilder_ == null) {
-        if (!other.security_.isEmpty()) {
-          if (security_.isEmpty()) {
-            security_ = other.security_;
-            bitField0_ = (bitField0_ & ~0x00000004);
-          } else {
-            ensureSecurityIsMutable();
-            security_.addAll(other.security_);
-          }
-          onChanged();
-        }
-      } else {
-        if (!other.security_.isEmpty()) {
-          if (securityBuilder_.isEmpty()) {
-            securityBuilder_.dispose();
-            securityBuilder_ = null;
-            security_ = other.security_;
-            bitField0_ = (bitField0_ & ~0x00000004);
-            securityBuilder_ = 
-              com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
-                 getSecurityFieldBuilder() : null;
-          } else {
-            securityBuilder_.addAllMessages(other.security_);
-          }
-        }
-      }
-      if (!other.getAuthorizationHeader().isEmpty()) {
-        authorizationHeader_ = other.authorizationHeader_;
-        onChanged();
-      }
-      if (other.getDisableSecurity() != false) {
-        setDisableSecurity(other.getDisableSecurity());
-      }
       if (!other.getVhost().isEmpty()) {
         vhost_ = other.vhost_;
         onChanged();
@@ -1691,7 +1439,7 @@ private static final long serialVersionUID = 0L;
         if (!other.clientCertificates_.isEmpty()) {
           if (clientCertificates_.isEmpty()) {
             clientCertificates_ = other.clientCertificates_;
-            bitField0_ = (bitField0_ & ~0x00000008);
+            bitField0_ = (bitField0_ & ~0x00000002);
           } else {
             ensureClientCertificatesIsMutable();
             clientCertificates_.addAll(other.clientCertificates_);
@@ -1704,7 +1452,7 @@ private static final long serialVersionUID = 0L;
             clientCertificatesBuilder_.dispose();
             clientCertificatesBuilder_ = null;
             clientCertificates_ = other.clientCertificates_;
-            bitField0_ = (bitField0_ & ~0x00000008);
+            bitField0_ = (bitField0_ & ~0x00000002);
             clientCertificatesBuilder_ = 
               com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                  getClientCertificatesFieldBuilder() : null;
@@ -2060,13 +1808,71 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
+    private boolean disableAuthentications_ ;
+    /**
+     * <code>bool disableAuthentications = 5;</code>
+     * @return The disableAuthentications.
+     */
+    @java.lang.Override
+    public boolean getDisableAuthentications() {
+      return disableAuthentications_;
+    }
+    /**
+     * <code>bool disableAuthentications = 5;</code>
+     * @param value The disableAuthentications to set.
+     * @return This builder for chaining.
+     */
+    public Builder setDisableAuthentications(boolean value) {
+      
+      disableAuthentications_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>bool disableAuthentications = 5;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearDisableAuthentications() {
+      
+      disableAuthentications_ = false;
+      onChanged();
+      return this;
+    }
+
+    private boolean disableScopes_ ;
+    /**
+     * <code>bool disableScopes = 6;</code>
+     * @return The disableScopes.
+     */
+    @java.lang.Override
+    public boolean getDisableScopes() {
+      return disableScopes_;
+    }
+    /**
+     * <code>bool disableScopes = 6;</code>
+     * @param value The disableScopes to set.
+     * @return This builder for chaining.
+     */
+    public Builder setDisableScopes(boolean value) {
+      
+      disableScopes_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>bool disableScopes = 6;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearDisableScopes() {
+      
+      disableScopes_ = false;
+      onChanged();
+      return this;
+    }
+
     private java.lang.Object envType_ = "";
     /**
-     * <pre>
-     * string description = 5;
-     * </pre>
-     *
-     * <code>string envType = 6;</code>
+     * <code>string envType = 7;</code>
      * @return The envType.
      */
     public java.lang.String getEnvType() {
@@ -2082,11 +1888,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <pre>
-     * string description = 5;
-     * </pre>
-     *
-     * <code>string envType = 6;</code>
+     * <code>string envType = 7;</code>
      * @return The bytes for envType.
      */
     public com.google.protobuf.ByteString
@@ -2103,11 +1905,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <pre>
-     * string description = 5;
-     * </pre>
-     *
-     * <code>string envType = 6;</code>
+     * <code>string envType = 7;</code>
      * @param value The envType to set.
      * @return This builder for chaining.
      */
@@ -2122,11 +1920,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <pre>
-     * string description = 5;
-     * </pre>
-     *
-     * <code>string envType = 6;</code>
+     * <code>string envType = 7;</code>
      * @return This builder for chaining.
      */
     public Builder clearEnvType() {
@@ -2136,11 +1930,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <pre>
-     * string description = 5;
-     * </pre>
-     *
-     * <code>string envType = 6;</code>
+     * <code>string envType = 7;</code>
      * @param value The bytes for envType to set.
      * @return This builder for chaining.
      */
@@ -2624,596 +2414,9 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    private java.util.List<org.wso2.apk.enforcer.discovery.api.SecurityScheme> securityScheme_ =
-      java.util.Collections.emptyList();
-    private void ensureSecuritySchemeIsMutable() {
-      if (!((bitField0_ & 0x00000002) != 0)) {
-        securityScheme_ = new java.util.ArrayList<org.wso2.apk.enforcer.discovery.api.SecurityScheme>(securityScheme_);
-        bitField0_ |= 0x00000002;
-       }
-    }
-
-    private com.google.protobuf.RepeatedFieldBuilderV3<
-        org.wso2.apk.enforcer.discovery.api.SecurityScheme, org.wso2.apk.enforcer.discovery.api.SecurityScheme.Builder, org.wso2.apk.enforcer.discovery.api.SecuritySchemeOrBuilder> securitySchemeBuilder_;
-
-    /**
-     * <code>repeated .wso2.discovery.api.SecurityScheme securityScheme = 12;</code>
-     */
-    public java.util.List<org.wso2.apk.enforcer.discovery.api.SecurityScheme> getSecuritySchemeList() {
-      if (securitySchemeBuilder_ == null) {
-        return java.util.Collections.unmodifiableList(securityScheme_);
-      } else {
-        return securitySchemeBuilder_.getMessageList();
-      }
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.SecurityScheme securityScheme = 12;</code>
-     */
-    public int getSecuritySchemeCount() {
-      if (securitySchemeBuilder_ == null) {
-        return securityScheme_.size();
-      } else {
-        return securitySchemeBuilder_.getCount();
-      }
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.SecurityScheme securityScheme = 12;</code>
-     */
-    public org.wso2.apk.enforcer.discovery.api.SecurityScheme getSecurityScheme(int index) {
-      if (securitySchemeBuilder_ == null) {
-        return securityScheme_.get(index);
-      } else {
-        return securitySchemeBuilder_.getMessage(index);
-      }
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.SecurityScheme securityScheme = 12;</code>
-     */
-    public Builder setSecurityScheme(
-        int index, org.wso2.apk.enforcer.discovery.api.SecurityScheme value) {
-      if (securitySchemeBuilder_ == null) {
-        if (value == null) {
-          throw new NullPointerException();
-        }
-        ensureSecuritySchemeIsMutable();
-        securityScheme_.set(index, value);
-        onChanged();
-      } else {
-        securitySchemeBuilder_.setMessage(index, value);
-      }
-      return this;
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.SecurityScheme securityScheme = 12;</code>
-     */
-    public Builder setSecurityScheme(
-        int index, org.wso2.apk.enforcer.discovery.api.SecurityScheme.Builder builderForValue) {
-      if (securitySchemeBuilder_ == null) {
-        ensureSecuritySchemeIsMutable();
-        securityScheme_.set(index, builderForValue.build());
-        onChanged();
-      } else {
-        securitySchemeBuilder_.setMessage(index, builderForValue.build());
-      }
-      return this;
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.SecurityScheme securityScheme = 12;</code>
-     */
-    public Builder addSecurityScheme(org.wso2.apk.enforcer.discovery.api.SecurityScheme value) {
-      if (securitySchemeBuilder_ == null) {
-        if (value == null) {
-          throw new NullPointerException();
-        }
-        ensureSecuritySchemeIsMutable();
-        securityScheme_.add(value);
-        onChanged();
-      } else {
-        securitySchemeBuilder_.addMessage(value);
-      }
-      return this;
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.SecurityScheme securityScheme = 12;</code>
-     */
-    public Builder addSecurityScheme(
-        int index, org.wso2.apk.enforcer.discovery.api.SecurityScheme value) {
-      if (securitySchemeBuilder_ == null) {
-        if (value == null) {
-          throw new NullPointerException();
-        }
-        ensureSecuritySchemeIsMutable();
-        securityScheme_.add(index, value);
-        onChanged();
-      } else {
-        securitySchemeBuilder_.addMessage(index, value);
-      }
-      return this;
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.SecurityScheme securityScheme = 12;</code>
-     */
-    public Builder addSecurityScheme(
-        org.wso2.apk.enforcer.discovery.api.SecurityScheme.Builder builderForValue) {
-      if (securitySchemeBuilder_ == null) {
-        ensureSecuritySchemeIsMutable();
-        securityScheme_.add(builderForValue.build());
-        onChanged();
-      } else {
-        securitySchemeBuilder_.addMessage(builderForValue.build());
-      }
-      return this;
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.SecurityScheme securityScheme = 12;</code>
-     */
-    public Builder addSecurityScheme(
-        int index, org.wso2.apk.enforcer.discovery.api.SecurityScheme.Builder builderForValue) {
-      if (securitySchemeBuilder_ == null) {
-        ensureSecuritySchemeIsMutable();
-        securityScheme_.add(index, builderForValue.build());
-        onChanged();
-      } else {
-        securitySchemeBuilder_.addMessage(index, builderForValue.build());
-      }
-      return this;
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.SecurityScheme securityScheme = 12;</code>
-     */
-    public Builder addAllSecurityScheme(
-        java.lang.Iterable<? extends org.wso2.apk.enforcer.discovery.api.SecurityScheme> values) {
-      if (securitySchemeBuilder_ == null) {
-        ensureSecuritySchemeIsMutable();
-        com.google.protobuf.AbstractMessageLite.Builder.addAll(
-            values, securityScheme_);
-        onChanged();
-      } else {
-        securitySchemeBuilder_.addAllMessages(values);
-      }
-      return this;
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.SecurityScheme securityScheme = 12;</code>
-     */
-    public Builder clearSecurityScheme() {
-      if (securitySchemeBuilder_ == null) {
-        securityScheme_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000002);
-        onChanged();
-      } else {
-        securitySchemeBuilder_.clear();
-      }
-      return this;
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.SecurityScheme securityScheme = 12;</code>
-     */
-    public Builder removeSecurityScheme(int index) {
-      if (securitySchemeBuilder_ == null) {
-        ensureSecuritySchemeIsMutable();
-        securityScheme_.remove(index);
-        onChanged();
-      } else {
-        securitySchemeBuilder_.remove(index);
-      }
-      return this;
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.SecurityScheme securityScheme = 12;</code>
-     */
-    public org.wso2.apk.enforcer.discovery.api.SecurityScheme.Builder getSecuritySchemeBuilder(
-        int index) {
-      return getSecuritySchemeFieldBuilder().getBuilder(index);
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.SecurityScheme securityScheme = 12;</code>
-     */
-    public org.wso2.apk.enforcer.discovery.api.SecuritySchemeOrBuilder getSecuritySchemeOrBuilder(
-        int index) {
-      if (securitySchemeBuilder_ == null) {
-        return securityScheme_.get(index);  } else {
-        return securitySchemeBuilder_.getMessageOrBuilder(index);
-      }
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.SecurityScheme securityScheme = 12;</code>
-     */
-    public java.util.List<? extends org.wso2.apk.enforcer.discovery.api.SecuritySchemeOrBuilder> 
-         getSecuritySchemeOrBuilderList() {
-      if (securitySchemeBuilder_ != null) {
-        return securitySchemeBuilder_.getMessageOrBuilderList();
-      } else {
-        return java.util.Collections.unmodifiableList(securityScheme_);
-      }
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.SecurityScheme securityScheme = 12;</code>
-     */
-    public org.wso2.apk.enforcer.discovery.api.SecurityScheme.Builder addSecuritySchemeBuilder() {
-      return getSecuritySchemeFieldBuilder().addBuilder(
-          org.wso2.apk.enforcer.discovery.api.SecurityScheme.getDefaultInstance());
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.SecurityScheme securityScheme = 12;</code>
-     */
-    public org.wso2.apk.enforcer.discovery.api.SecurityScheme.Builder addSecuritySchemeBuilder(
-        int index) {
-      return getSecuritySchemeFieldBuilder().addBuilder(
-          index, org.wso2.apk.enforcer.discovery.api.SecurityScheme.getDefaultInstance());
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.SecurityScheme securityScheme = 12;</code>
-     */
-    public java.util.List<org.wso2.apk.enforcer.discovery.api.SecurityScheme.Builder> 
-         getSecuritySchemeBuilderList() {
-      return getSecuritySchemeFieldBuilder().getBuilderList();
-    }
-    private com.google.protobuf.RepeatedFieldBuilderV3<
-        org.wso2.apk.enforcer.discovery.api.SecurityScheme, org.wso2.apk.enforcer.discovery.api.SecurityScheme.Builder, org.wso2.apk.enforcer.discovery.api.SecuritySchemeOrBuilder> 
-        getSecuritySchemeFieldBuilder() {
-      if (securitySchemeBuilder_ == null) {
-        securitySchemeBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-            org.wso2.apk.enforcer.discovery.api.SecurityScheme, org.wso2.apk.enforcer.discovery.api.SecurityScheme.Builder, org.wso2.apk.enforcer.discovery.api.SecuritySchemeOrBuilder>(
-                securityScheme_,
-                ((bitField0_ & 0x00000002) != 0),
-                getParentForChildren(),
-                isClean());
-        securityScheme_ = null;
-      }
-      return securitySchemeBuilder_;
-    }
-
-    private java.util.List<org.wso2.apk.enforcer.discovery.api.SecurityList> security_ =
-      java.util.Collections.emptyList();
-    private void ensureSecurityIsMutable() {
-      if (!((bitField0_ & 0x00000004) != 0)) {
-        security_ = new java.util.ArrayList<org.wso2.apk.enforcer.discovery.api.SecurityList>(security_);
-        bitField0_ |= 0x00000004;
-       }
-    }
-
-    private com.google.protobuf.RepeatedFieldBuilderV3<
-        org.wso2.apk.enforcer.discovery.api.SecurityList, org.wso2.apk.enforcer.discovery.api.SecurityList.Builder, org.wso2.apk.enforcer.discovery.api.SecurityListOrBuilder> securityBuilder_;
-
-    /**
-     * <code>repeated .wso2.discovery.api.SecurityList security = 13;</code>
-     */
-    public java.util.List<org.wso2.apk.enforcer.discovery.api.SecurityList> getSecurityList() {
-      if (securityBuilder_ == null) {
-        return java.util.Collections.unmodifiableList(security_);
-      } else {
-        return securityBuilder_.getMessageList();
-      }
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.SecurityList security = 13;</code>
-     */
-    public int getSecurityCount() {
-      if (securityBuilder_ == null) {
-        return security_.size();
-      } else {
-        return securityBuilder_.getCount();
-      }
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.SecurityList security = 13;</code>
-     */
-    public org.wso2.apk.enforcer.discovery.api.SecurityList getSecurity(int index) {
-      if (securityBuilder_ == null) {
-        return security_.get(index);
-      } else {
-        return securityBuilder_.getMessage(index);
-      }
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.SecurityList security = 13;</code>
-     */
-    public Builder setSecurity(
-        int index, org.wso2.apk.enforcer.discovery.api.SecurityList value) {
-      if (securityBuilder_ == null) {
-        if (value == null) {
-          throw new NullPointerException();
-        }
-        ensureSecurityIsMutable();
-        security_.set(index, value);
-        onChanged();
-      } else {
-        securityBuilder_.setMessage(index, value);
-      }
-      return this;
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.SecurityList security = 13;</code>
-     */
-    public Builder setSecurity(
-        int index, org.wso2.apk.enforcer.discovery.api.SecurityList.Builder builderForValue) {
-      if (securityBuilder_ == null) {
-        ensureSecurityIsMutable();
-        security_.set(index, builderForValue.build());
-        onChanged();
-      } else {
-        securityBuilder_.setMessage(index, builderForValue.build());
-      }
-      return this;
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.SecurityList security = 13;</code>
-     */
-    public Builder addSecurity(org.wso2.apk.enforcer.discovery.api.SecurityList value) {
-      if (securityBuilder_ == null) {
-        if (value == null) {
-          throw new NullPointerException();
-        }
-        ensureSecurityIsMutable();
-        security_.add(value);
-        onChanged();
-      } else {
-        securityBuilder_.addMessage(value);
-      }
-      return this;
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.SecurityList security = 13;</code>
-     */
-    public Builder addSecurity(
-        int index, org.wso2.apk.enforcer.discovery.api.SecurityList value) {
-      if (securityBuilder_ == null) {
-        if (value == null) {
-          throw new NullPointerException();
-        }
-        ensureSecurityIsMutable();
-        security_.add(index, value);
-        onChanged();
-      } else {
-        securityBuilder_.addMessage(index, value);
-      }
-      return this;
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.SecurityList security = 13;</code>
-     */
-    public Builder addSecurity(
-        org.wso2.apk.enforcer.discovery.api.SecurityList.Builder builderForValue) {
-      if (securityBuilder_ == null) {
-        ensureSecurityIsMutable();
-        security_.add(builderForValue.build());
-        onChanged();
-      } else {
-        securityBuilder_.addMessage(builderForValue.build());
-      }
-      return this;
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.SecurityList security = 13;</code>
-     */
-    public Builder addSecurity(
-        int index, org.wso2.apk.enforcer.discovery.api.SecurityList.Builder builderForValue) {
-      if (securityBuilder_ == null) {
-        ensureSecurityIsMutable();
-        security_.add(index, builderForValue.build());
-        onChanged();
-      } else {
-        securityBuilder_.addMessage(index, builderForValue.build());
-      }
-      return this;
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.SecurityList security = 13;</code>
-     */
-    public Builder addAllSecurity(
-        java.lang.Iterable<? extends org.wso2.apk.enforcer.discovery.api.SecurityList> values) {
-      if (securityBuilder_ == null) {
-        ensureSecurityIsMutable();
-        com.google.protobuf.AbstractMessageLite.Builder.addAll(
-            values, security_);
-        onChanged();
-      } else {
-        securityBuilder_.addAllMessages(values);
-      }
-      return this;
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.SecurityList security = 13;</code>
-     */
-    public Builder clearSecurity() {
-      if (securityBuilder_ == null) {
-        security_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000004);
-        onChanged();
-      } else {
-        securityBuilder_.clear();
-      }
-      return this;
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.SecurityList security = 13;</code>
-     */
-    public Builder removeSecurity(int index) {
-      if (securityBuilder_ == null) {
-        ensureSecurityIsMutable();
-        security_.remove(index);
-        onChanged();
-      } else {
-        securityBuilder_.remove(index);
-      }
-      return this;
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.SecurityList security = 13;</code>
-     */
-    public org.wso2.apk.enforcer.discovery.api.SecurityList.Builder getSecurityBuilder(
-        int index) {
-      return getSecurityFieldBuilder().getBuilder(index);
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.SecurityList security = 13;</code>
-     */
-    public org.wso2.apk.enforcer.discovery.api.SecurityListOrBuilder getSecurityOrBuilder(
-        int index) {
-      if (securityBuilder_ == null) {
-        return security_.get(index);  } else {
-        return securityBuilder_.getMessageOrBuilder(index);
-      }
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.SecurityList security = 13;</code>
-     */
-    public java.util.List<? extends org.wso2.apk.enforcer.discovery.api.SecurityListOrBuilder> 
-         getSecurityOrBuilderList() {
-      if (securityBuilder_ != null) {
-        return securityBuilder_.getMessageOrBuilderList();
-      } else {
-        return java.util.Collections.unmodifiableList(security_);
-      }
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.SecurityList security = 13;</code>
-     */
-    public org.wso2.apk.enforcer.discovery.api.SecurityList.Builder addSecurityBuilder() {
-      return getSecurityFieldBuilder().addBuilder(
-          org.wso2.apk.enforcer.discovery.api.SecurityList.getDefaultInstance());
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.SecurityList security = 13;</code>
-     */
-    public org.wso2.apk.enforcer.discovery.api.SecurityList.Builder addSecurityBuilder(
-        int index) {
-      return getSecurityFieldBuilder().addBuilder(
-          index, org.wso2.apk.enforcer.discovery.api.SecurityList.getDefaultInstance());
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.SecurityList security = 13;</code>
-     */
-    public java.util.List<org.wso2.apk.enforcer.discovery.api.SecurityList.Builder> 
-         getSecurityBuilderList() {
-      return getSecurityFieldBuilder().getBuilderList();
-    }
-    private com.google.protobuf.RepeatedFieldBuilderV3<
-        org.wso2.apk.enforcer.discovery.api.SecurityList, org.wso2.apk.enforcer.discovery.api.SecurityList.Builder, org.wso2.apk.enforcer.discovery.api.SecurityListOrBuilder> 
-        getSecurityFieldBuilder() {
-      if (securityBuilder_ == null) {
-        securityBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-            org.wso2.apk.enforcer.discovery.api.SecurityList, org.wso2.apk.enforcer.discovery.api.SecurityList.Builder, org.wso2.apk.enforcer.discovery.api.SecurityListOrBuilder>(
-                security_,
-                ((bitField0_ & 0x00000004) != 0),
-                getParentForChildren(),
-                isClean());
-        security_ = null;
-      }
-      return securityBuilder_;
-    }
-
-    private java.lang.Object authorizationHeader_ = "";
-    /**
-     * <code>string authorizationHeader = 14;</code>
-     * @return The authorizationHeader.
-     */
-    public java.lang.String getAuthorizationHeader() {
-      java.lang.Object ref = authorizationHeader_;
-      if (!(ref instanceof java.lang.String)) {
-        com.google.protobuf.ByteString bs =
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        authorizationHeader_ = s;
-        return s;
-      } else {
-        return (java.lang.String) ref;
-      }
-    }
-    /**
-     * <code>string authorizationHeader = 14;</code>
-     * @return The bytes for authorizationHeader.
-     */
-    public com.google.protobuf.ByteString
-        getAuthorizationHeaderBytes() {
-      java.lang.Object ref = authorizationHeader_;
-      if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        authorizationHeader_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
-    }
-    /**
-     * <code>string authorizationHeader = 14;</code>
-     * @param value The authorizationHeader to set.
-     * @return This builder for chaining.
-     */
-    public Builder setAuthorizationHeader(
-        java.lang.String value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  
-      authorizationHeader_ = value;
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>string authorizationHeader = 14;</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearAuthorizationHeader() {
-      
-      authorizationHeader_ = getDefaultInstance().getAuthorizationHeader();
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>string authorizationHeader = 14;</code>
-     * @param value The bytes for authorizationHeader to set.
-     * @return This builder for chaining.
-     */
-    public Builder setAuthorizationHeaderBytes(
-        com.google.protobuf.ByteString value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-      
-      authorizationHeader_ = value;
-      onChanged();
-      return this;
-    }
-
-    private boolean disableSecurity_ ;
-    /**
-     * <code>bool disableSecurity = 15;</code>
-     * @return The disableSecurity.
-     */
-    @java.lang.Override
-    public boolean getDisableSecurity() {
-      return disableSecurity_;
-    }
-    /**
-     * <code>bool disableSecurity = 15;</code>
-     * @param value The disableSecurity to set.
-     * @return This builder for chaining.
-     */
-    public Builder setDisableSecurity(boolean value) {
-      
-      disableSecurity_ = value;
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>bool disableSecurity = 15;</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearDisableSecurity() {
-      
-      disableSecurity_ = false;
-      onChanged();
-      return this;
-    }
-
     private java.lang.Object vhost_ = "";
     /**
-     * <code>string vhost = 16;</code>
+     * <code>string vhost = 12;</code>
      * @return The vhost.
      */
     public java.lang.String getVhost() {
@@ -3229,7 +2432,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>string vhost = 16;</code>
+     * <code>string vhost = 12;</code>
      * @return The bytes for vhost.
      */
     public com.google.protobuf.ByteString
@@ -3246,7 +2449,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>string vhost = 16;</code>
+     * <code>string vhost = 12;</code>
      * @param value The vhost to set.
      * @return This builder for chaining.
      */
@@ -3261,7 +2464,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>string vhost = 16;</code>
+     * <code>string vhost = 12;</code>
      * @return This builder for chaining.
      */
     public Builder clearVhost() {
@@ -3271,7 +2474,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>string vhost = 16;</code>
+     * <code>string vhost = 12;</code>
      * @param value The bytes for vhost to set.
      * @return This builder for chaining.
      */
@@ -3289,7 +2492,7 @@ private static final long serialVersionUID = 0L;
 
     private java.lang.Object organizationId_ = "";
     /**
-     * <code>string organizationId = 17;</code>
+     * <code>string organizationId = 13;</code>
      * @return The organizationId.
      */
     public java.lang.String getOrganizationId() {
@@ -3305,7 +2508,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>string organizationId = 17;</code>
+     * <code>string organizationId = 13;</code>
      * @return The bytes for organizationId.
      */
     public com.google.protobuf.ByteString
@@ -3322,7 +2525,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>string organizationId = 17;</code>
+     * <code>string organizationId = 13;</code>
      * @param value The organizationId to set.
      * @return This builder for chaining.
      */
@@ -3337,7 +2540,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>string organizationId = 17;</code>
+     * <code>string organizationId = 13;</code>
      * @return This builder for chaining.
      */
     public Builder clearOrganizationId() {
@@ -3347,7 +2550,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>string organizationId = 17;</code>
+     * <code>string organizationId = 13;</code>
      * @param value The bytes for organizationId to set.
      * @return This builder for chaining.
      */
@@ -3366,9 +2569,9 @@ private static final long serialVersionUID = 0L;
     private java.util.List<org.wso2.apk.enforcer.discovery.api.Certificate> clientCertificates_ =
       java.util.Collections.emptyList();
     private void ensureClientCertificatesIsMutable() {
-      if (!((bitField0_ & 0x00000008) != 0)) {
+      if (!((bitField0_ & 0x00000002) != 0)) {
         clientCertificates_ = new java.util.ArrayList<org.wso2.apk.enforcer.discovery.api.Certificate>(clientCertificates_);
-        bitField0_ |= 0x00000008;
+        bitField0_ |= 0x00000002;
        }
     }
 
@@ -3380,7 +2583,7 @@ private static final long serialVersionUID = 0L;
      * bool isMockedApi = 18;
      * </pre>
      *
-     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
+     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 14;</code>
      */
     public java.util.List<org.wso2.apk.enforcer.discovery.api.Certificate> getClientCertificatesList() {
       if (clientCertificatesBuilder_ == null) {
@@ -3394,7 +2597,7 @@ private static final long serialVersionUID = 0L;
      * bool isMockedApi = 18;
      * </pre>
      *
-     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
+     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 14;</code>
      */
     public int getClientCertificatesCount() {
       if (clientCertificatesBuilder_ == null) {
@@ -3408,7 +2611,7 @@ private static final long serialVersionUID = 0L;
      * bool isMockedApi = 18;
      * </pre>
      *
-     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
+     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 14;</code>
      */
     public org.wso2.apk.enforcer.discovery.api.Certificate getClientCertificates(int index) {
       if (clientCertificatesBuilder_ == null) {
@@ -3422,7 +2625,7 @@ private static final long serialVersionUID = 0L;
      * bool isMockedApi = 18;
      * </pre>
      *
-     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
+     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 14;</code>
      */
     public Builder setClientCertificates(
         int index, org.wso2.apk.enforcer.discovery.api.Certificate value) {
@@ -3443,7 +2646,7 @@ private static final long serialVersionUID = 0L;
      * bool isMockedApi = 18;
      * </pre>
      *
-     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
+     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 14;</code>
      */
     public Builder setClientCertificates(
         int index, org.wso2.apk.enforcer.discovery.api.Certificate.Builder builderForValue) {
@@ -3461,7 +2664,7 @@ private static final long serialVersionUID = 0L;
      * bool isMockedApi = 18;
      * </pre>
      *
-     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
+     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 14;</code>
      */
     public Builder addClientCertificates(org.wso2.apk.enforcer.discovery.api.Certificate value) {
       if (clientCertificatesBuilder_ == null) {
@@ -3481,7 +2684,7 @@ private static final long serialVersionUID = 0L;
      * bool isMockedApi = 18;
      * </pre>
      *
-     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
+     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 14;</code>
      */
     public Builder addClientCertificates(
         int index, org.wso2.apk.enforcer.discovery.api.Certificate value) {
@@ -3502,7 +2705,7 @@ private static final long serialVersionUID = 0L;
      * bool isMockedApi = 18;
      * </pre>
      *
-     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
+     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 14;</code>
      */
     public Builder addClientCertificates(
         org.wso2.apk.enforcer.discovery.api.Certificate.Builder builderForValue) {
@@ -3520,7 +2723,7 @@ private static final long serialVersionUID = 0L;
      * bool isMockedApi = 18;
      * </pre>
      *
-     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
+     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 14;</code>
      */
     public Builder addClientCertificates(
         int index, org.wso2.apk.enforcer.discovery.api.Certificate.Builder builderForValue) {
@@ -3538,7 +2741,7 @@ private static final long serialVersionUID = 0L;
      * bool isMockedApi = 18;
      * </pre>
      *
-     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
+     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 14;</code>
      */
     public Builder addAllClientCertificates(
         java.lang.Iterable<? extends org.wso2.apk.enforcer.discovery.api.Certificate> values) {
@@ -3557,12 +2760,12 @@ private static final long serialVersionUID = 0L;
      * bool isMockedApi = 18;
      * </pre>
      *
-     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
+     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 14;</code>
      */
     public Builder clearClientCertificates() {
       if (clientCertificatesBuilder_ == null) {
         clientCertificates_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000008);
+        bitField0_ = (bitField0_ & ~0x00000002);
         onChanged();
       } else {
         clientCertificatesBuilder_.clear();
@@ -3574,7 +2777,7 @@ private static final long serialVersionUID = 0L;
      * bool isMockedApi = 18;
      * </pre>
      *
-     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
+     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 14;</code>
      */
     public Builder removeClientCertificates(int index) {
       if (clientCertificatesBuilder_ == null) {
@@ -3591,7 +2794,7 @@ private static final long serialVersionUID = 0L;
      * bool isMockedApi = 18;
      * </pre>
      *
-     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
+     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 14;</code>
      */
     public org.wso2.apk.enforcer.discovery.api.Certificate.Builder getClientCertificatesBuilder(
         int index) {
@@ -3602,7 +2805,7 @@ private static final long serialVersionUID = 0L;
      * bool isMockedApi = 18;
      * </pre>
      *
-     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
+     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 14;</code>
      */
     public org.wso2.apk.enforcer.discovery.api.CertificateOrBuilder getClientCertificatesOrBuilder(
         int index) {
@@ -3616,7 +2819,7 @@ private static final long serialVersionUID = 0L;
      * bool isMockedApi = 18;
      * </pre>
      *
-     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
+     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 14;</code>
      */
     public java.util.List<? extends org.wso2.apk.enforcer.discovery.api.CertificateOrBuilder> 
          getClientCertificatesOrBuilderList() {
@@ -3631,7 +2834,7 @@ private static final long serialVersionUID = 0L;
      * bool isMockedApi = 18;
      * </pre>
      *
-     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
+     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 14;</code>
      */
     public org.wso2.apk.enforcer.discovery.api.Certificate.Builder addClientCertificatesBuilder() {
       return getClientCertificatesFieldBuilder().addBuilder(
@@ -3642,7 +2845,7 @@ private static final long serialVersionUID = 0L;
      * bool isMockedApi = 18;
      * </pre>
      *
-     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
+     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 14;</code>
      */
     public org.wso2.apk.enforcer.discovery.api.Certificate.Builder addClientCertificatesBuilder(
         int index) {
@@ -3654,7 +2857,7 @@ private static final long serialVersionUID = 0L;
      * bool isMockedApi = 18;
      * </pre>
      *
-     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
+     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 14;</code>
      */
     public java.util.List<org.wso2.apk.enforcer.discovery.api.Certificate.Builder> 
          getClientCertificatesBuilderList() {
@@ -3667,7 +2870,7 @@ private static final long serialVersionUID = 0L;
         clientCertificatesBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
             org.wso2.apk.enforcer.discovery.api.Certificate, org.wso2.apk.enforcer.discovery.api.Certificate.Builder, org.wso2.apk.enforcer.discovery.api.CertificateOrBuilder>(
                 clientCertificates_,
-                ((bitField0_ & 0x00000008) != 0),
+                ((bitField0_ & 0x00000002) != 0),
                 getParentForChildren(),
                 isClean());
         clientCertificates_ = null;
@@ -3677,7 +2880,7 @@ private static final long serialVersionUID = 0L;
 
     private java.lang.Object mutualSSL_ = "";
     /**
-     * <code>string mutualSSL = 20;</code>
+     * <code>string mutualSSL = 15;</code>
      * @return The mutualSSL.
      */
     public java.lang.String getMutualSSL() {
@@ -3693,7 +2896,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>string mutualSSL = 20;</code>
+     * <code>string mutualSSL = 15;</code>
      * @return The bytes for mutualSSL.
      */
     public com.google.protobuf.ByteString
@@ -3710,7 +2913,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>string mutualSSL = 20;</code>
+     * <code>string mutualSSL = 15;</code>
      * @param value The mutualSSL to set.
      * @return This builder for chaining.
      */
@@ -3725,7 +2928,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>string mutualSSL = 20;</code>
+     * <code>string mutualSSL = 15;</code>
      * @return This builder for chaining.
      */
     public Builder clearMutualSSL() {
@@ -3735,7 +2938,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>string mutualSSL = 20;</code>
+     * <code>string mutualSSL = 15;</code>
      * @param value The bytes for mutualSSL to set.
      * @return This builder for chaining.
      */
@@ -3753,7 +2956,7 @@ private static final long serialVersionUID = 0L;
 
     private boolean applicationSecurity_ ;
     /**
-     * <code>bool applicationSecurity = 21;</code>
+     * <code>bool applicationSecurity = 16;</code>
      * @return The applicationSecurity.
      */
     @java.lang.Override
@@ -3761,7 +2964,7 @@ private static final long serialVersionUID = 0L;
       return applicationSecurity_;
     }
     /**
-     * <code>bool applicationSecurity = 21;</code>
+     * <code>bool applicationSecurity = 16;</code>
      * @param value The applicationSecurity to set.
      * @return This builder for chaining.
      */
@@ -3772,7 +2975,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>bool applicationSecurity = 21;</code>
+     * <code>bool applicationSecurity = 16;</code>
      * @return This builder for chaining.
      */
     public Builder clearApplicationSecurity() {
@@ -3789,7 +2992,7 @@ private static final long serialVersionUID = 0L;
      * repeated GraphqlComplexity graphqlComplexityInfo = 23;
      * </pre>
      *
-     * <code>bool systemAPI = 24;</code>
+     * <code>bool systemAPI = 17;</code>
      * @return The systemAPI.
      */
     @java.lang.Override
@@ -3802,7 +3005,7 @@ private static final long serialVersionUID = 0L;
      * repeated GraphqlComplexity graphqlComplexityInfo = 23;
      * </pre>
      *
-     * <code>bool systemAPI = 24;</code>
+     * <code>bool systemAPI = 17;</code>
      * @param value The systemAPI to set.
      * @return This builder for chaining.
      */
@@ -3818,7 +3021,7 @@ private static final long serialVersionUID = 0L;
      * repeated GraphqlComplexity graphqlComplexityInfo = 23;
      * </pre>
      *
-     * <code>bool systemAPI = 24;</code>
+     * <code>bool systemAPI = 17;</code>
      * @return This builder for chaining.
      */
     public Builder clearSystemAPI() {
@@ -3832,14 +3035,14 @@ private static final long serialVersionUID = 0L;
     private com.google.protobuf.SingleFieldBuilderV3<
         org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo, org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo.Builder, org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfoOrBuilder> backendJWTTokenInfoBuilder_;
     /**
-     * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 25;</code>
+     * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 18;</code>
      * @return Whether the backendJWTTokenInfo field is set.
      */
     public boolean hasBackendJWTTokenInfo() {
       return backendJWTTokenInfoBuilder_ != null || backendJWTTokenInfo_ != null;
     }
     /**
-     * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 25;</code>
+     * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 18;</code>
      * @return The backendJWTTokenInfo.
      */
     public org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo getBackendJWTTokenInfo() {
@@ -3850,7 +3053,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 25;</code>
+     * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 18;</code>
      */
     public Builder setBackendJWTTokenInfo(org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo value) {
       if (backendJWTTokenInfoBuilder_ == null) {
@@ -3866,7 +3069,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 25;</code>
+     * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 18;</code>
      */
     public Builder setBackendJWTTokenInfo(
         org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo.Builder builderForValue) {
@@ -3880,7 +3083,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 25;</code>
+     * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 18;</code>
      */
     public Builder mergeBackendJWTTokenInfo(org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo value) {
       if (backendJWTTokenInfoBuilder_ == null) {
@@ -3898,7 +3101,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 25;</code>
+     * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 18;</code>
      */
     public Builder clearBackendJWTTokenInfo() {
       if (backendJWTTokenInfoBuilder_ == null) {
@@ -3912,7 +3115,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 25;</code>
+     * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 18;</code>
      */
     public org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo.Builder getBackendJWTTokenInfoBuilder() {
       
@@ -3920,7 +3123,7 @@ private static final long serialVersionUID = 0L;
       return getBackendJWTTokenInfoFieldBuilder().getBuilder();
     }
     /**
-     * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 25;</code>
+     * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 18;</code>
      */
     public org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfoOrBuilder getBackendJWTTokenInfoOrBuilder() {
       if (backendJWTTokenInfoBuilder_ != null) {
@@ -3931,7 +3134,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 25;</code>
+     * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 18;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
         org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo, org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo.Builder, org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfoOrBuilder> 

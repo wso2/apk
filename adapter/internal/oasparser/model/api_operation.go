@@ -41,7 +41,8 @@ type Operation struct {
 	iD     string
 	method string
 	//security map of security scheme names -> list of scopes
-	security         []map[string][]string
+	scopes           []string
+	auth             *Authentication
 	tier             string
 	disableSecurity  bool
 	vendorExtensions map[string]interface{}
@@ -49,6 +50,43 @@ type Operation struct {
 	mockedAPIConfig  *api.MockedApiConfig
 	//todo(amali) refactor all vars to private/public vars
 	RateLimitPolicy *RateLimitPolicy
+}
+
+// Authentication holds authentication related configurations
+type Authentication struct {
+	Disabled       bool
+	JWT            *JWT
+	APIKey         []APIKey
+	TestConsoleKey *TestConsoleKey
+}
+
+// JWT holds JWT related configurations
+type JWT struct {
+	Header              string
+	SendTokenToUpstream bool
+}
+
+// TestConsoleKey holds testkey related configurations
+type TestConsoleKey struct {
+	Header              string
+	SendTokenToUpstream bool
+}
+
+// APIKey holds API Key related configurations
+type APIKey struct {
+	In                  string
+	Name                string
+	SendTokenToUpstream bool
+}
+
+// SetAuthentication set authentication configurations
+func (operation *Operation) SetAuthentication(authentication *Authentication) {
+	operation.auth = authentication
+}
+
+// GetAuthentication get authentication configurations
+func (operation *Operation) GetAuthentication() *Authentication {
+	return operation.auth
 }
 
 // SetMockedAPIConfigOAS3 generate mock impl endpoint configurations
@@ -184,24 +222,19 @@ func (operation *Operation) GetMethod() string {
 	return operation.method
 }
 
-// GetDisableSecurity returns if the resouce is secured.
-func (operation *Operation) GetDisableSecurity() bool {
-	return operation.disableSecurity
-}
-
 // GetPolicies returns if the resouce is secured.
 func (operation *Operation) GetPolicies() *OperationPolicies {
 	return &operation.policies
 }
 
-// GetSecurity returns the security schemas defined for the http opeartion
-func (operation *Operation) GetSecurity() []map[string][]string {
-	return operation.security
+// GetScopes returns the security schemas defined for the http opeartion
+func (operation *Operation) GetScopes() []string {
+	return operation.scopes
 }
 
-// SetSecurity sets the security schemas for the http opeartion
-func (operation *Operation) SetSecurity(security []map[string][]string) {
-	operation.security = security
+// SetScopes sets the security schemas for the http opeartion
+func (operation *Operation) SetScopes(scopes []string) {
+	operation.scopes = scopes
 }
 
 // GetTier returns the operation level throttling tier
@@ -271,11 +304,11 @@ func (operation *Operation) GetCallInterceptorService(isIn bool) InterceptEndpoi
 }
 
 // NewOperation Creates and returns operation type object
-func NewOperation(method string, security []map[string][]string, extensions map[string]interface{}) *Operation {
+func NewOperation(method string, security []string, extensions map[string]interface{}) *Operation {
 	tier := ResolveThrottlingTier(extensions)
 	disableSecurity := ResolveDisableSecurity(extensions)
 	id := uuid.New().String()
-	return &Operation{id, method, security, tier, disableSecurity, extensions, OperationPolicies{}, &api.MockedApiConfig{}, nil}
+	return &Operation{id, method, security, nil, tier, disableSecurity, extensions, OperationPolicies{}, &api.MockedApiConfig{}, nil}
 }
 
 // NewOperationWithPolicies Creates and returns operation with given method and policies

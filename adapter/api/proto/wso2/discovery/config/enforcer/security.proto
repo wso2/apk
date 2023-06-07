@@ -1,7 +1,6 @@
 syntax = "proto3";
 
 package wso2.discovery.config.enforcer;
-import "wso2/discovery/config/enforcer/auth_header.proto";
 import "wso2/discovery/config/enforcer/mutual_ssl.proto";
 import "wso2/discovery/config/enforcer/api_key_enforcer.proto";
 option go_package = "github.com/envoyproxy/go-control-plane/wso2/discovery/config/enforcer;enforcer";
@@ -16,8 +15,6 @@ message Security {
     APIKeyEnforcer apiKey = 1;
 
     APIKeyEnforcer runtimeToken = 2;
-
-    AuthHeader authHeader = 3;
     
     MutualSSL mutualSSL = 4;
 }

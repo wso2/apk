@@ -454,7 +454,7 @@ var Mapper = map[int]ErrorDetails{
 	error3113: {
 		ErrorCode: error3113,
 		Message:   "Error resolving certificate for JWKS %v",
-		Severity:  BLOCKER,
+		Severity:  MAJOR,
 	},
 	error3114: {
 		ErrorCode: error3114,

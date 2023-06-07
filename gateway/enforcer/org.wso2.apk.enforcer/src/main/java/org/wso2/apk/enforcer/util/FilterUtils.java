@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2021, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2021, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
  *
- * WSO2 Inc. licenses this file to you under the Apache License,
+ * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License.
  * You may obtain a copy of the License at
@@ -44,9 +44,7 @@ import org.wso2.apk.enforcer.commons.logging.ErrorDetails;
 import org.wso2.apk.enforcer.commons.logging.LoggingConstants;
 import org.wso2.apk.enforcer.commons.model.AuthenticationContext;
 import org.wso2.apk.enforcer.commons.model.RequestContext;
-import org.wso2.apk.enforcer.commons.model.SecuritySchemaConfig;
 import org.wso2.apk.enforcer.config.ConfigHolder;
-import org.wso2.apk.enforcer.config.dto.AuthHeaderDto;
 import org.wso2.apk.enforcer.config.dto.MutualSSLDto;
 import org.wso2.apk.enforcer.constants.APIConstants;
 import org.wso2.apk.enforcer.constants.APISecurityConstants;
@@ -576,18 +574,6 @@ public class FilterUtils {
         return clientIp;
     }
 
-    public static String getAuthHeaderName(RequestContext requestContext) {
-        AuthHeaderDto authHeader = ConfigHolder.getInstance().getConfig().getAuthHeader();
-        String authHeaderName = requestContext.getMatchedAPI().getAuthHeader();
-        if (StringUtils.isEmpty(authHeaderName)) {
-            authHeaderName = authHeader.getAuthorizationHeader();
-        }
-        if (StringUtils.isEmpty(authHeaderName)) {
-            authHeaderName = APIConstants.AUTHORIZATION_HEADER_DEFAULT;
-        }
-        return authHeaderName.toLowerCase();
-    }
-
     public static String getCertificateHeaderName() {
         MutualSSLDto mtlsInfo = ConfigHolder.getInstance().getConfig().getMtlsInfo();
         String certificateHeaderName = mtlsInfo.getCertificateHeader();
@@ -595,22 +581,6 @@ public class FilterUtils {
             certificateHeaderName = APIConstants.CLIENT_CERTIFICATE_HEADER_DEFAULT;
         }
         return certificateHeaderName.toLowerCase();
-    }
-
-    /**
-     * Provides list of arbitrary names used to define API keys.
-     *
-     * @param securitySchemeDefinitions Security scheme definitions relevant to the API
-     * @return List of arbitrary names used to define API keys
-     */
-    public static List<String> getAPIKeyDefinitionNames(Map<String, SecuritySchemaConfig> securitySchemeDefinitions) {
-        List<String> apiKeyArbitraryNames = new ArrayList<>();
-        for (SecuritySchemaConfig config : securitySchemeDefinitions.values()) {
-            if (config.getType().equalsIgnoreCase(APIConstants.SWAGGER_API_KEY_AUTH_TYPE_NAME)) {
-                apiKeyArbitraryNames.add(config.getDefinitionName());
-            }
-        }
-        return apiKeyArbitraryNames;
     }
 
     /**

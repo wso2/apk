@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2020, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2020, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
  *
- * WSO2 Inc. licenses this file to you under the Apache License,
+ * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License.
  * You may obtain a copy of the License at
@@ -26,7 +26,6 @@ import org.wso2.apk.enforcer.config.dto.APIKeyIssuerDto;
 import org.wso2.apk.enforcer.config.dto.AdminRestServerDto;
 import org.wso2.apk.enforcer.config.dto.AnalyticsDTO;
 import org.wso2.apk.enforcer.config.dto.AnalyticsReceiverConfigDTO;
-import org.wso2.apk.enforcer.config.dto.AuthHeaderDto;
 import org.wso2.apk.enforcer.config.dto.AuthServiceConfigurationDto;
 import org.wso2.apk.enforcer.config.dto.CacheDto;
 import org.wso2.apk.enforcer.config.dto.CredentialDto;
@@ -146,8 +145,6 @@ public class ConfigHolder {
         // Read jwt issuer configurations
         populateJWTIssuerConfigurations(config.getJwtIssuer());
 
-        populateAuthHeaderConfigurations(config.getSecurity().getAuthHeader());
-
         populateMTLSConfigurations(config.getSecurity().getMutualSSL());
 
         populateManagementCredentials(config.getManagement());
@@ -209,15 +206,6 @@ public class ConfigHolder {
         managementCredentialsDto.setPassword(management.getPassword().toCharArray());
         managementCredentialsDto.setUserName(management.getUsername());
         config.setManagement(managementCredentialsDto);
-    }
-
-    private void populateAuthHeaderConfigurations(AuthHeader authHeader) {
-
-        AuthHeaderDto authHeaderDto = new AuthHeaderDto();
-        authHeaderDto.setAuthorizationHeader(authHeader.getAuthorizationHeader());
-        authHeaderDto.setEnableOutboundAuthHeader(authHeader.getEnableOutboundAuthHeader());
-        authHeaderDto.setTestConsoleHeaderName(authHeader.getTestConsoleHeaderName());
-        config.setAuthHeader(authHeaderDto);
     }
 
     private void populateMTLSConfigurations(MutualSSL mtlsInfo) {

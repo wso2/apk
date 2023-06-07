@@ -47,7 +47,7 @@ public class UnsecuredAPIAuthenticator implements Authenticator {
         // Retrieve the disable security value. If security is disabled for all matching resources,
         // then you can proceed directly with the authentication.
         for (ResourceConfig resourceConfig : requestContext.getMatchedResourcePaths()) {
-            if (!isDisableSecurity(resourceConfig)) {
+            if (!resourceConfig.getAuthenticationConfig().isDisabled()) {
                 return false;
             }
         }
@@ -104,19 +104,5 @@ public class UnsecuredAPIAuthenticator implements Authenticator {
     @Override
     public int getPriority() {
         return -20;
-    }
-
-    /**
-     * This method retrieve the proper auth type for the given request context.
-     * AuthType can be deduced from API level and resource level. If both are defined,
-     * resource level gets the precedence.
-     * If nothing declared, it will return the authType as "default".
-     *
-     * @param matchingResource matching resource related configurations
-     * @return value of the authType from API definition. If not present "default"
-     */
-    private boolean isDisableSecurity(ResourceConfig matchingResource) {
-
-        return matchingResource.isDisableSecurity();
     }
 }

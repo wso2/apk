@@ -19,7 +19,7 @@ syntax = "proto3";
 package wso2.discovery.api;
 
 import "wso2/discovery/api/endpoint_cluster.proto";
-import "wso2/discovery/api/security_scheme.proto";
+import "wso2/discovery/api/api_authentication.proto";
 import "wso2/discovery/api/security_info.proto";
 // import "wso2/discovery/api/mocked_api_config.proto";
 
@@ -35,19 +35,17 @@ message Resource {
 	string id = 1;
 	string path = 2;
 	repeated Operation methods = 3;
-	EndpointCluster endpoints = 6;
-	repeated SecurityInfo endpointSecurity =7;
-	map<string, string> security = 8;
-	repeated string schemes = 10;
+	EndpointCluster endpoints = 4;
+	repeated SecurityInfo endpointSecurity =5;
 }
 
 // Operation model which maps to a particular http methods
 message Operation {
 	string method = 1;
-	repeated SecurityList security = 2;
+	APIAuthentication apiAuthentication = 2;
 	string tier = 3;
-	bool disableSecurity = 4;
-	OperationPolicies policies = 5;
+	OperationPolicies policies = 4;
+	repeated string scopes = 5;
 	// MockedApiConfig mockedApiConfig = 6;
 }
 

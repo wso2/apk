@@ -20,6 +20,7 @@ package org.wso2.apk.enforcer.security.jwt;
 
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import java.util.List;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
@@ -34,10 +35,9 @@ import org.wso2.apk.enforcer.commons.exception.APISecurityException;
 import org.wso2.apk.enforcer.commons.jwtgenerator.AbstractAPIMgtGatewayJWTGenerator;
 import org.wso2.apk.enforcer.commons.logging.ErrorDetails;
 import org.wso2.apk.enforcer.commons.logging.LoggingConstants;
+import org.wso2.apk.enforcer.commons.model.APIKeyAuthenticationConfig;
 import org.wso2.apk.enforcer.commons.model.AuthenticationContext;
 import org.wso2.apk.enforcer.commons.model.RequestContext;
-import org.wso2.apk.enforcer.commons.model.ResourceConfig;
-import org.wso2.apk.enforcer.commons.model.SecuritySchemaConfig;
 import org.wso2.apk.enforcer.config.ConfigHolder;
 import org.wso2.apk.enforcer.config.EnforcerConfig;
 import org.wso2.apk.enforcer.config.dto.APIKeyIssuerDto;
@@ -92,35 +92,33 @@ public class APIKeyAuthenticator extends APIKeyHandler {
     public boolean canAuthenticate(RequestContext requestContext) {
         // only getting first operation is enough as all matched resource configs have the same security schemes
         // i.e. graphQL apis do not support resource level security yet
-        return isAPIKey(getAPIKeyFromRequest(requestContext, requestContext.getMatchedResourcePaths().get(0)));
+        return isAPIKey(getAPIKeyFromRequest(requestContext));
     }
 
     // Gets API key from request
-    private static String getAPIKeyFromRequest(RequestContext requestContext, ResourceConfig resourceConfig) {
+    private static String getAPIKeyFromRequest(RequestContext requestContext) {
+        List<APIKeyAuthenticationConfig> apiKeyAuthenticationConfigs = requestContext.getMatchedResourcePaths().get(0)
+                .getAuthenticationConfig().getApiKeyAuthenticationConfigs();
+        if (apiKeyAuthenticationConfigs == null) {
+            return "";
+        }
 
-        Map<String, SecuritySchemaConfig> securitySchemaDefinitions = requestContext.getMatchedAPI().
-                getSecuritySchemeDefinitions();
-        // loop over resource security and get definition for the matching security definition name
-        for (String securityDefinitionName : resourceConfig.getSecuritySchemas().keySet()) {
-            if (securitySchemaDefinitions.containsKey(securityDefinitionName)) {
-                SecuritySchemaConfig securitySchemaDefinition =
-                        securitySchemaDefinitions.get(securityDefinitionName);
-                if (APIConstants.SWAGGER_API_KEY_AUTH_TYPE_NAME.equalsIgnoreCase(
-                        securitySchemaDefinition.getType())) {
-                    // If Defined in openAPI definition (when not enabled at APIM App level),
-                    // key must exist in specified location
-                    if (APIConstants.SWAGGER_API_KEY_IN_HEADER.equalsIgnoreCase(securitySchemaDefinition.getIn())) {
-                        String header = StringUtils.lowerCase(securitySchemaDefinition.getName());
-                        if (requestContext.getHeaders().containsKey(header)) {
-                            return requestContext.getHeaders().get(header);
-                        }
+        // loop over apikey auths and get apikey from the matching location
+        for (APIKeyAuthenticationConfig apiKeyAuthenticationConfig : apiKeyAuthenticationConfigs) {
+            switch (apiKeyAuthenticationConfig.getIn()) {
+                case APIConstants.SWAGGER_API_KEY_IN_HEADER:
+                    String header = StringUtils.lowerCase(apiKeyAuthenticationConfig.getName());
+                    if (requestContext.getHeaders().containsKey(header)) {
+                        return requestContext.getHeaders().get(header);
                     }
-                    if (APIConstants.SWAGGER_API_KEY_IN_QUERY.equalsIgnoreCase(securitySchemaDefinition.getIn())) {
-                        if (requestContext.getQueryParameters().containsKey(securitySchemaDefinition.getName())) {
-                            return requestContext.getQueryParameters().get(securitySchemaDefinition.getName());
-                        }
+                    break;
+                case APIConstants.SWAGGER_API_KEY_IN_QUERY:
+                    if (requestContext.getQueryParameters().containsKey(apiKeyAuthenticationConfig.getName())) {
+                        return requestContext.getQueryParameters().get(apiKeyAuthenticationConfig.getName());
                     }
-                }
+                    break;
+                default:
+                    log.error("Invalid API key location: " + apiKeyAuthenticationConfig.getIn());
             }
         }
         return "";
@@ -142,7 +140,7 @@ public class APIKeyAuthenticator extends APIKeyHandler {
                     APISecurityConstants.API_AUTH_GENERAL_ERROR,
                     APISecurityConstants.API_AUTH_GENERAL_ERROR_MESSAGE);
         }
-        String apiKey = getAPIKeyFromRequest(requestContext, requestContext.getMatchedResourcePaths().get(0));
+        String apiKey = getAPIKeyFromRequest(requestContext);
         return processAPIKey(requestContext, apiKey);
     }
 

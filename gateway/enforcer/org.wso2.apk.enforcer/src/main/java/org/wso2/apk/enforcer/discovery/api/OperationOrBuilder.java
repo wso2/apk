@@ -20,28 +20,19 @@ public interface OperationOrBuilder extends
       getMethodBytes();
 
   /**
-   * <code>repeated .wso2.discovery.api.SecurityList security = 2;</code>
+   * <code>.wso2.discovery.api.APIAuthentication apiAuthentication = 2;</code>
+   * @return Whether the apiAuthentication field is set.
    */
-  java.util.List<org.wso2.apk.enforcer.discovery.api.SecurityList> 
-      getSecurityList();
+  boolean hasApiAuthentication();
   /**
-   * <code>repeated .wso2.discovery.api.SecurityList security = 2;</code>
+   * <code>.wso2.discovery.api.APIAuthentication apiAuthentication = 2;</code>
+   * @return The apiAuthentication.
    */
-  org.wso2.apk.enforcer.discovery.api.SecurityList getSecurity(int index);
+  org.wso2.apk.enforcer.discovery.api.APIAuthentication getApiAuthentication();
   /**
-   * <code>repeated .wso2.discovery.api.SecurityList security = 2;</code>
+   * <code>.wso2.discovery.api.APIAuthentication apiAuthentication = 2;</code>
    */
-  int getSecurityCount();
-  /**
-   * <code>repeated .wso2.discovery.api.SecurityList security = 2;</code>
-   */
-  java.util.List<? extends org.wso2.apk.enforcer.discovery.api.SecurityListOrBuilder> 
-      getSecurityOrBuilderList();
-  /**
-   * <code>repeated .wso2.discovery.api.SecurityList security = 2;</code>
-   */
-  org.wso2.apk.enforcer.discovery.api.SecurityListOrBuilder getSecurityOrBuilder(
-      int index);
+  org.wso2.apk.enforcer.discovery.api.APIAuthenticationOrBuilder getApiAuthenticationOrBuilder();
 
   /**
    * <code>string tier = 3;</code>
@@ -56,35 +47,58 @@ public interface OperationOrBuilder extends
       getTierBytes();
 
   /**
-   * <code>bool disableSecurity = 4;</code>
-   * @return The disableSecurity.
+   * <code>.wso2.discovery.api.OperationPolicies policies = 4;</code>
+   * @return Whether the policies field is set.
    */
-  boolean getDisableSecurity();
+  boolean hasPolicies();
+  /**
+   * <code>.wso2.discovery.api.OperationPolicies policies = 4;</code>
+   * @return The policies.
+   */
+  org.wso2.apk.enforcer.discovery.api.OperationPolicies getPolicies();
+  /**
+   * <code>.wso2.discovery.api.OperationPolicies policies = 4;</code>
+   */
+  org.wso2.apk.enforcer.discovery.api.OperationPoliciesOrBuilder getPoliciesOrBuilder();
 
   /**
    * <pre>
    * MockedApiConfig mockedApiConfig = 6;
    * </pre>
    *
-   * <code>.wso2.discovery.api.OperationPolicies policies = 5;</code>
-   * @return Whether the policies field is set.
+   * <code>repeated string scopes = 5;</code>
+   * @return A list containing the scopes.
    */
-  boolean hasPolicies();
+  java.util.List<java.lang.String>
+      getScopesList();
   /**
    * <pre>
    * MockedApiConfig mockedApiConfig = 6;
    * </pre>
    *
-   * <code>.wso2.discovery.api.OperationPolicies policies = 5;</code>
-   * @return The policies.
+   * <code>repeated string scopes = 5;</code>
+   * @return The count of scopes.
    */
-  org.wso2.apk.enforcer.discovery.api.OperationPolicies getPolicies();
+  int getScopesCount();
   /**
    * <pre>
    * MockedApiConfig mockedApiConfig = 6;
    * </pre>
    *
-   * <code>.wso2.discovery.api.OperationPolicies policies = 5;</code>
+   * <code>repeated string scopes = 5;</code>
+   * @param index The index of the element to return.
+   * @return The scopes at the given index.
    */
-  org.wso2.apk.enforcer.discovery.api.OperationPoliciesOrBuilder getPoliciesOrBuilder();
+  java.lang.String getScopes(int index);
+  /**
+   * <pre>
+   * MockedApiConfig mockedApiConfig = 6;
+   * </pre>
+   *
+   * <code>repeated string scopes = 5;</code>
+   * @param index The index of the value to return.
+   * @return The bytes of the scopes at the given index.
+   */
+  com.google.protobuf.ByteString
+      getScopesBytes(int index);
 }

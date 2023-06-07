@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2021, WSO2 Inc. (http://www.wso2.org).
+ * Copyright (c) 2021, WSO2 LLC. (http://www.wso2.org).
  *
- * WSO2 Inc. licenses this file to you under the Apache License,
+ * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,11 +17,14 @@
  */
 package org.wso2.apk.enforcer.api;
 
+import org.wso2.apk.enforcer.commons.model.APIKeyAuthenticationConfig;
+import org.wso2.apk.enforcer.commons.model.AuthenticationConfig;
+import org.wso2.apk.enforcer.commons.model.InternalKeyConfig;
+import org.wso2.apk.enforcer.commons.model.JWTAuthenticationConfig;
+import org.wso2.apk.enforcer.discovery.api.APIKey;
 import org.wso2.apk.enforcer.discovery.api.EndpointClusterConfig;
 import org.wso2.apk.enforcer.discovery.api.Operation;
 import org.wso2.apk.enforcer.discovery.api.OperationPolicies;
-import org.wso2.apk.enforcer.discovery.api.Scopes;
-import org.wso2.apk.enforcer.discovery.api.SecurityList;
 import org.wso2.apk.enforcer.commons.model.EndpointCluster;
 import org.wso2.apk.enforcer.commons.model.EndpointSecurity;
 import org.wso2.apk.enforcer.commons.model.Policy;
@@ -29,15 +32,10 @@ import org.wso2.apk.enforcer.commons.model.PolicyConfig;
 import org.wso2.apk.enforcer.commons.model.RequestContext;
 import org.wso2.apk.enforcer.commons.model.ResourceConfig;
 import org.wso2.apk.enforcer.commons.model.RetryConfig;
-import org.wso2.apk.enforcer.config.ConfigHolder;
-import org.wso2.apk.enforcer.config.dto.AuthHeaderDto;
 import org.wso2.apk.enforcer.constants.AdapterConstants;
-import org.wso2.apk.enforcer.util.FilterUtils;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Utility Methods used across different APIs.
@@ -85,34 +83,41 @@ public class Utils {
         return endpointCluster;
     }
 
-    public static ResourceConfig buildResource(Operation operation, String resPath, Map<String,
-            List<String>> apiLevelSecurityList, EndpointSecurity[] endpointSecurity) {
+    public static ResourceConfig buildResource(Operation operation, String resPath, EndpointSecurity[] endpointSecurity) {
         ResourceConfig resource = new ResourceConfig();
         resource.setPath(resPath);
         resource.setMethod(ResourceConfig.HttpMethods.valueOf(operation.getMethod().toUpperCase()));
         resource.setTier(operation.getTier());
-        resource.setDisableSecurity(operation.getDisableSecurity());
         resource.setEndpointSecurity(endpointSecurity);
-        Map<String, List<String>> securityMap = new HashMap<>();
-        if (operation.getSecurityList().size() > 0) {
-            for (SecurityList securityList : operation.getSecurityList()) {
-                for (Map.Entry<String, Scopes> entry : securityList.getScopeListMap().entrySet()) {
-                    securityMap.put(entry.getKey(), new ArrayList<>());
-                    if (entry.getValue() != null && entry.getValue().getScopesList().size() > 0) {
-                        List<String> scopeList = new ArrayList<>(entry.getValue().getScopesList());
-                        securityMap.replace(entry.getKey(), scopeList);
-                    }
-                    // only supports security scheme OR combinations. Example -
-                    // Security:
-                    // - api_key: []
-                    //   oauth: [] <-- AND operation is not supported hence ignoring oauth here.
-                    break;
-                }
+        AuthenticationConfig authenticationConfig = new AuthenticationConfig();
+        if (operation.hasApiAuthentication()) {
+            authenticationConfig.setDisabled(operation.getApiAuthentication().getDisabled());
+            if (operation.getApiAuthentication().hasJwt()) {
+                JWTAuthenticationConfig jwtAuthenticationConfig = new JWTAuthenticationConfig();
+                jwtAuthenticationConfig.setHeader(operation.getApiAuthentication().getJwt().getHeader());
+                jwtAuthenticationConfig.setSendTokenToUpstream(operation.getApiAuthentication().getJwt()
+                        .getSendTokenToUpstream());
+                authenticationConfig.setJwtAuthenticationConfig(jwtAuthenticationConfig);
             }
-            resource.setSecuritySchemas(securityMap);
-        } else {
-            resource.setSecuritySchemas(apiLevelSecurityList);
+            List<APIKeyAuthenticationConfig> apiKeyAuthenticationConfigs = new ArrayList<>();
+            for (APIKey apiKey : operation.getApiAuthentication().getApikeyList()) {
+                APIKeyAuthenticationConfig apiKeyAuthenticationConfig = new APIKeyAuthenticationConfig();
+                apiKeyAuthenticationConfig.setIn(apiKey.getIn());
+                apiKeyAuthenticationConfig.setName(apiKey.getName());
+                apiKeyAuthenticationConfig.setSendTokenToUpstream(apiKey.getSendTokenToUpstream());
+                apiKeyAuthenticationConfigs.add(apiKeyAuthenticationConfig);
+            }
+            authenticationConfig.setApiKeyAuthenticationConfigs(apiKeyAuthenticationConfigs);
+            if(operation.getApiAuthentication().hasTestConsoleKey()) {
+                InternalKeyConfig internalKeyConfig = new InternalKeyConfig();
+                internalKeyConfig.setSendTokenToUpstream(operation.getApiAuthentication().getTestConsoleKey()
+                        .getSendTokenToUpstream());
+                internalKeyConfig.setHeader(operation.getApiAuthentication().getTestConsoleKey().getHeader());
+                authenticationConfig.setInternalKeyConfig(internalKeyConfig);
+            }
         }
+        resource.setAuthenticationConfig(authenticationConfig);
+        resource.setScopes(operation.getScopesList().toArray(new String[0]));
         return resource;
     }
 
@@ -145,25 +150,7 @@ public class Utils {
      *
      * @param requestContext requestContext
      */
-    public static void removeCommonAuthHeaders(RequestContext requestContext) {
-        // Internal-Key credential is considered to be protected headers,
-        // such that the header would not be sent
-        // to backend and traffic manager.
-        String internalKeyHeader = ConfigHolder.getInstance().getConfig().getAuthHeader()
-                .getTestConsoleHeaderName().toLowerCase();
-        requestContext.getRemoveHeaders().add(internalKeyHeader);
-        // Avoid internal key being published to the Traffic Manager
-        requestContext.getProtectedHeaders().add(internalKeyHeader);
-
-        // Remove Authorization Header
-        AuthHeaderDto authHeader = ConfigHolder.getInstance().getConfig().getAuthHeader();
-        String authHeaderName = FilterUtils.getAuthHeaderName(requestContext);
-        if (!authHeader.isEnableOutboundAuthHeader()) {
-            requestContext.getRemoveHeaders().add(authHeaderName);
-        }
-        // Authorization Header should not be included in the throttle publishing event.
-        requestContext.getProtectedHeaders().add(authHeaderName);
-
+    public static void handleCommonHeaders(RequestContext requestContext) {
         // not allow clients to set cluster header manually
         requestContext.getRemoveHeaders().add(AdapterConstants.CLUSTER_HEADER);
     }

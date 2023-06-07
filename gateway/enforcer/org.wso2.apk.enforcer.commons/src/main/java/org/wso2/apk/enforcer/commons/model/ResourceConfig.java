@@ -28,13 +28,13 @@ public class ResourceConfig {
 
     private String path;
     private HttpMethods method;
-    private Map<String, List<String>> securitySchemas = new HashMap(); // security_schema_name -> scopes
     private String tier = "Unlimited";
-    private boolean disableSecurity = false;
     private EndpointCluster endpoints;
     private EndpointSecurity[] endpointSecurity;
     private PolicyConfig policyConfig;
     private MockedApiConfig mockedApiConfig;
+    private AuthenticationConfig authenticationConfig;
+    private String[] scopes;
 
     /**
      * ENUM to hold http operations.
@@ -78,20 +78,6 @@ public class ResourceConfig {
     }
 
     /**
-     * Get the List of security Schemas. Keys would define the available set of security schemas and
-     * its value would denote the scopes assigned.
-     *
-     * @return security schemas as a map of <security_schema_name, list of scopes.
-     */
-    public Map<String, List<String>> getSecuritySchemas() {
-        return securitySchemas;
-    }
-
-    public void setSecuritySchemas(Map<String, List<String>> securitySchemas) {
-        this.securitySchemas = securitySchemas;
-    }
-
-    /**
      * Get the resource level throttling tier assigned for the corresponding Resource.
      *
      * @return resource level throttling tier
@@ -102,20 +88,6 @@ public class ResourceConfig {
 
     public void setTier(String tier) {
         this.tier = tier;
-    }
-
-    /**
-     * Returns true if the security is disabled for the corresponding resource using
-     * x-wso2-disable-security openAPI extension.
-     *
-     * @return true if security is disabled.
-     */
-    public boolean isDisableSecurity() {
-        return disableSecurity;
-    }
-
-    public void setDisableSecurity(boolean disableSecurity) {
-        this.disableSecurity = disableSecurity;
     }
 
     //todo(amali) this don't need to be a map
@@ -146,6 +118,21 @@ public class ResourceConfig {
         this.mockedApiConfig = mockedApiConfig;
     }
 
+    public AuthenticationConfig getAuthenticationConfig() {
+        return authenticationConfig;
+    }
+
+    public void setAuthenticationConfig(AuthenticationConfig authenticationConfig) {
+        this.authenticationConfig = authenticationConfig;
+    }
+
+    public String[] getScopes() {
+        return scopes;
+    }
+
+    public void setScopes(String[] scopes) {
+        this.scopes = scopes;
+    }
     public PolicyConfig getPolicyConfig() {
         return policyConfig;
     }

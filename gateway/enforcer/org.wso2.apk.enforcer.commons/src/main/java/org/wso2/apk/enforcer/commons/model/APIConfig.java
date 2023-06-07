@@ -36,15 +36,13 @@ public class APIConfig {
     private String apiType;
 //    private Map<String, EndpointCluster> endpoints; // "PRODUCTION" OR "SANDBOX" -> endpoint cluster
     private String envType;
-    private Map<String, SecuritySchemaConfig> securitySchemeDefinitions; // security scheme def name -> scheme def
     private String apiLifeCycleState;
     private String authorizationHeader;
     private String organizationId;
     private String uuid;
-
-    private Map<String, List<String>> apiSecurity = new HashMap<>();
     private String tier;
-    private boolean disableSecurity = false;
+    private boolean disableAuthentication;
+    private boolean disableScopes;
     private List<ResourceConfig> resources = new ArrayList<>();
     private boolean isMockedApi;
     private KeyStore trustStore;
@@ -92,13 +90,6 @@ public class APIConfig {
     }
 
     /**
-     * @return API security definitions
-     */
-    public Map<String, SecuritySchemaConfig> getSecuritySchemeDefinitions() {
-        return securitySchemeDefinitions;
-    }
-
-    /**
      * Corresponding API's API Name is returned.
      * @return API name
      */
@@ -131,32 +122,11 @@ public class APIConfig {
     }
 
     /**
-     * If the Authentication Header for the API is modified using x-wso2-auth-header extension,
-     * this would return the changed value. If it remains unchanged, it returns null.
-     * @return Authentication header for the API if changed.
-     */
-    public String getAuthHeader() {
-        return authorizationHeader;
-    }
-
-    /**
      * Current API Lifecycle state is returned.
      * @return lifecycle state
      */
     public String getApiLifeCycleState() {
         return apiLifeCycleState;
-    }
-
-    /**
-     * Security Schemas assigned for the corresponding API together with the scopes.
-     * Items of the map currently does not support being applied as AND.
-     * Authenticators are applied as OR. In other words, authentication succeeds if
-     * at least one security scheme matches.
-     *
-     * @return array of security schemes and scopes assigned for the API.
-     */
-    public Map<String, List<String>> getApiSecurity() {
-        return apiSecurity;
     }
 
     /**
@@ -168,12 +138,21 @@ public class APIConfig {
     }
 
     /**
-     * If the authentication is disabled for the API using x-wso2-disable-security extension.
+     * If the authentication is disabled for the API .
      *
-     * @return true if x-wso2-disable-security extension is assigned for the API and its value is true.
+     * @return true if the authentication is disabled for the API.
      */
-    public boolean isDisableSecurity() {
-        return disableSecurity;
+    public boolean isDisableAuthentication() {
+        return disableAuthentication;
+    }
+
+    /**
+     * If the scopes are disabled for the API .
+     *
+     * @return true if the scopes are disabled for the API.
+     */
+    public boolean isDisableScopes() {
+        return disableScopes;
     }
 
     /**
@@ -259,13 +238,11 @@ public class APIConfig {
         private String apiType;
         private String envType;
         private String apiLifeCycleState;
-        private String authorizationHeader;
         private String organizationId;
         private String uuid;
-        private Map<String, SecuritySchemaConfig> securitySchemeDefinitions;
-        private Map<String, List<String>> apiSecurity = new HashMap<>();
         private String tier;
-        private boolean disableSecurity = false;
+        private boolean disableAuthentication;
+        private boolean disableScopes;
         private List<ResourceConfig> resources = new ArrayList<>();
         private boolean isMockedApi;
         private KeyStore trustStore;
@@ -309,8 +286,13 @@ public class APIConfig {
             return this;
         }
 
-        public Builder disableSecurity(boolean enabled) {
-            this.disableSecurity = enabled;
+        public Builder disableAuthentication(boolean enabled) {
+            this.disableAuthentication = enabled;
+            return this;
+        }
+
+        public Builder disableScopes(boolean enabled) {
+            this.disableScopes = enabled;
             return this;
         }
 
@@ -324,16 +306,6 @@ public class APIConfig {
             return this;
         }
 
-        public Builder apiSecurity(Map<String, List<String>> apiSecurity) {
-            this.apiSecurity = apiSecurity;
-            return this;
-        }
-
-        public Builder authHeader(String authorizationHeader) {
-            this.authorizationHeader = authorizationHeader;
-            return this;
-        }
-
         public Builder organizationId(String organizationId) {
             this.organizationId = organizationId;
             return this;
@@ -344,10 +316,6 @@ public class APIConfig {
             return this;
         }
 
-        public Builder securitySchemeDefinitions(Map<String, SecuritySchemaConfig> securitySchemeDefinitions) {
-            this.securitySchemeDefinitions = securitySchemeDefinitions;
-            return this;
-        }
         public Builder graphQLSchemaDTO(GraphQLSchemaDTO graphQLSchemaDTO) {
             this.graphQLSchemaDTO = graphQLSchemaDTO;
             return this;
@@ -396,13 +364,11 @@ public class APIConfig {
             apiConfig.resources = this.resources;
             apiConfig.apiType = this.apiType;
             apiConfig.envType = this.envType;
-            apiConfig.apiSecurity = this.apiSecurity;
             apiConfig.tier = this.tier;
-            apiConfig.authorizationHeader = this.authorizationHeader;
-            apiConfig.disableSecurity = this.disableSecurity;
+            apiConfig.disableAuthentication = this.disableAuthentication;
+            apiConfig.disableScopes = this.disableScopes;
             apiConfig.organizationId = this.organizationId;
             apiConfig.uuid = this.uuid;
-            apiConfig.securitySchemeDefinitions = this.securitySchemeDefinitions;
             apiConfig.isMockedApi = this.isMockedApi;
             apiConfig.trustStore = this.trustStore;
             apiConfig.mtlsCertificateTiers = this.mtlsCertificateTiers;

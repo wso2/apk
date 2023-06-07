@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2020, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2020, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
  *
- * WSO2 Inc. licenses this file to you under the Apache License,
+ * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License.
  * You may obtain a copy of the License at
@@ -76,20 +76,8 @@ public class KeyValidator {
                     APISecurityConstants.API_AUTH_GENERAL_ERROR,
                     "Error while validating scopes. Key validation information has not been set");
         }
-        String[] scopes;
-        Set<String> scopesSet = apiKeyValidationInfoDTO.getScopes();
-        StringBuilder scopeList = new StringBuilder();
 
-        if (scopesSet != null && !scopesSet.isEmpty()) {
-            scopes = scopesSet.toArray(new String[scopesSet.size()]);
-            if (log.isDebugEnabled() && scopes != null) {
-                for (String scope : scopes) {
-                    scopeList.append(scope);
-                    scopeList.append(",");
-                }
-                scopeList.deleteCharAt(scopeList.length() - 1);
-            }
-        }
+        Set<String> scopesFromToken = apiKeyValidationInfoDTO.getScopes();
 
         List<ResourceConfig> matchedResources;
         // when it is a graphQL api multiple matching resources will be returned.
@@ -99,27 +87,17 @@ public class KeyValidator {
         // failedResourcePath - used to identify resource paths with failed scope validation.
         String failedResourcePath = "";
         for (ResourceConfig matchedResource : matchedResources) {
-            // needToValidate - indicate there are scopes for the resource
-            // which indicates resource has scopes which needs to be validated against the token
-            boolean needToValidate = false;
             // scopesValidated - indicate scope has validated
             boolean scopesValidated = false;
             String resourcePath = matchedResource.getPath();
-            if (matchedResource.getSecuritySchemas().entrySet().size() > 0) {
-                for (Map.Entry<String, List<String>> pair : matchedResource.getSecuritySchemas().entrySet()) {
-                    if (pair.getValue() != null && pair.getValue().size() > 0) {
-                        needToValidate = true; // Resource has scopes, hence token scopes requires scope validation
-                        for (String scope : pair.getValue()) {
-                            if (scopesSet.contains(scope)) {
-                                scopesValidated = true;
-                                break;
-                            }
-                        }
-                        break;
-                    }
+            String[] scopesToValidate = matchedResource.getScopes();
+            for (String scope : scopesToValidate) {
+                if (scopesFromToken.contains(scope)) {
+                    scopesValidated = true;
+                    break;
                 }
             }
-            if (needToValidate && !scopesValidated) {
+            if (scopesToValidate.length > 0 && !scopesValidated) {
                 allScopesValidated = false;
                 failedResourcePath = resourcePath;
                 break;
@@ -171,20 +149,20 @@ public class KeyValidator {
                 // TODO: (Sampath) Handle the scenario when App keys are generated properly and sent
 //                key = datastore.getKeyMappingByKeyAndKeyManager(consumerKey, keyManager);
 //                if (key != null) {
-                    app = datastore.getApplicationById(key.getApplicationUUID());
-                    if (app != null) {
-                        sub = datastore.getSubscriptionById(app.getUUID(), api.getApiUUID());
-                        if (sub != null) {
-                            log.debug("All information is retrieved from the inmemory data store.");
-                        } else {
-                            log.info(
-                                    "Valid subscription not found for oauth access token. " +
-                                            "application: {} app_UUID: {} API_name: {} API_UUID : {}",
-                                    app.getName(), app.getUUID(), api.getApiName(), api.getApiUUID());
-                        }
+                app = datastore.getApplicationById(key.getApplicationUUID());
+                if (app != null) {
+                    sub = datastore.getSubscriptionById(app.getUUID(), api.getApiUUID());
+                    if (sub != null) {
+                        log.debug("All information is retrieved from the inmemory data store.");
                     } else {
-                        log.info("Application not found in the data store for uuid " + key.getApplicationUUID());
+                        log.info(
+                                "Valid subscription not found for oauth access token. " +
+                                        "application: {} app_UUID: {} API_name: {} API_UUID : {}",
+                                app.getName(), app.getUUID(), api.getApiName(), api.getApiUUID());
                     }
+                } else {
+                    log.info("Application not found in the data store for uuid " + key.getApplicationUUID());
+                }
 //                } else {
 //                    log.info("Application key mapping not found in the data store for id consumerKey " + consumerKey);
 //                }

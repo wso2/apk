@@ -1,8 +1,9 @@
 {
 	"info": {
-		"_postman_id": "926725e8-8db5-4cd9-9f89-fab60c0d2e2c",
+		"_postman_id": "1d666976-0ee2-4604-ad5d-3ce96df5a3ed",
 		"name": "APK-Devportal API Operations",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "6425178"
 	},
 	"item": [
 		{
@@ -132,7 +133,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"context\": \"{{testAPIContext}}\",\n    \"name\": \"{{testAPIName}}\",\n    \"version\": \"{{testAPIVersion}}\",\n    \"type\": \"REST\",\n    \"endpointConfig\": {\n        \"endpoint_type\": \"http\",\n            \"production_endpoints\": {\n                \"url\": \"http://httpbin.org\"\n        }\n    },\n    \"operations\": [\n        {\n            \"target\": \"/get\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"endpointConfig\": {\n                \"endpoint_type\": \"http\",\n                \"production_endpoints\": {\n                    \"url\": \"http://httpbin.org\"\n                }\n            }\n        },\n        {\n            \"target\": \"/headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"endpointConfig\": {\n                \"endpoint_type\": \"http\",\n                \"production_endpoints\": {\n                    \"url\": \"http://httpbin.org\"\n                }\n            }\n        }\n    ],\n    \"securityScheme\": [\"oauth2\",\"apiKey\"]\n}"
+					"raw": "{\n    \"context\": \"{{testAPIContext}}\",\n    \"name\": \"{{testAPIName}}\",\n    \"version\": \"{{testAPIVersion}}\",\n    \"type\": \"REST\",\n    \"endpointConfig\": {\n        \"endpoint_type\": \"http\",\n            \"production_endpoints\": {\n                \"url\": \"http://httpbin.org\"\n        }\n    },\n    \"operations\": [\n        {\n            \"target\": \"/get\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"endpointConfig\": {\n                \"endpoint_type\": \"http\",\n                \"production_endpoints\": {\n                    \"url\": \"http://httpbin.org\"\n                }\n            }\n        },\n        {\n            \"target\": \"/headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"endpointConfig\": {\n                \"endpoint_type\": \"http\",\n                \"production_endpoints\": {\n                    \"url\": \"http://httpbin.org\"\n                }\n            }\n        }\n    ]\n}"
 				},
 				"url": {
 					"raw": "{{gatewayBaseURl}}/api/runtime/apis",
@@ -1039,72 +1040,6 @@
 						"api-keys",
 						"PRODUCTION",
 						"generate"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Invoke API using APIKey",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Check API response and status code is 200\", function () {",
-							"  pm.response.to.have.status(200);",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
-			"request": {
-				"auth": {
-					"type": "noauth"
-				},
-				"method": "GET",
-				"header": [
-					{
-						"key": "HOST",
-						"value": "a3b58ccf-6ecc-4557-b5bb-0a35cce38256.gw.wso2.com",
-						"type": "text"
-					},
-					{
-						"key": "",
-						"value": "",
-						"type": "text",
-						"disabled": true
-					},
-					{
-						"key": "apiKey",
-						"value": "{{APIKey}}",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "formdata",
-					"formdata": [
-						{
-							"key": "status",
-							"value": "sold",
-							"type": "text",
-							"disabled": true
-						}
-					]
-				},
-				"url": {
-					"raw": "{{gatewayBaseURl}}/http-bin-api/1.0.8/get",
-					"host": [
-						"{{gatewayBaseURl}}"
-					],
-					"path": [
-						"http-bin-api",
-						"1.0.8",
-						"get"
 					]
 				}
 			},
