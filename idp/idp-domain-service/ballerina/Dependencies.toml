@@ -95,7 +95,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "io"
-version = "1.4.1"
+version = "1.4.0"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "lang.value"}
@@ -158,8 +158,8 @@ org = "ballerina"
 name = "lang.int"
 version = "0.0.0"
 dependencies = [
-	{org = "ballerina", name = "jballerina.java"},
-	{org = "ballerina", name = "lang.__internal"},
+	{org = "ballerina", name = "jballerina.java"},	
+	{org = "ballerina", name = "lang.__internal"},	
 	{org = "ballerina", name = "lang.object"}
 ]
 
@@ -261,7 +261,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "regex"
-version = "1.4.3"
+version = "1.4.2"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "lang.string"}
@@ -372,7 +372,7 @@ modules = [
 [[package]]
 org = "wso2"
 name = "idp_domain_service"
-version = "0.0.1-m10"
+version = "0.0.1-m11"
 dependencies = [
 	{org = "ballerina", name = "http"},
 	{org = "ballerina", name = "jwt"},
