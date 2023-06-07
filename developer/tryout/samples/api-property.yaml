@@ -1,7 +1,14 @@
 apiVersion: dp.wso2.com/v1alpha1
 kind: APIProperty
 metadata:
-  name: api-property-1
+  name: uuid-api-property
 spec:
-  foo: "123"
-  bar: "456"
+  properties:
+    - name: propertyName1
+      value: "propertyValue1"
+    - name: propertyName2
+      value: "propertyValue2"
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: API
+    name: http-bin-api
