@@ -230,6 +230,18 @@ A Helm chart for APK components
 | wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.tls.certFilename | string | `""` | TLS certificate file name. |
 | wso2.apk.dp.gatewayRuntime.deployment.enforcer.logging.level | string | `"DEBUG"` | Log level can be one of DEBUG, INFO, WARN, ERROR, OFF |
 | wso2.apk.dp.gatewayRuntime.deployment.enforcer.logging.logFile | string | `"logs/enforcer.log"` | Log file name |
+| wso2.apk.dp.gatewayRuntime.tracing.enabled | bool | `true` | Enable/Disable tracing in gateway runtime. |
+| wso2.apk.dp.gatewayRuntime.tracing.type | string | `"zipkin"` | Type of tracer exporter (e.g: azure, zipkin). Use zipkin type for Jaeger as well. |
+| wso2.apk.dp.gatewayRuntime.tracing.configProperties.host | string | `"jaeger"` | Jaeger/Zipkin host. |
+| wso2.apk.dp.gatewayRuntime.tracing.configProperties.port | string | `"9411"` | Jaeger/Zipkin port. |
+| wso2.apk.dp.gatewayRuntime.tracing.configProperties.endpoint | string | `"/api/v2/spans"` | Jaeger/Zipkin collector endpoint path. |
+| wso2.apk.dp.gatewayRuntime.tracing.configProperties.instrumentationName | string | `"CHOREO-CONNECT"` | Library Name to be tagged in traces (`otel.library.name`). |
+| wso2.apk.dp.gatewayRuntime.tracing.configProperties.maximumTracesPerSecond | string | `"2"` | Maximum number of sampled traces per second string. |
+| wso2.apk.dp.gatewayRuntime.tracing.configProperties.maxPathLength | string | `"256"` | Maximum length of the request path to extract and include in the HttpUrl tag. |
+| wso2.apk.dp.gatewayRuntime.tracing.configProperties.connectionString | string | `"https://otlp.nr-data.net"` | New Relic OTLP gRPC collector endpoint. |
+| wso2.apk.dp.gatewayRuntime.tracing.configProperties.authHeaderName | string | `"api-key"` | Auth header name. |
+| wso2.apk.dp.gatewayRuntime.tracing.configProperties.authHeaderValue | string | `"<INGEST_LICENSE_KEY>"` | Auth header value. |
+| wso2.apk.dp.gatewayRuntime.tracing.configProperties.connectionTimeout | string | `"20"` | Connection timeout for the otlp service. |
 | wso2.apk.migration.enabled | bool | `false` | It is not recommended to run a production deployment with this flag enabled. |
 | idp.enabled | bool | `true` | Enable Non production identity server |
 | idp.listener.hostname | string | `"idp.am.wso2.com"` | identity server hostname |
