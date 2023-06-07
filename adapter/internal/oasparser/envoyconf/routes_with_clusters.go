@@ -82,6 +82,7 @@ const (
 	DescriptorValueForOperationMethod  = ":method"
 	MetadataNamespaceForCustomPolicies = "apk.ratelimit.metadata"
 	MetadataNamespaceForWSO2Policies   = "envoy.filters.http.ext_authz"
+	apiDefinitionClusterName           = "api_definition_cluster"
 )
 
 // CreateRoutesWithClusters creates envoy routes along with clusters and endpoint instances.
@@ -114,7 +115,14 @@ func CreateRoutesWithClusters(adapterInternalAPI model.AdapterInternalAPI, inter
 	// creation of clusters.
 	processedEndpoints := map[string]model.EndpointCluster{}
 
-	routeP := CreateAPIDefinitionRoute(adapterInternalAPI.GetXWso2Basepath(), vHost)
+	corsConfig := adapterInternalAPI.GetCorsConfig()
+	var methods []string
+	if corsConfig != nil {
+		methods = append(methods, "GET", "OPTIONS")
+	} else {
+		methods = append(methods, "GET")
+	}
+	routeP := CreateAPIDefinitionRoute(adapterInternalAPI.GetXWso2Basepath(), vHost, methods)
 	routes = append(routes, routeP)
 	var endpointForAPIDefinitions []model.Endpoint
 	endpoint := &model.Endpoint{
@@ -127,7 +135,7 @@ func CreateRoutesWithClusters(adapterInternalAPI model.AdapterInternalAPI, inter
 		Endpoints: endpointForAPIDefinitions,
 	}
 
-	cluster, address, err := processEndpoints("api_definition_cluster", &endpointCluster, timeout, "")
+	cluster, address, err := processEndpoints(apiDefinitionClusterName, &endpointCluster, timeout, "")
 	if err != nil {
 		logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(2239, apiTitle, apiVersion, apiDefinitionPath, err.Error()))
 	}
@@ -630,6 +638,8 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 	vHost := params.vHost
 	xWso2Basepath := params.xWSO2BasePath
 	apiType := params.apiType
+
+	// cors policy
 	corsPolicy := getCorsPolicy(params.corsPolicy)
 	resource := params.resource
 	clusterName := params.clusterName
@@ -1104,10 +1114,9 @@ func CreateTokenRoute() *routev3.Route {
 }
 
 // CreateAPIDefinitionRoute generates a route for the jwt /testkey endpoint
-func CreateAPIDefinitionRoute(basePath string, vHost string) *routev3.Route {
+func CreateAPIDefinitionRoute(basePath string, vHost string, methods []string) *routev3.Route {
 	path := basePath + apiDefinitionPath
 	rewritePath := basePath + "/" + vHost + apiDefinitionPath
-	// routePath := generateRoutePath(path, gwapiv1b1.PathMatchExact)
 
 	var (
 		router    routev3.Route
@@ -1116,14 +1125,13 @@ func CreateAPIDefinitionRoute(basePath string, vHost string) *routev3.Route {
 		decorator *routev3.Decorator
 	)
 
-	resourceMethods := []string{"GET"}
-	methodRegex := strings.Join(resourceMethods, "|")
+	methodRegex := strings.Join(methods, "|")
 
 	match = &routev3.RouteMatch{
 		PathSpecifier: &routev3.RouteMatch_Path{
 			Path: path,
 		},
-		Headers: generateHTTPMethodMatcher(methodRegex, "api_definition_cluster"),
+		Headers: generateHTTPMethodMatcher(methodRegex, apiDefinitionClusterName),
 	}
 
 	decorator = &routev3.Decorator{
@@ -1145,7 +1153,7 @@ func CreateAPIDefinitionRoute(basePath string, vHost string) *routev3.Route {
 	}
 
 	directClusterSpecifier := &routev3.RouteAction_Cluster{
-		Cluster: "api_definition_cluster",
+		Cluster: apiDefinitionClusterName,
 	}
 
 	action = &routev3.Route_Route{
@@ -1157,12 +1165,6 @@ func CreateAPIDefinitionRoute(basePath string, vHost string) *routev3.Route {
 			},
 			ClusterSpecifier: directClusterSpecifier,
 			PrefixRewrite:    rewritePath,
-			// RegexRewrite: &envoy_type_matcherv3.RegexMatchAndSubstitute{
-			// 	Pattern: &envoy_type_matcherv3.RegexMatcher{
-			// 		Regex: path,
-			// 	},
-			// 	Substitution: rewritePath,
-			// },
 		},
 	}
 
