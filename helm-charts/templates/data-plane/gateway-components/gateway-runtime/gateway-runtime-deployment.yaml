@@ -181,6 +181,8 @@ spec:
               value: {{ template "apk-helm.resource.prefix" . }}-adapter-service.{{ .Release.Namespace }}.svc
             - name: ENFORCER_HOST
               value: "127.0.0.1"
+            - name: ENFORCER_ANALYTICS_HOST
+              value: "127.0.0.1"
             - name: ROUTER_ADMIN_HOST
               value: "0.0.0.0"
             - name: ROUTER_ADMIN_PORT

@@ -214,7 +214,7 @@ public class ChoreoAnalyticsForWSProvider implements AnalyticsDataProvider {
 
     @Override
     public String getUserName() {
-        return null;
+        return extAuthMetadata.get(MetadataConstants.API_USER_NAME_KEY);
     }
 
     @Override

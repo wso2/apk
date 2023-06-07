@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 [libraries]
 amazonaws-awslambda = {module = "org.wso2.orbit.com.amazonaws:awslambda", version.ref = "awslambda"}
 analytic-publisher = {module = "org.wso2.am.analytics.publisher:org.wso2.am.analytics.publisher.client", version.ref = "am-analytics"}
@@ -110,7 +111,7 @@ xml-apis = {module = "xml-apis:xml-apis", version.ref = "xml-apis"}
 openapi-generator-plugin = {id = "org.openapi.generator", version.ref = "openapi-generator-plugin"}
 
 [versions]
-am-analytics = "1.2.3"
+am-analytics = "1.2.5"
 apache-pdfbox = "2.0.25"
 apicurio = "1.1.5"
 aspectj = "1.9.5"

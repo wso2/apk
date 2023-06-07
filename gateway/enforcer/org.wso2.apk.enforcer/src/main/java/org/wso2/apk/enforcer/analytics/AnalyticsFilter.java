@@ -27,7 +27,6 @@ import org.apache.logging.log4j.ThreadContext;
 import org.wso2.apk.enforcer.commons.analytics.collectors.AnalyticsCustomDataProvider;
 import org.wso2.apk.enforcer.commons.analytics.collectors.impl.GenericRequestDataCollector;
 import org.wso2.apk.enforcer.commons.analytics.exceptions.AnalyticsException;
-import org.wso2.apk.enforcer.discovery.service.websocket.WebSocketFrameRequest;
 import org.wso2.apk.enforcer.commons.logging.ErrorDetails;
 import org.wso2.apk.enforcer.commons.logging.LoggingConstants;
 import org.wso2.apk.enforcer.commons.model.AuthenticationContext;
@@ -80,7 +79,7 @@ public class AnalyticsFilter {
         boolean elkEnabled = AnalyticsConstants.ELK_TYPE
                 .equalsIgnoreCase(ConfigHolder.getInstance().getConfig().getAnalyticsConfig().getType());
         if (elkEnabled) {
-            // Remove Choreo pulisher related configs
+            // Remove Choreo publisher related configs
             publisherConfig.remove(AnalyticsConstants.AUTH_URL_CONFIG_KEY);
             publisherConfig.remove(AnalyticsConstants.AUTH_TOKEN_CONFIG_KEY);
             // Add default elk publisher class config
@@ -196,6 +195,13 @@ public class AnalyticsFilter {
             requestContext.addMetadataToMap(MetadataConstants.CLIENT_IP_KEY, requestContext.getClientIp());
             requestContext.addMetadataToMap(MetadataConstants.USER_AGENT_KEY,
                     AnalyticsUtils.setDefaultIfNull(requestContext.getHeaders().get("user-agent")));
+
+            // Adding UserName and the APIContext
+            String endUserName = authContext.getUsername();
+            requestContext.addMetadataToMap(MetadataConstants.API_USER_NAME_KEY,
+                    endUserName == null ? APIConstants.END_USER_UNKNOWN : endUserName);
+            requestContext.addMetadataToMap(MetadataConstants.API_CONTEXT_KEY,
+                    requestContext.getMatchedAPI().getBasePath());
         } finally {
             if (Utils.tracingEnabled()) {
                 analyticsSpanScope.close();
