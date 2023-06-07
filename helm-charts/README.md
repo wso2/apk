@@ -242,6 +242,10 @@ A Helm chart for APK components
 | wso2.apk.dp.gatewayRuntime.tracing.configProperties.authHeaderName | string | `"api-key"` | Auth header name. |
 | wso2.apk.dp.gatewayRuntime.tracing.configProperties.authHeaderValue | string | `"<INGEST_LICENSE_KEY>"` | Auth header value. |
 | wso2.apk.dp.gatewayRuntime.tracing.configProperties.connectionTimeout | string | `"20"` | Connection timeout for the otlp service. |
+| wso2.apk.dp.gatewayRuntime.analytics.enabled | bool | `true` | Enable/Disable analytics in gateway runtime. |
+| wso2.apk.dp.gatewayRuntime.analytics.type | string | `"ELK"` | Type of analytics data publisher. |
+| wso2.apk.dp.gatewayRuntime.analytics.logFileName | string | `"logs/enforcer_analytics.log"` | Optional: File name of the log file. |
+| wso2.apk.dp.gatewayRuntime.analytics.logLevel | string | `"INFO"` | Optional: Log level the analytics data. Can be one of DEBUG, INFO, WARN, ERROR, OFF. |
 | wso2.apk.migration.enabled | bool | `false` | It is not recommended to run a production deployment with this flag enabled. |
 | idp.enabled | bool | `true` | Enable Non production identity server |
 | idp.listener.hostname | string | `"idp.am.wso2.com"` | identity server hostname |
