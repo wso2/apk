@@ -582,8 +582,12 @@ wso2:
         analytics:
           # -- Enable/Disable analytics in gateway runtime.
           enabled: true
-          # -- Type of analytics data publisher.
-          type: "ELK"
+          # -- Type of analytics data publisher. Can be "Choreo" or "ELK".
+          type: "Choreo"
+          # -- Choreo analytics auth URL. Not required for ELK type.
+          authURL: "https://analytics-event-auth.choreo.dev/auth/v1"
+          # -- On-prem key generated from Choreo console. Not required for ELK type.
+          authToken: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
           # -- Optional: File name of the log file.
           logFileName: "logs/enforcer_analytics.log"
           # -- Optional: Log level the analytics data. Can be one of DEBUG, INFO, WARN, ERROR, OFF.
