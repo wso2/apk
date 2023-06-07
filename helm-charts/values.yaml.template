@@ -579,6 +579,15 @@ wso2:
             authHeaderValue: "<INGEST_LICENSE_KEY>"
             # -- Connection timeout for the otlp service.
             connectionTimeout: "20"
+        analytics:
+          # -- Enable/Disable analytics in gateway runtime.
+          enabled: true
+          # -- Type of analytics data publisher.
+          type: "ELK"
+          # -- Optional: File name of the log file.
+          logFileName: "logs/enforcer_analytics.log"
+          # -- Optional: Log level the analytics data. Can be one of DEBUG, INFO, WARN, ERROR, OFF.
+          logLevel: "INFO"
     migration:
       # -- This flag should be enabled only in a migration scenario.
       # -- It is not recommended to run a production deployment with this flag enabled.

@@ -109,8 +109,14 @@ data:
         connectionTimeout = "{{ .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.connectionTimeout }}"
         {{end}}
     {{end}}
+
+    {{- if .Values.wso2.apk.dp.gatewayRuntime.analytics }}
     [analytics]
-      enabled = false
+      enabled = {{ .Values.wso2.apk.dp.gatewayRuntime.analytics.enabled | default false }}
+      {{- if .Values.wso2.apk.dp.gatewayRuntime.analytics.type }}
+      type = "{{ .Values.wso2.apk.dp.gatewayRuntime.analytics.type }}"
+      {{- end }}
+    {{- end }}
 
     [enforcer.metrics]
       enabled = false
@@ -763,7 +769,28 @@ data:
   log4j2.properties: |
     monitorInterval=20
 
-    appenders = ENFORCER_CONSOLE, ENFORCER_LOGFILE, ENFORCER_ACCESS_LOG
+    appenders = ENFORCER_ANALYTICS, ENFORCER_CONSOLE, ENFORCER_LOGFILE, ENFORCER_ACCESS_LOG
+
+    appender.ENFORCER_ANALYTICS.type = RollingFile
+    appender.ENFORCER_ANALYTICS.name = ENFORCER_ANALYTICS
+    {{- if .Values.wso2.apk.dp.gatewayRuntime.analytics }}
+    appender.ENFORCER_ANALYTICS.fileName = {{ .Values.wso2.apk.dp.gatewayRuntime.analytics.logFileName | default "logs/enforcer_analytics.log" }}
+    {{- else }}
+    appender.ENFORCER_ANALYTICS.fileName = logs/enforcer_analytics.log
+    {{- end }}
+    appender.ENFORCER_ANALYTICS.filePattern = /logs/enforcer_analytics-%d{MM-dd-yyyy}.log
+    appender.ENFORCER_ANALYTICS.layout.type = PatternLayout
+    appender.ENFORCER_ANALYTICS.layout.pattern = [%d] - %m%ex%n
+    appender.ENFORCER_ANALYTICS.policies.type = Policies
+    appender.ENFORCER_ANALYTICS.policies.time.type = TimeBasedTriggeringPolicy
+    appender.ENFORCER_ANALYTICS.policies.time.interval = 1
+    appender.ENFORCER_ANALYTICS.policies.time.modulate = true
+    appender.ENFORCER_ANALYTICS.policies.size.type = SizeBasedTriggeringPolicy
+    appender.ENFORCER_ANALYTICS.policies.size.size=10MB
+    appender.ENFORCER_ANALYTICS.strategy.type = DefaultRolloverStrategy
+    appender.ENFORCER_ANALYTICS.strategy.max = 20
+    appender.ENFORCER_ANALYTICS.filter.threshold.type = ThresholdFilter
+    appender.ENFORCER_ANALYTICS.filter.threshold.level = DEBUG
 
     appender.ENFORCER_CONSOLE.type = Console
     appender.ENFORCER_CONSOLE.name = ENFORCER_CONSOLE
@@ -810,7 +837,16 @@ data:
     appender.ENFORCER_ACCESS_LOG.filter.threshold.type = ThresholdFilter
     appender.ENFORCER_ACCESS_LOG.filter.threshold.level = DEBUG
 
-    loggers = enforcer, io-swagger-v3, enforcer-interceptors
+    loggers = reporter, enforcer, io-swagger-v3, enforcer-interceptors
+
+    logger.reporter.name = org.wso2.am.analytics.publisher.reporter.elk
+    {{- if .Values.wso2.apk.dp.gatewayRuntime.analytics }}
+    logger.reporter.level = {{ .Values.wso2.apk.dp.gatewayRuntime.analytics.logLevel | default "INFO" }}
+    {{- else }}
+    logger.reporter.level = INFO
+    {{- end }}
+    logger.reporter.additivity = false
+    logger.reporter.appenderRef.rolling.ref = ENFORCER_ANALYTICS
 
     # Log to access log file
     logger.enforcer-interceptors.name = org.wso2.apk.enforcer.grpc.interceptors
