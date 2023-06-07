@@ -167,6 +167,9 @@ A Helm chart for APK components
 | wso2.apk.dp.adapter.configs.tls.secretName | string | `""` | TLS secret name for adapter public certificate. |
 | wso2.apk.dp.adapter.configs.tls.certKeyFilename | string | `""` | TLS certificate file name. |
 | wso2.apk.dp.adapter.configs.tls.certFilename | string | `""` | TLS certificate file name. |
+| wso2.apk.dp.adapter.logging.level | string | `"INFO"` | Optionally configure logging for adapter. LogLevels can be "DEBG", "FATL", "ERRO", "WARN", "INFO", "PANC" |
+| wso2.apk.dp.adapter.logging.logFile | string | `"logs/adapter.log"` | Log file name |
+| wso2.apk.dp.adapter.logging.logFormat | string | `"TEXT"` | Log format can be "JSON", "TEXT" |
 | wso2.apk.dp.ratelimiter.enabled | bool | `true` | Enable the deployment of the Rate Limiter |
 | wso2.apk.dp.ratelimiter.deployment.resources.requests.memory | string | `"128Mi"` | CPU request for the container |
 | wso2.apk.dp.ratelimiter.deployment.resources.requests.cpu | string | `"100m"` | Memory request for the container |
@@ -204,6 +207,10 @@ A Helm chart for APK components
 | wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls.secretName | string | `"router-cert"` | TLS secret name for router public certificate. |
 | wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls.certKeyFilename | string | `""` | TLS certificate file name. |
 | wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls.certFilename | string | `""` | TLS certificate file name. |
+| wso2.apk.dp.gatewayRuntime.deployment.router.logging.wireLogs | object | `{"enable":true}` | Optionally configure logging for router. |
+| wso2.apk.dp.gatewayRuntime.deployment.router.logging.wireLogs.enable | bool | `true` | Enable wire logs for router. |
+| wso2.apk.dp.gatewayRuntime.deployment.router.logging.accessLogs.enable | bool | `true` | Enable access logs for router. |
+| wso2.apk.dp.gatewayRuntime.deployment.router.logging.accessLogs.logfile | string | `"/tmp/envoy.access.log"` | Log file name |
 | wso2.apk.dp.gatewayRuntime.deployment.enforcer.resources.requests.memory | string | `"128Mi"` | CPU request for the container |
 | wso2.apk.dp.gatewayRuntime.deployment.enforcer.resources.requests.cpu | string | `"100m"` | Memory request for the container |
 | wso2.apk.dp.gatewayRuntime.deployment.enforcer.resources.limits.memory | string | `"1028Mi"` | CPU limit for the container |
