@@ -231,23 +231,23 @@ public interface ApiOrBuilder extends
    * repeated GraphqlComplexity graphqlComplexityInfo = 23;
    * </pre>
    *
-   * <code>bool systemAPI = 17;</code>
+   * <code>bool systemAPI = 24;</code>
    * @return The systemAPI.
    */
   boolean getSystemAPI();
 
   /**
-   * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 18;</code>
+   * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 25;</code>
    * @return Whether the backendJWTTokenInfo field is set.
    */
   boolean hasBackendJWTTokenInfo();
   /**
-   * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 18;</code>
+   * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 25;</code>
    * @return The backendJWTTokenInfo.
    */
   org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo getBackendJWTTokenInfo();
   /**
-   * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 18;</code>
+   * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 25;</code>
    */
   org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfoOrBuilder getBackendJWTTokenInfoOrBuilder();
 
