@@ -228,6 +228,8 @@ A Helm chart for APK components
 | wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.tls.secretName | string | `""` | TLS secret name for enforcer public certificate. |
 | wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.tls.certKeyFilename | string | `""` | TLS certificate file name. |
 | wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.tls.certFilename | string | `""` | TLS certificate file name. |
+| wso2.apk.dp.gatewayRuntime.deployment.enforcer.logging.level | string | `"DEBUG"` | Log level can be one of DEBUG, INFO, WARN, ERROR, OFF |
+| wso2.apk.dp.gatewayRuntime.deployment.enforcer.logging.logFile | string | `"logs/enforcer.log"` | Log file name |
 | wso2.apk.dp.gatewayRuntime.tracing.enabled | bool | `true` | Enable/Disable tracing in gateway runtime. |
 | wso2.apk.dp.gatewayRuntime.tracing.type | string | `"zipkin"` | Type of tracer exporter (e.g: azure, zipkin). Use zipkin type for Jaeger as well. |
 | wso2.apk.dp.gatewayRuntime.tracing.configProperties.host | string | `"jaeger"` | Jaeger/Zipkin host. |
