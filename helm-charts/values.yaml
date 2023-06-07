@@ -98,8 +98,8 @@ wso2:
             failureThreshold: 5
           strategy: Recreate
           replicas: 1
-          imagePullPolicy: IfNotPresent
-          image: admin-domain-service:0.0.1-SNAPSHOT
+          imagePullPolicy: Always
+          image: wso2/admin-domain-service:latest
       backoffice:
         deployment:
           resources:
@@ -247,8 +247,8 @@ wso2:
             failureThreshold: 5
           strategy: Recreate
           replicas: 1
-          imagePullPolicy: Always
-          image: wso2/adapter:0.0.1-m11
+          imagePullPolicy: IfNotPresent
+          image: adapter:0.0.1-SNAPSHOT
           security:
             sslHostname: "adapter"
 #        logging:
