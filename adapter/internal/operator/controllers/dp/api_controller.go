@@ -762,12 +762,30 @@ func (apiReconciler *APIReconciler) getAPIsForAPIPolicy(obj k8client.Object) []r
 
 func (apiReconciler *APIReconciler) getAPIsForAPIProperty(obj k8client.Object) []reconcile.Request {
 	apiProperty, ok := obj.(*dpv1alpha1.APIProperty)
-	loggers.LoggerAPKOperator.Info("APIProperty changed")
 	if !ok {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2624, apiProperty))
 		return []reconcile.Request{}
 	}
+
 	requests := []reconcile.Request{}
+
+	if !(apiProperty.Spec.TargetRef.Kind == constants.KindAPI) {
+		loggers.LoggerAPKOperator.Errorf("Unsupported target ref kind : %s was given for apiProperty: %s",
+		apiProperty.Spec.TargetRef.Kind, apiProperty.Name)
+		return requests
+	}
+
+	namespace := utils.GetNamespace((*gwapiv1b1.Namespace)(apiProperty.Spec.TargetRef.Namespace), apiProperty.Namespace)
+
+	req := reconcile.Request{
+		NamespacedName: types.NamespacedName{
+			Name:      string(apiProperty.Spec.TargetRef.Name),
+			Namespace: namespace,
+		},
+	}
+	requests = append(requests, req)
+	loggers.LoggerAPKOperator.Infof("Adding reconcile request for API: %s/%s", string(apiProperty.Spec.TargetRef.Name), namespace)
+
 	return requests
 }
 

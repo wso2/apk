@@ -19,6 +19,7 @@ package v1alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1alpha2"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
@@ -26,12 +27,14 @@ import (
 
 // APIPropertySpec defines the desired state of APIProperty
 type APIPropertySpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	Properties []Property `json:"properties,omitempty"`
+	TargetRef gwapiv1b1.PolicyTargetReference `json:"targetRef,omitempty"`
+}
 
-	// Foo is an example field of APIProperty. Edit apiproperty_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
-	Bar string `json:"bar,omitempty"`
+// Property holds key value pair of properties
+type Property struct {
+	Name  string `json:"name,omitempty"`
+	Value string `json:"value,omitempty"`
 }
 
 // APIPropertyStatus defines the observed state of APIProperty
