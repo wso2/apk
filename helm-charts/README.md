@@ -235,7 +235,7 @@ A Helm chart for APK components
 | wso2.apk.dp.gatewayRuntime.tracing.configProperties.host | string | `"jaeger"` | Jaeger/Zipkin host. |
 | wso2.apk.dp.gatewayRuntime.tracing.configProperties.port | string | `"9411"` | Jaeger/Zipkin port. |
 | wso2.apk.dp.gatewayRuntime.tracing.configProperties.endpoint | string | `"/api/v2/spans"` | Jaeger/Zipkin collector endpoint path. |
-| wso2.apk.dp.gatewayRuntime.tracing.configProperties.instrumentationName | string | `"CHOREO-CONNECT"` | Library Name to be tagged in traces (`otel.library.name`). |
+| wso2.apk.dp.gatewayRuntime.tracing.configProperties.instrumentationName | string | `"APK"` | Library Name to be tagged in traces (`otel.library.name`). |
 | wso2.apk.dp.gatewayRuntime.tracing.configProperties.maximumTracesPerSecond | string | `"2"` | Maximum number of sampled traces per second string. |
 | wso2.apk.dp.gatewayRuntime.tracing.configProperties.maxPathLength | string | `"256"` | Maximum length of the request path to extract and include in the HttpUrl tag. |
 | wso2.apk.dp.gatewayRuntime.tracing.configProperties.connectionString | string | `"https://otlp.nr-data.net"` | New Relic OTLP gRPC collector endpoint. |
