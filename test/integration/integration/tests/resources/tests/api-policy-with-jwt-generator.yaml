@@ -24,7 +24,7 @@ spec:
   apiType: REST
   apiVersion: v1
   context: /api-policy-with-jwt-generator/v1
-  definitionFileRef: definition-file
+  #definitionFileRef: definition-file
   production:
     - httpRouteRefs:
       - api-policy-with-jwt-generator-httproute

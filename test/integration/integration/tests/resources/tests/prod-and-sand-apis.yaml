@@ -24,7 +24,7 @@ spec:
   apiType: REST
   apiVersion: v1
   context: /prod-sand-test-api/v1
-  definitionFileRef: definition-file
+  #definitionFileRef: definition-file
   production:
     - httpRouteRefs:
       - prod-httproute

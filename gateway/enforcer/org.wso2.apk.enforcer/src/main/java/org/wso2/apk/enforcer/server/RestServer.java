@@ -33,6 +33,7 @@ import org.apache.logging.log4j.Logger;
 import org.wso2.apk.enforcer.admin.AdminServerInitializer;
 import org.wso2.apk.enforcer.config.ConfigHolder;
 import org.wso2.apk.enforcer.security.jwt.issuer.HttpTokenServerInitializer;
+import org.wso2.apk.enforcer.server.swagger.SwaggerServerInitializer;
 
 import java.io.File;
 import java.nio.file.Paths;
@@ -51,6 +52,7 @@ public class RestServer {
 
     public void initServer() throws SSLException, CertificateException, InterruptedException {
 
+        logger.info("New Rest Server New");
         // Configure SSL
         final SslContext sslCtx;
         final SslContextBuilder ssl;
@@ -76,6 +78,14 @@ public class RestServer {
             Channel tokenChannel = tokenServer.bind(TOKEN_PORT).sync().channel();
             logger.info("Token endpoint started Listening in port : " + TOKEN_PORT);
 
+            ServerBootstrap swaggerServer = new ServerBootstrap();
+            swaggerServer.option(ChannelOption.SO_BACKLOG, 1024);
+            swaggerServer.group(bossGroup, workerGroup)
+                    .channel(NioServerSocketChannel.class)
+                    .handler(new LoggingHandler(LogLevel.INFO))
+                    .childHandler(new SwaggerServerInitializer(sslCtx));
+            Channel swaggerChannel = swaggerServer.bind(8084).sync().channel();
+            logger.info("API Definition endpoint started Listening in port : " + 8084);
 
             if (ConfigHolder.getInstance().getConfig().getRestServer().isEnable()) {
                 ServerBootstrap adminServer = new ServerBootstrap();
@@ -91,6 +101,7 @@ public class RestServer {
                 adminChannel.closeFuture().sync();
             }
 
+            swaggerChannel.closeFuture().sync();
             // Wait until server socket is closed
             tokenChannel.closeFuture().sync();
 

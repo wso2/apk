@@ -187,6 +187,8 @@ func GetEnforcerAPI(adapterInternalAPI model.AdapterInternalAPI, vhost string) *
 		}
 	}
 
+	fmt.Println("API Definition : ", adapterInternalAPI.GetAPIDefinitionFile())
+
 	return &api.Api{
 		Id:                     adapterInternalAPI.UUID,
 		Title:                  adapterInternalAPI.GetTitle(),
@@ -208,7 +210,8 @@ func GetEnforcerAPI(adapterInternalAPI model.AdapterInternalAPI, vhost string) *
 		ApplicationSecurity: adapterInternalAPI.GetXWSO2ApplicationSecurity(),
 		// GraphQLSchema:         adapterInternalAPI.GraphQLSchema,
 		// GraphqlComplexityInfo: adapterInternalAPI.GraphQLComplexities.Data.List,
-		SystemAPI: adapterInternalAPI.IsSystemAPI,
+		SystemAPI:         adapterInternalAPI.IsSystemAPI,
+		ApiDefinitionFile: adapterInternalAPI.GetAPIDefinitionFile(),
 	}
 }
 

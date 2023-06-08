@@ -24,7 +24,7 @@ spec:
   apiType: REST
   apiVersion: 1.0.0
   context: /trailing-slash/v1.0.0
-  definitionFileRef: definition-file
+  #definitionFileRef: definition-file
   production:
     - httpRouteRefs:
       - trailing-slash-httproute

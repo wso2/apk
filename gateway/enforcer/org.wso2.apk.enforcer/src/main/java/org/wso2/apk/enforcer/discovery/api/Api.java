@@ -33,6 +33,7 @@ private static final long serialVersionUID = 0L;
     organizationId_ = "";
     clientCertificates_ = java.util.Collections.emptyList();
     mutualSSL_ = "";
+    apiDefinitionFile_ = com.google.protobuf.ByteString.EMPTY;
   }
 
   @java.lang.Override
@@ -165,12 +166,12 @@ private static final long serialVersionUID = 0L;
             applicationSecurity_ = input.readBool();
             break;
           }
-          case 136: {
+          case 192: {
 
             systemAPI_ = input.readBool();
             break;
           }
-          case 146: {
+          case 202: {
             org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo.Builder subBuilder = null;
             if (backendJWTTokenInfo_ != null) {
               subBuilder = backendJWTTokenInfo_.toBuilder();
@@ -181,6 +182,11 @@ private static final long serialVersionUID = 0L;
               backendJWTTokenInfo_ = subBuilder.buildPartial();
             }
 
+            break;
+          }
+          case 210: {
+
+            apiDefinitionFile_ = input.readBytes();
             break;
           }
           default: {
@@ -772,7 +778,7 @@ private static final long serialVersionUID = 0L;
     return applicationSecurity_;
   }
 
-  public static final int SYSTEMAPI_FIELD_NUMBER = 17;
+  public static final int SYSTEMAPI_FIELD_NUMBER = 24;
   private boolean systemAPI_;
   /**
    * <pre>
@@ -780,7 +786,7 @@ private static final long serialVersionUID = 0L;
    * repeated GraphqlComplexity graphqlComplexityInfo = 23;
    * </pre>
    *
-   * <code>bool systemAPI = 17;</code>
+   * <code>bool systemAPI = 24;</code>
    * @return The systemAPI.
    */
   @java.lang.Override
@@ -788,10 +794,10 @@ private static final long serialVersionUID = 0L;
     return systemAPI_;
   }
 
-  public static final int BACKENDJWTTOKENINFO_FIELD_NUMBER = 18;
+  public static final int BACKENDJWTTOKENINFO_FIELD_NUMBER = 25;
   private org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo_;
   /**
-   * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 18;</code>
+   * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 25;</code>
    * @return Whether the backendJWTTokenInfo field is set.
    */
   @java.lang.Override
@@ -799,7 +805,7 @@ private static final long serialVersionUID = 0L;
     return backendJWTTokenInfo_ != null;
   }
   /**
-   * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 18;</code>
+   * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 25;</code>
    * @return The backendJWTTokenInfo.
    */
   @java.lang.Override
@@ -807,11 +813,22 @@ private static final long serialVersionUID = 0L;
     return backendJWTTokenInfo_ == null ? org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo.getDefaultInstance() : backendJWTTokenInfo_;
   }
   /**
-   * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 18;</code>
+   * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 25;</code>
    */
   @java.lang.Override
   public org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfoOrBuilder getBackendJWTTokenInfoOrBuilder() {
     return getBackendJWTTokenInfo();
+  }
+
+  public static final int APIDEFINITIONFILE_FIELD_NUMBER = 26;
+  private com.google.protobuf.ByteString apiDefinitionFile_;
+  /**
+   * <code>bytes apiDefinitionFile = 26;</code>
+   * @return The apiDefinitionFile.
+   */
+  @java.lang.Override
+  public com.google.protobuf.ByteString getApiDefinitionFile() {
+    return apiDefinitionFile_;
   }
 
   private byte memoizedIsInitialized = -1;
@@ -877,10 +894,13 @@ private static final long serialVersionUID = 0L;
       output.writeBool(16, applicationSecurity_);
     }
     if (systemAPI_ != false) {
-      output.writeBool(17, systemAPI_);
+      output.writeBool(24, systemAPI_);
     }
     if (backendJWTTokenInfo_ != null) {
-      output.writeMessage(18, getBackendJWTTokenInfo());
+      output.writeMessage(25, getBackendJWTTokenInfo());
+    }
+    if (!apiDefinitionFile_.isEmpty()) {
+      output.writeBytes(26, apiDefinitionFile_);
     }
     unknownFields.writeTo(output);
   }
@@ -946,11 +966,15 @@ private static final long serialVersionUID = 0L;
     }
     if (systemAPI_ != false) {
       size += com.google.protobuf.CodedOutputStream
-        .computeBoolSize(17, systemAPI_);
+        .computeBoolSize(24, systemAPI_);
     }
     if (backendJWTTokenInfo_ != null) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(18, getBackendJWTTokenInfo());
+        .computeMessageSize(25, getBackendJWTTokenInfo());
+    }
+    if (!apiDefinitionFile_.isEmpty()) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeBytesSize(26, apiDefinitionFile_);
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -1006,6 +1030,8 @@ private static final long serialVersionUID = 0L;
       if (!getBackendJWTTokenInfo()
           .equals(other.getBackendJWTTokenInfo())) return false;
     }
+    if (!getApiDefinitionFile()
+        .equals(other.getApiDefinitionFile())) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -1063,6 +1089,8 @@ private static final long serialVersionUID = 0L;
       hash = (37 * hash) + BACKENDJWTTOKENINFO_FIELD_NUMBER;
       hash = (53 * hash) + getBackendJWTTokenInfo().hashCode();
     }
+    hash = (37 * hash) + APIDEFINITIONFILE_FIELD_NUMBER;
+    hash = (53 * hash) + getApiDefinitionFile().hashCode();
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -1250,6 +1278,8 @@ private static final long serialVersionUID = 0L;
         backendJWTTokenInfo_ = null;
         backendJWTTokenInfoBuilder_ = null;
       }
+      apiDefinitionFile_ = com.google.protobuf.ByteString.EMPTY;
+
       return this;
     }
 
@@ -1315,6 +1345,7 @@ private static final long serialVersionUID = 0L;
       } else {
         result.backendJWTTokenInfo_ = backendJWTTokenInfoBuilder_.build();
       }
+      result.apiDefinitionFile_ = apiDefinitionFile_;
       onBuilt();
       return result;
     }
@@ -1473,6 +1504,9 @@ private static final long serialVersionUID = 0L;
       }
       if (other.hasBackendJWTTokenInfo()) {
         mergeBackendJWTTokenInfo(other.getBackendJWTTokenInfo());
+      }
+      if (other.getApiDefinitionFile() != com.google.protobuf.ByteString.EMPTY) {
+        setApiDefinitionFile(other.getApiDefinitionFile());
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -2992,7 +3026,7 @@ private static final long serialVersionUID = 0L;
      * repeated GraphqlComplexity graphqlComplexityInfo = 23;
      * </pre>
      *
-     * <code>bool systemAPI = 17;</code>
+     * <code>bool systemAPI = 24;</code>
      * @return The systemAPI.
      */
     @java.lang.Override
@@ -3005,7 +3039,7 @@ private static final long serialVersionUID = 0L;
      * repeated GraphqlComplexity graphqlComplexityInfo = 23;
      * </pre>
      *
-     * <code>bool systemAPI = 17;</code>
+     * <code>bool systemAPI = 24;</code>
      * @param value The systemAPI to set.
      * @return This builder for chaining.
      */
@@ -3021,7 +3055,7 @@ private static final long serialVersionUID = 0L;
      * repeated GraphqlComplexity graphqlComplexityInfo = 23;
      * </pre>
      *
-     * <code>bool systemAPI = 17;</code>
+     * <code>bool systemAPI = 24;</code>
      * @return This builder for chaining.
      */
     public Builder clearSystemAPI() {
@@ -3035,14 +3069,14 @@ private static final long serialVersionUID = 0L;
     private com.google.protobuf.SingleFieldBuilderV3<
         org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo, org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo.Builder, org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfoOrBuilder> backendJWTTokenInfoBuilder_;
     /**
-     * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 18;</code>
+     * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 25;</code>
      * @return Whether the backendJWTTokenInfo field is set.
      */
     public boolean hasBackendJWTTokenInfo() {
       return backendJWTTokenInfoBuilder_ != null || backendJWTTokenInfo_ != null;
     }
     /**
-     * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 18;</code>
+     * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 25;</code>
      * @return The backendJWTTokenInfo.
      */
     public org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo getBackendJWTTokenInfo() {
@@ -3053,7 +3087,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 18;</code>
+     * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 25;</code>
      */
     public Builder setBackendJWTTokenInfo(org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo value) {
       if (backendJWTTokenInfoBuilder_ == null) {
@@ -3069,7 +3103,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 18;</code>
+     * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 25;</code>
      */
     public Builder setBackendJWTTokenInfo(
         org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo.Builder builderForValue) {
@@ -3083,7 +3117,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 18;</code>
+     * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 25;</code>
      */
     public Builder mergeBackendJWTTokenInfo(org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo value) {
       if (backendJWTTokenInfoBuilder_ == null) {
@@ -3101,7 +3135,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 18;</code>
+     * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 25;</code>
      */
     public Builder clearBackendJWTTokenInfo() {
       if (backendJWTTokenInfoBuilder_ == null) {
@@ -3115,7 +3149,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 18;</code>
+     * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 25;</code>
      */
     public org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo.Builder getBackendJWTTokenInfoBuilder() {
       
@@ -3123,7 +3157,7 @@ private static final long serialVersionUID = 0L;
       return getBackendJWTTokenInfoFieldBuilder().getBuilder();
     }
     /**
-     * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 18;</code>
+     * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 25;</code>
      */
     public org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfoOrBuilder getBackendJWTTokenInfoOrBuilder() {
       if (backendJWTTokenInfoBuilder_ != null) {
@@ -3134,7 +3168,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 18;</code>
+     * <code>.wso2.discovery.api.BackendJWTTokenInfo backendJWTTokenInfo = 25;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
         org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo, org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo.Builder, org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfoOrBuilder> 
@@ -3148,6 +3182,40 @@ private static final long serialVersionUID = 0L;
         backendJWTTokenInfo_ = null;
       }
       return backendJWTTokenInfoBuilder_;
+    }
+
+    private com.google.protobuf.ByteString apiDefinitionFile_ = com.google.protobuf.ByteString.EMPTY;
+    /**
+     * <code>bytes apiDefinitionFile = 26;</code>
+     * @return The apiDefinitionFile.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString getApiDefinitionFile() {
+      return apiDefinitionFile_;
+    }
+    /**
+     * <code>bytes apiDefinitionFile = 26;</code>
+     * @param value The apiDefinitionFile to set.
+     * @return This builder for chaining.
+     */
+    public Builder setApiDefinitionFile(com.google.protobuf.ByteString value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  
+      apiDefinitionFile_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>bytes apiDefinitionFile = 26;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearApiDefinitionFile() {
+      
+      apiDefinitionFile_ = getDefaultInstance().getApiDefinitionFile();
+      onChanged();
+      return this;
     }
     @java.lang.Override
     public final Builder setUnknownFields(

@@ -82,6 +82,7 @@ const (
 	DescriptorValueForOperationMethod  = ":method"
 	MetadataNamespaceForCustomPolicies = "apk.ratelimit.metadata"
 	MetadataNamespaceForWSO2Policies   = "envoy.filters.http.ext_authz"
+	apiDefinitionClusterName           = "api_definition_cluster"
 )
 
 // CreateRoutesWithClusters creates envoy routes along with clusters and endpoint instances.
@@ -114,6 +115,33 @@ func CreateRoutesWithClusters(adapterInternalAPI model.AdapterInternalAPI, inter
 	// creation of clusters.
 	processedEndpoints := map[string]model.EndpointCluster{}
 
+	corsConfig := adapterInternalAPI.GetCorsConfig()
+	var methods []string
+	if corsConfig != nil {
+		methods = append(methods, "GET", "OPTIONS")
+	} else {
+		methods = append(methods, "GET")
+	}
+	routeP := CreateAPIDefinitionRoute(adapterInternalAPI.GetXWso2Basepath(), vHost, methods)
+	routes = append(routes, routeP)
+	var endpointForAPIDefinitions []model.Endpoint
+	endpoint := &model.Endpoint{
+		Host:    "localhost",
+		Port:    8084,
+		URLType: "https",
+	}
+	endpointForAPIDefinitions = append(endpointForAPIDefinitions, *endpoint)
+	endpointCluster := model.EndpointCluster{
+		Endpoints: endpointForAPIDefinitions,
+	}
+
+	cluster, address, err := processEndpoints(apiDefinitionClusterName, &endpointCluster, timeout, "")
+	if err != nil {
+		logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(2239, apiTitle, apiVersion, apiDefinitionPath, err.Error()))
+	}
+	clusters = append(clusters, cluster)
+	endpoints = append(endpoints, address...)
+
 	for _, resource := range adapterInternalAPI.GetResources() {
 		var clusterName string
 		resourcePath := resource.GetPath()
@@ -139,7 +167,8 @@ func CreateRoutesWithClusters(adapterInternalAPI model.AdapterInternalAPI, inter
 			interceptorCerts, vHost, organizationID, apiRequestInterceptor, apiResponseInterceptor, resource)
 		clusters = append(clusters, clustersI...)
 		endpoints = append(endpoints, endpointsI...)
-		routeP, err := createRoutes(genRouteCreateParams(&adapterInternalAPI, resource, vHost, basePath, clusterName, *operationalReqInterceptors, *operationalRespInterceptorVal, organizationID, false))
+		routeP, err := createRoutes(genRouteCreateParams(&adapterInternalAPI, resource, vHost, basePath, clusterName, *operationalReqInterceptors, *operationalRespInterceptorVal, organizationID,
+			false))
 		if err != nil {
 			logger.LoggerXds.ErrorC(logging.GetErrorByCode(2231, adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), resource.GetPath(), err.Error()))
 			return nil, nil, nil, fmt.Errorf("error while creating routes. %v", err)
@@ -609,6 +638,8 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 	vHost := params.vHost
 	xWso2Basepath := params.xWSO2BasePath
 	apiType := params.apiType
+
+	// cors policy
 	corsPolicy := getCorsPolicy(params.corsPolicy)
 	resource := params.resource
 	clusterName := params.clusterName
@@ -681,6 +712,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 	b := proto.NewBuffer(nil)
 	b.SetDeterministic(true)
 	_ = b.Marshal(&extAuthPerFilterConfig)
+
 	extAuthzFilter := &any.Any{
 		TypeUrl: extAuthzPerRouteName,
 		Value:   b.Bytes(),
@@ -694,19 +726,19 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 		if logConf.WireLogs.Enable {
 
 			templateString := `
-local utils = require 'home.wso2.interceptor.lib.utils'
-local wire_log_config = {
-	log_body_enabled = {{ .LogConfig.LogBodyEnabled }},
-	log_headers_enabled = {{ .LogConfig.LogHeadersEnabled }},
-	log_trailers_enabled = {{ .LogConfig.LogTrailersEnabled }}
-}
-function envoy_on_request(request_handle)
-	utils.wire_log(request_handle, " >> request body >> ", " >> request headers >> ", " >> request trailers >> ", wire_log_config)
-end
-
-function envoy_on_response(response_handle)
-	utils.wire_log(response_handle, " << response body << ", " << response headers << ", " << response trailers << ", wire_log_config)
-end`
+ local utils = require 'home.wso2.interceptor.lib.utils'
+ local wire_log_config = {
+	 log_body_enabled = {{ .LogConfig.LogBodyEnabled }},
+	 log_headers_enabled = {{ .LogConfig.LogHeadersEnabled }},
+	 log_trailers_enabled = {{ .LogConfig.LogTrailersEnabled }}
+ }
+ function envoy_on_request(request_handle)
+	 utils.wire_log(request_handle, " >> request body >> ", " >> request headers >> ", " >> request trailers >> ", wire_log_config)
+ end
+ 
+ function envoy_on_response(response_handle)
+	 utils.wire_log(response_handle, " << response body << ", " << response headers << ", " << response trailers << ", wire_log_config)
+ end`
 			templateValues := WireLogValues{
 				LogConfig: config.GetWireLogConfig(),
 			}
@@ -1070,6 +1102,74 @@ func CreateTokenRoute() *routev3.Route {
 
 	router = routev3.Route{
 		Name:      testKeyPath, //Categorize routes with same base path
+		Match:     match,
+		Action:    action,
+		Metadata:  nil,
+		Decorator: decorator,
+		TypedPerFilterConfig: map[string]*any.Any{
+			wellknown.HTTPExternalAuthorization: filter,
+		},
+	}
+	return &router
+}
+
+// CreateAPIDefinitionRoute generates a route for the jwt /testkey endpoint
+func CreateAPIDefinitionRoute(basePath string, vHost string, methods []string) *routev3.Route {
+	path := basePath + apiDefinitionPath
+	rewritePath := basePath + "/" + vHost + apiDefinitionPath
+
+	var (
+		router    routev3.Route
+		action    *routev3.Route_Route
+		match     *routev3.RouteMatch
+		decorator *routev3.Decorator
+	)
+
+	methodRegex := strings.Join(methods, "|")
+
+	match = &routev3.RouteMatch{
+		PathSpecifier: &routev3.RouteMatch_Path{
+			Path: path,
+		},
+		Headers: generateHTTPMethodMatcher(methodRegex, apiDefinitionClusterName),
+	}
+
+	decorator = &routev3.Decorator{
+		Operation: path,
+	}
+
+	perFilterConfig := extAuthService.ExtAuthzPerRoute{
+		Override: &extAuthService.ExtAuthzPerRoute_Disabled{
+			Disabled: true,
+		},
+	}
+
+	b := proto.NewBuffer(nil)
+	b.SetDeterministic(true)
+	_ = b.Marshal(&perFilterConfig)
+	filter := &any.Any{
+		TypeUrl: extAuthzPerRouteName,
+		Value:   b.Bytes(),
+	}
+
+	directClusterSpecifier := &routev3.RouteAction_Cluster{
+		Cluster: apiDefinitionClusterName,
+	}
+
+	action = &routev3.Route_Route{
+		Route: &routev3.RouteAction{
+			HostRewriteSpecifier: &routev3.RouteAction_AutoHostRewrite{
+				AutoHostRewrite: &wrapperspb.BoolValue{
+					Value: true,
+				},
+			},
+			ClusterSpecifier: directClusterSpecifier,
+			PrefixRewrite:    rewritePath,
+		},
+	}
+
+	router = routev3.Route{
+		Name:      apiDefinitionPath,
 		Match:     match,
 		Action:    action,
 		Metadata:  nil,

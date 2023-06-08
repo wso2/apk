@@ -280,6 +280,7 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 	var resourceRateLimitPolicies map[string]dpv1alpha1.RateLimitPolicy
 	var resourceAPIPolicies map[string]dpv1alpha1.APIPolicy
 	var interceptorServices map[string]dpv1alpha1.InterceptorService
+	var apiDefinitionFile []byte
 
 	var err error
 	if authentications, err = apiReconciler.getAuthenticationsForAPI(ctx, apiRef.String()); err != nil {
@@ -310,6 +311,12 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 	if interceptorServices, err = apiReconciler.getInterceptorServices(ctx, apiPolicies, resourceAPIPolicies); err != nil {
 		return nil, fmt.Errorf("error while getting interceptor services %s in namespace :%s, %s", apiRef.String(),
 			namespace, err.Error())
+	}
+	if api.Spec.DefinitionFileRef != "" {
+		if apiDefinitionFile, err = apiReconciler.getAPIDefinitionForAPI(ctx, api.Spec.DefinitionFileRef, namespace); err != nil {
+			return nil, fmt.Errorf("error while getting api definition file of api %s in namespace :%s, %s", apiRef.String(),
+				namespace, err.Error())
+		}
 	}
 
 	if len(prodHTTPRouteRef) > 0 {
@@ -361,10 +368,10 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 	loggers.LoggerAPKOperator.Debugf("HTTPRoutes are retrieved successfully for API CR %s", apiRef.String())
 
 	if !api.Status.Accepted {
-		apiState := apiReconciler.ods.AddAPIState(api, prodHTTPRoute, sandHTTPRoute)
+		apiState := apiReconciler.ods.AddAPIState(api, prodHTTPRoute, sandHTTPRoute, apiDefinitionFile)
 		return &synchronizer.APIEvent{EventType: constants.Create, Event: apiState, UpdatedEvents: []string{}}, nil
 	} else if cachedAPI, events, updated :=
-		apiReconciler.ods.UpdateAPIState(&api, prodHTTPRoute, sandHTTPRoute); updated {
+		apiReconciler.ods.UpdateAPIState(&api, prodHTTPRoute, sandHTTPRoute, apiDefinitionFile); updated {
 		return &synchronizer.APIEvent{EventType: constants.Update, Event: cachedAPI, UpdatedEvents: events}, nil
 	}
 
@@ -496,6 +503,21 @@ func (apiReconciler *APIReconciler) getAPIPoliciesForAPI(ctx context.Context,
 		apiPolicies[utils.NamespacedName(&item).String()] = item
 	}
 	return apiPolicies, nil
+}
+
+func (apiReconciler *APIReconciler) getAPIDefinitionForAPI(ctx context.Context,
+	apiDefinitionFile, namespace string) ([]byte, error) {
+	configMap := &corev1.ConfigMap{}
+	if err := apiReconciler.client.Get(ctx, types.NamespacedName{Namespace: namespace, Name: apiDefinitionFile}, configMap); err != nil {
+		return nil, fmt.Errorf("error while getting swagger definition %s in namespace :%s, %s", apiDefinitionFile,
+			namespace, err.Error())
+	}
+	apiDef := make(map[string][]byte)
+	for _, val := range configMap.Data {
+		// config map data key is "swagger.yaml"
+		apiDef["apiDef"] = []byte(val)
+	}
+	return apiDef["apiDef"], nil
 }
 
 func (apiReconciler *APIReconciler) getAPIPoliciesForResources(ctx context.Context,

@@ -24,7 +24,7 @@ spec:
   apiType: REST
   apiVersion: v1
   context: /disable-api-security/v1
-  definitionFileRef: definition-file
+  #definitionFileRef: definition-file
   production:
     - httpRouteRefs:
       - disable-api-security-httproute

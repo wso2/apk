@@ -40,7 +40,7 @@ spec:
   apiType: REST
   apiVersion: 1.0.0
   context: /operatinal-policy-api/1.0.0
-  definitionFileRef: swagger-definition-webhook
+  #definitionFileRef: swagger-definition-webhook
   production:
     - httpRouteRefs:
       - test-api-with-operatinal-policy-httproute

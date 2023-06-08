@@ -45,26 +45,27 @@ func CreateNewOperatorDataStore() *OperatorDataStore {
 
 // AddAPIState stores a new API in the OperatorDataStore.
 func (ods *OperatorDataStore) AddAPIState(api dpv1alpha1.API, prodHTTPRouteState *HTTPRouteState,
-	sandHTTPRouteState *HTTPRouteState) APIState {
+	sandHTTPRouteState *HTTPRouteState, apiDefinition []byte) APIState {
 	ods.mu.Lock()
 	defer ods.mu.Unlock()
 
 	apiNamespacedName := utils.NamespacedName(&api)
 	ods.apiStore[apiNamespacedName] = &APIState{
-		APIDefinition: &api,
-		ProdHTTPRoute: prodHTTPRouteState,
-		SandHTTPRoute: sandHTTPRouteState,
+		APIDefinition:     &api,
+		ProdHTTPRoute:     prodHTTPRouteState,
+		SandHTTPRoute:     sandHTTPRouteState,
+		APIDefinitionFile: apiDefinition,
 	}
 	return *ods.apiStore[apiNamespacedName]
 }
 
 // UpdateAPIState update/create the APIState on ref updates
 func (ods *OperatorDataStore) UpdateAPIState(apiDef *dpv1alpha1.API, prodHTTPRoute *HTTPRouteState,
-	sandHTTPRoute *HTTPRouteState) (APIState, []string, bool) {
+	sandHTTPRoute *HTTPRouteState, apiDefinitionFile []byte) (APIState, []string, bool) {
 	_, found := ods.apiStore[utils.NamespacedName(apiDef)]
 	if !found {
 		loggers.LoggerAPKOperator.Infof("Adding new apistate as API : %s has not found in memory datastore.", apiDef.Spec.APIDisplayName)
-		apiState := ods.AddAPIState(*apiDef, prodHTTPRoute, sandHTTPRoute)
+		apiState := ods.AddAPIState(*apiDef, prodHTTPRoute, sandHTTPRoute, apiDefinitionFile)
 		return apiState, []string{"API"}, true
 	}
 	return ods.processAPIState(apiDef, prodHTTPRoute, sandHTTPRoute)

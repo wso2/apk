@@ -24,7 +24,7 @@ spec:
   apiType: REST
   apiVersion: 1.0.0
   context: /cors-policy-api/1.0.0
-  definitionFileRef: definition-file
+  #definitionFileRef: definition-file
   production:
     - httpRouteRefs:
       - cors-policy-httproute

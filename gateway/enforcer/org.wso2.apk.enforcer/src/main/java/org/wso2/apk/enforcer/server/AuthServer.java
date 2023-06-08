@@ -79,6 +79,8 @@ public class AuthServer {
             }
 
             EnforcerConfig enforcerConfig = ConfigHolder.getInstance().getConfig();
+
+            // rest api call initialization happens here
             APIFactory.getInstance().init();
 
             // Initialize tracing objects
