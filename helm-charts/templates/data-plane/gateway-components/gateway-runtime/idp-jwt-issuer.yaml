@@ -11,7 +11,7 @@ spec:
   issuer: "{{ .Values.wso2.apk.idp.issuer }}"
   organization: "carbon.super"
   signatureValidation:
-  {{if and .Values.wso2.apk.idp.signing .Values.wso2.apk.idp.signing.configMapName .Values.wso2.apk.idp.signing.secretName }}
+  {{if and .Values.wso2.apk.idp.signing }}
     certificate:
    {{if .Values.wso2.apk.idp.signing.secretName }}
       secretRef:
@@ -25,7 +25,7 @@ spec:
     {{ else if and .Values.wso2.apk.idp.signing .Values.wso2.apk.idp.signing.jwksEndpoint }}
     jwks:
       url: "{{ .Values.wso2.apk.idp.signing.jwksEndpoint }}"
-    {{if and .Values.wso2.apk.idp.tls.configMapName .Values.wso2.apk.idp.tls.secretName }}
+    {{if and .Values.wso2.apk.idp.tls }}
       tls:
         {{if .Values.wso2.apk.idp.tls.secretName }}
         secretRef:
