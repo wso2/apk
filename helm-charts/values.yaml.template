@@ -566,7 +566,7 @@ wso2:
             # -- Jaeger/Zipkin collector endpoint path.
             endpoint: "/api/v2/spans"
             # -- Library Name to be tagged in traces (`otel.library.name`).
-            instrumentationName: "CHOREO-CONNECT"
+            instrumentationName: "APK"
             # -- Maximum number of sampled traces per second string.
             maximumTracesPerSecond: "2"
             # -- Maximum length of the request path to extract and include in the HttpUrl tag.
