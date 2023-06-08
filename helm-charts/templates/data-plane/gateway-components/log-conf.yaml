@@ -113,9 +113,40 @@ data:
     {{- if .Values.wso2.apk.dp.gatewayRuntime.analytics }}
     [analytics]
       enabled = {{ .Values.wso2.apk.dp.gatewayRuntime.analytics.enabled | default false }}
-      {{- if .Values.wso2.apk.dp.gatewayRuntime.analytics.type }}
-      type = "{{ .Values.wso2.apk.dp.gatewayRuntime.analytics.type }}"
+    {{- if .Values.wso2.apk.dp.gatewayRuntime.analytics.type }}
+      {{- if eq .Values.wso2.apk.dp.gatewayRuntime.analytics.type "ELK" }}
+      type = "ELK"
       {{- end }}
+
+    {{- if eq .Values.wso2.apk.dp.gatewayRuntime.analytics.type "Choreo" }}
+    [analytics.adapter]
+      bufferFlushInterval = "1s"
+      bufferSizeBytes = 16384
+      gRPCRequestTimeout = "20s"
+    
+    [analytics.enforcer.configProperties]
+      {{- if .Values.wso2.apk.dp.gatewayRuntime.analytics.authURL }}
+      authURL = "{{ .Values.wso2.apk.dp.gatewayRuntime.analytics.authURL }}"
+      {{- end }}
+      {{- if .Values.wso2.apk.dp.gatewayRuntime.analytics.authToken }}
+      authToken = "{{ .Values.wso2.apk.dp.gatewayRuntime.analytics.authToken }}"
+      {{- end }}
+    
+    [analytics.enforcer.LogReceiver]
+      port = 18090
+      maxMessageSize = 1000000000
+      maxHeaderLimit = 8192
+      #keep alive time of the external authz connection
+      keepAliveTime = 600
+    
+    [analytics.enforcer.LogReceiver.threadPool]
+      coreSize = 10
+      maxSize = 100
+      #keep alive time of threads in seconds
+      keepAliveTime = 600
+      queueSize = 1000
+    {{- end }}
+    {{- end }}
     {{- end }}
 
     [enforcer.metrics]
@@ -150,8 +181,8 @@ data:
       serviceBasePath = "{{ .Values.wso2.apk.dp.partitionServer.serviceBasePath}}"
       partitionName = "{{ .Values.wso2.apk.dp.partitionServer.partitionName}}"
     {{end}}
-{{ if and .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.filters }}
-{{ range $index, $filter := .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.filters}}
+    {{ if and .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.filters }}
+    {{ range $index, $filter := .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.filters}}
     [[enforcer.filters]]
         className = "{{$filter.className}}"
         position = {{$filter.position}}
@@ -161,8 +192,8 @@ data:
         {{$value.name}} = "{{$value.value}}"
         {{end}}
         {{end}}
-{{end}}
-{{end}}
+    {{end}}
+    {{end}}
 
   config.toml.template: |
     # The configuration file for mgw
