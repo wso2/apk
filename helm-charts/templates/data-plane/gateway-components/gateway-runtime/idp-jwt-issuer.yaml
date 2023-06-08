@@ -12,20 +12,20 @@ spec:
   organization: "carbon.super"
   signatureValidation:
   {{if and .Values.wso2.apk.idp.signing }}
-    certificate:
    {{if .Values.wso2.apk.idp.signing.secretName }}
+    certificate:
       secretRef:
         name: "{{.Values.wso2.apk.idp.signing.secretName}}"
         key: "{{.Values.wso2.apk.idp.signing.fileName}}"
     {{else if .Values.wso2.apk.idp.signing.configMapName }}
+    certificate:
       configMapRef:
         name: "{{.Values.wso2.apk.idp.signing.configMapName}}"
         key: "{{.Values.wso2.apk.idp.signing.fileName}}"
-    {{end}}
-    {{ else if and .Values.wso2.apk.idp.signing .Values.wso2.apk.idp.signing.jwksEndpoint }}
+    {{else if .Values.wso2.apk.idp.signing.jwksEndpoint }}
     jwks:
       url: "{{ .Values.wso2.apk.idp.signing.jwksEndpoint }}"
-    {{if and .Values.wso2.apk.idp.tls }}
+    {{if and .Values.wso2.apk.idp.tls}}
       tls:
         {{if .Values.wso2.apk.idp.tls.secretName }}
         secretRef:
@@ -36,6 +36,7 @@ spec:
             name: "{{.Values.wso2.apk.idp.tls.configMapName}}"
             key: "{{.Values.wso2.apk.idp.tls.fileName}}"
         {{end}}
+    {{end}}
     {{end}}
     {{else}}
     certificate:
