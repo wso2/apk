@@ -23,7 +23,7 @@ package org.wso2.apk.enforcer.tracing;
  * This class contains all the constants related to the tracing implementation with azure app insights
  */
 public class TracingConstants {
-    public static final String SERVICE_NAME_PREFIX = "choreo_connect_enforcer";
+    public static final String SERVICE_NAME_PREFIX = "apk_enforcer";
     public static final String AZURE_TRACE_EXPORTER = "azure";
     public static final String JAEGER_TRACE_EXPORTER = "jaeger";
     public static final String ZIPKIN_TRACE_EXPORTER = "zipkin";

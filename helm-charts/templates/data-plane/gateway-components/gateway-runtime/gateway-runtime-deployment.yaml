@@ -192,7 +192,7 @@ spec:
             - name: ROUTER_PORT
               value: "9095"
             - name: ROUTER_CLUSTER
-              value: "default_cluster"
+              value: "apk_router_cluster"
             - name: ROUTER_LABEL
               value: "default"
             - name: ROUTER_PRIVATE_KEY_PATH
