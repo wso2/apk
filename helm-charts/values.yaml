@@ -78,7 +78,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/devportal-domain-service:latest
+          image: wso2/devportal-domain-service:0.0.1-m11
       admin:
         deployment:
           resources:
@@ -99,7 +99,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/admin-domain-service:latest
+          image: wso2/admin-domain-service:0.0.1-m11
       backoffice:
         deployment:
           resources:
@@ -120,7 +120,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/backoffice-domain-service:latest
+          image: wso2/backoffice-domain-service:0.0.1-m11
       managementServer:
         deployment:
           resources:
@@ -133,7 +133,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/management-server:latest
+          image: wso2/management-server:0.0.1-m11
           readinessProbe:
             initialDelaySeconds: 20
             periodSeconds: 20
@@ -194,7 +194,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/runtime-domain-service:latest
+          image: wso2/runtime-domain-service:0.0.1-m11
           # configs:
           #   authrorization: true
           #   baseUrl: "https://api.am.wso2.com:9095/api/runtime"
@@ -222,7 +222,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/adapter:latest
+          image: wso2/adapter:0.0.1-m11
           security:
             sslHostname: "adapter"
 #        logging:
@@ -257,7 +257,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/ratelimiter:latest
+          image: wso2/ratelimiter:0.0.1-m11
           security:
             sslHostname: "ratelimiter"
           # configs:
@@ -287,7 +287,7 @@ wso2:
               failureThreshold: 5
             strategy: Recreate
             imagePullPolicy: Always
-            image: wso2/router:latest
+            image: wso2/router:0.0.1-m11
             # configs:
             #   tls:
             #     secretName: "router-cert"
@@ -317,7 +317,7 @@ wso2:
               failureThreshold: 5
             strategy: Recreate
             imagePullPolicy: Always
-            image: wso2/enforcer:latest
+            image: wso2/enforcer:0.0.1-m11
             security:
               sslHostname: "enforcer"
 #            logging:
@@ -381,7 +381,7 @@ idp:
       strategy: Recreate
       replicas: 1
       imagePullPolicy: Always
-      image: wso2/idp-domain-service:latest
+      image: wso2/idp-domain-service:0.0.1-m11
   idpui:
     deployment:
       resources:
@@ -402,7 +402,7 @@ idp:
       strategy: Recreate
       replicas: 1
       imagePullPolicy: Always
-      image: wso2/idp-ui:latest
+      image: wso2/idp-ui:0.0.1-m11
     configs:
       idpLoginUrl: "https://idp.am.wso2.com:9095/commonauth/login"
       idpAuthCallBackUrl: "https://idp.am.wso2.com:9095/oauth2/auth-callback"
