@@ -382,6 +382,8 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
                                 TLSUtils.getCertificateFromContent(certificate.getJwks().getTls());
                         jwksConfigurationDTO.setCertificate(tlsCertificate);
                     }
+                    jwksConfigurationDTO.setUrl(certificate.getJwks().getUrl());
+                    jwksConfigurationDTO.setEnabled(true);
                     tokenIssuerDto.setJwksConfigurationDTO(jwksConfigurationDTO);
                 }
                 if (StringUtils.isNotEmpty(certificate.getCertificate())) {
