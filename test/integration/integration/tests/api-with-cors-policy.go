@@ -41,7 +41,7 @@ var APIWithCORSPolicy = suite.IntegrationTest{
 			{
 				Request: http.Request{
 					Host: "cors-policy.test.gw.wso2.com",
-					Path: "/cors-policy-api/1.0.0/options",
+					Path: "/cors-policy-api/1.0.0/test",
 					Headers: map[string]string{
 						"origin":                        "apk.wso2.com",
 						"access-control-request-method": "GET",
@@ -68,9 +68,36 @@ var APIWithCORSPolicy = suite.IntegrationTest{
 			{
 				Request: http.Request{
 					Host: "cors-policy.test.gw.wso2.com",
-					Path: "/cors-policy-api/1.0.0/options",
+					Path: "/cors-policy-api/1.0.0/test",
 					Headers: map[string]string{
-						"origin":                        "wso2.org",
+						"origin":                        "apk.wso2.com",
+						"access-control-request-method": "PUT",
+					},
+					Method: "OPTIONS",
+				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Host: "",
+						Method: "OPTIONS",
+					},
+				},
+				Response: http.Response{
+					Headers: map[string]string{
+						"access-control-allow-origin":      "apk.wso2.com",
+						"access-control-allow-credentials": "true",
+						"access-control-allow-methods":     "GET, POST",
+						"access-control-allow-headers":     "authorization",
+						"access-control-expose-headers":    "*",
+					},
+					StatusCode: 200,
+				},
+			},
+			{
+				Request: http.Request{
+					Host: "cors-policy.test.gw.wso2.com",
+					Path: "/no-cors-policy-api/1.0.0/test",
+					Headers: map[string]string{
+						"origin":                        "apk.wso2.com",
 						"access-control-request-method": "GET",
 					},
 					Method: "OPTIONS",
@@ -82,7 +109,7 @@ var APIWithCORSPolicy = suite.IntegrationTest{
 					},
 				},
 				Response: http.Response{
-					StatusCode: 401,
+					StatusCode: 404,
 				},
 			},
 		}
