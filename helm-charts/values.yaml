@@ -202,6 +202,32 @@ wso2:
           #     secretName: "my-secret"
           #     certKeyFilename: "tls.key"
           #     certFilename: "certchain.crt"
+      configdeployer:
+        deployment:
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "1028Mi"
+              cpu: "1000m"
+          readinessProbe:
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            failureThreshold: 5
+          livenessProbe:
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            failureThreshold: 5
+          strategy: Recreate
+          replicas: 0
+          imagePullPolicy: IfNotPresent
+          image: config-deployer-service:0.0.1-SNAPSHOT
+          # configs:
+          #   tls:
+          #     secretName: "my-secret"
+          #     certKeyFilename: "tls.key"
+          #     certFilename: "certchain.crt"
       adapter:
         deployment:
           resources:

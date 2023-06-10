@@ -106,6 +106,18 @@ jobs:
       DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
       AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+  build_config:
+    if: github.event_name == 'pull_request_target' && github.event.action == 'opened' || github.event.action == 'synchronize'
+    uses: ./.github/workflows/config-deployer-release.yml
+    with:
+      aks_deployment: true
+    secrets:
+      WSO2_BOT_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}
+      WSO2_BOT_USER: ${{ secrets.WSO2_BOT_USER }}
+      WSO2_BOT_EMAIL: ${{ secrets.WSO2_BOT_EMAIL }}
+      DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
+      AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}      
   build_idpds:
     if: github.event_name == 'pull_request_target' && github.event.action == 'opened' || github.event.action == 'synchronize'
     uses: ./.github/workflows/idp-domain-service-release.yml
@@ -194,6 +206,7 @@ jobs:
         --set wso2.apk.cp.backoffice.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/backoffice-domain-service:${{ github.sha }} \
         --set wso2.apk.cp.managementServer.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/management-server:${{ github.sha }} \
         --set wso2.apk.dp.runtime.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/runtime-domain-service:${{ github.sha }} \
+        --set wso2.apk.dp.configdeployer.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/config-deployer-service:${{ github.sha }} \
         --set wso2.apk.dp.adapter.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/adapter:${{ github.sha }} \
         --set wso2.apk.dp.gatewayRuntime.deployment.enforcer.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/enforcer:${{ github.sha }} \
         --set idp.idpds.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/idp-domain-service:${{ github.sha }} \
