@@ -44,6 +44,17 @@ isolated function convertK8sAPItoAPI(model:API api, boolean lightWeight) returns
             if apiPolicies is model:OperationPolicies {
                 convertedModel.apiPolicies = convertOperationPolicies(apiPolicies);
             }
+            model:CORSPolicy? corsConfiguration = internalAPI.spec.cORSPolicy;
+            if corsConfiguration is model:CORSPolicy {
+                convertedModel.corsConfiguration = {
+                    corsConfigurationEnabled: corsConfiguration.enabled,
+                    accessControlAllowCredentials: corsConfiguration.accessControlAllowCredentials,
+                    accessControlAllowOrigins: corsConfiguration.accessControlAllowOrigins,
+                    accessControlAllowHeaders: corsConfiguration.accessControlAllowHeaders,
+                    accessControlAllowMethods: corsConfiguration.accessControlAllowMethods,
+                    accessControlExposeHeaders: corsConfiguration.accessControlExposeHeaders
+                };
+            }
             APIOperations[] apiOperations = [];
             model:Operations[]? operations = internalAPI.spec.operations;
             if operations is model:Operations[] {

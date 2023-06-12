@@ -295,6 +295,30 @@ spec:
                           parameters:
                             type: object
                             additionalProperties: true
+                cORSPolicy:
+                  description: CORSPolicy holds CORS policy information
+                  properties:
+                    accessControlAllowCredentials:
+                      type: boolean
+                    accessControlAllowHeaders:
+                      items:
+                        type: string
+                      type: array
+                    accessControlAllowMethods:
+                      items:
+                        type: string
+                      type: array
+                    accessControlAllowOrigins:
+                      items:
+                        type: string
+                      type: array
+                    accessControlExposeHeaders:
+                      items:
+                        type: string
+                      type: array
+                    enabled:
+                      type: boolean
+                  type: object
           type: object
       served: true
       storage: true

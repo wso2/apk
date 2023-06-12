@@ -710,6 +710,17 @@ public class APIClient {
                 endpointSecurity: serviceEntry.endpointSecurity
             };
         }
+        CorsConfiguration? corsConfiguration = api.corsConfiguration;
+        if (corsConfiguration is CorsConfiguration) {
+            runtimeAPI.spec.cORSPolicy = {
+                enabled: corsConfiguration.corsConfigurationEnabled,
+                accessControlAllowCredentials: corsConfiguration.accessControlAllowCredentials,
+                accessControlAllowOrigins: corsConfiguration.accessControlAllowOrigins,
+                accessControlAllowHeaders: corsConfiguration.accessControlAllowHeaders,
+                accessControlAllowMethods: corsConfiguration.accessControlAllowMethods,
+                accessControlExposeHeaders: corsConfiguration.accessControlExposeHeaders
+            };
+        }
         log:printDebug("RuntimeAPI: " + runtimeAPI.toString());
         return runtimeAPI;
     }

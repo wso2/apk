@@ -40,12 +40,12 @@ public type InterceptorReference record {
 };
 
 public type CORSPolicy record {
-    boolean enabled;
-    boolean accessControlAllowCredentials;
-    string[] accessControlAllowOrigins;
-    string[] accessControlAllowHeaders;
-    string[] accessControlAllowMethods;
-    string[] accessControlExposeHeaders;
+    boolean enabled = false;
+    boolean accessControlAllowCredentials = false;
+    string[] accessControlAllowOrigins = [];
+    string[] accessControlAllowHeaders = [];
+    string[] accessControlAllowMethods = [];
+    string[] accessControlExposeHeaders = [];
 };
 
 public type APIPolicyList record {

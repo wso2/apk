@@ -20,6 +20,7 @@ public type RuntimeAPISpec record {|
     record {} endpointConfig?;
     Operations[] operations?;
     OperationPolicies apiPolicies?;
+    CORSPolicy cORSPolicy?;
     RateLimit apiRateLimit?;
     string[] securityScheme?;
     ServiceInfo serviceInfo?;
