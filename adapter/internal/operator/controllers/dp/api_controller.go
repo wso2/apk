@@ -73,6 +73,7 @@ const (
 	backendHTTPRouteIndex            = "backendHTTPRouteIndex"
 	interceptorServiceAPIPolicyIndex = "interceptorServiceAPIPolicyIndex"
 	backendInterceptorServiceIndex   = "backendInterceptorServiceIndex"
+	apiAPIPropertyIndex              = "apiAPIPropertyIndex"
 )
 
 var (
@@ -287,6 +288,7 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 	var resourceAPIPolicies map[string]dpv1alpha1.APIPolicy
 	var interceptorServices map[string]dpv1alpha1.InterceptorService
 	var apiDefinitionFile []byte
+	var apiProperties map[string]dpv1alpha1.APIProperty
 
 	var err error
 	if authentications, err = apiReconciler.getAuthenticationsForAPI(ctx, apiRef.String()); err != nil {
@@ -324,6 +326,10 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 				namespace, err.Error())
 		}
 	}
+	if apiProperties, err = apiReconciler.getAPIPropertiesForAPI(ctx, apiRef.String()); err != nil {
+		return nil, fmt.Errorf("error while getting API level apiproperty for API : %s in namespace :%s, %s", apiRef.String(),
+			namespace, err.Error())
+	}
 
 	if len(prodHTTPRouteRef) > 0 {
 		prodHTTPRoute = &synchronizer.HTTPRouteState{
@@ -334,6 +340,7 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 			ResourceAPIPolicies:       resourceAPIPolicies,
 			APIPolicies:               apiPolicies,
 			InterceptorServiceMapping: interceptorServices,
+			APIProperties:             apiProperties,
 		}
 		if prodHTTPRoute, err = apiReconciler.resolveHTTPRouteRefs(ctx, prodHTTPRoute, prodHTTPRouteRef, namespace, apiRef.String(), apiPolicies); err != nil {
 			return nil, fmt.Errorf("error while resolving production httpRouteref %s in namespace :%s has not found. %s",
@@ -357,6 +364,7 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 			ResourceAPIPolicies:       resourceAPIPolicies,
 			APIPolicies:               apiPolicies,
 			InterceptorServiceMapping: interceptorServices,
+			APIProperties:             apiProperties,
 		}
 		if sandHTTPRoute, err = apiReconciler.resolveHTTPRouteRefs(ctx, sandHTTPRoute, sandHTTPRouteRef, namespace, apiRef.String(), apiPolicies); err != nil {
 			return nil, fmt.Errorf("error while resolving sandbox httpRouteref %s in namespace :%s has not found. %s",
@@ -524,6 +532,21 @@ func (apiReconciler *APIReconciler) getAPIDefinitionForAPI(ctx context.Context,
 		apiDef["apiDef"] = []byte(val)
 	}
 	return apiDef["apiDef"], nil
+}
+
+func (apiReconciler *APIReconciler) getAPIPropertiesForAPI(ctx context.Context,
+	apiRef string) (map[string]dpv1alpha1.APIProperty, error) {
+	apiProperties := make(map[string]dpv1alpha1.APIProperty)
+	apiPropertyList := &dpv1alpha1.APIPropertyList{}
+	if err := apiReconciler.client.List(ctx, apiPropertyList, &k8client.ListOptions{
+		FieldSelector: fields.OneTermEqualSelector(apiAPIPropertyIndex, apiRef),
+	}); err != nil {
+		return nil, err
+	}
+	for _, item := range apiPropertyList.Items {
+		apiProperties[utils.NamespacedName(&item).String()] = item
+	}
+	return apiProperties, nil
 }
 
 func (apiReconciler *APIReconciler) getAPIPoliciesForResources(ctx context.Context,
@@ -1236,6 +1259,24 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 						Namespace: utils.GetNamespace(
 							(*gwapiv1b1.Namespace)(apiPolicy.Spec.TargetRef.Namespace), apiPolicy.Namespace),
 						Name: string(apiPolicy.Spec.TargetRef.Name),
+					}.String())
+			}
+			return apis
+		}); err != nil {
+		return err
+	}
+
+	// httpRoute to APIProperty indexer
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.APIProperty{}, apiAPIPropertyIndex,
+		func(rawObj k8client.Object) []string {
+			apiProperty := rawObj.(*dpv1alpha1.APIProperty)
+			var apis []string
+			if apiProperty.Spec.TargetRef.Kind == constants.KindAPI {
+				apis = append(apis,
+					types.NamespacedName{
+						Namespace: utils.GetNamespace(
+							(*gwapiv1b1.Namespace)(apiProperty.Spec.TargetRef.Namespace), apiProperty.Namespace),
+						Name: string(apiProperty.Spec.TargetRef.Name),
 					}.String())
 			}
 			return apis

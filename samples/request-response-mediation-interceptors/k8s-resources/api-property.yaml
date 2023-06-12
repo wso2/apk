@@ -1,0 +1,16 @@
+apiVersion: dp.wso2.com/v1alpha1
+kind: APIProperty
+metadata:
+  name: uuid-api-property
+  namespace: interceptor
+spec:
+  properties:
+    - name: propertyName1
+      value: "propertyValue1"
+    - name: propertyName2
+      value: "propertyValue2"
+  targetRef:
+    group: dp.wso2.com
+    kind: API
+    name: interceptor-api
+    namespace: interceptor

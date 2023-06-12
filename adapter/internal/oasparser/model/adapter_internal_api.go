@@ -68,6 +68,7 @@ type AdapterInternalAPI struct {
 	// GraphQLComplexities        GraphQLComplexityYaml
 	IsSystemAPI     bool
 	RateLimitPolicy *RateLimitPolicy
+	APIProperty		*dpv1alpha1.APIProperty
 }
 
 // BackendJWTTokenInfo represents the object structure holding the information related to the JWT Generator

@@ -41,6 +41,7 @@ type HTTPRouteParams struct {
 	ResourceScopes            map[string]dpv1alpha1.Scope
 	RateLimitPolicies         map[string]dpv1alpha1.RateLimitPolicy
 	ResourceRateLimitPolicies map[string]dpv1alpha1.RateLimitPolicy
+	APIProperties             map[string]dpv1alpha1.APIProperty
 }
 
 // SetInfoHTTPRouteCR populates resources and endpoints of adapterInternalAPI. httpRoute.Spec.Rules.Matches
@@ -51,6 +52,7 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 	outputAuthScheme := utils.TieBreaker(utils.GetPtrSlice(maps.Values(httpRouteParams.AuthSchemes)))
 	outputAPIPolicy := utils.TieBreaker(utils.GetPtrSlice(maps.Values(httpRouteParams.APIPolicies)))
 	outputRatelimitPolicy := utils.TieBreaker(utils.GetPtrSlice(maps.Values(httpRouteParams.RateLimitPolicies)))
+	outputAPIProperty := utils.TieBreaker(utils.GetPtrSlice(maps.Values(httpRouteParams.APIProperties)))
 
 	disableScopes := true
 	disableAuthentications := false
@@ -65,6 +67,10 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 	var apiPolicy *dpv1alpha1.APIPolicy
 	if outputAPIPolicy != nil {
 		apiPolicy = *outputAPIPolicy
+	}
+	var apiProperty *dpv1alpha1.APIProperty
+	if outputAPIProperty != nil {
+		apiProperty = *outputAPIProperty
 	}
 
 	var ratelimitPolicy *dpv1alpha1.RateLimitPolicy
@@ -289,6 +295,7 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 	apiPolicySelected := concatAPIPolicies(apiPolicy, nil)
 	swagger.disableAuthentications = disableAuthentications
 	swagger.disableScopes = disableScopes
+	swagger.APIProperty = apiProperty
 
 	// Check whether the API has a backend JWT token
 	if apiPolicySelected != nil && apiPolicySelected.Spec.Override != nil && apiPolicySelected.Spec.Override.BackendJWTToken != nil {
