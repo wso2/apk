@@ -45,4 +45,5 @@ type HTTPRouteState struct {
 	Scopes                    map[string]v1alpha1.Scope
 	RateLimitPolicies         map[string]v1alpha1.RateLimitPolicy
 	ResourceRateLimitPolicies map[string]v1alpha1.RateLimitPolicy
+	APIProperties             map[string]v1alpha1.APIProperty
 }

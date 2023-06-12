@@ -617,6 +617,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 	requestInterceptor := params.requestInterceptor
 	responseInterceptor := params.responseInterceptor
 	isDefaultVersion := params.isDefaultVersion
+	logger.LoggerInterceptor.Info("======================================srilanka5==============================================")
 
 	logger.LoggerOasparser.Debugf("creating routes for API %s ....", title)
 	var (
@@ -733,7 +734,11 @@ end`
 			PathTemplate:     contextExtensions[pathContextExtension],
 			Vhost:            contextExtensions[vHostContextExtension],
 			ClusterName:      contextExtensions[clusterNameContextExtension],
+			// APIProperty:      params.apiProperty,
 		}
+		logger.LoggerInterceptor.Info("======================================srilanka3==============================================")
+		// logger.LoggerInterceptor.Info(contextExtensions)
+		// logger.LoggerInterceptor.Info(params)
 		luaPerFilterConfig = lua.LuaPerRoute{
 			Override: &lua.LuaPerRoute_SourceCode{
 				SourceCode: &corev3.DataSource{
@@ -963,7 +968,9 @@ end`
 // GetInlineLuaScript creates the inline lua script
 func GetInlineLuaScript(requestInterceptor map[string]model.InterceptEndpoint, responseInterceptor map[string]model.InterceptEndpoint,
 	requestContext *interceptor.InvocationContext) string {
-
+		logger.LoggerInterceptor.Info("======================================srilanka2==============================================")
+		logger.LoggerInterceptor.Info("======================================requestContext.APIProperty==============================================")
+		// logger.LoggerInterceptor.Info(requestContext.APIProperty)
 	i := &interceptor.Interceptor{
 		Context:      requestContext,
 		RequestFlow:  make(map[string]interceptor.Config),
@@ -1008,8 +1015,14 @@ func GetInlineLuaScript(requestInterceptor map[string]model.InterceptEndpoint, r
 
 	templateString := interceptor.GetTemplate(i.IsRequestFlowEnabled,
 		i.IsResponseFlowEnabled)
-
-	return interceptor.GetInterceptor(templateValues, templateString)
+	// logger.LoggerInterceptor.Info("======================================GetInlineLuaScript 1011==============================================")
+	// logger.LoggerInterceptor.Info("======================================GetInlineLuaScript templateValues begin==============================================")
+	// logger.LoggerInterceptor.Info(templateValues)
+	// logger.LoggerInterceptor.Info("======================================GetInlineLuaScript templateValues end==============================================")
+	// logger.LoggerInterceptor.Info("======================================GetInlineLuaScript templateString begin==============================================")
+	// logger.LoggerInterceptor.Info(templateString)
+	// logger.LoggerInterceptor.Info("======================================GetInlineLuaScript templateString end==============================================")
+	return interceptor.GetInterceptor(templateValues, templateString) //
 }
 
 // CreateTokenRoute generates a route for the jwt /testkey endpoint
@@ -1347,6 +1360,8 @@ func genRouteCreateParams(swagger *model.AdapterInternalAPI, resource *model.Res
 	clusterName string, requestInterceptor map[string]model.InterceptEndpoint,
 	responseInterceptor map[string]model.InterceptEndpoint, organizationID string, isSandbox bool) *routeCreateParams {
 
+	logger.LoggerInterceptor.Info("======================================srilanka4==============================================")
+	logger.LoggerInterceptor.Info(swagger.APIProperty)
 	params := &routeCreateParams{
 		organizationID:               organizationID,
 		title:                        swagger.GetTitle(),
@@ -1364,6 +1379,7 @@ func genRouteCreateParams(swagger *model.AdapterInternalAPI, resource *model.Res
 		passRequestPayloadToEnforcer: swagger.GetXWso2RequestBodyPass(),
 		isDefaultVersion:             swagger.IsDefaultVersion,
 		apiLevelRateLimitPolicy:      swagger.RateLimitPolicy,
+		// apiProperty:                  swagger.APIProperty,
 	}
 	return params
 }

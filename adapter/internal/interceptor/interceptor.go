@@ -23,6 +23,7 @@ import (
 
 	logger "github.com/wso2/apk/adapter/internal/loggers"
 	logging "github.com/wso2/apk/adapter/internal/logging"
+	// dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
 )
 
 // Interceptor hold values used for interceptor
@@ -70,6 +71,7 @@ type InvocationContext struct {
 	PathTemplate     string
 	Vhost            string
 	ClusterName      string
+	// APIProperty      *dpv1alpha1.APIProperty
 }
 
 var (
@@ -168,6 +170,9 @@ func GetInterceptor(templateValues any, templateString string) string {
 		logger.LoggerInterceptor.ErrorC(logging.GetErrorByCode(1801, err.Error()))
 		return emptyInterceptorTemplate
 	}
+	logger.LoggerInterceptor.Info("==========================================GetInterceptor out.String() begin==========================================")
+	logger.LoggerInterceptor.Info(out.String())
+	logger.LoggerInterceptor.Info("==========================================GetInterceptor out.String() end==========================================")
 	return out.String()
 }
 
@@ -181,5 +186,8 @@ func GetTemplate(isReqIntercept bool, isResIntercept bool) string {
 	if isResIntercept {
 		resT = responseInterceptorTemplate
 	}
+	// logger.LoggerInterceptor.Info("==========================================GetTemplate commonTemplate + reqT + resT begin==========================================")
+	// logger.LoggerInterceptor.Info(commonTemplate + reqT + resT)
+	// logger.LoggerInterceptor.Info("==========================================GetTemplate commonTemplate + reqT + resT end==========================================")
 	return commonTemplate + reqT + resT
 }
