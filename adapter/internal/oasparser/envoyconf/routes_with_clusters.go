@@ -155,13 +155,6 @@ func CreateRoutesWithClusters(adapterInternalAPI model.AdapterInternalAPI, inter
 		basePath := strings.TrimSuffix(endpoint.Endpoints[0].Basepath, "/")
 		existingClusterName := getExistingClusterName(*endpoint, processedEndpoints)
 
-		// convert the timeout value to seconds as the envoy timeout is in seconds
-		if endpoint.Config.TimeoutInMillis > 0 {
-			secs := endpoint.Config.TimeoutInMillis / 1000
-			timeout = time.Duration(secs)
-			fmt.Println("Timeout Value: ", timeout)
-		}
-
 		if existingClusterName == "" {
 			clusterName = getClusterName(endpoint.EndpointPrefix, organizationID, vHost, adapterInternalAPI.GetTitle(), apiVersion, resource.GetID())
 			cluster, address, err := processEndpoints(clusterName, endpoint, timeout, basePath)
@@ -1203,7 +1196,6 @@ func CreateJWKSRoute() *routev3.Route {
 	}
 	return &router
 }
-
 
 // CreateAPIDefinitionRoute generates a route for the jwt /testkey endpoint
 func CreateAPIDefinitionRoute(basePath string, vHost string, methods []string) *routev3.Route {

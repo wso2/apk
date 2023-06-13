@@ -143,9 +143,10 @@ type EndpointSecurity struct {
 
 // EndpointConfig holds the configs such as timeout, retry, etc. for the EndpointCluster
 type EndpointConfig struct {
-	RetryConfig     *RetryConfig     `mapstructure:"retryConfig"`
-	TimeoutInMillis uint32           `mapstructure:"timeoutInMillis"`
-	CircuitBreakers *CircuitBreakers `mapstructure:"circuitBreakers"`
+	RetryConfig          *RetryConfig     `mapstructure:"retryConfig"`
+	TimeoutInMillis      uint32           `mapstructure:"timeoutInMillis"`
+	IdleTimeoutInSeconds uint32           `mapstructure:"idleTimeoutInSeconds"`
+	CircuitBreakers      *CircuitBreakers `mapstructure:"circuitBreakers"`
 }
 
 // RetryConfig holds the parameters for retries done by apk to the EndpointCluster
