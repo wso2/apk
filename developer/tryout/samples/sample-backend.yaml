@@ -24,6 +24,7 @@ spec:
   services:
   - host: backend
     port: 80
+  timeout: 50
   security:
   - type: Basic
     basic:

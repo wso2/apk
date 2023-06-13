@@ -25,6 +25,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/golang/protobuf/ptypes/duration"
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/interceptor"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
@@ -128,6 +129,7 @@ type Endpoint struct {
 	Certificate []byte
 	// Subject Alternative Names to verify in the public certificate
 	AllowedSANs []string
+	Timeout     *duration.Duration
 }
 
 // EndpointSecurity contains parameters of endpoint security at api.json
@@ -432,6 +434,8 @@ func (endpointCluster *EndpointCluster) validateEndpointCluster() error {
 			}
 		}
 
+		// fmt.Println("Endpoint Cluster: ", endpointCluster.Config)
+
 		if endpointCluster.Config != nil {
 			// Validate retry
 			if endpointCluster.Config.RetryConfig != nil {
@@ -439,6 +443,8 @@ func (endpointCluster *EndpointCluster) validateEndpointCluster() error {
 			}
 			// Validate timeout
 			conf := config.ReadConfigs()
+			// Set timeout to default if not provided
+			// fmt.Println("Endpoint Cluster Timeout: ", endpointCluster.Config.TimeoutInMillis)
 			maxTimeoutInMillis := conf.Envoy.Upstream.Timeouts.MaxRouteTimeoutInSeconds * 1000
 			if endpointCluster.Config.TimeoutInMillis > maxTimeoutInMillis {
 				endpointCluster.Config.TimeoutInMillis = maxTimeoutInMillis

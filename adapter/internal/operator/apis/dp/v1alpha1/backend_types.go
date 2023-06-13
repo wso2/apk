@@ -61,6 +61,7 @@ type BackendSpec struct {
 
 	// +optional
 	Security []SecurityConfig `json:"security,omitempty"`
+	Timeout  uint32           `json:"timeout,omitempty"`
 }
 
 // Service holds host and port information for the service
