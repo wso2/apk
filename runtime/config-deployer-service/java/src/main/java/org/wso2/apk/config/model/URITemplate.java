@@ -31,8 +31,7 @@ public class URITemplate implements Serializable{
     private String resourceURI;
     private String httpVerb;
     private boolean authEnabled = true;
-    private Scope scope;
-    private List<Scope> scopes = new ArrayList<Scope>();
+    private List<String> scopes = new ArrayList<String>();
     private int id;
     private String endpoint;
 
@@ -68,18 +67,12 @@ public class URITemplate implements Serializable{
         this.uriTemplate = template;
     }
 
-    public Scope getScope() {
-        return scope;
-    }
-    public List<Scope> getScopes() {
-        return scopes;
+    public String[] getScopes() {
+        return scopes.toArray(new String[scopes.size()]);
     }
 
-    public void setScope(Scope scope) {
-        this.scope = scope;
-    }
 
-    public void setScopes(Scope scope){
+    public void setScopes(String scope){
         this.scopes.add(scope);
     }
 
@@ -89,13 +82,13 @@ public class URITemplate implements Serializable{
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         URITemplate that = (URITemplate) o;
-        return authEnabled == that.authEnabled && id == that.id && Objects.equals(uriTemplate, that.uriTemplate) && Objects.equals(resourceURI, that.resourceURI) && Objects.equals(httpVerb, that.httpVerb) && Objects.equals(scope, that.scope) && Objects.equals(scopes, that.scopes) && Objects.equals(endpoint, that.endpoint);
+        return authEnabled == that.authEnabled && id == that.id && Objects.equals(uriTemplate, that.uriTemplate) && Objects.equals(resourceURI, that.resourceURI) && Objects.equals(httpVerb, that.httpVerb) && Objects.equals(scopes, that.scopes) && Objects.equals(endpoint, that.endpoint);
     }
 
     @Override
     public int hashCode() {
 
-        return Objects.hash(uriTemplate, resourceURI, httpVerb, authEnabled, scope, scopes, id, endpoint);
+        return Objects.hash(uriTemplate, resourceURI, httpVerb, authEnabled, scopes, id, endpoint);
     }
 
     public int getId() {
@@ -106,11 +99,11 @@ public class URITemplate implements Serializable{
         this.id = id;
     }
 
-    public List<Scope> retrieveAllScopes() {
-        return this.scopes;
+    public String[] retrieveAllScopes() {
+        return this.scopes.toArray(new String[scopes.size()]);
     }
 
-    public void addAllScopes(List<Scope> scopes) {
+    public void addAllScopes(List<String> scopes) {
 
         this.scopes = scopes;
     }

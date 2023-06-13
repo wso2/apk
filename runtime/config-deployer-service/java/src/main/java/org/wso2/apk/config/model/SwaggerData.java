@@ -17,92 +17,74 @@
  */
 package org.wso2.apk.config.model;
 
-
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
  * Intermediate model used to store data required for swagger processing
  */
 public class SwaggerData {
+
     /**
      * Maps to Swagger PathItem/Operation
      */
     public static class Resource {
+
         private String path;
         private String verb;
         private boolean authType;
         private String policy;
-        private Scope scope;
-        private List<Scope> scopes = new ArrayList<>();
-        private String amznResourceName;
-        private int amznResourceTimeout;
+        private String[] scopes;
 
         public String getPath() {
+
             return path;
         }
 
         public void setPath(String path) {
+
             this.path = path;
         }
 
         public String getVerb() {
+
             return verb;
         }
 
         public void setVerb(String verb) {
+
             this.verb = verb;
         }
 
         public boolean isAuthType() {
+
             return authType;
         }
 
         public void setAuthType(boolean authType) {
+
             this.authType = authType;
         }
 
         public String getPolicy() {
+
             return policy;
         }
 
         public void setPolicy(String policy) {
+
             this.policy = policy;
         }
 
-        public Scope getScope() {
-            return scope;
-        }
 
-        public void setScope(Scope scope) {
-            this.scope = scope;
-        }
 
-        public String getAmznResourceName() {
-            return amznResourceName;
-        }
-
-        public void setAmznResourceName(String amznResourceName) {
-            this.amznResourceName = amznResourceName;
-        }
-
-        public int getAmznResourceTimeout() {
-            return amznResourceTimeout;
-        }
-
-        public void setAmznResourceTimeout(int amznResourceTimeout) {
-            this.amznResourceTimeout = amznResourceTimeout;
-        }
-
-        public List<Scope> getScopes() {
+        public String[] getScopes() {
 
             return scopes;
         }
 
-        public void setScopes(List<Scope> scopes) {
+        public void setScopes(String[] scopes) {
 
             this.scopes = scopes;
         }
@@ -118,12 +100,12 @@ public class SwaggerData {
     private String security;
     private String apiLevelPolicy;
     private final Set<Resource> resources = new LinkedHashSet<>();
-    private final Set<Scope> scopes = new HashSet<>();
+    private final Set<String> scopes = new HashSet<>();
 
     public SwaggerData(API api) {
+
         title = api.getName();
         version = api.getVersion();
-
 
         URITemplate[] uriTemplates = api.getUriTemplates();
 
@@ -132,7 +114,6 @@ public class SwaggerData {
             resource.path = uriTemplate.getUriTemplate();
             resource.verb = uriTemplate.getHTTPVerb();
             resource.authType = uriTemplate.isAuthEnabled();
-            resource.scope = uriTemplate.getScope();
             resource.scopes = uriTemplate.retrieveAllScopes();
             resources.add(resource);
         }
@@ -141,42 +122,52 @@ public class SwaggerData {
     }
 
     public Set<Resource> getResources() {
+
         return resources;
     }
 
-    public Set<Scope> getScopes() {
+    public Set<String> getScopes() {
+
         return scopes;
     }
 
     public String getTitle() {
+
         return title;
     }
 
     public String getDescription() {
+
         return description;
     }
 
     public String getVersion() {
+
         return version;
     }
 
     public String getContactName() {
+
         return contactName;
     }
 
     public String getContactEmail() {
+
         return contactEmail;
     }
 
     public String getTransportType() {
+
         return transportType;
     }
 
     public String getSecurity() {
+
         return security;
     }
 
     public String getApiLevelPolicy() {
+
         return apiLevelPolicy;
     }
 }
