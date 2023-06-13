@@ -1743,12 +1743,14 @@ public class APIClient {
     private isolated function generateAPIPolicyAndBackendCR(model:APIArtifact apiArtifact, API api, APIOperations? operations, APIOperationPolicies? policies, commons:Organization organization, string targetRefName) returns model:APIPolicy? {
         model:APIPolicyData defaultSpecData = {};
         OperationPolicy[]? request = policies?.request;
-        model:InterceptorReference? requestInterceptor = self.retrieveAPIPolicyDetails(apiArtifact, api, operations, organization, request, "request");
-        if requestInterceptor is model:InterceptorReference {
-            defaultSpecData.requestInterceptors = [requestInterceptor];
+        model:InterceptorReference?|model:BackendJwtPolicy? requestPolicy = self.retrieveAPIPolicyDetails(apiArtifact, api, operations, organization, request, "request");
+        if requestPolicy is model:InterceptorReference {
+            defaultSpecData.requestInterceptors = [requestPolicy];
+        } else if requestPolicy is model:BackendJwtPolicy {
+            defaultSpecData.backendJwtToken = requestPolicy;
         }
         OperationPolicy[]? response = policies?.response;
-        model:InterceptorReference? responseInterceptor = self.retrieveAPIPolicyDetails(apiArtifact, api, operations, organization, response, "response");
+        model:InterceptorReference?|model:BackendJwtPolicy? responseInterceptor = self.retrieveAPIPolicyDetails(apiArtifact, api, operations, organization, response, "response");
         if responseInterceptor is model:InterceptorReference {
             defaultSpecData.responseInterceptors = [responseInterceptor];
         }
@@ -2476,7 +2478,7 @@ public class APIClient {
         return apiPolicyCR;
     }
 
-    isolated function retrieveAPIPolicyDetails(model:APIArtifact apiArtifact, API api, APIOperations? operations, commons:Organization organization, OperationPolicy[]? policies, string flow) returns model:InterceptorReference? {
+    isolated function retrieveAPIPolicyDetails(model:APIArtifact apiArtifact, API api, APIOperations? operations, commons:Organization organization, OperationPolicy[]? policies, string flow) returns model:InterceptorReference?|model:BackendJwtPolicy? {
         if policies is OperationPolicy[] {
             foreach OperationPolicy policy in policies {
                 string policyName = policy.policyName;
@@ -2501,7 +2503,29 @@ public class APIClient {
                             };
                         }
                         return interceptorReference;
-                    }
+                    } else if (policyName == "BackendJwt") {
+                        model:BackendJwtPolicy backendJwt = {};
+                        if policyParameters["enabled"] is boolean {
+                            backendJwt.enabled = <boolean>policyParameters["enabled"];
+                        }
+                        if policyParameters["encoding"] is string {
+                            backendJwt.encoding = <string>policyParameters["encoding"];
+                        }
+                        if policyParameters["signingAlgorithm"] is string {
+                            backendJwt.signingAlgorithm = <string>policyParameters["signingAlgorithm"];
+                        }
+                        if policyParameters["header"] is string {
+                            backendJwt.header = <string>policyParameters["header"];
+                        }
+                        if policyParameters["tokenTTL"] is int {
+                            backendJwt.tokenTTL = <int>policyParameters["tokenTTL"];
+                        }
+                        if policyParameters["customClaims"] is model:BackendJwtCustomClaim[] {
+                            backendJwt.customClaims = <model:BackendJwtCustomClaim[]>policyParameters["customClaims"];
+                        }
+                        return backendJwt;
+                    } 
+
                 }
             }
         }
