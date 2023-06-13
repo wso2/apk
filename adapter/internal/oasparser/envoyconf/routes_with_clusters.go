@@ -95,6 +95,7 @@ const (
 // to the api level clusters.
 func CreateRoutesWithClusters(adapterInternalAPI model.AdapterInternalAPI, interceptorCerts map[string][]byte, vHost string, organizationID string) (routesP []*routev3.Route,
 	clustersP []*clusterv3.Cluster, addressesP []*corev3.Address, err error) {
+	// fmt.Println("Endpoints creating 1")
 	var (
 		routes    []*routev3.Route
 		clusters  []*clusterv3.Cluster
@@ -105,6 +106,8 @@ func CreateRoutesWithClusters(adapterInternalAPI model.AdapterInternalAPI, inter
 	apiVersion := adapterInternalAPI.GetVersion()
 
 	conf := config.ReadConfigs()
+
+	// Get the timeout from the default config as this is used for the enforcer timeout
 	timeout := conf.Envoy.ClusterTimeoutInSeconds
 
 	// Create API level interceptor clusters if required
@@ -128,15 +131,16 @@ func CreateRoutesWithClusters(adapterInternalAPI model.AdapterInternalAPI, inter
 	routes = append(routes, routeP)
 	var endpointForAPIDefinitions []model.Endpoint
 	endpoint := &model.Endpoint{
+		// Localhost is set as the two containers are in the same pod
 		Host:    "localhost",
-		Port:    8084,
+		Port:    uint32(8084),
 		URLType: "https",
+		Timeout: durationpb.New(timeout),
 	}
 	endpointForAPIDefinitions = append(endpointForAPIDefinitions, *endpoint)
 	endpointCluster := model.EndpointCluster{
 		Endpoints: endpointForAPIDefinitions,
 	}
-
 	cluster, address, err := processEndpoints(apiDefinitionClusterName, &endpointCluster, timeout, "")
 	if err != nil {
 		logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(2239, apiTitle, apiVersion, apiDefinitionQueryParam, err.Error()))
@@ -151,6 +155,13 @@ func CreateRoutesWithClusters(adapterInternalAPI model.AdapterInternalAPI, inter
 		basePath := strings.TrimSuffix(endpoint.Endpoints[0].Basepath, "/")
 		existingClusterName := getExistingClusterName(*endpoint, processedEndpoints)
 
+		// convert the timeout value to seconds as the envoy timeout is in seconds
+		if endpoint.Config.TimeoutInMillis > 0 {
+			secs := endpoint.Config.TimeoutInMillis / 1000
+			timeout = time.Duration(secs)
+			fmt.Println("Timeout Value: ", timeout)
+		}
+
 		if existingClusterName == "" {
 			clusterName = getClusterName(endpoint.EndpointPrefix, organizationID, vHost, adapterInternalAPI.GetTitle(), apiVersion, resource.GetID())
 			cluster, address, err := processEndpoints(clusterName, endpoint, timeout, basePath)
@@ -161,6 +172,7 @@ func CreateRoutesWithClusters(adapterInternalAPI model.AdapterInternalAPI, inter
 				endpoints = append(endpoints, address...)
 				processedEndpoints[clusterName] = *endpoint
 			}
+			fmt.Println("Cluster Timeout after creation : ", cluster.ConnectTimeout)
 		} else {
 			clusterName = existingClusterName
 		}
@@ -358,6 +370,7 @@ func processEndpoints(clusterName string, clusterDetails *model.EndpointCluster,
 	addresses := []*corev3.Address{}
 
 	for i, ep := range clusterDetails.Endpoints {
+		// timeout = ep.Timeout.AsDuration()
 		// validating the basepath to be same for all upstreams of an api
 		if strings.TrimSuffix(ep.Basepath, "/") != basePath {
 			return nil, nil, errors.New("endpoint basepath mismatched for " + ep.RawURL + ". expected : " + basePath + " but found : " + ep.Basepath)
@@ -455,6 +468,7 @@ func processEndpoints(clusterName string, clusterDetails *model.EndpointCluster,
 		logger.LoggerOasparser.Error(err2)
 	}
 
+	// api definition
 	cluster := clusterv3.Cluster{
 		Name:                 clusterName,
 		ConnectTimeout:       durationpb.New(timeout * time.Second),
@@ -1605,6 +1619,8 @@ func createInterceptorAPIClusters(adapterInternalAPI model.AdapterInternalAPI, i
 	)
 	apiTitle := adapterInternalAPI.GetTitle()
 	apiVersion := adapterInternalAPI.GetVersion()
+
+	// fetch cluster timeout value from the vendor extension name for interceptors
 	apiRequestInterceptor = adapterInternalAPI.GetInterceptor(adapterInternalAPI.GetVendorExtensions(), xWso2requestInterceptor, APILevelInterceptor)
 	// if lua filter exists on api level, add cluster
 	if apiRequestInterceptor.Enable {

@@ -115,6 +115,9 @@ spec:
                   type: object
                 minItems: 1
                 type: array
+              timeout:
+                format: int32
+                type: integer
               tls:
                 description: TLSConfig defines enpoint TLS configurations
                 properties:

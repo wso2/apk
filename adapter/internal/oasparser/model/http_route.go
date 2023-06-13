@@ -19,6 +19,7 @@ package model
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/wso2/apk/adapter/internal/loggers"
@@ -26,6 +27,7 @@ import (
 	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
 	"github.com/wso2/apk/adapter/internal/operator/utils"
 	"golang.org/x/exp/maps"
+	"google.golang.org/protobuf/types/known/durationpb"
 	"k8s.io/apimachinery/pkg/types"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
@@ -54,6 +56,7 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 
 	disableScopes := true
 	disableAuthentications := false
+	var clusterTimeout uint32
 
 	var authScheme *dpv1alpha1.Authentication
 	if outputAuthScheme != nil {
@@ -264,22 +267,16 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 				hasPolicies:   hasPolicies,
 				iD:            uuid.New().String(),
 			}
+			resource.endpoints = &EndpointCluster{
+				Endpoints: endPoints,
+			}
 			if circuitBreaker != nil {
-				resource.endpoints = &EndpointCluster{
-					Endpoints: endPoints,
-					Config: &EndpointConfig{
-						CircuitBreakers: &CircuitBreakers{
-							MaxConnections:     int32(circuitBreaker.MaxConnections),
-							MaxRequests:        int32(circuitBreaker.MaxRequests),
-							MaxPendingRequests: int32(circuitBreaker.MaxPendingRequests),
-							MaxRetries:         int32(circuitBreaker.MaxRetries),
-							MaxConnectionPools: int32(circuitBreaker.MaxConnectionPools),
-						},
-					},
-				}
-			} else {
-				resource.endpoints = &EndpointCluster{
-					Endpoints: endPoints,
+				resource.endpoints.Config.CircuitBreakers = &CircuitBreakers{
+					MaxConnections:     int32(circuitBreaker.MaxConnections),
+					MaxRequests:        int32(circuitBreaker.MaxRequests),
+					MaxPendingRequests: int32(circuitBreaker.MaxPendingRequests),
+					MaxRetries:         int32(circuitBreaker.MaxRetries),
+					MaxConnectionPools: int32(circuitBreaker.MaxConnectionPools),
 				}
 			}
 			resource.endpointSecurity = utils.GetPtrSlice(securityConfig)
@@ -407,6 +404,7 @@ func GetEndpoints(backendName types.NamespacedName, backendMapping dpv1alpha1.Ba
 	endpoints := []Endpoint{}
 	backend, ok := backendMapping[backendName]
 	if ok && backend != nil {
+		timeout := backend.Timeout
 		if len(backend.Services) > 0 {
 			for _, service := range backend.Services {
 				endpoints = append(endpoints, Endpoint{
@@ -415,6 +413,7 @@ func GetEndpoints(backendName types.NamespacedName, backendMapping dpv1alpha1.Ba
 					URLType:     string(backend.Protocol),
 					Certificate: []byte(backend.TLS.ResolvedCertificate),
 					AllowedSANs: backend.TLS.AllowedSANs,
+					Timeout:     durationpb.New(time.Duration(timeout) * time.Second),
 				})
 			}
 		}

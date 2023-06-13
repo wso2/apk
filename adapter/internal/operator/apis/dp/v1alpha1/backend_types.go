@@ -64,6 +64,19 @@ type BackendSpec struct {
 
 	// + optional
 	CircuitBreaker *CircuitBreaker `json:"circuitBreaker,omitempty"`
+	// +optional
+	// Timeout congifuration for the backend
+	Timeout *Timeout `json:"timeout,omitempty"`
+}
+
+// Timeout defines the timeout configurations
+type Timeout struct {
+	// +kubebuilder:default=60
+	MaxRouteTimeoutSeconds uint32 `json:"maxRouteTimeoutSeconds"`
+	// +kubebuilder:default=60
+	RouteTimeoutSeconds uint32 `json:"routeTimeoutSeconds"`
+	// +kubebuilder:default=300
+	RouteIdleTimeoutSeconds uint32 `json:"routeIdleTimeoutSeconds"`
 }
 
 // CircuitBreaker defines the circuit breaker configurations
