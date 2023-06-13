@@ -95,7 +95,7 @@ var (
 	 pathTemplate = "{{.Context.PathTemplate}}",
 	 vhost = "{{.Context.Vhost}}",
 	 clusterName = "{{.Context.ClusterName}}",
-	 apiProperty = "{{.Context.APIProperty}}"
+	 apiProperty = "{{.Context.APIProperty.Spec.Properties}}"
  }
  local wire_log_config = {
 	 log_body_enabled = {{ .LogConfig.LogBodyEnabled }},

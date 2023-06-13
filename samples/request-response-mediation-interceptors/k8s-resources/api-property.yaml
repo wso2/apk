@@ -9,6 +9,8 @@ spec:
       value: "propertyValue1"
     - name: propertyName2
       value: "propertyValue2"
+    - name: propertyName3
+      value: "propertyValue3"
   targetRef:
     group: dp.wso2.com
     kind: API

@@ -32,6 +32,8 @@ exports.handleRequest = function(body) {
   const options = {compact: true, ignoreComment: true, spaces: 4};
   const xmlBody = convert.json2xml(reqBody, options);
   const xmlBodyBase64 = Buffer.from(xmlBody).toString('base64')
+  console.log('Request Service reqBody');
+  console.log(reqBody);
 
   return new Promise(function(resolve, reject) {
     let examples = {};
