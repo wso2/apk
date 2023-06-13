@@ -262,11 +262,17 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 				hasPolicies:   hasPolicies,
 				iD:            uuid.New().String(),
 			}
-			resource.endpoints = &EndpointCluster{
-				Endpoints: endPoints,
-				Config: &EndpointConfig{
-					TimeoutInMillis: clusterTimeout * 1000,
-				},
+			if clusterTimeout > 0 {
+				resource.endpoints = &EndpointCluster{
+					Endpoints: endPoints,
+					Config: &EndpointConfig{
+						TimeoutInMillis: clusterTimeout * 1000,
+					},
+				}
+			} else {
+				resource.endpoints = &EndpointCluster{
+					Endpoints: endPoints,
+				}
 			}
 			resource.endpointSecurity = utils.GetPtrSlice(securityConfig)
 			resources = append(resources, resource)

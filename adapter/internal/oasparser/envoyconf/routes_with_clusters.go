@@ -156,7 +156,7 @@ func CreateRoutesWithClusters(adapterInternalAPI model.AdapterInternalAPI, inter
 		existingClusterName := getExistingClusterName(*endpoint, processedEndpoints)
 
 		// convert the timeout value to seconds as the envoy timeout is in seconds
-		if endpoint.Config.TimeoutInMillis > 0 {
+		if endpoint.Config != nil && endpoint.Config.TimeoutInMillis > 0 {
 			secs := endpoint.Config.TimeoutInMillis / 1000
 			timeout = time.Duration(secs)
 			fmt.Println("Timeout Value: ", timeout)
