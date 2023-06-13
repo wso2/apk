@@ -56,11 +56,13 @@ It consists of the following sub-components:
 -->
 
 - **Data Plane** - The APK data plane. It provides API runtime capabilities such as gateway, rate-limiting services, and runtime management. It consists of the following sub-components:
-  <!---
+  
+<!---
    - **Runtime Manager** - Responsible for configuring the runtime aspects of API including API endpoints, discovering Kubernetes services, and converting them into APIs, etc. The backend component was developed using **Ballerina**
   
    - **Management Client** - Responsible for communication with the management server(control plane) to push/pull updates and maintain connectivity between the data plane and the control plane. The backend component was developed using **Go** 
   -->
+
    - **Config and Deploy APIs** - Responsible for configuring the runtime aspects of API including API endpoints, rate limiting policies, and converting API schemas into API configurations, etc. This API implementation done using **Ballerina**
  
    - **API Gateway - Router** - Router will intercept incoming API traffic and apply quality of services such as authentication, authorization, and rate limiting. The router uses the **Envoy Proxy** as the core component that does the traffic routing. Required additional extensions were developed using **C++**
