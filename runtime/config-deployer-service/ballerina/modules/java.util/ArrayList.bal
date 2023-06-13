@@ -24,8 +24,8 @@ public distinct class ArrayList {
     # The function to retrieve the string representation of the Ballerina class mapping the `java.util.ArrayList` Java class.
     #
     # + return - The `string` form of the Java object instance.
-    public isolated function toString() returns string {
-        return java:toString(self.jObj) ?: "null";
+    public function toString() returns string {
+        return java:toString(self.jObj) ?: "";
     }
     # The function that maps to the `add` method of `java.util.ArrayList`.
     #

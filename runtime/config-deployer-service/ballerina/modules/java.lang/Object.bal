@@ -155,3 +155,4 @@ function java_lang_Object_newObject1() returns handle = @java:Constructor {
     'class: "java.lang.Object",
     paramTypes: []
 } external;
+

@@ -21,7 +21,7 @@ import wso2/apk_common_lib as commons;
 
 configurable KeyStores keyStores = {
     tls: {
-        keyFilePath: "/home/wso2apk/runtime/security/wso2carbon.key"
+        keyFilePath: "/home/wso2apk/config-deployer/security/config.key"
     }
 };
 configurable (K8sConfigurations & readonly) k8sConfiguration = {};

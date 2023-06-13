@@ -24,7 +24,7 @@ public distinct class StackTraceElement {
     # The init function of the Ballerina class mapping the `java.lang.StackTraceElement` Java class.
     #
     # + obj - The `handle` value containing the Java reference of the object.
-    public isolated function init(handle obj) {
+    public function init(handle obj) {
         self.jObj = obj;
     }
 
@@ -32,7 +32,8 @@ public distinct class StackTraceElement {
     #
     # + return - The `string` form of the Java object instance.
     public function toString() returns string {
-        return java:toString(self.jObj) ?: "null";
+        return java:toString(self.jObj) ?: "";
     }
+
 }
 

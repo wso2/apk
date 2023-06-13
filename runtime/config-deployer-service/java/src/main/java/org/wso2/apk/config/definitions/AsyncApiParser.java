@@ -8,7 +8,12 @@ import io.apicurio.datamodels.asyncapi.models.AaiChannelItem;
 import io.apicurio.datamodels.asyncapi.models.AaiDocument;
 import io.apicurio.datamodels.asyncapi.models.AaiOperation;
 import io.apicurio.datamodels.asyncapi.models.AaiOperationBindings;
-import io.apicurio.datamodels.asyncapi.v2.models.*;
+import io.apicurio.datamodels.asyncapi.v2.models.Aai20ChannelItem;
+import io.apicurio.datamodels.asyncapi.v2.models.Aai20Document;
+import io.apicurio.datamodels.asyncapi.v2.models.Aai20ImplicitOAuthFlow;
+import io.apicurio.datamodels.asyncapi.v2.models.Aai20OAuthFlows;
+import io.apicurio.datamodels.asyncapi.v2.models.Aai20Operation;
+import io.apicurio.datamodels.asyncapi.v2.models.Aai20SecurityScheme;
 import io.apicurio.datamodels.core.models.Extension;
 import org.apache.commons.lang.StringUtils;
 import org.everit.json.schema.Schema;
@@ -21,12 +26,19 @@ import org.wso2.apk.config.api.APIDefinitionValidationResponse;
 import org.wso2.apk.config.api.APIManagementException;
 import org.wso2.apk.config.api.ExceptionCodes;
 import org.wso2.apk.config.model.API;
-import org.wso2.apk.config.model.Scope;
 import org.wso2.apk.config.model.URITemplate;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class AsyncApiParser extends APIDefinition {
@@ -1548,13 +1560,6 @@ public class AsyncApiParser extends APIDefinition {
             "    }\n" +
             "  }\n" +
             "}";
-    private List<String> otherSchemes;
-    public List<String> getOtherSchemes() {
-        return otherSchemes;
-    }
-    public void setOtherSchemes(List<String> otherSchemes) {
-        this.otherSchemes = otherSchemes;
-    }
 
     @Override
     public Set<URITemplate> getURITemplates(String resourceConfigsJSON) throws APIManagementException {
@@ -1564,7 +1569,7 @@ public class AsyncApiParser extends APIDefinition {
     public Set<URITemplate> getURITemplates(String apiDefinition, boolean includePublish)
             throws APIManagementException {
         Set<URITemplate> uriTemplates = new HashSet<>();
-        Set<Scope> scopes = getScopes(apiDefinition);
+        String[] scopes = getScopes(apiDefinition);
         Aai20Document document = (Aai20Document) Library.readDocumentFromJSONString(apiDefinition);
         if (document.channels != null && document.channels.size() > 0) {
             for (Map.Entry<String, AaiChannelItem> entry : document.channels.entrySet()) {
@@ -1582,7 +1587,7 @@ public class AsyncApiParser extends APIDefinition {
         return uriTemplates;
     }
 
-    private URITemplate buildURITemplate(String target, String verb, Aai20Operation operation, Set<Scope> scopes,
+    private URITemplate buildURITemplate(String target, String verb, Aai20Operation operation, String[] scopes,
                                          Aai20ChannelItem channel) throws APIManagementException {
         URITemplate template = new URITemplate();
         template.setHTTPVerb(verb);
@@ -1595,18 +1600,8 @@ public class AsyncApiParser extends APIDefinition {
 
         List<String> opScopes = getScopeOfOperations(operation);
         if (!opScopes.isEmpty()) {
-            if (opScopes.size() == 1) {
-                String firstScope = opScopes.get(0);
-                Scope scope = ParserUtil.findScopeByKey(scopes, firstScope);
-                if (scope == null) {
-                    throw new APIManagementException("Scope '" + firstScope + "' not found.",
-                            ExceptionCodes.SCOPE_NOT_FOUND);
-                }
-                template.setScope(scope);
-                template.setScopes(scope);
-            } else {
                 for (String scopeName : opScopes) {
-                    Scope scope = ParserUtil.findScopeByKey(scopes, scopeName);
+                    String scope = ParserUtil.findScopeByKey(scopes, scopeName);
                     if (scope == null) {
                         throw new APIManagementException("Resource Scope '" + scopeName + "' not found.",
                                 ExceptionCodes.SCOPE_NOT_FOUND);
@@ -1614,7 +1609,6 @@ public class AsyncApiParser extends APIDefinition {
                     template.setScopes(scope);
                 }
             }
-        }
         return template;
     }
 
@@ -1640,8 +1634,8 @@ public class AsyncApiParser extends APIDefinition {
     }
 
     @Override
-    public Set<Scope> getScopes(String resourceConfigsJSON) {
-        Set<Scope> scopeSet = new LinkedHashSet<>();
+    public String[] getScopes(String resourceConfigsJSON) {
+        Set<String> scopeSet = new LinkedHashSet<>();
         Aai20Document document = (Aai20Document) Library.readDocumentFromJSONString(resourceConfigsJSON);
         if (document.components != null && document.components.securitySchemes != null) {
             Aai20SecurityScheme oauth2 = (Aai20SecurityScheme) document.components.securitySchemes.get("oauth2");
@@ -1654,20 +1648,12 @@ public class AsyncApiParser extends APIDefinition {
                 }
                 if (scopes != null) {
                     for (Map.Entry<String, String> entry : scopes.entrySet()) {
-                        Scope scope = new Scope();
-                        scope.setKey(entry.getKey());
-                        scope.setName(entry.getKey());
-                        scope.setDescription(entry.getValue());
-                        String scopeBinding = scopeBindings.get(scope.getKey());
-                        if (scopeBinding != null) {
-                            scope.setRoles(scopeBinding);
-                        }
-                        scopeSet.add(scope);
+                        scopeSet.add(entry.getKey());
                     }
                 }
             }
         }
-        return scopeSet;
+        return scopeSet.toArray(new String[scopeSet.size()]);
     }
 
     @Override
@@ -1862,11 +1848,10 @@ public class AsyncApiParser extends APIDefinition {
         Map<String, String> scopes = new HashMap<>();
         Map<String, String> scopeBindings = new HashMap<>();
 
-        Iterator<Scope> iterator = apiToUpdate.getScopes().iterator();
-        while (iterator.hasNext()) {
-            Scope scope = iterator.next();
-            scopes.put(scope.getName(), scope.getDescription());
-            scopeBindings.put(scope.getName(), scope.getRoles());
+        if (apiToUpdate.getScopes() != null) {
+            for (String scope : apiToUpdate.getScopes()) {
+                scopes.put(scope, scope);
+            }
         }
         oauth2SecurityScheme.flows.implicit.scopes = scopes;
 

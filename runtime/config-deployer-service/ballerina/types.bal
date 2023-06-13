@@ -71,6 +71,9 @@ public type DefinitionBody record {
 };
 
 # Map of virtual hosts of API
+#
+# + production - Field Description  
+# + sandbox - Field Description
 public type APKConf_vhosts record {
     string[] production?;
     string[] sandbox?;
@@ -108,6 +111,13 @@ public type APKOperations record {
 };
 
 # CORS Configuration of API
+#
+# + corsConfigurationEnabled - Field Description  
+# + accessControlAllowOrigins - Field Description  
+# + accessControlAllowCredentials - Field Description  
+# + accessControlAllowHeaders - Field Description  
+# + accessControlAllowMethods - Field Description  
+# + accessControlAllowMaxAge - Field Description
 public type CORSConfiguration record {
     boolean corsConfigurationEnabled?;
     string[] accessControlAllowOrigins?;

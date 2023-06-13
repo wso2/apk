@@ -23,7 +23,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.swagger.models.*;
+import io.swagger.models.RefModel;
+import io.swagger.models.RefPath;
+import io.swagger.models.RefResponse;
+import io.swagger.models.Response;
+import io.swagger.models.Swagger;
 import io.swagger.models.parameters.RefParameter;
 import io.swagger.models.properties.RefProperty;
 import io.swagger.parser.SwaggerParser;
@@ -31,21 +35,14 @@ import io.swagger.parser.util.DeserializationUtils;
 import io.swagger.parser.util.SwaggerDeserializationResult;
 import io.swagger.v3.core.util.Json;
 import io.swagger.v3.core.util.Yaml;
-import io.swagger.v3.oas.models.Operation;
-import io.swagger.v3.oas.models.*;
-import io.swagger.v3.oas.models.headers.Header;
-import io.swagger.v3.oas.models.media.*;
-import io.swagger.v3.oas.models.parameters.Parameter;
-import io.swagger.v3.oas.models.parameters.RequestBody;
-import io.swagger.v3.oas.models.responses.ApiResponse;
-import io.swagger.v3.oas.models.responses.ApiResponses;
-import io.swagger.v3.oas.models.security.OAuthFlow;
-import io.swagger.v3.oas.models.security.Scopes;
-import io.swagger.v3.oas.models.security.SecurityRequirement;
-import io.swagger.v3.oas.models.security.SecurityScheme;
+import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Paths;
+import io.swagger.v3.oas.models.media.ComposedSchema;
+import io.swagger.v3.oas.models.media.ObjectSchema;
+import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.parser.ObjectMapperFactory;
 import io.swagger.v3.parser.OpenAPIV3Parser;
-import io.swagger.v3.parser.converter.SwaggerConverter;
 import io.swagger.v3.parser.core.models.ParseOptions;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -54,16 +51,32 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONObject;
 import org.wso2.apk.config.APIConstants;
-import org.wso2.apk.config.api.*;
+import org.wso2.apk.config.api.APIDefinition;
+import org.wso2.apk.config.api.APIDefinitionValidationResponse;
+import org.wso2.apk.config.api.APIManagementException;
+import org.wso2.apk.config.api.ErrorItem;
+import org.wso2.apk.config.api.ExceptionCodes;
 import org.wso2.apk.config.api.Info;
-import org.wso2.apk.config.model.Scope;
 import org.wso2.apk.config.model.URITemplate;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -74,7 +87,6 @@ public class OASParserUtil {
     private static final Log log = LogFactory.getLog(OASParserUtil.class);
     private static final String OPENAPI_RESOURCE_KEY = "paths";
     private static final String[] UNSUPPORTED_RESOURCE_BLOCKS = new String[]{"servers"};
-    private static final SwaggerConverter swaggerConverter = new SwaggerConverter();
     private static final APIDefinition oas3Parser = new OAS3Parser();
 
     public enum SwaggerVersion {
@@ -89,12 +101,9 @@ public class OASParserUtil {
     private static final String HEADERS = "headers";
 
     private static final String REF_PREFIX = "#/components/";
-    private static final String ARRAY_DATA_TYPE = "array";
-    private static final String OBJECT_DATA_TYPE = "object";
 
     static class SwaggerUpdateContext {
         private final Paths paths = new Paths();
-        private final Set<Scope> aggregatedScopes = new HashSet<>();
         private final Map<String, Set<String>> referenceObjectMap = new HashMap<>();
         private final Set<Components> aggregatedComponents = new HashSet<>();
 
@@ -109,10 +118,6 @@ public class OASParserUtil {
 
         Paths getPaths() {
             return paths;
-        }
-
-        Set<Scope> getAggregatedScopes() {
-            return aggregatedScopes;
         }
 
         Map<String, Set<String>> getReferenceObjectMapping() {
@@ -150,330 +155,6 @@ public class OASParserUtil {
 
         throw new APIManagementException("Invalid OAS definition provided.",
                 ExceptionCodes.MALFORMED_OPENAPI_DEFINITON);
-    }
-
-    private static void setScopes(final OpenAPI destOpenAPI, final Set<Scope> aggregatedScopes) {
-        Map<String, SecurityScheme> securitySchemes;
-        SecurityScheme securityScheme;
-        OAuthFlow oAuthFlow;
-        Scopes scopes = new Scopes();
-        if (destOpenAPI.getComponents() != null &&
-                (securitySchemes = destOpenAPI.getComponents().getSecuritySchemes()) != null &&
-                (securityScheme = securitySchemes.get(OAS3Parser.OPENAPI_SECURITY_SCHEMA_KEY)) != null &&
-                (oAuthFlow = securityScheme.getFlows().getImplicit()) != null) {
-
-            Map<String, String> scopeBindings = new HashMap<>();
-
-            for (Scope scope : aggregatedScopes) {
-                scopes.addString(scope.getKey(), scope.getDescription());
-                scopeBindings.put(scope.getKey(), scope.getRoles());
-            }
-
-            oAuthFlow.setScopes(scopes);
-
-            Map<String, Object> extensions = new HashMap<>();
-            extensions.put(APIConstants.SWAGGER_X_SCOPES_BINDINGS, scopeBindings);
-            oAuthFlow.setExtensions(extensions);
-        }
-    }
-
-    private static void processReferenceObjectMap(SwaggerUpdateContext context) {
-        // Get a deep copy of the reference objects in order to prevent Concurrent modification exception
-        // since we may need to update the reference object mapping while iterating through it
-        Map<String, Set<String>> referenceObjectsMappingCopy = getReferenceObjectsCopy(context.getReferenceObjectMapping());
-
-        int preRefObjectCount = getReferenceObjectCount(context.getReferenceObjectMapping());
-
-        Set<Components> aggregatedComponents = context.getAggregatedComponents();
-        for (Components sourceComponents : aggregatedComponents) {
-
-            for (Map.Entry<String, Set<String>> refCategoryEntry : referenceObjectsMappingCopy.entrySet()) {
-                String category = refCategoryEntry.getKey();
-
-                if (REQUEST_BODIES.equalsIgnoreCase(category)) {
-                    Map<String, RequestBody> sourceRequestBodies = sourceComponents.getRequestBodies();
-
-                    if (sourceRequestBodies != null) {
-                        for (String refKey : refCategoryEntry.getValue()) {
-                            RequestBody requestBody = sourceRequestBodies.get(refKey);
-                            setRefOfRequestBody(requestBody, context);
-                        }
-                    }
-                }
-
-                if (SCHEMAS.equalsIgnoreCase(category)) {
-                    Map<String, Schema> sourceSchemas = sourceComponents.getSchemas();
-
-                    if (sourceSchemas != null) {
-                        for (String refKey : refCategoryEntry.getValue()) {
-                            Schema schema = sourceSchemas.get(refKey);
-                            extractReferenceFromSchema(schema, context);
-                        }
-                    }
-                }
-
-                if (PARAMETERS.equalsIgnoreCase(category)) {
-                    Map<String, Parameter> parameters = sourceComponents.getParameters();
-
-                    if (parameters != null) {
-                        for (String refKey : refCategoryEntry.getValue()) {
-                            Parameter parameter = parameters.get(refKey);
-                            //Extract the parameter reference only if it exists in the source definition
-                            if(parameter != null) {
-                                Content content = parameter.getContent();
-                                if (content != null) {
-                                    extractReferenceFromContent(content, context);
-                                } else {
-                                    String ref = parameter.get$ref();
-                                    if (ref != null) {
-                                        extractReferenceWithoutSchema(ref, context);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                if (RESPONSES.equalsIgnoreCase(category)) {
-                    Map<String, ApiResponse> responses = sourceComponents.getResponses();
-
-                    if (responses != null) {
-                        for (String refKey : refCategoryEntry.getValue()) {
-                            ApiResponse response = responses.get(refKey);
-                            //Extract the response reference only if it exists in the source definition
-                            if(response != null) {
-                                Content content = response.getContent();
-                                extractReferenceFromContent(content, context);
-                            }
-                        }
-                    }
-                }
-
-                if (HEADERS.equalsIgnoreCase(category)) {
-                    Map<String, Header> headers = sourceComponents.getHeaders();
-
-                    if (headers != null) {
-                        for (String refKey : refCategoryEntry.getValue()) {
-                            Header header = headers.get(refKey);
-                            Content content = header.getContent();
-                            extractReferenceFromContent(content, context);
-                        }
-                    }
-                }
-            }
-
-            int postRefObjectCount = getReferenceObjectCount(context.getReferenceObjectMapping());
-
-            if (postRefObjectCount > preRefObjectCount) {
-                processReferenceObjectMap(context);
-            }
-        }
-    }
-
-    private static int getReferenceObjectCount(Map<String, Set<String>> referenceObjectMap) {
-        int total = 0;
-
-        for (Set<String> refKeys : referenceObjectMap.values()) {
-            total += refKeys.size();
-        }
-
-        return total;
-    }
-
-    private static Map<String, Set<String>> getReferenceObjectsCopy(Map<String, Set<String>> referenceObject) {
-        return referenceObject.entrySet().stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, e -> new HashSet<>(e.getValue())));
-    }
-
-    private static void readPathsAndScopes(PathItem srcPathItem, URITemplate uriTemplate,
-            final Set<Scope> allScopes, SwaggerUpdateContext context) {
-        Map<PathItem.HttpMethod, Operation> srcOperations = srcPathItem.readOperationsMap();
-
-        PathItem.HttpMethod httpMethod = PathItem.HttpMethod.valueOf(uriTemplate.getHTTPVerb().toUpperCase());
-        Operation srcOperation = srcOperations.get(httpMethod);
-
-        Paths paths = context.getPaths();
-        Set<Scope> aggregatedScopes = context.getAggregatedScopes();
-
-        if (!paths.containsKey(uriTemplate.getUriTemplate())) {
-            paths.put(uriTemplate.getUriTemplate(), new PathItem());
-        }
-
-        PathItem pathItem = paths.get(uriTemplate.getUriTemplate());
-        pathItem.operation(httpMethod, srcOperation);
-
-        readReferenceObjects(srcOperation, context);
-
-        List<SecurityRequirement> srcOperationSecurity = srcOperation.getSecurity();
-        if (srcOperationSecurity != null) {
-            for (SecurityRequirement requirement : srcOperationSecurity) {
-                List<String> scopes = requirement.get(OAS3Parser.OPENAPI_SECURITY_SCHEMA_KEY);
-                if (scopes != null) {
-                    for (String scopeKey : scopes) {
-                        for (Scope scope : allScopes) {
-                            if (scope.getKey().equals(scopeKey)) {
-                                aggregatedScopes.add(scope);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private static void readReferenceObjects(Operation srcOperation, SwaggerUpdateContext context) {
-        setRefOfRequestBody(srcOperation.getRequestBody(), context);
-
-        setRefOfApiResponses(srcOperation.getResponses(), context);
-
-        setRefOfApiResponseHeaders(srcOperation.getResponses(), context);
-
-        setRefOfParameters(srcOperation.getParameters(), context);
-    }
-
-    private static void setRefOfRequestBody(RequestBody requestBody, SwaggerUpdateContext context) {
-        if (requestBody != null) {
-            Content content = requestBody.getContent();
-            if (content != null) {
-                extractReferenceFromContent(content, context);
-            } else {
-                String ref = requestBody.get$ref();
-                if (ref != null) {
-                    addToReferenceObjectMap(ref, context);
-                }
-            }
-        }
-    }
-
-    private static void setRefOfApiResponses(ApiResponses responses, SwaggerUpdateContext context) {
-        if (responses != null) {
-            for (ApiResponse response : responses.values()) {
-                Content content = response.getContent();
-
-                if (content != null) {
-                    extractReferenceFromContent(content, context);
-                } else {
-                    String ref = response.get$ref();
-                    if (ref != null) {
-                        extractReferenceWithoutSchema(ref, context);
-                    }
-                }
-            }
-        }
-    }
-
-    private static void setRefOfApiResponseHeaders(ApiResponses responses, SwaggerUpdateContext context) {
-        if (responses != null) {
-            for (ApiResponse response : responses.values()) {
-                Map<String, Header> headers = response.getHeaders();
-
-                if (headers != null) {
-                    for (Header header : headers.values()) {
-                        Content content = header.getContent();
-
-                        extractReferenceFromContent(content, context);
-                    }
-                }
-            }
-        }
-    }
-
-    private static void setRefOfParameters(List<Parameter> parameters, SwaggerUpdateContext context) {
-        if (parameters != null) {
-            for (Parameter parameter : parameters) {
-                Schema schema = parameter.getSchema();
-                if (schema != null) {
-                    String ref = schema.get$ref();
-                    if (ref != null) {
-                        addToReferenceObjectMap(ref, context);
-                    }
-                } else {
-                    String ref = parameter.get$ref();
-                    if (ref != null) {
-                        extractReferenceWithoutSchema(ref, context);
-                    }
-                }
-            }
-        }
-    }
-
-    private static void extractReferenceFromContent(Content content, SwaggerUpdateContext context) {
-        if (content != null) {
-            for (MediaType mediaType : content.values()) {
-                Schema schema = mediaType.getSchema();
-
-                extractReferenceFromSchema(schema, context);
-            }
-        }
-    }
-
-    private static void extractReferenceWithoutSchema(String reference, SwaggerUpdateContext context) {
-        if (reference != null) {
-            addToReferenceObjectMap(reference, context);
-        }
-    }
-
-    private static void extractReferenceFromSchema(Schema schema, SwaggerUpdateContext context) {
-        if (schema != null) {
-            String ref = schema.get$ref();
-            List<String> references = new ArrayList<String>();
-            if (ref == null) {
-                if (schema instanceof ArraySchema) {
-                    ArraySchema arraySchema = (ArraySchema) schema;
-                    ref = arraySchema.getItems().get$ref();
-                } else if (schema instanceof ObjectSchema) {
-                    references = addSchemaOfSchema(schema);
-                } else if (schema instanceof MapSchema) {
-                    Schema additionalPropertiesSchema = (Schema) schema.getAdditionalProperties();
-                    extractReferenceFromSchema(additionalPropertiesSchema, context);
-                } else if (schema instanceof ComposedSchema) {
-                    if (((ComposedSchema) schema).getAllOf() != null) {
-                        for (Schema sc : ((ComposedSchema) schema).getAllOf()) {
-                            if (OBJECT_DATA_TYPE.equalsIgnoreCase(sc.getType())) {
-                                references.addAll(addSchemaOfSchema(sc));
-                            } else {
-                                references.add(sc.get$ref());
-                            }
-                        }
-                    } else if (((ComposedSchema) schema).getAnyOf() != null) {
-                        for (Schema sc : ((ComposedSchema) schema).getAnyOf()) {
-                            if (OBJECT_DATA_TYPE.equalsIgnoreCase(sc.getType())) {
-                                references.addAll(addSchemaOfSchema(sc));
-                            } else {
-                                references.add(sc.get$ref());
-                            }
-                        }
-                    } else if (((ComposedSchema) schema).getOneOf() != null) {
-                        for (Schema sc : ((ComposedSchema) schema).getOneOf()) {
-                            if (OBJECT_DATA_TYPE.equalsIgnoreCase(sc.getType())) {
-                                references.addAll(addSchemaOfSchema(sc));
-                            } else {
-                                references.add(sc.get$ref());
-                            }
-                        }
-                    } else {
-                        log.error("Unidentified schema. The schema is not available in the API definition.");
-                    }
-                }
-            }
-
-            if (ref != null) {
-                addToReferenceObjectMap(ref, context);
-            } else if (!references.isEmpty() && references.size() != 0) {
-                for (String reference : references) {
-                    addToReferenceObjectMap(reference, context);
-                }
-            }
-
-            // Process schema properties if present
-            Map properties = schema.getProperties();
-
-            if (properties != null) {
-                for (Object propertySchema : properties.values()) {
-                    extractReferenceFromSchema((Schema) propertySchema, context);
-                }
-            }
-        }
     }
 
     private static List<String> addSchemaOfSchema(Schema schema) {
@@ -626,11 +307,11 @@ public class OASParserUtil {
      * @return URL template after setting the scopes
      */
     public static URITemplate setScopesToTemplate(URITemplate template, List<String> resourceScopes,
-            Set<Scope> apiScopes) throws APIManagementException {
+            String[] apiScopes) throws APIManagementException {
 
         for (String scopeName : resourceScopes) {
             if (StringUtils.isNotBlank(scopeName)) {
-                Scope scope = ParserUtil.findScopeByKey(apiScopes, scopeName);
+                String scope = ParserUtil.findScopeByKey(apiScopes, scopeName);
                 if (scope == null) {
                     throw new APIManagementException("Resource Scope '" + scopeName + "' not found.",
                             ExceptionCodes.SCOPE_NOT_FOUND);
@@ -648,10 +329,11 @@ public class OASParserUtil {
      * @param scopeSet
      * @return Scope set
      */
-    static Set<Scope> sortScopes(Set<Scope> scopeSet) {
-        List<Scope> scopesSortedlist = new ArrayList<>(scopeSet);
-        scopesSortedlist.sort(Comparator.comparing(Scope::getKey));
-        return new LinkedHashSet<>(scopesSortedlist);
+    static String[] sortScopes(Set<String> scopeSet) {
+
+        String[] scopeArray = scopeSet.toArray(new String[scopeSet.size()]);
+        Arrays.sort(scopeArray);
+        return scopeArray;
     }
 
     public static void copyOperationVendorExtensions(Map<String, Object> existingExtensions,

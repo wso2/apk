@@ -1,0 +1,9 @@
+[wso2.config_deployer_service.k8sConfiguration]
+host = "localhost:9090"
+serviceAccountPath = "./tests/resources/serviceAccount"
+[wso2.config_deployer_service.keyStores.tls]
+keyFilePath = "./tests/resources/wso2carbon.key"
+certFilePath = "./tests/resources/wso2carbon.crt"
+[wso2.config_deployer_service.gatewayConfiguration]
+name = "default"
+listenerName = "httpslistener"

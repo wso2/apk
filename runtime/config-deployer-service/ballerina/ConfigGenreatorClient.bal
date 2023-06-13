@@ -29,7 +29,7 @@ public class ConfigGeneratorClient {
                     runtimeapi:APIDefinition parser = validateAndRetrieveDefinitionResult.getParser();
                     runtimeModels:API apiFromDefinition = check parser.getAPIFromDefinition(validateAndRetrieveDefinitionResult.getContent());
                     APIClient apiclient = new ();
-                    APKConf generatedAPKConf = apiclient.fromAPIModelToAPKConf(apiFromDefinition);
+                    APKConf generatedAPKConf =check apiclient.fromAPIModelToAPKConf(apiFromDefinition);
                     string|() apkConfYaml = check commons:newYamlUtil1().fromJsonStringToYaml(generatedAPKConf.toJsonString());
                     OkAnydata response = {body: apkConfYaml, mediaType: "application/yaml"};
                     return response;

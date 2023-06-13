@@ -26,64 +26,64 @@ public distinct class ErrorHandler {
     #
     # + return - The `int` value returning from the Java mapping.
     public function getErrorCode() returns int {
-        return org_wso2_apk_runtime_api_ErrorHandler_getErrorCode(self.jObj);
+        return org_wso2_apk_config_api_ErrorHandler_getErrorCode(self.jObj);
     }
 
     # The function that maps to the `getErrorDescription` method of `org.wso2.apk.config.api.ErrorHandler`.
     #
     # + return - The `string` value returning from the Java mapping.
     public function getErrorDescription() returns string {
-        return java:toString(org_wso2_apk_runtime_api_ErrorHandler_getErrorDescription(self.jObj)) ?: "";
+        return java:toString(org_wso2_apk_config_api_ErrorHandler_getErrorDescription(self.jObj)) ?: "";
     }
 
     # The function that maps to the `getErrorMessage` method of `org.wso2.apk.config.api.ErrorHandler`.
     #
     # + return - The `string` value returning from the Java mapping.
     public function getErrorMessage() returns string {
-        return java:toString(org_wso2_apk_runtime_api_ErrorHandler_getErrorMessage(self.jObj)) ?: "";
+        return java:toString(org_wso2_apk_config_api_ErrorHandler_getErrorMessage(self.jObj)) ?: "";
     }
 
     # The function that maps to the `getHttpStatusCode` method of `org.wso2.apk.config.api.ErrorHandler`.
     #
     # + return - The `int` value returning from the Java mapping.
     public function getHttpStatusCode() returns int {
-        return org_wso2_apk_runtime_api_ErrorHandler_getHttpStatusCode(self.jObj);
+        return org_wso2_apk_config_api_ErrorHandler_getHttpStatusCode(self.jObj);
     }
 
     # The function that maps to the `printStackTrace` method of `org.wso2.apk.config.api.ErrorHandler`.
     #
     # + return - The `boolean` value returning from the Java mapping.
     public function printStackTrace() returns boolean {
-        return org_wso2_apk_runtime_api_ErrorHandler_printStackTrace(self.jObj);
+        return org_wso2_apk_config_api_ErrorHandler_printStackTrace(self.jObj);
     }
 
 }
 
-function org_wso2_apk_runtime_api_ErrorHandler_getErrorCode(handle receiver) returns int = @java:Method {
+function org_wso2_apk_config_api_ErrorHandler_getErrorCode(handle receiver) returns int = @java:Method {
     name: "getErrorCode",
     'class: "org.wso2.apk.config.api.ErrorHandler",
     paramTypes: []
 } external;
 
-function org_wso2_apk_runtime_api_ErrorHandler_getErrorDescription(handle receiver) returns handle = @java:Method {
+function org_wso2_apk_config_api_ErrorHandler_getErrorDescription(handle receiver) returns handle = @java:Method {
     name: "getErrorDescription",
     'class: "org.wso2.apk.config.api.ErrorHandler",
     paramTypes: []
 } external;
 
-function org_wso2_apk_runtime_api_ErrorHandler_getErrorMessage(handle receiver) returns handle = @java:Method {
+function org_wso2_apk_config_api_ErrorHandler_getErrorMessage(handle receiver) returns handle = @java:Method {
     name: "getErrorMessage",
     'class: "org.wso2.apk.config.api.ErrorHandler",
     paramTypes: []
 } external;
 
-function org_wso2_apk_runtime_api_ErrorHandler_getHttpStatusCode(handle receiver) returns int = @java:Method {
+function org_wso2_apk_config_api_ErrorHandler_getHttpStatusCode(handle receiver) returns int = @java:Method {
     name: "getHttpStatusCode",
     'class: "org.wso2.apk.config.api.ErrorHandler",
     paramTypes: []
 } external;
 
-function org_wso2_apk_runtime_api_ErrorHandler_printStackTrace(handle receiver) returns boolean = @java:Method {
+function org_wso2_apk_config_api_ErrorHandler_printStackTrace(handle receiver) returns boolean = @java:Method {
     name: "printStackTrace",
     'class: "org.wso2.apk.config.api.ErrorHandler",
     paramTypes: []

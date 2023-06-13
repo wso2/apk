@@ -17,13 +17,15 @@
  */
 package org.wso2.apk.config.api;
 
-
 import org.wso2.apk.config.model.API;
-import org.wso2.apk.config.model.Scope;
 import org.wso2.apk.config.model.SwaggerData;
 import org.wso2.apk.config.model.URITemplate;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -50,7 +52,7 @@ public abstract class APIDefinition {
      * @param resourceConfigsJSON resource json
      * @return scopes
      */
-    public abstract Set<Scope> getScopes(String resourceConfigsJSON) throws APIManagementException;
+    public abstract String[] getScopes(String resourceConfigsJSON) throws APIManagementException;
 
     public abstract String generateAPIDefinition(API api) throws APIManagementException;
 

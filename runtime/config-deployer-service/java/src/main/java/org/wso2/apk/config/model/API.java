@@ -11,7 +11,7 @@ public class API {
     private String endpoint;
     private URITemplate[] uriTemplates = new URITemplate[0];
     private String apiSecurity;
-    private Set<Scope> scopes;
+    private String[] scopes;
     private String graphQLSchema;
     private String swaggerDefinition;
 
@@ -64,11 +64,11 @@ public class API {
         return apiSecurity;
     }
 
-    public Set<Scope> getScopes() {
+    public String[] getScopes() {
         return scopes;
     }
 
-    public void setScopes(Set<Scope> scopes) {
+    public void setScopes(String[] scopes) {
         this.scopes = scopes;
     }
 

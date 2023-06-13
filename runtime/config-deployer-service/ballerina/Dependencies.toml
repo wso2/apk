@@ -313,6 +313,18 @@ dependencies = [
 
 [[package]]
 org = "ballerina"
+name = "test"
+version = "0.0.0"
+scope = "testOnly"
+dependencies = [
+	{org = "ballerina", name = "jballerina.java"}
+]
+modules = [
+	{org = "ballerina", packageName = "test", moduleName = "test"}
+]
+
+[[package]]
+org = "ballerina"
 name = "time"
 version = "2.2.5"
 dependencies = [
@@ -395,6 +407,7 @@ dependencies = [
 	{org = "ballerina", name = "log"},
 	{org = "ballerina", name = "mime"},
 	{org = "ballerina", name = "regex"},
+	{org = "ballerina", name = "test"},
 	{org = "ballerina", name = "url"},
 	{org = "ballerina", name = "uuid"},
 	{org = "wso2", name = "apk_common_lib"}
@@ -403,7 +416,6 @@ modules = [
 	{org = "wso2", packageName = "config_deployer_service", moduleName = "config_deployer_service"},
 	{org = "wso2", packageName = "config_deployer_service", moduleName = "config_deployer_service.java.io"},
 	{org = "wso2", packageName = "config_deployer_service", moduleName = "config_deployer_service.java.lang"},
-	{org = "wso2", packageName = "config_deployer_service", moduleName = "config_deployer_service.java.nio.charset"},
 	{org = "wso2", packageName = "config_deployer_service", moduleName = "config_deployer_service.java.util"},
 	{org = "wso2", packageName = "config_deployer_service", moduleName = "config_deployer_service.java.util.function"},
 	{org = "wso2", packageName = "config_deployer_service", moduleName = "config_deployer_service.java.util.stream"},

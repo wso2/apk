@@ -28,10 +28,19 @@ import ballerina/crypto;
 import config_deployer_service.java.io as javaio;
 import wso2/apk_common_lib as commons;
 
+#
 public class APIClient {
 
-    public isolated function fromAPIModelToAPKConf(runtimeModels:API api) returns APKConf {
-        APKConf apkConf = {name: api.getName(), context: "", version: api.getVersion()};
+    # This function used to convert APKInternalAPI model to APKConf.
+    #
+    # + api - APKInternalAPI model
+    # + return - APKConf model.
+    public isolated function fromAPIModelToAPKConf(runtimeModels:API api) returns APKConf|error {
+        APKConf apkConf = {
+            name: api.getName(),
+            context: api.getContext().length() > 0 ? api.getContext() : "",
+            version: api.getVersion()
+        };
         string endpoint = api.getEndpoint();
         if endpoint.length() > 0 {
             apkConf.endpointConfigurations = {production: {endpoint: endpoint}};
@@ -43,7 +52,8 @@ public class APIClient {
                 APKOperations operation = {
                     verb: uriTemplate.getHTTPVerb(),
                     target: uriTemplate.getUriTemplate(),
-                    authTypeEnabled: uriTemplate.isAuthEnabled()
+                    authTypeEnabled: uriTemplate.isAuthEnabled(),
+                    scopes: check uriTemplate.getScopes()
                 };
                 string resourceEndpoint = uriTemplate.getEndpoint();
                 if resourceEndpoint.length() > 0 {
@@ -56,43 +66,47 @@ public class APIClient {
         return apkConf;
     }
 
-    public isolated function generateK8sArtifacts(APKConf apkConf, string? definition, string organization) returns model:APIArtifact|commons:APKError|error {
-        string uniqueId = self.getUniqueIdForAPI(apkConf.name, apkConf.version, organization);
-        model:APIArtifact apiArtifact = {uniqueId: uniqueId, name: apkConf.name, version: apkConf.version};
-        APKOperations[]? operations = apkConf.operations;
-        if operations is APKOperations[] {
-            if operations.length() == 0 {
+    public isolated function generateK8sArtifacts(APKConf apkConf, string? definition, string organization) returns model:APIArtifact|commons:APKError {
+        do {
+            string uniqueId = self.getUniqueIdForAPI(apkConf.name, apkConf.version, organization);
+            model:APIArtifact apiArtifact = {uniqueId: uniqueId, name: apkConf.name, version: apkConf.version};
+            APKOperations[]? operations = apkConf.operations;
+            if operations is APKOperations[] {
+                if operations.length() == 0 {
+                    return e909021();
+                }
+                // Validating operation policies.
+                _ = check self.validateOperationPolicies(apkConf.apiPolicies, operations, organization);
+
+                // Validating rate limit.
+                _ = check self.validateRateLimit(apkConf.apiRateLimit, operations);
+            } else {
                 return e909021();
             }
-            // Validating operation policies.
-            _ = check self.validateOperationPolicies(apkConf.apiPolicies, operations, organization);
+            map<model:Endpoint|()> createdEndpoints = {};
+            EndpointConfigurations? endpointConfigurations = apkConf.endpointConfigurations;
+            if endpointConfigurations is EndpointConfigurations {
+                createdEndpoints = check self.createAndAddBackendServics(apiArtifact, apkConf, endpointConfigurations, (), (), organization);
+            }
+            JWTAuthentication|APIKeyAuthentication[]? authentication = apkConf.authentication;
+            if authentication is Authentication[] {
+                self.populateAuthenticationMap(apiArtifact, apkConf, authentication, createdEndpoints, organization);
+            }
 
-            // Validating rate limit.
-            _ = check self.validateRateLimit(apkConf.apiRateLimit, operations);
-        } else {
-            return e909021();
+            _ = check self.setHttpRoute(apiArtifact, apkConf, createdEndpoints.hasKey(PRODUCTION_TYPE) ? createdEndpoints.get(PRODUCTION_TYPE) : (), uniqueId, PRODUCTION_TYPE, organization);
+            _ = check self.setHttpRoute(apiArtifact, apkConf, createdEndpoints.hasKey(SANDBOX_TYPE) ? createdEndpoints.get(SANDBOX_TYPE) : (), uniqueId, SANDBOX_TYPE, organization);
+            json generatedSwagger = check self.retrieveGeneratedSwaggerDefinition(apkConf, definition);
+            check self.retrieveGeneratedConfigmapForDefinition(apiArtifact, apkConf, generatedSwagger, uniqueId, organization);
+            self.generateAndSetAPICRArtifact(apiArtifact, apkConf, organization);
+            self.generateAndSetPolicyCRArtifact(apiArtifact, apkConf, organization);
+            apiArtifact.organization = organization;
+            return apiArtifact;
+        } on fail var e {
+            return e909022("Internal Error occured while generating k8s-artifact", e);
         }
-        map<model:Endpoint|()> createdEndpoints = {};
-        EndpointConfigurations? endpointConfigurations = apkConf.endpointConfigurations;
-        if endpointConfigurations is EndpointConfigurations {
-            createdEndpoints = check self.createAndAddBackendServics(apiArtifact, apkConf, endpointConfigurations, (), (), organization);
-        }
-        JWTAuthentication|APIKeyAuthentication[]? authentication = apkConf.authentication;
-        if authentication is Authentication[] {
-            self.populateAuthenticationMap(apiArtifact, apkConf, authentication, createdEndpoints, organization);
-        }
-
-        _ = check self.setHttpRoute(apiArtifact, apkConf, createdEndpoints.hasKey(PRODUCTION_TYPE) ? createdEndpoints.get(PRODUCTION_TYPE) : (), uniqueId, PRODUCTION_TYPE, organization);
-        _ = check self.setHttpRoute(apiArtifact, apkConf, createdEndpoints.hasKey(SANDBOX_TYPE) ? createdEndpoints.get(SANDBOX_TYPE) : (), uniqueId, SANDBOX_TYPE, organization);
-        json generatedSwagger = check self.retrieveGeneratedSwaggerDefinition(apkConf, definition);
-        check self.retrieveGeneratedConfigmapForDefinition(apiArtifact, apkConf, generatedSwagger, uniqueId, organization);
-        self.generateAndSetAPICRArtifact(apiArtifact, apkConf, organization);
-        self.generateAndSetPolicyCRArtifact(apiArtifact, apkConf, organization);
-        apiArtifact.organization = organization;
-        return apiArtifact;
     }
 
-    isolated function validateOperationPolicies(APIOperationPolicies? apiPolicies, APKOperations[] operations, string organization) returns commons:APKError|() {
+    isolated function validateOperationPolicies(APIOperationPolicies? apiPolicies, APKOperations[] operations, string organization) returns commons:APKError? {
         foreach APKOperations operation in operations {
             APIOperationPolicies? operationPolicies = operation.operationPolicies;
             if (!self.isPolicyEmpty(operationPolicies)) {
@@ -807,11 +821,7 @@ public class APIClient {
                 string[]? scopes = apiOperation.scopes;
                 if scopes is string[] {
                     foreach string item in scopes {
-                        runtimeModels:Scope scope = runtimeModels:newScope1();
-                        scope.setId(item);
-                        scope.setName(item);
-                        scope.setKey(item);
-                        uriTemplate.setScopes(scope);
+                        uriTemplate.setScopes(item);
                     }
                 }
                 uritemplatesSet.push(uriTemplate);

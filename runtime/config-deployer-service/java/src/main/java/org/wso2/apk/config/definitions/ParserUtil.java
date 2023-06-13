@@ -1,8 +1,5 @@
 package org.wso2.apk.config.definitions;
 
-import org.wso2.apk.config.model.Scope;
-
-import java.util.Set;
 
 public class ParserUtil {
     private ParserUtil() {
@@ -14,10 +11,10 @@ public class ParserUtil {
      * @param key    - Key to search with
      * @return Scope - scope object
      */
-    public static Scope findScopeByKey(Set<Scope> scopes, String key) {
+    public static String findScopeByKey(String[] scopes, String key) {
 
-        for (Scope scope : scopes) {
-            if (scope.getKey().equals(key)) {
+        for (String scope : scopes) {
+            if (scope.equals(key)) {
                 return scope;
             }
         }
