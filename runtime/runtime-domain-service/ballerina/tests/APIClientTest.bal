@@ -2480,8 +2480,8 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
         services.push([interceptorBackendService2, interceptorBackendServiceResponse2]);
 
         [model:InterceptorService, any][] interceptorServices = [];
-        string interceptorBackendUrl1 =  "http://interceptor-backend1.interceptor:9082";
-        string interceptorBackendUrl2 =  "http://interceptor-backend2.interceptor:9083";
+        string interceptorBackendUrl1 = "http://interceptor-backend1.interceptor:9082";
+        string interceptorBackendUrl2 = "http://interceptor-backend2.interceptor:9083";
         string[] requestIncludes = ["request_headers", "invocation_context"];
         string[] responseIncludes = ["response_body", "invocation_context"];
         model:InterceptorService requestInterceptorService = getMockInterceptorService(check apiWithAPILevelInterceptorPolicy.cloneWithType(API), organiztion1, apiUUID, "request", requestIncludes, interceptorBackendUrl1);
@@ -4351,10 +4351,10 @@ function createAPIWithOperationPolicyProvider() returns map<[string, string, API
         services.push([interceptorBackendService2, interceptorBackendServiceResponse2]);
         [model:Backend, any][] servicesError = [];
         servicesError.push([backendService, backendServiceErrorResponse]);
-        
+
         [model:InterceptorService, any][] interceptorServices = [];
-        string interceptorBackendUrl1 =  "http://interceptor-backend1.interceptor:9082";
-        string interceptorBackendUrl2 =  "http://interceptor-backend2.interceptor:9083";
+        string interceptorBackendUrl1 = "http://interceptor-backend1.interceptor:9082";
+        string interceptorBackendUrl2 = "http://interceptor-backend2.interceptor:9083";
         string[] requestIncludes = ["request_headers", "invocation_context"];
         string[] responseIncludes = ["response_body", "invocation_context"];
         model:InterceptorService requestInterceptorService = getMockInterceptorService(check apiWithAPILevelInterceptorPolicy.cloneWithType(API), organiztion1, apiUUID, "request", requestIncludes, interceptorBackendUrl1);
@@ -5628,15 +5628,15 @@ function getMockResourceLevelPolicy(API api, commons:Organization organiztion, s
         "metadata": {"name": "api-policy-ref-name", "namespace": "apk-platform", "labels": getLabels(api, organiztion)},
         "spec": {
             "default": {
-               "requestInterceptors": [
+                "requestInterceptors": [
                     {
                         "name": getInterceptorServiceUid(api, organiztion, "request", 0),
                         "namespace": "apk-platform"
                     }
-                    
+
                 ],
                 "responseInterceptors": [
-                   {
+                    {
                         "name": getInterceptorServiceUid(api, organiztion, "response", 0),
                         "namespace": "apk-platform"
                     }
@@ -5664,10 +5664,10 @@ function getMockAPILevelPolicy(API api, commons:Organization organiztion, string
                         "name": getInterceptorServiceUid(api, organiztion, "request", 0),
                         "namespace": "apk-platform"
                     }
-                    
+
                 ],
                 "responseInterceptors": [
-                   {
+                    {
                         "name": getInterceptorServiceUid(api, organiztion, "response", 0),
                         "namespace": "apk-platform"
                     }
@@ -5693,17 +5693,17 @@ function getMockAPIPolicyResponse(model:APIPolicy request) returns http:Response
 
 function getMockInterceptorService(API api, commons:Organization organiztion, string apiUUID, string flow, string[] includes, string backendUrl) returns model:InterceptorService {
     return {
-            "apiVersion": "dp.wso2.com/v1alpha1",
-            "kind": "InterceptorService",
-            "metadata": {"name": getInterceptorServiceUid(api, organiztion, flow, 0), "namespace": "apk-platform", "labels": getLabels(api, organiztion)},
-            "spec": {
-                "backendRef": {
-                    "name": getInterceptorBackendUid(api, INTERCEPTOR_TYPE, organiztion, backendUrl),
-                    "namespace": "apk-platform"
-                },
-                "includes": includes
-            }
-        };
+        "apiVersion": "dp.wso2.com/v1alpha1",
+        "kind": "InterceptorService",
+        "metadata": {"name": getInterceptorServiceUid(api, organiztion, flow, 0), "namespace": "apk-platform", "labels": getLabels(api, organiztion)},
+        "spec": {
+            "backendRef": {
+                "name": getInterceptorBackendUid(api, INTERCEPTOR_TYPE, organiztion, backendUrl),
+                "namespace": "apk-platform"
+            },
+            "includes": includes
+        }
+    };
 }
 
 function getMockInterceptorServiceResponse(model:InterceptorService request) returns http:Response {
@@ -6167,15 +6167,15 @@ public function mediationPolicyByIdDataProvider() returns map<[string, commons:O
             }
         ]
     };
-    commons:APKError notfound = error commons:APKError("6 not found",
+    commons:APKError notfound = error commons:APKError("7 not found",
         code = 909001,
-        message = "6 not found",
+        message = "7 not found",
         statusCode = 404,
-        description = "6 not found"
+        description = "7 not found"
     );
     map<[string, commons:Organization, anydata]> dataset = {
         "1": ["1", organiztion1, mediationPolicy1.toBalString()],
-        "2": ["6", organiztion1, notfound.toBalString()]
+        "2": ["7", organiztion1, notfound.toBalString()]
     };
     return dataset;
 }
@@ -6212,8 +6212,59 @@ function getMediationPolicyListDataProvider() returns map<[string?, int, int, st
             SORT_BY_POLICY_NAME,
             SORT_ORDER_ASC,
             {
-                "count": 5,
+                "count": 6,
                 "list": [
+                    {
+                        "id": "6",
+                        "type": "BackendJwt",
+                        "name": "BackendJwt",
+                        "displayName": "BackendJwt",
+                        "description": "This policy allows you to add backend JWT",
+                        "applicableFlows": [
+                            "request"
+                        ],
+                        "supportedApiTypes": [
+                            "REST"
+                        ],
+                        "policyAttributes": [
+                            {
+                                "name": "enabled",
+                                "description": "enabled holds the status of the policy",
+                                "required": true,
+                                "type": "boolean"
+                            },
+                            {
+                                "name": "encoding",
+                                "description": "Encoding holds the encoding type",
+                                "required": false,
+                                "type": "String"
+                            },
+                            {
+                                "name": "signingAlgorithm",
+                                "description": "signingAlgorithm holds the signing algorithm",
+                                "required": false,
+                                "type": "String"
+                            },
+                            {
+                                "name": "header",
+                                "description": "Header holds the header name",
+                                "required": false,
+                                "type": "String"
+                            },
+                            {
+                                "name": "tokenTTL",
+                                "description": "TokenTTL holds the token time to live in seconds",
+                                "required": false,
+                                "type": "int"
+                            },
+                            {
+                                "name": "customClaims",
+                                "description": "CustomClaim holds custom claim information",
+                                "required": false,
+                                "type": "array"
+                            }
+                        ]
+                    },
                     {
                         "id": "5",
                         "type": "Interceptor",
@@ -6367,7 +6418,7 @@ function getMediationPolicyListDataProvider() returns map<[string?, int, int, st
                 "pagination": {
                     "offset": 0,
                     "limit": 10,
-                    "total": 5,
+                    "total": 6,
                     "next": "",
                     "previous": ""
                 }
@@ -6380,7 +6431,7 @@ function getMediationPolicyListDataProvider() returns map<[string?, int, int, st
             SORT_BY_POLICY_NAME,
             SORT_ORDER_DESC,
             {
-                "count": 5,
+                "count": 6,
                 "list": [
                     {
                         "id": "2",
@@ -6530,12 +6581,63 @@ function getMediationPolicyListDataProvider() returns map<[string?, int, int, st
                                 "type": "String"
                             }
                         ]
+                    },
+                    {
+                        "id": "6",
+                        "type": "BackendJwt",
+                        "name": "BackendJwt",
+                        "displayName": "BackendJwt",
+                        "description": "This policy allows you to add backend JWT",
+                        "applicableFlows": [
+                            "request"
+                        ],
+                        "supportedApiTypes": [
+                            "REST"
+                        ],
+                        "policyAttributes": [
+                            {
+                                "name": "enabled",
+                                "description": "enabled holds the status of the policy",
+                                "required": true,
+                                "type": "boolean"
+                            },
+                            {
+                                "name": "encoding",
+                                "description": "Encoding holds the encoding type",
+                                "required": false,
+                                "type": "String"
+                            },
+                            {
+                                "name": "signingAlgorithm",
+                                "description": "signingAlgorithm holds the signing algorithm",
+                                "required": false,
+                                "type": "String"
+                            },
+                            {
+                                "name": "header",
+                                "description": "Header holds the header name",
+                                "required": false,
+                                "type": "String"
+                            },
+                            {
+                                "name": "tokenTTL",
+                                "description": "TokenTTL holds the token time to live in seconds",
+                                "required": false,
+                                "type": "int"
+                            },
+                            {
+                                "name": "customClaims",
+                                "description": "CustomClaim holds custom claim information",
+                                "required": false,
+                                "type": "array"
+                            }
+                        ]
                     }
                 ],
                 "pagination": {
                     "offset": 0,
                     "limit": 10,
-                    "total": 5,
+                    "total": 6,
                     "next": "",
                     "previous": ""
                 }
@@ -6548,7 +6650,7 @@ function getMediationPolicyListDataProvider() returns map<[string?, int, int, st
             SORT_BY_ID,
             SORT_ORDER_ASC,
             {
-                "count": 5,
+                "count": 6,
                 "list": [
                     {
                         "id": "1",
@@ -6698,12 +6800,63 @@ function getMediationPolicyListDataProvider() returns map<[string?, int, int, st
                                 "type": "String"
                             }
                         ]
+                    },
+                    {
+                        "id": "6",
+                        "type": "BackendJwt",
+                        "name": "BackendJwt",
+                        "displayName": "BackendJwt",
+                        "description": "This policy allows you to add backend JWT",
+                        "applicableFlows": [
+                            "request"
+                        ],
+                        "supportedApiTypes": [
+                            "REST"
+                        ],
+                        "policyAttributes": [
+                            {
+                                "name": "enabled",
+                                "description": "enabled holds the status of the policy",
+                                "required": true,
+                                "type": "boolean"
+                            },
+                            {
+                                "name": "encoding",
+                                "description": "Encoding holds the encoding type",
+                                "required": false,
+                                "type": "String"
+                            },
+                            {
+                                "name": "signingAlgorithm",
+                                "description": "signingAlgorithm holds the signing algorithm",
+                                "required": false,
+                                "type": "String"
+                            },
+                            {
+                                "name": "header",
+                                "description": "Header holds the header name",
+                                "required": false,
+                                "type": "String"
+                            },
+                            {
+                                "name": "tokenTTL",
+                                "description": "TokenTTL holds the token time to live in seconds",
+                                "required": false,
+                                "type": "int"
+                            },
+                            {
+                                "name": "customClaims",
+                                "description": "CustomClaim holds custom claim information",
+                                "required": false,
+                                "type": "array"
+                            }
+                        ]
                     }
                 ],
                 "pagination": {
                     "offset": 0,
                     "limit": 10,
-                    "total": 5,
+                    "total": 6,
                     "next": "",
                     "previous": ""
                 }
@@ -6716,8 +6869,59 @@ function getMediationPolicyListDataProvider() returns map<[string?, int, int, st
             SORT_BY_ID,
             SORT_ORDER_DESC,
             {
-                "count": 5,
+                "count": 6,
                 "list": [
+                    {
+                        "id": "6",
+                        "type": "BackendJwt",
+                        "name": "BackendJwt",
+                        "displayName": "BackendJwt",
+                        "description": "This policy allows you to add backend JWT",
+                        "applicableFlows": [
+                            "request"
+                        ],
+                        "supportedApiTypes": [
+                            "REST"
+                        ],
+                        "policyAttributes": [
+                            {
+                                "name": "enabled",
+                                "description": "enabled holds the status of the policy",
+                                "required": true,
+                                "type": "boolean"
+                            },
+                            {
+                                "name": "encoding",
+                                "description": "Encoding holds the encoding type",
+                                "required": false,
+                                "type": "String"
+                            },
+                            {
+                                "name": "signingAlgorithm",
+                                "description": "signingAlgorithm holds the signing algorithm",
+                                "required": false,
+                                "type": "String"
+                            },
+                            {
+                                "name": "header",
+                                "description": "Header holds the header name",
+                                "required": false,
+                                "type": "String"
+                            },
+                            {
+                                "name": "tokenTTL",
+                                "description": "TokenTTL holds the token time to live in seconds",
+                                "required": false,
+                                "type": "int"
+                            },
+                            {
+                                "name": "customClaims",
+                                "description": "CustomClaim holds custom claim information",
+                                "required": false,
+                                "type": "array"
+                            }
+                        ]
+                    },
                     {
                         "id": "5",
                         "type": "Interceptor",
@@ -6871,7 +7075,7 @@ function getMediationPolicyListDataProvider() returns map<[string?, int, int, st
                 "pagination": {
                     "offset": 0,
                     "limit": 10,
-                    "total": 5,
+                    "total": 6,
                     "next": "",
                     "previous": ""
                 }
@@ -6888,6 +7092,57 @@ function getMediationPolicyListDataProvider() returns map<[string?, int, int, st
                 "count": 2,
                 "list": [
                     {
+                        "id": "6",
+                        "type": "BackendJwt",
+                        "name": "BackendJwt",
+                        "displayName": "BackendJwt",
+                        "description": "This policy allows you to add backend JWT",
+                        "applicableFlows": [
+                            "request"
+                        ],
+                        "supportedApiTypes": [
+                            "REST"
+                        ],
+                        "policyAttributes": [
+                            {
+                                "name": "enabled",
+                                "description": "enabled holds the status of the policy",
+                                "required": true,
+                                "type": "boolean"
+                            },
+                            {
+                                "name": "encoding",
+                                "description": "Encoding holds the encoding type",
+                                "required": false,
+                                "type": "String"
+                            },
+                            {
+                                "name": "signingAlgorithm",
+                                "description": "signingAlgorithm holds the signing algorithm",
+                                "required": false,
+                                "type": "String"
+                            },
+                            {
+                                "name": "header",
+                                "description": "Header holds the header name",
+                                "required": false,
+                                "type": "String"
+                            },
+                            {
+                                "name": "tokenTTL",
+                                "description": "TokenTTL holds the token time to live in seconds",
+                                "required": false,
+                                "type": "int"
+                            },
+                            {
+                                "name": "customClaims",
+                                "description": "CustomClaim holds custom claim information",
+                                "required": false,
+                                "type": "array"
+                            }
+                        ]
+                    },
+                    {
                         "id": "5",
                         "type": "Interceptor",
                         "name": "Interceptor",
@@ -6933,41 +7188,12 @@ function getMediationPolicyListDataProvider() returns map<[string?, int, int, st
                                 "type": "String"
                             }
                         ]
-                    },
-                    {
-                        "id": "1",
-                        "type": "RequestHeaderModifier",
-                        "name": "addHeader",
-                        "displayName": "Add Header",
-                        "description": "This policy allows you to add a new header to the request",
-                        "applicableFlows": [
-                            "request"
-                        ],
-                        "supportedApiTypes": [
-                            "REST"
-                        ],
-                        "policyAttributes": [
-                            {
-                                "name": "headerName",
-                                "description": "Name of the header to be added",
-                                "required": true,
-                                "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
-                                "type": "String"
-                            },
-                            {
-                                "name": "headerValue",
-                                "description": "Value of the header",
-                                "required": true,
-                                "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
-                                "type": "String"
-                            }
-                        ]
                     }
                 ],
                 "pagination": {
                     "offset": 0,
                     "limit": 2,
-                    "total": 5,
+                    "total": 6,
                     "next": "/policies?limit=2&offset=2&sortBy=policyName&sortOrder=asc&query=",
                     "previous": ""
                 }
@@ -7044,7 +7270,7 @@ function getMediationPolicyListDataProvider() returns map<[string?, int, int, st
                 "pagination": {
                     "offset": 2,
                     "limit": 2,
-                    "total": 5,
+                    "total": 6,
                     "next": "/policies?limit=2&offset=4&sortBy=policyName&sortOrder=desc&query=",
                     "previous": "/policies?limit=2&offset=0&sortBy=policyName&sortOrder=desc&query="
                 }
@@ -7053,16 +7279,16 @@ function getMediationPolicyListDataProvider() returns map<[string?, int, int, st
         "8": [
             (),
             3,
-            6,
+            7,
             SORT_BY_POLICY_NAME,
             SORT_ORDER_ASC,
             {
                 "count": 0,
                 "list": [],
                 "pagination": {
-                    "offset": 6,
+                    "offset": 7,
                     "limit": 3,
-                    "total": 5,
+                    "total": 6,
                     "next": "",
                     "previous": ""
                 }
