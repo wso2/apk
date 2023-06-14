@@ -22,7 +22,7 @@ kind: PersistentVolumeClaim
 metadata:
   name: enforcer-analytics-logs-volume-pvc
 spec:
-  storageClassName: standard
+  storageClassName: {{ .Values.wso2.apk.dp.gatewayRuntime.analytics.storageClassName | default "standard" }}
   accessModes:
     - ReadWriteOnce
   resources:
