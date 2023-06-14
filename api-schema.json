@@ -1,0 +1,365 @@
+{
+    "Apk-conf-version": {
+      "title": "apk configuration file version"
+    },
+    "type": "string",
+    "API": {
+      "title": "API object",
+      "required": [
+        "context",
+        "name",
+        "version"
+      ],
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "UUID of the API\n",
+          "readOnly": true
+        },
+        "name": {
+          "maxLength": 60,
+          "minLength": 1,
+          "type": "string"
+        },
+        "context": {
+          "maxLength": 232,
+          "minLength": 1,
+          "type": "string"
+        },
+        "version": {
+          "maxLength": 30,
+          "minLength": 1,
+          "pattern": "^[^~!@#;:%^*()+={}|\\\\<>\"',&/$\\[\\]\\s+\\/]+$",
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "default": "HTTP",
+          "enum": [
+            "HTTP",
+            "GRAPHQL",
+            "GRPC"
+          ]
+        },
+        "organization": {
+          "type": "string"
+        },
+        "endpointConfigurations": {
+          "$ref": "#/components/schemas/EndpointConfigurations"
+        },
+        "operations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/APIOperations"
+          }
+        },
+        "apiPolicies": {
+          "$ref": "#/components/schemas/APIOperationPolicies",
+          "optional": true
+        },
+        "apiRateLimit": {
+          "$ref": "#/components/schemas/APIRateLimit"
+        },
+        "authentication": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/Authentication"
+          }
+        },
+        "AdditionalProperties": {
+          "type": "array",
+          "description": "Map of custom properties of API",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "value": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "vhosts": {
+          "type": "object",
+          "description": "Map of virtual hosts of API\n",
+          "properties": {
+            "production": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "sandbox": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "corsConfiguration": {
+          "$ref": "#/components/schemas/CORSConfiguration"
+        }
+      }
+    },
+    "APIOperations": {
+      "title": "Operation",
+      "type": "object",
+      "properties": {
+        "target": null,
+        "type": "string",
+        "example": "/order/{orderId}"
+      },
+      "verb": {
+        "type": "string",
+        "example": "POST"
+      },
+      "authentication": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Authentication"
+        }
+      },
+      "EndpointConfigurations": {
+        "$ref": "#/components/schemas/EndpointConfigurations"
+      },
+      "operationPolicies": {
+        "$ref": "#/components/schemas/APIOperationPolicies"
+      },
+      "operationRateLimit": {
+        "$ref": "#/components/schemas/APIRateLimit"
+      }
+    },
+    "scopes": {
+      "type": "array",
+      "example": [
+  
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "APIOperationPolicies": {
+      "title": "API Operation Level Policies",
+      "properties": {
+        "request": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/OperationPolicy"
+          }
+        },
+        "response": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/OperationPolicy"
+          }
+        }
+      }
+    },
+    "OperationPolicy": {
+      "title": "API Operation Policy",
+      "required": [
+        "policyName"
+      ],
+      "type": "object",
+      "properties": {
+        "policyName": {
+          "type": "string"
+        },
+        "policyVersion": {
+          "type": "string",
+          "default": "v1"
+        },
+        "policyId": {
+          "type": "string"
+        },
+        "parameters": {
+          "type": "object",
+          "example": {
+            "headerName": "header1"
+          }
+        }
+      }
+    },
+    "APIRateLimit": {
+      "title": "API Rate Limit Details",
+      "type": "object",
+      "required": [
+        "requestsPerUnit",
+        "unit"
+      ],
+      "properties": {
+        "requestsPerUnit": {
+          "type": "integer",
+          "description": "Number of requests allowed per specified unit of time",
+          "example": 30
+        },
+        "unit": {
+          "type": "string",
+          "description": "Unit of time",
+          "enum": [
+            "Minute",
+            "Hour",
+            "Day"
+          ],
+          "example": "Minute"
+        }
+      }
+    },
+    "EndpointConfigurations": {
+      "title": "Endpoint configs",
+      "properties": {
+        "production": {
+          "$ref": "#/components/schemas/EndpointConfiguration"
+        },
+        "sandbox": {
+          "$ref": "#/components/schemas/EndpointConfiguration"
+        }
+      }
+    },
+    "EndpointConfiguration": {
+      "required": [
+        "endpoint"
+      ],
+      "type": "object",
+      "properties": {
+        "endpoint": {
+          "type": "object",
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/components/schemas/K8sService"
+            }
+          ]
+        },
+        "endpointSecurity": {
+          "$ref": "#/components/schemas/EndpointSecurity"
+        },
+        "certificate": {
+          "type": "object",
+          "$ref": "#/components/schemas/Certificate"
+        },
+        "resiliency": {
+          "$ref": "#/components/schemas/Resiliency"
+        }
+      }
+    },
+    "Certificate": {
+      "type": "object",
+      "properties": {
+        "secretName": {
+          "type": "string"
+        },
+        "secretKey": {
+          "type": "string"
+        }
+      }
+    },
+    "EndpointSecurity": {
+      "type": "object",
+      "properties": {
+        "enabled": null,
+        "type": "boolean",
+        "default": false
+      },
+      "securityType": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/BasicEndpointSecurity"
+          }
+        ]
+      }
+    },
+    "BasicEndpointSecurity": {
+      "type": "object",
+      "properties": {
+        "secretName": {
+          "type": "string"
+        },
+        "userNameKey": {
+          "type": "string"
+        },
+        "passwordKey": {
+          "type": "string"
+        }
+      }
+    },
+    "Resiliency": {
+      "type": "object",
+      "properties": {
+      }
+    },
+    "Authentication": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "authType": {
+          "type": "string"
+        }
+      }
+    },
+    "CORSConfiguration": {
+      "type": "object",
+      "description": "CORS Configuration of API\n",
+      "properties": {
+        "corsConfigurationEnabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "accessControlAllowOrigins": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "accessControlAllowCredentials": {
+          "type": "boolean",
+          "default": false
+        },
+        "accessControlAllowHeaders": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "accessControlAllowMethods": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "accessControlAllowMaxAge": {
+          "type": "integer",
+          "default": 0
+        }
+      }
+    },
+    "K8sService": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "example": "pizzashack-service"
+        },
+        "namespace": {
+          "type": "string",
+          "example": "apk-platform"
+        },
+        "port": {
+          "type": "integer",
+          "example": 8080
+        },
+        "protocol": {
+          "type": "string"
+        }
+      }
+    }
+  }
+  
