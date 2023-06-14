@@ -18,6 +18,14 @@ public class ConfigGeneratorClient {
         do {
             DefinitionBody definitionBody = check self.prepareDefinitionBodyFromRequest(request);
             runtimeapi:APIDefinitionValidationResponse|runtimeapi:APIManagementException? validateAndRetrieveDefinitionResult = ();
+            if (definitionBody.url is string && definitionBody.definition is record {|byte[] fileContent; string fileName; anydata...;|}) || (definitionBody.url is () && definitionBody.definition is ()) {
+                BadRequestError badRequest = {body: {code: 90091, message: "Invalid API Definition"}};
+                return badRequest;
+            }
+            if definitionBody.apiType is () {
+                BadRequestError badRequest = {body: {code: 90091, message: "API Type need to specified"}};
+                return badRequest;
+            }
             if definitionBody.url is string {
                 validateAndRetrieveDefinitionResult = check self.validateAndRetrieveDefinition(<string>definitionBody.'apiType, definitionBody.url, (), ());
             } else if definitionBody.definition is record {|byte[] fileContent; string fileName; anydata...;|} {
