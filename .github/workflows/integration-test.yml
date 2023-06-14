@@ -145,7 +145,7 @@ jobs:
 
   runs_integration_tests_on_pull_request_target:
     if: github.event_name == 'pull_request_target' && github.event.action == 'opened' || github.event.action == 'synchronize' || github.event.action == 'reopened'
-    needs: [build_adapter, build_enforcer, build_runtime,build_management_server,build_admin,build_backoffice,build_devportal, build_idpds, build_idpui]
+    needs: [build_adapter, build_enforcer, build_runtime,build_management_server,build_admin,build_backoffice,build_devportal, build_idpds, build_idpui,build_config]
     runs-on: ubuntu-latest
     steps:
     - uses: azure/login@v1
