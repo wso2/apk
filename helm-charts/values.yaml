@@ -99,7 +99,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/admin-domain-service:latest
+          image: wso2/admin-domain-service:0.0.1-m11
       backoffice:
         deployment:
           resources:

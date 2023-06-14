@@ -27,8 +27,6 @@
  * returns ResponseHandlerResponseBody
  **/
 exports.handleResponse = function(body) {
-  console.log('Response Service reqBody');
-  console.log(reqBody);
   return new Promise(function(resolve, reject) {
     let examples = {};
     examples['application/json'] = {};

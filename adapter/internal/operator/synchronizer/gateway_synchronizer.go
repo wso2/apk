@@ -169,8 +169,8 @@ func getGlobalInterceptorScript(gatewayAPIPolicies map[string]v1alpha1.APIPolicy
 		PathTemplate:     "",
 		Vhost:            "",
 		ClusterName:      "",
+		APIProperty:      nil,
 	}
-	loggers.LoggerAPKOperator.Info("======================================srilanka1==============================================")
 	reqI, resI := createInterceptors(gatewayAPIPolicies, gatewayInterceptorServiceMapping, gatewayBackendMapping)
 	if len(reqI) > 0 || len(resI) > 0 {
 		return envoyconf.GetInlineLuaScript(reqI, resI, iInvCtx)

@@ -171,9 +171,6 @@ func GetInterceptor(templateValues any, templateString string) string {
 		logger.LoggerInterceptor.ErrorC(logging.GetErrorByCode(1801, err.Error()))
 		return emptyInterceptorTemplate
 	}
-	logger.LoggerInterceptor.Info("==========================================GetInterceptor out.String() begin==========================================")
-	logger.LoggerInterceptor.Info(out.String())
-	logger.LoggerInterceptor.Info("==========================================GetInterceptor out.String() end==========================================")
 	return out.String()
 }
 
@@ -187,8 +184,5 @@ func GetTemplate(isReqIntercept bool, isResIntercept bool) string {
 	if isResIntercept {
 		resT = responseInterceptorTemplate
 	}
-		// logger.LoggerInterceptor.Info("==========================================GetTemplate commonTemplate + reqT + resT begin==========================================")
-	// logger.LoggerInterceptor.Info(commonTemplate + reqT + resT)
-	// logger.LoggerInterceptor.Info("==========================================GetTemplate commonTemplate + reqT + resT end==========================================")
 	return commonTemplate + reqT + resT
 }
