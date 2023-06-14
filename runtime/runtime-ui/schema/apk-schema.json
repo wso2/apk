@@ -1,0 +1,86 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "id": { "type": "string" },
+      "name": { "type": "string", "description": "test description" },
+      "context": { "type": "string" },
+      "chanaka": { "type": "string" },
+      "version": { "type": "string" },
+      "provider": { "type": "string" },
+      "type": { "type": "string" },
+      "endpointConfig": {
+        "type": "object",
+        "properties": {
+          "production": {
+            "type": "object",
+            "properties": {
+              "endpointURL": { "type": "string" },
+              "endpointSecurity": {
+                "type": "object",
+                "properties": {
+                  "enable": { "type": "boolean" },
+                  "securityType": { "type": "string" },
+                  "securityProperties": { "type": "object" }
+                },
+                "required": ["enable", "securityType", "securityProperties"]
+              },
+              "timeouts": { "type": "object" }
+            },
+            "required": ["endpointURL", "endpointSecurity", "timeouts"]
+          },
+          "sandbox": {
+            "type": "object",
+            "properties": {
+              "endpointURL": { "type": "string" },
+              "endpointSecurity": {
+                "type": "object",
+                "properties": {
+                  "enable": { "type": "boolean" },
+                  "securityType": { "type": "string" },
+                  "securityProperties": { "type": "object" }
+                },
+                "required": ["enable", "securityType", "securityProperties"]
+              },
+              "timeouts": { "type": "object" }
+            },
+            "required": ["endpointURL", "endpointSecurity", "timeouts"]
+          }
+        },
+        "required": ["production", "sandbox"]
+      },
+      "operations": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "target": { "type": "string" },
+            "verb": { "type": "string" },
+            "authTypeEnabled": { "type": "boolean" },
+            "endpointConfig": { "type": "object" },
+            "operationPolicies": { "type": "object" },
+            "operationRateLimit": { "type": "object" }
+          },
+          "required": ["target", "verb", "authTypeEnabled", "endpointConfig", "operationPolicies", "operationRateLimit"]
+        }
+      },
+      "serviceInfo": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "namespace": { "type": "string" },
+          "endpoint_security": { "type": "object" }
+        },
+        "required": ["name", "namespace", "endpoint_security"]
+      },
+      "apiPolicies": { "type": "object" },
+      "apiRateLimit": { "type": "object" },
+      "securityScheme": { "type": "array" },
+      "AdditionalProperties": { "type": "array" },
+      "APIOperations": { "type": "object" }
+    },
+    "required": ["id", "name", "context", "chanaka", "version", "provider", "type", "endpointConfig", "operations", "serviceInfo", "apiPolicies"],
+    "AdditionalProperties": { "type": "array" },
+    "APIOperations": { "type": "object" }
+  }
+  

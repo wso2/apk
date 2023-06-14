@@ -1,0 +1,39 @@
+---
+id: 6be875e8-38d5-4f61-b8b1-7e1c90f9d8fd
+name: My API
+context: api/v1
+chanaka: some value
+version: '1.0'
+provider: John Doe
+type: HTTP
+endpointConfig:
+  production:
+    endpointURL: https://api.example.com
+    endpointSecurity:
+      enable: true
+      securityType: OAuth
+      securityProperties: {}
+    timeouts: {}
+  sandbox:
+    endpointURL: https://sandbox.example.com
+    endpointSecurity:
+      enable: false
+      securityType: ''
+      securityProperties: {}
+    timeouts: {}
+operations:
+- target: "/order/{orderId}"
+  verb: POST
+  authTypeEnabled: true
+  endpointConfig: {}
+  operationPolicies: {}
+  operationRateLimit: {}
+serviceInfo:
+  name: pizzashack-service
+  namespace: apk-platform
+  endpoint_security: {}
+apiPolicies: {}
+apiRateLimit: {}
+securityScheme: []
+AdditionalProperties: []
+APIOperations: {}

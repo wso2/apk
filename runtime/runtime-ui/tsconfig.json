@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "lib": ["es2016","WebWorker"],
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "outDir": "out",
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "target": "es6"
+  },
+  "exclude": ["node_modules", "server", "src/webworker"],
+  "include": ["src", "test"]
+}
