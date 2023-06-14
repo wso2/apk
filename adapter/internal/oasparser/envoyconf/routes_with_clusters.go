@@ -58,6 +58,7 @@ import (
 	"github.com/golang/protobuf/ptypes/any"
 	"github.com/golang/protobuf/ptypes/wrappers"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
+	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
 )
 
 // WireLogValues holds debug logging related template values
@@ -765,7 +766,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 			PathTemplate:     contextExtensions[pathContextExtension],
 			Vhost:            contextExtensions[vHostContextExtension],
 			ClusterName:      contextExtensions[clusterNameContextExtension],
-			APIProperty:      params.apiProperty,
+			APIProperty:      getAPIProperties(params.apiProperty),
 		}
 		luaPerFilterConfig = lua.LuaPerRoute{
 			Override: &lua.LuaPerRoute_SourceCode{
@@ -1398,6 +1399,14 @@ func getUpgradeConfig(apiType string) []*routev3.RouteAction_UpgradeConfig {
 		}}
 	}
 	return upgradeConfig
+}
+
+func getAPIProperties(apiPropertiesConfig *dpv1alpha1.APIProperty) map[string]string {
+	var dat map[string]string
+	for _, val := range apiPropertiesConfig.Spec.Properties {
+		dat[val.Name] = val.Value
+	 }
+	return dat
 }
 
 func getCorsPolicy(corsConfig *model.CorsConfig) *cors_filter_v3.CorsPolicy {

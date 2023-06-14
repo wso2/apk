@@ -23,7 +23,6 @@ import (
 
 	logger "github.com/wso2/apk/adapter/internal/loggers"
 	logging "github.com/wso2/apk/adapter/internal/logging"
-	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
 )
 
 // Interceptor hold values used for interceptor
@@ -71,7 +70,7 @@ type InvocationContext struct {
 	PathTemplate     string
 	Vhost            string
 	ClusterName      string
-	APIProperty      *dpv1alpha1.APIProperty
+	APIProperty      map[string]string
 }
 
 var (
@@ -95,7 +94,7 @@ var (
 	 pathTemplate = "{{.Context.PathTemplate}}",
 	 vhost = "{{.Context.Vhost}}",
 	 clusterName = "{{.Context.ClusterName}}",
-	 apiProperty = "{{.Context.APIProperty.Spec.Properties}}"
+	 apiProperty = "{{.Context.APIProperty}}"
  }
  local wire_log_config = {
 	 log_body_enabled = {{ .LogConfig.LogBodyEnabled }},
