@@ -146,6 +146,53 @@ isolated final model:MediationPolicy[] avilableMediationPolicyList = [
                 validationRegex: "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$"
             }
         ]
+    },
+    {
+        id: "6",
+        'type: POLICY_TYPE_BACKEND_JWT,
+        name: POLICY_TYPE_BACKEND_JWT,
+        displayName: "BackendJwt",
+        description: "This policy allows you to add backend JWT",
+        applicableFlows: [MEDIATION_POLICY_FLOW_REQUEST],
+        supportedApiTypes: [API_TYPE_REST],
+        policyAttributes: [
+            {
+                name: "enabled",
+                description: "enabled holds the status of the policy",
+                'type: "boolean",
+                required: true
+            },
+            {
+                name: "encoding",
+                description: "Encoding holds the encoding type",
+                'type: "String",
+                required: false
+            },
+            {
+                name: "signingAlgorithm",
+                description: "signingAlgorithm holds the signing algorithm",
+                'type: "String",
+                required: false
+            },
+            {
+                name: "header",
+                description: "Header holds the header name",
+                'type: "String",
+                required: false
+            },
+            {
+                name: "tokenTTL",
+                description: "TokenTTL holds the token time to live in seconds",
+                'type: "int",
+                required: false
+            },
+            {
+                name: "customClaims",
+                description: "CustomClaim holds custom claim information",
+                'type: "array",
+                required: false
+            }
+        ]
     }
 ];
 

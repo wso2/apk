@@ -31,11 +31,27 @@ public type APIPolicySpec record {|
 public type APIPolicyData record {
     InterceptorReference[] requestInterceptors?;
     InterceptorReference[] responseInterceptors?;
+    BackendJwtPolicy backendJwtToken?;
 };
 
 public type InterceptorReference record {
     string name;
     string namespace?;
+};
+
+public type BackendJwtPolicy record {
+    boolean enabled = false;
+    string encoding?;
+    string signingAlgorithm?;
+    string header?;
+    int tokenTTL?;
+    BackendJwtCustomClaim[] customClaims?;
+
+};
+
+public type BackendJwtCustomClaim record {
+    string claim?;
+    string value?;
 };
 
 public type APIPolicyList record {
