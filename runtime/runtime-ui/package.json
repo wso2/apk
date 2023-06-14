@@ -62,7 +62,8 @@
           ".yml",
           ".eyaml",
           ".eyml",
-          ".yaml"
+          ".yaml",
+          ".apk-conf"
         ],
         "filenames": [
           ".clang-format",
