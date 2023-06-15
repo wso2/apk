@@ -60,8 +60,16 @@ type BackendSpec struct {
 	TLS *TLSConfig `json:"tls,omitempty"`
 
 	// +optional
-	Security   []SecurityConfig `json:"security,omitempty"`
-	RetryCount int32            `json:"retryCount,omitempty"`
+	Security []SecurityConfig `json:"security,omitempty"`
+	Retry    *RetryConfig     `json:"retry,omitempty"`
+	// RetryCount int32            `json:"retryCount,omitempty"`
+}
+
+// RetryConfig defines retry configurations
+type RetryConfig struct {
+	MaxRetryCount        uint32   `json:"maxRetryCount,omitempty"`
+	BaseIntervalInMillis uint32   `json:"baseIntervalInMillis,omitempty"`
+	StatusCodes          []uint32 `json:"statusCodes,omitempty"`
 }
 
 // Service holds host and port information for the service
