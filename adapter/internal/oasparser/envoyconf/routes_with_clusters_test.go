@@ -77,17 +77,6 @@ func TestCreateRoutesWithClustersWithExactAndRegularExpressionRules(t *testing.T
 							Method: &methodTypeGet,
 						},
 					},
-					Filters: []gwapiv1b1.HTTPRouteFilter{
-						{
-							Type: gwapiv1b1.HTTPRouteFilterType("URLRewrite"),
-							URLRewrite: &gwapiv1b1.HTTPURLRewriteFilter{
-								Path: &gwapiv1b1.HTTPPathModifier{
-									Type:               gwapiv1b1.PrefixMatchHTTPPathModifier,
-									ReplacePrefixMatch: operatorutils.StringPtr("/backend-base-path"),
-								},
-							},
-						},
-					},
 					BackendRefs: []gwapiv1b1.HTTPBackendRef{
 						createDefaultBackendRef("backend-1"),
 					},
@@ -100,17 +89,6 @@ func TestCreateRoutesWithClustersWithExactAndRegularExpressionRules(t *testing.T
 								Value: operatorutils.StringPtr("/regex-path/2.0.0/userId/([^/]+)/orderId/([^/]+)"),
 							},
 							Method: &methodTypePost,
-						},
-					},
-					Filters: []gwapiv1b1.HTTPRouteFilter{
-						{
-							Type: gwapiv1b1.HTTPRouteFilterType("URLRewrite"),
-							URLRewrite: &gwapiv1b1.HTTPURLRewriteFilter{
-								Path: &gwapiv1b1.HTTPPathModifier{
-									Type:               gwapiv1b1.PrefixMatchHTTPPathModifier,
-									ReplacePrefixMatch: operatorutils.StringPtr("/backend-base-path/order/\\2/user/\\1"),
-								},
-							},
 						},
 					},
 					BackendRefs: []gwapiv1b1.HTTPBackendRef{
@@ -174,8 +152,8 @@ func TestCreateRoutesWithClustersWithExactAndRegularExpressionRules(t *testing.T
 	assert.Equal(t, uint32(0), regexPathClusterPriority, "Regex path cluster's assigned priority is incorrect.")
 
 	assert.Equal(t, 3, len(routes), "Created number of routes are incorrect.")
-	assert.Contains(t, []string{"^/exact-path-api/2\\.0\\.0/\\(\\.\\*\\)/exact-path([/]{0,1})"}, routes[1].GetMatch().GetSafeRegex().Regex)
-	assert.Contains(t, []string{"^/regex-path/2.0.0/userId/([^/]+)/orderId/([^/]+)([/]{0,1})"}, routes[2].GetMatch().GetSafeRegex().Regex)
+	assert.Contains(t, []string{"^/test-api/2\\.0\\.0/exact-path-api/2\\.0\\.0/\\(\\.\\*\\)/exact-path([/]{0,1})"}, routes[1].GetMatch().GetSafeRegex().Regex)
+	assert.Contains(t, []string{"^/test-api/2.0.0/regex-path/2.0.0/userId/([^/]+)/orderId/([^/]+)([/]{0,1})"}, routes[2].GetMatch().GetSafeRegex().Regex)
 	assert.NotEqual(t, routes[1].GetMatch().GetSafeRegex().Regex, routes[2].GetMatch().GetSafeRegex().Regex,
 		"The route regex for the two paths should not be the same")
 }
@@ -218,18 +196,7 @@ func TestCreateRoutesWithClustersWithMultiplePathPrefixRules(t *testing.T) {
 						{
 							Path: &gwapiv1b1.HTTPPathMatch{
 								Type:  operatorutils.PathMatchTypePtr(gwapiv1b1.PathMatchPathPrefix),
-								Value: operatorutils.StringPtr("/test-api/1.0.0/orders"),
-							},
-						},
-					},
-					Filters: []gwapiv1b1.HTTPRouteFilter{
-						{
-							Type: gwapiv1b1.HTTPRouteFilterType("URLRewrite"),
-							URLRewrite: &gwapiv1b1.HTTPURLRewriteFilter{
-								Path: &gwapiv1b1.HTTPPathModifier{
-									Type:               gwapiv1b1.PrefixMatchHTTPPathModifier,
-									ReplacePrefixMatch: operatorutils.StringPtr("/backend-base-path/orders"),
-								},
+								Value: operatorutils.StringPtr("/orders"),
 							},
 						},
 					},
@@ -242,18 +209,7 @@ func TestCreateRoutesWithClustersWithMultiplePathPrefixRules(t *testing.T) {
 						{
 							Path: &gwapiv1b1.HTTPPathMatch{
 								Type:  operatorutils.PathMatchTypePtr(gwapiv1b1.PathMatchPathPrefix),
-								Value: operatorutils.StringPtr("/test-api/1.0.0/users"),
-							},
-						},
-					},
-					Filters: []gwapiv1b1.HTTPRouteFilter{
-						{
-							Type: gwapiv1b1.HTTPRouteFilterType("URLRewrite"),
-							URLRewrite: &gwapiv1b1.HTTPURLRewriteFilter{
-								Path: &gwapiv1b1.HTTPPathModifier{
-									Type:               gwapiv1b1.PrefixMatchHTTPPathModifier,
-									ReplacePrefixMatch: operatorutils.StringPtr("/backend-base-path/users"),
-								},
+								Value: operatorutils.StringPtr("/users"),
 							},
 						},
 					},
@@ -393,17 +349,6 @@ func TestCreateRoutesWithClustersWithBackendTLSConfigs(t *testing.T) {
 								Value: operatorutils.StringPtr("/resource-path"),
 							},
 							Method: &methodTypeGet,
-						},
-					},
-					Filters: []gwapiv1b1.HTTPRouteFilter{
-						{
-							Type: gwapiv1b1.HTTPRouteFilterType("URLRewrite"),
-							URLRewrite: &gwapiv1b1.HTTPURLRewriteFilter{
-								Path: &gwapiv1b1.HTTPPathModifier{
-									Type:               gwapiv1b1.PrefixMatchHTTPPathModifier,
-									ReplacePrefixMatch: operatorutils.StringPtr("/backend-base-path"),
-								},
-							},
 						},
 					},
 					BackendRefs: []gwapiv1b1.HTTPBackendRef{
@@ -714,17 +659,6 @@ func TestCreateRoutesWithClustersDifferentBackendRefs(t *testing.T) {
 							Method: &methodTypeGet,
 						},
 					},
-					Filters: []gwapiv1b1.HTTPRouteFilter{
-						{
-							Type: gwapiv1b1.HTTPRouteFilterType("URLRewrite"),
-							URLRewrite: &gwapiv1b1.HTTPURLRewriteFilter{
-								Path: &gwapiv1b1.HTTPPathModifier{
-									Type:               gwapiv1b1.PrefixMatchHTTPPathModifier,
-									ReplacePrefixMatch: operatorutils.StringPtr("/backend-base-path-1"),
-								},
-							},
-						},
-					},
 					BackendRefs: []gwapiv1b1.HTTPBackendRef{
 						createDefaultBackendRef("test-backend-1"),
 					},
@@ -737,17 +671,6 @@ func TestCreateRoutesWithClustersDifferentBackendRefs(t *testing.T) {
 								Value: operatorutils.StringPtr("/resource-path-2"),
 							},
 							Method: &methodTypeGet,
-						},
-					},
-					Filters: []gwapiv1b1.HTTPRouteFilter{
-						{
-							Type: gwapiv1b1.HTTPRouteFilterType("URLRewrite"),
-							URLRewrite: &gwapiv1b1.HTTPURLRewriteFilter{
-								Path: &gwapiv1b1.HTTPPathModifier{
-									Type:               gwapiv1b1.PrefixMatchHTTPPathModifier,
-									ReplacePrefixMatch: operatorutils.StringPtr("/backend-base-path-2"),
-								},
-							},
 						},
 					},
 					BackendRefs: []gwapiv1b1.HTTPBackendRef{
@@ -828,17 +751,6 @@ func TestCreateRoutesWithClustersSameBackendRefs(t *testing.T) {
 							Method: &methodTypeGet,
 						},
 					},
-					Filters: []gwapiv1b1.HTTPRouteFilter{
-						{
-							Type: gwapiv1b1.HTTPRouteFilterType("URLRewrite"),
-							URLRewrite: &gwapiv1b1.HTTPURLRewriteFilter{
-								Path: &gwapiv1b1.HTTPPathModifier{
-									Type:               gwapiv1b1.PrefixMatchHTTPPathModifier,
-									ReplacePrefixMatch: operatorutils.StringPtr("/backend-base-path-1"),
-								},
-							},
-						},
-					},
 					BackendRefs: []gwapiv1b1.HTTPBackendRef{
 						createDefaultBackendRef("test-backend-1"),
 					},
@@ -851,17 +763,6 @@ func TestCreateRoutesWithClustersSameBackendRefs(t *testing.T) {
 								Value: operatorutils.StringPtr("/resource-path-2"),
 							},
 							Method: &methodTypeGet,
-						},
-					},
-					Filters: []gwapiv1b1.HTTPRouteFilter{
-						{
-							Type: gwapiv1b1.HTTPRouteFilterType("URLRewrite"),
-							URLRewrite: &gwapiv1b1.HTTPURLRewriteFilter{
-								Path: &gwapiv1b1.HTTPPathModifier{
-									Type:               gwapiv1b1.PrefixMatchHTTPPathModifier,
-									ReplacePrefixMatch: operatorutils.StringPtr("/backend-base-path-2"),
-								},
-							},
 						},
 					},
 					BackendRefs: []gwapiv1b1.HTTPBackendRef{

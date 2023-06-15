@@ -674,6 +674,9 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 	}
 	routePath := generateRoutePath(resourcePath, pathMatchType)
 
+	if isDefaultVersion {
+		routePath = getDefaultVersionBasepath(routePath, regexp.QuoteMeta(version))
+	}
 	// route path could be empty only if there is no basePath for API or the endpoint available,
 	// and resourcePath is also an empty string.
 	// Empty check is added to run the gateway in failsafe mode, as if the decorator string is

@@ -48,14 +48,9 @@ spec:
   - matches:
     - path:
         type: PathPrefix
-        value: /test-api-with-request-header-remove/1.0.0
+        value: /users
       method: GET
     filters:
-    - type: URLRewrite
-      urlRewrite:
-        path:
-          type: ReplacePrefixMatch
-          replacePrefixMatch: /users
     - type: RequestHeaderModifier
       requestHeaderModifier:
         remove:
@@ -67,14 +62,9 @@ spec:
   - matches:
     - path:
         type: PathPrefix
-        value: /test-api-with-request-header-add/1.0.0
+        value: /orders
       method: GET
     filters:
-    - type: URLRewrite
-      urlRewrite:
-        path:
-          type: ReplacePrefixMatch
-          replacePrefixMatch: /orders
     - type: RequestHeaderModifier
       requestHeaderModifier:
         set:
