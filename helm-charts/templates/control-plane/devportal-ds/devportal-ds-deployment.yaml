@@ -97,9 +97,9 @@ spec:
               subPath: nonprodidp.yaml            
            {{if .Values.wso2.apk.cp.keyManagerConnectors }}
             {{- range $index, $val := $.Values.wso2.apk.cp.keyManagerConnectors}}
-            - name: keyManagerConnectors-$val.type
-              mountPath: /home/wso2apk/devportal/keymanager/$val.fileName
-              subPath: $val.fileName
+            - name: key-manager-connectors-{{ .type}}
+              mountPath: /home/wso2apk/admin/keymanager/{{ .fileName}}
+              subPath: {{ .fileName}}
             {{- end }}
             {{end}}
           env:
@@ -147,9 +147,9 @@ spec:
             name: {{ template "apk-helm.resource.prefix" . }}-nonprodidp-config
         {{if .Values.wso2.apk.cp.keyManagerConnectors }}
         {{- range $index, $val := $.Values.wso2.apk.cp.keyManagerConnectors}}
-        - name: keyManagerConnectors-$val.type
+        - name: key-manager-connectors-{{ .type}}
           configMap:
-            name: $val.name
+            name: {{ .name}}
        {{- end }}
        {{end}}
 {{- end -}}
