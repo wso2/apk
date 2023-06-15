@@ -326,6 +326,7 @@ func GetResolvedBackend(ctx context.Context, client k8client.Client,
 			RouteIdleTimeoutSeconds: backend.Spec.Timeout.RouteIdleTimeoutSeconds,
 		}
 	}
+	resolvedBackend.Retry = backend.Spec.Retry
 	if backend.Spec.TLS != nil {
 		resolvedTLSConfig.ResolvedCertificate, err = ResolveCertificate(ctx, client,
 			backend.Namespace, backend.Spec.TLS.CertificateInline, backend.Spec.TLS.ConfigMapRef, backend.Spec.TLS.SecretRef)
