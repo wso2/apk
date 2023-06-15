@@ -89,6 +89,14 @@ type APISpec struct {
 	//
 	// +optional
 	SystemAPI bool `json:"systemAPI"`
+
+	APIProperty []Property `json:"apiProperties,omitempty"`
+}
+
+// Property holds key value pair of APIProperties
+type Property struct {
+	Name  string `json:"name,omitempty"`
+	Value string `json:"value,omitempty"`
 }
 
 // EnvConfig contains the environment specific configuration

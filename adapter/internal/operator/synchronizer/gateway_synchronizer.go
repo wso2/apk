@@ -169,6 +169,7 @@ func getGlobalInterceptorScript(gatewayAPIPolicies map[string]v1alpha1.APIPolicy
 		PathTemplate:     "",
 		Vhost:            "",
 		ClusterName:      "",
+		APIProperty:      "",
 	}
 	reqI, resI := createInterceptors(gatewayAPIPolicies, gatewayInterceptorServiceMapping, gatewayBackendMapping)
 	if len(reqI) > 0 || len(resI) > 0 {
