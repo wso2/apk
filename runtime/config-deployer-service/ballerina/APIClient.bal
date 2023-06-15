@@ -68,7 +68,11 @@ public class APIClient {
 
     public isolated function generateK8sArtifacts(APKConf apkConf, string? definition, string organization) returns model:APIArtifact|commons:APKError {
         do {
+
             string uniqueId = self.getUniqueIdForAPI(apkConf.name, apkConf.version, organization);
+            if apkConf.id is string {
+                uniqueId = <string>apkConf.id;
+            }
             model:APIArtifact apiArtifact = {uniqueId: uniqueId, name: apkConf.name, version: apkConf.version};
             APKOperations[]? operations = apkConf.operations;
             if operations is APKOperations[] {
@@ -92,9 +96,17 @@ public class APIClient {
             if authentication is Authentication[] {
                 self.populateAuthenticationMap(apiArtifact, apkConf, authentication, createdEndpoints, organization);
             }
-
-            _ = check self.setHttpRoute(apiArtifact, apkConf, createdEndpoints.hasKey(PRODUCTION_TYPE) ? createdEndpoints.get(PRODUCTION_TYPE) : (), uniqueId, PRODUCTION_TYPE, organization);
-            _ = check self.setHttpRoute(apiArtifact, apkConf, createdEndpoints.hasKey(SANDBOX_TYPE) ? createdEndpoints.get(SANDBOX_TYPE) : (), uniqueId, SANDBOX_TYPE, organization);
+            APKConf_vhosts? vhosts = apkConf.vhosts;
+            if vhosts is APKConf_vhosts {
+                if vhosts.production is string[] {
+                    _ = check self.setHttpRoute(apiArtifact, apkConf, createdEndpoints.hasKey(PRODUCTION_TYPE) ? createdEndpoints.get(PRODUCTION_TYPE) : (), uniqueId, PRODUCTION_TYPE, organization);
+                }
+                if vhosts.sandbox is string[] {
+                    _ = check self.setHttpRoute(apiArtifact, apkConf, createdEndpoints.hasKey(SANDBOX_TYPE) ? createdEndpoints.get(SANDBOX_TYPE) : (), uniqueId, SANDBOX_TYPE, organization);
+                }
+            } else {
+                return e9090445();
+            }
             json generatedSwagger = check self.retrieveGeneratedSwaggerDefinition(apkConf, definition);
             check self.retrieveGeneratedConfigmapForDefinition(apiArtifact, apkConf, generatedSwagger, uniqueId, organization);
             self.generateAndSetAPICRArtifact(apiArtifact, apkConf, organization);
@@ -471,11 +483,14 @@ public class APIClient {
                 hostnames: check self.getHostNames(apkConf, uniqueId, endpointType, organization)
             }
         };
-        if endpointType == PRODUCTION_TYPE {
-            apiArtifact.productionRoute.push(httpRoute);
-        } else {
-            apiArtifact.sandboxRoute.push(httpRoute);
+        if httpRoute.spec.rules.length() > 0 {
+            if endpointType == PRODUCTION_TYPE {
+                apiArtifact.productionRoute.push(httpRoute);
+            } else {
+                apiArtifact.sandboxRoute.push(httpRoute);
+            }
         }
+
         return;
     }
 
@@ -490,7 +505,7 @@ public class APIClient {
                 hosts = <string[]>vhosts.sandbox;
             }
         } else {
-            return e909045();
+            return e9090445();
         }
         return hosts;
     }
