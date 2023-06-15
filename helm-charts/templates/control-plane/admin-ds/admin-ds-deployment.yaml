@@ -84,10 +84,10 @@ spec:
             - name: keymanager-connetor--nonprodidp
               mountPath: /home/wso2apk/admin/keymanager/nonprodidp.yaml
               subPath: nonprodidp.yaml
-            {{- range $index, $val := $.Values.wso2.apk.cp.keyManagerConnectors}}
-            - name: keyManagerConnectors-$val.type
-              mountPath: /home/wso2apk/admin/keymanager/$val.fileName
-              subPath: $val.fileName
+            {{- range .Values.wso2.apk.cp.keyManagerConnectors}}
+            - name: key-manager-connectors-{{ .type}}
+              mountPath: /home/wso2apk/admin/keymanager/{{ .fileName}}
+              subPath: {{ .fileName}}
             {{- end }}
           env:
             - name: DB_PASSWORD
@@ -123,10 +123,10 @@ spec:
           configMap:
             name: {{ template "apk-helm.resource.prefix" . }}-nonprodidp-config
        {{if .Values.wso2.apk.cp.keyManagerConnectors }}
-       {{- range $name, $val := $.Values.wso2.apk.cp.keyManagerConnectors}}
-        - name: keyManagerConnectors-$val.type
+       {{- range .Values.wso2.apk.cp.keyManagerConnectors}}
+        - name: key-manager-connectors-{{ .type}}
           configMap:
-            name: $val.name
+            name: {{ .name}}
        {{- end }}
        {{end}}
 {{- end -}}
