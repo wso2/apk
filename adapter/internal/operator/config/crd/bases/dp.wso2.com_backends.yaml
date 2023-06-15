@@ -44,7 +44,7 @@ spec:
                 - ws
                 - wss
                 type: string
-              retry:
+              retryCount:
                 format: int32
                 type: integer
               security:
