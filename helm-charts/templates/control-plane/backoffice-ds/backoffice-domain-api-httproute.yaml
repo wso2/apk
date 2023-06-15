@@ -29,8 +29,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/apis"
+        value: "/api/backoffice/apis"
       method: "GET"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/backoffice/apis"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -38,8 +44,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/apis/(.*)"
+        value: "/api/backoffice/apis/(.*)"
       method: "GET"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/backoffice/apis/\\1"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -47,8 +59,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/apis/(.*)"
+        value: "/api/backoffice/apis/(.*)"
       method: "PUT"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/backoffice/apis/\\1"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -56,8 +74,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/apis/(.*)/definition"
+        value: "/api/backoffice/apis/(.*)/definition"
       method: "GET"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/backoffice/apis/\\1/definition"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -65,8 +89,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/apis/(.*)/resource-paths"
+        value: "/api/backoffice/apis/(.*)/resource-paths"
       method: "GET"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/backoffice/apis/\\1/resource-paths"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -74,8 +104,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/apis/(.*)/thumbnail"
+        value: "/api/backoffice/apis/(.*)/thumbnail"
       method: "GET"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/backoffice/apis/\\1/thumbnail"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -83,8 +119,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/apis/(.*)/thumbnail"
+        value: "/api/backoffice/apis/(.*)/thumbnail"
       method: "PUT"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/backoffice/apis/\\1/thumbnail"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -92,8 +134,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/apis/(.*)/documents"
+        value: "/api/backoffice/apis/(.*)/documents"
       method: "GET"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/backoffice/apis/\\1/documents"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -101,8 +149,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/apis/(.*)/documents"
+        value: "/api/backoffice/apis/(.*)/documents"
       method: "POST"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/backoffice/apis/\\1/documents"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -110,8 +164,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/apis/(.*)/documents/(.*)"
+        value: "/api/backoffice/apis/(.*)/documents/(.*)"
       method: "GET"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/backoffice/apis/\\1/documents/\\2"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -119,8 +179,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/apis/(.*)/documents/(.*)"
+        value: "/api/backoffice/apis/(.*)/documents/(.*)"
       method: "PUT"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/backoffice/apis/\\1/documents/\\2"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -128,8 +194,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/apis/(.*)/documents/(.*)"
+        value: "/api/backoffice/apis/(.*)/documents/(.*)"
       method: "DELETE"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/backoffice/apis/\\1/documents/\\2"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -137,8 +209,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/apis/(.*)/documents/(.*)/content"
+        value: "/api/backoffice/apis/(.*)/documents/(.*)/content"
       method: "GET"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/backoffice/apis/\\1/documents/\\2/content"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -146,8 +224,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/apis/(.*)/documents/(.*)/content"
+        value: "/api/backoffice/apis/(.*)/documents/(.*)/content"
       method: "POST"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/backoffice/apis/\\1/documents/\\2/content"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -155,8 +239,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/apis/(.*)/comments"
+        value: "/api/backoffice/apis/(.*)/comments"
       method: "GET"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/backoffice/apis/\\1/comments"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -164,8 +254,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/apis/(.*)/comments"
+        value: "/api/backoffice/apis/(.*)/comments"
       method: "POST"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/backoffice/apis/\\1/comments"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -173,8 +269,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/apis/(.*)/comments/(.*)"
+        value: "/api/backoffice/apis/(.*)/comments/(.*)"
       method: "GET"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/backoffice/apis/\\1/comments/\\2"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -182,8 +284,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/apis/(.*)/comments/(.*)"
+        value: "/api/backoffice/apis/(.*)/comments/(.*)"
       method: "DELETE"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/backoffice/apis/\\1/comments/\\2"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -191,8 +299,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/apis/(.*)/comments/(.*)"
+        value: "/api/backoffice/apis/(.*)/comments/(.*)"
       method: "PATCH"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/backoffice/apis/\\1/comments/\\2"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -200,8 +314,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/apis/(.*)/comments/(.*)/replies"
+        value: "/api/backoffice/apis/(.*)/comments/(.*)/replies"
       method: "GET"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/backoffice/apis/\\1/comments/\\2/replies"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -209,8 +329,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/subscriptions"
+        value: "/api/backoffice/subscriptions"
       method: "GET"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/backoffice/subscriptions"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -218,8 +344,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/subscriptions/(.*)/subscriber-info"
+        value: "/api/backoffice/subscriptions/(.*)/subscriber-info"
       method: "GET"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/backoffice/subscriptions/\\1/subscriber-info"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -227,8 +359,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/subscriptions/block-subscription"
+        value: "/api/backoffice/subscriptions/block-subscription"
       method: "POST"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/backoffice/subscriptions/block-subscription"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -236,8 +374,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/subscriptions/unblock-subscription"
+        value: "/api/backoffice/subscriptions/unblock-subscription"
       method: "POST"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/backoffice/subscriptions/unblock-subscription"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -245,8 +389,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/usage-plans"
+        value: "/api/backoffice/usage-plans"
       method: "GET"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/backoffice/usage-plans"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -254,8 +404,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/search"
+        value: "/api/backoffice/search"
       method: "GET"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/backoffice/search"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -263,8 +419,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/settings"
+        value: "/api/backoffice/settings"
       method: "GET"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/backoffice/settings"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -272,8 +434,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api-categories"
+        value: "/api/backoffice/api-categories"
       method: "GET"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/backoffice/api-categories"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -281,8 +449,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/apis/change-lifecycle"
+        value: "/api/backoffice/apis/change-lifecycle"
       method: "POST"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/backoffice/apis/change-lifecycle"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -290,8 +464,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/apis/(.*)/lifecycle-history"
+        value: "/api/backoffice/apis/(.*)/lifecycle-history"
       method: "GET"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/backoffice/apis/\\1/lifecycle-history"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -299,8 +479,14 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/apis/(.*)/lifecycle-state"
+        value: "/api/backoffice/apis/(.*)/lifecycle-state"
       method: "GET"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/backoffice/apis/\\1/lifecycle-state"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
