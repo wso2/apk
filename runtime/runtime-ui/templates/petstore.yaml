@@ -1,0 +1,92 @@
+id: "123e4567-e89b-12d3-a456-426614174000"
+name: "PetStore API"
+context: "/petstore"
+version: "1.0.0"
+type: "REST"
+organization: "ACME Corp"
+endpointConfigurations:
+  production:
+     endpoint:
+      protocol: http
+      namespace: ns1
+      dolor_2c: test
+      enim_57: test
+  sandbox:
+     endpoint:
+      protocol: http
+      namespace: ns1
+      dolor_2c: test
+      enim_57: test
+operations:
+  - target: "/pets"
+    verb: "GET"
+    authTypeEnabled: true
+    operationPolicies:
+      request:
+        - policyName: "Request Policy 1"
+          policyVersion: "v1"
+          parameters:
+            headerName: "header1"
+      response:
+        - policyName: "Response Policy 1"
+          policyVersion: "v1"
+    operationRateLimit:
+      requestsPerUnit: 100
+      unit: "Minute"
+    scopes: []
+  - target: "/pets/{petId}"
+    verb: "GET"
+    authTypeEnabled: true
+    endpointConfigurations:
+      production:
+        endpoint:
+          protocol: http
+          namespace: ns1
+          dolor_2c: test
+          enim_57: test
+      sandbox:
+        endpoint:
+          protocol: http
+          namespace: ns1
+          dolor_2c: test
+          enim_57: test
+    operationPolicies:
+      request:
+        - policyName: "Request Policy 2"
+          policyVersion: "v1"
+          parameters:
+            headerName: "header2"
+      response:
+        - policyName: "Response Policy 2"
+          policyVersion: "v1"
+    operationRateLimit:
+      requestsPerUnit: 50
+      unit: "Minute"
+    scopes: []
+apiPolicies:
+  request: []
+  response: []
+apiRateLimit:
+  requestsPerUnit: 1000
+  unit: "Hour"
+authentication:
+  - authType: "JWT"
+    sendTokenToUpstream: false
+    enabled: true
+    headerName: "Authorization"
+    queryParamName: "apikey"
+    headerEnable: true
+    queryParamEnable: true
+additionalProperties: []
+vhosts:
+  production:
+    - "api.petstore.com"
+  sandbox:
+    - "sandbox.petstore.com"
+corsConfiguration:
+  corsConfigurationEnabled: false
+  accessControlAllowOrigins: []
+  accessControlAllowCredentials: false
+  accessControlAllowHeaders: []
+  accessControlAllowMethods: []
+  accessControlAllowMaxAge: 0

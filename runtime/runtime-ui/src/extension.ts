@@ -106,7 +106,7 @@ export function startClient(
       const selectedTemplate = await window.showQuickPick(templates);
       if (selectedTemplate) {
         const activeEditor = window.activeTextEditor;
-        if (activeEditor && activeEditor.document.fileName.endsWith('apk-config.apk-conf')) {
+        if (activeEditor && activeEditor.document.fileName.endsWith('.apk-conf')) {
           // Insert the selected template into the currently open 'api-config.yaml' file
           activeEditor.edit((editBuilder) => {
             const templatePath = Uri.file(path.join(templatesFolderPath.fsPath, selectedTemplate));
@@ -124,7 +124,7 @@ export function startClient(
   context.subscriptions.push(
     workspace.onDidCreateFiles((e) => {
       e.files.forEach((file) => {
-        if (file.fsPath.endsWith('apk-config.apk-conf')) {
+        if (file.fsPath.endsWith('.apk-conf')) {
           window.showInformationMessage('Choose a template', 'Select Template').then((choice) => {
             if (choice === 'Select Template') {
               commands.executeCommand('extension.chooseTemplate');

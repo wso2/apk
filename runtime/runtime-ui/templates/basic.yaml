@@ -1,0 +1,36 @@
+name: "My API"
+context: "/myapi"
+type: "REST"
+organization: "My Organization"
+endpointConfigurations:
+  production:
+    endpoint:
+      protocol: http
+      namespace: ns1
+      dolor_2c: test
+      enim_57: test
+  sandbox:
+    endpoint:
+      protocol: https
+      namespace: ns1
+      dolor_2c: test
+      enim_57: test
+operations: []
+apiPolicies:
+  request: []
+  response: []
+apiRateLimit:
+  requestsPerUnit: 1000
+  unit: "Hour"
+authentication: []
+additionalProperties: []
+vhosts:
+  production: []
+  sandbox: []
+corsConfiguration:
+  corsConfigurationEnabled: false
+  accessControlAllowOrigins: []
+  accessControlAllowCredentials: false
+  accessControlAllowHeaders: []
+  accessControlAllowMethods: []
+  accessControlAllowMaxAge: 0
