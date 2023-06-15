@@ -60,6 +60,9 @@ spec:
                 - ws
                 - wss
                 type: string
+              retry:
+                format: int32
+                type: integer
               security:
                 items:
                   description: SecurityConfig defines enpoint security configurations

@@ -28,6 +28,7 @@ type ResolvedBackend struct {
 	Protocol BackendProtocolType
 	TLS      ResolvedTLSConfig
 	Security []ResolvedSecurityConfig
+	Retry    int32
 }
 
 // ResolvedTLSConfig defines enpoint TLS configurations

@@ -71,27 +71,7 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 	if outputRatelimitPolicy != nil {
 		ratelimitPolicy = concatRateLimitPolicies(*outputRatelimitPolicy, nil)
 	}
-
-	// var endpoints []Endpoint
-	// endpoint := &Endpoint{
-	// 	Host:    "localhost",
-	// 	Port:    8084,
-	// 	URLType: "https",
-	// }
-	// path := swagger.xWso2Basepath + "/swagger.json"
-	// endpoints = append(endpoints, *endpoint)
-	// swaggerResource := &Resource{
-	// 	path: path,
-	// 	methods: []*Operation{{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodGet),
-	// 		disableSecurity: true, security: nil, RateLimitPolicy: nil}},
-	// 	pathMatchType: gwapiv1b1.PathMatchExact,
-	// 	iD:            uuid.New().String(),
-	// 	endpoints: &EndpointCluster{
-	// 		Endpoints: endpoints,
-	// 	},
-	// }
-	// resources = append(resources, swaggerResource)
-	// fmt.Println("swaggerResource", swaggerResource)
+	var backendRetry int32
 
 	for _, rule := range httpRoute.Spec.Rules {
 		var endPoints []Endpoint
@@ -250,6 +230,7 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 			}
 			resolvedBackend, ok := httpRouteParams.BackendMapping[backendName]
 			if ok {
+				backendRetry = resolvedBackend.Retry
 				endPoints = append(endPoints, GetEndpoints(backendName, httpRouteParams.BackendMapping)...)
 				for _, security := range resolvedBackend.Security {
 					switch security.Type {
@@ -275,8 +256,19 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 				hasPolicies:   hasPolicies,
 				iD:            uuid.New().String(),
 			}
-			resource.endpoints = &EndpointCluster{
-				Endpoints: endPoints,
+			if backendRetry > 0 {
+				resource.endpoints = &EndpointCluster{
+					Endpoints: endPoints,
+					Config: &EndpointConfig{
+						RetryConfig: &RetryConfig{
+							Count: backendRetry,
+						},
+					},
+				}
+			} else {
+				resource.endpoints = &EndpointCluster{
+					Endpoints: endPoints,
+				}
 			}
 			resource.endpointSecurity = utils.GetPtrSlice(securityConfig)
 			resources = append(resources, resource)

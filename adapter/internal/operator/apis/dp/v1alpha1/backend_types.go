@@ -61,6 +61,7 @@ type BackendSpec struct {
 
 	// +optional
 	Security []SecurityConfig `json:"security,omitempty"`
+	Retry    int32            `json:"retry,omitempty"`
 }
 
 // Service holds host and port information for the service
