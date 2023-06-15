@@ -26,7 +26,7 @@ spec:
   apiDisplayName: "Devportal Domain API"
   apiType: "REST"
   apiVersion: "1.0.0"
-  context: "/api/devportal/1.0.0"
+  context: "/api/devportal"
   organization: "carbon.super"
   production:
     - httpRouteRefs:

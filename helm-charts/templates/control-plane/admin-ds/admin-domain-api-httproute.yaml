@@ -29,14 +29,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/policies/search"
+        value: "/policies/search"
       method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/policies/search"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -44,14 +38,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/application-rate-plans"
+        value: "/application-rate-plans"
       method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/application-rate-plans"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -59,14 +47,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/application-rate-plans"
+        value: "/application-rate-plans"
       method: "POST"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/application-rate-plans"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -74,14 +56,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/application-rate-plans/(.*)"
+        value: "/application-rate-plans/(.*)"
       method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/application-rate-plans/\\1"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -89,14 +65,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/application-rate-plans/(.*)"
+        value: "/application-rate-plans/(.*)"
       method: "PUT"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/application-rate-plans/\\1"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -104,14 +74,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/application-rate-plans/(.*)"
+        value: "/application-rate-plans/(.*)"
       method: "DELETE"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/application-rate-plans/\\1"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -119,14 +83,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/business-plans"
+        value: "/business-plans"
       method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/business-plans"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -134,14 +92,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/business-plans"
+        value: "/business-plans"
       method: "POST"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/business-plans"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -149,14 +101,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/business-plans/(.*)"
+        value: "/business-plans/(.*)"
       method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/business-plans/\\1"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -164,14 +110,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/business-plans/(.*)"
+        value: "/business-plans/(.*)"
       method: "PUT"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/business-plans/\\1"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -179,14 +119,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/business-plans/(.*)"
+        value: "/business-plans/(.*)"
       method: "DELETE"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/business-plans/\\1"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -194,14 +128,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/throttling/policies/advanced"
+        value: "/throttling/policies/advanced"
       method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/throttling/policies/advanced"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -209,14 +137,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/throttling/policies/advanced"
+        value: "/throttling/policies/advanced"
       method: "POST"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/throttling/policies/advanced"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -224,14 +146,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/throttling/policies/advanced/(.*)"
+        value: "/throttling/policies/advanced/(.*)"
       method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/throttling/policies/advanced/\\1"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -239,14 +155,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/throttling/policies/advanced/(.*)"
+        value: "/throttling/policies/advanced/(.*)"
       method: "PUT"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/throttling/policies/advanced/\\1"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -254,14 +164,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/throttling/policies/advanced/(.*)"
+        value: "/throttling/policies/advanced/(.*)"
       method: "DELETE"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/throttling/policies/advanced/\\1"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -269,14 +173,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/throttling/policies/export"
+        value: "/throttling/policies/export"
       method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/throttling/policies/export"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -284,14 +182,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/throttling/policies/import"
+        value: "/throttling/policies/import"
       method: "POST"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/throttling/policies/import"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -299,14 +191,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/deny-policies"
+        value: "/deny-policies"
       method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/deny-policies"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -314,14 +200,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/deny-policies"
+        value: "/deny-policies"
       method: "POST"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/deny-policies"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -329,14 +209,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/deny-policies/(.*)"
+        value: "/deny-policies/(.*)"
       method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/deny-policies/\\1"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -344,14 +218,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/deny-policies/(.*)"
+        value: "/deny-policies/(.*)"
       method: "DELETE"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/deny-policies/\\1"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -359,14 +227,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/deny-policies/(.*)"
+        value: "/deny-policies/(.*)"
       method: "PATCH"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/deny-policies/\\1"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -374,14 +236,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/applications"
+        value: "/applications"
       method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/applications"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -389,14 +245,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/applications/(.*)"
+        value: "/applications/(.*)"
       method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/applications/\\1"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -404,14 +254,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/applications/(.*)"
+        value: "/applications/(.*)"
       method: "DELETE"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/applications/\\1"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -419,14 +263,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/applications/(.*)/change-owner"
+        value: "/applications/(.*)/change-owner"
       method: "POST"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/applications/\\1/change-owner"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -434,14 +272,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/environments"
+        value: "/environments"
       method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/environments"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -449,14 +281,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/environments"
+        value: "/environments"
       method: "POST"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/environments"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -464,14 +290,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/environments/(.*)"
+        value: "/environments/(.*)"
       method: "PUT"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/environments/\\1"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -479,14 +299,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/environments/(.*)"
+        value: "/environments/(.*)"
       method: "DELETE"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/environments/\\1"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -494,14 +308,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/bot-detection-data"
+        value: "/bot-detection-data"
       method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/bot-detection-data"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -509,14 +317,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/monetization/publish-usage"
+        value: "/monetization/publish-usage"
       method: "POST"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/monetization/publish-usage"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -524,14 +326,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/monetization/publish-usage/status"
+        value: "/monetization/publish-usage/status"
       method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/monetization/publish-usage/status"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -539,14 +335,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/workflows"
+        value: "/workflows"
       method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/workflows"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -554,14 +344,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/workflows/(.*)"
+        value: "/workflows/(.*)"
       method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/workflows/\\1"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -569,14 +353,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/workflows/update-workflow-status"
+        value: "/workflows/update-workflow-status"
       method: "POST"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/workflows/update-workflow-status"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -584,14 +362,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/tenant-info/(.*)"
+        value: "/tenant-info/(.*)"
       method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/tenant-info/\\1"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -599,14 +371,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/custom-urls/(.*)"
+        value: "/custom-urls/(.*)"
       method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/custom-urls/\\1"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -614,14 +380,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/api-categories"
+        value: "/api-categories"
       method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/api-categories"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -629,14 +389,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/api-categories"
+        value: "/api-categories"
       method: "POST"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/api-categories"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -644,14 +398,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/api-categories/(.*)"
+        value: "/api-categories/(.*)"
       method: "PUT"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/api-categories/\\1"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -659,14 +407,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/api-categories/(.*)"
+        value: "/api-categories/(.*)"
       method: "DELETE"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/api-categories/\\1"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -674,14 +416,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/settings"
+        value: "/settings"
       method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/settings"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -689,14 +425,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/system-scopes/(.*)"
+        value: "/system-scopes/(.*)"
       method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/system-scopes/\\1"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -704,14 +434,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/system-scopes"
+        value: "/system-scopes"
       method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/system-scopes"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -719,14 +443,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/system-scopes"
+        value: "/system-scopes"
       method: "PUT"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/system-scopes"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -734,14 +452,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/system-scopes/role-aliases"
+        value: "/system-scopes/role-aliases"
       method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/system-scopes/role-aliases"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -749,14 +461,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/system-scopes/role-aliases"
+        value: "/system-scopes/role-aliases"
       method: "PUT"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/system-scopes/role-aliases"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -764,14 +470,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/roles/(.*)"
+        value: "/roles/(.*)"
       method: "HEAD"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/roles/\\1"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -779,14 +479,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/tenant-theme"
+        value: "/tenant-theme"
       method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/tenant-theme"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -794,14 +488,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/tenant-theme"
+        value: "/tenant-theme"
       method: "PUT"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/tenant-theme"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -809,14 +497,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/tenant-config"
+        value: "/tenant-config"
       method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/tenant-config"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -824,14 +506,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/tenant-config"
+        value: "/tenant-config"
       method: "PUT"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/tenant-config"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -839,14 +515,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/tenant-config-schema"
+        value: "/tenant-config-schema"
       method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/tenant-config-schema"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -854,14 +524,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/key-managers"
+        value: "/key-managers"
       method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/key-managers"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -869,14 +533,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/key-managers"
+        value: "/key-managers"
       method: "POST"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/key-managers"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -884,14 +542,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/key-managers/(.*)"
+        value: "/key-managers/(.*)"
       method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/key-managers/\\1"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -899,14 +551,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/key-managers/(.*)"
+        value: "/key-managers/(.*)"
       method: "PUT"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/key-managers/\\1"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -914,14 +560,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/key-managers/(.*)"
+        value: "/key-managers/(.*)"
       method: "DELETE"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/key-managers/\\1"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -929,14 +569,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/admin/key-managers/discover"
+        value: "/key-managers/discover"
       method: "POST"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/admin/key-managers/discover"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -944,7 +578,7 @@ spec:
   - matches:
     - path:
         type: "PathPrefix"
-        value: "/api/admin/organizations"
+        value: "/organizations"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -952,7 +586,7 @@ spec:
   - matches:
     - path:
         type: "Exact"
-        value: "/api/admin/organization-info"
+        value: "/organization-info"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
