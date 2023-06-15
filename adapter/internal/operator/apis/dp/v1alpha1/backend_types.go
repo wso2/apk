@@ -60,8 +60,8 @@ type BackendSpec struct {
 	TLS *TLSConfig `json:"tls,omitempty"`
 
 	// +optional
-	Security []SecurityConfig `json:"security,omitempty"`
-	Retry    int32            `json:"retry,omitempty"`
+	Security   []SecurityConfig `json:"security,omitempty"`
+	RetryCount int32            `json:"retryCount,omitempty"`
 }
 
 // Service holds host and port information for the service

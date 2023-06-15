@@ -230,7 +230,7 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 			}
 			resolvedBackend, ok := httpRouteParams.BackendMapping[backendName]
 			if ok {
-				backendRetry = resolvedBackend.Retry
+				backendRetry = resolvedBackend.RetryCount
 				endPoints = append(endPoints, GetEndpoints(backendName, httpRouteParams.BackendMapping)...)
 				for _, security := range resolvedBackend.Security {
 					switch security.Type {

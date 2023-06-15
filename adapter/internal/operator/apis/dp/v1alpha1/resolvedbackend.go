@@ -24,11 +24,11 @@ type BackendMapping map[types.NamespacedName]*ResolvedBackend
 
 // ResolvedBackend holds backend properties
 type ResolvedBackend struct {
-	Services []Service
-	Protocol BackendProtocolType
-	TLS      ResolvedTLSConfig
-	Security []ResolvedSecurityConfig
-	Retry    int32
+	Services   []Service
+	Protocol   BackendProtocolType
+	TLS        ResolvedTLSConfig
+	Security   []ResolvedSecurityConfig
+	RetryCount int32
 }
 
 // ResolvedTLSConfig defines enpoint TLS configurations
