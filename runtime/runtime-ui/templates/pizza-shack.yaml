@@ -1,0 +1,136 @@
+id: "123e4567-e89b-12d3-a456-426614174000"
+name: "Pizza Shack API"
+context: "/pizza"
+version: "1.0.0"
+type: "REST"
+organization: "Pizza Shack Inc."
+endpointConfigurations:
+  production:
+    endpoint:
+      protocol: http
+      namespace: ns1
+      dolor_2c: test
+      enim_57: test
+    endpointSecurity:
+      enabled: true
+      securityType:
+        basicEndpointSecurity:
+          secretName: "mysecret"
+          userNameKey: "username"
+          passwordKey: "password"
+    certificate:
+      secretName: "certificate-secret"
+      secretKey: "certificate-key"
+    resiliency: {}
+  sandbox:
+    endpoint:
+      protocol: http
+      namespace: ns1
+      dolor_2c: test
+      enim_57: test
+    endpointSecurity:
+      enabled: false
+    certificate: {}
+operations:
+  - target: "/pizzas"
+    verb: "GET"
+    authTypeEnabled: true
+    endpointConfigurations:
+      production:
+        endpoint:
+          protocol: http
+          namespace: ns1
+          dolor_2c: test
+          enim_57: test
+      sandbox:
+        endpoint:
+          protocol: http
+          namespace: ns1
+          dolor_2c: test
+          enim_57: test
+    operationPolicies:
+      request:
+        - policyName: "Request Policy 1"
+          policyVersion: "v1"
+          parameters:
+            headerName: "header1"
+      response:
+        - policyName: "Response Policy 1"
+          policyVersion: "v1"
+    operationRateLimit:
+      requestsPerUnit: 100
+      unit: "Minute"
+    scopes:
+      - "read:pizzas"
+      - "write:pizzas"
+  - target: "/pizzas/{pizzaId}"
+    verb: "GET"
+    authTypeEnabled: true
+    endpointConfigurations:
+      production:
+        endpoint:
+          protocol: http
+          namespace: ns1
+          dolor_2c: test
+          enim_57: test
+      sandbox:
+        endpoint:
+          protocol: http
+          namespace: ns1
+          dolor_2c: test
+          enim_57: test
+    operationPolicies:
+      request:
+        - policyName: "Request Policy 2"
+          policyVersion: "v1"
+          parameters:
+            headerName: "header2"
+      response:
+        - policyName: "Response Policy 2"
+          policyVersion: "v1"
+    operationRateLimit:
+      requestsPerUnit: 50
+      unit: "Minute"
+    scopes:
+      - "read:pizzas"
+apiPolicies:
+  request:
+    - policyName: "Global Request Policy"
+      policyVersion: "v1"
+  response:
+    - policyName: "Global Response Policy"
+      policyVersion: "v1"
+apiRateLimit:
+  requestsPerUnit: 1000
+  unit: "Hour"
+authentication:
+  - authType: "JWT"
+    sendTokenToUpstream: false
+    enabled: true
+    headerName: "Authorization"
+    queryParamName: "apikey"
+additionalProperties:
+  - name: "property1"
+    value: "value1"
+  - name: "property2"
+    value: "value2"
+vhosts:
+  production:
+    - "api.pizzashack.com"
+  sandbox:
+    - "sandbox.pizzashack.com"
+corsConfiguration:
+  corsConfigurationEnabled: true
+  accessControlAllowOrigins:
+    - "https://example.com"
+    - "https://sandbox.example.com"
+  accessControlAllowCredentials: true
+  accessControlAllowHeaders:
+    - "Content-Type"
+    - "Authorization"
+  accessControlAllowMethods:
+    - "GET"
+    - "POST"
+    - "PUT"
+    - "DELETE"
+  accessControlAllowMaxAge: 3600

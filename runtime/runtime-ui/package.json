@@ -1,25 +1,15 @@
 {
-  "name": "vscode-yaml",
-  "displayName": "YAML",
-  "description": "YAML Language Support by Red Hat, with built-in Kubernetes syntax support",
-  "author": "Red Hat",
-  "contributors": [
-    {
-      "name": "Joshua Pinkney",
-      "email": "jpinkney@redhat.com"
-    },
-    {
-      "name": "Yevhen Vydolob",
-      "email": "yvydolob@redhat.com"
-    }
-  ],
+  "name": "wso2-apk",
+  "displayName": "WSO2 APK",
+  "description": "WSO2 APK configuration Language Support.",
+  "author": "WSO2",
   "license": "MIT",
-  "version": "1.13.0",
-  "publisher": "redhat",
-  "bugs": "https://github.com/redhat-developer/vscode-yaml/issues",
+  "version": "0.0.1",
+  "publisher": "wso2",
+  "bugs": "https://github.com/wso2/apk/issues",
   "repository": {
     "type": "git",
-    "url": "https://github.com/redhat-developer/vscode-yaml"
+    "url": "https://github.com/wso2/apk"
   },
   "icon": "icon/icon128.png",
   "engines": {
@@ -39,17 +29,16 @@
     "virtualWorkspaces": true
   },
   "activationEvents": [
-    "onLanguage:yaml",
-    "onLanguage:dockercompose"
+    "onLanguage:yaml"
   ],
   "keywords": [
-    "kubernetes",
+    "apk",
     "yaml",
     "autocompletion",
-    "validation"
+    "validation",
+    "wso2"
   ],
   "main": "./dist/extension",
-  "browser": "./dist/extension-web",
   "contributes": {
     "languages": [
       {
@@ -80,165 +69,8 @@
         "path": "./syntaxes/yaml.tmLanguage.json"
       }
     ],
-    "configuration": {
-      "title:": "YAML",
-      "properties": {
-        "redhat.telemetry.enabled": {
-          "type": "boolean",
-          "default": null,
-          "markdownDescription": "Enable usage data and errors to be sent to Red Hat servers. Read our [privacy statement](https://developers.redhat.com/article/tool-data-collection).",
-          "scope": "window",
-          "tags": [
-            "telemetry",
-            "usesOnlineServices"
-          ]
-        },
-        "yaml.yamlVersion": {
-          "type": "string",
-          "default": "1.2",
-          "enum": [
-            "1.1",
-            "1.2"
-          ],
-          "markdownDescription": "Default YAML spec version"
-        },
-        "yaml.trace.server": {
-          "type": "string",
-          "enum": [
-            "off",
-            "messages",
-            "verbose"
-          ],
-          "default": "off",
-          "description": "Traces the communication between VSCode and the YAML language service."
-        },
-        "yaml.schemas": {
-          "type": "object",
-          "default": {},
-          "description": "Associate schemas to YAML files in the current workspace"
-        },
-        "yaml.format.enable": {
-          "type": "boolean",
-          "default": true,
-          "description": "Enable/disable default YAML formatter"
-        },
-        "yaml.format.singleQuote": {
-          "type": "boolean",
-          "default": false,
-          "description": "Use single quotes instead of double quotes"
-        },
-        "yaml.format.bracketSpacing": {
-          "type": "boolean",
-          "default": true,
-          "description": "Print spaces between brackets in objects"
-        },
-        "yaml.format.proseWrap": {
-          "type": "string",
-          "default": "preserve",
-          "enum": [
-            "preserve",
-            "never",
-            "always"
-          ],
-          "description": "Always: wrap prose if it exceeds the print width, Never: never wrap the prose, Preserve: wrap prose as-is"
-        },
-        "yaml.format.printWidth": {
-          "type": "integer",
-          "default": 80,
-          "description": "Specify the line length that the printer will wrap on"
-        },
-        "yaml.validate": {
-          "type": "boolean",
-          "default": true,
-          "description": "Enable/disable validation feature"
-        },
-        "yaml.hover": {
-          "type": "boolean",
-          "default": true,
-          "description": "Enable/disable hover feature"
-        },
-        "yaml.completion": {
-          "type": "boolean",
-          "default": true,
-          "description": "Enable/disable completion feature"
-        },
-        "yaml.customTags": {
-          "type": "array",
-          "default": [],
-          "description": "Custom tags for the parser to use"
-        },
-        "yaml.schemaStore.enable": {
-          "type": "boolean",
-          "default": true,
-          "description": "Automatically pull available YAML schemas from JSON Schema Store"
-        },
-        "yaml.schemaStore.url": {
-          "type": "string",
-          "default": "https://www.schemastore.org/api/json/catalog.json",
-          "description": "URL of schema store catalog to use"
-        },
-        "yaml.disableAdditionalProperties": {
-          "type": "boolean",
-          "default": false,
-          "description": "Globally set additionalProperties to false for all objects. So if its true, no extra properties are allowed inside yaml."
-        },
-        "yaml.disableDefaultProperties": {
-          "type": "boolean",
-          "default": false,
-          "description": "Disable adding not required properties with default values into completion text."
-        },
-        "yaml.maxItemsComputed": {
-          "type": "integer",
-          "default": 5000,
-          "description": "The maximum number of outline symbols and folding regions computed (limited for performance reasons)."
-        },
-        "yaml.suggest.parentSkeletonSelectedFirst": {
-          "type": "boolean",
-          "default": false,
-          "description": "If true, the user must select some parent skeleton first before autocompletion starts to suggest the rest of the properties. When yaml object is not empty, autocompletion ignores this setting and returns all properties and skeletons"
-        },
-        "yaml.style.flowMapping": {
-          "type": "string",
-          "enum": [
-            "allow",
-            "forbid"
-          ],
-          "default": "allow",
-          "description": "Forbid flow style mappings"
-        },
-        "yaml.style.flowSequence": {
-          "type": "string",
-          "enum": [
-            "allow",
-            "forbid"
-          ],
-          "default": "allow",
-          "description": "Forbid flow style sequences"
-        },
-        "yaml.keyOrdering": {
-          "type": "boolean",
-          "default": false,
-          "description": "Enforces alphabetical ordering of keys in mappings when set to true"
-        },
-        "yaml.extension.recommendations": {
-          "type": "boolean",
-          "default": "true",
-          "description": "Suggest additional extensions based on YAML usage."
-        }
-      }
-    },
-    "configurationDefaults": {
-      "[yaml]": {
-        "editor.insertSpaces": true,
-        "editor.tabSize": 2,
-        "editor.quickSuggestions": {
-          "other": true,
-          "comments": false,
-          "strings": true
-        },
-        "editor.autoIndent": "keep"
-      }
-    }
+    "configuration": {},
+    "configurationDefaults": {}
   },
   "extensionDependencies": [],
   "scripts": {
@@ -248,12 +80,7 @@
     "compile": "webpack --mode none",
     "format": "prettier --write .",
     "lint": "eslint -c .eslintrc.js --ext .ts src test",
-    "test": "yarn test-compile && sh scripts/e2e.sh",
-    "ui-test": "yarn test-compile && extest setup-and-run -y out/test/ui-test/allTestsSuite.js -c max",
-    "vscode:prepublish": "webpack --mode production",
-    "watch": "webpack --mode development --watch --info-verbosity verbose",
-    "test-compile": "yarn clean && tsc -p ./ && webpack --mode development",
-    "run-in-chromium": "npm run compile && vscode-test-web --browserType=chromium --extensionDevelopmentPath=. ."
+    "vscode:prepublish": "webpack --mode production"
   },
   "devDependencies": {
     "@types/chai": "^4.2.12",
