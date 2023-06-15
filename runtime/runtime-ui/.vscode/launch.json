@@ -15,54 +15,6 @@
         "DEBUG_VSCODE_YAML":"true",
         "VSCODE_REDHAT_TELEMETRY_DEBUG":"true"
       }
-    },
-    {
-      "name": "Extension Tests",
-      "type": "extensionHost",
-      "request": "launch",
-      "runtimeExecutable": "${execPath}",
-      "preLaunchTask": "compile test",
-      "args": [
-        "--disable-extension=ms-kubernetes-tools.vscode-kubernetes-tools",
-        "--extensionDevelopmentPath=${workspaceFolder}",
-        "--extensionTestsPath=${workspaceFolder}/out/test",
-        "${workspaceRoot}/test/testFixture"
-      ],
-      "outFiles": ["${workspaceFolder}/out/test/**/*.js"],
-      "env": {
-        "DEBUG_VSCODE_YAML":"true"
-      }
-    },
-    {
-      "name": "Launch Web Extension",
-      "type": "extensionHost",
-      "debugWebWorkerHost": true,
-      "request": "launch",
-      "args": [
-        "--extensionDevelopmentPath=${workspaceFolder}",
-        "--extensionDevelopmentKind=web"
-      ],
-      "env": {
-        "VSCODE_REDHAT_TELEMETRY_DEBUG":"true"
-      },
-      "outFiles": ["${workspaceRoot}/dist/**/*.js"],
-      "preLaunchTask": "compile webpack"
-    },
-    {
-      "name": "Debug UI Tests",
-      "type": "node",
-      "request": "launch",
-      "program": "${workspaceFolder}/node_modules/.bin/extest",
-      "args": [
-        "setup-and-run",
-        "${workspaceFolder}/out/test/ui-test/allTestsSuite.js",
-        "-o",
-        "${workspaceFolder}/custom-settings.json",
-        "--mocha_config",
-        "${workspaceFolder}/src/ui-test/.mocharc-debug.js"
-      ],
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen"
     }
   ]
 }
