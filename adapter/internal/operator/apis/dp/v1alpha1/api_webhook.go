@@ -107,7 +107,7 @@ func (r *API) validateAPI() error {
 		allErrs = append(allErrs, field.Required(field.NewPath("spec").Child("context"), "API context is required"))
 	} else if errMsg := validateAPIContextFormat(r.Spec.Context, r.Spec.APIVersion); errMsg != "" {
 		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("context"), r.Spec.Context, errMsg))
-	} else if err := r.validateAPIContextExists(); err != nil {
+	} else if err := r.validateAPIContextExistsAndDefaultVersion(); err != nil {
 		allErrs = append(allErrs, err)
 	}
 
@@ -157,7 +157,7 @@ func isEmptyStringsInArray(strings []string) bool {
 	return false
 }
 
-func (r *API) validateAPIContextExists() *field.Error {
+func (r *API) validateAPIContextExistsAndDefaultVersion() *field.Error {
 
 	apiList, err := retrieveAPIList()
 	if err != nil {
@@ -165,14 +165,29 @@ func (r *API) validateAPIContextExists() *field.Error {
 			errors.New("unable to list APIs for API context validation"))
 
 	}
+	currentAPIContextWithoutVersion := getContextWithoutVersion(r.Spec.Context);
 	for _, api := range apiList {
 		if (types.NamespacedName{Namespace: r.Namespace, Name: r.Name} !=
-			types.NamespacedName{Namespace: api.Namespace, Name: api.Name}) && api.Spec.Organization == r.Spec.Organization && api.Spec.Context == r.Spec.Context {
-			return &field.Error{
-				Type:     field.ErrorTypeDuplicate,
-				Field:    field.NewPath("spec").Child("context").String(),
-				BadValue: r.Spec.Context,
-				Detail:   "an API has been already created for the context"}
+			types.NamespacedName{Namespace: api.Namespace, Name: api.Name}) {
+			if (api.Spec.Organization == r.Spec.Organization && api.Spec.Context == r.Spec.Context) {
+				return &field.Error{
+					Type:     field.ErrorTypeDuplicate,
+					Field:    field.NewPath("spec").Child("context").String(),
+					BadValue: r.Spec.Context,
+					Detail:   "an API has been already created for the context"}
+			}
+			if (r.Spec.IsDefaultVersion) {
+				targetAPIContextWithoutVersion := getContextWithoutVersion(api.Spec.Context);
+				if (targetAPIContextWithoutVersion == currentAPIContextWithoutVersion) {
+					if (api.Spec.IsDefaultVersion) {
+						return &field.Error{
+							Type:     field.ErrorTypeForbidden,
+							Field:    field.NewPath("spec").Child("isDefaultVersion").String(),
+							BadValue: r.Spec.Context,
+							Detail:   "this API already had a default version"}
+					}
+				}
+			}
 		}
 	}
 	return nil
@@ -242,4 +257,13 @@ func validateAPITypeFormat(apiType string) string {
 		return "invalid API type. Only REST is supported"
 	}
 	return ""
+}
+
+// getContextWithoutVersion returns the context without version
+func getContextWithoutVersion(context string) string {
+	lastIndex := strings.LastIndex(context, "/")
+	if lastIndex != -1 {
+		return context[:lastIndex]
+	}
+	return context
 }

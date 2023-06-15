@@ -52,13 +52,13 @@ spec:
     matches:
     - path:
         type: PathPrefix
-        value: /http-bin-api/1.0.8/get/
-    filters:
-      - type: URLRewrite
-        urlRewrite:
-          path:
-            type: ReplacePrefixMatch
-            replacePrefixMatch: /get
+        value: /get/
+    # filters:
+      # - type: URLRewrite
+      #   urlRewrite:
+      #     path:
+      #       type: ReplacePrefixMatch
+      #       replacePrefixMatch: /get
   - backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -66,14 +66,14 @@ spec:
     matches:
     - path:
         type: PathPrefix
-        value: /http-bin-api/1.0.8/secure/post/
+        value: /secure/post/
       method: POST
-    filters:
-      - type: URLRewrite
-        urlRewrite:
-          path:
-            type: ReplacePrefixMatch
-            replacePrefixMatch: /post
+    # filters:
+      # - type: URLRewrite
+      #   urlRewrite:
+      #     path:
+      #       type: ReplacePrefixMatch
+      #       replacePrefixMatch: /post
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
 kind: HTTPRoute
@@ -93,14 +93,14 @@ spec:
       matches:
         - path:
             type: PathPrefix
-            value: /http-bin-api/1.0.8/secure/get/
+            value: /secure/get/
           method: GET
       filters:
-        - type: URLRewrite
-          urlRewrite:
-            path:
-              type: ReplacePrefixMatch
-              replacePrefixMatch: /get
+        # - type: URLRewrite
+        #   urlRewrite:
+        #     path:
+        #       type: ReplacePrefixMatch
+        #       replacePrefixMatch: /get
         - type: ExtensionRef
           extensionRef:
             group: dp.wso2.com
@@ -127,13 +127,13 @@ spec:
       matches:
         - path:
             type: PathPrefix
-            value: /http-bin-api/1.0.8/get
+            value: /get
       filters:
-        - type: URLRewrite
-          urlRewrite:
-            path:
-              type: ReplacePrefixMatch
-              replacePrefixMatch: /get
+        # - type: URLRewrite
+        #   urlRewrite:
+        #     path:
+        #       type: ReplacePrefixMatch
+        #       replacePrefixMatch: /get
         - type: ResponseHeaderModifier
           responseHeaderModifier:
             set:

@@ -25,48 +25,49 @@ import (
 )
 
 func init() {
-	IntegrationTests = append(IntegrationTests, APIWithOperationalPolicy)
+	IntegrationTests = append(IntegrationTests, DefaultAPIVersion)
 }
 
-// APIWithOperationalPolicy test
-var APIWithOperationalPolicy = suite.IntegrationTest{
-	ShortName:   "APIWithOperationalPolicy",
-	Description: "An API with operatinal policy",
-	Manifests:   []string{"tests/api-with-operational-policy.yaml"},
+// DefaultAPIVersion tests default api version feature
+var DefaultAPIVersion = suite.IntegrationTest{
+	ShortName:   "DefaultAPIVersionTest",
+	Description: "Tests an API with default version",
+	Manifests:   []string{"tests/default-api-version.yaml"},
 	Test: func(t *testing.T, suite *suite.IntegrationTestSuite) {
 		ns := "gateway-integration-test-infra"
-		gwAddr := "backend-base-path.test.gw.wso2.com:9095"
+		gwAddr := "default-api-version.test.gw.wso2.com:9095"
 		token := http.GetTestToken(t)
 
 		testCases := []http.ExpectedResponse{
 			{
 				Request: http.Request{
-					Host:   "backend-base-path.test.gw.wso2.com",
-					Path:   "/test-api-with-operatinal-policy/1.0.0/test-get-path",
+					Host:   "default-api-version.test.gw.wso2.com",
+					Path:   "/default-api-version/v1.0.0/v2/echo-full/",
 					Method: "GET",
 				},
 				ExpectedRequest: &http.ExpectedRequest{
 					Request: http.Request{
-						Path:   "/test-get-path",
-						Method: "GET",
+						Path: "/v2/echo-full/",
 					},
 				},
 				Backend:   "infra-backend-v1",
 				Namespace: ns,
-			}, {
+				Response: http.Response{StatusCode: 200},
+			},
+			{
 				Request: http.Request{
-					Host:   "backend-base-path.test.gw.wso2.com",
-					Path:   "/test-api-with-operatinal-policy/1.0.0/test-post-path",
-					Method: "POST",
+					Host:   "default-api-version.test.gw.wso2.com",
+					Path:   "/default-api-version/v2/echo-full",
+					Method: "GET",
 				},
 				ExpectedRequest: &http.ExpectedRequest{
 					Request: http.Request{
-						Path:   "/test-post-path",
-						Method: "POST",
+						Path: "/v2/echo-full",
 					},
 				},
 				Backend:   "infra-backend-v1",
 				Namespace: ns,
+				Response: http.Response{StatusCode: 200},
 			},
 		}
 		for i := range testCases {

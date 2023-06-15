@@ -96,7 +96,7 @@ var BackendJWTGenerationPolicy = suite.IntegrationTest{
 			{
 				Request: http.Request{
 					Host: "api-policy-with-jwt-generator.test.gw.wso2.com",
-					Path: "/api-policy-with-jwt-generator/v1.0.0",
+					Path: "/api-policy-with-jwt-generator/v1.0.0/v2/echo-full",
 					Headers: map[string]string{
 						"content-type": "application/json",
 					},

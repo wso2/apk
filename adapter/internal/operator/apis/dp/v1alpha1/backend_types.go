@@ -67,6 +67,7 @@ type BackendSpec struct {
 type Service struct {
 	Host string `json:"host"`
 	Port uint32 `json:"port"`
+	BasePath string `json:"basePath"`
 }
 
 // TLSConfig defines enpoint TLS configurations

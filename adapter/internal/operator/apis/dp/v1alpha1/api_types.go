@@ -40,6 +40,9 @@ type APISpec struct {
 	//
 	APIVersion string `json:"apiVersion"`
 
+	// IsDefaultVersion indicates whether this API version should be used as a default API
+	IsDefaultVersion bool `json:"isDefaultVersion"`
+
 	// DefinitionFileRef contains the OpenAPI 3 or Swagger
 	// definition of the API in a ConfigMap.
 	//
