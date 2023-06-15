@@ -99,7 +99,8 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 		resourceAuthScheme := authScheme
 		resourceAPIPolicy := apiPolicy
 		var resourceRatelimitPolicy *dpv1alpha1.RateLimitPolicy
-		hasPolicies := false
+		// No longer need this flag, since we are going to create a rewrite policy always.
+		hasPolicies := true
 		var scopes []string
 		for _, filter := range rule.Filters {
 			hasPolicies = true
@@ -234,6 +235,21 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 				}
 			}
 		}
+		// TODO need to move this logic to the for loop for Matches tht already exists below and see whether it works or not.
+		for _, match := range rule.Matches {
+			loggers.LoggerOasparser.Infof("test1 2223 rewrite path from match val: ", *match.Path.Value)
+			
+			policyParameters := make(map[string]interface{})
+			policyParameters[constants.RewritePathType] = gwapiv1b1.PrefixMatchHTTPPathModifier
+			policyParameters[constants.IncludeQueryParams] = true
+			policyParameters[constants.RewritePathResourcePath] = *match.Path.Value
+			loggers.LoggerOasparser.Infof("test1 2111 policy params: ", policyParameters)
+			policies.Request = append(policies.Request, Policy{
+				PolicyName: string(gwapiv1b1.HTTPRouteFilterURLRewrite),
+				Action:     constants.ActionRewritePath,
+				Parameters: policyParameters,
+			})
+		}
 
 		addOperationLevelInterceptors(&policies, resourceAPIPolicy, httpRouteParams.InterceptorServiceMapping, httpRouteParams.BackendMapping)
 
@@ -267,7 +283,8 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 			}
 		}
 		for _, match := range rule.Matches {
-			resourcePath := *match.Path.Value
+			resourcePath := swagger.xWso2Basepath + *match.Path.Value
+			loggers.LoggerOasparser.Infoln("resouce path: " + resourcePath);
 			resource := &Resource{path: resourcePath,
 				methods: getAllowedOperations(match.Method, policies, apiAuth,
 					parseRateLimitPolicyToInternal(resourceRatelimitPolicy), scopes),
