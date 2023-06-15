@@ -39,14 +39,6 @@ public isolated function e909001(string id) returns commons:APKError {
     );
 }
 
-public isolated function e909002() returns commons:APKError {
-    return error commons:APKError("Context/Name doesn't exist",
-        code = 909002,
-        message = "Context/Name doesn't exist",
-        statusCode = 404,
-        description = "Context/Name doesn't exist"
-    );
-}
 
 public isolated function e909003() returns commons:APKError {
     return error commons:APKError("apiId not found in request",
@@ -57,14 +49,6 @@ public isolated function e909003() returns commons:APKError {
     );
 }
 
-public isolated function e909004() returns commons:APKError {
-    return error commons:APKError("Invalid property id in Request",
-        code = 909004,
-        message = "Invalid property id in Request",
-        statusCode = 406,
-        description = "Invalid property id in Request"
-    );
-}
 
 public isolated function e909005(string 'field) returns commons:APKError {
     string msg = 'field + " field(s) unavailable";
@@ -278,19 +262,19 @@ public isolated function e909043() returns commons:APKError {
     );
 }
 public isolated function e909044() returns commons:APKError {
-    return error commons:APKError("Retrieve definition from Url result",
+    return error commons:APKError("Invalid url provided for openapi definition",
         code = 909044,
-        message = "Retrieve definition from Url result",
+        message = "Invalid url provided for openapi definition",
         statusCode = 406,
-        description = "Retrieve definition from Url result"
+        description = "Invalid url provided for openapi definition"
     );
 }
-public isolated function e909045() returns commons:APKError {
-    return error commons:APKError("Atleast one Vhost need per production and sandbox",
-        code = 909044,
-        message = "Atleast one Vhost need per production and sandbox",
+public isolated function e9090445() returns commons:APKError {
+    return error commons:APKError("Atleast one Vhost need per production or/and sandbox",
+        code = 9090445,
+        message = "Atleast one Vhost need per production or/and sandbox",
         statusCode = 406,
-        description = "Atleast one Vhost need per production and sandbox"
+        description = "Atleast one Vhost need per production or/and sandbox"
     );
 }
 public isolated function e909028() returns commons:APKError {

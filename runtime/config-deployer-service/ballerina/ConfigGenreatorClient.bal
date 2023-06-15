@@ -7,9 +7,9 @@ import config_deployer_service.org.wso2.apk.config as runtimeUtil;
 import ballerina/mime;
 import ballerina/jballerina.java;
 import config_deployer_service.model;
-import ballerina/log;
 import ballerina/io;
 import ballerina/file;
+import ballerina/log;
 import ballerina/uuid;
 
 public class ConfigGeneratorClient {
@@ -26,6 +26,10 @@ public class ConfigGeneratorClient {
                 BadRequestError badRequest = {body: {code: 90091, message: "API Type need to specified"}};
                 return badRequest;
             }
+            if ALLOWED_API_TYPES.indexOf(<string>definitionBody.apiType) is () {
+                BadRequestError badRequest = {body: {code: 90091, message: "Invalid API Type"}};
+                return badRequest;
+            }
             if definitionBody.url is string {
                 validateAndRetrieveDefinitionResult = check self.validateAndRetrieveDefinition(<string>definitionBody.'apiType, definitionBody.url, (), ());
             } else if definitionBody.definition is record {|byte[] fileContent; string fileName; anydata...;|} {
@@ -37,7 +41,7 @@ public class ConfigGeneratorClient {
                     runtimeapi:APIDefinition parser = validateAndRetrieveDefinitionResult.getParser();
                     runtimeModels:API apiFromDefinition = check parser.getAPIFromDefinition(validateAndRetrieveDefinitionResult.getContent());
                     APIClient apiclient = new ();
-                    APKConf generatedAPKConf =check apiclient.fromAPIModelToAPKConf(apiFromDefinition);
+                    APKConf generatedAPKConf = check apiclient.fromAPIModelToAPKConf(apiFromDefinition);
                     string|() apkConfYaml = check commons:newYamlUtil1().fromJsonStringToYaml(generatedAPKConf.toJsonString());
                     OkAnydata response = {body: apkConfYaml, mediaType: "application/yaml"};
                     return response;
@@ -59,6 +63,9 @@ public class ConfigGeneratorClient {
                 return e909022("Error occured while validating the definition", ());
             }
         } on fail var e {
+            if e is commons:APKError {
+                return e;
+            }
             return e909022("Internal error occured while creating APK conf", e);
         }
     }
@@ -91,13 +98,8 @@ public class ConfigGeneratorClient {
             return e909006();
         }
         if url is string {
-            string|error retrieveDefinitionFromUrlResult = self.retrieveDefinitionFromUrl(url);
-            if retrieveDefinitionFromUrlResult is string {
-                validationResponse = runtimeUtil:RuntimeAPICommonUtil_validateOpenAPIDefinition('type, [], retrieveDefinitionFromUrlResult, fileName ?: "", true);
-            } else {
-                log:printError("Error occured while retrieving definition from url", retrieveDefinitionFromUrlResult);
-                return e909044();
-            }
+            string retrieveDefinitionFromUrlResult = check self.retrieveDefinitionFromUrl(url);
+            validationResponse = runtimeUtil:RuntimeAPICommonUtil_validateOpenAPIDefinition('type, [], retrieveDefinitionFromUrlResult, fileName ?: "", true);
         } else if fileName is string && content is byte[] {
             validationResponse = runtimeUtil:RuntimeAPICommonUtil_validateOpenAPIDefinition('type, <byte[]>content, "", <string>fileName, true);
         } else {
@@ -111,10 +113,13 @@ public class ConfigGeneratorClient {
         if domain.length() > 0 {
             http:Client httpClient = check new (domain);
             http:Response response = check httpClient->get(path, targetType = http:Response);
-            return response.getTextPayload();
-        } else {
-            return error("invalid url " + url);
+            if response.statusCode == 200 {
+                return response.getTextPayload();
+            } else {
+                log:printError("Error occured while retrieving the definition from the url: " + url, statusCode = response.statusCode);
+            }
         }
+        return e909044();
     }
     public isolated function getGeneratedK8sResources(http:Request request) returns http:Response|BadRequestError|InternalServerErrorError|commons:APKError {
         GenerateK8sResourcesBody body = {};
