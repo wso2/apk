@@ -48,7 +48,7 @@ spec:
   - matches:
     - path:
         type: Exact
-        value: /trailing-slash/v1.0.0/echo-full/no-slash/findByStatus
+        value: /echo-full/no-slash/findByStatus
       method: GET
     filters:
     - type: URLRewrite
@@ -63,7 +63,7 @@ spec:
   - matches:
     - path:
         type: RegularExpression
-        value: /trailing-slash/v1.0.0/echo-full/no-slash/([^/]+)
+        value: /echo-full/no-slash/([^/]+)
       method: GET
     filters:
     - type: URLRewrite
@@ -78,7 +78,7 @@ spec:
   - matches:
     - path:
         type: RegularExpression
-        value: /trailing-slash/v1.0.0/echo-full/no-slash/([^/]+)/pet/([^/]+)
+        value: /echo-full/no-slash/([^/]+)/pet/([^/]+)
       method: GET
     filters:
     - type: URLRewrite
@@ -93,7 +93,7 @@ spec:
   - matches:
     - path:
         type: Exact
-        value: /trailing-slash/v1.0.0/echo-full/with-slash/findByStatus
+        value: /echo-full/with-slash/findByStatus
       method: GET
     filters:
     - type: URLRewrite
@@ -108,7 +108,7 @@ spec:
   - matches:
     - path:
         type: RegularExpression
-        value: /trailing-slash/v1.0.0/echo-full/with-slash/([^/]+)
+        value: /echo-full/with-slash/([^/]+)
       method: GET
     filters:
     - type: URLRewrite
@@ -123,7 +123,7 @@ spec:
   - matches:
     - path:
         type: RegularExpression
-        value: /trailing-slash/v1.0.0/echo-full/with-slash/([^/]+)/pet/([^/]+)
+        value: /echo-full/with-slash/([^/]+)/pet/([^/]+)
       method: GET
     filters:
     - type: URLRewrite
@@ -138,7 +138,7 @@ spec:
   - matches:
     - path:
         type: Exact
-        value: /trailing-slash/v1.0.0/echo-full/chars
+        value: /echo-full/chars
       method: GET
     filters:
     - type: URLRewrite
@@ -153,7 +153,7 @@ spec:
   - matches:
     - path:
         type: RegularExpression
-        value: /trailing-slash/v1.0.0/echo-full/with-param/([^/]+)
+        value: /echo-full/with-param/([^/]+)
       method: GET
     filters:
     - type: URLRewrite

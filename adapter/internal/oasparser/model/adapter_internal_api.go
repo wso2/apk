@@ -322,6 +322,11 @@ func (swagger *AdapterInternalAPI) SetVersion(version string) {
 	swagger.version = version
 }
 
+// SetIsDefaultVersion sets whether this API is the default
+func (swagger *AdapterInternalAPI) SetIsDefaultVersion(isDefaultVersion bool) {
+	swagger.IsDefaultVersion = isDefaultVersion;
+}
+
 // SetXWso2AuthHeader sets the authHeader of the API
 func (swagger *AdapterInternalAPI) SetXWso2AuthHeader(authHeader string) {
 	if swagger.xWso2AuthHeader == "" {

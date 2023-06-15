@@ -48,14 +48,9 @@ spec:
   - matches:
     - path:
         type: Exact
-        value: /disable-resource-security/v1/users
+        value: /users
       method: GET
     filters:
-    - type: URLRewrite
-      urlRewrite:
-        path:
-          type: ReplaceFullPath
-          replaceFullPath: /users
     - type: ExtensionRef
       extensionRef:
         group: dp.wso2.com
@@ -68,14 +63,8 @@ spec:
   - matches:
     - path:
         type: Exact
-        value: /disable-resource-security/v1/orders
+        value: /orders
       method: GET
-    filters:
-    - type: URLRewrite
-      urlRewrite:
-        path:
-          type: ReplaceFullPath
-          replaceFullPath: /orders
     backendRefs:
     - group: dp.wso2.com
       kind: Backend

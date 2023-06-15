@@ -42,7 +42,7 @@ var APIWithRequestHeaderModify = suite.IntegrationTest{
 			{
 				Request: http.Request{
 					Host: "backend-base-path.test.gw.wso2.com",
-					Path: "/test-api-with-request-header-remove/1.0.0",
+					Path: "/request-header-modify/1.0.0/users",
 				},
 				ExpectedRequest: &http.ExpectedRequest{
 					Request: http.Request{
@@ -56,7 +56,7 @@ var APIWithRequestHeaderModify = suite.IntegrationTest{
 			{
 				Request: http.Request{
 					Host: "backend-base-path.test.gw.wso2.com",
-					Path: "/test-api-with-request-header-add/1.0.0",
+					Path: "/request-header-modify/1.0.0/orders",
 				},
 				ExpectedRequest: &http.ExpectedRequest{
 					Request: http.Request{
