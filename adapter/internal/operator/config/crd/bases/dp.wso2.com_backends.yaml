@@ -74,9 +74,20 @@ spec:
                 - ws
                 - wss
                 type: string
-              retryCount:
-                format: int32
-                type: integer
+              retry:
+                properties:
+                  baseIntervalInMillis:
+                    format: int32
+                    type: integer
+                  maxRetryCount:
+                    format: int32
+                    type: integer
+                  statusCodes:
+                    items:
+                      format: int32
+                      type: integer
+                    type: array
+                type: object
               security:
                 items:
                   description: SecurityConfig defines enpoint security configurations

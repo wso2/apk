@@ -326,7 +326,13 @@ func GetResolvedBackend(ctx context.Context, client k8client.Client,
 			RouteIdleTimeoutSeconds: backend.Spec.Timeout.RouteIdleTimeoutSeconds,
 		}
 	}
-	resolvedBackend.Retry = backend.Spec.Retry
+	if backend.Spec.Retry != nil {
+		resolvedBackend.Retry = dpv1alpha1.Retry{
+			MaxRetryCount:        backend.Spec.Retry.MaxRetryCount,
+			BaseIntervalInMillis: backend.Spec.Retry.BaseIntervalInMillis,
+			StatusCodes:          backend.Spec.Retry.StatusCodes,
+		}
+	}
 	if backend.Spec.TLS != nil {
 		resolvedTLSConfig.ResolvedCertificate, err = ResolveCertificate(ctx, client,
 			backend.Namespace, backend.Spec.TLS.CertificateInline, backend.Spec.TLS.ConfigMapRef, backend.Spec.TLS.SecretRef)

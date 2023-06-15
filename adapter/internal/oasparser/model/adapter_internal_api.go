@@ -149,8 +149,9 @@ type EndpointConfig struct {
 
 // RetryConfig holds the parameters for retries done by apk to the EndpointCluster
 type RetryConfig struct {
-	Count       int32    `mapstructure:"count"`
-	StatusCodes []uint32 `mapstructure:"statusCodes"`
+	Count                int32    `mapstructure:"count"`
+	StatusCodes          []uint32 `mapstructure:"statusCodes"`
+	BaseIntervalInMillis int32    `mapstructure:"baseIntervalInMillis"`
 }
 
 // CircuitBreakers holds the parameters for retries done by apk to the EndpointCluster

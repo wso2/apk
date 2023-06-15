@@ -66,8 +66,8 @@ type BackendSpec struct {
 	CircuitBreaker *CircuitBreaker `json:"circuitBreaker,omitempty"`
 	// +optional
 	// Timeout congifuration for the backend
-	Timeout *Timeout `json:"timeout,omitempty"`
-	Retry   int32    `json:"retry,omitempty"`
+	Timeout *Timeout     `json:"timeout,omitempty"`
+	Retry   *RetryConfig `json:"retry,omitempty"`
 }
 
 // Timeout defines the timeout configurations
@@ -98,6 +98,14 @@ type CircuitBreaker struct {
 type RetryBudget struct {
 	BudgetPercent       uint64 `json:"budgetPercent,omitempty"`
 	MinRetryConcurrency uint32 `json:"minRetryConcurrency,omitempty"`
+	// RetryCount int32            `json:"retryCount,omitempty"`
+}
+
+// RetryConfig defines retry configurations
+type RetryConfig struct {
+	MaxRetryCount        uint32   `json:"maxRetryCount,omitempty"`
+	BaseIntervalInMillis uint32   `json:"baseIntervalInMillis,omitempty"`
+	StatusCodes          []uint32 `json:"statusCodes,omitempty"`
 }
 
 // Service holds host and port information for the service
