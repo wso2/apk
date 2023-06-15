@@ -26,6 +26,10 @@ flag_management:
     - name: runtime-domain-service
       paths:
         - '**/runtime-domain-service/**'
+    - name: config-deployer-service
+      paths:
+        - '**/config-deployer-service/**'
+
     - name: idp-domain-service
       paths:
         - '**/idp/idp-domain-service/**'
