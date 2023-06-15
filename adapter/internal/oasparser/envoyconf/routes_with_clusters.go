@@ -26,6 +26,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"encoding/json"
 
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/durationpb"
@@ -1401,12 +1402,13 @@ func getUpgradeConfig(apiType string) []*routev3.RouteAction_UpgradeConfig {
 	return upgradeConfig
 }
 
-func getAPIProperties(apiPropertiesConfig *dpv1alpha1.APIProperty) map[string]string {
-	var dat map[string]string
+func getAPIProperties(apiPropertiesConfig *dpv1alpha1.APIProperty) string {
+	var apiProperties = make(map[string]string)
 	for _, val := range apiPropertiesConfig.Spec.Properties {
-		dat[val.Name] = val.Value
-	 }
-	return dat
+		apiProperties[val.Name] = val.Value
+	}
+	apiPropertiesJSON, _ := json.Marshal(apiProperties)
+	return strings.Replace(string(apiPropertiesJSON), `"`, `'`, -1)
 }
 
 func getCorsPolicy(corsConfig *model.CorsConfig) *cors_filter_v3.CorsPolicy {

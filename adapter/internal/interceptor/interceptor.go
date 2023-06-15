@@ -70,7 +70,7 @@ type InvocationContext struct {
 	PathTemplate     string
 	Vhost            string
 	ClusterName      string
-	APIProperty      map[string]string
+	APIProperty      string
 }
 
 var (
