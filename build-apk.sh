@@ -10,6 +10,8 @@ cd backoffice/backoffice-domain-service;./gradlew build;
 cd $current_dir;
 cd runtime/runtime-domain-service;./gradlew build;
 cd $current_dir;
+cd runtime/config-deployer-service;./gradlew build;
+cd $current_dir;
 cd admin/admin-domain-service;./gradlew build;
 cd $current_dir;
 cd devportal/devportal-domain-service;./gradlew build;
