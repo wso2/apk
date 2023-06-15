@@ -8,3 +8,4 @@ test/testFixture/.vscode
 .DS_Store
 test-resources
 yarn-error.log
+.github/
