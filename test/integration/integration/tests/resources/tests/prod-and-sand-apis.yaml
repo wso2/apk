@@ -51,14 +51,8 @@ spec:
   - matches:
     - path:
         type: PathPrefix
-        value: /prod-sand-test-api/v1
+        value: /
       method: GET
-    filters:
-    - type: URLRewrite
-      urlRewrite:
-        path:
-          type: ReplacePrefixMatch
-          replacePrefixMatch: /
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -82,14 +76,9 @@ spec:
   - matches:
     - path:
         type: PathPrefix
-        value: /prod-sand-test-api/v1
+        value: /
       method: GET
-    filters:
-    - type: URLRewrite
-      urlRewrite:
-        path:
-          type: ReplacePrefixMatch
-          replacePrefixMatch: /
+    
     backendRefs:
     - group: dp.wso2.com
       kind: Backend

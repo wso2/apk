@@ -47,7 +47,7 @@ spec:
   - matches:
     - path:
         type: PathPrefix
-        value: /cors-policy-api/1.0.0/test
+        value: /test
       method: GET
     filters:
     - type: URLRewrite
@@ -117,7 +117,7 @@ spec:
   - matches:
     - path:
         type: PathPrefix
-        value: /no-cors-policy-api/1.0.0/test
+        value: /test
       method: GET
     filters:
     - type: URLRewrite

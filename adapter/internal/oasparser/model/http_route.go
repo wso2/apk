@@ -19,6 +19,7 @@ package model
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/wso2/apk/adapter/internal/loggers"
@@ -95,11 +96,42 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 
 	for _, rule := range httpRoute.Spec.Rules {
 		var endPoints []Endpoint
+		if len(rule.BackendRefs) < 1 {
+			return fmt.Errorf("no backendref were provided")
+		}
+		var securityConfig []EndpointSecurity
+		backendBasePath := "";
+		for _, backend := range rule.BackendRefs {
+			backendName := types.NamespacedName{
+				Name:      string(backend.Name),
+				Namespace: utils.GetNamespace(backend.Namespace, httpRoute.Namespace),
+			}
+			resolvedBackend, ok := httpRouteParams.BackendMapping[backendName]
+			if ok {
+				endPoints = append(endPoints, GetEndpoints(backendName, httpRouteParams.BackendMapping)...)
+				backendBasePath = GetBackendBasePath(backendName, httpRouteParams.BackendMapping)
+				for _, security := range resolvedBackend.Security {
+					switch security.Type {
+					case "Basic":
+						securityConfig = append(securityConfig, EndpointSecurity{
+							Password: string(security.Basic.Password),
+							Username: string(security.Basic.Username),
+							Type:     string(security.Type),
+							Enabled:  true,
+						})
+					}
+				}
+			} else {
+				return fmt.Errorf("backend: %s has not been resolved", backendName)
+			}
+		}
 		var policies = OperationPolicies{}
 		resourceAuthScheme := authScheme
 		resourceAPIPolicy := apiPolicy
 		var resourceRatelimitPolicy *dpv1alpha1.RateLimitPolicy
-		hasPolicies := false
+		// No longer need this flag, since we are going to create a rewrite policy always.
+		hasPolicies := true
+		hasURLRewritePolicy := false;
 		var scopes []string
 		for _, filter := range rule.Filters {
 			hasPolicies = true
@@ -111,9 +143,9 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 
 				switch filter.URLRewrite.Path.Type {
 				case gwapiv1b1.FullPathHTTPPathModifier:
-					policyParameters[constants.RewritePathResourcePath] = *filter.URLRewrite.Path.ReplaceFullPath
+					policyParameters[constants.RewritePathResourcePath] = backendBasePath + *filter.URLRewrite.Path.ReplaceFullPath
 				case gwapiv1b1.PrefixMatchHTTPPathModifier:
-					policyParameters[constants.RewritePathResourcePath] = *filter.URLRewrite.Path.ReplacePrefixMatch
+					policyParameters[constants.RewritePathResourcePath] = backendBasePath + *filter.URLRewrite.Path.ReplacePrefixMatch
 				}
 
 				policies.Request = append(policies.Request, Policy{
@@ -121,6 +153,7 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 					Action:     constants.ActionRewritePath,
 					Parameters: policyParameters,
 				})
+				hasURLRewritePolicy = true;
 			case gwapiv1b1.HTTPRouteFilterExtensionRef:
 				if filter.ExtensionRef.Kind == constants.KindAuthentication {
 					if ref, found := httpRouteParams.ResourceAuthSchemes[types.NamespacedName{
@@ -234,41 +267,34 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 				}
 			}
 		}
-
 		addOperationLevelInterceptors(&policies, resourceAPIPolicy, httpRouteParams.InterceptorServiceMapping, httpRouteParams.BackendMapping)
 
 		loggers.LoggerOasparser.Debug("Calculating auths for API ...")
 		apiAuth := getSecurity(resourceAuthScheme)
-		if len(rule.BackendRefs) < 1 {
-			return fmt.Errorf("no backendref were provided")
-		}
-		var securityConfig []EndpointSecurity
-		for _, backend := range rule.BackendRefs {
-			backendName := types.NamespacedName{
-				Name:      string(backend.Name),
-				Namespace: utils.GetNamespace(backend.Namespace, httpRoute.Namespace),
-			}
-			resolvedBackend, ok := httpRouteParams.BackendMapping[backendName]
-			if ok {
-				endPoints = append(endPoints, GetEndpoints(backendName, httpRouteParams.BackendMapping)...)
-				for _, security := range resolvedBackend.Security {
-					switch security.Type {
-					case "Basic":
-						securityConfig = append(securityConfig, EndpointSecurity{
-							Password: string(security.Basic.Password),
-							Username: string(security.Basic.Username),
-							Type:     string(security.Type),
-							Enabled:  true,
-						})
-					}
+		
+		for _, match := range rule.Matches {	
+			if (!hasURLRewritePolicy) {		
+				policyParameters := make(map[string]interface{})
+				if (*match.Path.Type == gwapiv1b1.PathMatchPathPrefix) {
+					policyParameters[constants.RewritePathType] = gwapiv1b1.PrefixMatchHTTPPathModifier
+				} else {
+					policyParameters[constants.RewritePathType] = gwapiv1b1.FullPathHTTPPathModifier
 				}
-			} else {
-				return fmt.Errorf("backend: %s has not been resolved", backendName)
+				policyParameters[constants.RewritePathType] = gwapiv1b1.PrefixMatchHTTPPathModifier
+				policyParameters[constants.IncludeQueryParams] = true
+				
+				policyParameters[constants.RewritePathResourcePath] = strings.TrimSuffix(backendBasePath, "/") + *match.Path.Value		
+				policies.Request = append(policies.Request, Policy{
+					PolicyName: string(gwapiv1b1.HTTPRouteFilterURLRewrite),
+					Action:     constants.ActionRewritePath,
+					Parameters: policyParameters,
+				})
 			}
-		}
-		for _, match := range rule.Matches {
-			resourcePath := *match.Path.Value
-			resource := &Resource{path: resourcePath,
+
+			resourcePath := swagger.xWso2Basepath + *match.Path.Value
+			loggers.LoggerOasparser.Infoln("resouce path: " + resourcePath);
+			resource := &Resource{
+				path: resourcePath,
 				methods: getAllowedOperations(match.Method, policies, apiAuth,
 					parseRateLimitPolicyToInternal(resourceRatelimitPolicy), scopes),
 				pathMatchType: *match.Path.Type,
@@ -416,6 +442,17 @@ func GetEndpoints(backendName types.NamespacedName, backendMapping dpv1alpha1.Ba
 		}
 	}
 	return endpoints
+}
+
+// GetBackendBasePath gets basePath of the the Backend
+func GetBackendBasePath(backendName types.NamespacedName, backendMapping dpv1alpha1.BackendMapping) string {
+	backend, ok := backendMapping[backendName]
+	if ok && backend != nil {
+		if len(backend.Services) > 0 {
+			return backend.Services[0].BasePath;
+		}
+	}
+	return "";
 }
 
 func concatRateLimitPolicies(schemeUp *dpv1alpha1.RateLimitPolicy, schemeDown *dpv1alpha1.RateLimitPolicy) *dpv1alpha1.RateLimitPolicy {
