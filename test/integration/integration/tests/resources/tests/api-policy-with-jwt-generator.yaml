@@ -22,8 +22,8 @@ metadata:
 spec:
   apiDisplayName: API with Backend Base Path
   apiType: REST
-  apiVersion: v1
-  context: /api-policy-with-jwt-generator/v1
+  apiVersion: v1.0.0
+  context: /api-policy-with-jwt-generator/v1.0.0
   #definitionFileRef: definition-file
   production:
     - httpRouteRefs:
@@ -48,13 +48,7 @@ spec:
   - matches:
     - path:
         type: PathPrefix
-        value: /api-policy-with-jwt-generator/v1.0.0
-    filters:
-    - type: URLRewrite
-      urlRewrite:
-        path:
-          type: ReplacePrefixMatch
-          replacePrefixMatch: /v2/echo-full
+        value: /v2/echo-full
     backendRefs:
     - group: dp.wso2.com
       kind: Backend

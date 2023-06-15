@@ -668,6 +668,9 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 	}
 	routePath := generateRoutePath(resourcePath, pathMatchType)
 
+	if isDefaultVersion {
+		routePath = getDefaultVersionBasepath(routePath, regexp.QuoteMeta(version))
+	}
 	// route path could be empty only if there is no basePath for API or the endpoint available,
 	// and resourcePath is also an empty string.
 	// Empty check is added to run the gateway in failsafe mode, as if the decorator string is
@@ -875,7 +878,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 					logger.LoggerOasparser.Debugf("Adding %s policy to request flow for %s %s",
 						constants.ActionRewritePath, resourcePath, operation.GetMethod())
 					regexRewrite, err := generateRewritePathRouteConfig(routePath, resourcePath, endpointBasepath,
-						requestPolicy.Parameters, pathMatchType)
+						requestPolicy.Parameters, pathMatchType, isDefaultVersion)
 					if err != nil {
 						errMsg := fmt.Sprintf("Error adding request policy %s to operation %s of resource %s. %v",
 							constants.ActionRewritePath, operation.GetMethod(), resourcePath, err)
