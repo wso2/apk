@@ -67,6 +67,7 @@ type BackendSpec struct {
 	// +optional
 	// Timeout congifuration for the backend
 	Timeout *Timeout `json:"timeout,omitempty"`
+	Retry   int32    `json:"retry,omitempty"`
 }
 
 // Timeout defines the timeout configurations

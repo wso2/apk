@@ -108,7 +108,7 @@ func generateRouteAction(apiType string, routeConfig *model.EndpointConfig, rate
 		commonRetryPolicy := &routev3.RetryPolicy{
 			RetryOn: retryPolicyRetriableStatusCodes,
 			NumRetries: &wrapperspb.UInt32Value{
-				Value: 0,
+				Value: uint32(routeConfig.RetryConfig.Count),
 				// If not set to 0, default value 1 will be
 			},
 			RetriableStatusCodes: retryConfig.StatusCodes,

@@ -71,6 +71,7 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 	if outputRatelimitPolicy != nil {
 		ratelimitPolicy = concatRateLimitPolicies(*outputRatelimitPolicy, nil)
 	}
+	var backendRetry int32
 
 	for _, rule := range httpRoute.Spec.Rules {
 		var endPoints []Endpoint
@@ -247,6 +248,7 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 					timeoutInMillis = resolvedBackend.Timeout.RouteTimeoutSeconds * 1000
 					idleTimeoutInSeconds = resolvedBackend.Timeout.RouteIdleTimeoutSeconds
 				}
+				backendRetry = resolvedBackend.Retry
 				endPoints = append(endPoints, GetEndpoints(backendName, httpRouteParams.BackendMapping)...)
 				for _, security := range resolvedBackend.Security {
 					switch security.Type {
