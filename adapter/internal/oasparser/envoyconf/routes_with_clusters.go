@@ -1134,7 +1134,7 @@ func CreateTokenRoute() *routev3.Route {
 // CreateAPIDefinitionRoute generates a route for the jwt /testkey endpoint
 func CreateAPIDefinitionRoute(basePath string, vHost string, methods []string) *routev3.Route {
 	rewritePath := basePath + "/" + vHost + "?" + apiDefinitionQueryParam
-	if basePath[len(basePath)-1] == '?' {
+	if len(basePath) > 0 && basePath[len(basePath)-1] == '/' {
 		basePath = basePath[:len(basePath)-1]
 	}
 
