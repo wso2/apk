@@ -29,6 +29,11 @@ spec:
     - httpRouteRefs:
       - api-interceptor-route
   organization: wso2-org
+  apiProperties:
+    - name: propertyName1
+      value: "propertyValue1"
+    - name: propertyName2
+      value: "propertyValue2"
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
 kind: HTTPRoute
