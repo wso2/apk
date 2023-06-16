@@ -139,7 +139,7 @@ func CreateRoutesWithClusters(adapterInternalAPI model.AdapterInternalAPI, inter
 
 	cluster, address, err := processEndpoints(apiDefinitionClusterName, &endpointCluster, timeout, "")
 	if err != nil {
-		logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(2239, apiTitle, apiVersion, apiDefinitionPath, err.Error()))
+		logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(2239, apiTitle, apiVersion, apiDefinitionQueryParam, err.Error()))
 	}
 	clusters = append(clusters, cluster)
 	endpoints = append(endpoints, address...)
@@ -1133,8 +1133,10 @@ func CreateTokenRoute() *routev3.Route {
 
 // CreateAPIDefinitionRoute generates a route for the jwt /testkey endpoint
 func CreateAPIDefinitionRoute(basePath string, vHost string, methods []string) *routev3.Route {
-	path := basePath + apiDefinitionPath
-	rewritePath := basePath + "/" + vHost + apiDefinitionPath
+	rewritePath := basePath + "/" + vHost + "?" + apiDefinitionQueryParam
+	if basePath[len(basePath)-1] == '?' {
+		basePath = basePath[:len(basePath)-1]
+	}
 
 	var (
 		router    routev3.Route
@@ -1147,14 +1149,14 @@ func CreateAPIDefinitionRoute(basePath string, vHost string, methods []string) *
 
 	match = &routev3.RouteMatch{
 		PathSpecifier: &routev3.RouteMatch_Path{
-			Path: path,
+			Path: basePath,
 		},
 		QueryParameters: generateQueryParamMatcher("definitionType", "swagger"),
 		Headers:         generateHTTPMethodMatcher(methodRegex, apiDefinitionClusterName),
 	}
 
 	decorator = &routev3.Decorator{
-		Operation: path,
+		Operation: basePath,
 	}
 
 	perFilterConfig := extAuthService.ExtAuthzPerRoute{
@@ -1188,7 +1190,7 @@ func CreateAPIDefinitionRoute(basePath string, vHost string, methods []string) *
 	}
 
 	router = routev3.Route{
-		Name:      apiDefinitionPath,
+		Name:      apiDefinitionQueryParam,
 		Match:     match,
 		Action:    action,
 		Metadata:  nil,

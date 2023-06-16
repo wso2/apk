@@ -22,10 +22,15 @@ import org.wso2.apk.enforcer.models.ResponsePayload;
 import org.wso2.apk.enforcer.subscription.SubscriptionDataHolder;
 import org.wso2.apk.enforcer.subscription.SubscriptionDataStore;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.zip.GZIPInputStream;
 
 public class SwaggerServerHandler extends SimpleChannelInboundHandler<HttpObject> {
 
@@ -49,17 +54,26 @@ public class SwaggerServerHandler extends SimpleChannelInboundHandler<HttpObject
             return;
         }
 
+        boolean isSwagger = false;
+
         String [] params = request.uri().split("/");
-        boolean isSwagger = Arrays.stream(params).anyMatch(param -> {
-            if(APIDefinitionConstants.SWAGGER_DEFINITION.equalsIgnoreCase(param)) {
-                return true;
-            }
-            return false;
-        });
         final String basePath = "/" + params[1] + "/" + params[2];
+        final String vHost = params[3].split("\\?")[0];
+        final String queryParam = params[3].split("\\?")[1];
+
+        if (queryParam != null && queryParam != "" && queryParam.contains(APIDefinitionConstants.SWAGGER_DEFINITION)) {
+            isSwagger = true;
+        }
+        // isSwagger = APIDefinitionConstants.SWAGGER_DEFINITION.equalsIgnoreCase(queryParam.split("=")[1]);
+//        boolean isSwagger = Arrays.stream(params).anyMatch(param -> {
+//            if(APIDefinitionConstants.SWAGGER_DEFINITION.equalsIgnoreCase(param)) {
+//                return true;
+//            }
+//            return false;
+//        });
         if(isSwagger){
             // load the corresponding swagger definition from the API name
-            byte[] apiDefinition = apiFactory.getAPIDefinition(basePath, params[2], params[3]);
+            byte[] apiDefinition = apiFactory.getAPIDefinition(basePath, params[2], vHost);
             if (apiDefinition == null || apiDefinition.length == 0) {
                 String error = AdminConstants.ErrorMessages.NOT_FOUND;
                 responsePayload = new ResponsePayload();
@@ -68,6 +82,16 @@ public class SwaggerServerHandler extends SimpleChannelInboundHandler<HttpObject
                 responsePayload.setContent(error);
                 buildAndSendResponse(ctx, responsePayload);
                 return;
+            }
+            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(apiDefinition);
+            GZIPInputStream gzipInputStream = new GZIPInputStream(byteArrayInputStream);
+            InputStreamReader inputStreamReader = new InputStreamReader(gzipInputStream);
+            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+            String line;
+            StringBuilder stringBuilder = new StringBuilder();
+
+            while ((line = bufferedReader.readLine()) != null) {
+                stringBuilder.append(line);
             }
             Map<String,String> map = new HashMap<>();
             map.put("apiDefinition", new String(apiDefinition, StandardCharsets.UTF_8));
