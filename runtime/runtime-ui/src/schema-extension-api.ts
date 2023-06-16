@@ -1,7 +1,7 @@
 import { URI } from 'vscode-uri';
 import { CommonLanguageClient as LanguageClient, RequestType } from 'vscode-languageclient/node';
 import { workspace } from 'vscode';
-import { logToExtensionOutputChannel } from './extension';
+import { logToExtensionOutputChannel } from './utils';
 
 interface SchemaContributorProvider {
   readonly requestSchema: (resource: string) => string;
