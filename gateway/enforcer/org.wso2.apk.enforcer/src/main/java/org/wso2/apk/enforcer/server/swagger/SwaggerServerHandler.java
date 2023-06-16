@@ -70,7 +70,7 @@ public class SwaggerServerHandler extends SimpleChannelInboundHandler<HttpObject
                 return;
             }
             Map<String,String> map = new HashMap<>();
-            map.put("swagger.json", new String(apiDefinition, StandardCharsets.UTF_8));
+            map.put("apiDefinition", new String(apiDefinition, StandardCharsets.UTF_8));
             responsePayload = APIDefinitionUtils.buildResponsePayload(map, HttpResponseStatus.OK, false);
             buildAndSendResponse(ctx, responsePayload);
         }

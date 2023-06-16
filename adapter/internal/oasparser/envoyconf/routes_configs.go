@@ -183,6 +183,21 @@ func generateHTTPMethodMatcher(methodRegex string, sandClusterName string) []*ro
 	return headerMatcherArray
 }
 
+func generateQueryParamMatcher(queryParamName, value string) []*routev3.QueryParameterMatcher {
+	queryParamMatcher := &routev3.QueryParameterMatcher{
+		Name: queryParamName,
+		QueryParameterMatchSpecifier: &routev3.QueryParameterMatcher_StringMatch{
+			StringMatch: &envoy_type_matcherv3.StringMatcher{
+				MatchPattern: &envoy_type_matcherv3.StringMatcher_Exact{
+					Exact: value,
+				},
+			},
+		},
+	}
+	queryParamArray := []*routev3.QueryParameterMatcher{queryParamMatcher}
+	return queryParamArray
+}
+
 func generateHeaderMatcher(headerName, valueRegex string) *routev3.HeaderMatcher {
 	headerMatcherArray := &routev3.HeaderMatcher{
 		Name: headerName,
