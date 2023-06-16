@@ -29,7 +29,7 @@ spec:
     - httpRouteRefs:
       - api-interceptor-route
   organization: wso2-org
-  apiProperties:
+  apiProperties123:
     - name: propertyName1
       value: "propertyValue1"
     - name: propertyName2
