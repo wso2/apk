@@ -108,6 +108,9 @@ public class APIFactory {
     public byte[] getAPIDefinition(final String basePath, final String version, final String vHost) {
         String apiKey = getApiKey(vHost, basePath, version);
         API api = apis.get(apiKey);
+        if(api == null) {
+            return null;
+        }
         return api.getAPIConfig().getApiDefinition();
     }
 

@@ -513,7 +513,7 @@ func (apiReconciler *APIReconciler) getAPIDefinitionForAPI(ctx context.Context,
 			namespace, err.Error())
 	}
 	apiDef := make(map[string][]byte)
-	for _, val := range configMap.Data {
+	for _, val := range configMap.BinaryData {
 		// config map data key is "swagger.yaml"
 		apiDef["apiDef"] = []byte(val)
 	}

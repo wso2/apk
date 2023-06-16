@@ -29,7 +29,6 @@ spec:
   apiVersion: "1.0.0"
   context: "/api/backoffice/1.0.0"
   organization: "carbon.super"
-  #definitionFileRef: ""
   production:
     - httpRouteRefs:
       - {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-httproute

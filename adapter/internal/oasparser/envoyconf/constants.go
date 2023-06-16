@@ -89,10 +89,10 @@ const (
 
 // Paths exposed from the router by default
 const (
-	healthPath        string = "/health"
-	testKeyPath       string = "/testkey"
-	readyPath         string = "/ready"
-	apiDefinitionPath string = "/swagger.json"
+	healthPath              string = "/health"
+	testKeyPath             string = "/testkey"
+	readyPath               string = "/ready"
+	apiDefinitionQueryParam string = "swagger"
 )
 
 const (
