@@ -33,4 +33,12 @@ message BackendJWTTokenInfo {
 	string signingAlgorithm = 4;
 	map<string,string> customClaims = 5;
 	int32 tokenTTL = 6;
+	repeated Keypair keypairs = 11;
+}
+
+// keypair model
+message Keypair {
+  string public_certificate_path = 1;
+  string private_key_path = 2;
+  bool use_for_signing = 3;
 }

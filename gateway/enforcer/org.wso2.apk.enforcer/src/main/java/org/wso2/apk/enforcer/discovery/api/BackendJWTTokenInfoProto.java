@@ -24,6 +24,11 @@ public final class BackendJWTTokenInfoProto {
   static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_wso2_discovery_api_BackendJWTTokenInfo_CustomClaimsEntry_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_wso2_discovery_api_Keypair_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_wso2_discovery_api_Keypair_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -34,17 +39,20 @@ public final class BackendJWTTokenInfoProto {
   static {
     java.lang.String[] descriptorData = {
       "\n,wso2/discovery/api/BackendJWTTokenInfo" +
-      ".proto\022\022wso2.discovery.api\"\372\001\n\023BackendJW" +
+      ".proto\022\022wso2.discovery.api\"\251\002\n\023BackendJW" +
       "TTokenInfo\022\017\n\007enabled\030\001 \001(\010\022\020\n\010encoding\030" +
       "\002 \001(\t\022\016\n\006header\030\003 \001(\t\022\030\n\020signingAlgorith" +
       "m\030\004 \001(\t\022O\n\014customClaims\030\005 \003(\01329.wso2.dis" +
       "covery.api.BackendJWTTokenInfo.CustomCla" +
-      "imsEntry\022\020\n\010tokenTTL\030\006 \001(\005\0323\n\021CustomClai" +
-      "msEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001B" +
-      "\200\001\n#org.wso2.apk.enforcer.discovery.apiB" +
-      "\030BackendJWTTokenInfoProtoP\001Z=github.com/" +
-      "envoyproxy/go-control-plane/wso2/discove" +
-      "ry/api;apib\006proto3"
+      "imsEntry\022\020\n\010tokenTTL\030\006 \001(\005\022-\n\010keypairs\030\013" +
+      " \003(\0132\033.wso2.discovery.api.Keypair\0323\n\021Cus" +
+      "tomClaimsEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001" +
+      "(\t:\0028\001\"]\n\007Keypair\022\037\n\027public_certificate_" +
+      "path\030\001 \001(\t\022\030\n\020private_key_path\030\002 \001(\t\022\027\n\017" +
+      "use_for_signing\030\003 \001(\010B\200\001\n#org.wso2.apk.e" +
+      "nforcer.discovery.apiB\030BackendJWTTokenIn" +
+      "foProtoP\001Z=github.com/envoyproxy/go-cont" +
+      "rol-plane/wso2/discovery/api;apib\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -55,13 +63,19 @@ public final class BackendJWTTokenInfoProto {
     internal_static_wso2_discovery_api_BackendJWTTokenInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_wso2_discovery_api_BackendJWTTokenInfo_descriptor,
-        new java.lang.String[] { "Enabled", "Encoding", "Header", "SigningAlgorithm", "CustomClaims", "TokenTTL", });
+        new java.lang.String[] { "Enabled", "Encoding", "Header", "SigningAlgorithm", "CustomClaims", "TokenTTL", "Keypairs", });
     internal_static_wso2_discovery_api_BackendJWTTokenInfo_CustomClaimsEntry_descriptor =
       internal_static_wso2_discovery_api_BackendJWTTokenInfo_descriptor.getNestedTypes().get(0);
     internal_static_wso2_discovery_api_BackendJWTTokenInfo_CustomClaimsEntry_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_wso2_discovery_api_BackendJWTTokenInfo_CustomClaimsEntry_descriptor,
         new java.lang.String[] { "Key", "Value", });
+    internal_static_wso2_discovery_api_Keypair_descriptor =
+      getDescriptor().getMessageTypes().get(1);
+    internal_static_wso2_discovery_api_Keypair_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_wso2_discovery_api_Keypair_descriptor,
+        new java.lang.String[] { "PublicCertificatePath", "PrivateKeyPath", "UseForSigning", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)

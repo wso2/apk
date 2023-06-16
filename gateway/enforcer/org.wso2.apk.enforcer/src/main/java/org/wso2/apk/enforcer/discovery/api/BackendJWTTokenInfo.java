@@ -23,6 +23,7 @@ private static final long serialVersionUID = 0L;
     encoding_ = "";
     header_ = "";
     signingAlgorithm_ = "";
+    keypairs_ = java.util.Collections.emptyList();
   }
 
   @java.lang.Override
@@ -97,6 +98,15 @@ private static final long serialVersionUID = 0L;
             tokenTTL_ = input.readInt32();
             break;
           }
+          case 90: {
+            if (!((mutable_bitField0_ & 0x00000002) != 0)) {
+              keypairs_ = new java.util.ArrayList<org.wso2.apk.enforcer.discovery.api.Keypair>();
+              mutable_bitField0_ |= 0x00000002;
+            }
+            keypairs_.add(
+                input.readMessage(org.wso2.apk.enforcer.discovery.api.Keypair.parser(), extensionRegistry));
+            break;
+          }
           default: {
             if (!parseUnknownField(
                 input, unknownFields, extensionRegistry, tag)) {
@@ -112,6 +122,9 @@ private static final long serialVersionUID = 0L;
       throw new com.google.protobuf.InvalidProtocolBufferException(
           e).setUnfinishedMessage(this);
     } finally {
+      if (((mutable_bitField0_ & 0x00000002) != 0)) {
+        keypairs_ = java.util.Collections.unmodifiableList(keypairs_);
+      }
       this.unknownFields = unknownFields.build();
       makeExtensionsImmutable();
     }
@@ -358,6 +371,46 @@ private static final long serialVersionUID = 0L;
     return tokenTTL_;
   }
 
+  public static final int KEYPAIRS_FIELD_NUMBER = 11;
+  private java.util.List<org.wso2.apk.enforcer.discovery.api.Keypair> keypairs_;
+  /**
+   * <code>repeated .wso2.discovery.api.Keypair keypairs = 11;</code>
+   */
+  @java.lang.Override
+  public java.util.List<org.wso2.apk.enforcer.discovery.api.Keypair> getKeypairsList() {
+    return keypairs_;
+  }
+  /**
+   * <code>repeated .wso2.discovery.api.Keypair keypairs = 11;</code>
+   */
+  @java.lang.Override
+  public java.util.List<? extends org.wso2.apk.enforcer.discovery.api.KeypairOrBuilder> 
+      getKeypairsOrBuilderList() {
+    return keypairs_;
+  }
+  /**
+   * <code>repeated .wso2.discovery.api.Keypair keypairs = 11;</code>
+   */
+  @java.lang.Override
+  public int getKeypairsCount() {
+    return keypairs_.size();
+  }
+  /**
+   * <code>repeated .wso2.discovery.api.Keypair keypairs = 11;</code>
+   */
+  @java.lang.Override
+  public org.wso2.apk.enforcer.discovery.api.Keypair getKeypairs(int index) {
+    return keypairs_.get(index);
+  }
+  /**
+   * <code>repeated .wso2.discovery.api.Keypair keypairs = 11;</code>
+   */
+  @java.lang.Override
+  public org.wso2.apk.enforcer.discovery.api.KeypairOrBuilder getKeypairsOrBuilder(
+      int index) {
+    return keypairs_.get(index);
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -392,6 +445,9 @@ private static final long serialVersionUID = 0L;
         5);
     if (tokenTTL_ != 0) {
       output.writeInt32(6, tokenTTL_);
+    }
+    for (int i = 0; i < keypairs_.size(); i++) {
+      output.writeMessage(11, keypairs_.get(i));
     }
     unknownFields.writeTo(output);
   }
@@ -429,6 +485,10 @@ private static final long serialVersionUID = 0L;
       size += com.google.protobuf.CodedOutputStream
         .computeInt32Size(6, tokenTTL_);
     }
+    for (int i = 0; i < keypairs_.size(); i++) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(11, keypairs_.get(i));
+    }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
     return size;
@@ -456,6 +516,8 @@ private static final long serialVersionUID = 0L;
         other.internalGetCustomClaims())) return false;
     if (getTokenTTL()
         != other.getTokenTTL()) return false;
+    if (!getKeypairsList()
+        .equals(other.getKeypairsList())) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -482,6 +544,10 @@ private static final long serialVersionUID = 0L;
     }
     hash = (37 * hash) + TOKENTTL_FIELD_NUMBER;
     hash = (53 * hash) + getTokenTTL();
+    if (getKeypairsCount() > 0) {
+      hash = (37 * hash) + KEYPAIRS_FIELD_NUMBER;
+      hash = (53 * hash) + getKeypairsList().hashCode();
+    }
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -636,6 +702,7 @@ private static final long serialVersionUID = 0L;
     private void maybeForceBuilderInitialization() {
       if (com.google.protobuf.GeneratedMessageV3
               .alwaysUseFieldBuilders) {
+        getKeypairsFieldBuilder();
       }
     }
     @java.lang.Override
@@ -652,6 +719,12 @@ private static final long serialVersionUID = 0L;
       internalGetMutableCustomClaims().clear();
       tokenTTL_ = 0;
 
+      if (keypairsBuilder_ == null) {
+        keypairs_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000002);
+      } else {
+        keypairsBuilder_.clear();
+      }
       return this;
     }
 
@@ -686,6 +759,15 @@ private static final long serialVersionUID = 0L;
       result.customClaims_ = internalGetCustomClaims();
       result.customClaims_.makeImmutable();
       result.tokenTTL_ = tokenTTL_;
+      if (keypairsBuilder_ == null) {
+        if (((bitField0_ & 0x00000002) != 0)) {
+          keypairs_ = java.util.Collections.unmodifiableList(keypairs_);
+          bitField0_ = (bitField0_ & ~0x00000002);
+        }
+        result.keypairs_ = keypairs_;
+      } else {
+        result.keypairs_ = keypairsBuilder_.build();
+      }
       onBuilt();
       return result;
     }
@@ -753,6 +835,32 @@ private static final long serialVersionUID = 0L;
           other.internalGetCustomClaims());
       if (other.getTokenTTL() != 0) {
         setTokenTTL(other.getTokenTTL());
+      }
+      if (keypairsBuilder_ == null) {
+        if (!other.keypairs_.isEmpty()) {
+          if (keypairs_.isEmpty()) {
+            keypairs_ = other.keypairs_;
+            bitField0_ = (bitField0_ & ~0x00000002);
+          } else {
+            ensureKeypairsIsMutable();
+            keypairs_.addAll(other.keypairs_);
+          }
+          onChanged();
+        }
+      } else {
+        if (!other.keypairs_.isEmpty()) {
+          if (keypairsBuilder_.isEmpty()) {
+            keypairsBuilder_.dispose();
+            keypairsBuilder_ = null;
+            keypairs_ = other.keypairs_;
+            bitField0_ = (bitField0_ & ~0x00000002);
+            keypairsBuilder_ = 
+              com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                 getKeypairsFieldBuilder() : null;
+          } else {
+            keypairsBuilder_.addAllMessages(other.keypairs_);
+          }
+        }
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -1200,6 +1308,246 @@ private static final long serialVersionUID = 0L;
       tokenTTL_ = 0;
       onChanged();
       return this;
+    }
+
+    private java.util.List<org.wso2.apk.enforcer.discovery.api.Keypair> keypairs_ =
+      java.util.Collections.emptyList();
+    private void ensureKeypairsIsMutable() {
+      if (!((bitField0_ & 0x00000002) != 0)) {
+        keypairs_ = new java.util.ArrayList<org.wso2.apk.enforcer.discovery.api.Keypair>(keypairs_);
+        bitField0_ |= 0x00000002;
+       }
+    }
+
+    private com.google.protobuf.RepeatedFieldBuilderV3<
+        org.wso2.apk.enforcer.discovery.api.Keypair, org.wso2.apk.enforcer.discovery.api.Keypair.Builder, org.wso2.apk.enforcer.discovery.api.KeypairOrBuilder> keypairsBuilder_;
+
+    /**
+     * <code>repeated .wso2.discovery.api.Keypair keypairs = 11;</code>
+     */
+    public java.util.List<org.wso2.apk.enforcer.discovery.api.Keypair> getKeypairsList() {
+      if (keypairsBuilder_ == null) {
+        return java.util.Collections.unmodifiableList(keypairs_);
+      } else {
+        return keypairsBuilder_.getMessageList();
+      }
+    }
+    /**
+     * <code>repeated .wso2.discovery.api.Keypair keypairs = 11;</code>
+     */
+    public int getKeypairsCount() {
+      if (keypairsBuilder_ == null) {
+        return keypairs_.size();
+      } else {
+        return keypairsBuilder_.getCount();
+      }
+    }
+    /**
+     * <code>repeated .wso2.discovery.api.Keypair keypairs = 11;</code>
+     */
+    public org.wso2.apk.enforcer.discovery.api.Keypair getKeypairs(int index) {
+      if (keypairsBuilder_ == null) {
+        return keypairs_.get(index);
+      } else {
+        return keypairsBuilder_.getMessage(index);
+      }
+    }
+    /**
+     * <code>repeated .wso2.discovery.api.Keypair keypairs = 11;</code>
+     */
+    public Builder setKeypairs(
+        int index, org.wso2.apk.enforcer.discovery.api.Keypair value) {
+      if (keypairsBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureKeypairsIsMutable();
+        keypairs_.set(index, value);
+        onChanged();
+      } else {
+        keypairsBuilder_.setMessage(index, value);
+      }
+      return this;
+    }
+    /**
+     * <code>repeated .wso2.discovery.api.Keypair keypairs = 11;</code>
+     */
+    public Builder setKeypairs(
+        int index, org.wso2.apk.enforcer.discovery.api.Keypair.Builder builderForValue) {
+      if (keypairsBuilder_ == null) {
+        ensureKeypairsIsMutable();
+        keypairs_.set(index, builderForValue.build());
+        onChanged();
+      } else {
+        keypairsBuilder_.setMessage(index, builderForValue.build());
+      }
+      return this;
+    }
+    /**
+     * <code>repeated .wso2.discovery.api.Keypair keypairs = 11;</code>
+     */
+    public Builder addKeypairs(org.wso2.apk.enforcer.discovery.api.Keypair value) {
+      if (keypairsBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureKeypairsIsMutable();
+        keypairs_.add(value);
+        onChanged();
+      } else {
+        keypairsBuilder_.addMessage(value);
+      }
+      return this;
+    }
+    /**
+     * <code>repeated .wso2.discovery.api.Keypair keypairs = 11;</code>
+     */
+    public Builder addKeypairs(
+        int index, org.wso2.apk.enforcer.discovery.api.Keypair value) {
+      if (keypairsBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureKeypairsIsMutable();
+        keypairs_.add(index, value);
+        onChanged();
+      } else {
+        keypairsBuilder_.addMessage(index, value);
+      }
+      return this;
+    }
+    /**
+     * <code>repeated .wso2.discovery.api.Keypair keypairs = 11;</code>
+     */
+    public Builder addKeypairs(
+        org.wso2.apk.enforcer.discovery.api.Keypair.Builder builderForValue) {
+      if (keypairsBuilder_ == null) {
+        ensureKeypairsIsMutable();
+        keypairs_.add(builderForValue.build());
+        onChanged();
+      } else {
+        keypairsBuilder_.addMessage(builderForValue.build());
+      }
+      return this;
+    }
+    /**
+     * <code>repeated .wso2.discovery.api.Keypair keypairs = 11;</code>
+     */
+    public Builder addKeypairs(
+        int index, org.wso2.apk.enforcer.discovery.api.Keypair.Builder builderForValue) {
+      if (keypairsBuilder_ == null) {
+        ensureKeypairsIsMutable();
+        keypairs_.add(index, builderForValue.build());
+        onChanged();
+      } else {
+        keypairsBuilder_.addMessage(index, builderForValue.build());
+      }
+      return this;
+    }
+    /**
+     * <code>repeated .wso2.discovery.api.Keypair keypairs = 11;</code>
+     */
+    public Builder addAllKeypairs(
+        java.lang.Iterable<? extends org.wso2.apk.enforcer.discovery.api.Keypair> values) {
+      if (keypairsBuilder_ == null) {
+        ensureKeypairsIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, keypairs_);
+        onChanged();
+      } else {
+        keypairsBuilder_.addAllMessages(values);
+      }
+      return this;
+    }
+    /**
+     * <code>repeated .wso2.discovery.api.Keypair keypairs = 11;</code>
+     */
+    public Builder clearKeypairs() {
+      if (keypairsBuilder_ == null) {
+        keypairs_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000002);
+        onChanged();
+      } else {
+        keypairsBuilder_.clear();
+      }
+      return this;
+    }
+    /**
+     * <code>repeated .wso2.discovery.api.Keypair keypairs = 11;</code>
+     */
+    public Builder removeKeypairs(int index) {
+      if (keypairsBuilder_ == null) {
+        ensureKeypairsIsMutable();
+        keypairs_.remove(index);
+        onChanged();
+      } else {
+        keypairsBuilder_.remove(index);
+      }
+      return this;
+    }
+    /**
+     * <code>repeated .wso2.discovery.api.Keypair keypairs = 11;</code>
+     */
+    public org.wso2.apk.enforcer.discovery.api.Keypair.Builder getKeypairsBuilder(
+        int index) {
+      return getKeypairsFieldBuilder().getBuilder(index);
+    }
+    /**
+     * <code>repeated .wso2.discovery.api.Keypair keypairs = 11;</code>
+     */
+    public org.wso2.apk.enforcer.discovery.api.KeypairOrBuilder getKeypairsOrBuilder(
+        int index) {
+      if (keypairsBuilder_ == null) {
+        return keypairs_.get(index);  } else {
+        return keypairsBuilder_.getMessageOrBuilder(index);
+      }
+    }
+    /**
+     * <code>repeated .wso2.discovery.api.Keypair keypairs = 11;</code>
+     */
+    public java.util.List<? extends org.wso2.apk.enforcer.discovery.api.KeypairOrBuilder> 
+         getKeypairsOrBuilderList() {
+      if (keypairsBuilder_ != null) {
+        return keypairsBuilder_.getMessageOrBuilderList();
+      } else {
+        return java.util.Collections.unmodifiableList(keypairs_);
+      }
+    }
+    /**
+     * <code>repeated .wso2.discovery.api.Keypair keypairs = 11;</code>
+     */
+    public org.wso2.apk.enforcer.discovery.api.Keypair.Builder addKeypairsBuilder() {
+      return getKeypairsFieldBuilder().addBuilder(
+          org.wso2.apk.enforcer.discovery.api.Keypair.getDefaultInstance());
+    }
+    /**
+     * <code>repeated .wso2.discovery.api.Keypair keypairs = 11;</code>
+     */
+    public org.wso2.apk.enforcer.discovery.api.Keypair.Builder addKeypairsBuilder(
+        int index) {
+      return getKeypairsFieldBuilder().addBuilder(
+          index, org.wso2.apk.enforcer.discovery.api.Keypair.getDefaultInstance());
+    }
+    /**
+     * <code>repeated .wso2.discovery.api.Keypair keypairs = 11;</code>
+     */
+    public java.util.List<org.wso2.apk.enforcer.discovery.api.Keypair.Builder> 
+         getKeypairsBuilderList() {
+      return getKeypairsFieldBuilder().getBuilderList();
+    }
+    private com.google.protobuf.RepeatedFieldBuilderV3<
+        org.wso2.apk.enforcer.discovery.api.Keypair, org.wso2.apk.enforcer.discovery.api.Keypair.Builder, org.wso2.apk.enforcer.discovery.api.KeypairOrBuilder> 
+        getKeypairsFieldBuilder() {
+      if (keypairsBuilder_ == null) {
+        keypairsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+            org.wso2.apk.enforcer.discovery.api.Keypair, org.wso2.apk.enforcer.discovery.api.Keypair.Builder, org.wso2.apk.enforcer.discovery.api.KeypairOrBuilder>(
+                keypairs_,
+                ((bitField0_ & 0x00000002) != 0),
+                getParentForChildren(),
+                isClean());
+        keypairs_ = null;
+      }
+      return keypairsBuilder_;
     }
     @java.lang.Override
     public final Builder setUnknownFields(

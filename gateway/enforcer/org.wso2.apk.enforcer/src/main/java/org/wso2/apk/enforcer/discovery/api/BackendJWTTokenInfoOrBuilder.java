@@ -88,4 +88,28 @@ public interface BackendJWTTokenInfoOrBuilder extends
    * @return The tokenTTL.
    */
   int getTokenTTL();
+
+  /**
+   * <code>repeated .wso2.discovery.api.Keypair keypairs = 11;</code>
+   */
+  java.util.List<org.wso2.apk.enforcer.discovery.api.Keypair> 
+      getKeypairsList();
+  /**
+   * <code>repeated .wso2.discovery.api.Keypair keypairs = 11;</code>
+   */
+  org.wso2.apk.enforcer.discovery.api.Keypair getKeypairs(int index);
+  /**
+   * <code>repeated .wso2.discovery.api.Keypair keypairs = 11;</code>
+   */
+  int getKeypairsCount();
+  /**
+   * <code>repeated .wso2.discovery.api.Keypair keypairs = 11;</code>
+   */
+  java.util.List<? extends org.wso2.apk.enforcer.discovery.api.KeypairOrBuilder> 
+      getKeypairsOrBuilderList();
+  /**
+   * <code>repeated .wso2.discovery.api.Keypair keypairs = 11;</code>
+   */
+  org.wso2.apk.enforcer.discovery.api.KeypairOrBuilder getKeypairsOrBuilder(
+      int index);
 }
