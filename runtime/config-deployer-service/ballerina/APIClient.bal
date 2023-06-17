@@ -73,7 +73,7 @@ public class APIClient {
             if apkConf.id is string {
                 uniqueId = <string>apkConf.id;
             }
-            model:APIArtifact apiArtifact = {uniqueId: uniqueId, name: apkConf.name, version: apkConf.version};
+            model:APIArtifact apiArtifact = {uniqueId: uniqueId, name: apkConf.name, version: apkConf.version,organization:organization};
             APKOperations[]? operations = apkConf.operations;
             if operations is APKOperations[] {
                 if operations.length() == 0 {

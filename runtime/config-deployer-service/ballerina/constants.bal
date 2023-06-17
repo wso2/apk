@@ -1,3 +1,4 @@
+const string DEFAULT_PARTITION = "default";
 const string ALL_NAMESPACES = "*";
 public final string[] & readonly HTTP_DEFAULT_METHODS = ["get", "put", "post", "delete", "patch"];
 public final string[] SOAP_DEFAULT_METHODS = ["post"];

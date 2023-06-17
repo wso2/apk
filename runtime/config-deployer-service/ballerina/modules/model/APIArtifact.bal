@@ -20,5 +20,5 @@ public type APIArtifact record {|
     string uniqueId;
     map<K8sSecret> secrets = {};
     string namespace?;
-    string organization?;
+    string organization;
 |};

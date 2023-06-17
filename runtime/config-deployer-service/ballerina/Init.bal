@@ -26,10 +26,10 @@ configurable KeyStores keyStores = {
 };
 configurable (K8sConfigurations & readonly) k8sConfiguration = {};
 configurable (GatewayConfigurations & readonly) gatewayConfiguration = {};
-
+configurable (PartitionServiceConfiguration & readonly) partitionServiceConfiguration = {};
 commons:RequestErrorInterceptor requestErrorInterceptor = new;
 commons:ResponseErrorInterceptor responseErrorInterceptor = new;
-
+final PartitionResolver partitionResolver;
 listener http:Listener ep0 = new (9443, secureSocket = {
         'key: {
             certFile: <string>keyStores.tls.certFilePath,
@@ -42,5 +42,10 @@ listener http:Listener ep0 = new (9443, secureSocket = {
 # Initializing method for runtime
 # + return - Return Error if error occured at initialization.
 function init() returns error? {
-    log:printInfo("Initializing Runtime Domain Service..");
+    if partitionServiceConfiguration.enabled {
+        partitionResolver = check new PartitionServiceBaseResolver(partitionServiceConfiguration);
+    } else {
+        partitionResolver = new SinglePartitionResolver();
+    }
+    log:printInfo("Initializing Configuration Deployer Service..");
 }

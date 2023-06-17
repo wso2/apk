@@ -1,12 +1,12 @@
 ---
 openapi: 3.0.1
 info:
-  title: API for Partition Service
+  title: WSO2 API Platform for Kubernetes - Partiiton Service API
   description: |
     API for Partition Service
   version: v1
 paths:
-  /event:
+  /api-deployment:
     post:
       tags:
         - Event
@@ -32,9 +32,85 @@ paths:
           $ref: "#/components/responses/InternalServerError"
         "400":
           $ref: "#/components/responses/BadRequest"
-
+  /api-deployment/{apiId}:
+    get:
+      tags:
+        - Event
+      summary: |
+        Get Event
+      description: |
+        Get Event
+      operationId: getApiDeployment
+      parameters:
+        - name: apiId
+          in: path
+          description: |
+            API Id.
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: |
+            OK.
+            Event
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Partition"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+  /deployable-partition:
+    get:
+      tags:
+        - Partition
+      summary: |
+        Get Active Partition
+      description: |
+        Get Active Partition
+      operationId: getActivePartition
+      parameters:
+      - name: apiId
+        in: query
+        description: |
+          API Id.
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: |
+            OK.
+            Active Partition
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Partition"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+        "400":
+          $ref: "#/components/responses/BadRequest"
 components:
   schemas:
+    Partition:
+      title: Partition
+      properties:
+        name:
+          type: string
+          description: |
+            Partition Name
+        namespace:
+          type: string
+          description: |
+            Partition Namespace
+        apiCount:
+          type: integer
+          description: |
+            Number of APIs deployed in the partition
     Event:
       title: Event
       properties:
@@ -63,10 +139,10 @@ components:
           type: string
           description: |
             API Version 
-        organizationId:
+        organization:
           type: string
           description: |
-            Organization ID 
+            Organization
         partition:
           type: string
           description: |
@@ -124,6 +200,19 @@ components:
           description: |
             A detailed description of the error message.
   responses:
+    NotFound:
+      description: Not Found. The specified resource does not exist.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: 404
+            message: Not Found
+            description: The specified resource does not exist
+            moreInfo: ""
+            error: []
+
     BadRequest:
       description: Bad Request. Invalid request or validation error.
       content:
