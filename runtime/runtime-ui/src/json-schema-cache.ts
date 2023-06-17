@@ -7,7 +7,7 @@ import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as crypto from 'crypto';
 import { Memento } from 'vscode';
-import { logToExtensionOutputChannel } from './extension';
+import { logToExtensionOutputChannel } from './utils';
 import { IJSONSchemaCache } from './json-schema-content-provider';
 
 const CACHE_DIR = 'schemas_cache';

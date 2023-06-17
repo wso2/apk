@@ -1,8 +1,0 @@
-{
-  "For Loop": {
-    "prefix": ["endpoint", "endpointConfig"],
-    "bosy": [""],
-    "body": ["for (const ${2:element} of ${1:array}) {", "\t$0", "}"],
-    "description": "A for loop."
-  }
-}
