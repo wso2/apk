@@ -17,7 +17,6 @@
 //
 import wso2/apk_common_lib as commons;
 
-
 public type K8sConfigurations record {|
     string host = "kubernetes.default";
     string serviceAccountPath = "/var/run/secrets/kubernetes.io/serviceaccount";
@@ -34,3 +33,15 @@ public type GatewayConfigurations record {|
     string hostname = "gw.wso2.com";
 |};
 
+public type PartitionServiceConfiguration record {|
+    boolean enabled = false;
+    string url?;
+    string tlsCertificatePath?;
+    boolean hostnameVerificationEnable = true;
+    Header[] & readonly headers = [];
+|};
+
+public type Header record {|
+    string headerName;
+    string headerValue;
+|};
