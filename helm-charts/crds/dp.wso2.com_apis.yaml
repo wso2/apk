@@ -91,6 +91,9 @@ spec:
               apiVersion:
                 description: APIVersion is the version number of the API.
                 type: string
+              isDefaultVersion: 
+                description: IsDefaultVersion indicates whether this API version should be used as a default API
+                type: boolean
               context:
                 description: 'Context denotes the context of the API. e.g: /pet-store-api/1.0.6'
                 type: string

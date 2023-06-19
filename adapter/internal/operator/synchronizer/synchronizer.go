@@ -148,6 +148,7 @@ func deployAPIInGateway(apiState APIState) error {
 // GenerateAdapterInternalAPI this will populate a AdapterInternalAPI representation for an HTTPRoute
 func GenerateAdapterInternalAPI(apiState APIState, httpRoute *HTTPRouteState, envType string) (*model.AdapterInternalAPI, error) {
 	var adapterInternalAPI model.AdapterInternalAPI
+	adapterInternalAPI.SetIsDefaultVersion(apiState.APIDefinition.Spec.IsDefaultVersion);
 	adapterInternalAPI.SetInfoAPICR(*apiState.APIDefinition)
 	adapterInternalAPI.SetAPIDefinitionFile(apiState.APIDefinitionFile)
 	adapterInternalAPI.EnvType = envType
