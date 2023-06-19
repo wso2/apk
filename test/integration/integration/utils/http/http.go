@@ -217,6 +217,13 @@ func CompareRequest(req *roundtripper.Request, cReq *roundtripper.CapturedReques
 			expected.ExpectedRequest = &ExpectedRequest{Request: expected.Request}
 		}
 
+		if expected.TestCaseName == "FetchAPIDefinition" {
+			if len(cRes.APIDefinition) <= 0 {
+				return fmt.Errorf("expected api definition should not be empty")
+			}
+			return nil
+		}
+
 		if expected.ExpectedRequest.Method == "" {
 			expected.ExpectedRequest.Method = "GET"
 		}

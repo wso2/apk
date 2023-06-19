@@ -55,11 +55,12 @@ type Request struct {
 // CapturedRequest contains request metadata captured from an echoserver
 // response.
 type CapturedRequest struct {
-	Path     string              `json:"path"`
-	Host     string              `json:"host"`
-	Method   string              `json:"method"`
-	Protocol string              `json:"proto"`
-	Headers  map[string][]string `json:"headers"`
+	Path          string              `json:"path"`
+	Host          string              `json:"host"`
+	Method        string              `json:"method"`
+	Protocol      string              `json:"proto"`
+	Headers       map[string][]string `json:"headers"`
+	APIDefinition string              `json:"apiDefinition,omitempty"`
 
 	Namespace string `json:"namespace"`
 	Pod       string `json:"pod"`
@@ -80,6 +81,7 @@ type CapturedResponse struct {
 	ContentLength   int64
 	Protocol        string
 	Headers         map[string][]string
+	APIDefinition   string
 	RedirectRequest *RedirectRequest
 }
 
@@ -163,7 +165,6 @@ func (d *DefaultRoundTripper) CaptureRoundTrip(request Request) (*CapturedReques
 
 		fmt.Printf("Received Response:\n%s\n\n", formatDump(dump, "< "))
 	}
-
 	body, _ := iou.ReadAll(resp.Body)
 
 	// we cannot assume the response is JSON
@@ -179,6 +180,7 @@ func (d *DefaultRoundTripper) CaptureRoundTrip(request Request) (*CapturedReques
 		ContentLength: resp.ContentLength,
 		Protocol:      resp.Proto,
 		Headers:       resp.Header,
+		APIDefinition: cReq.APIDefinition,
 	}
 
 	if IsRedirect(resp.StatusCode) {
