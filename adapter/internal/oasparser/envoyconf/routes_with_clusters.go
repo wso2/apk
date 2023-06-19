@@ -154,13 +154,9 @@ func CreateRoutesWithClusters(adapterInternalAPI model.AdapterInternalAPI, inter
 		endpoint := resource.GetEndpoints()
 		basePath := strings.TrimSuffix(endpoint.Endpoints[0].Basepath, "/")
 		existingClusterName := getExistingClusterName(*endpoint, processedEndpoints)
-
-		// Do not pass the timeout from Endpoint to Cluster Timeout as cluster timeout represents a new connection timeout
-		// // convert the timeout value to seconds as the envoy timeout is in seconds
-		// if endpoint.Config != nil && endpoint.Config.TimeoutInMillis > 0 {
-		// 	secs := endpoint.Config.TimeoutInMillis / 1000
-		// 	timeout = time.Duration(secs)
-		// }
+		if resource.GetClusterTimeout() > 0 {
+			timeout = time.Duration(resource.GetClusterTimeout())
+		}
 
 		if existingClusterName == "" {
 			clusterName = getClusterName(endpoint.EndpointPrefix, organizationID, vHost, adapterInternalAPI.GetTitle(), apiVersion, resource.GetID())
