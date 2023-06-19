@@ -19,6 +19,7 @@ package model
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/wso2/apk/adapter/internal/loggers"
@@ -235,22 +236,6 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 				}
 			}
 		}
-		// TODO need to move this logic to the for loop for Matches tht already exists below and see whether it works or not.
-		for _, match := range rule.Matches {
-			loggers.LoggerOasparser.Infof("test1 2223 rewrite path from match val: ", *match.Path.Value)
-			
-			policyParameters := make(map[string]interface{})
-			policyParameters[constants.RewritePathType] = gwapiv1b1.PrefixMatchHTTPPathModifier
-			policyParameters[constants.IncludeQueryParams] = true
-			policyParameters[constants.RewritePathResourcePath] = *match.Path.Value
-			loggers.LoggerOasparser.Infof("test1 2111 policy params: ", policyParameters)
-			policies.Request = append(policies.Request, Policy{
-				PolicyName: string(gwapiv1b1.HTTPRouteFilterURLRewrite),
-				Action:     constants.ActionRewritePath,
-				Parameters: policyParameters,
-			})
-		}
-
 		addOperationLevelInterceptors(&policies, resourceAPIPolicy, httpRouteParams.InterceptorServiceMapping, httpRouteParams.BackendMapping)
 
 		loggers.LoggerOasparser.Debug("Calculating auths for API ...")
@@ -259,6 +244,7 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 			return fmt.Errorf("no backendref were provided")
 		}
 		var securityConfig []EndpointSecurity
+		backendBasePath := "";
 		for _, backend := range rule.BackendRefs {
 			backendName := types.NamespacedName{
 				Name:      string(backend.Name),
@@ -267,6 +253,7 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 			resolvedBackend, ok := httpRouteParams.BackendMapping[backendName]
 			if ok {
 				endPoints = append(endPoints, GetEndpoints(backendName, httpRouteParams.BackendMapping)...)
+				backendBasePath = GetBackendBasePath(backendName, httpRouteParams.BackendMapping)
 				for _, security := range resolvedBackend.Security {
 					switch security.Type {
 					case "Basic":
@@ -282,10 +269,22 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 				return fmt.Errorf("backend: %s has not been resolved", backendName)
 			}
 		}
-		for _, match := range rule.Matches {
+		for _, match := range rule.Matches {			
+			policyParameters := make(map[string]interface{})
+			policyParameters[constants.RewritePathType] = gwapiv1b1.PrefixMatchHTTPPathModifier
+			policyParameters[constants.IncludeQueryParams] = true
+			
+			policyParameters[constants.RewritePathResourcePath] = strings.TrimSuffix(backendBasePath, "/") + *match.Path.Value		
+			policies.Request = append(policies.Request, Policy{
+				PolicyName: string(gwapiv1b1.HTTPRouteFilterURLRewrite),
+				Action:     constants.ActionRewritePath,
+				Parameters: policyParameters,
+			})
+
 			resourcePath := swagger.xWso2Basepath + *match.Path.Value
 			loggers.LoggerOasparser.Infoln("resouce path: " + resourcePath);
-			resource := &Resource{path: resourcePath,
+			resource := &Resource{
+				path: resourcePath,
 				methods: getAllowedOperations(match.Method, policies, apiAuth,
 					parseRateLimitPolicyToInternal(resourceRatelimitPolicy), scopes),
 				pathMatchType: *match.Path.Type,
@@ -433,6 +432,17 @@ func GetEndpoints(backendName types.NamespacedName, backendMapping dpv1alpha1.Ba
 		}
 	}
 	return endpoints
+}
+
+// GetBackendBasePath gets basePath of the the Backend
+func GetBackendBasePath(backendName types.NamespacedName, backendMapping dpv1alpha1.BackendMapping) string {
+	backend, ok := backendMapping[backendName]
+	if ok && backend != nil {
+		if len(backend.Services) > 0 {
+			return backend.Services[0].BasePath;
+		}
+	}
+	return "";
 }
 
 func concatRateLimitPolicies(schemeUp *dpv1alpha1.RateLimitPolicy, schemeDown *dpv1alpha1.RateLimitPolicy) *dpv1alpha1.RateLimitPolicy {
