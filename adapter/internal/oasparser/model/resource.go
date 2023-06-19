@@ -44,6 +44,7 @@ type Resource struct {
 	endpointSecurity []*EndpointSecurity
 	vendorExtensions map[string]interface{}
 	hasPolicies      bool
+	clusterTimeout   uint32
 }
 
 // GetEndpointSecurity returns the endpoint security object of a given resource.
@@ -54,6 +55,11 @@ func (resource *Resource) GetEndpointSecurity() []*EndpointSecurity {
 // GetEndpoints returns the endpoints object of a given resource.
 func (resource *Resource) GetEndpoints() *EndpointCluster {
 	return resource.endpoints
+}
+
+// GetClusterTimeout returns the cluster timeout of a given resource.
+func (resource *Resource) GetClusterTimeout() uint32 {
+	return resource.clusterTimeout
 }
 
 // GetPath returns the pathItem name (of openAPI definition) corresponding to a given resource
