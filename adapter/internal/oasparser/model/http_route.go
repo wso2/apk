@@ -21,7 +21,6 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
-	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/internal/oasparser/constants"
 	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
@@ -55,12 +54,6 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 
 	disableScopes := true
 	disableAuthentications := false
-	config := config.ReadConfigs()
-	retryConfig := config.Envoy.Upstream.Retry
-
-	backendRetryCount := retryConfig.MaxRetryCount
-	statusCodes := retryConfig.StatusCodes
-	baseIntervalInMillis := retryConfig.BaseIntervalInMillis
 
 	var authScheme *dpv1alpha1.Authentication
 	if outputAuthScheme != nil {
@@ -92,6 +85,9 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 		var idleTimeoutInSeconds uint32
 		isRetryConfig := false
 		isRouteTimeout := false
+		var backendRetryCount uint32
+		var statusCodes []uint32
+		var baseIntervalInMillis uint32
 		for _, filter := range rule.Filters {
 			hasPolicies = true
 			switch filter.Type {
@@ -234,6 +230,7 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 			return fmt.Errorf("no backendref were provided")
 		}
 		var securityConfig []EndpointSecurity
+		isRetryConfigDefined := false
 		for _, backend := range rule.BackendRefs {
 			backendName := types.NamespacedName{
 				Name:      string(backend.Name),
@@ -262,7 +259,7 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 						backendRetryCount = resolvedBackend.Retry.MaxRetryCount
 					}
 					if resolvedBackend.Retry.StatusCodes != nil && len(resolvedBackend.Retry.StatusCodes) > 0 {
-						statusCodes = append(statusCodes, resolvedBackend.Retry.StatusCodes...)
+						statusCodes = resolvedBackend.Retry.StatusCodes
 					}
 					if resolvedBackend.Retry.BaseIntervalInMillis > 0 {
 						baseIntervalInMillis = resolvedBackend.Retry.BaseIntervalInMillis
