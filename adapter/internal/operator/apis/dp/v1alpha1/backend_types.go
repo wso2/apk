@@ -62,7 +62,6 @@ type BackendSpec struct {
 	// +optional
 	Security []SecurityConfig `json:"security,omitempty"`
 	Retry    *RetryConfig     `json:"retry,omitempty"`
-	// RetryCount int32            `json:"retryCount,omitempty"`
 }
 
 // RetryConfig defines retry configurations

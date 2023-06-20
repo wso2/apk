@@ -79,12 +79,6 @@ func generateRouteMatch(routeRegex string) *routev3.RouteMatch {
 func generateRouteAction(apiType string, routeConfig *model.EndpointConfig, ratelimitCriteria *ratelimitCriteria) (action *routev3.Route_Route) {
 
 	config := config.ReadConfigs()
-	var timeoutInSecs uint32
-	if routeConfig != nil && routeConfig.TimeoutInMillis > 0 {
-		timeoutInSecs = routeConfig.TimeoutInMillis / 1000
-	} else {
-		timeoutInSecs = config.Envoy.Upstream.Timeouts.RouteTimeoutInSeconds
-	}
 
 	action = &routev3.Route_Route{
 		Route: &routev3.RouteAction{
@@ -95,7 +89,7 @@ func generateRouteAction(apiType string, routeConfig *model.EndpointConfig, rate
 			},
 			UpgradeConfigs:    getUpgradeConfig(apiType),
 			MaxStreamDuration: getMaxStreamDuration(apiType),
-			Timeout:           durationpb.New(time.Duration(timeoutInSecs) * time.Second),
+			Timeout:           durationpb.New(time.Duration(config.Envoy.Upstream.Timeouts.RouteTimeoutInSeconds) * time.Second),
 			IdleTimeout:       durationpb.New(time.Duration(config.Envoy.Upstream.Timeouts.RouteIdleTimeoutInSeconds) * time.Second),
 			ClusterSpecifier: &routev3.RouteAction_ClusterHeader{
 				ClusterHeader: clusterHeaderName,
@@ -124,7 +118,6 @@ func generateRouteAction(apiType string, routeConfig *model.EndpointConfig, rate
 			},
 		}
 		action.Route.RetryPolicy = commonRetryPolicy
-		fmt.Println("Action Retry: ", action.Route.RetryPolicy.NumRetries)
 	}
 
 	return action
