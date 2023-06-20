@@ -47,14 +47,7 @@ spec:
   - matches:
     - path:
         type: PathPrefix
-        value: /cors-policy-api/1.0.0/test
-      method: GET
-    filters:
-    - type: URLRewrite
-      urlRewrite:
-        path:
-          type: ReplacePrefixMatch
-          replacePrefixMatch: /v2/echo-full
+        value: /options
     backendRefs:
     - group: dp.wso2.com
       kind: Backend

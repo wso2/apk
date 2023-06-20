@@ -23,7 +23,7 @@ spec:
   apiDisplayName: API with Backend Base Path
   apiType: REST
   apiVersion: 1.0.0
-  context: /rewrite-path-api/1.0.0
+  context: /test-api-with-backend-base-path/1.0.0
   #definitionFileRef: swagger-definition-webhook
   production:
     - httpRouteRefs:
@@ -48,14 +48,8 @@ spec:
   - matches:
     - path:
         type: PathPrefix
-        value: /test-api-with-backend-base-path/1.0.0
+        value: /backend-base-path
       method: GET
-    filters:
-    - type: URLRewrite
-      urlRewrite:
-        path:
-          type: ReplacePrefixMatch
-          replacePrefixMatch: /backend-base-path
     backendRefs:
     - group: dp.wso2.com
       kind: Backend

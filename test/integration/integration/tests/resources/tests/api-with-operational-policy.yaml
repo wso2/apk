@@ -39,7 +39,7 @@ spec:
   apiDisplayName: API with operatinal policy
   apiType: REST
   apiVersion: 1.0.0
-  context: /operatinal-policy-api/1.0.0
+  context: /test-api-with-operatinal-policy/1.0.0
   #definitionFileRef: swagger-definition-webhook
   production:
     - httpRouteRefs:
@@ -64,14 +64,8 @@ spec:
   - matches:
     - path:
         type: PathPrefix
-        value: /test-api-with-operatinal-policy/1.0.0
+        value: /test-get-path
       method: GET
-    filters:
-    - type: URLRewrite
-      urlRewrite:
-        path:
-          type: ReplacePrefixMatch
-          replacePrefixMatch: /test-get-path
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -79,14 +73,8 @@ spec:
   - matches:
     - path:
         type: PathPrefix
-        value: /test-api-with-operatinal-policy/1.0.0
+        value: /test-post-path
       method: POST
-    filters:
-    - type: URLRewrite
-      urlRewrite:
-        path:
-          type: ReplacePrefixMatch
-          replacePrefixMatch: /test-post-path
     backendRefs:
     - group: dp.wso2.com
       kind: Backend

@@ -48,7 +48,7 @@ spec:
   - matches:
     - path:
         type: RegularExpression
-        value: /test-api-with-path-params/v1.0.0/user/([^/]+)/playlist/([^/]+)
+        value: /user/([^/]+)/playlist/([^/]+)
       method: GET
     filters:
     - type: URLRewrite

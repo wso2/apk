@@ -48,14 +48,9 @@ spec:
   - matches:
     - path:
         type: Exact
-        value: /resource-scopes/v1/pets/findByTags
+        value: /pets/findByTags
       method: GET
     filters:
-    - type: URLRewrite
-      urlRewrite:
-        path:
-          type: ReplaceFullPath
-          replaceFullPath: /pets/findByTags
     - type: ExtensionRef
       extensionRef:
         group: dp.wso2.com
@@ -68,7 +63,7 @@ spec:
   - matches:
     - path:
         type: RegularExpression
-        value: /resource-scopes/v1/pet/(\d{1,3})
+        value: /pet/(\d{1,3})
       method: GET
     filters:
     - type: URLRewrite

@@ -38,7 +38,7 @@ var APIWithResoponseHeaderModify = suite.IntegrationTest{
 			{
 				Request: http.Request{
 					Host: "gateway-integration-test-infra.test.gw.wso2.com",
-					Path: "/set",
+					Path: "/response-header-modify/1.0.0/set",
 				},
 				BackendSetResponseHeaders: map[string]string{
 					"Some-Other-Header": "val",
@@ -60,7 +60,7 @@ var APIWithResoponseHeaderModify = suite.IntegrationTest{
 			{
 				Request: http.Request{
 					Host: "gateway-integration-test-infra.test.gw.wso2.com",
-					Path: "/set",
+					Path: "/response-header-modify/1.0.0/set",
 				},
 				BackendSetResponseHeaders: map[string]string{
 					"Some-Other-Header": "val",
@@ -83,7 +83,7 @@ var APIWithResoponseHeaderModify = suite.IntegrationTest{
 			{
 				Request: http.Request{
 					Host: "gateway-integration-test-infra.test.gw.wso2.com",
-					Path: "/add",
+					Path: "/response-header-modify/1.0.0/add",
 				},
 				BackendSetResponseHeaders: map[string]string{
 					"Some-Other-Header": "val",
@@ -105,7 +105,7 @@ var APIWithResoponseHeaderModify = suite.IntegrationTest{
 			{
 				Request: http.Request{
 					Host: "gateway-integration-test-infra.test.gw.wso2.com",
-					Path: "/add",
+					Path: "/response-header-modify/1.0.0/add",
 				},
 				BackendSetResponseHeaders: map[string]string{
 					"Some-Other-Header": "val",
@@ -127,7 +127,7 @@ var APIWithResoponseHeaderModify = suite.IntegrationTest{
 			}, {
 				Request: http.Request{
 					Host: "gateway-integration-test-infra.test.gw.wso2.com",
-					Path: "/remove",
+					Path: "/response-header-modify/1.0.0/remove",
 				},
 				ExpectedRequest: &http.ExpectedRequest{
 					Request: http.Request{

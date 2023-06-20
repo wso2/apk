@@ -42,7 +42,7 @@ var APIWithOperationalPolicy = suite.IntegrationTest{
 			{
 				Request: http.Request{
 					Host:   "backend-base-path.test.gw.wso2.com",
-					Path:   "/test-api-with-operatinal-policy/1.0.0",
+					Path:   "/test-api-with-operatinal-policy/1.0.0/test-get-path",
 					Method: "GET",
 				},
 				ExpectedRequest: &http.ExpectedRequest{
@@ -56,7 +56,7 @@ var APIWithOperationalPolicy = suite.IntegrationTest{
 			}, {
 				Request: http.Request{
 					Host:   "backend-base-path.test.gw.wso2.com",
-					Path:   "/test-api-with-operatinal-policy/1.0.0",
+					Path:   "/test-api-with-operatinal-policy/1.0.0/test-post-path",
 					Method: "POST",
 				},
 				ExpectedRequest: &http.ExpectedRequest{
