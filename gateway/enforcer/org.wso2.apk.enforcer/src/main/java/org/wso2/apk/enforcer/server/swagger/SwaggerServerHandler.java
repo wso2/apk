@@ -61,7 +61,7 @@ public class SwaggerServerHandler extends SimpleChannelInboundHandler<HttpObject
         final String vHost = params[3].split("\\?")[0];
         final String queryParam = params[3].split("\\?")[1];
 
-        if (queryParam != null && queryParam != "" && queryParam.contains(APIDefinitionConstants.SWAGGER_DEFINITION)) {
+        if (APIDefinitionConstants.SWAGGER_DEFINITION.equalsIgnoreCase(queryParam)) {
             isSwagger = true;
         }
 
