@@ -20,6 +20,7 @@ package org.wso2.apk.enforcer.api;
 import io.envoyproxy.envoy.service.auth.v3.CheckRequest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.wso2.apk.enforcer.discovery.api.Api;
 import org.wso2.apk.enforcer.commons.model.APIConfig;
 import org.wso2.apk.enforcer.commons.model.ResourceConfig;
@@ -100,7 +101,8 @@ public class APIFactory {
         String version = request.getAttributes().getContextExtensionsMap().get(APIConstants.GW_VERSION_PARAM);
         String apiKey = getApiKey(vHost, basePath, version);
         if (logger.isDebugEnabled()) {
-            logger.debug("Looking for matching API with basepath: {} and version: {}", basePath, version);
+            logger.debug("Looking for matching API with basepath: {} and version: {}, TRACE_ID = {}",
+                         basePath, version, ThreadContext.get(APIConstants.LOG_TRACE_ID));
         }
 
         return apis.get(apiKey);

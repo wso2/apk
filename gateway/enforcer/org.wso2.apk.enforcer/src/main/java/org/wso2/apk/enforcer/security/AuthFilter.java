@@ -20,6 +20,7 @@ package org.wso2.apk.enforcer.security;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.wso2.apk.enforcer.commons.Filter;
 import org.wso2.apk.enforcer.commons.dto.JWTConfigurationDto;
 import org.wso2.apk.enforcer.commons.exception.APISecurityException;
@@ -146,10 +147,10 @@ public class AuthFilter implements Filter {
                 if (isMutualSSLMandatory && authenticator.getName()
                         .contains(APIConstants.API_SECURITY_MUTUAL_SSL_NAME)) {
                     authenticated = false;
-                    log.debug("mTLS authentication was failed for the request: {} , API: {}:{} APIUUID: {} ",
-                            requestContext.getMatchedResourcePaths().get(0).getPath(),
-                            requestContext.getMatchedAPI().getName(), requestContext.getMatchedAPI().getVersion(),
-                            requestContext.getMatchedAPI().getUuid());
+                    log.debug("mTLS authentication was failed for the request: {} , API: {}:{} APIUUID: {}, "
+                                      + "TRACE_ID = {} ", requestContext.getMatchedResourcePaths().get(0).getPath(),
+                              requestContext.getMatchedAPI().getName(), requestContext.getMatchedAPI().getVersion(),
+                              requestContext.getMatchedAPI().getUuid(), ThreadContext.get(APIConstants.LOG_TRACE_ID));
                     break;
                 }
                 // Check if the failed authentication is a mandatory application level security
@@ -165,9 +166,10 @@ public class AuthFilter implements Filter {
         if (!canAuthenticated) {
             FilterUtils.setUnauthenticatedErrorToContext(requestContext);
         }
-        log.debug("None of the authenticators were able to authenticate the request: {}",
-                requestContext.getRequestPathTemplate(),
-                ErrorDetails.errorLog(LoggingConstants.Severity.MINOR, 6600));
+        log.debug("None of the authenticators were able to authenticate the request: {} {}, TRACE_ID = {}",
+                  requestContext.getRequestPathTemplate(),
+                  ErrorDetails.errorLog(LoggingConstants.Severity.MINOR, 6600),
+                  ThreadContext.get(APIConstants.LOG_TRACE_ID));
         //set WWW_AUTHENTICATE header to error response
         requestContext.addOrModifyHeaders(APIConstants.WWW_AUTHENTICATE, getAuthenticatorsChallengeString() +
                 ", error=\"invalid_token\"" +
@@ -182,25 +184,27 @@ public class AuthFilter implements Filter {
             if (authenticator.getName().contains(APIConstants.API_SECURITY_MUTUAL_SSL_NAME)) {
                 // This section is for mTLS authentication
                 if (authenticate.isAuthenticated()) {
-                    log.debug("mTLS authentication was passed for the request: {} , API: {}:{}, APIUUID: {} ",
-                            requestContext.getMatchedResourcePaths().get(0).getPath(),
-                            requestContext.getMatchedAPI().getName(), requestContext.getMatchedAPI().getVersion(),
-                            requestContext.getMatchedAPI().getUuid());
+                    log.debug("mTLS authentication was passed for the request: {} , API: {}:{}, APIUUID: {},"
+                                      + " TRACE_ID = {}. ", requestContext.getMatchedResourcePaths().get(0).getPath(),
+                              requestContext.getMatchedAPI().getName(), requestContext.getMatchedAPI().getVersion(),
+                              requestContext.getMatchedAPI().getUuid(), ThreadContext.get(APIConstants.LOG_TRACE_ID));
                     return new AuthenticationResponse(true, isMutualSSLMandatory, true);
                 } else {
                     if (isMutualSSLMandatory) {
-                        log.debug("Mandatory mTLS authentication was failed for the request: {} , API: {}:{}, " +
-                                        "APIUUID: {} ",
-                                requestContext.getMatchedResourcePaths().get(0).getPath(),
-                                requestContext.getMatchedAPI().getName(), requestContext.getMatchedAPI().getVersion(),
-                                requestContext.getMatchedAPI().getUuid());
+                        log.debug("Mandatory mTLS authentication was failed for the request: {} , API: {}:{}, "
+                                          + "APIUUID: {}, TRACE_ID = {}. ",
+                                  requestContext.getMatchedResourcePaths().get(0).getPath(),
+                                  requestContext.getMatchedAPI().getName(), requestContext.getMatchedAPI().getVersion(),
+                                  requestContext.getMatchedAPI().getUuid(),
+                                  ThreadContext.get(APIConstants.LOG_TRACE_ID));
                         return new AuthenticationResponse(false, true, false);
                     } else {
-                        log.debug("Optional mTLS authentication was failed for the request: {} , API: {}:{}, " +
-                                        "APIUUID: {} ",
-                                requestContext.getMatchedResourcePaths().get(0).getPath(),
-                                requestContext.getMatchedAPI().getName(), requestContext.getMatchedAPI().getVersion(),
-                                requestContext.getMatchedAPI().getUuid());
+                        log.debug("Optional mTLS authentication was failed for the request: {} , API: {}:{}, "
+                                          + "APIUUID: {}, TRACE_ID = {}. ",
+                                  requestContext.getMatchedResourcePaths().get(0).getPath(),
+                                  requestContext.getMatchedAPI().getName(), requestContext.getMatchedAPI().getVersion(),
+                                  requestContext.getMatchedAPI().getUuid(),
+                                  ThreadContext.get(APIConstants.LOG_TRACE_ID));
                         return new AuthenticationResponse(false, false, true);
                     }
                 }

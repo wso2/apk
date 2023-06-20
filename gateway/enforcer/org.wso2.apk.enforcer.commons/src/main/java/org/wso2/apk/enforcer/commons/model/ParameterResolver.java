@@ -19,6 +19,8 @@ package org.wso2.apk.enforcer.commons.model;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
+import org.wso2.apk.enforcer.commons.constants.APIConstants;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -65,7 +67,8 @@ class ParameterResolver {
         final Matcher matcher = pattern.matcher(formattedURI);
         if (!matcher.matches()) {
             // Unlikely to occur as this pair is already matched within router.
-            logger.debug("PathTemplate: {}  and RawPath: {} is mismatched.", pathTemplate, uriString);
+            logger.debug("PathTemplate: {}  and RawPath: {} is mismatched, TRACE_ID = {}.", pathTemplate, uriString,
+                         ThreadContext.get(APIConstants.LOG_TRACE_ID));
             return new HashMap<>();
         }
         final Map<String, String> map = new HashMap<>();

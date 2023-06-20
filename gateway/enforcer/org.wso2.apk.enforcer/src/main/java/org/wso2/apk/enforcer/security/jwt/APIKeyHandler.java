@@ -26,6 +26,7 @@ import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.wso2.apk.enforcer.common.CacheProvider;
 import org.wso2.apk.enforcer.commons.exception.APISecurityException;
 import org.wso2.apk.enforcer.commons.exception.EnforcerException;
@@ -144,7 +145,7 @@ public abstract class APIKeyHandler implements Authenticator {
     public boolean verifyTokenWhenNotInCache(Certificate certificate, SignedJWT signedJWT, String[] splitToken,
                                              JWTClaimsSet payload, String apiKeyType) throws APISecurityException {
         boolean isVerified = false;
-        log.debug("{} not found in the cache.", apiKeyType);
+        log.debug("{} not found in the cache, TRACE_ID = {}", apiKeyType, ThreadContext.get(APIConstants.LOG_TRACE_ID));
 
         isVerified = JWTUtils.verifyTokenSignature(signedJWT, certificate.getPublicKey()) && !isJwtTokenExpired(payload, apiKeyType);
         return isVerified;
@@ -165,7 +166,7 @@ public abstract class APIKeyHandler implements Authenticator {
             jwtClaimsSetVerifier.verify(payload);
         } catch (BadJWTException e) {
             if ("Expired JWT".equals(e.getMessage())) {
-                log.debug("{} API key is expired.", keyType);
+                log.debug("{} API key is expired, TRACE_ID = {}", keyType, ThreadContext.get(APIConstants.LOG_TRACE_ID));
                 if (APIConstants.JwtTokenConstants.INTERNAL_KEY_TOKEN_TYPE.equals(keyType)) {
                     CacheProvider.getGatewayInternalKeyDataCache().invalidate(payload.getJWTID());
                     CacheProvider.getInvalidGatewayInternalKeyCache().put(payload.getJWTID(), "carbon.super");

@@ -246,7 +246,8 @@ public class AnalyticsFilter {
             GenericRequestDataCollector dataCollector = new GenericRequestDataCollector(provider);
             try {
                 dataCollector.collectData();
-                logger.debug("Analytics event for failure event is published.");
+                logger.debug("Analytics event for failure event is published, TRACE_ID = {}",
+                             ThreadContext.get(APIConstants.LOG_TRACE_ID));
             } catch (AnalyticsException e) {
                 logger.error("Error while publishing the analytics event. ", e);
             }
@@ -262,7 +263,8 @@ public class AnalyticsFilter {
 
         // For the choreo deployment, class name need not to be provided.
         if (StringUtils.isEmpty(className)) {
-            logger.debug("Proceeding with default analytics publisher.");
+            logger.debug("Proceeding with default analytics publisher, TRACE_ID = {}",
+                         ThreadContext.get(APIConstants.LOG_TRACE_ID));
             if (isChoreoDeployment) {
                 return new DefaultAnalyticsEventPublisher(AnalyticsConstants.CHOREO_RESPONSE_SCHEMA,
                         AnalyticsConstants.CHOREO_FAULT_SCHEMA);

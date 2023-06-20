@@ -160,10 +160,12 @@ public class JWTAuthenticator implements Authenticator {
             if (StringUtils.isNotEmpty(jwtTokenIdentifier)) {
                 if (RevokedJWTDataHolder.isJWTTokenSignatureExistsInRevokedMap(jwtTokenIdentifier)) {
                     if (log.isDebugEnabled()) {
-                        log.debug("Token retrieved from the revoked jwt token map. Token: "
-                                + FilterUtils.getMaskedToken(jwtHeader));
+                        log.debug(
+                                "Token retrieved from the revoked jwt token map. Token: " + FilterUtils.getMaskedToken(
+                                        jwtHeader) + ", {}", ThreadContext.get(APIConstants.LOG_TRACE_ID));
                     }
-                    log.debug("Invalid JWT token. " + FilterUtils.getMaskedToken(jwtHeader));
+                    log.debug("Invalid JWT token. " + FilterUtils.getMaskedToken(jwtHeader) + ", {}",
+                              ThreadContext.get(APIConstants.LOG_TRACE_ID));
                     throw new APISecurityException(APIConstants.StatusCodes.UNAUTHENTICATED.getCode(),
                             APISecurityConstants.API_AUTH_INVALID_CREDENTIALS, "Invalid JWT token");
                 }
@@ -280,7 +282,7 @@ public class JWTAuthenticator implements Authenticator {
                             Utils.finishSpan(validateScopesSpan);
                         }
                     }
-                    log.debug("JWT authentication successful.");
+                    log.debug("JWT authentication successful, {}.", ThreadContext.get(APIConstants.LOG_TRACE_ID));
 
                     // Generate or get backend JWT
                     String endUserToken = null;

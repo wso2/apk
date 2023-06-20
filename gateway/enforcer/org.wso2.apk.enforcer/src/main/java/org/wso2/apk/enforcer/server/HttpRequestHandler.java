@@ -59,8 +59,8 @@ public class HttpRequestHandler implements RequestHandler<CheckRequest, Response
             return responseObject;
         }
         APIConfig api = matchedAPI.getAPIConfig();
-        logger.debug("API {}/{} found in the cache", api.getBasePath(), api.getVersion());
-
+        logger.debug("API {}/{} found in the cache, TRACE_ID = {}", api.getBasePath(), api.getVersion(),
+                     ThreadContext.get(APIConstants.LOG_TRACE_ID));
         // putting API details into ThreadContext for logging purposes
         ThreadContext.push(api.getName());
         ThreadContext.push(api.getOrganizationId());

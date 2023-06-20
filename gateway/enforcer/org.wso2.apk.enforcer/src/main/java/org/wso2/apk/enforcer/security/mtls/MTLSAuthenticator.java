@@ -62,9 +62,10 @@ public class MTLSAuthenticator implements Authenticator {
             cert = requestContext.getHeaders().get(FilterUtils.getCertificateHeaderName());
         }
         if (StringUtils.isBlank(cert)) {
-            log.debug("Could not find a valid client certificate in the request: {} for the API: {}:{} ",
-                    requestContext.getMatchedResourcePaths().get(0).getPath(), requestContext.getMatchedAPI().getName(),
-                    requestContext.getMatchedAPI().getVersion());
+            log.debug("Could not find a valid client certificate in the request: {} for the API: {}:{}, TRACE_ID = {}",
+                      requestContext.getMatchedResourcePaths().get(0).getPath(),
+                      requestContext.getMatchedAPI().getName(), requestContext.getMatchedAPI().getVersion(),
+                      ThreadContext.get(APIConstants.LOG_TRACE_ID));
             return false;
         }
         return true;
@@ -94,9 +95,10 @@ public class MTLSAuthenticator implements Authenticator {
                 String clientCertificateAlias = MtlsUtils
                         .getMatchedCertificateAliasFromTrustStore(clientCert, trustStore);
                 if (StringUtils.isBlank(clientCertificateAlias)) {
-                    log.debug("Provided client certificate in request: {} is not in the truststore of the API: {}:{} ",
-                            requestContext.getMatchedResourcePaths().get(0).getPath(),
-                            requestContext.getMatchedAPI().getName(), requestContext.getMatchedAPI().getVersion());
+                    log.debug("Provided client certificate in request: {} is not in the truststore of the API: {}:{},"
+                                      + " TRACE_ID = {} ", requestContext.getMatchedResourcePaths().get(0).getPath(),
+                              requestContext.getMatchedAPI().getName(), requestContext.getMatchedAPI().getVersion(),
+                              ThreadContext.get(APIConstants.LOG_TRACE_ID));
                     clientCert = null;
                 }
                 if (!Objects.isNull(clientCert)) {
@@ -156,9 +158,9 @@ public class MTLSAuthenticator implements Authenticator {
         if (StringUtils.isNotBlank(certContent)) {
             return MtlsUtils.getX509Cert(certContent);
         }
-        log.debug("Provided client certificate in the request: {} for the API: {}:{} is invalid.",
-                requestContext.getMatchedResourcePaths().get(0).getPath(), requestContext.getMatchedAPI().getName(),
-                requestContext.getMatchedAPI().getVersion());
+        log.debug("Provided client certificate in the request: {} for the API: {}:{} is invalid. TRACE_ID = {}",
+                  requestContext.getMatchedResourcePaths().get(0).getPath(), requestContext.getMatchedAPI().getName(),
+                  requestContext.getMatchedAPI().getVersion(), ThreadContext.get(APIConstants.LOG_TRACE_ID));
         return null;
     }
 

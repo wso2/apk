@@ -52,14 +52,16 @@ public class CorsFilter implements Filter {
                         ThreadContext.get(APIConstants.LOG_TRACE_ID));
 
             }
-            logger.debug("Cors Filter (enforcer) is applied.");
+            logger.debug("Cors Filter (enforcer) is applied. TRACE_ID = {}",
+                         ThreadContext.get(APIConstants.LOG_TRACE_ID));
             // Options request is served here.
             // Preflight success request does not reach here.
             if (requestContext.getRequestMethod().contains(HttpConstants.OPTIONS)) {
                 // If the OPTIONS method is provided under the resource, microgateway do not respond
                 if (requestContext.getMatchedResourcePaths() != null) {
-                    logger.debug("OPTIONS method is listed under the resource. Hence OPTIONS request will" +
-                            "be responded from the upstream");
+                    logger.debug("OPTIONS method is listed under the resource. Hence OPTIONS request will"
+                                         + "be responded from the upstream, TRACE_ID = {}",
+                                 ThreadContext.get(APIConstants.LOG_TRACE_ID));
                     return true;
                 }
                 StringBuilder allowedMethodsBuilder = new StringBuilder(HttpConstants.OPTIONS);
@@ -78,9 +80,10 @@ public class CorsFilter implements Filter {
                 requestContext.getProperties()
                         .put(APIConstants.MessageFormat.STATUS_CODE, HttpConstants.NO_CONTENT_STATUS_CODE);
                 requestContext.addOrModifyHeaders(HttpConstants.ALLOW_HEADER, allowedMethodsBuilder.toString());
-                logger.debug("OPTIONS request received for " +
-                        requestContext.getMatchedAPI().getResources().get(0).getPath() +
-                        ". Responded with allow header : " + allowedMethodsBuilder.toString());
+                logger.debug(
+                        "OPTIONS request received for " + requestContext.getMatchedAPI().getResources().get(0).getPath()
+                                + ". Responded with allow header : " + allowedMethodsBuilder.toString()
+                                + ", TRACE_ID = {}", ThreadContext.get(APIConstants.LOG_TRACE_ID));
                 return false;
             }
             return true;

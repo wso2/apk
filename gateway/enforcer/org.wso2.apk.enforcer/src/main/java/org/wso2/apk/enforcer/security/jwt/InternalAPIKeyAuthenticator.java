@@ -96,7 +96,8 @@ public class InternalAPIKeyAuthenticator extends APIKeyHandler {
         TracingSpan verifyTokenWithoutCacheSpan = null;
 
         if (requestContext.getMatchedAPI() != null) {
-            log.debug("Internal Key Authentication initialized");
+            log.debug("Internal Key Authentication initialized, TRACE_ID = {}",
+                      ThreadContext.get(APIConstants.LOG_TRACE_ID));
 
             try {
                 if (Utils.tracingEnabled()) {
@@ -160,7 +161,8 @@ public class InternalAPIKeyAuthenticator extends APIKeyHandler {
                         .equals(CacheProvider.getInvalidGatewayInternalKeyCache().getIfPresent(tokenIdentifier))) {
 
                     log.debug("Internal Key retrieved from the invalid internal Key cache. Internal Key: "
-                            + FilterUtils.getMaskedToken(splitToken[0]));
+                                      + FilterUtils.getMaskedToken(splitToken[0]) + ", TRACE_ID = " + ThreadContext.get(
+                            APIConstants.LOG_TRACE_ID));
 
                     log.error("Invalid Internal Key. " + FilterUtils.getMaskedToken(splitToken[0]));
                     throw new APISecurityException(APIConstants.StatusCodes.UNAUTHENTICATED.getCode(),
@@ -171,7 +173,8 @@ public class InternalAPIKeyAuthenticator extends APIKeyHandler {
                 Scope verifyTokenWithoutCacheSpanScope = null;
                 // Verify token when it is not found in cache
                 if (!isVerified) {
-                    log.debug("Internal Key not found in the cache.");
+                    log.debug("Internal Key not found in the cache, TRACE_ID = {}.",
+                              ThreadContext.get(APIConstants.LOG_TRACE_ID));
                     if (Utils.tracingEnabled()) {
                         verifyTokenWithoutCacheSpan = Utils.startSpan(TracingConstants.VERIFY_TOKEN_SPAN, tracer);
                         verifyTokenWithoutCacheSpanScope = verifyTokenWithoutCacheSpan.getSpan().makeCurrent();
@@ -203,11 +206,13 @@ public class InternalAPIKeyAuthenticator extends APIKeyHandler {
                 }
 
                 if (isVerified) {
-                    log.debug("Internal Key signature is verified.");
+                    log.debug("Internal Key signature is verified, TRACE_ID = {}.",
+                              ThreadContext.get(APIConstants.LOG_TRACE_ID));
 
                     if (jwtTokenPayloadInfo == null) {
                         // Retrieve payload from InternalKey
-                        log.debug("InternalKey payload not found in the cache.");
+                        log.debug("InternalKey payload not found in the cache, TRACE_ID = {}.",
+                                  ThreadContext.get(APIConstants.LOG_TRACE_ID));
 
                         jwtTokenPayloadInfo = new JWTTokenPayloadInfo();
                         jwtTokenPayloadInfo.setPayload(payload);
@@ -245,12 +250,14 @@ public class InternalAPIKeyAuthenticator extends APIKeyHandler {
                                         GeneralErrorCodeConstants.API_BLOCKED_CODE,
                                         GeneralErrorCodeConstants.API_BLOCKED_MESSAGE);
                             }
-                            log.debug("Internal Key Authentication is successful.");
+                            log.debug("Internal Key Authentication is successful, TRACE_ID = {}.",
+                                      ThreadContext.get(APIConstants.LOG_TRACE_ID));
                         }
                     } catch (APISecurityException e) {
                         throw e;
                     } finally {
-                        log.debug("Internal Key authentication is completed.");
+                        log.debug("Internal Key authentication is completed, TRACE_ID = {}.",
+                                  ThreadContext.get(APIConstants.LOG_TRACE_ID));
                         if (Utils.tracingEnabled()) {
                             apiKeyValidateSubscriptionSpanScope.close();
                             Utils.finishSpan(apiKeyValidateSubscriptionSpan);

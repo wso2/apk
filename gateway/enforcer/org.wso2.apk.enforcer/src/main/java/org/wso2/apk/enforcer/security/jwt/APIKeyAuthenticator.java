@@ -26,6 +26,7 @@ import net.minidev.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.wso2.apk.enforcer.common.CacheProvider;
 import org.wso2.apk.enforcer.commons.constants.GraphQLConstants;
 import org.wso2.apk.enforcer.commons.dto.JWTConfigurationDto;
@@ -135,7 +136,8 @@ public class APIKeyAuthenticator extends APIKeyHandler {
                     APISecurityConstants.API_AUTH_GENERAL_ERROR_MESSAGE);
         }
         if (requestContext.getMatchedAPI() == null) {
-            log.debug("API Key Authentication failed");
+            log.debug("API Key Authentication failed, TRACE_ID = {}",
+                      ThreadContext.get(APIConstants.LOG_TRACE_ID));
             throw new APISecurityException(APIConstants.StatusCodes.UNAUTHENTICATED.getCode(),
                     APISecurityConstants.API_AUTH_GENERAL_ERROR,
                     APISecurityConstants.API_AUTH_GENERAL_ERROR_MESSAGE);
@@ -184,7 +186,8 @@ public class APIKeyAuthenticator extends APIKeyHandler {
             }
 
             if (isVerified) {
-                log.debug("API Key signature is verified.");
+                log.debug("API Key signature is verified, TRACE_ID = {}",
+                          ThreadContext.get(APIConstants.LOG_TRACE_ID));
 
                 if (jwtTokenPayloadInfo == null) {
                     log.debug("API Key payload not found in the cache.");
@@ -204,15 +207,18 @@ public class APIKeyAuthenticator extends APIKeyHandler {
                 validateAPIKeyRestrictions(payload, requestContext, apiContext, apiVersion);
                 APIKeyValidationInfoDTO validationInfoDto;
                 log.debug("Validating subscription for API Key against subscription store."
-                        + " context: {} version: {}", apiContext, apiVersion);
+                                  + " context: {} version: {}, TRACE_ID = {}.", apiContext, apiVersion,
+                          ThreadContext.get(APIConstants.LOG_TRACE_ID));
                 validationInfoDto = KeyValidator.validateSubscription(apiUuid, apiContext, payload, envType);
                 if (!requestContext.getMatchedAPI().isSystemAPI()) {
                     log.debug("Validating subscription for API Key using JWT claims against invoked API info."
-                            + " context: {} version: {}", apiContext, apiVersion);
+                                      + " context: {} version: {}. TRACE_ID = {}", apiContext, apiVersion,
+                              ThreadContext.get(APIConstants.LOG_TRACE_ID));
                     validationInfoDto = getAPIKeyValidationDTO(requestContext, payload);
                 } else {
                     log.debug("Creating API Key info DTO for unknown API and Application."
-                            + " context: {} version: {}", apiContext, apiVersion);
+                                      + " context: {} version: {}. TRACE_ID = {}.", apiContext, apiVersion,
+                              ThreadContext.get(APIConstants.LOG_TRACE_ID));
                     validationInfoDto = new APIKeyValidationInfoDTO();
                     JWTUtils.updateApplicationNameForSubscriptionDisabledKM(validationInfoDto,
                             APIConstants.KeyManager.APIM_APIKEY_ISSUER);
@@ -247,7 +253,8 @@ public class APIKeyAuthenticator extends APIKeyHandler {
                                     + "API Subscription validation failed.");
                 }
 
-                log.debug("API Key authentication successful.");
+                log.debug("API Key authentication successful, TRACE_ID = {}.",
+                          ThreadContext.get(APIConstants.LOG_TRACE_ID));
 
                 /* GraphQL Query Analysis Information */
                 if (APIConstants.ApiType.GRAPHQL.equals(requestContext.getMatchedAPI()
@@ -281,7 +288,8 @@ public class APIKeyAuthenticator extends APIKeyHandler {
                 AuthenticationContext authenticationContext = FilterUtils
                         .generateAuthenticationContext(requestContext, tokenIdentifier, validationInfo,
                                 validationInfoDto, endUserToken, apiKey, false);
-                log.debug("Analytics data processing for API Key (jiti) {} was successful", tokenIdentifier);
+                log.debug("Analytics data processing for API Key (jiti) {} was successful, TRACE_ID = {}",
+                          tokenIdentifier, ThreadContext.get(APIConstants.LOG_TRACE_ID));
                 return authenticationContext;
 
             }
@@ -346,14 +354,15 @@ public class APIKeyAuthenticator extends APIKeyHandler {
                         validationInfoDTO.setSubscriberTenantDomain(subTenant);
                     }
 
-                    log.debug("APIKeyValidationInfoDTO populated for API: {}, version: {}.", name, version);
+                    log.debug("APIKeyValidationInfoDTO populated for API: {}, version: {}, TRACE_ID = {}.", name,
+                              version, ThreadContext.get(APIConstants.LOG_TRACE_ID));
 
                     break;
                 }
             }
             if (api == null) {
-                log.debug("Subscription data not populated in APIKeyValidationInfoDTO for the API: {}, version: {}.",
-                        name, version);
+                log.debug("Subscription data not populated in APIKeyValidationInfoDTO for the API: {}, version: {}, "
+                                  + "TRACE_ID = {}.", name, version, ThreadContext.get(APIConstants.LOG_TRACE_ID));
                 log.error("User's subscription details cannot obtain for the API : {}", name);
                 throw new APISecurityException(APIConstants.StatusCodes.UNAUTHORIZED.getCode(),
                         APISecurityConstants.API_AUTH_FORBIDDEN,
@@ -383,8 +392,8 @@ public class APIKeyAuthenticator extends APIKeyHandler {
                     }
                 }
                 if (StringUtils.isNotEmpty(clientIP)) {
-                    log.debug("Invocations to API: {}:{} is not permitted for client with IP: {}",
-                            apiContext, apiVersion, clientIP);
+                    log.debug("Invocations to API: {}:{} is not permitted for client with IP: {}, TRACE_ID = {}",
+                              apiContext, apiVersion, clientIP, ThreadContext.get(APIConstants.LOG_TRACE_ID));
                 }
 
                 throw new APISecurityException(APIConstants.StatusCodes.UNAUTHORIZED.getCode(),
@@ -412,8 +421,8 @@ public class APIKeyAuthenticator extends APIKeyHandler {
                         }
                     }
                     if (StringUtils.isNotEmpty(referer)) {
-                        log.debug("Invocations to API: {}:{} is not permitted for referer: {}",
-                                apiContext, apiVersion, referer);
+                        log.debug("Invocations to API: {}:{} is not permitted for referer: {}, TRACE_ID = {}",
+                                  apiContext, apiVersion, referer, ThreadContext.get(APIConstants.LOG_TRACE_ID));
                     }
                 }
                 throw new APISecurityException(APIConstants.StatusCodes.UNAUTHORIZED.getCode(),
