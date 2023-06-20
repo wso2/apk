@@ -767,7 +767,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 			PathTemplate:     contextExtensions[pathContextExtension],
 			Vhost:            contextExtensions[vHostContextExtension],
 			ClusterName:      contextExtensions[clusterNameContextExtension],
-			APIProperty:	  getAPIProperties(params.apiProperty),
+			APIProperties:	  getAPIProperties(params.apiProperties),
 		}
 		luaPerFilterConfig = lua.LuaPerRoute{
 			Override: &lua.LuaPerRoute_SourceCode{
@@ -1476,7 +1476,7 @@ func genRouteCreateParams(swagger *model.AdapterInternalAPI, resource *model.Res
 		passRequestPayloadToEnforcer: swagger.GetXWso2RequestBodyPass(),
 		isDefaultVersion:             swagger.IsDefaultVersion,
 		apiLevelRateLimitPolicy:      swagger.RateLimitPolicy,
-		apiProperty:                  swagger.APIProperty,
+		apiProperties:                  swagger.APIProperties,
 	}
 	return params
 }
