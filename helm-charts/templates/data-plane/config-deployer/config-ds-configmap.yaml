@@ -32,4 +32,20 @@ data:
     [wso2.config_deployer_service.gatewayConfiguration]
     name = "default"
     listenerName = "httpslistener"
+{{if and .Values.wso2.apk.dp.partitionServer .Values.wso2.apk.dp.partitionServer.enabled}}
+    [wso2.config_deployer_service.partitionServiceConfiguration]
+    enabled = true
+    url = "{{.Values.wso2.apk.dp.partitionServer.host}}{{.Values.wso2.apk.dp.partitionServer.serviceBasePath}}"
+{{if and .Values.wso2.apk.dp.partitionServer .Values.wso2.apk.dp.partitionServer.tls}}
+    tlsCertificatePath = "/home/wso2apk/config-deployer/security/partition-server.pem"
+{{end}} 
+    hostnameVerificationEnable = {{.Values.wso2.apk.dp.partitionServer.hostnameVerificationEnable}}
+  {{ if .Values.wso2.apk.dp.partitionServer.headers}}
+      {{ range $key, $value := .Values.wso2.apk.dp.partitionServer.headers}}
+    [[wso2.config_deployer_service.partitionServiceConfiguration.headers]]
+      name = "{{ $key }}"
+      value = "{{ $value }}"
+      {{ end}}
+  {{ end}}
+{{end}}
 {{- end -}}

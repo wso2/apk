@@ -429,11 +429,12 @@ type managementServer struct {
 }
 
 type partitionServer struct {
-	Enabled         bool
-	Host            string
-	Port            int
-	ServiceBasePath string
-	PartitionName   string
+	Enabled                bool
+	Host                   string
+	Port                   int
+	ServiceBasePath        string
+	PartitionName          string
+	DisableSslVerification bool
 }
 
 type brokerConnectionParameters struct {
