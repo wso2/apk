@@ -308,8 +308,9 @@ func GetResolvedBackend(ctx context.Context, client k8client.Client,
 	}
 	resolvedBackend.Services = backend.Spec.Services
 	resolvedBackend.Protocol = backend.Spec.Protocol
+	resolvedBackend.Retry = nil
 	if backend.Spec.Retry != nil {
-		resolvedBackend.Retry = dpv1alpha1.Retry{
+		resolvedBackend.Retry = &dpv1alpha1.Retry{
 			MaxRetryCount:        backend.Spec.Retry.MaxRetryCount,
 			BaseIntervalInMillis: backend.Spec.Retry.BaseIntervalInMillis,
 			StatusCodes:          backend.Spec.Retry.StatusCodes,

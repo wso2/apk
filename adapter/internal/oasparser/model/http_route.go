@@ -21,7 +21,6 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
-	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/internal/oasparser/constants"
 	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
@@ -55,12 +54,6 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 
 	disableScopes := true
 	disableAuthentications := false
-	config := config.ReadConfigs()
-	retryConfig := config.Envoy.Upstream.Retry
-
-	backendRetryCount := retryConfig.MaxRetryCount
-	statusCodes := retryConfig.StatusCodes
-	baseIntervalInMillis := retryConfig.BaseIntervalInMillis
 
 	var authScheme *dpv1alpha1.Authentication
 	if outputAuthScheme != nil {
@@ -87,6 +80,9 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 		var resourceRatelimitPolicy *dpv1alpha1.RateLimitPolicy
 		hasPolicies := false
 		var scopes []string
+		var backendRetryCount uint32
+		var statusCodes []uint32
+		var baseIntervalInMillis uint32
 		for _, filter := range rule.Filters {
 			hasPolicies = true
 			switch filter.Type {
@@ -229,6 +225,7 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 			return fmt.Errorf("no backendref were provided")
 		}
 		var securityConfig []EndpointSecurity
+		isRetryConfigDefined := false
 		for _, backend := range rule.BackendRefs {
 			backendName := types.NamespacedName{
 				Name:      string(backend.Name),
@@ -236,14 +233,17 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 			}
 			resolvedBackend, ok := httpRouteParams.BackendMapping[backendName]
 			if ok {
-				if resolvedBackend.Retry.MaxRetryCount > 0 {
-					backendRetryCount = resolvedBackend.Retry.MaxRetryCount
-				}
-				if resolvedBackend.Retry.StatusCodes != nil && len(resolvedBackend.Retry.StatusCodes) > 0 {
-					statusCodes = retryConfig.StatusCodes
-				}
-				if resolvedBackend.Retry.BaseIntervalInMillis > 0 {
-					baseIntervalInMillis = resolvedBackend.Retry.BaseIntervalInMillis
+				if resolvedBackend.Retry != nil {
+					isRetryConfigDefined = true
+					if resolvedBackend.Retry.MaxRetryCount > 0 {
+						backendRetryCount = resolvedBackend.Retry.MaxRetryCount
+					}
+					if resolvedBackend.Retry.StatusCodes != nil && len(resolvedBackend.Retry.StatusCodes) > 0 {
+						statusCodes = resolvedBackend.Retry.StatusCodes
+					}
+					if resolvedBackend.Retry.BaseIntervalInMillis > 0 {
+						baseIntervalInMillis = resolvedBackend.Retry.BaseIntervalInMillis
+					}
 				}
 				endPoints = append(endPoints, GetEndpoints(backendName, httpRouteParams.BackendMapping)...)
 				for _, security := range resolvedBackend.Security {
@@ -270,18 +270,23 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 				hasPolicies:   hasPolicies,
 				iD:            uuid.New().String(),
 			}
-			fmt.Println("Retried count: ", int32(backendRetryCount))
-			fmt.Println("Status codes: ", statusCodes[0])
-			fmt.Println("Base interval: ", int32(baseIntervalInMillis))
-			resource.endpoints = &EndpointCluster{
-				Endpoints: endPoints,
-				Config: &EndpointConfig{
-					RetryConfig: &RetryConfig{
-						Count:                int32(backendRetryCount),
-						StatusCodes:          statusCodes,
-						BaseIntervalInMillis: int32(baseIntervalInMillis),
+
+			// Avoid overriding the virtul host level retry config
+			if isRetryConfigDefined {
+				resource.endpoints = &EndpointCluster{
+					Endpoints: endPoints,
+					Config: &EndpointConfig{
+						RetryConfig: &RetryConfig{
+							Count:                int32(backendRetryCount),
+							StatusCodes:          statusCodes,
+							BaseIntervalInMillis: int32(baseIntervalInMillis),
+						},
 					},
-				},
+				}
+			} else {
+				resource.endpoints = &EndpointCluster{
+					Endpoints: endPoints,
+				}
 			}
 			resource.endpointSecurity = utils.GetPtrSlice(securityConfig)
 			resources = append(resources, resource)

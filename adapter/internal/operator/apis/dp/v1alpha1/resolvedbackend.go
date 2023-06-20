@@ -28,7 +28,7 @@ type ResolvedBackend struct {
 	Protocol BackendProtocolType
 	TLS      ResolvedTLSConfig
 	Security []ResolvedSecurityConfig
-	Retry    Retry
+	Retry    *Retry
 }
 
 // Retry defines retry configurations
