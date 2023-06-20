@@ -79,7 +79,6 @@ func generateRouteMatch(routeRegex string) *routev3.RouteMatch {
 func generateRouteAction(apiType string, routeConfig *model.EndpointConfig, ratelimitCriteria *ratelimitCriteria) (action *routev3.Route_Route) {
 
 	config := config.ReadConfigs()
-	// fmt.Println("Config Upstream Timeout:: ", config.Envoy.Upstream.Timeouts.RouteTimeoutInSeconds)
 
 	action = &routev3.Route_Route{
 		Route: &routev3.RouteAction{

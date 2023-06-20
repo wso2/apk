@@ -233,10 +233,6 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 			resolvedBackend, ok := httpRouteParams.BackendMapping[backendName]
 			if ok {
 				clusterTimeout = resolvedBackend.Timeout
-				if backend.Name == "insecure-backend" {
-					fmt.Println("Resolved backend: ", resolvedBackend)
-					fmt.Println("Timeout in http_route: ", clusterTimeout)
-				}
 				endPoints = append(endPoints, GetEndpoints(backendName, httpRouteParams.BackendMapping)...)
 				for _, security := range resolvedBackend.Security {
 					switch security.Type {

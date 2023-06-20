@@ -95,7 +95,6 @@ const (
 // to the api level clusters.
 func CreateRoutesWithClusters(adapterInternalAPI model.AdapterInternalAPI, interceptorCerts map[string][]byte, vHost string, organizationID string) (routesP []*routev3.Route,
 	clustersP []*clusterv3.Cluster, addressesP []*corev3.Address, err error) {
-	// fmt.Println("Endpoints creating 1")
 	var (
 		routes    []*routev3.Route
 		clusters  []*clusterv3.Cluster
@@ -168,7 +167,6 @@ func CreateRoutesWithClusters(adapterInternalAPI model.AdapterInternalAPI, inter
 				endpoints = append(endpoints, address...)
 				processedEndpoints[clusterName] = *endpoint
 			}
-			fmt.Println("Cluster Timeout after creation : ", cluster.ConnectTimeout)
 		} else {
 			clusterName = existingClusterName
 		}
@@ -366,7 +364,6 @@ func processEndpoints(clusterName string, clusterDetails *model.EndpointCluster,
 	addresses := []*corev3.Address{}
 
 	for i, ep := range clusterDetails.Endpoints {
-		// timeout = ep.Timeout.AsDuration()
 		// validating the basepath to be same for all upstreams of an api
 		if strings.TrimSuffix(ep.Basepath, "/") != basePath {
 			return nil, nil, errors.New("endpoint basepath mismatched for " + ep.RawURL + ". expected : " + basePath + " but found : " + ep.Basepath)
@@ -464,7 +461,6 @@ func processEndpoints(clusterName string, clusterDetails *model.EndpointCluster,
 		logger.LoggerOasparser.Error(err2)
 	}
 
-	// api definition
 	cluster := clusterv3.Cluster{
 		Name:                 clusterName,
 		ConnectTimeout:       durationpb.New(timeout * time.Second),
