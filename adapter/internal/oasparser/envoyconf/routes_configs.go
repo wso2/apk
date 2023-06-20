@@ -31,7 +31,6 @@ import (
 	"github.com/envoyproxy/go-control-plane/pkg/wellknown"
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes/any"
-	"github.com/wso2/apk/adapter/config"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/internal/oasparser/constants"
 	"github.com/wso2/apk/adapter/internal/oasparser/model"
@@ -77,8 +76,6 @@ func generateRouteMatch(routeRegex string) *routev3.RouteMatch {
 }
 
 func generateRouteAction(apiType string, routeConfig *model.EndpointConfig, ratelimitCriteria *ratelimitCriteria) (action *routev3.Route_Route) {
-
-	config := config.ReadConfigs()
 	action = &routev3.Route_Route{
 		Route: &routev3.RouteAction{
 			HostRewriteSpecifier: &routev3.RouteAction_AutoHostRewrite{
@@ -88,6 +85,7 @@ func generateRouteAction(apiType string, routeConfig *model.EndpointConfig, rate
 			},
 			UpgradeConfigs:    getUpgradeConfig(apiType),
 			MaxStreamDuration: getMaxStreamDuration(apiType),
+			IdleTimeout:       durationpb.New(time.Duration(routeConfig.IdleTimeoutInSeconds) * time.Second),
 			ClusterSpecifier: &routev3.RouteAction_ClusterHeader{
 				ClusterHeader: clusterHeaderName,
 			},
@@ -118,7 +116,6 @@ func generateRouteAction(apiType string, routeConfig *model.EndpointConfig, rate
 			},
 		}
 		action.Route.RetryPolicy = commonRetryPolicy
-		fmt.Println("Action Retry: ", action.Route.RetryPolicy.NumRetries)
 	}
 
 	return action

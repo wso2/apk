@@ -66,8 +66,10 @@ type BackendSpec struct {
 	CircuitBreaker *CircuitBreaker `json:"circuitBreaker,omitempty"`
 	// +optional
 	// Timeout congifuration for the backend
-	Timeout *Timeout     `json:"timeout,omitempty"`
-	Retry   *RetryConfig `json:"retry,omitempty"`
+	Timeout *Timeout `json:"timeout,omitempty"`
+
+	// +optional
+	Retry *RetryConfig `json:"retry,omitempty"`
 }
 
 // Timeout defines the timeout configurations
