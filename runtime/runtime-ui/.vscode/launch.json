@@ -15,7 +15,10 @@
 			"outFiles": [
 				"${workspaceFolder}/out/**/*.js"
 			],
-			"preLaunchTask": "${defaultBuildTask}"
+			"preLaunchTask": "${defaultBuildTask}",
+			"env": {
+				"DEBUG_VSCODE_YAML": "true"
+			}
 		},
 		{
 			"name": "Extension Tests",

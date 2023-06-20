@@ -1,7 +1,11 @@
-import { URI } from 'vscode-uri';
-import { CommonLanguageClient as LanguageClient, RequestType } from 'vscode-languageclient/node';
-import { workspace } from 'vscode';
-import { logToExtensionOutputChannel } from './utils';
+/* eslint-disable @typescript-eslint/ban-types */
+import { URI } from "vscode-uri";
+import {
+  CommonLanguageClient as LanguageClient,
+  RequestType,
+} from "vscode-languageclient/node";
+import { workspace } from "vscode";
+import { logToExtensionOutputChannel } from "./utils";
 
 interface SchemaContributorProvider {
   readonly requestSchema: (resource: string) => string;
@@ -10,8 +14,8 @@ interface SchemaContributorProvider {
 }
 
 export enum MODIFICATION_ACTIONS {
-  'delete',
-  'add',
+  "delete",
+  "add",
 }
 
 export interface SchemaAdditions {
@@ -32,7 +36,11 @@ export interface SchemaDeletions {
 // eslint-disable-next-line @typescript-eslint/no-namespace
 namespace SchemaModificationNotification {
   // eslint-disable-next-line @typescript-eslint/ban-types
-  export const type: RequestType<SchemaAdditions | SchemaDeletions, void, {}> = new RequestType('json/schema/modify');
+  export const type: RequestType<
+    SchemaAdditions | SchemaDeletions,
+    void,
+    {}
+  > = new RequestType("json/schema/modify");
 }
 
 export interface ExtensionAPI {
@@ -42,11 +50,15 @@ export interface ExtensionAPI {
     requestSchemaContent: (uri: string) => Promise<string> | string,
     label?: string
   ): boolean;
-  modifySchemaContent(schemaModifications: SchemaAdditions | SchemaDeletions): Promise<void>;
+  modifySchemaContent(
+    schemaModifications: SchemaAdditions | SchemaDeletions
+  ): Promise<void>;
 }
 
 class SchemaExtensionAPI implements ExtensionAPI {
-  private _customSchemaContributors: { [index: string]: SchemaContributorProvider } = {};
+  private _customSchemaContributors: {
+    [index: string]: SchemaContributorProvider;
+  } = {};
   private _yamlClient: LanguageClient;
 
   constructor(client: LanguageClient) {
@@ -73,14 +85,14 @@ class SchemaExtensionAPI implements ExtensionAPI {
     }
 
     if (!requestSchema) {
-      throw new Error('Illegal parameter for requestSchema.');
+      throw new Error("Illegal parameter for requestSchema.");
     }
 
     if (label) {
-      const [first, second] = label.split(':');
+      const [first, second] = label.split(":");
       if (first && second) {
         label = second.trim();
-        label = label.replace('.', '\\.');
+        label = label.replace(".", "\\.");
         label = `${first}:[\t ]+${label}`;
       }
     }
@@ -106,7 +118,7 @@ class SchemaExtensionAPI implements ExtensionAPI {
         const contributor = this._customSchemaContributors[customKey];
         let uri: string;
         if (contributor.label && workspace.textDocuments) {
-          const labelRegexp = new RegExp(contributor.label, 'g');
+          const labelRegexp = new RegExp(contributor.label, "g");
           for (const doc of workspace.textDocuments) {
             if (doc.uri.toString() === resource) {
               if (labelRegexp.test(doc.getText())) {
@@ -146,13 +158,20 @@ class SchemaExtensionAPI implements ExtensionAPI {
         this._customSchemaContributors[_uri.scheme] &&
         this._customSchemaContributors[_uri.scheme].requestSchemaContent
       ) {
-        return this._customSchemaContributors[_uri.scheme].requestSchemaContent(uri);
+        return this._customSchemaContributors[_uri.scheme].requestSchemaContent(
+          uri
+        );
       }
     }
   }
 
-  public async modifySchemaContent(schemaModifications: SchemaAdditions | SchemaDeletions): Promise<void> {
-    return this._yamlClient.sendRequest(SchemaModificationNotification.type, schemaModifications);
+  public async modifySchemaContent(
+    schemaModifications: SchemaAdditions | SchemaDeletions
+  ): Promise<void> {
+    return this._yamlClient.sendRequest(
+      SchemaModificationNotification.type,
+      schemaModifications
+    );
   }
 
   public hasProvider(schema: string): boolean {
@@ -161,7 +180,7 @@ class SchemaExtensionAPI implements ExtensionAPI {
 }
 
 // constants
-export const CUSTOM_SCHEMA_REQUEST = 'custom/schema/request';
-export const CUSTOM_CONTENT_REQUEST = 'custom/schema/content';
+export const CUSTOM_SCHEMA_REQUEST = "custom/schema/request";
+export const CUSTOM_CONTENT_REQUEST = "custom/schema/content";
 
 export { SchemaExtensionAPI };

@@ -14,7 +14,7 @@
   "icon": "icon/icon128.png",
   "engines": {
     "npm": ">=7.0.0",
-    "vscode": "^1.79.0"
+    "vscode": "^1.63.0"
   },
   "keywords": [
     "apk",
@@ -38,7 +38,7 @@
   "activationEvents": [
     "onLanguage:yaml"
   ],
-  "main": "./out/extension.js",
+  "main": "./dist/extension.js",
   "contributes": {
     "languages": [
       {
@@ -73,7 +73,9 @@
     "configurationDefaults": {}
   },
   "scripts": {
-    "vscode:prepublish": "yarn run compile",
+    "vscode:prepublish": "webpack --mode production",
+		"webpack": "webpack --mode development",
+		"webpack-dev": "webpack --mode development --watch",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "pretest": "yarn run compile && yarn run lint",
@@ -99,7 +101,7 @@
     "@types/node": "20.2.5",
     "@types/sinon": "^10.0.6",
     "@types/sinon-chai": "^3.2.5",
-    "@types/vscode": "^1.79.0",
+    "@types/vscode": "^1.63.0",
     "@types/webpack": "^4.4.10",
     "@typescript-eslint/eslint-plugin": "^5.59.8",
     "@typescript-eslint/parser": "^5.59.8",

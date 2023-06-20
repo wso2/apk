@@ -3,15 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as fs from 'fs-extra';
-import * as path from 'path';
-import * as crypto from 'crypto';
-import { Memento } from 'vscode';
-import { logToExtensionOutputChannel } from './utils';
-import { IJSONSchemaCache } from './json-schema-content-provider';
+import * as fs from "fs-extra";
+import * as path from "path";
+import * as crypto from "crypto";
+import { Memento } from "vscode";
+import { logToExtensionOutputChannel } from "./utils";
+import { IJSONSchemaCache } from "./json-schema-content-provider";
 
-const CACHE_DIR = 'schemas_cache';
-const CACHE_KEY = 'json-schema-key';
+const CACHE_DIR = "schemas_cache";
+const CACHE_KEY = "json-schema-key";
 
 interface CacheEntry {
   eTag: string;
@@ -51,9 +51,9 @@ export class JSONSchemaCache implements IJSONSchemaCache {
   }
 
   private getCacheFilePath(uri: string): string {
-    const hash = crypto.createHash('MD5');
+    const hash = crypto.createHash("MD5");
     hash.update(uri);
-    const hashedURI = hash.digest('hex');
+    const hashedURI = hash.digest("hex");
     return path.join(this.cachePath, hashedURI);
   }
 
@@ -64,12 +64,19 @@ export class JSONSchemaCache implements IJSONSchemaCache {
     return this.cache[schemaUri]?.eTag;
   }
 
-  async putSchema(schemaUri: string, eTag: string, schemaContent: string): Promise<void> {
+  async putSchema(
+    schemaUri: string,
+    eTag: string,
+    schemaContent: string
+  ): Promise<void> {
     if (!this.isInitialized) {
       await this.init();
     }
     if (!this.cache[schemaUri]) {
-      this.cache[schemaUri] = { eTag, schemaPath: this.getCacheFilePath(schemaUri) };
+      this.cache[schemaUri] = {
+        eTag,
+        schemaPath: this.getCacheFilePath(schemaUri),
+      };
     } else {
       this.cache[schemaUri].eTag = eTag;
     }
@@ -90,7 +97,7 @@ export class JSONSchemaCache implements IJSONSchemaCache {
     }
     const cacheFile = this.cache[schemaUri]?.schemaPath;
     if (await fs.pathExists(cacheFile)) {
-      return await fs.readFile(cacheFile, { encoding: 'UTF8' });
+      return await fs.readFile(cacheFile, { encoding: "UTF8" });
     }
 
     return undefined;
