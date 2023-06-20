@@ -92,7 +92,7 @@ const (
 	healthPath              string = "/health"
 	testKeyPath             string = "/testkey"
 	readyPath               string = "/ready"
-	apiDefinitionQueryParam string = "swagger"
+	apiDefinitionQueryParam string = "OAS"
 )
 
 const (
