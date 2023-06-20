@@ -64,7 +64,7 @@ type AdapterInternalAPI struct {
 	EnvType                  string
 	backendJWTTokenInfo      *BackendJWTTokenInfo
 	apiDefinitionFile        []byte
-	APIProperty	             []dpv1alpha1.Property
+	APIProperties	         []dpv1alpha1.Property
 	// GraphQLSchema              string
 	// GraphQLComplexities        GraphQLComplexityYaml
 	IsSystemAPI     bool
