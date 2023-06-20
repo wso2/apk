@@ -42,7 +42,7 @@ var FetchAPIDefinition = suite.IntegrationTest{
 			{
 				Request: http.Request{
 					Host: "fetch-api-definition.test.gw.wso2.com",
-					Path: "/fetch-api-definition/v1.0.0?definitionType=swagger",
+					Path: "/fetch-api-definition/v1.0.0?definitionType=OAS",
 					Headers: map[string]string{
 						"content-type": "application/json",
 					},
