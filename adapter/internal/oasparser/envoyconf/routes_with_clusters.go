@@ -1476,7 +1476,7 @@ func genRouteCreateParams(swagger *model.AdapterInternalAPI, resource *model.Res
 		passRequestPayloadToEnforcer: swagger.GetXWso2RequestBodyPass(),
 		isDefaultVersion:             swagger.IsDefaultVersion,
 		apiLevelRateLimitPolicy:      swagger.RateLimitPolicy,
-		apiProperties:                  swagger.APIProperties,
+		apiProperties:                swagger.APIProperties,
 	}
 	return params
 }
