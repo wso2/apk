@@ -131,6 +131,11 @@ spec:
             {{- else }}
               subPath: tls.crt
             {{- end }}
+            {{if and .Values.wso2.apk.dp.partitionServer .Values.wso2.apk.dp.partitionServer.tls}}
+            - name:  partition-server-truststore-secret-volume
+              mountPath: /home/wso2/security/truststore/partition-server.crt
+              subPath: {{.Values.wso2.apk.dp.partitionServer.tls.fileName | default "tls.crt"}}
+            {{- end }}
           readinessProbe:
             exec:
               command: [ "sh", "check_health.sh" ]
@@ -205,5 +210,9 @@ spec:
           {{- else }}
             secretName: "apk-root-certificate"
           {{- end }}
-
+        {{if and .Values.wso2.apk.dp.partitionServer .Values.wso2.apk.dp.partitionServer.tls}}
+        - name:  partition-server-truststore-secret-volume
+          secret:
+            secretName: {{.Values.wso2.apk.dp.partitionServer.tls.secretName}}
+        {{- end }}
 {{- end -}}

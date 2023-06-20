@@ -174,12 +174,13 @@ data:
       certFilePath = "/home/wso2/security/keystore/router.crt"
       caCertFilePath = "/home/wso2/security/truststore/ratelimiter.crt"
     {{end}}
-    {{ if .Values.wso2.apk.dp.partitionService}}
+    {{ if .Values.wso2.apk.dp.partitionServer}}
     [partitionServer]
       enabled = {{.Values.wso2.apk.dp.partitionServer.enabled}}
       host = "{{ .Values.wso2.apk.dp.partitionServer.host}}"
       serviceBasePath = "{{ .Values.wso2.apk.dp.partitionServer.serviceBasePath}}"
       partitionName = "{{ .Values.wso2.apk.dp.partitionServer.partitionName}}"
+      disableSslVerification = {{eq .Values.wso2.apk.dp.partitionServer.hostnameVerificationEnable false }}
     {{end}}
     {{ if and .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.filters }}
     {{ range $index, $filter := .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.filters}}

@@ -230,11 +230,12 @@ var defaultConfig = &Config{
 		},
 	},
 	PartitionServer: partitionServer{
-		Enabled:         false,
-		Host:            "partition-server",
-		Port:            9443,
-		ServiceBasePath: "/partition-service",
-		PartitionName:   "default",
+		Enabled:                false,
+		Host:                   "partition-server",
+		Port:                   9443,
+		ServiceBasePath:        "/partition-service",
+		PartitionName:          "default",
+		DisableSslVerification: false,
 	},
 	Runtime: runtime{
 		Host:            "runtime-service",

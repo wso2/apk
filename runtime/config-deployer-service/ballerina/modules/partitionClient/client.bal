@@ -2,13 +2,14 @@ import ballerina/http;
 
 # API for Partition Service
 public isolated client class Client {
-    final http:Client clientEp;
+    private final http:Client clientEp;
+    private final map<string> & readonly headers;
     # Gets invoked to initialize the `connector`.
     #
     # + config - The configurations to be used when initializing the `connector` 
     # + serviceUrl - URL of the target service 
     # + return - An error if connector initialization failed 
-    public isolated function init(string serviceUrl, ConnectionConfig config =  {}) returns error? {
+    public isolated function init(string serviceUrl, ConnectionConfig config = {}) returns error? {
         http:ClientConfiguration httpClientConfig = {httpVersion: config.httpVersion, timeout: config.timeout, forwarded: config.forwarded, poolConfig: config.poolConfig, compression: config.compression, circuitBreaker: config.circuitBreaker, retryConfig: config.retryConfig, validation: config.validation};
         do {
             if config.http1Settings is ClientHttp1Settings {
@@ -30,6 +31,7 @@ public isolated client class Client {
             if config.proxy is http:ProxyConfig {
                 httpClientConfig.proxy = check config.proxy.ensureType(http:ProxyConfig);
             }
+            self.headers = config.headers.cloneReadOnly();
         }
         http:Client httpEp = check new (serviceUrl, httpClientConfig);
         self.clientEp = httpEp;
@@ -44,6 +46,9 @@ public isolated client class Client {
         http:Request request = new;
         json jsonBody = payload.toJson();
         request.setPayload(jsonBody, "application/json");
+        foreach string headerName in self.headers.keys() {
+            request.setHeader(headerName, self.headers.get(headerName));
+        }
         http:Response response = check self.clientEp->post(resourcePath, request);
         return response;
     }
@@ -53,7 +58,7 @@ public isolated client class Client {
     # + return - OK. Event 
     resource isolated function get 'api\-deployment/[string apiId]() returns Partition|error {
         string resourcePath = string `/api-deployment/${getEncodedUri(apiId)}`;
-        Partition response = check self.clientEp->get(resourcePath);
+        Partition response = check self.clientEp->get(resourcePath, headers = self.headers);
         return response;
     }
     # Get Active Partition
@@ -64,7 +69,7 @@ public isolated client class Client {
         string resourcePath = string `/deployable-partition`;
         map<anydata> queryParam = {"apiId": apiId};
         resourcePath = resourcePath + check getPathForQueryParam(queryParam);
-        Partition response = check self.clientEp->get(resourcePath);
+        Partition response = check self.clientEp->get(resourcePath, headers = self.headers);
         return response;
     }
 }

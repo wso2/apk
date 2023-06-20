@@ -16,7 +16,7 @@
 apiVersion: dp.wso2.com/v1alpha1
 kind: API
 metadata:
-  name: http-bin-api
+  name: http-bin-api1
 spec:
   apiDisplayName: http-bin-api
   apiType: REST

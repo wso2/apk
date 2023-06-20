@@ -34,6 +34,7 @@ import (
 	k8error "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -240,14 +241,12 @@ func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 // applyStartupAPIs applies the APIs which are already available in the cluster at the startup of the operator.
 func (apiReconciler *APIReconciler) applyStartupAPIs() {
 	ctx := context.Background()
-	apiList := &dpv1alpha1.APIList{}
-	conf := config.ReadConfigs()
-	listOptions := utils.RetrieveNamespaceListOptions(conf.Adapter.Operator.Namespaces)
-	if err := apiReconciler.client.List(ctx, apiList, &listOptions); err != nil {
+	apisList, err := retrieveAPIList(apiReconciler.client)
+	if err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2601, err))
 		return
 	}
-	for _, api := range apiList.Items {
+	for _, api := range apisList {
 		if apiState, err := apiReconciler.resolveAPIRefs(ctx, api, utils.NamespacedName(&api), api.Namespace); err != nil {
 			loggers.LoggerAPKOperator.Warnf("Error retrieving ref CRs for API : %s in namespace : %s, %v", api.Name, api.Namespace, err)
 		} else if apiState != nil {
@@ -256,6 +255,30 @@ func (apiReconciler *APIReconciler) applyStartupAPIs() {
 	}
 	xds.SetReady()
 	loggers.LoggerAPKOperator.Info("Initial APIs were deployed successfully")
+}
+
+func retrieveAPIList(k8sclient k8client.Client) ([]dpv1alpha1.API, error) {
+	ctx := context.Background()
+	conf := config.ReadConfigs()
+	namespaces := conf.Adapter.Operator.Namespaces
+	var apis []dpv1alpha1.API
+	if namespaces == nil {
+		apiList := &dpv1alpha1.APIList{}
+		if err := k8sclient.List(ctx, apiList, &client.ListOptions{}); err != nil {
+			return nil, err
+		}
+		apis = make([]dpv1alpha1.API, len(apiList.Items))
+		copy(apis[:], apiList.Items[:])
+	} else {
+		for _, namespace := range namespaces {
+			apiList := &dpv1alpha1.APIList{}
+			if err := k8sclient.List(ctx, apiList, &client.ListOptions{Namespace: namespace}); err != nil {
+				return nil, err
+			}
+			apis = append(apis, apiList.Items...)
+		}
+	}
+	return apis, nil
 }
 
 // resolveAPIRefs validates following references related to the API

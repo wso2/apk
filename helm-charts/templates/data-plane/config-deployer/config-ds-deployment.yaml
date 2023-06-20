@@ -73,6 +73,11 @@ spec:
             {{- else }}
               subPath: tls.crt
             {{- end }}
+            {{if and .Values.wso2.apk.dp.partitionServer .Values.wso2.apk.dp.partitionServer.tls}}
+            - name:  partition-server-truststore-secret-volume
+              mountPath: /home/wso2apk/config-deployer/security/partition-server.pem
+              subPath: {{.Values.wso2.apk.dp.partitionServer.tls.fileName | default "tls.crt"}}
+            {{- end }}
       {{- if and .Values.wso2.subscription .Values.wso2.subscription.imagePullSecrets}}
       imagePullSecrets:
         - name: {{ .Values.wso2.subscription.imagePullSecrets }}
@@ -89,4 +94,9 @@ spec:
        {{ else }}
             secretName: {{ template "apk-helm.resource.prefix" . }}-config-ds-server-cert
        {{ end }}
+        {{if and .Values.wso2.apk.dp.partitionServer .Values.wso2.apk.dp.partitionServer.tls}}
+        - name:  partition-server-truststore-secret-volume
+          secret:
+            secretName: {{.Values.wso2.apk.dp.partitionServer.tls.secretName}}
+        {{ end }}
 {{- end -}}

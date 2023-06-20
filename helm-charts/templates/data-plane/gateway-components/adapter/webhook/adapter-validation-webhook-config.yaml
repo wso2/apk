@@ -43,13 +43,6 @@ webhooks:
     resources:
     - apis
   sideEffects: None
-  {{ if and .Values.wso2.apk.dp.adapter.configs .Values.wso2.apk.dp.adapter.configs.apiNamespaces }}
-  namespaceSelector:
-    matchExpressions:
-    - key: metadata.namespace
-      operator: In
-      values: [{{ include "commaJoinedQuotedList" .Values.wso2.apk.dp.adapter.configs.apiNamespaces}}]
-  {{ end}}    
 - admissionReviewVersions:
     - v1
   clientConfig:
@@ -91,12 +84,5 @@ webhooks:
       resources:
         - ratelimitpolicies
   sideEffects: None
-  {{ if and .Values.wso2.apk.dp.adapter.configs .Values.wso2.apk.dp.adapter.configs.apiNamespaces }}
-  namespaceSelector:
-    matchExpressions:
-    - key: metadata.namespace
-      operator: In
-      values: [{{ include "commaJoinedQuotedList" .Values.wso2.apk.dp.adapter.configs.apiNamespaces }}]
-  {{ end }}
 {{ end }}
 {{- end -}}

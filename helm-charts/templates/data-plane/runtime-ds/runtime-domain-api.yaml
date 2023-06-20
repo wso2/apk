@@ -28,7 +28,6 @@ spec:
   apiVersion: "1.0.0"
   context: "/api/runtime/1.0.0"
   organization: "carbon.super"
-  definitionFileRef: "swagger-definition-runtime-ds"
   production:
     - httpRouteRefs:
       - {{ template "apk-helm.resource.prefix" . }}-runtime-ds-httproute

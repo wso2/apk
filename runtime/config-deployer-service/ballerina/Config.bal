@@ -42,6 +42,6 @@ public type PartitionServiceConfiguration record {|
 |};
 
 public type Header record {|
-    string headerName;
-    string headerValue;
+    string name;
+    string value;
 |};

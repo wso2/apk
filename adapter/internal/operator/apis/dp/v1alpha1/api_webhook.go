@@ -26,8 +26,8 @@ import (
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/pkg/logging"
+	"golang.org/x/exp/slices"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
@@ -83,7 +83,14 @@ func (r *API) ValidateDelete() error {
 // validateAPI validate api crd fields
 func (r *API) validateAPI() error {
 	var allErrs field.ErrorList
-
+	conf := config.ReadConfigs()
+	namespaces := conf.Adapter.Operator.Namespaces
+	if len(namespaces) > 0 {
+		if !slices.Contains(namespaces, r.Namespace) {
+			loggers.LoggerAPK.Debugf("API validation Skipped for namespace: %v", r.Namespace)
+			return nil
+		}
+	}
 	if r.Spec.APIDisplayName == "" {
 		allErrs = append(allErrs, field.Required(field.NewPath("spec").Child("apiDisplayName"), "API display name is required"))
 	} else if errMsg := validateAPIDisplayNameFormat(r.Spec.APIDisplayName); errMsg != "" {
@@ -151,16 +158,14 @@ func isEmptyStringsInArray(strings []string) bool {
 }
 
 func (r *API) validateAPIContextExists() *field.Error {
-	ctx := context.Background()
-	conf := config.ReadConfigs()
-	apiList := &APIList{}
-	listOptions := retrieveNamespaceListOptions(conf.Adapter.Operator.Namespaces)
-	if err := c.List(ctx, apiList, &listOptions); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2605, err.Error()))
+
+	apiList, err := retrieveAPIList()
+	if err != nil {
 		return field.InternalError(field.NewPath("spec").Child("context"),
 			errors.New("unable to list APIs for API context validation"))
+
 	}
-	for _, api := range apiList.Items {
+	for _, api := range apiList {
 		if (types.NamespacedName{Namespace: r.Namespace, Name: r.Name} !=
 			types.NamespacedName{Namespace: api.Namespace, Name: api.Name}) && api.Spec.Context == r.Spec.Context {
 			return &field.Error{
@@ -173,16 +178,32 @@ func (r *API) validateAPIContextExists() *field.Error {
 	return nil
 }
 
-// retrieveNamespaceListOptions retrieve namespace list options for the given namespaces
-func retrieveNamespaceListOptions(namespaces []string) client.ListOptions {
-	var listOptions client.ListOptions
+func retrieveAPIList() ([]API, error) {
+	ctx := context.Background()
+	conf := config.ReadConfigs()
+	namespaces := conf.Adapter.Operator.Namespaces
+	var apis []API
 	if namespaces == nil {
-		listOptions = client.ListOptions{}
+		apiList := &APIList{}
+		if err := c.List(ctx, apiList, &client.ListOptions{}); err != nil {
+			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2605, err.Error()))
+			return nil, err
+		}
+		apis = make([]API, len(apiList.Items))
+		copy(apis[:], apiList.Items[:])
 	} else {
-		listOptions = client.ListOptions{FieldSelector: fields.SelectorFromSet(fields.Set{"metadata.namespace": strings.Join(namespaces, ",")})}
+		for _, namespace := range namespaces {
+			apiList := &APIList{}
+			if err := c.List(ctx, apiList, &client.ListOptions{Namespace: namespace}); err != nil {
+				loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2605, err.Error()))
+				return nil, err
+			}
+			apis = append(apis, apiList.Items...)
+		}
 	}
-	return listOptions
+	return apis, nil
 }
+
 func validateAPIContextFormat(context string, apiVersion string) string {
 	if len(context) > 232 {
 		return "API context character length should not exceed 232."

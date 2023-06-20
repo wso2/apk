@@ -19,10 +19,12 @@ package synchronizer
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"context"
 
@@ -38,6 +40,7 @@ import (
 	"github.com/wso2/apk/adapter/internal/operator/utils"
 	apiProtos "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/apkmgt"
 	"github.com/wso2/apk/adapter/pkg/logging"
+	"github.com/wso2/apk/adapter/pkg/utils/tlsutils"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
@@ -283,6 +286,22 @@ func SendAPIToAPKMgtServer() {
 	}
 }
 
+// Runtime client connetion
+var partitionClient *http.Client
+
+func init() {
+	conf := config.ReadConfigs()
+
+	_, _, truststoreLocation := tlsutils.GetKeyLocations()
+	caCertPool := tlsutils.GetTrustedCertPool(truststoreLocation)
+	transport := &http.Transport{
+		MaxIdleConns:    2,
+		IdleConnTimeout: 30 * time.Second,
+		TLSClientConfig: &tls.Config{RootCAs: caCertPool, InsecureSkipVerify: conf.PartitionServer.DisableSslVerification},
+	}
+	partitionClient = &http.Client{Transport: transport}
+}
+
 // SendEventToPartitionServer sends the API create/update/delete event to the partition server.
 func SendEventToPartitionServer() {
 	conf := config.ReadConfigs()
@@ -295,7 +314,7 @@ func SendEventToPartitionServer() {
 			organization := api.APIDefinition.Spec.Organization
 			version := api.APIDefinition.Spec.APIVersion
 			apiName := api.APIDefinition.Spec.APIDisplayName
-			apiUUID := string(api.APIDefinition.GetUID())
+			apiUUID := string(api.APIDefinition.Name)
 			var hostNames []string
 			httpRoute := api.ProdHTTPRoute
 			if httpRoute == nil {
@@ -305,30 +324,29 @@ func SendEventToPartitionServer() {
 				hostNames = append(hostNames, string(hostName))
 			}
 			data := PartitionEvent{
-				EventType:      eventType,
-				APIContext:     context,
-				OrganizationID: organization,
-				APIVersion:     version,
-				APIName:        apiName,
-				APIUUID:        apiUUID,
-				Vhosts:         hostNames,
-				PartitionID:    conf.PartitionServer.PartitionName,
+				EventType:    eventType,
+				APIContext:   context,
+				Organization: organization,
+				APIVersion:   version,
+				APIName:      apiName,
+				APIUUID:      apiUUID,
+				Vhosts:       hostNames,
+				Partition:    conf.PartitionServer.PartitionName,
 			}
 			payload, err := json.Marshal(data)
 			if err != nil {
 				loggers.LoggerAPKOperator.Errorf("Error creating Event: %v", err)
 			}
-			req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s%s", conf.PartitionServer.Host, conf.PartitionServer.ServiceBasePath), bytes.NewBuffer(payload))
+			req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s%s%s", conf.PartitionServer.Host, conf.PartitionServer.ServiceBasePath, "/api-deployment"), bytes.NewBuffer(payload))
 			if err != nil {
 				loggers.LoggerAPKOperator.Errorf("Error creating api definition request: %v", err)
 			}
 			req.Header.Set("Content-Type", "application/json; charset=UTF-8")
-			client := &http.Client{}
-			resp, err := client.Do(req)
+			resp, err := partitionClient.Do(req)
 			if err != nil {
 				loggers.LoggerAPKOperator.Errorf("Error sending API Event: %v", err)
 			}
-			if resp.StatusCode != http.StatusAccepted {
+			if resp.StatusCode == http.StatusAccepted {
 				loggers.LoggerAPKOperator.Info("API Event Accepted", resp.Status)
 			}
 		}
@@ -337,14 +355,14 @@ func SendEventToPartitionServer() {
 
 // PartitionEvent is the event sent to the partition server.
 type PartitionEvent struct {
-	EventType      string   `json:"eventType"`
-	APIName        string   `json:"apiName"`
-	APIVersion     string   `json:"apiVersion"`
-	APIContext     string   `json:"apiContext"`
-	OrganizationID string   `json:"organizationId"`
-	PartitionID    string   `json:"partitionId"`
-	APIUUID        string   `json:"apiId"`
-	Vhosts         []string `json:"vhosts"`
+	EventType    string   `json:"eventType"`
+	APIName      string   `json:"apiName"`
+	APIVersion   string   `json:"apiVersion"`
+	APIContext   string   `json:"apiContext"`
+	Organization string   `json:"organization"`
+	Partition    string   `json:"partition"`
+	APIUUID      string   `json:"apiId"`
+	Vhosts       []string `json:"vhosts"`
 }
 
 // getResourcesForAPI returns []*apiProtos.Resource for HTTPRoute
