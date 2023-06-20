@@ -153,7 +153,7 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 					Action:     constants.ActionRewritePath,
 					Parameters: policyParameters,
 				})
-				hasURLRewritePolicy = false;
+				hasURLRewritePolicy = true;
 			case gwapiv1b1.HTTPRouteFilterExtensionRef:
 				if filter.ExtensionRef.Kind == constants.KindAuthentication {
 					if ref, found := httpRouteParams.ResourceAuthSchemes[types.NamespacedName{
@@ -275,6 +275,11 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 		for _, match := range rule.Matches {	
 			if (!hasURLRewritePolicy) {		
 				policyParameters := make(map[string]interface{})
+				if (*match.Path.Type == gwapiv1b1.PathMatchPathPrefix) {
+					policyParameters[constants.RewritePathType] = gwapiv1b1.PrefixMatchHTTPPathModifier
+				} else {
+					policyParameters[constants.RewritePathType] = gwapiv1b1.FullPathHTTPPathModifier
+				}
 				policyParameters[constants.RewritePathType] = gwapiv1b1.PrefixMatchHTTPPathModifier
 				policyParameters[constants.IncludeQueryParams] = true
 				
