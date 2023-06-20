@@ -822,9 +822,24 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 
 	if resource != nil && resource.HasPolicies() {
 		logger.LoggerOasparser.Debug("Start creating routes for resource with policies")
+		operations := resource.GetOperations()
+
+		// Add OPTIONS operation if CORS policy is enabled.
+		if corsPolicy != nil {
+			hasOptions := false
+			for _, operation := range operations {
+				if operation.GetMethod() == "OPTIONS" {
+					hasOptions = true
+					break
+				}
+			}
+			if !hasOptions {
+				operations = append(operations, model.NewOperation("OPTIONS", nil, nil))
+			}
+		}
 
 		// Policies are per operation (HTTP method). Therefore, create route per HTTP method.
-		for _, operation := range resource.GetOperations() {
+		for _, operation := range operations {
 			var requestHeadersToAdd []*corev3.HeaderValueOption
 			var requestHeadersToRemove []string
 			var responseHeadersToAdd []*corev3.HeaderValueOption
