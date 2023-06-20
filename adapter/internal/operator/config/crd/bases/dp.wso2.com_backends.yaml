@@ -45,6 +45,7 @@ spec:
                 - wss
                 type: string
               retry:
+                description: RetryConfig defines retry configurations
                 properties:
                   baseIntervalInMillis:
                     format: int32

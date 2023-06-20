@@ -21,6 +21,11 @@ kind: Backend
 metadata:
   name: insecure-backend
 spec:
+  retry:
+    maxRetryCount: 3
+    baseIntervalInMillis: 2000
+    statusCodes:
+      - 504
   services:
   - host: backend
     port: 80
