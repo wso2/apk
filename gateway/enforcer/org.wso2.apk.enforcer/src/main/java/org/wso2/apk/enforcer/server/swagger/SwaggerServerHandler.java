@@ -64,13 +64,7 @@ public class SwaggerServerHandler extends SimpleChannelInboundHandler<HttpObject
         if (queryParam != null && queryParam != "" && queryParam.contains(APIDefinitionConstants.SWAGGER_DEFINITION)) {
             isSwagger = true;
         }
-        // isSwagger = APIDefinitionConstants.SWAGGER_DEFINITION.equalsIgnoreCase(queryParam.split("=")[1]);
-//        boolean isSwagger = Arrays.stream(params).anyMatch(param -> {
-//            if(APIDefinitionConstants.SWAGGER_DEFINITION.equalsIgnoreCase(param)) {
-//                return true;
-//            }
-//            return false;
-//        });
+
         if(isSwagger){
             // load the corresponding swagger definition from the API name
             byte[] apiDefinition = apiFactory.getAPIDefinition(basePath, params[2], vHost);
