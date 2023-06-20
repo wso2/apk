@@ -88,7 +88,8 @@ type CircuitBreaker struct {
 	// +kubebuilder:default=1024
 	MaxRequests uint32 `json:"maxRequests"`
 	// +kubebuilder:default=3
-	MaxRetries         uint32 `json:"maxRetries"`
+	MaxRetries uint32 `json:"maxRetries"`
+	// +optional
 	MaxConnectionPools uint32 `json:"maxConnectionPools,omitempty"`
 }
 
