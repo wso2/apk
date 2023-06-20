@@ -41,7 +41,7 @@ type routeCreateParams struct {
 	passRequestPayloadToEnforcer bool
 	isDefaultVersion             bool
 	apiLevelRateLimitPolicy      *model.RateLimitPolicy
-	apiProperty	                 []dpv1alpha1.Property
+	apiProperties	             []dpv1alpha1.Property
 }
 
 // RatelimitCriteria criterias of rate limiting
