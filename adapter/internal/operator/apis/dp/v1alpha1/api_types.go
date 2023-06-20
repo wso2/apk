@@ -90,7 +90,7 @@ type APISpec struct {
 	// +optional
 	SystemAPI bool `json:"systemAPI"`
 
-	APIProperty []Property `json:"apiProperties,omitempty"`
+	APIProperties []Property `json:"apiProperties,omitempty"`
 }
 
 // Property holds key value pair of APIProperties
