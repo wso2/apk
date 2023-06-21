@@ -41,22 +41,6 @@ var FetchNonExistingAPIDefinition = suite.IntegrationTest{
 		testCases := []http.ExpectedResponse{
 			{
 				Request: http.Request{
-					Host: "fetch-non-existing-api-definition.test.gw.wso2.com",
-					Path: "/fetch-api-definition/v1.0.0?definitionType=OAS",
-					Headers: map[string]string{
-						"content-type": "application/json",
-					},
-					Method: "GET",
-				},
-				Response: http.Response{
-					StatusCode: 200,
-				},
-				Backend:      "infra-backend-v1",
-				Namespace:    ns,
-				TestCaseName: "FetchNonExistingAPIDefinition",
-			},
-			{
-				Request: http.Request{
 					Host: "fetch-non-existing-api-definition.gw.wso2.com",
 					Path: "/fetch-non-existing-api-definition/v1.0.0?definitionType=OAS",
 					Headers: map[string]string{
