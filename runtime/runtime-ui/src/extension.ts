@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ExtensionContext, Uri } from "vscode";
+import { ExtensionContext, extensions, window, Uri, env } from "vscode";
 import {
   startClient,
   LanguageClientConstructor,
@@ -25,6 +25,26 @@ import { JSONSchemaCache } from "./json-schema-cache";
 export async function activate(
   context: ExtensionContext
 ): Promise<SchemaExtensionAPI> {
+  const yamlExtension = extensions.getExtension("redhat.vscode-yaml");
+  if (yamlExtension) {
+    // Show a recommendation message to disable the "YAML Language Support by Red Hat" extension
+    window
+      .showInformationMessage(
+        'For the best experience with the APK Configuration extension, we recommend disabling the "YAML Language Support by Red Hat" extension.',
+        "Disable Extension"
+      )
+      .then((selection) => {
+        if (selection === "Disable Extension") {
+          // Open the "YAML Language Support by Red Hat" extension configuration page
+          if (selection === "Disable Extension") {
+            // Open the "YAML Language Support by Red Hat" extension home page
+            env.openExternal(Uri.parse("vscode:extension/redhat.vscode-yaml"));
+          }
+        }
+      });
+    return;
+  }
+
   // Create Telemetry Service
   const telemetry = await (
     await getRedHatService(context)
