@@ -521,4 +521,5 @@ func (swagger *AdapterInternalAPI) SetInfoAPICR(api dpv1alpha1.API) {
 	swagger.xWso2Basepath = api.Spec.Context
 	swagger.OrganizationID = api.Spec.Organization
 	swagger.IsSystemAPI = api.Spec.SystemAPI
+	swagger.APIProperties = api.Spec.APIProperties
 }

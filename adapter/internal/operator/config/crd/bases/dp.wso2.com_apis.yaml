@@ -56,6 +56,16 @@ spec:
                   defined. "Namespace/APIDisplayName" can be used to uniquely identify
                   an API.
                 type: string
+              apiProperties:
+                items:
+                  description: Property holds key value pair of APIProperties
+                  properties:
+                    name:
+                      type: string
+                    value:
+                      type: string
+                  type: object
+                type: array
               apiProvider:
                 description: APIProvider denotes the provider of the API.
                 type: string

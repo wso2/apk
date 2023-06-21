@@ -24,6 +24,11 @@ spec:
   apiType: REST
   apiVersion: 1.0.0
   context: /interceptor/1.0.0
+  apiProperties:
+    - name: propertyName1
+      value: "propertyValue1"
+    - name: propertyName2
+      value: "propertyValue2"
   production:
     - httpRouteRefs:
       - interceptor-route

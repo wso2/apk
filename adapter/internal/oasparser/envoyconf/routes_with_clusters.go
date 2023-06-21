@@ -26,6 +26,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"encoding/json"
 
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/durationpb"
@@ -58,6 +59,7 @@ import (
 	"github.com/golang/protobuf/ptypes/any"
 	"github.com/golang/protobuf/ptypes/wrappers"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
+	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
 )
 
 // WireLogValues holds debug logging related template values
@@ -765,6 +767,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 			PathTemplate:     contextExtensions[pathContextExtension],
 			Vhost:            contextExtensions[vHostContextExtension],
 			ClusterName:      contextExtensions[clusterNameContextExtension],
+			APIProperties:	  getAPIProperties(params.apiProperties),
 		}
 		luaPerFilterConfig = lua.LuaPerRoute{
 			Override: &lua.LuaPerRoute_SourceCode{
@@ -1414,6 +1417,15 @@ func getUpgradeConfig(apiType string) []*routev3.RouteAction_UpgradeConfig {
 	return upgradeConfig
 }
 
+func getAPIProperties(apiPropertiesConfig []dpv1alpha1.Property) string {
+	var apiProperties = make(map[string]string)
+	for _, val := range apiPropertiesConfig {
+		apiProperties[val.Name] = val.Value
+	}
+	apiPropertiesJSON, _ := json.Marshal(apiProperties)
+	return strings.Replace(string(apiPropertiesJSON), `"`, `'`, -1)
+}
+
 func getCorsPolicy(corsConfig *model.CorsConfig) *cors_filter_v3.CorsPolicy {
 
 	if corsConfig == nil || !corsConfig.Enabled {
@@ -1479,6 +1491,7 @@ func genRouteCreateParams(swagger *model.AdapterInternalAPI, resource *model.Res
 		passRequestPayloadToEnforcer: swagger.GetXWso2RequestBodyPass(),
 		isDefaultVersion:             swagger.IsDefaultVersion,
 		apiLevelRateLimitPolicy:      swagger.RateLimitPolicy,
+		apiProperties:                swagger.APIProperties,
 	}
 	return params
 }

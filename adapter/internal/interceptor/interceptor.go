@@ -70,6 +70,7 @@ type InvocationContext struct {
 	PathTemplate     string
 	Vhost            string
 	ClusterName      string
+	APIProperties    string
 }
 
 var (
@@ -93,6 +94,7 @@ var (
 	 pathTemplate = "{{.Context.PathTemplate}}",
 	 vhost = "{{.Context.Vhost}}",
 	 clusterName = "{{.Context.ClusterName}}",
+	 apiProperties = "{{.Context.APIProperties}}",
  }
  local wire_log_config = {
 	 log_body_enabled = {{ .LogConfig.LogBodyEnabled }},
