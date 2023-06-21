@@ -194,7 +194,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/runtime-domain-service:0.0.1-m11
+          image: wso2/runtime-domain-service:latest
           # configs:
           #   authrorization: true
           #   baseUrl: "https://api.am.wso2.com:9095/api/runtime"
@@ -248,7 +248,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/adapter:0.0.1-m11
+          image: wso2/adapter:latest
           security:
             sslHostname: "adapter"
 #        logging:
@@ -343,7 +343,7 @@ wso2:
               failureThreshold: 5
             strategy: Recreate
             imagePullPolicy: Always
-            image: wso2/enforcer:0.0.1-m11
+            image: wso2/enforcer:latest
             security:
               sslHostname: "enforcer"
 #            logging:
