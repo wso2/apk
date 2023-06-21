@@ -66,6 +66,7 @@ sudo echo "$IP interceptor-api.test.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "$IP interceptor-resource.test.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "$IP cors-policy.test.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "$IP fetch-api-definition.test.gw.wso2.com" | sudo tee -a /etc/hosts
+sudo echo "$IP fetch-non-existing-api-definition.test.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "255.255.255.255 broadcasthost" | sudo tee -a /etc/hosts
 sudo echo "::1 localhost" | sudo tee -a /etc/hosts
 

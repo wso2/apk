@@ -224,6 +224,13 @@ func CompareRequest(req *roundtripper.Request, cReq *roundtripper.CapturedReques
 			return nil
 		}
 
+		if expected.TestCaseName == "FetchNonExistingAPIDefinition" {
+			if !cRes.IsError && !strings.Contains(cRes.ErrorMsg, "API Definition not found") {
+				return fmt.Errorf("expected error response")
+			}
+			return nil
+		}
+
 		if expected.ExpectedRequest.Method == "" {
 			expected.ExpectedRequest.Method = "GET"
 		}
