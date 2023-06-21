@@ -881,11 +881,6 @@ func (apiReconciler *APIReconciler) getAPIsForBackend(obj k8client.Object) []rec
 		return []reconcile.Request{}
 	}
 
-	if backend.Name == "insecure-backend" {
-		fmt.Println("Backend Name: ", backend.Name)
-		fmt.Println("Backend Timeout when creating: ", backend.Spec.Timeout)
-	}
-
 	httpRouteList := &gwapiv1b1.HTTPRouteList{}
 	if err := apiReconciler.client.List(ctx, httpRouteList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(backendHTTPRouteIndex, utils.NamespacedName(backend).String()),

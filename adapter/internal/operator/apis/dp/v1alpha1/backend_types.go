@@ -63,7 +63,7 @@ type BackendSpec struct {
 	Security []SecurityConfig `json:"security,omitempty"`
 
 	// +optional
-	// Timeout in seconds
+	// Timeout in seconds '20s'
 	Timeout uint32 `json:"timeout,omitempty"`
 }
 
