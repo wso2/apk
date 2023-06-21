@@ -61,6 +61,8 @@ type CapturedRequest struct {
 	Protocol      string              `json:"proto"`
 	Headers       map[string][]string `json:"headers"`
 	APIDefinition string              `json:"apiDefinition,omitempty"`
+	IsError       bool                `json:"error,omitempty"`
+	ErrorMsg      string              `json:"message,omitempty"`
 
 	Namespace string `json:"namespace"`
 	Pod       string `json:"pod"`
@@ -83,6 +85,8 @@ type CapturedResponse struct {
 	Headers         map[string][]string
 	APIDefinition   string
 	RedirectRequest *RedirectRequest
+	IsError         bool
+	ErrorMsg        string
 }
 
 // DefaultRoundTripper is the default implementation of a RoundTripper. It will
@@ -181,6 +185,8 @@ func (d *DefaultRoundTripper) CaptureRoundTrip(request Request) (*CapturedReques
 		Protocol:      resp.Proto,
 		Headers:       resp.Header,
 		APIDefinition: cReq.APIDefinition,
+		IsError:       cReq.IsError,
+		ErrorMsg:      cReq.ErrorMsg,
 	}
 
 	if IsRedirect(resp.StatusCode) {

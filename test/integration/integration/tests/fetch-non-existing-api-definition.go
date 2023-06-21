@@ -25,23 +25,23 @@ import (
 )
 
 func init() {
-	IntegrationTests = append(IntegrationTests, FetchAPIDefinition)
+	IntegrationTests = append(IntegrationTests, FetchNonExistingAPIDefinition)
 }
 
-// FetchAPIDefinition test
-var FetchAPIDefinition = suite.IntegrationTest{
-	ShortName:   "FetchAPIDefinition",
-	Description: "Tests an API definition fetch using path prefix match and unspecified HTTP method",
-	Manifests:   []string{"tests/fetch-api-definition.yaml"},
+// FetchNonExistingAPIDefinition test
+var FetchNonExistingAPIDefinition = suite.IntegrationTest{
+	ShortName:   "FetchNonExistingAPIDefinition",
+	Description: "Tests an invocation on non existing api definition from the api definition route",
+	Manifests:   []string{"tests/fetch-non-existing-api-definition.yaml"},
 	Test: func(t *testing.T, suite *suite.IntegrationTestSuite) {
 		ns := "gateway-integration-test-infra"
-		gwAddr := "fetch-api-definition.test.gw.wso2.com:9095"
+		gwAddr := "fetch-non-existing-api-definition.test.gw.wso2.com:9095"
 		token := http.GetTestToken(t)
 
 		testCases := []http.ExpectedResponse{
 			{
 				Request: http.Request{
-					Host: "fetch-api-definition.test.gw.wso2.com",
+					Host: "fetch-non-existing-api-definition.test.gw.wso2.com",
 					Path: "/fetch-api-definition/v1.0.0?definitionType=OAS",
 					Headers: map[string]string{
 						"content-type": "application/json",
@@ -53,12 +53,12 @@ var FetchAPIDefinition = suite.IntegrationTest{
 				},
 				Backend:      "infra-backend-v1",
 				Namespace:    ns,
-				TestCaseName: "FetchAPIDefinition",
+				TestCaseName: "FetchNonExistingAPIDefinition",
 			},
 			{
 				Request: http.Request{
-					Host: "fetch-api-definition.test.gw.wso2.com",
-					Path: "/fetch-api-definition/v1.0.0?definitionType=GQL",
+					Host: "fetch-non-existing-api-definition.gw.wso2.com",
+					Path: "/fetch-non-existing-api-definition/v1.0.0?definitionType=OAS",
 					Headers: map[string]string{
 						"content-type": "application/json",
 					},
