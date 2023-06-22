@@ -273,7 +273,7 @@ jobs:
     - uses: azure/aks-set-context@v3
       with:
          resource-group: '${{ secrets.AZURE_RESOURCE_GROUP }}'
-         cluster-name: '${{ secrets.AKS_CLUSTER_NAME }}-${{ github.event.number || github.run_id }}'
+         cluster-name: 'go-integ-${{ secrets.AKS_CLUSTER_NAME }}-${{ github.event.number || github.run_id }}'
     - name: Create Namespace apk-integration-test
       shell: sh
       run: |
