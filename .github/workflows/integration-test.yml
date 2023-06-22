@@ -322,6 +322,7 @@ jobs:
         --set idp.idpui.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/idp-ui:${{ github.sha }} \
         --set wso2.apk.cp.enabled=false \
         --set wso2.apk.dp.managementServer.enabled=false
+        --set wso2.apk.dp.runtime.deployment.replicas=0
         kubectl get pods -n apk-integration-test
         kubectl get svc -n apk-integration-test
     - name: Run test cases
