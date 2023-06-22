@@ -25,10 +25,11 @@ import (
 )
 
 func init() {
-	IntegrationTests = append(IntegrationTests, ALLHTTPMethodsForWildCard1)
+	IntegrationTests = append(IntegrationTests, DefaultAPIVersion)
 }
 
-var ALLHTTPMethodsForWildCard1 = suite.IntegrationTest{
+// DefaultAPIVersion tests default api version feature
+var DefaultAPIVersion = suite.IntegrationTest{
 	ShortName:   "DefaultAPIVersionTest",
 	Description: "Tests an API with default version",
 	Manifests:   []string{"tests/default-api-version.yaml"},
