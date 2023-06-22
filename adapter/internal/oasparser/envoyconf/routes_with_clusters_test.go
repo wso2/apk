@@ -77,17 +77,6 @@ func TestCreateRoutesWithClustersWithExactAndRegularExpressionRules(t *testing.T
 							Method: &methodTypeGet,
 						},
 					},
-					// Filters: []gwapiv1b1.HTTPRouteFilter{
-					// 	{
-					// 		Type: gwapiv1b1.HTTPRouteFilterType("URLRewrite"),
-					// 		URLRewrite: &gwapiv1b1.HTTPURLRewriteFilter{
-					// 			Path: &gwapiv1b1.HTTPPathModifier{
-					// 				Type:               gwapiv1b1.PrefixMatchHTTPPathModifier,
-					// 				ReplacePrefixMatch: operatorutils.StringPtr("/backend-base-path"),
-					// 			},
-					// 		},
-					// 	},
-					// },
 					BackendRefs: []gwapiv1b1.HTTPBackendRef{
 						createDefaultBackendRef("backend-1"),
 					},
@@ -102,17 +91,6 @@ func TestCreateRoutesWithClustersWithExactAndRegularExpressionRules(t *testing.T
 							Method: &methodTypePost,
 						},
 					},
-					// Filters: []gwapiv1b1.HTTPRouteFilter{
-					// 	{
-					// 		Type: gwapiv1b1.HTTPRouteFilterType("URLRewrite"),
-					// 		URLRewrite: &gwapiv1b1.HTTPURLRewriteFilter{
-					// 			Path: &gwapiv1b1.HTTPPathModifier{
-					// 				Type:               gwapiv1b1.PrefixMatchHTTPPathModifier,
-					// 				ReplacePrefixMatch: operatorutils.StringPtr("/backend-base-path/order/\\2/user/\\1"),
-					// 			},
-					// 		},
-					// 	},
-					// },
 					BackendRefs: []gwapiv1b1.HTTPBackendRef{
 						createDefaultBackendRef("backend-2"),
 					},
@@ -222,17 +200,6 @@ func TestCreateRoutesWithClustersWithMultiplePathPrefixRules(t *testing.T) {
 							},
 						},
 					},
-					// Filters: []gwapiv1b1.HTTPRouteFilter{
-					// 	{
-					// 		Type: gwapiv1b1.HTTPRouteFilterType("URLRewrite"),
-					// 		URLRewrite: &gwapiv1b1.HTTPURLRewriteFilter{
-					// 			Path: &gwapiv1b1.HTTPPathModifier{
-					// 				Type:               gwapiv1b1.PrefixMatchHTTPPathModifier,
-					// 				ReplacePrefixMatch: operatorutils.StringPtr("/backend-base-path/orders"),
-					// 			},
-					// 		},
-					// 	},
-					// },
 					BackendRefs: []gwapiv1b1.HTTPBackendRef{
 						createDefaultBackendRef("order-backend"),
 					},
@@ -246,17 +213,6 @@ func TestCreateRoutesWithClustersWithMultiplePathPrefixRules(t *testing.T) {
 							},
 						},
 					},
-					// Filters: []gwapiv1b1.HTTPRouteFilter{
-					// 	{
-					// 		Type: gwapiv1b1.HTTPRouteFilterType("URLRewrite"),
-					// 		URLRewrite: &gwapiv1b1.HTTPURLRewriteFilter{
-					// 			Path: &gwapiv1b1.HTTPPathModifier{
-					// 				Type:               gwapiv1b1.PrefixMatchHTTPPathModifier,
-					// 				ReplacePrefixMatch: operatorutils.StringPtr("/backend-base-path/users"),
-					// 			},
-					// 		},
-					// 	},
-					// },
 					BackendRefs: []gwapiv1b1.HTTPBackendRef{
 						createDefaultBackendRef("user-backend"),
 					},
@@ -395,17 +351,6 @@ func TestCreateRoutesWithClustersWithBackendTLSConfigs(t *testing.T) {
 							Method: &methodTypeGet,
 						},
 					},
-					// Filters: []gwapiv1b1.HTTPRouteFilter{
-					// 	{
-					// 		Type: gwapiv1b1.HTTPRouteFilterType("URLRewrite"),
-					// 		URLRewrite: &gwapiv1b1.HTTPURLRewriteFilter{
-					// 			Path: &gwapiv1b1.HTTPPathModifier{
-					// 				Type:               gwapiv1b1.PrefixMatchHTTPPathModifier,
-					// 				ReplacePrefixMatch: operatorutils.StringPtr("/backend-base-path"),
-					// 			},
-					// 		},
-					// 	},
-					// },
 					BackendRefs: []gwapiv1b1.HTTPBackendRef{
 						createDefaultBackendRef("test-backend-3"),
 					},
@@ -714,17 +659,6 @@ func TestCreateRoutesWithClustersDifferentBackendRefs(t *testing.T) {
 							Method: &methodTypeGet,
 						},
 					},
-					// Filters: []gwapiv1b1.HTTPRouteFilter{
-					// 	{
-					// 		Type: gwapiv1b1.HTTPRouteFilterType("URLRewrite"),
-					// 		URLRewrite: &gwapiv1b1.HTTPURLRewriteFilter{
-					// 			Path: &gwapiv1b1.HTTPPathModifier{
-					// 				Type:               gwapiv1b1.PrefixMatchHTTPPathModifier,
-					// 				ReplacePrefixMatch: operatorutils.StringPtr("/backend-base-path-1"),
-					// 			},
-					// 		},
-					// 	},
-					// },
 					BackendRefs: []gwapiv1b1.HTTPBackendRef{
 						createDefaultBackendRef("test-backend-1"),
 					},
@@ -739,17 +673,6 @@ func TestCreateRoutesWithClustersDifferentBackendRefs(t *testing.T) {
 							Method: &methodTypeGet,
 						},
 					},
-					// Filters: []gwapiv1b1.HTTPRouteFilter{
-					// 	{
-					// 		Type: gwapiv1b1.HTTPRouteFilterType("URLRewrite"),
-					// 		URLRewrite: &gwapiv1b1.HTTPURLRewriteFilter{
-					// 			Path: &gwapiv1b1.HTTPPathModifier{
-					// 				Type:               gwapiv1b1.PrefixMatchHTTPPathModifier,
-					// 				ReplacePrefixMatch: operatorutils.StringPtr("/backend-base-path-2"),
-					// 			},
-					// 		},
-					// 	},
-					// },
 					BackendRefs: []gwapiv1b1.HTTPBackendRef{
 						createDefaultBackendRef("test-backend-2"),
 					},
@@ -828,17 +751,6 @@ func TestCreateRoutesWithClustersSameBackendRefs(t *testing.T) {
 							Method: &methodTypeGet,
 						},
 					},
-					// Filters: []gwapiv1b1.HTTPRouteFilter{
-					// 	{
-					// 		Type: gwapiv1b1.HTTPRouteFilterType("URLRewrite"),
-					// 		URLRewrite: &gwapiv1b1.HTTPURLRewriteFilter{
-					// 			Path: &gwapiv1b1.HTTPPathModifier{
-					// 				Type:               gwapiv1b1.PrefixMatchHTTPPathModifier,
-					// 				ReplacePrefixMatch: operatorutils.StringPtr("/backend-base-path-1"),
-					// 			},
-					// 		},
-					// 	},
-					// },
 					BackendRefs: []gwapiv1b1.HTTPBackendRef{
 						createDefaultBackendRef("test-backend-1"),
 					},
@@ -853,17 +765,6 @@ func TestCreateRoutesWithClustersSameBackendRefs(t *testing.T) {
 							Method: &methodTypeGet,
 						},
 					},
-					// Filters: []gwapiv1b1.HTTPRouteFilter{
-					// 	{
-					// 		Type: gwapiv1b1.HTTPRouteFilterType("URLRewrite"),
-					// 		URLRewrite: &gwapiv1b1.HTTPURLRewriteFilter{
-					// 			Path: &gwapiv1b1.HTTPPathModifier{
-					// 				Type:               gwapiv1b1.PrefixMatchHTTPPathModifier,
-					// 				ReplacePrefixMatch: operatorutils.StringPtr("/backend-base-path-2"),
-					// 			},
-					// 		},
-					// 	},
-					// },
 					BackendRefs: []gwapiv1b1.HTTPBackendRef{
 						createDefaultBackendRef("test-backend-1"),
 					},
