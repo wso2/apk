@@ -313,18 +313,6 @@ dependencies = [
 
 [[package]]
 org = "ballerina"
-name = "test"
-version = "0.0.0"
-scope = "testOnly"
-dependencies = [
-	{org = "ballerina", name = "jballerina.java"}
-]
-modules = [
-	{org = "ballerina", packageName = "test", moduleName = "test"}
-]
-
-[[package]]
-org = "ballerina"
 name = "time"
 version = "2.2.5"
 dependencies = [
@@ -337,9 +325,6 @@ name = "url"
 version = "2.2.4"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
-]
-modules = [
-	{org = "ballerina", packageName = "url", moduleName = "url"}
 ]
 
 [[package]]
@@ -394,7 +379,7 @@ modules = [
 [[package]]
 org = "wso2"
 name = "config_deployer_service"
-version = "0.0.1-SNAPSHOT"
+version = "0.0.1-m12"
 dependencies = [
 	{org = "ballerina", name = "constraint"},
 	{org = "ballerina", name = "crypto"},
@@ -407,8 +392,6 @@ dependencies = [
 	{org = "ballerina", name = "log"},
 	{org = "ballerina", name = "mime"},
 	{org = "ballerina", name = "regex"},
-	{org = "ballerina", name = "test"},
-	{org = "ballerina", name = "url"},
 	{org = "ballerina", name = "uuid"},
 	{org = "wso2", name = "apk_common_lib"}
 ]
@@ -416,13 +399,13 @@ modules = [
 	{org = "wso2", packageName = "config_deployer_service", moduleName = "config_deployer_service"},
 	{org = "wso2", packageName = "config_deployer_service", moduleName = "config_deployer_service.java.io"},
 	{org = "wso2", packageName = "config_deployer_service", moduleName = "config_deployer_service.java.lang"},
+	{org = "wso2", packageName = "config_deployer_service", moduleName = "config_deployer_service.java.nio.charset"},
 	{org = "wso2", packageName = "config_deployer_service", moduleName = "config_deployer_service.java.util"},
 	{org = "wso2", packageName = "config_deployer_service", moduleName = "config_deployer_service.java.util.function"},
 	{org = "wso2", packageName = "config_deployer_service", moduleName = "config_deployer_service.java.util.stream"},
 	{org = "wso2", packageName = "config_deployer_service", moduleName = "config_deployer_service.model"},
 	{org = "wso2", packageName = "config_deployer_service", moduleName = "config_deployer_service.org.wso2.apk.config"},
 	{org = "wso2", packageName = "config_deployer_service", moduleName = "config_deployer_service.org.wso2.apk.config.api"},
-	{org = "wso2", packageName = "config_deployer_service", moduleName = "config_deployer_service.org.wso2.apk.config.model"},
-	{org = "wso2", packageName = "config_deployer_service", moduleName = "config_deployer_service.partitionClient"}
+	{org = "wso2", packageName = "config_deployer_service", moduleName = "config_deployer_service.org.wso2.apk.config.model"}
 ]
 
