@@ -21,11 +21,6 @@ kind: Backend
 metadata:
   name: insecure-backend
 spec:
-  retry:
-    maxRetryCount: 3
-    baseIntervalInMillis: 2000
-    statusCodes:
-      - 504
   services:
   - host: backend
     port: 3000
@@ -46,6 +41,12 @@ spec:
     maxRouteTimeoutSeconds: 60
     routeIdleTimeoutSeconds: 10
     routeTimeoutSeconds: 40
+  retry:
+    maxRetryCount: 4
+    baseIntervalInMillis: 2000
+    statusCodes:
+      - 504
+      - 500
   services:
   - host: test-backend-svc
     port: 3000
