@@ -53,7 +53,7 @@ metadata:
   name: test-backend-svc
 spec:
   type: ExternalName
-  externalName: benura-4.local
+  externalName: <hostname|IP>
   ports:
     - name: http
       port: 3000
