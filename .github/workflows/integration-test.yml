@@ -282,7 +282,7 @@ jobs:
     - name: Create Image pull secret.
       shell: sh
       run: |
-        kubectl create secret docker-registry azure-registry --docker-server=${{ secrets.AZURE_ACR_NAME }}.azurecr.io --docker-username=${{ secrets.AZURE_ACR_USER }} --docker-password=${{ secrets.AZURE_ACR_PASSWORD }} --docker-email=${{ secrets.WSO2_BOT_EMAIL }} -n apk-release
+        kubectl create secret docker-registry azure-registry --docker-server=${{ secrets.AZURE_ACR_NAME }}.azurecr.io --docker-username=${{ secrets.AZURE_ACR_USER }} --docker-password=${{ secrets.AZURE_ACR_PASSWORD }} --docker-email=${{ secrets.WSO2_BOT_EMAIL }} -n apk-integration-test
     - name: Checkout apk-repo.
       uses: actions/checkout@v3
       with:
@@ -312,7 +312,7 @@ jobs:
         helm repo add bitnami https://charts.bitnami.com/bitnami
         helm repo add jetstack https://charts.jetstack.io
         helm dependency build
-        helm install apk-test-setup -n apk-release . --debug --wait --timeout 10m0s \
+        helm install apk-test-setup -n apk-integration-test . --debug --wait --timeout 10m0s \
         --set wso2.subscription.imagePullSecrets=azure-registry \
         --set wso2.apk.dp.runtime.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/runtime-domain-service:${{ github.sha }} \
         --set wso2.apk.dp.configdeployer.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/config-deployer-service:${{ github.sha }} \
@@ -324,15 +324,6 @@ jobs:
         --set wso2.apk.dp.managementServer.enabled=false
         kubectl get pods -n apk-integration-test
         kubectl get svc -n apk-integration-test
-    - name: Apply test resources
-      shell: sh
-      run: |
-        cd apk-repo/test/k8s-resources
-        kubectl apply -f .
-    - name: Retrieve Router IP
-      id: retrieveIp
-      run: |
-        echo "router_ip=`kubectl get svc apk-test-setup-wso2-apk-router-service -n apk-integration-test --output jsonpath='{.status.loadBalancer.ingress[0].ip}'`">> $GITHUB_OUTPUT
     - name: Run test cases
       shell: sh
       run: |
@@ -344,9 +335,9 @@ jobs:
       shell: sh
       run: |
         cd apk-repo/helm-charts
-        helm uninstall apk-test-setup -n apk-release
-        kubectl get pods -n apk-release
-        kubectl get svc -n apk-release
+        helm uninstall apk-test-setup -n apk-integration-test
+        kubectl get pods -n apk-integration-test
+        kubectl get svc -n apk-integration-test
     - name: Delete AKS cluster
       if: always()
       uses: azure/CLI@v1
