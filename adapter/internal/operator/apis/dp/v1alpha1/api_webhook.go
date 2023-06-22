@@ -167,7 +167,7 @@ func (r *API) validateAPIContextExists() *field.Error {
 	}
 	for _, api := range apiList {
 		if (types.NamespacedName{Namespace: r.Namespace, Name: r.Name} !=
-			types.NamespacedName{Namespace: api.Namespace, Name: api.Name}) && api.Spec.Context == r.Spec.Context {
+			types.NamespacedName{Namespace: api.Namespace, Name: api.Name}) && api.Spec.Organization == r.Spec.Organization && api.Spec.Context == r.Spec.Context {
 			return &field.Error{
 				Type:     field.ErrorTypeDuplicate,
 				Field:    field.NewPath("spec").Child("context").String(),
