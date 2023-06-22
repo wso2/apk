@@ -2464,7 +2464,7 @@ public class APIClient {
                 labels: self.getLabels(api, organization)
             },
             spec: {
-                default: policyData,
+                override: policyData,
                 targetRef: {
                     group: "dp.wso2.com",
                     kind: operation != () ? "Resource" : "API",
