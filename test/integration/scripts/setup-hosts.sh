@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+kubectl wait --timeout=5m -n gateway-system deployment/gateway-api-admission-server --for=condition=Available
+kubectl wait --timeout=5m -n gateway-system job/gateway-api-admission --for=condition=Complete
+kubectl wait --timeout=5m -n apk-integration-test deployment/apk-test-setup-wso2-apk-adapter-deployment --for=condition=Available
+kubectl wait --timeout=5m -n apk-integration-test deployment/apk-test-setup-wso2-apk-gateway-runtime-deployment --for=condition=Available
+IP=$(kubectl get svc apk-test-setup-wso2-apk-router-service -n apk-integration-test --output jsonpath='{.status.loadBalancer.ingress[0].ip}')
+sudo echo "$IP localhost" | sudo tee -a /etc/hosts
+sudo echo "$IP all-http-methods-for-wildcard.test.gw.wso2.com" | sudo tee -a /etc/hosts
+sudo echo "$IP api-policy-with-jwt-generator.test.gw.wso2.com" | sudo tee -a /etc/hosts
+sudo echo "$IP backend-base-path.test.gw.wso2.com" | sudo tee -a /etc/hosts
+sudo echo "$IP path-param-api.test.gw.wso2.com" | sudo tee -a /etc/hosts
+sudo echo "$IP gateway-integration-test-infra.test.gw.wso2.com" | sudo tee -a /etc/hosts
+sudo echo "$IP no-base-path.test.gw.wso2.com" | sudo tee -a /etc/hosts
+sudo echo "$IP api.am.wso2.com" | sudo tee -a /etc/hosts
+sudo echo "$IP disable-api-security.test.gw.wso2.com" | sudo tee -a /etc/hosts
+sudo echo "$IP disable-resource-security.test.gw.wso2.com" | sudo tee -a /etc/hosts
+sudo echo "$IP prod-api.test.gw.wso2.com" | sudo tee -a /etc/hosts
+sudo echo "$IP sand-api.test.gw.wso2.com" | sudo tee -a /etc/hosts
+sudo echo "$IP resource-scopes.test.gw.wso2.com" | sudo tee -a /etc/hosts
+sudo echo "$IP trailing-slash.test.gw.wso2.com" | sudo tee -a /etc/hosts
+sudo echo "$IP interceptor-api.test.gw.wso2.com" | sudo tee -a /etc/hosts
+sudo echo "$IP interceptor-resource.test.gw.wso2.com" | sudo tee -a /etc/hosts
+sudo echo "$IP cors-policy.test.gw.wso2.com" | sudo tee -a /etc/hosts
+sudo echo "255.255.255.255 broadcasthost" | sudo tee -a /etc/hosts
+sudo echo "::1 localhost" | sudo tee -a /etc/hosts
