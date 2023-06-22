@@ -1,5 +1,5 @@
 
-rootProject.name = 'runtime-domain-service'
+rootProject.name = 'config-deployer-service'
 include ':ballerina'
 include ':docker'
 include ':java'
