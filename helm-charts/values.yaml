@@ -194,7 +194,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/runtime-domain-service:0.0.1-m11
+          image: wso2/runtime-domain-service:0.0.1-m12
           # configs:
           #   authrorization: true
           #   baseUrl: "https://api.am.wso2.com:9095/api/runtime"
@@ -222,7 +222,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/config-deployer-service:latest
+          image: wso2/config-deployer-service:0.0.1-m12
           # configs:
           #   tls:
           #     secretName: "my-secret"
@@ -248,7 +248,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/adapter:latest
+          image: wso2/adapter:0.0.1-m12
           security:
             sslHostname: "adapter"
 #        logging:
@@ -283,7 +283,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/ratelimiter:0.0.1-m11
+          image: wso2/ratelimiter:0.0.1-m12
           security:
             sslHostname: "ratelimiter"
           # configs:
@@ -313,7 +313,7 @@ wso2:
               failureThreshold: 5
             strategy: Recreate
             imagePullPolicy: Always
-            image: wso2/router:0.0.1-m11
+            image: wso2/router:0.0.1-m12
             # configs:
             #   tls:
             #     secretName: "router-cert"
@@ -343,7 +343,7 @@ wso2:
               failureThreshold: 5
             strategy: Recreate
             imagePullPolicy: Always
-            image: wso2/enforcer:latest
+            image: wso2/enforcer:0.0.1-m12
             security:
               sslHostname: "enforcer"
 #            logging:
@@ -407,7 +407,7 @@ idp:
       strategy: Recreate
       replicas: 1
       imagePullPolicy: Always
-      image: wso2/idp-domain-service:0.0.1-m11
+      image: wso2/idp-domain-service:0.0.1-m12
   idpui:
     deployment:
       resources:
@@ -428,7 +428,7 @@ idp:
       strategy: Recreate
       replicas: 1
       imagePullPolicy: Always
-      image: wso2/idp-ui:0.0.1-m11
+      image: wso2/idp-ui:0.0.1-m12
     configs:
       idpLoginUrl: "https://idp.am.wso2.com:9095/commonauth/login"
       idpAuthCallBackUrl: "https://idp.am.wso2.com:9095/oauth2/auth-callback"
