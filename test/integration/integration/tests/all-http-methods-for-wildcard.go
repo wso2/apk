@@ -28,7 +28,7 @@ func init() {
 	IntegrationTests = append(IntegrationTests, ALLHTTPMethodsForWildCard)
 }
 
-// ALLHTTPMethodsForWildCard test
+// ALLHTTPMethodsForWildCard tests api with wildcard paths
 var ALLHTTPMethodsForWildCard = suite.IntegrationTest{
 	ShortName:   "ALLHTTPMethodsForWildCard",
 	Description: "Tests an API with wild card path using path prefix match and unspecified HTTP method",
