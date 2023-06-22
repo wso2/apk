@@ -248,7 +248,6 @@
       "type": "object",
       "properties": {
         "endpoint": {
-          "type": "object",
           "oneOf": [
             {
               "type": "string"
@@ -382,6 +381,7 @@
     "type",
     "organization",
     "endpointConfigurations",
-    "operations"
+    "operations",
+    "vhosts"
   ]
 }
