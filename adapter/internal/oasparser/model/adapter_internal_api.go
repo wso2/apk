@@ -64,7 +64,7 @@ type AdapterInternalAPI struct {
 	EnvType                  string
 	backendJWTTokenInfo      *BackendJWTTokenInfo
 	apiDefinitionFile        []byte
-	APIProperties	         []dpv1alpha1.Property
+	APIProperties            []dpv1alpha1.Property
 	// GraphQLSchema              string
 	// GraphQLComplexities        GraphQLComplexityYaml
 	IsSystemAPI     bool
@@ -159,6 +159,27 @@ type CircuitBreakers struct {
 	MaxPendingRequests int32 `mapstructure:"maxPendingRequests"`
 	MaxRetries         int32 `mapstructure:"maxRetries"`
 	MaxConnectionPools int32 `mapstructure:"maxConnectionPools"`
+}
+
+type CircuitBreaker struct {
+	Thresholds        []Thresholds `mapstructure:"thresholds"`
+	PerHostThresholds []Thresholds `mapstructure:"perHostThresholds"`
+}
+
+type Thresholds struct {
+	Priority           string       `mapstructure:"priority"`
+	MaxConnections     uint32       `mapstructure:"maxConnections"`
+	MaxPendingRequests uint32       `mapstructure:"maxPendingRequests"`
+	MaxRequests        uint32       `mapstructure:"maxRequests"`
+	MaxRetries         uint32       `mapstructure:"maxRetries"`
+	RetryBudget        *RetryBudget `mapstructure:"retryBudget"`
+	TrackRemaining     bool         `mapstructure:"trackRemaining"`
+	MaxConnectionPools uint32       `mapstructure:"maxConnectionPools"`
+}
+
+type RetryBudget struct {
+	BudgetPercent       float32 `mapstructure:"budgetPercent"`
+	MinRetryConcurrency uint32  `mapstructure:"minRetryConcurrency"`
 }
 
 // SecurityScheme represents the structure of an security scheme.
