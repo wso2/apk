@@ -6,17 +6,9 @@ type: "REST"
 organization: "ACME Corp"
 endpointConfigurations:
   production:
-     endpoint:
-      protocol: http
-      namespace: ns1
-      dolor_2c: test
-      enim_57: test
+     endpoint: "https://petstore.swagger.io/v2/pet"
   sandbox:
-     endpoint:
-      protocol: http
-      namespace: ns1
-      dolor_2c: test
-      enim_57: test
+     endpoint: "https://petstore.swagger.io/v2/pet"
 operations:
   - target: "/pets"
     verb: "GET"
@@ -39,17 +31,9 @@ operations:
     authTypeEnabled: true
     endpointConfigurations:
       production:
-        endpoint:
-          protocol: http
-          namespace: ns1
-          dolor_2c: test
-          enim_57: test
+        endpoint: "https://petstore.swagger.io/v2/pet"
       sandbox:
-        endpoint:
-          protocol: http
-          namespace: ns1
-          dolor_2c: test
-          enim_57: test
+        endpoint: "https://petstore.swagger.io/v2/pet"
     operationPolicies:
       request:
         - policyName: "Request Policy 2"

@@ -6,11 +6,7 @@ type: "REST"
 organization: "Pizza Shack Inc."
 endpointConfigurations:
   production:
-    endpoint:
-      protocol: http
-      namespace: ns1
-      dolor_2c: test
-      enim_57: test
+    endpoint: "https://pizza"
     endpointSecurity:
       enabled: true
       securityType:
@@ -23,11 +19,7 @@ endpointConfigurations:
       secretKey: "certificate-key"
     resiliency: {}
   sandbox:
-    endpoint:
-      protocol: http
-      namespace: ns1
-      dolor_2c: test
-      enim_57: test
+    endpoint: "https://pizza"
     endpointSecurity:
       enabled: false
     certificate: {}
@@ -37,17 +29,9 @@ operations:
     authTypeEnabled: true
     endpointConfigurations:
       production:
-        endpoint:
-          protocol: http
-          namespace: ns1
-          dolor_2c: test
-          enim_57: test
+        endpoint: "https://pizza"
       sandbox:
-        endpoint:
-          protocol: http
-          namespace: ns1
-          dolor_2c: test
-          enim_57: test
+        endpoint: "https://pizza"
     operationPolicies:
       request:
         - policyName: "Request Policy 1"
@@ -68,17 +52,9 @@ operations:
     authTypeEnabled: true
     endpointConfigurations:
       production:
-        endpoint:
-          protocol: http
-          namespace: ns1
-          dolor_2c: test
-          enim_57: test
+        endpoint: "https://pizza"
       sandbox:
-        endpoint:
-          protocol: http
-          namespace: ns1
-          dolor_2c: test
-          enim_57: test
+        endpoint: "https://pizza"
     operationPolicies:
       request:
         - policyName: "Request Policy 2"

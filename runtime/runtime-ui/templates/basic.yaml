@@ -4,17 +4,9 @@ type: "REST"
 organization: "My Organization"
 endpointConfigurations:
   production:
-    endpoint:
-      protocol: http
-      namespace: ns1
-      dolor_2c: test
-      enim_57: test
+    endpoint: "https://endpoint/production"
   sandbox:
-    endpoint:
-      protocol: https
-      namespace: ns1
-      dolor_2c: test
-      enim_57: test
+    endpoint: "https://endpoint/sandbox"
 operations: []
 apiPolicies:
   request: []
