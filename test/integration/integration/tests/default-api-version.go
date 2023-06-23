@@ -34,7 +34,7 @@ var DefaultAPIVersion = suite.IntegrationTest{
 	Description: "Tests an API with default version",
 	Manifests:   []string{"tests/default-api-version.yaml"},
 	Test: func(t *testing.T, suite *suite.IntegrationTestSuite) {
-		ns := "apk"
+		ns := "gateway-integration-test-infra"
 		gwAddr := "default-api-version.test.gw.wso2.com:9095"
 		token := http.GetTestToken(t)
 
