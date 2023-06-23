@@ -18,6 +18,7 @@
 package envoyconf
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net"
@@ -26,7 +27,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"encoding/json"
 
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/durationpb"
@@ -58,8 +58,8 @@ import (
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/any"
 	"github.com/golang/protobuf/ptypes/wrappers"
-	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
+	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
 // WireLogValues holds debug logging related template values
@@ -465,6 +465,7 @@ func processEndpoints(clusterName string, clusterDetails *model.EndpointCluster,
 			ClusterName: clusterName,
 			Endpoints:   lbEPs,
 		},
+		CircuitBreakers:        &clusterv3.CircuitBreakers{},
 		TransportSocketMatches: transportSocketMatches,
 		DnsRefreshRate:         durationpb.New(time.Duration(conf.Envoy.Upstream.DNS.DNSRefreshRate) * time.Millisecond),
 		RespectDnsTtl:          conf.Envoy.Upstream.DNS.RespectDNSTtl,
@@ -767,7 +768,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 			PathTemplate:     contextExtensions[pathContextExtension],
 			Vhost:            contextExtensions[vHostContextExtension],
 			ClusterName:      contextExtensions[clusterNameContextExtension],
-			APIProperties:	  getAPIProperties(params.apiProperties),
+			APIProperties:    getAPIProperties(params.apiProperties),
 		}
 		luaPerFilterConfig = lua.LuaPerRoute{
 			Override: &lua.LuaPerRoute_SourceCode{

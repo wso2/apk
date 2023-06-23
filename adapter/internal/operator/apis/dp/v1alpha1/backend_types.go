@@ -60,7 +60,29 @@ type BackendSpec struct {
 	TLS *TLSConfig `json:"tls,omitempty"`
 
 	// +optional
-	Security []SecurityConfig `json:"security,omitempty"`
+	Security       []SecurityConfig `json:"security,omitempty"`
+	CircuitBreaker *CircuitBreaker  `json:"circuitBreaker,omitempty"`
+}
+
+type CircuitBreaker struct {
+	Thresholds        []Thresholds `json:"thresholds,omitempty"`
+	PerHostThresholds []Thresholds `json:"perHostThresholds,omitempty"`
+}
+
+type Thresholds struct {
+	Priority           string       `json:"priority"`
+	MaxConnections     uint32       `json:"maxConnections"`
+	MaxPendingRequests uint32       `json:"maxPendingRequests"`
+	MaxRequests        uint32       `json:"maxRequests"`
+	MaxRetries         uint32       `json:"maxRetries"`
+	RetryBudget        *RetryBudget `json:"retryBudget,omitempty"`
+	TrackRemaining     bool         `json:"trackRemaining"`
+	MaxConnectionPools uint32       `json:"maxConnectionPools"`
+}
+
+type RetryBudget struct {
+	BudgetPercent       float32 `json:"budgetPercent"`
+	MinRetryConcurrency uint32  `json:"minRetryConcurrency"`
 }
 
 // Service holds host and port information for the service
