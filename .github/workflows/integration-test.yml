@@ -1,4 +1,4 @@
-name: start and run postman collection
+name: start and run postman collection and go integration tests
 on:
   workflow_dispatch:
   pull_request_target:
