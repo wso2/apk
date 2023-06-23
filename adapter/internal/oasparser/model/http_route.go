@@ -129,8 +129,7 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 		resourceAuthScheme := authScheme
 		resourceAPIPolicy := apiPolicy
 		var resourceRatelimitPolicy *dpv1alpha1.RateLimitPolicy
-		// No longer need this flag, since we are going to create a rewrite policy always.
-		hasPolicies := true
+		hasPolicies := false
 		hasURLRewritePolicy := false;
 		var scopes []string
 		for _, filter := range rule.Filters {
@@ -289,6 +288,7 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 					Action:     constants.ActionRewritePath,
 					Parameters: policyParameters,
 				})
+				hasPolicies = true
 			}
 
 			resourcePath := swagger.xWso2Basepath + *match.Path.Value
