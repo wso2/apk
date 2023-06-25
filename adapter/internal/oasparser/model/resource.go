@@ -44,7 +44,6 @@ type Resource struct {
 	endpointSecurity []*EndpointSecurity
 	vendorExtensions map[string]interface{}
 	hasPolicies      bool
-	CircuitBreaker   *CircuitBreaker
 }
 
 // GetEndpointSecurity returns the endpoint security object of a given resource.
