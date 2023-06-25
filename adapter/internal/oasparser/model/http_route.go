@@ -279,23 +279,25 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 		}
 		var thresholds []Thresholds
 		var perHostThresholds []Thresholds
-		for _, threshold := range circuitBreaker.Thresholds {
-			thresholds = append(thresholds, Thresholds{
-				MaxConnections:     threshold.MaxConnections,
-				MaxRequests:        threshold.MaxRequests,
-				MaxPendingRequests: threshold.MaxPendingRequests,
-				MaxRetries:         threshold.MaxRetries,
-				MaxConnectionPools: threshold.MaxConnectionPools,
-			})
-		}
-		for _, threshold := range circuitBreaker.PerHostThresholds {
-			perHostThresholds = append(perHostThresholds, Thresholds{
-				MaxConnections:     threshold.MaxConnections,
-				MaxRequests:        threshold.MaxRequests,
-				MaxPendingRequests: threshold.MaxPendingRequests,
-				MaxRetries:         threshold.MaxRetries,
-				MaxConnectionPools: threshold.MaxConnectionPools,
-			})
+		if circuitBreaker != nil {
+			for _, threshold := range circuitBreaker.Thresholds {
+				thresholds = append(thresholds, Thresholds{
+					MaxConnections:     threshold.MaxConnections,
+					MaxRequests:        threshold.MaxRequests,
+					MaxPendingRequests: threshold.MaxPendingRequests,
+					MaxRetries:         threshold.MaxRetries,
+					MaxConnectionPools: threshold.MaxConnectionPools,
+				})
+			}
+			for _, threshold := range circuitBreaker.PerHostThresholds {
+				perHostThresholds = append(perHostThresholds, Thresholds{
+					MaxConnections:     threshold.MaxConnections,
+					MaxRequests:        threshold.MaxRequests,
+					MaxPendingRequests: threshold.MaxPendingRequests,
+					MaxRetries:         threshold.MaxRetries,
+					MaxConnectionPools: threshold.MaxConnectionPools,
+				})
+			}
 		}
 		for _, match := range rule.Matches {
 			resourcePath := *match.Path.Value
@@ -306,21 +308,27 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 				hasPolicies:   hasPolicies,
 				iD:            uuid.New().String(),
 			}
-			resource.endpoints = &EndpointCluster{
-				Endpoints: endPoints,
-				Config: &EndpointConfig{
-					CircuitBreakers: &CircuitBreakers{
-						MaxConnections:     int32(circuitBreaker.Thresholds[0].MaxConnections),
-						MaxRequests:        int32(circuitBreaker.Thresholds[0].MaxRequests),
-						MaxPendingRequests: int32(circuitBreaker.Thresholds[0].MaxPendingRequests),
-						MaxRetries:         int32(circuitBreaker.Thresholds[0].MaxRetries),
-						MaxConnectionPools: int32(circuitBreaker.Thresholds[0].MaxConnectionPools),
+			if circuitBreaker != nil {
+				resource.endpoints = &EndpointCluster{
+					Endpoints: endPoints,
+					Config: &EndpointConfig{
+						CircuitBreakers: &CircuitBreakers{
+							MaxConnections:     int32(circuitBreaker.Thresholds[0].MaxConnections),
+							MaxRequests:        int32(circuitBreaker.Thresholds[0].MaxRequests),
+							MaxPendingRequests: int32(circuitBreaker.Thresholds[0].MaxPendingRequests),
+							MaxRetries:         int32(circuitBreaker.Thresholds[0].MaxRetries),
+							MaxConnectionPools: int32(circuitBreaker.Thresholds[0].MaxConnectionPools),
+						},
+						CircuitBreaker: &CircuitBreaker{
+							Thresholds:        thresholds,
+							PerHostThresholds: perHostThresholds,
+						},
 					},
-					CircuitBreaker: &CircuitBreaker{
-						Thresholds:        thresholds,
-						PerHostThresholds: perHostThresholds,
-					},
-				},
+				}
+			} else {
+				resource.endpoints = &EndpointCluster{
+					Endpoints: endPoints,
+				}
 			}
 			resource.endpointSecurity = utils.GetPtrSlice(securityConfig)
 			resources = append(resources, resource)

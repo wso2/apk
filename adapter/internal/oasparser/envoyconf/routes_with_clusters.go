@@ -44,6 +44,7 @@ import (
 	upstreams "github.com/envoyproxy/go-control-plane/envoy/extensions/upstreams/http/v3"
 	upstreams_http_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/upstreams/http/v3"
 	envoy_type_matcherv3 "github.com/envoyproxy/go-control-plane/envoy/type/matcher/v3"
+	typev3 "github.com/envoyproxy/go-control-plane/envoy/type/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/wellknown"
 
 	"github.com/wso2/apk/adapter/config"
@@ -455,27 +456,6 @@ func processEndpoints(clusterName string, clusterDetails *model.EndpointCluster,
 		logger.LoggerOasparser.Error(err2)
 	}
 
-	var thresholds []*clusterv3.CircuitBreakers_Thresholds
-	var perHostThresholds []*clusterv3.CircuitBreakers_Thresholds
-	for _, threshold := range clusterDetails.Config.CircuitBreaker.Thresholds {
-		thresholds = append(thresholds, &clusterv3.CircuitBreakers_Thresholds{
-			MaxConnections:     wrapperspb.UInt32(threshold.MaxConnections),
-			MaxRequests:        wrapperspb.UInt32(threshold.MaxRequests),
-			MaxPendingRequests: wrapperspb.UInt32(threshold.MaxPendingRequests),
-			MaxRetries:         wrapperspb.UInt32(threshold.MaxRetries),
-			MaxConnectionPools: wrapperspb.UInt32(threshold.MaxConnectionPools),
-		})
-	}
-	for _, threshold := range clusterDetails.Config.CircuitBreaker.PerHostThresholds {
-		perHostThresholds = append(perHostThresholds, &clusterv3.CircuitBreakers_Thresholds{
-			MaxConnections:     wrapperspb.UInt32(threshold.MaxConnections),
-			MaxRequests:        wrapperspb.UInt32(threshold.MaxRequests),
-			MaxPendingRequests: wrapperspb.UInt32(threshold.MaxPendingRequests),
-			MaxRetries:         wrapperspb.UInt32(threshold.MaxRetries),
-			MaxConnectionPools: wrapperspb.UInt32(threshold.MaxConnectionPools),
-		})
-	}
-
 	cluster := clusterv3.Cluster{
 		Name:                 clusterName,
 		ConnectTimeout:       durationpb.New(timeout * time.Second),
@@ -485,10 +465,6 @@ func processEndpoints(clusterName string, clusterDetails *model.EndpointCluster,
 		LoadAssignment: &endpointv3.ClusterLoadAssignment{
 			ClusterName: clusterName,
 			Endpoints:   lbEPs,
-		},
-		CircuitBreakers: &clusterv3.CircuitBreakers{
-			Thresholds:        thresholds,
-			PerHostThresholds: perHostThresholds,
 		},
 		TransportSocketMatches: transportSocketMatches,
 		DnsRefreshRate:         durationpb.New(time.Duration(conf.Envoy.Upstream.DNS.DNSRefreshRate) * time.Millisecond),
@@ -505,30 +481,72 @@ func processEndpoints(clusterName string, clusterDetails *model.EndpointCluster,
 		cluster.HealthChecks = createHealthCheck()
 	}
 
-	// if clusterDetails.Config != nil && clusterDetails.Config.CircuitBreakers != nil {
-	// 	config := clusterDetails.Config.CircuitBreakers
-	// 	thresholds := &clusterv3.CircuitBreakers_Thresholds{}
-	// 	if config.MaxConnections > 0 {
-	// 		thresholds.MaxConnections = wrapperspb.UInt32(uint32(config.MaxConnections))
-	// 	}
-	// 	if config.MaxConnectionPools > 0 {
-	// 		thresholds.MaxConnectionPools = wrapperspb.UInt32(uint32(config.MaxConnectionPools))
-	// 	}
-	// 	if config.MaxPendingRequests > 0 {
-	// 		thresholds.MaxPendingRequests = wrapperspb.UInt32(uint32(config.MaxPendingRequests))
-	// 	}
-	// 	if config.MaxRequests > 0 {
-	// 		thresholds.MaxRequests = wrapperspb.UInt32(uint32(config.MaxRequests))
-	// 	}
-	// 	if config.MaxRetries > 0 {
-	// 		thresholds.MaxRetries = wrapperspb.UInt32(uint32(config.MaxRetries))
-	// 	}
-	// 	cluster.CircuitBreakers = &clusterv3.CircuitBreakers{
-	// 		Thresholds: []*clusterv3.CircuitBreakers_Thresholds{
-	// 			thresholds,
-	// 		},
-	// 	}
-	// }
+	if clusterDetails.Config != nil && clusterDetails.Config.CircuitBreakers != nil {
+		var thresholds []*clusterv3.CircuitBreakers_Thresholds
+		var perHostThresholds []*clusterv3.CircuitBreakers_Thresholds
+		for _, threshold := range clusterDetails.Config.CircuitBreaker.Thresholds {
+			if threshold.RetryBudget != nil {
+				var budgetPercentVal float64
+				if threshold.RetryBudget.BudgetPercent != 0 {
+					budgetPercentVal = float64(threshold.RetryBudget.BudgetPercent / 100)
+				}
+				thresholds = append(thresholds, &clusterv3.CircuitBreakers_Thresholds{
+					MaxConnections:     wrapperspb.UInt32(threshold.MaxConnections),
+					MaxRequests:        wrapperspb.UInt32(threshold.MaxRequests),
+					MaxPendingRequests: wrapperspb.UInt32(threshold.MaxPendingRequests),
+					MaxRetries:         wrapperspb.UInt32(threshold.MaxRetries),
+					MaxConnectionPools: wrapperspb.UInt32(threshold.MaxConnectionPools),
+					RetryBudget: &clusterv3.CircuitBreakers_Thresholds_RetryBudget{
+						BudgetPercent: &typev3.Percent{
+							Value: float64(budgetPercentVal),
+						},
+						MinRetryConcurrency: wrapperspb.UInt32(threshold.RetryBudget.MinRetryConcurrency),
+					},
+				})
+			} else {
+				thresholds = append(thresholds, &clusterv3.CircuitBreakers_Thresholds{
+					MaxConnections:     wrapperspb.UInt32(threshold.MaxConnections),
+					MaxRequests:        wrapperspb.UInt32(threshold.MaxRequests),
+					MaxPendingRequests: wrapperspb.UInt32(threshold.MaxPendingRequests),
+					MaxRetries:         wrapperspb.UInt32(threshold.MaxRetries),
+					MaxConnectionPools: wrapperspb.UInt32(threshold.MaxConnectionPools),
+				})
+			}
+		}
+		for _, threshold := range clusterDetails.Config.CircuitBreaker.PerHostThresholds {
+			if threshold.RetryBudget != nil {
+				var budgetPercentVal float64
+				if threshold.RetryBudget.BudgetPercent != 0 {
+					budgetPercentVal = float64(threshold.RetryBudget.BudgetPercent / 100)
+				}
+				thresholds = append(thresholds, &clusterv3.CircuitBreakers_Thresholds{
+					MaxConnections:     wrapperspb.UInt32(threshold.MaxConnections),
+					MaxRequests:        wrapperspb.UInt32(threshold.MaxRequests),
+					MaxPendingRequests: wrapperspb.UInt32(threshold.MaxPendingRequests),
+					MaxRetries:         wrapperspb.UInt32(threshold.MaxRetries),
+					MaxConnectionPools: wrapperspb.UInt32(threshold.MaxConnectionPools),
+					RetryBudget: &clusterv3.CircuitBreakers_Thresholds_RetryBudget{
+						BudgetPercent: &typev3.Percent{
+							Value: float64(budgetPercentVal),
+						},
+						MinRetryConcurrency: wrapperspb.UInt32(threshold.RetryBudget.MinRetryConcurrency),
+					},
+				})
+			} else {
+				thresholds = append(thresholds, &clusterv3.CircuitBreakers_Thresholds{
+					MaxConnections:     wrapperspb.UInt32(threshold.MaxConnections),
+					MaxRequests:        wrapperspb.UInt32(threshold.MaxRequests),
+					MaxPendingRequests: wrapperspb.UInt32(threshold.MaxPendingRequests),
+					MaxRetries:         wrapperspb.UInt32(threshold.MaxRetries),
+					MaxConnectionPools: wrapperspb.UInt32(threshold.MaxConnectionPools),
+				})
+			}
+		}
+		cluster.CircuitBreakers = &clusterv3.CircuitBreakers{
+			Thresholds:        thresholds,
+			PerHostThresholds: perHostThresholds,
+		}
+	}
 
 	// service discovery itself will be handling loadbancing etc.
 	// Therefore mutiple endpoint support is not needed, hence consider only.

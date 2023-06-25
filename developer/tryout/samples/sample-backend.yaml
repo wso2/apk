@@ -21,6 +21,12 @@ kind: Backend
 metadata:
   name: insecure-backend
 spec:
+  circuitBreaker:
+    thresholds:
+    - maxConnections: 100
+      maxPendingRequests: 100
+      maxRequests: 100
+      maxRetries: 3
   services:
   - host: backend
     port: 80
