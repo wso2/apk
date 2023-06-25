@@ -60,29 +60,34 @@ type BackendSpec struct {
 	TLS *TLSConfig `json:"tls,omitempty"`
 
 	// +optional
-	Security       []SecurityConfig `json:"security,omitempty"`
-	CircuitBreaker *CircuitBreaker  `json:"circuitBreaker,omitempty"`
+	Security []SecurityConfig `json:"security,omitempty"`
+
+	// + optional
+	CircuitBreaker *CircuitBreaker `json:"circuitBreaker,omitempty"`
 }
 
+// CircuitBreaker defines the circuit breaker configurations
 type CircuitBreaker struct {
 	Thresholds        []Thresholds `json:"thresholds,omitempty"`
 	PerHostThresholds []Thresholds `json:"perHostThresholds,omitempty"`
 }
 
+// Thresholds defines the circuit breaker thresholds
 type Thresholds struct {
-	Priority           string       `json:"priority"`
-	MaxConnections     uint32       `json:"maxConnections"`
-	MaxPendingRequests uint32       `json:"maxPendingRequests"`
-	MaxRequests        uint32       `json:"maxRequests"`
-	MaxRetries         uint32       `json:"maxRetries"`
+	Priority           string       `json:"priority,omitempty"`
+	MaxConnections     uint32       `json:"maxConnections,omitempty"`
+	MaxPendingRequests uint32       `json:"maxPendingRequests,omitempty"`
+	MaxRequests        uint32       `json:"maxRequests,omitempty"`
+	MaxRetries         uint32       `json:"maxRetries,omitempty"`
 	RetryBudget        *RetryBudget `json:"retryBudget,omitempty"`
-	TrackRemaining     bool         `json:"trackRemaining"`
-	MaxConnectionPools uint32       `json:"maxConnectionPools"`
+	TrackRemaining     bool         `json:"trackRemaining,omitempty"`
+	MaxConnectionPools uint32       `json:"maxConnectionPools,omitempty"`
 }
 
+// RetryBudget defines the retry budget configurations
 type RetryBudget struct {
-	BudgetPercent       float32 `json:"budgetPercent"`
-	MinRetryConcurrency uint32  `json:"minRetryConcurrency"`
+	BudgetPercent       uint64 `json:"budgetPercent,omitempty"`
+	MinRetryConcurrency uint32 `json:"minRetryConcurrency,omitempty"`
 }
 
 // Service holds host and port information for the service
