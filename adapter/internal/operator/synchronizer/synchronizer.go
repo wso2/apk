@@ -191,6 +191,7 @@ func getVhostsForAPI(httpRoute *gwapiv1b1.HTTPRoute) []string {
 	for _, hostName := range httpRoute.Spec.Hostnames {
 		vHosts = append(vHosts, string(hostName))
 	}
+	fmt.Println("vhosts size: ", len(vHosts))
 	return vHosts
 }
 
