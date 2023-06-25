@@ -256,6 +256,26 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 				return fmt.Errorf("backend: %s has not been resolved", backendName)
 			}
 		}
+		var thresholds []Thresholds
+		var perHostThresholds []Thresholds
+		for _, threshold := range circuitBreaker.Thresholds {
+			thresholds = append(thresholds, Thresholds{
+				MaxConnections:     threshold.MaxConnections,
+				MaxRequests:        threshold.MaxRequests,
+				MaxPendingRequests: threshold.MaxPendingRequests,
+				MaxRetries:         threshold.MaxRetries,
+				MaxConnectionPools: threshold.MaxConnectionPools,
+			})
+		}
+		for _, threshold := range circuitBreaker.PerHostThresholds {
+			perHostThresholds = append(perHostThresholds, Thresholds{
+				MaxConnections:     threshold.MaxConnections,
+				MaxRequests:        threshold.MaxRequests,
+				MaxPendingRequests: threshold.MaxPendingRequests,
+				MaxRetries:         threshold.MaxRetries,
+				MaxConnectionPools: threshold.MaxConnectionPools,
+			})
+		}
 		for _, match := range rule.Matches {
 			resourcePath := *match.Path.Value
 			resource := &Resource{path: resourcePath,
@@ -275,31 +295,11 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 						MaxRetries:         int32(circuitBreaker.Thresholds[0].MaxRetries),
 						MaxConnectionPools: int32(circuitBreaker.Thresholds[0].MaxConnectionPools),
 					},
+					CircuitBreaker: &CircuitBreaker{
+						Thresholds:        thresholds,
+						PerHostThresholds: perHostThresholds,
+					},
 				},
-			}
-			var thresholds []Thresholds
-			var perHostThresholds []Thresholds
-			for _, threshold := range circuitBreaker.Thresholds {
-				thresholds = append(thresholds, Thresholds{
-					MaxConnections:     threshold.MaxConnections,
-					MaxRequests:        threshold.MaxRequests,
-					MaxPendingRequests: threshold.MaxPendingRequests,
-					MaxRetries:         threshold.MaxRetries,
-					MaxConnectionPools: threshold.MaxConnectionPools,
-				})
-			}
-			for _, threshold := range circuitBreaker.PerHostThresholds {
-				perHostThresholds = append(perHostThresholds, Thresholds{
-					MaxConnections:     threshold.MaxConnections,
-					MaxRequests:        threshold.MaxRequests,
-					MaxPendingRequests: threshold.MaxPendingRequests,
-					MaxRetries:         threshold.MaxRetries,
-					MaxConnectionPools: threshold.MaxConnectionPools,
-				})
-			}
-			resource.CircuitBreaker = &CircuitBreaker{
-				Thresholds:        thresholds,
-				PerHostThresholds: perHostThresholds,
 			}
 			resource.endpointSecurity = utils.GetPtrSlice(securityConfig)
 			resources = append(resources, resource)
