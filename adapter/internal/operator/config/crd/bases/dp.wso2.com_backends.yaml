@@ -116,8 +116,22 @@ spec:
                 minItems: 1
                 type: array
               timeout:
-                format: int32
-                type: integer
+                description: Timeout congifuration for the backend
+                properties:
+                  maxRouteTimeoutInSeconds:
+                    format: int32
+                    type: integer
+                  routeIdleTimeoutInSeconds:
+                    format: int32
+                    type: integer
+                  routeTimeoutInSeconds:
+                    format: int32
+                    type: integer
+                required:
+                - maxRouteTimeoutInSeconds
+                - routeIdleTimeoutInSeconds
+                - routeTimeoutInSeconds
+                type: object
               tls:
                 description: TLSConfig defines enpoint TLS configurations
                 properties:
