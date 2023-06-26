@@ -18,8 +18,6 @@
 package model
 
 import (
-	"fmt"
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -31,7 +29,6 @@ func TestGetHostandBasepathandPort(t *testing.T) {
 		result  *Endpoint
 		message string
 	}
-	fmt.Println(os.Getwd())
 	dataItems := []setResourcesTestItem{
 		{
 			input: "https://petstore.io:8000/api/v2",

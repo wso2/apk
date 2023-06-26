@@ -64,7 +64,6 @@ public class SwaggerServerHandler extends SimpleChannelInboundHandler<HttpObject
         if (APIDefinitionConstants.SWAGGER_DEFINITION.equalsIgnoreCase(queryParam)) {
             isSwagger = true;
         }
-
         if(isSwagger){
             // load the corresponding swagger definition from the API name
             byte[] apiDefinition = apiFactory.getAPIDefinition(basePath, params[2], vHost);
@@ -88,7 +87,7 @@ public class SwaggerServerHandler extends SimpleChannelInboundHandler<HttpObject
                 stringBuilder.append(line);
             }
             Map<String,String> map = new HashMap<>();
-            map.put("apiDefinition", new String(apiDefinition, StandardCharsets.UTF_8));
+            map.put("apiDefinition", new String(stringBuilder));
             responsePayload = APIDefinitionUtils.buildResponsePayload(map, HttpResponseStatus.OK, false);
             buildAndSendResponse(ctx, responsePayload);
         }

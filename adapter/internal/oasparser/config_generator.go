@@ -187,8 +187,6 @@ func GetEnforcerAPI(adapterInternalAPI model.AdapterInternalAPI, vhost string) *
 		}
 	}
 
-	fmt.Println("API Definition : ", adapterInternalAPI.GetAPIDefinitionFile())
-
 	return &api.Api{
 		Id:                     adapterInternalAPI.UUID,
 		Title:                  adapterInternalAPI.GetTitle(),
