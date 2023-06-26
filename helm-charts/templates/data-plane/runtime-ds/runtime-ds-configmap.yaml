@@ -27,7 +27,7 @@ data:
     [ballerina.http]
     traceLogConsole = true
     [wso2.runtime_domain_service.runtimeConfiguration]
-    orgResolver = "{{.Values.wso2.apk.idp.organizationResolver | default "controlPlane"}}"
+    orgResolver = "none"
     {{  if and .Values.wso2.apk.dp.runtime.configs .Values.wso2.apk.dp.runtime.configs.baseUrl }}
     baseURl = "{{ .Values.wso2.apk.dp.runtime.configs.baseUrl }}/api/runtime"
     {{ else }}
@@ -47,27 +47,6 @@ data:
     [wso2.runtime_domain_service.runtimeConfiguration.gatewayConfiguration]
     name = "default"
     listenerName = "httpslistener"
-    {{  if .Values.wso2.apk.dp.controlPlane }}
-    [wso2.runtime_domain_service.runtimeConfiguration.controlPlane]
-    serviceBaseURl = "{{ .Values.wso2.apk.dp.controlPlane.serviceUrl | default (printf "http://%s-admin-ds-service:9444" (include "apk-helm.resource.prefix" .)) }}"
-    enableAuthentication = {{ .Values.wso2.apk.dp.controlPlane.enableAuthentication | default true}}
-    enableHostNameVerification = {{ .Values.wso2.apk.dp.controlPlane.enableHostNameVerification | default true}}
-    [wso2.runtime_domain_service.runtimeConfiguration.controlPlane.certificate]
-    certFilePath = "/home/wso2apk/runtime/security/controlplane.pem"
-    {{  if .Values.wso2.apk.dp.controlPlane.headers }}
-    {{- range $name, $val := $.Values.wso2.apk.dp.controlPlane.headers }}
-    [[wso2.runtime_domain_service.runtimeConfiguration.controlPlane.headers]]
-     name = "{{ $val.name }}"
-     value = "{{ $val.value }}"
-    {{- end }}
-    {{- end }}
-    {{ else }}
-    [wso2.runtime_domain_service.runtimeConfiguration.controlPlane]
-    serviceBaseURl = "https://{{ template "apk-helm.resource.prefix" . }}-admin-ds-service:9444/api/internal/v1"
-    enableHostNameVerification = false
-    [wso2.runtime_domain_service.runtimeConfiguration.controlPlane.certificate]
-    certFilePath = "/home/wso2apk/runtime/security/controlplane.pem"
-    {{- end }}   
     [[wso2.runtime_domain_service.runtimeConfiguration.vhost]]
     name = "Default"
     type = "production"

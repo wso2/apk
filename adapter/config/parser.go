@@ -43,12 +43,6 @@ const (
 	relativeConfigPath = "/conf/config.toml"
 )
 
-// Constants related to utility functions
-const (
-	tenantDomainSeparator = "@"
-	superTenantDomain     = "carbon.super"
-)
-
 // ReadConfigs implements adapter configuration read operation. The read operation will happen only once, hence
 // the consistancy is ensured.
 //

@@ -1,2 +1,0 @@
-## Admin Domain Service
-

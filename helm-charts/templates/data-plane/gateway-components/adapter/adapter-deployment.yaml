@@ -124,13 +124,6 @@ spec:
               subPath: tls.crt
             {{- end }}
             {{ end }}
-            - name:  management-server-truststore-secret-volume
-              mountPath: /home/wso2/security/truststore/management-server.crt
-            {{- if and .Values.wso2.apk.cp.managementServer.configs .Values.wso2.apk.cp.managementServer.configs.tls }}
-              subPath: {{ .Values.wso2.apk.cp.managementServer.configs.tls.secretName | default "tls.key" }}
-            {{- else }}
-              subPath: tls.crt
-            {{- end }}
             {{if and .Values.wso2.apk.dp.partitionServer .Values.wso2.apk.dp.partitionServer.tls}}
             - name:  partition-server-truststore-secret-volume
               mountPath: /home/wso2/security/truststore/partition-server.crt
@@ -202,13 +195,6 @@ spec:
             secretName: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.tls.secretName | default (printf "%s-enforcer-server-cert" (include "apk-helm.resource.prefix" .)) }}
           {{- else }}
             secretName: {{ template "apk-helm.resource.prefix" . }}-enforcer-server-cert
-          {{- end }}
-        - name: management-server-truststore-secret-volume
-          secret: 
-            {{- if and .Values.wso2.apk.dp.managementServer .Values.wso2.apk.dp.managementServer.configs .Values.wso2.apk.dp.managementServer.configs.tls }}
-            secretName: {{ .Values.wso2.apk.dp.managementServer.configs.tls.secretName | default "apk-root-certificate" }}
-          {{- else }}
-            secretName: "apk-root-certificate"
           {{- end }}
         {{if and .Values.wso2.apk.dp.partitionServer .Values.wso2.apk.dp.partitionServer.tls}}
         - name:  partition-server-truststore-secret-volume

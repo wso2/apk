@@ -29,30 +29,15 @@ configurable RuntimeConfiguratation & readonly runtimeConfiguration = {
             keyFilePath: "/home/wso2apk/runtime/security/wso2carbon.key"
         }
     },
-    idpConfiguration: {publicKey: {certFilePath: "/home/wso2apk/runtime/security/mg.pem"}},
-    controlPlane: {serviceBaseURl: ""}
+    idpConfiguration: {publicKey: {certFilePath: "/home/wso2apk/runtime/security/mg.pem"}}
 };
 
-isolated function initializeServiceBaseResolver() returns ServiceBaseOrgResolver|error {
-    map<string> headers = {};
-    foreach Header & readonly header in runtimeConfiguration.controlPlane.headers {
-        headers[header.name] = header.value;
-    }
-    return check new (runtimeConfiguration.controlPlane.serviceBaseURl, headers, runtimeConfiguration.controlPlane.certificate, runtimeConfiguration.controlPlane.enableAuthentication);
-}
 
-final K8sBaseOrgResolver k8sBaseOrgResolver = new;
-final ServiceBaseOrgResolver serviceBaseOrgResolver = check initializeServiceBaseResolver();
+
 final commons:JWTBaseOrgResolver jwtBaseOrgResolver = new;
 
 isolated function getOrgResolver() returns commons:OrganizationResolver {
-    if runtimeConfiguration.orgResolver == ORG_RESOLVER_CONTROL_PLANE {
-        return serviceBaseOrgResolver;
-    } else if runtimeConfiguration.orgResolver == ORG_RESOLVER_K8s {
-        return k8sBaseOrgResolver;
-    } else {
         return jwtBaseOrgResolver;
-    }
 }
 
 commons:JWTValidationInterceptor jwtValidationInterceptor = new (runtimeConfiguration.idpConfiguration, getOrgResolver());

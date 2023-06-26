@@ -41,16 +41,16 @@ A Helm chart for APK components
 | wso2.apk.idp.signing.secretName | string | `""` | IDP jwt signing certificate secret name |
 | wso2.apk.idp.signing.fileName | string | `""` | IDP jwt signing certificate file name |
 | wso2.apk.cp.enabled | bool | `true` | Enabled control plane. |
-| wso2.apk.cp.database.driver | string | `"org.postgresql.Driver"` | Database Driver class. |
-| wso2.apk.cp.database.url | string | `"jdbc:postgresql://wso2apk-db-service:5432/WSO2AM_DB"` | Database URL. |
-| wso2.apk.cp.database.host | string | `"wso2apk-db-service"` | Database Host. |
-| wso2.apk.cp.database.port | int | `5432` | Database Port. |
-| wso2.apk.cp.database.databaseName | string | `"WSO2AM_DB"` | Database Name. |
-| wso2.apk.cp.database.username | string | `"wso2carbon"` | Database Username. |
-| wso2.apk.cp.database.secretName | string | `"apk-db-secret"` | Database Password secret name. |
-| wso2.apk.cp.database.secretKey | string | `"DB_PASSWORD"` | Database Password secret key. |
-| wso2.apk.cp.database.validationQuery | string | `"SELECT 1"` | Database validation query. |
-| wso2.apk.cp.database.validationTimeout | int | `250` | Database validation timeout in ms. |
+| wso2.apk.idp.database.driver | string | `"org.postgresql.Driver"` | Database Driver class. |
+| wso2.apk.idp.database.url | string | `"jdbc:postgresql://wso2apk-db-service:5432/WSO2AM_DB"` | Database URL. |
+| wso2.apk.idp.database.host | string | `"wso2apk-db-service"` | Database Host. |
+| wso2.apk.idp.database.port | int | `5432` | Database Port. |
+| wso2.apk.idp.database.databaseName | string | `"WSO2AM_DB"` | Database Name. |
+| wso2.apk.idp.database.username | string | `"wso2carbon"` | Database Username. |
+| wso2.apk.idp.database.secretName | string | `"apk-db-secret"` | Database Password secret name. |
+| wso2.apk.idp.database.secretKey | string | `"DB_PASSWORD"` | Database Password secret key. |
+| wso2.apk.idp.database.validationQuery | string | `"SELECT 1"` | Database validation query. |
+| wso2.apk.idp.database.validationTimeout | int | `250` | Database validation timeout in ms. |
 | wso2.apk.cp.devportal.deployment.resources.requests.memory | string | `"128Mi"` | CPU request for the container |
 | wso2.apk.cp.devportal.deployment.resources.requests.cpu | string | `"100m"` | Memory request for the container |
 | wso2.apk.cp.devportal.deployment.resources.limits.memory | string | `"1028Mi"` | CPU limit for the container |

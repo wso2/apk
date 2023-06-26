@@ -219,7 +219,7 @@ var defaultConfig = &Config{
 		},
 	},
 	ManagementServer: managementServer{
-		Enabled:   true,
+		Enabled:   false,
 		Host:      "management-server",
 		XDSPort:   18000,
 		NodeLabel: "default",
@@ -236,11 +236,6 @@ var defaultConfig = &Config{
 		ServiceBasePath:        "/partition-service",
 		PartitionName:          "default",
 		DisableSslVerification: false,
-	},
-	Runtime: runtime{
-		Host:            "runtime-service",
-		Port:            9443,
-		ServiceBasePath: "/api/runtime",
 	},
 	Analytics: analytics{
 		Enabled: false,

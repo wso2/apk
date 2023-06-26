@@ -27,15 +27,13 @@ helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo add jetstack https://charts.jetstack.io
 helm dependency build ../../helm-charts
 helm install apk-test-setup ../../helm-charts -n apk-integration-test \
---set wso2.apk.cp.enabled=false \
 --set wso2.apk.dp.adapter.deployment.image=adapter:test \
 --set wso2.apk.dp.adapter.deployment.imagePullPolicy=IfNotPresent \
 --set wso2.apk.dp.gatewayRuntime.deployment.enforcer.image=enforcer:test \
 --set wso2.apk.dp.gatewayRuntime.deployment.enforcer.imagePullPolicy=IfNotPresent \
 --set wso2.apk.dp.configdeployer.deployment.replicas=0 \
 --set wso2.apk.dp.ratelimiter.enabled=false \
---set wso2.apk.dp.redis.enabled=false \
---set wso2.apk.dp.managementServer.enabled=false
+--set wso2.apk.dp.redis.enabled=false
 
 
 # Wait gateway resources to be available.

@@ -23,22 +23,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strings"
 	"time"
 
-	"context"
-
 	"github.com/wso2/apk/adapter/internal/discovery/xds"
-	client "github.com/wso2/apk/adapter/internal/management-server/grpc-client"
 	"k8s.io/apimachinery/pkg/types"
 
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/loggers"
 	model "github.com/wso2/apk/adapter/internal/oasparser/model"
 	"github.com/wso2/apk/adapter/internal/operator/constants"
-	"github.com/wso2/apk/adapter/internal/operator/services/runtime"
 	"github.com/wso2/apk/adapter/internal/operator/utils"
-	apiProtos "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/apkmgt"
 	"github.com/wso2/apk/adapter/pkg/logging"
 	"github.com/wso2/apk/adapter/pkg/utils/tlsutils"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
@@ -62,12 +56,10 @@ type SuccessEvent struct {
 
 var (
 	// TODO: Decide on a buffer size and add to config.
-	mgtServerCh chan APIEvent
-	paritionCh  chan APIEvent
+	paritionCh chan APIEvent
 )
 
 func init() {
-	mgtServerCh = make(chan APIEvent, 10)
 	paritionCh = make(chan APIEvent, 10)
 }
 
@@ -95,9 +87,6 @@ func HandleAPILifeCycleEvents(ch *chan APIEvent, successChannel *chan SuccessEve
 				APINamespacedName: utils.NamespacedName(event.Event.APIDefinition),
 				State:             event.EventType,
 				Events:            event.UpdatedEvents,
-			}
-			if config.ReadConfigs().ManagementServer.Enabled {
-				mgtServerCh <- event
 			}
 			if config.ReadConfigs().PartitionServer.Enabled {
 				paritionCh <- event
@@ -220,72 +209,6 @@ func getListenersForAPI(httpRoute *gwapiv1b1.HTTPRoute) []string {
 	return listeners
 }
 
-// SendAPIToAPKMgtServer sends the API create/update/delete event to the APK management server.
-func SendAPIToAPKMgtServer() {
-	loggers.LoggerAPKOperator.Info("Start listening for API to APK management server events")
-	conf := config.ReadConfigs()
-	address := fmt.Sprintf("%s:%d", conf.ManagementServer.Host, conf.ManagementServer.GRPCClient.Port)
-	for apiEvent := range mgtServerCh {
-		if !apiEvent.Event.APIDefinition.Spec.SystemAPI {
-			loggers.LoggerAPKOperator.Infof("Sending API to APK management server: %v", apiEvent.Event.APIDefinition.Spec.APIDisplayName)
-			api := apiEvent.Event
-			conn, err := client.GetConnection(address)
-			apiClient := apiProtos.NewAPIServiceClient(conn)
-			if err != nil {
-				loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2634, address, err))
-			}
-			_, err = client.ExecuteGRPCCall(func() (interface{}, error) {
-				var definition string
-				var errDef error
-				definition, errDef = runtime.GetAPIDefinition(string(api.APIDefinition.GetUID()), api.APIDefinition.Spec.Organization)
-				if strings.Compare(apiEvent.EventType, constants.Create) == 0 {
-					if errDef != nil {
-						return nil, err
-					}
-					return apiClient.CreateAPI(context.Background(), &apiProtos.API{
-						Uuid:           string(api.APIDefinition.GetUID()),
-						Version:        api.APIDefinition.Spec.APIVersion,
-						Name:           api.APIDefinition.Spec.APIDisplayName,
-						Context:        api.APIDefinition.Spec.Context,
-						Type:           api.APIDefinition.Spec.APIType,
-						OrganizationId: api.APIDefinition.Spec.Organization,
-						Resources:      getResourcesForAPI(api),
-						Definition:     definition,
-					})
-				} else if strings.Compare(apiEvent.EventType, constants.Update) == 0 {
-					if errDef != nil {
-						return nil, err
-					}
-					return apiClient.UpdateAPI(context.Background(), &apiProtos.API{
-						Uuid:           string(api.APIDefinition.GetUID()),
-						Version:        api.APIDefinition.Spec.APIVersion,
-						Name:           api.APIDefinition.Spec.APIDisplayName,
-						Context:        api.APIDefinition.Spec.Context,
-						Type:           api.APIDefinition.Spec.APIType,
-						OrganizationId: api.APIDefinition.Spec.Organization,
-						Resources:      getResourcesForAPI(api),
-						Definition:     definition,
-					})
-				} else if strings.Compare(apiEvent.EventType, constants.Delete) == 0 {
-					return apiClient.DeleteAPI(context.Background(), &apiProtos.API{
-						Uuid:           string(api.APIDefinition.GetUID()),
-						Version:        api.APIDefinition.Spec.APIVersion,
-						Name:           api.APIDefinition.Spec.APIDisplayName,
-						Context:        api.APIDefinition.Spec.Context,
-						Type:           api.APIDefinition.Spec.APIType,
-						OrganizationId: api.APIDefinition.Spec.Organization,
-						Resources:      getResourcesForAPI(api),
-					})
-				}
-				return nil, nil
-			})
-			if err != nil {
-				loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2635, err))
-			}
-		}
-	}
-}
-
 // Runtime client connetion
 var partitionClient *http.Client
 
@@ -363,31 +286,4 @@ type PartitionEvent struct {
 	Partition    string   `json:"partition"`
 	APIUUID      string   `json:"apiId"`
 	Vhosts       []string `json:"vhosts"`
-}
-
-// getResourcesForAPI returns []*apiProtos.Resource for HTTPRoute
-// resources. Temporary method added until a proper implementation is done.
-func getResourcesForAPI(api APIState) []*apiProtos.Resource {
-	var resources []*apiProtos.Resource
-	var hostNames []string
-	httpRoute := api.ProdHTTPRoute
-	if httpRoute == nil {
-		httpRoute = api.SandHTTPRoute
-	}
-	for _, hostName := range httpRoute.HTTPRoute.Spec.Hostnames {
-		hostNames = append(hostNames, string(hostName))
-	}
-	for _, rule := range httpRoute.HTTPRoute.Spec.Rules {
-		for _, match := range rule.Matches {
-			resource := &apiProtos.Resource{
-				Path:     *match.Path.Value,
-				Hostname: hostNames,
-			}
-			if match.Method != nil {
-				resource.Verb = string(*match.Method)
-			}
-			resources = append(resources, resource)
-		}
-	}
-	return resources
 }

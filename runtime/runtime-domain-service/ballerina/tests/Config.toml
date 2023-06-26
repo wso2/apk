@@ -1,8 +1,6 @@
 [wso2.runtime_domain_service.runtimeConfiguration.k8sConfiguration]
 host = "localhost:9090"
 serviceAccountPath = "./tests/resources/serviceAccount"
-[wso2.runtime_domain_service.runtimeConfiguration.controlPlane]
-serviceBaseURl = "https://localhost:9443"
 [wso2.runtime_domain_service.runtimeConfiguration.keyStores.signing]
 keyFilePath = "./tests/resources/wso2carbon.key"
 [wso2.runtime_domain_service.runtimeConfiguration.keyStores.tls]

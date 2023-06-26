@@ -51,16 +51,10 @@ public isolated service class JWTValidationInterceptor {
                     return apkError;
                 }
             } else {
-                // find default organization
-                Organization? retrievedorg = check self.organizationResolver.retrieveOrganizationByName(DEFAULT_ORGANIZATION_NAME);
-                if retrievedorg is Organization {
-                    UserContext userContext = {username: <string>validatedJWT.get(self.idpConfiguration.userClaim), organization: retrievedorg};
-                    userContext.claims = self.extractCustomClaims(validatedJWT);
-                    return userContext;
-                } else {
-                    APKError apkError = error("Organization not found in APK system", code = 900952, description = "Organization not found in APK system", statusCode = 401, message = "Organization not found in APK system");
-                    return apkError;
-                }
+                Organization org = {uuid: "a3b58ccf-6ecc-4557-b5bb-0a35cce38256", name: DEFAULT_ORGANIZATION_NAME, displayName: DEFAULT_ORGANIZATION_NAME, organizationClaimValue: "", enabled: true};
+                UserContext userContext = {username: <string>validatedJWT.get(self.idpConfiguration.userClaim), organization: org};
+                userContext.claims = claims;
+                return userContext;
             }
         }
         else {

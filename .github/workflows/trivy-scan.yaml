@@ -4,17 +4,6 @@ on:
   schedule:
     - cron: "0 20 * * *"
 jobs:
-  scan-backoffice-domain-service:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: 'wso2/backoffice-domain-service:latest'
-          format: 'table'
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
   scan-runtime-domain-service:
     runs-on: ubuntu-latest
     steps:
@@ -26,28 +15,6 @@ jobs:
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'    
-  scan-admin-domain-service:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: 'wso2/admin-domain-service:latest'
-          format: 'table'
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'                 
-  scan-devportal-domain-service:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: 'wso2/devportal-domain-service:latest'
-          format: 'table'
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'                 
   scan-idp-domain-service:
     runs-on: ubuntu-latest
     steps:
@@ -77,17 +44,6 @@ jobs:
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: 'wso2/adapter:latest'
-          format: 'table'
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'                 
-  scan-management-server:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: 'wso2/management-server:latest'
           format: 'table'
           ignore-unfixed: true
           vuln-type: 'os,library'

@@ -38,7 +38,6 @@ public type Header record {|
 # + k8sConfiguration - K8s Configuration (debug purpose only.)  
 # + vhost - Virtual Host Configuration
 # + idpConfiguration - IDP configuration for JWT generated from Enforcer.  
-# + controlPlane - Field Description  
 # + gatewayConfiguration - Gateway Configuration with name and listener name  
 # + baseURl - Runtime base URL  
 # + orgResolver - Organization resolver.  
@@ -52,7 +51,6 @@ public type RuntimeConfiguratation record {|
     (K8sConfigurations & readonly) k8sConfiguration = {};
     (Vhost[] & readonly) vhost = [{name:"Default",hosts:["gw.wso2.com"],'type:PRODUCTION_TYPE},{name:"Default",hosts:["sandbox.gw.wso2.com"],'type:SANDBOX_TYPE}];
     commons:IDPConfiguration idpConfiguration;
-    ControlPlaneConfiguration controlPlane;
     (GatewayConfigurations & readonly) gatewayConfiguration = {};
     string baseURl = "";
     string orgResolver = ORG_RESOLVER_CONTROL_PLANE; // controlPlane, k8s/none
