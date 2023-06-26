@@ -26,12 +26,7 @@ kubectl create ns apk-integration-test
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo add jetstack https://charts.jetstack.io
 helm dependency build ../../helm-charts
-helm install apk-test-setup ../../helm-charts -n apk-integration-test \
---set wso2.apk.dp.adapter.deployment.image=adapter:test \
---set wso2.apk.dp.adapter.deployment.imagePullPolicy=IfNotPresent \
---set wso2.apk.dp.gatewayRuntime.deployment.enforcer.image=enforcer:test \
---set wso2.apk.dp.gatewayRuntime.deployment.enforcer.imagePullPolicy=IfNotPresent \
---set wso2.apk.dp.configdeployer.deployment.replicas=0 \
+helm install apk-test-setup . -n apk-integration-test \
 --set wso2.apk.dp.ratelimiter.enabled=false \
 --set wso2.apk.dp.redis.enabled=false
 
@@ -65,6 +60,7 @@ sudo echo "$IP interceptor-resource.test.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "$IP cors-policy.test.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "$IP fetch-api-definition.test.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "$IP fetch-non-existing-api-definition.test.gw.wso2.com" | sudo tee -a /etc/hosts
+sudo echo "$IP backend-with-upstream-timeout.test.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "255.255.255.255 broadcasthost" | sudo tee -a /etc/hosts
 sudo echo "::1 localhost" | sudo tee -a /etc/hosts
 
