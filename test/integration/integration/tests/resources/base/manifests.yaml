@@ -236,7 +236,6 @@ metadata:
   name: infra-backend-v1
   namespace: gateway-integration-test-infra
 spec:
-  timeout: 20
   services:
   - host: infra-backend-v1.gateway-integration-test-infra
     port: 8080
