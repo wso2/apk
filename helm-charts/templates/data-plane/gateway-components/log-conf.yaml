@@ -151,21 +151,10 @@ data:
 
     [enforcer.metrics]
       enabled = false
-
-    [runtime]
-      host = "{{ template "apk-helm.resource.prefix" . }}-runtime-ds-service.{{ .Release.Namespace }}.svc"
-      port = 9444
-      serviceBasePath = "/api/internal/runtime"
     
     [managementServer]
-    {{ if .Values.wso2.apk.dp.managementServer }}
-      enabled = {{.Values.wso2.apk.dp.managementServer.enabled}}
-      host = "{{ .Values.wso2.apk.dp.managementServer.serviceUrl | default (printf "%s-management-server.%s.svc" (include "apk-helm.resource.prefix" .) .Release.Namespace) }}"
-      {{else}}
-      enabled = {{ .Values.wso2.apk.cp.enabled }}
-      host = "{{ template "apk-helm.resource.prefix" . }}-management-server.{{ .Release.Namespace }}.svc"
-    {{end}}
-    
+      enabled = false
+
     {{ if .Values.wso2.apk.dp.ratelimiter }}
     [router.ratelimit]
       host = "{{ template "apk-helm.resource.prefix" . }}-ratelimiter-service.{{ .Release.Namespace }}.svc"

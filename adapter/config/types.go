@@ -77,7 +77,6 @@ type Config struct {
 	Envoy            envoy            `toml:"router"`
 	ManagementServer managementServer `toml:"managementServer"`
 	PartitionServer  partitionServer  `toml:"partitionServer"`
-	Runtime          runtime          `toml:"runtime"`
 	Analytics        analytics        `toml:"analytics"`
 	Tracing          tracing
 }
@@ -284,50 +283,6 @@ type truststore struct {
 	Location string
 }
 
-type binaryPublisher struct {
-	Username string
-	Password string
-	URLGroup []urlGroup
-	// Deprecated: Use URLGroup instead
-	URLGroupDeprecated []urlGroup `toml:"urlGroup"`
-	Pool               publisherPool
-	Agent              binaryAgent
-}
-
-type urlGroup struct {
-	ReceiverURLs []string
-	AuthURLs     []string
-	Type         string
-}
-
-type publisherPool struct {
-	MaxIdleDataPublishingAgents        int32
-	InitIdleObjectDataPublishingAgents int32
-	PublisherThreadPoolCoreSize        int32
-	PublisherThreadPoolMaximumSize     int32
-	PublisherThreadPoolKeepAliveTime   int32
-}
-
-type binaryAgent struct {
-	SslEnabledProtocols        string
-	Ciphers                    string
-	QueueSize                  int32
-	BatchSize                  int32
-	CorePoolSize               int32
-	SocketTimeoutMS            int32
-	MaxPoolSize                int32
-	KeepAliveTimeInPool        int32
-	ReconnectionInterval       int32
-	MaxTransportPoolSize       int32
-	MaxIdleConnections         int32
-	EvictionTimePeriod         int32
-	MinIdleTimeInPool          int32
-	SecureMaxTransportPoolSize int32
-	SecureMaxIdleConnections   int32
-	SecureEvictionTimePeriod   int32
-	SecureMinIdleTimeInPool    int32
-}
-
 type jwtGenerator struct {
 	// Deprecated: Use Enabled instead
 	Enable                bool
@@ -437,12 +392,6 @@ type partitionServer struct {
 	DisableSslVerification bool
 }
 
-type brokerConnectionParameters struct {
-	EventListeningEndpoints []string
-	ReconnectInterval       time.Duration
-	ReconnectRetryCount     int
-}
-
 // Configuration for Enforcer admin rest api
 type restServer struct {
 	// Deprecated: Use Enabled Instead
@@ -506,10 +455,4 @@ type responseDirection struct {
 
 type operator struct {
 	Namespaces []string
-}
-
-type runtime struct {
-	Host            string
-	Port            int
-	ServiceBasePath string
 }

@@ -33,7 +33,7 @@ public isolated class ServiceBaseOrgResolver {
         defaultMaxAge: 900,
         cleanupInterval: 60
     });
-    public isolated function init(string serviceBaseURL, map<string>? headers, commons:KeyStore? certificate, boolean enableAuth) returns error? {
+    public isolated function init(string serviceBaseURL, map<string>? headers, commons:KeyStore? certificate, boolean enableAuth,boolean enableHostnameVerification=true) returns error? {
         self.orgCache = new ({
             capacity: 1000,
             evictionFactor: 0.2,
@@ -57,7 +57,7 @@ public isolated class ServiceBaseOrgResolver {
                         }
                     }
                 } : {},
-            secureSocket = secured ? (certificate is commons:KeyStore ? {cert: certificate.certFilePath, verifyHostName: runtimeConfiguration.controlPlane.enableHostNameVerification} : ()) : {}
+            secureSocket = secured ? (certificate is commons:KeyStore ? {cert: certificate.certFilePath, verifyHostName: enableHostnameVerification} : ()) : {}
         );
     }
 

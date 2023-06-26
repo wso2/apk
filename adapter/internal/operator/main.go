@@ -165,7 +165,6 @@ func InitOperator() {
 		go xds.InitApkMgtXDSClient()
 		go xds.HandleApplicationEventsFromMgtServer(mgr.GetClient(), mgr.GetAPIReader())
 		go xds.HandleSubscriptionEventsFromMgtServer(mgr.GetClient(), mgr.GetAPIReader())
-		go synchronizer.SendAPIToAPKMgtServer()
 	}
 	if config.ReadConfigs().PartitionServer.Enabled {
 		go synchronizer.SendEventToPartitionServer()

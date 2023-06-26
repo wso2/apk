@@ -43,17 +43,6 @@ ___
 
 ___
 
-- **Control Plane** - The APK control plane. It provides API Management capabilities, marketplace capabilities along with domain services and web applications. In the initial APK release there wont be any control plane components. 
-<!---
-It consists of the following sub-components:
-   - **Back Office** - Responsible for configuring the portal aspects of API including descriptions, documents, images, etc. Also, manage API visibility and lifecycle. The backend component was developed using **Ballerina**
-
-   - **Dev Portal** - Responsible for API consumer interaction. API consumers can discover APIs, read documents, try them out and eventually subscribe to and consume APIs. The backend component was developed using **Ballerina**
-  
-   - **Admin Portal** - Responsible for configuring rate limit policies, key management services, and other administrative tasks. Backend components developed using **Ballerina**
-  
-   - **Management Server** - Responsible for communication with data planes and pushing updates. Backend components developed using **Go lang** 
--->
 
 <!---
    - **Runtime Manager** - Responsible for configuring the runtime aspects of API including API endpoints, discovering Kubernetes services, and converting them into APIs, etc. The backend component was developed using **Ballerina**
@@ -82,11 +71,7 @@ WSO2 API Kubernetes Platform has released following docker images in the WSO2 pu
 * Adapter: [wso2/adapter:0.0.1-m12](https://hub.docker.com/r/wso2/adapter)
 * Gateway Enforcer: [wso2/enforcer:0.0.1-m12](https://hub.docker.com/r/wso2/enforcer/tags)
 * Gatewary Router: [wso2/router:0.0.1-m12](https://hub.docker.com/r/wso2/router)
-* Management Server: [wso2/management-server:0.0.1-m11](https://hub.docker.com/r/wso2/management-server)
-* Runtime DS: [wso2/runtime-domain-service:0.0.1-m12](https://hub.docker.com/r/wso2/admin-domain-service)
-* Admin DS: [wso2/admin-domain-service:0.0.1-m11](https://hub.docker.com/r/wso2/admin-domain-service)
-* BackOffice DS: [wso2/backoffice-domain-service:0.0.1-m11](https://hub.docker.com/r/wso2/backoffice-domain-service)
-* Devportal DS: [wso2/devportal-domain-service:0.0.1-m11](https://hub.docker.com/r/wso2/devportal-domain-service)
+* Runtime DS: [wso2/runtime-domain-service:0.0.1-m12](https://hub.docker.com/r/wso2/runtime-domain-service)
 * IDP DS: [wso2/idp-domain-service:0.0.1-m12](https://hub.docker.com/r/wso2/devportal-domain-service)
 * IDP UI: [wso2/idp-ui:0.0.1-m12](https://hub.docker.com/r/wso2/devportal-domain-service)
 * Ratelimiter: [wso2/ratelimiter:0.0.1-m12](https://hub.docker.com/r/wso2/ratelimiter)

@@ -35,7 +35,7 @@ spec:
       initContainers:
         - name: init-db
           image: busybox:1.32
-          command: ['sh', '-c', 'echo -e "Checking for the availability of DB Server deployment"; while ! nc -z "{{ .Values.wso2.apk.cp.database.host }}" {{.Values.wso2.apk.cp.database.port }}; do sleep 1; printf "-"; done; echo -e "  >> DB Server has started";']
+          command: ['sh', '-c', 'echo -e "Checking for the availability of DB Server deployment"; while ! nc -z "{{ .Values.idp.database.host }}" {{.Values.idp.database.port }}; do sleep 1; printf "-"; done; echo -e "  >> DB Server has started";']
       containers:
         - name: idpds
           image: {{ .Values.idp.idpds.deployment.image }}
@@ -86,7 +86,7 @@ spec:
             - name: DB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  {{ if and .Values.wso2.apk.cp.database .Values.wso2.apk.cp.database.secretName }}
+                  {{ if and .Values.wso2.apk.idp.database .Values.wso2.apk.idp.database.secretName }}
                   name: "{{ .Values.idp.database.secretName}}"
                   key: "{{ .Values.idp.database.secretKey}}"
                   {{ else }}
