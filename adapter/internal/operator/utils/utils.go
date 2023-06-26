@@ -308,7 +308,14 @@ func GetResolvedBackend(ctx context.Context, client k8client.Client,
 	}
 	resolvedBackend.Services = backend.Spec.Services
 	resolvedBackend.Protocol = backend.Spec.Protocol
-	resolvedBackend.Timeout = backend.Spec.Timeout
+	resolvedBackend.Timeout = nil
+	if backend.Spec.Timeout != nil {
+		resolvedBackend.Timeout = &dpv1alpha1.Timeout{
+			MaxRouteTimeoutInSeconds:  backend.Spec.Timeout.MaxRouteTimeoutInSeconds,
+			RouteTimeoutInSeconds:     backend.Spec.Timeout.RouteTimeoutInSeconds,
+			RouteIdleTimeoutInSeconds: backend.Spec.Timeout.RouteIdleTimeoutInSeconds,
+		}
+	}
 	if backend.Spec.TLS != nil {
 		resolvedTLSConfig.ResolvedCertificate, err = ResolveCertificate(ctx, client,
 			backend.Namespace, backend.Spec.TLS.CertificateInline, backend.Spec.TLS.ConfigMapRef, backend.Spec.TLS.SecretRef)

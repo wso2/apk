@@ -25,7 +25,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/golang/protobuf/ptypes/duration"
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/interceptor"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
@@ -65,7 +64,7 @@ type AdapterInternalAPI struct {
 	EnvType                  string
 	backendJWTTokenInfo      *BackendJWTTokenInfo
 	apiDefinitionFile        []byte
-	APIProperties	         []dpv1alpha1.Property
+	APIProperties            []dpv1alpha1.Property
 	// GraphQLSchema              string
 	// GraphQLComplexities        GraphQLComplexityYaml
 	IsSystemAPI     bool
@@ -129,7 +128,6 @@ type Endpoint struct {
 	Certificate []byte
 	// Subject Alternative Names to verify in the public certificate
 	AllowedSANs []string
-	Timeout     *duration.Duration
 }
 
 // EndpointSecurity contains parameters of endpoint security at api.json
@@ -143,9 +141,10 @@ type EndpointSecurity struct {
 
 // EndpointConfig holds the configs such as timeout, retry, etc. for the EndpointCluster
 type EndpointConfig struct {
-	RetryConfig     *RetryConfig     `mapstructure:"retryConfig"`
-	TimeoutInMillis uint32           `mapstructure:"timeoutInMillis"`
-	CircuitBreakers *CircuitBreakers `mapstructure:"circuitBreakers"`
+	RetryConfig          *RetryConfig     `mapstructure:"retryConfig"`
+	TimeoutInMillis      uint32           `mapstructure:"timeoutInMillis"`
+	IdleTimeoutInSeconds uint32           `mapstructure:"idleTimeoutInSeconds"`
+	CircuitBreakers      *CircuitBreakers `mapstructure:"circuitBreakers"`
 }
 
 // RetryConfig holds the parameters for retries done by apk to the EndpointCluster
@@ -441,6 +440,7 @@ func (endpointCluster *EndpointCluster) validateEndpointCluster() error {
 			}
 			// Validate timeout
 			conf := config.ReadConfigs()
+			// Set timeout to default if not provided
 			maxTimeoutInMillis := conf.Envoy.Upstream.Timeouts.MaxRouteTimeoutInSeconds * 1000
 			if endpointCluster.Config.TimeoutInMillis > maxTimeoutInMillis {
 				endpointCluster.Config.TimeoutInMillis = maxTimeoutInMillis

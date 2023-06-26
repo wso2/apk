@@ -19,15 +19,14 @@ package model
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/google/uuid"
+	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/internal/oasparser/constants"
 	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
 	"github.com/wso2/apk/adapter/internal/operator/utils"
 	"golang.org/x/exp/maps"
-	"google.golang.org/protobuf/types/known/durationpb"
 	"k8s.io/apimachinery/pkg/types"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
@@ -56,7 +55,6 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 
 	disableScopes := true
 	disableAuthentications := false
-	var clusterTimeout uint32
 
 	var authScheme *dpv1alpha1.Authentication
 	if outputAuthScheme != nil {
@@ -75,6 +73,8 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 		ratelimitPolicy = concatRateLimitPolicies(*outputRatelimitPolicy, nil)
 	}
 
+	config := config.ReadConfigs()
+
 	for _, rule := range httpRoute.Spec.Rules {
 		var endPoints []Endpoint
 		var policies = OperationPolicies{}
@@ -83,6 +83,9 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 		var resourceRatelimitPolicy *dpv1alpha1.RateLimitPolicy
 		hasPolicies := false
 		var scopes []string
+		var timeoutInMillis uint32 = config.Envoy.Upstream.Timeouts.RouteTimeoutInSeconds * 1000
+		var idleTimeoutInSeconds uint32 = config.Envoy.Upstream.Timeouts.RouteIdleTimeoutInSeconds
+
 		for _, filter := range rule.Filters {
 			hasPolicies = true
 			switch filter.Type {
@@ -232,7 +235,10 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 			}
 			resolvedBackend, ok := httpRouteParams.BackendMapping[backendName]
 			if ok {
-				clusterTimeout = resolvedBackend.Timeout
+				if resolvedBackend.Timeout != nil {
+					timeoutInMillis = resolvedBackend.Timeout.RouteTimeoutInSeconds * 1000
+					idleTimeoutInSeconds = resolvedBackend.Timeout.RouteIdleTimeoutInSeconds
+				}
 				endPoints = append(endPoints, GetEndpoints(backendName, httpRouteParams.BackendMapping)...)
 				for _, security := range resolvedBackend.Security {
 					switch security.Type {
@@ -254,13 +260,16 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 			resource := &Resource{path: resourcePath,
 				methods: getAllowedOperations(match.Method, policies, apiAuth,
 					parseRateLimitPolicyToInternal(resourceRatelimitPolicy), scopes),
-				pathMatchType:  *match.Path.Type,
-				hasPolicies:    hasPolicies,
-				iD:             uuid.New().String(),
-				clusterTimeout: clusterTimeout,
+				pathMatchType: *match.Path.Type,
+				hasPolicies:   hasPolicies,
+				iD:            uuid.New().String(),
 			}
 			resource.endpoints = &EndpointCluster{
 				Endpoints: endPoints,
+				Config: &EndpointConfig{
+					TimeoutInMillis:      timeoutInMillis,
+					IdleTimeoutInSeconds: idleTimeoutInSeconds,
+				},
 			}
 			resource.endpointSecurity = utils.GetPtrSlice(securityConfig)
 			resources = append(resources, resource)
@@ -387,7 +396,6 @@ func GetEndpoints(backendName types.NamespacedName, backendMapping dpv1alpha1.Ba
 	endpoints := []Endpoint{}
 	backend, ok := backendMapping[backendName]
 	if ok && backend != nil {
-		timeout := backend.Timeout
 		if len(backend.Services) > 0 {
 			for _, service := range backend.Services {
 				endpoints = append(endpoints, Endpoint{
@@ -396,7 +404,6 @@ func GetEndpoints(backendName types.NamespacedName, backendMapping dpv1alpha1.Ba
 					URLType:     string(backend.Protocol),
 					Certificate: []byte(backend.TLS.ResolvedCertificate),
 					AllowedSANs: backend.TLS.AllowedSANs,
-					Timeout:     durationpb.New(time.Duration(timeout) * time.Second),
 				})
 			}
 		}

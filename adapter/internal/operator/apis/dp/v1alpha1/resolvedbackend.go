@@ -28,7 +28,7 @@ type ResolvedBackend struct {
 	Protocol BackendProtocolType
 	TLS      ResolvedTLSConfig
 	Security []ResolvedSecurityConfig
-	Timeout  uint32
+	Timeout  *Timeout
 }
 
 // ResolvedTLSConfig defines enpoint TLS configurations

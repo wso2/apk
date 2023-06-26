@@ -134,7 +134,6 @@ func CreateRoutesWithClusters(adapterInternalAPI model.AdapterInternalAPI, inter
 		Host:    "localhost",
 		Port:    uint32(8084),
 		URLType: "https",
-		Timeout: durationpb.New(timeout),
 	}
 	endpointForAPIDefinitions = append(endpointForAPIDefinitions, *endpoint)
 	endpointCluster := model.EndpointCluster{
@@ -1499,6 +1498,7 @@ func genRouteCreateParams(swagger *model.AdapterInternalAPI, resource *model.Res
 		isDefaultVersion:             swagger.IsDefaultVersion,
 		apiLevelRateLimitPolicy:      swagger.RateLimitPolicy,
 		apiProperties:                swagger.APIProperties,
+		routeConfig:                  resource.GetEndpoints().Config,
 	}
 	return params
 }

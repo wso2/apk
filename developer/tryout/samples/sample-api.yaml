@@ -74,6 +74,21 @@ spec:
           path:
             type: ReplacePrefixMatch
             replacePrefixMatch: /post
+  - backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: test-backend
+    matches:
+    - path:
+        type: PathPrefix
+        value: /http-bin-api/1.0.8/hello
+      method: GET
+    filters:
+      - type: URLRewrite
+        urlRewrite:
+          path:
+            type: ReplacePrefixMatch
+            replacePrefixMatch: /hello
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
 kind: HTTPRoute
@@ -106,6 +121,21 @@ spec:
             group: dp.wso2.com
             kind: Scope
             name: pet
+    - backendRefs:
+      - group: dp.wso2.com
+        kind: Backend
+        name: test-backend
+      matches:
+      - path:
+          type: PathPrefix
+          value: /http-bin-api/1.0.8/hello
+        method: GET
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /hello
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
 kind: HTTPRoute
@@ -151,6 +181,21 @@ spec:
             group: dp.wso2.com
             kind: Authentication
             name: sand-http-bin-authentication
+    - backendRefs:
+      - group: dp.wso2.com
+        kind: Backend
+        name: test-backend
+      matches:
+      - path:
+          type: PathPrefix
+          value: /http-bin-api/1.0.8/hello
+        method: GET
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /hello
 ---
 apiVersion: dp.wso2.com/v1alpha1
 kind: Scope

@@ -63,8 +63,15 @@ type BackendSpec struct {
 	Security []SecurityConfig `json:"security,omitempty"`
 
 	// +optional
-	// Timeout in seconds '20s'
-	Timeout uint32 `json:"timeout,omitempty"`
+	// Timeout congifuration for the backend
+	Timeout *Timeout `json:"timeout,omitempty"`
+}
+
+// Timeout defines the timeout configurations
+type Timeout struct {
+	MaxRouteTimeoutInSeconds  uint32 `json:"maxRouteTimeoutInSeconds"`
+	RouteTimeoutInSeconds     uint32 `json:"routeTimeoutInSeconds"`
+	RouteIdleTimeoutInSeconds uint32 `json:"routeIdleTimeoutInSeconds"`
 }
 
 // Service holds host and port information for the service
