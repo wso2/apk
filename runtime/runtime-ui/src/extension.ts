@@ -1,99 +1,153 @@
-/*---------------------------------------------------------------------------------------------
- *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the MIT License. See License.txt in the project root for license information.
- *--------------------------------------------------------------------------------------------*/
+import * as vscode from 'vscode';
+import * as fs from 'fs';
+import * as path from 'path';
 
-import { ExtensionContext, extensions, window, Uri, env } from "vscode";
-import {
-  startClient,
-  LanguageClientConstructor,
-  RuntimeEnvironment,
-} from "./utils";
-import {
-  ServerOptions,
-  TransportKind,
-  LanguageClientOptions,
-  LanguageClient,
-} from "vscode-languageclient/node";
+export async function activate(context: vscode.ExtensionContext) {
 
-import { SchemaExtensionAPI } from "./schema-extension-api";
+	// Register the "*.apk-conf" file association to the "yaml" language
+	registerFileAssociation();
 
-import { getRedHatService } from "@redhat-developer/vscode-redhat-telemetry";
-import { JSONSchemaCache } from "./json-schema-cache";
+	// Check if "YAML Language Support by Red Hat" extension is installed
+	const yamlExtension = vscode.extensions.getExtension('redhat.vscode-yaml');
+	if (!yamlExtension) {
+		vscode.window.showErrorMessage(
+			'The "YAML Language Support by Red Hat" extension is required for the APK Configuration extension to work properly. Please install it and reload the window.'
+		);
+		return;
+	}
+	const yamlExtensionAPI = await yamlExtension.activate();
+	const SCHEMA = "apkschema";
 
-// this method is called when vs code is activated
-export async function activate(
-  context: ExtensionContext
-): Promise<SchemaExtensionAPI> {
-  const yamlExtension = extensions.getExtension("redhat.vscode-yaml");
-  if (yamlExtension) {
-    // Show a recommendation message to disable the "YAML Language Support by Red Hat" extension
-    window
-      .showInformationMessage(
-        'For the best experience with the APK Configuration extension, we recommend disabling the "YAML Language Support by Red Hat" extension.',
-        "Disable Extension"
-      )
-      .then((selection) => {
-        if (selection === "Disable Extension") {
-          // Open the "YAML Language Support by Red Hat" extension configuration page
-          if (selection === "Disable Extension") {
-            // Open the "YAML Language Support by Red Hat" extension home page
-            env.openExternal(Uri.parse("vscode:extension/redhat.vscode-yaml"));
-          }
-        }
-      });
-    return;
-  }
+	// Read the schema file content
+	const schemaFilePath = path.join(context.extensionPath, 'schema', 'apk-schema.json');
 
-  // Create Telemetry Service
-  const telemetry = await (
-    await getRedHatService(context)
-  ).getTelemetryService();
+	const schemaContent = fs.readFileSync(schemaFilePath, 'utf8');
+	const schemaContentJSON = JSON.parse(schemaContent);
 
-  // let serverModule: string;
-  // if (startedFromSources()) {
-  //   serverModule = context.asAbsolutePath(
-  //     "./node_modules/yaml-language-server/bin/yaml-language-server"
-  //   );
-  // } else {
-  // The YAML language server is implemented in node
-  const serverModule = context.asAbsolutePath("./dist/languageserver.js");
-  // }
+	const schemaJSON = JSON.stringify(schemaContentJSON);
 
-  // The debug options for the server
-  const debugOptions = { execArgv: ["--nolazy", "--inspect=6009"] };
+	/**
+	 * 
+	 * @param resource  The URI of the resource
+	 * @returns  The URI of the schema file
+	 * 
+	 * This function is called when the YAML Language Support extension needs to know the URI of the schema file.
+	 * The schema file is stored in the extension's "schema" folder.
+	 * The schema file is named "apk-schema.json".
+	 */
+	function onRequestSchemaURI(resource: string): string | undefined {
+		if (resource.endsWith('.apk-conf')) {
+			return `${SCHEMA}://schema/apk-conf`;
+		}
+		return undefined;
+	}
+	/**
+	 * 
+	 * @param schemaUri  The URI of the schema
+	 * @returns  The content of the schema file
+	 *
+	 */
+	function onRequestSchemaContent(schemaUri: string): string | undefined {
+		const parsedUri = vscode.Uri.parse(schemaUri);
+		if (parsedUri.scheme !== SCHEMA) {
+			return undefined;
+		}
+		if (!parsedUri.path || !parsedUri.path.startsWith('/')) {
+			return undefined;
+		}
 
-  // If the extension is launched in debug mode then the debug server options are used
-  // Otherwise the run options are used
-  console.info(serverModule);
-  const serverOptions: ServerOptions = {
-    run: { module: serverModule, transport: TransportKind.ipc },
-    debug: {
-      module: serverModule,
-      transport: TransportKind.ipc,
-      options: debugOptions,
-    },
+		return schemaJSON;
+	}
+
+	// Register the schema provider
+	yamlExtensionAPI.registerContributor(SCHEMA, onRequestSchemaURI, onRequestSchemaContent);
+
+
+	/////////////////////////// template selection code ////////////////////////////
+
+	const extensionRoot = context.extensionUri.fsPath;
+	const templatesFolderPath = vscode.Uri.file(path.join(extensionRoot, "templates"));
+
+	// Register a command to handle the "choose a template" action
+	// Read the template files from the templates folder
+	const templateFiles = fs.readdirSync(templatesFolderPath.fsPath);
+
+	// Process the template files
+	const templates: string[] = [];
+	templateFiles.forEach((file) => {
+		templates.push(file);
+	});
+
+	/**
+	 * Register a command to handle the "choose a template" action
+	 * Read the template files from the templates folder
+	 * Process the template files
+	 */
+
+	context.subscriptions.push(
+		vscode.commands.registerCommand("extension.chooseTemplateApk", async () => {
+			// Show a quick pick menu to let the user choose a template
+
+			const selectedTemplate = await vscode.window.showQuickPick(templates);
+			if (selectedTemplate) {
+				const activeEditor = vscode.window.activeTextEditor;
+				if (
+					activeEditor &&
+					activeEditor.document.fileName.endsWith(".apk-conf")
+				) {
+					// Insert the selected template into the currently open 'api-config.yaml' file
+					activeEditor.edit((editBuilder) => {
+						const templatePath = vscode.Uri.file(
+							path.join(templatesFolderPath.fsPath, selectedTemplate)
+						);
+						const templateContent = fs.readFileSync(
+							templatePath.fsPath,
+							"utf-8"
+						);
+						editBuilder.insert(activeEditor.selection.start, templateContent);
+					});
+				} else {
+					vscode.window.showErrorMessage('Please open an "apk-config.apk-conf" file.');
+				}
+			}
+		})
+	);
+
+	// Show the "choose a template" message when the user creates a new file named "apk-config.yaml"
+	// in the workspace
+	context.subscriptions.push(
+		vscode.workspace.onDidCreateFiles((e) => {
+			e.files.forEach((file) => {
+				if (file.fsPath.endsWith(".apk-conf")) {
+					vscode.window
+						.showInformationMessage("Choose a template", "Select Template")
+						.then((choice) => {
+							if (choice === "Select Template") {
+								vscode.commands.executeCommand("extension.chooseTemplateApk");
+							}
+						});
+				}
+			});
+		})
+	);
+	////////////////////////// end template selection code ///////////////////////////
+}
+/**
+ * Registers the "*.apk-conf" file association to the "yaml" language
+ * so that the YAML Language Support extension can be used to edit
+ * the APK configuration files.
+ */
+function registerFileAssociation() {
+  const config = vscode.workspace.getConfiguration('files');
+  const fileAssociations = config.get('associations') as Record<string, string>;
+
+  // Update the file associations to include "*.apk-conf" mapping to "yaml"
+  const updatedAssociations = {
+    ...fileAssociations,
+    '*.apk-conf': 'yaml',
   };
 
-  const newLanguageClient: LanguageClientConstructor = (
-    id: string,
-    name: string,
-    clientOptions: LanguageClientOptions
-  ) => {
-    return new LanguageClient(id, name, serverOptions, clientOptions);
-  };
-
-  const runtime: RuntimeEnvironment = {
-    telemetry,
-    schemaCache: new JSONSchemaCache(
-      context.globalStorageUri.fsPath,
-      context.globalState
-    ),
-  };
-
-  return startClient(context, newLanguageClient, runtime);
+  // Update the configuration with the modified file associations
+  config.update('associations', updatedAssociations, vscode.ConfigurationTarget.Global);
 }
 
-function startedFromSources(): boolean {
-  return process.env["DEBUG_VSCODE_YAML"] === "true";
-}
