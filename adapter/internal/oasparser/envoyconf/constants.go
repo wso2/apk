@@ -93,7 +93,7 @@ const (
 	testKeyPath             string = "/testkey"
 	readyPath               string = "/ready"
 	apiDefinitionQueryParam string = "OAS"
-	jwksPath    string = "/.wellknown/jwks"
+	jwksPath                string = "/.wellknown/jwks"
 )
 
 const (

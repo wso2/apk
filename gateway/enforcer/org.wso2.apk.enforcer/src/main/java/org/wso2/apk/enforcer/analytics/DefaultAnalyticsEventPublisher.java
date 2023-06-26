@@ -147,9 +147,10 @@ public class DefaultAnalyticsEventPublisher implements AnalyticsEventPublisher {
                 // Token endpoint calls needs to be removed as well
                 || (AnalyticsConstants.TOKEN_ENDPOINT_PATH.equals(logEntry.getRequest().getOriginalPath()))
                 // Health endpoint calls are not published
-                || (AnalyticsConstants.HEALTH_ENDPOINT_PATH.equals(logEntry.getRequest().getOriginalPath()));
+                || (AnalyticsConstants.HEALTH_ENDPOINT_PATH.equals(logEntry.getRequest().getOriginalPath())
                 // already published websocket log entries should not be published to the analytics again.
 //                || alreadyPublishedWebsocketHttpLogEntry(logEntry);
+                || (AnalyticsConstants.JWKS_ENDPOINT_PATH.equals(logEntry.getRequest().getOriginalPath())));
     }
 
 //    // If the access log entry has the status code of 101 and it is a websocket related log entry,

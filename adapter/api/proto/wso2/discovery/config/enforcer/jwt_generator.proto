@@ -11,8 +11,12 @@ option java_multiple_files = true;
 
 // JWT Generator model
 message JWTGenerator {
+    repeated Keypair keypairs = 1;
+}
 
-    string public_certificate_path = 1;
-
-    string private_key_path = 2;
+// keypair model
+message Keypair {
+  string public_certificate_path = 1;
+  string private_key_path = 2;
+  bool use_for_signing = 3;
 }

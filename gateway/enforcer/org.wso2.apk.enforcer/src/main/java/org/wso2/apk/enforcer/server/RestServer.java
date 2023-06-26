@@ -32,6 +32,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.wso2.apk.enforcer.admin.AdminServerInitializer;
 import org.wso2.apk.enforcer.config.ConfigHolder;
+import org.wso2.apk.enforcer.jwks.JWKSRequestHandler;
+import org.wso2.apk.enforcer.jwks.JWKSServerInitializer;
 import org.wso2.apk.enforcer.security.jwt.issuer.HttpTokenServerInitializer;
 import org.wso2.apk.enforcer.server.swagger.SwaggerServerInitializer;
 
@@ -86,6 +88,17 @@ public class RestServer {
                     .childHandler(new SwaggerServerInitializer(sslCtx));
             Channel swaggerChannel = swaggerServer.bind(8084).sync().channel();
             logger.info("API Definition endpoint started Listening in port : " + 8084);
+
+            ServerBootstrap jWKSServer = new ServerBootstrap();
+            jWKSServer.option(ChannelOption.SO_BACKLOG, 1024);
+            jWKSServer.group(bossGroup, workerGroup)
+                    .channel(NioServerSocketChannel.class)
+                    .handler(new JWKSRequestHandler())
+                    .childHandler(new JWKSServerInitializer(sslCtx));
+            Channel jwksChannel = jWKSServer.bind(9092).sync().channel();
+            logger.info("JWKS endpoint started Listening in port : " + 9092);
+            jwksChannel.closeFuture().sync();
+
 
             if (ConfigHolder.getInstance().getConfig().getRestServer().isEnable()) {
                 ServerBootstrap adminServer = new ServerBootstrap();

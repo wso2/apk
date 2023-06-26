@@ -298,6 +298,14 @@ type jwtGenerator struct {
 	PublicCertificatePath string
 	PrivateKeyPath        string
 	TokenTTL              int32
+	Keypair               []KeyPair
+}
+
+// KeyPair represents hthe rsa keypair used for signing JWTs
+type KeyPair struct {
+	PrivateKeyPath        string
+	PublicCertificatePath string
+	UseForSigning         bool
 }
 
 type claimMapping struct {

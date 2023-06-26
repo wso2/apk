@@ -72,6 +72,29 @@ func MarshalConfig(config *config.Config) *enforcer.Config {
 		jwtUsers = append(jwtUsers, jwtUser)
 	}
 
+	keyPairs := []*enforcer.Keypair{}
+
+	if config.Enforcer.JwtGenerator.PrivateKeyPath == "" {
+		// New configuration
+		for _, kp := range config.Enforcer.JwtGenerator.Keypair {
+			keypair := &enforcer.Keypair{
+				PublicCertificatePath: kp.PublicCertificatePath,
+				PrivateKeyPath:        kp.PrivateKeyPath,
+				UseForSigning:         kp.UseForSigning,
+			}
+
+			keyPairs = append(keyPairs, keypair)
+		}
+	} else {
+		// Marshal old config
+		keypair := &enforcer.Keypair{
+			PrivateKeyPath:        config.Enforcer.JwtGenerator.PrivateKeyPath,
+			PublicCertificatePath: config.Enforcer.JwtGenerator.PublicCertificatePath,
+			UseForSigning:         true,
+		}
+		keyPairs = append(keyPairs, keypair)
+	}
+
 	authService := &enforcer.Service{
 		KeepAliveTime:  config.Enforcer.AuthService.KeepAliveTime,
 		MaxHeaderLimit: config.Enforcer.AuthService.MaxHeaderLimit,
@@ -144,8 +167,7 @@ func MarshalConfig(config *config.Config) *enforcer.Config {
 
 	return &enforcer.Config{
 		JwtGenerator: &enforcer.JWTGenerator{
-			PublicCertificatePath: config.Enforcer.JwtGenerator.PublicCertificatePath,
-			PrivateKeyPath:        config.Enforcer.JwtGenerator.PrivateKeyPath,
+			Keypairs:             keyPairs,
 		},
 		JwtIssuer: &enforcer.JWTIssuer{
 			Enabled:               config.Enforcer.JwtIssuer.Enabled,
