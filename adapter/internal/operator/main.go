@@ -27,7 +27,6 @@ import (
 	gwapiv1a2 "sigs.k8s.io/gateway-api/apis/v1alpha2"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 
-	cpcontrollers "github.com/wso2/apk/adapter/internal/operator/controllers/cp"
 	dpcontrollers "github.com/wso2/apk/adapter/internal/operator/controllers/dp"
 	"github.com/wso2/apk/adapter/internal/operator/status"
 	"github.com/wso2/apk/adapter/internal/operator/synchronizer"
@@ -142,13 +141,6 @@ func InitOperator() {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2652, err))
 	}
 
-	if err := cpcontrollers.NewApplicationController(mgr); err != nil {
-		loggers.LoggerAPKOperator.Errorf("Error creating Application controller: %v", err)
-	}
-
-	if err := cpcontrollers.NewSubscriptionController(mgr); err != nil {
-		loggers.LoggerAPKOperator.Errorf("Error creating Subscription controller: %v", err)
-	}
 	if err := dpcontrollers.NewJWTIssuerReconciler(mgr); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3114, err))
 	}
