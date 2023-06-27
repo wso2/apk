@@ -76,11 +76,7 @@ function init() returns error? {
     if retrieveAllServicesAtStartup is error {
         log:printError("Error occured while retrieving Service List", retrieveAllServicesAtStartup);
     }
-    OrgClient orgClient = new ();
-    error? retrieveAllOrganizationsAtStartup = orgClient.retrieveAllOrganizationsAtStartup((), ());
-    if retrieveAllOrganizationsAtStartup is error {
-        log:printError("Error occured while retrieving Organization List", retrieveAllOrganizationsAtStartup);
-    }
+
     APIListingTask apiListingTask = new (apiResourceVersion);
     _ = check apiListingTask.startListening();
     ServiceTask serviceTask = new (servicesResourceVersion);
@@ -88,8 +84,6 @@ function init() returns error? {
     _ = check servicesService.retrieveAllServiceMappingsAtStartup((), ());
     ServiceMappingTask serviceMappingTask = new (serviceMappingResourceVersion);
     _ = check serviceMappingTask.startListening();
-    OrganizationListingTask organizationListingTask = new (organizationResourceVersion);
-    _ = check organizationListingTask.startListening();
     _ = check retrieveAllConfigMapsAtStartup((), ());
     ConfigMapListingTask configMapTask = new (configMapResourceVersion);
     _ = check configMapTask.startListening();
