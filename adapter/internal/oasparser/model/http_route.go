@@ -312,6 +312,18 @@ func getCorsConfigFromAPIPolicy(apiPolicy *dpv1alpha1.APIPolicy) *CorsConfig {
 			}
 		}
 	}
+	if apiPolicy != nil && apiPolicy.Spec.Default != nil {
+		if apiPolicy.Spec.Default.CORSPolicy != nil {
+			corsConfig = &CorsConfig{
+				Enabled:                       apiPolicy.Spec.Default.CORSPolicy.Enabled,
+				AccessControlAllowCredentials: apiPolicy.Spec.Default.CORSPolicy.AccessControlAllowCredentials,
+				AccessControlAllowHeaders:     apiPolicy.Spec.Default.CORSPolicy.AccessControlAllowHeaders,
+				AccessControlAllowMethods:     apiPolicy.Spec.Default.CORSPolicy.AccessControlAllowMethods,
+				AccessControlAllowOrigins:     apiPolicy.Spec.Default.CORSPolicy.AccessControlAllowOrigins,
+				AccessControlExposeHeaders:    apiPolicy.Spec.Default.CORSPolicy.AccessControlExposeHeaders,
+			}
+		}
+	}
 	return corsConfig
 }
 
@@ -322,6 +334,12 @@ func parseRateLimitPolicyToInternal(ratelimitPolicy *dpv1alpha1.RateLimitPolicy)
 			rateLimitPolicyInternal = &RateLimitPolicy{
 				Count:    ratelimitPolicy.Spec.Override.API.RateLimit.RequestsPerUnit,
 				SpanUnit: ratelimitPolicy.Spec.Override.API.RateLimit.Unit,
+			}
+		}
+		if ratelimitPolicy.Spec.Default.API.RateLimit.RequestsPerUnit > 0 {
+			rateLimitPolicyInternal = &RateLimitPolicy{
+				Count:    ratelimitPolicy.Spec.Default.API.RateLimit.RequestsPerUnit,
+				SpanUnit: ratelimitPolicy.Spec.Default.API.RateLimit.Unit,
 			}
 		}
 	}
@@ -357,6 +375,50 @@ func addOperationLevelInterceptors(policies *OperationPolicies, apiPolicy *dpv1a
 			responseInterceptor := interceptorServicesMapping[types.NamespacedName{
 				Name:      apiPolicy.Spec.Override.ResponseInterceptors[0].Name,
 				Namespace: apiPolicy.Spec.Override.ResponseInterceptors[0].Namespace,
+			}.String()].Spec
+			policyParameters := make(map[string]interface{})
+			backendName := types.NamespacedName{
+				Name:      responseInterceptor.BackendRef.Name,
+				Namespace: utils.GetNamespace((*gwapiv1b1.Namespace)(&responseInterceptor.BackendRef.Namespace), apiPolicy.Namespace),
+			}
+			endpoints := GetEndpoints(backendName, backendMapping)
+			if len(endpoints) > 0 {
+				policyParameters[constants.InterceptorEndpoints] = endpoints
+				policyParameters[constants.InterceptorServiceIncludes] = responseInterceptor.Includes
+				policies.Response = append(policies.Response, Policy{
+					PolicyName: constants.PolicyResponseInterceptor,
+					Action:     constants.ActionInterceptorService,
+					Parameters: policyParameters,
+				})
+			}
+		}
+	}
+	if apiPolicy != nil && apiPolicy.Spec.Default != nil {
+		if len(apiPolicy.Spec.Default.RequestInterceptors) > 0 {
+			requestInterceptor := interceptorServicesMapping[types.NamespacedName{
+				Name:      apiPolicy.Spec.Default.RequestInterceptors[0].Name,
+				Namespace: apiPolicy.Spec.Default.RequestInterceptors[0].Namespace,
+			}.String()].Spec
+			policyParameters := make(map[string]interface{})
+			backendName := types.NamespacedName{
+				Name:      requestInterceptor.BackendRef.Name,
+				Namespace: utils.GetNamespace((*gwapiv1b1.Namespace)(&requestInterceptor.BackendRef.Namespace), apiPolicy.Namespace),
+			}
+			endpoints := GetEndpoints(backendName, backendMapping)
+			if len(endpoints) > 0 {
+				policyParameters[constants.InterceptorEndpoints] = endpoints
+				policyParameters[constants.InterceptorServiceIncludes] = requestInterceptor.Includes
+				policies.Request = append(policies.Request, Policy{
+					PolicyName: constants.PolicyRequestInterceptor,
+					Action:     constants.ActionInterceptorService,
+					Parameters: policyParameters,
+				})
+			}
+		}
+		if len(apiPolicy.Spec.Default.ResponseInterceptors) > 0 {
+			responseInterceptor := interceptorServicesMapping[types.NamespacedName{
+				Name:      apiPolicy.Spec.Default.ResponseInterceptors[0].Name,
+				Namespace: apiPolicy.Spec.Default.ResponseInterceptors[0].Namespace,
 			}.String()].Spec
 			policyParameters := make(map[string]interface{})
 			backendName := types.NamespacedName{
