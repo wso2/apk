@@ -213,10 +213,14 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 				}
 			}
 		}
+		if resourceAPIPolicy == apiPolicy {
+			apiPolicySelected := concatAPIPolicies(apiPolicy, nil)
+			addOperationLevelInterceptors(&policies, apiPolicySelected, httpRouteParams.InterceptorServiceMapping, httpRouteParams.BackendMapping)
+		} else {
+			addOperationLevelInterceptors(&policies, resourceAPIPolicy, httpRouteParams.InterceptorServiceMapping, httpRouteParams.BackendMapping)
+		}
 
-		addOperationLevelInterceptors(&policies, resourceAPIPolicy, httpRouteParams.InterceptorServiceMapping, httpRouteParams.BackendMapping)
-
-		loggers.LoggerOasparser.Debug("Calculating auths for API ...")
+		loggers.LoggerOasparser.Debugf("Calculating auths for API ...")
 		apiAuth := getSecurity(resourceAuthScheme)
 		if len(rule.BackendRefs) < 1 {
 			return fmt.Errorf("no backendref were provided")
@@ -261,11 +265,11 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 			resources = append(resources, resource)
 		}
 	}
-	swagger.xWso2Cors = getCorsConfigFromAPIPolicy(apiPolicy)
 
 	swagger.RateLimitPolicy = parseRateLimitPolicyToInternal(ratelimitPolicy)
 	swagger.resources = resources
 	apiPolicySelected := concatAPIPolicies(apiPolicy, nil)
+	swagger.xWso2Cors = getCorsConfigFromAPIPolicy(apiPolicySelected)
 	swagger.disableAuthentications = disableAuthentications
 	swagger.disableScopes = disableScopes
 
