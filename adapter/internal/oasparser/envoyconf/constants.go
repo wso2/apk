@@ -37,7 +37,7 @@ const (
 	apkWASMVmID                string = "mgw_WASM_vm"
 	apkWASMVmRuntime           string = "envoy.wasm.runtime.v8"
 	apkWebSocketWASMFilterRoot string = "mgw_WASM_websocket_root"
-	apkWebSocketWASM           string = "/home/wso2/wasm/websocket/mgw-websocket.wasm"
+	apkWebSocketWASM           string = "/ambassador/wasm/websocket/mgw-websocket.wasm"
 	compressorFilterName       string = "envoy.filters.http.compressor"
 )
 

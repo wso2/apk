@@ -204,64 +204,64 @@ spec:
             - name: ROUTER_LABEL
               value: "default"
             - name: ROUTER_PRIVATE_KEY_PATH
-              value: "/home/wso2/security/keystore/router.key"
+              value: "/ambassador/security/keystore/router.key"
             - name: ROUTER_PUBLIC_CERT_PATH
-              value: "/home/wso2/security/keystore/router.crt"
+              value: "/ambassador/security/keystore/router.crt"
             - name: ADAPTER_PORT
               value: "18000"
             - name: ADAPTER_CA_CERT_PATH
-              value: "/home/wso2/security/truststore/adapter.crt"
+              value: "/ambassador/security/truststore/adapter.crt"
             - name: ENFORCER_PORT
               value: "8081"
             - name: ENFORCER_ANALYTICS_RECEIVER_PORT
               value: "18090"
             - name: ENFORCER_CA_CERT_PATH
-              value: "/home/wso2/security/truststore/enforcer.crt"
+              value: "/ambassador/security/truststore/enforcer.crt"
             - name: CONCURRENCY
               value: "2"
             - name: TRAILING_ARGS
               value: --component-log-level http:debug,http2:debug,conn_handler:debug,ext_authz:trace
           volumeMounts:
             - name: router-keystore-secret-volume
-              mountPath: /home/wso2/security/keystore/router.key
+              mountPath: /ambassador/security/keystore/router.key
             {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls }}
               subPath: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls.certKeyFilename | default "tls.key" }}
             {{- else }}
               subPath: tls.key
             {{- end }}
             - name: router-keystore-secret-volume
-              mountPath: /home/wso2/security/keystore/router.crt
+              mountPath: /ambassador/security/keystore/router.crt
             {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls }}
               subPath: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls.certFilename | default "tls.crt" }}
             {{- else }}
               subPath: tls.crt
             {{- end }}
             - name: adapter-truststore-secret-volume
-              mountPath: /home/wso2/security/truststore/adapter.crt
+              mountPath: /ambassador/security/truststore/adapter.crt
             {{- if and .Values.wso2.apk.dp.adapter.configs .Values.wso2.apk.dp.adapter.configs.tls }}
               subPath: {{ .Values.wso2.apk.dp.adapter.configs.tls.certFilename | default "tls.crt" }}
             {{- else }}
               subPath: tls.crt
             {{- end }}
             - name: enforcer-keystore-secret-volume
-              mountPath: /home/wso2/security/truststore/enforcer.crt
+              mountPath: /ambassador/security/truststore/enforcer.crt
             {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.tls }}
               subPath: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.tls.certFilename | default "tls.crt" }}
             {{- else }}
               subPath: tls.crt
             {{- end }}
             - name: log-conf-volume
-              mountPath: /home/wso2/conf/
+              mountPath: /ambassador/conf/
             {{ if and .Values.wso2.apk.dp.enabled .Values.wso2.apk.dp.ratelimiter.enabled }}
             - name: ratelimiter-truststore-secret-volume
-              mountPath: /home/wso2/security/truststore/ratelimiter.crt
+              mountPath: /ambassador/security/truststore/ratelimiter.crt
             {{- if and .Values.wso2.apk.dp.ratelimiter.configs .Values.wso2.apk.dp.ratelimiter.configs.tls }}
               subPath: {{ .Values.wso2.apk.dp.ratelimiter.configs.tls.certFilename | default "tls.crt" }}
             {{- else }}
               subPath: tls.crt
             {{- end }}
             - name: ratelimiter-truststore-secret-volume
-              mountPath: /home/wso2/security/truststore/ratelimiter-ca.crt
+              mountPath: /ambassador/security/truststore/ratelimiter-ca.crt
             {{- if and .Values.wso2.apk.dp.ratelimiter.configs .Values.wso2.apk.dp.ratelimiter.configs.tls }}
               subPath: {{ .Values.wso2.apk.dp.ratelimiter.configs.tls.certCAFilename | default "ca.crt" }}
             {{- else }}

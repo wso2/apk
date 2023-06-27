@@ -49,8 +49,8 @@ var defaultConfig = &Config{
 		EnforcerResponseTimeoutInSeconds: 20,
 		UseRemoteAddress:                 false,
 		KeyStore: keystore{
-			KeyPath:  "/home/wso2/security/keystore/mg.key",
-			CertPath: "/home/wso2/security/keystore/mg.pem",
+			KeyPath:  "/ambassador/security/keystore/mg.key",
+			CertPath: "/ambassador/security/keystore/mg.pem",
 		},
 		SystemHost: "localhost",
 		Upstream: envoyUpstream{
@@ -143,9 +143,9 @@ var defaultConfig = &Config{
 			},
 			FailureModeDeny:        false,
 			RequestTimeoutInMillis: 80,
-			KeyFilePath:            "/home/wso2/security/keystore/router.key",
-			CertFilePath:           "/home/wso2/security/keystore/router.crt",
-			CaCertFilePath:         "/home/wso2/security/truststore/ratelimiter.crt",
+			KeyFilePath:            "/ambassador/security/keystore/router.key",
+			CertFilePath:           "/ambassador/security/keystore/router.crt",
+			CaCertFilePath:         "/ambassador/security/truststore/ratelimiter.crt",
 			SSLCertSANHostname:     "",
 		},
 	},

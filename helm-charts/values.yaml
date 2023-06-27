@@ -136,8 +136,8 @@ wso2:
             failureThreshold: 5
           strategy: Recreate
           replicas: 1
-          imagePullPolicy: Always
-          image: wso2/adapter:latest
+          
+          image: adapter:0.0.1-SNAPSHOT
           security:
             sslHostname: "adapter"
 #        logging:
@@ -201,8 +201,7 @@ wso2:
               periodSeconds: 20
               failureThreshold: 5
             strategy: Recreate
-            imagePullPolicy: Always
-            image: wso2/router:0.0.1-m12
+            image: router:0.0.1-SNAPSHOT
             # configs:
             #   tls:
             #     secretName: "router-cert"
@@ -231,8 +230,8 @@ wso2:
               periodSeconds: 20
               failureThreshold: 5
             strategy: Recreate
-            imagePullPolicy: Always
-            image: wso2/enforcer:0.0.1-m12
+            
+            image: enforcer:0.0.1-SNAPSHOT
             security:
               sslHostname: "enforcer"
 #            logging:

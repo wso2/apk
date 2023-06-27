@@ -42,7 +42,7 @@ tasks.register('envoy_filter_build', Exec) {
 }
 
 tasks.named('docker_build').configure {
-    dependsOn envoy_filter_build
+    // dependsOn envoy_filter_build
 }
 
 task build{

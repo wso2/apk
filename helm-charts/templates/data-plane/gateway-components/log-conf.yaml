@@ -33,8 +33,8 @@ data:
       useRemoteAddress = false
 
     [router.keystore]
-      certPath = "/home/wso2/security/keystore/router.crt"
-      keyPath = "/home/wso2/security/keystore/router.key"
+      certPath = "/ambassador/security/keystore/router.crt"
+      keyPath = "/ambassador/security/keystore/router.key"
 
     [router.upstream]
     [router.upstream.tls]
@@ -159,9 +159,9 @@ data:
     [router.ratelimit]
       host = "{{ template "apk-helm.resource.prefix" . }}-ratelimiter-service.{{ .Release.Namespace }}.svc"
       enabled = {{ and .Values.wso2.apk.dp.enabled .Values.wso2.apk.dp.ratelimiter.enabled}}
-      keyFilePath = "/home/wso2/security/keystore/router.key"
-      certFilePath = "/home/wso2/security/keystore/router.crt"
-      caCertFilePath = "/home/wso2/security/truststore/ratelimiter.crt"
+      keyFilePath = "/ambassador/security/keystore/router.key"
+      certFilePath = "/ambassador/security/keystore/router.crt"
+      caCertFilePath = "/ambassador/security/truststore/ratelimiter.crt"
     {{end}}
     {{ if .Values.wso2.apk.dp.partitionServer}}
     [partitionServer]

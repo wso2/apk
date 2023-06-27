@@ -225,7 +225,7 @@ func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 			*apiReconciler.ch <- synchronizer.APIEvent{EventType: constants.Delete, Event: apiState}
 			return ctrl.Result{}, nil
 		}
-		loggers.LoggerAPKOperator.Warnf("Api CR related to the reconcile request with key: %s returned error. Assuming API is already deleted, hence ignoring the error : %v", err)
+		loggers.LoggerAPKOperator.Warnf("Api CR related to the reconcile request with key: %s returned error. Assuming API is already deleted, hence ignoring the error : %v", req.NamespacedName.String(), err)
 		return ctrl.Result{}, nil
 	}
 	if apiState, err := apiReconciler.resolveAPIRefs(ctx, apiDef, req.NamespacedName, req.Namespace); err != nil {

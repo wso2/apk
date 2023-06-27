@@ -19,8 +19,8 @@
   useRemoteAddress = false
 
 [router.keystore]
-  certPath = "/home/wso2/security/keystore/mg.pem"
-  keyPath = "/home/wso2/security/keystore/mg.key"
+  certPath = "/ambassador/security/keystore/mg.pem"
+  keyPath = "/ambassador/security/keystore/mg.key"
 
 [router.upstream]
 [router.upstream.tls]
