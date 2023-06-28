@@ -790,28 +790,7 @@ data:
   log4j2.properties: |
     monitorInterval=20
 
-    appenders = ENFORCER_ANALYTICS, ENFORCER_CONSOLE, ENFORCER_LOGFILE, ENFORCER_ACCESS_LOG
-
-    appender.ENFORCER_ANALYTICS.type = RollingFile
-    appender.ENFORCER_ANALYTICS.name = ENFORCER_ANALYTICS
-    {{- if .Values.wso2.apk.dp.gatewayRuntime.analytics }}
-    appender.ENFORCER_ANALYTICS.fileName = {{ .Values.wso2.apk.dp.gatewayRuntime.analytics.logFileName | default "logs/enforcer_analytics.log" }}
-    {{- else }}
-    appender.ENFORCER_ANALYTICS.fileName = logs/enforcer_analytics.log
-    {{- end }}
-    appender.ENFORCER_ANALYTICS.filePattern = /logs/enforcer_analytics-%d{MM-dd-yyyy}.log
-    appender.ENFORCER_ANALYTICS.layout.type = PatternLayout
-    appender.ENFORCER_ANALYTICS.layout.pattern = [%d] - %m%ex%n
-    appender.ENFORCER_ANALYTICS.policies.type = Policies
-    appender.ENFORCER_ANALYTICS.policies.time.type = TimeBasedTriggeringPolicy
-    appender.ENFORCER_ANALYTICS.policies.time.interval = 1
-    appender.ENFORCER_ANALYTICS.policies.time.modulate = true
-    appender.ENFORCER_ANALYTICS.policies.size.type = SizeBasedTriggeringPolicy
-    appender.ENFORCER_ANALYTICS.policies.size.size=10MB
-    appender.ENFORCER_ANALYTICS.strategy.type = DefaultRolloverStrategy
-    appender.ENFORCER_ANALYTICS.strategy.max = 20
-    appender.ENFORCER_ANALYTICS.filter.threshold.type = ThresholdFilter
-    appender.ENFORCER_ANALYTICS.filter.threshold.level = DEBUG
+    appenders = ENFORCER_CONSOLE
 
     appender.ENFORCER_CONSOLE.type = Console
     appender.ENFORCER_CONSOLE.name = ENFORCER_CONSOLE
@@ -819,44 +798,6 @@ data:
     appender.ENFORCER_CONSOLE.layout.pattern = [%d{DEFAULT}][%X{traceId}]%x %5p - {%c} - %m [%errorDetails]%n
     appender.ENFORCER_CONSOLE.filter.threshold.type = ThresholdFilter
     appender.ENFORCER_CONSOLE.filter.threshold.level = DEBUG
-
-    appender.ENFORCER_LOGFILE.type = RollingFile
-    appender.ENFORCER_LOGFILE.name = ENFORCER_LOGFILE
-    {{- if .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.logging }}
-    appender.ENFORCER_LOGFILE.fileName = {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.logging.logFile | default "logs/enforcer.log" }}
-    {{- else }}
-    appender.ENFORCER_LOGFILE.fileName = logs/enforcer.log
-    {{- end }}    
-    appender.ENFORCER_LOGFILE.filePattern = /logs/enforcer-%d{MM-dd-yyyy}.log
-    appender.ENFORCER_LOGFILE.layout.type = PatternLayout
-    appender.ENFORCER_LOGFILE.layout.pattern = [%d][%X{traceId}]%x %5p {%c} - %m%ex%n
-    appender.ENFORCER_LOGFILE.policies.type = Policies
-    appender.ENFORCER_LOGFILE.policies.time.type = TimeBasedTriggeringPolicy
-    appender.ENFORCER_LOGFILE.policies.time.interval = 1
-    appender.ENFORCER_LOGFILE.policies.time.modulate = true
-    appender.ENFORCER_LOGFILE.policies.size.type = SizeBasedTriggeringPolicy
-    appender.ENFORCER_LOGFILE.policies.size.size=10MB
-    appender.ENFORCER_LOGFILE.strategy.type = DefaultRolloverStrategy
-    appender.ENFORCER_LOGFILE.strategy.max = 20
-    appender.ENFORCER_LOGFILE.filter.threshold.type = ThresholdFilter
-    appender.ENFORCER_LOGFILE.filter.threshold.level = DEBUG
-
-    appender.ENFORCER_ACCESS_LOG.type = RollingFile
-    appender.ENFORCER_ACCESS_LOG.name = ENFORCER_ACCESS_LOG
-    appender.ENFORCER_ACCESS_LOG.fileName = logs/enforcer_access.log
-    appender.ENFORCER_ACCESS_LOG.filePattern = /logs/enforcer_access-%d{MM-dd-yyyy}.log
-    appender.ENFORCER_ACCESS_LOG.layout.type = PatternLayout
-    appender.ENFORCER_ACCESS_LOG.layout.pattern = [%d] - %m%ex%n
-    appender.ENFORCER_ACCESS_LOG.policies.type = Policies
-    appender.ENFORCER_ACCESS_LOG.policies.time.type = TimeBasedTriggeringPolicy
-    appender.ENFORCER_ACCESS_LOG.policies.time.interval = 1
-    appender.ENFORCER_ACCESS_LOG.policies.time.modulate = true
-    appender.ENFORCER_ACCESS_LOG.policies.size.type = SizeBasedTriggeringPolicy
-    appender.ENFORCER_ACCESS_LOG.policies.size.size=10MB
-    appender.ENFORCER_ACCESS_LOG.strategy.type = DefaultRolloverStrategy
-    appender.ENFORCER_ACCESS_LOG.strategy.max = 20
-    appender.ENFORCER_ACCESS_LOG.filter.threshold.type = ThresholdFilter
-    appender.ENFORCER_ACCESS_LOG.filter.threshold.level = DEBUG
 
     loggers = reporter, enforcer, io-swagger-v3, enforcer-interceptors
 
@@ -867,9 +808,9 @@ data:
     logger.reporter.level = INFO
     {{- end }}
     logger.reporter.additivity = false
-    logger.reporter.appenderRef.rolling.ref = ENFORCER_ANALYTICS
+    logger.reporter.appenderRef.console.ref = ENFORCER_CONSOLE
 
-    # Log to access log file
+    # Log access log to console
     logger.enforcer-interceptors.name = org.wso2.apk.enforcer.grpc.interceptors
     # Change the log level into DEBUG to view the access logs.
     {{- if .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.logging }}
@@ -878,9 +819,9 @@ data:
     logger.enforcer-interceptors.level = INFO
     {{- end }} 
     logger.enforcer-interceptors.additivity = false
-    logger.enforcer-interceptors.appenderRef.rolling.ref = ENFORCER_ACCESS_LOG
+    logger.enforcer-interceptors.appenderRef.console.ref = ENFORCER_CONSOLE
 
-    # Log to console and rolling file
+    # Log to console 
     logger.enforcer.name = org.wso2.apk.enforcer
     {{- if .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.logging }}
     logger.enforcer.level = {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.logging.level | default "INFO" }}
@@ -888,13 +829,11 @@ data:
     logger.enforcer.level = INFO
     {{- end }} 
     logger.enforcer.additivity = false
-    logger.enforcer.appenderRef.rolling.ref = ENFORCER_LOGFILE
     logger.enforcer.appenderRef.console.ref = ENFORCER_CONSOLE
 
     logger.io-swagger-v3.name = io.swagger.v3.parser
     logger.io-swagger-v3.level = ERROR
     logger.io-swagger-v3.additivity = false
-    logger.io-swagger-v3.appenderRef.rolling.ref = ENFORCER_LOGFILE
     logger.io-swagger-v3.appenderRef.console.ref = ENFORCER_CONSOLE
 
     rootLogger.level = ERROR
