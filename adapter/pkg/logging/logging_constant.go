@@ -465,5 +465,6 @@ var Mapper = map[int]ErrorDetails{
 	error3115: {
 		ErrorCode: error3115,
 		Message:   "Route Timeout cannot be greater than the Max value defined : %s",
+		Severity:  MAJOR,
 	},
 }
