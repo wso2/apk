@@ -42,8 +42,8 @@ spec:
     routeIdleTimeoutSeconds: 10
     routeTimeoutSeconds: 40
   retry:
-    maxRetryCount: 4
-    baseIntervalInMillis: 2000
+    count: 4
+    baseIntervalMillis: 2000
     statusCodes:
       - 504
       - 500
@@ -57,7 +57,7 @@ metadata:
   name: test-backend-svc
 spec:
   type: ExternalName
-  externalName: <hostname|IP>
+  externalName: benura-4.local
   ports:
     - name: http
       port: 3000

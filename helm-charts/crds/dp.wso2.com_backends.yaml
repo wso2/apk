@@ -91,18 +91,27 @@ spec:
                 - wss
                 type: string
               retry:
+                description: RetryConfig defines retry configurations
                 properties:
-                  baseIntervalInMillis:
+                  baseIntervalMillis:
+                    default: 25
+                    description: BaseIntervalMillis defines the base interval in milliseconds
                     format: int32
                     type: integer
-                  maxRetryCount:
+                  count:
+                    default: 5
+                    description: MaxRetry defines the maximum number of retries
                     format: int32
                     type: integer
                   statusCodes:
+                    description: StatusCodes defines the list of status codes to retry
                     items:
                       format: int32
                       type: integer
                     type: array
+                required:
+                - baseIntervalMillis
+                - count
                 type: object
               security:
                 items:

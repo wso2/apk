@@ -21,6 +21,7 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/internal/oasparser/constants"
 	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
@@ -54,6 +55,7 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 
 	disableScopes := true
 	disableAuthentications := false
+	config := config.ReadConfigs()
 
 	var authScheme *dpv1alpha1.Authentication
 	if outputAuthScheme != nil {
@@ -87,6 +89,7 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 		isRouteTimeout := false
 		var backendRetryCount uint32
 		var statusCodes []uint32
+		statusCodes = append(statusCodes, config.Envoy.Upstream.Retry.StatusCodes...)
 		var baseIntervalInMillis uint32
 		for _, filter := range rule.Filters {
 			hasPolicies = true
@@ -230,7 +233,7 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 			return fmt.Errorf("no backendref were provided")
 		}
 		var securityConfig []EndpointSecurity
-		isRetryConfigDefined := false
+		// isRetryConfigDefined := false
 		for _, backend := range rule.BackendRefs {
 			backendName := types.NamespacedName{
 				Name:      string(backend.Name),

@@ -100,14 +100,20 @@ type CircuitBreaker struct {
 type RetryBudget struct {
 	BudgetPercent       uint64 `json:"budgetPercent,omitempty"`
 	MinRetryConcurrency uint32 `json:"minRetryConcurrency,omitempty"`
-	// RetryCount int32            `json:"retryCount,omitempty"`
 }
 
 // RetryConfig defines retry configurations
 type RetryConfig struct {
-	MaxRetryCount        uint32   `json:"maxRetryCount,omitempty"`
-	BaseIntervalInMillis uint32   `json:"baseIntervalInMillis,omitempty"`
-	StatusCodes          []uint32 `json:"statusCodes,omitempty"`
+	// +kubebuilder:default=5
+	// MaxRetry defines the maximum number of retries
+	Count uint32 `json:"count"`
+	// +kubebuilder:default=25
+	// BaseIntervalMillis defines the base interval in milliseconds
+	BaseIntervalMillis uint32 `json:"baseIntervalMillis"`
+	// +optional
+	// +kubebuilder:validation:"minimum=401,maximum=598
+	// StatusCodes defines the list of status codes to retry
+	StatusCodes []uint32 `json:"statusCodes,omitempty"`
 }
 
 // Service holds host and port information for the service

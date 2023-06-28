@@ -99,25 +99,6 @@ func generateRouteAction(apiType string, routeConfig *model.EndpointConfig, rate
 		action.Route.RateLimits = generateRateLimitPolicy(ratelimitCriteria)
 	}
 
-	if routeConfig != nil && routeConfig.RetryConfig != nil {
-		// Retry configs are always added via headers. This is to update the
-		// default retry back-off base interval, which cannot be updated via headers.
-		commonRetryPolicy := &routev3.RetryPolicy{
-			RetryOn: retryPolicyRetriableStatusCodes,
-			NumRetries: &wrapperspb.UInt32Value{
-				Value: uint32(routeConfig.RetryConfig.Count),
-				// If not set to 0, default value 1 will be
-			},
-			RetriableStatusCodes: routeConfig.RetryConfig.StatusCodes,
-			RetryBackOff: &routev3.RetryPolicy_RetryBackOff{
-				BaseInterval: &durationpb.Duration{
-					Nanos: int32(routeConfig.RetryConfig.BaseIntervalInMillis) * 1000,
-				},
-			},
-		}
-		action.Route.RetryPolicy = commonRetryPolicy
-	}
-
 	return action
 }
 
