@@ -174,17 +174,6 @@ func CreateRoutesWithClusters(adapterInternalAPI model.AdapterInternalAPI, inter
 		routeParams := genRouteCreateParams(&adapterInternalAPI, resource, vHost, basePath, clusterName, *operationalReqInterceptors, *operationalRespInterceptorVal, organizationID,
 			false)
 
-		// set retry count if endpoint retry config is available
-		if endpoint.Config != nil && endpoint.Config.RetryConfig != nil {
-			routeParams.routeConfig = &model.EndpointConfig{
-				RetryConfig: &model.RetryConfig{
-					Count:                endpoint.Config.RetryConfig.Count,
-					StatusCodes:          endpoint.Config.RetryConfig.StatusCodes,
-					BaseIntervalInMillis: endpoint.Config.RetryConfig.BaseIntervalInMillis,
-				},
-			}
-		}
-
 		routeP, err := createRoutes(routeParams)
 		if err != nil {
 			logger.LoggerXds.ErrorC(logging.GetErrorByCode(2231, adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), resource.GetPath(), err.Error()))
