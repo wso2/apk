@@ -13,25 +13,28 @@
 # KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations
 # under the License.
-{{- if .Values.wso2.apk.dp.enabled }}
-kind: "APIPolicy"
+{{- if .Values.idp.enabled }}
+kind: "Backend"
 apiVersion: "dp.wso2.com/v1alpha1"
 metadata:
-  name: {{ template "apk-helm.resource.prefix" . }}-idp-ds-api-policy
+  name: {{ template "apk-helm.resource.prefix" . }}-oauth-ds-backend
   namespace: {{ .Release.Namespace }}
 spec:
-  override:
-    backendJwtToken:
-      enabled: true
-      encoding: "base64"
-      signingAlgorithm: "SHA256withRSA"
-      header: "X-JWT-Assertion"
-      tokenTTL: 3600
-      customClaims:
-        - claim: "admin"
-          value: "http://wso2.org/claims/enduser"
-  targetRef:
-    group: "gateway.networking.k8s.io"
-    kind: "API"
-    name: {{ template "apk-helm.resource.prefix" . }}-idp-ds-api
+ services:
+  - host:  {{ template "apk-helm.resource.prefix" . }}-idp-ds-service.{{ .Release.Namespace }}.svc
+    port: 9443
+    basePath: /oauth2
+ protocol: "https"
+ tls:
+  allowedSANs:
+   - {{ template "apk-helm.resource.prefix" . }}-idp-ds-service.{{ .Release.Namespace }}.svc
+  secretRef:
+  {{- if and .Values.idp.idpds.configs .Values.idp.idpds.configs.tls }}
+    name: {{.Values.idp.idpds.configs.tls.secretName}}
+    key: {{.Values.idp.idpds.configs.tls.certFilename}}
+  {{- else }}
+    name: {{ template "apk-helm.resource.prefix" . }}-idp-ds-server-cert
+    key: tls.crt
+  {{- end }}
+    
 {{- end -}}

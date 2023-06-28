@@ -29,7 +29,7 @@ spec:
   - matches:
     - path:
         type: "Exact"
-        value: "/api/runtime/apis"
+        value: "/apis"
       method: "GET"
     backendRefs:
     - group: dp.wso2.com
@@ -38,7 +38,7 @@ spec:
   - matches:
     - path:
         type: "Exact"
-        value: "/api/runtime/apis"
+        value: "/apis"
       method: "POST"
     backendRefs:
     - group: dp.wso2.com
@@ -46,24 +46,9 @@ spec:
       name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
   - matches:
     - path:
-        type: "PathPrefix"
-        value: "/api/runtime/apis"
-      method: "GET"
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
-  - matches:
-    - path:
         type: "RegularExpression"
-        value: "/api/runtime/apis/(.*)"
+        value: "/apis/(.*)"
       method: "PUT"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/runtime/apis/\\1"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -71,14 +56,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/runtime/apis/(.*)"
+        value: "/apis/(.*)"
       method: "DELETE"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/runtime/apis/\\1"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -86,22 +65,7 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/runtime/apis/(.*)/generate-key"
-      method: "POST"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/runtime/apis/\\1/generate-key"
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
-  - matches:
-    - path:
-        type: "Exact"
-        value: "/api/runtime/apis/import-service"
+        value: "/apis/(.*)/generate-key"
       method: "POST"
     backendRefs:
     - group: dp.wso2.com
@@ -110,7 +74,7 @@ spec:
   - matches:
     - path:
         type: "Exact"
-        value: "/api/runtime/apis/import-definition"
+        value: "/apis/import-service"
       method: "POST"
     backendRefs:
     - group: dp.wso2.com
@@ -119,7 +83,7 @@ spec:
   - matches:
     - path:
         type: "Exact"
-        value: "/api/runtime/apis/validate-definition"
+        value: "/apis/import-definition"
       method: "POST"
     backendRefs:
     - group: dp.wso2.com
@@ -128,7 +92,16 @@ spec:
   - matches:
     - path:
         type: "Exact"
-        value: "/api/runtime/apis/validate"
+        value: "/apis/validate-definition"
+      method: "POST"
+    backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
+  - matches:
+    - path:
+        type: "Exact"
+        value: "/apis/validate"
       method: "POST"
     backendRefs:
     - group: dp.wso2.com
@@ -137,14 +110,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/runtime/apis/(.*)/definition"
+        value: "/apis/(.*)/definition"
       method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/runtime/apis/\\1/definition"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -152,14 +119,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/runtime/apis/(.*)/definition"
+        value: "/apis/(.*)/definition"
       method: "PUT"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/runtime/apis/\\1/definition"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -167,14 +128,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/runtime/apis/(.*)/endpoint-certificates"
+        value: "/apis/(.*)/endpoint-certificates"
       method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/runtime/apis/\\1/endpoint-certificates"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -182,14 +137,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/runtime/apis/(.*)/endpoint-certificates"
+        value: "/apis/(.*)/endpoint-certificates"
       method: "POST"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/runtime/apis/\\1/endpoint-certificates"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -197,14 +146,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/runtime/apis/(.*)/endpoint-certificates/(.*)"
+        value: "/apis/(.*)/endpoint-certificates/(.*)"
       method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/runtime/apis/\\1/endpoint-certificates/\\2"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -212,14 +155,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/runtime/apis/(.*)/endpoint-certificates/(.*)"
+        value: "/apis/(.*)/endpoint-certificates/(.*)"
       method: "PUT"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/runtime/apis/\\1/endpoint-certificates/\\2"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -227,14 +164,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/runtime/apis/(.*)/endpoint-certificates/(.*)"
+        value: "/apis/(.*)/endpoint-certificates/(.*)"
       method: "DELETE"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/runtime/apis/\\1/endpoint-certificates/\\2"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -242,7 +173,7 @@ spec:
   - matches:
     - path:
         type: "Exact"
-        value: "/api/runtime/apis/export"
+        value: "/apis/export"
       method: "GET"
     backendRefs:
     - group: dp.wso2.com
@@ -251,7 +182,7 @@ spec:
   - matches:
     - path:
         type: "Exact"
-        value: "/api/runtime/apis/copy-api"
+        value: "/apis/copy-api"
       method: "POST"
     backendRefs:
     - group: dp.wso2.com
@@ -260,7 +191,7 @@ spec:
   - matches:
     - path:
         type: "Exact"
-        value: "/api/runtime/services"
+        value: "/services"
       method: "GET"
     backendRefs:
     - group: dp.wso2.com
@@ -269,7 +200,7 @@ spec:
   - matches:
     - path:
         type: "PathPrefix"
-        value: "/api/runtime/services"
+        value: "/services"
       method: "GET"
     backendRefs:
     - group: dp.wso2.com
@@ -278,14 +209,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/runtime/services/(.*)/usage"
+        value: "/services/(.*)/usage"
       method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/runtime/services/\\1/usage"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -293,7 +218,7 @@ spec:
   - matches:
     - path:
         type: "Exact"
-        value: "/api/runtime/policies"
+        value: "/policies"
       method: "GET"
     backendRefs:
     - group: dp.wso2.com
@@ -302,14 +227,8 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/runtime/policies/(.*)"
+        value: "/policies/(.*)"
       method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/runtime/policies/\\1"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend

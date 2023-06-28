@@ -13,24 +13,24 @@
 # KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations
 # under the License.
-{{- if .Values.wso2.apk.dp.enabled }}
+{{- if .Values.idp.enabled }}
 kind: "API"
 apiVersion: "dp.wso2.com/v1alpha1"
 metadata:
-  name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-api
+  name: {{ template "apk-helm.resource.prefix" . }}-commonoauth-api
   namespace: {{ .Release.Namespace }}
   labels:
-    api-name: "runtime-domain-service"
+    api-name: "idp-domain-service"
     api-version: "1.0.0"
 spec:
-  apiDisplayName: "Runtime Domain Service API"
+  apiDisplayName: "commonoauth-api"
   apiType: "REST"
   apiVersion: "1.0.0"
-  context: "/api/runtime/1.0.0"
-  organization: "carbon.super"
+  context: "/commonoauth/1.0.0"
   isDefaultVersion: true
+  organization: "carbon.super"
   production:
     - httpRouteRefs:
-      - {{ template "apk-helm.resource.prefix" . }}-runtime-ds-httproute
+      - {{ template "apk-helm.resource.prefix" . }}-commonoauth-ds-httproute
   systemAPI: true
 {{- end -}}
