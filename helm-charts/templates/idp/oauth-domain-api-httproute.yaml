@@ -13,24 +13,30 @@
 # KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations
 # under the License.
-{{- if .Values.wso2.apk.dp.enabled }}
-kind: "API"
-apiVersion: "dp.wso2.com/v1alpha1"
+{{- if .Values.idp.enabled }}
+apiVersion: "gateway.networking.k8s.io/v1beta1"
+kind: "HTTPRoute"
 metadata:
-  name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-api
+  name: {{ template "apk-helm.resource.prefix" . }}-oauth-ds-httproute
   namespace: {{ .Release.Namespace }}
   labels:
-    api-name: "runtime-domain-service"
+    api-name: "idp-domain-service"
     api-version: "1.0.0"
 spec:
-  apiDisplayName: "Runtime Domain Service API"
-  apiType: "REST"
-  apiVersion: "1.0.0"
-  context: "/api/runtime/1.0.0"
-  organization: "carbon.super"
-  isDefaultVersion: true
-  production:
-    - httpRouteRefs:
-      - {{ template "apk-helm.resource.prefix" . }}-runtime-ds-httproute
-  systemAPI: true
+  hostnames:
+  - "{{ .Values.idp.listener.hostname | default "idp.am.wso2.com"}}"
+  rules:
+  - matches:
+    - path:
+        type: "PathPrefix"
+        value: "/"
+    backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-oauth-ds-backend
+  parentRefs:
+  - group: "gateway.networking.k8s.io"
+    kind: "Gateway"
+    name: "default"
+    sectionName: "httpslistener"
 {{- end -}}

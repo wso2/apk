@@ -13,24 +13,28 @@
 # KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations
 # under the License.
-{{- if .Values.wso2.apk.dp.enabled }}
-kind: "API"
+{{- if .Values.idp.enabled }}
+kind: "Backend"
 apiVersion: "dp.wso2.com/v1alpha1"
 metadata:
-  name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-api
+  name: {{ template "apk-helm.resource.prefix" . }}-commonoauth-ds-backend
   namespace: {{ .Release.Namespace }}
-  labels:
-    api-name: "runtime-domain-service"
-    api-version: "1.0.0"
 spec:
-  apiDisplayName: "Runtime Domain Service API"
-  apiType: "REST"
-  apiVersion: "1.0.0"
-  context: "/api/runtime/1.0.0"
-  organization: "carbon.super"
-  isDefaultVersion: true
-  production:
-    - httpRouteRefs:
-      - {{ template "apk-helm.resource.prefix" . }}-runtime-ds-httproute
-  systemAPI: true
+ services:
+  - host:  {{ template "apk-helm.resource.prefix" . }}-idp-ds-service.{{ .Release.Namespace }}.svc
+    port: 9443
+    basePath: /commonoauth
+ protocol: "https"
+ tls:
+  allowedSANs:
+   - {{ template "apk-helm.resource.prefix" . }}-idp-ds-service.{{ .Release.Namespace }}.svc
+  secretRef:
+  {{- if and .Values.idp.idpds.configs .Values.idp.idpds.configs.tls }}
+    name: {{.Values.idp.idpds.configs.tls.secretName}}
+    key: {{.Values.idp.idpds.configs.tls.certFilename}}
+  {{- else }}
+    name: {{ template "apk-helm.resource.prefix" . }}-idp-ds-server-cert
+    key: tls.crt
+  {{- end }}
+    
 {{- end -}}

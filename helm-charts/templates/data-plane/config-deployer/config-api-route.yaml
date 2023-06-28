@@ -28,33 +28,21 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/configurator/1.0.0/apis/generate-configuration"
+        value: "/apis/generate-configuration"
       method: "POST"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/configurator/apis/generate-configuration"
     backendRefs:
     - group: "dp.wso2.com"
       kind: "Backend"
-      name: "{{ template "apk-helm.resource.prefix" . }}-config-ds-backend"
+      name: "{{ template "apk-helm.resource.prefix" . }}-config-generator-backend"
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/configurator/1.0.0/apis/generate-k8s-resources"
+        value: "/apis/generate-k8s-resources"
       method: "POST"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/configurator/apis/generate-k8s-resources"
     backendRefs:
     - group: "dp.wso2.com"
       kind: "Backend"
-      name: "{{ template "apk-helm.resource.prefix" . }}-config-ds-backend"
+      name: "{{ template "apk-helm.resource.prefix" . }}-config-generator-backend"
   parentRefs:
   - group: "gateway.networking.k8s.io"
     kind: "Gateway"
