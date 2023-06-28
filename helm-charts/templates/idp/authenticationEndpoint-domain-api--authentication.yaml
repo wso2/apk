@@ -17,7 +17,7 @@
 apiVersion: "dp.wso2.com/v1alpha1"
 kind: "Authentication"
 metadata:
-  name: {{ template "apk-helm.resource.prefix" . }}-idp-ds-authentication
+  name: {{ template "apk-helm.resource.prefix" . }}-authentication-endpoint-ds-authentication
   namespace: {{ .Release.Namespace }}
   labels:
     api-name: "idp-domain-service"
@@ -30,6 +30,6 @@ spec:
   targetRef:
     group: ""
     kind: "API"
-    name: {{ template "apk-helm.resource.prefix" . }}-idp-ds-api
+    name: {{ template "apk-helm.resource.prefix" . }}-authentication-endpoint-ds-api
     namespace: {{ .Release.Namespace }}
 {{- end -}}

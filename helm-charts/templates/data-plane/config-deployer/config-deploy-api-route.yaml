@@ -28,33 +28,21 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/deployer/1.0.0/apis/deploy"
+        value: "/apis/deploy"
       method: "POST"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/deployer/apis/deploy"
     backendRefs:
     - group: "dp.wso2.com"
       kind: "Backend"
-      name: "{{ template "apk-helm.resource.prefix" . }}-config-ds-backend"
+      name: "{{ template "apk-helm.resource.prefix" . }}-config-deployer-ds-backend"
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/deployer/1.0.0/apis/undeploy"
+        value: "/apis/undeploy"
       method: "POST"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/deployer/apis/undeploy"
     backendRefs:
     - group: "dp.wso2.com"
       kind: "Backend"
-      name: "{{ template "apk-helm.resource.prefix" . }}-config-ds-backend"
+      name: "{{ template "apk-helm.resource.prefix" . }}-config-deployer-ds-backend"
   parentRefs:
   - group: "gateway.networking.k8s.io"
     kind: "Gateway"

@@ -14,23 +14,26 @@
 # specific language governing permissions and limitations
 # under the License.
 {{- if .Values.wso2.apk.dp.enabled }}
-kind: "API"
+kind: "Backend"
 apiVersion: "dp.wso2.com/v1alpha1"
 metadata:
-  name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-api
+  name: {{ template "apk-helm.resource.prefix" . }}-config-deployer-ds-backend
   namespace: {{ .Release.Namespace }}
-  labels:
-    api-name: "runtime-domain-service"
-    api-version: "1.0.0"
 spec:
-  apiDisplayName: "Runtime Domain Service API"
-  apiType: "REST"
-  apiVersion: "1.0.0"
-  context: "/api/runtime/1.0.0"
-  organization: "carbon.super"
-  isDefaultVersion: true
-  production:
-    - httpRouteRefs:
-      - {{ template "apk-helm.resource.prefix" . }}-runtime-ds-httproute
-  systemAPI: true
+ services:
+  - host:  {{ template "apk-helm.resource.prefix" . }}-config-ds-service.{{ .Release.Namespace }}
+    port: 9443
+    basePath: "/api/deployer"
+ protocol: "https"
+ tls:
+  allowedSANs:
+   - {{ template "apk-helm.resource.prefix" . }}-config-ds-service.{{ .Release.Namespace }}.svc
+  secretRef:
+  {{- if and .Values.wso2.apk.dp.configdeployer.configs .Values.wso2.apk.dp.configdeployer.configs.tls }}
+    name: {{.Values.wso2.apk.dp.configdeployer.configs.tls.secretName}}
+    key: {{.Values.wso2.apk.dp.configdeployer.configs.tls.certFilename}}
+  {{- else }}
+    name: {{ template "apk-helm.resource.prefix" . }}-config-ds-server-cert
+    key: tls.crt
+  {{- end }}
 {{- end -}}
