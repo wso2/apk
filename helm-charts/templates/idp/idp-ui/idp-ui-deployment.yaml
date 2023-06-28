@@ -50,14 +50,14 @@ spec:
             value: /home/wso2apk/security/idp.key
           readinessProbe:
             httpGet:
-              path: /authentication-endpoint/health
+              path: /authenticationEndpoint/health
               port: 9443
               scheme: HTTPS
             initialDelaySeconds: {{ .Values.idp.idpui.deployment.readinessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.idp.idpui.deployment.readinessProbe.periodSeconds }}    
           livenessProbe:
             httpGet:
-              path: /authentication-endpoint/health
+              path: /authenticationEndpoint/health
               port: 9443
               scheme: HTTPS
             initialDelaySeconds: {{ .Values.idp.idpui.deployment.livenessProbe.initialDelaySeconds }}
