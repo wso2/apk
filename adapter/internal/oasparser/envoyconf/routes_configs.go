@@ -267,7 +267,7 @@ func generateHeaderToRemoveString(policyParams interface{}) (string, error) {
 }
 
 func generateRewritePathRouteConfig(routePath, resourcePath, endpointBasepath string,
-	policyParams interface{}, pathMatchType gwapiv1b1.PathMatchType) (*envoy_type_matcherv3.RegexMatchAndSubstitute, error) {
+	policyParams interface{}, pathMatchType gwapiv1b1.PathMatchType, isDefaultVersion bool) (*envoy_type_matcherv3.RegexMatchAndSubstitute, error) {
 
 	var paramsToSetHeader map[string]interface{}
 	var ok bool
@@ -286,7 +286,7 @@ func generateRewritePathRouteConfig(routePath, resourcePath, endpointBasepath st
 	}
 
 	substitutionString := generateSubstitutionStringWithRewritePathType(rewritePath,
-		pathMatchType, rewritePathType)
+		pathMatchType, rewritePathType, isDefaultVersion)
 
 	return &envoy_type_matcherv3.RegexMatchAndSubstitute{
 		Pattern: &envoy_type_matcherv3.RegexMatcher{
@@ -297,7 +297,7 @@ func generateRewritePathRouteConfig(routePath, resourcePath, endpointBasepath st
 }
 
 func generateSubstitutionStringWithRewritePathType(rewritePath string,
-	pathMatchType gwapiv1b1.PathMatchType, rewritePathType gwapiv1b1.HTTPPathModifierType) string {
+	pathMatchType gwapiv1b1.PathMatchType, rewritePathType gwapiv1b1.HTTPPathModifierType, isDefaultVersion bool) string {
 	var resourceRegex string
 	switch pathMatchType {
 	case gwapiv1b1.PathMatchExact:
@@ -307,7 +307,11 @@ func generateSubstitutionStringWithRewritePathType(rewritePath string,
 		case gwapiv1b1.FullPathHTTPPathModifier:
 			resourceRegex = strings.TrimSuffix(rewritePath, "/")
 		case gwapiv1b1.PrefixMatchHTTPPathModifier:
-			resourceRegex = fmt.Sprintf("%s\\1", strings.TrimSuffix(rewritePath, "/"))
+			pathPrefix := "%s\\1"
+			if (isDefaultVersion) {
+				pathPrefix = "%s\\1\\2";
+			}
+			resourceRegex = fmt.Sprintf(pathPrefix, strings.TrimSuffix(rewritePath, "/"))
 		}
 	case gwapiv1b1.PathMatchRegularExpression:
 		resourceRegex = rewritePath
