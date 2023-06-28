@@ -26,6 +26,7 @@ spec:
   apiType: "REST"
   apiVersion: "1.0.0"
   context: "/api/configurator/1.0.0"
+  isDefaultVersion: true
   organization: "carbon.super"
   definitionFileRef: "{{ template "apk-helm.resource.prefix" . }}-wso2-apk-config-generator-api-definition"
   production:

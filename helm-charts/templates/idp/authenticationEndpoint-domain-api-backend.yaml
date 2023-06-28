@@ -14,22 +14,27 @@
 # specific language governing permissions and limitations
 # under the License.
 {{- if .Values.idp.enabled }}
-kind: "API"
+kind: "Backend"
 apiVersion: "dp.wso2.com/v1alpha1"
 metadata:
-  name: {{ template "apk-helm.resource.prefix" . }}-idp-ds-api
+  name: {{ template "apk-helm.resource.prefix" . }}-authentication-endpoint-ds-backend
   namespace: {{ .Release.Namespace }}
-  labels:
-    api-name: "idp-domain-service"
-    api-version: "1.0.0"
 spec:
-  apiDisplayName: "idp-domain-service"
-  apiType: "REST"
-  apiVersion: "1.0.0"
-  context: "/idp/1.0.0"
-  organization: "carbon.super"
-  production:
-    - httpRouteRefs:
-      - {{ template "apk-helm.resource.prefix" . }}-idp-ds-httproute
-  systemAPI: true
+ services:
+  - host:  {{ template "apk-helm.resource.prefix" . }}-idp-ds-service.{{ .Release.Namespace }}.svc
+    port: 9443
+    basePath: /commonoauth
+ protocol: "https"
+ tls:
+  allowedSANs:
+   - {{ template "apk-helm.resource.prefix" . }}-idp-ds-service.{{ .Release.Namespace }}.svc
+  secretRef:
+  {{- if and .Values.idp.idpds.configs .Values.idp.idpds.configs.tls }}
+    name: {{.Values.idp.idpds.configs.tls.secretName}}
+    key: {{.Values.idp.idpds.configs.tls.certFilename}}
+  {{- else }}
+    name: {{ template "apk-helm.resource.prefix" . }}-idp-ds-server-cert
+    key: tls.crt
+  {{- end }}
+    
 {{- end -}}
