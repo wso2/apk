@@ -22,7 +22,6 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
-	"time"
 
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	routev3 "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
@@ -79,15 +78,6 @@ func generateRouteMatch(routeRegex string) *routev3.RouteMatch {
 func generateRouteAction(apiType string, routeConfig *model.EndpointConfig, ratelimitCriteria *ratelimitCriteria) (action *routev3.Route_Route) {
 
 	config := config.ReadConfigs()
-	var timeoutInSeconds uint32 = config.Envoy.Upstream.Timeouts.RouteTimeoutInSeconds
-	var idleTimeoutInSeconds uint32 = config.Envoy.Upstream.Timeouts.RouteIdleTimeoutInSeconds
-	if routeConfig != nil {
-		if routeConfig.TimeoutInMillis != 0 {
-			timeoutInSeconds = routeConfig.TimeoutInMillis / 1000
-		}
-		idleTimeoutInSeconds = routeConfig.IdleTimeoutInSeconds
-	}
-
 	action = &routev3.Route_Route{
 		Route: &routev3.RouteAction{
 			HostRewriteSpecifier: &routev3.RouteAction_AutoHostRewrite{
@@ -97,8 +87,6 @@ func generateRouteAction(apiType string, routeConfig *model.EndpointConfig, rate
 			},
 			UpgradeConfigs:    getUpgradeConfig(apiType),
 			MaxStreamDuration: getMaxStreamDuration(apiType),
-			Timeout:           durationpb.New(time.Duration(timeoutInSeconds) * time.Second),
-			IdleTimeout:       durationpb.New(time.Duration(idleTimeoutInSeconds) * time.Second),
 			ClusterSpecifier: &routev3.RouteAction_ClusterHeader{
 				ClusterHeader: clusterHeaderName,
 			},

@@ -22,7 +22,6 @@ import (
 	"regexp"
 	"strings"
 	"testing"
-	"time"
 
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	routev3 "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
@@ -31,7 +30,6 @@ import (
 	tlsv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/transport_sockets/tls/v3"
 	envoy_type_matcherv3 "github.com/envoyproxy/go-control-plane/envoy/type/matcher/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/wellknown"
-	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/stretchr/testify/assert"
 	"github.com/wso2/apk/adapter/config"
@@ -95,18 +93,12 @@ func TestCreateRoute(t *testing.T) {
 		Enabled:     &wrappers.BoolValue{Value: false},
 	}}
 
-	TimeOutConfig := ptypes.DurationProto(60 * time.Second)
-
-	IdleTimeOutConfig := ptypes.DurationProto(300 * time.Second)
-
 	expectedRouteActionWithXWso2BasePath := &routev3.Route_Route{
 		Route: &routev3.RouteAction{
 			HostRewriteSpecifier: hostRewriteSpecifier,
 			RegexRewrite:         regexRewriteWithXWso2BasePath,
 			ClusterSpecifier:     clusterSpecifier,
 			UpgradeConfigs:       UpgradeConfigsDisabled,
-			Timeout:              TimeOutConfig,
-			IdleTimeout:          IdleTimeOutConfig,
 		},
 	}
 

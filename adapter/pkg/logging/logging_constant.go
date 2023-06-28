@@ -101,6 +101,7 @@ const (
 	error3112 = 3112
 	error3113 = 3113
 	error3114 = 3114
+	error3115 = 3115
 )
 
 // Mapper used to keep error details for error logs
@@ -460,5 +461,9 @@ var Mapper = map[int]ErrorDetails{
 		ErrorCode: error3114,
 		Message:   "Error creating JWT Issuer controller: %v",
 		Severity:  BLOCKER,
+	},
+	error3115: {
+		ErrorCode: error3115,
+		Message:   "Route Timeout cannot be greater than the Max value defined : %s",
 	},
 }

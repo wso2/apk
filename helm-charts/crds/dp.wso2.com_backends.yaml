@@ -134,19 +134,22 @@ spec:
               timeout:
                 description: Timeout congifuration for the backend
                 properties:
-                  maxRouteTimeoutInSeconds:
+                  maxRouteTimeoutSeconds:
+                    default: 60
                     format: int32
                     type: integer
-                  routeIdleTimeoutInSeconds:
+                  routeIdleTimeoutSeconds:
+                    default: 300
                     format: int32
                     type: integer
-                  routeTimeoutInSeconds:
+                  routeTimeoutSeconds:
+                    default: 60
                     format: int32
                     type: integer
                 required:
-                - maxRouteTimeoutInSeconds
-                - routeIdleTimeoutInSeconds
-                - routeTimeoutInSeconds
+                - maxRouteTimeoutSeconds
+                - routeIdleTimeoutSeconds
+                - routeTimeoutSeconds
                 type: object
               tls:
                 description: TLSConfig defines enpoint TLS configurations
