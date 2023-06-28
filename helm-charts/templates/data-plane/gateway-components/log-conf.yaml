@@ -114,7 +114,7 @@ data:
     [analytics]
       enabled = {{ .Values.wso2.apk.dp.gatewayRuntime.analytics.enabled | default false }}
     {{- if .Values.wso2.apk.dp.gatewayRuntime.analytics.type }}
-      {{- if eq .Values.wso2.apk.dp.gatewayRuntime.analytics.type "File" }}
+      {{- if eq .Values.wso2.apk.dp.gatewayRuntime.analytics.type "ELK" }}
       type = "ELK"
       {{- end }}
 
