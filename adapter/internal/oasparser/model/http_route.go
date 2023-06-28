@@ -231,13 +231,12 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 			resolvedBackend, ok := httpRouteParams.BackendMapping[backendName]
 			if ok {
 				if resolvedBackend.CircuitBreaker != nil {
-					var thresholds []dpv1alpha1.Thresholds
-					var perHostThresholds []dpv1alpha1.Thresholds
-					thresholds = append(thresholds, resolvedBackend.CircuitBreaker.Thresholds...)
-					perHostThresholds = append(perHostThresholds, resolvedBackend.CircuitBreaker.PerHostThresholds...)
 					circuitBreaker = &dpv1alpha1.CircuitBreaker{
-						Thresholds:        thresholds,
-						PerHostThresholds: perHostThresholds,
+						MaxConnections:     resolvedBackend.CircuitBreaker.MaxConnections,
+						MaxPendingRequests: resolvedBackend.CircuitBreaker.MaxPendingRequests,
+						MaxRequests:        resolvedBackend.CircuitBreaker.MaxRequests,
+						MaxRetries:         resolvedBackend.CircuitBreaker.MaxRetries,
+						MaxConnectionPools: resolvedBackend.CircuitBreaker.MaxConnectionPools,
 					}
 				}
 				endPoints = append(endPoints, GetEndpoints(backendName, httpRouteParams.BackendMapping)...)
@@ -256,28 +255,6 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 				return fmt.Errorf("backend: %s has not been resolved", backendName)
 			}
 		}
-		var thresholds []Thresholds
-		var perHostThresholds []Thresholds
-		if circuitBreaker != nil {
-			for _, threshold := range circuitBreaker.Thresholds {
-				thresholds = append(thresholds, Thresholds{
-					MaxConnections:     threshold.MaxConnections,
-					MaxRequests:        threshold.MaxRequests,
-					MaxPendingRequests: threshold.MaxPendingRequests,
-					MaxRetries:         threshold.MaxRetries,
-					MaxConnectionPools: threshold.MaxConnectionPools,
-				})
-			}
-			for _, threshold := range circuitBreaker.PerHostThresholds {
-				perHostThresholds = append(perHostThresholds, Thresholds{
-					MaxConnections:     threshold.MaxConnections,
-					MaxRequests:        threshold.MaxRequests,
-					MaxPendingRequests: threshold.MaxPendingRequests,
-					MaxRetries:         threshold.MaxRetries,
-					MaxConnectionPools: threshold.MaxConnectionPools,
-				})
-			}
-		}
 		for _, match := range rule.Matches {
 			resourcePath := *match.Path.Value
 			resource := &Resource{path: resourcePath,
@@ -292,15 +269,11 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 					Endpoints: endPoints,
 					Config: &EndpointConfig{
 						CircuitBreakers: &CircuitBreakers{
-							MaxConnections:     int32(circuitBreaker.Thresholds[0].MaxConnections),
-							MaxRequests:        int32(circuitBreaker.Thresholds[0].MaxRequests),
-							MaxPendingRequests: int32(circuitBreaker.Thresholds[0].MaxPendingRequests),
-							MaxRetries:         int32(circuitBreaker.Thresholds[0].MaxRetries),
-							MaxConnectionPools: int32(circuitBreaker.Thresholds[0].MaxConnectionPools),
-						},
-						CircuitBreaker: &CircuitBreaker{
-							Thresholds:        thresholds,
-							PerHostThresholds: perHostThresholds,
+							MaxConnections:     int32(circuitBreaker.MaxConnections),
+							MaxRequests:        int32(circuitBreaker.MaxRequests),
+							MaxPendingRequests: int32(circuitBreaker.MaxPendingRequests),
+							MaxRetries:         int32(circuitBreaker.MaxRetries),
+							MaxConnectionPools: int32(circuitBreaker.MaxConnectionPools),
 						},
 					},
 				}

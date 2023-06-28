@@ -144,7 +144,6 @@ type EndpointConfig struct {
 	RetryConfig     *RetryConfig     `mapstructure:"retryConfig"`
 	TimeoutInMillis uint32           `mapstructure:"timeoutInMillis"`
 	CircuitBreakers *CircuitBreakers `mapstructure:"circuitBreakers"`
-	CircuitBreaker  *CircuitBreaker  `mapstructure:"circuitBreaker"`
 }
 
 // RetryConfig holds the parameters for retries done by apk to the EndpointCluster

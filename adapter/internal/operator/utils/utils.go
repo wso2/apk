@@ -310,51 +310,13 @@ func GetResolvedBackend(ctx context.Context, client k8client.Client,
 	resolvedBackend.Protocol = backend.Spec.Protocol
 	resolvedBackend.CircuitBreaker = nil
 	if backend.Spec.CircuitBreaker != nil {
-		var thresholds []dpv1alpha1.Thresholds
-		var thresholdObj dpv1alpha1.Thresholds
-		var perHostThresholds []dpv1alpha1.Thresholds
-		for _, threshold := range backend.Spec.CircuitBreaker.Thresholds {
-			if threshold.RetryBudget != nil {
-				retryBudget := dpv1alpha1.RetryBudget{
-					BudgetPercent:       threshold.RetryBudget.BudgetPercent,
-					MinRetryConcurrency: threshold.RetryBudget.MinRetryConcurrency,
-				}
-				thresholdObj.RetryBudget = &retryBudget
-			}
-			thresholds = append(thresholds, dpv1alpha1.Thresholds{
-				Priority:           threshold.Priority,
-				MaxConnections:     threshold.MaxConnections,
-				MaxPendingRequests: threshold.MaxPendingRequests,
-				MaxRequests:        threshold.MaxRequests,
-				MaxRetries:         threshold.MaxRetries,
-				TrackRemaining:     threshold.TrackRemaining,
-				MaxConnectionPools: threshold.MaxConnectionPools,
-				RetryBudget:        thresholdObj.RetryBudget,
-			})
-		}
-
-		for _, perHostThreshold := range backend.Spec.CircuitBreaker.PerHostThresholds {
-			if perHostThreshold.RetryBudget != nil {
-				retryBudget := dpv1alpha1.RetryBudget{
-					BudgetPercent:       perHostThreshold.RetryBudget.BudgetPercent,
-					MinRetryConcurrency: perHostThreshold.RetryBudget.MinRetryConcurrency,
-				}
-				thresholdObj.RetryBudget = &retryBudget
-			}
-			perHostThresholds = append(perHostThresholds, dpv1alpha1.Thresholds{
-				Priority:           perHostThreshold.Priority,
-				MaxConnections:     perHostThreshold.MaxConnections,
-				MaxPendingRequests: perHostThreshold.MaxPendingRequests,
-				MaxRequests:        perHostThreshold.MaxRequests,
-				MaxRetries:         perHostThreshold.MaxRetries,
-				TrackRemaining:     perHostThreshold.TrackRemaining,
-				MaxConnectionPools: perHostThreshold.MaxConnectionPools,
-				RetryBudget:        thresholdObj.RetryBudget,
-			})
-		}
+		fmt.Println("Max connection pools: ", backend.Spec.CircuitBreaker.MaxConnectionPools)
 		resolvedBackend.CircuitBreaker = &dpv1alpha1.CircuitBreaker{
-			Thresholds:        thresholds,
-			PerHostThresholds: perHostThresholds,
+			MaxConnections:     backend.Spec.CircuitBreaker.MaxConnections,
+			MaxRequests:        backend.Spec.CircuitBreaker.MaxRequests,
+			MaxRetries:         backend.Spec.CircuitBreaker.MaxRetries,
+			MaxConnectionPools: backend.Spec.CircuitBreaker.MaxConnectionPools,
+			MaxPendingRequests: backend.Spec.CircuitBreaker.MaxPendingRequests,
 		}
 	}
 	if backend.Spec.TLS != nil {
