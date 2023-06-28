@@ -44,9 +44,9 @@ metadata:
   name: test-backend
 spec:
   timeout:
-    maxRouteTimeoutInSeconds: 60
-    routeIdleTimeoutInSeconds: 10
-    routeTimeoutInSeconds: 40
+    maxRouteTimeoutSeconds: 60
+    routeIdleTimeoutSeconds: 10
+    routeTimeoutSeconds: 40
   services:
   - host: test-backend-svc
     port: 3000
@@ -57,7 +57,7 @@ metadata:
   name: test-backend-svc
 spec:
   type: ExternalName
-  externalName: benura
+  externalName: benura-4.local
   ports:
     - name: http
       port: 3000
