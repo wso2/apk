@@ -884,7 +884,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 					logger.LoggerOasparser.Debugf("Adding %s policy to request flow for %s %s",
 						constants.ActionRewritePath, resourcePath, operation.GetMethod())
 					regexRewrite, err := generateRewritePathRouteConfig(routePath, resourcePath, endpointBasepath,
-						requestPolicy.Parameters, pathMatchType)
+						requestPolicy.Parameters, pathMatchType, isDefaultVersion)
 					if err != nil {
 						errMsg := fmt.Sprintf("Error adding request policy %s to operation %s of resource %s. %v",
 							constants.ActionRewritePath, operation.GetMethod(), resourcePath, err)
