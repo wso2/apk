@@ -258,7 +258,6 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 				} else {
 					policyParameters[constants.RewritePathType] = gwapiv1b1.FullPathHTTPPathModifier
 				}
-				policyParameters[constants.RewritePathType] = gwapiv1b1.PrefixMatchHTTPPathModifier
 				policyParameters[constants.IncludeQueryParams] = true
 				
 				policyParameters[constants.RewritePathResourcePath] = strings.TrimSuffix(backendBasePath, "/") + *match.Path.Value		

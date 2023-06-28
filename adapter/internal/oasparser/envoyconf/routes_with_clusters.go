@@ -675,7 +675,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 	routePath := generateRoutePath(resourcePath, pathMatchType)
 
 	if isDefaultVersion {
-		routePath = getDefaultVersionBasepath(routePath, regexp.QuoteMeta(version))
+		routePath = getDefaultVersionBasepath(routePath, version)
 	}
 	// route path could be empty only if there is no basePath for API or the endpoint available,
 	// and resourcePath is also an empty string.
@@ -1530,7 +1530,13 @@ func getMaxStreamDuration(apiType string) *routev3.RouteAction_MaxStreamDuration
 func getDefaultVersionBasepath(basePath string, version string) string {
 	// Following is used to replace only the version when basepath = /foo/v2 and version = v2 and context => /foo/v2/v2
 	indexOfVersionString := strings.LastIndex(basePath, "/"+version)
-	context := strings.Replace(basePath, "/"+version, "", indexOfVersionString)
+	if (indexOfVersionString == -1) {
+		indexOfVersionString := strings.LastIndex(basePath, "/"+regexp.QuoteMeta(version))
+		if (indexOfVersionString != -1) {
+			version = regexp.QuoteMeta(version);
+		}
+	}
+	context := strings.Replace(basePath, "/"+version, "", 1)
 
 	// Having ?: in the regex below, avoids this regex acting as a capturing group. Without this the basepath
 	// would again be added in the locations of path variables when sending the request to backend.
