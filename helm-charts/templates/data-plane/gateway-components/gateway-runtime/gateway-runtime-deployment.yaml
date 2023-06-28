@@ -151,14 +151,6 @@ spec:
               mountPath: /home/wso2/security/truststore/idp-tls.pem
               subPath: {{ .Values.wso2.apk.idp.tls.fileName }}
             {{ end }}
-            {{- if and .Values.wso2.apk.dp.gatewayRuntime.analytics .Values.wso2.apk.dp.gatewayRuntime.analytics.enabled .Values.wso2.apk.dp.gatewayRuntime.analytics.type }}
-            {{- if eq .Values.wso2.apk.dp.gatewayRuntime.analytics.enabled true }}
-            {{- if eq .Values.wso2.apk.dp.gatewayRuntime.analytics.type "File" }}
-            - name: enforcer-analytics-logs-volume
-              mountPath: /home/wso2/logs
-            {{- end }}
-            {{- end }}
-            {{- end }}
           readinessProbe:
             exec:
               command: [ "sh", "check_health.sh" ]
@@ -343,12 +335,3 @@ spec:
             secretName: {{ .Values.wso2.apk.idp.tls.secretName }}
           {{ end }}
           {{end}}
-        {{- if and .Values.wso2.apk.dp.gatewayRuntime.analytics .Values.wso2.apk.dp.gatewayRuntime.analytics.enabled .Values.wso2.apk.dp.gatewayRuntime.analytics.type }}
-        {{- if eq .Values.wso2.apk.dp.gatewayRuntime.analytics.enabled true }}
-        {{- if eq .Values.wso2.apk.dp.gatewayRuntime.analytics.type "File" }}
-        - name: enforcer-analytics-logs-volume
-          persistentVolumeClaim:
-            claimName: enforcer-analytics-logs-volume-pvc
-        {{- end }}
-        {{- end }}
-        {{- end }}
