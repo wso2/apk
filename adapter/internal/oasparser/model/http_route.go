@@ -277,12 +277,6 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 				Endpoints: endPoints,
 			}
 
-			if isRouteTimeout {
-				resource.endpoints.Config = &EndpointConfig{
-					TimeoutInMillis:      timeoutInMillis,
-					IdleTimeoutInSeconds: idleTimeoutInSeconds,
-				}
-			}
 			endpointConfig := &EndpointConfig{}
 
 			if isRouteTimeout {
