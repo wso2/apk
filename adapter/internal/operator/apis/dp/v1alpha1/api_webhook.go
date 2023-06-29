@@ -20,6 +20,7 @@ package v1alpha1
 import (
 	"context"
 	"errors"
+	"fmt"
 	"regexp"
 	"strings"
 
@@ -178,14 +179,24 @@ func (r *API) validateAPIContextExistsAndDefaultVersion() *field.Error {
 			}
 			if (r.Spec.IsDefaultVersion) {
 				targetAPIContextWithoutVersion := getContextWithoutVersion(api.Spec.Context);
-				if (targetAPIContextWithoutVersion == currentAPIContextWithoutVersion) {
-					if (api.Spec.IsDefaultVersion) {
+				targetAPIContextWithVersion := api.Spec.Context;
+				if (api.Spec.IsDefaultVersion) {
+					if (targetAPIContextWithoutVersion == currentAPIContextWithoutVersion) {
 						return &field.Error{
 							Type:     field.ErrorTypeForbidden,
 							Field:    field.NewPath("spec").Child("isDefaultVersion").String(),
 							BadValue: r.Spec.Context,
-							Detail:   "this API already had a default version"}
+							Detail:   "this API already has a default version"}
 					}
+					
+
+				}
+				if (targetAPIContextWithVersion == currentAPIContextWithoutVersion) {
+					return &field.Error{
+						Type:     field.ErrorTypeForbidden,
+						Field:    field.NewPath("spec").Child("isDefaultVersion").String(),
+						BadValue: r.Spec.Context,
+						Detail:   fmt.Sprintf("api: %s's context path is colliding with default path", r.Name)}
 				}
 			}
 		}
