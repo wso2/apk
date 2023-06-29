@@ -76,10 +76,17 @@ func (r *Backend) ValidateDelete() error {
 func (r *Backend) validateBackendSpec() error {
 	var allErrs field.ErrorList
 	timeout := r.Spec.Timeout
+	circuitBreakers := r.Spec.CircuitBreaker
 	if timeout != nil {
 		if timeout.MaxRouteTimeoutSeconds < timeout.RouteTimeoutSeconds {
 			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("timeout").Child("maxRouteTimeoutSeconds"),
 				timeout.MaxRouteTimeoutSeconds, "maxRouteTimeoutSeconds should be greater than routeTimeoutSeconds"))
+		}
+	}
+	if circuitBreakers != nil {
+		if circuitBreakers.MaxConnectionPools <= 0 {
+			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("circuitBreaker").Child("maxConnectionPools"),
+				circuitBreakers.MaxConnectionPools, "maxConnectionPools should be greater than 0"))
 		}
 	}
 	if len(allErrs) > 0 {

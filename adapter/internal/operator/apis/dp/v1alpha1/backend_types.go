@@ -89,8 +89,8 @@ type CircuitBreaker struct {
 	MaxRequests uint32 `json:"maxRequests"`
 	// +kubebuilder:default=3
 	MaxRetries uint32 `json:"maxRetries"`
-	// +optional
-	MaxConnectionPools uint32 `json:"maxConnectionPools,omitempty"`
+	// +kubebuilder:default=1000
+	MaxConnectionPools uint32 `json:"maxConnectionPools"`
 }
 
 // RetryBudget defines the retry budget configurations

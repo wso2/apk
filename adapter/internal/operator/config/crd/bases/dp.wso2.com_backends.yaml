@@ -39,6 +39,7 @@ spec:
                 description: CircuitBreaker defines the circuit breaker configurations
                 properties:
                   maxConnectionPools:
+                    default: 1000
                     format: int32
                     type: integer
                   maxConnections:
@@ -58,6 +59,7 @@ spec:
                     format: int32
                     type: integer
                 required:
+                - maxConnectionPools
                 - maxConnections
                 - maxPendingRequests
                 - maxRequests
