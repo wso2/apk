@@ -233,7 +233,6 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 			return fmt.Errorf("no backendref were provided")
 		}
 		var securityConfig []EndpointSecurity
-		// isRetryConfigDefined := false
 		for _, backend := range rule.BackendRefs {
 			backendName := types.NamespacedName{
 				Name:      string(backend.Name),
@@ -261,7 +260,7 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 					if resolvedBackend.Retry.MaxRetryCount > 0 {
 						backendRetryCount = resolvedBackend.Retry.MaxRetryCount
 					}
-					if resolvedBackend.Retry.StatusCodes != nil && len(resolvedBackend.Retry.StatusCodes) > 0 {
+					if len(resolvedBackend.Retry.StatusCodes) > 0 {
 						statusCodes = resolvedBackend.Retry.StatusCodes
 					}
 					if resolvedBackend.Retry.BaseIntervalInMillis > 0 {

@@ -111,7 +111,6 @@ type RetryConfig struct {
 	// BaseIntervalMillis defines the base interval in milliseconds
 	BaseIntervalMillis uint32 `json:"baseIntervalMillis"`
 	// +optional
-	// +kubebuilder:validation:"minimum=401,maximum=598
 	// StatusCodes defines the list of status codes to retry
 	StatusCodes []uint32 `json:"statusCodes,omitempty"`
 }
