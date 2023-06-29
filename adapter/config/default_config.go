@@ -64,11 +64,6 @@ var defaultConfig = &Config{
 				VerifyHostName:         true,
 				DisableSslVerification: false,
 			},
-			Timeouts: upstreamTimeout{
-				MaxRouteTimeoutInSeconds:  60,
-				RouteTimeoutInSeconds:     60,
-				RouteIdleTimeoutInSeconds: 300,
-			},
 			Health: upstreamHealth{
 				Timeout:            1,
 				Interval:           10,

@@ -21,7 +21,6 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
-	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/internal/oasparser/constants"
 	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
@@ -72,8 +71,6 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 	if outputRatelimitPolicy != nil {
 		ratelimitPolicy = concatRateLimitPolicies(*outputRatelimitPolicy, nil)
 	}
-
-	config := config.ReadConfigs()
 
 	for _, rule := range httpRoute.Spec.Rules {
 		var endPoints []Endpoint
@@ -275,12 +272,16 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 				hasPolicies:   hasPolicies,
 				iD:            uuid.New().String(),
 			}
+
 			resource.endpoints = &EndpointCluster{
 				Endpoints: endPoints,
-				Config: &EndpointConfig{
+			}
+
+			if isRouteTimeout {
+				resource.endpoints.Config = &EndpointConfig{
 					TimeoutInMillis:      timeoutInMillis,
 					IdleTimeoutInSeconds: idleTimeoutInSeconds,
-				},
+				}
 			}
 			endpointConfig := &EndpointConfig{}
 
