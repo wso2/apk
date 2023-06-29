@@ -54,76 +54,30 @@ spec:
               circuitBreaker:
                 description: CircuitBreaker defines the circuit breaker configurations
                 properties:
-                  perHostThresholds:
-                    items:
-                      description: Thresholds defines the circuit breaker thresholds
-                      properties:
-                        maxConnectionPools:
-                          format: int32
-                          type: integer
-                        maxConnections:
-                          format: int32
-                          type: integer
-                        maxPendingRequests:
-                          format: int32
-                          type: integer
-                        maxRequests:
-                          format: int32
-                          type: integer
-                        maxRetries:
-                          format: int32
-                          type: integer
-                        priority:
-                          type: string
-                        retryBudget:
-                          description: RetryBudget defines the retry budget configurations
-                          properties:
-                            budgetPercent:
-                              format: int64
-                              type: integer
-                            minRetryConcurrency:
-                              format: int32
-                              type: integer
-                          type: object
-                        trackRemaining:
-                          type: boolean
-                      type: object
-                    type: array
-                  thresholds:
-                    items:
-                      description: Thresholds defines the circuit breaker thresholds
-                      properties:
-                        maxConnectionPools:
-                          format: int32
-                          type: integer
-                        maxConnections:
-                          format: int32
-                          type: integer
-                        maxPendingRequests:
-                          format: int32
-                          type: integer
-                        maxRequests:
-                          format: int32
-                          type: integer
-                        maxRetries:
-                          format: int32
-                          type: integer
-                        priority:
-                          type: string
-                        retryBudget:
-                          description: RetryBudget defines the retry budget configurations
-                          properties:
-                            budgetPercent:
-                              format: int64
-                              type: integer
-                            minRetryConcurrency:
-                              format: int32
-                              type: integer
-                          type: object
-                        trackRemaining:
-                          type: boolean
-                      type: object
-                    type: array
+                  maxConnectionPools:
+                    format: int32
+                    type: integer
+                  maxConnections:
+                    default: 1024
+                    format: int32
+                    type: integer
+                  maxPendingRequests:
+                    default: 1024
+                    format: int32
+                    type: integer
+                  maxRequests:
+                    default: 1024
+                    format: int32
+                    type: integer
+                  maxRetries:
+                    default: 3
+                    format: int32
+                    type: integer
+                required:
+                - maxConnections
+                - maxPendingRequests
+                - maxRequests
+                - maxRetries
                 type: object
               protocol:
                 default: http
@@ -223,4 +177,3 @@ spec:
     storage: true
     subresources:
       status: {}
-
