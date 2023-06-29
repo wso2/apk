@@ -24,6 +24,7 @@ public type Backend record {
 
 public type BackendSpec record {|
     BackendService[] services;
+    string basePath?;
     string protocol;
     TLSConfig tls?;
     SecurityConfig security?;
@@ -32,7 +33,6 @@ public type BackendSpec record {|
 public type BackendService record {
     string host;
     int port;
-    string basePath?;
 };
 
 public type BasicSecurityConfig record {
