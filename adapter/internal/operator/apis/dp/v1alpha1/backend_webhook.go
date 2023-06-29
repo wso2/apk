@@ -30,6 +30,7 @@ import (
 // log is for logging in this package.
 var backendlog = logf.Log.WithName("backend-resource")
 
+// SetupWebhookWithManager sets up and registers the backend webhook with the manager.
 func (r *Backend) SetupWebhookWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewWebhookManagedBy(mgr).
 		For(r).
