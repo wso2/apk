@@ -966,10 +966,10 @@ public class APIClient {
                 services: [
                     {
                         host: self.gethost(endpointConfig.endpoint),
-                        port: check self.getPort(endpointConfig.endpoint),
-                        basePath: endpointConfig.endpoint is string ? getPath(<string>endpointConfig.endpoint) : ()
+                        port: check self.getPort(endpointConfig.endpoint)
                     }
                 ],
+                basePath: endpointConfig.endpoint is string ? getPath(<string>endpointConfig.endpoint) : (),
                 protocol: self.getProtocol(endpointConfig.endpoint)
             }
         };

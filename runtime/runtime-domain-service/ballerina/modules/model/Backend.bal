@@ -24,6 +24,7 @@ public type Backend record {
 
 public type BackendSpec record {|
     BackendService[] services;
+    string basePath?;
     string protocol;
     TLSConfig tls?;
     SecurityConfig[] security?;
@@ -32,11 +33,10 @@ public type BackendSpec record {|
 public type BackendService record {
     string host;
     int port;
-    string basePath?;
 };
 
 public type BasicSecurityConfig record {
-   SecretRefConfig secretRef;
+    SecretRefConfig secretRef;
 };
 
 public type SecurityConfig record {
@@ -45,11 +45,10 @@ public type SecurityConfig record {
 };
 
 public type SecretRefConfig record {
-   string name;
-   string usernameKey = "username";
-   string passwordKey = "password"; 
+    string name;
+    string usernameKey = "username";
+    string passwordKey = "password";
 };
-
 
 public type RefConfig record {
     string key;
@@ -63,9 +62,10 @@ public type TLSConfig record {
     RefConfig secretRef?;
 
 };
+
 public type BackendList record {
-    string apiVersion="dp.wso2.com/v1alpha1";
+    string apiVersion = "dp.wso2.com/v1alpha1";
     string kind = "BackendList";
-    Backend [] items;
+    Backend[] items;
     ListMeta metadata;
 };
