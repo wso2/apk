@@ -31,6 +31,7 @@ public type APIPolicySpec record {|
 public type APIPolicyData record {
     InterceptorReference[] requestInterceptors?;
     InterceptorReference[] responseInterceptors?;
+    CORSPolicy cORSPolicy?;
 };
 
 public type InterceptorReference record {
@@ -43,4 +44,13 @@ public type APIPolicyList record {
     string kind = "APIPolicyList";
     ListMeta metadata;
     APIPolicy[] items;
+};
+
+public type CORSPolicy record {
+    boolean enabled = false;
+    boolean accessControlAllowCredentials = false;
+    string[] accessControlAllowOrigins = [];
+    string[] accessControlAllowHeaders = [];
+    string[] accessControlAllowMethods = [];
+    string[] accessControlExposeHeaders = [];
 };

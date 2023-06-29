@@ -117,6 +117,7 @@ public type APKOperations record {
 # + accessControlAllowCredentials - Field Description  
 # + accessControlAllowHeaders - Field Description  
 # + accessControlAllowMethods - Field Description  
+# + accessControlExposeHeaders - Field Description
 # + accessControlAllowMaxAge - Field Description
 public type CORSConfiguration record {
     boolean corsConfigurationEnabled?;
@@ -124,6 +125,7 @@ public type CORSConfiguration record {
     boolean accessControlAllowCredentials?;
     string[] accessControlAllowHeaders?;
     string[] accessControlAllowMethods?;
+    string[] accessControlExposeHeaders?;
     int accessControlAllowMaxAge?;
 };
 
