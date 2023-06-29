@@ -78,6 +78,7 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 		var circuitBreaker *dpv1alpha1.CircuitBreaker
 		resourceAuthScheme := authScheme
 		resourceAPIPolicy := apiPolicy
+		var maxConnectionPools uint32
 		var resourceRatelimitPolicy *dpv1alpha1.RateLimitPolicy
 		hasPolicies := false
 		var scopes []string
@@ -231,12 +232,22 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 			resolvedBackend, ok := httpRouteParams.BackendMapping[backendName]
 			if ok {
 				if resolvedBackend.CircuitBreaker != nil {
-					circuitBreaker = &dpv1alpha1.CircuitBreaker{
-						MaxConnections:     resolvedBackend.CircuitBreaker.MaxConnections,
-						MaxPendingRequests: resolvedBackend.CircuitBreaker.MaxPendingRequests,
-						MaxRequests:        resolvedBackend.CircuitBreaker.MaxRequests,
-						MaxRetries:         resolvedBackend.CircuitBreaker.MaxRetries,
-						MaxConnectionPools: resolvedBackend.CircuitBreaker.MaxConnectionPools,
+					maxConnectionPools = resolvedBackend.CircuitBreaker.MaxConnectionPools
+					if maxConnectionPools == 0 {
+						circuitBreaker = &dpv1alpha1.CircuitBreaker{
+							MaxConnections:     resolvedBackend.CircuitBreaker.MaxConnections,
+							MaxPendingRequests: resolvedBackend.CircuitBreaker.MaxPendingRequests,
+							MaxRequests:        resolvedBackend.CircuitBreaker.MaxRequests,
+							MaxRetries:         resolvedBackend.CircuitBreaker.MaxRetries,
+						}
+					} else {
+						circuitBreaker = &dpv1alpha1.CircuitBreaker{
+							MaxConnections:     resolvedBackend.CircuitBreaker.MaxConnections,
+							MaxPendingRequests: resolvedBackend.CircuitBreaker.MaxPendingRequests,
+							MaxRequests:        resolvedBackend.CircuitBreaker.MaxRequests,
+							MaxRetries:         resolvedBackend.CircuitBreaker.MaxRetries,
+							MaxConnectionPools: resolvedBackend.CircuitBreaker.MaxConnectionPools,
+						}
 					}
 				}
 				endPoints = append(endPoints, GetEndpoints(backendName, httpRouteParams.BackendMapping)...)
@@ -265,17 +276,31 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 				iD:            uuid.New().String(),
 			}
 			if circuitBreaker != nil {
-				resource.endpoints = &EndpointCluster{
-					Endpoints: endPoints,
-					Config: &EndpointConfig{
-						CircuitBreakers: &CircuitBreakers{
-							MaxConnections:     int32(circuitBreaker.MaxConnections),
-							MaxRequests:        int32(circuitBreaker.MaxRequests),
-							MaxPendingRequests: int32(circuitBreaker.MaxPendingRequests),
-							MaxRetries:         int32(circuitBreaker.MaxRetries),
-							MaxConnectionPools: int32(circuitBreaker.MaxConnectionPools),
+				if maxConnectionPools == 0 {
+					resource.endpoints = &EndpointCluster{
+						Endpoints: endPoints,
+						Config: &EndpointConfig{
+							CircuitBreakers: &CircuitBreakers{
+								MaxConnections:     int32(circuitBreaker.MaxConnections),
+								MaxRequests:        int32(circuitBreaker.MaxRequests),
+								MaxPendingRequests: int32(circuitBreaker.MaxPendingRequests),
+								MaxRetries:         int32(circuitBreaker.MaxRetries),
+							},
 						},
-					},
+					}
+				} else {
+					resource.endpoints = &EndpointCluster{
+						Endpoints: endPoints,
+						Config: &EndpointConfig{
+							CircuitBreakers: &CircuitBreakers{
+								MaxConnections:     int32(circuitBreaker.MaxConnections),
+								MaxRequests:        int32(circuitBreaker.MaxRequests),
+								MaxPendingRequests: int32(circuitBreaker.MaxPendingRequests),
+								MaxRetries:         int32(circuitBreaker.MaxRetries),
+								MaxConnectionPools: int32(circuitBreaker.MaxConnectionPools),
+							},
+						},
+					}
 				}
 			} else {
 				resource.endpoints = &EndpointCluster{

@@ -161,30 +161,6 @@ type CircuitBreakers struct {
 	MaxConnectionPools int32 `mapstructure:"maxConnectionPools"`
 }
 
-// CircuitBreaker holds the per host and global parameters for retries done by apk to the EndpointCluster
-type CircuitBreaker struct {
-	Thresholds        []Thresholds `mapstructure:"thresholds"`
-	PerHostThresholds []Thresholds `mapstructure:"perHostThresholds"`
-}
-
-// Thresholds holds the parameters for retries done by apk to the EndpointCluster
-type Thresholds struct {
-	Priority           string       `mapstructure:"priority"`
-	MaxConnections     uint32       `mapstructure:"maxConnections"`
-	MaxPendingRequests uint32       `mapstructure:"maxPendingRequests"`
-	MaxRequests        uint32       `mapstructure:"maxRequests"`
-	MaxRetries         uint32       `mapstructure:"maxRetries"`
-	RetryBudget        *RetryBudget `mapstructure:"retryBudget"`
-	TrackRemaining     bool         `mapstructure:"trackRemaining"`
-	MaxConnectionPools uint32       `mapstructure:"maxConnectionPools"`
-}
-
-// RetryBudget holds the parameters for retry done by apk to the EndpointCluster
-type RetryBudget struct {
-	BudgetPercent       uint64 `mapstructure:"budgetPercent"`
-	MinRetryConcurrency uint32 `mapstructure:"minRetryConcurrency"`
-}
-
 // SecurityScheme represents the structure of an security scheme.
 type SecurityScheme struct {
 	DefinitionName string // Arbitrary name used to define the security scheme. ex: default, myApikey
