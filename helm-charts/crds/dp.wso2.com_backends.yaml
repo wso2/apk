@@ -51,6 +51,34 @@ spec:
           spec:
             description: BackendSpec defines the desired state of Backend
             properties:
+              circuitBreaker:
+                description: CircuitBreaker defines the circuit breaker configurations
+                properties:
+                  maxConnectionPools:
+                    format: int32
+                    type: integer
+                  maxConnections:
+                    default: 1024
+                    format: int32
+                    type: integer
+                  maxPendingRequests:
+                    default: 1024
+                    format: int32
+                    type: integer
+                  maxRequests:
+                    default: 1024
+                    format: int32
+                    type: integer
+                  maxRetries:
+                    default: 3
+                    format: int32
+                    type: integer
+                required:
+                - maxConnections
+                - maxPendingRequests
+                - maxRequests
+                - maxRetries
+                type: object
               protocol:
                 default: http
                 description: BackendProtocolType defines the backend protocol type.

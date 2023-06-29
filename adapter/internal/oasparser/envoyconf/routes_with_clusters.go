@@ -481,27 +481,17 @@ func processEndpoints(clusterName string, clusterDetails *model.EndpointCluster,
 	}
 
 	if clusterDetails.Config != nil && clusterDetails.Config.CircuitBreakers != nil {
-		config := clusterDetails.Config.CircuitBreakers
-		thresholds := &clusterv3.CircuitBreakers_Thresholds{}
-		if config.MaxConnections > 0 {
-			thresholds.MaxConnections = wrapperspb.UInt32(uint32(config.MaxConnections))
-		}
-		if config.MaxConnectionPools > 0 {
-			thresholds.MaxConnectionPools = wrapperspb.UInt32(uint32(config.MaxConnectionPools))
-		}
-		if config.MaxPendingRequests > 0 {
-			thresholds.MaxPendingRequests = wrapperspb.UInt32(uint32(config.MaxPendingRequests))
-		}
-		if config.MaxRequests > 0 {
-			thresholds.MaxRequests = wrapperspb.UInt32(uint32(config.MaxRequests))
-		}
-		if config.MaxRetries > 0 {
-			thresholds.MaxRetries = wrapperspb.UInt32(uint32(config.MaxRetries))
-		}
+		var thresholds []*clusterv3.CircuitBreakers_Thresholds
+		circuitBreaker := clusterDetails.Config.CircuitBreakers
+		thresholds = append(thresholds, &clusterv3.CircuitBreakers_Thresholds{
+			MaxConnections:     wrapperspb.UInt32(uint32(circuitBreaker.MaxConnections)),
+			MaxRequests:        wrapperspb.UInt32(uint32(circuitBreaker.MaxRequests)),
+			MaxPendingRequests: wrapperspb.UInt32(uint32(circuitBreaker.MaxPendingRequests)),
+			MaxRetries:         wrapperspb.UInt32(uint32(circuitBreaker.MaxRetries)),
+			MaxConnectionPools: wrapperspb.UInt32(uint32(circuitBreaker.MaxConnectionPools)),
+		})
 		cluster.CircuitBreakers = &clusterv3.CircuitBreakers{
-			Thresholds: []*clusterv3.CircuitBreakers_Thresholds{
-				thresholds,
-			},
+			Thresholds: thresholds,
 		}
 	}
 

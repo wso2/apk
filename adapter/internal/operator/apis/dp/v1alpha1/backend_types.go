@@ -61,6 +61,28 @@ type BackendSpec struct {
 
 	// +optional
 	Security []SecurityConfig `json:"security,omitempty"`
+
+	// + optional
+	CircuitBreaker *CircuitBreaker `json:"circuitBreaker,omitempty"`
+}
+
+// CircuitBreaker defines the circuit breaker configurations
+type CircuitBreaker struct {
+	// +kubebuilder:default=1024
+	MaxConnections uint32 `json:"maxConnections"`
+	// +kubebuilder:default=1024
+	MaxPendingRequests uint32 `json:"maxPendingRequests"`
+	// +kubebuilder:default=1024
+	MaxRequests uint32 `json:"maxRequests"`
+	// +kubebuilder:default=3
+	MaxRetries         uint32 `json:"maxRetries"`
+	MaxConnectionPools uint32 `json:"maxConnectionPools,omitempty"`
+}
+
+// RetryBudget defines the retry budget configurations
+type RetryBudget struct {
+	BudgetPercent       uint64 `json:"budgetPercent,omitempty"`
+	MinRetryConcurrency uint32 `json:"minRetryConcurrency,omitempty"`
 }
 
 // Service holds host and port information for the service

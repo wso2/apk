@@ -75,6 +75,7 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 	for _, rule := range httpRoute.Spec.Rules {
 		var endPoints []Endpoint
 		var policies = OperationPolicies{}
+		var circuitBreaker *dpv1alpha1.CircuitBreaker
 		resourceAuthScheme := authScheme
 		resourceAPIPolicy := apiPolicy
 		var resourceRatelimitPolicy *dpv1alpha1.RateLimitPolicy
@@ -229,6 +230,15 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 			}
 			resolvedBackend, ok := httpRouteParams.BackendMapping[backendName]
 			if ok {
+				if resolvedBackend.CircuitBreaker != nil {
+					circuitBreaker = &dpv1alpha1.CircuitBreaker{
+						MaxConnections:     resolvedBackend.CircuitBreaker.MaxConnections,
+						MaxPendingRequests: resolvedBackend.CircuitBreaker.MaxPendingRequests,
+						MaxRequests:        resolvedBackend.CircuitBreaker.MaxRequests,
+						MaxRetries:         resolvedBackend.CircuitBreaker.MaxRetries,
+						MaxConnectionPools: resolvedBackend.CircuitBreaker.MaxConnectionPools,
+					}
+				}
 				endPoints = append(endPoints, GetEndpoints(backendName, httpRouteParams.BackendMapping)...)
 				for _, security := range resolvedBackend.Security {
 					switch security.Type {
@@ -254,8 +264,23 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 				hasPolicies:   hasPolicies,
 				iD:            uuid.New().String(),
 			}
-			resource.endpoints = &EndpointCluster{
-				Endpoints: endPoints,
+			if circuitBreaker != nil {
+				resource.endpoints = &EndpointCluster{
+					Endpoints: endPoints,
+					Config: &EndpointConfig{
+						CircuitBreakers: &CircuitBreakers{
+							MaxConnections:     int32(circuitBreaker.MaxConnections),
+							MaxRequests:        int32(circuitBreaker.MaxRequests),
+							MaxPendingRequests: int32(circuitBreaker.MaxPendingRequests),
+							MaxRetries:         int32(circuitBreaker.MaxRetries),
+							MaxConnectionPools: int32(circuitBreaker.MaxConnectionPools),
+						},
+					},
+				}
+			} else {
+				resource.endpoints = &EndpointCluster{
+					Endpoints: endPoints,
+				}
 			}
 			resource.endpointSecurity = utils.GetPtrSlice(securityConfig)
 			resources = append(resources, resource)
