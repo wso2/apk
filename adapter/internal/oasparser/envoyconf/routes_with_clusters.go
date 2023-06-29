@@ -491,8 +491,7 @@ func processEndpoints(clusterName string, clusterDetails *model.EndpointCluster,
 			MaxConnectionPools: wrapperspb.UInt32(uint32(circuitBreaker.MaxConnectionPools)),
 		})
 		cluster.CircuitBreakers = &clusterv3.CircuitBreakers{
-			Thresholds:        thresholds,
-			PerHostThresholds: thresholds,
+			Thresholds: thresholds,
 		}
 	}
 
