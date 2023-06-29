@@ -876,12 +876,6 @@ func (apiReconciler *APIReconciler) getAPIsForScope(obj k8client.Object) []recon
 func (apiReconciler *APIReconciler) getAPIsForBackend(obj k8client.Object) []reconcile.Request {
 	ctx := context.Background()
 	backend, ok := obj.(*dpv1alpha1.Backend)
-	timeout := backend.Spec.Timeout
-	if timeout != nil {
-		if timeout.MaxRouteTimeoutSeconds < timeout.RouteTimeoutSeconds {
-			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3115, utils.NamespacedName(backend).String()))
-		}
-	}
 	if !ok {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2624, backend))
 		return []reconcile.Request{}

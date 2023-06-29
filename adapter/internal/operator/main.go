@@ -141,6 +141,10 @@ func InitOperator() {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2652, err))
 	}
 
+	if err = (&dpv1alpha1.Backend{}).SetupWebhookWithManager(mgr); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3115, err))
+	}
+
 	if err := dpcontrollers.NewJWTIssuerReconciler(mgr); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3114, err))
 	}
