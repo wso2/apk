@@ -446,12 +446,12 @@ data:
     [enforcer.restserver]
     enabled = true
 
-    # The configuration of the backend jwt generation in the Choreo Connect
-    [enforcer.jwtGenerator]
+    [[enforcer.jwtGenerator.keypair]]
     # Public certificate for generated JWT
     publicCertificatePath = "/home/wso2/security/truststore/mg.pem"
     # Private key path used for JWT generation
     privateKeyPath = "/home/wso2/security/keystore/mg.key"
+    useForSigning = true
 
     # The issuer configuration required to generate token at Choreo Connect
     [enforcer.jwtIssuer]

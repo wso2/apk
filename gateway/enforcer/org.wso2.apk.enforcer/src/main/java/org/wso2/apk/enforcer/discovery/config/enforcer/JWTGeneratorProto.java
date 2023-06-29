@@ -19,6 +19,11 @@ public final class JWTGeneratorProto {
   static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_wso2_discovery_config_enforcer_JWTGenerator_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_wso2_discovery_config_enforcer_Keypair_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_wso2_discovery_config_enforcer_Keypair_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -30,12 +35,15 @@ public final class JWTGeneratorProto {
     java.lang.String[] descriptorData = {
       "\n2wso2/discovery/config/enforcer/jwt_gen" +
       "erator.proto\022\036wso2.discovery.config.enfo" +
-      "rcer\"I\n\014JWTGenerator\022\037\n\027public_certifica" +
-      "te_path\030\001 \001(\t\022\030\n\020private_key_path\030\002 \001(\tB" +
-      "\226\001\n/org.wso2.apk.enforcer.discovery.conf" +
-      "ig.enforcerB\021JWTGeneratorProtoP\001ZNgithub" +
-      ".com/envoyproxy/go-control-plane/wso2/di" +
-      "scovery/config/enforcer;enforcerb\006proto3"
+      "rcer\"I\n\014JWTGenerator\0229\n\010keypairs\030\001 \003(\0132\'" +
+      ".wso2.discovery.config.enforcer.Keypair\"" +
+      "]\n\007Keypair\022\037\n\027public_certificate_path\030\001 " +
+      "\001(\t\022\030\n\020private_key_path\030\002 \001(\t\022\027\n\017use_for" +
+      "_signing\030\003 \001(\010B\226\001\n/org.wso2.apk.enforcer" +
+      ".discovery.config.enforcerB\021JWTGenerator" +
+      "ProtoP\001ZNgithub.com/envoyproxy/go-contro" +
+      "l-plane/wso2/discovery/config/enforcer;e" +
+      "nforcerb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -46,7 +54,13 @@ public final class JWTGeneratorProto {
     internal_static_wso2_discovery_config_enforcer_JWTGenerator_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_wso2_discovery_config_enforcer_JWTGenerator_descriptor,
-        new java.lang.String[] { "PublicCertificatePath", "PrivateKeyPath", });
+        new java.lang.String[] { "Keypairs", });
+    internal_static_wso2_discovery_config_enforcer_Keypair_descriptor =
+      getDescriptor().getMessageTypes().get(1);
+    internal_static_wso2_discovery_config_enforcer_Keypair_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_wso2_discovery_config_enforcer_Keypair_descriptor,
+        new java.lang.String[] { "PublicCertificatePath", "PrivateKeyPath", "UseForSigning", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)

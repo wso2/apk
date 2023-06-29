@@ -8,26 +8,26 @@ public interface JWTGeneratorOrBuilder extends
     com.google.protobuf.MessageOrBuilder {
 
   /**
-   * <code>string public_certificate_path = 1;</code>
-   * @return The publicCertificatePath.
+   * <code>repeated .wso2.discovery.config.enforcer.Keypair keypairs = 1;</code>
    */
-  java.lang.String getPublicCertificatePath();
+  java.util.List<org.wso2.apk.enforcer.discovery.config.enforcer.Keypair> 
+      getKeypairsList();
   /**
-   * <code>string public_certificate_path = 1;</code>
-   * @return The bytes for publicCertificatePath.
+   * <code>repeated .wso2.discovery.config.enforcer.Keypair keypairs = 1;</code>
    */
-  com.google.protobuf.ByteString
-      getPublicCertificatePathBytes();
-
+  org.wso2.apk.enforcer.discovery.config.enforcer.Keypair getKeypairs(int index);
   /**
-   * <code>string private_key_path = 2;</code>
-   * @return The privateKeyPath.
+   * <code>repeated .wso2.discovery.config.enforcer.Keypair keypairs = 1;</code>
    */
-  java.lang.String getPrivateKeyPath();
+  int getKeypairsCount();
   /**
-   * <code>string private_key_path = 2;</code>
-   * @return The bytes for privateKeyPath.
+   * <code>repeated .wso2.discovery.config.enforcer.Keypair keypairs = 1;</code>
    */
-  com.google.protobuf.ByteString
-      getPrivateKeyPathBytes();
+  java.util.List<? extends org.wso2.apk.enforcer.discovery.config.enforcer.KeypairOrBuilder> 
+      getKeypairsOrBuilderList();
+  /**
+   * <code>repeated .wso2.discovery.config.enforcer.Keypair keypairs = 1;</code>
+   */
+  org.wso2.apk.enforcer.discovery.config.enforcer.KeypairOrBuilder getKeypairsOrBuilder(
+      int index);
 }

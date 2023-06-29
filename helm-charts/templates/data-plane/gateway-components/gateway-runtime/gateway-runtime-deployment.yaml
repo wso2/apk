@@ -52,6 +52,8 @@ spec:
               protocol: "TCP"
             - containerPort: 8084
               protocol: "TCP"
+            - containerPort: 9092
+              protocol: "TCP"
 {{ include "apk-helm.deployment.resources" .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.resources | indent 10 }}
 {{ include "apk-helm.deployment.env" .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.env | indent 10 }}
             - name: ADAPTER_HOST_NAME
