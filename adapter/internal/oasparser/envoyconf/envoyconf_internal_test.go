@@ -22,6 +22,7 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+	"time"
 
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	routev3 "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
@@ -35,6 +36,7 @@ import (
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/oasparser/constants"
 	"github.com/wso2/apk/adapter/internal/oasparser/model"
+	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
@@ -93,17 +95,25 @@ func TestCreateRoute(t *testing.T) {
 		Enabled:     &wrappers.BoolValue{Value: false},
 	}}
 
+	IdleTimeOutConfig := durationpb.New(time.Duration(300) * time.Second)
+
 	expectedRouteActionWithXWso2BasePath := &routev3.Route_Route{
 		Route: &routev3.RouteAction{
 			HostRewriteSpecifier: hostRewriteSpecifier,
 			RegexRewrite:         regexRewriteWithXWso2BasePath,
 			ClusterSpecifier:     clusterSpecifier,
 			UpgradeConfigs:       UpgradeConfigsDisabled,
+			IdleTimeout:          IdleTimeOutConfig,
 		},
 	}
 
-	generatedRouteArrayWithXWso2BasePath, err := createRoutes(generateRouteCreateParamsForUnitTests(title, apiType, vHost, xWso2BasePath, version,
-		endpoint.Basepath, &resourceWithGet, clusterName, nil, false))
+	routeParams := generateRouteCreateParamsForUnitTests(title, apiType, vHost, xWso2BasePath, version,
+		endpoint.Basepath, &resourceWithGet, clusterName, nil, false)
+	routeParams.routeConfig = &model.EndpointConfig{
+		IdleTimeoutInSeconds: 300,
+	}
+
+	generatedRouteArrayWithXWso2BasePath, err := createRoutes(routeParams)
 	assert.Nil(t, err, "Error while creating routes WithXWso2BasePath")
 	generatedRouteWithXWso2BasePath := generatedRouteArrayWithXWso2BasePath[0]
 	assert.NotNil(t, generatedRouteWithXWso2BasePath, "Route should not be null.")

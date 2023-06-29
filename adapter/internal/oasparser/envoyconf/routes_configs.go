@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"time"
 
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	routev3 "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
@@ -78,19 +79,37 @@ func generateRouteMatch(routeRegex string) *routev3.RouteMatch {
 func generateRouteAction(apiType string, routeConfig *model.EndpointConfig, ratelimitCriteria *ratelimitCriteria) (action *routev3.Route_Route) {
 
 	config := config.ReadConfigs()
-	action = &routev3.Route_Route{
-		Route: &routev3.RouteAction{
-			HostRewriteSpecifier: &routev3.RouteAction_AutoHostRewrite{
-				AutoHostRewrite: &wrapperspb.BoolValue{
-					Value: true,
+	if routeConfig != nil {
+		action = &routev3.Route_Route{
+			Route: &routev3.RouteAction{
+				HostRewriteSpecifier: &routev3.RouteAction_AutoHostRewrite{
+					AutoHostRewrite: &wrapperspb.BoolValue{
+						Value: true,
+					},
+				},
+				IdleTimeout:       durationpb.New(time.Duration(routeConfig.IdleTimeoutInSeconds) * time.Second),
+				UpgradeConfigs:    getUpgradeConfig(apiType),
+				MaxStreamDuration: getMaxStreamDuration(apiType),
+				ClusterSpecifier: &routev3.RouteAction_ClusterHeader{
+					ClusterHeader: clusterHeaderName,
 				},
 			},
-			UpgradeConfigs:    getUpgradeConfig(apiType),
-			MaxStreamDuration: getMaxStreamDuration(apiType),
-			ClusterSpecifier: &routev3.RouteAction_ClusterHeader{
-				ClusterHeader: clusterHeaderName,
+		}
+	} else {
+		action = &routev3.Route_Route{
+			Route: &routev3.RouteAction{
+				HostRewriteSpecifier: &routev3.RouteAction_AutoHostRewrite{
+					AutoHostRewrite: &wrapperspb.BoolValue{
+						Value: true,
+					},
+				},
+				UpgradeConfigs:    getUpgradeConfig(apiType),
+				MaxStreamDuration: getMaxStreamDuration(apiType),
+				ClusterSpecifier: &routev3.RouteAction_ClusterHeader{
+					ClusterHeader: clusterHeaderName,
+				},
 			},
-		},
+		}
 	}
 
 	if ratelimitCriteria != nil && ratelimitCriteria.level != "" {
