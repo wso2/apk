@@ -291,15 +291,15 @@ public function testretrievePathPrefix(string context, string 'version, string p
 
 function pathProvider() returns map<[string, string, string, string]>|error {
     map<[string, string, string, string]> dataSet = {
-        "1": ["/abc/1.0.0", "1.0.0", "/abc", "/abc/1.0.0/abc"],
-        "2": ["/abc", "1.0.0", "/abc", "/abc/1.0.0/abc"],
-        "3": ["/abc", "1.0.0", "/*", "/abc/1.0.0(.*)"],
-        "4": ["/abc/1.0.0", "1.0.0", "/*", "/abc/1.0.0(.*)"],
-        "5": ["/abc/1.0.0", "1.0.0", "/{path}/abcd", "/abc/1.0.0/(.*)/abcd"],
-        "6": ["/abc/1.0.0", "1.0.0", "/path1/{bcd}", "/abc/1.0.0/path1/(.*)"],
-        "7": ["/abc/1.0.0", "1.0.0", "/path1/{bcd}/path2", "/abc/1.0.0/path1/(.*)/path2"],
-        "8": ["/abc/1.0.0", "1.0.0", "/path1/{bcd}/{pathparam2}", "/abc/1.0.0/path1/(.*)/(.*)"],
-        "9": ["/abc", "1.0.0", "/path1/*", "/abc/1.0.0/path1(.*)"]
+        "1": ["/abc/1.0.0", "1.0.0", "/abc", "/abc"],
+        "2": ["/abc", "1.0.0", "/abc", "/abc"],
+        "3": ["/abc", "1.0.0", "/*", "(.*)"],
+        "4": ["/abc/1.0.0", "1.0.0", "/*", "(.*)"],
+        "5": ["/abc/1.0.0", "1.0.0", "/{path}/abcd", "/(.*)/abcd"],
+        "6": ["/abc/1.0.0", "1.0.0", "/path1/{bcd}", "/path1/(.*)"],
+        "7": ["/abc/1.0.0", "1.0.0", "/path1/{bcd}/path2", "/path1/(.*)/path2"],
+        "8": ["/abc/1.0.0", "1.0.0", "/path1/{bcd}/{pathparam2}", "/path1/(.*)/(.*)"],
+        "9": ["/abc", "1.0.0", "/path1/*", "/path1(.*)"]
     };
     return dataSet;
 }
@@ -2922,7 +2922,7 @@ function getMockHttpRoute(API api, string apiUUID, commons:Organization organizt
             "hostnames": [string:concat(organiztion.uuid, ".", "gw.wso2.com")],
             "rules": [
                 {
-                    "matches": [{"path": {"type": "RegularExpression", "value": "/pizzaAPI/1.0.0(.*)"}, "method": "GET"}],
+                    "matches": [{"path": {"type": "RegularExpression", "value": "(.*)"}, "method": "GET"}],
                     "filters": [{"type": "URLRewrite", "urlRewrite": {"path": {"type": "ReplaceFullPath", "replaceFullPath": "\\1"}}}],
                     "backendRefs": [
                         {
@@ -2934,7 +2934,7 @@ function getMockHttpRoute(API api, string apiUUID, commons:Organization organizt
                     ]
                 },
                 {
-                    "matches": [{"path": {"type": "RegularExpression", "value": "/pizzaAPI/1.0.0(.*)"}, "method": "PUT"}],
+                    "matches": [{"path": {"type": "RegularExpression", "value": "(.*)"}, "method": "PUT"}],
                     "filters": [{"type": "URLRewrite", "urlRewrite": {"path": {"type": "ReplaceFullPath", "replaceFullPath": "\\1"}}}],
                     "backendRefs": [
                         {
@@ -2946,7 +2946,7 @@ function getMockHttpRoute(API api, string apiUUID, commons:Organization organizt
                     ]
                 },
                 {
-                    "matches": [{"path": {"type": "RegularExpression", "value": "/pizzaAPI/1.0.0(.*)"}, "method": "POST"}],
+                    "matches": [{"path": {"type": "RegularExpression", "value": "(.*)"}, "method": "POST"}],
                     "filters": [{"type": "URLRewrite", "urlRewrite": {"path": {"type": "ReplaceFullPath", "replaceFullPath": "\\1"}}}],
                     "backendRefs": [
                         {
@@ -2958,7 +2958,7 @@ function getMockHttpRoute(API api, string apiUUID, commons:Organization organizt
                     ]
                 },
                 {
-                    "matches": [{"path": {"type": "RegularExpression", "value": "/pizzaAPI/1.0.0(.*)"}, "method": "DELETE"}],
+                    "matches": [{"path": {"type": "RegularExpression", "value": "(.*)"}, "method": "DELETE"}],
                     "filters": [{"type": "URLRewrite", "urlRewrite": {"path": {"type": "ReplaceFullPath", "replaceFullPath": "\\1"}}}],
                     "backendRefs": [
                         {
@@ -2970,7 +2970,7 @@ function getMockHttpRoute(API api, string apiUUID, commons:Organization organizt
                     ]
                 },
                 {
-                    "matches": [{"path": {"type": "RegularExpression", "value": "/pizzaAPI/1.0.0(.*)"}, "method": "PATCH"}],
+                    "matches": [{"path": {"type": "RegularExpression", "value": "(.*)"}, "method": "PATCH"}],
                     "filters": [{"type": "URLRewrite", "urlRewrite": {"path": {"type": "ReplaceFullPath", "replaceFullPath": "\\1"}}}],
                     "backendRefs": [
                         {
@@ -3009,7 +3009,7 @@ function getMockHttpRouteWithOperationPolicies1(API api, string apiUUID, commons
                         {
                             "path": {
                                 "type": "RegularExpression",
-                                "value": "/pizzaAPI/1.0.0(.*)"
+                                "value": "(.*)"
                             },
                             "method": "GET"
                         }
@@ -3056,7 +3056,7 @@ function getMockHttpRouteWithOperationPolicies1(API api, string apiUUID, commons
                         {
                             "path": {
                                 "type": "RegularExpression",
-                                "value": "/pizzaAPI/1.0.0(.*)"
+                                "value": "(.*)"
                             },
                             "method": "PUT"
                         }
@@ -3086,7 +3086,7 @@ function getMockHttpRouteWithOperationPolicies1(API api, string apiUUID, commons
                         {
                             "path": {
                                 "type": "RegularExpression",
-                                "value": "/pizzaAPI/1.0.0(.*)"
+                                "value": "(.*)"
                             },
                             "method": "POST"
                         }
@@ -3116,7 +3116,7 @@ function getMockHttpRouteWithOperationPolicies1(API api, string apiUUID, commons
                         {
                             "path": {
                                 "type": "RegularExpression",
-                                "value": "/pizzaAPI/1.0.0(.*)"
+                                "value": "(.*)"
                             },
                             "method": "DELETE"
                         }
@@ -3146,7 +3146,7 @@ function getMockHttpRouteWithOperationPolicies1(API api, string apiUUID, commons
                         {
                             "path": {
                                 "type": "RegularExpression",
-                                "value": "/pizzaAPI/1.0.0(.*)"
+                                "value": "(.*)"
                             },
                             "method": "PATCH"
                         }
@@ -3199,7 +3199,7 @@ function getMockHttpRouteWithOperationRateLimits1(API api, string apiUUID, commo
                         {
                             "path": {
                                 "type": "RegularExpression",
-                                "value": "/pizzaAPI/1.0.0(.*)"
+                                "value": "(.*)"
                             },
                             "method": "GET"
                         }
@@ -3237,7 +3237,7 @@ function getMockHttpRouteWithOperationRateLimits1(API api, string apiUUID, commo
                         {
                             "path": {
                                 "type": "RegularExpression",
-                                "value": "/pizzaAPI/1.0.0(.*)"
+                                "value": "(.*)"
                             },
                             "method": "PUT"
                         }
@@ -3267,7 +3267,7 @@ function getMockHttpRouteWithOperationRateLimits1(API api, string apiUUID, commo
                         {
                             "path": {
                                 "type": "RegularExpression",
-                                "value": "/pizzaAPI/1.0.0(.*)"
+                                "value": "(.*)"
                             },
                             "method": "POST"
                         }
@@ -3297,7 +3297,7 @@ function getMockHttpRouteWithOperationRateLimits1(API api, string apiUUID, commo
                         {
                             "path": {
                                 "type": "RegularExpression",
-                                "value": "/pizzaAPI/1.0.0(.*)"
+                                "value": "(.*)"
                             },
                             "method": "DELETE"
                         }
@@ -3327,7 +3327,7 @@ function getMockHttpRouteWithOperationRateLimits1(API api, string apiUUID, commo
                         {
                             "path": {
                                 "type": "RegularExpression",
-                                "value": "/pizzaAPI/1.0.0(.*)"
+                                "value": "(.*)"
                             },
                             "method": "PATCH"
                         }
@@ -3380,7 +3380,7 @@ function getMockHttpRouteWithOperationInterceptorPolicy1(API api, string apiUUID
                         {
                             "path": {
                                 "type": "RegularExpression",
-                                "value": "/pizzaAPI/1.0.0(.*)"
+                                "value": "(.*)"
                             },
                             "method": "GET"
                         }
@@ -3418,7 +3418,7 @@ function getMockHttpRouteWithOperationInterceptorPolicy1(API api, string apiUUID
                         {
                             "path": {
                                 "type": "RegularExpression",
-                                "value": "/pizzaAPI/1.0.0(.*)"
+                                "value": "(.*)"
                             },
                             "method": "PUT"
                         }
@@ -3448,7 +3448,7 @@ function getMockHttpRouteWithOperationInterceptorPolicy1(API api, string apiUUID
                         {
                             "path": {
                                 "type": "RegularExpression",
-                                "value": "/pizzaAPI/1.0.0(.*)"
+                                "value": "(.*)"
                             },
                             "method": "POST"
                         }
@@ -3478,7 +3478,7 @@ function getMockHttpRouteWithOperationInterceptorPolicy1(API api, string apiUUID
                         {
                             "path": {
                                 "type": "RegularExpression",
-                                "value": "/pizzaAPI/1.0.0(.*)"
+                                "value": "(.*)"
                             },
                             "method": "DELETE"
                         }
@@ -3508,7 +3508,7 @@ function getMockHttpRouteWithOperationInterceptorPolicy1(API api, string apiUUID
                         {
                             "path": {
                                 "type": "RegularExpression",
-                                "value": "/pizzaAPI/1.0.0(.*)"
+                                "value": "(.*)"
                             },
                             "method": "PATCH"
                         }
@@ -4549,7 +4549,7 @@ function getMockHttpRouteWithBackend(API api, string apiUUID, string backenduuid
                         {
                             "path": {
                                 "type": "RegularExpression",
-                                "value": "/pizzaAPI/1.0.0(.*)"
+                                "value": "(.*)"
                             },
                             "method": "GET"
                         }
@@ -4579,7 +4579,7 @@ function getMockHttpRouteWithBackend(API api, string apiUUID, string backenduuid
                         {
                             "path": {
                                 "type": "RegularExpression",
-                                "value": "/pizzaAPI/1.0.0(.*)"
+                                "value": "(.*)"
                             },
                             "method": "PUT"
                         }
@@ -4609,7 +4609,7 @@ function getMockHttpRouteWithBackend(API api, string apiUUID, string backenduuid
                         {
                             "path": {
                                 "type": "RegularExpression",
-                                "value": "/pizzaAPI/1.0.0(.*)"
+                                "value": "(.*)"
                             },
                             "method": "POST"
                         }
@@ -4639,7 +4639,7 @@ function getMockHttpRouteWithBackend(API api, string apiUUID, string backenduuid
                         {
                             "path": {
                                 "type": "RegularExpression",
-                                "value": "/pizzaAPI/1.0.0(.*)"
+                                "value": "(.*)"
                             },
                             "method": "DELETE"
                         }
@@ -4669,7 +4669,7 @@ function getMockHttpRouteWithBackend(API api, string apiUUID, string backenduuid
                         {
                             "path": {
                                 "type": "RegularExpression",
-                                "value": "/pizzaAPI/1.0.0(.*)"
+                                "value": "(.*)"
                             },
                             "method": "PATCH"
                         }
@@ -4723,7 +4723,7 @@ function getMockHttpRouteWithOperationPolicies(API api, string apiUUID, string b
                         {
                             "path": {
                                 "type": "RegularExpression",
-                                "value": "/pizzaAPI/1.0.0(.*)"
+                                "value": "(.*)"
                             },
                             "method": "GET"
                         }
@@ -4770,7 +4770,7 @@ function getMockHttpRouteWithOperationPolicies(API api, string apiUUID, string b
                         {
                             "path": {
                                 "type": "RegularExpression",
-                                "value": "/pizzaAPI/1.0.0(.*)"
+                                "value": "(.*)"
                             },
                             "method": "PUT"
                         }
@@ -4800,7 +4800,7 @@ function getMockHttpRouteWithOperationPolicies(API api, string apiUUID, string b
                         {
                             "path": {
                                 "type": "RegularExpression",
-                                "value": "/pizzaAPI/1.0.0(.*)"
+                                "value": "(.*)"
                             },
                             "method": "POST"
                         }
@@ -4830,7 +4830,7 @@ function getMockHttpRouteWithOperationPolicies(API api, string apiUUID, string b
                         {
                             "path": {
                                 "type": "RegularExpression",
-                                "value": "/pizzaAPI/1.0.0(.*)"
+                                "value": "(.*)"
                             },
                             "method": "DELETE"
                         }
@@ -4860,7 +4860,7 @@ function getMockHttpRouteWithOperationPolicies(API api, string apiUUID, string b
                         {
                             "path": {
                                 "type": "RegularExpression",
-                                "value": "/pizzaAPI/1.0.0(.*)"
+                                "value": "(.*)"
                             },
                             "method": "PATCH"
                         }
@@ -4914,7 +4914,7 @@ function getMockHttpRouteWithAPIPolicies(API api, string apiUUID, string backend
                         {
                             "path": {
                                 "type": "RegularExpression",
-                                "value": "/pizzaAPI/1.0.0(.*)"
+                                "value": "(.*)"
                             },
                             "method": "GET"
                         }
@@ -4961,7 +4961,7 @@ function getMockHttpRouteWithAPIPolicies(API api, string apiUUID, string backend
                         {
                             "path": {
                                 "type": "RegularExpression",
-                                "value": "/pizzaAPI/1.0.0(.*)"
+                                "value": "(.*)"
                             },
                             "method": "PUT"
                         }
@@ -5008,7 +5008,7 @@ function getMockHttpRouteWithAPIPolicies(API api, string apiUUID, string backend
                         {
                             "path": {
                                 "type": "RegularExpression",
-                                "value": "/pizzaAPI/1.0.0(.*)"
+                                "value": "(.*)"
                             },
                             "method": "POST"
                         }
@@ -5055,7 +5055,7 @@ function getMockHttpRouteWithAPIPolicies(API api, string apiUUID, string backend
                         {
                             "path": {
                                 "type": "RegularExpression",
-                                "value": "/pizzaAPI/1.0.0(.*)"
+                                "value": "(.*)"
                             },
                             "method": "DELETE"
                         }
@@ -5102,7 +5102,7 @@ function getMockHttpRouteWithAPIPolicies(API api, string apiUUID, string backend
                         {
                             "path": {
                                 "type": "RegularExpression",
-                                "value": "/pizzaAPI/1.0.0(.*)"
+                                "value": "(.*)"
                             },
                             "method": "PATCH"
                         }
@@ -5173,7 +5173,7 @@ function getMockHttpRouteWithOperationRateLimits(API api, string apiUUID, string
                         {
                             "path": {
                                 "type": "RegularExpression",
-                                "value": "/pizzaAPI/1.0.0(.*)"
+                                "value": "(.*)"
                             },
                             "method": "GET"
                         }
@@ -5211,7 +5211,7 @@ function getMockHttpRouteWithOperationRateLimits(API api, string apiUUID, string
                         {
                             "path": {
                                 "type": "RegularExpression",
-                                "value": "/pizzaAPI/1.0.0(.*)"
+                                "value": "(.*)"
                             },
                             "method": "PUT"
                         }
@@ -5241,7 +5241,7 @@ function getMockHttpRouteWithOperationRateLimits(API api, string apiUUID, string
                         {
                             "path": {
                                 "type": "RegularExpression",
-                                "value": "/pizzaAPI/1.0.0(.*)"
+                                "value": "(.*)"
                             },
                             "method": "POST"
                         }
@@ -5271,7 +5271,7 @@ function getMockHttpRouteWithOperationRateLimits(API api, string apiUUID, string
                         {
                             "path": {
                                 "type": "RegularExpression",
-                                "value": "/pizzaAPI/1.0.0(.*)"
+                                "value": "(.*)"
                             },
                             "method": "DELETE"
                         }
@@ -5301,7 +5301,7 @@ function getMockHttpRouteWithOperationRateLimits(API api, string apiUUID, string
                         {
                             "path": {
                                 "type": "RegularExpression",
-                                "value": "/pizzaAPI/1.0.0(.*)"
+                                "value": "(.*)"
                             },
                             "method": "PATCH"
                         }
@@ -5355,7 +5355,7 @@ function getMockHttpRouteWithOperationInterceptorPolicy(API api, string apiUUID,
                         {
                             "path": {
                                 "type": "RegularExpression",
-                                "value": "/pizzaAPI/1.0.0(.*)"
+                                "value": "(.*)"
                             },
                             "method": "GET"
                         }
@@ -5393,7 +5393,7 @@ function getMockHttpRouteWithOperationInterceptorPolicy(API api, string apiUUID,
                         {
                             "path": {
                                 "type": "RegularExpression",
-                                "value": "/pizzaAPI/1.0.0(.*)"
+                                "value": "(.*)"
                             },
                             "method": "PUT"
                         }
@@ -5423,7 +5423,7 @@ function getMockHttpRouteWithOperationInterceptorPolicy(API api, string apiUUID,
                         {
                             "path": {
                                 "type": "RegularExpression",
-                                "value": "/pizzaAPI/1.0.0(.*)"
+                                "value": "(.*)"
                             },
                             "method": "POST"
                         }
@@ -5453,7 +5453,7 @@ function getMockHttpRouteWithOperationInterceptorPolicy(API api, string apiUUID,
                         {
                             "path": {
                                 "type": "RegularExpression",
-                                "value": "/pizzaAPI/1.0.0(.*)"
+                                "value": "(.*)"
                             },
                             "method": "DELETE"
                         }
@@ -5483,7 +5483,7 @@ function getMockHttpRouteWithOperationInterceptorPolicy(API api, string apiUUID,
                         {
                             "path": {
                                 "type": "RegularExpression",
-                                "value": "/pizzaAPI/1.0.0(.*)"
+                                "value": "(.*)"
                             },
                             "method": "PATCH"
                         }
