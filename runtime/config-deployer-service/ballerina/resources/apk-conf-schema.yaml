@@ -38,6 +38,10 @@ components:
           type: string
           description: |
             Organization of the API
+        defaultVersion:
+          type: boolean
+          description: |
+            Is this the default version of the API
         endpointConfigurations:
           $ref: "#/components/schemas/EndpointConfigurations"
         operations:

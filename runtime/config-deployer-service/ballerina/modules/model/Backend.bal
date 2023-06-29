@@ -32,6 +32,7 @@ public type BackendSpec record {|
 public type BackendService record {
     string host;
     int port;
+    string basePath?;
 };
 
 public type BasicSecurityConfig record {

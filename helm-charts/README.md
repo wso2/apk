@@ -266,8 +266,8 @@ A Helm chart for APK components
 | idp.idpds.config.keyId | string | `"gateway_certificate_alias"` | identity server keyId |
 | idp.idpds.config.hostname | string | `"idp.am.wso2.com"` | identity server hostname. |
 | idp.idpds.config.loginPageURl | string | `"https://idp.am.wso2.com:9095/authenticationEndpoint/login"` | identity server login page url |
-| idp.idpds.config.loginErrorPageUrl | string | `"https://idp.am.wso2.com:9095/authentication-endpoint/error"` | identity server login error page url |
-| idp.idpds.config.loginCallBackURl | string | `"https://idp.am.wso2.com:9095/authentication-endpoint/login-callback"` | identity server login callback page url |
+| idp.idpds.config.loginErrorPageUrl | string | `"https://idp.am.wso2.com:9095/authenticationEndpoint/error"` | identity server login error page url |
+| idp.idpds.config.loginCallBackURl | string | `"https://idp.am.wso2.com:9095/authenticationEndpoint/login-callback"` | identity server login callback page url |
 | idp.idpds.deployment.resources.requests.memory | string | `"128Mi"` | CPU request for the container |
 | idp.idpds.deployment.resources.requests.cpu | string | `"100m"` | Memory request for the container |
 | idp.idpds.deployment.resources.limits.memory | string | `"1028Mi"` | CPU limit for the container |
