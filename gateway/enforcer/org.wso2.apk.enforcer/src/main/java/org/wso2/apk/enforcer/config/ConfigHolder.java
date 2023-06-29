@@ -318,9 +318,7 @@ public class ConfigHolder {
                 jwks.add(jwk);
             }
         } catch (JOSEException | CertificateException | IOException e) {
-            String err = "Error in loading additional public certificates for JWKS: " + e;
-//            logger.error(err, ErrorDetails.errorLog(LoggingConstants.Severity.CRITICAL, 5401));
-            logger.error(err);
+            logger.error("Error in loading additional public certificates for JWKS: " + e);
         }
         backendJWKSDto.setJwks(jwks);
         config.setBackendJWKSDto(backendJWKSDto);

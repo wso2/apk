@@ -189,8 +189,6 @@ var defaultConfig = &Config{
 			},
 		},
 		JwtGenerator: jwtGenerator{
-			PublicCertificatePath: "",
-			PrivateKeyPath:        "",
 			Keypair: []KeyPair{
 				{
 					PublicCertificatePath: "/home/wso2/security/truststore/mg.pem",
