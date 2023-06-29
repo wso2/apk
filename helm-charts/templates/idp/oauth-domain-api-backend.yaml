@@ -20,10 +20,10 @@ metadata:
   name: {{ template "apk-helm.resource.prefix" . }}-oauth-ds-backend
   namespace: {{ .Release.Namespace }}
 spec:
+ basePath: /oauth2
  services:
   - host:  {{ template "apk-helm.resource.prefix" . }}-idp-ds-service.{{ .Release.Namespace }}.svc
     port: 9443
-    basePath: /oauth2
  protocol: "https"
  tls:
   allowedSANs:

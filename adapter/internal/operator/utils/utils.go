@@ -308,6 +308,7 @@ func GetResolvedBackend(ctx context.Context, client k8client.Client,
 	}
 	resolvedBackend.Services = backend.Spec.Services
 	resolvedBackend.Protocol = backend.Spec.Protocol
+	resolvedBackend.BasePath = backend.Spec.BasePath;
 	if backend.Spec.CircuitBreaker != nil {
 		resolvedBackend.CircuitBreaker = &dpv1alpha1.CircuitBreaker{
 			MaxConnections:     backend.Spec.CircuitBreaker.MaxConnections,

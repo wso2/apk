@@ -20,10 +20,10 @@ metadata:
   name: {{ template "apk-helm.resource.prefix" . }}-config-generator-backend
   namespace: {{ .Release.Namespace }}
 spec:
+ basePath: "/api/configurator"
  services:
   - host:  {{ template "apk-helm.resource.prefix" . }}-config-ds-service.{{ .Release.Namespace }}
     port: 9443
-    basePath: "/api/configurator"
  protocol: "https"
  tls:
   allowedSANs:

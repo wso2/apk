@@ -490,7 +490,7 @@ func GetBackendBasePath(backendName types.NamespacedName, backendMapping dpv1alp
 	backend, ok := backendMapping[backendName]
 	if ok && backend != nil {
 		if len(backend.Services) > 0 {
-			return backend.Services[0].BasePath;
+			return backend.BasePath;
 		}
 	}
 	return "";

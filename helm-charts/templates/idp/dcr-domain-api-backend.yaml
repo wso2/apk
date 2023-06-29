@@ -20,10 +20,10 @@ metadata:
   name: {{ template "apk-helm.resource.prefix" . }}-dcr-ds-backend
   namespace: {{ .Release.Namespace }}
 spec:
+ basePath: /dcr
  services:
   - host:  {{ template "apk-helm.resource.prefix" . }}-idp-ds-service.{{ .Release.Namespace }}.svc
     port: 9443
-    basePath: /dcr
  protocol: "https"
  tls:
   allowedSANs:
