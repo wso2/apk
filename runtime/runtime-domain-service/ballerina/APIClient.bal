@@ -1927,11 +1927,10 @@ public class APIClient {
     }
 
     public isolated function retrievePathPrefix(string context, string 'version, string operation, commons:Organization organization) returns string {
-        string fullContext = self.returnFullContext(context, 'version);
         string[] splitValues = regex:split(operation, "/");
-        string generatedPath = fullContext;
+        string generatedPath = "";
         if (operation == "/*") {
-            return generatedPath + "(.*)";
+            return "(.*)";
         }
         foreach string pathPart in splitValues {
             if pathPart.trim().length() > 0 {

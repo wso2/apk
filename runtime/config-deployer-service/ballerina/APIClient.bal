@@ -73,7 +73,7 @@ public class APIClient {
             if apkConf.id is string {
                 uniqueId = <string>apkConf.id;
             }
-            model:APIArtifact apiArtifact = {uniqueId: uniqueId, name: apkConf.name, version: apkConf.version,organization:organization};
+            model:APIArtifact apiArtifact = {uniqueId: uniqueId, name: apkConf.name, version: apkConf.version, organization: organization};
             APKOperations[]? operations = apkConf.operations;
             if operations is APKOperations[] {
                 if operations.length() == 0 {
@@ -410,6 +410,7 @@ public class APIClient {
                 apiType: apkConf.'type,
                 apiVersion: apkConf.'version,
                 context: self.returnFullContext(apkConf.context, apkConf.'version),
+                isDefaultVersion: apkConf.defaultVersion,
                 organization: organization
             }
         };
@@ -767,9 +768,8 @@ public class APIClient {
     }
 
     public isolated function retrievePathPrefix(string context, string 'version, string operation, string organization) returns string {
-        string fullContext = self.returnFullContext(context, 'version);
         string[] splitValues = regex:split(operation, "/");
-        string generatedPath = fullContext;
+        string generatedPath = "";
         if (operation == "/*") {
             return generatedPath + "(.*)";
         }
@@ -959,7 +959,8 @@ public class APIClient {
                 services: [
                     {
                         host: self.gethost(endpointConfig.endpoint),
-                        port: check self.getPort(endpointConfig.endpoint)
+                        port: check self.getPort(endpointConfig.endpoint),
+                        basePath: endpointConfig.endpoint is string ? getPath(<string>endpointConfig.endpoint) : ()
                     }
                 ],
                 protocol: self.getProtocol(endpointConfig.endpoint)

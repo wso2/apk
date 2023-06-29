@@ -46,9 +46,24 @@ spec:
       name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
   - matches:
     - path:
+        type: "PathPrefix"
+        value: "/apis"
+      method: "GET"
+    backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
+  - matches:
+    - path:
         type: "RegularExpression"
         value: "/apis/(.*)"
       method: "PUT"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/apis/\\1"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -58,6 +73,12 @@ spec:
         type: "RegularExpression"
         value: "/apis/(.*)"
       method: "DELETE"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/apis/\\1\\2"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -67,6 +88,12 @@ spec:
         type: "RegularExpression"
         value: "/apis/(.*)/generate-key"
       method: "POST"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/apis/\\1/generate-key"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -112,127 +139,181 @@ spec:
         type: "RegularExpression"
         value: "/apis/(.*)/definition"
       method: "GET"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/apis/\\1/definition"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
       name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
-  - matches:
-    - path:
-        type: "RegularExpression"
-        value: "/apis/(.*)/definition"
-      method: "PUT"
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
-  - matches:
-    - path:
-        type: "RegularExpression"
-        value: "/apis/(.*)/endpoint-certificates"
-      method: "GET"
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
-  - matches:
-    - path:
-        type: "RegularExpression"
-        value: "/apis/(.*)/endpoint-certificates"
-      method: "POST"
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
-  - matches:
-    - path:
-        type: "RegularExpression"
-        value: "/apis/(.*)/endpoint-certificates/(.*)"
-      method: "GET"
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
-  - matches:
-    - path:
-        type: "RegularExpression"
-        value: "/apis/(.*)/endpoint-certificates/(.*)"
-      method: "PUT"
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
-  - matches:
-    - path:
-        type: "RegularExpression"
-        value: "/apis/(.*)/endpoint-certificates/(.*)"
-      method: "DELETE"
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
-  - matches:
-    - path:
-        type: "Exact"
-        value: "/apis/export"
-      method: "GET"
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
-  - matches:
-    - path:
-        type: "Exact"
-        value: "/apis/copy-api"
-      method: "POST"
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
-  - matches:
-    - path:
-        type: "Exact"
-        value: "/services"
-      method: "GET"
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
-  - matches:
-    - path:
-        type: "PathPrefix"
-        value: "/services"
-      method: "GET"
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
-  - matches:
-    - path:
-        type: "RegularExpression"
-        value: "/services/(.*)/usage"
-      method: "GET"
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
-  - matches:
-    - path:
-        type: "Exact"
-        value: "/policies"
-      method: "GET"
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
-  - matches:
-    - path:
-        type: "RegularExpression"
-        value: "/policies/(.*)"
-      method: "GET"
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
+    - matches:
+      - path:
+          type: "RegularExpression"
+          value: "/apis/(.*)/definition"
+        method: "PUT"
+      filters:
+      - type: "URLRewrite"
+        urlRewrite:
+          path:
+            type: "ReplaceFullPath"
+            replaceFullPath: "/apis/\\1/definition"
+      backendRefs:
+      - group: dp.wso2.com
+        kind: Backend
+        name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
+    - matches:
+      - path:
+          type: "RegularExpression"
+          value: "/apis/(.*)/endpoint-certificates"
+        method: "GET"
+      filters:
+      - type: "URLRewrite"
+        urlRewrite:
+          path:
+            type: "ReplaceFullPath"
+            replaceFullPath: "/apis/\\1/endpoint-certificates"
+      backendRefs:
+      - group: dp.wso2.com
+        kind: Backend
+        name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
+    - matches:
+      - path:
+          type: "RegularExpression"
+          value: "/apis/(.*)/endpoint-certificates"
+        method: "POST"
+      filters:
+      - type: "URLRewrite"
+        urlRewrite:
+          path:
+            type: "ReplaceFullPath"
+            replaceFullPath: "/apis/\\1/endpoint-certificates"
+      backendRefs:
+      - group: dp.wso2.com
+        kind: Backend
+        name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
+    - matches:
+      - path:
+          type: "RegularExpression"
+          value: "/apis/(.*)/endpoint-certificates/(.*)"
+        method: "GET"
+      filters:
+      - type: "URLRewrite"
+        urlRewrite:
+          path:
+            type: "ReplaceFullPath"
+            replaceFullPath: "/apis/\\1/endpoint-certificates/\\2"
+      backendRefs:
+      - group: dp.wso2.com
+        kind: Backend
+        name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
+    - matches:
+      - path:
+          type: "RegularExpression"
+          value: "/apis/(.*)/endpoint-certificates/(.*)"
+        method: "PUT"
+      filters:
+      - type: "URLRewrite"
+        urlRewrite:
+          path:
+            type: "ReplaceFullPath"
+            replaceFullPath: "/apis/\\1/endpoint-certificates/\\2"
+      backendRefs:
+      - group: dp.wso2.com
+        kind: Backend
+        name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
+    - matches:
+      - path:
+          type: "RegularExpression"
+          value: "/apis/(.*)/endpoint-certificates/(.*)"
+        method: "DELETE"
+      filters:
+      - type: "URLRewrite"
+        urlRewrite:
+          path:
+            type: "ReplaceFullPath"
+            replaceFullPath: "/apis/\\1/endpoint-certificates/\\2"
+      backendRefs:
+      - group: dp.wso2.com
+        kind: Backend
+        name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
+    - matches:
+      - path:
+          type: "Exact"
+          value: "/apis/export"
+        method: "GET"
+      backendRefs:
+      - group: dp.wso2.com
+        kind: Backend
+        name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
+    - matches:
+      - path:
+          type: "Exact"
+          value: "/apis/copy-api"
+        method: "POST"
+      backendRefs:
+      - group: dp.wso2.com
+        kind: Backend
+        name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
+    - matches:
+      - path:
+          type: "Exact"
+          value: "/services"
+        method: "GET"
+      backendRefs:
+      - group: dp.wso2.com
+        kind: Backend
+        name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
+    - matches:
+      - path:
+          type: "PathPrefix"
+          value: "/services"
+        method: "GET"
+      backendRefs:
+      - group: dp.wso2.com
+        kind: Backend
+        name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
+    - matches:
+      - path:
+          type: "RegularExpression"
+          value: "/services/(.*)/usage"
+        method: "GET"
+      filters:
+      - type: "URLRewrite"
+        urlRewrite:
+          path:
+            type: "ReplaceFullPath"
+            replaceFullPath: "/services/\\1/usage"
+      backendRefs:
+      - group: dp.wso2.com
+        kind: Backend
+        name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
+    - matches:
+      - path:
+          type: "Exact"
+          value: "/policies"
+        method: "GET"
+      backendRefs:
+      - group: dp.wso2.com
+        kind: Backend
+        name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
+    - matches:
+      - path:
+          type: "RegularExpression"
+          value: "/policies/(.*)"
+        method: "GET"
+      filters:
+      - type: "URLRewrite"
+        urlRewrite:
+          path:
+            type: "ReplaceFullPath"
+            replaceFullPath: "/policies/\\1"
+      backendRefs:
+      - group: dp.wso2.com
+        kind: Backend
+        name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
   parentRefs:
   - group: "gateway.networking.k8s.io"
     kind: "Gateway"

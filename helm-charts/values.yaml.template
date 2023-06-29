@@ -436,11 +436,11 @@ idp:
       # -- identity server hostname.
       hostname: "idp.am.wso2.com"
       # -- identity server login page url
-      loginPageURl: "https://idp.am.wso2.com:9095/authentication-endpoint/login"
+      loginPageURl: "https://idp.am.wso2.com:9095/authenticationEndpoint/login"
       # -- identity server login error page url
-      loginErrorPageUrl: "https://idp.am.wso2.com:9095/authentication-endpoint/error"
+      loginErrorPageUrl: "https://idp.am.wso2.com:9095/authenticationEndpoint/error"
       # -- identity server login callback page url
-      loginCallBackURl: "https://idp.am.wso2.com:9095/authentication-endpoint/login-callback"
+      loginCallBackURl: "https://idp.am.wso2.com:9095/authenticationEndpoint/login-callback"
     deployment:
       resources:
         requests:
