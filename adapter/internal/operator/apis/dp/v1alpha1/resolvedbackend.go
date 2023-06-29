@@ -28,6 +28,7 @@ type ResolvedBackend struct {
 	Protocol BackendProtocolType
 	TLS      ResolvedTLSConfig
 	Security []ResolvedSecurityConfig
+	BasePath string `json:"basePath"`
 }
 
 // ResolvedTLSConfig defines enpoint TLS configurations
