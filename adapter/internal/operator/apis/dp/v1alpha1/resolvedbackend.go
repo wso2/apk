@@ -31,6 +31,7 @@ type ResolvedBackend struct {
 	CircuitBreaker *CircuitBreaker
 	Timeout        *Timeout
 	Retry          *RetryConfig
+	BasePath string `json:"basePath"`
 }
 
 // ResolvedTLSConfig defines enpoint TLS configurations

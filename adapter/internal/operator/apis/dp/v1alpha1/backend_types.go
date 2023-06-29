@@ -70,6 +70,9 @@ type BackendSpec struct {
 
 	// +optional
 	Retry *RetryConfig `json:"retry,omitempty"`
+	
+	// +optional
+	BasePath string `json:"basePath"`
 }
 
 // Timeout defines the timeout configurations
@@ -119,7 +122,6 @@ type RetryConfig struct {
 type Service struct {
 	Host string `json:"host"`
 	Port uint32 `json:"port"`
-	BasePath string `json:"basePath"`
 }
 
 // TLSConfig defines enpoint TLS configurations
