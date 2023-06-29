@@ -12,8 +12,6 @@ cd runtime/config-deployer-service;./gradlew build;
 cd $current_dir;
 cd adapter;./gradlew build;
 cd $current_dir;
-cd management-server;./gradlew build;
-cd $current_dir;
 cd gateway/router;./gradlew build;
 cd $current_dir;
 cd gateway/enforcer;./gradlew build;
