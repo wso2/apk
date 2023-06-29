@@ -106,7 +106,7 @@ func CreateRoutesWithClusters(adapterInternalAPI model.AdapterInternalAPI, inter
 
 	conf := config.ReadConfigs()
 
-	// Get the timeout from the default config as this is used for the enforcer timeout
+	// Get the timeout from the default config as this is used for the api definition cluster timeout
 	timeout := conf.Envoy.ClusterTimeoutInSeconds
 
 	// Create API level interceptor clusters if required

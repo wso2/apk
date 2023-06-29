@@ -438,13 +438,6 @@ func (endpointCluster *EndpointCluster) validateEndpointCluster() error {
 			if endpointCluster.Config.RetryConfig != nil {
 				endpointCluster.Config.RetryConfig.validateRetryConfig()
 			}
-			// Validate timeout
-			conf := config.ReadConfigs()
-			// Set timeout to default if not provided
-			maxTimeoutInMillis := conf.Envoy.Upstream.Timeouts.MaxRouteTimeoutInSeconds * 1000
-			if endpointCluster.Config.TimeoutInMillis > maxTimeoutInMillis {
-				endpointCluster.Config.TimeoutInMillis = maxTimeoutInMillis
-			}
 		}
 	}
 	return nil
