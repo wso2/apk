@@ -97,14 +97,14 @@ spec:
                     port:
                       format: int32
                       type: integer
-                    basePath:
-                      type: string
                   required:
                   - host
                   - port
                   type: object
                 minItems: 1
                 type: array
+              basePath:
+                type: string
               tls:
                 description: TLSConfig defines enpoint TLS configurations
                 properties:

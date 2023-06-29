@@ -61,13 +61,15 @@ type BackendSpec struct {
 
 	// +optional
 	Security []SecurityConfig `json:"security,omitempty"`
+
+	// +optional
+	BasePath string `json:"basePath"`
 }
 
 // Service holds host and port information for the service
 type Service struct {
 	Host string `json:"host"`
 	Port uint32 `json:"port"`
-	BasePath string `json:"basePath"`
 }
 
 // TLSConfig defines enpoint TLS configurations
