@@ -1,0 +1,29 @@
+---
+organization: "wso2"
+name: "test-cors"
+context: "/test_cors"
+version: "2.0.0"
+type: "REST"
+endpointConfigurations:
+    production:
+        endpoint: "https://httpbin.org"
+operations:
+    - target: "/anything"
+      verb: "GET"
+      authTypeEnabled: true
+      scopes: []
+vhosts:
+  production: ["gw.am.wso2.com"]
+  sandbox: []
+corsConfiguration:
+  corsConfigurationEnabled: true
+  accessControlAllowOrigins:
+    - "wso2.com"
+  accessControlAllowCredentials: true
+  accessControlAllowHeaders:
+    - "Content-Type"
+    - "Authorization"
+  accessControlAllowMethods:
+    - "GET"
+  accessControlAllowMaxAge: 3600
+
