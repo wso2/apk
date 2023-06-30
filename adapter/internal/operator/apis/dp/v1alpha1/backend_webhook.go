@@ -89,6 +89,19 @@ func (r *Backend) validateBackendSpec() error {
 				circuitBreakers.MaxConnectionPools, "maxConnectionPools should be greater than 0"))
 		}
 	}
+	retryConfig := r.Spec.Retry
+	if retryConfig != nil {
+		if int32(retryConfig.Count) < 0 {
+			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("retry").Child("count"), retryConfig.Count,
+				"retry count should be greater than or equal to 0"))
+		}
+		for _, statusCode := range retryConfig.StatusCodes {
+			if statusCode > 598 || statusCode < 401 {
+				allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("retry").Child("statusCodes"),
+					retryConfig.StatusCodes, "status code should be between 401 and 598"))
+			}
+		}
+	}
 	if len(allErrs) > 0 {
 		return apierrors.NewInvalid(
 			schema.GroupKind{Group: "dp.wso2.com", Kind: "Backend"},
