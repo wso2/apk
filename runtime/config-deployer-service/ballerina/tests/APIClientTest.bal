@@ -1,11 +1,40 @@
 import ballerina/test;
+import config_deployer_service.model;
 import config_deployer_service.org.wso2.apk.config.model as runtimeModels;
+import ballerina/io;
 
 @test:Config {dataProvider: APIToAPKConfDataProvider}
 public isolated function testFromAPIModelToAPKConf(runtimeModels:API api, APKConf expected) returns error? {
     APIClient apiClient = new;
     APKConf apkConf = check apiClient.fromAPIModelToAPKConf(api);
     test:assertEquals(apkConf, expected, "APKConf is not equal to expected APKConf");
+}
+
+@test:Config {}
+public isolated function testCORSPolicyGenerationFromAPKConf() returns error? {
+
+    GenerateK8sResourcesBody body = {};
+    body.apkConfiguration = {fileName: "API_CORS.apk-conf", fileContent: check io:fileReadBytes("./tests/resources/API_CORS.apk-conf")};
+    body.definitionFile = {fileName: "api_cors.yaml", fileContent: check io:fileReadBytes("./tests/resources/api_cors.yaml")};
+    body.apiType = "REST";
+    APIClient apiClient = new;
+
+    model:APIArtifact apiArtifact = check apiClient.prepareArtifact(body.apkConfiguration, body.definitionFile);
+
+    model:CORSPolicy? corsPolicySpecExpected = {
+        enabled: true,
+        accessControlAllowCredentials: true,
+        accessControlAllowOrigins: ["wso2.com"],
+        accessControlAllowHeaders: ["Content-Type","Authorization"],
+        accessControlAllowMethods: ["GET"]
+    };
+
+    foreach model:APIPolicy apiPolicy in apiArtifact.apiPolicies {
+        model:APIPolicyData? policyData = apiPolicy.spec.default;
+        if (policyData is model:APIPolicyData) {
+            test:assertEquals(policyData.cORSPolicy, corsPolicySpecExpected, "CORS Policy is not equal to expected CORS Policy");
+        }
+    }
 }
 
 public function APIToAPKConfDataProvider() returns map<[runtimeModels:API, APKConf]>|error {
