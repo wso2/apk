@@ -308,7 +308,6 @@ func GetResolvedBackend(ctx context.Context, client k8client.Client,
 	}
 	resolvedBackend.Services = backend.Spec.Services
 	resolvedBackend.Protocol = backend.Spec.Protocol
-	resolvedBackend.CircuitBreaker = nil
 	if backend.Spec.CircuitBreaker != nil {
 		resolvedBackend.CircuitBreaker = &dpv1alpha1.CircuitBreaker{
 			MaxConnections:     backend.Spec.CircuitBreaker.MaxConnections,
@@ -318,12 +317,18 @@ func GetResolvedBackend(ctx context.Context, client k8client.Client,
 			MaxPendingRequests: backend.Spec.CircuitBreaker.MaxPendingRequests,
 		}
 	}
-	resolvedBackend.Timeout = nil
 	if backend.Spec.Timeout != nil {
 		resolvedBackend.Timeout = &dpv1alpha1.Timeout{
 			MaxRouteTimeoutSeconds:  backend.Spec.Timeout.MaxRouteTimeoutSeconds,
 			RouteTimeoutSeconds:     backend.Spec.Timeout.RouteTimeoutSeconds,
 			RouteIdleTimeoutSeconds: backend.Spec.Timeout.RouteIdleTimeoutSeconds,
+		}
+	}
+	if backend.Spec.Retry != nil {
+		resolvedBackend.Retry = &dpv1alpha1.RetryConfig{
+			Count:              backend.Spec.Retry.Count,
+			BaseIntervalMillis: backend.Spec.Retry.BaseIntervalMillis,
+			StatusCodes:        backend.Spec.Retry.StatusCodes,
 		}
 	}
 	if backend.Spec.TLS != nil {

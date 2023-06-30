@@ -102,6 +102,8 @@ const (
 	error3113 = 3113
 	error3114 = 3114
 	error3115 = 3115
+	error3116 = 3116
+	error3117 = 3117
 )
 
 // Mapper used to keep error details for error logs
@@ -465,6 +467,16 @@ var Mapper = map[int]ErrorDetails{
 	error3115: {
 		ErrorCode: error3115,
 		Message:   "Route Timeout cannot be greater than the Max value defined : %s",
+		Severity:  MAJOR,
+	},
+	error3116: {
+		ErrorCode: error3116,
+		Message:   "Invalid Status Codes for Retry: %s",
+		Severity:  MAJOR,
+	},
+	error3117: {
+		ErrorCode: error3117,
+		Message:   "Retry Count Should be greater than 0: %s",
 		Severity:  MAJOR,
 	},
 }

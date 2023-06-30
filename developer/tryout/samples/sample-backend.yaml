@@ -21,12 +21,6 @@ kind: Backend
 metadata:
   name: insecure-backend
 spec:
-  circuitBreaker:
-    thresholds:
-    - maxConnections: 100
-      maxPendingRequests: 100
-      maxRequests: 100
-      maxRetries: 3
   services:
   - host: backend
     port: 3000
@@ -47,6 +41,12 @@ spec:
     maxRouteTimeoutSeconds: 60
     routeIdleTimeoutSeconds: 10
     routeTimeoutSeconds: 40
+  retry:
+    count: 4
+    baseIntervalMillis: 2000
+    statusCodes:
+      - 504
+      - 500
   services:
   - host: test-backend-svc
     port: 3000

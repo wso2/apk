@@ -67,6 +67,9 @@ type BackendSpec struct {
 	// +optional
 	// Timeout congifuration for the backend
 	Timeout *Timeout `json:"timeout,omitempty"`
+
+	// +optional
+	Retry *RetryConfig `json:"retry,omitempty"`
 }
 
 // Timeout defines the timeout configurations
@@ -97,6 +100,19 @@ type CircuitBreaker struct {
 type RetryBudget struct {
 	BudgetPercent       uint64 `json:"budgetPercent,omitempty"`
 	MinRetryConcurrency uint32 `json:"minRetryConcurrency,omitempty"`
+}
+
+// RetryConfig defines retry configurations
+type RetryConfig struct {
+	// +kubebuilder:default=1
+	// MaxRetry defines the maximum number of retries
+	Count uint32 `json:"count"`
+	// +kubebuilder:default=2000
+	// BaseIntervalMillis defines the base interval in milliseconds
+	BaseIntervalMillis uint32 `json:"baseIntervalMillis"`
+	// +optional
+	// StatusCodes defines the list of status codes to retry
+	StatusCodes []uint32 `json:"statusCodes,omitempty"`
 }
 
 // Service holds host and port information for the service

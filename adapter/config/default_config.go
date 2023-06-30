@@ -71,9 +71,7 @@ var defaultConfig = &Config{
 				HealthyThreshold:   2,
 			},
 			Retry: upstreamRetry{
-				MaxRetryCount:        5,
-				BaseIntervalInMillis: 25,
-				StatusCodes:          []uint32{504},
+				StatusCodes: []uint32{504},
 			},
 			DNS: upstreamDNS{
 				DNSRefreshRate: 5000,

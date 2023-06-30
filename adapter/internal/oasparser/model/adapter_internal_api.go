@@ -149,8 +149,9 @@ type EndpointConfig struct {
 
 // RetryConfig holds the parameters for retries done by apk to the EndpointCluster
 type RetryConfig struct {
-	Count       int32    `mapstructure:"count"`
-	StatusCodes []uint32 `mapstructure:"statusCodes"`
+	Count                int32    `mapstructure:"count"`
+	StatusCodes          []uint32 `mapstructure:"statusCodes"`
+	BaseIntervalInMillis int32    `mapstructure:"baseIntervalInMillis"`
 }
 
 // CircuitBreakers holds the parameters for retries done by apk to the EndpointCluster
@@ -401,12 +402,6 @@ func (endpoint *Endpoint) GetAuthorityHeader() string {
 
 func (retryConfig *RetryConfig) validateRetryConfig() {
 	conf := config.ReadConfigs()
-	maxConfigurableCount := conf.Envoy.Upstream.Retry.MaxRetryCount
-	if retryConfig.Count > int32(maxConfigurableCount) || retryConfig.Count < 0 {
-		logger.LoggerOasparser.Errorf("Retry count for the API must be within the range 0 - %v."+
-			"Reconfiguring retry count as %v", maxConfigurableCount, maxConfigurableCount)
-		retryConfig.Count = int32(maxConfigurableCount)
-	}
 	var validStatusCodes []uint32
 	for _, statusCode := range retryConfig.StatusCodes {
 		if statusCode > 598 || statusCode < 401 {

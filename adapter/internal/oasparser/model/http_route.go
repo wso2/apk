@@ -21,6 +21,7 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/internal/oasparser/constants"
 	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
@@ -54,6 +55,7 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 
 	disableScopes := true
 	disableAuthentications := false
+	config := config.ReadConfigs()
 
 	var authScheme *dpv1alpha1.Authentication
 	if outputAuthScheme != nil {
@@ -83,7 +85,12 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 		var scopes []string
 		var timeoutInMillis uint32
 		var idleTimeoutInSeconds uint32
+		isRetryConfig := false
 		isRouteTimeout := false
+		var backendRetryCount uint32
+		var statusCodes []uint32
+		statusCodes = append(statusCodes, config.Envoy.Upstream.Retry.StatusCodes...)
+		var baseIntervalInMillis uint32
 		for _, filter := range rule.Filters {
 			hasPolicies = true
 			switch filter.Type {
@@ -251,6 +258,15 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 					timeoutInMillis = resolvedBackend.Timeout.RouteTimeoutSeconds * 1000
 					idleTimeoutInSeconds = resolvedBackend.Timeout.RouteIdleTimeoutSeconds
 				}
+
+				if resolvedBackend.Retry != nil {
+					isRetryConfig = true
+					backendRetryCount = resolvedBackend.Retry.Count
+					baseIntervalInMillis = resolvedBackend.Retry.BaseIntervalMillis
+					if len(resolvedBackend.Retry.StatusCodes) > 0 {
+						statusCodes = resolvedBackend.Retry.StatusCodes
+					}
+				}
 				endPoints = append(endPoints, GetEndpoints(backendName, httpRouteParams.BackendMapping)...)
 				for _, security := range resolvedBackend.Security {
 					switch security.Type {
@@ -296,7 +312,14 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 					MaxConnectionPools: int32(circuitBreaker.MaxConnectionPools),
 				}
 			}
-			if isRouteTimeout || circuitBreaker != nil {
+			if isRetryConfig {
+				endpointConfig.RetryConfig = &RetryConfig{
+					Count:                int32(backendRetryCount),
+					StatusCodes:          statusCodes,
+					BaseIntervalInMillis: int32(baseIntervalInMillis),
+				}
+			}
+			if isRouteTimeout || circuitBreaker != nil || isRetryConfig {
 				resource.endpoints.Config = endpointConfig
 			}
 			resource.endpointSecurity = utils.GetPtrSlice(securityConfig)
