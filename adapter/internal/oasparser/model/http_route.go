@@ -257,14 +257,10 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 
 				if resolvedBackend.Retry != nil {
 					isRetryConfig = true
-					if resolvedBackend.Retry.Count > 0 {
-						backendRetryCount = resolvedBackend.Retry.Count
-					}
+					backendRetryCount = resolvedBackend.Retry.Count
+					baseIntervalInMillis = resolvedBackend.Retry.BaseIntervalMillis
 					if len(resolvedBackend.Retry.StatusCodes) > 0 {
 						statusCodes = resolvedBackend.Retry.StatusCodes
-					}
-					if resolvedBackend.Retry.BaseIntervalMillis > 0 {
-						baseIntervalInMillis = resolvedBackend.Retry.BaseIntervalMillis
 					}
 				}
 				endPoints = append(endPoints, GetEndpoints(backendName, httpRouteParams.BackendMapping)...)

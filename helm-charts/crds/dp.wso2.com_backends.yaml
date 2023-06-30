@@ -94,12 +94,12 @@ spec:
                 description: RetryConfig defines retry configurations
                 properties:
                   baseIntervalMillis:
-                    default: 25
+                    default: 2000
                     description: BaseIntervalMillis defines the base interval in milliseconds
                     format: int32
                     type: integer
                   count:
-                    default: 5
+                    default: 1
                     description: MaxRetry defines the maximum number of retries
                     format: int32
                     type: integer

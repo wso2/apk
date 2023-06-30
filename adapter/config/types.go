@@ -186,12 +186,11 @@ type payloadPassingToEnforcer struct {
 // Envoy Upstream Related Configurations
 type envoyUpstream struct {
 	// UpstreamTLS related Configuration
-	TLS      upstreamTLS
-	Timeouts upstreamTimeout
-	Health   upstreamHealth
-	DNS      upstreamDNS
-	Retry    upstreamRetry
-	HTTP2    upstreamHTTP2Options
+	TLS    upstreamTLS
+	Health upstreamHealth
+	DNS    upstreamDNS
+	Retry  upstreamRetry
+	HTTP2  upstreamHTTP2Options
 }
 
 // Envoy Downstream Related Configurations
@@ -214,12 +213,6 @@ type upstreamTLS struct {
 	DisableSslVerification bool
 }
 
-type upstreamTimeout struct {
-	RouteTimeoutInSeconds     uint32
-	MaxRouteTimeoutInSeconds  uint32
-	RouteIdleTimeoutInSeconds uint32
-}
-
 type upstreamHealth struct {
 	Timeout            int32
 	Interval           int32
@@ -238,9 +231,7 @@ type upstreamHTTP2Options struct {
 }
 
 type upstreamRetry struct {
-	MaxRetryCount        uint32
-	BaseIntervalInMillis uint32
-	StatusCodes          []uint32
+	StatusCodes []uint32
 }
 
 type security struct {

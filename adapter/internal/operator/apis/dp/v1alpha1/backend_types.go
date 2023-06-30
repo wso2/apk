@@ -104,10 +104,10 @@ type RetryBudget struct {
 
 // RetryConfig defines retry configurations
 type RetryConfig struct {
-	// +kubebuilder:default=5
+	// +kubebuilder:default=1
 	// MaxRetry defines the maximum number of retries
 	Count uint32 `json:"count"`
-	// +kubebuilder:default=25
+	// +kubebuilder:default=2000
 	// BaseIntervalMillis defines the base interval in milliseconds
 	BaseIntervalMillis uint32 `json:"baseIntervalMillis"`
 	// +optional

@@ -876,17 +876,6 @@ func (apiReconciler *APIReconciler) getAPIsForScope(obj k8client.Object) []recon
 func (apiReconciler *APIReconciler) getAPIsForBackend(obj k8client.Object) []reconcile.Request {
 	ctx := context.Background()
 	backend, ok := obj.(*dpv1alpha1.Backend)
-	retryConfig := backend.Spec.Retry
-	if retryConfig != nil {
-		if int32(retryConfig.Count) < 0 {
-			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3117, utils.NamespacedName(backend).String()))
-		}
-		for _, statusCode := range retryConfig.StatusCodes {
-			if statusCode > 598 || statusCode < 401 {
-				loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3116, utils.NamespacedName(backend).String()))
-			}
-		}
-	}
 	if !ok {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2624, backend))
 		return []reconcile.Request{}
