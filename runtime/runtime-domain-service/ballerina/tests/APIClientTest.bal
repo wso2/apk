@@ -5588,7 +5588,7 @@ function getMockResourceLevelPolicy(API api, commons:Organization organiztion, s
         "kind": "APIPolicy",
         "metadata": {"name": "api-policy-ref-name", "namespace": "apk-platform", "labels": getLabels(api, organiztion)},
         "spec": {
-            "override": {
+            "default": {
                "requestInterceptors": [
                     {
                         "name": getInterceptorServiceUid(api, organiztion, "request", 0),
@@ -5619,7 +5619,7 @@ function getMockAPILevelPolicy(API api, commons:Organization organiztion, string
         "kind": "APIPolicy",
         "metadata": {"name": "api-policy-ref-name", "namespace": "apk-platform", "labels": getLabels(api, organiztion)},
         "spec": {
-            "override": {
+            "default": {
                 "requestInterceptors": [
                     {
                         "name": getInterceptorServiceUid(api, organiztion, "request", 0),
