@@ -85,7 +85,6 @@ func generateRouteAction(apiType string, routeConfig *model.EndpointConfig, rate
 			},
 			UpgradeConfigs:    getUpgradeConfig(apiType),
 			MaxStreamDuration: getMaxStreamDuration(apiType),
-			IdleTimeout:       durationpb.New(time.Duration(routeConfig.IdleTimeoutInSeconds) * time.Second),
 			ClusterSpecifier: &routev3.RouteAction_ClusterHeader{
 				ClusterHeader: clusterHeaderName,
 			},
