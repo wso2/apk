@@ -1,52 +1,52 @@
-# --------------------------------------------------------------------
-# Copyright (c) 2023, WSO2 LLC. (http://wso2.com) All Rights Reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-# -----------------------------------------------------------------------
-apiVersion: dp.wso2.com/v1alpha1
-kind: RateLimitPolicy
-metadata:
-  name: http-bin-ratelimit-usergroup
-spec:
-  override:
-    type: Custom
-    custom:
-      key: rlkey_usergroup
-      value: admin
-      rateLimit:
-        requestsPerUnit: 8
-        unit: Minute
-    organization: default
-  targetRef:
-    kind: Gateway
-    name: default
-    group: gateway.networking.k8s.io
----
-apiVersion: dp.wso2.com/v1alpha1
-kind: RateLimitPolicy
-metadata:
-  name: http-bin-ratelimit-user
-spec:
-  override:
-    type: Custom
-    custom:
-      key: rlkey_user
-      value: bob
-      rateLimit:
-        requestsPerUnit: 4
-        unit: Minute
-    organization: default
-  targetRef:
-    kind: Gateway
-    name: default
-    group: gateway.networking.k8s.io
+# # --------------------------------------------------------------------
+# # Copyright (c) 2023, WSO2 LLC. (http://wso2.com) All Rights Reserved.
+# #
+# # Licensed under the Apache License, Version 2.0 (the "License");
+# # you may not use this file except in compliance with the License.
+# # You may obtain a copy of the License at
+# #
+# # http://www.apache.org/licenses/LICENSE-2.0
+# #
+# # Unless required by applicable law or agreed to in writing, software
+# # distributed under the License is distributed on an "AS IS" BASIS,
+# # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# # See the License for the specific language governing permissions and
+# # limitations under the License.
+# # -----------------------------------------------------------------------
+# apiVersion: dp.wso2.com/v1alpha1
+# kind: RateLimitPolicy
+# metadata:
+#   name: http-bin-ratelimit-usergroup
+# spec:
+#   override:
+#     type: Custom
+#     custom:
+#       key: rlkey_usergroup
+#       value: admin
+#       rateLimit:
+#         requestsPerUnit: 8
+#         unit: Minute
+#     organization: default
+#   targetRef:
+#     kind: Gateway
+#     name: default
+#     group: gateway.networking.k8s.io
+# ---
+# apiVersion: dp.wso2.com/v1alpha1
+# kind: RateLimitPolicy
+# metadata:
+#   name: http-bin-ratelimit-user
+# spec:
+#   override:
+#     type: Custom
+#     custom:
+#       key: rlkey_user
+#       value: bob
+#       rateLimit:
+#         requestsPerUnit: 4
+#         unit: Minute
+#     organization: default
+#   targetRef:
+#     kind: Gateway
+#     name: default
+#     group: gateway.networking.k8s.io

@@ -79,7 +79,6 @@ func generateRouteMatch(routeRegex string) *routev3.RouteMatch {
 func generateRouteAction(apiType string, routeConfig *model.EndpointConfig, ratelimitCriteria *ratelimitCriteria) (action *routev3.Route_Route) {
 
 	config := config.ReadConfigs()
-
 	action = &routev3.Route_Route{
 		Route: &routev3.RouteAction{
 			HostRewriteSpecifier: &routev3.RouteAction_AutoHostRewrite{
@@ -89,12 +88,13 @@ func generateRouteAction(apiType string, routeConfig *model.EndpointConfig, rate
 			},
 			UpgradeConfigs:    getUpgradeConfig(apiType),
 			MaxStreamDuration: getMaxStreamDuration(apiType),
-			Timeout:           durationpb.New(time.Duration(config.Envoy.Upstream.Timeouts.RouteTimeoutInSeconds) * time.Second),
-			IdleTimeout:       durationpb.New(time.Duration(config.Envoy.Upstream.Timeouts.RouteIdleTimeoutInSeconds) * time.Second),
 			ClusterSpecifier: &routev3.RouteAction_ClusterHeader{
 				ClusterHeader: clusterHeaderName,
 			},
 		},
+	}
+	if routeConfig != nil {
+		action.Route.IdleTimeout = durationpb.New(time.Duration(routeConfig.IdleTimeoutInSeconds) * time.Second)
 	}
 
 	if ratelimitCriteria != nil && ratelimitCriteria.level != "" {

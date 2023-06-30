@@ -105,6 +105,8 @@ func CreateRoutesWithClusters(adapterInternalAPI model.AdapterInternalAPI, inter
 	apiVersion := adapterInternalAPI.GetVersion()
 
 	conf := config.ReadConfigs()
+
+	// Get the timeout from the default config as this is used for the api definition cluster timeout
 	timeout := conf.Envoy.ClusterTimeoutInSeconds
 
 	// Create API level interceptor clusters if required
@@ -128,15 +130,15 @@ func CreateRoutesWithClusters(adapterInternalAPI model.AdapterInternalAPI, inter
 	routes = append(routes, routeP)
 	var endpointForAPIDefinitions []model.Endpoint
 	endpoint := &model.Endpoint{
+		// Localhost is set as the two containers are in the same pod
 		Host:    "localhost",
-		Port:    8084,
+		Port:    uint32(8084),
 		URLType: "https",
 	}
 	endpointForAPIDefinitions = append(endpointForAPIDefinitions, *endpoint)
 	endpointCluster := model.EndpointCluster{
 		Endpoints: endpointForAPIDefinitions,
 	}
-
 	cluster, address, err := processEndpoints(apiDefinitionClusterName, &endpointCluster, timeout, "")
 	if err != nil {
 		logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(2239, apiTitle, apiVersion, apiDefinitionQueryParam, err.Error()))
@@ -1190,7 +1192,6 @@ func CreateJWKSRoute() *routev3.Route {
 	return &router
 }
 
-
 // CreateAPIDefinitionRoute generates a route for the jwt /testkey endpoint
 func CreateAPIDefinitionRoute(basePath string, vHost string, methods []string) *routev3.Route {
 	rewritePath := basePath + "/" + vHost + "?" + apiDefinitionQueryParam
@@ -1553,6 +1554,7 @@ func genRouteCreateParams(swagger *model.AdapterInternalAPI, resource *model.Res
 		isDefaultVersion:             swagger.IsDefaultVersion,
 		apiLevelRateLimitPolicy:      swagger.RateLimitPolicy,
 		apiProperties:                swagger.APIProperties,
+		routeConfig:                  resource.GetEndpoints().Config,
 	}
 	return params
 }
@@ -1605,6 +1607,8 @@ func createInterceptorAPIClusters(adapterInternalAPI model.AdapterInternalAPI, i
 	)
 	apiTitle := adapterInternalAPI.GetTitle()
 	apiVersion := adapterInternalAPI.GetVersion()
+
+	// fetch cluster timeout value from the vendor extension name for interceptors
 	apiRequestInterceptor = adapterInternalAPI.GetInterceptor(adapterInternalAPI.GetVendorExtensions(), xWso2requestInterceptor, APILevelInterceptor)
 	// if lua filter exists on api level, add cluster
 	if apiRequestInterceptor.Enable {

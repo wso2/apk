@@ -64,6 +64,19 @@ type BackendSpec struct {
 
 	// + optional
 	CircuitBreaker *CircuitBreaker `json:"circuitBreaker,omitempty"`
+	// +optional
+	// Timeout congifuration for the backend
+	Timeout *Timeout `json:"timeout,omitempty"`
+}
+
+// Timeout defines the timeout configurations
+type Timeout struct {
+	// +kubebuilder:default=60
+	MaxRouteTimeoutSeconds uint32 `json:"maxRouteTimeoutSeconds"`
+	// +kubebuilder:default=60
+	RouteTimeoutSeconds uint32 `json:"routeTimeoutSeconds"`
+	// +kubebuilder:default=300
+	RouteIdleTimeoutSeconds uint32 `json:"routeIdleTimeoutSeconds"`
 }
 
 // CircuitBreaker defines the circuit breaker configurations
@@ -75,8 +88,9 @@ type CircuitBreaker struct {
 	// +kubebuilder:default=1024
 	MaxRequests uint32 `json:"maxRequests"`
 	// +kubebuilder:default=3
-	MaxRetries         uint32 `json:"maxRetries"`
-	MaxConnectionPools uint32 `json:"maxConnectionPools,omitempty"`
+	MaxRetries uint32 `json:"maxRetries"`
+	// +kubebuilder:default=1000
+	MaxConnectionPools uint32 `json:"maxConnectionPools"`
 }
 
 // RetryBudget defines the retry budget configurations

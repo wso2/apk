@@ -31,12 +31,12 @@ import (
 	tlsv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/transport_sockets/tls/v3"
 	envoy_type_matcherv3 "github.com/envoyproxy/go-control-plane/envoy/type/matcher/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/wellknown"
-	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/stretchr/testify/assert"
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/oasparser/constants"
 	"github.com/wso2/apk/adapter/internal/oasparser/model"
+	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
@@ -95,9 +95,7 @@ func TestCreateRoute(t *testing.T) {
 		Enabled:     &wrappers.BoolValue{Value: false},
 	}}
 
-	TimeOutConfig := ptypes.DurationProto(60 * time.Second)
-
-	IdleTimeOutConfig := ptypes.DurationProto(300 * time.Second)
+	IdleTimeOutConfig := durationpb.New(time.Duration(300) * time.Second)
 
 	expectedRouteActionWithXWso2BasePath := &routev3.Route_Route{
 		Route: &routev3.RouteAction{
@@ -105,13 +103,17 @@ func TestCreateRoute(t *testing.T) {
 			RegexRewrite:         regexRewriteWithXWso2BasePath,
 			ClusterSpecifier:     clusterSpecifier,
 			UpgradeConfigs:       UpgradeConfigsDisabled,
-			Timeout:              TimeOutConfig,
 			IdleTimeout:          IdleTimeOutConfig,
 		},
 	}
 
-	generatedRouteArrayWithXWso2BasePath, err := createRoutes(generateRouteCreateParamsForUnitTests(title, apiType, vHost, xWso2BasePath, version,
-		endpoint.Basepath, &resourceWithGet, clusterName, nil, false))
+	routeParams := generateRouteCreateParamsForUnitTests(title, apiType, vHost, xWso2BasePath, version,
+		endpoint.Basepath, &resourceWithGet, clusterName, nil, false)
+	routeParams.routeConfig = &model.EndpointConfig{
+		IdleTimeoutInSeconds: 300,
+	}
+
+	generatedRouteArrayWithXWso2BasePath, err := createRoutes(routeParams)
 	assert.Nil(t, err, "Error while creating routes WithXWso2BasePath")
 	generatedRouteWithXWso2BasePath := generatedRouteArrayWithXWso2BasePath[0]
 	assert.NotNil(t, generatedRouteWithXWso2BasePath, "Route should not be null.")

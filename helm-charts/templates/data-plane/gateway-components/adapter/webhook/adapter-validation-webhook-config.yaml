@@ -29,6 +29,26 @@ webhooks:
     service:
       name: {{ template "apk-helm.resource.prefix" . }}-adapter-service
       namespace: {{ .Release.Namespace }}
+      path: /validate-dp-wso2-com-v1alpha1-backend
+  failurePolicy: Fail
+  name: vbackend.kb.io
+  rules:
+  - apiGroups:
+    - dp.wso2.com
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - backends
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: {{ template "apk-helm.resource.prefix" . }}-adapter-service
+      namespace: {{ .Release.Namespace }}
       path: /validate-dp-wso2-com-v1alpha1-api
   failurePolicy: Fail
   name: vapi.kb.io

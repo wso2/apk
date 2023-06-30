@@ -29,6 +29,7 @@ type ResolvedBackend struct {
 	TLS            ResolvedTLSConfig
 	Security       []ResolvedSecurityConfig
 	CircuitBreaker *CircuitBreaker
+	Timeout        *Timeout
 }
 
 // ResolvedTLSConfig defines enpoint TLS configurations

@@ -55,6 +55,7 @@ spec:
                 description: CircuitBreaker defines the circuit breaker configurations
                 properties:
                   maxConnectionPools:
+                    default: 1000
                     format: int32
                     type: integer
                   maxConnections:
@@ -74,6 +75,7 @@ spec:
                     format: int32
                     type: integer
                 required:
+                - maxConnectionPools
                 - maxConnections
                 - maxPendingRequests
                 - maxRequests
@@ -131,6 +133,26 @@ spec:
                   type: object
                 minItems: 1
                 type: array
+              timeout:
+                description: Timeout congifuration for the backend
+                properties:
+                  maxRouteTimeoutSeconds:
+                    default: 60
+                    format: int32
+                    type: integer
+                  routeIdleTimeoutSeconds:
+                    default: 300
+                    format: int32
+                    type: integer
+                  routeTimeoutSeconds:
+                    default: 60
+                    format: int32
+                    type: integer
+                required:
+                - maxRouteTimeoutSeconds
+                - routeIdleTimeoutSeconds
+                - routeTimeoutSeconds
+                type: object
               tls:
                 description: TLSConfig defines enpoint TLS configurations
                 properties:
@@ -177,3 +199,4 @@ spec:
     storage: true
     subresources:
       status: {}
+

@@ -81,6 +81,9 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 		var resourceRatelimitPolicy *dpv1alpha1.RateLimitPolicy
 		hasPolicies := false
 		var scopes []string
+		var timeoutInMillis uint32
+		var idleTimeoutInSeconds uint32
+		isRouteTimeout := false
 		for _, filter := range rule.Filters {
 			hasPolicies = true
 			switch filter.Type {
@@ -239,6 +242,11 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 						MaxConnectionPools: resolvedBackend.CircuitBreaker.MaxConnectionPools,
 					}
 				}
+				if resolvedBackend.Timeout != nil {
+					isRouteTimeout = true
+					timeoutInMillis = resolvedBackend.Timeout.RouteTimeoutSeconds * 1000
+					idleTimeoutInSeconds = resolvedBackend.Timeout.RouteIdleTimeoutSeconds
+				}
 				endPoints = append(endPoints, GetEndpoints(backendName, httpRouteParams.BackendMapping)...)
 				for _, security := range resolvedBackend.Security {
 					switch security.Type {
@@ -264,23 +272,28 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 				hasPolicies:   hasPolicies,
 				iD:            uuid.New().String(),
 			}
+
+			resource.endpoints = &EndpointCluster{
+				Endpoints: endPoints,
+			}
+
+			endpointConfig := &EndpointConfig{}
+
+			if isRouteTimeout {
+				endpointConfig.TimeoutInMillis = timeoutInMillis
+				endpointConfig.IdleTimeoutInSeconds = idleTimeoutInSeconds
+			}
 			if circuitBreaker != nil {
-				resource.endpoints = &EndpointCluster{
-					Endpoints: endPoints,
-					Config: &EndpointConfig{
-						CircuitBreakers: &CircuitBreakers{
-							MaxConnections:     int32(circuitBreaker.MaxConnections),
-							MaxRequests:        int32(circuitBreaker.MaxRequests),
-							MaxPendingRequests: int32(circuitBreaker.MaxPendingRequests),
-							MaxRetries:         int32(circuitBreaker.MaxRetries),
-							MaxConnectionPools: int32(circuitBreaker.MaxConnectionPools),
-						},
-					},
+				endpointConfig.CircuitBreakers = &CircuitBreakers{
+					MaxConnections:     int32(circuitBreaker.MaxConnections),
+					MaxRequests:        int32(circuitBreaker.MaxRequests),
+					MaxPendingRequests: int32(circuitBreaker.MaxPendingRequests),
+					MaxRetries:         int32(circuitBreaker.MaxRetries),
+					MaxConnectionPools: int32(circuitBreaker.MaxConnectionPools),
 				}
-			} else {
-				resource.endpoints = &EndpointCluster{
-					Endpoints: endPoints,
-				}
+			}
+			if isRouteTimeout || circuitBreaker != nil {
+				resource.endpoints.Config = endpointConfig
 			}
 			resource.endpointSecurity = utils.GetPtrSlice(securityConfig)
 			resources = append(resources, resource)

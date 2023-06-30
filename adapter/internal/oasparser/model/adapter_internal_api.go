@@ -141,9 +141,10 @@ type EndpointSecurity struct {
 
 // EndpointConfig holds the configs such as timeout, retry, etc. for the EndpointCluster
 type EndpointConfig struct {
-	RetryConfig     *RetryConfig     `mapstructure:"retryConfig"`
-	TimeoutInMillis uint32           `mapstructure:"timeoutInMillis"`
-	CircuitBreakers *CircuitBreakers `mapstructure:"circuitBreakers"`
+	RetryConfig          *RetryConfig     `mapstructure:"retryConfig"`
+	TimeoutInMillis      uint32           `mapstructure:"timeoutInMillis"`
+	IdleTimeoutInSeconds uint32           `mapstructure:"idleTimeoutInSeconds"`
+	CircuitBreakers      *CircuitBreakers `mapstructure:"circuitBreakers"`
 }
 
 // RetryConfig holds the parameters for retries done by apk to the EndpointCluster
@@ -436,12 +437,6 @@ func (endpointCluster *EndpointCluster) validateEndpointCluster() error {
 			// Validate retry
 			if endpointCluster.Config.RetryConfig != nil {
 				endpointCluster.Config.RetryConfig.validateRetryConfig()
-			}
-			// Validate timeout
-			conf := config.ReadConfigs()
-			maxTimeoutInMillis := conf.Envoy.Upstream.Timeouts.MaxRouteTimeoutInSeconds * 1000
-			if endpointCluster.Config.TimeoutInMillis > maxTimeoutInMillis {
-				endpointCluster.Config.TimeoutInMillis = maxTimeoutInMillis
 			}
 		}
 	}
