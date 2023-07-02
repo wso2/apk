@@ -102,6 +102,25 @@ func (r *Backend) validateBackendSpec() error {
 			}
 		}
 	}
+	healthCheck := r.Spec.HealthCheck
+	if healthCheck != nil {
+		if healthCheck.Timeout < 0 {
+			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("healthCheck").Child("timeoutInMillis"),
+				healthCheck.Timeout, "timeout should be greater than or equal to 0"))
+		}
+		if healthCheck.Interval < 0 {
+			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("healthCheck").Child("intervalInMillis"),
+				healthCheck.Interval, "interval should be greater than or equal to 0"))
+		}
+		if healthCheck.UnhealthyThreshold < 0 {
+			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("healthCheck").Child("unhealthyThreshold"),
+				healthCheck.UnhealthyThreshold, "unhealthyThreshold should be greater than or equal to 0"))
+		}
+		if healthCheck.HealthyThreshold < 0 {
+			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("healthCheck").Child("healthyThreshold"),
+				healthCheck.HealthyThreshold, "healthyThreshold should be greater than or equal to 0"))
+		}
+	}
 	if len(allErrs) > 0 {
 		return apierrors.NewInvalid(
 			schema.GroupKind{Group: "dp.wso2.com", Kind: "Backend"},

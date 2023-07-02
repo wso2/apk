@@ -70,9 +70,24 @@ type BackendSpec struct {
 
 	// +optional
 	Retry *RetryConfig `json:"retry,omitempty"`
-	
+
 	// +optional
 	BasePath string `json:"basePath"`
+
+	// +optional
+	HealthCheck *HealthCheck `json:"healthCheck,omitempty"`
+}
+
+// HealthCheck defines the health check configurations
+type HealthCheck struct {
+	// +kubebuilder:default=1
+	Timeout int32 `json:"timeout,omitempty"`
+	// +kubebuilder:default=10
+	Interval int32 `json:"interval,omitempty"`
+	// +kubebuilder:default=2
+	UnhealthyThreshold int32 `json:"unhealthyThreshold,omitempty"`
+	// +kubebuilder:default=2
+	HealthyThreshold int32 `json:"healthyThreshold,omitempty"`
 }
 
 // Timeout defines the timeout configurations

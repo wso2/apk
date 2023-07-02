@@ -80,6 +80,7 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 		var endPoints []Endpoint
 		var policies = OperationPolicies{}
 		var circuitBreaker *dpv1alpha1.CircuitBreaker
+		var healthCheck *dpv1alpha1.HealthCheck
 		resourceAuthScheme := authScheme
 		resourceAPIPolicy := apiPolicy
 		var resourceRatelimitPolicy *dpv1alpha1.RateLimitPolicy
@@ -93,9 +94,9 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 		var statusCodes []uint32
 		statusCodes = append(statusCodes, config.Envoy.Upstream.Retry.StatusCodes...)
 		var baseIntervalInMillis uint32
-		hasURLRewritePolicy := false;
+		hasURLRewritePolicy := false
 		var securityConfig []EndpointSecurity
-		backendBasePath := "";
+		backendBasePath := ""
 		for _, backend := range rule.BackendRefs {
 			backendName := types.NamespacedName{
 				Name:      string(backend.Name),
@@ -163,7 +164,7 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 					Action:     constants.ActionRewritePath,
 					Parameters: policyParameters,
 				})
-				hasURLRewritePolicy = true;
+				hasURLRewritePolicy = true
 			case gwapiv1b1.HTTPRouteFilterExtensionRef:
 				if filter.ExtensionRef.Kind == constants.KindAuthentication {
 					if ref, found := httpRouteParams.ResourceAuthSchemes[types.NamespacedName{
@@ -289,17 +290,17 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 		if len(rule.BackendRefs) < 1 {
 			return fmt.Errorf("no backendref were provided")
 		}
-		
+
 		for _, match := range rule.Matches {
-			if (!hasURLRewritePolicy) {		
+			if !hasURLRewritePolicy {
 				policyParameters := make(map[string]interface{})
-				if (*match.Path.Type == gwapiv1b1.PathMatchPathPrefix) {
+				if *match.Path.Type == gwapiv1b1.PathMatchPathPrefix {
 					policyParameters[constants.RewritePathType] = gwapiv1b1.PrefixMatchHTTPPathModifier
 				} else {
 					policyParameters[constants.RewritePathType] = gwapiv1b1.FullPathHTTPPathModifier
 				}
 				policyParameters[constants.IncludeQueryParams] = true
-				policyParameters[constants.RewritePathResourcePath] = strings.TrimSuffix(backendBasePath, "/") + *match.Path.Value		
+				policyParameters[constants.RewritePathResourcePath] = strings.TrimSuffix(backendBasePath, "/") + *match.Path.Value
 				policies.Request = append(policies.Request, Policy{
 					PolicyName: string(gwapiv1b1.HTTPRouteFilterURLRewrite),
 					Action:     constants.ActionRewritePath,
@@ -342,7 +343,15 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 					BaseIntervalInMillis: int32(baseIntervalInMillis),
 				}
 			}
-			if isRouteTimeout || circuitBreaker != nil || isRetryConfig {
+			if healthCheck != nil {
+				resource.endpoints.HealthCheck = &HealthCheck{
+					Interval:           healthCheck.Interval,
+					Timeout:            healthCheck.Timeout,
+					UnhealthyThreshold: healthCheck.UnhealthyThreshold,
+					HealthyThreshold:   healthCheck.HealthyThreshold,
+				}
+			}
+			if isRouteTimeout || circuitBreaker != nil || healthCheck != nil || isRetryConfig {
 				resource.endpoints.Config = endpointConfig
 			}
 			resource.endpointSecurity = utils.GetPtrSlice(securityConfig)
@@ -490,10 +499,10 @@ func GetBackendBasePath(backendName types.NamespacedName, backendMapping dpv1alp
 	backend, ok := backendMapping[backendName]
 	if ok && backend != nil {
 		if len(backend.Services) > 0 {
-			return backend.BasePath;
+			return backend.BasePath
 		}
 	}
-	return "";
+	return ""
 }
 
 func concatRateLimitPolicies(schemeUp *dpv1alpha1.RateLimitPolicy, schemeDown *dpv1alpha1.RateLimitPolicy) *dpv1alpha1.RateLimitPolicy {
