@@ -186,11 +186,10 @@ type payloadPassingToEnforcer struct {
 // Envoy Upstream Related Configurations
 type envoyUpstream struct {
 	// UpstreamTLS related Configuration
-	TLS    upstreamTLS
-	Health upstreamHealth
-	DNS    upstreamDNS
-	Retry  upstreamRetry
-	HTTP2  upstreamHTTP2Options
+	TLS   upstreamTLS
+	DNS   upstreamDNS
+	Retry upstreamRetry
+	HTTP2 upstreamHTTP2Options
 }
 
 // Envoy Downstream Related Configurations
@@ -211,13 +210,6 @@ type upstreamTLS struct {
 	TrustedCertPath        string
 	VerifyHostName         bool
 	DisableSslVerification bool
-}
-
-type upstreamHealth struct {
-	Timeout            int32
-	Interval           int32
-	UnhealthyThreshold int32
-	HealthyThreshold   int32
 }
 
 type upstreamDNS struct {
