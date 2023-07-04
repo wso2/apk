@@ -23,7 +23,7 @@ metadata:
 spec:
   services:
   - host: backend
-    port: 80
+    port: 3000
   security:
   - type: Basic
     basic:
@@ -31,6 +31,37 @@ spec:
         name: user-creds
         usernameKey: usr
         passwordKey: pwd
+---
+apiVersion: dp.wso2.com/v1alpha1
+kind: Backend
+metadata:
+  name: test-backend
+spec:
+  timeout:
+    maxRouteTimeoutSeconds: 60
+    routeIdleTimeoutSeconds: 10
+    routeTimeoutSeconds: 40
+  retry:
+    count: 4
+    baseIntervalMillis: 2000
+    statusCodes:
+      - 504
+      - 500
+  services:
+  - host: test-backend-svc
+    port: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-backend-svc
+spec:
+  type: ExternalName
+  externalName: benura-4.local
+  ports:
+    - name: http
+      port: 3000
+      targetPort: 3000
 ---
 apiVersion: v1
 kind: Secret

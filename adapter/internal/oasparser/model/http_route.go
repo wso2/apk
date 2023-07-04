@@ -21,6 +21,7 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/internal/logging"
 	"github.com/wso2/apk/adapter/internal/oasparser/constants"
@@ -55,6 +56,7 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 
 	disableScopes := true
 	disableAuthentications := false
+	config := config.ReadConfigs()
 
 	var authScheme *dpv1alpha1.Authentication
 	if outputAuthScheme != nil {
@@ -76,11 +78,20 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 	for _, rule := range httpRoute.Spec.Rules {
 		var endPoints []Endpoint
 		var policies = OperationPolicies{}
+		var circuitBreaker *dpv1alpha1.CircuitBreaker
 		resourceAuthScheme := authScheme
 		resourceAPIPolicy := apiPolicy
 		var resourceRatelimitPolicy *dpv1alpha1.RateLimitPolicy
 		hasPolicies := false
 		var scopes []string
+		var timeoutInMillis uint32
+		var idleTimeoutInSeconds uint32
+		isRetryConfig := false
+		isRouteTimeout := false
+		var backendRetryCount uint32
+		var statusCodes []uint32
+		statusCodes = append(statusCodes, config.Envoy.Upstream.Retry.StatusCodes...)
+		var baseIntervalInMillis uint32
 		for _, filter := range rule.Filters {
 			hasPolicies = true
 			switch filter.Type {
@@ -214,8 +225,12 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 				}
 			}
 		}
-
-		addOperationLevelInterceptors(&policies, resourceAPIPolicy, httpRouteParams.InterceptorServiceMapping, httpRouteParams.BackendMapping)
+		if resourceAPIPolicy == apiPolicy {
+			apiPolicySelected := concatAPIPolicies(apiPolicy, nil)
+			addOperationLevelInterceptors(&policies, apiPolicySelected, httpRouteParams.InterceptorServiceMapping, httpRouteParams.BackendMapping)
+		} else {
+			addOperationLevelInterceptors(&policies, resourceAPIPolicy, httpRouteParams.InterceptorServiceMapping, httpRouteParams.BackendMapping)
+		}
 
 		loggers.LoggerOasparser.Debugf("Calculating auths for API ..., API_UUID = %v", logging.GetValueFromLogContext("API_UUID"))
 		apiAuth := getSecurity(resourceAuthScheme)
@@ -230,6 +245,29 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 			}
 			resolvedBackend, ok := httpRouteParams.BackendMapping[backendName]
 			if ok {
+				if resolvedBackend.CircuitBreaker != nil {
+					circuitBreaker = &dpv1alpha1.CircuitBreaker{
+						MaxConnections:     resolvedBackend.CircuitBreaker.MaxConnections,
+						MaxPendingRequests: resolvedBackend.CircuitBreaker.MaxPendingRequests,
+						MaxRequests:        resolvedBackend.CircuitBreaker.MaxRequests,
+						MaxRetries:         resolvedBackend.CircuitBreaker.MaxRetries,
+						MaxConnectionPools: resolvedBackend.CircuitBreaker.MaxConnectionPools,
+					}
+				}
+				if resolvedBackend.Timeout != nil {
+					isRouteTimeout = true
+					timeoutInMillis = resolvedBackend.Timeout.RouteTimeoutSeconds * 1000
+					idleTimeoutInSeconds = resolvedBackend.Timeout.RouteIdleTimeoutSeconds
+				}
+
+				if resolvedBackend.Retry != nil {
+					isRetryConfig = true
+					backendRetryCount = resolvedBackend.Retry.Count
+					baseIntervalInMillis = resolvedBackend.Retry.BaseIntervalMillis
+					if len(resolvedBackend.Retry.StatusCodes) > 0 {
+						statusCodes = resolvedBackend.Retry.StatusCodes
+					}
+				}
 				endPoints = append(endPoints, GetEndpoints(backendName, httpRouteParams.BackendMapping)...)
 				for _, security := range resolvedBackend.Security {
 					switch security.Type {
@@ -255,18 +293,45 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 				hasPolicies:   hasPolicies,
 				iD:            uuid.New().String(),
 			}
+
 			resource.endpoints = &EndpointCluster{
 				Endpoints: endPoints,
+			}
+
+			endpointConfig := &EndpointConfig{}
+
+			if isRouteTimeout {
+				endpointConfig.TimeoutInMillis = timeoutInMillis
+				endpointConfig.IdleTimeoutInSeconds = idleTimeoutInSeconds
+			}
+			if circuitBreaker != nil {
+				endpointConfig.CircuitBreakers = &CircuitBreakers{
+					MaxConnections:     int32(circuitBreaker.MaxConnections),
+					MaxRequests:        int32(circuitBreaker.MaxRequests),
+					MaxPendingRequests: int32(circuitBreaker.MaxPendingRequests),
+					MaxRetries:         int32(circuitBreaker.MaxRetries),
+					MaxConnectionPools: int32(circuitBreaker.MaxConnectionPools),
+				}
+			}
+			if isRetryConfig {
+				endpointConfig.RetryConfig = &RetryConfig{
+					Count:                int32(backendRetryCount),
+					StatusCodes:          statusCodes,
+					BaseIntervalInMillis: int32(baseIntervalInMillis),
+				}
+			}
+			if isRouteTimeout || circuitBreaker != nil || isRetryConfig {
+				resource.endpoints.Config = endpointConfig
 			}
 			resource.endpointSecurity = utils.GetPtrSlice(securityConfig)
 			resources = append(resources, resource)
 		}
 	}
-	swagger.xWso2Cors = getCorsConfigFromAPIPolicy(apiPolicy)
 
 	swagger.RateLimitPolicy = parseRateLimitPolicyToInternal(ratelimitPolicy)
 	swagger.resources = resources
 	apiPolicySelected := concatAPIPolicies(apiPolicy, nil)
+	swagger.xWso2Cors = getCorsConfigFromAPIPolicy(apiPolicySelected)
 	swagger.disableAuthentications = disableAuthentications
 	swagger.disableScopes = disableScopes
 

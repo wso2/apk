@@ -61,6 +61,58 @@ type BackendSpec struct {
 
 	// +optional
 	Security []SecurityConfig `json:"security,omitempty"`
+
+	// + optional
+	CircuitBreaker *CircuitBreaker `json:"circuitBreaker,omitempty"`
+	// +optional
+	// Timeout congifuration for the backend
+	Timeout *Timeout `json:"timeout,omitempty"`
+
+	// +optional
+	Retry *RetryConfig `json:"retry,omitempty"`
+}
+
+// Timeout defines the timeout configurations
+type Timeout struct {
+	// +kubebuilder:default=60
+	MaxRouteTimeoutSeconds uint32 `json:"maxRouteTimeoutSeconds"`
+	// +kubebuilder:default=60
+	RouteTimeoutSeconds uint32 `json:"routeTimeoutSeconds"`
+	// +kubebuilder:default=300
+	RouteIdleTimeoutSeconds uint32 `json:"routeIdleTimeoutSeconds"`
+}
+
+// CircuitBreaker defines the circuit breaker configurations
+type CircuitBreaker struct {
+	// +kubebuilder:default=1024
+	MaxConnections uint32 `json:"maxConnections"`
+	// +kubebuilder:default=1024
+	MaxPendingRequests uint32 `json:"maxPendingRequests"`
+	// +kubebuilder:default=1024
+	MaxRequests uint32 `json:"maxRequests"`
+	// +kubebuilder:default=3
+	MaxRetries uint32 `json:"maxRetries"`
+	// +kubebuilder:default=1000
+	MaxConnectionPools uint32 `json:"maxConnectionPools"`
+}
+
+// RetryBudget defines the retry budget configurations
+type RetryBudget struct {
+	BudgetPercent       uint64 `json:"budgetPercent,omitempty"`
+	MinRetryConcurrency uint32 `json:"minRetryConcurrency,omitempty"`
+}
+
+// RetryConfig defines retry configurations
+type RetryConfig struct {
+	// +kubebuilder:default=1
+	// MaxRetry defines the maximum number of retries
+	Count uint32 `json:"count"`
+	// +kubebuilder:default=2000
+	// BaseIntervalMillis defines the base interval in milliseconds
+	BaseIntervalMillis uint32 `json:"baseIntervalMillis"`
+	// +optional
+	// StatusCodes defines the list of status codes to retry
+	StatusCodes []uint32 `json:"statusCodes,omitempty"`
 }
 
 // Service holds host and port information for the service

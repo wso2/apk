@@ -64,11 +64,6 @@ var defaultConfig = &Config{
 				VerifyHostName:         true,
 				DisableSslVerification: false,
 			},
-			Timeouts: upstreamTimeout{
-				MaxRouteTimeoutInSeconds:  60,
-				RouteTimeoutInSeconds:     60,
-				RouteIdleTimeoutInSeconds: 300,
-			},
 			Health: upstreamHealth{
 				Timeout:            1,
 				Interval:           10,
@@ -76,9 +71,7 @@ var defaultConfig = &Config{
 				HealthyThreshold:   2,
 			},
 			Retry: upstreamRetry{
-				MaxRetryCount:        5,
-				BaseIntervalInMillis: 25,
-				StatusCodes:          []uint32{504},
+				StatusCodes: []uint32{504},
 			},
 			DNS: upstreamDNS{
 				DNSRefreshRate: 5000,
@@ -189,8 +182,13 @@ var defaultConfig = &Config{
 			},
 		},
 		JwtGenerator: jwtGenerator{
-			PublicCertificatePath: "/home/wso2/security/truststore/mg.pem",
-			PrivateKeyPath:        "/home/wso2/security/keystore/mg.key",
+			Keypair: []KeyPair{
+				{
+					PublicCertificatePath: "/home/wso2/security/truststore/mg.pem",
+					PrivateKeyPath:        "/home/wso2/security/keystore/mg.key",
+					UseForSigning:         true,
+				},
+			},
 		},
 		Cache: cache{
 			Enabled:     true,

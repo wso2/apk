@@ -142,15 +142,17 @@ type EndpointSecurity struct {
 
 // EndpointConfig holds the configs such as timeout, retry, etc. for the EndpointCluster
 type EndpointConfig struct {
-	RetryConfig     *RetryConfig     `mapstructure:"retryConfig"`
-	TimeoutInMillis uint32           `mapstructure:"timeoutInMillis"`
-	CircuitBreakers *CircuitBreakers `mapstructure:"circuitBreakers"`
+	RetryConfig          *RetryConfig     `mapstructure:"retryConfig"`
+	TimeoutInMillis      uint32           `mapstructure:"timeoutInMillis"`
+	IdleTimeoutInSeconds uint32           `mapstructure:"idleTimeoutInSeconds"`
+	CircuitBreakers      *CircuitBreakers `mapstructure:"circuitBreakers"`
 }
 
 // RetryConfig holds the parameters for retries done by apk to the EndpointCluster
 type RetryConfig struct {
-	Count       int32    `mapstructure:"count"`
-	StatusCodes []uint32 `mapstructure:"statusCodes"`
+	Count                int32    `mapstructure:"count"`
+	StatusCodes          []uint32 `mapstructure:"statusCodes"`
+	BaseIntervalInMillis int32    `mapstructure:"baseIntervalInMillis"`
 }
 
 // CircuitBreakers holds the parameters for retries done by apk to the EndpointCluster
@@ -401,12 +403,6 @@ func (endpoint *Endpoint) GetAuthorityHeader() string {
 
 func (retryConfig *RetryConfig) validateRetryConfig() {
 	conf := config.ReadConfigs()
-	maxConfigurableCount := conf.Envoy.Upstream.Retry.MaxRetryCount
-	if retryConfig.Count > int32(maxConfigurableCount) || retryConfig.Count < 0 {
-		logger.LoggerOasparser.Errorf("Retry count for the API must be within the range 0 - %v."+
-			"Reconfiguring retry count as %v", maxConfigurableCount, maxConfigurableCount)
-		retryConfig.Count = int32(maxConfigurableCount)
-	}
 	var validStatusCodes []uint32
 	for _, statusCode := range retryConfig.StatusCodes {
 		if statusCode > 598 || statusCode < 401 {
@@ -437,12 +433,6 @@ func (endpointCluster *EndpointCluster) validateEndpointCluster() error {
 			// Validate retry
 			if endpointCluster.Config.RetryConfig != nil {
 				endpointCluster.Config.RetryConfig.validateRetryConfig()
-			}
-			// Validate timeout
-			conf := config.ReadConfigs()
-			maxTimeoutInMillis := conf.Envoy.Upstream.Timeouts.MaxRouteTimeoutInSeconds * 1000
-			if endpointCluster.Config.TimeoutInMillis > maxTimeoutInMillis {
-				endpointCluster.Config.TimeoutInMillis = maxTimeoutInMillis
 			}
 		}
 	}

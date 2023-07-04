@@ -31,7 +31,6 @@ import (
 	"github.com/envoyproxy/go-control-plane/pkg/wellknown"
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes/any"
-	"github.com/wso2/apk/adapter/config"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/internal/oasparser/constants"
 	"github.com/wso2/apk/adapter/internal/oasparser/model"
@@ -77,9 +76,6 @@ func generateRouteMatch(routeRegex string) *routev3.RouteMatch {
 }
 
 func generateRouteAction(apiType string, routeConfig *model.EndpointConfig, ratelimitCriteria *ratelimitCriteria) (action *routev3.Route_Route) {
-
-	config := config.ReadConfigs()
-
 	action = &routev3.Route_Route{
 		Route: &routev3.RouteAction{
 			HostRewriteSpecifier: &routev3.RouteAction_AutoHostRewrite{
@@ -89,37 +85,28 @@ func generateRouteAction(apiType string, routeConfig *model.EndpointConfig, rate
 			},
 			UpgradeConfigs:    getUpgradeConfig(apiType),
 			MaxStreamDuration: getMaxStreamDuration(apiType),
-			Timeout:           durationpb.New(time.Duration(config.Envoy.Upstream.Timeouts.RouteTimeoutInSeconds) * time.Second),
-			IdleTimeout:       durationpb.New(time.Duration(config.Envoy.Upstream.Timeouts.RouteIdleTimeoutInSeconds) * time.Second),
 			ClusterSpecifier: &routev3.RouteAction_ClusterHeader{
 				ClusterHeader: clusterHeaderName,
 			},
 		},
+	}
+	if routeConfig != nil {
+		action.Route.IdleTimeout = durationpb.New(time.Duration(routeConfig.IdleTimeoutInSeconds) * time.Second)
+	}
+
+	if routeConfig != nil && routeConfig.RetryConfig != nil {
+		retryPolicy := &routev3.RetryPolicy{
+			RetryBackOff: &routev3.RetryPolicy_RetryBackOff{
+				BaseInterval: durationpb.New(time.Duration(routeConfig.RetryConfig.BaseIntervalInMillis) * time.Millisecond),
+			},
+		}
+		action.Route.RetryPolicy = retryPolicy
 	}
 
 	if ratelimitCriteria != nil && ratelimitCriteria.level != "" {
 		action.Route.RateLimits = generateRateLimitPolicy(ratelimitCriteria)
 	}
 
-	if routeConfig != nil && routeConfig.RetryConfig != nil {
-		// Retry configs are always added via headers. This is to update the
-		// default retry back-off base interval, which cannot be updated via headers.
-		retryConfig := config.Envoy.Upstream.Retry
-		commonRetryPolicy := &routev3.RetryPolicy{
-			RetryOn: retryPolicyRetriableStatusCodes,
-			NumRetries: &wrapperspb.UInt32Value{
-				Value: 0,
-				// If not set to 0, default value 1 will be
-			},
-			RetriableStatusCodes: retryConfig.StatusCodes,
-			RetryBackOff: &routev3.RetryPolicy_RetryBackOff{
-				BaseInterval: &durationpb.Duration{
-					Nanos: int32(retryConfig.BaseIntervalInMillis) * 1000,
-				},
-			},
-		}
-		action.Route.RetryPolicy = commonRetryPolicy
-	}
 	return action
 }
 

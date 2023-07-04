@@ -338,7 +338,7 @@ public class APIClient {
                 apiArtifact.rateLimitPolicies[rateLimitPolicyCR.metadata.name] = rateLimitPolicyCR;
             }
         }
-        if apkConf.apiPolicies != () {
+        if apkConf.apiPolicies != () || apkConf.corsConfiguration != (){
             model:APIPolicy? apiPolicyCR = self.generateAPIPolicyAndBackendCR(apiArtifact, apkConf, (), apkConf.apiPolicies, organization, apiArtifact.uniqueId);
             if apiPolicyCR != () {
                 apiArtifact.apiPolicies[apiPolicyCR.metadata.name] = apiPolicyCR;
@@ -590,6 +590,13 @@ public class APIClient {
         model:InterceptorReference? responseInterceptor = self.retrieveAPIPolicyDetails(apiArtifact, apkConf, operations, organization, response, "response");
         if responseInterceptor is model:InterceptorReference {
             defaultSpecData.responseInterceptors = [responseInterceptor];
+        }
+        CORSConfiguration? corsConfiguration = apkConf.corsConfiguration;
+        if corsConfiguration is CORSConfiguration {
+            model:CORSPolicy? cORSPolicy = self.retrieveCORSPolicyDetails(apiArtifact, apkConf, corsConfiguration, organization);
+            if cORSPolicy is model:CORSPolicy {
+                defaultSpecData.cORSPolicy = cORSPolicy;
+            }
         }
         if defaultSpecData != {} {
             model:APIPolicy? apiPolicyCR = self.generateAPIPolicyCR(apkConf, targetRefName, operations, organization, defaultSpecData);
@@ -1083,6 +1090,29 @@ public class APIClient {
             }
         }
         return ();
+    }
+
+    private isolated function retrieveCORSPolicyDetails(model:APIArtifact apiArtifact, APKConf apkConf, CORSConfiguration corsConfiguration, string organization) returns model:CORSPolicy? {
+        model:CORSPolicy corsPolicy = {};
+        if corsConfiguration.corsConfigurationEnabled is boolean {
+            corsPolicy.enabled = <boolean>corsConfiguration.corsConfigurationEnabled;
+        }
+        if corsConfiguration.accessControlAllowCredentials is boolean {
+            corsPolicy.accessControlAllowCredentials = <boolean>corsConfiguration.accessControlAllowCredentials;
+        }
+        if corsConfiguration.accessControlAllowOrigins is string[] {
+            corsPolicy.accessControlAllowOrigins = <string[]>corsConfiguration.accessControlAllowOrigins;
+        }
+        if corsConfiguration.accessControlAllowHeaders is string[] {
+            corsPolicy.accessControlAllowHeaders = <string[]>corsConfiguration.accessControlAllowHeaders;
+        }
+        if corsConfiguration.accessControlAllowMethods is string[] {
+            corsPolicy.accessControlAllowMethods = <string[]>corsConfiguration.accessControlAllowMethods;
+        }
+        if corsConfiguration.accessControlExposeHeaders is string[] {
+            corsPolicy.accessControlExposeHeaders = <string[]>corsConfiguration.accessControlExposeHeaders;
+        }
+        return corsPolicy;
     }
 
     isolated function generateInterceptorServiceCR(record {} parameters, string interceptorBackend, string flow, APKConf apkConf, string organization) returns model:InterceptorService? {

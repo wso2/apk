@@ -105,6 +105,8 @@ func CreateRoutesWithClusters(adapterInternalAPI model.AdapterInternalAPI, inter
 	apiVersion := adapterInternalAPI.GetVersion()
 
 	conf := config.ReadConfigs()
+
+	// Get the timeout from the default config as this is used for the api definition cluster timeout
 	timeout := conf.Envoy.ClusterTimeoutInSeconds
 
 	// Create API level interceptor clusters if required
@@ -128,15 +130,15 @@ func CreateRoutesWithClusters(adapterInternalAPI model.AdapterInternalAPI, inter
 	routes = append(routes, routeP)
 	var endpointForAPIDefinitions []model.Endpoint
 	endpoint := &model.Endpoint{
+		// Localhost is set as the two containers are in the same pod
 		Host:    "localhost",
-		Port:    8084,
+		Port:    uint32(8084),
 		URLType: "https",
 	}
 	endpointForAPIDefinitions = append(endpointForAPIDefinitions, *endpoint)
 	endpointCluster := model.EndpointCluster{
 		Endpoints: endpointForAPIDefinitions,
 	}
-
 	cluster, address, err := processEndpoints(apiDefinitionClusterName, &endpointCluster, timeout, "")
 	if err != nil {
 		logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(2239, apiTitle, apiVersion, apiDefinitionQueryParam, err.Error()))
@@ -169,8 +171,10 @@ func CreateRoutesWithClusters(adapterInternalAPI model.AdapterInternalAPI, inter
 			interceptorCerts, vHost, organizationID, apiRequestInterceptor, apiResponseInterceptor, resource)
 		clusters = append(clusters, clustersI...)
 		endpoints = append(endpoints, endpointsI...)
-		routeP, err := createRoutes(genRouteCreateParams(&adapterInternalAPI, resource, vHost, basePath, clusterName, *operationalReqInterceptors, *operationalRespInterceptorVal, organizationID,
-			false))
+		routeParams := genRouteCreateParams(&adapterInternalAPI, resource, vHost, basePath, clusterName, *operationalReqInterceptors, *operationalRespInterceptorVal, organizationID,
+			false)
+
+		routeP, err := createRoutes(routeParams)
 		if err != nil {
 			logger.LoggerXds.ErrorC(logging.GetErrorByCode(2231, adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), resource.GetPath(), err.Error()))
 			return nil, nil, nil, fmt.Errorf("error while creating routes. %v", err)
@@ -481,27 +485,17 @@ func processEndpoints(clusterName string, clusterDetails *model.EndpointCluster,
 	}
 
 	if clusterDetails.Config != nil && clusterDetails.Config.CircuitBreakers != nil {
-		config := clusterDetails.Config.CircuitBreakers
-		thresholds := &clusterv3.CircuitBreakers_Thresholds{}
-		if config.MaxConnections > 0 {
-			thresholds.MaxConnections = wrapperspb.UInt32(uint32(config.MaxConnections))
-		}
-		if config.MaxConnectionPools > 0 {
-			thresholds.MaxConnectionPools = wrapperspb.UInt32(uint32(config.MaxConnectionPools))
-		}
-		if config.MaxPendingRequests > 0 {
-			thresholds.MaxPendingRequests = wrapperspb.UInt32(uint32(config.MaxPendingRequests))
-		}
-		if config.MaxRequests > 0 {
-			thresholds.MaxRequests = wrapperspb.UInt32(uint32(config.MaxRequests))
-		}
-		if config.MaxRetries > 0 {
-			thresholds.MaxRetries = wrapperspb.UInt32(uint32(config.MaxRetries))
-		}
+		var thresholds []*clusterv3.CircuitBreakers_Thresholds
+		circuitBreaker := clusterDetails.Config.CircuitBreakers
+		thresholds = append(thresholds, &clusterv3.CircuitBreakers_Thresholds{
+			MaxConnections:     wrapperspb.UInt32(uint32(circuitBreaker.MaxConnections)),
+			MaxRequests:        wrapperspb.UInt32(uint32(circuitBreaker.MaxRequests)),
+			MaxPendingRequests: wrapperspb.UInt32(uint32(circuitBreaker.MaxPendingRequests)),
+			MaxRetries:         wrapperspb.UInt32(uint32(circuitBreaker.MaxRetries)),
+			MaxConnectionPools: wrapperspb.UInt32(uint32(circuitBreaker.MaxConnectionPools)),
+		})
 		cluster.CircuitBreakers = &clusterv3.CircuitBreakers{
-			Thresholds: []*clusterv3.CircuitBreakers_Thresholds{
-				thresholds,
-			},
+			Thresholds: thresholds,
 		}
 	}
 
@@ -1131,6 +1125,75 @@ func CreateTokenRoute() *routev3.Route {
 	return &router
 }
 
+// CreateJWKSRoute generates a route for the /jwks endpoint
+func CreateJWKSRoute() *routev3.Route {
+	var (
+		router    routev3.Route
+		action    *routev3.Route_Route
+		match     *routev3.RouteMatch
+		decorator *routev3.Decorator
+	)
+
+	match = &routev3.RouteMatch{
+		PathSpecifier: &routev3.RouteMatch_Path{
+			Path: jwksPath,
+		},
+	}
+
+	hostRewriteSpecifier := &routev3.RouteAction_AutoHostRewrite{
+		AutoHostRewrite: &wrapperspb.BoolValue{
+			Value: true,
+		},
+	}
+
+	decorator = &routev3.Decorator{
+		Operation: jwksPath,
+	}
+
+	perFilterConfig := extAuthService.ExtAuthzPerRoute{
+		Override: &extAuthService.ExtAuthzPerRoute_Disabled{
+			Disabled: true,
+		},
+	}
+
+	b := proto.NewBuffer(nil)
+	b.SetDeterministic(true)
+	_ = b.Marshal(&perFilterConfig)
+	filter := &any.Any{
+		TypeUrl: extAuthzPerRouteName,
+		Value:   b.Bytes(),
+	}
+
+	action = &routev3.Route_Route{
+		Route: &routev3.RouteAction{
+			HostRewriteSpecifier: hostRewriteSpecifier,
+			RegexRewrite: &envoy_type_matcherv3.RegexMatchAndSubstitute{
+				Pattern: &envoy_type_matcherv3.RegexMatcher{
+					Regex: jwksPath,
+				},
+				Substitution: "/",
+			},
+		},
+	}
+
+	directClusterSpecifier := &routev3.RouteAction_Cluster{
+		Cluster: "jwks_cluster",
+	}
+	action.Route.ClusterSpecifier = directClusterSpecifier
+
+	router = routev3.Route{
+		Name:      jwksPath, //Categorize routes with same base path
+		Match:     match,
+		Action:    action,
+		Metadata:  nil,
+		Decorator: decorator,
+		TypedPerFilterConfig: map[string]*any.Any{
+			wellknown.HTTPExternalAuthorization: filter,
+		},
+	}
+	return &router
+}
+
 // CreateAPIDefinitionRoute generates a route for the jwt /testkey endpoint
 func CreateAPIDefinitionRoute(basePath string, vHost string, methods []string) *routev3.Route {
 	rewritePath := basePath + "/" + vHost + "?" + apiDefinitionQueryParam
@@ -1493,6 +1556,7 @@ func genRouteCreateParams(swagger *model.AdapterInternalAPI, resource *model.Res
 		isDefaultVersion:             swagger.IsDefaultVersion,
 		apiLevelRateLimitPolicy:      swagger.RateLimitPolicy,
 		apiProperties:                swagger.APIProperties,
+		routeConfig:                  resource.GetEndpoints().Config,
 	}
 	return params
 }
@@ -1545,6 +1609,8 @@ func createInterceptorAPIClusters(adapterInternalAPI model.AdapterInternalAPI, i
 	)
 	apiTitle := adapterInternalAPI.GetTitle()
 	apiVersion := adapterInternalAPI.GetVersion()
+
+	// fetch cluster timeout value from the vendor extension name for interceptors
 	apiRequestInterceptor = adapterInternalAPI.GetInterceptor(adapterInternalAPI.GetVendorExtensions(), xWso2requestInterceptor, APILevelInterceptor)
 	// if lua filter exists on api level, add cluster
 	if apiRequestInterceptor.Enable {

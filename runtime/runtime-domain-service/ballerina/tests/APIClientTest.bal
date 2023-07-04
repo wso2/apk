@@ -104,45 +104,6 @@ function getMockServiceMappingClient(string resourceVersion) returns websocket:C
 
 }
 
-int orgWatchIndex = 0;
-
-@test:Mock {functionName: "getOrganizationWatchClient"}
-function getMockOrganiationClient(string resourceVersion) returns websocket:Client|error {
-    string initialConectionId = uuid:createType1AsString();
-    if resourceVersion == "28702" {
-        websocket:Client mock = test:mock(websocket:Client);
-        test:prepare(mock).when("isOpen").thenReturnSequence(true, true, false);
-        test:prepare(mock).when("getConnectionId").thenReturn(initialConectionId);
-        test:prepare(mock).when("readMessage").thenReturn(getOrganizationWatchEvent());
-        return mock;
-    } else if resourceVersion == "28705" {
-        string connectionId = uuid:createType1AsString();
-        websocket:Client mock = test:mock(websocket:Client);
-        test:prepare(mock).when("isOpen").thenReturnSequence(true, true, false);
-        test:prepare(mock).when("getConnectionId").thenReturn(connectionId);
-        test:prepare(mock).when("readMessage").thenReturnSequence(getNextOrganizationEvent(), ());
-        return mock;
-    } else if resourceVersion == "28714" {
-        if orgWatchIndex == 0 {
-            websocket:Error websocketError = error("Error", message = "Error");
-            orgWatchIndex += 1;
-            return websocketError;
-        } else {
-            initialConectionId = uuid:createType1AsString();
-            websocket:Client mock = test:mock(websocket:Client);
-            test:prepare(mock).when("isOpen").thenReturn(true);
-            test:prepare(mock).when("getConnectionId").thenReturn(initialConectionId);
-            test:prepare(mock).when("readMessage").thenReturnSequence(getOrganizationWatchDeleteEvent(), ());
-            return mock;
-        }
-    } else {
-        websocket:Client mock = test:mock(websocket:Client);
-        test:prepare(mock).when("isOpen").thenReturn(true);
-        test:prepare(mock).when("getConnectionId").thenReturn(initialConectionId);
-        test:prepare(mock).when("readMessage").thenReturnSequence(());
-        return mock;
-    }
-}
 
 int configMapWatchIndex = 0;
 
@@ -163,9 +124,9 @@ function getTestConfigMapWatchClient(string resourceVersion) returns websocket:C
         test:prepare(mock).when("readMessage").thenReturnSequence(getConfigMapUpdateEvent(), ());
         return mock;
     } else if resourceVersion == "28714" {
-        if orgWatchIndex == 0 {
+        if configMapWatchIndex == 0 {
             websocket:Error websocketError = error("Error", message = "Error");
-            orgWatchIndex += 1;
+            configMapWatchIndex += 1;
             return websocketError;
         } else {
             initialConectionId = uuid:createType1AsString();
@@ -5627,7 +5588,7 @@ function getMockResourceLevelPolicy(API api, commons:Organization organiztion, s
         "kind": "APIPolicy",
         "metadata": {"name": "api-policy-ref-name", "namespace": "apk-platform", "labels": getLabels(api, organiztion)},
         "spec": {
-            "override": {
+            "default": {
                "requestInterceptors": [
                     {
                         "name": getInterceptorServiceUid(api, organiztion, "request", 0),
@@ -5658,7 +5619,7 @@ function getMockAPILevelPolicy(API api, commons:Organization organiztion, string
         "kind": "APIPolicy",
         "metadata": {"name": "api-policy-ref-name", "namespace": "apk-platform", "labels": getLabels(api, organiztion)},
         "spec": {
-            "override": {
+            "default": {
                 "requestInterceptors": [
                     {
                         "name": getInterceptorServiceUid(api, organiztion, "request", 0),

@@ -20,8 +20,7 @@ private static final long serialVersionUID = 0L;
     super(builder);
   }
   private JWTGenerator() {
-    publicCertificatePath_ = "";
-    privateKeyPath_ = "";
+    keypairs_ = java.util.Collections.emptyList();
   }
 
   @java.lang.Override
@@ -44,6 +43,7 @@ private static final long serialVersionUID = 0L;
     if (extensionRegistry == null) {
       throw new java.lang.NullPointerException();
     }
+    int mutable_bitField0_ = 0;
     com.google.protobuf.UnknownFieldSet.Builder unknownFields =
         com.google.protobuf.UnknownFieldSet.newBuilder();
     try {
@@ -55,15 +55,12 @@ private static final long serialVersionUID = 0L;
             done = true;
             break;
           case 10: {
-            java.lang.String s = input.readStringRequireUtf8();
-
-            publicCertificatePath_ = s;
-            break;
-          }
-          case 18: {
-            java.lang.String s = input.readStringRequireUtf8();
-
-            privateKeyPath_ = s;
+            if (!((mutable_bitField0_ & 0x00000001) != 0)) {
+              keypairs_ = new java.util.ArrayList<org.wso2.apk.enforcer.discovery.config.enforcer.Keypair>();
+              mutable_bitField0_ |= 0x00000001;
+            }
+            keypairs_.add(
+                input.readMessage(org.wso2.apk.enforcer.discovery.config.enforcer.Keypair.parser(), extensionRegistry));
             break;
           }
           default: {
@@ -81,6 +78,9 @@ private static final long serialVersionUID = 0L;
       throw new com.google.protobuf.InvalidProtocolBufferException(
           e).setUnfinishedMessage(this);
     } finally {
+      if (((mutable_bitField0_ & 0x00000001) != 0)) {
+        keypairs_ = java.util.Collections.unmodifiableList(keypairs_);
+      }
       this.unknownFields = unknownFields.build();
       makeExtensionsImmutable();
     }
@@ -98,80 +98,44 @@ private static final long serialVersionUID = 0L;
             org.wso2.apk.enforcer.discovery.config.enforcer.JWTGenerator.class, org.wso2.apk.enforcer.discovery.config.enforcer.JWTGenerator.Builder.class);
   }
 
-  public static final int PUBLIC_CERTIFICATE_PATH_FIELD_NUMBER = 1;
-  private volatile java.lang.Object publicCertificatePath_;
+  public static final int KEYPAIRS_FIELD_NUMBER = 1;
+  private java.util.List<org.wso2.apk.enforcer.discovery.config.enforcer.Keypair> keypairs_;
   /**
-   * <code>string public_certificate_path = 1;</code>
-   * @return The publicCertificatePath.
+   * <code>repeated .wso2.discovery.config.enforcer.Keypair keypairs = 1;</code>
    */
   @java.lang.Override
-  public java.lang.String getPublicCertificatePath() {
-    java.lang.Object ref = publicCertificatePath_;
-    if (ref instanceof java.lang.String) {
-      return (java.lang.String) ref;
-    } else {
-      com.google.protobuf.ByteString bs = 
-          (com.google.protobuf.ByteString) ref;
-      java.lang.String s = bs.toStringUtf8();
-      publicCertificatePath_ = s;
-      return s;
-    }
+  public java.util.List<org.wso2.apk.enforcer.discovery.config.enforcer.Keypair> getKeypairsList() {
+    return keypairs_;
   }
   /**
-   * <code>string public_certificate_path = 1;</code>
-   * @return The bytes for publicCertificatePath.
+   * <code>repeated .wso2.discovery.config.enforcer.Keypair keypairs = 1;</code>
    */
   @java.lang.Override
-  public com.google.protobuf.ByteString
-      getPublicCertificatePathBytes() {
-    java.lang.Object ref = publicCertificatePath_;
-    if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
-          com.google.protobuf.ByteString.copyFromUtf8(
-              (java.lang.String) ref);
-      publicCertificatePath_ = b;
-      return b;
-    } else {
-      return (com.google.protobuf.ByteString) ref;
-    }
-  }
-
-  public static final int PRIVATE_KEY_PATH_FIELD_NUMBER = 2;
-  private volatile java.lang.Object privateKeyPath_;
-  /**
-   * <code>string private_key_path = 2;</code>
-   * @return The privateKeyPath.
-   */
-  @java.lang.Override
-  public java.lang.String getPrivateKeyPath() {
-    java.lang.Object ref = privateKeyPath_;
-    if (ref instanceof java.lang.String) {
-      return (java.lang.String) ref;
-    } else {
-      com.google.protobuf.ByteString bs = 
-          (com.google.protobuf.ByteString) ref;
-      java.lang.String s = bs.toStringUtf8();
-      privateKeyPath_ = s;
-      return s;
-    }
+  public java.util.List<? extends org.wso2.apk.enforcer.discovery.config.enforcer.KeypairOrBuilder> 
+      getKeypairsOrBuilderList() {
+    return keypairs_;
   }
   /**
-   * <code>string private_key_path = 2;</code>
-   * @return The bytes for privateKeyPath.
+   * <code>repeated .wso2.discovery.config.enforcer.Keypair keypairs = 1;</code>
    */
   @java.lang.Override
-  public com.google.protobuf.ByteString
-      getPrivateKeyPathBytes() {
-    java.lang.Object ref = privateKeyPath_;
-    if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
-          com.google.protobuf.ByteString.copyFromUtf8(
-              (java.lang.String) ref);
-      privateKeyPath_ = b;
-      return b;
-    } else {
-      return (com.google.protobuf.ByteString) ref;
-    }
+  public int getKeypairsCount() {
+    return keypairs_.size();
+  }
+  /**
+   * <code>repeated .wso2.discovery.config.enforcer.Keypair keypairs = 1;</code>
+   */
+  @java.lang.Override
+  public org.wso2.apk.enforcer.discovery.config.enforcer.Keypair getKeypairs(int index) {
+    return keypairs_.get(index);
+  }
+  /**
+   * <code>repeated .wso2.discovery.config.enforcer.Keypair keypairs = 1;</code>
+   */
+  @java.lang.Override
+  public org.wso2.apk.enforcer.discovery.config.enforcer.KeypairOrBuilder getKeypairsOrBuilder(
+      int index) {
+    return keypairs_.get(index);
   }
 
   private byte memoizedIsInitialized = -1;
@@ -188,11 +152,8 @@ private static final long serialVersionUID = 0L;
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output)
                       throws java.io.IOException {
-    if (!getPublicCertificatePathBytes().isEmpty()) {
-      com.google.protobuf.GeneratedMessageV3.writeString(output, 1, publicCertificatePath_);
-    }
-    if (!getPrivateKeyPathBytes().isEmpty()) {
-      com.google.protobuf.GeneratedMessageV3.writeString(output, 2, privateKeyPath_);
+    for (int i = 0; i < keypairs_.size(); i++) {
+      output.writeMessage(1, keypairs_.get(i));
     }
     unknownFields.writeTo(output);
   }
@@ -203,11 +164,9 @@ private static final long serialVersionUID = 0L;
     if (size != -1) return size;
 
     size = 0;
-    if (!getPublicCertificatePathBytes().isEmpty()) {
-      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, publicCertificatePath_);
-    }
-    if (!getPrivateKeyPathBytes().isEmpty()) {
-      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, privateKeyPath_);
+    for (int i = 0; i < keypairs_.size(); i++) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(1, keypairs_.get(i));
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -224,10 +183,8 @@ private static final long serialVersionUID = 0L;
     }
     org.wso2.apk.enforcer.discovery.config.enforcer.JWTGenerator other = (org.wso2.apk.enforcer.discovery.config.enforcer.JWTGenerator) obj;
 
-    if (!getPublicCertificatePath()
-        .equals(other.getPublicCertificatePath())) return false;
-    if (!getPrivateKeyPath()
-        .equals(other.getPrivateKeyPath())) return false;
+    if (!getKeypairsList()
+        .equals(other.getKeypairsList())) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -239,10 +196,10 @@ private static final long serialVersionUID = 0L;
     }
     int hash = 41;
     hash = (19 * hash) + getDescriptor().hashCode();
-    hash = (37 * hash) + PUBLIC_CERTIFICATE_PATH_FIELD_NUMBER;
-    hash = (53 * hash) + getPublicCertificatePath().hashCode();
-    hash = (37 * hash) + PRIVATE_KEY_PATH_FIELD_NUMBER;
-    hash = (53 * hash) + getPrivateKeyPath().hashCode();
+    if (getKeypairsCount() > 0) {
+      hash = (37 * hash) + KEYPAIRS_FIELD_NUMBER;
+      hash = (53 * hash) + getKeypairsList().hashCode();
+    }
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -375,15 +332,18 @@ private static final long serialVersionUID = 0L;
     private void maybeForceBuilderInitialization() {
       if (com.google.protobuf.GeneratedMessageV3
               .alwaysUseFieldBuilders) {
+        getKeypairsFieldBuilder();
       }
     }
     @java.lang.Override
     public Builder clear() {
       super.clear();
-      publicCertificatePath_ = "";
-
-      privateKeyPath_ = "";
-
+      if (keypairsBuilder_ == null) {
+        keypairs_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000001);
+      } else {
+        keypairsBuilder_.clear();
+      }
       return this;
     }
 
@@ -410,8 +370,16 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public org.wso2.apk.enforcer.discovery.config.enforcer.JWTGenerator buildPartial() {
       org.wso2.apk.enforcer.discovery.config.enforcer.JWTGenerator result = new org.wso2.apk.enforcer.discovery.config.enforcer.JWTGenerator(this);
-      result.publicCertificatePath_ = publicCertificatePath_;
-      result.privateKeyPath_ = privateKeyPath_;
+      int from_bitField0_ = bitField0_;
+      if (keypairsBuilder_ == null) {
+        if (((bitField0_ & 0x00000001) != 0)) {
+          keypairs_ = java.util.Collections.unmodifiableList(keypairs_);
+          bitField0_ = (bitField0_ & ~0x00000001);
+        }
+        result.keypairs_ = keypairs_;
+      } else {
+        result.keypairs_ = keypairsBuilder_.build();
+      }
       onBuilt();
       return result;
     }
@@ -460,13 +428,31 @@ private static final long serialVersionUID = 0L;
 
     public Builder mergeFrom(org.wso2.apk.enforcer.discovery.config.enforcer.JWTGenerator other) {
       if (other == org.wso2.apk.enforcer.discovery.config.enforcer.JWTGenerator.getDefaultInstance()) return this;
-      if (!other.getPublicCertificatePath().isEmpty()) {
-        publicCertificatePath_ = other.publicCertificatePath_;
-        onChanged();
-      }
-      if (!other.getPrivateKeyPath().isEmpty()) {
-        privateKeyPath_ = other.privateKeyPath_;
-        onChanged();
+      if (keypairsBuilder_ == null) {
+        if (!other.keypairs_.isEmpty()) {
+          if (keypairs_.isEmpty()) {
+            keypairs_ = other.keypairs_;
+            bitField0_ = (bitField0_ & ~0x00000001);
+          } else {
+            ensureKeypairsIsMutable();
+            keypairs_.addAll(other.keypairs_);
+          }
+          onChanged();
+        }
+      } else {
+        if (!other.keypairs_.isEmpty()) {
+          if (keypairsBuilder_.isEmpty()) {
+            keypairsBuilder_.dispose();
+            keypairsBuilder_ = null;
+            keypairs_ = other.keypairs_;
+            bitField0_ = (bitField0_ & ~0x00000001);
+            keypairsBuilder_ = 
+              com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                 getKeypairsFieldBuilder() : null;
+          } else {
+            keypairsBuilder_.addAllMessages(other.keypairs_);
+          }
+        }
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -496,157 +482,246 @@ private static final long serialVersionUID = 0L;
       }
       return this;
     }
+    private int bitField0_;
 
-    private java.lang.Object publicCertificatePath_ = "";
-    /**
-     * <code>string public_certificate_path = 1;</code>
-     * @return The publicCertificatePath.
-     */
-    public java.lang.String getPublicCertificatePath() {
-      java.lang.Object ref = publicCertificatePath_;
-      if (!(ref instanceof java.lang.String)) {
-        com.google.protobuf.ByteString bs =
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        publicCertificatePath_ = s;
-        return s;
-      } else {
-        return (java.lang.String) ref;
-      }
-    }
-    /**
-     * <code>string public_certificate_path = 1;</code>
-     * @return The bytes for publicCertificatePath.
-     */
-    public com.google.protobuf.ByteString
-        getPublicCertificatePathBytes() {
-      java.lang.Object ref = publicCertificatePath_;
-      if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        publicCertificatePath_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
-    }
-    /**
-     * <code>string public_certificate_path = 1;</code>
-     * @param value The publicCertificatePath to set.
-     * @return This builder for chaining.
-     */
-    public Builder setPublicCertificatePath(
-        java.lang.String value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  
-      publicCertificatePath_ = value;
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>string public_certificate_path = 1;</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearPublicCertificatePath() {
-      
-      publicCertificatePath_ = getDefaultInstance().getPublicCertificatePath();
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>string public_certificate_path = 1;</code>
-     * @param value The bytes for publicCertificatePath to set.
-     * @return This builder for chaining.
-     */
-    public Builder setPublicCertificatePathBytes(
-        com.google.protobuf.ByteString value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-      
-      publicCertificatePath_ = value;
-      onChanged();
-      return this;
+    private java.util.List<org.wso2.apk.enforcer.discovery.config.enforcer.Keypair> keypairs_ =
+      java.util.Collections.emptyList();
+    private void ensureKeypairsIsMutable() {
+      if (!((bitField0_ & 0x00000001) != 0)) {
+        keypairs_ = new java.util.ArrayList<org.wso2.apk.enforcer.discovery.config.enforcer.Keypair>(keypairs_);
+        bitField0_ |= 0x00000001;
+       }
     }
 
-    private java.lang.Object privateKeyPath_ = "";
+    private com.google.protobuf.RepeatedFieldBuilderV3<
+        org.wso2.apk.enforcer.discovery.config.enforcer.Keypair, org.wso2.apk.enforcer.discovery.config.enforcer.Keypair.Builder, org.wso2.apk.enforcer.discovery.config.enforcer.KeypairOrBuilder> keypairsBuilder_;
+
     /**
-     * <code>string private_key_path = 2;</code>
-     * @return The privateKeyPath.
+     * <code>repeated .wso2.discovery.config.enforcer.Keypair keypairs = 1;</code>
      */
-    public java.lang.String getPrivateKeyPath() {
-      java.lang.Object ref = privateKeyPath_;
-      if (!(ref instanceof java.lang.String)) {
-        com.google.protobuf.ByteString bs =
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        privateKeyPath_ = s;
-        return s;
+    public java.util.List<org.wso2.apk.enforcer.discovery.config.enforcer.Keypair> getKeypairsList() {
+      if (keypairsBuilder_ == null) {
+        return java.util.Collections.unmodifiableList(keypairs_);
       } else {
-        return (java.lang.String) ref;
+        return keypairsBuilder_.getMessageList();
       }
     }
     /**
-     * <code>string private_key_path = 2;</code>
-     * @return The bytes for privateKeyPath.
+     * <code>repeated .wso2.discovery.config.enforcer.Keypair keypairs = 1;</code>
      */
-    public com.google.protobuf.ByteString
-        getPrivateKeyPathBytes() {
-      java.lang.Object ref = privateKeyPath_;
-      if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        privateKeyPath_ = b;
-        return b;
+    public int getKeypairsCount() {
+      if (keypairsBuilder_ == null) {
+        return keypairs_.size();
       } else {
-        return (com.google.protobuf.ByteString) ref;
+        return keypairsBuilder_.getCount();
       }
     }
     /**
-     * <code>string private_key_path = 2;</code>
-     * @param value The privateKeyPath to set.
-     * @return This builder for chaining.
+     * <code>repeated .wso2.discovery.config.enforcer.Keypair keypairs = 1;</code>
      */
-    public Builder setPrivateKeyPath(
-        java.lang.String value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  
-      privateKeyPath_ = value;
-      onChanged();
+    public org.wso2.apk.enforcer.discovery.config.enforcer.Keypair getKeypairs(int index) {
+      if (keypairsBuilder_ == null) {
+        return keypairs_.get(index);
+      } else {
+        return keypairsBuilder_.getMessage(index);
+      }
+    }
+    /**
+     * <code>repeated .wso2.discovery.config.enforcer.Keypair keypairs = 1;</code>
+     */
+    public Builder setKeypairs(
+        int index, org.wso2.apk.enforcer.discovery.config.enforcer.Keypair value) {
+      if (keypairsBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureKeypairsIsMutable();
+        keypairs_.set(index, value);
+        onChanged();
+      } else {
+        keypairsBuilder_.setMessage(index, value);
+      }
       return this;
     }
     /**
-     * <code>string private_key_path = 2;</code>
-     * @return This builder for chaining.
+     * <code>repeated .wso2.discovery.config.enforcer.Keypair keypairs = 1;</code>
      */
-    public Builder clearPrivateKeyPath() {
-      
-      privateKeyPath_ = getDefaultInstance().getPrivateKeyPath();
-      onChanged();
+    public Builder setKeypairs(
+        int index, org.wso2.apk.enforcer.discovery.config.enforcer.Keypair.Builder builderForValue) {
+      if (keypairsBuilder_ == null) {
+        ensureKeypairsIsMutable();
+        keypairs_.set(index, builderForValue.build());
+        onChanged();
+      } else {
+        keypairsBuilder_.setMessage(index, builderForValue.build());
+      }
       return this;
     }
     /**
-     * <code>string private_key_path = 2;</code>
-     * @param value The bytes for privateKeyPath to set.
-     * @return This builder for chaining.
+     * <code>repeated .wso2.discovery.config.enforcer.Keypair keypairs = 1;</code>
      */
-    public Builder setPrivateKeyPathBytes(
-        com.google.protobuf.ByteString value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-      
-      privateKeyPath_ = value;
-      onChanged();
+    public Builder addKeypairs(org.wso2.apk.enforcer.discovery.config.enforcer.Keypair value) {
+      if (keypairsBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureKeypairsIsMutable();
+        keypairs_.add(value);
+        onChanged();
+      } else {
+        keypairsBuilder_.addMessage(value);
+      }
       return this;
+    }
+    /**
+     * <code>repeated .wso2.discovery.config.enforcer.Keypair keypairs = 1;</code>
+     */
+    public Builder addKeypairs(
+        int index, org.wso2.apk.enforcer.discovery.config.enforcer.Keypair value) {
+      if (keypairsBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureKeypairsIsMutable();
+        keypairs_.add(index, value);
+        onChanged();
+      } else {
+        keypairsBuilder_.addMessage(index, value);
+      }
+      return this;
+    }
+    /**
+     * <code>repeated .wso2.discovery.config.enforcer.Keypair keypairs = 1;</code>
+     */
+    public Builder addKeypairs(
+        org.wso2.apk.enforcer.discovery.config.enforcer.Keypair.Builder builderForValue) {
+      if (keypairsBuilder_ == null) {
+        ensureKeypairsIsMutable();
+        keypairs_.add(builderForValue.build());
+        onChanged();
+      } else {
+        keypairsBuilder_.addMessage(builderForValue.build());
+      }
+      return this;
+    }
+    /**
+     * <code>repeated .wso2.discovery.config.enforcer.Keypair keypairs = 1;</code>
+     */
+    public Builder addKeypairs(
+        int index, org.wso2.apk.enforcer.discovery.config.enforcer.Keypair.Builder builderForValue) {
+      if (keypairsBuilder_ == null) {
+        ensureKeypairsIsMutable();
+        keypairs_.add(index, builderForValue.build());
+        onChanged();
+      } else {
+        keypairsBuilder_.addMessage(index, builderForValue.build());
+      }
+      return this;
+    }
+    /**
+     * <code>repeated .wso2.discovery.config.enforcer.Keypair keypairs = 1;</code>
+     */
+    public Builder addAllKeypairs(
+        java.lang.Iterable<? extends org.wso2.apk.enforcer.discovery.config.enforcer.Keypair> values) {
+      if (keypairsBuilder_ == null) {
+        ensureKeypairsIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, keypairs_);
+        onChanged();
+      } else {
+        keypairsBuilder_.addAllMessages(values);
+      }
+      return this;
+    }
+    /**
+     * <code>repeated .wso2.discovery.config.enforcer.Keypair keypairs = 1;</code>
+     */
+    public Builder clearKeypairs() {
+      if (keypairsBuilder_ == null) {
+        keypairs_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000001);
+        onChanged();
+      } else {
+        keypairsBuilder_.clear();
+      }
+      return this;
+    }
+    /**
+     * <code>repeated .wso2.discovery.config.enforcer.Keypair keypairs = 1;</code>
+     */
+    public Builder removeKeypairs(int index) {
+      if (keypairsBuilder_ == null) {
+        ensureKeypairsIsMutable();
+        keypairs_.remove(index);
+        onChanged();
+      } else {
+        keypairsBuilder_.remove(index);
+      }
+      return this;
+    }
+    /**
+     * <code>repeated .wso2.discovery.config.enforcer.Keypair keypairs = 1;</code>
+     */
+    public org.wso2.apk.enforcer.discovery.config.enforcer.Keypair.Builder getKeypairsBuilder(
+        int index) {
+      return getKeypairsFieldBuilder().getBuilder(index);
+    }
+    /**
+     * <code>repeated .wso2.discovery.config.enforcer.Keypair keypairs = 1;</code>
+     */
+    public org.wso2.apk.enforcer.discovery.config.enforcer.KeypairOrBuilder getKeypairsOrBuilder(
+        int index) {
+      if (keypairsBuilder_ == null) {
+        return keypairs_.get(index);  } else {
+        return keypairsBuilder_.getMessageOrBuilder(index);
+      }
+    }
+    /**
+     * <code>repeated .wso2.discovery.config.enforcer.Keypair keypairs = 1;</code>
+     */
+    public java.util.List<? extends org.wso2.apk.enforcer.discovery.config.enforcer.KeypairOrBuilder> 
+         getKeypairsOrBuilderList() {
+      if (keypairsBuilder_ != null) {
+        return keypairsBuilder_.getMessageOrBuilderList();
+      } else {
+        return java.util.Collections.unmodifiableList(keypairs_);
+      }
+    }
+    /**
+     * <code>repeated .wso2.discovery.config.enforcer.Keypair keypairs = 1;</code>
+     */
+    public org.wso2.apk.enforcer.discovery.config.enforcer.Keypair.Builder addKeypairsBuilder() {
+      return getKeypairsFieldBuilder().addBuilder(
+          org.wso2.apk.enforcer.discovery.config.enforcer.Keypair.getDefaultInstance());
+    }
+    /**
+     * <code>repeated .wso2.discovery.config.enforcer.Keypair keypairs = 1;</code>
+     */
+    public org.wso2.apk.enforcer.discovery.config.enforcer.Keypair.Builder addKeypairsBuilder(
+        int index) {
+      return getKeypairsFieldBuilder().addBuilder(
+          index, org.wso2.apk.enforcer.discovery.config.enforcer.Keypair.getDefaultInstance());
+    }
+    /**
+     * <code>repeated .wso2.discovery.config.enforcer.Keypair keypairs = 1;</code>
+     */
+    public java.util.List<org.wso2.apk.enforcer.discovery.config.enforcer.Keypair.Builder> 
+         getKeypairsBuilderList() {
+      return getKeypairsFieldBuilder().getBuilderList();
+    }
+    private com.google.protobuf.RepeatedFieldBuilderV3<
+        org.wso2.apk.enforcer.discovery.config.enforcer.Keypair, org.wso2.apk.enforcer.discovery.config.enforcer.Keypair.Builder, org.wso2.apk.enforcer.discovery.config.enforcer.KeypairOrBuilder> 
+        getKeypairsFieldBuilder() {
+      if (keypairsBuilder_ == null) {
+        keypairsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+            org.wso2.apk.enforcer.discovery.config.enforcer.Keypair, org.wso2.apk.enforcer.discovery.config.enforcer.Keypair.Builder, org.wso2.apk.enforcer.discovery.config.enforcer.KeypairOrBuilder>(
+                keypairs_,
+                ((bitField0_ & 0x00000001) != 0),
+                getParentForChildren(),
+                isClean());
+        keypairs_ = null;
+      }
+      return keypairsBuilder_;
     }
     @java.lang.Override
     public final Builder setUnknownFields(

@@ -34,6 +34,7 @@ import org.wso2.apk.enforcer.config.dto.MetricsDTO;
 import org.wso2.apk.enforcer.config.dto.MutualSSLDto;
 import org.wso2.apk.enforcer.config.dto.SoapErrorResponseConfigDto;
 import org.wso2.apk.enforcer.config.dto.TracingDTO;
+import org.wso2.apk.enforcer.jwks.BackendJWKSDto;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -47,6 +48,7 @@ public class EnforcerConfig {
     private TracingDTO tracingConfig;
     private MetricsDTO metricsConfig;
     private JWTConfigurationDto jwtConfigurationDto;
+    private BackendJWKSDto backendJWKSDto;
 
     private APIKeyIssuerDto apiKeyIssuerDto;
     private APIKeyIssuerDto runtimeTokenIssuerDto;
@@ -223,6 +225,13 @@ public class EnforcerConfig {
     public void setRuntimeTokenIssuerDto(APIKeyIssuerDto runtimeTokenIssuerDto) {
 
         this.runtimeTokenIssuerDto = runtimeTokenIssuerDto;
+    }
+    public BackendJWKSDto getBackendJWKSDto() {
+        return backendJWKSDto;
+    }
+
+    public void setBackendJWKSDto(BackendJWKSDto backendJWKSDto) {
+        this.backendJWKSDto = backendJWKSDto;
     }
 }
 

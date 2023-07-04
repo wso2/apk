@@ -308,6 +308,29 @@ func GetResolvedBackend(ctx context.Context, client k8client.Client,
 	}
 	resolvedBackend.Services = backend.Spec.Services
 	resolvedBackend.Protocol = backend.Spec.Protocol
+	if backend.Spec.CircuitBreaker != nil {
+		resolvedBackend.CircuitBreaker = &dpv1alpha1.CircuitBreaker{
+			MaxConnections:     backend.Spec.CircuitBreaker.MaxConnections,
+			MaxRequests:        backend.Spec.CircuitBreaker.MaxRequests,
+			MaxRetries:         backend.Spec.CircuitBreaker.MaxRetries,
+			MaxConnectionPools: backend.Spec.CircuitBreaker.MaxConnectionPools,
+			MaxPendingRequests: backend.Spec.CircuitBreaker.MaxPendingRequests,
+		}
+	}
+	if backend.Spec.Timeout != nil {
+		resolvedBackend.Timeout = &dpv1alpha1.Timeout{
+			MaxRouteTimeoutSeconds:  backend.Spec.Timeout.MaxRouteTimeoutSeconds,
+			RouteTimeoutSeconds:     backend.Spec.Timeout.RouteTimeoutSeconds,
+			RouteIdleTimeoutSeconds: backend.Spec.Timeout.RouteIdleTimeoutSeconds,
+		}
+	}
+	if backend.Spec.Retry != nil {
+		resolvedBackend.Retry = &dpv1alpha1.RetryConfig{
+			Count:              backend.Spec.Retry.Count,
+			BaseIntervalMillis: backend.Spec.Retry.BaseIntervalMillis,
+			StatusCodes:        backend.Spec.Retry.StatusCodes,
+		}
+	}
 	if backend.Spec.TLS != nil {
 		resolvedTLSConfig.ResolvedCertificate, err = ResolveCertificate(ctx, client,
 			backend.Namespace, backend.Spec.TLS.CertificateInline, backend.Spec.TLS.ConfigMapRef, backend.Spec.TLS.SecretRef)

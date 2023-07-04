@@ -35,6 +35,36 @@ spec:
           spec:
             description: BackendSpec defines the desired state of Backend
             properties:
+              circuitBreaker:
+                description: CircuitBreaker defines the circuit breaker configurations
+                properties:
+                  maxConnectionPools:
+                    default: 1000
+                    format: int32
+                    type: integer
+                  maxConnections:
+                    default: 1024
+                    format: int32
+                    type: integer
+                  maxPendingRequests:
+                    default: 1024
+                    format: int32
+                    type: integer
+                  maxRequests:
+                    default: 1024
+                    format: int32
+                    type: integer
+                  maxRetries:
+                    default: 3
+                    format: int32
+                    type: integer
+                required:
+                - maxConnectionPools
+                - maxConnections
+                - maxPendingRequests
+                - maxRequests
+                - maxRetries
+                type: object
               protocol:
                 default: http
                 description: BackendProtocolType defines the backend protocol type.
@@ -44,6 +74,29 @@ spec:
                 - ws
                 - wss
                 type: string
+              retry:
+                description: RetryConfig defines retry configurations
+                properties:
+                  baseIntervalMillis:
+                    default: 2000
+                    description: BaseIntervalMillis defines the base interval in milliseconds
+                    format: int32
+                    type: integer
+                  count:
+                    default: 1
+                    description: MaxRetry defines the maximum number of retries
+                    format: int32
+                    type: integer
+                  statusCodes:
+                    description: StatusCodes defines the list of status codes to retry
+                    items:
+                      format: int32
+                      type: integer
+                    type: array
+                required:
+                - baseIntervalMillis
+                - count
+                type: object
               security:
                 items:
                   description: SecurityConfig defines enpoint security configurations
@@ -87,6 +140,26 @@ spec:
                   type: object
                 minItems: 1
                 type: array
+              timeout:
+                description: Timeout congifuration for the backend
+                properties:
+                  maxRouteTimeoutSeconds:
+                    default: 60
+                    format: int32
+                    type: integer
+                  routeIdleTimeoutSeconds:
+                    default: 300
+                    format: int32
+                    type: integer
+                  routeTimeoutSeconds:
+                    default: 60
+                    format: int32
+                    type: integer
+                required:
+                - maxRouteTimeoutSeconds
+                - routeIdleTimeoutSeconds
+                - routeTimeoutSeconds
+                type: object
               tls:
                 description: TLSConfig defines enpoint TLS configurations
                 properties:

@@ -429,6 +429,10 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 		vhostToRouteArrayMap[systemHost] = append(vhostToRouteArrayMap[systemHost], routeToken)
 	}
 
+	// Add jwsk endpoint
+	routeJwks := envoyconf.CreateJWKSRoute()
+	vhostToRouteArrayMap[systemHost] = append(vhostToRouteArrayMap[systemHost], routeJwks)
+
 	// Add health endpoint
 	routeHealth := envoyconf.CreateHealthEndpoint()
 	vhostToRouteArrayMap[systemHost] = append(vhostToRouteArrayMap[systemHost], routeHealth)
