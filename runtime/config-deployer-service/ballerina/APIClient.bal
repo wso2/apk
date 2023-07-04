@@ -1015,6 +1015,19 @@ public class APIClient {
                 }
             };
         }
+        Resiliency? resiliency = endpointConfig.resiliency;
+        if resiliency is Resiliency {
+            backendService.spec.retry = {
+                count: resiliency.retryPolicy?count;
+                baseIntervalInMillis: resiliency.retryPolicy?baseIntervalInMillis;
+                statusCodes: resiliency.retryPolicy?statusCodes;
+            };
+            backendService.spec.timeout = {
+                maxRouteTimeoutSeconds: resiliency.timeout?maxRouteTimeoutSeconds;
+                routeIdleTimeoutSeconds: resiliency.timeout?routeIdleTimeoutSeconds;
+                routeTimeoutSeconds: resiliency.timeout?routeTimeoutSeconds;
+            };
+        }
         return backendService;
     }
 

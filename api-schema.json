@@ -291,7 +291,50 @@
     },
     "Resiliency": {
       "type": "object",
+      "description": "Endpoint resiliency related configurations of the API\n",
       "properties": {
+        "timeout": {
+          "$ref": "#/components/schemas/Timeout"
+        },
+        "retryPolicy": {
+          "$ref": "#/components/schemas/RetryPolicy"
+        }
+      }
+    },
+    "Timeout": {
+      "type": "object",
+      "properties": {
+        "maxRouteTimeoutSeconds": {
+          "type": "integer",
+          "example": 60
+        },
+        "routeIdleTimeoutSeconds": {
+          "type": "integer",
+          "example": 400
+        },
+        "routeTimeoutSeconds": {
+          "type": "integer",
+          "example": 40
+        }
+      }
+    },
+    "RetryPolicy": {
+      "type": "object",
+      "properties": {
+        "count": {
+          "type": "integer",
+          "example": 3
+        },
+        "baseIntervalInMillis": {
+          "type": "integer",
+          "example": 1000
+        },
+        "statusCodes": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        }
       }
     },
     "Authentication": {
