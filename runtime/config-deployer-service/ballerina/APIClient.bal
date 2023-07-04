@@ -39,7 +39,8 @@ public class APIClient {
         APKConf apkConf = {
             name: api.getName(),
             context: api.getContext().length() > 0 ? api.getContext() : "",
-            version: api.getVersion()
+            version: api.getVersion(),
+            organization: ""
         };
         string endpoint = api.getEndpoint();
         if endpoint.length() > 0 {
@@ -1373,6 +1374,23 @@ public class APIClient {
             return "api-" + uuid:createType1AsString();
         }
     }
+    private isolated function validateAPKConfiguration(string apkconfJson) returns commons:APKError? {
+        do {
+            runtimeapi:APKConfValidationResponse validationResponse = check apkConfValidator.validate(apkconfJson);
+            if validationResponse.isValidated() {
+                // additional validations
+
+            } else {
+                map<string> errorMap = {};
+                foreach runtimeapi:ErrorHandler errorItem in check validationResponse.getErrorItems() {
+                    errorMap[errorItem.getErrorMessage()] = errorItem.getErrorDescription();
+                }
+                return e909029(errorMap);
+            }
+        } on fail var e {
+            return e909022("APK configuration is not valid", e);
+        }
+    }
     public isolated function prepareArtifact(record {|byte[] fileContent; string fileName; anydata...;|}? apkConfiguration, record {|byte[] fileContent; string fileName; anydata...;|}? definitionFile) returns commons:APKError|model:APIArtifact {
         if apkConfiguration is () && definitionFile is () {
             return e909022("apkConfiguration ,definitionFile and apiType are not provided", ());
@@ -1383,6 +1401,7 @@ public class APIClient {
                 string apkConfContent = check string:fromBytes(apkConfiguration.fileContent);
                 string|() convertedJson = check commons:newYamlUtil1().fromYamlStringToJson(apkConfContent);
                 if convertedJson is string {
+                    _ = check self.validateAPKConfiguration(apkConfContent);
                     apkConf = check value:fromJsonStringWithType(convertedJson, APKConf);
                 }
             }

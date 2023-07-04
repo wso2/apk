@@ -197,6 +197,15 @@ public isolated function e909022(string msg, error? e) returns commons:APKError 
     }
 }
 
+public isolated function e909029(map<string> errorItems) returns commons:APKError{ 
+return error commons:APKError("Apk-conf validation failed",
+        code = 909029,
+        message = "Invalid apk-conf provided",
+        statusCode = 400,
+        description = "Invalid apk-conf provided",
+        moreInfo = errorItems
+    );
+}
 public isolated function e909024(string policyName) returns commons:APKError {
     return error commons:APKError("Invalid parameters provided for policy " + policyName,
         code = 909024,
