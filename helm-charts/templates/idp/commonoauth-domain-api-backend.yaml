@@ -20,10 +20,10 @@ metadata:
   name: {{ template "apk-helm.resource.prefix" . }}-commonoauth-ds-backend
   namespace: {{ .Release.Namespace }}
 spec:
+ basePath: /commonoauth
  services:
   - host:  {{ template "apk-helm.resource.prefix" . }}-idp-ds-service.{{ .Release.Namespace }}.svc
     port: 9443
-    basePath: /commonoauth
  protocol: "https"
  tls:
   allowedSANs:
