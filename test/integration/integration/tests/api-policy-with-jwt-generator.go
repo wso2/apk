@@ -111,6 +111,24 @@ var BackendJWTGenerationPolicy = suite.IntegrationTest{
 				Backend:   "infra-backend-v1",
 				Namespace: ns,
 			},
+			{
+				Request: http.Request{
+					Host: "api-policy-with-jwt-generator.test.gw.wso2.com",
+					Path: "/api-policy-with-jwt-generator/v2/echo-full",
+					Headers: map[string]string{
+						"content-type": "application/json",
+					},
+					Method: "GET",
+				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Path:    "/v2/echo-full",
+						Headers: headers,
+					},
+				},
+				Backend:   "infra-backend-v1",
+				Namespace: ns,
+			},
 		}
 		for i := range testCases {
 			tc := testCases[i]
