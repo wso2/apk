@@ -220,6 +220,20 @@ public type EndpointConfiguration record {
 };
 
 public type Resiliency record {
+    Timeout timeout?;
+    RetryPolicy retryPolicy?;
+};
+
+public type Timeout record {
+    int maxRouteTimeoutSeconds?;
+    int routeIdleTimeoutSeconds?;
+    int routeTimeoutSeconds?;
+};
+
+public type RetryPolicy record {
+    int count?;
+    int baseIntervalInMillis?;
+    int[] statusCodes?;
 };
 
 public type EndpointConfigurations record {
