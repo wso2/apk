@@ -22,8 +22,9 @@ metadata:
 spec:
   apiDisplayName: API with Backend Base Path
   apiType: REST
-  apiVersion: 1.0.0
+  apiVersion: v1.0.0
   context: /test-api-with-path-params/v1.0.0
+  isDefaultVersion: true
   #definitionFileRef: definition-file
   production:
     - httpRouteRefs:

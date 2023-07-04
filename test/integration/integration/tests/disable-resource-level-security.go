@@ -58,6 +58,26 @@ var DisableResourceSecurity = suite.IntegrationTest{
 				},
 				Response: http.Response{StatusCode: 401},
 			},
+			{
+				Request: http.Request{
+					Host: "disable-resource-security.test.gw.wso2.com",
+					Path: "/disable-resource-security/users",
+				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Path: "/users",
+					},
+				},
+				Backend:   "infra-backend-v1",
+				Namespace: ns,
+			},
+			{
+				Request: http.Request{
+					Host: "disable-resource-security.test.gw.wso2.com",
+					Path: "/disable-resource-security/orders",
+				},
+				Response: http.Response{StatusCode: 401},
+			},
 		}
 		for i := range testCases {
 			tc := testCases[i]

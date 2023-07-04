@@ -59,6 +59,26 @@ var APIWithPathParams = suite.IntegrationTest{
 				},
 				Response: http.Response{StatusCode: 404},
 			},
+			{
+				Request: http.Request{
+					Host: "path-param-api.test.gw.wso2.com",
+					Path: "/test-api-with-path-params/user/user123/playlist/watch-later",
+				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Path: "/user/user123/playlist/watch-later",
+					},
+				},
+				Backend:   "infra-backend-v1",
+				Namespace: ns,
+			},
+			{
+				Request: http.Request{
+					Host: "path-param-api.test.gw.wso2.com",
+					Path: "/test-api-with-path-params/user/user123/other-path",
+				},
+				Response: http.Response{StatusCode: 404},
+			},
 		}
 		for i := range testCases {
 			tc := testCases[i]

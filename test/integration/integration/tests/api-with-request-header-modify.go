@@ -68,6 +68,35 @@ var APIWithRequestHeaderModify = suite.IntegrationTest{
 				Backend:   "infra-backend-v1",
 				Namespace: ns,
 			},
+			{
+				Request: http.Request{
+					Host: "backend-base-path.test.gw.wso2.com",
+					Path: "/request-header-modify/users",
+				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Path: "/users",
+					},
+					AbsentHeaders: []string{"X-Header-Remove"},
+				},
+				Backend:   "infra-backend-v1",
+				Namespace: ns,
+			},
+			{
+				Request: http.Request{
+					Host: "backend-base-path.test.gw.wso2.com",
+					Path: "/request-header-modify/orders",
+				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Path:    "/orders",
+						Headers: map[string]string{"test-header": "test"},
+					},
+					AbsentHeaders: []string{"X-Header-add"},
+				},
+				Backend:   "infra-backend-v1",
+				Namespace: ns,
+			},
 		}
 		for i := range testCases {
 			tc := testCases[i]

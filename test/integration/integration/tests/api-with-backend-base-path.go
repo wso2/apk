@@ -42,7 +42,7 @@ var APIWithBackendBasePath = suite.IntegrationTest{
 			{
 				Request: http.Request{
 					Host: "backend-base-path.test.gw.wso2.com",
-					Path: "/test-api-with-backend-base-path/1.0.0/backend-base-path/orders",
+					Path: "/test-api-with-backend-base-path/1.0.0/orders",
 				},
 				ExpectedRequest: &http.ExpectedRequest{
 					Request: http.Request{
@@ -55,7 +55,33 @@ var APIWithBackendBasePath = suite.IntegrationTest{
 			{
 				Request: http.Request{
 					Host: "backend-base-path.test.gw.wso2.com",
-					Path: "/test-api-with-backend-base-path/1.0.0/backend-base-path/users",
+					Path: "/test-api-with-backend-base-path/1.0.0/users",
+				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Path: "/backend-base-path/users",
+					},
+				},
+				Backend:   "infra-backend-v1",
+				Namespace: ns,
+			},
+			{
+				Request: http.Request{
+					Host: "backend-base-path.test.gw.wso2.com",
+					Path: "/test-api-with-backend-base-path/orders",
+				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Path: "/backend-base-path/orders",
+					},
+				},
+				Backend:   "infra-backend-v1",
+				Namespace: ns,
+			},
+			{
+				Request: http.Request{
+					Host: "backend-base-path.test.gw.wso2.com",
+					Path: "/test-api-with-backend-base-path/users",
 				},
 				ExpectedRequest: &http.ExpectedRequest{
 					Request: http.Request{

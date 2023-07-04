@@ -24,6 +24,7 @@ spec:
   apiType: REST
   apiVersion: 1.0.0
   context: /response-header-modify/1.0.0
+  isDefaultVersion: true
   #definitionFileRef: swagger-definition-webhook
   production:
     - httpRouteRefs:
