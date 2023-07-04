@@ -59,6 +59,7 @@ public class HttpRequestHandler implements RequestHandler<CheckRequest, Response
             return responseObject;
         }
         APIConfig api = matchedAPI.getAPIConfig();
+        ThreadContext.put(APIConstants.API_UUID, api.getUuid());
         logger.debug("API {}/{} found in the cache", api.getBasePath(), api.getVersion());
 
         // putting API details into ThreadContext for logging purposes

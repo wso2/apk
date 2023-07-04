@@ -22,6 +22,7 @@ import (
 
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/loggers"
+	internalLogging "github.com/wso2/apk/adapter/internal/logging"
 	"github.com/wso2/apk/adapter/internal/management-server/xds"
 	"github.com/wso2/apk/adapter/pkg/logging"
 	gwapiv1a2 "sigs.k8s.io/gateway-api/apis/v1alpha2"
@@ -155,6 +156,7 @@ func InitOperator() {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2603, err))
 	}
 
+	internalLogging.InitializeContext()
 	go synchronizer.HandleAPILifeCycleEvents(&ch, &successChannel)
 	go synchronizer.HandleGatewayLifeCycleEvents(&gatewaych)
 	if config.ReadConfigs().ManagementServer.Enabled {
@@ -169,4 +171,5 @@ func InitOperator() {
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2604, err))
 	}
+	internalLogging.RemoveValueFromLogContext("API_UUID")
 }

@@ -30,6 +30,7 @@ import (
 
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/loggers"
+	internalLogging "github.com/wso2/apk/adapter/internal/logging"
 	model "github.com/wso2/apk/adapter/internal/oasparser/model"
 	"github.com/wso2/apk/adapter/internal/operator/constants"
 	"github.com/wso2/apk/adapter/internal/operator/utils"
@@ -139,6 +140,7 @@ func GenerateAdapterInternalAPI(apiState APIState, httpRoute *HTTPRouteState, en
 	var adapterInternalAPI model.AdapterInternalAPI
 	adapterInternalAPI.SetInfoAPICR(*apiState.APIDefinition)
 	adapterInternalAPI.SetAPIDefinitionFile(apiState.APIDefinitionFile)
+	internalLogging.SetValueToLogContext("API_UUID", adapterInternalAPI.UUID)
 	adapterInternalAPI.EnvType = envType
 	httpRouteParams := model.HTTPRouteParams{
 		AuthSchemes:               httpRoute.Authentications,
@@ -203,8 +205,8 @@ func getLabelsForAPI(httpRoute *gwapiv1b1.HTTPRoute) []string {
 func getListenersForAPI(httpRoute *gwapiv1b1.HTTPRoute) []string {
 	var listeners []string
 	for _, parentRef := range httpRoute.Spec.ParentRefs {
-		loggers.LoggerAPKOperator.Debugf("Recieved Parent Refs:%v", parentRef)
-		loggers.LoggerAPKOperator.Debugf("Recieved Parent Refs Section Name:%v", string(*parentRef.SectionName))
+		loggers.LoggerAPKOperator.Debugf("Recieved Parent Refs:%v, API_UUID: %v", parentRef, internalLogging.GetValueFromLogContext("API_UUID"))
+		loggers.LoggerAPKOperator.Debugf("Recieved Parent Refs Section Name:%v, API_UUID: %v", string(*parentRef.SectionName), internalLogging.GetValueFromLogContext("API_UUID"))
 		listeners = append(listeners, string(*parentRef.SectionName))
 	}
 	return listeners
@@ -231,7 +233,7 @@ func SendEventToPartitionServer() {
 	conf := config.ReadConfigs()
 	for apiEvent := range paritionCh {
 		if !apiEvent.Event.APIDefinition.Spec.SystemAPI {
-			loggers.LoggerAPKOperator.Infof("Sending API to APK management server: %v", apiEvent.Event.APIDefinition.Spec.APIDisplayName)
+			loggers.LoggerAPKOperator.Infof("Sending API to APK management server: %v, API_UUID: %v", apiEvent.Event.APIDefinition.Spec.APIDisplayName, internalLogging.GetValueFromLogContext("API_UUID"))
 			api := apiEvent.Event
 			eventType := apiEvent.EventType
 			context := api.APIDefinition.Spec.Context
@@ -259,16 +261,16 @@ func SendEventToPartitionServer() {
 			}
 			payload, err := json.Marshal(data)
 			if err != nil {
-				loggers.LoggerAPKOperator.Errorf("Error creating Event: %v", err)
+				loggers.LoggerAPKOperator.Errorf("Error creating Event: %v, API_UUID: %v", err, internalLogging.GetValueFromLogContext("API_UUID"))
 			}
 			req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s%s%s", conf.PartitionServer.Host, conf.PartitionServer.ServiceBasePath, "/api-deployment"), bytes.NewBuffer(payload))
 			if err != nil {
-				loggers.LoggerAPKOperator.Errorf("Error creating api definition request: %v", err)
+				loggers.LoggerAPKOperator.Errorf("Error creating api definition request: %v, API_UUID: %v", err, internalLogging.GetValueFromLogContext("API_UUID"))
 			}
 			req.Header.Set("Content-Type", "application/json; charset=UTF-8")
 			resp, err := partitionClient.Do(req)
 			if err != nil {
-				loggers.LoggerAPKOperator.Errorf("Error sending API Event: %v", err)
+				loggers.LoggerAPKOperator.Errorf("Error sending API Event: %v, API_UUID: %v", err, internalLogging.GetValueFromLogContext("API_UUID"))
 			}
 			if resp.StatusCode == http.StatusAccepted {
 				loggers.LoggerAPKOperator.Info("API Event Accepted", resp.Status)

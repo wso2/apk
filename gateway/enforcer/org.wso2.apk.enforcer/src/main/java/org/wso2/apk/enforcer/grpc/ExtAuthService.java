@@ -85,8 +85,9 @@ public class ExtAuthService extends AuthorizationGrpc.AuthorizationImplBase {
             responseObserver.onNext(response);
             // When you are done, you must call onCompleted.
             responseObserver.onCompleted();
-            ThreadContext.remove(APIConstants.LOG_TRACE_ID);
         } finally {
+            ThreadContext.remove(APIConstants.LOG_TRACE_ID);
+            ThreadContext.remove(APIConstants.API_UUID);
             if (Utils.tracingEnabled()) {
                 extAuthServiceSpanScope.close();
                 Utils.finishSpan(extAuthServiceSpan);

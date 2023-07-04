@@ -28,6 +28,7 @@ import (
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/interceptor"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
+	"github.com/wso2/apk/adapter/internal/logging"
 	"github.com/wso2/apk/adapter/internal/oasparser/constants"
 	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
 )
@@ -363,14 +364,14 @@ func (swagger *AdapterInternalAPI) GetOrganizationID() string {
 func (swagger *AdapterInternalAPI) Validate() error {
 	for _, res := range swagger.resources {
 		if res.endpoints == nil || len(res.endpoints.Endpoints) == 0 {
-			logger.LoggerOasparser.Errorf("No Endpoints are provided for the resources in %s:%s",
-				swagger.title, swagger.version)
+			logger.LoggerOasparser.Errorf("No Endpoints are provided for the resources in %s:%s, API_UUID: %v",
+				swagger.title, swagger.version, logging.GetValueFromLogContext("API_UUID"))
 			return errors.New("no endpoints are provided for the API")
 		}
 		err := res.endpoints.validateEndpointCluster()
 		if err != nil {
-			logger.LoggerOasparser.Errorf("Error while parsing the endpoints of the API %s:%s - %v",
-				swagger.title, swagger.version, err)
+			logger.LoggerOasparser.Errorf("Error while parsing the endpoints of the API %s:%s - %v, API_UUID: %v",
+				swagger.title, swagger.version, err, logging.GetValueFromLogContext("API_UUID"))
 			return err
 		}
 	}
