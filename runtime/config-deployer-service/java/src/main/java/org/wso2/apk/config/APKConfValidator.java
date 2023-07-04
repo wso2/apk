@@ -45,6 +45,12 @@ public class APKConfValidator {
                 errorItem.setDescription(message.getLocalizedMessage());
                 errorItems.add(errorItem);
             }
+            if (e.getCausingExceptions() == null || e.getCausingExceptions().isEmpty()){
+                ErrorItem errorItem = new ErrorItem();
+                errorItem.setMessage(e.getErrorMessage());
+                errorItem.setDescription(e.getLocalizedMessage());
+                errorItems.add(errorItem);
+            }
             apkConfValidationResponse.setErrorItems(errorItems.toArray(new ErrorItem[errorItems.size()]));
             return apkConfValidationResponse;
         }

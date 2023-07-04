@@ -339,7 +339,7 @@ public class APIClient {
                 apiArtifact.rateLimitPolicies[rateLimitPolicyCR.metadata.name] = rateLimitPolicyCR;
             }
         }
-        if apkConf.apiPolicies != () || apkConf.corsConfiguration != (){
+        if apkConf.apiPolicies != () || apkConf.corsConfiguration != () {
             model:APIPolicy? apiPolicyCR = self.generateAPIPolicyAndBackendCR(apiArtifact, apkConf, (), apkConf.apiPolicies, organization, apiArtifact.uniqueId);
             if apiPolicyCR != () {
                 apiArtifact.apiPolicies[apiPolicyCR.metadata.name] = apiPolicyCR;
@@ -1401,8 +1401,9 @@ public class APIClient {
                 string apkConfContent = check string:fromBytes(apkConfiguration.fileContent);
                 string|() convertedJson = check commons:newYamlUtil1().fromYamlStringToJson(apkConfContent);
                 if convertedJson is string {
-                    _ = check self.validateAPKConfiguration(apkConfContent);
-                    apkConf = check value:fromJsonStringWithType(convertedJson, APKConf);
+                    json apkConfJson = check value:fromJsonString(convertedJson);
+                    _ = check self.validateAPKConfiguration(apkConfJson.toJsonString());
+                    apkConf = check apkConfJson.cloneWithType(APKConf);
                 }
             }
             string? apiDefinition = ();
@@ -1424,6 +1425,9 @@ public class APIClient {
             APIClient apiclent = new ();
             return check apiclent.generateK8sArtifacts(apkConf, apiDefinition, organization);
         } on fail var e {
+            if e is commons:APKError {
+                return e;
+            }
             log:printError("Error occured while prepare artifact", e);
             return e909022("Error occured while prepare artifact", e);
         }

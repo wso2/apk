@@ -1,0 +1,387 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "title": "UUID of the API"
+    },
+    "name": {
+      "type": "string",
+      "title": "Name of the API",
+      "maxLength": 60,
+      "minLength": 1
+    },
+    "context": {
+      "type": "string",
+      "title": "Context of the API",
+      "maxLength": 232,
+      "minLength": 1
+    },
+    "version": {
+      "type": "string",
+      "title": "Version of the API",
+      "maxLength": 30,
+      "minLength": 1,
+      "pattern": "^[^~!@#;:%^*()+={}|\\\\<>\"',&/$\\[\\]\\s+\\/]+$"
+    },
+    "type": {
+      "type": "string",
+      "default": "REST",
+      "enum": [
+        "REST",
+        "GRAPHQL",
+        "GRPC"
+      ]
+    },
+    "organization": {
+      "type": "string",
+      "description": "Organization of the API\n"
+    },
+    "endpointConfigurations": {
+      "$ref": "#/schemas/EndpointConfigurations"
+    },
+    "operations": {
+      "type": "array",
+      "items": {
+        "$ref": "#/schemas/APKOperations"
+      }
+    },
+    "apiPolicies": {
+      "$ref": "#/schemas/APIOperationPolicies"
+    },
+    "apiRateLimit": {
+      "$ref": "#/schemas/RateLimit"
+    },
+    "authentication": {
+      "type": "array",
+      "items": {
+        "$ref": "#/schemas/Authentication"
+      }
+    },
+    "additionalProperties": {
+      "type": "array",
+      "description": "Map of custom properties of API",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "vhosts": {
+      "type": "object",
+      "description": "Map of virtual hosts of API\n",
+      "properties": {
+        "production": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "sandbox": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "corsConfiguration": {
+      "$ref": "#/schemas/CORSConfiguration"
+    }
+  },
+  "schemas": {
+    "Authentication": {
+      "type": "object",
+      "properties": {
+        "authType": {
+          "type": "string",
+          "example": "JWT"
+        },
+        "sendTokenToUpstream": {
+          "type": "boolean",
+          "default": false
+        },
+        "enabled": {
+          "type": "boolean",
+          "example": true
+        },
+        "headerName": {
+          "type": "string",
+          "example": "Authorization"
+        },
+        "queryParamName": {
+          "type": "string",
+          "example": "apikey"
+        },
+        "headerEnable": {
+          "type": "boolean"
+        },
+        "queryParamEnable": {
+          "type": "boolean"
+        }
+      }
+    },
+    "CORSConfiguration": {
+      "type": "object",
+      "description": "CORS Configuration of API\n",
+      "properties": {
+        "corsConfigurationEnabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "accessControlAllowOrigins": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "accessControlAllowCredentials": {
+          "type": "boolean",
+          "default": false
+        },
+        "accessControlAllowHeaders": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "accessControlAllowMethods": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "accessControlAllowMaxAge": {
+          "type": "integer",
+          "default": 0
+        }
+      }
+    },
+    "APIOperationPolicies": {
+      "title": "API Operation Level Policies",
+      "properties": {
+        "request": {
+          "type": "array",
+          "items": {
+            "$ref": "#/schemas/APKOperationPolicy"
+          }
+        },
+        "response": {
+          "type": "array",
+          "items": {
+            "$ref": "#/schemas/APKOperationPolicy"
+          }
+        }
+      }
+    },
+    "APKOperationPolicy": {
+      "title": "API Operation Policy",
+      "required": [
+        "policyName"
+      ],
+      "type": "object",
+      "properties": {
+        "policyName": {
+          "type": "string"
+        },
+        "policyVersion": {
+          "type": "string",
+          "default": "v1"
+        },
+        "policyId": {
+          "type": "string"
+        },
+        "parameters": {
+          "type": "object",
+          "example": {
+            "headerName": "header1"
+          }
+        }
+      }
+    },
+    "RateLimit": {
+      "title": "API Rate Limit Details",
+      "type": "object",
+      "required": [
+        "requestsPerUnit",
+        "unit"
+      ],
+      "properties": {
+        "requestsPerUnit": {
+          "type": "integer",
+          "description": "Number of requests allowed per specified unit of time",
+          "example": 30
+        },
+        "unit": {
+          "type": "string",
+          "description": "Unit of time",
+          "enum": [
+            "Minute",
+            "Hour",
+            "Day"
+          ],
+          "example": "Minute"
+        }
+      }
+    },
+    "EndpointConfigurations": {
+      "title": "Endpoint configs",
+      "properties": {
+        "production": {
+          "$ref": "#/schemas/EndpointConfiguration"
+        },
+        "sandbox": {
+          "$ref": "#/schemas/EndpointConfiguration"
+        }
+      }
+    },
+    "EndpointConfiguration": {
+      "required": [
+        "endpoint"
+      ],
+      "type": "object",
+      "properties": {
+        "endpoint": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/schemas/K8sService"
+            }
+          ]
+        },
+        "endpointSecurity": {
+          "$ref": "#/schemas/EndpointSecurity"
+        },
+        "certificate": {
+          "type": "object",
+          "$ref": "#/schemas/Certificate"
+        },
+        "resiliency": {
+          "$ref": "#/schemas/Resiliency"
+        }
+      }
+    },
+    "Certificate": {
+      "type": "object",
+      "properties": {
+        "secretName": {
+          "type": "string"
+        },
+        "secretKey": {
+          "type": "string"
+        }
+      }
+    },
+    "EndpointSecurity": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "securityType": {
+          "oneOf": [
+            {
+              "$ref": "#/schemas/BasicEndpointSecurity"
+            }
+          ]
+        }
+      }
+    },
+    "BasicEndpointSecurity": {
+      "type": "object",
+      "properties": {
+        "secretName": {
+          "type": "string"
+        },
+        "userNameKey": {
+          "type": "string"
+        },
+        "passwordKey": {
+          "type": "string"
+        }
+      }
+    },
+    "Resiliency": {
+      "type": "object",
+      "properties": {
+      }
+    },
+    "APKOperations": {
+      "title": "Operation",
+      "type": "object",
+      "properties": {
+        "target": {
+          "type": "string",
+          "example": "/order/{orderId}"
+        },
+        "verb": {
+          "type": "string",
+          "example": "POST"
+        },
+        "authTypeEnabled": {
+          "type": "boolean",
+          "example": true,
+          "default": true,
+          "description": "Authentication mode for resource (true/false)"
+        },
+        "endpointConfigurations": {
+          "$ref": "#/schemas/EndpointConfigurations"
+        },
+        "operationPolicies": {
+          "$ref": "#/schemas/APIOperationPolicies"
+        },
+        "operationRateLimit": {
+          "$ref": "#/schemas/RateLimit"
+        },
+        "scopes": {
+          "type": "array",
+          "example": [
+
+          ],
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "K8sService": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "example": "pizzashack-service"
+        },
+        "namespace": {
+          "type": "string",
+          "example": "apk-platform"
+        },
+        "port": {
+          "type": "integer",
+          "example": 8080
+        },
+        "protocol": {
+          "type": "string",
+          "example": "http"
+        }
+      }
+    }
+  },
+  "required": [
+    "name",
+    "context",
+    "type",
+    "organization",
+    "endpointConfigurations",
+    "operations",
+    "vhosts"
+  ]
+}
