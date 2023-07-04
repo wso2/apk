@@ -253,7 +253,7 @@ func generateHeaderToRemoveString(policyParams interface{}) (string, error) {
 	return requestHeaderToRemove, nil
 }
 
-func generateRewritePathRouteConfig(routePath, resourcePath, endpointBasepath string,
+func generateRewritePathRouteConfig(routePath, endpointBasepath string,
 	policyParams interface{}, pathMatchType gwapiv1b1.PathMatchType, isDefaultVersion bool) (*envoy_type_matcherv3.RegexMatchAndSubstitute, error) {
 
 	var paramsToSetHeader map[string]interface{}
@@ -295,9 +295,6 @@ func generateSubstitutionStringWithRewritePathType(rewritePath string,
 			resourceRegex = strings.TrimSuffix(rewritePath, "/")
 		case gwapiv1b1.PrefixMatchHTTPPathModifier:
 			pathPrefix := "%s\\1"
-			if (isDefaultVersion) {
-				pathPrefix = "%s\\1\\2";
-			}
 			resourceRegex = fmt.Sprintf(pathPrefix, strings.TrimSuffix(rewritePath, "/"))
 		}
 	case gwapiv1b1.PathMatchRegularExpression:
