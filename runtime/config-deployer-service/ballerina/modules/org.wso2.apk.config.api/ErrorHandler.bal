@@ -12,7 +12,7 @@ public distinct class ErrorHandler {
     # The init function of the Ballerina class mapping the `org.wso2.apk.config.api.ErrorHandler` Java interface.
     #
     # + obj - The `handle` value containing the Java reference of the object.
-    public function init(handle obj) {
+    public isolated function init(handle obj) {
         self.jObj = obj;
     }
 
@@ -32,14 +32,14 @@ public distinct class ErrorHandler {
     # The function that maps to the `getErrorDescription` method of `org.wso2.apk.config.api.ErrorHandler`.
     #
     # + return - The `string` value returning from the Java mapping.
-    public function getErrorDescription() returns string {
+    public isolated function getErrorDescription() returns string {
         return java:toString(org_wso2_apk_config_api_ErrorHandler_getErrorDescription(self.jObj)) ?: "";
     }
 
     # The function that maps to the `getErrorMessage` method of `org.wso2.apk.config.api.ErrorHandler`.
     #
     # + return - The `string` value returning from the Java mapping.
-    public function getErrorMessage() returns string {
+    public isolated function getErrorMessage() returns string {
         return java:toString(org_wso2_apk_config_api_ErrorHandler_getErrorMessage(self.jObj)) ?: "";
     }
 
@@ -65,13 +65,13 @@ function org_wso2_apk_config_api_ErrorHandler_getErrorCode(handle receiver) retu
     paramTypes: []
 } external;
 
-function org_wso2_apk_config_api_ErrorHandler_getErrorDescription(handle receiver) returns handle = @java:Method {
+isolated function org_wso2_apk_config_api_ErrorHandler_getErrorDescription(handle receiver) returns handle = @java:Method {
     name: "getErrorDescription",
     'class: "org.wso2.apk.config.api.ErrorHandler",
     paramTypes: []
 } external;
 
-function org_wso2_apk_config_api_ErrorHandler_getErrorMessage(handle receiver) returns handle = @java:Method {
+isolated function org_wso2_apk_config_api_ErrorHandler_getErrorMessage(handle receiver) returns handle = @java:Method {
     name: "getErrorMessage",
     'class: "org.wso2.apk.config.api.ErrorHandler",
     paramTypes: []

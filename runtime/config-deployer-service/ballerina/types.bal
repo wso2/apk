@@ -178,11 +178,13 @@ public type APKConf record {
     string context;
     @constraint:String {maxLength: 30, minLength: 1}
     string version;
+    @constraint:String {maxLength: 30, minLength: 1}
     string 'type = "REST";
     # Organization of the API
-    string organization?;
+    @constraint:String {maxLength: 30, minLength: 1}
+    string organization;
     # Is this the default version of the API
-    boolean defaultVersion?;
+    boolean defaultVersion = false;
     EndpointConfigurations endpointConfigurations?;
     APKOperations[] operations?;
     APIOperationPolicies apiPolicies?;

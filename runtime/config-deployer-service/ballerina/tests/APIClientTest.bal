@@ -72,6 +72,7 @@ public function APIToAPKConfDataProvider() returns map<[runtimeModels:API, APKCo
                 name: "testAPI",
                 context: "/test",
                 version: "1.0.0",
+                organization:"",
                 operations: []
             }
         ],
@@ -81,6 +82,7 @@ public function APIToAPKConfDataProvider() returns map<[runtimeModels:API, APKCo
                 name: "testAPI",
                 context: "/test",
                 version: "1.0.0",
+                organization: "",
                 endpointConfigurations: {production: {endpoint: "http://localhost:9090"}},
                 operations: []
             }
@@ -92,6 +94,7 @@ public function APIToAPKConfDataProvider() returns map<[runtimeModels:API, APKCo
                 name: "testAPI",
                 context: "/test",
                 version: "1.0.0",
+                organization: "",
                 endpointConfigurations: {production: {endpoint: "http://localhost:9090"}},
                 operations: [
                     {target: "/menu", verb: "GET", authTypeEnabled: true,scopes:[]},
@@ -101,4 +104,4 @@ public function APIToAPKConfDataProvider() returns map<[runtimeModels:API, APKCo
         ]
     };
     return apkConfMap;
-}
+} 
