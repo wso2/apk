@@ -281,25 +281,38 @@ func getSecretValue(ctx context.Context, client k8client.Client,
 // ResolveAndAddBackendToMapping resolves backend from reference and adds it to the backendMapping.
 func ResolveAndAddBackendToMapping(ctx context.Context, client k8client.Client,
 	backendMapping dpv1alpha1.BackendMapping,
-	backendRef dpv1alpha1.BackendReference, interceptorServiceNamespace string) {
+	backendRef dpv1alpha1.BackendReference, interceptorServiceNamespace string, api *dpv1alpha1.API) {
 	namespace := gwapiv1b1.Namespace(backendRef.Namespace)
 	backendName := types.NamespacedName{
 		Name:      backendRef.Name,
 		Namespace: GetNamespace(&namespace, interceptorServiceNamespace),
 	}
-	backend := GetResolvedBackend(ctx, client, backendName)
-	backendMapping[backendName] = backend
+	backend := GetResolvedBackend(ctx, client, backendName, api)
+	if backend != nil {
+		backendMapping[backendName] = backend
+	}
+}
+
+// ResolveRef this function will return k8client object and update owner
+func ResolveRef(ctx context.Context, client k8client.Client, api *dpv1alpha1.API,
+	namespacedName types.NamespacedName, obj k8client.Object, opts ...k8client.ListOption) error {
+	if err := client.Get(ctx, namespacedName, obj); err != nil {
+		return err
+	}
+	if api != nil {
+		err := UpdateOwnerReference(ctx, client, obj, *api)
+		return err
+	}
+	return nil
 }
 
 // GetResolvedBackend resolves backend TLS configurations.
 func GetResolvedBackend(ctx context.Context, client k8client.Client,
-	backendNamespacedName types.NamespacedName) *dpv1alpha1.ResolvedBackend {
+	backendNamespacedName types.NamespacedName, api *dpv1alpha1.API) *dpv1alpha1.ResolvedBackend {
 	resolvedBackend := dpv1alpha1.ResolvedBackend{}
 	resolvedTLSConfig := dpv1alpha1.ResolvedTLSConfig{}
-	var backend = new(dpv1alpha1.Backend)
-	err := client.Get(context.Background(), backendNamespacedName, backend)
-
-	if err != nil {
+	var backend dpv1alpha1.Backend
+	if err := ResolveRef(ctx, client, api, backendNamespacedName, &backend); err != nil {
 		if !apierrors.IsNotFound(err) {
 			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2646, backendNamespacedName, err.Error()))
 		}
@@ -339,6 +352,7 @@ func GetResolvedBackend(ctx context.Context, client k8client.Client,
 			HealthyThreshold:   backend.Spec.HealthCheck.HealthyThreshold,
 		}
 	}
+	var err error
 	if backend.Spec.TLS != nil {
 		resolvedTLSConfig.ResolvedCertificate, err = ResolveCertificate(ctx, client,
 			backend.Namespace, backend.Spec.TLS.CertificateInline, backend.Spec.TLS.ConfigMapRef, backend.Spec.TLS.SecretRef)
@@ -358,6 +372,21 @@ func GetResolvedBackend(ctx context.Context, client k8client.Client,
 			backend.Namespace, *backend.Spec.Security)
 	}
 	return &resolvedBackend
+}
+
+// UpdateOwnerReference update the child with owner reference of the given parent.
+func UpdateOwnerReference(ctx context.Context, client k8client.Client, child metav1.Object, api dpv1alpha1.API) error {
+	child.SetOwnerReferences(append(child.GetOwnerReferences(), metav1.OwnerReference{
+		APIVersion: api.APIVersion,
+		Kind:       api.Kind,
+		Name:       api.Name,
+		UID:        api.UID,
+	}))
+	if err := client.Update(ctx, child.(k8client.Object)); err != nil {
+		loggers.LoggerAPKOperator.Errorf("Error while updating OwnerReferences of k8 object : %s in %s, %v", child.GetName(), child.GetNamespace(), err)
+		return err
+	}
+	return nil
 }
 
 // getResolvedBackendSecurity resolves backend security configurations.
@@ -436,13 +465,13 @@ func RetrieveNamespaceListOptions(namespaces []string) k8client.ListOptions {
 
 // GetInterceptorService reads InterceptorService when interceptorReference is given
 func GetInterceptorService(ctx context.Context, client k8client.Client,
-	interceptorReference *dpv1alpha1.InterceptorReference) *dpv1alpha1.InterceptorService {
+	interceptorReference *dpv1alpha1.InterceptorReference, api *dpv1alpha1.API) *dpv1alpha1.InterceptorService {
 	interceptorService := &dpv1alpha1.InterceptorService{}
 	interceptorRef := types.NamespacedName{
 		Namespace: interceptorReference.Namespace,
 		Name:      interceptorReference.Name,
 	}
-	if err := client.Get(ctx, interceptorRef, interceptorService); err != nil {
+	if err := ResolveRef(ctx, client, api, interceptorRef, interceptorService); err != nil {
 		if !apierrors.IsNotFound(err) {
 			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2651, interceptorRef, err.Error()))
 		}
