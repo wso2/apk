@@ -143,6 +143,117 @@ var APIWithResoponseHeaderModify = suite.IntegrationTest{
 				Backend:   "infra-backend-v1",
 				Namespace: ns,
 			},
+
+			// Check default api path
+			{
+				Request: http.Request{
+					Host: "gateway-integration-test-infra.test.gw.wso2.com",
+					Path: "/response-header-modify/set",
+				},
+				BackendSetResponseHeaders: map[string]string{
+					"Some-Other-Header": "val",
+				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Path: "/set",
+					},
+				},
+				Response: http.Response{
+					Headers: map[string]string{
+						"Some-Other-Header": "val",
+						"X-Header-Set":      "set-overwrites-values",
+					},
+				},
+				Backend:   "infra-backend-v1",
+				Namespace: ns,
+			},
+			{
+				Request: http.Request{
+					Host: "gateway-integration-test-infra.test.gw.wso2.com",
+					Path: "/response-header-modify/set",
+				},
+				BackendSetResponseHeaders: map[string]string{
+					"Some-Other-Header": "val",
+					"X-Header-Set":      "some-other-value",
+				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Path: "/set",
+					},
+				},
+				Response: http.Response{
+					Headers: map[string]string{
+						"Some-Other-Header": "val",
+						"X-Header-Set":      "set-overwrites-values",
+					},
+				},
+				Backend:   "infra-backend-v1",
+				Namespace: ns,
+			},
+			{
+				Request: http.Request{
+					Host: "gateway-integration-test-infra.test.gw.wso2.com",
+					Path: "/response-header-modify/add",
+				},
+				BackendSetResponseHeaders: map[string]string{
+					"Some-Other-Header": "val",
+				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Path: "/add",
+					},
+				},
+				Response: http.Response{
+					Headers: map[string]string{
+						"Some-Other-Header": "val",
+						"X-Header-Add":      "add-appends-values",
+					},
+				},
+				Backend:   "infra-backend-v1",
+				Namespace: ns,
+			},
+			{
+				Request: http.Request{
+					Host: "gateway-integration-test-infra.test.gw.wso2.com",
+					Path: "/response-header-modify/add",
+				},
+				BackendSetResponseHeaders: map[string]string{
+					"Some-Other-Header": "val",
+					"X-Header-Add":      "some-other-value",
+				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Path: "/add",
+					},
+				},
+				Response: http.Response{
+					Headers: map[string]string{
+						"Some-Other-Header": "val",
+						"X-Header-Add":      "add-appends-values",
+					},
+				},
+				Backend:   "infra-backend-v1",
+				Namespace: ns,
+			},
+			{
+				Request: http.Request{
+					Host: "gateway-integration-test-infra.test.gw.wso2.com",
+					Path: "/response-header-modify/remove",
+				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Path: "/remove",
+					},
+				},
+				BackendSetResponseHeaders: map[string]string{
+					"X-Header-Remove": "val",
+				},
+				Response: http.Response{
+					AbsentHeaders: []string{"X-Header-Remove"},
+				},
+				Backend:   "infra-backend-v1",
+				Namespace: ns,
+			},
 		}
 		for i := range testCases {
 			tc := testCases[i]

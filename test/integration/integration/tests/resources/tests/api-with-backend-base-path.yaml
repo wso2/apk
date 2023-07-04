@@ -15,6 +15,17 @@
 # under the License.
 
 apiVersion: dp.wso2.com/v1alpha1
+kind: Backend
+metadata:
+  name: infra-backend-basepath
+  namespace: gateway-integration-test-infra
+spec:
+  basePath: /backend-base-path
+  services:
+  - host: infra-backend-v1.gateway-integration-test-infra
+    port: 8080
+---
+apiVersion: dp.wso2.com/v1alpha1
 kind: API
 metadata:
   name: test-api-with-backend-base-path
@@ -24,6 +35,7 @@ spec:
   apiType: REST
   apiVersion: 1.0.0
   context: /test-api-with-backend-base-path/1.0.0
+  isDefaultVersion: true
   #definitionFileRef: swagger-definition-webhook
   production:
     - httpRouteRefs:
@@ -48,9 +60,9 @@ spec:
   - matches:
     - path:
         type: PathPrefix
-        value: /backend-base-path
+        value: /
       method: GET
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
-      name: infra-backend-v1
+      name: infra-backend-basepath

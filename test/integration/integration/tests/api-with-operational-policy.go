@@ -68,6 +68,35 @@ var APIWithOperationalPolicy = suite.IntegrationTest{
 				Backend:   "infra-backend-v1",
 				Namespace: ns,
 			},
+			{
+				Request: http.Request{
+					Host:   "backend-base-path.test.gw.wso2.com",
+					Path:   "/test-api-with-operatinal-policy/test-get-path",
+					Method: "GET",
+				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Path:   "/test-get-path",
+						Method: "GET",
+					},
+				},
+				Backend:   "infra-backend-v1",
+				Namespace: ns,
+			}, {
+				Request: http.Request{
+					Host:   "backend-base-path.test.gw.wso2.com",
+					Path:   "/test-api-with-operatinal-policy/test-post-path",
+					Method: "POST",
+				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Path:   "/test-post-path",
+						Method: "POST",
+					},
+				},
+				Backend:   "infra-backend-v1",
+				Namespace: ns,
+			},
 		}
 		for i := range testCases {
 			tc := testCases[i]

@@ -64,6 +64,32 @@ var DisableAPISecurity = suite.IntegrationTest{
 				Backend:   "infra-backend-v1",
 				Namespace: ns,
 			},
+			{
+				Request: http.Request{
+					Host: "disable-api-security.test.gw.wso2.com",
+					Path: "/disable-api-security/users",
+				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Path: "/users",
+					},
+				},
+				Backend:   "infra-backend-v1",
+				Namespace: ns,
+			},
+			{
+				Request: http.Request{
+					Host: "disable-api-security.test.gw.wso2.com",
+					Path: "/disable-api-security/orders",
+				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Path: "/orders",
+					},
+				},
+				Backend:   "infra-backend-v1",
+				Namespace: ns,
+			},
 		}
 		for i := range testCases {
 			tc := testCases[i]

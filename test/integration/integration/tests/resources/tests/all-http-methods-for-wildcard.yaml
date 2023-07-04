@@ -24,6 +24,7 @@ spec:
   apiType: REST
   apiVersion: v1.0.0
   context: /all-http-methods-for-wildcard/v1.0.0
+  isDefaultVersion: true
   #definitionFileRef: definition-file
   production:
     - httpRouteRefs:

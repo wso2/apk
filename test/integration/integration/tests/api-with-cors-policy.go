@@ -34,9 +34,9 @@ var APIWithCORSPolicy = suite.IntegrationTest{
 	Description: "Tests API with CORS policy",
 	Manifests:   []string{"tests/api-with-cors-policy.yaml"},
 	Test: func(t *testing.T, suite *suite.IntegrationTestSuite) {
-		
+
 		gwAddr := "cors-policy.test.gw.wso2.com:9095"
-		
+
 		testCases := []http.ExpectedResponse{
 			{
 				Request: http.Request{
@@ -100,7 +100,78 @@ var APIWithCORSPolicy = suite.IntegrationTest{
 				},
 				ExpectedRequest: &http.ExpectedRequest{
 					Request: http.Request{
-						Host: "",
+						Host:   "",
+						Method: "OPTIONS",
+					},
+				},
+				Response: http.Response{
+					StatusCode: 404,
+				},
+			},
+			// Check for default api path
+			{
+				Request: http.Request{
+					Host: "cors-policy.test.gw.wso2.com",
+					Path: "/cors-policy-api/test",
+					Headers: map[string]string{
+						"origin":                        "apk.wso2.com",
+						"access-control-request-method": "GET",
+					},
+					Method: "OPTIONS",
+				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Host:   "",
+						Method: "OPTIONS",
+					},
+				},
+				Response: http.Response{
+					Headers: map[string]string{
+						"access-control-allow-origin":      "apk.wso2.com",
+						"access-control-allow-credentials": "true",
+						"access-control-allow-methods":     "GET, POST",
+						"access-control-allow-headers":     "authorization",
+						"access-control-expose-headers":    "*",
+					},
+					StatusCode: 200,
+				},
+			},
+			{
+				Request: http.Request{
+					Host: "cors-policy.test.gw.wso2.com",
+					Path: "/cors-policy-api/test",
+					Headers: map[string]string{
+						"origin":                        "apk.wso2.org",
+						"access-control-request-method": "GET",
+					},
+					Method: "OPTIONS",
+				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Host:   "",
+						Method: "OPTIONS",
+					},
+				},
+				Response: http.Response{
+					Headers: map[string]string{
+						"allow": "OPTIONS, GET",
+					},
+					StatusCode: 204,
+				},
+			},
+			{
+				Request: http.Request{
+					Host: "cors-policy.test.gw.wso2.com",
+					Path: "/no-cors-policy-api/test",
+					Headers: map[string]string{
+						"origin":                        "apk.wso2.com",
+						"access-control-request-method": "GET",
+					},
+					Method: "OPTIONS",
+				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Host:   "",
 						Method: "OPTIONS",
 					},
 				},
@@ -111,7 +182,7 @@ var APIWithCORSPolicy = suite.IntegrationTest{
 		}
 		for i := range testCases {
 			tc := testCases[i]
-			
+
 			t.Run(tc.GetTestCaseName(i), func(t *testing.T) {
 				t.Parallel()
 				http.MakeRequestAndExpectEventuallyConsistentResponse(t, suite.RoundTripper, suite.TimeoutConfig, gwAddr, tc)

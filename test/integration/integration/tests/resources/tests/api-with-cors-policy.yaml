@@ -24,6 +24,7 @@ spec:
   apiType: REST
   apiVersion: 1.0.0
   context: /cors-policy-api/1.0.0
+  isDefaultVersion: true
   production:
     - httpRouteRefs:
       - cors-policy-httproute

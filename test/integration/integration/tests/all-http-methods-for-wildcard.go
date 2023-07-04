@@ -56,9 +56,38 @@ var ALLHTTPMethodsForWildCard = suite.IntegrationTest{
 				Namespace: ns,
 			},
 			{
+				// TODO{Amila}: Fix issue with trailing slash #758
+				Request: http.Request{
+					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
+					Path:   "/all-http-methods-for-wildcard/v2/echo-full/",
+					Method: "GET",
+				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Path: "/v2/echo-full/",
+					},
+				},
+				Backend:   "infra-backend-v1",
+				Namespace: ns,
+			},
+			{
 				Request: http.Request{
 					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
 					Path:   "/all-http-methods-for-wildcard/v1.0.0/v2/echo-full",
+					Method: "GET",
+				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Path: "/v2/echo-full",
+					},
+				},
+				Backend:   "infra-backend-v1",
+				Namespace: ns,
+			},
+			{
+				Request: http.Request{
+					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
+					Path:   "/all-http-methods-for-wildcard/v2/echo-full",
 					Method: "GET",
 				},
 				ExpectedRequest: &http.ExpectedRequest{
@@ -86,7 +115,35 @@ var ALLHTTPMethodsForWildCard = suite.IntegrationTest{
 			{
 				Request: http.Request{
 					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
+					Path:   "/all-http-methods-for-wildcard/v2/echo-full/test",
+					Method: "GET",
+				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Path: "/v2/echo-full/test",
+					},
+				},
+				Backend:   "infra-backend-v1",
+				Namespace: ns,
+			},
+			{
+				Request: http.Request{
+					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
 					Path:   "/all-http-methods-for-wildcard/v1.0.0/v2/echo-full/test1/test2/test3?foo=foo1&bar=bar1",
+					Method: "GET",
+				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Path: "/v2/echo-full/test1/test2/test3?foo=foo1&bar=bar1",
+					},
+				},
+				Backend:   "infra-backend-v1",
+				Namespace: ns,
+			},
+			{
+				Request: http.Request{
+					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
+					Path:   "/all-http-methods-for-wildcard/v2/echo-full/test1/test2/test3?foo=foo1&bar=bar1",
 					Method: "GET",
 				},
 				ExpectedRequest: &http.ExpectedRequest{
@@ -116,6 +173,21 @@ var ALLHTTPMethodsForWildCard = suite.IntegrationTest{
 			{
 				Request: http.Request{
 					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
+					Path:   "/all-http-methods-for-wildcard/v2/echo-full/",
+					Method: "POST",
+				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Path:   "/v2/echo-full/",
+						Method: "POST",
+					},
+				},
+				Backend:   "infra-backend-v1",
+				Namespace: ns,
+			},
+			{
+				Request: http.Request{
+					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
 					Path:   "/all-http-methods-for-wildcard/v1.0.0/v2/echo-full",
 					Method: "POST",
 				},
@@ -131,7 +203,37 @@ var ALLHTTPMethodsForWildCard = suite.IntegrationTest{
 			{
 				Request: http.Request{
 					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
+					Path:   "/all-http-methods-for-wildcard/v2/echo-full",
+					Method: "POST",
+				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Path:   "/v2/echo-full",
+						Method: "POST",
+					},
+				},
+				Backend:   "infra-backend-v1",
+				Namespace: ns,
+			},
+			{
+				Request: http.Request{
+					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
 					Path:   "/all-http-methods-for-wildcard/v1.0.0/v2/echo-full/test",
+					Method: "POST",
+				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Path:   "/v2/echo-full/test",
+						Method: "POST",
+					},
+				},
+				Backend:   "infra-backend-v1",
+				Namespace: ns,
+			},
+			{
+				Request: http.Request{
+					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
+					Path:   "/all-http-methods-for-wildcard/v2/echo-full/test",
 					Method: "POST",
 				},
 				ExpectedRequest: &http.ExpectedRequest{
@@ -162,6 +264,21 @@ var ALLHTTPMethodsForWildCard = suite.IntegrationTest{
 			{
 				Request: http.Request{
 					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
+					Path:   "/all-http-methods-for-wildcard/v2/echo-full/",
+					Method: "PUT",
+				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Path:   "/v2/echo-full/",
+						Method: "PUT",
+					},
+				},
+				Backend:   "infra-backend-v1",
+				Namespace: ns,
+			},
+			{
+				Request: http.Request{
+					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
 					Path:   "/all-http-methods-for-wildcard/v1.0.0/v2/echo-full",
 					Method: "PUT",
 				},
@@ -177,7 +294,37 @@ var ALLHTTPMethodsForWildCard = suite.IntegrationTest{
 			{
 				Request: http.Request{
 					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
+					Path:   "/all-http-methods-for-wildcard/v2/echo-full",
+					Method: "PUT",
+				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Path:   "/v2/echo-full",
+						Method: "PUT",
+					},
+				},
+				Backend:   "infra-backend-v1",
+				Namespace: ns,
+			},
+			{
+				Request: http.Request{
+					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
 					Path:   "/all-http-methods-for-wildcard/v1.0.0/v2/echo-full/test",
+					Method: "PUT",
+				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Path:   "/v2/echo-full/test",
+						Method: "PUT",
+					},
+				},
+				Backend:   "infra-backend-v1",
+				Namespace: ns,
+			},
+			{
+				Request: http.Request{
+					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
+					Path:   "/all-http-methods-for-wildcard/v2/echo-full/test",
 					Method: "PUT",
 				},
 				ExpectedRequest: &http.ExpectedRequest{
@@ -208,6 +355,21 @@ var ALLHTTPMethodsForWildCard = suite.IntegrationTest{
 			{
 				Request: http.Request{
 					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
+					Path:   "/all-http-methods-for-wildcard/v2/echo-full/",
+					Method: "PATCH",
+				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Path:   "/v2/echo-full/",
+						Method: "PATCH",
+					},
+				},
+				Backend:   "infra-backend-v1",
+				Namespace: ns,
+			},
+			{
+				Request: http.Request{
+					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
 					Path:   "/all-http-methods-for-wildcard/v1.0.0/v2/echo-full",
 					Method: "PATCH",
 				},
@@ -223,7 +385,37 @@ var ALLHTTPMethodsForWildCard = suite.IntegrationTest{
 			{
 				Request: http.Request{
 					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
+					Path:   "/all-http-methods-for-wildcard/v2/echo-full",
+					Method: "PATCH",
+				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Path:   "/v2/echo-full",
+						Method: "PATCH",
+					},
+				},
+				Backend:   "infra-backend-v1",
+				Namespace: ns,
+			},
+			{
+				Request: http.Request{
+					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
 					Path:   "/all-http-methods-for-wildcard/v1.0.0/v2/echo-full/test",
+					Method: "PATCH",
+				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Path:   "/v2/echo-full/test",
+						Method: "PATCH",
+					},
+				},
+				Backend:   "infra-backend-v1",
+				Namespace: ns,
+			},
+			{
+				Request: http.Request{
+					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
+					Path:   "/all-http-methods-for-wildcard/v2/echo-full/test",
 					Method: "PATCH",
 				},
 				ExpectedRequest: &http.ExpectedRequest{
@@ -254,6 +446,21 @@ var ALLHTTPMethodsForWildCard = suite.IntegrationTest{
 			{
 				Request: http.Request{
 					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
+					Path:   "/all-http-methods-for-wildcard/v2/echo-full/",
+					Method: "DELETE",
+				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Path:   "/v2/echo-full/",
+						Method: "DELETE",
+					},
+				},
+				Backend:   "infra-backend-v1",
+				Namespace: ns,
+			},
+			{
+				Request: http.Request{
+					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
 					Path:   "/all-http-methods-for-wildcard/v1.0.0/v2/echo-full",
 					Method: "DELETE",
 				},
@@ -269,7 +476,37 @@ var ALLHTTPMethodsForWildCard = suite.IntegrationTest{
 			{
 				Request: http.Request{
 					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
+					Path:   "/all-http-methods-for-wildcard/v2/echo-full",
+					Method: "DELETE",
+				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Path:   "/v2/echo-full",
+						Method: "DELETE",
+					},
+				},
+				Backend:   "infra-backend-v1",
+				Namespace: ns,
+			},
+			{
+				Request: http.Request{
+					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
 					Path:   "/all-http-methods-for-wildcard/v1.0.0/v2/echo-full/test",
+					Method: "DELETE",
+				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Path:   "/v2/echo-full/test",
+						Method: "DELETE",
+					},
+				},
+				Backend:   "infra-backend-v1",
+				Namespace: ns,
+			},
+			{
+				Request: http.Request{
+					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
+					Path:   "/all-http-methods-for-wildcard/v2/echo-full/test",
 					Method: "DELETE",
 				},
 				ExpectedRequest: &http.ExpectedRequest{

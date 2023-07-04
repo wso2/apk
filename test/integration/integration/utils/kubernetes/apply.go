@@ -217,7 +217,7 @@ func (a Applier) MustApplyWithCleanup(t *testing.T, c client.Client, timeoutConf
 			for err != nil {
 				if rounds > 0 {
 					err = c.Create(ctx, uObj)
-					t.Logf("Waitning to create resource")
+					t.Logf("Waiting to create resource")
 					time.Sleep(15 * time.Second)
 					rounds--
 				} else {
