@@ -40,6 +40,7 @@ type routeCreateParams struct {
 	corsPolicy                   *model.CorsConfig
 	passRequestPayloadToEnforcer bool
 	isDefaultVersion             bool
+	createDefaultPath						 bool
 	apiLevelRateLimitPolicy      *model.RateLimitPolicy
 	apiProperties	             []dpv1alpha1.Property
 }

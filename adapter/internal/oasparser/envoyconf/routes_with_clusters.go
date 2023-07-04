@@ -172,7 +172,7 @@ func CreateRoutesWithClusters(adapterInternalAPI model.AdapterInternalAPI, inter
 		clusters = append(clusters, clustersI...)
 		endpoints = append(endpoints, endpointsI...)
 		routeParams := genRouteCreateParams(&adapterInternalAPI, resource, vHost, basePath, clusterName, *operationalReqInterceptors, *operationalRespInterceptorVal, organizationID,
-			false)
+			false, false)
 
 		routeP, err := createRoutes(routeParams)
 		if err != nil {
@@ -180,6 +180,16 @@ func CreateRoutesWithClusters(adapterInternalAPI model.AdapterInternalAPI, inter
 			return nil, nil, nil, fmt.Errorf("error while creating routes. %v", err)
 		}
 		routes = append(routes, routeP...)
+		if ((&adapterInternalAPI).IsDefaultVersion) {
+			defaultRoutes, errDefaultPath := createRoutes(genRouteCreateParams(&adapterInternalAPI, resource, vHost, basePath, clusterName, *operationalReqInterceptors, *operationalRespInterceptorVal, organizationID,
+			false, true))
+			if errDefaultPath != nil {
+				logger.LoggerXds.ErrorC(logging.GetErrorByCode(2231, adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), removeFirstOccurrence(resource.GetPath(), adapterInternalAPI.GetVersion()), errDefaultPath.Error()))
+				return nil, nil, nil, fmt.Errorf("error while creating routes. %v", errDefaultPath)
+			}
+			routes = append(routes, defaultRoutes...)
+		}
+		
 	}
 
 	return routes, clusters, endpoints, nil
@@ -646,10 +656,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 	isDefaultVersion := params.isDefaultVersion
 
 	logger.LoggerOasparser.Debugf("creating routes for API %s ....", title)
-	var (
-		// The following are common to all routes and does not get updated per operation
-		decorator *routev3.Decorator
-	)
+	
 
 	basePath := strings.TrimSuffix(xWso2Basepath, "/")
 	if isDefaultVersion {
@@ -666,20 +673,9 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 		resourceMethods = resource.GetMethodList()
 		pathMatchType = resource.GetPathMatchType()
 	}
-	routePath := generateRoutePath(resourcePath, pathMatchType)
+	
 
-	if isDefaultVersion {
-		routePath = getDefaultVersionBasepath(routePath, regexp.QuoteMeta(version))
-	}
-	// route path could be empty only if there is no basePath for API or the endpoint available,
-	// and resourcePath is also an empty string.
-	// Empty check is added to run the gateway in failsafe mode, as if the decorator string is
-	// empty, the route configuration does not apply.
-	if strings.TrimSpace(routePath) != "" {
-		decorator = &routev3.Decorator{
-			Operation: vHost + ":" + routePath,
-		}
-	}
+	
 
 	var contextExtensions = make(map[string]string)
 	contextExtensions[pathContextExtension] = resourcePath
@@ -819,6 +815,29 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 			basePathForRLService: basePathForRLService,
 		}
 	}
+	var (
+		// The following are common to all routes and does not get updated per operation
+		decorator *routev3.Decorator
+	)
+	if (params.createDefaultPath) {
+		logger.LoggerOasparser.Infoln("r1111esource path calculated before removing the version: ", xWso2Basepath);
+		xWso2Basepath = removeFirstOccurrence(xWso2Basepath, "/"+version)
+		logger.LoggerOasparser.Infoln("r1111esource path calculated after removing the version: ", xWso2Basepath, "version: ", version);
+	}
+	if (params.createDefaultPath) {
+		resourcePath = removeFirstOccurrence(resource.GetPath(), "/"+version)
+		logger.LoggerOasparser.Infoln("r1111esource path calculated after removing the version: ", resourcePath, "resource path before: ", resource.GetPath(), "version: ", version);
+	}
+	routePath := generateRoutePath(resourcePath, pathMatchType)
+	// route path could be empty only if there is no basePath for API or the endpoint available,
+	// and resourcePath is also an empty string.
+	// Empty check is added to run the gateway in failsafe mode, as if the decorator string is
+	// empty, the route configuration does not apply.
+	if strings.TrimSpace(routePath) != "" {
+		decorator = &routev3.Decorator{
+			Operation: vHost + ":" + routePath,
+		}
+	}
 
 	if resource != nil && resource.HasPolicies() {
 		logger.LoggerOasparser.Debug("Start creating routes for resource with policies")
@@ -877,7 +896,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 				case constants.ActionRewritePath:
 					logger.LoggerOasparser.Debugf("Adding %s policy to request flow for %s %s",
 						constants.ActionRewritePath, resourcePath, operation.GetMethod())
-					regexRewrite, err := generateRewritePathRouteConfig(routePath, resourcePath, endpointBasepath,
+					regexRewrite, err := generateRewritePathRouteConfig(routePath, endpointBasepath,
 						requestPolicy.Parameters, pathMatchType, isDefaultVersion)
 					if err != nil {
 						errMsg := fmt.Sprintf("Error adding request policy %s to operation %s of resource %s. %v",
@@ -931,6 +950,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 				}
 			}
 
+			
 			// TODO: (suksw) preserve header key case?
 			if hasMethodRewritePolicy {
 				logger.LoggerOasparser.Debugf("Creating two routes to support method rewrite for %s %s. New method: %s",
@@ -1539,7 +1559,7 @@ func getCorsPolicy(corsConfig *model.CorsConfig) *cors_filter_v3.CorsPolicy {
 
 func genRouteCreateParams(swagger *model.AdapterInternalAPI, resource *model.Resource, vHost, endpointBasePath string,
 	clusterName string, requestInterceptor map[string]model.InterceptEndpoint,
-	responseInterceptor map[string]model.InterceptEndpoint, organizationID string, isSandbox bool) *routeCreateParams {
+	responseInterceptor map[string]model.InterceptEndpoint, organizationID string, isSandbox bool, createDefaultPath bool) *routeCreateParams {
 
 	params := &routeCreateParams{
 		organizationID:               organizationID,
@@ -1560,6 +1580,7 @@ func genRouteCreateParams(swagger *model.AdapterInternalAPI, resource *model.Res
 		apiLevelRateLimitPolicy:      swagger.RateLimitPolicy,
 		apiProperties:                swagger.APIProperties,
 		routeConfig:                  resource.GetEndpoints().Config,
+		createDefaultPath: 						createDefaultPath,			
 	}
 	return params
 }
@@ -1732,4 +1753,13 @@ func createInterceptorResourceClusters(adapterInternalAPI model.AdapterInternalA
 		}
 	}
 	return clusters, endpoints, &operationalReqInterceptors, &operationalRespInterceptorVal
+}
+
+
+func removeFirstOccurrence(str, substr string) string {
+	index := strings.Index(str, substr)
+	if index == -1 {
+		return str 
+	}
+	return str[:index] + str[index+len(substr):]
 }
