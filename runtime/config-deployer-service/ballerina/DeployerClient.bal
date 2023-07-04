@@ -28,7 +28,11 @@ public class DeployerClient {
                 return e909022("Error occured while converting APKConf to YAML", ());
             }
         } on fail var e {
-            return e909022("Error occured while converting APKConf to YAML", e);
+            if e is commons:APKError {
+                return e;
+            } else {
+                return e909022("Error occured while converting APKConf to YAML", e);
+            }
         }
     }
     public isolated function handleAPIUndeployment(string apiId) returns AcceptedString|BadRequestError|InternalServerErrorError|commons:APKError {
