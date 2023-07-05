@@ -152,7 +152,7 @@ type EndpointConfig struct {
 // HealthCheck holds the parameters for health check done by apk to the EndpointCluster
 type HealthCheck struct {
 	Timeout            int32 `mapstructure:"timeout"`
-	Interval           int32 `json:"mapstructure"`
+	Interval           int32 `mapstructure:"interval"`
 	UnhealthyThreshold int32 `mapstructure:"unhealthyThreshold"`
 	HealthyThreshold   int32 `mapstructure:"healthyThreshold"`
 }
@@ -333,7 +333,7 @@ func (swagger *AdapterInternalAPI) SetVersion(version string) {
 
 // SetIsDefaultVersion sets whether this API is the default
 func (swagger *AdapterInternalAPI) SetIsDefaultVersion(isDefaultVersion bool) {
-	swagger.IsDefaultVersion = isDefaultVersion;
+	swagger.IsDefaultVersion = isDefaultVersion
 }
 
 // SetXWso2AuthHeader sets the authHeader of the API
