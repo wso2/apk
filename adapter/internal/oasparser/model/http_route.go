@@ -127,6 +127,14 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 						statusCodes = resolvedBackend.Retry.StatusCodes
 					}
 				}
+				if resolvedBackend.HealthCheck != nil {
+					healthCheck = &dpv1alpha1.HealthCheck{
+						Interval:           resolvedBackend.HealthCheck.Interval,
+						Timeout:            resolvedBackend.HealthCheck.Timeout,
+						UnhealthyThreshold: resolvedBackend.HealthCheck.UnhealthyThreshold,
+						HealthyThreshold:   resolvedBackend.HealthCheck.HealthyThreshold,
+					}
+				}
 				endPoints = append(endPoints, GetEndpoints(backendName, httpRouteParams.BackendMapping)...)
 				backendBasePath = GetBackendBasePath(backendName, httpRouteParams.BackendMapping)
 				for _, security := range resolvedBackend.Security {
