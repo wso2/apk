@@ -133,7 +133,21 @@ public type APKOperationPolicy record {
     string policyName;
     string policyVersion = "v1";
     string policyId?;
-    record {} parameters?;
+    BackendJWTPolicyProperties|record {} parameters?;
+};
+
+public type BackendJWTPolicyProperties record {
+    boolean enabled?;
+    string encoding?;
+    string signingAlgorithm?;
+    string header?;
+    int tokenTTL?;
+    BackednJWTCustomClaims[] customClaims?;
+};
+
+public type BackednJWTCustomClaims record {
+    string claim;
+    string value;
 };
 
 public type DeployApiBody record {
