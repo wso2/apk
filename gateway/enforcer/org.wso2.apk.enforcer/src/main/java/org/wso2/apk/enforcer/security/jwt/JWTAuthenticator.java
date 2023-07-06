@@ -59,6 +59,7 @@ import org.wso2.apk.enforcer.util.JWTUtils;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -291,9 +292,16 @@ public class JWTAuthenticator implements Authenticator {
 
                     // jwt generator is only set if the backend jwt is enabled
                     if (this.jwtGenerator != null) {
-
+                        JWTConfigurationDto configurationDto = this.jwtGenerator.getJWTConfigurationDto();
+                        Map<String, String> claimMap = new HashMap<>();
+                        if(configurationDto != null) {
+                            claimMap = configurationDto.getCustomClaims();
+                        }
                         JWTInfoDto jwtInfoDto = FilterUtils.generateJWTInfoDto(null, validationInfo,
                                 apiKeyValidationInfoDTO, requestContext);
+
+                        // set custom claims get from the CR
+                        jwtInfoDto.setClaims(claimMap);
                         endUserToken = BackendJwtUtils.generateAndRetrieveJWTToken(this.jwtGenerator, jwtTokenIdentifier,
                                 jwtInfoDto, isGatewayTokenCacheEnabled);
                         // Set generated jwt token as a response header

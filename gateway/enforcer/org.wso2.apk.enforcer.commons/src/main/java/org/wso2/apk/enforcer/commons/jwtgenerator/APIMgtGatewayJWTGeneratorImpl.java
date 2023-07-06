@@ -110,6 +110,12 @@ public class APIMgtGatewayJWTGeneratorImpl extends AbstractAPIMgtGatewayJWTGener
                 }
             }
         }
+        Map<String, String> customClaimsAPI = jwtInfoDto.getClaims();
+        if(customClaimsAPI != null) {
+            for (Map.Entry<String, String> customClaimEntry : customClaimsAPI.entrySet()) {
+                claims.putIfAbsent(customClaimEntry.getKey(), customClaimEntry.getValue());
+            }
+        }
         return claims;
     }
 }
