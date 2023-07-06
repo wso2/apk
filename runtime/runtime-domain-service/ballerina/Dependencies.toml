@@ -368,7 +368,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "websocket"
-version = "2.7.2"
+version = "2.7.1"
 dependencies = [
 	{org = "ballerina", name = "auth"},
 	{org = "ballerina", name = "constraint"},
@@ -426,7 +426,7 @@ modules = [
 [[package]]
 org = "wso2"
 name = "runtime_domain_service"
-version = "0.0.1-m13"
+version = "0.0.1-SNAPSHOT"
 dependencies = [
 	{org = "ballerina", name = "cache"},
 	{org = "ballerina", name = "constraint"},
