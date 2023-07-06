@@ -57,6 +57,15 @@ const (
 	relativeConfigPath = "/conf/config.toml"
 )
 
+// ReadConfigs implements adapter configuration read operation. The read operation will happen only once, hence
+// the consistancy is ensured.
+//
+// If the "APK_HOME" variable is set, the configuration file location would be picked relative to the
+// variable's value ("/conf/config.toml"). otherwise, the "APK_HOME" variable would be set to the directory
+// from where the executable is called from.
+//
+// Returns the configuration object that is initialized with default values. Changes to the default
+// configuration object is achieved through the configuration file.
 func ReadConfigs() *Config {
 	onceConfigRead.Do(func() {
 		adapterConfig = defaultConfig

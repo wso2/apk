@@ -66,6 +66,7 @@ func init() {
 	flag.UintVar(&rlsPort, "rls-port", 18001, "Rate Limiter management server port")
 }
 
+// InitCommonAdapterServer initializes the gRPC server for the common adapter.
 func InitCommonAdapterServer() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
