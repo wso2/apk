@@ -60,7 +60,7 @@ type AdapterInternalAPI struct {
 	xWso2RequestBodyPass     bool
 	IsDefaultVersion         bool
 	clientCertificates       []Certificate
-	xWso2MutualSSL           string
+	mutualSSL                string
 	xWso2ApplicationSecurity bool
 	EnvType                  string
 	backendJWTTokenInfo      *BackendJWTTokenInfo
@@ -349,14 +349,14 @@ func (swagger *AdapterInternalAPI) GetXWSO2AuthHeader() string {
 	return swagger.xWso2AuthHeader
 }
 
-// SetXWSO2MutualSSL sets the optional or mandatory mTLS
-func (swagger *AdapterInternalAPI) SetXWSO2MutualSSL(mutualSSl string) {
-	swagger.xWso2MutualSSL = mutualSSl
+// SetMutualSSL sets the optional or mandatory mTLS
+func (swagger *AdapterInternalAPI) SetMutualSSL(mutualSSl string) {
+	swagger.mutualSSL = mutualSSl
 }
 
-// GetXWSO2MutualSSL returns the optional or mandatory mTLS
-func (swagger *AdapterInternalAPI) GetXWSO2MutualSSL() string {
-	return swagger.xWso2MutualSSL
+// GetMutualSSL returns the optional or mandatory mTLS
+func (swagger *AdapterInternalAPI) GetMutualSSL() string {
+	return swagger.mutualSSL
 }
 
 // SetXWSO2ApplicationSecurity sets the optional or mandatory application security

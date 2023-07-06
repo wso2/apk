@@ -156,6 +156,7 @@ func GenerateAdapterInternalAPI(apiState APIState, httpRoute *HTTPRouteState, en
 		RateLimitPolicies:         httpRoute.RateLimitPolicies,
 		ResourceRateLimitPolicies: httpRoute.ResourceRateLimitPolicies,
 	}
+
 	if err := adapterInternalAPI.SetInfoHTTPRouteCR(httpRoute.HTTPRoute, httpRouteParams); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2631, err))
 		return nil, err

@@ -124,10 +124,6 @@ public class RestAPI implements API {
             apiDefinition = api.getApiDefinitionFile().toByteArray();
         }
 
-        System.out.println("API Name: " + name);
-        System.out.println("API Base Path: " + basePath);
-        System.out.println("API VHost: " + vhost);
-
         this.apiLifeCycleState = api.getApiLifeCycleState();
         this.apiConfig = new APIConfig.Builder(name).uuid(api.getId()).vhost(vhost).basePath(basePath).version(version)
                 .resources(resources).apiType(apiType).apiLifeCycleState(apiLifeCycleState).tier(api.getTier())
@@ -135,7 +131,7 @@ public class RestAPI implements API {
                 .disableScopes(api.getDisableScopes()).trustStore(trustStore).organizationId(api.getOrganizationId())
                 .mtlsCertificateTiers(mtlsCertificateTiers).mutualSSL(mutualSSL).systemAPI(api.getSystemAPI())
                 .applicationSecurity(applicationSecurity).jwtConfigurationDto(jwtConfigurationDto)
-                .apiDefinition(apiDefinition).build();
+                .apiDefinition(apiDefinition).mutualSSL(api.getMutualSSL()).build();
 
         initFilters();
         return basePath;

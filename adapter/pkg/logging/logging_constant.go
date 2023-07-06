@@ -74,6 +74,8 @@ const (
 	error2652 = 2652
 	error2653 = 2653
 	error2654 = 2654
+	error2655 = 2655
+	error2656 = 2656
 )
 
 // Error Log Pkg auth(3001-3099) Config Constants
@@ -377,6 +379,16 @@ var Mapper = map[int]ErrorDetails{
 	error2652: {
 		ErrorCode: error2652,
 		Message:   "Unable to create webhook for InterceptorService: %v",
+		Severity:  BLOCKER,
+	},
+	error2655: {
+		ErrorCode: error2655,
+		Message:   "Unable to create webhook for Authentication: %v",
+		Severity:  BLOCKER,
+	},
+	error2656: {
+		ErrorCode: error2656,
+		Message:   "Unable to create webhook for Backend: %v",
 		Severity:  BLOCKER,
 	},
 	error3001: {
