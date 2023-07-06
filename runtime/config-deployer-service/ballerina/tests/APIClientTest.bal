@@ -37,6 +37,34 @@ public isolated function testCORSPolicyGenerationFromAPKConf() returns error? {
     }
 }
 
+@test:Config {}
+public isolated function testBackendJWTConfigGenerationFromAPKConf() returns error? {
+
+    GenerateK8sResourcesBody body = {};
+    body.apkConfiguration = {fileName: "API_CORS.apk-conf", fileContent: check io:fileReadBytes("./tests/resources/API_CORS.apk-conf")};
+    body.definitionFile = {fileName: "api_cors.yaml", fileContent: check io:fileReadBytes("./tests/resources/api_cors.yaml")};
+    body.apiType = "REST";
+    APIClient apiClient = new;
+
+    model:APIArtifact apiArtifact = check apiClient.prepareArtifact(body.apkConfiguration, body.definitionFile);
+
+    model:BackendJwtPolicy? backendJWTConfigSpecExpected = {
+        enabled: true,
+        encoding: "base64",
+        signingAlgorithm: "SHA256withRSA",
+        header: "X-JWT-Assertion",
+        tokenTTL: 3600,
+        customClaims: [{claim: "claim1", value: "value1"}, {claim: "claim2", value: "value2"}]
+    };
+
+    foreach model:APIPolicy apiPolicy in apiArtifact.apiPolicies {
+        model:APIPolicyData? policyData = apiPolicy.spec.default;
+        if (policyData is model:APIPolicyData) {
+            test:assertEquals(policyData.backendJwtToken, backendJWTConfigSpecExpected, "Backend JWT Config is not equal to expected Backend JWT Config");
+        }
+    }
+}
+
 public function APIToAPKConfDataProvider() returns map<[runtimeModels:API, APKConf]>|error {
     runtimeModels:API api = runtimeModels:newAPI1();
     api.setName("testAPI");
