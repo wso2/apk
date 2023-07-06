@@ -352,6 +352,10 @@ func CreateTracingCluster(conf *config.Config) (*clusterv3.Cluster, []*corev3.Ad
 	epCluster.Endpoints[0].Port = epPort
 	epCluster.Endpoints[0].Basepath = epPath
 
+	if conf.Tracing.Type == TracerTypeOtlp {
+		epCluster.HTTP2BackendEnabled = true
+	}
+
 	return processEndpoints(tracingClusterName, epCluster, epTimeout, epPath)
 }
 
