@@ -44,6 +44,7 @@ public class JWTInfoDto {
     private Map<String, String> appAttributes = new HashMap<>();
     private String sub;
     private String[] organizations;
+    private Map<String, String> claims = new HashMap<>();
 
     public JWTInfoDto() {
 
@@ -107,6 +108,14 @@ public class JWTInfoDto {
     public void setApplicationName(String applicationName) {
 
         this.applicationName = applicationName;
+    }
+
+    public void setClaims(Map<String, String> claims) {
+        this.claims = claims;
+    }
+
+    public Map<String, String> getClaims() {
+        return claims;
     }
 
     public String getEndUser() {
