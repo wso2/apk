@@ -84,12 +84,10 @@ func HandleAPILifeCycleEvents(ch *chan APIEvent, successChannel *chan SuccessEve
 		if err != nil {
 			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2629, event.EventType, err))
 		} else {
-			if event.EventType != constants.Delete {
-				*successChannel <- SuccessEvent{
-					APINamespacedName: utils.NamespacedName(event.Event.APIDefinition),
-					State:             event.EventType,
-					Events:            event.UpdatedEvents,
-				}
+			*successChannel <- SuccessEvent{
+				APINamespacedName: utils.NamespacedName(event.Event.APIDefinition),
+				State:             event.EventType,
+				Events:            event.UpdatedEvents,
 			}
 			if config.ReadConfigs().PartitionServer.Enabled {
 				paritionCh <- event
@@ -140,7 +138,7 @@ func deployAPIInGateway(apiState APIState) error {
 // GenerateAdapterInternalAPI this will populate a AdapterInternalAPI representation for an HTTPRoute
 func GenerateAdapterInternalAPI(apiState APIState, httpRoute *HTTPRouteState, envType string) (*model.AdapterInternalAPI, error) {
 	var adapterInternalAPI model.AdapterInternalAPI
-	adapterInternalAPI.SetIsDefaultVersion(apiState.APIDefinition.Spec.IsDefaultVersion)
+	adapterInternalAPI.SetIsDefaultVersion(apiState.APIDefinition.Spec.IsDefaultVersion);
 	adapterInternalAPI.SetInfoAPICR(*apiState.APIDefinition)
 	adapterInternalAPI.SetAPIDefinitionFile(apiState.APIDefinitionFile)
 	internalLogging.SetValueToLogContext("API_UUID", adapterInternalAPI.UUID)
