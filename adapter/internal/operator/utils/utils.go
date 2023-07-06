@@ -385,7 +385,7 @@ func UpdateOwnerReference(ctx context.Context, client k8client.Client, child met
 		UID:        api.UID,
 	}))
 	if err := client.Update(ctx, child.(k8client.Object)); err != nil {
-		loggers.LoggerAPKOperator.Warnf("Error while updating OwnerReferences of k8 object : %s in %s, %v", child.GetName(), child.GetNamespace(), err)
+		loggers.LoggerAPKOperator.Errorf("Error while updating OwnerReferences of k8 object : %s in %s, %v", child.GetName(), child.GetNamespace(), err)
 		return err
 	}
 	return nil
