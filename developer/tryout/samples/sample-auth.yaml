@@ -4,7 +4,7 @@ metadata:
   name: sand-http-bin-authentication
 spec:
   override:
-    mutualSSL: abc
+    mutualSSL: optional
     type: ext
     ext:
       disabled: false
@@ -18,7 +18,7 @@ spec:
           - in: Header
             name: x-api-key
   default:
-    mutualSSL: optional
+    mutualSSL: ""
     type: ext
     ext:
       serviceRef: 

@@ -83,16 +83,15 @@ func (r *Authentication) validateAuthentication() error {
 	const mltsMandatory = "mandatory"
 	mtlsOverride := r.Spec.Override.MutualSSL
 	mtlsDefault := r.Spec.Default.MutualSSL
-	fmt.Println("mtlsOverride", mtlsOverride)
-	if mtlsOverride != "" && mtlsDefault != "" {
+	if mtlsOverride == "" && mtlsDefault == "" {
 		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("default").Child("mutualSSL"),
 			r.Spec.Default.MutualSSL, "mutualSSL cannot be empty in both default and override"))
 	}
-	if mtlsOverride != "" && (!strings.EqualFold(mtlsDefault, mltsMandatory) || !strings.EqualFold(mtlsDefault, mltsOptional)) {
+	if mtlsOverride != "" && (!strings.EqualFold(mtlsOverride, mltsMandatory) && !strings.EqualFold(mtlsOverride, mltsOptional)) {
 		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("override").Child("mutualSSL"),
 			r.Spec.Override.MutualSSL, "invalid value for mutualSSL"))
 	}
-	if mtlsDefault != "" && (!strings.EqualFold(mtlsDefault, mltsMandatory) || !strings.EqualFold(mtlsDefault, mltsOptional)) {
+	if mtlsDefault != "" && (!strings.EqualFold(mtlsDefault, mltsMandatory) && !strings.EqualFold(mtlsDefault, mltsOptional)) {
 		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("default").Child("mutualSSL"),
 			r.Spec.Default.MutualSSL, "invalid value for mutualSSL"))
 	}
