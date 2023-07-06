@@ -29,7 +29,7 @@ public type BackendSpec record {|
     TLSConfig tls?;
     SecurityConfig security?;
     Timeout timeout?;
-    RetryConfig retryConfig?;
+    Retry 'retry?;
 |};
 
 public type BackendService record {
@@ -64,7 +64,7 @@ public type Timeout record {
     int routeTimeoutSeconds?;
 };
 
-public type RetryConfig record {
+public type Retry record {
     int count?;
     int baseIntervalInMillis?;
     int[] statusCodes?;

@@ -65,6 +65,40 @@ public isolated function testBackendJWTConfigGenerationFromAPKConf() returns err
     }
 }
 
+@test:Config {}
+public isolated function testBackendRetryAndTimeoutGenerationFromAPKConf() returns error? {
+
+    GenerateK8sResourcesBody body = {};
+    body.apkConfiguration = {fileName: "backend-retry.apk-conf", fileContent: check io:fileReadBytes("./tests/resources/backend-retry.apk-conf")};
+    body.definitionFile = {fileName: "backend-retry.yaml", fileContent: check io:fileReadBytes("./tests/resources/backend-retry.yaml")};
+    body.apiType = "REST";
+    APIClient apiClient = new;
+
+    model:APIArtifact apiArtifact = check apiClient.prepareArtifact(body.apkConfiguration, body.definitionFile);
+
+    model:Retry? retryConfigExpected = {
+        count: 3,
+        baseIntervalInMillis: 1000,
+        statusCodes: [504]
+    };
+    model:Timeout? timeoutConfigExpected = {
+        maxRouteTimeoutSeconds: 60,
+        routeIdleTimeoutSeconds: 400,
+        routeTimeoutSeconds: 40
+    };
+
+    foreach model:Backend backend in apiArtifact.backendServices {
+        model:Timeout? timeout = backend.spec.timeout;
+        model:Retry? retryPolicy = backend.spec.'retry;
+        if (timeout is model:Timeout) {
+            test:assertEquals(timeout, timeoutConfigExpected, "Timeout is not equal to expected Timeout Config");
+        }
+        if (retryPolicy is model:Retry) {
+            test:assertEquals(retryPolicy, retryConfigExpected, "Retry Policy is not equal to expected Retry Policy");
+        }
+    }
+}
+
 public function APIToAPKConfDataProvider() returns map<[runtimeModels:API, APKConf]>|error {
     runtimeModels:API api = runtimeModels:newAPI1();
     api.setName("testAPI");

@@ -1018,7 +1018,7 @@ public class APIClient {
         Resiliency? resiliency = endpointConfig.resiliency;
         if resiliency is Resiliency {
             backendService.spec.timeout = resiliency.timeout;
-            backendService.spec.retryConfig = resiliency.retryPolicy;
+            backendService.spec.'retry = resiliency.retryPolicy;
         }
         return backendService;
     }
