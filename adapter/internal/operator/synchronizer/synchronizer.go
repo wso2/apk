@@ -84,10 +84,12 @@ func HandleAPILifeCycleEvents(ch *chan APIEvent, successChannel *chan SuccessEve
 		if err != nil {
 			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2629, event.EventType, err))
 		} else {
-			*successChannel <- SuccessEvent{
-				APINamespacedName: utils.NamespacedName(event.Event.APIDefinition),
-				State:             event.EventType,
-				Events:            event.UpdatedEvents,
+			if event.EventType != constants.Delete {
+				*successChannel <- SuccessEvent{
+					APINamespacedName: utils.NamespacedName(event.Event.APIDefinition),
+					State:             event.EventType,
+					Events:            event.UpdatedEvents,
+				}
 			}
 			if config.ReadConfigs().PartitionServer.Enabled {
 				paritionCh <- event
