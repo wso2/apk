@@ -108,13 +108,17 @@ const (
 
 // tracing configuration constants
 const (
-	tracerHost          = "host"
-	tracerPort          = "port"
-	tracerMaxPathLength = "maxPathLength"
-	tracerEndpoint      = "endpoint"
-	tracerNameZipkin    = "envoy.tracers.zipkin"
+	tracerHost              = "host"
+	tracerPort              = "port"
+	tracerMaxPathLength     = "maxPathLength"
+	tracerEndpoint          = "endpoint"
+	tracerNameZipkin        = "envoy.tracers.zipkin"
+	tracerNameOpenTelemetry = "envoy.tracers.opentelemetry"
+	tracerConnectionTimeout = "connectionTimeout"
+	tracerServiceNameRouter = "apk_router-default"
 	// Azure tracer's name
 	TracerTypeAzure = "azure"
+	TracerTypeOtlp  = "otlp"
 )
 
 // Constants used for SOAP APIs

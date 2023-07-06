@@ -39,6 +39,7 @@ import (
 	logger "github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/internal/oasparser/model"
 	"google.golang.org/protobuf/types/known/anypb"
+	"google.golang.org/protobuf/types/known/durationpb"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
@@ -189,13 +190,25 @@ end`)
 			manager.AccessLog = accessLogs
 		}
 
-		if conf.Tracing.Enabled && conf.Tracing.Type != TracerTypeAzure {
-			if tracing, err := getTracing(conf); err == nil {
-				manager.Tracing = tracing
-				manager.GenerateRequestId = &wrappers.BoolValue{Value: conf.Tracing.Enabled}
-			} else {
-				logger.LoggerOasparser.Error("Failed to initialize tracing. Router tracing will be disabled. ", err)
-				conf.Tracing.Enabled = false
+		if conf.Tracing.Enabled {
+			if conf.Tracing.Type == TracerTypeOtlp {
+				if tracing, err := getTracingOTLP(conf); err == nil {
+					manager.Tracing = tracing
+					manager.GenerateRequestId = &wrappers.BoolValue{Value: conf.Tracing.Enabled}
+				} else {
+					logger.LoggerOasparser.Error("Failed to initialize tracing for %s. Router tracing will be disabled. ",
+						TracerTypeOtlp, err)
+					conf.Tracing.Enabled = false
+				}
+			} else if conf.Tracing.Type != TracerTypeAzure {
+				if tracing, err := getZipkinTracing(conf); err == nil {
+					manager.Tracing = tracing
+					manager.GenerateRequestId = &wrappers.BoolValue{Value: conf.Tracing.Enabled}
+				} else {
+					logger.LoggerOasparser.Error("Failed to initialize tracing for %s. Router tracing will be disabled. ",
+						conf.Tracing.Type, err)
+					conf.Tracing.Enabled = false
+				}
 			}
 		}
 
@@ -407,7 +420,7 @@ func generateTLSCertWithStr(privateKey string, publicKey string) *tlsv3.TlsCerti
 	return &tlsCert
 }
 
-func getTracing(conf *config.Config) (*hcmv3.HttpConnectionManager_Tracing, error) {
+func getZipkinTracing(conf *config.Config) (*hcmv3.HttpConnectionManager_Tracing, error) {
 	var endpoint string
 	var maxPathLength uint32
 
@@ -455,4 +468,52 @@ func getListenerCodecType(codecType string) hcmv3.HttpConnectionManager_CodecTyp
 	default:
 		return hcmv3.HttpConnectionManager_AUTO
 	}
+}
+
+func getTracingOTLP(conf *config.Config) (*hcmv3.HttpConnectionManager_Tracing, error) {
+
+	var maxPathLength uint32
+	var connectionTimeout uint32
+
+	if length, err := strconv.ParseUint(conf.Tracing.ConfigProperties[tracerMaxPathLength], 10, 32); err == nil {
+		maxPathLength = uint32(length)
+	} else {
+		return nil, errors.New("invalid max path length provided for tracing endpoint")
+	}
+
+	if timeout, err := strconv.ParseUint(conf.Tracing.ConfigProperties[tracerConnectionTimeout], 10, 32); err == nil {
+		connectionTimeout = uint32(timeout)
+	} else {
+		connectionTimeout = 20
+		logger.LoggerOasparser.Infof("Setting up default connection timeout for tracing endpoint as %d seconds", connectionTimeout)
+	}
+
+	providerConf := &envoy_config_trace_v3.OpenTelemetryConfig{
+		GrpcService: &corev3.GrpcService{
+			TargetSpecifier: &corev3.GrpcService_EnvoyGrpc_{
+				EnvoyGrpc: &corev3.GrpcService_EnvoyGrpc{
+					ClusterName: tracingClusterName,
+				},
+			},
+			Timeout: durationpb.New(time.Duration(connectionTimeout) * time.Second),
+		},
+		ServiceName: tracerServiceNameRouter,
+	}
+
+	typedConf, err := anypb.New(providerConf)
+	if err != nil {
+		return nil, err
+	}
+
+	tracing := &hcmv3.HttpConnectionManager_Tracing{
+		Provider: &envoy_config_trace_v3.Tracing_Http{
+			Name: tracerNameOpenTelemetry,
+			ConfigType: &envoy_config_trace_v3.Tracing_Http_TypedConfig{
+				TypedConfig: typedConf,
+			},
+		},
+		MaxPathTagLength: &wrappers.UInt32Value{Value: maxPathLength},
+	}
+
+	return tracing, nil
 }
