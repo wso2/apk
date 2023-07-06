@@ -35,6 +35,8 @@ type AuthenticationSpec struct {
 type AuthSpec struct {
 	AuthServerType  string         `json:"type,omitempty"`
 	ExternalService ExtAuthService `json:"ext,omitempty"`
+	// +optional
+	MutualSSL string `json:"mutualSSL,omitempty"`
 }
 
 // ExtAuthService external authentication related information

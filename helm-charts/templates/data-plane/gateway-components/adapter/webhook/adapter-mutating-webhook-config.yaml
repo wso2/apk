@@ -64,6 +64,26 @@ webhooks:
         - apipolicies
   sideEffects: None
 - admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: {{ template "apk-helm.resource.prefix" . }}-adapter-service
+      namespace: {{ .Release.Namespace }}
+      path: /mutate-dp-wso2-com-v1alpha1-authentication
+  failurePolicy: Fail
+  name: mauthentication.kb.io
+  rules:
+  - apiGroups:
+    - dp.wso2.com
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - authentications
+  sideEffects: None
+- admissionReviewVersions:
     - v1
   clientConfig:
     service:
