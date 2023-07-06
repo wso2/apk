@@ -68,7 +68,7 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 		var mutualSSL string
 		if authScheme.Spec.Override != nil && authScheme.Spec.Default != nil && authScheme.Spec.Override.MutualSSL == "" {
 			mutualSSL = authScheme.Spec.Default.MutualSSL
-		} else {
+		} else if authScheme.Spec.Override != nil && authScheme.Spec.Override.MutualSSL != "" {
 			mutualSSL = authScheme.Spec.Override.MutualSSL
 		}
 		swagger.mutualSSL = mutualSSL
