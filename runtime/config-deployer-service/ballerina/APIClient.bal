@@ -1097,27 +1097,28 @@ public class APIClient {
                         }
                         return interceptorReference;
                     } else if (policyName == "BackendJwt") {
+                        BackendJWTPolicyProperties backendJWTPolicyParameters = <BackendJWTPolicyProperties>policyParameters;
                         model:BackendJwtPolicy backendJwt = {};
-                        if policyParameters["enabled"] is boolean {
-                            backendJwt.enabled = <boolean>policyParameters["enabled"];
+                        if backendJWTPolicyParameters.enabled is boolean {
+                            backendJwt.enabled = <boolean>backendJWTPolicyParameters.enabled;
                         }
-                        if policyParameters["encoding"] is string {
-                            backendJwt.encoding = <string>policyParameters["encoding"];
+                        if backendJWTPolicyParameters.encoding is string {
+                            backendJwt.encoding = <string>backendJWTPolicyParameters.encoding;
                         }
-                        if policyParameters["signingAlgorithm"] is string {
-                            backendJwt.signingAlgorithm = <string>policyParameters["signingAlgorithm"];
+                        if backendJWTPolicyParameters.signingAlgorithm is string {
+                            backendJwt.signingAlgorithm = <string>backendJWTPolicyParameters.signingAlgorithm;
                         }
-                        if policyParameters["header"] is string {
-                            backendJwt.header = <string>policyParameters["header"];
+                        if backendJWTPolicyParameters.header is string {
+                            backendJwt.header = <string>backendJWTPolicyParameters.header;
                         }
-                        if policyParameters["tokenTTL"] is int {
-                            backendJwt.tokenTTL = <int>policyParameters["tokenTTL"];
+                        if backendJWTPolicyParameters.tokenTTL is int {
+                            backendJwt.tokenTTL = <int>backendJWTPolicyParameters.tokenTTL;
                         }
-                        if policyParameters["customClaims"] is model:BackendJwtCustomClaim[] {
-                            backendJwt.customClaims = <model:BackendJwtCustomClaim[]>policyParameters["customClaims"];
+                        if backendJWTPolicyParameters.customClaims is BackednJWTCustomClaims[] {
+                            backendJwt.customClaims = <BackednJWTCustomClaims[]>backendJWTPolicyParameters.customClaims;
                         }
                         return backendJwt;
-                    } 
+                    }
                 }
             }
         }
