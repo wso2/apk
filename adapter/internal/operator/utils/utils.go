@@ -301,7 +301,7 @@ func GetResolvedBackend(ctx context.Context, client k8client.Client,
 
 	if err != nil {
 		if !apierrors.IsNotFound(err) {
-			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2637, backendNamespacedName, err.Error()))
+			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2646, backendNamespacedName, err.Error()))
 		}
 		return nil
 	}
