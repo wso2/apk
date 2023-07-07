@@ -1,6 +1,6 @@
 # APK Config Language Support
 
-> A Visual Studio Code extension for providing language support for APK configuration YAML files.
+A Visual Studio Code extension for providing language support for APK configuration YAML files.
 
 ## Features
 - Syntax highlighting for APK configuration YAML files.

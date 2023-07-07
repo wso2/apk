@@ -5,7 +5,7 @@ import * as path from 'path';
 export async function activate(context: vscode.ExtensionContext) {
 
 	// Register the "*.apk-conf" file association to the "yaml" language
-	registerFileAssociation();
+	// registerFileAssociation();
 
 	// Check if "YAML Language Support by Red Hat" extension is installed
 	const yamlExtension = vscode.extensions.getExtension('redhat.vscode-yaml');
@@ -68,6 +68,13 @@ export async function activate(context: vscode.ExtensionContext) {
 	const extensionRoot = context.extensionUri.fsPath;
 	const templatesFolderPath = vscode.Uri.file(path.join(extensionRoot, "templates"));
 
+	/**
+	 * Register a command to handle the "choose a template" action
+	 * Read the template files from the templates folder
+	 * Process the template files
+	 */
+	// vscode.workspace.onDidOpenTextDocument((document) => {
+
 	// Register a command to handle the "choose a template" action
 	// Read the template files from the templates folder
 	const templateFiles = fs.readdirSync(templatesFolderPath.fsPath);
@@ -78,16 +85,9 @@ export async function activate(context: vscode.ExtensionContext) {
 		templates.push(file);
 	});
 
-	/**
-	 * Register a command to handle the "choose a template" action
-	 * Read the template files from the templates folder
-	 * Process the template files
-	 */
-
 	context.subscriptions.push(
 		vscode.commands.registerCommand("extension.chooseTemplateApk", async () => {
 			// Show a quick pick menu to let the user choose a template
-
 			const selectedTemplate = await vscode.window.showQuickPick(templates);
 			if (selectedTemplate) {
 				const activeEditor = vscode.window.activeTextEditor;
@@ -95,7 +95,7 @@ export async function activate(context: vscode.ExtensionContext) {
 					activeEditor &&
 					activeEditor.document.fileName.endsWith(".apk-conf")
 				) {
-					// Insert the selected template into the currently open 'api-config.yaml' file
+					// Insert the selected template into the currently open '*.apk-conf' file
 					activeEditor.edit((editBuilder) => {
 						const templatePath = vscode.Uri.file(
 							path.join(templatesFolderPath.fsPath, selectedTemplate)
@@ -110,6 +110,7 @@ export async function activate(context: vscode.ExtensionContext) {
 					vscode.window.showErrorMessage('Please open an "apk-config.apk-conf" file.');
 				}
 			}
+
 		})
 	);
 
@@ -130,24 +131,8 @@ export async function activate(context: vscode.ExtensionContext) {
 			});
 		})
 	);
+	// });
 	////////////////////////// end template selection code ///////////////////////////
 }
-/**
- * Registers the "*.apk-conf" file association to the "yaml" language
- * so that the YAML Language Support extension can be used to edit
- * the APK configuration files.
- */
-function registerFileAssociation() {
-  const config = vscode.workspace.getConfiguration('files');
-  const fileAssociations = config.get('associations') as Record<string, string>;
 
-  // Update the file associations to include "*.apk-conf" mapping to "yaml"
-  const updatedAssociations = {
-    ...fileAssociations,
-    '*.apk-conf': 'yaml',
-  };
-
-  // Update the configuration with the modified file associations
-  config.update('associations', updatedAssociations, vscode.ConfigurationTarget.Global);
-}
 
