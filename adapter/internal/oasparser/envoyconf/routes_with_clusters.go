@@ -662,9 +662,6 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 	
 
 	basePath := strings.TrimSuffix(xWso2Basepath, "/")
-	if isDefaultVersion {
-		basePath = getDefaultVersionBasepath(basePath, version)
-	}
 
 	resourcePath := ""
 	var resourceMethods []string
