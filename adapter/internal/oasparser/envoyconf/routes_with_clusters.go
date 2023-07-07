@@ -673,7 +673,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 		pathMatchType = resource.GetPathMatchType()
 	}
 
-	var contextExtensions = make(map[string]string)
+	contextExtensions := make(map[string]string)
 	contextExtensions[pathContextExtension] = resourcePath
 	contextExtensions[vHostContextExtension] = vHost
 	if xWso2Basepath != "" {
