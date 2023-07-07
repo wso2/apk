@@ -24,6 +24,7 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"time"
 
 	"github.com/wso2/apk/adapter/internal/loggers"
 	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
@@ -382,11 +383,19 @@ func UpdateOwnerReference(ctx context.Context, client k8client.Client, child met
 		Name:       api.Name,
 		UID:        api.UID,
 	}))
-	if err := client.Update(ctx, child.(k8client.Object)); err != nil {
-		loggers.LoggerAPKOperator.Warnf("Error while updating OwnerReferences of k8 object : %s in %s, %v", child.GetName(), child.GetNamespace(), err)
-		return err
+	for {
+		if err := client.Update(ctx, child.(k8client.Object)); err != nil {
+			if apierrors.IsInternalError(err) {
+				loggers.LoggerAPKOperator.Warnf("Error while updating OwnerReferences of k8 object : %s in %s, %v",
+					child.GetName(), child.GetNamespace(), err)
+				time.Sleep(5 * time.Second)
+			} else {
+				return err
+			}
+		} else {
+			return nil
+		}
 	}
-	return nil
 }
 
 // getResolvedBackendSecurity resolves backend security configurations.
