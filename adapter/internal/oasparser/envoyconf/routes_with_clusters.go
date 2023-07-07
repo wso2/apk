@@ -823,13 +823,8 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 		decorator *routev3.Decorator
 	)
 	if (params.createDefaultPath) {
-		logger.LoggerOasparser.Infoln("r1111esource path calculated before removing the version: ", xWso2Basepath);
 		xWso2Basepath = removeFirstOccurrence(xWso2Basepath, "/"+version)
-		logger.LoggerOasparser.Infoln("r1111esource path calculated after removing the version: ", xWso2Basepath, "version: ", version);
-	}
-	if (params.createDefaultPath) {
 		resourcePath = removeFirstOccurrence(resource.GetPath(), "/"+version)
-		logger.LoggerOasparser.Infoln("r1111esource path calculated after removing the version: ", resourcePath, "resource path before: ", resource.GetPath(), "version: ", version);
 	}
 	routePath := generateRoutePath(resourcePath, pathMatchType)
 	// route path could be empty only if there is no basePath for API or the endpoint available,
