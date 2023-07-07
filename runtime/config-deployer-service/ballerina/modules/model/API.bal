@@ -33,9 +33,15 @@ public type APISpec record {|
     string apiProvider?;
     boolean isDefaultVersion?;
     string definitionFileRef?;
-    EnvConfig[]|() production= ();
-    EnvConfig[]|() sandbox=();
+    EnvConfig[]|() production = ();
+    EnvConfig[]|() sandbox = ();
     boolean systemAPI?;
+    APIProperties[] apiProperties = [];
+|};
+
+public type APIProperties record {|
+    string name;
+    string value;
 |};
 
 public type APIStatus record {
