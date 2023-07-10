@@ -536,18 +536,15 @@ func concatAPIPolicies(schemeUp *dpv1alpha1.APIPolicy, schemeDown *dpv1alpha1.AP
 }
 
 func concatAuthSchemes(schemeUp *dpv1alpha1.Authentication, schemeDown *dpv1alpha1.Authentication) *dpv1alpha1.Authentication {
-	finalAuth := dpv1alpha1.Authentication{}
-	finalAuth.Spec.Override = &dpv1alpha1.AuthSpec{}
-	finalAuth.Spec.Override.ExternalService = dpv1alpha1.ExtAuthService{}
+	finalAuth := dpv1alpha1.Authentication{
+		Spec: dpv1alpha1.AuthenticationSpec{},
+	}
 	if schemeUp != nil && schemeDown != nil {
-		finalAuth.Spec.Override.ExternalService.Disabled = utils.SelectPolicy(&schemeUp.Spec.Override.ExternalService.Disabled, &schemeUp.Spec.Default.ExternalService.Disabled, &schemeDown.Spec.Override.ExternalService.Disabled, &schemeDown.Spec.Default.ExternalService.Disabled)
-		finalAuth.Spec.Override.ExternalService.AuthTypes = utils.SelectPolicy(&schemeUp.Spec.Override.ExternalService.AuthTypes, &schemeUp.Spec.Default.ExternalService.AuthTypes, &schemeDown.Spec.Override.ExternalService.AuthTypes, &schemeDown.Spec.Default.ExternalService.AuthTypes)
+		finalAuth.Spec.Override = utils.SelectPolicy(&schemeUp.Spec.Override, &schemeUp.Spec.Default, &schemeDown.Spec.Override, &schemeDown.Spec.Default)
 	} else if schemeUp != nil {
-		finalAuth.Spec.Override.ExternalService.Disabled = utils.SelectPolicy(&schemeUp.Spec.Override.ExternalService.Disabled, &schemeUp.Spec.Default.ExternalService.Disabled, nil, nil)
-		finalAuth.Spec.Override.ExternalService.AuthTypes = utils.SelectPolicy(&schemeUp.Spec.Override.ExternalService.AuthTypes, &schemeUp.Spec.Default.ExternalService.AuthTypes, nil, nil)
+		finalAuth.Spec.Override = utils.SelectPolicy(&schemeUp.Spec.Override, &schemeUp.Spec.Default, nil, nil)
 	} else if schemeDown != nil {
-		finalAuth.Spec.Override.ExternalService.Disabled = utils.SelectPolicy(nil, nil, &schemeDown.Spec.Override.ExternalService.Disabled, &schemeDown.Spec.Default.ExternalService.Disabled)
-		finalAuth.Spec.Override.ExternalService.AuthTypes = utils.SelectPolicy(nil, nil, &schemeDown.Spec.Override.ExternalService.AuthTypes, &schemeDown.Spec.Default.ExternalService.AuthTypes)
+		finalAuth.Spec.Override = utils.SelectPolicy(nil, nil, &schemeDown.Spec.Override, &schemeDown.Spec.Default)
 	}
 	return &finalAuth
 }

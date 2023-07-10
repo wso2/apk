@@ -16,7 +16,7 @@
 apiVersion: dp.wso2.com/v1alpha1
 kind: API
 metadata:
-  name: http-bin-api1
+  name: http-bin-api
 spec:
   apiDisplayName: http-bin-api
   apiType: REST
@@ -117,7 +117,7 @@ spec:
       matches:
       - path:
           type: PathPrefix
-          value: /http-bin-api/1.0.8/hello
+          value: /hello
         method: GET
       filters:
         - type: URLRewrite
@@ -172,7 +172,7 @@ spec:
       matches:
       - path:
           type: PathPrefix
-          value: /http-bin-api/1.0.8/hello
+          value: /hello
         method: GET
       filters:
         - type: URLRewrite
