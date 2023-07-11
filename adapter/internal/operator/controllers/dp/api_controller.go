@@ -1058,14 +1058,12 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 					}.String())
 			}
 			if backend.Spec.Security != nil {
-				for _, security := range backend.Spec.Security {
-					if security.Type == "Basic" {
-						secrets = append(secrets,
-							types.NamespacedName{
-								Name:      string(security.Basic.SecretRef.Name),
-								Namespace: backend.Namespace,
-							}.String())
-					}
+				if backend.Spec.Security.Basic != nil {
+					secrets = append(secrets,
+						types.NamespacedName{
+							Name:      string(backend.Spec.Security.Basic.SecretRef.Name),
+							Namespace: backend.Namespace,
+						}.String())
 				}
 			}
 			return secrets
