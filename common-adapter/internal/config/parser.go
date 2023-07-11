@@ -43,7 +43,7 @@ const (
 	// The environtmental variable which represents the path of the log_config.toml in host machine.
 	logConfigPathEnvVariable = "LOG_CONFIG_PATH"
 	// RelativeLogConfigPath is the relative file path where the log configuration file is.
-	relativeLogConfigPath = "/conf/log_config.toml"
+	relativeLogConfigPath = "../resources/conf/log_config.toml"
 	// EnvConfigPrefix is used when configs should be read from environment variables.
 	EnvConfigPrefix = "$env"
 	// envVariableForCCPrefix is the prefix used for APK specific environmental variables.
@@ -54,7 +54,7 @@ const (
 
 const (
 	// RelativeConfigPath is the relative file path where the configuration file is.
-	relativeConfigPath = "/conf/config.toml"
+	relativeConfigPath = "../resources/conf/config.toml"
 )
 
 // ReadConfigs implements adapter configuration read operation. The read operation will happen only once, hence

@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package operator
 
 import (
 	"flag"
@@ -22,12 +22,11 @@ import (
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
-	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
 	"github.com/wso2/apk/adapter/pkg/logging"
-	dpv1alpha1 "github.com/wso2/apk/common-adapter/api/v1alpha1"
-	dpcontrollers "github.com/wso2/apk/common-adapter/internal/controller"
-	"github.com/wso2/apk/common-adapter/loggers"
+	"github.com/wso2/apk/common-adapter/internal/loggers"
+	dpv1alpha1 "github.com/wso2/apk/common-adapter/internal/operator/api/v1alpha1"
+	dpcontrollers "github.com/wso2/apk/common-adapter/internal/operator/controller"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
@@ -49,7 +48,8 @@ func init() {
 	//+kubebuilder:scaffold:scheme
 }
 
-func main() {
+// InitOperator initializes the operator
+func InitOperator() {
 	var metricsAddr string
 	var enableLeaderElection bool
 	var probeAddr string
@@ -71,8 +71,9 @@ func main() {
 		MetricsBindAddress:     metricsAddr,
 		Port:                   9443,
 		HealthProbeBindAddress: probeAddr,
-		LeaderElection:         enableLeaderElection,
-		LeaderElectionID:       "5142a7ea.wso2.com",
+		// LeaderElection:         enableLeaderElection,
+		// LeaderElectionID:       "5142a7ea.wso2.com",
+		Namespace: "apk",
 		// LeaderElectionReleaseOnCancel defines if the leader should step down voluntarily
 		// when the Manager ends. This requires the binary to immediately end when the
 		// Manager is stopped, otherwise, this setting is unsafe. Setting this significantly
@@ -91,6 +92,7 @@ func main() {
 	}
 
 	if err := dpcontrollers.NewratelimitController(mgr); err != nil {
+		setupLog.Info("asa manager")
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3114, err))
 	}
 	//+kubebuilder:scaffold:builder

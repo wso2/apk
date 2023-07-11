@@ -20,7 +20,8 @@ LABEL maintainer="WSO2 Docker Maintainers <wso2.com>"
 RUN apk update && apk upgrade --no-cache
 RUN apk add  --no-cache tzdata
 
-ENV LANG=C.UTF-8
+ENV LANG=C.UTF-8 KUBERNETES_SERVICE_PORT=8443 KUBERNETES_SERVICE_HOST=192.168.49.2
+
 
 ARG APK_USER=wso2
 ARG APK_USER_ID=802
@@ -65,6 +66,6 @@ COPY resources/security security
 COPY resources/conf/config.toml conf/
 COPY resources/check_health.sh .
 COPY resources/conf/log_config.toml conf/
-COPY ./${TARGETARCH}/main adapter
+COPY ./${TARGETARCH}/main common-adapter
 
-CMD ./adapter
+CMD ./common-adapter

@@ -23,7 +23,7 @@ apply from: "$rootDir/../common-gradle-scripts/docker.gradle"
 apply from: "$rootDir/../common-gradle-scripts/go.gradle"
 
 release {
-    tagTemplate = 'adapter-$version'
+    tagTemplate = 'common-adapter-$version'
 
     git {
         requireBranch= "main"

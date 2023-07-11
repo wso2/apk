@@ -32,6 +32,7 @@ import (
 	"github.com/wso2/apk/adapter/pkg/logging"
 	"github.com/wso2/apk/adapter/pkg/utils/tlsutils"
 	"github.com/wso2/apk/common-adapter/internal/loggers"
+	dpv1alpha1 "github.com/wso2/apk/common-adapter/internal/operator/api/v1alpha1"
 	ratelimiterCallbacks "github.com/wso2/apk/common-adapter/internal/xds/callbacks"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -44,8 +45,9 @@ var (
 )
 
 const (
-	maxRandomInt             int = 999999999
-	grpcMaxConcurrentStreams     = 1000000
+	maxRandomInt             int    = 999999999
+	grpcMaxConcurrentStreams        = 1000000
+	apiKeyFieldSeparator     string = ":"
 )
 
 // IDHash uses ID field as the node hash.
@@ -124,4 +126,20 @@ func InitCommonAdapterServer() {
 // GetRateLimiterCache returns xds server cache for rate limiter service.
 func GetRateLimiterCache() envoy_cachev3.SnapshotCache {
 	return rlsPolicyCache.xdsCache
+}
+
+// UpdateRateLimitXDSCache updates the xDS cache of the RateLimiter.
+func UpdateRateLimitXDSCache(vhosts []string, resolveRatelimit dpv1alpha1.ResolveRateLimitAPIPolicy) {
+	// Add Rate Limit inline policies in API to the cache
+	rlsPolicyCache.AddAPILevelRateLimitPolicies(vhosts, resolveRatelimit)
+}
+
+// GenerateIdentifierForAPIWithUUID generates an identifier unique to the API
+func GenerateIdentifierForAPIWithUUID(vhost, uuid string) string {
+	return fmt.Sprint(vhost, apiKeyFieldSeparator, uuid)
+}
+
+// UpdateRateLimiterPolicies update the rate limiter xDS cache with latest rate limit policies
+func UpdateRateLimiterPolicies(label string) {
+	_ = rlsPolicyCache.updateXdsCache(label)
 }

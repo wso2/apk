@@ -15,12 +15,8 @@ Compress = true
 ## Adapter package Level configurations
 
 [[pkg]]
-name = "github.com/wso2/apk/adapter/internal/adapter"
+name = "github.com/wso2/apk/common-adapter/internal/operator"
 logLevel = "INFO" # LogLevels can be "DEBG", "FATL", "ERRO", "WARN", "INFO", "PANC"
-
-[[pkg]]
-name = "github.com/wso2/apk/adapter/internal/oasparser"
-logLevel = "INFO"
 
 
 # The logging configuration for Router

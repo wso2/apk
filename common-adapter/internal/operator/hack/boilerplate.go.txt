@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2023, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
+ *  Copyright (c) 2022, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,32 +14,3 @@
  *  limitations under the License.
  *
  */
-
-package main
-
-import (
-	"os"
-	"os/signal"
-
-	logger "github.com/sirupsen/logrus"
-	"github.com/wso2/apk/common-adapter/internal/operator"
-	xds "github.com/wso2/apk/common-adapter/internal/xds"
-)
-
-func main() {
-	logger.Info("Starting the Common Adapter")
-	sig := make(chan os.Signal, 2)
-	signal.Notify(sig, os.Interrupt)
-	xds.InitCommonAdapterServer()
-	operator.InitOperator()
-OUTER:
-	for {
-		select {
-		case s := <-sig:
-			switch s {
-			case os.Interrupt:
-				break OUTER
-			}
-		}
-	}
-}
