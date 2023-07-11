@@ -352,6 +352,10 @@ func CreateTracingCluster(conf *config.Config) (*clusterv3.Cluster, []*corev3.Ad
 	epCluster.Endpoints[0].Port = epPort
 	epCluster.Endpoints[0].Basepath = epPath
 
+	if conf.Tracing.Type == TracerTypeOtlp {
+		epCluster.HTTP2BackendEnabled = true
+	}
+
 	return processEndpoints(tracingClusterName, epCluster, epTimeout, epPath)
 }
 
@@ -490,8 +494,8 @@ func processEndpoints(clusterName string, clusterDetails *model.EndpointCluster,
 		},
 	}
 
-	if len(clusterDetails.Endpoints) > 1 {
-		cluster.HealthChecks = createHealthCheck()
+	if len(clusterDetails.Endpoints) > 0 && clusterDetails.HealthCheck != nil {
+		cluster.HealthChecks = createHealthCheck(clusterDetails.HealthCheck)
 	}
 
 	if clusterDetails.Config != nil && clusterDetails.Config.CircuitBreakers != nil {
@@ -522,14 +526,13 @@ func processEndpoints(clusterName string, clusterDetails *model.EndpointCluster,
 	return &cluster, addresses, nil
 }
 
-func createHealthCheck() []*corev3.HealthCheck {
-	conf := config.ReadConfigs()
+func createHealthCheck(healthCheck *model.HealthCheck) []*corev3.HealthCheck {
 	return []*corev3.HealthCheck{
 		{
-			Timeout:            durationpb.New(time.Duration(conf.Envoy.Upstream.Health.Timeout) * time.Second),
-			Interval:           durationpb.New(time.Duration(conf.Envoy.Upstream.Health.Interval) * time.Second),
-			UnhealthyThreshold: wrapperspb.UInt32(uint32(conf.Envoy.Upstream.Health.UnhealthyThreshold)),
-			HealthyThreshold:   wrapperspb.UInt32(uint32(conf.Envoy.Upstream.Health.HealthyThreshold)),
+			Timeout:            durationpb.New(time.Duration(healthCheck.Timeout) * time.Second),
+			Interval:           durationpb.New(time.Duration(healthCheck.Interval) * time.Second),
+			UnhealthyThreshold: wrapperspb.UInt32(uint32(healthCheck.UnhealthyThreshold)),
+			HealthyThreshold:   wrapperspb.UInt32(uint32(healthCheck.HealthyThreshold)),
 			// we only support tcp default healthcheck
 			HealthChecker: &corev3.HealthCheck_TcpHealthCheck_{},
 		},
@@ -659,9 +662,6 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 	
 
 	basePath := strings.TrimSuffix(xWso2Basepath, "/")
-	if isDefaultVersion {
-		basePath = getDefaultVersionBasepath(basePath, version)
-	}
 
 	resourcePath := ""
 	var resourceMethods []string
@@ -820,13 +820,8 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 		decorator *routev3.Decorator
 	)
 	if (params.createDefaultPath) {
-		logger.LoggerOasparser.Infoln("r1111esource path calculated before removing the version: ", xWso2Basepath);
 		xWso2Basepath = removeFirstOccurrence(xWso2Basepath, "/"+version)
-		logger.LoggerOasparser.Infoln("r1111esource path calculated after removing the version: ", xWso2Basepath, "version: ", version);
-	}
-	if (params.createDefaultPath) {
 		resourcePath = removeFirstOccurrence(resource.GetPath(), "/"+version)
-		logger.LoggerOasparser.Infoln("r1111esource path calculated after removing the version: ", resourcePath, "resource path before: ", resource.GetPath(), "version: ", version);
 	}
 	routePath := generateRoutePath(resourcePath, pathMatchType)
 	// route path could be empty only if there is no basePath for API or the endpoint available,

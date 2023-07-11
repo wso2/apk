@@ -41,6 +41,8 @@ spec:
     maxRouteTimeoutSeconds: 60
     routeIdleTimeoutSeconds: 10
     routeTimeoutSeconds: 40
+  healthCheck:
+    timeout: 5
   retry:
     count: 4
     baseIntervalMillis: 2000

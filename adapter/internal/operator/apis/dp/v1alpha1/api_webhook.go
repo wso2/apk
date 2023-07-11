@@ -112,6 +112,11 @@ func (r *API) validateAPI() error {
 		allErrs = append(allErrs, err)
 	}
 
+	// Organization value should not be empty as it required when applying ratelimit policy
+	if r.Spec.Organization == "" {
+		allErrs = append(allErrs, field.Required(field.NewPath("spec").Child("organization"), "Organization can not be empty"))
+	}
+
 	if errMsg := validateAPITypeFormat(r.Spec.APIType); errMsg != "" {
 		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("apiType"), r.Spec.APIType, errMsg))
 	} else {

@@ -64,12 +64,6 @@ var defaultConfig = &Config{
 				VerifyHostName:         true,
 				DisableSslVerification: false,
 			},
-			Health: upstreamHealth{
-				Timeout:            1,
-				Interval:           10,
-				UnhealthyThreshold: 2,
-				HealthyThreshold:   2,
-			},
 			Retry: upstreamRetry{
 				StatusCodes: []uint32{504},
 			},

@@ -440,6 +440,13 @@ public class APIClient {
         if apkConf.id != () {
             k8sAPI.metadata["annotations"] = {[API_UUID_ANNOTATION] : <string>apkConf.id};
         }
+        if apkConf.additionalProperties is APKConf_additionalProperties[] {
+            model:APIProperties[] properties = [];
+            foreach APKConf_additionalProperties additionalProperty in <APKConf_additionalProperties[]>apkConf.additionalProperties {
+                properties.push({name: <string>additionalProperty.name, value: <string>additionalProperty.value});
+            }
+            k8sAPI.spec.apiProperties = properties;
+        }
         apiArtifact.api = k8sAPI;
     }
 

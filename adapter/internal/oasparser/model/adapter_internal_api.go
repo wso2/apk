@@ -101,6 +101,7 @@ type EndpointCluster struct {
 	// EndpointType enum {failover, loadbalance}. if any other value provided, consider as the default value; which is loadbalance
 	EndpointType string
 	Config       *EndpointConfig
+	HealthCheck  *HealthCheck
 	// Is http2 protocol enabled
 	HTTP2BackendEnabled bool
 }
@@ -146,6 +147,14 @@ type EndpointConfig struct {
 	TimeoutInMillis      uint32           `mapstructure:"timeoutInMillis"`
 	IdleTimeoutInSeconds uint32           `mapstructure:"idleTimeoutInSeconds"`
 	CircuitBreakers      *CircuitBreakers `mapstructure:"circuitBreakers"`
+}
+
+// HealthCheck holds the parameters for health check done by apk to the EndpointCluster
+type HealthCheck struct {
+	Timeout            int32 `mapstructure:"timeout"`
+	Interval           int32 `mapstructure:"interval"`
+	UnhealthyThreshold int32 `mapstructure:"unhealthyThreshold"`
+	HealthyThreshold   int32 `mapstructure:"healthyThreshold"`
 }
 
 // RetryConfig holds the parameters for retries done by apk to the EndpointCluster
@@ -324,7 +333,7 @@ func (swagger *AdapterInternalAPI) SetVersion(version string) {
 
 // SetIsDefaultVersion sets whether this API is the default
 func (swagger *AdapterInternalAPI) SetIsDefaultVersion(isDefaultVersion bool) {
-	swagger.IsDefaultVersion = isDefaultVersion;
+	swagger.IsDefaultVersion = isDefaultVersion
 }
 
 // SetXWso2AuthHeader sets the authHeader of the API
