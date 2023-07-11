@@ -24,6 +24,11 @@ public final class BackendJWTTokenInfoProto {
   static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_wso2_discovery_api_BackendJWTTokenInfo_CustomClaimsEntry_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_wso2_discovery_api_Claim_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_wso2_discovery_api_Claim_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -34,17 +39,19 @@ public final class BackendJWTTokenInfoProto {
   static {
     java.lang.String[] descriptorData = {
       "\n,wso2/discovery/api/BackendJWTTokenInfo" +
-      ".proto\022\022wso2.discovery.api\"\372\001\n\023BackendJW" +
+      ".proto\022\022wso2.discovery.api\"\225\002\n\023BackendJW" +
       "TTokenInfo\022\017\n\007enabled\030\001 \001(\010\022\020\n\010encoding\030" +
       "\002 \001(\t\022\016\n\006header\030\003 \001(\t\022\030\n\020signingAlgorith" +
       "m\030\004 \001(\t\022O\n\014customClaims\030\005 \003(\01329.wso2.dis" +
       "covery.api.BackendJWTTokenInfo.CustomCla" +
-      "imsEntry\022\020\n\010tokenTTL\030\006 \001(\005\0323\n\021CustomClai" +
-      "msEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001B" +
-      "\200\001\n#org.wso2.apk.enforcer.discovery.apiB" +
-      "\030BackendJWTTokenInfoProtoP\001Z=github.com/" +
-      "envoyproxy/go-control-plane/wso2/discove" +
-      "ry/api;apib\006proto3"
+      "imsEntry\022\020\n\010tokenTTL\030\006 \001(\005\032N\n\021CustomClai" +
+      "msEntry\022\013\n\003key\030\001 \001(\t\022(\n\005value\030\002 \001(\0132\031.ws" +
+      "o2.discovery.api.Claim:\0028\001\"$\n\005Claim\022\r\n\005v" +
+      "alue\030\001 \001(\t\022\014\n\004type\030\002 \001(\tB\200\001\n#org.wso2.ap" +
+      "k.enforcer.discovery.apiB\030BackendJWTToke" +
+      "nInfoProtoP\001Z=github.com/envoyproxy/go-c" +
+      "ontrol-plane/wso2/discovery/api;apib\006pro" +
+      "to3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -62,6 +69,12 @@ public final class BackendJWTTokenInfoProto {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_wso2_discovery_api_BackendJWTTokenInfo_CustomClaimsEntry_descriptor,
         new java.lang.String[] { "Key", "Value", });
+    internal_static_wso2_discovery_api_Claim_descriptor =
+      getDescriptor().getMessageTypes().get(1);
+    internal_static_wso2_discovery_api_Claim_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_wso2_discovery_api_Claim_descriptor,
+        new java.lang.String[] { "Value", "Type", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)

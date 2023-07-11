@@ -23,6 +23,7 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.apk.enforcer.commons.constants.JWTConstants;
+import org.wso2.apk.enforcer.commons.dto.ClaimValueDTO;
 import org.wso2.apk.enforcer.commons.dto.JWTConfigurationDto;
 import org.wso2.apk.enforcer.commons.dto.JWTInfoDto;
 import org.wso2.apk.enforcer.commons.exception.JWTGeneratorException;
@@ -33,6 +34,7 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -154,14 +156,36 @@ public abstract class AbstractAPIMgtGatewayJWTGenerator {
 
         JWTClaimsSet.Builder jwtClaimSetBuilder = new JWTClaimsSet.Builder();
         Map<String, Object> claims = populateStandardClaims(jwtInfoDto);
-        Map<String, Object> customClaims = populateCustomClaims(jwtInfoDto);
-        for (Map.Entry<String, Object> claimEntry : customClaims.entrySet()) {
-            if (!claims.containsKey(claimEntry.getKey())) {
-                claims.put(claimEntry.getKey(), claimEntry.getValue());
-            } else {
-                if (log.isDebugEnabled()) {
-                    log.debug("Claim key " + claimEntry.getKey() + " already exist");
+        Map<String, ClaimValueDTO> customClaims = populateCustomClaims(jwtInfoDto);
+        for (Map.Entry<String, ClaimValueDTO> claimEntry : customClaims.entrySet()) {
+            Object val = claimEntry.getValue().getValue();
+            final String type = claimEntry.getValue().getType();
+            Object claim = val;
+            if(val instanceof String) {
+                if(claimEntry.getValue().getType() != null) {
+                    switch (type.toLowerCase()) {
+                        case "bool":
+                            claim = Boolean.parseBoolean(String.valueOf(val));
+                            break;
+                        case "int":
+                            claim = Integer.parseInt(String.valueOf(val));
+                            break;
+                        case "long":
+                            claim =Long.parseLong(String.valueOf(val));
+                            break;
+                        case "float":
+                            claim = Double.parseDouble(String.valueOf(val));
+                            break;
+                        case "date":
+                            claim = LocalDate.parse(String.valueOf(val));
+                            break;
+                    }
                 }
+            }
+            if (!claims.containsKey(claimEntry.getKey())) {
+                claims.put(claimEntry.getKey(),claim);
+            } else {
+                claims.replace(claimEntry.getKey(), claim);
             }
         }
         ObjectMapper mapper = new ObjectMapper();
@@ -214,6 +238,6 @@ public abstract class AbstractAPIMgtGatewayJWTGenerator {
 
     public abstract Map<String, Object> populateStandardClaims(JWTInfoDto jwtInfoDto);
 
-    public abstract Map<String, Object> populateCustomClaims(JWTInfoDto jwtInfoDto);
+    public abstract Map<String, ClaimValueDTO> populateCustomClaims(JWTInfoDto jwtInfoDto);
 }
 

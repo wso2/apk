@@ -173,9 +173,12 @@ func GetEnforcerAPI(adapterInternalAPI model.AdapterInternalAPI, vhost string) *
 	backendJWTTokenInfoFromInternalAPI := adapterInternalAPI.GetBackendJWTTokenInfo()
 
 	if backendJWTTokenInfoFromInternalAPI != nil {
-		customClaims := make(map[string]string)
+		customClaims := make(map[string]*api.Claim)
 		for _, claim := range backendJWTTokenInfoFromInternalAPI.CustomClaims {
-			customClaims[claim.Claim] = claim.Value
+			customClaims[claim.Claim] = &api.Claim{
+				Value: claim.Value.Value,
+				Type:  claim.Value.Type,
+			}
 		}
 		backendJWTTokenInfo = &api.BackendJWTTokenInfo{
 			Enabled:          backendJWTTokenInfoFromInternalAPI.Enabled,

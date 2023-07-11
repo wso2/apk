@@ -50,11 +50,11 @@ public interface BackendJWTTokenInfoOrBuilder extends
       getSigningAlgorithmBytes();
 
   /**
-   * <code>map&lt;string, string&gt; customClaims = 5;</code>
+   * <code>map&lt;string, .wso2.discovery.api.Claim&gt; customClaims = 5;</code>
    */
   int getCustomClaimsCount();
   /**
-   * <code>map&lt;string, string&gt; customClaims = 5;</code>
+   * <code>map&lt;string, .wso2.discovery.api.Claim&gt; customClaims = 5;</code>
    */
   boolean containsCustomClaims(
       java.lang.String key);
@@ -62,25 +62,25 @@ public interface BackendJWTTokenInfoOrBuilder extends
    * Use {@link #getCustomClaimsMap()} instead.
    */
   @java.lang.Deprecated
-  java.util.Map<java.lang.String, java.lang.String>
+  java.util.Map<java.lang.String, org.wso2.apk.enforcer.discovery.api.Claim>
   getCustomClaims();
   /**
-   * <code>map&lt;string, string&gt; customClaims = 5;</code>
+   * <code>map&lt;string, .wso2.discovery.api.Claim&gt; customClaims = 5;</code>
    */
-  java.util.Map<java.lang.String, java.lang.String>
+  java.util.Map<java.lang.String, org.wso2.apk.enforcer.discovery.api.Claim>
   getCustomClaimsMap();
   /**
-   * <code>map&lt;string, string&gt; customClaims = 5;</code>
+   * <code>map&lt;string, .wso2.discovery.api.Claim&gt; customClaims = 5;</code>
    */
 
-  java.lang.String getCustomClaimsOrDefault(
+  org.wso2.apk.enforcer.discovery.api.Claim getCustomClaimsOrDefault(
       java.lang.String key,
-      java.lang.String defaultValue);
+      org.wso2.apk.enforcer.discovery.api.Claim defaultValue);
   /**
-   * <code>map&lt;string, string&gt; customClaims = 5;</code>
+   * <code>map&lt;string, .wso2.discovery.api.Claim&gt; customClaims = 5;</code>
    */
 
-  java.lang.String getCustomClaimsOrThrow(
+  org.wso2.apk.enforcer.discovery.api.Claim getCustomClaimsOrThrow(
       java.lang.String key);
 
   /**
