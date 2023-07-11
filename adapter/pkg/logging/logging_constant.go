@@ -447,7 +447,7 @@ var Mapper = map[int]ErrorDetails{
 	error3111: {
 		ErrorCode: error3111,
 		Message:   "Error creating JWTIssuer controller: %v",
-		Severity:  BLOCKER,
+		Severity:  MAJOR,
 	},
 	error3112: {
 		ErrorCode: error3112,
