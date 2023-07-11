@@ -43,7 +43,7 @@ type BackendConfigs struct {
 	// +kubebuilder:validation:Enum=http;https;ws;wss
 	Protocol BackendProtocolType `json:"protocol"`
 	TLS      TLSConfig           `json:"tls,omitempty"`
-	Security []SecurityConfig    `json:"security,omitempty"`
+	Security SecurityConfig      `json:"security,omitempty"`
 }
 
 // BackendSpec defines the desired state of Backend
@@ -60,7 +60,7 @@ type BackendSpec struct {
 	TLS *TLSConfig `json:"tls,omitempty"`
 
 	// +optional
-	Security []SecurityConfig `json:"security,omitempty"`
+	Security *SecurityConfig `json:"security,omitempty"`
 
 	// + optional
 	CircuitBreaker *CircuitBreaker `json:"circuitBreaker,omitempty"`
@@ -159,8 +159,8 @@ type RefConfig struct {
 
 // SecurityConfig defines enpoint security configurations
 type SecurityConfig struct {
-	Type  string              `json:"type,omitempty"`
-	Basic BasicSecurityConfig `json:"basic,omitempty"`
+	Type  string               `json:"type,omitempty"`
+	Basic *BasicSecurityConfig `json:"basic,omitempty"`
 }
 
 // BasicSecurityConfig defines basic security configurations

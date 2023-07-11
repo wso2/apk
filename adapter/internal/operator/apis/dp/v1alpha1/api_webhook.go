@@ -171,32 +171,31 @@ func (r *API) validateAPIContextExistsAndDefaultVersion() *field.Error {
 			errors.New("unable to list APIs for API context validation"))
 
 	}
-	currentAPIContextWithoutVersion := getContextWithoutVersion(r.Spec.Context);
+	currentAPIContextWithoutVersion := getContextWithoutVersion(r.Spec.Context)
 	for _, api := range apiList {
 		if (types.NamespacedName{Namespace: r.Namespace, Name: r.Name} !=
 			types.NamespacedName{Namespace: api.Namespace, Name: api.Name}) {
-			if (api.Spec.Organization == r.Spec.Organization && api.Spec.Context == r.Spec.Context) {
+			if api.Spec.Organization == r.Spec.Organization && api.Spec.Context == r.Spec.Context {
 				return &field.Error{
 					Type:     field.ErrorTypeDuplicate,
 					Field:    field.NewPath("spec").Child("context").String(),
 					BadValue: r.Spec.Context,
 					Detail:   "an API has been already created for the context"}
 			}
-			if (r.Spec.IsDefaultVersion) {
-				targetAPIContextWithoutVersion := getContextWithoutVersion(api.Spec.Context);
-				targetAPIContextWithVersion := api.Spec.Context;
-				if (api.Spec.IsDefaultVersion) {
-					if (targetAPIContextWithoutVersion == currentAPIContextWithoutVersion) {
+			if r.Spec.IsDefaultVersion {
+				targetAPIContextWithoutVersion := getContextWithoutVersion(api.Spec.Context)
+				targetAPIContextWithVersion := api.Spec.Context
+				if api.Spec.IsDefaultVersion {
+					if targetAPIContextWithoutVersion == currentAPIContextWithoutVersion {
 						return &field.Error{
 							Type:     field.ErrorTypeForbidden,
 							Field:    field.NewPath("spec").Child("isDefaultVersion").String(),
 							BadValue: r.Spec.Context,
 							Detail:   "this API already has a default version"}
 					}
-					
 
 				}
-				if (targetAPIContextWithVersion == currentAPIContextWithoutVersion) {
+				if targetAPIContextWithVersion == currentAPIContextWithoutVersion {
 					return &field.Error{
 						Type:     field.ErrorTypeForbidden,
 						Field:    field.NewPath("spec").Child("isDefaultVersion").String(),

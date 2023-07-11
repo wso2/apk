@@ -83,6 +83,10 @@ spec:
                 description: DefinitionFileRef contains the OpenAPI 3 or Swagger definition
                   of the API in a ConfigMap.
                 type: string
+              isDefaultVersion:
+                description: IsDefaultVersion indicates whether this API version should
+                  be used as a default API
+                type: boolean
               organization:
                 description: Organization denotes the organization. related to the
                   API
@@ -127,6 +131,7 @@ spec:
             - apiType
             - apiVersion
             - context
+            - isDefaultVersion
             type: object
           status:
             description: APIStatus defines the observed state of API

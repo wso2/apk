@@ -137,16 +137,14 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 				}
 				endPoints = append(endPoints, GetEndpoints(backendName, httpRouteParams.BackendMapping)...)
 				backendBasePath = GetBackendBasePath(backendName, httpRouteParams.BackendMapping)
-				for _, security := range resolvedBackend.Security {
-					switch security.Type {
-					case "Basic":
-						securityConfig = append(securityConfig, EndpointSecurity{
-							Password: string(security.Basic.Password),
-							Username: string(security.Basic.Username),
-							Type:     string(security.Type),
-							Enabled:  true,
-						})
-					}
+				switch resolvedBackend.Security.Type {
+				case "Basic":
+					securityConfig = append(securityConfig, EndpointSecurity{
+						Password: string(resolvedBackend.Security.Basic.Password),
+						Username: string(resolvedBackend.Security.Basic.Username),
+						Type:     string(resolvedBackend.Security.Type),
+						Enabled:  true,
+					})
 				}
 			} else {
 				return fmt.Errorf("backend: %s has not been resolved", backendName)

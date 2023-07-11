@@ -36,13 +36,12 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/types"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	k8client "sigs.k8s.io/controller-runtime/pkg/client"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
 // NamespacedName generates namespaced name for Kubernetes objects
-func NamespacedName(obj client.Object) types.NamespacedName {
+func NamespacedName(obj k8client.Object) types.NamespacedName {
 	return types.NamespacedName{
 		Namespace: obj.GetNamespace(),
 		Name:      obj.GetName(),
@@ -52,8 +51,8 @@ func NamespacedName(obj client.Object) types.NamespacedName {
 // FilterByNamespaces takes a list of namespaces and returns a filter function
 // which return true if the input object is in the given namespaces list,
 // and returns false otherwise
-func FilterByNamespaces(namespaces []string) func(object client.Object) bool {
-	return func(object client.Object) bool {
+func FilterByNamespaces(namespaces []string) func(object k8client.Object) bool {
+	return func(object k8client.Object) bool {
 		if namespaces == nil {
 			return true
 		}
@@ -254,7 +253,7 @@ func GetPtrSlice[T any](inputSlice []T) []*T {
 }
 
 // getConfigMapValue call kubernetes client and get the configmap and key
-func getConfigMapValue(ctx context.Context, client client.Client,
+func getConfigMapValue(ctx context.Context, client k8client.Client,
 	namespace, configMapName, key string) (string, error) {
 	configMap := &corev1.ConfigMap{}
 	err := client.Get(ctx, types.NamespacedName{
@@ -267,7 +266,7 @@ func getConfigMapValue(ctx context.Context, client client.Client,
 }
 
 // getSecretValue call kubernetes client and get the secret and key
-func getSecretValue(ctx context.Context, client client.Client,
+func getSecretValue(ctx context.Context, client k8client.Client,
 	namespace, secretName, key string) (string, error) {
 	secret := &corev1.Secret{}
 	err := client.Get(ctx, types.NamespacedName{
@@ -308,7 +307,7 @@ func GetResolvedBackend(ctx context.Context, client k8client.Client,
 	}
 	resolvedBackend.Services = backend.Spec.Services
 	resolvedBackend.Protocol = backend.Spec.Protocol
-	resolvedBackend.BasePath = backend.Spec.BasePath;
+	resolvedBackend.BasePath = backend.Spec.BasePath
 	if backend.Spec.CircuitBreaker != nil {
 		resolvedBackend.CircuitBreaker = &dpv1alpha1.CircuitBreaker{
 			MaxConnections:     backend.Spec.CircuitBreaker.MaxConnections,
@@ -356,35 +355,33 @@ func GetResolvedBackend(ctx context.Context, client k8client.Client,
 	}
 	if backend.Spec.Security != nil {
 		resolvedBackend.Security = getResolvedBackendSecurity(ctx, client,
-			backend.Namespace, backend.Spec.Security)
+			backend.Namespace, *backend.Spec.Security)
 	}
 	return &resolvedBackend
 }
 
 // getResolvedBackendSecurity resolves backend security configurations.
 func getResolvedBackendSecurity(ctx context.Context, client k8client.Client,
-	namespace string, security []dpv1alpha1.SecurityConfig) []dpv1alpha1.ResolvedSecurityConfig {
-	resolvedSecurity := make([]dpv1alpha1.ResolvedSecurityConfig, len(security))
-	for _, sec := range security {
-		switch sec.Type {
-		case "Basic":
-			var err error
-			var username string
-			var password string
-			username, err = getSecretValue(ctx, client,
-				namespace, sec.Basic.SecretRef.Name, sec.Basic.SecretRef.UsernameKey)
-			password, err = getSecretValue(ctx, client,
-				namespace, sec.Basic.SecretRef.Name, sec.Basic.SecretRef.PasswordKey)
-			if err != nil {
-				loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2648, sec.Basic.SecretRef))
-			}
-			resolvedSecurity = append(resolvedSecurity, dpv1alpha1.ResolvedSecurityConfig{
-				Type: "Basic",
-				Basic: dpv1alpha1.ResolvedBasicSecurityConfig{
-					Username: username,
-					Password: password,
-				},
-			})
+	namespace string, security dpv1alpha1.SecurityConfig) dpv1alpha1.ResolvedSecurityConfig {
+	resolvedSecurity := dpv1alpha1.ResolvedSecurityConfig{}
+	switch security.Type {
+	case "Basic":
+		var err error
+		var username string
+		var password string
+		username, err = getSecretValue(ctx, client,
+			namespace, security.Basic.SecretRef.Name, security.Basic.SecretRef.UsernameKey)
+		password, err = getSecretValue(ctx, client,
+			namespace, security.Basic.SecretRef.Name, security.Basic.SecretRef.PasswordKey)
+		if err != nil || username == "" || password == "" {
+			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2648, security.Basic.SecretRef))
+		}
+		resolvedSecurity = dpv1alpha1.ResolvedSecurityConfig{
+			Type: "Basic",
+			Basic: dpv1alpha1.ResolvedBasicSecurityConfig{
+				Username: username,
+				Password: password,
+			},
 		}
 	}
 	return resolvedSecurity
@@ -427,12 +424,12 @@ func ResolveCertificate(ctx context.Context, client k8client.Client, namespace s
 }
 
 // RetrieveNamespaceListOptions retrieve namespace list options for the given namespaces
-func RetrieveNamespaceListOptions(namespaces []string) client.ListOptions {
-	var listOptions client.ListOptions
+func RetrieveNamespaceListOptions(namespaces []string) k8client.ListOptions {
+	var listOptions k8client.ListOptions
 	if namespaces == nil {
-		listOptions = client.ListOptions{}
+		listOptions = k8client.ListOptions{}
 	} else {
-		listOptions = client.ListOptions{FieldSelector: fields.SelectorFromSet(fields.Set{"metadata.namespace": strings.Join(namespaces, ",")})}
+		listOptions = k8client.ListOptions{FieldSelector: fields.SelectorFromSet(fields.Set{"metadata.namespace": strings.Join(namespaces, ",")})}
 	}
 	return listOptions
 }
