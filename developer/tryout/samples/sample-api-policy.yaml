@@ -13,6 +13,9 @@ spec:
       customClaims:
         - claim: "admin"
           value: "http://wso2.org/claims/enduser"
+        - claim: "test"
+          value: "1"
+          type: float
     cORSPolicy:
       enabled: true
       accessControlAllowCredentials: false

@@ -382,11 +382,15 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 func parseBackendJWTTokenToInternal(backendJWTToken *dpv1alpha1.BackendJWTToken) *BackendJWTTokenInfo {
 	var customClaims []ClaimMapping
 	for _, value := range backendJWTToken.CustomClaims {
+		valType := value.Type
 		claim := value.Claim
 		value := value.Value
 		claimMapping := ClaimMapping{
 			Claim: claim,
-			Value: value,
+			Value: ClaimVal{
+				Value: value,
+				Type:  valType,
+			},
 		}
 		customClaims = append(customClaims, claimMapping)
 	}

@@ -85,7 +85,7 @@ private static final long serialVersionUID = 0L;
                   CustomClaimsDefaultEntryHolder.defaultEntry);
               mutable_bitField0_ |= 0x00000001;
             }
-            com.google.protobuf.MapEntry<java.lang.String, java.lang.String>
+            com.google.protobuf.MapEntry<java.lang.String, org.wso2.apk.enforcer.discovery.api.Claim>
             customClaims__ = input.readMessage(
                 CustomClaimsDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
             customClaims_.getMutableMap().put(
@@ -269,18 +269,18 @@ private static final long serialVersionUID = 0L;
   public static final int CUSTOMCLAIMS_FIELD_NUMBER = 5;
   private static final class CustomClaimsDefaultEntryHolder {
     static final com.google.protobuf.MapEntry<
-        java.lang.String, java.lang.String> defaultEntry =
+        java.lang.String, org.wso2.apk.enforcer.discovery.api.Claim> defaultEntry =
             com.google.protobuf.MapEntry
-            .<java.lang.String, java.lang.String>newDefaultInstance(
+            .<java.lang.String, org.wso2.apk.enforcer.discovery.api.Claim>newDefaultInstance(
                 org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfoProto.internal_static_wso2_discovery_api_BackendJWTTokenInfo_CustomClaimsEntry_descriptor, 
                 com.google.protobuf.WireFormat.FieldType.STRING,
                 "",
-                com.google.protobuf.WireFormat.FieldType.STRING,
-                "");
+                com.google.protobuf.WireFormat.FieldType.MESSAGE,
+                org.wso2.apk.enforcer.discovery.api.Claim.getDefaultInstance());
   }
   private com.google.protobuf.MapField<
-      java.lang.String, java.lang.String> customClaims_;
-  private com.google.protobuf.MapField<java.lang.String, java.lang.String>
+      java.lang.String, org.wso2.apk.enforcer.discovery.api.Claim> customClaims_;
+  private com.google.protobuf.MapField<java.lang.String, org.wso2.apk.enforcer.discovery.api.Claim>
   internalGetCustomClaims() {
     if (customClaims_ == null) {
       return com.google.protobuf.MapField.emptyMapField(
@@ -293,7 +293,7 @@ private static final long serialVersionUID = 0L;
     return internalGetCustomClaims().getMap().size();
   }
   /**
-   * <code>map&lt;string, string&gt; customClaims = 5;</code>
+   * <code>map&lt;string, .wso2.discovery.api.Claim&gt; customClaims = 5;</code>
    */
 
   @java.lang.Override
@@ -307,39 +307,39 @@ private static final long serialVersionUID = 0L;
    */
   @java.lang.Override
   @java.lang.Deprecated
-  public java.util.Map<java.lang.String, java.lang.String> getCustomClaims() {
+  public java.util.Map<java.lang.String, org.wso2.apk.enforcer.discovery.api.Claim> getCustomClaims() {
     return getCustomClaimsMap();
   }
   /**
-   * <code>map&lt;string, string&gt; customClaims = 5;</code>
+   * <code>map&lt;string, .wso2.discovery.api.Claim&gt; customClaims = 5;</code>
    */
   @java.lang.Override
 
-  public java.util.Map<java.lang.String, java.lang.String> getCustomClaimsMap() {
+  public java.util.Map<java.lang.String, org.wso2.apk.enforcer.discovery.api.Claim> getCustomClaimsMap() {
     return internalGetCustomClaims().getMap();
   }
   /**
-   * <code>map&lt;string, string&gt; customClaims = 5;</code>
+   * <code>map&lt;string, .wso2.discovery.api.Claim&gt; customClaims = 5;</code>
    */
   @java.lang.Override
 
-  public java.lang.String getCustomClaimsOrDefault(
+  public org.wso2.apk.enforcer.discovery.api.Claim getCustomClaimsOrDefault(
       java.lang.String key,
-      java.lang.String defaultValue) {
+      org.wso2.apk.enforcer.discovery.api.Claim defaultValue) {
     if (key == null) { throw new java.lang.NullPointerException(); }
-    java.util.Map<java.lang.String, java.lang.String> map =
+    java.util.Map<java.lang.String, org.wso2.apk.enforcer.discovery.api.Claim> map =
         internalGetCustomClaims().getMap();
     return map.containsKey(key) ? map.get(key) : defaultValue;
   }
   /**
-   * <code>map&lt;string, string&gt; customClaims = 5;</code>
+   * <code>map&lt;string, .wso2.discovery.api.Claim&gt; customClaims = 5;</code>
    */
   @java.lang.Override
 
-  public java.lang.String getCustomClaimsOrThrow(
+  public org.wso2.apk.enforcer.discovery.api.Claim getCustomClaimsOrThrow(
       java.lang.String key) {
     if (key == null) { throw new java.lang.NullPointerException(); }
-    java.util.Map<java.lang.String, java.lang.String> map =
+    java.util.Map<java.lang.String, org.wso2.apk.enforcer.discovery.api.Claim> map =
         internalGetCustomClaims().getMap();
     if (!map.containsKey(key)) {
       throw new java.lang.IllegalArgumentException();
@@ -415,9 +415,9 @@ private static final long serialVersionUID = 0L;
     if (!getSigningAlgorithmBytes().isEmpty()) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, signingAlgorithm_);
     }
-    for (java.util.Map.Entry<java.lang.String, java.lang.String> entry
+    for (java.util.Map.Entry<java.lang.String, org.wso2.apk.enforcer.discovery.api.Claim> entry
          : internalGetCustomClaims().getMap().entrySet()) {
-      com.google.protobuf.MapEntry<java.lang.String, java.lang.String>
+      com.google.protobuf.MapEntry<java.lang.String, org.wso2.apk.enforcer.discovery.api.Claim>
       customClaims__ = CustomClaimsDefaultEntryHolder.defaultEntry.newBuilderForType()
           .setKey(entry.getKey())
           .setValue(entry.getValue())
@@ -1044,8 +1044,8 @@ private static final long serialVersionUID = 0L;
     }
 
     private com.google.protobuf.MapField<
-        java.lang.String, java.lang.String> customClaims_;
-    private com.google.protobuf.MapField<java.lang.String, java.lang.String>
+        java.lang.String, org.wso2.apk.enforcer.discovery.api.Claim> customClaims_;
+    private com.google.protobuf.MapField<java.lang.String, org.wso2.apk.enforcer.discovery.api.Claim>
     internalGetCustomClaims() {
       if (customClaims_ == null) {
         return com.google.protobuf.MapField.emptyMapField(
@@ -1053,7 +1053,7 @@ private static final long serialVersionUID = 0L;
       }
       return customClaims_;
     }
-    private com.google.protobuf.MapField<java.lang.String, java.lang.String>
+    private com.google.protobuf.MapField<java.lang.String, org.wso2.apk.enforcer.discovery.api.Claim>
     internalGetMutableCustomClaims() {
       onChanged();;
       if (customClaims_ == null) {
@@ -1070,7 +1070,7 @@ private static final long serialVersionUID = 0L;
       return internalGetCustomClaims().getMap().size();
     }
     /**
-     * <code>map&lt;string, string&gt; customClaims = 5;</code>
+     * <code>map&lt;string, .wso2.discovery.api.Claim&gt; customClaims = 5;</code>
      */
 
     @java.lang.Override
@@ -1084,39 +1084,39 @@ private static final long serialVersionUID = 0L;
      */
     @java.lang.Override
     @java.lang.Deprecated
-    public java.util.Map<java.lang.String, java.lang.String> getCustomClaims() {
+    public java.util.Map<java.lang.String, org.wso2.apk.enforcer.discovery.api.Claim> getCustomClaims() {
       return getCustomClaimsMap();
     }
     /**
-     * <code>map&lt;string, string&gt; customClaims = 5;</code>
+     * <code>map&lt;string, .wso2.discovery.api.Claim&gt; customClaims = 5;</code>
      */
     @java.lang.Override
 
-    public java.util.Map<java.lang.String, java.lang.String> getCustomClaimsMap() {
+    public java.util.Map<java.lang.String, org.wso2.apk.enforcer.discovery.api.Claim> getCustomClaimsMap() {
       return internalGetCustomClaims().getMap();
     }
     /**
-     * <code>map&lt;string, string&gt; customClaims = 5;</code>
+     * <code>map&lt;string, .wso2.discovery.api.Claim&gt; customClaims = 5;</code>
      */
     @java.lang.Override
 
-    public java.lang.String getCustomClaimsOrDefault(
+    public org.wso2.apk.enforcer.discovery.api.Claim getCustomClaimsOrDefault(
         java.lang.String key,
-        java.lang.String defaultValue) {
+        org.wso2.apk.enforcer.discovery.api.Claim defaultValue) {
       if (key == null) { throw new java.lang.NullPointerException(); }
-      java.util.Map<java.lang.String, java.lang.String> map =
+      java.util.Map<java.lang.String, org.wso2.apk.enforcer.discovery.api.Claim> map =
           internalGetCustomClaims().getMap();
       return map.containsKey(key) ? map.get(key) : defaultValue;
     }
     /**
-     * <code>map&lt;string, string&gt; customClaims = 5;</code>
+     * <code>map&lt;string, .wso2.discovery.api.Claim&gt; customClaims = 5;</code>
      */
     @java.lang.Override
 
-    public java.lang.String getCustomClaimsOrThrow(
+    public org.wso2.apk.enforcer.discovery.api.Claim getCustomClaimsOrThrow(
         java.lang.String key) {
       if (key == null) { throw new java.lang.NullPointerException(); }
-      java.util.Map<java.lang.String, java.lang.String> map =
+      java.util.Map<java.lang.String, org.wso2.apk.enforcer.discovery.api.Claim> map =
           internalGetCustomClaims().getMap();
       if (!map.containsKey(key)) {
         throw new java.lang.IllegalArgumentException();
@@ -1130,7 +1130,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>map&lt;string, string&gt; customClaims = 5;</code>
+     * <code>map&lt;string, .wso2.discovery.api.Claim&gt; customClaims = 5;</code>
      */
 
     public Builder removeCustomClaims(
@@ -1144,16 +1144,16 @@ private static final long serialVersionUID = 0L;
      * Use alternate mutation accessors instead.
      */
     @java.lang.Deprecated
-    public java.util.Map<java.lang.String, java.lang.String>
+    public java.util.Map<java.lang.String, org.wso2.apk.enforcer.discovery.api.Claim>
     getMutableCustomClaims() {
       return internalGetMutableCustomClaims().getMutableMap();
     }
     /**
-     * <code>map&lt;string, string&gt; customClaims = 5;</code>
+     * <code>map&lt;string, .wso2.discovery.api.Claim&gt; customClaims = 5;</code>
      */
     public Builder putCustomClaims(
         java.lang.String key,
-        java.lang.String value) {
+        org.wso2.apk.enforcer.discovery.api.Claim value) {
       if (key == null) { throw new java.lang.NullPointerException(); }
       if (value == null) { throw new java.lang.NullPointerException(); }
       internalGetMutableCustomClaims().getMutableMap()
@@ -1161,11 +1161,11 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>map&lt;string, string&gt; customClaims = 5;</code>
+     * <code>map&lt;string, .wso2.discovery.api.Claim&gt; customClaims = 5;</code>
      */
 
     public Builder putAllCustomClaims(
-        java.util.Map<java.lang.String, java.lang.String> values) {
+        java.util.Map<java.lang.String, org.wso2.apk.enforcer.discovery.api.Claim> values) {
       internalGetMutableCustomClaims().getMutableMap()
           .putAll(values);
       return this;

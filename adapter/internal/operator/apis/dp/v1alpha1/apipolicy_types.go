@@ -59,6 +59,8 @@ type BackendJWTToken struct {
 type CustomClaim struct {
 	Claim string `json:"claim,omitempty"`
 	Value string `json:"value,omitempty"`
+	// +kubebuilder:default=string
+	Type string `json:"type"`
 }
 
 // RequestQueryModifier allows to modify request query params

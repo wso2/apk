@@ -47,8 +47,13 @@ spec:
                           properties:
                             claim:
                               type: string
+                            type:
+                              default: string
+                              type: string
                             value:
                               type: string
+                          required:
+                          - type
                           type: object
                         type: array
                       enabled:
@@ -173,8 +178,13 @@ spec:
                           properties:
                             claim:
                               type: string
+                            type:
+                              default: string
+                              type: string
                             value:
                               type: string
+                          required:
+                          - type
                           type: object
                         type: array
                       enabled:

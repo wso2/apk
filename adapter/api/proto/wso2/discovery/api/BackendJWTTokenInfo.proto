@@ -31,6 +31,11 @@ message BackendJWTTokenInfo {
 	string encoding = 2;
 	string header = 3;
 	string signingAlgorithm = 4;
-	map<string,string> customClaims = 5;
+	map<string,Claim> customClaims = 5;
 	int32 tokenTTL = 6;
+}
+
+message Claim {
+	string value = 1;
+	string type = 2;
 }
