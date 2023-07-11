@@ -95,6 +95,7 @@ spec:
     ext:
       disabled: true            
   default:
+    mutualSSL: optional
     type: ext
     ext:
       serviceRef: 
