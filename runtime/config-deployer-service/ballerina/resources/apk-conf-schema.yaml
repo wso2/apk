@@ -155,7 +155,9 @@ components:
           type: string
         parameters:
           type: object
-          example: {"headerName":"header1"}
+          oneOf:
+            - "$ref": "#/schemas/InterceptorProperties"
+            - "$ref": "#/schemas/BackendJWTProperties"
     RateLimit:
       title: API Rate Limit Details
       type: object
@@ -268,3 +270,54 @@ components:
         protocol:
           type: string
           example: http
+    InterceptorProperties:
+      title: Interceptor Parameters
+      type: object
+      properties:
+        backendUrl:
+          type: string
+        headersEnabled:
+          type: boolean
+        bodyEnabled:
+          type: boolean
+        trailersEnabled:
+          type: boolean
+        contextEnabled:
+          type: boolean
+      required:
+      - backendUrl
+      additionalProperties: false
+    BackendJWTProperties:
+      title: Backend JWT Parameters
+      type: object
+      properties:
+        enabled:
+          type: boolean
+          default: true
+        encoding:
+          type: string
+        signingAlgorithm:
+          type: string
+        header:
+          type: string
+        tokenTTL:
+          type: integer
+        customClaims:
+          type: array
+          items:
+            "$ref": "#/schemas/CustomClaims"
+      required:
+      - enabled
+      additionalProperties: false
+    CustomClaims:
+      type: object
+      required:
+      - claim
+      - value
+      properties:
+        claim:
+          type: string
+          default: claim1
+        value:
+          type: string
+          default: value1
