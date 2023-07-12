@@ -55,7 +55,7 @@ components:
         authentication:
           type: array
           items:
-            type: object
+            $ref: "#/components/schemas/AuthenticationRequest"
         additionalProperties:
           type: array
           description: Map of custom properties of API
@@ -81,18 +81,47 @@ components:
                 type: string
         corsConfiguration:
           $ref: "#/components/schemas/CORSConfiguration"
+    AuthenticationRequest:
+      oneOf:
+        - $ref: "#/components/schemas/JWTAuthentication"
+        - $ref: "#/components/schemas/APIKeyAuthentication"
+      discriminator:
+        propertyName: authType
+        mapping:
+          JWT: "#/components/schemas/JWTAuthentication"
+          APIKey: "#/components/schemas/APIKeyAuthentication"
     Authentication:
       type: object
+      discriminator:
+        propertyName: authType
       properties:
         authType:
           type: string
           example: JWT
-        sendTokenToUpstream:
-          type: boolean
-          default: false
         enabled:
           type: boolean
           example: true
+    JWTAuthentication:
+      allOf:
+      - $ref: '#/components/schemas/Authentication'
+      type: object
+      properties:
+        sendTokenToUpstream:
+          type: boolean
+          default: false
+        headerName:
+          type: string
+          example: Authorization
+        headerEnable:
+          type: boolean
+    APIKeyAuthentication:
+      allOf:
+      - $ref: '#/components/schemas/Authentication'
+      type: object
+      properties:
+        sendTokenToUpstream:
+          type: boolean
+          default: false
         headerName:
           type: string
           example: Authorization
@@ -102,7 +131,7 @@ components:
         headerEnable:
           type: boolean
         queryParamEnable:
-          type: boolean        
+          type: boolean      
     CORSConfiguration:
       type: object
       description: |
@@ -142,6 +171,16 @@ components:
             $ref: "#/components/schemas/APKOperationPolicy"
     APKOperationPolicy:
       title: API Operation Policy
+      oneOf:
+        - $ref: "#/components/schemas/InterceptorPolicy"
+        - $ref: "#/components/schemas/BackendJWTPolicy"
+      discriminator:
+        propertyName: "policyName"
+        mapping:
+          BackendJwt: "#/components/schemas/BackendJWTPolicy"
+          Interceptor: "#/components/schemas/InterceptorPolicy"
+    BaseOperationPolicy:
+      title: API Operation Policy
       required:
         - policyName
       type: object
@@ -150,14 +189,11 @@ components:
           type: string
         policyVersion:
           type: string
-          default: v1
+          default: "v1"
         policyId:
           type: string
-        parameters:
-          type: object
-          oneOf:
-            - "$ref": "#/schemas/InterceptorProperties"
-            - "$ref": "#/schemas/BackendJWTProperties"
+      discriminator:
+        propertyName: policyName
     RateLimit:
       title: API Rate Limit Details
       type: object
@@ -294,45 +330,53 @@ components:
         protocol:
           type: string
           example: http
-    InterceptorProperties:
+    InterceptorPolicy:
       title: Interceptor Parameters
       type: object
+      allOf:
+       - $ref: "#/components/schemas/BaseOperationPolicy"
       properties:
-        backendUrl:
-          type: string
-        headersEnabled:
-          type: boolean
-        bodyEnabled:
-          type: boolean
-        trailersEnabled:
-          type: boolean
-        contextEnabled:
-          type: boolean
+        parameters:
+          type: object
+          properties:
+            backendUrl:
+              type: string
+            headersEnabled:
+              type: boolean
+            bodyEnabled:
+              type: boolean
+            trailersEnabled:
+              type: boolean
+            contextEnabled:
+              type: boolean
       required:
       - backendUrl
-      additionalProperties: false
-    BackendJWTProperties:
+    BackendJWTPolicy:
       title: Backend JWT Parameters
       type: object
+      allOf:
+       - $ref: "#/components/schemas/BaseOperationPolicy"
       properties:
-        enabled:
-          type: boolean
-          default: true
-        encoding:
-          type: string
-        signingAlgorithm:
-          type: string
-        header:
-          type: string
-        tokenTTL:
-          type: integer
-        customClaims:
-          type: array
-          items:
-            "$ref": "#/schemas/CustomClaims"
+        parameters:
+          type: object
+          properties:
+            enabled:
+              type: boolean
+              default: true
+            encoding:
+              type: string
+            signingAlgorithm:
+              type: string
+            header:
+              type: string
+            tokenTTL:
+              type: integer
+            customClaims:
+              type: array
+              items:
+                "$ref": "#/components/schemas/CustomClaims"
       required:
       - enabled
-      additionalProperties: false
     CustomClaims:
       type: object
       required:
