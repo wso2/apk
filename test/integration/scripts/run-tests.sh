@@ -39,7 +39,7 @@ helm install apk-test-setup ../../helm-charts -n apk-integration-test \
 # Wait gateway resources to be available.
 kubectl wait --timeout=5m -n gateway-system deployment/gateway-api-admission-server --for=condition=Available
 kubectl wait --timeout=5m -n gateway-system job/gateway-api-admission --for=condition=Complete
-kubectl wait --timeout=5m -n apk-integration-test deployment/apk-test-setup-wso2-apk-adapter-deployment --for=condition=Available
+kubectl wait --timeout=10m -n apk-integration-test deployment/apk-test-setup-wso2-apk-adapter-deployment --for=condition=Available
 kubectl wait --timeout=5m -n apk-integration-test deployment/apk-test-setup-wso2-apk-gateway-runtime-deployment --for=condition=Available
 kubectl describe deployment apk-test-setup-wso2-apk-adapter-deployment -n apk-integration-test
 POD=$(kubectl get pod -l networkPolicyId=adapter-npi -n apk-integration-test -o jsonpath="{.items[0].metadata.name}")
