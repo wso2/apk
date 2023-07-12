@@ -929,6 +929,7 @@ public class APIClient {
         if resiliency is Resiliency {
             backendService.spec.timeout = resiliency.timeout;
             backendService.spec.'retry = resiliency.retryPolicy;
+            backendService.spec.circuitBreaker = resiliency.circuitBreaker;
         }
         return backendService;
     }

@@ -221,6 +221,21 @@ schemas:
           $ref: "#/schemas/Timeout"
         retryPolicy:
           $ref: "#/schemas/RetryPolicy"
+        circuitBreaker:
+          $ref: "#/schemas/CircuitBreaker"
+  CircuitBreaker:
+    type: object
+    properties:
+      maxConnectionPools:
+        type: integer
+      maxConnections:
+        type: integer
+      maxPendingRequests:
+        type: integer
+      maxRequests:
+        type: integer
+      maxRetries:
+        type: integer
   Timeout:
     type: object
     properties:

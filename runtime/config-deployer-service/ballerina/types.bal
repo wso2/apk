@@ -95,8 +95,17 @@ public type APKConf_additionalProperties record {
 };
 
 public type Resiliency record {
+    CircuitBreaker circuitBreaker?;
     Timeout timeout?;
     RetryPolicy retryPolicy?;
+};
+
+public type CircuitBreaker record {
+    int maxConnectionPools?;
+    int maxConnections?;
+    int maxPendingRequests?;
+    int maxRequests?;
+    int maxRetries?;
 };
 
 public type AuthenticationRequest JWTAuthentication|APIKeyAuthentication;

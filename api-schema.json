@@ -298,6 +298,34 @@
         },
         "retryPolicy": {
           "$ref": "#/components/schemas/RetryPolicy"
+        },
+        "circuitBreaker": {
+          "$ref": "#/components/schemas/CircuitBreaker"
+        }
+      }
+    },
+    "CircuitBreaker": {
+      "type": "object",
+      "properties": {
+        "maxConnectionPools": {
+          "type": "integer",
+          "example": 100
+        },
+        "maxConnections": {
+          "type": "integer",
+          "example": 100
+        },
+        "maxPendingRequests": {
+          "type": "integer",
+          "example": 100
+        },
+        "maxRequests": {
+          "type": "integer",
+          "example": 100
+        },
+        "maxRetries": {
+          "type": "integer",
+          "example": 3
         }
       }
     },
