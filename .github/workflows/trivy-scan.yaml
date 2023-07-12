@@ -4,13 +4,13 @@ on:
   schedule:
     - cron: "0 20 * * *"
 jobs:
-  scan-runtime-domain-service:
+  scan-config-deployer-service:
     runs-on: ubuntu-latest
     steps:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: 'wso2/runtime-domain-service:latest'
+          image-ref: 'wso2/config-deployer-service:latest'
           format: 'table'
           ignore-unfixed: true
           vuln-type: 'os,library'

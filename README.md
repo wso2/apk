@@ -71,7 +71,6 @@ WSO2 API Kubernetes Platform has released following docker images in the WSO2 pu
 * Adapter: [wso2/adapter:0.0.1-m12](https://hub.docker.com/r/wso2/adapter)
 * Gateway Enforcer: [wso2/enforcer:0.0.1-m12](https://hub.docker.com/r/wso2/enforcer/tags)
 * Gatewary Router: [wso2/router:0.0.1-m12](https://hub.docker.com/r/wso2/router)
-* Runtime DS: [wso2/runtime-domain-service:0.0.1-m12](https://hub.docker.com/r/wso2/runtime-domain-service)
 * IDP DS: [wso2/idp-domain-service:0.0.1-m12](https://hub.docker.com/r/wso2/devportal-domain-service)
 * IDP UI: [wso2/idp-ui:0.0.1-m12](https://hub.docker.com/r/wso2/devportal-domain-service)
 * Ratelimiter: [wso2/ratelimiter:0.0.1-m12](https://hub.docker.com/r/wso2/ratelimiter)

@@ -28,8 +28,6 @@ set -e
 current_dir=$PWD;
 # cd $current_dir;
 # cd ../../common-bal-libs/apk-common-lib;./gradlew build;
-# cd $current_dir;
-# cd ../../runtime/runtime-domain-service;./gradlew build -Pversion='test';
 cd $current_dir;
 cd ../../adapter;./gradlew build -Pversion='test';
 cd $current_dir;
