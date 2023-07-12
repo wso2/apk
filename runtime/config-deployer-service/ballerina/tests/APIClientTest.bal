@@ -88,18 +88,11 @@ public isolated function testBackendRetryAndTimeoutGenerationFromAPKConf() retur
         routeTimeoutSeconds: 40
     };
     model:CircuitBreaker? circuitBreakerConfigExpected = {
-        // threshold: {
-        //     maxConnectionPools: 100,
-        //     maxConnections: 100,
-        //     maxPendingRequests: 100,
-        //     maxRequests: 100,
-        //     maxRetries: 3
-        // }
-        maxConnectionPools: 100,
+        maxConnectionPools: 200,
         maxConnections: 100,
         maxPendingRequests: 100,
         maxRequests: 100,
-        maxRetries: 3
+        maxRetries: 5
     };
 
     foreach model:Backend backend in apiArtifact.backendServices {

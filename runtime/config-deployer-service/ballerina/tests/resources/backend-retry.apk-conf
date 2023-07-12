@@ -9,11 +9,11 @@ endpointConfigurations:
         endpoint: "https://httpbin.org"
         resiliency:
           circuitBreaker:
-            maxConnectionPools: 100
+            maxConnectionPools: 200
             maxConnections: 100
             maxPendingRequests: 100
             maxRequests: 100
-            maxRetries: 3
+            maxRetries: 5
           timeout:
             maxRouteTimeoutSeconds: 60
             routeIdleTimeoutSeconds: 400

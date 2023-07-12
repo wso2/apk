@@ -72,21 +72,12 @@ public type Retry record {
 };
 
 public type CircuitBreaker record {
-    // Threshold threshold?;
     int maxConnectionPools?;
     int maxConnections?;
     int maxPendingRequests?;
     int maxRequests?;
     int maxRetries?;
 };
-
-// public type Threshold record {
-//     int maxConnectionPools?;
-//     int maxConnections?;
-//     int maxPendingRequests?;
-//     int maxRequests?;
-//     int maxRetries?;
-// };
 
 public type TLSConfig record {
     string[] allowedSANs?;
