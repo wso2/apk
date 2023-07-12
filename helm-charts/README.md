@@ -1,6 +1,6 @@
 # apk-helm
 
-![Version: 0.0.1-m11](https://img.shields.io/badge/Version-0.0.1--m11-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.16.0](https://img.shields.io/badge/AppVersion-1.16.0-informational?style=flat-square)
+![Version: 0.0.1-m13](https://img.shields.io/badge/Version-0.0.1--m13-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.16.0](https://img.shields.io/badge/AppVersion-1.16.0-informational?style=flat-square)
 
 A Helm chart for APK components
 
@@ -40,114 +40,34 @@ A Helm chart for APK components
 | wso2.apk.idp.signing.configMapName | string | `""` | IDP jwt signing certificate configmap name |
 | wso2.apk.idp.signing.secretName | string | `""` | IDP jwt signing certificate secret name |
 | wso2.apk.idp.signing.fileName | string | `""` | IDP jwt signing certificate file name |
-| wso2.apk.cp.enabled | bool | `true` | Enabled control plane. |
-| wso2.apk.idp.database.driver | string | `"org.postgresql.Driver"` | Database Driver class. |
-| wso2.apk.idp.database.url | string | `"jdbc:postgresql://wso2apk-db-service:5432/WSO2AM_DB"` | Database URL. |
-| wso2.apk.idp.database.host | string | `"wso2apk-db-service"` | Database Host. |
-| wso2.apk.idp.database.port | int | `5432` | Database Port. |
-| wso2.apk.idp.database.databaseName | string | `"WSO2AM_DB"` | Database Name. |
-| wso2.apk.idp.database.username | string | `"wso2carbon"` | Database Username. |
-| wso2.apk.idp.database.secretName | string | `"apk-db-secret"` | Database Password secret name. |
-| wso2.apk.idp.database.secretKey | string | `"DB_PASSWORD"` | Database Password secret key. |
-| wso2.apk.idp.database.validationQuery | string | `"SELECT 1"` | Database validation query. |
-| wso2.apk.idp.database.validationTimeout | int | `250` | Database validation timeout in ms. |
-| wso2.apk.cp.devportal.deployment.resources.requests.memory | string | `"128Mi"` | CPU request for the container |
-| wso2.apk.cp.devportal.deployment.resources.requests.cpu | string | `"100m"` | Memory request for the container |
-| wso2.apk.cp.devportal.deployment.resources.limits.memory | string | `"1028Mi"` | CPU limit for the container |
-| wso2.apk.cp.devportal.deployment.resources.limits.cpu | string | `"1000m"` | Memory limit for the container |
-| wso2.apk.cp.devportal.deployment.readinessProbe.initialDelaySeconds | int | `20` | Number of seconds after the container has started before liveness probes are initiated. |
-| wso2.apk.cp.devportal.deployment.readinessProbe.periodSeconds | int | `20` | How often (in seconds) to perform the probe. |
-| wso2.apk.cp.devportal.deployment.readinessProbe.failureThreshold | int | `5` | Minimum consecutive failures for the probe to be considered failed after having succeeded. |
-| wso2.apk.cp.devportal.deployment.livenessProbe.initialDelaySeconds | int | `20` | Number of seconds after the container has started before liveness probes are initiated. |
-| wso2.apk.cp.devportal.deployment.livenessProbe.periodSeconds | int | `20` | How often (in seconds) to perform the probe. |
-| wso2.apk.cp.devportal.deployment.livenessProbe.failureThreshold | int | `5` | Minimum consecutive failures for the probe to be considered failed after having succeeded. |
-| wso2.apk.cp.devportal.deployment.strategy | string | `"Recreate"` | Deployment strategy |
-| wso2.apk.cp.devportal.deployment.replicas | int | `1` | Number of replicas |
-| wso2.apk.cp.devportal.deployment.imagePullPolicy | string | `"Always"` | Image pull policy |
-| wso2.apk.cp.devportal.deployment.image | string | `"wso2/devportal-domain-service:latest"` | Image |
-| wso2.apk.cp.admin.deployment.resources.requests.memory | string | `"128Mi"` | CPU request for the container |
-| wso2.apk.cp.admin.deployment.resources.requests.cpu | string | `"100m"` | Memory request for the container |
-| wso2.apk.cp.admin.deployment.resources.limits.memory | string | `"1028Mi"` | CPU limit for the container |
-| wso2.apk.cp.admin.deployment.resources.limits.cpu | string | `"1000m"` | Memory limit for the container |
-| wso2.apk.cp.admin.deployment.readinessProbe.initialDelaySeconds | int | `20` | Number of seconds after the container has started before liveness probes are initiated. |
-| wso2.apk.cp.admin.deployment.readinessProbe.periodSeconds | int | `20` | How often (in seconds) to perform the probe. |
-| wso2.apk.cp.admin.deployment.readinessProbe.failureThreshold | int | `5` | Minimum consecutive failures for the probe to be considered failed after having succeeded. |
-| wso2.apk.cp.admin.deployment.livenessProbe.initialDelaySeconds | int | `20` | Number of seconds after the container has started before liveness probes are initiated. |
-| wso2.apk.cp.admin.deployment.livenessProbe.periodSeconds | int | `20` | How often (in seconds) to perform the probe. |
-| wso2.apk.cp.admin.deployment.livenessProbe.failureThreshold | int | `5` | Minimum consecutive failures for the probe to be considered failed after having succeeded. |
-| wso2.apk.cp.admin.deployment.strategy | string | `"Recreate"` | Deployment strategy |
-| wso2.apk.cp.admin.deployment.replicas | int | `1` | Number of replicas |
-| wso2.apk.cp.admin.deployment.imagePullPolicy | string | `"Always"` | Image pull policy |
-| wso2.apk.cp.admin.deployment.image | string | `"wso2/admin-domain-service:latest"` | Image |
-| wso2.apk.cp.backoffice.deployment.resources.requests.memory | string | `"128Mi"` | CPU request for the container |
-| wso2.apk.cp.backoffice.deployment.resources.requests.cpu | string | `"100m"` | Memory request for the container |
-| wso2.apk.cp.backoffice.deployment.resources.limits.memory | string | `"1028Mi"` | CPU limit for the container |
-| wso2.apk.cp.backoffice.deployment.resources.limits.cpu | string | `"1000m"` | Memory limit for the container |
-| wso2.apk.cp.backoffice.deployment.readinessProbe.initialDelaySeconds | int | `20` | Number of seconds after the container has started before liveness probes are initiated. |
-| wso2.apk.cp.backoffice.deployment.readinessProbe.periodSeconds | int | `20` | How often (in seconds) to perform the probe. |
-| wso2.apk.cp.backoffice.deployment.readinessProbe.failureThreshold | int | `5` | Minimum consecutive failures for the probe to be considered failed after having succeeded. |
-| wso2.apk.cp.backoffice.deployment.livenessProbe.initialDelaySeconds | int | `20` | Number of seconds after the container has started before liveness probes are initiated. |
-| wso2.apk.cp.backoffice.deployment.livenessProbe.periodSeconds | int | `20` | How often (in seconds) to perform the probe. |
-| wso2.apk.cp.backoffice.deployment.livenessProbe.failureThreshold | int | `5` | Minimum consecutive failures for the probe to be considered failed after having succeeded. |
-| wso2.apk.cp.backoffice.deployment.strategy | string | `"Recreate"` | Deployment strategy |
-| wso2.apk.cp.backoffice.deployment.replicas | int | `1` | Number of replicas |
-| wso2.apk.cp.backoffice.deployment.imagePullPolicy | string | `"Always"` | Image pull policy |
-| wso2.apk.cp.backoffice.deployment.image | string | `"wso2/backoffice-domain-service:latest"` | Image |
-| wso2.apk.cp.managementServer.deployment.resources.requests.memory | string | `"128Mi"` | CPU request for the container |
-| wso2.apk.cp.managementServer.deployment.resources.requests.cpu | string | `"100m"` | Memory request for the container |
-| wso2.apk.cp.managementServer.deployment.resources.limits.memory | string | `"1028Mi"` | CPU limit for the container |
-| wso2.apk.cp.managementServer.deployment.resources.limits.cpu | string | `"1000m"` | Memory limit for the container |
-| wso2.apk.cp.managementServer.deployment.strategy | string | `"Recreate"` | Deployment strategy |
-| wso2.apk.cp.managementServer.deployment.replicas | int | `1` | Number of replicas |
-| wso2.apk.cp.managementServer.deployment.imagePullPolicy | string | `"Always"` | Image pull policy |
-| wso2.apk.cp.managementServer.deployment.image | string | `"wso2/management-server:0.0.1-m8"` | Image |
-| wso2.apk.cp.managementServer.deployment.readinessProbe.initialDelaySeconds | int | `20` | Number of seconds after the container has started before liveness probes are initiated. |
-| wso2.apk.cp.managementServer.deployment.readinessProbe.periodSeconds | int | `20` | How often (in seconds) to perform the probe. |
-| wso2.apk.cp.managementServer.deployment.readinessProbe.failureThreshold | int | `5` | Minimum consecutive failures for the probe to be considered failed after having succeeded. |
-| wso2.apk.cp.managementServer.deployment.livenessProbe.initialDelaySeconds | int | `20` | Number of seconds after the container has started before liveness probes are initiated. |
-| wso2.apk.cp.managementServer.deployment.livenessProbe.periodSeconds | int | `20` | How often (in seconds) to perform the probe. |
-| wso2.apk.cp.managementServer.deployment.livenessProbe.failureThreshold | int | `5` | Minimum consecutive failures for the probe to be considered failed after having succeeded. |
-| wso2.apk.cp.managementServer.configs.tls.secretName | string | `"management-server-cert"` | TLS secret name |
-| wso2.apk.cp.managementServer.configs.tls.certKeyFilename | string | `"tls.key"` | TLS key file name |
-| wso2.apk.cp.managementServer.configs.tls.certFilename | string | `"certchain.crt"` | TLS certificate file name |
 | wso2.apk.dp.enabled | bool | `true` | Enable the deployment of the Data Plane |
 | wso2.apk.dp.gateway.listener.hostname | string | `"gw.wso2.com"` | Gateway Listener Hostname |
 | wso2.apk.dp.gateway.listener.secretName | string | `""` | Gateway Listener Certificate Secret Name |
-| wso2.apk.dp.controlPlane.enabled | bool | `true` | Enable the control plane for Dataplane. |
-| wso2.apk.dp.controlPlane.serviceUrl | string | `""` | Control Plane Service URL |
-| wso2.apk.dp.controlPlane.enableHostNameVerification | bool | `true` | Hostname verification for the control plane  |
-| wso2.apk.dp.controlPlane.tls.secretName | string | `"organization-managetment-server-cert"` | TLS secret name for control-plane public certificate. |
-| wso2.apk.dp.controlPlane.tls.fileName | string | `"certificate.crt"` | TLS certificate file name. |
-| wso2.apk.dp.controlPlane.headers | list | `[{"name":"","value":""}]` | optional headers to be send to control plane service. |
-| wso2.apk.dp.managementServer.enabled | bool | `true` | Enable management server for Data Plane. |
-| wso2.apk.dp.managementServer.serviceUrl | string | `"https://control-plane-wso2-apk-management-server.control-plane.svc.cluster.local"` | Management Server Service URL |
-| wso2.apk.dp.managementServer.tls.secretName | string | `"managetment-server-cert"` | TLS secret name for management server public certificate. |
-| wso2.apk.dp.managementServer.tls.fileName | string | `"certificate.crt"` | TLS certificate file name. |
 | wso2.apk.dp.partitionServer.enabled | bool | `false` | Enable partition server for Data Plane. |
 | wso2.apk.dp.partitionServer.host | string | `""` | Partition Server Service URL |
 | wso2.apk.dp.partitionServer.serviceBasePath | string | `"/api/publisher/v1"` | Partition Server Service Base Path. |
 | wso2.apk.dp.partitionServer.partitionName | string | `"default"` | Partition Name. |
 | wso2.apk.dp.partitionServer.tls.secretName | string | `"managetment-server-cert"` | TLS secret name for Partition Server Public Certificate. |
 | wso2.apk.dp.partitionServer.tls.fileName | string | `"certificate.crt"` | TLS certificate file name. |
-| wso2.apk.dp.runtime.deployment.resources.requests.memory | string | `"128Mi"` | CPU request for the container |
-| wso2.apk.dp.runtime.deployment.resources.requests.cpu | string | `"100m"` | Memory request for the container |
-| wso2.apk.dp.runtime.deployment.resources.limits.memory | string | `"1028Mi"` | CPU limit for the container |
-| wso2.apk.dp.runtime.deployment.resources.limits.cpu | string | `"1000m"` | Memory limit for the container |
-| wso2.apk.dp.runtime.deployment.readinessProbe.initialDelaySeconds | int | `20` | Number of seconds after the container has started before liveness probes are initiated. |
-| wso2.apk.dp.runtime.deployment.readinessProbe.periodSeconds | int | `20` | How often (in seconds) to perform the probe. |
-| wso2.apk.dp.runtime.deployment.readinessProbe.failureThreshold | int | `5` | Minimum consecutive failures for the probe to be considered failed after having succeeded. |
-| wso2.apk.dp.runtime.deployment.livenessProbe.initialDelaySeconds | int | `20` | Number of seconds after the container has started before liveness probes are initiated. |
-| wso2.apk.dp.runtime.deployment.livenessProbe.periodSeconds | int | `20` | How often (in seconds) to perform the probe. |
-| wso2.apk.dp.runtime.deployment.livenessProbe.failureThreshold | int | `5` | Minimum consecutive failures for the probe to be considered failed after having succeeded. |
-| wso2.apk.dp.runtime.deployment.strategy | string | `"Recreate"` | Deployment strategy |
-| wso2.apk.dp.runtime.deployment.replicas | int | `1` | Number of replicas |
-| wso2.apk.dp.runtime.deployment.imagePullPolicy | string | `"Always"` | Image pull policy |
-| wso2.apk.dp.runtime.deployment.image | string | `"wso2/runtime-domain-service:latest"` | Image |
-| wso2.apk.dp.runtime.deployment.configs.authrorization | bool | `true` | Enable authorization for runtime api. |
-| wso2.apk.dp.runtime.deployment.configs.baseUrl | string | `"https://api.am.wso2.com:9095/api/runtime"` | Baseurl for runtime api. |
-| wso2.apk.dp.runtime.deployment.configs.tls.secretName | string | `""` | TLS secret name for runtime public certificate. |
-| wso2.apk.dp.runtime.deployment.configs.tls.certKeyFilename | string | `""` | TLS certificate file name. |
-| wso2.apk.dp.runtime.deployment.configs.tls.certFilename | string | `""` | TLS certificate file name. |
+| wso2.apk.dp.configdeployer.deployment.resources.requests.memory | string | `"128Mi"` | CPU request for the container |
+| wso2.apk.dp.configdeployer.deployment.resources.requests.cpu | string | `"100m"` | Memory request for the container |
+| wso2.apk.dp.configdeployer.deployment.resources.limits.memory | string | `"1028Mi"` | CPU limit for the container |
+| wso2.apk.dp.configdeployer.deployment.resources.limits.cpu | string | `"1000m"` | Memory limit for the container |
+| wso2.apk.dp.configdeployer.deployment.readinessProbe.initialDelaySeconds | int | `20` | Number of seconds after the container has started before liveness probes are initiated. |
+| wso2.apk.dp.configdeployer.deployment.readinessProbe.periodSeconds | int | `20` | How often (in seconds) to perform the probe. |
+| wso2.apk.dp.configdeployer.deployment.readinessProbe.failureThreshold | int | `5` | Minimum consecutive failures for the probe to be considered failed after having succeeded. |
+| wso2.apk.dp.configdeployer.deployment.livenessProbe.initialDelaySeconds | int | `20` | Number of seconds after the container has started before liveness probes are initiated. |
+| wso2.apk.dp.configdeployer.deployment.livenessProbe.periodSeconds | int | `20` | How often (in seconds) to perform the probe. |
+| wso2.apk.dp.configdeployer.deployment.livenessProbe.failureThreshold | int | `5` | Minimum consecutive failures for the probe to be considered failed after having succeeded. |
+| wso2.apk.dp.configdeployer.deployment.strategy | string | `"Recreate"` | Deployment strategy |
+| wso2.apk.dp.configdeployer.deployment.replicas | int | `1` | Number of replicas |
+| wso2.apk.dp.configdeployer.deployment.imagePullPolicy | string | `"Always"` | Image pull policy |
+| wso2.apk.dp.configdeployer.deployment.image | string | `"wso2/config-deployer-service:0.0.1-m13"` | Image |
+| wso2.apk.dp.configdeployer.deployment.configs.authrorization | bool | `true` | Enable authorization for runtime api. |
+| wso2.apk.dp.configdeployer.deployment.configs.baseUrl | string | `"https://api.am.wso2.com:9095/api/runtime"` | Baseurl for runtime api. |
+| wso2.apk.dp.configdeployer.deployment.configs.tls.secretName | string | `""` | TLS secret name for runtime public certificate. |
+| wso2.apk.dp.configdeployer.deployment.configs.tls.certKeyFilename | string | `""` | TLS certificate file name. |
+| wso2.apk.dp.configdeployer.deployment.configs.tls.certFilename | string | `""` | TLS certificate file name. |
 | wso2.apk.dp.adapter.deployment.resources.requests.memory | string | `"128Mi"` | CPU request for the container |
 | wso2.apk.dp.adapter.deployment.resources.requests.cpu | string | `"100m"` | Memory request for the container |
 | wso2.apk.dp.adapter.deployment.resources.limits.memory | string | `"1028Mi"` | CPU limit for the container |

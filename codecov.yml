@@ -11,9 +11,6 @@ flag_management:
     - name: adapter
       paths:
         - '**/adapter/**'
-    - name: runtime-domain-service
-      paths:
-        - '**/runtime-domain-service/**'
     - name: config-deployer-service
       paths:
         - '**/config-deployer-service/**'

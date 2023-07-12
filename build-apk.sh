@@ -6,8 +6,6 @@ current_dir=$PWD;
 cd $current_dir;
 cd common-bal-libs;./gradlew build;
 cd $current_dir;
-cd runtime/runtime-domain-service;./gradlew build;
-cd $current_dir;
 cd runtime/config-deployer-service;./gradlew build;
 cd $current_dir;
 cd adapter;./gradlew build;
