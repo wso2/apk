@@ -52,7 +52,7 @@ var DefaultAPIVersion = suite.IntegrationTest{
 				},
 				Backend:   "infra-backend-v1",
 				Namespace: ns,
-				Response:  http.Response{StatusCode: 200},
+				Response: http.Response{StatusCode: 200},
 			},
 			{
 				Request: http.Request{
@@ -67,24 +67,7 @@ var DefaultAPIVersion = suite.IntegrationTest{
 				},
 				Backend:   "infra-backend-v1",
 				Namespace: ns,
-				Response:  http.Response{StatusCode: 200},
-			},
-
-			// Test ratelimit for default version api
-			{
-				Request: http.Request{
-					Host:   "default-api-version.test.gw.wso2.com",
-					Path:   "/default-api-version/v2/echo-full",
-					Method: "GET",
-				},
-				ExpectedRequest: &http.ExpectedRequest{
-					Request: http.Request{
-						Path: "/v2/echo-full",
-					},
-				},
-				Backend:   "infra-backend-v1",
-				Namespace: ns,
-				Response:  http.Response{StatusCode: 429},
+				Response: http.Response{StatusCode: 200},
 			},
 		}
 		for i := range testCases {

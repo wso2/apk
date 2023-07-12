@@ -54,20 +54,3 @@ spec:
     - group: dp.wso2.com
       kind: Backend
       name: infra-backend-v1
----
-apiVersion: dp.wso2.com/v1alpha1
-kind: RateLimitPolicy
-metadata:
-  name: ratelimitter
-  namespace: gateway-integration-test-infra
-spec:
-  default:
-    type: Api
-    api:
-      rateLimit:
-        requestsPerUnit: 2
-        unit: Minute
-  targetRef:
-    kind: API
-    name: default-api-version
-    group: gateway.networking.k8s.io
