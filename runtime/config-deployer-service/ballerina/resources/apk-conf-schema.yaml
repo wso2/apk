@@ -104,34 +104,40 @@ components:
     JWTAuthentication:
       allOf:
       - $ref: '#/components/schemas/Authentication'
-      type: object
-      properties:
-        sendTokenToUpstream:
-          type: boolean
-          default: false
-        headerName:
-          type: string
-          example: Authorization
-        headerEnable:
-          type: boolean
+      - type: object
+        properties:
+          sendTokenToUpstream:
+            type: boolean
+            default: false
+          headerName:
+            type: string
+            example: Authorization
+            default: Authorization
+          headerEnable:
+            type: boolean
+            default: true
     APIKeyAuthentication:
       allOf:
       - $ref: '#/components/schemas/Authentication'
-      type: object
-      properties:
-        sendTokenToUpstream:
-          type: boolean
-          default: false
-        headerName:
-          type: string
-          example: Authorization
-        queryParamName:
-          type: string
-          example: apikey
-        headerEnable:
-          type: boolean
-        queryParamEnable:
-          type: boolean      
+      - type: object
+        properties:
+          sendTokenToUpstream:
+            type: boolean
+            default: false
+          headerName:
+            type: string
+            example: Authorization
+            default: apikey
+          queryParamName:
+            type: string
+            example: apikey
+            default: apikey
+          headerEnable:
+            type: boolean
+            default: true
+          queryParamEnable:
+            type: boolean      
+            default: true
     CORSConfiguration:
       type: object
       description: |
@@ -158,6 +164,10 @@ components:
         accessControlAllowMaxAge:
           type: integer
           default: 0
+        accessControlExposeHeaders:
+          type: array
+          items:
+            type: string
     APIOperationPolicies:
       title: API Operation Level Policies
       properties:
@@ -332,49 +342,49 @@ components:
           example: http
     InterceptorPolicy:
       title: Interceptor Parameters
-      type: object
       allOf:
-       - $ref: "#/components/schemas/BaseOperationPolicy"
-      properties:
-        parameters:
-          type: object
-          properties:
-            backendUrl:
-              type: string
-            headersEnabled:
-              type: boolean
-            bodyEnabled:
-              type: boolean
-            trailersEnabled:
-              type: boolean
-            contextEnabled:
-              type: boolean
+      - $ref: "#/components/schemas/BaseOperationPolicy"
+      - type: object
+        properties:
+          parameters:
+            type: object
+            properties:
+              backendUrl:
+                type: string
+              headersEnabled:
+                type: boolean
+              bodyEnabled:
+                type: boolean
+              trailersEnabled:
+                type: boolean
+              contextEnabled:
+                type: boolean
       required:
       - backendUrl
     BackendJWTPolicy:
       title: Backend JWT Parameters
-      type: object
       allOf:
-       - $ref: "#/components/schemas/BaseOperationPolicy"
-      properties:
-        parameters:
-          type: object
-          properties:
-            enabled:
-              type: boolean
-              default: true
-            encoding:
-              type: string
-            signingAlgorithm:
-              type: string
-            header:
-              type: string
-            tokenTTL:
-              type: integer
-            customClaims:
-              type: array
-              items:
-                "$ref": "#/components/schemas/CustomClaims"
+      - $ref: "#/components/schemas/BaseOperationPolicy"
+      - type: object
+        properties:
+          parameters:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+                default: true
+              encoding:
+                type: string
+              signingAlgorithm:
+                type: string
+              header:
+                type: string
+              tokenTTL:
+                type: integer
+              customClaims:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/CustomClaims"
       required:
       - enabled
     CustomClaims:
