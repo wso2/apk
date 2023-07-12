@@ -115,15 +115,6 @@ spec:
             - mountPath: /tmp/k8s-webhook-server/serving-certs
               name: adapter-webhook-server-cert
               readOnly: true
-            {{ if .Values.wso2.apk.dp.enabled}}
-            - name: runtime-ds-tls-volume
-              mountPath: /home/wso2/security/truststore/runtime.pem
-            {{- if and .Values.wso2.apk.dp.runtime.configs .Values.wso2.apk.dp.runtime.configs.tls }}
-              subPath: {{ .Values.wso2.apk.dp.runtime.configs.tls.certFilename | default "tls.crt" }}
-            {{- else }}
-              subPath: tls.crt
-            {{- end }}
-            {{ end }}
             {{if and .Values.wso2.apk.dp.partitionServer .Values.wso2.apk.dp.partitionServer.tls}}
             - name:  partition-server-truststore-secret-volume
               mountPath: /home/wso2/security/truststore/partition-server.crt
@@ -164,15 +155,6 @@ spec:
           secret:
             secretName: {{ template "apk-helm.resource.prefix" . }}-webhook-server-cert
             defaultMode: 420
-        {{ if .Values.wso2.apk.dp.enabled}}
-        - name: runtime-ds-tls-volume
-          secret:
-       {{ if and .Values.wso2.apk.dp.runtime.configs .Values.wso2.apk.dp.runtime.configs.tls }}
-            secretName: {{ .Values.wso2.apk.dp.runtime.configs.tls.secretName | default (printf "%s-runtime-ds-server-cert" (include "apk-helm.resource.prefix" .)) }}
-       {{ else }}
-            secretName: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-server-cert
-       {{ end }}
-        {{ end }}
         - name: router-truststore-secret-volume
           secret: 
             {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls }}
