@@ -1,0 +1,22 @@
+{{ if and .Values.wso2.apk.dp.enabled .Values.wso2.apk.migration.enabled }}
+kind: JWTIssuer
+apiVersion: dp.wso2.com/v1alpha1
+metadata:
+  name: {{ template "apk-helm.resource.prefix" . }}-migration-jwt-issuer
+  namespace: {{ .Release.Namespace }}
+spec:
+  name: "Domain-service-idp"
+  consumerKeyClaim: "azp"
+  scopesClaim: "scope"
+  issuer: "https://idp.migration.am.wso2.com/token"
+  organization: "carbon.super"
+  signatureValidation:
+    certificate:
+      secretRef:
+        name: "{{ template "apk-helm.resource.prefix" . }}-enforcer-truststore-secret"
+        key: "wso2carbon.pem"
+  targetRef:
+    kind: Gateway
+    name: default
+    group: gateway.networking.k8s.io
+{{- end -}}
