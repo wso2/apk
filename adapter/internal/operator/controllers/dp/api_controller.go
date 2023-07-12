@@ -45,6 +45,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	k8client "sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
 	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -291,75 +292,59 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 	if len(api.Spec.Sandbox) > 0 {
 		sandHTTPRouteRefs = api.Spec.Sandbox[0].HTTPRouteRefs
 	}
-	var prodHTTPRoute *synchronizer.HTTPRouteState
-	var sandHTTPRoute *synchronizer.HTTPRouteState
 
-	// Resolve API level policies
-	var authentications map[string]dpv1alpha1.Authentication
-	var rateLimitPolicies map[string]dpv1alpha1.RateLimitPolicy
-	var apiPolicies map[string]dpv1alpha1.APIPolicy
-	var resourceAuthentications map[string]dpv1alpha1.Authentication
-	var resourceRateLimitPolicies map[string]dpv1alpha1.RateLimitPolicy
-	var resourceAPIPolicies map[string]dpv1alpha1.APIPolicy
-	var interceptorServices map[string]dpv1alpha1.InterceptorService
-	var apiDefinitionFile []byte
-
+	apiState := &synchronizer.APIState{}
 	var err error
 	apiRef := utils.NamespacedName(&api)
 	namespace := api.Namespace
-	if authentications, err = apiReconciler.getAuthenticationsForAPI(ctx, api); err != nil {
+	if apiState.Authentications, err = apiReconciler.getAuthenticationsForAPI(ctx, api); err != nil {
 		return nil, fmt.Errorf("error while getting API level auth for API : %s in namespace :%s, %s", apiRef.String(),
 			namespace, err.Error())
 	}
-	if rateLimitPolicies, err = apiReconciler.getRatelimitPoliciesForAPI(ctx, api); err != nil {
+	if apiState.RateLimitPolicies, err = apiReconciler.getRatelimitPoliciesForAPI(ctx, api); err != nil {
 		return nil, fmt.Errorf("error while getting API level ratelimit for API : %s in namespace :%s, %s", apiRef.String(),
 			namespace, err.Error())
 	}
-	if apiPolicies, err = apiReconciler.getAPIPoliciesForAPI(ctx, api); err != nil {
+	if apiState.APIPolicies, err = apiReconciler.getAPIPoliciesForAPI(ctx, api); err != nil {
 		return nil, fmt.Errorf("error while getting API level apipolicy for API : %s in namespace :%s, %s", apiRef.String(),
 			namespace, err.Error())
 	}
 
-	if resourceAuthentications, err = apiReconciler.getAuthenticationsForResources(ctx, api); err != nil {
+	if apiState.ResourceAuthentications, err = apiReconciler.getAuthenticationsForResources(ctx, api); err != nil {
 		return nil, fmt.Errorf("error while getting httproute resource auth : %s in namespace :%s, %s", apiRef.String(),
 			namespace, err.Error())
 	}
-	if resourceRateLimitPolicies, err = apiReconciler.getRatelimitPoliciesForResources(ctx, api); err != nil {
+	if apiState.ResourceRateLimitPolicies, err = apiReconciler.getRatelimitPoliciesForResources(ctx, api); err != nil {
 		return nil, fmt.Errorf("error while getting httproute resource ratelimit : %s in namespace :%s, %s", apiRef.String(),
 			namespace, err.Error())
 	}
-	if resourceAPIPolicies, err = apiReconciler.getAPIPoliciesForResources(ctx, api); err != nil {
+	if apiState.ResourceAPIPolicies, err = apiReconciler.getAPIPoliciesForResources(ctx, api); err != nil {
 		return nil, fmt.Errorf("error while getting httproute resource apipolicy %s in namespace :%s, %s", apiRef.String(),
 			namespace, err.Error())
 	}
-	if interceptorServices, err = apiReconciler.getInterceptorServices(ctx, apiPolicies, resourceAPIPolicies, api); err != nil {
+	if apiState.InterceptorServiceMapping, err = apiReconciler.getInterceptorServices(ctx, apiState.APIPolicies,
+		apiState.ResourceAPIPolicies, api); err != nil {
 		return nil, fmt.Errorf("error while getting interceptor services %s in namespace :%s, %s", apiRef.String(),
 			namespace, err.Error())
 	}
 	if api.Spec.DefinitionFileRef != "" {
-		if apiDefinitionFile, err = apiReconciler.getAPIDefinitionForAPI(ctx, api.Spec.DefinitionFileRef, namespace, api); err != nil {
+		if apiState.APIDefinitionFile, err = apiReconciler.getAPIDefinitionForAPI(ctx, api.Spec.DefinitionFileRef, namespace, api); err != nil {
 			return nil, fmt.Errorf("error while getting api definition file of api %s in namespace :%s, %s", apiRef.String(),
 				namespace, err.Error())
 		}
 	}
 
 	if len(prodHTTPRouteRefs) > 0 {
-		prodHTTPRoute = &synchronizer.HTTPRouteState{
-			Authentications:           authentications,
-			RateLimitPolicies:         rateLimitPolicies,
-			ResourceAuthentications:   resourceAuthentications,
-			ResourceRateLimitPolicies: resourceRateLimitPolicies,
-			ResourceAPIPolicies:       resourceAPIPolicies,
-			APIPolicies:               apiPolicies,
-			InterceptorServiceMapping: interceptorServices,
-		}
-		if prodHTTPRoute, err = apiReconciler.resolveHTTPRouteRefs(ctx, prodHTTPRoute, prodHTTPRouteRefs, namespace, api, apiPolicies); err != nil {
+		apiState.ProdHTTPRoute = &synchronizer.HTTPRouteState{}
+		if apiState.ProdHTTPRoute, err = apiReconciler.resolveHTTPRouteRefs(ctx, apiState.ProdHTTPRoute, prodHTTPRouteRefs,
+			namespace, apiState.InterceptorServiceMapping, api); err != nil {
 			return nil, fmt.Errorf("error while resolving production httpRouteref %s in namespace :%s has not found. %s",
 				prodHTTPRouteRefs, namespace, err.Error())
 		}
 		if !apiReconciler.ods.IsGatewayAvailable(types.NamespacedName{
-			Name:      string(prodHTTPRoute.HTTPRoute.Spec.ParentRefs[0].Name),
-			Namespace: utils.GetNamespace(prodHTTPRoute.HTTPRoute.Spec.ParentRefs[0].Namespace, prodHTTPRoute.HTTPRoute.Namespace),
+			Name: string(apiState.ProdHTTPRoute.HTTPRoute.Spec.ParentRefs[0].Name),
+			Namespace: utils.GetNamespace(apiState.ProdHTTPRoute.HTTPRoute.Spec.ParentRefs[0].Namespace,
+				apiState.ProdHTTPRoute.HTTPRoute.Namespace),
 		}) {
 			return nil, fmt.Errorf("no gateway available for httpRouteref %s in namespace :%s has not found",
 				prodHTTPRouteRefs, namespace)
@@ -367,22 +352,15 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 	}
 
 	if len(sandHTTPRouteRefs) > 0 {
-		sandHTTPRoute = &synchronizer.HTTPRouteState{
-			Authentications:           authentications,
-			RateLimitPolicies:         rateLimitPolicies,
-			ResourceAuthentications:   resourceAuthentications,
-			ResourceRateLimitPolicies: resourceRateLimitPolicies,
-			ResourceAPIPolicies:       resourceAPIPolicies,
-			APIPolicies:               apiPolicies,
-			InterceptorServiceMapping: interceptorServices,
-		}
-		if sandHTTPRoute, err = apiReconciler.resolveHTTPRouteRefs(ctx, sandHTTPRoute, sandHTTPRouteRefs, namespace, api, apiPolicies); err != nil {
+		apiState.SandHTTPRoute = &synchronizer.HTTPRouteState{}
+		if apiState.SandHTTPRoute, err = apiReconciler.resolveHTTPRouteRefs(ctx, apiState.SandHTTPRoute, sandHTTPRouteRefs,
+			namespace, apiState.InterceptorServiceMapping, api); err != nil {
 			return nil, fmt.Errorf("error while resolving sandbox httpRouteref %s in namespace :%s has not found. %s",
 				sandHTTPRouteRefs, namespace, err.Error())
 		}
 		if !apiReconciler.ods.IsGatewayAvailable(types.NamespacedName{
-			Name:      string(sandHTTPRoute.HTTPRoute.Spec.ParentRefs[0].Name),
-			Namespace: utils.GetNamespace(sandHTTPRoute.HTTPRoute.Spec.ParentRefs[0].Namespace, sandHTTPRoute.HTTPRoute.Namespace),
+			Name:      string(apiState.SandHTTPRoute.HTTPRoute.Spec.ParentRefs[0].Name),
+			Namespace: utils.GetNamespace(apiState.SandHTTPRoute.HTTPRoute.Spec.ParentRefs[0].Namespace, apiState.SandHTTPRoute.HTTPRoute.Namespace),
 		}) {
 			return nil, fmt.Errorf("no gateway available for httpRouteref %s in namespace :%s has not found",
 				sandHTTPRouteRefs, namespace)
@@ -392,10 +370,10 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 	loggers.LoggerAPKOperator.Debugf("HTTPRoutes are retrieved successfully for API CR %s", apiRef.String())
 
 	if !api.Status.Accepted {
-		apiState := apiReconciler.ods.AddAPIState(api, prodHTTPRoute, sandHTTPRoute, apiDefinitionFile)
-		return &synchronizer.APIEvent{EventType: constants.Create, Event: apiState, UpdatedEvents: []string{}}, nil
+		apiReconciler.ods.AddAPIState(apiRef, apiState)
+		return &synchronizer.APIEvent{EventType: constants.Create, Event: *apiState, UpdatedEvents: []string{}}, nil
 	} else if cachedAPI, events, updated :=
-		apiReconciler.ods.UpdateAPIState(&api, prodHTTPRoute, sandHTTPRoute, apiDefinitionFile); updated {
+		apiReconciler.ods.UpdateAPIState(apiRef, apiState); updated {
 		return &synchronizer.APIEvent{EventType: constants.Update, Event: cachedAPI, UpdatedEvents: events}, nil
 	}
 
@@ -405,13 +383,13 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 // resolveHTTPRouteRefs validates following references related to the API
 // - Authentications
 func (apiReconciler *APIReconciler) resolveHTTPRouteRefs(ctx context.Context, httpRouteState *synchronizer.HTTPRouteState,
-	httpRouteRefs []string, namespace string, api dpv1alpha1.API, apiPolicies map[string]dpv1alpha1.APIPolicy) (*synchronizer.HTTPRouteState, error) {
+	httpRouteRefs []string, namespace string, interceptorServiceMapping map[string]v1alpha1.InterceptorService, api dpv1alpha1.API) (*synchronizer.HTTPRouteState, error) {
 	var err error
 	httpRouteState.HTTPRoute, err = apiReconciler.concatHTTPRoutes(ctx, httpRouteRefs, namespace, api)
 	if err != nil {
 		return nil, err
 	}
-	httpRouteState.BackendMapping = apiReconciler.getResolvedBackendsMapping(ctx, httpRouteState, api)
+	httpRouteState.BackendMapping = apiReconciler.getResolvedBackendsMapping(ctx, httpRouteState, interceptorServiceMapping, api)
 	httpRouteState.Scopes, err = apiReconciler.getScopesForHTTPRoute(ctx, httpRouteState.HTTPRoute, api)
 	return httpRouteState, err
 }
@@ -619,7 +597,7 @@ func (apiReconciler *APIReconciler) getInterceptorServices(ctx context.Context,
 }
 
 func (apiReconciler *APIReconciler) getResolvedBackendsMapping(ctx context.Context,
-	httpRouteState *synchronizer.HTTPRouteState, api dpv1alpha1.API) dpv1alpha1.BackendMapping {
+	httpRouteState *synchronizer.HTTPRouteState, interceptorServiceMapping map[string]v1alpha1.InterceptorService, api dpv1alpha1.API) dpv1alpha1.BackendMapping {
 	backendMapping := make(dpv1alpha1.BackendMapping)
 
 	// Resolve backends in HTTPRoute
@@ -638,7 +616,7 @@ func (apiReconciler *APIReconciler) getResolvedBackendsMapping(ctx context.Conte
 	}
 
 	// Resolve backends in InterceptorServices
-	interceptorServices := maps.Values(httpRouteState.InterceptorServiceMapping)
+	interceptorServices := maps.Values(interceptorServiceMapping)
 	for _, interceptorService := range interceptorServices {
 		utils.ResolveAndAddBackendToMapping(ctx, apiReconciler.client, backendMapping,
 			interceptorService.Spec.BackendRef, interceptorService.Namespace, &api)

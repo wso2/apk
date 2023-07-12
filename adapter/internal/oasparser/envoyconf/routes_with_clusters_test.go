@@ -100,8 +100,6 @@ func TestCreateRoutesWithClustersWithExactAndRegularExpressionRules(t *testing.T
 	}
 
 	httpRouteState.HTTPRoute = &httpRoute
-	httpRouteState.Authentications = make(map[string]v1alpha1.Authentication)
-	httpRouteState.ResourceAuthentications = make(map[string]v1alpha1.Authentication)
 
 	backendMapping := make(v1alpha1.BackendMapping)
 	backendMapping[k8types.NamespacedName{Namespace: "default", Name: "backend-1"}] =
@@ -222,8 +220,6 @@ func TestCreateRoutesWithClustersWithMultiplePathPrefixRules(t *testing.T) {
 	}
 
 	httpRouteState.HTTPRoute = &httpRoute
-	httpRouteState.Authentications = make(map[string]v1alpha1.Authentication)
-	httpRouteState.ResourceAuthentications = make(map[string]v1alpha1.Authentication)
 
 	backendMapping := make(v1alpha1.BackendMapping)
 	backendMapping[k8types.NamespacedName{Namespace: "default", Name: "order-backend"}] =
@@ -360,8 +356,6 @@ func TestCreateRoutesWithClustersWithBackendTLSConfigs(t *testing.T) {
 	}
 
 	httpRouteState.HTTPRoute = &httpRoute
-	httpRouteState.Authentications = make(map[string]v1alpha1.Authentication)
-	httpRouteState.ResourceAuthentications = make(map[string]v1alpha1.Authentication)
 
 	backendMapping := make(v1alpha1.BackendMapping)
 	backendMapping[k8types.NamespacedName{Namespace: "default", Name: "test-backend-3"}] =
@@ -682,8 +676,6 @@ func TestCreateRoutesWithClustersDifferentBackendRefs(t *testing.T) {
 	}
 
 	httpRouteState.HTTPRoute = &httpRoute
-	httpRouteState.Authentications = make(map[string]v1alpha1.Authentication)
-	httpRouteState.ResourceAuthentications = make(map[string]v1alpha1.Authentication)
 
 	backendMapping := make(v1alpha1.BackendMapping)
 	backendMapping[k8types.NamespacedName{Namespace: "default", Name: "test-backend-1"}] =
@@ -774,8 +766,6 @@ func TestCreateRoutesWithClustersSameBackendRefs(t *testing.T) {
 	}
 
 	httpRouteState.HTTPRoute = &httpRoute
-	httpRouteState.Authentications = make(map[string]v1alpha1.Authentication)
-	httpRouteState.ResourceAuthentications = make(map[string]v1alpha1.Authentication)
 
 	backendMapping := make(v1alpha1.BackendMapping)
 	backendMapping[k8types.NamespacedName{Namespace: "default", Name: "test-backend-1"}] =
