@@ -208,6 +208,12 @@ func getExtAuthzHTTPFilter() *hcmv3.HttpFilter {
 					},
 				},
 				Timeout: ptypes.DurationProto(conf.Envoy.EnforcerResponseTimeoutInSeconds * time.Second),
+				InitialMetadata: []*corev3.HeaderValue{
+					{
+						Key:   "x-request-id",
+						Value: "%REQ(x-request-id)%",
+					},
+				},
 			},
 		},
 	}

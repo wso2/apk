@@ -18,6 +18,7 @@
 
 package org.wso2.apk.enforcer.grpc.interceptors;
 
+import com.google.common.net.HttpHeaders;
 import io.grpc.Contexts;
 import io.grpc.Metadata;
 import io.grpc.ServerCall;
@@ -65,7 +66,10 @@ public class OpenTelemetryInterceptor implements ServerInterceptor {
         if (Utils.tracingEnabled()) {
             TextMapPropagator propagator = TracerFactory.getInstance().getTextPropagator();
             Context parentContext = propagator.extract(Context.current(), headers, getter);
-            TracingContextHolder.getInstance().setContext(parentContext);
+            Metadata.Key<String> xRequestIdKey = Metadata.Key.of(HttpHeaders.X_REQUEST_ID,
+                                                                 Metadata.ASCII_STRING_MARSHALLER);
+            String traceId = headers.get(xRequestIdKey);
+            TracingContextHolder.setContext(traceId, parentContext);
             logger.debug("Attached to propagated parent tracing context.");
         }
         return Contexts.interceptCall(io.grpc.Context.current(), call, headers, next);

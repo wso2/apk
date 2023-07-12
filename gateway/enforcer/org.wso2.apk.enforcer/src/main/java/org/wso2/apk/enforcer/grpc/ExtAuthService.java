@@ -73,7 +73,7 @@ public class ExtAuthService extends AuthorizationGrpc.AuthorizationImplBase {
                             request.getAttributes().getRequest().getHttp().getId());
             if (Utils.tracingEnabled()) {
                 TracingTracer tracer = Utils.getGlobalTracer();
-                Context parentContext = TracingContextHolder.getInstance().getContext();
+                Context parentContext = TracingContextHolder.getContext(traceId);
                 // This span will be the parent span for all the filters
                 extAuthServiceSpan = Utils.startSpan(TracingConstants.EXT_AUTH_SERVICE_SPAN, parentContext, tracer);
                 extAuthServiceSpanScope = extAuthServiceSpan.getSpan().makeCurrent();
