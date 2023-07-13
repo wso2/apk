@@ -19,7 +19,6 @@ package v1alpha1
 
 import (
 	"strconv"
-	"strings"
 	"time"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -111,10 +110,6 @@ func (r *APIPolicy) validateJWTClaims() error {
 	if r.Spec.Default != nil && r.Spec.Default.BackendJWTToken != nil {
 		claims := r.Spec.Default.BackendJWTToken.CustomClaims
 		for _, claim := range claims {
-			if strings.EqualFold(claim.Type, "string") || strings.EqualFold(claim.Type, "int") ||
-				strings.EqualFold(claim.Type, "float") || strings.EqualFold(claim.Type, "bool") || strings.EqualFold(claim.Type, "date") {
-				allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("default").Child("backendJWTToken").Child("customClaims"), claim, "Invalid type for Claim Value"))
-			}
 			valType := claim.Type
 			switch valType {
 			case "int":
@@ -143,10 +138,6 @@ func (r *APIPolicy) validateJWTClaims() error {
 	if r.Spec.Override != nil && r.Spec.Override.BackendJWTToken != nil {
 		claims := r.Spec.Override.BackendJWTToken.CustomClaims
 		for _, claim := range claims {
-			if !strings.EqualFold(claim.Type, "string") && !strings.EqualFold(claim.Type, "int") &&
-				!strings.EqualFold(claim.Type, "float") && !strings.EqualFold(claim.Type, "bool") && !strings.EqualFold(claim.Type, "date") {
-				allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("override").Child("backendJWTToken").Child("customClaims"), claim, "Invalid type for Claim Value"))
-			}
 			valType := claim.Type
 			switch valType {
 			case "int":
