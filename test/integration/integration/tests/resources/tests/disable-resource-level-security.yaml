@@ -82,9 +82,9 @@ spec:
     ext:
       disabled: true            
   default:
-    mutualSSL: optional
     type: ext
     ext:
+      mutualSSL: optional
       serviceRef: 
         group: wso2/v1alpha2
         kind: Backend
