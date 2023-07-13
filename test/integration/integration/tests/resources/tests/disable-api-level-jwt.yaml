@@ -1,0 +1,186 @@
+# Copyright (c) 2023, WSO2 LLC. (https://www.wso2.com) All Rights Reserved.
+#
+# WSO2 LLC. licenses this file to you under the Apache License,
+# Version 2.0 (the "License"); you may not use this file except
+# in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+apiVersion: dp.wso2.com/v1alpha1
+kind: API
+metadata:
+  name: disable-api-level-jwt
+  namespace: gateway-integration-test-infra
+spec:
+  apiDisplayName: API with Backend Base Path
+  apiType: REST
+  apiVersion: v1.0.0
+  context: /disable-api-level-jwt/v1.0.0
+  isDefaultVersion: true
+  #definitionFileRef: definition-file
+  production:
+    - httpRouteRefs:
+      - disable-api-level-jwt-httproute
+  organization: wso2-org
+---
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: HTTPRoute
+metadata:
+  name: disable-api-level-jwt-httproute
+  namespace: gateway-integration-test-infra
+spec:
+  parentRefs:
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    name: default
+    namespace: apk-integration-test
+    sectionName: httpslistener
+  hostnames:
+  - disable-api-level-jwt.test.gw.wso2.com
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /v2/echo-full
+    backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: infra-backend-v1
+---
+apiVersion: dp.wso2.com/v1alpha1
+kind: Authentication
+metadata:
+  name: disable-api-level-jwt-authentication
+  namespace: gateway-integration-test-infra
+spec:
+  override:
+    type: ext
+    ext:
+      disabled: false
+      serviceRef:
+        group: wso2/v1alpha2
+        kind: Backend
+        name: ext_authz-server
+        port: 1234
+      authTypes:
+        apiKey:
+          - in: Header
+            name: x-api-key
+        jwt:
+          disabled: true
+  default:
+    type: ext
+    ext:
+      serviceRef: 
+        group: wso2/v1alpha2
+        kind: Backend
+        name: ext_authz-server
+        port: 1234
+      authTypes:
+        apiKey:
+          - in: Header
+            name: x-api-key
+  targetRef:
+    kind: API
+    name: disable-api-level-jwt
+    group: gateway.networking.k8s.io
+    namespace: gateway-integration-test-infra
+
+
+
+
+
+
+
+
+
+
+
+---
+apiVersion: dp.wso2.com/v1alpha1
+kind: API
+metadata:
+  name: disable-api-level-jwt1
+  namespace: gateway-integration-test-infra
+spec:
+  apiDisplayName: API with Backend Base Path
+  apiType: REST
+  apiVersion: v1.0.0
+  context: /disable-api-level-jwt1/v1.0.0
+  isDefaultVersion: true
+  #definitionFileRef: definition-file
+  production:
+    - httpRouteRefs:
+      - disable-api-level-jwt1-httproute
+  organization: wso2-org
+---
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: HTTPRoute
+metadata:
+  name: disable-api-level-jwt1-httproute
+  namespace: gateway-integration-test-infra
+spec:
+  parentRefs:
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    name: default
+    namespace: apk-integration-test
+    sectionName: httpslistener
+  hostnames:
+  - disable-api-level-jwt1.test.gw.wso2.com
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /v2/echo-full
+    backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: infra-backend-v1
+---
+apiVersion: dp.wso2.com/v1alpha1
+kind: Authentication
+metadata:
+  name: disable-api-level-jwt1-authentication
+  namespace: gateway-integration-test-infra
+spec:
+  override:
+    type: ext
+    ext:
+      disabled: false
+      serviceRef:
+        group: wso2/v1alpha2
+        kind: Backend
+        name: ext_authz-server
+        port: 1234
+      authTypes:
+        apiKey:
+          - in: Header
+            name: x-api-key
+        jwt:
+          disabled: false
+  default:
+    type: ext
+    ext:
+      serviceRef: 
+        group: wso2/v1alpha2
+        kind: Backend
+        name: ext_authz-server
+        port: 1234
+      authTypes:
+        apiKey:
+          - in: Header
+            name: x-api-key
+  targetRef:
+    kind: API
+    name: disable-api-level-jwt1
+    group: gateway.networking.k8s.io
+    namespace: gateway-integration-test-infra

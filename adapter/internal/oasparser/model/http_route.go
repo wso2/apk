@@ -561,8 +561,13 @@ func concatAuthSchemes(schemeUp *dpv1alpha1.Authentication, schemeDown *dpv1alph
 // tip: use concatScheme method
 func getSecurity(authScheme *dpv1alpha1.Authentication) *Authentication {
 	auth := &Authentication{Disabled: false,
-		JWT:            &JWT{Header: constants.AuthorizationHeader},
 		TestConsoleKey: &TestConsoleKey{Header: constants.TestConsoleKeyHeader},
+		JWT: &JWT{Header: constants.AuthorizationHeader},
+	}
+	if (authScheme != nil && authScheme.Spec.Override.ExternalService.AuthTypes != nil && authScheme.Spec.Override.ExternalService.AuthTypes.JWT.Disabled) {
+		auth = &Authentication{Disabled: false,
+			TestConsoleKey: &TestConsoleKey{Header: constants.TestConsoleKeyHeader},
+		}
 	}
 	//todo(amali) jwt disable apikey enable handle
 	// todo(amali) handle disabled auth
@@ -582,7 +587,6 @@ func getSecurity(authScheme *dpv1alpha1.Authentication) *Authentication {
 			auth.APIKey = apiKeys
 		}
 	}
-	loggers.LoggerOasparser.Debug("No auths were provided")
 	return auth
 }
 

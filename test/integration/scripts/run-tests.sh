@@ -67,6 +67,10 @@ sudo echo "$IP fetch-api-definition.test.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "$IP fetch-non-existing-api-definition.test.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "$IP default-api-version-ratelimit.test.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "$IP default-api-version.test.gw.wso2.com" | sudo tee -a /etc/hosts
+sudo echo "$IP disable-api-level-jwt.test.gw.wso2.com" | sudo tee -a /etc/hosts
+sudo echo "$IP disable-resource-level-jwt.test.gw.wso2.com" | sudo tee -a /etc/hosts
+sudo echo "$IP disable-api-level-jwt1.test.gw.wso2.com" | sudo tee -a /etc/hosts
+sudo echo "$IP disable-resource-level-jwt1.test.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "255.255.255.255 broadcasthost" | sudo tee -a /etc/hosts
 sudo echo "::1 localhost" | sudo tee -a /etc/hosts
 
