@@ -35,8 +35,6 @@ type AuthenticationSpec struct {
 type AuthSpec struct {
 	AuthServerType  string         `json:"type,omitempty"`
 	ExternalService ExtAuthService `json:"ext,omitempty"`
-	// +optional
-	MutualSSL string `json:"mutualSSL,omitempty"`
 }
 
 // ExtAuthService external authentication related information
@@ -59,6 +57,9 @@ type ServiceRef struct {
 
 // APIAuth Authentication scheme type and details
 type APIAuth struct {
+	// +optional
+	// +kubebuilder:validation:Enum=mandatory;optional
+	MutualSSL      string             `json:"mutualSSL,omitempty"`
 	JWT            JWTAuth            `json:"jwt,omitempty"`
 	APIKey         []APIKeyAuth       `json:"apiKey,omitempty"`
 	TestConsoleKey TestConsoleKeyAuth `json:"testConsoleKey,omitempty"`

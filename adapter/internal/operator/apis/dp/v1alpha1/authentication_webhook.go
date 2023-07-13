@@ -19,7 +19,6 @@ package v1alpha1
 
 import (
 	"fmt"
-	"strings"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -79,22 +78,24 @@ func (r *Authentication) ValidateDelete() error {
 
 func (r *Authentication) validateAuthentication() error {
 	var allErrs field.ErrorList
-	const mltsOptional = "optional"
-	const mltsMandatory = "mandatory"
-	mtlsOverride := r.Spec.Override.MutualSSL
-	mtlsDefault := r.Spec.Default.MutualSSL
-	if mtlsOverride == "" && mtlsDefault == "" {
-		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("default").Child("mutualSSL"),
-			r.Spec.Default.MutualSSL, "mutualSSL cannot be empty in both default and override"))
+	var isMtlsDefault bool
+	var mtlsOverride string
+	if r.Spec.Default != nil && r.Spec.Default.ExternalService.AuthTypes != nil {
+		mtlsDefault := r.Spec.Default.ExternalService.AuthTypes.MutualSSL
+		if mtlsDefault != "" {
+			isMtlsDefault = true
+		}
 	}
-	if mtlsOverride != "" && (!strings.EqualFold(mtlsOverride, mltsMandatory) && !strings.EqualFold(mtlsOverride, mltsOptional)) {
-		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("override").Child("mutualSSL"),
-			r.Spec.Override.MutualSSL, "invalid value for mutualSSL"))
+
+	if r.Spec.Override != nil && r.Spec.Override.ExternalService.AuthTypes != nil {
+		mtlsOverride = r.Spec.Override.ExternalService.AuthTypes.MutualSSL
 	}
-	if mtlsDefault != "" && (!strings.EqualFold(mtlsDefault, mltsMandatory) && !strings.EqualFold(mtlsDefault, mltsOptional)) {
-		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("default").Child("mutualSSL"),
-			r.Spec.Default.MutualSSL, "invalid value for mutualSSL"))
+
+	if mtlsOverride == "" && !isMtlsDefault {
+		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("override").Child("ext").Child("authTypes").Child("mutualSSL"),
+			r.Spec.Override.ExternalService.AuthTypes.MutualSSL, "mutualSSL is mandatory when default is not set"))
 	}
+
 	if len(allErrs) > 0 {
 		return apierrors.NewInvalid(
 			schema.GroupKind{Group: "dp.wso2.com", Kind: "Authentication"},
