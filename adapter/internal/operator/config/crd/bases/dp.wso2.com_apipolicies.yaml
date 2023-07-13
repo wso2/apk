@@ -83,6 +83,8 @@ spec:
                         items:
                           type: string
                         type: array
+                      accessControlMaxAge:
+                        type: integer
                       enabled:
                         type: boolean
                     type: object
@@ -207,6 +209,8 @@ spec:
                         items:
                           type: string
                         type: array
+                      accessControlMaxAge:
+                        type: integer
                       enabled:
                         type: boolean
                     type: object

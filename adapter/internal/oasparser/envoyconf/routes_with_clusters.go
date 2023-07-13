@@ -180,16 +180,16 @@ func CreateRoutesWithClusters(adapterInternalAPI model.AdapterInternalAPI, inter
 			return nil, nil, nil, fmt.Errorf("error while creating routes. %v", err)
 		}
 		routes = append(routes, routeP...)
-		if ((&adapterInternalAPI).IsDefaultVersion) {
+		if (&adapterInternalAPI).IsDefaultVersion {
 			defaultRoutes, errDefaultPath := createRoutes(genRouteCreateParams(&adapterInternalAPI, resource, vHost, basePath, clusterName, *operationalReqInterceptors, *operationalRespInterceptorVal, organizationID,
-			false, true))
+				false, true))
 			if errDefaultPath != nil {
 				logger.LoggerXds.ErrorC(logging.GetErrorByCode(2231, adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), removeFirstOccurrence(resource.GetPath(), adapterInternalAPI.GetVersion()), errDefaultPath.Error()))
 				return nil, nil, nil, fmt.Errorf("error while creating routes. %v", errDefaultPath)
 			}
 			routes = append(routes, defaultRoutes...)
 		}
-		
+
 	}
 
 	return routes, clusters, endpoints, nil
@@ -659,7 +659,6 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 	isDefaultVersion := params.isDefaultVersion
 
 	logger.LoggerOasparser.Debugf("creating routes for API %s ....", title)
-	
 
 	basePath := strings.TrimSuffix(xWso2Basepath, "/")
 
@@ -673,9 +672,6 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 		resourceMethods = resource.GetMethodList()
 		pathMatchType = resource.GetPathMatchType()
 	}
-	
-
-	
 
 	var contextExtensions = make(map[string]string)
 	contextExtensions[pathContextExtension] = resourcePath
@@ -819,7 +815,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 		// The following are common to all routes and does not get updated per operation
 		decorator *routev3.Decorator
 	)
-	if (params.createDefaultPath) {
+	if params.createDefaultPath {
 		xWso2Basepath = removeFirstOccurrence(xWso2Basepath, "/"+version)
 		resourcePath = removeFirstOccurrence(resource.GetPath(), "/"+version)
 	}
@@ -945,7 +941,6 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 				}
 			}
 
-			
 			// TODO: (suksw) preserve header key case?
 			if hasMethodRewritePolicy {
 				logger.LoggerOasparser.Debugf("Creating two routes to support method rewrite for %s %s. New method: %s",
@@ -1549,6 +1544,10 @@ func getCorsPolicy(corsConfig *model.CorsConfig) *cors_filter_v3.CorsPolicy {
 	if len(corsConfig.AccessControlExposeHeaders) > 0 {
 		corsPolicy.ExposeHeaders = strings.Join(corsConfig.AccessControlExposeHeaders, ", ")
 	}
+	if corsConfig.AccessControlMaxAge != nil {
+
+		corsPolicy.MaxAge = strconv.Itoa(*corsConfig.AccessControlMaxAge)
+	}
 	return corsPolicy
 }
 
@@ -1575,7 +1574,7 @@ func genRouteCreateParams(swagger *model.AdapterInternalAPI, resource *model.Res
 		apiLevelRateLimitPolicy:      swagger.RateLimitPolicy,
 		apiProperties:                swagger.APIProperties,
 		routeConfig:                  resource.GetEndpoints().Config,
-		createDefaultPath: 						createDefaultPath,			
+		createDefaultPath:            createDefaultPath,
 	}
 	return params
 }
@@ -1750,11 +1749,10 @@ func createInterceptorResourceClusters(adapterInternalAPI model.AdapterInternalA
 	return clusters, endpoints, &operationalReqInterceptors, &operationalRespInterceptorVal
 }
 
-
 func removeFirstOccurrence(str, substr string) string {
 	index := strings.Index(str, substr)
 	if index == -1 {
-		return str 
+		return str
 	}
 	return str[:index] + str[index+len(substr):]
 }

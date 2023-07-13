@@ -1066,6 +1066,9 @@ public class APIClient {
         if corsConfiguration.accessControlExposeHeaders is string[] {
             corsPolicy.accessControlExposeHeaders = <string[]>corsConfiguration.accessControlExposeHeaders;
         }
+        if corsConfiguration.accessControlAllowMaxAge is int {
+            corsPolicy.accessControlMaxAge = <int>corsConfiguration.accessControlAllowMaxAge;
+        }
         return corsPolicy;
     }
 

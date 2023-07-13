@@ -69,4 +69,5 @@ public type CORSPolicy record {
     string[] accessControlAllowHeaders = [];
     string[] accessControlAllowMethods = [];
     string[] accessControlExposeHeaders = [];
+    int accessControlMaxAge?;
 };

@@ -26,7 +26,8 @@ public isolated function testCORSPolicyGenerationFromAPKConf() returns error? {
         accessControlAllowCredentials: true,
         accessControlAllowOrigins: ["wso2.com"],
         accessControlAllowHeaders: ["Content-Type","Authorization"],
-        accessControlAllowMethods: ["GET"]
+        accessControlAllowMethods: ["GET"],
+        accessControlMaxAge: 3600
     };
 
     foreach model:APIPolicy apiPolicy in apiArtifact.apiPolicies {
