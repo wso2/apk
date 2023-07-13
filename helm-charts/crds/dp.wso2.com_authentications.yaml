@@ -93,6 +93,11 @@ spec:
                               sendTokenToUpstream:
                                 type: boolean
                             type: object
+                          mutualSSL:
+                            enum:
+                            - mandatory
+                            - optional
+                            type: string
                           testConsoleKey:
                             description: TestConsoleKeyAuth Test Console Key Authentication
                               scheme details
@@ -124,8 +129,6 @@ spec:
                             type: integer
                         type: object
                     type: object
-                  mutualSSL:
-                    type: string
                   type:
                     type: string
                 type: object
@@ -171,6 +174,11 @@ spec:
                               sendTokenToUpstream:
                                 type: boolean
                             type: object
+                          mutualSSL:
+                            enum:
+                            - mandatory
+                            - optional
+                            type: string
                           testConsoleKey:
                             description: TestConsoleKeyAuth Test Console Key Authentication
                               scheme details
@@ -202,8 +210,6 @@ spec:
                             type: integer
                         type: object
                     type: object
-                  mutualSSL:
-                    type: string
                   type:
                     type: string
                 type: object
