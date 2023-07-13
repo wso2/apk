@@ -88,6 +88,7 @@ spec:
                                 disabled: 
                                   default: false
                                   type: boolean
+                                  description: If set true JWT authentication will be disabled
                                 header:
                                   default: authorization
                                   description: Header is the header name used to pass
@@ -167,6 +168,7 @@ spec:
                                 disabled: 
                                   default: false
                                   type: boolean
+                                  description: If set true JWT authentication will be disabled
                                 header:
                                   default: authorization
                                   description: Header is the header name used to pass
