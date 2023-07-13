@@ -49,6 +49,11 @@ spec:
                               type: string
                             type:
                               default: string
+                              enum:
+                              - string
+                              - int
+                              - float
+                              - bool
                               type: string
                             value:
                               type: string
@@ -180,6 +185,11 @@ spec:
                               type: string
                             type:
                               default: string
+                              enum:
+                              - string
+                              - int
+                              - float
+                              - bool
                               type: string
                             value:
                               type: string
