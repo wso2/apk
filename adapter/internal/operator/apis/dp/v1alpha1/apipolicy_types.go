@@ -60,6 +60,7 @@ type CustomClaim struct {
 	Claim string `json:"claim,omitempty"`
 	Value string `json:"value,omitempty"`
 	// +kubebuilder:default=string
+	// +kubebuilder:validation:Enum=string;int;float;bool
 	Type string `json:"type"`
 }
 
