@@ -189,6 +189,7 @@ type CorsConfig struct {
 	AccessControlAllowMethods     []string `mapstructure:"accessControlAllowMethods"`
 	AccessControlAllowOrigins     []string `mapstructure:"accessControlAllowOrigins"`
 	AccessControlExposeHeaders    []string `mapstructure:"accessControlExposeHeaders"`
+	AccessControlMaxAge           *int     `mapstructure:"accessControlMaxAge"`
 }
 
 // InterceptEndpoint contains the parameters of endpoint security

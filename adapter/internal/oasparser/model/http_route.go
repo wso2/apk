@@ -413,6 +413,9 @@ func getCorsConfigFromAPIPolicy(apiPolicy *dpv1alpha1.APIPolicy) *CorsConfig {
 				AccessControlAllowOrigins:     apiPolicy.Spec.Override.CORSPolicy.AccessControlAllowOrigins,
 				AccessControlExposeHeaders:    apiPolicy.Spec.Override.CORSPolicy.AccessControlExposeHeaders,
 			}
+			if apiPolicy.Spec.Override.CORSPolicy.AccessControlMaxAge != nil {
+				corsConfig.AccessControlMaxAge = apiPolicy.Spec.Override.CORSPolicy.AccessControlMaxAge
+			}
 		}
 	}
 	return corsConfig

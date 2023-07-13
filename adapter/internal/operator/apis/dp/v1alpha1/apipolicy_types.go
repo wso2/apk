@@ -76,6 +76,7 @@ type CORSPolicy struct {
 	AccessControlAllowMethods     []string `json:"accessControlAllowMethods,omitempty"`
 	AccessControlAllowOrigins     []string `json:"accessControlAllowOrigins,omitempty"`
 	AccessControlExposeHeaders    []string `json:"accessControlExposeHeaders,omitempty"`
+	AccessControlMaxAge           *int     `json:"accessControlMaxAge,omitempty"`
 }
 
 // InterceptorReference holds InterceptorService reference using name and namespace
