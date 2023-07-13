@@ -71,6 +71,8 @@ spec:
                               - int
                               - float
                               - bool
+                              - long
+                              - date
                               type: string
                             value:
                               type: string
@@ -207,6 +209,8 @@ spec:
                               - int
                               - float
                               - bool
+                              - long
+                              - date
                               type: string
                             value:
                               type: string
