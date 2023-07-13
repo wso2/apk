@@ -288,10 +288,10 @@ public class APIClient {
                 if authentication.authType == "APIKey" && authentication is APIKeyAuthentication {
                     authTypes.apiKey = [];
                     if authentication.headerName is string {
-                        authTypes.apiKey.push({'in: "header", name: authentication.headerName ?: "apiKey", sendTokenToUpstream: authentication.sendTokenToUpstream ?: false});
+                        authTypes.apiKey.push({'in: "Header", name: authentication.headerName ?: "apiKey", sendTokenToUpstream: authentication.sendTokenToUpstream ?: false});
                     }
                     if authentication.queryParamName is string {
-                        authTypes.apiKey.push({'in: "query", name: authentication.queryParamName ?: "apiKey", sendTokenToUpstream: authentication.sendTokenToUpstream ?: false});
+                        authTypes.apiKey.push({'in: "Query", name: authentication.queryParamName ?: "apiKey", sendTokenToUpstream: authentication.sendTokenToUpstream ?: false});
                     }
                 }
             }
