@@ -71,11 +71,6 @@ spec:
     type: ext
     ext:
       disabled: false
-      serviceRef:
-        group: wso2/v1alpha2
-        kind: Backend
-        name: ext_authz-server
-        port: 1234
       authTypes:
         apiKey:
           - in: Header
@@ -90,10 +85,6 @@ spec:
         kind: Backend
         name: ext_authz-server
         port: 1234
-      authTypes:
-        apiKey:
-          - in: Header
-            name: x-api-key
   targetRef:
     kind: Resource
     name: disable-resource-level-jwt
@@ -157,11 +148,6 @@ spec:
     type: ext
     ext:
       disabled: false
-      serviceRef:
-        group: wso2/v1alpha2
-        kind: Backend
-        name: ext_authz-server
-        port: 1234
       authTypes:
         apiKey:
           - in: Header
@@ -176,12 +162,18 @@ spec:
         kind: Backend
         name: ext_authz-server
         port: 1234
-      authTypes:
-        apiKey:
-          - in: Header
-            name: x-api-key
   targetRef:
     kind: Resource
     name: disable-resource-level-jwt1
     group: gateway.networking.k8s.io
     namespace: gateway-integration-test-infra
+---
+apiVersion: dp.wso2.com/v1alpha1
+kind: Backend
+metadata:
+  name: infra-backend-v1
+  namespace: gateway-integration-test-infra
+spec:
+  services:
+  - host: infra-backend-v1.gateway-integration-test-infra
+    port: 8080
