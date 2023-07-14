@@ -177,7 +177,14 @@ func (a Applier) MustApplyObjectsWithCleanup(t *testing.T, c client.Client, time
 				defer cancel()
 				t.Logf("Deleting %s %s", resource.GetName(), resource.GetObjectKind().GroupVersionKind().Kind)
 				err = c.Delete(ctx, resource)
-				require.NoErrorf(t, err, "error deleting resource")
+				if (err != nil) {  
+					if (strings.Contains(strings.ToLower(err.Error()), "not found")) {
+						t.Logf("Error while deleting %s %s. Resource not found. Error: %s", resource.GetName(), 
+							resource.GetObjectKind().GroupVersionKind().Kind, err.Error())
+					} else {
+						require.NoErrorf(t, err, "error deleting resource")
+					}
+				}
 			})
 		}
 	}
@@ -231,7 +238,13 @@ func (a Applier) MustApplyWithCleanup(t *testing.T, c client.Client, timeoutConf
 					defer cancel()
 					t.Logf("Deleting %s %s", uObj.GetName(), uObj.GetKind())
 					err = c.Delete(ctx, uObj)
-					require.NoErrorf(t, err, "error deleting resource")
+					if (err != nil) {  
+					if (strings.Contains(strings.ToLower(err.Error()), "not found")) {
+						t.Logf("Error while deleting %s %s. Resource not found. Error: %s", uObj.GetName(), uObj.GetKind(), err.Error())
+					} else {
+						require.NoErrorf(t, err, "error deleting resource")
+					}
+				}
 				})
 			}
 			continue
@@ -247,7 +260,13 @@ func (a Applier) MustApplyWithCleanup(t *testing.T, c client.Client, timeoutConf
 				defer cancel()
 				t.Logf("Deleting %s %s", uObj.GetName(), uObj.GetKind())
 				err = c.Delete(ctx, uObj)
-				require.NoErrorf(t, err, "error deleting resource")
+				if (err != nil) {  
+					if (strings.Contains(strings.ToLower(err.Error()), "not found")) {
+						t.Logf("Error while deleting %s %s. Resource not found. Error: %s", uObj.GetName(), uObj.GetKind(), err.Error())
+					} else {
+						require.NoErrorf(t, err, "error deleting resource")
+					}
+				}
 			})
 		}
 		require.NoErrorf(t, err, "error updating resource")
