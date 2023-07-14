@@ -3,19 +3,19 @@
 <a href="https://wso2.com/">  <img src="https://raw.githubusercontent.com/wso2/apk/main/logo/wso2-logo.png" alt="WSO2 logo" title="WSO2" height="100" width="180" /></a>
 
 ---
-Cloud native API management refers to the use of API management tools and practices that are designed to be natively integrated with cloud computing environments, such as Kubernetes. These tools and practices help organizations to manage and govern their APIs in a more effective and efficient way, leveraging the benefits of cloud computing such as scalability, reliability, and cost-effectiveness.  Cloud native API management is also a way of designing, building, and deploying APIs in a cloud environment. There are several characteristics that are commonly associated with cloud native API management:
+Introducing APK, the API Platform for Kubernetes, a cutting-edge API management solution designed to leverage the power of Kubernetes for seamless and scalable deployments. APK harnesses Kubernetes' native features, enabling automatic scaling based on load and configurable parameters, utilizing rich Kubernetes metrics.
 
-WSO2 APK, designed to help you build, deploy, and manage APIs in a cloud environment. Our platform is built on top of a microservices architecture and uses containerization technologies to ensure scalability and flexibility. With features like automatic failover and load balancing, our APK platform is designed to be highly available and able to handle large numbers of API requests without performance degradation. We've also added support for continuous delivery and deployment, so you can quickly and easily push updates to your API services.
+At the core of APK's robust gateway solution is the meticulously selected Envoy technology, known for exceptional performance, lightweight nature, and perfect compatibility within the APK ecosystem. APK extends beyond traditional gateways with purpose-built extensions addressing specific API management use cases. Some of these extensions have been contributed back to the Envoy community, reflecting our commitment to collaborative innovation.
 
+WSO2 APK adheres to the Kubernetes Gateway API specification, an open-source project managed by the SIG-NETWORK community. This specification introduces vital resources such as GatewayClass, Gateway, HTTPRoute, TCPRoute, and Service, augmenting service networking capabilities in Kubernetes. By adhering to this specification, WSO2 APK seamlessly integrates with Kubernetes service networking, leveraging expressive and extensible interfaces to enhance API management functionality within Kubernetes deployments.
 
 Some characteristics of APK
-- Scalability: Designed to scale up and down based on demand, allowing them to handle large numbers of API requests without performance degradation.
-- High availability: Designed to be highly available, with features like automatic failover and load balancing to ensure that API services are always available to clients.
-- Elasticity: Designed to be elastic, meaning that they can quickly and easily adapt to changes in demand and workload.
-- Microservices architecture: Built using a microservices architecture, which allows for more flexible and scalable deployment of API services.
-- Containerization: Use containerization technologies to package and deploy product API services/ implementations in a cloud environment.
-- Continuous delivery and deployment: Support continuous delivery and deployment, allowing developers to quickly and easily push updates to product.
-
+- APK's microservices architecture offers advantages such as easy scalability and seamless upgrades, harnessing the benefits of the architecture for agility and flexibility.
+- The separation of the control plane and data plane in APK allows users to integrate any control plane of their choice, providing maximum flexibility and customization.
+- APK is an evolving open-source solution that delivers advanced API management capabilities and is designed for cloud-native architectures, seamlessly integrating with Kubernetes.
+- With seamless CI/CD integration, APK supports a streamlined GitOps approach for efficient deployment and management of APIs.
+- APK aims to provide API marketplace capabilities, enabling sharing, discovery, and reusability of APIs while focusing on efficient governance and administration.
+- With its Kubernetes-native approach, exceptional characteristics, microservices architecture, and commitment to collaboration and innovation, APK sets a new standard for API management.
 
 
 For more information about APK release planning and project management information, visit [APK Project Dashboard](https://github.com/orgs/wso2/projects/80/)
@@ -49,15 +49,11 @@ ___
   
    - **Management Client** - Responsible for communication with the management server(control plane) to push/pull updates and maintain connectivity between the data plane and the control plane. The backend component was developed using **Go** 
   -->
-- **Data Plane** - The APK data plane. It provides API runtime capabilities such as gateway, rate-limiting services, and runtime management. It consists of the following sub-components:
+The APK architecture consists of both control plane and data plane components. In the data plane, we have the Config Service, an open API for generating APK configurations and Kubernetes API artifacts based on inputs like OpenAPI schema files. The Deployer Service enables the creation of API artifacts within the gateway runtime, requiring a valid access token for secure deployment.
 
-   - **Config and Deploy APIs** - Responsible for configuring the runtime aspects of API including API endpoints, rate limiting policies, and converting API schemas into API configurations, etc. This API implementation done using **Ballerina**
- 
-   - **API Gateway - Router** - Router will intercept incoming API traffic and apply quality of services such as authentication, authorization, and rate limiting. The router uses the **Envoy Proxy** as the core component that does the traffic routing. Required additional extensions were developed using **C++**
+These components efficiently generate configurations and deploy API artifacts within the data plane. The gateway partition comprises the Router, Enforcer, and Management Client. The Router intercepts API traffic, applying QoS policies for optimal performance. The Enforcer handles authentication and authorization, ensuring authorized access. The Management Client configures and synchronizes the Router and Enforcer, ensuring the gateway partition's smooth operation.
 
-   - **API Gateway - Enforcer** - The Enforcer is the component that enforces the API management capabilities such as security, Rate Limiting, analytics, validation and etc. When the Router receives a request, it forwards that request to the Enforcer in order to perform the additional QoS. Plugins were developed using **Java** 
- 
-   - **Identity Platform** - Responsible for authentication and authorization happens in the data plane.
+The architecture also includes the Rate Limiting Service, which manages rate limits for API calls. The Router communicates with the Rate Limiter to enforce quota compliance. To facilitate distributed counters across gateways, Redis serves as a shared information store for rate limiting.
 
 ## Test Product APIs
 WSO2 APK comes with Postman collections to test product APIs and developers can use collection of API requests and configure them to test different scenarios. For example, they can reuse available requests to verify that the API returns the correct responses for different requests.
@@ -66,16 +62,7 @@ Please refer [Postman Tests](https://github.com/wso2/apk/tree/main/test/postman-
 
 ## Getting Started
 
-WSO2 API Kubernetes Platform has released following docker images in the WSO2 public docker hub.
-
-* Adapter: [wso2/adapter:0.0.1-m12](https://hub.docker.com/r/wso2/adapter)
-* Gateway Enforcer: [wso2/enforcer:0.0.1-m12](https://hub.docker.com/r/wso2/enforcer/tags)
-* Gatewary Router: [wso2/router:0.0.1-m12](https://hub.docker.com/r/wso2/router)
-* Runtime DS: [wso2/runtime-domain-service:0.0.1-m12](https://hub.docker.com/r/wso2/runtime-domain-service)
-* IDP DS: [wso2/idp-domain-service:0.0.1-m12](https://hub.docker.com/r/wso2/devportal-domain-service)
-* IDP UI: [wso2/idp-ui:0.0.1-m12](https://hub.docker.com/r/wso2/devportal-domain-service)
-* Ratelimiter: [wso2/ratelimiter:0.0.1-m12](https://hub.docker.com/r/wso2/ratelimiter)
-* Config Deployer: [wso2/config-deployer:0.0.1-m12](https://hub.docker.com/r/wso2/config-deployer-service/)
+To tryout APK please refer to this [document](https://apk.docs.wso2.com/en/latest/get-started/quick-start-guide/p).
 
 ### Before you begin...
 
