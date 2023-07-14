@@ -62,7 +62,7 @@ Please refer [Postman Tests](https://github.com/wso2/apk/tree/main/test/postman-
 
 ## Getting Started
 
-To tryout APK please refer to this [document](https://apk.docs.wso2.com/en/latest/get-started/quick-start-guide/p).
+To tryout APK please refer to this [document](https://apk.docs.wso2.com/en/latest/get-started/quick-start-guide/).
 
 ### Before you begin...
 
