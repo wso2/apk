@@ -1,7 +1,7 @@
 ---
 organization: "wso2"
-name: "test-cors"
-context: "/test_cors"
+name: "test-retry"
+context: "/test_retry"
 version: "2.0.0"
 type: "REST"
 endpointConfigurations:
