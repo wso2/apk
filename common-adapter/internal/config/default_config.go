@@ -18,4 +18,14 @@
 package config
 
 // Configuration object which is populated with default values.
-var defaultConfig = &Config{}
+var defaultConfig = &Config{
+	CommonAdapter: commonadapter{
+		Keystore: keystore{
+			KeyPath:  "/home/wso2/security/keystore/mg.key",
+			CertPath: "/home/wso2/security/keystore/mg.pem",
+		},
+		Truststore: truststore{
+			Location: "/home/wso2/security/truststore",
+		},
+	},
+}

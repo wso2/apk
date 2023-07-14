@@ -1,0 +1,16 @@
+{{- if or .Values.wso2.apk.dp.enabled .Values.wso2.apk.cp.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "apk-helm.resource.prefix" . }}-common-log-conf
+  namespace: {{ .Release.Namespace }}
+data:
+  config.toml: | 
+    [commonadapter]
+    [commonadapter.keystore]
+      certPath = "/home/wso2/security/keystore/commonadapter.crt"
+      keyPath = "/home/wso2/security/keystore/commonadapter.key"
+
+    [commonadapter.truststore]
+      location = "/home/wso2/security/truststore"
+{{- end -}}

@@ -18,28 +18,11 @@
 package main
 
 import (
-	"os"
-	"os/signal"
-
 	logger "github.com/sirupsen/logrus"
-	"github.com/wso2/apk/common-adapter/internal/operator"
-	xds "github.com/wso2/apk/common-adapter/internal/xds"
+	commonadapter "github.com/wso2/apk/common-adapter/commonadapter"
 )
 
 func main() {
 	logger.Info("Starting the Common Adapter")
-	sig := make(chan os.Signal, 2)
-	signal.Notify(sig, os.Interrupt)
-	xds.InitCommonAdapterServer()
-	operator.InitOperator()
-OUTER:
-	for {
-		select {
-		case s := <-sig:
-			switch s {
-			case os.Interrupt:
-				break OUTER
-			}
-		}
-	}
+	commonadapter.InitCommonAdapterServer()
 }

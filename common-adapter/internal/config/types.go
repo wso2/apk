@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2022, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
+ *  Copyright (c) 2023, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -20,10 +20,31 @@ package config
 // Config represents the adapter configuration.
 // It is created directly from the configuration toml file.
 type Config struct {
-	CommonAdapter commonAdapter
+	CommonAdapter commonadapter
 }
 
-type commonAdapter struct {
-	XDSPort    int32    `toml:"xdsPort"`
-	NodeLabels []string `toml:"nodeLabels"`
+// Config represents the adapter configuration.
+// It is created directly from the configuration toml file.
+// Note :
+//
+//	Don't use toml tag for configuration properties as it may affect environment variable based
+//	config resolution.
+
+// Adapter related Configurations
+
+type commonadapter struct {
+	// XDSPort    int32    `toml:"xdsPort"`
+	// NodeLabels []string `toml:"nodeLabels"`
+	Keystore keystore
+	// Trusted Certificates
+	Truststore truststore
+}
+
+type keystore struct {
+	KeyPath  string
+	CertPath string
+}
+
+type truststore struct {
+	Location string
 }

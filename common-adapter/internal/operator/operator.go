@@ -24,6 +24,7 @@ import (
 	// to ensure that exec-entrypoint and run can make use of them.
 
 	"github.com/wso2/apk/adapter/pkg/logging"
+	cache "github.com/wso2/apk/common-adapter/internal/cache"
 	"github.com/wso2/apk/common-adapter/internal/loggers"
 	dpv1alpha1 "github.com/wso2/apk/common-adapter/internal/operator/api/v1alpha1"
 	dpcontrollers "github.com/wso2/apk/common-adapter/internal/operator/controller"
@@ -33,6 +34,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -43,7 +45,7 @@ var (
 
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
-
+	utilruntime.Must(gwapiv1b1.AddToScheme(scheme))
 	utilruntime.Must(dpv1alpha1.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
@@ -65,14 +67,14 @@ func InitOperator() {
 	flag.Parse()
 
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
-
+	ratelimitStore := cache.CreateNewOperatorDataStore()
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:                 scheme,
 		MetricsBindAddress:     metricsAddr,
 		Port:                   9443,
 		HealthProbeBindAddress: probeAddr,
-		// LeaderElection:         enableLeaderElection,
-		// LeaderElectionID:       "5142a7ea.wso2.com",
+		// LeaderElection:         true,
+		// LeaderElectionID:       "operator-lease.apk.wso2.com",
 		Namespace: "apk",
 		// LeaderElectionReleaseOnCancel defines if the leader should step down voluntarily
 		// when the Manager ends. This requires the binary to immediately end when the
@@ -91,7 +93,7 @@ func InitOperator() {
 		os.Exit(1)
 	}
 
-	if err := dpcontrollers.NewratelimitController(mgr); err != nil {
+	if err := dpcontrollers.NewratelimitController(mgr, ratelimitStore); err != nil {
 		setupLog.Info("asa manager")
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3114, err))
 	}

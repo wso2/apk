@@ -18,9 +18,10 @@ package controller
 
 import (
 	"context"
-	"fmt"
 
 	logger "github.com/sirupsen/logrus"
+	k8error "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -29,15 +30,17 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
-
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+
+	k8client "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 
-	"github.com/wso2/apk/adapter/pkg/loggers"
 	"github.com/wso2/apk/adapter/pkg/logging"
 	"github.com/wso2/apk/adapter/pkg/utils/envutils"
 	"github.com/wso2/apk/adapter/pkg/utils/stringutils"
+	cache "github.com/wso2/apk/common-adapter/internal/cache"
+	loggers "github.com/wso2/apk/common-adapter/internal/loggers"
 	dpv1alpha1 "github.com/wso2/apk/common-adapter/internal/operator/api/v1alpha1"
 	constants "github.com/wso2/apk/common-adapter/internal/operator/constant"
 	xds "github.com/wso2/apk/common-adapter/internal/xds"
@@ -46,27 +49,45 @@ import (
 // RateLimitPolicyReconciler reconciles a RateLimitPolicy object
 type RateLimitPolicyReconciler struct {
 	client client.Client
+	ods    *cache.RatelimitDataStore
 	Scheme *runtime.Scheme
 }
 
+const (
+	// apiRateLimitIndex Index for API level ratelimits
+	apiRateLimitIndex = "apiRateLimitIndex"
+)
+
 // NewratelimitController creates a new ratelimitcontroller instance.
-func NewratelimitController(mgr manager.Manager) error {
+func NewratelimitController(mgr manager.Manager, ratelimitStore *cache.RatelimitDataStore) error {
 	ratelimitReconsiler := &RateLimitPolicyReconciler{
 		client: mgr.GetClient(),
+		ods:    ratelimitStore,
 	}
-	logger.Info("Incoming 1")
+	ctx := context.Background()
+	if err := addIndexes(ctx, mgr); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2612, err))
+		return err
+	}
+
 	c, err := controller.New(constants.RatelimitController, mgr, controller.Options{Reconciler: ratelimitReconsiler})
 	if err != nil {
-		loggers.LoggerAuth.ErrorC(logging.GetErrorByCode(3111, err.Error()))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3111, err.Error()))
+		return err
+	}
+
+	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.API{}},
+		handler.EnqueueRequestsFromMapFunc(ratelimitReconsiler.getRatelimitForAPI)); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2611, err))
 		return err
 	}
 
 	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.RateLimitPolicy{}}, &handler.EnqueueRequestForObject{}); err != nil {
-		loggers.LoggerAuth.ErrorC(logging.GetErrorByCode(3112, err.Error()))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3112, err.Error()))
 		return err
 	}
 
-	loggers.LoggerAuth.Debug("RatelimitPolicy Controller successfully started. Watching RatelimitPolicy Objects...")
+	loggers.LoggerAPKOperator.Debug("RatelimitPolicy Controller successfully started. Watching RatelimitPolicy Objects...")
 	return nil
 }
 
@@ -85,21 +106,93 @@ func NewratelimitController(mgr manager.Manager) error {
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.15.0/pkg/reconcile
 func (ratelimitReconsiler *RateLimitPolicyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = log.FromContext(ctx)
-	logger.Info("Incoming ")
+	// Check whether the Ratelimit CR exist, if not consider as a DELETE event.
+	loggers.LoggerAPKOperator.Infof("Reconciling ratelimit...")
 	ratelimitKey := req.NamespacedName
+	var ratelimitPolicy dpv1alpha1.RateLimitPolicy
+
+	// Check k8s RatelimitPolicy Availbility
+	if err := ratelimitReconsiler.client.Get(ctx, ratelimitKey, &ratelimitPolicy); err != nil {
+		_, found := ratelimitReconsiler.ods.GetCachedRatelimitPolicy(req.NamespacedName)
+		// If not availble if cache Delete Event
+		if found && k8error.IsNotFound(err) {
+			ratelimitReconsiler.ods.DeleteCachedRatelimitPolicy(req.NamespacedName)
+			logger.Info("delete api ratelimit")
+			// xds.DeleteAPILevelRateLimitPolicies(ratelimitPolicy)
+			return ctrl.Result{}, nil
+		}
+		return ctrl.Result{}, nil
+	}
+
+	//Check k8s RatelimitPolicy Availbility
+	if err := ratelimitReconsiler.client.Get(ctx, ratelimitKey, &ratelimitPolicy); err == nil {
+		_, found := ratelimitReconsiler.ods.GetCachedRatelimitPolicy(req.NamespacedName)
+		if !found {
+			ratelimitReconsiler.ods.AddRatelimitToStore(ratelimitPolicy)
+			var vhost, resolveRatelimit = ratelimitReconsiler.marshelRateLimit(ctx, ratelimitKey, ratelimitPolicy)
+			xds.UpdateRateLimitXDSCache(vhost, resolveRatelimit)
+			xds.UpdateRateLimiterPolicies("default1")
+		}
+	}
+
+	return ctrl.Result{}, nil
+}
+
+func (ratelimitReconsiler *RateLimitPolicyReconciler) getRatelimitForAPI(obj k8client.Object) []reconcile.Request {
+	ctx := context.Background()
+	api, ok := obj.(*dpv1alpha1.API)
+	if !ok {
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2624, api))
+		return []reconcile.Request{}
+	}
+
+	requests := []reconcile.Request{}
+
+	ratelimitPolicyList := &dpv1alpha1.RateLimitPolicyList{}
+	if err := ratelimitReconsiler.client.List(ctx, ratelimitPolicyList, &k8client.ListOptions{
+		FieldSelector: fields.OneTermEqualSelector(apiRateLimitIndex, NamespacedName(api).String()),
+	}); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2649, NamespacedName(api).String()))
+		return []reconcile.Request{}
+	}
+
+	for _, ratelimitPolicy := range ratelimitPolicyList.Items {
+		requests = append(requests, ratelimitReconsiler.AddRatelimitRequest(&ratelimitPolicy)...)
+	}
+
+	return requests
+}
+
+// AddRatelimitRequest adds a request to reconcile for the given ratelimit policy
+func (ratelimitReconsiler *RateLimitPolicyReconciler) AddRatelimitRequest(obj k8client.Object) []reconcile.Request {
+	ratelimitPolicy, ok := obj.(*dpv1alpha1.RateLimitPolicy)
+	if !ok {
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2624, ratelimitPolicy))
+		return nil
+	}
+
+	if !(ratelimitPolicy.Spec.TargetRef.Kind == constants.KindAPI) {
+		return nil
+	}
+
+	return []reconcile.Request{{
+		NamespacedName: types.NamespacedName{
+			Name: string(ratelimitPolicy.Name),
+			Namespace: GetNamespace(
+				(*gwapiv1b1.Namespace)(ratelimitPolicy.Spec.TargetRef.Namespace), ratelimitPolicy.Namespace),
+		},
+	}}
+}
+
+func (ratelimitReconsiler *RateLimitPolicyReconciler) marshelRateLimit(ctx context.Context, ratelimitKey types.NamespacedName,
+	ratelimitPolicy dpv1alpha1.RateLimitPolicy) ([]string, dpv1alpha1.ResolveRateLimitAPIPolicy) {
 	var api dpv1alpha1.API
 	var vhost []string
 	var resolveResourceList []dpv1alpha1.ResolveResource
 	var resolveRatelimit dpv1alpha1.ResolveRateLimitAPIPolicy
-	var ratelimitPolicy dpv1alpha1.RateLimitPolicy
-	if err := ratelimitReconsiler.client.Get(ctx, ratelimitKey, &ratelimitPolicy); err != nil {
-		return reconcile.Result{}, fmt.Errorf("failed to get Ratelimit policy %s/%s",
-			ratelimitKey.Namespace, ratelimitKey.Name)
-	}
-	logger.Info(" xxxxxxxxxxxxxx", ratelimitPolicy.Spec.TargetRef.Kind)
+
 	// API Level Rate limit policy
 	if ratelimitPolicy.Spec.TargetRef.Kind == constants.KindAPI {
-		logger.Info("API Kind ")
 		ratelimitReconsiler.client.Get(ctx, types.NamespacedName{
 			Namespace: ratelimitKey.Namespace,
 			Name:      string(ratelimitPolicy.Spec.TargetRef.Name)},
@@ -108,14 +201,15 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) Reconcile(ctx context.Cont
 		var organization = api.Spec.Organization
 		var context = api.Spec.Context
 		var httpRoute gwapiv1b1.HTTPRoute
-		logger.Info("context ", context)
 		if len(api.Spec.Production) > 0 {
 			for _, ref := range api.Spec.Production[0].HTTPRouteRefs {
 				if ref != "" {
-					ratelimitReconsiler.client.Get(ctx, types.NamespacedName{
+					if err := ratelimitReconsiler.client.Get(ctx, types.NamespacedName{
 						Namespace: ratelimitKey.Namespace,
 						Name:      ref},
-						&httpRoute)
+						&httpRoute); err != nil {
+						logger.Info("error", err)
+					}
 					for _, hostName := range httpRoute.Spec.Hostnames {
 						vhost = append(vhost, string(hostName))
 					}
@@ -169,6 +263,9 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) Reconcile(ctx context.Cont
 									resolveResource.PathMatchType = *rule.Matches[0].Path.Type
 									resolveResourceList = append(resolveResourceList, resolveResource)
 								}
+								for _, hostName := range httpRoute.Spec.Hostnames {
+									vhost = append(vhost, string(hostName))
+								}
 							}
 						}
 
@@ -193,6 +290,9 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) Reconcile(ctx context.Cont
 									resolveResource.PathMatchType = *rule.Matches[0].Path.Type
 									resolveResourceList = append(resolveResourceList, resolveResource)
 								}
+								for _, hostName := range httpRoute.Spec.Hostnames {
+									vhost = append(vhost, string(hostName))
+								}
 							}
 						}
 
@@ -203,15 +303,49 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) Reconcile(ctx context.Cont
 		resolveRatelimit.Organization = organization
 		resolveRatelimit.Context = context
 		resolveRatelimit.UUID = string(api.ObjectMeta.UID)
+		resolveRatelimit.Vhost = vhost
 		resolveRatelimit.Resources = resolveResourceList
 		resolveRatelimit.API.RequestsPerUnit = ratelimitPolicy.Spec.Default.API.RateLimit.RequestsPerUnit
 		resolveRatelimit.API.Unit = ratelimitPolicy.Spec.Default.API.RateLimit.Unit
 	}
+	return vhost, resolveRatelimit
+}
 
-	xds.UpdateRateLimitXDSCache(vhost, resolveRatelimit)
-	xds.UpdateRateLimiterPolicies("default")
+func addIndexes(ctx context.Context, mgr manager.Manager) error {
+	// ratelimite policy to API indexer
+	err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.RateLimitPolicy{}, apiRateLimitIndex,
+		func(rawObj k8client.Object) []string {
+			ratelimitPolicy := rawObj.(*dpv1alpha1.RateLimitPolicy)
+			var apis []string
+			if ratelimitPolicy.Spec.TargetRef.Kind == constants.KindAPI {
+				apis = append(apis,
+					types.NamespacedName{
+						Namespace: GetNamespace(
+							(*gwapiv1b1.Namespace)(ratelimitPolicy.Spec.TargetRef.Namespace),
+							ratelimitPolicy.Namespace),
+						Name: string(ratelimitPolicy.Spec.TargetRef.Name),
+					}.String())
+			}
+			logger.Info("index api policy")
+			return apis
+		})
+	return err
+}
 
-	return ctrl.Result{}, nil
+// NamespacedName generates namespaced name for Kubernetes objects
+func NamespacedName(obj client.Object) types.NamespacedName {
+	return types.NamespacedName{
+		Namespace: obj.GetNamespace(),
+		Name:      obj.GetName(),
+	}
+}
+
+// GetNamespace reads namespace with a default value
+func GetNamespace(namespace *gwapiv1b1.Namespace, defaultNamespace string) string {
+	if namespace != nil && *namespace != "" {
+		return string(*namespace)
+	}
+	return defaultNamespace
 }
 
 // FilterByNamespaces takes a list of namespaces and returns a filter function

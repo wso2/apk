@@ -16,7 +16,7 @@
  */
 
 // Package common includes the common functions shared between enforcer and router callbacks.
-package common
+package utils
 
 import (
 	"sync"

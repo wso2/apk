@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2022, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
+ *  Copyright (c) 2023, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -38,23 +38,8 @@ var (
 )
 
 const (
-	// The environtmental variable which represents the path of the distribution in host machine.
-	apkHomeEnvVariable = "APK_HOME"
-	// The environtmental variable which represents the path of the log_config.toml in host machine.
-	logConfigPathEnvVariable = "LOG_CONFIG_PATH"
-	// RelativeLogConfigPath is the relative file path where the log configuration file is.
-	relativeLogConfigPath = "../resources/conf/log_config.toml"
-	// EnvConfigPrefix is used when configs should be read from environment variables.
-	EnvConfigPrefix = "$env"
-	// envVariableForCCPrefix is the prefix used for APK specific environmental variables.
-	envVariablePrefix = "APK_"
-	// envVariableEntrySeparator is used as the separator used to denote nested structured properties.
-	envVariableEntrySeparator = "_"
-)
-
-const (
 	// RelativeConfigPath is the relative file path where the configuration file is.
-	relativeConfigPath = "../resources/conf/config.toml"
+	relativeConfigPath = "/conf/config.toml"
 )
 
 // ReadConfigs implements adapter configuration read operation. The read operation will happen only once, hence

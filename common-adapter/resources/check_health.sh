@@ -15,12 +15,13 @@
 # limitations under the License.
 # -----------------------------------------------------------------------
 
-ADAPTER_XDS_PORT="${ADAPTER_XDS_PORT:-18000}"
-ADAPTER_SERVER_NAME="${ADAPTER_SERVER_NAME:-adapter}"
-grpc_health_probe -addr "127.0.0.1:${ADAPTER_XDS_PORT}" \
+COMMON_ADAPTER_XDS_PORT="${COMMON_ADAPTER_XDS_PORT:-18005}"
+COMMON_ADAPTER_SERVER_NAME="${COMMON_ADAPTER_SERVER_NAME:-commonadapter}"
+grpc_health_probe -addr "127.0.0.1:${COMMON_ADAPTER_XDS_PORT}" \
     -tls \
     -tls-ca-cert "${COMMON_ADAPTER_PUBLIC_CERT_PATH}" \
     -tls-client-cert "${COMMON_ADAPTER_PUBLIC_CERT_PATH}" \
-    -tls-client-key "${ADAPTER_PRIVATE_KEY_PATH}" \
-    -tls-server-name ${ADAPTER_SERVER_NAME} \
+    -tls-client-key "${COMMON_ADAPTER_PRIVATE_KEY_PATH}" \
+    -tls-server-name ${COMMON_ADAPTER_SERVER_NAME} \
     -connect-timeout=3s
+    

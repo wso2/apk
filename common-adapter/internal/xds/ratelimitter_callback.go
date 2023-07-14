@@ -15,22 +15,24 @@
  *
  */
 
-package ratelimitercallbacks
+package xds
 
 import (
 	"context"
+	"strings"
 
 	core "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	discovery "github.com/envoyproxy/go-control-plane/envoy/service/discovery/v3"
+	logger "github.com/sirupsen/logrus"
 	"github.com/wso2/apk/adapter/pkg/logging"
 	"github.com/wso2/apk/common-adapter/internal/loggers"
-	common "github.com/wso2/apk/common-adapter/internal/utils"
+	utils "github.com/wso2/apk/common-adapter/internal/utils"
 )
 
-var nodeQueueInstance *common.NodeQueue
+var nodeQueueInstance *utils.NodeQueue
 
 func init() {
-	nodeQueueInstance = common.GenerateNodeQueue()
+	nodeQueueInstance = utils.GenerateNodeQueue()
 }
 
 // Callbacks is used to debug the xds server related communication.
@@ -42,27 +44,42 @@ func (cb *Callbacks) Report() {}
 
 // OnStreamOpen prints debug logs
 func (cb *Callbacks) OnStreamOpen(_ context.Context, id int64, typ string) error {
-	loggers.LoggerRateLimiterXdsCallbacks.Debugf("stream %d open for %s\n", id, typ)
+	loggers.LoggerAPKOperator.Debugf("stream %d open for %s\n", id, typ)
 	return nil
 }
 
 // OnStreamClosed prints debug logs
 func (cb *Callbacks) OnStreamClosed(id int64, node *core.Node) {
-	loggers.LoggerRateLimiterXdsCallbacks.Debugf("stream %d closed\n", id)
+	loggers.LoggerAPKOperator.Debugf("stream %d closed\n", id)
 }
 
 // OnStreamRequest prints debug logs
 func (cb *Callbacks) OnStreamRequest(id int64, request *discovery.DiscoveryRequest) error {
-	nodeIdentifier := common.GetNodeIdentifier(request) // TODO: (renuka) set metadata instanceIdentifier from rate limiter (have to add in ADS Client impl)
+	nodeIdentifier := utils.GetNodeIdentifier(request) // TODO: (renuka) set metadata instanceIdentifier from rate limiter (have to add in ADS Client impl)
 	if nodeQueueInstance.IsNewNode(nodeIdentifier) {
-		loggers.LoggerRateLimiterXdsCallbacks.Infof("stream request on stream id: %d, from node: %s, version: %s",
+		loggers.LoggerAPKOperator.Infof("stream request on stream id: %d, from node: %s, version: %s",
 			id, nodeIdentifier, request.VersionInfo)
 	}
-	loggers.LoggerRateLimiterXdsCallbacks.Debugf("stream request on stream id: %d, from node: %s, version: %s, for type: %s",
+	loggers.LoggerAPKOperator.Debugf("stream request on stream id: %d, from node: %s, version: %s, for type: %s",
 		id, nodeIdentifier, request.VersionInfo, request.TypeUrl)
 	if request.ErrorDetail != nil {
-		loggers.LoggerEnforcerXdsCallbacks.ErrorC(logging.GetErrorByCode(2300, request.GetTypeUrl(),
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2300, request.GetTypeUrl(),
 			id, nodeIdentifier, request.ErrorDetail.Message))
+	}
+	_, err := GetRateLimiterCache().GetSnapshot("default")
+	if err != nil && strings.Contains(err.Error(), "no snapshot found for node") {
+		logger.Info("No snapshot found for node. Hence, setting empty snapshot.")
+		// This will be called only after the readiness probe is deployed.
+		// Hence, there is no possibility to set empty snapshot for woking adapter (with APIs)
+		// (i.e setting snapshot before adding APIs to the cache)
+		errSetSnap := SetEmptySnapshotupdate("default")
+		if errSetSnap != true {
+			logger.Info("error while setting empty snapshot")
+			loggers.LoggerAPKOperator.Errorf("Error while setting empty snapshot. error : %v", errSetSnap)
+			return nil
+		}
+		logger.Info("Updated empty snapshot into cache as there is no apis for the label")
+		loggers.LoggerAPKOperator.Infof("Updated empty snapshot into cache as there is no apis for the label : %v", request.GetNode().Id)
 	}
 	return nil
 }
@@ -70,21 +87,21 @@ func (cb *Callbacks) OnStreamRequest(id int64, request *discovery.DiscoveryReque
 // OnStreamResponse prints debug logs
 func (cb *Callbacks) OnStreamResponse(context context.Context, id int64, request *discovery.DiscoveryRequest,
 	response *discovery.DiscoveryResponse) {
-	nodeIdentifier := common.GetNodeIdentifier(request)
-	loggers.LoggerRateLimiterXdsCallbacks.Debugf("stream response on stream id: %d, to node: %s, version: %s, for type: %v", id,
+	nodeIdentifier := utils.GetNodeIdentifier(request)
+	loggers.LoggerAPKOperator.Debugf("stream response on stream id: %d, to node: %s, version: %s, for type: %v", id,
 		nodeIdentifier, response.VersionInfo, response.TypeUrl)
 }
 
 // OnFetchRequest prints debug logs
 func (cb *Callbacks) OnFetchRequest(_ context.Context, req *discovery.DiscoveryRequest) error {
-	loggers.LoggerRateLimiterXdsCallbacks.Debugf("fetch request from node %s, version: %s, for type %s", common.GetNodeIdentifier(req),
+	loggers.LoggerAPKOperator.Debugf("fetch request from node %s, version: %s, for type %s", utils.GetNodeIdentifier(req),
 		req.VersionInfo, req.TypeUrl)
 	return nil
 }
 
 // OnFetchResponse prints debug logs
 func (cb *Callbacks) OnFetchResponse(req *discovery.DiscoveryRequest, res *discovery.DiscoveryResponse) {
-	loggers.LoggerRateLimiterXdsCallbacks.Debugf("fetch response to node: %s, version: %s, for type %s", common.GetNodeIdentifier(req),
+	loggers.LoggerAPKOperator.Debugf("fetch response to node: %s, version: %s, for type %s", utils.GetNodeIdentifier(req),
 		req.VersionInfo, res.TypeUrl)
 }
 
