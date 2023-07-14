@@ -91,7 +91,7 @@ func (r *Authentication) validateAuthentication() error {
 		mtlsOverride = r.Spec.Override.ExternalService.AuthTypes.MutualSSL
 	}
 
-	if mtlsOverride == "" && !isMtlsDefault {
+	if r.Spec.Override != nil && r.Spec.Override.ExternalService.AuthTypes != nil && mtlsOverride == "" && !isMtlsDefault {
 		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("override").Child("ext").Child("authTypes").Child("mutualSSL"),
 			r.Spec.Override.ExternalService.AuthTypes.MutualSSL, "mutualSSL is mandatory when default is not set"))
 	}
