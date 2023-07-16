@@ -132,10 +132,18 @@ spec:
             initialDelaySeconds: {{ .Values.wso2.apk.dp.adapter.deployment.livenessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.wso2.apk.dp.adapter.deployment.livenessProbe.periodSeconds }}
             failureThreshold: {{ .Values.wso2.apk.dp.adapter.deployment.livenessProbe.failureThreshold }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
       {{- if and .Values.wso2.subscription .Values.wso2.subscription.imagePullSecrets}}
       imagePullSecrets:
         - name: {{ .Values.wso2.subscription.imagePullSecrets }}
       {{ end }}      
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: "RuntimeDefault"
       volumes: 
         - name: adapter-keystore-secret-volume
           secret:

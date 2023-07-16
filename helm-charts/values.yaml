@@ -323,6 +323,17 @@ postgresql:
     service:
       ports:
         postgresql: 5432
+    podSecurityContext:
+      enabled: true
+      runAsNonRoot: true
+      seccompProfile:
+        type: RuntimeDefault
+    containerSecurityContext:
+      enabled: true
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop: ["ALL"]
+
   image:
     debug: true
 
@@ -334,6 +345,17 @@ redis:
     service:
       ports:
         redis: 6379
+  master:
+    podSecurityContext:
+      enabled: true
+      runAsNonRoot: true
+      seccompProfile:
+        type: RuntimeDefault
+    containerSecurityContext:
+      enabled: true
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop: ["ALL"]
   auth:
     enabled: false
   image:
