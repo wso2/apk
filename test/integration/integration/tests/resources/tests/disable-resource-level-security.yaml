@@ -84,7 +84,8 @@ spec:
   default:
     type: ext
     ext:
-      mutualSSL: optional
+      authTypes:
+        mutualSSL: optional
       serviceRef: 
         group: wso2/v1alpha2
         kind: Backend
