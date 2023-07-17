@@ -123,7 +123,7 @@ wso2:
         #     secretName: "adapter-cert"
         #     certKeyFilename: ""
         #     certFilename: ""
-      commonAdapter:
+      commonController:
         deployment:
           resources:
             requests:
@@ -143,9 +143,9 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: IfNotPresent
-          image: common-adapter:0.0.1-SNAPSHOT
+          image: common-controller:0.0.1-SNAPSHOT
           security:
-            sslHostname: "commonadapter"
+            sslHostname: "commoncontroller"
       ratelimiter:
         enabled: true
         deployment:
