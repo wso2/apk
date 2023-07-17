@@ -61,7 +61,7 @@ spec:
               subPath: tls.key
             {{- end }}
             - name: common-controller-keystore-secret-volume
-              mountPath: /home/wso2/security/keystore/commonCcntroller.crt
+              mountPath: /home/wso2/security/keystore/commoncontroller.crt
             {{- if and .Values.wso2.apk.dp.commonController.configs .Values.wso2.apk.dp.commonController.configs.tls }}
               subPath: {{ .Values.wso2.apk.dp.commonController.configs.tls.certFilename | default "tls.crt" }}
             {{- else }}
@@ -114,7 +114,7 @@ spec:
           {{- if and .Values.wso2.apk.dp.commonController.configs .Values.wso2.apk.dp.commonController.configs.tls }}
             secretName: {{ .Values.wso2.apk.dp.commonController.configs.tls.secretName | default (printf "%s-common-controller-server-cert" (include "apk-helm.resource.prefix" .)) }}
           {{- else }}
-            secretName: {{ template "apk-helm.resource.prefix" . }}-common-cntroller-server-cert
+            secretName: {{ template "apk-helm.resource.prefix" . }}-common-controller-server-cert
           {{- end }}
             defaultMode: 420
         - name: log-conf-volume

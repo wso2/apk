@@ -66,6 +66,6 @@ COPY resources/security security
 COPY resources/conf/config.toml conf/
 COPY resources/check_health.sh .
 COPY resources/conf/log_config.toml conf/
-COPY ./${TARGETARCH}/main common-acontroller
+COPY ./${TARGETARCH}/main common-controller
 
 CMD ./common-controller

@@ -6,11 +6,11 @@ metadata:
   namespace: {{ .Release.Namespace }}
 data:
   config.toml: | 
-    [commonadapter]
-    [commonadapter.keystore]
-      certPath = "/home/wso2/security/keystore/commonadapter.crt"
-      keyPath = "/home/wso2/security/keystore/commonadapter.key"
+    [commoncontroller]
+    [commoncontroller.keystore]
+      certPath = "/home/wso2/security/keystore/commoncontroller.crt"
+      keyPath = "/home/wso2/security/keystore/commoncontroller.key"
 
-    [commonadapter.truststore]
+    [commoncontroller.truststore]
       location = "/home/wso2/security/truststore"
 {{- end -}}
