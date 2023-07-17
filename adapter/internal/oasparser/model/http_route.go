@@ -565,8 +565,6 @@ func getSecurity(authScheme *dpv1alpha1.Authentication) *Authentication {
 			TestConsoleKey: &TestConsoleKey{Header: constants.TestConsoleKeyHeader},
 		}
 	}
-	//todo(amali) jwt disable apikey enable handle
-	// todo(amali) handle disabled auth
 	if authScheme != nil {
 		if authScheme.Spec.Override.ExternalService.Disabled != nil && *authScheme.Spec.Override.ExternalService.Disabled {
 			loggers.LoggerOasparser.Debug("Disabled security")
