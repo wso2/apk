@@ -162,6 +162,10 @@ A Helm chart for APK components
 | wso2.apk.dp.gatewayRuntime.tracing.configProperties.authHeaderName | string | `"api-key"` | Auth header name. |
 | wso2.apk.dp.gatewayRuntime.tracing.configProperties.authHeaderValue | string | `"<INGEST_LICENSE_KEY>"` | Auth header value. |
 | wso2.apk.dp.gatewayRuntime.tracing.configProperties.connectionTimeout | string | `"20"` | Connection timeout for the otlp service. |
+| wso2.apk.dp.gatewayRuntime.tracing.configProperties.tls.enabled | bool | `true` | Enable/Disable TLS for the otlp service. |
+| wso2.apk.dp.gatewayRuntime.tracing.configProperties.tls.secretName | string | `"ratelimiter-cert"` | TLS certificate file name. |
+| wso2.apk.dp.gatewayRuntime.tracing.configProperties.tls.certFilename | string | `""` | TLS certificate file name. |
+| wso2.apk.dp.gatewayRuntime.tracing.configProperties.tls.certCAFilename | string | `""` | TLS certificate file name. |
 | wso2.apk.dp.gatewayRuntime.analytics.enabled | bool | `true` | Enable/Disable analytics in gateway runtime. |
 | wso2.apk.dp.gatewayRuntime.analytics.type | string | `"Choreo"` | Type of analytics data publisher. Can be "Choreo" or "ELK". |
 | wso2.apk.dp.gatewayRuntime.analytics.authURL | string | `"https://analytics-event-auth.choreo.dev/auth/v1"` | Choreo analytics auth URL. Not required for ELK type. |
