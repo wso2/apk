@@ -52,18 +52,16 @@ func (ods *OperatorDataStore) AddAPIState(apiNamespacedName types.NamespacedName
 
 // UpdateAPIState update/create the APIState on ref updates
 func (ods *OperatorDataStore) UpdateAPIState(apiNamespacedName types.NamespacedName, apiState *APIState) (APIState, []string, bool) {
-	// removeOldOwnerRefs()
 	_, found := ods.apiStore[apiNamespacedName]
 	if !found {
 		loggers.LoggerAPKOperator.Infof("Adding new apistate as API : %s has not found in memory datastore.",
-			apiState.APIDefinition.Spec.APIDisplayName)
+			apiState.APIDefinition.Name)
 		ods.AddAPIState(apiNamespacedName, apiState)
 		return *apiState, []string{"API"}, true
 	}
 	return ods.processAPIState(apiNamespacedName, apiState)
 }
 
-// TODO(amali) revisit the logic
 // processAPIState process and update the APIState on ref updates
 func (ods *OperatorDataStore) processAPIState(apiNamespacedName types.NamespacedName, apiState *APIState) (APIState, []string, bool) {
 	ods.mu.Lock()

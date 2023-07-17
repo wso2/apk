@@ -45,7 +45,6 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	k8client "sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
 	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -293,7 +292,9 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 		sandHTTPRouteRefs = api.Spec.Sandbox[0].HTTPRouteRefs
 	}
 
-	apiState := &synchronizer.APIState{}
+	apiState := &synchronizer.APIState{
+		APIDefinition: &api,
+	}
 	var err error
 	apiRef := utils.NamespacedName(&api)
 	namespace := api.Namespace
@@ -374,16 +375,44 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 		return &synchronizer.APIEvent{EventType: constants.Create, Event: *apiState, UpdatedEvents: []string{}}, nil
 	} else if cachedAPI, events, updated :=
 		apiReconciler.ods.UpdateAPIState(apiRef, apiState); updated {
+		// apiReconciler.removeOldOwnerRefs(ctx, cachedAPI)
 		return &synchronizer.APIEvent{EventType: constants.Update, Event: cachedAPI, UpdatedEvents: events}, nil
 	}
 
 	return nil, nil
 }
 
+func (apiReconciler *APIReconciler) removeOldOwnerRefs(ctx context.Context, apiState synchronizer.APIState) {
+	api := apiState.APIDefinition
+	scopeList := &dpv1alpha1.ScopeList{}
+	if err := apiReconciler.client.List(ctx, scopeList, &k8client.ListOptions{
+		Namespace: api.Namespace,
+	}); err != nil {
+		loggers.LoggerAPKOperator.Errorf("error while listing authentication CRs for API CR %s, %s", api.Name, err.Error())
+	} else {
+		for _, scope := range scopeList.Items {
+			for _, ownerRef := range scope.ObjectMeta.OwnerReferences {
+				if ownerRef.Kind == "API" && ownerRef.Name == api.Name {
+					loggers.LoggerAPI.Error("found old owner ref!!!!!!!")
+					apiList := &dpv1alpha1.APIList{}
+					if err := apiReconciler.client.List(ctx, apiList, &k8client.ListOptions{
+						FieldSelector: fields.OneTermEqualSelector(apiScopeIndex, utils.NamespacedName(&scope).String())}); err != nil {
+						loggers.LoggerAPKOperator.Errorf("error while listing scope CRs for API CR %s, %s", api.Name, err.Error())
+					} else {
+						loggers.LoggerAPI.Errorf("found apis %v!!!!!!!", apiList.Items)
+						break
+					}
+				}
+			}
+		}
+	}
+}
+
 // resolveHTTPRouteRefs validates following references related to the API
 // - Authentications
 func (apiReconciler *APIReconciler) resolveHTTPRouteRefs(ctx context.Context, httpRouteState *synchronizer.HTTPRouteState,
-	httpRouteRefs []string, namespace string, interceptorServiceMapping map[string]v1alpha1.InterceptorService, api dpv1alpha1.API) (*synchronizer.HTTPRouteState, error) {
+	httpRouteRefs []string, namespace string, interceptorServiceMapping map[string]dpv1alpha1.InterceptorService,
+	api dpv1alpha1.API) (*synchronizer.HTTPRouteState, error) {
 	var err error
 	httpRouteState.HTTPRoute, err = apiReconciler.concatHTTPRoutes(ctx, httpRouteRefs, namespace, api)
 	if err != nil {
@@ -399,8 +428,8 @@ func (apiReconciler *APIReconciler) concatHTTPRoutes(ctx context.Context, httpRo
 	var combinedHTTPRoute *gwapiv1b1.HTTPRoute
 	for _, httpRouteRef := range httpRouteRefs {
 		var httpRoute gwapiv1b1.HTTPRoute
-		if err := utils.ResolveRef(ctx, apiReconciler.client, &api, types.NamespacedName{Namespace: namespace, Name: httpRouteRef},
-			&httpRoute); err != nil {
+		if err := utils.ResolveRef(ctx, apiReconciler.client, &api,
+			types.NamespacedName{Namespace: namespace, Name: httpRouteRef}, true, &httpRoute); err != nil {
 			return nil, fmt.Errorf("error while getting httproute %s in namespace :%s, %s", httpRouteRef, namespace, err.Error())
 		}
 		if combinedHTTPRoute == nil {
@@ -423,7 +452,7 @@ func (apiReconciler *APIReconciler) getAuthenticationsForAPI(ctx context.Context
 		return nil, err
 	}
 	for _, item := range authenticationList.Items {
-		if err := utils.UpdateOwnerReference(ctx, apiReconciler.client, &item, api); err != nil {
+		if err := utils.UpdateOwnerReference(ctx, apiReconciler.client, &item, api, true); err != nil {
 			return nil, err
 		}
 		authentications[utils.NamespacedName(&item).String()] = item
@@ -442,7 +471,7 @@ func (apiReconciler *APIReconciler) getRatelimitPoliciesForAPI(ctx context.Conte
 		return nil, err
 	}
 	for _, item := range ratelimitPolicyList.Items {
-		if err := utils.UpdateOwnerReference(ctx, apiReconciler.client, &item, api); err != nil {
+		if err := utils.UpdateOwnerReference(ctx, apiReconciler.client, &item, api, true); err != nil {
 			return nil, err
 		}
 		ratelimitPolicies[utils.NamespacedName(&item).String()] = item
@@ -455,9 +484,11 @@ func (apiReconciler *APIReconciler) getScopesForHTTPRoute(ctx context.Context,
 	scopes := make(map[string]dpv1alpha1.Scope)
 	for _, rule := range httpRoute.Spec.Rules {
 		for _, filter := range rule.Filters {
-			if filter.Type == gwapiv1b1.HTTPRouteFilterExtensionRef && filter.ExtensionRef != nil && filter.ExtensionRef.Kind == constants.KindScope {
+			if filter.Type == gwapiv1b1.HTTPRouteFilterExtensionRef && filter.ExtensionRef != nil &&
+				filter.ExtensionRef.Kind == constants.KindScope {
 				scope := &dpv1alpha1.Scope{}
-				if err := utils.ResolveRef(ctx, apiReconciler.client, &api, types.NamespacedName{Namespace: httpRoute.Namespace, Name: string(filter.ExtensionRef.Name)},
+				if err := utils.ResolveRef(ctx, apiReconciler.client, &api,
+					types.NamespacedName{Namespace: httpRoute.Namespace, Name: string(filter.ExtensionRef.Name)}, false,
 					scope); err != nil {
 					return nil, fmt.Errorf("error while getting scope %s in namespace :%s, %s", filter.ExtensionRef.Name,
 						httpRoute.Namespace, err.Error())
@@ -482,7 +513,7 @@ func (apiReconciler *APIReconciler) getAuthenticationsForResources(ctx context.C
 		return nil, err
 	}
 	for _, item := range authenticationList.Items {
-		if err := utils.UpdateOwnerReference(ctx, apiReconciler.client, &item, api); err != nil {
+		if err := utils.UpdateOwnerReference(ctx, apiReconciler.client, &item, api, true); err != nil {
 			return nil, err
 		}
 		authentications[utils.NamespacedName(&item).String()] = item
@@ -501,7 +532,7 @@ func (apiReconciler *APIReconciler) getRatelimitPoliciesForResources(ctx context
 		return nil, err
 	}
 	for _, item := range ratelimitPolicyList.Items {
-		if err := utils.UpdateOwnerReference(ctx, apiReconciler.client, &item, api); err != nil {
+		if err := utils.UpdateOwnerReference(ctx, apiReconciler.client, &item, api, true); err != nil {
 			return nil, err
 		}
 		ratelimitpolicies[utils.NamespacedName(&item).String()] = item
@@ -520,7 +551,7 @@ func (apiReconciler *APIReconciler) getAPIPoliciesForAPI(ctx context.Context,
 		return nil, err
 	}
 	for _, item := range apiPolicyList.Items {
-		if err := utils.UpdateOwnerReference(ctx, apiReconciler.client, &item, api); err != nil {
+		if err := utils.UpdateOwnerReference(ctx, apiReconciler.client, &item, api, true); err != nil {
 			return nil, err
 		}
 		apiPolicies[utils.NamespacedName(&item).String()] = item
@@ -531,7 +562,8 @@ func (apiReconciler *APIReconciler) getAPIPoliciesForAPI(ctx context.Context,
 func (apiReconciler *APIReconciler) getAPIDefinitionForAPI(ctx context.Context,
 	apiDefinitionFile, namespace string, api dpv1alpha1.API) ([]byte, error) {
 	configMap := &corev1.ConfigMap{}
-	if err := utils.ResolveRef(ctx, apiReconciler.client, &api, types.NamespacedName{Namespace: namespace, Name: apiDefinitionFile}, configMap); err != nil {
+	if err := utils.ResolveRef(ctx, apiReconciler.client, &api,
+		types.NamespacedName{Namespace: namespace, Name: apiDefinitionFile}, true, configMap); err != nil {
 		return nil, fmt.Errorf("error while getting swagger definition %s in namespace :%s, %s", apiDefinitionFile,
 			namespace, err.Error())
 	}
@@ -554,7 +586,7 @@ func (apiReconciler *APIReconciler) getAPIPoliciesForResources(ctx context.Conte
 		return nil, err
 	}
 	for _, item := range apiPolicyList.Items {
-		if err := utils.UpdateOwnerReference(ctx, apiReconciler.client, &item, api); err != nil {
+		if err := utils.UpdateOwnerReference(ctx, apiReconciler.client, &item, api, true); err != nil {
 			return nil, err
 		}
 		apiPolicies[utils.NamespacedName(&item).String()] = item
@@ -597,7 +629,8 @@ func (apiReconciler *APIReconciler) getInterceptorServices(ctx context.Context,
 }
 
 func (apiReconciler *APIReconciler) getResolvedBackendsMapping(ctx context.Context,
-	httpRouteState *synchronizer.HTTPRouteState, interceptorServiceMapping map[string]v1alpha1.InterceptorService, api dpv1alpha1.API) dpv1alpha1.BackendMapping {
+	httpRouteState *synchronizer.HTTPRouteState, interceptorServiceMapping map[string]dpv1alpha1.InterceptorService,
+	api dpv1alpha1.API) dpv1alpha1.BackendMapping {
 	backendMapping := make(dpv1alpha1.BackendMapping)
 
 	// Resolve backends in HTTPRoute
@@ -853,7 +886,7 @@ func (apiReconciler *APIReconciler) getAPIsForScope(obj k8client.Object) []recon
 	apiList := &dpv1alpha1.APIList{}
 
 	if err := apiReconciler.client.List(ctx, apiList, &k8client.ListOptions{
-		FieldSelector: fields.OneTermEqualSelector(httpRouteAPIIndex, utils.NamespacedName(scope).String())}); err != nil {
+		FieldSelector: fields.OneTermEqualSelector(apiScopeIndex, utils.NamespacedName(scope).String())}); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2623, utils.NamespacedName(scope).String()))
 		return []reconcile.Request{}
 	}

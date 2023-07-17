@@ -135,8 +135,8 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 						HealthyThreshold:   resolvedBackend.HealthCheck.HealthyThreshold,
 					}
 				}
-				endPoints = append(endPoints, GetEndpoints(backendName, httpRouteParams.BackendMapping)...)
-				backendBasePath = GetBackendBasePath(backendName, httpRouteParams.BackendMapping)
+				endPoints = append(endPoints, GetEndpoints(backendName, resourceParams.BackendMapping)...)
+				backendBasePath = GetBackendBasePath(backendName, resourceParams.BackendMapping)
 				switch resolvedBackend.Security.Type {
 				case "Basic":
 					securityConfig = append(securityConfig, EndpointSecurity{
