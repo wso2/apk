@@ -25,6 +25,8 @@ metadata:
 spec:
   override:
     ext:
+      authTypes:
+        mutualSSL: optional
       disabled: true
     type: "ext"
   targetRef:
