@@ -381,6 +381,15 @@ wso2:
             authHeaderValue: "<INGEST_LICENSE_KEY>"
             # -- Connection timeout for the otlp service.
             connectionTimeout: "20"
+            tls: 
+              # -- Enable/Disable TLS for the otlp service.
+              enabled: true
+              # -- TLS certificate file name.
+              secretName: "ratelimiter-cert"
+              # -- TLS certificate file name.
+              certFilename: ""
+              # -- TLS certificate file name.
+              certCAFilename: ""
         analytics:
           # -- Enable/Disable analytics in gateway runtime.
           enabled: true
