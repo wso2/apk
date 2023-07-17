@@ -2,7 +2,7 @@
 org = "wso2"
 name = "idp_domain_service"
 version = "0.0.1-m13"
-distribution = "2201.5.0"
+distribution = "2201.7.0"
 
 [[platform.java11.dependency]]
 groupId = "org.postgresql"
