@@ -86,17 +86,29 @@ func (ods *OperatorDataStore) processAPIState(apiDef *dpv1alpha1.API, prodHTTPRo
 		events = append(events, "API Definition")
 	}
 	if prodHTTPRoute != nil {
-		if routeEvents, routesUpdated := updateHTTPRoute(prodHTTPRoute, cachedAPI.ProdHTTPRoute, "Production"); routesUpdated {
+		if (cachedAPI.ProdHTTPRoute == nil) {
+			cachedAPI.ProdHTTPRoute = prodHTTPRoute
 			updated = true
-			events = append(events, routeEvents...)
+			events = append(events, "Production")
+		} else {
+			if routeEvents, routesUpdated := updateHTTPRoute(prodHTTPRoute, cachedAPI.ProdHTTPRoute, "Production"); routesUpdated {
+				updated = true
+				events = append(events, routeEvents...)
+			}
 		}
 	} else {
 		cachedAPI.ProdHTTPRoute = nil
 	}
 	if sandHTTPRoute != nil {
-		if routeEvents, routesUpdated := updateHTTPRoute(sandHTTPRoute, cachedAPI.SandHTTPRoute, "Sandbox"); routesUpdated {
+		if (cachedAPI.SandHTTPRoute == nil) {
+			cachedAPI.SandHTTPRoute = sandHTTPRoute
 			updated = true
-			events = append(events, routeEvents...)
+			events = append(events, "Sandbox")
+		} else { 
+			if routeEvents, routesUpdated := updateHTTPRoute(sandHTTPRoute, cachedAPI.SandHTTPRoute, "Sandbox"); routesUpdated {
+				updated = true
+				events = append(events, routeEvents...)
+			}
 		}
 	} else {
 		cachedAPI.SandHTTPRoute = nil
@@ -109,7 +121,7 @@ func (ods *OperatorDataStore) processAPIState(apiDef *dpv1alpha1.API, prodHTTPRo
 func updateHTTPRoute(httpRoute *HTTPRouteState, cachedHTTPRoute *HTTPRouteState, endpointType string) ([]string, bool) {
 	var updated bool
 	events := []string{}
-	if httpRoute.HTTPRoute.UID != cachedHTTPRoute.HTTPRoute.UID ||
+	if cachedHTTPRoute.HTTPRoute == nil || httpRoute.HTTPRoute.UID != cachedHTTPRoute.HTTPRoute.UID ||
 		httpRoute.HTTPRoute.Generation > cachedHTTPRoute.HTTPRoute.Generation {
 		cachedHTTPRoute.HTTPRoute = httpRoute.HTTPRoute
 		updated = true
