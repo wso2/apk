@@ -18,12 +18,12 @@
 package org.wso2.apk.enforcer.tracing.exporters;
 
 import com.azure.monitor.opentelemetry.exporter.AzureMonitorExporterBuilder;
-import com.azure.monitor.opentelemetry.exporter.AzureMonitorTraceExporter;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -54,7 +54,7 @@ public class AzureExporter implements TracerBuilder {
     }
 
     /**
-     * Initialize the tracer SDK with AzureMonitorTraceExporter.
+     * Initialize the tracer SDK with SpanExporter.
      */
     @Override
     public OpenTelemetrySdk initSdk(Map<String, String> properties) throws TracingException {
@@ -66,7 +66,7 @@ public class AzureExporter implements TracerBuilder {
         int maxTracesPerSecond = StringUtils.isEmpty(maxTracesPerSecondString) ?
                 TracingConstants.DEFAULT_MAX_TRACES_PER_SEC : Integer.parseInt(maxTracesPerSecondString);
 
-        AzureMonitorTraceExporter exporter = new AzureMonitorExporterBuilder()
+        SpanExporter exporter = new AzureMonitorExporterBuilder()
                 .connectionString(connectionString).buildTraceExporter();
         SdkTracerProvider tracerProvider = SdkTracerProvider.builder()
                 .setSampler(new RateLimitingSampler(maxTracesPerSecond))
