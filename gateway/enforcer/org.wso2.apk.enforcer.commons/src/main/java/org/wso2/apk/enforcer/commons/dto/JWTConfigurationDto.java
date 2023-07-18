@@ -41,7 +41,7 @@ public class JWTConfigurationDto {
     private Certificate publicCert;
     private PrivateKey privateKey;
     private long ttl;
-    private Map<String, String> customClaims = new HashMap<>();
+    private Map<String, ClaimValueDTO> customClaims = new HashMap<>();
 
     private boolean useKid;
 
@@ -159,7 +159,7 @@ public class JWTConfigurationDto {
         this.ttl = ttl;
     }
 
-    public Map<String, String> getCustomClaims() {
+    public Map<String, ClaimValueDTO> getCustomClaims() {
 
         return customClaims;
     }
@@ -171,7 +171,7 @@ public class JWTConfigurationDto {
 
     public void populateConfigValues(final boolean enabled, final String jwtHeader,
             final String signatureAlgorithm, final String encoding,
-            final Certificate publicCert, final PrivateKey privateKey, final long ttl, final Map<String, String> customClaims) {
+            final Certificate publicCert, final PrivateKey privateKey, final long ttl, final Map<String, ClaimValueDTO> customClaims) {
         this.enabled = enabled;
         this.jwtHeader = jwtHeader;
         this.signatureAlgorithm = signatureAlgorithm;

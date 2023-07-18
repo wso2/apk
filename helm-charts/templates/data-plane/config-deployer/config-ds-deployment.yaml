@@ -31,6 +31,8 @@ spec:
     metadata:
       labels:
 {{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" "configdeployer-ds" ) | indent 8}}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/data-plane/config-deployer/config-ds-configmap.yaml") . | sha256sum }}
     spec:
       serviceAccountName: {{ .Values.wso2.apk.auth.serviceAccountName }}
       containers:

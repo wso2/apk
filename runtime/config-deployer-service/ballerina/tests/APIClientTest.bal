@@ -26,13 +26,76 @@ public isolated function testCORSPolicyGenerationFromAPKConf() returns error? {
         accessControlAllowCredentials: true,
         accessControlAllowOrigins: ["wso2.com"],
         accessControlAllowHeaders: ["Content-Type","Authorization"],
-        accessControlAllowMethods: ["GET"]
+        accessControlAllowMethods: ["GET"],
+        accessControlMaxAge: 3600
     };
 
     foreach model:APIPolicy apiPolicy in apiArtifact.apiPolicies {
         model:APIPolicyData? policyData = apiPolicy.spec.default;
         if (policyData is model:APIPolicyData) {
             test:assertEquals(policyData.cORSPolicy, corsPolicySpecExpected, "CORS Policy is not equal to expected CORS Policy");
+        }
+    }
+}
+
+@test:Config {}
+public isolated function testBackendJWTConfigGenerationFromAPKConf() returns error? {
+
+    GenerateK8sResourcesBody body = {};
+    body.apkConfiguration = {fileName: "API_CORS.apk-conf", fileContent: check io:fileReadBytes("./tests/resources/API_CORS.apk-conf")};
+    body.definitionFile = {fileName: "api_cors.yaml", fileContent: check io:fileReadBytes("./tests/resources/api_cors.yaml")};
+    body.apiType = "REST";
+    APIClient apiClient = new;
+
+    model:APIArtifact apiArtifact = check apiClient.prepareArtifact(body.apkConfiguration, body.definitionFile);
+
+    model:BackendJwtPolicy? backendJWTConfigSpecExpected = {
+        enabled: true,
+        encoding: "base64",
+        signingAlgorithm: "SHA256withRSA",
+        header: "X-JWT-Assertion",
+        tokenTTL: 3600,
+        customClaims: [{claim: "claim1", value: "value1"}, {claim: "claim2", value: "value2"}]
+    };
+
+    foreach model:APIPolicy apiPolicy in apiArtifact.apiPolicies {
+        model:APIPolicyData? policyData = apiPolicy.spec.default;
+        if (policyData is model:APIPolicyData) {
+            test:assertEquals(policyData.backendJwtToken, backendJWTConfigSpecExpected, "Backend JWT Config is not equal to expected Backend JWT Config");
+        }
+    }
+}
+
+@test:Config {}
+public isolated function testBackendRetryAndTimeoutGenerationFromAPKConf() returns error? {
+
+    GenerateK8sResourcesBody body = {};
+    body.apkConfiguration = {fileName: "backend-retry.apk-conf", fileContent: check io:fileReadBytes("./tests/resources/backend-retry.apk-conf")};
+    body.definitionFile = {fileName: "backend-retry.yaml", fileContent: check io:fileReadBytes("./tests/resources/backend-retry.yaml")};
+    body.apiType = "REST";
+    APIClient apiClient = new;
+
+    model:APIArtifact apiArtifact = check apiClient.prepareArtifact(body.apkConfiguration, body.definitionFile);
+
+    model:Retry? retryConfigExpected = {
+        count: 3,
+        baseIntervalInMillis: 1000,
+        statusCodes: [504]
+    };
+    model:Timeout? timeoutConfigExpected = {
+        maxRouteTimeoutSeconds: 60,
+        routeIdleTimeoutSeconds: 400,
+        routeTimeoutSeconds: 40
+    };
+
+    foreach model:Backend backend in apiArtifact.backendServices {
+        model:Timeout? timeout = backend.spec.timeout;
+        model:Retry? retryPolicy = backend.spec.'retry;
+        if (timeout is model:Timeout) {
+            test:assertEquals(timeout, timeoutConfigExpected, "Timeout is not equal to expected Timeout Config");
+        }
+        if (retryPolicy is model:Retry) {
+            test:assertEquals(retryPolicy, retryConfigExpected, "Retry Policy is not equal to expected Retry Policy");
         }
     }
 }

@@ -75,3 +75,13 @@ spec:
     - group: dp.wso2.com
       kind: Backend
       name: infra-backend-v1
+---
+apiVersion: dp.wso2.com/v1alpha1
+kind: Backend
+metadata:
+  name: infra-backend-v1
+  namespace: gateway-integration-test-infra
+spec:
+  services:
+  - host: infra-backend-v1.gateway-integration-test-infra
+    port: 8080

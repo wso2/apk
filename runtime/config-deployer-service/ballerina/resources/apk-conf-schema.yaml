@@ -55,7 +55,7 @@ components:
         authentication:
           type: array
           items:
-            type: object
+            $ref: "#/components/schemas/AuthenticationRequest"
         additionalProperties:
           type: array
           description: Map of custom properties of API
@@ -81,28 +81,63 @@ components:
                 type: string
         corsConfiguration:
           $ref: "#/components/schemas/CORSConfiguration"
+    AuthenticationRequest:
+      oneOf:
+        - $ref: "#/components/schemas/JWTAuthentication"
+        - $ref: "#/components/schemas/APIKeyAuthentication"
+      discriminator:
+        propertyName: authType
+        mapping:
+          JWT: "#/components/schemas/JWTAuthentication"
+          APIKey: "#/components/schemas/APIKeyAuthentication"
     Authentication:
       type: object
+      discriminator:
+        propertyName: authType
       properties:
         authType:
           type: string
           example: JWT
-        sendTokenToUpstream:
-          type: boolean
-          default: false
         enabled:
           type: boolean
           example: true
-        headerName:
-          type: string
-          example: Authorization
-        queryParamName:
-          type: string
-          example: apikey
-        headerEnable:
-          type: boolean
-        queryParamEnable:
-          type: boolean        
+    JWTAuthentication:
+      allOf:
+      - $ref: '#/components/schemas/Authentication'
+      - type: object
+        properties:
+          sendTokenToUpstream:
+            type: boolean
+            default: false
+          headerName:
+            type: string
+            example: Authorization
+            default: Authorization
+          headerEnable:
+            type: boolean
+            default: true
+    APIKeyAuthentication:
+      allOf:
+      - $ref: '#/components/schemas/Authentication'
+      - type: object
+        properties:
+          sendTokenToUpstream:
+            type: boolean
+            default: false
+          headerName:
+            type: string
+            example: Authorization
+            default: apikey
+          queryParamName:
+            type: string
+            example: apikey
+            default: apikey
+          headerEnable:
+            type: boolean
+            default: true
+          queryParamEnable:
+            type: boolean      
+            default: true
     CORSConfiguration:
       type: object
       description: |
@@ -129,6 +164,10 @@ components:
         accessControlAllowMaxAge:
           type: integer
           default: 0
+        accessControlExposeHeaders:
+          type: array
+          items:
+            type: string
     APIOperationPolicies:
       title: API Operation Level Policies
       properties:
@@ -142,6 +181,16 @@ components:
             $ref: "#/components/schemas/APKOperationPolicy"
     APKOperationPolicy:
       title: API Operation Policy
+      oneOf:
+        - $ref: "#/components/schemas/InterceptorPolicy"
+        - $ref: "#/components/schemas/BackendJWTPolicy"
+      discriminator:
+        propertyName: "policyName"
+        mapping:
+          BackendJwt: "#/components/schemas/BackendJWTPolicy"
+          Interceptor: "#/components/schemas/InterceptorPolicy"
+    BaseOperationPolicy:
+      title: API Operation Policy
       required:
         - policyName
       type: object
@@ -150,12 +199,11 @@ components:
           type: string
         policyVersion:
           type: string
-          default: v1
+          default: "v1"
         policyId:
           type: string
-        parameters:
-          type: object
-          example: {"headerName":"header1"}
+      discriminator:
+        propertyName: policyName
     RateLimit:
       title: API Rate Limit Details
       type: object
@@ -226,7 +274,31 @@ components:
           type: string
     Resiliency:
       type: object
-      properties: {}
+      properties:
+        timeout:
+          $ref: "#/components/schemas/Timeout"
+        retryPolicy:
+          $ref: "#/components/schemas/RetryPolicy"
+    Timeout:
+      type: object
+      properties:
+        maxRouteTimeoutSeconds:
+          type: integer
+        routeIdleTimeoutSeconds:
+          type: integer
+        routeTimeoutSeconds:
+          type: integer
+    RetryPolicy:
+      type: object
+      properties:
+        count:
+          type: integer
+        baseIntervalInMillis:
+          type: integer
+        statusCodes:
+          type: array
+          items:
+            type: integer
     APKOperations:
       title: Operation
       type: object
@@ -268,3 +340,62 @@ components:
         protocol:
           type: string
           example: http
+    InterceptorPolicy:
+      title: Interceptor Parameters
+      allOf:
+      - $ref: "#/components/schemas/BaseOperationPolicy"
+      - type: object
+        properties:
+          parameters:
+            type: object
+            properties:
+              backendUrl:
+                type: string
+              headersEnabled:
+                type: boolean
+              bodyEnabled:
+                type: boolean
+              trailersEnabled:
+                type: boolean
+              contextEnabled:
+                type: boolean
+      required:
+      - backendUrl
+    BackendJWTPolicy:
+      title: Backend JWT Parameters
+      allOf:
+      - $ref: "#/components/schemas/BaseOperationPolicy"
+      - type: object
+        properties:
+          parameters:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+                default: true
+              encoding:
+                type: string
+              signingAlgorithm:
+                type: string
+              header:
+                type: string
+              tokenTTL:
+                type: integer
+              customClaims:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/CustomClaims"
+      required:
+      - enabled
+    CustomClaims:
+      type: object
+      required:
+      - claim
+      - value
+      properties:
+        claim:
+          type: string
+          default: claim1
+        value:
+          type: string
+          default: value1

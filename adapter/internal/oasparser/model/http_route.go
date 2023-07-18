@@ -137,16 +137,14 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 				}
 				endPoints = append(endPoints, GetEndpoints(backendName, httpRouteParams.BackendMapping)...)
 				backendBasePath = GetBackendBasePath(backendName, httpRouteParams.BackendMapping)
-				for _, security := range resolvedBackend.Security {
-					switch security.Type {
-					case "Basic":
-						securityConfig = append(securityConfig, EndpointSecurity{
-							Password: string(security.Basic.Password),
-							Username: string(security.Basic.Username),
-							Type:     string(security.Type),
-							Enabled:  true,
-						})
-					}
+				switch resolvedBackend.Security.Type {
+				case "Basic":
+					securityConfig = append(securityConfig, EndpointSecurity{
+						Password: string(resolvedBackend.Security.Basic.Password),
+						Username: string(resolvedBackend.Security.Basic.Username),
+						Type:     string(resolvedBackend.Security.Type),
+						Enabled:  true,
+					})
 				}
 			} else {
 				return fmt.Errorf("backend: %s has not been resolved", backendName)
@@ -384,11 +382,15 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 func parseBackendJWTTokenToInternal(backendJWTToken *dpv1alpha1.BackendJWTToken) *BackendJWTTokenInfo {
 	var customClaims []ClaimMapping
 	for _, value := range backendJWTToken.CustomClaims {
+		valType := value.Type
 		claim := value.Claim
 		value := value.Value
 		claimMapping := ClaimMapping{
 			Claim: claim,
-			Value: value,
+			Value: ClaimVal{
+				Value: value,
+				Type:  valType,
+			},
 		}
 		customClaims = append(customClaims, claimMapping)
 	}
@@ -414,6 +416,9 @@ func getCorsConfigFromAPIPolicy(apiPolicy *dpv1alpha1.APIPolicy) *CorsConfig {
 				AccessControlAllowMethods:     apiPolicy.Spec.Override.CORSPolicy.AccessControlAllowMethods,
 				AccessControlAllowOrigins:     apiPolicy.Spec.Override.CORSPolicy.AccessControlAllowOrigins,
 				AccessControlExposeHeaders:    apiPolicy.Spec.Override.CORSPolicy.AccessControlExposeHeaders,
+			}
+			if apiPolicy.Spec.Override.CORSPolicy.AccessControlMaxAge != nil {
+				corsConfig.AccessControlMaxAge = apiPolicy.Spec.Override.CORSPolicy.AccessControlMaxAge
 			}
 		}
 	}
@@ -538,18 +543,15 @@ func concatAPIPolicies(schemeUp *dpv1alpha1.APIPolicy, schemeDown *dpv1alpha1.AP
 }
 
 func concatAuthSchemes(schemeUp *dpv1alpha1.Authentication, schemeDown *dpv1alpha1.Authentication) *dpv1alpha1.Authentication {
-	finalAuth := dpv1alpha1.Authentication{}
-	finalAuth.Spec.Override = &dpv1alpha1.AuthSpec{}
-	finalAuth.Spec.Override.ExternalService = dpv1alpha1.ExtAuthService{}
+	finalAuth := dpv1alpha1.Authentication{
+		Spec: dpv1alpha1.AuthenticationSpec{},
+	}
 	if schemeUp != nil && schemeDown != nil {
-		finalAuth.Spec.Override.ExternalService.Disabled = utils.SelectPolicy(&schemeUp.Spec.Override.ExternalService.Disabled, &schemeUp.Spec.Default.ExternalService.Disabled, &schemeDown.Spec.Override.ExternalService.Disabled, &schemeDown.Spec.Default.ExternalService.Disabled)
-		finalAuth.Spec.Override.ExternalService.AuthTypes = utils.SelectPolicy(&schemeUp.Spec.Override.ExternalService.AuthTypes, &schemeUp.Spec.Default.ExternalService.AuthTypes, &schemeDown.Spec.Override.ExternalService.AuthTypes, &schemeDown.Spec.Default.ExternalService.AuthTypes)
+		finalAuth.Spec.Override = utils.SelectPolicy(&schemeUp.Spec.Override, &schemeUp.Spec.Default, &schemeDown.Spec.Override, &schemeDown.Spec.Default)
 	} else if schemeUp != nil {
-		finalAuth.Spec.Override.ExternalService.Disabled = utils.SelectPolicy(&schemeUp.Spec.Override.ExternalService.Disabled, &schemeUp.Spec.Default.ExternalService.Disabled, nil, nil)
-		finalAuth.Spec.Override.ExternalService.AuthTypes = utils.SelectPolicy(&schemeUp.Spec.Override.ExternalService.AuthTypes, &schemeUp.Spec.Default.ExternalService.AuthTypes, nil, nil)
+		finalAuth.Spec.Override = utils.SelectPolicy(&schemeUp.Spec.Override, &schemeUp.Spec.Default, nil, nil)
 	} else if schemeDown != nil {
-		finalAuth.Spec.Override.ExternalService.Disabled = utils.SelectPolicy(nil, nil, &schemeDown.Spec.Override.ExternalService.Disabled, &schemeDown.Spec.Default.ExternalService.Disabled)
-		finalAuth.Spec.Override.ExternalService.AuthTypes = utils.SelectPolicy(nil, nil, &schemeDown.Spec.Override.ExternalService.AuthTypes, &schemeDown.Spec.Default.ExternalService.AuthTypes)
+		finalAuth.Spec.Override = utils.SelectPolicy(nil, nil, &schemeDown.Spec.Override, &schemeDown.Spec.Default)
 	}
 	return &finalAuth
 }
@@ -559,11 +561,14 @@ func concatAuthSchemes(schemeUp *dpv1alpha1.Authentication, schemeDown *dpv1alph
 // tip: use concatScheme method
 func getSecurity(authScheme *dpv1alpha1.Authentication) *Authentication {
 	auth := &Authentication{Disabled: false,
-		JWT:            &JWT{Header: constants.AuthorizationHeader},
 		TestConsoleKey: &TestConsoleKey{Header: constants.TestConsoleKeyHeader},
+		JWT: &JWT{Header: constants.AuthorizationHeader},
 	}
-	//todo(amali) jwt disable apikey enable handle
-	// todo(amali) handle disabled auth
+	if (authScheme != nil && authScheme.Spec.Override.ExternalService.AuthTypes != nil && authScheme.Spec.Override.ExternalService.AuthTypes.JWT.Disabled) {
+		auth = &Authentication{Disabled: false,
+			TestConsoleKey: &TestConsoleKey{Header: constants.TestConsoleKeyHeader},
+		}
+	}
 	if authScheme != nil {
 		if authScheme.Spec.Override.ExternalService.Disabled != nil && *authScheme.Spec.Override.ExternalService.Disabled {
 			loggers.LoggerOasparser.Debug("Disabled security")
@@ -580,7 +585,6 @@ func getSecurity(authScheme *dpv1alpha1.Authentication) *Authentication {
 			auth.APIKey = apiKeys
 		}
 	}
-	loggers.LoggerOasparser.Debug("No auths were provided")
 	return auth
 }
 

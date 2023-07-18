@@ -31,6 +31,8 @@ spec:
     metadata:
       labels:
 {{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" "idp-ds" ) | indent 8}}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/idp/idp-ds/idp-ds-configmap.yaml") . | sha256sum }}
     spec:
       initContainers:
         - name: init-db

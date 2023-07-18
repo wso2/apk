@@ -28,6 +28,8 @@ public type BackendSpec record {|
     string protocol;
     TLSConfig tls?;
     SecurityConfig security?;
+    Timeout timeout?;
+    Retry 'retry?;
 |};
 
 public type BackendService record {
@@ -54,6 +56,18 @@ public type SecretRefConfig record {
 public type RefConfig record {
     string key;
     string name;
+};
+
+public type Timeout record {
+    int maxRouteTimeoutSeconds?;
+    int routeIdleTimeoutSeconds?;
+    int routeTimeoutSeconds?;
+};
+
+public type Retry record {
+    int count?;
+    int baseIntervalInMillis?;
+    int[] statusCodes?;
 };
 
 public type TLSConfig record {

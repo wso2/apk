@@ -63,34 +63,6 @@ wso2:
       #   headers:
       #     - name: "apiKey"
       #       value: "123-456-789"
-      runtime:
-        deployment:
-          resources:
-            requests:
-              memory: "128Mi"
-              cpu: "100m"
-            limits:
-              memory: "1028Mi"
-              cpu: "1000m"
-          readinessProbe:
-            initialDelaySeconds: 20
-            periodSeconds: 20
-            failureThreshold: 5
-          livenessProbe:
-            initialDelaySeconds: 20
-            periodSeconds: 20
-            failureThreshold: 5
-          strategy: Recreate
-          replicas: 1
-          imagePullPolicy: Always
-          image: wso2/runtime-domain-service:0.0.1-m13
-          # configs:
-          #   authrorization: true
-          #   baseUrl: "https://api.am.wso2.com:9095/api/runtime"
-          #   tls:
-          #     secretName: "my-secret"
-          #     certKeyFilename: "tls.key"
-          #     certFilename: "certchain.crt"
       configdeployer:
         deployment:
           resources:
@@ -111,7 +83,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/config-deployer-service:0.0.1-m13
+          image: wso2/config-deployer-service:latest
           # configs:
           #   tls:
           #     secretName: "my-secret"
@@ -137,7 +109,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/adapter:0.0.1-m13
+          image: wso2/adapter:latest
           security:
             sslHostname: "adapter"
 #        logging:
@@ -232,7 +204,7 @@ wso2:
               failureThreshold: 5
             strategy: Recreate
             imagePullPolicy: Always
-            image: wso2/enforcer:0.0.1-m13
+            image: wso2/enforcer:latest
             security:
               sslHostname: "enforcer"
 #            logging:

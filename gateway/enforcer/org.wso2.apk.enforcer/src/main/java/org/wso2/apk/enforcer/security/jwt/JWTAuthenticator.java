@@ -27,6 +27,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
 import org.wso2.apk.enforcer.commons.constants.GraphQLConstants;
+import org.wso2.apk.enforcer.commons.dto.ClaimValueDTO;
 import org.wso2.apk.enforcer.commons.dto.JWTConfigurationDto;
 import org.wso2.apk.enforcer.commons.dto.JWTInfoDto;
 import org.wso2.apk.enforcer.commons.dto.JWTValidationInfo;
@@ -59,6 +60,7 @@ import org.wso2.apk.enforcer.util.JWTUtils;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -291,9 +293,16 @@ public class JWTAuthenticator implements Authenticator {
 
                     // jwt generator is only set if the backend jwt is enabled
                     if (this.jwtGenerator != null) {
-
+                        JWTConfigurationDto configurationDto = this.jwtGenerator.getJWTConfigurationDto();
+                        Map<String, ClaimValueDTO> claimMap = new HashMap<>();
+                        if(configurationDto != null) {
+                            claimMap = configurationDto.getCustomClaims();
+                        }
                         JWTInfoDto jwtInfoDto = FilterUtils.generateJWTInfoDto(null, validationInfo,
                                 apiKeyValidationInfoDTO, requestContext);
+
+                        // set custom claims get from the CR
+                        jwtInfoDto.setClaims(claimMap);
                         endUserToken = BackendJwtUtils.generateAndRetrieveJWTToken(this.jwtGenerator, jwtTokenIdentifier,
                                 jwtInfoDto, isGatewayTokenCacheEnabled);
                         // Set generated jwt token as a response header

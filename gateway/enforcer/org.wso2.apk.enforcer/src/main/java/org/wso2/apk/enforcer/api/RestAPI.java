@@ -19,11 +19,13 @@ package org.wso2.apk.enforcer.api;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.wso2.apk.enforcer.commons.dto.ClaimValueDTO;
 import org.wso2.apk.enforcer.commons.dto.JWTConfigurationDto;
 import org.wso2.apk.enforcer.config.EnforcerConfig;
 import org.wso2.apk.enforcer.discovery.api.Api;
 import org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo;
 import org.wso2.apk.enforcer.discovery.api.Certificate;
+import org.wso2.apk.enforcer.discovery.api.Claim;
 import org.wso2.apk.enforcer.discovery.api.Operation;
 import org.wso2.apk.enforcer.discovery.api.Resource;
 import org.wso2.apk.enforcer.analytics.AnalyticsFilter;
@@ -111,22 +113,25 @@ public class RestAPI implements API {
 
         // If backendJWTTokeInfo is available
         if (api.hasBackendJWTTokenInfo()) {
+            Map<String, Claim> claims = backendJWTTokenInfo.getCustomClaimsMap();
+            Map<String,ClaimValueDTO> claimsMap = new HashMap<>();
+            for(Map.Entry<String, Claim> claimEntry : claims.entrySet()) {
+                Claim claim = claimEntry.getValue();
+                ClaimValueDTO claimVal = new ClaimValueDTO(claim.getValue(), claim.getType());
+                claimsMap.put(claimEntry.getKey(), claimVal);
+            }
             EnforcerConfig enforcerConfig = ConfigHolder.getInstance().getConfig();
             jwtConfigurationDto.populateConfigValues(backendJWTTokenInfo.getEnabled(),
                     backendJWTTokenInfo.getHeader(), backendJWTTokenInfo.getSigningAlgorithm(),
                     backendJWTTokenInfo.getEncoding(), enforcerConfig.getJwtConfigurationDto().getPublicCert(),
                     enforcerConfig.getJwtConfigurationDto().getPrivateKey(), backendJWTTokenInfo.getTokenTTL(),
-                    backendJWTTokenInfo.getCustomClaimsMap());
+                   claimsMap);
         }
 
         byte[] apiDefinition = null;
         if(api.getApiDefinitionFile() != null) {
             apiDefinition = api.getApiDefinitionFile().toByteArray();
         }
-
-        System.out.println("API Name: " + name);
-        System.out.println("API Base Path: " + basePath);
-        System.out.println("API VHost: " + vhost);
 
         this.apiLifeCycleState = api.getApiLifeCycleState();
         this.apiConfig = new APIConfig.Builder(name).uuid(api.getId()).vhost(vhost).basePath(basePath).version(version)

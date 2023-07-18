@@ -42,10 +42,10 @@ public type AuthenticationExtenstion record {
 };
 
 public type AuthenticationServiceRef record {
-    string group;
-    string kind;
-    string name;
-    int port;
+    string group?;
+    string kind?;
+    string name?;
+    int port?;
 };
 
 public type AuthenticationExtenstionType record {

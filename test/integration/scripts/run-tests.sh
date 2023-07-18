@@ -39,8 +39,8 @@ helm install apk-test-setup ../../helm-charts -n apk-integration-test \
 # Wait gateway resources to be available.
 kubectl wait --timeout=5m -n gateway-system deployment/gateway-api-admission-server --for=condition=Available
 kubectl wait --timeout=5m -n gateway-system job/gateway-api-admission --for=condition=Complete
-kubectl wait --timeout=5m -n apk-integration-test deployment/apk-test-setup-wso2-apk-adapter-deployment --for=condition=Available
-kubectl wait --timeout=5m -n apk-integration-test deployment/apk-test-setup-wso2-apk-gateway-runtime-deployment --for=condition=Available
+kubectl wait --timeout=15m -n apk-integration-test deployment/apk-test-setup-wso2-apk-adapter-deployment --for=condition=Available
+kubectl wait --timeout=15m -n apk-integration-test deployment/apk-test-setup-wso2-apk-gateway-runtime-deployment --for=condition=Available
 kubectl describe deployment apk-test-setup-wso2-apk-adapter-deployment -n apk-integration-test
 POD=$(kubectl get pod -l networkPolicyId=adapter-npi -n apk-integration-test -o jsonpath="{.items[0].metadata.name}")
 kubectl describe pod $POD -n apk-integration-test
@@ -65,7 +65,12 @@ sudo echo "$IP interceptor-resource.test.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "$IP cors-policy.test.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "$IP fetch-api-definition.test.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "$IP fetch-non-existing-api-definition.test.gw.wso2.com" | sudo tee -a /etc/hosts
+sudo echo "$IP default-api-version-ratelimit.test.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "$IP default-api-version.test.gw.wso2.com" | sudo tee -a /etc/hosts
+sudo echo "$IP disable-api-level-jwt.test.gw.wso2.com" | sudo tee -a /etc/hosts
+sudo echo "$IP disable-resource-level-jwt.test.gw.wso2.com" | sudo tee -a /etc/hosts
+sudo echo "$IP disable-api-level-jwt1.test.gw.wso2.com" | sudo tee -a /etc/hosts
+sudo echo "$IP disable-resource-level-jwt1.test.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "255.255.255.255 broadcasthost" | sudo tee -a /etc/hosts
 sudo echo "::1 localhost" | sudo tee -a /etc/hosts
 

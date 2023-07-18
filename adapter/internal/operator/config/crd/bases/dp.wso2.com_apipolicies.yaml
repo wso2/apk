@@ -47,8 +47,20 @@ spec:
                           properties:
                             claim:
                               type: string
+                            type:
+                              default: string
+                              enum:
+                              - string
+                              - int
+                              - float
+                              - bool
+                              - long
+                              - date
+                              type: string
                             value:
                               type: string
+                          required:
+                          - type
                           type: object
                         type: array
                       enabled:
@@ -83,6 +95,8 @@ spec:
                         items:
                           type: string
                         type: array
+                      accessControlMaxAge:
+                        type: integer
                       enabled:
                         type: boolean
                     type: object
@@ -171,8 +185,20 @@ spec:
                           properties:
                             claim:
                               type: string
+                            type:
+                              default: string
+                              enum:
+                              - string
+                              - int
+                              - float
+                              - bool
+                              - long
+                              - date
+                              type: string
                             value:
                               type: string
+                          required:
+                          - type
                           type: object
                         type: array
                       enabled:
@@ -207,6 +233,8 @@ spec:
                         items:
                           type: string
                         type: array
+                      accessControlMaxAge:
+                        type: integer
                       enabled:
                         type: boolean
                     type: object

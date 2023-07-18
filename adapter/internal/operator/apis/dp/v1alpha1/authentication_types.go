@@ -73,6 +73,8 @@ type TestConsoleKeyAuth struct {
 
 // JWTAuth JWT Authentication scheme details
 type JWTAuth struct {
+	// +kubebuilder:default:=false
+	Disabled  						bool   `json:"disabled"`
 	// Header is the header name used to pass the JWT token
 	//
 	// +kubebuilder:default:=authorization

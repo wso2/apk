@@ -118,14 +118,6 @@ func InitOperator() {
 		loggers.LoggerAPKOperator.Errorf("Failed to add status update handler %v", err)
 	}
 
-	if err := dpcontrollers.NewGatewayController(mgr, operatorDataStore, updateHandler, &gatewaych); err != nil {
-		loggers.LoggerAPKOperator.Errorf("Error creating Gateway controller: %v", err)
-	}
-
-	if err := dpcontrollers.NewAPIController(mgr, operatorDataStore, updateHandler, &ch, &successChannel); err != nil {
-		loggers.LoggerAPKOperator.Errorf("Error creating API controller: %v", err)
-	}
-
 	if err = (&dpv1alpha1.API{}).SetupWebhookWithManager(mgr); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2601, err))
 	}
@@ -144,6 +136,14 @@ func InitOperator() {
 
 	if err = (&dpv1alpha1.Backend{}).SetupWebhookWithManager(mgr); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3115, err))
+	}
+
+	if err := dpcontrollers.NewGatewayController(mgr, operatorDataStore, updateHandler, &gatewaych); err != nil {
+		loggers.LoggerAPKOperator.Errorf("Error creating Gateway controller: %v", err)
+	}
+
+	if err := dpcontrollers.NewAPIController(mgr, operatorDataStore, updateHandler, &ch, &successChannel); err != nil {
+		loggers.LoggerAPKOperator.Errorf("Error creating API controller: %v", err)
 	}
 
 	if err := dpcontrollers.NewJWTIssuerReconciler(mgr); err != nil {

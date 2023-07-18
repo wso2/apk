@@ -85,7 +85,13 @@ type BackendJWTTokenInfo struct {
 // ClaimMapping represents the object structure holding the information related to the JWT Generator Claims
 type ClaimMapping struct {
 	Claim string
+	Value ClaimVal
+}
+
+// ClaimVal represents the object structure holding the information related to the JWT Generator Claim Values
+type ClaimVal struct {
 	Value string
+	Type  string
 }
 
 // RateLimitPolicy information related to the rate limiting policy
@@ -189,6 +195,7 @@ type CorsConfig struct {
 	AccessControlAllowMethods     []string `mapstructure:"accessControlAllowMethods"`
 	AccessControlAllowOrigins     []string `mapstructure:"accessControlAllowOrigins"`
 	AccessControlExposeHeaders    []string `mapstructure:"accessControlExposeHeaders"`
+	AccessControlMaxAge           *int     `mapstructure:"accessControlMaxAge"`
 }
 
 // InterceptEndpoint contains the parameters of endpoint security

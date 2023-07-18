@@ -26,4 +26,17 @@ corsConfiguration:
   accessControlAllowMethods:
     - "GET"
   accessControlAllowMaxAge: 3600
-
+apiPolicies:
+  request:
+    - policyName: "BackendJwt"
+      parameters:
+        enabled: true
+        encoding: base64
+        signingAlgorithm: SHA256withRSA
+        header: X-JWT-Assertion
+        tokenTTL: 3600
+        customClaims:
+        - claim: claim1
+          value: value1
+        - claim: claim2
+          value: value2

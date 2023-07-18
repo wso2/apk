@@ -2,7 +2,7 @@
 org = "wso2"
 name = "apk_common_lib"
 version = "0.0.1-SNAPSHOT"
-distribution = "2201.5.0"
+distribution = "2201.7.0"
 
 [[platform.java11.dependency]]
 groupId = "org.wso2.apk"

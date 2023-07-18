@@ -123,6 +123,25 @@ spec:
               value: "/home/wso2/security/truststore/ratelimiter-ca.crt"
             - name: CONFIG_GRPC_XDS_SERVER_TLS_SAN
               value: "{{ template "apk-helm.resource.prefix" . }}-adapter-service.{{ .Release.Namespace }}.svc"
+            {{ if and .Values.wso2.apk.dp.gatewayRuntime.tracing .Values.wso2.apk.dp.gatewayRuntime.tracing.enabled .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties }}
+            - name: TRACING_ENABLED
+              value: "{{ .Values.wso2.apk.dp.gatewayRuntime.tracing.enabled }}"
+            - name: TRACING_EXPORTER_PROTOCOL
+              value: "{{ .Values.wso2.apk.dp.gatewayRuntime.tracing.protocol | default "grpc" }}"
+            - name: TRACING_SERVICE_NAME
+              value: "apk-ratelimitter"
+            - name: TRACING_SERVICE_INSTANCE_ID
+              value: "{{ template "apk-helm.resource.prefix" . }}-ratelimiter"
+            {{ if and .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.tls .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.tls.enabled }}
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "https://{{ .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.host}}:{{ .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.port}}"
+            - name: OTEL_EXPORTER_OTLP_CERTIFICATE
+              value: "/home/wso2/security/truststore/tracing.pem"
+            {{ else }}
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "http://{{ .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.host}}:{{ .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.port}}"
+            {{ end }}
+            {{ end }}
           volumeMounts:
             - name: ratelimiter-keystore-secret-volume
               mountPath: /home/wso2/security/keystore/ratelimiter.key
@@ -159,6 +178,14 @@ spec:
             {{- else }}
               subPath: tls.crt
             {{- end }}
+            {{ if and .Values.wso2.apk.dp.gatewayRuntime.tracing .Values.wso2.apk.dp.gatewayRuntime.tracing.enabled .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.tls .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.tls.enabled }}
+            - name: tracing-truststore-secret-volume
+              mountPath: /home/wso2/security/truststore/tracing-ca.pem
+              subPath: {{ .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.tls.certCAFilename}}
+            - name: tracing-truststore-secret-volume
+              mountPath: /home/wso2/security/truststore/tracing.pem
+              subPath: {{ .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.tls.certFilename}}
+            {{ end }}
           livenessProbe:
             httpGet:
               port: 8090
@@ -205,4 +232,10 @@ spec:
             secretName: {{ template "apk-helm.resource.prefix" . }}-router-server-cert
           {{- end }}
             defaultMode: 420
+        {{ if and .Values.wso2.apk.dp.gatewayRuntime.tracing .Values.wso2.apk.dp.gatewayRuntime.tracing.enabled .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.tls .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.tls.enabled }}
+        - name: tracing-truststore-secret-volume
+          secret:
+            secretName: {{ .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.tls.secretName}}
+            defaultMode: 420
+        {{ end }}
 {{- end -}}

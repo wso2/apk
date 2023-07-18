@@ -59,6 +59,9 @@ type BackendJWTToken struct {
 type CustomClaim struct {
 	Claim string `json:"claim,omitempty"`
 	Value string `json:"value,omitempty"`
+	// +kubebuilder:default=string
+	// +kubebuilder:validation:Enum=string;int;float;bool;long;date
+	Type string `json:"type"`
 }
 
 // RequestQueryModifier allows to modify request query params
@@ -76,6 +79,7 @@ type CORSPolicy struct {
 	AccessControlAllowMethods     []string `json:"accessControlAllowMethods,omitempty"`
 	AccessControlAllowOrigins     []string `json:"accessControlAllowOrigins,omitempty"`
 	AccessControlExposeHeaders    []string `json:"accessControlExposeHeaders,omitempty"`
+	AccessControlMaxAge           *int     `json:"accessControlMaxAge,omitempty"`
 }
 
 // InterceptorReference holds InterceptorService reference using name and namespace

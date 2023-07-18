@@ -98,7 +98,7 @@ wso2:
           secretName: "managetment-server-cert"
           # -- TLS certificate file name.
           fileName: "certificate.crt"
-      runtime:
+      configdeployer:
         deployment:
           resources:
             requests:
@@ -132,7 +132,7 @@ wso2:
           # -- Image pull policy
           imagePullPolicy: Always
           # -- Image
-          image: wso2/runtime-domain-service:latest
+          image: wso2/config-deployer-service:0.0.1-m13
           configs:
             # -- Enable authorization for runtime api.
             authrorization: true
@@ -381,6 +381,15 @@ wso2:
             authHeaderValue: "<INGEST_LICENSE_KEY>"
             # -- Connection timeout for the otlp service.
             connectionTimeout: "20"
+            tls: 
+              # -- Enable/Disable TLS for the otlp service.
+              enabled: true
+              # -- TLS certificate file name.
+              secretName: "ratelimiter-cert"
+              # -- TLS certificate file name.
+              certFilename: ""
+              # -- TLS certificate file name.
+              certCAFilename: ""
         analytics:
           # -- Enable/Disable analytics in gateway runtime.
           enabled: true

@@ -27,7 +27,7 @@ type ResolvedBackend struct {
 	Services       []Service
 	Protocol       BackendProtocolType
 	TLS            ResolvedTLSConfig
-	Security       []ResolvedSecurityConfig
+	Security       ResolvedSecurityConfig
 	CircuitBreaker *CircuitBreaker
 	Timeout        *Timeout
 	Retry          *RetryConfig

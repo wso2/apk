@@ -20,6 +20,7 @@ package org.wso2.apk.enforcer.commons.jwtgenerator;
 
 import org.apache.commons.lang3.StringUtils;
 import org.wso2.apk.enforcer.commons.constants.JWTConstants;
+import org.wso2.apk.enforcer.commons.dto.ClaimValueDTO;
 import org.wso2.apk.enforcer.commons.dto.JWTInfoDto;
 
 import java.util.Arrays;
@@ -95,19 +96,32 @@ public class APIMgtGatewayJWTGeneratorImpl extends AbstractAPIMgtGatewayJWTGener
     }
 
     @Override
-    public Map<String, Object> populateCustomClaims(JWTInfoDto jwtInfoDto) {
+    public Map<String, ClaimValueDTO> populateCustomClaims(JWTInfoDto jwtInfoDto) {
 
         String[] restrictedClaims = {"iss", "sub", "aud", "exp", "nbf", "iat", "jti", "application", "tierInfo",
                 "subscribedAPIs", "aut"};
-        Map<String, Object> claims = new HashMap<>();
+        Map<String, ClaimValueDTO> claims = new HashMap<>();
         Set<String> jwtExcludedClaims = jwtConfigurationDto.getJWTExcludedClaims();
         jwtExcludedClaims.addAll(Arrays.asList(restrictedClaims));
         Map<String, Object> jwtToken = jwtInfoDto.getJwtValidationInfo().getClaims();
         if (jwtToken != null) {
             for (Map.Entry<String, Object> jwtClaimEntry : jwtToken.entrySet()) {
                 if (!jwtExcludedClaims.contains(jwtClaimEntry.getKey())) {
-                    claims.put(jwtClaimEntry.getKey(), jwtClaimEntry.getValue());
+                    ClaimValueDTO claimValue = new ClaimValueDTO(jwtClaimEntry.getValue(), null);
+                    claims.put(jwtClaimEntry.getKey(), claimValue);
                 }
+            }
+        }
+        Map<String, ClaimValueDTO> customClaimsAPI = jwtInfoDto.getClaims();
+        if(customClaimsAPI != null) {
+            for (Map.Entry<String, ClaimValueDTO> customClaimEntry : customClaimsAPI.entrySet()) {
+                ClaimValueDTO claim = new ClaimValueDTO(customClaimEntry.getValue().getValue(), customClaimEntry.getValue().getType());
+                if(claims.containsKey(customClaimEntry.getKey())) {
+                    claims.replace(customClaimEntry.getKey(), claim);
+                } else {
+                    claims.put(customClaimEntry.getKey(), claim);
+                }
+
             }
         }
         return claims;

@@ -20,24 +20,20 @@ package org.wso2.apk.enforcer.tracing;
 
 import io.opentelemetry.context.Context;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * Holds an instance of Tracing context per thread.
  */
 public class TracingContextHolder {
-    private Context context;
-    private static ThreadLocal<TracingContextHolder> instance = ThreadLocal.withInitial(TracingContextHolder::new);
+    private static final Map<String, Context> contextMap = new ConcurrentHashMap<>();
 
-    private TracingContextHolder() {}
-
-    public static TracingContextHolder getInstance() {
-        return instance.get();
+    public static void setContext(String traceId, Context context) {
+        contextMap.putIfAbsent(traceId, context);
     }
 
-    public Context getContext() {
-        return context;
-    }
-
-    public void setContext(Context context) {
-        this.context = context;
+    public static Context getContext(String traceId) {
+        return contextMap.remove(traceId);
     }
 }

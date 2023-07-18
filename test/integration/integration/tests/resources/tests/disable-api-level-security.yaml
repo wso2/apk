@@ -88,3 +88,13 @@ spec:
     kind: API
     namespace: gateway-integration-test-infra
     name: disable-api-security
+---
+apiVersion: dp.wso2.com/v1alpha1
+kind: Backend
+metadata:
+  name: infra-backend-v1
+  namespace: gateway-integration-test-infra
+spec:
+  services:
+  - host: infra-backend-v1.gateway-integration-test-infra
+    port: 8080

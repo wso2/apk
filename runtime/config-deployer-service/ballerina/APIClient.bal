@@ -80,8 +80,6 @@ public class APIClient {
                 if operations.length() == 0 {
                     return e909021();
                 }
-                // Validating operation policies.
-                _ = check self.validateOperationPolicies(apkConf.apiPolicies, operations, organization);
 
                 // Validating rate limit.
                 _ = check self.validateRateLimit(apkConf.apiRateLimit, operations);
@@ -93,8 +91,8 @@ public class APIClient {
             if endpointConfigurations is EndpointConfigurations {
                 createdEndpoints = check self.createAndAddBackendServics(apiArtifact, apkConf, endpointConfigurations, (), (), organization);
             }
-            JWTAuthentication|APIKeyAuthentication[]? authentication = apkConf.authentication;
-            if authentication is Authentication[] {
+            AuthenticationRequest[]? authentication = apkConf.authentication;
+            if authentication is AuthenticationRequest[] {
                 self.populateAuthenticationMap(apiArtifact, apkConf, authentication, createdEndpoints, organization);
             }
             APKConf_vhosts? vhosts = apkConf.vhosts;
@@ -111,35 +109,15 @@ public class APIClient {
             json generatedSwagger = check self.retrieveGeneratedSwaggerDefinition(apkConf, definition);
             check self.retrieveGeneratedConfigmapForDefinition(apiArtifact, apkConf, generatedSwagger, uniqueId, organization);
             self.generateAndSetAPICRArtifact(apiArtifact, apkConf, organization);
-            self.generateAndSetPolicyCRArtifact(apiArtifact, apkConf, organization);
+            _ = check self.generateAndSetPolicyCRArtifact(apiArtifact, apkConf, organization);
             apiArtifact.organization = organization;
             return apiArtifact;
         } on fail var e {
+            if e is commons:APKError {
+                return e;
+            }
             return e909022("Internal Error occured while generating k8s-artifact", e);
         }
-    }
-
-    isolated function validateOperationPolicies(APIOperationPolicies? apiPolicies, APKOperations[] operations, string organization) returns commons:APKError? {
-        foreach APKOperations operation in operations {
-            APIOperationPolicies? operationPolicies = operation.operationPolicies;
-            if (!self.isPolicyEmpty(operationPolicies)) {
-                if (self.isPolicyEmpty(apiPolicies)) {
-                    // Validating resource level operation policy data
-                    commons:APKError|() apkError = self.validateOperationPolicyData(operationPolicies, organization);
-                    if (apkError is commons:APKError) {
-                        return apkError;
-                    }
-                } else {
-                    // Presence of both resource level and API level operation policies.
-                    return e909025();
-                }
-            }
-        }
-        if (!self.isPolicyEmpty(apiPolicies)) {
-            // Validating API level operation policy data
-            return self.validateOperationPolicyData(apiPolicies, organization);
-        }
-        return ();
     }
 
     isolated function isPolicyEmpty(APIOperationPolicies? policies) returns boolean {
@@ -160,55 +138,6 @@ public class APIClient {
         return true;
     }
 
-    isolated function validateOperationPolicyData(APIOperationPolicies? operationPolicies, string organization) returns commons:APKError|() {
-        if operationPolicies is APIOperationPolicies {
-            // Validating request operation policy data.
-            commons:APKError|() apkError = self.validatePolicyDetails(operationPolicies.request, organization);
-            if (apkError == ()) {
-                // Validating response operation policy data.
-                return self.validatePolicyDetails(operationPolicies.response, organization);
-            } else {
-                return apkError;
-            }
-        }
-        return ();
-    }
-
-    isolated function validatePolicyDetails(APKOperationPolicy[]? policyData, string organization) returns commons:APKError|() {
-        if (policyData is APKOperationPolicy[]) {
-            foreach APKOperationPolicy policy in policyData {
-                string policyName = policy.policyName;
-                boolean policySelected = false;
-                record {}? policyParameters = policy.parameters;
-                if (policyParameters is record {}) {
-                    string[] allowedPolicyAttributes = [];
-                    foreach MediationPolicy & readonly mediationPolicy in avilableMediationPolicyList {
-                        if mediationPolicy.name == policyName {
-                            policySelected = true;
-                            MediationPolicySpecAttribute[]? parameters = mediationPolicy.policyAttributes;
-                            if (parameters is MediationPolicySpecAttribute[]) {
-                                foreach MediationPolicySpecAttribute params in parameters {
-                                    allowedPolicyAttributes.push(<string>params.name);
-                                }
-                            }
-                            string[] keys = policyParameters.keys();
-                            foreach string key in keys {
-                                if allowedPolicyAttributes.indexOf(key) is () {
-                                    // Invalid parameter provided for given policy
-                                    return e909024(policyName);
-                                }
-                            }
-                        }
-                    }
-                    if !policySelected {
-                        // Invalid operation policy name.
-                        return e909010();
-                    }
-                }
-            }
-            return ();
-        }
-    }
     isolated function validateRateLimit(RateLimit? apiRateLimit, APKOperations[] operations) returns commons:APKError|() {
         if (apiRateLimit == ()) {
             return ();
@@ -332,7 +261,7 @@ public class APIClient {
         }
     }
 
-    private isolated function generateAndSetPolicyCRArtifact(model:APIArtifact apiArtifact, APKConf apkConf, string organization) {
+    private isolated function generateAndSetPolicyCRArtifact(model:APIArtifact apiArtifact, APKConf apkConf, string organization) returns error? {
         if apkConf.apiRateLimit != () {
             model:RateLimitPolicy? rateLimitPolicyCR = self.generateRateLimitPolicyCR(apkConf, apkConf.apiRateLimit, apiArtifact.uniqueId, (), organization);
             if rateLimitPolicyCR != () {
@@ -340,29 +269,29 @@ public class APIClient {
             }
         }
         if apkConf.apiPolicies != () || apkConf.corsConfiguration != () {
-            model:APIPolicy? apiPolicyCR = self.generateAPIPolicyAndBackendCR(apiArtifact, apkConf, (), apkConf.apiPolicies, organization, apiArtifact.uniqueId);
+            model:APIPolicy? apiPolicyCR = check self.generateAPIPolicyAndBackendCR(apiArtifact, apkConf, (), apkConf.apiPolicies, organization, apiArtifact.uniqueId);
             if apiPolicyCR != () {
                 apiArtifact.apiPolicies[apiPolicyCR.metadata.name] = apiPolicyCR;
             }
         }
     }
 
-    private isolated function populateAuthenticationMap(model:APIArtifact apiArtifact, APKConf apkConf, Authentication[] authentications,
+    private isolated function populateAuthenticationMap(model:APIArtifact apiArtifact, APKConf apkConf, AuthenticationRequest[] authentications,
             map<model:Endpoint|()> createdEndpointMap, string organization) {
         map<model:Authentication> authenticationMap = {};
         model:AuthenticationExtenstionType authTypes = {};
-        foreach JWTAuthentication|APIKeyAuthentication authentication in authentications {
+        foreach Authentication authentication in authentications {
             if authentication.enabled ?: false {
-                if authentication is JWTAuthentication {
+                if authentication.authType == "JWT" && authentication is JWTAuthentication {
                     authTypes.jwt = {header: <string>authentication.headerName, sendTokenToUpstream: <boolean>authentication.sendTokenToUpstream};
                 }
-                if authentication is APIKeyAuthentication {
+                if authentication.authType == "APIKey" && authentication is APIKeyAuthentication {
                     authTypes.apiKey = [];
                     if authentication.headerName is string {
-                        authTypes.apiKey.push({'in: "header", name: authentication?.headerName ?: "apiKey", sendTokenToUpstream: authentication?.sendTokenToUpstream ?: false});
+                        authTypes.apiKey.push({'in: "Header", name: authentication.headerName ?: "apiKey", sendTokenToUpstream: authentication.sendTokenToUpstream ?: false});
                     }
                     if authentication.queryParamName is string {
-                        authTypes.apiKey.push({'in: "query", name: authentication?.queryParamName ?: "apiKey", sendTokenToUpstream: authentication?.sendTokenToUpstream ?: false});
+                        authTypes.apiKey.push({'in: "Query", name: authentication.queryParamName ?: "apiKey", sendTokenToUpstream: authentication.sendTokenToUpstream ?: false});
                     }
                 }
             }
@@ -458,7 +387,7 @@ public class APIClient {
         return self.getUniqueIdForAPI(apkConf.name, apkConf.'version, organization) + "-" + 'type + "-authentication";
     }
 
-    private isolated function setHttpRoute(model:APIArtifact apiArtifact, APKConf apkConf, model:Endpoint? endpoint, string uniqueId, string endpointType, string organization) returns commons:APKError? {
+    private isolated function setHttpRoute(model:APIArtifact apiArtifact, APKConf apkConf, model:Endpoint? endpoint, string uniqueId, string endpointType, string organization) returns commons:APKError|error? {
         APKOperations[] apiOperations = apkConf.operations ?: [];
         APKOperations[][] operationsArray = [];
         int row = 0;
@@ -478,7 +407,7 @@ public class APIClient {
         }
     }
 
-    private isolated function putHttpRouteForPartition(model:APIArtifact apiArtifact, APKConf apkConf, model:Endpoint? endpoint, string uniqueId, string endpointType, string organization) returns commons:APKError? {
+    private isolated function putHttpRouteForPartition(model:APIArtifact apiArtifact, APKConf apkConf, model:Endpoint? endpoint, string uniqueId, string endpointType, string organization) returns commons:APKError|error? {
         string httpRouteRefName = self.retrieveHttpRouteRefName(apkConf, endpointType, organization);
         model:Httproute httpRoute = {
             metadata:
@@ -528,7 +457,7 @@ public class APIClient {
         return parentRefs;
     }
 
-    private isolated function generateHttpRouteRules(model:APIArtifact apiArtifact, APKConf apkConf, model:Endpoint? endpoint, string endpointType, string organization, string httpRouteRefName) returns model:HTTPRouteRule[]|commons:APKError {
+    private isolated function generateHttpRouteRules(model:APIArtifact apiArtifact, APKConf apkConf, model:Endpoint? endpoint, string endpointType, string organization, string httpRouteRefName) returns model:HTTPRouteRule[]|commons:APKError|error {
         model:HTTPRouteRule[] httpRouteRules = [];
         APKOperations[]? operations = apkConf.operations;
         if operations is APKOperations[] {
@@ -574,7 +503,7 @@ public class APIClient {
                         }
                     }
                     if operation.operationPolicies != () {
-                        model:APIPolicy? apiPolicyCR = self.generateAPIPolicyAndBackendCR(apiArtifact, apkConf, operation, operation.operationPolicies, organization, apiArtifact.uniqueId);
+                        model:APIPolicy? apiPolicyCR = check self.generateAPIPolicyAndBackendCR(apiArtifact, apkConf, operation, operation.operationPolicies, organization, apiArtifact.uniqueId);
                         if apiPolicyCR != () {
                             apiArtifact.apiPolicies[apiPolicyCR.metadata.name] = apiPolicyCR;
                             model:HTTPRouteFilter apiPolicyFilter = {'type: "ExtensionRef", extensionRef: {group: "dp.wso2.com", kind: "APIPolicy", name: apiPolicyCR.metadata.name}};
@@ -588,15 +517,17 @@ public class APIClient {
         return httpRouteRules;
     }
 
-    private isolated function generateAPIPolicyAndBackendCR(model:APIArtifact apiArtifact, APKConf apkConf, APKOperations? operations, APIOperationPolicies? policies, string organization, string targetRefName) returns model:APIPolicy? {
+    private isolated function generateAPIPolicyAndBackendCR(model:APIArtifact apiArtifact, APKConf apkConf, APKOperations? operations, APIOperationPolicies? policies, string organization, string targetRefName) returns model:APIPolicy?|error {
         model:APIPolicyData defaultSpecData = {};
         APKOperationPolicy[]? request = policies?.request;
-        model:InterceptorReference? requestInterceptor = self.retrieveAPIPolicyDetails(apiArtifact, apkConf, operations, organization, request, "request");
-        if requestInterceptor is model:InterceptorReference {
-            defaultSpecData.requestInterceptors = [requestInterceptor];
+        model:InterceptorReference?|model:BackendJwtPolicy? requestPolicy = check self.retrieveAPIPolicyDetails(apiArtifact, apkConf, operations, organization, request, "request");
+        if requestPolicy is model:InterceptorReference {
+            defaultSpecData.requestInterceptors = [requestPolicy];
+        } else if requestPolicy is model:BackendJwtPolicy {
+            defaultSpecData.backendJwtToken = requestPolicy;
         }
         APKOperationPolicy[]? response = policies?.response;
-        model:InterceptorReference? responseInterceptor = self.retrieveAPIPolicyDetails(apiArtifact, apkConf, operations, organization, response, "response");
+        model:InterceptorReference?|model:BackendJwtPolicy? responseInterceptor = check self.retrieveAPIPolicyDetails(apiArtifact, apkConf, operations, organization, response, "response");
         if responseInterceptor is model:InterceptorReference {
             defaultSpecData.responseInterceptors = [responseInterceptor];
         }
@@ -690,25 +621,6 @@ public class APIClient {
         if operationPoliciesToUse is APIOperationPolicies {
             APKOperationPolicy[]? request = operationPoliciesToUse.request;
             if request is APKOperations[] {
-                model:HTTPHeaderFilter requestHeaderModifier = self.extractHttpHeaderFilterData(request, organization);
-                if requestHeaderModifier != {} {
-                    model:HTTPRouteFilter requestHeaderFilter = {
-                        'type: "RequestHeaderModifier",
-                        requestHeaderModifier: requestHeaderModifier
-                    };
-                    routeFilters.push(requestHeaderFilter);
-                }
-            }
-            APKOperationPolicy[]? response = operationPoliciesToUse.response;
-            if response is APKOperations[] {
-                model:HTTPHeaderFilter responseHeaderModifier = self.extractHttpHeaderFilterData(response, organization);
-                if responseHeaderModifier != {} {
-                    model:HTTPRouteFilter responseHeaderFilter = {
-                        'type: "ResponseHeaderModifier",
-                        responseHeaderModifier: responseHeaderModifier
-                    };
-                    routeFilters.push(responseHeaderFilter);
-                }
             }
         }
         return routeFilters;
@@ -1013,6 +925,11 @@ public class APIClient {
                 }
             };
         }
+        Resiliency? resiliency = endpointConfig.resiliency;
+        if resiliency is Resiliency {
+            backendService.spec.timeout = resiliency.timeout;
+            backendService.spec.'retry = resiliency.retryPolicy;
+        }
         return backendService;
     }
 
@@ -1070,22 +987,22 @@ public class APIClient {
         return apiPolicyCR;
     }
 
-    isolated function retrieveAPIPolicyDetails(model:APIArtifact apiArtifact, APKConf apkConf, APKOperations? operations, string organization, APKOperationPolicy[]? policies, string flow) returns model:InterceptorReference? {
+    isolated function retrieveAPIPolicyDetails(model:APIArtifact apiArtifact, APKConf apkConf, APKOperations? operations, string organization, APKOperationPolicy[]? policies, string flow) returns model:InterceptorReference?|model:BackendJwtPolicy?|error {
         if policies is APKOperationPolicy[] {
             foreach APKOperationPolicy policy in policies {
                 string policyName = policy.policyName;
-                record {}? policyParameters = policy.parameters;
-                if (policyParameters is record {}) {
+                if policy.parameters is record {} {
                     if (policyName == "Interceptor") {
-                        string backendUrl = <string>policyParameters.get("backendUrl");
-                        EndpointConfiguration endpointConfig = {endpoint: backendUrl};
+                        InterceptorPolicy interceptorPolicy = check policy.cloneWithType(InterceptorPolicy);
+                        InterceptorPolicy_parameters parameters = <InterceptorPolicy_parameters>interceptorPolicy?.parameters;
+                        EndpointConfiguration endpointConfig = {endpoint: parameters.backendUrl ?: ""};
                         model:Backend|error backendService = self.createBackendService(apiArtifact, apkConf, operations, INTERCEPTOR_TYPE, organization, endpointConfig);
                         string backendServiceName = "";
                         if backendService is model:Backend {
                             apiArtifact.backendServices[backendService.metadata.name] = (backendService);
                             backendServiceName = backendService.metadata.name;
                         }
-                        model:InterceptorService? interceptorService = self.generateInterceptorServiceCR(policyParameters, backendServiceName, flow, apkConf, organization);
+                        model:InterceptorService? interceptorService = self.generateInterceptorServiceCR(parameters, backendServiceName, flow, apkConf, organization);
                         model:InterceptorReference? interceptorReference = ();
                         if interceptorService is model:InterceptorService {
                             apiArtifact.interceptorServices[interceptorService.metadata.name] = (interceptorService);
@@ -1094,6 +1011,34 @@ public class APIClient {
                             };
                         }
                         return interceptorReference;
+                    } else if (policyName == "BackendJwt") {
+                        BackendJWTPolicy backendJWTPolicy = check policy.cloneWithType(BackendJWTPolicy);
+                        BackendJWTPolicy_parameters backendJWTPolicyParameters = <BackendJWTPolicy_parameters>backendJWTPolicy?.parameters;
+                        model:BackendJwtPolicy backendJwt = {};
+                        backendJwt.enabled = backendJWTPolicyParameters.enabled ?: false;
+                        if backendJWTPolicyParameters.encoding is string {
+                            backendJwt.encoding = <string>backendJWTPolicyParameters.encoding;
+                        }
+                        if backendJWTPolicyParameters.signingAlgorithm is string {
+                            backendJwt.signingAlgorithm = <string>backendJWTPolicyParameters.signingAlgorithm;
+                        }
+                        if backendJWTPolicyParameters.header is string {
+                            backendJwt.header = <string>backendJWTPolicyParameters.header;
+                        }
+                        if backendJWTPolicyParameters.tokenTTL is int {
+                            backendJwt.tokenTTL = <int>backendJWTPolicyParameters.tokenTTL;
+                        }
+                        if backendJWTPolicyParameters.customClaims is CustomClaims[] {
+                            model:BackendJwtCustomClaim[] backendJWTClaims = [];
+                            foreach CustomClaims customClaim in <CustomClaims[]>backendJWTPolicyParameters?.customClaims {
+                                backendJWTClaims.push({
+                                    claim: customClaim.claim,
+                                    value: customClaim.value
+                                });
+                            }
+                            backendJwt.customClaims = backendJWTClaims;
+                        }
+                        return backendJwt;
                     }
                 }
             }
@@ -1121,10 +1066,13 @@ public class APIClient {
         if corsConfiguration.accessControlExposeHeaders is string[] {
             corsPolicy.accessControlExposeHeaders = <string[]>corsConfiguration.accessControlExposeHeaders;
         }
+        if corsConfiguration.accessControlAllowMaxAge is int {
+            corsPolicy.accessControlMaxAge = <int>corsConfiguration.accessControlAllowMaxAge;
+        }
         return corsPolicy;
     }
 
-    isolated function generateInterceptorServiceCR(record {} parameters, string interceptorBackend, string flow, APKConf apkConf, string organization) returns model:InterceptorService? {
+    isolated function generateInterceptorServiceCR(InterceptorPolicy_parameters parameters, string interceptorBackend, string flow, APKConf apkConf, string organization) returns model:InterceptorService? {
         model:InterceptorService? interceptorServiceCR = ();
         interceptorServiceCR = {
             metadata: {
@@ -1141,41 +1089,33 @@ public class APIClient {
         return interceptorServiceCR;
     }
 
-    isolated function getInterceptorIncludes(record {} parameters, string flow) returns string[] {
+    isolated function getInterceptorIncludes(InterceptorPolicy_parameters parameters, string flow) returns string[] {
         string[] includes = [];
         if flow == "request" {
-            anydata headersEnabled = parameters["headersEnabled"];
-            if headersEnabled is boolean && headersEnabled {
+            if parameters.headersEnabled ?: false {
                 includes.push("request_headers");
             }
-            anydata bodyEnabled = parameters["bodyEnabled"];
-            if bodyEnabled is boolean && bodyEnabled {
+            if parameters.bodyEnabled ?: false {
                 includes.push("request_body");
             }
-            anydata trailersEnabled = parameters["trailersEnabled"];
-            if trailersEnabled is boolean && trailersEnabled {
+            if parameters.trailersEnabled ?: false {
                 includes.push("request_trailers");
             }
-            anydata contextEnabled = parameters["contextEnabled"];
-            if contextEnabled is boolean && contextEnabled {
+            if parameters.contextEnabled ?: false {
                 includes.push("invocation_context");
             }
         }
         if flow == "response" {
-            anydata headersEnabled = parameters["headersEnabled"];
-            if headersEnabled is boolean && headersEnabled {
+            if parameters.headersEnabled ?: false {
                 includes.push("response_headers");
             }
-            anydata bodyEnabled = parameters["bodyEnabled"];
-            if bodyEnabled is boolean && bodyEnabled {
+            if parameters.bodyEnabled ?: false {
                 includes.push("response_body");
             }
-            anydata trailersEnabled = parameters["trailersEnabled"];
-            if trailersEnabled is boolean && trailersEnabled {
+            if parameters.trailersEnabled ?: false {
                 includes.push("response_trailers");
             }
-            anydata contextEnabled = parameters["contextEnabled"];
-            if contextEnabled is boolean && contextEnabled {
+            if parameters.contextEnabled ?: false {
                 includes.push("invocation_context");
             }
         }

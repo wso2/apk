@@ -1,14 +1,14 @@
 import ballerina/http;
 import ballerina/constraint;
 
-public type NotFoundError record {|
-    *http:NotFound;
-    Error body;
-|};
-
 public type OkAnydata record {|
     *http:Ok;
     anydata body;
+|};
+
+public type NotFoundError record {|
+    *http:NotFound;
+    Error body;
 |};
 
 public type BadRequestError record {|
@@ -34,49 +34,14 @@ public type ErrorListItem record {
     string description?;
 };
 
-public type GenerateK8sResourcesBody record {
-    # apk-configuration file
-    record {byte[] fileContent; string fileName;} apkConfiguration?;
-    # api definition (OAS/Graphql/WebSocket)
-    record {byte[] fileContent; string fileName;} definitionFile?;
-    # Type of API
-    string apiType?;
-};
-
-public type Error record {
-    int code;
-    # Error message.
-    string message;
-    # A detail description about the error message.
-    string description?;
-    # Preferably an url with more details about the error.
-    string moreInfo?;
-    # If there are more than one error list them out.
-    # For example, list out validation errors by each field.
-    ErrorListItem[] 'error?;
-};
-
 public type EndpointSecurity record {
     boolean enabled?;
     BasicEndpointSecurity securityType?;
 };
 
-public type DefinitionBody record {
-    # api definition (OAS/Graphql/WebSocket)
-    record {byte[] fileContent; string fileName;} definition?;
-    # url of api definition
-    string url?;
-    # Type of API
-    string apiType?;
-};
-
-# Map of virtual hosts of API
-#
-# + production - Field Description  
-# + sandbox - Field Description
-public type APKConf_vhosts record {
-    string[] production?;
-    string[] sandbox?;
+public type CustomClaims record {
+    string claim;
+    string value;
 };
 
 public type K8sService record {
@@ -110,6 +75,90 @@ public type APKOperations record {
     string[] scopes?;
 };
 
+public type APKOperationPolicy InterceptorPolicy|BackendJWTPolicy;
+
+public type DeployApiBody record {
+    # apk-configuration file
+    record {byte[] fileContent; string fileName;} apkConfiguration?;
+    # api definition (OAS/Graphql/WebSocket)
+    record {byte[] fileContent; string fileName;} definitionFile?;
+};
+
+public type APIOperationPolicies record {
+    APKOperationPolicy[] request?;
+    APKOperationPolicy[] response?;
+};
+
+public type APKConf_additionalProperties record {
+    string name?;
+    string value?;
+};
+
+public type Resiliency record {
+    Timeout timeout?;
+    RetryPolicy retryPolicy?;
+};
+
+public type AuthenticationRequest JWTAuthentication|APIKeyAuthentication;
+
+public type EndpointConfigurations record {
+    EndpointConfiguration production?;
+    EndpointConfiguration sandbox?;
+};
+
+public type JWTAuthentication record {
+    *Authentication;
+    boolean sendTokenToUpstream?;
+    string headerName?;
+    boolean headerEnable?;
+};
+
+public type Timeout record {
+    int maxRouteTimeoutSeconds?;
+    int routeIdleTimeoutSeconds?;
+    int routeTimeoutSeconds?;
+};
+
+public type GenerateK8sResourcesBody record {
+    # apk-configuration file
+    record {byte[] fileContent; string fileName;} apkConfiguration?;
+    # api definition (OAS/Graphql/WebSocket)
+    record {byte[] fileContent; string fileName;} definitionFile?;
+    # Type of API
+    string apiType?;
+};
+
+public type Error record {
+    int code;
+    # Error message.
+    string message;
+    # A detail description about the error message.
+    string description?;
+    # Preferably an url with more details about the error.
+    string moreInfo?;
+    # If there are more than one error list them out.
+    # For example, list out validation errors by each field.
+    ErrorListItem[] 'error?;
+};
+
+public type DefinitionBody record {
+    # api definition (OAS/Graphql/WebSocket)
+    record {byte[] fileContent; string fileName;} definition?;
+    # url of api definition
+    string url?;
+    # Type of API
+    string apiType?;
+};
+
+# Map of virtual hosts of API
+#
+# + production - Field Description  
+# + sandbox - Field Description
+public type APKConf_vhosts record {
+    string[] production?;
+    string[] sandbox?;
+};
+
 # CORS Configuration of API
 #
 # + corsConfigurationEnabled - Field Description  
@@ -125,48 +174,24 @@ public type CORSConfiguration record {
     boolean accessControlAllowCredentials?;
     string[] accessControlAllowHeaders?;
     string[] accessControlAllowMethods?;
-    string[] accessControlExposeHeaders?;
     int accessControlAllowMaxAge?;
+    string[] accessControlExposeHeaders?;
 };
 
-public type APKOperationPolicy record {
+public type BaseOperationPolicy record {
     string policyName;
     string policyVersion = "v1";
     string policyId?;
-    record {} parameters?;
-};
-
-public type DeployApiBody record {
-    # apk-configuration file
-    record {byte[] fileContent; string fileName;} apkConfiguration?;
-    # api definition (OAS/Graphql/WebSocket)
-    record {byte[] fileContent; string fileName;} definitionFile?;
 };
 
 public type Authentication record {
     string authType?;
-    boolean sendTokenToUpstream?;
     boolean enabled?;
 };
 
-public type JWTAuthentication record {
-    *Authentication;
-    string headerName?;
-};
-public type APIKeyAuthentication record {
-    *Authentication;
-    string headerName?;
-    string queryParamName?;
-};
-
-public type APIOperationPolicies record {
-    APKOperationPolicy[] request?;
-    APKOperationPolicy[] response?;
-};
-
-public type APKConf_additionalProperties record {
-    string name?;
-    string value?;
+public type InterceptorPolicy record {
+    *BaseOperationPolicy;
+    InterceptorPolicy_parameters parameters?;
 };
 
 public type APKConf record {
@@ -178,24 +203,39 @@ public type APKConf record {
     string context;
     @constraint:String {maxLength: 30, minLength: 1}
     string version;
-    @constraint:String {maxLength: 30, minLength: 1}
     string 'type = "REST";
     # Organization of the API
-    @constraint:String {maxLength: 30, minLength: 1}
-    string organization;
+    string organization?;
     # Is this the default version of the API
     boolean defaultVersion = false;
     EndpointConfigurations endpointConfigurations?;
     APKOperations[] operations?;
     APIOperationPolicies apiPolicies?;
     RateLimit apiRateLimit?;
-    JWTAuthentication|APIKeyAuthentication[] authentication?;
+    AuthenticationRequest[] authentication?;
     # Map of custom properties of API
     APKConf_additionalProperties[] additionalProperties?;
     # Map of virtual hosts of API
     APKConf_vhosts vhosts?;
     # CORS Configuration of API
     CORSConfiguration corsConfiguration?;
+};
+
+public type InterceptorPolicy_parameters record {
+    string backendUrl?;
+    boolean headersEnabled?;
+    boolean bodyEnabled?;
+    boolean trailersEnabled?;
+    boolean contextEnabled?;
+};
+
+public type BackendJWTPolicy_parameters record {
+    boolean enabled?;
+    string encoding?;
+    string signingAlgorithm?;
+    string header?;
+    int tokenTTL?;
+    CustomClaims[] customClaims?;
 };
 
 public type EndpointConfiguration record {
@@ -205,12 +245,24 @@ public type EndpointConfiguration record {
     Resiliency resiliency?;
 };
 
-public type Resiliency record {
+public type BackendJWTPolicy record {
+    *BaseOperationPolicy;
+    BackendJWTPolicy_parameters parameters?;
 };
 
-public type EndpointConfigurations record {
-    EndpointConfiguration production?;
-    EndpointConfiguration sandbox?;
+public type RetryPolicy record {
+    int count?;
+    int baseIntervalInMillis?;
+    int[] statusCodes?;
+};
+
+public type APIKeyAuthentication record {
+    *Authentication;
+    boolean sendTokenToUpstream?;
+    string headerName?;
+    string queryParamName?;
+    boolean headerEnable?;
+    boolean queryParamEnable?;
 };
 
 public type Certificate record {

@@ -6,28 +6,28 @@ spec:
   override:
     type: ext
     ext:
-      disabled: false
-      serviceRef:
-        group: wso2/v1alpha2
-        kind: Backend
-        name: ext_authz-server
-        port: 1234
-      authTypes:
-        apiKey:
-          - in: Header
-            name: x-api-key
-  default:
-    type: ext
-    ext:
-      serviceRef: 
-        group: wso2/v1alpha2
-        kind: Backend
-        name: ext_authz-server
-        port: 1234
-      authTypes:
-        apiKey:
-          - in: Header
-            name: x-api-key
+      disabled: true
+      # serviceRef:
+      #   group: wso2/v1alpha2
+      #   kind: Backend
+      #   name: ext_authz-server
+      #   port: 1234
+      # authTypes:
+      #   apiKey:
+      #     - in: Header
+      #       name: x-api-key
+  # default:
+  #   type: ext
+  #   ext:
+  #     serviceRef: 
+  #       group: wso2/v1alpha2
+  #       kind: Backend
+  #       name: ext_authz-server
+  #       port: 1234
+  #     authTypes:
+  #       apiKey:
+  #         - in: Header
+  #           name: x-api-key
   targetRef:
     kind: Resource
     name: http-bin-api #provide API ref name

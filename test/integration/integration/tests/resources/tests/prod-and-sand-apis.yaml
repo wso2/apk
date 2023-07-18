@@ -28,9 +28,6 @@ spec:
   production:
     - httpRouteRefs:
       - prod-httproute
-  sandbox:
-    - httpRouteRefs:
-      - sand-httproute
   organization: wso2-org
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
@@ -107,3 +104,43 @@ spec:
     kind: API
     namespace: gateway-integration-test-infra
     name: prod-and-sand-apis
+---
+apiVersion: dp.wso2.com/v1alpha1
+kind: Backend
+metadata:
+  name: infra-backend-v1
+  namespace: gateway-integration-test-infra
+spec:
+  services:
+  - host: infra-backend-v1.gateway-integration-test-infra
+    port: 8080
+---
+apiVersion: dp.wso2.com/v1alpha1
+kind: Backend
+metadata:
+  name: infra-backend-v2
+  namespace: gateway-integration-test-infra
+spec:
+  services:
+  - host: infra-backend-v2.gateway-integration-test-infra
+    port: 8080
+---
+# To test whether we can successfully update already existing API with sandbox endpoints.
+apiVersion: dp.wso2.com/v1alpha1
+kind: API
+metadata:
+  name: prod-and-sand-apis
+  namespace: gateway-integration-test-infra
+spec:
+  apiDisplayName: Backend with no basepath
+  apiType: REST
+  apiVersion: v1
+  context: /prod-sand-test-api/v1
+  #definitionFileRef: definition-file
+  production:
+    - httpRouteRefs:
+      - prod-httproute
+  sandbox:
+    - httpRouteRefs:
+      - sand-httproute
+  organization: wso2-org
