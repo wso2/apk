@@ -52,9 +52,11 @@ RUN groupadd --system -g ${USER_GROUP_ID} ${USER_GROUP} && useradd --system --cr
 
 ADD config-deployer ${USER_HOME}/config-deployer
 COPY docker-entrypoint.sh ${USER_HOME}
-RUN chown -R ${USER} ${USER_HOME}/config-deployer
-RUN chown ${USER} /home/${USER}/docker-entrypoint.sh
+RUN chown -R ${USER} ${USER_HOME}/config-deployer \
+    && chown ${USER} /home/${USER}/docker-entrypoint.sh \
+    && chgrp -R 0 ${USER_HOME} \
+    && chmod -R g=u ${USER_HOME}
 EXPOSE 9443 9444
-USER wso2apk
+USER ${USER_ID}
 WORKDIR ${USER_HOME}
 ENTRYPOINT ["sh", "/home/wso2apk/docker-entrypoint.sh"]

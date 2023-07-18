@@ -55,11 +55,12 @@ RUN \
     
 RUN \
     chmod +x ${GRPC_HEALTH_PROBE_PATH} \
-    && chown ${APK_USER}:${APK_USER_GROUP} ${GRPC_HEALTH_PROBE_PATH}
-
+    && chown ${APK_USER}:${APK_USER_GROUP} ${GRPC_HEALTH_PROBE_PATH} \
+    && chgrp -R 0 ${APK_USER_HOME} \
+    && chmod -R g=u ${APK_USER_HOME}
 
 WORKDIR ${APK_USER_HOME}
-USER ${APK_USER}
+USER ${APK_USER_ID}
 
 COPY resources/security security
 COPY resources/conf/config.toml conf/

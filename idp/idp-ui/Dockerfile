@@ -15,6 +15,8 @@ ENV ENV=${USER_HOME}"/.ashrc"
 RUN \
     addgroup -S -g ${USER_GROUP_ID} ${USER_GROUP} \
     && adduser -S -u ${USER_ID} -h ${USER_HOME} -G ${USER_GROUP} ${USER} \
+    && chgrp -R 0 ${USER_HOME} \
+    && chmod -R g=u ${USER_HOME} \
     && echo ${MOTD} > "${ENV}"
 
 WORKDIR /home/wso2apk
@@ -23,4 +25,5 @@ ENV NODE_ENV production
 RUN npm ci --only=production
 COPY . .
 EXPOSE 9443
+USER ${USER_ID}
 CMD [ "node", "index.js" ]
