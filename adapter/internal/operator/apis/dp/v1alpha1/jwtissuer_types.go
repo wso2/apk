@@ -49,6 +49,7 @@ type JWTIssuerSpec struct {
 	ScopesClaim string `json:"scopesClaim"`
 	// SignatureValidation denotes the signature validation method of jwt
 	SignatureValidation *SignatureValidation             `json:"signatureValidation"`
+	ClaimMappings       *map[string]string               `json:"claimMappings,omitempty"`
 	TargetRef           *gwapiv1b1.PolicyTargetReference `json:"targetRef,omitempty"`
 }
 
