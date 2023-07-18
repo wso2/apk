@@ -20,6 +20,7 @@ package cache
 import (
 	"sync"
 
+	logger "github.com/sirupsen/logrus"
 	dpv1alpha1 "github.com/wso2/apk/common-controller/internal/operator/api/v1alpha1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -27,35 +28,33 @@ import (
 
 // RatelimitDataStore is a cache for rate limit policies.
 type RatelimitDataStore struct {
-	ratelimitStore map[types.NamespacedName]*dpv1alpha1.RateLimitPolicy
+	ratelimitStore map[types.NamespacedName]*dpv1alpha1.ResolveRateLimitAPIPolicy
 	mu             sync.Mutex
 }
 
 // CreateNewOperatorDataStore creates a new RatelimitDataStore.
 func CreateNewOperatorDataStore() *RatelimitDataStore {
 	return &RatelimitDataStore{
-		ratelimitStore: map[types.NamespacedName]*dpv1alpha1.RateLimitPolicy{},
+		ratelimitStore: map[types.NamespacedName]*dpv1alpha1.ResolveRateLimitAPIPolicy{},
 	}
 }
 
-// AddRatelimitToStore adds a new ratelimit to the RatelimitDataStore.
-func (ods *RatelimitDataStore) AddRatelimitToStore(ratelimit dpv1alpha1.RateLimitPolicy) {
+// AddorUpdateRatelimitToStore adds a new ratelimit to the RatelimitDataStore.
+func (ods *RatelimitDataStore) AddorUpdateRatelimitToStore(rateLimit types.NamespacedName,
+	resolveRatelimit dpv1alpha1.ResolveRateLimitAPIPolicy) {
 	ods.mu.Lock()
 	defer ods.mu.Unlock()
-
-	ratelimitNamespacedName := NamespacedName(&ratelimit)
-	ods.ratelimitStore[ratelimitNamespacedName] = &ratelimit
-}
-
-// UpdateRatelimitToStore update/create
-func (ods *RatelimitDataStore) UpdateRatelimitToStore() {
-
+	logger.Info("Adding/Updating ratelimit to cache")
+	ods.ratelimitStore[rateLimit] = &resolveRatelimit
+	logger.Info("resolveRatelimit: ", resolveRatelimit)
 }
 
 // GetCachedRatelimitPolicy get cached ratelimit
-func (ods *RatelimitDataStore) GetCachedRatelimitPolicy(rateLimit types.NamespacedName) (dpv1alpha1.RateLimitPolicy, bool) {
-	var rateLimitPolicy dpv1alpha1.RateLimitPolicy
+func (ods *RatelimitDataStore) GetCachedRatelimitPolicy(rateLimit types.NamespacedName) (dpv1alpha1.ResolveRateLimitAPIPolicy, bool) {
+	var rateLimitPolicy dpv1alpha1.ResolveRateLimitAPIPolicy
 	if cachedRatelimit, found := ods.ratelimitStore[rateLimit]; found {
+		logger.Info("Found cached ratelimit")
+		logger.Info("cachedRatelimit: ", cachedRatelimit)
 		return *cachedRatelimit, true
 	}
 	return rateLimitPolicy, false
@@ -65,6 +64,7 @@ func (ods *RatelimitDataStore) GetCachedRatelimitPolicy(rateLimit types.Namespac
 func (ods *RatelimitDataStore) DeleteCachedRatelimitPolicy(rateLimit types.NamespacedName) {
 	ods.mu.Lock()
 	defer ods.mu.Unlock()
+	logger.Info("Deleting ratelimit from cache")
 	delete(ods.ratelimitStore, rateLimit)
 }
 

@@ -19,10 +19,10 @@ package xds
 
 import (
 	"fmt"
-	"strings"
 
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	envoy_cachev3 "github.com/envoyproxy/go-control-plane/pkg/cache/v3"
+	logger "github.com/sirupsen/logrus"
 	dpv1alpha1 "github.com/wso2/apk/common-controller/internal/operator/api/v1alpha1"
 )
 
@@ -57,7 +57,11 @@ func UpdateRateLimitXDSCache(vhosts []string, resolveRatelimit dpv1alpha1.Resolv
 }
 
 // DeleteAPILevelRateLimitPolicies delete the ratelimit xds cache
-func DeleteAPILevelRateLimitPolicies(org string, vhost string, apiID string) {
+func DeleteAPILevelRateLimitPolicies(resolveRatelimit dpv1alpha1.ResolveRateLimitAPIPolicy) {
+	var org = resolveRatelimit.Organization
+	var vhost = resolveRatelimit.Vhost
+	var apiID = resolveRatelimit.UUID
+	logger.Info(org, vhost, apiID)
 	rlsPolicyCache.DeleteAPILevelRateLimitPolicies(org, vhost, apiID)
 }
 
@@ -69,16 +73,6 @@ func GenerateIdentifierForAPIWithUUID(vhost, uuid string) string {
 // UpdateRateLimiterPolicies update the rate limiter xDS cache with latest rate limit policies
 func UpdateRateLimiterPolicies(label string) {
 	_ = rlsPolicyCache.updateXdsCache(label)
-}
-
-// ExtractVhostFromAPIIdentifier extracts vhost from the API identifier
-func ExtractVhostFromAPIIdentifier(id string) (string, error) {
-	elem := strings.Split(id, apiKeyFieldSeparator)
-	if len(elem) == 2 {
-		return elem[0], nil
-	}
-	err := fmt.Errorf("invalid API identifier: %v", id)
-	return "", err
 }
 
 // SetEmptySnapshotupdate update empty snapshot

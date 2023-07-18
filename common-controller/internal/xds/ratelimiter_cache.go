@@ -150,10 +150,15 @@ func (r *rateLimitPolicyCache) AddAPILevelRateLimitPolicies(vHosts []string, res
 }
 
 // DeleteAPILevelRateLimitPolicies deletes inline Rate Limit policies added with the API.
-func (r *rateLimitPolicyCache) DeleteAPILevelRateLimitPolicies(org, vHost, apiID string) {
+func (r *rateLimitPolicyCache) DeleteAPILevelRateLimitPolicies(org string, vHosts []string, apiID string) {
 	r.apiLevelMu.Lock()
 	defer r.apiLevelMu.Unlock()
-	delete(r.apiLevelRateLimitPolicies[org][vHost], apiID)
+	for _, vHost := range vHosts {
+		apiIdentifier := GenerateIdentifierForAPIWithUUID(vHost, apiID)
+		logger.Info("apiIdentifier", apiIdentifier)
+		logger.Info("r.apiLevelRateLimitPolicies[org][vHost]", r.apiLevelRateLimitPolicies[org][vHost])
+		delete(r.apiLevelRateLimitPolicies[org][vHost], apiIdentifier)
+	}
 }
 
 func (r *rateLimitPolicyCache) generateRateLimitConfig() *rls_config.RateLimitConfig {
@@ -199,7 +204,7 @@ func (r *rateLimitPolicyCache) generateRateLimitConfig() *rls_config.RateLimitCo
 
 func (r *rateLimitPolicyCache) updateXdsCache(label string) bool {
 	rlsConf := r.generateRateLimitConfig()
-	logger.Info("label", label)
+	logger.Info("label", rlsConf)
 	version := fmt.Sprint(rand.Intn(maxRandomInt))
 	logger.Info("rlsConf", rlsConf)
 	snap, err := gcp_cache.NewSnapshot(version, map[gcp_resource.Type][]gcp_types.Resource{

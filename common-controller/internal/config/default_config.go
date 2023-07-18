@@ -20,6 +20,9 @@ package config
 // Configuration object which is populated with default values.
 var defaultConfig = &Config{
 	CommonController: commoncontroller{
+		Server: server{
+			Label: "default1",
+		},
 		Keystore: keystore{
 			KeyPath:  "/home/wso2/security/keystore/mg.key",
 			CertPath: "/home/wso2/security/keystore/mg.pem",

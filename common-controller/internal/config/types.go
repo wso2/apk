@@ -36,6 +36,7 @@ type commoncontroller struct {
 	// XDSPort    int32    `toml:"xdsPort"`
 	// NodeLabels []string `toml:"nodeLabels"`
 	Keystore keystore
+	Server   server
 	// Trusted Certificates
 	Truststore truststore
 }
@@ -47,4 +48,8 @@ type keystore struct {
 
 type truststore struct {
 	Location string
+}
+
+type server struct {
+	Label string
 }

@@ -35,6 +35,7 @@ import (
 	"github.com/wso2/apk/adapter/pkg/health"
 	healthservice "github.com/wso2/apk/adapter/pkg/health/api/wso2/health/service"
 	"github.com/wso2/apk/adapter/pkg/logging"
+	"github.com/wso2/apk/common-controller/internal/config"
 	"github.com/wso2/apk/common-controller/internal/loggers"
 	"github.com/wso2/apk/common-controller/internal/operator"
 	utils "github.com/wso2/apk/common-controller/internal/utils"
@@ -123,7 +124,7 @@ func runRatelimitServer(rlsServer xdsv3.Server) {
 }
 
 // InitCommonControllerServer initializes the gRPC server for the common controller.
-func InitCommonControllerServer() {
+func InitCommonControllerServer(conf *config.Config) {
 	sig := make(chan os.Signal, 2)
 	flag.Parse()
 	signal.Notify(sig, os.Interrupt)
@@ -137,7 +138,7 @@ func InitCommonControllerServer() {
 	runRatelimitServer(rlsSrv)
 	// Set empty snapshot to initiate ratelimit service
 	// Set label as default1 to avoid label mismatch error
-	xds.SetEmptySnapshotupdate("default1")
+	xds.SetEmptySnapshotupdate(conf.CommonController.Server.Label)
 	go operator.InitOperator()
 OUTER:
 	for {

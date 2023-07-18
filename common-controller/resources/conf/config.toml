@@ -1,15 +1,10 @@
-[adapter]
-[adapter.server]
-  enabled = true
-  port = "9843"
-  tokenPrivateKeyPath = "/home/wso2/security/keystore/mg.key"
-  [[adapter.server.users]]
-    username = "admin"
-    password = "$env{adapter_admin_pwd}"
+[commoncontroller]
+[commoncontroller.server]
+  label = "default1"
 
-[adapter.keystore]
+[commoncontroller.keystore]
   certPath = "/home/wso2/security/keystore/mg.pem"
   keyPath = "/home/wso2/security/keystore/mg.key"
 
-[adapter.truststore]
+[commoncontroller.truststore]
   location = "/home/wso2/security/truststore"

@@ -75,7 +75,6 @@ func InitOperator() {
 		HealthProbeBindAddress: probeAddr,
 		// LeaderElection:         true,
 		// LeaderElectionID:       "operator-lease.apk.wso2.com",
-		Namespace: "apk",
 		// LeaderElectionReleaseOnCancel defines if the leader should step down voluntarily
 		// when the Manager ends. This requires the binary to immediately end when the
 		// Manager is stopped, otherwise, this setting is unsafe. Setting this significantly
@@ -94,7 +93,6 @@ func InitOperator() {
 	}
 
 	if err := dpcontrollers.NewratelimitController(mgr, ratelimitStore); err != nil {
-		setupLog.Info("asa manager")
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3114, err))
 	}
 	//+kubebuilder:scaffold:builder

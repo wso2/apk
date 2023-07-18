@@ -19,11 +19,9 @@ package xds
 
 import (
 	"context"
-	"strings"
 
 	core "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	discovery "github.com/envoyproxy/go-control-plane/envoy/service/discovery/v3"
-	logger "github.com/sirupsen/logrus"
 	"github.com/wso2/apk/adapter/pkg/logging"
 	"github.com/wso2/apk/common-controller/internal/loggers"
 	utils "github.com/wso2/apk/common-controller/internal/utils"
@@ -65,21 +63,6 @@ func (cb *Callbacks) OnStreamRequest(id int64, request *discovery.DiscoveryReque
 	if request.ErrorDetail != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2300, request.GetTypeUrl(),
 			id, nodeIdentifier, request.ErrorDetail.Message))
-	}
-	_, err := GetRateLimiterCache().GetSnapshot("default")
-	if err != nil && strings.Contains(err.Error(), "no snapshot found for node") {
-		logger.Info("No snapshot found for node. Hence, setting empty snapshot.")
-		// This will be called only after the readiness probe is deployed.
-		// Hence, there is no possibility to set empty snapshot for woking adapter (with APIs)
-		// (i.e setting snapshot before adding APIs to the cache)
-		errSetSnap := SetEmptySnapshotupdate("default")
-		if errSetSnap != true {
-			logger.Info("error while setting empty snapshot")
-			loggers.LoggerAPKOperator.Errorf("Error while setting empty snapshot. error : %v", errSetSnap)
-			return nil
-		}
-		logger.Info("Updated empty snapshot into cache as there is no apis for the label")
-		loggers.LoggerAPKOperator.Infof("Updated empty snapshot into cache as there is no apis for the label : %v", request.GetNode().Id)
 	}
 	return nil
 }

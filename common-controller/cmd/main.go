@@ -20,9 +20,11 @@ package main
 import (
 	logger "github.com/sirupsen/logrus"
 	commoncontroller "github.com/wso2/apk/common-controller/commoncontroller"
+	config "github.com/wso2/apk/common-controller/internal/config"
 )
 
 func main() {
 	logger.Info("Starting the Common Controller")
-	commoncontroller.InitCommonControllerServer()
+	conf := config.ReadConfigs()
+	commoncontroller.InitCommonControllerServer(conf)
 }
