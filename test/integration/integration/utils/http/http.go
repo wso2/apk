@@ -57,6 +57,10 @@ type ExpectedResponse struct {
 
 	// User Given TestCase name
 	TestCaseName string
+
+	// The UnacceptableStatuses field represents the list of HTTP statuses that, 
+	// if encountered during the test, would indicate a failure
+	UnacceptableStatuses []int
 }
 
 // Request can be used as both the request to make and a means to verify
@@ -193,7 +197,10 @@ func WaitForConsistentResponse(t *testing.T, r roundtripper.RoundTripper, req ro
 			t.Logf("Request failed, not ready yet: %v (after %v)", err.Error(), elapsed)
 			return false
 		}
-
+		// Check for unaccpetable response status
+		if (containsInt(expected.UnacceptableStatuses, cRes.StatusCode)) {
+			t.Fatalf("Unacceptable response received. Received response code: %d", cRes.StatusCode)
+		}
 		if err := CompareRequest(&req, cReq, cRes, expected); err != nil {
 			t.Logf("Response expectation failed for request: %v  not ready yet: %v (after %v)", req, err, elapsed)
 			return false
@@ -202,6 +209,15 @@ func WaitForConsistentResponse(t *testing.T, r roundtripper.RoundTripper, req ro
 		return true
 	})
 	t.Logf("Request passed")
+}
+
+func containsInt(arr []int, target int) bool {
+	for _, value := range arr {
+		if value == target {
+			return true
+		}
+	}
+	return false
 }
 
 // CompareRequest compares the expected request and the captured request.

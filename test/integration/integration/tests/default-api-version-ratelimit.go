@@ -50,9 +50,10 @@ var DefaultAPIVersionRatelimit = suite.IntegrationTest{
 						Path: "/v2/echo-full",
 					},
 				},
-				Backend:   "infra-backend-v1",
-				Namespace: ns,
-				Response:  http.Response{StatusCode: 429},
+				Backend:              "infra-backend-v1",
+				Namespace:            ns,
+				Response:             http.Response{StatusCode: 200},
+				UnacceptableStatuses: []int{429},
 			},
 			{
 				Request: http.Request{
@@ -65,16 +66,48 @@ var DefaultAPIVersionRatelimit = suite.IntegrationTest{
 						Path: "/v2/echo-full",
 					},
 				},
-				Backend:   "infra-backend-v1",
-				Namespace: ns,
-				Response:  http.Response{StatusCode: 429},
+				Backend:              "infra-backend-v1",
+				Namespace:            ns,
+				Response:             http.Response{StatusCode: 200},
+				UnacceptableStatuses: []int{429},
+			},
+			{
+				Request: http.Request{
+					Host:   "default-api-version-ratelimit.test.gw.wso2.com",
+					Path:   "/default-api-version-ratelimit/v1.0.0/v2/echo-full",
+					Method: "GET",
+				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Path: "/v2/echo-full",
+					},
+				},
+				Backend:              "infra-backend-v1",
+				Namespace:            ns,
+				Response:             http.Response{StatusCode: 429},
+				UnacceptableStatuses: []int{200},
+			},
+			{
+				Request: http.Request{
+					Host:   "default-api-version-ratelimit.test.gw.wso2.com",
+					Path:   "/default-api-version-ratelimit/v2/echo-full",
+					Method: "GET",
+				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Path: "/v2/echo-full",
+					},
+				},
+				Backend:              "infra-backend-v1",
+				Namespace:            ns,
+				Response:             http.Response{StatusCode: 429},
+				UnacceptableStatuses: []int{200},
 			},
 		}
 		for i := range testCases {
 			tc := testCases[i]
 			tc.Request.Headers = http.AddBearerTokenToHeader(token, tc.Request.Headers)
 			t.Run(tc.GetTestCaseName(i), func(t *testing.T) {
-				t.Parallel()
 				http.MakeRequestAndExpectEventuallyConsistentResponse(t, suite.RoundTripper, suite.TimeoutConfig, gwAddr, tc)
 			})
 		}
