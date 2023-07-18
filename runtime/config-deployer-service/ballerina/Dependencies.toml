@@ -56,7 +56,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "file"
-version = "1.8.0"
+version = "1.8.1"
 dependencies = [
 	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "jballerina.java"},

@@ -30,8 +30,8 @@ public type AuthenticationSpec record {
 };
 
 public type AuthenticationData record {
-    AuthenticationExtenstion ext;
-    string 'type;
+    AuthenticationExtenstion ext?;
+    string 'type?;
 
 };
 
@@ -54,19 +54,19 @@ public type AuthenticationExtenstionType record {
 };
 
 public type JWTAuthentication record {
-    string header;
-    boolean sendTokenToUpstream;
+    string header?;
+    boolean sendTokenToUpstream?;
 };
 
 public type InternalKey record {
-    string header;
-    string sendTokenToUpstream;
+    string header?;
+    string sendTokenToUpstream?;
 };
 
 public type APIKey record {
-    string 'in;
-    string name;
-    boolean sendTokenToUpstream;
+    string 'in?;
+    string name?;
+    boolean sendTokenToUpstream?;
 };
 
 public type AuthenticationList record {
