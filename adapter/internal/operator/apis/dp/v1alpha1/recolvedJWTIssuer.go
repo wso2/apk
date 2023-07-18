@@ -30,6 +30,7 @@ type ResolvedJWTIssuer struct {
 	ConsumerKeyClaim    string
 	ScopesClaim         string
 	SignatureValidation ResolvedSignatureValidation
+	ClaimMappings       map[string]string
 }
 
 // ResolvedSignatureValidation holds the resolved properties of SignatureValidation

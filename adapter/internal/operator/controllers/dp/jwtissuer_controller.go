@@ -24,7 +24,6 @@ import (
 
 	"github.com/wso2/apk/adapter/internal/discovery/xds"
 	"github.com/wso2/apk/adapter/internal/loggers"
-	"github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
 	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
 	"github.com/wso2/apk/adapter/internal/operator/constants"
 	"github.com/wso2/apk/adapter/internal/operator/utils"
@@ -33,7 +32,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	k8client "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
@@ -51,7 +49,7 @@ const (
 
 // JWTIssuerReconciler reconciles a JWTIssuer object
 type JWTIssuerReconciler struct {
-	client client.Client
+	client k8client.Client
 	Scheme *runtime.Scheme
 }
 
@@ -166,11 +164,11 @@ func addJWTIssuerIndexes(ctx context.Context, mgr manager.Manager) error {
 }
 
 // UpdateEnforcerJWTIssuers updates the JWT Issuers in the Enforcer
-func UpdateEnforcerJWTIssuers(jwtIssuerMapping v1alpha1.JWTIssuerMapping) {
+func UpdateEnforcerJWTIssuers(jwtIssuerMapping dpv1alpha1.JWTIssuerMapping) {
 	jwtIssuerList := marshalJWTIssuerList(jwtIssuerMapping)
 	xds.UpdateEnforcerJWTIssuers(jwtIssuerList)
 }
-func marshalJWTIssuerList(jwtIssuerMapping v1alpha1.JWTIssuerMapping) *subscription.JWTIssuerList {
+func marshalJWTIssuerList(jwtIssuerMapping dpv1alpha1.JWTIssuerMapping) *subscription.JWTIssuerList {
 	jwtIssuers := []*subscription.JWTIssuer{}
 	for _, internalJWTIssuer := range jwtIssuerMapping {
 		certificate := &subscription.Certificate{}
@@ -192,6 +190,7 @@ func marshalJWTIssuerList(jwtIssuerMapping v1alpha1.JWTIssuerMapping) *subscript
 			}
 			certificate.Jwks = jwks
 		}
+		jwtIssuer.ClaimMapping = internalJWTIssuer.ClaimMappings
 		jwtIssuer.Certificate = certificate
 		jwtIssuers = append(jwtIssuers, jwtIssuer)
 
@@ -202,7 +201,7 @@ func marshalJWTIssuerList(jwtIssuerMapping v1alpha1.JWTIssuerMapping) *subscript
 }
 
 // getJWTIssuers returns the JWTIssuers for the given JWTIssuerMapping
-func getJWTIssuers(ctx context.Context, client client.Client, namespace types.NamespacedName) (dpv1alpha1.JWTIssuerMapping, error) {
+func getJWTIssuers(ctx context.Context, client k8client.Client, namespace types.NamespacedName) (dpv1alpha1.JWTIssuerMapping, error) {
 	jwtIssuerMapping := make(dpv1alpha1.JWTIssuerMapping)
 	jwtIssuerList := &dpv1alpha1.JWTIssuerList{}
 	if err := client.List(ctx, jwtIssuerList); err != nil {
@@ -240,6 +239,11 @@ func getJWTIssuers(ctx context.Context, client client.Client, namespace types.Na
 		jwtIssuerMappingName := types.NamespacedName{
 			Name:      jwtIssuer.Name,
 			Namespace: jwtIssuer.Namespace,
+		}
+		if jwtIssuer.Spec.ClaimMappings != nil {
+			resolvedJwtIssuer.ClaimMappings = *jwtIssuer.Spec.ClaimMappings
+		} else {
+			resolvedJwtIssuer.ClaimMappings = make(map[string]string)
 		}
 		jwtIssuerMapping[jwtIssuerMappingName] = &resolvedJwtIssuer
 	}

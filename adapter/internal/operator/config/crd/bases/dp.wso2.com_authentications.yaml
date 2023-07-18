@@ -69,6 +69,9 @@ spec:
                           jwt:
                             description: JWTAuth JWT Authentication scheme details
                             properties:
+                              disabled:
+                                default: false
+                                type: boolean
                               header:
                                 default: authorization
                                 description: Header is the header name used to pass
@@ -76,6 +79,8 @@ spec:
                                 type: string
                               sendTokenToUpstream:
                                 type: boolean
+                            required:
+                            - disabled
                             type: object
                           testConsoleKey:
                             description: TestConsoleKeyAuth Test Console Key Authentication
@@ -145,6 +150,9 @@ spec:
                           jwt:
                             description: JWTAuth JWT Authentication scheme details
                             properties:
+                              disabled:
+                                default: false
+                                type: boolean
                               header:
                                 default: authorization
                                 description: Header is the header name used to pass
@@ -152,6 +160,8 @@ spec:
                                 type: string
                               sendTokenToUpstream:
                                 type: boolean
+                            required:
+                            - disabled
                             type: object
                           testConsoleKey:
                             description: TestConsoleKeyAuth Test Console Key Authentication

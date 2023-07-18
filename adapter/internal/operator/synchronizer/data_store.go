@@ -86,7 +86,7 @@ func (ods *OperatorDataStore) processAPIState(apiDef *dpv1alpha1.API, prodHTTPRo
 		events = append(events, "API Definition")
 	}
 	if prodHTTPRoute != nil {
-		if (cachedAPI.ProdHTTPRoute == nil) {
+		if cachedAPI.ProdHTTPRoute == nil {
 			cachedAPI.ProdHTTPRoute = prodHTTPRoute
 			updated = true
 			events = append(events, "Production")
@@ -100,11 +100,11 @@ func (ods *OperatorDataStore) processAPIState(apiDef *dpv1alpha1.API, prodHTTPRo
 		cachedAPI.ProdHTTPRoute = nil
 	}
 	if sandHTTPRoute != nil {
-		if (cachedAPI.SandHTTPRoute == nil) {
+		if cachedAPI.SandHTTPRoute == nil {
 			cachedAPI.SandHTTPRoute = sandHTTPRoute
 			updated = true
 			events = append(events, "Sandbox")
-		} else { 
+		} else {
 			if routeEvents, routesUpdated := updateHTTPRoute(sandHTTPRoute, cachedAPI.SandHTTPRoute, "Sandbox"); routesUpdated {
 				updated = true
 				events = append(events, routeEvents...)
