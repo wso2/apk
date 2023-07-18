@@ -35,6 +35,10 @@ spec:
           spec:
             description: JWTIssuerSpec defines the desired state of JWTIssuer
             properties:
+              claimMappings:
+                additionalProperties:
+                  type: string
+                type: object
               consumerKeyClaim:
                 description: ConsumerKeyClaim denotes the claim key of the consumer
                   key.

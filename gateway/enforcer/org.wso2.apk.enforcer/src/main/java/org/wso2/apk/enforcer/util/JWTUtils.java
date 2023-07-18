@@ -72,6 +72,7 @@ import java.util.concurrent.TimeUnit;
  * Utility functions used for jwt authentication.
  */
 public class JWTUtils {
+
     private static final Logger log = LogManager.getLogger(JWTUtils.class);
 
     /**
@@ -144,6 +145,7 @@ public class JWTUtils {
      * @return whether the signature is verified or not
      */
     private static boolean verifyTokenSignature(SignedJWT jwt, ECPublicKey publicKey) {
+
         try {
             JWSVerifier jwsVerifier = new ECDSAVerifier(publicKey);
             return jwt.verify(jwsVerifier);
@@ -183,12 +185,14 @@ public class JWTUtils {
     }
 
     public static PrivateKey getPrivateKey(String filePath) throws EnforcerException {
+
         try {
             String strKeyPEM;
             Path keyPath = Paths.get(filePath);
             String key = Files.readString(keyPath, Charset.defaultCharset());
 
-            strKeyPEM = key.replace(Constants.BEGINING_OF_PRIVATE_KEY, "").replaceAll("\n", "").replaceAll("\r", "") // certs could be created in a Unix/Windows platform
+            strKeyPEM = key.replace(Constants.BEGINING_OF_PRIVATE_KEY, "").replaceAll("\n", "").replaceAll("\r", "")
+                    // certs could be created in a Unix/Windows platform
                     .replace(Constants.END_OF_PRIVATE_KEY, "");
 
             byte[] encoded = Base64.getDecoder().decode(strKeyPEM);
@@ -209,6 +213,7 @@ public class JWTUtils {
      * @throws ParseException if an error occurs when decoding the JWT
      */
     public static SignedJWTInfo getSignedJwt(String accessToken) throws ParseException {
+
         String signature = accessToken.split("\\.")[2];
         SignedJWTInfo signedJWTInfo = null;
         //Check whether GatewaySignedJWTParseCache is correct
@@ -239,6 +244,7 @@ public class JWTUtils {
      * @return true if expired
      */
     public static boolean isExpired(String token) {
+
         String[] splitToken = token.split("\\.");
         org.json.JSONObject payload = new org.json.JSONObject(new String(Base64.getUrlDecoder().decode(splitToken[1])));
         long exp = payload.getLong(JwtConstants.EXP);
@@ -252,7 +258,9 @@ public class JWTUtils {
      * @param apiKeyValidationInfoDTO empty JWT info DTO to be populated with anonymous details
      * @param kmReference             name of the token service
      */
-    public static void updateApplicationNameForSubscriptionDisabledKM(APIKeyValidationInfoDTO apiKeyValidationInfoDTO, String kmReference) {
+    public static void updateApplicationNameForSubscriptionDisabledKM(APIKeyValidationInfoDTO apiKeyValidationInfoDTO
+            , String kmReference) {
+
         String applicationRef = APIConstants.ANONYMOUS_PREFIX + kmReference;
         apiKeyValidationInfoDTO.setApplicationName(applicationRef);
         apiKeyValidationInfoDTO.setApplicationId(-1);
@@ -260,10 +268,12 @@ public class JWTUtils {
         apiKeyValidationInfoDTO.setApplicationTier(APIConstants.UNLIMITED_TIER);
     }
 
-    public static JWTValidationInfo validateJWTToken(SignedJWTInfo signedJWTInfo) throws EnforcerException {
+    public static JWTValidationInfo validateJWTToken(SignedJWTInfo signedJWTInfo, String organization) throws EnforcerException {
+
         JWTValidationInfo jwtValidationInfo = new JWTValidationInfo();
         String issuer = signedJWTInfo.getJwtClaimsSet().getIssuer();
-        JWTValidator jwtValidator = SubscriptionDataStoreImpl.getInstance().getJWTValidatorByIssuer(issuer);
+        JWTValidator jwtValidator = SubscriptionDataStoreImpl.getInstance().getJWTValidatorByIssuer(issuer,
+                organization);
         if (jwtValidator != null) {
             return jwtValidator.validateJWTToken(signedJWTInfo);
         }

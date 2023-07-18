@@ -93,4 +93,38 @@ public interface JWTIssuerOrBuilder extends
    */
   com.google.protobuf.ByteString
       getScopesClaimBytes();
+
+  /**
+   * <code>map&lt;string, string&gt; claimMapping = 8;</code>
+   */
+  int getClaimMappingCount();
+  /**
+   * <code>map&lt;string, string&gt; claimMapping = 8;</code>
+   */
+  boolean containsClaimMapping(
+      java.lang.String key);
+  /**
+   * Use {@link #getClaimMappingMap()} instead.
+   */
+  @java.lang.Deprecated
+  java.util.Map<java.lang.String, java.lang.String>
+  getClaimMapping();
+  /**
+   * <code>map&lt;string, string&gt; claimMapping = 8;</code>
+   */
+  java.util.Map<java.lang.String, java.lang.String>
+  getClaimMappingMap();
+  /**
+   * <code>map&lt;string, string&gt; claimMapping = 8;</code>
+   */
+
+  java.lang.String getClaimMappingOrDefault(
+      java.lang.String key,
+      java.lang.String defaultValue);
+  /**
+   * <code>map&lt;string, string&gt; claimMapping = 8;</code>
+   */
+
+  java.lang.String getClaimMappingOrThrow(
+      java.lang.String key);
 }

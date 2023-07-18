@@ -75,6 +75,7 @@ public class JWTAuthenticator implements Authenticator {
     private AbstractAPIMgtGatewayJWTGenerator jwtGenerator;
 
     public JWTAuthenticator(final JWTConfigurationDto jwtConfigurationDto, final boolean isGatewayTokenCacheEnabled) {
+
         this.isGatewayTokenCacheEnabled = isGatewayTokenCacheEnabled;
         if (jwtConfigurationDto.isEnabled()) {
             this.jwtGenerator = BackendJwtUtils.getApiMgtGatewayJWTGenerator(jwtConfigurationDto);
@@ -107,6 +108,7 @@ public class JWTAuthenticator implements Authenticator {
 
     @Override
     public AuthenticationContext authenticate(RequestContext requestContext) throws APISecurityException {
+
         TracingTracer tracer = null;
         TracingSpan decodeTokenHeaderSpan = null;
         TracingSpan jwtAuthenticatorInfoSpan = null;
@@ -133,6 +135,7 @@ public class JWTAuthenticator implements Authenticator {
             String name = requestContext.getMatchedAPI().getName();
             String envType = requestContext.getMatchedAPI().getEnvType();
             String version = requestContext.getMatchedAPI().getVersion();
+            String organization = requestContext.getMatchedAPI().getOrganizationId();
             context = context + "/" + version;
             SignedJWTInfo signedJWTInfo;
             Scope decodeTokenHeaderSpanScope = null;
@@ -171,7 +174,7 @@ public class JWTAuthenticator implements Authenticator {
                 }
 
             }
-            JWTValidationInfo validationInfo = getJwtValidationInfo(signedJWTInfo, jwtTokenIdentifier);
+            JWTValidationInfo validationInfo = getJwtValidationInfo(signedJWTInfo, jwtTokenIdentifier, organization);
             if (validationInfo != null) {
                 if (validationInfo.isValid()) {
                     // Validate token type
@@ -295,7 +298,7 @@ public class JWTAuthenticator implements Authenticator {
                     if (this.jwtGenerator != null) {
                         JWTConfigurationDto configurationDto = this.jwtGenerator.getJWTConfigurationDto();
                         Map<String, ClaimValueDTO> claimMap = new HashMap<>();
-                        if(configurationDto != null) {
+                        if (configurationDto != null) {
                             claimMap = configurationDto.getCustomClaims();
                         }
                         JWTInfoDto jwtInfoDto = FilterUtils.generateJWTInfoDto(null, validationInfo,
@@ -303,11 +306,13 @@ public class JWTAuthenticator implements Authenticator {
 
                         // set custom claims get from the CR
                         jwtInfoDto.setClaims(claimMap);
-                        endUserToken = BackendJwtUtils.generateAndRetrieveJWTToken(this.jwtGenerator, jwtTokenIdentifier,
+                        endUserToken = BackendJwtUtils.generateAndRetrieveJWTToken(this.jwtGenerator,
+                                jwtTokenIdentifier,
                                 jwtInfoDto, isGatewayTokenCacheEnabled);
                         // Set generated jwt token as a response header
                         // Change the backendJWTConfig to API level
-                        requestContext.addOrModifyHeaders(this.jwtGenerator.getJWTConfigurationDto().getJwtHeader(), endUserToken);
+                        requestContext.addOrModifyHeaders(this.jwtGenerator.getJWTConfigurationDto().getJwtHeader(),
+                                endUserToken);
                     }
 
                     return FilterUtils
@@ -334,21 +339,25 @@ public class JWTAuthenticator implements Authenticator {
 
     @Override
     public String getChallengeString() {
+
         return "Bearer realm=\"APK\"";
     }
 
     @Override
     public String getName() {
+
         return "JWT";
     }
 
     @Override
     public int getPriority() {
+
         return 10;
     }
 
     private String retrieveAuthHeaderValue(RequestContext requestContext,
                                            JWTAuthenticationConfig jwtAuthenticationConfig) {
+
         Map<String, String> headers = requestContext.getHeaders();
         return headers.get(jwtAuthenticationConfig.getHeader());
     }
@@ -367,6 +376,7 @@ public class JWTAuthenticator implements Authenticator {
     private void validateScopes(String apiContext, String apiVersion, ArrayList<ResourceConfig> matchingResources,
                                 JWTValidationInfo jwtValidationInfo, SignedJWTInfo jwtToken)
             throws APISecurityException {
+
         APIKeyValidationInfoDTO apiKeyValidationInfoDTO = new APIKeyValidationInfoDTO();
         Set<String> scopeSet = new HashSet<>(jwtValidationInfo.getScopes());
         apiKeyValidationInfoDTO.setScopes(scopeSet);
@@ -410,7 +420,6 @@ public class JWTAuthenticator implements Authenticator {
                 APISecurityConstants.API_AUTH_FORBIDDEN, APISecurityConstants.API_AUTH_FORBIDDEN_MESSAGE);
     }
 
-
     /**
      * Validate whether the user is subscribed to the invoked API. If subscribed, return a JSON object containing
      * the API information. This validation is done based on the jwt token claims.
@@ -428,6 +437,7 @@ public class JWTAuthenticator implements Authenticator {
                                                      String[] splitToken, String envType,
                                                      APIKeyValidationInfoDTO validationInfo,
                                                      boolean isOauth) throws APISecurityException {
+
         JSONObject api = null;
         try {
             validationInfo.setEndUserName(payload.getSubject());
@@ -517,7 +527,7 @@ public class JWTAuthenticator implements Authenticator {
         return api;
     }
 
-    private JWTValidationInfo getJwtValidationInfo(SignedJWTInfo signedJWTInfo, String jti)
+    private JWTValidationInfo getJwtValidationInfo(SignedJWTInfo signedJWTInfo, String jti, String organization)
             throws APISecurityException {
 
         String jwtHeader = signedJWTInfo.getSignedJWT().getHeader().toString();
@@ -555,7 +565,7 @@ public class JWTAuthenticator implements Authenticator {
         if (jwtValidationInfo == null) {
 
             try {
-                jwtValidationInfo = JWTUtils.validateJWTToken(signedJWTInfo);
+                jwtValidationInfo = JWTUtils.validateJWTToken(signedJWTInfo, organization);
                 signedJWTInfo.setValidationStatus(jwtValidationInfo.isValid() ?
                         SignedJWTInfo.ValidationStatus.VALID : SignedJWTInfo.ValidationStatus.INVALID);
                 if (isGatewayTokenCacheEnabled) {

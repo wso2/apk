@@ -48,6 +48,7 @@ private static final long serialVersionUID = 0L;
     if (extensionRegistry == null) {
       throw new java.lang.NullPointerException();
     }
+    int mutable_bitField0_ = 0;
     com.google.protobuf.UnknownFieldSet.Builder unknownFields =
         com.google.protobuf.UnknownFieldSet.newBuilder();
     try {
@@ -107,6 +108,19 @@ private static final long serialVersionUID = 0L;
             scopesClaim_ = s;
             break;
           }
+          case 66: {
+            if (!((mutable_bitField0_ & 0x00000001) != 0)) {
+              claimMapping_ = com.google.protobuf.MapField.newMapField(
+                  ClaimMappingDefaultEntryHolder.defaultEntry);
+              mutable_bitField0_ |= 0x00000001;
+            }
+            com.google.protobuf.MapEntry<java.lang.String, java.lang.String>
+            claimMapping__ = input.readMessage(
+                ClaimMappingDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
+            claimMapping_.getMutableMap().put(
+                claimMapping__.getKey(), claimMapping__.getValue());
+            break;
+          }
           default: {
             if (!parseUnknownField(
                 input, unknownFields, extensionRegistry, tag)) {
@@ -131,6 +145,18 @@ private static final long serialVersionUID = 0L;
     return org.wso2.apk.enforcer.discovery.subscription.JWTIssuerProto.internal_static_wso2_discovery_subscription_JWTIssuer_descriptor;
   }
 
+  @SuppressWarnings({"rawtypes"})
+  @java.lang.Override
+  protected com.google.protobuf.MapField internalGetMapField(
+      int number) {
+    switch (number) {
+      case 8:
+        return internalGetClaimMapping();
+      default:
+        throw new RuntimeException(
+            "Invalid map field number: " + number);
+    }
+  }
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internalGetFieldAccessorTable() {
@@ -393,6 +419,87 @@ private static final long serialVersionUID = 0L;
     }
   }
 
+  public static final int CLAIMMAPPING_FIELD_NUMBER = 8;
+  private static final class ClaimMappingDefaultEntryHolder {
+    static final com.google.protobuf.MapEntry<
+        java.lang.String, java.lang.String> defaultEntry =
+            com.google.protobuf.MapEntry
+            .<java.lang.String, java.lang.String>newDefaultInstance(
+                org.wso2.apk.enforcer.discovery.subscription.JWTIssuerProto.internal_static_wso2_discovery_subscription_JWTIssuer_ClaimMappingEntry_descriptor, 
+                com.google.protobuf.WireFormat.FieldType.STRING,
+                "",
+                com.google.protobuf.WireFormat.FieldType.STRING,
+                "");
+  }
+  private com.google.protobuf.MapField<
+      java.lang.String, java.lang.String> claimMapping_;
+  private com.google.protobuf.MapField<java.lang.String, java.lang.String>
+  internalGetClaimMapping() {
+    if (claimMapping_ == null) {
+      return com.google.protobuf.MapField.emptyMapField(
+          ClaimMappingDefaultEntryHolder.defaultEntry);
+    }
+    return claimMapping_;
+  }
+
+  public int getClaimMappingCount() {
+    return internalGetClaimMapping().getMap().size();
+  }
+  /**
+   * <code>map&lt;string, string&gt; claimMapping = 8;</code>
+   */
+
+  @java.lang.Override
+  public boolean containsClaimMapping(
+      java.lang.String key) {
+    if (key == null) { throw new java.lang.NullPointerException(); }
+    return internalGetClaimMapping().getMap().containsKey(key);
+  }
+  /**
+   * Use {@link #getClaimMappingMap()} instead.
+   */
+  @java.lang.Override
+  @java.lang.Deprecated
+  public java.util.Map<java.lang.String, java.lang.String> getClaimMapping() {
+    return getClaimMappingMap();
+  }
+  /**
+   * <code>map&lt;string, string&gt; claimMapping = 8;</code>
+   */
+  @java.lang.Override
+
+  public java.util.Map<java.lang.String, java.lang.String> getClaimMappingMap() {
+    return internalGetClaimMapping().getMap();
+  }
+  /**
+   * <code>map&lt;string, string&gt; claimMapping = 8;</code>
+   */
+  @java.lang.Override
+
+  public java.lang.String getClaimMappingOrDefault(
+      java.lang.String key,
+      java.lang.String defaultValue) {
+    if (key == null) { throw new java.lang.NullPointerException(); }
+    java.util.Map<java.lang.String, java.lang.String> map =
+        internalGetClaimMapping().getMap();
+    return map.containsKey(key) ? map.get(key) : defaultValue;
+  }
+  /**
+   * <code>map&lt;string, string&gt; claimMapping = 8;</code>
+   */
+  @java.lang.Override
+
+  public java.lang.String getClaimMappingOrThrow(
+      java.lang.String key) {
+    if (key == null) { throw new java.lang.NullPointerException(); }
+    java.util.Map<java.lang.String, java.lang.String> map =
+        internalGetClaimMapping().getMap();
+    if (!map.containsKey(key)) {
+      throw new java.lang.IllegalArgumentException();
+    }
+    return map.get(key);
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -428,6 +535,12 @@ private static final long serialVersionUID = 0L;
     if (!getScopesClaimBytes().isEmpty()) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 7, scopesClaim_);
     }
+    com.google.protobuf.GeneratedMessageV3
+      .serializeStringMapTo(
+        output,
+        internalGetClaimMapping(),
+        ClaimMappingDefaultEntryHolder.defaultEntry,
+        8);
     unknownFields.writeTo(output);
   }
 
@@ -458,6 +571,16 @@ private static final long serialVersionUID = 0L;
     }
     if (!getScopesClaimBytes().isEmpty()) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(7, scopesClaim_);
+    }
+    for (java.util.Map.Entry<java.lang.String, java.lang.String> entry
+         : internalGetClaimMapping().getMap().entrySet()) {
+      com.google.protobuf.MapEntry<java.lang.String, java.lang.String>
+      claimMapping__ = ClaimMappingDefaultEntryHolder.defaultEntry.newBuilderForType()
+          .setKey(entry.getKey())
+          .setValue(entry.getValue())
+          .build();
+      size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(8, claimMapping__);
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -491,6 +614,8 @@ private static final long serialVersionUID = 0L;
         .equals(other.getConsumerKeyClaim())) return false;
     if (!getScopesClaim()
         .equals(other.getScopesClaim())) return false;
+    if (!internalGetClaimMapping().equals(
+        other.internalGetClaimMapping())) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -518,6 +643,10 @@ private static final long serialVersionUID = 0L;
     hash = (53 * hash) + getConsumerKeyClaim().hashCode();
     hash = (37 * hash) + SCOPESCLAIM_FIELD_NUMBER;
     hash = (53 * hash) + getScopesClaim().hashCode();
+    if (!internalGetClaimMapping().getMap().isEmpty()) {
+      hash = (37 * hash) + CLAIMMAPPING_FIELD_NUMBER;
+      hash = (53 * hash) + internalGetClaimMapping().hashCode();
+    }
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -629,6 +758,28 @@ private static final long serialVersionUID = 0L;
       return org.wso2.apk.enforcer.discovery.subscription.JWTIssuerProto.internal_static_wso2_discovery_subscription_JWTIssuer_descriptor;
     }
 
+    @SuppressWarnings({"rawtypes"})
+    protected com.google.protobuf.MapField internalGetMapField(
+        int number) {
+      switch (number) {
+        case 8:
+          return internalGetClaimMapping();
+        default:
+          throw new RuntimeException(
+              "Invalid map field number: " + number);
+      }
+    }
+    @SuppressWarnings({"rawtypes"})
+    protected com.google.protobuf.MapField internalGetMutableMapField(
+        int number) {
+      switch (number) {
+        case 8:
+          return internalGetMutableClaimMapping();
+        default:
+          throw new RuntimeException(
+              "Invalid map field number: " + number);
+      }
+    }
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
@@ -673,6 +824,7 @@ private static final long serialVersionUID = 0L;
 
       scopesClaim_ = "";
 
+      internalGetMutableClaimMapping().clear();
       return this;
     }
 
@@ -699,6 +851,7 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public org.wso2.apk.enforcer.discovery.subscription.JWTIssuer buildPartial() {
       org.wso2.apk.enforcer.discovery.subscription.JWTIssuer result = new org.wso2.apk.enforcer.discovery.subscription.JWTIssuer(this);
+      int from_bitField0_ = bitField0_;
       result.eventId_ = eventId_;
       result.name_ = name_;
       result.organization_ = organization_;
@@ -710,6 +863,8 @@ private static final long serialVersionUID = 0L;
       }
       result.consumerKeyClaim_ = consumerKeyClaim_;
       result.scopesClaim_ = scopesClaim_;
+      result.claimMapping_ = internalGetClaimMapping();
+      result.claimMapping_.makeImmutable();
       onBuilt();
       return result;
     }
@@ -785,6 +940,8 @@ private static final long serialVersionUID = 0L;
         scopesClaim_ = other.scopesClaim_;
         onChanged();
       }
+      internalGetMutableClaimMapping().mergeFrom(
+          other.internalGetClaimMapping());
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
       return this;
@@ -813,6 +970,7 @@ private static final long serialVersionUID = 0L;
       }
       return this;
     }
+    private int bitField0_;
 
     private java.lang.Object eventId_ = "";
     /**
@@ -1386,6 +1544,134 @@ private static final long serialVersionUID = 0L;
       
       scopesClaim_ = value;
       onChanged();
+      return this;
+    }
+
+    private com.google.protobuf.MapField<
+        java.lang.String, java.lang.String> claimMapping_;
+    private com.google.protobuf.MapField<java.lang.String, java.lang.String>
+    internalGetClaimMapping() {
+      if (claimMapping_ == null) {
+        return com.google.protobuf.MapField.emptyMapField(
+            ClaimMappingDefaultEntryHolder.defaultEntry);
+      }
+      return claimMapping_;
+    }
+    private com.google.protobuf.MapField<java.lang.String, java.lang.String>
+    internalGetMutableClaimMapping() {
+      onChanged();;
+      if (claimMapping_ == null) {
+        claimMapping_ = com.google.protobuf.MapField.newMapField(
+            ClaimMappingDefaultEntryHolder.defaultEntry);
+      }
+      if (!claimMapping_.isMutable()) {
+        claimMapping_ = claimMapping_.copy();
+      }
+      return claimMapping_;
+    }
+
+    public int getClaimMappingCount() {
+      return internalGetClaimMapping().getMap().size();
+    }
+    /**
+     * <code>map&lt;string, string&gt; claimMapping = 8;</code>
+     */
+
+    @java.lang.Override
+    public boolean containsClaimMapping(
+        java.lang.String key) {
+      if (key == null) { throw new java.lang.NullPointerException(); }
+      return internalGetClaimMapping().getMap().containsKey(key);
+    }
+    /**
+     * Use {@link #getClaimMappingMap()} instead.
+     */
+    @java.lang.Override
+    @java.lang.Deprecated
+    public java.util.Map<java.lang.String, java.lang.String> getClaimMapping() {
+      return getClaimMappingMap();
+    }
+    /**
+     * <code>map&lt;string, string&gt; claimMapping = 8;</code>
+     */
+    @java.lang.Override
+
+    public java.util.Map<java.lang.String, java.lang.String> getClaimMappingMap() {
+      return internalGetClaimMapping().getMap();
+    }
+    /**
+     * <code>map&lt;string, string&gt; claimMapping = 8;</code>
+     */
+    @java.lang.Override
+
+    public java.lang.String getClaimMappingOrDefault(
+        java.lang.String key,
+        java.lang.String defaultValue) {
+      if (key == null) { throw new java.lang.NullPointerException(); }
+      java.util.Map<java.lang.String, java.lang.String> map =
+          internalGetClaimMapping().getMap();
+      return map.containsKey(key) ? map.get(key) : defaultValue;
+    }
+    /**
+     * <code>map&lt;string, string&gt; claimMapping = 8;</code>
+     */
+    @java.lang.Override
+
+    public java.lang.String getClaimMappingOrThrow(
+        java.lang.String key) {
+      if (key == null) { throw new java.lang.NullPointerException(); }
+      java.util.Map<java.lang.String, java.lang.String> map =
+          internalGetClaimMapping().getMap();
+      if (!map.containsKey(key)) {
+        throw new java.lang.IllegalArgumentException();
+      }
+      return map.get(key);
+    }
+
+    public Builder clearClaimMapping() {
+      internalGetMutableClaimMapping().getMutableMap()
+          .clear();
+      return this;
+    }
+    /**
+     * <code>map&lt;string, string&gt; claimMapping = 8;</code>
+     */
+
+    public Builder removeClaimMapping(
+        java.lang.String key) {
+      if (key == null) { throw new java.lang.NullPointerException(); }
+      internalGetMutableClaimMapping().getMutableMap()
+          .remove(key);
+      return this;
+    }
+    /**
+     * Use alternate mutation accessors instead.
+     */
+    @java.lang.Deprecated
+    public java.util.Map<java.lang.String, java.lang.String>
+    getMutableClaimMapping() {
+      return internalGetMutableClaimMapping().getMutableMap();
+    }
+    /**
+     * <code>map&lt;string, string&gt; claimMapping = 8;</code>
+     */
+    public Builder putClaimMapping(
+        java.lang.String key,
+        java.lang.String value) {
+      if (key == null) { throw new java.lang.NullPointerException(); }
+      if (value == null) { throw new java.lang.NullPointerException(); }
+      internalGetMutableClaimMapping().getMutableMap()
+          .put(key, value);
+      return this;
+    }
+    /**
+     * <code>map&lt;string, string&gt; claimMapping = 8;</code>
+     */
+
+    public Builder putAllClaimMapping(
+        java.util.Map<java.lang.String, java.lang.String> values) {
+      internalGetMutableClaimMapping().getMutableMap()
+          .putAll(values);
       return this;
     }
     @java.lang.Override

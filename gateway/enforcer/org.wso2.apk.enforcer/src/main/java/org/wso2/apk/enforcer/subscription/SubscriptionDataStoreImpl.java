@@ -80,12 +80,14 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
     private Map<String, ApplicationPolicy> appPolicyMap;
     private Map<String, Subscription> subscriptionMap;
 
-    private Map<String, JWTValidator> jwtValidatorMap;
+    private Map<String, Map<String, JWTValidator>> jwtValidatorMap;
 
     SubscriptionDataStoreImpl() {
+
     }
 
     public static SubscriptionDataStoreImpl getInstance() {
+
         return instance;
     }
 
@@ -110,6 +112,7 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
 
     @Override
     public API getApiByContextAndVersion(String uuid) {
+
         return apiMap.get(uuid);
     }
 
@@ -120,6 +123,7 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
     }
 
     private void initializeLoadingTasks() {
+
         SubscriptionDiscoveryClient.getInstance().watchSubscriptions();
         ApplicationDiscoveryClient.getInstance().watchApplications();
         ApiListDiscoveryClient.getInstance().watchApiList();
@@ -130,6 +134,7 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
     }
 
     public void addSubscriptions(List<org.wso2.apk.enforcer.discovery.subscription.Subscription> subscriptionList) {
+
         Map<String, Subscription> newSubscriptionMap = new ConcurrentHashMap<>();
 
         for (org.wso2.apk.enforcer.discovery.subscription.Subscription subscription : subscriptionList) {
@@ -150,8 +155,8 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
         this.subscriptionMap = newSubscriptionMap;
     }
 
-
     public void addApplications(List<org.wso2.apk.enforcer.discovery.subscription.Application> applicationList) {
+
         Map<String, Application> newApplicationMap = new ConcurrentHashMap<>();
 
         for (org.wso2.apk.enforcer.discovery.subscription.Application application : applicationList) {
@@ -171,6 +176,7 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
     }
 
     public void addApis(List<APIs> apisList) {
+
         Map<String, API> newApiMap = new ConcurrentHashMap<>();
 
         for (APIs api : apisList) {
@@ -194,6 +200,7 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
 
     public void addApplicationPolicies(
             List<org.wso2.apk.enforcer.discovery.subscription.ApplicationPolicy> applicationPolicyList) {
+
         Map<String, ApplicationPolicy> newAppPolicyMap = new ConcurrentHashMap<>();
 
         for (org.wso2.apk.enforcer.discovery.subscription.ApplicationPolicy applicationPolicy :
@@ -214,6 +221,7 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
 
     public void addSubscriptionPolicies(
             List<org.wso2.apk.enforcer.discovery.subscription.SubscriptionPolicy> subscriptionPolicyList) {
+
         Map<String, SubscriptionPolicy> newSubscriptionPolicyMap = new ConcurrentHashMap<>();
 
         for (org.wso2.apk.enforcer.discovery.subscription.SubscriptionPolicy subscriptionPolicy :
@@ -239,6 +247,7 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
 
     public void addApplicationKeyMappings(
             List<org.wso2.apk.enforcer.discovery.subscription.ApplicationKeyMapping> applicationKeyMappingList) {
+
         Map<ApplicationKeyMappingCacheKey, ApplicationKeyMapping> newApplicationKeyMappingMap =
                 new ConcurrentHashMap<>();
 
@@ -261,6 +270,7 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
 
     @Override
     public List<API> getMatchingAPIs(String name, String context, String version, String uuid) {
+
         List<API> apiList = new ArrayList<>();
         for (API api : apiMap.values()) {
             boolean isNameMatching = true;
@@ -288,6 +298,7 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
 
     @Override
     public API getMatchingAPI(String context, String version) {
+
         for (API api : apiMap.values()) {
             if (StringUtils.isNotEmpty(context) && StringUtils.isNotEmpty(version)) {
                 if (api.getContext().equals(context) && api.getApiVersion().equals(version)) {
@@ -300,6 +311,7 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
 
     @Override
     public List<Application> getMatchingApplications(String name, String organizationID, String uuid) {
+
         List<Application> applicationList = new ArrayList<>();
         for (Application application : applicationMap.values()) {
             boolean isNameMatching = true;
@@ -323,6 +335,7 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
 
     @Override
     public List<ApplicationKeyMapping> getMatchingKeyMapping(String applicationUUID, String consumerKey) {
+
         List<ApplicationKeyMapping> applicationKeyMappingList = new ArrayList<>();
 
         for (ApplicationKeyMapping applicationKeyMapping : applicationKeyMappingMap.values()) {
@@ -344,6 +357,7 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
 
     @Override
     public List<Subscription> getMatchingSubscriptions(String applicationUUID, String apiUUID, String state) {
+
         List<Subscription> subscriptionList = new ArrayList<>();
 
         for (Subscription subscription : subscriptionMap.values()) {
@@ -368,6 +382,7 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
 
     @Override
     public void addJWTIssuers(List<JWTIssuer> jwtIssuers) {
+
         for (JWTIssuer jwtIssuer : jwtIssuers) {
             try {
                 ExtendedTokenIssuerDto tokenIssuerDto = new ExtendedTokenIssuerDto(jwtIssuer.getIssuer());
@@ -392,7 +407,12 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
                     tokenIssuerDto.setCertificate(signingCertificate);
                 }
                 JWTValidator jwtValidator = new JWTValidator(tokenIssuerDto);
-                jwtValidatorMap.put(jwtIssuer.getIssuer(),jwtValidator);
+                Map<String, JWTValidator> orgBasedJWTValidatorMap = new ConcurrentHashMap<>();
+                if (jwtValidatorMap.containsKey(jwtIssuer.getOrganization())) {
+                    orgBasedJWTValidatorMap = jwtValidatorMap.get(jwtIssuer.getOrganization());
+                }
+                orgBasedJWTValidatorMap.put(jwtIssuer.getIssuer(), jwtValidator);
+                jwtValidatorMap.put(jwtIssuer.getOrganization(), orgBasedJWTValidatorMap);
             } catch (EnforcerException | CertificateException | IOException e) {
                 log.error("Error occurred while configuring JWT Validator for issuer " + jwtIssuer.getIssuer(), e);
             }
@@ -400,7 +420,12 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
     }
 
     @Override
-    public JWTValidator getJWTValidatorByIssuer(String issuer) {
-        return jwtValidatorMap.get(issuer);
+    public JWTValidator getJWTValidatorByIssuer(String issuer, String organization) {
+
+        Map<String, JWTValidator> orgBaseJWTValidators = jwtValidatorMap.get(organization);
+        if (orgBaseJWTValidators != null) {
+            return orgBaseJWTValidators.get(issuer);
+        }
+        return null;
     }
 }
