@@ -5,7 +5,7 @@
   "author": "WSO2",
   "license": "Apache 2.0",
   "version": "0.0.1",
-  "publisher": "wso2",
+  "publisher": "WSO2",
   "bugs": "https://github.com/wso2/apk/issues",
   "repository": {
     "type": "git",
@@ -35,10 +35,12 @@
   "main": "./out/extension.js",
   "extensionDependencies": ["redhat.vscode-yaml"],
   "contributes": {
-    "commands": [
+    "languages": [
       {
-        "command": "apk.helloWorld",
-        "title": "Hello World"
+        "id": "yaml",
+        "aliases": ["APK Configuration"],
+        "extensions": [".apk-conf"],
+        "configuration": "./language-configuration.json"
       }
     ]
   },

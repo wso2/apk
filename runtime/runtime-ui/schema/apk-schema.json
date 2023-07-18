@@ -22,7 +22,8 @@
       "title": "Version of the API",
       "maxLength": 30,
       "minLength": 1,
-      "pattern": "^[^~!@#;:%^*()+={}|\\\\<>\"',&/$\\[\\]\\s+\\/]+$"
+        "pattern": "^[^~!@#;:%^*()+={}|\\\\<>\"',&/$\\[\\]\\s+\\/]+$",
+        "description": "A string representing the version of the API. It should not contain special characters or spaces."
     },
     "type": {
       "type": "string",
@@ -31,26 +32,31 @@
         "REST",
         "GRAPHQL",
         "GRPC"
-      ]
+        ],
+        "description": "The type of the API. Can be one of: REST, GraphQL, GRPC."
     },
     "organization": {
       "type": "string",
       "description": "Organization of the API\n"
     },
     "endpointConfigurations": {
-      "$ref": "#/schemas/EndpointConfigurations"
+        "$ref": "#/schemas/EndpointConfigurations",
+        "description": "Configuration for different endpoints of the API."
     },
     "operations": {
       "type": "array",
       "items": {
         "$ref": "#/schemas/APKOperations"
-      }
+        },
+        "description": "Operations supported by the API."
     },
     "apiPolicies": {
-      "$ref": "#/schemas/APIOperationPolicies"
+        "$ref": "#/schemas/APIOperationPolicies",
+        "description": "Policies applied to API-level operations."
     },
     "apiRateLimit": {
-      "$ref": "#/schemas/RateLimit"
+        "$ref": "#/schemas/RateLimit",
+        "description": "Rate limiting configuration for the API."
     },
     "authentication": {
       "type": "array",
@@ -75,7 +81,7 @@
     },
     "vhosts": {
       "type": "object",
-      "description": "Map of virtual hosts of API\n",
+        "description": "Map of virtual hosts of the API.",
       "properties": {
         "production": {
           "type": "array",
@@ -92,7 +98,8 @@
       }
     },
     "corsConfiguration": {
-      "$ref": "#/schemas/CORSConfiguration"
+        "$ref": "#/schemas/CORSConfiguration",
+        "description": "Cross-Origin Resource Sharing (CORS) configuration for the API."
     }
   },
   "schemas": {
@@ -101,65 +108,78 @@
       "properties": {
         "authType": {
           "type": "string",
-          "example": "JWT"
+            "example": "JWT",
+            "description": "The type of authentication to be used, e.g., JWT, OAuth, etc."
         },
         "sendTokenToUpstream": {
           "type": "boolean",
-          "default": false
+            "default": false,
+            "description": "Specifies whether to send the authentication token to the upstream service."
         },
         "enabled": {
           "type": "boolean",
-          "example": true
+            "example": true,
+            "description": "Specifies whether authentication is enabled for the API."
         },
         "headerName": {
           "type": "string",
-          "example": "Authorization"
+            "example": "Authorization",
+            "description": "The name of the header field used to send the authentication token."
         },
         "queryParamName": {
           "type": "string",
-          "example": "apikey"
+            "example": "apikey",
+            "description": "The name of the query parameter used to send the authentication token."
         },
         "headerEnable": {
-          "type": "boolean"
+            "type": "boolean",
+            "description": "Specifies whether the authentication token can be sent in the header."
         },
         "queryParamEnable": {
-          "type": "boolean"
+            "type": "boolean",
+            "description": "Specifies whether the authentication token can be sent as a query parameter."
         }
       }
     },
     "CORSConfiguration": {
       "type": "object",
-      "description": "CORS Configuration of API\n",
+        "description": "Cross-Origin Resource Sharing (CORS) configuration for the API.",
       "properties": {
         "corsConfigurationEnabled": {
           "type": "boolean",
-          "default": false
+            "default": false,
+            "description": "Specifies whether CORS configuration is enabled."
         },
         "accessControlAllowOrigins": {
           "type": "array",
           "items": {
             "type": "string"
-          }
+            },
+            "description": "Allowed origins for CORS requests."
         },
         "accessControlAllowCredentials": {
           "type": "boolean",
-          "default": false
+            "default": false,
+            "description": "Specifies whether credentials are allowed to be sent for CORS requests."
         },
         "accessControlAllowHeaders": {
           "type": "array",
           "items": {
             "type": "string"
-          }
+            },
+            "description": "Allowed headers for CORS requests."
         },
         "accessControlAllowMethods": {
           "type": "array",
           "items": {
             "type": "string"
-          }
+            },
+            "description": "Allowed HTTP methods for CORS requests."
         },
         "accessControlAllowMaxAge": {
           "type": "integer",
-          "default": 0
+            "default": 0,
+            "description": "Maximum age (in seconds) for which the CORS preflight response can be cached."
         }
       }
     },
@@ -170,13 +190,15 @@
           "type": "array",
           "items": {
             "$ref": "#/schemas/APKOperationPolicy"
-          }
+            },
+            "description": "Policies applied to request operations."
         },
         "response": {
           "type": "array",
           "items": {
             "$ref": "#/schemas/APKOperationPolicy"
-          }
+            },
+            "description": "Policies applied to response operations."
         }
       }
     },
@@ -188,14 +210,17 @@
       "type": "object",
       "properties": {
         "policyName": {
-          "type": "string"
+            "type": "string",
+            "description": "The name of the operation policy."
         },
         "policyVersion": {
           "type": "string",
-          "default": "v1"
+            "default": "v1",
+            "description": "The version of the operation policy."
         },
         "policyId": {
-          "type": "string"
+            "type": "string",
+            "description": "The ID of the operation policy."
         },
         "parameters": {
           "type": "object",
@@ -220,12 +245,12 @@
       "properties": {
         "requestsPerUnit": {
           "type": "integer",
-          "description": "Number of requests allowed per specified unit of time",
+            "description": "The number of requests allowed per specified unit of time.",
           "example": 30
         },
         "unit": {
           "type": "string",
-          "description": "Unit of time",
+            "description": "The unit of time for rate limiting.",
           "enum": [
             "Minute",
             "Hour",
@@ -236,7 +261,7 @@
       }
     },
     "EndpointConfigurations": {
-      "title": "Endpoint configs",
+        "title": "Endpoint Configurations",
       "properties": {
         "production": {
           "$ref": "#/schemas/EndpointConfiguration"
@@ -263,14 +288,17 @@
           ]
         },
         "endpointSecurity": {
-          "$ref": "#/schemas/EndpointSecurity"
+            "$ref": "#/schemas/EndpointSecurity",
+            "description": "Security configuration for the API endpoint."
         },
         "certificate": {
           "type": "object",
-          "$ref": "#/schemas/Certificate"
+            "$ref": "#/schemas/Certificate",
+            "description": "Certificate information for secure communication."
         },
         "resiliency": {
-          "$ref": "#/schemas/Resiliency"
+            "$ref": "#/schemas/Resiliency",
+            "description": "Resiliency configuration for the API endpoint."
         }
       }
     },
@@ -278,10 +306,12 @@
       "type": "object",
       "properties": {
         "secretName": {
-          "type": "string"
+            "type": "string",
+            "description": "The name of the secret containing the certificate."
         },
         "secretKey": {
-          "type": "string"
+            "type": "string",
+            "description": "The key within the secret that holds the certificate."
         }
       }
     },
@@ -290,14 +320,16 @@
       "properties": {
         "enabled": {
           "type": "boolean",
-          "default": false
+            "default": false,
+            "description": "Specifies whether endpoint security is enabled."
         },
         "securityType": {
           "oneOf": [
             {
               "$ref": "#/schemas/BasicEndpointSecurity"
             }
-          ]
+            ],
+            "description": "The type of security to be applied to the API endpoint."
         }
       }
     },
@@ -305,13 +337,16 @@
       "type": "object",
       "properties": {
         "secretName": {
-          "type": "string"
+            "type": "string",
+            "description": "The name of the secret containing the credentials for basic authentication."
         },
         "userNameKey": {
-          "type": "string"
+            "type": "string",
+            "description": "The key within the secret that holds the username for basic authentication."
         },
         "passwordKey": {
-          "type": "string"
+            "type": "string",
+            "description": "The key within the secret that holds the password for basic authentication."
         }
       }
     },
