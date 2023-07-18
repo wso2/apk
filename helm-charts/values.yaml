@@ -325,6 +325,7 @@ postgresql:
         postgresql: 5432
     podSecurityContext:
       enabled: true
+      fsGroup: null
       runAsNonRoot: true
       seccompProfile:
         type: RuntimeDefault
@@ -333,6 +334,7 @@ postgresql:
       allowPrivilegeEscalation: false
       capabilities:
         drop: ["ALL"]
+      runAsUser: null
 
   image:
     debug: true
@@ -348,6 +350,7 @@ redis:
   master:
     podSecurityContext:
       enabled: true
+      fsGroup: null
       runAsNonRoot: true
       seccompProfile:
         type: RuntimeDefault
@@ -356,6 +359,7 @@ redis:
       allowPrivilegeEscalation: false
       capabilities:
         drop: ["ALL"]
+      runAsUser: null
   auth:
     enabled: false
   image:

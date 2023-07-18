@@ -231,7 +231,6 @@ spec:
       {{ end }}
       securityContext:
         runAsNonRoot: true
-        runAsUser: 2000
         seccompProfile:
           type: "RuntimeDefault"
 ---
@@ -278,7 +277,6 @@ spec:
       {{ end }}
       securityContext:
         runAsNonRoot: true
-        runAsUser: 2000
         seccompProfile:
           type: "RuntimeDefault"
 {{- end -}}
