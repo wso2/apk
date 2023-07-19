@@ -28,6 +28,7 @@ public type BackendSpec record {|
     string protocol;
     TLSConfig tls?;
     SecurityConfig security?;
+    CircuitBreaker circuitBreaker?;
     Timeout timeout?;
     Retry 'retry?;
 |};
@@ -68,6 +69,14 @@ public type Retry record {
     int count?;
     int baseIntervalInMillis?;
     int[] statusCodes?;
+};
+
+public type CircuitBreaker record {
+    int maxConnectionPools?;
+    int maxConnections?;
+    int maxPendingRequests?;
+    int maxRequests?;
+    int maxRetries?;
 };
 
 public type TLSConfig record {

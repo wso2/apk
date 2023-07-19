@@ -87,15 +87,27 @@ public isolated function testBackendRetryAndTimeoutGenerationFromAPKConf() retur
         routeIdleTimeoutSeconds: 400,
         routeTimeoutSeconds: 40
     };
+    model:CircuitBreaker? circuitBreakerConfigExpected = {
+        maxConnectionPools: 200,
+        maxConnections: 100,
+        maxPendingRequests: 100,
+        maxRequests: 100,
+        maxRetries: 5
+    };
 
     foreach model:Backend backend in apiArtifact.backendServices {
         model:Timeout? timeout = backend.spec.timeout;
         model:Retry? retryPolicy = backend.spec.'retry;
+        model:CircuitBreaker? circuitBreakerPolicy = backend.spec.circuitBreaker;
         if (timeout is model:Timeout) {
             test:assertEquals(timeout, timeoutConfigExpected, "Timeout is not equal to expected Timeout Config");
         }
         if (retryPolicy is model:Retry) {
             test:assertEquals(retryPolicy, retryConfigExpected, "Retry Policy is not equal to expected Retry Policy");
+        }
+        if (circuitBreakerPolicy is model:CircuitBreaker) {
+            test:assertEquals(circuitBreakerPolicy, circuitBreakerConfigExpected, "Circuit Breaker Policy is not equal to " +
+            "expected Circuit Breaker Policy");
         }
     }
 }
