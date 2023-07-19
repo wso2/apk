@@ -59,7 +59,9 @@ public class DeployerClient {
                 _ = check self.deleteBackends(api, organization);
                 _ = check self.deleteAPIPolicyCRs(api, organization);
                 _ = check self.deleteInterceptorServiceCRs(api, organization);
-                return {body: "API with id " + apiId + " undeployed successfully"};
+                string response = string `API with id ${apiId} undeployed successfully`;
+                json jsonResponse = {status: response};
+                return {body: jsonResponse.toString()};
             } else {
                 return e909001(apiId);
             }
