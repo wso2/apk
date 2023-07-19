@@ -51,15 +51,15 @@ func (r *APIPolicy) Default() {
 	if r.Spec.Override != nil {
 		if len(r.Spec.Override.RequestInterceptors) > 0 {
 			for i := range r.Spec.Override.RequestInterceptors {
-				if len(r.Spec.Override.RequestInterceptors[i].Namespace) == 0 {
-					r.Spec.Override.RequestInterceptors[i].Namespace = r.Namespace
+				if len(r.Spec.Override.RequestInterceptors[i].Ref) == 0 {
+					r.Spec.Override.RequestInterceptors[i].Ref = r.Name
 				}
 			}
 		}
 		if len(r.Spec.Override.ResponseInterceptors) > 0 {
 			for i := range r.Spec.Override.ResponseInterceptors {
-				if len(r.Spec.Override.ResponseInterceptors[i].Namespace) == 0 {
-					r.Spec.Override.ResponseInterceptors[i].Namespace = r.Namespace
+				if len(r.Spec.Override.ResponseInterceptors[i].Ref) == 0 {
+					r.Spec.Override.ResponseInterceptors[i].Ref = r.Name
 				}
 			}
 		}
@@ -67,15 +67,15 @@ func (r *APIPolicy) Default() {
 	if r.Spec.Default != nil {
 		if len(r.Spec.Default.RequestInterceptors) > 0 {
 			for i := range r.Spec.Default.RequestInterceptors {
-				if len(r.Spec.Default.RequestInterceptors[i].Namespace) == 0 {
-					r.Spec.Default.RequestInterceptors[i].Namespace = r.Namespace
+				if len(r.Spec.Default.RequestInterceptors[i].Ref) == 0 {
+					r.Spec.Default.RequestInterceptors[i].Ref = r.Name
 				}
 			}
 		}
 		if r.Spec.Default.ResponseInterceptors != nil {
 			for i := range r.Spec.Default.ResponseInterceptors {
-				if len(r.Spec.Default.ResponseInterceptors[i].Namespace) == 0 {
-					r.Spec.Default.ResponseInterceptors[i].Namespace = r.Namespace
+				if len(r.Spec.Default.ResponseInterceptors[i].Ref) == 0 {
+					r.Spec.Default.ResponseInterceptors[i].Ref = r.Name
 				}
 			}
 		}

@@ -196,7 +196,7 @@ func createInterceptors(gatewayAPIPolicies map[string]dpv1alpha1.APIPolicy,
 		if resolvedPolicySpec != nil {
 			if len(resolvedPolicySpec.RequestInterceptors) > 0 {
 				reqIEp := getInterceptorEndpoint(&resolvedPolicySpec.RequestInterceptors[0], gatewayInterceptorServiceMapping,
-					gatewayBackendMapping, true)
+					gatewayBackendMapping, true, apiPolicy.Namespace)
 				if reqIEp != nil {
 					requestInterceptorMap[string(gwapiv1b1.HTTPMethodPost)] = *reqIEp
 					requestInterceptorMap[string(gwapiv1b1.HTTPMethodGet)] = *reqIEp
@@ -209,7 +209,7 @@ func createInterceptors(gatewayAPIPolicies map[string]dpv1alpha1.APIPolicy,
 			}
 			if len(resolvedPolicySpec.ResponseInterceptors) > 0 {
 				resIEp := getInterceptorEndpoint(&resolvedPolicySpec.ResponseInterceptors[0], gatewayInterceptorServiceMapping,
-					gatewayBackendMapping, false)
+					gatewayBackendMapping, false, apiPolicy.Namespace)
 				if resIEp != nil {
 					responseInterceptorMap[string(gwapiv1b1.HTTPMethodPost)] = *resIEp
 					responseInterceptorMap[string(gwapiv1b1.HTTPMethodGet)] = *resIEp
@@ -226,10 +226,10 @@ func createInterceptors(gatewayAPIPolicies map[string]dpv1alpha1.APIPolicy,
 }
 
 func getInterceptorEndpoint(interceptorRef *dpv1alpha1.InterceptorReference,
-	gatewayInterceptorServiceMapping map[string]dpv1alpha1.InterceptorService, gatewayBackendMapping dpv1alpha1.BackendMapping, isReq bool) *model.InterceptEndpoint {
+	gatewayInterceptorServiceMapping map[string]dpv1alpha1.InterceptorService, gatewayBackendMapping dpv1alpha1.BackendMapping, isReq bool, apiPolicyNamespace string) *model.InterceptEndpoint {
 	interceptor := gatewayInterceptorServiceMapping[types.NamespacedName{
-		Namespace: interceptorRef.Namespace,
-		Name:      interceptorRef.Name}.String()].Spec
+		Namespace: apiPolicyNamespace,
+		Name:      interceptorRef.Ref}.String()].Spec
 	endpoints := model.GetEndpoints(types.NamespacedName{Namespace: interceptor.BackendRef.Namespace, Name: interceptor.BackendRef.Name},
 		gatewayBackendMapping)
 	var clusterName string

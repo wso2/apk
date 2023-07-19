@@ -84,12 +84,9 @@ type CORSPolicy struct {
 
 // InterceptorReference holds InterceptorService reference using name and namespace
 type InterceptorReference struct {
-	// Name is the name of the InterceptorService resource.
-	Name string `json:"name"`
-
-	// Namespace is the namespace of the InterceptorService resource.
-	// +optional
-	Namespace string `json:"namespace,omitempty"`
+	// Ref is the reference of the InterceptorService resource.
+	// Name string `json:"ref"`
+	Ref string `json:"ref"`
 }
 
 // HTTPQuery represents an HTTP Header name and value as defined by RFC 7230.

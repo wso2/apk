@@ -122,16 +122,12 @@ spec:
                       description: InterceptorReference holds InterceptorService reference
                         using name and namespace
                       properties:
-                        name:
-                          description: Name is the name of the InterceptorService
-                            resource.
-                          type: string
-                        namespace:
-                          description: Namespace is the namespace of the InterceptorService
+                        ref:
+                          description: Ref is the name of the InterceptorService
                             resource.
                           type: string
                       required:
-                      - name
+                      - ref
                       type: object
                     type: array
                   requestQueryModifier:
@@ -177,16 +173,12 @@ spec:
                       description: InterceptorReference holds InterceptorService reference
                         using name and namespace
                       properties:
-                        name:
-                          description: Name is the name of the InterceptorService
-                            resource.
-                          type: string
-                        namespace:
-                          description: Namespace is the namespace of the InterceptorService
+                        ref:
+                          description: Ref is the name of the InterceptorService
                             resource.
                           type: string
                       required:
-                      - name
+                      - ref
                       type: object
                     type: array
                 type: object
@@ -260,16 +252,12 @@ spec:
                       description: InterceptorReference holds InterceptorService reference
                         using name and namespace
                       properties:
-                        name:
-                          description: Name is the name of the InterceptorService
-                            resource.
-                          type: string
-                        namespace:
-                          description: Namespace is the namespace of the InterceptorService
+                        ref:
+                          description: Ref is the name of the InterceptorService
                             resource.
                           type: string
                       required:
-                      - name
+                      - ref
                       type: object
                     type: array
                   requestQueryModifier:
@@ -315,16 +303,12 @@ spec:
                       description: InterceptorReference holds InterceptorService reference
                         using name and namespace
                       properties:
-                        name:
-                          description: Name is the name of the InterceptorService
-                            resource.
-                          type: string
-                        namespace:
-                          description: Namespace is the namespace of the InterceptorService
+                        ref:
+                          description: Ref is the name of the InterceptorService
                             resource.
                           type: string
                       required:
-                      - name
+                      - ref
                       type: object
                     type: array
                 type: object

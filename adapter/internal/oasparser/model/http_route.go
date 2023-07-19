@@ -444,8 +444,8 @@ func addOperationLevelInterceptors(policies *OperationPolicies, apiPolicy *dpv1a
 	if apiPolicy != nil && apiPolicy.Spec.Override != nil {
 		if len(apiPolicy.Spec.Override.RequestInterceptors) > 0 {
 			requestInterceptor := interceptorServicesMapping[types.NamespacedName{
-				Name:      apiPolicy.Spec.Override.RequestInterceptors[0].Name,
-				Namespace: apiPolicy.Spec.Override.RequestInterceptors[0].Namespace,
+				Name:      apiPolicy.Spec.Override.RequestInterceptors[0].Ref,
+				Namespace: apiPolicy.Namespace,
 			}.String()].Spec
 			policyParameters := make(map[string]interface{})
 			backendName := types.NamespacedName{
@@ -465,8 +465,8 @@ func addOperationLevelInterceptors(policies *OperationPolicies, apiPolicy *dpv1a
 		}
 		if len(apiPolicy.Spec.Override.ResponseInterceptors) > 0 {
 			responseInterceptor := interceptorServicesMapping[types.NamespacedName{
-				Name:      apiPolicy.Spec.Override.ResponseInterceptors[0].Name,
-				Namespace: apiPolicy.Spec.Override.ResponseInterceptors[0].Namespace,
+				Name:      apiPolicy.Spec.Override.ResponseInterceptors[0].Ref,
+				Namespace: apiPolicy.Namespace,
 			}.String()].Spec
 			policyParameters := make(map[string]interface{})
 			backendName := types.NamespacedName{
@@ -562,9 +562,9 @@ func concatAuthSchemes(schemeUp *dpv1alpha1.Authentication, schemeDown *dpv1alph
 func getSecurity(authScheme *dpv1alpha1.Authentication) *Authentication {
 	auth := &Authentication{Disabled: false,
 		TestConsoleKey: &TestConsoleKey{Header: constants.TestConsoleKeyHeader},
-		JWT: &JWT{Header: constants.AuthorizationHeader},
+		JWT:            &JWT{Header: constants.AuthorizationHeader},
 	}
-	if (authScheme != nil && authScheme.Spec.Override.ExternalService.AuthTypes != nil && authScheme.Spec.Override.ExternalService.AuthTypes.JWT.Disabled) {
+	if authScheme != nil && authScheme.Spec.Override.ExternalService.AuthTypes != nil && authScheme.Spec.Override.ExternalService.AuthTypes.JWT.Disabled {
 		auth = &Authentication{Disabled: false,
 			TestConsoleKey: &TestConsoleKey{Header: constants.TestConsoleKeyHeader},
 		}

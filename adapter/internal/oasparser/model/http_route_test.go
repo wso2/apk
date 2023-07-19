@@ -459,8 +459,7 @@ func TestConcatAPIPolicies(t *testing.T) {
 				Override: &dpv1alpha1.PolicySpec{
 					RequestInterceptors: []dpv1alpha1.InterceptorReference{
 						{
-							Name:      "up-request-interceptor",
-							Namespace: "up-request-interceptor-ns",
+							Ref: "up-request-interceptor",
 						},
 					},
 				},
@@ -469,16 +468,14 @@ func TestConcatAPIPolicies(t *testing.T) {
 				Override: &dpv1alpha1.PolicySpec{
 					RequestInterceptors: []dpv1alpha1.InterceptorReference{
 						{
-							Name:      "down-request-interceptor",
-							Namespace: "down-request-interceptor-ns",
+							Ref: "down-request-interceptor",
 						},
 					},
 				},
 				Default: &dpv1alpha1.PolicySpec{
 					ResponseInterceptors: []dpv1alpha1.InterceptorReference{
 						{
-							Name:      "down-response-interceptor",
-							Namespace: "down-response-interceptor-ns",
+							Ref: "down-response-interceptor",
 						},
 					},
 				},
@@ -487,14 +484,12 @@ func TestConcatAPIPolicies(t *testing.T) {
 				Override: &dpv1alpha1.PolicySpec{
 					RequestInterceptors: []dpv1alpha1.InterceptorReference{
 						{
-							Name:      "up-request-interceptor",
-							Namespace: "up-request-interceptor-ns",
+							Ref: "up-request-interceptor",
 						},
 					},
 					ResponseInterceptors: []dpv1alpha1.InterceptorReference{
 						{
-							Name:      "down-response-interceptor",
-							Namespace: "down-response-interceptor-ns",
+							Ref: "down-response-interceptor",
 						},
 					},
 				},
