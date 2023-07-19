@@ -9,7 +9,7 @@ spec:
   consumerKeyClaim: {{ .Values.wso2.apk.idp.consumerKeyClaim | default "azp" }}
   scopesClaim: {{ .Values.wso2.apk.idp.scopeClaim | default "scope" }}
   issuer: "{{ .Values.wso2.apk.idp.issuer }}"
-  organization: "carbon.super"
+  organization: "apk-system"
   signatureValidation:
   {{if and .Values.wso2.apk.idp.signing }}
    {{if .Values.wso2.apk.idp.signing.secretName }}
