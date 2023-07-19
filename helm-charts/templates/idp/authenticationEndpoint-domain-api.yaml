@@ -27,7 +27,7 @@ spec:
   apiType: "REST"
   apiVersion: "1.0.0"
   context: "/authenticationEndpoint/1.0.0"
-  organization: "carbon.super"
+  organization: "apk-system"
   production:
     - httpRouteRefs:
       - {{ template "apk-helm.resource.prefix" . }}-authentication-endpoint-ds-httproute
