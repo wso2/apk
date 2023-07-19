@@ -142,8 +142,8 @@ wso2:
             failureThreshold: 5
           strategy: Recreate
           replicas: 1
-          imagePullPolicy: IfNotPresent
-          image: common-controller:0.0.1-SNAPSHOT
+          imagePullPolicy: Always
+          image: wso2/common-controller:latest
           security:
             sslHostname: "commoncontroller"
       ratelimiter:
