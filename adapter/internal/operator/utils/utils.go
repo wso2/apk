@@ -296,12 +296,12 @@ func ResolveAndAddBackendToMapping(ctx context.Context, client k8client.Client,
 
 // ResolveRef this function will return k8client object and update owner
 func ResolveRef(ctx context.Context, client k8client.Client, api *dpv1alpha1.API,
-	namespacedName types.NamespacedName, obj k8client.Object, opts ...k8client.ListOption) error {
-	if err := client.Get(ctx, namespacedName, obj); err != nil {
+	namespacedName types.NamespacedName, isReplace bool, obj k8client.Object, opts ...k8client.GetOption) error {
+	if err := client.Get(ctx, namespacedName, obj, opts...); err != nil {
 		return err
 	}
 	if api != nil {
-		err := UpdateOwnerReference(ctx, client, obj, *api)
+		err := UpdateOwnerReference(ctx, client, obj, *api, isReplace)
 		return err
 	}
 	return nil
@@ -313,12 +313,13 @@ func GetResolvedBackend(ctx context.Context, client k8client.Client,
 	resolvedBackend := dpv1alpha1.ResolvedBackend{}
 	resolvedTLSConfig := dpv1alpha1.ResolvedTLSConfig{}
 	var backend dpv1alpha1.Backend
-	if err := ResolveRef(ctx, client, api, backendNamespacedName, &backend); err != nil {
+	if err := ResolveRef(ctx, client, api, backendNamespacedName, false, &backend); err != nil {
 		if !apierrors.IsNotFound(err) {
 			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2646, backendNamespacedName, err.Error()))
 		}
 		return nil
 	}
+	resolvedBackend.Backend = backend
 	resolvedBackend.Services = backend.Spec.Services
 	resolvedBackend.Protocol = backend.Spec.Protocol
 	resolvedBackend.BasePath = backend.Spec.BasePath
@@ -376,13 +377,31 @@ func GetResolvedBackend(ctx context.Context, client k8client.Client,
 }
 
 // UpdateOwnerReference update the child with owner reference of the given parent.
-func UpdateOwnerReference(ctx context.Context, client k8client.Client, child metav1.Object, api dpv1alpha1.API) error {
-	child.SetOwnerReferences(append(child.GetOwnerReferences(), metav1.OwnerReference{
-		APIVersion: api.APIVersion,
-		Kind:       api.Kind,
-		Name:       api.Name,
-		UID:        api.UID,
-	}))
+func UpdateOwnerReference(ctx context.Context, client k8client.Client, child metav1.Object, api dpv1alpha1.API,
+	isReplace bool) error {
+	if isReplace {
+		child.SetOwnerReferences([]metav1.OwnerReference{
+			{
+				APIVersion: api.APIVersion,
+				Kind:       api.Kind,
+				Name:       api.Name,
+				UID:        api.UID,
+			},
+		})
+	} else {
+		child.SetOwnerReferences(append(child.GetOwnerReferences(), metav1.OwnerReference{
+			APIVersion: api.APIVersion,
+			Kind:       api.Kind,
+			Name:       api.Name,
+			UID:        api.UID,
+		}))
+	}
+	return UpdateCR(ctx, client, child)
+}
+
+// UpdateCR updates the given CR.
+// use to update owner reference of the given CR.
+func UpdateCR(ctx context.Context, client k8client.Client, child metav1.Object) error {
 	for {
 		if err := client.Update(ctx, child.(k8client.Object)); err != nil {
 			if apierrors.IsInternalError(err) {
@@ -480,7 +499,7 @@ func GetInterceptorService(ctx context.Context, client k8client.Client,
 		Namespace: interceptorReference.Namespace,
 		Name:      interceptorReference.Name,
 	}
-	if err := ResolveRef(ctx, client, api, interceptorRef, interceptorService); err != nil {
+	if err := ResolveRef(ctx, client, api, interceptorRef, false, interceptorService); err != nil {
 		if !apierrors.IsNotFound(err) {
 			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2651, interceptorRef, err.Error()))
 		}

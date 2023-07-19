@@ -44,74 +44,210 @@ func CreateNewOperatorDataStore() *OperatorDataStore {
 }
 
 // AddAPIState stores a new API in the OperatorDataStore.
-func (ods *OperatorDataStore) AddAPIState(api dpv1alpha1.API, prodHTTPRouteState *HTTPRouteState,
-	sandHTTPRouteState *HTTPRouteState, apiDefinition []byte) APIState {
+func (ods *OperatorDataStore) AddAPIState(apiNamespacedName types.NamespacedName, apiState *APIState) {
 	ods.mu.Lock()
 	defer ods.mu.Unlock()
-
-	apiNamespacedName := utils.NamespacedName(&api)
-	ods.apiStore[apiNamespacedName] = &APIState{
-		APIDefinition:     &api,
-		ProdHTTPRoute:     prodHTTPRouteState,
-		SandHTTPRoute:     sandHTTPRouteState,
-		APIDefinitionFile: apiDefinition,
-	}
-	return *ods.apiStore[apiNamespacedName]
+	ods.apiStore[apiNamespacedName] = apiState
 }
 
 // UpdateAPIState update/create the APIState on ref updates
-func (ods *OperatorDataStore) UpdateAPIState(apiDef *dpv1alpha1.API, prodHTTPRoute *HTTPRouteState,
-	sandHTTPRoute *HTTPRouteState, apiDefinitionFile []byte) (APIState, []string, bool) {
-	_, found := ods.apiStore[utils.NamespacedName(apiDef)]
+func (ods *OperatorDataStore) UpdateAPIState(apiNamespacedName types.NamespacedName, apiState *APIState) (APIState, []string, bool) {
+	_, found := ods.apiStore[apiNamespacedName]
 	if !found {
-		loggers.LoggerAPKOperator.Infof("Adding new apistate as API : %s has not found in memory datastore.", apiDef.Spec.APIDisplayName)
-		apiState := ods.AddAPIState(*apiDef, prodHTTPRoute, sandHTTPRoute, apiDefinitionFile)
-		return apiState, []string{"API"}, true
+		loggers.LoggerAPKOperator.Infof("Adding new apistate as API : %s has not found in memory datastore.",
+			apiState.APIDefinition.Name)
+		ods.AddAPIState(apiNamespacedName, apiState)
+		return *apiState, []string{"API"}, true
 	}
-	return ods.processAPIState(apiDef, prodHTTPRoute, sandHTTPRoute)
+	return ods.processAPIState(apiNamespacedName, apiState)
 }
 
 // processAPIState process and update the APIState on ref updates
-func (ods *OperatorDataStore) processAPIState(apiDef *dpv1alpha1.API, prodHTTPRoute *HTTPRouteState,
-	sandHTTPRoute *HTTPRouteState) (APIState, []string, bool) {
+func (ods *OperatorDataStore) processAPIState(apiNamespacedName types.NamespacedName, apiState *APIState) (APIState, []string, bool) {
 	ods.mu.Lock()
 	defer ods.mu.Unlock()
 	var updated bool
 	events := []string{}
-	cachedAPI := ods.apiStore[utils.NamespacedName(apiDef)]
+	cachedAPI := ods.apiStore[apiNamespacedName]
 
-	if apiDef.Generation > cachedAPI.APIDefinition.Generation {
-		cachedAPI.APIDefinition = apiDef
+	if apiState.APIDefinition.Generation > cachedAPI.APIDefinition.Generation {
+		cachedAPI.APIDefinition = apiState.APIDefinition
 		updated = true
 		events = append(events, "API Definition")
 	}
-	if prodHTTPRoute != nil {
+	if apiState.ProdHTTPRoute != nil {
 		if cachedAPI.ProdHTTPRoute == nil {
-			cachedAPI.ProdHTTPRoute = prodHTTPRoute
+			cachedAPI.ProdHTTPRoute = apiState.ProdHTTPRoute
 			updated = true
 			events = append(events, "Production")
-		} else {
-			if routeEvents, routesUpdated := updateHTTPRoute(prodHTTPRoute, cachedAPI.ProdHTTPRoute, "Production"); routesUpdated {
-				updated = true
-				events = append(events, routeEvents...)
-			}
+		} else if routeEvents, routesUpdated := updateHTTPRoute(apiState.ProdHTTPRoute, cachedAPI.ProdHTTPRoute,
+			"Production"); routesUpdated {
+			updated = true
+			events = append(events, routeEvents...)
 		}
 	} else {
 		cachedAPI.ProdHTTPRoute = nil
 	}
-	if sandHTTPRoute != nil {
+	if apiState.SandHTTPRoute != nil {
 		if cachedAPI.SandHTTPRoute == nil {
-			cachedAPI.SandHTTPRoute = sandHTTPRoute
+			cachedAPI.SandHTTPRoute = apiState.SandHTTPRoute
 			updated = true
 			events = append(events, "Sandbox")
-		} else {
-			if routeEvents, routesUpdated := updateHTTPRoute(sandHTTPRoute, cachedAPI.SandHTTPRoute, "Sandbox"); routesUpdated {
-				updated = true
-				events = append(events, routeEvents...)
-			}
+		} else if routeEvents, routesUpdated := updateHTTPRoute(apiState.SandHTTPRoute, cachedAPI.SandHTTPRoute, "Sandbox"); routesUpdated {
+			updated = true
+			events = append(events, routeEvents...)
 		}
 	} else {
 		cachedAPI.SandHTTPRoute = nil
+	}
+	if len(apiState.Authentications) != len(cachedAPI.Authentications) {
+		cachedAPI.Authentications = apiState.Authentications
+		updated = true
+		events = append(events, "Authentications")
+	} else {
+		for key, auth := range apiState.Authentications {
+			if existingAuth, found := cachedAPI.Authentications[key]; found {
+				if auth.UID != existingAuth.UID || auth.Generation > existingAuth.Generation {
+					cachedAPI.Authentications = apiState.Authentications
+					updated = true
+					events = append(events, "Authentications")
+					break
+				}
+			} else {
+				cachedAPI.Authentications = apiState.Authentications
+				updated = true
+				events = append(events, "Authentications")
+				break
+			}
+		}
+	}
+	if len(apiState.ResourceAuthentications) != len(cachedAPI.ResourceAuthentications) {
+		cachedAPI.ResourceAuthentications = apiState.ResourceAuthentications
+		updated = true
+		events = append(events, "Resource Authentications")
+	} else {
+		for key, auth := range apiState.ResourceAuthentications {
+			if existingAuth, found := cachedAPI.ResourceAuthentications[key]; found {
+				if auth.UID != existingAuth.UID || auth.Generation > existingAuth.Generation {
+					cachedAPI.ResourceAuthentications = apiState.ResourceAuthentications
+					updated = true
+					events = append(events, "Resource Authentications")
+					break
+				}
+			} else {
+				cachedAPI.ResourceAuthentications = apiState.ResourceAuthentications
+				updated = true
+				events = append(events, "Resource Authentications")
+				break
+			}
+		}
+	}
+
+	if len(apiState.APIPolicies) != len(cachedAPI.APIPolicies) {
+		cachedAPI.APIPolicies = apiState.APIPolicies
+		updated = true
+		events = append(events, "APIPolicies")
+	} else {
+		for key, auth := range apiState.APIPolicies {
+			if existingAuth, found := cachedAPI.APIPolicies[key]; found {
+				if auth.UID != existingAuth.UID || auth.Generation > existingAuth.Generation {
+					cachedAPI.APIPolicies = apiState.APIPolicies
+					updated = true
+					events = append(events, "APIPolicies")
+					break
+				}
+			} else {
+				cachedAPI.APIPolicies = apiState.APIPolicies
+				updated = true
+				events = append(events, "APIPolicies")
+				break
+			}
+		}
+	}
+	if len(apiState.ResourceAPIPolicies) != len(cachedAPI.ResourceAPIPolicies) {
+		cachedAPI.ResourceAPIPolicies = apiState.ResourceAPIPolicies
+		updated = true
+		events = append(events, "Resource APIPolicies")
+	} else {
+		for key, auth := range apiState.ResourceAPIPolicies {
+			if existingAuth, found := cachedAPI.ResourceAPIPolicies[key]; found {
+				if auth.UID != existingAuth.UID || auth.Generation > existingAuth.Generation {
+					cachedAPI.ResourceAPIPolicies = apiState.ResourceAPIPolicies
+					updated = true
+					events = append(events, "Resource APIPolicies")
+					break
+				}
+			} else {
+				cachedAPI.ResourceAPIPolicies = apiState.ResourceAPIPolicies
+				updated = true
+				events = append(events, "Resource APIPolicies")
+				break
+			}
+		}
+	}
+
+	if len(apiState.RateLimitPolicies) != len(cachedAPI.RateLimitPolicies) {
+		cachedAPI.RateLimitPolicies = apiState.RateLimitPolicies
+		updated = true
+		events = append(events, "RateLimitPolicies")
+	} else {
+		for key, rateLimitPolicy := range apiState.RateLimitPolicies {
+			if existingRateLimitPolicy, found := cachedAPI.RateLimitPolicies[key]; found {
+				if rateLimitPolicy.UID != existingRateLimitPolicy.UID || rateLimitPolicy.Generation > existingRateLimitPolicy.Generation {
+					cachedAPI.RateLimitPolicies = apiState.RateLimitPolicies
+					updated = true
+					events = append(events, "RateLimitPolicies")
+					break
+				}
+			} else {
+				cachedAPI.RateLimitPolicies = apiState.RateLimitPolicies
+				updated = true
+				events = append(events, "RateLimitPolicies")
+				break
+			}
+		}
+	}
+	if len(apiState.ResourceRateLimitPolicies) != len(cachedAPI.ResourceRateLimitPolicies) {
+		cachedAPI.ResourceRateLimitPolicies = apiState.ResourceRateLimitPolicies
+		updated = true
+		events = append(events, "Resource RateLimitPolicies")
+	} else {
+		for key, rateLimitPolicy := range apiState.ResourceRateLimitPolicies {
+			if existingRateLimitPolicy, found := cachedAPI.ResourceRateLimitPolicies[key]; found {
+				if rateLimitPolicy.UID != existingRateLimitPolicy.UID || rateLimitPolicy.Generation > existingRateLimitPolicy.Generation {
+					cachedAPI.ResourceRateLimitPolicies = apiState.ResourceRateLimitPolicies
+					updated = true
+					events = append(events, "Resource RateLimitPolicies")
+					break
+				}
+			} else {
+				cachedAPI.ResourceRateLimitPolicies = apiState.ResourceRateLimitPolicies
+				updated = true
+				events = append(events, "Resource RateLimitPolicies")
+				break
+			}
+		}
+	}
+	if len(apiState.InterceptorServiceMapping) != len(cachedAPI.InterceptorServiceMapping) {
+		cachedAPI.InterceptorServiceMapping = apiState.InterceptorServiceMapping
+		updated = true
+		events = append(events, "Interceptor Service")
+	} else {
+		for key, interceptService := range apiState.InterceptorServiceMapping {
+			if existingInterceptService, found := cachedAPI.InterceptorServiceMapping[key]; found {
+				if interceptService.UID != existingInterceptService.UID || interceptService.Generation > existingInterceptService.Generation {
+					cachedAPI.InterceptorServiceMapping = apiState.InterceptorServiceMapping
+					updated = true
+					events = append(events, "Interceptor Service")
+					break
+				}
+			} else {
+				cachedAPI.InterceptorServiceMapping = apiState.InterceptorServiceMapping
+				updated = true
+				events = append(events, "Interceptor Service")
+				break
+			}
+		}
 	}
 
 	return *cachedAPI, events, updated
@@ -127,174 +263,24 @@ func updateHTTPRoute(httpRoute *HTTPRouteState, cachedHTTPRoute *HTTPRouteState,
 		updated = true
 		events = append(events, endpointType+" Endpoint")
 	}
-	if len(httpRoute.Authentications) != len(cachedHTTPRoute.Authentications) {
-		cachedHTTPRoute.Authentications = httpRoute.Authentications
-		updated = true
-		events = append(events, endpointType+" Endpoint Authentications")
-	} else {
-		for key, auth := range httpRoute.Authentications {
-			if existingAuth, found := cachedHTTPRoute.Authentications[key]; found {
-				if auth.UID != existingAuth.UID || auth.Generation > existingAuth.Generation {
-					cachedHTTPRoute.Authentications = httpRoute.Authentications
-					updated = true
-					events = append(events, endpointType+" Endpoint Authentications")
-					break
-				}
-			} else {
-				cachedHTTPRoute.Authentications = httpRoute.Authentications
-				updated = true
-				events = append(events, endpointType+" Endpoint Authentications")
-				break
-			}
-		}
-	}
-	if len(httpRoute.ResourceAuthentications) != len(cachedHTTPRoute.ResourceAuthentications) {
-		cachedHTTPRoute.ResourceAuthentications = httpRoute.ResourceAuthentications
-		updated = true
-		events = append(events, endpointType+" Endpoint Resource Authentications")
-	} else {
-		for key, auth := range httpRoute.ResourceAuthentications {
-			if existingAuth, found := cachedHTTPRoute.ResourceAuthentications[key]; found {
-				if auth.UID != existingAuth.UID || auth.Generation > existingAuth.Generation {
-					cachedHTTPRoute.ResourceAuthentications = httpRoute.ResourceAuthentications
-					updated = true
-					events = append(events, endpointType+" Endpoint Resource Authentications")
-					break
-				}
-			} else {
-				cachedHTTPRoute.ResourceAuthentications = httpRoute.ResourceAuthentications
-				updated = true
-				events = append(events, endpointType+" Endpoint Resource Authentications")
-				break
-			}
-		}
-	}
-
-	if len(httpRoute.APIPolicies) != len(cachedHTTPRoute.APIPolicies) {
-		cachedHTTPRoute.APIPolicies = httpRoute.APIPolicies
-		updated = true
-		events = append(events, endpointType+" Endpoint APIPolicies")
-	} else {
-		for key, auth := range httpRoute.APIPolicies {
-			if existingAuth, found := cachedHTTPRoute.APIPolicies[key]; found {
-				if auth.UID != existingAuth.UID || auth.Generation > existingAuth.Generation {
-					cachedHTTPRoute.APIPolicies = httpRoute.APIPolicies
-					updated = true
-					events = append(events, endpointType+" Endpoint APIPolicies")
-					break
-				}
-			} else {
-				cachedHTTPRoute.APIPolicies = httpRoute.APIPolicies
-				updated = true
-				events = append(events, endpointType+" Endpoint APIPolicies")
-				break
-			}
-		}
-	}
-	if len(httpRoute.ResourceAPIPolicies) != len(cachedHTTPRoute.ResourceAPIPolicies) {
-		cachedHTTPRoute.ResourceAPIPolicies = httpRoute.ResourceAPIPolicies
-		updated = true
-		events = append(events, endpointType+" Endpoint Resource APIPolicies")
-	} else {
-		for key, auth := range httpRoute.ResourceAPIPolicies {
-			if existingAuth, found := cachedHTTPRoute.ResourceAPIPolicies[key]; found {
-				if auth.UID != existingAuth.UID || auth.Generation > existingAuth.Generation {
-					cachedHTTPRoute.ResourceAPIPolicies = httpRoute.ResourceAPIPolicies
-					updated = true
-					events = append(events, endpointType+" Endpoint Resource APIPolicies")
-					break
-				}
-			} else {
-				cachedHTTPRoute.ResourceAPIPolicies = httpRoute.ResourceAPIPolicies
-				updated = true
-				events = append(events, endpointType+" Endpoint Resource APIPolicies")
-				break
-			}
-		}
-	}
-
-	if len(httpRoute.RateLimitPolicies) != len(cachedHTTPRoute.RateLimitPolicies) {
-		cachedHTTPRoute.RateLimitPolicies = httpRoute.RateLimitPolicies
-		updated = true
-		events = append(events, endpointType+" Endpoint RateLimitPolicies")
-	} else {
-		for key, rateLimitPolicy := range httpRoute.RateLimitPolicies {
-			if existingRateLimitPolicy, found := cachedHTTPRoute.RateLimitPolicies[key]; found {
-				if rateLimitPolicy.UID != existingRateLimitPolicy.UID || rateLimitPolicy.Generation > existingRateLimitPolicy.Generation {
-					cachedHTTPRoute.RateLimitPolicies = httpRoute.RateLimitPolicies
-					updated = true
-					events = append(events, endpointType+" Endpoint RateLimitPolicies")
-					break
-				}
-			} else {
-				cachedHTTPRoute.RateLimitPolicies = httpRoute.RateLimitPolicies
-				updated = true
-				events = append(events, endpointType+" Endpoint RateLimitPolicies")
-				break
-			}
-		}
-	}
-	if len(httpRoute.ResourceRateLimitPolicies) != len(cachedHTTPRoute.ResourceRateLimitPolicies) {
-		cachedHTTPRoute.ResourceRateLimitPolicies = httpRoute.ResourceRateLimitPolicies
-		updated = true
-		events = append(events, endpointType+" Endpoint Resource RateLimitPolicies")
-	} else {
-		for key, rateLimitPolicy := range httpRoute.ResourceRateLimitPolicies {
-			if existingRateLimitPolicy, found := cachedHTTPRoute.ResourceRateLimitPolicies[key]; found {
-				if rateLimitPolicy.UID != existingRateLimitPolicy.UID || rateLimitPolicy.Generation > existingRateLimitPolicy.Generation {
-					cachedHTTPRoute.ResourceRateLimitPolicies = httpRoute.ResourceRateLimitPolicies
-					updated = true
-					events = append(events, endpointType+" Endpoint Resource RateLimitPolicies")
-					break
-				}
-			} else {
-				cachedHTTPRoute.ResourceRateLimitPolicies = httpRoute.ResourceRateLimitPolicies
-				updated = true
-				events = append(events, endpointType+" Endpoint Resource RateLimitPolicies")
-				break
-			}
-		}
-	}
 
 	if len(httpRoute.Scopes) != len(cachedHTTPRoute.Scopes) {
 		cachedHTTPRoute.Scopes = httpRoute.Scopes
 		updated = true
-		events = append(events, endpointType+" Endpoint Resource Scopes")
+		events = append(events, "Resource Scopes")
 	} else {
 		for key, scope := range httpRoute.Scopes {
 			if existingScope, found := cachedHTTPRoute.Scopes[key]; found {
 				if scope.UID != existingScope.UID || scope.Generation > existingScope.Generation {
 					cachedHTTPRoute.Scopes = httpRoute.Scopes
 					updated = true
-					events = append(events, endpointType+" Endpoint Resource Scopes")
+					events = append(events, "Resource Scopes")
 					break
 				}
 			} else {
 				cachedHTTPRoute.Scopes = httpRoute.Scopes
 				updated = true
-				events = append(events, endpointType+" Endpoint Resource Scopes")
-				break
-			}
-		}
-	}
-
-	if len(httpRoute.InterceptorServiceMapping) != len(cachedHTTPRoute.InterceptorServiceMapping) {
-		cachedHTTPRoute.InterceptorServiceMapping = httpRoute.InterceptorServiceMapping
-		updated = true
-		events = append(events, endpointType+" Interceptor Service")
-	} else {
-		for key, interceptService := range httpRoute.InterceptorServiceMapping {
-			if existingInterceptService, found := cachedHTTPRoute.InterceptorServiceMapping[key]; found {
-				if interceptService.UID != existingInterceptService.UID || interceptService.Generation > existingInterceptService.Generation {
-					cachedHTTPRoute.InterceptorServiceMapping = httpRoute.InterceptorServiceMapping
-					updated = true
-					events = append(events, endpointType+" Interceptor Service")
-					break
-				}
-			} else {
-				cachedHTTPRoute.InterceptorServiceMapping = httpRoute.InterceptorServiceMapping
-				updated = true
-				events = append(events, endpointType+" Interceptor Service")
+				events = append(events, "Resource Scopes")
 				break
 			}
 		}

@@ -26,24 +26,24 @@ import (
 // the state of the Kubernetes controller cache to detect updates.
 // +k8s:deepcopy-gen=true
 type APIState struct {
-	APIDefinition     *v1alpha1.API
-	ProdHTTPRoute     *HTTPRouteState
-	SandHTTPRoute     *HTTPRouteState
-	APIDefinitionFile []byte
+	APIDefinition             *v1alpha1.API
+	ProdHTTPRoute             *HTTPRouteState
+	SandHTTPRoute             *HTTPRouteState
+	Authentications           map[string]v1alpha1.Authentication
+	RateLimitPolicies         map[string]v1alpha1.RateLimitPolicy
+	ResourceAuthentications   map[string]v1alpha1.Authentication
+	ResourceRateLimitPolicies map[string]v1alpha1.RateLimitPolicy
+	ResourceAPIPolicies       map[string]v1alpha1.APIPolicy
+	APIPolicies               map[string]v1alpha1.APIPolicy
+	InterceptorServiceMapping map[string]v1alpha1.InterceptorService
+	APIDefinitionFile         []byte
 }
 
 // HTTPRouteState holds the state of the deployed httpRoutes. This state is compared with
 // the state of the Kubernetes controller cache to detect updates.
 // +k8s:deepcopy-gen=true
 type HTTPRouteState struct {
-	HTTPRoute                 *gwapiv1b1.HTTPRoute
-	Authentications           map[string]v1alpha1.Authentication
-	ResourceAuthentications   map[string]v1alpha1.Authentication
-	APIPolicies               map[string]v1alpha1.APIPolicy
-	ResourceAPIPolicies       map[string]v1alpha1.APIPolicy
-	InterceptorServiceMapping map[string]v1alpha1.InterceptorService
-	BackendMapping            v1alpha1.BackendMapping
-	Scopes                    map[string]v1alpha1.Scope
-	RateLimitPolicies         map[string]v1alpha1.RateLimitPolicy
-	ResourceRateLimitPolicies map[string]v1alpha1.RateLimitPolicy
+	HTTPRoute      *gwapiv1b1.HTTPRoute
+	BackendMapping v1alpha1.BackendMapping
+	Scopes         map[string]v1alpha1.Scope
 }

@@ -45,6 +45,55 @@ func (in *APIState) DeepCopyInto(out *APIState) {
 		*out = new(HTTPRouteState)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.Authentications != nil {
+		in, out := &in.Authentications, &out.Authentications
+		*out = make(map[string]v1alpha1.Authentication, len(*in))
+		for key, val := range *in {
+			(*out)[key] = *val.DeepCopy()
+		}
+	}
+	if in.RateLimitPolicies != nil {
+		in, out := &in.RateLimitPolicies, &out.RateLimitPolicies
+		*out = make(map[string]v1alpha1.RateLimitPolicy, len(*in))
+		for key, val := range *in {
+			(*out)[key] = *val.DeepCopy()
+		}
+	}
+	if in.ResourceAuthentications != nil {
+		in, out := &in.ResourceAuthentications, &out.ResourceAuthentications
+		*out = make(map[string]v1alpha1.Authentication, len(*in))
+		for key, val := range *in {
+			(*out)[key] = *val.DeepCopy()
+		}
+	}
+	if in.ResourceRateLimitPolicies != nil {
+		in, out := &in.ResourceRateLimitPolicies, &out.ResourceRateLimitPolicies
+		*out = make(map[string]v1alpha1.RateLimitPolicy, len(*in))
+		for key, val := range *in {
+			(*out)[key] = *val.DeepCopy()
+		}
+	}
+	if in.ResourceAPIPolicies != nil {
+		in, out := &in.ResourceAPIPolicies, &out.ResourceAPIPolicies
+		*out = make(map[string]v1alpha1.APIPolicy, len(*in))
+		for key, val := range *in {
+			(*out)[key] = *val.DeepCopy()
+		}
+	}
+	if in.APIPolicies != nil {
+		in, out := &in.APIPolicies, &out.APIPolicies
+		*out = make(map[string]v1alpha1.APIPolicy, len(*in))
+		for key, val := range *in {
+			(*out)[key] = *val.DeepCopy()
+		}
+	}
+	if in.InterceptorServiceMapping != nil {
+		in, out := &in.InterceptorServiceMapping, &out.InterceptorServiceMapping
+		*out = make(map[string]v1alpha1.InterceptorService, len(*in))
+		for key, val := range *in {
+			(*out)[key] = *val.DeepCopy()
+		}
+	}
 	if in.APIDefinitionFile != nil {
 		in, out := &in.APIDefinitionFile, &out.APIDefinitionFile
 		*out = make([]byte, len(*in))
@@ -175,41 +224,6 @@ func (in *HTTPRouteState) DeepCopyInto(out *HTTPRouteState) {
 		*out = new(v1beta1.HTTPRoute)
 		(*in).DeepCopyInto(*out)
 	}
-	if in.Authentications != nil {
-		in, out := &in.Authentications, &out.Authentications
-		*out = make(map[string]v1alpha1.Authentication, len(*in))
-		for key, val := range *in {
-			(*out)[key] = *val.DeepCopy()
-		}
-	}
-	if in.ResourceAuthentications != nil {
-		in, out := &in.ResourceAuthentications, &out.ResourceAuthentications
-		*out = make(map[string]v1alpha1.Authentication, len(*in))
-		for key, val := range *in {
-			(*out)[key] = *val.DeepCopy()
-		}
-	}
-	if in.APIPolicies != nil {
-		in, out := &in.APIPolicies, &out.APIPolicies
-		*out = make(map[string]v1alpha1.APIPolicy, len(*in))
-		for key, val := range *in {
-			(*out)[key] = *val.DeepCopy()
-		}
-	}
-	if in.ResourceAPIPolicies != nil {
-		in, out := &in.ResourceAPIPolicies, &out.ResourceAPIPolicies
-		*out = make(map[string]v1alpha1.APIPolicy, len(*in))
-		for key, val := range *in {
-			(*out)[key] = *val.DeepCopy()
-		}
-	}
-	if in.InterceptorServiceMapping != nil {
-		in, out := &in.InterceptorServiceMapping, &out.InterceptorServiceMapping
-		*out = make(map[string]v1alpha1.InterceptorService, len(*in))
-		for key, val := range *in {
-			(*out)[key] = *val.DeepCopy()
-		}
-	}
 	if in.BackendMapping != nil {
 		in, out := &in.BackendMapping, &out.BackendMapping
 		*out = make(v1alpha1.BackendMapping, len(*in))
@@ -228,20 +242,6 @@ func (in *HTTPRouteState) DeepCopyInto(out *HTTPRouteState) {
 	if in.Scopes != nil {
 		in, out := &in.Scopes, &out.Scopes
 		*out = make(map[string]v1alpha1.Scope, len(*in))
-		for key, val := range *in {
-			(*out)[key] = *val.DeepCopy()
-		}
-	}
-	if in.RateLimitPolicies != nil {
-		in, out := &in.RateLimitPolicies, &out.RateLimitPolicies
-		*out = make(map[string]v1alpha1.RateLimitPolicy, len(*in))
-		for key, val := range *in {
-			(*out)[key] = *val.DeepCopy()
-		}
-	}
-	if in.ResourceRateLimitPolicies != nil {
-		in, out := &in.ResourceRateLimitPolicies, &out.ResourceRateLimitPolicies
-		*out = make(map[string]v1alpha1.RateLimitPolicy, len(*in))
 		for key, val := range *in {
 			(*out)[key] = *val.DeepCopy()
 		}

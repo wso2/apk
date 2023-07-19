@@ -585,6 +585,11 @@ func (in *BackendSpec) DeepCopyInto(out *BackendSpec) {
 		*out = new(CircuitBreaker)
 		**out = **in
 	}
+	if in.CircuitBreaker != nil {
+		in, out := &in.CircuitBreaker, &out.CircuitBreaker
+		*out = new(CircuitBreaker)
+		**out = **in
+	}
 	if in.Timeout != nil {
 		in, out := &in.Timeout, &out.Timeout
 		*out = new(Timeout)
@@ -1352,6 +1357,11 @@ func (in *ResolvedBackend) DeepCopyInto(out *ResolvedBackend) {
 	}
 	in.TLS.DeepCopyInto(&out.TLS)
 	out.Security = in.Security
+	if in.CircuitBreaker != nil {
+		in, out := &in.CircuitBreaker, &out.CircuitBreaker
+		*out = new(CircuitBreaker)
+		**out = **in
+	}
 	if in.CircuitBreaker != nil {
 		in, out := &in.CircuitBreaker, &out.CircuitBreaker
 		*out = new(CircuitBreaker)
