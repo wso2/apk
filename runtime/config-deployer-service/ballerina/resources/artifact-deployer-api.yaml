@@ -81,44 +81,6 @@ paths:
                 example: "API undeployed successfully"
         "400":
           $ref: "./common-responses.yaml#/components/responses/BadRequest"
-
-        "500":
-          $ref: "./common-responses.yaml#/components/responses/InternalServerError"
-  /apis/configurations:
-    get:
-      tags:
-        - APIs
-      summary: Get API Configurations
-      description: | 
-      operationId: getAPIConfigurations
-      parameters:
-        - name: apiId
-          in: query
-          description: |
-            UUID of the K8s API Resource
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: |
-            API configurations retrieved successfully
-          headers:
-            Content-Type:
-              description: |
-                The content type of the body.
-              style: simple
-              explode: false
-              schema:
-                type: string
-          content:
-            application/yaml:
-              schema:
-                $ref: "./apk-conf-schema.yaml#/components/schemas/APKConf"
-        "400":
-          $ref: "./common-responses.yaml#/components/responses/BadRequest"
-        "404":
-          $ref: "./common-responses.yaml#/components/responses/NotFound"
         "500":
           $ref: "./common-responses.yaml#/components/responses/InternalServerError"
 components:

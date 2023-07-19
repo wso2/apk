@@ -24,14 +24,4 @@ isolated service /api/deployer on ep0 {
         DeployerClient deployerClient = new;
         return check deployerClient.handleAPIUndeployment(apiId);
     }
-    // # Get API Configurations
-    // #
-    // # + apiId - UUID of the K8s API Resource 
-    // # + return - returns can be any of following types
-    // # anydata (API configurations retrieved successfully)
-    // # BadRequestError (Bad Request. Invalid request or validation error.)
-    // # NotFoundError (Not Found. The specified resource does not exist.)
-    // # InternalServerErrorError (Internal Server Error.)
-    // isolated resource function get apis/configurations(string apiId) returns anydata {
-    // }
 }
