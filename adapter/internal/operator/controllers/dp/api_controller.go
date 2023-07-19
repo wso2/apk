@@ -754,7 +754,13 @@ func (apiReconciler *APIReconciler) getAPIsForAuthentication(obj k8client.Object
 		return requests
 	}
 
-	namespace := utils.GetNamespace((*gwapiv1b1.Namespace)(authentication.Spec.TargetRef.Namespace), authentication.Namespace)
+	namespace, err := utils.CheckAndRetrieveNamespace((*gwapiv1b1.Namespace)(authentication.Spec.TargetRef.Namespace), authentication.Namespace)
+
+	if err != nil {
+		loggers.LoggerAPKOperator.Errorf("Namespace mismatch. TargetRef needs to be in the same namespace as the Athentication. Expected: %s, Given: %s",
+			authentication.Namespace, string(*authentication.Spec.TargetRef.Namespace))
+		return requests
+	}
 
 	req := reconcile.Request{
 		NamespacedName: types.NamespacedName{
@@ -790,7 +796,13 @@ func (apiReconciler *APIReconciler) getAPIsForAPIPolicy(obj k8client.Object) []r
 		return requests
 	}
 
-	namespace := utils.GetNamespace((*gwapiv1b1.Namespace)(apiPolicy.Spec.TargetRef.Namespace), apiPolicy.Namespace)
+	namespace, err := utils.CheckAndRetrieveNamespace((*gwapiv1b1.Namespace)(apiPolicy.Spec.TargetRef.Namespace), apiPolicy.Namespace)
+
+	if err != nil {
+		loggers.LoggerAPKOperator.Errorf("Namespace mismatch. TargetRef needs to be in the same namespace as the ApiPolicy. Expected: %s, Given: %s",
+			apiPolicy.Namespace, string(*apiPolicy.Spec.TargetRef.Namespace))
+		return requests
+	}
 
 	req := reconcile.Request{
 		NamespacedName: types.NamespacedName{
@@ -846,7 +858,13 @@ func (apiReconciler *APIReconciler) getAPIsForRateLimitPolicy(obj k8client.Objec
 		return requests
 	}
 
-	namespace := utils.GetNamespace((*gwapiv1b1.Namespace)(ratelimitPolicy.Spec.TargetRef.Namespace), ratelimitPolicy.Namespace)
+	namespace, err := utils.CheckAndRetrieveNamespace((*gwapiv1b1.Namespace)(ratelimitPolicy.Spec.TargetRef.Namespace), ratelimitPolicy.Namespace)
+
+	if err != nil {
+		loggers.LoggerAPKOperator.Errorf("Namespace mismatch. TargetRef needs to be in the same namespace as the ApiPolicy. Expected: %s, Given: %s",
+			ratelimitPolicy.Namespace, string(*ratelimitPolicy.Spec.TargetRef.Namespace))
+		return requests
+	}
 
 	req := reconcile.Request{
 		NamespacedName: types.NamespacedName{
@@ -1103,12 +1121,19 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 			authentication := rawObj.(*dpv1alpha1.Authentication)
 			var apis []string
 			if authentication.Spec.TargetRef.Kind == constants.KindAPI {
+
+				namespace, err := utils.CheckAndRetrieveNamespace((*gwapiv1b1.Namespace)(authentication.Spec.TargetRef.Namespace), authentication.Namespace)
+
+				if err != nil {
+					loggers.LoggerAPKOperator.Errorf("Namespace mismatch. TargetRef needs to be in the same namespace as the Athentication. Expected: %s, Given: %s",
+						authentication.Namespace, string(*authentication.Spec.TargetRef.Namespace))
+					return apis
+				}
+
 				apis = append(apis,
 					types.NamespacedName{
-						Namespace: utils.GetNamespace(
-							(*gwapiv1b1.Namespace)(authentication.Spec.TargetRef.Namespace),
-							authentication.Namespace),
-						Name: string(authentication.Spec.TargetRef.Name),
+						Namespace: namespace,
+						Name:      string(authentication.Spec.TargetRef.Name),
 					}.String())
 			}
 			return apis
@@ -1125,12 +1150,19 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 			authentication := rawObj.(*dpv1alpha1.Authentication)
 			var apis []string
 			if authentication.Spec.TargetRef.Kind == constants.KindResource {
+
+				namespace, err := utils.CheckAndRetrieveNamespace((*gwapiv1b1.Namespace)(authentication.Spec.TargetRef.Namespace), authentication.Namespace)
+
+				if err != nil {
+					loggers.LoggerAPKOperator.Errorf("Namespace mismatch. TargetRef needs to be in the same namespace as the Athentication. Expected: %s, Given: %s",
+						authentication.Namespace, string(*authentication.Spec.TargetRef.Namespace))
+					return apis
+				}
+
 				apis = append(apis,
 					types.NamespacedName{
-						Namespace: utils.GetNamespace(
-							(*gwapiv1b1.Namespace)(authentication.Spec.TargetRef.Namespace),
-							authentication.Namespace),
-						Name: string(authentication.Spec.TargetRef.Name),
+						Namespace: namespace,
+						Name:      string(authentication.Spec.TargetRef.Name),
 					}.String())
 			}
 			return apis
@@ -1144,12 +1176,19 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 			ratelimitPolicy := rawObj.(*dpv1alpha1.RateLimitPolicy)
 			var apis []string
 			if ratelimitPolicy.Spec.TargetRef.Kind == constants.KindAPI {
+
+				namespace, err := utils.CheckAndRetrieveNamespace((*gwapiv1b1.Namespace)(ratelimitPolicy.Spec.TargetRef.Namespace), ratelimitPolicy.Namespace)
+
+				if err != nil {
+					loggers.LoggerAPKOperator.Errorf("Namespace mismatch. TargetRef needs to be in the same namespace as the RatelimitPolicy. Expected: %s, Given: %s",
+						ratelimitPolicy.Namespace, string(*ratelimitPolicy.Spec.TargetRef.Namespace))
+					return apis
+				}
+
 				apis = append(apis,
 					types.NamespacedName{
-						Namespace: utils.GetNamespace(
-							(*gwapiv1b1.Namespace)(ratelimitPolicy.Spec.TargetRef.Namespace),
-							ratelimitPolicy.Namespace),
-						Name: string(ratelimitPolicy.Spec.TargetRef.Name),
+						Namespace: namespace,
+						Name:      string(ratelimitPolicy.Spec.TargetRef.Name),
 					}.String())
 			}
 			return apis
@@ -1166,12 +1205,19 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 			ratelimitPolicy := rawObj.(*dpv1alpha1.RateLimitPolicy)
 			var apis []string
 			if ratelimitPolicy.Spec.TargetRef.Kind == constants.KindResource {
+
+				namespace, err := utils.CheckAndRetrieveNamespace((*gwapiv1b1.Namespace)(ratelimitPolicy.Spec.TargetRef.Namespace), ratelimitPolicy.Namespace)
+
+				if err != nil {
+					loggers.LoggerAPKOperator.Errorf("Namespace mismatch. TargetRef needs to be in the same namespace as the RatelimitPolicy. Expected: %s, Given: %s",
+						ratelimitPolicy.Namespace, string(*ratelimitPolicy.Spec.TargetRef.Namespace))
+					return apis
+				}
+
 				apis = append(apis,
 					types.NamespacedName{
-						Namespace: utils.GetNamespace(
-							(*gwapiv1b1.Namespace)(ratelimitPolicy.Spec.TargetRef.Namespace),
-							ratelimitPolicy.Namespace),
-						Name: string(ratelimitPolicy.Spec.TargetRef.Name),
+						Namespace: namespace,
+						Name:      string(ratelimitPolicy.Spec.TargetRef.Name),
 					}.String())
 			}
 			return apis
@@ -1243,11 +1289,19 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 			apiPolicy := rawObj.(*dpv1alpha1.APIPolicy)
 			var apis []string
 			if apiPolicy.Spec.TargetRef.Kind == constants.KindAPI {
+
+				namespace, err := utils.CheckAndRetrieveNamespace((*gwapiv1b1.Namespace)(apiPolicy.Spec.TargetRef.Namespace), apiPolicy.Namespace)
+
+				if err != nil {
+					loggers.LoggerAPKOperator.Errorf("Namespace mismatch. TargetRef needs to be in the same namespace as the ApiPolicy. Expected: %s, Given: %s",
+						apiPolicy.Namespace, string(*apiPolicy.Spec.TargetRef.Namespace))
+					return apis
+				}
+
 				apis = append(apis,
 					types.NamespacedName{
-						Namespace: utils.GetNamespace(
-							(*gwapiv1b1.Namespace)(apiPolicy.Spec.TargetRef.Namespace), apiPolicy.Namespace),
-						Name: string(apiPolicy.Spec.TargetRef.Name),
+						Namespace: namespace,
+						Name:      string(apiPolicy.Spec.TargetRef.Name),
 					}.String())
 			}
 			return apis
@@ -1265,12 +1319,19 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 			apiPolicy := rawObj.(*dpv1alpha1.APIPolicy)
 			var apis []string
 			if apiPolicy.Spec.TargetRef.Kind == constants.KindResource {
+
+				namespace, err := utils.CheckAndRetrieveNamespace((*gwapiv1b1.Namespace)(apiPolicy.Spec.TargetRef.Namespace), apiPolicy.Namespace)
+
+				if err != nil {
+					loggers.LoggerAPKOperator.Errorf("Namespace mismatch. TargetRef needs to be in the same namespace as the ApiPolicy. Expected: %s, Given: %s",
+						apiPolicy.Namespace, string(*apiPolicy.Spec.TargetRef.Namespace))
+					return apis
+				}
+
 				apis = append(apis,
 					types.NamespacedName{
-						Namespace: utils.GetNamespace(
-							(*gwapiv1b1.Namespace)(apiPolicy.Spec.TargetRef.Namespace),
-							apiPolicy.Namespace),
-						Name: string(apiPolicy.Spec.TargetRef.Name),
+						Namespace: namespace,
+						Name:      string(apiPolicy.Spec.TargetRef.Name),
 					}.String())
 			}
 			return apis
