@@ -754,11 +754,11 @@ func (apiReconciler *APIReconciler) getAPIsForAuthentication(obj k8client.Object
 		return requests
 	}
 
-	namespace, err := utils.CheckAndRetrieveNamespace((*gwapiv1b1.Namespace)(authentication.Spec.TargetRef.Namespace), authentication.Namespace)
+	namespace, err := utils.ValidateAndRetrieveNamespace((*gwapiv1b1.Namespace)(authentication.Spec.TargetRef.Namespace), authentication.Namespace)
 
 	if err != nil {
-		loggers.LoggerAPKOperator.Errorf("Namespace mismatch. TargetRef needs to be in the same namespace as the Athentication. Expected: %s, Given: %s",
-			authentication.Namespace, string(*authentication.Spec.TargetRef.Namespace))
+		loggers.LoggerAPKOperator.Errorf("Namespace mismatch. TargetRef %s needs to be in the same namespace as the Athentication %s. Expected: %s, Actual: %s",
+			string(authentication.Spec.TargetRef.Name), authentication.Name, authentication.Namespace, string(*authentication.Spec.TargetRef.Namespace))
 		return requests
 	}
 
@@ -796,11 +796,11 @@ func (apiReconciler *APIReconciler) getAPIsForAPIPolicy(obj k8client.Object) []r
 		return requests
 	}
 
-	namespace, err := utils.CheckAndRetrieveNamespace((*gwapiv1b1.Namespace)(apiPolicy.Spec.TargetRef.Namespace), apiPolicy.Namespace)
+	namespace, err := utils.ValidateAndRetrieveNamespace((*gwapiv1b1.Namespace)(apiPolicy.Spec.TargetRef.Namespace), apiPolicy.Namespace)
 
 	if err != nil {
-		loggers.LoggerAPKOperator.Errorf("Namespace mismatch. TargetRef needs to be in the same namespace as the ApiPolicy. Expected: %s, Given: %s",
-			apiPolicy.Namespace, string(*apiPolicy.Spec.TargetRef.Namespace))
+		loggers.LoggerAPKOperator.Errorf("Namespace mismatch. TargetRef %s needs to be in the same namespace as the ApiPolicy %s. Expected: %s, Actual: %s",
+			string(apiPolicy.Spec.TargetRef.Name), apiPolicy.Name, apiPolicy.Namespace, string(*apiPolicy.Spec.TargetRef.Namespace))
 		return requests
 	}
 
@@ -858,11 +858,11 @@ func (apiReconciler *APIReconciler) getAPIsForRateLimitPolicy(obj k8client.Objec
 		return requests
 	}
 
-	namespace, err := utils.CheckAndRetrieveNamespace((*gwapiv1b1.Namespace)(ratelimitPolicy.Spec.TargetRef.Namespace), ratelimitPolicy.Namespace)
+	namespace, err := utils.ValidateAndRetrieveNamespace((*gwapiv1b1.Namespace)(ratelimitPolicy.Spec.TargetRef.Namespace), ratelimitPolicy.Namespace)
 
 	if err != nil {
-		loggers.LoggerAPKOperator.Errorf("Namespace mismatch. TargetRef needs to be in the same namespace as the ApiPolicy. Expected: %s, Given: %s",
-			ratelimitPolicy.Namespace, string(*ratelimitPolicy.Spec.TargetRef.Namespace))
+		loggers.LoggerAPKOperator.Errorf("Namespace mismatch. TargetRef %s needs to be in the same namespace as the RatelimitPolicy %s. Expected: %s, Actual: %s",
+			string(ratelimitPolicy.Spec.TargetRef.Name), ratelimitPolicy.Name, ratelimitPolicy.Namespace, string(*ratelimitPolicy.Spec.TargetRef.Namespace))
 		return requests
 	}
 
@@ -1122,11 +1122,11 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 			var apis []string
 			if authentication.Spec.TargetRef.Kind == constants.KindAPI {
 
-				namespace, err := utils.CheckAndRetrieveNamespace((*gwapiv1b1.Namespace)(authentication.Spec.TargetRef.Namespace), authentication.Namespace)
+				namespace, err := utils.ValidateAndRetrieveNamespace((*gwapiv1b1.Namespace)(authentication.Spec.TargetRef.Namespace), authentication.Namespace)
 
 				if err != nil {
-					loggers.LoggerAPKOperator.Errorf("Namespace mismatch. TargetRef needs to be in the same namespace as the Athentication. Expected: %s, Given: %s",
-						authentication.Namespace, string(*authentication.Spec.TargetRef.Namespace))
+					loggers.LoggerAPKOperator.Errorf("Namespace mismatch. TargetRef %s needs to be in the same namespace as the Athentication %s. Expected: %s, Actual: %s",
+						string(authentication.Spec.TargetRef.Name), authentication.Name, authentication.Namespace, string(*authentication.Spec.TargetRef.Namespace))
 					return apis
 				}
 
@@ -1151,11 +1151,11 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 			var apis []string
 			if authentication.Spec.TargetRef.Kind == constants.KindResource {
 
-				namespace, err := utils.CheckAndRetrieveNamespace((*gwapiv1b1.Namespace)(authentication.Spec.TargetRef.Namespace), authentication.Namespace)
+				namespace, err := utils.ValidateAndRetrieveNamespace((*gwapiv1b1.Namespace)(authentication.Spec.TargetRef.Namespace), authentication.Namespace)
 
 				if err != nil {
-					loggers.LoggerAPKOperator.Errorf("Namespace mismatch. TargetRef needs to be in the same namespace as the Athentication. Expected: %s, Given: %s",
-						authentication.Namespace, string(*authentication.Spec.TargetRef.Namespace))
+					loggers.LoggerAPKOperator.Errorf("Namespace mismatch. TargetRef %s needs to be in the same namespace as the Athentication %s. Expected: %s, Actual: %s",
+						string(authentication.Spec.TargetRef.Name), authentication.Name, authentication.Namespace, string(*authentication.Spec.TargetRef.Namespace))
 					return apis
 				}
 
@@ -1177,11 +1177,11 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 			var apis []string
 			if ratelimitPolicy.Spec.TargetRef.Kind == constants.KindAPI {
 
-				namespace, err := utils.CheckAndRetrieveNamespace((*gwapiv1b1.Namespace)(ratelimitPolicy.Spec.TargetRef.Namespace), ratelimitPolicy.Namespace)
+				namespace, err := utils.ValidateAndRetrieveNamespace((*gwapiv1b1.Namespace)(ratelimitPolicy.Spec.TargetRef.Namespace), ratelimitPolicy.Namespace)
 
 				if err != nil {
-					loggers.LoggerAPKOperator.Errorf("Namespace mismatch. TargetRef needs to be in the same namespace as the RatelimitPolicy. Expected: %s, Given: %s",
-						ratelimitPolicy.Namespace, string(*ratelimitPolicy.Spec.TargetRef.Namespace))
+					loggers.LoggerAPKOperator.Errorf("Namespace mismatch. TargetRef %s needs to be in the same namespace as the RatelimitPolicy %s. Expected: %s, Given: %s",
+						string(ratelimitPolicy.Spec.TargetRef.Name), ratelimitPolicy.Name, ratelimitPolicy.Namespace, string(*ratelimitPolicy.Spec.TargetRef.Namespace))
 					return apis
 				}
 
@@ -1206,11 +1206,11 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 			var apis []string
 			if ratelimitPolicy.Spec.TargetRef.Kind == constants.KindResource {
 
-				namespace, err := utils.CheckAndRetrieveNamespace((*gwapiv1b1.Namespace)(ratelimitPolicy.Spec.TargetRef.Namespace), ratelimitPolicy.Namespace)
+				namespace, err := utils.ValidateAndRetrieveNamespace((*gwapiv1b1.Namespace)(ratelimitPolicy.Spec.TargetRef.Namespace), ratelimitPolicy.Namespace)
 
 				if err != nil {
-					loggers.LoggerAPKOperator.Errorf("Namespace mismatch. TargetRef needs to be in the same namespace as the RatelimitPolicy. Expected: %s, Given: %s",
-						ratelimitPolicy.Namespace, string(*ratelimitPolicy.Spec.TargetRef.Namespace))
+					loggers.LoggerAPKOperator.Errorf("Namespace mismatch. TargetRef %s needs to be in the same namespace as the RatelimitPolicy %s. Expected: %s, Given: %s",
+						string(ratelimitPolicy.Spec.TargetRef.Name), ratelimitPolicy.Name, ratelimitPolicy.Namespace, string(*ratelimitPolicy.Spec.TargetRef.Namespace))
 					return apis
 				}
 
@@ -1286,11 +1286,11 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 			var apis []string
 			if apiPolicy.Spec.TargetRef.Kind == constants.KindAPI {
 
-				namespace, err := utils.CheckAndRetrieveNamespace((*gwapiv1b1.Namespace)(apiPolicy.Spec.TargetRef.Namespace), apiPolicy.Namespace)
+				namespace, err := utils.ValidateAndRetrieveNamespace((*gwapiv1b1.Namespace)(apiPolicy.Spec.TargetRef.Namespace), apiPolicy.Namespace)
 
 				if err != nil {
-					loggers.LoggerAPKOperator.Errorf("Namespace mismatch. TargetRef needs to be in the same namespace as the ApiPolicy. Expected: %s, Given: %s",
-						apiPolicy.Namespace, string(*apiPolicy.Spec.TargetRef.Namespace))
+					loggers.LoggerAPKOperator.Errorf("Namespace mismatch. TargetRef %s needs to be in the same namespace as the ApiPolicy %s. Expected: %s, Actual: %s",
+						string(apiPolicy.Spec.TargetRef.Name), apiPolicy.Name, apiPolicy.Namespace, string(*apiPolicy.Spec.TargetRef.Namespace))
 					return apis
 				}
 
@@ -1316,11 +1316,11 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 			var apis []string
 			if apiPolicy.Spec.TargetRef.Kind == constants.KindResource {
 
-				namespace, err := utils.CheckAndRetrieveNamespace((*gwapiv1b1.Namespace)(apiPolicy.Spec.TargetRef.Namespace), apiPolicy.Namespace)
+				namespace, err := utils.ValidateAndRetrieveNamespace((*gwapiv1b1.Namespace)(apiPolicy.Spec.TargetRef.Namespace), apiPolicy.Namespace)
 
 				if err != nil {
-					loggers.LoggerAPKOperator.Errorf("Namespace mismatch. TargetRef needs to be in the same namespace as the ApiPolicy. Expected: %s, Given: %s",
-						apiPolicy.Namespace, string(*apiPolicy.Spec.TargetRef.Namespace))
+					loggers.LoggerAPKOperator.Errorf("Namespace mismatch. TargetRef %s needs to be in the same namespace as the ApiPolicy %s. Expected: %s, Actual: %s",
+						string(apiPolicy.Spec.TargetRef.Name), apiPolicy.Name, apiPolicy.Namespace, string(*apiPolicy.Spec.TargetRef.Namespace))
 					return apis
 				}
 

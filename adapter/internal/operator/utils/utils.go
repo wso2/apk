@@ -70,8 +70,8 @@ func GetNamespace(namespace *gwapiv1b1.Namespace, defaultNamespace string) strin
 	return defaultNamespace
 }
 
-// CheckAndRetrieveNamespace checks if the namespace is the same as the default namespace
-func CheckAndRetrieveNamespace(namespace *gwapiv1b1.Namespace, defaultNamespace string) (string, error) {
+// ValidateAndRetrieveNamespace checks if the child resource's namespace is the same as the parent resource's namespace
+func ValidateAndRetrieveNamespace(namespace *gwapiv1b1.Namespace, defaultNamespace string) (string, error) {
 	if namespace != nil && *namespace != "" {
 		if string(*namespace) == defaultNamespace {
 			return string(*namespace), nil
