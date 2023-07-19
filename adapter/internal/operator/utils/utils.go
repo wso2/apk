@@ -319,6 +319,7 @@ func GetResolvedBackend(ctx context.Context, client k8client.Client,
 		}
 		return nil
 	}
+	resolvedBackend.Backend = backend
 	resolvedBackend.Services = backend.Spec.Services
 	resolvedBackend.Protocol = backend.Spec.Protocol
 	resolvedBackend.BasePath = backend.Spec.BasePath
@@ -395,6 +396,12 @@ func UpdateOwnerReference(ctx context.Context, client k8client.Client, child met
 			UID:        api.UID,
 		}))
 	}
+	return UpdateCR(ctx, client, child)
+}
+
+// UpdateCR updates the given CR.
+// use to update owner reference of the given CR.
+func UpdateCR(ctx context.Context, client k8client.Client, child metav1.Object) error {
 	for {
 		if err := client.Update(ctx, child.(k8client.Object)); err != nil {
 			if apierrors.IsInternalError(err) {
