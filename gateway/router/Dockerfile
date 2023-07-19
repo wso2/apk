@@ -36,6 +36,8 @@ ARG MOTD="\n\
 RUN \
     groupadd --system -g ${MG_USER_GROUP_ID} ${MG_USER_GROUP} \
     && useradd --system --create-home --home-dir ${MG_USER_HOME} --no-log-init -g ${MG_USER_GROUP_ID} -u ${MG_USER_ID} ${MG_USER} \
+    && chgrp -R 0 ${MG_USER_HOME} \
+    && chmod -R g=u ${MG_USER_HOME} \
     && echo '[ ! -z "${TERM}" -a -r /etc/motd ] && cat /etc/motd' >> /etc/bash.bashrc; echo "${MOTD}" > /etc/motd
 
 ENV ROUTER_ADMIN_HOST=0.0.0.0
@@ -60,7 +62,7 @@ ENV ENFORCER_ANALYTICS_HOST=$ENFORCER_HOST
 ENV CONCURRENCY=2
 ENV TRAILING_ARGS=
 
-USER ${MG_USER}
+USER ${MG_USER_ID}
 ENV ENVOY_UID=0
 ENV ENVOY_GID=0
 

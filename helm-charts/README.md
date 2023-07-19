@@ -240,11 +240,27 @@ A Helm chart for APK components
 | postgresql.primary.initdb.user | string | `"wso2carbon"` | Specify the PostgreSQL username to execute the initdb scripts |
 | postgresql.primary.initdb.password | string | `"wso2carbon"` | Specify the PostgreSQL password to execute the initdb scripts |
 | postgresql.primary.service.ports.postgresql | int | `5432` | PostgreSQL service port |
+| postgresql.primary.podSecurityContext.enabled | bool | `true` | Enable Pod Security Context for PostgreSQL primary |
+| postgresql.primary.podSecurityContext.fsGroup | int | `null` | The fsGroup to assign to the PostgreSQL primary pod |
+| postgresql.primary.podSecurityContext.runAsNonRoot | bool | `true` | Run PostgreSQL primary as a non-root user |
+| postgresql.primary.podSecurityContext.seccompProfile.type | string | `RuntimeDefault` | Seccomp profile type for PostgreSQL primary |
+| postgresql.primary.containerSecurityContext.enabled | bool | `true` | Enable Container Security Context for PostgreSQL primary |
+| postgresql.primary.containerSecurityContext.allowPrivilegeEscalation | bool | `false` | Prevent privilege escalation for PostgreSQL primary container |
+| postgresql.primary.containerSecurityContext.capabilities.drop | array | `["ALL"]` | Drop Linux capabilities for PostgreSQL primary container |
+| postgresql.primary.containerSecurityContext.runAsUser | int | `null` | The user ID to run the PostgreSQL primary container as |
 | postgresql.image.debug | bool | `true` | Enable debug mode |
 | redis.enabled | bool | `true` | Enable redis |
 | redis.architecture | string | `"standalone"` | Redis® architecture. Allowed values: standalone or replication.  |
 | redis.fullnameOverride | string | `"redis"` | String to fully override common.names.fullname template |
 | redis.primary.service.ports.redis | int | `6379` | Redis service port |
+| redis.master.podSecurityContext.enabled | bool | `true` | Enable Pod Security Context for Redis master |
+| redis.master.podSecurityContext.fsGroup | int | `null` | The fsGroup to assign to the Redis master pod |
+| redis.master.podSecurityContext.runAsNonRoot | bool | `true` | Run Redis master as a non-root user |
+| redis.master.podSecurityContext.seccompProfile.type | string | `RuntimeDefault` | Seccomp profile type for Redis master |
+| redis.master.containerSecurityContext.enabled | bool | `true` | Enable Container Security Context for Redis master |
+| redis.master.containerSecurityContext.allowPrivilegeEscalation | bool | `false` | Prevent privilege escalation for Redis master container |
+| redis.master.containerSecurityContext.capabilities.drop | array | `["ALL"]` | Drop Linux capabilities for Redis master container |
+| redis.master.containerSecurityContext.runAsUser | int | `null` | The user ID to run the Redis master container as |
 | redis.auth.enabled | bool | `false` | Enable password authentication	 |
 | redis.image.debug | bool | `true` | Enable debug mode |
 
