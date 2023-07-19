@@ -1,0 +1,10 @@
+[commoncontroller]
+[commoncontroller.server]
+  label = "default1"
+
+[commoncontroller.keystore]
+  certPath = "/home/wso2/security/keystore/mg.pem"
+  keyPath = "/home/wso2/security/keystore/mg.key"
+
+[commoncontroller.truststore]
+  location = "/home/wso2/security/truststore"

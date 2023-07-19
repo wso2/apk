@@ -20,6 +20,18 @@ jobs:
       DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
       AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+  build_common_controller:
+    if: github.event_name == 'pull_request_target' && github.event.action == 'opened' || github.event.action == 'synchronize'
+    uses: ./.github/workflows/common-controller-release.yml
+    with:
+      aks_deployment: true
+    secrets:
+      WSO2_BOT_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}
+      WSO2_BOT_USER: ${{ secrets.WSO2_BOT_USER }}
+      WSO2_BOT_EMAIL: ${{ secrets.WSO2_BOT_EMAIL }}
+      DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
+      AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
   build_enforcer:
     if: github.event_name == 'pull_request_target' && github.event.action == 'opened' || github.event.action == 'synchronize'
     uses: ./.github/workflows/enforcer-release.yml
@@ -84,7 +96,7 @@ jobs:
 
   runs_go_integration_tests_on_pull_request_target:
     if: github.event_name == 'pull_request_target' && github.event.action == 'opened' || github.event.action == 'synchronize' || github.event.action == 'reopened'
-    needs: [build_adapter, build_enforcer,build_config,build_idpds,build_idpui]
+    needs: [build_adapter, build_common_controller, build_enforcer,build_config,build_idpds,build_idpui]
     runs-on: ubuntu-latest
     steps:
     - uses: azure/login@v1
@@ -142,6 +154,7 @@ jobs:
         --set wso2.subscription.imagePullSecrets=azure-registry \
         --set wso2.apk.dp.configdeployer.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/config-deployer-service:${{ github.sha }} \
         --set wso2.apk.dp.adapter.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/adapter:${{ github.sha }} \
+        --set wso2.apk.dp.commonController.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/common-controller:${{ github.sha }} \
         --set wso2.apk.dp.gatewayRuntime.deployment.enforcer.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/enforcer:${{ github.sha }} \
         --set idp.idpds.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/idp-domain-service:${{ github.sha }} \
         --set idp.idpui.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/idp-ui:${{ github.sha }} \

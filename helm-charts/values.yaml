@@ -123,6 +123,29 @@ wso2:
         #     secretName: "adapter-cert"
         #     certKeyFilename: ""
         #     certFilename: ""
+      commonController:
+        deployment:
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "1028Mi"
+              cpu: "1000m"
+          readinessProbe:
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            failureThreshold: 5
+          livenessProbe:
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            failureThreshold: 5
+          strategy: Recreate
+          replicas: 1
+          imagePullPolicy: Always
+          image: wso2/common-controller:latest
+          security:
+            sslHostname: "commoncontroller"
       ratelimiter:
         enabled: true
         deployment:
