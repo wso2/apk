@@ -21,7 +21,6 @@ import (
 
 	logger "github.com/sirupsen/logrus"
 	k8error "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -67,11 +66,11 @@ func NewratelimitController(mgr manager.Manager, ratelimitStore *cache.Ratelimit
 		client: mgr.GetClient(),
 		ods:    ratelimitStore,
 	}
-	ctx := context.Background()
-	if err := addIndexes(ctx, mgr); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2612, err))
-		return err
-	}
+	// ctx := context.Background()
+	// if err := addIndexes(ctx, mgr); err != nil {
+	// 	loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2612, err))
+	// 	return err
+	// }
 
 	c, err := controller.New(constants.RatelimitController, mgr, controller.Options{Reconciler: ratelimitReconsiler})
 	if err != nil {
@@ -127,6 +126,7 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) Reconcile(ctx context.Cont
 		// If availble in cache Delete cache and xds
 		if found && k8error.IsNotFound(err) {
 			ratelimitReconsiler.ods.DeleteCachedRatelimitPolicy(req.NamespacedName)
+			ratelimitReconsiler.ods.RemoveRatelimitPolicyByNamespacedName(req.NamespacedName)
 			logger.Info("delete api ratelimit")
 			logger.Info("resolveRateLimitAPIPolicy", resolveRateLimitAPIPolicy)
 			xds.DeleteAPILevelRateLimitPolicies(resolveRateLimitAPIPolicy)
@@ -150,7 +150,6 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) Reconcile(ctx context.Cont
 }
 
 func (ratelimitReconsiler *RateLimitPolicyReconciler) getRatelimitForAPI(obj k8client.Object) []reconcile.Request {
-	ctx := context.Background()
 	api, ok := obj.(*dpv1alpha1.API)
 	if !ok {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2624, api))
@@ -159,36 +158,12 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) getRatelimitForAPI(obj k8c
 
 	requests := []reconcile.Request{}
 
-	ratelimitPolicyList := &dpv1alpha1.RateLimitPolicyList{}
-	if err := ratelimitReconsiler.client.List(ctx, ratelimitPolicyList, &k8client.ListOptions{
-		FieldSelector: fields.OneTermEqualSelector(apiRateLimitIndex, NamespacedName(api).String()),
-	}); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2649, NamespacedName(api).String()))
-		return []reconcile.Request{}
-	}
-
-	for _, ratelimitPolicy := range ratelimitPolicyList.Items {
-		requests = append(requests, ratelimitReconsiler.AddRatelimitRequest(&ratelimitPolicy)...)
-	}
-
-	return requests
-}
-
-func (ratelimitReconsiler *RateLimitPolicyReconciler) getRatelimitForHTTPRoute(obj k8client.Object) []reconcile.Request {
-	ctx := context.Background()
-	httpRoute, ok := obj.(*gwapiv1b1.HTTPRoute)
-	if !ok {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2624, httpRoute))
-		return []reconcile.Request{}
-	}
-
-	requests := []reconcile.Request{}
-
-	ratelimitPolicyList := &dpv1alpha1.RateLimitPolicyList{}
-	if err := ratelimitReconsiler.client.List(ctx, ratelimitPolicyList, &k8client.ListOptions{
-		FieldSelector: fields.OneTermEqualSelector(httprouteRateLimitIndex, NamespacedName(httpRoute).String()),
-	}); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2649, NamespacedName(httpRoute).String()))
+	ratelimitPolicyList := ratelimitReconsiler.ods.GetRatelimitsToAPI(
+		types.NamespacedName{
+			Name:      api.Name,
+			Namespace: api.Namespace,
+		})
+	if ratelimitPolicyList == nil {
 		return []reconcile.Request{}
 	}
 
@@ -220,6 +195,31 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) AddRatelimitRequest(obj k8
 	}}
 }
 
+func (ratelimitReconsiler *RateLimitPolicyReconciler) getRatelimitForHTTPRoute(obj k8client.Object) []reconcile.Request {
+	httpRoute, ok := obj.(*gwapiv1b1.HTTPRoute)
+	if !ok {
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2624, httpRoute))
+		return []reconcile.Request{}
+	}
+
+	requests := []reconcile.Request{}
+
+	ratelimitPolicyList := ratelimitReconsiler.ods.GetRateLimitPolicyForHTTPRoute(
+		types.NamespacedName{
+			Name:      httpRoute.Name,
+			Namespace: httpRoute.Namespace,
+		})
+	if ratelimitPolicyList == nil {
+		return []reconcile.Request{}
+	}
+
+	for _, ratelimitPolicy := range ratelimitPolicyList.Items {
+		requests = append(requests, ratelimitReconsiler.AddRatelimitRequest(&ratelimitPolicy)...)
+	}
+
+	return requests
+}
+
 func (ratelimitReconsiler *RateLimitPolicyReconciler) marshelRateLimit(ctx context.Context, ratelimitKey types.NamespacedName,
 	ratelimitPolicy dpv1alpha1.RateLimitPolicy) ([]string, dpv1alpha1.ResolveRateLimitAPIPolicy) {
 	var api dpv1alpha1.API
@@ -233,13 +233,28 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) marshelRateLimit(ctx conte
 			Namespace: ratelimitKey.Namespace,
 			Name:      string(ratelimitPolicy.Spec.TargetRef.Name)},
 			&api); err != nil {
-			logger.Info("errorss", err)
+			found := ratelimitReconsiler.ods.IsRateLimitPolicyAvailble(
+				types.NamespacedName{
+					Namespace: ratelimitKey.Namespace,
+					Name:      string(ratelimitPolicy.Spec.TargetRef.Name)}, ratelimitPolicy)
+			if !found {
+				ratelimitReconsiler.ods.AddRatelimitToAPI(
+					types.NamespacedName{
+						Namespace: ratelimitKey.Namespace,
+						Name:      string(ratelimitPolicy.Spec.TargetRef.Name)}, ratelimitPolicy)
+				return nil, resolveRatelimit
+			}
+			ratelimitReconsiler.ods.DeleteRatelimitToAPI(
+				types.NamespacedName{
+					Namespace: ratelimitKey.Namespace,
+					Name:      string(ratelimitPolicy.Spec.TargetRef.Name)})
 			return nil, resolveRatelimit
 		}
-
+		logger.Info("cccccc", api.Spec.Production[0].HTTPRouteRefs)
 		var organization = api.Spec.Organization
 		var context = api.Spec.Context
 		var httpRoute gwapiv1b1.HTTPRoute
+		logger.Info("fsfwfwfew", api.Spec.Production[0].HTTPRouteRefs)
 		if len(api.Spec.Production) > 0 {
 			for _, ref := range api.Spec.Production[0].HTTPRouteRefs {
 				if ref != "" {
@@ -350,44 +365,44 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) marshelRateLimit(ctx conte
 	return vhost, resolveRatelimit
 }
 
-func addIndexes(ctx context.Context, mgr manager.Manager) error {
-	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.RateLimitPolicy{}, httprouteRateLimitIndex,
-		func(rawObj k8client.Object) []string {
-			ratelimitPolicy := rawObj.(*dpv1alpha1.RateLimitPolicy)
-			var apis []string
-			if ratelimitPolicy.Spec.TargetRef.Kind == constants.KindResource {
-				apis = append(apis,
-					types.NamespacedName{
-						Namespace: GetNamespace(
-							(*gwapiv1b1.Namespace)(ratelimitPolicy.Spec.TargetRef.Namespace),
-							ratelimitPolicy.Namespace),
-						Name: string(ratelimitPolicy.Spec.TargetRef.Name),
-					}.String())
-			}
-			return apis
-		}); err != nil {
-		return err
-	}
+// func addIndexes(ctx context.Context, mgr manager.Manager) error {
+// 	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.RateLimitPolicy{}, httprouteRateLimitIndex,
+// 		func(rawObj k8client.Object) []string {
+// 			ratelimitPolicy := rawObj.(*dpv1alpha1.RateLimitPolicy)
+// 			var apis []string
+// 			if ratelimitPolicy.Spec.TargetRef.Kind == constants.KindResource {
+// 				apis = append(apis,
+// 					types.NamespacedName{
+// 						Namespace: GetNamespace(
+// 							(*gwapiv1b1.Namespace)(ratelimitPolicy.Spec.TargetRef.Namespace),
+// 							ratelimitPolicy.Namespace),
+// 						Name: string(ratelimitPolicy.Spec.TargetRef.Name),
+// 					}.String())
+// 			}
+// 			return apis
+// 		}); err != nil {
+// 		return err
+// 	}
 
-	// ratelimite policy to API indexer
-	err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.RateLimitPolicy{}, apiRateLimitIndex,
-		func(rawObj k8client.Object) []string {
-			ratelimitPolicy := rawObj.(*dpv1alpha1.RateLimitPolicy)
-			var apis []string
-			if ratelimitPolicy.Spec.TargetRef.Kind == constants.KindAPI {
-				apis = append(apis,
-					types.NamespacedName{
-						Namespace: GetNamespace(
-							(*gwapiv1b1.Namespace)(ratelimitPolicy.Spec.TargetRef.Namespace),
-							ratelimitPolicy.Namespace),
-						Name: string(ratelimitPolicy.Spec.TargetRef.Name),
-					}.String())
-			}
-			logger.Info("index api policy")
-			return apis
-		})
-	return err
-}
+// 	// ratelimite policy to API indexer
+// 	err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.RateLimitPolicy{}, apiRateLimitIndex,
+// 		func(rawObj k8client.Object) []string {
+// 			ratelimitPolicy := rawObj.(*dpv1alpha1.RateLimitPolicy)
+// 			var apis []string
+// 			if ratelimitPolicy.Spec.TargetRef.Kind == constants.KindAPI {
+// 				apis = append(apis,
+// 					types.NamespacedName{
+// 						Namespace: GetNamespace(
+// 							(*gwapiv1b1.Namespace)(ratelimitPolicy.Spec.TargetRef.Namespace),
+// 							ratelimitPolicy.Namespace),
+// 						Name: string(ratelimitPolicy.Spec.TargetRef.Name),
+// 					}.String())
+// 			}
+// 			logger.Info("index api policy")
+// 			return apis
+// 		})
+// 	return err
+// }
 
 // NamespacedName generates namespaced name for Kubernetes objects
 func NamespacedName(obj client.Object) types.NamespacedName {
