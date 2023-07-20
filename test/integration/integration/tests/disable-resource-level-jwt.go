@@ -145,7 +145,6 @@ var DisableResourceLevelJWTWithNoOtherAuth = suite.IntegrationTest{
 	Test: func(t *testing.T, suite *suite.IntegrationTestSuite) {
 		ns := "gateway-integration-test-infra"
 		gwAddr := "disable-resource-level-jwt2.test.gw.wso2.com:9095"
-		token := http.GetTestToken(t)
 
 		testCases := []http.ExpectedResponse{
 			{
@@ -181,7 +180,6 @@ var DisableResourceLevelJWTWithNoOtherAuth = suite.IntegrationTest{
 		}
 		for i := range testCases {
 			tc := testCases[i]
-			tc.Request.Headers = http.AddBearerTokenToHeader(token, tc.Request.Headers)
 			t.Run(tc.GetTestCaseName(i), func(t *testing.T) {
 				t.Parallel()
 				http.MakeRequestAndExpectEventuallyConsistentResponse(t, suite.RoundTripper, suite.TimeoutConfig, gwAddr, tc)

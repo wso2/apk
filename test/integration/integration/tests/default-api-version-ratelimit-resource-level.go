@@ -30,7 +30,7 @@ func init() {
 
 // DefaultAPIVersionRatelimit tests default api version feature
 var DefaultAPIVersionRatelimitResourceLevel = suite.IntegrationTest{
-	ShortName:   "DefaultAPIVersionRatelimitTest",
+	ShortName:   "DefaultAPIVersionRatelimitResourceLevelTest",
 	Description: "Tests an API with default version",
 	Manifests:   []string{"tests/default-api-version-ratelimit-resource-level.yaml"},
 	Test: func(t *testing.T, testSuite *suite.IntegrationTestSuite) {

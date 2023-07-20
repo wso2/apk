@@ -179,7 +179,10 @@ func WaitForNextMinute(t *testing.T) {
     now := time.Now()
     nextMinute := now.Add(time.Minute).Truncate(time.Minute)
     durationToWait := nextMinute.Sub(now)
-
+		if (int(durationToWait.Seconds()) > 15) {
+        t.Logf("Not waiting for next minute as we have enough time in this minute. Current time (%v)\n", now)
+				return
+    }
     t.Logf("Waiting for the next minute to start (%v)... current time (%v)\n", nextMinute.Format("15:04:05"), now)
 
     time.Sleep(durationToWait)
