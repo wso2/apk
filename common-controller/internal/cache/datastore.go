@@ -18,7 +18,6 @@
 package cache
 
 import (
-	"reflect"
 	"sync"
 
 	logger "github.com/sirupsen/logrus"
@@ -29,35 +28,31 @@ import (
 
 // RatelimitDataStore is a cache for rate limit policies.
 type RatelimitDataStore struct {
-	ratelimitStore       map[types.NamespacedName]*dpv1alpha1.ResolveRateLimitAPIPolicy
-	apisToRateLimit      map[types.NamespacedName]*dpv1alpha1.RateLimitPolicyList
-	httpRouteToRateLimit map[types.NamespacedName]*dpv1alpha1.RateLimitPolicyList
-	mu                   sync.Mutex
+	resolveRatelimitStore map[types.NamespacedName]*dpv1alpha1.ResolveRateLimitAPIPolicy
+	mu                    sync.Mutex
 }
 
 // CreateNewOperatorDataStore creates a new RatelimitDataStore.
 func CreateNewOperatorDataStore() *RatelimitDataStore {
 	return &RatelimitDataStore{
-		ratelimitStore:       map[types.NamespacedName]*dpv1alpha1.ResolveRateLimitAPIPolicy{},
-		apisToRateLimit:      map[types.NamespacedName]*dpv1alpha1.RateLimitPolicyList{},
-		httpRouteToRateLimit: map[types.NamespacedName]*dpv1alpha1.RateLimitPolicyList{},
+		resolveRatelimitStore: map[types.NamespacedName]*dpv1alpha1.ResolveRateLimitAPIPolicy{},
 	}
 }
 
-// AddorUpdateRatelimitToStore adds a new ratelimit to the RatelimitDataStore.
-func (ods *RatelimitDataStore) AddorUpdateRatelimitToStore(rateLimit types.NamespacedName,
+// AddorUpdateResolveRatelimitToStore adds a new ratelimit to the RatelimitDataStore.
+func (ods *RatelimitDataStore) AddorUpdateResolveRatelimitToStore(rateLimit types.NamespacedName,
 	resolveRatelimit dpv1alpha1.ResolveRateLimitAPIPolicy) {
 	ods.mu.Lock()
 	defer ods.mu.Unlock()
 	logger.Info("Adding/Updating ratelimit to cache")
-	ods.ratelimitStore[rateLimit] = &resolveRatelimit
+	ods.resolveRatelimitStore[rateLimit] = &resolveRatelimit
 	logger.Info("resolveRatelimit: ", resolveRatelimit)
 }
 
-// GetCachedRatelimitPolicy get cached ratelimit
-func (ods *RatelimitDataStore) GetCachedRatelimitPolicy(rateLimit types.NamespacedName) (dpv1alpha1.ResolveRateLimitAPIPolicy, bool) {
+// GetResolveRatelimitPolicy get cached ratelimit
+func (ods *RatelimitDataStore) GetResolveRatelimitPolicy(rateLimit types.NamespacedName) (dpv1alpha1.ResolveRateLimitAPIPolicy, bool) {
 	var rateLimitPolicy dpv1alpha1.ResolveRateLimitAPIPolicy
-	if cachedRatelimit, found := ods.ratelimitStore[rateLimit]; found {
+	if cachedRatelimit, found := ods.resolveRatelimitStore[rateLimit]; found {
 		logger.Info("Found cached ratelimit")
 		logger.Info("cachedRatelimit: ", cachedRatelimit)
 		return *cachedRatelimit, true
@@ -65,144 +60,12 @@ func (ods *RatelimitDataStore) GetCachedRatelimitPolicy(rateLimit types.Namespac
 	return rateLimitPolicy, false
 }
 
-// DeleteCachedRatelimitPolicy delete from ratelimit cache
-func (ods *RatelimitDataStore) DeleteCachedRatelimitPolicy(rateLimit types.NamespacedName) {
+// DeleteResolveRatelimitPolicy delete from ratelimit cache
+func (ods *RatelimitDataStore) DeleteResolveRatelimitPolicy(rateLimit types.NamespacedName) {
 	ods.mu.Lock()
 	defer ods.mu.Unlock()
 	logger.Info("Deleting ratelimit from cache")
-	delete(ods.ratelimitStore, rateLimit)
-}
-
-// GetRatelimitsToAPI returns the list of rate limits for the specified API.
-func (ods *RatelimitDataStore) GetRatelimitsToAPI(api types.NamespacedName) *dpv1alpha1.RateLimitPolicyList {
-	return ods.apisToRateLimit[api]
-}
-
-// DeleteRatelimitToAPI deletes the list of rate limits for the specified API.
-func (ods *RatelimitDataStore) DeleteRatelimitToAPI(api types.NamespacedName) {
-	delete(ods.apisToRateLimit, api)
-}
-
-// AddRatelimitToAPI adds a rate limit to the list of rate limits for the specified API.
-func (ods *RatelimitDataStore) AddRatelimitToAPI(key types.NamespacedName, ratelimit dpv1alpha1.RateLimitPolicy) {
-	if ods.apisToRateLimit[key] == nil {
-		ods.apisToRateLimit[key] = &dpv1alpha1.RateLimitPolicyList{
-			Items: []dpv1alpha1.RateLimitPolicy{ratelimit},
-		}
-	} else {
-		ods.apisToRateLimit[key].Items = append(ods.apisToRateLimit[key].Items, ratelimit)
-	}
-}
-
-// IsRateLimitPolicyAvailble checks whether the specified rate limit policy is available in the cache.
-func (ods *RatelimitDataStore) IsRateLimitPolicyAvailble(key types.NamespacedName, desiredPolicy dpv1alpha1.RateLimitPolicy) bool {
-	if list, ok := ods.apisToRateLimit[key]; ok {
-		for _, policy := range list.Items {
-			if policiesEqual(policy, desiredPolicy) {
-				return true
-			}
-		}
-	}
-	return false
-}
-
-// RemoveRatelimitPolicyByNamespacedName removes the rate limit policy with the specified namespaced name from the cache.
-func (ods *RatelimitDataStore) RemoveRatelimitPolicyByNamespacedName(namespacedName types.NamespacedName) {
-	ods.mu.Lock()
-	defer ods.mu.Unlock()
-
-	// Iterate through the rate limit policies in the cache.
-	for api, rateLimitPolicyList := range ods.apisToRateLimit {
-		for i, policy := range rateLimitPolicyList.Items {
-			if policy.ObjectMeta.Namespace == namespacedName.Namespace && policy.ObjectMeta.Name == namespacedName.Name {
-				// Found the rate limit policy with the specified namespaced name.
-				// Remove the policy from the list.
-				ods.apisToRateLimit[api].Items = append(rateLimitPolicyList.Items[:i], rateLimitPolicyList.Items[i+1:]...)
-				return // Found and removed the policy, so return.
-			}
-		}
-	}
-}
-
-// Helper function to compare policies.
-func policiesEqual(policy1, policy2 dpv1alpha1.RateLimitPolicy) bool {
-	// Compare relevant fields here.
-	return reflect.DeepEqual(policy1.Spec, policy2.Spec)
-}
-
-// AddRateLimitToHTTPRoute adds a rate limit policy to the list associated with the given key.
-func (ods *RatelimitDataStore) AddRateLimitToHTTPRoute(key types.NamespacedName, policy dpv1alpha1.RateLimitPolicy) {
-	ods.mu.Lock()
-	defer ods.mu.Unlock()
-
-	if ods.httpRouteToRateLimit[key] == nil {
-		ods.httpRouteToRateLimit[key] = &dpv1alpha1.RateLimitPolicyList{
-			Items: []dpv1alpha1.RateLimitPolicy{policy},
-		}
-	} else {
-		ods.httpRouteToRateLimit[key].Items = append(ods.httpRouteToRateLimit[key].Items, policy)
-	}
-}
-
-// GetRateLimitPolicyForHTTPRoute returns the list of rate limit policies associated with the given key.
-// If the key is not found, it returns nil.
-func (ods *RatelimitDataStore) GetRateLimitPolicyForHTTPRoute(key types.NamespacedName) *dpv1alpha1.RateLimitPolicyList {
-	ods.mu.Lock()
-	defer ods.mu.Unlock()
-
-	return ods.httpRouteToRateLimit[key]
-}
-
-// DeleteRateLimitPolicyListForHTTPRoute deletes the rate limit policy list associated with the given key.
-func (ods *RatelimitDataStore) DeleteRateLimitPolicyListForHTTPRoute(key types.NamespacedName) {
-	ods.mu.Lock()
-	defer ods.mu.Unlock()
-
-	delete(ods.httpRouteToRateLimit, key)
-}
-
-// RemoveRateLimitPolicyFromListHTTPRoute removes a specific rate limit policy from the list associated with the given key.
-func (ods *RatelimitDataStore) RemoveRateLimitPolicyFromListHTTPRoute(key types.NamespacedName, policyToDelete dpv1alpha1.RateLimitPolicy) {
-	ods.mu.Lock()
-	defer ods.mu.Unlock()
-	if list, ok := ods.httpRouteToRateLimit[key]; ok {
-		for i, policy := range list.Items {
-			if policiesEqual(policy, policyToDelete) {
-				ods.httpRouteToRateLimit[key].Items = append(list.Items[:i], list.Items[i+1:]...)
-				return // Found and removed the policy, so return.
-			}
-		}
-	}
-}
-
-// IsRateLimitPolicyAvailableForHTTPRoute checks if the specified rate limit policy is available for the given HTTP route.
-func (ods *RatelimitDataStore) IsRateLimitPolicyAvailableForHTTPRoute(httpRoute types.NamespacedName, policyToCheck dpv1alpha1.RateLimitPolicy) bool {
-	ods.mu.Lock()
-	defer ods.mu.Unlock()
-
-	if list, ok := ods.httpRouteToRateLimit[httpRoute]; ok {
-		for _, policy := range list.Items {
-			if policiesEqual(policy, policyToCheck) {
-				return true // Found the policy, so return true.
-			}
-		}
-	}
-	return false // Policy not found, so return false.
-}
-
-// RemoveRatelimitPolicyByNamespacedNameHTTPRoute removes a specific rate limit policy based on its namespaced name from the map.
-func (ods *RatelimitDataStore) RemoveRatelimitPolicyByNamespacedNameHTTPRoute(httpRoute types.NamespacedName, policyToDelete dpv1alpha1.RateLimitPolicy) {
-	ods.mu.Lock()
-	defer ods.mu.Unlock()
-
-	if list, ok := ods.httpRouteToRateLimit[httpRoute]; ok {
-		for i, policy := range list.Items {
-			if policiesEqual(policy, policyToDelete) {
-				ods.httpRouteToRateLimit[httpRoute].Items = append(list.Items[:i], list.Items[i+1:]...)
-				return // Found and removed the policy, so return.
-			}
-		}
-	}
+	delete(ods.resolveRatelimitStore, rateLimit)
 }
 
 // NamespacedName generates namespaced name for Kubernetes objects

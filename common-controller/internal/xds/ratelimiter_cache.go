@@ -80,6 +80,7 @@ func (r *rateLimitPolicyCache) AddAPILevelRateLimitPolicies(vHosts []string, res
 	// path -> HTTP method
 	apiOperations := make(map[string]map[string]struct{})
 	if len(resolveRatelimit.Resources) != 0 {
+		logger.Info("Going to resorcelevel")
 		for _, resource := range resolveRatelimit.Resources {
 
 			path := resolveRatelimit.Context + resolveRatelimit.Context + resource.Path
@@ -114,6 +115,7 @@ func (r *rateLimitPolicyCache) AddAPILevelRateLimitPolicies(vHosts []string, res
 				logger.Info("org", org)
 			}
 			for _, vHost := range vHosts {
+				logger.Info("vHost", vHost)
 				if _, ok := r.apiLevelRateLimitPolicies[org][vHost]; !ok {
 					r.apiLevelRateLimitPolicies[org][vHost] = make(map[string][]*rls_config.RateLimitDescriptor)
 				}
@@ -122,6 +124,7 @@ func (r *rateLimitPolicyCache) AddAPILevelRateLimitPolicies(vHosts []string, res
 			}
 		}
 	} else {
+		logger.Info("Going to APILevel")
 		apiLevelRLPolicyConfig := parseRateLimitPolicyToXDS(resolveRatelimit.API)
 		rlsConfigs = append(rlsConfigs, &rls_config.RateLimitDescriptor{
 			Key:   DescriptorKeyForPath,
@@ -148,6 +151,7 @@ func (r *rateLimitPolicyCache) AddAPILevelRateLimitPolicies(vHosts []string, res
 			logger.Info("org", org)
 		}
 		for _, vHost := range vHosts {
+			logger.Info("vHost", vHost)
 			if _, ok := r.apiLevelRateLimitPolicies[org][vHost]; !ok {
 				r.apiLevelRateLimitPolicies[org][vHost] = make(map[string][]*rls_config.RateLimitDescriptor)
 			}
