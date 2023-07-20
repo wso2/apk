@@ -115,12 +115,12 @@ public type EndpointConfigurations record {
     EndpointConfiguration sandbox?;
 };
 
-public type JWTAuthentication record {
+public type JWTAuthentication record {|
     *Authentication;
-    boolean sendTokenToUpstream?;
-    string headerName?;
-    boolean headerEnable?;
-};
+    boolean sendTokenToUpstream = false;
+    string headerName = "Authorization";
+    boolean headerEnable = true;
+|};
 
 public type Timeout record {
     int maxRouteTimeoutSeconds?;
@@ -193,10 +193,10 @@ public type BaseOperationPolicy record {
     string policyId?;
 };
 
-public type Authentication record {
+public type Authentication record {|
     string authType?;
-    boolean enabled?;
-};
+    boolean enabled = true;
+|};
 
 public type InterceptorPolicy record {
     *BaseOperationPolicy;
@@ -265,14 +265,14 @@ public type RetryPolicy record {
     int[] statusCodes?;
 };
 
-public type APIKeyAuthentication record {
+public type APIKeyAuthentication record {|
     *Authentication;
-    boolean sendTokenToUpstream?;
-    string headerName?;
-    string queryParamName?;
-    boolean headerEnable?;
-    boolean queryParamEnable?;
-};
+    boolean sendTokenToUpstream = false;
+    string headerName = "apiKey";
+    string queryParamName = "apiKey";
+    boolean headerEnable = true;
+    boolean queryParamEnable = true;
+|};
 
 public type Certificate record {
     string secretName?;
