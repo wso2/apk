@@ -27,6 +27,7 @@ import (
 func init() {
 	IntegrationTests = append(IntegrationTests, DisableAPILevelJWT)
 	IntegrationTests = append(IntegrationTests, DisableAPILevelJWTTestWithFalseValue)
+	IntegrationTests = append(IntegrationTests, DisableAPILevelJWTTestWithNoOtherAuth)
 }
 
 // DisableAPILevelJWT tests disabling and enabling jwt feature api level with disabled = true value
@@ -112,6 +113,59 @@ var DisableAPILevelJWTTestWithFalseValue = suite.IntegrationTest{
 				Request: http.Request{
 					Host:   "disable-api-level-jwt1.test.gw.wso2.com",
 					Path:   "/disable-api-level-jwt1/v2/echo-full/",
+					Method: "GET",
+				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Path: "/v2/echo-full/",
+					},
+				},
+				Backend:   "infra-backend-v1",
+				Namespace: ns,
+				Response:  http.Response{StatusCode: 200},
+			},
+		}
+		for i := range testCases {
+			tc := testCases[i]
+			tc.Request.Headers = http.AddBearerTokenToHeader(token, tc.Request.Headers)
+			t.Run(tc.GetTestCaseName(i), func(t *testing.T) {
+				t.Parallel()
+				http.MakeRequestAndExpectEventuallyConsistentResponse(t, suite.RoundTripper, suite.TimeoutConfig, gwAddr, tc)
+			})
+		}
+	},
+}
+
+// DisableAPILevelJWTTestWithNoOtherAuth tests disabling and enabling jwt feature api level with disabled = true value with no other auth
+var DisableAPILevelJWTTestWithNoOtherAuth = suite.IntegrationTest{
+	ShortName:   "DisableAPILevelJWTTestWithNoOtherAuthTest",
+	Description: "Tests enabled JWT in API level with no other auth",
+	Manifests:   []string{"tests/disable-api-level-jwt.yaml"},
+	Test: func(t *testing.T, suite *suite.IntegrationTestSuite) {
+		ns := "gateway-integration-test-infra"
+		gwAddr := "disable-api-level-jwt2.test.gw.wso2.com:9095"
+		token := http.GetTestToken(t)
+
+		testCases := []http.ExpectedResponse{
+			{
+				Request: http.Request{
+					Host:   "disable-api-level-jwt2.test.gw.wso2.com",
+					Path:   "/disable-api-level-jwt2/v1.0.0/v2/echo-full/",
+					Method: "GET",
+				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Path: "/v2/echo-full/",
+					},
+				},
+				Backend:   "infra-backend-v1",
+				Namespace: ns,
+				Response:  http.Response{StatusCode: 200},
+			},
+			{
+				Request: http.Request{
+					Host:   "disable-api-level-jwt2.test.gw.wso2.com",
+					Path:   "/disable-api-level-jwt2/v2/echo-full/",
 					Method: "GET",
 				},
 				ExpectedRequest: &http.ExpectedRequest{

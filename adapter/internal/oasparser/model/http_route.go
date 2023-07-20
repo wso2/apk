@@ -560,21 +560,29 @@ func concatAuthSchemes(schemeUp *dpv1alpha1.Authentication, schemeDown *dpv1alph
 // make sure authscheme only has external service override values. (i.e. empty default values)
 // tip: use concatScheme method
 func getSecurity(authScheme *dpv1alpha1.Authentication) *Authentication {
+	authHeader := constants.AuthorizationHeader;
+	if (authScheme != nil && authScheme.Spec.Override.ExternalService.AuthTypes != nil && len(authScheme.Spec.Override.ExternalService.AuthTypes.JWT.Header) > 0) {
+		authHeader = authScheme.Spec.Override.ExternalService.AuthTypes.JWT.Header;
+	}
 	auth := &Authentication{Disabled: false,
 		TestConsoleKey: &TestConsoleKey{Header: constants.TestConsoleKeyHeader},
-		JWT: &JWT{Header: constants.AuthorizationHeader},
-	}
-	if (authScheme != nil && authScheme.Spec.Override.ExternalService.AuthTypes != nil && authScheme.Spec.Override.ExternalService.AuthTypes.JWT.Disabled) {
-		auth = &Authentication{Disabled: false,
-			TestConsoleKey: &TestConsoleKey{Header: constants.TestConsoleKeyHeader},
-		}
+		JWT: &JWT{Header: authHeader},
 	}
 	if authScheme != nil {
 		if authScheme.Spec.Override.ExternalService.Disabled != nil && *authScheme.Spec.Override.ExternalService.Disabled {
 			loggers.LoggerOasparser.Debug("Disabled security")
 			return &Authentication{Disabled: true}
 		}
+		authFound := false;
+		if (authScheme.Spec.Override.ExternalService.AuthTypes != nil && authScheme.Spec.Override.ExternalService.AuthTypes.JWT.Disabled) {
+			auth = &Authentication{Disabled: false,
+				TestConsoleKey: &TestConsoleKey{Header: constants.TestConsoleKeyHeader},
+			}
+		} else {
+			authFound = true;
+		}
 		if authScheme.Spec.Override.ExternalService.AuthTypes.APIKey != nil {
+			authFound = authFound || len(authScheme.Spec.Override.ExternalService.AuthTypes.APIKey) > 0;
 			var apiKeys []APIKey
 			for _, apiKey := range authScheme.Spec.Override.ExternalService.AuthTypes.APIKey {
 				apiKeys = append(apiKeys, APIKey{
@@ -583,6 +591,10 @@ func getSecurity(authScheme *dpv1alpha1.Authentication) *Authentication {
 				})
 			}
 			auth.APIKey = apiKeys
+		}
+		if (!authFound) {
+			loggers.LoggerOasparser.Debug("Disabled security.")
+			return &Authentication{Disabled: true}
 		}
 	}
 	return auth
