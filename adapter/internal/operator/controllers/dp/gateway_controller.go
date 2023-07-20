@@ -444,9 +444,18 @@ func (gatewayReconciler *GatewayReconciler) handleCustomRateLimitPolicies(obj k8
 	}
 	requests := []reconcile.Request{}
 	if ratelimitPolicy.Spec.TargetRef.Kind == constants.KindGateway {
+
+		namespace, err := utils.ValidateAndRetrieveNamespace((*gwapiv1b1.Namespace)(ratelimitPolicy.Spec.TargetRef.Namespace), ratelimitPolicy.Namespace)
+
+		if err != nil {
+			loggers.LoggerAPKOperator.Errorf("Namespace mismatch. TargetRef %s needs to be in the same namespace as the RatelimitPolicy %s. Expected: %s, Actual: %s",
+				string(ratelimitPolicy.Spec.TargetRef.Name), ratelimitPolicy.Name, ratelimitPolicy.Namespace, string(*ratelimitPolicy.Spec.TargetRef.Namespace))
+			return requests
+		}
+
 		requests = append(requests, reconcile.Request{
 			NamespacedName: types.NamespacedName{
-				Namespace: ratelimitPolicy.Namespace,
+				Namespace: namespace,
 				Name:      string(ratelimitPolicy.Spec.TargetRef.Name),
 			},
 		})
@@ -484,11 +493,18 @@ func (gatewayReconciler *GatewayReconciler) getGatewaysForAPIPolicy(obj k8client
 		return nil
 	}
 
+	namespace, err := utils.ValidateAndRetrieveNamespace((*gwapiv1b1.Namespace)(apiPolicy.Spec.TargetRef.Namespace), apiPolicy.Namespace)
+
+	if err != nil {
+		loggers.LoggerAPKOperator.Errorf("Namespace mismatch. TargetRef %s needs to be in the same namespace as the ApiPolicy %s. Expected: %s, Actual: %s",
+			string(apiPolicy.Spec.TargetRef.Name), apiPolicy.Name, apiPolicy.Namespace, string(*apiPolicy.Spec.TargetRef.Namespace))
+		return nil
+	}
+
 	return []reconcile.Request{{
 		NamespacedName: types.NamespacedName{
-			Name: string(apiPolicy.Spec.TargetRef.Name),
-			Namespace: utils.GetNamespace(
-				(*gwapiv1b1.Namespace)(apiPolicy.Spec.TargetRef.Namespace), apiPolicy.Namespace),
+			Name:      string(apiPolicy.Spec.TargetRef.Name),
+			Namespace: namespace,
 		},
 	}}
 }
@@ -501,12 +517,19 @@ func addGatewayIndexes(ctx context.Context, mgr manager.Manager) error {
 			ratelimitPolicy := rawObj.(*dpv1alpha1.RateLimitPolicy)
 			var gateways []string
 			if ratelimitPolicy.Spec.TargetRef.Kind == constants.KindGateway {
+
+				namespace, err := utils.ValidateAndRetrieveNamespace((*gwapiv1b1.Namespace)(ratelimitPolicy.Spec.TargetRef.Namespace), ratelimitPolicy.Namespace)
+
+				if err != nil {
+					loggers.LoggerAPKOperator.Errorf("Namespace mismatch. TargetRef %s needs to be in the same namespace as the RatelimitPolicy %s. Expected: %s, Actual: %s",
+						string(ratelimitPolicy.Spec.TargetRef.Name), ratelimitPolicy.Name, ratelimitPolicy.Namespace, string(*ratelimitPolicy.Spec.TargetRef.Namespace))
+					return gateways
+				}
+
 				gateways = append(gateways,
 					types.NamespacedName{
-						Namespace: utils.GetNamespace(
-							(*gwapiv1b1.Namespace)(ratelimitPolicy.Spec.TargetRef.Namespace),
-							ratelimitPolicy.Namespace),
-						Name: string(ratelimitPolicy.Spec.TargetRef.Name),
+						Namespace: namespace,
+						Name:      string(ratelimitPolicy.Spec.TargetRef.Name),
 					}.String())
 			}
 			return gateways
@@ -520,11 +543,19 @@ func addGatewayIndexes(ctx context.Context, mgr manager.Manager) error {
 			apiPolicy := rawObj.(*dpv1alpha1.APIPolicy)
 			var httpRoutes []string
 			if apiPolicy.Spec.TargetRef.Kind == constants.KindGateway {
+
+				namespace, err := utils.ValidateAndRetrieveNamespace((*gwapiv1b1.Namespace)(apiPolicy.Spec.TargetRef.Namespace), apiPolicy.Namespace)
+
+				if err != nil {
+					loggers.LoggerAPKOperator.Errorf("Namespace mismatch. TargetRef %s needs to be in the same namespace as the ApiPolicy %s. Expected: %s, Actual: %s",
+						string(apiPolicy.Spec.TargetRef.Name), apiPolicy.Name, apiPolicy.Namespace, string(*apiPolicy.Spec.TargetRef.Namespace))
+					return httpRoutes
+				}
+
 				httpRoutes = append(httpRoutes,
 					types.NamespacedName{
-						Namespace: utils.GetNamespace(
-							(*gwapiv1b1.Namespace)(apiPolicy.Spec.TargetRef.Namespace), apiPolicy.Namespace),
-						Name: string(apiPolicy.Spec.TargetRef.Name),
+						Namespace: namespace,
+						Name:      string(apiPolicy.Spec.TargetRef.Name),
 					}.String())
 			}
 			return httpRoutes
