@@ -209,11 +209,11 @@ jobs:
       with:
         azcliversion: 2.44.1
         inlineScript: |
-          az aks create --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" --name "cucumber-integ-${{ secrets.AKS_CLUSTER_NAME }}-${{ github.event.number || github.run_id }}" --enable-cluster-autoscaler --min-count 1 --max-count 3 --location "southeastasia" --generate-ssh-keys --verbose 
+          az aks create --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" --name "integ-${{ secrets.AKS_CLUSTER_NAME }}-${{ github.event.number || github.run_id }}" --enable-cluster-autoscaler --min-count 1 --max-count 3 --location "southeastasia" --generate-ssh-keys --verbose
     - uses: azure/aks-set-context@v3
       with:
          resource-group: '${{ secrets.AZURE_RESOURCE_GROUP }}'
-         cluster-name: 'cucumber-integ-${{ secrets.AKS_CLUSTER_NAME }}-${{ github.event.number || github.run_id }}'
+         cluster-name: 'integ-${{ secrets.AKS_CLUSTER_NAME }}-${{ github.event.number || github.run_id }}'
     - name: Create Namespace apk-cucumber-integration-test
       shell: sh
       run: |
@@ -287,7 +287,7 @@ jobs:
       with:
         azcliversion: 2.44.1
         inlineScript: |
-          az aks delete --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} --name cucumber-integ-${{ secrets.AKS_CLUSTER_NAME }}-${{ github.event.number || github.run_id }} --yes
+          az aks delete --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} --name integ-${{ secrets.AKS_CLUSTER_NAME }}-${{ github.event.number || github.run_id }} --yes
     - name: Logout from azure
       if: always()
       uses: azure/CLI@v1
