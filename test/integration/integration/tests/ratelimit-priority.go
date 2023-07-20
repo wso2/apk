@@ -33,7 +33,7 @@ var RatelimitPriority = suite.IntegrationTest{
 	ShortName:   "RatelimitPriorityTest",
 	Description: "Tests ratelimit priority between API level and resource level",
 	Manifests:   []string{"tests/ratelimit-priority.yaml"},
-	Test: func(t *testing.T, suite *suite.IntegrationTestSuite) {
+	Test: func(t *testing.T, testSuite *suite.IntegrationTestSuite) {
 		ns := "gateway-integration-test-infra"
 		gwAddr := "ratelimit-priority.test.gw.wso2.com:9095"
 		token := http.GetTestToken(t)
@@ -88,11 +88,12 @@ var RatelimitPriority = suite.IntegrationTest{
 				UnacceptableStatuses: []int{200},
 			},
 		}
+		suite.WaitForNextMinute(t);
 		for i := range testCases {
 			tc := testCases[i]
 			tc.Request.Headers = http.AddBearerTokenToHeader(token, tc.Request.Headers)
 			t.Run(tc.GetTestCaseName(i), func(t *testing.T) {
-				http.MakeRequestAndExpectEventuallyConsistentResponse(t, suite.RoundTripper, suite.TimeoutConfig, gwAddr, tc)
+				http.MakeRequestAndExpectEventuallyConsistentResponse(t, testSuite.RoundTripper, testSuite.TimeoutConfig, gwAddr, tc)
 			})
 		}
 	},
