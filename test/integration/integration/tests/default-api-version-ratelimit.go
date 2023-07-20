@@ -33,7 +33,7 @@ var DefaultAPIVersionRatelimit = suite.IntegrationTest{
 	ShortName:   "DefaultAPIVersionRatelimitTest",
 	Description: "Tests an API with default version",
 	Manifests:   []string{"tests/default-api-version-ratelimit.yaml"},
-	Test: func(t *testing.T, suite *suite.IntegrationTestSuite) {
+	Test: func(t *testing.T, testSuite *suite.IntegrationTestSuite) {
 		ns := "gateway-integration-test-infra"
 		gwAddr := "default-api-version-ratelimit.test.gw.wso2.com:9095"
 		token := http.GetTestToken(t)
@@ -104,11 +104,12 @@ var DefaultAPIVersionRatelimit = suite.IntegrationTest{
 				UnacceptableStatuses: []int{200},
 			},
 		}
+		suite.WaitForNextMinute(t)
 		for i := range testCases {
 			tc := testCases[i]
 			tc.Request.Headers = http.AddBearerTokenToHeader(token, tc.Request.Headers)
 			t.Run(tc.GetTestCaseName(i), func(t *testing.T) {
-				http.MakeRequestAndExpectEventuallyConsistentResponse(t, suite.RoundTripper, suite.TimeoutConfig, gwAddr, tc)
+				http.MakeRequestAndExpectEventuallyConsistentResponse(t, testSuite.RoundTripper, testSuite.TimeoutConfig, gwAddr, tc)
 			})
 		}
 	},
