@@ -300,6 +300,7 @@ public class APIClient {
                     authTypes.jwt = {header: <string>authentication.headerName, sendTokenToUpstream: <boolean>authentication.sendTokenToUpstream, disabled: true};
                 }
             }
+        }
         log:printDebug("Auth Types:" + authTypes.toString());
         string[] keys = createdEndpointMap.keys();
         log:printDebug("createdEndpointMap.keys:" + createdEndpointMap.keys().toString());
