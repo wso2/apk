@@ -56,6 +56,7 @@ public type AuthenticationExtenstionType record {
 public type JWTAuthentication record {
     string header?;
     boolean sendTokenToUpstream?;
+    boolean disabled;
 };
 
 public type InternalKey record {

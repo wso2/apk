@@ -302,7 +302,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "sql"
-version = "1.8.0"
+version = "1.10.0"
 dependencies = [
 	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "jballerina.java"},
@@ -368,7 +368,7 @@ modules = [
 [[package]]
 org = "ballerinax"
 name = "postgresql"
-version = "1.8.0"
+version = "1.10.0"
 dependencies = [
 	{org = "ballerina", name = "crypto"},
 	{org = "ballerina", name = "io"},

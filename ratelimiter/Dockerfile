@@ -56,10 +56,12 @@ RUN \
     addgroup -S -g ${MG_USER_GROUP_ID} ${MG_USER_GROUP} \
     && adduser -S -u ${MG_USER_ID} -h ${MG_USER_HOME} -G ${MG_USER_GROUP} ${MG_USER} \
     && mkdir ${MG_USER_HOME}/logs && chown -R ${MG_USER}:${MG_USER_GROUP} ${MG_USER_HOME}/logs  \
+    && chgrp -R 0 ${MG_USER_GROUP} \
+    && chmod -R g=u ${MG_USER_GROUP} \
     && echo '[ ! -z "${TERM}" -a -r /etc/motd ] && cat /etc/motd' >> /etc/bash.bashrc; echo "${MOTD}" > /etc/motd
 
 WORKDIR ${MG_USER_HOME}
-USER ${MG_USER}
+USER ${MG_USER_ID}
 COPY resources/security security
 COPY resources/start-server.sh .
 

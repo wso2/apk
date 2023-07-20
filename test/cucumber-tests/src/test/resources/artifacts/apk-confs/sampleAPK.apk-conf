@@ -1,0 +1,15 @@
+---
+name: "sample-api"
+context: ""
+version: "2.0.0"
+type: "REST"
+organization: ""
+defaultVersion: false
+endpointConfigurations:
+  production:
+    endpoint: "https://httpbin.org"
+operations:
+- target: "/anything"
+  verb: "GET"
+  authTypeEnabled: true
+  scopes: []

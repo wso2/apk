@@ -33,8 +33,8 @@ import (
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
-// HTTPRouteParams contains httproute related parameters
-type HTTPRouteParams struct {
+// ResourceParams contains httproute related parameters
+type ResourceParams struct {
 	AuthSchemes               map[string]dpv1alpha1.Authentication
 	ResourceAuthSchemes       map[string]dpv1alpha1.Authentication
 	APIPolicies               map[string]dpv1alpha1.APIPolicy
@@ -48,12 +48,12 @@ type HTTPRouteParams struct {
 
 // SetInfoHTTPRouteCR populates resources and endpoints of adapterInternalAPI. httpRoute.Spec.Rules.Matches
 // are used to create resources and httpRoute.Spec.Rules.BackendRefs are used to create EndpointClusters.
-func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, httpRouteParams HTTPRouteParams) error {
+func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, resourceParams ResourceParams) error {
 	var resources []*Resource
 	//TODO(amali) add gateway level securities after gateway crd has implemented
-	outputAuthScheme := utils.TieBreaker(utils.GetPtrSlice(maps.Values(httpRouteParams.AuthSchemes)))
-	outputAPIPolicy := utils.TieBreaker(utils.GetPtrSlice(maps.Values(httpRouteParams.APIPolicies)))
-	outputRatelimitPolicy := utils.TieBreaker(utils.GetPtrSlice(maps.Values(httpRouteParams.RateLimitPolicies)))
+	outputAuthScheme := utils.TieBreaker(utils.GetPtrSlice(maps.Values(resourceParams.AuthSchemes)))
+	outputAPIPolicy := utils.TieBreaker(utils.GetPtrSlice(maps.Values(resourceParams.APIPolicies)))
+	outputRatelimitPolicy := utils.TieBreaker(utils.GetPtrSlice(maps.Values(resourceParams.RateLimitPolicies)))
 
 	disableScopes := true
 	disableAuthentications := false
@@ -102,7 +102,7 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 				Name:      string(backend.Name),
 				Namespace: utils.GetNamespace(backend.Namespace, httpRoute.Namespace),
 			}
-			resolvedBackend, ok := httpRouteParams.BackendMapping[backendName]
+			resolvedBackend, ok := resourceParams.BackendMapping[backendName]
 			if ok {
 				if resolvedBackend.CircuitBreaker != nil {
 					circuitBreaker = &dpv1alpha1.CircuitBreaker{
@@ -135,8 +135,8 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 						HealthyThreshold:   resolvedBackend.HealthCheck.HealthyThreshold,
 					}
 				}
-				endPoints = append(endPoints, GetEndpoints(backendName, httpRouteParams.BackendMapping)...)
-				backendBasePath = GetBackendBasePath(backendName, httpRouteParams.BackendMapping)
+				endPoints = append(endPoints, GetEndpoints(backendName, resourceParams.BackendMapping)...)
+				backendBasePath = GetBackendBasePath(backendName, resourceParams.BackendMapping)
 				switch resolvedBackend.Security.Type {
 				case "Basic":
 					securityConfig = append(securityConfig, EndpointSecurity{
@@ -173,7 +173,7 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 				hasURLRewritePolicy = true
 			case gwapiv1b1.HTTPRouteFilterExtensionRef:
 				if filter.ExtensionRef.Kind == constants.KindAuthentication {
-					if ref, found := httpRouteParams.ResourceAuthSchemes[types.NamespacedName{
+					if ref, found := resourceParams.ResourceAuthSchemes[types.NamespacedName{
 						Name:      string(filter.ExtensionRef.Name),
 						Namespace: httpRoute.Namespace,
 					}.String()]; found {
@@ -184,7 +184,7 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 					}
 				}
 				if filter.ExtensionRef.Kind == constants.KindAPIPolicy {
-					if ref, found := httpRouteParams.ResourceAPIPolicies[types.NamespacedName{
+					if ref, found := resourceParams.ResourceAPIPolicies[types.NamespacedName{
 						Name:      string(filter.ExtensionRef.Name),
 						Namespace: httpRoute.Namespace,
 					}.String()]; found {
@@ -195,7 +195,7 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 					}
 				}
 				if filter.ExtensionRef.Kind == constants.KindScope {
-					if ref, found := httpRouteParams.ResourceScopes[types.NamespacedName{
+					if ref, found := resourceParams.ResourceScopes[types.NamespacedName{
 						Name:      string(filter.ExtensionRef.Name),
 						Namespace: httpRoute.Namespace,
 					}.String()]; found {
@@ -206,7 +206,7 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 					}
 				}
 				if filter.ExtensionRef.Kind == constants.KindRateLimitPolicy {
-					if ref, found := httpRouteParams.ResourceRateLimitPolicies[types.NamespacedName{
+					if ref, found := resourceParams.ResourceRateLimitPolicies[types.NamespacedName{
 						Name:      string(filter.ExtensionRef.Name),
 						Namespace: httpRoute.Namespace,
 					}.String()]; found {
@@ -286,9 +286,9 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 		}
 		if resourceAPIPolicy == apiPolicy {
 			apiPolicySelected := concatAPIPolicies(apiPolicy, nil)
-			addOperationLevelInterceptors(&policies, apiPolicySelected, httpRouteParams.InterceptorServiceMapping, httpRouteParams.BackendMapping)
+			addOperationLevelInterceptors(&policies, apiPolicySelected, resourceParams.InterceptorServiceMapping, resourceParams.BackendMapping)
 		} else {
-			addOperationLevelInterceptors(&policies, resourceAPIPolicy, httpRouteParams.InterceptorServiceMapping, httpRouteParams.BackendMapping)
+			addOperationLevelInterceptors(&policies, resourceAPIPolicy, resourceParams.InterceptorServiceMapping, resourceParams.BackendMapping)
 		}
 
 		loggers.LoggerOasparser.Debugf("Calculating auths for API ..., API_UUID = %v", logging.GetValueFromLogContext("API_UUID"))
@@ -560,21 +560,29 @@ func concatAuthSchemes(schemeUp *dpv1alpha1.Authentication, schemeDown *dpv1alph
 // make sure authscheme only has external service override values. (i.e. empty default values)
 // tip: use concatScheme method
 func getSecurity(authScheme *dpv1alpha1.Authentication) *Authentication {
+	authHeader := constants.AuthorizationHeader;
+	if (authScheme != nil && authScheme.Spec.Override.ExternalService.AuthTypes != nil && len(authScheme.Spec.Override.ExternalService.AuthTypes.JWT.Header) > 0) {
+		authHeader = authScheme.Spec.Override.ExternalService.AuthTypes.JWT.Header;
+	}
 	auth := &Authentication{Disabled: false,
 		TestConsoleKey: &TestConsoleKey{Header: constants.TestConsoleKeyHeader},
-		JWT:            &JWT{Header: constants.AuthorizationHeader},
-	}
-	if authScheme != nil && authScheme.Spec.Override.ExternalService.AuthTypes != nil && authScheme.Spec.Override.ExternalService.AuthTypes.JWT.Disabled {
-		auth = &Authentication{Disabled: false,
-			TestConsoleKey: &TestConsoleKey{Header: constants.TestConsoleKeyHeader},
-		}
+		JWT: &JWT{Header: authHeader},
 	}
 	if authScheme != nil {
 		if authScheme.Spec.Override.ExternalService.Disabled != nil && *authScheme.Spec.Override.ExternalService.Disabled {
 			loggers.LoggerOasparser.Debug("Disabled security")
 			return &Authentication{Disabled: true}
 		}
+		authFound := false;
+		if (authScheme.Spec.Override.ExternalService.AuthTypes != nil && authScheme.Spec.Override.ExternalService.AuthTypes.JWT.Disabled) {
+			auth = &Authentication{Disabled: false,
+				TestConsoleKey: &TestConsoleKey{Header: constants.TestConsoleKeyHeader},
+			}
+		} else {
+			authFound = true;
+		}
 		if authScheme.Spec.Override.ExternalService.AuthTypes.APIKey != nil {
+			authFound = authFound || len(authScheme.Spec.Override.ExternalService.AuthTypes.APIKey) > 0;
 			var apiKeys []APIKey
 			for _, apiKey := range authScheme.Spec.Override.ExternalService.AuthTypes.APIKey {
 				apiKeys = append(apiKeys, APIKey{
@@ -583,6 +591,10 @@ func getSecurity(authScheme *dpv1alpha1.Authentication) *Authentication {
 				})
 			}
 			auth.APIKey = apiKeys
+		}
+		if (!authFound) {
+			loggers.LoggerOasparser.Debug("Disabled security.")
+			return &Authentication{Disabled: true}
 		}
 	}
 	return auth

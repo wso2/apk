@@ -145,18 +145,18 @@ func GenerateAdapterInternalAPI(apiState APIState, httpRoute *HTTPRouteState, en
 	adapterInternalAPI.SetAPIDefinitionFile(apiState.APIDefinitionFile)
 	internalLogging.SetValueToLogContext("API_UUID", adapterInternalAPI.UUID)
 	adapterInternalAPI.EnvType = envType
-	httpRouteParams := model.HTTPRouteParams{
-		AuthSchemes:               httpRoute.Authentications,
-		ResourceAuthSchemes:       httpRoute.ResourceAuthentications,
+	resourceParams := model.ResourceParams{
+		AuthSchemes:               apiState.Authentications,
+		ResourceAuthSchemes:       apiState.ResourceAuthentications,
 		BackendMapping:            httpRoute.BackendMapping,
-		APIPolicies:               httpRoute.APIPolicies,
-		ResourceAPIPolicies:       httpRoute.ResourceAPIPolicies,
+		APIPolicies:               apiState.APIPolicies,
+		ResourceAPIPolicies:       apiState.ResourceAPIPolicies,
 		ResourceScopes:            httpRoute.Scopes,
-		InterceptorServiceMapping: httpRoute.InterceptorServiceMapping,
-		RateLimitPolicies:         httpRoute.RateLimitPolicies,
-		ResourceRateLimitPolicies: httpRoute.ResourceRateLimitPolicies,
+		InterceptorServiceMapping: apiState.InterceptorServiceMapping,
+		RateLimitPolicies:         apiState.RateLimitPolicies,
+		ResourceRateLimitPolicies: apiState.ResourceRateLimitPolicies,
 	}
-	if err := adapterInternalAPI.SetInfoHTTPRouteCR(httpRoute.HTTPRoute, httpRouteParams); err != nil {
+	if err := adapterInternalAPI.SetInfoHTTPRouteCR(httpRoute.HTTPRoute, resourceParams); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2631, err))
 		return nil, err
 	}

@@ -280,10 +280,10 @@ public class APIClient {
             map<model:Endpoint|()> createdEndpointMap, string organization) {
         map<model:Authentication> authenticationMap = {};
         model:AuthenticationExtenstionType authTypes = {};
-        foreach Authentication authentication in authentications {
-            if authentication.enabled ?: false {
+        foreach AuthenticationRequest authentication in authentications {
+            if authentication.enabled == true {
                 if authentication.authType == "JWT" && authentication is JWTAuthentication {
-                    authTypes.jwt = {header: <string>authentication.headerName, sendTokenToUpstream: <boolean>authentication.sendTokenToUpstream};
+                    authTypes.jwt = {header: <string>authentication.headerName, sendTokenToUpstream: <boolean>authentication.sendTokenToUpstream, disabled: false};
                 }
                 if authentication.authType == "APIKey" && authentication is APIKeyAuthentication {
                     authTypes.apiKey = [];
@@ -293,6 +293,11 @@ public class APIClient {
                     if authentication.queryParamName is string {
                         authTypes.apiKey.push({'in: "Query", name: authentication.queryParamName ?: "apiKey", sendTokenToUpstream: authentication.sendTokenToUpstream ?: false});
                     }
+                }
+            } else {
+                if authentication.authType == "JWT" && authentication is JWTAuthentication {
+                    log:printInfo("Authentications: Inside second if");
+                    authTypes.jwt = {header: <string>authentication.headerName, sendTokenToUpstream: <boolean>authentication.sendTokenToUpstream, disabled: true};
                 }
             }
         }

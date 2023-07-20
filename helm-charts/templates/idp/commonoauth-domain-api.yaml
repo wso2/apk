@@ -28,7 +28,7 @@ spec:
   apiVersion: "1.0.0"
   context: "/commonoauth/1.0.0"
   isDefaultVersion: true
-  organization: "carbon.super"
+  organization: "apk-system"
   production:
     - httpRouteRefs:
       - {{ template "apk-helm.resource.prefix" . }}-commonoauth-ds-httproute

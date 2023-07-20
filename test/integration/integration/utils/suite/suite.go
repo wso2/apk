@@ -19,6 +19,7 @@ package suite
 
 import (
 	"testing"
+  "time"
 
 	"github.com/wso2/apk/test/integration/integration/utils/kubernetes"
 	"github.com/wso2/apk/test/integration/integration/utils/roundtripper"
@@ -171,4 +172,19 @@ func (test *IntegrationTest) Run(t *testing.T, suite *IntegrationTestSuite) {
 	}
 
 	test.Test(t, suite)
+}
+
+// WaitForNextMinute wait until next clock minute starts
+func WaitForNextMinute(t *testing.T) {
+    now := time.Now()
+    nextMinute := now.Add(time.Minute).Truncate(time.Minute)
+    durationToWait := nextMinute.Sub(now)
+		if (int(durationToWait.Seconds()) > 15) {
+        t.Logf("Not waiting for next minute as we have enough time in this minute. Current time (%v)\n", now)
+				return
+    }
+    t.Logf("Waiting for the next minute to start (%v)... current time (%v)\n", nextMinute.Format("15:04:05"), now)
+
+    time.Sleep(durationToWait)
+    t.Logf("Next minute has started! current time: (%v)", time.Now())
 }
