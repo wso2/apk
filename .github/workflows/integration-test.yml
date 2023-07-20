@@ -195,3 +195,103 @@ jobs:
       with:
        report_paths: 'apk-repo/test/postman-tests/build/*.xml'
        fail_on_test_failures: true
+
+  runs_cucumber_integration_tests_on_pull_request_target:
+    if: github.event_name == 'pull_request_target' && github.event.action == 'opened' || github.event.action == 'synchronize' || github.event.action == 'reopened'
+    needs: [build_adapter, build_common_controller, build_enforcer,build_config,build_idpds,build_idpui]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+    - name: Create AKS Cluster and set context
+      uses: azure/CLI@v1
+      with:
+        azcliversion: 2.44.1
+        inlineScript: |
+          az aks create --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" --name "go-integ-${{ secrets.AKS_CLUSTER_NAME }}-${{ github.event.number || github.run_id }}" --enable-cluster-autoscaler --min-count 1 --max-count 3 --location "southeastasia" --generate-ssh-keys --verbose 
+    - uses: azure/aks-set-context@v3
+      with:
+         resource-group: '${{ secrets.AZURE_RESOURCE_GROUP }}'
+         cluster-name: 'go-integ-${{ secrets.AKS_CLUSTER_NAME }}-${{ github.event.number || github.run_id }}'
+    - name: Create Namespace apk-integration-test
+      shell: sh
+      run: |
+        kubectl create namespace apk-integration-test
+        kubectl get ns 
+    - name: Create Image pull secret.
+      shell: sh
+      run: |
+        kubectl create secret docker-registry azure-registry --docker-server=${{ secrets.AZURE_ACR_NAME }}.azurecr.io --docker-username=${{ secrets.AZURE_ACR_USER }} --docker-password=${{ secrets.AZURE_ACR_PASSWORD }} --docker-email=${{ secrets.WSO2_BOT_EMAIL }} -n apk-integration-test
+    - name: Checkout apk-repo.
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: "0"
+        path: apk-repo
+        token: ${{ secrets.WSO2_BOT_TOKEN }}
+    - name: Set release username and email
+      shell: sh
+      run: |
+        git config --global user.name ${{ secrets.WSO2_BOT_USER }}
+        git config --global user.email ${{ secrets.WSO2_BOT_EMAIL }}
+
+    - name: checkout pull request and merge.
+      shell: sh
+      if: github.event_name == 'pull_request_target' && github.event.action == 'opened' || github.event.action == 'synchronize' || github.event.action == 'reopened'
+      run: |
+        cd apk-repo
+        gh pr checkout ${{ github.event.number }} -b pr-${{ github.event.number }}
+        git checkout pr-${{ github.event.number }}
+        git merge origin/main
+
+    - name: Helm release deploy
+      if: github.event_name == 'pull_request_target' && github.event.action == 'opened' || github.event.action == 'synchronize' || github.event.action == 'reopened'
+      shell: sh
+      run: |
+        cd apk-repo/helm-charts
+        helm repo add bitnami https://charts.bitnami.com/bitnami
+        helm repo add jetstack https://charts.jetstack.io
+        helm dependency build
+        helm install apk-test-setup -n apk-integration-test . --debug --wait --timeout 10m0s \
+        --set wso2.subscription.imagePullSecrets=azure-registry \
+        --set wso2.apk.dp.configdeployer.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/config-deployer-service:${{ github.sha }} \
+        --set wso2.apk.dp.adapter.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/adapter:${{ github.sha }} \
+        --set wso2.apk.dp.commonController.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/common-controller:${{ github.sha }} \
+        --set wso2.apk.dp.gatewayRuntime.deployment.enforcer.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/enforcer:${{ github.sha }} \
+        --set idp.idpds.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/idp-domain-service:${{ github.sha }} \
+        --set idp.idpui.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/idp-ui:${{ github.sha }} \
+        --set wso2.apk.dp.runtime.deployment.replicas=0
+        kubectl get pods -n apk-integration-test
+        kubectl get svc -n apk-integration-test
+    - name: Setup Hosts
+      shell: sh
+      run: |
+          cd apk-repo/test/integration
+          sh ./scripts/setup-hosts.sh
+    - name: Run test cases
+      shell: sh
+      run: |
+          cd apk-repo/test/cucumber-tests
+          ./gradlew test
+    - name: Helm release undeploy
+      if: always()
+      shell: sh
+      run: |
+        cd apk-repo/helm-charts
+        kubectl get pods -n apk-integration-test
+        kubectl get svc -n apk-integration-test
+        helm uninstall apk-test-setup -n apk-integration-test
+    - name: Delete AKS cluster
+      if: always()
+      uses: azure/CLI@v1
+      with:
+        azcliversion: 2.44.1
+        inlineScript: |
+          az aks delete --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} --name go-integ-${{ secrets.AKS_CLUSTER_NAME }}-${{ github.event.number || github.run_id }} --yes
+    - name: Logout from azure
+      if: always()
+      uses: azure/CLI@v1
+      with:
+        azcliversion: 2.44.1
+        inlineScript: |
+          az logout
