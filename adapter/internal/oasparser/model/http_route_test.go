@@ -457,39 +457,39 @@ func TestConcatAPIPolicies(t *testing.T) {
 		{
 			schemeUpSpec: dpv1alpha1.APIPolicySpec{
 				Override: &dpv1alpha1.PolicySpec{
-					RequestInterceptors: []dpv1alpha1.InterceptorReference{
-						{
-							Ref: "up-request-interceptor",
+					RequestInterceptor: &dpv1alpha1.InterceptorReference{
+						Refs: []string{
+							"up-request-interceptor",
 						},
 					},
 				},
 			},
 			schemeDownSpec: dpv1alpha1.APIPolicySpec{
 				Override: &dpv1alpha1.PolicySpec{
-					RequestInterceptors: []dpv1alpha1.InterceptorReference{
-						{
-							Ref: "down-request-interceptor",
+					RequestInterceptor: &dpv1alpha1.InterceptorReference{
+						Refs: []string{
+							"down-request-interceptor",
 						},
 					},
 				},
 				Default: &dpv1alpha1.PolicySpec{
-					ResponseInterceptors: []dpv1alpha1.InterceptorReference{
-						{
-							Ref: "down-response-interceptor",
+					ResponseInterceptor: &dpv1alpha1.InterceptorReference{
+						Refs: []string{
+							"down-response-interceptor",
 						},
 					},
 				},
 			},
 			result: dpv1alpha1.APIPolicySpec{
 				Override: &dpv1alpha1.PolicySpec{
-					RequestInterceptors: []dpv1alpha1.InterceptorReference{
-						{
-							Ref: "up-request-interceptor",
+					RequestInterceptor: &dpv1alpha1.InterceptorReference{
+						Refs: []string{
+							"up-request-interceptor",
 						},
 					},
-					ResponseInterceptors: []dpv1alpha1.InterceptorReference{
-						{
-							Ref: "down-response-interceptor",
+					ResponseInterceptor: &dpv1alpha1.InterceptorReference{
+						Refs: []string{
+							"down-response-interceptor",
 						},
 					},
 				},

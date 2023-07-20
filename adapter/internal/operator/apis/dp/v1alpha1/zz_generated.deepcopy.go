@@ -1123,15 +1123,15 @@ func (in *JWTIssuerStatus) DeepCopy() *JWTIssuerStatus {
 func (in *PolicySpec) DeepCopyInto(out *PolicySpec) {
 	*out = *in
 	in.RequestQueryModifier.DeepCopyInto(&out.RequestQueryModifier)
-	if in.RequestInterceptors != nil {
-		in, out := &in.RequestInterceptors, &out.RequestInterceptors
-		*out = make([]InterceptorReference, len(*in))
-		copy(*out, *in)
+	if in.RequestInterceptor != nil {
+		in, out := &in.RequestInterceptor, &out.RequestInterceptor
+		*out = new(InterceptorReference)
+		(*in).DeepCopyInto(*out)
 	}
-	if in.ResponseInterceptors != nil {
-		in, out := &in.ResponseInterceptors, &out.ResponseInterceptors
-		*out = make([]InterceptorReference, len(*in))
-		copy(*out, *in)
+	if in.ResponseInterceptor != nil {
+		in, out := &in.ResponseInterceptor, &out.ResponseInterceptor
+		*out = new(InterceptorReference)
+		(*in).DeepCopyInto(*out)
 	}
 	if in.BackendJWTToken != nil {
 		in, out := &in.BackendJWTToken, &out.BackendJWTToken

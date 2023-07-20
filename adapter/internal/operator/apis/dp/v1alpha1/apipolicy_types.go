@@ -38,11 +38,11 @@ type APIPolicySpec struct {
 
 // PolicySpec contains API policies
 type PolicySpec struct {
-	RequestQueryModifier RequestQueryModifier   `json:"requestQueryModifier,omitempty"`
-	RequestInterceptors  []InterceptorReference `json:"requestInterceptors,omitempty"`
-	ResponseInterceptors []InterceptorReference `json:"responseInterceptors,omitempty"`
-	BackendJWTToken      *BackendJWTToken       `json:"backendJwtToken,omitempty"`
-	CORSPolicy           *CORSPolicy            `json:"cORSPolicy,omitempty"`
+	RequestQueryModifier RequestQueryModifier  `json:"requestQueryModifier,omitempty"`
+	RequestInterceptor   *InterceptorReference `json:"requestInterceptor,omitempty"`
+	ResponseInterceptor  *InterceptorReference `json:"responseInterceptor,omitempty"`
+	BackendJWTToken      *BackendJWTToken      `json:"backendJwtToken,omitempty"`
+	CORSPolicy           *CORSPolicy           `json:"cORSPolicy,omitempty"`
 }
 
 // BackendJWTToken holds backend JWT token information
@@ -82,11 +82,10 @@ type CORSPolicy struct {
 	AccessControlMaxAge           *int     `json:"accessControlMaxAge,omitempty"`
 }
 
-// InterceptorReference holds InterceptorService reference using name and namespace
+// InterceptorReference holds InterceptorService references for the InterceptorService resource.
 type InterceptorReference struct {
-	// Ref is the reference of the InterceptorService resource.
-	// Name string `json:"ref"`
-	Ref string `json:"ref"`
+	// Refs is an array of referenced Interceptors.
+	Refs []string `json:"refs,omitempty"`
 }
 
 // HTTPQuery represents an HTTP Header name and value as defined by RFC 7230.

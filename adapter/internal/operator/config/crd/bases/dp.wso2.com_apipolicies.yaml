@@ -100,23 +100,16 @@ spec:
                       enabled:
                         type: boolean
                     type: object
-                  requestInterceptors:
-                    items:
-                      description: InterceptorReference holds InterceptorService reference
-                        using name and namespace
-                      properties:
-                        name:
-                          description: Name is the name of the InterceptorService
-                            resource.
+                  requestInterceptor:
+                    description: InterceptorReference holds InterceptorService 
+                      references for the InterceptorService resource.
+                    properties:
+                      refs:
+                        description: Refs is an array of references
+                        items:
                           type: string
-                        namespace:
-                          description: Namespace is the namespace of the InterceptorService
-                            resource.
-                          type: string
-                      required:
-                      - name
-                      type: object
-                    type: array
+                        type: array
+                    type: object
                   requestQueryModifier:
                     description: RequestQueryModifier allows to modify request query
                       params
@@ -155,23 +148,16 @@ spec:
                       removeAll:
                         type: string
                     type: object
-                  responseInterceptors:
-                    items:
-                      description: InterceptorReference holds InterceptorService reference
-                        using name and namespace
-                      properties:
-                        name:
-                          description: Name is the name of the InterceptorService
-                            resource.
+                  responseInterceptor:
+                    description: InterceptorReference holds InterceptorService 
+                      references for the InterceptorService resource.
+                    properties:
+                      refs:
+                        description: Refs is an array of references
+                        items:
                           type: string
-                        namespace:
-                          description: Namespace is the namespace of the InterceptorService
-                            resource.
-                          type: string
-                      required:
-                      - name
-                      type: object
-                    type: array
+                        type: array
+                    type: object
                 type: object
               override:
                 description: PolicySpec contains API policies
@@ -238,23 +224,16 @@ spec:
                       enabled:
                         type: boolean
                     type: object
-                  requestInterceptors:
-                    items:
-                      description: InterceptorReference holds InterceptorService reference
-                        using name and namespace
-                      properties:
-                        name:
-                          description: Name is the name of the InterceptorService
-                            resource.
+                  requestInterceptor:
+                    description: InterceptorReference holds InterceptorService 
+                      references for the InterceptorService resource.
+                    properties:
+                      refs:
+                        description: Refs is an array of references
+                        items:
                           type: string
-                        namespace:
-                          description: Namespace is the namespace of the InterceptorService
-                            resource.
-                          type: string
-                      required:
-                      - name
-                      type: object
-                    type: array
+                        type: array
+                    type: object
                   requestQueryModifier:
                     description: RequestQueryModifier allows to modify request query
                       params
@@ -293,23 +272,16 @@ spec:
                       removeAll:
                         type: string
                     type: object
-                  responseInterceptors:
-                    items:
-                      description: InterceptorReference holds InterceptorService reference
-                        using name and namespace
-                      properties:
-                        name:
-                          description: Name is the name of the InterceptorService
-                            resource.
+                  responseInterceptor:
+                    description: InterceptorReference holds InterceptorService 
+                      references for the InterceptorService resource.
+                    properties:
+                      refs:
+                        description: Refs is an array of references
+                        items:
                           type: string
-                        namespace:
-                          description: Namespace is the namespace of the InterceptorService
-                            resource.
-                          type: string
-                      required:
-                      - name
-                      type: object
-                    type: array
+                        type: array
+                    type: object
                 type: object
               targetRef:
                 description: PolicyTargetReference identifies an API object to apply
