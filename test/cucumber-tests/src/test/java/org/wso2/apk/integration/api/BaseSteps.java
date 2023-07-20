@@ -21,7 +21,7 @@ import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import org.apache.http.HttpResponse;
-import org.junit.Assert;
+import org.testng.Assert;
 import org.wso2.apk.integration.utils.Constants;
 import org.wso2.apk.integration.utils.Utils;
 import org.wso2.apk.integration.utils.clients.SimpleHTTPClient;

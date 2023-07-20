@@ -25,21 +25,29 @@ repositories {
 
 dependencies {
     testImplementation 'io.cucumber:cucumber-picocontainer:7.2.3'
+    testImplementation 'io.cucumber:cucumber-core:7.2.3'
     testImplementation 'com.google.guava:guava:32.1.1-jre'
     testImplementation 'com.google.code.gson:gson:2.10.1'
     testImplementation 'org.apache.httpcomponents:httpmime:4.5.13'
     testImplementation 'org.apache.httpcomponents:httpclient:4.5.13'
     testImplementation 'org.apache.httpcomponents:httpcore:4.4.14'
-    testImplementation platform('org.junit:junit-bom:5.9.1')
-    testImplementation 'org.junit.jupiter:junit-jupiter'
     testImplementation 'io.cucumber:cucumber-java:7.13.0'
-    testImplementation 'io.cucumber:cucumber-junit:7.13.0'
-    testImplementation 'org.junit.vintage:junit-vintage-engine:5.7.2'
+    testImplementation 'io.cucumber:cucumber-testng:7.13.0'
 }
 
 test {
-    useJUnitPlatform()
+    useTestNG()
     testLogging {
         events "passed", "skipped", "failed", "standardOut", "standardError"
     }
+}
+
+task runTests(type: JavaExec, dependsOn: 'classes') {
+    main = 'org.testng.TestNG'
+    classpath = files("./src/test/resources",
+            project.sourceSets.main.compileClasspath,
+            project.sourceSets.test.compileClasspath,
+            project.sourceSets.main.runtimeClasspath,
+            project.sourceSets.test.runtimeClasspath)
+    args = ["-d", "./build/test-output", "./src/test/resources/testng.xml"]
 }
