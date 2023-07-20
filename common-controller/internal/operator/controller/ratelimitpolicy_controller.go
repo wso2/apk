@@ -135,16 +135,29 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) Reconcile(ctx context.Cont
 				xds.DeleteResourceLevelRateLimitPolicies(resolveRateLimitAPIPolicy)
 			}
 			xds.UpdateRateLimiterPolicies(conf.CommonController.Server.Label)
-			return ctrl.Result{}, nil
+		}
+		resolveCustomRateLimitPolicy, foundCustom := ratelimitReconsiler.ods.GetCachedCustomRatelimitPolicy(req.NamespacedName)
+		if foundCustom && k8error.IsNotFound(err) {
+			ratelimitReconsiler.ods.DeleteCachedCustomRatelimitPolicy(req.NamespacedName)
+			logger.Info("Deleting CustomRateLimitPolicy : ", resolveCustomRateLimitPolicy)
+			xds.DeleteCustomRateLimitPolicies(resolveCustomRateLimitPolicy)
+			xds.UpdateRateLimiterPolicies(conf.CommonController.Server.Label)
 		}
 		return ctrl.Result{}, nil
 	}
 	var vhost, resolveRatelimit = ratelimitReconsiler.marshelRateLimit(ctx, ratelimitKey, ratelimitPolicy)
-	if vhost == nil {
+	logger.Info("add custom ratelimit")
+	var customRateLimitPolicy = ratelimitReconsiler.marshelCustomRateLimit(ctx, ratelimitKey, ratelimitPolicy)
+	logger.Info("resolveRatelimitxxxx", resolveRatelimit)
+	logger.Info("resolveCustomRateLimitPolicy", customRateLimitPolicy)
+
+	if vhost == nil && customRateLimitPolicy.Key == "" {
 		return ctrl.Result{}, nil
 	}
 	ratelimitReconsiler.ods.AddorUpdateResolveRatelimitToStore(ratelimitKey, resolveRatelimit)
+	ratelimitReconsiler.ods.AddorUpdateCustomRatelimitToStore(ratelimitKey, customRateLimitPolicy)
 	xds.UpdateRateLimitXDSCache(vhost, resolveRatelimit)
+	xds.UpdateRateLimitXDSCacheForCustomPolicies(customRateLimitPolicy)
 	xds.UpdateRateLimiterPolicies(conf.CommonController.Server.Label)
 
 	return ctrl.Result{}, nil
@@ -206,7 +219,7 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) getRatelimitForHTTPRoute(o
 	if err := ratelimitReconsiler.client.List(ctx, ratelimitPolicyList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(httprouteRateLimitIndex, NamespacedName(httpRoute).String()),
 	}); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2649, NamespacedName(httpRoute).String()))
+		loggers.LoggerAPKOperator.Info(logging.GetErrorByCode(2649, NamespacedName(httpRoute).String()))
 		return []reconcile.Request{}
 	}
 	for _, ratelimitPolicy := range ratelimitPolicyList.Items {
@@ -222,7 +235,6 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) marshelRateLimit(ctx conte
 	var vhost []string
 	var resolveResourceList []dpv1alpha1.ResolveResource
 	var resolveRatelimit dpv1alpha1.ResolveRateLimitAPIPolicy
-
 	// API Level Rate limit policy
 	if ratelimitPolicy.Spec.TargetRef.Kind == constants.KindAPI {
 		if err := ratelimitReconsiler.client.Get(ctx, types.NamespacedName{
@@ -352,6 +364,24 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) marshelRateLimit(ctx conte
 		resolveRatelimit.Resources = resolveResourceList
 	}
 	return vhost, resolveRatelimit
+}
+
+func (ratelimitReconsiler *RateLimitPolicyReconciler) marshelCustomRateLimit(ctx context.Context, ratelimitKey types.NamespacedName,
+	ratelimitPolicy dpv1alpha1.RateLimitPolicy) dpv1alpha1.CustomRateLimitPolicyDef {
+	var customRateLimitPolicy dpv1alpha1.CustomRateLimitPolicyDef
+	// Custom Rate limit policy
+	if ratelimitPolicy.Spec.TargetRef.Kind == constants.KindGateway {
+		customRateLimitPolicy = getCustomRateLimitPolicy(&ratelimitPolicy)
+		logger.Info("CustomRateLimitPolicy : ", customRateLimitPolicy)
+	}
+	return customRateLimitPolicy
+}
+
+// getCustomRateLimitPolicy returns the custom rate limit policy.
+func getCustomRateLimitPolicy(customRateLimitPolicy *dpv1alpha1.RateLimitPolicy) dpv1alpha1.CustomRateLimitPolicyDef {
+	customRLPolicy := *dpv1alpha1.ParseCustomRateLimitPolicy(*customRateLimitPolicy)
+	logger.Info("customRLPolicy:", customRLPolicy)
+	return customRLPolicy
 }
 
 func addIndexes(ctx context.Context, mgr manager.Manager) error {

@@ -56,6 +56,13 @@ func UpdateRateLimitXDSCache(vhosts []string, resolveRatelimit dpv1alpha1.Resolv
 	rlsPolicyCache.AddAPILevelRateLimitPolicies(vhosts, resolveRatelimit)
 }
 
+// UpdateRateLimitXDSCacheForCustomPolicies updates the xDS cache of the RateLimiter for custom policies.
+func UpdateRateLimitXDSCacheForCustomPolicies(customRateLimitPolicies dpv1alpha1.CustomRateLimitPolicyDef) {
+	if customRateLimitPolicies.Key != "" {
+		rlsPolicyCache.AddCustomRateLimitPolicies(customRateLimitPolicies)
+	}
+}
+
 // DeleteAPILevelRateLimitPolicies delete the ratelimit xds cache
 func DeleteAPILevelRateLimitPolicies(resolveRatelimit dpv1alpha1.ResolveRateLimitAPIPolicy) {
 	var org = resolveRatelimit.Organization
@@ -74,6 +81,11 @@ func DeleteResourceLevelRateLimitPolicies(resolveRatelimit dpv1alpha1.ResolveRat
 	var method = resolveRatelimit.Resources[0].Method
 	logger.Info(org, vhost, apiID)
 	rlsPolicyCache.DeleteResourceLevelRateLimitPolicies(org, vhost, apiID, path, method)
+}
+
+// DeleteCustomRateLimitPolicies delete the ratelimit xds cache
+func DeleteCustomRateLimitPolicies(customRateLimitPolicy dpv1alpha1.CustomRateLimitPolicyDef) {
+	rlsPolicyCache.DeleteCustomRateLimitPolicies(customRateLimitPolicy)
 }
 
 // GenerateIdentifierForAPIWithUUID generates an identifier unique to the API
