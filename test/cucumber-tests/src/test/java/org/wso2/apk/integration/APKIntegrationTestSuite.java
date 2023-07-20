@@ -15,14 +15,10 @@
  * limitations under the License.
  */
 
-package org.wso2.apk.integration.api;
+package org.wso2.apk.integration;
 
-import io.cucumber.junit.Cucumber;
-import io.cucumber.junit.CucumberOptions;
-import org.junit.runner.RunWith;
+import io.cucumber.testng.AbstractTestNGCucumberTests;
 
-@RunWith(Cucumber.class)
-@CucumberOptions(plugin = {"pretty"}, features = "src/test/resources/tests/api")
-public class APIDeploymentTests {
-    // Empty class
+public class APKIntegrationTestSuite extends AbstractTestNGCucumberTests {
+
 }
