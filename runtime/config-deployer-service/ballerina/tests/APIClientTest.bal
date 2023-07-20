@@ -25,7 +25,7 @@ public isolated function testCORSPolicyGenerationFromAPKConf() returns error? {
         enabled: true,
         accessControlAllowCredentials: true,
         accessControlAllowOrigins: ["wso2.com"],
-        accessControlAllowHeaders: ["Content-Type","Authorization"],
+        accessControlAllowHeaders: ["Content-Type", "Authorization"],
         accessControlAllowMethods: ["GET"],
         accessControlMaxAge: 3600
     };
@@ -112,6 +112,109 @@ public isolated function testBackendRetryAndTimeoutGenerationFromAPKConf() retur
     }
 }
 
+@test:Config {}
+public isolated function testJWTAuthenticationOnlyEnable() returns error? {
+
+    GenerateK8sResourcesBody body = {};
+    body.apkConfiguration = {fileName: "jwtAuth.apk-conf", fileContent: check io:fileReadBytes("./tests/resources/jwtAuth.apk-conf")};
+    body.definitionFile = {fileName: "api.yaml", fileContent: check io:fileReadBytes("./tests/resources/api.yaml")};
+    body.apiType = "REST";
+    APIClient apiClient = new;
+
+    model:APIArtifact apiArtifact = check apiClient.prepareArtifact(body.apkConfiguration, body.definitionFile);
+    model:AuthenticationData expectedAuthenticationData = {
+        'type: "ext",
+        ext: {
+            disabled: false,
+            authTypes: {
+                jwt: {
+                    disabled: false,
+                    header: "Authorization",
+                    sendTokenToUpstream: false
+                }
+            }
+        }
+    };
+    foreach model:Authentication item in apiArtifact.authenticationMap {
+        test:assertEquals(item.spec.override, expectedAuthenticationData);
+    }
+}
+
+@test:Config {}
+public isolated function testAPIKeyOnlyEnable() returns error? {
+
+    GenerateK8sResourcesBody body = {};
+    body.apkConfiguration = {fileName: "apiKeyOnly.apk-conf", fileContent: check io:fileReadBytes("./tests/resources/apiKeyOnly.apk-conf")};
+    body.definitionFile = {fileName: "api.yaml", fileContent: check io:fileReadBytes("./tests/resources/api.yaml")};
+    body.apiType = "REST";
+    APIClient apiClient = new;
+
+    model:APIArtifact apiArtifact = check apiClient.prepareArtifact(body.apkConfiguration, body.definitionFile);
+    model:AuthenticationData expectedAuthenticationData = {
+        'type: "ext",
+        ext: {
+            disabled: false,
+            authTypes: {
+                apiKey: [
+                    {
+                        'in: "Header",
+                        name: "apiKey",
+                        sendTokenToUpstream: false
+                    },
+                    {
+                        'in: "Query",
+                        name: "apiKey",
+                        sendTokenToUpstream: false
+                    }
+                ]
+            }
+        }
+    };
+    foreach model:Authentication item in apiArtifact.authenticationMap {
+        test:assertEquals(item.spec.override, expectedAuthenticationData);
+    }
+}
+
+@test:Config {}
+public isolated function testAPIKeyAndJWTEnable() returns error? {
+
+    GenerateK8sResourcesBody body = {};
+    body.apkConfiguration = {fileName: "jwtandAPIKey.apk-conf", fileContent: check io:fileReadBytes("./tests/resources/jwtandAPIKey.apk-conf")};
+    body.definitionFile = {fileName: "api.yaml", fileContent: check io:fileReadBytes("./tests/resources/api.yaml")};
+    body.apiType = "REST";
+    APIClient apiClient = new;
+
+    model:APIArtifact apiArtifact = check apiClient.prepareArtifact(body.apkConfiguration, body.definitionFile);
+    model:AuthenticationData expectedAuthenticationData = {
+        'type: "ext",
+        ext: {
+            disabled: false,
+            authTypes: {
+                apiKey: [
+                    {
+                        'in: "Header",
+                        name: "apiKey",
+                        sendTokenToUpstream: false
+                    },
+                    {
+                        'in: "Query",
+                        name: "apiKey",
+                        sendTokenToUpstream: false
+                    }
+                ],
+                jwt: {
+                    disabled: false,
+                    header: "Authorization",
+                    sendTokenToUpstream: false
+                }
+            }
+        }
+    };
+    foreach model:Authentication item in apiArtifact.authenticationMap {
+        test:assertEquals(item.spec.override, expectedAuthenticationData);
+    }
+}
+
 public function APIToAPKConfDataProvider() returns map<[runtimeModels:API, APKConf]>|error {
     runtimeModels:API api = runtimeModels:newAPI1();
     api.setName("testAPI");
@@ -138,7 +241,7 @@ public function APIToAPKConfDataProvider() returns map<[runtimeModels:API, APKCo
     uriTemplate1.setAuthEnabled(false);
     uriTemplate1.setEndpoint("http://localhost:9091");
     uriTemplate1.setScopes("scope1");
-    uriTemplates .push(uriTemplate1);
+    uriTemplates.push(uriTemplate1);
     _ = check api3.setUriTemplates(uriTemplates);
     map<[runtimeModels:API, APKConf]> apkConfMap = {
         "1": [
@@ -147,7 +250,7 @@ public function APIToAPKConfDataProvider() returns map<[runtimeModels:API, APKCo
                 name: "testAPI",
                 context: "/test",
                 version: "1.0.0",
-                organization:"",
+                organization: "",
                 operations: []
             }
         ],
@@ -172,11 +275,11 @@ public function APIToAPKConfDataProvider() returns map<[runtimeModels:API, APKCo
                 organization: "",
                 endpointConfigurations: {production: {endpoint: "http://localhost:9090"}},
                 operations: [
-                    {target: "/menu", verb: "GET", authTypeEnabled: true,scopes:[]},
+                    {target: "/menu", verb: "GET", authTypeEnabled: true, scopes: []},
                     {target: "/order", verb: "POST", authTypeEnabled: false, endpointConfigurations: {production: {endpoint: "http://localhost:9091"}}, scopes: ["scope1"]}
                 ]
             }
         ]
     };
     return apkConfMap;
-} 
+}

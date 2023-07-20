@@ -93,7 +93,7 @@ public class APIClient {
             }
             AuthenticationRequest[]? authentication = apkConf.authentication;
             if authentication is AuthenticationRequest[] {
-                self.populateAuthenticationMap(apiArtifact, apkConf, authentication, createdEndpoints, organization);
+                _= check self.populateAuthenticationMap(apiArtifact, apkConf, authentication, createdEndpoints, organization);
             }
             APKConf_vhosts? vhosts = apkConf.vhosts;
             if vhosts is APKConf_vhosts {
@@ -277,29 +277,19 @@ public class APIClient {
     }
 
     private isolated function populateAuthenticationMap(model:APIArtifact apiArtifact, APKConf apkConf, AuthenticationRequest[] authentications,
-            map<model:Endpoint|()> createdEndpointMap, string organization) {
+            map<model:Endpoint|()> createdEndpointMap, string organization) returns error? {
         map<model:Authentication> authenticationMap = {};
         model:AuthenticationExtenstionType authTypes = {};
         foreach AuthenticationRequest authentication in authentications {
-            if authentication.enabled == true {
-                if authentication.authType == "JWT" && authentication is JWTAuthentication {
-                    authTypes.jwt = {header: <string>authentication.headerName, sendTokenToUpstream: <boolean>authentication.sendTokenToUpstream, disabled: false};
-                }
-                if authentication.authType == "APIKey" && authentication is APIKeyAuthentication {
+                if authentication.authType == "JWT" {
+                    JWTAuthentication jwtAuthentication =check authentication.cloneWithType(JWTAuthentication);
+                    authTypes.jwt = {header: <string>jwtAuthentication.headerName, sendTokenToUpstream: <boolean>jwtAuthentication.sendTokenToUpstream, disabled: !jwtAuthentication.enabled};
+                } else if authentication.authType == "APIKey" && authentication is APIKeyAuthentication {
+                    APIKeyAuthentication apiKeyAuthentication =check authentication.cloneWithType(APIKeyAuthentication);
                     authTypes.apiKey = [];
-                    if authentication.headerName is string {
-                        authTypes.apiKey.push({'in: "Header", name: authentication.headerName ?: "apiKey", sendTokenToUpstream: authentication.sendTokenToUpstream ?: false});
-                    }
-                    if authentication.queryParamName is string {
-                        authTypes.apiKey.push({'in: "Query", name: authentication.queryParamName ?: "apiKey", sendTokenToUpstream: authentication.sendTokenToUpstream ?: false});
-                    }
+                    authTypes.apiKey.push({'in: "Header", name: apiKeyAuthentication.headerName, sendTokenToUpstream: apiKeyAuthentication.sendTokenToUpstream});
+                    authTypes.apiKey.push({'in: "Query", name: apiKeyAuthentication.queryParamName, sendTokenToUpstream: apiKeyAuthentication.sendTokenToUpstream});
                 }
-            } else {
-                if authentication.authType == "JWT" && authentication is JWTAuthentication {
-                    log:printInfo("Authentications: Inside second if");
-                    authTypes.jwt = {header: <string>authentication.headerName, sendTokenToUpstream: <boolean>authentication.sendTokenToUpstream, disabled: true};
-                }
-            }
         }
         log:printDebug("Auth Types:" + authTypes.toString());
         string[] keys = createdEndpointMap.keys();
