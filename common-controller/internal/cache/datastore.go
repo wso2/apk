@@ -44,7 +44,6 @@ func CreateNewOperatorDataStore() *RatelimitDataStore {
 	}
 }
 
-// Resolve Ratelimit cache
 // AddorUpdateRatelimitToStore adds a new ratelimit to the RatelimitDataStore.
 func (ods *RatelimitDataStore) AddorUpdateRatelimitToStore(rateLimit types.NamespacedName,
 	resolveRatelimit dpv1alpha1.ResolveRateLimitAPIPolicy) {
@@ -74,7 +73,6 @@ func (ods *RatelimitDataStore) DeleteCachedRatelimitPolicy(rateLimit types.Names
 	delete(ods.ratelimitStore, rateLimit)
 }
 
-// RatelimitPloicyForAPI Cache
 // GetRatelimitsToAPI returns the list of rate limits for the specified API.
 func (ods *RatelimitDataStore) GetRatelimitsToAPI(api types.NamespacedName) *dpv1alpha1.RateLimitPolicyList {
 	return ods.apisToRateLimit[api]
@@ -132,8 +130,7 @@ func policiesEqual(policy1, policy2 dpv1alpha1.RateLimitPolicy) bool {
 	return reflect.DeepEqual(policy1.Spec, policy2.Spec)
 }
 
-// HTTPRouteToRateLimit Cache
-// AddRateLimitToAPI adds a rate limit policy to the list associated with the given key.
+// AddRateLimitToHTTPRoute adds a rate limit policy to the list associated with the given key.
 func (ods *RatelimitDataStore) AddRateLimitToHTTPRoute(key types.NamespacedName, policy dpv1alpha1.RateLimitPolicy) {
 	ods.mu.Lock()
 	defer ods.mu.Unlock()
@@ -147,7 +144,7 @@ func (ods *RatelimitDataStore) AddRateLimitToHTTPRoute(key types.NamespacedName,
 	}
 }
 
-// GetRateLimitPolicyList returns the list of rate limit policies associated with the given key.
+// GetRateLimitPolicyForHTTPRoute returns the list of rate limit policies associated with the given key.
 // If the key is not found, it returns nil.
 func (ods *RatelimitDataStore) GetRateLimitPolicyForHTTPRoute(key types.NamespacedName) *dpv1alpha1.RateLimitPolicyList {
 	ods.mu.Lock()
@@ -156,7 +153,7 @@ func (ods *RatelimitDataStore) GetRateLimitPolicyForHTTPRoute(key types.Namespac
 	return ods.httpRouteToRateLimit[key]
 }
 
-// DeleteRateLimitPolicyList deletes the rate limit policy list associated with the given key.
+// DeleteRateLimitPolicyListForHTTPRoute deletes the rate limit policy list associated with the given key.
 func (ods *RatelimitDataStore) DeleteRateLimitPolicyListForHTTPRoute(key types.NamespacedName) {
 	ods.mu.Lock()
 	defer ods.mu.Unlock()
@@ -164,15 +161,44 @@ func (ods *RatelimitDataStore) DeleteRateLimitPolicyListForHTTPRoute(key types.N
 	delete(ods.httpRouteToRateLimit, key)
 }
 
-// RemoveRateLimitPolicyFromList removes a specific rate limit policy from the list associated with the given key.
-func (ods *RatelimitDataStore) RemoveRateLimitPolicyFromListHttpRoute(key types.NamespacedName, policyToDelete dpv1alpha1.RateLimitPolicy) {
+// RemoveRateLimitPolicyFromListHTTPRoute removes a specific rate limit policy from the list associated with the given key.
+func (ods *RatelimitDataStore) RemoveRateLimitPolicyFromListHTTPRoute(key types.NamespacedName, policyToDelete dpv1alpha1.RateLimitPolicy) {
 	ods.mu.Lock()
 	defer ods.mu.Unlock()
-
 	if list, ok := ods.httpRouteToRateLimit[key]; ok {
 		for i, policy := range list.Items {
 			if policiesEqual(policy, policyToDelete) {
 				ods.httpRouteToRateLimit[key].Items = append(list.Items[:i], list.Items[i+1:]...)
+				return // Found and removed the policy, so return.
+			}
+		}
+	}
+}
+
+// IsRateLimitPolicyAvailableForHTTPRoute checks if the specified rate limit policy is available for the given HTTP route.
+func (ods *RatelimitDataStore) IsRateLimitPolicyAvailableForHTTPRoute(httpRoute types.NamespacedName, policyToCheck dpv1alpha1.RateLimitPolicy) bool {
+	ods.mu.Lock()
+	defer ods.mu.Unlock()
+
+	if list, ok := ods.httpRouteToRateLimit[httpRoute]; ok {
+		for _, policy := range list.Items {
+			if policiesEqual(policy, policyToCheck) {
+				return true // Found the policy, so return true.
+			}
+		}
+	}
+	return false // Policy not found, so return false.
+}
+
+// RemoveRatelimitPolicyByNamespacedNameHTTPRoute removes a specific rate limit policy based on its namespaced name from the map.
+func (ods *RatelimitDataStore) RemoveRatelimitPolicyByNamespacedNameHTTPRoute(httpRoute types.NamespacedName, policyToDelete dpv1alpha1.RateLimitPolicy) {
+	ods.mu.Lock()
+	defer ods.mu.Unlock()
+
+	if list, ok := ods.httpRouteToRateLimit[httpRoute]; ok {
+		for i, policy := range list.Items {
+			if policiesEqual(policy, policyToDelete) {
+				ods.httpRouteToRateLimit[httpRoute].Items = append(list.Items[:i], list.Items[i+1:]...)
 				return // Found and removed the policy, so return.
 			}
 		}

@@ -65,6 +65,17 @@ func DeleteAPILevelRateLimitPolicies(resolveRatelimit dpv1alpha1.ResolveRateLimi
 	rlsPolicyCache.DeleteAPILevelRateLimitPolicies(org, vhost, apiID)
 }
 
+// DeleteResourceLevelRateLimitPolicies delete the ratelimit xds cache
+func DeleteResourceLevelRateLimitPolicies(resolveRatelimit dpv1alpha1.ResolveRateLimitAPIPolicy) {
+	var org = resolveRatelimit.Organization
+	var vhost = resolveRatelimit.Vhost
+	var apiID = resolveRatelimit.UUID
+	var path = resolveRatelimit.Resources[0].Path
+	var method = resolveRatelimit.Resources[0].Method
+	logger.Info(org, vhost, apiID)
+	rlsPolicyCache.DeleteResourceLevelRateLimitPolicies(org, vhost, apiID, path, method)
+}
+
 // GenerateIdentifierForAPIWithUUID generates an identifier unique to the API
 func GenerateIdentifierForAPIWithUUID(vhost, uuid string) string {
 	return fmt.Sprint(vhost, apiKeyFieldSeparator, uuid)
