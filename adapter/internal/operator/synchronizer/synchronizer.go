@@ -102,15 +102,15 @@ func HandleAPILifeCycleEvents(ch *chan APIEvent, successChannel *chan SuccessEve
 func undeployAPIInGateway(apiState APIState) error {
 	var err error
 	if apiState.ProdHTTPRoute != nil {
-		err = deleteAPIFromEnv(apiState.ProdHTTPRoute.HTTPRoute, apiState)
+		err = deleteAPIFromEnv(apiState.ProdHTTPRoute.HTTPRouteCombined, apiState)
 	}
 	if err != nil {
 		loggers.LoggerXds.ErrorC(logging.GetErrorByCode(2630, string(apiState.APIDefinition.ObjectMeta.UID), apiState.APIDefinition.Spec.Organization,
-			getLabelsForAPI(apiState.ProdHTTPRoute.HTTPRoute)))
+			getLabelsForAPI(apiState.ProdHTTPRoute.HTTPRouteCombined)))
 		return err
 	}
 	if apiState.SandHTTPRoute != nil {
-		err = deleteAPIFromEnv(apiState.SandHTTPRoute.HTTPRoute, apiState)
+		err = deleteAPIFromEnv(apiState.SandHTTPRoute.HTTPRouteCombined, apiState)
 	}
 	return err
 }
@@ -156,7 +156,7 @@ func GenerateAdapterInternalAPI(apiState APIState, httpRoute *HTTPRouteState, en
 		RateLimitPolicies:         apiState.RateLimitPolicies,
 		ResourceRateLimitPolicies: apiState.ResourceRateLimitPolicies,
 	}
-	if err := adapterInternalAPI.SetInfoHTTPRouteCR(httpRoute.HTTPRoute, resourceParams); err != nil {
+	if err := adapterInternalAPI.SetInfoHTTPRouteCR(httpRoute.HTTPRouteCombined, resourceParams); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2631, err))
 		return nil, err
 	}
@@ -164,9 +164,9 @@ func GenerateAdapterInternalAPI(apiState APIState, httpRoute *HTTPRouteState, en
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2632, err))
 		return nil, err
 	}
-	vHosts := getVhostsForAPI(httpRoute.HTTPRoute)
-	labels := getLabelsForAPI(httpRoute.HTTPRoute)
-	listeners := getListenersForAPI(httpRoute.HTTPRoute)
+	vHosts := getVhostsForAPI(httpRoute.HTTPRouteCombined)
+	labels := getLabelsForAPI(httpRoute.HTTPRouteCombined)
+	listeners := getListenersForAPI(httpRoute.HTTPRouteCombined)
 
 	conf := config.ReadConfigs()
 	if conf.Envoy.RateLimit.Enabled {
@@ -249,7 +249,7 @@ func SendEventToPartitionServer() {
 			if httpRoute == nil {
 				httpRoute = api.SandHTTPRoute
 			}
-			for _, hostName := range httpRoute.HTTPRoute.Spec.Hostnames {
+			for _, hostName := range httpRoute.HTTPRouteCombined.Spec.Hostnames {
 				hostNames = append(hostNames, string(hostName))
 			}
 			data := PartitionEvent{
