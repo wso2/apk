@@ -21,7 +21,7 @@ public type API record {
     string apiVersion = "dp.wso2.com/v1alpha1";
     Metadata metadata;
     APISpec spec;
-    APIDeploymentEvent? deploymentEvent = ();
+    APIStatus? status = ();
 };
 
 public type APISpec record {|
@@ -30,6 +30,7 @@ public type APISpec record {|
     string apiVersion;
     string context;
     string organization;
+    string apiProvider?;
     boolean isDefaultVersion?;
     string definitionFileRef?;
     EnvConfig[]|() production = ();
@@ -43,7 +44,7 @@ public type APIProperties record {|
     string value;
 |};
 
-public type APIDeploymentEvent record {
+public type APIStatus record {
     boolean accepted;
     string[] events;
     string message;
