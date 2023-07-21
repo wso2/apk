@@ -123,15 +123,12 @@ public isolated function testJWTAuthenticationOnlyEnable() returns error? {
 
     model:APIArtifact apiArtifact = check apiClient.prepareArtifact(body.apkConfiguration, body.definitionFile);
     model:AuthenticationData expectedAuthenticationData = {
-        'type: "ext",
-        ext: {
-            disabled: false,
-            authTypes: {
-                jwt: {
-                    disabled: false,
-                    header: "Authorization",
-                    sendTokenToUpstream: false
-                }
+        disabled: false,
+        authTypes: {
+            jwt: {
+                disabled: false,
+                header: "Authorization",
+                sendTokenToUpstream: false
             }
         }
     };
@@ -151,23 +148,20 @@ public isolated function testAPIKeyOnlyEnable() returns error? {
 
     model:APIArtifact apiArtifact = check apiClient.prepareArtifact(body.apkConfiguration, body.definitionFile);
     model:AuthenticationData expectedAuthenticationData = {
-        'type: "ext",
-        ext: {
-            disabled: false,
-            authTypes: {
-                apiKey: [
-                    {
-                        'in: "Header",
-                        name: "apiKey",
-                        sendTokenToUpstream: false
-                    },
-                    {
-                        'in: "Query",
-                        name: "apiKey",
-                        sendTokenToUpstream: false
-                    }
-                ]
-            }
+        disabled: false,
+        authTypes: {
+            apiKey: [
+                {
+                    'in: "Header",
+                    name: "apiKey",
+                    sendTokenToUpstream: false
+                },
+                {
+                    'in: "Query",
+                    name: "apiKey",
+                    sendTokenToUpstream: false
+                }
+            ]
         }
     };
     foreach model:Authentication item in apiArtifact.authenticationMap {
@@ -186,27 +180,24 @@ public isolated function testAPIKeyAndJWTEnable() returns error? {
 
     model:APIArtifact apiArtifact = check apiClient.prepareArtifact(body.apkConfiguration, body.definitionFile);
     model:AuthenticationData expectedAuthenticationData = {
-        'type: "ext",
-        ext: {
-            disabled: false,
-            authTypes: {
-                apiKey: [
-                    {
-                        'in: "Header",
-                        name: "apiKey",
-                        sendTokenToUpstream: false
-                    },
-                    {
-                        'in: "Query",
-                        name: "apiKey",
-                        sendTokenToUpstream: false
-                    }
-                ],
-                jwt: {
-                    disabled: false,
-                    header: "Authorization",
+        disabled: false,
+        authTypes: {
+            apiKey: [
+                {
+                    'in: "Header",
+                    name: "apiKey",
+                    sendTokenToUpstream: false
+                },
+                {
+                    'in: "Query",
+                    name: "apiKey",
                     sendTokenToUpstream: false
                 }
+            ],
+            jwt: {
+                disabled: false,
+                header: "Authorization",
+                sendTokenToUpstream: false
             }
         }
     };

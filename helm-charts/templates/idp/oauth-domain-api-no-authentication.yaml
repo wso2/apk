@@ -24,9 +24,7 @@ metadata:
     api-version: "1.0.0"
 spec:
   override:
-    ext:
-      disabled: true
-    type: "ext"
+    disabled: true
   targetRef:
     group: ""
     kind: "API"

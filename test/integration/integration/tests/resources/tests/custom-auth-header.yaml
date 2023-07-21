@@ -62,21 +62,11 @@ metadata:
   namespace: gateway-integration-test-infra
 spec:
   override:
-    type: ext
-    ext:
-      disabled: false    
-      authTypes:
-        jwt:
-          disabled: false
-          header: testAuth        
-  default:
-    type: ext
-    ext:
-      serviceRef: 
-        group: wso2/v1alpha2
-        kind: Backend
-        name: ext_authz-server
-        port: 1234
+    disabled: false    
+    authTypes:
+      jwt:
+        disabled: false
+        header: testAuth        
   targetRef:
     group: gateway.networking.k8s.io
     kind: API

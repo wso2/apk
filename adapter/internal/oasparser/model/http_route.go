@@ -62,8 +62,8 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 	var authScheme *dpv1alpha1.Authentication
 	if outputAuthScheme != nil {
 		authScheme = *outputAuthScheme
-		if authScheme.Spec.Override != nil && authScheme.Spec.Override.ExternalService.Disabled != nil {
-			disableAuthentications = *authScheme.Spec.Override.ExternalService.Disabled
+		if authScheme.Spec.Override != nil && authScheme.Spec.Override.Disabled != nil {
+			disableAuthentications = *authScheme.Spec.Override.Disabled
 		}
 	}
 	var apiPolicy *dpv1alpha1.APIPolicy
@@ -561,30 +561,30 @@ func concatAuthSchemes(schemeUp *dpv1alpha1.Authentication, schemeDown *dpv1alph
 // tip: use concatScheme method
 func getSecurity(authScheme *dpv1alpha1.Authentication) *Authentication {
 	authHeader := constants.AuthorizationHeader
-	if authScheme != nil && authScheme.Spec.Override.ExternalService.AuthTypes != nil && len(authScheme.Spec.Override.ExternalService.AuthTypes.JWT.Header) > 0 {
-		authHeader = authScheme.Spec.Override.ExternalService.AuthTypes.JWT.Header
+	if authScheme != nil && authScheme.Spec.Override.AuthTypes != nil && len(authScheme.Spec.Override.AuthTypes.JWT.Header) > 0 {
+		authHeader = authScheme.Spec.Override.AuthTypes.JWT.Header
 	}
 	auth := &Authentication{Disabled: false,
 		TestConsoleKey: &TestConsoleKey{Header: constants.TestConsoleKeyHeader},
 		JWT:            &JWT{Header: authHeader},
 	}
 	if authScheme != nil {
-		if authScheme.Spec.Override.ExternalService.Disabled != nil && *authScheme.Spec.Override.ExternalService.Disabled {
+		if authScheme.Spec.Override.Disabled != nil && *authScheme.Spec.Override.Disabled {
 			loggers.LoggerOasparser.Debug("Disabled security")
 			return &Authentication{Disabled: true}
 		}
 		authFound := false
-		if authScheme.Spec.Override.ExternalService.AuthTypes != nil && authScheme.Spec.Override.ExternalService.AuthTypes.JWT.Disabled {
+		if authScheme.Spec.Override.AuthTypes != nil && authScheme.Spec.Override.AuthTypes.JWT.Disabled {
 			auth = &Authentication{Disabled: false,
 				TestConsoleKey: &TestConsoleKey{Header: constants.TestConsoleKeyHeader},
 			}
 		} else {
 			authFound = true
 		}
-		if authScheme.Spec.Override.ExternalService.AuthTypes.APIKey != nil {
-			authFound = authFound || len(authScheme.Spec.Override.ExternalService.AuthTypes.APIKey) > 0
+		if authScheme.Spec.Override.AuthTypes.APIKey != nil {
+			authFound = authFound || len(authScheme.Spec.Override.AuthTypes.APIKey) > 0
 			var apiKeys []APIKey
-			for _, apiKey := range authScheme.Spec.Override.ExternalService.AuthTypes.APIKey {
+			for _, apiKey := range authScheme.Spec.Override.AuthTypes.APIKey {
 				apiKeys = append(apiKeys, APIKey{
 					Name: apiKey.Name,
 					In:   apiKey.In,

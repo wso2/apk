@@ -23,9 +23,7 @@ metadata:
     managed-by: "apk"
 spec:
   override:
-    ext:
-      disabled: true
-    type: "ext"
+    disabled: true
   targetRef:
     group: ""
     kind: "API"
