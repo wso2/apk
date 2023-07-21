@@ -41,8 +41,6 @@ type APISpec struct {
 	APIVersion string `json:"apiVersion"`
 
 	// IsDefaultVersion indicates whether this API version should be used as a default API
-	// +optional
-	// +kubebuilder:default=false
 	IsDefaultVersion bool `json:"isDefaultVersion"`
 
 	// DefinitionFileRef contains the OpenAPI 3 or Swagger
@@ -80,6 +78,10 @@ type APISpec struct {
 	//
 	Context string `json:"context"`
 
+	// APIProvider denotes the provider of the API.
+	// +optional
+	APIProvider string `json:"apiProvider"`
+
 	// Organization denotes the organization.
 	// related to the API
 	//
@@ -106,8 +108,8 @@ type EnvConfig struct {
 	HTTPRouteRefs []string `json:"httpRouteRefs"`
 }
 
-// APIDeploymentEvent defines the observed deployment state of API
-type APIDeploymentEvent struct {
+// APIStatus defines the observed state of API
+type APIStatus struct {
 
 	// Status denotes the state of the API in its lifecycle.
 	// Possible values could be Accepted, Invalid, Deploy etc.
@@ -152,8 +154,8 @@ type API struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec               APISpec            `json:"spec,omitempty"`
-	APIDeploymentEvent APIDeploymentEvent `json:"deploymentEvent,omitempty"`
+	Spec   APISpec   `json:"spec,omitempty"`
+	Status APIStatus `json:"status,omitempty"`
 }
 
 //+kubebuilder:object:root=true

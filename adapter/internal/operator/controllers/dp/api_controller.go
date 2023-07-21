@@ -370,7 +370,7 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 
 	loggers.LoggerAPKOperator.Debugf("HTTPRoutes are retrieved successfully for API CR %s", apiRef.String())
 
-	if !api.APIDeploymentEvent.Accepted {
+	if !api.Status.Accepted {
 		apiReconciler.ods.AddAPIState(apiRef, apiState)
 		return &synchronizer.APIEvent{EventType: constants.Create, Event: *apiState, UpdatedEvents: []string{}}, nil
 	} else if cachedAPI, events, updated :=
@@ -1401,11 +1401,11 @@ func (apiReconciler *APIReconciler) handleStatus() {
 					loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2626, obj))
 				}
 				hCopy := h.DeepCopy()
-				hCopy.APIDeploymentEvent.Status = successEvent.State
-				hCopy.APIDeploymentEvent.Accepted = accept
-				hCopy.APIDeploymentEvent.Message = message
-				hCopy.APIDeploymentEvent.Events = append(hCopy.APIDeploymentEvent.Events, event)
-				hCopy.APIDeploymentEvent.TransitionTime = &timeNow
+				hCopy.Status.Status = successEvent.State
+				hCopy.Status.Accepted = accept
+				hCopy.Status.Message = message
+				hCopy.Status.Events = append(hCopy.Status.Events, event)
+				hCopy.Status.TransitionTime = &timeNow
 				return hCopy
 			},
 		})

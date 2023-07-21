@@ -41,35 +41,6 @@ spec:
               of an object. Servers should convert recognized schemas to the latest
               internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
             type: string
-          deploymentEvent:
-            description: APIDeploymentEvent defines the observed deployment state
-              of API
-            properties:
-              accepted:
-                description: Accepted represents whether the API is accepted or not.
-                type: boolean
-              events:
-                description: Events contains a list of events related to the API.
-                items:
-                  type: string
-                type: array
-              message:
-                description: Message represents a user friendly message that explains
-                  the current state of the API.
-                type: string
-              status:
-                description: Status denotes the state of the API in its lifecycle.
-                  Possible values could be Accepted, Invalid, Deploy etc.
-                type: string
-              transitionTime:
-                description: TransitionTime represents the last known transition timestamp.
-                format: date-time
-                type: string
-            required:
-            - accepted
-            - status
-            - transitionTime
-            type: object
           kind:
             description: 'Kind is a string value representing the REST resource this
               object represents. Servers may infer this from the endpoint the client
@@ -95,6 +66,9 @@ spec:
                       type: string
                   type: object
                 type: array
+              apiProvider:
+                description: APIProvider denotes the provider of the API.
+                type: string
               apiType:
                 description: APIType denotes the type of the API. Possible values
                   could be REST, GraphQL, Async
@@ -110,7 +84,6 @@ spec:
                   of the API in a ConfigMap.
                 type: string
               isDefaultVersion:
-                default: false
                 description: IsDefaultVersion indicates whether this API version should
                   be used as a default API
                 type: boolean
@@ -158,6 +131,35 @@ spec:
             - apiType
             - apiVersion
             - context
+            - isDefaultVersion
+            type: object
+          status:
+            description: APIStatus defines the observed state of API
+            properties:
+              accepted:
+                description: Accepted represents whether the API is accepted or not.
+                type: boolean
+              events:
+                description: Events contains a list of events related to the API.
+                items:
+                  type: string
+                type: array
+              message:
+                description: Message represents a user friendly message that explains
+                  the current state of the API.
+                type: string
+              status:
+                description: Status denotes the state of the API in its lifecycle.
+                  Possible values could be Accepted, Invalid, Deploy etc.
+                type: string
+              transitionTime:
+                description: TransitionTime represents the last known transition timestamp.
+                format: date-time
+                type: string
+            required:
+            - accepted
+            - status
+            - transitionTime
             type: object
         type: object
     served: true
