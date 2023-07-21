@@ -124,7 +124,6 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) Reconcile(ctx context.Cont
 
 	// Check k8s RatelimitPolicy Availbility
 	if err := ratelimitReconsiler.client.Get(ctx, ratelimitKey, &ratelimitPolicy); err != nil {
-		logger.Info("errxxxx", err)
 		resolveRateLimitAPIPolicy, found := ratelimitReconsiler.ods.GetResolveRatelimitPolicy(req.NamespacedName)
 		// If availble in cache Delete cache and xds
 		if found && k8error.IsNotFound(err) {
@@ -184,10 +183,6 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) AddRatelimitRequest(obj k8
 		return nil
 	}
 
-	if !(ratelimitPolicy.Spec.TargetRef.Kind == constants.KindAPI) {
-		return nil
-	}
-
 	return []reconcile.Request{{
 		NamespacedName: types.NamespacedName{
 			Name: string(ratelimitPolicy.Name),
@@ -214,7 +209,6 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) getRatelimitForHTTPRoute(o
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2649, NamespacedName(httpRoute).String()))
 		return []reconcile.Request{}
 	}
-
 	for _, ratelimitPolicy := range ratelimitPolicyList.Items {
 		requests = append(requests, ratelimitReconsiler.AddRatelimitRequest(&ratelimitPolicy)...)
 	}
@@ -237,11 +231,9 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) marshelRateLimit(ctx conte
 			&api); err != nil {
 			return nil, resolveRatelimit
 		}
-		logger.Info("cccccc", api.Spec.Production[0].HTTPRouteRefs)
 		var organization = api.Spec.Organization
 		var context = api.Spec.Context
 		var httpRoute gwapiv1b1.HTTPRoute
-		logger.Info("fsfwfwfew", api.Spec.Production[0].HTTPRouteRefs)
 		if len(api.Spec.Production) > 0 {
 			for _, ref := range api.Spec.Production[0].HTTPRouteRefs {
 				if ref != "" {
@@ -288,11 +280,9 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) marshelRateLimit(ctx conte
 			&api); err != nil {
 			return nil, resolveRatelimit
 		}
-		logger.Info("cccccc111", api.Spec.Production[0].HTTPRouteRefs)
 		var organization = api.Spec.Organization
 		var context = api.Spec.Context
 		var httpRoute gwapiv1b1.HTTPRoute
-		logger.Info("fsfwfwfew111", api.Spec.Production[0].HTTPRouteRefs)
 		if len(api.Spec.Production) > 0 {
 			for _, ref := range api.Spec.Production[0].HTTPRouteRefs {
 				if ref != "" {
@@ -300,10 +290,8 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) marshelRateLimit(ctx conte
 						Namespace: ratelimitKey.Namespace,
 						Name:      ref},
 						&httpRoute); err != nil {
-						logger.Info("httpRoutedqwdwq", httpRoute)
 						return nil, resolveRatelimit
 					}
-					logger.Info("httpRoute", httpRoute)
 					for _, rule := range httpRoute.Spec.Rules {
 						for _, filter := range rule.Filters {
 							if filter.ExtensionRef != nil {
@@ -367,40 +355,24 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) marshelRateLimit(ctx conte
 }
 
 func addIndexes(ctx context.Context, mgr manager.Manager) error {
-	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.RateLimitPolicy{}, httprouteRateLimitIndex,
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &gwapiv1b1.HTTPRoute{}, httprouteRateLimitIndex,
 		func(rawObj k8client.Object) []string {
-			ratelimitPolicy := rawObj.(*dpv1alpha1.RateLimitPolicy)
-			var api = dpv1alpha1.API{}
-			if err := mgr.GetCache().Get(ctx, types.NamespacedName{
-				Namespace: ratelimitPolicy.Namespace,
-				Name:      string(ratelimitPolicy.Spec.TargetRef.Name),
-			}, &api); err != nil {
-				return nil
-			}
-			var httpRoutes []string
-			if len(api.Spec.Production) > 0 {
-				for _, ref := range api.Spec.Production[0].HTTPRouteRefs {
-					if ref != "" {
-						httpRoutes = append(httpRoutes,
-							types.NamespacedName{
-								Namespace: api.Namespace,
-								Name:      ref,
-							}.String())
+			httpRoute := rawObj.(*gwapiv1b1.HTTPRoute)
+			var ratelimitPolicy []string
+			for _, rule := range httpRoute.Spec.Rules {
+				for _, filter := range rule.Filters {
+					if filter.ExtensionRef != nil {
+						if filter.ExtensionRef.Kind == constants.KindRateLimitPolicy {
+							ratelimitPolicy = append(ratelimitPolicy,
+								types.NamespacedName{
+									Namespace: httpRoute.Namespace,
+									Name:      string(filter.ExtensionRef.Name),
+								}.String())
+						}
 					}
 				}
 			}
-			if len(api.Spec.Sandbox) > 0 {
-				for _, ref := range api.Spec.Sandbox[0].HTTPRouteRefs {
-					if ref != "" {
-						httpRoutes = append(httpRoutes,
-							types.NamespacedName{
-								Namespace: api.Namespace,
-								Name:      ref,
-							}.String())
-					}
-				}
-			}
-			return httpRoutes
+			return ratelimitPolicy
 		}); err != nil {
 		return err
 	}
@@ -417,8 +389,6 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 						ratelimitPolicy.Namespace),
 					Name: string(ratelimitPolicy.Spec.TargetRef.Name),
 				}.String())
-
-			logger.Info("index api policy")
 			return apis
 		})
 	return err
