@@ -40,7 +40,6 @@ const (
 	error1103 = 1103
 	error1104 = 1104
 	error1105 = 1105
-	error1106 = 1106
 )
 
 // Error Log Internal discovery(1400-1499) Config Constants
@@ -168,11 +167,6 @@ var Mapper = map[int]logging.ErrorDetails{
 		Message:   "Error serving Rate Limiter xDS gRPC server: %v",
 		Severity:  BLOCKER,
 	},
-	error1106: {
-		ErrorCode: error1106,
-		Message:   "Failed to listen %v: %v",
-		Severity:  BLOCKER,
-	},
 	error1400: {
 		ErrorCode: error1400,
 		Message:   "Stream request for type %s on stream id: %d Error: %s",
@@ -196,7 +190,7 @@ var Mapper = map[int]logging.ErrorDetails{
 	error1410: {
 		ErrorCode: error1410,
 		Message:   "Error undeploying API %v of Organization %v from environments %v",
-		Severity:  MAJOR,
+		Severity:  CRITICAL,
 	},
 	error1411: {
 		ErrorCode: error1411,
@@ -396,7 +390,7 @@ var Mapper = map[int]logging.ErrorDetails{
 	error2212: {
 		ErrorCode: error2212,
 		Message:   "Error adding request policy %s to operation %s of resource %s. %v",
-		Severity:  MINOR,
+		Severity:  MAJOR,
 	},
 	error2231: {
 		ErrorCode: error2231,
@@ -491,6 +485,6 @@ var Mapper = map[int]logging.ErrorDetails{
 	error2300: {
 		ErrorCode: error2300,
 		Message:   "Stream request for type %s on stream id: %d, from node: %s, Error: %s",
-		Severity:  MAJOR,
+		Severity:  CRITICAL,
 	},
 }
