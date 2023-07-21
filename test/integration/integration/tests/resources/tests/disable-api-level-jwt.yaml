@@ -62,23 +62,13 @@ metadata:
   namespace: gateway-integration-test-infra
 spec:
   override:
-    type: ext
-    ext:
-      disabled: false    
-      authTypes:
-        apiKey:
-          - in: Header
-            name: x-api-key
-        jwt:
-          disabled: true        
-  default:
-    type: ext
-    ext:
-      serviceRef: 
-        group: wso2/v1alpha2
-        kind: Backend
-        name: ext_authz-server
-        port: 1234
+    disabled: false    
+    authTypes:
+      apiKey:
+        - in: Header
+          name: x-api-key
+      jwt:
+        disabled: true        
   targetRef:
     group: gateway.networking.k8s.io
     kind: API
@@ -133,23 +123,13 @@ metadata:
   namespace: gateway-integration-test-infra
 spec:
   override:
-    type: ext
-    ext:
-      disabled: false    
-      authTypes:
-        apiKey:
-          - in: Header
-            name: x-api-key
-        jwt:
-          disabled: false        
-  default:
-    type: ext
-    ext:
-      serviceRef: 
-        group: wso2/v1alpha2
-        kind: Backend
-        name: ext_authz-server
-        port: 1234
+    disabled: false    
+    authTypes:
+      apiKey:
+        - in: Header
+          name: x-api-key
+      jwt:
+        disabled: false        
   targetRef:
     group: gateway.networking.k8s.io
     kind: API
@@ -214,20 +194,10 @@ metadata:
   namespace: gateway-integration-test-infra
 spec:
   override:
-    type: ext
-    ext:
-      disabled: false    
-      authTypes:
-        jwt:
-          disabled: true        
-  default:
-    type: ext
-    ext:
-      serviceRef: 
-        group: wso2/v1alpha2
-        kind: Backend
-        name: ext_authz-server
-        port: 1234
+    disabled: false    
+    authTypes:
+      jwt:
+        disabled: true        
   targetRef:
     group: gateway.networking.k8s.io
     kind: API

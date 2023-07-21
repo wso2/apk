@@ -38,164 +38,124 @@ spec:
               default:
                 description: AuthSpec specification of the authentication service
                 properties:
-                  ext:
-                    description: ExtAuthService external authentication related information
+                  authTypes:
+                    description: APIAuth Authentication scheme type and details
                     properties:
-                      authTypes:
-                        description: APIAuth Authentication scheme type and details
+                      apiKey:
+                        items:
+                          description: APIKeyAuth APIKey Authentication scheme details
+                          properties:
+                            in:
+                              description: In is to specify how the APIKey is passed
+                                to the request
+                              enum:
+                              - Header
+                              - Query
+                              minLength: 1
+                              type: string
+                            name:
+                              description: Name is the name of the header or query
+                                parameter to be used
+                              minLength: 1
+                              type: string
+                            sendTokenToUpstream:
+                              type: boolean
+                          type: object
+                        type: array
+                      jwt:
+                        description: JWTAuth JWT Authentication scheme details
                         properties:
-                          apiKey:
-                            items:
-                              description: APIKeyAuth APIKey Authentication scheme
-                                details
-                              properties:
-                                in:
-                                  description: In is to specify how the APIKey is
-                                    passed to the request
-                                  enum:
-                                  - Header
-                                  - Query
-                                  minLength: 1
-                                  type: string
-                                name:
-                                  description: Name is the name of the header or query
-                                    parameter to be used
-                                  minLength: 1
-                                  type: string
-                                sendTokenToUpstream:
-                                  type: boolean
-                              type: object
-                            type: array
-                          jwt:
-                            description: JWTAuth JWT Authentication scheme details
-                            properties:
-                              disabled:
-                                default: false
-                                type: boolean
-                              header:
-                                default: authorization
-                                description: Header is the header name used to pass
-                                  the JWT token
-                                type: string
-                              sendTokenToUpstream:
-                                type: boolean
-                            required:
-                            - disabled
-                            type: object
-                          testConsoleKey:
-                            description: TestConsoleKeyAuth Test Console Key Authentication
-                              scheme details
-                            properties:
-                              header:
-                                default: internal-key
-                                description: Header is the header name used to pass
-                                  the Test Console Key
-                                type: string
-                              sendTokenToUpstream:
-                                type: boolean
-                            type: object
+                          disabled:
+                            default: false
+                            type: boolean
+                          header:
+                            default: authorization
+                            description: Header is the header name used to pass the
+                              JWT token
+                            type: string
+                          sendTokenToUpstream:
+                            type: boolean
+                        required:
+                        - disabled
                         type: object
-                      disabled:
-                        description: Disabled is to disable all authentications
-                        nullable: true
-                        type: boolean
-                      serviceRef:
-                        description: ServiceRef service using for Authentication
+                      testConsoleKey:
+                        description: TestConsoleKeyAuth Test Console Key Authentication
+                          scheme details
                         properties:
-                          group:
+                          header:
+                            default: internal-key
+                            description: Header is the header name used to pass the
+                              Test Console Key
                             type: string
-                          kind:
-                            type: string
-                          name:
-                            type: string
-                          port:
-                            format: int32
-                            type: integer
+                          sendTokenToUpstream:
+                            type: boolean
                         type: object
                     type: object
-                  type:
-                    type: string
+                  disabled:
+                    description: Disabled is to disable all authentications
+                    nullable: true
+                    type: boolean
                 type: object
               override:
                 description: AuthSpec specification of the authentication service
                 properties:
-                  ext:
-                    description: ExtAuthService external authentication related information
+                  authTypes:
+                    description: APIAuth Authentication scheme type and details
                     properties:
-                      authTypes:
-                        description: APIAuth Authentication scheme type and details
+                      apiKey:
+                        items:
+                          description: APIKeyAuth APIKey Authentication scheme details
+                          properties:
+                            in:
+                              description: In is to specify how the APIKey is passed
+                                to the request
+                              enum:
+                              - Header
+                              - Query
+                              minLength: 1
+                              type: string
+                            name:
+                              description: Name is the name of the header or query
+                                parameter to be used
+                              minLength: 1
+                              type: string
+                            sendTokenToUpstream:
+                              type: boolean
+                          type: object
+                        type: array
+                      jwt:
+                        description: JWTAuth JWT Authentication scheme details
                         properties:
-                          apiKey:
-                            items:
-                              description: APIKeyAuth APIKey Authentication scheme
-                                details
-                              properties:
-                                in:
-                                  description: In is to specify how the APIKey is
-                                    passed to the request
-                                  enum:
-                                  - Header
-                                  - Query
-                                  minLength: 1
-                                  type: string
-                                name:
-                                  description: Name is the name of the header or query
-                                    parameter to be used
-                                  minLength: 1
-                                  type: string
-                                sendTokenToUpstream:
-                                  type: boolean
-                              type: object
-                            type: array
-                          jwt:
-                            description: JWTAuth JWT Authentication scheme details
-                            properties:
-                              disabled:
-                                default: false
-                                type: boolean
-                              header:
-                                default: authorization
-                                description: Header is the header name used to pass
-                                  the JWT token
-                                type: string
-                              sendTokenToUpstream:
-                                type: boolean
-                            required:
-                            - disabled
-                            type: object
-                          testConsoleKey:
-                            description: TestConsoleKeyAuth Test Console Key Authentication
-                              scheme details
-                            properties:
-                              header:
-                                default: internal-key
-                                description: Header is the header name used to pass
-                                  the Test Console Key
-                                type: string
-                              sendTokenToUpstream:
-                                type: boolean
-                            type: object
+                          disabled:
+                            default: false
+                            type: boolean
+                          header:
+                            default: authorization
+                            description: Header is the header name used to pass the
+                              JWT token
+                            type: string
+                          sendTokenToUpstream:
+                            type: boolean
+                        required:
+                        - disabled
                         type: object
-                      disabled:
-                        description: Disabled is to disable all authentications
-                        nullable: true
-                        type: boolean
-                      serviceRef:
-                        description: ServiceRef service using for Authentication
+                      testConsoleKey:
+                        description: TestConsoleKeyAuth Test Console Key Authentication
+                          scheme details
                         properties:
-                          group:
+                          header:
+                            default: internal-key
+                            description: Header is the header name used to pass the
+                              Test Console Key
                             type: string
-                          kind:
-                            type: string
-                          name:
-                            type: string
-                          port:
-                            format: int32
-                            type: integer
+                          sendTokenToUpstream:
+                            type: boolean
                         type: object
                     type: object
-                  type:
-                    type: string
+                  disabled:
+                    description: Disabled is to disable all authentications
+                    nullable: true
+                    type: boolean
                 type: object
               targetRef:
                 description: PolicyTargetReference identifies an API object to apply
