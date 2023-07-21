@@ -1,0 +1,35 @@
+organization: "wso2"
+name: "test-cors"
+id: "cors-api-adff3dbc-2787-11ee-be56-0242ac120002"
+context: "/test_cors"
+version: "2.0.0"
+type: "REST"
+endpointConfigurations:
+    production:
+      endpoint: 
+        name: "sample"
+        namespace: "apk"
+        protocol: "http"
+        port: 55
+operations:
+    - target: "/anything"
+      verb: "GET"
+      authTypeEnabled: true
+      scopes: []
+vhosts:
+  production: ["abc"]
+  sandbox: []
+corsConfiguration:
+  corsConfigurationEnabled: false
+  accessControlAllowOrigins:
+    - "abc"
+  accessControlAllowCredentials: true
+  accessControlAllowHeaders:
+    - "Content-Type"
+    - "Authorization"
+  accessControlAllowMethods:
+    - "GET"
+    - "POST"
+    - "PUT"
+    - "DELETE"
+  accessControlAllowMaxAge: 3600

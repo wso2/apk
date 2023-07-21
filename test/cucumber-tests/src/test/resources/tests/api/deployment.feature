@@ -2,11 +2,11 @@ Feature: API Deployment
   Scenario: Deploying an API
     Given The system is ready
     And I have a valid subscription
-    When I use the APK Conf file "/home/sanoj/work/repos/apk-test/expectedAPK.apk-conf"
-    And the definition file "/home/sanoj/work/repos/apk-test/api.yaml"
+    When I use the APK Conf file "artifacts/apk-confs/cors_API.apk-conf"
+    And the definition file "artifacts/definitions/cors_api.yaml"
     And make the API deployment request
     Then the response status code should be 200
-    And the response body should contain "id"
+    And the response body should contain "cors-api-adff3dbc-2787-11ee-be56-0242ac120002"
 
   Scenario Outline: Undeploy an API
     Given The system is ready
@@ -16,5 +16,5 @@ Feature: API Deployment
 
     Examples:
       | apiID | expectedStatusCode |
-      | b76df54c6c2e37adfca2c9afda3439949a34f73a  | 202         |
+      | cors-api-adff3dbc-2787-11ee-be56-0242ac120002  | 202         |
       | abcdeadsxzads | 404        |
