@@ -222,7 +222,7 @@ jobs:
     - name: Create Image pull secret.
       shell: sh
       run: |
-        kubectl create secret docker-registry azure-registry --docker-server=${{ secrets.AZURE_ACR_NAME }}.azurecr.io --docker-username=${{ secrets.AZURE_ACR_USER }} --docker-password=${{ secrets.AZURE_ACR_PASSWORD }} --docker-email=${{ secrets.WSO2_BOT_EMAIL }} -n apk-cucumber-integration-test
+        kubectl create secret docker-registry azure-registry --docker-server=${{ secrets.AZURE_ACR_NAME }}.azurecr.io --docker-username=${{ secrets.AZURE_ACR_USER }} --docker-password=${{ secrets.AZURE_ACR_PASSWORD }} --docker-email=${{ secrets.WSO2_BOT_EMAIL }} -n apk-integration-test
     - name: Checkout apk-repo.
       uses: actions/checkout@v3
       with:
@@ -263,15 +263,11 @@ jobs:
         --set wso2.apk.dp.runtime.deployment.replicas=0
         kubectl get pods -n apk-integration-test
         kubectl get svc -n apk-integration-test
-    - name: Setup Hosts
-      shell: sh
-      run: |
-          cd apk-repo/test/integration
-          sh ./scripts/setup-hosts.sh
     - name: Run test cases
       shell: sh
       run: |
           cd apk-repo/test/cucumber-tests
+          sh ./scripts/setup-hosts.sh
           ./gradlew runTests
     - name: Helm release undeploy
       if: always()
