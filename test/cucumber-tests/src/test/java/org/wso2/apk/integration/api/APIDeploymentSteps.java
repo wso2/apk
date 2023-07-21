@@ -17,6 +17,7 @@
 
 package org.wso2.apk.integration.api;
 
+import com.google.common.io.Resources;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.apache.http.HttpEntity;
@@ -35,6 +36,7 @@ import org.wso2.apk.integration.utils.clients.SimpleHTTPClient;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -57,13 +59,15 @@ public class APIDeploymentSteps {
     @When("I use the APK Conf file {string}")
     public void iHaveTheAPKConf(String apkConfFileName) throws IOException {
 
-        apkConfFile = new File(apkConfFileName);
+        URL url = Resources.getResource(apkConfFileName);
+        apkConfFile = new File(url.getPath());
     }
 
     @When("the definition file {string}")
     public void iHaveTheDefinitionFile(String definitionFileName) throws IOException {
 
-        definitionFile = new File(definitionFileName);
+        URL url = Resources.getResource(definitionFileName);
+        definitionFile = new File(url.getPath());
     }
 
     @When("make the API deployment request")
