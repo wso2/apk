@@ -57,7 +57,7 @@ public class BaseSteps {
     public void theResponseStatusCodeShouldBe(int expectedStatusCode) {
 
         int actualStatusCode = sharedContext.getResponse().getStatusLine().getStatusCode();
-        Assert.assertEquals(expectedStatusCode, actualStatusCode);
+        Assert.assertEquals(actualStatusCode, expectedStatusCode);
     }
 
     @Given("I have a valid subscription")
