@@ -67,6 +67,9 @@ type rateLimitPolicyCache struct {
 	// org -> vhost -> API-Identifier (i.e. Vhost:API-UUID) -> Rate Limit Configs
 	apiLevelRateLimitPolicies map[string]map[string]map[string][]*rls_config.RateLimitDescriptor
 
+	// org -> Custom Rate Limit Configs
+	customRateLimitPolicies map[string]map[string]*rls_config.RateLimitDescriptor
+
 	// mutex for API level
 	apiLevelMu sync.RWMutex
 }
@@ -186,6 +189,13 @@ func (r *rateLimitPolicyCache) DeleteResourceLevelRateLimitPolicies(org string, 
 	}
 }
 
+// DeleteCustomRateLimitPolicies deletes Custom Rate Limit policies added.
+func (r *rateLimitPolicyCache) DeleteCustomRateLimitPolicies(customRateLimitPolicy dpv1alpha1.CustomRateLimitPolicyDef) {
+	r.apiLevelMu.Lock()
+	defer r.apiLevelMu.Unlock()
+	delete(r.customRateLimitPolicies[customRateLimitPolicy.Organization], customRateLimitPolicy.Key+"_"+customRateLimitPolicy.Value)
+}
+
 func (r *rateLimitPolicyCache) generateRateLimitConfig() *rls_config.RateLimitConfig {
 	var orgDescriptors []*rls_config.RateLimitDescriptor
 
@@ -220,10 +230,38 @@ func (r *rateLimitPolicyCache) generateRateLimitConfig() *rls_config.RateLimitCo
 		orgDescriptors = append(orgDescriptors, orgDescriptor)
 	}
 
+	// Add custom rate limit policies as organization level rate limit policies
+	customRateLimitDescriptors := r.generateCustomPolicyRateLimitConfig()
+	orgDescriptors = append(orgDescriptors, customRateLimitDescriptors...)
+
 	return &rls_config.RateLimitConfig{
 		Name:        RateLimiterDomain,
 		Domain:      RateLimiterDomain,
 		Descriptors: orgDescriptors,
+	}
+}
+
+// AddCustomRateLimitPolicies adds custom rate limit policies to the rateLimitPolicyCache.
+func (r *rateLimitPolicyCache) AddCustomRateLimitPolicies(customRateLimitPolicy dpv1alpha1.CustomRateLimitPolicyDef) {
+	if r.customRateLimitPolicies[customRateLimitPolicy.Organization] == nil {
+		r.customRateLimitPolicies[customRateLimitPolicy.Organization] = make(map[string]*rls_config.RateLimitDescriptor)
+		r.customRateLimitPolicies[customRateLimitPolicy.Organization][customRateLimitPolicy.Key+"_"+customRateLimitPolicy.Value] = &rls_config.RateLimitDescriptor{
+			Key:   customRateLimitPolicy.Key,
+			Value: customRateLimitPolicy.Value,
+			RateLimit: &rls_config.RateLimitPolicy{
+				Unit:            getRateLimitUnit(customRateLimitPolicy.RateLimit.Unit),
+				RequestsPerUnit: uint32(customRateLimitPolicy.RateLimit.RequestsPerUnit),
+			},
+		}
+	} else {
+		r.customRateLimitPolicies[customRateLimitPolicy.Organization][customRateLimitPolicy.Key+"_"+customRateLimitPolicy.Value] = &rls_config.RateLimitDescriptor{
+			Key:   customRateLimitPolicy.Key,
+			Value: customRateLimitPolicy.Value,
+			RateLimit: &rls_config.RateLimitPolicy{
+				Unit:            getRateLimitUnit(customRateLimitPolicy.RateLimit.Unit),
+				RequestsPerUnit: uint32(customRateLimitPolicy.RateLimit.RequestsPerUnit),
+			},
+		}
 	}
 }
 
@@ -287,7 +325,26 @@ func init() {
 	rlsPolicyCache = &rateLimitPolicyCache{
 		xdsCache:                  gcp_cache.NewSnapshotCache(false, IDHash{}, nil),
 		apiLevelRateLimitPolicies: make(map[string]map[string]map[string][]*rls_config.RateLimitDescriptor),
+		customRateLimitPolicies:   make(map[string]map[string]*rls_config.RateLimitDescriptor),
 	}
+}
+
+// generateCustomPolicyRateLimitConfig generates rate limit configurations for custom rate limit policies
+// based on the policies stored in the rateLimitPolicyCache.
+func (r *rateLimitPolicyCache) generateCustomPolicyRateLimitConfig() []*rls_config.RateLimitDescriptor {
+	var orgDescriptors []*rls_config.RateLimitDescriptor
+	for org, customRateLimitPolicies := range r.customRateLimitPolicies {
+		descriptors := []*rls_config.RateLimitDescriptor{}
+		for _, customRateLimitPolicy := range customRateLimitPolicies {
+			descriptors = append(descriptors, customRateLimitPolicy)
+		}
+		orgDescriptors = append(orgDescriptors, &rls_config.RateLimitDescriptor{
+			Key:         OrgMetadataKey,
+			Value:       org,
+			Descriptors: descriptors,
+		})
+	}
+	return orgDescriptors
 }
 
 // SetEmptySnapshot sets an empty snapshot into the apiCache for the given label
