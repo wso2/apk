@@ -19,21 +19,22 @@ package v1alpha1
 
 // CustomRateLimitPolicyDef defines the desired state of CustomPolicy
 type CustomRateLimitPolicyDef struct {
-	Key          string    `json:"key,omitempty"`
-	Value        string    `json:"value,omitempty"`
-	RateLimit    RateLimit `json:"rateLimit,omitempty"`
-	Organization string    `json:"organization,omitempty"`
+	Key             string `json:"key,omitempty"`
+	Value           string `json:"value,omitempty"`
+	RequestsPerUnit int    `json:"requestsPerUnit,omitempty"`
+
+	Unit string `json:"unit,omitempty"`
+	// RateLimit    RateLimit `json:"rateLimit,omitempty"`
+	Organization string `json:"organization,omitempty"`
 }
 
 // ParseCustomRateLimitPolicy parses the custom rate limit policy
 func ParseCustomRateLimitPolicy(customRateLimitCR RateLimitPolicy) *CustomRateLimitPolicyDef {
 	return &CustomRateLimitPolicyDef{
-		Key:   customRateLimitCR.Spec.Override.Custom.Key,
-		Value: customRateLimitCR.Spec.Override.Custom.Value,
-		RateLimit: RateLimit{
-			RequestsPerUnit: customRateLimitCR.Spec.Override.Custom.RateLimit.RequestsPerUnit,
-			Unit:            customRateLimitCR.Spec.Override.Custom.RateLimit.Unit,
-		},
-		Organization: customRateLimitCR.Spec.Override.Organization,
+		Key:             customRateLimitCR.Spec.Override.Custom.Key,
+		Value:           customRateLimitCR.Spec.Override.Custom.Value,
+		RequestsPerUnit: customRateLimitCR.Spec.Override.Custom.RequestsPerUnit,
+		Unit:            customRateLimitCR.Spec.Override.Custom.Unit,
+		Organization:    customRateLimitCR.Spec.Override.Organization,
 	}
 }
