@@ -32,6 +32,8 @@ import org.wso2.apk.integration.utils.Utils;
 import org.wso2.apk.integration.utils.clients.SimpleHTTPClient;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +45,7 @@ public class BaseSteps {
 
     private final SharedContext sharedContext;
     private SimpleHTTPClient httpClient;
+    private static final int MAX_WAIT_FOR_NEXT_MINUTE_IN_SECONDS = 10;
 
     public BaseSteps(SharedContext sharedContext) {
 
@@ -106,6 +109,17 @@ public class BaseSteps {
             sharedContext.setResponse(httpResponse);
             Assert.assertEquals(httpResponse.getStatusLine().getStatusCode(), statusCode);
         }
+    }
+
+    @Then("I wait for next minute")
+    public void waitForNextMinute() throws InterruptedException {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime nextMinute = now.plusMinutes(1).withSecond(0).withNano(0);
+        long secondsToWait = now.until(nextMinute, ChronoUnit.SECONDS);
+        if (secondsToWait > MAX_WAIT_FOR_NEXT_MINUTE_IN_SECONDS) {
+            return;
+        }
+        Thread.sleep((secondsToWait+1) * 1000);
     }
 
 
