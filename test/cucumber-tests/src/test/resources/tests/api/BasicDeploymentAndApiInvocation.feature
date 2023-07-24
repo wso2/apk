@@ -12,13 +12,13 @@ Feature: API Deployment and invocation
     And I eventually receive 200 response code, not accepting
       |429|
     And I send "POST" request to "https://default.gw.wso2.com:9095/test/3.14/employee/" with body ""
-    And I receive 200 response code
+    And the response status code should be 200
     And I send "POST" request to "https://default.gw.wso2.com:9095/test/3.14/test/" with body ""
-    And I receive 404 response code
+    And the response status code should be 404
     And I send "PUT" request to "https://default.gw.wso2.com:9095/test/3.14/employee/12" with body ""
-    And I receive 200 response code
+    And the response status code should be 200
     And I send "DELETE" request to "https://default.gw.wso2.com:9095/test/3.14/employee/12" with body ""
-    And I receive 200 response code
+    And the response status code should be 200
 
   Scenario: Deploying an API with default version
     Given The system is ready
@@ -33,25 +33,25 @@ Feature: API Deployment and invocation
     And I eventually receive 200 response code, not accepting
       |429|
     And I send "POST" request to "https://default.gw.wso2.com:9095/test-default/3.14/employee/" with body ""
-    And I receive 200 response code
+    And the response status code should be 200
     And I send "POST" request to "https://default.gw.wso2.com:9095/test-default/3.14/test/" with body ""
-    And I receive 404 response code
+    And the response status code should be 404
     And I send "PUT" request to "https://default.gw.wso2.com:9095/test-default/3.14/employee/12" with body ""
-    And I receive 200 response code
+    And the response status code should be 200
     And I send "DELETE" request to "https://default.gw.wso2.com:9095/test-default/3.14/employee/12" with body ""
-    And I receive 200 response code
+    And the response status code should be 200
 
     And I send "GET" request to "https://default.gw.wso2.com:9095/test-default/employee/" with body ""
     And I eventually receive 200 response code, not accepting
       |429|
     And I send "POST" request to "https://default.gw.wso2.com:9095/test-default/employee/" with body ""
-    And I receive 200 response code
+    And the response status code should be 200
     And I send "POST" request to "https://default.gw.wso2.com:9095/test-default/test/" with body ""
-    And I receive 404 response code
+    And the response status code should be 404
     And I send "PUT" request to "https://default.gw.wso2.com:9095/test-default/employee/12" with body ""
-    And I receive 200 response code
+    And the response status code should be 200
     And I send "DELETE" request to "https://default.gw.wso2.com:9095/test-default/employee/12" with body ""
-    And I receive 200 response code
+    And the response status code should be 200
 
   Scenario Outline: Undeploy API
     Given The system is ready

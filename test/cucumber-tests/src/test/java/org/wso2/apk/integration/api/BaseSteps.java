@@ -108,11 +108,6 @@ public class BaseSteps {
         }
     }
 
-    @Then("I receive {int} response code")
-    public void receiveSuccess(int statusCode) throws IOException, InterruptedException {
-        Assert.assertEquals(sharedContext.getResponse().getStatusLine().getStatusCode(), statusCode);
-    }
-
 
     @Given("I have a valid subscription")
     public void iHaveValidSubscription() throws Exception {
