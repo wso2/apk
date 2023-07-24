@@ -1,0 +1,37 @@
+---
+name: "JWTCustomHeaderAPI"
+context: "/jwt-custom-header"
+id: "jwt-custom-header-test"
+version: "3.14"
+type: "REST"
+organization: "apk-org"
+defaultVersion: false
+endpointConfigurations:
+  production:
+    endpoint: "https://run.mocky.io/v3/85516819-1edd-412b-a32b-a9284705a0b4"
+operations:
+  - target: "/employee"
+    verb: "GET"
+    authTypeEnabled: true
+    scopes: []
+  - target: "/employee"
+    verb: "POST"
+    authTypeEnabled: true
+    scopes: []
+  - target: "/employee/{employeeId}"
+    verb: "PUT"
+    authTypeEnabled: true
+    scopes: []
+  - target: "/employee/{employeeId}"
+    verb: "DELETE"
+    authTypeEnabled: true
+    scopes: []
+vhosts:
+  production:
+    - "default.gw.wso2.com"
+authentication:
+ - authType: JWT
+   enabled: true
+   sendTokenToUpstream: true
+   headerName: testAuth
+   headerEnable: true
