@@ -30,16 +30,12 @@ public type RateLimitSpec record {|
 
 public type RateLimitData record {
     APIRateLimitDetails api?;
-    string 'type?;
     string organization;
 };
 
-public type RateLimitDataSpec record {|
+public type APIRateLimitDetails record {|
     int requestsPerUnit?;
     string unit?;
-|};
-public type APIRateLimitDetails record {|
-    RateLimitDataSpec rateLimit?;
 |};
 
 public type RateLimitPolicyList record {

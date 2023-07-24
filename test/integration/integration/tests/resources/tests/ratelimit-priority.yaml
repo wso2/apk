@@ -86,11 +86,9 @@ metadata:
   namespace: gateway-integration-test-infra
 spec:
   override:
-    type: Api
     api:
-      rateLimit:
-        requestsPerUnit: 10
-        unit: Minute
+      requestsPerUnit: 10
+      unit: Minute
   targetRef:
     kind: Resource
     name: ratelimit-priority
@@ -104,11 +102,9 @@ metadata:
   namespace: gateway-integration-test-infra
 spec:
   default:
-    type: Api
     api:
-      rateLimit:
-        requestsPerUnit: 2
-        unit: Minute
+      requestsPerUnit: 2
+      unit: Minute
   targetRef:
     kind: API
     name: ratelimit-priority
