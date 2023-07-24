@@ -23,9 +23,8 @@
 #     custom:
 #       key: rlkey_usergroup
 #       value: admin
-#       rateLimit:
-#         requestsPerUnit: 8
-#         unit: Minute
+#       requestsPerUnit: 8
+#       unit: Minute
 #     organization: default
 #   targetRef:
 #     kind: Gateway
@@ -38,13 +37,11 @@
 #   name: http-bin-ratelimit-user
 # spec:
 #   override:
-#     type: Custom
 #     custom:
 #       key: rlkey_user
 #       value: bob
-#       rateLimit:
-#         requestsPerUnit: 4
-#         unit: Minute
+#       requestsPerUnit: 4
+#       unit: Minute
 #     organization: default
 #   targetRef:
 #     kind: Gateway

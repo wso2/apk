@@ -953,13 +953,10 @@ public class APIClient {
     isolated function retrieveRateLimitData(RateLimit rateLimit, string organization) returns model:RateLimitData {
         model:RateLimitData rateLimitData = {
             api: {
-                rateLimit: {
                     requestsPerUnit: rateLimit.requestsPerUnit,
                     unit: rateLimit.unit
-                }
             },
-            organization: organization,
-            'type: "Api"
+            organization: organization
         };
         return rateLimitData;
     }

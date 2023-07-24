@@ -428,10 +428,10 @@ func getCorsConfigFromAPIPolicy(apiPolicy *dpv1alpha1.APIPolicy) *CorsConfig {
 func parseRateLimitPolicyToInternal(ratelimitPolicy *dpv1alpha1.RateLimitPolicy) *RateLimitPolicy {
 	var rateLimitPolicyInternal *RateLimitPolicy
 	if ratelimitPolicy != nil {
-		if ratelimitPolicy.Spec.Override.API.RateLimit.RequestsPerUnit > 0 {
+		if ratelimitPolicy.Spec.Override.API.RequestsPerUnit > 0 {
 			rateLimitPolicyInternal = &RateLimitPolicy{
-				Count:    ratelimitPolicy.Spec.Override.API.RateLimit.RequestsPerUnit,
-				SpanUnit: ratelimitPolicy.Spec.Override.API.RateLimit.Unit,
+				Count:    ratelimitPolicy.Spec.Override.API.RequestsPerUnit,
+				SpanUnit: ratelimitPolicy.Spec.Override.API.Unit,
 			}
 		}
 	}
