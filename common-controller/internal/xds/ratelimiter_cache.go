@@ -79,73 +79,86 @@ func (r *rateLimitPolicyCache) AddAPILevelRateLimitPolicies(vHosts []string, res
 	// The map apiOperations is used to keep `Pat:HTTPmethod` unique to make sure the Rate Limiter Config to be consistent (not to have duplicate rate limit policies)
 	// path -> HTTP method
 	apiOperations := make(map[string]map[string]struct{})
-	for _, resource := range resolveRatelimit.Resources {
+	if len(resolveRatelimit.Resources) != 0 {
+		logger.Info("Going to resorcelevel")
+		for _, resource := range resolveRatelimit.Resources {
 
-		path := resolveRatelimit.Context + resource.Path
-		if _, ok := apiOperations[path]; !ok {
-			apiOperations[path] = make(map[string]struct{})
-		}
-		operationRlsConfigs := []*rls_config.RateLimitDescriptor{}
+			path := resolveRatelimit.Context + resolveRatelimit.Context + resource.Path
+			logger.Info("path", path)
+			if _, ok := apiOperations[path]; !ok {
+				apiOperations[path] = make(map[string]struct{})
+			}
 
-		method := resource.Method
-		if _, ok := apiOperations[path][method]; ok {
-			// Unreachable if the swagger definition is valid
-			loggers.LoggerAPKOperator.Warnf("Duplicate API resource HTTP method %q %q in the swagger definition, skipping rate limit policy for the duplicate resource. API_UUID: %v", path, method, logging.GetValueFromLogContext("API_UUID"))
-			continue
-		}
+			method := resource.Method
 
-		rlPolicyConfig := parseRateLimitPolicyToXDS(resolveRatelimit.API)
-		rlConf := &rls_config.RateLimitDescriptor{
-			Key:       DescriptorKeyForMethod,
-			Value:     method,
-			RateLimit: rlPolicyConfig,
-		}
-		operationRlsConfigs = append(operationRlsConfigs, rlConf)
-		apiOperations[path][method] = void
+			rlPolicyConfig := parseRateLimitPolicyToXDS(resource.ResourceRatelimit)
+			rlConf := &rls_config.RateLimitDescriptor{
+				Key:       DescriptorKeyForMethod,
+				Value:     method,
+				RateLimit: rlPolicyConfig,
+			}
 
-		if len(operationRlsConfigs) > 0 {
 			rlsConfig := &rls_config.RateLimitDescriptor{
-				Key:         DescriptorKeyForPath,
-				Value:       path,
-				Descriptors: operationRlsConfigs,
+				Key:   DescriptorKeyForPath,
+				Value: path,
+				Descriptors: []*rls_config.RateLimitDescriptor{
+					rlConf,
+				},
 			}
 			rlsConfigs = append(rlsConfigs, rlsConfig)
-		}
-	}
+			var org = resolveRatelimit.Organization
 
-	apiLevelRLPolicyConfig := parseRateLimitPolicyToXDS(resolveRatelimit.API)
-	rlsConfigs = append(rlsConfigs, &rls_config.RateLimitDescriptor{
-		Key:   DescriptorKeyForPath,
-		Value: resolveRatelimit.Context,
-		Descriptors: []*rls_config.RateLimitDescriptor{
-			{
-				Key:       DescriptorKeyForMethod,
-				Value:     DescriptorValueForAPIMethod,
-				RateLimit: apiLevelRLPolicyConfig,
+			r.apiLevelMu.Lock()
+			defer r.apiLevelMu.Unlock()
+			if _, ok := r.apiLevelRateLimitPolicies[org]; !ok {
+				r.apiLevelRateLimitPolicies[org] = make(map[string]map[string][]*rls_config.RateLimitDescriptor)
+				logger.Info("org", org)
+			}
+			for _, vHost := range vHosts {
+				logger.Info("vHost", vHost)
+				if _, ok := r.apiLevelRateLimitPolicies[org][vHost]; !ok {
+					r.apiLevelRateLimitPolicies[org][vHost] = make(map[string][]*rls_config.RateLimitDescriptor)
+				}
+				apiIdentifier := GenerateIdentifierForAPIWithUUID(vHost, resolveRatelimit.UUID) + resource.Path + resource.Method
+				r.apiLevelRateLimitPolicies[org][vHost][apiIdentifier] = rlsConfigs
+			}
+		}
+	} else {
+		logger.Info("Going to APILevel")
+		apiLevelRLPolicyConfig := parseRateLimitPolicyToXDS(resolveRatelimit.API)
+		rlsConfigs = append(rlsConfigs, &rls_config.RateLimitDescriptor{
+			Key:   DescriptorKeyForPath,
+			Value: resolveRatelimit.Context,
+			Descriptors: []*rls_config.RateLimitDescriptor{
+				{
+					Key:       DescriptorKeyForMethod,
+					Value:     DescriptorValueForAPIMethod,
+					RateLimit: apiLevelRLPolicyConfig,
+				},
 			},
 		},
-	},
-	)
-	logger.Info("rlsConfigs", rlsConfigs)
-	if len(rlsConfigs) == 0 {
-		return
-	}
-
-	var org = resolveRatelimit.Organization
-
-	r.apiLevelMu.Lock()
-	defer r.apiLevelMu.Unlock()
-	if _, ok := r.apiLevelRateLimitPolicies[org]; !ok {
-		r.apiLevelRateLimitPolicies[org] = make(map[string]map[string][]*rls_config.RateLimitDescriptor)
-		logger.Info("org", org)
-	}
-	for _, vHost := range vHosts {
-		if _, ok := r.apiLevelRateLimitPolicies[org][vHost]; !ok {
-			r.apiLevelRateLimitPolicies[org][vHost] = make(map[string][]*rls_config.RateLimitDescriptor)
+		)
+		if len(rlsConfigs) == 0 {
+			return
 		}
-		apiIdentifier := GenerateIdentifierForAPIWithUUID(vHost, resolveRatelimit.UUID)
-		r.apiLevelRateLimitPolicies[org][vHost][apiIdentifier] = rlsConfigs
-		logger.Info("apiIdentifier", apiIdentifier)
+
+		var org = resolveRatelimit.Organization
+
+		r.apiLevelMu.Lock()
+		defer r.apiLevelMu.Unlock()
+		if _, ok := r.apiLevelRateLimitPolicies[org]; !ok {
+			r.apiLevelRateLimitPolicies[org] = make(map[string]map[string][]*rls_config.RateLimitDescriptor)
+			logger.Info("org", org)
+		}
+		for _, vHost := range vHosts {
+			logger.Info("vHost", vHost)
+			if _, ok := r.apiLevelRateLimitPolicies[org][vHost]; !ok {
+				r.apiLevelRateLimitPolicies[org][vHost] = make(map[string][]*rls_config.RateLimitDescriptor)
+			}
+			apiIdentifier := GenerateIdentifierForAPIWithUUID(vHost, resolveRatelimit.UUID)
+			r.apiLevelRateLimitPolicies[org][vHost][apiIdentifier] = rlsConfigs
+			logger.Info("apiIdentifier", apiIdentifier)
+		}
 	}
 }
 
@@ -155,6 +168,18 @@ func (r *rateLimitPolicyCache) DeleteAPILevelRateLimitPolicies(org string, vHost
 	defer r.apiLevelMu.Unlock()
 	for _, vHost := range vHosts {
 		apiIdentifier := GenerateIdentifierForAPIWithUUID(vHost, apiID)
+		logger.Info("apiIdentifier", apiIdentifier)
+		logger.Info("r.apiLevelRateLimitPolicies[org][vHost]", r.apiLevelRateLimitPolicies[org][vHost])
+		delete(r.apiLevelRateLimitPolicies[org][vHost], apiIdentifier)
+	}
+}
+
+// DeleteAPILevelRateLimitPolicies deletes inline Rate Limit policies added with the API.
+func (r *rateLimitPolicyCache) DeleteResourceLevelRateLimitPolicies(org string, vHosts []string, apiID string, path string, method string) {
+	r.apiLevelMu.Lock()
+	defer r.apiLevelMu.Unlock()
+	for _, vHost := range vHosts {
+		apiIdentifier := GenerateIdentifierForAPIWithUUID(vHost, apiID) + path + method
 		logger.Info("apiIdentifier", apiIdentifier)
 		logger.Info("r.apiLevelRateLimitPolicies[org][vHost]", r.apiLevelRateLimitPolicies[org][vHost])
 		delete(r.apiLevelRateLimitPolicies[org][vHost], apiIdentifier)

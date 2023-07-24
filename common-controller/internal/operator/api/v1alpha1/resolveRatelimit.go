@@ -43,7 +43,8 @@ type ResolveRateLimit struct {
 
 // ResolveResource defines the desired state of Resource
 type ResolveResource struct {
-	Path          string                  `json:"path,omitempty"`
-	PathMatchType gwapiv1b1.PathMatchType `json:"pathMatchType,omitempty"`
-	Method        string                  `json:"method,omitempty"`
+	ResourceRatelimit ResolveRateLimit        `json:"resourceRatelimit,omitempty"`
+	Path              string                  `json:"path,omitempty"`
+	PathMatchType     gwapiv1b1.PathMatchType `json:"pathMatchType,omitempty"`
+	Method            string                  `json:"method,omitempty"`
 }
