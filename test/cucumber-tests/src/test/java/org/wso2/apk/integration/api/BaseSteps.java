@@ -17,16 +17,23 @@
 
 package org.wso2.apk.integration.api;
 
+import io.cucumber.core.options.CurlOption;
+import io.cucumber.datatable.DataTable;
 import io.cucumber.java.Before;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.testng.Assert;
 import org.wso2.apk.integration.utils.Constants;
 import org.wso2.apk.integration.utils.Utils;
 import org.wso2.apk.integration.utils.clients.SimpleHTTPClient;
 
+import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -60,6 +67,53 @@ public class BaseSteps {
         Assert.assertEquals(actualStatusCode, expectedStatusCode);
     }
 
+    @Then("I send {string} request to {string} with body {string}")
+    public void sendHttpRequest(String httpMethod, String url, String body) throws IOException {
+        if (sharedContext.getResponse() instanceof CloseableHttpResponse) {
+            ((CloseableHttpResponse) sharedContext.getResponse()).close();
+        }
+        if (CurlOption.HttpMethod.GET.toString().toLowerCase().equals(httpMethod.toLowerCase())) {
+            sharedContext.setResponse(httpClient.doGet(url, sharedContext.getHeaders()));
+        } else if (CurlOption.HttpMethod.POST.toString().toLowerCase().equals(httpMethod.toLowerCase())) {
+            sharedContext.setResponse(httpClient.doPost(url, sharedContext.getHeaders(), body, null));
+        } else if (CurlOption.HttpMethod.PUT.toString().toLowerCase().equals(httpMethod.toLowerCase())) {
+            sharedContext.setResponse(httpClient.doPut(url, sharedContext.getHeaders(), body, null));
+        } else if (CurlOption.HttpMethod.DELETE.toString().toLowerCase().equals(httpMethod.toLowerCase())) {
+            sharedContext.setResponse(httpClient.doPut(url, sharedContext.getHeaders(), body, null));
+        }
+    }
+
+    @Then("I set headers")
+    public void setHeaders(DataTable dataTable) {
+        List<List<String>> rows = dataTable.asLists(String.class);
+        for (List<String> columns : rows) {
+            String key = columns.get(0);
+            String value = columns.get(1);
+            key = Utils.resolveVariables(key, sharedContext.getValueStore());
+            value = Utils.resolveVariables(value, sharedContext.getValueStore());
+            sharedContext.addHeader(key, value);
+        }
+    }
+
+    @Then("I eventually receive {int} response code, not accepting")
+    public void eventualSuccess(int statusCode, DataTable dataTable) throws IOException, InterruptedException {
+        List<Integer> nonAcceptableCodes = dataTable.asList(Integer.class);
+        if (sharedContext.getResponse().getStatusLine().getStatusCode() == statusCode) {
+            Assert.assertTrue(true);
+        } else {
+            HttpResponse httpResponse = httpClient.executeLastRequestForEventualConsistentResponse(statusCode,
+                    nonAcceptableCodes);
+            sharedContext.setResponse(httpResponse);
+            Assert.assertEquals(httpResponse.getStatusLine().getStatusCode(), statusCode);
+        }
+    }
+
+    @Then("I receive {int} response code")
+    public void receiveSuccess(int statusCode) throws IOException, InterruptedException {
+        Assert.assertEquals(sharedContext.getResponse().getStatusLine().getStatusCode(), statusCode);
+    }
+
+
     @Given("I have a valid subscription")
     public void iHaveValidSubscription() throws Exception {
 
@@ -70,5 +124,6 @@ public class BaseSteps {
         HttpResponse httpResponse = httpClient.doPost(Utils.getTokenEndpointURL(), headers, "grant_type=client_credentials",
                 Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
         sharedContext.setAccessToken(Utils.extractToken(httpResponse));
+        sharedContext.addStoreValue("accessToken", sharedContext.getAccessToken());
     }
 }
