@@ -37,7 +37,7 @@ corsConfiguration:
   - DELETE
   - PATCH
   - OPTIONS
-  accessControlMaxAge: 0
+  accessControlAllowMaxAge: 0
 vhosts:
   production:
   - default.gw.wso2.com
