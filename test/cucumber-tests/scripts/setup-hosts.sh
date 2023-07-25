@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+kubectl apply -f ./CRs/artifacts.yaml
+kubectl wait deployment/httpbin -n apk-integration-test --for=condition=available --timeout=600s
 kubectl wait --timeout=5m -n apk-integration-test deployment/apk-test-setup-wso2-apk-adapter-deployment --for=condition=Available
 kubectl wait --timeout=15m -n apk-integration-test deployment/apk-test-setup-wso2-apk-gateway-runtime-deployment --for=condition=Available
 IP=$(kubectl get svc apk-test-setup-wso2-apk-router-service -n apk-integration-test --output jsonpath='{.status.loadBalancer.ingress[0].ip}')
