@@ -30,22 +30,8 @@ public type AuthenticationSpec record {
 };
 
 public type AuthenticationData record {
-    AuthenticationExtenstion ext?;
-    string 'type?;
-
-};
-
-public type AuthenticationExtenstion record {
     AuthenticationExtenstionType authTypes?;
     boolean disabled?;
-    AuthenticationServiceRef serviceRef?;
-};
-
-public type AuthenticationServiceRef record {
-    string group?;
-    string kind?;
-    string name?;
-    int port?;
 };
 
 public type AuthenticationExtenstionType record {

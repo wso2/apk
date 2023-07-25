@@ -343,9 +343,9 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 				prodHTTPRouteRefs, namespace, err.Error())
 		}
 		if !apiReconciler.ods.IsGatewayAvailable(types.NamespacedName{
-			Name: string(apiState.ProdHTTPRoute.HTTPRoute.Spec.ParentRefs[0].Name),
-			Namespace: utils.GetNamespace(apiState.ProdHTTPRoute.HTTPRoute.Spec.ParentRefs[0].Namespace,
-				apiState.ProdHTTPRoute.HTTPRoute.Namespace),
+			Name: string(apiState.ProdHTTPRoute.HTTPRouteCombined.Spec.ParentRefs[0].Name),
+			Namespace: utils.GetNamespace(apiState.ProdHTTPRoute.HTTPRouteCombined.Spec.ParentRefs[0].Namespace,
+				apiState.ProdHTTPRoute.HTTPRouteCombined.Namespace),
 		}) {
 			return nil, fmt.Errorf("no gateway available for httpRouteref %s in namespace :%s has not found",
 				prodHTTPRouteRefs, namespace)
@@ -360,8 +360,9 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 				sandHTTPRouteRefs, namespace, err.Error())
 		}
 		if !apiReconciler.ods.IsGatewayAvailable(types.NamespacedName{
-			Name:      string(apiState.SandHTTPRoute.HTTPRoute.Spec.ParentRefs[0].Name),
-			Namespace: utils.GetNamespace(apiState.SandHTTPRoute.HTTPRoute.Spec.ParentRefs[0].Namespace, apiState.SandHTTPRoute.HTTPRoute.Namespace),
+			Name: string(apiState.SandHTTPRoute.HTTPRouteCombined.Spec.ParentRefs[0].Name),
+			Namespace: utils.GetNamespace(apiState.SandHTTPRoute.HTTPRouteCombined.Spec.ParentRefs[0].Namespace,
+				apiState.SandHTTPRoute.HTTPRouteCombined.Namespace),
 		}) {
 			return nil, fmt.Errorf("no gateway available for httpRouteref %s in namespace :%s has not found",
 				sandHTTPRouteRefs, namespace)
@@ -370,12 +371,13 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 
 	loggers.LoggerAPKOperator.Debugf("HTTPRoutes are retrieved successfully for API CR %s", apiRef.String())
 
-	if !api.APIDeploymentEvent.Accepted {
+	if !api.Status.Accepted {
 		apiReconciler.ods.AddAPIState(apiRef, apiState)
 		return &synchronizer.APIEvent{EventType: constants.Create, Event: *apiState, UpdatedEvents: []string{}}, nil
 	} else if cachedAPI, events, updated :=
 		apiReconciler.ods.UpdateAPIState(apiRef, apiState); updated {
 		apiReconciler.removeOldOwnerRefs(ctx, cachedAPI)
+		loggers.LoggerAPI.Infof("API CR %s is updated on %v", apiRef.String(), events)
 		return &synchronizer.APIEvent{EventType: constants.Update, Event: cachedAPI, UpdatedEvents: events}, nil
 	}
 
@@ -417,28 +419,25 @@ func (apiReconciler *APIReconciler) removeOldOwnerRefs(ctx context.Context, apiS
 
 func (apiReconciler *APIReconciler) removeOldOwnerRefsFromHTTPRoute(ctx context.Context,
 	httpRouteState *synchronizer.HTTPRouteState, apiName, apiNamespace string) {
-	httpRoute := httpRouteState.HTTPRoute
-	if httpRoute != nil {
-		// scope CRs
-		scopeList := &dpv1alpha1.ScopeList{}
-		if err := apiReconciler.client.List(ctx, scopeList, &k8client.ListOptions{
-			Namespace: apiNamespace,
-		}); err != nil {
-			loggers.LoggerAPKOperator.Errorf("error while listing authentication CRs for API CR %s, %s",
-				apiName, err.Error())
+	// scope CRs
+	scopeList := &dpv1alpha1.ScopeList{}
+	if err := apiReconciler.client.List(ctx, scopeList, &k8client.ListOptions{
+		Namespace: apiNamespace,
+	}); err != nil {
+		loggers.LoggerAPKOperator.Errorf("error while listing authentication CRs for API CR %s, %s",
+			apiName, err.Error())
+	}
+	for _, scope := range scopeList.Items {
+		// check scope has similar item inside the apiState.ProdHTTPRoute.Scopes
+		scopeFound := false
+		for _, attachedScope := range httpRouteState.Scopes {
+			if scope.GetName() == attachedScope.GetName() {
+				scopeFound = true
+				break
+			}
 		}
-		for _, scope := range scopeList.Items {
-			// check scope has similar item inside the apiState.ProdHTTPRoute.Scopes
-			scopeFound := false
-			for _, attachedScope := range httpRouteState.Scopes {
-				if scope.GetName() == attachedScope.GetName() {
-					scopeFound = true
-					break
-				}
-			}
-			if !scopeFound {
-				apiReconciler.removeOldOwnerRefsFromChild(ctx, &scope, apiName, apiNamespace)
-			}
+		if !scopeFound {
+			apiReconciler.removeOldOwnerRefsFromChild(ctx, &scope, apiName, apiNamespace)
 		}
 
 		// backend CRs
@@ -488,31 +487,34 @@ func (apiReconciler *APIReconciler) resolveHTTPRouteRefs(ctx context.Context, ht
 	httpRouteRefs []string, namespace string, interceptorServiceMapping map[string]dpv1alpha1.InterceptorService,
 	api dpv1alpha1.API) (*synchronizer.HTTPRouteState, error) {
 	var err error
-	httpRouteState.HTTPRoute, err = apiReconciler.concatHTTPRoutes(ctx, httpRouteRefs, namespace, api)
+	httpRouteState.HTTPRouteCombined, httpRouteState.HTTPRoutePartitions, err = apiReconciler.concatHTTPRoutes(ctx, httpRouteRefs, namespace, api)
 	if err != nil {
 		return nil, err
 	}
 	httpRouteState.BackendMapping = apiReconciler.getResolvedBackendsMapping(ctx, httpRouteState, interceptorServiceMapping, api)
-	httpRouteState.Scopes, err = apiReconciler.getScopesForHTTPRoute(ctx, httpRouteState.HTTPRoute, api)
+	httpRouteState.Scopes, err = apiReconciler.getScopesForHTTPRoute(ctx, httpRouteState.HTTPRouteCombined, api)
 	return httpRouteState, err
 }
 
 func (apiReconciler *APIReconciler) concatHTTPRoutes(ctx context.Context, httpRouteRefs []string,
-	namespace string, api dpv1alpha1.API) (*gwapiv1b1.HTTPRoute, error) {
+	namespace string, api dpv1alpha1.API) (*gwapiv1b1.HTTPRoute, map[string]*gwapiv1b1.HTTPRoute, error) {
 	var combinedHTTPRoute *gwapiv1b1.HTTPRoute
+	httpRoutePartitions := make(map[string]*gwapiv1b1.HTTPRoute)
 	for _, httpRouteRef := range httpRouteRefs {
 		var httpRoute gwapiv1b1.HTTPRoute
+		namespacedName := types.NamespacedName{Namespace: namespace, Name: httpRouteRef}
 		if err := utils.ResolveRef(ctx, apiReconciler.client, &api,
-			types.NamespacedName{Namespace: namespace, Name: httpRouteRef}, true, &httpRoute); err != nil {
-			return nil, fmt.Errorf("error while getting httproute %s in namespace :%s, %s", httpRouteRef, namespace, err.Error())
+			namespacedName, true, &httpRoute); err != nil {
+			return nil, httpRoutePartitions, fmt.Errorf("error while getting httproute %s in namespace :%s, %s", httpRouteRef, namespace, err.Error())
 		}
+		httpRoutePartitions[namespacedName.String()] = &httpRoute
 		if combinedHTTPRoute == nil {
 			combinedHTTPRoute = &httpRoute
 		} else {
 			combinedHTTPRoute.Spec.Rules = append(combinedHTTPRoute.Spec.Rules, httpRoute.Spec.Rules...)
 		}
 	}
-	return combinedHTTPRoute, nil
+	return combinedHTTPRoute, httpRoutePartitions, nil
 }
 
 func (apiReconciler *APIReconciler) getAuthenticationsForAPI(ctx context.Context,
@@ -703,11 +705,11 @@ func (apiReconciler *APIReconciler) getInterceptorServices(ctx context.Context,
 
 func (apiReconciler *APIReconciler) getResolvedBackendsMapping(ctx context.Context,
 	httpRouteState *synchronizer.HTTPRouteState, interceptorServiceMapping map[string]dpv1alpha1.InterceptorService,
-	api dpv1alpha1.API) dpv1alpha1.BackendMapping {
-	backendMapping := make(dpv1alpha1.BackendMapping)
+	api dpv1alpha1.API) map[string]*dpv1alpha1.ResolvedBackend {
+	backendMapping := make(map[string]*dpv1alpha1.ResolvedBackend)
 
 	// Resolve backends in HTTPRoute
-	httpRoute := httpRouteState.HTTPRoute
+	httpRoute := httpRouteState.HTTPRouteCombined
 	for _, rule := range httpRoute.Spec.Rules {
 		for _, backend := range rule.BackendRefs {
 			backendNamespacedName := types.NamespacedName{
@@ -716,7 +718,7 @@ func (apiReconciler *APIReconciler) getResolvedBackendsMapping(ctx context.Conte
 			}
 			resolvedBackend := utils.GetResolvedBackend(ctx, apiReconciler.client, backendNamespacedName, &api)
 			if resolvedBackend != nil {
-				backendMapping[backendNamespacedName] = resolvedBackend
+				backendMapping[backendNamespacedName.String()] = resolvedBackend
 			}
 		}
 	}
@@ -924,8 +926,12 @@ func (apiReconciler *APIReconciler) getAPIsForRateLimitPolicy(obj k8client.Objec
 	requests := []reconcile.Request{}
 
 	// todo(amali) move this validation to validation hook
+	if ratelimitPolicy.Spec.TargetRef.Kind == constants.KindGateway {
+		return []reconcile.Request{}
+	}
+
 	if !(ratelimitPolicy.Spec.TargetRef.Kind == constants.KindAPI || ratelimitPolicy.Spec.TargetRef.Kind == constants.KindResource) {
-		loggers.LoggerAPKOperator.Errorf("Unsupported target ref kind : %s was given for authentication: %s",
+		loggers.LoggerAPKOperator.Errorf("Unsupported target ref kind : %s was given for ratelimit: %s",
 			ratelimitPolicy.Spec.TargetRef.Kind, ratelimitPolicy.Name)
 		return requests
 	}
@@ -1401,11 +1407,11 @@ func (apiReconciler *APIReconciler) handleStatus() {
 					loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2626, obj))
 				}
 				hCopy := h.DeepCopy()
-				hCopy.APIDeploymentEvent.Status = successEvent.State
-				hCopy.APIDeploymentEvent.Accepted = accept
-				hCopy.APIDeploymentEvent.Message = message
-				hCopy.APIDeploymentEvent.Events = append(hCopy.APIDeploymentEvent.Events, event)
-				hCopy.APIDeploymentEvent.TransitionTime = &timeNow
+				hCopy.Status.Status = successEvent.State
+				hCopy.Status.Accepted = accept
+				hCopy.Status.Message = message
+				hCopy.Status.Events = append(hCopy.Status.Events, event)
+				hCopy.Status.TransitionTime = &timeNow
 				return hCopy
 			},
 		})

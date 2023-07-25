@@ -275,8 +275,8 @@ func (gatewayReconciler *GatewayReconciler) getInterceptorServicesForGateway(ctx
 }
 
 func (gatewayReconciler *GatewayReconciler) getResolvedBackendsMapping(ctx context.Context,
-	gatewayStateData *synchronizer.GatewayStateData) dpv1alpha1.BackendMapping {
-	backendMapping := make(dpv1alpha1.BackendMapping)
+	gatewayStateData *synchronizer.GatewayStateData) map[string]*dpv1alpha1.ResolvedBackend {
+	backendMapping := make(map[string]*dpv1alpha1.ResolvedBackend)
 	if gatewayStateData.GatewayInterceptorServiceMapping != nil {
 		interceptorServices := maps.Values(gatewayStateData.GatewayInterceptorServiceMapping)
 		for _, interceptorService := range interceptorServices {
@@ -455,10 +455,10 @@ func (gatewayReconciler *GatewayReconciler) handleCustomRateLimitPolicies(obj k8
 }
 
 // getCustomRateLimitPoliciesForGateway returns the list of custom rate limit policies for a gateway
-func (gatewayReconciler *GatewayReconciler) getCustomRateLimitPoliciesForGateway(gatewayName types.NamespacedName) ([]*dpv1alpha1.RateLimitPolicy, error) {
+func (gatewayReconciler *GatewayReconciler) getCustomRateLimitPoliciesForGateway(gatewayName types.NamespacedName) (map[string]*dpv1alpha1.RateLimitPolicy, error) {
 	ctx := context.Background()
 	var ratelimitPolicyList dpv1alpha1.RateLimitPolicyList
-	var rateLimitPolicies []*dpv1alpha1.RateLimitPolicy
+	rateLimitPolicies := make(map[string]*dpv1alpha1.RateLimitPolicy)
 	if err := gatewayReconciler.client.List(ctx, &ratelimitPolicyList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(gatewayRateLimitPolicyIndex, gatewayName.String()),
 	}); err != nil {
@@ -466,7 +466,7 @@ func (gatewayReconciler *GatewayReconciler) getCustomRateLimitPoliciesForGateway
 	}
 	for _, item := range ratelimitPolicyList.Items {
 		rateLimitPolicy := item
-		rateLimitPolicies = append(rateLimitPolicies, &rateLimitPolicy)
+		rateLimitPolicies[utils.NamespacedName(&rateLimitPolicy).String()] = &rateLimitPolicy
 	}
 	return rateLimitPolicies, nil
 }

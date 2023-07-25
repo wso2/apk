@@ -33,26 +33,11 @@ type AuthenticationSpec struct {
 
 // AuthSpec specification of the authentication service
 type AuthSpec struct {
-	AuthServerType  string         `json:"type,omitempty"`
-	ExternalService ExtAuthService `json:"ext,omitempty"`
-}
-
-// ExtAuthService external authentication related information
-type ExtAuthService struct {
-	ServiceRef ServiceRef `json:"serviceRef,omitempty"`
 	// Disabled is to disable all authentications
 	//
 	// +nullable
 	Disabled  *bool    `json:"disabled,omitempty"`
 	AuthTypes *APIAuth `json:"authTypes,omitempty"`
-}
-
-// ServiceRef service using for Authentication
-type ServiceRef struct {
-	Group string `json:"group,omitempty"`
-	Kind  string `json:"kind,omitempty"`
-	Name  string `json:"name,omitempty"`
-	Port  int32  `json:"port,omitempty"`
 }
 
 // APIAuth Authentication scheme type and details

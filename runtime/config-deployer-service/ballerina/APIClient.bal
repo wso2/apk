@@ -93,7 +93,7 @@ public class APIClient {
             }
             AuthenticationRequest[]? authentication = apkConf.authentication;
             if authentication is AuthenticationRequest[] {
-                _= check self.populateAuthenticationMap(apiArtifact, apkConf, authentication, createdEndpoints, organization);
+                _ = check self.populateAuthenticationMap(apiArtifact, apkConf, authentication, createdEndpoints, organization);
             }
             APKConf_vhosts? vhosts = apkConf.vhosts;
             if vhosts is APKConf_vhosts {
@@ -281,15 +281,15 @@ public class APIClient {
         map<model:Authentication> authenticationMap = {};
         model:AuthenticationExtenstionType authTypes = {};
         foreach AuthenticationRequest authentication in authentications {
-                if authentication.authType == "JWT" {
-                    JWTAuthentication jwtAuthentication =check authentication.cloneWithType(JWTAuthentication);
-                    authTypes.jwt = {header: <string>jwtAuthentication.headerName, sendTokenToUpstream: <boolean>jwtAuthentication.sendTokenToUpstream, disabled: !jwtAuthentication.enabled};
-                } else if authentication.authType == "APIKey" && authentication is APIKeyAuthentication {
-                    APIKeyAuthentication apiKeyAuthentication =check authentication.cloneWithType(APIKeyAuthentication);
-                    authTypes.apiKey = [];
-                    authTypes.apiKey.push({'in: "Header", name: apiKeyAuthentication.headerName, sendTokenToUpstream: apiKeyAuthentication.sendTokenToUpstream});
-                    authTypes.apiKey.push({'in: "Query", name: apiKeyAuthentication.queryParamName, sendTokenToUpstream: apiKeyAuthentication.sendTokenToUpstream});
-                }
+            if authentication.authType == "JWT" {
+                JWTAuthentication jwtAuthentication = check authentication.cloneWithType(JWTAuthentication);
+                authTypes.jwt = {header: <string>jwtAuthentication.headerName, sendTokenToUpstream: <boolean>jwtAuthentication.sendTokenToUpstream, disabled: !jwtAuthentication.enabled};
+            } else if authentication.authType == "APIKey" && authentication is APIKeyAuthentication {
+                APIKeyAuthentication apiKeyAuthentication = check authentication.cloneWithType(APIKeyAuthentication);
+                authTypes.apiKey = [];
+                authTypes.apiKey.push({'in: "Header", name: apiKeyAuthentication.headerName, sendTokenToUpstream: apiKeyAuthentication.sendTokenToUpstream});
+                authTypes.apiKey.push({'in: "Query", name: apiKeyAuthentication.queryParamName, sendTokenToUpstream: apiKeyAuthentication.sendTokenToUpstream});
+            }
         }
         log:printDebug("Auth Types:" + authTypes.toString());
         string[] keys = createdEndpointMap.keys();
@@ -304,11 +304,8 @@ public class APIClient {
                 },
                 spec: {
                     override: {
-                        'type: "ext",
-                        ext: {
-                            disabled: false,
-                            authTypes: authTypes
-                        }
+                        disabled: false,
+                        authTypes: authTypes
                     },
                     targetRef: {
                         group: "gateway.networking.k8s.io",
@@ -568,8 +565,7 @@ public class APIClient {
                     name: self.getUniqueIdForAPI(apkConf.name, apkConf.'version, organization)
                 },
                 override: {
-                    ext: {disabled: true},
-                    'type: "ext"
+                    disabled: true
                 }
             }
         };
@@ -953,13 +949,10 @@ public class APIClient {
     isolated function retrieveRateLimitData(RateLimit rateLimit, string organization) returns model:RateLimitData {
         model:RateLimitData rateLimitData = {
             api: {
-                rateLimit: {
                     requestsPerUnit: rateLimit.requestsPerUnit,
                     unit: rateLimit.unit
-                }
             },
-            organization: organization,
-            'type: "Api"
+            organization: organization
         };
         return rateLimitData;
     }
