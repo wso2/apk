@@ -102,45 +102,6 @@ func TestAPIDisplayNameFormat(t *testing.T) {
 	}
 }
 
-func TestAPITypeFormat(t *testing.T) {
-	type getAPITestItem struct {
-		pass    bool
-		message string
-		context string
-	}
-	dataItems := []getAPITestItem{
-		{
-			context: "",
-			pass:    true,
-			message: "",
-		},
-		{
-			context: "rest",
-			pass:    true,
-			message: "",
-		},
-		{
-			context: "REST",
-			pass:    true,
-			message: "",
-		},
-		{
-			context: "Rest",
-			pass:    true,
-			message: "",
-		},
-		{
-			context: "GQL",
-			pass:    false,
-			message: "invalid API type. Only REST is supported",
-		},
-	}
-	for _, item := range dataItems {
-		err := validateAPITypeFormat(item.context)
-		assert.Equal(t, item.pass, err == "", item.message)
-	}
-}
-
 func TestAPIVersionFormat(t *testing.T) {
 	type getAPITestItem struct {
 		pass    bool

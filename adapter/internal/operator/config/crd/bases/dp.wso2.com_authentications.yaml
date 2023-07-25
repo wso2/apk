@@ -39,9 +39,12 @@ spec:
                 description: AuthSpec specification of the authentication service
                 properties:
                   authTypes:
-                    description: APIAuth Authentication scheme type and details
+                    description: AuthTypes is to specify the authentication scheme
+                      types and details
                     properties:
                       apiKey:
+                        description: APIKey is to specify the APIKey authentication
+                          scheme details
                         items:
                           description: APIKeyAuth APIKey Authentication scheme details
                           properties:
@@ -59,14 +62,19 @@ spec:
                               minLength: 1
                               type: string
                             sendTokenToUpstream:
+                              description: SendTokenToUpstream is to specify whether
+                                the APIKey should be sent to the upstream
                               type: boolean
                           type: object
+                        nullable: true
                         type: array
                       jwt:
-                        description: JWTAuth JWT Authentication scheme details
+                        description: JWT is to specify the JWT authentication scheme
+                          details
                         properties:
                           disabled:
                             default: false
+                            description: Disabled is to disable JWT authentication
                             type: boolean
                           header:
                             default: authorization
@@ -74,35 +82,40 @@ spec:
                               JWT token
                             type: string
                           sendTokenToUpstream:
+                            description: SendTokenToUpstream is to specify whether
+                              the JWT token should be sent to the upstream
                             type: boolean
-                        required:
-                        - disabled
                         type: object
                       testConsoleKey:
-                        description: TestConsoleKeyAuth Test Console Key Authentication
-                          scheme details
+                        description: TestConsoleKey is to specify the Test Console
+                          Key authentication scheme details
                         properties:
                           header:
                             default: internal-key
                             description: Header is the header name used to pass the
                               Test Console Key
+                            minLength: 1
                             type: string
                           sendTokenToUpstream:
+                            description: SendTokenToUpstream is to specify whether
+                              the Test Console Key should be sent to the upstream
                             type: boolean
                         type: object
                     type: object
                   disabled:
                     description: Disabled is to disable all authentications
-                    nullable: true
                     type: boolean
                 type: object
               override:
                 description: AuthSpec specification of the authentication service
                 properties:
                   authTypes:
-                    description: APIAuth Authentication scheme type and details
+                    description: AuthTypes is to specify the authentication scheme
+                      types and details
                     properties:
                       apiKey:
+                        description: APIKey is to specify the APIKey authentication
+                          scheme details
                         items:
                           description: APIKeyAuth APIKey Authentication scheme details
                           properties:
@@ -120,14 +133,19 @@ spec:
                               minLength: 1
                               type: string
                             sendTokenToUpstream:
+                              description: SendTokenToUpstream is to specify whether
+                                the APIKey should be sent to the upstream
                               type: boolean
                           type: object
+                        nullable: true
                         type: array
                       jwt:
-                        description: JWTAuth JWT Authentication scheme details
+                        description: JWT is to specify the JWT authentication scheme
+                          details
                         properties:
                           disabled:
                             default: false
+                            description: Disabled is to disable JWT authentication
                             type: boolean
                           header:
                             default: authorization
@@ -135,26 +153,28 @@ spec:
                               JWT token
                             type: string
                           sendTokenToUpstream:
+                            description: SendTokenToUpstream is to specify whether
+                              the JWT token should be sent to the upstream
                             type: boolean
-                        required:
-                        - disabled
                         type: object
                       testConsoleKey:
-                        description: TestConsoleKeyAuth Test Console Key Authentication
-                          scheme details
+                        description: TestConsoleKey is to specify the Test Console
+                          Key authentication scheme details
                         properties:
                           header:
                             default: internal-key
                             description: Header is the header name used to pass the
                               Test Console Key
+                            minLength: 1
                             type: string
                           sendTokenToUpstream:
+                            description: SendTokenToUpstream is to specify whether
+                              the Test Console Key should be sent to the upstream
                             type: boolean
                         type: object
                     type: object
                   disabled:
                     description: Disabled is to disable all authentications
-                    nullable: true
                     type: boolean
                 type: object
               targetRef:
@@ -197,34 +217,6 @@ spec:
             type: object
           status:
             description: AuthenticationStatus defines the observed state of Authentication
-            properties:
-              accepted:
-                description: Accepted represents whether the Authentication is accepted
-                  or not.
-                type: boolean
-              events:
-                description: Events contains a list of events related to the Authentication.
-                items:
-                  type: string
-                type: array
-              message:
-                description: Message represents a user friendly message that explains
-                  the current state of the Authentication.
-                minLength: 4
-                type: string
-              status:
-                description: Status denotes the state of the Authentication in its
-                  lifecycle. Possible values could be Accepted, Invalid, Deploy etc.
-                minLength: 4
-                type: string
-              transitionTime:
-                description: TransitionTime represents the last known transition timestamp.
-                format: date-time
-                type: string
-            required:
-            - accepted
-            - status
-            - transitionTime
             type: object
         type: object
     served: true

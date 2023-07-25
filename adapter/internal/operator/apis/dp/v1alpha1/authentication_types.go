@@ -34,16 +34,28 @@ type AuthenticationSpec struct {
 // AuthSpec specification of the authentication service
 type AuthSpec struct {
 	// Disabled is to disable all authentications
-	//
-	// +nullable
-	Disabled  *bool    `json:"disabled,omitempty"`
+	Disabled *bool `json:"disabled,omitempty"`
+
+	// AuthTypes is to specify the authentication scheme types and details
 	AuthTypes *APIAuth `json:"authTypes,omitempty"`
 }
 
 // APIAuth Authentication scheme type and details
 type APIAuth struct {
-	JWT            JWTAuth            `json:"jwt,omitempty"`
-	APIKey         []APIKeyAuth       `json:"apiKey,omitempty"`
+	// JWT is to specify the JWT authentication scheme details
+	//
+	// +optional
+	JWT JWTAuth `json:"jwt,omitempty"`
+
+	// APIKey is to specify the APIKey authentication scheme details
+	//
+	// +optional
+	// +nullable
+	APIKey []APIKeyAuth `json:"apiKey,omitempty"`
+
+	// TestConsoleKey is to specify the Test Console Key authentication scheme details
+	//
+	// +optional
 	TestConsoleKey TestConsoleKeyAuth `json:"testConsoleKey,omitempty"`
 }
 
@@ -52,19 +64,35 @@ type TestConsoleKeyAuth struct {
 	// Header is the header name used to pass the Test Console Key
 	//
 	// +kubebuilder:default:=internal-key
-	Header              string `json:"header,omitempty"`
-	SendTokenToUpstream bool   `json:"sendTokenToUpstream,omitempty"`
+	// +optional
+	// +kubebuilder:validation:MinLength=1
+	Header string `json:"header,omitempty"`
+
+	// SendTokenToUpstream is to specify whether the Test Console Key should be sent to the upstream
+	//
+	// +optional
+	SendTokenToUpstream bool `json:"sendTokenToUpstream,omitempty"`
 }
 
 // JWTAuth JWT Authentication scheme details
 type JWTAuth struct {
+
+	// Disabled is to disable JWT authentication
+	//
 	// +kubebuilder:default:=false
+	// +optional
 	Disabled bool `json:"disabled"`
+
 	// Header is the header name used to pass the JWT token
 	//
 	// +kubebuilder:default:=authorization
-	Header              string `json:"header,omitempty"`
-	SendTokenToUpstream bool   `json:"sendTokenToUpstream,omitempty"`
+	// +optional
+	Header string `json:"header,omitempty"`
+
+	// SendTokenToUpstream is to specify whether the JWT token should be sent to the upstream
+	//
+	// +optional
+	SendTokenToUpstream bool `json:"sendTokenToUpstream,omitempty"`
 }
 
 // APIKeyAuth APIKey Authentication scheme details
@@ -77,42 +105,16 @@ type APIKeyAuth struct {
 
 	// Name is the name of the header or query parameter to be used
 	// +kubebuilder:validation:MinLength=1
-	Name                string `json:"name,omitempty"`
-	SendTokenToUpstream bool   `json:"sendTokenToUpstream,omitempty"`
+	Name string `json:"name,omitempty"`
+
+	// SendTokenToUpstream is to specify whether the APIKey should be sent to the upstream
+	//
+	// +optional
+	SendTokenToUpstream bool `json:"sendTokenToUpstream,omitempty"`
 }
 
 // AuthenticationStatus defines the observed state of Authentication
 type AuthenticationStatus struct {
-	// Status denotes the state of the Authentication in its lifecycle.
-	// Possible values could be Accepted, Invalid, Deploy etc.
-	//
-	//
-	// +kubebuilder:validation:MinLength=4
-	Status string `json:"status"`
-
-	// Message represents a user friendly message that explains the
-	// current state of the Authentication.
-	//
-	//
-	// +kubebuilder:validation:MinLength=4
-	// +optional
-	Message string `json:"message"`
-
-	// Accepted represents whether the Authentication is accepted or not.
-	//
-	//
-	Accepted bool `json:"accepted"`
-
-	// TransitionTime represents the last known transition timestamp.
-	//
-	//
-	TransitionTime *metav1.Time `json:"transitionTime"`
-
-	// Events contains a list of events related to the Authentication.
-	//
-	//
-	// +optional
-	Events []string `json:"events,omitempty"`
 }
 
 //+kubebuilder:object:root=true

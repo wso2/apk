@@ -27,10 +27,6 @@ import (
 
 // APIPolicySpec defines the desired state of APIPolicy
 type APIPolicySpec struct {
-	// RequestQueryModifier support request query modifications
-	//
-	//
-	// +optional
 	Default   *PolicySpec                     `json:"default,omitempty"`
 	Override  *PolicySpec                     `json:"override,omitempty"`
 	TargetRef gwapiv1b1.PolicyTargetReference `json:"targetRef,omitempty"`
@@ -38,51 +34,76 @@ type APIPolicySpec struct {
 
 // PolicySpec contains API policies
 type PolicySpec struct {
-	RequestInterceptors  []InterceptorReference `json:"requestInterceptors,omitempty"`
+	// RequestInterceptors referenced to intercetor services to be applied
+	// to the request flow.
+	//
+	// +optional
+	// +nullable
+	RequestInterceptors []InterceptorReference `json:"requestInterceptors,omitempty"`
+
+	// ResponseInterceptors referenced to intercetor services to be applied
+	// to the response flow.
+	//
+	// +optional
+	// +nullable
 	ResponseInterceptors []InterceptorReference `json:"responseInterceptors,omitempty"`
-	BackendJWTPolicy     *BackendJWTToken       `json:"backendJwtPolicy,omitempty"`
-	CORSPolicy           *CORSPolicy            `json:"cORSPolicy,omitempty"`
+
+	// BackendJWTPolicy holds reference to backendJWT policy configurations
+	BackendJWTPolicy *BackendJWTToken `json:"backendJwtPolicy,omitempty"`
+
+	// CORS policy to be applied to the API.
+	CORSPolicy *CORSPolicy `json:"cORSPolicy,omitempty"`
 }
 
 // BackendJWTToken holds backend JWT token information
 type BackendJWTToken struct {
+	// Name holds the name of the BackendJWT resource.
 	Name string `json:"name,omitempty"`
 }
 
 // CORSPolicy holds CORS policy information
 type CORSPolicy struct {
-	Enabled                       bool     `json:"enabled,omitempty"`
-	AccessControlAllowCredentials bool     `json:"accessControlAllowCredentials,omitempty"`
-	AccessControlAllowHeaders     []string `json:"accessControlAllowHeaders,omitempty"`
-	AccessControlAllowMethods     []string `json:"accessControlAllowMethods,omitempty"`
-	AccessControlAllowOrigins     []string `json:"accessControlAllowOrigins,omitempty"`
-	AccessControlExposeHeaders    []string `json:"accessControlExposeHeaders,omitempty"`
-	AccessControlMaxAge           *int     `json:"accessControlMaxAge,omitempty"`
+	// AllowCredentials indicates whether the request can include user credentials like
+	// cookies, HTTP authentication or client side SSL certificates.
+	//
+	// +optional
+	AccessControlAllowCredentials bool `json:"accessControlAllowCredentials,omitempty"`
+
+	// AccessControlAllowHeaders indicates which headers can be used
+	// during the actual request.
+	//
+	// +optional
+	AccessControlAllowHeaders []string `json:"accessControlAllowHeaders,omitempty"`
+
+	// AccessControlAllowMethods indicates which methods can be used
+	// during the actual request.
+	//
+	// +optional
+	AccessControlAllowMethods []string `json:"accessControlAllowMethods,omitempty"`
+
+	// AccessControlAllowOrigins indicates which origins can be used
+	// during the actual request.
+	//
+	// +optional
+	AccessControlAllowOrigins []string `json:"accessControlAllowOrigins,omitempty"`
+
+	// AccessControlExposeHeaders indicates which headers can be exposed
+	// as part of the response by listing their names.
+	//
+	// +optional
+	AccessControlExposeHeaders []string `json:"accessControlExposeHeaders,omitempty"`
+
+	// AccessControlMaxAge indicates how long the results of a preflight request
+	// can be cached in a preflight result cache.
+	//
+	// +optional
+	AccessControlMaxAge *int `json:"accessControlMaxAge,omitempty"`
 }
 
 // InterceptorReference holds InterceptorService reference using name and namespace
 type InterceptorReference struct {
 	// Name is the referced CR's name of InterceptorService resource.
 	Name string `json:"name"`
-}
-
-// HTTPQuery represents an HTTP Header name and value as defined by RFC 7230.
-type HTTPQuery struct {
-	// Name is the name of the HTTP Header to be matched. Name matching MUST be
-	// case insensitive. (See https://tools.ietf.org/html/rfc7230#section-3.2).
-	//
-	// If multiple entries specify equivalent header names, the first entry with
-	// an equivalent name MUST be considered for a match. Subsequent entries
-	// with an equivalent header name MUST be ignored. Due to the
-	// case-insensitivity of header names, "foo" and "Foo" are considered
-	// equivalent.
-	Name string `json:"name"`
-
-	// Value is the value of HTTP Header to be matched.
-	//
-	// +kubebuilder:validation:MinLength=1
-	// +kubebuilder:validation:MaxLength=4096
-	Value string `json:"value"`
 }
 
 // APIPolicyStatus defines the observed state of APIPolicy

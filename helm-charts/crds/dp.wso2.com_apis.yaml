@@ -70,8 +70,10 @@ spec:
                 description: APIDisplayName is the unique name of the API in the namespace
                   defined. "Namespace/APIDisplayName" can be used to uniquely identify
                   an API.
+                minLength: 1
                 type: string
               apiProperties:
+                description: APIProperties denotes the custom properties of the API.
                 items:
                   description: Property holds key value pair of APIProperties
                   properties:
@@ -80,13 +82,17 @@ spec:
                     value:
                       type: string
                   type: object
+                nullable: true
                 type: array
               apiType:
                 description: APIType denotes the type of the API. Possible values
                   could be REST, GraphQL, Async
+                enum:
+                - REST
                 type: string
               apiVersion:
                 description: APIVersion is the version number of the API.
+                minLength: 1
                 type: string
               context:
                 description: 'Context denotes the context of the API. e.g: /pet-store-api/1.0.6'
@@ -143,13 +149,13 @@ spec:
             - apiType
             - apiVersion
             - context
-            - isDefaultVersion
             type: object
           status:
             description: APIStatus defines the observed state of API
             properties:
               deploymentStatus:
-                description: DeploymentStatus contains the status of the API deployment
+                description: DeploymentStatus denotes the deployment status of the
+                  API
                 properties:
                   accepted:
                     description: Accepted represents whether the API is accepted or
@@ -178,8 +184,6 @@ spec:
                 - status
                 - transitionTime
                 type: object
-            required:
-            - deploymentStatus
             type: object
         type: object
     served: true

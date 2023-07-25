@@ -36,41 +36,58 @@ spec:
             description: APIPolicySpec defines the desired state of APIPolicy
             properties:
               default:
-                description: RequestQueryModifier support request query modifications
+                description: PolicySpec contains API policies
                 properties:
                   backendJwtPolicy:
-                    description: BackendJWTToken holds backend JWT token information
+                    description: BackendJWTPolicy holds reference to backendJWT policy
+                      configurations
                     properties:
                       name:
+                        description: Name holds the name of the BackendJWT resource.
                         type: string
                     type: object
                   cORSPolicy:
-                    description: CORSPolicy holds CORS policy information
+                    description: CORS policy to be applied to the API.
                     properties:
                       accessControlAllowCredentials:
+                        description: AllowCredentials indicates whether the request
+                          can include user credentials like cookies, HTTP authentication
+                          or client side SSL certificates.
                         type: boolean
                       accessControlAllowHeaders:
+                        description: AccessControlAllowHeaders indicates which headers
+                          can be used during the actual request.
                         items:
                           type: string
                         type: array
                       accessControlAllowMethods:
+                        description: AccessControlAllowMethods indicates which methods
+                          can be used during the actual request.
                         items:
                           type: string
                         type: array
                       accessControlAllowOrigins:
+                        description: AccessControlAllowOrigins indicates which origins
+                          can be used during the actual request.
                         items:
                           type: string
                         type: array
                       accessControlExposeHeaders:
+                        description: AccessControlExposeHeaders indicates which headers
+                          can be exposed as part of the response by listing their
+                          names.
                         items:
                           type: string
                         type: array
                       accessControlMaxAge:
+                        description: AccessControlMaxAge indicates how long the results
+                          of a preflight request can be cached in a preflight result
+                          cache.
                         type: integer
-                      enabled:
-                        type: boolean
                     type: object
                   requestInterceptors:
+                    description: RequestInterceptors referenced to intercetor services
+                      to be applied to the request flow.
                     items:
                       description: InterceptorReference holds InterceptorService reference
                         using name and namespace
@@ -82,8 +99,11 @@ spec:
                       required:
                       - name
                       type: object
+                    nullable: true
                     type: array
                   responseInterceptors:
+                    description: ResponseInterceptors referenced to intercetor services
+                      to be applied to the response flow.
                     items:
                       description: InterceptorReference holds InterceptorService reference
                         using name and namespace
@@ -95,44 +115,62 @@ spec:
                       required:
                       - name
                       type: object
+                    nullable: true
                     type: array
                 type: object
               override:
                 description: PolicySpec contains API policies
                 properties:
                   backendJwtPolicy:
-                    description: BackendJWTToken holds backend JWT token information
+                    description: BackendJWTPolicy holds reference to backendJWT policy
+                      configurations
                     properties:
                       name:
+                        description: Name holds the name of the BackendJWT resource.
                         type: string
                     type: object
                   cORSPolicy:
-                    description: CORSPolicy holds CORS policy information
+                    description: CORS policy to be applied to the API.
                     properties:
                       accessControlAllowCredentials:
+                        description: AllowCredentials indicates whether the request
+                          can include user credentials like cookies, HTTP authentication
+                          or client side SSL certificates.
                         type: boolean
                       accessControlAllowHeaders:
+                        description: AccessControlAllowHeaders indicates which headers
+                          can be used during the actual request.
                         items:
                           type: string
                         type: array
                       accessControlAllowMethods:
+                        description: AccessControlAllowMethods indicates which methods
+                          can be used during the actual request.
                         items:
                           type: string
                         type: array
                       accessControlAllowOrigins:
+                        description: AccessControlAllowOrigins indicates which origins
+                          can be used during the actual request.
                         items:
                           type: string
                         type: array
                       accessControlExposeHeaders:
+                        description: AccessControlExposeHeaders indicates which headers
+                          can be exposed as part of the response by listing their
+                          names.
                         items:
                           type: string
                         type: array
                       accessControlMaxAge:
+                        description: AccessControlMaxAge indicates how long the results
+                          of a preflight request can be cached in a preflight result
+                          cache.
                         type: integer
-                      enabled:
-                        type: boolean
                     type: object
                   requestInterceptors:
+                    description: RequestInterceptors referenced to intercetor services
+                      to be applied to the request flow.
                     items:
                       description: InterceptorReference holds InterceptorService reference
                         using name and namespace
@@ -144,8 +182,11 @@ spec:
                       required:
                       - name
                       type: object
+                    nullable: true
                     type: array
                   responseInterceptors:
+                    description: ResponseInterceptors referenced to intercetor services
+                      to be applied to the response flow.
                     items:
                       description: InterceptorReference holds InterceptorService reference
                         using name and namespace
@@ -157,6 +198,7 @@ spec:
                       required:
                       - name
                       type: object
+                    nullable: true
                     type: array
                 type: object
               targetRef:
