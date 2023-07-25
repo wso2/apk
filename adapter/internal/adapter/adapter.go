@@ -154,7 +154,7 @@ func runManagementServer(conf *config.Config, server xdsv3.Server, rlsServer xds
 		rlsGrpcServer := grpc.NewServer(grpcOptions...)
 		rlsLis, err := net.Listen("tcp", fmt.Sprintf(":%d", rlsPort))
 		if err != nil {
-			logger.LoggerAPK.ErrorC(logging.GetErrorByCode(1106, port, err.Error()))
+			logger.LoggerAPK.ErrorC(logging.GetErrorByCode(1100, port, err.Error()))
 		}
 
 		discoveryv3.RegisterAggregatedDiscoveryServiceServer(rlsGrpcServer, rlsServer)

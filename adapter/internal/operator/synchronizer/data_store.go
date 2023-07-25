@@ -18,7 +18,6 @@
 package synchronizer
 
 import (
-	"reflect"
 	"sync"
 
 	"github.com/wso2/apk/adapter/internal/loggers"
@@ -257,9 +256,9 @@ func (ods *OperatorDataStore) processAPIState(apiNamespacedName types.Namespaced
 func updateHTTPRoute(httpRoute *HTTPRouteState, cachedHTTPRoute *HTTPRouteState, endpointType string) ([]string, bool) {
 	var updated bool
 	events := []string{}
-	if cachedHTTPRoute.HTTPRoute == nil || httpRoute.HTTPRoute.UID != cachedHTTPRoute.HTTPRoute.UID ||
-		httpRoute.HTTPRoute.Generation > cachedHTTPRoute.HTTPRoute.Generation {
-		cachedHTTPRoute.HTTPRoute = httpRoute.HTTPRoute
+	if cachedHTTPRoute.HTTPRouteCombined == nil || !isEqualHTTPRoutes(cachedHTTPRoute.HTTPRoutePartitions, httpRoute.HTTPRoutePartitions) {
+		cachedHTTPRoute.HTTPRouteCombined = httpRoute.HTTPRouteCombined
+		cachedHTTPRoute.HTTPRoutePartitions = httpRoute.HTTPRoutePartitions
 		updated = true
 		events = append(events, endpointType+" Endpoint")
 	}
@@ -286,12 +285,38 @@ func updateHTTPRoute(httpRoute *HTTPRouteState, cachedHTTPRoute *HTTPRouteState,
 		}
 	}
 
-	if !reflect.DeepEqual(cachedHTTPRoute.BackendMapping, httpRoute.BackendMapping) {
+	if len(httpRoute.BackendMapping) != len(cachedHTTPRoute.BackendMapping) {
 		cachedHTTPRoute.BackendMapping = httpRoute.BackendMapping
 		updated = true
 		events = append(events, endpointType+" Backend Properties")
+	} else {
+		for key, backend := range httpRoute.BackendMapping {
+			if existingBackend, found := cachedHTTPRoute.BackendMapping[key]; found {
+				if backend.Backend.UID != existingBackend.Backend.UID || backend.Backend.Generation > existingBackend.Backend.Generation {
+					cachedHTTPRoute.BackendMapping = httpRoute.BackendMapping
+					updated = true
+					events = append(events, endpointType+" Backend Properties")
+					break
+				}
+			} else {
+				cachedHTTPRoute.BackendMapping = httpRoute.BackendMapping
+				updated = true
+				events = append(events, endpointType+" Backend Properties")
+				break
+			}
+		}
 	}
 	return events, updated
+}
+
+func isEqualHTTPRoutes(cachedHTTPRoutes, newHTTPRoutes map[string]*gwapiv1b1.HTTPRoute) bool {
+	for key, cachedHTTPRoute := range cachedHTTPRoutes {
+		if newHTTPRoutes[key].UID == cachedHTTPRoute.UID &&
+			newHTTPRoutes[key].Generation > cachedHTTPRoute.Generation {
+			return false
+		}
+	}
+	return true
 }
 
 // GetCachedAPI get cached apistate
@@ -337,7 +362,7 @@ func (ods *OperatorDataStore) UpdateGatewayState(gatewayDef *gwapiv1b1.Gateway,
 
 // processGatewayState process and update the GatewayState on ref updates
 func (ods *OperatorDataStore) processGatewayState(gatewayDef *gwapiv1b1.Gateway,
-	customRateLimitPolicies []*dpv1alpha1.RateLimitPolicy) (GatewayState, []string, bool) {
+	customRateLimitPolicies map[string]*dpv1alpha1.RateLimitPolicy) (GatewayState, []string, bool) {
 	ods.mu.Lock()
 	defer ods.mu.Unlock()
 	var updated bool
@@ -350,10 +375,26 @@ func (ods *OperatorDataStore) processGatewayState(gatewayDef *gwapiv1b1.Gateway,
 		events = append(events, "Gateway Definition")
 	}
 
-	if !reflect.DeepEqual(cachedGateway.GatewayStateData.GatewayCustomRateLimitPolicies, customRateLimitPolicies) {
+	if len(customRateLimitPolicies) != len(cachedGateway.GatewayStateData.GatewayCustomRateLimitPolicies) {
 		cachedGateway.GatewayStateData.GatewayCustomRateLimitPolicies = customRateLimitPolicies
 		updated = true
 		events = append(events, "Gateway Custom RateLimit Policies")
+	} else {
+		for key, rateLimitPolicy := range customRateLimitPolicies {
+			if existingRateLimitPolicy, found := cachedGateway.GatewayStateData.GatewayCustomRateLimitPolicies[key]; found {
+				if rateLimitPolicy.UID != existingRateLimitPolicy.UID || rateLimitPolicy.Generation > existingRateLimitPolicy.Generation {
+					cachedGateway.GatewayStateData.GatewayCustomRateLimitPolicies = customRateLimitPolicies
+					updated = true
+					events = append(events, "Gateway Custom RateLimit Policies")
+					break
+				}
+			} else {
+				cachedGateway.GatewayStateData.GatewayCustomRateLimitPolicies = customRateLimitPolicies
+				updated = true
+				events = append(events, "Gateway Custom RateLimit Policies")
+				break
+			}
+		}
 	}
 
 	return *cachedGateway, events, updated

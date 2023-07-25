@@ -243,7 +243,7 @@ func (apiReconciler *APIReconciler) applyStartupAPIs() {
 	ctx := context.Background()
 	apisList, err := retrieveAPIList(apiReconciler.client)
 	if err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2601, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2605, err))
 		return
 	}
 	for _, api := range apisList {
@@ -343,9 +343,9 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 				prodHTTPRouteRefs, namespace, err.Error())
 		}
 		if !apiReconciler.ods.IsGatewayAvailable(types.NamespacedName{
-			Name: string(apiState.ProdHTTPRoute.HTTPRoute.Spec.ParentRefs[0].Name),
-			Namespace: utils.GetNamespace(apiState.ProdHTTPRoute.HTTPRoute.Spec.ParentRefs[0].Namespace,
-				apiState.ProdHTTPRoute.HTTPRoute.Namespace),
+			Name: string(apiState.ProdHTTPRoute.HTTPRouteCombined.Spec.ParentRefs[0].Name),
+			Namespace: utils.GetNamespace(apiState.ProdHTTPRoute.HTTPRouteCombined.Spec.ParentRefs[0].Namespace,
+				apiState.ProdHTTPRoute.HTTPRouteCombined.Namespace),
 		}) {
 			return nil, fmt.Errorf("no gateway available for httpRouteref %s in namespace :%s has not found",
 				prodHTTPRouteRefs, namespace)
@@ -360,8 +360,9 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 				sandHTTPRouteRefs, namespace, err.Error())
 		}
 		if !apiReconciler.ods.IsGatewayAvailable(types.NamespacedName{
-			Name:      string(apiState.SandHTTPRoute.HTTPRoute.Spec.ParentRefs[0].Name),
-			Namespace: utils.GetNamespace(apiState.SandHTTPRoute.HTTPRoute.Spec.ParentRefs[0].Namespace, apiState.SandHTTPRoute.HTTPRoute.Namespace),
+			Name: string(apiState.SandHTTPRoute.HTTPRouteCombined.Spec.ParentRefs[0].Name),
+			Namespace: utils.GetNamespace(apiState.SandHTTPRoute.HTTPRouteCombined.Spec.ParentRefs[0].Namespace,
+				apiState.SandHTTPRoute.HTTPRouteCombined.Namespace),
 		}) {
 			return nil, fmt.Errorf("no gateway available for httpRouteref %s in namespace :%s has not found",
 				sandHTTPRouteRefs, namespace)
@@ -376,6 +377,7 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 	} else if cachedAPI, events, updated :=
 		apiReconciler.ods.UpdateAPIState(apiRef, apiState); updated {
 		apiReconciler.removeOldOwnerRefs(ctx, cachedAPI)
+		loggers.LoggerAPI.Infof("API CR %s is updated on %v", apiRef.String(), events)
 		return &synchronizer.APIEvent{EventType: constants.Update, Event: cachedAPI, UpdatedEvents: events}, nil
 	}
 
@@ -417,28 +419,25 @@ func (apiReconciler *APIReconciler) removeOldOwnerRefs(ctx context.Context, apiS
 
 func (apiReconciler *APIReconciler) removeOldOwnerRefsFromHTTPRoute(ctx context.Context,
 	httpRouteState *synchronizer.HTTPRouteState, apiName, apiNamespace string) {
-	httpRoute := httpRouteState.HTTPRoute
-	if httpRoute != nil {
-		// scope CRs
-		scopeList := &dpv1alpha1.ScopeList{}
-		if err := apiReconciler.client.List(ctx, scopeList, &k8client.ListOptions{
-			Namespace: apiNamespace,
-		}); err != nil {
-			loggers.LoggerAPKOperator.Errorf("error while listing authentication CRs for API CR %s, %s",
-				apiName, err.Error())
+	// scope CRs
+	scopeList := &dpv1alpha1.ScopeList{}
+	if err := apiReconciler.client.List(ctx, scopeList, &k8client.ListOptions{
+		Namespace: apiNamespace,
+	}); err != nil {
+		loggers.LoggerAPKOperator.Errorf("error while listing authentication CRs for API CR %s, %s",
+			apiName, err.Error())
+	}
+	for _, scope := range scopeList.Items {
+		// check scope has similar item inside the apiState.ProdHTTPRoute.Scopes
+		scopeFound := false
+		for _, attachedScope := range httpRouteState.Scopes {
+			if scope.GetName() == attachedScope.GetName() {
+				scopeFound = true
+				break
+			}
 		}
-		for _, scope := range scopeList.Items {
-			// check scope has similar item inside the apiState.ProdHTTPRoute.Scopes
-			scopeFound := false
-			for _, attachedScope := range httpRouteState.Scopes {
-				if scope.GetName() == attachedScope.GetName() {
-					scopeFound = true
-					break
-				}
-			}
-			if !scopeFound {
-				apiReconciler.removeOldOwnerRefsFromChild(ctx, &scope, apiName, apiNamespace)
-			}
+		if !scopeFound {
+			apiReconciler.removeOldOwnerRefsFromChild(ctx, &scope, apiName, apiNamespace)
 		}
 
 		// backend CRs
@@ -488,31 +487,34 @@ func (apiReconciler *APIReconciler) resolveHTTPRouteRefs(ctx context.Context, ht
 	httpRouteRefs []string, namespace string, interceptorServiceMapping map[string]dpv1alpha1.InterceptorService,
 	api dpv1alpha1.API) (*synchronizer.HTTPRouteState, error) {
 	var err error
-	httpRouteState.HTTPRoute, err = apiReconciler.concatHTTPRoutes(ctx, httpRouteRefs, namespace, api)
+	httpRouteState.HTTPRouteCombined, httpRouteState.HTTPRoutePartitions, err = apiReconciler.concatHTTPRoutes(ctx, httpRouteRefs, namespace, api)
 	if err != nil {
 		return nil, err
 	}
 	httpRouteState.BackendMapping = apiReconciler.getResolvedBackendsMapping(ctx, httpRouteState, interceptorServiceMapping, api)
-	httpRouteState.Scopes, err = apiReconciler.getScopesForHTTPRoute(ctx, httpRouteState.HTTPRoute, api)
+	httpRouteState.Scopes, err = apiReconciler.getScopesForHTTPRoute(ctx, httpRouteState.HTTPRouteCombined, api)
 	return httpRouteState, err
 }
 
 func (apiReconciler *APIReconciler) concatHTTPRoutes(ctx context.Context, httpRouteRefs []string,
-	namespace string, api dpv1alpha1.API) (*gwapiv1b1.HTTPRoute, error) {
+	namespace string, api dpv1alpha1.API) (*gwapiv1b1.HTTPRoute, map[string]*gwapiv1b1.HTTPRoute, error) {
 	var combinedHTTPRoute *gwapiv1b1.HTTPRoute
+	httpRoutePartitions := make(map[string]*gwapiv1b1.HTTPRoute)
 	for _, httpRouteRef := range httpRouteRefs {
 		var httpRoute gwapiv1b1.HTTPRoute
+		namespacedName := types.NamespacedName{Namespace: namespace, Name: httpRouteRef}
 		if err := utils.ResolveRef(ctx, apiReconciler.client, &api,
-			types.NamespacedName{Namespace: namespace, Name: httpRouteRef}, true, &httpRoute); err != nil {
-			return nil, fmt.Errorf("error while getting httproute %s in namespace :%s, %s", httpRouteRef, namespace, err.Error())
+			namespacedName, true, &httpRoute); err != nil {
+			return nil, httpRoutePartitions, fmt.Errorf("error while getting httproute %s in namespace :%s, %s", httpRouteRef, namespace, err.Error())
 		}
+		httpRoutePartitions[namespacedName.String()] = &httpRoute
 		if combinedHTTPRoute == nil {
 			combinedHTTPRoute = &httpRoute
 		} else {
 			combinedHTTPRoute.Spec.Rules = append(combinedHTTPRoute.Spec.Rules, httpRoute.Spec.Rules...)
 		}
 	}
-	return combinedHTTPRoute, nil
+	return combinedHTTPRoute, httpRoutePartitions, nil
 }
 
 func (apiReconciler *APIReconciler) getAuthenticationsForAPI(ctx context.Context,
@@ -703,11 +705,11 @@ func (apiReconciler *APIReconciler) getInterceptorServices(ctx context.Context,
 
 func (apiReconciler *APIReconciler) getResolvedBackendsMapping(ctx context.Context,
 	httpRouteState *synchronizer.HTTPRouteState, interceptorServiceMapping map[string]dpv1alpha1.InterceptorService,
-	api dpv1alpha1.API) dpv1alpha1.BackendMapping {
-	backendMapping := make(dpv1alpha1.BackendMapping)
+	api dpv1alpha1.API) map[string]*dpv1alpha1.ResolvedBackend {
+	backendMapping := make(map[string]*dpv1alpha1.ResolvedBackend)
 
 	// Resolve backends in HTTPRoute
-	httpRoute := httpRouteState.HTTPRoute
+	httpRoute := httpRouteState.HTTPRouteCombined
 	for _, rule := range httpRoute.Spec.Rules {
 		for _, backend := range rule.BackendRefs {
 			backendNamespacedName := types.NamespacedName{
@@ -716,7 +718,7 @@ func (apiReconciler *APIReconciler) getResolvedBackendsMapping(ctx context.Conte
 			}
 			resolvedBackend := utils.GetResolvedBackend(ctx, apiReconciler.client, backendNamespacedName, &api)
 			if resolvedBackend != nil {
-				backendMapping[backendNamespacedName] = resolvedBackend
+				backendMapping[backendNamespacedName.String()] = resolvedBackend
 			}
 		}
 	}
@@ -783,7 +785,7 @@ func (apiReconciler *APIReconciler) getAPIsForConfigMap(obj k8client.Object) []r
 	if err := apiReconciler.client.List(ctx, backendList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(configMapBackend, utils.NamespacedName(configMap).String()),
 	}); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2638, utils.NamespacedName(configMap).String()))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2647, utils.NamespacedName(configMap).String()))
 		return []reconcile.Request{}
 	}
 
@@ -825,7 +827,7 @@ func (apiReconciler *APIReconciler) getAPIsForSecret(obj k8client.Object) []reco
 func (apiReconciler *APIReconciler) getAPIsForAuthentication(obj k8client.Object) []reconcile.Request {
 	authentication, ok := obj.(*dpv1alpha1.Authentication)
 	if !ok {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2624, authentication))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2622, authentication))
 		return []reconcile.Request{}
 	}
 
@@ -864,7 +866,7 @@ func (apiReconciler *APIReconciler) getAPIsForAuthentication(obj k8client.Object
 func (apiReconciler *APIReconciler) getAPIsForAPIPolicy(obj k8client.Object) []reconcile.Request {
 	apiPolicy, ok := obj.(*dpv1alpha1.APIPolicy)
 	if !ok {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2624, apiPolicy))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2622, apiPolicy))
 		return []reconcile.Request{}
 	}
 	requests := []reconcile.Request{}
@@ -904,7 +906,7 @@ func (apiReconciler *APIReconciler) getAPIsForAPIPolicy(obj k8client.Object) []r
 func (apiReconciler *APIReconciler) getAPIsForInterceptorService(obj k8client.Object) []reconcile.Request {
 	interceptorService, ok := obj.(*dpv1alpha1.InterceptorService)
 	if !ok {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2624, interceptorService))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2622, interceptorService))
 		return []reconcile.Request{}
 	}
 
@@ -913,7 +915,7 @@ func (apiReconciler *APIReconciler) getAPIsForInterceptorService(obj k8client.Ob
 	if err := apiReconciler.client.List(ctx, apiPolicyList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(interceptorServiceAPIPolicyIndex, utils.NamespacedName(interceptorService).String()),
 	}); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2651, utils.NamespacedName(interceptorService).String(), err.Error()))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2649, utils.NamespacedName(interceptorService).String(), err.Error()))
 		return []reconcile.Request{}
 	}
 
@@ -930,14 +932,18 @@ func (apiReconciler *APIReconciler) getAPIsForInterceptorService(obj k8client.Ob
 func (apiReconciler *APIReconciler) getAPIsForRateLimitPolicy(obj k8client.Object) []reconcile.Request {
 	ratelimitPolicy, ok := obj.(*dpv1alpha1.RateLimitPolicy)
 	if !ok {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2624, ratelimitPolicy))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2622, ratelimitPolicy))
 		return []reconcile.Request{}
 	}
 	requests := []reconcile.Request{}
 
 	// todo(amali) move this validation to validation hook
+	if ratelimitPolicy.Spec.TargetRef.Kind == constants.KindGateway {
+		return []reconcile.Request{}
+	}
+
 	if !(ratelimitPolicy.Spec.TargetRef.Kind == constants.KindAPI || ratelimitPolicy.Spec.TargetRef.Kind == constants.KindResource) {
-		loggers.LoggerAPKOperator.Errorf("Unsupported target ref kind : %s was given for authentication: %s",
+		loggers.LoggerAPKOperator.Errorf("Unsupported target ref kind : %s was given for ratelimit: %s",
 			ratelimitPolicy.Spec.TargetRef.Kind, ratelimitPolicy.Name)
 		return requests
 	}
@@ -967,7 +973,7 @@ func (apiReconciler *APIReconciler) getAPIsForRateLimitPolicy(obj k8client.Objec
 func (apiReconciler *APIReconciler) getAPIsForScope(obj k8client.Object) []reconcile.Request {
 	scope, ok := obj.(*dpv1alpha1.Scope)
 	if !ok {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2624, scope))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2622, scope))
 		return []reconcile.Request{}
 	}
 	ctx := context.Background()
@@ -996,7 +1002,7 @@ func (apiReconciler *APIReconciler) getAPIsForBackend(obj k8client.Object) []rec
 	ctx := context.Background()
 	backend, ok := obj.(*dpv1alpha1.Backend)
 	if !ok {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2624, backend))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2622, backend))
 		return []reconcile.Request{}
 	}
 
@@ -1043,7 +1049,7 @@ func (apiReconciler *APIReconciler) getAPIsForGateway(obj k8client.Object) []rec
 	ctx := context.Background()
 	gateway, ok := obj.(*gwapiv1b1.Gateway)
 	if !ok {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2624, gateway))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2622, gateway))
 		return []reconcile.Request{}
 	}
 

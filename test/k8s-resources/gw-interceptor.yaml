@@ -71,13 +71,11 @@ metadata:
   namespace: apk-release
 spec:
   override:
-    type: Custom
     custom:
       key: user_key
       value: bob
-      rateLimit:
-        requestsPerUnit: 4
-        unit: Minute
+      requestsPerUnit: 4
+      unit: Minute
     organization: a3b58ccf-6ecc-4557-b5bb-0a35cce38256
   targetRef:
     kind: Gateway
@@ -91,13 +89,11 @@ metadata:
   namespace: apk-release
 spec:
   override:
-    type: Custom
     custom:
       key: org_key
       value: wso2
-      rateLimit:
-        requestsPerUnit: 10
-        unit: Minute
+      requestsPerUnit: 10
+      unit: Minute
     organization: a3b58ccf-6ecc-4557-b5bb-0a35cce38256
   targetRef:
     kind: Gateway

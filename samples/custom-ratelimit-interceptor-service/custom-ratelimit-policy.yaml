@@ -19,13 +19,11 @@ metadata:
   name: http-bin-ratelimit-user
 spec:
   override:
-    type: Custom
     custom:
       key: rlkey_user
       value: bob
-      rateLimit:
-        requestsPerUnit: 4
-        unit: Minute
+      requestsPerUnit: 4
+      unit: Minute
     organization: a3b58ccf-6ecc-4557-b5bb-0a35cce38256
   targetRef:
     kind: Gateway

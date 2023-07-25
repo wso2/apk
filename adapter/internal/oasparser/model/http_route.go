@@ -40,7 +40,7 @@ type ResourceParams struct {
 	APIPolicies               map[string]dpv1alpha1.APIPolicy
 	ResourceAPIPolicies       map[string]dpv1alpha1.APIPolicy
 	InterceptorServiceMapping map[string]dpv1alpha1.InterceptorService
-	BackendMapping            dpv1alpha1.BackendMapping
+	BackendMapping            map[string]*dpv1alpha1.ResolvedBackend
 	ResourceScopes            map[string]dpv1alpha1.Scope
 	RateLimitPolicies         map[string]dpv1alpha1.RateLimitPolicy
 	ResourceRateLimitPolicies map[string]dpv1alpha1.RateLimitPolicy
@@ -62,8 +62,8 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 	var authScheme *dpv1alpha1.Authentication
 	if outputAuthScheme != nil {
 		authScheme = *outputAuthScheme
-		if authScheme.Spec.Override != nil && authScheme.Spec.Override.ExternalService.Disabled != nil {
-			disableAuthentications = *authScheme.Spec.Override.ExternalService.Disabled
+		if authScheme.Spec.Override != nil && authScheme.Spec.Override.Disabled != nil {
+			disableAuthentications = *authScheme.Spec.Override.Disabled
 		}
 	}
 	var apiPolicy *dpv1alpha1.APIPolicy
@@ -102,7 +102,7 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 				Name:      string(backend.Name),
 				Namespace: utils.GetNamespace(backend.Namespace, httpRoute.Namespace),
 			}
-			resolvedBackend, ok := resourceParams.BackendMapping[backendName]
+			resolvedBackend, ok := resourceParams.BackendMapping[backendName.String()]
 			if ok {
 				if resolvedBackend.CircuitBreaker != nil {
 					circuitBreaker = &dpv1alpha1.CircuitBreaker{
@@ -428,10 +428,10 @@ func getCorsConfigFromAPIPolicy(apiPolicy *dpv1alpha1.APIPolicy) *CorsConfig {
 func parseRateLimitPolicyToInternal(ratelimitPolicy *dpv1alpha1.RateLimitPolicy) *RateLimitPolicy {
 	var rateLimitPolicyInternal *RateLimitPolicy
 	if ratelimitPolicy != nil {
-		if ratelimitPolicy.Spec.Override.API.RateLimit.RequestsPerUnit > 0 {
+		if ratelimitPolicy.Spec.Override.API.RequestsPerUnit > 0 {
 			rateLimitPolicyInternal = &RateLimitPolicy{
-				Count:    ratelimitPolicy.Spec.Override.API.RateLimit.RequestsPerUnit,
-				SpanUnit: ratelimitPolicy.Spec.Override.API.RateLimit.Unit,
+				Count:    ratelimitPolicy.Spec.Override.API.RequestsPerUnit,
+				SpanUnit: ratelimitPolicy.Spec.Override.API.Unit,
 			}
 		}
 	}
@@ -440,7 +440,7 @@ func parseRateLimitPolicyToInternal(ratelimitPolicy *dpv1alpha1.RateLimitPolicy)
 
 // addOperationLevelInterceptors add the operation level interceptor policy to the policies
 func addOperationLevelInterceptors(policies *OperationPolicies, apiPolicy *dpv1alpha1.APIPolicy,
-	interceptorServicesMapping map[string]dpv1alpha1.InterceptorService, backendMapping dpv1alpha1.BackendMapping) {
+	interceptorServicesMapping map[string]dpv1alpha1.InterceptorService, backendMapping map[string]*dpv1alpha1.ResolvedBackend) {
 	if apiPolicy != nil && apiPolicy.Spec.Override != nil {
 		if apiPolicy.Spec.Override.RequestInterceptor != nil && len(apiPolicy.Spec.Override.RequestInterceptor.Refs) > 0 {
 			requestInterceptor := interceptorServicesMapping[types.NamespacedName{
@@ -488,9 +488,9 @@ func addOperationLevelInterceptors(policies *OperationPolicies, apiPolicy *dpv1a
 }
 
 // GetEndpoints creates endpoints using resolved backends in backendMapping
-func GetEndpoints(backendName types.NamespacedName, backendMapping dpv1alpha1.BackendMapping) []Endpoint {
+func GetEndpoints(backendName types.NamespacedName, backendMapping map[string]*dpv1alpha1.ResolvedBackend) []Endpoint {
 	endpoints := []Endpoint{}
-	backend, ok := backendMapping[backendName]
+	backend, ok := backendMapping[backendName.String()]
 	if ok && backend != nil {
 		if len(backend.Services) > 0 {
 			for _, service := range backend.Services {
@@ -508,8 +508,8 @@ func GetEndpoints(backendName types.NamespacedName, backendMapping dpv1alpha1.Ba
 }
 
 // GetBackendBasePath gets basePath of the the Backend
-func GetBackendBasePath(backendName types.NamespacedName, backendMapping dpv1alpha1.BackendMapping) string {
-	backend, ok := backendMapping[backendName]
+func GetBackendBasePath(backendName types.NamespacedName, backendMapping map[string]*dpv1alpha1.ResolvedBackend) string {
+	backend, ok := backendMapping[backendName.String()]
 	if ok && backend != nil {
 		if len(backend.Services) > 0 {
 			return backend.BasePath
@@ -560,31 +560,31 @@ func concatAuthSchemes(schemeUp *dpv1alpha1.Authentication, schemeDown *dpv1alph
 // make sure authscheme only has external service override values. (i.e. empty default values)
 // tip: use concatScheme method
 func getSecurity(authScheme *dpv1alpha1.Authentication) *Authentication {
-	authHeader := constants.AuthorizationHeader;
-	if (authScheme != nil && authScheme.Spec.Override.ExternalService.AuthTypes != nil && len(authScheme.Spec.Override.ExternalService.AuthTypes.JWT.Header) > 0) {
-		authHeader = authScheme.Spec.Override.ExternalService.AuthTypes.JWT.Header;
+	authHeader := constants.AuthorizationHeader
+	if authScheme != nil && authScheme.Spec.Override.AuthTypes != nil && len(authScheme.Spec.Override.AuthTypes.JWT.Header) > 0 {
+		authHeader = authScheme.Spec.Override.AuthTypes.JWT.Header
 	}
 	auth := &Authentication{Disabled: false,
 		TestConsoleKey: &TestConsoleKey{Header: constants.TestConsoleKeyHeader},
-		JWT: &JWT{Header: authHeader},
+		JWT:            &JWT{Header: authHeader},
 	}
 	if authScheme != nil {
-		if authScheme.Spec.Override.ExternalService.Disabled != nil && *authScheme.Spec.Override.ExternalService.Disabled {
+		if authScheme.Spec.Override.Disabled != nil && *authScheme.Spec.Override.Disabled {
 			loggers.LoggerOasparser.Debug("Disabled security")
 			return &Authentication{Disabled: true}
 		}
-		authFound := false;
-		if (authScheme.Spec.Override.ExternalService.AuthTypes != nil && authScheme.Spec.Override.ExternalService.AuthTypes.JWT.Disabled) {
+		authFound := false
+		if authScheme.Spec.Override.AuthTypes != nil && authScheme.Spec.Override.AuthTypes.JWT.Disabled {
 			auth = &Authentication{Disabled: false,
 				TestConsoleKey: &TestConsoleKey{Header: constants.TestConsoleKeyHeader},
 			}
 		} else {
-			authFound = true;
+			authFound = true
 		}
-		if authScheme.Spec.Override.ExternalService.AuthTypes.APIKey != nil {
-			authFound = authFound || len(authScheme.Spec.Override.ExternalService.AuthTypes.APIKey) > 0;
+		if authScheme.Spec.Override.AuthTypes.APIKey != nil {
+			authFound = authFound || len(authScheme.Spec.Override.AuthTypes.APIKey) > 0
 			var apiKeys []APIKey
-			for _, apiKey := range authScheme.Spec.Override.ExternalService.AuthTypes.APIKey {
+			for _, apiKey := range authScheme.Spec.Override.AuthTypes.APIKey {
 				apiKeys = append(apiKeys, APIKey{
 					Name: apiKey.Name,
 					In:   apiKey.In,
@@ -592,7 +592,7 @@ func getSecurity(authScheme *dpv1alpha1.Authentication) *Authentication {
 			}
 			auth.APIKey = apiKeys
 		}
-		if (!authFound) {
+		if !authFound {
 			loggers.LoggerOasparser.Debug("Disabled security.")
 			return &Authentication{Disabled: true}
 		}

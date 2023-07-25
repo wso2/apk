@@ -214,15 +214,15 @@ jobs:
       with:
          resource-group: '${{ secrets.AZURE_RESOURCE_GROUP }}'
          cluster-name: 'integ-${{ secrets.AKS_CLUSTER_NAME }}-${{ github.event.number || github.run_id }}'
-    - name: Create Namespace apk-cucumber-integration-test
+    - name: Create Namespace apk-integration-test
       shell: sh
       run: |
-        kubectl create namespace apk-cucumber-integration-test
+        kubectl create namespace apk-integration-test
         kubectl get ns 
     - name: Create Image pull secret.
       shell: sh
       run: |
-        kubectl create secret docker-registry azure-registry --docker-server=${{ secrets.AZURE_ACR_NAME }}.azurecr.io --docker-username=${{ secrets.AZURE_ACR_USER }} --docker-password=${{ secrets.AZURE_ACR_PASSWORD }} --docker-email=${{ secrets.WSO2_BOT_EMAIL }} -n apk-cucumber-integration-test
+        kubectl create secret docker-registry azure-registry --docker-server=${{ secrets.AZURE_ACR_NAME }}.azurecr.io --docker-username=${{ secrets.AZURE_ACR_USER }} --docker-password=${{ secrets.AZURE_ACR_PASSWORD }} --docker-email=${{ secrets.WSO2_BOT_EMAIL }} -n apk-integration-test
     - name: Checkout apk-repo.
       uses: actions/checkout@v3
       with:
@@ -252,7 +252,7 @@ jobs:
         helm repo add bitnami https://charts.bitnami.com/bitnami
         helm repo add jetstack https://charts.jetstack.io
         helm dependency build
-        helm install apk-test-setup -n apk-cucumber-integration-test . --debug --wait --timeout 10m0s \
+        helm install apk-test-setup -n apk-integration-test . --debug --wait --timeout 15m0s \
         --set wso2.subscription.imagePullSecrets=azure-registry \
         --set wso2.apk.dp.configdeployer.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/config-deployer-service:${{ github.sha }} \
         --set wso2.apk.dp.adapter.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/adapter:${{ github.sha }} \
@@ -261,26 +261,22 @@ jobs:
         --set idp.idpds.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/idp-domain-service:${{ github.sha }} \
         --set idp.idpui.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/idp-ui:${{ github.sha }} \
         --set wso2.apk.dp.runtime.deployment.replicas=0
-        kubectl get pods -n apk-cucumber-integration-test
-        kubectl get svc -n apk-cucumber-integration-test
-    - name: Setup Hosts
-      shell: sh
-      run: |
-          cd apk-repo/test/integration
-          sh ./scripts/setup-hosts.sh
+        kubectl get pods -n apk-integration-test
+        kubectl get svc -n apk-integration-test
     - name: Run test cases
       shell: sh
       run: |
           cd apk-repo/test/cucumber-tests
+          sh ./scripts/setup-hosts.sh
           ./gradlew runTests
     - name: Helm release undeploy
       if: always()
       shell: sh
       run: |
         cd apk-repo/helm-charts
-        kubectl get pods -n apk-cucumber-integration-test
-        kubectl get svc -n apk-cucumber-integration-test
-        helm uninstall apk-test-setup -n apk-cucumber-integration-test
+        kubectl get pods -n apk-integration-test
+        kubectl get svc -n apk-integration-test
+        helm uninstall apk-test-setup -n apk-integration-test
     - name: Delete AKS cluster
       if: always()
       uses: azure/CLI@v1

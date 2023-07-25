@@ -116,6 +116,7 @@ components:
           headerEnable:
             type: boolean
             default: true
+        additionalProperties: false
     APIKeyAuthentication:
       allOf:
       - $ref: '#/components/schemas/Authentication'
@@ -138,10 +139,12 @@ components:
           queryParamEnable:
             type: boolean      
             default: true
+        additionalProperties: false
     CORSConfiguration:
       type: object
       description: |
         CORS Configuration of API
+      additionalProperties: false
       properties:
         corsConfigurationEnabled:
           type: boolean

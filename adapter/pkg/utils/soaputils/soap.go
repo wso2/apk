@@ -124,7 +124,7 @@ func GenerateSoapFaultMessage(protocolVersion string, errorMessage string, error
 
 	msg, err := xml.Marshal(envelope)
 	if err != nil {
-		logger.LoggerSoapUtils.ErrorC(logging.GetErrorByCode(2635, err.Error()))
+		logger.LoggerSoapUtils.ErrorC(logging.GetErrorByCode(2636, err.Error()))
 		return xmlHeader + string(msg), err
 	}
 	return xmlHeader + string(msg), nil

@@ -135,7 +135,7 @@ func InitOperator() {
 	}
 
 	if err = (&dpv1alpha1.Backend{}).SetupWebhookWithManager(mgr); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3115, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2655, err))
 	}
 
 	if err := dpcontrollers.NewGatewayController(mgr, operatorDataStore, updateHandler, &gatewaych); err != nil {

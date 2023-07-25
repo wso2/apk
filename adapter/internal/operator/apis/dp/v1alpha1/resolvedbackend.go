@@ -17,13 +17,6 @@
 
 package v1alpha1
 
-import (
-	"k8s.io/apimachinery/pkg/types"
-)
-
-// BackendMapping maps read reconciled Backend and resolve properties into ResolvedBackend struct
-type BackendMapping map[types.NamespacedName]*ResolvedBackend
-
 // ResolvedBackend holds backend properties
 type ResolvedBackend struct {
 	Backend        Backend

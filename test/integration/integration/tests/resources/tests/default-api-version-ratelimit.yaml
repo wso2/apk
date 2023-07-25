@@ -62,11 +62,9 @@ metadata:
   namespace: gateway-integration-test-infra
 spec:
   default:
-    type: Api
     api:
-      rateLimit:
-        requestsPerUnit: 2
-        unit: Minute
+      requestsPerUnit: 2
+      unit: Minute
   targetRef:
     kind: API
     name: default-api-version-ratelimit

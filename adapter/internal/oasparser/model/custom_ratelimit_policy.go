@@ -45,8 +45,8 @@ func ParseCustomRateLimitPolicy(customRateLimitCR dpv1alpha1.RateLimitPolicy) *C
 		Key:   rlPolicy.Spec.Override.Custom.Key,
 		Value: rlPolicy.Spec.Override.Custom.Value,
 		RateLimit: RateLimit{
-			RequestsPerUnit: rlPolicy.Spec.Override.Custom.RateLimit.RequestsPerUnit,
-			Unit:            rlPolicy.Spec.Override.Custom.RateLimit.Unit,
+			RequestsPerUnit: rlPolicy.Spec.Override.Custom.RequestsPerUnit,
+			Unit:            rlPolicy.Spec.Override.Custom.Unit,
 		},
 		Organization: rlPolicy.Spec.Override.Organization,
 	}

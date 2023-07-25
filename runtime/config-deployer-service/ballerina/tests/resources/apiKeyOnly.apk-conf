@@ -1,0 +1,49 @@
+name: api1
+version: 1.0.0
+context: /api1/1.0.0
+type: REST
+organization: default
+defaultVersion: true
+endpointConfigurations:
+  production:
+    endpoint: http://backend.test-apk.svc.cluster.local:80
+  sandbox:
+    endpoint: http://backend.test-apk.svc.cluster.local:80
+operations:
+- target: /get
+  verb: GET
+  authTypeEnabled: false
+- target: /get
+  verb: POST
+authentication: 
+  - authType: "APIKey"
+    enabled: true
+    queryParamEnable: true
+corsConfiguration:
+  corsConfigurationEnabled: false
+  accessControlAllowOrigins:
+  - '*'
+  accessControlAllowCredentials: false
+  accessControlAllowHeaders:
+  - authorization
+  - Access-Control-Allow-Origin
+  - Content-Type
+  - SOAPAction
+  - apikey
+  - testKey
+  accessControlAllowMethods:
+  - GET
+  - PUT
+  - POST
+  - DELETE
+  - PATCH
+  - OPTIONS
+  accessControlMaxAge: 0
+vhosts:
+  production:
+  - default.gw.wso2.com
+  sandbox:
+  - default.sandbox.gw.wso2.com
+apiRateLimit:
+  requestsPerUnit: 10
+  unit: Minute
