@@ -44,12 +44,16 @@ public type APIProperties record {|
     string value;
 |};
 
-public type APIStatus record {
+public type DeploymentStatus record {
     boolean accepted;
     string[] events;
     string message;
     string status;
     string transitionTime;
+};
+
+public type APIStatus record {
+    DeploymentStatus deploymentStatus;
 };
 
 public type EnvConfig record {
