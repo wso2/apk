@@ -153,6 +153,7 @@ func GenerateAdapterInternalAPI(apiState APIState, httpRoute *HTTPRouteState, en
 		ResourceAPIPolicies:       apiState.ResourceAPIPolicies,
 		ResourceScopes:            httpRoute.Scopes,
 		InterceptorServiceMapping: apiState.InterceptorServiceMapping,
+		BackendJWTMapping:         apiState.BackendJWTMapping,
 		RateLimitPolicies:         apiState.RateLimitPolicies,
 		ResourceRateLimitPolicies: apiState.ResourceRateLimitPolicies,
 	}

@@ -36,6 +36,7 @@ type APIState struct {
 	ResourceAPIPolicies       map[string]v1alpha1.APIPolicy
 	APIPolicies               map[string]v1alpha1.APIPolicy
 	InterceptorServiceMapping map[string]v1alpha1.InterceptorService
+	BackendJWTMapping         map[string]v1alpha1.BackendJWT
 	APIDefinitionFile         []byte
 }
 

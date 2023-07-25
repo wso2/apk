@@ -195,7 +195,7 @@ func createInterceptors(gatewayAPIPolicies map[string]dpv1alpha1.APIPolicy,
 		resolvedPolicySpec := utils.SelectPolicy(&apiPolicy.Spec.Override, &apiPolicy.Spec.Default, nil, nil)
 		if resolvedPolicySpec != nil {
 			if len(resolvedPolicySpec.RequestInterceptors) > 0 {
-				reqIEp := getInterceptorEndpoint(&resolvedPolicySpec.RequestInterceptors[0], gatewayInterceptorServiceMapping,
+				reqIEp := getInterceptorEndpoint(apiPolicy.Namespace, &resolvedPolicySpec.RequestInterceptors[0], gatewayInterceptorServiceMapping,
 					gatewayBackendMapping, true)
 				if reqIEp != nil {
 					requestInterceptorMap[string(gwapiv1b1.HTTPMethodPost)] = *reqIEp
@@ -208,7 +208,7 @@ func createInterceptors(gatewayAPIPolicies map[string]dpv1alpha1.APIPolicy,
 				}
 			}
 			if len(resolvedPolicySpec.ResponseInterceptors) > 0 {
-				resIEp := getInterceptorEndpoint(&resolvedPolicySpec.ResponseInterceptors[0], gatewayInterceptorServiceMapping,
+				resIEp := getInterceptorEndpoint(apiPolicy.Namespace, &resolvedPolicySpec.ResponseInterceptors[0], gatewayInterceptorServiceMapping,
 					gatewayBackendMapping, false)
 				if resIEp != nil {
 					responseInterceptorMap[string(gwapiv1b1.HTTPMethodPost)] = *resIEp
@@ -225,10 +225,10 @@ func createInterceptors(gatewayAPIPolicies map[string]dpv1alpha1.APIPolicy,
 	return requestInterceptorMap, responseInterceptorMap
 }
 
-func getInterceptorEndpoint(interceptorRef *dpv1alpha1.InterceptorReference,
+func getInterceptorEndpoint(namespace string, interceptorRef *dpv1alpha1.InterceptorReference,
 	gatewayInterceptorServiceMapping map[string]dpv1alpha1.InterceptorService, gatewayBackendMapping map[string]*dpv1alpha1.ResolvedBackend, isReq bool) *model.InterceptEndpoint {
 	interceptor := gatewayInterceptorServiceMapping[types.NamespacedName{
-		Namespace: interceptorRef.Namespace,
+		Namespace: namespace,
 		Name:      interceptorRef.Name}.String()].Spec
 	endpoints := model.GetEndpoints(types.NamespacedName{Namespace: interceptor.BackendRef.Namespace, Name: interceptor.BackendRef.Name},
 		gatewayBackendMapping)

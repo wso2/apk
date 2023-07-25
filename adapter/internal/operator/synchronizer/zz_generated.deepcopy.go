@@ -94,6 +94,13 @@ func (in *APIState) DeepCopyInto(out *APIState) {
 			(*out)[key] = *val.DeepCopy()
 		}
 	}
+	if in.BackendJWTMapping != nil {
+		in, out := &in.BackendJWTMapping, &out.BackendJWTMapping
+		*out = make(map[string]v1alpha1.BackendJWT, len(*in))
+		for key, val := range *in {
+			(*out)[key] = *val.DeepCopy()
+		}
+	}
 	if in.APIDefinitionFile != nil {
 		in, out := &in.APIDefinitionFile, &out.APIDefinitionFile
 		*out = make([]byte, len(*in))

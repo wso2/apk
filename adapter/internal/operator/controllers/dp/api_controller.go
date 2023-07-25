@@ -73,6 +73,7 @@ const (
 	backendHTTPRouteIndex            = "backendHTTPRouteIndex"
 	interceptorServiceAPIPolicyIndex = "interceptorServiceAPIPolicyIndex"
 	backendInterceptorServiceIndex   = "backendInterceptorServiceIndex"
+	backendJWTAPIPolicyIndex         = "backendJWTAPIPolicyIndex"
 )
 
 var (
@@ -148,6 +149,12 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.InterceptorService{}}, handler.EnqueueRequestsFromMapFunc(apiReconciler.getAPIsForInterceptorService),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2640, err))
+		return err
+	}
+
+	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.BackendJWT{}}, handler.EnqueueRequestsFromMapFunc(apiReconciler.getAPIsForBackendJWT),
+		predicates...); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2661, err))
 		return err
 	}
 
@@ -323,10 +330,11 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 		return nil, fmt.Errorf("error while getting httproute resource apipolicy %s in namespace :%s, %s", apiRef.String(),
 			namespace, err.Error())
 	}
-	if apiState.InterceptorServiceMapping, err = apiReconciler.getInterceptorServices(ctx, apiState.APIPolicies,
-		apiState.ResourceAPIPolicies, api); err != nil {
-		return nil, fmt.Errorf("error while getting interceptor services %s in namespace :%s, %s", apiRef.String(),
-			namespace, err.Error())
+	if apiState.InterceptorServiceMapping, apiState.BackendJWTMapping, err =
+		apiReconciler.getInterceptorServices(ctx, apiState.APIPolicies, apiState.ResourceAPIPolicies,
+			api); err != nil {
+		return nil, fmt.Errorf("error while getting interceptor services %s in namespace :%s, %s",
+			apiRef.String(), namespace, err.Error())
 	}
 	if api.Spec.DefinitionFileRef != "" {
 		if apiState.APIDefinitionFile, err = apiReconciler.getAPIDefinitionForAPI(ctx, api.Spec.DefinitionFileRef, namespace, api); err != nil {
@@ -413,6 +421,29 @@ func (apiReconciler *APIReconciler) removeOldOwnerRefs(ctx context.Context, apiS
 		if !interceptorServiceFound {
 			// remove owner reference
 			apiReconciler.removeOldOwnerRefsFromChild(ctx, &interceptorService, api.Name, api.Namespace)
+		}
+	}
+
+	// remove old owner refs from backend JWTs
+	backendJWTList := &dpv1alpha1.BackendJWTList{}
+	if err := apiReconciler.client.List(ctx, backendJWTList, &k8client.ListOptions{
+		Namespace: api.Namespace,
+	}); err != nil {
+		loggers.LoggerAPKOperator.Errorf("error while listing CRs for API CR %s, %s",
+			api.Name, err.Error())
+	}
+	for _, backendJWT := range backendJWTList.Items {
+		// check backendJWT has similar item inside the apiState.BackendJWTMapping
+		backendJWTFound := false
+		for _, attachedBackendJWT := range apiState.BackendJWTMapping {
+			if attachedBackendJWT.Name == backendJWT.Name {
+				backendJWTFound = true
+				break
+			}
+		}
+		if !backendJWTFound {
+			// remove owner reference
+			apiReconciler.removeOldOwnerRefsFromChild(ctx, &backendJWT, api.Name, api.Namespace)
 		}
 	}
 }
@@ -671,36 +702,78 @@ func (apiReconciler *APIReconciler) getAPIPoliciesForResources(ctx context.Conte
 
 // getInterceptorServices gets all the interceptor services for the resolving API
 func (apiReconciler *APIReconciler) getInterceptorServices(ctx context.Context,
-	apiPolicies, resourceAPIPolicies map[string]dpv1alpha1.APIPolicy, api dpv1alpha1.API) (map[string]dpv1alpha1.InterceptorService, error) {
+	apiPolicies, resourceAPIPolicies map[string]dpv1alpha1.APIPolicy,
+	api dpv1alpha1.API) (map[string]dpv1alpha1.InterceptorService, map[string]dpv1alpha1.BackendJWT, error) {
 	allAPIPolicies := append(maps.Values(apiPolicies), maps.Values(resourceAPIPolicies)...)
 	interceptorServices := make(map[string]dpv1alpha1.InterceptorService)
+	backendJWTs := make(map[string]dpv1alpha1.BackendJWT)
 	for _, apiPolicy := range allAPIPolicies {
-		if apiPolicy.Spec.Default != nil && len(apiPolicy.Spec.Default.RequestInterceptors) > 0 {
-			interceptorPtr := utils.GetInterceptorService(ctx, apiReconciler.client, &apiPolicy.Spec.Default.RequestInterceptors[0], &api)
-			if interceptorPtr != nil {
-				interceptorServices[utils.NamespacedName(interceptorPtr).String()] = *interceptorPtr
+		if apiPolicy.Spec.Default != nil {
+			if len(apiPolicy.Spec.Default.RequestInterceptors) > 0 {
+				interceptorPtr := utils.GetInterceptorService(ctx, apiReconciler.client, apiPolicy.Namespace,
+					&apiPolicy.Spec.Default.RequestInterceptors[0], &api)
+				if interceptorPtr != nil {
+					interceptorServices[utils.NamespacedName(interceptorPtr).String()] = *interceptorPtr
+				}
+			}
+			if apiPolicy.Spec.Default.BackendJWTPolicy != nil {
+				backendJWTPtr := utils.GetBackendJWT(ctx, apiReconciler.client, apiPolicy.Namespace,
+					apiPolicy.Spec.Default.BackendJWTPolicy.Name, &api)
+				if backendJWTPtr != nil {
+					backendJWTs[utils.NamespacedName(backendJWTPtr).String()] = *backendJWTPtr
+				}
 			}
 		}
-		if apiPolicy.Spec.Default != nil && len(apiPolicy.Spec.Default.ResponseInterceptors) > 0 {
-			interceptorPtr := utils.GetInterceptorService(ctx, apiReconciler.client, &apiPolicy.Spec.Default.ResponseInterceptors[0], &api)
-			if interceptorPtr != nil {
-				interceptorServices[utils.NamespacedName(interceptorPtr).String()] = *interceptorPtr
+		if apiPolicy.Spec.Default != nil {
+			if len(apiPolicy.Spec.Default.ResponseInterceptors) > 0 {
+				interceptorPtr := utils.GetInterceptorService(ctx, apiReconciler.client, apiPolicy.Namespace,
+					&apiPolicy.Spec.Default.ResponseInterceptors[0], &api)
+				if interceptorPtr != nil {
+					interceptorServices[utils.NamespacedName(interceptorPtr).String()] = *interceptorPtr
+				}
+			}
+			if apiPolicy.Spec.Default.BackendJWTPolicy != nil {
+				backendJWTPtr := utils.GetBackendJWT(ctx, apiReconciler.client, apiPolicy.Namespace,
+					apiPolicy.Spec.Default.BackendJWTPolicy.Name, &api)
+				if backendJWTPtr != nil {
+					backendJWTs[utils.NamespacedName(backendJWTPtr).String()] = *backendJWTPtr
+				}
 			}
 		}
-		if apiPolicy.Spec.Override != nil && len(apiPolicy.Spec.Override.RequestInterceptors) > 0 {
-			interceptorPtr := utils.GetInterceptorService(ctx, apiReconciler.client, &apiPolicy.Spec.Override.RequestInterceptors[0], &api)
-			if interceptorPtr != nil {
-				interceptorServices[utils.NamespacedName(interceptorPtr).String()] = *interceptorPtr
+		if apiPolicy.Spec.Override != nil {
+			if len(apiPolicy.Spec.Override.RequestInterceptors) > 0 {
+				interceptorPtr := utils.GetInterceptorService(ctx, apiReconciler.client, apiPolicy.Namespace,
+					&apiPolicy.Spec.Override.RequestInterceptors[0], &api)
+				if interceptorPtr != nil {
+					interceptorServices[utils.NamespacedName(interceptorPtr).String()] = *interceptorPtr
+				}
+			}
+			if apiPolicy.Spec.Override.BackendJWTPolicy != nil {
+				backendJWTPtr := utils.GetBackendJWT(ctx, apiReconciler.client, apiPolicy.Namespace,
+					apiPolicy.Spec.Override.BackendJWTPolicy.Name, &api)
+				if backendJWTPtr != nil {
+					backendJWTs[utils.NamespacedName(backendJWTPtr).String()] = *backendJWTPtr
+				}
 			}
 		}
-		if apiPolicy.Spec.Override != nil && len(apiPolicy.Spec.Override.ResponseInterceptors) > 0 {
-			interceptorPtr := utils.GetInterceptorService(ctx, apiReconciler.client, &apiPolicy.Spec.Override.ResponseInterceptors[0], &api)
-			if interceptorPtr != nil {
-				interceptorServices[utils.NamespacedName(interceptorPtr).String()] = *interceptorPtr
+		if apiPolicy.Spec.Override != nil {
+			if len(apiPolicy.Spec.Override.ResponseInterceptors) > 0 {
+				interceptorPtr := utils.GetInterceptorService(ctx, apiReconciler.client, apiPolicy.Namespace,
+					&apiPolicy.Spec.Override.ResponseInterceptors[0], &api)
+				if interceptorPtr != nil {
+					interceptorServices[utils.NamespacedName(interceptorPtr).String()] = *interceptorPtr
+				}
+			}
+			if apiPolicy.Spec.Override.BackendJWTPolicy != nil {
+				backendJWTPtr := utils.GetBackendJWT(ctx, apiReconciler.client, apiPolicy.Namespace,
+					apiPolicy.Spec.Override.BackendJWTPolicy.Name, &api)
+				if backendJWTPtr != nil {
+					backendJWTs[utils.NamespacedName(backendJWTPtr).String()] = *backendJWTPtr
+				}
 			}
 		}
 	}
-	return interceptorServices, nil
+	return interceptorServices, backendJWTs, nil
 }
 
 func (apiReconciler *APIReconciler) getResolvedBackendsMapping(ctx context.Context,
@@ -904,6 +977,31 @@ func (apiReconciler *APIReconciler) getAPIsForInterceptorService(obj k8client.Ob
 		FieldSelector: fields.OneTermEqualSelector(interceptorServiceAPIPolicyIndex, utils.NamespacedName(interceptorService).String()),
 	}); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2649, utils.NamespacedName(interceptorService).String(), err.Error()))
+		return []reconcile.Request{}
+	}
+
+	requests := []reconcile.Request{}
+	for _, apiPolicy := range apiPolicyList.Items {
+		requests = append(requests, apiReconciler.getAPIsForAPIPolicy(&apiPolicy)...)
+	}
+	return requests
+}
+
+// getAPIsForBackendJWT returns associated apipolicy for the backendjwt
+// when the changes detected in backendjwt resources.
+func (apiReconciler *APIReconciler) getAPIsForBackendJWT(obj k8client.Object) []reconcile.Request {
+	backendJWT, ok := obj.(*dpv1alpha1.BackendJWT)
+	if !ok {
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2624, backendJWT))
+		return []reconcile.Request{}
+	}
+
+	ctx := context.Background()
+	apiPolicyList := &dpv1alpha1.APIPolicyList{}
+	if err := apiReconciler.client.List(ctx, apiPolicyList, &k8client.ListOptions{
+		FieldSelector: fields.OneTermEqualSelector(backendJWTAPIPolicyIndex, utils.NamespacedName(backendJWT).String()),
+	}); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2651, utils.NamespacedName(backendJWT).String(), err.Error()))
 		return []reconcile.Request{}
 	}
 
@@ -1305,36 +1403,70 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 			if apiPolicy.Spec.Default != nil && len(apiPolicy.Spec.Default.RequestInterceptors) > 0 {
 				interceptorServices = append(interceptorServices,
 					types.NamespacedName{
-						Namespace: utils.GetNamespace(
-							(*gwapiv1b1.Namespace)(&apiPolicy.Spec.Default.RequestInterceptors[0].Namespace), apiPolicy.Namespace),
-						Name: string(apiPolicy.Spec.Default.RequestInterceptors[0].Name),
+						Namespace: apiPolicy.Namespace,
+						Name:      string(apiPolicy.Spec.Default.RequestInterceptors[0].Name),
 					}.String())
 			}
 			if apiPolicy.Spec.Override != nil && len(apiPolicy.Spec.Override.RequestInterceptors) > 0 {
 				interceptorServices = append(interceptorServices,
 					types.NamespacedName{
-						Namespace: utils.GetNamespace(
-							(*gwapiv1b1.Namespace)(&apiPolicy.Spec.Override.RequestInterceptors[0].Namespace), apiPolicy.Namespace),
-						Name: string(apiPolicy.Spec.Override.RequestInterceptors[0].Name),
+						Namespace: apiPolicy.Namespace,
+						Name:      string(apiPolicy.Spec.Override.RequestInterceptors[0].Name),
 					}.String())
 			}
 			if apiPolicy.Spec.Default != nil && len(apiPolicy.Spec.Default.ResponseInterceptors) > 0 {
 				interceptorServices = append(interceptorServices,
 					types.NamespacedName{
-						Namespace: utils.GetNamespace(
-							(*gwapiv1b1.Namespace)(&apiPolicy.Spec.Default.ResponseInterceptors[0].Namespace), apiPolicy.Namespace),
-						Name: string(apiPolicy.Spec.Default.ResponseInterceptors[0].Name),
+						Namespace: apiPolicy.Namespace,
+						Name:      string(apiPolicy.Spec.Default.ResponseInterceptors[0].Name),
 					}.String())
 			}
 			if apiPolicy.Spec.Override != nil && len(apiPolicy.Spec.Override.ResponseInterceptors) > 0 {
 				interceptorServices = append(interceptorServices,
 					types.NamespacedName{
-						Namespace: utils.GetNamespace(
-							(*gwapiv1b1.Namespace)(&apiPolicy.Spec.Override.ResponseInterceptors[0].Namespace), apiPolicy.Namespace),
-						Name: string(apiPolicy.Spec.Override.ResponseInterceptors[0].Name),
+						Namespace: apiPolicy.Namespace,
+						Name:      string(apiPolicy.Spec.Override.ResponseInterceptors[0].Name),
 					}.String())
 			}
 			return interceptorServices
+		}); err != nil {
+		return err
+	}
+
+	// backendjwt to APIPolicy indexer
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.APIPolicy{}, backendJWTAPIPolicyIndex,
+		func(rawObj k8client.Object) []string {
+			apiPolicy := rawObj.(*dpv1alpha1.APIPolicy)
+			var backendJWTs []string
+			if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.BackendJWTPolicy != nil {
+				backendJWTs = append(backendJWTs,
+					types.NamespacedName{
+						Namespace: apiPolicy.Namespace,
+						Name:      string(apiPolicy.Spec.Default.BackendJWTPolicy.Name),
+					}.String())
+			}
+			if apiPolicy.Spec.Override != nil && len(apiPolicy.Spec.Override.RequestInterceptors) > 0 {
+				backendJWTs = append(backendJWTs,
+					types.NamespacedName{
+						Namespace: apiPolicy.Namespace,
+						Name:      string(apiPolicy.Spec.Override.BackendJWTPolicy.Name),
+					}.String())
+			}
+			if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.BackendJWTPolicy != nil {
+				backendJWTs = append(backendJWTs,
+					types.NamespacedName{
+						Namespace: apiPolicy.Namespace,
+						Name:      string(apiPolicy.Spec.Default.BackendJWTPolicy.Name),
+					}.String())
+			}
+			if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.BackendJWTPolicy != nil {
+				backendJWTs = append(backendJWTs,
+					types.NamespacedName{
+						Namespace: apiPolicy.Namespace,
+						Name:      string(apiPolicy.Spec.Override.BackendJWTPolicy.Name),
+					}.String())
+			}
+			return backendJWTs
 		}); err != nil {
 		return err
 	}

@@ -38,37 +38,15 @@ type APIPolicySpec struct {
 
 // PolicySpec contains API policies
 type PolicySpec struct {
-	RequestQueryModifier RequestQueryModifier   `json:"requestQueryModifier,omitempty"`
 	RequestInterceptors  []InterceptorReference `json:"requestInterceptors,omitempty"`
 	ResponseInterceptors []InterceptorReference `json:"responseInterceptors,omitempty"`
-	BackendJWTToken      *BackendJWTToken       `json:"backendJwtToken,omitempty"`
+	BackendJWTPolicy     *BackendJWTToken       `json:"backendJwtPolicy,omitempty"`
 	CORSPolicy           *CORSPolicy            `json:"cORSPolicy,omitempty"`
 }
 
 // BackendJWTToken holds backend JWT token information
 type BackendJWTToken struct {
-	Enabled          bool          `json:"enabled,omitempty"`
-	Encoding         string        `json:"encoding,omitempty"`
-	Header           string        `json:"header,omitempty"`
-	SigningAlgorithm string        `json:"signingAlgorithm,omitempty"`
-	TokenTTL         int           `json:"tokenTTL,omitempty"`
-	CustomClaims     []CustomClaim `json:"customClaims,omitempty"`
-}
-
-// CustomClaim holds custom claim information
-type CustomClaim struct {
-	Claim string `json:"claim,omitempty"`
-	Value string `json:"value,omitempty"`
-	// +kubebuilder:default=string
-	// +kubebuilder:validation:Enum=string;int;float;bool;long;date
-	Type string `json:"type"`
-}
-
-// RequestQueryModifier allows to modify request query params
-type RequestQueryModifier struct {
-	Add       []HTTPQuery `json:"add,omitempty"`
-	Remove    []string    `json:"remove,omitempty"`
-	RemoveAll string      `json:"removeAll,omitempty"`
+	Name string `json:"name,omitempty"`
 }
 
 // CORSPolicy holds CORS policy information
@@ -84,12 +62,8 @@ type CORSPolicy struct {
 
 // InterceptorReference holds InterceptorService reference using name and namespace
 type InterceptorReference struct {
-	// Name is the name of the InterceptorService resource.
+	// Name is the referced CR's name of InterceptorService resource.
 	Name string `json:"name"`
-
-	// Namespace is the namespace of the InterceptorService resource.
-	// +optional
-	Namespace string `json:"namespace,omitempty"`
 }
 
 // HTTPQuery represents an HTTP Header name and value as defined by RFC 7230.

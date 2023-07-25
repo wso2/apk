@@ -110,6 +110,12 @@ func NewGatewayController(mgr manager.Manager, operatorDataStore *synchronizer.O
 		return err
 	}
 
+	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.BackendJWT{}}, handler.EnqueueRequestsFromMapFunc(r.getAPIsForBackendJWT),
+		predicates...); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3110, err))
+		return err
+	}
+
 	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.Backend{}}, handler.EnqueueRequestsFromMapFunc(r.getGatewaysForBackend),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3102, err))
@@ -247,25 +253,29 @@ func (gatewayReconciler *GatewayReconciler) getInterceptorServicesForGateway(ctx
 	interceptorServices := make(map[string]dpv1alpha1.InterceptorService)
 	for _, apiPolicy := range allGatewayAPIPolicies {
 		if apiPolicy.Spec.Default != nil && len(apiPolicy.Spec.Default.RequestInterceptors) > 0 {
-			interceptorPtr := utils.GetInterceptorService(ctx, gatewayReconciler.client, &apiPolicy.Spec.Default.RequestInterceptors[0], nil)
+			interceptorPtr := utils.GetInterceptorService(ctx, gatewayReconciler.client, apiPolicy.Namespace,
+				&apiPolicy.Spec.Default.RequestInterceptors[0], nil)
 			if interceptorPtr != nil {
 				interceptorServices[utils.NamespacedName(interceptorPtr).String()] = *interceptorPtr
 			}
 		}
 		if apiPolicy.Spec.Default != nil && len(apiPolicy.Spec.Default.ResponseInterceptors) > 0 {
-			interceptorPtr := utils.GetInterceptorService(ctx, gatewayReconciler.client, &apiPolicy.Spec.Default.ResponseInterceptors[0], nil)
+			interceptorPtr := utils.GetInterceptorService(ctx, gatewayReconciler.client, apiPolicy.Namespace,
+				&apiPolicy.Spec.Default.ResponseInterceptors[0], nil)
 			if interceptorPtr != nil {
 				interceptorServices[utils.NamespacedName(interceptorPtr).String()] = *interceptorPtr
 			}
 		}
 		if apiPolicy.Spec.Override != nil && len(apiPolicy.Spec.Override.RequestInterceptors) > 0 {
-			interceptorPtr := utils.GetInterceptorService(ctx, gatewayReconciler.client, &apiPolicy.Spec.Override.RequestInterceptors[0], nil)
+			interceptorPtr := utils.GetInterceptorService(ctx, gatewayReconciler.client, apiPolicy.Namespace,
+				&apiPolicy.Spec.Override.RequestInterceptors[0], nil)
 			if interceptorPtr != nil {
 				interceptorServices[utils.NamespacedName(interceptorPtr).String()] = *interceptorPtr
 			}
 		}
 		if apiPolicy.Spec.Override != nil && len(apiPolicy.Spec.Override.ResponseInterceptors) > 0 {
-			interceptorPtr := utils.GetInterceptorService(ctx, gatewayReconciler.client, &apiPolicy.Spec.Override.ResponseInterceptors[0], nil)
+			interceptorPtr := utils.GetInterceptorService(ctx, gatewayReconciler.client, apiPolicy.Namespace,
+				&apiPolicy.Spec.Override.ResponseInterceptors[0], nil)
 			if interceptorPtr != nil {
 				interceptorServices[utils.NamespacedName(interceptorPtr).String()] = *interceptorPtr
 			}
@@ -331,6 +341,33 @@ func (gatewayReconciler *GatewayReconciler) getAPIsForInterceptorService(obj k8c
 		FieldSelector: fields.OneTermEqualSelector(interceptorServiceAPIPolicyIndex, utils.NamespacedName(interceptorService).String()),
 	}); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3125, utils.NamespacedName(interceptorService).String()))
+		return []reconcile.Request{}
+	}
+
+	for _, apiPolicy := range apiPolicyList.Items {
+		requests = append(requests, gatewayReconciler.getGatewaysForAPIPolicy(&apiPolicy)...)
+	}
+
+	return requests
+}
+
+// getAPIsForBackendJWT triggers the Gateway controller reconcile method based on the changes detected
+// in BackendJWT resources.
+func (gatewayReconciler *GatewayReconciler) getAPIsForBackendJWT(obj k8client.Object) []reconcile.Request {
+	ctx := context.Background()
+	backendJWT, ok := obj.(*dpv1alpha1.BackendJWT)
+	if !ok {
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3107, backendJWT))
+		return []reconcile.Request{}
+	}
+
+	requests := []reconcile.Request{}
+
+	apiPolicyList := &dpv1alpha1.APIPolicyList{}
+	if err := gatewayReconciler.client.List(ctx, apiPolicyList, &k8client.ListOptions{
+		FieldSelector: fields.OneTermEqualSelector(backendJWTAPIPolicyIndex, utils.NamespacedName(backendJWT).String()),
+	}); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2649, utils.NamespacedName(backendJWT).String()))
 		return []reconcile.Request{}
 	}
 
