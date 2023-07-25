@@ -224,3 +224,18 @@ isolated function getInterceptorServiceCRsForAPI(string apiName, string apiVersi
     string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/interceptorservices?labelSelector=" + check generateUrlEncodedLabelSelector(apiName, apiVersion, organization);
     return k8sApiServerEp->get(endpoint, targetType = model:InterceptorServiceList);
 }
+
+isolated function deployBackendJWTCr(model:BackendJWT backendJWT, string namespace) returns http:Response|http:ClientError {
+    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/backendjwts";
+    return k8sApiServerEp->post(endpoint, backendJWT, targetType = http:Response);
+}
+
+isolated function deleteBackendJWTCr(string name, string namespace) returns http:Response|http:ClientError {
+    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/backendjwts/" + name;
+    return k8sApiServerEp->delete(endpoint, targetType = http:Response);
+}
+
+isolated function getBackendJWTCrsForAPI(string apiName, string apiVersion, string namespace, string organization) returns model:BackendJWTList|http:ClientError|error {
+    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/backendjwts?labelSelector=" + check generateUrlEncodedLabelSelector(apiName, apiVersion, organization);
+    return k8sApiServerEp->get(endpoint, targetType = model:BackendJWTList);
+}

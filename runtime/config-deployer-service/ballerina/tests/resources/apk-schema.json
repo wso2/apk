@@ -114,29 +114,36 @@
       "properties": {
         "authType": {
           "type": "string",
-          "example": "JWT"
+          "example": "JWT",
+          "description": "The type of authentication to be used, e.g., JWT, OAuth, etc."
         },
         "sendTokenToUpstream": {
           "type": "boolean",
-          "default": false
+          "default": false,
+          "description": "Specifies whether to send the authentication token to the upstream service."
         },
         "enabled": {
           "type": "boolean",
-          "example": true
+          "example": true,
+          "description": "Specifies whether authentication is enabled for the API."
         },
         "headerName": {
           "type": "string",
-          "example": "Authorization"
+          "example": "Authorization",
+          "description": "The name of the header field used to send the authentication token."
         },
         "queryParamName": {
           "type": "string",
-          "example": "apikey"
+          "example": "apikey",
+          "description": "The name of the query parameter used to send the authentication token."
         },
         "headerEnable": {
-          "type": "boolean"
+          "type": "boolean",
+          "description": "Specifies whether the authentication token can be sent in the header."
         },
         "queryParamEnable": {
-          "type": "boolean"
+          "type": "boolean",
+          "description": "Specifies whether the authentication token can be sent as a query parameter."
         }
       },
       "additionalProperties": false
@@ -563,12 +570,13 @@
       ],
       "properties": {
         "claim": {
-          "type": "string",
-          "default": "claim1"
+          "type": "string"
         },
         "value": {
-          "type": "string",
-          "default": "value1"
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
         }
       },
       "additionalProperties": false

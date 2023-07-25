@@ -19,6 +19,7 @@ public type APIArtifact record {|
     boolean productionEndpointAvailable = false;
     string uniqueId;
     map<K8sSecret> secrets = {};
+    BackendJWT backendJwt?;
     string namespace?;
     string organization;
 |};

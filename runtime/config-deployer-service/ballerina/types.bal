@@ -42,6 +42,7 @@ public type EndpointSecurity record {
 public type CustomClaims record {
     string claim;
     string value;
+    string 'type = "string";
 };
 
 public type K8sService record {
@@ -239,7 +240,6 @@ public type InterceptorPolicy_parameters record {
 };
 
 public type BackendJWTPolicy_parameters record {
-    boolean enabled?;
     string encoding?;
     string signingAlgorithm?;
     string header?;

@@ -570,12 +570,13 @@
       ],
       "properties": {
         "claim": {
-          "type": "string",
-          "default": "claim1"
+          "type": "string"
         },
         "value": {
-          "type": "string",
-          "default": "value1"
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
         }
       },
       "additionalProperties": false

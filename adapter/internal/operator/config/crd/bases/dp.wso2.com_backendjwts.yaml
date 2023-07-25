@@ -57,8 +57,6 @@ spec:
                   - type
                   type: object
                 type: array
-              enabled:
-                type: boolean
               encoding:
                 type: string
               header:
