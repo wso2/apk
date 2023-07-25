@@ -19,6 +19,16 @@ Feature: API Deployment and invocation
     And the response status code should be 200
     And I send "DELETE" request to "https://default.gw.wso2.com:9095/test/3.14/employee/12" with body ""
     And the response status code should be 200
+    Then I set headers
+      |Authorization|bearer invalidToken|
+    And I send "GET" request to "https://default.gw.wso2.com:9095/test/3.14/employee/" with body ""
+    And the response status code should be 401
+    And I send "POST" request to "https://default.gw.wso2.com:9095/test/3.14/employee/" with body ""
+    And the response status code should be 401
+    And I send "PUT" request to "https://default.gw.wso2.com:9095/test/3.14/employee/12" with body ""
+    And the response status code should be 401
+    And I send "DELETE" request to "https://default.gw.wso2.com:9095/test/3.14/employee/12" with body ""
+    And the response status code should be 401
 
   Scenario: Deploying an API with default version
     Given The system is ready
