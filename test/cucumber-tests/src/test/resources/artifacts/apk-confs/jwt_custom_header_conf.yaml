@@ -1,0 +1,51 @@
+---
+name: "JWTCustomHeaderAPI"
+context: "/jwt-custom-header"
+id: "jwt-custom-header-test"
+version: "3.14"
+type: "REST"
+organization: "apk-org"
+defaultVersion: false
+endpointConfigurations:
+  production:
+    endpoint: "http://backend:80/anything"
+operations:
+  - target: "/employee"
+    verb: "GET"
+    authTypeEnabled: true
+    scopes: []
+  - target: "/employee"
+    verb: "POST"
+    authTypeEnabled: true
+    scopes: []
+  - target: "/employee/{employeeId}"
+    verb: "PUT"
+    authTypeEnabled: true
+    scopes: []
+  - target: "/employee/{employeeId}"
+    verb: "DELETE"
+    authTypeEnabled: true
+    scopes: []
+vhosts:
+  production:
+    - "default.gw.wso2.com"
+authentication:
+ - authType: JWT
+   enabled: true
+   sendTokenToUpstream: true
+   headerName: testAuth
+   headerEnable: true
+apiPolicies:
+  request:
+    - policyName: "BackendJwt"
+      parameters:
+        enabled: true
+        encoding: base64
+        signingAlgorithm: SHA256withRSA
+        header: X-JWT-Assertion
+        tokenTTL: 3600
+        customClaims:
+          - claim: claim1
+            value: value1
+          - claim: claim2
+            value: value2
