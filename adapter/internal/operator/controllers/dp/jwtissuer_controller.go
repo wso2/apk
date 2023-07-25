@@ -79,7 +79,7 @@ func (r *JWTIssuerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	}
 	jwtIssuerMapping, err := getJWTIssuers(ctx, r.client, jwtKey)
 	if err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2660, err.Error()))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2660, logging.CRITICAL, "Unable to find associated JWTIssuers: %s", err.Error()))
 		return ctrl.Result{}, err
 	}
 	UpdateEnforcerJWTIssuers(jwtIssuerMapping)
@@ -94,18 +94,18 @@ func NewJWTIssuerReconciler(mgr manager.Manager) error {
 	ctx := context.Background()
 
 	if err := addJWTIssuerIndexes(ctx, mgr); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2658, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2658, logging.CRITICAL, "Error adding indexes: %v", err))
 		return err
 	}
 	c, err := controller.New(constants.JWTIssuerReconciler, mgr, controller.Options{Reconciler: r})
 	if err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2657, err.Error()))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2657, logging.BLOCKER, "Error creating JWTIssuer controller: %v", err.Error()))
 		return err
 	}
 
 	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.JWTIssuer{}}, &handler.EnqueueRequestForObject{},
 		predicate.NewPredicateFuncs(utils.FilterByNamespaces([]string{utils.GetOperatorPodNamespace()}))); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2656, err.Error()))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2656, logging.BLOCKER, "Error watching JWTIssuer resources: %v", err.Error()))
 		return err
 	}
 
@@ -220,7 +220,7 @@ func getJWTIssuers(ctx context.Context, client k8client.Client, namespace types.
 			if jwtIssuer.Spec.SignatureValidation.JWKS.TLS != nil {
 				tlsCertificate, err := utils.ResolveCertificate(ctx, client, jwtIssuer.ObjectMeta.Namespace, *&jwtIssuer.Spec.SignatureValidation.JWKS.TLS.CertificateInline, *&jwtIssuer.Spec.SignatureValidation.JWKS.TLS.ConfigMapRef, *&jwtIssuer.Spec.SignatureValidation.JWKS.TLS.SecretRef)
 				if err != nil || tlsCertificate == "" {
-					loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2659, err.Error()))
+					loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2659, logging.MAJOR, "Error resolving certificate for JWKS %v", err.Error()))
 					continue
 				}
 				jwks.TLS = &dpv1alpha1.ResolvedTLSConfig{ResolvedCertificate: tlsCertificate}
@@ -230,7 +230,7 @@ func getJWTIssuers(ctx context.Context, client k8client.Client, namespace types.
 		if jwtIssuer.Spec.SignatureValidation.Certificate != nil {
 			tlsCertificate, err := utils.ResolveCertificate(ctx, client, jwtIssuer.ObjectMeta.Namespace, jwtIssuer.Spec.SignatureValidation.Certificate.CertificateInline, *&jwtIssuer.Spec.SignatureValidation.Certificate.ConfigMapRef, *&jwtIssuer.Spec.SignatureValidation.Certificate.SecretRef)
 			if err != nil || tlsCertificate == "" {
-				loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2659, err.Error()))
+				loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2659, logging.MAJOR, "Error resolving certificate for JWKS %v", err.Error()))
 				return nil, err
 			}
 			signatureValidation.Certificate = &dpv1alpha1.ResolvedTLSConfig{ResolvedCertificate: tlsCertificate}

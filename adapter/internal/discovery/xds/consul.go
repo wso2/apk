@@ -49,7 +49,7 @@ func startConsulServiceDiscovery(organizationID string) {
 				})
 				query, errConSyn := svcdiscovery.ParseQueryString(consulSyntax)
 				if errConSyn != nil {
-					logger.LoggerXds.ErrorC(logging.GetErrorByCode(1402, errConSyn.Error()))
+					logger.LoggerXds.ErrorC(logging.PrintError(logging.Error1402, logging.CRITICAL, "Consul syntax parse, error: %v", errConSyn.Error()))
 					return
 				}
 				logger.LoggerXds.Debugln("consul query values: ", query)
@@ -83,7 +83,7 @@ func updateCertsForServiceMesh(organizationID string) {
 
 			marshalledTLSContext, err := anypb.New(upstreamTLSContext)
 			if err != nil {
-				logger.LoggerXds.ErrorC(logging.GetErrorByCode(1403, err.Error()))
+				logger.LoggerXds.ErrorC(logging.PrintError(logging.Error1403, logging.CRITICAL, "Internal Error while marshalling the upstream TLS Context, error: %v", err.Error()))
 			} else {
 				//envoy config
 				upstreamTransportSocket := &corev3.TransportSocket{

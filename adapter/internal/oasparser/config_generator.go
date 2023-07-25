@@ -63,7 +63,7 @@ func GetGlobalClusters() ([]*clusterv3.Cluster, []*corev3.Address) {
 			clusters = append(clusters, rlCluster)
 			endpoints = append(endpoints, rlEP...)
 		} else {
-			logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(2248, errRL))
+			logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2248, logging.BLOCKER, "Failed to initialize ratelimit cluster. Hence terminating the adapter. Error: %s", errRL))
 		}
 	}
 
@@ -73,7 +73,7 @@ func GetGlobalClusters() ([]*clusterv3.Cluster, []*corev3.Address) {
 			clusters = append(clusters, c)
 			endpoints = append(endpoints, e...)
 		} else {
-			logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(2249, err.Error()))
+			logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2249, logging.CRITICAL, "Failed to initialize tracer's cluster. Router tracing will be disabled. %v", err.Error()))
 			conf.Tracing.Enabled = false
 		}
 	}

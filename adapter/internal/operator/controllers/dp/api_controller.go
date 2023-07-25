@@ -105,7 +105,7 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 
 	c, err := controller.New(constants.APIController, mgr, controller.Options{Reconciler: apiReconciler})
 	if err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2619, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2619, logging.BLOCKER, "Error applying startup APIs: %v", err.Error()))
 		return err
 	}
 
@@ -114,77 +114,77 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 
 	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.API{}}, &handler.EnqueueRequestForObject{},
 		predicates...); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2611, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2611, logging.BLOCKER, "Error watching API resources: %v", err))
 		return err
 	}
 	if err := addIndexes(ctx, mgr); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2612, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2612, logging.BLOCKER, "Error adding indexes: %v", err))
 		return err
 	}
 
 	if err := c.Watch(&source.Kind{Type: &gwapiv1b1.HTTPRoute{}}, handler.EnqueueRequestsFromMapFunc(apiReconciler.getAPIForHTTPRoute),
 		predicates...); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2613, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2613, logging.BLOCKER, "Error watching HTTPRoute resources: %v", err))
 		return err
 	}
 
 	if err := c.Watch(&source.Kind{Type: &gwapiv1b1.Gateway{}}, handler.EnqueueRequestsFromMapFunc(apiReconciler.getAPIsForGateway),
 		predicates...); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2611, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2611, logging.BLOCKER, "Error watching API resources: %v", err))
 		return err
 	}
 
 	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.Backend{}}, handler.EnqueueRequestsFromMapFunc(apiReconciler.getAPIsForBackend),
 		predicates...); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2615, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2615, logging.BLOCKER, "Error watching Backend resources: %v", err))
 		return err
 	}
 
 	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.Authentication{}}, handler.EnqueueRequestsFromMapFunc(apiReconciler.getAPIsForAuthentication),
 		predicates...); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2616, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2616, logging.BLOCKER, "Error watching Authentication resources: %v", err))
 		return err
 	}
 
 	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.InterceptorService{}}, handler.EnqueueRequestsFromMapFunc(apiReconciler.getAPIsForInterceptorService),
 		predicates...); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2640, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2640, logging.BLOCKER, "Error watching InterceptorService resources: %v", err))
 		return err
 	}
 
 	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.BackendJWT{}}, handler.EnqueueRequestsFromMapFunc(apiReconciler.getAPIsForBackendJWT),
 		predicates...); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2661, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2661, logging.BLOCKER, "Error watching BackendJWT resources: %v", err))
 		return err
 	}
 
 	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.APIPolicy{}}, handler.EnqueueRequestsFromMapFunc(apiReconciler.getAPIsForAPIPolicy),
 		predicates...); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2617, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2617, logging.BLOCKER, "Error watching APIPolicy resources: %v", err))
 		return err
 	}
 
 	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.RateLimitPolicy{}}, handler.EnqueueRequestsFromMapFunc(apiReconciler.getAPIsForRateLimitPolicy),
 		predicates...); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2639, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2639, logging.BLOCKER, "Error watching Ratelimit resources: %v", err))
 		return err
 	}
 
 	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.Scope{}}, handler.EnqueueRequestsFromMapFunc(apiReconciler.getAPIsForScope),
 		predicates...); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2618, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2618, logging.BLOCKER, "Error watching scope resources: %v", err))
 		return err
 	}
 
 	if err := c.Watch(&source.Kind{Type: &corev1.ConfigMap{}}, handler.EnqueueRequestsFromMapFunc(apiReconciler.getAPIsForConfigMap),
 		predicates...); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2644, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2644, logging.BLOCKER, "Error watching ConfigMap resources: %v", err))
 		return err
 	}
 
 	if err := c.Watch(&source.Kind{Type: &corev1.Secret{}}, handler.EnqueueRequestsFromMapFunc(apiReconciler.getAPIsForSecret),
 		predicates...); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2645, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2645, logging.BLOCKER, "Error watching Secret resources: %v", err))
 		return err
 	}
 
@@ -250,7 +250,7 @@ func (apiReconciler *APIReconciler) applyStartupAPIs() {
 	ctx := context.Background()
 	apisList, err := retrieveAPIList(apiReconciler.client)
 	if err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2605, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2605, logging.CRITICAL, "Unable to list APIs: %v", err))
 		return
 	}
 	for _, api := range apisList {
@@ -817,7 +817,7 @@ func (apiReconciler *APIReconciler) getAPIForHTTPRoute(obj k8client.Object) []re
 	ctx := context.Background()
 	httpRoute, ok := obj.(*gwapiv1b1.HTTPRoute)
 	if !ok {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2622, httpRoute))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL, "Unexpected object type, bypassing reconciliation: %v", httpRoute))
 		return []reconcile.Request{}
 	}
 
@@ -825,7 +825,7 @@ func (apiReconciler *APIReconciler) getAPIForHTTPRoute(obj k8client.Object) []re
 	if err := apiReconciler.client.List(ctx, apiList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(httpRouteAPIIndex, utils.NamespacedName(httpRoute).String()),
 	}); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2623, utils.NamespacedName(httpRoute).String()))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2623, logging.CRITICAL, "Unable to find associated APIs: %s", utils.NamespacedName(httpRoute).String()))
 		return []reconcile.Request{}
 	}
 
@@ -853,7 +853,7 @@ func (apiReconciler *APIReconciler) getAPIsForConfigMap(obj k8client.Object) []r
 	ctx := context.Background()
 	configMap, ok := obj.(*corev1.ConfigMap)
 	if !ok {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2622, configMap))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL, "Unexpected object type, bypassing reconciliation: %v", configMap))
 		return []reconcile.Request{}
 	}
 
@@ -861,7 +861,7 @@ func (apiReconciler *APIReconciler) getAPIsForConfigMap(obj k8client.Object) []r
 	if err := apiReconciler.client.List(ctx, backendList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(configMapBackend, utils.NamespacedName(configMap).String()),
 	}); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2647, utils.NamespacedName(configMap).String()))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2647, logging.CRITICAL, "Unable to find associated Backends for ConfigMap: %s", utils.NamespacedName(configMap).String()))
 		return []reconcile.Request{}
 	}
 
@@ -878,7 +878,7 @@ func (apiReconciler *APIReconciler) getAPIsForSecret(obj k8client.Object) []reco
 	ctx := context.Background()
 	secret, ok := obj.(*corev1.Secret)
 	if !ok {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2622, secret))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL, "Unexpected object type, bypassing reconciliation: %v", secret))
 		return []reconcile.Request{}
 	}
 
@@ -886,7 +886,7 @@ func (apiReconciler *APIReconciler) getAPIsForSecret(obj k8client.Object) []reco
 	if err := apiReconciler.client.List(ctx, backendList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(secretBackend, utils.NamespacedName(secret).String()),
 	}); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2621, utils.NamespacedName(secret).String()))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2621, logging.CRITICAL, "Unable to find associated Backends for Secret: %s", utils.NamespacedName(secret).String()))
 		return []reconcile.Request{}
 	}
 
@@ -903,7 +903,7 @@ func (apiReconciler *APIReconciler) getAPIsForSecret(obj k8client.Object) []reco
 func (apiReconciler *APIReconciler) getAPIsForAuthentication(obj k8client.Object) []reconcile.Request {
 	authentication, ok := obj.(*dpv1alpha1.Authentication)
 	if !ok {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2622, authentication))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL, "Unexpected object type, bypassing reconciliation: %v", authentication))
 		return []reconcile.Request{}
 	}
 
@@ -943,7 +943,7 @@ func (apiReconciler *APIReconciler) getAPIsForAPIPolicy(obj k8client.Object) []r
 	apiPolicy, ok := obj.(*dpv1alpha1.APIPolicy)
 	requests := []reconcile.Request{}
 	if !ok {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2622, apiPolicy))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL, "Unexpected object type, bypassing reconciliation: %v", apiPolicy))
 		return requests
 	}
 
@@ -975,7 +975,7 @@ func (apiReconciler *APIReconciler) getAPIsForAPIPolicy(obj k8client.Object) []r
 func (apiReconciler *APIReconciler) getAPIsForInterceptorService(obj k8client.Object) []reconcile.Request {
 	interceptorService, ok := obj.(*dpv1alpha1.InterceptorService)
 	if !ok {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2622, interceptorService))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL, "Unexpected object type, bypassing reconciliation: %v", interceptorService))
 		return []reconcile.Request{}
 	}
 
@@ -984,7 +984,7 @@ func (apiReconciler *APIReconciler) getAPIsForInterceptorService(obj k8client.Ob
 	if err := apiReconciler.client.List(ctx, apiPolicyList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(interceptorServiceAPIPolicyIndex, utils.NamespacedName(interceptorService).String()),
 	}); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2649, utils.NamespacedName(interceptorService).String(), err.Error()))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2649, logging.CRITICAL, "Unable to find associated APIPolicies: %s, error: %v", utils.NamespacedName(interceptorService).String(), err.Error()))
 		return []reconcile.Request{}
 	}
 
@@ -1000,7 +1000,7 @@ func (apiReconciler *APIReconciler) getAPIsForInterceptorService(obj k8client.Ob
 func (apiReconciler *APIReconciler) getAPIsForBackendJWT(obj k8client.Object) []reconcile.Request {
 	backendJWT, ok := obj.(*dpv1alpha1.BackendJWT)
 	if !ok {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2624, backendJWT))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL, "Unexpected object type, bypassing reconciliation: %v", backendJWT))
 		return []reconcile.Request{}
 	}
 
@@ -1009,7 +1009,7 @@ func (apiReconciler *APIReconciler) getAPIsForBackendJWT(obj k8client.Object) []
 	if err := apiReconciler.client.List(ctx, apiPolicyList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(backendJWTAPIPolicyIndex, utils.NamespacedName(backendJWT).String()),
 	}); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2651, utils.NamespacedName(backendJWT).String(), err.Error()))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2651, logging.CRITICAL, "Error while getting interceptor service %s, %s", utils.NamespacedName(backendJWT).String(), err.Error()))
 		return []reconcile.Request{}
 	}
 
@@ -1027,7 +1027,7 @@ func (apiReconciler *APIReconciler) getAPIsForRateLimitPolicy(obj k8client.Objec
 	ratelimitPolicy, ok := obj.(*dpv1alpha1.RateLimitPolicy)
 	requests := []reconcile.Request{}
 	if !ok {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2622, ratelimitPolicy))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL, "Unexpected object type, bypassing reconciliation: %v", ratelimitPolicy))
 		return requests
 	}
 
@@ -1060,7 +1060,7 @@ func (apiReconciler *APIReconciler) getAPIsForRateLimitPolicy(obj k8client.Objec
 func (apiReconciler *APIReconciler) getAPIsForScope(obj k8client.Object) []reconcile.Request {
 	scope, ok := obj.(*dpv1alpha1.Scope)
 	if !ok {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2622, scope))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL, "Unexpected object type, bypassing reconciliation: %v", scope))
 		return []reconcile.Request{}
 	}
 	ctx := context.Background()
@@ -1069,7 +1069,7 @@ func (apiReconciler *APIReconciler) getAPIsForScope(obj k8client.Object) []recon
 	if err := apiReconciler.client.List(ctx, httpRouteList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(httprouteScopeIndex, utils.NamespacedName(scope).String()),
 	}); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2625, utils.NamespacedName(scope).String()))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2625, logging.CRITICAL, "Unable to find associated HTTPRoutes: %s", utils.NamespacedName(scope).String()))
 		return []reconcile.Request{}
 	}
 
@@ -1089,7 +1089,7 @@ func (apiReconciler *APIReconciler) getAPIsForBackend(obj k8client.Object) []rec
 	ctx := context.Background()
 	backend, ok := obj.(*dpv1alpha1.Backend)
 	if !ok {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2622, backend))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL, "Unexpected object type, bypassing reconciliation: %v", backend))
 		return []reconcile.Request{}
 	}
 
@@ -1097,7 +1097,7 @@ func (apiReconciler *APIReconciler) getAPIsForBackend(obj k8client.Object) []rec
 	if err := apiReconciler.client.List(ctx, httpRouteList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(backendHTTPRouteIndex, utils.NamespacedName(backend).String()),
 	}); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2625, utils.NamespacedName(backend).String()))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2625, logging.CRITICAL, "Unable to find associated HTTPRoutes: %s", utils.NamespacedName(backend).String()))
 		return []reconcile.Request{}
 	}
 
@@ -1115,7 +1115,7 @@ func (apiReconciler *APIReconciler) getAPIsForBackend(obj k8client.Object) []rec
 	if err := apiReconciler.client.List(ctx, interceptorServiceList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(backendInterceptorServiceIndex, utils.NamespacedName(backend).String()),
 	}); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2649, utils.NamespacedName(backend).String()))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2649, logging.CRITICAL, "Unable to find associated APIPolicies: %s", utils.NamespacedName(backend).String()))
 		return []reconcile.Request{}
 	}
 
@@ -1136,7 +1136,7 @@ func (apiReconciler *APIReconciler) getAPIsForGateway(obj k8client.Object) []rec
 	ctx := context.Background()
 	gateway, ok := obj.(*gwapiv1b1.Gateway)
 	if !ok {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2622, gateway))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL, "Unexpected object type, bypassing reconciliation: %v", gateway))
 		return []reconcile.Request{}
 	}
 
@@ -1144,7 +1144,7 @@ func (apiReconciler *APIReconciler) getAPIsForGateway(obj k8client.Object) []rec
 	if err := apiReconciler.client.List(ctx, httpRouteList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(gatewayHTTPRouteIndex, utils.NamespacedName(gateway).String()),
 	}); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2625, utils.NamespacedName(gateway).String()))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2625, logging.CRITICAL, "Unable to find associated HTTPRoutes: %s", utils.NamespacedName(gateway).String()))
 		return []reconcile.Request{}
 	}
 
@@ -1586,7 +1586,7 @@ func (apiReconciler *APIReconciler) handleStatus() {
 			UpdateStatus: func(obj k8client.Object) k8client.Object {
 				h, ok := obj.(*dpv1alpha1.API)
 				if !ok {
-					loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2626, obj))
+					loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2626, logging.BLOCKER, "Unsupported object type %T", obj))
 				}
 				hCopy := h.DeepCopy()
 				hCopy.Status.DeploymentStatus.Status = successEvent.State

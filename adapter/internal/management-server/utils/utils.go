@@ -34,7 +34,7 @@ func GenerateTLSCredentials() (credentials.TransportCredentials, error) {
 	certificate, err := tlsutils.GetServerCertificate(conf.Adapter.Keystore.CertPath,
 		conf.Adapter.Keystore.KeyPath)
 	if err != nil {
-		loggers.LoggerGRPCClient.ErrorC(logging.GetErrorByCode(2700, err.Error()))
+		loggers.LoggerGRPCClient.ErrorC(logging.PrintError(logging.Error2700, logging.BLOCKER, "Error while processing the private-public key pair : %v", err.Error()))
 		return nil, err
 	}
 	tlsConfig := &tls.Config{

@@ -74,7 +74,7 @@ end`)
 	if conf.Envoy.Filters.Compression.Enabled {
 		compressionFilter, err := getCompressorFilter()
 		if err != nil {
-			logger.LoggerXds.ErrorC(logging.GetErrorByCode(2234, err.Error()))
+			logger.LoggerXds.ErrorC(logging.PrintError(logging.Error2234, logging.MINOR, "Error occurred while creating the compression filter: %v", err.Error()))
 			return httpFilters
 		}
 		httpFilters = append(httpFilters, compressionFilter)
@@ -152,7 +152,7 @@ func getRateLimitFilter() *hcmv3.HttpFilter {
 			enableXRatelimitHeaders = ratelimit.RateLimit_DRAFT_VERSION_03
 		default:
 			defaultType := ratelimit.RateLimit_DRAFT_VERSION_03
-			logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(2240, defaultType))
+			logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2240, logging.MAJOR, "Invalid XRatelimitHeaders type, continue with default type %s", defaultType))
 			enableXRatelimitHeaders = defaultType
 		}
 	} else {
@@ -180,7 +180,7 @@ func getRateLimitFilter() *hcmv3.HttpFilter {
 	}
 	ext, err2 := ptypes.MarshalAny(rateLimit)
 	if err2 != nil {
-		logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(2241, err2.Error()))
+		logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2241, logging.MAJOR, "Error occurred while parsing ratelimit filter config. Error: %s", err2.Error()))
 	}
 	rlFilter := hcmv3.HttpFilter{
 		Name: wellknown.HTTPRateLimit,

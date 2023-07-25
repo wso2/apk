@@ -118,7 +118,7 @@ func runManagementServer(conf *config.Config, server xdsv3.Server, rlsServer xds
 
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
-		logger.LoggerAPK.ErrorC(logging.GetErrorByCode(1100, port, err.Error()))
+		logger.LoggerAPK.ErrorC(logging.PrintError(logging.Error1100, logging.BLOCKER, "Failed to listen on port: %v, error: %v", port, err.Error()))
 	}
 
 	// register services
@@ -141,7 +141,7 @@ func runManagementServer(conf *config.Config, server xdsv3.Server, rlsServer xds
 	go func() {
 		logger.LoggerAPK.Info("Starting XDS GRPC server.")
 		if err = grpcServer.Serve(lis); err != nil {
-			logger.LoggerAPK.ErrorC(logging.GetErrorByCode(1101, err.Error()))
+			logger.LoggerAPK.ErrorC(logging.PrintError(logging.Error1101, logging.BLOCKER, "Failed to start XDS GRPS server, error: %v", err.Error()))
 		}
 	}()
 
@@ -154,14 +154,14 @@ func runManagementServer(conf *config.Config, server xdsv3.Server, rlsServer xds
 		rlsGrpcServer := grpc.NewServer(grpcOptions...)
 		rlsLis, err := net.Listen("tcp", fmt.Sprintf(":%d", rlsPort))
 		if err != nil {
-			logger.LoggerAPK.ErrorC(logging.GetErrorByCode(1100, port, err.Error()))
+			logger.LoggerAPK.ErrorC(logging.PrintError(logging.Error1100, logging.BLOCKER, "Failed to listen on port: %v, error: %v", port, err.Error()))
 		}
 
 		discoveryv3.RegisterAggregatedDiscoveryServiceServer(rlsGrpcServer, rlsServer)
 		go func() {
 			logger.LoggerAPK.Info("Starting Rate Limiter xDS gRPC server.")
 			if err = rlsGrpcServer.Serve(rlsLis); err != nil {
-				logger.LoggerAPK.ErrorC(logging.GetErrorByCode(1105, port, err.Error()))
+				logger.LoggerAPK.ErrorC(logging.PrintError(logging.Error1105, logging.BLOCKER, "Error serving Rate Limiter xDS gRPC server in port %v, error: %v", port, err.Error()))
 			}
 		}()
 	}
@@ -186,7 +186,7 @@ func Run(conf *config.Config) {
 	}
 
 	if errC != nil {
-		logger.LoggerAPK.ErrorC(logging.GetErrorByCode(1102, errC.Error()))
+		logger.LoggerAPK.ErrorC(logging.PrintError(logging.Error1102, logging.CRITICAL, "Error reading the log configs, error: %v", errC.Error()))
 	}
 
 	logger.LoggerAPK.Info("Starting adapter ....")

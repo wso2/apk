@@ -48,7 +48,7 @@ func HandleGatewayLifeCycleEvents(ch *chan GatewayEvent) {
 	loggers.LoggerAPKOperator.Info("Operator synchronizer listening for Gateway lifecycle events...")
 	for event := range *ch {
 		if event.Event.GatewayDefinition == nil {
-			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2628))
+			loggers.LoggerAPKOperator.ErrorC(logging.PrintErrorWithDefaultMessage(logging.Error2628, logging.CRITICAL))
 		}
 		loggers.LoggerAPKOperator.Infof("%s event received for %v", event.EventType, event.Event.GatewayDefinition.Name)
 		var err error
@@ -61,7 +61,7 @@ func HandleGatewayLifeCycleEvents(ch *chan GatewayEvent) {
 			err = deployGateway(event.Event, constants.Update)
 		}
 		if err != nil {
-			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2629, event.EventType, err))
+			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2629, logging.MAJOR, "API deployment failed for %s event : %v", event.EventType, err))
 		}
 	}
 }

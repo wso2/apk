@@ -34,457 +34,387 @@ const (
 // Error Log Internal Adapter(1100-1199) Constants
 // - LoggerAPK
 const (
-	error1100 = 1100
-	error1101 = 1101
-	error1102 = 1102
-	error1103 = 1103
-	error1104 = 1104
-	error1105 = 1105
+	Error1100 = 1100
+	Error1101 = 1101
+	Error1102 = 1102
+	Error1103 = 1103
+	Error1104 = 1104
+	Error1105 = 1105
 )
 
 // Error Log Internal discovery(1400-1499) Config Constants
 // - LoggerXds
 const (
-	error1400 = 1400
-	error1401 = 1401
-	error1402 = 1402
-	error1403 = 1403
-	error1410 = 1410
-	error1411 = 1411
-	error1413 = 1413
-	error1414 = 1414
+	Error1400 = 1400
+	Error1401 = 1401
+	Error1402 = 1402
+	Error1403 = 1403
+	Error1410 = 1410
+	Error1411 = 1411
+	Error1413 = 1413
+	Error1414 = 1414
 )
 
 // Error Log Internal XDS(1700-1799) Config Constants
 // - LoggerXds
 const (
-	error1700 = 1700
-	error1701 = 1701
-	error1702 = 1702
-	error1703 = 1703
-	error1704 = 1704
-	error1705 = 1705
-	error1706 = 1706
-	error1707 = 1707
-	error1709 = 1709
-	error1710 = 1710
-	error1711 = 1711
-	error1712 = 1712
-	error1713 = 1713
-	error1714 = 1714
-	error1715 = 1715
-	error1716 = 1716
-	error1717 = 1717
-	error1718 = 1718
-	error1719 = 1719
-	error1720 = 1720
-	error1721 = 1721
-	error1722 = 1722
-	error1723 = 1723
-	error1724 = 1724
+	Error1700 = 1700
+	Error1701 = 1701
+	Error1702 = 1702
+	Error1703 = 1703
+	Error1704 = 1704
+	Error1705 = 1705
+	Error1706 = 1706
+	Error1707 = 1707
+	Error1709 = 1709
+	Error1710 = 1710
+	Error1711 = 1711
+	Error1712 = 1712
+	Error1713 = 1713
+	Error1714 = 1714
+	Error1715 = 1715
+	Error1716 = 1716
+	Error1717 = 1717
+	Error1718 = 1718
+	Error1719 = 1719
+	Error1720 = 1720
+	Error1721 = 1721
+	Error1722 = 1722
+	Error1723 = 1723
+	Error1724 = 1724
 )
 
 // Error Log Internal intercepter(1800-1899) Config Constants
 // - LoggerInterceptor
 const (
-	error1800 = 1800
-	error1801 = 1801
+	Error1800 = 1800
+	Error1801 = 1801
 )
 
 // Error Log Internal OASParser(2200-2299) Config Constants
 // - LoggerOasparser
 const (
-	error2200 = 2200
-	error2201 = 2201
-	error2204 = 2204
-	error2205 = 2205
-	error2206 = 2206
-	error2207 = 2207
-	error2208 = 2208
-	error2209 = 2209
-	error2210 = 2210
-	error2211 = 2211
-	error2212 = 2212
-	error2231 = 2231
-	error2234 = 2234
-	error2235 = 2235
-	error2236 = 2236
-	error2237 = 2237
-	error2238 = 2238
-	error2239 = 2239
-	error2240 = 2240
-	error2241 = 2241
-	error2242 = 2242
-	error2243 = 2243
-	error2244 = 2244
-	error2245 = 2245
-	error2246 = 2246
-	error2247 = 2247
-	error2248 = 2248
-	error2249 = 2249
+	Error2200 = 2200
+	Error2201 = 2201
+	Error2204 = 2204
+	Error2205 = 2205
+	Error2206 = 2206
+	Error2207 = 2207
+	Error2208 = 2208
+	Error2209 = 2209
+	Error2210 = 2210
+	Error2211 = 2211
+	Error2212 = 2212
+	Error2231 = 2231
+	Error2234 = 2234
+	Error2235 = 2235
+	Error2236 = 2236
+	Error2237 = 2237
+	Error2238 = 2238
+	Error2239 = 2239
+	Error2240 = 2240
+	Error2241 = 2241
+	Error2242 = 2242
+	Error2243 = 2243
+	Error2244 = 2244
+	Error2245 = 2245
+	Error2246 = 2246
+	Error2247 = 2247
+	Error2248 = 2248
+	Error2249 = 2249
 )
 
 // Error Log RateLimiter callbacks(2300-2399) Config Constants
 // - LoggerEnforcerXdsCallbacks
 const (
-	error2300 = 2300
+	Error2300 = 2300
 )
 
 // Error Log Internal GRPC(2700-2799) Config Constants
 const (
-	error2700 = 2700
+	Error2700 = 2700
 )
 
 // Mapper used to keep error details for error logs
 var Mapper = map[int]logging.ErrorDetails{
-	error1100: {
-		ErrorCode: error1100,
-		Message:   "Failed to listen on port: %v, error: %v",
-		Severity:  BLOCKER,
+	Error1100: {
+		ErrorCode: Error1100,
+		Message:   "Failed to listen on port.",
 	},
-	error1101: {
-		ErrorCode: error1101,
-		Message:   "Failed to start XDS GRPS server %s",
-		Severity:  BLOCKER,
+	Error1101: {
+		ErrorCode: Error1101,
+		Message:   "Failed to start XDS GRPS server.",
 	},
-	error1102: {
-		ErrorCode: error1102,
-		Message:   "Error reading the log configs. %v",
-		Severity:  CRITICAL,
+	Error1102: {
+		ErrorCode: Error1102,
+		Message:   "Error reading the log configs.",
 	},
-	error1103: {
-		ErrorCode: error1103,
+	Error1103: {
+		ErrorCode: Error1103,
 		Message:   "Error while initializing authorization component, when intializing adapter REST API",
-		Severity:  BLOCKER,
 	},
-	error1104: {
-		ErrorCode: error1104,
+	Error1104: {
+		ErrorCode: Error1104,
 		Message:   "Readiness probe is not set as local api artifacts processing has failed.",
-		Severity:  CRITICAL,
 	},
-	error1105: {
-		ErrorCode: error1105,
-		Message:   "Error serving Rate Limiter xDS gRPC server: %v",
-		Severity:  BLOCKER,
+	Error1105: {
+		ErrorCode: Error1105,
+		Message:   "Error serving Rate Limiter xDS gRPC server.",
 	},
-	error1400: {
-		ErrorCode: error1400,
-		Message:   "Stream request for type %s on stream id: %d Error: %s",
-		Severity:  CRITICAL,
+	Error1400: {
+		ErrorCode: Error1400,
+		Message:   "Error in Stream request type.",
 	},
-	error1401: {
-		ErrorCode: error1401,
-		Message:   "Stream request for type %s on stream id: %d, from node: %s, Error: %s",
-		Severity:  CRITICAL,
+	Error1401: {
+		ErrorCode: Error1401,
+		Message:   "Error in Stream request type.",
 	},
-	error1402: {
-		ErrorCode: error1402,
-		Message:   "Consul syntax parse error %v",
-		Severity:  CRITICAL,
+	Error1402: {
+		ErrorCode: Error1402,
+		Message:   "Consul syntax parse error.",
 	},
-	error1403: {
-		ErrorCode: error1403,
-		Message:   "Internal Error while marshalling the upstream TLS Context. %v",
-		Severity:  CRITICAL,
+	Error1403: {
+		ErrorCode: Error1403,
+		Message:   "Internal Error while marshalling the upstream TLS Context.",
 	},
-	error1410: {
-		ErrorCode: error1410,
-		Message:   "Error undeploying API %v of Organization %v from environments %v",
-		Severity:  CRITICAL,
+	Error1410: {
+		ErrorCode: Error1410,
+		Message:   "Error undeploying API.",
 	},
-	error1411: {
-		ErrorCode: error1411,
-		Message:   "Error extracting vhost from API identifier: %v for Organization %v. Ignore deploying the API",
-		Severity:  MAJOR,
+	Error1411: {
+		ErrorCode: Error1411,
+		Message:   "Error extracting vhost from API identifier. Ignore deploying the API",
 	},
-	error1413: {
-		ErrorCode: error1413,
-		Message:   "Error creating new snapshot : %v",
-		Severity:  MAJOR,
+	Error1413: {
+		ErrorCode: Error1413,
+		Message:   "Error creating new snapshot.",
 	},
-	error1414: {
-		ErrorCode: error1414,
-		Message:   "Error while setting the snapshot : %v",
-		Severity:  MAJOR,
+	Error1414: {
+		ErrorCode: Error1414,
+		Message:   "Error while setting the snapshot.",
 	},
-	error1700: {
-		ErrorCode: error1700,
-		Message:   "Error while connecting to the APK Management Server. %v",
-		Severity:  BLOCKER,
+	Error1700: {
+		ErrorCode: Error1700,
+		Message:   "Error while connecting to the APK Management Server.",
 	},
-	error1701: {
-		ErrorCode: error1701,
-		Message:   "Error while starting APK Management application stream. %v",
-		Severity:  BLOCKER,
+	Error1701: {
+		ErrorCode: Error1701,
+		Message:   "Error while starting APK Management application stream.",
 	},
-	error1702: {
-		ErrorCode: error1702,
-		Message:   "EOF is received from the APK Management Server application stream. %v",
-		Severity:  CRITICAL,
+	Error1702: {
+		ErrorCode: Error1702,
+		Message:   "EOF is received from the APK Management Server application stream.",
 	},
-	error1703: {
-		ErrorCode: error1703,
-		Message:   "Failed to receive the discovery response from the APK Management Server application stream. %v",
-		Severity:  CRITICAL,
+	Error1703: {
+		ErrorCode: Error1703,
+		Message:   "Failed to receive the discovery response from the APK Management Server application stream.",
 	},
-	error1704: {
-		ErrorCode: error1704,
-		Message:   "The APK Management Server application stream connection stopped: %v",
-		Severity:  MINOR,
+	Error1704: {
+		ErrorCode: Error1704,
+		Message:   "The APK Management Server application stream connection stopped.",
 	},
-	error1705: {
-		ErrorCode: error1705,
-		Message:   "Error while starting the APK Management Server: %v",
-		Severity:  BLOCKER,
+	Error1705: {
+		ErrorCode: Error1705,
+		Message:   "Error while starting the APK Management Server.",
 	},
-	error1706: {
-		ErrorCode: error1706,
-		Message:   "Error while unmarshalling APK Management Server Application discovery response: %v",
-		Severity:  MINOR,
+	Error1706: {
+		ErrorCode: Error1706,
+		Message:   "Error while unmarshalling APK Management Server Application discovery response.",
 	},
-	error1707: {
-		ErrorCode: error1707,
-		Message:   "Error creating application: %v",
-		Severity:  CRITICAL,
+	Error1707: {
+		ErrorCode: Error1707,
+		Message:   "Error creating application.",
 	},
-	error1709: {
-		ErrorCode: error1709,
-		Message:   "Error updating application: %v",
-		Severity:  CRITICAL,
+	Error1709: {
+		ErrorCode: Error1709,
+		Message:   "Error updating application.",
 	},
-	error1710: {
-		ErrorCode: error1710,
-		Message:   "Error deleting application: %v",
-		Severity:  CRITICAL,
+	Error1710: {
+		ErrorCode: Error1710,
+		Message:   "Error deleting application.",
 	},
-	error1711: {
-		ErrorCode: error1711,
-		Message:   "Error retrieving application: %v",
-		Severity:  CRITICAL,
+	Error1711: {
+		ErrorCode: Error1711,
+		Message:   "Error retrieving application.",
 	},
-	error1712: {
-		ErrorCode: error1712,
-		Message:   "Unknown rate limit unit %q, defaulting to UNKNOWN",
-		Severity:  MAJOR,
+	Error1712: {
+		ErrorCode: Error1712,
+		Message:   "Unknown rate limit unit. Defaulting to UNKNOWN",
 	},
-	error1713: {
-		ErrorCode: error1713,
-		Message:   "Error extracting vhost from apiIdentifier: %q. Continue cleaning other maps: %v",
-		Severity:  MAJOR,
+	Error1713: {
+		ErrorCode: Error1713,
+		Message:   "Error extracting vhost from apiIdentifier. Continue cleaning other maps.",
 	},
-	error1714: {
-		ErrorCode: error1714,
-		Message:   "Error while creating the rate limit snapshot: %v",
-		Severity:  MAJOR,
+	Error1714: {
+		ErrorCode: Error1714,
+		Message:   "Error while creating the rate limit snapshot.",
 	},
-	error1715: {
-		ErrorCode: error1715,
-		Message:   "Inconsistent rate limiter snapshot: %v",
-		Severity:  MAJOR,
+	Error1715: {
+		ErrorCode: Error1715,
+		Message:   "Inconsistent rate limiter snapshot.",
 	},
-	error1716: {
-		ErrorCode: error1716,
-		Message:   "Error while updating the rate limit snapshot: %v",
-		Severity:  MAJOR,
+	Error1716: {
+		ErrorCode: Error1716,
+		Message:   "Error while updating the rate limit snapshot.",
 	},
-	error1717: {
-		ErrorCode: error1717,
-		Message:   "EOF is received from the APK Management Server subscription stream. %v",
-		Severity:  CRITICAL,
+	Error1717: {
+		ErrorCode: Error1717,
+		Message:   "EOF is received from the APK Management Server subscription stream.",
 	},
-	error1718: {
-		ErrorCode: error1718,
-		Message:   "Failed to receive the discovery response from the APK Management Server subscription stream. %v",
-		Severity:  CRITICAL,
+	Error1718: {
+		ErrorCode: Error1718,
+		Message:   "Failed to receive the discovery response from the APK Management Server subscription stream.",
 	},
-	error1719: {
-		ErrorCode: error1719,
-		Message:   "The APK Management Server subscription stream connection stopped: %v",
-		Severity:  MINOR,
+	Error1719: {
+		ErrorCode: Error1719,
+		Message:   "The APK Management Server subscription stream connection stopped.",
 	},
-	error1720: {
-		ErrorCode: error1720,
-		Message:   "Error while unmarshalling APK Management Server Subscription discovery response: %v",
-		Severity:  MINOR,
+	Error1720: {
+		ErrorCode: Error1720,
+		Message:   "Error while unmarshalling APK Management Server Subscription discovery response.",
 	},
-	error1721: {
-		ErrorCode: error1721,
-		Message:   "Error creating subscription: %v",
-		Severity:  CRITICAL,
+	Error1721: {
+		ErrorCode: Error1721,
+		Message:   "Error creating subscription.",
 	},
-	error1722: {
-		ErrorCode: error1722,
-		Message:   "Error updating subscription: %v",
-		Severity:  CRITICAL,
+	Error1722: {
+		ErrorCode: Error1722,
+		Message:   "Error updating subscription.",
 	},
-	error1723: {
-		ErrorCode: error1723,
-		Message:   "Error deleting subscription: %v",
-		Severity:  CRITICAL,
+	Error1723: {
+		ErrorCode: Error1723,
+		Message:   "Error deleting subscription.",
 	},
-	error1724: {
-		ErrorCode: error1724,
-		Message:   "Error retrieving subscription: %v",
-		Severity:  CRITICAL,
+	Error1724: {
+		ErrorCode: Error1724,
+		Message:   "Error retrieving subscription.",
 	},
-	error1800: {
-		ErrorCode: error1800,
-		Message:   "Error while parsing the interceptor template: %v",
-		Severity:  CRITICAL,
+	Error1800: {
+		ErrorCode: Error1800,
+		Message:   "Error while parsing the interceptor template.",
 	},
-	error1801: {
-		ErrorCode: error1801,
-		Message:   "Executing request interceptor template: %v",
-		Severity:  CRITICAL,
+	Error1801: {
+		ErrorCode: Error1801,
+		Message:   "Executing request interceptor template.",
 	},
-	error2200: {
-		ErrorCode: error2200,
-		Message:   "Error marsheling access log configs. %v",
-		Severity:  CRITICAL,
+	Error2200: {
+		ErrorCode: Error2200,
+		Message:   "Error marsheling access log configs.",
 	},
-	error2201: {
-		ErrorCode: error2201,
-		Message:   "Error marshalling gRPC access log configs. %v",
-		Severity:  CRITICAL,
+	Error2201: {
+		ErrorCode: Error2201,
+		Message:   "Error marshalling gRPC access log configs.",
 	},
-	error2204: {
-		ErrorCode: error2204,
-		Message:   "Operation policy validation failed for API %q in org %q:, policy %q: %v",
-		Severity:  MINOR,
+	Error2204: {
+		ErrorCode: Error2204,
+		Message:   "Operation policy validation failed for API.",
 	},
-	error2205: {
-		ErrorCode: error2205,
-		Message:   "Error parsing the operation policy definition %q into go template of the API %q in org %q: %v",
-		Severity:  MINOR,
+	Error2205: {
+		ErrorCode: Error2205,
+		Message:   "Error parsing the operation policy definition into go template of the API.",
 	},
-	error2206: {
-		ErrorCode: error2206,
-		Message:   "Error parsing operation policy definition %q of the API %q in org %q: %v",
-		Severity:  MINOR,
+	Error2206: {
+		ErrorCode: Error2206,
+		Message:   "Error parsing operation policy definition of the API.",
 	},
-	error2207: {
-		ErrorCode: error2207,
-		Message:   "Error parsing formalized operation policy definition %q into yaml of the API %q in org %q: %v",
-		Severity:  MINOR,
+	Error2207: {
+		ErrorCode: Error2207,
+		Message:   "Error parsing formalized operation policy definition into yaml of the API.",
 	},
-	error2208: {
-		ErrorCode: error2208,
-		Message:   "API policy validation failed, policy: %q of the API %q in org %q: %v",
-		Severity:  MINOR,
+	Error2208: {
+		ErrorCode: Error2208,
+		Message:   "API policy validation failed.",
 	},
-	error2209: {
-		ErrorCode: error2209,
-		Message:   "Error while JSON unmarshalling to find the API definition version. %s",
-		Severity:  MINOR,
+	Error2209: {
+		ErrorCode: Error2209,
+		Message:   "Error while JSON unmarshalling to find the API definition version.",
 	},
-	error2210: {
-		ErrorCode: error2210,
-		Message:   "AsyncAPI version %s is not supported.",
-		Severity:  MINOR,
+	Error2210: {
+		ErrorCode: Error2210,
+		Message:   "AsyncAPI version is not supported.",
 	},
-	error2211: {
-		ErrorCode: error2211,
+	Error2211: {
+		ErrorCode: Error2211,
 		Message:   "API definition version is not defined.",
-		Severity:  MINOR,
 	},
-	error2212: {
-		ErrorCode: error2212,
-		Message:   "Error adding request policy %s to operation %s of resource %s. %v",
-		Severity:  MAJOR,
+	Error2212: {
+		ErrorCode: Error2212,
+		Message:   "Error adding request policy to operation.",
 	},
-	error2231: {
-		ErrorCode: error2231,
-		Message:   "Error while creating routes for API %s %s for path: %s Error: %s",
-		Severity:  MAJOR,
+	Error2231: {
+		ErrorCode: Error2231,
+		Message:   "Error while creating routes for API.",
 	},
-	error2234: {
-		ErrorCode: error2234,
-		Message:   "Error occurred while creating the compression filter: %v",
-		Severity:  MINOR,
+	Error2234: {
+		ErrorCode: Error2234,
+		Message:   "Error occurred while creating the compression filter.",
 	},
-	error2235: {
-		ErrorCode: error2235,
-		Message:   "Error while parsing the gzip configuration value for the memory level: %v",
-		Severity:  MINOR,
+	Error2235: {
+		ErrorCode: Error2235,
+		Message:   "Error while parsing the gzip configuration value for the memory level.",
 	},
-	error2236: {
-		ErrorCode: error2236,
-		Message:   "Error while parsing the gzip configuration value for the window bits: %v",
-		Severity:  MINOR,
+	Error2236: {
+		ErrorCode: Error2236,
+		Message:   "Error while parsing the gzip configuration value for the window bits.",
 	},
-	error2237: {
-		ErrorCode: error2237,
-		Message:   "Error while parsing the gzip configuration value for the compression level: %v",
-		Severity:  MINOR,
+	Error2237: {
+		ErrorCode: Error2237,
+		Message:   "Error while parsing the gzip configuration value for the compression level.",
 	},
-	error2238: {
-		ErrorCode: error2238,
-		Message:   "Error while parsing the gzip configuration value for the chunk size: %v",
-		Severity:  MINOR,
+	Error2238: {
+		ErrorCode: Error2238,
+		Message:   "Error while parsing the gzip configuration value for the chunk size.",
 	},
-	error2239: {
-		ErrorCode: error2239,
-		Message:   "Error while adding resource level endpoints for %s:%v-%v. %v",
-		Severity:  MAJOR,
+	Error2239: {
+		ErrorCode: Error2239,
+		Message:   "Error while adding resource level endpoints.",
 	},
-	error2240: {
-		ErrorCode: error2240,
-		Message:   "Invalid XRatelimitHeaders type, continue with default type %s",
-		Severity:  MAJOR,
+	Error2240: {
+		ErrorCode: Error2240,
+		Message:   "Invalid XRatelimitHeaders type, continue with default type.",
 	},
-	error2241: {
-		ErrorCode: error2241,
-		Message:   "Error occurred while parsing ratelimit filter config. Error: %s",
-		Severity:  MAJOR,
+	Error2241: {
+		ErrorCode: Error2241,
+		Message:   "Error occurred while parsing ratelimit filter config.",
 	},
-	error2242: {
-		ErrorCode: error2242,
-		Message:   "Error while adding api level request intercepter external cluster for %s. %v",
-		Severity:  MAJOR,
+	Error2242: {
+		ErrorCode: Error2242,
+		Message:   "Error while adding api level request intercepter external cluster.",
 	},
-	error2243: {
-		ErrorCode: error2243,
-		Message:   "Error while adding api level response intercepter external cluster for %s. %v",
-		Severity:  MAJOR,
+	Error2243: {
+		ErrorCode: Error2243,
+		Message:   "Error while adding api level response intercepter external cluster.",
 	},
-	error2244: {
-		ErrorCode: error2244,
-		Message:   "Error while adding resource level request intercept external cluster for %s. %v",
-		Severity:  MAJOR,
+	Error2244: {
+		ErrorCode: Error2244,
+		Message:   "Error while adding resource level request intercept external cluster.",
 	},
-	error2245: {
-		ErrorCode: error2245,
-		Message:   "Error while adding operational level request intercept external cluster for %v:%v-%v-%v. %v",
-		Severity:  MAJOR,
+	Error2245: {
+		ErrorCode: Error2245,
+		Message:   "Error while adding operational level request intercept external cluster.",
 	},
-	error2246: {
-		ErrorCode: error2246,
-		Message:   "Error while adding resource level response intercept external cluster for %s. %v",
-		Severity:  MAJOR,
+	Error2246: {
+		ErrorCode: Error2246,
+		Message:   "Error while adding resource level response intercept external cluster.",
 	},
-	error2247: {
-		ErrorCode: error2247,
-		Message:   "Error while adding operational level response intercept external cluster for %v:%v-%v-%v. %v",
-		Severity:  MAJOR,
+	Error2247: {
+		ErrorCode: Error2247,
+		Message:   "Error while adding operational level response intercept external cluster.",
 	},
-	error2248: {
-		ErrorCode: error2248,
-		Message:   "Failed to initialize ratelimit cluster. Hence terminating the adapter. Error: %s",
-		Severity:  BLOCKER,
+	Error2248: {
+		ErrorCode: Error2248,
+		Message:   "Failed to initialize ratelimit cluster. Hence terminating the adapter.",
 	},
-	error2249: {
-		ErrorCode: error2249,
-		Message:   "Failed to initialize tracer's cluster. Router tracing will be disabled. %v",
-		Severity:  CRITICAL,
+	Error2249: {
+		ErrorCode: Error2249,
+		Message:   "Failed to initialize tracer's cluster. Router tracing will be disabled.",
 	},
-	error2700: {
-		ErrorCode: error2700,
-		Message:   "Error while processing the private-public key pair : %v",
-		Severity:  BLOCKER,
+	Error2700: {
+		ErrorCode: Error2700,
+		Message:   "Error while processing the private-public key pair.",
 	},
-	error2300: {
-		ErrorCode: error2300,
-		Message:   "Stream request for type %s on stream id: %d, from node: %s, Error: %s",
-		Severity:  CRITICAL,
+	Error2300: {
+		ErrorCode: Error2300,
+		Message:   "Error in Stream request.",
 	},
 }

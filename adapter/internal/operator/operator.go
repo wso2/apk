@@ -105,7 +105,7 @@ func InitOperator() {
 		// LeaderElectionReleaseOnCancel: true,
 	})
 	if err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2600, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2600, logging.BLOCKER, "Unable to start manager: %v", err))
 	}
 
 	// TODO: Decide on a buffer size and add to config.
@@ -119,23 +119,23 @@ func InitOperator() {
 	}
 
 	if err = (&dpv1alpha1.API{}).SetupWebhookWithManager(mgr); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2601, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2601, logging.BLOCKER, "Unable to create webhook API: %v", err))
 	}
 
 	if err = (&dpv1alpha1.RateLimitPolicy{}).SetupWebhookWithManager(mgr); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2637, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2637, logging.BLOCKER, "Unable to create webhook for Ratelimit: %v", err))
 	}
 
 	if err = (&dpv1alpha1.APIPolicy{}).SetupWebhookWithManager(mgr); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2638, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2638, logging.BLOCKER, "Unable to create webhook for APIPolicy: %v", err))
 	}
 
 	if err = (&dpv1alpha1.InterceptorService{}).SetupWebhookWithManager(mgr); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2652, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2652, logging.BLOCKER, "Unable to create webhook for InterceptorService: %v", err))
 	}
 
 	if err = (&dpv1alpha1.Backend{}).SetupWebhookWithManager(mgr); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2655, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2655, logging.BLOCKER, "Unable to create webhook for Backend: %v", err))
 	}
 
 	if err := dpcontrollers.NewGatewayController(mgr, operatorDataStore, updateHandler, &gatewaych); err != nil {
@@ -147,13 +147,13 @@ func InitOperator() {
 	}
 
 	if err := dpcontrollers.NewJWTIssuerReconciler(mgr); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3114, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3114, logging.BLOCKER, "Error creating JWT Issuer controller: %v", err))
 	}
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2602, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2602, logging.BLOCKER, "Unable to set up health check: %v", err))
 	}
 	if err := mgr.AddReadyzCheck("readyz", healthz.Ping); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2603, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2603, logging.BLOCKER, "Unable to set up ready check: %v", err))
 	}
 
 	internalLogging.InitializeContext()
@@ -169,7 +169,7 @@ func InitOperator() {
 	}
 
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2604, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2604, logging.BLOCKER, "Problem running manager: %v", err))
 	}
 	internalLogging.RemoveValueFromLogContext("API_UUID")
 }

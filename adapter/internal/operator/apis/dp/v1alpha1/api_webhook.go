@@ -210,7 +210,7 @@ func retrieveAPIList() ([]API, error) {
 	if namespaces == nil {
 		apiList := &APIList{}
 		if err := c.List(ctx, apiList, &client.ListOptions{}); err != nil {
-			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2605, err.Error()))
+			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2605, logging.CRITICAL, "Unable to list APIs: %v", err.Error()))
 			return nil, err
 		}
 		apis = make([]API, len(apiList.Items))
@@ -219,7 +219,7 @@ func retrieveAPIList() ([]API, error) {
 		for _, namespace := range namespaces {
 			apiList := &APIList{}
 			if err := c.List(ctx, apiList, &client.ListOptions{Namespace: namespace}); err != nil {
-				loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2605, err.Error()))
+				loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2605, logging.CRITICAL, "Unable to list APIs: %v", err.Error()))
 				return nil, err
 			}
 			apis = append(apis, apiList.Items...)

@@ -21,16 +21,31 @@ import (
 	"fmt"
 )
 
-// GetErrorByCode used to keep error details for error logs
-func GetErrorByCode(code int, args ...interface{}) ErrorDetails {
+// GetErrorMessageByCode retrieve the error message corresponds to the provided error code
+func GetErrorMessageByCode(code int) string {
 	errorLog, ok := Mapper[code]
 	if !ok {
-		errorLog = ErrorDetails{
-			ErrorCode: 0000,
-			Message:   fmt.Sprintf("No error message found for error code: %v", code),
-			Severity:  "MINOR",
-		}
+		return fmt.Sprintf("No error message found for error code: %v", code)
 	}
-	errorLog.Message = fmt.Sprintf(errorLog.Message, args...)
+	return errorLog.Message
+}
+
+// PrintError prints the error details
+func PrintError(code int, severity string, message string, args ...interface{}) ErrorDetails {
+	errorLog := ErrorDetails{
+		ErrorCode: code,
+		Message:   fmt.Sprintf(message, args...),
+		Severity:  severity,
+	}
+	return errorLog
+}
+
+// PrintErrorWithDefaultMessage prints the error details with default message
+func PrintErrorWithDefaultMessage(code int, severity string) ErrorDetails {
+	errorLog := ErrorDetails{
+		ErrorCode: code,
+		Message:   GetErrorMessageByCode(code),
+		Severity:  severity,
+	}
 	return errorLog
 }

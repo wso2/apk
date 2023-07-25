@@ -51,25 +51,25 @@ func getGzipConfigurations(config config.Config) *gzip_compressor.Gzip {
 	if memoryLevel != 0 {
 		gzipConf.MemoryLevel = wrapperspb.UInt32(memoryLevel)
 	} else {
-		logger.LoggerXds.ErrorC(logging.GetErrorByCode(2235, err1.Error()))
+		logger.LoggerXds.ErrorC(logging.PrintError(logging.Error2235, logging.MINOR, "Error while parsing the gzip configuration value for the memory level: %v", err1.Error()))
 	}
 	windowBits, err2 := getUInt32Value(config.Envoy.Filters.Compression.LibraryProperties["windowBits"])
 	if windowBits != 0 && err2 == nil {
 		gzipConf.WindowBits = wrapperspb.UInt32(windowBits)
 	} else {
-		logger.LoggerXds.ErrorC(logging.GetErrorByCode(2236, err2.Error()))
+		logger.LoggerXds.ErrorC(logging.PrintError(logging.Error2236, logging.MINOR, "Error while parsing the gzip configuration value for the window bits: %v", err2.Error()))
 	}
 	compressionLevel, err3 := getUInt32Value(config.Envoy.Filters.Compression.LibraryProperties["compressionLevel"])
 	if compressionLevel != 0 && err3 == nil {
 		gzipConf.CompressionLevel = getGzipCompressionLevel(compressionLevel)
 	} else {
-		logger.LoggerXds.ErrorC(logging.GetErrorByCode(2237, err3.Error()))
+		logger.LoggerXds.ErrorC(logging.PrintError(logging.Error2237, logging.MINOR, "Error while parsing the gzip configuration value for the compression level: %v", err3.Error()))
 	}
 	chunkSize, err4 := getUInt32Value(config.Envoy.Filters.Compression.LibraryProperties["chunkSize"])
 	if chunkSize != 0 && err4 == nil {
 		gzipConf.ChunkSize = wrapperspb.UInt32(chunkSize)
 	} else {
-		logger.LoggerXds.ErrorC(logging.GetErrorByCode(2238, err4.Error()))
+		logger.LoggerXds.ErrorC(logging.PrintError(logging.Error2238, logging.MINOR, "Error while parsing the gzip configuration value for the chunk size: %v", err4.Error()))
 	}
 	gzipConf.CompressionStrategy = getGzipCompressionStrategy(compressionStrategy)
 	logger.LoggerOasparser.Debug("gzip configuration values parsed successfully.")

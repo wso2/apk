@@ -145,7 +145,7 @@ func CreateRoutesWithClusters(adapterInternalAPI model.AdapterInternalAPI, inter
 	}
 	cluster, address, err := processEndpoints(apiDefinitionClusterName, &endpointCluster, timeout, "")
 	if err != nil {
-		logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(2239, apiTitle, apiVersion, apiDefinitionQueryParam, err.Error()))
+		logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2239, logging.MAJOR, "Error while adding resource level endpoints for %s:%v-%v. %v", apiTitle, apiVersion, apiDefinitionQueryParam, err.Error()))
 	}
 	clusters = append(clusters, cluster)
 	endpoints = append(endpoints, address...)
@@ -161,7 +161,7 @@ func CreateRoutesWithClusters(adapterInternalAPI model.AdapterInternalAPI, inter
 			clusterName = getClusterName(endpoint.EndpointPrefix, organizationID, vHost, adapterInternalAPI.GetTitle(), apiVersion, resource.GetID())
 			cluster, address, err := processEndpoints(clusterName, endpoint, timeout, basePath)
 			if err != nil {
-				logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(2239, apiTitle, apiVersion, resourcePath, err.Error()))
+				logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2239, logging.MAJOR, "Error while adding resource level endpoints for %s:%v-%v. %v", apiTitle, apiVersion, resourcePath, err.Error()))
 			} else {
 				clusters = append(clusters, cluster)
 				endpoints = append(endpoints, address...)
@@ -180,7 +180,7 @@ func CreateRoutesWithClusters(adapterInternalAPI model.AdapterInternalAPI, inter
 
 		routeP, err := createRoutes(routeParams)
 		if err != nil {
-			logger.LoggerXds.ErrorC(logging.GetErrorByCode(2231, adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), resource.GetPath(), err.Error()))
+			logger.LoggerXds.ErrorC(logging.PrintError(logging.Error2231, logging.MAJOR, "Error while creating routes for API %s %s for path: %s Error: %s", adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), resource.GetPath(), err.Error()))
 			return nil, nil, nil, fmt.Errorf("error while creating routes. %v", err)
 		}
 		routes = append(routes, routeP...)
@@ -188,7 +188,7 @@ func CreateRoutesWithClusters(adapterInternalAPI model.AdapterInternalAPI, inter
 			defaultRoutes, errDefaultPath := createRoutes(genRouteCreateParams(&adapterInternalAPI, resource, vHost, basePath, clusterName, *operationalReqInterceptors, *operationalRespInterceptorVal, organizationID,
 				false, true))
 			if errDefaultPath != nil {
-				logger.LoggerXds.ErrorC(logging.GetErrorByCode(2231, adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), removeFirstOccurrence(resource.GetPath(), adapterInternalAPI.GetVersion()), errDefaultPath.Error()))
+				logger.LoggerXds.ErrorC(logging.PrintError(logging.Error2231, logging.MAJOR, "Error while creating routes for API %s %s for path: %s Error: %s", adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), removeFirstOccurrence(resource.GetPath(), adapterInternalAPI.GetVersion()), errDefaultPath.Error()))
 				return nil, nil, nil, fmt.Errorf("error while creating routes. %v", errDefaultPath)
 			}
 			routes = append(routes, defaultRoutes...)
@@ -896,7 +896,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 					if err != nil {
 						errMsg := fmt.Sprintf("Error adding request policy %s to operation %s of resource %s. %v",
 							constants.ActionRewritePath, operation.GetMethod(), resourcePath, err)
-						logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(2212, constants.ActionRewritePath, operation.GetMethod(), resourcePath, err))
+						logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2212, logging.MAJOR, "Error adding request policy %s to operation %s of resource %s. %v", constants.ActionRewritePath, operation.GetMethod(), resourcePath, err))
 						return nil, errors.New(errMsg)
 					}
 					pathRewriteConfig = regexRewrite
@@ -1226,10 +1226,10 @@ func CreateAPIDefinitionRoute(basePath string, vHost string, methods []string, i
 	methodRegex := strings.Join(methods, "|")
 
 	matchPath := basePath
-	if (isDefaultversion) {
+	if isDefaultversion {
 		matchPath = removeLastOccurrence(basePath, "/"+version)
 	}
-	
+
 	match = &routev3.RouteMatch{
 		PathSpecifier: &routev3.RouteMatch_Path{
 			Path: matchPath,
@@ -1647,7 +1647,7 @@ func createInterceptorAPIClusters(adapterInternalAPI model.AdapterInternalAPI, i
 		cluster, addresses, err := CreateLuaCluster(interceptorCerts, apiRequestInterceptor)
 		if err != nil {
 			apiRequestInterceptor = model.InterceptEndpoint{}
-			logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(2242, apiTitle, err.Error()))
+			logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2242, logging.MAJOR, "Error while adding api level request intercepter external cluster for %s. %v", apiTitle, err.Error()))
 		} else {
 			clusters = append(clusters, cluster)
 			endpoints = append(endpoints, addresses...)
@@ -1662,7 +1662,7 @@ func createInterceptorAPIClusters(adapterInternalAPI model.AdapterInternalAPI, i
 		cluster, addresses, err := CreateLuaCluster(interceptorCerts, apiResponseInterceptor)
 		if err != nil {
 			apiResponseInterceptor = model.InterceptEndpoint{}
-			logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(2243, apiTitle, err.Error()))
+			logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2243, logging.MAJOR, "Error while adding api level response intercepter external cluster for %s. %v", apiTitle, err.Error()))
 		} else {
 			clusters = append(clusters, cluster)
 			endpoints = append(endpoints, addresses...)
@@ -1689,7 +1689,7 @@ func createInterceptorResourceClusters(adapterInternalAPI model.AdapterInternalA
 			apiTitle, apiVersion, resource.GetID())
 		cluster, addresses, err := CreateLuaCluster(interceptorCerts, reqInterceptorVal)
 		if err != nil {
-			logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(2244, apiTitle, err.Error()))
+			logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2244, logging.MAJOR, "Error while adding resource level request intercept external cluster for %s. %v", apiTitle, err.Error()))
 		} else {
 			resourceRequestInterceptor = &reqInterceptorVal
 			clusters = append(clusters, cluster)
@@ -1708,7 +1708,7 @@ func createInterceptorResourceClusters(adapterInternalAPI model.AdapterInternalA
 			operationalReqInterceptors[method] = opI // since cluster name is updated
 			cluster, addresses, err := CreateLuaCluster(interceptorCerts, opI)
 			if err != nil {
-				logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(2245, apiTitle, apiVersion, resource.GetPath(), opID, err.Error()))
+				logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2245, logging.MAJOR, "Error while adding operational level request intercept external cluster for %v:%v-%v-%v. %v", apiTitle, apiVersion, resource.GetPath(), opID, err.Error()))
 				// setting resource level interceptor to failed operation level interceptor.
 				operationalReqInterceptors[method] = *resourceRequestInterceptor
 			} else {
@@ -1726,7 +1726,7 @@ func createInterceptorResourceClusters(adapterInternalAPI model.AdapterInternalA
 			vHost, apiTitle, apiVersion, resource.GetID())
 		cluster, addresses, err := CreateLuaCluster(interceptorCerts, respInterceptorVal)
 		if err != nil {
-			logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(2246, apiTitle, err.Error()))
+			logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2246, logging.MAJOR, "Error while adding resource level response intercept external cluster for %s. %v", apiTitle, err.Error()))
 		} else {
 			resourceResponseInterceptor = &respInterceptorVal
 			clusters = append(clusters, cluster)
@@ -1746,7 +1746,7 @@ func createInterceptorResourceClusters(adapterInternalAPI model.AdapterInternalA
 			operationalRespInterceptorVal[method] = opI // since cluster name is updated
 			cluster, addresses, err := CreateLuaCluster(interceptorCerts, opI)
 			if err != nil {
-				logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(2247, apiTitle, apiVersion, resource.GetPath(), opID, err.Error()))
+				logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2247, logging.MAJOR, "Error while adding operational level response intercept external cluster for %v:%v-%v-%v. %v", apiTitle, apiVersion, resource.GetPath(), opID, err.Error()))
 				// setting resource level interceptor to failed operation level interceptor.
 				operationalRespInterceptorVal[method] = *resourceResponseInterceptor
 			} else {

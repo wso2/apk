@@ -56,16 +56,16 @@ func ReadConfigs() *Config {
 		adapterConfig = defaultConfig
 		_, err := os.Stat(pkgconf.GetApkHome() + relativeConfigPath)
 		if err != nil {
-			loggerConfig.ErrorC(logging.GetErrorByCode(1000, err.Error()))
+			loggerConfig.ErrorC(logging.PrintError(logging.Error1000, logging.BLOCKER, "Configuration file not found, error: %v", err.Error()))
 		}
 		content, readErr := ioutil.ReadFile(pkgconf.GetApkHome() + relativeConfigPath)
 		if readErr != nil {
-			loggerConfig.ErrorC(logging.GetErrorByCode(1001, err.Error()))
+			loggerConfig.ErrorC(logging.PrintError(logging.Error1001, logging.BLOCKER, "Error reading configurations, error: %v", err.Error()))
 			return
 		}
 		parseErr := toml.Unmarshal(content, adapterConfig)
 		if parseErr != nil {
-			loggerConfig.ErrorC(logging.GetErrorByCode(1002, err.Error()))
+			loggerConfig.ErrorC(logging.PrintError(logging.Error1002, logging.BLOCKER, "Error parsing the configurations, error: %v", err.Error()))
 			return
 		}
 
