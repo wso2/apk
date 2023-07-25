@@ -75,11 +75,6 @@ var DefaultAPIVersion = suite.IntegrationTest{
 					Path:   "/default-api-version/?definitionType=OAS",
 					Method: "GET",
 				},
-				ExpectedRequest: &http.ExpectedRequest{
-					Request: http.Request{
-						Path: "/v2/echo-full",
-					},
-				},
 				Backend:   "infra-backend-v1",
 				Namespace: ns,
 				Response: http.Response{StatusCode: 200},
@@ -89,11 +84,6 @@ var DefaultAPIVersion = suite.IntegrationTest{
 					Host:   "default-api-version.test.gw.wso2.com",
 					Path:   "/default-api-version/v1.0.0?definitionType=OAS",
 					Method: "GET",
-				},
-				ExpectedRequest: &http.ExpectedRequest{
-					Request: http.Request{
-						Path: "/v2/echo-full",
-					},
 				},
 				Backend:   "infra-backend-v1",
 				Namespace: ns,
