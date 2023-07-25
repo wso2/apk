@@ -193,6 +193,11 @@ public class ConfigGeneratorClient {
             string yamlString = check self.convertJsonToYaml(interceptorService.toJsonString());
             _ = check self.storeFile(yamlString, interceptorService.metadata.name, zipDir);
         }
+        model:BackendJWT? backendJwt = apiArtifact.backendJwt;
+        if backendJwt is model:BackendJWT {
+            string yamlString = check self.convertJsonToYaml(apiArtifact.backendJwt.toJsonString());
+            _ = check self.storeFile(yamlString, backendJwt.metadata.name, zipDir);
+        }
         string zipfileName = string:concat(apiArtifact.name, "-", apiArtifact.'version);
         [string, string] zipName = check self.zipDirectory(zipfileName, zipDir);
         return zipName;

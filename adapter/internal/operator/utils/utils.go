@@ -517,7 +517,7 @@ func GetBackendJWT(ctx context.Context, client k8client.Client, namespace,
 	}
 	if err := ResolveRef(ctx, client, api, backendJWTRef, false, backendJWT); err != nil {
 		if !apierrors.IsNotFound(err) {
-			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2652, backendJWTRef, err.Error()))
+			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2662, backendJWTRef, err.Error()))
 		}
 	}
 	return backendJWT

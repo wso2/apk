@@ -376,8 +376,8 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 	// Check whether the API has a backend JWT token
 	if apiPolicySelected != nil && apiPolicySelected.Spec.Override != nil && apiPolicySelected.Spec.Override.BackendJWTPolicy != nil {
 		backendJWTPolicy := resourceParams.BackendJWTMapping[types.NamespacedName{
-			Name:      apiPolicy.Spec.Override.BackendJWTPolicy.Name,
-			Namespace: apiPolicy.Namespace,
+			Name:      apiPolicySelected.Spec.Override.BackendJWTPolicy.Name,
+			Namespace: httpRoute.Namespace,
 		}.String()].Spec
 		swagger.backendJWTTokenInfo = parseBackendJWTTokenToInternal(backendJWTPolicy)
 	}
@@ -400,7 +400,7 @@ func parseBackendJWTTokenToInternal(backendJWTToken dpv1alpha1.BackendJWTSpec) *
 		customClaims = append(customClaims, claimMapping)
 	}
 	backendJWTTokenInternal := &BackendJWTTokenInfo{
-		Enabled:          backendJWTToken.Enabled,
+		Enabled:          true,
 		Encoding:         backendJWTToken.Encoding,
 		Header:           backendJWTToken.Header,
 		SigningAlgorithm: backendJWTToken.SigningAlgorithm,

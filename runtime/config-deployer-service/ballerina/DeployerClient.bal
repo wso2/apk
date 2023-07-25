@@ -40,25 +40,10 @@ public class DeployerClient {
         if availablePartitionForAPI is model:Partition {
             model:API|() api = check getK8sAPIByNameAndNamespace(apiId, availablePartitionForAPI.namespace);
             if api is model:API {
-                string organization = api.spec.organization;
                 http:Response|http:ClientError apiCRDeletionResponse = deleteAPICR(api.metadata.name, availablePartitionForAPI.namespace);
                 if apiCRDeletionResponse is http:ClientError {
                     log:printError("Error while undeploying API CR ", apiCRDeletionResponse);
                 }
-                string? definitionFileRef = api.spec.definitionFileRef;
-                if definitionFileRef is string {
-                    http:Response|http:ClientError apiDefinitionDeletionResponse = deleteConfigMap(definitionFileRef, availablePartitionForAPI.namespace);
-                    if apiDefinitionDeletionResponse is http:ClientError {
-                        log:printError("Error while undeploying API definition ", apiDefinitionDeletionResponse);
-                    }
-                }
-                _ = check self.deleteHttpRoutes(api, organization);
-                _ = check self.deleteAuthneticationCRs(api, organization);
-                _ = check self.deleteScopeCrsForAPI(api, organization);
-                _ = check self.deleteRateLimitPolicyCRs(api, organization);
-                _ = check self.deleteBackends(api, organization);
-                _ = check self.deleteAPIPolicyCRs(api, organization);
-                _ = check self.deleteInterceptorServiceCRs(api, organization);
                 string response = string `API with id ${apiId} undeployed successfully`;
                 json jsonResponse = {status: response};
                 return {body: jsonResponse.toString()};
@@ -116,6 +101,7 @@ public class DeployerClient {
                 check self.deleteRateLimitPolicyCRs(existingAPI, <string>apiArtifact?.organization);
                 check self.deleteAPIPolicyCRs(existingAPI, <string>apiArtifact?.organization);
                 check self.deleteInterceptorServiceCRs(existingAPI, <string>apiArtifact?.organization);
+                check self.deleteBackendJWTConfig(existingAPI, <string>apiArtifact?.organization);
             }
             model:ConfigMap? definition = apiArtifact.definition;
             if definition is model:ConfigMap {
@@ -126,8 +112,9 @@ public class DeployerClient {
             check self.deployBackendServices(apiArtifact);
             check self.deployAuthneticationCRs(apiArtifact);
             check self.deployRateLimitPolicyCRs(apiArtifact);
-            check self.deployAPIPolicyCRs(apiArtifact);
             check self.deployInterceptorServiceCRs(apiArtifact);
+            check self.deployBackendJWTConfigs(apiArtifact);
+            check self.deployAPIPolicyCRs(apiArtifact);
             check self.deployHttpRoutes(apiArtifact.productionRoute, <string>apiArtifact?.namespace);
             check self.deployHttpRoutes(apiArtifact.sandboxRoute, <string>apiArtifact?.namespace);
             return check self.deployK8sAPICr(apiArtifact);
@@ -510,6 +497,20 @@ public class DeployerClient {
         }
     }
 
+    private isolated function deployBackendJWTConfigs(model:APIArtifact apiArtifact) returns error? {
+        model:BackendJWT? backendJwt = apiArtifact.backendJwt;
+        if backendJwt is model:BackendJWT {
+            http:Response backendJWTCrDeployResponse = check deployBackendJWTCr(backendJwt, <string>apiArtifact?.namespace);
+            if backendJWTCrDeployResponse.statusCode == http:STATUS_CREATED {
+                log:printDebug("Deployed BackendJWT Config Successfully" + backendJwt.toString());
+            } else {
+                json responsePayLoad = check backendJWTCrDeployResponse.getJsonPayload();
+                model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+                check self.handleK8sTimeout(statusResponse);
+            }
+        }
+    }
+
     isolated function handleK8sTimeout(model:Status errorStatus) returns commons:APKError {
         model:StatusDetails? details = errorStatus.details;
         if details is model:StatusDetails {
@@ -542,6 +543,30 @@ public class DeployerClient {
         } on fail var e {
             log:printError("Error occured deleting Interceptor Service", e);
             return error("Error occured deleting Interceptor Service", message = "Internal Server Error", code = 909000, description = "Internal Server Error", statusCode = 500);
+        }
+    }
+
+    private isolated function deleteBackendJWTConfig(model:API api, string organization) returns commons:APKError? {
+        do {
+            model:BackendJWTList|http:ClientError backendJWTlist = check getBackendJWTCrsForAPI(api.spec.apiDisplayName, api.spec.apiVersion, <string>api.metadata?.namespace, organization);
+            if backendJWTlist is model:BackendJWTList {
+                foreach model:BackendJWT item in backendJWTlist.items {
+                    http:Response|http:ClientError backendJWTConfigDeletionResponse = deleteBackendJWTCr(item.metadata.name, <string>item.metadata?.namespace);
+                    if backendJWTConfigDeletionResponse is http:Response {
+                        if backendJWTConfigDeletionResponse.statusCode != http:STATUS_OK {
+                            json responsePayLoad = check backendJWTConfigDeletionResponse.getJsonPayload();
+                            model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+                            check self.handleK8sTimeout(statusResponse);
+                        }
+                    } else {
+                        log:printError("Error occured while deleting BackendJWT Config.");
+                    }
+                }
+                return;
+            }
+        } on fail var e {
+            log:printError("Error occured deleting BackendJWT Config", e);
+            return error("Error occured deleting BackendJWT Config", message = "Internal Server Error", code = 909000, description = "Internal Server Error", statusCode = 500);
         }
     }
 

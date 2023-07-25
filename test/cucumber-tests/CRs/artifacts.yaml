@@ -75,3 +75,25 @@ data:
   username: ZHNmZHNmc2Rmc2Rm
   password: YWRtaW4=
 type: Opaque
+---
+apiVersion: dp.wso2.com/v1alpha1
+kind: JWTIssuer
+metadata:
+  annotations:
+  name: jwtissuer-1
+  namespace: apk-integration-test
+spec:
+  consumerKeyClaim: azp
+  issuer: https://idp.am.wso2.com/token
+  name: Domain-service-idp
+  organization: apk-org
+  scopesClaim: scope
+  signatureValidation:
+    certificate:
+      secretRef:
+        key: wso2carbon.pem
+        name: apk-test-setup-wso2-apk-enforcer-truststore-secret
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: default

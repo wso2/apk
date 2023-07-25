@@ -512,14 +512,14 @@ public class APIClient {
     private isolated function generateAPIPolicyAndBackendCR(model:APIArtifact apiArtifact, APKConf apkConf, APKOperations? operations, APIOperationPolicies? policies, string organization, string targetRefName) returns model:APIPolicy?|error {
         model:APIPolicyData defaultSpecData = {};
         APKOperationPolicy[]? request = policies?.request;
-        model:InterceptorReference?|model:BackendJwtPolicy? requestPolicy = check self.retrieveAPIPolicyDetails(apiArtifact, apkConf, operations, organization, request, "request");
+        model:InterceptorReference?|model:BackendJwtReference? requestPolicy = check self.retrieveAPIPolicyDetails(apiArtifact, apkConf, operations, organization, request, "request");
         if requestPolicy is model:InterceptorReference {
             defaultSpecData.requestInterceptors = [requestPolicy];
-        } else if requestPolicy is model:BackendJwtPolicy {
-            defaultSpecData.backendJwtToken = requestPolicy;
+        } else if requestPolicy is model:BackendJwtReference {
+            defaultSpecData.backendJwtPolicy = requestPolicy;
         }
         APKOperationPolicy[]? response = policies?.response;
-        model:InterceptorReference?|model:BackendJwtPolicy? responseInterceptor = check self.retrieveAPIPolicyDetails(apiArtifact, apkConf, operations, organization, response, "response");
+        model:InterceptorReference?|model:BackendJwtReference? responseInterceptor = check self.retrieveAPIPolicyDetails(apiArtifact, apkConf, operations, organization, response, "response");
         if responseInterceptor is model:InterceptorReference {
             defaultSpecData.responseInterceptors = [responseInterceptor];
         }
@@ -943,8 +943,8 @@ public class APIClient {
     isolated function retrieveRateLimitData(RateLimit rateLimit, string organization) returns model:RateLimitData {
         model:RateLimitData rateLimitData = {
             api: {
-                    requestsPerUnit: rateLimit.requestsPerUnit,
-                    unit: rateLimit.unit
+                requestsPerUnit: rateLimit.requestsPerUnit,
+                unit: rateLimit.unit
             },
             organization: organization
         };
@@ -970,7 +970,7 @@ public class APIClient {
         return apiPolicyCR;
     }
 
-    isolated function retrieveAPIPolicyDetails(model:APIArtifact apiArtifact, APKConf apkConf, APKOperations? operations, string organization, APKOperationPolicy[]? policies, string flow) returns model:InterceptorReference?|model:BackendJwtPolicy?|error {
+    isolated function retrieveAPIPolicyDetails(model:APIArtifact apiArtifact, APKConf apkConf, APKOperations? operations, string organization, APKOperationPolicy[]? policies, string flow) returns model:InterceptorReference?|model:BackendJwtReference?|error {
         if policies is APKOperationPolicy[] {
             foreach APKOperationPolicy policy in policies {
                 string policyName = policy.policyName;
@@ -996,39 +996,49 @@ public class APIClient {
                         return interceptorReference;
                     } else if (policyName == "BackendJwt") {
                         BackendJWTPolicy backendJWTPolicy = check policy.cloneWithType(BackendJWTPolicy);
-                        BackendJWTPolicy_parameters backendJWTPolicyParameters = <BackendJWTPolicy_parameters>backendJWTPolicy?.parameters;
-                        model:BackendJwtPolicy backendJwt = {};
-                        backendJwt.enabled = backendJWTPolicyParameters.enabled ?: false;
-                        if backendJWTPolicyParameters.encoding is string {
-                            backendJwt.encoding = <string>backendJWTPolicyParameters.encoding;
-                        }
-                        if backendJWTPolicyParameters.signingAlgorithm is string {
-                            backendJwt.signingAlgorithm = <string>backendJWTPolicyParameters.signingAlgorithm;
-                        }
-                        if backendJWTPolicyParameters.header is string {
-                            backendJwt.header = <string>backendJWTPolicyParameters.header;
-                        }
-                        if backendJWTPolicyParameters.tokenTTL is int {
-                            backendJwt.tokenTTL = <int>backendJWTPolicyParameters.tokenTTL;
-                        }
-                        if backendJWTPolicyParameters.customClaims is CustomClaims[] {
-                            model:BackendJwtCustomClaim[] backendJWTClaims = [];
-                            foreach CustomClaims customClaim in <CustomClaims[]>backendJWTPolicyParameters?.customClaims {
-                                backendJWTClaims.push({
-                                    claim: customClaim.claim,
-                                    value: customClaim.value
-                                });
-                            }
-                            backendJwt.customClaims = backendJWTClaims;
-                        }
-                        return backendJwt;
+                        model:BackendJWT backendJwt = self.retrieveBackendJWTPolicy(apkConf, apiArtifact, backendJWTPolicy, organization);
+                        apiArtifact.backendJwt = backendJwt;
+                        return <model:BackendJwtReference>{name: backendJwt.metadata.name};
                     }
                 }
             }
         }
         return ();
     }
-
+    private isolated function retrieveBackendJWTPolicy(APKConf apkConf, model:APIArtifact apiArtifact, BackendJWTPolicy backendJWTPolicy, string organization) returns model:BackendJWT {
+        BackendJWTPolicy_parameters parameters = backendJWTPolicy.parameters ?: {};
+        model:BackendJWT backendJwt = {
+            metadata: {
+                name: self.getBackendJWTPolicyUid(apkConf, organization),
+                labels: self.getLabels(apkConf, organization)
+            },
+            spec: {}
+        };
+        if parameters.encoding is string {
+            backendJwt.spec.encoding = <string>parameters.encoding;
+        }
+        if parameters.signingAlgorithm is string {
+            backendJwt.spec.signingAlgorithm = <string>parameters.signingAlgorithm;
+        }
+        if parameters.header is string {
+            backendJwt.spec.header = <string>parameters.header;
+        }
+        if parameters.tokenTTL is int {
+            backendJwt.spec.tokenTTL = <int>parameters.tokenTTL;
+        }
+        if parameters.customClaims is CustomClaims[] {
+            model:CustomClaims[] backendJWTClaims = [];
+            foreach CustomClaims customClaim in <CustomClaims[]>parameters?.customClaims {
+                backendJWTClaims.push({
+                    claim: customClaim.claim,
+                    value: customClaim.value,
+                    'type: customClaim.'type
+                });
+            }
+            backendJwt.spec.customClaims = backendJWTClaims;
+        }
+        return backendJwt;
+    }
     private isolated function retrieveCORSPolicyDetails(model:APIArtifact apiArtifact, APKConf apkConf, CORSConfiguration corsConfiguration, string organization) returns model:CORSPolicy? {
         model:CORSPolicy corsPolicy = {};
         if corsConfiguration.corsConfigurationEnabled is boolean {
@@ -1250,6 +1260,12 @@ public class APIClient {
         return "backend-" + concatanatedString + "-interceptor";
     }
 
+    public isolated function getBackendJWTPolicyUid(APKConf apkConf, string organization) returns string {
+        string concatanatedString = string:'join("-", organization, apkConf.name, 'apkConf.'version);
+        byte[] hashedValue = crypto:hashSha1(concatanatedString.toBytes());
+        concatanatedString = hashedValue.toBase16();
+        return string:'join("-", concatanatedString, "backend-jwt-policy");
+    }
     public isolated function getBackendServiceUid(APKConf apkConf, APKOperations? apiOperation, string endpointType, string organization) returns string {
         string concatanatedString = uuid:createType1AsString();
         if (apiOperation is APKOperations) {

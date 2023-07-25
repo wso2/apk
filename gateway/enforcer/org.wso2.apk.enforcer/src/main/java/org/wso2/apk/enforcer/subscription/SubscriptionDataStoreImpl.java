@@ -382,7 +382,7 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
 
     @Override
     public void addJWTIssuers(List<JWTIssuer> jwtIssuers) {
-
+        Map<String, Map<String, JWTValidator>> jwtValidatorMap = new ConcurrentHashMap<>();
         for (JWTIssuer jwtIssuer : jwtIssuers) {
             try {
                 ExtendedTokenIssuerDto tokenIssuerDto = new ExtendedTokenIssuerDto(jwtIssuer.getIssuer());
@@ -413,6 +413,7 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
                 }
                 orgBasedJWTValidatorMap.put(jwtIssuer.getIssuer(), jwtValidator);
                 jwtValidatorMap.put(jwtIssuer.getOrganization(), orgBasedJWTValidatorMap);
+                this.jwtValidatorMap = jwtValidatorMap;
             } catch (EnforcerException | CertificateException | IOException e) {
                 log.error("Error occurred while configuring JWT Validator for issuer " + jwtIssuer.getIssuer(), e);
             }

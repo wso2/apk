@@ -32,7 +32,7 @@ public type APIPolicyData record {
     InterceptorReference[] requestInterceptors?;
     InterceptorReference[] responseInterceptors?;
     CORSPolicy cORSPolicy?;
-    BackendJwtPolicy backendJwtToken?;
+    BackendJwtReference backendJwtPolicy?;
 };
 
 public type InterceptorReference record {
@@ -40,20 +40,11 @@ public type InterceptorReference record {
     string namespace?;
 };
 
-public type BackendJwtPolicy record {
-    boolean enabled = false;
-    string encoding?;
-    string signingAlgorithm?;
-    string header?;
-    int tokenTTL?;
-    BackendJwtCustomClaim[] customClaims?;
-
+public type BackendJwtReference record {
+    string name?;
 };
 
-public type BackendJwtCustomClaim record {
-    string claim?;
-    string value?;
-};
+
 
 public type APIPolicyList record {
     string apiVersion = "dp.wso2.com/v1alpha1";

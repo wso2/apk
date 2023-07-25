@@ -430,6 +430,9 @@ schemas:
       value:
         type: string
         default: value1
+      type:
+        type: string
+        default: string
     additionalProperties: false
 required:
 - name

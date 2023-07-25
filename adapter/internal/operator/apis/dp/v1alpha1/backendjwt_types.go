@@ -26,7 +26,6 @@ import (
 
 // BackendJWTSpec defines the desired state of BackendJWT
 type BackendJWTSpec struct {
-	Enabled          bool          `json:"enabled,omitempty"`
 	Encoding         string        `json:"encoding,omitempty"`
 	Header           string        `json:"header,omitempty"`
 	SigningAlgorithm string        `json:"signingAlgorithm,omitempty"`

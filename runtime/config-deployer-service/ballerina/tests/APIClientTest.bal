@@ -49,20 +49,26 @@ public isolated function testBackendJWTConfigGenerationFromAPKConf() returns err
 
     model:APIArtifact apiArtifact = check apiClient.prepareArtifact(body.apkConfiguration, body.definitionFile);
 
-    model:BackendJwtPolicy? backendJWTConfigSpecExpected = {
-        enabled: true,
+    model:BackendJWTSpec backendJWTConfigSpec = {
         encoding: "base64",
         signingAlgorithm: "SHA256withRSA",
         header: "X-JWT-Assertion",
         tokenTTL: 3600,
-        customClaims: [{claim: "claim1", value: "value1"}, {claim: "claim2", value: "value2"}]
+        customClaims: [{claim: "claim1", value: "value1",'type:"string"}, {claim: "claim2", value: "value2",'type:"string"}]
     };
-
-    foreach model:APIPolicy apiPolicy in apiArtifact.apiPolicies {
-        model:APIPolicyData? policyData = apiPolicy.spec.default;
-        if (policyData is model:APIPolicyData) {
-            test:assertEquals(policyData.backendJwtToken, backendJWTConfigSpecExpected, "Backend JWT Config is not equal to expected Backend JWT Config");
+    test:assertTrue(apiArtifact.backendJwt is model:BackendJWT);
+    model:BackendJWT? backendJwt = apiArtifact.backendJwt;
+    if backendJwt is model:BackendJWT {
+        test:assertEquals(backendJwt.spec, backendJWTConfigSpec, "Backend JWT Config is not equal to expected Backend JWT Config");
+        model:BackendJwtReference backendJwtReference = {name: backendJwt.metadata.name};
+        foreach model:APIPolicy apiPolicy in apiArtifact.apiPolicies {
+            model:APIPolicyData? policyData = apiPolicy.spec.default;
+            if (policyData is model:APIPolicyData) {
+                test:assertEquals(policyData.backendJwtPolicy, backendJwtReference, "Backend JWT Config is not equal to expected Backend JWT Config");
+            }
         }
+    } else {
+        test:assertFail("Backend JWT is not equal to expected Backend JWT Config");
     }
 }
 
