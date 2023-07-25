@@ -240,8 +240,8 @@ func (r *rateLimitPolicyCache) AddCustomRateLimitPolicies(customRateLimitPolicy 
 			Key:   customRateLimitPolicy.Key,
 			Value: customRateLimitPolicy.Value,
 			RateLimit: &rls_config.RateLimitPolicy{
-				Unit:            getRateLimitUnit(customRateLimitPolicy.RateLimit.Unit),
-				RequestsPerUnit: uint32(customRateLimitPolicy.RateLimit.RequestsPerUnit),
+				Unit:            getRateLimitUnit(customRateLimitPolicy.Unit),
+				RequestsPerUnit: uint32(customRateLimitPolicy.RequestsPerUnit),
 			},
 		}
 	} else {
@@ -249,8 +249,8 @@ func (r *rateLimitPolicyCache) AddCustomRateLimitPolicies(customRateLimitPolicy 
 			Key:   customRateLimitPolicy.Key,
 			Value: customRateLimitPolicy.Value,
 			RateLimit: &rls_config.RateLimitPolicy{
-				Unit:            getRateLimitUnit(customRateLimitPolicy.RateLimit.Unit),
-				RequestsPerUnit: uint32(customRateLimitPolicy.RateLimit.RequestsPerUnit),
+				Unit:            getRateLimitUnit(customRateLimitPolicy.Unit),
+				RequestsPerUnit: uint32(customRateLimitPolicy.RequestsPerUnit),
 			},
 		}
 	}

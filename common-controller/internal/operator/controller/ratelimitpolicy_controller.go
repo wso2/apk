@@ -276,8 +276,8 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) marshelRateLimit(ctx conte
 				}
 			}
 		}
-		resolveRatelimit.API.RequestsPerUnit = ratelimitPolicy.Spec.Default.API.RateLimit.RequestsPerUnit
-		resolveRatelimit.API.Unit = ratelimitPolicy.Spec.Default.API.RateLimit.Unit
+		resolveRatelimit.API.RequestsPerUnit = ratelimitPolicy.Spec.Default.API.RequestsPerUnit
+		resolveRatelimit.API.Unit = ratelimitPolicy.Spec.Default.API.Unit
 		resolveRatelimit.Vhost = vhost
 		resolveRatelimit.Organization = organization
 		resolveRatelimit.Context = context
@@ -312,8 +312,8 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) marshelRateLimit(ctx conte
 									resolveResource.Path = *rule.Matches[0].Path.Value
 									resolveResource.Method = string(*rule.Matches[0].Method)
 									resolveResource.PathMatchType = *rule.Matches[0].Path.Type
-									resolveResource.ResourceRatelimit.RequestsPerUnit = ratelimitPolicy.Spec.Default.API.RateLimit.RequestsPerUnit
-									resolveResource.ResourceRatelimit.Unit = ratelimitPolicy.Spec.Default.API.RateLimit.Unit
+									resolveResource.ResourceRatelimit.RequestsPerUnit = ratelimitPolicy.Spec.Default.API.RequestsPerUnit
+									resolveResource.ResourceRatelimit.Unit = ratelimitPolicy.Spec.Default.API.Unit
 									resolveResourceList = append(resolveResourceList, resolveResource)
 								}
 								for _, hostName := range httpRoute.Spec.Hostnames {
@@ -343,8 +343,8 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) marshelRateLimit(ctx conte
 									resolveResource.Path = *rule.Matches[0].Path.Value
 									resolveResource.Method = string(*rule.Matches[0].Method)
 									resolveResource.PathMatchType = *rule.Matches[0].Path.Type
-									resolveResource.ResourceRatelimit.RequestsPerUnit = ratelimitPolicy.Spec.Default.API.RateLimit.RequestsPerUnit
-									resolveResource.ResourceRatelimit.Unit = ratelimitPolicy.Spec.Default.API.RateLimit.Unit
+									resolveResource.ResourceRatelimit.RequestsPerUnit = ratelimitPolicy.Spec.Default.API.RequestsPerUnit
+									resolveResource.ResourceRatelimit.Unit = ratelimitPolicy.Spec.Default.API.Unit
 									resolveResourceList = append(resolveResourceList, resolveResource)
 								}
 								for _, hostName := range httpRoute.Spec.Hostnames {

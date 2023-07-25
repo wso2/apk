@@ -33,20 +33,15 @@ type RateLimitPolicySpec struct {
 
 // RateLimitAPIPolicy defines the desired state of Policy
 type RateLimitAPIPolicy struct {
-	// Type of the policy can be either "api" or "application" or "subscription"
-	//
-	// +kubebuilder:validation:Enum=Api;Application;Subscription;Custom
-	Type string `json:"type,omitempty"`
-
 	// API policy
 	//
 	// +optional
-	API APIRateLimitPolicy `json:"api,omitempty"`
+	API *APIRateLimitPolicy `json:"api,omitempty"`
 
 	// Custom policy
 	//
 	// +optional
-	Custom CustomRateLimitPolicy `json:"custom,omitempty"`
+	Custom *CustomRateLimitPolicy `json:"custom,omitempty"`
 
 	// Organization is the organization of the policy
 	//
@@ -54,8 +49,8 @@ type RateLimitAPIPolicy struct {
 	Organization string `json:"organization,omitempty"`
 }
 
-// RateLimit is the rate limit value for the applied policy
-type RateLimit struct {
+// APIRateLimitPolicy defines the desired state of APIPolicy
+type APIRateLimitPolicy struct {
 	// RequestPerUnit is the number of requests allowed per unit time
 	//
 	RequestsPerUnit int `json:"requestsPerUnit,omitempty"`
@@ -66,19 +61,16 @@ type RateLimit struct {
 	Unit string `json:"unit,omitempty"`
 }
 
-// APIRateLimitPolicy defines the desired state of APIPolicy
-type APIRateLimitPolicy struct {
-
-	// RateLimit is the rate limit for the API
-	//
-	RateLimit RateLimit `json:"rateLimit,omitempty"`
-}
-
 // CustomRateLimitPolicy defines the desired state of CustomPolicy
 type CustomRateLimitPolicy struct {
 	// RateLimit is the rate limit for the API
 	//
-	RateLimit RateLimit `json:"rateLimit,omitempty"`
+	RequestsPerUnit int `json:"requestsPerUnit,omitempty"`
+
+	// Unit is the unit of the requestsPerUnit
+	//
+	// +kubebuilder:validation:Enum=Minute;Hour;Day
+	Unit string `json:"unit,omitempty"`
 
 	// Key is the key of the custom policy
 	//
