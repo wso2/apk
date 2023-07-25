@@ -217,6 +217,40 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 						'Resource' in resource level RateLimitPolicies`, filter.ExtensionRef.Name)
 					}
 				}
+			case gwapiv1b1.HTTPRouteFilterRequestHeaderModifier:
+				for _, header := range filter.RequestHeaderModifier.Add {
+					policyParameters := make(map[string]interface{})
+					policyParameters[constants.HeaderName] = string(header.Name)
+					policyParameters[constants.HeaderValue] = string(header.Value)
+
+					policies.Request = append(policies.Request, Policy{
+						PolicyName: string(gwapiv1b1.HTTPRouteFilterRequestHeaderModifier),
+						Action:     constants.ActionHeaderAdd,
+						Parameters: policyParameters,
+					})
+				}
+				for _, header := range filter.RequestHeaderModifier.Remove {
+					policyParameters := make(map[string]interface{})
+					policyParameters[constants.HeaderName] = string(header)
+
+					policies.Request = append(policies.Request, Policy{
+						PolicyName: string(gwapiv1b1.HTTPRouteFilterRequestHeaderModifier),
+						Action:     constants.ActionHeaderRemove,
+						Parameters: policyParameters,
+					})
+				}
+				for _, header := range filter.RequestHeaderModifier.Set {
+					policyParameters := make(map[string]interface{})
+					policyParameters[constants.HeaderName] = string(header.Name)
+					policyParameters[constants.HeaderValue] = string(header.Value)
+
+					policies.Request = append(policies.Request, Policy{
+						PolicyName: string(gwapiv1b1.HTTPRouteFilterRequestHeaderModifier),
+						Action:     constants.ActionHeaderAdd,
+						Parameters: policyParameters,
+					})
+				}
+			case gwapiv1b1.HTTPRouteFilterResponseHeaderModifier:
 				for _, header := range filter.ResponseHeaderModifier.Add {
 					policyParameters := make(map[string]interface{})
 					policyParameters[constants.HeaderName] = string(header.Name)
