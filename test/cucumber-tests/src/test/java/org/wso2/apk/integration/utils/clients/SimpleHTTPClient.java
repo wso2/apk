@@ -23,6 +23,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
@@ -408,13 +409,32 @@ public class SimpleHTTPClient {
         while(counter < EVENTUAL_SUCCESS_RESPONSE_TIMEOUT_IN_SECONDS) {
             counter++;
             Thread.sleep(1000);
-            HttpResponse httpResponse = client.execute(lastRequest);
-            ((CloseableHttpResponse)httpResponse).close();
+            HttpResponse httpResponse = getClient().execute(lastRequest);
             responseCode = httpResponse.getStatusLine().getStatusCode();
             if (responseCode == successResponseCode || nonAcceptableCodes.contains(responseCode)) {
                 return httpResponse;
+            } else {
+                ((CloseableHttpResponse)httpResponse).close();
             }
         }
         throw new TimeoutException("Could not receive expected response within time. Last received code: " + responseCode);
+    }
+
+    private HttpClient getClient() {
+
+        final SSLContext sslcontext;
+        try {
+            sslcontext = SSLContexts.custom()
+                    .loadTrustMaterial(null, new TrustAllStrategy())
+                    .build();
+        } catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException e) {
+            throw new RuntimeException(e);
+        }
+        final SSLConnectionSocketFactory csf = new SSLConnectionSocketFactory(sslcontext);
+
+        return HttpClients.custom()
+                .setSSLSocketFactory(csf)
+                .evictExpiredConnections()
+                .build();
     }
 }

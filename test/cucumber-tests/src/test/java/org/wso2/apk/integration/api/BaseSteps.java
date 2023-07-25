@@ -24,6 +24,7 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.testng.Assert;
@@ -61,6 +62,12 @@ public class BaseSteps {
     @Given("The system is ready")
     public void systemIsReady() {
 
+    }
+
+    @Then("the response body should contain {string}")
+    public void theResponseBodyShouldContain(String expectedText) throws IOException {
+
+        Assert.assertTrue(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()).contains(expectedText));
     }
 
     @Then("the response status code should be {int}")
@@ -120,6 +127,25 @@ public class BaseSteps {
             return;
         }
         Thread.sleep((secondsToWait+1) * 1000);
+    }
+
+    @Then("the response headers contains key {string} and value {string} ")
+    public void containsHeader(String key, String value) {
+        key = Utils.resolveVariables(key, sharedContext.getValueStore());
+        value = Utils.resolveVariables(value, sharedContext.getValueStore());
+        HttpResponse response = sharedContext.getResponse();
+        if (response == null) {
+            Assert.fail("Response is null.");
+        }
+        Header header = response.getFirstHeader(key);
+        if (header == null) {
+            Assert.fail("Could not find a header with the given key: " + key);
+        }
+        if ("*".equals(value)) {
+            return; // Any value is acceptable
+        }
+        String actualValue = header.getValue();
+        Assert.assertEquals("Header with key found but value mismatched.", value, actualValue);
     }
 
 
