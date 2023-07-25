@@ -30,5 +30,4 @@ Feature: Basic auth
 
     Examples:
       | apiID                 | expectedStatusCode  |
-#      | basic-auth-api-test          | 202                 |
-#      | default-version-api-test      | 202                 |
+      | basic-auth-api-test          | 202                 |
