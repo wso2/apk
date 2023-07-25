@@ -212,70 +212,22 @@ func TestConcatAPIPolicies(t *testing.T) {
 		{
 			schemeUpSpec: dpv1alpha1.APIPolicySpec{
 				Override: &dpv1alpha1.PolicySpec{
-					RequestQueryModifier: dpv1alpha1.RequestQueryModifier{
-						Remove: []string{"a", "b"},
-						Add: []dpv1alpha1.HTTPQuery{
-							{Name: "q1", Value: "val1"},
-						},
-						RemoveAll: "true",
+					RequestInterceptors: []dpv1alpha1.InterceptorReference{
+						{Name: "i1"},
 					},
 				},
 			},
 			schemeDownSpec: dpv1alpha1.APIPolicySpec{
 				Override: &dpv1alpha1.PolicySpec{
-					RequestQueryModifier: dpv1alpha1.RequestQueryModifier{
-						Remove: []string{"c", "d"},
-						Add: []dpv1alpha1.HTTPQuery{
-							{Name: "q2", Value: "val2"},
-						},
-						RemoveAll: "false",
+					RequestInterceptors: []dpv1alpha1.InterceptorReference{
+						{Name: "i2"},
 					},
 				},
 			},
 			result: dpv1alpha1.APIPolicySpec{
 				Override: &dpv1alpha1.PolicySpec{
-					RequestQueryModifier: dpv1alpha1.RequestQueryModifier{
-						Remove: []string{"a", "b"},
-						Add: []dpv1alpha1.HTTPQuery{
-							{Name: "q1", Value: "val1"},
-						},
-						RemoveAll: "true",
-					},
-				},
-			},
-			message: "only schemeUp override policies should be provided",
-		},
-		{
-			schemeUpSpec: dpv1alpha1.APIPolicySpec{
-				Override: &dpv1alpha1.PolicySpec{
-					RequestQueryModifier: dpv1alpha1.RequestQueryModifier{
-						Remove: []string{"a", "b"},
-						Add: []dpv1alpha1.HTTPQuery{
-							{Name: "q1", Value: "val1"},
-						},
-						RemoveAll: "true",
-					},
-				},
-			},
-			schemeDownSpec: dpv1alpha1.APIPolicySpec{
-				Default: &dpv1alpha1.PolicySpec{
-					RequestQueryModifier: dpv1alpha1.RequestQueryModifier{
-						Remove: []string{"c", "d"},
-						Add: []dpv1alpha1.HTTPQuery{
-							{Name: "q2", Value: "val2"},
-						},
-						RemoveAll: "false",
-					},
-				},
-			},
-			result: dpv1alpha1.APIPolicySpec{
-				Override: &dpv1alpha1.PolicySpec{
-					RequestQueryModifier: dpv1alpha1.RequestQueryModifier{
-						Remove: []string{"a", "b"},
-						Add: []dpv1alpha1.HTTPQuery{
-							{Name: "q1", Value: "val1"},
-						},
-						RemoveAll: "true",
+					RequestInterceptors: []dpv1alpha1.InterceptorReference{
+						{Name: "i1"},
 					},
 				},
 			},
@@ -284,34 +236,22 @@ func TestConcatAPIPolicies(t *testing.T) {
 		{
 			schemeUpSpec: dpv1alpha1.APIPolicySpec{
 				Default: &dpv1alpha1.PolicySpec{
-					RequestQueryModifier: dpv1alpha1.RequestQueryModifier{
-						Remove: []string{"a", "b"},
-						Add: []dpv1alpha1.HTTPQuery{
-							{Name: "q1", Value: "val1"},
-						},
-						RemoveAll: "true",
+					RequestInterceptors: []dpv1alpha1.InterceptorReference{
+						{Name: "i1"},
 					},
 				},
 			},
 			schemeDownSpec: dpv1alpha1.APIPolicySpec{
 				Override: &dpv1alpha1.PolicySpec{
-					RequestQueryModifier: dpv1alpha1.RequestQueryModifier{
-						Remove: []string{"c", "d"},
-						Add: []dpv1alpha1.HTTPQuery{
-							{Name: "q2", Value: "val2"},
-						},
-						RemoveAll: "false",
+					RequestInterceptors: []dpv1alpha1.InterceptorReference{
+						{Name: "i2"},
 					},
 				},
 			},
 			result: dpv1alpha1.APIPolicySpec{
 				Override: &dpv1alpha1.PolicySpec{
-					RequestQueryModifier: dpv1alpha1.RequestQueryModifier{
-						Remove: []string{"c", "d"},
-						Add: []dpv1alpha1.HTTPQuery{
-							{Name: "q2", Value: "val2"},
-						},
-						RemoveAll: "false",
+					RequestInterceptors: []dpv1alpha1.InterceptorReference{
+						{Name: "i2"},
 					},
 				},
 			},
@@ -320,34 +260,22 @@ func TestConcatAPIPolicies(t *testing.T) {
 		{
 			schemeUpSpec: dpv1alpha1.APIPolicySpec{
 				Default: &dpv1alpha1.PolicySpec{
-					RequestQueryModifier: dpv1alpha1.RequestQueryModifier{
-						Remove: []string{"a", "b"},
-						Add: []dpv1alpha1.HTTPQuery{
-							{Name: "q1", Value: "val1"},
-						},
-						RemoveAll: "true",
+					RequestInterceptors: []dpv1alpha1.InterceptorReference{
+						{Name: "i1"},
 					},
 				},
 			},
 			schemeDownSpec: dpv1alpha1.APIPolicySpec{
 				Default: &dpv1alpha1.PolicySpec{
-					RequestQueryModifier: dpv1alpha1.RequestQueryModifier{
-						Remove: []string{"c", "d"},
-						Add: []dpv1alpha1.HTTPQuery{
-							{Name: "q2", Value: "val2"},
-						},
-						RemoveAll: "false",
+					RequestInterceptors: []dpv1alpha1.InterceptorReference{
+						{Name: "i2"},
 					},
 				},
 			},
 			result: dpv1alpha1.APIPolicySpec{
 				Override: &dpv1alpha1.PolicySpec{
-					RequestQueryModifier: dpv1alpha1.RequestQueryModifier{
-						Remove: []string{"c", "d"},
-						Add: []dpv1alpha1.HTTPQuery{
-							{Name: "q2", Value: "val2"},
-						},
-						RemoveAll: "false",
+					RequestInterceptors: []dpv1alpha1.InterceptorReference{
+						{Name: "i2"},
 					},
 				},
 			},
@@ -356,23 +284,15 @@ func TestConcatAPIPolicies(t *testing.T) {
 		{
 			schemeUpSpec: dpv1alpha1.APIPolicySpec{
 				Override: &dpv1alpha1.PolicySpec{
-					RequestQueryModifier: dpv1alpha1.RequestQueryModifier{
-						Remove: []string{"a", "b"},
-						Add: []dpv1alpha1.HTTPQuery{
-							{Name: "q1", Value: "val1"},
-						},
-						RemoveAll: "true",
+					RequestInterceptors: []dpv1alpha1.InterceptorReference{
+						{Name: "i1"},
 					},
 				},
 			},
 			result: dpv1alpha1.APIPolicySpec{
 				Override: &dpv1alpha1.PolicySpec{
-					RequestQueryModifier: dpv1alpha1.RequestQueryModifier{
-						Remove: []string{"a", "b"},
-						Add: []dpv1alpha1.HTTPQuery{
-							{Name: "q1", Value: "val1"},
-						},
-						RemoveAll: "true",
+					RequestInterceptors: []dpv1alpha1.InterceptorReference{
+						{Name: "i1"},
 					},
 				},
 			},
@@ -381,23 +301,15 @@ func TestConcatAPIPolicies(t *testing.T) {
 		{
 			schemeUpSpec: dpv1alpha1.APIPolicySpec{
 				Default: &dpv1alpha1.PolicySpec{
-					RequestQueryModifier: dpv1alpha1.RequestQueryModifier{
-						Remove: []string{"a", "b"},
-						Add: []dpv1alpha1.HTTPQuery{
-							{Name: "q1", Value: "val1"},
-						},
-						RemoveAll: "true",
+					RequestInterceptors: []dpv1alpha1.InterceptorReference{
+						{Name: "i1"},
 					},
 				},
 			},
 			result: dpv1alpha1.APIPolicySpec{
 				Override: &dpv1alpha1.PolicySpec{
-					RequestQueryModifier: dpv1alpha1.RequestQueryModifier{
-						Remove: []string{"a", "b"},
-						Add: []dpv1alpha1.HTTPQuery{
-							{Name: "q1", Value: "val1"},
-						},
-						RemoveAll: "true",
+					RequestInterceptors: []dpv1alpha1.InterceptorReference{
+						{Name: "i1"},
 					},
 				},
 			},
@@ -408,8 +320,7 @@ func TestConcatAPIPolicies(t *testing.T) {
 				Override: &dpv1alpha1.PolicySpec{
 					RequestInterceptors: []dpv1alpha1.InterceptorReference{
 						{
-							Name:      "up-request-interceptor",
-							Namespace: "up-request-interceptor-ns",
+							Name: "up-request-interceptor",
 						},
 					},
 				},
@@ -418,16 +329,14 @@ func TestConcatAPIPolicies(t *testing.T) {
 				Override: &dpv1alpha1.PolicySpec{
 					RequestInterceptors: []dpv1alpha1.InterceptorReference{
 						{
-							Name:      "down-request-interceptor",
-							Namespace: "down-request-interceptor-ns",
+							Name: "down-request-interceptor",
 						},
 					},
 				},
 				Default: &dpv1alpha1.PolicySpec{
 					ResponseInterceptors: []dpv1alpha1.InterceptorReference{
 						{
-							Name:      "down-response-interceptor",
-							Namespace: "down-response-interceptor-ns",
+							Name: "down-response-interceptor",
 						},
 					},
 				},
@@ -436,14 +345,12 @@ func TestConcatAPIPolicies(t *testing.T) {
 				Override: &dpv1alpha1.PolicySpec{
 					RequestInterceptors: []dpv1alpha1.InterceptorReference{
 						{
-							Name:      "up-request-interceptor",
-							Namespace: "up-request-interceptor-ns",
+							Name: "up-request-interceptor",
 						},
 					},
 					ResponseInterceptors: []dpv1alpha1.InterceptorReference{
 						{
-							Name:      "down-response-interceptor",
-							Namespace: "down-response-interceptor-ns",
+							Name: "down-response-interceptor",
 						},
 					},
 				},

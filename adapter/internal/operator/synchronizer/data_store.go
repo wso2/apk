@@ -249,6 +249,28 @@ func (ods *OperatorDataStore) processAPIState(apiNamespacedName types.Namespaced
 		}
 	}
 
+	if len(apiState.BackendJWTMapping) != len(cachedAPI.BackendJWTMapping) {
+		cachedAPI.BackendJWTMapping = apiState.BackendJWTMapping
+		updated = true
+		events = append(events, "Backend JWT")
+	} else {
+		for key, backendJWT := range apiState.BackendJWTMapping {
+			if existingBackendJWT, found := cachedAPI.BackendJWTMapping[key]; found {
+				if backendJWT.UID != existingBackendJWT.UID || backendJWT.Generation > existingBackendJWT.Generation {
+					cachedAPI.BackendJWTMapping = apiState.BackendJWTMapping
+					updated = true
+					events = append(events, "Backend JWT")
+					break
+				}
+			} else {
+				cachedAPI.BackendJWTMapping = apiState.BackendJWTMapping
+				updated = true
+				events = append(events, "Backend JWT")
+				break
+			}
+		}
+	}
+
 	return *cachedAPI, events, updated
 }
 

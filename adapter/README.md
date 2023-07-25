@@ -56,20 +56,22 @@ Following are some tasks with the steps that a developer might do in operator de
 
 3. Change directory into `OPERATOR_HOME`.
 
-4. Let's say we want a new Kind called `APIPolicy` for data plane then run the following Kubebuilder command to scaffold out the new kind.
+4. Rename OPERATOR_HOME/operator.go to main.go temperorily.
+
+5. Let's say we want a new Kind called `APIPolicy` for data plane then run the following Kubebuilder command to scaffold out the new kind.
 
     ```bash
     kubebuilder create api --group dp --version v1alpha1 --kind APIPolicy
     ```
 
-5. This will prompt for creating the resource. Respond yes for that since we need to generate the CRD for it.
+6. This will prompt for creating the resource. Respond yes for that since we need to generate the CRD for it.
 
     ```bash
     Create Resource [y/n]
     y
     ```
 
-6. Next it will prompt for generating the boilerplate code for a controller, respond yes to it. As we are using a single controller in the current architecture. If your CR changes can be mapped to a `API` kind change event then you can delete the controller file. But, there might be cases you want a separate controller, then keep the generated controller file and add the code there.
+7. Next it will prompt for generating the boilerplate code for a controller, respond yes to it. As we are using a single controller in the current architecture. If your CR changes can be mapped to a `API` kind change event then you can delete the controller file. But, there might be cases you want a separate controller, then keep the generated controller file and add the code there.
 
     ```bash
     Create Controller [y/n]
@@ -102,8 +104,9 @@ Following are some tasks with the steps that a developer might do in operator de
     |       ├── ...
     │       └── apipolicy_controller.go
     ```
+3. Revert the naming change did to internal/operator/operator.go in step 4.
 
-7. The `apipolicy_types.go` contains the go struct representing the our example `APIPolicy` kind. You need to fill in the `APIPolicySpec` and `APIPolicyStatus` structs as per the needs.
+9. The `apipolicy_types.go` contains the go struct representing the our example `APIPolicy` kind. You need to fill in the `APIPolicySpec` and `APIPolicyStatus` structs as per the needs.
 
     ```go
     // APIPolicySpec defines the desired state of APIPolicy
@@ -118,9 +121,9 @@ Following are some tasks with the steps that a developer might do in operator de
 
     Here we have set the `Type` property to be required by adding `// +kubebuilder:validation:MinLength=4` [marker](https://book.kubebuilder.io/reference/markers/crd-validation.htm).
 
-8. Since this example `APIPolicy` kind related to `API` kind, we can delete the `apipolicy_controller.go` file.
+10. Since this example `APIPolicy` kind related to `API` kind, we can delete the `apipolicy_controller.go` file.
 
-9. Adding the indexers: To filter out events to reconciliation loop, we need to index the `APIPolicy` resources in the operator in memory cache. Let's say we want `APIPolicy` resources to create a index using the targetRef section when the kind is `HTTPRoute` then the code for that will be as below. 
+11. Adding the indexers: To filter out events to reconciliation loop, we need to index the `APIPolicy` resources in the operator in memory cache. Let's say we want `APIPolicy` resources to create a index using the targetRef section when the kind is `HTTPRoute` then the code for that will be as below. 
 
     > **NOTE**
     >
@@ -151,7 +154,7 @@ Following are some tasks with the steps that a developer might do in operator de
 	}
     ```
 
-10. Adding event filtering handler: We need to implement `getAPIsForAPIPolicy()` function to filter out the `APIPolicy` changes as below.
+12. Adding event filtering handler: We need to implement `getAPIsForAPIPolicy()` function to filter out the `APIPolicy` changes as below.
 
     ```go
     func (apiReconciler *APIReconciler) getAPIsForAPIPolicy(obj k8client.Object) []reconcile.Request {
@@ -186,7 +189,7 @@ Following are some tasks with the steps that a developer might do in operator de
     }
     ```
 
-11. Adding the watchers: Since the `APIPolicy` kind resource changes are fed into the Reconcile loop of `api_controller.go`, Add following code snippet under at the end of `NewAPIController` function.
+13. Adding the watchers: Since the `APIPolicy` kind resource changes are fed into the Reconcile loop of `api_controller.go`, Add following code snippet under at the end of `NewAPIController` function.
 
     ```go
     if err := c.Watch(&source.Kind{Type: &dpv1alpha1.APIPolicy{}}, handler.EnqueueRequestsFromMapFunc(r.getAPIsForAPIPolicy),
@@ -200,7 +203,7 @@ Following are some tasks with the steps that a developer might do in operator de
     }
     ```
 
-12. Generating CRD and other resource yamls:
+14. Generating CRD and other resource yamls:
 
     ```bash
     make manifests
@@ -208,7 +211,7 @@ Following are some tasks with the steps that a developer might do in operator de
 
     This will generate artefacts inside `{OPERATOR_HOME}/config` directory.
 
-13. To make the CRD and other resource changes affect, you need to move the k8s resources to the helm chart in `PROJECT_HOME/helm-charts` directory:
+15. To make the CRD and other resource changes affect, you need to move the k8s resources to the helm chart in `PROJECT_HOME/helm-charts` directory:
 
     - Copy the newly created CRD (in this example `dp.wso2.com_apipolicies.yaml`) from `adapter/internal/operator/config/crd/bases` to `helm-charts/crds`.
 
@@ -241,15 +244,18 @@ Other than the basic validations we can add using [kubebuilder markers](https://
 In that case, we can write the validating and defaulting logic by generating more scaffold code as described in [Implementing defaulting/validating webhooks](https://book.kubebuilder.io/cronjob-tutorial/webhook-implementation.html) section in kubebuilder docs.
 
 Refer to this example [PR](https://github.com/wso2/apk/pull/370) for more information.
+1. Rename internal/operator/operator.go to main.go
 
-1. Create webhook resources. Example command would be similar to;
+2. Create webhook resources. Example command would be similar to;
 
     ```bash
     kubebuilder create webhook --group dp --version v1alpha1 --kind APIPolicy --defaulting --programmatic-validation
     ```
-2. Copy `manifests.yaml` new entries to helm chart.
+3. Revert the naming change did to internal/operator/operator.go in step 1.
 
-3. Add webhook setup to `operator.go`.
+4. Copy `manifests.yaml` new entries to helm chart.
+
+5. Add webhook setup to `operator.go`.
 
     ```go
     (&dpv1alpha1.APIPolicy{}).SetupWebhookWithManager(mgr)
