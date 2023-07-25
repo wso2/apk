@@ -243,7 +243,7 @@ func (apiReconciler *APIReconciler) applyStartupAPIs() {
 	ctx := context.Background()
 	apisList, err := retrieveAPIList(apiReconciler.client)
 	if err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2601, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2605, err))
 		return
 	}
 	for _, api := range apisList {
@@ -785,7 +785,7 @@ func (apiReconciler *APIReconciler) getAPIsForConfigMap(obj k8client.Object) []r
 	if err := apiReconciler.client.List(ctx, backendList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(configMapBackend, utils.NamespacedName(configMap).String()),
 	}); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2638, utils.NamespacedName(configMap).String()))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2647, utils.NamespacedName(configMap).String()))
 		return []reconcile.Request{}
 	}
 
@@ -827,7 +827,7 @@ func (apiReconciler *APIReconciler) getAPIsForSecret(obj k8client.Object) []reco
 func (apiReconciler *APIReconciler) getAPIsForAuthentication(obj k8client.Object) []reconcile.Request {
 	authentication, ok := obj.(*dpv1alpha1.Authentication)
 	if !ok {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2624, authentication))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2622, authentication))
 		return []reconcile.Request{}
 	}
 
@@ -860,7 +860,7 @@ func (apiReconciler *APIReconciler) getAPIsForAuthentication(obj k8client.Object
 func (apiReconciler *APIReconciler) getAPIsForAPIPolicy(obj k8client.Object) []reconcile.Request {
 	apiPolicy, ok := obj.(*dpv1alpha1.APIPolicy)
 	if !ok {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2624, apiPolicy))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2622, apiPolicy))
 		return []reconcile.Request{}
 	}
 	requests := []reconcile.Request{}
@@ -894,7 +894,7 @@ func (apiReconciler *APIReconciler) getAPIsForAPIPolicy(obj k8client.Object) []r
 func (apiReconciler *APIReconciler) getAPIsForInterceptorService(obj k8client.Object) []reconcile.Request {
 	interceptorService, ok := obj.(*dpv1alpha1.InterceptorService)
 	if !ok {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2624, interceptorService))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2622, interceptorService))
 		return []reconcile.Request{}
 	}
 
@@ -903,7 +903,7 @@ func (apiReconciler *APIReconciler) getAPIsForInterceptorService(obj k8client.Ob
 	if err := apiReconciler.client.List(ctx, apiPolicyList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(interceptorServiceAPIPolicyIndex, utils.NamespacedName(interceptorService).String()),
 	}); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2651, utils.NamespacedName(interceptorService).String(), err.Error()))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2649, utils.NamespacedName(interceptorService).String(), err.Error()))
 		return []reconcile.Request{}
 	}
 
@@ -920,7 +920,7 @@ func (apiReconciler *APIReconciler) getAPIsForInterceptorService(obj k8client.Ob
 func (apiReconciler *APIReconciler) getAPIsForRateLimitPolicy(obj k8client.Object) []reconcile.Request {
 	ratelimitPolicy, ok := obj.(*dpv1alpha1.RateLimitPolicy)
 	if !ok {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2624, ratelimitPolicy))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2622, ratelimitPolicy))
 		return []reconcile.Request{}
 	}
 	requests := []reconcile.Request{}
@@ -955,7 +955,7 @@ func (apiReconciler *APIReconciler) getAPIsForRateLimitPolicy(obj k8client.Objec
 func (apiReconciler *APIReconciler) getAPIsForScope(obj k8client.Object) []reconcile.Request {
 	scope, ok := obj.(*dpv1alpha1.Scope)
 	if !ok {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2624, scope))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2622, scope))
 		return []reconcile.Request{}
 	}
 	ctx := context.Background()
@@ -984,7 +984,7 @@ func (apiReconciler *APIReconciler) getAPIsForBackend(obj k8client.Object) []rec
 	ctx := context.Background()
 	backend, ok := obj.(*dpv1alpha1.Backend)
 	if !ok {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2624, backend))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2622, backend))
 		return []reconcile.Request{}
 	}
 
@@ -1031,7 +1031,7 @@ func (apiReconciler *APIReconciler) getAPIsForGateway(obj k8client.Object) []rec
 	ctx := context.Background()
 	gateway, ok := obj.(*gwapiv1b1.Gateway)
 	if !ok {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2624, gateway))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2622, gateway))
 		return []reconcile.Request{}
 	}
 

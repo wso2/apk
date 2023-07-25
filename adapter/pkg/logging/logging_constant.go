@@ -17,6 +17,14 @@
 
 package logging
 
+// Error Log Internal Configuration(1000-1099) Config Constants
+// - loggerConfig
+const (
+	error1000 = 1000
+	error1001 = 1001
+	error1002 = 1002
+)
+
 // Error Log Pkg operator(2600-2699) Config Constants
 // - LoggerAPKOperator
 const (
@@ -40,10 +48,10 @@ const (
 	error2617 = 2617
 	error2618 = 2618
 	error2619 = 2619
+	error2620 = 2620
 	error2621 = 2621
 	error2622 = 2622
 	error2623 = 2623
-	error2624 = 2624
 	error2625 = 2625
 	error2626 = 2626
 	error2627 = 2627
@@ -74,6 +82,12 @@ const (
 	error2652 = 2652
 	error2653 = 2653
 	error2654 = 2654
+	error2655 = 2655
+	error2656 = 2656
+	error2657 = 2657
+	error2658 = 2658
+	error2659 = 2659
+	error2660 = 2660
 )
 
 // Error Log Pkg auth(3001-3099) Config Constants
@@ -95,8 +109,6 @@ const (
 	error3108 = 3108
 	error3109 = 3109
 	error3110 = 3110
-)
-const (
 	error3111 = 3111
 	error3112 = 3112
 	error3113 = 3113
@@ -104,10 +116,33 @@ const (
 	error3115 = 3115
 	error3116 = 3116
 	error3117 = 3117
+	error3118 = 3118
+	error3119 = 3119
+	error3120 = 3120
+	error3121 = 3121
+	error3122 = 3122
+	error3123 = 3123
+	error3124 = 3124
+	error3125 = 3125
 )
 
 // Mapper used to keep error details for error logs
 var Mapper = map[int]ErrorDetails{
+	error1000: {
+		ErrorCode: error1000,
+		Message:   "Configuration file not found: %v",
+		Severity:  BLOCKER,
+	},
+	error1001: {
+		ErrorCode: error1001,
+		Message:   "Error reading configurations: %v",
+		Severity:  BLOCKER,
+	},
+	error1002: {
+		ErrorCode: error1002,
+		Message:   "Error parsing the configurations: %v",
+		Severity:  BLOCKER,
+	},
 	error2600: {
 		ErrorCode: error2600,
 		Message:   "unable to start manager: %v",
@@ -130,12 +165,12 @@ var Mapper = map[int]ErrorDetails{
 	},
 	error2604: {
 		ErrorCode: error2604,
-		Message:   "uproblem running manager: %v",
+		Message:   "Problem running manager: %v",
 		Severity:  BLOCKER,
 	},
 	error2605: {
 		ErrorCode: error2605,
-		Message:   "unable to list APIs for API context validation: %v",
+		Message:   "Unable to list APIs: %v",
 		Severity:  CRITICAL,
 	},
 	error2606: {
@@ -208,6 +243,11 @@ var Mapper = map[int]ErrorDetails{
 		Message:   "Error applying startup APIs: %v",
 		Severity:  BLOCKER,
 	},
+	error2620: {
+		ErrorCode: error2620,
+		Message:   "Error resolving Gateway State %s: %v",
+		Severity:  BLOCKER,
+	},
 	error2622: {
 		ErrorCode: error2622,
 		Message:   "Unexpected object type, bypassing reconciliation: %v",
@@ -217,11 +257,6 @@ var Mapper = map[int]ErrorDetails{
 		ErrorCode: error2623,
 		Message:   "Unable to find associated APIs: %s",
 		Severity:  CRITICAL,
-	},
-	error2624: {
-		ErrorCode: error2624,
-		Message:   "Unexpected object type, bypassing reconciliation: %v",
-		Severity:  TRIVIAL,
 	},
 	error2625: {
 		ErrorCode: error2625,
@@ -236,7 +271,7 @@ var Mapper = map[int]ErrorDetails{
 	error2628: {
 		ErrorCode: error2628,
 		Message:   "API Event is nil",
-		Severity:  BLOCKER,
+		Severity:  CRITICAL,
 	},
 	error2629: {
 		ErrorCode: error2629,
@@ -262,7 +297,7 @@ var Mapper = map[int]ErrorDetails{
 	error2633: {
 		ErrorCode: error2633,
 		Message:   "Error updating the API : %s:%s in vhosts: %s. %v",
-		Severity:  "MAJOR",
+		Severity:  MAJOR,
 	},
 	error2634: {
 		ErrorCode: error2634,
@@ -379,6 +414,36 @@ var Mapper = map[int]ErrorDetails{
 		Message:   "Unable to create webhook for InterceptorService: %v",
 		Severity:  BLOCKER,
 	},
+	error2655: {
+		ErrorCode: error2655,
+		Message:   "Unable to create webhook for Backend: %v",
+		Severity:  BLOCKER,
+	},
+	error2656: {
+		ErrorCode: error2656,
+		Message:   "Error watching JWTIssuer resources: %v",
+		Severity:  BLOCKER,
+	},
+	error2657: {
+		ErrorCode: error2657,
+		Message:   "Error creating JWTIssuer controller: %v",
+		Severity:  BLOCKER,
+	},
+	error2658: {
+		ErrorCode: error2658,
+		Message:   "Error adding indexes: %v",
+		Severity:  CRITICAL,
+	},
+	error2659: {
+		ErrorCode: error2659,
+		Message:   "Error resolving certificate for JWKS %v",
+		Severity:  MAJOR,
+	},
+	error2660: {
+		ErrorCode: error2660,
+		Message:   "Unable to find associated JWTIssuers: %s",
+		Severity:  CRITICAL,
+	},
 	error3001: {
 		ErrorCode: error3001,
 		Message:   "Error reading ssh key file: %s",
@@ -452,7 +517,7 @@ var Mapper = map[int]ErrorDetails{
 	error3112: {
 		ErrorCode: error3112,
 		Message:   "Error adding indexes: %v",
-		Severity:  BLOCKER,
+		Severity:  CRITICAL,
 	},
 	error3113: {
 		ErrorCode: error3113,
@@ -478,5 +543,45 @@ var Mapper = map[int]ErrorDetails{
 		ErrorCode: error3117,
 		Message:   "Retry Count Should be greater than 0: %s",
 		Severity:  MAJOR,
+	},
+	error3118: {
+		ErrorCode: error3118,
+		Message:   "Unable to find associated interceptorServices: %v",
+		Severity:  CRITICAL,
+	},
+	error3119: {
+		ErrorCode: error3119,
+		Message:   "Error creating API controller : %v",
+		Severity:  BLOCKER,
+	},
+	error3120: {
+		ErrorCode: error3120,
+		Message:   "Error adding indexes: %v",
+		Severity:  BLOCKER,
+	},
+	error3121: {
+		ErrorCode: error3121,
+		Message:   "Error watching Ratelimit resources: %v",
+		Severity:  BLOCKER,
+	},
+	error3122: {
+		ErrorCode: error3122,
+		Message:   "Error resolving Gateway State %s: %v",
+		Severity:  BLOCKER,
+	},
+	error3123: {
+		ErrorCode: error3123,
+		Message:   "Unable to find associated secret %s in %s: %v",
+		Severity:  CRITICAL,
+	},
+	error3124: {
+		ErrorCode: error3124,
+		Message:   "Error while getting custom rate limit policies: %s",
+		Severity:  MAJOR,
+	},
+	error3125: {
+		ErrorCode: error3125,
+		Message:   "Unable to find associated APIPolicies: %s",
+		Severity:  CRITICAL,
 	},
 }

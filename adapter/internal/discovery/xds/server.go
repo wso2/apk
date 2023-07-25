@@ -312,7 +312,7 @@ func cleanMapResources(apiIdentifier string, organizationID string, toBeDelEnvs 
 	}
 	vHost, err := ExtractVhostFromAPIIdentifier(apiIdentifier)
 	if err != nil {
-		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1713, apiIdentifier, err))
+		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1411, apiIdentifier, organizationID, err))
 	} else {
 		rlsPolicyCache.DeleteAPILevelRateLimitPolicies(organizationID, vHost, apiIdentifier)
 	}
@@ -390,7 +390,7 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 			if stringutils.StringInSlice(gatewayName, envoyInternalAPI.envoyLabels) {
 				vhost, err := ExtractVhostFromAPIIdentifier(apiKey)
 				if err != nil {
-					logger.LoggerXds.ErrorC(logging.GetErrorByCode(1411, err.Error(), organizationID))
+					logger.LoggerXds.ErrorC(logging.GetErrorByCode(1411, err.Error(), apiKey, organizationID, err))
 					continue
 				}
 				isDefaultVersion := false

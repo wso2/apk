@@ -73,7 +73,7 @@ func NewGatewayController(mgr manager.Manager, operatorDataStore *synchronizer.O
 	}
 	c, err := controller.New(constants.GatewayController, mgr, controller.Options{Reconciler: r})
 	if err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2610, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3119, err))
 		return err
 	}
 
@@ -82,7 +82,7 @@ func NewGatewayController(mgr manager.Manager, operatorDataStore *synchronizer.O
 	predicates := []predicate.Predicate{predicate.NewPredicateFuncs(utils.FilterByNamespaces(conf.Adapter.Operator.Namespaces))}
 
 	if err := addGatewayIndexes(ctx, mgr); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2612, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3120, err))
 		return err
 	}
 
@@ -94,7 +94,7 @@ func NewGatewayController(mgr manager.Manager, operatorDataStore *synchronizer.O
 
 	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.RateLimitPolicy{}},
 		handler.EnqueueRequestsFromMapFunc(r.handleCustomRateLimitPolicies), predicates...); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2611, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3121, err))
 		return err
 	}
 
@@ -165,7 +165,7 @@ func (gatewayReconciler *GatewayReconciler) Reconcile(ctx context.Context, req c
 
 	gatewayStateData, err := gatewayReconciler.resolveGatewayState(ctx, gatewayDef)
 	if err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2620, req.NamespacedName.String(), err))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3122, req.NamespacedName.String(), err))
 		return ctrl.Result{}, err
 	}
 
@@ -187,7 +187,7 @@ func (gatewayReconciler *GatewayReconciler) resolveListenerSecretRefs(ctx contex
 	namespace := gwapiv1b1.Namespace(string(*secretRef.Namespace))
 	if err := gatewayReconciler.client.Get(ctx, types.NamespacedName{Name: string(secretRef.Name),
 		Namespace: utils.GetNamespace(&namespace, gatewayNamespace)}, &secret); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2612, secretRef.Name, string(*secretRef.Namespace), err))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3123, secretRef.Name, string(*secretRef.Namespace), err))
 		return nil, err
 	}
 	return secret.Data, nil
@@ -218,7 +218,7 @@ func (gatewayReconciler *GatewayReconciler) resolveGatewayState(ctx context.Cont
 	}
 	customRateLimitPolicies, err := gatewayReconciler.getCustomRateLimitPoliciesForGateway(utils.NamespacedName(&gateway))
 	if err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2650, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3124, err))
 	}
 	gatewayState.GatewayCustomRateLimitPolicies = customRateLimitPolicies
 	gatewayState.GatewayBackendMapping = gatewayReconciler.getResolvedBackendsMapping(ctx, gatewayState)
@@ -293,7 +293,7 @@ func (gatewayReconciler *GatewayReconciler) getGatewaysForBackend(obj k8client.O
 	ctx := context.Background()
 	backend, ok := obj.(*dpv1alpha1.Backend)
 	if !ok {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2624, backend))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3107, backend))
 		return []reconcile.Request{}
 	}
 
@@ -303,7 +303,7 @@ func (gatewayReconciler *GatewayReconciler) getGatewaysForBackend(obj k8client.O
 	if err := gatewayReconciler.client.List(ctx, interceptorServiceList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(backendInterceptorServiceIndex, utils.NamespacedName(backend).String()),
 	}); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2649, utils.NamespacedName(backend).String()))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3118, utils.NamespacedName(backend).String()))
 		return []reconcile.Request{}
 	}
 
@@ -330,7 +330,7 @@ func (gatewayReconciler *GatewayReconciler) getAPIsForInterceptorService(obj k8c
 	if err := gatewayReconciler.client.List(ctx, apiPolicyList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(interceptorServiceAPIPolicyIndex, utils.NamespacedName(interceptorService).String()),
 	}); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2649, utils.NamespacedName(interceptorService).String()))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3125, utils.NamespacedName(interceptorService).String()))
 		return []reconcile.Request{}
 	}
 
@@ -439,7 +439,7 @@ func (gatewayReconciler *GatewayReconciler) handleGatewayStatus(gatewayKey types
 func (gatewayReconciler *GatewayReconciler) handleCustomRateLimitPolicies(obj k8client.Object) []reconcile.Request {
 	ratelimitPolicy, ok := obj.(*dpv1alpha1.RateLimitPolicy)
 	if !ok {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2622, ratelimitPolicy))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3107, ratelimitPolicy))
 		return []reconcile.Request{}
 	}
 	requests := []reconcile.Request{}
@@ -476,7 +476,7 @@ func (gatewayReconciler *GatewayReconciler) getCustomRateLimitPoliciesForGateway
 func (gatewayReconciler *GatewayReconciler) getGatewaysForAPIPolicy(obj k8client.Object) []reconcile.Request {
 	apiPolicy, ok := obj.(*dpv1alpha1.APIPolicy)
 	if !ok {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2624, apiPolicy))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3107, apiPolicy))
 		return nil
 	}
 
