@@ -6,6 +6,11 @@ components:
         - context
         - name
         - version
+        - type
+        - organization
+        - endpointConfigurations
+        - operations
+        - vhosts
       type: object
       properties:
         id:
@@ -79,8 +84,10 @@ components:
               type: array
               items:
                 type: string
+          additionalProperties: false
         corsConfiguration:
           $ref: "#/components/schemas/CORSConfiguration"
+      additionalProperties: false
     AuthenticationRequest:
       oneOf:
         - $ref: "#/components/schemas/JWTAuthentication"
@@ -101,6 +108,7 @@ components:
         enabled:
           type: boolean
           example: true
+      additionalProperties: false
     JWTAuthentication:
       allOf:
       - $ref: '#/components/schemas/Authentication'
@@ -182,6 +190,7 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/APKOperationPolicy"
+      additionalProperties: false
     APKOperationPolicy:
       title: API Operation Policy
       oneOf:
@@ -207,6 +216,7 @@ components:
           type: string
       discriminator:
         propertyName: policyName
+      additionalProperties: false
     RateLimit:
       title: API Rate Limit Details
       type: object
@@ -226,6 +236,7 @@ components:
           - Hour
           - Day
           example: Minute
+      additionalProperties: false
     EndpointConfigurations:
       title: Endpoint configs
       properties:
@@ -233,6 +244,7 @@ components:
           $ref: "#/components/schemas/EndpointConfiguration"
         sandbox:
           $ref: "#/components/schemas/EndpointConfiguration"
+      additionalProperties: false
     EndpointConfiguration:
       required:
         - endpoint
@@ -250,6 +262,7 @@ components:
           $ref: "#/components/schemas/Certificate"
         resiliency:
           $ref: "#/components/schemas/Resiliency"
+      additionalProperties: false
     Certificate:
       type: object
       properties:
@@ -257,6 +270,7 @@ components:
           type: string
         secretKey:
           type: string
+      additionalProperties: false
     EndpointSecurity:
       type: object
       properties:
@@ -266,6 +280,7 @@ components:
         securityType:
           oneOf:
             - $ref: "#/components/schemas/BasicEndpointSecurity"
+      additionalProperties: false
     BasicEndpointSecurity:
       type: object
       properties:
@@ -275,6 +290,7 @@ components:
           type: string
         passwordKey:
           type: string
+      additionalProperties: false
     Resiliency:
       type: object
       properties:
@@ -284,6 +300,7 @@ components:
           $ref: "#/components/schemas/RetryPolicy"
         circuitBreaker:
           $ref: "#/components/schemas/CircuitBreaker"
+      additionalProperties: false
     CircuitBreaker:
       type: object
       properties:
@@ -297,6 +314,7 @@ components:
           type: integer
         maxRetries:
           type: integer
+      additionalProperties: false
     Timeout:
       type: object
       properties:
@@ -306,6 +324,7 @@ components:
           type: integer
         routeTimeoutSeconds:
           type: integer
+      additionalProperties: false
     RetryPolicy:
       type: object
       properties:
@@ -317,6 +336,7 @@ components:
           type: array
           items:
             type: integer
+      additionalProperties: false
     APKOperations:
       title: Operation
       type: object
@@ -343,6 +363,7 @@ components:
           example: []
           items:
             type: string
+      additionalProperties: false
     K8sService:
       type: object
       properties:
@@ -358,6 +379,7 @@ components:
         protocol:
           type: string
           example: http
+      additionalProperties: false
     InterceptorPolicy:
       title: Interceptor Parameters
       allOf:
@@ -377,8 +399,10 @@ components:
                 type: boolean
               contextEnabled:
                 type: boolean
+            additionalProperties: false
       required:
       - backendUrl
+      additionalProperties: false
     BackendJWTPolicy:
       title: Backend JWT Parameters
       allOf:
@@ -403,8 +427,10 @@ components:
                 type: array
                 items:
                   "$ref": "#/components/schemas/CustomClaims"
+            additionalProperties: false
       required:
       - enabled
+      additionalProperties: false
     CustomClaims:
       type: object
       required:
@@ -417,3 +443,4 @@ components:
         value:
           type: string
           default: value1
+      additionalProperties: false
