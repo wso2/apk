@@ -18,6 +18,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: backend
+  namespace: apk-integration-test
 spec:
   ports:
     - name: http
@@ -30,6 +31,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: httpbin
+  namespace: apk-integration-test
 spec:
   replicas: 1
   selector:
@@ -58,6 +60,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: backend-creds
+  namespace: apk-integration-test
 data:
   username: YWRtaW4=
   password: YWRtaW4=
@@ -67,6 +70,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: backend-creds-1
+  namespace: apk-integration-test
 data:
   username: ZHNmZHNmc2Rmc2Rm
   password: YWRtaW4=
