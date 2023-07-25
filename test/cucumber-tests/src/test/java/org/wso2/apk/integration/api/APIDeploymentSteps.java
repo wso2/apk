@@ -91,11 +91,7 @@ public class APIDeploymentSteps {
         sharedContext.setResponse(response);
     }
 
-    @Then("the response body should contain {string}")
-    public void theResponseBodyShouldContain(String expectedText) throws IOException {
 
-        Assert.assertTrue(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()).contains(expectedText));
-    }
 
     @When("I undeploy the API whose ID is {string}")
     public void i_undeploy_the_api_whose_id_is(String apiID) throws Exception {

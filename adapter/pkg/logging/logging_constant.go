@@ -88,6 +88,8 @@ const (
 	error2658 = 2658
 	error2659 = 2659
 	error2660 = 2660
+	error2661 = 2661
+	error2662 = 2662
 )
 
 // Error Log Pkg auth(3001-3099) Config Constants
@@ -343,6 +345,16 @@ var Mapper = map[int]ErrorDetails{
 		ErrorCode: error2654,
 		Message:   "Error resolving certificate for Backend %v",
 		Severity:  BLOCKER,
+	},
+	error2661: {
+		ErrorCode: error2661,
+		Message:   "Error watching BackendJWT resources: %v",
+		Severity:  BLOCKER,
+	},
+	error2662: {
+		ErrorCode: error2662,
+		Message:   "Error while getting backendjwt %s, %s",
+		Severity:  CRITICAL,
 	},
 	error2621: {
 		ErrorCode: error2621,

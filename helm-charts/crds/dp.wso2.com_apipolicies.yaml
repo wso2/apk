@@ -55,41 +55,11 @@ spec:
               default:
                 description: RequestQueryModifier support request query modifications
                 properties:
-                  backendJwtToken:
+                  backendJwtPolicy:
                     description: BackendJWTToken holds backend JWT token information
                     properties:
-                      customClaims:
-                        items:
-                          description: CustomClaim holds custom claim information
-                          properties:
-                            claim:
-                              type: string
-                            type:
-                              default: string
-                              enum:
-                              - string
-                              - int
-                              - float
-                              - bool
-                              - long
-                              - date
-                              type: string
-                            value:
-                              type: string
-                          required:
-                          - type
-                          type: object
-                        type: array
-                      enabled:
-                        type: boolean
-                      encoding:
+                      name:
                         type: string
-                      header:
-                        type: string
-                      signingAlgorithm:
-                        type: string
-                      tokenTTL:
-                        type: integer
                     type: object
                   cORSPolicy:
                     description: CORSPolicy holds CORS policy information
@@ -127,44 +97,6 @@ spec:
                           type: string
                         type: array
                     type: object
-                  requestQueryModifier:
-                    description: RequestQueryModifier allows to modify request query
-                      params
-                    properties:
-                      add:
-                        items:
-                          description: HTTPQuery represents an HTTP Header name and
-                            value as defined by RFC 7230.
-                          properties:
-                            name:
-                              description: "Name is the name of the HTTP Header to
-                                be matched. Name matching MUST be case insensitive.
-                                (See https://tools.ietf.org/html/rfc7230#section-3.2).
-                                \n If multiple entries specify equivalent header names,
-                                the first entry with an equivalent name MUST be considered
-                                for a match. Subsequent entries with an equivalent
-                                header name MUST be ignored. Due to the case-insensitivity
-                                of header names, \"foo\" and \"Foo\" are considered
-                                equivalent."
-                              type: string
-                            value:
-                              description: Value is the value of HTTP Header to be
-                                matched.
-                              maxLength: 4096
-                              minLength: 1
-                              type: string
-                          required:
-                          - name
-                          - value
-                          type: object
-                        type: array
-                      remove:
-                        items:
-                          type: string
-                        type: array
-                      removeAll:
-                        type: string
-                    type: object
                   responseInterceptor:
                     description: InterceptorReference holds InterceptorService 
                       references for the InterceptorService resource.
@@ -179,41 +111,11 @@ spec:
               override:
                 description: PolicySpec contains API policies
                 properties:
-                  backendJwtToken:
+                  backendJwtPolicy:
                     description: BackendJWTToken holds backend JWT token information
                     properties:
-                      customClaims:
-                        items:
-                          description: CustomClaim holds custom claim information
-                          properties:
-                            claim:
-                              type: string
-                            type:
-                              default: string
-                              enum:
-                              - string
-                              - int
-                              - float
-                              - bool
-                              - long
-                              - date
-                              type: string
-                            value:
-                              type: string
-                          required:
-                          - type
-                          type: object
-                        type: array
-                      enabled:
-                        type: boolean
-                      encoding:
+                      name:
                         type: string
-                      header:
-                        type: string
-                      signingAlgorithm:
-                        type: string
-                      tokenTTL:
-                        type: integer
                     type: object
                   cORSPolicy:
                     description: CORSPolicy holds CORS policy information
@@ -250,44 +152,6 @@ spec:
                         items:
                           type: string
                         type: array
-                    type: object
-                  requestQueryModifier:
-                    description: RequestQueryModifier allows to modify request query
-                      params
-                    properties:
-                      add:
-                        items:
-                          description: HTTPQuery represents an HTTP Header name and
-                            value as defined by RFC 7230.
-                          properties:
-                            name:
-                              description: "Name is the name of the HTTP Header to
-                                be matched. Name matching MUST be case insensitive.
-                                (See https://tools.ietf.org/html/rfc7230#section-3.2).
-                                \n If multiple entries specify equivalent header names,
-                                the first entry with an equivalent name MUST be considered
-                                for a match. Subsequent entries with an equivalent
-                                header name MUST be ignored. Due to the case-insensitivity
-                                of header names, \"foo\" and \"Foo\" are considered
-                                equivalent."
-                              type: string
-                            value:
-                              description: Value is the value of HTTP Header to be
-                                matched.
-                              maxLength: 4096
-                              minLength: 1
-                              type: string
-                          required:
-                          - name
-                          - value
-                          type: object
-                        type: array
-                      remove:
-                        items:
-                          type: string
-                        type: array
-                      removeAll:
-                        type: string
                     type: object
                   responseInterceptor:
                     description: InterceptorReference holds InterceptorService 

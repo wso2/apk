@@ -504,11 +504,11 @@ func RetrieveNamespaceListOptions(namespaces []string) k8client.ListOptions {
 }
 
 // GetInterceptorService reads InterceptorService when interceptorReference is given
-func GetInterceptorService(ctx context.Context, client k8client.Client,
-	interceptorReference string, api *dpv1alpha1.API, apiPolicyNamespace string) *dpv1alpha1.InterceptorService {
+func GetInterceptorService(ctx context.Context, client k8client.Client, namespace string,
+	interceptorReference string, api *dpv1alpha1.API) *dpv1alpha1.InterceptorService {
 	interceptorService := &dpv1alpha1.InterceptorService{}
 	interceptorRef := types.NamespacedName{
-		Namespace: apiPolicyNamespace,
+		Namespace: namespace,
 		Name:      interceptorReference,
 	}
 	if err := ResolveRef(ctx, client, api, interceptorRef, false, interceptorService); err != nil {
@@ -517,4 +517,20 @@ func GetInterceptorService(ctx context.Context, client k8client.Client,
 		}
 	}
 	return interceptorService
+}
+
+// GetBackendJWT reads BackendJWT when backendJWTReference is given
+func GetBackendJWT(ctx context.Context, client k8client.Client, namespace,
+	backendJWTReference string, api *dpv1alpha1.API) *dpv1alpha1.BackendJWT {
+	backendJWT := &dpv1alpha1.BackendJWT{}
+	backendJWTRef := types.NamespacedName{
+		Namespace: namespace,
+		Name:      backendJWTReference,
+	}
+	if err := ResolveRef(ctx, client, api, backendJWTRef, false, backendJWT); err != nil {
+		if !apierrors.IsNotFound(err) {
+			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2652, backendJWTRef, err.Error()))
+		}
+	}
+	return backendJWT
 }

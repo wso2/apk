@@ -29,6 +29,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Utils {
 
@@ -85,5 +90,25 @@ public class Utils {
             return jsonResponse.get("access_token").getAsString();
         }
         throw new IOException("Missing key [access_token] in the response from the OAuth server");
+    }
+
+    public static String resolveVariables(String input, Map<String, Object> valueStore) {
+        // Define the pattern to match variables like ${variableName}
+        Pattern pattern = Pattern.compile("\\$\\{([^}]*)\\}");
+        Matcher matcher = pattern.matcher(input);
+        StringBuffer resolvedString = new StringBuffer();
+
+        while (matcher.find()) {
+            String variableName = matcher.group(1);
+            String variableValue = valueStore.get(variableName).toString();
+
+            // Replace the variable with its value from the value store if it exists
+            // Otherwise, keep the variable placeholder as is in the string
+            String replacement = (variableValue != null) ? variableValue : matcher.group();
+            matcher.appendReplacement(resolvedString, Matcher.quoteReplacement(replacement));
+        }
+
+        matcher.appendTail(resolvedString);
+        return resolvedString.toString();
     }
 }

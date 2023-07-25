@@ -40,6 +40,7 @@ type ResourceParams struct {
 	APIPolicies               map[string]dpv1alpha1.APIPolicy
 	ResourceAPIPolicies       map[string]dpv1alpha1.APIPolicy
 	InterceptorServiceMapping map[string]dpv1alpha1.InterceptorService
+	BackendJWTMapping         map[string]dpv1alpha1.BackendJWT
 	BackendMapping            map[string]*dpv1alpha1.ResolvedBackend
 	ResourceScopes            map[string]dpv1alpha1.Scope
 	RateLimitPolicies         map[string]dpv1alpha1.RateLimitPolicy
@@ -373,13 +374,17 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 	swagger.disableScopes = disableScopes
 
 	// Check whether the API has a backend JWT token
-	if apiPolicySelected != nil && apiPolicySelected.Spec.Override != nil && apiPolicySelected.Spec.Override.BackendJWTToken != nil {
-		swagger.backendJWTTokenInfo = parseBackendJWTTokenToInternal(apiPolicySelected.Spec.Override.BackendJWTToken)
+	if apiPolicySelected != nil && apiPolicySelected.Spec.Override != nil && apiPolicySelected.Spec.Override.BackendJWTPolicy != nil {
+		backendJWTPolicy := resourceParams.BackendJWTMapping[types.NamespacedName{
+			Name:      apiPolicy.Spec.Override.BackendJWTPolicy.Name,
+			Namespace: apiPolicy.Namespace,
+		}.String()].Spec
+		swagger.backendJWTTokenInfo = parseBackendJWTTokenToInternal(backendJWTPolicy)
 	}
 	return nil
 }
 
-func parseBackendJWTTokenToInternal(backendJWTToken *dpv1alpha1.BackendJWTToken) *BackendJWTTokenInfo {
+func parseBackendJWTTokenToInternal(backendJWTToken dpv1alpha1.BackendJWTSpec) *BackendJWTTokenInfo {
 	var customClaims []ClaimMapping
 	for _, value := range backendJWTToken.CustomClaims {
 		valType := value.Type
@@ -570,7 +575,6 @@ func getSecurity(authScheme *dpv1alpha1.Authentication) *Authentication {
 	}
 	if authScheme != nil {
 		if authScheme.Spec.Override.Disabled != nil && *authScheme.Spec.Override.Disabled {
-			loggers.LoggerOasparser.Debug("Disabled security")
 			return &Authentication{Disabled: true}
 		}
 		authFound := false

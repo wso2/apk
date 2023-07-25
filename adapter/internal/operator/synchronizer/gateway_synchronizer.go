@@ -195,8 +195,8 @@ func createInterceptors(gatewayAPIPolicies map[string]dpv1alpha1.APIPolicy,
 		resolvedPolicySpec := utils.SelectPolicy(&apiPolicy.Spec.Override, &apiPolicy.Spec.Default, nil, nil)
 		if resolvedPolicySpec != nil {
 			if resolvedPolicySpec.RequestInterceptor != nil && len(resolvedPolicySpec.RequestInterceptor.Refs) > 0 {
-				reqIEp := getInterceptorEndpoint(resolvedPolicySpec.RequestInterceptor.Refs[0], gatewayInterceptorServiceMapping,
-					gatewayBackendMapping, true, apiPolicy.Namespace)
+				reqIEp := getInterceptorEndpoint(apiPolicy.Namespace, resolvedPolicySpec.RequestInterceptor.Refs[0], gatewayInterceptorServiceMapping,
+					gatewayBackendMapping, true)
 				if reqIEp != nil {
 					requestInterceptorMap[string(gwapiv1b1.HTTPMethodPost)] = *reqIEp
 					requestInterceptorMap[string(gwapiv1b1.HTTPMethodGet)] = *reqIEp
@@ -208,8 +208,8 @@ func createInterceptors(gatewayAPIPolicies map[string]dpv1alpha1.APIPolicy,
 				}
 			}
 			if resolvedPolicySpec.ResponseInterceptor != nil && len(resolvedPolicySpec.ResponseInterceptor.Refs) > 0 {
-				resIEp := getInterceptorEndpoint(resolvedPolicySpec.ResponseInterceptor.Refs[0], gatewayInterceptorServiceMapping,
-					gatewayBackendMapping, false, apiPolicy.Namespace)
+				resIEp := getInterceptorEndpoint(apiPolicy.Namespace, resolvedPolicySpec.ResponseInterceptor.Refs[0], gatewayInterceptorServiceMapping,
+					gatewayBackendMapping, false)
 				if resIEp != nil {
 					responseInterceptorMap[string(gwapiv1b1.HTTPMethodPost)] = *resIEp
 					responseInterceptorMap[string(gwapiv1b1.HTTPMethodGet)] = *resIEp
@@ -225,10 +225,10 @@ func createInterceptors(gatewayAPIPolicies map[string]dpv1alpha1.APIPolicy,
 	return requestInterceptorMap, responseInterceptorMap
 }
 
-func getInterceptorEndpoint(interceptorRef *dpv1alpha1.InterceptorReference,
+func getInterceptorEndpoint(namespace string, interceptorRef string,
 	gatewayInterceptorServiceMapping map[string]dpv1alpha1.InterceptorService, gatewayBackendMapping map[string]*dpv1alpha1.ResolvedBackend, isReq bool) *model.InterceptEndpoint {
 	interceptor := gatewayInterceptorServiceMapping[types.NamespacedName{
-		Namespace: apiPolicyNamespace,
+		Namespace: namespace,
 		Name:      interceptorRef}.String()].Spec
 	endpoints := model.GetEndpoints(types.NamespacedName{Namespace: interceptor.BackendRef.Namespace, Name: interceptor.BackendRef.Name},
 		gatewayBackendMapping)

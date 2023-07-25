@@ -23,6 +23,8 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpHead;
@@ -43,6 +45,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContexts;
 import org.wso2.apk.integration.utils.MultipartFilePart;
+import org.wso2.apk.integration.utils.exceptions.TimeoutException;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -63,6 +66,8 @@ public class SimpleHTTPClient {
 
     protected Log log = LogFactory.getLog(getClass());
     private CloseableHttpClient client;
+    private HttpUriRequest lastRequest;
+    private static final int EVENTUAL_SUCCESS_RESPONSE_TIMEOUT_IN_SECONDS = 10;
 
     public SimpleHTTPClient() throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
 
@@ -76,6 +81,7 @@ public class SimpleHTTPClient {
                 .setSSLSocketFactory(csf)
                 .evictExpiredConnections()
                 .build();
+        this.lastRequest = null;
     }
 
     /**
@@ -113,6 +119,7 @@ public class SimpleHTTPClient {
 
         HttpUriRequest request = new HttpGet(url);
         setHeaders(headers, request);
+        this.lastRequest = request;
         return client.execute(request);
     }
 
@@ -146,11 +153,14 @@ public class SimpleHTTPClient {
                 out.close();
             }
         });
-        ent.setContentType(contentType);
+        if (contentType != null) {
+            ent.setContentType(contentType);
+        }
         if (zip) {
             ent.setContentEncoding("gzip");
         }
         entityEncReq.setEntity(ent);
+        this.lastRequest = request;
         return client.execute(request);
     }
 
@@ -175,6 +185,7 @@ public class SimpleHTTPClient {
             request.addHeader(headerKey, header.get(headerKey));
         }
         request.setEntity(httpEntity);
+        this.lastRequest = request;
         return client.execute(request);
     }
 
@@ -192,6 +203,7 @@ public class SimpleHTTPClient {
         }
         HttpEntity mutiPartHttpEntity = entitybuilder.build();
         request.setEntity(mutiPartHttpEntity);
+        this.lastRequest = request;
         return client.execute(request);
     }
 
@@ -207,6 +219,7 @@ public class SimpleHTTPClient {
         }
         HttpEntity mutiPartHttpEntity = entitybuilder.build();
         request.setEntity(mutiPartHttpEntity);
+        this.lastRequest = request;
         return client.execute(request);
     }
 
@@ -338,6 +351,7 @@ public class SimpleHTTPClient {
 
         HttpUriRequest request = new HttpDelete(url);
         setHeaders(headers, request);
+        this.lastRequest = lastRequest;
         return client.execute(request);
     }
 
@@ -376,6 +390,7 @@ public class SimpleHTTPClient {
             ent.setContentEncoding("gzip");
         }
         entityEncReq.setEntity(ent);
+        this.lastRequest = lastRequest;
         return client.execute(request);
     }
 
@@ -386,5 +401,40 @@ public class SimpleHTTPClient {
                 request.setHeader(header.getKey(), header.getValue());
             }
         }
+    }
+
+    public HttpResponse executeLastRequestForEventualConsistentResponse(int successResponseCode, List<Integer> nonAcceptableCodes) throws IOException, InterruptedException {
+        int counter = 1;
+        int responseCode = -1;
+        while(counter < EVENTUAL_SUCCESS_RESPONSE_TIMEOUT_IN_SECONDS) {
+            counter++;
+            Thread.sleep(1000);
+            HttpResponse httpResponse = getClient().execute(lastRequest);
+            responseCode = httpResponse.getStatusLine().getStatusCode();
+            if (responseCode == successResponseCode || nonAcceptableCodes.contains(responseCode)) {
+                return httpResponse;
+            } else {
+                ((CloseableHttpResponse)httpResponse).close();
+            }
+        }
+        throw new TimeoutException("Could not receive expected response within time. Last received code: " + responseCode);
+    }
+
+    private HttpClient getClient() {
+
+        final SSLContext sslcontext;
+        try {
+            sslcontext = SSLContexts.custom()
+                    .loadTrustMaterial(null, new TrustAllStrategy())
+                    .build();
+        } catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException e) {
+            throw new RuntimeException(e);
+        }
+        final SSLConnectionSocketFactory csf = new SSLConnectionSocketFactory(sslcontext);
+
+        return HttpClients.custom()
+                .setSSLSocketFactory(csf)
+                .evictExpiredConnections()
+                .build();
     }
 }

@@ -23,12 +23,19 @@ import org.wso2.apk.integration.utils.clients.SimpleHTTPClient;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 public class SharedContext {
 
     private SimpleHTTPClient httpClient;
     private String accessToken;
     private HttpResponse response;
+    private HashMap<String, Object> valueStore = new HashMap<>();
+    private HashMap<String, String> headers = new HashMap<>();
+
     public SimpleHTTPClient getHttpClient() throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         if (httpClient == null) {
             httpClient = new SimpleHTTPClient();
@@ -55,4 +62,25 @@ public class SharedContext {
 
         this.response = response;
     }
+
+    public Object getStoreValue(String key) {
+        return valueStore.get(key);
+    }
+
+    public void addStoreValue(String key, Object value) {
+        valueStore.put(key, value);
+    }
+
+    public Map<String, Object> getValueStore() {
+        return Collections.unmodifiableMap(valueStore);
+    }
+
+    public Map<String, String> getHeaders() {
+        return Collections.unmodifiableMap(headers);
+    }
+
+    public void addHeader(String key, String value) {
+        headers.put(key, value);
+    }
+
 }

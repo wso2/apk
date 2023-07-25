@@ -38,37 +38,15 @@ type APIPolicySpec struct {
 
 // PolicySpec contains API policies
 type PolicySpec struct {
-	RequestQueryModifier RequestQueryModifier  `json:"requestQueryModifier,omitempty"`
-	RequestInterceptor   *InterceptorReference `json:"requestInterceptor,omitempty"`
-	ResponseInterceptor  *InterceptorReference `json:"responseInterceptor,omitempty"`
-	BackendJWTToken      *BackendJWTToken      `json:"backendJwtToken,omitempty"`
-	CORSPolicy           *CORSPolicy           `json:"cORSPolicy,omitempty"`
+	RequestInterceptor  *InterceptorReference `json:"requestInterceptor,omitempty"`
+	ResponseInterceptor *InterceptorReference `json:"responseInterceptor,omitempty"`
+	BackendJWTPolicy    *BackendJWTToken      `json:"backendJwtPolicy,omitempty"`
+	CORSPolicy          *CORSPolicy           `json:"cORSPolicy,omitempty"`
 }
 
 // BackendJWTToken holds backend JWT token information
 type BackendJWTToken struct {
-	Enabled          bool          `json:"enabled,omitempty"`
-	Encoding         string        `json:"encoding,omitempty"`
-	Header           string        `json:"header,omitempty"`
-	SigningAlgorithm string        `json:"signingAlgorithm,omitempty"`
-	TokenTTL         int           `json:"tokenTTL,omitempty"`
-	CustomClaims     []CustomClaim `json:"customClaims,omitempty"`
-}
-
-// CustomClaim holds custom claim information
-type CustomClaim struct {
-	Claim string `json:"claim,omitempty"`
-	Value string `json:"value,omitempty"`
-	// +kubebuilder:default=string
-	// +kubebuilder:validation:Enum=string;int;float;bool;long;date
-	Type string `json:"type"`
-}
-
-// RequestQueryModifier allows to modify request query params
-type RequestQueryModifier struct {
-	Add       []HTTPQuery `json:"add,omitempty"`
-	Remove    []string    `json:"remove,omitempty"`
-	RemoveAll string      `json:"removeAll,omitempty"`
+	Name string `json:"name,omitempty"`
 }
 
 // CORSPolicy holds CORS policy information
