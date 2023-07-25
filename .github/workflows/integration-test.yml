@@ -269,6 +269,7 @@ jobs:
           cd apk-repo/test/cucumber-tests
           sh ./scripts/setup-hosts.sh
           kubectl apply -f ./CRs/artifacts.yaml
+          kubectl wait deployment/httpbin -n apk-integration-test --for=condition=available --timeout=600s
           ./gradlew runTests
     - name: Helm release undeploy
       if: always()
