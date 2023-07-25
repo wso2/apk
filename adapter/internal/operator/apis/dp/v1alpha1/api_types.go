@@ -110,6 +110,11 @@ type EnvConfig struct {
 
 // APIStatus defines the observed state of API
 type APIStatus struct {
+	DeploymentStatus DeploymentStatus `json:"deploymentStatus"`
+}
+
+// DeploymentStatus contains the status of the API deployment
+type DeploymentStatus struct {
 
 	// Status denotes the state of the API in its lifecycle.
 	// Possible values could be Accepted, Invalid, Deploy etc.

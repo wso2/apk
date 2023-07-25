@@ -136,30 +136,38 @@ spec:
           status:
             description: APIStatus defines the observed state of API
             properties:
-              accepted:
-                description: Accepted represents whether the API is accepted or not.
-                type: boolean
-              events:
-                description: Events contains a list of events related to the API.
-                items:
-                  type: string
-                type: array
-              message:
-                description: Message represents a user friendly message that explains
-                  the current state of the API.
-                type: string
-              status:
-                description: Status denotes the state of the API in its lifecycle.
-                  Possible values could be Accepted, Invalid, Deploy etc.
-                type: string
-              transitionTime:
-                description: TransitionTime represents the last known transition timestamp.
-                format: date-time
-                type: string
+              deploymentStatus:
+                description: DeploymentStatus contains the status of the API deployment
+                properties:
+                  accepted:
+                    description: Accepted represents whether the API is accepted or
+                      not.
+                    type: boolean
+                  events:
+                    description: Events contains a list of events related to the API.
+                    items:
+                      type: string
+                    type: array
+                  message:
+                    description: Message represents a user friendly message that explains
+                      the current state of the API.
+                    type: string
+                  status:
+                    description: Status denotes the state of the API in its lifecycle.
+                      Possible values could be Accepted, Invalid, Deploy etc.
+                    type: string
+                  transitionTime:
+                    description: TransitionTime represents the last known transition
+                      timestamp.
+                    format: date-time
+                    type: string
+                required:
+                - accepted
+                - status
+                - transitionTime
+                type: object
             required:
-            - accepted
-            - status
-            - transitionTime
+            - deploymentStatus
             type: object
         type: object
     served: true
