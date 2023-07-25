@@ -601,7 +601,7 @@ public class APIClient {
 
     private isolated function generateFilters(model:APIArtifact apiArtifact, APKConf apkConf, model:Endpoint endpoint, APKOperations operation, string endpointType, string organization) returns model:HTTPRouteFilter[] {
         model:HTTPRouteFilter[] routeFilters = [];
-        model:HTTPRouteFilter replacePathFilter = {'type: "URLRewrite", urlRewrite: {path: {'type: "ReplaceFullPath", replaceFullPath: self.generatePrefixMatch(apkConf, endpoint, operation, endpointType)}}};
+        model:HTTPRouteFilter replacePathFilter = {'type: "URLRewrite", urlRewrite: {path: {'type: "ReplaceFullPath", replaceFullPath: self.generatePrefixMatch(endpoint, operation)}}};
         routeFilters.push(replacePathFilter);
         APIOperationPolicies? operationPoliciesToUse = ();
         if (apkConf.apiPolicies is APIOperationPolicies) {
@@ -648,7 +648,7 @@ public class APIClient {
         return headerModifier;
     }
 
-    isolated function generatePrefixMatch(APKConf apkConf, model:Endpoint endpoint, APKOperations operation, string endpointType) returns string {
+    isolated function generatePrefixMatch(model:Endpoint endpoint, APKOperations operation) returns string {
         string target = operation.target ?: "/*";
         string[] splitValues = regex:split(target, "/");
         string generatedPath = "";
@@ -676,13 +676,7 @@ public class APIClient {
         if endpoint.serviceEntry {
             return generatedPath.trim();
         }
-        string path = getPath(<string>endpoint.url);
-        if path.endsWith("/") {
-            if generatedPath.startsWith("/") {
-                return path.substring(0, path.length() - 1) + generatedPath;
-            }
-        }
-        return path + generatedPath;
+        return generatedPath;
     }
 
     public isolated function retrievePathPrefix(string context, string 'version, string operation, string organization) returns string {
