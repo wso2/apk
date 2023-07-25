@@ -126,7 +126,11 @@ func CreateRoutesWithClusters(adapterInternalAPI model.AdapterInternalAPI, inter
 	} else {
 		methods = append(methods, "GET")
 	}
-	routeP := CreateAPIDefinitionRoute(adapterInternalAPI.GetXWso2Basepath(), vHost, methods)
+	routeP := CreateAPIDefinitionRoute(adapterInternalAPI.GetXWso2Basepath(), vHost, methods, false, adapterInternalAPI.GetVersion())
+	if (&adapterInternalAPI).IsDefaultVersion {
+		defaultDefRoutes := CreateAPIDefinitionRoute(adapterInternalAPI.GetXWso2Basepath(), vHost, methods, true, adapterInternalAPI.GetVersion())
+		routes = append(routes, defaultDefRoutes)
+	}
 	routes = append(routes, routeP)
 	var endpointForAPIDefinitions []model.Endpoint
 	endpoint := &model.Endpoint{
@@ -1208,7 +1212,7 @@ func CreateJWKSRoute() *routev3.Route {
 }
 
 // CreateAPIDefinitionRoute generates a route for the jwt /testkey endpoint
-func CreateAPIDefinitionRoute(basePath string, vHost string, methods []string) *routev3.Route {
+func CreateAPIDefinitionRoute(basePath string, vHost string, methods []string, isDefaultversion bool, version string) *routev3.Route {
 	rewritePath := basePath + "/" + vHost + "?" + apiDefinitionQueryParam
 	basePath = strings.TrimSuffix(basePath, "/")
 
@@ -1221,9 +1225,14 @@ func CreateAPIDefinitionRoute(basePath string, vHost string, methods []string) *
 
 	methodRegex := strings.Join(methods, "|")
 
+	matchPath := basePath
+	if (isDefaultversion) {
+		matchPath = removeLastOccurrence(basePath, "/"+version)
+	}
+	
 	match = &routev3.RouteMatch{
 		PathSpecifier: &routev3.RouteMatch_Path{
-			Path: basePath,
+			Path: matchPath,
 		},
 		QueryParameters: generateQueryParamMatcher("definitionType", "OAS"),
 		Headers:         generateHTTPMethodMatcher(methodRegex, apiDefinitionClusterName),
@@ -1751,6 +1760,14 @@ func createInterceptorResourceClusters(adapterInternalAPI model.AdapterInternalA
 
 func removeFirstOccurrence(str, substr string) string {
 	index := strings.Index(str, substr)
+	if index == -1 {
+		return str
+	}
+	return str[:index] + str[index+len(substr):]
+}
+
+func removeLastOccurrence(str, substr string) string {
+	index := strings.LastIndex(str, substr)
 	if index == -1 {
 		return str
 	}
