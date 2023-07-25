@@ -50,6 +50,7 @@ Feature: Test JWT related functionalities
     And I eventually receive 200 response code, not accepting
       |429|
       |401|
+    And the response body should contain "\"X-Jwt-Assertion\""
 
 
   Scenario Outline: Undeploy API

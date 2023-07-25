@@ -66,8 +66,8 @@ public class BaseSteps {
 
     @Then("the response body should contain {string}")
     public void theResponseBodyShouldContain(String expectedText) throws IOException {
-
-        Assert.assertTrue(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()).contains(expectedText));
+        String body = SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse());
+        Assert.assertTrue(body.contains(expectedText), "Actual response body: " + body);
     }
 
     @Then("the response status code should be {int}")
