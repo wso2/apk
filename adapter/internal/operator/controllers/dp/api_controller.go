@@ -1445,7 +1445,7 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 						Name:      string(apiPolicy.Spec.Default.BackendJWTPolicy.Name),
 					}.String())
 			}
-			if apiPolicy.Spec.Override != nil && len(apiPolicy.Spec.Override.RequestInterceptors) > 0 {
+			if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.BackendJWTPolicy != nil {
 				backendJWTs = append(backendJWTs,
 					types.NamespacedName{
 						Namespace: apiPolicy.Namespace,
