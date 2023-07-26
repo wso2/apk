@@ -35,7 +35,7 @@ public class DeployerClient {
             }
         }
     }
-    public isolated function handleAPIUndeployment(string apiId) returns AcceptedString|BadRequestError|InternalServerErrorError|commons:APKError|error {
+    public isolated function handleAPIUndeployment(string apiId) returns AcceptedString|BadRequestError|InternalServerErrorError|commons:APKError {
         model:Partition|() availablePartitionForAPI = check partitionResolver.getAvailablePartitionForAPI(apiId, "");
         if availablePartitionForAPI is model:Partition {
             model:API|() api = check getK8sAPIByNameAndNamespace(apiId, availablePartitionForAPI.namespace);
