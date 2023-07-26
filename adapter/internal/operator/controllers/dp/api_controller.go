@@ -350,6 +350,7 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 			return nil, fmt.Errorf("error while resolving production httpRouteref %s in namespace :%s has not found. %s",
 				prodHTTPRouteRefs, namespace, err.Error())
 		}
+		// TODO(amali) check what happens if parents are not available
 		if !apiReconciler.ods.IsGatewayAvailable(types.NamespacedName{
 			Name: string(apiState.ProdHTTPRoute.HTTPRouteCombined.Spec.ParentRefs[0].Name),
 			Namespace: utils.GetNamespace(apiState.ProdHTTPRoute.HTTPRouteCombined.Spec.ParentRefs[0].Namespace,
