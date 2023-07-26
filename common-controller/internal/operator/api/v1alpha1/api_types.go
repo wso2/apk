@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2023, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
+ *  Copyright (c) 2022, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -32,20 +32,21 @@ type APISpec struct {
 	// the namespace defined. "Namespace/APIDisplayName" can
 	// be used to uniquely identify an API.
 	//
-	//
+	// +kubebuilder:validation:MinLength=1
 	APIDisplayName string `json:"apiDisplayName"`
 
 	// APIVersion is the version number of the API.
 	//
-	//
+	// +kubebuilder:validation:MinLength=1
 	APIVersion string `json:"apiVersion"`
 
 	// IsDefaultVersion indicates whether this API version should be used as a default API
+	//
+	// +optional
 	IsDefaultVersion bool `json:"isDefaultVersion"`
 
 	// DefinitionFileRef contains the OpenAPI 3 or Swagger
 	// definition of the API in a ConfigMap.
-	//
 	//
 	// +optional
 	DefinitionFileRef string `json:"definitionFileRef"`
@@ -71,16 +72,13 @@ type APISpec struct {
 	// APIType denotes the type of the API.
 	// Possible values could be REST, GraphQL, Async
 	//
+	// +kubebuilder:validation:Enum=REST
 	APIType string `json:"apiType"`
 
 	// Context denotes the context of the API.
 	// e.g: /pet-store-api/1.0.6
 	//
 	Context string `json:"context"`
-
-	// APIProvider denotes the provider of the API.
-	// +optional
-	APIProvider string `json:"apiProvider"`
 
 	// Organization denotes the organization.
 	// related to the API
@@ -93,6 +91,10 @@ type APISpec struct {
 	// +optional
 	SystemAPI bool `json:"systemAPI"`
 
+	// APIProperties denotes the custom properties of the API.
+	//
+	// +optional
+	// +nullable
 	APIProperties []Property `json:"apiProperties,omitempty"`
 }
 
@@ -110,6 +112,14 @@ type EnvConfig struct {
 
 // APIStatus defines the observed state of API
 type APIStatus struct {
+	// DeploymentStatus denotes the deployment status of the API
+	//
+	// +optional
+	DeploymentStatus DeploymentStatus `json:"deploymentStatus"`
+}
+
+// DeploymentStatus contains the status of the API deployment
+type DeploymentStatus struct {
 
 	// Status denotes the state of the API in its lifecycle.
 	// Possible values could be Accepted, Invalid, Deploy etc.
