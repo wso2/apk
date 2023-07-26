@@ -22,7 +22,6 @@ public isolated function testCORSPolicyGenerationFromAPKConf() returns error? {
     model:APIArtifact apiArtifact = check apiClient.prepareArtifact(body.apkConfiguration, body.definitionFile);
 
     model:CORSPolicy? corsPolicySpecExpected = {
-        enabled: true,
         accessControlAllowCredentials: true,
         accessControlAllowOrigins: ["wso2.com"],
         accessControlAllowHeaders: ["Content-Type", "Authorization"],

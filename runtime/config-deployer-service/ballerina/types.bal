@@ -171,7 +171,6 @@ public type APKConf_vhosts record {
 
 # CORS Configuration of API
 #
-# + corsConfigurationEnabled - Field Description  
 # + accessControlAllowOrigins - Field Description  
 # + accessControlAllowCredentials - Field Description  
 # + accessControlAllowHeaders - Field Description  
@@ -179,7 +178,6 @@ public type APKConf_vhosts record {
 # + accessControlExposeHeaders - Field Description
 # + accessControlAllowMaxAge - Field Description
 public type CORSConfiguration record {
-    boolean corsConfigurationEnabled?;
     string[] accessControlAllowOrigins?;
     boolean accessControlAllowCredentials?;
     string[] accessControlAllowHeaders?;

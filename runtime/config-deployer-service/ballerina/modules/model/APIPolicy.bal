@@ -29,8 +29,8 @@ public type APIPolicySpec record {|
 |};
 
 public type APIPolicyData record {
-    InterceptorReference[] requestInterceptors?;
-    InterceptorReference[] responseInterceptors?;
+    InterceptorReference requestInterceptor?;
+    InterceptorReference responseInterceptor?;
     CORSPolicy cORSPolicy?;
     BackendJwtReference backendJwtPolicy?;
 };
@@ -54,7 +54,6 @@ public type APIPolicyList record {
 };
 
 public type CORSPolicy record {
-    boolean enabled = false;
     boolean accessControlAllowCredentials = false;
     string[] accessControlAllowOrigins = [];
     string[] accessControlAllowHeaders = [];
