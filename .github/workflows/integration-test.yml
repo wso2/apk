@@ -293,6 +293,6 @@ jobs:
           az logout
     - name: Publish Test Report
       if: always()
-      uses: malinthaprasan/action-surefire-report@v1
+      uses: starburstdata/action-testng-report@v1
       with:
        report_paths: 'apk-repo/test/cucumber-tests/build/test-output/*.xml'
