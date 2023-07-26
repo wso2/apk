@@ -20,7 +20,7 @@ isolated service /api/deployer on ep0 {
     # AcceptedString (API undeployed successfully)
     # BadRequestError (Bad Request. Invalid request or validation error.)
     # InternalServerErrorError (Internal Server Error.)
-    isolated resource function post apis/undeploy(string apiId) returns AcceptedString|BadRequestError|InternalServerErrorError|commons:APKError|error {
+    isolated resource function post apis/undeploy(string apiId) returns AcceptedString|BadRequestError|InternalServerErrorError|commons:APKError {
         DeployerClient deployerClient = new;
         return check deployerClient.handleAPIUndeployment(apiId);
     }

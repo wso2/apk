@@ -40,7 +40,6 @@ public class DeployerClient {
         if availablePartitionForAPI is model:Partition {
             model:API|() api = check getK8sAPIByNameAndNamespace(apiId, availablePartitionForAPI.namespace);
             if api is model:API {
-                string organization = api.spec.organization;
                 http:Response|http:ClientError apiCRDeletionResponse = deleteAPICR(api.metadata.name, availablePartitionForAPI.namespace);
                 if apiCRDeletionResponse is http:ClientError {
                     log:printError("Error while undeploying API CR ", apiCRDeletionResponse);
@@ -51,34 +50,6 @@ public class DeployerClient {
                     if apiDefinitionDeletionResponse is http:ClientError {
                         log:printError("Error while undeploying API definition ", apiDefinitionDeletionResponse);
                     }
-                }
-                commons:APKError? deleteHttpRouteError = self.deleteHttpRoutes(api, organization);
-                if deleteHttpRouteError is commons:APKError {
-                    log:printDebug("Error while deleting http route, ", deleteHttpRouteError);
-                }
-                commons:APKError? deleteAuthError = self.deleteAuthneticationCRs(api, organization);
-                if deleteAuthError is commons:APKError {
-                    log:printDebug("Error while deleting authentication CRs: ", deleteAuthError);
-                }
-                commons:APKError? deleteScopeError = self.deleteScopeCrsForAPI(api, organization);
-                if deleteScopeError is commons:APKError {
-                    log:printDebug("Error while deleting scope CRs for API: ", deleteScopeError);
-                }
-                commons:APKError? deleteRateLimitError = self.deleteRateLimitPolicyCRs(api, organization);
-                if deleteRateLimitError is commons:APKError {
-                    log:printDebug("Error while deleting rate limit policy CRs: ", deleteRateLimitError);
-                }
-                commons:APKError? deleteBackendsError = self.deleteBackends(api, organization);
-                if deleteBackendsError is commons:APKError {
-                    log:printDebug("Error while deleting backends: ", deleteBackendsError);
-                }
-                commons:APKError? deletePolicyError = self.deleteAPIPolicyCRs(api, organization);
-                if deletePolicyError is commons:APKError {
-                    log:printDebug("Error while deleting API policy CRs: ", deletePolicyError);
-                }
-                commons:APKError? deleteInterceptorError = self.deleteInterceptorServiceCRs(api, organization);
-                if deleteInterceptorError is commons:APKError {
-                    log:printDebug("Error while deleting interceptor service CRs: ", deleteInterceptorError);
                 }
                 string response = string `API with id ${apiId} undeployed successfully`;
                 json jsonResponse = {status: response};
