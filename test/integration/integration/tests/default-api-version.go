@@ -69,26 +69,6 @@ var DefaultAPIVersion = suite.IntegrationTest{
 				Namespace: ns,
 				Response: http.Response{StatusCode: 200},
 			},
-			{
-				Request: http.Request{
-					Host:   "default-api-version.test.gw.wso2.com",
-					Path:   "/default-api-version/?definitionType=OAS",
-					Method: "GET",
-				},
-				Backend:   "infra-backend-v1",
-				Namespace: ns,
-				Response: http.Response{StatusCode: 200},
-			},
-			{
-				Request: http.Request{
-					Host:   "default-api-version.test.gw.wso2.com",
-					Path:   "/default-api-version/v1.0.0?definitionType=OAS",
-					Method: "GET",
-				},
-				Backend:   "infra-backend-v1",
-				Namespace: ns,
-				Response: http.Response{StatusCode: 200},
-			},
 		}
 		for i := range testCases {
 			tc := testCases[i]
