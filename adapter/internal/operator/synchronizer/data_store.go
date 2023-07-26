@@ -333,7 +333,7 @@ func updateHTTPRoute(httpRoute *HTTPRouteState, cachedHTTPRoute *HTTPRouteState,
 
 func isEqualHTTPRoutes(cachedHTTPRoutes, newHTTPRoutes map[string]*gwapiv1b1.HTTPRoute) bool {
 	for key, cachedHTTPRoute := range cachedHTTPRoutes {
-		if newHTTPRoutes[key].UID == cachedHTTPRoute.UID &&
+		if newHTTPRoutes[key] != nil && newHTTPRoutes[key].UID == cachedHTTPRoute.UID &&
 			newHTTPRoutes[key].Generation > cachedHTTPRoute.Generation {
 			return false
 		}
