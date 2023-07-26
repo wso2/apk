@@ -1,4 +1,4 @@
-name: start and run postman collection and go integration tests
+name: start and run cucumber and go integration tests
 on:
   workflow_dispatch:
   pull_request_target:
@@ -291,3 +291,8 @@ jobs:
         azcliversion: 2.44.1
         inlineScript: |
           az logout
+    - name: Publish Test Report
+      if: always()
+      uses: malinthaprasan/action-surefire-report@v1
+      with:
+       report_paths: 'apk-repo/test/cucumber-tests/build/test-output/*.xml'
