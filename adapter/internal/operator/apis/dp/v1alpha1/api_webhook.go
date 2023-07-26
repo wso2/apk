@@ -117,12 +117,6 @@ func (r *API) validateAPI() error {
 		allErrs = append(allErrs, field.Required(field.NewPath("spec").Child("organization"), "Organization can not be empty"))
 	}
 
-	if errMsg := validateAPITypeFormat(r.Spec.APIType); errMsg != "" {
-		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("apiType"), r.Spec.APIType, errMsg))
-	} else {
-		r.Spec.APIType = "REST"
-	}
-
 	if !(len(r.Spec.Production) > 0 && r.Spec.Production[0].HTTPRouteRefs != nil && len(r.Spec.Production[0].HTTPRouteRefs) > 0) && !(len(r.Spec.Sandbox) > 0 && r.Spec.Sandbox[0].HTTPRouteRefs != nil && len(r.Spec.Sandbox[0].HTTPRouteRefs) > 0) {
 		allErrs = append(allErrs, field.Required(field.NewPath("spec"),
 			"both API production and sandbox endpoint references cannot be empty"))
@@ -263,13 +257,6 @@ func validateAPIVersionFormat(version string) string {
 	}
 	if match, _ := regexp.MatchString("^[^~!@#;:%^*()+={}|\\<>\"'',&/$\\[\\]\\s+\\/]+$", version); !match {
 		return "invalid API version. Includes invalid characters."
-	}
-	return ""
-}
-
-func validateAPITypeFormat(apiType string) string {
-	if apiType != "" && strings.ToUpper(apiType) != "REST" {
-		return "invalid API type. Only REST is supported"
 	}
 	return ""
 }

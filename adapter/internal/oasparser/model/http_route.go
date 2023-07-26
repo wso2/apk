@@ -415,7 +415,7 @@ func getCorsConfigFromAPIPolicy(apiPolicy *dpv1alpha1.APIPolicy) *CorsConfig {
 	if apiPolicy != nil && apiPolicy.Spec.Override != nil {
 		if apiPolicy.Spec.Override.CORSPolicy != nil {
 			corsConfig = &CorsConfig{
-				Enabled:                       apiPolicy.Spec.Override.CORSPolicy.Enabled,
+				Enabled:                       true,
 				AccessControlAllowCredentials: apiPolicy.Spec.Override.CORSPolicy.AccessControlAllowCredentials,
 				AccessControlAllowHeaders:     apiPolicy.Spec.Override.CORSPolicy.AccessControlAllowHeaders,
 				AccessControlAllowMethods:     apiPolicy.Spec.Override.CORSPolicy.AccessControlAllowMethods,

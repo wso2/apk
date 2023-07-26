@@ -1,5 +1,5 @@
 # --------------------------------------------------------------------
-# Copyright (c) 2022, WSO2 LLC. (http://wso2.com) All Rights Reserved.
+# Copyright (c) 2023, WSO2 LLC. (http://wso2.com) All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -70,8 +70,10 @@ spec:
                 description: APIDisplayName is the unique name of the API in the namespace
                   defined. "Namespace/APIDisplayName" can be used to uniquely identify
                   an API.
+                minLength: 1
                 type: string
               apiProperties:
+                description: APIProperties denotes the custom properties of the API.
                 items:
                   description: Property holds key value pair of APIProperties
                   properties:
@@ -80,20 +82,18 @@ spec:
                     value:
                       type: string
                   type: object
+                nullable: true
                 type: array
-              apiProvider:
-                description: APIProvider denotes the provider of the API.
-                type: string
               apiType:
                 description: APIType denotes the type of the API. Possible values
                   could be REST, GraphQL, Async
+                enum:
+                - REST
                 type: string
               apiVersion:
                 description: APIVersion is the version number of the API.
+                minLength: 1
                 type: string
-              isDefaultVersion: 
-                description: IsDefaultVersion indicates whether this API version should be used as a default API
-                type: boolean
               context:
                 description: 'Context denotes the context of the API. e.g: /pet-store-api/1.0.6'
                 type: string
@@ -101,11 +101,14 @@ spec:
                 description: DefinitionFileRef contains the OpenAPI 3 or Swagger definition
                   of the API in a ConfigMap.
                 type: string
+              isDefaultVersion:
+                description: IsDefaultVersion indicates whether this API version should
+                  be used as a default API
+                type: boolean
               organization:
                 description: Organization denotes the organization. related to the
                   API
                 type: string
-                default: super-user
               production:
                 description: 'Production contains a list of references to HttpRoutes
                   of type HttpRoute. xref: https://github.com/kubernetes-sigs/gateway-api/blob/main/apis/v1beta1/httproute_types.go'
@@ -150,30 +153,37 @@ spec:
           status:
             description: APIStatus defines the observed state of API
             properties:
-              accepted:
-                description: Accepted represents whether the API is accepted or not.
-                type: boolean
-              events:
-                description: Events contains a list of events related to the API.
-                items:
-                  type: string
-                type: array
-              message:
-                description: Message represents a user friendly message that explains
-                  the current state of the API.
-                type: string
-              status:
-                description: Status denotes the state of the API in its lifecycle.
-                  Possible values could be Accepted, Invalid, Deploy etc.
-                type: string
-              transitionTime:
-                description: TransitionTime represents the last known transition timestamp.
-                format: date-time
-                type: string
-            required:
-            - accepted
-            - status
-            - transitionTime
+              deploymentStatus:
+                description: DeploymentStatus denotes the deployment status of the
+                  API
+                properties:
+                  accepted:
+                    description: Accepted represents whether the API is accepted or
+                      not.
+                    type: boolean
+                  events:
+                    description: Events contains a list of events related to the API.
+                    items:
+                      type: string
+                    type: array
+                  message:
+                    description: Message represents a user friendly message that explains
+                      the current state of the API.
+                    type: string
+                  status:
+                    description: Status denotes the state of the API in its lifecycle.
+                      Possible values could be Accepted, Invalid, Deploy etc.
+                    type: string
+                  transitionTime:
+                    description: TransitionTime represents the last known transition
+                      timestamp.
+                    format: date-time
+                    type: string
+                required:
+                - accepted
+                - status
+                - transitionTime
+                type: object
             type: object
         type: object
     served: true

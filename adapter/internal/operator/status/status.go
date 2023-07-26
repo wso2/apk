@@ -105,5 +105,5 @@ func isStatusEqual(objA, objB interface{}) bool {
 
 // compareAPIs compares status in API CRs.
 func compareAPIs(api1 *dpv1alpha1.API, api2 *dpv1alpha1.API) bool {
-	return api1.Status.Message == api2.Status.Message
+	return api1.Status.DeploymentStatus.Message == api2.Status.DeploymentStatus.Message
 }
