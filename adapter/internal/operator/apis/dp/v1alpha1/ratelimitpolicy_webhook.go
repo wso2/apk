@@ -18,12 +18,14 @@
 package v1alpha1
 
 import (
+	"github.com/wso2/apk/adapter/internal/operator/constants"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
+	"sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
 // SetupWebhookWithManager creates a new webhook builder for RateLimitPolicy
@@ -98,7 +100,19 @@ func (r *RateLimitPolicy) ValidatePolicies() error {
 			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("override").Child("custom"),
 				r.Spec.Override.Custom, "requestsPerUnit, unit and organization are required for Custom type"))
 		}
+	}
 
+	if r.Spec.TargetRef.Name == "" {
+		allErrs = append(allErrs, field.Required(field.NewPath("spec").Child("targetRef").Child("name"), "Name is required"))
+	}
+	if !(r.Spec.TargetRef.Kind == constants.KindAPI || r.Spec.TargetRef.Kind == constants.KindResource ||
+		r.Spec.TargetRef.Kind == constants.KindGateway) {
+		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("targetRef").Child("kind"), r.Spec.TargetRef.Kind,
+			"Invalid Kind is provided"))
+	}
+	if r.Spec.TargetRef.Namespace != (*v1beta1.Namespace)(&r.Namespace) {
+		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("targetRef").Child("namespace"), r.Spec.TargetRef.Namespace,
+			"namespace cross reference is not allowed"))
 	}
 
 	if len(allErrs) > 0 {

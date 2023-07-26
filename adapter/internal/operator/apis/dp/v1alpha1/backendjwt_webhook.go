@@ -95,7 +95,7 @@ func (r *BackendJWT) validateJWTClaims() error {
 
 	if len(allErrs) > 0 {
 		return apierrors.NewInvalid(
-			schema.GroupKind{Group: "dp.wso2.com", Kind: "APIPolicy"},
+			schema.GroupKind{Group: "dp.wso2.com", Kind: "BackendJWT"},
 			r.Name, allErrs)
 	}
 	return nil

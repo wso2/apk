@@ -331,7 +331,7 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 			namespace, err.Error())
 	}
 	if apiState.InterceptorServiceMapping, apiState.BackendJWTMapping, err =
-		apiReconciler.getInterceptorServices(ctx, apiState.APIPolicies, apiState.ResourceAPIPolicies,
+		apiReconciler.getAPIPolicyChildrenRefs(ctx, apiState.APIPolicies, apiState.ResourceAPIPolicies,
 			api); err != nil {
 		return nil, fmt.Errorf("error while getting interceptor services %s in namespace :%s, %s",
 			apiRef.String(), namespace, err.Error())
@@ -701,8 +701,10 @@ func (apiReconciler *APIReconciler) getAPIPoliciesForResources(ctx context.Conte
 	return apiPolicies, nil
 }
 
-// getInterceptorServices gets all the interceptor services for the resolving API
-func (apiReconciler *APIReconciler) getInterceptorServices(ctx context.Context,
+// getAPIPolicyChildrenRefs gets all the referenced policies in apipolicy for the resolving API
+// - interceptor services
+// - backend JWTs
+func (apiReconciler *APIReconciler) getAPIPolicyChildrenRefs(ctx context.Context,
 	apiPolicies, resourceAPIPolicies map[string]dpv1alpha1.APIPolicy,
 	api dpv1alpha1.API) (map[string]dpv1alpha1.InterceptorService, map[string]dpv1alpha1.BackendJWT, error) {
 	allAPIPolicies := append(maps.Values(apiPolicies), maps.Values(resourceAPIPolicies)...)
@@ -939,20 +941,13 @@ func (apiReconciler *APIReconciler) getAPIsForAuthentication(obj k8client.Object
 // a new reconcile event will be created and added to the reconcile event queue.
 func (apiReconciler *APIReconciler) getAPIsForAPIPolicy(obj k8client.Object) []reconcile.Request {
 	apiPolicy, ok := obj.(*dpv1alpha1.APIPolicy)
+	requests := []reconcile.Request{}
 	if !ok {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2622, apiPolicy))
-		return []reconcile.Request{}
-	}
-	requests := []reconcile.Request{}
-
-	if apiPolicy.Spec.TargetRef.Kind == constants.KindGateway {
-		return []reconcile.Request{}
+		return requests
 	}
 
-	// todo(amali) move this validation to validation hook
 	if !(apiPolicy.Spec.TargetRef.Kind == constants.KindAPI || apiPolicy.Spec.TargetRef.Kind == constants.KindResource) {
-		loggers.LoggerAPKOperator.Errorf("Unsupported target ref kind : %s was given for authentication: %s",
-			apiPolicy.Spec.TargetRef.Kind, apiPolicy.Name)
 		return requests
 	}
 
@@ -1030,20 +1025,13 @@ func (apiReconciler *APIReconciler) getAPIsForBackendJWT(obj k8client.Object) []
 // a new reconcile event will be created and added to the reconcile event queue.
 func (apiReconciler *APIReconciler) getAPIsForRateLimitPolicy(obj k8client.Object) []reconcile.Request {
 	ratelimitPolicy, ok := obj.(*dpv1alpha1.RateLimitPolicy)
+	requests := []reconcile.Request{}
 	if !ok {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2622, ratelimitPolicy))
-		return []reconcile.Request{}
-	}
-	requests := []reconcile.Request{}
-
-	// todo(amali) move this validation to validation hook
-	if ratelimitPolicy.Spec.TargetRef.Kind == constants.KindGateway {
-		return []reconcile.Request{}
+		return requests
 	}
 
 	if !(ratelimitPolicy.Spec.TargetRef.Kind == constants.KindAPI || ratelimitPolicy.Spec.TargetRef.Kind == constants.KindResource) {
-		loggers.LoggerAPKOperator.Errorf("Unsupported target ref kind : %s was given for ratelimit: %s",
-			ratelimitPolicy.Spec.TargetRef.Kind, ratelimitPolicy.Name)
 		return requests
 	}
 
