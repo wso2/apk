@@ -30,7 +30,6 @@ public type APISpec record {|
     string apiVersion;
     string context;
     string organization;
-    string apiProvider?;
     boolean isDefaultVersion?;
     string definitionFileRef?;
     EnvConfig[]|() production = ();

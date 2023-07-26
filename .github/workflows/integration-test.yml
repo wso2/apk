@@ -295,4 +295,5 @@ jobs:
       if: always()
       uses: malinthaprasan/action-surefire-report@v1
       with:
-       report_paths: 'apk-repo/test/cucumber-tests/build/test-output/*.xml'
+       report_paths: 'apk-repo/test/cucumber-tests/build/test-output/junitreports/*.xml'
+       fail_on_test_failures: true

@@ -514,14 +514,14 @@ public class APIClient {
         APKOperationPolicy[]? request = policies?.request;
         model:InterceptorReference?|model:BackendJwtReference? requestPolicy = check self.retrieveAPIPolicyDetails(apiArtifact, apkConf, operations, organization, request, "request");
         if requestPolicy is model:InterceptorReference {
-            defaultSpecData.requestInterceptors = [requestPolicy];
+            defaultSpecData.requestInterceptor = requestPolicy;
         } else if requestPolicy is model:BackendJwtReference {
             defaultSpecData.backendJwtPolicy = requestPolicy;
         }
         APKOperationPolicy[]? response = policies?.response;
         model:InterceptorReference?|model:BackendJwtReference? responseInterceptor = check self.retrieveAPIPolicyDetails(apiArtifact, apkConf, operations, organization, response, "response");
         if responseInterceptor is model:InterceptorReference {
-            defaultSpecData.responseInterceptors = [responseInterceptor];
+            defaultSpecData.responseInterceptor = responseInterceptor;
         }
         CORSConfiguration? corsConfiguration = apkConf.corsConfiguration;
         if corsConfiguration is CORSConfiguration {
@@ -1041,9 +1041,6 @@ public class APIClient {
     }
     private isolated function retrieveCORSPolicyDetails(model:APIArtifact apiArtifact, APKConf apkConf, CORSConfiguration corsConfiguration, string organization) returns model:CORSPolicy? {
         model:CORSPolicy corsPolicy = {};
-        if corsConfiguration.corsConfigurationEnabled is boolean {
-            corsPolicy.enabled = <boolean>corsConfiguration.corsConfigurationEnabled;
-        }
         if corsConfiguration.accessControlAllowCredentials is boolean {
             corsPolicy.accessControlAllowCredentials = <boolean>corsConfiguration.accessControlAllowCredentials;
         }
