@@ -23,12 +23,9 @@ spec:
   override:
     requestInterceptors:
     - name: req-interceptor-service
-      namespace: interceptor
     responseInterceptors:
     - name: res-interceptor-service
-      namespace: interceptor
   targetRef:
     group: dp.wso2.com
     kind: API
     name: interceptor-api
-    namespace: interceptor
