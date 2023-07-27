@@ -70,6 +70,15 @@ public class BaseSteps {
         Assert.assertTrue(body.contains(expectedText), "Actual response body: " + body);
     }
 
+    @Then("the response body should contain")
+    public void theResponseBodyShouldContain(DataTable dataTable) throws IOException {
+        List<String> responseBodyLines = dataTable.asList(String.class);
+        String body = SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse());
+        for (String line : responseBodyLines) {
+            Assert.assertTrue(body.contains(line), "Actual response body: " + body);
+        }
+    }
+
     @Then("the response status code should be {int}")
     public void theResponseStatusCodeShouldBe(int expectedStatusCode) {
 

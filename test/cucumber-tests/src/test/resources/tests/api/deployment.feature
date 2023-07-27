@@ -8,6 +8,17 @@ Feature: API Deployment
     Then the response status code should be 200
     And the response body should contain "cors-api-adff3dbc-2787-11ee-be56-0242ac120002"
 
+  Scenario: Deploying an API with invalid APK Conf file
+    Given The system is ready
+    And I have a valid subscription
+    When I use the APK Conf file "artifacts/apk-confs/invalid_cors_API.apk-conf"
+    And the definition file "artifacts/definitions/cors_api.yaml"
+    And make the API deployment request
+    Then the response status code should be 400
+    And the response body should contain
+      |"#/corsConfiguration/corsConfigurationEnabled: expected type: Boolean, found: String"|
+      |"#/corsConfiguration: extraneous key [enable] is not permitted"|
+
   Scenario Outline: Undeploy an API
     Given The system is ready
     And I have a valid subscription
