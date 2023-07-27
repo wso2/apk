@@ -33,6 +33,7 @@ dependencies {
     testImplementation 'org.apache.httpcomponents:httpcore:4.4.14'
     testImplementation 'io.cucumber:cucumber-java:7.13.0'
     testImplementation 'io.cucumber:cucumber-testng:7.13.0'
+    testImplementation 'commons-io:commons-io:2.13.0'
 }
 
 test {

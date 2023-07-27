@@ -534,10 +534,6 @@
       "title": "Backend JWT Parameters",
       "type": "object",
       "properties": {
-        "enabled": {
-          "type": "boolean",
-          "default": true
-        },
         "encoding": {
           "type": "string"
         },
@@ -557,9 +553,6 @@
           }
         }
       },
-      "required": [
-        "enabled"
-      ],
       "additionalProperties": false
     },
     "CustomClaims": {

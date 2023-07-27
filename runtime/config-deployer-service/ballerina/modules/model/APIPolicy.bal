@@ -29,15 +29,14 @@ public type APIPolicySpec record {|
 |};
 
 public type APIPolicyData record {
-    InterceptorReference requestInterceptor?;
-    InterceptorReference responseInterceptor?;
+    InterceptorReference[] requestInterceptors?;
+    InterceptorReference[] responseInterceptors?;
     CORSPolicy cORSPolicy?;
     BackendJwtReference backendJwtPolicy?;
 };
 
 public type InterceptorReference record {
     string name;
-    string namespace?;
 };
 
 public type BackendJwtReference record {
