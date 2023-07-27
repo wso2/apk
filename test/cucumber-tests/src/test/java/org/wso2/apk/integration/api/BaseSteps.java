@@ -216,4 +216,23 @@ public class BaseSteps {
         sharedContext.setAccessToken(Utils.extractToken(httpResponse));
         sharedContext.addStoreValue("accessToken", sharedContext.getAccessToken());
     }
+
+    @Given("I have a valid subscription with scopes")
+    public void iHaveValidSubscriptionWithScope(DataTable dataTable) throws Exception {
+        List<List<String>> rows = dataTable.asLists(String.class);
+        String scopes = Constants.EMPTY_STRING;
+        for (List<String> row : rows) {
+            String scope = row.get(0);
+            scopes += scope + Constants.SPACE_STRING;
+        }
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.HOST, Constants.DEFAULT_IDP_HOST);
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, Constants.SUBSCRIPTION_BASIC_AUTH_TOKEN);
+
+        HttpResponse httpResponse = httpClient.doPost(Utils.getTokenEndpointURL(), headers,
+                                                      "grant_type=client_credentials&scope=" + scopes,
+                                                      Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
+        sharedContext.setAccessToken(Utils.extractToken(httpResponse));
+        sharedContext.addStoreValue(Constants.ACCESS_TOKEN, sharedContext.getAccessToken());
+    }
 }
