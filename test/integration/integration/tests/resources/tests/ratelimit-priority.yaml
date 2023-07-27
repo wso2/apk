@@ -93,7 +93,6 @@ spec:
     kind: Resource
     name: ratelimit-priority
     group: gateway.networking.k8s.io
-    namespace: gateway-integration-test-infra
 ---
 apiVersion: dp.wso2.com/v1alpha1
 kind: RateLimitPolicy
@@ -109,4 +108,3 @@ spec:
     kind: API
     name: ratelimit-priority
     group: gateway.networking.k8s.io
-    namespace: gateway-integration-test-infra
