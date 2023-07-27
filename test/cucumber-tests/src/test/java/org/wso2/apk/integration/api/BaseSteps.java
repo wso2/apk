@@ -80,11 +80,10 @@ public class BaseSteps {
     }
 
     @Then("the response status code should be {int}")
-    public void theResponseStatusCodeShouldBe(int expectedStatusCode) throws IOException {
+    public void theResponseStatusCodeShouldBe(int expectedStatusCode) {
 
         int actualStatusCode = sharedContext.getResponse().getStatusLine().getStatusCode();
-        Assert.assertEquals(actualStatusCode, expectedStatusCode, "Response message: " +
-                SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()));
+        Assert.assertEquals(actualStatusCode, expectedStatusCode);
     }
 
     @Then("I send {string} request to {string} with body {string}")
