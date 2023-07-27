@@ -14,12 +14,12 @@ Feature: API Deployment with Global Interceptor
     Then the response status code should be 200
     And the response body should contain "\"Gw-Header\": \"GW-header-value\""
     Then the response headers contains key "gw-response-header" and value "GW-response-header-value"
-#  Scenario Outline: Undeploy an API
-#    Given The system is ready
-#    And I have a valid subscription
-#    When I undeploy the API whose ID is "<apiID>"
-#    Then the response status code should be <expectedStatusCode>
-#
-#    Examples:
-#      | apiID | expectedStatusCode |
-#      | 3cd25ba2bbc777ae3160fb06cf9e5944f3dd7650  | 202         |
+  Scenario Outline: Undeploy an API
+    Given The system is ready
+    And I have a valid subscription
+    When I undeploy the API whose ID is "<apiID>"
+    Then the response status code should be <expectedStatusCode>
+
+    Examples:
+      | apiID | expectedStatusCode |
+      | 3cd25ba2bbc777ae3160fb06cf9e5944f3dd7650  | 202         |

@@ -17,6 +17,7 @@
 
 package org.wso2.apk.integration.utils.clients;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpEntity;
@@ -33,6 +34,7 @@ import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustAllStrategy;
 import org.apache.http.entity.ContentProducer;
@@ -43,6 +45,7 @@ import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.ssl.SSLContexts;
 import org.wso2.apk.integration.utils.MultipartFilePart;
 import org.wso2.apk.integration.utils.exceptions.TimeoutException;
@@ -76,10 +79,11 @@ public class SimpleHTTPClient {
                 .build();
 
         final SSLConnectionSocketFactory csf = new SSLConnectionSocketFactory(sslcontext);
-
         this.client = HttpClients.custom()
                 .setSSLSocketFactory(csf)
                 .evictExpiredConnections()
+                .setMaxConnPerRoute(100)
+                .setMaxConnTotal(1000)
                 .build();
         this.lastRequest = null;
     }
@@ -94,15 +98,9 @@ public class SimpleHTTPClient {
     public static String responseEntityBodyToString(HttpResponse response) throws IOException {
 
         if (response != null && response.getEntity() != null) {
-            BufferedReader bufferedReader = new BufferedReader(
-                    new InputStreamReader(response.getEntity().getContent()));
-            StringBuilder strBuilder = new StringBuilder();
-            strBuilder.append("");
-            String line;
-            while ((line = bufferedReader.readLine()) != null) {
-                strBuilder.append(line);
+            try (InputStream inputStreamContent = response.getEntity().getContent()) {
+                return IOUtils.toString(inputStreamContent);
             }
-            return strBuilder.toString();
         }
         return null;
     }
@@ -403,11 +401,13 @@ public class SimpleHTTPClient {
         }
     }
 
-    public HttpResponse executeLastRequestForEventualConsistentResponse(int successResponseCode, List<Integer> nonAcceptableCodes) throws IOException, InterruptedException {
+    public HttpResponse executeLastRequestForEventualConsistentResponse(int successResponseCode,
+                                                                        List<Integer> nonAcceptableCodes) throws IOException, InterruptedException {
+
         int counter = 1;
         int responseCode = -1;
         String lastResponseBody = null;
-        while(counter < EVENTUAL_SUCCESS_RESPONSE_TIMEOUT_IN_SECONDS) {
+        while (counter < EVENTUAL_SUCCESS_RESPONSE_TIMEOUT_IN_SECONDS) {
             counter++;
             Thread.sleep(1000);
             HttpResponse httpResponse = getClient().execute(lastRequest);
@@ -418,7 +418,7 @@ public class SimpleHTTPClient {
                 if (counter == EVENTUAL_SUCCESS_RESPONSE_TIMEOUT_IN_SECONDS) {
                     lastResponseBody = responseEntityBodyToString(httpResponse);
                 }
-                ((CloseableHttpResponse)httpResponse).close();
+                ((CloseableHttpResponse) httpResponse).close();
             }
         }
         throw new TimeoutException("Could not receive expected response within time. Last received code: "
