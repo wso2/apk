@@ -1,0 +1,22 @@
+---
+name: "EmployeeServiceScopeTestAPI"
+context: "/test-scope"
+id: "emp-api-test-scope"
+version: "1.0.0"
+type: "REST"
+organization: "apk-system"
+defaultVersion: false
+endpointConfigurations:
+  production:
+    endpoint: "https://run.mocky.io/v3/85516819-1edd-412b-a32b-a9284705a0b4"
+operations:
+  - target: "/employeewithoutscope"
+    verb: "GET"
+    scopes: []
+  - target: "/employeewithscope"
+    verb: "GET"
+    scopes:
+      - "wso2"
+vhosts:
+  production:
+    - "default.gw.wso2.com"

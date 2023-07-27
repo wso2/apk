@@ -84,6 +84,31 @@ Feature: API Deployment and invocation
     And I send "DELETE" request to "https://default.gw.wso2.com:9095/test-default/employee/12" with body ""
     And the response status code should be 200
 
+  Scenario: Scope Validation
+    Given The system is ready
+    And I have a valid subscription
+    When I use the APK Conf file "artifacts/apk-confs/employees_scope_test_conf.yaml"
+    And the definition file "artifacts/definitions/employees_scope_test_api.json"
+    And make the API deployment request
+    Then the response status code should be 200
+    Then I set headers
+      |Authorization|bearer ${accessToken}|
+    And I send "GET" request to "https://default.gw.wso2.com:9095/test-scope/1.0.0/employeewithoutscope/" with body ""
+    And I eventually receive 200 response code, not accepting
+      |429|
+    And I send "GET" request to "https://default.gw.wso2.com:9095/test-scope/1.0.0/employeewithscope/" with body ""
+    And the response status code should be 403
+    Given I have a valid subscription with scopes
+      |wso2|
+    Then I set headers
+      |Authorization|bearer ${accessToken}|
+    And I send "GET" request to "https://default.gw.wso2.com:9095/test-scope/1.0.0/employeewithoutscope/" with body ""
+    And I eventually receive 200 response code, not accepting
+      |429|
+    And I send "GET" request to "https://default.gw.wso2.com:9095/test-scope/1.0.0/employeewithscope/" with body ""
+    And I eventually receive 200 response code, not accepting
+      |429|
+
   Scenario Outline: Undeploy API
     Given The system is ready
     And I have a valid subscription
@@ -91,6 +116,7 @@ Feature: API Deployment and invocation
     Then the response status code should be <expectedStatusCode>
 
     Examples:
-      | apiID                 | expectedStatusCode  |
-      | emp-api-test          | 202                 |
-      | default-version-api-test      | 202                 |
+      | apiID                    | expectedStatusCode |
+      | emp-api-test             | 202                |
+      | default-version-api-test | 202                |
+      | emp-api-test-scope       | 202                |
