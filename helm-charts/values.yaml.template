@@ -132,7 +132,7 @@ wso2:
           # -- Image pull policy
           imagePullPolicy: Always
           # -- Image
-          image: wso2/config-deployer-service:0.0.1-m13
+          image: wso2/config-deployer-service:latest
           configs:
             # -- Enable authorization for runtime api.
             authrorization: true
