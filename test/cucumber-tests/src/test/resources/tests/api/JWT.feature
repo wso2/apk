@@ -51,7 +51,10 @@ Feature: Test JWT related functionalities
       |429|
       |401|
     And the response body should contain "\"X-Jwt-Assertion\""
-
+    And the decoded "X-Jwt-Assertion" jwt should contain
+      | claim    | value    |
+      | claim1 | value1 |
+      | claim2 | value2 |
 
   Scenario Outline: Undeploy API
     Given The system is ready

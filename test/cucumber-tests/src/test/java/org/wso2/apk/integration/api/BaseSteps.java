@@ -17,6 +17,8 @@
 
 package org.wso2.apk.integration.api;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import io.cucumber.core.options.CurlOption;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.Before;
@@ -24,7 +26,7 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import org.apache.commons.io.IOUtils;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -69,21 +71,18 @@ public class BaseSteps {
 
     @Then("the response body should contain {string}")
     public void theResponseBodyShouldContain(String expectedText) throws IOException {
-        String body = SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse());
-        Assert.assertTrue(body.contains(expectedText), "Actual response body: " + body);
+        Assert.assertTrue(sharedContext.getResponseBody().contains(expectedText), "Actual response body: " + sharedContext.getResponseBody());
     }
     @Then("the response body should not contain {string}")
     public void theResponseBodyShouldNotContain(String expectedText) throws IOException {
-        String body = SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse());
-        Assert.assertFalse(body.contains(expectedText), "Actual response body: " + body);
+        Assert.assertFalse(sharedContext.getResponseBody().contains(expectedText), "Actual response body: " + sharedContext.getResponseBody());
     }
 
     @Then("the response body should contain")
     public void theResponseBodyShouldContain(DataTable dataTable) throws IOException {
         List<String> responseBodyLines = dataTable.asList(String.class);
-        String body = SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse());
         for (String line : responseBodyLines) {
-            Assert.assertTrue(body.contains(line), "Actual response body: " + body);
+            Assert.assertTrue(sharedContext.getResponseBody().contains(line), "Actual response body: " + sharedContext.getResponseBody());
         }
     }
 
@@ -101,12 +100,16 @@ public class BaseSteps {
         }
         if (CurlOption.HttpMethod.GET.toString().toLowerCase().equals(httpMethod.toLowerCase())) {
             sharedContext.setResponse(httpClient.doGet(url, sharedContext.getHeaders()));
+            sharedContext.setResponseBody(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()));
         } else if (CurlOption.HttpMethod.POST.toString().toLowerCase().equals(httpMethod.toLowerCase())) {
             sharedContext.setResponse(httpClient.doPost(url, sharedContext.getHeaders(), body, null));
+            sharedContext.setResponseBody(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()));
         } else if (CurlOption.HttpMethod.PUT.toString().toLowerCase().equals(httpMethod.toLowerCase())) {
             sharedContext.setResponse(httpClient.doPut(url, sharedContext.getHeaders(), body, null));
+            sharedContext.setResponseBody(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()));
         } else if (CurlOption.HttpMethod.DELETE.toString().toLowerCase().equals(httpMethod.toLowerCase())) {
             sharedContext.setResponse(httpClient.doPut(url, sharedContext.getHeaders(), body, null));
+            sharedContext.setResponseBody(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()));
         } else if (CurlOption.HttpMethod.OPTIONS.toString().toLowerCase().equals(httpMethod.toLowerCase())) {
             sharedContext.setResponse(httpClient.doOptions(url, sharedContext.getHeaders(), null, null));
         }
@@ -202,6 +205,23 @@ public class BaseSteps {
         }
         Header header = response.getFirstHeader(key);
         Assert.assertNull(header,"header contains in response headers");
+    }
+
+    @Then("the decoded {string} jwt should contain")
+    public void decode_header_and_validate(String header, DataTable dataTable) {
+        List<Map<String, String>> claims = dataTable.asMaps(String.class, String.class);
+        JsonObject jsonResponse = (JsonObject) JsonParser.parseString(sharedContext.getResponseBody());
+        String headerValue = jsonResponse.get("headers").getAsJsonObject().get(header).toString();
+        String[] split_string = headerValue.split("\\.");
+
+        String jwtBody = new String(Base64.decodeBase64(split_string[1]));
+        JsonObject jwtJSONBody = (JsonObject) JsonParser.parseString(jwtBody);
+
+        for (Map<String, String> claim : claims) {
+            Assert.assertTrue(jwtJSONBody.has(claim.get("claim")), "Actual decoded JWT body: " + jwtBody);
+            Assert.assertEquals(claim.get("value"), jwtJSONBody.get(claim.get("claim")).getAsString(), "Actual " +
+                    "decoded JWT body: " + jwtBody);
+        }
     }
 
     @Given("I have a valid subscription")
