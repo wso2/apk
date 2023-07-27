@@ -21,6 +21,7 @@ import (
 	"context"
 	"crypto/x509"
 	"encoding/pem"
+	"errors"
 	"fmt"
 	"reflect"
 	"strings"
@@ -67,6 +68,17 @@ func GetNamespace(namespace *gwapiv1b1.Namespace, defaultNamespace string) strin
 		return string(*namespace)
 	}
 	return defaultNamespace
+}
+
+// ValidateAndRetrieveNamespace checks if the child resource's namespace is the same as the parent resource's namespace
+func ValidateAndRetrieveNamespace(namespace *gwapiv1b1.Namespace, defaultNamespace string) (string, error) {
+	if namespace != nil && *namespace != "" {
+		if string(*namespace) == defaultNamespace {
+			return string(*namespace), nil
+		}
+		return "", errors.New("Namespace mismatch")
+	}
+	return defaultNamespace, nil
 }
 
 // GetOperatorPodNamespace returns the namesapce of the operator pod
