@@ -24,7 +24,17 @@ Feature: API Deployment with Interceptor
     And I send "GET" request to "https://default.gw.wso2.com:9095/interceptor/1.0.0/get" with body ""
     Then the response status code should be 200
     And the response body should contain "\"Interceptor-Header\": \"Interceptor-header-value\""
-
+    Then I use the APK Conf file "artifacts/apk-confs/interceptors/withResponseInterceptor.apk-conf"
+    And the definition file "artifacts/definitions/cors_api.yaml"
+    And make the API deployment request
+    Then the response status code should be 200
+    And the response body should contain "268309bb509758d0ec2ac03f96929cbb001e10cb"
+    And I wait for 1 minute
+    Then I set headers
+      |Authorization|bearer ${accessToken}|
+    And I send "GET" request to "https://default.gw.wso2.com:9095/interceptor/1.0.0/get" with body ""
+    Then the response status code should be 200
+    And the response headers contains key Interceptor-Response-header and value Interceptor-Response-header-value
   Scenario Outline: Undeploy an API
     Given The system is ready
     And I have a valid subscription
