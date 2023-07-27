@@ -287,9 +287,9 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 		}
 		if resourceAPIPolicy == apiPolicy {
 			apiPolicySelected := concatAPIPolicies(apiPolicy, nil)
-			addOperationLevelInterceptors(&policies, apiPolicySelected, resourceParams.InterceptorServiceMapping, resourceParams.BackendMapping)
+			addOperationLevelInterceptors(&policies, apiPolicySelected, resourceParams.InterceptorServiceMapping, resourceParams.BackendMapping, httpRoute.Namespace)
 		} else {
-			addOperationLevelInterceptors(&policies, resourceAPIPolicy, resourceParams.InterceptorServiceMapping, resourceParams.BackendMapping)
+			addOperationLevelInterceptors(&policies, resourceAPIPolicy, resourceParams.InterceptorServiceMapping, resourceParams.BackendMapping, httpRoute.Namespace)
 		}
 
 		loggers.LoggerOasparser.Debugf("Calculating auths for API ..., API_UUID = %v", logging.GetValueFromLogContext("API_UUID"))
@@ -445,17 +445,18 @@ func parseRateLimitPolicyToInternal(ratelimitPolicy *dpv1alpha1.RateLimitPolicy)
 
 // addOperationLevelInterceptors add the operation level interceptor policy to the policies
 func addOperationLevelInterceptors(policies *OperationPolicies, apiPolicy *dpv1alpha1.APIPolicy,
-	interceptorServicesMapping map[string]dpv1alpha1.InterceptorService, backendMapping map[string]*dpv1alpha1.ResolvedBackend) {
+	interceptorServicesMapping map[string]dpv1alpha1.InterceptorService,
+	backendMapping map[string]*dpv1alpha1.ResolvedBackend, namespace string) {
 	if apiPolicy != nil && apiPolicy.Spec.Override != nil {
 		if len(apiPolicy.Spec.Override.RequestInterceptors) > 0 {
 			requestInterceptor := interceptorServicesMapping[types.NamespacedName{
 				Name:      apiPolicy.Spec.Override.RequestInterceptors[0].Name,
-				Namespace: apiPolicy.Namespace,
+				Namespace: namespace,
 			}.String()].Spec
 			policyParameters := make(map[string]interface{})
 			backendName := types.NamespacedName{
 				Name:      requestInterceptor.BackendRef.Name,
-				Namespace: utils.GetNamespace((*gwapiv1b1.Namespace)(&requestInterceptor.BackendRef.Namespace), apiPolicy.Namespace),
+				Namespace: namespace,
 			}
 			endpoints := GetEndpoints(backendName, backendMapping)
 			if len(endpoints) > 0 {
@@ -471,12 +472,12 @@ func addOperationLevelInterceptors(policies *OperationPolicies, apiPolicy *dpv1a
 		if len(apiPolicy.Spec.Override.ResponseInterceptors) > 0 {
 			responseInterceptor := interceptorServicesMapping[types.NamespacedName{
 				Name:      apiPolicy.Spec.Override.ResponseInterceptors[0].Name,
-				Namespace: apiPolicy.Namespace,
+				Namespace: namespace,
 			}.String()].Spec
 			policyParameters := make(map[string]interface{})
 			backendName := types.NamespacedName{
 				Name:      responseInterceptor.BackendRef.Name,
-				Namespace: utils.GetNamespace((*gwapiv1b1.Namespace)(&responseInterceptor.BackendRef.Namespace), apiPolicy.Namespace),
+				Namespace: namespace,
 			}
 			endpoints := GetEndpoints(backendName, backendMapping)
 			if len(endpoints) > 0 {
