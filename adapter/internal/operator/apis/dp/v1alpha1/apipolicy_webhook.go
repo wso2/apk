@@ -75,7 +75,7 @@ func (r *APIPolicy) ValidatePolicy() error {
 		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("targetRef").Child("kind"), r.Spec.TargetRef.Kind,
 			"Invalid Kind is provided"))
 	}
-	if r.Spec.TargetRef.Namespace != (*v1beta1.Namespace)(&r.Namespace) {
+	if r.Spec.TargetRef.Namespace != nil && r.Spec.TargetRef.Namespace != (*v1beta1.Namespace)(&r.Namespace) {
 		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("targetRef").Child("namespace"), r.Spec.TargetRef.Namespace,
 			"namespace cross reference is not allowed"))
 	}
