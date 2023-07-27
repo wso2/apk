@@ -33,6 +33,7 @@ public class SharedContext {
     private SimpleHTTPClient httpClient;
     private String accessToken;
     private HttpResponse response;
+    private String responseBody;
     private HashMap<String, Object> valueStore = new HashMap<>();
     private HashMap<String, String> headers = new HashMap<>();
 
@@ -83,4 +84,13 @@ public class SharedContext {
         headers.put(key, value);
     }
 
+    public String getResponseBody() {
+
+        return responseBody;
+    }
+
+    public void setResponseBody(String responseBody) {
+
+        this.responseBody = responseBody;
+    }
 }

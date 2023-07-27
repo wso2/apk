@@ -89,6 +89,7 @@ public class APIDeploymentSteps {
                 multipartEntity, headers);
 
         sharedContext.setResponse(response);
+        sharedContext.setResponseBody(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()));
     }
 
 
@@ -110,5 +111,6 @@ public class APIDeploymentSteps {
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
 
         sharedContext.setResponse(response);
+        sharedContext.setResponseBody(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()));
     }
 }
