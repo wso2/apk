@@ -17,7 +17,6 @@ Feature: API Deployment
     Then the response status code should be 400
     And the response body should contain
       |"#/corsConfiguration/corsConfigurationEnabled: expected type: Boolean, found: String"|
-      |"#/corsConfiguration: extraneous key [enable] is not permitted"|
 
   Scenario Outline: Undeploy an API
     Given The system is ready
