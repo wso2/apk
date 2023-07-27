@@ -18,10 +18,15 @@
 package v1alpha1
 
 import (
+	"github.com/wso2/apk/adapter/internal/operator/constants"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/util/validation/field"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
+	"sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
 // log is for logging in this package.
@@ -50,11 +55,35 @@ var _ webhook.Validator = &APIPolicy{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (r *APIPolicy) ValidateCreate() error {
-	return nil
+	return r.ValidatePolicy()
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *APIPolicy) ValidateUpdate(old runtime.Object) error {
+	return r.ValidatePolicy()
+}
+
+// ValidatePolicy validates the APIPolicy
+func (r *APIPolicy) ValidatePolicy() error {
+	var allErrs field.ErrorList
+
+	if r.Spec.TargetRef.Name == "" {
+		allErrs = append(allErrs, field.Required(field.NewPath("spec").Child("targetRef").Child("name"), "Name is required"))
+	}
+	if !(r.Spec.TargetRef.Kind == constants.KindAPI || r.Spec.TargetRef.Kind == constants.KindResource ||
+		r.Spec.TargetRef.Kind == constants.KindGateway) {
+		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("targetRef").Child("kind"), r.Spec.TargetRef.Kind,
+			"Invalid Kind is provided"))
+	}
+	if r.Spec.TargetRef.Namespace != nil && r.Spec.TargetRef.Namespace != (*v1beta1.Namespace)(&r.Namespace) {
+		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("targetRef").Child("namespace"), r.Spec.TargetRef.Namespace,
+			"namespace cross reference is not allowed"))
+	}
+	if len(allErrs) > 0 {
+		return apierrors.NewInvalid(
+			schema.GroupKind{Group: "dp.wso2.com", Kind: "APIPolicy"},
+			r.Name, allErrs)
+	}
 	return nil
 }
 

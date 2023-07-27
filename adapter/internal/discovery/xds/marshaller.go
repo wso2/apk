@@ -197,7 +197,6 @@ func MarshalConfig(config *config.Config) *enforcer.Config {
 		RestServer: restServer,
 		Filters:    filters,
 		Soap:       soap,
-		//todo(amali) cleanup enforcer xds
 	}
 }
 

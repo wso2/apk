@@ -51,7 +51,6 @@ type ResourceParams struct {
 // are used to create resources and httpRoute.Spec.Rules.BackendRefs are used to create EndpointClusters.
 func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, resourceParams ResourceParams) error {
 	var resources []*Resource
-	//TODO(amali) add gateway level securities after gateway crd has implemented
 	outputAuthScheme := utils.TieBreaker(utils.GetPtrSlice(maps.Values(resourceParams.AuthSchemes)))
 	outputAPIPolicy := utils.TieBreaker(utils.GetPtrSlice(maps.Values(resourceParams.APIPolicies)))
 	outputRatelimitPolicy := utils.TieBreaker(utils.GetPtrSlice(maps.Values(resourceParams.RateLimitPolicies)))
