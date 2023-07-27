@@ -408,6 +408,7 @@ public class SimpleHTTPClient {
     public HttpResponse executeLastRequestForEventualConsistentResponse(int successResponseCode, List<Integer> nonAcceptableCodes) throws IOException, InterruptedException {
         int counter = 1;
         int responseCode = -1;
+        String lastResponseBody = null;
         while(counter < EVENTUAL_SUCCESS_RESPONSE_TIMEOUT_IN_SECONDS) {
             counter++;
             Thread.sleep(1000);
@@ -416,10 +417,14 @@ public class SimpleHTTPClient {
             if (responseCode == successResponseCode || nonAcceptableCodes.contains(responseCode)) {
                 return httpResponse;
             } else {
+                if (counter == EVENTUAL_SUCCESS_RESPONSE_TIMEOUT_IN_SECONDS) {
+                    lastResponseBody = responseEntityBodyToString(httpResponse);
+                }
                 ((CloseableHttpResponse)httpResponse).close();
             }
         }
-        throw new TimeoutException("Could not receive expected response within time. Last received code: " + responseCode);
+        throw new TimeoutException("Could not receive expected response within time. Last received code: "
+                + responseCode + ", last response body: " + lastResponseBody);
     }
 
     private HttpClient getClient() {
