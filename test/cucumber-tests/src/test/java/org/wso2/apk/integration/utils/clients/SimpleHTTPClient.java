@@ -155,8 +155,6 @@ public class SimpleHTTPClient {
         });
         if (contentType != null) {
             ent.setContentType(contentType);
-        } else {
-            ent.setContentType(MediaType.JSON.getValue());
         }
         if (zip) {
             ent.setContentEncoding("gzip");
@@ -443,22 +441,5 @@ public class SimpleHTTPClient {
                 .setSSLSocketFactory(csf)
                 .evictExpiredConnections()
                 .build();
-    }
-}
-
-enum MediaType {
-    JSON("application/json"),
-    XML("application/xml"),
-    FORM("application/x-www-form-urlencoded");
-    // Add more Content-Type values as needed
-
-    private final String value;
-
-    MediaType(String value) {
-        this.value = value;
-    }
-
-    public String getValue() {
-        return value;
     }
 }
