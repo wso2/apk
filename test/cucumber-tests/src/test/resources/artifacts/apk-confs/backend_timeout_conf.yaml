@@ -12,7 +12,7 @@ endpointConfigurations:
     resiliency:
       timeout:
         maxRouteTimeoutSeconds: 3
-        routeIdleTimeoutSeconds: 3
+        routeIdleTimeoutSeconds: 5
         routeTimeoutSeconds: 3
 operations:
   - target: "/get"
@@ -29,7 +29,7 @@ operations:
         resiliency:
           timeout:
             maxRouteTimeoutSeconds: 1
-            routeIdleTimeoutSeconds: 1
+            routeIdleTimeoutSeconds: 5
             routeTimeoutSeconds: 1
   - target: "/delay/{delay}"
     verb: "POST"
@@ -41,7 +41,7 @@ operations:
         resiliency:
           timeout:
             maxRouteTimeoutSeconds: 2
-            routeIdleTimeoutSeconds: 2
+            routeIdleTimeoutSeconds: 5
             routeTimeoutSeconds: 2
   - target: "/delay/{delay}"
     verb: "PUT"
