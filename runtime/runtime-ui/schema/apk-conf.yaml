@@ -400,9 +400,6 @@ schemas:
     title: Backend JWT Parameters
     type: object
     properties:
-      enabled:
-        type: boolean
-        default: true
       encoding:
         type: string
       signingAlgorithm:
@@ -415,8 +412,6 @@ schemas:
         type: array
         items:
           $ref: "#/schemas/CustomClaims"
-    required:
-    - enabled
     additionalProperties: false
   CustomClaims:
     type: object
