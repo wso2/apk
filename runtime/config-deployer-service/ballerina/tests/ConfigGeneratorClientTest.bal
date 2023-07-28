@@ -1,6 +1,6 @@
 import ballerina/http;
 import ballerina/test;
-import apk_common_lib;
+import wso2/apk_common_lib;
 import ballerina/io;
 import ballerina/mime;
 

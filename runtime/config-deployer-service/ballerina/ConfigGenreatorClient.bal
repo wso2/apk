@@ -1,4 +1,4 @@
-import apk_common_lib as commons;
+import wso2/apk_common_lib as commons;
 import ballerina/http;
 import config_deployer_service.org.wso2.apk.config.api as runtimeapi;
 import config_deployer_service.org.wso2.apk.config.model as runtimeModels;
