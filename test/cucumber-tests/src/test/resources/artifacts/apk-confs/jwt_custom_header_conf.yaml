@@ -39,7 +39,6 @@ apiPolicies:
   request:
     - policyName: "BackendJwt"
       parameters:
-        enabled: true
         encoding: base64
         signingAlgorithm: SHA256withRSA
         header: X-JWT-Assertion

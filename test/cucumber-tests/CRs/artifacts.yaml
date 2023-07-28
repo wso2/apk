@@ -97,3 +97,128 @@ spec:
     group: gateway.networking.k8s.io
     kind: Gateway
     name: default
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: interceptor-service-config-toml
+  namespace: apk-integration-test
+data:
+  Config.toml: |
+        [ballerina.log]
+        level = "DEBUG"
+        [ballerina.http]
+        traceLogConsole = true  
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: interceptor-service-configmap
+  namespace: "apk-integration-test"
+binaryData:
+  tls.key: LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlFb3dJQkFBS0NBUUVBeEpZRzVYckQxQkFGN3BydEY3enFVTllLaTdpdU5ySWJuUGJMQkhPeTlCVDE3SUN5Ckp1NklleEE0SERvbER3bGprWGlYLzNBdjhuV1ZnbHN6ZkFUK0FZNHhqRkp3S05qSzArN1FPQ0RFVE9TYitKajkKbVpIaEhPY0tRNGNlelRIZURFWkRwc3dlT05DdHVmQ3MvQ1ZzTk85NkhwTU1abDFSSzhnMWI5aUVqTnBncHd2MApLNmV3TXFxaE9Bc1BqaUVXM3MzT0hjUUxGbGRDOUdVand5NU83a2VLamVxaVg3MmZPUTBlZjdBYTZSSWxFdURMCjA5OW1pMnlWWlZSVjlTa3hTN2tGVkhDYVhva0hyUDlITlhUSlRYTU41UXdYZWU3eFR1N1pHRjlJYmQwNWhXNzUKN2lBeW8ydDVtZVp5eFRpc0NBSGwwRk9qeVF2OXVHZGhZdktjdXdJREFRQUJBb0lCQURjSGpqZW54WEN6Nlkwdwo1aVNxZCtjWCs0ekFMbGhXUkQrTW9Da0hZRFZPTnNjMUFXbS9oUW41OE5NSi9ieTNVcDF5cGczVnNENU5ad1ErCkZtdmxrOXNJbkZzYzZwT3NtQjU2YitQK1hDVHdLNjhMMkpXb0RkMkMyVThzNEZUdFhDeVFjTGljMCtyd2sya0UKODgrRGhFWlBNUjZrNkNneGdCcmk2UDU5bkNFM004azdBdjEwNDhoSDRNYzkvMVZISGErM3Z4K3VVb2I0OFU4cApGNGtiSktIM0dLYUhackVpcnhIQkFhR3dxL0RJVURsdU5qc0F2S1VCaktPajhqL0lGSUQ4eDdSUmpqcE1QZUF4CmFJbGF1TEJGUktGNTN4eEhiVUVvb2x2QTc2eG9jdTFHck5EV1hJNEFJNVpJbXBUemhYeXJRYW0rR0xTZERBS0UKY0hTc1pMVUNnWUVBK3hjRkJ3dlJpU1NiNnlleXN2b0xSQjRnMnFzdWtuNWtsUEQ0UTdtNnF1Mk1pYzhLRkppNQpObE5ZV1ZiQkFEbnlucUs5RG41eWtvcE1ack1sY1hqaUx3RXpHa1JmSVcyOU1UWEc1c1BTRWE3WVJ3a3Jxemk0CnI5cXBOclJwMllWNG9CWlJUclAxN2k2dmlSWnZNcGxsZXRPdjdHUnVXcUFteHowcTBkTGxrajhDZ1lFQXlHNG4KMTNDUWREK0dBMmVBRnJSK3VBTHEvb3lmbk8wM2N5L3c3ZjBRa1hhRUk4RmhtYzQ1OVBHNzF2THd0dEg2UmhyZgpUaG14b00xcVFkYTZmbDhDcldmYnRRQ01INjc1VUFtQng5Qng3TmsvbTNVV3RFVnJMVnZUVTZzZGJYQVIxTTZJCjFJZ3dReWMzQWtkT1MrUmdpejRKT2JydnhDaGNrQmh5Z0habDNvVUNnWUFwcEY2MEZYU3h6djJBMlh1Y2pUV1QKSFlBTFkvcDhWelB0TTYybzVjT2NsM3NJVytyckVZMGVBbUtUcG55cHdmS0g5cXR1SFBCNWR6QkdsQTF3clVDdAoxUUFacWg4dzF4ZGFjdlhDemRVb0U1eFE0NmQzWlJmVUttcUg1UkhzL21MTUFnZUlDdmFOZ3ZhZndMVythWXhYCis0V2dxZU5YYWxva0R2UHNDcE1DVndLQmdBdzJNZlU5WlgrL3N4R1lCOFRhWUhJanMxK28vN3lXODI3d045UzQKTzM4eFltR3ZVWndHWlorWDd1THMwRi9ETVdWK0U2YjFoODROVmZFRy9UdmYzQkRtcUF0Q0trZHY2TDdJcFlDZwpJYURWcDd0NENkY1g5NnkrMElSamc1cDhYb25CdjdKN1RiMTVzUzlSV3VMaTJrTUJsNXhOMkhmeUlabWg4N0FDCkJyamxBb0dCQUprRTRXMmRPY2pLaVVDTkd3c2tGMnR2TXRpU1QrclcyK2lLZWVpZnp3ZDdtSG13Zm1lMm5yblYKWDZ5cmF6N1UyUDlGK3h4eWdyREQ5blhhcGcrbUU2K2JlQktVZytZellqdzM1YWg3cnlkZm9RMHpkVG56a2tVYQpsTEJid1RZbko4djZNWVJNRVFyaU03elhlWlJtZzNzenQ3R2MxNUdTc0NNWWFqcnR5Sjk1Ci0tLS0tRU5EIFJTQSBQUklWQVRFIEtFWS0tLS0tCg==
+  tls.pem: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUR2ekNDQXFlZ0F3SUJBZ0lFWkVwR0h6QU5CZ2txaGtpRzl3MEJBUXNGQURCMU1Rc3dDUVlEVlFRR0V3SlYKVXpFTE1Ba0dBMVVFQ0F3Q1EwRXhGakFVQmdOVkJBY01EVTF2ZFc1MFlXbHVJRlpwWlhjeERUQUxCZ05WQkFvTQpCRmRUVHpJeEZEQVNCZ05WQkFzTUMwVnVaMmx1WldWeWFXNW5NUnd3R2dZRFZRUUREQk5wYm5SbGNtTmxjSFJ2CmNpMXpaWEoyYVdObE1CNFhEVEl6TURReU56QTVOVE16TlZvWERUSTBNRFF5TmpBNU5UTXpOVm93ZFRFTE1Ba0cKQTFVRUJoTUNWVk14Q3pBSkJnTlZCQWdNQWtOQk1SWXdGQVlEVlFRSERBMU5iM1Z1ZEdGcGJpQldhV1YzTVEwdwpDd1lEVlFRS0RBUlhVMDh5TVJRd0VnWURWUVFMREF0RmJtZHBibVZsY21sdVp6RWNNQm9HQTFVRUF3d1RhVzUwClpYSmpaWEIwYjNJdGMyVnlkbWxqWlRDQ0FTSXdEUVlKS29aSWh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUIKQU1TV0J1VjZ3OVFRQmU2YTdSZTg2bERXQ291NHJqYXlHNXoyeXdSenN2UVU5ZXlBc2lidWlIc1FPQnc2SlE4SgpZNUY0bC85d0wvSjFsWUpiTTN3RS9nR09NWXhTY0NqWXl0UHUwRGdneEV6a20vaVkvWm1SNFJ6bkNrT0hIczB4CjNneEdRNmJNSGpqUXJibndyUHdsYkRUdmVoNlRER1pkVVN2SU5XL1loSXphWUtjTDlDdW5zREtxb1RnTEQ0NGgKRnQ3TnpoM0VDeFpYUXZSbEk4TXVUdTVIaW8zcW9sKzluemtOSG4rd0d1a1NKUkxneTlQZlpvdHNsV1ZVVmZVcApNVXU1QlZSd21sNkpCNnovUnpWMHlVMXpEZVVNRjNudThVN3UyUmhmU0czZE9ZVnUrZTRnTXFOcmVabm1jc1U0CnJBZ0I1ZEJUbzhrTC9iaG5ZV0x5bkxzQ0F3RUFBYU5YTUZVd1V3WURWUjBSQkV3d1NvSWNLaTUwWlhOMExXRncKYXk1emRtTXVZMngxYzNSbGNpNXNiMk5oYklJcWFXNTBaWEpqWlhCMGIzSXRjMlZ5TG5SbGMzUXRZWEJyTG5OMgpZeTVqYkhWemRHVnlMbXh2WTJGc01BMEdDU3FHU0liM0RRRUJDd1VBQTRJQkFRQUM4dFdkQzAzNXVuU1FBdWlkCmI1RDRIM2hVbEc2SWNNV1JITU5lNUkwajlnS2l1SC90MExuZUF1ME80L3pVWlAyd1JadEsvZmxRbGRqYnU2eGgKSkNuSWhhaXduRWI0N2JTNitEWGR0ZTRvSFMwVEhxUTNkMEdWY2RzRHJNSHFjSGRtVW5hY2tzVUk1MDJ2QTAwZQpBSHpxNGhPWlVxWDgyYzUwdnE0SHplZFBDaEF0Q3NiZEs2c2VoVE1rSVNhRnZKZjlUMDFoYVJ5dEdzWkZVUFNkCkQ5U3BZWFBoN3FEY0RHZUxacVladXFTL2Z6d0R6VCtWWnI0ZkV4NVRiMWhvZ1ZEU0R6Q0YzMkJtaUx4blI3OTgKbXA1elNvQlIwbTVwRDFCVHJHdjhEeEhqcEtpNWt5cGJpZHRMNDZ1V1A1RS94RTFiekVPbjdndUFQNVAvQ3B5YwpocXVzCi0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
+---
+apiVersion: "v1"
+kind: "Service"
+metadata:
+  labels:
+    app: "interceptor_service"
+  name: "interceptor-service"
+  namespace: "apk-integration-test"
+spec:
+  ports:
+  - name: "port-1-intercep"
+    port: 8443
+    protocol: "TCP"
+    targetPort: 8443
+  - name: "port-2-intercep"
+    port: 8444
+    protocol: "TCP"
+    targetPort: 8444
+  - name: "port-3-intercep"
+    port: 8445
+    protocol: "TCP"
+    targetPort: 8445
+  selector:
+    app: "interceptor_service"
+  type: "ClusterIP"
+---
+apiVersion: "apps/v1"
+kind: "Deployment"
+metadata:
+  labels:
+    app: "interceptor_service"
+  name: "interceptor-service-deployment"
+  namespace: "apk-integration-test"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: "interceptor_service"
+  template:
+    metadata:
+      labels:
+        app: "interceptor_service"
+    spec:
+      containers:
+      - image: "tharindu1st/interceptor_service:latest"
+        imagePullPolicy: "IfNotPresent"
+        name: "interceptor-service-deployment"
+        ports:
+        - containerPort: 8443
+          name: "port-1-intercep"
+          protocol: "TCP"
+        - containerPort: 8444
+          name: "port-2-intercep"
+          protocol: "TCP"
+        - containerPort: 8445
+          name: "port-3-intercep"
+          protocol: "TCP"
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "1000m"
+          requests:
+            memory: "100Mi"
+            cpu: "200m"
+        volumeMounts:
+        - mountPath: "/home/ineterceptor/tls.pem"
+          name: "service-certs"
+          subPath: "tls.pem"
+        - mountPath: "/home/ineterceptor/tls.key"
+          name: "service-certs"
+          subPath: "tls.key"
+        - mountPath: "/home/ineterceptor/Config.toml"
+          name: "config-toml"
+          subPath: "Config.toml"
+        readinessProbe:
+          httpGet:
+            path: /api/v1/health
+            port: 8443
+            scheme: HTTP
+            httpHeaders:
+            - name: "Connection"
+              value: "keep-alive"
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /api/v1/health
+            port: 8443
+            scheme: HTTP
+            httpHeaders:
+            - name: "Connection"
+              value: "keep-alive"
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        env:
+        - name: "BAL_CONFIG_FILES"
+          value: "/home/ineterceptor/Config.toml"
+      volumes:
+        - name: "service-certs"
+          configMap:
+            name: "interceptor-service-configmap"
+        - name: "config-toml"
+          configMap:
+            name: "interceptor-service-config-toml" 

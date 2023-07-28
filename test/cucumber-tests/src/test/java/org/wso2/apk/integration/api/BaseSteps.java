@@ -24,7 +24,9 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.testng.Assert;
@@ -33,6 +35,7 @@ import org.wso2.apk.integration.utils.Utils;
 import org.wso2.apk.integration.utils.clients.SimpleHTTPClient;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
@@ -68,6 +71,11 @@ public class BaseSteps {
     public void theResponseBodyShouldContain(String expectedText) throws IOException {
         String body = SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse());
         Assert.assertTrue(body.contains(expectedText), "Actual response body: " + body);
+    }
+    @Then("the response body should not contain {string}")
+    public void theResponseBodyShouldNotContain(String expectedText) throws IOException {
+        String body = SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse());
+        Assert.assertFalse(body.contains(expectedText), "Actual response body: " + body);
     }
 
     @Then("the response body should contain")
@@ -162,6 +170,11 @@ public class BaseSteps {
         Thread.sleep((secondsToWait+1) * 1000);
     }
 
+    @Then("I wait for {int} minute")
+    public void waitForMinute(int minute) throws InterruptedException {
+        Thread.sleep(minute * 1000);
+    }
+
     @Then("the response headers contains key {string} and value {string} ")
     public void containsHeader(String key, String value) {
         key = Utils.resolveVariables(key, sharedContext.getValueStore());
@@ -180,7 +193,16 @@ public class BaseSteps {
         String actualValue = header.getValue();
         Assert.assertEquals("Header with key found but value mismatched.", value, actualValue);
     }
-
+    @Then("the response headers not contains key {string}")
+    public void notContainsHeader(String key) {
+        key = Utils.resolveVariables(key, sharedContext.getValueStore());
+        HttpResponse response = sharedContext.getResponse();
+        if (response == null) {
+            Assert.fail("Response is null.");
+        }
+        Header header = response.getFirstHeader(key);
+        Assert.assertNull(header,"header contains in response headers");
+    }
 
     @Given("I have a valid subscription")
     public void iHaveValidSubscription() throws Exception {

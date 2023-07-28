@@ -93,4 +93,3 @@ spec:
     kind: Resource
     name: default-api-version-ratelimit-resource-level
     group: gateway.networking.k8s.io
-    namespace: gateway-integration-test-infra

@@ -512,16 +512,20 @@ public class APIClient {
     private isolated function generateAPIPolicyAndBackendCR(model:APIArtifact apiArtifact, APKConf apkConf, APKOperations? operations, APIOperationPolicies? policies, string organization, string targetRefName) returns model:APIPolicy?|error {
         model:APIPolicyData defaultSpecData = {};
         APKOperationPolicy[]? request = policies?.request;
-        model:InterceptorReference?|model:BackendJwtReference? requestPolicy = check self.retrieveAPIPolicyDetails(apiArtifact, apkConf, operations, organization, request, "request");
-        if requestPolicy is model:InterceptorReference {
-            defaultSpecData.requestInterceptor = requestPolicy;
-        } else if requestPolicy is model:BackendJwtReference {
-            defaultSpecData.backendJwtPolicy = requestPolicy;
+        any[] requestPolicy = check self.retrieveAPIPolicyDetails(apiArtifact, apkConf, operations, organization, request, "request");
+        foreach any item in requestPolicy {
+            if item is model:InterceptorReference {
+                defaultSpecData.requestInterceptors = [item];
+            } else if item is model:BackendJwtReference {
+                defaultSpecData.backendJwtPolicy = item;
+            }
         }
         APKOperationPolicy[]? response = policies?.response;
-        model:InterceptorReference?|model:BackendJwtReference? responseInterceptor = check self.retrieveAPIPolicyDetails(apiArtifact, apkConf, operations, organization, response, "response");
-        if responseInterceptor is model:InterceptorReference {
-            defaultSpecData.responseInterceptor = responseInterceptor;
+        any[] responseInterceptor = check self.retrieveAPIPolicyDetails(apiArtifact, apkConf, operations, organization, response, "response");
+        foreach any item in responseInterceptor {
+            if item is model:InterceptorReference {
+                defaultSpecData.responseInterceptors = [item];
+            }
         }
         CORSConfiguration? corsConfiguration = apkConf.corsConfiguration;
         if corsConfiguration is CORSConfiguration {
@@ -970,7 +974,8 @@ public class APIClient {
         return apiPolicyCR;
     }
 
-    isolated function retrieveAPIPolicyDetails(model:APIArtifact apiArtifact, APKConf apkConf, APKOperations? operations, string organization, APKOperationPolicy[]? policies, string flow) returns model:InterceptorReference?|model:BackendJwtReference?|error {
+    isolated function retrieveAPIPolicyDetails(model:APIArtifact apiArtifact, APKConf apkConf, APKOperations? operations, string organization, APKOperationPolicy[]? policies, string flow) returns any[]|error {
+        any[] policyReferences = [];
         if policies is APKOperationPolicy[] {
             foreach APKOperationPolicy policy in policies {
                 string policyName = policy.policyName;
@@ -978,7 +983,7 @@ public class APIClient {
                     if (policyName == "Interceptor") {
                         InterceptorPolicy interceptorPolicy = check policy.cloneWithType(InterceptorPolicy);
                         InterceptorPolicy_parameters parameters = <InterceptorPolicy_parameters>interceptorPolicy?.parameters;
-                        EndpointConfiguration endpointConfig = {endpoint: parameters.backendUrl ?: ""};
+                        EndpointConfiguration endpointConfig = {endpoint: parameters.backendUrl ?: "", certificate: {secretName: parameters.tlsSecretName, secretKey: parameters.tlsSecretKey}};
                         model:Backend|error backendService = self.createBackendService(apiArtifact, apkConf, operations, INTERCEPTOR_TYPE, organization, endpointConfig);
                         string backendServiceName = "";
                         if backendService is model:Backend {
@@ -993,17 +998,17 @@ public class APIClient {
                                 name: interceptorService.metadata.name
                             };
                         }
-                        return interceptorReference;
+                        policyReferences.push(interceptorReference);
                     } else if (policyName == "BackendJwt") {
                         BackendJWTPolicy backendJWTPolicy = check policy.cloneWithType(BackendJWTPolicy);
                         model:BackendJWT backendJwt = self.retrieveBackendJWTPolicy(apkConf, apiArtifact, backendJWTPolicy, organization);
                         apiArtifact.backendJwt = backendJwt;
-                        return <model:BackendJwtReference>{name: backendJwt.metadata.name};
+                        policyReferences.push(<model:BackendJwtReference>{name: backendJwt.metadata.name});
                     }
                 }
             }
         }
-        return ();
+        return policyReferences;
     }
     private isolated function retrieveBackendJWTPolicy(APKConf apkConf, model:APIArtifact apiArtifact, BackendJWTPolicy backendJWTPolicy, string organization) returns model:BackendJWT {
         BackendJWTPolicy_parameters parameters = backendJWTPolicy.parameters ?: {};

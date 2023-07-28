@@ -69,7 +69,6 @@ spec:
     kind: API
     name: default-api-version-ratelimit
     group: gateway.networking.k8s.io
-    namespace: gateway-integration-test-infra
 ---
 apiVersion: dp.wso2.com/v1alpha1
 kind: Backend

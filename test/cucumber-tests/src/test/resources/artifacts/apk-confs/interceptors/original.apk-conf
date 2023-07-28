@@ -1,0 +1,17 @@
+name: "InterceptorAPI"
+context: "/interceptor"
+version: "1.0.0"
+type: "REST"
+organization: "apk-org"
+defaultVersion: true
+endpointConfigurations:
+  production:
+    endpoint: "http://backend.apk-integration-test.svc.cluster.local"
+operations:
+  - target: "/get"
+    verb: "GET"
+    authTypeEnabled: true
+    scopes: []
+vhosts:
+  production:
+    - "default.gw.wso2.com"
