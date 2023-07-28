@@ -1,6 +1,6 @@
 # apk-helm
 
-![Version: 0.0.1-m13](https://img.shields.io/badge/Version-0.0.1--m13-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.16.0](https://img.shields.io/badge/AppVersion-1.16.0-informational?style=flat-square)
+![Version: 1.0.0-alpha](https://img.shields.io/badge/Version-1.0.0--alpha-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.16.0](https://img.shields.io/badge/AppVersion-1.16.0-informational?style=flat-square)
 
 A Helm chart for APK components
 
@@ -62,7 +62,7 @@ A Helm chart for APK components
 | wso2.apk.dp.configdeployer.deployment.strategy | string | `"Recreate"` | Deployment strategy |
 | wso2.apk.dp.configdeployer.deployment.replicas | int | `1` | Number of replicas |
 | wso2.apk.dp.configdeployer.deployment.imagePullPolicy | string | `"Always"` | Image pull policy |
-| wso2.apk.dp.configdeployer.deployment.image | string | `"wso2/config-deployer-service:0.0.1-m13"` | Image |
+| wso2.apk.dp.configdeployer.deployment.image | string | `"wso2/config-deployer-service:latest"` | Image |
 | wso2.apk.dp.configdeployer.deployment.configs.authrorization | bool | `true` | Enable authorization for runtime api. |
 | wso2.apk.dp.configdeployer.deployment.configs.baseUrl | string | `"https://api.am.wso2.com:9095/api/runtime"` | Baseurl for runtime api. |
 | wso2.apk.dp.configdeployer.deployment.configs.tls.secretName | string | `""` | TLS secret name for runtime public certificate. |
