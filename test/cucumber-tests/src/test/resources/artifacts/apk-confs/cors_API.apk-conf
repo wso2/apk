@@ -17,12 +17,12 @@ operations:
       authTypeEnabled: true
       scopes: []
 vhosts:
-  production: ["abc"]
+  production: ["default.gw.wso2.com"]
   sandbox: []
 corsConfiguration:
-  corsConfigurationEnabled: false
+  corsConfigurationEnabled: true
   accessControlAllowOrigins:
-    - "abc"
+    - "abc.com"
   accessControlAllowCredentials: true
   accessControlAllowHeaders:
     - "Content-Type"

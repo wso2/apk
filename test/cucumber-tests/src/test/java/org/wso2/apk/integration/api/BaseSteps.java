@@ -107,6 +107,8 @@ public class BaseSteps {
             sharedContext.setResponse(httpClient.doPut(url, sharedContext.getHeaders(), body, null));
         } else if (CurlOption.HttpMethod.DELETE.toString().toLowerCase().equals(httpMethod.toLowerCase())) {
             sharedContext.setResponse(httpClient.doPut(url, sharedContext.getHeaders(), body, null));
+        } else if (CurlOption.HttpMethod.OPTIONS.toString().toLowerCase().equals(httpMethod.toLowerCase())) {
+            sharedContext.setResponse(httpClient.doOptions(url, sharedContext.getHeaders(), null, null));
         }
     }
 
@@ -119,6 +121,28 @@ public class BaseSteps {
             key = Utils.resolveVariables(key, sharedContext.getValueStore());
             value = Utils.resolveVariables(value, sharedContext.getValueStore());
             sharedContext.addHeader(key, value);
+        }
+    }
+
+    @Then("the response headers should contain")
+    public void theResponseHeadersShouldContain(DataTable dataTable) {
+        List<List<String>> rows = dataTable.asLists(String.class);
+        for (List<String> columns : rows) {
+            String key = columns.get(0);
+            String value = columns.get(1);
+            Header header = sharedContext.getResponse().getFirstHeader(key);
+            Assert.assertNotNull(header);
+            Assert.assertEquals(header.getValue(), value);
+        }
+    }
+
+    @Then("the response headers should not contain")
+    public void theResponseHeadersShouldNotContain(DataTable dataTable) {
+        List<List<String>> rows = dataTable.asLists(String.class);
+        for (List<String> columns : rows) {
+            String key = columns.get(0);
+            Header header = sharedContext.getResponse().getFirstHeader(key);
+            Assert.assertNull(header);
         }
     }
 
