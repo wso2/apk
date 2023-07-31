@@ -1340,8 +1340,8 @@ public class APIClient {
         }
     }
     public isolated function prepareArtifact(record {|byte[] fileContent; string fileName; anydata...;|}? apkConfiguration, record {|byte[] fileContent; string fileName; anydata...;|}? definitionFile) returns commons:APKError|model:APIArtifact {
-        if apkConfiguration is () && definitionFile is () {
-            return e909022("apkConfiguration ,definitionFile and apiType are not provided", ());
+        if apkConfiguration is () || definitionFile is () {
+            return e909018("Required apkConfiguration ,definitionFile and apiType are not provided");
         }
         do {
             APKConf? apkConf = ();
