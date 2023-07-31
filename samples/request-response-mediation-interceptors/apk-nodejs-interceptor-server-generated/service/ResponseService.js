@@ -27,6 +27,7 @@
  * returns ResponseHandlerResponseBody
  **/
 exports.handleResponse = function(body) {
+  console.log("Request received to handle response");
   return new Promise(function(resolve, reject) {
     let examples = {};
     examples['application/json'] = {};
