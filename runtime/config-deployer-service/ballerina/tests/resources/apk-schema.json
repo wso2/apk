@@ -523,6 +523,12 @@
         },
         "contextEnabled": {
           "type": "boolean"
+        },
+        "tlsSecretName": {
+          "type": "string"
+        },
+        "tlsSecretKey": {
+          "type": "string"
         }
       },
       "required": [

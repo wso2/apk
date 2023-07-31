@@ -340,3 +340,35 @@ spec:
     kind: Gateway
     name: default
     group: gateway.networking.k8s.io
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: interceptor-service-secret
+  namespace: "apk-integration-test"
+data:
+    tls.pem: |
+      -----BEGIN CERTIFICATE-----
+      MIIDxjCCAq6gAwIBAgIEZMOPyTANBgkqhkiG9w0BAQsFADB1MQswCQYDVQQGEwJV
+      UzELMAkGA1UECAwCQ0ExFjAUBgNVBAcMDU1vdW50YWluIFZpZXcxDTALBgNVBAoM
+      BFdTTzIxFDASBgNVBAsMC0VuZ2luZWVyaW5nMRwwGgYDVQQDDBNpbnRlcmNlcHRv
+      ci1zZXJ2aWNlMB4XDTIzMDcyODA5NTIwOVoXDTMzMDcyODA5NTIwOVowdTELMAkG
+      A1UEBhMCVVMxCzAJBgNVBAgMAkNBMRYwFAYDVQQHDA1Nb3VudGFpbiBWaWV3MQ0w
+      CwYDVQQKDARXU08yMRQwEgYDVQQLDAtFbmdpbmVlcmluZzEcMBoGA1UEAwwTaW50
+      ZXJjZXB0b3Itc2VydmljZTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEB
+      AKcsfIZmptmRp+eMJ8IKFFZ1eQbNA8RH6BqxE1wpdBwrn9m49Rc1MD/XbJG93TlJ
+      bvKCJI3vtnxJGRfbQFwvIyRS2AzLl2+VtWRlVSARdlVT3HSlRxdO2ROllAlICD75
+      uwyJTxNQeBR1gx3YxelpemGWEj962tBYfrU8mgYQRtv7ctAlo0ILrDyuXlx+yj0y
+      76/oDBtM6irC64YeoE+S4oIHnOu3RjFjyNLnLraqv5ye7YQoMjpHYJKpM1oW3jBG
+      ojijvDLQcnXkjxJxsA/NyZEQXLpqfgzaRy4SF+scl+eYaJsnU6LT62BHA7aNSLzu
+      62sqbAnlFnaxrWG/UQthGz8CAwEAAaNeMFwwWgYDVR0RBFMwUYITaW50ZXJjZXB0
+      b3Itc2VydmljZYI6aW50ZXJjZXB0b3Itc2VydmljZS5hcGstaW50ZWdyYXRpb24t
+      dGVzdC5zdmMuY2x1c3Rlci5sb2NhbDANBgkqhkiG9w0BAQsFAAOCAQEAOTLeIK6S
+      E5CEEdJWUVO9I7AAMFFqbkVk596iUfV3IyXfcvto/QXhKwY8zQSEqSo3kgIz6k+Z
+      vYSqPcZr2LrrMVc5hx4J2eljPfPJxpQKRnYREHk44EH8pGZ8sDhQV+4umKl7J1Mn
+      ttLzVcEcXsZfgq07mElLze9rvyH7Rm6Z7R0caizT/MzJ1MJYXniWWQcBlNO94LkB
+      4ojQLiJnTtKLABW6DASatXrtJjFgVVvO/+wcgaJySVn6FWkO9z83IY3l/4WANd7K
+      iZpnaZyuhK/31uR06++NI+592kEXdTDKZ7cPRas9vPABs5K6tiwff4dNypyoF/M/
+      DlU3bLKzKD3VAQ==
+      -----END CERTIFICATE-----
