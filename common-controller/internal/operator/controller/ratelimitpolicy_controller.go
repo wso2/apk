@@ -198,9 +198,8 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) AddRatelimitRequest(obj k8
 
 	return []reconcile.Request{{
 		NamespacedName: types.NamespacedName{
-			Name: string(ratelimitPolicy.Name),
-			Namespace: GetNamespace(
-				(*gwapiv1b1.Namespace)(ratelimitPolicy.Spec.TargetRef.Namespace), ratelimitPolicy.Namespace),
+			Name:      string(ratelimitPolicy.Name),
+			Namespace: ratelimitPolicy.Namespace,
 		},
 	}}
 }
@@ -414,10 +413,8 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 			var apis []string
 			apis = append(apis,
 				types.NamespacedName{
-					Namespace: GetNamespace(
-						(*gwapiv1b1.Namespace)(ratelimitPolicy.Spec.TargetRef.Namespace),
-						ratelimitPolicy.Namespace),
-					Name: string(ratelimitPolicy.Spec.TargetRef.Name),
+					Namespace: ratelimitPolicy.Namespace,
+					Name:      string(ratelimitPolicy.Spec.TargetRef.Name),
 				}.String())
 			return apis
 		})
