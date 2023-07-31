@@ -2,12 +2,13 @@ apiVersion: dp.wso2.com/v1alpha1
 kind: APIPolicy
 metadata:
   name: interceptor-policy-gateway-level
-  namespace: apk-release
+  namespace: apk-integration-test
 spec:
   override:
     requestInterceptors:
     - name: interceptor-service-gateway-level
-      namespace: apk-release
+    responseInterceptors:
+    - name: interceptor-service-gateway-level
   targetRef:
     group: gateway.networking.k8s.io
     kind: Gateway
@@ -17,7 +18,7 @@ apiVersion: dp.wso2.com/v1alpha1
 kind: Backend
 metadata:
   name: interceptor-backend-v1
-  namespace: apk-release
+  namespace: apk-integration-test
 spec:
   services:
     - host: interceptor-service.test-apk.svc.cluster.local
@@ -58,7 +59,6 @@ metadata:
 spec:
   backendRef:
     name: interceptor-backend-v1
-    namespace: apk-release
   includes:
     - request_body
     - request_headers
@@ -68,7 +68,7 @@ apiVersion: dp.wso2.com/v1alpha1
 kind: RateLimitPolicy
 metadata:
   name: gw-ratelimit-user
-  namespace: apk-release
+  namespace: apk-integration-test
 spec:
   override:
     custom:

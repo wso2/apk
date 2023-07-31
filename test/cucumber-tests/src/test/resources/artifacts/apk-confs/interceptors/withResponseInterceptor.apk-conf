@@ -24,4 +24,3 @@ apiPolicies:
         contextEnabled: true
         headersEnabled: true
         bodyEnabled: true
-        trailersEnabled: true

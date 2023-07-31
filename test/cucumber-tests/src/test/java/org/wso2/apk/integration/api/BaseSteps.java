@@ -175,7 +175,7 @@ public class BaseSteps {
         Thread.sleep(minute * 1000);
     }
 
-    @Then("the response headers contains key {string} and value {string} ")
+    @Then("the response headers contains key {string} and value {string}")
     public void containsHeader(String key, String value) {
         key = Utils.resolveVariables(key, sharedContext.getValueStore());
         value = Utils.resolveVariables(value, sharedContext.getValueStore());
@@ -191,7 +191,7 @@ public class BaseSteps {
             return; // Any value is acceptable
         }
         String actualValue = header.getValue();
-        Assert.assertEquals("Header with key found but value mismatched.", value, actualValue);
+        Assert.assertEquals(value, actualValue,"Header with key found but value mismatched.");
     }
     @Then("the response headers not contains key {string}")
     public void notContainsHeader(String key) {
