@@ -84,7 +84,7 @@ public isolated function testBackendRetryAndTimeoutGenerationFromAPKConf() retur
 
     model:Retry? retryConfigExpected = {
         count: 3,
-        baseIntervalInMillis: 1000,
+        baseIntervalMillis: 1000,
         statusCodes: [504]
     };
     model:Timeout? timeoutConfigExpected = {

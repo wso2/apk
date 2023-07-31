@@ -330,7 +330,7 @@ components:
       properties:
         count:
           type: integer
-        baseIntervalInMillis:
+        baseIntervalMillis:
           type: integer
         statusCodes:
           type: array
