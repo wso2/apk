@@ -78,9 +78,9 @@ func (r *Backend) validateBackendSpec() error {
 	timeout := r.Spec.Timeout
 	circuitBreakers := r.Spec.CircuitBreaker
 	if timeout != nil {
-		if timeout.MaxRouteTimeoutSeconds < timeout.RouteTimeoutSeconds {
-			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("timeout").Child("maxRouteTimeoutSeconds"),
-				timeout.MaxRouteTimeoutSeconds, "maxRouteTimeoutSeconds should be greater than routeTimeoutSeconds"))
+		if timeout.RouteTimeoutSeconds < timeout.RouteIdleTimeoutSeconds {
+			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("timeout").Child("RouteIdleTimeoutSeconds"),
+				timeout.MaxRouteTimeoutSeconds, "RouteTimeoutSeconds should be greater than RouteIdleTimeoutSeconds"))
 		}
 	}
 	if circuitBreakers != nil {

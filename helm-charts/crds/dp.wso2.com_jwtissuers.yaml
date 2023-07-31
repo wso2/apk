@@ -77,8 +77,12 @@ spec:
                           that contains the Certificate
                         properties:
                           key:
+                            description: Key of the secret or configmap
+                            minLength: 1
                             type: string
                           name:
+                            description: Name of the secret or configmap
+                            minLength: 1
                             type: string
                         required:
                         - key
@@ -89,8 +93,12 @@ spec:
                           that contains the Certificate
                         properties:
                           key:
+                            description: Key of the secret or configmap
+                            minLength: 1
                             type: string
                           name:
+                            description: Name of the secret or configmap
+                            minLength: 1
                             type: string
                         required:
                         - key
@@ -112,8 +120,12 @@ spec:
                               ConfigMap that contains the Certificate
                             properties:
                               key:
+                                description: Key of the secret or configmap
+                                minLength: 1
                                 type: string
                               name:
+                                description: Name of the secret or configmap
+                                minLength: 1
                                 type: string
                             required:
                             - key
@@ -124,8 +136,12 @@ spec:
                               that contains the Certificate
                             properties:
                               key:
+                                description: Key of the secret or configmap
+                                minLength: 1
                                 type: string
                               name:
+                                description: Name of the secret or configmap
+                                minLength: 1
                                 type: string
                             required:
                             - key

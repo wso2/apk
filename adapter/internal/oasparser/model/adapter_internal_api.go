@@ -140,43 +140,43 @@ type Endpoint struct {
 
 // EndpointSecurity contains parameters of endpoint security at api.json
 type EndpointSecurity struct {
-	Password         string            `json:"password,omitempty" mapstructure:"password"`
-	Type             string            `json:"type,omitempty" mapstructure:"type"`
-	Enabled          bool              `json:"enabled,omitempty" mapstructure:"enabled"`
-	Username         string            `json:"username,omitempty" mapstructure:"username"`
-	CustomParameters map[string]string `json:"customparameters,omitempty" mapstructure:"customparameters"`
+	Password         string
+	Type             string
+	Enabled          bool
+	Username         string
+	CustomParameters map[string]string
 }
 
 // EndpointConfig holds the configs such as timeout, retry, etc. for the EndpointCluster
 type EndpointConfig struct {
-	RetryConfig          *RetryConfig     `mapstructure:"retryConfig"`
-	TimeoutInMillis      uint32           `mapstructure:"timeoutInMillis"`
-	IdleTimeoutInSeconds uint32           `mapstructure:"idleTimeoutInSeconds"`
-	CircuitBreakers      *CircuitBreakers `mapstructure:"circuitBreakers"`
+	RetryConfig          *RetryConfig
+	TimeoutInMillis      uint32
+	IdleTimeoutInSeconds uint32
+	CircuitBreakers      *CircuitBreakers
 }
 
 // HealthCheck holds the parameters for health check done by apk to the EndpointCluster
 type HealthCheck struct {
-	Timeout            int32 `mapstructure:"timeout"`
-	Interval           int32 `mapstructure:"interval"`
-	UnhealthyThreshold int32 `mapstructure:"unhealthyThreshold"`
-	HealthyThreshold   int32 `mapstructure:"healthyThreshold"`
+	Timeout            uint32
+	Interval           uint32
+	UnhealthyThreshold uint32
+	HealthyThreshold   uint32
 }
 
 // RetryConfig holds the parameters for retries done by apk to the EndpointCluster
 type RetryConfig struct {
-	Count                int32    `mapstructure:"count"`
-	StatusCodes          []uint32 `mapstructure:"statusCodes"`
-	BaseIntervalInMillis int32    `mapstructure:"baseIntervalInMillis"`
+	Count                int32
+	StatusCodes          []uint32
+	BaseIntervalInMillis int32
 }
 
 // CircuitBreakers holds the parameters for retries done by apk to the EndpointCluster
 type CircuitBreakers struct {
-	MaxConnections     int32 `mapstructure:"maxConnections"`
-	MaxRequests        int32 `mapstructure:"maxRequests"`
-	MaxPendingRequests int32 `mapstructure:"maxPendingRequests"`
-	MaxRetries         int32 `mapstructure:"maxRetries"`
-	MaxConnectionPools int32 `mapstructure:"maxConnectionPools"`
+	MaxConnections     int32
+	MaxRequests        int32
+	MaxPendingRequests int32
+	MaxRetries         int32
+	MaxConnectionPools int32
 }
 
 // SecurityScheme represents the structure of an security scheme.
@@ -189,13 +189,13 @@ type SecurityScheme struct {
 
 // CorsConfig represents the API level Cors Configuration
 type CorsConfig struct {
-	Enabled                       bool     `mapstructure:"corsConfigurationEnabled"`
-	AccessControlAllowCredentials bool     `mapstructure:"accessControlAllowCredentials,omitempty"`
-	AccessControlAllowHeaders     []string `mapstructure:"accessControlAllowHeaders"`
-	AccessControlAllowMethods     []string `mapstructure:"accessControlAllowMethods"`
-	AccessControlAllowOrigins     []string `mapstructure:"accessControlAllowOrigins"`
-	AccessControlExposeHeaders    []string `mapstructure:"accessControlExposeHeaders"`
-	AccessControlMaxAge           *int     `mapstructure:"accessControlMaxAge"`
+	Enabled                       bool
+	AccessControlAllowCredentials bool
+	AccessControlAllowHeaders     []string
+	AccessControlAllowMethods     []string
+	AccessControlAllowOrigins     []string
+	AccessControlExposeHeaders    []string
+	AccessControlMaxAge           *int
 }
 
 // InterceptEndpoint contains the parameters of endpoint security

@@ -5,9 +5,8 @@ metadata:
 spec:
   override:
     backendJwtPolicy:
-      name: backendjwt
+      name: backend-jwt-policy
     cORSPolicy:
-      enabled: true
       accessControlAllowCredentials: false
       accessControlAllowOrigins:
         - "*"

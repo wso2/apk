@@ -21,7 +21,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"regexp"
 	"strings"
 
 	"github.com/wso2/apk/adapter/config"
@@ -91,17 +90,6 @@ func (r *API) validateAPI() error {
 			loggers.LoggerAPK.Debugf("API validation Skipped for namespace: %v", r.Namespace)
 			return nil
 		}
-	}
-	if r.Spec.APIDisplayName == "" {
-		allErrs = append(allErrs, field.Required(field.NewPath("spec").Child("apiDisplayName"), "API display name is required"))
-	} else if errMsg := validateAPIDisplayNameFormat(r.Spec.APIDisplayName); errMsg != "" {
-		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("apiDisplayName"), r.Spec.APIDisplayName, errMsg))
-	}
-
-	if r.Spec.APIVersion == "" {
-		allErrs = append(allErrs, field.Required(field.NewPath("spec").Child("apiVersion"), "API version is required"))
-	} else if errMsg := validateAPIVersionFormat(r.Spec.APIVersion); errMsg != "" {
-		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("apiVersion"), r.Spec.APIVersion, errMsg))
 	}
 
 	if r.Spec.Context == "" {
@@ -229,34 +217,8 @@ func retrieveAPIList() ([]API, error) {
 }
 
 func validateAPIContextFormat(context string, apiVersion string) string {
-	if len(context) > 232 {
-		return "API context character length should not exceed 232."
-	}
-	if match, _ := regexp.MatchString("^[/][a-zA-Z0-9~/_.-]*$", context); !match {
-		return "invalid API context. Does not start with / or includes invalid characters."
-	}
 	if !strings.HasSuffix("/"+context, apiVersion) {
 		return "API context value should contain the /{APIVersion} at end."
-	}
-	return ""
-}
-
-func validateAPIDisplayNameFormat(apiName string) string {
-	if len(apiName) > 60 {
-		return "API display name character length should not exceed 60."
-	}
-	if match, _ := regexp.MatchString("^[^~!@#;:%^*()+={}|\\<>\"'',&$\\[\\]\\/]*$", apiName); !match {
-		return "invalid API display name. Includes invalid characters."
-	}
-	return ""
-}
-
-func validateAPIVersionFormat(version string) string {
-	if len(version) > 30 {
-		return "API version length should not exceed 30."
-	}
-	if match, _ := regexp.MatchString("^[^~!@#;:%^*()+={}|\\<>\"'',&/$\\[\\]\\s+\\/]+$", version); !match {
-		return "invalid API version. Includes invalid characters."
 	}
 	return ""
 }

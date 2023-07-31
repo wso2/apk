@@ -5,17 +5,15 @@ metadata:
 spec:
   override:
     disabled: true
-      # serviceRef:
-      #   group: wso2/v1alpha2
-      #   kind: Backend
-      #   name: ext_authz-server
-      #   port: 1234
-      # authTypes:
-      #   apiKey:
-      #     - in: Header
-      #       name: x-api-key
-  # default:
-  #   type: ext
+    # serviceRef:
+    #   group: wso2/v1alpha2
+    #   kind: Backend
+    #   name: ext_authz-server
+    #   port: 1234
+    # authTypes:
+    #   apiKey:
+    #     - in: Header
+    #       name: x-api-key
   #   ext:
   #     serviceRef: 
   #       group: wso2/v1alpha2

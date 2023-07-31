@@ -60,18 +60,21 @@ spec:
                         items:
                           type: string
                         type: array
+                        uniqueItems: true
                       accessControlAllowMethods:
                         description: AccessControlAllowMethods indicates which methods
                           can be used during the actual request.
                         items:
                           type: string
                         type: array
+                        uniqueItems: true
                       accessControlAllowOrigins:
                         description: AccessControlAllowOrigins indicates which origins
                           can be used during the actual request.
                         items:
                           type: string
                         type: array
+                        uniqueItems: true
                       accessControlExposeHeaders:
                         description: AccessControlExposeHeaders indicates which headers
                           can be exposed as part of the response by listing their
@@ -79,6 +82,7 @@ spec:
                         items:
                           type: string
                         type: array
+                        uniqueItems: true
                       accessControlMaxAge:
                         description: AccessControlMaxAge indicates how long the results
                           of a preflight request can be cached in a preflight result
@@ -99,6 +103,7 @@ spec:
                       required:
                       - name
                       type: object
+                    maxItems: 1
                     nullable: true
                     type: array
                   responseInterceptors:
@@ -115,6 +120,7 @@ spec:
                       required:
                       - name
                       type: object
+                    maxItems: 1
                     nullable: true
                     type: array
                 type: object
@@ -143,18 +149,21 @@ spec:
                         items:
                           type: string
                         type: array
+                        uniqueItems: true
                       accessControlAllowMethods:
                         description: AccessControlAllowMethods indicates which methods
                           can be used during the actual request.
                         items:
                           type: string
                         type: array
+                        uniqueItems: true
                       accessControlAllowOrigins:
                         description: AccessControlAllowOrigins indicates which origins
                           can be used during the actual request.
                         items:
                           type: string
                         type: array
+                        uniqueItems: true
                       accessControlExposeHeaders:
                         description: AccessControlExposeHeaders indicates which headers
                           can be exposed as part of the response by listing their
@@ -162,6 +171,7 @@ spec:
                         items:
                           type: string
                         type: array
+                        uniqueItems: true
                       accessControlMaxAge:
                         description: AccessControlMaxAge indicates how long the results
                           of a preflight request can be cached in a preflight result
@@ -182,6 +192,7 @@ spec:
                       required:
                       - name
                       type: object
+                    maxItems: 1
                     nullable: true
                     type: array
                   responseInterceptors:
@@ -198,6 +209,7 @@ spec:
                       required:
                       - name
                       type: object
+                    maxItems: 1
                     nullable: true
                     type: array
                 type: object
