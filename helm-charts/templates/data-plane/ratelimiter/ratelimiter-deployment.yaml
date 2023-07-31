@@ -112,7 +112,7 @@ spec:
             - name: RATELIMITER_LABEL
               value: "default1"
             - name: CONFIG_GRPC_XDS_SERVER_URL
-              value: "{{ template "apk-helm.resource.prefix" . }}-common-controller-service.{{ .Release.Namespace }}.svc:18001"
+              value: "{{ template "apk-helm.resource.prefix" . }}-common-controller-service.{{ .Release.Namespace }}.svc:18005"
             - name: CONFIG_GRPC_XDS_SERVER_USE_TLS
               value: "true"
             - name: CONFIG_GRPC_XDS_CLIENT_TLS_KEY
