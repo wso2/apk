@@ -36,11 +36,5 @@ spec:
     matches:
     - path:
         type: RegularExpression
-        value: /interceptor/1.0.0/books
+        value: /books
       method: POST
-    filters:
-    - type: URLRewrite
-      urlRewrite:
-        path:
-          type: ReplaceFullPath
-          replaceFullPath: /books

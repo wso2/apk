@@ -33,3 +33,16 @@ spec:
   production:
     - httpRouteRefs:
       - interceptor-route
+---
+apiVersion: dp.wso2.com/v1alpha1
+kind: Authentication
+metadata:
+  name: sand-http-bin-authentication
+  namespace: interceptor
+spec:
+  override:
+    disabled: true
+  targetRef:
+    kind: API
+    name: interceptor-api #provide API ref name
+    group: gateway.networking.k8s.io
