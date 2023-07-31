@@ -264,7 +264,7 @@ public type BackendJWTPolicy record {
 
 public type RetryPolicy record {
     int count?;
-    int baseIntervalInMillis?;
+    int baseIntervalMillis?;
     int[] statusCodes?;
 };
 

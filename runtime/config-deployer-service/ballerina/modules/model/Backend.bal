@@ -67,7 +67,7 @@ public type Timeout record {
 
 public type Retry record {
     int count?;
-    int baseIntervalInMillis?;
+    int baseIntervalMillis?;
     int[] statusCodes?;
 };
 

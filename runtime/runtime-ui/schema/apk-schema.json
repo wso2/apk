@@ -433,7 +433,7 @@
           "type": "integer",
           "example": 3
         },
-        "baseIntervalInMillis": {
+        "baseIntervalMillis": {
           "type": "integer",
           "example": 1000
         },
