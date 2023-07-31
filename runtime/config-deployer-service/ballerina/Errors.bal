@@ -168,7 +168,14 @@ public isolated function e909017() returns commons:APKError {
     );
 }
 
-
+public isolated function e909018(string msg) returns commons:APKError {
+    return error commons:APKError("Invalid API request",
+        code = 909018,
+        message = "Invalid API request",
+        statusCode = 406,
+        description = "Invalid API request" + msg
+    );
+}
 
 public isolated function e909021() returns commons:APKError {
     return error commons:APKError("Atleast one operation need to specified",
@@ -259,7 +266,7 @@ public isolated function e909052(error e) returns commons:APKError {
         code = 909052,
         message = "Error while generating k8s artifact",
         statusCode = 500,
-        description = "Error while generating k8s artifact"
+        description = "Error while generating k8s artifact:"+ e.message()
     );
 }
 public isolated function e909043() returns commons:APKError {
