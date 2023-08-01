@@ -62,7 +62,10 @@ Feature: API Deployment with Interceptor
     Then I set headers
       |Authorization|bearer ${accessToken}|
     And I send "GET" request to "https://default.gw.wso2.com:9095/interceptor/1.0.0/headers" with body ""
-    And the response body should contain "\"Interceptor-Header\": \"Interceptor-header-value\""
+    And the response body should contain
+      |"Interceptor-Header": "Interceptor-header-value"|
+      |"Interceptor-Header-Apigroup": "Gold"|
+      |"Interceptor-Header-Apitier": "Unlimited"|
     Then the response status code should be 200
     Then the response headers contains key "interceptor-response-header" and value "Interceptor-Response-header-value"
     Then I use the APK Conf file "artifacts/apk-confs/interceptors/withRequestAndResponsetls.apk-conf"
