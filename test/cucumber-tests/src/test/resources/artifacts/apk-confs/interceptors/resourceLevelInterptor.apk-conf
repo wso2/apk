@@ -35,3 +35,8 @@ operations:
 vhosts:
   production:
     - "default.gw.wso2.com"
+additionalProperties:
+  - name: "APIGroup"
+    value: "Gold"
+  - name: "APITier"
+    value: "Unlimited"

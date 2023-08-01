@@ -163,7 +163,7 @@ spec:
     spec:
       containers:
       - image: "tharindu1st/interceptor_service:latest"
-        imagePullPolicy: "IfNotPresent"
+        imagePullPolicy: "Always"
         name: "interceptor-service-deployment"
         ports:
         - containerPort: 8443

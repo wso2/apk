@@ -1,4 +1,7 @@
+import ballerina/lang.value;
 import ballerina/http;
+import ballerina/log;
+import ballerina/regex;
 
 http:Service interceptorService = service object {
     # Handle Request
@@ -6,7 +9,25 @@ http:Service interceptorService = service object {
     # + payload - Content of the request 
     # + return - Successful operation 
     isolated resource function post 'handle\-request(@http:Payload RequestHandlerRequestBody payload) returns OkRequestHandlerResponseBody {
-        OkRequestHandlerResponseBody okRequestHandlerResponseBody = {body: {headersToAdd: {"Interceptor-header": "Interceptor-header-value"}}};
+        map<string> headers = {"Interceptor-header": "Interceptor-header-value"};
+        InvocationContext? invocationContext = payload.invocationContext;
+        if invocationContext is InvocationContext {
+            string? apiProperties = invocationContext.apiProperties;
+            if apiProperties is string {
+                string replacedAPIProperties = regex:replaceAll(apiProperties, "'", "\"");
+                do {
+                    APIProperties apiPropertyJson = check value:fromJsonStringWithType(replacedAPIProperties, APIProperties);
+                    foreach any key in apiPropertyJson.keys() {
+                        if key is string {
+                            headers["Interceptor-header-"+key] = <string>apiPropertyJson.get(key);
+                        }
+                    }
+                } on fail var e {
+                    log:printError("Error while parsing apiProperties: " + e.message());
+                }
+            }
+        }
+        OkRequestHandlerResponseBody okRequestHandlerResponseBody = {body: {headersToAdd: headers}};
         return okRequestHandlerResponseBody;
     }
     # Handle Response
@@ -20,4 +41,8 @@ http:Service interceptorService = service object {
         json status = {"health": "Ok"};
         return {body: status};
     }
+};
+
+public type APIProperties record {
+
 };
