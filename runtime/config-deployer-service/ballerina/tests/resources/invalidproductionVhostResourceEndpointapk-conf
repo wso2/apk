@@ -1,0 +1,31 @@
+id: "123e4567-e89b-12d3-a456-426614174000"
+name: "PetStore API"
+context: "/petstore"
+version: "1.0.0"
+type: "REST"
+organization: "ACME Corp"
+endpointConfigurations:
+  sandbox:
+     endpoint: "https://petstore.swagger.io/v2/pet"
+operations:
+  - target: "/pets"
+    verb: "GET"
+    authTypeEnabled: true
+    endpointConfigurations:
+      production:
+        endpoint: "https://petstore.swagger.io/v2/pet"
+  - target: "/pets/{petId}"
+    verb: "GET"
+    authTypeEnabled: true
+    scopes: []
+authentication:
+  - authType: "JWT"
+    sendTokenToUpstream: false
+    enabled: true
+    headerName: "Authorization"
+    queryParamName: "apikey"
+    headerEnable: true
+    queryParamEnable: true
+vhosts:
+  sandbox:
+    - "api.petstore.com"

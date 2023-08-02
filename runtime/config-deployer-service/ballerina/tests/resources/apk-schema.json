@@ -586,7 +586,6 @@
     "context",
     "type",
     "organization",
-    "endpointConfigurations",
     "operations",
     "vhosts"
   ]
