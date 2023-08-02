@@ -146,6 +146,9 @@ public class ConfigGeneratorClient {
             response.addHeader("Content-Disposition", "attachment; filename=" + zipName[0]);
             return response;
         } on fail var e {
+            if e is commons:APKError {
+                return e;
+            }
             return e909052(e);
         }
     }

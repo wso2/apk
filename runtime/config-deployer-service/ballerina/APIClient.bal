@@ -1322,12 +1322,18 @@ public class APIClient {
             return "api-" + uuid:createType1AsString();
         }
     }
-    private isolated function validateAPKConfiguration(string apkconfJson) returns commons:APKError? {
+    private isolated function validateAndRetrieveAPKConfiguration(json apkconfJson) returns APKConf|commons:APKError? {
         do {
-            runtimeapi:APKConfValidationResponse validationResponse = check apkConfValidator.validate(apkconfJson);
+            runtimeapi:APKConfValidationResponse validationResponse = check apkConfValidator.validate(apkconfJson.toJsonString());
             if validationResponse.isValidated() {
-                // additional validations
-
+                APKConf apkConf = check apkconfJson.cloneWithType(APKConf);
+                map<string> errors = {};
+                self.validateVhosts(apkConf, errors);
+                self.validateEndpointConfigurations(apkConf, errors);
+                if (errors.length() > 0) {
+                    return e909029(errors);
+                }
+                return apkConf;
             } else {
                 map<string> errorMap = {};
                 foreach runtimeapi:ErrorHandler errorItem in check validationResponse.getErrorItems() {
@@ -1339,31 +1345,104 @@ public class APIClient {
             return e909022("APK configuration is not valid", e);
         }
     }
+    private isolated function validateEndpointConfigurations(APKConf apkConf, map<string> errors) {
+        APKConf_vhosts? vhosts = apkConf.vhosts;
+        boolean productionVhostsAvailable = false;
+        boolean sandboxVhostsAvailable = false;
+
+        if vhosts is APKConf_vhosts {
+            productionVhostsAvailable = vhosts.production is string[];
+            sandboxVhostsAvailable = vhosts.sandbox is string[];
+        }
+        EndpointConfigurations? endpointConfigurations = apkConf.endpointConfigurations;
+        boolean productionEndpointAvailable = false;
+        boolean sandboxEndpointAvailable = false;
+        if endpointConfigurations is EndpointConfigurations {
+            sandboxEndpointAvailable = endpointConfigurations.sandbox is EndpointConfiguration;
+            productionEndpointAvailable = endpointConfigurations.production is EndpointConfiguration;
+        }
+        APKOperations[]? operations = apkConf.operations;
+        if operations is APKOperations[] {
+            foreach APKOperations operation in operations {
+                EndpointConfigurations? endpointConfigs = operation.endpointConfigurations;
+                if endpointConfigs is EndpointConfigurations {
+                    if endpointConfigs.production is () {
+                        if !productionEndpointAvailable && productionVhostsAvailable {
+                            errors["production endpoint"] = "production endpoint not available for " + <string>operation.target;
+                        }
+                    }
+                    if endpointConfigs.sandbox is () {
+                        if !sandboxEndpointAvailable && sandboxVhostsAvailable {
+                            errors["sandbox endpoint"] = "sandbox endpoint not available for " + <string>operation.target;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    private isolated function validateVhosts(APKConf apkConf, map<string> errors) {
+        APKConf_vhosts? vhosts = apkConf.vhosts;
+        if vhosts is APKConf_vhosts {
+            boolean productionVhostsAvailable = vhosts.production is string[];
+            boolean sandboxVhostsAvailable = vhosts.sandbox is string[];
+            boolean sandboxGlobalEndpointAvailable = false;
+            boolean productionGlobalEndpointAvailable = false;
+            EndpointConfigurations? endpointConfigurations = apkConf.endpointConfigurations;
+            if endpointConfigurations is EndpointConfigurations {
+                sandboxGlobalEndpointAvailable = endpointConfigurations.sandbox is EndpointConfiguration;
+                productionGlobalEndpointAvailable = endpointConfigurations.production is EndpointConfiguration;
+            }
+            if sandboxGlobalEndpointAvailable {
+                if !sandboxVhostsAvailable {
+                    errors["sandbox vhosts"] = "sandbox vhosts not available";
+                }
+            }
+            if productionGlobalEndpointAvailable {
+                if !productionVhostsAvailable {
+                    errors["production vhosts"] = "production vhosts not available";
+                }
+            }
+            APKOperations[]? operations = apkConf.operations;
+            if operations is APKOperations[] {
+                foreach APKOperations operation in operations {
+                    EndpointConfigurations? endpointConfigs = operation.endpointConfigurations;
+                    if endpointConfigs is EndpointConfigurations {
+                        if endpointConfigs.production is EndpointConfiguration {
+                            if !productionVhostsAvailable {
+                                errors["production vhosts"] = "production vhosts not available";
+                            }
+                        }
+                        if endpointConfigs.sandbox is EndpointConfiguration {
+                            if !sandboxVhostsAvailable {
+                                errors["sandbox vhosts"] = "sandbox vhosts not available";
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     public isolated function prepareArtifact(record {|byte[] fileContent; string fileName; anydata...;|}? apkConfiguration, record {|byte[] fileContent; string fileName; anydata...;|}? definitionFile) returns commons:APKError|model:APIArtifact {
         if apkConfiguration is () || definitionFile is () {
             return e909018("Required apkConfiguration ,definitionFile and apiType are not provided");
         }
         do {
             APKConf? apkConf = ();
-            if apkConfiguration is record {|byte[] fileContent; string fileName; anydata...;|} {
-                string apkConfContent = check string:fromBytes(apkConfiguration.fileContent);
-                string|() convertedJson = check commons:newYamlUtil1().fromYamlStringToJson(apkConfContent);
-                if convertedJson is string {
-                    json apkConfJson = check value:fromJsonString(convertedJson);
-                    _ = check self.validateAPKConfiguration(apkConfJson.toJsonString());
-                    apkConf = check apkConfJson.cloneWithType(APKConf);
-                }
+            string apkConfContent = check string:fromBytes(apkConfiguration.fileContent);
+            string|() convertedJson = check commons:newYamlUtil1().fromYamlStringToJson(apkConfContent);
+            if convertedJson is string {
+                json apkConfJson = check value:fromJsonString(convertedJson);
+                apkConf = check self.validateAndRetrieveAPKConfiguration(apkConfJson);
             }
             string? apiDefinition = ();
-            if definitionFile is record {|byte[] fileContent; string fileName; anydata...;|} {
-                string definitionFileContent = check string:fromBytes(definitionFile.fileContent);
-                string apiType = <string>apkConf?.'type;
-                if apiType == API_TYPE_REST {
-                    if definitionFile.fileName.endsWith(".yaml") {
-                        apiDefinition = check commons:newYamlUtil1().fromYamlStringToJson(definitionFileContent);
-                    } else if definitionFile.fileName.endsWith(".json") {
-                        apiDefinition = definitionFileContent;
-                    }
+            string definitionFileContent = check string:fromBytes(definitionFile.fileContent);
+            string apiType = <string>apkConf?.'type;
+            if apiType == API_TYPE_REST {
+                if definitionFile.fileName.endsWith(".yaml") {
+                    apiDefinition = check commons:newYamlUtil1().fromYamlStringToJson(definitionFileContent);
+                } else if definitionFile.fileName.endsWith(".json") {
+                    apiDefinition = definitionFileContent;
                 }
             }
             if apkConf is () {

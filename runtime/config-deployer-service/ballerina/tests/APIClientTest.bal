@@ -1,6 +1,7 @@
 import ballerina/test;
 import config_deployer_service.model;
 import config_deployer_service.org.wso2.apk.config.model as runtimeModels;
+import wso2/apk_common_lib;
 import ballerina/io;
 
 @test:Config {dataProvider: APIToAPKConfDataProvider}
@@ -53,7 +54,7 @@ public isolated function testBackendJWTConfigGenerationFromAPKConf() returns err
         signingAlgorithm: "SHA256withRSA",
         header: "X-JWT-Assertion",
         tokenTTL: 3600,
-        customClaims: [{claim: "claim1", value: "value1",'type:"string"}, {claim: "claim2", value: "value2",'type:"string"}]
+        customClaims: [{claim: "claim1", value: "value1", 'type: "string"}, {claim: "claim2", value: "value2", 'type: "string"}]
     };
     test:assertTrue(apiArtifact.backendJwt is model:BackendJWT);
     model:BackendJWT? backendJwt = apiArtifact.backendJwt;
@@ -278,4 +279,40 @@ public function APIToAPKConfDataProvider() returns map<[runtimeModels:API, APKCo
         ]
     };
     return apkConfMap;
+}
+
+@test:Config {dataProvider: apkConfValidationDataProvider}
+public isolated function testValidationAPKConf(string apkConfFileName, map<string> errors) returns error? {
+
+    GenerateK8sResourcesBody body = {};
+    body.apkConfiguration = {fileName: apkConfFileName, fileContent: check io:fileReadBytes("./tests/resources/" + apkConfFileName)};
+    body.definitionFile = {fileName: "api.yaml", fileContent: check io:fileReadBytes("./tests/resources/api.yaml")};
+    body.apiType = "REST";
+    APIClient apiClient = new;
+
+    apk_common_lib:APKError|model:APIArtifact apiArtifact = apiClient.prepareArtifact(body.apkConfiguration, body.definitionFile);
+    if apiArtifact is model:APIArtifact {
+        test:assertFail("Expected an error but got an APIArtifact");
+    } else {
+        apk_common_lib:ErrorHandler & readonly details = apiArtifact.detail();
+        test:assertEquals(details.code, 909029);
+        test:assertEquals(details.message, "Invalid apk-conf provided");
+        test:assertEquals(details.description, "Invalid apk-conf provided");
+        test:assertEquals(details.statusCode, 400);
+        test:assertEquals(details.moreInfo, errors);
+    }
+
+}
+
+public function apkConfValidationDataProvider() returns map<[string, map<string>]> {
+
+    map<[string, map<string>]> results = {
+        "1": ["invalidsandboxVhostGlobalEndpoint.apk-conf", {"sandbox vhosts": "sandbox vhosts not available"}],
+        "2": ["invalidproductionVhostGlobalEndpoint.apk-conf", {"production vhosts": "production vhosts not available"}],
+        "3": ["bothVhostGlobalEndpoint.apk-conf", {"required key [vhosts] not found": "#: required key [vhosts] not found"}],
+        "4": ["invalidproductionVhostResourceEndpointapk-conf", {"production vhosts": "production vhosts not available"}],
+        "5": ["invalid.apk-conf", {"sandbox vhosts":"sandbox vhosts not available","production endpoint":"production endpoint not available for /pets"}]
+    };
+
+    return results;
 }
