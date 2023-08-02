@@ -11,9 +11,9 @@ endpointConfigurations:
     endpoint: "http://backend:80"
     resiliency:
       timeout:
-        maxRouteTimeoutSeconds: 5
-        routeIdleTimeoutSeconds: 3
-        routeTimeoutSeconds: 5
+        maxRouteTimeoutSeconds: 3
+        routeIdleTimeoutSeconds: 5
+        routeTimeoutSeconds: 3
 operations:
   - target: "/get"
     verb: "GET"
@@ -28,9 +28,9 @@ operations:
         endpoint: "http://backend:80"
         resiliency:
           timeout:
-            maxRouteTimeoutSeconds: 5
-            routeIdleTimeoutSeconds: 1
-            routeTimeoutSeconds: 5
+            maxRouteTimeoutSeconds: 1
+            routeIdleTimeoutSeconds: 5
+            routeTimeoutSeconds: 1
   - target: "/delay/{delay}"
     verb: "POST"
     authTypeEnabled: true
@@ -40,9 +40,9 @@ operations:
         endpoint: "http://backend:80"
         resiliency:
           timeout:
-            maxRouteTimeoutSeconds: 5
-            routeIdleTimeoutSeconds: 2
-            routeTimeoutSeconds: 5
+            maxRouteTimeoutSeconds: 2
+            routeIdleTimeoutSeconds: 5
+            routeTimeoutSeconds: 2
   - target: "/delay/{delay}"
     verb: "PUT"
     authTypeEnabled: true
