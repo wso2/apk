@@ -20,13 +20,15 @@ package org.wso2.apk.enforcer.security.jwt;
 
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+
 import java.util.List;
+
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.wso2.apk.enforcer.common.CacheProvider;
+import org.wso2.apk.enforcer.common.CacheProviderUtil;
 import org.wso2.apk.enforcer.commons.constants.GraphQLConstants;
 import org.wso2.apk.enforcer.commons.dto.JWTConfigurationDto;
 import org.wso2.apk.enforcer.commons.dto.JWTInfoDto;
@@ -97,6 +99,7 @@ public class APIKeyAuthenticator extends APIKeyHandler {
 
     // Gets API key from request
     private static String getAPIKeyFromRequest(RequestContext requestContext) {
+
         List<APIKeyAuthenticationConfig> apiKeyAuthenticationConfigs = requestContext.getMatchedResourcePaths().get(0)
                 .getAuthenticationConfig().getApiKeyAuthenticationConfigs();
         if (apiKeyAuthenticationConfigs == null) {
@@ -157,7 +160,7 @@ public class APIKeyAuthenticator extends APIKeyHandler {
             String apiContext = requestContext.getMatchedAPI().getBasePath();
             String apiUuid = requestContext.getMatchedAPI().getUuid();
             String envType = requestContext.getMatchedAPI().getEnvType();
-
+            String organization = requestContext.getMatchedAPI().getOrganizationId();
             // Avoids using internal API keys, when internal key header or queryParam configured as api_key
             if (isInternalKey(payload)) {
                 log.error("Invalid API Key token type. {} ", FilterUtils.getMaskedToken(splitToken[0]));
@@ -174,13 +177,14 @@ public class APIKeyAuthenticator extends APIKeyHandler {
 
             // Verifies the token if it is found in cache
             JWTTokenPayloadInfo jwtTokenPayloadInfo = (JWTTokenPayloadInfo)
-                    CacheProvider.getGatewayAPIKeyDataCache().getIfPresent(tokenIdentifier);
+                    CacheProviderUtil.getOrganizationCache(organization).getGatewayAPIKeyDataCache().getIfPresent(tokenIdentifier);
             boolean isVerified = isVerifiedApiKeyInCache(tokenIdentifier, apiKey, payload, splitToken,
-                    "API Key", jwtTokenPayloadInfo);
+                    "API Key", jwtTokenPayloadInfo, organization);
 
             // Verifies token when it is not found in cache
             if (!isVerified) {
-                isVerified = verifyTokenWhenNotInCache(certificate, signedJWT, splitToken, payload, "API Key");
+                isVerified = verifyTokenWhenNotInCache(certificate, signedJWT, splitToken, payload, "API Key",
+                        organization);
             }
 
             if (isVerified) {
@@ -192,7 +196,7 @@ public class APIKeyAuthenticator extends APIKeyHandler {
                     jwtTokenPayloadInfo = new JWTTokenPayloadInfo();
                     jwtTokenPayloadInfo.setPayload(payload);
                     jwtTokenPayloadInfo.setAccessToken(apiKey);
-                    CacheProvider.getGatewayAPIKeyDataCache().put(tokenIdentifier, jwtTokenPayloadInfo);
+                    CacheProviderUtil.getOrganizationCache(organization).getGatewayAPIKeyDataCache().put(tokenIdentifier, jwtTokenPayloadInfo);
                 }
                 // Validate token type
                 Object keyType = payload.getClaim("keytype");
@@ -272,7 +276,7 @@ public class APIKeyAuthenticator extends APIKeyHandler {
                     JWTInfoDto jwtInfoDto = FilterUtils
                             .generateJWTInfoDto(null, validationInfo, validationInfoDto, requestContext);
                     endUserToken = BackendJwtUtils.generateAndRetrieveJWTToken(jwtGenerator, tokenIdentifier,
-                            jwtInfoDto, isGatewayTokenCacheEnabled);
+                            jwtInfoDto, isGatewayTokenCacheEnabled, organization);
                     // Set generated jwt token as a response header
                     requestContext.addOrModifyHeaders(jwtConfigurationDto.getJwtHeader(), endUserToken);
                 }

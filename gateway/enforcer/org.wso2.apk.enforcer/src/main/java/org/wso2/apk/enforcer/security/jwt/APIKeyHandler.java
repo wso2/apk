@@ -26,9 +26,8 @@ import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.wso2.apk.enforcer.common.CacheProvider;
+import org.wso2.apk.enforcer.common.CacheProviderUtil;
 import org.wso2.apk.enforcer.commons.exception.APISecurityException;
-import org.wso2.apk.enforcer.commons.exception.EnforcerException;
 import org.wso2.apk.enforcer.commons.logging.ErrorDetails;
 import org.wso2.apk.enforcer.commons.logging.LoggingConstants;
 import org.wso2.apk.enforcer.constants.APIConstants;
@@ -55,6 +54,7 @@ public abstract class APIKeyHandler implements Authenticator {
      * @return whether a given string is an API key or not.
      */
     public boolean isAPIKey(String apiKey) {
+
         if (apiKey != null && apiKey.split("\\.").length == 3) {
             return true;
         }
@@ -68,6 +68,7 @@ public abstract class APIKeyHandler implements Authenticator {
      * @return whether a given API key is an internal API key or not
      */
     public boolean isInternalKey(JWTClaimsSet jwtClaimsSet) {
+
         Object tokenTypeClaim = jwtClaimsSet.getClaim(APIConstants.JwtTokenConstants.TOKEN_TYPE);
         if (tokenTypeClaim != null) {
             return APIConstants.JwtTokenConstants.INTERNAL_KEY_TOKEN_TYPE.equals(tokenTypeClaim);
@@ -83,9 +84,10 @@ public abstract class APIKeyHandler implements Authenticator {
      * @throws APISecurityException if an invalid API key is passed to the method.
      */
     public void checkInRevokedMap(String tokenIdentifier, String[] splitToken) throws APISecurityException {
+
         if (RevokedJWTDataHolder.isJWTTokenSignatureExistsInRevokedMap(tokenIdentifier)) {
             log.debug("API key retrieved from the revoked jwt token map. Token: {}",
-                         FilterUtils.getMaskedToken(splitToken[0]));
+                    FilterUtils.getMaskedToken(splitToken[0]));
             log.error("Invalid API Key. {}", FilterUtils.getMaskedToken(splitToken[0]));
             throw new APISecurityException(APIConstants.StatusCodes.UNAUTHENTICATED.getCode(),
                     APISecurityConstants.API_AUTH_INVALID_CREDENTIALS,
@@ -107,18 +109,21 @@ public abstract class APIKeyHandler implements Authenticator {
      */
     public boolean isVerifiedApiKeyInCache(String tokenIdentifier, String apiKey, JWTClaimsSet payload,
                                            String[] splitToken, String apiKeyType,
-                                           JWTTokenPayloadInfo jwtTokenPayloadInfo) throws APISecurityException {
+                                           JWTTokenPayloadInfo jwtTokenPayloadInfo, String organization) throws APISecurityException {
+
         boolean isVerified = false;
         if (jwtTokenPayloadInfo != null) {
             String cachedToken = jwtTokenPayloadInfo.getAccessToken();
-            isVerified = cachedToken.equals(apiKey) && !isJwtTokenExpired(payload, apiKeyType);
+            isVerified = cachedToken.equals(apiKey) && !isJwtTokenExpired(payload, apiKeyType, organization);
         } else {
-            boolean isInvalidInternalAPIKey = CacheProvider.getInvalidGatewayInternalKeyCache()
-                    .getIfPresent(tokenIdentifier) != null &&
-                    apiKey.equals(CacheProvider.getInvalidGatewayInternalKeyCache().getIfPresent(tokenIdentifier));
-            boolean isInvalidAPIKey = CacheProvider.getInvalidGatewayAPIKeyCache()
-                    .getIfPresent(tokenIdentifier) != null &&
-                    apiKey.equals(CacheProvider.getInvalidGatewayAPIKeyCache().getIfPresent(tokenIdentifier));
+            boolean isInvalidInternalAPIKey =
+                    CacheProviderUtil.getOrganizationCache(organization).getInvalidGatewayInternalKeyCache()
+                            .getIfPresent(tokenIdentifier) != null &&
+                            apiKey.equals(CacheProviderUtil.getOrganizationCache(organization).getInvalidGatewayInternalKeyCache().getIfPresent(tokenIdentifier));
+            boolean isInvalidAPIKey =
+                    CacheProviderUtil.getOrganizationCache(organization).getInvalidGatewayAPIKeyCache()
+                            .getIfPresent(tokenIdentifier) != null &&
+                            apiKey.equals(CacheProviderUtil.getOrganizationCache(organization).getInvalidGatewayAPIKeyCache().getIfPresent(tokenIdentifier));
             if (isInvalidInternalAPIKey || isInvalidAPIKey) {
                 log.debug("API key found in cache for invalid API keys. " + FilterUtils.getMaskedToken(splitToken[0]),
                         ErrorDetails.errorLog(LoggingConstants.Severity.MINOR, 6601));
@@ -133,7 +138,6 @@ public abstract class APIKeyHandler implements Authenticator {
     /**
      * Handles API key if it's not found in the cache.
      *
-     * @param alias      Certificate alias used to verify the JWT signature
      * @param signedJWT  Signed JWT for the API key
      * @param splitToken API key segments.
      * @param payload    API key payload
@@ -142,11 +146,14 @@ public abstract class APIKeyHandler implements Authenticator {
      * @throws APISecurityException if the given API key is not in the cache and able to verify
      */
     public boolean verifyTokenWhenNotInCache(Certificate certificate, SignedJWT signedJWT, String[] splitToken,
-                                             JWTClaimsSet payload, String apiKeyType) throws APISecurityException {
+                                             JWTClaimsSet payload, String apiKeyType, String organization) throws APISecurityException {
+
         boolean isVerified = false;
         log.debug("{} not found in the cache.", apiKeyType);
 
-        isVerified = JWTUtils.verifyTokenSignature(signedJWT, certificate.getPublicKey()) && !isJwtTokenExpired(payload, apiKeyType);
+        isVerified =
+                JWTUtils.verifyTokenSignature(signedJWT, certificate.getPublicKey()) && !isJwtTokenExpired(payload,
+                        apiKeyType, organization);
         return isVerified;
     }
 
@@ -158,7 +165,8 @@ public abstract class APIKeyHandler implements Authenticator {
      * @return returns true if the JWT token is expired
      * @throws APISecurityException when there is an error while checking API key expiry details.
      */
-    public boolean isJwtTokenExpired(JWTClaimsSet payload, String keyType) throws APISecurityException {
+    public boolean isJwtTokenExpired(JWTClaimsSet payload, String keyType, String organization) throws APISecurityException {
+
         DefaultJWTClaimsVerifier jwtClaimsSetVerifier = new DefaultJWTClaimsVerifier();
         jwtClaimsSetVerifier.setMaxClockSkew((int) FilterUtils.getTimeStampSkewInSeconds());
         try {
@@ -167,11 +175,11 @@ public abstract class APIKeyHandler implements Authenticator {
             if ("Expired JWT".equals(e.getMessage())) {
                 log.debug("{} API key is expired.", keyType);
                 if (APIConstants.JwtTokenConstants.INTERNAL_KEY_TOKEN_TYPE.equals(keyType)) {
-                    CacheProvider.getGatewayInternalKeyDataCache().invalidate(payload.getJWTID());
-                    CacheProvider.getInvalidGatewayInternalKeyCache().put(payload.getJWTID(), "carbon.super");
+                    CacheProviderUtil.getOrganizationCache(organization).getGatewayInternalKeyDataCache().invalidate(payload.getJWTID());
+                    CacheProviderUtil.getOrganizationCache(organization).getInvalidGatewayInternalKeyCache().put(payload.getJWTID(), "carbon.super");
                 } else {
-                    CacheProvider.getGatewayAPIKeyDataCache().invalidate(payload.getJWTID());
-                    CacheProvider.getInvalidGatewayAPIKeyCache().put(payload.getJWTID(), "carbon.super");
+                    CacheProviderUtil.getOrganizationCache(organization).getGatewayAPIKeyDataCache().invalidate(payload.getJWTID());
+                    CacheProviderUtil.getOrganizationCache(organization).getInvalidGatewayAPIKeyCache().put(payload.getJWTID(), "carbon.super");
                 }
                 throw new APISecurityException(APIConstants.StatusCodes.UNAUTHENTICATED.getCode(),
                         APISecurityConstants.API_AUTH_INVALID_CREDENTIALS,
@@ -180,8 +188,6 @@ public abstract class APIKeyHandler implements Authenticator {
         }
         return false;
     }
-
-
 
     /**
      * Checks for API subscriptions.

@@ -28,7 +28,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.wso2.apk.enforcer.analytics.AccessLoggingService;
 import org.wso2.apk.enforcer.api.APIFactory;
-import org.wso2.apk.enforcer.common.CacheProvider;
 import org.wso2.apk.enforcer.commons.logging.ErrorDetails;
 import org.wso2.apk.enforcer.commons.logging.LoggingConstants;
 import org.wso2.apk.enforcer.config.ConfigHolder;
@@ -49,10 +48,10 @@ import org.wso2.apk.enforcer.tracing.TracingException;
 import org.wso2.apk.enforcer.tracing.Utils;
 import org.wso2.apk.enforcer.util.TLSUtils;
 
-import javax.net.ssl.SSLException;
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import javax.net.ssl.SSLException;
 
 /**
  * gRPC netty based server that handles the incoming requests.
@@ -118,8 +117,6 @@ public class AuthServer {
                 logger.debug("analytics filter is disabled.");
             }
 
-            //Initialise cache objects
-            CacheProvider.init();
 
             // Start the server
             server.start();

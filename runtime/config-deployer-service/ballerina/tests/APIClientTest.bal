@@ -3,7 +3,6 @@ import config_deployer_service.model;
 import config_deployer_service.org.wso2.apk.config.model as runtimeModels;
 import wso2/apk_common_lib;
 import ballerina/io;
-import wso2/apk_common_lib;
 
 @test:Config {dataProvider: APIToAPKConfDataProvider}
 public isolated function testFromAPIModelToAPKConf(runtimeModels:API api, APKConf expected) returns error? {
