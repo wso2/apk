@@ -3,6 +3,7 @@ import config_deployer_service.model;
 import config_deployer_service.org.wso2.apk.config.model as runtimeModels;
 import wso2/apk_common_lib;
 import ballerina/io;
+import wso2/apk_common_lib;
 
 @test:Config {dataProvider: APIToAPKConfDataProvider}
 public isolated function testFromAPIModelToAPKConf(runtimeModels:API api, APKConf expected) returns error? {
@@ -35,6 +36,33 @@ public isolated function testCORSPolicyGenerationFromAPKConf() returns error? {
         if (policyData is model:APIPolicyData) {
             test:assertEquals(policyData.cORSPolicy, corsPolicySpecExpected, "CORS Policy is not equal to expected CORS Policy");
         }
+    }
+}
+
+@test:Config {}
+public isolated function testInvalidCORSPolicyGenerationFromAPKConf() returns error? {
+
+    GenerateK8sResourcesBody body = {};
+    body.apkConfiguration = {fileName: "invalid_API_CORS.apk-conf", fileContent: check io:fileReadBytes("./tests/resources/invalid_API_CORS.apk-conf")};
+    body.definitionFile = {fileName: "api_cors.yaml", fileContent: check io:fileReadBytes("./tests/resources/api_cors.yaml")};
+    body.apiType = "REST";
+    APIClient apiClient = new;
+
+    map<string> errors = {
+        "expected type: Boolean, found: String": "#/corsConfiguration/corsConfigurationEnabled: expected type: Boolean, found: String",
+        "expected type: String, found: Integer": "#/corsConfiguration/accessControlAllowMethods/0: expected type: String, found: Integer"
+    };
+
+    apk_common_lib:APKError|model:APIArtifact apiArtifact = apiClient.prepareArtifact(body.apkConfiguration, body.definitionFile);
+    if apiArtifact is model:APIArtifact {
+        test:assertFail("Expected an error but got an APIArtifact");
+    } else {
+        apk_common_lib:ErrorHandler & readonly details = apiArtifact.detail();
+        test:assertEquals(details.code, 909029);
+        test:assertEquals(details.message, "Invalid apk-conf provided");
+        test:assertEquals(details.description, "Invalid apk-conf provided");
+        test:assertEquals(details.statusCode, 400);
+        test:assertEquals(details.moreInfo, errors);
     }
 }
 
