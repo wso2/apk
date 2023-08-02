@@ -58,6 +58,7 @@ spec:
                 properties:
                   name:
                     description: Name is the name of the Backend resource.
+                    minLength: 1
                     type: string
                   namespace:
                     description: Namespace is the namespace of the Backend resource.
@@ -66,11 +67,14 @@ spec:
                 - name
                 type: object
               includes:
+                description: Includes defines the types of data which should be included
+                  when calling the interceptor service
                 items:
                   description: InterceptorInclusion defines the type of data which
                     can be included in the interceptor request/response path
                   type: string
                 maxItems: 4
+                nullable: true
                 type: array
             required:
             - backendRef
