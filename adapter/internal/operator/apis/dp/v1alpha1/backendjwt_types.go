@@ -29,7 +29,7 @@ type BackendJWTSpec struct {
 	// Encoding of the JWT token
 	//
 	// +optional
-	// +kubebuilder:default=base64
+	// +kubebuilder:default=Base64
 	// +kubebuilder:validation:Enum=Base64;Base64url
 	Encoding string `json:"encoding,omitempty"`
 
