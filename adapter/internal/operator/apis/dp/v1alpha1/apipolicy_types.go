@@ -39,6 +39,7 @@ type PolicySpec struct {
 	//
 	// +optional
 	// +nullable
+	// +kubebuilder:validation:MaxItems=1
 	RequestInterceptors []InterceptorReference `json:"requestInterceptors,omitempty"`
 
 	// ResponseInterceptors referenced to intercetor services to be applied
@@ -46,6 +47,7 @@ type PolicySpec struct {
 	//
 	// +optional
 	// +nullable
+	// +kubebuilder:validation:MaxItems=1
 	ResponseInterceptors []InterceptorReference `json:"responseInterceptors,omitempty"`
 
 	// BackendJWTPolicy holds reference to backendJWT policy configurations

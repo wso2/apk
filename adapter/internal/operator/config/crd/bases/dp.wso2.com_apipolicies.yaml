@@ -99,6 +99,7 @@ spec:
                       required:
                       - name
                       type: object
+                    maxItems: 1
                     nullable: true
                     type: array
                   responseInterceptors:
@@ -115,6 +116,7 @@ spec:
                       required:
                       - name
                       type: object
+                    maxItems: 1
                     nullable: true
                     type: array
                 type: object
@@ -182,6 +184,7 @@ spec:
                       required:
                       - name
                       type: object
+                    maxItems: 1
                     nullable: true
                     type: array
                   responseInterceptors:
@@ -198,6 +201,7 @@ spec:
                       required:
                       - name
                       type: object
+                    maxItems: 1
                     nullable: true
                     type: array
                 type: object

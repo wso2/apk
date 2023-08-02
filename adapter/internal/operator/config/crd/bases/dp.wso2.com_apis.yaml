@@ -55,7 +55,9 @@ spec:
                 description: APIDisplayName is the unique name of the API in the namespace
                   defined. "Namespace/APIDisplayName" can be used to uniquely identify
                   an API.
+                maxLength: 60
                 minLength: 1
+                pattern: ^[^~!@#;:%^*()+={}|\<>"'',&$\[\]\/]*$
                 type: string
               apiProperties:
                 description: APIProperties denotes the custom properties of the API.
@@ -77,10 +79,13 @@ spec:
                 type: string
               apiVersion:
                 description: APIVersion is the version number of the API.
+                maxLength: 30
                 minLength: 1
+                pattern: ^[^~!@#;:%^*()+={}|\<>"'',&/$\[\]\s+\/]+$
                 type: string
               context:
                 description: 'Context denotes the context of the API. e.g: /pet-store-api/1.0.6'
+                pattern: ^[/][a-zA-Z0-9~/_.-]*$
                 type: string
               definitionFileRef:
                 description: DefinitionFileRef contains the OpenAPI 3 or Swagger definition
@@ -108,6 +113,7 @@ spec:
                   required:
                   - httpRouteRefs
                   type: object
+                maxItems: 1
                 nullable: true
                 type: array
               sandbox:
@@ -124,6 +130,7 @@ spec:
                   required:
                   - httpRouteRefs
                   type: object
+                maxItems: 1
                 nullable: true
                 type: array
               systemAPI:

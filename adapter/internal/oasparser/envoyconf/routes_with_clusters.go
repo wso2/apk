@@ -503,17 +503,21 @@ func processEndpoints(clusterName string, clusterDetails *model.EndpointCluster,
 	}
 
 	if clusterDetails.Config != nil && clusterDetails.Config.CircuitBreakers != nil {
-		var thresholds []*clusterv3.CircuitBreakers_Thresholds
 		circuitBreaker := clusterDetails.Config.CircuitBreakers
-		thresholds = append(thresholds, &clusterv3.CircuitBreakers_Thresholds{
+		threshold := &clusterv3.CircuitBreakers_Thresholds{
 			MaxConnections:     wrapperspb.UInt32(uint32(circuitBreaker.MaxConnections)),
 			MaxRequests:        wrapperspb.UInt32(uint32(circuitBreaker.MaxRequests)),
 			MaxPendingRequests: wrapperspb.UInt32(uint32(circuitBreaker.MaxPendingRequests)),
 			MaxRetries:         wrapperspb.UInt32(uint32(circuitBreaker.MaxRetries)),
-			MaxConnectionPools: wrapperspb.UInt32(uint32(circuitBreaker.MaxConnectionPools)),
-		})
+		}
+		if circuitBreaker.MaxConnectionPools > 0 {
+			threshold.MaxConnectionPools = wrapperspb.UInt32(uint32(circuitBreaker.MaxConnectionPools))
+		}
+
 		cluster.CircuitBreakers = &clusterv3.CircuitBreakers{
-			Thresholds: thresholds,
+			Thresholds: []*clusterv3.CircuitBreakers_Thresholds{
+				threshold,
+			},
 		}
 	}
 

@@ -346,7 +346,6 @@ func GetResolvedBackend(ctx context.Context, client k8client.Client,
 	}
 	if backend.Spec.Timeout != nil {
 		resolvedBackend.Timeout = &dpv1alpha1.Timeout{
-			MaxRouteTimeoutSeconds:  backend.Spec.Timeout.MaxRouteTimeoutSeconds,
 			RouteTimeoutSeconds:     backend.Spec.Timeout.RouteTimeoutSeconds,
 			RouteIdleTimeoutSeconds: backend.Spec.Timeout.RouteIdleTimeoutSeconds,
 		}
@@ -433,8 +432,7 @@ func UpdateCR(ctx context.Context, client k8client.Client, child metav1.Object) 
 func getResolvedBackendSecurity(ctx context.Context, client k8client.Client,
 	namespace string, security dpv1alpha1.SecurityConfig) dpv1alpha1.ResolvedSecurityConfig {
 	resolvedSecurity := dpv1alpha1.ResolvedSecurityConfig{}
-	switch security.Type {
-	case "Basic":
+	if security.Basic != nil {
 		var err error
 		var username string
 		var password string

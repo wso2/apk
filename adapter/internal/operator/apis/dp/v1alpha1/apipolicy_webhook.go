@@ -24,13 +24,9 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	ctrl "sigs.k8s.io/controller-runtime"
-	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 	"sigs.k8s.io/gateway-api/apis/v1beta1"
 )
-
-// log is for logging in this package.
-var apipolicylog = logf.Log.WithName("apipolicy-resource")
 
 // SetupWebhookWithManager creates a new webhook builder for APIPolicy
 func (r *APIPolicy) SetupWebhookWithManager(mgr ctrl.Manager) error {
@@ -89,8 +85,6 @@ func (r *APIPolicy) ValidatePolicy() error {
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
 func (r *APIPolicy) ValidateDelete() error {
-	apipolicylog.Info("validate delete", "name", r.Name)
-
 	// TODO(user): fill in your validation logic upon object deletion.
 	return nil
 }

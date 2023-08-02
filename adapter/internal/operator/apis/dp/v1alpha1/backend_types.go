@@ -38,104 +38,166 @@ const (
 	WSSProtocol BackendProtocolType = "wss"
 )
 
-// BackendConfigs holds different backend configurations
-type BackendConfigs struct {
-	// +kubebuilder:validation:Enum=http;https;ws;wss
-	Protocol BackendProtocolType `json:"protocol"`
-	TLS      TLSConfig           `json:"tls,omitempty"`
-	Security SecurityConfig      `json:"security,omitempty"`
-}
-
 // BackendSpec defines the desired state of Backend
 type BackendSpec struct {
+	// Services holds hosts and ports
+	//
 	// +kubebuilder:validation:MinItems=1
+	// +kubebuilder:validation:MaxItems=1
 	Services []Service `json:"services,omitempty"`
 
+	// Protocol defines the backend protocol
+	//
 	// +optional
 	// +kubebuilder:validation:Enum=http;https;ws;wss
 	// +kubebuilder:default=http
 	Protocol BackendProtocolType `json:"protocol"`
 
-	// +optional
-	TLS *TLSConfig `json:"tls,omitempty"`
-
-	// +optional
-	Security *SecurityConfig `json:"security,omitempty"`
-
-	// + optional
-	CircuitBreaker *CircuitBreaker `json:"circuitBreaker,omitempty"`
-	// +optional
-	// Timeout congifuration for the backend
-	Timeout *Timeout `json:"timeout,omitempty"`
-
-	// +optional
-	Retry *RetryConfig `json:"retry,omitempty"`
-
+	// BasePath defines the base path of the backend
 	// +optional
 	BasePath string `json:"basePath"`
 
-	// +optional
+	// TLS defines the TLS configurations of the backend
+	TLS *TLSConfig `json:"tls,omitempty"`
+
+	// Security defines the security configurations of the backend
+	Security *SecurityConfig `json:"security,omitempty"`
+
+	// CircuitBreaker defines the circuit breaker configurations
+	CircuitBreaker *CircuitBreaker `json:"circuitBreaker,omitempty"`
+
+	// Timeout congifuration for the backend
+	Timeout *Timeout `json:"timeout,omitempty"`
+
+	// Retry congifuration for the backend
+	Retry *RetryConfig `json:"retry,omitempty"`
+
+	// HealthCheck congifuration for the backend tcp health check
 	HealthCheck *HealthCheck `json:"healthCheck,omitempty"`
 }
 
 // HealthCheck defines the health check configurations
 type HealthCheck struct {
+
+	// Timeout is the time to wait for a health check response.
+	// If the timeout is reached the health check attempt will be considered a failure.
+	//
 	// +kubebuilder:default=1
-	Timeout int32 `json:"timeout,omitempty"`
+	// +optional
+	Timeout uint32 `json:"timeout,omitempty"`
+
+	// Interval is the time between health check attempts in seconds.
+	//
 	// +kubebuilder:default=10
-	Interval int32 `json:"interval,omitempty"`
+	// +optional
+	Interval uint32 `json:"interval,omitempty"`
+
+	// UnhealthyThreshold is the number of consecutive health check failures required
+	// before a backend is marked unhealthy.
+	//
 	// +kubebuilder:default=2
-	UnhealthyThreshold int32 `json:"unhealthyThreshold,omitempty"`
+	// +optional
+	UnhealthyThreshold uint32 `json:"unhealthyThreshold,omitempty"`
+
+	// HealthyThreshold is the number of healthy health checks required before a host is marked healthy.
+	// Note that during startup, only a single successful health check is required to mark a host healthy.
+	//
 	// +kubebuilder:default=2
-	HealthyThreshold int32 `json:"healthyThreshold,omitempty"`
+	// +optional
+	HealthyThreshold uint32 `json:"healthyThreshold,omitempty"`
 }
 
 // Timeout defines the timeout configurations
 type Timeout struct {
 	// +kubebuilder:default=60
 	MaxRouteTimeoutSeconds uint32 `json:"maxRouteTimeoutSeconds"`
-	// +kubebuilder:default=60
+
+	// RouteTimeoutSeconds If not specified, the default is 15s.
+	// This spans between the point at which the entire downstream request (i.e. end-of-stream) has been processed and
+	// when the upstream response has been completely processed.
+	// A value of 0 will disable the route’s timeout.
+	// If the timeout fires, the stream is terminated with a 408 Request Timeout error code.
+	//
+	// +kubebuilder:default=15
 	RouteTimeoutSeconds uint32 `json:"routeTimeoutSeconds"`
+
+	// RouteIdleTimeoutSeconds is distinct to RouteTimeoutSeconds which provides an upper bound.
+	// on the upstream response time, instead bounds the amount of time the request's stream may be idle.
+	// A value of 0 will completely disable the route's idle timeout.
+	//
 	// +kubebuilder:default=300
+	// +optional
 	RouteIdleTimeoutSeconds uint32 `json:"routeIdleTimeoutSeconds"`
 }
 
 // CircuitBreaker defines the circuit breaker configurations
 type CircuitBreaker struct {
-	// +kubebuilder:default=1024
-	MaxConnections uint32 `json:"maxConnections"`
-	// +kubebuilder:default=1024
-	MaxPendingRequests uint32 `json:"maxPendingRequests"`
-	// +kubebuilder:default=1024
-	MaxRequests uint32 `json:"maxRequests"`
-	// +kubebuilder:default=3
-	MaxRetries uint32 `json:"maxRetries"`
-	// +kubebuilder:default=1000
-	MaxConnectionPools uint32 `json:"maxConnectionPools"`
-}
 
-// RetryBudget defines the retry budget configurations
-type RetryBudget struct {
-	BudgetPercent       uint64 `json:"budgetPercent,omitempty"`
-	MinRetryConcurrency uint32 `json:"minRetryConcurrency,omitempty"`
+	// MaxConnections is the maximum number of connections that will make to the upstream cluster.
+	//
+	// +kubebuilder:default=1024
+	// +optional
+	MaxConnections uint32 `json:"maxConnections"`
+
+	// MaxPendingRequests is the maximum number of pending requests that will allow to the upstream cluster.
+	//
+	// +kubebuilder:default=1024
+	// +optional
+	MaxPendingRequests uint32 `json:"maxPendingRequests"`
+
+	// MaxRequests is the maximum number of parallel requests that will make to the upstream cluster.
+	//
+	// +kubebuilder:default=1024
+	// +optional
+	MaxRequests uint32 `json:"maxRequests"`
+
+	// MaxRetries is the maximum number of parallel retries that will allow to the upstream cluster.
+	//
+	// +kubebuilder:default=3
+	// +optional
+	MaxRetries uint32 `json:"maxRetries"`
+
+	// MaxConnectionPools is the maximum number of parallel connection pools that will allow to the upstream cluster.
+	// If not specified, the default is unlimited.
+	//
+	// +optional
+	// +kubebuilder:validation:Minimum=1
+	MaxConnectionPools uint32 `json:"maxConnectionPools"`
 }
 
 // RetryConfig defines retry configurations
 type RetryConfig struct {
+
+	// Count defines the number of retries.
+	// If exceeded, TooEarly(425 response code) response will be sent to the client.
+	//
 	// +kubebuilder:default=1
-	// MaxRetry defines the maximum number of retries
 	Count uint32 `json:"count"`
-	// +kubebuilder:default=2000
-	// BaseIntervalMillis defines the base interval in milliseconds
-	BaseIntervalMillis uint32 `json:"baseIntervalMillis"`
+
+	// BaseIntervalMillis defines the base interval between retries in milliseconds.
+	// This parameter is required and must be greater than zero.
+	//
+	// +kubebuilder:default=25
+	// +kubebuilder:validation:Minimum=1
 	// +optional
+	BaseIntervalMillis uint32 `json:"baseIntervalMillis"`
+
+	// todo(amali) this is not supposed to be a integer list, but a string list. Verify.
+
 	// StatusCodes defines the list of status codes to retry
+	//
+	// +optional
 	StatusCodes []uint32 `json:"statusCodes,omitempty"`
 }
 
 // Service holds host and port information for the service
 type Service struct {
+	// Host is the hostname of the service
+	//
+	// +kubebuilder:validation:MinLength=1
 	Host string `json:"host"`
+
+	// Port of the service
 	Port uint32 `json:"port"`
 }
 
@@ -143,35 +205,62 @@ type Service struct {
 type TLSConfig struct {
 	// CertificateInline is the Inline Certificate entry
 	CertificateInline *string `json:"certificateInline,omitempty"`
+
 	// SecretRef denotes the reference to the Secret that contains the Certificate
 	SecretRef *RefConfig `json:"secretRef,omitempty"`
+
 	// ConfigMapRef denotes the reference to the ConfigMap that contains the Certificate
 	ConfigMapRef *RefConfig `json:"configMapRef,omitempty"`
+
 	// AllowedCNs is the list of allowed Subject Alternative Names (SANs)
+	//
+	// +optional
 	AllowedSANs []string `json:"allowedSANs,omitempty"`
 }
 
 // RefConfig holds a config for a secret or a configmap
 type RefConfig struct {
+	// Name of the secret or configmap
+	//
+	// +kubebuilder:validation:MinLength=1
 	Name string `json:"name"`
-	Key  string `json:"key"`
+
+	// Key of the secret or configmap
+	//
+	// +kubebuilder:validation:MinLength=1
+	Key string `json:"key"`
 }
 
 // SecurityConfig defines enpoint security configurations
 type SecurityConfig struct {
-	Type  string               `json:"type,omitempty"`
+	// todo(amali) remove this field
+	Type string `json:"type,omitempty"`
+
+	// Basic security configuration
 	Basic *BasicSecurityConfig `json:"basic,omitempty"`
 }
 
 // BasicSecurityConfig defines basic security configurations
 type BasicSecurityConfig struct {
+	// SecretRef to credentials
 	SecretRef SecretRef `json:"secretRef"`
 }
 
 // SecretRef to credentials
 type SecretRef struct {
-	Name        string `json:"name"`
+	// Name of the secret
+	//
+	// +kubebuilder:validation:MinLength=1
+	Name string `json:"name"`
+
+	// Namespace of the secret
+	//
+	// +kubebuilder:validation:MinLength=1
 	UsernameKey string `json:"usernameKey"`
+
+	// Key of the secret
+	//
+	// +kubebuilder:validation:MinLength=1
 	PasswordKey string `json:"passwordKey"`
 }
 

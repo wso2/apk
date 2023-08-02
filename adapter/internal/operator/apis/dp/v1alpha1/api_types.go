@@ -33,11 +33,15 @@ type APISpec struct {
 	// be used to uniquely identify an API.
 	//
 	// +kubebuilder:validation:MinLength=1
+	// +kubebuilder:validation:MaxLength=60
+	// +kubebuilder:validation:Pattern="^[^~!@#;:%^*()+={}|\\<>\"'',&$\\[\\]\\/]*$"
 	APIDisplayName string `json:"apiDisplayName"`
 
 	// APIVersion is the version number of the API.
 	//
 	// +kubebuilder:validation:MinLength=1
+	// +kubebuilder:validation:MaxLength=30
+	// +kubebuilder:validation:Pattern="^[^~!@#;:%^*()+={}|\\<>\"'',&/$\\[\\]\\s+\\/]+$"
 	APIVersion string `json:"apiVersion"`
 
 	// IsDefaultVersion indicates whether this API version should be used as a default API
@@ -58,6 +62,7 @@ type APISpec struct {
 	//
 	// +optional
 	// +nullable
+	// +kubebuilder:validation:MaxItems=1
 	Production []EnvConfig `json:"production"`
 
 	// Sandbox contains a list of references to HttpRoutes
@@ -67,6 +72,7 @@ type APISpec struct {
 	//
 	// +optional
 	// +nullable
+	// +kubebuilder:validation:MaxItems=1
 	Sandbox []EnvConfig `json:"sandbox"`
 
 	// APIType denotes the type of the API.
@@ -78,6 +84,8 @@ type APISpec struct {
 	// Context denotes the context of the API.
 	// e.g: /pet-store-api/1.0.6
 	//
+	// +kubectl:validation:MaxLength=232
+	// +kubebuilder:validation:Pattern=^[/][a-zA-Z0-9~/_.-]*$
 	Context string `json:"context"`
 
 	// Organization denotes the organization.
