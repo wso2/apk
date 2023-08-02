@@ -27,19 +27,16 @@ import com.nimbusds.jose.crypto.RSASSAVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.wso2.apk.enforcer.common.CacheProvider;
+import org.wso2.apk.enforcer.common.CacheProviderUtil;
 import org.wso2.apk.enforcer.commons.dto.JWTValidationInfo;
 import org.wso2.apk.enforcer.commons.exception.EnforcerException;
-import org.wso2.apk.enforcer.commons.jwttransformer.JWTTransformer;
 import org.wso2.apk.enforcer.config.ConfigHolder;
-import org.wso2.apk.enforcer.config.dto.ExtendedTokenIssuerDto;
 import org.wso2.apk.enforcer.constants.APIConstants;
 import org.wso2.apk.enforcer.constants.Constants;
 import org.wso2.apk.enforcer.constants.JwtConstants;
@@ -56,7 +53,11 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.*;
+import java.security.KeyFactory;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
@@ -64,7 +65,6 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.text.ParseException;
 import java.util.Base64;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -212,12 +212,12 @@ public class JWTUtils {
      * @return the internal representation of the JWT
      * @throws ParseException if an error occurs when decoding the JWT
      */
-    public static SignedJWTInfo getSignedJwt(String accessToken) throws ParseException {
+    public static SignedJWTInfo getSignedJwt(String accessToken,String organization) throws ParseException {
 
         String signature = accessToken.split("\\.")[2];
         SignedJWTInfo signedJWTInfo = null;
         //Check whether GatewaySignedJWTParseCache is correct
-        LoadingCache gatewaySignedJWTParseCache = CacheProvider.getGatewaySignedJWTParseCache();
+        LoadingCache gatewaySignedJWTParseCache = CacheProviderUtil.getOrganizationCache(organization).getGatewaySignedJWTParseCache();
         if (gatewaySignedJWTParseCache != null) {
             Object cachedEntry = gatewaySignedJWTParseCache.getIfPresent(signature);
             if (cachedEntry != null) {

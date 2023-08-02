@@ -21,15 +21,14 @@ package org.wso2.apk.enforcer.util;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.wso2.apk.enforcer.common.CacheProviderUtil;
 import org.wso2.apk.enforcer.commons.dto.JWTConfigurationDto;
 import org.wso2.apk.enforcer.commons.dto.JWTInfoDto;
 import org.wso2.apk.enforcer.commons.exception.JWTGeneratorException;
 import org.wso2.apk.enforcer.commons.jwtgenerator.APIMgtGatewayJWTGeneratorImpl;
 import org.wso2.apk.enforcer.commons.jwtgenerator.AbstractAPIMgtGatewayJWTGenerator;
 import org.wso2.apk.enforcer.commons.jwttransformer.JWTTransformer;
-import org.wso2.apk.enforcer.common.CacheProvider;
 import org.wso2.apk.enforcer.commons.exception.APISecurityException;
-import org.wso2.apk.enforcer.config.ConfigHolder;
 import org.wso2.apk.enforcer.constants.APIConstants;
 import org.wso2.apk.enforcer.constants.APISecurityConstants;
 import org.wso2.apk.enforcer.security.jwt.JwtTransformerAnnotation;
@@ -47,21 +46,23 @@ import java.util.ServiceLoader;
  * Contains Util methods related to backend JWT generation.
  */
 public class BackendJwtUtils {
+
     private static final Logger log = LogManager.getLogger(BackendJwtUtils.class);
 
     /**
      * Generates or gets the Cached Backend JWT token.
      *
-     * @param jwtGenerator the jwtGenerator instance to use if generating the token
-     * @param tokenSignature token signature to use in the cache key
-     * @param jwtInfoDto information to include in the jwt
+     * @param jwtGenerator               the jwtGenerator instance to use if generating the token
+     * @param tokenSignature             token signature to use in the cache key
+     * @param jwtInfoDto                 information to include in the jwt
      * @param isGatewayTokenCacheEnabled whether gateway token cache is enabled
      * @return backend jwt token
      * @throws APISecurityException if an error occurs while generating the token
      */
     public static String generateAndRetrieveJWTToken(AbstractAPIMgtGatewayJWTGenerator jwtGenerator,
                                                      String tokenSignature, JWTInfoDto jwtInfoDto,
-                                               boolean isGatewayTokenCacheEnabled) throws APISecurityException {
+                                                     boolean isGatewayTokenCacheEnabled, String organization) throws APISecurityException {
+
         log.debug("Inside generateAndRetrieveJWTToken");
         String endUserToken = null;
         boolean valid = false;
@@ -71,7 +72,8 @@ public class BackendJwtUtils {
         if (jwtGenerator != null) {
             if (isGatewayTokenCacheEnabled) {
                 try {
-                    Object token = CacheProvider.getGatewayJWTTokenCache().get(jwtTokenCacheKey);
+                    Object token =
+                            CacheProviderUtil.getOrganizationCache(organization).getGatewayJWTTokenCache().get(jwtTokenCacheKey);
                     if (token != null && !JWTConstants.UNAVAILABLE.equals(token)) {
                         endUserToken = (String) token;
                         valid = !JWTUtils.isExpired(endUserToken);
@@ -81,10 +83,10 @@ public class BackendJwtUtils {
                 }
 
                 if (StringUtils.isEmpty(endUserToken) || !valid) {
-                    endUserToken = generateToken(jwtGenerator, jwtInfoDto, true, jwtTokenCacheKey);
+                    endUserToken = generateToken(jwtGenerator, jwtInfoDto, true, jwtTokenCacheKey, organization);
                 }
             } else {
-                endUserToken = generateToken(jwtGenerator, jwtInfoDto, false, jwtTokenCacheKey);
+                endUserToken = generateToken(jwtGenerator, jwtInfoDto, false, jwtTokenCacheKey, organization);
             }
         } else {
             log.debug("Error while loading JWTGenerator");
@@ -93,14 +95,17 @@ public class BackendJwtUtils {
     }
 
     private static String generateToken(AbstractAPIMgtGatewayJWTGenerator jwtGenerator, JWTInfoDto jwtInfoDto,
-                   boolean isGatewayTokenCacheEnabled, String jwtTokenCacheKey) throws APISecurityException {
+                                        boolean isGatewayTokenCacheEnabled, String jwtTokenCacheKey,
+                                        String organization) throws APISecurityException {
+
         String endUserToken;
         JWTConfigurationDto jwtConfigurationDto = jwtGenerator.getJWTConfigurationDto();
         jwtGenerator.setJWTConfigurationDto(jwtConfigurationDto);
         try {
             endUserToken = jwtGenerator.generateToken(jwtInfoDto);
             if (isGatewayTokenCacheEnabled) {
-                CacheProvider.getGatewayJWTTokenCache().put(jwtTokenCacheKey, endUserToken);
+                CacheProviderUtil.getOrganizationCache(organization).getGatewayJWTTokenCache().put(jwtTokenCacheKey,
+                        endUserToken);
             }
         } catch (JWTGeneratorException e) {
             log.error("Error while Generating Backend JWT", e);
@@ -113,10 +118,12 @@ public class BackendJwtUtils {
 
     /**
      * Load the specified backend JWT Generator.
+     *
      * @param jwtConfigurationDtoFromAPI jwt configuration dto from api
      * @return an instance of the JWT Generator given in the config
      */
     public static AbstractAPIMgtGatewayJWTGenerator getApiMgtGatewayJWTGenerator(final JWTConfigurationDto jwtConfigurationDtoFromAPI) {
+
         JWTConfigurationDto jwtConfigurationDto = jwtConfigurationDtoFromAPI;
         String classNameInConfig = jwtConfigurationDto.getGatewayJWTGeneratorImpl();
         AbstractAPIMgtGatewayJWTGenerator jwtGenerator = null;
@@ -145,6 +152,7 @@ public class BackendJwtUtils {
      * @return a map of JWT Transformers
      */
     public static Map<String, JWTTransformer> loadJWTTransformers() {
+
         ServiceLoader<JWTTransformer> loader = ServiceLoader.load(JWTTransformer.class);
         Iterator<JWTTransformer> classIterator = loader.iterator();
         Map<String, JWTTransformer> jwtTransformersMap = new HashMap<>();

@@ -66,7 +66,6 @@ public class RequestContext {
 
     // Request Timestamp is required for analytics
     private long requestTimeStamp;
-
     /**
      * The dynamic metadata sent from enforcer are stored in this metadata map.
      *
@@ -364,6 +363,7 @@ public class RequestContext {
     public void setClientCertificate(String clientCertificate) {
         this.clientCertificate = clientCertificate;
     }
+
 
     /**
      * Implements builder pattern to build an {@link RequestContext} object.

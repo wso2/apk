@@ -26,13 +26,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
+import org.wso2.apk.enforcer.common.CacheProviderUtil;
 import org.wso2.apk.enforcer.commons.constants.GraphQLConstants;
 import org.wso2.apk.enforcer.commons.dto.ClaimValueDTO;
 import org.wso2.apk.enforcer.commons.dto.JWTConfigurationDto;
 import org.wso2.apk.enforcer.commons.dto.JWTInfoDto;
 import org.wso2.apk.enforcer.commons.dto.JWTValidationInfo;
 import org.wso2.apk.enforcer.commons.jwtgenerator.AbstractAPIMgtGatewayJWTGenerator;
-import org.wso2.apk.enforcer.common.CacheProvider;
 import org.wso2.apk.enforcer.commons.exception.APISecurityException;
 import org.wso2.apk.enforcer.commons.exception.EnforcerException;
 import org.wso2.apk.enforcer.commons.model.AuthenticationContext;
@@ -87,8 +87,8 @@ public class JWTAuthenticator implements Authenticator {
     public boolean canAuthenticate(RequestContext requestContext) {
         // only getting first operation is enough as all matched resource configs have the same security schemes
         // i.e. graphQL apis do not support resource level security yet
-        JWTAuthenticationConfig jwtAuthenticationConfig = requestContext.getMatchedResourcePaths().get(0)
-                .getAuthenticationConfig().getJwtAuthenticationConfig();
+        JWTAuthenticationConfig jwtAuthenticationConfig =
+                requestContext.getMatchedResourcePaths().get(0).getAuthenticationConfig().getJwtAuthenticationConfig();
         if (jwtAuthenticationConfig != null) {
             String authHeaderValue = retrieveAuthHeaderValue(requestContext, jwtAuthenticationConfig);
 
@@ -99,9 +99,7 @@ public class JWTAuthenticator implements Authenticator {
             // StringUtils.startsWithIgnoreCase(null, "bearer")         = false
             // StringUtils.startsWithIgnoreCase("abc", "bearer")        = false
             // StringUtils.startsWithIgnoreCase("Bearer abc", "bearer") = true
-            return StringUtils.startsWithIgnoreCase(authHeaderValue, JWTConstants.BEARER) &&
-                    authHeaderValue.trim().split("\\s+").length == 2 &&
-                    authHeaderValue.split("\\.").length == 3;
+            return StringUtils.startsWithIgnoreCase(authHeaderValue, JWTConstants.BEARER) && authHeaderValue.trim().split("\\s+").length == 2 && authHeaderValue.split("\\.").length == 3;
         }
         return false;
     }
@@ -124,8 +122,8 @@ public class JWTAuthenticator implements Authenticator {
                 Utils.setTag(jwtAuthenticatorInfoSpan, APIConstants.LOG_TRACE_ID,
                         ThreadContext.get(APIConstants.LOG_TRACE_ID));
             }
-            String jwtToken = retrieveAuthHeaderValue(requestContext, requestContext.getMatchedResourcePaths().get(0)
-                    .getAuthenticationConfig().getJwtAuthenticationConfig());
+            String jwtToken = retrieveAuthHeaderValue(requestContext,
+                    requestContext.getMatchedResourcePaths().get(0).getAuthenticationConfig().getJwtAuthenticationConfig());
             String[] splitToken = jwtToken.split("\\s");
             // Extract the token when it is sent as bearer token. i.e Authorization: Bearer <token>
             if (splitToken.length > 1) {
@@ -146,12 +144,12 @@ public class JWTAuthenticator implements Authenticator {
                     Utils.setTag(decodeTokenHeaderSpan, APIConstants.LOG_TRACE_ID,
                             ThreadContext.get(APIConstants.LOG_TRACE_ID));
                 }
-                signedJWTInfo = JWTUtils.getSignedJwt(jwtToken);
+                signedJWTInfo = JWTUtils.getSignedJwt(jwtToken, organization);
             } catch (ParseException | IllegalArgumentException e) {
                 log.error("Failed to decode the token header. {}", e.getMessage());
                 throw new APISecurityException(APIConstants.StatusCodes.UNAUTHENTICATED.getCode(),
-                        APISecurityConstants.API_AUTH_INVALID_CREDENTIALS,
-                        "Not a JWT token. Failed to decode the token header", e);
+                        APISecurityConstants.API_AUTH_INVALID_CREDENTIALS, "Not a JWT token. Failed to decode the " +
+                        "token header", e);
             } finally {
                 if (Utils.tracingEnabled()) {
                     decodeTokenHeaderSpanScope.close();
@@ -165,8 +163,7 @@ public class JWTAuthenticator implements Authenticator {
             if (StringUtils.isNotEmpty(jwtTokenIdentifier)) {
                 if (RevokedJWTDataHolder.isJWTTokenSignatureExistsInRevokedMap(jwtTokenIdentifier)) {
                     if (log.isDebugEnabled()) {
-                        log.debug("Token retrieved from the revoked jwt token map. Token: "
-                                + FilterUtils.getMaskedToken(jwtHeader));
+                        log.debug("Token retrieved from the revoked jwt token map. Token: " + FilterUtils.getMaskedToken(jwtHeader));
                     }
                     log.debug("Invalid JWT token. " + FilterUtils.getMaskedToken(jwtHeader));
                     throw new APISecurityException(APIConstants.StatusCodes.UNAUTHENTICATED.getCode(),
@@ -179,8 +176,7 @@ public class JWTAuthenticator implements Authenticator {
                 if (validationInfo.isValid()) {
                     // Validate token type
                     Object keyType = claims.getClaim("keytype");
-                    if (keyType != null && !keyType.toString()
-                            .equalsIgnoreCase(requestContext.getMatchedAPI().getEnvType())) {
+                    if (keyType != null && !keyType.toString().equalsIgnoreCase(requestContext.getMatchedAPI().getEnvType())) {
                         throw new APISecurityException(APIConstants.StatusCodes.UNAUTHENTICATED.getCode(),
                                 APISecurityConstants.API_AUTH_INVALID_CREDENTIALS, "Invalid key type.");
                     }
@@ -192,61 +188,50 @@ public class JWTAuthenticator implements Authenticator {
                         // TODO(TharinduD) revisit when subscription validation is enabled
                         if (false) {
                             if (Utils.tracingEnabled()) {
-                                validateSubscriptionSpan = Utils
-                                        .startSpan(TracingConstants.SUBSCRIPTION_VALIDATION_SPAN, tracer);
+                                validateSubscriptionSpan =
+                                        Utils.startSpan(TracingConstants.SUBSCRIPTION_VALIDATION_SPAN, tracer);
                                 validateSubscriptionSpanScope = validateSubscriptionSpan.getSpan().makeCurrent();
                                 Utils.setTag(validateSubscriptionSpan, APIConstants.LOG_TRACE_ID,
                                         ThreadContext.get(APIConstants.LOG_TRACE_ID));
                             }
                             // if the token is self contained, validation subscription from `subscribedApis` claim
-                            JSONObject api = validateSubscriptionFromClaim(name, version, claims, splitToken, envType,
-                                    apiKeyValidationInfoDTO, true);
+                            JSONObject api = validateSubscriptionFromClaim(name, version, claims, splitToken, envType
+                                    , apiKeyValidationInfoDTO, true);
                             if (api == null) {
                                 if (log.isDebugEnabled()) {
-                                    log.debug("Begin subscription validation via Key Manager: "
-                                            + validationInfo.getKeyManager());
+                                    log.debug("Begin subscription validation via Key Manager: " + validationInfo.getKeyManager());
                                 }
                                 apiKeyValidationInfoDTO = validateSubscriptionUsingKeyManager(requestContext,
                                         validationInfo);
 
                                 if (log.isDebugEnabled()) {
-                                    log.debug("Subscription validation via Key Manager. Status: "
-                                            + apiKeyValidationInfoDTO.isAuthorized());
+                                    log.debug("Subscription validation via Key Manager. Status: " + apiKeyValidationInfoDTO.isAuthorized());
                                 }
                                 if (!apiKeyValidationInfoDTO.isAuthorized()) {
-                                    if (GeneralErrorCodeConstants.API_BLOCKED_CODE == apiKeyValidationInfoDTO
-                                            .getValidationStatus()) {
+                                    if (GeneralErrorCodeConstants.API_BLOCKED_CODE == apiKeyValidationInfoDTO.getValidationStatus()) {
                                         FilterUtils.setErrorToContext(requestContext,
                                                 GeneralErrorCodeConstants.API_BLOCKED_CODE,
                                                 APIConstants.StatusCodes.SERVICE_UNAVAILABLE.getCode(),
                                                 GeneralErrorCodeConstants.API_BLOCKED_MESSAGE,
                                                 GeneralErrorCodeConstants.API_BLOCKED_DESCRIPTION);
-                                        throw new APISecurityException(APIConstants.StatusCodes.SERVICE_UNAVAILABLE
-                                                .getCode(), apiKeyValidationInfoDTO.getValidationStatus(),
-                                                GeneralErrorCodeConstants.API_BLOCKED_MESSAGE);
-                                    } else if (APISecurityConstants.API_SUBSCRIPTION_BLOCKED == apiKeyValidationInfoDTO
-                                            .getValidationStatus()) {
+                                        throw new APISecurityException(APIConstants.StatusCodes.SERVICE_UNAVAILABLE.getCode(), apiKeyValidationInfoDTO.getValidationStatus(), GeneralErrorCodeConstants.API_BLOCKED_MESSAGE);
+                                    } else if (APISecurityConstants.API_SUBSCRIPTION_BLOCKED == apiKeyValidationInfoDTO.getValidationStatus()) {
                                         FilterUtils.setErrorToContext(requestContext,
                                                 APISecurityConstants.API_SUBSCRIPTION_BLOCKED,
                                                 APIConstants.StatusCodes.UNAUTHENTICATED.getCode(),
                                                 APISecurityConstants.API_SUBSCRIPTION_BLOCKED_MESSAGE,
                                                 APISecurityConstants.API_SUBSCRIPTION_BLOCKED_DESCRIPTION);
-                                        throw new APISecurityException(APIConstants.StatusCodes.UNAUTHENTICATED
-                                                .getCode(), apiKeyValidationInfoDTO.getValidationStatus(),
-                                                APISecurityConstants.API_SUBSCRIPTION_BLOCKED_MESSAGE);
+                                        throw new APISecurityException(APIConstants.StatusCodes.UNAUTHENTICATED.getCode(), apiKeyValidationInfoDTO.getValidationStatus(), APISecurityConstants.API_SUBSCRIPTION_BLOCKED_MESSAGE);
                                     }
                                     throw new APISecurityException(APIConstants.StatusCodes.UNAUTHORIZED.getCode(),
-                                            apiKeyValidationInfoDTO.getValidationStatus(),
-                                            "User is NOT authorized to access the Resource. "
-                                                    + "API Subscription validation failed.");
+                                            apiKeyValidationInfoDTO.getValidationStatus(), "User is NOT authorized to" +
+                                            " access the Resource. " + "API Subscription validation failed.");
                                 } else {
                                     /* GraphQL Query Analysis Information */
-                                    if (APIConstants.ApiType.GRAPHQL.equals(requestContext.getMatchedAPI()
-                                            .getApiType())) {
+                                    if (APIConstants.ApiType.GRAPHQL.equals(requestContext.getMatchedAPI().getApiType())) {
                                         requestContext.getProperties().put(GraphQLConstants.MAXIMUM_QUERY_DEPTH,
                                                 apiKeyValidationInfoDTO.getGraphQLMaxDepth());
-                                        requestContext.getProperties().put(
-                                                GraphQLConstants.MAXIMUM_QUERY_COMPLEXITY,
+                                        requestContext.getProperties().put(GraphQLConstants.MAXIMUM_QUERY_COMPLEXITY,
                                                 apiKeyValidationInfoDTO.getGraphQLMaxComplexity());
                                     }
                                 }
@@ -291,8 +276,8 @@ public class JWTAuthenticator implements Authenticator {
                     String endUserToken = null;
 
                     // change the config to api specific config
-                    JWTConfigurationDto backendJwtConfig = ConfigHolder.getInstance().getConfig().
-                            getJwtConfigurationDto();
+                    JWTConfigurationDto backendJwtConfig =
+                            ConfigHolder.getInstance().getConfig().getJwtConfigurationDto();
 
                     // jwt generator is only set if the backend jwt is enabled
                     if (this.jwtGenerator != null) {
@@ -307,17 +292,15 @@ public class JWTAuthenticator implements Authenticator {
                         // set custom claims get from the CR
                         jwtInfoDto.setClaims(claimMap);
                         endUserToken = BackendJwtUtils.generateAndRetrieveJWTToken(this.jwtGenerator,
-                                jwtTokenIdentifier,
-                                jwtInfoDto, isGatewayTokenCacheEnabled);
+                                jwtTokenIdentifier, jwtInfoDto, isGatewayTokenCacheEnabled, organization);
                         // Set generated jwt token as a response header
                         // Change the backendJWTConfig to API level
                         requestContext.addOrModifyHeaders(this.jwtGenerator.getJWTConfigurationDto().getJwtHeader(),
                                 endUserToken);
                     }
 
-                    return FilterUtils
-                            .generateAuthenticationContext(requestContext, jwtTokenIdentifier, validationInfo,
-                                    apiKeyValidationInfoDTO, endUserToken, jwtToken, true);
+                    return FilterUtils.generateAuthenticationContext(requestContext, jwtTokenIdentifier,
+                            validationInfo, apiKeyValidationInfoDTO, endUserToken, jwtToken, true);
                 } else {
                     throw new APISecurityException(APIConstants.StatusCodes.UNAUTHENTICATED.getCode(),
                             validationInfo.getValidationCode(),
@@ -374,8 +357,7 @@ public class JWTAuthenticator implements Authenticator {
      * @throws APISecurityException in case of scope validation failure
      */
     private void validateScopes(String apiContext, String apiVersion, ArrayList<ResourceConfig> matchingResources,
-                                JWTValidationInfo jwtValidationInfo, SignedJWTInfo jwtToken)
-            throws APISecurityException {
+                                JWTValidationInfo jwtValidationInfo, SignedJWTInfo jwtToken) throws APISecurityException {
 
         APIKeyValidationInfoDTO apiKeyValidationInfoDTO = new APIKeyValidationInfoDTO();
         Set<String> scopeSet = new HashSet<>(jwtValidationInfo.getScopes());
@@ -399,8 +381,7 @@ public class JWTAuthenticator implements Authenticator {
     }
 
     private APIKeyValidationInfoDTO validateSubscriptionUsingKeyManager(RequestContext requestContext,
-                                                                        JWTValidationInfo jwtValidationInfo)
-            throws APISecurityException {
+                                                                        JWTValidationInfo jwtValidationInfo) throws APISecurityException {
 
         String apiContext = requestContext.getMatchedAPI().getBasePath();
         String apiVersion = requestContext.getMatchedAPI().getVersion();
@@ -413,9 +394,8 @@ public class JWTAuthenticator implements Authenticator {
         if (consumerKey != null && keyManager != null) {
             return KeyValidator.validateSubscription(uuid, apiContext, apiVersion, consumerKey, envType, keyManager);
         }
-        log.debug("Cannot call Key Manager to validate subscription. "
-                + "Payload of the token does not contain the Authorized party - the party to which the ID Token was "
-                + "issued");
+        log.debug("Cannot call Key Manager to validate subscription. " + "Payload of the token does not contain the " +
+                "Authorized party - the party to which the ID Token was " + "issued");
         throw new APISecurityException(APIConstants.StatusCodes.UNAUTHORIZED.getCode(),
                 APISecurityConstants.API_AUTH_FORBIDDEN, APISecurityConstants.API_AUTH_FORBIDDEN_MESSAGE);
     }
@@ -435,8 +415,7 @@ public class JWTAuthenticator implements Authenticator {
      */
     private JSONObject validateSubscriptionFromClaim(String name, String version, JWTClaimsSet payload,
                                                      String[] splitToken, String envType,
-                                                     APIKeyValidationInfoDTO validationInfo,
-                                                     boolean isOauth) throws APISecurityException {
+                                                     APIKeyValidationInfoDTO validationInfo, boolean isOauth) throws APISecurityException {
 
         JSONObject api = null;
         try {
@@ -450,34 +429,26 @@ public class JWTAuthenticator implements Authenticator {
             JSONObject app = payload.getJSONObjectClaim(APIConstants.JwtTokenConstants.APPLICATION);
             if (app != null) {
                 validationInfo.setApplicationUUID(app.getAsString(APIConstants.JwtTokenConstants.APPLICATION_UUID));
-                validationInfo.setApplicationId(app.getAsNumber(APIConstants.JwtTokenConstants.APPLICATION_ID)
-                        .intValue());
+                validationInfo.setApplicationId(app.getAsNumber(APIConstants.JwtTokenConstants.APPLICATION_ID).intValue());
                 validationInfo.setApplicationName(app.getAsString(APIConstants.JwtTokenConstants.APPLICATION_NAME));
                 validationInfo.setApplicationTier(app.getAsString(APIConstants.JwtTokenConstants.APPLICATION_TIER));
                 validationInfo.setSubscriber(app.getAsString(APIConstants.JwtTokenConstants.APPLICATION_OWNER));
-                if (app.containsKey(APIConstants.JwtTokenConstants.QUOTA_TYPE)
-                        && APIConstants.JwtTokenConstants.QUOTA_TYPE_BANDWIDTH
-                        .equals(app.getAsString(APIConstants.JwtTokenConstants.QUOTA_TYPE))) {
+                if (app.containsKey(APIConstants.JwtTokenConstants.QUOTA_TYPE) && APIConstants.JwtTokenConstants.QUOTA_TYPE_BANDWIDTH.equals(app.getAsString(APIConstants.JwtTokenConstants.QUOTA_TYPE))) {
                     validationInfo.setContentAware(true);
                 }
             }
         } catch (ParseException e) {
             log.error("Error while parsing jwt claims");
             throw new APISecurityException(APIConstants.StatusCodes.UNAUTHORIZED.getCode(),
-                    APISecurityConstants.API_AUTH_FORBIDDEN,
-                    APISecurityConstants.API_AUTH_FORBIDDEN_MESSAGE);
+                    APISecurityConstants.API_AUTH_FORBIDDEN, APISecurityConstants.API_AUTH_FORBIDDEN_MESSAGE);
         }
 
         if (payload.getClaim(APIConstants.JwtTokenConstants.SUBSCRIBED_APIS) != null) {
             // Subscription validation
-            JSONArray subscribedAPIs =
-                    (JSONArray) payload.getClaim(APIConstants.JwtTokenConstants.SUBSCRIBED_APIS);
+            JSONArray subscribedAPIs = (JSONArray) payload.getClaim(APIConstants.JwtTokenConstants.SUBSCRIBED_APIS);
             for (Object apiObj : subscribedAPIs) {
-                JSONObject subApi =
-                        (JSONObject) apiObj;
-                if (name.equals(subApi.getAsString(APIConstants.JwtTokenConstants.API_NAME)) &&
-                        version.equals(subApi.getAsString(APIConstants.JwtTokenConstants.API_VERSION)
-                        )) {
+                JSONObject subApi = (JSONObject) apiObj;
+                if (name.equals(subApi.getAsString(APIConstants.JwtTokenConstants.API_NAME)) && version.equals(subApi.getAsString(APIConstants.JwtTokenConstants.API_VERSION))) {
                     api = subApi;
                     validationInfo.setAuthorized(true);
 
@@ -496,21 +467,20 @@ public class JWTAuthenticator implements Authenticator {
                         validationInfo.setSubscriberTenantDomain(subTenant);
                     }
                     if (log.isDebugEnabled()) {
-                        log.debug("User is subscribed to the API: " + name + ", " +
-                                "version: " + version + ". Token: " + FilterUtils.getMaskedToken(splitToken[0]));
+                        log.debug("User is subscribed to the API: " + name + ", " + "version: " + version + ". Token:" +
+                                " " + FilterUtils.getMaskedToken(splitToken[0]));
                     }
                     break;
                 }
             }
             if (api == null) {
                 if (log.isDebugEnabled()) {
-                    log.debug("User is not subscribed to access the API: " + name +
-                            ", version: " + version + ". Token: " + FilterUtils.getMaskedToken(splitToken[0]));
+                    log.debug("User is not subscribed to access the API: " + name + ", version: " + version + ". " +
+                            "Token: " + FilterUtils.getMaskedToken(splitToken[0]));
                 }
                 log.error("User is not subscribed to access the API.");
                 throw new APISecurityException(APIConstants.StatusCodes.UNAUTHORIZED.getCode(),
-                        APISecurityConstants.API_AUTH_FORBIDDEN,
-                        APISecurityConstants.API_AUTH_FORBIDDEN_MESSAGE);
+                        APISecurityConstants.API_AUTH_FORBIDDEN, APISecurityConstants.API_AUTH_FORBIDDEN_MESSAGE);
             }
         } else {
             if (log.isDebugEnabled()) {
@@ -520,42 +490,37 @@ public class JWTAuthenticator implements Authenticator {
             if (!isOauth) {
                 log.error("User is not subscribed to access the API.");
                 throw new APISecurityException(APIConstants.StatusCodes.UNAUTHORIZED.getCode(),
-                        APISecurityConstants.API_AUTH_FORBIDDEN,
-                        APISecurityConstants.API_AUTH_FORBIDDEN_MESSAGE);
+                        APISecurityConstants.API_AUTH_FORBIDDEN, APISecurityConstants.API_AUTH_FORBIDDEN_MESSAGE);
             }
         }
         return api;
     }
 
-    private JWTValidationInfo getJwtValidationInfo(SignedJWTInfo signedJWTInfo, String jti, String organization)
-            throws APISecurityException {
+    private JWTValidationInfo getJwtValidationInfo(SignedJWTInfo signedJWTInfo, String jti, String organization) throws APISecurityException {
 
         String jwtHeader = signedJWTInfo.getSignedJWT().getHeader().toString();
         JWTValidationInfo jwtValidationInfo = null;
-        if (isGatewayTokenCacheEnabled &&
-                !SignedJWTInfo.ValidationStatus.NOT_VALIDATED.equals(signedJWTInfo.getValidationStatus())) {
-            Object cacheToken = CacheProvider.getGatewayTokenCache().getIfPresent(jti);
-            if (cacheToken != null && (Boolean) cacheToken &&
-                    SignedJWTInfo.ValidationStatus.VALID.equals(signedJWTInfo.getValidationStatus())) {
-                if (CacheProvider.getGatewayKeyCache().getIfPresent(jti) != null) {
+        if (isGatewayTokenCacheEnabled && !SignedJWTInfo.ValidationStatus.NOT_VALIDATED.equals(signedJWTInfo.getValidationStatus())) {
+            Object cacheToken =
+                    CacheProviderUtil.getOrganizationCache(organization).getGatewayTokenCache().getIfPresent(jti);
+            if (cacheToken != null && (Boolean) cacheToken && SignedJWTInfo.ValidationStatus.VALID.equals(signedJWTInfo.getValidationStatus())) {
+                if (CacheProviderUtil.getOrganizationCache(organization).getGatewayKeyCache().getIfPresent(jti) != null) {
                     JWTValidationInfo tempJWTValidationInfo =
-                            (JWTValidationInfo) CacheProvider.getGatewayKeyCache()
-                                    .getIfPresent(jti);
-                    checkTokenExpiration(jti, tempJWTValidationInfo);
+                            (JWTValidationInfo) CacheProviderUtil.getOrganizationCache(organization).getGatewayKeyCache().getIfPresent(jti);
+                    checkTokenExpiration(jti, tempJWTValidationInfo, organization);
                     jwtValidationInfo = tempJWTValidationInfo;
                 }
-            } else if (SignedJWTInfo.ValidationStatus.INVALID.equals(signedJWTInfo.getValidationStatus()) &&
-                    CacheProvider.getInvalidTokenCache().getIfPresent(jti) != null) {
+            } else if (SignedJWTInfo.ValidationStatus.INVALID.equals(signedJWTInfo.getValidationStatus()) && CacheProviderUtil.getOrganizationCache(organization).getInvalidTokenCache().getIfPresent(jti) != null) {
                 if (log.isDebugEnabled()) {
-                    log.debug("Token retrieved from the invalid token cache. Token: "
-                            + FilterUtils.getMaskedToken(jwtHeader));
+                    log.debug("Token retrieved from the invalid token cache. Token: " + FilterUtils.getMaskedToken(jwtHeader));
                 }
                 log.debug("Invalid JWT token. " + FilterUtils.getMaskedToken(jwtHeader));
-                if (CacheProvider.getGatewayKeyCache().getIfPresent(jti) != null) {
-                    jwtValidationInfo = (JWTValidationInfo) CacheProvider.getGatewayKeyCache().getIfPresent(jti);
+                if (CacheProviderUtil.getOrganizationCache(organization).getGatewayKeyCache().getIfPresent(jti) != null) {
+                    jwtValidationInfo =
+                            (JWTValidationInfo) CacheProviderUtil.getOrganizationCache(organization).getGatewayKeyCache().getIfPresent(jti);
                 } else {
-                    log.warn("Token retrieved from the invalid token cache. But the validation info not found "
-                            + "in the key cache for the Token: " + FilterUtils.getMaskedToken(jwtHeader));
+                    log.warn("Token retrieved from the invalid token cache. But the validation info not found " + "in" +
+                            " the key cache for the Token: " + FilterUtils.getMaskedToken(jwtHeader));
                     jwtValidationInfo = new JWTValidationInfo();
                     jwtValidationInfo.setValidationCode(APISecurityConstants.API_AUTH_GENERAL_ERROR);
                     jwtValidationInfo.setValid(false);
@@ -566,16 +531,17 @@ public class JWTAuthenticator implements Authenticator {
 
             try {
                 jwtValidationInfo = JWTUtils.validateJWTToken(signedJWTInfo, organization);
-                signedJWTInfo.setValidationStatus(jwtValidationInfo.isValid() ?
-                        SignedJWTInfo.ValidationStatus.VALID : SignedJWTInfo.ValidationStatus.INVALID);
+                signedJWTInfo.setValidationStatus(jwtValidationInfo.isValid() ? SignedJWTInfo.ValidationStatus.VALID
+                        : SignedJWTInfo.ValidationStatus.INVALID);
                 if (isGatewayTokenCacheEnabled) {
                     // Add token to tenant token cache
                     if (jwtValidationInfo.isValid()) {
-                        CacheProvider.getGatewayTokenCache().put(jti, true);
+                        CacheProviderUtil.getOrganizationCache(organization).getGatewayTokenCache().put(jti, true);
                     } else {
-                        CacheProvider.getInvalidTokenCache().put(jti, true);
+                        CacheProviderUtil.getOrganizationCache(organization).getInvalidTokenCache().put(jti, true);
                     }
-                    CacheProvider.getGatewayKeyCache().put(jti, jwtValidationInfo);
+                    CacheProviderUtil.getOrganizationCache(organization).getGatewayKeyCache().put(jti,
+                            jwtValidationInfo);
 
                 }
                 return jwtValidationInfo;
@@ -594,9 +560,11 @@ public class JWTAuthenticator implements Authenticator {
      *
      * @param tokenIdentifier The token Identifier of JWT.
      * @param payload         The payload of the JWT token
+     * @param organization
      * @return
      */
-    private JWTValidationInfo checkTokenExpiration(String tokenIdentifier, JWTValidationInfo payload) {
+    private JWTValidationInfo checkTokenExpiration(String tokenIdentifier, JWTValidationInfo payload,
+                                                   String organization) {
 
         long timestampSkew = FilterUtils.getTimeStampSkewInSeconds();
 
@@ -604,9 +572,9 @@ public class JWTAuthenticator implements Authenticator {
         Date exp = new Date(payload.getExpiryTime());
         if (!DateUtils.isAfter(exp, now, timestampSkew)) {
             if (isGatewayTokenCacheEnabled) {
-                CacheProvider.getGatewayTokenCache().invalidate(tokenIdentifier);
-                CacheProvider.getGatewayJWTTokenCache().invalidate(tokenIdentifier);
-                CacheProvider.getInvalidTokenCache().put(tokenIdentifier, true);
+                CacheProviderUtil.getOrganizationCache(organization).getGatewayTokenCache().invalidate(tokenIdentifier);
+                CacheProviderUtil.getOrganizationCache(organization).getGatewayJWTTokenCache().invalidate(tokenIdentifier);
+                CacheProviderUtil.getOrganizationCache(organization).getInvalidTokenCache().put(tokenIdentifier, true);
             }
             payload.setValid(false);
             payload.setValidationCode(APISecurityConstants.API_AUTH_INVALID_CREDENTIALS);

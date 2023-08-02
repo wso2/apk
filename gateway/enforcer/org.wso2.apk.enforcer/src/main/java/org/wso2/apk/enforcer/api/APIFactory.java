@@ -20,6 +20,7 @@ package org.wso2.apk.enforcer.api;
 import io.envoyproxy.envoy.service.auth.v3.CheckRequest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.wso2.apk.enforcer.common.CacheProviderUtil;
 import org.wso2.apk.enforcer.discovery.api.Api;
 import org.wso2.apk.enforcer.commons.model.APIConfig;
 import org.wso2.apk.enforcer.commons.model.ResourceConfig;
@@ -27,6 +28,7 @@ import org.wso2.apk.enforcer.constants.APIConstants;
 import org.wso2.apk.enforcer.discovery.ApiDiscoveryClient;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -38,7 +40,7 @@ public class APIFactory {
     private static final Logger logger = LogManager.getLogger(APIFactory.class);
 
     private static APIFactory apiFactory;
-    private ConcurrentHashMap<String, API> apis = new ConcurrentHashMap<>();
+    private Map<String, API> apis = new ConcurrentHashMap<>();
 
     private APIFactory() {
     }
@@ -62,7 +64,7 @@ public class APIFactory {
 
     public void addApis(List<Api> apis) {
         //TODO: (Praminda) Use apiId as the map key. Need to add the apiId to envoy context meta
-        ConcurrentHashMap<String, API> newApis = new ConcurrentHashMap<>();
+        Map<String, API> newApis = new ConcurrentHashMap<>();
 
         for (Api api : apis) {
 //            if (APIConstants.ApiType.WEB_SOCKET.equals(api.getApiType())) {
@@ -87,6 +89,7 @@ public class APIFactory {
             logger.debug("Total APIs in new cache: {}", newApis.size());
         }
         this.apis = newApis;
+        CacheProviderUtil.initializeCacheHolder(newApis);
     }
 
     public void removeApi(API api) {
