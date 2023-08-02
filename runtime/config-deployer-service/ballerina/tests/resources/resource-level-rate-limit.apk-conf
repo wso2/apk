@@ -1,0 +1,30 @@
+---
+organization: "wso2"
+name: "test-cors"
+context: "/test_cors"
+version: "2.0.0"
+type: "REST"
+endpointConfigurations:
+    production:
+      endpoint: "https://backend-prod-test/v1/"
+    sandbox:
+      endpoint:
+        name: http-bin-backend
+        namespace: apk-test
+        port: 7676
+        protocol: http
+operations:
+    - target: "/anything"
+      verb: "GET"
+      authTypeEnabled: true
+      scopes: []
+      operationRateLimit:
+        requestsPerUnit: 10
+        unit: Hour
+    - target: "/post_cat"
+      verb: "POST"
+      authTypeEnabled: true
+      scopes: []
+vhosts:
+  production: ["gw.am.wso2.com"]
+  sandbox: ["sandbox.gw.am.wso2.com"]

@@ -72,6 +72,222 @@ public isolated function testBackendJWTConfigGenerationFromAPKConf() returns err
 }
 
 @test:Config {}
+public isolated function testInterceptorConfigGenerationFromAPKConf() returns error? {
+
+    GenerateK8sResourcesBody body = {};
+    body.apkConfiguration = {fileName: "API_Interceptors.apk-conf", fileContent: check io:fileReadBytes("./tests/resources/API_Interceptors.apk-conf")};
+    body.definitionFile = {fileName: "api_cors.yaml", fileContent: check io:fileReadBytes("./tests/resources/api_cors.yaml")};
+    body.apiType = "REST";
+    APIClient apiClient = new;
+
+    model:APIArtifact apiArtifact = check apiClient.prepareArtifact(body.apkConfiguration, body.definitionFile);
+
+    model:InterceptorServiceSpec reqInterceptorServiceSpecExpected = {
+        backendRef: {name: "backend-ad23313e6fc5a4db1073998a6d59fd648b4dc037-interceptor"},
+        includes: [
+            "request_headers",
+            "request_body",
+            "request_trailers",
+            "invocation_context"
+        ]
+    };
+
+    model:InterceptorServiceSpec resInterceptorServiceSpecExpected = {
+        backendRef: {name: "backend-5720a3adf80f8ee7c7f210c38045504b30817c33-interceptor"},
+        includes: [
+            "response_body",
+            "response_trailers"
+        ]
+    };
+
+    test:assertEquals(apiArtifact.interceptorServices.length(), 2, "Required Interceptor services not defined");
+    foreach model:InterceptorService interceptorService in apiArtifact.interceptorServices {
+        test:assertTrue(interceptorService is model:InterceptorService);
+        string interceptorName = interceptorService.metadata.name;
+        model:InterceptorReference interceptorReference = {name: interceptorName};
+        if (interceptorName.startsWith("request-interceptor")) {
+            test:assertEquals(interceptorService.spec, reqInterceptorServiceSpecExpected, "Request Interceptor is not equal to expected Request Interceptor");
+            foreach model:APIPolicy apiPolicy in apiArtifact.apiPolicies {
+                model:APIPolicyData? policyData = apiPolicy.spec.default;
+                if (policyData is model:APIPolicyData) {
+                    model:InterceptorReference[]? requestInterceptors = policyData.requestInterceptors;
+                    if (requestInterceptors is model:InterceptorReference[]) {
+                        foreach model:InterceptorReference reqInterceptorReference in requestInterceptors {
+                            test:assertEquals(reqInterceptorReference, interceptorReference, "Request Interceptor ref is not equal to expected Request Interceptor ref");
+                        }
+                    } else {
+                        test:assertFail("Request Interceptor references not found");
+                    }
+                }
+            }
+        } else if (interceptorName.startsWith("response-interceptor")) {
+            test:assertEquals(interceptorService.spec, resInterceptorServiceSpecExpected, "Response Interceptor is not equal to expected Response Interceptor");
+            foreach model:APIPolicy apiPolicy in apiArtifact.apiPolicies {
+                model:APIPolicyData? policyData = apiPolicy.spec.default;
+                if (policyData is model:APIPolicyData) {
+                    model:InterceptorReference[]? responseInterceptors = policyData.responseInterceptors;
+                    if (responseInterceptors is model:InterceptorReference[]) {
+                        foreach model:InterceptorReference resInterceptorReference in responseInterceptors {
+                            test:assertEquals(resInterceptorReference, interceptorReference, "Response Interceptor ref is not equal to expected Response Interceptor ref");
+                        }
+                    } else {
+                        test:assertFail("Response Interceptor references not found");
+                    }
+                }
+            }
+        }
+    }
+}
+
+@test:Config {}
+public isolated function testBackendConfigGenerationFromAPKConf() returns error? {
+
+    GenerateK8sResourcesBody body = {};
+    body.apkConfiguration = {fileName: "backends.apk-conf", fileContent: check io:fileReadBytes("./tests/resources/backends.apk-conf")};
+    body.definitionFile = {fileName: "api_cors.yaml", fileContent: check io:fileReadBytes("./tests/resources/api_cors.yaml")};
+    body.apiType = "REST";
+    APIClient apiClient = new;
+
+    model:APIArtifact apiArtifact = check apiClient.prepareArtifact(body.apkConfiguration, body.definitionFile);
+
+    model:BackendSpec prodBackendSpec = {
+        services: [
+            {
+                "host": "backend-prod-test",
+                "port": 443
+            }
+        ],
+        basePath: "/v1/",
+        protocol: "https"
+    };
+
+    model:BackendSpec sandboxBackendSpec = {
+        services: [
+            {
+                "host": "http-bin-backend.apk-test.svc.cluster.local",
+                "port": 7676
+            }
+        ],
+        protocol: "http"
+    };
+
+    test:assertEquals(apiArtifact.backendServices.length(), 3, "Required number of endpoints not found");
+    test:assertTrue(apiArtifact.productionEndpointAvailable, "Production endpoint not defined");
+    test:assertEquals(apiArtifact.productionRoute.length(), 1, "Production endpoint not defined");
+    foreach model:Httproute httpRoute in apiArtifact.productionRoute {
+        test:assertEquals(httpRoute.spec.hostnames, ["gw.am.wso2.com"], "Production endpoint vhost mismatch");
+        test:assertEquals(httpRoute.spec.rules.length(), 2, "Required number of HTTP Route rules not found");
+        model:HTTPBackendRef[]? backendRefs = httpRoute.spec.rules[0].backendRefs;
+        if backendRefs is model:HTTPBackendRef[] {
+            string backendUUID = backendRefs[0].name;
+            test:assertEquals(apiArtifact.backendServices.get(backendUUID).spec, prodBackendSpec, "Production Backend is not equal to expected Production Backend Config");
+        } else {
+            test:assertFail("Production backend references not found");
+        }
+    }
+
+    test:assertTrue(apiArtifact.sandboxEndpointAvailable, "Sandbox endpoint not defined");
+    test:assertEquals(apiArtifact.sandboxRoute.length(), 1, "Sandbox Backend not defined");
+    foreach model:Httproute httpRoute in apiArtifact.sandboxRoute {
+        test:assertEquals(httpRoute.spec.hostnames, ["sandbox.gw.am.wso2.com"], "Sandbox vhost mismatch");
+        model:HTTPBackendRef[]? backendRefs = httpRoute.spec.rules[0].backendRefs;
+        if backendRefs is model:HTTPBackendRef[] {
+            string backendUUID = backendRefs[0].name;
+            test:assertEquals(apiArtifact.backendServices.get(backendUUID).spec, sandboxBackendSpec, "Sandbox Backend is not equal to expected Sandbox Backend Config");
+        } else {
+            test:assertFail("Sandbox backend references not found");
+        }
+    }
+}
+
+@test:Config {}
+public isolated function testAPILevelRateLimitConfigGenerationFromAPKConf() returns error? {
+
+    GenerateK8sResourcesBody body = {};
+    body.apkConfiguration = {fileName: "backends.apk-conf", fileContent: check io:fileReadBytes("./tests/resources/backends.apk-conf")};
+    body.definitionFile = {fileName: "api_cors.yaml", fileContent: check io:fileReadBytes("./tests/resources/api_cors.yaml")};
+    body.apiType = "REST";
+    APIClient apiClient = new;
+
+    model:APIArtifact apiArtifact = check apiClient.prepareArtifact(body.apkConfiguration, body.definitionFile);
+
+    model:RateLimitData rateLimitData = {
+        organization: "wso2",
+        api: {
+            requestsPerUnit: 5,
+            unit: "Minute"
+        }
+    };
+
+    test:assertEquals(apiArtifact.rateLimitPolicies.length(), 1, "Required number of Rate Limit policies not found");
+    foreach model:RateLimitPolicy rateLimitPolicy in apiArtifact.rateLimitPolicies {
+        test:assertEquals(rateLimitPolicy.spec.'default, rateLimitData, "Rate limit policy is not equal to expected Rate limit config");
+        test:assertEquals(rateLimitPolicy.spec.targetRef.kind, "API", "Rate limit type is not equal to expected Rate limit type");
+    }
+}
+
+@test:Config {}
+public isolated function testOperationLevelRateLimitConfigGenerationFromAPKConf() returns error? {
+
+    GenerateK8sResourcesBody body = {};
+    body.apkConfiguration = {fileName: "resource-level-rate-limit.apk-conf", fileContent: check io:fileReadBytes("./tests/resources/resource-level-rate-limit.apk-conf")};
+    body.definitionFile = {fileName: "api_cors.yaml", fileContent: check io:fileReadBytes("./tests/resources/api_cors.yaml")};
+    body.apiType = "REST";
+    APIClient apiClient = new;
+
+    model:APIArtifact apiArtifact = check apiClient.prepareArtifact(body.apkConfiguration, body.definitionFile);
+
+    model:RateLimitData rateLimitData = {
+        organization: "wso2",
+        api: {
+            requestsPerUnit: 10,
+            unit: "Hour"
+        }
+    };
+
+    test:assertEquals(apiArtifact.rateLimitPolicies.length(), 2, "Required number of Rate Limit policies not found");
+    foreach model:RateLimitPolicy rateLimitPolicy in apiArtifact.rateLimitPolicies {
+        test:assertEquals(rateLimitPolicy.spec.'default, rateLimitData, "Rate limit policy is not equal to expected Rate limit config");
+        test:assertEquals(rateLimitPolicy.spec.targetRef.kind, "Resource", "Rate limit type is not equal to expected Rate limit type");
+    }
+}
+
+@test:Config {}
+public isolated function testScopeConfigGenerationFromAPKConf() returns error? {
+
+    GenerateK8sResourcesBody body = {};
+    body.apkConfiguration = {fileName: "backends.apk-conf", fileContent: check io:fileReadBytes("./tests/resources/backends.apk-conf")};
+    body.definitionFile = {fileName: "api_cors.yaml", fileContent: check io:fileReadBytes("./tests/resources/api_cors.yaml")};
+    body.apiType = "REST";
+    APIClient apiClient = new;
+
+    model:APIArtifact apiArtifact = check apiClient.prepareArtifact(body.apkConfiguration, body.definitionFile);
+
+    test:assertEquals(apiArtifact.scopes.length(), 3, "Required number of scopes not found");
+    string[] scopeUUIDs = [
+        apiArtifact.scopes.get("admin").metadata.name,
+        apiArtifact.scopes.get("publisher").metadata.name,
+        apiArtifact.scopes.get("reader").metadata.name
+    ];
+    foreach model:Httproute httpRoute in apiArtifact.productionRoute {
+        model:HTTPRouteFilter[]? httpFilters = httpRoute.spec.rules[0].filters;
+        if httpFilters is model:HTTPRouteFilter[] {
+            foreach model:HTTPRouteFilter httpFilter in httpFilters {
+                if (httpFilter.'type.equalsIgnoreCaseAscii("ExtensionRef")) {
+                    model:LocalObjectReference? extensionRef = httpFilter.extensionRef;
+                    if extensionRef is model:LocalObjectReference {
+                        test:assertEquals(extensionRef.kind, "Scope", "ExtensionRef for scope is not equal to expected Config");
+                        test:assertTrue(scopeUUIDs.indexOf(extensionRef.name) != (), "Scope not found in the scope resources");
+                    }
+                }
+            }
+        } else {
+            test:assertFail("HTTP Route filters not found");
+        }
+    }
+}
+
+@test:Config {}
 public isolated function testBackendRetryAndTimeoutGenerationFromAPKConf() returns error? {
 
     GenerateK8sResourcesBody body = {};
