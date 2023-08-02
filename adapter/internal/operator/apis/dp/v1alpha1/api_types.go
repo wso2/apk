@@ -105,7 +105,6 @@ type APISpec struct {
 	//
 	// +optional
 	// +nullable
-	// +kubebuilder:validation:UniqueItems=true
 	APIProperties []Property `json:"apiProperties,omitempty"`
 }
 
