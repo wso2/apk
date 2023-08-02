@@ -50,7 +50,7 @@ public isolated function testBackendJWTConfigGenerationFromAPKConf() returns err
     model:APIArtifact apiArtifact = check apiClient.prepareArtifact(body.apkConfiguration, body.definitionFile);
 
     model:BackendJWTSpec backendJWTConfigSpec = {
-        encoding: "base64",
+        encoding: "Base64",
         signingAlgorithm: "SHA256withRSA",
         header: "X-JWT-Assertion",
         tokenTTL: 3600,
