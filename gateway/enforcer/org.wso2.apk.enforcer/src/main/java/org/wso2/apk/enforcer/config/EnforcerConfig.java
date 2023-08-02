@@ -26,9 +26,7 @@ import org.wso2.apk.enforcer.config.dto.AdminRestServerDto;
 import org.wso2.apk.enforcer.config.dto.AnalyticsDTO;
 import org.wso2.apk.enforcer.config.dto.AuthServiceConfigurationDto;
 import org.wso2.apk.enforcer.config.dto.CacheDto;
-import org.wso2.apk.enforcer.config.dto.CredentialDto;
 import org.wso2.apk.enforcer.config.dto.FilterDTO;
-import org.wso2.apk.enforcer.config.dto.JWTIssuerConfigurationDto;
 import org.wso2.apk.enforcer.config.dto.ManagementCredentialsDto;
 import org.wso2.apk.enforcer.config.dto.MetricsDTO;
 import org.wso2.apk.enforcer.config.dto.MutualSSLDto;
@@ -53,8 +51,6 @@ public class EnforcerConfig {
     private APIKeyIssuerDto apiKeyIssuerDto;
     private APIKeyIssuerDto runtimeTokenIssuerDto;
     private CacheDto cacheDto;
-    private JWTIssuerConfigurationDto jwtIssuerConfigurationDto;
-    private CredentialDto[] jwtUsersCredentials;
     private String publicCertificatePath = "";
     private String privateKeyPath = "";
     private AnalyticsDTO analyticsConfig;
@@ -94,22 +90,6 @@ public class EnforcerConfig {
 
     public void setJwtConfigurationDto(JWTConfigurationDto jwtConfigurationDto) {
         this.jwtConfigurationDto = jwtConfigurationDto;
-    }
-
-    public void setJwtIssuerConfigurationDto(JWTIssuerConfigurationDto jwtIssuerConfigurationDto) {
-        this.jwtIssuerConfigurationDto = jwtIssuerConfigurationDto;
-    }
-
-    public JWTIssuerConfigurationDto getJwtIssuerConfigurationDto() {
-        return jwtIssuerConfigurationDto;
-    }
-
-    public void setJwtUsersCredentials(CredentialDto[] credentialDtos) {
-        this.jwtUsersCredentials = credentialDtos;
-    }
-
-    public CredentialDto[] getJwtUsersCredentials() {
-        return jwtUsersCredentials;
     }
 
     public JWTConfigurationDto getJwtConfigurationDto() {

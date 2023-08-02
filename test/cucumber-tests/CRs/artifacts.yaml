@@ -79,7 +79,6 @@ type: Opaque
 apiVersion: dp.wso2.com/v1alpha1
 kind: JWTIssuer
 metadata:
-  annotations:
   name: jwtissuer-1
   namespace: apk-integration-test
 spec:

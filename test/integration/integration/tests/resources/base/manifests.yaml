@@ -309,15 +309,15 @@ metadata:
   namespace: apk-integration-test
 spec:
   consumerKeyClaim: azp
-  issuer: https://prod.gw.wso2.com/testkey
+  issuer: https://idp.am.wso2.com/token
   name: TestKey-idp
   organization: carbon.super
   scopesClaim: scope
   signatureValidation:
     certificate:
       secretRef:
-        key: "mg.pem"
-        name: "apk-test-setup-wso2-apk-enforcer-keystore-secret"
+        key: wso2carbon.pem
+        name: apk-test-setup-wso2-apk-enforcer-truststore-secret
   targetRef:
     group: gateway.networking.k8s.io
     kind: Gateway
@@ -331,15 +331,15 @@ metadata:
   namespace: apk-integration-test
 spec:
   consumerKeyClaim: azp
-  issuer: https://prod.gw.wso2.com/testkey
+  issuer: https://idp.am.wso2.com/token
   name: TestKey-idp
   organization: wso2-org
   scopesClaim: scope
   signatureValidation:
     certificate:
       secretRef:
-        key: "mg.pem"
-        name: "apk-test-setup-wso2-apk-enforcer-keystore-secret"
+        key: wso2carbon.pem
+        name: apk-test-setup-wso2-apk-enforcer-truststore-secret
   targetRef:
     group: gateway.networking.k8s.io
     kind: Gateway
@@ -352,15 +352,15 @@ metadata:
   namespace: apk-integration-test
 spec:
   consumerKeyClaim: azp
-  issuer: https://prod.gw.wso2.com/testkey
+  issuer: https://idp.am.wso2.com/token
   name: TestKey-idp
   organization: default
   scopesClaim: scope
   signatureValidation:
     certificate:
       secretRef:
-        key: "mg.pem"
-        name: "apk-test-setup-wso2-apk-enforcer-keystore-secret"
+        key: wso2carbon.pem
+        name: apk-test-setup-wso2-apk-enforcer-truststore-secret
   targetRef:
     group: gateway.networking.k8s.io
     kind: Gateway

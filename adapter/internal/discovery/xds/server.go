@@ -420,14 +420,9 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 
 	// If the token endpoint is enabled, the token endpoint also needs to be added.
 	conf := config.ReadConfigs()
-	enableJwtIssuer := conf.Enforcer.JwtIssuer.Enabled
 	systemHost := conf.Envoy.SystemHost
 
 	logger.LoggerXds.Debugf("System Host : %v", systemHost)
-	if enableJwtIssuer {
-		routeToken := envoyconf.CreateTokenRoute()
-		vhostToRouteArrayMap[systemHost] = append(vhostToRouteArrayMap[systemHost], routeToken)
-	}
 
 	// Add jwsk endpoint
 	routeJwks := envoyconf.CreateJWKSRoute()
@@ -542,7 +537,7 @@ func updateXdsCache(label string, endpoints []types.Resource, clusters []types.R
 		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1414, errSetSnap.Error()))
 		return false
 	}
-	logger.LoggerXds.Infof("New Router cache updated for the label: " + label + " version: " + fmt.Sprint(version) + ", API_UUID: %v", logging.GetValueFromLogContext("API_UUID"))
+	logger.LoggerXds.Infof("New Router cache updated for the label: "+label+" version: "+fmt.Sprint(version)+", API_UUID: %v", logging.GetValueFromLogContext("API_UUID"))
 	return true
 }
 
@@ -590,7 +585,7 @@ func UpdateEnforcerApis(label string, apis []types.Resource, version string) {
 	if errSetSnap != nil {
 		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1414, errSetSnap.Error()))
 	}
-	logger.LoggerXds.Infof("New API cache update for the label: " + label + " version: " + fmt.Sprint(version) + ", API_UUID: %v", logging.GetValueFromLogContext("API_UUID"))
+	logger.LoggerXds.Infof("New API cache update for the label: "+label+" version: "+fmt.Sprint(version)+", API_UUID: %v", logging.GetValueFromLogContext("API_UUID"))
 
 	subAPIs := []*subscription.APIs{}
 	for _, api := range apis {
@@ -688,7 +683,7 @@ func UpdateEnforcerAPIList(label string, apis *subscription.APIList) {
 		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1414, errSetSnap.Error()))
 	}
 	enforcerLabelMap[label].apiList = apiList
-	logger.LoggerXds.Infof("New API List cache update for the label: " + label + " version: " + fmt.Sprint(version) + ", API_UUID: %v", logging.GetValueFromLogContext("API_UUID"))
+	logger.LoggerXds.Infof("New API List cache update for the label: "+label+" version: "+fmt.Sprint(version)+", API_UUID: %v", logging.GetValueFromLogContext("API_UUID"))
 }
 
 // UpdateEnforcerApplicationPolicies sets new update to the enforcer's Application Policies

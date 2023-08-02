@@ -63,15 +63,6 @@ const blockedStatus string = "BLOCKED"
 // enfocer's CDS resource representation.
 func MarshalConfig(config *config.Config) *enforcer.Config {
 
-	jwtUsers := []*enforcer.JWTUser{}
-	for _, user := range config.Enforcer.JwtIssuer.JwtUser {
-		jwtUser := &enforcer.JWTUser{
-			Username: user.Username,
-			Password: user.Password,
-		}
-		jwtUsers = append(jwtUsers, jwtUser)
-	}
-
 	keyPairs := []*enforcer.Keypair{}
 
 	// New configuration
@@ -158,17 +149,6 @@ func MarshalConfig(config *config.Config) *enforcer.Config {
 	return &enforcer.Config{
 		JwtGenerator: &enforcer.JWTGenerator{
 			Keypairs: keyPairs,
-		},
-		JwtIssuer: &enforcer.JWTIssuer{
-			Enabled:               config.Enforcer.JwtIssuer.Enabled,
-			Issuer:                config.Enforcer.JwtIssuer.Issuer,
-			Encoding:              config.Enforcer.JwtIssuer.Encoding,
-			ClaimDialect:          config.Enforcer.JwtIssuer.ClaimDialect,
-			SigningAlgorithm:      config.Enforcer.JwtIssuer.SigningAlgorithm,
-			PublicCertificatePath: config.Enforcer.JwtIssuer.PublicCertificatePath,
-			PrivateKeyPath:        config.Enforcer.JwtIssuer.PrivateKeyPath,
-			ValidityPeriod:        config.Enforcer.JwtIssuer.ValidityPeriod,
-			JwtUsers:              jwtUsers,
 		},
 		AuthService: authService,
 		Security: &enforcer.Security{

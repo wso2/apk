@@ -90,7 +90,6 @@ const (
 // Paths exposed from the router by default
 const (
 	healthPath              string = "/health"
-	testKeyPath             string = "/testkey"
 	readyPath               string = "/ready"
 	apiDefinitionQueryParam string = "OAS"
 	jwksPath                string = "/.wellknown/jwks"

@@ -193,22 +193,6 @@ var defaultConfig = &Config{
 			Enabled: false,
 			Type:    "azure",
 		},
-		JwtIssuer: jwtIssuer{
-			Enabled:               true,
-			Issuer:                "https://localhost:9095/testkey",
-			Encoding:              "base64",
-			ClaimDialect:          "",
-			SigningAlgorithm:      "SHA256withRSA",
-			PublicCertificatePath: "/home/wso2/security/truststore/mg.pem",
-			PrivateKeyPath:        "/home/wso2/security/keystore/mg.key",
-			ValidityPeriod:        3600,
-			JwtUser: []JwtUser{
-				{
-					Username: "admin",
-					Password: "$env{enforcer_admin_pwd}",
-				},
-			},
-		},
 	},
 	ManagementServer: managementServer{
 		Enabled:   false,
