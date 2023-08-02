@@ -103,7 +103,7 @@ func NewJWTIssuerReconciler(mgr manager.Manager) error {
 		return err
 	}
 
-	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.JWTIssuer{}}, &handler.EnqueueRequestForObject{},
+	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha1.JWTIssuer{}), &handler.EnqueueRequestForObject{},
 		predicate.NewPredicateFuncs(utils.FilterByNamespaces([]string{utils.GetOperatorPodNamespace()}))); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2656, logging.BLOCKER, "Error watching JWTIssuer resources: %v", err.Error()))
 		return err

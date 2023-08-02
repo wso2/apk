@@ -25,6 +25,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
+	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
 // log is for logging in this package.
@@ -56,21 +57,21 @@ func (r *Backend) Default() {
 var _ webhook.Validator = &Backend{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
-func (r *Backend) ValidateCreate() error {
-	return r.validateBackendSpec()
+func (r *Backend) ValidateCreate() (admission.Warnings, error) {
+	return nil, r.validateBackendSpec()
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
-func (r *Backend) ValidateUpdate(old runtime.Object) error {
-	return r.validateBackendSpec()
+func (r *Backend) ValidateUpdate(old runtime.Object) (admission.Warnings, error) {
+	return nil, r.validateBackendSpec()
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
-func (r *Backend) ValidateDelete() error {
+func (r *Backend) ValidateDelete() (admission.Warnings, error) {
 	backendlog.Info("validate delete", "name", r.Name)
 
 	// TODO(user): fill in your validation logic upon object deletion.
-	return nil
+	return nil, nil
 }
 
 func (r *Backend) validateBackendSpec() error {
