@@ -177,7 +177,6 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) getRatelimitForAPI(obj k8c
 	if err := ratelimitReconsiler.client.List(ctx, ratelimitPolicyList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(apiRateLimitIndex, NamespacedName(api).String()),
 	}); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2649, NamespacedName(api).String()))
 		return []reconcile.Request{}
 	}
 
@@ -218,7 +217,6 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) getRatelimitForHTTPRoute(o
 	if err := ratelimitReconsiler.client.List(ctx, ratelimitPolicyList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(httprouteRateLimitIndex, NamespacedName(httpRoute).String()),
 	}); err != nil {
-		loggers.LoggerAPKOperator.Info(logging.GetErrorByCode(2649, NamespacedName(httpRoute).String()))
 		return []reconcile.Request{}
 	}
 	for _, ratelimitPolicy := range ratelimitPolicyList.Items {
@@ -275,8 +273,13 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) marshelRateLimit(ctx conte
 				}
 			}
 		}
-		resolveRatelimit.API.RequestsPerUnit = ratelimitPolicy.Spec.Default.API.RequestsPerUnit
-		resolveRatelimit.API.Unit = ratelimitPolicy.Spec.Default.API.Unit
+		if ratelimitPolicy.Spec.Override != nil {
+			resolveRatelimit.API.RequestsPerUnit = ratelimitPolicy.Spec.Override.API.RequestsPerUnit
+			resolveRatelimit.API.Unit = ratelimitPolicy.Spec.Override.API.Unit
+		} else {
+			resolveRatelimit.API.RequestsPerUnit = ratelimitPolicy.Spec.Default.API.RequestsPerUnit
+			resolveRatelimit.API.Unit = ratelimitPolicy.Spec.Default.API.Unit
+		}
 		resolveRatelimit.Vhost = vhost
 		resolveRatelimit.Organization = organization
 		resolveRatelimit.Context = context
@@ -309,10 +312,19 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) marshelRateLimit(ctx conte
 								if filter.ExtensionRef.Kind == constants.KindRateLimitPolicy && string(filter.ExtensionRef.Name) == ratelimitPolicy.Name {
 									var resolveResource dpv1alpha1.ResolveResource
 									resolveResource.Path = *rule.Matches[0].Path.Value
-									resolveResource.Method = string(*rule.Matches[0].Method)
+									if rule.Matches[0].Method != nil {
+										resolveResource.Method = string(*rule.Matches[0].Method)
+									} else {
+										resolveResource.Method = constants.All
+									}
 									resolveResource.PathMatchType = *rule.Matches[0].Path.Type
-									resolveResource.ResourceRatelimit.RequestsPerUnit = ratelimitPolicy.Spec.Default.API.RequestsPerUnit
-									resolveResource.ResourceRatelimit.Unit = ratelimitPolicy.Spec.Default.API.Unit
+									if ratelimitPolicy.Spec.Override != nil {
+										resolveResource.ResourceRatelimit.RequestsPerUnit = ratelimitPolicy.Spec.Override.API.RequestsPerUnit
+										resolveResource.ResourceRatelimit.Unit = ratelimitPolicy.Spec.Override.API.Unit
+									} else {
+										resolveResource.ResourceRatelimit.RequestsPerUnit = ratelimitPolicy.Spec.Default.API.RequestsPerUnit
+										resolveResource.ResourceRatelimit.Unit = ratelimitPolicy.Spec.Default.API.Unit
+									}
 									resolveResourceList = append(resolveResourceList, resolveResource)
 								}
 								for _, hostName := range httpRoute.Spec.Hostnames {
@@ -340,10 +352,19 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) marshelRateLimit(ctx conte
 								if filter.ExtensionRef.Kind == constants.KindRateLimitPolicy && string(filter.ExtensionRef.Name) == ratelimitPolicy.Name {
 									var resolveResource dpv1alpha1.ResolveResource
 									resolveResource.Path = *rule.Matches[0].Path.Value
-									resolveResource.Method = string(*rule.Matches[0].Method)
+									if rule.Matches[0].Method != nil {
+										resolveResource.Method = string(*rule.Matches[0].Method)
+									} else {
+										resolveResource.Method = constants.All
+									}
 									resolveResource.PathMatchType = *rule.Matches[0].Path.Type
-									resolveResource.ResourceRatelimit.RequestsPerUnit = ratelimitPolicy.Spec.Default.API.RequestsPerUnit
-									resolveResource.ResourceRatelimit.Unit = ratelimitPolicy.Spec.Default.API.Unit
+									if ratelimitPolicy.Spec.Override != nil {
+										resolveResource.ResourceRatelimit.RequestsPerUnit = ratelimitPolicy.Spec.Override.API.RequestsPerUnit
+										resolveResource.ResourceRatelimit.Unit = ratelimitPolicy.Spec.Override.API.Unit
+									} else {
+										resolveResource.ResourceRatelimit.RequestsPerUnit = ratelimitPolicy.Spec.Default.API.RequestsPerUnit
+										resolveResource.ResourceRatelimit.Unit = ratelimitPolicy.Spec.Default.API.Unit
+									}
 									resolveResourceList = append(resolveResourceList, resolveResource)
 								}
 								for _, hostName := range httpRoute.Spec.Hostnames {

@@ -40,6 +40,7 @@ const (
 	KindAuthentication = "Authentication"
 	KindAPI            = "API"
 	KindService        = "Service"
+	All                = "All"
 	//TODO(amali) remove this after fixing the issue in https://github.com/wso2/apk/issues/383
 	KindResource        = "Resource"
 	KindGateway         = "Gateway"
