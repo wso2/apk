@@ -76,25 +76,14 @@ func (r *Backend) ValidateDelete() error {
 func (r *Backend) validateBackendSpec() error {
 	var allErrs field.ErrorList
 	timeout := r.Spec.Timeout
-	circuitBreakers := r.Spec.CircuitBreaker
 	if timeout != nil {
 		if timeout.RouteTimeoutSeconds < timeout.RouteIdleTimeoutSeconds {
 			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("timeout").Child("RouteIdleTimeoutSeconds"),
 				timeout.MaxRouteTimeoutSeconds, "RouteTimeoutSeconds should be greater than RouteIdleTimeoutSeconds"))
 		}
 	}
-	if circuitBreakers != nil {
-		if circuitBreakers.MaxConnectionPools <= 0 {
-			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("circuitBreaker").Child("maxConnectionPools"),
-				circuitBreakers.MaxConnectionPools, "maxConnectionPools should be greater than 0"))
-		}
-	}
 	retryConfig := r.Spec.Retry
 	if retryConfig != nil {
-		if int32(retryConfig.Count) < 0 {
-			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("retry").Child("count"), retryConfig.Count,
-				"retry count should be greater than or equal to 0"))
-		}
 		for _, statusCode := range retryConfig.StatusCodes {
 			if statusCode > 598 || statusCode < 401 {
 				allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("retry").Child("statusCodes"),
@@ -102,25 +91,7 @@ func (r *Backend) validateBackendSpec() error {
 			}
 		}
 	}
-	healthCheck := r.Spec.HealthCheck
-	if healthCheck != nil {
-		if healthCheck.Timeout < 0 {
-			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("healthCheck").Child("timeoutInMillis"),
-				healthCheck.Timeout, "timeout should be greater than or equal to 0"))
-		}
-		if healthCheck.Interval < 0 {
-			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("healthCheck").Child("intervalInMillis"),
-				healthCheck.Interval, "interval should be greater than or equal to 0"))
-		}
-		if healthCheck.UnhealthyThreshold < 0 {
-			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("healthCheck").Child("unhealthyThreshold"),
-				healthCheck.UnhealthyThreshold, "unhealthyThreshold should be greater than or equal to 0"))
-		}
-		if healthCheck.HealthyThreshold < 0 {
-			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("healthCheck").Child("healthyThreshold"),
-				healthCheck.HealthyThreshold, "healthyThreshold should be greater than or equal to 0"))
-		}
-	}
+
 	if len(allErrs) > 0 {
 		return apierrors.NewInvalid(
 			schema.GroupKind{Group: "dp.wso2.com", Kind: "Backend"},

@@ -78,7 +78,7 @@ type BackendJWTTokenInfo struct {
 	Encoding         string
 	Header           string
 	SigningAlgorithm string
-	TokenTTL         int
+	TokenTTL         uint32
 	CustomClaims     []ClaimMapping
 }
 

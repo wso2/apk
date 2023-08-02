@@ -36,13 +36,18 @@ spec:
             description: BackendJWTSpec defines the desired state of BackendJWT
             properties:
               customClaims:
+                description: CustomClaims holds custom claims that needs to be added
+                  to the jwt
                 items:
                   description: CustomClaim holds custom claim information
                   properties:
                     claim:
+                      description: Claim name
+                      minLength: 1
                       type: string
                     type:
                       default: string
+                      description: Claim type
                       enum:
                       - string
                       - int
@@ -52,18 +57,34 @@ spec:
                       - date
                       type: string
                     value:
+                      description: Claim value
+                      minLength: 1
                       type: string
                   required:
                   - type
                   type: object
+                nullable: true
                 type: array
               encoding:
+                default: base64
+                description: Encoding of the JWT token
+                enum:
+                - Base64
+                - Base64url
                 type: string
               header:
+                default: X-JWT-Assertion
+                description: Header of the JWT token
+                minLength: 1
                 type: string
               signingAlgorithm:
+                default: SHA256withRSA
+                description: Signing algorithm of the JWT token
                 type: string
               tokenTTL:
+                default: 3600
+                description: TokenTTL time to live for the backend JWT token in seconds
+                format: int32
                 type: integer
             type: object
           status:

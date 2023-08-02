@@ -26,17 +26,54 @@ import (
 
 // BackendJWTSpec defines the desired state of BackendJWT
 type BackendJWTSpec struct {
-	Encoding         string        `json:"encoding,omitempty"`
-	Header           string        `json:"header,omitempty"`
-	SigningAlgorithm string        `json:"signingAlgorithm,omitempty"`
-	TokenTTL         int           `json:"tokenTTL,omitempty"`
-	CustomClaims     []CustomClaim `json:"customClaims,omitempty"`
+	// Encoding of the JWT token
+	//
+	// +optional
+	// +kubebuilder:default=base64
+	// +kubebuilder:validation:Enum=Base64;Base64url
+	Encoding string `json:"encoding,omitempty"`
+
+	// Header of the JWT token
+	//
+	// +optional
+	// +kubebuilder:default=X-JWT-Assertion
+	// +kubebuilder:validation:MinLength=1
+	Header string `json:"header,omitempty"`
+
+	// Signing algorithm of the JWT token
+	//
+	// +optional
+	// +kubebuilder:default=SHA256withRSA
+	// +kubeBuilder:validation:Enum=SHA256withRSA;SHA384withRSA;SHA512withRSA;SHA256withECDSA;SHA384withECDSA;SHA512withECDSA;SHA256withHMAC;SHA384withHMAC;SHA512withHMAC
+	SigningAlgorithm string `json:"signingAlgorithm,omitempty"`
+
+	// TokenTTL time to live for the backend JWT token in seconds
+	//
+	// +optional
+	// +kubebuilder:default=3600
+	TokenTTL uint32 `json:"tokenTTL,omitempty"`
+
+	// CustomClaims holds custom claims that needs to be added to the jwt
+	//
+	// +optional
+	// +nullable
+	CustomClaims []CustomClaim `json:"customClaims,omitempty"`
 }
 
 // CustomClaim holds custom claim information
 type CustomClaim struct {
+	// Claim name
+	//
+	// +kubebuilder:validation:MinLength=1
 	Claim string `json:"claim,omitempty"`
+
+	// Claim value
+	//
+	// +kubebuilder:validation:MinLength=1
 	Value string `json:"value,omitempty"`
+
+	// Claim type
+	//
 	// +kubebuilder:default=string
 	// +kubebuilder:validation:Enum=string;int;float;bool;long;date
 	Type string `json:"type"`
