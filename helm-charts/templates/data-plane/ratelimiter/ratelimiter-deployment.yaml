@@ -110,9 +110,9 @@ spec:
             - name: GRPC_CLIENT_TLS_SAN
               value: "{{ template "apk-helm.resource.prefix" . }}-router-service.{{ .Release.Namespace }}.svc"
             - name: RATELIMITER_LABEL
-              value: "default"
+              value: "default1"
             - name: CONFIG_GRPC_XDS_SERVER_URL
-              value: "{{ template "apk-helm.resource.prefix" . }}-adapter-service.{{ .Release.Namespace }}.svc:18001"
+              value: "{{ template "apk-helm.resource.prefix" . }}-common-controller-service.{{ .Release.Namespace }}.svc:18005"
             - name: CONFIG_GRPC_XDS_SERVER_USE_TLS
               value: "true"
             - name: CONFIG_GRPC_XDS_CLIENT_TLS_KEY
@@ -122,7 +122,7 @@ spec:
             - name: CONFIG_GRPC_XDS_SERVER_TLS_CACERT
               value: "/home/wso2/security/truststore/ratelimiter-ca.crt"
             - name: CONFIG_GRPC_XDS_SERVER_TLS_SAN
-              value: "{{ template "apk-helm.resource.prefix" . }}-adapter-service.{{ .Release.Namespace }}.svc"
+              value: "{{ template "apk-helm.resource.prefix" . }}-common-controller-service.{{ .Release.Namespace }}.svc"
             {{ if and .Values.wso2.apk.dp.gatewayRuntime.tracing .Values.wso2.apk.dp.gatewayRuntime.tracing.enabled .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties }}
             - name: TRACING_ENABLED
               value: "{{ .Values.wso2.apk.dp.gatewayRuntime.tracing.enabled }}"
@@ -164,10 +164,10 @@ spec:
             {{- else }}
               subPath: ca.crt
             {{- end }}
-            - name: adapter-truststore-secret-volume
+            - name: common-controller-truststore-secret-volume
               mountPath: /home/wso2/security/truststore/adapter.pem
-            {{- if and .Values.wso2.apk.dp.adapter.configs .Values.wso2.apk.dp.adapter.configs.tls }}
-              subPath: {{ .Values.wso2.apk.dp.adapter.configs.tls.certFilename | default "tls.crt" }}
+            {{- if and .Values.wso2.apk.dp.commonController.configs .Values.wso2.apk.dp.commonController.configs.tls }}
+              subPath: {{ .Values.wso2.apk.dp.commonController.configs.tls.certFilename | default "tls.crt" }}
             {{- else }}
               subPath: tls.crt
             {{- end }}
@@ -224,12 +224,12 @@ spec:
             secretName: {{ template "apk-helm.resource.prefix" . }}-ratelimiter-server-cert
           {{- end }}
             defaultMode: 420
-        - name: adapter-truststore-secret-volume
+        - name: common-controller-truststore-secret-volume
           secret:
-          {{- if and .Values.wso2.apk.dp.adapter.configs .Values.wso2.apk.dp.adapter.configs.tls }}
-            secretName: {{ .Values.wso2.apk.dp.adapter.configs.tls.secretName | default (printf "%s-adapter-server-cert" (include "apk-helm.resource.prefix" .)) }}
+          {{- if and .Values.wso2.apk.dp.commonController.configs .Values.wso2.apk.dp.commonController.configs.tls }}
+            secretName: {{ .Values.wso2.apk.dp.commonController.configs.tls.secretName | default (printf "%s-common-controller-server-cert" (include "apk-helm.resource.prefix" .)) }}
           {{- else }}
-            secretName: {{ template "apk-helm.resource.prefix" . }}-adapter-server-cert
+            secretName: {{ template "apk-helm.resource.prefix" . }}-common-controller-server-cert
           {{- end }}
             defaultMode: 420
         - name: router-truststore-secret-volume
