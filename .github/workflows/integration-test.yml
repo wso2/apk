@@ -172,9 +172,9 @@ jobs:
       shell: sh
       run: |
         cd apk-repo/helm-charts
-        helm uninstall apk-test-setup -n apk-integration-test
         kubectl get pods -n apk-integration-test
         kubectl get svc -n apk-integration-test
+        helm uninstall apk-test-setup -n apk-integration-test
     - name: Delete AKS cluster
       if: always()
       uses: azure/CLI@v1
