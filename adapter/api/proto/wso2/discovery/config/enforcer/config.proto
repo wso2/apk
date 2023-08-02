@@ -5,7 +5,6 @@ package wso2.discovery.config.enforcer;
 import "wso2/discovery/config/enforcer/cert.proto";
 import "wso2/discovery/config/enforcer/service.proto";
 import "wso2/discovery/config/enforcer/jwt_generator.proto";
-import "wso2/discovery/config/enforcer/jwt_issuer.proto";
 import "wso2/discovery/config/enforcer/cache.proto";
 import "wso2/discovery/config/enforcer/analytics.proto";
 import "wso2/discovery/config/enforcer/security.proto";
@@ -37,19 +36,18 @@ message Config {
 
     Cache cache = 7;
 
-    JWTIssuer jwtIssuer = 8;
 
-    Analytics analytics = 9;
+    Analytics analytics = 8;
 
-    Management management = 10;
+    Management management = 9;
 
-    RestServer restServer = 11;
+    RestServer restServer = 10;
 
-    Tracing tracing = 12;
+    Tracing tracing = 11;
 
-    Metrics metrics = 13;
+    Metrics metrics = 12;
 
-    repeated Filter filters = 14;
+    repeated Filter filters = 13;
 
-    Soap soap = 15;
+    Soap soap = 14;
 }

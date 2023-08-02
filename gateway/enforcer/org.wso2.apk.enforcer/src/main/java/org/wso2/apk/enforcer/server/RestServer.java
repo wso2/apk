@@ -34,7 +34,6 @@ import org.wso2.apk.enforcer.admin.AdminServerInitializer;
 import org.wso2.apk.enforcer.config.ConfigHolder;
 import org.wso2.apk.enforcer.jwks.JWKSRequestHandler;
 import org.wso2.apk.enforcer.jwks.JWKSServerInitializer;
-import org.wso2.apk.enforcer.security.jwt.issuer.HttpTokenServerInitializer;
 import org.wso2.apk.enforcer.server.swagger.SwaggerServerInitializer;
 
 import java.io.File;
@@ -49,7 +48,6 @@ import javax.net.ssl.SSLException;
 public class RestServer {
 
     private static final Logger logger = LogManager.getLogger(RestServer.class);
-    static final int TOKEN_PORT = 8082;
     static final int ADMIN_PORT = 9001;
 
     public void initServer() throws SSLException, CertificateException, InterruptedException {
@@ -68,18 +66,6 @@ public class RestServer {
         final EventLoopGroup bossGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors());
         final EventLoopGroup workerGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors() * 2);
         try {
-            // A helper class that simplifies server configuration
-            ServerBootstrap tokenServer = new ServerBootstrap();
-            // Configure the server
-            tokenServer.option(ChannelOption.SO_BACKLOG, 1024);
-            tokenServer.group(bossGroup, workerGroup)
-                    .channel(NioServerSocketChannel.class)
-                    .handler(new LoggingHandler(LogLevel.INFO))
-                    .childHandler(new HttpTokenServerInitializer(sslCtx));
-
-            Channel tokenChannel = tokenServer.bind(TOKEN_PORT).sync().channel();
-            logger.info("Token endpoint started Listening in port : " + TOKEN_PORT);
-
             ServerBootstrap swaggerServer = new ServerBootstrap();
             swaggerServer.option(ChannelOption.SO_BACKLOG, 1024);
             swaggerServer.group(bossGroup, workerGroup)
@@ -115,8 +101,6 @@ public class RestServer {
             }
 
             swaggerChannel.closeFuture().sync();
-            // Wait until server socket is closed
-            tokenChannel.closeFuture().sync();
 
         } finally {
             workerGroup.shutdownGracefully();

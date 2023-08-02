@@ -98,131 +98,116 @@ public interface ConfigOrBuilder extends
   org.wso2.apk.enforcer.discovery.config.enforcer.CacheOrBuilder getCacheOrBuilder();
 
   /**
-   * <code>.wso2.discovery.config.enforcer.JWTIssuer jwtIssuer = 8;</code>
-   * @return Whether the jwtIssuer field is set.
-   */
-  boolean hasJwtIssuer();
-  /**
-   * <code>.wso2.discovery.config.enforcer.JWTIssuer jwtIssuer = 8;</code>
-   * @return The jwtIssuer.
-   */
-  org.wso2.apk.enforcer.discovery.config.enforcer.JWTIssuer getJwtIssuer();
-  /**
-   * <code>.wso2.discovery.config.enforcer.JWTIssuer jwtIssuer = 8;</code>
-   */
-  org.wso2.apk.enforcer.discovery.config.enforcer.JWTIssuerOrBuilder getJwtIssuerOrBuilder();
-
-  /**
-   * <code>.wso2.discovery.config.enforcer.Analytics analytics = 9;</code>
+   * <code>.wso2.discovery.config.enforcer.Analytics analytics = 8;</code>
    * @return Whether the analytics field is set.
    */
   boolean hasAnalytics();
   /**
-   * <code>.wso2.discovery.config.enforcer.Analytics analytics = 9;</code>
+   * <code>.wso2.discovery.config.enforcer.Analytics analytics = 8;</code>
    * @return The analytics.
    */
   org.wso2.apk.enforcer.discovery.config.enforcer.Analytics getAnalytics();
   /**
-   * <code>.wso2.discovery.config.enforcer.Analytics analytics = 9;</code>
+   * <code>.wso2.discovery.config.enforcer.Analytics analytics = 8;</code>
    */
   org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsOrBuilder getAnalyticsOrBuilder();
 
   /**
-   * <code>.wso2.discovery.config.enforcer.Management management = 10;</code>
+   * <code>.wso2.discovery.config.enforcer.Management management = 9;</code>
    * @return Whether the management field is set.
    */
   boolean hasManagement();
   /**
-   * <code>.wso2.discovery.config.enforcer.Management management = 10;</code>
+   * <code>.wso2.discovery.config.enforcer.Management management = 9;</code>
    * @return The management.
    */
   org.wso2.apk.enforcer.discovery.config.enforcer.Management getManagement();
   /**
-   * <code>.wso2.discovery.config.enforcer.Management management = 10;</code>
+   * <code>.wso2.discovery.config.enforcer.Management management = 9;</code>
    */
   org.wso2.apk.enforcer.discovery.config.enforcer.ManagementOrBuilder getManagementOrBuilder();
 
   /**
-   * <code>.wso2.discovery.config.enforcer.RestServer restServer = 11;</code>
+   * <code>.wso2.discovery.config.enforcer.RestServer restServer = 10;</code>
    * @return Whether the restServer field is set.
    */
   boolean hasRestServer();
   /**
-   * <code>.wso2.discovery.config.enforcer.RestServer restServer = 11;</code>
+   * <code>.wso2.discovery.config.enforcer.RestServer restServer = 10;</code>
    * @return The restServer.
    */
   org.wso2.apk.enforcer.discovery.config.enforcer.RestServer getRestServer();
   /**
-   * <code>.wso2.discovery.config.enforcer.RestServer restServer = 11;</code>
+   * <code>.wso2.discovery.config.enforcer.RestServer restServer = 10;</code>
    */
   org.wso2.apk.enforcer.discovery.config.enforcer.RestServerOrBuilder getRestServerOrBuilder();
 
   /**
-   * <code>.wso2.discovery.config.enforcer.Tracing tracing = 12;</code>
+   * <code>.wso2.discovery.config.enforcer.Tracing tracing = 11;</code>
    * @return Whether the tracing field is set.
    */
   boolean hasTracing();
   /**
-   * <code>.wso2.discovery.config.enforcer.Tracing tracing = 12;</code>
+   * <code>.wso2.discovery.config.enforcer.Tracing tracing = 11;</code>
    * @return The tracing.
    */
   org.wso2.apk.enforcer.discovery.config.enforcer.Tracing getTracing();
   /**
-   * <code>.wso2.discovery.config.enforcer.Tracing tracing = 12;</code>
+   * <code>.wso2.discovery.config.enforcer.Tracing tracing = 11;</code>
    */
   org.wso2.apk.enforcer.discovery.config.enforcer.TracingOrBuilder getTracingOrBuilder();
 
   /**
-   * <code>.wso2.discovery.config.enforcer.Metrics metrics = 13;</code>
+   * <code>.wso2.discovery.config.enforcer.Metrics metrics = 12;</code>
    * @return Whether the metrics field is set.
    */
   boolean hasMetrics();
   /**
-   * <code>.wso2.discovery.config.enforcer.Metrics metrics = 13;</code>
+   * <code>.wso2.discovery.config.enforcer.Metrics metrics = 12;</code>
    * @return The metrics.
    */
   org.wso2.apk.enforcer.discovery.config.enforcer.Metrics getMetrics();
   /**
-   * <code>.wso2.discovery.config.enforcer.Metrics metrics = 13;</code>
+   * <code>.wso2.discovery.config.enforcer.Metrics metrics = 12;</code>
    */
   org.wso2.apk.enforcer.discovery.config.enforcer.MetricsOrBuilder getMetricsOrBuilder();
 
   /**
-   * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 14;</code>
+   * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 13;</code>
    */
   java.util.List<org.wso2.apk.enforcer.discovery.config.enforcer.Filter> 
       getFiltersList();
   /**
-   * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 14;</code>
+   * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 13;</code>
    */
   org.wso2.apk.enforcer.discovery.config.enforcer.Filter getFilters(int index);
   /**
-   * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 14;</code>
+   * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 13;</code>
    */
   int getFiltersCount();
   /**
-   * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 14;</code>
+   * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 13;</code>
    */
   java.util.List<? extends org.wso2.apk.enforcer.discovery.config.enforcer.FilterOrBuilder> 
       getFiltersOrBuilderList();
   /**
-   * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 14;</code>
+   * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 13;</code>
    */
   org.wso2.apk.enforcer.discovery.config.enforcer.FilterOrBuilder getFiltersOrBuilder(
       int index);
 
   /**
-   * <code>.wso2.discovery.config.enforcer.Soap soap = 15;</code>
+   * <code>.wso2.discovery.config.enforcer.Soap soap = 14;</code>
    * @return Whether the soap field is set.
    */
   boolean hasSoap();
   /**
-   * <code>.wso2.discovery.config.enforcer.Soap soap = 15;</code>
+   * <code>.wso2.discovery.config.enforcer.Soap soap = 14;</code>
    * @return The soap.
    */
   org.wso2.apk.enforcer.discovery.config.enforcer.Soap getSoap();
   /**
-   * <code>.wso2.discovery.config.enforcer.Soap soap = 15;</code>
+   * <code>.wso2.discovery.config.enforcer.Soap soap = 14;</code>
    */
   org.wso2.apk.enforcer.discovery.config.enforcer.SoapOrBuilder getSoapOrBuilder();
 }

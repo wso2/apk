@@ -28,10 +28,6 @@
   verifyHostName = true
   disableSslVerification = false
 
-[enforcer]
-[enforcer.jwtIssuer]
-  enabled = true
-  issuer = "https://localhost:9095/testkey"
 
 [enforcer.security]
 [[enforcer.security.tokenService]]
@@ -43,14 +39,6 @@
   consumerKeyClaim = "azp"
   certificateFilePath = "/home/wso2/security/truststore/wso2carbon.pem"
 
-[[enforcer.security.tokenService]]
-  name = "APK"
-  issuer = "https://localhost:9095/testkey"
-  certificateAlias = "apk"
-  jwksURL = ""
-  validateSubscription = false
-  consumerKeyClaim = ""
-  certificateFilePath = "/home/wso2/security/truststore/mg.pem"
 
 [[enforcer.security.tokenService]]
   name = "APIM Publisher"

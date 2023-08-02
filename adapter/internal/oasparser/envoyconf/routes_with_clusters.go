@@ -1077,75 +1077,6 @@ func GetInlineLuaScript(requestInterceptor map[string]model.InterceptEndpoint, r
 	return interceptor.GetInterceptor(templateValues, templateString)
 }
 
-// CreateTokenRoute generates a route for the jwt /testkey endpoint
-func CreateTokenRoute() *routev3.Route {
-	var (
-		router    routev3.Route
-		action    *routev3.Route_Route
-		match     *routev3.RouteMatch
-		decorator *routev3.Decorator
-	)
-
-	match = &routev3.RouteMatch{
-		PathSpecifier: &routev3.RouteMatch_Path{
-			Path: testKeyPath,
-		},
-	}
-
-	hostRewriteSpecifier := &routev3.RouteAction_AutoHostRewrite{
-		AutoHostRewrite: &wrapperspb.BoolValue{
-			Value: true,
-		},
-	}
-
-	decorator = &routev3.Decorator{
-		Operation: testKeyPath,
-	}
-
-	perFilterConfig := extAuthService.ExtAuthzPerRoute{
-		Override: &extAuthService.ExtAuthzPerRoute_Disabled{
-			Disabled: true,
-		},
-	}
-
-	b := proto.NewBuffer(nil)
-	b.SetDeterministic(true)
-	_ = b.Marshal(&perFilterConfig)
-	filter := &any.Any{
-		TypeUrl: extAuthzPerRouteName,
-		Value:   b.Bytes(),
-	}
-
-	action = &routev3.Route_Route{
-		Route: &routev3.RouteAction{
-			HostRewriteSpecifier: hostRewriteSpecifier,
-			RegexRewrite: &envoy_type_matcherv3.RegexMatchAndSubstitute{
-				Pattern: &envoy_type_matcherv3.RegexMatcher{
-					Regex: testKeyPath,
-				},
-				Substitution: "/",
-			},
-		},
-	}
-
-	directClusterSpecifier := &routev3.RouteAction_Cluster{
-		Cluster: "token_cluster",
-	}
-	action.Route.ClusterSpecifier = directClusterSpecifier
-
-	router = routev3.Route{
-		Name:      testKeyPath, //Categorize routes with same base path
-		Match:     match,
-		Action:    action,
-		Metadata:  nil,
-		Decorator: decorator,
-		TypedPerFilterConfig: map[string]*any.Any{
-			wellknown.HTTPExternalAuthorization: filter,
-		},
-	}
-	return &router
-}
-
 // CreateJWKSRoute generates a route for the /jwks endpoint
 func CreateJWKSRoute() *routev3.Route {
 	var (
@@ -1230,10 +1161,10 @@ func CreateAPIDefinitionRoute(basePath string, vHost string, methods []string, i
 	methodRegex := strings.Join(methods, "|")
 
 	matchPath := basePath
-	if (isDefaultversion) {
+	if isDefaultversion {
 		matchPath = removeLastOccurrence(basePath, "/"+version)
 	}
-	
+
 	match = &routev3.RouteMatch{
 		PathSpecifier: &routev3.RouteMatch_Path{
 			Path: matchPath,

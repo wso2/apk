@@ -35,10 +35,7 @@ import org.wso2.apk.enforcer.config.dto.AnalyticsDTO;
 import org.wso2.apk.enforcer.config.dto.AnalyticsReceiverConfigDTO;
 import org.wso2.apk.enforcer.config.dto.AuthServiceConfigurationDto;
 import org.wso2.apk.enforcer.config.dto.CacheDto;
-import org.wso2.apk.enforcer.config.dto.CredentialDto;
-import org.wso2.apk.enforcer.config.dto.ExtendedTokenIssuerDto;
 import org.wso2.apk.enforcer.config.dto.FilterDTO;
-import org.wso2.apk.enforcer.config.dto.JWTIssuerConfigurationDto;
 import org.wso2.apk.enforcer.config.dto.ManagementCredentialsDto;
 import org.wso2.apk.enforcer.config.dto.MetricsDTO;
 import org.wso2.apk.enforcer.config.dto.MutualSSLDto;
@@ -47,14 +44,26 @@ import org.wso2.apk.enforcer.config.dto.ThreadPoolConfig;
 import org.wso2.apk.enforcer.config.dto.TracingDTO;
 import org.wso2.apk.enforcer.constants.Constants;
 import org.wso2.apk.enforcer.constants.JwtConstants;
-import org.wso2.apk.enforcer.discovery.config.enforcer.*;
+import org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcer;
+import org.wso2.apk.enforcer.discovery.config.enforcer.Analytics;
+import org.wso2.apk.enforcer.discovery.config.enforcer.Cache;
+import org.wso2.apk.enforcer.discovery.config.enforcer.Config;
+import org.wso2.apk.enforcer.discovery.config.enforcer.Filter;
+import org.wso2.apk.enforcer.discovery.config.enforcer.JWTGenerator;
+import org.wso2.apk.enforcer.discovery.config.enforcer.Keypair;
+import org.wso2.apk.enforcer.discovery.config.enforcer.Management;
+import org.wso2.apk.enforcer.discovery.config.enforcer.Metrics;
+import org.wso2.apk.enforcer.discovery.config.enforcer.MutualSSL;
+import org.wso2.apk.enforcer.discovery.config.enforcer.RestServer;
+import org.wso2.apk.enforcer.discovery.config.enforcer.Service;
+import org.wso2.apk.enforcer.discovery.config.enforcer.Soap;
+import org.wso2.apk.enforcer.discovery.config.enforcer.Tracing;
 import org.wso2.apk.enforcer.jmx.MBeanRegistrator;
 import org.wso2.apk.enforcer.jwks.BackendJWKSDto;
 import org.wso2.apk.enforcer.util.FilterUtils;
 import org.wso2.apk.enforcer.util.JWTUtils;
 import org.wso2.apk.enforcer.util.TLSUtils;
 
-import javax.net.ssl.TrustManagerFactory;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.security.KeyStore;
@@ -68,6 +77,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.net.ssl.TrustManagerFactory;
 
 /**
  * Configuration holder class for Microgateway.
@@ -138,9 +148,6 @@ public class ConfigHolder {
 
         // Populate Analytics Configuration Values
         populateAnalyticsConfig(config.getAnalytics());
-
-        // Read jwt issuer configurations
-        populateJWTIssuerConfigurations(config.getJwtIssuer());
 
         populateMTLSConfigurations(config.getSecurity().getMutualSSL());
 
@@ -464,29 +471,7 @@ public class ConfigHolder {
         return value;
     }
 
-    private void populateJWTIssuerConfigurations(JWTIssuer jwtIssuer) {
 
-        JWTIssuerConfigurationDto jwtIssuerConfigurationDto = new JWTIssuerConfigurationDto();
-        jwtIssuerConfigurationDto.setEnabled(jwtIssuer.getEnabled());
-        jwtIssuerConfigurationDto.setIssuer(jwtIssuer.getIssuer());
-        jwtIssuerConfigurationDto.setConsumerDialectUri(jwtIssuer.getClaimDialect());
-        jwtIssuerConfigurationDto.setSignatureAlgorithm(jwtIssuer.getSigningAlgorithm());
-        try {
-            jwtIssuerConfigurationDto.setPrivateKey(JWTUtils.getPrivateKey(jwtIssuer.getPrivateKeyPath()));
-            jwtIssuerConfigurationDto.setPublicCert(TLSUtils.getCertificate(jwtIssuer.getPublicCertificatePath()));
-        } catch (EnforcerException | CertificateException | IOException e) {
-            logger.error("Error in loading public cert or private key", e);
-        }
-        jwtIssuerConfigurationDto.setTtl(jwtIssuer.getValidityPeriod());
-        CredentialDto[] credentialDtos = new CredentialDto[jwtIssuer.getJwtUsersList().size()];
-        for (int index = 0; index < jwtIssuer.getJwtUsersList().size(); index++) {
-            CredentialDto credentialDto = new CredentialDto(jwtIssuer.getJwtUsers(index).getUsername(),
-                    jwtIssuer.getJwtUsers(index).getPassword().toCharArray());
-            credentialDtos[index] = credentialDto;
-        }
-        config.setJwtUsersCredentials(credentialDtos);
-        config.setJwtIssuerConfigurationDto(jwtIssuerConfigurationDto);
-    }
 
     private void populateCustomFilters(List<Filter> filterList) {
 

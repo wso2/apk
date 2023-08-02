@@ -19,6 +19,7 @@ package http
 
 import (
 	"crypto/tls"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -58,7 +59,7 @@ type ExpectedResponse struct {
 	// User Given TestCase name
 	TestCaseName string
 
-	// The UnacceptableStatuses field represents the list of HTTP statuses that, 
+	// The UnacceptableStatuses field represents the list of HTTP statuses that,
 	// if encountered during the test, would indicate a failure
 	UnacceptableStatuses []int
 }
@@ -198,7 +199,7 @@ func WaitForConsistentResponse(t *testing.T, r roundtripper.RoundTripper, req ro
 			return false
 		}
 		// Check for unaccpetable response status
-		if (containsInt(expected.UnacceptableStatuses, cRes.StatusCode)) {
+		if containsInt(expected.UnacceptableStatuses, cRes.StatusCode) {
 			t.Fatalf("Unacceptable response received. Received response code: %d", cRes.StatusCode)
 		}
 		if err := CompareRequest(&req, cReq, cRes, expected); err != nil {
@@ -419,12 +420,12 @@ func GetTestToken(t *testing.T, scopes ...string) string {
 		},
 	}
 	client := &http.Client{Transport: transport}
-	req, err := http.NewRequest("POST", "https://localhost:9095/testkey",
-		strings.NewReader(fmt.Sprintf("scope=%s", strings.Join(scopes, " "))))
+	req, err := http.NewRequest("POST", "https://idp.am.wso2.com:9095/oauth2/token",
+		strings.NewReader(fmt.Sprintf("grant_type=client_credentials&scope=%s", strings.Join(scopes, " "))))
 
-	req.Header.Set("Authorization", "Basic YWRtaW46YWRtaW4=")
+	req.Header.Set("Authorization", "Basic NDVmMWM1YzgtYTkyZS0xMWVkLWFmYTEtMDI0MmFjMTIwMDAyOjRmYmQ2MmVjLWE5MmUtMTFlZC1hZmExLTAyNDJhYzEyMDAwMg==")
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	req.Host = "localhost"
+	req.Host = "idp.am.wso2.com"
 	if err != nil {
 		t.Fatalf("failed to create request: %v", err)
 	}
@@ -450,5 +451,19 @@ func GetTestToken(t *testing.T, scopes ...string) string {
 	if err != nil {
 		t.Fatalf("failed to read token response: %v", err)
 	}
-	return string(body)
+	var accessTokenResponse AccessTokenResponse
+
+	// Unmarshal the JSON data into the person struct
+	if err := json.Unmarshal(body, &accessTokenResponse); err != nil {
+		fmt.Println("Error unmarshaling JSON:", err)
+		return ""
+	}
+	return string(accessTokenResponse.AccessToken)
+}
+
+type AccessTokenResponse struct {
+	AccessToken string `json:"access_token"`
+	TokenType   string `json:"token_type"`
+	Expiry      int    `json:"expires_in"`
+	Scopes      string `json:"scope"`
 }
