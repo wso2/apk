@@ -31,6 +31,7 @@ import (
 	"github.com/wso2/apk/common-controller/internal/loggers"
 	logging "github.com/wso2/apk/common-controller/internal/logging"
 	dpv1alpha1 "github.com/wso2/apk/common-controller/internal/operator/api/v1alpha1"
+	constants "github.com/wso2/apk/common-controller/internal/operator/constant"
 )
 
 // Constants relevant to the route related ratelimit configurations
@@ -78,7 +79,7 @@ type rateLimitPolicyCache struct {
 func (r *rateLimitPolicyCache) AddAPILevelRateLimitPolicies(vHosts []string, resolveRatelimit dpv1alpha1.ResolveRateLimitAPIPolicy) {
 
 	rlsConfigs := rls_config.RateLimitDescriptor{}
-
+	httpMethods := []string{"GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"}
 	// The map apiOperations is used to keep `Pat:HTTPmethod` unique to make sure the Rate Limiter Config to be consistent (not to have duplicate rate limit policies)
 	// path -> HTTP method
 
@@ -93,28 +94,58 @@ func (r *rateLimitPolicyCache) AddAPILevelRateLimitPolicies(vHosts []string, res
 			method := resource.Method
 
 			rlPolicyConfig := parseRateLimitPolicyToXDS(resource.ResourceRatelimit)
-			rlConf := &rls_config.RateLimitDescriptor{
-				Key:       DescriptorKeyForMethod,
-				Value:     method,
-				RateLimit: rlPolicyConfig,
-			}
+			if method == constants.All {
+				for _, httpMethod := range httpMethods {
+					logger.Info("httpMethod", httpMethod)
+					rlConf := &rls_config.RateLimitDescriptor{
+						Key:       DescriptorKeyForMethod,
+						Value:     httpMethod,
+						RateLimit: rlPolicyConfig,
+					}
+					logger.Info("rlConf", rlConf)
 
-			r.apiLevelMu.Lock()
-			defer r.apiLevelMu.Unlock()
-			if _, ok := r.apiLevelRateLimitPolicies[org]; !ok {
-				r.apiLevelRateLimitPolicies[org] = make(map[string]map[string]map[string]*rls_config.RateLimitDescriptor)
-				logger.Info("org", org)
-			}
-			for _, vHost := range vHosts {
-				logger.Info("vHost", vHost)
-				if _, ok := r.apiLevelRateLimitPolicies[org][vHost]; !ok {
-					r.apiLevelRateLimitPolicies[org][vHost] = make(map[string]map[string]*rls_config.RateLimitDescriptor)
+					if _, ok := r.apiLevelRateLimitPolicies[org]; !ok {
+						r.apiLevelRateLimitPolicies[org] = make(map[string]map[string]map[string]*rls_config.RateLimitDescriptor)
+						logger.Info("org", org)
+					}
+					for _, vHost := range vHosts {
+						logger.Info("vHost", vHost)
+						if _, ok := r.apiLevelRateLimitPolicies[org][vHost]; !ok {
+							r.apiLevelRateLimitPolicies[org][vHost] = make(map[string]map[string]*rls_config.RateLimitDescriptor)
+						}
+						if _, ok := r.apiLevelRateLimitPolicies[org][vHost][resolveRatelimit.Context+resolveRatelimit.Context+resource.Path]; !ok {
+							r.apiLevelRateLimitPolicies[org][vHost][resolveRatelimit.Context+resolveRatelimit.Context+resource.Path] = make(map[string]*rls_config.RateLimitDescriptor)
+							r.apiLevelRateLimitPolicies[org][vHost][resolveRatelimit.Context+resolveRatelimit.Context+resource.Path][httpMethod] = rlConf
+						} else {
+							logger.Info("csa", httpMethod)
+							r.apiLevelRateLimitPolicies[org][vHost][resolveRatelimit.Context+resolveRatelimit.Context+resource.Path][httpMethod] = rlConf
+						}
+					}
 				}
-				if _, ok := r.apiLevelRateLimitPolicies[org][vHost][resolveRatelimit.Context+resolveRatelimit.Context+resource.Path]; !ok {
-					r.apiLevelRateLimitPolicies[org][vHost][resolveRatelimit.Context+resolveRatelimit.Context+resource.Path] = make(map[string]*rls_config.RateLimitDescriptor)
-					r.apiLevelRateLimitPolicies[org][vHost][resolveRatelimit.Context+resolveRatelimit.Context+resource.Path][method] = rlConf
-				} else {
-					r.apiLevelRateLimitPolicies[org][vHost][resolveRatelimit.Context+resolveRatelimit.Context+resource.Path][method] = rlConf
+			} else {
+				rlConf := &rls_config.RateLimitDescriptor{
+					Key:       DescriptorKeyForMethod,
+					Value:     method,
+					RateLimit: rlPolicyConfig,
+				}
+
+				r.apiLevelMu.Lock()
+				defer r.apiLevelMu.Unlock()
+				if _, ok := r.apiLevelRateLimitPolicies[org]; !ok {
+					r.apiLevelRateLimitPolicies[org] = make(map[string]map[string]map[string]*rls_config.RateLimitDescriptor)
+					logger.Info("org", org)
+				}
+				for _, vHost := range vHosts {
+					logger.Info("vHost", vHost)
+					if _, ok := r.apiLevelRateLimitPolicies[org][vHost]; !ok {
+						r.apiLevelRateLimitPolicies[org][vHost] = make(map[string]map[string]*rls_config.RateLimitDescriptor)
+					}
+					if _, ok := r.apiLevelRateLimitPolicies[org][vHost][resolveRatelimit.Context+resolveRatelimit.Context+resource.Path]; !ok {
+						r.apiLevelRateLimitPolicies[org][vHost][resolveRatelimit.Context+resolveRatelimit.Context+resource.Path] = make(map[string]*rls_config.RateLimitDescriptor)
+						r.apiLevelRateLimitPolicies[org][vHost][resolveRatelimit.Context+resolveRatelimit.Context+resource.Path][method] = rlConf
+					} else {
+						r.apiLevelRateLimitPolicies[org][vHost][resolveRatelimit.Context+resolveRatelimit.Context+resource.Path][method] = rlConf
+					}
 				}
 			}
 		}
@@ -160,10 +191,17 @@ func (r *rateLimitPolicyCache) DeleteAPILevelRateLimitPolicies(org string, vHost
 
 // DeleteAPILevelRateLimitPolicies deletes inline Rate Limit policies added with the API.
 func (r *rateLimitPolicyCache) DeleteResourceLevelRateLimitPolicies(org string, vHosts []string, context string, path string, method string) {
+	httpMethods := []string{"GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"}
 	r.apiLevelMu.Lock()
 	defer r.apiLevelMu.Unlock()
 	for _, vHost := range vHosts {
-		delete(r.apiLevelRateLimitPolicies[org][vHost][context+context+path], method)
+		if method == constants.All {
+			for _, httpMethod := range httpMethods {
+				delete(r.apiLevelRateLimitPolicies[org][vHost][context+context+path], httpMethod)
+			}
+		} else {
+			delete(r.apiLevelRateLimitPolicies[org][vHost][context+context+path], method)
+		}
 	}
 }
 
