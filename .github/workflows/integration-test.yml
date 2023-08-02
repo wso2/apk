@@ -45,18 +45,19 @@ jobs:
       AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
     
-  # build_router:
-    # if: github.event_name == 'pull_request_target' && github.event.action == 'opened' || github.event.action == 'synchronize'
-    # uses: ./.github/workflows/router-release.yml
-  #   with:
-  #     aks_deployment: true
-  #   secrets:
-  #     WSO2_BOT_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}
-  #     WSO2_BOT_USER: ${{ secrets.WSO2_BOT_USER }}
-  #     WSO2_BOT_EMAIL: ${{ secrets.WSO2_BOT_EMAIL }}
-  #     DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
-  #     AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
-  #     AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+  build_router:
+    if: github.event_name == 'pull_request_target' && github.event.action == 'opened' || github.event.action == 'synchronize'
+    uses: ./.github/workflows/router-release.yml
+    with:
+      aks_deployment: true
+    secrets:
+      WSO2_BOT_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}
+      WSO2_BOT_USER: ${{ secrets.WSO2_BOT_USER }}
+      WSO2_BOT_EMAIL: ${{ secrets.WSO2_BOT_EMAIL }}
+      DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
+      AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+
   build_config:
     if: github.event_name == 'pull_request_target' && github.event.action == 'opened' || github.event.action == 'synchronize'
     uses: ./.github/workflows/config-deployer-release.yml
@@ -156,6 +157,7 @@ jobs:
         --set wso2.apk.dp.adapter.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/adapter:${{ github.sha }} \
         --set wso2.apk.dp.commonController.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/common-controller:${{ github.sha }} \
         --set wso2.apk.dp.gatewayRuntime.deployment.enforcer.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/enforcer:${{ github.sha }} \
+        --set wso2.apk.dp.gatewayRuntime.deployment.router.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/router:${{ github.sha }} \
         --set idp.idpds.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/idp-domain-service:${{ github.sha }} \
         --set idp.idpui.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/idp-ui:${{ github.sha }} \
         --set wso2.apk.dp.runtime.deployment.replicas=0
@@ -258,6 +260,7 @@ jobs:
         --set wso2.apk.dp.adapter.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/adapter:${{ github.sha }} \
         --set wso2.apk.dp.commonController.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/common-controller:${{ github.sha }} \
         --set wso2.apk.dp.gatewayRuntime.deployment.enforcer.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/enforcer:${{ github.sha }} \
+        --set wso2.apk.dp.gatewayRuntime.deployment.router.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/router:${{ github.sha }} \
         --set idp.idpds.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/idp-domain-service:${{ github.sha }} \
         --set idp.idpui.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/idp-ui:${{ github.sha }} \
         --set wso2.apk.dp.runtime.deployment.replicas=0
