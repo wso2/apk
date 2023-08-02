@@ -75,13 +75,6 @@ func (r *Backend) ValidateDelete() error {
 
 func (r *Backend) validateBackendSpec() error {
 	var allErrs field.ErrorList
-	timeout := r.Spec.Timeout
-	if timeout != nil {
-		if timeout.RouteTimeoutSeconds < timeout.RouteIdleTimeoutSeconds {
-			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("timeout").Child("RouteIdleTimeoutSeconds"),
-				timeout.MaxRouteTimeoutSeconds, "RouteTimeoutSeconds should be greater than RouteIdleTimeoutSeconds"))
-		}
-	}
 	retryConfig := r.Spec.Retry
 	if retryConfig != nil {
 		for _, statusCode := range retryConfig.StatusCodes {
