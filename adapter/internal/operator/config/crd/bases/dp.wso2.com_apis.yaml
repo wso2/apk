@@ -71,7 +71,6 @@ spec:
                   type: object
                 nullable: true
                 type: array
-                uniqueItems: true
               apiType:
                 description: APIType denotes the type of the API. Possible values
                   could be REST, GraphQL, Async
@@ -117,7 +116,6 @@ spec:
                 maxItems: 1
                 nullable: true
                 type: array
-                uniqueItems: true
               sandbox:
                 description: 'Sandbox contains a list of references to HttpRoutes
                   of type HttpRoute. xref: https://github.com/kubernetes-sigs/gateway-api/blob/main/apis/v1beta1/httproute_types.go'
@@ -135,7 +133,6 @@ spec:
                 maxItems: 1
                 nullable: true
                 type: array
-                uniqueItems: true
               systemAPI:
                 description: SystemAPI denotes if it is an internal system API.
                 type: boolean

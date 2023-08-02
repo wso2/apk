@@ -75,28 +75,24 @@ type CORSPolicy struct {
 	// during the actual request.
 	//
 	// +optional
-	// +kubebuilder:validation:UniqueItems=true
 	AccessControlAllowHeaders []string `json:"accessControlAllowHeaders,omitempty"`
 
 	// AccessControlAllowMethods indicates which methods can be used
 	// during the actual request.
 	//
 	// +optional
-	// +kubebuilder:validation:UniqueItems=true
 	AccessControlAllowMethods []string `json:"accessControlAllowMethods,omitempty"`
 
 	// AccessControlAllowOrigins indicates which origins can be used
 	// during the actual request.
 	//
 	// +optional
-	// +kubebuilder:validation:UniqueItems=true
 	AccessControlAllowOrigins []string `json:"accessControlAllowOrigins,omitempty"`
 
 	// AccessControlExposeHeaders indicates which headers can be exposed
 	// as part of the response by listing their names.
 	//
 	// +optional
-	// +kubebuilder:validation:UniqueItems=true
 	AccessControlExposeHeaders []string `json:"accessControlExposeHeaders,omitempty"`
 
 	// AccessControlMaxAge indicates how long the results of a preflight request

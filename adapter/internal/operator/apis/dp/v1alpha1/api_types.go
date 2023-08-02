@@ -62,7 +62,6 @@ type APISpec struct {
 	//
 	// +optional
 	// +nullable
-	// +kubebuilder:validation:UniqueItems=true
 	// +kubebuilder:validation:MaxItems=1
 	Production []EnvConfig `json:"production"`
 
@@ -73,7 +72,6 @@ type APISpec struct {
 	//
 	// +optional
 	// +nullable
-	// +kubebuilder:validation:UniqueItems=true
 	// +kubebuilder:validation:MaxItems=1
 	Sandbox []EnvConfig `json:"sandbox"`
 
