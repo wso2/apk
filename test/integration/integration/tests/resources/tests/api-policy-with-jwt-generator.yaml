@@ -64,7 +64,7 @@ spec:
   override:
     backendJwtToken:
       enabled: true
-      encoding: "base64"
+      encoding: "Base64"
       signingAlgorithm: "SHA256withRSA"
       header: "X-JWT-Assertion"
   targetRef:
