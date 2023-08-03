@@ -96,7 +96,7 @@ type ClaimVal struct {
 
 // RateLimitPolicy information related to the rate limiting policy
 type RateLimitPolicy struct {
-	Count    int
+	Count    uint32
 	SpanUnit string
 }
 

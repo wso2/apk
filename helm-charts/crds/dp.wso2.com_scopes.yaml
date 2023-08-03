@@ -55,6 +55,7 @@ spec:
                 description: Name scope name
                 items:
                   type: string
+                minItems: 1
                 type: array
             type: object
           status:
