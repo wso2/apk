@@ -8,7 +8,7 @@ data:
   config.toml: | 
     [commoncontroller]
     [commoncontroller.server]
-      label = "default1"
+      label = "ratelimiter"
     [commoncontroller.keystore]
       certPath = "/home/wso2/security/keystore/commoncontroller.crt"
       keyPath = "/home/wso2/security/keystore/commoncontroller.key"
