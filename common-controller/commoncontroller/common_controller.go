@@ -137,7 +137,6 @@ func InitCommonControllerServer(conf *config.Config) {
 
 	runRatelimitServer(rlsSrv)
 	// Set empty snapshot to initiate ratelimit service
-	// Set label as default1 to avoid label mismatch error
 	xds.SetEmptySnapshotupdate(conf.CommonController.Server.Label)
 	go operator.InitOperator()
 OUTER:
