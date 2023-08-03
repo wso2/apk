@@ -293,6 +293,7 @@ public class ConfigHolder {
     }
 
     private void populateJWTGeneratorConfigurations(JWTGenerator jwtGenerator) {
+
         List<Keypair> keypairs = jwtGenerator.getKeypairsList();
         // Validation is done at the adapter to ensure that only one signing keypair is available
         Keypair signingKey = getSigningKey(keypairs);
@@ -304,11 +305,13 @@ public class ConfigHolder {
             String err = "Error in loading keypair for Backend JWTs: " + e;
             logger.error(err);
         }
+        jwtConfigurationDto.setUseKid(true);
         config.setJwtConfigurationDto(jwtConfigurationDto);
         populateBackendJWKSConfiguration(jwtGenerator);
     }
 
     private void populateBackendJWKSConfiguration(JWTGenerator jwtGenerator) {
+
         BackendJWKSDto backendJWKSDto = new BackendJWKSDto();
         List<Keypair> keypairs = jwtGenerator.getKeypairsList();
         ArrayList<JWK> jwks = new ArrayList<>();
@@ -323,6 +326,9 @@ public class ConfigHolder {
                         .keyIDFromThumbprint()
                         .build().toPublicJWK();
                 jwks.add(jwk);
+                if (keypair.getUseForSigning()) {
+                    config.getJwtConfigurationDto().setKidValue(jwk.getKeyID());
+                }
             }
         } catch (JOSEException | CertificateException | IOException e) {
             logger.error("Error in loading additional public certificates for JWKS: " + e);
@@ -332,8 +338,9 @@ public class ConfigHolder {
     }
 
     private Keypair getSigningKey(List<Keypair> keypairs) {
+
         for (Keypair keypair : keypairs) {
-            if (keypair.getUseForSigning())  {
+            if (keypair.getUseForSigning()) {
                 return keypair;
             }
         }
@@ -341,6 +348,7 @@ public class ConfigHolder {
     }
 
     private Algorithm getJWKSAlgorithm(String alg) {
+
         switch (alg) {
             case JwtConstants.RS384:
                 return JWSAlgorithm.RS384;
@@ -470,8 +478,6 @@ public class ConfigHolder {
         }
         return value;
     }
-
-
 
     private void populateCustomFilters(List<Filter> filterList) {
 
