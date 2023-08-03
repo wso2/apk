@@ -30,6 +30,8 @@ type ScopeSpec struct {
 	// Important: Run "make" to regenerate code after modifying this file
 
 	// Name scope name
+	//
+	// +kubebuilder:validation:MinItems=1
 	Names []string `json:"names,omitempty"`
 }
 

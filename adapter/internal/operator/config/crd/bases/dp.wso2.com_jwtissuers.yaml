@@ -38,6 +38,7 @@ spec:
               claimMappings:
                 additionalProperties:
                   type: string
+                description: ClaimMappings denotes the claim mappings of the jwt
                 type: object
               consumerKeyClaim:
                 description: ConsumerKeyClaim denotes the claim key of the consumer
@@ -67,7 +68,7 @@ spec:
                   method of jwt
                 properties:
                   certificate:
-                    description: CERTConfig defines the certificate configuration
+                    description: Certificate denotes the certificate information
                     properties:
                       certificateInline:
                         description: CertificateInline is the Inline Certificate entry
@@ -106,10 +107,11 @@ spec:
                         type: object
                     type: object
                   jwks:
-                    description: JWKS defines the JWKS endpoint
+                    description: JWKS denotes the JWKS endpoint information
                     properties:
                       tls:
-                        description: CERTConfig defines the certificate configuration
+                        description: TLS denotes the TLS configuration of the JWKS
+                          endpoint
                         properties:
                           certificateInline:
                             description: CertificateInline is the Inline Certificate
@@ -156,11 +158,8 @@ spec:
                     type: object
                 type: object
               targetRef:
-                description: PolicyTargetReference identifies an API object to apply
-                  policy to. This should be used as part of Policy resources that
-                  can target Gateway API resources. For more information on how this
-                  policy attachment model works, and a sample Policy resource, refer
-                  to the policy attachment documentation for Gateway API.
+                description: TargetRef denotes the reference to the which gateway
+                  it applies to
                 properties:
                   group:
                     description: Group is the group of the target resource.

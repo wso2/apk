@@ -27,42 +27,56 @@ import (
 
 // JWTIssuerSpec defines the desired state of JWTIssuer
 type JWTIssuerSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-
 	// Name is the unique name of the JWT Issuer in
 	// the Organization defined . "Organization/Name" can
 	// be used to uniquely identify an Issuer.
+	//
 	// +kubebuilder:validation:MinLength=1
 	Name string `json:"name"`
+
 	// Organization denotes the organization of the JWT Issuer.
+	//
 	// +kubebuilder:validation:MinLength=1
 	Organization string `json:"organization"`
+
 	// Issuer denotes the issuer of the JWT Issuer.
+	//
 	// +kubebuilder:validation:MinLength=1
 	Issuer string `json:"issuer"`
+
 	// ConsumerKeyClaim denotes the claim key of the consumer key.
+	//
 	// +kubebuilder:validation:MinLength=1
 	ConsumerKeyClaim string `json:"consumerKeyClaim"`
+
 	// ScopesClaim denotes the claim key of the scopes.
+	//
 	// +kubebuilder:validation:MinLength=1
 	ScopesClaim string `json:"scopesClaim"`
+
 	// SignatureValidation denotes the signature validation method of jwt
-	SignatureValidation *SignatureValidation             `json:"signatureValidation"`
-	ClaimMappings       *map[string]string               `json:"claimMappings,omitempty"`
-	TargetRef           *gwapiv1b1.PolicyTargetReference `json:"targetRef,omitempty"`
+	SignatureValidation *SignatureValidation `json:"signatureValidation"`
+
+	// ClaimMappings denotes the claim mappings of the jwt
+	ClaimMappings *map[string]string `json:"claimMappings,omitempty"`
+
+	// TargetRef denotes the reference to the which gateway it applies to
+	TargetRef *gwapiv1b1.PolicyTargetReference `json:"targetRef,omitempty"`
 }
 
 // SignatureValidation defines the signature validation method
 type SignatureValidation struct {
-	JWKS        *JWKS       `json:"jwks,omitempty"`
+	// JWKS denotes the JWKS endpoint information
+	JWKS *JWKS `json:"jwks,omitempty"`
+	// Certificate denotes the certificate information
 	Certificate *CERTConfig `json:"certificate,omitempty"`
 }
 
 // JWKS defines the JWKS endpoint
 type JWKS struct {
 	// URL is the URL of the JWKS endpoint
-	URL string      `json:"url"`
+	URL string `json:"url"`
+	// TLS denotes the TLS configuration of the JWKS endpoint
 	TLS *CERTConfig `json:"tls,omitempty"`
 }
 

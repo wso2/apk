@@ -39,11 +39,12 @@ spec:
                 description: RateLimitAPIPolicy defines the desired state of Policy
                 properties:
                   api:
-                    description: API policy
+                    description: API level ratelimit policy
                     properties:
                       requestsPerUnit:
                         description: RequestPerUnit is the number of requests allowed
                           per unit time
+                        format: int32
                         type: integer
                       unit:
                         description: Unit is the unit of the requestsPerUnit
@@ -54,7 +55,7 @@ spec:
                         type: string
                     type: object
                   custom:
-                    description: Custom policy
+                    description: Custom ratelimit policy
                     properties:
                       key:
                         description: Key is the key of the custom policy
@@ -63,6 +64,7 @@ spec:
                       requestsPerUnit:
                         description: RequestPerUnit is the number of requests allowed
                           per unit time
+                        format: int32
                         type: integer
                       unit:
                         description: Unit is the unit of the requestsPerUnit
@@ -83,11 +85,12 @@ spec:
                 description: RateLimitAPIPolicy defines the desired state of Policy
                 properties:
                   api:
-                    description: API policy
+                    description: API level ratelimit policy
                     properties:
                       requestsPerUnit:
                         description: RequestPerUnit is the number of requests allowed
                           per unit time
+                        format: int32
                         type: integer
                       unit:
                         description: Unit is the unit of the requestsPerUnit
@@ -98,7 +101,7 @@ spec:
                         type: string
                     type: object
                   custom:
-                    description: Custom policy
+                    description: Custom ratelimit policy
                     properties:
                       key:
                         description: Key is the key of the custom policy
@@ -107,6 +110,7 @@ spec:
                       requestsPerUnit:
                         description: RequestPerUnit is the number of requests allowed
                           per unit time
+                        format: int32
                         type: integer
                       unit:
                         description: Unit is the unit of the requestsPerUnit
