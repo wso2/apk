@@ -19,6 +19,12 @@
 package org.wso2.apk.enforcer.commons.jwtgenerator;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nimbusds.jose.JOSEObjectType;
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.JWSHeader;
+import com.nimbusds.jose.JWSSigner;
+import com.nimbusds.jose.PlainHeader;
+import com.nimbusds.jose.crypto.RSASSASigner;
 import com.nimbusds.jwt.JWTClaimsSet;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -66,7 +72,7 @@ public abstract class AbstractAPIMgtGatewayJWTGenerator {
             dialectURI = "http://wso2.org/claims";
         }
         signatureAlgorithm = jwtConfigurationDto.getSignatureAlgorithm();
-        if (signatureAlgorithm == null || !(NONE.equals(signatureAlgorithm)
+        if (!(NONE.equals(signatureAlgorithm)
                 || SHA256_WITH_RSA.equals(signatureAlgorithm))) {
             signatureAlgorithm = SHA256_WITH_RSA;
         }
@@ -110,17 +116,11 @@ public abstract class AbstractAPIMgtGatewayJWTGenerator {
         String jwtHeader = null;
 
         if (NONE.equals(signatureAlgorithm)) {
-            StringBuilder jwtHeaderBuilder = new StringBuilder();
-            jwtHeaderBuilder.append("{\"typ\":\"JWT\",");
-            jwtHeaderBuilder.append("\"alg\":\"");
-            jwtHeaderBuilder.append(JWTUtil.getJWSCompliantAlgorithmCode(NONE));
-            jwtHeaderBuilder.append('\"');
-            jwtHeaderBuilder.append('}');
-
-            jwtHeader = jwtHeaderBuilder.toString();
+            PlainHeader plainHeader = new PlainHeader.Builder().build();
+            jwtHeader= plainHeader.toString();
 
         } else if (SHA256_WITH_RSA.equals(signatureAlgorithm)) {
-            jwtHeader = addCertToHeader();
+            jwtHeader= addCertToHeader();
         }
         return jwtHeader;
     }
@@ -143,9 +143,7 @@ public abstract class AbstractAPIMgtGatewayJWTGenerator {
     protected String addCertToHeader() throws JWTGeneratorException {
 
         try {
-            Certificate publicCert = jwtConfigurationDto.getPublicCert();
-            // TODO(benura) populate useKid accordingly, currently it's always false
-            return JWTUtil.generateHeader(publicCert, signatureAlgorithm, jwtConfigurationDto.useKid());
+            return JWTUtil.generateHeader(jwtConfigurationDto, signatureAlgorithm);
         } catch (Exception e) {
             String error = "Error in obtaining keystore";
             throw new JWTGeneratorException(error, e);

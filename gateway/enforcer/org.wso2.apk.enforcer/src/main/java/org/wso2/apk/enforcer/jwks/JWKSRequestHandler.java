@@ -31,6 +31,7 @@ import io.grpc.netty.shaded.io.netty.handler.codec.http.HttpMethod;
 import io.grpc.netty.shaded.io.netty.handler.codec.http.HttpObject;
 import io.grpc.netty.shaded.io.netty.handler.codec.http.HttpRequest;
 import io.grpc.netty.shaded.io.netty.handler.codec.http.HttpResponseStatus;
+import io.grpc.netty.shaded.io.netty.handler.codec.http.HttpUtil;
 import io.grpc.netty.shaded.io.netty.handler.codec.http.HttpVersion;
 import org.apache.http.protocol.HTTP;
 import org.apache.logging.log4j.LogManager;
@@ -44,6 +45,14 @@ import org.wso2.apk.enforcer.constants.HttpConstants;
 public class JWKSRequestHandler extends SimpleChannelInboundHandler<HttpObject> {
     private static final Logger logger = LogManager.getLogger(JWKSRequestHandler.class);
     private static final String route = "/jwks";
+    private static final String CONNECTION = "Connection";
+    private static final String CLOSE = "close";
+    private static final String KEEP_ALIVE = "keep-alive";
+    @Override
+    public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
+
+        ctx.flush();
+    }
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, HttpObject msg) {
@@ -53,6 +62,7 @@ public class JWKSRequestHandler extends SimpleChannelInboundHandler<HttpObject> 
         JWKSet jwks = backendJWKSDto.getJwks();
         if (msg instanceof HttpRequest) {
             req = (FullHttpRequest) msg;
+            boolean keepAlive = HttpUtil.isKeepAlive(req);
             String path = req.uri().split("\\?")[0]; //Get the context without query params
 
             if (!(HttpMethod.GET.equals(req.method()) && path.equals(route))) {
@@ -65,8 +75,18 @@ public class JWKSRequestHandler extends SimpleChannelInboundHandler<HttpObject> 
                     .set(HTTP.CONN_DIRECTIVE, HTTP.CONN_KEEP_ALIVE)
                     .set(HTTP.CONTENT_TYPE, HttpConstants.APPLICATION_JSON)
                     .setInt(HTTP.CONTENT_LEN, res.content().readableBytes());
+            if (keepAlive) {
+                if (!req.protocolVersion().isKeepAliveDefault()) {
+                    res.headers().set(CONNECTION, KEEP_ALIVE);
+                }
+            } else {
+                // Tell the client we're going to close the connection.
+                res.headers().set(CONNECTION, CLOSE);
+            }
             ChannelFuture f = ctx.write(res);
-            f.addListener(ChannelFutureListener.CLOSE_ON_FAILURE);
+            if (!keepAlive) {
+                f.addListener(ChannelFutureListener.CLOSE);
+            }
         }
     }
 }

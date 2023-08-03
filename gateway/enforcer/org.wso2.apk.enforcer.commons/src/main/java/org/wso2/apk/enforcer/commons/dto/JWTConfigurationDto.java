@@ -45,6 +45,17 @@ public class JWTConfigurationDto {
 
     private boolean useKid;
 
+    public String getKidValue() {
+
+        return kidValue;
+    }
+
+    public void setKidValue(String kidValue) {
+
+        this.kidValue = kidValue;
+    }
+
+    private String kidValue;
     public JWTConfigurationDto() {
 
     }
@@ -171,7 +182,7 @@ public class JWTConfigurationDto {
 
     public void populateConfigValues(final boolean enabled, final String jwtHeader,
             final String signatureAlgorithm, final String encoding,
-            final Certificate publicCert, final PrivateKey privateKey, final long ttl, final Map<String, ClaimValueDTO> customClaims) {
+            final Certificate publicCert, final PrivateKey privateKey, final long ttl, final Map<String, ClaimValueDTO> customClaims,boolean useKid,String kidValue) {
         this.enabled = enabled;
         this.jwtHeader = jwtHeader;
         this.signatureAlgorithm = signatureAlgorithm;
@@ -180,6 +191,8 @@ public class JWTConfigurationDto {
         this.privateKey = privateKey;
         this.ttl = ttl;
         this.customClaims = customClaims;
+        this.useKid = useKid;
+        this.kidValue = kidValue;
     }
 
 }

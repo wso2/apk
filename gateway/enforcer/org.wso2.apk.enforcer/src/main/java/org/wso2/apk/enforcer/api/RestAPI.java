@@ -64,6 +64,7 @@ import java.util.ServiceLoader;
  * Specific implementation for a Rest API type APIs.
  */
 public class RestAPI implements API {
+
     private static final Logger logger = LogManager.getLogger(RestAPI.class);
     private final List<Filter> filters = new ArrayList<>();
     private APIConfig apiConfig;
@@ -71,11 +72,13 @@ public class RestAPI implements API {
 
     @Override
     public List<Filter> getFilters() {
+
         return filters;
     }
 
     @Override
     public String init(Api api) {
+
         String vhost = api.getVhost();
         String basePath = api.getBasePath();
         String name = api.getTitle();
@@ -115,8 +118,8 @@ public class RestAPI implements API {
         // If backendJWTTokeInfo is available
         if (api.hasBackendJWTTokenInfo()) {
             Map<String, Claim> claims = backendJWTTokenInfo.getCustomClaimsMap();
-            Map<String,ClaimValueDTO> claimsMap = new HashMap<>();
-            for(Map.Entry<String, Claim> claimEntry : claims.entrySet()) {
+            Map<String, ClaimValueDTO> claimsMap = new HashMap<>();
+            for (Map.Entry<String, Claim> claimEntry : claims.entrySet()) {
                 Claim claim = claimEntry.getValue();
                 ClaimValueDTO claimVal = new ClaimValueDTO(claim.getValue(), claim.getType());
                 claimsMap.put(claimEntry.getKey(), claimVal);
@@ -126,11 +129,12 @@ public class RestAPI implements API {
                     backendJWTTokenInfo.getHeader(), backendJWTTokenInfo.getSigningAlgorithm(),
                     backendJWTTokenInfo.getEncoding(), enforcerConfig.getJwtConfigurationDto().getPublicCert(),
                     enforcerConfig.getJwtConfigurationDto().getPrivateKey(), backendJWTTokenInfo.getTokenTTL(),
-                   claimsMap);
+                    claimsMap, enforcerConfig.getJwtConfigurationDto().useKid(),
+                    enforcerConfig.getJwtConfigurationDto().getKidValue());
         }
 
         byte[] apiDefinition = null;
-        if(api.getApiDefinitionFile() != null) {
+        if (api.getApiDefinitionFile() != null) {
             apiDefinition = api.getApiDefinitionFile().toByteArray();
         }
 
@@ -149,6 +153,7 @@ public class RestAPI implements API {
 
     @Override
     public ResponseObject process(RequestContext requestContext) {
+
         ResponseObject responseObject = new ResponseObject(requestContext.getRequestID());
         responseObject.setRequestPath(requestContext.getRequestPath());
         boolean analyticsEnabled = ConfigHolder.getInstance().getConfig().getAnalyticsConfig().isEnabled();
@@ -221,11 +226,13 @@ public class RestAPI implements API {
 
     @Override
     public APIConfig getAPIConfig() {
+
         return this.apiConfig;
     }
 
     private MockedApiConfig getMockedApiOperationConfig(
             org.wso2.apk.enforcer.discovery.api.MockedApiConfig mockedApiConfig, String operationName) {
+
         MockedApiConfig configData = new MockedApiConfig();
         Map<String, MockedResponseConfig> responses = new HashMap<>();
         for (org.wso2.apk.enforcer.discovery.api.MockedResponseConfig response : mockedApiConfig.getResponsesList()) {
@@ -259,6 +266,7 @@ public class RestAPI implements API {
     }
 
     private void initFilters() {
+
         AuthFilter authFilter = new AuthFilter();
         authFilter.init(apiConfig, null);
         this.filters.add(authFilter);
@@ -275,6 +283,7 @@ public class RestAPI implements API {
     }
 
     private void loadCustomFilters(APIConfig apiConfig) {
+
         FilterDTO[] customFilters = ConfigHolder.getInstance().getConfig().getCustomFilters();
         // Needs to sort the filter in ascending order to position the filter in the given position.
         Arrays.sort(customFilters, Comparator.comparing(FilterDTO::getPosition));

@@ -23,12 +23,17 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
+import com.nimbusds.jose.JOSEObjectType;
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.JWSHeader;
+import com.nimbusds.jose.PlainHeader;
+import com.nimbusds.jose.util.Base64URL;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.wso2.apk.enforcer.commons.dto.JWTConfigurationDto;
 import org.wso2.apk.enforcer.commons.exception.JWTGeneratorException;
-import org.wso2.apk.enforcer.commons.jwtgenerator.JWTSignatureAlg;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
@@ -53,42 +58,21 @@ import java.util.regex.Pattern;
 public final class JWTUtil {
 
     private static final Log log = LogFactory.getLog(JWTUtil.class);
-    private static final String NONE = "NONE";
-    private static final String SHA256_WITH_RSA = "SHA256withRSA";
-
-    /**
-     * Get the JWS compliant signature algorithm code of the algorithm used to sign the JWT.
-     *
-     * @param signatureAlgorithm - The algorithm used to sign the JWT. If signing is disabled, the value will be NONE.
-     * @return - The JWS Compliant algorithm code of the signature algorithm.
-     */
-    public static String getJWSCompliantAlgorithmCode(String signatureAlgorithm) {
-
-        if (signatureAlgorithm == null || NONE.equals(signatureAlgorithm)) {
-            return JWTSignatureAlg.NONE.getJwsCompliantCode();
-        } else if (SHA256_WITH_RSA.equals(signatureAlgorithm)) {
-            return JWTSignatureAlg.SHA256_WITH_RSA.getJwsCompliantCode();
-        } else {
-            return signatureAlgorithm;
-        }
-    }
-
-    public static String generateHeader(Certificate publicCert, String signatureAlgorithm)
-            throws JWTGeneratorException {
-        return generateHeader(publicCert, signatureAlgorithm, false);
-    }
 
     /**
      * Utility method to generate JWT header with public certificate thumbprint for signature verification.
      *
-     * @param publicCert         - The public certificate which needs to include in the header as thumbprint
      * @param signatureAlgorithm signature algorithm which needs to include in the header
-     * @param useKid - Specifies whether this function should use kid as a thumbprint or x5t
      * @throws JWTGeneratorException
      */
 
-    public static String generateHeader(Certificate publicCert, String signatureAlgorithm, boolean useKid) throws
+    public static String generateHeader(JWTConfigurationDto jwtConfigurationDto, String signatureAlgorithm) throws
             JWTGeneratorException {
+        if ("NONE".equals(signatureAlgorithm)){
+            PlainHeader.Builder plainHeader = new PlainHeader.Builder().type(JOSEObjectType.JWT);
+            return plainHeader.build().toString();
+        }
+        JWSHeader.Builder jwsHeaderBuilder = new JWSHeader.Builder(JWSAlgorithm.RS256).type(JOSEObjectType.JWT);
 
         /*
          * Sample header
@@ -97,22 +81,12 @@ public final class JWTUtil {
          * {"typ":"JWT", "alg":"[2]", "x5t":"[1]", "x5t":"[1]"}
          * */
         try {
-            StringBuilder jwtHeader = new StringBuilder();
-            jwtHeader.append("{\"typ\":\"JWT\",");
-            jwtHeader.append("\"alg\":\"");
-            jwtHeader.append(getJWSCompliantAlgorithmCode(signatureAlgorithm));
-            jwtHeader.append("\",");
-            if (useKid) {
-                jwtHeader.append("\"kid\":\"");
-                // No padding
-                jwtHeader.append(generateThumbprint("SHA-256", publicCert, false));
+            if (jwtConfigurationDto.useKid()) {
+                jwsHeaderBuilder = jwsHeaderBuilder.keyID(jwtConfigurationDto.getKidValue());
             } else {
-                jwtHeader.append("\"x5t\":\"");
-                // Has padding for legacy support
-                jwtHeader.append(generateThumbprint("SHA-1", publicCert, true));
+                jwsHeaderBuilder = jwsHeaderBuilder.x509CertThumbprint(new Base64URL(generateThumbprint("SHA-1", jwtConfigurationDto.getPublicCert(), true)));
             }
-            jwtHeader.append("\"}");
-            return jwtHeader.toString();
+            return jwsHeaderBuilder.build().toString();
         } catch (NoSuchAlgorithmException | CertificateEncodingException | UnsupportedEncodingException e) {
             throw new JWTGeneratorException("Error in generating public certificate thumbprint", e);
         }

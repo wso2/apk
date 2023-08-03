@@ -1123,7 +1123,7 @@ func CreateJWKSRoute() *routev3.Route {
 				Pattern: &envoy_type_matcherv3.RegexMatcher{
 					Regex: jwksPath,
 				},
-				Substitution: "/",
+				Substitution: "/jwks",
 			},
 		},
 	}

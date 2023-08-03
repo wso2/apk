@@ -26,6 +26,7 @@ import org.wso2.apk.enforcer.commons.dto.JWTConfigurationDto;
 import org.wso2.apk.enforcer.commons.dto.JWTInfoDto;
 import org.wso2.apk.enforcer.commons.exception.JWTGeneratorException;
 import org.wso2.apk.enforcer.commons.jwtgenerator.APIMgtGatewayJWTGeneratorImpl;
+import org.wso2.apk.enforcer.commons.jwtgenerator.APIMgtGatewayUrlSafeJWTGeneratorImpl;
 import org.wso2.apk.enforcer.commons.jwtgenerator.AbstractAPIMgtGatewayJWTGenerator;
 import org.wso2.apk.enforcer.commons.jwttransformer.JWTTransformer;
 import org.wso2.apk.enforcer.commons.exception.APISecurityException;
@@ -125,25 +126,13 @@ public class BackendJwtUtils {
     public static AbstractAPIMgtGatewayJWTGenerator getApiMgtGatewayJWTGenerator(final JWTConfigurationDto jwtConfigurationDtoFromAPI) {
 
         JWTConfigurationDto jwtConfigurationDto = jwtConfigurationDtoFromAPI;
-        String classNameInConfig = jwtConfigurationDto.getGatewayJWTGeneratorImpl();
         AbstractAPIMgtGatewayJWTGenerator jwtGenerator = null;
-
-        // Load default jwt generator class
-        if (classNameInConfig.equals(JWTConstants.DEFAULT_JWT_GENERATOR_CLASS_NAME)) {
-            jwtGenerator = new APIMgtGatewayJWTGeneratorImpl();
-            return jwtGenerator;
-        } else {
-            Class<AbstractAPIMgtGatewayJWTGenerator> clazz;
-            try {
-                clazz = (Class<AbstractAPIMgtGatewayJWTGenerator>) Class.forName(classNameInConfig);
-                Constructor<AbstractAPIMgtGatewayJWTGenerator> constructor = clazz.getConstructor();
-                jwtGenerator = constructor.newInstance();
-            } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException
-                     | InstantiationException | InvocationTargetException | ClassCastException e) {
-                log.error("Error while generating AbstractAPIMgtGatewayJWTGenerator from the class", e);
-            }
+        if ("Base64".equals(jwtConfigurationDto.getEncoding())){
+            return new APIMgtGatewayJWTGeneratorImpl();
+        }else if ("Base64Url".equals(jwtConfigurationDto.getEncoding())){
+            return new APIMgtGatewayUrlSafeJWTGeneratorImpl();
         }
-        return jwtGenerator;
+        return null;
     }
 
     /**
