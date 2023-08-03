@@ -20,12 +20,8 @@ package v1alpha1
 import (
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
-	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 )
-
-// log is for logging in this package.
-var interceptorservicelog = logf.Log.WithName("interceptorservice-resource")
 
 // SetupWebhookWithManager creates a new webhook builder for InterceptorService
 func (r *InterceptorService) SetupWebhookWithManager(mgr ctrl.Manager) error {
@@ -54,24 +50,18 @@ var _ webhook.Validator = &InterceptorService{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (r *InterceptorService) ValidateCreate() error {
-	interceptorservicelog.Info("validate create", "name", r.Name)
-
 	// TODO(user): fill in your validation logic upon object creation.
 	return nil
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *InterceptorService) ValidateUpdate(old runtime.Object) error {
-	interceptorservicelog.Info("validate update", "name", r.Name)
-
 	// TODO(user): fill in your validation logic upon object update.
 	return nil
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
 func (r *InterceptorService) ValidateDelete() error {
-	interceptorservicelog.Info("validate delete", "name", r.Name)
-
 	// TODO(user): fill in your validation logic upon object deletion.
 	return nil
 }
