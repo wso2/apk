@@ -21,7 +21,7 @@ package config
 var defaultConfig = &Config{
 	CommonController: commoncontroller{
 		Server: server{
-			Label: "default1",
+			Label: "ratelimiter",
 		},
 		Keystore: keystore{
 			KeyPath:  "/home/wso2/security/keystore/mg.key",
