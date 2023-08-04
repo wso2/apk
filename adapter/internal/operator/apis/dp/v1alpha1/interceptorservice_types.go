@@ -27,13 +27,6 @@ type BackendReference struct {
 	//
 	// +kubebuilder:validation:MinLength=1
 	Name string `json:"name"`
-
-	// todo(amali) remove this
-
-	// Namespace is the namespace of the Backend resource.
-	//
-	// +optional
-	Namespace string `json:"namespace,omitempty"`
 }
 
 // InterceptorInclusion defines the type of data which can be included in the interceptor request/response path
