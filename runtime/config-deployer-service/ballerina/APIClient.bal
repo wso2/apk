@@ -1004,6 +1004,8 @@ public class APIClient {
                         model:BackendJWT backendJwt = self.retrieveBackendJWTPolicy(apkConf, apiArtifact, backendJWTPolicy, organization);
                         apiArtifact.backendJwt = backendJwt;
                         policyReferences.push(<model:BackendJwtReference>{name: backendJwt.metadata.name});
+                    } else {
+                        return e909052(error("Incorrect API Policy name provided."));
                     }
                 }
             }
