@@ -103,21 +103,41 @@ public class DeployerClient {
                 check self.deleteInterceptorServiceCRs(existingAPI, <string>apiArtifact?.organization);
                 check self.deleteBackendJWTConfig(existingAPI, <string>apiArtifact?.organization);
             }
-            model:ConfigMap? definition = apiArtifact.definition;
-            if definition is model:ConfigMap {
-                definition.metadata.namespace = apiPartition.namespace;
-                _ = check self.deployConfigMap(definition);
+            model:API? api = apiArtifact.api;
+            if api is model:API {
+                do {
+                    model:API deployK8sAPICrResult = check self.deployK8sAPICr(apiArtifact);
+                    model:OwnerReference ownerReference = {apiVersion: deployK8sAPICrResult.apiVersion, kind: deployK8sAPICrResult.kind, name: deployK8sAPICrResult.metadata.name, uid: <string>deployK8sAPICrResult.metadata.uid};
+                    model:ConfigMap? definition = apiArtifact.definition;
+                    if definition is model:ConfigMap {
+                        definition.metadata.namespace = apiPartition.namespace;
+                        definition.metadata.ownerReferences = [ownerReference];
+                        _ = check self.deployConfigMap(definition);
+                    }
+                    check self.deployScopeCrs(apiArtifact, ownerReference);
+                    check self.deployBackendServices(apiArtifact, ownerReference);
+                    check self.deployAuthneticationCRs(apiArtifact, ownerReference);
+                    check self.deployRateLimitPolicyCRs(apiArtifact, ownerReference);
+                    check self.deployInterceptorServiceCRs(apiArtifact, ownerReference);
+                    check self.deployBackendJWTConfigs(apiArtifact, ownerReference);
+                    check self.deployAPIPolicyCRs(apiArtifact, ownerReference);
+                    check self.deployHttpRoutes(apiArtifact.productionRoute, <string>apiArtifact?.namespace, ownerReference);
+                    check self.deployHttpRoutes(apiArtifact.sandboxRoute, <string>apiArtifact?.namespace, ownerReference);
+                    return deployK8sAPICrResult;
+                } on fail var e {
+                    http:Response|http:ClientError apiCRDeletionResponse = deleteAPICR(api.metadata.name, apiArtifact.namespace ?: "");
+                    if apiCRDeletionResponse is http:ClientError {
+                        log:printError("Error while undeploying API CR ", apiCRDeletionResponse);
+                    }
+                    if e is commons:APKError {
+                        return e;
+                    }
+                    log:printError("Internal Error occured while deploying API", e);
+                    return e909028();
+                }
+            } else {
+                return e909028();
             }
-            check self.deployScopeCrs(apiArtifact);
-            check self.deployBackendServices(apiArtifact);
-            check self.deployAuthneticationCRs(apiArtifact);
-            check self.deployRateLimitPolicyCRs(apiArtifact);
-            check self.deployInterceptorServiceCRs(apiArtifact);
-            check self.deployBackendJWTConfigs(apiArtifact);
-            check self.deployAPIPolicyCRs(apiArtifact);
-            check self.deployHttpRoutes(apiArtifact.productionRoute, <string>apiArtifact?.namespace);
-            check self.deployHttpRoutes(apiArtifact.sandboxRoute, <string>apiArtifact?.namespace);
-            return check self.deployK8sAPICr(apiArtifact);
         } on fail var e {
             if e is commons:APKError {
                 return e;
@@ -127,11 +147,22 @@ public class DeployerClient {
         }
     }
 
-    private isolated function deployAPIPolicyCRs(model:APIArtifact apiArtifact) returns error? {
+    private isolated function deployAPIPolicyCRs(model:APIArtifact apiArtifact, model:OwnerReference ownerReference) returns error? {
         foreach model:APIPolicy apiPolicy in apiArtifact.apiPolicies {
+            apiPolicy.metadata.namespace = apiArtifact.namespace;
             http:Response deployAPIPolicyResult = check deployAPIPolicyCR(apiPolicy, <string>apiArtifact?.namespace);
             if deployAPIPolicyResult.statusCode == http:STATUS_CREATED {
                 log:printDebug("Deployed APIPolicy Successfully" + apiPolicy.toString());
+            } else if deployAPIPolicyResult.statusCode == http:STATUS_CONFLICT {
+                log:printDebug("APIPolicy already exists" + apiPolicy.toString());
+                model:APIPolicy retrievedApiPolicy = check getAPIPolicyCR(apiPolicy.metadata.name, <string>apiArtifact?.namespace);
+                apiPolicy.metadata.resourceVersion = retrievedApiPolicy.metadata.resourceVersion;
+                http:Response response = check updateAPIPolicyCR(apiPolicy, <string>apiArtifact?.namespace);
+                if response.statusCode != http:STATUS_OK {
+                    json responsePayLoad = check response.getJsonPayload();
+                    model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+                    check self.handleK8sTimeout(statusResponse);
+                }
             } else {
                 json responsePayLoad = check deployAPIPolicyResult.getJsonPayload();
                 model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
@@ -236,11 +267,22 @@ public class DeployerClient {
         }
     }
 
-    private isolated function deployScopeCrs(model:APIArtifact apiArtifact) returns error? {
+    private isolated function deployScopeCrs(model:APIArtifact apiArtifact, model:OwnerReference ownerReference) returns error? {
         foreach model:Scope scope in apiArtifact.scopes {
+            scope.metadata.ownerReferences = [ownerReference];
             http:Response deployScopeResult = check deployScopeCR(scope, <string>apiArtifact?.namespace);
             if deployScopeResult.statusCode == http:STATUS_CREATED {
                 log:printDebug("Deployed Scope Successfully" + scope.toString());
+            } else if deployScopeResult.statusCode == http:STATUS_CONFLICT {
+                log:printDebug("Scope already exists" + scope.toString());
+                model:Scope scopeFromK8s = check getScopeCR(scope.metadata.name, <string>apiArtifact?.namespace);
+                scope.metadata.resourceVersion=scopeFromK8s.metadata.resourceVersion;
+                http:Response scopeCR = check updateScopeCR(scope, <string>apiArtifact?.namespace);
+                if scopeCR.statusCode != http:STATUS_OK {
+                    json responsePayLoad = check scopeCR.getJsonPayload();
+                    model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+                    check self.handleK8sTimeout(statusResponse);
+                }
             } else {
                 json responsePayLoad = check deployScopeResult.getJsonPayload();
                 model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
@@ -306,12 +348,23 @@ public class DeployerClient {
         }
     }
 
-    private isolated function deployHttpRoutes(model:Httproute[] httproutes, string namespace) returns error? {
+    private isolated function deployHttpRoutes(model:Httproute[] httproutes, string namespace, model:OwnerReference ownerReference) returns error? {
         foreach model:Httproute httpRoute in httproutes {
+            httpRoute.metadata.ownerReferences = [ownerReference];
             if httpRoute.spec.rules.length() > 0 {
                 http:Response deployHttpRouteResult = check deployHttpRoute(httpRoute, namespace);
                 if deployHttpRouteResult.statusCode == http:STATUS_CREATED {
                     log:printDebug("Deployed HttpRoute Successfully" + httpRoute.toString());
+                } else if deployHttpRouteResult.statusCode == http:STATUS_CONFLICT {
+                    log:printDebug("HttpRoute already exists" + httpRoute.toString());
+                    model:Httproute httpRouteFromK8s = check getHttpRoute(httpRoute.metadata.name, namespace);
+                    httpRoute.metadata.resourceVersion=httpRouteFromK8s.metadata.resourceVersion;
+                    http:Response httpRouteCR = check updateHttpRoute(httpRoute, namespace);
+                    if httpRouteCR.statusCode != http:STATUS_OK {
+                        json responsePayLoad = check httpRouteCR.getJsonPayload();
+                        model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+                        check self.handleK8sTimeout(statusResponse);
+                    }
                 } else {
                     json responsePayLoad = check deployHttpRouteResult.getJsonPayload();
                     model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
@@ -320,16 +373,26 @@ public class DeployerClient {
             }
         }
     }
-
-    private isolated function deployAuthneticationCRs(model:APIArtifact apiArtifact) returns error? {
+    private isolated function deployAuthneticationCRs(model:APIArtifact apiArtifact, model:OwnerReference ownerReference) returns error? {
         string[] keys = apiArtifact.authenticationMap.keys();
         log:printDebug("Inside Deploy Authentication CRs" + keys.toString());
         foreach string authenticationCrName in keys {
             model:Authentication authenticationCr = apiArtifact.authenticationMap.get(authenticationCrName);
+            authenticationCr.metadata.ownerReferences = [ownerReference];
             log:printDebug("Authentication CR:" + authenticationCr.toString());
             http:Response authenticationCrDeployResponse = check deployAuthenticationCR(authenticationCr, <string>apiArtifact?.namespace);
             if authenticationCrDeployResponse.statusCode == http:STATUS_CREATED {
-                log:printInfo("Deployed Authentication Successfully" + authenticationCr.toString());
+                log:printDebug("Deployed Authentication Successfully" + authenticationCr.toString());
+            } else if authenticationCrDeployResponse.statusCode == http:STATUS_CONFLICT {
+                log:printDebug("Authentication CR already exists" + authenticationCr.toString());
+                model:Authentication authenticationCrFromK8s = check getAuthenticationCR(authenticationCr.metadata.name, <string>apiArtifact?.namespace);
+                authenticationCr.metadata.resourceVersion=authenticationCrFromK8s.metadata.resourceVersion;
+                http:Response authenticationCR = check updateAuthenticationCR(authenticationCr, <string>apiArtifact?.namespace);
+                if authenticationCR.statusCode != http:STATUS_OK {
+                    json responsePayLoad = check authenticationCR.getJsonPayload();
+                    model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+                    check self.handleK8sTimeout(statusResponse);
+                }
             } else {
                 log:printError("Error Deploying Authentication" + authenticationCr.toString());
                 json responsePayLoad = check authenticationCrDeployResponse.getJsonPayload();
@@ -338,12 +401,22 @@ public class DeployerClient {
             }
         }
     }
-
-    private isolated function deployBackendServices(model:APIArtifact apiArtifact) returns error? {
+    private isolated function deployBackendServices(model:APIArtifact apiArtifact, model:OwnerReference ownerReference) returns error? {
         foreach model:Backend backendService in apiArtifact.backendServices {
+            backendService.metadata.ownerReferences = [ownerReference];
             http:Response deployServiceResult = check deployBackendCR(backendService, <string>apiArtifact?.namespace);
             if deployServiceResult.statusCode == http:STATUS_CREATED {
                 log:printDebug("Deployed Backend Successfully" + backendService.toString());
+            } else if deployServiceResult.statusCode == http:STATUS_CONFLICT {
+                log:printDebug("Backend already exists" + backendService.toString());
+                model:Backend backendCRFromK8s = check getBackendCR(backendService.metadata.name, <string>apiArtifact?.namespace);
+                backendService.metadata.resourceVersion=backendCRFromK8s.metadata.resourceVersion;
+                http:Response backendCR = check updateBackendCR(backendService, <string>apiArtifact?.namespace);
+                if backendCR.statusCode != http:STATUS_OK {
+                    json responsePayLoad = check backendCR.getJsonPayload();
+                    model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+                    check self.handleK8sTimeout(statusResponse);
+                }
             } else {
                 json responsePayLoad = check deployServiceResult.getJsonPayload();
                 model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
@@ -354,20 +427,16 @@ public class DeployerClient {
 
     private isolated function deployConfigMap(model:ConfigMap definition) returns model:ConfigMap|commons:APKError|error {
         string deployableNamespace = <string>definition.metadata?.namespace;
-        http:Response configMapRetrieved = check getConfigMapValueFromNameAndNamespace(definition.metadata.name, deployableNamespace);
-        if configMapRetrieved.statusCode == 404 {
-            http:Response deployConfigMapResult = check deployConfigMap(definition, deployableNamespace);
-            if deployConfigMapResult.statusCode == http:STATUS_CREATED {
-                log:printDebug("Deployed Configmap Successfully" + definition.toString());
-                json responsePayLoad = check deployConfigMapResult.getJsonPayload();
-                return check responsePayLoad.cloneWithType(model:ConfigMap);
-            } else {
-                json responsePayLoad = check deployConfigMapResult.getJsonPayload();
-                model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
-                return self.handleK8sTimeout(statusResponse);
-            }
-        } else if configMapRetrieved.statusCode == 200 {
-            http:Response deployConfigMapResult = check updateConfigMap(definition, deployableNamespace);
+        http:Response deployConfigMapResult = check deployConfigMap(definition, deployableNamespace);
+        if deployConfigMapResult.statusCode == http:STATUS_CREATED {
+            log:printDebug("Deployed Configmap Successfully" + definition.toString());
+            json responsePayLoad = check deployConfigMapResult.getJsonPayload();
+            return check responsePayLoad.cloneWithType(model:ConfigMap);
+        } else if deployConfigMapResult.statusCode == http:STATUS_CONFLICT {
+            log:printDebug("Configmap Already Exists" + definition.toString());
+            model:ConfigMap configMapFromK8s = check getConfigMap(definition.metadata.name, deployableNamespace);
+            definition.metadata.resourceVersion=configMapFromK8s.metadata.resourceVersion;
+            deployConfigMapResult = check updateConfigMap(definition, deployableNamespace);
             if deployConfigMapResult.statusCode == http:STATUS_OK {
                 log:printDebug("updated Configmap Successfully" + definition.toString());
                 json responsePayLoad = check deployConfigMapResult.getJsonPayload();
@@ -378,7 +447,7 @@ public class DeployerClient {
                 return self.handleK8sTimeout(statusResponse);
             }
         } else {
-            json responsePayLoad = check configMapRetrieved.getJsonPayload();
+            json responsePayLoad = check deployConfigMapResult.getJsonPayload();
             model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
             return self.handleK8sTimeout(statusResponse);
         }
@@ -423,11 +492,22 @@ public class DeployerClient {
         }
     }
 
-    private isolated function deployRateLimitPolicyCRs(model:APIArtifact apiArtifact) returns error? {
+    private isolated function deployRateLimitPolicyCRs(model:APIArtifact apiArtifact, model:OwnerReference ownerReference) returns error? {
         foreach model:RateLimitPolicy rateLimitPolicy in apiArtifact.rateLimitPolicies {
+            rateLimitPolicy.metadata.ownerReferences = [ownerReference];
             http:Response deployRateLimitPolicyResult = check deployRateLimitPolicyCR(rateLimitPolicy, <string>apiArtifact?.namespace);
             if deployRateLimitPolicyResult.statusCode == http:STATUS_CREATED {
                 log:printDebug("Deployed RateLimitPolicy Successfully" + rateLimitPolicy.toString());
+            } else if deployRateLimitPolicyResult.statusCode == http:STATUS_CONFLICT {
+                log:printDebug("RateLimitPolicy already exists" + rateLimitPolicy.toString());
+                model:RateLimitPolicy rateLimitPolicyFromK8s = check getRateLimitPolicyCR(rateLimitPolicy.metadata.name, <string>apiArtifact?.namespace);
+                rateLimitPolicy.metadata.resourceVersion=rateLimitPolicyFromK8s.metadata.resourceVersion;
+                http:Response rateLimitPolicyCR = check updateRateLimitPolicyCR(rateLimitPolicy, <string>apiArtifact?.namespace);
+                if rateLimitPolicyCR.statusCode != http:STATUS_OK {
+                    json responsePayLoad = check rateLimitPolicyCR.getJsonPayload();
+                    model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+                    check self.handleK8sTimeout(statusResponse);
+                }
             } else {
                 json responsePayLoad = check deployRateLimitPolicyResult.getJsonPayload();
                 model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
@@ -484,11 +564,22 @@ public class DeployerClient {
         }
     }
 
-    private isolated function deployInterceptorServiceCRs(model:APIArtifact apiArtifact) returns error? {
+    private isolated function deployInterceptorServiceCRs(model:APIArtifact apiArtifact, model:OwnerReference ownerReference) returns error? {
         foreach model:InterceptorService interceptorService in apiArtifact.interceptorServices {
+            interceptorService.metadata.ownerReferences = [ownerReference];
             http:Response deployAPIPolicyResult = check deployInterceptorServiceCR(interceptorService, <string>apiArtifact?.namespace);
             if deployAPIPolicyResult.statusCode == http:STATUS_CREATED {
                 log:printDebug("Deployed InterceptorService Successfully" + interceptorService.toString());
+            } else if deployAPIPolicyResult.statusCode == http:STATUS_CONFLICT {
+                log:printDebug("InterceptorService already exists" + interceptorService.toString());
+                model:InterceptorService interceptorServiceFromK8s = check getInterceptorServiceCR(interceptorService.metadata.name, <string>apiArtifact?.namespace);
+                interceptorService.metadata.resourceVersion=interceptorServiceFromK8s.metadata.resourceVersion;
+                http:Response interceptorServiceCR = check updateInterceptorServiceCR(interceptorService, <string>apiArtifact?.namespace);
+                if interceptorServiceCR.statusCode != http:STATUS_OK {
+                    json responsePayLoad = check interceptorServiceCR.getJsonPayload();
+                    model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+                    check self.handleK8sTimeout(statusResponse);
+                }
             } else {
                 json responsePayLoad = check deployAPIPolicyResult.getJsonPayload();
                 model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
@@ -497,12 +588,23 @@ public class DeployerClient {
         }
     }
 
-    private isolated function deployBackendJWTConfigs(model:APIArtifact apiArtifact) returns error? {
+    private isolated function deployBackendJWTConfigs(model:APIArtifact apiArtifact, model:OwnerReference ownerReference) returns error? {
         model:BackendJWT? backendJwt = apiArtifact.backendJwt;
         if backendJwt is model:BackendJWT {
+            backendJwt.metadata.ownerReferences = [ownerReference];
             http:Response backendJWTCrDeployResponse = check deployBackendJWTCr(backendJwt, <string>apiArtifact?.namespace);
             if backendJWTCrDeployResponse.statusCode == http:STATUS_CREATED {
                 log:printDebug("Deployed BackendJWT Config Successfully" + backendJwt.toString());
+            } else if backendJWTCrDeployResponse.statusCode == http:STATUS_CONFLICT {
+                log:printDebug("BackendJWT Config already exists" + backendJwt.toString());
+                model:BackendJWT backendJWTCrFromK8s = check getBackendJWTCr(backendJwt.metadata.name, <string>apiArtifact?.namespace);
+                backendJwt.metadata.resourceVersion=backendJWTCrFromK8s.metadata.resourceVersion;
+                http:Response backendJWTCr = check updateBackendJWTCr(backendJwt, <string>apiArtifact?.namespace);
+                if backendJWTCr.statusCode != http:STATUS_OK {
+                    json responsePayLoad = check backendJWTCr.getJsonPayload();
+                    model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+                    check self.handleK8sTimeout(statusResponse);
+                }
             } else {
                 json responsePayLoad = check backendJWTCrDeployResponse.getJsonPayload();
                 model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);

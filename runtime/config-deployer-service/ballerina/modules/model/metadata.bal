@@ -31,6 +31,12 @@ public type Metadata record {
 };
 
 public type OwnerReference record {
+    string apiVersion;
+    boolean blockOwnerDeletion?;
+    boolean controller?;
+    string kind;
+    string name;
+    string uid;
 };
 
 public type ManagedFieldsEntry record {
