@@ -197,7 +197,7 @@ wso2:
               failureThreshold: 5
             strategy: Recreate
             imagePullPolicy: Always
-            image: wso2/router:1.0.0-alpha
+            image: wso2/router:latest
             # configs:
             #   tls:
             #     secretName: "router-cert"
