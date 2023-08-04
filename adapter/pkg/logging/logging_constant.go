@@ -20,580 +20,491 @@ package logging
 // Error Log Internal Configuration(1000-1099) Config Constants
 // - loggerConfig
 const (
-	error1000 = 1000
-	error1001 = 1001
-	error1002 = 1002
+	Error1000 = 1000
+	Error1001 = 1001
+	Error1002 = 1002
 )
 
 // Error Log Pkg operator(2600-2699) Config Constants
 // - LoggerAPKOperator
 const (
-	error2600 = 2600
-	error2601 = 2601
-	error2602 = 2602
-	error2603 = 2603
-	error2604 = 2604
-	error2605 = 2605
-	error2606 = 2606
-	error2607 = 2607
-	error2608 = 2608
-	error2609 = 2609
-	error2610 = 2610
-	error2611 = 2611
-	error2612 = 2612
-	error2613 = 2613
-	error2614 = 2614
-	error2615 = 2615
-	error2616 = 2616
-	error2617 = 2617
-	error2618 = 2618
-	error2619 = 2619
-	error2620 = 2620
-	error2621 = 2621
-	error2622 = 2622
-	error2623 = 2623
-	error2625 = 2625
-	error2626 = 2626
-	error2627 = 2627
-	error2628 = 2628
-	error2629 = 2629
-	error2630 = 2630
-	error2631 = 2631
-	error2632 = 2632
-	error2633 = 2633
-	error2634 = 2634
-	error2635 = 2635
-	error2636 = 2636
-	error2637 = 2637
-	error2638 = 2638
-	error2639 = 2639
-	error2640 = 2640
-	error2641 = 2641
-	error2642 = 2642
-	error2643 = 2643
-	error2644 = 2644
-	error2645 = 2645
-	error2646 = 2646
-	error2647 = 2647
-	error2648 = 2648
-	error2649 = 2649
-	error2650 = 2650
-	error2651 = 2651
-	error2652 = 2652
-	error2653 = 2653
-	error2654 = 2654
-	error2655 = 2655
-	error2656 = 2656
-	error2657 = 2657
-	error2658 = 2658
-	error2659 = 2659
-	error2660 = 2660
-	error2661 = 2661
-	error2662 = 2662
+	Error2600 = 2600
+	Error2601 = 2601
+	Error2602 = 2602
+	Error2603 = 2603
+	Error2604 = 2604
+	Error2605 = 2605
+	Error2606 = 2606
+	Error2607 = 2607
+	Error2608 = 2608
+	Error2609 = 2609
+	Error2610 = 2610
+	Error2611 = 2611
+	Error2612 = 2612
+	Error2613 = 2613
+	Error2614 = 2614
+	Error2615 = 2615
+	Error2616 = 2616
+	Error2617 = 2617
+	Error2618 = 2618
+	Error2619 = 2619
+	Error2620 = 2620
+	Error2621 = 2621
+	Error2622 = 2622
+	Error2623 = 2623
+	Error2625 = 2625
+	Error2626 = 2626
+	Error2627 = 2627
+	Error2628 = 2628
+	Error2629 = 2629
+	Error2630 = 2630
+	Error2631 = 2631
+	Error2632 = 2632
+	Error2633 = 2633
+	Error2634 = 2634
+	Error2635 = 2635
+	Error2636 = 2636
+	Error2637 = 2637
+	Error2638 = 2638
+	Error2639 = 2639
+	Error2640 = 2640
+	Error2641 = 2641
+	Error2642 = 2642
+	Error2643 = 2643
+	Error2644 = 2644
+	Error2645 = 2645
+	Error2646 = 2646
+	Error2647 = 2647
+	Error2648 = 2648
+	Error2649 = 2649
+	Error2650 = 2650
+	Error2651 = 2651
+	Error2652 = 2652
+	Error2653 = 2653
+	Error2654 = 2654
+	Error2655 = 2655
+	Error2656 = 2656
+	Error2657 = 2657
+	Error2658 = 2658
+	Error2659 = 2659
+	Error2660 = 2660
+	Error2661 = 2661
+	Error2662 = 2662
 )
 
 // Error Log Pkg auth(3001-3099) Config Constants
 const (
-	error3001 = 3001
-	error3002 = 3002
+	Error3001 = 3001
+	Error3002 = 3002
 )
 
 // Error codes gateway controller (3100-3199)
 const (
-	error3100 = 3100
-	error3101 = 3101
-	error3102 = 3102
-	error3103 = 3103
-	error3104 = 3104
-	error3105 = 3105
-	error3106 = 3106
-	error3107 = 3107
-	error3108 = 3108
-	error3109 = 3109
-	error3110 = 3110
-	error3111 = 3111
-	error3112 = 3112
-	error3113 = 3113
-	error3114 = 3114
-	error3115 = 3115
-	error3116 = 3116
-	error3117 = 3117
-	error3118 = 3118
-	error3119 = 3119
-	error3120 = 3120
-	error3121 = 3121
-	error3122 = 3122
-	error3123 = 3123
-	error3124 = 3124
-	error3125 = 3125
+	Error3100 = 3100
+	Error3101 = 3101
+	Error3102 = 3102
+	Error3103 = 3103
+	Error3104 = 3104
+	Error3105 = 3105
+	Error3106 = 3106
+	Error3107 = 3107
+	Error3108 = 3108
+	Error3109 = 3109
+	Error3110 = 3110
+	Error3111 = 3111
+	Error3112 = 3112
+	Error3113 = 3113
+	Error3114 = 3114
+	Error3115 = 3115
+	Error3116 = 3116
+	Error3117 = 3117
+	Error3118 = 3118
+	Error3119 = 3119
+	Error3120 = 3120
+	Error3121 = 3121
+	Error3122 = 3122
+	Error3123 = 3123
+	Error3124 = 3124
+	Error3125 = 3125
+	Error3126 = 3126
 )
 
 // Mapper used to keep error details for error logs
 var Mapper = map[int]ErrorDetails{
-	error1000: {
-		ErrorCode: error1000,
-		Message:   "Configuration file not found: %v",
-		Severity:  BLOCKER,
+	Error1000: {
+		ErrorCode: Error1000,
+		Message:   "Configuration file not found.",
 	},
-	error1001: {
-		ErrorCode: error1001,
-		Message:   "Error reading configurations: %v",
-		Severity:  BLOCKER,
+	Error1001: {
+		ErrorCode: Error1001,
+		Message:   "Error reading configurations.",
 	},
-	error1002: {
-		ErrorCode: error1002,
-		Message:   "Error parsing the configurations: %v",
-		Severity:  BLOCKER,
+	Error1002: {
+		ErrorCode: Error1002,
+		Message:   "Error parsing the configurations.",
 	},
-	error2600: {
-		ErrorCode: error2600,
-		Message:   "unable to start manager: %v",
-		Severity:  BLOCKER,
+	Error2600: {
+		ErrorCode: Error2600,
+		Message:   "unable to start manager.",
 	},
-	error2601: {
-		ErrorCode: error2601,
-		Message:   "Unable to create webhook API: %v",
-		Severity:  BLOCKER,
+	Error2601: {
+		ErrorCode: Error2601,
+		Message:   "Unable to create webhook API.",
 	},
-	error2602: {
-		ErrorCode: error2602,
-		Message:   "unable to set up health check: %v",
-		Severity:  BLOCKER,
+	Error2602: {
+		ErrorCode: Error2602,
+		Message:   "unable to set up health check.",
 	},
-	error2603: {
-		ErrorCode: error2603,
-		Message:   "unable to set up ready check: %v",
-		Severity:  BLOCKER,
+	Error2603: {
+		ErrorCode: Error2603,
+		Message:   "unable to set up ready check.",
 	},
-	error2604: {
-		ErrorCode: error2604,
-		Message:   "Problem running manager: %v",
-		Severity:  BLOCKER,
+	Error2604: {
+		ErrorCode: Error2604,
+		Message:   "Problem running manager.",
 	},
-	error2605: {
-		ErrorCode: error2605,
-		Message:   "Unable to list APIs: %v",
-		Severity:  CRITICAL,
+	Error2605: {
+		ErrorCode: Error2605,
+		Message:   "Unable to list APIs.",
 	},
-	error2606: {
-		ErrorCode: error2606,
-		Message:   "Error creating Application controller: %v",
-		Severity:  BLOCKER,
+	Error2606: {
+		ErrorCode: Error2606,
+		Message:   "Error creating Application controller.",
 	},
-	error2607: {
-		ErrorCode: error2607,
-		Message:   "Error watching Application resources: %v",
-		Severity:  BLOCKER,
+	Error2607: {
+		ErrorCode: Error2607,
+		Message:   "Error watching Application resources.",
 	},
-	error2608: {
-		ErrorCode: error2608,
-		Message:   "Error creating Subscription controller: %v",
-		Severity:  BLOCKER,
+	Error2608: {
+		ErrorCode: Error2608,
+		Message:   "Error creating Subscription controller.",
 	},
-	error2609: {
-		ErrorCode: error2609,
-		Message:   "Error watching Subscription resources: %v",
-		Severity:  BLOCKER,
+	Error2609: {
+		ErrorCode: Error2609,
+		Message:   "Error watching Subscription resources.",
 	},
-	error2610: {
-		ErrorCode: error2610,
-		Message:   "Error creating API controller : %v",
-		Severity:  BLOCKER,
+	Error2610: {
+		ErrorCode: Error2610,
+		Message:   "Error creating API controller .",
 	},
-	error2611: {
-		ErrorCode: error2611,
-		Message:   "Error watching API resources: %v",
-		Severity:  BLOCKER,
+	Error2611: {
+		ErrorCode: Error2611,
+		Message:   "Error watching API resources.",
 	},
-	error2612: {
-		ErrorCode: error2612,
-		Message:   "Error adding indexes: %v",
-		Severity:  BLOCKER,
+	Error2612: {
+		ErrorCode: Error2612,
+		Message:   "Error adding indexes.",
 	},
-	error2613: {
-		ErrorCode: error2613,
-		Message:   "Error watching HTTPRoute resources: %v",
-		Severity:  BLOCKER,
+	Error2613: {
+		ErrorCode: Error2613,
+		Message:   "Error watching HTTPRoute resources.",
 	},
-	error2614: {
-		ErrorCode: error2614,
-		Message:   "Error watching Service resources: %v",
-		Severity:  BLOCKER,
+	Error2614: {
+		ErrorCode: Error2614,
+		Message:   "Error watching Service resources.",
 	},
-	error2615: {
-		ErrorCode: error2615,
-		Message:   "Error watching Backend resources: %v",
-		Severity:  BLOCKER,
+	Error2615: {
+		ErrorCode: Error2615,
+		Message:   "Error watching Backend resources.",
 	},
-	error2616: {
-		ErrorCode: error2616,
-		Message:   "Error watching Authentication resources: %v",
-		Severity:  BLOCKER,
+	Error2616: {
+		ErrorCode: Error2616,
+		Message:   "Error watching Authentication resources.",
 	},
-	error2617: {
-		ErrorCode: error2617,
-		Message:   "Error watching APIPolicy resources: %v",
-		Severity:  BLOCKER,
+	Error2617: {
+		ErrorCode: Error2617,
+		Message:   "Error watching APIPolicy resources.",
 	},
-	error2618: {
-		ErrorCode: error2618,
-		Message:   "Error watching scope resources: %v",
-		Severity:  BLOCKER,
+	Error2618: {
+		ErrorCode: Error2618,
+		Message:   "Error watching scope resources.",
 	},
-	error2619: {
-		ErrorCode: error2619,
-		Message:   "Error applying startup APIs: %v",
-		Severity:  BLOCKER,
+	Error2619: {
+		ErrorCode: Error2619,
+		Message:   "Error applying startup APIs.",
 	},
-	error2620: {
-		ErrorCode: error2620,
-		Message:   "Error resolving Gateway State %s: %v",
-		Severity:  BLOCKER,
+	Error2620: {
+		ErrorCode: Error2620,
+		Message:   "Error resolving Gateway State.",
 	},
-	error2622: {
-		ErrorCode: error2622,
-		Message:   "Unexpected object type, bypassing reconciliation: %v",
-		Severity:  TRIVIAL,
+	Error2622: {
+		ErrorCode: Error2622,
+		Message:   "Unexpected object type, bypassing reconciliation.",
 	},
-	error2623: {
-		ErrorCode: error2623,
-		Message:   "Unable to find associated APIs: %s",
-		Severity:  CRITICAL,
+	Error2623: {
+		ErrorCode: Error2623,
+		Message:   "Unable to find associated APIs.",
 	},
-	error2625: {
-		ErrorCode: error2625,
-		Message:   "Unable to find associated HTTPRoutes: %s",
-		Severity:  CRITICAL,
+	Error2625: {
+		ErrorCode: Error2625,
+		Message:   "Unable to find associated HTTPRoutes.",
 	},
-	error2626: {
-		ErrorCode: error2626,
-		Message:   "Unsupported object type %T",
-		Severity:  BLOCKER,
+	Error2626: {
+		ErrorCode: Error2626,
+		Message:   "Unsupported object type.",
 	},
-	error2628: {
-		ErrorCode: error2628,
-		Message:   "API Event is nil",
-		Severity:  CRITICAL,
+	Error2628: {
+		ErrorCode: Error2628,
+		Message:   "API Event is nil.",
 	},
-	error2629: {
-		ErrorCode: error2629,
-		Message:   "API deployment failed for %s event : %v",
-		Severity:  MAJOR,
+	Error2629: {
+		ErrorCode: Error2629,
+		Message:   "API deployment failed for event.",
 	},
-	error2630: {
-		ErrorCode: error2630,
-		Message: "Error undeploying prod httpRoute of API : %v in Organization %v from environments %v." +
-			" Hence not checking on deleting the sand httpRoute of the API",
-		Severity: MAJOR,
+	Error2630: {
+		ErrorCode: Error2630,
+		Message:   "Error undeploying prod httpRoute of API. Hence not checking on deleting the sand httpRoute of the API",
 	},
-	error2631: {
-		ErrorCode: error2631,
-		Message:   "Error setting HttpRoute CR info to adapterInternalAPI. %v",
-		Severity:  MAJOR,
+	Error2631: {
+		ErrorCode: Error2631,
+		Message:   "Error setting HttpRoute CR info to adapterInternalAPI.",
 	},
-	error2632: {
-		ErrorCode: error2632,
-		Message:   "Error validating adapterInternalAPI intermediate representation. %v",
-		Severity:  MAJOR,
+	Error2632: {
+		ErrorCode: Error2632,
+		Message:   "Error validating adapterInternalAPI intermediate representation.",
 	},
-	error2633: {
-		ErrorCode: error2633,
-		Message:   "Error updating the API : %s:%s in vhosts: %s. %v",
-		Severity:  MAJOR,
+	Error2633: {
+		ErrorCode: Error2633,
+		Message:   "Error updating the API.",
 	},
-	error2634: {
-		ErrorCode: error2634,
-		Message:   "Error creating connection for %v : %v",
-		Severity:  MAJOR,
+	Error2634: {
+		ErrorCode: Error2634,
+		Message:   "Error creating connection.",
 	},
-	error2635: {
-		ErrorCode: error2635,
-		Message:   "Error sending API to APK management server : %v",
-		Severity:  MAJOR,
+	Error2635: {
+		ErrorCode: Error2635,
+		Message:   "Error sending API to APK management server.",
 	},
-	error2636: {
-		ErrorCode: error2636,
-		Message:   "Error while generating the soap fault message. %s",
-		Severity:  MINOR,
+	Error2636: {
+		ErrorCode: Error2636,
+		Message:   "Error while generating the soap fault message.",
 	},
-	error2637: {
-		ErrorCode: error2637,
-		Message:   "Unable to create webhook for Ratelimit: %v",
-		Severity:  BLOCKER,
+	Error2637: {
+		ErrorCode: Error2637,
+		Message:   "Unable to create webhook for Ratelimit.",
 	},
-	error2638: {
-		ErrorCode: error2638,
-		Message:   "Unable to create webhook for APIPolicy: %v",
-		Severity:  BLOCKER,
+	Error2638: {
+		ErrorCode: Error2638,
+		Message:   "Unable to create webhook for APIPolicy.",
 	},
-	error2639: {
-		ErrorCode: error2639,
-		Message:   "Error watching Ratelimit resources: %v",
-		Severity:  BLOCKER,
+	Error2639: {
+		ErrorCode: Error2639,
+		Message:   "Error watching Ratelimit resources.",
 	},
-	error2640: {
-		ErrorCode: error2640,
-		Message:   "Error watching InterceptorService resources: %v",
-		Severity:  BLOCKER,
+	Error2640: {
+		ErrorCode: Error2640,
+		Message:   "Error watching InterceptorService resources.",
 	},
-	error2653: {
-		ErrorCode: error2653,
-		Message:   "Gateway Label is invalid: %s",
-		Severity:  CRITICAL,
+	Error2653: {
+		ErrorCode: Error2653,
+		Message:   "Gateway Label is invalid.",
 	},
-	error2654: {
-		ErrorCode: error2654,
-		Message:   "Error resolving certificate for Backend %v",
-		Severity:  BLOCKER,
+	Error2654: {
+		ErrorCode: Error2654,
+		Message:   "Error resolving certificate for Backend.",
 	},
-	error2661: {
-		ErrorCode: error2661,
-		Message:   "Error watching BackendJWT resources: %v",
-		Severity:  BLOCKER,
+	Error2661: {
+		ErrorCode: Error2661,
+		Message:   "Error watching BackendJWT resources.",
 	},
-	error2662: {
-		ErrorCode: error2662,
-		Message:   "Error while getting backendjwt %s, %s",
-		Severity:  CRITICAL,
+	Error2662: {
+		ErrorCode: Error2662,
+		Message:   "Error while getting BackendJWT.",
 	},
-	error2621: {
-		ErrorCode: error2621,
-		Message:   "Unable to find associated Backends for Secret: %s",
-		Severity:  CRITICAL,
+	Error2621: {
+		ErrorCode: Error2621,
+		Message:   "Unable to find associated Backends for Secret.",
 	},
-	error2627: {
-		ErrorCode: error2627,
+	Error2627: {
+		ErrorCode: Error2627,
 		Message:   "Failed to decode certificate PEM",
-		Severity:  CRITICAL,
 	},
-	error2641: {
-		ErrorCode: error2641,
-		Message:   "Error while parsing certificate: %s",
-		Severity:  CRITICAL,
+	Error2641: {
+		ErrorCode: Error2641,
+		Message:   "Error while parsing certificate.",
 	},
-	error2642: {
-		ErrorCode: error2642,
-		Message:   "Error while reading certificate from secretRef: %s",
-		Severity:  CRITICAL,
+	Error2642: {
+		ErrorCode: Error2642,
+		Message:   "Error while reading certificate from secretRef.",
 	},
-	error2643: {
-		ErrorCode: error2643,
-		Message:   "Error while reading certificate from configMapRef: %s",
-		Severity:  CRITICAL,
+	Error2643: {
+		ErrorCode: Error2643,
+		Message:   "Error while reading certificate from configMapRef.",
 	},
-	error2644: {
-		ErrorCode: error2644,
-		Message:   "Error watching ConfigMap resources: %v",
-		Severity:  BLOCKER,
+	Error2644: {
+		ErrorCode: Error2644,
+		Message:   "Error watching ConfigMap resources.",
 	},
-	error2645: {
-		ErrorCode: error2645,
-		Message:   "Error watching Secret resources: %v",
-		Severity:  BLOCKER,
+	Error2645: {
+		ErrorCode: Error2645,
+		Message:   "Error watching Secret resources.",
 	},
-	error2646: {
-		ErrorCode: error2646,
-		Message:   "Error while getting backend: %v, error: %v",
-		Severity:  CRITICAL,
+	Error2646: {
+		ErrorCode: Error2646,
+		Message:   "Error while getting Backend.",
 	},
-	error2647: {
-		ErrorCode: error2647,
-		Message:   "Unable to find associated Backends for ConfigMap: %s",
-		Severity:  CRITICAL,
+	Error2647: {
+		ErrorCode: Error2647,
+		Message:   "Unable to find associated Backends for ConfigMap.",
 	},
-	error2648: {
-		ErrorCode: error2648,
-		Message:   "Error while reading key from secretRef: %s",
-		Severity:  CRITICAL,
+	Error2648: {
+		ErrorCode: Error2648,
+		Message:   "Error while reading key from secretRef.",
 	},
-	error2649: {
-		ErrorCode: error2649,
-		Message:   "Unable to find associated APIPolicies: %s",
-		Severity:  CRITICAL,
+	Error2649: {
+		ErrorCode: Error2649,
+		Message:   "Unable to find associated APIPolicies.",
 	},
-	error2650: {
-		ErrorCode: error2650,
-		Message:   "Error while getting custom rate limit policies: %s",
-		Severity:  MAJOR,
+	Error2650: {
+		ErrorCode: Error2650,
+		Message:   "Error while getting custom rate limit policies.",
 	},
-	error2651: {
-		ErrorCode: error2651,
-		Message:   "Error while getting interceptor service %s, %s",
-		Severity:  CRITICAL,
+	Error2651: {
+		ErrorCode: Error2651,
+		Message:   "Error while getting interceptor service.",
 	},
-	error2652: {
-		ErrorCode: error2652,
-		Message:   "Unable to create webhook for InterceptorService: %v",
-		Severity:  BLOCKER,
+	Error2652: {
+		ErrorCode: Error2652,
+		Message:   "Unable to create webhook for InterceptorService.",
 	},
-	error2655: {
-		ErrorCode: error2655,
-		Message:   "Unable to create webhook for Backend: %v",
-		Severity:  BLOCKER,
+	Error2655: {
+		ErrorCode: Error2655,
+		Message:   "Unable to create webhook for Backend.",
 	},
-	error2656: {
-		ErrorCode: error2656,
-		Message:   "Error watching JWTIssuer resources: %v",
-		Severity:  BLOCKER,
+	Error2656: {
+		ErrorCode: Error2656,
+		Message:   "Error watching JWTIssuer resources.",
 	},
-	error2657: {
-		ErrorCode: error2657,
-		Message:   "Error creating JWTIssuer controller: %v",
-		Severity:  BLOCKER,
+	Error2657: {
+		ErrorCode: Error2657,
+		Message:   "Error creating JWTIssuer controller.",
 	},
-	error2658: {
-		ErrorCode: error2658,
-		Message:   "Error adding indexes: %v",
-		Severity:  CRITICAL,
+	Error2658: {
+		ErrorCode: Error2658,
+		Message:   "Error adding indexes.",
 	},
-	error2659: {
-		ErrorCode: error2659,
-		Message:   "Error resolving certificate for JWKS %v",
-		Severity:  MAJOR,
+	Error2659: {
+		ErrorCode: Error2659,
+		Message:   "Error resolving certificate for JWKS.",
 	},
-	error2660: {
-		ErrorCode: error2660,
-		Message:   "Unable to find associated JWTIssuers: %s",
-		Severity:  CRITICAL,
+	Error2660: {
+		ErrorCode: Error2660,
+		Message:   "Unable to find associated JWTIssuers.",
 	},
-	error3001: {
-		ErrorCode: error3001,
-		Message:   "Error reading ssh key file: %s",
-		Severity:  CRITICAL,
+	Error3001: {
+		ErrorCode: Error3001,
+		Message:   "Error reading ssh key file.",
 	},
-	error3002: {
-		ErrorCode: error3002,
-		Message:   "Error creating ssh public key: %s",
-		Severity:  CRITICAL,
+	Error3002: {
+		ErrorCode: Error3002,
+		Message:   "Error creating ssh public key.",
 	},
-	error3100: {
-		ErrorCode: error3100,
-		Message:   "Error watching Gateway resources: %v",
-		Severity:  BLOCKER,
+	Error3100: {
+		ErrorCode: Error3100,
+		Message:   "Error watching Gateway resources.",
 	},
-	error3101: {
-		ErrorCode: error3101,
-		Message:   "Error watching APIPolicy resources: %v",
-		Severity:  BLOCKER,
+	Error3101: {
+		ErrorCode: Error3101,
+		Message:   "Error watching APIPolicy resources.",
 	},
-	error3102: {
-		ErrorCode: error3102,
-		Message:   "Error watching Backend resources: %v",
-		Severity:  BLOCKER,
+	Error3102: {
+		ErrorCode: Error3102,
+		Message:   "Error watching Backend resources.",
 	},
-	error3103: {
-		ErrorCode: error3103,
-		Message:   "Error watching ConfigMap resources: %v",
-		Severity:  BLOCKER,
+	Error3103: {
+		ErrorCode: Error3103,
+		Message:   "Error watching ConfigMap resources.",
 	},
-	error3104: {
-		ErrorCode: error3104,
-		Message:   "Error watching Secret resources: %v",
-		Severity:  BLOCKER,
+	Error3104: {
+		ErrorCode: Error3104,
+		Message:   "Error watching Secret resources.",
 	},
-	error3105: {
-		ErrorCode: error3105,
-		Message:   "Error resolving listener certificates: %v",
-		Severity:  BLOCKER,
+	Error3105: {
+		ErrorCode: Error3105,
+		Message:   "Error resolving listener certificates.",
 	},
-	error3106: {
-		ErrorCode: error3106,
-		Message:   "Unable to find associated Backends for Secret: %s",
-		Severity:  CRITICAL,
+	Error3106: {
+		ErrorCode: Error3106,
+		Message:   "Unable to find associated Backends for Secret.",
 	},
-	error3107: {
-		ErrorCode: error3107,
-		Message:   "Unexpected object type, bypassing reconciliation: %v",
-		Severity:  TRIVIAL,
+	Error3107: {
+		ErrorCode: Error3107,
+		Message:   "Unexpected object type, bypassing reconciliation.",
 	},
-	error3108: {
-		ErrorCode: error3108,
-		Message:   "Unable to find associated Backends for ConfigMap: %s",
-		Severity:  CRITICAL,
+	Error3108: {
+		ErrorCode: Error3108,
+		Message:   "Unable to find associated Backends for ConfigMap.",
 	},
-	error3109: {
-		ErrorCode: error3109,
-		Message:   "Error while updating Gateway status %v",
-		Severity:  BLOCKER,
+	Error3109: {
+		ErrorCode: Error3109,
+		Message:   "Error while updating Gateway status.",
 	},
-	error3110: {
-		ErrorCode: error3110,
-		Message:   "Error watching InterceptorService resources: %v",
-		Severity:  BLOCKER,
+	Error3110: {
+		ErrorCode: Error3110,
+		Message:   "Error watching InterceptorService resources.",
 	},
-	error3111: {
-		ErrorCode: error3111,
-		Message:   "Error creating JWTIssuer controller: %v",
-		Severity:  MAJOR,
+	Error3111: {
+		ErrorCode: Error3111,
+		Message:   "Error creating JWTIssuer controller.",
 	},
-	error3112: {
-		ErrorCode: error3112,
-		Message:   "Error adding indexes: %v",
-		Severity:  CRITICAL,
+	Error3112: {
+		ErrorCode: Error3112,
+		Message:   "Error adding indexes.",
 	},
-	error3113: {
-		ErrorCode: error3113,
-		Message:   "Error resolving certificate for JWKS %v",
-		Severity:  MAJOR,
+	Error3113: {
+		ErrorCode: Error3113,
+		Message:   "Error resolving certificate for JWKS.",
 	},
-	error3114: {
-		ErrorCode: error3114,
-		Message:   "Error creating JWT Issuer controller: %v",
-		Severity:  BLOCKER,
+	Error3114: {
+		ErrorCode: Error3114,
+		Message:   "Error creating JWT Issuer controller.",
 	},
-	error3115: {
-		ErrorCode: error3115,
-		Message:   "Route Timeout cannot be greater than the Max value defined : %s",
-		Severity:  MAJOR,
+	Error3115: {
+		ErrorCode: Error3115,
+		Message:   "Route Timeout cannot be greater than the Max value defined.",
 	},
-	error3116: {
-		ErrorCode: error3116,
-		Message:   "Invalid Status Codes for Retry: %s",
-		Severity:  MAJOR,
+	Error3116: {
+		ErrorCode: Error3116,
+		Message:   "Invalid Status Codes for Retry.",
 	},
-	error3117: {
-		ErrorCode: error3117,
-		Message:   "Retry Count Should be greater than 0: %s",
-		Severity:  MAJOR,
+	Error3117: {
+		ErrorCode: Error3117,
+		Message:   "Retry Count Should be greater than 0.",
 	},
-	error3118: {
-		ErrorCode: error3118,
-		Message:   "Unable to find associated interceptorServices: %v",
-		Severity:  CRITICAL,
+	Error3118: {
+		ErrorCode: Error3118,
+		Message:   "Unable to find associated interceptorServices.",
 	},
-	error3119: {
-		ErrorCode: error3119,
-		Message:   "Error creating API controller : %v",
-		Severity:  BLOCKER,
+	Error3119: {
+		ErrorCode: Error3119,
+		Message:   "Error creating API controller .",
 	},
-	error3120: {
-		ErrorCode: error3120,
-		Message:   "Error adding indexes: %v",
-		Severity:  BLOCKER,
+	Error3120: {
+		ErrorCode: Error3120,
+		Message:   "Error adding indexes.",
 	},
-	error3121: {
-		ErrorCode: error3121,
-		Message:   "Error watching Ratelimit resources: %v",
-		Severity:  BLOCKER,
+	Error3121: {
+		ErrorCode: Error3121,
+		Message:   "Error watching Ratelimit resources.",
 	},
-	error3122: {
-		ErrorCode: error3122,
-		Message:   "Error resolving Gateway State %s: %v",
-		Severity:  BLOCKER,
+	Error3122: {
+		ErrorCode: Error3122,
+		Message:   "Error resolving Gateway State.",
 	},
-	error3123: {
-		ErrorCode: error3123,
-		Message:   "Unable to find associated secret %s in %s: %v",
-		Severity:  CRITICAL,
+	Error3123: {
+		ErrorCode: Error3123,
+		Message:   "Unable to find associated secret.",
 	},
-	error3124: {
-		ErrorCode: error3124,
-		Message:   "Error while getting custom rate limit policies: %s",
-		Severity:  MAJOR,
+	Error3124: {
+		ErrorCode: Error3124,
+		Message:   "Error while getting custom rate limit policies.",
 	},
-	error3125: {
-		ErrorCode: error3125,
-		Message:   "Unable to find associated APIPolicies: %s",
-		Severity:  CRITICAL,
+	Error3125: {
+		ErrorCode: Error3125,
+		Message:   "Unable to find associated APIPolicies.",
+	},
+	Error3126: {
+		ErrorCode: Error3126,
+		Message:   "Error watching BackendJWT resources.",
 	},
 }

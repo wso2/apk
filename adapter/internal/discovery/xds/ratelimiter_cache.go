@@ -47,7 +47,7 @@ func getRateLimitUnit(name string) rls_config.RateLimitUnit {
 	case "DAY":
 		return rls_config.RateLimitUnit_DAY
 	default:
-		loggers.LoggerXds.ErrorC(logging.GetErrorByCode(1712, name))
+		loggers.LoggerXds.ErrorC(logging.PrintError(logging.Error1712, logging.MAJOR, "Unknown rate limit unit %q, defaulting to UNKNOWN", name))
 		return rls_config.RateLimitUnit_UNKNOWN
 	}
 }
@@ -219,16 +219,16 @@ func (r *rateLimitPolicyCache) updateXdsCache(label string) bool {
 		},
 	})
 	if err != nil {
-		loggers.LoggerXds.ErrorC(logging.GetErrorByCode(1714, err.Error()))
+		loggers.LoggerXds.ErrorC(logging.PrintError(logging.Error1714, logging.MAJOR, "Error while creating the rate limit snapshot, error: %v", err.Error()))
 		return false
 	}
 	if err := snap.Consistent(); err != nil {
-		loggers.LoggerXds.ErrorC(logging.GetErrorByCode(1715, err.Error()))
+		loggers.LoggerXds.ErrorC(logging.PrintError(logging.Error1715, logging.MAJOR, "Inconsistent rate limiter snapshot, error: %v", err.Error()))
 		return false
 	}
 
 	if err := r.xdsCache.SetSnapshot(context.Background(), label, snap); err != nil {
-		loggers.LoggerXds.ErrorC(logging.GetErrorByCode(1716, err.Error()))
+		loggers.LoggerXds.ErrorC(logging.PrintError(logging.Error1716, logging.MAJOR, "Error while updating the rate limit snapshot, error: %v", err.Error()))
 		return false
 	}
 	loggers.LoggerXds.Infof("New rate limit cache updated for the label: %q version: %q, API_UUID: %v", label, version, logging.GetValueFromLogContext("API_UUID"))

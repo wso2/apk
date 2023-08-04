@@ -327,7 +327,7 @@ func GetResolvedBackend(ctx context.Context, client k8client.Client,
 	var backend dpv1alpha1.Backend
 	if err := ResolveRef(ctx, client, api, backendNamespacedName, false, &backend); err != nil {
 		if !apierrors.IsNotFound(err) {
-			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2646, backendNamespacedName, err.Error()))
+			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2646, logging.CRITICAL, "Error while getting backend: %v, error: %v", backendNamespacedName, err.Error()))
 		}
 		return nil
 	}
@@ -370,11 +370,11 @@ func GetResolvedBackend(ctx context.Context, client k8client.Client,
 		resolvedTLSConfig.ResolvedCertificate, err = ResolveCertificate(ctx, client,
 			backend.Namespace, backend.Spec.TLS.CertificateInline, backend.Spec.TLS.ConfigMapRef, backend.Spec.TLS.SecretRef)
 		if err != nil {
-			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2654, err.Error()))
+			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2654, logging.CRITICAL, "Error resolving certificate for Backend %v", err.Error()))
 			return nil
 		}
 		if resolvedTLSConfig.ResolvedCertificate == "" {
-			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2654, "resolved certificate is empty"))
+			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2654, logging.CRITICAL, "Error resolving certificate for Backend. Resolved certificate is empty"))
 			return nil
 		}
 		resolvedTLSConfig.AllowedSANs = backend.Spec.TLS.AllowedSANs
@@ -441,7 +441,7 @@ func getResolvedBackendSecurity(ctx context.Context, client k8client.Client,
 		password, err = getSecretValue(ctx, client,
 			namespace, security.Basic.SecretRef.Name, security.Basic.SecretRef.PasswordKey)
 		if err != nil || username == "" || password == "" {
-			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2648, security.Basic.SecretRef))
+			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2648, logging.CRITICAL, "Error while reading key from secretRef: %s", security.Basic.SecretRef))
 		}
 		resolvedSecurity = dpv1alpha1.ResolvedSecurityConfig{
 			Type: "Basic",
@@ -464,12 +464,12 @@ func ResolveCertificate(ctx context.Context, client k8client.Client, namespace s
 	} else if secretRef != nil {
 		if certificate, err = getSecretValue(ctx, client,
 			namespace, secretRef.Name, secretRef.Key); err != nil {
-			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2642, secretRef))
+			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2642, logging.CRITICAL, "Error while reading certificate from secretRef: %s", secretRef))
 		}
 	} else if configMapRef != nil {
 		if certificate, err = getConfigMapValue(ctx, client,
 			namespace, configMapRef.Name, configMapRef.Key); err != nil {
-			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2643, configMapRef))
+			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2643, logging.CRITICAL, "Error while reading certificate from configMapRef: %s", configMapRef))
 		}
 	}
 	if err != nil {
@@ -478,12 +478,12 @@ func ResolveCertificate(ctx context.Context, client k8client.Client, namespace s
 	if len(certificate) > 0 {
 		block, _ := pem.Decode([]byte(certificate))
 		if block == nil {
-			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2627))
+			loggers.LoggerAPKOperator.ErrorC(logging.PrintErrorWithDefaultMessage(logging.Error2627, logging.CRITICAL))
 			return "", nil
 		}
 		_, err = x509.ParseCertificate(block.Bytes)
 		if err != nil {
-			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2641, err.Error()))
+			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2641, logging.CRITICAL, "Error while parsing certificate: %s", err.Error()))
 			return "", err
 		}
 	}
@@ -511,7 +511,7 @@ func GetInterceptorService(ctx context.Context, client k8client.Client, namespac
 	}
 	if err := ResolveRef(ctx, client, api, interceptorRef, false, interceptorService); err != nil {
 		if !apierrors.IsNotFound(err) {
-			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2651, interceptorRef, err.Error()))
+			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2651, logging.CRITICAL, "Error while getting interceptor service %s, error: %v", interceptorRef, err.Error()))
 		}
 	}
 	return interceptorService
@@ -527,7 +527,7 @@ func GetBackendJWT(ctx context.Context, client k8client.Client, namespace,
 	}
 	if err := ResolveRef(ctx, client, api, backendJWTRef, false, backendJWT); err != nil {
 		if !apierrors.IsNotFound(err) {
-			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2662, backendJWTRef, err.Error()))
+			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2662, logging.CRITICAL, "Error while getting backendjwt %s, error: %v", backendJWTRef, err.Error()))
 		}
 	}
 	return backendJWT

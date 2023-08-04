@@ -21,7 +21,7 @@ func HandleSubscriptionEventsFromMgtServer(c client.Client, cReader client.Reade
 		case SubscriptionCreate:
 			if found, _, err := checkSubscriptionExists(subscriptionEvent.Subscription, c, cReader); err == nil && !found {
 				if err := c.Create(context.Background(), *&subscriptionEvent.Subscription); err != nil {
-					loggers.LoggerXds.ErrorC(logging.GetErrorByCode(1721, err.Error()))
+					loggers.LoggerXds.ErrorC(logging.PrintError(logging.Error1721, logging.CRITICAL, "Error creating subscription: %v", err.Error()))
 				} else {
 					loggers.LoggerXds.Info("Subscription created: " + subscriptionEvent.Subscription.Name)
 				}
@@ -32,7 +32,7 @@ func HandleSubscriptionEventsFromMgtServer(c client.Client, cReader client.Reade
 				subscription.Spec = subscriptionEvent.Subscription.Spec
 				err := c.Update(context.Background(), subscription)
 				if err != nil {
-					loggers.LoggerXds.ErrorC(logging.GetErrorByCode(1722, err.Error()))
+					loggers.LoggerXds.ErrorC(logging.PrintError(logging.Error1722, logging.CRITICAL, "Error updating subscription: %v", err.Error()))
 				} else {
 					loggers.LoggerXds.Info("Subscription updated: " + subscriptionEvent.Subscription.Name)
 				}
@@ -41,7 +41,7 @@ func HandleSubscriptionEventsFromMgtServer(c client.Client, cReader client.Reade
 		case SubscriptionDelete:
 			err := c.Delete(context.Background(), *&subscriptionEvent.Subscription)
 			if err != nil {
-				loggers.LoggerXds.ErrorC(logging.GetErrorByCode(1723, err.Error()))
+				loggers.LoggerXds.ErrorC(logging.PrintError(logging.Error1723, logging.CRITICAL, "Error deleting subscription: %v", err.Error()))
 			} else {
 				loggers.LoggerXds.Info("Subscription deleted: " + subscriptionEvent.Subscription.Name)
 			}
@@ -67,13 +67,13 @@ func checkSubscriptionExists(subscription *cpv1alpha1.Subscription, c client.Cli
 				Namespace: subscription.Namespace}, retrivedSubscription); err != nil {
 
 				if !apierrors.IsNotFound(err) {
-					loggers.LoggerXds.ErrorC(logging.GetErrorByCode(1724, err.Error()))
+					loggers.LoggerXds.ErrorC(logging.PrintError(logging.Error1724, logging.CRITICAL, "Error retrieving subscription: %v", err.Error()))
 					return false, nil, err
 				}
 				return false, nil, nil
 			}
 		} else if !apierrors.IsNotFound(err) {
-			loggers.LoggerXds.ErrorC(logging.GetErrorByCode(1724, err.Error()))
+			loggers.LoggerXds.ErrorC(logging.PrintError(logging.Error1724, logging.CRITICAL, "Error retrieving subscription: %v", err.Error()))
 			return false, nil, err
 		} else {
 			return false, nil, nil

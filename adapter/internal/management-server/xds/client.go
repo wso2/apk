@@ -126,7 +126,7 @@ func initConnection(xdsURL string) error {
 	conn, err := grpc.Dial(xdsURL, grpc.WithTransportCredentials(transportCredentials), grpc.WithBlock())
 	if err != nil {
 		// TODO: (AmaliMatharaarachchi) retries
-		loggers.LoggerXds.ErrorC(logging.GetErrorByCode(1700, err.Error()))
+		loggers.LoggerXds.ErrorC(logging.PrintError(logging.Error1700, logging.BLOCKER, "Error while connecting to the APK Management Server. %v", err.Error()))
 		return err
 	}
 
@@ -138,7 +138,7 @@ func initConnection(xdsURL string) error {
 
 	if err != nil {
 		// TODO: (AmaliMatharaarachchi) handle error.
-		loggers.LoggerXds.ErrorC(logging.GetErrorByCode(1701, err.Error()))
+		loggers.LoggerXds.ErrorC(logging.PrintError(logging.Error1701, logging.BLOCKER, "Error while starting APK Management application stream. %v", err.Error()))
 		return err
 	}
 	loggers.LoggerXds.Infof("Connection to the APK Management Server: %s is successful.", xdsURL)
@@ -149,14 +149,14 @@ func watchApplications() {
 	for {
 		discoveryResponse, err := xdsStream.Recv()
 		if err == io.EOF {
-			loggers.LoggerXds.ErrorC(logging.GetErrorByCode(1702, err.Error()))
+			loggers.LoggerXds.ErrorC(logging.PrintError(logging.Error1702, logging.CRITICAL, "EOF is received from the APK Management Server application stream. %v", err.Error()))
 			return
 		}
 		if err != nil {
-			loggers.LoggerXds.ErrorC(logging.GetErrorByCode(1703, err.Error()))
+			loggers.LoggerXds.ErrorC(logging.PrintError(logging.Error1703, logging.CRITICAL, "Failed to receive the discovery response from the APK Management Server application stream. %v", err.Error()))
 			errStatus, _ := grpcStatus.FromError(err)
 			if errStatus.Code() == codes.Unavailable {
-				loggers.LoggerXds.ErrorC(logging.GetErrorByCode(1704, err.Error()))
+				loggers.LoggerXds.ErrorC(logging.PrintError(logging.Error1704, logging.MINOR, "The APK Management Server application stream connection stopped: %v", err.Error()))
 				return
 			}
 			nack(err.Error())
@@ -173,14 +173,14 @@ func watchSubscriptions() {
 	for {
 		discoveryResponse, err := xdsSubStream.Recv()
 		if err == io.EOF {
-			loggers.LoggerXds.ErrorC(logging.GetErrorByCode(1717, err.Error()))
+			loggers.LoggerXds.ErrorC(logging.PrintError(logging.Error1717, logging.CRITICAL, "EOF is received from the APK Management Server subscription stream. %v", err.Error()))
 			return
 		}
 		if err != nil {
-			loggers.LoggerXds.ErrorC(logging.GetErrorByCode(1718, err.Error()))
+			loggers.LoggerXds.ErrorC(logging.PrintError(logging.Error1718, logging.CRITICAL, "Failed to receive the discovery response from the APK Management Server subscription stream. %v", err.Error()))
 			errStatus, _ := grpcStatus.FromError(err)
 			if errStatus.Code() == codes.Unavailable {
-				loggers.LoggerXds.ErrorC(logging.GetErrorByCode(1719, err.Error()))
+				loggers.LoggerXds.ErrorC(logging.PrintError(logging.Error1719, logging.MINOR, "The APK Management Server subscription stream connection stopped: %v", err.Error()))
 				return
 			}
 			nackSub(err.Error())
@@ -275,7 +275,7 @@ func InitApkMgtXDSClient() {
 		}
 		xdsSubStream.Send(discoveryRequestSub)
 	} else {
-		loggers.LoggerXds.ErrorC(logging.GetErrorByCode(1705, err.Error()))
+		loggers.LoggerXds.ErrorC(logging.PrintError(logging.Error1705, logging.BLOCKER, "Error while starting the APK Management Server: %v", err.Error()))
 	}
 }
 
@@ -287,7 +287,7 @@ func addApplicationsToChannel(resp *discovery.DiscoveryResponse) {
 		err := ptypes.UnmarshalAny(res, application)
 
 		if err != nil {
-			loggers.LoggerXds.ErrorC(logging.GetErrorByCode(1706, err.Error()))
+			loggers.LoggerXds.ErrorC(logging.PrintError(logging.Error1706, logging.MINOR, "Error while unmarshalling APK Management Server Application discovery response: %v", err.Error()))
 			continue
 		}
 
@@ -372,7 +372,7 @@ func addSubscriptionsToChannel(resp *discovery.DiscoveryResponse) {
 		err := ptypes.UnmarshalAny(res, subscription)
 
 		if err != nil {
-			loggers.LoggerXds.ErrorC(logging.GetErrorByCode(1720, err.Error()))
+			loggers.LoggerXds.ErrorC(logging.PrintError(logging.Error1720, logging.MINOR, "Error while unmarshalling APK Management Server Subscription discovery response: %v", err.Error()))
 			continue
 		}
 

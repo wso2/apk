@@ -71,7 +71,7 @@ func getFileAccessLogConfigs() *config_access_logv3.AccessLog {
 
 	accessLogTypedConf, err := anypb.New(accessLogConf)
 	if err != nil {
-		logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(2200, err.Error()))
+		logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2200, logging.CRITICAL, "Error marsheling access log configs. %v", err.Error()))
 		return nil
 	}
 
@@ -110,7 +110,7 @@ func getGRPCAccessLogConfigs(conf *config.Config) *config_access_logv3.AccessLog
 	}
 	accessLogTypedConf, err := anypb.New(accessLogConf)
 	if err != nil {
-		logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(2201, err.Error()))
+		logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2201, logging.CRITICAL, "Error marshalling gRPC access log configs. %v", err.Error()))
 		return nil
 	}
 

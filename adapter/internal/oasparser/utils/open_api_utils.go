@@ -61,7 +61,7 @@ func FindAPIDefinitionVersion(jsn []byte) string {
 
 	err := json.Unmarshal(jsn, &result)
 	if err != nil {
-		logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(2209, err.Error()))
+		logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2209, logging.MINOR, "Error while JSON unmarshalling to find the API definition version. %v", err.Error()))
 	}
 
 	if _, ok := result[constants.Swagger]; ok {
@@ -72,10 +72,10 @@ func FindAPIDefinitionVersion(jsn []byte) string {
 		if strings.HasPrefix(versionNumber.(string), "2") {
 			return constants.AsyncAPI2
 		}
-		logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(2210, versionNumber.(string)))
+		logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2210, logging.MINOR, "AsyncAPI version %s is not supported.", versionNumber.(string)))
 		return constants.NotSupported
 	}
-	logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(2211))
+	logger.LoggerOasparser.ErrorC(logging.PrintErrorWithDefaultMessage(logging.Error2211, logging.MINOR))
 	return constants.NotDefined
 }
 

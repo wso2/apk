@@ -28,20 +28,6 @@ var logContext context.Context
 
 type logContextKey string
 
-// GetErrorByCode used to keep error details for error logs
-func GetErrorByCode(code int, args ...interface{}) logging.ErrorDetails {
-	errorLog, ok := Mapper[code]
-	if !ok {
-		errorLog = logging.ErrorDetails{
-			ErrorCode: 0000,
-			Message:   fmt.Sprintf("No error message found for error code: %v", code),
-			Severity:  "MINOR",
-		}
-	}
-	errorLog.Message = fmt.Sprintf(errorLog.Message, args...)
-	return errorLog
-}
-
 // SetValueToContext used to set the value in the context
 func SetValueToContext(ctx context.Context, key logContextKey, value interface{}) context.Context {
 	return context.WithValue(ctx, key, value)
@@ -79,4 +65,33 @@ func RemoveValueFromLogContext(key logContextKey) {
 		return
 	}
 	logContext = SetValueToContext(logContext, key, nil)
+}
+
+// GetErrorMessageByCode retrieve the error message corresponds to the provided error code
+func GetErrorMessageByCode(code int) string {
+	errorLog, ok := Mapper[code]
+	if !ok {
+		return fmt.Sprintf("No error message found for error code: %v", code)
+	}
+	return errorLog.Message
+}
+
+// PrintError prints the error details
+func PrintError(code int, severity string, message string, args ...interface{}) logging.ErrorDetails {
+	errorLog := logging.ErrorDetails{
+		ErrorCode: code,
+		Message:   fmt.Sprintf(message, args...),
+		Severity:  severity,
+	}
+	return errorLog
+}
+
+// PrintErrorWithDefaultMessage prints the error details with default message
+func PrintErrorWithDefaultMessage(code int, severity string) logging.ErrorDetails {
+	errorLog := logging.ErrorDetails{
+		ErrorCode: code,
+		Message:   GetErrorMessageByCode(code),
+		Severity:  severity,
+	}
+	return errorLog
 }

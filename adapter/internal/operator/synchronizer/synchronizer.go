@@ -69,7 +69,7 @@ func HandleAPILifeCycleEvents(ch *chan APIEvent, successChannel *chan SuccessEve
 	loggers.LoggerAPKOperator.Info("Operator synchronizer listening for API lifecycle events...")
 	for event := range *ch {
 		if event.Event.APIDefinition == nil {
-			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2628))
+			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2628, logging.CRITICAL, "API Event is nil"))
 		}
 		loggers.LoggerAPKOperator.Infof("%s event received for %v", event.EventType, event.Event.APIDefinition.Name)
 		var err error
@@ -82,7 +82,7 @@ func HandleAPILifeCycleEvents(ch *chan APIEvent, successChannel *chan SuccessEve
 			err = deployAPIInGateway(event.Event)
 		}
 		if err != nil {
-			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2629, event.EventType, err))
+			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2629, logging.MAJOR, "API deployment failed for %s event : %v", event.EventType, err))
 		} else {
 			if event.EventType != constants.Delete {
 				*successChannel <- SuccessEvent{
@@ -105,7 +105,8 @@ func undeployAPIInGateway(apiState APIState) error {
 		err = deleteAPIFromEnv(apiState.ProdHTTPRoute.HTTPRouteCombined, apiState)
 	}
 	if err != nil {
-		loggers.LoggerXds.ErrorC(logging.GetErrorByCode(2630, string(apiState.APIDefinition.ObjectMeta.UID), apiState.APIDefinition.Spec.Organization,
+		loggers.LoggerXds.ErrorC(logging.PrintError(logging.Error2630, logging.MAJOR, "Error undeploying prod httpRoute of API : %v in Organization %v from environments %v."+
+			" Hence not checking on deleting the sand httpRoute of the API", string(apiState.APIDefinition.ObjectMeta.UID), apiState.APIDefinition.Spec.Organization,
 			getLabelsForAPI(apiState.ProdHTTPRoute.HTTPRouteCombined)))
 		return err
 	}
@@ -158,11 +159,11 @@ func GenerateAdapterInternalAPI(apiState APIState, httpRoute *HTTPRouteState, en
 		ResourceRateLimitPolicies: apiState.ResourceRateLimitPolicies,
 	}
 	if err := adapterInternalAPI.SetInfoHTTPRouteCR(httpRoute.HTTPRouteCombined, resourceParams); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2631, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2631, logging.MAJOR, "Error setting HttpRoute CR info to adapterInternalAPI. %v", err))
 		return nil, err
 	}
 	if err := adapterInternalAPI.Validate(); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2632, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2632, logging.MAJOR, "Error validating adapterInternalAPI intermediate representation. %v", err))
 		return nil, err
 	}
 	vHosts := getVhostsForAPI(httpRoute.HTTPRouteCombined)
@@ -175,7 +176,7 @@ func GenerateAdapterInternalAPI(apiState APIState, httpRoute *HTTPRouteState, en
 	}
 	err := xds.UpdateAPICache(vHosts, labels, listeners, adapterInternalAPI)
 	if err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2633, adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), vHosts, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2633, logging.MAJOR, "Error updating the API : %s:%s in vhosts: %s. %v", adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), vHosts, err))
 	}
 	return &adapterInternalAPI, nil
 }
@@ -197,7 +198,7 @@ func getLabelsForAPI(httpRoute *gwapiv1b1.HTTPRoute) []string {
 	for _, parentRef := range httpRoute.Spec.ParentRefs {
 		err = xds.SanitizeGateway(string(parentRef.Name), false)
 		if err != nil {
-			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2653, string(parentRef.Name)))
+			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2653, logging.CRITICAL, "Gateway Label is invalid: %s", string(parentRef.Name)))
 		} else {
 			labels = append(labels, string(parentRef.Name))
 		}

@@ -257,7 +257,7 @@ func DeleteAPICREvent(labels []string, apiUUID string, organizationID string) er
 	for _, vhost := range vHosts {
 		apiIdentifier := GenerateIdentifierForAPIWithUUID(vhost, apiUUID)
 		if err := deleteAPI(apiIdentifier, labels, organizationID); err != nil {
-			logger.LoggerXds.ErrorC(logging.GetErrorByCode(1410, apiIdentifier, organizationID, labels))
+			logger.LoggerXds.ErrorC(logging.PrintError(logging.Error1410, logging.MAJOR, "Error undeploying API %v of Organization %v from environments %v, error: %v", apiIdentifier, organizationID, labels, err.Error()))
 			return err
 		}
 		// if no error, update internal vhost maps
@@ -312,7 +312,7 @@ func cleanMapResources(apiIdentifier string, organizationID string, toBeDelEnvs 
 	}
 	vHost, err := ExtractVhostFromAPIIdentifier(apiIdentifier)
 	if err != nil {
-		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1411, apiIdentifier, organizationID, err))
+		logger.LoggerXds.ErrorC(logging.PrintError(logging.Error1411, logging.MAJOR, "Error extracting vhost from API identifier: %v for Organization %v. Ignore deploying the API, error: %v", apiIdentifier, organizationID, err))
 	} else {
 		rlsPolicyCache.DeleteAPILevelRateLimitPolicies(organizationID, vHost, apiIdentifier)
 	}
@@ -390,7 +390,7 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 			if stringutils.StringInSlice(gatewayName, envoyInternalAPI.envoyLabels) {
 				vhost, err := ExtractVhostFromAPIIdentifier(apiKey)
 				if err != nil {
-					logger.LoggerXds.ErrorC(logging.GetErrorByCode(1411, err.Error(), apiKey, organizationID, err))
+					logger.LoggerXds.ErrorC(logging.PrintError(logging.Error1411, logging.MAJOR, "Error extracting vhost from API identifier: %v for Organization %v. Ignore deploying the API, error: %v", apiKey, organizationID, err))
 					continue
 				}
 				isDefaultVersion := false
@@ -527,14 +527,14 @@ func updateXdsCache(label string, endpoints []types.Resource, clusters []types.R
 		envoy_resource.RouteType:    routes,
 	})
 	if errNewSnap != nil {
-		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1413, errNewSnap.Error()))
+		logger.LoggerXds.ErrorC(logging.PrintError(logging.Error1413, logging.MAJOR, "Error creating new snapshot : %v", errNewSnap.Error()))
 		return false
 	}
 	snap.Consistent()
 	//TODO: (VirajSalaka) check
 	errSetSnap := cache.SetSnapshot(context.Background(), label, snap)
 	if errSetSnap != nil {
-		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1414, errSetSnap.Error()))
+		logger.LoggerXds.ErrorC(logging.PrintError(logging.Error1414, logging.MAJOR, "Error while setting the snapshot : %v", errSetSnap.Error()))
 		return false
 	}
 	logger.LoggerXds.Infof("New Router cache updated for the label: "+label+" version: "+fmt.Sprint(version)+", API_UUID: %v", logging.GetValueFromLogContext("API_UUID"))
@@ -556,13 +556,13 @@ func UpdateEnforcerConfig(configFile *config.Config) {
 		wso2_resource.ConfigType: configs,
 	})
 	if errNewSnap != nil {
-		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1413, errNewSnap.Error()))
+		logger.LoggerXds.ErrorC(logging.PrintError(logging.Error1413, logging.MAJOR, "Error creating new snapshot : %v", errNewSnap.Error()))
 	}
 	snap.Consistent()
 
 	errSetSnap := enforcerCache.SetSnapshot(context.Background(), label, snap)
 	if errSetSnap != nil {
-		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1414, errSetSnap.Error()))
+		logger.LoggerXds.ErrorC(logging.PrintError(logging.Error1414, logging.MAJOR, "Error while setting the snapshot : %v", errSetSnap.Error()))
 	}
 
 	enforcerLabelMap[label].configs = configs
@@ -583,7 +583,7 @@ func UpdateEnforcerApis(label string, apis []types.Resource, version string) {
 
 	errSetSnap := enforcerCache.SetSnapshot(context.Background(), label, snap)
 	if errSetSnap != nil {
-		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1414, errSetSnap.Error()))
+		logger.LoggerXds.ErrorC(logging.PrintError(logging.Error1414, logging.MAJOR, "Error while setting the snapshot : %v", errSetSnap.Error()))
 	}
 	logger.LoggerXds.Infof("New API cache update for the label: "+label+" version: "+fmt.Sprint(version)+", API_UUID: %v", logging.GetValueFromLogContext("API_UUID"))
 
@@ -621,7 +621,7 @@ func UpdateEnforcerSubscriptions(subscriptions *subscription.SubscriptionList) {
 
 	errSetSnap := enforcerSubscriptionCache.SetSnapshot(context.Background(), label, snap)
 	if errSetSnap != nil {
-		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1414, errSetSnap.Error()))
+		logger.LoggerXds.ErrorC(logging.PrintError(logging.Error1414, logging.MAJOR, "Error while setting the snapshot : %v", errSetSnap.Error()))
 	}
 	enforcerLabelMap[label].subscriptions = subscriptionList
 	logger.LoggerXds.Infof("New Subscription cache update for the label: " + label + " version: " + fmt.Sprint(version))
@@ -641,7 +641,7 @@ func UpdateEnforcerApplications(applications *subscription.ApplicationList) {
 
 	errSetSnap := enforcerApplicationCache.SetSnapshot(context.Background(), label, snap)
 	if errSetSnap != nil {
-		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1414, errSetSnap.Error()))
+		logger.LoggerXds.ErrorC(logging.PrintError(logging.Error1414, logging.MAJOR, "Error while setting the snapshot : %v", errSetSnap.Error()))
 	}
 	enforcerLabelMap[label].applications = applicationList
 	logger.LoggerXds.Infof("New Application cache update for the label: " + label + " version: " + fmt.Sprint(version))
@@ -661,7 +661,7 @@ func UpdateEnforcerJWTIssuers(jwtIssuers *subscription.JWTIssuerList) {
 
 	errSetSnap := enforcerJwtIssuerCache.SetSnapshot(context.Background(), label, snap)
 	if errSetSnap != nil {
-		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1414, errSetSnap.Error()))
+		logger.LoggerXds.ErrorC(logging.PrintError(logging.Error1414, logging.MAJOR, "Error while setting the snapshot : %v", errSetSnap.Error()))
 	}
 	enforcerLabelMap[label].jwtIssuers = jwtIssuerList
 	logger.LoggerXds.Infof("New JWTIssuer cache update for the label: " + label + " version: " + fmt.Sprint(version))
@@ -680,7 +680,7 @@ func UpdateEnforcerAPIList(label string, apis *subscription.APIList) {
 
 	errSetSnap := enforcerAPICache.SetSnapshot(context.Background(), label, snap)
 	if errSetSnap != nil {
-		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1414, errSetSnap.Error()))
+		logger.LoggerXds.ErrorC(logging.PrintError(logging.Error1414, logging.MAJOR, "Error while setting the snapshot : %v", errSetSnap.Error()))
 	}
 	enforcerLabelMap[label].apiList = apiList
 	logger.LoggerXds.Infof("New API List cache update for the label: "+label+" version: "+fmt.Sprint(version)+", API_UUID: %v", logging.GetValueFromLogContext("API_UUID"))
@@ -700,7 +700,7 @@ func UpdateEnforcerApplicationPolicies(applicationPolicies *subscription.Applica
 
 	errSetSnap := enforcerApplicationPolicyCache.SetSnapshot(context.Background(), label, snap)
 	if errSetSnap != nil {
-		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1414, errSetSnap.Error()))
+		logger.LoggerXds.ErrorC(logging.PrintError(logging.Error1414, logging.MAJOR, "Error while setting the snapshot : %v", errSetSnap.Error()))
 	}
 	enforcerLabelMap[label].subscriptionPolicies = applicationPolicyList
 	logger.LoggerXds.Infof("New Application Policy cache update for the label: " + label + " version: " + fmt.Sprint(version))
@@ -720,7 +720,7 @@ func UpdateEnforcerSubscriptionPolicies(subscriptionPolicies *subscription.Subsc
 
 	errSetSnap := enforcerSubscriptionPolicyCache.SetSnapshot(context.Background(), label, snap)
 	if errSetSnap != nil {
-		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1414, errSetSnap.Error()))
+		logger.LoggerXds.ErrorC(logging.PrintError(logging.Error1414, logging.MAJOR, "Error while setting the snapshot : %v", errSetSnap.Error()))
 	}
 	enforcerLabelMap[label].subscriptionPolicies = subscriptionPolicyList
 	logger.LoggerXds.Infof("New Subscription Policy cache update for the label: " + label + " version: " + fmt.Sprint(version))
@@ -740,7 +740,7 @@ func UpdateEnforcerApplicationKeyMappings(applicationKeyMappings *subscription.A
 
 	errSetSnap := enforcerApplicationKeyMappingCache.SetSnapshot(context.Background(), label, snap)
 	if errSetSnap != nil {
-		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1414, errSetSnap.Error()))
+		logger.LoggerXds.ErrorC(logging.PrintError(logging.Error1414, logging.MAJOR, "Error while setting the snapshot : %v", errSetSnap.Error()))
 	}
 	enforcerLabelMap[label].applicationKeyMappings = applicationKeyMappingList
 	logger.LoggerXds.Infof("New Application Key Mapping cache update for the label: " + label + " version: " + fmt.Sprint(version))
@@ -815,7 +815,7 @@ func UpdateEnforcerKeyManagers(keyManagerConfigList []types.Resource) {
 
 	errSetSnap := enforcerKeyManagerCache.SetSnapshot(context.Background(), label, snap)
 	if errSetSnap != nil {
-		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1414, errSetSnap.Error()))
+		logger.LoggerXds.ErrorC(logging.PrintError(logging.Error1414, logging.MAJOR, "Error while setting the snapshot : %v", errSetSnap.Error()))
 	}
 	enforcerLabelMap[label].keyManagers = keyManagerConfigList
 	logger.LoggerXds.Infof("New key manager cache update for the label: " + label + " version: " + fmt.Sprint(version))
@@ -836,7 +836,7 @@ func UpdateEnforcerRevokedTokens(revokedTokens []types.Resource) {
 
 	errSetSnap := enforcerRevokedTokensCache.SetSnapshot(context.Background(), label, snap)
 	if errSetSnap != nil {
-		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1414, errSetSnap.Error()))
+		logger.LoggerXds.ErrorC(logging.PrintError(logging.Error1414, logging.MAJOR, "Error while setting the snapshot : %v", errSetSnap.Error()))
 	}
 	enforcerLabelMap[label].revokedTokens = tokens
 	logger.LoggerXds.Infof("New Revoked token cache update for the label: " + label + " version: " + fmt.Sprint(version))
