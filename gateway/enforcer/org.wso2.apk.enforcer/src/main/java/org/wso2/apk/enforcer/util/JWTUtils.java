@@ -249,7 +249,7 @@ public class JWTUtils {
         org.json.JSONObject payload = new org.json.JSONObject(new String(Base64.getUrlDecoder().decode(splitToken[1])));
         long exp = payload.getLong(JwtConstants.EXP);
         long timestampSkew = FilterUtils.getTimeStampSkewInSeconds();
-        return (exp - TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()) < timestampSkew);
+        return (exp-TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()) < timestampSkew);
     }
 
     /**

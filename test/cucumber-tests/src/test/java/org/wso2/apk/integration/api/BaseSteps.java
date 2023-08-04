@@ -19,17 +19,32 @@ package org.wso2.apk.integration.api;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.JOSEObjectType;
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.jwk.source.JWKSource;
+import com.nimbusds.jose.jwk.source.JWKSourceBuilder;
+import com.nimbusds.jose.proc.BadJOSEException;
+import com.nimbusds.jose.proc.DefaultJOSEObjectTypeVerifier;
+import com.nimbusds.jose.proc.JWSKeySelector;
+import com.nimbusds.jose.proc.JWSVerificationKeySelector;
+import com.nimbusds.jose.proc.SecurityContext;
+import com.nimbusds.jose.util.Resource;
+import com.nimbusds.jose.util.ResourceRetriever;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
+import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 import io.cucumber.core.options.CurlOption;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.Before;
-import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
-import io.cucumber.java.en.When;
-import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.http.Header;
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.testng.Assert;
 import org.wso2.apk.integration.utils.Constants;
@@ -38,8 +53,15 @@ import org.wso2.apk.integration.utils.clients.SimpleHTTPClient;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.text.ParseException;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +71,7 @@ import java.util.Map;
  */
 public class BaseSteps {
 
+    private static final Log logger = LogFactory.getLog(BaseSteps.class);
     private final SharedContext sharedContext;
     private SimpleHTTPClient httpClient;
     private static final int MAX_WAIT_FOR_NEXT_MINUTE_IN_SECONDS = 10;
@@ -207,20 +230,45 @@ public class BaseSteps {
         Assert.assertNull(header,"header contains in response headers");
     }
 
-    @Then("the decoded {string} jwt should contain")
-    public void decode_header_and_validate(String header, DataTable dataTable) {
+    @Then("the {string} jwt should validate from JWKS {string} and contain")
+    public void decode_header_and_validate(String header,String jwksEndpoint, DataTable dataTable) throws MalformedURLException {
         List<Map<String, String>> claims = dataTable.asMaps(String.class, String.class);
         JsonObject jsonResponse = (JsonObject) JsonParser.parseString(sharedContext.getResponseBody());
-        String headerValue = jsonResponse.get("headers").getAsJsonObject().get(header).toString();
-        String[] split_string = headerValue.split("\\.");
+        String headerValue = jsonResponse.get("headers").getAsJsonObject().get(header).getAsString();
+        ConfigurableJWTProcessor<SecurityContext> jwtProcessor = new DefaultJWTProcessor<>();
+        jwtProcessor.setJWSTypeVerifier(new DefaultJOSEObjectTypeVerifier<>(JOSEObjectType.JWT));
+        ResourceRetriever retriever = url -> {
+            try {
+                HttpResponse httpResponse = new SimpleHTTPClient().doGet(url.toString(), Collections.emptyMap());
+                StatusLine statusLine = httpResponse.getStatusLine();
+                if (statusLine.getStatusCode() == 200) {
+                    Header header1 = httpResponse.getFirstHeader("Content-Type");
+                    try (InputStream content = httpResponse.getEntity().getContent()) {
+                        return new Resource(IOUtils.toString(content), header1.getValue());
+                    }
+                } else {
+                    throw new IOException("HTTP " + statusLine.getStatusCode() + ": " + statusLine.getReasonPhrase());
+                }
+            } catch (NoSuchAlgorithmException | KeyStoreException | KeyManagementException e) {
+                throw new IOException(e);
+            }
+        };
 
-        String jwtBody = new String(Base64.decodeBase64(split_string[1]));
-        JsonObject jwtJSONBody = (JsonObject) JsonParser.parseString(jwtBody);
-
-        for (Map<String, String> claim : claims) {
-            Assert.assertTrue(jwtJSONBody.has(claim.get("claim")), "Actual decoded JWT body: " + jwtBody);
-            Assert.assertEquals(claim.get("value"), jwtJSONBody.get(claim.get("claim")).getAsString(), "Actual " +
-                    "decoded JWT body: " + jwtBody);
+        JWKSource<SecurityContext> keySource = JWKSourceBuilder.create(new URL(jwksEndpoint), retriever).build();
+        JWSAlgorithm expectedJWSAlg = JWSAlgorithm.RS256;
+        JWSKeySelector<SecurityContext> keySelector = new JWSVerificationKeySelector<>(expectedJWSAlg, keySource);
+        jwtProcessor.setJWSKeySelector(keySelector);
+        try {
+            JWTClaimsSet claimsSet = jwtProcessor.process(headerValue, null);
+            for (Map<String, String> claim : claims) {
+                Object claim1 = claimsSet.getClaim(claim.get("claim"));
+                Assert.assertNotNull(claim1, "Actual decoded JWT body: " + claimsSet);
+                Assert.assertEquals(claim.get("value"), claim1.toString(), "Actual " +
+                        "decoded JWT body: " + claimsSet);
+            }
+        } catch (BadJOSEException | JOSEException|ParseException e) {
+            logger.error("JWT Signature verification fail", e);
+            Assert.fail("JWT Signature verification fail");
         }
     }
 
