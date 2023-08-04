@@ -120,3 +120,5 @@ Feature: API Deployment and invocation
       | emp-api-test             | 202                |
       | default-version-api-test | 202                |
       | emp-api-test-scope       | 202                |
+      | version-api-test         | 202                |
+      | version-api-test2        | 202                |

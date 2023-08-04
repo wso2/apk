@@ -83,7 +83,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/config-deployer-service:1.0.0-alpha
+          image: wso2/config-deployer-service:latest
           # configs:
           #   tls:
           #     secretName: "my-secret"
@@ -109,7 +109,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/adapter:1.0.0-alpha
+          image: wso2/adapter:latest
           security:
             sslHostname: "adapter"
 #        logging:
@@ -227,7 +227,7 @@ wso2:
               failureThreshold: 5
             strategy: Recreate
             imagePullPolicy: Always
-            image: wso2/enforcer:1.0.0-alpha
+            image: wso2/enforcer:latest
             security:
               sslHostname: "enforcer"
 #            logging:
