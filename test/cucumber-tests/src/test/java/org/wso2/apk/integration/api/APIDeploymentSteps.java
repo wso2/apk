@@ -90,6 +90,7 @@ public class APIDeploymentSteps {
 
         sharedContext.setResponse(response);
         sharedContext.setResponseBody(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()));
+        Thread.sleep(3000);
     }
 
 
