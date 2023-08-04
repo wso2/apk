@@ -166,7 +166,7 @@ type HealthCheck struct {
 // RetryConfig holds the parameters for retries done by apk to the EndpointCluster
 type RetryConfig struct {
 	Count                int32
-	StatusCodes          []uint32
+	StatusCodes          []string
 	BaseIntervalInMillis int32
 }
 
@@ -399,6 +399,7 @@ func (swagger *AdapterInternalAPI) Validate() error {
 	return nil
 }
 
+// todo(amali) move to validation hook
 func (endpoint *Endpoint) validateEndpoint() error {
 	if len(endpoint.ServiceDiscoveryString) > 0 {
 		return nil
@@ -422,23 +423,6 @@ func (endpoint *Endpoint) GetAuthorityHeader() string {
 	return strings.Join([]string{endpoint.Host, strconv.FormatUint(uint64(endpoint.Port), 10)}, ":")
 }
 
-func (retryConfig *RetryConfig) validateRetryConfig() {
-	conf := config.ReadConfigs()
-	var validStatusCodes []uint32
-	for _, statusCode := range retryConfig.StatusCodes {
-		if statusCode > 598 || statusCode < 401 {
-			logger.LoggerOasparser.Errorf("Given status code for the API retry config is invalid." +
-				"Must be in the range 401 - 598. Dropping the status code.")
-		} else {
-			validStatusCodes = append(validStatusCodes, statusCode)
-		}
-	}
-	if len(validStatusCodes) < 1 {
-		validStatusCodes = append(validStatusCodes, conf.Envoy.Upstream.Retry.StatusCodes...)
-	}
-	retryConfig.StatusCodes = validStatusCodes
-}
-
 func (endpointCluster *EndpointCluster) validateEndpointCluster() error {
 	if endpointCluster != nil && len(endpointCluster.Endpoints) > 0 {
 		var err error
@@ -447,13 +431,6 @@ func (endpointCluster *EndpointCluster) validateEndpointCluster() error {
 			if err != nil {
 				logger.LoggerOasparser.Errorf("Error while parsing the endpoint. %v", err)
 				return err
-			}
-		}
-
-		if endpointCluster.Config != nil {
-			// Validate retry
-			if endpointCluster.Config.RetryConfig != nil {
-				endpointCluster.Config.RetryConfig.validateRetryConfig()
 			}
 		}
 	}

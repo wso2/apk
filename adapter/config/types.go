@@ -188,7 +188,6 @@ type envoyUpstream struct {
 	// UpstreamTLS related Configuration
 	TLS   upstreamTLS
 	DNS   upstreamDNS
-	Retry upstreamRetry
 	HTTP2 upstreamHTTP2Options
 }
 
@@ -220,10 +219,6 @@ type upstreamDNS struct {
 type upstreamHTTP2Options struct {
 	HpackTableSize       uint32
 	MaxConcurrentStreams uint32
-}
-
-type upstreamRetry struct {
-	StatusCodes []uint32
 }
 
 type security struct {

@@ -64,9 +64,6 @@ var defaultConfig = &Config{
 				VerifyHostName:         true,
 				DisableSslVerification: false,
 			},
-			Retry: upstreamRetry{
-				StatusCodes: []uint32{504},
-			},
 			DNS: upstreamDNS{
 				DNSRefreshRate: 5000,
 				RespectDNSTtl:  false,

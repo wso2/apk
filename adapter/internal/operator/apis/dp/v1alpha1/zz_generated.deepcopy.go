@@ -1492,7 +1492,7 @@ func (in *RetryConfig) DeepCopyInto(out *RetryConfig) {
 	*out = *in
 	if in.StatusCodes != nil {
 		in, out := &in.StatusCodes, &out.StatusCodes
-		*out = make([]uint32, len(*in))
+		*out = make([]RetryOnType, len(*in))
 		copy(*out, *in)
 	}
 }

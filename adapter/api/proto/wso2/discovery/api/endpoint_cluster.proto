@@ -44,5 +44,5 @@ message TimeoutConfig {
 
 message RetryConfig {
     uint32 count = 1;
-    repeated uint32 statusCodes = 2;
+    repeated string statusCodes = 2;
 }

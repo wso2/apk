@@ -16,7 +16,7 @@ private static final long serialVersionUID = 0L;
     super(builder);
   }
   private RetryConfig() {
-    statusCodes_ = emptyIntList();
+    statusCodes_ = com.google.protobuf.LazyStringArrayList.EMPTY;
   }
 
   @java.lang.Override
@@ -55,25 +55,13 @@ private static final long serialVersionUID = 0L;
             count_ = input.readUInt32();
             break;
           }
-          case 16: {
-            if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-              statusCodes_ = newIntList();
-              mutable_bitField0_ |= 0x00000001;
-            }
-            statusCodes_.addInt(input.readUInt32());
-            break;
-          }
           case 18: {
-            int length = input.readRawVarint32();
-            int limit = input.pushLimit(length);
-            if (!((mutable_bitField0_ & 0x00000001) != 0) && input.getBytesUntilLimit() > 0) {
-              statusCodes_ = newIntList();
+            java.lang.String s = input.readStringRequireUtf8();
+            if (!((mutable_bitField0_ & 0x00000001) != 0)) {
+              statusCodes_ = new com.google.protobuf.LazyStringArrayList();
               mutable_bitField0_ |= 0x00000001;
             }
-            while (input.getBytesUntilLimit() > 0) {
-              statusCodes_.addInt(input.readUInt32());
-            }
-            input.popLimit(limit);
+            statusCodes_.add(s);
             break;
           }
           default: {
@@ -92,7 +80,7 @@ private static final long serialVersionUID = 0L;
           e).setUnfinishedMessage(this);
     } finally {
       if (((mutable_bitField0_ & 0x00000001) != 0)) {
-        statusCodes_.makeImmutable(); // C
+        statusCodes_ = statusCodes_.getUnmodifiableView();
       }
       this.unknownFields = unknownFields.build();
       makeExtensionsImmutable();
@@ -123,32 +111,39 @@ private static final long serialVersionUID = 0L;
   }
 
   public static final int STATUSCODES_FIELD_NUMBER = 2;
-  private com.google.protobuf.Internal.IntList statusCodes_;
+  private com.google.protobuf.LazyStringList statusCodes_;
   /**
-   * <code>repeated uint32 statusCodes = 2;</code>
+   * <code>repeated string statusCodes = 2;</code>
    * @return A list containing the statusCodes.
    */
-  @java.lang.Override
-  public java.util.List<java.lang.Integer>
+  public com.google.protobuf.ProtocolStringList
       getStatusCodesList() {
     return statusCodes_;
   }
   /**
-   * <code>repeated uint32 statusCodes = 2;</code>
+   * <code>repeated string statusCodes = 2;</code>
    * @return The count of statusCodes.
    */
   public int getStatusCodesCount() {
     return statusCodes_.size();
   }
   /**
-   * <code>repeated uint32 statusCodes = 2;</code>
+   * <code>repeated string statusCodes = 2;</code>
    * @param index The index of the element to return.
    * @return The statusCodes at the given index.
    */
-  public int getStatusCodes(int index) {
-    return statusCodes_.getInt(index);
+  public java.lang.String getStatusCodes(int index) {
+    return statusCodes_.get(index);
   }
-  private int statusCodesMemoizedSerializedSize = -1;
+  /**
+   * <code>repeated string statusCodes = 2;</code>
+   * @param index The index of the value to return.
+   * @return The bytes of the statusCodes at the given index.
+   */
+  public com.google.protobuf.ByteString
+      getStatusCodesBytes(int index) {
+    return statusCodes_.getByteString(index);
+  }
 
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
@@ -164,16 +159,11 @@ private static final long serialVersionUID = 0L;
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output)
                       throws java.io.IOException {
-    getSerializedSize();
     if (count_ != 0) {
       output.writeUInt32(1, count_);
     }
-    if (getStatusCodesList().size() > 0) {
-      output.writeUInt32NoTag(18);
-      output.writeUInt32NoTag(statusCodesMemoizedSerializedSize);
-    }
     for (int i = 0; i < statusCodes_.size(); i++) {
-      output.writeUInt32NoTag(statusCodes_.getInt(i));
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 2, statusCodes_.getRaw(i));
     }
     unknownFields.writeTo(output);
   }
@@ -191,16 +181,10 @@ private static final long serialVersionUID = 0L;
     {
       int dataSize = 0;
       for (int i = 0; i < statusCodes_.size(); i++) {
-        dataSize += com.google.protobuf.CodedOutputStream
-          .computeUInt32SizeNoTag(statusCodes_.getInt(i));
+        dataSize += computeStringSizeNoTag(statusCodes_.getRaw(i));
       }
       size += dataSize;
-      if (!getStatusCodesList().isEmpty()) {
-        size += 1;
-        size += com.google.protobuf.CodedOutputStream
-            .computeInt32SizeNoTag(dataSize);
-      }
-      statusCodesMemoizedSerializedSize = dataSize;
+      size += 1 * getStatusCodesList().size();
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -373,7 +357,7 @@ private static final long serialVersionUID = 0L;
       super.clear();
       count_ = 0;
 
-      statusCodes_ = emptyIntList();
+      statusCodes_ = com.google.protobuf.LazyStringArrayList.EMPTY;
       bitField0_ = (bitField0_ & ~0x00000001);
       return this;
     }
@@ -404,7 +388,7 @@ private static final long serialVersionUID = 0L;
       int from_bitField0_ = bitField0_;
       result.count_ = count_;
       if (((bitField0_ & 0x00000001) != 0)) {
-        statusCodes_.makeImmutable();
+        statusCodes_ = statusCodes_.getUnmodifiableView();
         bitField0_ = (bitField0_ & ~0x00000001);
       }
       result.statusCodes_ = statusCodes_;
@@ -530,68 +514,83 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    private com.google.protobuf.Internal.IntList statusCodes_ = emptyIntList();
+    private com.google.protobuf.LazyStringList statusCodes_ = com.google.protobuf.LazyStringArrayList.EMPTY;
     private void ensureStatusCodesIsMutable() {
       if (!((bitField0_ & 0x00000001) != 0)) {
-        statusCodes_ = mutableCopy(statusCodes_);
+        statusCodes_ = new com.google.protobuf.LazyStringArrayList(statusCodes_);
         bitField0_ |= 0x00000001;
        }
     }
     /**
-     * <code>repeated uint32 statusCodes = 2;</code>
+     * <code>repeated string statusCodes = 2;</code>
      * @return A list containing the statusCodes.
      */
-    public java.util.List<java.lang.Integer>
+    public com.google.protobuf.ProtocolStringList
         getStatusCodesList() {
-      return ((bitField0_ & 0x00000001) != 0) ?
-               java.util.Collections.unmodifiableList(statusCodes_) : statusCodes_;
+      return statusCodes_.getUnmodifiableView();
     }
     /**
-     * <code>repeated uint32 statusCodes = 2;</code>
+     * <code>repeated string statusCodes = 2;</code>
      * @return The count of statusCodes.
      */
     public int getStatusCodesCount() {
       return statusCodes_.size();
     }
     /**
-     * <code>repeated uint32 statusCodes = 2;</code>
+     * <code>repeated string statusCodes = 2;</code>
      * @param index The index of the element to return.
      * @return The statusCodes at the given index.
      */
-    public int getStatusCodes(int index) {
-      return statusCodes_.getInt(index);
+    public java.lang.String getStatusCodes(int index) {
+      return statusCodes_.get(index);
     }
     /**
-     * <code>repeated uint32 statusCodes = 2;</code>
+     * <code>repeated string statusCodes = 2;</code>
+     * @param index The index of the value to return.
+     * @return The bytes of the statusCodes at the given index.
+     */
+    public com.google.protobuf.ByteString
+        getStatusCodesBytes(int index) {
+      return statusCodes_.getByteString(index);
+    }
+    /**
+     * <code>repeated string statusCodes = 2;</code>
      * @param index The index to set the value at.
      * @param value The statusCodes to set.
      * @return This builder for chaining.
      */
     public Builder setStatusCodes(
-        int index, int value) {
-      ensureStatusCodesIsMutable();
-      statusCodes_.setInt(index, value);
+        int index, java.lang.String value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureStatusCodesIsMutable();
+      statusCodes_.set(index, value);
       onChanged();
       return this;
     }
     /**
-     * <code>repeated uint32 statusCodes = 2;</code>
+     * <code>repeated string statusCodes = 2;</code>
      * @param value The statusCodes to add.
      * @return This builder for chaining.
      */
-    public Builder addStatusCodes(int value) {
-      ensureStatusCodesIsMutable();
-      statusCodes_.addInt(value);
+    public Builder addStatusCodes(
+        java.lang.String value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureStatusCodesIsMutable();
+      statusCodes_.add(value);
       onChanged();
       return this;
     }
     /**
-     * <code>repeated uint32 statusCodes = 2;</code>
+     * <code>repeated string statusCodes = 2;</code>
      * @param values The statusCodes to add.
      * @return This builder for chaining.
      */
     public Builder addAllStatusCodes(
-        java.lang.Iterable<? extends java.lang.Integer> values) {
+        java.lang.Iterable<java.lang.String> values) {
       ensureStatusCodesIsMutable();
       com.google.protobuf.AbstractMessageLite.Builder.addAll(
           values, statusCodes_);
@@ -599,12 +598,28 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>repeated uint32 statusCodes = 2;</code>
+     * <code>repeated string statusCodes = 2;</code>
      * @return This builder for chaining.
      */
     public Builder clearStatusCodes() {
-      statusCodes_ = emptyIntList();
+      statusCodes_ = com.google.protobuf.LazyStringArrayList.EMPTY;
       bitField0_ = (bitField0_ & ~0x00000001);
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>repeated string statusCodes = 2;</code>
+     * @param value The bytes of the statusCodes to add.
+     * @return This builder for chaining.
+     */
+    public Builder addStatusCodesBytes(
+        com.google.protobuf.ByteString value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+      ensureStatusCodesIsMutable();
+      statusCodes_.add(value);
       onChanged();
       return this;
     }

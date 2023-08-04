@@ -134,8 +134,8 @@ spec:
                   statusCodes:
                     description: StatusCodes defines the list of status codes to retry
                     items:
-                      format: int32
-                      type: integer
+                      description: RetryOnType defines the retry on types
+                      type: string
                     type: array
                 required:
                 - count

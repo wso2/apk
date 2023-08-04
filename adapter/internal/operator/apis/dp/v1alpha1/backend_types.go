@@ -21,8 +21,24 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
+// RetryOnType defines the retry on types
+type RetryOnType string
+
+const (
+	// RetryOnInternalError is to retry on any 5xx response code,
+	// or does not respond at all (disconnect/reset/read timeout). (Includes connect-failure and refused-stream)
+	RetryOnInternalError RetryOnType = "5xx"
+
+	// RetryOnGatewayError is to only retry on 502, 503, 504 status codes
+	RetryOnGatewayError RetryOnType = "gateway-error"
+
+	// RetryOnReset is to retry if the upstream server does not respond at all (disconnect/reset/read timeout.)
+	RetryOnReset RetryOnType = "reset"
+
+	// RetryOnConnectFailure is to retry if a request is failed because of a connection failure to the
+	// upstream server (connect timeout, etc.). (Included in 5xx)
+	RetryOnConnectFailure RetryOnType = "connect-failure"
+)
 
 // BackendProtocolType defines the backend protocol type.
 type BackendProtocolType string
@@ -182,12 +198,10 @@ type RetryConfig struct {
 	// +optional
 	BaseIntervalMillis uint32 `json:"baseIntervalMillis"`
 
-	// todo(amali) this is not supposed to be a integer list, but a string list. Verify.
-
 	// StatusCodes defines the list of status codes to retry
 	//
 	// +optional
-	StatusCodes []uint32 `json:"statusCodes,omitempty"`
+	StatusCodes []RetryOnType `json:"statusCodes,omitempty"`
 }
 
 // Service holds host and port information for the service

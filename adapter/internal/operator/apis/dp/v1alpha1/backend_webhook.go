@@ -18,10 +18,7 @@
 package v1alpha1
 
 import (
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apimachinery/pkg/util/validation/field"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
@@ -57,12 +54,12 @@ var _ webhook.Validator = &Backend{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (r *Backend) ValidateCreate() error {
-	return r.validateBackendSpec()
+	return nil
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *Backend) ValidateUpdate(old runtime.Object) error {
-	return r.validateBackendSpec()
+	return nil
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
@@ -70,25 +67,5 @@ func (r *Backend) ValidateDelete() error {
 	backendlog.Info("validate delete", "name", r.Name)
 
 	// TODO(user): fill in your validation logic upon object deletion.
-	return nil
-}
-
-func (r *Backend) validateBackendSpec() error {
-	var allErrs field.ErrorList
-	retryConfig := r.Spec.Retry
-	if retryConfig != nil {
-		for _, statusCode := range retryConfig.StatusCodes {
-			if statusCode > 598 || statusCode < 401 {
-				allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("retry").Child("statusCodes"),
-					retryConfig.StatusCodes, "status code should be between 401 and 598"))
-			}
-		}
-	}
-
-	if len(allErrs) > 0 {
-		return apierrors.NewInvalid(
-			schema.GroupKind{Group: "dp.wso2.com", Kind: "Backend"},
-			r.Name, allErrs)
-	}
 	return nil
 }

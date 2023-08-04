@@ -71,7 +71,7 @@ public class Utils {
                 org.wso2.apk.enforcer.discovery.api.RetryConfig rpcRetryConfig
                         = endpointClusterConfig.getRetryConfig();
                 RetryConfig retryConfig = new RetryConfig(rpcRetryConfig.getCount(),
-                        rpcRetryConfig.getStatusCodesList().toArray(new Integer[0]));
+                        rpcRetryConfig.getStatusCodesList().toArray(new String[0]));
                 endpointCluster.setRetryConfig(retryConfig);
             }
             if (endpointClusterConfig.hasTimeoutConfig()) {

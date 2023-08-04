@@ -54,7 +54,7 @@ public final class EndpointClusterProto {
       "\001(\0132!.wso2.discovery.api.TimeoutConfig\"-" +
       "\n\rTimeoutConfig\022\034\n\024routeTimeoutInMillis\030" +
       "\001 \001(\r\"1\n\013RetryConfig\022\r\n\005count\030\001 \001(\r\022\023\n\013s" +
-      "tatusCodes\030\002 \003(\rB|\n#org.wso2.apk.enforce" +
+      "tatusCodes\030\002 \003(\tB|\n#org.wso2.apk.enforce" +
       "r.discovery.apiB\024EndpointClusterProtoP\001Z" +
       "=github.com/envoyproxy/go-control-plane/" +
       "wso2/discovery/api;apib\006proto3"

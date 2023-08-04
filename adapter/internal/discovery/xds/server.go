@@ -117,7 +117,7 @@ var (
 	listenerToRouteArrayMap map[string][]*routev3.Route // Listener -> Routes map
 
 	// Common Enforcer Label as map key
-	// TODO(amali) This doesn't have a usage yet. It will be used to handle multiple enforcer labels in future.
+	// This doesn't have a usage yet. It will be used to handle multiple enforcer labels in future.
 	enforcerLabelMap map[string]*EnforcerInternalAPI // Enforcer Label -> EnforcerInternalAPI struct map
 
 	// KeyManagerList to store data

@@ -22,7 +22,6 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/internal/logging"
 	"github.com/wso2/apk/adapter/internal/oasparser/constants"
@@ -57,7 +56,6 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 
 	disableScopes := true
 	disableAuthentications := false
-	config := config.ReadConfigs()
 
 	var authScheme *dpv1alpha1.Authentication
 	if outputAuthScheme != nil {
@@ -91,8 +89,7 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 		isRetryConfig := false
 		isRouteTimeout := false
 		var backendRetryCount uint32
-		var statusCodes []uint32
-		statusCodes = append(statusCodes, config.Envoy.Upstream.Retry.StatusCodes...)
+		var statusCodes []string
 		var baseIntervalInMillis uint32
 		hasURLRewritePolicy := false
 		var securityConfig []EndpointSecurity
@@ -123,8 +120,8 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 					isRetryConfig = true
 					backendRetryCount = resolvedBackend.Retry.Count
 					baseIntervalInMillis = resolvedBackend.Retry.BaseIntervalMillis
-					if len(resolvedBackend.Retry.StatusCodes) > 0 {
-						statusCodes = resolvedBackend.Retry.StatusCodes
+					for _, statusCode := range resolvedBackend.Retry.StatusCodes {
+						statusCodes = append(statusCodes, string(statusCode))
 					}
 				}
 				if resolvedBackend.HealthCheck != nil {

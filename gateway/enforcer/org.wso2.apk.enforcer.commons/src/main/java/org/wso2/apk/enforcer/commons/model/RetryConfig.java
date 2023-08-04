@@ -21,13 +21,13 @@ package org.wso2.apk.enforcer.commons.model;
  */
 public class RetryConfig {
     int count;
-    Integer[] statusCodes;
+    String[] statusCodes;
 
     /**
      * @param count Number of times to retry
      * @param statusCodes Http status codes on which retrying must be done
      */
-    public RetryConfig(int count, Integer[] statusCodes) {
+    public RetryConfig(int count, String[] statusCodes) {
         this.count = count;
         this.statusCodes = statusCodes;
     }
@@ -42,7 +42,7 @@ public class RetryConfig {
     /**
      * @return Http status codes on which retrying must be done
      */
-    public Integer[] getStatusCodes() {
+    public String[] getStatusCodes() {
         return statusCodes;
     }
 }
