@@ -230,7 +230,7 @@ func getInterceptorEndpoint(namespace string, interceptorRef *dpv1alpha1.Interce
 	interceptor := gatewayInterceptorServiceMapping[types.NamespacedName{
 		Namespace: namespace,
 		Name:      interceptorRef.Name}.String()].Spec
-	endpoints := model.GetEndpoints(types.NamespacedName{Namespace: interceptor.BackendRef.Namespace, Name: interceptor.BackendRef.Name},
+	endpoints := model.GetEndpoints(types.NamespacedName{Namespace: namespace, Name: interceptor.BackendRef.Name},
 		gatewayBackendMapping)
 	var clusterName string
 	if isReq {

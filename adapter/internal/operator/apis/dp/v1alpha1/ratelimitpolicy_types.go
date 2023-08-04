@@ -41,13 +41,6 @@ type RateLimitAPIPolicy struct {
 	//
 	// +optional
 	Custom *CustomRateLimitPolicy `json:"custom,omitempty"`
-
-	//todo(amali) checking to set it inside custom policy
-
-	// Organization is the organization of the policy
-	//
-	// +optional
-	Organization string `json:"organization,omitempty"`
 }
 
 // APIRateLimitPolicy defines the desired state of APIPolicy
@@ -84,6 +77,11 @@ type CustomRateLimitPolicy struct {
 	//
 	// +optional
 	Value string `json:"value,omitempty"`
+
+	// Organization is the organization of the policy
+	//
+	// +kubeBuilder:validation:MinLength=1
+	Organization string `json:"organization,omitempty"`
 }
 
 // RateLimitPolicyStatus defines the observed state of RateLimitPolicy

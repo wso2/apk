@@ -1421,9 +1421,8 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 			var backends []string
 			backends = append(backends,
 				types.NamespacedName{
-					Namespace: utils.GetNamespace(
-						(*gwapiv1b1.Namespace)(&interceptorService.Spec.BackendRef.Namespace), interceptorService.Namespace),
-					Name: string(interceptorService.Spec.BackendRef.Name),
+					Namespace: interceptorService.Namespace,
+					Name:      string(interceptorService.Spec.BackendRef.Name),
 				}.String())
 			return backends
 		}); err != nil {

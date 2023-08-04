@@ -295,10 +295,9 @@ func getSecretValue(ctx context.Context, client k8client.Client,
 func ResolveAndAddBackendToMapping(ctx context.Context, client k8client.Client,
 	backendMapping map[string]*dpv1alpha1.ResolvedBackend,
 	backendRef dpv1alpha1.BackendReference, interceptorServiceNamespace string, api *dpv1alpha1.API) {
-	namespace := gwapiv1b1.Namespace(backendRef.Namespace)
 	backendName := types.NamespacedName{
 		Name:      backendRef.Name,
-		Namespace: GetNamespace(&namespace, interceptorServiceNamespace),
+		Namespace: interceptorServiceNamespace,
 	}
 	backend := GetResolvedBackend(ctx, client, backendName, api)
 	if backend != nil {
@@ -346,8 +345,8 @@ func GetResolvedBackend(ctx context.Context, client k8client.Client,
 	}
 	if backend.Spec.Timeout != nil {
 		resolvedBackend.Timeout = &dpv1alpha1.Timeout{
-			RouteTimeoutSeconds:     backend.Spec.Timeout.RouteTimeoutSeconds,
-			RouteIdleTimeoutSeconds: backend.Spec.Timeout.RouteIdleTimeoutSeconds,
+			UpstreamResponseTimeout:      backend.Spec.Timeout.UpstreamResponseTimeout,
+			DownstreamRequestIdleTimeout: backend.Spec.Timeout.DownstreamRequestIdleTimeout,
 		}
 	}
 	if backend.Spec.Retry != nil {

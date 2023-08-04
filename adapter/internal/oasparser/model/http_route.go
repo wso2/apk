@@ -115,8 +115,8 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 				}
 				if resolvedBackend.Timeout != nil {
 					isRouteTimeout = true
-					timeoutInMillis = resolvedBackend.Timeout.RouteTimeoutSeconds * 1000
-					idleTimeoutInSeconds = resolvedBackend.Timeout.RouteIdleTimeoutSeconds
+					timeoutInMillis = resolvedBackend.Timeout.UpstreamResponseTimeout * 1000
+					idleTimeoutInSeconds = resolvedBackend.Timeout.DownstreamRequestIdleTimeout
 				}
 
 				if resolvedBackend.Retry != nil {

@@ -75,19 +75,6 @@ func (r *RateLimitPolicy) ValidateDelete() error {
 // ValidatePolicies validates the policies in the RateLimitPolicy
 func (r *RateLimitPolicy) ValidatePolicies() error {
 	var allErrs field.ErrorList
-
-	if r.Spec.Override != nil && r.Spec.Override.Custom != nil && r.Spec.Override.Organization == "" {
-		allErrs = append(allErrs, field.Invalid(
-			field.NewPath("spec").Child("override").Child("organization"),
-			r.Spec.Override.Custom, "organization is required for Custom type"))
-	}
-
-	if r.Spec.Default != nil && r.Spec.Default.Custom != nil && r.Spec.Default.Organization == "" {
-		allErrs = append(allErrs,
-			field.Invalid(field.NewPath("spec").Child("default").Child("organization"),
-				r.Spec.Default.Organization, "organization is required for Custom type"))
-	}
-
 	if r.Spec.TargetRef.Name == "" {
 		allErrs = append(allErrs, field.Required(field.NewPath("spec").Child("targetRef").Child("name"),
 			"Name is required"))

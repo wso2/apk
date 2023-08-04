@@ -37,11 +37,7 @@ func (r *InterceptorService) SetupWebhookWithManager(mgr ctrl.Manager) error {
 var _ webhook.Defaulter = &InterceptorService{}
 
 // Default implements webhook.Defaulter so a webhook will be registered for the type
-func (r *InterceptorService) Default() {
-	if r.Spec.BackendRef.Namespace == "" {
-		r.Spec.BackendRef.Namespace = r.Namespace
-	}
-}
+func (r *InterceptorService) Default() {}
 
 // TODO(user): change verbs to "verbs=create;update;delete" if you want to enable deletion validation.
 //+kubebuilder:webhook:path=/validate-dp-wso2-com-v1alpha1-interceptorservice,mutating=false,failurePolicy=fail,sideEffects=None,groups=dp.wso2.com,resources=interceptorservices,verbs=create;update,versions=v1alpha1,name=vinterceptorservice.kb.io,admissionReviewVersions=v1
