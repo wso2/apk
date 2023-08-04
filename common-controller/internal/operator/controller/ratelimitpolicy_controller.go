@@ -80,19 +80,19 @@ func NewratelimitController(mgr manager.Manager, ratelimitStore *cache.Ratelimit
 		return err
 	}
 
-	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.API{}},
+	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha1.API{}),
 		handler.EnqueueRequestsFromMapFunc(ratelimitReconsiler.getRatelimitForAPI)); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2611, err))
 		return err
 	}
 
-	if err := c.Watch(&source.Kind{Type: &gwapiv1b1.HTTPRoute{}},
+	if err := c.Watch(source.Kind(mgr.GetCache(), &gwapiv1b1.HTTPRoute{}),
 		handler.EnqueueRequestsFromMapFunc(ratelimitReconsiler.getRatelimitForHTTPRoute)); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2611, err))
 		return err
 	}
 
-	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.RateLimitPolicy{}}, &handler.EnqueueRequestForObject{}); err != nil {
+	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha1.RateLimitPolicy{}), &handler.EnqueueRequestForObject{}); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3112, err.Error()))
 		return err
 	}
@@ -163,8 +163,7 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) Reconcile(ctx context.Cont
 	return ctrl.Result{}, nil
 }
 
-func (ratelimitReconsiler *RateLimitPolicyReconciler) getRatelimitForAPI(obj k8client.Object) []reconcile.Request {
-	ctx := context.Background()
+func (ratelimitReconsiler *RateLimitPolicyReconciler) getRatelimitForAPI(ctx context.Context, obj k8client.Object) []reconcile.Request {
 	api, ok := obj.(*dpv1alpha1.API)
 	if !ok {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2624, api))
@@ -203,8 +202,7 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) AddRatelimitRequest(obj k8
 	}}
 }
 
-func (ratelimitReconsiler *RateLimitPolicyReconciler) getRatelimitForHTTPRoute(obj k8client.Object) []reconcile.Request {
-	ctx := context.Background()
+func (ratelimitReconsiler *RateLimitPolicyReconciler) getRatelimitForHTTPRoute(ctx context.Context, obj k8client.Object) []reconcile.Request {
 	httpRoute, ok := obj.(*gwapiv1b1.HTTPRoute)
 	if !ok {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2624, httpRoute))
