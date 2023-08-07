@@ -43,7 +43,6 @@ public type BasicSecurityConfig record {
 };
 
 public type SecurityConfig record {
-    string 'type?;
     BasicSecurityConfig basic?;
 };
 
@@ -60,9 +59,8 @@ public type RefConfig record {
 };
 
 public type Timeout record {
-    int maxRouteTimeoutSeconds?;
-    int routeIdleTimeoutSeconds?;
-    int routeTimeoutSeconds?;
+    int downstreamRequestIdleTimeout?;
+    int upstreamResponseTimeout?;
 };
 
 public type Retry record {

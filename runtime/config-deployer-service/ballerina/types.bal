@@ -127,9 +127,8 @@ public type JWTAuthentication record {|
 |};
 
 public type Timeout record {
-    int maxRouteTimeoutSeconds?;
-    int routeIdleTimeoutSeconds?;
-    int routeTimeoutSeconds?;
+    int downstreamRequestIdleTimeout?;
+    int upstreamResponseTimeout?;
 };
 
 public type GenerateK8sResourcesBody record {
