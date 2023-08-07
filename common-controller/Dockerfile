@@ -60,7 +60,7 @@ RUN \
 
 
 WORKDIR ${APK_USER_HOME}
-USER ${APK_USER}
+USER ${APK_USER_ID}
 
 COPY resources/security security
 COPY resources/conf/config.toml conf/

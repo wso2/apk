@@ -39,7 +39,6 @@ public type InterceptorServiceStatus record {
 
 public type InterceptorBackendRef record {
     string name;
-    string namespace?;
 };
 
 public type InterceptorServiceList record {

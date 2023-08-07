@@ -74,7 +74,7 @@ spec:
                     type: integer
                 type: object
               healthCheck:
-                description: HealthCheck congifuration for the backend tcp health
+                description: HealthCheck configuration for the backend tcp health
                   check
                 properties:
                   healthyThreshold:
@@ -86,7 +86,7 @@ spec:
                     format: int32
                     type: integer
                   interval:
-                    default: 10
+                    default: 30
                     description: Interval is the time between health check attempts
                       in seconds.
                     format: int32
@@ -115,13 +115,13 @@ spec:
                 - wss
                 type: string
               retry:
-                description: Retry congifuration for the backend
+                description: Retry configuration for the backend
                 properties:
                   baseIntervalMillis:
                     default: 25
-                    description: BaseIntervalMillis defines the base interval between
-                      retries in milliseconds. This parameter is required and must
-                      be greater than zero.
+                    description: BaseIntervalMillis is exponential retry back off
+                      and it defines the base interval between retries in milliseconds.
+                      maximum interval is 10 times of the BaseIntervalMillis
                     format: int32
                     minimum: 1
                     type: integer
@@ -169,9 +169,6 @@ spec:
                     required:
                     - secretRef
                     type: object
-                  type:
-                    description: todo(amali) remove this field
-                    type: string
                 type: object
               services:
                 description: Services holds hosts and ports
@@ -194,34 +191,27 @@ spec:
                 minItems: 1
                 type: array
               timeout:
-                description: Timeout congifuration for the backend
+                description: Timeout configuration for the backend
                 properties:
-                  maxRouteTimeoutSeconds:
-                    default: 60
-                    format: int32
-                    type: integer
-                  routeIdleTimeoutSeconds:
+                  downstreamRequestIdleTimeout:
                     default: 300
-                    description: RouteIdleTimeoutSeconds is distinct to RouteTimeoutSeconds
-                      which provides an upper bound. on the upstream response time,
-                      instead bounds the amount of time the request's stream may be
-                      idle. A value of 0 will completely disable the route's idle
-                      timeout.
+                    description: DownstreamRequestIdleTimeout bounds the amount of
+                      time the request's stream may be idle. A value of 0 will completely
+                      disable the route's idle timeout.
                     format: int32
                     type: integer
-                  routeTimeoutSeconds:
+                  upstreamResponseTimeout:
                     default: 15
-                    description: RouteTimeoutSeconds If not specified, the default
-                      is 15s. This spans between the point at which the entire downstream
-                      request (i.e. end-of-stream) has been processed and when the
-                      upstream response has been completely processed. A value of
-                      0 will disable the route’s timeout. If the timeout fires, the
-                      stream is terminated with a 408 Request Timeout error code.
+                    description: UpstreamResponseTimeout spans between the point at
+                      which the entire downstream request (i.e. end-of-stream) has
+                      been processed and when the upstream response has been completely
+                      processed. A value of 0 will disable the route’s timeout. If
+                      the timeout fires, the stream is terminated with a 408 Request
+                      Timeout error code.
                     format: int32
                     type: integer
                 required:
-                - maxRouteTimeoutSeconds
-                - routeTimeoutSeconds
+                - upstreamResponseTimeout
                 type: object
               tls:
                 description: TLS defines the TLS configurations of the backend

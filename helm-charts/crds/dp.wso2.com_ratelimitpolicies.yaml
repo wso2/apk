@@ -61,6 +61,9 @@ spec:
                         description: Key is the key of the custom policy
                         minLength: 1
                         type: string
+                      organization:
+                        description: Organization is the organization of the policy
+                        type: string
                       requestsPerUnit:
                         description: RequestPerUnit is the number of requests allowed
                           per unit time
@@ -77,9 +80,6 @@ spec:
                         description: Value is the value of the custom policy
                         type: string
                     type: object
-                  organization:
-                    description: Organization is the organization of the policy
-                    type: string
                 type: object
               override:
                 description: RateLimitAPIPolicy defines the desired state of Policy
@@ -107,6 +107,9 @@ spec:
                         description: Key is the key of the custom policy
                         minLength: 1
                         type: string
+                      organization:
+                        description: Organization is the organization of the policy
+                        type: string
                       requestsPerUnit:
                         description: RequestPerUnit is the number of requests allowed
                           per unit time
@@ -123,9 +126,6 @@ spec:
                         description: Value is the value of the custom policy
                         type: string
                     type: object
-                  organization:
-                    description: Organization is the organization of the policy
-                    type: string
                 type: object
               targetRef:
                 description: PolicyTargetReference identifies an API object to apply

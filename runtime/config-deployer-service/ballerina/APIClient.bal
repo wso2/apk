@@ -892,7 +892,6 @@ public class APIClient {
 
                 if securityType is BasicEndpointSecurity {
                     securityConfig = {
-                        'type: ENDPOINT_SECURITY_TYPE_BASIC_CASE,
                         basic: {
                             secretRef: {
                                 name: <string>securityType.secretName,
@@ -949,8 +948,7 @@ public class APIClient {
             api: {
                 requestsPerUnit: rateLimit.requestsPerUnit,
                 unit: rateLimit.unit
-            },
-            organization: organization
+            }
         };
         return rateLimitData;
     }

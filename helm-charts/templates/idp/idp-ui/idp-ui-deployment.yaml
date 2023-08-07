@@ -66,6 +66,7 @@ spec:
             allowPrivilegeEscalation: false
             capabilities:
               drop: ["ALL"]
+            readOnlyRootFilesystem: true
 {{ include "apk-helm.deployment.resources" .Values.idp.idpui.deployment.resources | indent 10 }}
           volumeMounts:
             - name: idp-ui-tls-volume
