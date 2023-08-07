@@ -114,9 +114,9 @@ spec:
               mountPath: /home/wso2/security/truststore/consul
             - name: log-conf-volume
               mountPath: /home/wso2/conf/
-            - mountPath: /tmp/k8s-webhook-server/serving-certs
-              name: adapter-webhook-server-cert
-              readOnly: true
+            # - mountPath: /tmp/k8s-webhook-server/serving-certs
+            #   name: adapter-webhook-server-cert
+            #   readOnly: true
             {{if and .Values.wso2.apk.dp.partitionServer .Values.wso2.apk.dp.partitionServer.tls}}
             - name:  partition-server-truststore-secret-volume
               mountPath: /home/wso2/security/truststore/partition-server.crt
@@ -162,10 +162,10 @@ spec:
         - name: log-conf-volume
           configMap: 
             name: {{ template "apk-helm.resource.prefix" . }}-log-conf
-        - name: adapter-webhook-server-cert
-          secret:
-            secretName: {{ template "apk-helm.resource.prefix" . }}-webhook-server-cert
-            defaultMode: 420
+        # - name: adapter-webhook-server-cert
+        #   secret:
+        #     secretName: {{ template "apk-helm.resource.prefix" . }}-webhook-server-cert
+        #     defaultMode: 420
         - name: router-truststore-secret-volume
           secret: 
             {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls }}

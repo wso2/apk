@@ -16,9 +16,9 @@
 
 {{- if .Values.wso2.apk.dp.enabled }}
 apiVersion: admissionregistration.k8s.io/v1
-kind: MutatingWebhookConfiguration
+kind: ValidatingWebhookConfiguration
 metadata:
-  name: {{ template "apk-helm.resource.prefix" . }}-mutating-webhook-configuration
+  name: {{ template "apk-helm.resource.prefix" . }}-validating-webhook-configuration
   namespace : {{ .Release.Namespace }}
   annotations:
     cert-manager.io/inject-ca-from: {{ .Release.Namespace }}/{{ template "apk-helm.resource.prefix" . }}-webhook-server-cert
@@ -27,11 +27,31 @@ webhooks:
   - v1
   clientConfig:
     service:
-      name: {{ template "apk-helm.resource.prefix" . }}-adapter-service
+      name: {{ template "apk-helm.resource.prefix" . }}-common-controller-service
       namespace: {{ .Release.Namespace }}
-      path: /mutate-dp-wso2-com-v1alpha1-api
+      path: /validate-dp-wso2-com-v1alpha1-backend
   failurePolicy: Fail
-  name: mapi.kb.io
+  name: vbackend.kb.io
+  rules:
+  - apiGroups:
+    - dp.wso2.com
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - backends
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: {{ template "apk-helm.resource.prefix" . }}-common-controller-service
+      namespace: {{ .Release.Namespace }}
+      path: /validate-dp-wso2-com-v1alpha1-api
+  failurePolicy: Fail
+  name: vapi.kb.io
   rules:
   - apiGroups:
     - dp.wso2.com
@@ -47,11 +67,11 @@ webhooks:
     - v1
   clientConfig:
     service:
-      name: {{ template "apk-helm.resource.prefix" . }}-adapter-service
+      name: {{ template "apk-helm.resource.prefix" . }}-common-controller-service
       namespace: {{ .Release.Namespace }}
-      path: /mutate-dp-wso2-com-v1alpha1-apipolicy
+      path: /validate-dp-wso2-com-v1alpha1-apipolicy
   failurePolicy: Fail
-  name: mapipolicy.kb.io
+  name: vapipolicy.kb.io
   rules:
     - apiGroups:
         - dp.wso2.com
@@ -63,36 +83,16 @@ webhooks:
       resources:
         - apipolicies
   sideEffects: None
-- admissionReviewVersions:
-    - v1
-  clientConfig:
-    service:
-      name: {{ template "apk-helm.resource.prefix" . }}-adapter-service
-      namespace: {{ .Release.Namespace }}
-      path: /mutate-dp-wso2-com-v1alpha1-interceptorservice
-  failurePolicy: Fail
-  name: minterceptorservice.kb.io
-  rules:
-  - apiGroups:
-    - dp.wso2.com
-    apiVersions:
-    - v1alpha1
-    operations:
-    - CREATE
-    - UPDATE
-    resources:
-    - interceptorservices
-  sideEffects: None
 {{ if .Values.wso2.apk.dp.ratelimiter.enabled }}
 - admissionReviewVersions:
     - v1
   clientConfig:
     service:
-      name: {{ template "apk-helm.resource.prefix" . }}-adapter-service
+      name: {{ template "apk-helm.resource.prefix" . }}-common-controller-service
       namespace: {{ .Release.Namespace }}
-      path: /mutate-dp-wso2-com-v1alpha1-ratelimitpolicy
+      path: /validate-dp-wso2-com-v1alpha1-ratelimitpolicy
   failurePolicy: Fail
-  name: mratelimitpolicy.kb.io
+  name: vratelimitpolicy.kb.io
   rules:
     - apiGroups:
         - dp.wso2.com

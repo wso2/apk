@@ -28,4 +28,8 @@ spec:
     - name: https-rate-limiter
       protocol: TCP
       port: 18005
+    - name: webhook-server
+      protocol: TCP
+      port: 443
+      targetPort: 9443
 {{- end -}}
