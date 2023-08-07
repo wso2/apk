@@ -43,6 +43,11 @@ spec:
             - name: ADAPTER_XDS_PORT
               value : "18000"  
           command: ['sh', '-c', 'echo -e "Checking for the availability of Adapter deployment"; while ! nc -z $ADAPTER_HOST $ADAPTER_XDS_PORT; do sleep 1; printf "-"; done; echo -e "  >> Adapter has started";']
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            readOnlyRootFilesystem: true
       containers:
         - name: enforcer
           image: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.image }}
@@ -171,6 +176,7 @@ spec:
             allowPrivilegeEscalation: false
             capabilities:
               drop: ["ALL"]
+            readOnlyRootFilesystem: true
             runAsNonRoot: true
         - name: router
           image: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.image }}
@@ -285,6 +291,7 @@ spec:
             allowPrivilegeEscalation: false
             capabilities:
               drop: ["ALL"]
+            readOnlyRootFilesystem: true
             runAsNonRoot: true
           startupProbe:
             exec:
