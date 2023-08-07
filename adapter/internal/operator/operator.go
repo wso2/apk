@@ -120,27 +120,6 @@ func InitOperator() {
 		loggers.LoggerAPKOperator.Errorf("Failed to add status update handler %v", err)
 	}
 
-<<<<<<< HEAD
-	if err = (&dpv1alpha1.API{}).SetupWebhookWithManager(mgr); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2601, logging.BLOCKER, "Unable to create webhook API: %v", err))
-	}
-
-	if err = (&dpv1alpha1.RateLimitPolicy{}).SetupWebhookWithManager(mgr); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2637, logging.BLOCKER, "Unable to create webhook for Ratelimit: %v", err))
-	}
-
-	if err = (&dpv1alpha1.APIPolicy{}).SetupWebhookWithManager(mgr); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2638, logging.BLOCKER, "Unable to create webhook for APIPolicy: %v", err))
-	}
-
-	if err = (&dpv1alpha1.InterceptorService{}).SetupWebhookWithManager(mgr); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2652, logging.BLOCKER, "Unable to create webhook for InterceptorService: %v", err))
-	}
-
-	if err = (&dpv1alpha1.Backend{}).SetupWebhookWithManager(mgr); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2655, logging.BLOCKER, "Unable to create webhook for Backend: %v", err))
-	}
-=======
 	// if err = (&dpv1alpha1.API{}).SetupWebhookWithManager(mgr); err != nil {
 	// 	loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2601, err))
 	// }
@@ -160,7 +139,6 @@ func InitOperator() {
 	// if err = (&dpv1alpha1.Backend{}).SetupWebhookWithManager(mgr); err != nil {
 	// 	loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2655, err))
 	// }
->>>>>>> 6eb6f5b5 (Add helm changes)
 
 	if err := dpcontrollers.NewGatewayController(mgr, operatorDataStore, updateHandler, &gatewaych); err != nil {
 		loggers.LoggerAPKOperator.Errorf("Error creating Gateway controller: %v", err)
