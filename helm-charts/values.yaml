@@ -80,7 +80,7 @@ wso2:
             initialDelaySeconds: 20
             periodSeconds: 20
             failureThreshold: 5
-          strategy: Recreate
+          strategy: RollingUpdate
           replicas: 1
           imagePullPolicy: Always
           image: wso2/config-deployer-service:latest
@@ -106,7 +106,7 @@ wso2:
             initialDelaySeconds: 20
             periodSeconds: 20
             failureThreshold: 5
-          strategy: Recreate
+          strategy: RollingUpdate
           replicas: 1
           imagePullPolicy: Always
           image: wso2/adapter:latest
@@ -140,7 +140,7 @@ wso2:
             initialDelaySeconds: 20
             periodSeconds: 20
             failureThreshold: 5
-          strategy: Recreate
+          strategy: RollingUpdate
           replicas: 1
           imagePullPolicy: Always
           image: wso2/common-controller:latest
@@ -164,7 +164,7 @@ wso2:
             initialDelaySeconds: 20
             periodSeconds: 20
             failureThreshold: 5
-          strategy: Recreate
+          strategy: RollingUpdate
           replicas: 1
           imagePullPolicy: Always
           image: wso2/ratelimiter:1.0.0-alpha
@@ -195,7 +195,7 @@ wso2:
               initialDelaySeconds: 20
               periodSeconds: 20
               failureThreshold: 5
-            strategy: Recreate
+            strategy: RollingUpdate
             imagePullPolicy: Always
             image: wso2/router:latest
             # configs:
@@ -225,7 +225,7 @@ wso2:
               initialDelaySeconds: 20
               periodSeconds: 20
               failureThreshold: 5
-            strategy: Recreate
+            strategy: RollingUpdate
             imagePullPolicy: Always
             image: wso2/enforcer:latest
             security:
@@ -288,7 +288,7 @@ idp:
         initialDelaySeconds: 20
         periodSeconds: 20
         failureThreshold: 5
-      strategy: Recreate
+      strategy: RollingUpdate
       replicas: 1
       imagePullPolicy: Always
       image: wso2/idp-domain-service:1.0.0-alpha
@@ -309,7 +309,7 @@ idp:
         initialDelaySeconds: 20
         periodSeconds: 20
         failureThreshold: 5
-      strategy: Recreate
+      strategy: RollingUpdate
       replicas: 1
       imagePullPolicy: Always
       image: wso2/idp-ui:1.0.0-alpha

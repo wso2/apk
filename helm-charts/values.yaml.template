@@ -126,7 +126,7 @@ wso2:
             # -- Minimum consecutive failures for the probe to be considered failed after having succeeded.
             failureThreshold: 5
           # -- Deployment strategy
-          strategy: Recreate
+          strategy: RollingUpdate
           # -- Number of replicas
           replicas: 1
           # -- Image pull policy
@@ -173,7 +173,7 @@ wso2:
             # -- Minimum consecutive failures for the probe to be considered failed after having succeeded.
             failureThreshold: 5
           # -- Deployment strategy
-          strategy: Recreate
+          strategy: RollingUpdate
           # -- Number of replicas
           replicas: 1
           # -- Image pull policy
@@ -231,7 +231,7 @@ wso2:
             # -- Minimum consecutive failures for the probe to be considered failed after having succeeded.
             failureThreshold: 5
           # -- Deployment strategy
-          strategy: Recreate
+          strategy: RollingUpdate
           # -- Number of replicas
           replicas: 1
           # -- Image pull policy
@@ -282,7 +282,7 @@ wso2:
               # -- Minimum consecutive failures for the probe to be considered failed after having succeeded.
               failureThreshold: 5
             # -- Deployment strategy
-            strategy: Recreate
+            strategy: RollingUpdate
             # -- Image pull policy
             imagePullPolicy: Always
             # -- Image
@@ -332,7 +332,7 @@ wso2:
               # -- Minimum consecutive failures for the probe to be considered failed after having succeeded.
               failureThreshold: 5
             # -- Deployment strategy
-            strategy: Recreate
+            strategy: RollingUpdate
             # -- Image pull policy
             imagePullPolicy: Always
             # -- Image
@@ -477,7 +477,7 @@ idp:
         # -- Minimum consecutive failures for the probe to be considered failed after having succeeded.
         failureThreshold: 5
       # -- Deployment strategy
-      strategy: Recreate
+      strategy: RollingUpdate
       # -- Number of replicas
       replicas: 1
       # -- Image pull policy
@@ -512,7 +512,7 @@ idp:
         # -- Minimum consecutive failures for the probe to be considered failed after having succeeded.
         failureThreshold: 5
       # -- Deployment strategy
-      strategy: Recreate
+      strategy: RollingUpdate
       # -- Number of replicas
       replicas: 1
       # -- Image pull policy
