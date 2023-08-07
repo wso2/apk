@@ -25,6 +25,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
+	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 	"sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
@@ -52,67 +53,54 @@ func (r *RateLimitPolicy) Default() {
 var _ webhook.Validator = &RateLimitPolicy{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
-func (r *RateLimitPolicy) ValidateCreate() error {
+func (r *RateLimitPolicy) ValidateCreate() (admission.Warnings, error) {
 
 	// TODO(user): fill in your validation logic upon object creation.
-	return r.ValidatePolicies()
+	return nil, r.ValidatePolicies()
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
-func (r *RateLimitPolicy) ValidateUpdate(old runtime.Object) error {
+func (r *RateLimitPolicy) ValidateUpdate(old runtime.Object) (admission.Warnings, error) {
 
 	// TODO(user): fill in your validation logic upon object update.
-	return r.ValidatePolicies()
+	return nil, r.ValidatePolicies()
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
-func (r *RateLimitPolicy) ValidateDelete() error {
+func (r *RateLimitPolicy) ValidateDelete() (admission.Warnings, error) {
 
 	// TODO(user): fill in your validation logic upon object deletion.
-	return nil
+	return nil, nil
 }
 
 // ValidatePolicies validates the policies in the RateLimitPolicy
 func (r *RateLimitPolicy) ValidatePolicies() error {
 	var allErrs field.ErrorList
 
-	if r.Spec.Override != nil {
-		if r.Spec.Override.API != nil && (r.Spec.Override.API.RequestsPerUnit == 0 || r.Spec.Override.API.Unit == "") {
-			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("override").Child("api"),
-				r.Spec.Override.API, "requestsPerUnit and unit are required for Api type"))
-		}
-
-		if r.Spec.Override.Custom != nil && (r.Spec.Override.Custom.RequestsPerUnit == 0 ||
-			r.Spec.Override.Custom.Unit == "" || r.Spec.Override.Organization == "") {
-			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("override").Child("custom"),
-				r.Spec.Override.Custom, "requestsPerUnit, unit and organization are required for Custom type"))
-		}
+	if r.Spec.Override != nil && r.Spec.Override.Custom != nil && r.Spec.Override.Organization == "" {
+		allErrs = append(allErrs, field.Invalid(
+			field.NewPath("spec").Child("override").Child("organization"),
+			r.Spec.Override.Custom, "organization is required for Custom type"))
 	}
 
-	if r.Spec.Default != nil {
-		if r.Spec.Default.API != nil && (r.Spec.Default.API.RequestsPerUnit == 0 || r.Spec.Default.API.Unit == "") {
-			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("default").Child("api"),
-				r.Spec.Default.API, "requestsPerUnit and unit are required for Api type"))
-		}
-
-		if r.Spec.Default.Custom != nil && (r.Spec.Default.Custom.RequestsPerUnit == 0 ||
-			r.Spec.Default.Custom.Unit == "" || r.Spec.Default.Organization == "") {
-			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("override").Child("custom"),
-				r.Spec.Override.Custom, "requestsPerUnit, unit and organization are required for Custom type"))
-		}
+	if r.Spec.Default != nil && r.Spec.Default.Custom != nil && r.Spec.Default.Organization == "" {
+		allErrs = append(allErrs,
+			field.Invalid(field.NewPath("spec").Child("default").Child("organization"),
+				r.Spec.Default.Organization, "organization is required for Custom type"))
 	}
 
 	if r.Spec.TargetRef.Name == "" {
-		allErrs = append(allErrs, field.Required(field.NewPath("spec").Child("targetRef").Child("name"), "Name is required"))
+		allErrs = append(allErrs, field.Required(field.NewPath("spec").Child("targetRef").Child("name"),
+			"Name is required"))
 	}
 	if !(r.Spec.TargetRef.Kind == constants.KindAPI || r.Spec.TargetRef.Kind == constants.KindResource ||
 		r.Spec.TargetRef.Kind == constants.KindGateway) {
-		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("targetRef").Child("kind"), r.Spec.TargetRef.Kind,
-			"Invalid Kind is provided"))
+		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("targetRef").Child("kind"),
+			r.Spec.TargetRef.Kind, "Invalid Kind is provided"))
 	}
 	if r.Spec.TargetRef.Namespace != nil && r.Spec.TargetRef.Namespace != (*v1beta1.Namespace)(&r.Namespace) {
-		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("targetRef").Child("namespace"), r.Spec.TargetRef.Namespace,
-			"namespace cross reference is not allowed"))
+		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("targetRef").Child("namespace"),
+			r.Spec.TargetRef.Namespace, "namespace cross reference is not allowed"))
 	}
 
 	if len(allErrs) > 0 {

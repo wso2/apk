@@ -24,7 +24,6 @@ import (
 	"strings"
 
 	"github.com/wso2/apk/adapter/config"
-	"github.com/wso2/apk/adapter/pkg/logging"
 	"github.com/wso2/apk/common-controller/internal/loggers"
 	"golang.org/x/exp/slices"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -35,6 +34,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
+	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
 var c client.Client
@@ -64,20 +64,20 @@ func (r *API) Default() {
 var _ webhook.Validator = &API{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
-func (r *API) ValidateCreate() error {
-	return r.validateAPI()
+func (r *API) ValidateCreate() (admission.Warnings, error) {
+	return nil, r.validateAPI()
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
-func (r *API) ValidateUpdate(old runtime.Object) error {
-	return r.validateAPI()
+func (r *API) ValidateUpdate(old runtime.Object) (admission.Warnings, error) {
+	return nil, r.validateAPI()
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
-func (r *API) ValidateDelete() error {
+func (r *API) ValidateDelete() (admission.Warnings, error) {
 
 	// TODO(user): fill in your validation logic upon object deletion.
-	return nil
+	return nil, nil
 }
 
 // validateAPI validate api crd fields
@@ -198,7 +198,7 @@ func retrieveAPIList() ([]API, error) {
 	if namespaces == nil {
 		apiList := &APIList{}
 		if err := c.List(ctx, apiList, &client.ListOptions{}); err != nil {
-			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2605, err.Error()))
+			//loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2605, logging.CRITICAL, "Unable to list APIs: %v", err.Error()))
 			return nil, err
 		}
 		apis = make([]API, len(apiList.Items))
@@ -207,7 +207,7 @@ func retrieveAPIList() ([]API, error) {
 		for _, namespace := range namespaces {
 			apiList := &APIList{}
 			if err := c.List(ctx, apiList, &client.ListOptions{Namespace: namespace}); err != nil {
-				loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2605, err.Error()))
+				//loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2605, logging.CRITICAL, "Unable to list APIs: %v", err.Error()))
 				return nil, err
 			}
 			apis = append(apis, apiList.Items...)

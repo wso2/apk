@@ -27,6 +27,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
+	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
 // SetupWebhookWithManager creates a new webhook builder for BackendJWT
@@ -53,15 +54,15 @@ func (r *BackendJWT) Default() {
 var _ webhook.Validator = &BackendJWT{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
-func (r *BackendJWT) ValidateCreate() error {
+func (r *BackendJWT) ValidateCreate() (admission.Warnings, error) {
 	// TODO(user): fill in your validation logic upon object creation.
-	return r.validateJWTClaims()
+	return nil, r.validateJWTClaims()
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
-func (r *BackendJWT) ValidateUpdate(old runtime.Object) error {
+func (r *BackendJWT) ValidateUpdate(old runtime.Object) (admission.Warnings, error) {
 	// TODO(user): fill in your validation logic upon object update.
-	return r.validateJWTClaims()
+	return nil, r.validateJWTClaims()
 }
 
 func (r *BackendJWT) validateJWTClaims() error {
@@ -102,7 +103,7 @@ func (r *BackendJWT) validateJWTClaims() error {
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
-func (r *BackendJWT) ValidateDelete() error {
+func (r *BackendJWT) ValidateDelete() (admission.Warnings, error) {
 	// TODO(user): fill in your validation logic upon object deletion.
-	return nil
+	return nil, nil
 }
