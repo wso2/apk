@@ -894,8 +894,9 @@ func UpdateAPICache(vHosts []string, newLabels []string, newlistenersForRoutes [
 			vHost, adapterInternalAPI.GetOrganizationID())
 
 		if err != nil {
-			return fmt.Errorf("error while deploying API. Name: %s Version: %s, OrgID: %s, Error: %s",
-				adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), adapterInternalAPI.GetOrganizationID(), err.Error())
+			return fmt.Errorf("error while deploying API. Name: %s Version: %s, OrgID: %s, API_UUID: %v, Error: %s",
+				adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), adapterInternalAPI.GetOrganizationID(),
+				logging.GetValueFromLogContext("API_UUID"), err.Error())
 		}
 		if !orgExists {
 			orgAPIMap[adapterInternalAPI.GetOrganizationID()] = make(map[string]*EnvoyInternalAPI)

@@ -176,7 +176,8 @@ func GenerateAdapterInternalAPI(apiState APIState, httpRoute *HTTPRouteState, en
 	}
 	err := xds.UpdateAPICache(vHosts, labels, listeners, adapterInternalAPI)
 	if err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2633, logging.MAJOR, "Error updating the API : %s:%s in vhosts: %s. %v", adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), vHosts, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2633, logging.MAJOR, "Error updating the API : %s:%s in vhosts: %s, API_UUID: %v. %v",
+			adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), vHosts, internalLogging.GetValueFromLogContext("API_UUID"), err))
 	}
 	return &adapterInternalAPI, nil
 }
