@@ -25,6 +25,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
+	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 	"sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
@@ -50,13 +51,13 @@ func (r *APIPolicy) Default() {}
 var _ webhook.Validator = &APIPolicy{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
-func (r *APIPolicy) ValidateCreate() error {
-	return r.ValidatePolicy()
+func (r *APIPolicy) ValidateCreate() (admission.Warnings, error) {
+	return nil, r.ValidatePolicy()
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
-func (r *APIPolicy) ValidateUpdate(old runtime.Object) error {
-	return r.ValidatePolicy()
+func (r *APIPolicy) ValidateUpdate(old runtime.Object) (admission.Warnings, error) {
+	return nil, r.ValidatePolicy()
 }
 
 // ValidatePolicy validates the APIPolicy
@@ -84,7 +85,7 @@ func (r *APIPolicy) ValidatePolicy() error {
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
-func (r *APIPolicy) ValidateDelete() error {
+func (r *APIPolicy) ValidateDelete() (admission.Warnings, error) {
 	// TODO(user): fill in your validation logic upon object deletion.
-	return nil
+	return nil, nil
 }
