@@ -332,15 +332,11 @@
     "Timeout": {
       "type": "object",
       "properties": {
-        "maxRouteTimeoutSeconds": {
-          "type": "integer",
-          "example": 60
-        },
-        "routeIdleTimeoutSeconds": {
+        "downstreamRequestIdleTimeout": {
           "type": "integer",
           "example": 400
         },
-        "routeTimeoutSeconds": {
+        "upstreamResponseTimeout": {
           "type": "integer",
           "example": 40
         }

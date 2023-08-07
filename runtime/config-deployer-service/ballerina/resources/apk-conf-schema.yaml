@@ -318,11 +318,9 @@ components:
     Timeout:
       type: object
       properties:
-        maxRouteTimeoutSeconds:
+        downstreamRequestIdleTimeout:
           type: integer
-        routeIdleTimeoutSeconds:
-          type: integer
-        routeTimeoutSeconds:
+        upstreamResponseTimeout:
           type: integer
       additionalProperties: false
     RetryPolicy:
