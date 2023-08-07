@@ -410,7 +410,8 @@ func (apiReconciler *APIReconciler) removeOldOwnerRefs(ctx context.Context, apiS
 		loggers.LoggerAPKOperator.Errorf("error while listing CRs for API CR %s, %s",
 			api.Name, err.Error())
 	}
-	for _, interceptorService := range interceptorServiceList.Items {
+	for item := range interceptorServiceList.Items {
+		interceptorService := interceptorServiceList.Items[item]
 		// check interceptorService has similar item inside the apiState.InterceptorServiceMapping
 		interceptorServiceFound := false
 		for _, attachedInterceptorService := range apiState.InterceptorServiceMapping {
@@ -433,7 +434,8 @@ func (apiReconciler *APIReconciler) removeOldOwnerRefs(ctx context.Context, apiS
 		loggers.LoggerAPKOperator.Errorf("error while listing CRs for API CR %s, %s",
 			api.Name, err.Error())
 	}
-	for _, backendJWT := range backendJWTList.Items {
+	for item := range backendJWTList.Items {
+		backendJWT := backendJWTList.Items[item]
 		// check backendJWT has similar item inside the apiState.BackendJWTMapping
 		backendJWTFound := false
 		for _, attachedBackendJWT := range apiState.BackendJWTMapping {
@@ -459,7 +461,8 @@ func (apiReconciler *APIReconciler) removeOldOwnerRefsFromHTTPRoute(ctx context.
 		loggers.LoggerAPKOperator.Errorf("error while listing authentication CRs for API CR %s, %s",
 			apiName, err.Error())
 	}
-	for _, scope := range scopeList.Items {
+	for scopeListItem := range scopeList.Items {
+		scope := scopeList.Items[scopeListItem]
 		// check scope has similar item inside the apiState.ProdHTTPRoute.Scopes
 		scopeFound := false
 		for _, attachedScope := range httpRouteState.Scopes {
@@ -480,7 +483,8 @@ func (apiReconciler *APIReconciler) removeOldOwnerRefsFromHTTPRoute(ctx context.
 			loggers.LoggerAPKOperator.Errorf("error while listing authentication CRs for API CR %s, %s",
 				apiName, err.Error())
 		}
-		for _, backend := range backendList.Items {
+		for item := range backendList.Items {
+			backend := backendList.Items[item]
 			// check backend has similar item inside the apiState.ProdHTTPRoute.Backends
 			backendFound := false
 			for _, attachedBackend := range httpRouteState.BackendMapping {
@@ -559,11 +563,12 @@ func (apiReconciler *APIReconciler) getAuthenticationsForAPI(ctx context.Context
 	}); err != nil {
 		return nil, err
 	}
-	for _, item := range authenticationList.Items {
-		if err := utils.UpdateOwnerReference(ctx, apiReconciler.client, &item, api, true); err != nil {
+	for item := range authenticationList.Items {
+		authenticationListItem := authenticationList.Items[item]
+		if err := utils.UpdateOwnerReference(ctx, apiReconciler.client, &authenticationListItem, api, true); err != nil {
 			return nil, err
 		}
-		authentications[utils.NamespacedName(&item).String()] = item
+		authentications[utils.NamespacedName(&authenticationListItem).String()] = authenticationListItem
 	}
 	return authentications, nil
 }
@@ -578,11 +583,12 @@ func (apiReconciler *APIReconciler) getRatelimitPoliciesForAPI(ctx context.Conte
 	}); err != nil {
 		return nil, err
 	}
-	for _, item := range ratelimitPolicyList.Items {
-		if err := utils.UpdateOwnerReference(ctx, apiReconciler.client, &item, api, true); err != nil {
+	for item := range ratelimitPolicyList.Items {
+		rateLimitPolicy := ratelimitPolicyList.Items[item]
+		if err := utils.UpdateOwnerReference(ctx, apiReconciler.client, &rateLimitPolicy, api, true); err != nil {
 			return nil, err
 		}
-		ratelimitPolicies[utils.NamespacedName(&item).String()] = item
+		ratelimitPolicies[utils.NamespacedName(&rateLimitPolicy).String()] = rateLimitPolicy
 	}
 	return ratelimitPolicies, nil
 }
@@ -619,11 +625,12 @@ func (apiReconciler *APIReconciler) getAuthenticationsForResources(ctx context.C
 	}); err != nil {
 		return nil, err
 	}
-	for _, item := range authenticationList.Items {
-		if err := utils.UpdateOwnerReference(ctx, apiReconciler.client, &item, api, true); err != nil {
+	for item := range authenticationList.Items {
+		authenticationListItem := authenticationList.Items[item]
+		if err := utils.UpdateOwnerReference(ctx, apiReconciler.client, &authenticationListItem, api, true); err != nil {
 			return nil, err
 		}
-		authentications[utils.NamespacedName(&item).String()] = item
+		authentications[utils.NamespacedName(&authenticationListItem).String()] = authenticationListItem
 	}
 	return authentications, nil
 }
@@ -638,11 +645,12 @@ func (apiReconciler *APIReconciler) getRatelimitPoliciesForResources(ctx context
 	}); err != nil {
 		return nil, err
 	}
-	for _, item := range ratelimitPolicyList.Items {
-		if err := utils.UpdateOwnerReference(ctx, apiReconciler.client, &item, api, true); err != nil {
+	for item := range ratelimitPolicyList.Items {
+		rateLimitPolicy := ratelimitPolicyList.Items[item]
+		if err := utils.UpdateOwnerReference(ctx, apiReconciler.client, &rateLimitPolicy, api, true); err != nil {
 			return nil, err
 		}
-		ratelimitpolicies[utils.NamespacedName(&item).String()] = item
+		ratelimitpolicies[utils.NamespacedName(&rateLimitPolicy).String()] = rateLimitPolicy
 	}
 	return ratelimitpolicies, nil
 }
@@ -657,11 +665,12 @@ func (apiReconciler *APIReconciler) getAPIPoliciesForAPI(ctx context.Context,
 	}); err != nil {
 		return nil, err
 	}
-	for _, item := range apiPolicyList.Items {
-		if err := utils.UpdateOwnerReference(ctx, apiReconciler.client, &item, api, true); err != nil {
+	for item := range apiPolicyList.Items {
+		apiPolicy := apiPolicyList.Items[item]
+		if err := utils.UpdateOwnerReference(ctx, apiReconciler.client, &apiPolicy, api, true); err != nil {
 			return nil, err
 		}
-		apiPolicies[utils.NamespacedName(&item).String()] = item
+		apiPolicies[utils.NamespacedName(&apiPolicy).String()] = apiPolicy
 	}
 	return apiPolicies, nil
 }
@@ -692,11 +701,12 @@ func (apiReconciler *APIReconciler) getAPIPoliciesForResources(ctx context.Conte
 	}); err != nil {
 		return nil, err
 	}
-	for _, item := range apiPolicyList.Items {
-		if err := utils.UpdateOwnerReference(ctx, apiReconciler.client, &item, api, true); err != nil {
+	for item := range apiPolicyList.Items {
+		apiPolicy := apiPolicyList.Items[item]
+		if err := utils.UpdateOwnerReference(ctx, apiReconciler.client, &apiPolicy, api, true); err != nil {
 			return nil, err
 		}
-		apiPolicies[utils.NamespacedName(&item).String()] = item
+		apiPolicies[utils.NamespacedName(&apiPolicy).String()] = apiPolicy
 	}
 	return apiPolicies, nil
 }
@@ -864,7 +874,8 @@ func (apiReconciler *APIReconciler) getAPIsForConfigMap(ctx context.Context, obj
 	}
 
 	requests := []reconcile.Request{}
-	for _, backend := range backendList.Items {
+	for item := range backendList.Items {
+		backend := backendList.Items[item]
 		requests = append(requests, apiReconciler.getAPIsForBackend(ctx, &backend)...)
 	}
 	return requests
@@ -888,7 +899,8 @@ func (apiReconciler *APIReconciler) getAPIsForSecret(ctx context.Context, obj k8
 	}
 
 	requests := []reconcile.Request{}
-	for _, backend := range backendList.Items {
+	for item := range backendList.Items {
+		backend := backendList.Items[item]
 		requests = append(requests, apiReconciler.getAPIsForBackend(ctx, &backend)...)
 	}
 	return requests
@@ -985,7 +997,8 @@ func (apiReconciler *APIReconciler) getAPIsForInterceptorService(ctx context.Con
 	}
 
 	requests := []reconcile.Request{}
-	for _, apiPolicy := range apiPolicyList.Items {
+	for item := range apiPolicyList.Items {
+		apiPolicy := apiPolicyList.Items[item]
 		requests = append(requests, apiReconciler.getAPIsForAPIPolicy(ctx, &apiPolicy)...)
 	}
 	return requests
@@ -1009,7 +1022,8 @@ func (apiReconciler *APIReconciler) getAPIsForBackendJWT(ctx context.Context, ob
 	}
 
 	requests := []reconcile.Request{}
-	for _, apiPolicy := range apiPolicyList.Items {
+	for item := range apiPolicyList.Items {
+		apiPolicy := apiPolicyList.Items[item]
 		requests = append(requests, apiReconciler.getAPIsForAPIPolicy(ctx, &apiPolicy)...)
 	}
 	return requests
@@ -1071,7 +1085,8 @@ func (apiReconciler *APIReconciler) getAPIsForScope(ctx context.Context, obj k8c
 		loggers.LoggerAPKOperator.Debugf("HTTPRoutes for scope not found: %s", utils.NamespacedName(scope).String())
 	}
 	requests := []reconcile.Request{}
-	for _, httpRoute := range httpRouteList.Items {
+	for item := range httpRouteList.Items {
+		httpRoute := httpRouteList.Items[item]
 		requests = append(requests, apiReconciler.getAPIForHTTPRoute(ctx, &httpRoute)...)
 	}
 	return requests
@@ -1099,7 +1114,8 @@ func (apiReconciler *APIReconciler) getAPIsForBackend(ctx context.Context, obj k
 	}
 
 	requests := []reconcile.Request{}
-	for _, httpRoute := range httpRouteList.Items {
+	for item := range httpRouteList.Items {
+		httpRoute := httpRouteList.Items[item]
 		requests = append(requests, apiReconciler.getAPIForHTTPRoute(ctx, &httpRoute)...)
 	}
 
@@ -1116,7 +1132,8 @@ func (apiReconciler *APIReconciler) getAPIsForBackend(ctx context.Context, obj k
 		loggers.LoggerAPKOperator.Debugf("InterceptorService for Backend not found: %s", utils.NamespacedName(backend).String())
 	}
 
-	for _, interceptorService := range interceptorServiceList.Items {
+	for item := range interceptorServiceList.Items {
+		interceptorService := interceptorServiceList.Items[item]
 		requests = append(requests, apiReconciler.getAPIsForInterceptorService(ctx, &interceptorService)...)
 	}
 
@@ -1146,7 +1163,8 @@ func (apiReconciler *APIReconciler) getAPIsForGateway(ctx context.Context, obj k
 	}
 
 	requests := []reconcile.Request{}
-	for _, httpRoute := range httpRouteList.Items {
+	for item := range httpRouteList.Items {
+		httpRoute := httpRouteList.Items[item]
 		requests = append(requests, apiReconciler.getAPIForHTTPRoute(ctx, &httpRoute)...)
 	}
 	return requests

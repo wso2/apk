@@ -179,7 +179,8 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) getRatelimitForAPI(ctx con
 		return []reconcile.Request{}
 	}
 
-	for _, ratelimitPolicy := range ratelimitPolicyList.Items {
+	for item := range ratelimitPolicyList.Items {
+		ratelimitPolicy := ratelimitPolicyList.Items[&item]
 		requests = append(requests, ratelimitReconsiler.AddRatelimitRequest(&ratelimitPolicy)...)
 	}
 
@@ -217,7 +218,8 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) getRatelimitForHTTPRoute(c
 	}); err != nil {
 		return []reconcile.Request{}
 	}
-	for _, ratelimitPolicy := range ratelimitPolicyList.Items {
+	for item := range ratelimitPolicyList.Items {
+		ratelimitPolicy := &ratelimitPolicyList.Items[item]
 		requests = append(requests, ratelimitReconsiler.AddRatelimitRequest(&ratelimitPolicy)...)
 	}
 

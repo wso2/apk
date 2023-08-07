@@ -351,7 +351,8 @@ func addApplicationsToChannel(resp *discovery.DiscoveryResponse) {
 
 	}
 	// Send delete events for removed applications
-	for _, application := range applicationMap {
+	for item := range applicationMap {
+		application := applicationMap[item]
 		if !stringutils.StringInSlice(application.Name, newApplicationUUIDs) {
 			// Application delete event
 			event := ApplicationEvent{
@@ -419,7 +420,8 @@ func addSubscriptionsToChannel(resp *discovery.DiscoveryResponse) {
 
 	}
 	// Send delete events for removed subscriptions
-	for _, subscription := range subscriptionMap {
+	for item := range subscriptionMap {
+		subscription := subscriptionMap[item]
 		if !stringutils.StringInSlice(subscription.Name, newSubscriptionUUIDs) {
 			// Subscription delete event
 			event := SubscriptionEvent{
