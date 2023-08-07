@@ -51,7 +51,7 @@ Feature: Test JWT related functionalities
       |429|
       |401|
     And the response body should contain "\"X-Jwt-Assertion\""
-    And the decoded "X-Jwt-Assertion" jwt should contain
+    And the "X-Jwt-Assertion" jwt should validate from JWKS "https://api.am.wso2.com:9095/.wellknown/jwks" and contain
       | claim    | value    |
       | claim1 | value1 |
       | claim2 | value2 |

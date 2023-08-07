@@ -34,6 +34,7 @@ dependencies {
     testImplementation 'io.cucumber:cucumber-java:7.13.0'
     testImplementation 'io.cucumber:cucumber-testng:7.13.0'
     testImplementation 'commons-io:commons-io:2.13.0'
+    testImplementation 'com.nimbusds:nimbus-jose-jwt:9.31'
 }
 
 test {

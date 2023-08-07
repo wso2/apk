@@ -21,6 +21,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
+	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
 // SetupWebhookWithManager creates a new webhook builder for InterceptorService
@@ -49,19 +50,19 @@ func (r *InterceptorService) Default() {
 var _ webhook.Validator = &InterceptorService{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
-func (r *InterceptorService) ValidateCreate() error {
+func (r *InterceptorService) ValidateCreate() (admission.Warnings, error) {
 	// TODO(user): fill in your validation logic upon object creation.
-	return nil
+	return nil, nil
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
-func (r *InterceptorService) ValidateUpdate(old runtime.Object) error {
+func (r *InterceptorService) ValidateUpdate(old runtime.Object) (admission.Warnings, error) {
 	// TODO(user): fill in your validation logic upon object update.
-	return nil
+	return nil, nil
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
-func (r *InterceptorService) ValidateDelete() error {
+func (r *InterceptorService) ValidateDelete() (admission.Warnings, error) {
 	// TODO(user): fill in your validation logic upon object deletion.
-	return nil
+	return nil, nil
 }

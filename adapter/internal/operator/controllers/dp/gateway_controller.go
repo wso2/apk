@@ -86,49 +86,49 @@ func NewGatewayController(mgr manager.Manager, operatorDataStore *synchronizer.O
 		return err
 	}
 
-	if err := c.Watch(&source.Kind{Type: &gwapiv1b1.Gateway{}}, &handler.EnqueueRequestForObject{},
+	if err := c.Watch(source.Kind(mgr.GetCache(), &gwapiv1b1.Gateway{}), &handler.EnqueueRequestForObject{},
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3100, logging.BLOCKER, "Error watching Gateway resources: %v", err))
 		return err
 	}
 
-	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.RateLimitPolicy{}},
+	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha1.RateLimitPolicy{}),
 		handler.EnqueueRequestsFromMapFunc(r.handleCustomRateLimitPolicies), predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3121, logging.BLOCKER, "Error watching Ratelimit resources: %v", err))
 		return err
 	}
 
-	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.APIPolicy{}}, handler.EnqueueRequestsFromMapFunc(r.getGatewaysForAPIPolicy),
+	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha1.APIPolicy{}), handler.EnqueueRequestsFromMapFunc(r.getGatewaysForAPIPolicy),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3101, logging.BLOCKER, "Error watching APIPolicy resources: %v", err))
 		return err
 	}
 
-	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.InterceptorService{}}, handler.EnqueueRequestsFromMapFunc(r.getAPIsForInterceptorService),
+	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha1.InterceptorService{}), handler.EnqueueRequestsFromMapFunc(r.getAPIsForInterceptorService),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3110, logging.BLOCKER, "Error watching InterceptorService resources: %v", err))
 		return err
 	}
 
-	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.BackendJWT{}}, handler.EnqueueRequestsFromMapFunc(r.getAPIsForBackendJWT),
+	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha1.BackendJWT{}), handler.EnqueueRequestsFromMapFunc(r.getAPIsForBackendJWT),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3126, logging.BLOCKER, "Error watching BackendJWT resources: %v", err))
 		return err
 	}
 
-	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.Backend{}}, handler.EnqueueRequestsFromMapFunc(r.getGatewaysForBackend),
+	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha1.Backend{}), handler.EnqueueRequestsFromMapFunc(r.getGatewaysForBackend),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3102, logging.BLOCKER, "Error watching Backend resources: %v", err))
 		return err
 	}
 
-	if err := c.Watch(&source.Kind{Type: &corev1.ConfigMap{}}, handler.EnqueueRequestsFromMapFunc(r.getGatewaysForConfigMap),
+	if err := c.Watch(source.Kind(mgr.GetCache(), &corev1.ConfigMap{}), handler.EnqueueRequestsFromMapFunc(r.getGatewaysForConfigMap),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3103, logging.BLOCKER, "Error watching ConfigMap resources: %v", err))
 		return err
 	}
 
-	if err := c.Watch(&source.Kind{Type: &corev1.Secret{}}, handler.EnqueueRequestsFromMapFunc(r.getGatewaysForSecret),
+	if err := c.Watch(source.Kind(mgr.GetCache(), &corev1.Secret{}), handler.EnqueueRequestsFromMapFunc(r.getGatewaysForSecret),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3104, logging.BLOCKER, "Error watching Secret resources: %v", err))
 		return err
@@ -299,8 +299,7 @@ func (gatewayReconciler *GatewayReconciler) getResolvedBackendsMapping(ctx conte
 
 // getGatewaysForBackend triggers the Gateway controller reconcile method based on the changes detected
 // in backend resources.
-func (gatewayReconciler *GatewayReconciler) getGatewaysForBackend(obj k8client.Object) []reconcile.Request {
-	ctx := context.Background()
+func (gatewayReconciler *GatewayReconciler) getGatewaysForBackend(ctx context.Context, obj k8client.Object) []reconcile.Request {
 	backend, ok := obj.(*dpv1alpha1.Backend)
 	if !ok {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3107, logging.TRIVIAL, "Unexpected object type, bypassing reconciliation: %v", backend))
@@ -318,7 +317,7 @@ func (gatewayReconciler *GatewayReconciler) getGatewaysForBackend(obj k8client.O
 	}
 
 	for _, interceptorService := range interceptorServiceList.Items {
-		requests = append(requests, gatewayReconciler.getAPIsForInterceptorService(&interceptorService)...)
+		requests = append(requests, gatewayReconciler.getAPIsForInterceptorService(ctx, &interceptorService)...)
 	}
 
 	return requests
@@ -326,8 +325,7 @@ func (gatewayReconciler *GatewayReconciler) getGatewaysForBackend(obj k8client.O
 
 // getAPIsForInterceptorService triggers the Gateway controller reconcile method based on the changes detected
 // in InterceptorService resources.
-func (gatewayReconciler *GatewayReconciler) getAPIsForInterceptorService(obj k8client.Object) []reconcile.Request {
-	ctx := context.Background()
+func (gatewayReconciler *GatewayReconciler) getAPIsForInterceptorService(ctx context.Context, obj k8client.Object) []reconcile.Request {
 	interceptorService, ok := obj.(*dpv1alpha1.InterceptorService)
 	if !ok {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3107, logging.TRIVIAL, "Unexpected object type, bypassing reconciliation: %v", interceptorService))
@@ -345,7 +343,7 @@ func (gatewayReconciler *GatewayReconciler) getAPIsForInterceptorService(obj k8c
 	}
 
 	for _, apiPolicy := range apiPolicyList.Items {
-		requests = append(requests, gatewayReconciler.getGatewaysForAPIPolicy(&apiPolicy)...)
+		requests = append(requests, gatewayReconciler.getGatewaysForAPIPolicy(ctx, &apiPolicy)...)
 	}
 
 	return requests
@@ -353,8 +351,7 @@ func (gatewayReconciler *GatewayReconciler) getAPIsForInterceptorService(obj k8c
 
 // getAPIsForBackendJWT triggers the Gateway controller reconcile method based on the changes detected
 // in BackendJWT resources.
-func (gatewayReconciler *GatewayReconciler) getAPIsForBackendJWT(obj k8client.Object) []reconcile.Request {
-	ctx := context.Background()
+func (gatewayReconciler *GatewayReconciler) getAPIsForBackendJWT(ctx context.Context, obj k8client.Object) []reconcile.Request {
 	backendJWT, ok := obj.(*dpv1alpha1.BackendJWT)
 	if !ok {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3107, logging.TRIVIAL, "Unexpected object type, bypassing reconciliation: %v", backendJWT))
@@ -372,7 +369,7 @@ func (gatewayReconciler *GatewayReconciler) getAPIsForBackendJWT(obj k8client.Ob
 	}
 
 	for _, apiPolicy := range apiPolicyList.Items {
-		requests = append(requests, gatewayReconciler.getGatewaysForAPIPolicy(&apiPolicy)...)
+		requests = append(requests, gatewayReconciler.getGatewaysForAPIPolicy(ctx, &apiPolicy)...)
 	}
 
 	return requests
@@ -380,8 +377,7 @@ func (gatewayReconciler *GatewayReconciler) getAPIsForBackendJWT(obj k8client.Ob
 
 // getGatewaysForSecret triggers the Gateway controller reconcile method based on the changes detected
 // in secret resources.
-func (gatewayReconciler *GatewayReconciler) getGatewaysForSecret(obj k8client.Object) []reconcile.Request {
-	ctx := context.Background()
+func (gatewayReconciler *GatewayReconciler) getGatewaysForSecret(ctx context.Context, obj k8client.Object) []reconcile.Request {
 	secret, ok := obj.(*corev1.Secret)
 	if !ok {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3107, logging.TRIVIAL, "Unexpected object type, bypassing reconciliation: %v", secret))
@@ -398,15 +394,14 @@ func (gatewayReconciler *GatewayReconciler) getGatewaysForSecret(obj k8client.Ob
 
 	requests := []reconcile.Request{}
 	for _, backend := range backendList.Items {
-		requests = append(requests, gatewayReconciler.getGatewaysForBackend(&backend)...)
+		requests = append(requests, gatewayReconciler.getGatewaysForBackend(ctx, &backend)...)
 	}
 	return requests
 }
 
 // getGatewaysForConfigMap triggers the API controller reconcile method based on the changes detected
 // in configMap resources.
-func (gatewayReconciler *GatewayReconciler) getGatewaysForConfigMap(obj k8client.Object) []reconcile.Request {
-	ctx := context.Background()
+func (gatewayReconciler *GatewayReconciler) getGatewaysForConfigMap(ctx context.Context, obj k8client.Object) []reconcile.Request {
 	configMap, ok := obj.(*corev1.ConfigMap)
 	if !ok {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3107, logging.TRIVIAL, "Unexpected object type, bypassing reconciliation: %v", configMap))
@@ -423,7 +418,7 @@ func (gatewayReconciler *GatewayReconciler) getGatewaysForConfigMap(obj k8client
 
 	requests := []reconcile.Request{}
 	for _, backend := range backendList.Items {
-		requests = append(requests, gatewayReconciler.getGatewaysForBackend(&backend)...)
+		requests = append(requests, gatewayReconciler.getGatewaysForBackend(ctx, &backend)...)
 	}
 	return requests
 }
@@ -473,7 +468,7 @@ func (gatewayReconciler *GatewayReconciler) handleGatewayStatus(gatewayKey types
 }
 
 // handleCustomRateLimitPolicies returns the list of gateway reconcile requests
-func (gatewayReconciler *GatewayReconciler) handleCustomRateLimitPolicies(obj k8client.Object) []reconcile.Request {
+func (gatewayReconciler *GatewayReconciler) handleCustomRateLimitPolicies(ctx context.Context, obj k8client.Object) []reconcile.Request {
 	ratelimitPolicy, ok := obj.(*dpv1alpha1.RateLimitPolicy)
 	if !ok {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3107, logging.TRIVIAL, "Unexpected object type, bypassing reconciliation: %v", ratelimitPolicy))
@@ -519,7 +514,7 @@ func (gatewayReconciler *GatewayReconciler) getCustomRateLimitPoliciesForGateway
 
 // getGatewaysForAPIPolicy triggers the Gateway controller reconcile method
 // based on the changes detected from APIPolicy objects.
-func (gatewayReconciler *GatewayReconciler) getGatewaysForAPIPolicy(obj k8client.Object) []reconcile.Request {
+func (gatewayReconciler *GatewayReconciler) getGatewaysForAPIPolicy(ctx context.Context, obj k8client.Object) []reconcile.Request {
 	apiPolicy, ok := obj.(*dpv1alpha1.APIPolicy)
 	if !ok {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3107, logging.TRIVIAL, "Unexpected object type, bypassing reconciliation: %v", apiPolicy))

@@ -35,6 +35,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
+	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
 var c client.Client
@@ -64,20 +65,20 @@ func (r *API) Default() {
 var _ webhook.Validator = &API{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
-func (r *API) ValidateCreate() error {
-	return r.validateAPI()
+func (r *API) ValidateCreate() (admission.Warnings, error) {
+	return nil, r.validateAPI()
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
-func (r *API) ValidateUpdate(old runtime.Object) error {
-	return r.validateAPI()
+func (r *API) ValidateUpdate(old runtime.Object) (admission.Warnings, error) {
+	return nil, r.validateAPI()
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
-func (r *API) ValidateDelete() error {
+func (r *API) ValidateDelete() (admission.Warnings, error) {
 
 	// TODO(user): fill in your validation logic upon object deletion.
-	return nil
+	return nil, nil
 }
 
 // validateAPI validate api crd fields

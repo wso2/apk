@@ -54,6 +54,7 @@ Feature: Test simple rate limit feature
     And I send "GET" request to "https://default.gw.wso2.com:9095/simple-rl-r/3.14/employee/" with body ""
     Then the response status code should be 200
 
+
   Scenario Outline: Undeploy API
     Given The system is ready
     And I have a valid subscription
