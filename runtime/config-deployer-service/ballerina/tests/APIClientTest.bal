@@ -240,7 +240,6 @@ public isolated function testAPILevelRateLimitConfigGenerationFromAPKConf() retu
     model:APIArtifact apiArtifact = check apiClient.prepareArtifact(body.apkConfiguration, body.definitionFile);
 
     model:RateLimitData rateLimitData = {
-        organization: "wso2",
         api: {
             requestsPerUnit: 5,
             unit: "Minute"
@@ -266,7 +265,6 @@ public isolated function testOperationLevelRateLimitConfigGenerationFromAPKConf(
     model:APIArtifact apiArtifact = check apiClient.prepareArtifact(body.apkConfiguration, body.definitionFile);
 
     model:RateLimitData rateLimitData = {
-        organization: "wso2",
         api: {
             requestsPerUnit: 10,
             unit: "Hour"
@@ -332,9 +330,8 @@ public isolated function testBackendRetryAndTimeoutGenerationFromAPKConf() retur
         statusCodes: [504]
     };
     model:Timeout? timeoutConfigExpected = {
-        maxRouteTimeoutSeconds: 60,
-        routeIdleTimeoutSeconds: 400,
-        routeTimeoutSeconds: 40
+        downstreamRequestIdleTimeout: 400,
+        upstreamResponseTimeout: 40
     };
     model:CircuitBreaker? circuitBreakerConfigExpected = {
         maxConnectionPools: 200,

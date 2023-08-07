@@ -15,9 +15,8 @@ endpointConfigurations:
             maxRequests: 100
             maxRetries: 5
           timeout:
-            maxRouteTimeoutSeconds: 60
-            routeIdleTimeoutSeconds: 400
-            routeTimeoutSeconds: 40
+            downstreamRequestIdleTimeout: 400
+            upstreamResponseTimeout: 40
           retryPolicy:
             count: 3
             baseIntervalMillis: 1000

@@ -30,7 +30,6 @@ public type RateLimitSpec record {|
 
 public type RateLimitData record {
     APIRateLimitDetails api?;
-    string organization;
 };
 
 public type APIRateLimitDetails record {|
