@@ -240,8 +240,9 @@ func (gatewayReconciler *GatewayReconciler) getAPIPoliciesForGateway(ctx context
 	}); err != nil {
 		return nil, err
 	}
-	for _, apipolicy := range apiPolicyList.Items {
-		apiPolicies[utils.NamespacedName(&apipolicy).String()] = apipolicy
+	for item := range apiPolicyList.Items {
+		apiPolicy := apiPolicyList.Items[item]
+		apiPolicies[utils.NamespacedName(&apiPolicy).String()] = apiPolicy
 	}
 	return apiPolicies, nil
 }
@@ -316,7 +317,8 @@ func (gatewayReconciler *GatewayReconciler) getGatewaysForBackend(ctx context.Co
 		return []reconcile.Request{}
 	}
 
-	for _, interceptorService := range interceptorServiceList.Items {
+	for service := range interceptorServiceList.Items {
+		interceptorService := interceptorServiceList.Items[service]
 		requests = append(requests, gatewayReconciler.getAPIsForInterceptorService(ctx, &interceptorService)...)
 	}
 
@@ -342,7 +344,8 @@ func (gatewayReconciler *GatewayReconciler) getAPIsForInterceptorService(ctx con
 		return []reconcile.Request{}
 	}
 
-	for _, apiPolicy := range apiPolicyList.Items {
+	for item := range apiPolicyList.Items {
+		apiPolicy := apiPolicyList.Items[item]
 		requests = append(requests, gatewayReconciler.getGatewaysForAPIPolicy(ctx, &apiPolicy)...)
 	}
 
@@ -368,7 +371,8 @@ func (gatewayReconciler *GatewayReconciler) getAPIsForBackendJWT(ctx context.Con
 		return []reconcile.Request{}
 	}
 
-	for _, apiPolicy := range apiPolicyList.Items {
+	for item := range apiPolicyList.Items {
+		apiPolicy := apiPolicyList.Items[item]
 		requests = append(requests, gatewayReconciler.getGatewaysForAPIPolicy(ctx, &apiPolicy)...)
 	}
 
@@ -393,7 +397,8 @@ func (gatewayReconciler *GatewayReconciler) getGatewaysForSecret(ctx context.Con
 	}
 
 	requests := []reconcile.Request{}
-	for _, backend := range backendList.Items {
+	for item := range backendList.Items {
+		backend := backendList.Items[item]
 		requests = append(requests, gatewayReconciler.getGatewaysForBackend(ctx, &backend)...)
 	}
 	return requests
@@ -417,7 +422,8 @@ func (gatewayReconciler *GatewayReconciler) getGatewaysForConfigMap(ctx context.
 	}
 
 	requests := []reconcile.Request{}
-	for _, backend := range backendList.Items {
+	for item := range backendList.Items {
+		backend := backendList.Items[item]
 		requests = append(requests, gatewayReconciler.getGatewaysForBackend(ctx, &backend)...)
 	}
 	return requests
