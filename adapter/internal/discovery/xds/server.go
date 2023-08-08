@@ -243,7 +243,6 @@ func GetEnforcerThrottleDataCache() wso2_cache.SnapshotCache {
 
 // DeleteAPICREvent deletes API with the given UUID from the given gw environments
 func DeleteAPICREvent(labels []string, apiUUID string, organizationID string) error {
-	logging.SetValueToLogContext("API_UUID", apiUUID)
 	mutexForInternalMapUpdate.Lock()
 	defer mutexForInternalMapUpdate.Unlock()
 
@@ -256,27 +255,27 @@ func DeleteAPICREvent(labels []string, apiUUID string, organizationID string) er
 	delete(orgIDAPIvHostsMap[organizationID], sandvHostIdentifier)
 	for _, vhost := range vHosts {
 		apiIdentifier := GenerateIdentifierForAPIWithUUID(vhost, apiUUID)
-		if err := deleteAPI(apiIdentifier, labels, organizationID); err != nil {
+		if err := deleteAPI(apiUUID, apiIdentifier, labels, organizationID); err != nil {
 			logger.LoggerXds.ErrorC(logging.PrintError(logging.Error1410, logging.MAJOR, "Error undeploying API %v of Organization %v from environments %v, error: %v", apiIdentifier, organizationID, labels, err.Error()))
 			return err
 		}
 		// if no error, update internal vhost maps
 		// error only happens when API not found in deleteAPI func
 		logger.LoggerXds.Infof("Successfully undeployed the API %v under Organization %s and environment %s, API_UUID: %v ",
-			apiIdentifier, organizationID, labels, logging.GetValueFromLogContext("API_UUID"))
+			apiIdentifier, organizationID, labels, apiUUID)
 	}
 	return nil
 }
 
 // deleteAPI deletes an API, its resources and updates the caches of given environments
-func deleteAPI(apiIdentifier string, environments []string, organizationID string) error {
+func deleteAPI(apiUUID string, apiIdentifier string, environments []string, organizationID string) error {
 	if _, orgExists := orgAPIMap[organizationID]; orgExists {
 		if _, apiExists := orgAPIMap[organizationID][apiIdentifier]; !apiExists {
-			logger.LoggerXds.Infof("Unable to delete API: %v from Organization: %v. API Does not exist. API_UUID: %v", apiIdentifier, organizationID, logging.GetValueFromLogContext("API_UUID"))
+			logger.LoggerXds.Infof("Unable to delete API: %v from Organization: %v. API Does not exist. API_UUID: %v", apiIdentifier, organizationID, apiUUID)
 			return errors.New(constants.NotFound)
 		}
 	} else {
-		logger.LoggerXds.Infof("Unable to delete API: %v from Organization: %v. Organization Does not exist. API_UUID: %v", apiIdentifier, organizationID, logging.GetValueFromLogContext("API_UUID"))
+		logger.LoggerXds.Infof("Unable to delete API: %v from Organization: %v. Organization Does not exist. API_UUID: %v", apiIdentifier, organizationID, apiUUID)
 		return errors.New(constants.NotFound)
 	}
 
@@ -293,7 +292,7 @@ func deleteAPI(apiIdentifier string, environments []string, organizationID strin
 				return nil
 			}
 			logger.LoggerXds.Infof("API identifier: %v does not have any gateways. Hence deleting the API from label : %s. API_UUID: %v",
-				apiIdentifier, val, logging.GetValueFromLogContext("API_UUID"))
+				apiIdentifier, val, apiUUID)
 			cleanMapResources(apiIdentifier, organizationID, toBeDelEnvs)
 			return nil
 		}
@@ -533,7 +532,7 @@ func updateXdsCache(label string, endpoints []types.Resource, clusters []types.R
 		logger.LoggerXds.ErrorC(logging.PrintError(logging.Error1414, logging.MAJOR, "Error while setting the snapshot : %v", errSetSnap.Error()))
 		return false
 	}
-	logger.LoggerXds.Infof("New Router cache updated for the label: "+label+" version: "+fmt.Sprint(version)+", API_UUID: %v", logging.GetValueFromLogContext("API_UUID"))
+	logger.LoggerXds.Infof("New Router cache updated for the label: "+label+" version: "+fmt.Sprint(version))
 	return true
 }
 
@@ -581,7 +580,7 @@ func UpdateEnforcerApis(label string, apis []types.Resource, version string) {
 	if errSetSnap != nil {
 		logger.LoggerXds.ErrorC(logging.PrintError(logging.Error1414, logging.MAJOR, "Error while setting the snapshot : %v", errSetSnap.Error()))
 	}
-	logger.LoggerXds.Infof("New API cache update for the label: "+label+" version: "+fmt.Sprint(version)+", API_UUID: %v", logging.GetValueFromLogContext("API_UUID"))
+	logger.LoggerXds.Infof("New API cache update for the label: "+label+" version: "+fmt.Sprint(version))
 
 	subAPIs := []*subscription.APIs{}
 	for _, api := range apis {
@@ -665,7 +664,7 @@ func UpdateEnforcerJWTIssuers(jwtIssuers *subscription.JWTIssuerList) {
 
 // UpdateEnforcerAPIList sets new update to the enforcer's Apis
 func UpdateEnforcerAPIList(label string, apis *subscription.APIList) {
-	logger.LoggerXds.Debugf("Updating Enforcer API Cache, API_UUID: %v", logging.GetValueFromLogContext("API_UUID"))
+	logger.LoggerXds.Debugf("Updating Enforcer API Cache")
 	apiList := append(enforcerLabelMap[label].apiList, apis)
 
 	version := rand.Intn(maxRandomInt)
@@ -679,7 +678,7 @@ func UpdateEnforcerAPIList(label string, apis *subscription.APIList) {
 		logger.LoggerXds.ErrorC(logging.PrintError(logging.Error1414, logging.MAJOR, "Error while setting the snapshot : %v", errSetSnap.Error()))
 	}
 	enforcerLabelMap[label].apiList = apiList
-	logger.LoggerXds.Infof("New API List cache update for the label: "+label+" version: "+fmt.Sprint(version)+", API_UUID: %v", logging.GetValueFromLogContext("API_UUID"))
+	logger.LoggerXds.Infof("New API List cache update for the label: "+label+" version: "+fmt.Sprint(version))
 }
 
 // UpdateEnforcerApplicationPolicies sets new update to the enforcer's Application Policies
@@ -881,7 +880,8 @@ func UpdateAPICache(vHosts []string, newLabels []string, newlistenersForRoutes [
 
 	// Create internal mappigs for new vHosts
 	for _, vHost := range vHosts {
-		apiIdentifier := GenerateIdentifierForAPIWithUUID(vHost, adapterInternalAPI.UUID)
+		apiUUID := adapterInternalAPI.UUID
+		apiIdentifier := GenerateIdentifierForAPIWithUUID(vHost, apiUUID)
 		var oldLabels []string
 		var orgExists bool
 		if _, orgExists = orgAPIMap[adapterInternalAPI.GetOrganizationID()]; orgExists {
@@ -896,7 +896,7 @@ func UpdateAPICache(vHosts []string, newLabels []string, newlistenersForRoutes [
 		if err != nil {
 			return fmt.Errorf("error while deploying API. Name: %s Version: %s, OrgID: %s, API_UUID: %v, Error: %s",
 				adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), adapterInternalAPI.GetOrganizationID(),
-				logging.GetValueFromLogContext("API_UUID"), err.Error())
+				apiUUID, err.Error())
 		}
 		if !orgExists {
 			orgAPIMap[adapterInternalAPI.GetOrganizationID()] = make(map[string]*EnvoyInternalAPI)
@@ -917,7 +917,7 @@ func UpdateAPICache(vHosts []string, newLabels []string, newlistenersForRoutes [
 		}
 
 		revisionStatus := updateXdsCacheOnAPIChange(oldLabels, newLabels)
-		logger.LoggerXds.Infof("Deployed Revision: %v:%v, API_UUID: %v", apiIdentifier, revisionStatus, logging.GetValueFromLogContext("API_UUID"))
+		logger.LoggerXds.Infof("Deployed Revision: %v:%v, API_UUID: %v", apiIdentifier, revisionStatus, apiUUID)
 	}
 	return nil
 }

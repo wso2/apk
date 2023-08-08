@@ -25,7 +25,7 @@ import (
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/discovery/xds"
 	"github.com/wso2/apk/adapter/internal/loggers"
-	internalLogging "github.com/wso2/apk/adapter/internal/logging"
+	// internalLogging "github.com/wso2/apk/adapter/internal/logging"
 	"github.com/wso2/apk/adapter/internal/operator/constants"
 	"github.com/wso2/apk/adapter/internal/operator/status"
 	"github.com/wso2/apk/adapter/internal/operator/synchronizer"
@@ -220,31 +220,32 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.13.0/pkg/reconcile
 func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	applyAllAPIsOnce.Do(apiReconciler.applyStartupAPIs)
-	loggers.LoggerAPKOperator.Infof("Reconciling for API %s with API UUID %v", req.NamespacedName.String(), internalLogging.GetValueFromLogContext("API_UUID"))
+
 	// Check whether the API CR exist, if not consider as a DELETE event.
 	var apiCR dpv1alpha1.API
+	loggers.LoggerAPKOperator.Infof("Reconciling for API %s with API UUID %v", req.NamespacedName.String(), string(apiCR.ObjectMeta.UID))
 	if err := apiReconciler.client.Get(ctx, req.NamespacedName, &apiCR); err != nil {
 		apiState, found := apiReconciler.ods.GetCachedAPI(req.NamespacedName)
 		if found && k8error.IsNotFound(err) {
 			// The api doesn't exist in the api Cache, remove it
 			apiReconciler.ods.DeleteCachedAPI(req.NamespacedName)
 			loggers.LoggerAPKOperator.Infof("Delete event received for API : %s with API UUID : %v, hence deleted from API cache",
-				req.NamespacedName.String(), internalLogging.GetValueFromLogContext("API_UUID"))
+				req.NamespacedName.String(), string(apiCR.ObjectMeta.UID))
 			*apiReconciler.ch <- synchronizer.APIEvent{EventType: constants.Delete, Event: apiState}
 			return ctrl.Result{}, nil
 		}
 		loggers.LoggerAPKOperator.Warnf("Api CR related to the reconcile request with key: %s returned error. Assuming API with API UUID : %v is already deleted, hence ignoring the error : %v",
-			req.NamespacedName.String(), err, internalLogging.GetValueFromLogContext("API_UUID"))
+			req.NamespacedName.String(), string(apiCR.ObjectMeta.UID), err)
 		return ctrl.Result{}, nil
 	}
 
 	if apiState, err := apiReconciler.resolveAPIRefs(ctx, apiCR); err != nil {
 		loggers.LoggerAPKOperator.Warnf("Error retrieving ref CRs for API in namespace : %s with API UUID : %v, %v",
-			req.NamespacedName.String(), internalLogging.GetValueFromLogContext("API_UUID"), err)
+			req.NamespacedName.String(), string(apiCR.ObjectMeta.UID), err)
 		return ctrl.Result{}, err
 	} else if apiState != nil {
 		loggers.LoggerAPKOperator.Infof("Ready to deploy CRs for API in namespace : %s with API UUID : %v, %v",
-			req.NamespacedName.String(), internalLogging.GetValueFromLogContext("API_UUID"), err)
+			req.NamespacedName.String(), string(apiCR.ObjectMeta.UID), err)
 		*apiReconciler.ch <- *apiState
 	}
 	return ctrl.Result{}, nil
@@ -261,7 +262,7 @@ func (apiReconciler *APIReconciler) applyStartupAPIs() {
 	for _, api := range apisList {
 		if apiState, err := apiReconciler.resolveAPIRefs(ctx, api); err != nil {
 			loggers.LoggerAPKOperator.Warnf("Error retrieving ref CRs for API : %s in namespace : %s with API UUID : %v, %v",
-				api.Name, api.Namespace, internalLogging.GetValueFromLogContext("API_UUID"), err)
+				api.Name, api.Namespace, string(api.ObjectMeta.UID), err)
 		} else if apiState != nil {
 			*apiReconciler.ch <- *apiState
 		}
@@ -313,39 +314,39 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 	namespace := api.Namespace
 	if apiState.Authentications, err = apiReconciler.getAuthenticationsForAPI(ctx, api); err != nil {
 		return nil, fmt.Errorf("error while getting API level auth for API : %s in namespace : %s with API UUID : %v, %s",
-			apiRef.String(), namespace, internalLogging.GetValueFromLogContext("API_UUID"), err.Error())
+			apiRef.String(), namespace, string(api.ObjectMeta.UID), err.Error())
 	}
 	if apiState.RateLimitPolicies, err = apiReconciler.getRatelimitPoliciesForAPI(ctx, api); err != nil {
 		return nil, fmt.Errorf("error while getting API level ratelimit for API : %s in namespace : %s with API UUID : %v, %s",
-			apiRef.String(), namespace, internalLogging.GetValueFromLogContext("API_UUID"), err.Error())
+			apiRef.String(), namespace, string(api.ObjectMeta.UID), err.Error())
 	}
 	if apiState.APIPolicies, err = apiReconciler.getAPIPoliciesForAPI(ctx, api); err != nil {
 		return nil, fmt.Errorf("error while getting API level apipolicy for API : %s in namespace : %s with API UUID : %v, %s",
-			apiRef.String(), namespace, internalLogging.GetValueFromLogContext("API_UUID"), err.Error())
+			apiRef.String(), namespace, string(api.ObjectMeta.UID), err.Error())
 	}
 
 	if apiState.ResourceAuthentications, err = apiReconciler.getAuthenticationsForResources(ctx, api); err != nil {
 		return nil, fmt.Errorf("error while getting httproute resource auth : %s in namespace : %s with API UUID : %v, %s",
-			apiRef.String(), namespace, internalLogging.GetValueFromLogContext("API_UUID"), err.Error())
+			apiRef.String(), namespace, string(api.ObjectMeta.UID), err.Error())
 	}
 	if apiState.ResourceRateLimitPolicies, err = apiReconciler.getRatelimitPoliciesForResources(ctx, api); err != nil {
 		return nil, fmt.Errorf("error while getting httproute resource ratelimit : %s in namespace : %s with API UUID : %v, %s",
-			apiRef.String(), namespace, internalLogging.GetValueFromLogContext("API_UUID"), err.Error())
+			apiRef.String(), namespace, string(api.ObjectMeta.UID), err.Error())
 	}
 	if apiState.ResourceAPIPolicies, err = apiReconciler.getAPIPoliciesForResources(ctx, api); err != nil {
 		return nil, fmt.Errorf("error while getting httproute resource apipolicy %s in namespace : %s with API UUID : %v, %s",
-			apiRef.String(), namespace, internalLogging.GetValueFromLogContext("API_UUID"), err.Error())
+			apiRef.String(), namespace, string(api.ObjectMeta.UID), err.Error())
 	}
 	if apiState.InterceptorServiceMapping, apiState.BackendJWTMapping, err =
 		apiReconciler.getAPIPolicyChildrenRefs(ctx, apiState.APIPolicies, apiState.ResourceAPIPolicies,
 			api); err != nil {
 		return nil, fmt.Errorf("error while getting interceptor services %s in namespace : %s with API UUID : %v, %s",
-			apiRef.String(), namespace, internalLogging.GetValueFromLogContext("API_UUID"), err.Error())
+			apiRef.String(), namespace, string(api.ObjectMeta.UID), err.Error())
 	}
 	if api.Spec.DefinitionFileRef != "" {
 		if apiState.APIDefinitionFile, err = apiReconciler.getAPIDefinitionForAPI(ctx, api.Spec.DefinitionFileRef, namespace, api); err != nil {
 			return nil, fmt.Errorf("error while getting api definition file of api %s in namespace : %s with API UUID : %v, %s",
-				apiRef.String(), namespace, internalLogging.GetValueFromLogContext("API_UUID"), err.Error())
+				apiRef.String(), namespace, string(api.ObjectMeta.UID), err.Error())
 		}
 	}
 
@@ -393,7 +394,7 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 		apiReconciler.ods.UpdateAPIState(apiRef, apiState); updated {
 		apiReconciler.removeOldOwnerRefs(ctx, cachedAPI)
 		loggers.LoggerAPI.Infof("API CR %s with API UUID : %v is updated on %v", apiRef.String(),
-			internalLogging.GetValueFromLogContext("API_UUID"), events)
+			string(api.ObjectMeta.UID), events)
 		return &synchronizer.APIEvent{EventType: constants.Update, Event: cachedAPI, UpdatedEvents: events}, nil
 	}
 
@@ -849,7 +850,7 @@ func (apiReconciler *APIReconciler) getAPIForHTTPRoute(ctx context.Context, obj 
 		}
 		requests = append(requests, req)
 		loggers.LoggerAPKOperator.Infof("Adding reconcile request for API: %s/%s with API UUID: %v", api.Namespace, api.Name,
-			internalLogging.GetValueFromLogContext("API_UUID"))
+			string(api.ObjectMeta.UID))
 	}
 	return requests
 }
@@ -936,8 +937,7 @@ func (apiReconciler *APIReconciler) getAPIsForAuthentication(ctx context.Context
 		},
 	}
 	requests = append(requests, req)
-	loggers.LoggerAPKOperator.Infof("Adding reconcile request for API: %s/%s with API UUID: %v", string(authentication.Spec.TargetRef.Name), namespace,
-		internalLogging.GetValueFromLogContext("API_UUID"))
+	loggers.LoggerAPKOperator.Infof("Adding reconcile request for API: %s/%s", string(authentication.Spec.TargetRef.Name), namespace)
 
 	return requests
 }
@@ -971,8 +971,7 @@ func (apiReconciler *APIReconciler) getAPIsForAPIPolicy(ctx context.Context, obj
 			Namespace: namespace},
 	}
 	requests = append(requests, req)
-	loggers.LoggerAPKOperator.Infof("Adding reconcile request for API: %s/%s with API UUID: %v", string(apiPolicy.Spec.TargetRef.Name), namespace,
-		internalLogging.GetValueFromLogContext("API_UUID"))
+	loggers.LoggerAPKOperator.Infof("Adding reconcile request for API: %s/%s", string(apiPolicy.Spec.TargetRef.Name), namespace)
 
 	return requests
 }
@@ -1054,8 +1053,7 @@ func (apiReconciler *APIReconciler) getAPIsForRateLimitPolicy(ctx context.Contex
 			Namespace: namespace},
 	}
 	requests = append(requests, req)
-	loggers.LoggerAPKOperator.Infof("Adding reconcile request for API: %s/%s with API UUID: %v", string(ratelimitPolicy.Spec.TargetRef.Name), namespace,
-		internalLogging.GetValueFromLogContext("API_UUID"))
+	loggers.LoggerAPKOperator.Infof("Adding reconcile request for API: %s/%s", string(ratelimitPolicy.Spec.TargetRef.Name), namespace)
 
 	return requests
 }

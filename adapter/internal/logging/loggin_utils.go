@@ -43,30 +43,6 @@ func InitializeContext() {
 	logContext = context.Background()
 }
 
-// SetValueToLogContext used to set values to logContext
-func SetValueToLogContext(key logContextKey, value interface{}) {
-	if logContext == nil {
-		InitializeContext()
-	}
-	logContext = SetValueToContext(logContext, key, value)
-}
-
-// GetValueFromLogContext used to retrieve values from logContext
-func GetValueFromLogContext(key logContextKey) interface{} {
-	if logContext == nil {
-		return nil
-	}
-	return GetValueFromContext(logContext, key)
-}
-
-// RemoveValueFromLogContext used to remove values from logContext
-func RemoveValueFromLogContext(key logContextKey) {
-	if logContext == nil {
-		return
-	}
-	logContext = SetValueToContext(logContext, key, nil)
-}
-
 // GetErrorMessageByCode retrieve the error message corresponds to the provided error code
 func GetErrorMessageByCode(code int) string {
 	errorLog, ok := Mapper[code]

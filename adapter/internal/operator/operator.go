@@ -153,5 +153,4 @@ func InitOperator() {
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2604, logging.BLOCKER, "Problem running manager: %v", err))
 	}
-	internalLogging.RemoveValueFromLogContext("API_UUID")
 }

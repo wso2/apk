@@ -85,7 +85,8 @@ func (r *rateLimitPolicyCache) AddAPILevelRateLimitPolicies(vHosts []string, ada
 			method := operation.GetMethod()
 			if _, ok := apiOperations[path][method]; ok {
 				// Unreachable if the swagger definition is valid
-				loggers.LoggerXds.Warnf("Duplicate API resource HTTP method %q %q in the swagger definition, skipping rate limit policy for the duplicate resource. API_UUID: %v", path, method, logging.GetValueFromLogContext("API_UUID"))
+				loggers.LoggerXds.Warnf("Duplicate API resource HTTP method %q %q in the swagger definition, skipping rate limit policy for the duplicate resource. API_UUID: %v",
+					path, method, adapterInternalAPI.UUID)
 				continue
 			}
 
@@ -231,7 +232,7 @@ func (r *rateLimitPolicyCache) updateXdsCache(label string) bool {
 		loggers.LoggerXds.ErrorC(logging.PrintError(logging.Error1716, logging.MAJOR, "Error while updating the rate limit snapshot, error: %v", err.Error()))
 		return false
 	}
-	loggers.LoggerXds.Infof("New rate limit cache updated for the label: %q version: %q, API_UUID: %v", label, version, logging.GetValueFromLogContext("API_UUID"))
+	loggers.LoggerXds.Infof("New rate limit cache updated for the label: %q version: %q", label, version)
 	loggers.LoggerXds.Debug("Updated rate limit config: ", rlsConf)
 	return true
 }
