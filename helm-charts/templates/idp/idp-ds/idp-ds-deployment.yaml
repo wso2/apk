@@ -93,17 +93,6 @@ spec:
               mountPath: /home/wso2apk/idp/security/database/
             - name: tmp
               mountPath: /tmp
-          env:
-            - name: DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  {{ if and .Values.wso2.apk.idp.database .Values.wso2.apk.idp.database.secretName }}
-                  name: "{{ .Values.idp.database.secretName}}"
-                  key: "{{ .Values.idp.database.secretKey}}"
-                  {{ else }}
-                  name: "apk-db-secret"
-                  key: "DB_PASSWORD"
-                  {{ end }}
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
