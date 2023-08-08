@@ -69,7 +69,7 @@ var BackendJWTGenerationPolicy = suite.IntegrationTest{
 		gwAddr := "api-policy-with-jwt-generator.test.gw.wso2.com:9095"
 		token := http.GetTestToken(t)
 
-		yamlFile, err := ioutil.ReadFile(filePathToResource)
+		yamlFile, err := ioutil.ReadFile(filePath.Clean(filePathToResource))
 
 		if err != nil {
 			t.Error(err)

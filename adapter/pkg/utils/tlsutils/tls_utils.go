@@ -73,7 +73,7 @@ func GetTrustedCertPool(truststoreLocation string) *x509.CertPool {
 			} else {
 				if !info.IsDir() && (filepath.Ext(info.Name()) == pemExtension ||
 					filepath.Ext(info.Name()) == crtExtension) {
-					caCert, caCertErr := ioutil.ReadFile(path)
+					caCert, caCertErr := ioutil.ReadFile(filepath.Clean(path))
 					if caCertErr != nil {
 						logger.LoggerTLSUtils.Warn("Error while reading the certificate file.", info.Name())
 					}
