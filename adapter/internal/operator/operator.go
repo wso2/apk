@@ -120,26 +120,6 @@ func InitOperator() {
 		loggers.LoggerAPKOperator.Errorf("Failed to add status update handler %v", err)
 	}
 
-	// if err = (&dpv1alpha1.API{}).SetupWebhookWithManager(mgr); err != nil {
-	// 	loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2601, err))
-	// }
-
-	// if err = (&dpv1alpha1.RateLimitPolicy{}).SetupWebhookWithManager(mgr); err != nil {
-	// 	loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2637, err))
-	// }
-
-	// if err = (&dpv1alpha1.APIPolicy{}).SetupWebhookWithManager(mgr); err != nil {
-	// 	loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2638, err))
-	// }
-
-	// if err = (&dpv1alpha1.InterceptorService{}).SetupWebhookWithManager(mgr); err != nil {
-	// 	loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2652, err))
-	// }
-
-	// if err = (&dpv1alpha1.Backend{}).SetupWebhookWithManager(mgr); err != nil {
-	// 	loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2655, err))
-	// }
-
 	if err := dpcontrollers.NewGatewayController(mgr, operatorDataStore, updateHandler, &gatewaych); err != nil {
 		loggers.LoggerAPKOperator.Errorf("Error creating Gateway controller: %v", err)
 	}

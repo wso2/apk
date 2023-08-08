@@ -21,7 +21,7 @@ package v1alpha1
 type CustomRateLimitPolicyDef struct {
 	Key             string `json:"key,omitempty"`
 	Value           string `json:"value,omitempty"`
-	RequestsPerUnit int    `json:"requestsPerUnit,omitempty"`
+	RequestsPerUnit uint32 `json:"requestsPerUnit,omitempty"`
 
 	Unit string `json:"unit,omitempty"`
 	// RateLimit    RateLimit `json:"rateLimit,omitempty"`
@@ -35,6 +35,6 @@ func ParseCustomRateLimitPolicy(customRateLimitCR RateLimitPolicy) *CustomRateLi
 		Value:           customRateLimitCR.Spec.Override.Custom.Value,
 		RequestsPerUnit: customRateLimitCR.Spec.Override.Custom.RequestsPerUnit,
 		Unit:            customRateLimitCR.Spec.Override.Custom.Unit,
-		Organization:    customRateLimitCR.Spec.Override.Organization,
+		Organization:    customRateLimitCR.Spec.Override.Custom.Organization,
 	}
 }

@@ -1,18 +1,19 @@
 /*
-Copyright 2023.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
+ *  Copyright (c) 2023, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ */
 
 package v1alpha1
 
@@ -20,9 +21,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1alpha2"
 )
-
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
 // RateLimitPolicySpec defines the desired state of RateLimitPolicy
 type RateLimitPolicySpec struct {
@@ -33,27 +31,24 @@ type RateLimitPolicySpec struct {
 
 // RateLimitAPIPolicy defines the desired state of Policy
 type RateLimitAPIPolicy struct {
-	// API policy
+
+	// API level ratelimit policy
 	//
 	// +optional
 	API *APIRateLimitPolicy `json:"api,omitempty"`
 
-	// Custom policy
+	// Custom ratelimit policy
 	//
 	// +optional
 	Custom *CustomRateLimitPolicy `json:"custom,omitempty"`
-
-	// Organization is the organization of the policy
-	//
-	// +optional
-	Organization string `json:"organization,omitempty"`
 }
 
 // APIRateLimitPolicy defines the desired state of APIPolicy
 type APIRateLimitPolicy struct {
 	// RequestPerUnit is the number of requests allowed per unit time
 	//
-	RequestsPerUnit int `json:"requestsPerUnit,omitempty"`
+	// +kubeBuilder:validation:Minimum=1
+	RequestsPerUnit uint32 `json:"requestsPerUnit,omitempty"`
 
 	// Unit is the unit of the requestsPerUnit
 	//
@@ -63,9 +58,10 @@ type APIRateLimitPolicy struct {
 
 // CustomRateLimitPolicy defines the desired state of CustomPolicy
 type CustomRateLimitPolicy struct {
-	// RateLimit is the rate limit for the API
+	// RequestPerUnit is the number of requests allowed per unit time
 	//
-	RequestsPerUnit int `json:"requestsPerUnit,omitempty"`
+	// +kubeBuilder:validation:Minimum=1
+	RequestsPerUnit uint32 `json:"requestsPerUnit,omitempty"`
 
 	// Unit is the unit of the requestsPerUnit
 	//
@@ -81,6 +77,11 @@ type CustomRateLimitPolicy struct {
 	//
 	// +optional
 	Value string `json:"value,omitempty"`
+
+	// Organization is the organization of the policy
+	//
+	// +kubeBuilder:validation:MinLength=1
+	Organization string `json:"organization,omitempty"`
 }
 
 // RateLimitPolicyStatus defines the observed state of RateLimitPolicy
