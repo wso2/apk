@@ -1,4 +1,3 @@
-import ballerina/os;
 //
 // Copyright (c) 2023, WSO2 LLC. (http://www.wso2.com).
 //
@@ -16,6 +15,9 @@ import ballerina/os;
 // specific language governing permissions and limitations
 // under the License.
 //
+
+import ballerina/io;
+import ballerina/log;
 
 # Description
 #
@@ -72,7 +74,7 @@ public type DatasourceConfiguration record {
     string description;
     string url;
     string username;
-    string password = os:getEnv("DB_PASSWORD");
+    string password = getPassword();
     string host;
     int port;
     string databaseName;
@@ -99,3 +101,12 @@ public type TokenIssuerConfiguration record {|
     decimal expTime = 3600;
     decimal refrshTokenValidity = 86400;
 |};
+
+public isolated function getPassword() returns string {
+    string|error password = io:fileReadString("/home/wso2apk/idp/security/database/db-password");
+    if (password is error) {
+        log:printError("Error while reading the password");
+        return "";
+    }
+    return password;
+};
