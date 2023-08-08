@@ -80,10 +80,13 @@ spec:
               mountPath: /home/wso2apk/config-deployer/security/partition-server.pem
               subPath: {{.Values.wso2.apk.dp.partitionServer.tls.fileName | default "tls.crt"}}
             {{- end }}
+            - name: tmp
+              mountPath: /tmp
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
               drop: ["ALL"]
+            readOnlyRootFilesystem: true
       {{- if and .Values.wso2.subscription .Values.wso2.subscription.imagePullSecrets}}
       imagePullSecrets:
         - name: {{ .Values.wso2.subscription.imagePullSecrets }}
@@ -109,4 +112,6 @@ spec:
           secret:
             secretName: {{.Values.wso2.apk.dp.partitionServer.tls.secretName}}
         {{ end }}
+        - name: tmp
+          emptyDir: {}
 {{- end -}}
