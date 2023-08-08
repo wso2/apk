@@ -67,13 +67,13 @@ func GetServerCertificate(tlsCertificate string, tlsCertificateKey string) (tls.
 func GetTrustedCertPool(truststoreLocation string) *x509.CertPool {
 	onceTrustedCertsRead.Do(func() {
 		caCertPool = x509.NewCertPool()
-		filepath.Walk(truststoreLocation, func(path string, info os.FileInfo, err error) error {
+		err := filepath.Walk(truststoreLocation, func(path string, info os.FileInfo, err error) error {
 			if err != nil {
 				logger.LoggerTLSUtils.Warn("Error while reading the trusted certificates directory/file.", err)
 			} else {
 				if !info.IsDir() && (filepath.Ext(info.Name()) == pemExtension ||
 					filepath.Ext(info.Name()) == crtExtension) {
-					caCert, caCertErr := ioutil.ReadFile(path)
+					caCert, caCertErr := ioutil.ReadFile(filepath.Clean(path))
 					if caCertErr != nil {
 						logger.LoggerTLSUtils.Warn("Error while reading the certificate file.", info.Name())
 					}
@@ -85,6 +85,9 @@ func GetTrustedCertPool(truststoreLocation string) *x509.CertPool {
 			}
 			return nil
 		})
+		if err != nil {
+			logger.LoggerTLSUtils.Warn("Error walking the path %s", truststoreLocation, err)
+		}
 	})
 	return caCertPool
 }
