@@ -25,7 +25,6 @@ import (
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/discovery/xds"
 	"github.com/wso2/apk/adapter/internal/loggers"
-	// internalLogging "github.com/wso2/apk/adapter/internal/logging"
 	"github.com/wso2/apk/adapter/internal/operator/constants"
 	"github.com/wso2/apk/adapter/internal/operator/status"
 	"github.com/wso2/apk/adapter/internal/operator/synchronizer"
