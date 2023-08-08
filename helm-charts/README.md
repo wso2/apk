@@ -43,6 +43,11 @@ A Helm chart for APK components
 | wso2.apk.dp.enabled | bool | `true` | Enable the deployment of the Data Plane |
 | wso2.apk.dp.gateway.listener.hostname | string | `"gw.wso2.com"` | Gateway Listener Hostname |
 | wso2.apk.dp.gateway.listener.secretName | string | `""` | Gateway Listener Certificate Secret Name |
+| wso2.apk.dp.gateway.autoscaling.enabled | bool | `false` | Enable autoscaling for Gateway |
+| wso2.apk.dp.gateway.autoscaling.minReplicas | int | `1` | Minimum number of replicas for Gateway |
+| wso2.apk.dp.gateway.autoscaling.maxReplicas | int | `2` | Maximum number of replicas for Gateway |
+| wso2.apk.dp.gateway.autoscaling.targetMemory | int | `80` | Target memory utilization percentage for Gateway |
+| wso2.apk.dp.gateway.autoscaling.targetCPU | int | `80` | Target CPU utilization percentage for Gateway |
 | wso2.apk.dp.partitionServer.enabled | bool | `false` | Enable partition server for Data Plane. |
 | wso2.apk.dp.partitionServer.host | string | `""` | Partition Server Service URL |
 | wso2.apk.dp.partitionServer.serviceBasePath | string | `"/api/publisher/v1"` | Partition Server Service Base Path. |
@@ -59,7 +64,7 @@ A Helm chart for APK components
 | wso2.apk.dp.configdeployer.deployment.livenessProbe.initialDelaySeconds | int | `20` | Number of seconds after the container has started before liveness probes are initiated. |
 | wso2.apk.dp.configdeployer.deployment.livenessProbe.periodSeconds | int | `20` | How often (in seconds) to perform the probe. |
 | wso2.apk.dp.configdeployer.deployment.livenessProbe.failureThreshold | int | `5` | Minimum consecutive failures for the probe to be considered failed after having succeeded. |
-| wso2.apk.dp.configdeployer.deployment.strategy | string | `"Recreate"` | Deployment strategy |
+| wso2.apk.dp.configdeployer.deployment.strategy | string | `"RollingUpdate"` | Deployment strategy |
 | wso2.apk.dp.configdeployer.deployment.replicas | int | `1` | Number of replicas |
 | wso2.apk.dp.configdeployer.deployment.imagePullPolicy | string | `"Always"` | Image pull policy |
 | wso2.apk.dp.configdeployer.deployment.image | string | `"wso2/config-deployer-service:latest"` | Image |
@@ -78,7 +83,7 @@ A Helm chart for APK components
 | wso2.apk.dp.adapter.deployment.livenessProbe.initialDelaySeconds | int | `20` | Number of seconds after the container has started before liveness probes are initiated. |
 | wso2.apk.dp.adapter.deployment.livenessProbe.periodSeconds | int | `20` | How often (in seconds) to perform the probe. |
 | wso2.apk.dp.adapter.deployment.livenessProbe.failureThreshold | int | `5` | Minimum consecutive failures for the probe to be considered failed after having succeeded. |
-| wso2.apk.dp.adapter.deployment.strategy | string | `"Recreate"` | Deployment strategy |
+| wso2.apk.dp.adapter.deployment.strategy | string | `"RollingUpdate"` | Deployment strategy |
 | wso2.apk.dp.adapter.deployment.replicas | int | `1` | Number of replicas |
 | wso2.apk.dp.adapter.deployment.imagePullPolicy | string | `"Always"` | Image pull policy |
 | wso2.apk.dp.adapter.deployment.image | string | `"wso2/adapter:0.0.1-m8"` | Image |
@@ -101,7 +106,7 @@ A Helm chart for APK components
 | wso2.apk.dp.ratelimiter.deployment.livenessProbe.initialDelaySeconds | int | `20` | Number of seconds after the container has started before liveness probes are initiated. |
 | wso2.apk.dp.ratelimiter.deployment.livenessProbe.periodSeconds | int | `20` | How often (in seconds) to perform the probe. |
 | wso2.apk.dp.ratelimiter.deployment.livenessProbe.failureThreshold | int | `5` | Minimum consecutive failures for the probe to be considered failed after having succeeded. |
-| wso2.apk.dp.ratelimiter.deployment.strategy | string | `"Recreate"` | Deployment strategy |
+| wso2.apk.dp.ratelimiter.deployment.strategy | string | `"RollingUpdate"` | Deployment strategy |
 | wso2.apk.dp.ratelimiter.deployment.replicas | int | `1` | Number of replicas |
 | wso2.apk.dp.ratelimiter.deployment.imagePullPolicy | string | `"Always"` | Image pull policy |
 | wso2.apk.dp.ratelimiter.deployment.image | string | `"wso2/ratelimiter:0.0.1-m8"` | Image |
@@ -121,7 +126,7 @@ A Helm chart for APK components
 | wso2.apk.dp.gatewayRuntime.deployment.router.livenessProbe.initialDelaySeconds | int | `20` | Number of seconds after the container has started before liveness probes are initiated. |
 | wso2.apk.dp.gatewayRuntime.deployment.router.livenessProbe.periodSeconds | int | `20` | How often (in seconds) to perform the probe. |
 | wso2.apk.dp.gatewayRuntime.deployment.router.livenessProbe.failureThreshold | int | `5` | Minimum consecutive failures for the probe to be considered failed after having succeeded. |
-| wso2.apk.dp.gatewayRuntime.deployment.router.strategy | string | `"Recreate"` | Deployment strategy |
+| wso2.apk.dp.gatewayRuntime.deployment.router.strategy | string | `"RollingUpdate"` | Deployment strategy |
 | wso2.apk.dp.gatewayRuntime.deployment.router.imagePullPolicy | string | `"Always"` | Image pull policy |
 | wso2.apk.dp.gatewayRuntime.deployment.router.image | string | `"wso2/router:0.0.1-m8"` | Image |
 | wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls.secretName | string | `"router-cert"` | TLS secret name for router public certificate. |
@@ -141,7 +146,7 @@ A Helm chart for APK components
 | wso2.apk.dp.gatewayRuntime.deployment.enforcer.livenessProbe.initialDelaySeconds | int | `20` | Number of seconds after the container has started before liveness probes are initiated. |
 | wso2.apk.dp.gatewayRuntime.deployment.enforcer.livenessProbe.periodSeconds | int | `20` | How often (in seconds) to perform the probe. |
 | wso2.apk.dp.gatewayRuntime.deployment.enforcer.livenessProbe.failureThreshold | int | `5` | Minimum consecutive failures for the probe to be considered failed after having succeeded. |
-| wso2.apk.dp.gatewayRuntime.deployment.enforcer.strategy | string | `"Recreate"` | Deployment strategy |
+| wso2.apk.dp.gatewayRuntime.deployment.enforcer.strategy | string | `"RollingUpdate"` | Deployment strategy |
 | wso2.apk.dp.gatewayRuntime.deployment.enforcer.imagePullPolicy | string | `"Always"` | Image pull policy |
 | wso2.apk.dp.gatewayRuntime.deployment.enforcer.image | string | `"wso2/enforcer:latest"` | Image |
 | wso2.apk.dp.gatewayRuntime.deployment.enforcer.security.sslHostname | string | `"enforcer"` | hostname for the enforcer |
@@ -202,7 +207,7 @@ A Helm chart for APK components
 | idp.idpds.deployment.livenessProbe.initialDelaySeconds | int | `20` | Number of seconds after the container has started before liveness probes are initiated. |
 | idp.idpds.deployment.livenessProbe.periodSeconds | int | `20` | How often (in seconds) to perform the probe. |
 | idp.idpds.deployment.livenessProbe.failureThreshold | int | `5` | Minimum consecutive failures for the probe to be considered failed after having succeeded. |
-| idp.idpds.deployment.strategy | string | `"Recreate"` | Deployment strategy |
+| idp.idpds.deployment.strategy | string | `"RollingUpdate"` | Deployment strategy |
 | idp.idpds.deployment.replicas | int | `1` | Number of replicas |
 | idp.idpds.deployment.imagePullPolicy | string | `"Always"` | Image pull policy |
 | idp.idpds.deployment.image | string | `"wso2/idp-domain-service:latest"` | Image |
@@ -216,7 +221,7 @@ A Helm chart for APK components
 | idp.idpui.deployment.livenessProbe.initialDelaySeconds | int | `20` | Number of seconds after the container has started before liveness probes are initiated. |
 | idp.idpui.deployment.livenessProbe.periodSeconds | int | `20` | How often (in seconds) to perform the probe. |
 | idp.idpui.deployment.livenessProbe.failureThreshold | int | `5` | Minimum consecutive failures for the probe to be considered failed after having succeeded. |
-| idp.idpui.deployment.strategy | string | `"Recreate"` | Deployment strategy |
+| idp.idpui.deployment.strategy | string | `"RollingUpdate"` | Deployment strategy |
 | idp.idpui.deployment.replicas | int | `1` | Number of replicas |
 | idp.idpui.deployment.imagePullPolicy | string | `"Always"` | Image pull policy |
 | idp.idpui.deployment.image | string | `"wso2/idp-ui:0.0.1-m8"` | Image |
@@ -240,27 +245,11 @@ A Helm chart for APK components
 | postgresql.primary.initdb.user | string | `"wso2carbon"` | Specify the PostgreSQL username to execute the initdb scripts |
 | postgresql.primary.initdb.password | string | `"wso2carbon"` | Specify the PostgreSQL password to execute the initdb scripts |
 | postgresql.primary.service.ports.postgresql | int | `5432` | PostgreSQL service port |
-| postgresql.primary.podSecurityContext.enabled | bool | `true` | Enable Pod Security Context for PostgreSQL primary |
-| postgresql.primary.podSecurityContext.fsGroup | int | `null` | The fsGroup to assign to the PostgreSQL primary pod |
-| postgresql.primary.podSecurityContext.runAsNonRoot | bool | `true` | Run PostgreSQL primary as a non-root user |
-| postgresql.primary.podSecurityContext.seccompProfile.type | string | `RuntimeDefault` | Seccomp profile type for PostgreSQL primary |
-| postgresql.primary.containerSecurityContext.enabled | bool | `true` | Enable Container Security Context for PostgreSQL primary |
-| postgresql.primary.containerSecurityContext.allowPrivilegeEscalation | bool | `false` | Prevent privilege escalation for PostgreSQL primary container |
-| postgresql.primary.containerSecurityContext.capabilities.drop | array | `["ALL"]` | Drop Linux capabilities for PostgreSQL primary container |
-| postgresql.primary.containerSecurityContext.runAsUser | int | `null` | The user ID to run the PostgreSQL primary container as |
 | postgresql.image.debug | bool | `true` | Enable debug mode |
 | redis.enabled | bool | `true` | Enable redis |
 | redis.architecture | string | `"standalone"` | Redis® architecture. Allowed values: standalone or replication.  |
 | redis.fullnameOverride | string | `"redis"` | String to fully override common.names.fullname template |
 | redis.primary.service.ports.redis | int | `6379` | Redis service port |
-| redis.master.podSecurityContext.enabled | bool | `true` | Enable Pod Security Context for Redis master |
-| redis.master.podSecurityContext.fsGroup | int | `null` | The fsGroup to assign to the Redis master pod |
-| redis.master.podSecurityContext.runAsNonRoot | bool | `true` | Run Redis master as a non-root user |
-| redis.master.podSecurityContext.seccompProfile.type | string | `RuntimeDefault` | Seccomp profile type for Redis master |
-| redis.master.containerSecurityContext.enabled | bool | `true` | Enable Container Security Context for Redis master |
-| redis.master.containerSecurityContext.allowPrivilegeEscalation | bool | `false` | Prevent privilege escalation for Redis master container |
-| redis.master.containerSecurityContext.capabilities.drop | array | `["ALL"]` | Drop Linux capabilities for Redis master container |
-| redis.master.containerSecurityContext.runAsUser | int | `null` | The user ID to run the Redis master container as |
 | redis.auth.enabled | bool | `false` | Enable password authentication	 |
 | redis.image.debug | bool | `true` | Enable debug mode |
 
