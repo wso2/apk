@@ -91,6 +91,8 @@ spec:
             {{- end }}
             - name: db-secret-volume
               mountPath: /home/wso2apk/idp/security/database/
+            - name: tmp
+              mountPath: /tmp
           env:
             - name: DB_PASSWORD
               valueFrom:
@@ -107,6 +109,7 @@ spec:
             capabilities:
               drop: ["ALL"]
             runAsNonRoot: true
+            readOnlyRootFilesystem: true
       {{- if and .Values.wso2.subscription .Values.wso2.subscription.imagePullSecrets}}
       imagePullSecrets:
         - name: {{ .Values.wso2.subscription.imagePullSecrets }}
@@ -141,5 +144,6 @@ spec:
               - key: DB_PASSWORD
                 path: db-password
        {{ end }}
-
+        - name: tmp
+          emptyDir: {}
 {{- end -}}
