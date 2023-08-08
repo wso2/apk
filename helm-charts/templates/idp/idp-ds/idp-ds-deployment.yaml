@@ -89,6 +89,8 @@ spec:
             {{- else }}
               subPath: tls.crt
             {{- end }}
+            - name: db-secret-volume
+              mountPath: /home/wso2apk/idp/security/database/
           env:
             - name: DB_PASSWORD
               valueFrom:
@@ -125,6 +127,19 @@ spec:
             secretName: {{ .Values.idp.idpds.configs.tls.secretName | default (printf "%s-idpds-ds-server-cert" (include "apk-helm.resource.prefix" .)) }}
        {{ else }}
             secretName: {{ template "apk-helm.resource.prefix" . }}-idp-ds-server-cert
+       {{ end }}
+        - name: db-secret-volume
+          secret:
+       {{  if and .Values.idp.database .Values.idp.database.secretName  }}
+            secretName: {{ .Values.idp.database.secretName }}
+            items:
+              - key: "{{ .Values.idp.database.secretKey }}"
+                path: db-password
+       {{ else }}
+            secretName: apk-db-secret
+            items:
+              - key: DB_PASSWORD
+                path: db-password
        {{ end }}
 
 {{- end -}}
