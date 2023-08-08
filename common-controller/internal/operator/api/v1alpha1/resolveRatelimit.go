@@ -33,7 +33,7 @@ type ResolveRateLimitAPIPolicy struct {
 type ResolveRateLimit struct {
 	// RequestPerUnit is the number of requests allowed per unit time
 	//
-	RequestsPerUnit int `json:"requestsPerUnit,omitempty"`
+	RequestsPerUnit uint32 `json:"requestsPerUnit,omitempty"`
 
 	// Unit is the unit of the requestsPerUnit
 	//

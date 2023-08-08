@@ -87,7 +87,7 @@ func (r *API) validateAPI() error {
 	namespaces := conf.Adapter.Operator.Namespaces
 	if len(namespaces) > 0 {
 		if !slices.Contains(namespaces, r.Namespace) {
-			loggers.LoggerAPKOperator.Debugf("API validation Skipped for namespace: %v", r.Namespace)
+			loggers.LoggerAPK.Debugf("API validation Skipped for namespace: %v", r.Namespace)
 			return nil
 		}
 	}

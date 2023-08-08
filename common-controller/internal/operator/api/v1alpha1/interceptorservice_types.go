@@ -24,11 +24,9 @@ import (
 // BackendReference refers to a Backend resource as the interceptor service.
 type BackendReference struct {
 	// Name is the name of the Backend resource.
+	//
+	// +kubebuilder:validation:MinLength=1
 	Name string `json:"name"`
-
-	// Namespace is the namespace of the Backend resource.
-	// +optional
-	Namespace string `json:"namespace,omitempty"`
 }
 
 // InterceptorInclusion defines the type of data which can be included in the interceptor request/response path
@@ -55,8 +53,11 @@ const (
 type InterceptorServiceSpec struct {
 	BackendRef BackendReference `json:"backendRef"`
 
+	// Includes defines the types of data which should be included when calling the interceptor service
+	//
 	// +optional
 	// +kubebuilder:validation:MaxItems=4
+	// +nullable
 	Includes []InterceptorInclusion `json:"includes,omitempty"`
 }
 

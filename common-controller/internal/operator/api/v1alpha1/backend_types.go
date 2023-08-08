@@ -66,13 +66,13 @@ type BackendSpec struct {
 	// CircuitBreaker defines the circuit breaker configurations
 	CircuitBreaker *CircuitBreaker `json:"circuitBreaker,omitempty"`
 
-	// Timeout congifuration for the backend
+	// Timeout configuration for the backend
 	Timeout *Timeout `json:"timeout,omitempty"`
 
-	// Retry congifuration for the backend
+	// Retry configuration for the backend
 	Retry *RetryConfig `json:"retry,omitempty"`
 
-	// HealthCheck congifuration for the backend tcp health check
+	// HealthCheck configuration for the backend tcp health check
 	HealthCheck *HealthCheck `json:"healthCheck,omitempty"`
 }
 
@@ -88,7 +88,7 @@ type HealthCheck struct {
 
 	// Interval is the time between health check attempts in seconds.
 	//
-	// +kubebuilder:default=10
+	// +kubebuilder:default=30
 	// +optional
 	Interval uint32 `json:"interval,omitempty"`
 
@@ -109,25 +109,20 @@ type HealthCheck struct {
 
 // Timeout defines the timeout configurations
 type Timeout struct {
-	// +kubebuilder:default=60
-	MaxRouteTimeoutSeconds uint32 `json:"maxRouteTimeoutSeconds"`
-
-	// RouteTimeoutSeconds If not specified, the default is 15s.
-	// This spans between the point at which the entire downstream request (i.e. end-of-stream) has been processed and
+	// UpstreamResponseTimeout spans between the point at which the entire downstream request (i.e. end-of-stream) has been processed and
 	// when the upstream response has been completely processed.
 	// A value of 0 will disable the route’s timeout.
 	// If the timeout fires, the stream is terminated with a 408 Request Timeout error code.
 	//
 	// +kubebuilder:default=15
-	RouteTimeoutSeconds uint32 `json:"routeTimeoutSeconds"`
+	UpstreamResponseTimeout uint32 `json:"upstreamResponseTimeout"`
 
-	// RouteIdleTimeoutSeconds is distinct to RouteTimeoutSeconds which provides an upper bound.
-	// on the upstream response time, instead bounds the amount of time the request's stream may be idle.
+	// DownstreamRequestIdleTimeout bounds the amount of time the request's stream may be idle.
 	// A value of 0 will completely disable the route's idle timeout.
 	//
 	// +kubebuilder:default=300
 	// +optional
-	RouteIdleTimeoutSeconds uint32 `json:"routeIdleTimeoutSeconds"`
+	DownstreamRequestIdleTimeout uint32 `json:"downstreamRequestIdleTimeout"`
 }
 
 // CircuitBreaker defines the circuit breaker configurations
@@ -174,15 +169,13 @@ type RetryConfig struct {
 	// +kubebuilder:default=1
 	Count uint32 `json:"count"`
 
-	// BaseIntervalMillis defines the base interval between retries in milliseconds.
-	// This parameter is required and must be greater than zero.
+	// BaseIntervalMillis is exponential retry back off and it defines the base interval between retries in milliseconds.
+	// maximum interval is 10 times of the BaseIntervalMillis
 	//
 	// +kubebuilder:default=25
 	// +kubebuilder:validation:Minimum=1
 	// +optional
 	BaseIntervalMillis uint32 `json:"baseIntervalMillis"`
-
-	// todo(amali) this is not supposed to be a integer list, but a string list. Verify.
 
 	// StatusCodes defines the list of status codes to retry
 	//
@@ -233,9 +226,6 @@ type RefConfig struct {
 
 // SecurityConfig defines enpoint security configurations
 type SecurityConfig struct {
-	// todo(amali) remove this field
-	Type string `json:"type,omitempty"`
-
 	// Basic security configuration
 	Basic *BasicSecurityConfig `json:"basic,omitempty"`
 }
