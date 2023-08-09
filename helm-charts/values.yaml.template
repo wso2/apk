@@ -84,6 +84,17 @@ wso2:
           hostname: "gw.wso2.com"
           # -- Gateway Listener Certificate Secret Name
           secretName: ""
+        autoscaling:
+          # -- Enable autoscaling for Gateway
+          enabled: false
+          # -- Minimum number of replicas for Gateway
+          minReplicas: 1
+          # -- Maximum number of replicas for Gateway
+          maxReplicas: 2
+          # -- Target memory utilization percentage for Gateway
+          targetMemory: 80
+          # -- Target CPU utilization percentage for Gateway
+          targetCPU: 80
       partitionServer:
         # -- Enable partition server for Data Plane.
         enabled: false
