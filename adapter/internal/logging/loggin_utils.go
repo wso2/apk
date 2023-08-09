@@ -18,30 +18,10 @@
 package logging
 
 import (
-	"context"
 	"fmt"
 
 	logging "github.com/wso2/apk/adapter/pkg/logging"
 )
-
-var logContext context.Context
-
-type logContextKey string
-
-// SetValueToContext used to set the value in the context
-func SetValueToContext(ctx context.Context, key logContextKey, value interface{}) context.Context {
-	return context.WithValue(ctx, key, value)
-}
-
-// GetValueFromContext used to retrieve the value from the context
-func GetValueFromContext(ctx context.Context, key logContextKey) interface{} {
-	return ctx.Value(key)
-}
-
-// InitializeContext used to initialize logContext
-func InitializeContext() {
-	logContext = context.Background()
-}
 
 // GetErrorMessageByCode retrieve the error message corresponds to the provided error code
 func GetErrorMessageByCode(code int) string {

@@ -255,20 +255,22 @@ func DeleteAPICREvent(labels []string, apiUUID string, organizationID string) er
 	delete(orgIDAPIvHostsMap[organizationID], sandvHostIdentifier)
 	for _, vhost := range vHosts {
 		apiIdentifier := GenerateIdentifierForAPIWithUUID(vhost, apiUUID)
-		if err := deleteAPI(apiUUID, apiIdentifier, labels, organizationID); err != nil {
-			logger.LoggerXds.ErrorC(logging.PrintError(logging.Error1410, logging.MAJOR, "Error undeploying API %v of Organization %v from environments %v, error: %v", apiIdentifier, organizationID, labels, err.Error()))
+		if err := deleteAPI(apiIdentifier, labels, organizationID); err != nil {
+			logger.LoggerXds.ErrorC(logging.PrintError(logging.Error1410, logging.MAJOR, "Error undeploying API %v with UUID %v of Organization %v from environments %v, error: %v",
+				apiIdentifier, apiUUID, organizationID, labels, err.Error()))
 			return err
 		}
 		// if no error, update internal vhost maps
 		// error only happens when API not found in deleteAPI func
-		logger.LoggerXds.Infof("Successfully undeployed the API %v under Organization %s and environment %s, API_UUID: %v ",
-			apiIdentifier, organizationID, labels, apiUUID)
+		logger.LoggerXds.Infof("Successfully undeployed the API %v with UUID %v under Organization %s and environment %s",
+			apiIdentifier, apiUUID, organizationID, labels)
 	}
 	return nil
 }
 
 // deleteAPI deletes an API, its resources and updates the caches of given environments
-func deleteAPI(apiUUID string, apiIdentifier string, environments []string, organizationID string) error {
+func deleteAPI(apiIdentifier string, environments []string, organizationID string) error {
+	apiUUID, _ := ExtractUUIDFromAPIIdentifier(apiIdentifier)
 	if _, orgExists := orgAPIMap[organizationID]; orgExists {
 		if _, apiExists := orgAPIMap[organizationID][apiIdentifier]; !apiExists {
 			logger.LoggerXds.Infof("Unable to delete API: %v from Organization: %v. API Does not exist. API_UUID: %v", apiIdentifier, organizationID, apiUUID)
@@ -780,6 +782,16 @@ func ExtractVhostFromAPIIdentifier(id string) (string, error) {
 	elem := strings.Split(id, apiKeyFieldSeparator)
 	if len(elem) == 2 {
 		return elem[0], nil
+	}
+	err := fmt.Errorf("invalid API identifier: %v", id)
+	return "", err
+}
+
+// ExtractUUIDFromAPIIdentifier extracts UUID from the API identifier
+func ExtractUUIDFromAPIIdentifier(id string) (string, error) {
+	elem := strings.Split(id, apiKeyFieldSeparator)
+	if len(elem) == 2 {
+		return elem[1], nil
 	}
 	err := fmt.Errorf("invalid API identifier: %v", id)
 	return "", err

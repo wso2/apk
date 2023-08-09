@@ -219,10 +219,9 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.13.0/pkg/reconcile
 func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	applyAllAPIsOnce.Do(apiReconciler.applyStartupAPIs)
-
+	loggers.LoggerAPKOperator.Infof("Reconciling for API %s", req.NamespacedName.String())
 	// Check whether the API CR exist, if not consider as a DELETE event.
 	var apiCR dpv1alpha1.API
-	loggers.LoggerAPKOperator.Infof("Reconciling for API %s with API UUID %v", req.NamespacedName.String(), string(apiCR.ObjectMeta.UID))
 	if err := apiReconciler.client.Get(ctx, req.NamespacedName, &apiCR); err != nil {
 		apiState, found := apiReconciler.ods.GetCachedAPI(req.NamespacedName)
 		if found && k8error.IsNotFound(err) {

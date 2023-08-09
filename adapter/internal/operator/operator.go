@@ -22,7 +22,6 @@ import (
 
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/loggers"
-	internalLogging "github.com/wso2/apk/adapter/internal/logging"
 	"github.com/wso2/apk/adapter/internal/management-server/xds"
 	"github.com/wso2/apk/adapter/pkg/logging"
 	gwapiv1a2 "sigs.k8s.io/gateway-api/apis/v1alpha2"
@@ -138,7 +137,6 @@ func InitOperator() {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2603, logging.BLOCKER, "Unable to set up ready check: %v", err))
 	}
 
-	internalLogging.InitializeContext()
 	go synchronizer.HandleAPILifeCycleEvents(&ch, &successChannel)
 	go synchronizer.HandleGatewayLifeCycleEvents(&gatewaych)
 	if config.ReadConfigs().ManagementServer.Enabled {
