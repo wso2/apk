@@ -143,6 +143,7 @@ func GenerateAdapterInternalAPI(apiState APIState, httpRoute *HTTPRouteState, en
 	adapterInternalAPI.SetIsDefaultVersion(apiState.APIDefinition.Spec.IsDefaultVersion)
 	adapterInternalAPI.SetInfoAPICR(*apiState.APIDefinition)
 	adapterInternalAPI.SetAPIDefinitionFile(apiState.APIDefinitionFile)
+	adapterInternalAPI.SetAPIDefinitionEndpoint(apiState.APIDefinition.Spec.DefinitionPath)
 	adapterInternalAPI.EnvType = envType
 	resourceParams := model.ResourceParams{
 		AuthSchemes:               apiState.Authentications,

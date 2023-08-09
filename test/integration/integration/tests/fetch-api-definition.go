@@ -42,7 +42,7 @@ var FetchAPIDefinition = suite.IntegrationTest{
 			{
 				Request: http.Request{
 					Host: "fetch-api-definition.test.gw.wso2.com",
-					Path: "/fetch-api-definition/v1.0.0?definitionType=OAS",
+					Path: "/fetch-api-definition/v1.0.0/api-definition",
 					Headers: map[string]string{
 						"content-type": "application/json",
 					},
@@ -58,7 +58,7 @@ var FetchAPIDefinition = suite.IntegrationTest{
 			{
 				Request: http.Request{
 					Host: "fetch-api-definition.test.gw.wso2.com",
-					Path: "/fetch-api-definition?definitionType=OAS",
+					Path: "/fetch-api-definition/api-definition",
 					Headers: map[string]string{
 						"content-type": "application/json",
 					},
@@ -66,38 +66,6 @@ var FetchAPIDefinition = suite.IntegrationTest{
 				},
 				Response: http.Response{
 					StatusCode: 200,
-				},
-				Backend:      "infra-backend-v1",
-				Namespace:    ns,
-				TestCaseName: "FetchAPIDefinition",
-			},
-			{
-				Request: http.Request{
-					Host: "fetch-api-definition.test.gw.wso2.com",
-					Path: "/fetch-api-definition/v1.0.0?definitionType=GQL",
-					Headers: map[string]string{
-						"content-type": "application/json",
-					},
-					Method: "GET",
-				},
-				Response: http.Response{
-					StatusCode: 404,
-				},
-				Backend:      "infra-backend-v1",
-				Namespace:    ns,
-				TestCaseName: "FetchAPIDefinition",
-			},
-			{
-				Request: http.Request{
-					Host: "fetch-api-definition.test.gw.wso2.com",
-					Path: "/fetch-api-definition?definitionType=GQL",
-					Headers: map[string]string{
-						"content-type": "application/json",
-					},
-					Method: "GET",
-				},
-				Response: http.Response{
-					StatusCode: 404,
 				},
 				Backend:      "infra-backend-v1",
 				Namespace:    ns,

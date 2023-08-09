@@ -34,6 +34,9 @@ properties:
   organization:
     type: string
     description: Organization of the API
+  definitionPath:
+    type: string
+    description: Endpoint to expose API Definition
   defaultVersion:
     type: boolean
     description: Is this the default version of the API

@@ -216,6 +216,8 @@ public type APKConf record {
     string 'type = "REST";
     # Organization of the API
     string organization?;
+    # Endpoint to expose API Definition
+    string definitionPath?;
     # Is this the default version of the API
     boolean defaultVersion = false;
     EndpointConfigurations endpointConfigurations?;

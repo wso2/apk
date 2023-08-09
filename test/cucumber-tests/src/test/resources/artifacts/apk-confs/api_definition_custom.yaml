@@ -1,0 +1,32 @@
+---
+name: "APIDefinitionEndpointCustom"
+context: "/test-definition-custom"
+id: "custom-api-definition-endpoint-test"
+version: "3.14"
+type: "REST"
+organization: "apk-org"
+defaultVersion: true
+definitionPath: "/docs"
+endpointConfigurations:
+  production:
+    endpoint: "http://backend:80/anything"
+operations:
+  - target: "/employee"
+    verb: "GET"
+    authTypeEnabled: true
+    scopes: []
+  - target: "/employee"
+    verb: "POST"
+    authTypeEnabled: true
+    scopes: []
+  - target: "/employee/{employeeId}"
+    verb: "PUT"
+    authTypeEnabled: true
+    scopes: []
+  - target: "/employee/{employeeId}"
+    verb: "DELETE"
+    authTypeEnabled: true
+    scopes: []
+vhosts:
+  production:
+    - "default.gw.wso2.com"

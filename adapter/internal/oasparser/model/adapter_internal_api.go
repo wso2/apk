@@ -64,6 +64,7 @@ type AdapterInternalAPI struct {
 	EnvType                  string
 	backendJWTTokenInfo      *BackendJWTTokenInfo
 	apiDefinitionFile        []byte
+	apiDefinitionEndpoint    string
 	APIProperties            []dpv1alpha1.Property
 	// GraphQLSchema              string
 	// GraphQLComplexities        GraphQLComplexityYaml
@@ -225,6 +226,11 @@ func (swagger *AdapterInternalAPI) GetAPIDefinitionFile() []byte {
 	return swagger.apiDefinitionFile
 }
 
+// GetAPIDefinitionEndpoint returns the API Definition Endpoint.
+func (swagger *AdapterInternalAPI) GetAPIDefinitionEndpoint() string {
+	return swagger.apiDefinitionEndpoint
+}
+
 // GetBackendJWTTokenInfo returns the BackendJWTTokenInfo Object.
 func (swagger *AdapterInternalAPI) GetBackendJWTTokenInfo() *BackendJWTTokenInfo {
 	return swagger.backendJWTTokenInfo
@@ -325,6 +331,11 @@ func (swagger *AdapterInternalAPI) SetID(id string) {
 // SetAPIDefinitionFile sets the API Definition File.
 func (swagger *AdapterInternalAPI) SetAPIDefinitionFile(file []byte) {
 	swagger.apiDefinitionFile = file
+}
+
+// SetAPIDefinitionEndpoint sets the API Definition Endpoint.
+func (swagger *AdapterInternalAPI) SetAPIDefinitionEndpoint(endpoint string) {
+	swagger.apiDefinitionEndpoint = endpoint
 }
 
 // SetName sets the name of the API

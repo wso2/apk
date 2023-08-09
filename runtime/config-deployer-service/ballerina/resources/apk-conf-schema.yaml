@@ -43,6 +43,10 @@ components:
           type: string
           description: |
             Organization of the API
+        definitionPath:
+          type: string
+          description: |
+            Endpoint to expose API definition file
         defaultVersion:
           type: boolean
           description: |

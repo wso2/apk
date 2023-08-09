@@ -55,6 +55,11 @@ type APISpec struct {
 	// +optional
 	DefinitionFileRef string `json:"definitionFileRef"`
 
+	// DefinitionPath contains the path to expose the API definition.
+	//
+	// +optional
+	DefinitionPath string `json:"definitionPath"`
+
 	// Production contains a list of references to HttpRoutes
 	// of type HttpRoute.
 	// xref: https://github.com/kubernetes-sigs/gateway-api/blob/main/apis/v1beta1/httproute_types.go

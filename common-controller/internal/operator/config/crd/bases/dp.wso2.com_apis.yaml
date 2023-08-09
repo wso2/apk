@@ -82,6 +82,9 @@ spec:
                 description: DefinitionFileRef contains the OpenAPI 3 or Swagger definition
                   of the API in a ConfigMap.
                 type: string
+              definitionPath:
+                description: DefinitionPath contains the path to expose the API definition.
+                type: string
               isDefaultVersion:
                 description: IsDefaultVersion indicates whether this API version should
                   be used as a default API
