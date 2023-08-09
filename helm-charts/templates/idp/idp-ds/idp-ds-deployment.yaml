@@ -34,6 +34,7 @@ spec:
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/idp/idp-ds/idp-ds-configmap.yaml") . | sha256sum }}
     spec:
+      automountServiceAccountToken: false
       initContainers:
         - name: init-db
           image: busybox:1.32

@@ -32,6 +32,7 @@ spec:
       labels:
 {{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" "idp-ui" ) | indent 8}}
     spec:
+      automountServiceAccountToken: false
       containers:
         - name: idpui
           image: {{ .Values.idp.idpui.deployment.image }}
