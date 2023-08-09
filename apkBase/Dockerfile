@@ -1,45 +1,38 @@
-FROM ubuntu:20.04
+FROM --platform=linux/amd64 alpine:3.18.2
 
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 
 # install JDK Dependencies
-RUN apt-get update \
-    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata curl wget ca-certificates fontconfig locales \
-    && echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen \
-    && locale-gen en_US.UTF-8 \
-    && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache tzdata musl-locales musl-locales-lang \
+    && rm -rf /var/cache/apk/*
 
-ENV JAVA_VERSION jdk-11.0.17+8
+ENV JAVA_VERSION jdk-11.0.20+8
 
 RUN set -eux; \
-    ARCH="$(dpkg --print-architecture)"; \
+    ARCH="$(apk --print-arch)"; \
     case "${ARCH}" in \
-    amd64|i386:x86-64) \
-    ESUM='752616097e09d7f60a3ad8bd312f90eaf50ac72577e55df229fe6e8091148f79'; \
-    BINARY_URL='https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.17%2B8/OpenJDK11U-jre_x64_linux_hotspot_11.0.17_8.tar.gz'; \
-    ;; \
-    aarch64|arm64) \
-    ESUM='bd6efe3290c8b5a42f695a55a26f3e3c9c284288574879d4b7089f31f5114177'; \
-    BINARY_URL='https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.17%2B8/OpenJDK11U-jre_aarch64_linux_hotspot_11.0.17_8.tar.gz'; \
-    ;; \
-    *) \
-    echo "Unsupported arch: ${ARCH}"; \
-    exit 1; \
-    ;; \ 
+       amd64|x86_64) \
+         ESUM='0b7e894af823484f270031ed6626f78504a7a44f8173d67433e14321d015e669'; \
+         BINARY_URL='https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.20%2B8/OpenJDK11U-jdk_x64_alpine-linux_hotspot_11.0.20_8.tar.gz'; \
+         ;; \
+       *) \
+         echo "Unsupported arch: ${ARCH}"; \
+         exit 1; \
+         ;; \
     esac; \
-    curl -LfsSo /tmp/openjdk.tar.gz ${BINARY_URL}; \
-    echo "${ESUM} */tmp/openjdk.tar.gz" | sha256sum -c -; \
-    mkdir -p /opt/java/openjdk; \
-    cd /opt/java/openjdk; \
-    tar -xf /tmp/openjdk.tar.gz --strip-components=1; \
+	  wget -O /tmp/openjdk.tar.gz ${BINARY_URL}; \
+	  echo "${ESUM} */tmp/openjdk.tar.gz" | sha256sum -c -; \
+	  mkdir -p /opt/java/openjdk; \
+	  tar --extract \
+	      --file /tmp/openjdk.tar.gz \
+	      --directory /opt/java/openjdk \
+	      --strip-components 1 \
+	      --no-same-owner \
+	  ; \
     rm -rf /tmp/openjdk.tar.gz;
 
 ENV JAVA_HOME=/opt/java/openjdk \
     PATH="/opt/java/openjdk/bin:$PATH"
-
-RUN echo Verifying install ... \
-    && echo java --version && java --version \
-    && echo Complete.
 
 ARG USER=wso2apk
 ARG USER_ID=802
@@ -47,4 +40,7 @@ ARG USER_GROUP=wso2
 ARG USER_GROUP_ID=802
 ARG USER_HOME=/home/${USER}
 
-RUN groupadd --system -g ${USER_GROUP_ID} ${USER_GROUP} && useradd --system --create-home --home-dir ${USER_HOME} --no-log-init -g ${USER_GROUP_ID} -u ${USER_ID} ${USER}
+RUN addgroup --system -g ${USER_GROUP_ID} ${USER_GROUP} \
+    && adduser --system --home ${USER_HOME} -g ${USER_GROUP_ID} -u ${USER_ID} ${USER}
+
+USER ${USER_ID}

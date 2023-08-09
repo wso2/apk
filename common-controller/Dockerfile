@@ -14,14 +14,13 @@
 # limitations under the License.
 # -----------------------------------------------------------------------
 
-FROM alpine:3.17.2
+FROM alpine:3.18.2
 LABEL maintainer="WSO2 Docker Maintainers <wso2.com>"
 
-RUN apk update && apk upgrade --no-cache
-RUN apk add  --no-cache tzdata
+RUN apk update && apk upgrade --no-cache \
+    && apk add  --no-cache tzdata
 
 ENV LANG=C.UTF-8 KUBERNETES_SERVICE_PORT=8443 KUBERNETES_SERVICE_HOST=192.168.49.2
-
 
 ARG APK_USER=wso2
 ARG APK_USER_ID=802
