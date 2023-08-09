@@ -12,7 +12,6 @@ endpointConfigurations:
     resiliency:
       retryPolicy:
         count: 3
-        baseIntervalInMillis: 200
         statusCodes:
           - 500
 operations:
