@@ -34,6 +34,7 @@ spec:
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/data-plane/gateway-components/log-conf.yaml") . | sha256sum }}
     spec:
+      automountServiceAccountToken: false
       initContainers:
         - name: check-adapter
           image: busybox:1.32

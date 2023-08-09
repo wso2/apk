@@ -32,6 +32,7 @@ spec:
       labels:
 {{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" "ratelimiter" ) | indent 8}}
     spec:
+      automountServiceAccountToken: false
       serviceAccountName: {{ .Values.wso2.apk.auth.serviceAccountName }}
       containers:
         - name: ratelimiter
