@@ -55,8 +55,8 @@ ENV JAVA_HOME=/opt/java/openjdk \
 
 LABEL maintainer="WSO2 Docker Maintainers <wso2.com>"
 
-RUN apk update && apk upgrade --no-cache
-RUN apk add  --no-cache tzdata
+RUN apk update && apk upgrade --no-cache \
+    && apk add --no-cache tzdata
 
 LABEL maintainer="WSO2 Docker Maintainers <dev@wso2.org>"
 
