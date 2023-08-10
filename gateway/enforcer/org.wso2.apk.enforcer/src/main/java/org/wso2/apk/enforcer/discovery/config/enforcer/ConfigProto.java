@@ -32,49 +32,43 @@ public final class ConfigProto {
       "proto\022\036wso2.discovery.config.enforcer\032)w" +
       "so2/discovery/config/enforcer/cert.proto" +
       "\032,wso2/discovery/config/enforcer/service" +
-      ".proto\0322wso2/discovery/config/enforcer/j" +
-      "wt_generator.proto\032*wso2/discovery/confi" +
-      "g/enforcer/cache.proto\032.wso2/discovery/c" +
-      "onfig/enforcer/analytics.proto\032-wso2/dis" +
-      "covery/config/enforcer/security.proto\032/w" +
-      "so2/discovery/config/enforcer/management" +
-      ".proto\0320wso2/discovery/config/enforcer/r" +
-      "est_server.proto\032+wso2/discovery/config/" +
-      "enforcer/filter.proto\032,wso2/discovery/co" +
-      "nfig/enforcer/tracing.proto\032,wso2/discov" +
-      "ery/config/enforcer/metrics.proto\032)wso2/" +
-      "discovery/config/enforcer/soap.proto\"\227\006\n" +
-      "\006Config\022:\n\010security\030\001 \001(\0132(.wso2.discove" +
-      "ry.config.enforcer.Security\022;\n\010keystore\030" +
-      "\002 \001(\0132).wso2.discovery.config.enforcer.C" +
-      "ertStore\022=\n\ntruststore\030\003 \001(\0132).wso2.disc" +
-      "overy.config.enforcer.CertStore\022<\n\013authS" +
-      "ervice\030\004 \001(\0132\'.wso2.discovery.config.enf" +
-      "orcer.Service\022B\n\014jwtGenerator\030\005 \001(\0132,.ws" +
-      "o2.discovery.config.enforcer.JWTGenerato" +
-      "r\0224\n\005cache\030\007 \001(\0132%.wso2.discovery.config" +
-      ".enforcer.Cache\022<\n\tanalytics\030\010 \001(\0132).wso" +
-      "2.discovery.config.enforcer.Analytics\022>\n" +
-      "\nmanagement\030\t \001(\0132*.wso2.discovery.confi" +
-      "g.enforcer.Management\022>\n\nrestServer\030\n \001(" +
-      "\0132*.wso2.discovery.config.enforcer.RestS" +
-      "erver\0228\n\007tracing\030\013 \001(\0132\'.wso2.discovery." +
-      "config.enforcer.Tracing\0228\n\007metrics\030\014 \001(\013" +
-      "2\'.wso2.discovery.config.enforcer.Metric" +
-      "s\0227\n\007filters\030\r \003(\0132&.wso2.discovery.conf" +
-      "ig.enforcer.Filter\0222\n\004soap\030\016 \001(\0132$.wso2." +
-      "discovery.config.enforcer.SoapB\220\001\n/org.w" +
-      "so2.apk.enforcer.discovery.config.enforc" +
-      "erB\013ConfigProtoP\001ZNgithub.com/envoyproxy" +
-      "/go-control-plane/wso2/discovery/config/" +
-      "enforcer;enforcerb\006proto3"
+      ".proto\032*wso2/discovery/config/enforcer/c" +
+      "ache.proto\032.wso2/discovery/config/enforc" +
+      "er/analytics.proto\032-wso2/discovery/confi" +
+      "g/enforcer/security.proto\032/wso2/discover" +
+      "y/config/enforcer/management.proto\0320wso2" +
+      "/discovery/config/enforcer/rest_server.p" +
+      "roto\032+wso2/discovery/config/enforcer/fil" +
+      "ter.proto\032,wso2/discovery/config/enforce" +
+      "r/tracing.proto\032,wso2/discovery/config/e" +
+      "nforcer/metrics.proto\"\237\005\n\006Config\022:\n\010secu" +
+      "rity\030\001 \001(\0132(.wso2.discovery.config.enfor" +
+      "cer.Security\022;\n\010keystore\030\002 \001(\0132).wso2.di" +
+      "scovery.config.enforcer.CertStore\022=\n\ntru" +
+      "ststore\030\003 \001(\0132).wso2.discovery.config.en" +
+      "forcer.CertStore\022<\n\013authService\030\004 \001(\0132\'." +
+      "wso2.discovery.config.enforcer.Service\0224" +
+      "\n\005cache\030\005 \001(\0132%.wso2.discovery.config.en" +
+      "forcer.Cache\022<\n\tanalytics\030\006 \001(\0132).wso2.d" +
+      "iscovery.config.enforcer.Analytics\022>\n\nma" +
+      "nagement\030\007 \001(\0132*.wso2.discovery.config.e" +
+      "nforcer.Management\022>\n\nrestServer\030\010 \001(\0132*" +
+      ".wso2.discovery.config.enforcer.RestServ" +
+      "er\0228\n\007tracing\030\t \001(\0132\'.wso2.discovery.con" +
+      "fig.enforcer.Tracing\0228\n\007metrics\030\n \001(\0132\'." +
+      "wso2.discovery.config.enforcer.Metrics\0227" +
+      "\n\007filters\030\013 \003(\0132&.wso2.discovery.config." +
+      "enforcer.FilterB\220\001\n/org.wso2.apk.enforce" +
+      "r.discovery.config.enforcerB\013ConfigProto" +
+      "P\001ZNgithub.com/envoyproxy/go-control-pla" +
+      "ne/wso2/discovery/config/enforcer;enforc" +
+      "erb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
           org.wso2.apk.enforcer.discovery.config.enforcer.CertStoreProto.getDescriptor(),
           org.wso2.apk.enforcer.discovery.config.enforcer.ServiceProto.getDescriptor(),
-          org.wso2.apk.enforcer.discovery.config.enforcer.JWTGeneratorProto.getDescriptor(),
           org.wso2.apk.enforcer.discovery.config.enforcer.CacheProto.getDescriptor(),
           org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsProto.getDescriptor(),
           org.wso2.apk.enforcer.discovery.config.enforcer.SecurityProto.getDescriptor(),
@@ -83,17 +77,15 @@ public final class ConfigProto {
           org.wso2.apk.enforcer.discovery.config.enforcer.FilterProto.getDescriptor(),
           org.wso2.apk.enforcer.discovery.config.enforcer.TracingProto.getDescriptor(),
           org.wso2.apk.enforcer.discovery.config.enforcer.MetricsProto.getDescriptor(),
-          org.wso2.apk.enforcer.discovery.config.enforcer.soapProto.getDescriptor(),
         });
     internal_static_wso2_discovery_config_enforcer_Config_descriptor =
       getDescriptor().getMessageTypes().get(0);
     internal_static_wso2_discovery_config_enforcer_Config_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_wso2_discovery_config_enforcer_Config_descriptor,
-        new java.lang.String[] { "Security", "Keystore", "Truststore", "AuthService", "JwtGenerator", "Cache", "Analytics", "Management", "RestServer", "Tracing", "Metrics", "Filters", "Soap", });
+        new java.lang.String[] { "Security", "Keystore", "Truststore", "AuthService", "Cache", "Analytics", "Management", "RestServer", "Tracing", "Metrics", "Filters", });
     org.wso2.apk.enforcer.discovery.config.enforcer.CertStoreProto.getDescriptor();
     org.wso2.apk.enforcer.discovery.config.enforcer.ServiceProto.getDescriptor();
-    org.wso2.apk.enforcer.discovery.config.enforcer.JWTGeneratorProto.getDescriptor();
     org.wso2.apk.enforcer.discovery.config.enforcer.CacheProto.getDescriptor();
     org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsProto.getDescriptor();
     org.wso2.apk.enforcer.discovery.config.enforcer.SecurityProto.getDescriptor();
@@ -102,7 +94,6 @@ public final class ConfigProto {
     org.wso2.apk.enforcer.discovery.config.enforcer.FilterProto.getDescriptor();
     org.wso2.apk.enforcer.discovery.config.enforcer.TracingProto.getDescriptor();
     org.wso2.apk.enforcer.discovery.config.enforcer.MetricsProto.getDescriptor();
-    org.wso2.apk.enforcer.discovery.config.enforcer.soapProto.getDescriptor();
   }
 
   // @@protoc_insertion_point(outer_class_scope)

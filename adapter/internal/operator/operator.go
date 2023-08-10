@@ -22,7 +22,6 @@ import (
 
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/loggers"
-	"github.com/wso2/apk/adapter/internal/management-server/xds"
 	"github.com/wso2/apk/adapter/pkg/logging"
 	gwapiv1a2 "sigs.k8s.io/gateway-api/apis/v1alpha2"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
@@ -139,11 +138,11 @@ func InitOperator() {
 
 	go synchronizer.HandleAPILifeCycleEvents(&ch, &successChannel)
 	go synchronizer.HandleGatewayLifeCycleEvents(&gatewaych)
-	if config.ReadConfigs().ManagementServer.Enabled {
-		go xds.InitApkMgtXDSClient()
-		go xds.HandleApplicationEventsFromMgtServer(mgr.GetClient(), mgr.GetAPIReader())
-		go xds.HandleSubscriptionEventsFromMgtServer(mgr.GetClient(), mgr.GetAPIReader())
-	}
+	// if config.ReadConfigs().ManagementServer.Enabled {
+	// 	go xds.InitApkMgtXDSClient()
+	// 	go xds.HandleApplicationEventsFromMgtServer(mgr.GetClient(), mgr.GetAPIReader())
+	// 	go xds.HandleSubscriptionEventsFromMgtServer(mgr.GetClient(), mgr.GetAPIReader())
+	// }
 	if config.ReadConfigs().PartitionServer.Enabled {
 		go synchronizer.SendEventToPartitionServer()
 	}

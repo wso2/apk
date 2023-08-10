@@ -1,12 +1,4 @@
 [adapter]
-[adapter.server]
-  enabled = true
-  port = "9843"
-  tokenPrivateKeyPath = "/home/wso2/security/keystore/mg.key"
-  [[adapter.server.users]]
-    username = "admin"
-    password = "$env{adapter_admin_pwd}"
-
 [adapter.keystore]
   certPath = "/home/wso2/security/keystore/mg.pem"
   keyPath = "/home/wso2/security/keystore/mg.key"
@@ -14,7 +6,13 @@
 [adapter.truststore]
   location = "/home/wso2/security/truststore"
 
+[adapter.operator]
+  namespaces = []
+
 [router]
+  listenerCodecType = "AUTO"
+  clusterTimeoutInSeconds = 20
+  EnforcerResponseTimeoutInSeconds = 20
   systemHost = "localhost"
   useRemoteAddress = false
 
@@ -22,39 +20,108 @@
   certPath = "/home/wso2/security/keystore/mg.pem"
   keyPath = "/home/wso2/security/keystore/mg.key"
 
-[router.upstream]
 [router.upstream.tls]
+  minimumProtocolVersion = "TLS1_1"
+  maximumProtocolVersion = "TLS1_2"
+  ciphers = "ECDHE-ECDSA-AES128-GCM-SHA256, ECDHE-RSA-AES128-GCM-SHA256, ECDHE-ECDSA-AES128-SHA, ECDHE-RSA-AES128-SHA, AES128-GCM-SHA256, AES128-SHA, ECDHE-ECDSA-AES256-GCM-SHA384, ECDHE-RSA-AES256-GCM-SHA384, ECDHE-ECDSA-AES256-SHA, ECDHE-RSA-AES256-SHA, AES256-GCM-SHA384, AES256-SHA"
   trustedCertPath = "/etc/ssl/certs/ca-certificates.crt"
   verifyHostName = true
   disableSslVerification = false
 
+[router.upstream.retry]
+  statusCodes = [504]
 
-[enforcer.security]
-[[enforcer.security.tokenService]]
-  name = "Resident Key Manager"
-  issuer = "https://localhost:9443/oauth2/token"
-  certificateAlias = "wso2carbon"
-  jwksURL = ""
-  validateSubscription = false
-  consumerKeyClaim = "azp"
-  certificateFilePath = "/home/wso2/security/truststore/wso2carbon.pem"
+[router.upstream.dns]
+  dnsRefreshRate = 5000
+	respectDNSTtl = false
 
+[router.upstream.http2]
+  hpackTableSize = 4096
+	maxConcurrentStreams = 2147483647
 
-[[enforcer.security.tokenService]]
-  name = "APIM Publisher"
-  issuer = "https://localhost:9443/publisher"
-  validateSubscription = true
-  certificateFilePath = "/home/wso2/security/truststore/wso2carbon.pem"
+[router.downstream.tls]
+  trustedCertPath = "/etc/ssl/certs/ca-certificates.crt"
+  mtlsAPIsEnabled = false
 
-[enforcer.throttling]
-  enableGlobalEventPublishing = false
-  jmsConnectionProviderURL = "amqp://admin:$env{tm_admin_pwd}@carbon/carbon?brokerlist='tcp://apim:5672'"
-  [enforcer.throttling.publisher]
-    username = "admin"
-    password = "$env{tm_admin_pwd}"
-    [[enforcer.throttling.publisher.URLGroup]]
-      receiverURLs = ["tcp://apim:9611"]
-      authURLs = ["ssl://apim:9711"]
+[router.connection.timeout]
+  requestTimeoutInSeconds = 0
+	requestHeadersTimeoutInSeconds = 0
+	streamIdleTimeoutInSeconds = 300
+	idleTimeoutInSeconds = 3600
+
+[router.payloadPassingToEnforcer]
+  passRequestPayload = false
+	maxRequestBytes = 102400
+	allowPartialMessage = false
+	packAsBytes = false
+
+[router.filters.compression]
+  enabled = true
+	library = "gzip"
+[router.filters.compression.requestDirection]
+  enabled = false
+	minimumContentLength = 30
+	contentType = ["application/javascript", "application/json", "application/xhtml+xml", "image/svg+xml", "text/css", "text/html", "text/plain", "text/xml"]
+[router.filters.compression.responseDirection]
+  enabled = true
+	minimumContentLength = 30
+	contentType = ["application/javascript", "application/json", "application/xhtml+xml", "image/svg+xml", "text/css", "text/html", "text/plain", "text/xml"]
+	enableForEtagHeader = true
+[router.filters.compression.libraryProperties]
+  memoryLevel = 3
+	windowBits = 12
+	compressionLevel = 9
+	compressionStrategy = "defaultStrategy"
+	chunkSize = 4096
+
+[router.rateLimit]
+  enabled = false
+	host = "ratelimiter"
+	port = 8091
+  failureModeDeny = false
+	requestTimeoutInMillis = 80
+	keyFilePath = "/home/wso2/security/keystore/mg.key"
+	certFilePath = "/home/wso2/security/keystore/mg.crt"
+	caCertFilePath = "/home/wso2/security/truststore/ratelimiter.crt"
+	sslCertSANHostname = ""
+[router.rateLimit.xRateLimitHeaders]
+	enabled = true
+	rfcVersion = "DRAFT_VERSION_03"
+
+[enforcer.management]
+  username = "admin"
+	password = "admin"
+
+[enforcer.restServer]
+  enabled = false
+
+[enforcer.security.apiKey]
+  enabled = true
+	issuer = ""
+	certificateFilePath = "/home/wso2/security/truststore/wso2carbon.pem"
+
+[enforcer.security.internalKey]
+  enabled = true
+	issuer = "https://localhost:9443/publisher"
+	certificateFilePath = "/home/wso2/security/truststore/wso2carbon.pem"
+
+[enforcer.security.mutualSSL]
+  certificateHeader = "X-WSO2-CLIENT-CERTIFICATE"
+	enableClientValidation = true
+	clientCertificateEncode = false
+	enableOutboundCertificateHeader = false
+
+[enforcer.authService]
+  port = 8081
+	maxMessageSize = 1000000000
+	maxHeaderLimit = 8192
+	keepAliveTime = 600
+
+[enforcer.authService.threadPool]
+  coreSize = 400
+  maxSize = 500
+  keepAliveTime = 600
+  queueSize = 1000
 
 [analytics]
   enabled = false

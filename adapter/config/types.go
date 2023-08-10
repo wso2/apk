@@ -72,25 +72,25 @@ const (
 //	Don't use toml tag for configuration properties as it may affect environment variable based
 //	config resolution.
 type Config struct {
-	Adapter          adapter
-	Enforcer         enforcer
-	Envoy            envoy            `toml:"router"`
-	ManagementServer managementServer `toml:"managementServer"`
-	PartitionServer  partitionServer  `toml:"partitionServer"`
-	Analytics        analytics        `toml:"analytics"`
-	Tracing          tracing
+	Adapter  adapter
+	Enforcer enforcer
+	Envoy    envoy `toml:"router"`
+	// ManagementServer managementServer `toml:"managementServer"`
+	PartitionServer partitionServer `toml:"partitionServer"`
+	Analytics       analytics       `toml:"analytics"`
+	Tracing         tracing
 }
 
 // Adapter related Configurations
 type adapter struct {
 	// Consul represents the configuration required to connect to consul service discovery
-	Consul consul
+	// Consul consul
 	// Keystore contains the keyFile and Cert File of the adapter
 	Keystore keystore
 	// Trusted Certificates
 	Truststore truststore
 	// SoapErrorInXMLEnabled is used to configure gateway error responses(local reply) as soap envelope
-	SoapErrorInXMLEnabled bool
+	// SoapErrorInXMLEnabled bool
 	// Operator represents the operator related configurations
 	Operator operator
 }
@@ -141,39 +141,38 @@ type xRateLimitHeaders struct {
 }
 
 type enforcer struct {
-	Security     security
-	AuthService  authService
-	JwtGenerator jwtGenerator
-	Cache        cache
-	JwtIssuer    jwtIssuer
-	Management   management
-	RestServer   restServer
-	Filters      []filter
-	Metrics      metrics
+	Security    security
+	AuthService authService
+	Cache       cache
+	JwtIssuer   jwtIssuer
+	Management  management
+	RestServer  restServer
+	Filters     []filter
+	Metrics     metrics
 }
 
-type consul struct {
-	// Deprecated: Use Enabled instead
-	Enable bool
-	// Enabled whether consul service discovery should be enabled
-	Enabled bool
-	// URL url of the consul client in format: http(s)://host:port
-	URL string
-	// PollInterval how frequently consul API should be polled to get updates (in seconds)
-	PollInterval int
-	// ACLToken Access Control Token required to invoke HTTP API
-	ACLToken string
-	// ApkServiceName service name that Microgateway registered in Consul Service Mesh
-	ApkServiceName string
-	// ServiceMeshEnabled whether Consul service mesh is enabled
-	ServiceMeshEnabled bool
-	// CaCertFile path to the CA cert file(PEM encoded) required for tls connection between adapter and a consul client
-	CaCertFile string
-	// CertFile path to the cert file(PEM encoded) required for tls connection between adapter and a consul client
-	CertFile string
-	// KeyFile path to the key file(PEM encoded) required for tls connection between adapter and a consul client
-	KeyFile string
-}
+// type consul struct {
+// 	// Deprecated: Use Enabled instead
+// 	Enable bool
+// 	// Enabled whether consul service discovery should be enabled
+// 	Enabled bool
+// 	// URL url of the consul client in format: http(s)://host:port
+// 	URL string
+// 	// PollInterval how frequently consul API should be polled to get updates (in seconds)
+// 	PollInterval int
+// 	// ACLToken Access Control Token required to invoke HTTP API
+// 	ACLToken string
+// 	// ApkServiceName service name that Microgateway registered in Consul Service Mesh
+// 	ApkServiceName string
+// 	// ServiceMeshEnabled whether Consul service mesh is enabled
+// 	ServiceMeshEnabled bool
+// 	// CaCertFile path to the CA cert file(PEM encoded) required for tls connection between adapter and a consul client
+// 	CaCertFile string
+// 	// CertFile path to the cert file(PEM encoded) required for tls connection between adapter and a consul client
+// 	CertFile string
+// 	// KeyFile path to the key file(PEM encoded) required for tls connection between adapter and a consul client
+// 	KeyFile string
+// }
 
 // Router to enforcer request body passing configurations
 type payloadPassingToEnforcer struct {
@@ -266,32 +265,11 @@ type truststore struct {
 	Location string
 }
 
-type jwtGenerator struct {
-	// Deprecated: Use Enabled instead
-	Enable               bool
-	Enabled              bool
-	Encoding             string
-	ClaimDialect         string
-	ConvertDialect       bool
-	Header               string
-	SigningAlgorithm     string
-	EnableUserClaims     bool
-	GatewayGeneratorImpl string
-	ClaimsExtractorImpl  string
-	TokenTTL             int32
-	Keypair              []KeyPair
-}
-
 // KeyPair represents hthe rsa keypair used for signing JWTs
 type KeyPair struct {
 	PrivateKeyPath        string
 	PublicCertificatePath string
 	UseForSigning         bool
-}
-
-type claimMapping struct {
-	RemoteClaim string
-	LocalClaim  string
 }
 
 type cache struct {
@@ -348,20 +326,6 @@ type JwtUser struct {
 	Password string
 }
 
-type repository struct {
-	URL         string
-	Branch      string
-	Username    string
-	AccessToken string
-	SSHKeyFile  string // SSHKeyFile path to the private key file
-}
-
-type requestWorkerPool struct {
-	PoolSize              int
-	QueueSizePerPool      int
-	PauseTimeAfterFailure time.Duration
-}
-
 type managementServer struct {
 	Enabled bool
 	Host    string
@@ -383,8 +347,6 @@ type partitionServer struct {
 
 // Configuration for Enforcer admin rest api
 type restServer struct {
-	// Deprecated: Use Enabled Instead
-	Enable  bool
 	Enabled bool
 }
 
@@ -398,10 +360,6 @@ type filter struct {
 	ClassName        string
 	Position         int32
 	ConfigProperties map[string]string
-}
-
-type httpClient struct {
-	RequestTimeOut time.Duration
 }
 
 type mutualSSL struct {

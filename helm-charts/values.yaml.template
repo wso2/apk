@@ -196,14 +196,15 @@ wso2:
             sslHostname: "adapter"
         configs:
           # -- Optionally configure namespaces to watch for apis.
-          apiNamespaces:
+          apiNamespaces: []
           tls:
-            # -- TLS secret name for adapter public certificate.
+            # -- secret name of the adapter TLS certificate.
             secretName: ""
-            # -- TLS certificate file name.
+            # -- TLS private certificate file name.
             certKeyFilename: ""
-            # -- TLS certificate file name.
+            # -- TLS public certificate file name.
             certFilename: ""
+          
         logging:
           # -- Optionally configure logging for adapter.
           # LogLevels can be "DEBG", "FATL", "ERRO", "WARN", "INFO", "PANC"

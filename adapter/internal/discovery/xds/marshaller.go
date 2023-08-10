@@ -63,19 +63,6 @@ const blockedStatus string = "BLOCKED"
 // enfocer's CDS resource representation.
 func MarshalConfig(config *config.Config) *enforcer.Config {
 
-	keyPairs := []*enforcer.Keypair{}
-
-	// New configuration
-	for _, kp := range config.Enforcer.JwtGenerator.Keypair {
-		keypair := &enforcer.Keypair{
-			PublicCertificatePath: kp.PublicCertificatePath,
-			PrivateKeyPath:        kp.PrivateKeyPath,
-			UseForSigning:         kp.UseForSigning,
-		}
-
-		keyPairs = append(keyPairs, keypair)
-	}
-
 	authService := &enforcer.Service{
 		KeepAliveTime:  config.Enforcer.AuthService.KeepAliveTime,
 		MaxHeaderLimit: config.Enforcer.AuthService.MaxHeaderLimit,
@@ -131,10 +118,6 @@ func MarshalConfig(config *config.Config) *enforcer.Config {
 		Enable: config.Enforcer.RestServer.Enabled,
 	}
 
-	soap := &enforcer.Soap{
-		SoapErrorInXMLEnabled: config.Adapter.SoapErrorInXMLEnabled,
-	}
-
 	filters := []*enforcer.Filter{}
 
 	for _, filterConfig := range config.Enforcer.Filters {
@@ -147,9 +130,6 @@ func MarshalConfig(config *config.Config) *enforcer.Config {
 	}
 
 	return &enforcer.Config{
-		JwtGenerator: &enforcer.JWTGenerator{
-			Keypairs: keyPairs,
-		},
 		AuthService: authService,
 		Security: &enforcer.Security{
 			ApiKey: &enforcer.APIKeyEnforcer{
@@ -176,7 +156,6 @@ func MarshalConfig(config *config.Config) *enforcer.Config {
 		Management: management,
 		RestServer: restServer,
 		Filters:    filters,
-		Soap:       soap,
 	}
 }
 

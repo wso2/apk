@@ -20,17 +20,6 @@ package config
 // Configuration object which is populated with default values.
 var defaultConfig = &Config{
 	Adapter: adapter{
-		Consul: consul{
-			Enabled:            false,
-			URL:                "https://169.254.1.1:8501",
-			PollInterval:       5,
-			ACLToken:           "d3a2a719-4221-8c65-5212-58d4727427ac",
-			ApkServiceName:     "wso2",
-			ServiceMeshEnabled: false,
-			CaCertFile:         "/home/wso2/security/truststore/consul/consul-agent-ca.pem",
-			CertFile:           "/home/wso2/security/truststore/consul/local-dc-client-consul-0.pem",
-			KeyFile:            "/home/wso2/security/truststore/consul/local-dc-client-consul-0-key.pem",
-		},
 		Keystore: keystore{
 			KeyPath:  "/home/wso2/security/keystore/adapter.crt",
 			CertPath: "/home/wso2/security/keystore/adapter.key",
@@ -38,7 +27,6 @@ var defaultConfig = &Config{
 		Truststore: truststore{
 			Location: "/home/wso2/security/truststore",
 		},
-		SoapErrorInXMLEnabled: false,
 		Operator: operator{
 			Namespaces: nil,
 		},
@@ -131,7 +119,8 @@ var defaultConfig = &Config{
 				Enabled:    true,
 				RFCVersion: "DRAFT_VERSION_03",
 			},
-			FailureModeDeny:        false,
+			FailureModeDeny: false,
+			//todo(amali) move to crd?
 			RequestTimeoutInMillis: 80,
 			KeyFilePath:            "/home/wso2/security/keystore/router.key",
 			CertFilePath:           "/home/wso2/security/keystore/router.crt",
@@ -146,7 +135,6 @@ var defaultConfig = &Config{
 		},
 		RestServer: restServer{
 			Enabled: true,
-			Enable:  true,
 		},
 		Security: security{
 			APIkey: apiKey{
@@ -178,15 +166,6 @@ var defaultConfig = &Config{
 				QueueSize:     1000,
 			},
 		},
-		JwtGenerator: jwtGenerator{
-			Keypair: []KeyPair{
-				{
-					PublicCertificatePath: "/home/wso2/security/truststore/mg.pem",
-					PrivateKeyPath:        "/home/wso2/security/keystore/mg.key",
-					UseForSigning:         true,
-				},
-			},
-		},
 		Cache: cache{
 			Enabled:     true,
 			MaximumSize: 10000,
@@ -195,17 +174,6 @@ var defaultConfig = &Config{
 		Metrics: metrics{
 			Enabled: false,
 			Type:    "azure",
-		},
-	},
-	ManagementServer: managementServer{
-		Enabled:   false,
-		Host:      "management-server",
-		XDSPort:   18000,
-		NodeLabel: "default",
-		GRPCClient: gRPCClient{
-			Port:                  8765,
-			MaxAttempts:           5,
-			BackOffInMilliSeconds: 1000,
 		},
 	},
 	PartitionServer: partitionServer{

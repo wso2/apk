@@ -107,19 +107,6 @@ private static final long serialVersionUID = 0L;
             break;
           }
           case 42: {
-            org.wso2.apk.enforcer.discovery.config.enforcer.JWTGenerator.Builder subBuilder = null;
-            if (jwtGenerator_ != null) {
-              subBuilder = jwtGenerator_.toBuilder();
-            }
-            jwtGenerator_ = input.readMessage(org.wso2.apk.enforcer.discovery.config.enforcer.JWTGenerator.parser(), extensionRegistry);
-            if (subBuilder != null) {
-              subBuilder.mergeFrom(jwtGenerator_);
-              jwtGenerator_ = subBuilder.buildPartial();
-            }
-
-            break;
-          }
-          case 58: {
             org.wso2.apk.enforcer.discovery.config.enforcer.Cache.Builder subBuilder = null;
             if (cache_ != null) {
               subBuilder = cache_.toBuilder();
@@ -132,7 +119,7 @@ private static final long serialVersionUID = 0L;
 
             break;
           }
-          case 66: {
+          case 50: {
             org.wso2.apk.enforcer.discovery.config.enforcer.Analytics.Builder subBuilder = null;
             if (analytics_ != null) {
               subBuilder = analytics_.toBuilder();
@@ -145,7 +132,7 @@ private static final long serialVersionUID = 0L;
 
             break;
           }
-          case 74: {
+          case 58: {
             org.wso2.apk.enforcer.discovery.config.enforcer.Management.Builder subBuilder = null;
             if (management_ != null) {
               subBuilder = management_.toBuilder();
@@ -158,7 +145,7 @@ private static final long serialVersionUID = 0L;
 
             break;
           }
-          case 82: {
+          case 66: {
             org.wso2.apk.enforcer.discovery.config.enforcer.RestServer.Builder subBuilder = null;
             if (restServer_ != null) {
               subBuilder = restServer_.toBuilder();
@@ -171,7 +158,7 @@ private static final long serialVersionUID = 0L;
 
             break;
           }
-          case 90: {
+          case 74: {
             org.wso2.apk.enforcer.discovery.config.enforcer.Tracing.Builder subBuilder = null;
             if (tracing_ != null) {
               subBuilder = tracing_.toBuilder();
@@ -184,7 +171,7 @@ private static final long serialVersionUID = 0L;
 
             break;
           }
-          case 98: {
+          case 82: {
             org.wso2.apk.enforcer.discovery.config.enforcer.Metrics.Builder subBuilder = null;
             if (metrics_ != null) {
               subBuilder = metrics_.toBuilder();
@@ -197,26 +184,13 @@ private static final long serialVersionUID = 0L;
 
             break;
           }
-          case 106: {
+          case 90: {
             if (!((mutable_bitField0_ & 0x00000001) != 0)) {
               filters_ = new java.util.ArrayList<org.wso2.apk.enforcer.discovery.config.enforcer.Filter>();
               mutable_bitField0_ |= 0x00000001;
             }
             filters_.add(
                 input.readMessage(org.wso2.apk.enforcer.discovery.config.enforcer.Filter.parser(), extensionRegistry));
-            break;
-          }
-          case 114: {
-            org.wso2.apk.enforcer.discovery.config.enforcer.Soap.Builder subBuilder = null;
-            if (soap_ != null) {
-              subBuilder = soap_.toBuilder();
-            }
-            soap_ = input.readMessage(org.wso2.apk.enforcer.discovery.config.enforcer.Soap.parser(), extensionRegistry);
-            if (subBuilder != null) {
-              subBuilder.mergeFrom(soap_);
-              soap_ = subBuilder.buildPartial();
-            }
-
             break;
           }
           default: {
@@ -358,36 +332,10 @@ private static final long serialVersionUID = 0L;
     return getAuthService();
   }
 
-  public static final int JWTGENERATOR_FIELD_NUMBER = 5;
-  private org.wso2.apk.enforcer.discovery.config.enforcer.JWTGenerator jwtGenerator_;
-  /**
-   * <code>.wso2.discovery.config.enforcer.JWTGenerator jwtGenerator = 5;</code>
-   * @return Whether the jwtGenerator field is set.
-   */
-  @java.lang.Override
-  public boolean hasJwtGenerator() {
-    return jwtGenerator_ != null;
-  }
-  /**
-   * <code>.wso2.discovery.config.enforcer.JWTGenerator jwtGenerator = 5;</code>
-   * @return The jwtGenerator.
-   */
-  @java.lang.Override
-  public org.wso2.apk.enforcer.discovery.config.enforcer.JWTGenerator getJwtGenerator() {
-    return jwtGenerator_ == null ? org.wso2.apk.enforcer.discovery.config.enforcer.JWTGenerator.getDefaultInstance() : jwtGenerator_;
-  }
-  /**
-   * <code>.wso2.discovery.config.enforcer.JWTGenerator jwtGenerator = 5;</code>
-   */
-  @java.lang.Override
-  public org.wso2.apk.enforcer.discovery.config.enforcer.JWTGeneratorOrBuilder getJwtGeneratorOrBuilder() {
-    return getJwtGenerator();
-  }
-
-  public static final int CACHE_FIELD_NUMBER = 7;
+  public static final int CACHE_FIELD_NUMBER = 5;
   private org.wso2.apk.enforcer.discovery.config.enforcer.Cache cache_;
   /**
-   * <code>.wso2.discovery.config.enforcer.Cache cache = 7;</code>
+   * <code>.wso2.discovery.config.enforcer.Cache cache = 5;</code>
    * @return Whether the cache field is set.
    */
   @java.lang.Override
@@ -395,7 +343,7 @@ private static final long serialVersionUID = 0L;
     return cache_ != null;
   }
   /**
-   * <code>.wso2.discovery.config.enforcer.Cache cache = 7;</code>
+   * <code>.wso2.discovery.config.enforcer.Cache cache = 5;</code>
    * @return The cache.
    */
   @java.lang.Override
@@ -403,17 +351,17 @@ private static final long serialVersionUID = 0L;
     return cache_ == null ? org.wso2.apk.enforcer.discovery.config.enforcer.Cache.getDefaultInstance() : cache_;
   }
   /**
-   * <code>.wso2.discovery.config.enforcer.Cache cache = 7;</code>
+   * <code>.wso2.discovery.config.enforcer.Cache cache = 5;</code>
    */
   @java.lang.Override
   public org.wso2.apk.enforcer.discovery.config.enforcer.CacheOrBuilder getCacheOrBuilder() {
     return getCache();
   }
 
-  public static final int ANALYTICS_FIELD_NUMBER = 8;
+  public static final int ANALYTICS_FIELD_NUMBER = 6;
   private org.wso2.apk.enforcer.discovery.config.enforcer.Analytics analytics_;
   /**
-   * <code>.wso2.discovery.config.enforcer.Analytics analytics = 8;</code>
+   * <code>.wso2.discovery.config.enforcer.Analytics analytics = 6;</code>
    * @return Whether the analytics field is set.
    */
   @java.lang.Override
@@ -421,7 +369,7 @@ private static final long serialVersionUID = 0L;
     return analytics_ != null;
   }
   /**
-   * <code>.wso2.discovery.config.enforcer.Analytics analytics = 8;</code>
+   * <code>.wso2.discovery.config.enforcer.Analytics analytics = 6;</code>
    * @return The analytics.
    */
   @java.lang.Override
@@ -429,17 +377,17 @@ private static final long serialVersionUID = 0L;
     return analytics_ == null ? org.wso2.apk.enforcer.discovery.config.enforcer.Analytics.getDefaultInstance() : analytics_;
   }
   /**
-   * <code>.wso2.discovery.config.enforcer.Analytics analytics = 8;</code>
+   * <code>.wso2.discovery.config.enforcer.Analytics analytics = 6;</code>
    */
   @java.lang.Override
   public org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsOrBuilder getAnalyticsOrBuilder() {
     return getAnalytics();
   }
 
-  public static final int MANAGEMENT_FIELD_NUMBER = 9;
+  public static final int MANAGEMENT_FIELD_NUMBER = 7;
   private org.wso2.apk.enforcer.discovery.config.enforcer.Management management_;
   /**
-   * <code>.wso2.discovery.config.enforcer.Management management = 9;</code>
+   * <code>.wso2.discovery.config.enforcer.Management management = 7;</code>
    * @return Whether the management field is set.
    */
   @java.lang.Override
@@ -447,7 +395,7 @@ private static final long serialVersionUID = 0L;
     return management_ != null;
   }
   /**
-   * <code>.wso2.discovery.config.enforcer.Management management = 9;</code>
+   * <code>.wso2.discovery.config.enforcer.Management management = 7;</code>
    * @return The management.
    */
   @java.lang.Override
@@ -455,17 +403,17 @@ private static final long serialVersionUID = 0L;
     return management_ == null ? org.wso2.apk.enforcer.discovery.config.enforcer.Management.getDefaultInstance() : management_;
   }
   /**
-   * <code>.wso2.discovery.config.enforcer.Management management = 9;</code>
+   * <code>.wso2.discovery.config.enforcer.Management management = 7;</code>
    */
   @java.lang.Override
   public org.wso2.apk.enforcer.discovery.config.enforcer.ManagementOrBuilder getManagementOrBuilder() {
     return getManagement();
   }
 
-  public static final int RESTSERVER_FIELD_NUMBER = 10;
+  public static final int RESTSERVER_FIELD_NUMBER = 8;
   private org.wso2.apk.enforcer.discovery.config.enforcer.RestServer restServer_;
   /**
-   * <code>.wso2.discovery.config.enforcer.RestServer restServer = 10;</code>
+   * <code>.wso2.discovery.config.enforcer.RestServer restServer = 8;</code>
    * @return Whether the restServer field is set.
    */
   @java.lang.Override
@@ -473,7 +421,7 @@ private static final long serialVersionUID = 0L;
     return restServer_ != null;
   }
   /**
-   * <code>.wso2.discovery.config.enforcer.RestServer restServer = 10;</code>
+   * <code>.wso2.discovery.config.enforcer.RestServer restServer = 8;</code>
    * @return The restServer.
    */
   @java.lang.Override
@@ -481,17 +429,17 @@ private static final long serialVersionUID = 0L;
     return restServer_ == null ? org.wso2.apk.enforcer.discovery.config.enforcer.RestServer.getDefaultInstance() : restServer_;
   }
   /**
-   * <code>.wso2.discovery.config.enforcer.RestServer restServer = 10;</code>
+   * <code>.wso2.discovery.config.enforcer.RestServer restServer = 8;</code>
    */
   @java.lang.Override
   public org.wso2.apk.enforcer.discovery.config.enforcer.RestServerOrBuilder getRestServerOrBuilder() {
     return getRestServer();
   }
 
-  public static final int TRACING_FIELD_NUMBER = 11;
+  public static final int TRACING_FIELD_NUMBER = 9;
   private org.wso2.apk.enforcer.discovery.config.enforcer.Tracing tracing_;
   /**
-   * <code>.wso2.discovery.config.enforcer.Tracing tracing = 11;</code>
+   * <code>.wso2.discovery.config.enforcer.Tracing tracing = 9;</code>
    * @return Whether the tracing field is set.
    */
   @java.lang.Override
@@ -499,7 +447,7 @@ private static final long serialVersionUID = 0L;
     return tracing_ != null;
   }
   /**
-   * <code>.wso2.discovery.config.enforcer.Tracing tracing = 11;</code>
+   * <code>.wso2.discovery.config.enforcer.Tracing tracing = 9;</code>
    * @return The tracing.
    */
   @java.lang.Override
@@ -507,17 +455,17 @@ private static final long serialVersionUID = 0L;
     return tracing_ == null ? org.wso2.apk.enforcer.discovery.config.enforcer.Tracing.getDefaultInstance() : tracing_;
   }
   /**
-   * <code>.wso2.discovery.config.enforcer.Tracing tracing = 11;</code>
+   * <code>.wso2.discovery.config.enforcer.Tracing tracing = 9;</code>
    */
   @java.lang.Override
   public org.wso2.apk.enforcer.discovery.config.enforcer.TracingOrBuilder getTracingOrBuilder() {
     return getTracing();
   }
 
-  public static final int METRICS_FIELD_NUMBER = 12;
+  public static final int METRICS_FIELD_NUMBER = 10;
   private org.wso2.apk.enforcer.discovery.config.enforcer.Metrics metrics_;
   /**
-   * <code>.wso2.discovery.config.enforcer.Metrics metrics = 12;</code>
+   * <code>.wso2.discovery.config.enforcer.Metrics metrics = 10;</code>
    * @return Whether the metrics field is set.
    */
   @java.lang.Override
@@ -525,7 +473,7 @@ private static final long serialVersionUID = 0L;
     return metrics_ != null;
   }
   /**
-   * <code>.wso2.discovery.config.enforcer.Metrics metrics = 12;</code>
+   * <code>.wso2.discovery.config.enforcer.Metrics metrics = 10;</code>
    * @return The metrics.
    */
   @java.lang.Override
@@ -533,24 +481,24 @@ private static final long serialVersionUID = 0L;
     return metrics_ == null ? org.wso2.apk.enforcer.discovery.config.enforcer.Metrics.getDefaultInstance() : metrics_;
   }
   /**
-   * <code>.wso2.discovery.config.enforcer.Metrics metrics = 12;</code>
+   * <code>.wso2.discovery.config.enforcer.Metrics metrics = 10;</code>
    */
   @java.lang.Override
   public org.wso2.apk.enforcer.discovery.config.enforcer.MetricsOrBuilder getMetricsOrBuilder() {
     return getMetrics();
   }
 
-  public static final int FILTERS_FIELD_NUMBER = 13;
+  public static final int FILTERS_FIELD_NUMBER = 11;
   private java.util.List<org.wso2.apk.enforcer.discovery.config.enforcer.Filter> filters_;
   /**
-   * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 13;</code>
+   * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 11;</code>
    */
   @java.lang.Override
   public java.util.List<org.wso2.apk.enforcer.discovery.config.enforcer.Filter> getFiltersList() {
     return filters_;
   }
   /**
-   * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 13;</code>
+   * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 11;</code>
    */
   @java.lang.Override
   public java.util.List<? extends org.wso2.apk.enforcer.discovery.config.enforcer.FilterOrBuilder> 
@@ -558,52 +506,26 @@ private static final long serialVersionUID = 0L;
     return filters_;
   }
   /**
-   * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 13;</code>
+   * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 11;</code>
    */
   @java.lang.Override
   public int getFiltersCount() {
     return filters_.size();
   }
   /**
-   * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 13;</code>
+   * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 11;</code>
    */
   @java.lang.Override
   public org.wso2.apk.enforcer.discovery.config.enforcer.Filter getFilters(int index) {
     return filters_.get(index);
   }
   /**
-   * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 13;</code>
+   * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 11;</code>
    */
   @java.lang.Override
   public org.wso2.apk.enforcer.discovery.config.enforcer.FilterOrBuilder getFiltersOrBuilder(
       int index) {
     return filters_.get(index);
-  }
-
-  public static final int SOAP_FIELD_NUMBER = 14;
-  private org.wso2.apk.enforcer.discovery.config.enforcer.Soap soap_;
-  /**
-   * <code>.wso2.discovery.config.enforcer.Soap soap = 14;</code>
-   * @return Whether the soap field is set.
-   */
-  @java.lang.Override
-  public boolean hasSoap() {
-    return soap_ != null;
-  }
-  /**
-   * <code>.wso2.discovery.config.enforcer.Soap soap = 14;</code>
-   * @return The soap.
-   */
-  @java.lang.Override
-  public org.wso2.apk.enforcer.discovery.config.enforcer.Soap getSoap() {
-    return soap_ == null ? org.wso2.apk.enforcer.discovery.config.enforcer.Soap.getDefaultInstance() : soap_;
-  }
-  /**
-   * <code>.wso2.discovery.config.enforcer.Soap soap = 14;</code>
-   */
-  @java.lang.Override
-  public org.wso2.apk.enforcer.discovery.config.enforcer.SoapOrBuilder getSoapOrBuilder() {
-    return getSoap();
   }
 
   private byte memoizedIsInitialized = -1;
@@ -632,32 +554,26 @@ private static final long serialVersionUID = 0L;
     if (authService_ != null) {
       output.writeMessage(4, getAuthService());
     }
-    if (jwtGenerator_ != null) {
-      output.writeMessage(5, getJwtGenerator());
-    }
     if (cache_ != null) {
-      output.writeMessage(7, getCache());
+      output.writeMessage(5, getCache());
     }
     if (analytics_ != null) {
-      output.writeMessage(8, getAnalytics());
+      output.writeMessage(6, getAnalytics());
     }
     if (management_ != null) {
-      output.writeMessage(9, getManagement());
+      output.writeMessage(7, getManagement());
     }
     if (restServer_ != null) {
-      output.writeMessage(10, getRestServer());
+      output.writeMessage(8, getRestServer());
     }
     if (tracing_ != null) {
-      output.writeMessage(11, getTracing());
+      output.writeMessage(9, getTracing());
     }
     if (metrics_ != null) {
-      output.writeMessage(12, getMetrics());
+      output.writeMessage(10, getMetrics());
     }
     for (int i = 0; i < filters_.size(); i++) {
-      output.writeMessage(13, filters_.get(i));
-    }
-    if (soap_ != null) {
-      output.writeMessage(14, getSoap());
+      output.writeMessage(11, filters_.get(i));
     }
     unknownFields.writeTo(output);
   }
@@ -684,41 +600,33 @@ private static final long serialVersionUID = 0L;
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(4, getAuthService());
     }
-    if (jwtGenerator_ != null) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(5, getJwtGenerator());
-    }
     if (cache_ != null) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(7, getCache());
+        .computeMessageSize(5, getCache());
     }
     if (analytics_ != null) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(8, getAnalytics());
+        .computeMessageSize(6, getAnalytics());
     }
     if (management_ != null) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(9, getManagement());
+        .computeMessageSize(7, getManagement());
     }
     if (restServer_ != null) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(10, getRestServer());
+        .computeMessageSize(8, getRestServer());
     }
     if (tracing_ != null) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(11, getTracing());
+        .computeMessageSize(9, getTracing());
     }
     if (metrics_ != null) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(12, getMetrics());
+        .computeMessageSize(10, getMetrics());
     }
     for (int i = 0; i < filters_.size(); i++) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(13, filters_.get(i));
-    }
-    if (soap_ != null) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(14, getSoap());
+        .computeMessageSize(11, filters_.get(i));
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -755,11 +663,6 @@ private static final long serialVersionUID = 0L;
       if (!getAuthService()
           .equals(other.getAuthService())) return false;
     }
-    if (hasJwtGenerator() != other.hasJwtGenerator()) return false;
-    if (hasJwtGenerator()) {
-      if (!getJwtGenerator()
-          .equals(other.getJwtGenerator())) return false;
-    }
     if (hasCache() != other.hasCache()) return false;
     if (hasCache()) {
       if (!getCache()
@@ -792,11 +695,6 @@ private static final long serialVersionUID = 0L;
     }
     if (!getFiltersList()
         .equals(other.getFiltersList())) return false;
-    if (hasSoap() != other.hasSoap()) return false;
-    if (hasSoap()) {
-      if (!getSoap()
-          .equals(other.getSoap())) return false;
-    }
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -823,10 +721,6 @@ private static final long serialVersionUID = 0L;
     if (hasAuthService()) {
       hash = (37 * hash) + AUTHSERVICE_FIELD_NUMBER;
       hash = (53 * hash) + getAuthService().hashCode();
-    }
-    if (hasJwtGenerator()) {
-      hash = (37 * hash) + JWTGENERATOR_FIELD_NUMBER;
-      hash = (53 * hash) + getJwtGenerator().hashCode();
     }
     if (hasCache()) {
       hash = (37 * hash) + CACHE_FIELD_NUMBER;
@@ -855,10 +749,6 @@ private static final long serialVersionUID = 0L;
     if (getFiltersCount() > 0) {
       hash = (37 * hash) + FILTERS_FIELD_NUMBER;
       hash = (53 * hash) + getFiltersList().hashCode();
-    }
-    if (hasSoap()) {
-      hash = (37 * hash) + SOAP_FIELD_NUMBER;
-      hash = (53 * hash) + getSoap().hashCode();
     }
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
@@ -1022,12 +912,6 @@ private static final long serialVersionUID = 0L;
         authService_ = null;
         authServiceBuilder_ = null;
       }
-      if (jwtGeneratorBuilder_ == null) {
-        jwtGenerator_ = null;
-      } else {
-        jwtGenerator_ = null;
-        jwtGeneratorBuilder_ = null;
-      }
       if (cacheBuilder_ == null) {
         cache_ = null;
       } else {
@@ -1069,12 +953,6 @@ private static final long serialVersionUID = 0L;
         bitField0_ = (bitField0_ & ~0x00000001);
       } else {
         filtersBuilder_.clear();
-      }
-      if (soapBuilder_ == null) {
-        soap_ = null;
-      } else {
-        soap_ = null;
-        soapBuilder_ = null;
       }
       return this;
     }
@@ -1123,11 +1001,6 @@ private static final long serialVersionUID = 0L;
       } else {
         result.authService_ = authServiceBuilder_.build();
       }
-      if (jwtGeneratorBuilder_ == null) {
-        result.jwtGenerator_ = jwtGenerator_;
-      } else {
-        result.jwtGenerator_ = jwtGeneratorBuilder_.build();
-      }
       if (cacheBuilder_ == null) {
         result.cache_ = cache_;
       } else {
@@ -1166,11 +1039,6 @@ private static final long serialVersionUID = 0L;
         result.filters_ = filters_;
       } else {
         result.filters_ = filtersBuilder_.build();
-      }
-      if (soapBuilder_ == null) {
-        result.soap_ = soap_;
-      } else {
-        result.soap_ = soapBuilder_.build();
       }
       onBuilt();
       return result;
@@ -1232,9 +1100,6 @@ private static final long serialVersionUID = 0L;
       if (other.hasAuthService()) {
         mergeAuthService(other.getAuthService());
       }
-      if (other.hasJwtGenerator()) {
-        mergeJwtGenerator(other.getJwtGenerator());
-      }
       if (other.hasCache()) {
         mergeCache(other.getCache());
       }
@@ -1278,9 +1143,6 @@ private static final long serialVersionUID = 0L;
             filtersBuilder_.addAllMessages(other.filters_);
           }
         }
-      }
-      if (other.hasSoap()) {
-        mergeSoap(other.getSoap());
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -1788,137 +1650,18 @@ private static final long serialVersionUID = 0L;
       return authServiceBuilder_;
     }
 
-    private org.wso2.apk.enforcer.discovery.config.enforcer.JWTGenerator jwtGenerator_;
-    private com.google.protobuf.SingleFieldBuilderV3<
-        org.wso2.apk.enforcer.discovery.config.enforcer.JWTGenerator, org.wso2.apk.enforcer.discovery.config.enforcer.JWTGenerator.Builder, org.wso2.apk.enforcer.discovery.config.enforcer.JWTGeneratorOrBuilder> jwtGeneratorBuilder_;
-    /**
-     * <code>.wso2.discovery.config.enforcer.JWTGenerator jwtGenerator = 5;</code>
-     * @return Whether the jwtGenerator field is set.
-     */
-    public boolean hasJwtGenerator() {
-      return jwtGeneratorBuilder_ != null || jwtGenerator_ != null;
-    }
-    /**
-     * <code>.wso2.discovery.config.enforcer.JWTGenerator jwtGenerator = 5;</code>
-     * @return The jwtGenerator.
-     */
-    public org.wso2.apk.enforcer.discovery.config.enforcer.JWTGenerator getJwtGenerator() {
-      if (jwtGeneratorBuilder_ == null) {
-        return jwtGenerator_ == null ? org.wso2.apk.enforcer.discovery.config.enforcer.JWTGenerator.getDefaultInstance() : jwtGenerator_;
-      } else {
-        return jwtGeneratorBuilder_.getMessage();
-      }
-    }
-    /**
-     * <code>.wso2.discovery.config.enforcer.JWTGenerator jwtGenerator = 5;</code>
-     */
-    public Builder setJwtGenerator(org.wso2.apk.enforcer.discovery.config.enforcer.JWTGenerator value) {
-      if (jwtGeneratorBuilder_ == null) {
-        if (value == null) {
-          throw new NullPointerException();
-        }
-        jwtGenerator_ = value;
-        onChanged();
-      } else {
-        jwtGeneratorBuilder_.setMessage(value);
-      }
-
-      return this;
-    }
-    /**
-     * <code>.wso2.discovery.config.enforcer.JWTGenerator jwtGenerator = 5;</code>
-     */
-    public Builder setJwtGenerator(
-        org.wso2.apk.enforcer.discovery.config.enforcer.JWTGenerator.Builder builderForValue) {
-      if (jwtGeneratorBuilder_ == null) {
-        jwtGenerator_ = builderForValue.build();
-        onChanged();
-      } else {
-        jwtGeneratorBuilder_.setMessage(builderForValue.build());
-      }
-
-      return this;
-    }
-    /**
-     * <code>.wso2.discovery.config.enforcer.JWTGenerator jwtGenerator = 5;</code>
-     */
-    public Builder mergeJwtGenerator(org.wso2.apk.enforcer.discovery.config.enforcer.JWTGenerator value) {
-      if (jwtGeneratorBuilder_ == null) {
-        if (jwtGenerator_ != null) {
-          jwtGenerator_ =
-            org.wso2.apk.enforcer.discovery.config.enforcer.JWTGenerator.newBuilder(jwtGenerator_).mergeFrom(value).buildPartial();
-        } else {
-          jwtGenerator_ = value;
-        }
-        onChanged();
-      } else {
-        jwtGeneratorBuilder_.mergeFrom(value);
-      }
-
-      return this;
-    }
-    /**
-     * <code>.wso2.discovery.config.enforcer.JWTGenerator jwtGenerator = 5;</code>
-     */
-    public Builder clearJwtGenerator() {
-      if (jwtGeneratorBuilder_ == null) {
-        jwtGenerator_ = null;
-        onChanged();
-      } else {
-        jwtGenerator_ = null;
-        jwtGeneratorBuilder_ = null;
-      }
-
-      return this;
-    }
-    /**
-     * <code>.wso2.discovery.config.enforcer.JWTGenerator jwtGenerator = 5;</code>
-     */
-    public org.wso2.apk.enforcer.discovery.config.enforcer.JWTGenerator.Builder getJwtGeneratorBuilder() {
-      
-      onChanged();
-      return getJwtGeneratorFieldBuilder().getBuilder();
-    }
-    /**
-     * <code>.wso2.discovery.config.enforcer.JWTGenerator jwtGenerator = 5;</code>
-     */
-    public org.wso2.apk.enforcer.discovery.config.enforcer.JWTGeneratorOrBuilder getJwtGeneratorOrBuilder() {
-      if (jwtGeneratorBuilder_ != null) {
-        return jwtGeneratorBuilder_.getMessageOrBuilder();
-      } else {
-        return jwtGenerator_ == null ?
-            org.wso2.apk.enforcer.discovery.config.enforcer.JWTGenerator.getDefaultInstance() : jwtGenerator_;
-      }
-    }
-    /**
-     * <code>.wso2.discovery.config.enforcer.JWTGenerator jwtGenerator = 5;</code>
-     */
-    private com.google.protobuf.SingleFieldBuilderV3<
-        org.wso2.apk.enforcer.discovery.config.enforcer.JWTGenerator, org.wso2.apk.enforcer.discovery.config.enforcer.JWTGenerator.Builder, org.wso2.apk.enforcer.discovery.config.enforcer.JWTGeneratorOrBuilder> 
-        getJwtGeneratorFieldBuilder() {
-      if (jwtGeneratorBuilder_ == null) {
-        jwtGeneratorBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-            org.wso2.apk.enforcer.discovery.config.enforcer.JWTGenerator, org.wso2.apk.enforcer.discovery.config.enforcer.JWTGenerator.Builder, org.wso2.apk.enforcer.discovery.config.enforcer.JWTGeneratorOrBuilder>(
-                getJwtGenerator(),
-                getParentForChildren(),
-                isClean());
-        jwtGenerator_ = null;
-      }
-      return jwtGeneratorBuilder_;
-    }
-
     private org.wso2.apk.enforcer.discovery.config.enforcer.Cache cache_;
     private com.google.protobuf.SingleFieldBuilderV3<
         org.wso2.apk.enforcer.discovery.config.enforcer.Cache, org.wso2.apk.enforcer.discovery.config.enforcer.Cache.Builder, org.wso2.apk.enforcer.discovery.config.enforcer.CacheOrBuilder> cacheBuilder_;
     /**
-     * <code>.wso2.discovery.config.enforcer.Cache cache = 7;</code>
+     * <code>.wso2.discovery.config.enforcer.Cache cache = 5;</code>
      * @return Whether the cache field is set.
      */
     public boolean hasCache() {
       return cacheBuilder_ != null || cache_ != null;
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.Cache cache = 7;</code>
+     * <code>.wso2.discovery.config.enforcer.Cache cache = 5;</code>
      * @return The cache.
      */
     public org.wso2.apk.enforcer.discovery.config.enforcer.Cache getCache() {
@@ -1929,7 +1672,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.Cache cache = 7;</code>
+     * <code>.wso2.discovery.config.enforcer.Cache cache = 5;</code>
      */
     public Builder setCache(org.wso2.apk.enforcer.discovery.config.enforcer.Cache value) {
       if (cacheBuilder_ == null) {
@@ -1945,7 +1688,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.Cache cache = 7;</code>
+     * <code>.wso2.discovery.config.enforcer.Cache cache = 5;</code>
      */
     public Builder setCache(
         org.wso2.apk.enforcer.discovery.config.enforcer.Cache.Builder builderForValue) {
@@ -1959,7 +1702,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.Cache cache = 7;</code>
+     * <code>.wso2.discovery.config.enforcer.Cache cache = 5;</code>
      */
     public Builder mergeCache(org.wso2.apk.enforcer.discovery.config.enforcer.Cache value) {
       if (cacheBuilder_ == null) {
@@ -1977,7 +1720,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.Cache cache = 7;</code>
+     * <code>.wso2.discovery.config.enforcer.Cache cache = 5;</code>
      */
     public Builder clearCache() {
       if (cacheBuilder_ == null) {
@@ -1991,7 +1734,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.Cache cache = 7;</code>
+     * <code>.wso2.discovery.config.enforcer.Cache cache = 5;</code>
      */
     public org.wso2.apk.enforcer.discovery.config.enforcer.Cache.Builder getCacheBuilder() {
       
@@ -1999,7 +1742,7 @@ private static final long serialVersionUID = 0L;
       return getCacheFieldBuilder().getBuilder();
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.Cache cache = 7;</code>
+     * <code>.wso2.discovery.config.enforcer.Cache cache = 5;</code>
      */
     public org.wso2.apk.enforcer.discovery.config.enforcer.CacheOrBuilder getCacheOrBuilder() {
       if (cacheBuilder_ != null) {
@@ -2010,7 +1753,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.Cache cache = 7;</code>
+     * <code>.wso2.discovery.config.enforcer.Cache cache = 5;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
         org.wso2.apk.enforcer.discovery.config.enforcer.Cache, org.wso2.apk.enforcer.discovery.config.enforcer.Cache.Builder, org.wso2.apk.enforcer.discovery.config.enforcer.CacheOrBuilder> 
@@ -2030,14 +1773,14 @@ private static final long serialVersionUID = 0L;
     private com.google.protobuf.SingleFieldBuilderV3<
         org.wso2.apk.enforcer.discovery.config.enforcer.Analytics, org.wso2.apk.enforcer.discovery.config.enforcer.Analytics.Builder, org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsOrBuilder> analyticsBuilder_;
     /**
-     * <code>.wso2.discovery.config.enforcer.Analytics analytics = 8;</code>
+     * <code>.wso2.discovery.config.enforcer.Analytics analytics = 6;</code>
      * @return Whether the analytics field is set.
      */
     public boolean hasAnalytics() {
       return analyticsBuilder_ != null || analytics_ != null;
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.Analytics analytics = 8;</code>
+     * <code>.wso2.discovery.config.enforcer.Analytics analytics = 6;</code>
      * @return The analytics.
      */
     public org.wso2.apk.enforcer.discovery.config.enforcer.Analytics getAnalytics() {
@@ -2048,7 +1791,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.Analytics analytics = 8;</code>
+     * <code>.wso2.discovery.config.enforcer.Analytics analytics = 6;</code>
      */
     public Builder setAnalytics(org.wso2.apk.enforcer.discovery.config.enforcer.Analytics value) {
       if (analyticsBuilder_ == null) {
@@ -2064,7 +1807,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.Analytics analytics = 8;</code>
+     * <code>.wso2.discovery.config.enforcer.Analytics analytics = 6;</code>
      */
     public Builder setAnalytics(
         org.wso2.apk.enforcer.discovery.config.enforcer.Analytics.Builder builderForValue) {
@@ -2078,7 +1821,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.Analytics analytics = 8;</code>
+     * <code>.wso2.discovery.config.enforcer.Analytics analytics = 6;</code>
      */
     public Builder mergeAnalytics(org.wso2.apk.enforcer.discovery.config.enforcer.Analytics value) {
       if (analyticsBuilder_ == null) {
@@ -2096,7 +1839,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.Analytics analytics = 8;</code>
+     * <code>.wso2.discovery.config.enforcer.Analytics analytics = 6;</code>
      */
     public Builder clearAnalytics() {
       if (analyticsBuilder_ == null) {
@@ -2110,7 +1853,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.Analytics analytics = 8;</code>
+     * <code>.wso2.discovery.config.enforcer.Analytics analytics = 6;</code>
      */
     public org.wso2.apk.enforcer.discovery.config.enforcer.Analytics.Builder getAnalyticsBuilder() {
       
@@ -2118,7 +1861,7 @@ private static final long serialVersionUID = 0L;
       return getAnalyticsFieldBuilder().getBuilder();
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.Analytics analytics = 8;</code>
+     * <code>.wso2.discovery.config.enforcer.Analytics analytics = 6;</code>
      */
     public org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsOrBuilder getAnalyticsOrBuilder() {
       if (analyticsBuilder_ != null) {
@@ -2129,7 +1872,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.Analytics analytics = 8;</code>
+     * <code>.wso2.discovery.config.enforcer.Analytics analytics = 6;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
         org.wso2.apk.enforcer.discovery.config.enforcer.Analytics, org.wso2.apk.enforcer.discovery.config.enforcer.Analytics.Builder, org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsOrBuilder> 
@@ -2149,14 +1892,14 @@ private static final long serialVersionUID = 0L;
     private com.google.protobuf.SingleFieldBuilderV3<
         org.wso2.apk.enforcer.discovery.config.enforcer.Management, org.wso2.apk.enforcer.discovery.config.enforcer.Management.Builder, org.wso2.apk.enforcer.discovery.config.enforcer.ManagementOrBuilder> managementBuilder_;
     /**
-     * <code>.wso2.discovery.config.enforcer.Management management = 9;</code>
+     * <code>.wso2.discovery.config.enforcer.Management management = 7;</code>
      * @return Whether the management field is set.
      */
     public boolean hasManagement() {
       return managementBuilder_ != null || management_ != null;
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.Management management = 9;</code>
+     * <code>.wso2.discovery.config.enforcer.Management management = 7;</code>
      * @return The management.
      */
     public org.wso2.apk.enforcer.discovery.config.enforcer.Management getManagement() {
@@ -2167,7 +1910,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.Management management = 9;</code>
+     * <code>.wso2.discovery.config.enforcer.Management management = 7;</code>
      */
     public Builder setManagement(org.wso2.apk.enforcer.discovery.config.enforcer.Management value) {
       if (managementBuilder_ == null) {
@@ -2183,7 +1926,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.Management management = 9;</code>
+     * <code>.wso2.discovery.config.enforcer.Management management = 7;</code>
      */
     public Builder setManagement(
         org.wso2.apk.enforcer.discovery.config.enforcer.Management.Builder builderForValue) {
@@ -2197,7 +1940,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.Management management = 9;</code>
+     * <code>.wso2.discovery.config.enforcer.Management management = 7;</code>
      */
     public Builder mergeManagement(org.wso2.apk.enforcer.discovery.config.enforcer.Management value) {
       if (managementBuilder_ == null) {
@@ -2215,7 +1958,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.Management management = 9;</code>
+     * <code>.wso2.discovery.config.enforcer.Management management = 7;</code>
      */
     public Builder clearManagement() {
       if (managementBuilder_ == null) {
@@ -2229,7 +1972,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.Management management = 9;</code>
+     * <code>.wso2.discovery.config.enforcer.Management management = 7;</code>
      */
     public org.wso2.apk.enforcer.discovery.config.enforcer.Management.Builder getManagementBuilder() {
       
@@ -2237,7 +1980,7 @@ private static final long serialVersionUID = 0L;
       return getManagementFieldBuilder().getBuilder();
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.Management management = 9;</code>
+     * <code>.wso2.discovery.config.enforcer.Management management = 7;</code>
      */
     public org.wso2.apk.enforcer.discovery.config.enforcer.ManagementOrBuilder getManagementOrBuilder() {
       if (managementBuilder_ != null) {
@@ -2248,7 +1991,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.Management management = 9;</code>
+     * <code>.wso2.discovery.config.enforcer.Management management = 7;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
         org.wso2.apk.enforcer.discovery.config.enforcer.Management, org.wso2.apk.enforcer.discovery.config.enforcer.Management.Builder, org.wso2.apk.enforcer.discovery.config.enforcer.ManagementOrBuilder> 
@@ -2268,14 +2011,14 @@ private static final long serialVersionUID = 0L;
     private com.google.protobuf.SingleFieldBuilderV3<
         org.wso2.apk.enforcer.discovery.config.enforcer.RestServer, org.wso2.apk.enforcer.discovery.config.enforcer.RestServer.Builder, org.wso2.apk.enforcer.discovery.config.enforcer.RestServerOrBuilder> restServerBuilder_;
     /**
-     * <code>.wso2.discovery.config.enforcer.RestServer restServer = 10;</code>
+     * <code>.wso2.discovery.config.enforcer.RestServer restServer = 8;</code>
      * @return Whether the restServer field is set.
      */
     public boolean hasRestServer() {
       return restServerBuilder_ != null || restServer_ != null;
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.RestServer restServer = 10;</code>
+     * <code>.wso2.discovery.config.enforcer.RestServer restServer = 8;</code>
      * @return The restServer.
      */
     public org.wso2.apk.enforcer.discovery.config.enforcer.RestServer getRestServer() {
@@ -2286,7 +2029,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.RestServer restServer = 10;</code>
+     * <code>.wso2.discovery.config.enforcer.RestServer restServer = 8;</code>
      */
     public Builder setRestServer(org.wso2.apk.enforcer.discovery.config.enforcer.RestServer value) {
       if (restServerBuilder_ == null) {
@@ -2302,7 +2045,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.RestServer restServer = 10;</code>
+     * <code>.wso2.discovery.config.enforcer.RestServer restServer = 8;</code>
      */
     public Builder setRestServer(
         org.wso2.apk.enforcer.discovery.config.enforcer.RestServer.Builder builderForValue) {
@@ -2316,7 +2059,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.RestServer restServer = 10;</code>
+     * <code>.wso2.discovery.config.enforcer.RestServer restServer = 8;</code>
      */
     public Builder mergeRestServer(org.wso2.apk.enforcer.discovery.config.enforcer.RestServer value) {
       if (restServerBuilder_ == null) {
@@ -2334,7 +2077,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.RestServer restServer = 10;</code>
+     * <code>.wso2.discovery.config.enforcer.RestServer restServer = 8;</code>
      */
     public Builder clearRestServer() {
       if (restServerBuilder_ == null) {
@@ -2348,7 +2091,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.RestServer restServer = 10;</code>
+     * <code>.wso2.discovery.config.enforcer.RestServer restServer = 8;</code>
      */
     public org.wso2.apk.enforcer.discovery.config.enforcer.RestServer.Builder getRestServerBuilder() {
       
@@ -2356,7 +2099,7 @@ private static final long serialVersionUID = 0L;
       return getRestServerFieldBuilder().getBuilder();
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.RestServer restServer = 10;</code>
+     * <code>.wso2.discovery.config.enforcer.RestServer restServer = 8;</code>
      */
     public org.wso2.apk.enforcer.discovery.config.enforcer.RestServerOrBuilder getRestServerOrBuilder() {
       if (restServerBuilder_ != null) {
@@ -2367,7 +2110,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.RestServer restServer = 10;</code>
+     * <code>.wso2.discovery.config.enforcer.RestServer restServer = 8;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
         org.wso2.apk.enforcer.discovery.config.enforcer.RestServer, org.wso2.apk.enforcer.discovery.config.enforcer.RestServer.Builder, org.wso2.apk.enforcer.discovery.config.enforcer.RestServerOrBuilder> 
@@ -2387,14 +2130,14 @@ private static final long serialVersionUID = 0L;
     private com.google.protobuf.SingleFieldBuilderV3<
         org.wso2.apk.enforcer.discovery.config.enforcer.Tracing, org.wso2.apk.enforcer.discovery.config.enforcer.Tracing.Builder, org.wso2.apk.enforcer.discovery.config.enforcer.TracingOrBuilder> tracingBuilder_;
     /**
-     * <code>.wso2.discovery.config.enforcer.Tracing tracing = 11;</code>
+     * <code>.wso2.discovery.config.enforcer.Tracing tracing = 9;</code>
      * @return Whether the tracing field is set.
      */
     public boolean hasTracing() {
       return tracingBuilder_ != null || tracing_ != null;
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.Tracing tracing = 11;</code>
+     * <code>.wso2.discovery.config.enforcer.Tracing tracing = 9;</code>
      * @return The tracing.
      */
     public org.wso2.apk.enforcer.discovery.config.enforcer.Tracing getTracing() {
@@ -2405,7 +2148,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.Tracing tracing = 11;</code>
+     * <code>.wso2.discovery.config.enforcer.Tracing tracing = 9;</code>
      */
     public Builder setTracing(org.wso2.apk.enforcer.discovery.config.enforcer.Tracing value) {
       if (tracingBuilder_ == null) {
@@ -2421,7 +2164,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.Tracing tracing = 11;</code>
+     * <code>.wso2.discovery.config.enforcer.Tracing tracing = 9;</code>
      */
     public Builder setTracing(
         org.wso2.apk.enforcer.discovery.config.enforcer.Tracing.Builder builderForValue) {
@@ -2435,7 +2178,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.Tracing tracing = 11;</code>
+     * <code>.wso2.discovery.config.enforcer.Tracing tracing = 9;</code>
      */
     public Builder mergeTracing(org.wso2.apk.enforcer.discovery.config.enforcer.Tracing value) {
       if (tracingBuilder_ == null) {
@@ -2453,7 +2196,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.Tracing tracing = 11;</code>
+     * <code>.wso2.discovery.config.enforcer.Tracing tracing = 9;</code>
      */
     public Builder clearTracing() {
       if (tracingBuilder_ == null) {
@@ -2467,7 +2210,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.Tracing tracing = 11;</code>
+     * <code>.wso2.discovery.config.enforcer.Tracing tracing = 9;</code>
      */
     public org.wso2.apk.enforcer.discovery.config.enforcer.Tracing.Builder getTracingBuilder() {
       
@@ -2475,7 +2218,7 @@ private static final long serialVersionUID = 0L;
       return getTracingFieldBuilder().getBuilder();
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.Tracing tracing = 11;</code>
+     * <code>.wso2.discovery.config.enforcer.Tracing tracing = 9;</code>
      */
     public org.wso2.apk.enforcer.discovery.config.enforcer.TracingOrBuilder getTracingOrBuilder() {
       if (tracingBuilder_ != null) {
@@ -2486,7 +2229,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.Tracing tracing = 11;</code>
+     * <code>.wso2.discovery.config.enforcer.Tracing tracing = 9;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
         org.wso2.apk.enforcer.discovery.config.enforcer.Tracing, org.wso2.apk.enforcer.discovery.config.enforcer.Tracing.Builder, org.wso2.apk.enforcer.discovery.config.enforcer.TracingOrBuilder> 
@@ -2506,14 +2249,14 @@ private static final long serialVersionUID = 0L;
     private com.google.protobuf.SingleFieldBuilderV3<
         org.wso2.apk.enforcer.discovery.config.enforcer.Metrics, org.wso2.apk.enforcer.discovery.config.enforcer.Metrics.Builder, org.wso2.apk.enforcer.discovery.config.enforcer.MetricsOrBuilder> metricsBuilder_;
     /**
-     * <code>.wso2.discovery.config.enforcer.Metrics metrics = 12;</code>
+     * <code>.wso2.discovery.config.enforcer.Metrics metrics = 10;</code>
      * @return Whether the metrics field is set.
      */
     public boolean hasMetrics() {
       return metricsBuilder_ != null || metrics_ != null;
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.Metrics metrics = 12;</code>
+     * <code>.wso2.discovery.config.enforcer.Metrics metrics = 10;</code>
      * @return The metrics.
      */
     public org.wso2.apk.enforcer.discovery.config.enforcer.Metrics getMetrics() {
@@ -2524,7 +2267,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.Metrics metrics = 12;</code>
+     * <code>.wso2.discovery.config.enforcer.Metrics metrics = 10;</code>
      */
     public Builder setMetrics(org.wso2.apk.enforcer.discovery.config.enforcer.Metrics value) {
       if (metricsBuilder_ == null) {
@@ -2540,7 +2283,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.Metrics metrics = 12;</code>
+     * <code>.wso2.discovery.config.enforcer.Metrics metrics = 10;</code>
      */
     public Builder setMetrics(
         org.wso2.apk.enforcer.discovery.config.enforcer.Metrics.Builder builderForValue) {
@@ -2554,7 +2297,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.Metrics metrics = 12;</code>
+     * <code>.wso2.discovery.config.enforcer.Metrics metrics = 10;</code>
      */
     public Builder mergeMetrics(org.wso2.apk.enforcer.discovery.config.enforcer.Metrics value) {
       if (metricsBuilder_ == null) {
@@ -2572,7 +2315,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.Metrics metrics = 12;</code>
+     * <code>.wso2.discovery.config.enforcer.Metrics metrics = 10;</code>
      */
     public Builder clearMetrics() {
       if (metricsBuilder_ == null) {
@@ -2586,7 +2329,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.Metrics metrics = 12;</code>
+     * <code>.wso2.discovery.config.enforcer.Metrics metrics = 10;</code>
      */
     public org.wso2.apk.enforcer.discovery.config.enforcer.Metrics.Builder getMetricsBuilder() {
       
@@ -2594,7 +2337,7 @@ private static final long serialVersionUID = 0L;
       return getMetricsFieldBuilder().getBuilder();
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.Metrics metrics = 12;</code>
+     * <code>.wso2.discovery.config.enforcer.Metrics metrics = 10;</code>
      */
     public org.wso2.apk.enforcer.discovery.config.enforcer.MetricsOrBuilder getMetricsOrBuilder() {
       if (metricsBuilder_ != null) {
@@ -2605,7 +2348,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.wso2.discovery.config.enforcer.Metrics metrics = 12;</code>
+     * <code>.wso2.discovery.config.enforcer.Metrics metrics = 10;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
         org.wso2.apk.enforcer.discovery.config.enforcer.Metrics, org.wso2.apk.enforcer.discovery.config.enforcer.Metrics.Builder, org.wso2.apk.enforcer.discovery.config.enforcer.MetricsOrBuilder> 
@@ -2634,7 +2377,7 @@ private static final long serialVersionUID = 0L;
         org.wso2.apk.enforcer.discovery.config.enforcer.Filter, org.wso2.apk.enforcer.discovery.config.enforcer.Filter.Builder, org.wso2.apk.enforcer.discovery.config.enforcer.FilterOrBuilder> filtersBuilder_;
 
     /**
-     * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 13;</code>
+     * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 11;</code>
      */
     public java.util.List<org.wso2.apk.enforcer.discovery.config.enforcer.Filter> getFiltersList() {
       if (filtersBuilder_ == null) {
@@ -2644,7 +2387,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 13;</code>
+     * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 11;</code>
      */
     public int getFiltersCount() {
       if (filtersBuilder_ == null) {
@@ -2654,7 +2397,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 13;</code>
+     * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 11;</code>
      */
     public org.wso2.apk.enforcer.discovery.config.enforcer.Filter getFilters(int index) {
       if (filtersBuilder_ == null) {
@@ -2664,7 +2407,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 13;</code>
+     * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 11;</code>
      */
     public Builder setFilters(
         int index, org.wso2.apk.enforcer.discovery.config.enforcer.Filter value) {
@@ -2681,7 +2424,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 13;</code>
+     * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 11;</code>
      */
     public Builder setFilters(
         int index, org.wso2.apk.enforcer.discovery.config.enforcer.Filter.Builder builderForValue) {
@@ -2695,7 +2438,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 13;</code>
+     * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 11;</code>
      */
     public Builder addFilters(org.wso2.apk.enforcer.discovery.config.enforcer.Filter value) {
       if (filtersBuilder_ == null) {
@@ -2711,7 +2454,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 13;</code>
+     * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 11;</code>
      */
     public Builder addFilters(
         int index, org.wso2.apk.enforcer.discovery.config.enforcer.Filter value) {
@@ -2728,7 +2471,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 13;</code>
+     * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 11;</code>
      */
     public Builder addFilters(
         org.wso2.apk.enforcer.discovery.config.enforcer.Filter.Builder builderForValue) {
@@ -2742,7 +2485,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 13;</code>
+     * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 11;</code>
      */
     public Builder addFilters(
         int index, org.wso2.apk.enforcer.discovery.config.enforcer.Filter.Builder builderForValue) {
@@ -2756,7 +2499,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 13;</code>
+     * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 11;</code>
      */
     public Builder addAllFilters(
         java.lang.Iterable<? extends org.wso2.apk.enforcer.discovery.config.enforcer.Filter> values) {
@@ -2771,7 +2514,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 13;</code>
+     * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 11;</code>
      */
     public Builder clearFilters() {
       if (filtersBuilder_ == null) {
@@ -2784,7 +2527,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 13;</code>
+     * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 11;</code>
      */
     public Builder removeFilters(int index) {
       if (filtersBuilder_ == null) {
@@ -2797,14 +2540,14 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 13;</code>
+     * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 11;</code>
      */
     public org.wso2.apk.enforcer.discovery.config.enforcer.Filter.Builder getFiltersBuilder(
         int index) {
       return getFiltersFieldBuilder().getBuilder(index);
     }
     /**
-     * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 13;</code>
+     * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 11;</code>
      */
     public org.wso2.apk.enforcer.discovery.config.enforcer.FilterOrBuilder getFiltersOrBuilder(
         int index) {
@@ -2814,7 +2557,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 13;</code>
+     * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 11;</code>
      */
     public java.util.List<? extends org.wso2.apk.enforcer.discovery.config.enforcer.FilterOrBuilder> 
          getFiltersOrBuilderList() {
@@ -2825,14 +2568,14 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 13;</code>
+     * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 11;</code>
      */
     public org.wso2.apk.enforcer.discovery.config.enforcer.Filter.Builder addFiltersBuilder() {
       return getFiltersFieldBuilder().addBuilder(
           org.wso2.apk.enforcer.discovery.config.enforcer.Filter.getDefaultInstance());
     }
     /**
-     * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 13;</code>
+     * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 11;</code>
      */
     public org.wso2.apk.enforcer.discovery.config.enforcer.Filter.Builder addFiltersBuilder(
         int index) {
@@ -2840,7 +2583,7 @@ private static final long serialVersionUID = 0L;
           index, org.wso2.apk.enforcer.discovery.config.enforcer.Filter.getDefaultInstance());
     }
     /**
-     * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 13;</code>
+     * <code>repeated .wso2.discovery.config.enforcer.Filter filters = 11;</code>
      */
     public java.util.List<org.wso2.apk.enforcer.discovery.config.enforcer.Filter.Builder> 
          getFiltersBuilderList() {
@@ -2859,125 +2602,6 @@ private static final long serialVersionUID = 0L;
         filters_ = null;
       }
       return filtersBuilder_;
-    }
-
-    private org.wso2.apk.enforcer.discovery.config.enforcer.Soap soap_;
-    private com.google.protobuf.SingleFieldBuilderV3<
-        org.wso2.apk.enforcer.discovery.config.enforcer.Soap, org.wso2.apk.enforcer.discovery.config.enforcer.Soap.Builder, org.wso2.apk.enforcer.discovery.config.enforcer.SoapOrBuilder> soapBuilder_;
-    /**
-     * <code>.wso2.discovery.config.enforcer.Soap soap = 14;</code>
-     * @return Whether the soap field is set.
-     */
-    public boolean hasSoap() {
-      return soapBuilder_ != null || soap_ != null;
-    }
-    /**
-     * <code>.wso2.discovery.config.enforcer.Soap soap = 14;</code>
-     * @return The soap.
-     */
-    public org.wso2.apk.enforcer.discovery.config.enforcer.Soap getSoap() {
-      if (soapBuilder_ == null) {
-        return soap_ == null ? org.wso2.apk.enforcer.discovery.config.enforcer.Soap.getDefaultInstance() : soap_;
-      } else {
-        return soapBuilder_.getMessage();
-      }
-    }
-    /**
-     * <code>.wso2.discovery.config.enforcer.Soap soap = 14;</code>
-     */
-    public Builder setSoap(org.wso2.apk.enforcer.discovery.config.enforcer.Soap value) {
-      if (soapBuilder_ == null) {
-        if (value == null) {
-          throw new NullPointerException();
-        }
-        soap_ = value;
-        onChanged();
-      } else {
-        soapBuilder_.setMessage(value);
-      }
-
-      return this;
-    }
-    /**
-     * <code>.wso2.discovery.config.enforcer.Soap soap = 14;</code>
-     */
-    public Builder setSoap(
-        org.wso2.apk.enforcer.discovery.config.enforcer.Soap.Builder builderForValue) {
-      if (soapBuilder_ == null) {
-        soap_ = builderForValue.build();
-        onChanged();
-      } else {
-        soapBuilder_.setMessage(builderForValue.build());
-      }
-
-      return this;
-    }
-    /**
-     * <code>.wso2.discovery.config.enforcer.Soap soap = 14;</code>
-     */
-    public Builder mergeSoap(org.wso2.apk.enforcer.discovery.config.enforcer.Soap value) {
-      if (soapBuilder_ == null) {
-        if (soap_ != null) {
-          soap_ =
-            org.wso2.apk.enforcer.discovery.config.enforcer.Soap.newBuilder(soap_).mergeFrom(value).buildPartial();
-        } else {
-          soap_ = value;
-        }
-        onChanged();
-      } else {
-        soapBuilder_.mergeFrom(value);
-      }
-
-      return this;
-    }
-    /**
-     * <code>.wso2.discovery.config.enforcer.Soap soap = 14;</code>
-     */
-    public Builder clearSoap() {
-      if (soapBuilder_ == null) {
-        soap_ = null;
-        onChanged();
-      } else {
-        soap_ = null;
-        soapBuilder_ = null;
-      }
-
-      return this;
-    }
-    /**
-     * <code>.wso2.discovery.config.enforcer.Soap soap = 14;</code>
-     */
-    public org.wso2.apk.enforcer.discovery.config.enforcer.Soap.Builder getSoapBuilder() {
-      
-      onChanged();
-      return getSoapFieldBuilder().getBuilder();
-    }
-    /**
-     * <code>.wso2.discovery.config.enforcer.Soap soap = 14;</code>
-     */
-    public org.wso2.apk.enforcer.discovery.config.enforcer.SoapOrBuilder getSoapOrBuilder() {
-      if (soapBuilder_ != null) {
-        return soapBuilder_.getMessageOrBuilder();
-      } else {
-        return soap_ == null ?
-            org.wso2.apk.enforcer.discovery.config.enforcer.Soap.getDefaultInstance() : soap_;
-      }
-    }
-    /**
-     * <code>.wso2.discovery.config.enforcer.Soap soap = 14;</code>
-     */
-    private com.google.protobuf.SingleFieldBuilderV3<
-        org.wso2.apk.enforcer.discovery.config.enforcer.Soap, org.wso2.apk.enforcer.discovery.config.enforcer.Soap.Builder, org.wso2.apk.enforcer.discovery.config.enforcer.SoapOrBuilder> 
-        getSoapFieldBuilder() {
-      if (soapBuilder_ == null) {
-        soapBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-            org.wso2.apk.enforcer.discovery.config.enforcer.Soap, org.wso2.apk.enforcer.discovery.config.enforcer.Soap.Builder, org.wso2.apk.enforcer.discovery.config.enforcer.SoapOrBuilder>(
-                getSoap(),
-                getParentForChildren(),
-                isClean());
-        soap_ = null;
-      }
-      return soapBuilder_;
     }
     @java.lang.Override
     public final Builder setUnknownFields(

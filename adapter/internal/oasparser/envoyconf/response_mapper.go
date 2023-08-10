@@ -26,7 +26,6 @@ import (
 	hcmv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/http_connection_manager/v3"
 	envoy_type_matcher_v3 "github.com/envoyproxy/go-control-plane/envoy/type/matcher/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/wellknown"
-	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/err"
 	"github.com/wso2/apk/adapter/pkg/utils/soaputils"
 	"google.golang.org/protobuf/types/known/structpb"
@@ -64,23 +63,23 @@ func init() {
 
 func getErrorResponseMappers() []*hcmv3.ResponseMapper {
 	responseMappers := []*hcmv3.ResponseMapper{}
-	conf := config.ReadConfigs()
-	if conf.Adapter.SoapErrorInXMLEnabled {
-		for flag, details := range errorResponseMap {
-			responseMappers = append(responseMappers,
-				genSoap12ErrorResponseMapper(flag, uint32(details.statusCode), int32(details.errorCode), details.message, details.description),
-				genSoap11ErrorResponseMapper(flag, uint32(details.statusCode), int32(details.errorCode), details.message, details.description),
-			)
-		}
+	// conf := config.ReadConfigs()
+	// if conf.Adapter.SoapErrorInXMLEnabled {
+	// 	for flag, details := range errorResponseMap {
+	// 		responseMappers = append(responseMappers,
+	// 			genSoap12ErrorResponseMapper(flag, uint32(details.statusCode), int32(details.errorCode), details.message, details.description),
+	// 			genSoap11ErrorResponseMapper(flag, uint32(details.statusCode), int32(details.errorCode), details.message, details.description),
+	// 		)
+	// 	}
 
-		responseMappers = append(responseMappers,
-			genSoap12ErrorResponseMapperForExtAuthz(500, err.UaexCode, err.UaexMessage, err.UaexDecription),
-		)
+	// 	responseMappers = append(responseMappers,
+	// 		genSoap12ErrorResponseMapperForExtAuthz(500, err.UaexCode, err.UaexMessage, err.UaexDecription),
+	// 	)
 
-		responseMappers = append(responseMappers,
-			genSoap11ErrorResponseMapperForExtAuthz(500, err.UaexCode, err.UaexMessage, err.UaexDecription),
-		)
-	}
+	// 	responseMappers = append(responseMappers,
+	// 		genSoap11ErrorResponseMapperForExtAuthz(500, err.UaexCode, err.UaexMessage, err.UaexDecription),
+	// 	)
+	// }
 
 	for flag, details := range errorResponseMap {
 		responseMappers = append(responseMappers,

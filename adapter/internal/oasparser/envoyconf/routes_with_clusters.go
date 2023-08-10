@@ -52,7 +52,6 @@ import (
 	logging "github.com/wso2/apk/adapter/internal/logging"
 	"github.com/wso2/apk/adapter/internal/oasparser/constants"
 	"github.com/wso2/apk/adapter/internal/oasparser/model"
-	"github.com/wso2/apk/adapter/internal/svcdiscovery"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes"
@@ -524,13 +523,13 @@ func processEndpoints(clusterName string, clusterDetails *model.EndpointCluster,
 
 	// service discovery itself will be handling loadbancing etc.
 	// Therefore mutiple endpoint support is not needed, hence consider only.
-	serviceDiscoveryString := clusterDetails.Endpoints[0].ServiceDiscoveryString
-	if serviceDiscoveryString != "" {
-		//add the api level cluster name to the ClusterConsulKeyMap
-		svcdiscovery.ClusterConsulKeyMap[clusterName] = serviceDiscoveryString
-		logger.LoggerOasparser.Debugln("Consul cluster added for x-wso2-endpoints: ", clusterName, " ",
-			serviceDiscoveryString)
-	}
+	// serviceDiscoveryString := clusterDetails.Endpoints[0].ServiceDiscoveryString
+	// if serviceDiscoveryString != "" {
+	// 	//add the api level cluster name to the ClusterConsulKeyMap
+	// 	svcdiscovery.ClusterConsulKeyMap[clusterName] = serviceDiscoveryString
+	// 	logger.LoggerOasparser.Debugln("Consul cluster added for x-wso2-endpoints: ", clusterName, " ",
+	// 		serviceDiscoveryString)
+	// }
 
 	return &cluster, addresses, nil
 }

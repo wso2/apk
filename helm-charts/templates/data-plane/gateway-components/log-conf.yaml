@@ -6,8 +6,9 @@ metadata:
   namespace: {{ .Release.Namespace }}
 data:
   config.toml: | 
+    {{ if and .Values.wso2.apk.dp.adapter.configs }}
     [adapter]
-    {{ if and .Values.wso2.apk.dp.adapter.configs .Values.wso2.apk.dp.adapter.configs.apiNamespaces }}
+    {{ if .Values.wso2.apk.dp.adapter.configs.apiNamespaces }}
     [adapter.operator]
       namespaces = [{{ include "commaJoinedQuotedList" .Values.wso2.apk.dp.adapter.configs.apiNamespaces}}]
     {{ end}}    
@@ -18,6 +19,7 @@ data:
 
     [adapter.truststore]
       location = "/home/wso2/security/truststore"
+    {{ end}} 
 
     [router]
       securedListenerPort = 9095
@@ -44,7 +46,7 @@ data:
       keyFilePath = "/home/wso2/security/keystore/router.key"
       certFilePath = "/home/wso2/security/keystore/router.crt"
       caCertFilePath = "/home/wso2/security/truststore/ratelimiter.crt"
-      sslCertSANHostname = "ratelimiter"
+      sslCertSANHostname = "{{ .Values.wso2.apk.dp.ratelimiter.deployment.security.sslHostname | default "ratelimiter" }}"
     {{end}}
 
     [enforcer]
@@ -59,8 +61,8 @@ data:
       certificateFilePath = "/home/wso2/security/truststore/wso2carbon.pem"
     
     [enforcer.jwtGenerator]
-      publicCertificatePath = "/home/wso2/security/truststore/mg.pem"
-      privateKeyPath = "/home/wso2/security/keystore/mg.key"
+      publicCertificatePath = "/home/wso2/security/truststore/adapter.crt"
+      privateKeyPath = "/home/wso2/security/keystore/adapter.key"
 
     [enforcer.metrics]
       enabled = false
