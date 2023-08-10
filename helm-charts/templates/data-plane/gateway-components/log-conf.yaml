@@ -7,18 +7,10 @@ metadata:
 data:
   config.toml: | 
     [adapter]
-    [adapter.server]
-      enabled = true
-      port = "9843"
-      tokenPrivateKeyPath = "/home/wso2/security/keystore/adapter.key"
-      [[adapter.server.users]]
-        username = "admin"
-        password = "$env{adapter_admin_pwd}"
-
-      {{ if and .Values.wso2.apk.dp.adapter.configs .Values.wso2.apk.dp.adapter.configs.apiNamespaces }}
-      [adapter.operator]
-        namespaces = [{{ include "commaJoinedQuotedList" .Values.wso2.apk.dp.adapter.configs.apiNamespaces}}]
-      {{ end}}    
+    {{ if and .Values.wso2.apk.dp.adapter.configs .Values.wso2.apk.dp.adapter.configs.apiNamespaces }}
+    [adapter.operator]
+      namespaces = [{{ include "commaJoinedQuotedList" .Values.wso2.apk.dp.adapter.configs.apiNamespaces}}]
+    {{ end}}    
 
     [adapter.keystore]
       certPath = "/home/wso2/security/keystore/adapter.crt"
@@ -36,43 +28,43 @@ data:
       certPath = "/home/wso2/security/keystore/router.crt"
       keyPath = "/home/wso2/security/keystore/router.key"
 
-    [router.upstream]
     [router.upstream.tls]
       trustedCertPath = "/etc/ssl/certs/ca-certificates.crt"
       verifyHostName = true
       disableSslVerification = false
 
-    [enforcer]
-    [enforcer.jwtIssuer]
-      enabled = true
-      issuer = "https://prod.gw.wso2.com/testkey"
-
-    [enforcer.security.authHeader]
-    # Send the authorization header to the backend
-    enableOutboundAuthHeader = true
+    [router.downstream.tls]
+      mtlsAPIsEnabled = false
+      trustedCertPath = "/etc/ssl/certs/ca-certificates.crt"
     
-    [enforcer.security]
+    {{ if .Values.wso2.apk.dp.ratelimiter }}
+    [router.ratelimit]
+      host = "{{ template "apk-helm.resource.prefix" . }}-ratelimiter-service.{{ .Release.Namespace }}.svc"
+      enabled = {{ and .Values.wso2.apk.dp.enabled .Values.wso2.apk.dp.ratelimiter.enabled}}
+      keyFilePath = "/home/wso2/security/keystore/router.key"
+      certFilePath = "/home/wso2/security/keystore/router.crt"
+      caCertFilePath = "/home/wso2/security/truststore/ratelimiter.crt"
+      sslCertSANHostname = "ratelimiter"
+    {{end}}
+
+    [enforcer]
     [enforcer.security.internalKey]
       enabled = true
       issuer = "https://apim.wso2.com/publisher"
       certificateFilePath = "/home/wso2/security/truststore/wso2carbon.pem"
+    
     [enforcer.security.apiKey]
       enabled = true
       issuer = "https://apim.wso2.com/publisher"
       certificateFilePath = "/home/wso2/security/truststore/wso2carbon.pem"
+    
     [enforcer.jwtGenerator]
-    publicCertificatePath = "/home/wso2/security/truststore/mg.pem"
-    privateKeyPath = "/home/wso2/security/keystore/mg.key"
+      publicCertificatePath = "/home/wso2/security/truststore/mg.pem"
+      privateKeyPath = "/home/wso2/security/keystore/mg.key"
 
-    [enforcer.throttling]
-      enableGlobalEventPublishing = false
-      jmsConnectionProviderURL = "amqp://admin:$env{tm_admin_pwd}@carbon/carbon?brokerlist='tcp://apim:5672'"
-      [enforcer.throttling.publisher]
-        username = "admin"
-        password = "$env{tm_admin_pwd}"
-        [[enforcer.throttling.publisher.URLGroup]]
-          receiverURLs = ["tcp://apim:9611"]
-          authURLs = ["ssl://apim:9711"]
+    [enforcer.metrics]
+      enabled = false
+    
     {{ if and .Values.wso2.apk.dp.gatewayRuntime.tracing .Values.wso2.apk.dp.gatewayRuntime.tracing.enabled }}
     [tracing]
       enabled = true
@@ -110,15 +102,11 @@ data:
         {{end}}
     {{end}}
 
-    {{- if .Values.wso2.apk.dp.gatewayRuntime.analytics }}
+    {{- if and .Values.wso2.apk.dp.gatewayRuntime.analytics .Values.wso2.apk.dp.gatewayRuntime.analytics.enabled}}
     [analytics]
-      enabled = {{ .Values.wso2.apk.dp.gatewayRuntime.analytics.enabled | default false }}
-    {{- if .Values.wso2.apk.dp.gatewayRuntime.analytics.type }}
-      {{- if eq .Values.wso2.apk.dp.gatewayRuntime.analytics.type "ELK" }}
-      type = "ELK"
-      {{- end }}
+      enabled = true
+      type = {{ .Values.wso2.apk.dp.gatewayRuntime.analytics.type }}
 
-    {{- if eq .Values.wso2.apk.dp.gatewayRuntime.analytics.type "Choreo" }}
     [analytics.adapter]
       bufferFlushInterval = "1s"
       bufferSizeBytes = 16384
@@ -136,33 +124,15 @@ data:
       port = 18090
       maxMessageSize = 1000000000
       maxHeaderLimit = 8192
-      #keep alive time of the external authz connection
       keepAliveTime = 600
     
     [analytics.enforcer.LogReceiver.threadPool]
       coreSize = 10
       maxSize = 100
-      #keep alive time of threads in seconds
       keepAliveTime = 600
       queueSize = 1000
     {{- end }}
-    {{- end }}
-    {{- end }}
 
-    [enforcer.metrics]
-      enabled = false
-    
-    [managementServer]
-      enabled = false
-
-    {{ if .Values.wso2.apk.dp.ratelimiter }}
-    [router.ratelimit]
-      host = "{{ template "apk-helm.resource.prefix" . }}-ratelimiter-service.{{ .Release.Namespace }}.svc"
-      enabled = {{ and .Values.wso2.apk.dp.enabled .Values.wso2.apk.dp.ratelimiter.enabled}}
-      keyFilePath = "/home/wso2/security/keystore/router.key"
-      certFilePath = "/home/wso2/security/keystore/router.crt"
-      caCertFilePath = "/home/wso2/security/truststore/ratelimiter.crt"
-    {{end}}
     {{ if .Values.wso2.apk.dp.partitionServer}}
     [partitionServer]
       enabled = {{.Values.wso2.apk.dp.partitionServer.enabled}}
@@ -184,553 +154,6 @@ data:
         {{end}}
     {{end}}
     {{end}}
-
-  config.toml.template: |
-    # The configuration file for mgw
-
-    [adapter] # --------------------------------------------------------
-
-    artifactsDirectory = "/home/wso2/artifacts"
-    # Configurations required for configuring the deployment parameters that are used for identifying the Choreo Connect Adapter REST APIs
-    [adapter.server]
-    # Enable/Disable Choreo Connect Adapter REST API
-    enabled = true
-    # Hostname of the Choreo Connect Adapter
-    host = "0.0.0.0"
-    # Port of the Choreo Connect Adapter
-    port = "9843"
-    # Time to live for the Adapter access token
-    tokenTTL = "1h"
-    # Private key path to use for the token generation
-    tokenPrivateKeyPath = "/home/wso2/security/keystore/mg.key"
-    [[adapter.server.users]]
-        username = "admin"
-        password = "$env{adapter_admin_pwd}"
-
-    # Configurations of key store used in Choreo Connect Adapter
-    [adapter.keystore]
-    # Path of the certificate
-    certPath = "/home/wso2/security/keystore/mg.pem"
-    # Path of the private key
-    keyPath = "/home/wso2/security/keystore/mg.key"
-
-    # Configurations of trust store used in the Choreo Connect Adapter
-    [adapter.truststore]
-    # The directory path for the trusted certificates of the Choreo Connect Adapter
-    location = "/home/wso2/security/truststore"
-
-    # Configurations related to Consul
-    [adapter.consul]
-    # Enable/Disable consul service
-    enabled = false
-    # Connection url of the Consul HTTP API
-    url = "https://169.254.1.1:8501" # scheme + host ip + port
-    # Time interval (in seconds) in which the Choreo Connect should fetch updates from the Consul service catalog
-    pollInterval = 5
-    # Access Control Token generated using Consul
-    # You should grant read access to services when creating the token
-    ACLToken = "d3a2a719-4221-8c65-5212-58d4727427ac"
-    # Choreo Connect natively integrates with Consul service mesh
-    # Therefore a service name is required to be defined inorder to grant access to other services in mesh
-    # This only need to be defined if service mesh enabled in Consul
-    mgwServiceName = "wso2"
-    # Set this to true if service mesh is enabled in Consul
-    serviceMeshEnabled = false
-    # Certs for tls
-    # Optional path to the CA certificate used for Consul communication, defaults to the system bundle if not specified
-    caCertFile = "/home/wso2/security/truststore/consul/consul-agent-ca.pem"
-    # Optional path to the certificate for Consul communication. If this is set, then you also need to set keyFile
-    certFile = "/home/wso2/security/truststore/consul/local-dc-client-consul-0.pem"
-    # Optional path to the private key for Consul communication. If this is set, then you need to also set certFile
-    keyFile = "/home/wso2/security/truststore/consul/local-dc-client-consul-0-key.pem"
-
-    # Configuration related to the repository where the API artifacts are stored
-    [adapter.sourceControl]
-    # Enable/Disable Source Control for API Artifacts
-    enabled = false
-    # Time interval (in seconds) in which the Adapter should fetch updates from the remote repository
-    pollInterval = 30
-    # Time interval (in seconds) in which the adapter should retry fetching artifacts from the remote repository at startup
-    retryInterval = 5
-    # Maximum number of retries for fetching artifacts from the remote repository at startup
-    maxRetryCount = 20
-    # The directory path where the git artifacts are stored
-    artifactsDirectory = "/home/wso2/git-artifacts"
-    # Configurations of the repository
-    [adapter.sourceControl.repository]
-        # Repository URL where artifacts are stored
-        URL = "https://github.com/username/repository-name.git"
-        # Branch of the repository where the artifacts are stored (Use "" for default branch)
-        branch = "main"
-        # Use either username and accessToken, or ssh key for authentication
-        # Git username (Use "" in the case of a public repository (only for GitHub))
-        username = "username"
-        # Git personal access token or password
-        accessToken = $env{git_access_token}
-        # Path to the private key used for authentication (Use "" in the case of a public repository (only for GitHub))
-        sshKeyFile = "/home/wso2/ssh-keys/id_ed25519"
-
-    # Configurations for operator
-    [adapter.operator]
-    # Add the namespaces to watch, unspecified will cause to watch all namespaces
-    # while keeping an empty array causes to watch no namespaces
-    namespaces = ["alpha"]
-
-    # Configurations required for router to route the traffic from different clients to services
-    [router] # --------------------------------------------------------
-    # Host for listener of Router
-    listenerHost = "0.0.0.0"
-    # Port for listener of Router
-    listenerPort = 9090
-    # Host for secured listener of Router
-    securedListenerHost = "0.0.0.0"
-    # Port for secured listener of Router
-    securedListenerPort = {{ .Values.wso2.apk.dp.gateway.listener.port }}
-    # The timeout for new network connections to hosts in the cluster in seconds
-    clusterTimeoutInSeconds = 20
-    # The timeout for response coming from enforcer to route per API request
-    enforcerResponseTimeoutInSeconds = 20
-    # System hostname for system API resources (eg: /testkey and /health)
-    systemHost = "localhost"
-
-    # Configurations of key store used in Choreo Connect Router
-    [router.keystore]
-    # Path of the certificate of the Router
-    certPath = "/home/wso2/security/keystore/mg.pem"
-    # Path of the private key of the Router
-    keyPath = "/home/wso2/security/keystore/mg.key"
-
-    # Cors configurations
-    [router.cors]
-    # Enable CORS configurations globally for all endpoints and APIs deployed in Choreo Connect Router
-    enabled = true
-    # Allowed origins. Set this to [*] to allow all origins
-    allowOrigins = ["*"]
-    # The content for the access-control-allow-methods header
-    allowMethods = ["GET","PUT","POST","DELETE","PATCH","OPTIONS"]
-    # The content for the access-control-allow-headers header
-    allowHeaders = ["authorization","Access-Control-Allow-Origin","Content-Type","SOAPAction","apikey", "testKey", "Internal-Key"]
-    # The content for the access-control-expose-headers header
-    exposeHeaders = []
-    # Specifies whether the resource allows credentials
-    allowCredentials = false
-
-    [router.upstream]
-
-    # The configurations for SSL configuration related to the backend connection in Choreo Connect
-    [router.upstream.tls]
-    # Minimum TLS protocol version
-    minimumProtocolVersion = "TLS1_1"
-    # Maximum TLS protocol version
-    maximumProtocolVersion = "TLS1_2"
-    # If specified, the TLS listener will only support the specified ciphers when negotiating TLS 1.0-1.2 
-    # (this setting has no effect when negotiating TLS 1.3)
-    ciphers = "ECDHE-ECDSA-AES128-GCM-SHA256, ECDHE-RSA-AES128-GCM-SHA256, ECDHE-ECDSA-AES128-SHA, ECDHE-RSA-AES128-SHA, AES128-GCM-SHA256, AES128-SHA, ECDHE-ECDSA-AES256-GCM-SHA384, ECDHE-RSA-AES256-GCM-SHA384, ECDHE-ECDSA-AES256-SHA, ECDHE-RSA-AES256-SHA, AES256-GCM-SHA384, AES256-SHA"  
-    # Path to trusted certificates
-    trustedCertPath = "/etc/ssl/certs/ca-certificates.crt"
-    # Enable/Disable Verifying host name
-    verifyHostName = true
-    # Disable SSL verification
-    disableSslVerification = false
-
-    [router.upstream.dns]
-    #  DNS refresh rate in miliseconds
-    dNSRefreshRate = 5000
-    # set cluster’s DNS refresh rate to resource record’s TTL which comes from DNS resolution
-    respectDNSTtl = false
-
-    # health configs for upstream clusters 
-    [router.upstream.health]
-    #  time in seconds to wait for a health check response
-    timeout = 1
-    # interval between health checks in seconds.
-    interval = 10
-    # number of unhealthy health checks required before a host is marked unhealthy
-    unhealthyThreshold = 2
-    # number of healthy health checks required before a host is marked healthy
-    healthyThreshold = 2
-
-    # Configure timeout settings related to routes. This will be applicable globally for all the routes in router.
-    [router.upstream.timeouts]
-    # Upstream timeout for the route. If not specified, the default is 60s.
-    routeTimeoutInSeconds = 60
-    # Maximum upstream timeout allowed in an OpenAPI definition or API-M UI. A larger value will be replaced by this.
-    maxRouteTimeoutInSeconds = 60
-    # Backend connection idle timeout. The amount of time the request’s stream may be idle.
-    routeIdleTimeoutInSeconds = 300
-
-    # Configs for the router when retrying upstream clusters
-    [router.upstream.retry]
-    # Maximum value that can be set as the count within retry configs in an OpenAPI definition or API-M UI
-    maxRetryCount = 5
-    # Base interval for the Envoy's exponential retry back off algorithm
-    baseIntervalInMillis = 25
-    # HTTP status codes, the retry mechanism will be enabled for.
-    # Used when retry config is set via API-M UI or all given status codes are out of range.
-    statusCodes = [ 504 ]
-
-    # Timeouts managed by the connection manager
-    [router.connectionTimeout]
-    # The amount of time that Envoy will wait for the entire request to be received. Time from client to upstream.
-    requestTimeoutInSeconds = 0
-    # The amount of time that Envoy will wait for the request headers to be received. Time from client to upstream.
-    requestHeadersTimeoutInSeconds = 0
-    # The stream idle timeout for connections managed by the connection manager. This can be overriden by the `routeIdleTimeoutInSeconds`
-    streamIdleTimeoutInSeconds = 300
-    # The idle timeout for connections. The idle timeout is defined as the period in which there are no active requests. When the idle timeout is reached the connection will be closed. 
-    # If the connection is an HTTP/2 downstream connection a drain sequence will occur prior to closing the connection
-    idleTimeoutInSeconds = 3600
-
-    # Configs for request body passing from router to enforcer.
-    [router.payloadPassingToEnforcer]
-    # Enable/Disable request body passing feature.
-    PassRequestPayload = false
-    # Sets the allowed maximum size of a request body in bytes.
-    maxRequestBytes = 10240
-    # If enabled, request body will buffer the message until maxRequestBytes is reached.
-    allowPartialMessage = false
-    # If enabled, request body will send as raw bytes, otherwise it will be a UTF-8 string request body.
-    packAsBytes = false
-
-    [enforcer] # --------------------------------------------------------
-
-    # If Custom Filters needs to be engaged, mention them here with position.
-    # Note: The jar file containing customFilter should be added to the enforcer/dropins directory.
-    # Note: Position should be the final position (including already available filters) after all the filters engaged.
-    # Position starts from 1
-    [[enforcer.filters]]
-        # ClassName of the filter
-        className = "org.wso2.choreo.connect.custom.CCCustomFilter"
-        # Position of the filter within final filter-chain
-        position = 3
-        # Filter specific custom configurations. Only `(string, string)` key-value pairs are accepted
-        [enforcer.filters.configProperties]
-            testConfig1 = "testValue1"
-
-    # The configurations of gRPC netty based server in Enforcer that handles the incoming requests in the Choreo Connect
-    [enforcer.authService]
-    # Port of the Enforcer auth service
-    port = 8081
-    # Maximum message size in bytes
-    maxMessageSize = 1000000000
-    # Maximum header size in bytes
-    maxHeaderLimit = 8192
-    # Keep alive time in seconds for connection with the router via external authz service
-    keepAliveTime = 600
-    # Thread pool configurations of gRPC netty based server in Enforcer that handles the incoming requests in the Choreo Connect
-    [enforcer.authService.threadPool]
-        # Minimum number of workers to keep alive
-        coreSize = 400
-        # Maximum pool size
-        maxSize = 500
-        # Timeout in seconds for idle threads waiting for work
-        keepAliveTime = 600
-        # Queue size of the worker threads
-        queueSize = 1000
-
-    # The configurations of token caching in the Choreo Connect
-    [enforcer.cache]
-    # Enable/Disable token cache
-    enabled = true
-    # Maximum cache size
-    maximumSize = 10000
-    # Expiry time in minutes
-    expiryTime = 15
-
-    # Configuration for admin credentials of the Enforcer
-    [enforcer.management]
-    username = "admin"
-    password = "admin"
-
-    # This configuration to enable the Enforcer Internal Data rest API
-    [enforcer.restserver]
-    enabled = true
-
-    [[enforcer.jwtGenerator.keypair]]
-    # Public certificate for generated JWT
-    publicCertificatePath = "/home/wso2/security/truststore/mg.pem"
-    # Private key path used for JWT generation
-    privateKeyPath = "/home/wso2/security/keystore/mg.key"
-    useForSigning = true
-
-    # The issuer configuration required to generate token at Choreo Connect
-    [enforcer.jwtIssuer]
-    # Enable/Disable JWT generation
-    enabled = true
-    # Issuer value for the JWT under iss claim
-    issuer = "https://localhost:9095/testkey"
-    # Encoding of the JWT
-    encoding = "base64" # base64,base64url
-    # A set of claims are identified as a dialect. Different dialects represent the same piece of information with different claim URIs
-    claimDialect = ""
-    # The signing algorithm is used to sign the JWT
-    signingAlgorithm = "SHA256withRSA"
-    # Public certificate for generated JWT
-    publicCertificatePath = "/home/wso2/security/truststore/mg.pem"
-    # Private key path used for JWT generation
-    privateKeyPath = "/home/wso2/security/keystore/mg.key"
-    # Validity period of the JWT in seconds
-    validityPeriod = 3600
-    # Configure allowed users to use the JWT generated by the Choreo Connect. You can provide multiple users
-    [[enforcer.jwtIssuer.jwtUser]]
-        username = "admin"
-        password = "$env{enforcer_admin_pwd}"
-
-    [enforcer.security]
-
-    # Configurations related to Authorization header
-    [enforcer.security.authHeader]
-    # Send the authorization header to the backend
-    enableOutboundAuthHeader = false
-    # Header name for the authorization token coming from the downstream client
-    authorizationHeader = "authorization"
-    testConsoleHeaderName = "Internal-Key"
-    
-    # JWT token authorization configurations. You can provide multiple JWT issuers
-    # Issuer 1
-    [[enforcer.security.tokenService]]
-    # Provide unique name for the JWT issuer
-    name = "Resident Key Manager"
-    issuer = "https://localhost:9443/oauth2/token"
-    # Alias name given in Enforcer truststore for the public certificate of the JWT issuer
-    certificateAlias = "wso2carbon"
-    # URL of the JWKs endpoint
-    jwksURL = ""
-    # Validate subscribed APIs
-    validateSubscription = false
-    # The claim in which the consumer key of the application is coming
-    consumerKeyClaim = "azp"
-    # Certificate Filepath within Enforcer
-    certificateFilePath = "/home/wso2/security/truststore/wso2carbon.pem"
-
-    # Issuer 2
-    [[enforcer.security.tokenService]]
-    # Provide unique name for the JWT issuer
-    name = "MGW"
-    issuer = "https://localhost:9095/testkey"
-    # Alias name given in Enforcer truststore for the public certificate of the JWT issuer
-    certificateAlias = "mgw"
-    # URL of the JWKs endpoint
-    jwksURL = ""
-    # Validate subscribed APIs
-    validateSubscription = false
-    # The claim in which the consumer key of the application is coming
-    consumerKeyClaim = ""
-    # Certificate Filepath within Enforcer
-    certificateFilePath = "/home/wso2/security/truststore/mg.pem"
-
-    # Issuer 3
-    [[enforcer.security.tokenService]]
-    # Provide unique name for the JWT issuer
-    name = "APIM Publisher"
-    issuer = "https://localhost:9443/publisher"
-    validateSubscription = true
-    # Alias name given in Enforcer truststore for the public certificate of the JWT issuer
-    certificateAlias = ""
-    # Certificate Filepath within Enforcer
-    certificateFilePath = "/home/wso2/security/truststore/wso2carbon.pem"
-
-    # Throttling configurations
-    [enforcer.throttling]
-    # Connect with the central traffic manager
-    enableGlobalEventPublishing = false
-    # Enable global advanced throttling based on request header conditions
-    enableHeaderConditions = false
-    # Enable global advanced throttling based on request query parameter conditions
-    enableQueryParamConditions = false
-    # Enable global advanced throttling based on jwt claim conditions
-    enableJwtClaimConditions = false
-    # The message broker context factory
-    jmsConnectionInitialContextFactory = "org.wso2.andes.jndi.PropertiesFileInitialContextFactory"
-    # The message broker connection URL
-    jmsConnectionProviderURL = "amqp://admin:$env{tm_admin_pwd}@carbon/carbon?brokerlist='tcp://apim:5672'"
-    # Throttling configurations related to event publishing using a binary connection
-    [enforcer.throttling.publisher]
-        # Credentials required to establish connection between Traffic Manager
-        username = "admin"
-        password = "$env{tm_admin_pwd}"
-        # Receiver URL and the authentication URL of the Traffic manager node/nodes
-        [[enforcer.throttling.publisher.URLGroup]]
-        receiverURLs = ["tcp://apim:9611"]
-        authURLs = ["ssl://apim:9711"]
-
-        # Data publisher object pool configurations
-        [enforcer.throttling.publisher.pool]
-        # Maximum idle number of connections
-        maxIdleDataPublishingAgents = 1000
-        # Minimum idle number of connections
-        initIdleObjectDataPublishingAgents = 200
-        # Thread pool core size
-        publisherThreadPoolCoreSize = 200
-        # The maximum size of the thread pool
-        publisherThreadPoolMaximumSize = 1000
-        # The timeframe after which the publisher thread pool is terminated in seconds
-        publisherThreadPoolKeepAliveTime = 200
-
-        # Data publisher agent configurations
-        [enforcer.throttling.publisher.agent]
-        # SSL Protocols
-        sslEnabledProtocols = "TLSv1.2"
-        # Ciphers
-        ciphers = "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256, TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256, TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256,TLS_DHE_RSA_WITH_AES_128_CBC_SHA256,TLS_DHE_DSS_WITH_AES_128_CBC_SHA256, TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_RSA_WITH_AES_128_CBC_SHA, TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA,TLS_ECDH_RSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_128_CBC_SHA, TLS_DHE_DSS_WITH_AES_128_CBC_SHA,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256  ,TLS_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256, TLS_DHE_RSA_WITH_AES_128_GCM_SHA256,TLS_DHE_RSA_WITH_AES_128_GCM_SHA256,TLS_DHE_DSS_WITH_AES_128_GCM_SHA256  ,TLS_ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA,TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA,SSL_RSA_WITH_3DES_EDE_CBC_SHA, TLS_ECDH_ECDSA_WITH_3DES_EDE_CBC_SHA,TLS_ECDH_RSA_WITH_3DES_EDE_CBC_SHA,SSL_DHE_RSA_WITH_3DES_EDE_CBC_SHA, SSL_DHE_DSS_WITH_3DES_EDE_CBC_SHA,TLS_EMPTY_RENEGOTIATION_INFO_SCSV"
-        # The size of the queue event disruptor which handles events before they are published
-        # The value specified should always be the result of an exponent with 2 as the base
-        queueSize = 32768
-        # The maximum number of events in a batch sent to the queue event disruptor at a given time
-        batchSize = 200
-        # The number of threads that will be reserved to handle events at the time you start
-        corePoolSize = 1
-        # Socket timeout
-        socketTimeoutMS = 30000
-        # The maximum number of threads that should be reserved at any given time to handle events
-        maxPoolSize = 1
-        # The amount of time which threads in excess of the core pool size may remain idle before being terminated.
-        keepAliveTimeInPool = 20
-        # The time interval between reconnection
-        reconnectionInterval = 30
-        # TCP connection pool configurations (for data publishing)
-        maxTransportPoolSize = 250
-        maxIdleConnections = 250
-        evictionTimePeriod = 5500
-        minIdleTimeInPool = 5000
-        # SSL connection pool configurations (for authentication)
-        secureMaxTransportPoolSize = 250
-        secureMaxIdleConnections = 250
-        secureEvictionTimePeriod = 5500
-        secureMinIdleTimeInPool = 5000
-
-    # Metrics configurations for Choreo Connect
-    [enforcer.metrics]
-    # Enable/Disable metrics in Choreo Connect
-    enabled = false
-    type = "azure"
-
-    # Control plane's connection details
-    [controlPlane]
-    # Enable/Disable Choreo Connect Control plane
-    enabled = false
-    # Service URL of the API Manager
-    serviceURL = "https://apim:9443/"
-    # Username of the API Manager user
-    username = "admin"
-    # Password of the API Manager user
-    password = "$env{cp_admin_pwd}"
-    # Environment labels list
-    environmentLabels = ["default"]
-    # Connection retry interval
-    retryInterval = 5
-    # Skip SSL verification
-    skipSSLVerification = false
-    # Message broker connection URL of the control plane
-    [controlPlane.brokerConnectionParameters]
-        eventListeningEndpoints = ["amqp://admin:$env{cp_admin_pwd}@apim:5672?retries='10'&connectdelay='30'"]
-        reconnectInterval = 5000
-        reconnectRetryCount = 60
-    # HTTP client configuration.
-    [controlPlane.httpClient] 
-        requestTimeOut = 30
-
-    # Global Adapter related configurations
-    [globalAdapter]
-    # Enable Choreo Connect Global adapter client
-    enabled = false
-    # Global adapter Service URL (<Hostname>:<Port>)
-    serviceURL = "global-adapter:18000"
-    # Subject Alternative Name considered for TLS communication with global adapter
-    overrideHostName = ""
-    # Local Adapter Label
-    localLabel = "$env{local_label}"
-    # Retry Interval
-    retryInterval = 5
-
-    # Analytics configurations for Choreo Connect
-    [analytics]
-    # Enable/Disable Analytics in Choreo Connect
-    enabled = false
-    [analytics.adapter]
-        # Buffer flush interval for gRPC access log client in Router
-        bufferFlushInterval = "1s"
-        # Buffer size limit for buffer flush to be triggered
-        bufferSizeBytes = 16384
-        # gRPC connection timeout for access log service
-        gRPCRequestTimeout = "20s"
-
-    # Enforcer related configurations
-    [analytics.enforcer]
-        [analytics.enforcer.configProperties]
-        # Authentication endpoint for Choreo Analytics Publishing
-        authURL = "$env{analytics_authURL}"
-        # Authentication token for Choreo Analytics Publishing
-        authToken = "$env{analytics_authToken}"
-
-        # gRPC access log service within Enforcer
-        [analytics.enforcer.LogReceiver]
-        # Port
-        port = 18090
-        # Maximum message size in bytes
-        maxMessageSize = 1000000000
-        # Maximum header size in bytes
-        maxHeaderLimit = 8192
-        # Keep alive time of gRPC access log connection
-        keepAliveTime = 600
-
-        # Thread pool configuration for gRPC access log server
-        [analytics.enforcer.LogReceiver.threadPool]
-            # Minimum number of workers to keep alive
-            coreSize = 10
-            # Maximum pool size
-            maxSize = 100
-            # Timeout in seconds for idle threads waiting for work
-            keepAliveTime = 600
-            # Queue size of the worker threads
-            queueSize = 1000
-
-    # Tracing configurations for Choreo Connect
-    [tracing]
-    # Enable/Disable tracing in Choreo Connect
-    enabled = false
-    # Type of tracer exporter (e.g: azure, zipkin). Use zipkin type for Jaeger as well.
-    type = "zipkin"
-    # configurations for zipkin tracer type
-    [tracing.configProperties]
-        # maximum length of the request path to extract and include in the HttpUrl tag.
-        maxPathLength = "256"
-        # jaeger host
-        host = "jaeger"
-        # jaeger port
-        port = "9411"
-        # jaeger collector endpoint path
-        endpoint = "/api/v2/spans"
-        # library Name to be tagged in traces (`otel.library.name`).
-        libraryName = "CHOREO-CONNECT"
-        # Maximum number of sampled traces per second string
-        maximumTracesPerSecond = "2"
-
-    # # Type of tracer exporter (e.g: azure, jaeger, zipkin)
-    # type = "zipkin"
-    # # configurations for zipkin tracer type
-    # [tracing.configProperties]
-    #   # maximum length of the request path to extract and include in the HttpUrl tag.
-    #   maxPathLength = "256"
-    #   # zipkin host
-    #   host = "zipkin"
-    #   # zipkin port
-    #   port = "9411"
-    #   # zipkin collector endpoint path
-    #   endpoint = "/api/v2/spans"
-    #   # library Name to be tagged in traces (`otel.library.name`).
-    #   libraryName = "CHOREO-CONNECT"
-    #   # Maximum number of sampled traces per second string
-    #   maximumTracesPerSecond = "2"
-    #   timeout = "15"
-
-    # type = "azure"
-    # [tracing.configProperties]
-    #   connectionString = ""
-    #   # Instrumentation Name
-    #   instrumentationName = "CHOREO-CONNECT"
-    #   # Maximum number of sampled traces per second string
-    #   maximumTracesPerSecond = "2"
 
   log_config.toml: |
     # The logging configuration for Adapter
