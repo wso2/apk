@@ -24,7 +24,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/loggers"
-	"github.com/wso2/apk/adapter/internal/logging"
 	"github.com/wso2/apk/adapter/internal/oasparser/constants"
 	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
 	"github.com/wso2/apk/adapter/internal/operator/utils"
@@ -291,7 +290,7 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 			addOperationLevelInterceptors(&policies, resourceAPIPolicy, resourceParams.InterceptorServiceMapping, resourceParams.BackendMapping, httpRoute.Namespace)
 		}
 
-		loggers.LoggerOasparser.Debugf("Calculating auths for API ..., API_UUID = %v", logging.GetValueFromLogContext("API_UUID"))
+		loggers.LoggerOasparser.Debugf("Calculating auths for API ..., API_UUID = %v", swagger.UUID)
 		apiAuth := getSecurity(resourceAuthScheme)
 		if len(rule.BackendRefs) < 1 {
 			return fmt.Errorf("no backendref were provided")
