@@ -21,9 +21,9 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y curl
 ENV LANG=C.UTF-8
 
 ARG MG_USER=wso2
-ARG MG_USER_ID=10500
+ARG MG_USER_ID=10001
 ARG MG_USER_GROUP=wso2
-ARG MG_USER_GROUP_ID=10500
+ARG MG_USER_GROUP_ID=10001
 ARG MG_USER_HOME=/home/${MG_USER}
 
 ARG MOTD="\n\

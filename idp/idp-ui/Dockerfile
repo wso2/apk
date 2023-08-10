@@ -1,9 +1,9 @@
 FROM node:16-alpine
 
 ARG USER=wso2apk
-ARG USER_ID=802
+ARG USER_ID=10001
 ARG USER_GROUP=wso2
-ARG USER_GROUP_ID=802
+ARG USER_GROUP_ID=10001
 ARG USER_HOME=/home/${USER}
 ARG MOTD='printf "\n\
  Welcome to WSO2 Docker Resources \n\
