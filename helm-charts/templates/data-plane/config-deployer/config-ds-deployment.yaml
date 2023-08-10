@@ -82,6 +82,8 @@ spec:
             {{- end }}
             - name: tmp
               mountPath: /tmp
+            - name: config-deployer-temp
+              mountPath: /home/wso2apk/config-deployer/tmp
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
@@ -113,5 +115,7 @@ spec:
             secretName: {{.Values.wso2.apk.dp.partitionServer.tls.secretName}}
         {{ end }}
         - name: tmp
+          emptyDir: {}
+        - name: config-deployer-temp
           emptyDir: {}
 {{- end -}}
