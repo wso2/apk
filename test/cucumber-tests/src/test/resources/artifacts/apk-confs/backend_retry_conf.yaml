@@ -1,0 +1,32 @@
+---
+name: "BackendRetry"
+context: "/backend-retry"
+version: "3.14"
+id: "backend-retry-test"
+type: "REST"
+organization: "apk-org"
+defaultVersion: true
+endpointConfigurations:
+  production:
+    endpoint: "http://backend-retry:80"
+    resiliency:
+      retryPolicy:
+        count: 3
+        statusCodes:
+          - 500
+operations:
+  - target: "/retry"
+    verb: "GET"
+    authTypeEnabled: true
+    scopes: []
+  - target: "/reset"
+    verb: "POST"
+    authTypeEnabled: true
+    scopes: [ ]
+  - target: "/set-retry-count"
+    verb: "POST"
+    authTypeEnabled: true
+    scopes: [ ]
+vhosts:
+  production:
+    - "default.gw.wso2.com"

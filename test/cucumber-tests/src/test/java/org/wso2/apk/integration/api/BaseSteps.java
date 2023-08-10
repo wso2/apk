@@ -110,7 +110,7 @@ public class BaseSteps {
     }
 
     @Then("the response status code should be {int}")
-    public void theResponseStatusCodeShouldBe(int expectedStatusCode) {
+    public void theResponseStatusCodeShouldBe(int expectedStatusCode) throws IOException {
 
         int actualStatusCode = sharedContext.getResponse().getStatusLine().getStatusCode();
         Assert.assertEquals(actualStatusCode, expectedStatusCode);

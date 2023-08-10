@@ -32,8 +32,8 @@ var defaultConfig = &Config{
 			KeyFile:            "/home/wso2/security/truststore/consul/local-dc-client-consul-0-key.pem",
 		},
 		Keystore: keystore{
-			KeyPath:  "/home/wso2/security/keystore/mg.key",
-			CertPath: "/home/wso2/security/keystore/mg.pem",
+			KeyPath:  "/home/wso2/security/keystore/adapter.crt",
+			CertPath: "/home/wso2/security/keystore/adapter.key",
 		},
 		Truststore: truststore{
 			Location: "/home/wso2/security/truststore",
@@ -44,15 +44,17 @@ var defaultConfig = &Config{
 		},
 	},
 	Envoy: envoy{
-		ListenerCodecType:                "AUTO",
+		ListenerCodecType: "AUTO",
+		// todo(amali) move connect timeout to crd
 		ClusterTimeoutInSeconds:          20,
 		EnforcerResponseTimeoutInSeconds: 20,
 		UseRemoteAddress:                 false,
+		SystemHost:                       "localhost",
 		KeyStore: keystore{
-			KeyPath:  "/home/wso2/security/keystore/mg.key",
-			CertPath: "/home/wso2/security/keystore/mg.pem",
+			KeyPath:  "/home/wso2/security/keystore/router.key",
+			CertPath: "/home/wso2/security/keystore/router.crt",
 		},
-		SystemHost: "localhost",
+		// todo(amali) move to crd
 		Upstream: envoyUpstream{
 			TLS: upstreamTLS{
 				MinimumProtocolVersion: "TLS1_1",
@@ -82,6 +84,7 @@ var defaultConfig = &Config{
 				MTLSAPIsEnabled: false,
 			},
 		},
+		// todo(amali) move timeout to crd
 		Connection: connection{
 			Timeouts: connectionTimeouts{
 				RequestTimeoutInSeconds:        0,

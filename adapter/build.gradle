@@ -47,7 +47,6 @@ tasks.register('go_test', Exec) {
     environment "APK_Adapter_Consul_PollInterval", "2"
     environment "APK_analytics_enforcer_configProperties_authToken", "test-token"
     environment "APK_enforcer_security_tokenService_1_name", "APK-Test"
-    environment "adapter_admin_pwd", "password"
 
     environment "APK_test_test_stringarray", "foo2, bar2"
     environment "APK_test_test_intarray", "1,3"

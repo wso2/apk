@@ -242,7 +242,8 @@ func CreateRateLimitCluster() (*clusterv3.Cluster, []*corev3.Address, error) {
 			},
 		},
 	}
-	cluster, address, rlErr := processEndpoints(rateLimitClusterName, rlCluster, 20, "")
+
+	cluster, address, rlErr := processEndpoints(rateLimitClusterName, rlCluster, conf.Envoy.ClusterTimeoutInSeconds, "")
 	if rlErr != nil {
 		return nil, nil, rlErr
 	}
