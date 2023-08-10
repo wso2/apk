@@ -55,11 +55,6 @@ ENV JAVA_HOME=/opt/java/openjdk \
 
 LABEL maintainer="WSO2 Docker Maintainers <wso2.com>"
 
-RUN apk update && apk upgrade --no-cache \
-    && apk add --no-cache tzdata
-
-LABEL maintainer="WSO2 Docker Maintainers <dev@wso2.org>"
-
 ENV LANG=C.UTF-8
 
 ARG APK_USER=wso2
@@ -95,8 +90,8 @@ ARG MOTD="\n\
  Read more about Apache License, Version 2.0 here @ http://www.apache.org/licenses/LICENSE-2.0.\n"
 
 RUN \
-    addgroup -S -g ${APK_USER_GROUP_ID} ${APK_USER_GROUP} \
-    && adduser -S -u ${APK_USER_ID} -h ${APK_USER_HOME} -G ${APK_USER_GROUP} ${APK_USER} \
+    groupadd --system -g ${APK_USER_GROUP_ID} ${APK_USER_GROUP} \
+    && useradd --system --create-home --home-dir ${APK_USER_HOME} --no-log-init -g ${APK_USER_GROUP} -u ${APK_USER_ID} ${APK_USER} \
     && mkdir ${APK_USER_HOME}/logs && mkdir -p ${APK_USER_HOME}/lib/dropins \
     && chown -R ${APK_USER}:${APK_USER_GROUP} ${APK_USER_HOME} \
     && echo '[ ! -z "${TERM}" -a -r /etc/motd ] && cat /etc/motd' >> /etc/bash.bashrc; echo "${MOTD}" > /etc/motd

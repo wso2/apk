@@ -38,8 +38,8 @@ ENV JAVA_HOME=/opt/java/openjdk \
     PATH="/opt/java/openjdk/bin:$PATH"
 
 RUN \
-    addgroup -S -g 10000 ineterceptor \
-    && adduser -S -u 1001 -h /home/ineterceptor -G ineterceptor ineterceptor \
+    groupadd --system -g 10000 ineterceptor\
+    && useradd --system --create-home --home-dir /home/ineterceptor --no-log-init -g ineterceptor -u 1001 ineterceptor \
     && chown -R ineterceptor:ineterceptor /home/ineterceptor
 COPY /target/bin/interceptor_service.jar /home/ineterceptor/interceptor_service.jar
 EXPOSE 8443 8444 8445
