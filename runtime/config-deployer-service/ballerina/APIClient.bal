@@ -659,6 +659,8 @@ public class APIClient {
         int pathparamCount = 1;
         if (target == "/*") {
             generatedPath = "\\1";
+        } else if (target == "/") {
+            generatedPath = "/";
         } else {
             foreach int i in 0 ..< splitValues.length() {
                 if splitValues[i].trim().length() > 0 {
@@ -687,7 +689,9 @@ public class APIClient {
         string[] splitValues = regex:split(operation, "/");
         string generatedPath = "";
         if (operation == "/*") {
-            return generatedPath + "(.*)";
+            return "(.*)";
+        } else if operation == "/" {
+            return "/";
         }
         foreach string pathPart in splitValues {
             if pathPart.trim().length() > 0 {
