@@ -29,7 +29,7 @@ import (
 	"github.com/wso2/apk/adapter/internal/interceptor"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/internal/oasparser/constants"
-	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
+	dpv1alpha1 "github.com/wso2/apk/adapter/pkg/apis/dp/v1alpha1"
 )
 
 // AdapterInternalAPI represents the object structure holding the information related to the

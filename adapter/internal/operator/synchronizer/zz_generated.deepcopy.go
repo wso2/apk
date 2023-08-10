@@ -23,7 +23,7 @@
 package synchronizer
 
 import (
-	"github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
+	"github.com/wso2/apk/adapter/pkg/apis/dp/v1alpha1"
 	"sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 

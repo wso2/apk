@@ -28,8 +28,8 @@ import (
 	"time"
 
 	"github.com/wso2/apk/adapter/internal/loggers"
-	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
 	constants "github.com/wso2/apk/adapter/internal/operator/constants"
+	dpv1alpha1 "github.com/wso2/apk/adapter/pkg/apis/dp/v1alpha1"
 	"github.com/wso2/apk/adapter/pkg/logging"
 	"github.com/wso2/apk/adapter/pkg/utils/envutils"
 	"github.com/wso2/apk/adapter/pkg/utils/stringutils"

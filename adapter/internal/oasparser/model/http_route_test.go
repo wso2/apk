@@ -21,7 +21,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
+	dpv1alpha1 "github.com/wso2/apk/adapter/pkg/apis/dp/v1alpha1"
 )
 
 func TestConcatRateLimitPolicies(t *testing.T) {

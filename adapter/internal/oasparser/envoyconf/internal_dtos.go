@@ -19,7 +19,7 @@ package envoyconf
 
 import (
 	"github.com/wso2/apk/adapter/internal/oasparser/model"
-	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
+	dpv1alpha1 "github.com/wso2/apk/adapter/pkg/apis/dp/v1alpha1"
 )
 
 // routeCreateParams is the DTO used to provide information to the envoy route create function
@@ -42,7 +42,7 @@ type routeCreateParams struct {
 	isDefaultVersion             bool
 	createDefaultPath            bool
 	apiLevelRateLimitPolicy      *model.RateLimitPolicy
-	apiProperties	             []dpv1alpha1.Property
+	apiProperties                []dpv1alpha1.Property
 }
 
 // RatelimitCriteria criterias of rate limiting

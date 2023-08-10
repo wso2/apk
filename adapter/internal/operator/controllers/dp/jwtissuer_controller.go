@@ -24,9 +24,9 @@ import (
 
 	"github.com/wso2/apk/adapter/internal/discovery/xds"
 	"github.com/wso2/apk/adapter/internal/loggers"
-	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
 	"github.com/wso2/apk/adapter/internal/operator/constants"
 	"github.com/wso2/apk/adapter/internal/operator/utils"
+	dpv1alpha1 "github.com/wso2/apk/adapter/pkg/apis/dp/v1alpha1"
 	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/subscription"
 	"github.com/wso2/apk/adapter/pkg/logging"
 	"k8s.io/apimachinery/pkg/runtime"

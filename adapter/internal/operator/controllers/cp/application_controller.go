@@ -35,9 +35,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	cpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/cp/v1alpha1"
 	"github.com/wso2/apk/adapter/internal/operator/constants"
 	"github.com/wso2/apk/adapter/internal/operator/utils"
+	cpv1alpha1 "github.com/wso2/apk/adapter/pkg/apis/cp/v1alpha1"
 	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/subscription"
 )
 

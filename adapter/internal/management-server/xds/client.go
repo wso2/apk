@@ -30,7 +30,7 @@ import (
 	"github.com/wso2/apk/adapter/internal/loggers"
 	logging "github.com/wso2/apk/adapter/internal/logging"
 	"github.com/wso2/apk/adapter/internal/management-server/utils"
-	cpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/cp/v1alpha1"
+	cpv1alpha1 "github.com/wso2/apk/adapter/pkg/apis/cp/v1alpha1"
 
 	stub "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/subscription"
 	sub_model "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/subscription"
