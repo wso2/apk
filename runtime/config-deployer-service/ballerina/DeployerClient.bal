@@ -349,7 +349,8 @@ public class DeployerClient {
     }
 
     private isolated function deployHttpRoutes(model:Httproute[] httproutes, string namespace, model:OwnerReference ownerReference) returns error? {
-        foreach model:Httproute httpRoute in httproutes {
+        model:Httproute[] orderedHttproutes = self.createHttpRoutesOrder(httproutes);
+        foreach model:Httproute httpRoute in orderedHttproutes {
             httpRoute.metadata.ownerReferences = [ownerReference];
             if httpRoute.spec.rules.length() > 0 {
                 http:Response deployHttpRouteResult = check deployHttpRoute(httpRoute, namespace);
@@ -373,6 +374,18 @@ public class DeployerClient {
             }
         }
     }
+
+    private isolated function createHttpRoutesOrder(model:Httproute[] httproutes) returns model:Httproute[] {
+        foreach model:Httproute route in httproutes {
+            model:HTTPRouteRule[] routeRules = route.spec.rules;
+            model:HTTPRouteRule[] sortedRouteRules = from var routeRule in routeRules
+                                                order by (<model:HTTPPathMatch>((<model:HTTPRouteMatch[]>routeRule.matches)[0]).path).value descending
+                                                select routeRule;
+            route.spec.rules = sortedRouteRules;
+        }
+        return httproutes;
+    }
+
     private isolated function deployAuthneticationCRs(model:APIArtifact apiArtifact, model:OwnerReference ownerReference) returns error? {
         string[] keys = apiArtifact.authenticationMap.keys();
         log:printDebug("Inside Deploy Authentication CRs" + keys.toString());
