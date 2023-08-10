@@ -18,8 +18,8 @@ package xds
 
 import (
 	"context"
-	"crypto/rand"
 	"fmt"
+	"math/rand"
 	"strings"
 	"sync"
 
@@ -212,7 +212,7 @@ func (r *rateLimitPolicyCache) generateRateLimitConfig(label string) *rls_config
 func (r *rateLimitPolicyCache) updateXdsCache(label string) bool {
 	rlsConf := r.generateRateLimitConfig(label)
 
-	version := fmt.Sprint(rand.Int(rand.Reader, maxRandomBigInt()))
+	version := fmt.Sprint(rand.Intn(maxRandomInt))
 	snap, err := gcp_cache.NewSnapshot(version, map[gcp_resource.Type][]gcp_types.Resource{
 		gcp_resource.RateLimitConfigType: {
 			rlsConf,
