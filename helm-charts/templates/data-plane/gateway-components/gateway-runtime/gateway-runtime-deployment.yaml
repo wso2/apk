@@ -161,6 +161,8 @@ spec:
               mountPath: /home/wso2/security/truststore/idp-tls.pem
               subPath: {{ .Values.wso2.apk.idp.tls.fileName }}
             {{ end }}
+            - name: enforcer-logs-volume
+              mountPath: /home/wso2/logs
           readinessProbe:
             exec:
               command: [ "sh", "check_health.sh" ]
@@ -276,6 +278,8 @@ spec:
               subPath: ca.crt
             {{- end }}
             {{ end }}
+            - name: router-temp-volume
+              mountPath: /tmp
           livenessProbe:
             exec:
               command: [ "sh", "router_check_health.sh", "health" ]
@@ -359,4 +363,8 @@ spec:
           secret:
             secretName: {{ .Values.wso2.apk.idp.tls.secretName }}
           {{ end }}
+        - name: router-temp-volume
+          emptyDir: {}
+        - name: enforcer-logs-volume
+          emptyDir: {}
           {{end}}

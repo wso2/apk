@@ -122,6 +122,10 @@ spec:
               mountPath: /home/wso2/security/truststore/partition-server.crt
               subPath: {{.Values.wso2.apk.dp.partitionServer.tls.fileName | default "tls.crt"}}
             {{- end }}
+            - name: adapter-logs-volume
+              mountPath: /home/wso2/logs
+            - name: adapter-temp-volume
+              mountPath: /tmp
           readinessProbe:
             exec:
               command: [ "sh", "check_health.sh" ]
@@ -194,4 +198,8 @@ spec:
           secret:
             secretName: {{.Values.wso2.apk.dp.partitionServer.tls.secretName}}
         {{- end }}
+        - name: adapter-logs-volume
+          emptyDir: {}
+        - name: adapter-temp-volume
+          emptyDir: {}
 {{- end -}}
