@@ -277,7 +277,8 @@ func MarshalKeyManager(keyManager *types.KeyManager) *keymgt.KeyManagerConfig {
 // multiple applications are pulled at once. And then it returns the ApplicationList.
 func MarshalMultipleApplications(appList *types.ApplicationList) *subscription.ApplicationList {
 	resourceMap := make(map[string]*subscription.Application)
-	for _, application := range appList.List {
+	for item := range appList.List {
+		application := appList.List[item]
 		applicationSub := marshalApplication(&application)
 		resourceMap[application.UUID] = applicationSub
 	}
@@ -308,7 +309,8 @@ func MarshalApplicationEventAndReturnList(application *types.Application,
 // multiple key mappings are pulled at once. And then it returns the ApplicationKeyMappingList.
 func MarshalMultipleApplicationKeyMappings(keymappingList *types.ApplicationKeyMappingList) *subscription.ApplicationKeyMappingList {
 	resourceMap := make(map[string]*subscription.ApplicationKeyMapping)
-	for _, keyMapping := range keymappingList.List {
+	for item := range keymappingList.List {
+		keyMapping := keymappingList.List[item]
 		applicationKeyMappingReference := GetApplicationKeyMappingReference(&keyMapping)
 		keyMappingSub := marshalKeyMapping(&keyMapping)
 		resourceMap[applicationKeyMappingReference] = keyMappingSub
@@ -339,7 +341,8 @@ func MarshalApplicationKeyMappingEventAndReturnList(keyMapping *types.Applicatio
 // multiple subscriptions are pulled at once. And then it returns the SubscriptionList.
 func MarshalMultipleSubscriptions(subscriptionsList *types.SubscriptionList) *subscription.SubscriptionList {
 	resourceMap := make(map[int32]*subscription.Subscription)
-	for _, sb := range subscriptionsList.List {
+	for item := range subscriptionsList.List {
+		sb := subscriptionsList.List[item]
 		resourceMap[sb.SubscriptionID] = marshalSubscription(&sb)
 	}
 	SubscriptionMap = resourceMap
@@ -368,7 +371,8 @@ func MarshalSubscriptionEventAndReturnList(sub *types.Subscription, eventType Ev
 // multiple application policies are pulled at once. And then it returns the ApplicationPolicyList.
 func MarshalMultipleApplicationPolicies(policies *types.ApplicationPolicyList) *subscription.ApplicationPolicyList {
 	resourceMap := make(map[int32]*subscription.ApplicationPolicy)
-	for _, policy := range policies.List {
+	for item := range policies.List {
+		policy := policies.List[item]
 		appPolicy := marshalApplicationPolicy(&policy)
 		resourceMap[policy.ID] = appPolicy
 		logger.LoggerXds.Infof("appPolicy Entry is added : %v", appPolicy)
@@ -399,7 +403,8 @@ func MarshalApplicationPolicyEventAndReturnList(policy *types.ApplicationPolicy,
 // multiple subscription policies are pulled at once. And then it returns the SubscriptionPolicyList.
 func MarshalMultipleSubscriptionPolicies(policies *types.SubscriptionPolicyList) *subscription.SubscriptionPolicyList {
 	resourceMap := make(map[int32]*subscription.SubscriptionPolicy)
-	for _, policy := range policies.List {
+	for item := range policies.List {
+		policy := policies.List[item]
 		resourceMap[policy.ID] = marshalSubscriptionPolicy(&policy)
 	}
 	SubscriptionPolicyMap = resourceMap
@@ -438,7 +443,8 @@ func MarshalAPIMetataAndReturnList(apiList *types.APIList, initialAPIUUIDListMap
 		APIListMap[gatewayLabel] = make(map[string]*subscription.APIs)
 	}
 	resourceMapForLabel := APIListMap[gatewayLabel]
-	for _, api := range apiList.List {
+	for item := range apiList.List {
+		api := apiList.List[item]
 		// initialAPIUUIDListMap is not null if the adapter is running with global adapter enabled, and it is
 		// the first method invocation.
 		if initialAPIUUIDListMap != nil {

@@ -19,6 +19,7 @@ package xds
 
 import (
 	"fmt"
+	"math/big"
 
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	envoy_cachev3 "github.com/envoyproxy/go-control-plane/pkg/cache/v3"
@@ -31,6 +32,10 @@ const (
 	grpcMaxConcurrentStreams        = 1000000
 	apiKeyFieldSeparator     string = ":"
 )
+
+func maxRandomBigInt() *big.Int {
+	return big.NewInt(int64(maxRandomInt))
+}
 
 // IDHash uses ID field as the node hash.
 type IDHash struct{}

@@ -18,8 +18,8 @@ package xds
 
 import (
 	"context"
+	"crypto/rand"
 	"fmt"
-	"math/rand"
 	"strings"
 	"sync"
 
@@ -297,7 +297,7 @@ func (r *rateLimitPolicyCache) AddCustomRateLimitPolicies(customRateLimitPolicy 
 func (r *rateLimitPolicyCache) updateXdsCache(label string) bool {
 	rlsConf := r.generateRateLimitConfig()
 	logger.Info("label", rlsConf)
-	version := fmt.Sprint(rand.Intn(maxRandomInt))
+	version := fmt.Sprint(rand.Int(rand.Reader, maxRandomBigInt()))
 	logger.Info("rlsConf", rlsConf)
 	snap, err := gcp_cache.NewSnapshot(version, map[gcp_resource.Type][]gcp_types.Resource{
 		gcp_resource.RateLimitConfigType: {
@@ -384,7 +384,7 @@ func (r *rateLimitPolicyCache) SetEmptySnapshot(label string) bool {
 		Domain:      RateLimiterDomain,
 		Descriptors: []*rls_config.RateLimitDescriptor{},
 	}
-	version := fmt.Sprint(rand.Intn(maxRandomInt))
+	version := fmt.Sprint(rand.Int(rand.Reader, maxRandomBigInt()))
 	snap, err := gcp_cache.NewSnapshot(version, map[gcp_resource.Type][]gcp_types.Resource{
 		gcp_resource.RateLimitConfigType: {
 			rls,

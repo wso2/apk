@@ -24,6 +24,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -104,9 +105,9 @@ func GetLogConfigPath() (string, error) {
 func ReadLogConfigs() *LogConfig {
 	onceLogConfigRead.Do(func() {
 		adapterLogConfig = getDefaultLogConfig()
-		filePath, err := GetLogConfigPath()
+		path, err := GetLogConfigPath()
 		if err == nil {
-			content, readErr := ioutil.ReadFile(filePath)
+			content, readErr := ioutil.ReadFile(filepath.Clean(path))
 			if readErr != nil {
 				logger.Error("Proceeding with default log configuration as error occured while reading log configurations ", readErr)
 			} else {

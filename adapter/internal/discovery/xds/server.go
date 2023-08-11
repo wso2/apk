@@ -20,10 +20,12 @@ package xds
 
 import (
 	"context"
+	crand "crypto/rand"
 	"crypto/sha1"
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"math/big"
 	"math/rand"
 	"strings"
 	"sync"
@@ -135,6 +137,10 @@ const (
 	gatewayController    string = "GatewayController"
 	apiController        string = "APIController"
 )
+
+func maxRandomBigInt() *big.Int {
+	return big.NewInt(int64(maxRandomInt))
+}
 
 // IDHash uses ID field as the node hash.
 type IDHash struct{}
@@ -514,7 +520,7 @@ func GenerateInterceptorClusters(label string,
 
 // use UpdateXdsCacheWithLock to avoid race conditions
 func updateXdsCache(label string, endpoints []types.Resource, clusters []types.Resource, routes []types.Resource, listeners []types.Resource) bool {
-	version := rand.Intn(maxRandomInt)
+	version, _ := crand.Int(crand.Reader, maxRandomBigInt())
 	// TODO: (VirajSalaka) kept same version for all the resources as we are using simple cache implementation.
 	// Will be updated once decide to move to incremental XDS
 	snap, errNewSnap := envoy_cachev3.NewSnapshot(fmt.Sprint(version), map[envoy_resource.Type][]types.Resource{
@@ -548,7 +554,7 @@ func UpdateEnforcerConfig(configFile *config.Config) {
 	// TODO: (Praminda) handle labels
 	label := commonEnforcerLabel
 	configs := []types.Resource{MarshalConfig(configFile)}
-	version := rand.Intn(maxRandomInt)
+	version, _ := crand.Int(crand.Reader, maxRandomBigInt())
 	snap, errNewSnap := wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
 		wso2_resource.ConfigType: configs,
 	})
@@ -570,7 +576,7 @@ func UpdateEnforcerConfig(configFile *config.Config) {
 func UpdateEnforcerApis(label string, apis []types.Resource, version string) {
 
 	if version == "" {
-		version = fmt.Sprint(rand.Intn(maxRandomInt))
+		version = fmt.Sprint(crand.Int(crand.Reader, maxRandomBigInt()))
 	}
 
 	snap, _ := wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
@@ -610,7 +616,7 @@ func UpdateEnforcerSubscriptions(subscriptions *subscription.SubscriptionList) {
 	subscriptionList := append(enforcerLabelMap[label].subscriptions, subscriptions)
 
 	// TODO: (VirajSalaka) Decide if a map is required to keep version (just to avoid having the same version)
-	version := rand.Intn(maxRandomInt)
+	version, _ := crand.Int(crand.Reader, maxRandomBigInt())
 	snap, _ := wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
 		wso2_resource.SubscriptionListType: subscriptionList,
 	})
@@ -630,7 +636,7 @@ func UpdateEnforcerApplications(applications *subscription.ApplicationList) {
 	label := commonEnforcerLabel
 	applicationList := append(enforcerLabelMap[label].applications, applications)
 
-	version := rand.Intn(maxRandomInt)
+	version, _ := crand.Int(crand.Reader, maxRandomBigInt())
 	snap, _ := wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
 		wso2_resource.ApplicationListType: applicationList,
 	})
@@ -650,7 +656,7 @@ func UpdateEnforcerJWTIssuers(jwtIssuers *subscription.JWTIssuerList) {
 	label := commonEnforcerLabel
 	jwtIssuerList := append(enforcerLabelMap[label].jwtIssuers, jwtIssuers)
 
-	version := rand.Intn(maxRandomInt)
+	version, _ := crand.Int(crand.Reader, maxRandomBigInt())
 	snap, _ := wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
 		wso2_resource.JWTIssuerListType: jwtIssuerList,
 	})
@@ -669,7 +675,7 @@ func UpdateEnforcerAPIList(label string, apis *subscription.APIList) {
 	logger.LoggerXds.Debugf("Updating Enforcer API Cache")
 	apiList := append(enforcerLabelMap[label].apiList, apis)
 
-	version := rand.Intn(maxRandomInt)
+	version, _ := crand.Int(crand.Reader, maxRandomBigInt())
 	snap, _ := wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
 		wso2_resource.APIListType: apiList,
 	})
@@ -689,7 +695,7 @@ func UpdateEnforcerApplicationPolicies(applicationPolicies *subscription.Applica
 	label := commonEnforcerLabel
 	applicationPolicyList := append(enforcerLabelMap[label].applicationPolicies, applicationPolicies)
 
-	version := rand.Intn(maxRandomInt)
+	version, _ := crand.Int(crand.Reader, maxRandomBigInt())
 	snap, _ := wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
 		wso2_resource.ApplicationPolicyListType: applicationPolicyList,
 	})
@@ -709,7 +715,7 @@ func UpdateEnforcerSubscriptionPolicies(subscriptionPolicies *subscription.Subsc
 	label := commonEnforcerLabel
 	subscriptionPolicyList := append(enforcerLabelMap[label].subscriptionPolicies, subscriptionPolicies)
 
-	version := rand.Intn(maxRandomInt)
+	version, _ := crand.Int(crand.Reader, maxRandomBigInt())
 	snap, _ := wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
 		wso2_resource.SubscriptionPolicyListType: subscriptionPolicyList,
 	})
@@ -729,7 +735,7 @@ func UpdateEnforcerApplicationKeyMappings(applicationKeyMappings *subscription.A
 	label := commonEnforcerLabel
 	applicationKeyMappingList := append(enforcerLabelMap[label].applicationKeyMappings, applicationKeyMappings)
 
-	version := rand.Intn(maxRandomInt)
+	version, _ := crand.Int(crand.Reader, maxRandomBigInt())
 	snap, _ := wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
 		wso2_resource.ApplicationKeyMappingListType: applicationKeyMappingList,
 	})
@@ -800,7 +806,8 @@ func ExtractUUIDFromAPIIdentifier(id string) (string, error) {
 // GenerateAndUpdateKeyManagerList converts the data into KeyManager proto type
 func GenerateAndUpdateKeyManagerList() {
 	var keyManagerConfigList = make([]types.Resource, 0)
-	for _, keyManager := range KeyManagerList {
+	for item := range KeyManagerList {
+		keyManager := KeyManagerList[item]
 		kmConfig := MarshalKeyManager(&keyManager)
 		if kmConfig != nil {
 			keyManagerConfigList = append(keyManagerConfigList, kmConfig)
@@ -814,7 +821,7 @@ func UpdateEnforcerKeyManagers(keyManagerConfigList []types.Resource) {
 	logger.LoggerXds.Debug("Updating Key Manager Cache")
 	label := commonEnforcerLabel
 
-	version := rand.Intn(maxRandomInt)
+	version, _ := crand.Int(crand.Reader, maxRandomBigInt())
 	snap, _ := wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
 		wso2_resource.KeyManagerType: keyManagerConfigList,
 	})
@@ -835,7 +842,7 @@ func UpdateEnforcerRevokedTokens(revokedTokens []types.Resource) {
 	label := commonEnforcerLabel
 	tokens := append(enforcerLabelMap[label].revokedTokens, revokedTokens...)
 
-	version := rand.Intn(maxRandomInt)
+	version, _ := crand.Int(crand.Reader, maxRandomBigInt())
 	snap, _ := wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
 		wso2_resource.RevokedTokensType: revokedTokens,
 	})
