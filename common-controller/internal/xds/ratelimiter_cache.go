@@ -29,7 +29,7 @@ import (
 	rls_config "github.com/envoyproxy/go-control-plane/ratelimit/config/ratelimit/v3"
 	logger "github.com/sirupsen/logrus"
 	"github.com/wso2/apk/common-controller/internal/loggers"
-	logging "github.com/wso2/apk/common-controller/internal/logging"
+	"github.com/wso2/apk/adapter/pkg/logging"
 	dpv1alpha1 "github.com/wso2/apk/common-controller/internal/operator/api/v1alpha1"
 	constants "github.com/wso2/apk/common-controller/internal/operator/constant"
 )
@@ -287,19 +287,22 @@ func (r *rateLimitPolicyCache) updateXdsCache(label string) bool {
 		},
 	})
 	if err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(1714, err.Error()))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1714, logging.MAJOR,
+			"Error while creating the rate limit snapshot: %v", err.Error()))
 		return false
 	}
 	if err := snap.Consistent(); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(1715, err.Error()))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1715, logging.MAJOR,
+			"Inconsistent rate limiter snapshot: %v", err.Error()))
 		return false
 	}
 
 	if err := r.xdsCache.SetSnapshot(context.Background(), label, snap); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(1716, err.Error()))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1716, logging.MAJOR,
+			"Error while updating the rate limit snapshot: %v", err.Error()))
 		return false
 	}
-	loggers.LoggerAPKOperator.Infof("New rate limit cache updated for the label: %q version: %q, API_UUID: %v", label, version, logging.GetValueFromLogContext("API_UUID"))
+	loggers.LoggerAPKOperator.Infof("New rate limit cache updated for the label: %q version: %q", label, version)
 	loggers.LoggerAPKOperator.Debug("Updated rate limit config: ", rlsConf)
 	return true
 }
@@ -326,7 +329,8 @@ func getRateLimitUnit(name string) rls_config.RateLimitUnit {
 	case "DAY":
 		return rls_config.RateLimitUnit_DAY
 	default:
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(1712, name))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1712, logging.MAJOR,
+			"Unknown rate limit unit %q, defaulting to UNKNOWN", name))
 		return rls_config.RateLimitUnit_UNKNOWN
 	}
 }
@@ -372,19 +376,22 @@ func (r *rateLimitPolicyCache) SetEmptySnapshot(label string) bool {
 		},
 	})
 	if err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(1714, err.Error()))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1714, logging.MAJOR,
+			"Error while creating the rate limit snapshot: %v", err.Error()))
 		return false
 	}
 	if err := snap.Consistent(); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(1715, err.Error()))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1715, logging.MAJOR,
+			"Inconsistent rate limiter snapshot: %v", err.Error()))
 		return false
 	}
 
 	if err := r.xdsCache.SetSnapshot(context.Background(), label, snap); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(1716, err.Error()))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1716, logging.MAJOR,
+			"Error while updating the rate limit snapshot: %v", err.Error()))
 		return false
 	}
-	loggers.LoggerAPKOperator.Infof("New rate limit cache updated for the label: %q version: %q, API_UUID: %v", label, version, logging.GetValueFromLogContext("API_UUID"))
+	loggers.LoggerAPKOperator.Infof("New rate limit cache updated for the label: %q version: %q", label, version)
 	loggers.LoggerAPKOperator.Debug("Updated rate limit config: ", rls)
 	return true
 }

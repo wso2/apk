@@ -15,7 +15,7 @@ require (
 require (
 	github.com/envoyproxy/go-control-plane v0.11.2-0.20230802074621-eea0b3bd0f81
 	github.com/pelletier/go-toml v1.8.1
-	github.com/wso2/apk/adapter v0.0.0-20230707111541-73df4fe15db1
+	github.com/wso2/apk/adapter v0.0.0-20230811031118-fa0d1ec8848c
 	google.golang.org/grpc v1.57.0
 )
 
@@ -73,9 +73,9 @@ require (
 	golang.org/x/tools v0.9.1 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.3.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/genproto v0.0.0-20230526203410-71b5a4ffd15e // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20230530153820-e85fd2cbaebc // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20230530153820-e85fd2cbaebc // indirect
+	google.golang.org/genproto v0.0.0-20230731193218-e0aa005b6bdf // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20230726155614-23370e0ffb3e // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20230731190214-cbb8c96f2d6d // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
