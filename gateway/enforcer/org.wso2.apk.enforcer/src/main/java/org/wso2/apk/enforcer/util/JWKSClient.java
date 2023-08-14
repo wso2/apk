@@ -51,7 +51,7 @@ public class JWKSClient {
                 trustStore = TLSUtils.getDefaultCertTrustStore();
             }
             TLSUtils.convertAndAddCertificatesToTrustStore(trustStore, certificates);
-            httpClient = FilterUtils.getHttpClient("https", null, trustStore, null);
+            httpClient = FilterUtils.getHttpClient(null, trustStore, null);
         } catch (EnforcerException e) {
             log.error("Error occured while inializing JWKS Client", e);
             throw new EnforcerException("Error occured while inializing JWKS Client", e);

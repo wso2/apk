@@ -413,3 +413,101 @@ spec:
     - protocol: TCP
       port: 80
       targetPort: 3000
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: dynamic-backend
+  name: dynamic-backend
+  namespace: apk-integration-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dynamic-backend
+  template:
+    metadata:
+      labels:
+        app: dynamic-backend
+    spec:
+      containers:
+      - image: wiremock/wiremock
+        name: wiremock
+        imagePullPolicy: IfNotPresent
+        ports:
+          - containerPort: 8080
+          - containerPort: 8443
+        resources:
+          limits:
+            cpu: 100m
+            memory: 128Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+        volumeMounts:
+          - name: wiremock-mappings
+            mountPath: /home/wiremock/mappings
+      volumes:
+        - name: wiremock-mappings
+          configMap:
+            name: wiremock-mappings
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dynamic-backend-service
+  namespace: apk-integration-test
+spec:
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+    - name: https
+      port: 8443
+      targetPort: 8443
+  type: LoadBalancer
+  selector:
+      app: dynamic-backend
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: wiremock-mappings
+  namespace: apk-integration-test
+data:
+  jwks-endpoint.json: | 
+        {
+          "request": {
+              "method": "GET",
+              "url": "/idp1/jwks"
+          },
+          "response": {
+              "status": 200,
+              "headers": {
+                  "Content-Type": "application/json"
+              },
+              "body": "{\n   \"keys\":[\n      {\n         \"kty\":\"RSA\",\n         \"n\":\"m0YNpM5MVYToWZMZ9wL4KQOygvG0f6y0dw4wZ02T4C3SxiC1zEBCZLh2clj7bncyA3EV2bFrTIBNeq-1pFEfbNDMZB88Jcg0S9QyYujr6GM0AqLA7WjZQ6lLxLpeQdEQroEZI-c8rnGmzU8Qb25aiPbRf6Vh7vFYGQz5FnZ8E0LcEMYQ-4KPMkAqnMon1UKWDkqszTY5a-DGMAi5w7imKzXaU4qiEKVKIcezv9nLUVC5Od0T4FkUQi462ZA9SoHx1HNhcVAj8Nf9TG_C65GbsMMFJVcRXwZR99cVzVxVqEtxGlK7Qr0woYKQ3S5kHZPRFcMFXI6WHhEQXqyOMBdUfQ\",\n         \"e\":\"AQAB\",\n         \"alg\":\"RS256\",\n         \"kid\":\"123-456\",\n         \"use\":\"sig\"\n      }\n   ]\n}"
+          }
+        }
+---
+kind: JWTIssuer
+apiVersion: dp.wso2.com/v1alpha1
+metadata:
+  name: jwt-issuer-idp-1
+  namespace: apk-integration-test
+spec:
+  consumerKeyClaim: azp
+  issuer: https://idp1.com
+  name: idp-1
+  organization: apk-org
+  scopesClaim: scope
+  signatureValidation:
+    jwks:
+      url: "http://dynamic-backend-service:8080/idp1/jwks"
+
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: default
