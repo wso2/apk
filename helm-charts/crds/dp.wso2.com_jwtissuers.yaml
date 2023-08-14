@@ -36,10 +36,21 @@ spec:
             description: JWTIssuerSpec defines the desired state of JWTIssuer
             properties:
               claimMappings:
-                additionalProperties:
-                  type: string
                 description: ClaimMappings denotes the claim mappings of the jwt
-                type: object
+                items:
+                  description: ClaimMapping defines the reference configuration
+                  properties:
+                    localClaim:
+                      description: LocalClaim denotes the local claim
+                      type: string
+                    remoteClaim:
+                      description: RemoteClaim denotes the remote claim
+                      type: string
+                  required:
+                  - localClaim
+                  - remoteClaim
+                  type: object
+                type: array
               consumerKeyClaim:
                 description: ConsumerKeyClaim denotes the claim key of the consumer
                   key.

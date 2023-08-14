@@ -19,7 +19,8 @@ import ballerina/log;
 import ballerina/http;
 import ballerina/io;
 import wso2/apk_common_lib as commons;
-import config_deployer_service.org.wso2.apk.config as runtimeUtil; 
+import config_deployer_service.org.wso2.apk.config as runtimeUtil;
+
 configurable KeyStores keyStores = {
     tls: {
         keyFilePath: "/home/wso2apk/config-deployer/security/config.key"
@@ -29,8 +30,12 @@ configurable (string & readonly) apkSchemaLocation = "/home/wso2apk/config-deplo
 configurable (K8sConfigurations & readonly) k8sConfiguration = {};
 configurable (GatewayConfigurations & readonly) gatewayConfiguration = {};
 configurable (PartitionServiceConfiguration & readonly) partitionServiceConfiguration = {};
+configurable (Vhost[] & readonly) vhosts = [{name: "Default", hosts: ["gw.wso2.com"], 'type: PRODUCTION_TYPE}, {name: "Default", hosts: ["sandbox.gw.wso2.com"], 'type: SANDBOX_TYPE}];
 commons:RequestErrorInterceptor requestErrorInterceptor = new;
 commons:ResponseErrorInterceptor responseErrorInterceptor = new;
+configurable (commons:IDPConfiguration & readonly) idpConfiguration = {publicKey: {certFilePath: "/home/wso2apk/config-deployer/security/mg.pem"}};
+commons:JWTValidationInterceptor jwtValidationInterceptor = new (idpConfiguration, getOrgResolver(),["/health","/api/configurator/apis/generate-configuration","/api/configurator/apis/generate-k8s-resources",""]);
+final commons:JWTBaseOrgResolver jwtBaseOrgResolver = new;
 final PartitionResolver partitionResolver;
 final string apkConfSchemaContent = check io:fileReadString(apkSchemaLocation);
 listener http:Listener ep0 = new (9443, secureSocket = {
@@ -39,9 +44,13 @@ listener http:Listener ep0 = new (9443, secureSocket = {
             keyFile: <string>keyStores.tls.keyFilePath
         }
     },
-    interceptors = [requestErrorInterceptor, responseErrorInterceptor]
+    interceptors = [jwtValidationInterceptor, requestErrorInterceptor, responseErrorInterceptor]
 );
-    final runtimeUtil:APKConfValidator apkConfValidator;
+final runtimeUtil:APKConfValidator apkConfValidator;
+
+isolated function getOrgResolver() returns commons:OrganizationResolver {
+    return jwtBaseOrgResolver;
+}
 
 # Initializing method for runtime
 # + return - Return Error if error occured at initialization.

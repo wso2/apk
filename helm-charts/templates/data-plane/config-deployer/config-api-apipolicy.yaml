@@ -1,0 +1,13 @@
+apiVersion: dp.wso2.com/v1alpha1
+kind: APIPolicy
+metadata:
+  name: "{{ template "apk-helm.resource.prefix" . }}-config-api-api-policy"
+  namespace: {{ .Release.Namespace }}
+spec:
+  override:
+    backendJwtPolicy:
+        name: "{{ template "apk-helm.resource.prefix" . }}-config-api-backendjwt"
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: API
+    name:  {{ template "apk-helm.resource.prefix" . }}-wso2-apk-config-deployer-api

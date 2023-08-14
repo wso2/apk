@@ -45,3 +45,9 @@ public type Header record {|
     string name;
     string value;
 |};
+
+public type Vhost record {|
+string name;
+string[] hosts;
+string 'type;
+|};

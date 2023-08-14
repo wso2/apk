@@ -7,10 +7,8 @@ components:
         - name
         - version
         - type
-        - organization
         - endpointConfigurations
         - operations
-        - vhosts
       type: object
       properties:
         id:
@@ -39,10 +37,6 @@ components:
             - GRAPHQL
             - GRPC
             - WEBSOCKET
-        organization:
-          type: string
-          description: |
-            Organization of the API
         definitionPath:
           type: string
           description: |
@@ -75,20 +69,6 @@ components:
                 type: string
               value:
                 type: string
-        vhosts:
-          type: object
-          description: |
-            Map of virtual hosts of API
-          properties:
-            production:
-              type: array
-              items:
-                type: string
-            sandbox:
-              type: array
-              items:
-                type: string
-          additionalProperties: false
         corsConfiguration:
           $ref: "#/components/schemas/CORSConfiguration"
       additionalProperties: false

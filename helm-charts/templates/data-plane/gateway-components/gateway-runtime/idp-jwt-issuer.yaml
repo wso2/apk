@@ -44,6 +44,15 @@ spec:
         name: "{{ template "apk-helm.resource.prefix" . }}-enforcer-truststore-secret"
         key: "wso2carbon.pem"
     {{ end }}
+    {{ if .Values.wso2.apk.idp.organizationClaim }}
+  claimMappings:
+    - remoteClaim: "{{.Values.wso2.apk.idp.organizationClaim}}"
+      localClaim:  "x-wso2-organization"
+    {{ else }}
+  claimMappings:
+    - remoteClaim: "organization"
+      localClaim:  "x-wso2-organization"
+    {{ end }}
   targetRef:
     kind: Gateway
     name: default

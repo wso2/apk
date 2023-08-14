@@ -35,10 +35,6 @@
       ],
       "description": "The type of the API. Can be one of: REST, GraphQL, GRPC."
     },
-    "organization": {
-      "type": "string",
-      "description": "Organization of the API"
-    },
     "definitionPath": {
       "type": "string",
       "description": "Endpoint to expose API Definition"
@@ -86,25 +82,6 @@
           }
         }
       }
-    },
-    "vhosts": {
-      "type": "object",
-      "description": "Map of virtual hosts of the API.",
-      "properties": {
-        "production": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "sandbox": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      },
-      "additionalProperties": false
     },
     "corsConfiguration": {
       "$ref": "#/schemas/CORSConfiguration",
@@ -585,8 +562,6 @@
     "name",
     "context",
     "type",
-    "organization",
-    "operations",
-    "vhosts"
+    "operations"
   ]
 }

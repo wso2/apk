@@ -1,5 +1,4 @@
 ---
-organization: "wso2"
 name: "test-cors"
 context: "/test_cors"
 version: "2.0.0"
@@ -25,9 +24,6 @@ operations:
       endpointConfigurations:
         production:
           endpoint: "https://backend-prod-post-cat/v2/"
-vhosts:
-  production: ["gw.am.wso2.com"]
-  sandbox: ["sandbox.gw.am.wso2.com"]
 apiRateLimit:
   requestsPerUnit: 5
   unit: Minute

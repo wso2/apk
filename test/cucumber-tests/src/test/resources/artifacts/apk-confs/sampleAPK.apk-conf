@@ -3,7 +3,6 @@ name: "sample-api"
 context: ""
 version: "2.0.0"
 type: "REST"
-organization: ""
 defaultVersion: false
 endpointConfigurations:
   production:

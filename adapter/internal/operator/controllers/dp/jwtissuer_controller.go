@@ -241,11 +241,18 @@ func getJWTIssuers(ctx context.Context, client k8client.Client, namespace types.
 			Namespace: jwtIssuer.Namespace,
 		}
 		if jwtIssuer.Spec.ClaimMappings != nil {
-			resolvedJwtIssuer.ClaimMappings = *jwtIssuer.Spec.ClaimMappings
+			resolvedJwtIssuer.ClaimMappings = getResolvedClaimMapping(*jwtIssuer.Spec.ClaimMappings)
 		} else {
 			resolvedJwtIssuer.ClaimMappings = make(map[string]string)
 		}
 		jwtIssuerMapping[jwtIssuerMappingName] = &resolvedJwtIssuer
 	}
 	return jwtIssuerMapping, nil
+}
+func getResolvedClaimMapping(claimMappings []dpv1alpha1.ClaimMapping) map[string]string {
+	resolvedClaimMappings := make(map[string]string)
+	for _, claimMapping := range claimMappings {
+		resolvedClaimMappings[claimMapping.RemoteClaim] = claimMapping.LocalClaim
+	}
+	return resolvedClaimMappings
 }

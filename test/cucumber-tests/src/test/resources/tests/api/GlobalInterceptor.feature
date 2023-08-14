@@ -6,7 +6,7 @@ Feature: API Deployment with Global Interceptor
     And the definition file "artifacts/definitions/cors_api.yaml"
     And make the API deployment request
     Then the response status code should be 200
-    And the response body should contain "3cd25ba2bbc777ae3160fb06cf9e5944f3dd7650"
+    And the response body should contain "579ba27a1e03e2fdf099d1b6745e265f2d495606"
     And I wait for 1 minute
     Then I set headers
       |Authorization|bearer ${accessToken}|
@@ -22,4 +22,4 @@ Feature: API Deployment with Global Interceptor
 
     Examples:
       | apiID | expectedStatusCode |
-      | 3cd25ba2bbc777ae3160fb06cf9e5944f3dd7650  | 202         |
+      | 579ba27a1e03e2fdf099d1b6745e265f2d495606  | 202         |

@@ -9,3 +9,5 @@ certFilePath = "./tests/resources/wso2carbon.crt"
 [wso2.config_deployer_service.gatewayConfiguration]
 name = "default"
 listenerName = "httpslistener"
+[wso2.config_deployer_service.idpConfiguration.publicKey]
+certFilePath = "./tests/resources/wso2carbon.crt"

@@ -85,7 +85,7 @@ spec:
   consumerKeyClaim: azp
   issuer: https://idp.am.wso2.com/token
   name: Domain-service-idp
-  organization: apk-org
+  organization: default
   scopesClaim: scope
   signatureValidation:
     certificate:
@@ -316,7 +316,7 @@ spec:
       value: bob
       requestsPerUnit: 4
       unit: Minute
-    organization: a3b58ccf-6ecc-4557-b5bb-0a35cce38256
+      organization: a3b58ccf-6ecc-4557-b5bb-0a35cce38256
   targetRef:
     kind: Gateway
     name: default
@@ -334,7 +334,7 @@ spec:
       value: wso2
       requestsPerUnit: 10
       unit: Minute
-    organization: a3b58ccf-6ecc-4557-b5bb-0a35cce38256
+      organization: a3b58ccf-6ecc-4557-b5bb-0a35cce38256
   targetRef:
     kind: Gateway
     name: default
@@ -501,7 +501,7 @@ spec:
   consumerKeyClaim: azp
   issuer: https://idp1.com
   name: idp-1
-  organization: apk-org
+  organization: default
   scopesClaim: scope
   signatureValidation:
     jwks:

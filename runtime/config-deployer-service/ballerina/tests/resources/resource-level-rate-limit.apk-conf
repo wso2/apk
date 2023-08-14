@@ -1,5 +1,4 @@
 ---
-organization: "wso2"
 name: "test-cors"
 context: "/test_cors"
 version: "2.0.0"
@@ -25,6 +24,3 @@ operations:
       verb: "POST"
       authTypeEnabled: true
       scopes: []
-vhosts:
-  production: ["gw.am.wso2.com"]
-  sandbox: ["sandbox.gw.am.wso2.com"]

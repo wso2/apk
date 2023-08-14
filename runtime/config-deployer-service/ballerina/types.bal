@@ -162,14 +162,7 @@ public type DefinitionBody record {
     string apiType?;
 };
 
-# Map of virtual hosts of API
-#
-# + production - Field Description  
-# + sandbox - Field Description
-public type APKConf_vhosts record {
-    string[] production?;
-    string[] sandbox?;
-};
+
 
 # CORS Configuration of API
 #
@@ -214,8 +207,6 @@ public type APKConf record {
     @constraint:String {maxLength: 30, minLength: 1}
     string version;
     string 'type = "REST";
-    # Organization of the API
-    string organization?;
     # Endpoint to expose API Definition
     string definitionPath?;
     # Is this the default version of the API
@@ -227,8 +218,6 @@ public type APKConf record {
     AuthenticationRequest[] authentication?;
     # Map of custom properties of API
     APKConf_additionalProperties[] additionalProperties?;
-    # Map of virtual hosts of API
-    APKConf_vhosts vhosts?;
     # CORS Configuration of API
     CORSConfiguration corsConfiguration?;
 };

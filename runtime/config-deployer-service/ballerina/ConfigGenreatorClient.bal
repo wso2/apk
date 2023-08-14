@@ -121,7 +121,7 @@ public class ConfigGeneratorClient {
         }
         return e909044();
     }
-    public isolated function getGeneratedK8sResources(http:Request request) returns http:Response|BadRequestError|InternalServerErrorError|commons:APKError {
+    public isolated function getGeneratedK8sResources(http:Request request,commons:Organization organization) returns http:Response|BadRequestError|InternalServerErrorError|commons:APKError {
         GenerateK8sResourcesBody body = {};
         do {
             mime:Entity[] payload = check request.getBodyParts();
@@ -139,7 +139,7 @@ public class ConfigGeneratorClient {
                 }
             }
             APIClient apiclient = new ();
-            model:APIArtifact apiArtifact = check apiclient.prepareArtifact(body.apkConfiguration, body.definitionFile);
+            model:APIArtifact apiArtifact = check apiclient.prepareArtifact(body.apkConfiguration, body.definitionFile,organization);
             [string, string] zipName = check self.zipAPIArtifact(apiArtifact.uniqueId, apiArtifact);
             http:Response response = new;
             response.setFileAsPayload(zipName[1]);

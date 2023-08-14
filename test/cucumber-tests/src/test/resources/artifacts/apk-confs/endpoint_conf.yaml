@@ -4,7 +4,6 @@ context: "/endpoint"
 id: "endpoint-test"
 version: "3.14"
 type: "REST"
-organization: "apk-org"
 defaultVersion: false
 endpointConfigurations:
   production:
@@ -29,9 +28,6 @@ operations:
     verb: "DELETE"
     authTypeEnabled: true
     scopes: []
-vhosts:
-  production:
-    - "default.gw.wso2.com"
 authentication:
  - authType: JWT
    enabled: true

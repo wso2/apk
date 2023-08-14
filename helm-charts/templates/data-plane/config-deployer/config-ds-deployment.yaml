@@ -80,6 +80,9 @@ spec:
               mountPath: /home/wso2apk/config-deployer/security/partition-server.pem
               subPath: {{.Values.wso2.apk.dp.partitionServer.tls.fileName | default "tls.crt"}}
             {{- end }}
+            - name: enforcer-jwt-secret-volume
+              mountPath: /home/wso2apk/config-deployer/security/mg.pem
+              subPath: mg.pem
             - name: tmp
               mountPath: /tmp
             - name: config-deployer-temp
@@ -114,6 +117,9 @@ spec:
           secret:
             secretName: {{.Values.wso2.apk.dp.partitionServer.tls.secretName}}
         {{ end }}
+        - name: enforcer-jwt-secret-volume
+          secret: 
+            secretName: {{ template "apk-helm.resource.prefix" . }}-enforcer-keystore-secret
         - name: tmp
           emptyDir: {}
         - name: config-deployer-temp

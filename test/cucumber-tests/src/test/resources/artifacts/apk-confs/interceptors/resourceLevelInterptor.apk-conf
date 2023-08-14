@@ -2,7 +2,6 @@ name: "InterceptorAPI"
 context: "/interceptor"
 version: "1.0.0"
 type: "REST"
-organization: "apk-org"
 defaultVersion: true
 endpointConfigurations:
   production:
@@ -32,9 +31,6 @@ operations:
             contextEnabled: true
             headersEnabled: true
             bodyEnabled: true
-vhosts:
-  production:
-    - "default.gw.wso2.com"
 additionalProperties:
   - name: "APIGroup"
     value: "Gold"

@@ -6,7 +6,7 @@ Feature: API Deployment with Interceptor
     And the definition file "artifacts/definitions/cors_api.yaml"
     And make the API deployment request
     Then the response status code should be 200
-    And the response body should contain "268309bb509758d0ec2ac03f96929cbb001e10cb"
+    And the response body should contain "547961eeaafed989119c45ffc13f8b87bfda821d"
     And I wait for 1 minute
     Then I set headers
       |Authorization|bearer ${accessToken}|
@@ -17,7 +17,7 @@ Feature: API Deployment with Interceptor
     And the definition file "artifacts/definitions/cors_api.yaml"
     And make the API deployment request
     Then the response status code should be 200
-    And the response body should contain "268309bb509758d0ec2ac03f96929cbb001e10cb"
+    And the response body should contain "547961eeaafed989119c45ffc13f8b87bfda821d"
     And I wait for 1 minute
     Then I set headers
       |Authorization|bearer ${accessToken}|
@@ -28,7 +28,7 @@ Feature: API Deployment with Interceptor
     And the definition file "artifacts/definitions/cors_api.yaml"
     And make the API deployment request
     Then the response status code should be 200
-    And the response body should contain "268309bb509758d0ec2ac03f96929cbb001e10cb"
+    And the response body should contain "547961eeaafed989119c45ffc13f8b87bfda821d"
     And I wait for 1 minute
     Then I set headers
       |Authorization|bearer ${accessToken}|
@@ -39,7 +39,7 @@ Feature: API Deployment with Interceptor
     And the definition file "artifacts/definitions/cors_api.yaml"
     And make the API deployment request
     Then the response status code should be 200
-    And the response body should contain "268309bb509758d0ec2ac03f96929cbb001e10cb"
+    And the response body should contain "547961eeaafed989119c45ffc13f8b87bfda821d"
     And I wait for 1 minute
     Then I set headers
       |Authorization|bearer ${accessToken}|
@@ -51,7 +51,7 @@ Feature: API Deployment with Interceptor
     And the definition file "artifacts/definitions/cors_api.yaml"
     And make the API deployment request
     Then the response status code should be 200
-    And the response body should contain "268309bb509758d0ec2ac03f96929cbb001e10cb"
+    And the response body should contain "547961eeaafed989119c45ffc13f8b87bfda821d"
     And I wait for 1 minute
     Then I set headers
       |Authorization|bearer ${accessToken}|
@@ -72,7 +72,7 @@ Feature: API Deployment with Interceptor
     And the definition file "artifacts/definitions/cors_api.yaml"
     And make the API deployment request
     Then the response status code should be 200
-    And the response body should contain "268309bb509758d0ec2ac03f96929cbb001e10cb"
+    And the response body should contain "547961eeaafed989119c45ffc13f8b87bfda821d"
     And I wait for 1 minute
     Then I set headers
       |Authorization|bearer ${accessToken}|
@@ -88,4 +88,4 @@ Feature: API Deployment with Interceptor
 
     Examples:
       | apiID | expectedStatusCode |
-      | 268309bb509758d0ec2ac03f96929cbb001e10cb  | 202         |
+      | 547961eeaafed989119c45ffc13f8b87bfda821d  | 202         |

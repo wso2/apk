@@ -4,7 +4,6 @@ context: "/basic-auth"
 version: "3.14"
 id: "basic-auth-api-test"
 type: "REST"
-organization: "apk-org"
 defaultVersion: true
 endpointConfigurations:
   production:
@@ -69,6 +68,3 @@ operations:
     verb: "DELETE"
     authTypeEnabled: true
     scopes: []
-vhosts:
-  production:
-    - "default.gw.wso2.com"

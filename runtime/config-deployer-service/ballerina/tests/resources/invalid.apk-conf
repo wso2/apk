@@ -3,7 +3,6 @@ name: "PetStore API"
 context: "/petstore"
 version: "1.0.0"
 type: "REST"
-organization: "ACME Corp"
 operations:
   - target: "/pets"
     verb: "GET"
@@ -30,6 +29,3 @@ authentication:
     queryParamName: "apikey"
     headerEnable: true
     queryParamEnable: true
-vhosts:
-  production:
-    - "api.petstore.com"
