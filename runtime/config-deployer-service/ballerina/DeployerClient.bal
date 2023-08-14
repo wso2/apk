@@ -375,7 +375,7 @@ public class DeployerClient {
         }
     }
 
-    private isolated function createHttpRoutesOrder(model:Httproute[] httproutes) returns model:Httproute[] {
+    public isolated function createHttpRoutesOrder(model:Httproute[] httproutes) returns model:Httproute[] {
         foreach model:Httproute route in httproutes {
             model:HTTPRouteRule[] routeRules = route.spec.rules;
             model:HTTPRouteRule[] sortedRouteRules = from var routeRule in routeRules
