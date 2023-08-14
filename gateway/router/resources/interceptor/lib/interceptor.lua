@@ -455,11 +455,15 @@ function interceptor.handle_response_interceptor(response_handle, intercept_serv
     --#region read backend headers
     if resp_flow_includes[INCLUDES.RESP_HEADERS] then
         local backend_headers = response_handle:headers()
-        local backend_headers_table = {}
-        for key, value in pairs(backend_headers) do
-            backend_headers_table[key] = value
+        if backend_headers then
+            local backend_headers_table = {}
+            for key, value in pairs(backend_headers) do
+                backend_headers_table[key] = value
+            end
+            interceptor_request_body[REQUEST.RESP_HEADERS] = backend_headers_table
+        else
+            response_handle:logDebug("Response headers are not available.")
         end
-        interceptor_request_body[REQUEST.RESP_HEADERS] = backend_headers_table
     end
     --#endregion
 
@@ -473,11 +477,15 @@ function interceptor.handle_response_interceptor(response_handle, intercept_serv
     --#region read backend trailers
     if resp_flow_includes[INCLUDES.RESP_TRAILERS] then
         local backend_trailers = response_handle:trailers()
-        local backend_trailers_table = {}
-        for key, value in pairs(backend_trailers) do
-            backend_trailers_table[key] = value
+        if backend_trailers then
+            local backend_trailers_table = {}
+            for key, value in pairs(backend_trailers) do
+                backend_trailers_table[key] = value
+            end
+            interceptor_request_body[REQUEST.RESP_TRAILERS] = backend_trailers_table
+        else
+            response_handle:logDebug("Response trailers are not available.")
         end
-        interceptor_request_body[REQUEST.RESP_TRAILERS] = backend_trailers_table
     end
     --#endregion
 
