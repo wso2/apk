@@ -57,7 +57,8 @@ type APISpec struct {
 
 	// DefinitionPath contains the path to expose the API definition.
 	//
-	// +optional
+	// +kubebuilder:default:=/api-definition
+	// +kubebuilder:validation:MinLength=1
 	DefinitionPath string `json:"definitionPath"`
 
 	// Production contains a list of references to HttpRoutes

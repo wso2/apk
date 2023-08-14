@@ -92,7 +92,9 @@ spec:
                   of the API in a ConfigMap.
                 type: string
               definitionPath:
+                default: /api-definition
                 description: DefinitionPath contains the path to expose the API definition.
+                minLength: 1
                 type: string
               isDefaultVersion:
                 description: IsDefaultVersion indicates whether this API version should
@@ -144,6 +146,7 @@ spec:
             - apiType
             - apiVersion
             - context
+            - definitionPath
             type: object
           status:
             description: APIStatus defines the observed state of API
