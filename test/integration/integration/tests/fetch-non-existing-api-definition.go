@@ -42,7 +42,7 @@ var FetchNonExistingAPIDefinition = suite.IntegrationTest{
 			{
 				Request: http.Request{
 					Host: "fetch-non-existing-api-definition.gw.wso2.com",
-					Path: "/fetch-non-existing-api-definition/v1.0.0?definitionType=OAS",
+					Path: "/fetch-non-existing-api-definition/v1.0.0/api-definition",
 					Headers: map[string]string{
 						"content-type": "application/json",
 					},

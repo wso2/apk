@@ -92,6 +92,7 @@ const (
 	healthPath              string = "/health"
 	readyPath               string = "/ready"
 	apiDefinitionQueryParam string = "OAS"
+	apiDefinitionPath       string = "/api-definition"
 	jwksPath                string = "/.wellknown/jwks"
 )
 

@@ -126,9 +126,9 @@ func CreateRoutesWithClusters(adapterInternalAPI model.AdapterInternalAPI, inter
 	} else {
 		methods = append(methods, "GET")
 	}
-	routeP := CreateAPIDefinitionRoute(adapterInternalAPI.GetXWso2Basepath(), vHost, methods, false, adapterInternalAPI.GetVersion())
+	routeP := CreateAPIDefinitionEndpoint(adapterInternalAPI.GetXWso2Basepath(), vHost, methods, false, adapterInternalAPI.GetVersion(), adapterInternalAPI.GetAPIDefinitionEndpoint())
 	if (&adapterInternalAPI).IsDefaultVersion {
-		defaultDefRoutes := CreateAPIDefinitionRoute(adapterInternalAPI.GetXWso2Basepath(), vHost, methods, true, adapterInternalAPI.GetVersion())
+		defaultDefRoutes := CreateAPIDefinitionEndpoint(adapterInternalAPI.GetXWso2Basepath(), vHost, methods, true, adapterInternalAPI.GetVersion(), adapterInternalAPI.GetAPIDefinitionEndpoint())
 		routes = append(routes, defaultDefRoutes)
 	}
 	routes = append(routes, routeP)
@@ -1141,6 +1141,83 @@ func CreateAPIDefinitionRoute(basePath string, vHost string, methods []string, i
 
 	router = routev3.Route{
 		Name:      apiDefinitionQueryParam,
+		Match:     match,
+		Action:    action,
+		Metadata:  nil,
+		Decorator: decorator,
+		TypedPerFilterConfig: map[string]*any.Any{
+			wellknown.HTTPExternalAuthorization: filter,
+		},
+	}
+	return &router
+}
+
+// CreateAPIDefinitionEndpoint generates a route for the api defition endpoint
+func CreateAPIDefinitionEndpoint(basePath string, vHost string, methods []string, isDefaultversion bool, version string, providedAPIDefinitionPath string) *routev3.Route {
+	endpoint := apiDefinitionPath
+	if providedAPIDefinitionPath != "" {
+		endpoint = providedAPIDefinitionPath
+	}
+	rewritePath := basePath + "/" + vHost + "?" + apiDefinitionQueryParam
+	basePath = strings.TrimSuffix(basePath, "/")
+	var (
+		router    routev3.Route
+		action    *routev3.Route_Route
+		match     *routev3.RouteMatch
+		decorator *routev3.Decorator
+	)
+
+	methodRegex := strings.Join(methods, "|")
+
+	matchPath := basePath + endpoint
+	if isDefaultversion {
+		basePathWithoutVersion := removeLastOccurrence(basePath, "/"+version)
+		matchPath = basePathWithoutVersion + endpoint
+	}
+
+	match = &routev3.RouteMatch{
+		PathSpecifier: &routev3.RouteMatch_Path{
+			Path: matchPath,
+		},
+		Headers: generateHTTPMethodMatcher(methodRegex, apiDefinitionClusterName),
+	}
+
+	decorator = &routev3.Decorator{
+		Operation: basePath,
+	}
+
+	perFilterConfig := extAuthService.ExtAuthzPerRoute{
+		Override: &extAuthService.ExtAuthzPerRoute_Disabled{
+			Disabled: true,
+		},
+	}
+
+	b := proto.NewBuffer(nil)
+	b.SetDeterministic(true)
+	_ = b.Marshal(&perFilterConfig)
+	filter := &any.Any{
+		TypeUrl: extAuthzPerRouteName,
+		Value:   b.Bytes(),
+	}
+
+	directClusterSpecifier := &routev3.RouteAction_Cluster{
+		Cluster: apiDefinitionClusterName,
+	}
+
+	action = &routev3.Route_Route{
+		Route: &routev3.RouteAction{
+			HostRewriteSpecifier: &routev3.RouteAction_AutoHostRewrite{
+				AutoHostRewrite: &wrapperspb.BoolValue{
+					Value: true,
+				},
+			},
+			ClusterSpecifier: directClusterSpecifier,
+			PrefixRewrite:    rewritePath,
+		},
+	}
+
+	router = routev3.Route{
+		Name:      endpoint, //Categorize routes with same base path
 		Match:     match,
 		Action:    action,
 		Metadata:  nil,

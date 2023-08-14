@@ -54,8 +54,12 @@ spec:
                 description: APIDisplayName is the unique name of the API in the namespace
                   defined. "Namespace/APIDisplayName" can be used to uniquely identify
                   an API.
+                maxLength: 60
+                minLength: 1
+                pattern: ^[^~!@#;:%^*()+={}|\<>"'',&$\[\]\/]*$
                 type: string
               apiProperties:
+                description: APIProperties denotes the custom properties of the API.
                 items:
                   description: Property holds key value pair of APIProperties
                   properties:
@@ -64,23 +68,32 @@ spec:
                     value:
                       type: string
                   type: object
+                nullable: true
                 type: array
-              apiProvider:
-                description: APIProvider denotes the provider of the API.
-                type: string
               apiType:
                 description: APIType denotes the type of the API. Possible values
                   could be REST, GraphQL, Async
+                enum:
+                - REST
                 type: string
               apiVersion:
                 description: APIVersion is the version number of the API.
+                maxLength: 30
+                minLength: 1
+                pattern: ^[^~!@#;:%^*()+={}|\<>"'',&/$\[\]\s+\/]+$
                 type: string
               context:
                 description: 'Context denotes the context of the API. e.g: /pet-store-api/1.0.6'
+                pattern: ^[/][a-zA-Z0-9~/_.-]*$
                 type: string
               definitionFileRef:
                 description: DefinitionFileRef contains the OpenAPI 3 or Swagger definition
                   of the API in a ConfigMap.
+                type: string
+              definitionPath:
+                default: /api-definition
+                description: DefinitionPath contains the path to expose the API definition.
+                minLength: 1
                 type: string
               isDefaultVersion:
                 description: IsDefaultVersion indicates whether this API version should
@@ -104,6 +117,7 @@ spec:
                   required:
                   - httpRouteRefs
                   type: object
+                maxItems: 1
                 nullable: true
                 type: array
               sandbox:
@@ -120,6 +134,7 @@ spec:
                   required:
                   - httpRouteRefs
                   type: object
+                maxItems: 1
                 nullable: true
                 type: array
               systemAPI:
@@ -130,35 +145,42 @@ spec:
             - apiType
             - apiVersion
             - context
-            - isDefaultVersion
+            - definitionPath
             type: object
           status:
             description: APIStatus defines the observed state of API
             properties:
-              accepted:
-                description: Accepted represents whether the API is accepted or not.
-                type: boolean
-              events:
-                description: Events contains a list of events related to the API.
-                items:
-                  type: string
-                type: array
-              message:
-                description: Message represents a user friendly message that explains
-                  the current state of the API.
-                type: string
-              status:
-                description: Status denotes the state of the API in its lifecycle.
-                  Possible values could be Accepted, Invalid, Deploy etc.
-                type: string
-              transitionTime:
-                description: TransitionTime represents the last known transition timestamp.
-                format: date-time
-                type: string
-            required:
-            - accepted
-            - status
-            - transitionTime
+              deploymentStatus:
+                description: DeploymentStatus denotes the deployment status of the
+                  API
+                properties:
+                  accepted:
+                    description: Accepted represents whether the API is accepted or
+                      not.
+                    type: boolean
+                  events:
+                    description: Events contains a list of events related to the API.
+                    items:
+                      type: string
+                    type: array
+                  message:
+                    description: Message represents a user friendly message that explains
+                      the current state of the API.
+                    type: string
+                  status:
+                    description: Status denotes the state of the API in its lifecycle.
+                      Possible values could be Accepted, Invalid, Deploy etc.
+                    type: string
+                  transitionTime:
+                    description: TransitionTime represents the last known transition
+                      timestamp.
+                    format: date-time
+                    type: string
+                required:
+                - accepted
+                - status
+                - transitionTime
+                type: object
             type: object
         type: object
     served: true
