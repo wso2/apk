@@ -60,12 +60,12 @@ func ReadConfigs() *Config {
 		}
 		content, readErr := ioutil.ReadFile(pkgconf.GetApkHome() + relativeConfigPath)
 		if readErr != nil {
-			loggerConfig.ErrorC(logging.PrintError(logging.Error1001, logging.BLOCKER, "Error reading configurations, error: %v", err.Error()))
+			loggerConfig.ErrorC(logging.PrintError(logging.Error1001, logging.BLOCKER, "Error reading configurations, error: %v", readErr.Error()))
 			return
 		}
 		parseErr := toml.Unmarshal(content, adapterConfig)
 		if parseErr != nil {
-			loggerConfig.ErrorC(logging.PrintError(logging.Error1002, logging.BLOCKER, "Error parsing the configurations, error: %v", err.Error()))
+			loggerConfig.ErrorC(logging.PrintError(logging.Error1002, logging.BLOCKER, "Error parsing the configurations, error: %v", parseErr.Error()))
 			return
 		}
 
