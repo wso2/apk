@@ -4,7 +4,6 @@ context: "/test-scope"
 id: "emp-api-test-scope"
 version: "1.0.0"
 type: "REST"
-organization: "apk-system"
 defaultVersion: false
 endpointConfigurations:
   production:
@@ -17,6 +16,3 @@ operations:
     verb: "GET"
     scopes:
       - "wso2"
-vhosts:
-  production:
-    - "default.gw.wso2.com"

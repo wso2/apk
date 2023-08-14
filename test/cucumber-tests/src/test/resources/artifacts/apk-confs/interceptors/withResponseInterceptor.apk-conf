@@ -2,7 +2,6 @@ name: "InterceptorAPI"
 context: "/interceptor"
 version: "1.0.0"
 type: "REST"
-organization: "apk-org"
 defaultVersion: true
 endpointConfigurations:
   production:
@@ -12,9 +11,6 @@ operations:
     verb: "GET"
     authTypeEnabled: true
     scopes: []
-vhosts:
-  production:
-    - "default.gw.wso2.com"
 apiPolicies:
   response:
     - policyName: "Interceptor"

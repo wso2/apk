@@ -4,7 +4,6 @@ context: "/test-version"
 id: "version-api-test2"
 version: "2.0"
 type: "REST"
-organization: "apk-org"
 defaultVersion: false
 endpointConfigurations:
   production:
@@ -26,6 +25,3 @@ operations:
     verb: "DELETE"
     authTypeEnabled: true
     scopes: []
-vhosts:
-  production:
-    - "default.gw.wso2.com"

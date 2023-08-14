@@ -4,7 +4,6 @@ context: "/backend-retry"
 version: "3.14"
 id: "backend-retry-test"
 type: "REST"
-organization: "apk-org"
 defaultVersion: true
 endpointConfigurations:
   production:
@@ -27,6 +26,3 @@ operations:
     verb: "POST"
     authTypeEnabled: true
     scopes: [ ]
-vhosts:
-  production:
-    - "default.gw.wso2.com"

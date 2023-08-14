@@ -6,7 +6,7 @@ import ballerina/log;
 import ballerina/lang.value;
 
 public class DeployerClient {
-    public isolated function handleAPIDeployment(http:Request request) returns commons:APKError|http:Response {
+    public isolated function handleAPIDeployment(http:Request request,commons:Organization organization) returns commons:APKError|http:Response {
         do {
 
             DeployApiBody deployAPIBody = check self.retrieveDeployApiBody(request);
@@ -14,7 +14,7 @@ public class DeployerClient {
                 return e909017();
             }
             APIClient apiclient = new;
-            model:APIArtifact prepareArtifact = check apiclient.prepareArtifact(deployAPIBody?.apkConfiguration, deployAPIBody?.definitionFile);
+            model:APIArtifact prepareArtifact = check apiclient.prepareArtifact(deployAPIBody?.apkConfiguration, deployAPIBody?.definitionFile,organization);
             model:API deployAPIToK8sResult = check self.deployAPIToK8s(prepareArtifact);
             APKConf aPKConf = check self.getAPKConf(<record {|byte[] fileContent; string fileName; anydata...;|}>deployAPIBody.apkConfiguration);
             aPKConf.id = deployAPIToK8sResult.metadata.name;
@@ -35,7 +35,7 @@ public class DeployerClient {
             }
         }
     }
-    public isolated function handleAPIUndeployment(string apiId) returns AcceptedString|BadRequestError|InternalServerErrorError|commons:APKError {
+    public isolated function handleAPIUndeployment(string apiId,commons:Organization organization) returns AcceptedString|BadRequestError|InternalServerErrorError|commons:APKError {
         model:Partition|() availablePartitionForAPI = check partitionResolver.getAvailablePartitionForAPI(apiId, "");
         if availablePartitionForAPI is model:Partition {
             model:API|() api = check getK8sAPIByNameAndNamespace(apiId, availablePartitionForAPI.namespace);

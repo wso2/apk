@@ -3,7 +3,6 @@ name: "Pizza Shack API"
 context: "/pizza"
 version: "1.0.0"
 type: "REST"
-organization: "Pizza Shack Inc."
 endpointConfigurations:
   production:
     endpoint: "https://pizza"
@@ -90,11 +89,6 @@ additionalProperties:
     value: "value1"
   - name: "property2"
     value: "value2"
-vhosts:
-  production:
-    - "api.pizzashack.com"
-  sandbox:
-    - "sandbox.pizzashack.com"
 corsConfiguration:
   corsConfigurationEnabled: true
   accessControlAllowOrigins:

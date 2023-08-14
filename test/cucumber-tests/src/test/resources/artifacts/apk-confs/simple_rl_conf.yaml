@@ -4,7 +4,6 @@ context: "/simple-rl"
 id: "simple-rl-test"
 version: "3.14"
 type: "REST"
-organization: "apk-org"
 defaultVersion: false
 endpointConfigurations:
   production:
@@ -26,9 +25,6 @@ operations:
     verb: "DELETE"
     authTypeEnabled: true
     scopes: []
-vhosts:
-  production:
-    - "default.gw.wso2.com"
 apiRateLimit:
   requestsPerUnit: 1
   unit: "Minute"

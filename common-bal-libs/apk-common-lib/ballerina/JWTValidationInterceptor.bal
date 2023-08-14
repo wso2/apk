@@ -1,4 +1,5 @@
 import ballerina/jwt;
+import ballerina/regex;
 import ballerina/http;
 
 public isolated service class JWTValidationInterceptor {
@@ -6,14 +7,19 @@ public isolated service class JWTValidationInterceptor {
     private final IDPConfiguration & readonly idpConfiguration;
     private final jwt:ValidatorConfig jwtValidatorConfig;
     private final OrganizationResolver organizationResolver;
-    public isolated function init(IDPConfiguration idpConfiguration, OrganizationResolver organizationResolver) {
+    private final string[] & readonly ignoredPaths;
+    public isolated function init(IDPConfiguration idpConfiguration, OrganizationResolver organizationResolver, string[] ignoredPaths) {
         self.idpConfiguration = idpConfiguration.cloneReadOnly();
         self.organizationResolver = organizationResolver;
         self.jwtValidatorConfig = initializeJWTValidator(idpConfiguration.cloneReadOnly()).cloneReadOnly();
+        self.ignoredPaths = ignoredPaths.cloneReadOnly();
     }
     isolated resource function 'default [string... path](http:RequestContext ctx, http:Request request, http:Caller caller) returns http:NextService|error? {
-        if path[0] == "health" {
-            return ctx.next();
+        string concatPath = "/" + string:'join("/", ...path);
+        foreach string ignoredPath in self.ignoredPaths {
+            if regex:matches(concatPath, ignoredPath) {
+                return ctx.next();
+            }
         }
         string|http:HeaderNotFoundError authorizationHeader = request.getHeader(self.idpConfiguration.authorizationHeader);
         if authorizationHeader is string {

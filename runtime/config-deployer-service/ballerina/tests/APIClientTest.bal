@@ -3,16 +3,25 @@ import config_deployer_service.model;
 import config_deployer_service.org.wso2.apk.config.model as runtimeModels;
 import wso2/apk_common_lib;
 import ballerina/io;
+import wso2/apk_common_lib as commons;
+
+commons:Organization organization = {
+    displayName: "default",
+    name: "default",
+    organizationClaimValue: "default",
+    uuid: "",
+    enabled: true
+};
 
 @test:Config {dataProvider: APIToAPKConfDataProvider}
-public isolated function testFromAPIModelToAPKConf(runtimeModels:API api, APKConf expected) returns error? {
+public function testFromAPIModelToAPKConf(runtimeModels:API api, APKConf expected) returns error? {
     APIClient apiClient = new;
     APKConf apkConf = check apiClient.fromAPIModelToAPKConf(api);
     test:assertEquals(apkConf, expected, "APKConf is not equal to expected APKConf");
 }
 
 @test:Config {}
-public isolated function testCORSPolicyGenerationFromAPKConf() returns error? {
+public function testCORSPolicyGenerationFromAPKConf() returns error? {
 
     GenerateK8sResourcesBody body = {};
     body.apkConfiguration = {fileName: "API_CORS.apk-conf", fileContent: check io:fileReadBytes("./tests/resources/API_CORS.apk-conf")};
@@ -20,7 +29,7 @@ public isolated function testCORSPolicyGenerationFromAPKConf() returns error? {
     body.apiType = "REST";
     APIClient apiClient = new;
 
-    model:APIArtifact apiArtifact = check apiClient.prepareArtifact(body.apkConfiguration, body.definitionFile);
+    model:APIArtifact apiArtifact = check apiClient.prepareArtifact(body.apkConfiguration, body.definitionFile, organization);
 
     model:CORSPolicy? corsPolicySpecExpected = {
         accessControlAllowCredentials: true,
@@ -39,7 +48,7 @@ public isolated function testCORSPolicyGenerationFromAPKConf() returns error? {
 }
 
 @test:Config {}
-public isolated function testInvalidCORSPolicyGenerationFromAPKConf() returns error? {
+public function testInvalidCORSPolicyGenerationFromAPKConf() returns error? {
 
     GenerateK8sResourcesBody body = {};
     body.apkConfiguration = {fileName: "invalid_API_CORS.apk-conf", fileContent: check io:fileReadBytes("./tests/resources/invalid_API_CORS.apk-conf")};
@@ -52,7 +61,7 @@ public isolated function testInvalidCORSPolicyGenerationFromAPKConf() returns er
         "expected type: String, found: Integer": "#/corsConfiguration/accessControlAllowMethods/0: expected type: String, found: Integer"
     };
 
-    apk_common_lib:APKError|model:APIArtifact apiArtifact = apiClient.prepareArtifact(body.apkConfiguration, body.definitionFile);
+    apk_common_lib:APKError|model:APIArtifact apiArtifact = apiClient.prepareArtifact(body.apkConfiguration, body.definitionFile, organization);
     if apiArtifact is model:APIArtifact {
         test:assertFail("Expected an error but got an APIArtifact");
     } else {
@@ -66,7 +75,7 @@ public isolated function testInvalidCORSPolicyGenerationFromAPKConf() returns er
 }
 
 @test:Config {}
-public isolated function testBackendJWTConfigGenerationFromAPKConf() returns error? {
+public function testBackendJWTConfigGenerationFromAPKConf() returns error? {
 
     GenerateK8sResourcesBody body = {};
     body.apkConfiguration = {fileName: "API_CORS.apk-conf", fileContent: check io:fileReadBytes("./tests/resources/API_CORS.apk-conf")};
@@ -74,7 +83,7 @@ public isolated function testBackendJWTConfigGenerationFromAPKConf() returns err
     body.apiType = "REST";
     APIClient apiClient = new;
 
-    model:APIArtifact apiArtifact = check apiClient.prepareArtifact(body.apkConfiguration, body.definitionFile);
+    model:APIArtifact apiArtifact = check apiClient.prepareArtifact(body.apkConfiguration, body.definitionFile, organization);
 
     model:BackendJWTSpec backendJWTConfigSpec = {
         encoding: "Base64",
@@ -100,7 +109,7 @@ public isolated function testBackendJWTConfigGenerationFromAPKConf() returns err
 }
 
 @test:Config {}
-public isolated function testInterceptorConfigGenerationFromAPKConf() returns error? {
+public function testInterceptorConfigGenerationFromAPKConf() returns error? {
 
     GenerateK8sResourcesBody body = {};
     body.apkConfiguration = {fileName: "API_Interceptors.apk-conf", fileContent: check io:fileReadBytes("./tests/resources/API_Interceptors.apk-conf")};
@@ -108,10 +117,10 @@ public isolated function testInterceptorConfigGenerationFromAPKConf() returns er
     body.apiType = "REST";
     APIClient apiClient = new;
 
-    model:APIArtifact apiArtifact = check apiClient.prepareArtifact(body.apkConfiguration, body.definitionFile);
+    model:APIArtifact apiArtifact = check apiClient.prepareArtifact(body.apkConfiguration, body.definitionFile, organization);
 
     model:InterceptorServiceSpec reqInterceptorServiceSpecExpected = {
-        backendRef: {name: "backend-ad23313e6fc5a4db1073998a6d59fd648b4dc037-interceptor"},
+        backendRef: {name: "backend-785a745eae91584e351e0f898194b1d40eb2cfe4-interceptor"},
         includes: [
             "request_headers",
             "request_body",
@@ -121,7 +130,7 @@ public isolated function testInterceptorConfigGenerationFromAPKConf() returns er
     };
 
     model:InterceptorServiceSpec resInterceptorServiceSpecExpected = {
-        backendRef: {name: "backend-5720a3adf80f8ee7c7f210c38045504b30817c33-interceptor"},
+        backendRef: {name: "backend-280575aea49bbdf7dad7437eecf9b3685cdda938-interceptor"},
         includes: [
             "response_body",
             "response_trailers"
@@ -168,7 +177,7 @@ public isolated function testInterceptorConfigGenerationFromAPKConf() returns er
 }
 
 @test:Config {}
-public isolated function testBackendConfigGenerationFromAPKConf() returns error? {
+public function testBackendConfigGenerationFromAPKConf() returns error? {
 
     GenerateK8sResourcesBody body = {};
     body.apkConfiguration = {fileName: "backends.apk-conf", fileContent: check io:fileReadBytes("./tests/resources/backends.apk-conf")};
@@ -176,7 +185,7 @@ public isolated function testBackendConfigGenerationFromAPKConf() returns error?
     body.apiType = "REST";
     APIClient apiClient = new;
 
-    model:APIArtifact apiArtifact = check apiClient.prepareArtifact(body.apkConfiguration, body.definitionFile);
+    model:APIArtifact apiArtifact = check apiClient.prepareArtifact(body.apkConfiguration, body.definitionFile, organization);
 
     model:BackendSpec prodBackendSpec = {
         services: [
@@ -203,7 +212,7 @@ public isolated function testBackendConfigGenerationFromAPKConf() returns error?
     test:assertTrue(apiArtifact.productionEndpointAvailable, "Production endpoint not defined");
     test:assertEquals(apiArtifact.productionRoute.length(), 1, "Production endpoint not defined");
     foreach model:Httproute httpRoute in apiArtifact.productionRoute {
-        test:assertEquals(httpRoute.spec.hostnames, ["gw.am.wso2.com"], "Production endpoint vhost mismatch");
+        test:assertEquals(httpRoute.spec.hostnames, ["default.gw.wso2.com"], "Production endpoint vhost mismatch");
         test:assertEquals(httpRoute.spec.rules.length(), 2, "Required number of HTTP Route rules not found");
         model:HTTPBackendRef[]? backendRefs = httpRoute.spec.rules[0].backendRefs;
         if backendRefs is model:HTTPBackendRef[] {
@@ -217,7 +226,7 @@ public isolated function testBackendConfigGenerationFromAPKConf() returns error?
     test:assertTrue(apiArtifact.sandboxEndpointAvailable, "Sandbox endpoint not defined");
     test:assertEquals(apiArtifact.sandboxRoute.length(), 1, "Sandbox Backend not defined");
     foreach model:Httproute httpRoute in apiArtifact.sandboxRoute {
-        test:assertEquals(httpRoute.spec.hostnames, ["sandbox.gw.am.wso2.com"], "Sandbox vhost mismatch");
+        test:assertEquals(httpRoute.spec.hostnames, ["default.sandbox.gw.wso2.com"], "Sandbox vhost mismatch");
         model:HTTPBackendRef[]? backendRefs = httpRoute.spec.rules[0].backendRefs;
         if backendRefs is model:HTTPBackendRef[] {
             string backendUUID = backendRefs[0].name;
@@ -229,7 +238,7 @@ public isolated function testBackendConfigGenerationFromAPKConf() returns error?
 }
 
 @test:Config {}
-public isolated function testAPILevelRateLimitConfigGenerationFromAPKConf() returns error? {
+public function testAPILevelRateLimitConfigGenerationFromAPKConf() returns error? {
 
     GenerateK8sResourcesBody body = {};
     body.apkConfiguration = {fileName: "backends.apk-conf", fileContent: check io:fileReadBytes("./tests/resources/backends.apk-conf")};
@@ -237,7 +246,7 @@ public isolated function testAPILevelRateLimitConfigGenerationFromAPKConf() retu
     body.apiType = "REST";
     APIClient apiClient = new;
 
-    model:APIArtifact apiArtifact = check apiClient.prepareArtifact(body.apkConfiguration, body.definitionFile);
+    model:APIArtifact apiArtifact = check apiClient.prepareArtifact(body.apkConfiguration, body.definitionFile, organization);
 
     model:RateLimitData rateLimitData = {
         api: {
@@ -254,7 +263,7 @@ public isolated function testAPILevelRateLimitConfigGenerationFromAPKConf() retu
 }
 
 @test:Config {}
-public isolated function testOperationLevelRateLimitConfigGenerationFromAPKConf() returns error? {
+public function testOperationLevelRateLimitConfigGenerationFromAPKConf() returns error? {
 
     GenerateK8sResourcesBody body = {};
     body.apkConfiguration = {fileName: "resource-level-rate-limit.apk-conf", fileContent: check io:fileReadBytes("./tests/resources/resource-level-rate-limit.apk-conf")};
@@ -262,7 +271,7 @@ public isolated function testOperationLevelRateLimitConfigGenerationFromAPKConf(
     body.apiType = "REST";
     APIClient apiClient = new;
 
-    model:APIArtifact apiArtifact = check apiClient.prepareArtifact(body.apkConfiguration, body.definitionFile);
+    model:APIArtifact apiArtifact = check apiClient.prepareArtifact(body.apkConfiguration, body.definitionFile, organization);
 
     model:RateLimitData rateLimitData = {
         api: {
@@ -279,7 +288,7 @@ public isolated function testOperationLevelRateLimitConfigGenerationFromAPKConf(
 }
 
 @test:Config {}
-public isolated function testScopeConfigGenerationFromAPKConf() returns error? {
+public function testScopeConfigGenerationFromAPKConf() returns error? {
 
     GenerateK8sResourcesBody body = {};
     body.apkConfiguration = {fileName: "backends.apk-conf", fileContent: check io:fileReadBytes("./tests/resources/backends.apk-conf")};
@@ -287,7 +296,7 @@ public isolated function testScopeConfigGenerationFromAPKConf() returns error? {
     body.apiType = "REST";
     APIClient apiClient = new;
 
-    model:APIArtifact apiArtifact = check apiClient.prepareArtifact(body.apkConfiguration, body.definitionFile);
+    model:APIArtifact apiArtifact = check apiClient.prepareArtifact(body.apkConfiguration, body.definitionFile, organization);
 
     test:assertEquals(apiArtifact.scopes.length(), 3, "Required number of scopes not found");
     string[] scopeUUIDs = [
@@ -314,7 +323,7 @@ public isolated function testScopeConfigGenerationFromAPKConf() returns error? {
 }
 
 @test:Config {}
-public isolated function testBackendRetryAndTimeoutGenerationFromAPKConf() returns error? {
+public function testBackendRetryAndTimeoutGenerationFromAPKConf() returns error? {
 
     GenerateK8sResourcesBody body = {};
     body.apkConfiguration = {fileName: "backend-retry.apk-conf", fileContent: check io:fileReadBytes("./tests/resources/backend-retry.apk-conf")};
@@ -322,7 +331,7 @@ public isolated function testBackendRetryAndTimeoutGenerationFromAPKConf() retur
     body.apiType = "REST";
     APIClient apiClient = new;
 
-    model:APIArtifact apiArtifact = check apiClient.prepareArtifact(body.apkConfiguration, body.definitionFile);
+    model:APIArtifact apiArtifact = check apiClient.prepareArtifact(body.apkConfiguration, body.definitionFile, organization);
 
     model:Retry? retryConfigExpected = {
         count: 3,
@@ -359,7 +368,7 @@ public isolated function testBackendRetryAndTimeoutGenerationFromAPKConf() retur
 }
 
 @test:Config {}
-public isolated function testJWTAuthenticationOnlyEnable() returns error? {
+public function testJWTAuthenticationOnlyEnable() returns error? {
 
     GenerateK8sResourcesBody body = {};
     body.apkConfiguration = {fileName: "jwtAuth.apk-conf", fileContent: check io:fileReadBytes("./tests/resources/jwtAuth.apk-conf")};
@@ -367,7 +376,7 @@ public isolated function testJWTAuthenticationOnlyEnable() returns error? {
     body.apiType = "REST";
     APIClient apiClient = new;
 
-    model:APIArtifact apiArtifact = check apiClient.prepareArtifact(body.apkConfiguration, body.definitionFile);
+    model:APIArtifact apiArtifact = check apiClient.prepareArtifact(body.apkConfiguration, body.definitionFile, organization);
     model:AuthenticationData expectedAuthenticationData = {
         disabled: false,
         authTypes: {
@@ -384,7 +393,7 @@ public isolated function testJWTAuthenticationOnlyEnable() returns error? {
 }
 
 @test:Config {}
-public isolated function testAPIKeyOnlyEnable() returns error? {
+public function testAPIKeyOnlyEnable() returns error? {
 
     GenerateK8sResourcesBody body = {};
     body.apkConfiguration = {fileName: "apiKeyOnly.apk-conf", fileContent: check io:fileReadBytes("./tests/resources/apiKeyOnly.apk-conf")};
@@ -392,7 +401,7 @@ public isolated function testAPIKeyOnlyEnable() returns error? {
     body.apiType = "REST";
     APIClient apiClient = new;
 
-    model:APIArtifact apiArtifact = check apiClient.prepareArtifact(body.apkConfiguration, body.definitionFile);
+    model:APIArtifact apiArtifact = check apiClient.prepareArtifact(body.apkConfiguration, body.definitionFile, organization);
     model:AuthenticationData expectedAuthenticationData = {
         disabled: false,
         authTypes: {
@@ -416,7 +425,7 @@ public isolated function testAPIKeyOnlyEnable() returns error? {
 }
 
 @test:Config {}
-public isolated function testAPIKeyAndJWTEnable() returns error? {
+public function testAPIKeyAndJWTEnable() returns error? {
 
     GenerateK8sResourcesBody body = {};
     body.apkConfiguration = {fileName: "jwtandAPIKey.apk-conf", fileContent: check io:fileReadBytes("./tests/resources/jwtandAPIKey.apk-conf")};
@@ -424,7 +433,7 @@ public isolated function testAPIKeyAndJWTEnable() returns error? {
     body.apiType = "REST";
     APIClient apiClient = new;
 
-    model:APIArtifact apiArtifact = check apiClient.prepareArtifact(body.apkConfiguration, body.definitionFile);
+    model:APIArtifact apiArtifact = check apiClient.prepareArtifact(body.apkConfiguration, body.definitionFile, organization);
     model:AuthenticationData expectedAuthenticationData = {
         disabled: false,
         authTypes: {
@@ -487,7 +496,6 @@ public function APIToAPKConfDataProvider() returns map<[runtimeModels:API, APKCo
                 name: "testAPI",
                 context: "/test",
                 version: "1.0.0",
-                organization: "",
                 operations: []
             }
         ],
@@ -497,7 +505,6 @@ public function APIToAPKConfDataProvider() returns map<[runtimeModels:API, APKCo
                 name: "testAPI",
                 context: "/test",
                 version: "1.0.0",
-                organization: "",
                 endpointConfigurations: {production: {endpoint: "http://localhost:9090"}},
                 operations: []
             }
@@ -509,7 +516,6 @@ public function APIToAPKConfDataProvider() returns map<[runtimeModels:API, APKCo
                 name: "testAPI",
                 context: "/test",
                 version: "1.0.0",
-                organization: "",
                 endpointConfigurations: {production: {endpoint: "http://localhost:9090"}},
                 operations: [
                     {target: "/menu", verb: "GET", authTypeEnabled: true, scopes: []},
@@ -519,40 +525,4 @@ public function APIToAPKConfDataProvider() returns map<[runtimeModels:API, APKCo
         ]
     };
     return apkConfMap;
-}
-
-@test:Config {dataProvider: apkConfValidationDataProvider}
-public isolated function testValidationAPKConf(string apkConfFileName, map<string> errors) returns error? {
-
-    GenerateK8sResourcesBody body = {};
-    body.apkConfiguration = {fileName: apkConfFileName, fileContent: check io:fileReadBytes("./tests/resources/" + apkConfFileName)};
-    body.definitionFile = {fileName: "api.yaml", fileContent: check io:fileReadBytes("./tests/resources/api.yaml")};
-    body.apiType = "REST";
-    APIClient apiClient = new;
-
-    apk_common_lib:APKError|model:APIArtifact apiArtifact = apiClient.prepareArtifact(body.apkConfiguration, body.definitionFile);
-    if apiArtifact is model:APIArtifact {
-        test:assertFail("Expected an error but got an APIArtifact");
-    } else {
-        apk_common_lib:ErrorHandler & readonly details = apiArtifact.detail();
-        test:assertEquals(details.code, 909029);
-        test:assertEquals(details.message, "Invalid apk-conf provided");
-        test:assertEquals(details.description, "Invalid apk-conf provided");
-        test:assertEquals(details.statusCode, 400);
-        test:assertEquals(details.moreInfo, errors);
-    }
-
-}
-
-public function apkConfValidationDataProvider() returns map<[string, map<string>]> {
-
-    map<[string, map<string>]> results = {
-        "1": ["invalidsandboxVhostGlobalEndpoint.apk-conf", {"sandbox vhosts": "sandbox vhosts not available"}],
-        "2": ["invalidproductionVhostGlobalEndpoint.apk-conf", {"production vhosts": "production vhosts not available"}],
-        "3": ["bothVhostGlobalEndpoint.apk-conf", {"required key [vhosts] not found": "#: required key [vhosts] not found"}],
-        "4": ["invalidproductionVhostResourceEndpointapk-conf", {"production vhosts": "production vhosts not available"}],
-        "5": ["invalid.apk-conf", {"sandbox vhosts":"sandbox vhosts not available","production endpoint":"production endpoint not available for /pets"}]
-    };
-
-    return results;
 }

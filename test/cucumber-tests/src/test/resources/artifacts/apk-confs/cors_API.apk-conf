@@ -1,4 +1,3 @@
-organization: "wso2"
 name: "test-cors"
 id: "cors-api-adff3dbc-2787-11ee-be56-0242ac120002"
 context: "/test_cors"
@@ -16,9 +15,6 @@ operations:
       verb: "GET"
       authTypeEnabled: true
       scopes: []
-vhosts:
-  production: ["default.gw.wso2.com"]
-  sandbox: []
 corsConfiguration:
   corsConfigurationEnabled: true
   accessControlAllowOrigins:

@@ -1,7 +1,6 @@
 name: "My API"
 context: "/myapi"
 type: "REST"
-organization: "My Organization"
 endpointConfigurations:
   production:
     endpoint: "https://endpoint/production"
@@ -16,9 +15,6 @@ apiRateLimit:
   unit: "Hour"
 authentication: []
 additionalProperties: []
-vhosts:
-  production: []
-  sandbox: []
 corsConfiguration:
   corsConfigurationEnabled: false
   accessControlAllowOrigins: []

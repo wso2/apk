@@ -3,7 +3,6 @@ name: "PetStore API"
 context: "/petstore"
 version: "1.0.0"
 type: "REST"
-organization: "ACME Corp"
 endpointConfigurations:
   production:
      endpoint: "https://petstore.swagger.io/v2/pet"
@@ -25,6 +24,3 @@ authentication:
     queryParamName: "apikey"
     headerEnable: true
     queryParamEnable: true
-vhosts:
-  sandbox:
-    - "api.petstore.com"

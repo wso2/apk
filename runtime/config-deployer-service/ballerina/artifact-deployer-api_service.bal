@@ -9,9 +9,11 @@ isolated service /api/deployer on ep0 {
     # anydata (API deployed successfully)
     # BadRequestError (Bad Request. Invalid request or validation error.)
     # InternalServerErrorError (Internal Server Error.)
-    isolated resource function post apis/deploy(http:Request request) returns commons:APKError|http:Response {
+    isolated resource function post apis/deploy(http:RequestContext requestContext,http:Request request) returns commons:APKError|http:Response {
         DeployerClient deployerClient = new;
-        return check deployerClient.handleAPIDeployment(request);
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        return check deployerClient.handleAPIDeployment(request,organization);
     }
     # Undeploy API
     #
@@ -20,8 +22,10 @@ isolated service /api/deployer on ep0 {
     # AcceptedString (API undeployed successfully)
     # BadRequestError (Bad Request. Invalid request or validation error.)
     # InternalServerErrorError (Internal Server Error.)
-    isolated resource function post apis/undeploy(string apiId) returns AcceptedString|BadRequestError|InternalServerErrorError|commons:APKError {
+    isolated resource function post apis/undeploy(http:RequestContext requestContext,string apiId) returns AcceptedString|BadRequestError|InternalServerErrorError|commons:APKError {
         DeployerClient deployerClient = new;
-        return check deployerClient.handleAPIUndeployment(apiId);
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        return check deployerClient.handleAPIUndeployment(apiId,organization);
     }
 }

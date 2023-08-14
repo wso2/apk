@@ -58,10 +58,18 @@ type JWTIssuerSpec struct {
 	SignatureValidation *SignatureValidation `json:"signatureValidation"`
 
 	// ClaimMappings denotes the claim mappings of the jwt
-	ClaimMappings *map[string]string `json:"claimMappings,omitempty"`
+	ClaimMappings *[]ClaimMapping `json:"claimMappings,omitempty"`
 
 	// TargetRef denotes the reference to the which gateway it applies to
 	TargetRef *gwapiv1b1.PolicyTargetReference `json:"targetRef,omitempty"`
+}
+
+// ClaimMapping defines the reference configuration
+type ClaimMapping struct {
+	// RemoteClaim denotes the remote claim
+	RemoteClaim string `json:"remoteClaim"`
+	// LocalClaim denotes the local claim
+	LocalClaim string `json:"localClaim"`
 }
 
 // SignatureValidation defines the signature validation method

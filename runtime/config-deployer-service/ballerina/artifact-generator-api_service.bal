@@ -22,6 +22,11 @@ isolated service /api/configurator on ep0 {
     # InternalServerErrorError (Internal Server Error.)
     isolated resource function post apis/'generate\-k8s\-resources(http:Request request) returns http:Response|BadRequestError|InternalServerErrorError|commons:APKError {
         ConfigGeneratorClient apiclient = new ;
-        return check apiclient.getGeneratedK8sResources(request);
+        commons:Organization organization  = {displayName: "default",
+        name: "default",
+        organizationClaimValue: "default",
+        uuid: "",
+        enabled: true};
+        return check apiclient.getGeneratedK8sResources(request,organization);
     }
 }
