@@ -20,8 +20,8 @@ package envoyconf
 import (
 	config_access_logv3 "github.com/envoyproxy/go-control-plane/envoy/config/accesslog/v3"
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
-	file_accesslogv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/access_loggers/file/v3"
 	grpc_accesslogv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/access_loggers/grpc/v3"
+	stream_accesslogv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/access_loggers/stream/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/wellknown"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/wso2/apk/adapter/config"
@@ -33,8 +33,7 @@ import (
 
 // getAccessLogConfigs provides file access log configurations for envoy
 func getFileAccessLogConfigs() *config_access_logv3.AccessLog {
-	var logFormat *file_accesslogv3.FileAccessLog_LogFormat
-	logpath := defaultAccessLogPath //default access log path
+	var logFormat *stream_accesslogv3.StdoutAccessLog_LogFormat
 
 	logConf := config.ReadLogConfigs()
 
@@ -43,7 +42,7 @@ func getFileAccessLogConfigs() *config_access_logv3.AccessLog {
 		return nil
 	}
 
-	logFormat = &file_accesslogv3.FileAccessLog_LogFormat{
+	logFormat = &stream_accesslogv3.StdoutAccessLog_LogFormat{
 		LogFormat: &corev3.SubstitutionFormatString{
 			Format: &corev3.SubstitutionFormatString_TextFormatSource{
 				TextFormatSource: &corev3.DataSource{
@@ -62,10 +61,8 @@ func getFileAccessLogConfigs() *config_access_logv3.AccessLog {
 			},
 		},
 	}
-	logpath = logConf.AccessLogs.LogFile
 
-	accessLogConf := &file_accesslogv3.FileAccessLog{
-		Path:            logpath,
+	accessLogConf := &stream_accesslogv3.StdoutAccessLog{
 		AccessLogFormat: logFormat,
 	}
 
