@@ -105,13 +105,15 @@ data:
     {{- if and .Values.wso2.apk.dp.gatewayRuntime.analytics .Values.wso2.apk.dp.gatewayRuntime.analytics.enabled}}
     [analytics]
       enabled = true
-      type = {{ .Values.wso2.apk.dp.gatewayRuntime.analytics.type }}
+      {{- if .Values.wso2.apk.dp.gatewayRuntime.analytics.type }}
+      type = "{{ .Values.wso2.apk.dp.gatewayRuntime.analytics.type}}"
+      {{- end }}
 
     [analytics.adapter]
       bufferFlushInterval = "1s"
       bufferSizeBytes = 16384
       gRPCRequestTimeout = "20s"
-    
+
     [analytics.enforcer.configProperties]
       {{- if .Values.wso2.apk.dp.gatewayRuntime.analytics.authURL }}
       authURL = "{{ .Values.wso2.apk.dp.gatewayRuntime.analytics.authURL }}"
