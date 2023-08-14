@@ -17,12 +17,57 @@
 
 package logging
 
+// Log (Error) severity level constants
+const (
+	BLOCKER  = "Blocker"
+	CRITICAL = "Critical"
+	MAJOR    = "Major"
+	MINOR    = "Minor"
+	TRIVIAL  = "Trivial"
+	DEFAULT  = "Default"
+)
+
 // Error Log Internal Configuration(1000-1099) Config Constants
 // - loggerConfig
 const (
 	Error1000 = 1000
 	Error1001 = 1001
 	Error1002 = 1002
+)
+
+// Error Log Internal XDS(1700-1799) Config Constants
+// - LoggerXds
+const (
+	Error1700 = 1700
+	Error1701 = 1701
+	Error1702 = 1702
+	Error1703 = 1703
+	Error1704 = 1704
+	Error1705 = 1705
+	Error1706 = 1706
+	Error1707 = 1707
+	Error1709 = 1709
+	Error1710 = 1710
+	Error1711 = 1711
+	Error1712 = 1712
+	Error1713 = 1713
+	Error1714 = 1714
+	Error1715 = 1715
+	Error1716 = 1716
+	Error1717 = 1717
+	Error1718 = 1718
+	Error1719 = 1719
+	Error1720 = 1720
+	Error1721 = 1721
+	Error1722 = 1722
+	Error1723 = 1723
+	Error1724 = 1724
+)
+
+// Error Log RateLimiter callbacks(2300-2399) Config Constants
+// - LoggerEnforcerXdsCallbacks
+const (
+	Error2300 = 2300
 )
 
 // Error Log Pkg operator(2600-2699) Config Constants
@@ -90,6 +135,7 @@ const (
 	Error2660 = 2660
 	Error2661 = 2661
 	Error2662 = 2662
+	Error2663 = 2663
 )
 
 // Error Log Pkg auth(3001-3099) Config Constants
@@ -142,6 +188,106 @@ var Mapper = map[int]ErrorDetails{
 	Error1002: {
 		ErrorCode: Error1002,
 		Message:   "Error parsing the configurations.",
+	},
+	Error1700: {
+		ErrorCode: Error1700,
+		Message:   "Error while connecting to the APK Management Server.",
+	},
+	Error1701: {
+		ErrorCode: Error1701,
+		Message:   "Error while starting APK Management application stream.",
+	},
+	Error1702: {
+		ErrorCode: Error1702,
+		Message:   "EOF is received from the APK Management Server application stream.",
+	},
+	Error1703: {
+		ErrorCode: Error1703,
+		Message:   "Failed to receive the discovery response from the APK Management Server application stream.",
+	},
+	Error1704: {
+		ErrorCode: Error1704,
+		Message:   "The APK Management Server application stream connection stopped.",
+	},
+	Error1705: {
+		ErrorCode: Error1705,
+		Message:   "Error while starting the APK Management Server.",
+	},
+	Error1706: {
+		ErrorCode: Error1706,
+		Message:   "Error while unmarshalling APK Management Server Application discovery response.",
+	},
+	Error1707: {
+		ErrorCode: Error1707,
+		Message:   "Error creating application.",
+	},
+	Error1709: {
+		ErrorCode: Error1709,
+		Message:   "Error updating application.",
+	},
+	Error1710: {
+		ErrorCode: Error1710,
+		Message:   "Error deleting application.",
+	},
+	Error1711: {
+		ErrorCode: Error1711,
+		Message:   "Error retrieving application.",
+	},
+	Error1712: {
+		ErrorCode: Error1712,
+		Message:   "Unknown rate limit unit. Defaulting to UNKNOWN",
+	},
+	Error1713: {
+		ErrorCode: Error1713,
+		Message:   "Error extracting vhost from apiIdentifier. Continue cleaning other maps.",
+	},
+	Error1714: {
+		ErrorCode: Error1714,
+		Message:   "Error while creating the rate limit snapshot.",
+	},
+	Error1715: {
+		ErrorCode: Error1715,
+		Message:   "Inconsistent rate limiter snapshot.",
+	},
+	Error1716: {
+		ErrorCode: Error1716,
+		Message:   "Error while updating the rate limit snapshot.",
+	},
+	Error1717: {
+		ErrorCode: Error1717,
+		Message:   "EOF is received from the APK Management Server subscription stream.",
+	},
+	Error1718: {
+		ErrorCode: Error1718,
+		Message:   "Failed to receive the discovery response from the APK Management Server subscription stream.",
+	},
+	Error1719: {
+		ErrorCode: Error1719,
+		Message:   "The APK Management Server subscription stream connection stopped.",
+	},
+	Error1720: {
+		ErrorCode: Error1720,
+		Message:   "Error while unmarshalling APK Management Server Subscription discovery response.",
+	},
+	Error1721: {
+		ErrorCode: Error1721,
+		Message:   "Error creating subscription.",
+	},
+	Error1722: {
+		ErrorCode: Error1722,
+		Message:   "Error updating subscription.",
+	},
+	Error1723: {
+		ErrorCode: Error1723,
+		Message:   "Error deleting subscription.",
+	},
+	Error1724: {
+		ErrorCode: Error1724,
+		Message:   "Error retrieving subscription.",
+	},
+	Error2300: {
+		ErrorCode: Error2300,
+		Message:   "Error in Stream request.",
 	},
 	Error2600: {
 		ErrorCode: Error2600,
@@ -310,6 +456,10 @@ var Mapper = map[int]ErrorDetails{
 	Error2662: {
 		ErrorCode: Error2662,
 		Message:   "Error while getting BackendJWT.",
+	},
+	Error2663: {
+		ErrorCode: Error2663,
+		Message:   "Error creating Ratelimit controller.",
 	},
 	Error2621: {
 		ErrorCode: Error2621,
