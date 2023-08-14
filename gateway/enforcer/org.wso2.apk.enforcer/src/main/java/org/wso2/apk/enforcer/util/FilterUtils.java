@@ -26,6 +26,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLContextBuilder;
 import org.apache.http.conn.ssl.SSLContexts;
@@ -102,18 +103,17 @@ public class FilterUtils {
      * @return HTTP client
      */
     public static HttpClient getHttpClient(String protocol) {
-        return getHttpClient(protocol, null, null, null);
+        return getHttpClient(null, null, null);
     }
 
     /**
      * Return a http client instance.
      *
-     * @param protocol       - service endpoint protocol http/https
      * @param clientKeyStore - keystore with key and cert for client
      * @param options        - HTTP client options
      * @return HTTP client
      */
-    public static HttpClient getHttpClient(String protocol, KeyStore clientKeyStore, KeyStore clientTrustStore, Map<String, String> options) {
+    public static HttpClient getHttpClient(KeyStore clientKeyStore, KeyStore clientTrustStore, Map<String, String> options) {
 
         //        APIManagerConfiguration configuration = ServiceReferenceHolder.getInstance().
         //                getAPIManagerConfigurationService().getAPIManagerConfiguration();
@@ -127,7 +127,7 @@ public class FilterUtils {
 
         PoolingHttpClientConnectionManager pool = null;
         try {
-            pool = getPoolingHttpClientConnectionManager(protocol, clientKeyStore, clientTrustStore);
+            pool = getPoolingHttpClientConnectionManager(clientKeyStore, clientTrustStore);
             pool.setMaxTotal(Integer.parseInt(options.getOrDefault(HTTPClientOptions.MAX_OPEN_CONNECTIONS,
                     maxTotal)));
             pool.setDefaultMaxPerRoute(Integer.parseInt(options.getOrDefault(HTTPClientOptions.MAX_PER_ROUTE,
@@ -168,23 +168,18 @@ public class FilterUtils {
     /**
      * Return a PoolingHttpClientConnectionManager instance.
      *
-     * @param protocol- service endpoint protocol. It can be http/https
      * @return PoolManager
      */
     private static PoolingHttpClientConnectionManager getPoolingHttpClientConnectionManager(
-            String protocol, KeyStore clientKeyStore, KeyStore clientTrustStore) throws EnforcerException {
+            KeyStore clientKeyStore, KeyStore clientTrustStore) throws EnforcerException {
 
-        PoolingHttpClientConnectionManager poolManager;
-        if (APIConstants.HTTPS_PROTOCOL.equals(protocol)) {
-            SSLConnectionSocketFactory socketFactory = createSocketFactory(clientKeyStore, clientTrustStore);
+        SSLConnectionSocketFactory socketFactory = createSocketFactory(clientKeyStore, clientTrustStore);
             org.apache.http.config.Registry<ConnectionSocketFactory> socketFactoryRegistry =
                     RegistryBuilder.<ConnectionSocketFactory>create()
-                            .register(APIConstants.HTTPS_PROTOCOL, socketFactory).build();
-            poolManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
-        } else {
-            poolManager = new PoolingHttpClientConnectionManager();
-        }
-        return poolManager;
+                            .register(APIConstants.HTTP_PROTOCOL, PlainConnectionSocketFactory.getSocketFactory())
+                            .register(APIConstants.HTTPS_PROTOCOL, socketFactory)
+                            .build();
+        return new PoolingHttpClientConnectionManager(socketFactoryRegistry);
     }
 
     private static SSLConnectionSocketFactory createSocketFactory(KeyStore clientKeyStore, KeyStore clientTrustStore)
@@ -605,7 +600,7 @@ public class FilterUtils {
     }
 
     /**
-     * HTTP client option constants that is used with the util function {@link #getHttpClient(String, KeyStore, KeyStore, Map)
+     * HTTP client option constants that is used with the util function {@link #getHttpClient(KeyStore, KeyStore, Map)
      * getHttpClient}
      */
     public static class HTTPClientOptions {

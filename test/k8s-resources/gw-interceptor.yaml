@@ -55,7 +55,7 @@ apiVersion: dp.wso2.com/v1alpha1
 kind: InterceptorService
 metadata:
   name: interceptor-service-gateway-level
-  namespace: apk-release
+  namespace: apk-integration-test
 spec:
   backendRef:
     name: interceptor-backend-v1
@@ -86,7 +86,7 @@ apiVersion: dp.wso2.com/v1alpha1
 kind: RateLimitPolicy
 metadata:
   name: gw-ratelimit-org
-  namespace: apk-release
+  namespace: apk-integration-test
 spec:
   override:
     custom:

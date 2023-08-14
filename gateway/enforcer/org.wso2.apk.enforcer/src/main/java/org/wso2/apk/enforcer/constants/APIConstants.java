@@ -90,6 +90,7 @@ public class APIConstants {
     public static final String SOAP11_PROTOCOL = "SOAP 1.1 Protocol";
     public static final String SOAP12_PROTOCOL = "SOAP 1.2 Protocol";
     public static final String API_UUID = "API_UUID";
+    public static final String HTTP_PROTOCOL ="http" ;
 
     /**
      * Holds the constants related to denied response types.

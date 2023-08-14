@@ -16,7 +16,22 @@ Feature: Test JWT related functionalities
       |Authorization|bearer invalidToken|
     And I send "GET" request to "https://default.gw.wso2.com:9095/jwt-basic/3.14/employee/" with body ""
     And the response status code should be 401
-
+  Scenario: Test JWT Token from different issuer with JWKS
+    Given The system is ready
+    Then I generate JWT token from idp1 with kid "123-456"
+    Then I set headers
+      |Authorization|bearer ${idp-1-token}|
+    And I send "GET" request to "https://default.gw.wso2.com:9095/jwt-basic/3.14/employee/" with body ""
+    And I eventually receive 200 response code, not accepting
+      |429|
+      |401|
+    Then I generate JWT token from idp1 with kid "456-789"
+    Then I set headers
+      |Authorization|bearer ${idp-1-token}|
+    And I send "GET" request to "https://default.gw.wso2.com:9095/jwt-basic/3.14/employee/" with body ""
+    And I eventually receive 401 response code, not accepting
+      |429|
+      |200|
   Scenario: Test disabled JWT configuration
     Given The system is ready
     And I have a valid subscription
