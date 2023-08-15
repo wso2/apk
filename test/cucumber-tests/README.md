@@ -56,6 +56,7 @@ To create a new feature, follow these steps:
     sudo echo "$IP idp.am.wso2.com" | sudo tee -a /etc/hosts
     sudo echo "$IP api.am.wso2.com" | sudo tee -a /etc/hosts
     sudo echo "$IP default.gw.wso2.com" | sudo tee -a /etc/hosts
+    sudo echo "$IP default.sandbox.gw.wso2.com" | sudo tee -a /etc/hosts
     ```
 
 5. Run or debug integration tests.

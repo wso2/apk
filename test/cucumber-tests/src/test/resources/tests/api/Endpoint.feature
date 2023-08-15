@@ -12,10 +12,18 @@ Feature: Endpoint
     And I eventually receive 200 response code, not accepting
       |429|
     And the response body should contain "https://backend/anything/employee"
+    And I send "GET" request to "https://default.sandbox.gw.wso2.com:9095/endpoint/3.14/employee" with body ""
+    And I eventually receive 200 response code, not accepting
+      |429|
+    And the response body should contain "https://backend/anything/test/employee"
     And I send "POST" request to "https://default.gw.wso2.com:9095/endpoint/3.14/employee" with body ""
     And I eventually receive 200 response code, not accepting
       |429|
     And the response body should contain "https://backend/anything/test/employee"
+    And I send "POST" request to "https://default.sandbox.gw.wso2.com:9095/endpoint/3.14/employee" with body ""
+    And I eventually receive 200 response code, not accepting
+      |429|
+    And the response body should contain "https://backend/anything/employee"
 
 
   Scenario Outline: Undeploy API
