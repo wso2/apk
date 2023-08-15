@@ -389,7 +389,6 @@ dependencies = [
 	{org = "ballerina", name = "lang.value"},
 	{org = "ballerina", name = "log"},
 	{org = "ballerina", name = "os"},
-	{org = "ballerina", name = "regex"},
 	{org = "ballerina", name = "sql"},
 	{org = "ballerina", name = "uuid"},
 	{org = "ballerinax", name = "postgresql"}
@@ -403,7 +402,7 @@ modules = [
 [[package]]
 org = "wso2"
 name = "config_deployer_service"
-version = "1.0.0-SNAPSHOT"
+version = "1.0.0-beta"
 dependencies = [
 	{org = "ballerina", name = "constraint"},
 	{org = "ballerina", name = "crypto"},
