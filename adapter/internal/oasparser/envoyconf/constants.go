@@ -43,7 +43,6 @@ const (
 
 const (
 	defaultHTTPSListenerName string = "httpslistener"
-	defaultAccessLogPath     string = "/tmp/envoy.access.log"
 )
 
 // cluster prefixes

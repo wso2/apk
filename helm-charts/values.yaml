@@ -114,7 +114,6 @@ wso2:
             sslHostname: "adapter"
 #        logging:
 #          level: "INFO" # LogLevels can be "DEBG", "FATL", "ERRO", "WARN", "INFO", "PANC"
-#          logFile: "logs/adapter.log"
 #          logFormat: "TEXT" # Values can be "JSON", "TEXT"
         # configs:
         #   apiNamespaces:
@@ -208,7 +207,6 @@ wso2:
 #                enable: true
 #              accessLogs:
 #                enable: true
-#                logfile: "/tmp/envoy.access.log"
           enforcer:
             resources:
               requests:
@@ -232,7 +230,6 @@ wso2:
               sslHostname: "enforcer"
 #            logging:
 #              level: DEBUG
-#              logFile: logs/enforcer.log
             # configs:
             #   tls:
             #     secretName: "router-cert"

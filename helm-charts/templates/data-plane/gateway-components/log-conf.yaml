@@ -163,11 +163,9 @@ data:
     ## Adapter root Level configurations
 
     {{- if .Values.wso2.apk.dp.adapter.logging }}
-    logfile = "{{ .Values.wso2.apk.dp.adapter.logging.logFile | default "logs/adapter.log" }}" # This file will be created inside adapter container.
     logLevel = "{{ .Values.wso2.apk.dp.adapter.logging.level | default "INFO" }}" # LogLevels can be "DEBG", "FATL", "ERRO", "WARN", "INFO", "PANC"
     LogFormat = "{{ .Values.wso2.apk.dp.adapter.logging.logFormat | default "TEXT" }}" # Values can be "JSON", "TEXT"
     {{- else }}
-    logfile = "logs/adapter.log" # This file will be created inside adapter container.
     logLevel = "INFO" # LogLevels can be "DEBG", "FATL", "ERRO", "WARN", "INFO", "PANC"
     LogFormat = "TEXT" # Values can be "JSON", "TEXT"
     {{- end }}
@@ -203,12 +201,10 @@ data:
     {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.router.logging .Values.wso2.apk.dp.gatewayRuntime.deployment.router.logging.accessLogs }}
     [accessLogs]
     enable = {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.logging.accessLogs.enable | default false }}
-    logfile = "{{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.logging.accessLogs.logfile | default "/tmp/envoy.access.log" }}" # This file will be created inside router container.
     format = "[%START_TIME%] '%REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)% %PROTOCOL%' %RESPONSE_CODE% %RESPONSE_FLAGS% %BYTES_RECEIVED% %BYTES_SENT% %DURATION% %RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)% '%REQ(X-FORWARDED-FOR)%' '%REQ(USER-AGENT)%' '%REQ(X-REQUEST-ID)%' '%REQ(:AUTHORITY)%' '%UPSTREAM_HOST%'\n"
     {{- else }}
     [accessLogs]
     enable = false
-    logfile = "/tmp/envoy.access.log" # This file will be created inside router container.
     format = "[%START_TIME%] '%REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)% %PROTOCOL%' %RESPONSE_CODE% %RESPONSE_FLAGS% %BYTES_RECEIVED% %BYTES_SENT% %DURATION% %RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)% '%REQ(X-FORWARDED-FOR)%' '%REQ(USER-AGENT)%' '%REQ(X-REQUEST-ID)%' '%REQ(:AUTHORITY)%' '%UPSTREAM_HOST%'\n"
     {{- end }}
 
