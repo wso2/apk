@@ -83,7 +83,7 @@ wso2:
           strategy: RollingUpdate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/config-deployer-service:latest
+          image: wso2/config-deployer-service:1.0.0-beta
           # configs:
           #   tls:
           #     secretName: "my-secret"
@@ -109,7 +109,7 @@ wso2:
           strategy: RollingUpdate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/adapter:latest
+          image: wso2/adapter:1.0.0-beta
           security:
             sslHostname: "adapter"
 #        logging:
@@ -142,7 +142,7 @@ wso2:
           strategy: RollingUpdate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/common-controller:latest
+          image: wso2/common-controller:1.0.0-beta
           security:
             sslHostname: "commoncontroller"
       ratelimiter:
@@ -166,7 +166,7 @@ wso2:
           strategy: RollingUpdate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/ratelimiter:1.0.0-alpha
+          image: wso2/ratelimiter:1.0.0-beta
           security:
             sslHostname: "ratelimiter"
           # configs:
@@ -196,7 +196,7 @@ wso2:
               failureThreshold: 5
             strategy: RollingUpdate
             imagePullPolicy: Always
-            image: wso2/router:latest
+            image: wso2/router:1.0.0-beta
             # configs:
             #   tls:
             #     secretName: "router-cert"
@@ -225,7 +225,7 @@ wso2:
               failureThreshold: 5
             strategy: RollingUpdate
             imagePullPolicy: Always
-            image: wso2/enforcer:latest
+            image: wso2/enforcer:1.0.0-beta
             security:
               sslHostname: "enforcer"
 #            logging:
@@ -288,7 +288,7 @@ idp:
       strategy: RollingUpdate
       replicas: 1
       imagePullPolicy: Always
-      image: wso2/idp-domain-service:1.0.0-alpha
+      image: wso2/idp-domain-service:1.0.0-beta
   idpui:
     deployment:
       resources:
@@ -309,7 +309,7 @@ idp:
       strategy: RollingUpdate
       replicas: 1
       imagePullPolicy: Always
-      image: wso2/idp-ui:1.0.0-alpha
+      image: wso2/idp-ui:1.0.0-beta
     configs:
       idpLoginUrl: "https://idp.am.wso2.com:9095/commonauth/login"
       idpAuthCallBackUrl: "https://idp.am.wso2.com:9095/oauth2/auth-callback"
