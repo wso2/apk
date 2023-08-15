@@ -349,7 +349,12 @@ public class DeployerClient {
     }
 
     private isolated function deployHttpRoutes(model:Httproute[] httproutes, string namespace, model:OwnerReference ownerReference) returns error? {
-        foreach model:Httproute httpRoute in httproutes {
+        model:Httproute[] deployReadyHttproutes = httproutes;
+        model:Httproute[]|commons:APKError orderedHttproutes = self.createHttpRoutesOrder(httproutes);
+        if orderedHttproutes is model:Httproute[] {
+            deployReadyHttproutes = orderedHttproutes;
+        }
+        foreach model:Httproute httpRoute in deployReadyHttproutes {
             httpRoute.metadata.ownerReferences = [ownerReference];
             if httpRoute.spec.rules.length() > 0 {
                 http:Response deployHttpRouteResult = check deployHttpRoute(httpRoute, namespace);
@@ -373,6 +378,23 @@ public class DeployerClient {
             }
         }
     }
+
+    public isolated function createHttpRoutesOrder(model:Httproute[] httproutes) returns model:Httproute[]|commons:APKError {
+        do {
+            foreach model:Httproute route in httproutes {
+                model:HTTPRouteRule[] routeRules = route.spec.rules;
+                model:HTTPRouteRule[] sortedRouteRules = from var routeRule in routeRules
+                    order by (<model:HTTPPathMatch>((<model:HTTPRouteMatch[]>routeRule.matches)[0]).path).value descending
+                    select routeRule;
+                route.spec.rules = sortedRouteRules;
+            }
+            return httproutes;
+        } on fail var e {
+            log:printError("Error occured while sorting httpRoutes", e);
+            return e909022("Error occured while sorting httpRoutes", e);
+        }
+    }
+
     private isolated function deployAuthneticationCRs(model:APIArtifact apiArtifact, model:OwnerReference ownerReference) returns error? {
         string[] keys = apiArtifact.authenticationMap.keys();
         log:printDebug("Inside Deploy Authentication CRs" + keys.toString());
