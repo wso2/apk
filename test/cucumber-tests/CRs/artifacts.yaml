@@ -511,3 +511,69 @@ spec:
     group: gateway.networking.k8s.io
     kind: Gateway
     name: default
+---
+kind: JWTIssuer
+apiVersion: dp.wso2.com/v1alpha1
+metadata:
+  name: jwt-issuer-idp-2
+  namespace: apk-integration-test
+spec:
+  consumerKeyClaim: azp
+  issuer: https://idp1.com
+  name: idp-6
+  organization: apk-system
+  scopesClaim: scope
+  signatureValidation:
+    jwks:
+      url: "http://dynamic-backend-service:8080/idp1/jwks"
+  claimMappings:
+    - remoteClaim: "organization"
+      localClaim:  "x-wso2-organization"
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: default
+---
+kind: JWTIssuer
+apiVersion: dp.wso2.com/v1alpha1
+metadata:
+  name: jwt-issuer-idp-3
+  namespace: apk-integration-test
+spec:
+  consumerKeyClaim: azp
+  issuer: https://idp1.com
+  name: idp-7
+  organization: org1
+  scopesClaim: scope
+  signatureValidation:
+    jwks:
+      url: "http://dynamic-backend-service:8080/idp1/jwks"
+  claimMappings:
+    - remoteClaim: "organization"
+      localClaim:  "x-wso2-organization"
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: default
+---
+kind: JWTIssuer
+apiVersion: dp.wso2.com/v1alpha1
+metadata:
+  name: jwt-issuer-idp-4
+  namespace: apk-integration-test
+spec:
+  consumerKeyClaim: azp
+  issuer: https://idp1.com
+  name: idp-8
+  organization: org2
+  scopesClaim: scope
+  signatureValidation:
+    jwks:
+      url: "http://dynamic-backend-service:8080/idp1/jwks"
+  claimMappings:
+    - remoteClaim: "organization"
+      localClaim:  "x-wso2-organization"
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: default

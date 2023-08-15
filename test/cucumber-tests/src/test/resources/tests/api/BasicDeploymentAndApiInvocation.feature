@@ -117,7 +117,7 @@ Feature: API Deployment and invocation
 
     Examples:
       | apiID                    | expectedStatusCode |
-      | emp-api-test             | 202                |
+      | f7996dce4ac15e2af0f8ee14546c4f72988eddae             | 202                |
       | default-version-api-test | 202                |
       | emp-api-test-scope       | 202                |
       | version-api-test         | 202                |
