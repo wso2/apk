@@ -18,7 +18,10 @@
 
 package org.wso2.apk.enforcer.config.dto;
 
+import org.wso2.apk.enforcer.commons.dto.ClaimMappingDto;
 import org.wso2.apk.enforcer.commons.dto.TokenIssuerDto;
+
+import java.util.List;
 
 /**
  * Holds meta data related to a JWT token issuer.

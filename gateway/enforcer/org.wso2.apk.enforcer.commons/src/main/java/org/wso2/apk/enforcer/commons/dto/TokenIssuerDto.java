@@ -20,6 +20,7 @@ package org.wso2.apk.enforcer.commons.dto;
 
 import java.security.cert.Certificate;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -125,5 +126,8 @@ public class TokenIssuerDto {
 
     public void setAudience(String audience) {
         this.audience = audience;
+    }
+    public void setClaimMappings(Map<String,ClaimMappingDto> claimMappingDtos) {
+        this.claimConfigurations = claimMappingDtos;
     }
 }

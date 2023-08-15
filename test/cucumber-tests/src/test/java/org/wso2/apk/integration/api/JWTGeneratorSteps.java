@@ -9,6 +9,7 @@ import com.nimbusds.jose.crypto.RSASSASigner;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 
@@ -54,5 +55,33 @@ public class JWTGeneratorSteps {
         signedJWT.sign(signer);
         String jwtToken = signedJWT.serialize();
         sharedContext.addStoreValue("idp-1-token", jwtToken);
+    }
+
+
+    @And("I have a valid token for organization {string}")
+    public void generateTokenFromIdp1WithOrganization(String organization) throws IOException, CertificateException,
+            KeyStoreException,
+            NoSuchAlgorithmException, JOSEException {
+
+        URL url = Resources.getResource("artifacts/jwtcert/idp1.jks");
+        File keyStoreFile = new File(url.getPath());
+        KeyStore keyStore = KeyStore.getInstance(keyStoreFile, "wso2carbon".toCharArray());
+        RSAKey rsaKey = RSAKey.load(keyStore, "idp1Key", "wso2carbon".toCharArray());
+        JWSSigner signer = new RSASSASigner(rsaKey);
+        JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
+                .subject("alice")
+                .issuer("https://idp1.com")
+                .expirationTime(new Date(new Date().getTime() + 60 * 1000))
+                .jwtID(UUID.randomUUID().toString())
+                .claim("azp", UUID.randomUUID().toString())
+                .claim("scope", "default")
+                .claim("organization", organization)
+                .build();
+        SignedJWT signedJWT = new SignedJWT(
+                new JWSHeader.Builder(JWSAlgorithm.RS256).keyID("123-456").build(),
+                claimsSet);
+        signedJWT.sign(signer);
+        String jwtToken = signedJWT.serialize();
+        sharedContext.addStoreValue(organization, jwtToken);
     }
 }

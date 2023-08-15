@@ -93,6 +93,30 @@ public class APIDeploymentSteps {
         Thread.sleep(3000);
     }
 
+    @When("make the API deployment request for organization {string}")
+    public void makeAPIDeploymentFromOrganization(String organization) throws Exception {
+
+        // Create a MultipartEntityBuilder to build the request entity
+        MultipartEntityBuilder builder = MultipartEntityBuilder.create()
+                .setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
+                .addPart("definitionFile", new FileBody(definitionFile))
+                .addPart("apkConfiguration", new FileBody(apkConfFile));
+
+        Map<String, String> headers = new HashMap<>();
+        Object accessToken = sharedContext.getStoreValue(organization);
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + accessToken);
+        headers.put(Constants.REQUEST_HEADERS.HOST, Constants.DEFAULT_API_HOST);
+
+        HttpEntity multipartEntity = builder.build();
+
+        HttpResponse response = sharedContext.getHttpClient().doPostWithMultipart(Utils.getAPIDeployerURL(),
+                multipartEntity, headers);
+
+        sharedContext.setResponse(response);
+        sharedContext.setResponseBody(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()));
+        Thread.sleep(3000);
+    }
+
 
 
     @When("I undeploy the API whose ID is {string}")
@@ -106,6 +130,27 @@ public class APIDeploymentSteps {
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + sharedContext.getAccessToken());
+        headers.put(Constants.REQUEST_HEADERS.HOST, Constants.DEFAULT_API_HOST);
+
+        HttpResponse response = sharedContext.getHttpClient().doPost(uri.toString(), headers, "",
+                Constants.CONTENT_TYPES.APPLICATION_JSON);
+
+        sharedContext.setResponse(response);
+        sharedContext.setResponseBody(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()));
+    }
+
+    @When("I undeploy the API whose ID is {string} and organization {string}")
+    public void undeployAPIByIdAndOrganization(String apiID,String organization) throws Exception {
+
+        // Create query parameters
+        List<NameValuePair> queryParams = new ArrayList<>();
+        queryParams.add(new BasicNameValuePair("apiId", apiID));
+
+        URI uri = new URIBuilder(Utils.getAPIUnDeployerURL()).addParameters(queryParams).build();
+
+        Map<String, String> headers = new HashMap<>();
+        Object header = sharedContext.getStoreValue(organization);
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + header);
         headers.put(Constants.REQUEST_HEADERS.HOST, Constants.DEFAULT_API_HOST);
 
         HttpResponse response = sharedContext.getHttpClient().doPost(uri.toString(), headers, "",

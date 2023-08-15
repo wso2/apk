@@ -21,6 +21,7 @@ package org.wso2.apk.enforcer.subscription;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.wso2.apk.enforcer.commons.dto.ClaimMappingDto;
 import org.wso2.apk.enforcer.commons.dto.JWKSConfigurationDTO;
 import org.wso2.apk.enforcer.commons.exception.EnforcerException;
 import org.wso2.apk.enforcer.config.dto.ExtendedTokenIssuerDto;
@@ -48,6 +49,7 @@ import org.wso2.apk.enforcer.util.TLSUtils;
 import java.io.IOException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -382,6 +384,7 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
 
     @Override
     public void addJWTIssuers(List<JWTIssuer> jwtIssuers) {
+
         Map<String, Map<String, JWTValidator>> jwtValidatorMap = new ConcurrentHashMap<>();
         for (JWTIssuer jwtIssuer : jwtIssuers) {
             try {
@@ -406,6 +409,12 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
                             TLSUtils.getCertificateFromContent(certificate.getCertificate());
                     tokenIssuerDto.setCertificate(signingCertificate);
                 }
+                Map<String, String> claimMappingMap = jwtIssuer.getClaimMappingMap();
+                Map<String, ClaimMappingDto> claimMappingDtos = new HashMap<>();
+                claimMappingMap.forEach((remoteClaim, localClaim) -> {
+                    claimMappingDtos.put(remoteClaim, new ClaimMappingDto(remoteClaim, localClaim));
+                });
+                tokenIssuerDto.setClaimMappings(claimMappingDtos);
                 JWTValidator jwtValidator = new JWTValidator(tokenIssuerDto);
                 Map<String, JWTValidator> orgBasedJWTValidatorMap = new ConcurrentHashMap<>();
                 if (jwtValidatorMap.containsKey(jwtIssuer.getOrganization())) {
