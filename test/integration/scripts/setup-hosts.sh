@@ -45,3 +45,7 @@ echo "AKS ratelimitter time now: "
 kubectl -n apk-integration-test exec -it $(kubectl -n apk-integration-test  get pods -l app.kubernetes.io/app=ratelimiter -o jsonpath='{.items[0].metadata.name}') -- /bin/sh -c "date" 
 echo "VM time now: "
 date
+echo "AKS ratelimitter time2 now: "
+kubectl -n apk-integration-test exec -it $(kubectl -n apk-integration-test  get pods -l app.kubernetes.io/app=ratelimiter -o jsonpath='{.items[0].metadata.name}') -- /bin/sh -c "date" 
+echo "VM time2 now: "
+date
