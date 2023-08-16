@@ -1,12 +1,25 @@
-You can get the ip-address using 'kubectl get ing' command, IP address will be shown under ADDRESS column.
+Welcome to the WSO2 API Platform for Kubernetes!
 
-To connect with devportal use http://<ip-address>//api/devportal/<version>/<uri>, for example http://192.168.49.2/api/devportal/v2/apis?limit=2&offset=2
+Congratulations. You've successfully deployed WSO2 APK using Helm, you'll need to monitor and manage the deployment to ensure everything is running smoothly.
 
-To connect with admin use http://<ip-address>//api/admin/<version>/<uri>, for example http://192.168.49.2/api/admin/v3/settings?limit=2&offset=2
+   - Monitor Pods:
+     Check the status of the pods to ensure they are up and running:
+     ---
+     kubectl get pods
+     ---
+   
+   - Monitor Services:
+     Verify that the services are running and find their external IPs to access the APIs:
+     ---
+     kubectl get services
+     ---
 
-To connect with publisher use http://<ip-address>//api/publisher/<version>/<uri>, for example 192.168.49.2/api/publisher/v3/apis?limit=2&offset=2&sortBy=name&sortOrder=1
+For more detailed information, troubleshooting, and advanced configurations, we encourage you to explore the official WSO2 documentation.
 
-To browse dev portal UI -  Add "<ip-address> portal.ui.wso2" to /etc/hosts file
-Browse the dev portal UI using : https://portal.ui.wso2/
+- APK Documentation: [https://apk.docs.wso2.com/en/latest/get-started/quick-start-guide/]
 
-To access the Identity mangement console (If you have installed IPK) add "<ip-address> identity.wso2.com" to /etc/hosts file, and visit https://identity.wso2.com/carbon/
+This is just the beginning of your APK journey. Feel free to customize and tailor your deployment to match your organization's specific needs.
+
+For any questions or assistance, don't hesitate to reach out to our discord channel.
+
+Happy API management with WSO2 APK!
