@@ -23,7 +23,7 @@ metadata:
 spec:
   # label keys and values that must match in order to receive traffic for this service
   selector:
-{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" "router" ) | indent 4}}
+{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" "gateway" ) | indent 4}}
   ports:
     - name: servlet-https
       protocol: TCP

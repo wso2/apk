@@ -109,7 +109,7 @@ spec:
             - name: GRPC_CLIENT_TLS_CACERT
               value: "/home/wso2/security/truststore/ratelimiter-ca.crt"
             - name: GRPC_CLIENT_TLS_SAN
-              value: "{{ template "apk-helm.resource.prefix" . }}-router-service.{{ .Release.Namespace }}.svc"
+              value: "{{ template "apk-helm.resource.prefix" . }}-gateway-service.{{ .Release.Namespace }}.svc"
             - name: RATELIMITER_LABEL
               value: "ratelimiter"
             - name: CONFIG_GRPC_XDS_SERVER_URL
@@ -237,9 +237,9 @@ spec:
         - name: router-truststore-secret-volume
           secret:
           {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls }}
-            secretName: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls.secretName | default (printf "%s-router-server-cert" (include "apk-helm.resource.prefix" .)) }}
+            secretName: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls.secretName | default (printf "%s-gateway-server-cert" (include "apk-helm.resource.prefix" .)) }}
           {{- else }}
-            secretName: {{ template "apk-helm.resource.prefix" . }}-router-server-cert
+            secretName: {{ template "apk-helm.resource.prefix" . }}-gateway-server-cert
           {{- end }}
             defaultMode: 420
         {{ if and .Values.wso2.apk.dp.gatewayRuntime.tracing .Values.wso2.apk.dp.gatewayRuntime.tracing.enabled .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.tls .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.tls.enabled }}

@@ -461,6 +461,7 @@ func GetTestToken(t *testing.T, scopes ...string) string {
 	return string(accessTokenResponse.AccessToken)
 }
 
+// AccessTokenResponse contains the access token response
 type AccessTokenResponse struct {
 	AccessToken string `json:"access_token"`
 	TokenType   string `json:"token_type"`

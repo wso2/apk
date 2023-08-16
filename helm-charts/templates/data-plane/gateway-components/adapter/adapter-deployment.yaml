@@ -169,9 +169,9 @@ spec:
         - name: router-truststore-secret-volume
           secret: 
             {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls }}
-            secretName: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls.secretName | default (printf "%s-router-server-cert" (include "apk-helm.resource.prefix" .)) }}
+            secretName: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls.secretName | default (printf "%s-gateway-server-cert" (include "apk-helm.resource.prefix" .)) }}
           {{- else }}
-            secretName: {{ template "apk-helm.resource.prefix" . }}-router-server-cert
+            secretName: {{ template "apk-helm.resource.prefix" . }}-gateway-server-cert
           {{- end }}
       {{ if and .Values.wso2.apk.dp.enabled .Values.wso2.apk.dp.ratelimiter.enabled }}
         - name: ratelimiter-truststore-secret-volume

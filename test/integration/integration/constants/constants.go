@@ -19,7 +19,7 @@ package constants
 
 // gateway service properties
 const (
-	GatewayServiceName      string = "apk-test-setup-wso2-apk-router-service"
+	GatewayServiceName      string = "apk-test-setup-wso2-apk-gateway-service"
 	GatewayServiceNamespace string = "apk-integration-test"
 	GatewayServicePort      int16  = 9095
 )

@@ -45,7 +45,7 @@ kubectl describe deployment apk-test-setup-wso2-apk-adapter-deployment -n apk-in
 POD=$(kubectl get pod -l networkPolicyId=adapter-npi -n apk-integration-test -o jsonpath="{.items[0].metadata.name}")
 kubectl describe pod $POD -n apk-integration-test
 kubectl logs $POD -n apk-integration-test
-IP=$(kubectl get svc apk-test-setup-wso2-apk-router-service -n apk-integration-test --output jsonpath='{.status.loadBalancer.ingress[0].ip}')
+IP=$(kubectl get svc apk-test-setup-wso2-apk-gateway-service -n apk-integration-test --output jsonpath='{.status.loadBalancer.ingress[0].ip}')
 sudo echo "$IP localhost" | sudo tee -a /etc/hosts
 sudo echo "$IP all-http-methods-for-wildcard.test.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "$IP api-policy-with-jwt-generator.test.gw.wso2.com" | sudo tee -a /etc/hosts
