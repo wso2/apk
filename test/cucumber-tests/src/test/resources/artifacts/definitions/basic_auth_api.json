@@ -6,7 +6,7 @@
   },
   "servers": [
     {
-      "url": "https://run.mocky.io/v3/85516819-1edd-412b-a32b-a9284705a0b4",
+      "url": "http://backend:80/anything",
       "description": "Server URL",
       "variables": {}
     }
