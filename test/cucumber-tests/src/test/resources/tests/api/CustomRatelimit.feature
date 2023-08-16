@@ -107,12 +107,12 @@ Feature: Custom ratelimit
     Then the response status code should be 429
 
 
-  # Scenario Outline: Undeploy API
-  #   Given The system is ready
-  #   And I have a valid subscription
-  #   When I undeploy the API whose ID is "<apiID>"
-  #   Then the response status code should be <expectedStatusCode>
+  Scenario Outline: Undeploy API
+    Given The system is ready
+    And I have a valid subscription
+    When I undeploy the API whose ID is "<apiID>"
+    Then the response status code should be <expectedStatusCode>
 
-  #   Examples:
-  #     | apiID                                | expectedStatusCode |
-  #     | custom-ratelimit-api                 | 202                |
+    Examples:
+      | apiID                                | expectedStatusCode |
+      | custom-ratelimit-api                 | 202                |
