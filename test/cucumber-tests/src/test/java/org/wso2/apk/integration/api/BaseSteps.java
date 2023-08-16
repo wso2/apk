@@ -194,6 +194,16 @@ public class BaseSteps {
             return;
         }
         Thread.sleep((secondsToWait+1) * 1000);
+        logger.info("Current time: " + LocalDateTime.now());
+    }
+
+    @Then("I wait for next minute strictly")
+    public void waitForNextMinuteStrictly() throws InterruptedException {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime nextMinute = now.plusMinutes(1).withSecond(0).withNano(0);
+        long secondsToWait = now.until(nextMinute, ChronoUnit.SECONDS);
+        Thread.sleep((secondsToWait+1) * 1000);
+        logger.info("Current time: " + LocalDateTime.now());
     }
 
     @Then("I wait for {int} minute")

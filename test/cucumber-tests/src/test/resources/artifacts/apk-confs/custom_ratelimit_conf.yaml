@@ -1,0 +1,27 @@
+---
+name: "CustomRatelimitAPI"
+context: "/test-custom-ratelimit"
+id: "custom-ratelimit-api"
+version: "3.14"
+type: "REST"
+defaultVersion: true
+endpointConfigurations:
+  production:
+    endpoint: "http://backend:80/anything"
+operations:
+  - target: "/employee"
+    verb: "GET"
+    authTypeEnabled: true
+    scopes: []
+  - target: "/employee"
+    verb: "POST"
+    authTypeEnabled: true
+    scopes: []
+  - target: "/employee/{employeeId}"
+    verb: "PUT"
+    authTypeEnabled: true
+    scopes: []
+  - target: "/employee/{employeeId}"
+    verb: "DELETE"
+    authTypeEnabled: true
+    scopes: []

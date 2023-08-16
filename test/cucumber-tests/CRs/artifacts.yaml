@@ -316,7 +316,7 @@ spec:
       value: bob
       requestsPerUnit: 4
       unit: Minute
-      organization: a3b58ccf-6ecc-4557-b5bb-0a35cce38256
+      organization: default
   targetRef:
     kind: Gateway
     name: default
@@ -334,7 +334,7 @@ spec:
       value: wso2
       requestsPerUnit: 10
       unit: Minute
-      organization: a3b58ccf-6ecc-4557-b5bb-0a35cce38256
+      organization: default
   targetRef:
     kind: Gateway
     name: default
