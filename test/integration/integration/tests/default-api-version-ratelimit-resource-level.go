@@ -28,7 +28,7 @@ func init() {
 	IntegrationTests = append(IntegrationTests, DefaultAPIVersionRatelimitResourceLevel)
 }
 
-// DefaultAPIVersionRatelimit tests default api version feature
+// DefaultAPIVersionRatelimitResourceLevel tests default api version feature
 var DefaultAPIVersionRatelimitResourceLevel = suite.IntegrationTest{
 	ShortName:   "DefaultAPIVersionRatelimitResourceLevelTest",
 	Description: "Tests an API with default version",

@@ -26,11 +26,11 @@ spec:
     type: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.strategy }}
   selector:
     matchLabels:
-{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" "router" ) | indent 6}}
+{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" "gateway" ) | indent 6}}
   template:
     metadata:
       labels:
-{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" "router" ) | indent 8}}
+{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" "gateway" ) | indent 8}}
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/data-plane/gateway-components/log-conf.yaml") . | sha256sum }}
     spec:
@@ -330,9 +330,9 @@ spec:
         - name: router-keystore-secret-volume
           secret: 
             {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls }}
-            secretName: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.certificatesSecret | default (printf "%s-router-server-cert" (include "apk-helm.resource.prefix" .)) }}
+            secretName: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.certificatesSecret | default (printf "%s-gateway-server-cert" (include "apk-helm.resource.prefix" .)) }}
           {{- else }}
-            secretName: {{ template "apk-helm.resource.prefix" . }}-router-server-cert
+            secretName: {{ template "apk-helm.resource.prefix" . }}-gateway-server-cert
           {{- end }}
         - name: adapter-truststore-secret-volume
           secret: 
