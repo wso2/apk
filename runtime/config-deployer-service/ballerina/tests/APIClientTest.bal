@@ -323,6 +323,95 @@ public function testScopeConfigGenerationFromAPKConf() returns error? {
 }
 
 @test:Config {}
+public isolated function testRetrievePathPrefix() returns error? {
+
+    APIClient apiClient = new;
+    string pathPrefix;
+    string organizaionStr = "wso2";
+    string context = "test";
+    string version = "1.0.0";
+    string errorMessage = "Acual path prefix not equal to expected path prefix";
+    commons:Organization organization = {
+        displayName: organizaionStr,
+        name: organizaionStr,
+        organizationClaimValue: organizaionStr,
+        uuid: "",
+        enabled: true
+    };
+
+    pathPrefix = apiClient.retrievePathPrefix(context, version, "/", organization);
+    test:assertEquals(pathPrefix, "/", errorMessage);
+
+    pathPrefix = apiClient.retrievePathPrefix(context, version, "/*", organization);
+    test:assertEquals(pathPrefix, "(.*)", errorMessage);
+
+    pathPrefix = apiClient.retrievePathPrefix(context, version, "/employees/get", organization);
+    test:assertEquals(pathPrefix, "/employees/get", errorMessage);
+
+    pathPrefix = apiClient.retrievePathPrefix(context, version, "/employees/get/*", organization);
+    test:assertEquals(pathPrefix, "/employees/get(.*)", errorMessage);
+}
+
+@test:Config {}
+public isolated function testGeneratePrefixMatch() returns error? {
+
+    APIClient apiClient = new;
+    string prefixMatch;
+    string urlStr = "https://backend-prod-test/v1/";
+    string apiName = "sample-api";
+    string method = "GET";
+    string errorMessage = "Acual prefix match not equal to expected prefix match";
+
+    model:Endpoint endpoint = {
+        url: urlStr,
+        name: apiName
+    };
+    APKOperations operations = {
+        target: "/",
+        verb: method,
+        scopes: []
+    };
+    prefixMatch = apiClient.generatePrefixMatch(endpoint, operations);
+    test:assertEquals(prefixMatch, "/", errorMessage);
+
+    endpoint = {
+        url: urlStr,
+        name: apiName
+    };
+    operations = {
+        target: "/*",
+        verb: method,
+        scopes: []
+    };
+    prefixMatch = apiClient.generatePrefixMatch(endpoint, operations);
+    test:assertEquals(prefixMatch, "\\1", errorMessage);
+
+    endpoint = {
+        url: urlStr,
+        name: apiName
+    };
+    operations = {
+        target: "/employees/get",
+        verb: method,
+        scopes: []
+    };
+    prefixMatch = apiClient.generatePrefixMatch(endpoint, operations);
+    test:assertEquals(prefixMatch, "/employees/get", errorMessage);
+
+    endpoint = {
+        url: urlStr,
+        name: apiName
+    };
+    operations = {
+        target: "/employees/get/*",
+        verb: method,
+        scopes: []
+    };
+    prefixMatch = apiClient.generatePrefixMatch(endpoint, operations);
+    test:assertEquals(prefixMatch, "/employees/get///1", errorMessage);
+}
+
+@test:Config {}
 public function testBackendRetryAndTimeoutGenerationFromAPKConf() returns error? {
 
     GenerateK8sResourcesBody body = {};
