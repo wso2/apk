@@ -26,6 +26,7 @@ metadata:
 spec:
   dnsNames:
   - "*.gw.wso2.com"
+  - "*.sandbox.gw.wso2.com"
   - "prod.gw.wso2.com"
   issuerRef:
     kind: ClusterIssuer
