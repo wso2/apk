@@ -34,7 +34,7 @@ configurable (Vhost[] & readonly) vhosts = [{name: "Default", hosts: ["gw.wso2.c
 commons:RequestErrorInterceptor requestErrorInterceptor = new;
 commons:ResponseErrorInterceptor responseErrorInterceptor = new;
 configurable (commons:IDPConfiguration & readonly) idpConfiguration = {publicKey: {certFilePath: "/home/wso2apk/config-deployer/security/mg.pem"}};
-commons:JWTValidationInterceptor jwtValidationInterceptor = new (idpConfiguration, getOrgResolver(),["/health","/api/configurator/apis/generate-configuration","/api/configurator/apis/generate-k8s-resources",""]);
+commons:JWTValidationInterceptor jwtValidationInterceptor = new (idpConfiguration, getOrgResolver(), ["/health", "/api/configurator/apis/generate-configuration", "/api/configurator/apis/generate-k8s-resources", ""]);
 final commons:JWTBaseOrgResolver jwtBaseOrgResolver = new;
 final PartitionResolver partitionResolver;
 final string apkConfSchemaContent = check io:fileReadString(apkSchemaLocation);

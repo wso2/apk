@@ -168,6 +168,13 @@
           "type": "integer",
           "default": 0,
           "description": "Maximum age (in seconds) for which the CORS preflight response can be cached."
+        },
+        "accessControlExposeHeaders": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The headers that are safe to expose to the API."
         }
       },
       "additionalProperties": false
