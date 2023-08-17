@@ -314,7 +314,9 @@ func ResolveRef(ctx context.Context, client k8client.Client, api *dpv1alpha1.API
 	}
 	if api != nil {
 		err := UpdateOwnerReference(ctx, client, obj, *api, isReplace)
-		return err
+		if err != nil {
+			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2664, logging.CRITICAL, "Error while updating owner ref: %v, error: %v", namespacedName, err.Error()))
+		}
 	}
 	return nil
 }
@@ -478,7 +480,7 @@ func ResolveCertificate(ctx context.Context, client k8client.Client, namespace s
 	if len(certificate) > 0 {
 		block, _ := pem.Decode([]byte(certificate))
 		if block == nil {
-			loggers.LoggerAPKOperator.ErrorC(logging.PrintErrorWithDefaultMessage(logging.Error2627, logging.CRITICAL))
+			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2627, logging.CRITICAL, "Failed to decode certificate PEM."))
 			return "", nil
 		}
 		_, err = x509.ParseCertificate(block.Bytes)

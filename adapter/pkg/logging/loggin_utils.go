@@ -21,30 +21,11 @@ import (
 	"fmt"
 )
 
-// GetErrorMessageByCode retrieve the error message corresponds to the provided error code
-func GetErrorMessageByCode(code int) string {
-	errorLog, ok := Mapper[code]
-	if !ok {
-		return fmt.Sprintf("No error message found for error code: %v", code)
-	}
-	return errorLog.Message
-}
-
 // PrintError prints the error details
 func PrintError(code int, severity string, message string, args ...interface{}) ErrorDetails {
 	errorLog := ErrorDetails{
 		ErrorCode: code,
 		Message:   fmt.Sprintf(message, args...),
-		Severity:  severity,
-	}
-	return errorLog
-}
-
-// PrintErrorWithDefaultMessage prints the error details with default message
-func PrintErrorWithDefaultMessage(code int, severity string) ErrorDetails {
-	errorLog := ErrorDetails{
-		ErrorCode: code,
-		Message:   GetErrorMessageByCode(code),
 		Severity:  severity,
 	}
 	return errorLog
