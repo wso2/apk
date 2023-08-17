@@ -1,0 +1,25 @@
+---
+name: "APIDifferentEndpointResourceLevel"
+context: "/test-different-endpoint-resource-level"
+id: "different-endpoint-resource-level-test"
+version: "3.14"
+type: "REST"
+defaultVersion: true
+endpointConfigurations:
+  production:
+    endpoint: "http://backend:80/anything"
+operations:
+  - target: "/endpoint1"
+    verb: "GET"
+    authTypeEnabled: true
+    scopes: []
+    endpointConfigurations:
+      production:
+        endpoint: "http://backend:80/anything/base1"
+  - target: "/endpoint2"
+    verb: "GET"
+    authTypeEnabled: true
+    scopes: []
+    endpointConfigurations:
+      production:
+        endpoint: "http://backend:80/anything/base2"
