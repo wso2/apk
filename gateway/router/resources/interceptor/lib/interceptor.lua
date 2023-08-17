@@ -476,6 +476,9 @@ function interceptor.handle_response_interceptor(response_handle, intercept_serv
 
     --#region read backend trailers
     if resp_flow_includes[INCLUDES.RESP_TRAILERS] then
+        if not resp_flow_includes[INCLUDES.RESP_BODY] then
+            response_handle:body()
+        end
         local backend_trailers = response_handle:trailers()
         if backend_trailers then
             local backend_trailers_table = {}

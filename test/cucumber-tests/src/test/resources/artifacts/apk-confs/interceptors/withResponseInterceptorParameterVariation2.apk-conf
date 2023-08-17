@@ -1,0 +1,22 @@
+name: "InterceptorAPI"
+context: "/interceptor"
+version: "1.0.0"
+type: "REST"
+defaultVersion: true
+endpointConfigurations:
+  production:
+    endpoint: "http://backend.apk-integration-test.svc.cluster.local"
+operations:
+  - target: "/get"
+    verb: "GET"
+    authTypeEnabled: true
+    scopes: []
+apiPolicies:
+  response:
+    - policyName: "Interceptor"
+      policyVersion: v1
+      parameters:
+        backendUrl: "http://interceptor-service.apk-integration-test.svc.cluster.local:8443"
+        contextEnabled: true
+        bodyEnabled: true
+        trailersEnabled: true
