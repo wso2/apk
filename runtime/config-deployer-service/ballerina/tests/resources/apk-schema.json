@@ -173,7 +173,8 @@
           "type": "array",
           "items": {
             "type": "string"
-          }
+          },
+          "description": "The headers that are safe to expose to the API."
         }
       },
       "additionalProperties": false
