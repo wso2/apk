@@ -19,6 +19,9 @@ wso2:
     imagePullSecrets: ""
     
   apk:
+    webhooks:
+      validatingwebhookconfigurations : true
+      mutatingwebhookconfigurations : true
     auth:
       enabled: true
       enableServiceAccountCreation: true
@@ -64,6 +67,7 @@ wso2:
       #     - name: "apiKey"
       #       value: "123-456-789"
       configdeployer:
+        enabled: true
         deployment:
           resources:
             requests:

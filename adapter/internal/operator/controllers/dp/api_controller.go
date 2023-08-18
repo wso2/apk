@@ -252,7 +252,7 @@ func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 // applyStartupAPIs applies the APIs which are already available in the cluster at the startup of the operator.
 func (apiReconciler *APIReconciler) applyStartupAPIs() {
 	ctx := context.Background()
-	apisList, err := retrieveAPIList(apiReconciler.client)
+	apisList, err := utils.RetrieveAPIList(apiReconciler.client)
 	if err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2605, logging.CRITICAL, "Unable to list APIs: %v", err))
 		return
@@ -267,30 +267,6 @@ func (apiReconciler *APIReconciler) applyStartupAPIs() {
 	}
 	xds.SetReady()
 	loggers.LoggerAPKOperator.Info("Initial APIs were deployed successfully")
-}
-
-func retrieveAPIList(k8sclient k8client.Client) ([]dpv1alpha1.API, error) {
-	ctx := context.Background()
-	conf := config.ReadConfigs()
-	namespaces := conf.Adapter.Operator.Namespaces
-	var apis []dpv1alpha1.API
-	if namespaces == nil {
-		apiList := &dpv1alpha1.APIList{}
-		if err := k8sclient.List(ctx, apiList, &k8client.ListOptions{}); err != nil {
-			return nil, err
-		}
-		apis = make([]dpv1alpha1.API, len(apiList.Items))
-		copy(apis[:], apiList.Items[:])
-	} else {
-		for _, namespace := range namespaces {
-			apiList := &dpv1alpha1.APIList{}
-			if err := k8sclient.List(ctx, apiList, &k8client.ListOptions{Namespace: namespace}); err != nil {
-				return nil, err
-			}
-			apis = append(apis, apiList.Items...)
-		}
-	}
-	return apis, nil
 }
 
 // resolveAPIRefs validates following references related to the API

@@ -169,10 +169,6 @@ func GenerateAdapterInternalAPI(apiState APIState, httpRoute *HTTPRouteState, en
 	labels := getLabelsForAPI(httpRoute.HTTPRouteCombined)
 	listeners := getListenersForAPI(httpRoute.HTTPRouteCombined, adapterInternalAPI.UUID)
 
-	conf := config.ReadConfigs()
-	if conf.Envoy.RateLimit.Enabled {
-		xds.UpdateRateLimitXDSCache(vHosts, adapterInternalAPI)
-	}
 	err := xds.UpdateAPICache(vHosts, labels, listeners, adapterInternalAPI)
 	if err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2633, logging.MAJOR, "Error updating the API : %s:%s in vhosts: %s, API_UUID: %v. %v",

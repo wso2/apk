@@ -39,12 +39,18 @@ data:
     
     {{ if .Values.wso2.apk.dp.ratelimiter }}
     [router.ratelimit]
+      {{ if .Values.wso2.apk.dp.ratelimiter.host }}
+      host = "{{ .Values.wso2.apk.dp.ratelimiter.host }}"
+      {{ else }}
       host = "{{ template "apk-helm.resource.prefix" . }}-ratelimiter-service.{{ .Release.Namespace }}.svc"
+      {{ end }}
       enabled = {{ and .Values.wso2.apk.dp.enabled .Values.wso2.apk.dp.ratelimiter.enabled}}
       keyFilePath = "/home/wso2/security/keystore/router.key"
       certFilePath = "/home/wso2/security/keystore/router.crt"
       caCertFilePath = "/home/wso2/security/truststore/ratelimiter.crt"
       sslCertSANHostname = "ratelimiter"
+      requestTimeoutInMillis = {{ .Values.wso2.apk.dp.ratelimiter.requestTimeoutInMillis | default 80 }}
+      failureModeDeny = {{ .Values.wso2.apk.dp.ratelimiter.failureModeDeny | default false }}
     {{end}}
 
     [enforcer]

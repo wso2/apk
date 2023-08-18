@@ -68,7 +68,7 @@ spec:
               subPath: tls.crt
             {{- end }}
             - name: common-controller-keystore-secret-volume
-              mountPath: /home/wso2/security/trustore/adapter-ca.crt
+              mountPath: /home/wso2/security/truststore/adapter-ca.crt
             {{- if and .Values.wso2.apk.dp.commonController.configs .Values.wso2.apk.dp.commonController.configs.tls }}
               subPath: {{ .Values.wso2.apk.dp.commonController.configs.tls.certFilename | default "ca.crt" }}
             {{- else }}
