@@ -128,8 +128,6 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) Reconcile(ctx context.Cont
 		// If availble in cache Delete cache and xds
 		if found && k8error.IsNotFound(err) {
 			ratelimitReconsiler.ods.DeleteResolveRatelimitPolicy(req.NamespacedName)
-			logger.Info("delete api ratelimit")
-			logger.Info("resolveRateLimitAPIPolicy", resolveRateLimitAPIPolicy)
 			xds.DeleteAPILevelRateLimitPolicies(resolveRateLimitAPIPolicy)
 			if resolveRateLimitAPIPolicy.Resources != nil {
 				xds.DeleteResourceLevelRateLimitPolicies(resolveRateLimitAPIPolicy)
@@ -139,17 +137,14 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) Reconcile(ctx context.Cont
 		resolveCustomRateLimitPolicy, foundCustom := ratelimitReconsiler.ods.GetCachedCustomRatelimitPolicy(req.NamespacedName)
 		if foundCustom && k8error.IsNotFound(err) {
 			ratelimitReconsiler.ods.DeleteCachedCustomRatelimitPolicy(req.NamespacedName)
-			logger.Info("Deleting CustomRateLimitPolicy : ", resolveCustomRateLimitPolicy)
+			logger.Debug("Deleting CustomRateLimitPolicy : ", resolveCustomRateLimitPolicy)
 			xds.DeleteCustomRateLimitPolicies(resolveCustomRateLimitPolicy)
 			xds.UpdateRateLimiterPolicies(conf.CommonController.Server.Label)
 		}
 		return ctrl.Result{}, nil
 	}
 	var vhost, resolveRatelimit = ratelimitReconsiler.marshelRateLimit(ctx, ratelimitKey, ratelimitPolicy)
-	logger.Info("add custom ratelimit")
 	var customRateLimitPolicy = ratelimitReconsiler.marshelCustomRateLimit(ctx, ratelimitKey, ratelimitPolicy)
-	logger.Info("resolveRatelimitxxxx", resolveRatelimit)
-	logger.Info("resolveCustomRateLimitPolicy", customRateLimitPolicy)
 
 	if vhost == nil && customRateLimitPolicy.Key == "" {
 		return ctrl.Result{}, nil
@@ -392,7 +387,7 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) marshelCustomRateLimit(ctx
 	// Custom Rate limit policy
 	if ratelimitPolicy.Spec.TargetRef.Kind == constants.KindGateway {
 		customRateLimitPolicy = getCustomRateLimitPolicy(&ratelimitPolicy)
-		logger.Info("CustomRateLimitPolicy : ", customRateLimitPolicy)
+		logger.Debug("CustomRateLimitPolicy : ", customRateLimitPolicy)
 	}
 	return customRateLimitPolicy
 }
@@ -400,7 +395,7 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) marshelCustomRateLimit(ctx
 // getCustomRateLimitPolicy returns the custom rate limit policy.
 func getCustomRateLimitPolicy(customRateLimitPolicy *dpv1alpha1.RateLimitPolicy) dpv1alpha1.CustomRateLimitPolicyDef {
 	customRLPolicy := *dpv1alpha1.ParseCustomRateLimitPolicy(*customRateLimitPolicy)
-	logger.Info("customRLPolicy:", customRLPolicy)
+	logger.Debug("customRLPolicy:", customRLPolicy)
 	return customRLPolicy
 }
 

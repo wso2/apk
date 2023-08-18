@@ -46,9 +46,8 @@ func (ods *RatelimitDataStore) AddorUpdateResolveRatelimitToStore(rateLimit type
 	resolveRatelimit dpv1alpha1.ResolveRateLimitAPIPolicy) {
 	ods.mu.Lock()
 	defer ods.mu.Unlock()
-	logger.Info("Adding/Updating ratelimit to cache")
+	logger.Debug("Adding/Updating ratelimit to cache")
 	ods.resolveRatelimitStore[rateLimit] = &resolveRatelimit
-	logger.Info("resolveRatelimit: ", resolveRatelimit)
 }
 
 // AddorUpdateCustomRatelimitToStore adds a new ratelimit to the RatelimitDataStore.
@@ -56,17 +55,15 @@ func (ods *RatelimitDataStore) AddorUpdateCustomRatelimitToStore(rateLimit types
 	customRateLimitPolicy dpv1alpha1.CustomRateLimitPolicyDef) {
 	ods.mu.Lock()
 	defer ods.mu.Unlock()
-	logger.Info("Adding/Updating ratelimit to cache")
+	logger.Debug("Adding/Updating custom ratelimit to cache")
 	ods.customRatelimitStore[rateLimit] = &customRateLimitPolicy
-	logger.Info("resolveCustomRatelimit: ", customRateLimitPolicy)
 }
 
 // GetResolveRatelimitPolicy get cached ratelimit
 func (ods *RatelimitDataStore) GetResolveRatelimitPolicy(rateLimit types.NamespacedName) (dpv1alpha1.ResolveRateLimitAPIPolicy, bool) {
 	var rateLimitPolicy dpv1alpha1.ResolveRateLimitAPIPolicy
 	if cachedRatelimit, found := ods.resolveRatelimitStore[rateLimit]; found {
-		logger.Info("Found cached ratelimit")
-		logger.Info("cachedRatelimit: ", cachedRatelimit)
+		logger.Debug("Found cached ratelimit")
 		return *cachedRatelimit, true
 	}
 	return rateLimitPolicy, false
@@ -76,8 +73,7 @@ func (ods *RatelimitDataStore) GetResolveRatelimitPolicy(rateLimit types.Namespa
 func (ods *RatelimitDataStore) GetCachedCustomRatelimitPolicy(rateLimit types.NamespacedName) (dpv1alpha1.CustomRateLimitPolicyDef, bool) {
 	var rateLimitPolicy dpv1alpha1.CustomRateLimitPolicyDef
 	if cachedRatelimit, found := ods.customRatelimitStore[rateLimit]; found {
-		logger.Info("Found cached ratelimit")
-		logger.Info("cachedRatelimit: ", cachedRatelimit)
+		logger.Debug("Found cached custom ratelimit")
 		return *cachedRatelimit, true
 	}
 	return rateLimitPolicy, false
@@ -87,7 +83,7 @@ func (ods *RatelimitDataStore) GetCachedCustomRatelimitPolicy(rateLimit types.Na
 func (ods *RatelimitDataStore) DeleteResolveRatelimitPolicy(rateLimit types.NamespacedName) {
 	ods.mu.Lock()
 	defer ods.mu.Unlock()
-	logger.Info("Deleting ratelimit from cache")
+	logger.Debug("Deleting ratelimit from cache")
 	delete(ods.resolveRatelimitStore, rateLimit)
 }
 
@@ -95,7 +91,7 @@ func (ods *RatelimitDataStore) DeleteResolveRatelimitPolicy(rateLimit types.Name
 func (ods *RatelimitDataStore) DeleteCachedCustomRatelimitPolicy(rateLimit types.NamespacedName) {
 	ods.mu.Lock()
 	defer ods.mu.Unlock()
-	logger.Info("Deleting custom ratelimit from cache")
+	logger.Debug("Deleting custom ratelimit from cache")
 	delete(ods.customRatelimitStore, rateLimit)
 }
 

@@ -23,7 +23,6 @@ import (
 
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	envoy_cachev3 "github.com/envoyproxy/go-control-plane/pkg/cache/v3"
-	logger "github.com/sirupsen/logrus"
 	dpv1alpha1 "github.com/wso2/apk/common-controller/internal/operator/api/v1alpha1"
 )
 
@@ -73,7 +72,6 @@ func DeleteAPILevelRateLimitPolicies(resolveRatelimit dpv1alpha1.ResolveRateLimi
 	var org = resolveRatelimit.Organization
 	var vhost = resolveRatelimit.Vhost
 	var context = resolveRatelimit.Context
-	logger.Info(org, vhost, context)
 	rlsPolicyCache.DeleteAPILevelRateLimitPolicies(org, vhost, context)
 }
 
