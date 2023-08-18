@@ -19,6 +19,8 @@ require (
 	google.golang.org/grpc v1.57.0
 )
 
+replace github.com/wso2/apk/adapter => ../adapter
+
 require github.com/pmezard/go-difflib v1.0.0 // indirect
 
 require (

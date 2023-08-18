@@ -35,6 +35,17 @@ const (
 	Error1002 = 1002
 )
 
+// Error Log Internal Adapter(1100-1199) Constants
+// - LoggerAPK
+const (
+	Error1100 = 1100
+	Error1101 = 1101
+	Error1102 = 1102
+	Error1103 = 1103
+	Error1104 = 1104
+	Error1105 = 1105
+)
+
 // Error Log Internal XDS(1700-1799) Config Constants
 // - LoggerXds
 const (
@@ -188,6 +199,30 @@ var Mapper = map[int]ErrorDetails{
 	Error1002: {
 		ErrorCode: Error1002,
 		Message:   "Error parsing the configurations.",
+	},
+	Error1100: {
+		ErrorCode: Error1100,
+		Message:   "Failed to listen on port.",
+	},
+	Error1101: {
+		ErrorCode: Error1101,
+		Message:   "Failed to start XDS GRPS server.",
+	},
+	Error1102: {
+		ErrorCode: Error1102,
+		Message:   "Error reading the log configs.",
+	},
+	Error1103: {
+		ErrorCode: Error1103,
+		Message:   "Error while initializing authorization component, when intializing adapter REST API",
+	},
+	Error1104: {
+		ErrorCode: Error1104,
+		Message:   "Readiness probe is not set as local api artifacts processing has failed.",
+	},
+	Error1105: {
+		ErrorCode: Error1105,
+		Message:   "Error serving Rate Limiter xDS gRPC server.",
 	},
 	Error1700: {
 		ErrorCode: Error1700,

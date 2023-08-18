@@ -109,7 +109,7 @@ func runRatelimitServer(rlsServer xdsv3.Server) {
 	loggers.LoggerAPKOperator.Info("port: ", rlsPort, " ratelimiter management server listening")
 	rlsLis, err := net.Listen("tcp", fmt.Sprintf(":%d", rlsPort))
 	if err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1106, logging.BLOCKER, "Failed to listen %v: %v", rlsPort, err.Error()))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1100, logging.BLOCKER, "Failed to listen on port: %v, error: %v", rlsPort, err.Error()))
 	}
 
 	discoveryv3.RegisterAggregatedDiscoveryServiceServer(rlsGrpcServer, rlsServer)
