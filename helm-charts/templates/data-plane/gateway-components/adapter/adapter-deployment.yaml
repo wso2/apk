@@ -74,7 +74,7 @@ spec:
               subPath: tls.crt
             {{- end }}
             - name: adapter-keystore-secret-volume
-              mountPath: /home/wso2/security/trustore/adapter-ca.crt
+              mountPath: /home/wso2/security/truststore/adapter-ca.crt
             {{- if and .Values.wso2.apk.dp.adapter.configs .Values.wso2.apk.dp.adapter.configs.tls }}
               subPath: {{ .Values.wso2.apk.dp.adapter.configs.tls.certFilename | default "ca.crt" }}
             {{- else }}
@@ -94,22 +94,6 @@ spec:
             {{- else }}
               subPath: tls.crt
             {{- end }}
-        {{ if and .Values.wso2.apk.dp.enabled .Values.wso2.apk.dp.ratelimiter.enabled }}
-            - name: ratelimiter-truststore-secret-volume
-              mountPath: /home/wso2/security/truststore/ratelimiter.crt
-            {{- if and .Values.wso2.apk.dp.ratelimiter.configs .Values.wso2.apk.dp.ratelimiter.configs.tls }}
-              subPath: {{ .Values.wso2.apk.dp.ratelimiter.configs.tls.certFilename | default "tls.crt" }}
-            {{- else }}
-              subPath: tls.crt
-            {{- end }}
-            - name: ratelimiter-truststore-secret-volume
-              mountPath: /home/wso2/security/truststore/ca-ratelimiter.crt
-            {{- if and .Values.wso2.apk.dp.ratelimiter.configs .Values.wso2.apk.dp.ratelimiter.configs.tls }}
-              subPath: {{ .Values.wso2.apk.dp.ratelimiter.configs.tls.certCAFilename | default "ca.crt" }}
-            {{- else }}
-              subPath: ca.crt
-            {{- end }}
-        {{ end }}
             - name: adapter-truststore-consul-secret-volume
               mountPath: /home/wso2/security/truststore/consul
             - name: log-conf-volume
@@ -173,15 +157,6 @@ spec:
           {{- else }}
             secretName: {{ template "apk-helm.resource.prefix" . }}-gateway-server-cert
           {{- end }}
-      {{ if and .Values.wso2.apk.dp.enabled .Values.wso2.apk.dp.ratelimiter.enabled }}
-        - name: ratelimiter-truststore-secret-volume
-          secret:
-            {{- if and .Values.wso2.apk.dp.ratelimiter.configs .Values.wso2.apk.dp.ratelimiter.configs.tls }}
-            secretName: {{ .Values.wso2.apk.dp.ratelimiter.configs.tls.secretName | default (printf "%s-ratelimiter-server-cert" (include "apk-helm.resource.prefix" .)) }}
-          {{- else }}
-            secretName: {{ template "apk-helm.resource.prefix" . }}-ratelimiter-server-cert
-          {{- end }}
-      {{ end }}
         - name: enforcer-truststore-secret-volume
           secret: 
             {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.tls }}

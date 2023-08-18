@@ -111,10 +111,6 @@ func AddOrUpdateGateway(gatewayState GatewayState, state string) (string, error)
 	loggers.LoggerAPKOperator.Debugf("apis: %v", apis)
 	xds.UpdateXdsCacheWithLock(gateway.Name, endpoints, clusters, routes, listeners)
 	xds.UpdateEnforcerApis(gateway.Name, apis, "")
-	conf := config.ReadConfigs()
-	if conf.Envoy.RateLimit.Enabled {
-		xds.UpdateRateLimitXDSCacheForCustomPolicies(gateway.Name, customRateLimitPolicies)
-	}
 	return "", nil
 }
 

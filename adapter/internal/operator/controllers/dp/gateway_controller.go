@@ -20,8 +20,10 @@ package dp
 import (
 	"context"
 	"fmt"
+	"sync"
 
 	"github.com/wso2/apk/adapter/config"
+	"github.com/wso2/apk/adapter/internal/discovery/xds"
 	"github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/pkg/logging"
 	"golang.org/x/exp/maps"
@@ -50,6 +52,10 @@ import (
 const (
 	gatewayRateLimitPolicyIndex = "gatewayRateLimitPolicyIndex"
 	gatewayAPIPolicyIndex       = "gatewayAPIPolicyIndex"
+)
+
+var (
+	setReadiness sync.Once
 )
 
 // GatewayReconciler reconciles a Gateway object
@@ -184,7 +190,16 @@ func (gatewayReconciler *GatewayReconciler) Reconcile(ctx context.Context, req c
 		*gatewayReconciler.ch <- synchronizer.GatewayEvent{EventType: constants.Update, Event: cachedGateway}
 		gatewayReconciler.handleGatewayStatus(req.NamespacedName, constants.Update, events)
 	}
+	setReadiness.Do(gatewayReconciler.setGatewayReadiness)
 	return ctrl.Result{}, nil
+}
+
+// setGatewayReadiness sets the gateway readiness status
+func (gatewayReconciler *GatewayReconciler) setGatewayReadiness() {
+	apisList, _ := utils.RetrieveAPIList(gatewayReconciler.client)
+	if len(apisList) == 0 {
+		xds.SetReady()
+	}
 }
 
 // resolveListenerSecretRefs resolves the certificate secret references in the related listeners in Gateway CR

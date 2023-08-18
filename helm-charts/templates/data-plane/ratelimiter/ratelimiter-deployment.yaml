@@ -108,8 +108,6 @@ spec:
               value: "/home/wso2/security/keystore/ratelimiter.crt"
             - name: GRPC_CLIENT_TLS_CACERT
               value: "/home/wso2/security/truststore/ratelimiter-ca.crt"
-            - name: GRPC_CLIENT_TLS_SAN
-              value: "{{ template "apk-helm.resource.prefix" . }}-gateway-service.{{ .Release.Namespace }}.svc"
             - name: RATELIMITER_LABEL
               value: "ratelimiter"
             - name: CONFIG_GRPC_XDS_SERVER_URL

@@ -27,6 +27,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/loggers"
 	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
 	constants "github.com/wso2/apk/adapter/internal/operator/constants"
@@ -530,4 +531,29 @@ func GetBackendJWT(ctx context.Context, client k8client.Client, namespace,
 		}
 	}
 	return backendJWT
+}
+
+// RetrieveAPIList retrieves API list from the given kubernetes client
+func RetrieveAPIList(k8sclient k8client.Client) ([]dpv1alpha1.API, error) {
+	ctx := context.Background()
+	conf := config.ReadConfigs()
+	namespaces := conf.Adapter.Operator.Namespaces
+	var apis []dpv1alpha1.API
+	if namespaces == nil {
+		apiList := &dpv1alpha1.APIList{}
+		if err := k8sclient.List(ctx, apiList, &k8client.ListOptions{}); err != nil {
+			return nil, err
+		}
+		apis = make([]dpv1alpha1.API, len(apiList.Items))
+		copy(apis[:], apiList.Items[:])
+	} else {
+		for _, namespace := range namespaces {
+			apiList := &dpv1alpha1.APIList{}
+			if err := k8sclient.List(ctx, apiList, &k8client.ListOptions{Namespace: namespace}); err != nil {
+				return nil, err
+			}
+			apis = append(apis, apiList.Items...)
+		}
+	}
+	return apis, nil
 }

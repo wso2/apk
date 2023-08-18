@@ -1,3 +1,4 @@
+{{- if and .Values.wso2.apk.dp.enabled .Values.wso2.apk.dp.configdeployer.enabled }}
 apiVersion: dp.wso2.com/v1alpha1
 kind: BackendJWT
 metadata:
@@ -10,3 +11,4 @@ spec:
     encoding: "Base64"
     signingAlgorithm: "SHA256withRSA"
     tokenTTL: 3600
+{{- end}}
