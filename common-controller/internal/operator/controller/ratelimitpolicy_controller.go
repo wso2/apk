@@ -70,30 +70,34 @@ func NewratelimitController(mgr manager.Manager, ratelimitStore *cache.Ratelimit
 
 	ctx := context.Background()
 	if err := addIndexes(ctx, mgr); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2612, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2612, logging.BLOCKER, "Error adding indexes: %v", err))
 		return err
 	}
 
 	c, err := controller.New(constants.RatelimitController, mgr, controller.Options{Reconciler: ratelimitReconsiler})
 	if err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3111, err.Error()))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2663, logging.BLOCKER,
+			"Error creating Ratelimit controller: %v", err.Error()))
 		return err
 	}
 
 	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha1.API{}),
 		handler.EnqueueRequestsFromMapFunc(ratelimitReconsiler.getRatelimitForAPI)); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2611, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2611, logging.BLOCKER,
+			"Error watching API resources: %v", err))
 		return err
 	}
 
 	if err := c.Watch(source.Kind(mgr.GetCache(), &gwapiv1b1.HTTPRoute{}),
 		handler.EnqueueRequestsFromMapFunc(ratelimitReconsiler.getRatelimitForHTTPRoute)); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2611, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2613, logging.BLOCKER,
+			"Error watching HTTPRoute resources: %v", err))
 		return err
 	}
 
 	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha1.RateLimitPolicy{}), &handler.EnqueueRequestForObject{}); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3112, err.Error()))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2639, logging.BLOCKER,
+			"Error watching Ratelimit resources: %v", err.Error()))
 		return err
 	}
 
@@ -161,7 +165,8 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) Reconcile(ctx context.Cont
 func (ratelimitReconsiler *RateLimitPolicyReconciler) getRatelimitForAPI(ctx context.Context, obj k8client.Object) []reconcile.Request {
 	api, ok := obj.(*dpv1alpha1.API)
 	if !ok {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2624, api))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL,
+			"Unexpected object type, bypassing reconciliation: %v", api))
 		return []reconcile.Request{}
 	}
 
@@ -186,7 +191,8 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) getRatelimitForAPI(ctx con
 func (ratelimitReconsiler *RateLimitPolicyReconciler) AddRatelimitRequest(obj k8client.Object) []reconcile.Request {
 	ratelimitPolicy, ok := obj.(*dpv1alpha1.RateLimitPolicy)
 	if !ok {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2624, ratelimitPolicy))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL,
+			"Unexpected object type, bypassing reconciliation: %v", ratelimitPolicy))
 		return nil
 	}
 
@@ -201,7 +207,8 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) AddRatelimitRequest(obj k8
 func (ratelimitReconsiler *RateLimitPolicyReconciler) getRatelimitForHTTPRoute(ctx context.Context, obj k8client.Object) []reconcile.Request {
 	httpRoute, ok := obj.(*gwapiv1b1.HTTPRoute)
 	if !ok {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2624, httpRoute))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL,
+			"Unexpected object type, bypassing reconciliation: %v", httpRoute))
 		return []reconcile.Request{}
 	}
 

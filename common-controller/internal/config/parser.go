@@ -18,7 +18,6 @@
 package config
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"reflect"
@@ -56,28 +55,16 @@ func ReadConfigs() *Config {
 		controllerConfig = defaultConfig
 		_, err := os.Stat(pkgconf.GetApkHome() + relativeConfigPath)
 		if err != nil {
-			loggerConfig.ErrorC(logging.ErrorDetails{
-				Message:   fmt.Sprintf("Configuration file not found : %s", err.Error()),
-				Severity:  logging.BLOCKER,
-				ErrorCode: 1000,
-			})
+			loggerConfig.ErrorC(logging.PrintError(logging.Error1000, logging.BLOCKER, "Configuration file not found, error: %v", err.Error()))
 		}
 		content, readErr := ioutil.ReadFile(pkgconf.GetApkHome() + relativeConfigPath)
 		if readErr != nil {
-			loggerConfig.ErrorC(logging.ErrorDetails{
-				Message:   fmt.Sprintf("Error reading configurations : %s", readErr.Error()),
-				Severity:  logging.BLOCKER,
-				ErrorCode: 1001,
-			})
+			loggerConfig.ErrorC(logging.PrintError(logging.Error1001, logging.BLOCKER, "Error reading configurations, error: %v", readErr.Error()))
 			return
 		}
 		parseErr := toml.Unmarshal(content, controllerConfig)
 		if parseErr != nil {
-			loggerConfig.ErrorC(logging.ErrorDetails{
-				Message:   fmt.Sprintf("Error parsing the configurations : %s", parseErr.Error()),
-				Severity:  logging.BLOCKER,
-				ErrorCode: 1002,
-			})
+			loggerConfig.ErrorC(logging.PrintError(logging.Error1002, logging.BLOCKER, "Error parsing the configurations, error: %v", parseErr.Error()))
 			return
 		}
 

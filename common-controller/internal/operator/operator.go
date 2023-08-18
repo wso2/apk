@@ -88,46 +88,52 @@ func InitOperator() {
 		// LeaderElectionReleaseOnCancel: true,
 	})
 	if err != nil {
-		setupLog.Error(err, "unable to start manager")
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2600, logging.BLOCKER, "Unable to start manager: %v", err))
 		os.Exit(1)
 	}
 
 	if err = (&dpv1alpha1.API{}).SetupWebhookWithManager(mgr); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2601, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2601, logging.MAJOR,
+			"Unable to create webhook API, error: %v", err))
 	}
 
 	if err = (&dpv1alpha1.RateLimitPolicy{}).SetupWebhookWithManager(mgr); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2637, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2637, logging.MAJOR,
+			"Unable to create webhook for Ratelimit, error: %v", err))
 	}
 
 	if err = (&dpv1alpha1.APIPolicy{}).SetupWebhookWithManager(mgr); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2638, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2638, logging.MAJOR,
+			"Unable to create webhook for APIPolicy, error: %v", err))
 	}
 
 	if err = (&dpv1alpha1.InterceptorService{}).SetupWebhookWithManager(mgr); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2652, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2652, logging.MAJOR,
+			"Unable to create webhook for InterceptorService, error: %v", err))
 	}
 
 	if err = (&dpv1alpha1.Backend{}).SetupWebhookWithManager(mgr); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2655, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2655, logging.MAJOR,
+			"Unable to create webhook for Backend, error: %v", err))
 	}
 	if err := dpcontrollers.NewratelimitController(mgr, ratelimitStore); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3114, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3114, logging.MAJOR,
+			"Error creating JWT Issuer controller, error: %v", err))
 	}
 	//+kubebuilder:scaffold:builder
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
-		setupLog.Error(err, "unable to set up health check")
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2602, logging.BLOCKER, "Unable to set up health check: %v", err))
 		os.Exit(1)
 	}
 	if err := mgr.AddReadyzCheck("readyz", healthz.Ping); err != nil {
-		setupLog.Error(err, "unable to set up ready check")
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2603, logging.BLOCKER, "Unable to set up ready check: %v", err))
 		os.Exit(1)
 	}
 
 	setupLog.Info("starting manager")
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
-		setupLog.Error(err, "problem running manager")
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2604, logging.BLOCKER, "Problem running manager: %v", err))
 		os.Exit(1)
 	}
 }
