@@ -29,7 +29,7 @@ import (
 	rls_config "github.com/envoyproxy/go-control-plane/ratelimit/config/ratelimit/v3"
 	logger "github.com/sirupsen/logrus"
 	"github.com/wso2/apk/common-controller/internal/loggers"
-	logging "github.com/wso2/apk/common-controller/internal/logging"
+	"github.com/wso2/apk/adapter/pkg/logging"
 	dpv1alpha1 "github.com/wso2/apk/common-controller/internal/operator/api/v1alpha1"
 	constants "github.com/wso2/apk/common-controller/internal/operator/constant"
 )
@@ -84,32 +84,27 @@ func (r *rateLimitPolicyCache) AddAPILevelRateLimitPolicies(vHosts []string, res
 	// path -> HTTP method
 
 	if len(resolveRatelimit.Resources) != 0 {
-		logger.Info("Going to resorcelevel")
 		for _, resource := range resolveRatelimit.Resources {
 			var org = resolveRatelimit.Organization
 
 			path := resolveRatelimit.Context + resolveRatelimit.Context + resource.Path
-			logger.Info("path", path)
+			logger.Debug("path", path)
 
 			method := resource.Method
 
 			rlPolicyConfig := parseRateLimitPolicyToXDS(resource.ResourceRatelimit)
 			if method == constants.All {
 				for _, httpMethod := range httpMethods {
-					logger.Info("httpMethod", httpMethod)
 					rlConf := &rls_config.RateLimitDescriptor{
 						Key:       DescriptorKeyForMethod,
 						Value:     httpMethod,
 						RateLimit: rlPolicyConfig,
 					}
-					logger.Info("rlConf", rlConf)
 
 					if _, ok := r.apiLevelRateLimitPolicies[org]; !ok {
 						r.apiLevelRateLimitPolicies[org] = make(map[string]map[string]map[string]*rls_config.RateLimitDescriptor)
-						logger.Info("org", org)
 					}
 					for _, vHost := range vHosts {
-						logger.Info("vHost", vHost)
 						if _, ok := r.apiLevelRateLimitPolicies[org][vHost]; !ok {
 							r.apiLevelRateLimitPolicies[org][vHost] = make(map[string]map[string]*rls_config.RateLimitDescriptor)
 						}
@@ -117,7 +112,6 @@ func (r *rateLimitPolicyCache) AddAPILevelRateLimitPolicies(vHosts []string, res
 							r.apiLevelRateLimitPolicies[org][vHost][resolveRatelimit.Context+resolveRatelimit.Context+resource.Path] = make(map[string]*rls_config.RateLimitDescriptor)
 							r.apiLevelRateLimitPolicies[org][vHost][resolveRatelimit.Context+resolveRatelimit.Context+resource.Path][httpMethod] = rlConf
 						} else {
-							logger.Info("csa", httpMethod)
 							r.apiLevelRateLimitPolicies[org][vHost][resolveRatelimit.Context+resolveRatelimit.Context+resource.Path][httpMethod] = rlConf
 						}
 					}
@@ -133,10 +127,8 @@ func (r *rateLimitPolicyCache) AddAPILevelRateLimitPolicies(vHosts []string, res
 				defer r.apiLevelMu.Unlock()
 				if _, ok := r.apiLevelRateLimitPolicies[org]; !ok {
 					r.apiLevelRateLimitPolicies[org] = make(map[string]map[string]map[string]*rls_config.RateLimitDescriptor)
-					logger.Info("org", org)
 				}
 				for _, vHost := range vHosts {
-					logger.Info("vHost", vHost)
 					if _, ok := r.apiLevelRateLimitPolicies[org][vHost]; !ok {
 						r.apiLevelRateLimitPolicies[org][vHost] = make(map[string]map[string]*rls_config.RateLimitDescriptor)
 					}
@@ -150,7 +142,7 @@ func (r *rateLimitPolicyCache) AddAPILevelRateLimitPolicies(vHosts []string, res
 			}
 		}
 	} else {
-		logger.Info("Going to APILevel")
+		logger.Debug("Going to APILevel")
 		apiLevelRLPolicyConfig := parseRateLimitPolicyToXDS(resolveRatelimit.API)
 		rlsConfigs = rls_config.RateLimitDescriptor{
 
@@ -165,10 +157,8 @@ func (r *rateLimitPolicyCache) AddAPILevelRateLimitPolicies(vHosts []string, res
 		defer r.apiLevelMu.Unlock()
 		if _, ok := r.apiLevelRateLimitPolicies[org]; !ok {
 			r.apiLevelRateLimitPolicies[org] = make(map[string]map[string]map[string]*rls_config.RateLimitDescriptor)
-			logger.Info("org", org)
 		}
 		for _, vHost := range vHosts {
-			logger.Info("vHost", vHost)
 			if _, ok := r.apiLevelRateLimitPolicies[org][vHost]; !ok {
 				r.apiLevelRateLimitPolicies[org][vHost] = make(map[string]map[string]*rls_config.RateLimitDescriptor)
 			}
@@ -217,22 +207,16 @@ func (r *rateLimitPolicyCache) generateRateLimitConfig() *rls_config.RateLimitCo
 
 	r.apiLevelMu.RLock()
 	defer r.apiLevelMu.RUnlock()
-	logger.Info("r.apiLevelRateLimitPolicies", r.apiLevelRateLimitPolicies)
 	// Generate API level rate limit configurations
 	for org, orgPolicies := range r.apiLevelRateLimitPolicies {
-		logger.Info("org", org)
 		var vHostDescriptors []*rls_config.RateLimitDescriptor
 		for vHost, vHostPolicies := range orgPolicies {
-			logger.Info("vHost", vHost)
 			var apiPathDiscriptors []*rls_config.RateLimitDescriptor
 			for path, apiPathPolicies := range vHostPolicies {
-				logger.Info("apiPolicies", apiPathPolicies)
-				logger.Info("path", path)
 				// Configure API Level rate limit policies only if, the API is deployed to the gateway label
 				// Check API deployed to the gateway label
 				var methodDescriptors []*rls_config.RateLimitDescriptor
 				for _, methodPolicies := range apiPathPolicies {
-					logger.Info("methodDiscriptor", methodDescriptors)
 					methodDescriptors = append(methodDescriptors, methodPolicies)
 
 				}
@@ -296,29 +280,29 @@ func (r *rateLimitPolicyCache) AddCustomRateLimitPolicies(customRateLimitPolicy 
 
 func (r *rateLimitPolicyCache) updateXdsCache(label string) bool {
 	rlsConf := r.generateRateLimitConfig()
-	logger.Info("label", rlsConf)
 	version := fmt.Sprint(rand.Int(rand.Reader, maxRandomBigInt()))
-	logger.Info("rlsConf", rlsConf)
 	snap, err := gcp_cache.NewSnapshot(version, map[gcp_resource.Type][]gcp_types.Resource{
 		gcp_resource.RateLimitConfigType: {
 			rlsConf,
 		},
 	})
-	logger.Info("snap", snap)
 	if err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(1714, err.Error()))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1714, logging.MAJOR,
+			"Error while creating the rate limit snapshot: %v", err.Error()))
 		return false
 	}
 	if err := snap.Consistent(); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(1715, err.Error()))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1715, logging.MAJOR,
+			"Inconsistent rate limiter snapshot: %v", err.Error()))
 		return false
 	}
 
 	if err := r.xdsCache.SetSnapshot(context.Background(), label, snap); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(1716, err.Error()))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1716, logging.MAJOR,
+			"Error while updating the rate limit snapshot: %v", err.Error()))
 		return false
 	}
-	loggers.LoggerAPKOperator.Infof("New rate limit cache updated for the label: %q version: %q, API_UUID: %v", label, version, logging.GetValueFromLogContext("API_UUID"))
+	loggers.LoggerAPKOperator.Infof("New rate limit cache updated for the label: %q version: %q", label, version)
 	loggers.LoggerAPKOperator.Debug("Updated rate limit config: ", rlsConf)
 	return true
 }
@@ -345,7 +329,8 @@ func getRateLimitUnit(name string) rls_config.RateLimitUnit {
 	case "DAY":
 		return rls_config.RateLimitUnit_DAY
 	default:
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(1712, name))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1712, logging.MAJOR,
+			"Unknown rate limit unit %q, defaulting to UNKNOWN", name))
 		return rls_config.RateLimitUnit_UNKNOWN
 	}
 }
@@ -391,19 +376,22 @@ func (r *rateLimitPolicyCache) SetEmptySnapshot(label string) bool {
 		},
 	})
 	if err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(1714, err.Error()))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1714, logging.MAJOR,
+			"Error while creating the rate limit snapshot: %v", err.Error()))
 		return false
 	}
 	if err := snap.Consistent(); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(1715, err.Error()))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1715, logging.MAJOR,
+			"Inconsistent rate limiter snapshot: %v", err.Error()))
 		return false
 	}
 
 	if err := r.xdsCache.SetSnapshot(context.Background(), label, snap); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(1716, err.Error()))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1716, logging.MAJOR,
+			"Error while updating the rate limit snapshot: %v", err.Error()))
 		return false
 	}
-	loggers.LoggerAPKOperator.Infof("New rate limit cache updated for the label: %q version: %q, API_UUID: %v", label, version, logging.GetValueFromLogContext("API_UUID"))
+	loggers.LoggerAPKOperator.Infof("New rate limit cache updated for the label: %q version: %q", label, version)
 	loggers.LoggerAPKOperator.Debug("Updated rate limit config: ", rls)
 	return true
 }

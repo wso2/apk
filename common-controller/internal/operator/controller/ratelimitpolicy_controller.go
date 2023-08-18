@@ -70,30 +70,34 @@ func NewratelimitController(mgr manager.Manager, ratelimitStore *cache.Ratelimit
 
 	ctx := context.Background()
 	if err := addIndexes(ctx, mgr); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2612, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2612, logging.BLOCKER, "Error adding indexes: %v", err))
 		return err
 	}
 
 	c, err := controller.New(constants.RatelimitController, mgr, controller.Options{Reconciler: ratelimitReconsiler})
 	if err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3111, err.Error()))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2663, logging.BLOCKER,
+			"Error creating Ratelimit controller: %v", err.Error()))
 		return err
 	}
 
 	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha1.API{}),
 		handler.EnqueueRequestsFromMapFunc(ratelimitReconsiler.getRatelimitForAPI)); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2611, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2611, logging.BLOCKER,
+			"Error watching API resources: %v", err))
 		return err
 	}
 
 	if err := c.Watch(source.Kind(mgr.GetCache(), &gwapiv1b1.HTTPRoute{}),
 		handler.EnqueueRequestsFromMapFunc(ratelimitReconsiler.getRatelimitForHTTPRoute)); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2611, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2613, logging.BLOCKER,
+			"Error watching HTTPRoute resources: %v", err))
 		return err
 	}
 
 	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha1.RateLimitPolicy{}), &handler.EnqueueRequestForObject{}); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3112, err.Error()))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2639, logging.BLOCKER,
+			"Error watching Ratelimit resources: %v", err.Error()))
 		return err
 	}
 
@@ -128,8 +132,6 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) Reconcile(ctx context.Cont
 		// If availble in cache Delete cache and xds
 		if found && k8error.IsNotFound(err) {
 			ratelimitReconsiler.ods.DeleteResolveRatelimitPolicy(req.NamespacedName)
-			logger.Info("delete api ratelimit")
-			logger.Info("resolveRateLimitAPIPolicy", resolveRateLimitAPIPolicy)
 			xds.DeleteAPILevelRateLimitPolicies(resolveRateLimitAPIPolicy)
 			if resolveRateLimitAPIPolicy.Resources != nil {
 				xds.DeleteResourceLevelRateLimitPolicies(resolveRateLimitAPIPolicy)
@@ -139,17 +141,14 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) Reconcile(ctx context.Cont
 		resolveCustomRateLimitPolicy, foundCustom := ratelimitReconsiler.ods.GetCachedCustomRatelimitPolicy(req.NamespacedName)
 		if foundCustom && k8error.IsNotFound(err) {
 			ratelimitReconsiler.ods.DeleteCachedCustomRatelimitPolicy(req.NamespacedName)
-			logger.Info("Deleting CustomRateLimitPolicy : ", resolveCustomRateLimitPolicy)
+			logger.Debug("Deleting CustomRateLimitPolicy : ", resolveCustomRateLimitPolicy)
 			xds.DeleteCustomRateLimitPolicies(resolveCustomRateLimitPolicy)
 			xds.UpdateRateLimiterPolicies(conf.CommonController.Server.Label)
 		}
 		return ctrl.Result{}, nil
 	}
 	var vhost, resolveRatelimit = ratelimitReconsiler.marshelRateLimit(ctx, ratelimitKey, ratelimitPolicy)
-	logger.Info("add custom ratelimit")
 	var customRateLimitPolicy = ratelimitReconsiler.marshelCustomRateLimit(ctx, ratelimitKey, ratelimitPolicy)
-	logger.Info("resolveRatelimitxxxx", resolveRatelimit)
-	logger.Info("resolveCustomRateLimitPolicy", customRateLimitPolicy)
 
 	if vhost == nil && customRateLimitPolicy.Key == "" {
 		return ctrl.Result{}, nil
@@ -166,7 +165,8 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) Reconcile(ctx context.Cont
 func (ratelimitReconsiler *RateLimitPolicyReconciler) getRatelimitForAPI(ctx context.Context, obj k8client.Object) []reconcile.Request {
 	api, ok := obj.(*dpv1alpha1.API)
 	if !ok {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2624, api))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL,
+			"Unexpected object type, bypassing reconciliation: %v", api))
 		return []reconcile.Request{}
 	}
 
@@ -191,7 +191,8 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) getRatelimitForAPI(ctx con
 func (ratelimitReconsiler *RateLimitPolicyReconciler) AddRatelimitRequest(obj k8client.Object) []reconcile.Request {
 	ratelimitPolicy, ok := obj.(*dpv1alpha1.RateLimitPolicy)
 	if !ok {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2624, ratelimitPolicy))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL,
+			"Unexpected object type, bypassing reconciliation: %v", ratelimitPolicy))
 		return nil
 	}
 
@@ -206,7 +207,8 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) AddRatelimitRequest(obj k8
 func (ratelimitReconsiler *RateLimitPolicyReconciler) getRatelimitForHTTPRoute(ctx context.Context, obj k8client.Object) []reconcile.Request {
 	httpRoute, ok := obj.(*gwapiv1b1.HTTPRoute)
 	if !ok {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2624, httpRoute))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL,
+			"Unexpected object type, bypassing reconciliation: %v", httpRoute))
 		return []reconcile.Request{}
 	}
 
@@ -392,7 +394,7 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) marshelCustomRateLimit(ctx
 	// Custom Rate limit policy
 	if ratelimitPolicy.Spec.TargetRef.Kind == constants.KindGateway {
 		customRateLimitPolicy = getCustomRateLimitPolicy(&ratelimitPolicy)
-		logger.Info("CustomRateLimitPolicy : ", customRateLimitPolicy)
+		logger.Debug("CustomRateLimitPolicy : ", customRateLimitPolicy)
 	}
 	return customRateLimitPolicy
 }
@@ -400,7 +402,7 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) marshelCustomRateLimit(ctx
 // getCustomRateLimitPolicy returns the custom rate limit policy.
 func getCustomRateLimitPolicy(customRateLimitPolicy *dpv1alpha1.RateLimitPolicy) dpv1alpha1.CustomRateLimitPolicyDef {
 	customRLPolicy := *dpv1alpha1.ParseCustomRateLimitPolicy(*customRateLimitPolicy)
-	logger.Info("customRLPolicy:", customRLPolicy)
+	logger.Debug("customRLPolicy:", customRLPolicy)
 	return customRLPolicy
 }
 
