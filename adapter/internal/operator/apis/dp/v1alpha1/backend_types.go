@@ -112,7 +112,6 @@ type Timeout struct {
 	// UpstreamResponseTimeout spans between the point at which the entire downstream request (i.e. end-of-stream) has been processed and
 	// when the upstream response has been completely processed.
 	// A value of 0 will disable the route’s timeout.
-	// If the timeout fires, the stream is terminated with a 408 Request Timeout error code.
 	//
 	// +kubebuilder:default=15
 	UpstreamResponseTimeout uint32 `json:"upstreamResponseTimeout"`
