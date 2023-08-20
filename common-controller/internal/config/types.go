@@ -37,6 +37,7 @@ type commoncontroller struct {
 	// NodeLabels []string `toml:"nodeLabels"`
 	Keystore keystore
 	Server   server
+	Operator operator
 	// Trusted Certificates
 	Truststore truststore
 }
@@ -52,4 +53,8 @@ type truststore struct {
 
 type server struct {
 	Label string
+}
+
+type operator struct {
+	Namespaces []string
 }

@@ -30,6 +30,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	k8client "sigs.k8s.io/controller-runtime/pkg/client"
@@ -81,21 +82,24 @@ func NewratelimitController(mgr manager.Manager, ratelimitStore *cache.Ratelimit
 		return err
 	}
 
+	conf := config.ReadConfigs()
+	predicates := []predicate.Predicate{predicate.NewPredicateFuncs(FilterByNamespaces(conf.CommonController.Operator.Namespaces))}
+
 	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha1.API{}),
-		handler.EnqueueRequestsFromMapFunc(ratelimitReconsiler.getRatelimitForAPI)); err != nil {
+		handler.EnqueueRequestsFromMapFunc(ratelimitReconsiler.getRatelimitForAPI), predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2611, logging.BLOCKER,
 			"Error watching API resources: %v", err))
 		return err
 	}
 
 	if err := c.Watch(source.Kind(mgr.GetCache(), &gwapiv1b1.HTTPRoute{}),
-		handler.EnqueueRequestsFromMapFunc(ratelimitReconsiler.getRatelimitForHTTPRoute)); err != nil {
+		handler.EnqueueRequestsFromMapFunc(ratelimitReconsiler.getRatelimitForHTTPRoute), predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2613, logging.BLOCKER,
 			"Error watching HTTPRoute resources: %v", err))
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha1.RateLimitPolicy{}), &handler.EnqueueRequestForObject{}); err != nil {
+	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha1.RateLimitPolicy{}), &handler.EnqueueRequestForObject{}, predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2639, logging.BLOCKER,
 			"Error watching Ratelimit resources: %v", err.Error()))
 		return err

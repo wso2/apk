@@ -23,6 +23,9 @@ var defaultConfig = &Config{
 		Server: server{
 			Label: "ratelimiter",
 		},
+		Operator: operator{
+			Namespaces: nil,
+		},
 		Keystore: keystore{
 			KeyPath:  "/home/wso2/security/keystore/mg.key",
 			CertPath: "/home/wso2/security/keystore/mg.pem",
