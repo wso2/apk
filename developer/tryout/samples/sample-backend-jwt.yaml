@@ -3,7 +3,6 @@ kind: BackendJWT
 metadata:
   name: backend-jwt-policy
 spec:
-  enabled: true
   encoding: "Base64"
   signingAlgorithm: "SHA256withRSA"
   header: "X-JWT-Assertion"

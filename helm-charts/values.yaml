@@ -30,6 +30,7 @@ wso2:
       roleName: wso2apk-role
     listener:
       hostname: "api.am.wso2.com"
+      port: 9095
       # secretName: "idp-tls"
     idp:
       issuer: "https://idp.am.wso2.com/token"

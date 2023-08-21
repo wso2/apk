@@ -35,6 +35,8 @@ wso2:
     listener:
       # -- System api listener hostname
       hostname: "api.am.wso2.com"
+      # -- Gatewaylistener port
+      port: 9095
       # -- System api listener certificates. If you are using a custom certificate.
       # secretName: "idp-tls"
     idp:

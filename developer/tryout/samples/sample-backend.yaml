@@ -25,7 +25,6 @@ spec:
   - host: backend
     port: 80
   security:
-    type: Basic
     basic:
       secretRef:
         name: user-creds
@@ -38,9 +37,8 @@ metadata:
   name: test-backend
 spec:
   timeout:
-    maxRouteTimeoutSeconds: 60
-    routeIdleTimeoutSeconds: 10
-    routeTimeoutSeconds: 40
+    upstreamResponseTimeout: 60
+    downstreamRequestIdleTimeout: 40
   healthCheck:
     timeout: 5
   retry:
@@ -59,7 +57,7 @@ metadata:
   name: test-backend-svc
 spec:
   type: ExternalName
-  externalName: benura-4.local
+  externalName: external-service.local
   ports:
     - name: http
       port: 3000
