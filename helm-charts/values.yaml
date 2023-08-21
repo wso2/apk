@@ -329,6 +329,8 @@ certmanager:
   enabled: true
   enableClusterIssuer: true
   enableRootCa: true
+  rootCaSecretName: "apk-root-certificate"
+  
 postgresql:
   enabled: true
   fullnameOverride: "wso2apk-db-service"

@@ -551,6 +551,8 @@ certmanager:
   enableClusterIssuer: true
   # -- Enable root CA to generate certificates
   enableRootCa: true
+  # -- Enable CA certificate secret name.
+  rootCaSecretName: "apk-root-certificate"
 postgresql:
   # -- Enable postgresql database
   enabled: true
