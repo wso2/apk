@@ -206,8 +206,6 @@ func getLabelsForAPI(httpRoute *gwapiv1b1.HTTPRoute) []string {
 func getListenersForAPI(httpRoute *gwapiv1b1.HTTPRoute, apiUUID string) []string {
 	var listeners []string
 	for _, parentRef := range httpRoute.Spec.ParentRefs {
-		loggers.LoggerAPKOperator.Debugf("Recieved Parent Refs:%v, API_UUID: %v", parentRef, apiUUID)
-		loggers.LoggerAPKOperator.Debugf("Recieved Parent Refs Section Name:%v, API_UUID: %v", string(*parentRef.SectionName), apiUUID)
 		listeners = append(listeners, string(*parentRef.SectionName))
 	}
 	return listeners

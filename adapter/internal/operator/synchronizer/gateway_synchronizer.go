@@ -48,7 +48,7 @@ func HandleGatewayLifeCycleEvents(ch *chan GatewayEvent) {
 	loggers.LoggerAPKOperator.Info("Operator synchronizer listening for Gateway lifecycle events...")
 	for event := range *ch {
 		if event.Event.GatewayDefinition == nil {
-			loggers.LoggerAPKOperator.ErrorC(logging.PrintErrorWithDefaultMessage(logging.Error2628, logging.CRITICAL))
+			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2628, logging.CRITICAL, "Gateway definition is nil in the event : %v", event.EventType))
 		}
 		loggers.LoggerAPKOperator.Infof("%s event received for %v", event.EventType, event.Event.GatewayDefinition.Name)
 		var err error

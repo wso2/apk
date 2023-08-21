@@ -298,6 +298,8 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 		return nil, fmt.Errorf("error while getting API level apipolicy for API : %s in namespace : %s with API UUID : %v, %s",
 			apiRef.String(), namespace, string(api.ObjectMeta.UID), err.Error())
 	}
+	loggers.LoggerAPKOperator.Debugf("API level authentications, ratelimits and apipolicies are retrieved successfully for API CR %s, %v, %v, %v",
+		apiRef.String(), apiState.Authentications, apiState.RateLimitPolicies, apiState.APIPolicies)
 
 	if apiState.ResourceAuthentications, err = apiReconciler.getAuthenticationsForResources(ctx, api); err != nil {
 		return nil, fmt.Errorf("error while getting httproute resource auth : %s in namespace : %s with API UUID : %v, %s",

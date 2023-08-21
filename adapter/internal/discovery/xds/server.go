@@ -433,27 +433,18 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 	if !gwFound || listener == nil {
 		return nil, nil, nil, nil, nil
 	}
-
-	logger.LoggerXds.Debugf("Listener : %v", listener)
 	routesFromListener := listenerToRouteArrayMap[listener.Name]
-	logger.LoggerXds.Debugf("Routes from listener : %v", routesFromListener)
 	var vhostToRouteArrayFilteredMap = make(map[string][]*routev3.Route)
 	for vhost, routes := range vhostToRouteArrayMap {
-		logger.LoggerXds.Debugf("Routes from Vhost Map : %v", routes)
 		if vhost == systemHost || checkRoutes(routes, routesFromListener) {
-			logger.LoggerXds.Debugf("Equal routes : %v", routes)
 			vhostToRouteArrayFilteredMap[vhost] = routes
 		}
 	}
 	routesConfig := oasParser.GetRouteConfigs(vhostToRouteArrayFilteredMap, listener.Name, envoyGatewayConfig.customRateLimitPolicies)
 	envoyGatewayConfig.routeConfig = routesConfig
-	logger.LoggerXds.Debugf("Listener : %v and routes %v", listener, routesConfig)
-
-	logger.LoggerXds.Debugf("Routes Config : %v", routesConfig)
 	clusterArray = append(clusterArray, envoyGatewayConfig.clusters...)
 	endpointArray = append(endpointArray, envoyGatewayConfig.endpoints...)
 	endpoints, clusters, listeners, routeConfigs := oasParser.GetCacheResources(endpointArray, clusterArray, listener, routesConfig)
-	logger.LoggerXds.Debugf("Routes Config After Get cache : %v", routeConfigs)
 	return endpoints, clusters, listeners, routeConfigs, apis
 }
 
