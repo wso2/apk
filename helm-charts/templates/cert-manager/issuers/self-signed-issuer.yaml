@@ -20,5 +20,5 @@ metadata:
   name: selfsigned-issuer
 spec:
   ca:
-    secretName: apk-root-certificate
+    secretName: {{.Values.certmanager.rootCaSecretName}}
 {{ end }}
