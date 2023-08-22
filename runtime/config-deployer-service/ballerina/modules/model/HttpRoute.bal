@@ -116,15 +116,15 @@ public type HTTPBackendRef record {
 };
 
 public type HTTPRouteRule record {
+    HTTPBackendRef[] backendRefs?;
     HTTPRouteMatch[] matches?;
     HTTPRouteFilter[] filters?;
-    HTTPBackendRef[] backendRefs?;
 };
 
 public type HTTPRouteSpec record {
     *CommonRouteSpec;
     string[] hostnames?;
-    HTTPRouteRule[] rules=[];
+    HTTPRouteRule[] rules = [];
 };
 
 public type Httproute record {|
@@ -143,6 +143,7 @@ public type ParentReference record {|
     string port?;
 
 |};
+
 public type HttprouteList record {|
     string apiVersion = "gateway.networking.k8s.io/v1beta1";
     string kind = "HTTPRouteList";
