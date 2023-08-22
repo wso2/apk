@@ -31,6 +31,7 @@ import org.wso2.apk.enforcer.commons.jwtgenerator.AbstractAPIMgtGatewayJWTGenera
 import org.wso2.apk.enforcer.commons.jwttransformer.JWTTransformer;
 import org.wso2.apk.enforcer.commons.exception.APISecurityException;
 import org.wso2.apk.enforcer.constants.APIConstants;
+import org.wso2.apk.enforcer.constants.JwtConstants;
 import org.wso2.apk.enforcer.constants.APISecurityConstants;
 import org.wso2.apk.enforcer.security.jwt.JwtTransformerAnnotation;
 import org.wso2.apk.enforcer.security.jwt.validator.JWTConstants;
@@ -38,6 +39,7 @@ import org.wso2.apk.enforcer.security.jwt.validator.JWTConstants;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -77,7 +79,13 @@ public class BackendJwtUtils {
                             CacheProviderUtil.getOrganizationCache(organization).getGatewayJWTTokenCache().get(jwtTokenCacheKey);
                     if (token != null || !JWTConstants.UNAVAILABLE.equals(token)) {
                         endUserToken = (String) token;
-                        valid = !JWTUtils.isExpired(endUserToken);
+                        String[] splitToken = endUserToken.split("\\.");
+                        if (splitToken.length != 3) {
+                            throw new Exception("Invalid JWT Token");
+                        }
+                        org.json.JSONObject payload = new org.json.JSONObject(new String(Base64.getUrlDecoder().decode(splitToken[1])));
+                        long exp = payload.getLong(JwtConstants.EXP);
+                        valid = !JWTUtils.isExpired(exp);
                     }
                 } catch (Exception e) {
                     log.error("Error while getting token from the cache", e);

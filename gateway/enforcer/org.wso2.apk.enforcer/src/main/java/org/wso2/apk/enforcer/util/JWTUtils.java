@@ -240,14 +240,10 @@ public class JWTUtils {
     /**
      * Check if the JWT token is expired.
      *
-     * @param token the JWT token
+     * @param exp JWT token expiry time
      * @return true if expired
      */
-    public static boolean isExpired(String token) {
-
-        String[] splitToken = token.split("\\.");
-        org.json.JSONObject payload = new org.json.JSONObject(new String(Base64.getUrlDecoder().decode(splitToken[1])));
-        long exp = payload.getLong(JwtConstants.EXP);
+    public static boolean isExpired(long exp) {
         long timestampSkew = FilterUtils.getTimeStampSkewInSeconds();
         return (exp-TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()) < timestampSkew);
     }
