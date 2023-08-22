@@ -23,7 +23,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/wso2/apk/adapter/config"
+	"github.com/wso2/apk/adapter/pkg/logging"
+	"github.com/wso2/apk/common-controller/internal/config"
 	"github.com/wso2/apk/common-controller/internal/loggers"
 	"golang.org/x/exp/slices"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -35,7 +36,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
-	"github.com/wso2/apk/adapter/pkg/logging"
 )
 
 var c client.Client
@@ -85,7 +85,7 @@ func (r *API) ValidateDelete() (admission.Warnings, error) {
 func (r *API) validateAPI() error {
 	var allErrs field.ErrorList
 	conf := config.ReadConfigs()
-	namespaces := conf.Adapter.Operator.Namespaces
+	namespaces := conf.CommonController.Operator.Namespaces
 	if len(namespaces) > 0 {
 		if !slices.Contains(namespaces, r.Namespace) {
 			loggers.LoggerAPK.Debugf("API validation Skipped for namespace: %v", r.Namespace)
@@ -194,7 +194,7 @@ func (r *API) validateAPIContextExistsAndDefaultVersion() *field.Error {
 func retrieveAPIList() ([]API, error) {
 	ctx := context.Background()
 	conf := config.ReadConfigs()
-	namespaces := conf.Adapter.Operator.Namespaces
+	namespaces := conf.CommonController.Operator.Namespaces
 	var apis []API
 	if namespaces == nil {
 		apiList := &APIList{}

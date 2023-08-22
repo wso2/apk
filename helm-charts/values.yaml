@@ -150,6 +150,9 @@ wso2:
           image: wso2/common-controller:1.0.0-beta
           security:
             sslHostname: "commoncontroller"
+          # configs:
+          #   apiNamespaces:
+          #     - "apk-v12"
       ratelimiter:
         enabled: true
         deployment:
