@@ -97,18 +97,25 @@ type adapter struct {
 
 // Envoy Listener Component related configurations.
 type envoy struct {
-	ListenerCodecType                string
-	ClusterTimeoutInSeconds          time.Duration
+
+	// ListenerCodecType Default to AUTO where both http1 and http2 connections are handled
+	// It can be specifically set to either HTTP1 or HTTP2
+	ListenerCodecType string
+	// The timeout for new network connections to hosts in the cluster in seconds
+	ClusterTimeoutInSeconds time.Duration
+	// The timeout for response coming from enforcer to route per API request
 	EnforcerResponseTimeoutInSeconds time.Duration `default:"20"`
 	KeyStore                         keystore
-	SystemHost                       string `default:"localhost"`
-	Upstream                         envoyUpstream
-	Downstream                       envoyDownstream
-	Connection                       connection
-	PayloadPassingToEnforcer         payloadPassingToEnforcer
-	UseRemoteAddress                 bool
-	Filters                          filters
-	RateLimit                        rateLimit
+	// System hostname for system API resources (eg: /ready and /health)
+	SystemHost               string `default:"localhost"`
+	Upstream                 envoyUpstream
+	Downstream               envoyDownstream
+	Connection               connection
+	PayloadPassingToEnforcer payloadPassingToEnforcer
+	// If configured true, router appends the immediate downstream ip address to the x-forward-for header
+	UseRemoteAddress bool
+	Filters          filters
+	RateLimit        rateLimit
 }
 
 type connectionTimeouts struct {
@@ -153,8 +160,6 @@ type enforcer struct {
 }
 
 type consul struct {
-	// Deprecated: Use Enabled instead
-	Enable bool
 	// Enabled whether consul service discovery should be enabled
 	Enabled bool
 	// URL url of the consul client in format: http(s)://host:port
@@ -200,6 +205,7 @@ type envoyDownstream struct {
 
 type downstreamTLS struct {
 	TrustedCertPath string
+	// If configured true, router enables the client certificate validation for providing client certificates
 	MTLSAPIsEnabled bool
 }
 
@@ -267,8 +273,6 @@ type truststore struct {
 }
 
 type jwtGenerator struct {
-	// Deprecated: Use Enabled instead
-	Enable               bool
 	Enabled              bool
 	Encoding             string
 	ClaimDialect         string
@@ -383,8 +387,6 @@ type partitionServer struct {
 
 // Configuration for Enforcer admin rest api
 type restServer struct {
-	// Deprecated: Use Enabled Instead
-	Enable  bool
 	Enabled bool
 }
 

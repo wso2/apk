@@ -99,6 +99,7 @@ var defaultConfig = &Config{
 			AllowPartialMessage: false,
 			PackAsBytes:         false,
 		},
+		//todo(amali) test
 		Filters: filters{
 			Compression: compression{
 				Enabled: true,
@@ -146,17 +147,16 @@ var defaultConfig = &Config{
 		},
 		RestServer: restServer{
 			Enabled: true,
-			Enable:  true,
 		},
 		Security: security{
 			APIkey: apiKey{
 				Enabled:             true,
-				Issuer:              "",
+				Issuer:              "https://apim.wso2.com/publisher",
 				CertificateFilePath: "/home/wso2/security/truststore/wso2carbon.pem",
 			},
 			InternalKey: internalKey{
 				Enabled:             true,
-				Issuer:              "https://localhost:9443/publisher",
+				Issuer:              "https://apim.wso2.com/publisher",
 				CertificateFilePath: "/home/wso2/security/truststore/wso2carbon.pem",
 			},
 			MutualSSL: mutualSSL{
@@ -229,6 +229,7 @@ var defaultConfig = &Config{
 				"authURL":   "$env{analytics_authURL}",
 				"authToken": "$env{analytics_authToken}",
 			},
+			// todo(amali) Rename?
 			LogReceiver: authService{
 				Port:           18090,
 				MaxMessageSize: 1000000000,

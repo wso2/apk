@@ -69,7 +69,6 @@ func ReadConfigs() *Config {
 			return
 		}
 
-		adapterConfig.resolveDeprecatedProperties()
 		pkgconf.ResolveConfigEnvValues(reflect.ValueOf(&(adapterConfig.Adapter)).Elem(), "Adapter", true)
 		pkgconf.ResolveConfigEnvValues(reflect.ValueOf(&(adapterConfig.Envoy)).Elem(), "Router", true)
 		pkgconf.ResolveConfigEnvValues(reflect.ValueOf(&(adapterConfig.Enforcer)).Elem(), "Enforcer", false)
@@ -116,24 +115,6 @@ func GetLogConfigPath() (string, error) {
 // If the env variable is not present, the directory from which the executable is triggered will be assigned.
 func GetApkHome() string {
 	return pkgconf.GetApkHome()
-}
-
-func (config *Config) resolveDeprecatedProperties() {
-	// For boolean values, adapter check if the condition is changed by checking against the default value it is originally
-	// assigned.
-	if !config.Enforcer.RestServer.Enable {
-		printDeprecatedWarningLog("enforcer.restServer.enable", "enforcer.restServer.enabled")
-		config.Enforcer.RestServer.Enabled = config.Enforcer.RestServer.Enable
-	}
-	if config.Adapter.Consul.Enable {
-		printDeprecatedWarningLog("adapter.consul.enable", "adapter.consul.enabled")
-		config.Adapter.Consul.Enabled = config.Adapter.Consul.Enable
-	}
-	if config.Enforcer.JwtGenerator.Enable {
-		printDeprecatedWarningLog("enforcer.jwtGenerator.enable", "enforcer.jwtGenerator.enabled")
-		config.Enforcer.JwtGenerator.Enabled = config.Enforcer.JwtGenerator.Enable
-	}
-
 }
 
 func printDeprecatedWarningLog(deprecatedTerm, currentTerm string) {
