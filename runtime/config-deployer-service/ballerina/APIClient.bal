@@ -441,17 +441,18 @@ public class APIClient {
     private isolated function generateHttpRouteRules(model:APIArtifact apiArtifact, APKConf apkConf, model:Endpoint? endpoint, string endpointType, commons:Organization organization, string httpRouteRefName) returns model:HTTPRouteRule[]|commons:APKError|error {
         model:HTTPRouteRule[] httpRouteRules = [];
         APKOperations[]? operations = apkConf.operations;
-        boolean addOnlyUpperBackendRef = true;
+        boolean addCommonBackendRef = true;
         boolean isFirstRule = true;
         if operations is APKOperations[] {
             foreach APKOperations operation in operations {
                 EndpointConfigurations? endpointConfig = operation.endpointConfigurations;
                 if endpointConfig is EndpointConfigurations {
-                    addOnlyUpperBackendRef = false;
+                    addCommonBackendRef = false;
+                    break;
                 }
             }
             foreach APKOperations operation in operations {
-                model:HTTPRouteRule|() httpRouteRule = check self.generateHttpRouteRule(apiArtifact, apkConf, endpoint, operation, endpointType, organization, addOnlyUpperBackendRef, isFirstRule);
+                model:HTTPRouteRule|() httpRouteRule = check self.generateHttpRouteRule(apiArtifact, apkConf, endpoint, operation, endpointType, organization, addCommonBackendRef, isFirstRule);
                 isFirstRule = false;
                 if httpRouteRule is model:HTTPRouteRule {
                     model:HTTPRouteFilter[]? filters = httpRouteRule.filters;
@@ -574,7 +575,7 @@ public class APIClient {
         return authentication;
     }
 
-    private isolated function generateHttpRouteRule(model:APIArtifact apiArtifact, APKConf apkConf, model:Endpoint? endpoint, APKOperations operation, string endpointType, commons:Organization organization, boolean addUpperBackendRef, boolean isFirstRule) returns model:HTTPRouteRule|()|commons:APKError {
+    private isolated function generateHttpRouteRule(model:APIArtifact apiArtifact, APKConf apkConf, model:Endpoint? endpoint, APKOperations operation, string endpointType, commons:Organization organization, boolean addCommonBackendRef, boolean isFirstRule) returns model:HTTPRouteRule|()|commons:APKError {
         do {
             EndpointConfigurations? endpointConfig = operation.endpointConfigurations;
             model:Endpoint? endpointToUse = ();
@@ -591,7 +592,7 @@ public class APIClient {
             }
             if endpointToUse != () {
                 model:HTTPRouteRule httpRouteRule = {matches: self.retrieveMatches(apkConf, operation, organization), backendRefs: self.retrieveGeneratedBackend(apkConf, endpointToUse, endpointType), filters: self.generateFilters(apiArtifact, apkConf, endpointToUse, operation, endpointType, organization)};
-                if (addUpperBackendRef && !isFirstRule) {
+                if (addCommonBackendRef && !isFirstRule) {
                     httpRouteRule.backendRefs = ();
                 }
                 return httpRouteRule;

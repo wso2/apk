@@ -74,6 +74,19 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 	if outputRatelimitPolicy != nil {
 		ratelimitPolicy = concatRateLimitPolicies(*outputRatelimitPolicy, nil)
 	}
+	var commonBackendRef []gwapiv1b1.HTTPBackendRef
+
+	addBackendRefs := false
+	for _, rule := range httpRoute.Spec.Rules {
+		if rule.BackendRefs == nil {
+			addBackendRefs = true
+		} else {
+			commonBackendRef = rule.BackendRefs
+		}
+		if addBackendRefs && commonBackendRef != nil {
+			break
+		}
+	}
 
 	for _, rule := range httpRoute.Spec.Rules {
 		var endPoints []Endpoint
@@ -96,6 +109,9 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 		hasURLRewritePolicy := false
 		var securityConfig []EndpointSecurity
 		backendBasePath := ""
+		if addBackendRefs {
+			rule.BackendRefs = commonBackendRef
+		}
 		for _, backend := range rule.BackendRefs {
 			backendName := types.NamespacedName{
 				Name:      string(backend.Name),
