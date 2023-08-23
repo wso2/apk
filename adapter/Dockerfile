@@ -31,8 +31,6 @@ ARG APK_USER_GROUP_ID=10001
 ARG APK_USER_HOME=/home/${APK_USER}
 ARG GRPC_HEALTH_PROBE_PATH=/bin/grpc_health_probe
 ARG TARGETARCH
-ENV ADAPTER_PRIVATE_KEY_PATH=/home/wso2/security/keystore/mg.key
-ENV ADAPTER_PUBLIC_CERT_PATH=/home/wso2/security/keystore/mg.pem
 
 ARG MOTD="\n\
  Welcome to WSO2 Docker Resources \n\
@@ -62,7 +60,6 @@ RUN \
 WORKDIR ${APK_USER_HOME}
 USER ${APK_USER_ID}
 
-COPY resources/security security
 COPY resources/conf/config.toml conf/
 COPY resources/check_health.sh .
 COPY resources/conf/log_config.toml conf/
