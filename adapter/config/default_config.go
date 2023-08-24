@@ -32,8 +32,8 @@ var defaultConfig = &Config{
 			KeyFile:            "/home/wso2/security/truststore/consul/local-dc-client-consul-0-key.pem",
 		},
 		Keystore: keystore{
-			KeyPath:  "/home/wso2/security/keystore/adapter.crt",
-			CertPath: "/home/wso2/security/keystore/adapter.key",
+			KeyPath:  "/home/wso2/security/keystore/adapter.key",
+			CertPath: "/home/wso2/security/keystore/adapter.crt",
 		},
 		Truststore: truststore{
 			Location: "/home/wso2/security/truststore",

@@ -27,7 +27,6 @@ import (
 	"sync"
 
 	toml "github.com/pelletier/go-toml"
-	logger "github.com/sirupsen/logrus"
 	pkgconf "github.com/wso2/apk/adapter/pkg/config"
 	"github.com/wso2/apk/adapter/pkg/logging"
 )
@@ -115,8 +114,4 @@ func GetLogConfigPath() (string, error) {
 // If the env variable is not present, the directory from which the executable is triggered will be assigned.
 func GetApkHome() string {
 	return pkgconf.GetApkHome()
-}
-
-func printDeprecatedWarningLog(deprecatedTerm, currentTerm string) {
-	logger.Warnf("%s is deprecated. Use %s instead", deprecatedTerm, currentTerm)
 }
