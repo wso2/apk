@@ -591,9 +591,9 @@ public class APIClient {
                 }
             }
             if endpointToUse != () {
-                model:HTTPRouteRule httpRouteRule = {matches: self.retrieveMatches(apkConf, operation, organization), backendRefs: self.retrieveGeneratedBackend(apkConf, endpointToUse, endpointType), filters: self.generateFilters(apiArtifact, apkConf, endpointToUse, operation, endpointType, organization)};
-                if (addCommonBackendRef && !isFirstRule) {
-                    httpRouteRule.backendRefs = ();
+                model:HTTPRouteRule httpRouteRule = {matches: self.retrieveMatches(apkConf, operation, organization), filters: self.generateFilters(apiArtifact, apkConf, endpointToUse, operation, endpointType, organization)};
+                if (!addCommonBackendRef || isFirstRule) {
+                    httpRouteRule.backendRefs = self.retrieveGeneratedBackend(apkConf, endpointToUse, endpointType);
                 }
                 return httpRouteRule;
             } else {
