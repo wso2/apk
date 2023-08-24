@@ -243,12 +243,6 @@ wso2:
             #     secretName: "router-cert"
             #     certKeyFilename: ""
             #     certFilename: ""
-            #   filters:
-            #     - className: org.wso2.micro.gateway.enforcer.filter.RequestFilter
-            #       position: 1
-            #       properties:
-            #         - name: filterConfig1
-            #           value: filterConfig1
     migration:
       # -- This flag should be enabled only in a migration scenario.
       # -- It is not recommended to run a production deployment with this flag enabled.

@@ -12,13 +12,6 @@ data:
       namespaces = [{{ include "commaJoinedQuotedList" .Values.wso2.apk.dp.adapter.configs.apiNamespaces}}]
     {{ end}}    
 
-    [adapter.keystore]
-      certPath = "/home/wso2/security/keystore/adapter.crt"
-      keyPath = "/home/wso2/security/keystore/adapter.key"
-
-    [adapter.truststore]
-      location = "/home/wso2/security/truststore"
-
     [router]
       systemHost = "localhost"
       useRemoteAddress = false
@@ -53,16 +46,36 @@ data:
     {{end}}
 
     [enforcer]
-    [enforcer.security.internalKey]
-      enabled = true
-      issuer = "https://apim.wso2.com/publisher"
-      certificateFilePath = "/home/wso2/security/truststore/wso2carbon.pem"
+
+    {{ if and .Values.wso2.apk.dp.gatewayRuntime.deployment .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.authService }}
+    [enforcer.authService]
+      {{ if .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.authService.maxMessageSize }}
+      maxMessageSize = {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.authService.maxMessageSize }}
+      {{end}}
+      {{ if .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.authService.maxHeaderLimit }}
+      maxHeaderLimit = {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.authService.maxHeaderLimit }}
+      {{end}}
+      {{ if .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.authService.keepAliveTime }}
+      keepAliveTime = {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.authService.keepAliveTime }}
+      {{end}}
     
-    [enforcer.security.apiKey]
-      enabled = true
-      issuer = "https://apim.wso2.com/publisher"
-      certificateFilePath = "/home/wso2/security/truststore/wso2carbon.pem"
-    
+    {{ if .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.authService.threadPool }}
+    [enforcer.authService.threadPool]
+      {{ if .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.authService.threadPool.coreSize }}
+      coreSize = {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.authService.threadPool.coreSize }}
+      {{end}}
+      {{ if .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.authService.threadPool.maxSize }}
+      maxSize = {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.authService.threadPool.maxSize }}
+      {{end}}
+      {{ if .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.authService.threadPool.keepAliveTime }}
+      keepAliveTime = {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.authService.threadPool.keepAliveTime }}
+      {{end}}
+      {{ if .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.authService.threadPool.queueSize }}
+      queueSize = {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.authService.threadPool.queueSize }}
+      {{end}}
+    {{end}}
+    {{end}}
+
     [enforcer.jwtGenerator]
       publicCertificatePath = "/home/wso2/security/truststore/mg.pem"
       privateKeyPath = "/home/wso2/security/keystore/mg.key"
@@ -147,19 +160,6 @@ data:
       serviceBasePath = "{{ .Values.wso2.apk.dp.partitionServer.serviceBasePath}}"
       partitionName = "{{ .Values.wso2.apk.dp.partitionServer.partitionName}}"
       disableSslVerification = {{eq .Values.wso2.apk.dp.partitionServer.hostnameVerificationEnable false }}
-    {{end}}
-    {{ if and .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.filters }}
-    {{ range $index, $filter := .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.filters}}
-    [[enforcer.filters]]
-        className = "{{$filter.className}}"
-        position = {{$filter.position}}
-        {{ if $filter.properties }}
-        [enforcer.filters.configProperties]
-        {{range $key, $value := $filter.properties}}
-        {{$value.name}} = "{{$value.value}}"
-        {{end}}
-        {{end}}
-    {{end}}
     {{end}}
 
   log_config.toml: |

@@ -308,6 +308,17 @@ wso2:
                 certKeyFilename: ""
                 # -- TLS certificate file name.
                 certFilename: ""
+              # The configurations of gRPC netty based server in Enforcer that handles the incoming requests in the Choreo Connect
+              authService:
+                maxMessageSize: 1000000000
+                maxHeaderLimit = 8192
+                keepAliveTime = 600
+                threadPool:
+                  coreSize = 400
+                  maxSize = 1000
+                  keepAliveTime = 600
+                  queueSize = 2000
+   
             logging:
               # -- Optionally configure logging for router.
               wireLogs:
