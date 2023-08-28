@@ -443,6 +443,24 @@ wso2:
           logFileName: "logs/enforcer_analytics.log"
           # -- Optional: Log level the analytics data. Can be one of DEBUG, INFO, WARN, ERROR, OFF.
           logLevel: "INFO"
+          # -- gRPC access log service within Enforcer
+          receiver:
+            # -- Maximum message size in bytes
+            maxMessageSize: 1000000000
+            # -- Maximum header size in bytes
+            maxHeaderLimit: 8192
+            # -- Keep alive time of gRPC access log connection
+            keepAliveTime: 600
+            # -- Thread pool configuration for gRPC access log server
+            threadPool:
+              # -- Minimum number of workers to keep alive
+              coreSize = 10
+              # -- Maximum pool size
+              maxSize: 100
+              # -- Timeout in seconds for idle threads waiting for work
+              keepAliveTime: 600
+              # -- Queue size of the worker threads
+              queueSize: 1000
     migration:
       # -- This flag should be enabled only in a migration scenario.
       # -- It is not recommended to run a production deployment with this flag enabled.
