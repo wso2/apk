@@ -184,6 +184,7 @@ data:
       queueSize = {{ .Values.wso2.apk.dp.gatewayRuntime.analytics.receiver.threadPool.queueSize }}
       {{end}}
     {{end}}
+    {{end}}
     {{- end }}
 
     {{ if .Values.wso2.apk.dp.partitionServer}}
