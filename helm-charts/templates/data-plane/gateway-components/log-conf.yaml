@@ -158,17 +158,33 @@ data:
       authToken = "{{ .Values.wso2.apk.dp.gatewayRuntime.analytics.authToken }}"
       {{- end }}
     
+    {{ if .Values.wso2.apk.dp.gatewayRuntime.analytics.receiver }}
     [analytics.enforcer.LogReceiver]
-      port = 18090
-      maxMessageSize = 1000000000
-      maxHeaderLimit = 8192
-      keepAliveTime = 600
-    
+      {{ if .Values.wso2.apk.dp.gatewayRuntime.analytics.receiver.maxMessageSize }}
+      maxMessageSize = {{ .Values.wso2.apk.dp.gatewayRuntime.analytics.receiver.maxMessageSize }}
+      {{end}}
+      {{ if .Values.wso2.apk.dp.gatewayRuntime.analytics.receiver.maxHeaderLimit }}
+      maxHeaderLimit = {{ .Values.wso2.apk.dp.gatewayRuntime.analytics.receiver.maxHeaderLimit }}
+      {{end}}
+      {{ if .Values.wso2.apk.dp.gatewayRuntime.analytics.receiver.keepAliveTime }}
+      keepAliveTime = {{ .Values.wso2.apk.dp.gatewayRuntime.analytics.receiver.keepAliveTime }}
+      {{end}}
+    {{ if .Values.wso2.apk.dp.gatewayRuntime.analytics.receiver.threadPool }}
     [analytics.enforcer.LogReceiver.threadPool]
-      coreSize = 10
-      maxSize = 100
-      keepAliveTime = 600
-      queueSize = 1000
+      {{ if .Values.wso2.apk.dp.gatewayRuntime.analytics.receiver.threadPool.coreSize }}
+      coreSize = {{ .Values.wso2.apk.dp.gatewayRuntime.analytics.receiver.threadPool.coreSize }}
+      {{end}}
+      {{ if .Values.wso2.apk.dp.gatewayRuntime.analytics.receiver.threadPool.maxSize }}
+      maxSize = {{ .Values.wso2.apk.dp.gatewayRuntime.analytics.receiver.threadPool.maxSize }}
+      {{end}}
+      {{ if .Values.wso2.apk.dp.gatewayRuntime.analytics.receiver.threadPool.keepAliveTime }}
+      keepAliveTime = {{ .Values.wso2.apk.dp.gatewayRuntime.analytics.receiver.threadPool.keepAliveTime }}
+      {{end}}
+      {{ if .Values.wso2.apk.dp.gatewayRuntime.analytics.receiver.threadPool.queueSize }}
+      queueSize = {{ .Values.wso2.apk.dp.gatewayRuntime.analytics.receiver.threadPool.queueSize }}
+      {{end}}
+    {{end}}
+    {{end}}
     {{- end }}
 
     {{ if .Values.wso2.apk.dp.partitionServer}}
