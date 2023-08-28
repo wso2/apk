@@ -1,0 +1,11 @@
+kind: "ConfigMap"
+apiVersion: "v1"
+metadata:
+  name: "default-api-definition-endpoint-test-definition"
+  labels:
+    api-name: "cd66352292ca1b9f45d6d490f8ae612a962ac112"
+    api-version: "983b34771fb7185d04c9603559c9e46f4b70496d"
+    organization: "7505d64a54e061b7acd54ccd58b49dc43500b635"
+    managed-by: "apk"
+binaryData:
+  definition: "H4sIAAAAAAAAAO1VwXLTQAz9lczCqQNxmnJgcoMhh8xwYOj01Olh41WSLevd7a4MmIz/HUmOnZRmSgnlRi6xV9KT3pNW3qoQweto1UxdjCfjc/VqpKxfBTXbKrTogAzvPi0+wMp6izb4uTcxWI90omuH7P8VUiaLQJy/US0dZUh8qmbXW1UnR6YNYpwVxVKXX8Cb2dtJoX2DG+vXDGEgl8lG7GAuJXp09fmjam8ErayTxUbgzC7x7PpGjFHjJnO5BVTRhQaAX9aAQkGvuQjVm16XwWMKzkFSHEzsk+asC0N5KWi+c8xKoJOuAHsinl7Iy5pOJHq8qyE1/JbgrrYJCARTDVwyNqLdKqSKHeA74RrY28sNVFpKbCI7ZkysRSucEuQYfAbhNZ1M+O++RDsVRr0n52Bu4IW3jtHZUpgVt5kjtg9T6pS0VG8RKkn1MsGKDC+KMlQES2C56MJy0StDJfLv0bawNYZ8Qgu0MUOina6Q8X0wDWM9meGTiTyH2GfF2YnZf6Mim4epLrb908K0nCXWJ+gLxuKhwMdHfJ9pGHW+Zo9OerYUBPdmfaVdPjrstD9gTfWRjS+Ixu7sYvpc8//PWiK7ypFgfy59F/df/L+4D60k6jH2SeRxfrD+d1TD8hZK+UbFxM1A27EiibklD5YvOXZNOGYhDeza606DYw5ZO52aA5uvq+UvQptQL92wenqul8yiK21gvCeha9xMBcWFb+LE3bal7RYhWUOyP6Swq+Fbm+lji7Q6x6SXkjEgATi4W9/tT3K9Dzr6BwAA"
