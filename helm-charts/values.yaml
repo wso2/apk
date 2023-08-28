@@ -88,7 +88,7 @@ wso2:
           strategy: RollingUpdate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/config-deployer-service:1.0.0-beta
+          image: wso2/config-deployer-service:latest
           # configs:
           #   tls:
           #     secretName: "my-secret"
@@ -114,7 +114,7 @@ wso2:
           strategy: RollingUpdate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/adapter:1.0.0-beta
+          image: wso2/adapter:latest
           security:
             sslHostname: "adapter"
 #        logging:
@@ -147,7 +147,7 @@ wso2:
           strategy: RollingUpdate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/common-controller:1.0.0-beta
+          image: wso2/common-controller:latest
           security:
             sslHostname: "commoncontroller"
           # configs:
@@ -204,7 +204,7 @@ wso2:
               failureThreshold: 5
             strategy: RollingUpdate
             imagePullPolicy: Always
-            image: wso2/router:1.0.0-beta
+            image: wso2/router:latest
             # configs:
             #   tls:
             #     secretName: "router-cert"
@@ -233,7 +233,7 @@ wso2:
               failureThreshold: 5
             strategy: RollingUpdate
             imagePullPolicy: Always
-            image: wso2/enforcer:1.0.0-beta
+            image: wso2/enforcer:latest
             security:
               sslHostname: "enforcer"
 #            logging:
