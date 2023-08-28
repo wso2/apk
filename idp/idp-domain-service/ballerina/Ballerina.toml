@@ -1,7 +1,7 @@
 [package]
 org = "wso2"
 name = "idp_domain_service"
-version = "1.0.0-beta"
+version = "1.0.0-rc"
 distribution = "2201.7.0"
 
 [[platform.java11.dependency]]
