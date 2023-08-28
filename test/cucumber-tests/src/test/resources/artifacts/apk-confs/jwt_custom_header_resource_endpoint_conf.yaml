@@ -1,0 +1,42 @@
+---
+name: "JWTCustomHeaderResourceAPI"
+context: "/jwt-custom-header-resource"
+id: "jwt-custom-header-resource-test"
+version: "3.14"
+type: "REST"
+defaultVersion: false
+operations:
+  - target: "/employee"
+    verb: "GET"
+    authTypeEnabled: true
+    scopes: []
+    endpointConfigurations:
+      production:
+        endpoint: "http://backend:80/anything"
+  - target: "/employee"
+    verb: "POST"
+    authTypeEnabled: true
+    scopes: []
+    endpointConfigurations:
+      production:
+        endpoint: "http://backend:80/anything"
+  - target: "/employee/{employeeId}"
+    verb: "PUT"
+    authTypeEnabled: true
+    scopes: []
+    endpointConfigurations:
+      production:
+        endpoint: "http://backend:80/anything"
+  - target: "/employee/{employeeId}"
+    verb: "DELETE"
+    authTypeEnabled: true
+    scopes: []
+    endpointConfigurations:
+      production:
+        endpoint: "http://backend:80/anything"
+authentication:
+ - authType: JWT
+   enabled: true
+   sendTokenToUpstream: true
+   headerName: testAuth
+   headerEnable: true

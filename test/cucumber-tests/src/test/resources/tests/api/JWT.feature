@@ -71,6 +71,26 @@ Feature: Test JWT related functionalities
       | claim1 | value1 |
       | claim2 | value2 |
 
+    Scenario: Test customized JWT headers with Resource Endpoint
+      Given The system is ready
+      And I have a valid subscription
+      When I use the APK Conf file "artifacts/apk-confs/jwt_custom_header_resource_endpoint_conf.yaml"
+      And the definition file "artifacts/definitions/employees_api.json"
+      And make the API deployment request
+      Then the response status code should be 200
+      Then I set headers
+        |Authorization|bearer ${accessToken}|
+      And I send "GET" request to "https://default.gw.wso2.com:9095/jwt-custom-header-resource/3.14/employee/" with body ""
+      And I eventually receive 401 response code, not accepting
+        |429|
+        |200|
+      Then I set headers
+        |testAuth|bearer ${accessToken}|
+      And I send "GET" request to "https://default.gw.wso2.com:9095/jwt-custom-header-resource/3.14/employee/" with body ""
+      And I eventually receive 200 response code, not accepting
+        |429|
+        |401|
+
   Scenario Outline: Undeploy API
     Given The system is ready
     And I have a valid subscription
@@ -82,3 +102,4 @@ Feature: Test JWT related functionalities
       | jwt-basic-test          | 202                 |
       | jwt-disabled-test      | 202                 |
       | jwt-custom-header-test      | 202                 |
+      | jwt-custom-header-resource-test      | 202                 |
