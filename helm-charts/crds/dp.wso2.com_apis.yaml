@@ -95,6 +95,10 @@ spec:
                 description: DefinitionPath contains the path to expose the API definition.
                 minLength: 1
                 type: string
+              environment:
+                description: Environment denotes the environment of the API. This
+                  is a virtual environment on top of the segmented gateway.
+                type: string
               isDefaultVersion:
                 description: IsDefaultVersion indicates whether this API version should
                   be used as a default API
