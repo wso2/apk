@@ -31,6 +31,8 @@ spec:
     metadata:
       labels:
 {{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" "commoncontroller" ) | indent 8}}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/data-plane/gateway-components/common-log-conf.yaml") . | sha256sum }}
     spec:
       serviceAccountName: {{ .Values.wso2.apk.auth.serviceAccountName }}
       containers:
