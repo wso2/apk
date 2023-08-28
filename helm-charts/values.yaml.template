@@ -454,7 +454,7 @@ wso2:
             # -- Thread pool configuration for gRPC access log server
             threadPool:
               # -- Minimum number of workers to keep alive
-              coreSize = 10
+              coreSize: 10
               # -- Maximum pool size
               maxSize: 100
               # -- Timeout in seconds for idle threads waiting for work

@@ -23,6 +23,7 @@ A Helm chart for APK components
 | wso2.apk.auth.serviceAccountName | string | `"wso2apk-platform"` | Service Account name |
 | wso2.apk.auth.roleName | string | `"wso2apk-role"` | Cluster Role name |
 | wso2.apk.listener.hostname | string | `"api.am.wso2.com"` | System api listener hostname |
+| wso2.apk.listener.port | int | `9095` | Gatewaylistener port |
 | wso2.apk.idp.issuer | string | `"https://idp.am.wso2.com/token"` | IDP issuer value |
 | wso2.apk.idp.authorizeEndpoint | string | `"https://idp.am.wso2.com:9095/oauth2/authorize"` | IDP authorization endpoint |
 | wso2.apk.idp.tokenEndpoint | string | `"https://idp.am.wso2.com:9095/oauth2/token"` | IDP token endpoint |
@@ -93,6 +94,7 @@ A Helm chart for APK components
 | wso2.apk.dp.adapter.configs.tls.certKeyFilename | string | `""` | TLS certificate file name. |
 | wso2.apk.dp.adapter.configs.tls.certFilename | string | `""` | TLS certificate file name. |
 | wso2.apk.dp.adapter.logging.level | string | `"INFO"` | Optionally configure logging for adapter. LogLevels can be "DEBG", "FATL", "ERRO", "WARN", "INFO", "PANC" |
+| wso2.apk.dp.adapter.logging.logFile | string | `"logs/adapter.log"` | Log file name |
 | wso2.apk.dp.adapter.logging.logFormat | string | `"TEXT"` | Log format can be "JSON", "TEXT" |
 | wso2.apk.dp.ratelimiter.enabled | bool | `true` | Enable the deployment of the Rate Limiter |
 | wso2.apk.dp.ratelimiter.deployment.resources.requests.memory | string | `"128Mi"` | CPU request for the container |
@@ -128,12 +130,20 @@ A Helm chart for APK components
 | wso2.apk.dp.gatewayRuntime.deployment.router.strategy | string | `"RollingUpdate"` | Deployment strategy |
 | wso2.apk.dp.gatewayRuntime.deployment.router.imagePullPolicy | string | `"Always"` | Image pull policy |
 | wso2.apk.dp.gatewayRuntime.deployment.router.image | string | `"wso2/router:0.0.1-m8"` | Image |
+| wso2.apk.dp.gatewayRuntime.deployment.router.configs.enforcerResponseTimeoutInSeconds | int | `20` | The timeout for response coming from enforcer to route per API request |
+| wso2.apk.dp.gatewayRuntime.deployment.router.configs.useRemoteAddress | bool | `false` | If configured true, router appends the immediate downstream ip address to the x-forward-for header |
+| wso2.apk.dp.gatewayRuntime.deployment.router.configs.systemHost | string | `"localhost"` | System hostname for system API resources (eg: /testkey and /health) |
 | wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls.secretName | string | `"router-cert"` | TLS secret name for router public certificate. |
 | wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls.certKeyFilename | string | `""` | TLS certificate file name. |
 | wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls.certFilename | string | `""` | TLS certificate file name. |
+| wso2.apk.dp.gatewayRuntime.deployment.router.configs.upstream.tls.verifyHostName | bool | `true` | Enable/Disable Verifying host name |
+| wso2.apk.dp.gatewayRuntime.deployment.router.configs.upstream.tls.disableSslVerification | bool | `false` | Disable SSL verification |
+| wso2.apk.dp.gatewayRuntime.deployment.router.configs.upstream.dns.dnsRefreshRate | int | `5000` | DNS refresh rate in miliseconds |
+| wso2.apk.dp.gatewayRuntime.deployment.router.configs.upstream.dns.respectDNSTtl | bool | `false` | set cluster’s DNS refresh rate to resource record’s TTL which comes from DNS resolution |
 | wso2.apk.dp.gatewayRuntime.deployment.router.logging.wireLogs | object | `{"enable":true}` | Optionally configure logging for router. |
 | wso2.apk.dp.gatewayRuntime.deployment.router.logging.wireLogs.enable | bool | `true` | Enable wire logs for router. |
 | wso2.apk.dp.gatewayRuntime.deployment.router.logging.accessLogs.enable | bool | `true` | Enable access logs for router. |
+| wso2.apk.dp.gatewayRuntime.deployment.router.logging.accessLogs.logfile | string | `"/tmp/envoy.access.log"` | Log file name |
 | wso2.apk.dp.gatewayRuntime.deployment.enforcer.resources.requests.memory | string | `"128Mi"` | CPU request for the container |
 | wso2.apk.dp.gatewayRuntime.deployment.enforcer.resources.requests.cpu | string | `"100m"` | Memory request for the container |
 | wso2.apk.dp.gatewayRuntime.deployment.enforcer.resources.limits.memory | string | `"1028Mi"` | CPU limit for the container |
@@ -151,7 +161,9 @@ A Helm chart for APK components
 | wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.tls.secretName | string | `""` | TLS secret name for enforcer public certificate. |
 | wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.tls.certKeyFilename | string | `""` | TLS certificate file name. |
 | wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.tls.certFilename | string | `""` | TLS certificate file name. |
+| wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.authService | object | `{"keepAliveTime":600,"maxHeaderLimit":8192,"maxMessageSize":1000000000,"threadPool":{"coreSize":400,"keepAliveTime":600,"maxSize":1000,"queueSize":2000}}` | The configurations of gRPC netty based server in Enforcer that handles the incoming requests from ext_authz |
 | wso2.apk.dp.gatewayRuntime.deployment.enforcer.logging.level | string | `"DEBUG"` | Log level can be one of DEBUG, INFO, WARN, ERROR, OFF |
+| wso2.apk.dp.gatewayRuntime.deployment.enforcer.logging.logFile | string | `"logs/enforcer.log"` | Log file name |
 | wso2.apk.dp.gatewayRuntime.tracing.enabled | bool | `true` | Enable/Disable tracing in gateway runtime. |
 | wso2.apk.dp.gatewayRuntime.tracing.type | string | `"zipkin"` | Type of tracer exporter (e.g: azure, zipkin). Use zipkin type for Jaeger as well. |
 | wso2.apk.dp.gatewayRuntime.tracing.configProperties.host | string | `"jaeger"` | Jaeger/Zipkin host. |
@@ -174,6 +186,15 @@ A Helm chart for APK components
 | wso2.apk.dp.gatewayRuntime.analytics.authToken | string | `"xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"` | On-prem key generated from Choreo console. Not required for ELK type. |
 | wso2.apk.dp.gatewayRuntime.analytics.logFileName | string | `"logs/enforcer_analytics.log"` | Optional: File name of the log file. |
 | wso2.apk.dp.gatewayRuntime.analytics.logLevel | string | `"INFO"` | Optional: Log level the analytics data. Can be one of DEBUG, INFO, WARN, ERROR, OFF. |
+| wso2.apk.dp.gatewayRuntime.analytics.receiver | object | `{"keepAliveTime":600,"maxHeaderLimit":8192,"maxMessageSize":1000000000,"threadPool":{"coreSize":10,"keepAliveTime":600,"maxSize":100,"queueSize":1000}}` | gRPC access log service within Enforcer |
+| wso2.apk.dp.gatewayRuntime.analytics.receiver.maxMessageSize | int | `1000000000` | Maximum message size in bytes |
+| wso2.apk.dp.gatewayRuntime.analytics.receiver.maxHeaderLimit | int | `8192` | Maximum header size in bytes |
+| wso2.apk.dp.gatewayRuntime.analytics.receiver.keepAliveTime | int | `600` | Keep alive time of gRPC access log connection |
+| wso2.apk.dp.gatewayRuntime.analytics.receiver.threadPool | object | `{"coreSize":10,"keepAliveTime":600,"maxSize":100,"queueSize":1000}` | Thread pool configuration for gRPC access log server |
+| wso2.apk.dp.gatewayRuntime.analytics.receiver.threadPool.coreSize | int | `10` | Minimum number of workers to keep alive |
+| wso2.apk.dp.gatewayRuntime.analytics.receiver.threadPool.maxSize | int | `100` | Maximum pool size |
+| wso2.apk.dp.gatewayRuntime.analytics.receiver.threadPool.keepAliveTime | int | `600` | Timeout in seconds for idle threads waiting for work |
+| wso2.apk.dp.gatewayRuntime.analytics.receiver.threadPool.queueSize | int | `1000` | Queue size of the worker threads |
 | wso2.apk.migration.enabled | bool | `false` | It is not recommended to run a production deployment with this flag enabled. |
 | idp.enabled | bool | `true` | Enable Non production identity server |
 | idp.listener.hostname | string | `"idp.am.wso2.com"` | identity server hostname |
@@ -231,13 +252,14 @@ A Helm chart for APK components
 | certmanager.enabled | bool | `true` | Enable certificate manager to generate certificates |
 | certmanager.enableClusterIssuer | bool | `true` | Enable cluster issuer to generate certificates |
 | certmanager.enableRootCa | bool | `true` | Enable root CA to generate certificates |
+| certmanager.rootCaSecretName | string | `"apk-root-certificate"` | Enable CA certificate secret name. |
 | postgresql.enabled | bool | `true` | Enable postgresql database |
 | postgresql.fullnameOverride | string | `"wso2apk-db-service"` | String to fully override common.names.fullname template |
 | postgresql.auth.database | string | `"WSO2AM_DB"` | Name for a custom database to create |
 | postgresql.auth.postgresPassword | string | `"wso2carbon"` | Password for the "postgres" admin user. Ignored if auth.existingSecret is provided |
 | postgresql.auth.username | string | `"wso2carbon"` | Name for a custom user to create |
 | postgresql.auth.password | string | `"wso2carbon"` | Password for the custom user to create. Ignored if auth.existingSecret is provided |
-| postgresql.primary.extendedConfiguration | string | `"max_connections = 400\n"` | Extended PostgreSQL Primary configuration (appended to main or default configuration) |
+| postgresql.primary.extendedConfiguration | string | `"max_connections: 400\n"` | Extended PostgreSQL Primary configuration (appended to main or default configuration) |
 | postgresql.primary.initdb.scriptsConfigMap | string | `"postgres-initdb-scripts-configmap"` | ConfigMap with PostgreSQL initialization scripts |
 | postgresql.primary.initdb.user | string | `"wso2carbon"` | Specify the PostgreSQL username to execute the initdb scripts |
 | postgresql.primary.initdb.password | string | `"wso2carbon"` | Specify the PostgreSQL password to execute the initdb scripts |
