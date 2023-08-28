@@ -182,8 +182,7 @@ A Helm chart for APK components
 | wso2.apk.dp.gatewayRuntime.tracing.configProperties.tls.certCAFilename | string | `""` | TLS certificate file name. |
 | wso2.apk.dp.gatewayRuntime.analytics.enabled | bool | `true` | Enable/Disable analytics in gateway runtime. |
 | wso2.apk.dp.gatewayRuntime.analytics.type | string | `"Choreo"` | Type of analytics data publisher. Can be "Choreo" or "ELK". |
-| wso2.apk.dp.gatewayRuntime.analytics.authURL | string | `"https://analytics-event-auth.choreo.dev/auth/v1"` | Choreo analytics auth URL. Not required for ELK type. |
-| wso2.apk.dp.gatewayRuntime.analytics.authToken | string | `"xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"` | On-prem key generated from Choreo console. Not required for ELK type. |
+| wso2.apk.dp.gatewayRuntime.analytics.secretName | string | `"choreo-analytics-secret"` | Choreo analytics secret. |
 | wso2.apk.dp.gatewayRuntime.analytics.logFileName | string | `"logs/enforcer_analytics.log"` | Optional: File name of the log file. |
 | wso2.apk.dp.gatewayRuntime.analytics.logLevel | string | `"INFO"` | Optional: Log level the analytics data. Can be one of DEBUG, INFO, WARN, ERROR, OFF. |
 | wso2.apk.dp.gatewayRuntime.analytics.receiver | object | `{"keepAliveTime":600,"maxHeaderLimit":8192,"maxMessageSize":1000000000,"threadPool":{"coreSize":10,"keepAliveTime":600,"maxSize":100,"queueSize":1000}}` | gRPC access log service within Enforcer |

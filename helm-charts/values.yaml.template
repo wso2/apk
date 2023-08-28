@@ -435,10 +435,8 @@ wso2:
           enabled: true
           # -- Type of analytics data publisher. Can be "Choreo" or "ELK".
           type: "Choreo"
-          # -- Choreo analytics auth URL. Not required for ELK type.
-          authURL: "https://analytics-event-auth.choreo.dev/auth/v1"
-          # -- On-prem key generated from Choreo console. Not required for ELK type.
-          authToken: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+          # -- Choreo analytics secret.
+          secretName: "choreo-analytics-secret"
           # -- Optional: File name of the log file.
           logFileName: "logs/enforcer_analytics.log"
           # -- Optional: Log level the analytics data. Can be one of DEBUG, INFO, WARN, ERROR, OFF.

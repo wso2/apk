@@ -88,10 +88,20 @@ spec:
               value: "3"
             - name: enforcer_admin_pwd
               value: admin
-            - name: analytics_authURL
-              value: "https://localhost:8080"
             - name: JAVA_OPTS
               value: -Dhttpclient.hostnameVerifier=AllowAll -Xms512m -Xmx512m -XX:MaxRAMFraction=2
+        {{- if and .Values.wso2.apk.dp.gatewayRuntime.analytics .Values.wso2.apk.dp.gatewayRuntime.analytics.secretName }}
+            - name: analytics_authToken
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.wso2.apk.dp.gatewayRuntime.analytics.secretName }}
+                  key: "analytics_authToken"
+            - name: analytics_authURL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.wso2.apk.dp.gatewayRuntime.analytics.secretName }}
+                  key: "analytics_authURL"
+        {{- end }}
           volumeMounts:
             - name: enforcer-keystore-secret-volume
               mountPath: /home/wso2/security/keystore/enforcer.key
