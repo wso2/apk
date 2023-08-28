@@ -301,24 +301,30 @@ wso2:
             # -- Image
             image: wso2/router:0.0.1-m8
             configs:
+              # -- The timeout for response coming from enforcer to route per API request
+              enforcerResponseTimeoutInSeconds: 20
+              # -- If configured true, router appends the immediate downstream ip address to the x-forward-for header
+              useRemoteAddress: false
+              # -- System hostname for system API resources (eg: /testkey and /health)
+              systemHost: "localhost"
               tls:
                 # -- TLS secret name for router public certificate.
                 secretName: "router-cert"
                 # -- TLS certificate file name.
                 certKeyFilename: ""
                 # -- TLS certificate file name.
-                certFilename: ""
-              # The configurations of gRPC netty based server in Enforcer that handles the incoming requests in the Choreo Connect
-              authService:
-                maxMessageSize: 1000000000
-                maxHeaderLimit = 8192
-                keepAliveTime = 600
-                threadPool:
-                  coreSize = 400
-                  maxSize = 1000
-                  keepAliveTime = 600
-                  queueSize = 2000
-   
+                certFilename: "" 
+              upstream:
+                tls:
+                  # -- Enable/Disable Verifying host name
+                  verifyHostName: true
+                  # -- Disable SSL verification
+                  disableSslVerification: false
+                dns:
+                  # -- DNS refresh rate in miliseconds
+                  dnsRefreshRate: 5000
+                  # -- set cluster’s DNS refresh rate to resource record’s TTL which comes from DNS resolution
+                  respectDNSTtl:  false
             logging:
               # -- Optionally configure logging for router.
               wireLogs:
@@ -372,6 +378,16 @@ wso2:
                 certKeyFilename: ""
                 # -- TLS certificate file name.
                 certFilename: ""
+              # -- The configurations of gRPC netty based server in Enforcer that handles the incoming requests from ext_authz
+              authService:
+                maxMessageSize: 1000000000
+                maxHeaderLimit: 8192
+                keepAliveTime: 600
+                threadPool:
+                  coreSize: 400
+                  maxSize: 1000
+                  keepAliveTime: 600
+                  queueSize: 2000
             logging:
               # -- Optionally configure logging for enforcer.
               # -- Log level can be one of DEBUG, INFO, WARN, ERROR, OFF
@@ -583,7 +599,7 @@ postgresql:
   primary:
     # -- Extended PostgreSQL Primary configuration (appended to main or default configuration)
     extendedConfiguration: |
-      max_connections = 400
+      max_connections: 400
     initdb:
       # -- ConfigMap with PostgreSQL initialization scripts
       scriptsConfigMap: postgres-initdb-scripts-configmap

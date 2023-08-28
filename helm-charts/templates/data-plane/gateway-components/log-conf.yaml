@@ -12,23 +12,41 @@ data:
       namespaces = [{{ include "commaJoinedQuotedList" .Values.wso2.apk.dp.adapter.configs.apiNamespaces}}]
     {{ end}}    
 
+    {{ if and .Values.wso2.apk.dp.gatewayRuntime.deployment .Values.wso2.apk.dp.gatewayRuntime.deployment.router .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs }}
     [router]
-      systemHost = "localhost"
-      useRemoteAddress = false
+      {{ if .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.systemHost }}
+      systemHost = "{{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.systemHost }}"
+      {{ end }}
+      {{ if .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.useRemoteAddress }}
+      useRemoteAddress = {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.useRemoteAddress }}
+      {{ end }}
+      {{ if .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.enforcerResponseTimeoutInSeconds }}
+      enforcerResponseTimeoutInSeconds = {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.enforcerResponseTimeoutInSeconds }}
+      {{end}}
 
-    [router.keystore]
-      certPath = "/home/wso2/security/keystore/router.crt"
-      keyPath = "/home/wso2/security/keystore/router.key"
-
+    {{ if .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.upstream }}
+    {{ if .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.upstream.tls }}
     [router.upstream.tls]
-      trustedCertPath = "/etc/ssl/certs/ca-certificates.crt"
-      verifyHostName = true
-      disableSslVerification = false
+      {{ if .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.upstream.tls.verifyHostName }}
+      verifyHostName = {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.upstream.tls.verifyHostName }}
+      {{end}}
+      {{ if .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.upstream.tls.disableSslVerification }}
+      disableSslVerification = {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.upstream.tls.disableSslVerification }}
+      {{end}}
+    {{end}}
 
-    [router.downstream.tls]
-      mtlsAPIsEnabled = false
-      trustedCertPath = "/etc/ssl/certs/ca-certificates.crt"
-    
+    {{ if .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.upstream.dns }}
+    [router.upstream.dns]
+      {{ if .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.upstream.dns.refreshRate }}
+      dnsRefreshRate = {{.Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.upstream.dns.refreshRate}}
+      {{end}}
+      {{ if .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.upstream.dns.respectDNSTtl }}
+			respectDNSTtl = {{.Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.upstream.dns.respectDNSTtl}}
+      {{end}}
+    {{end}}
+    {{end}}
+    {{end}}
+
     {{ if .Values.wso2.apk.dp.ratelimiter }}
     [router.ratelimit]
       {{ if .Values.wso2.apk.dp.ratelimiter.host }}
