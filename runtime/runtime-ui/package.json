@@ -4,7 +4,7 @@
   "description": "APK config language support ",
   "author": "WSO2",
   "license": "Apache 2.0",
-  "version": "0.9.0",
+  "version": "1.0.0",
   "publisher": "WSO2",
   "bugs": "https://github.com/wso2/apk/issues",
   "repository": {
