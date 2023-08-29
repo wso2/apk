@@ -170,7 +170,7 @@ func (gatewayReconciler *GatewayReconciler) Reconcile(ctx context.Context, req c
 			*gatewayReconciler.ch <- synchronizer.GatewayEvent{EventType: constants.Delete, Event: gatewayState}
 			return ctrl.Result{}, nil
 		}
-		loggers.LoggerAPKOperator.Warnf("Gateway CR related to the reconcile request with key: %s returned error. Assuming Gateway is already deleted, hence ignoring the error : %v", err)
+		loggers.LoggerAPKOperator.Warnf("Gateway CR related to the reconcile request with key: returned error. Assuming Gateway is already deleted, hence ignoring the error : %v", err)
 		return ctrl.Result{}, nil
 	}
 	var gwCondition []metav1.Condition = gatewayDef.Status.Conditions

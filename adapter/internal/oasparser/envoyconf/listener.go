@@ -196,7 +196,7 @@ end`)
 					manager.Tracing = tracing
 					manager.GenerateRequestId = &wrappers.BoolValue{Value: conf.Tracing.Enabled}
 				} else {
-					logger.LoggerOasparser.Error("Failed to initialize tracing for %s. Router tracing will be disabled. ",
+					logger.LoggerOasparser.Errorf("Failed to initialize tracing for %s. Router tracing will be disabled. Error: %s",
 						TracerTypeOtlp, err)
 					conf.Tracing.Enabled = false
 				}
@@ -205,7 +205,7 @@ end`)
 					manager.Tracing = tracing
 					manager.GenerateRequestId = &wrappers.BoolValue{Value: conf.Tracing.Enabled}
 				} else {
-					logger.LoggerOasparser.Error("Failed to initialize tracing for %s. Router tracing will be disabled. ",
+					logger.LoggerOasparser.Errorf("Failed to initialize tracing for %s. Router tracing will be disabled. Error: %s",
 						conf.Tracing.Type, err)
 					conf.Tracing.Enabled = false
 				}
