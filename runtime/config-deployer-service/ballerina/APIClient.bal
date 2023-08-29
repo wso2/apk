@@ -636,8 +636,11 @@ public class APIClient {
 
     private isolated function generateFilters(model:APIArtifact apiArtifact, APKConf apkConf, model:Endpoint endpoint, APKOperations operation, string endpointType, commons:Organization organization) returns model:HTTPRouteFilter[] {
         model:HTTPRouteFilter[] routeFilters = [];
-        model:HTTPRouteFilter replacePathFilter = {'type: "URLRewrite", urlRewrite: {path: {'type: "ReplaceFullPath", replaceFullPath: self.generatePrefixMatch(endpoint, operation)}}};
-        routeFilters.push(replacePathFilter);
+        string generatedPath = self.generatePrefixMatch(endpoint, operation);
+        if (generatedPath != operation.target) {
+            model:HTTPRouteFilter replacePathFilter = {'type: "URLRewrite", urlRewrite: {path: {'type: "ReplaceFullPath", replaceFullPath: generatedPath}}};
+            routeFilters.push(replacePathFilter);
+        }
         APIOperationPolicies? operationPoliciesToUse = ();
         if (apkConf.apiPolicies is APIOperationPolicies) {
             operationPoliciesToUse = apkConf.apiPolicies;
