@@ -103,6 +103,8 @@ spec:
                   key: "analytics_authURL"
         {{- end }}
           volumeMounts:
+            - name: tmp
+              mountPath: /tmp
             - name: enforcer-keystore-secret-volume
               mountPath: /home/wso2/security/keystore/enforcer.key
             {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.tls }}
@@ -370,3 +372,5 @@ spec:
             secretName: {{ .Values.wso2.apk.idp.tls.secretName }}
           {{ end }}
           {{end}}
+        - name: tmp
+          emptyDir: {}
