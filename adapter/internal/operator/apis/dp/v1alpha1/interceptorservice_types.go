@@ -67,6 +67,7 @@ type InterceptorServiceStatus struct {
 	// Important: Run "make" to regenerate code after modifying this file
 }
 
+// +genclient
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 

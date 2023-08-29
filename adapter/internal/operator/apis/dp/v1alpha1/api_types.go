@@ -165,6 +165,7 @@ type DeploymentStatus struct {
 	Events []string `json:"events,omitempty"`
 }
 
+// +genclient
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 //+kubebuilder:printcolumn:name="API Name",type="string",JSONPath=".spec.apiDisplayName"

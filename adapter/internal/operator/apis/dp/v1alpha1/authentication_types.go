@@ -117,6 +117,7 @@ type APIKeyAuth struct {
 type AuthenticationStatus struct {
 }
 
+// +genclient
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 

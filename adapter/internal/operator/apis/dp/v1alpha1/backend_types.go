@@ -256,6 +256,7 @@ type SecretRef struct {
 // BackendStatus defines the observed state of Backend
 type BackendStatus struct{}
 
+// +genclient
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 
