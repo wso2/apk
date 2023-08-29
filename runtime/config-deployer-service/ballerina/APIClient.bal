@@ -74,6 +74,7 @@ public class APIClient {
                 uniqueId = <string>apkConf.id;
             }
             model:APIArtifact apiArtifact = {uniqueId: uniqueId, name: apkConf.name, version: apkConf.version, organization: organization.name};
+            EndpointConfigurations[] resourceLevelEndpointConfigList;
             APKOperations[]? operations = apkConf.operations;
             if operations is APKOperations[] {
                 if operations.length() == 0 {
@@ -82,6 +83,7 @@ public class APIClient {
 
                 // Validating rate limit.
                 _ = check self.validateRateLimit(apkConf.apiRateLimit, operations);
+                resourceLevelEndpointConfigList = self.getResourceLevelEndpointConfig(operations);
             } else {
                 return e909021();
             }
@@ -92,7 +94,35 @@ public class APIClient {
             }
             AuthenticationRequest[]? authentication = apkConf.authentication;
             if authentication is AuthenticationRequest[] {
+                if createdEndpoints != {} {
                 _ = check self.populateAuthenticationMap(apiArtifact, apkConf, authentication, createdEndpoints, organization);
+                } else {
+                    // check if there are resource level endpoints
+                    if resourceLevelEndpointConfigList.length() > 0 {
+                        foreach EndpointConfigurations resourceEndpointConfigurations in resourceLevelEndpointConfigList {
+                            map<model:Endpoint> resourceEndpointIdMap = {};
+                            EndpointConfiguration? productionEndpointConfig = resourceEndpointConfigurations.production;
+                            EndpointConfiguration? sandboxEndpointConfig = resourceEndpointConfigurations.sandbox;
+                            if sandboxEndpointConfig is EndpointConfiguration {
+                                resourceEndpointIdMap[SANDBOX_TYPE] = {
+                                    name: "",
+                                    serviceEntry: false,
+                                    url: self.construcURlFromService(sandboxEndpointConfig.endpoint)
+                                };
+                            }
+                            if productionEndpointConfig is EndpointConfiguration {
+                                resourceEndpointIdMap[PRODUCTION_TYPE] = {
+                                    name: "",
+                                    serviceEntry: false,
+                                    url: self.construcURlFromService(productionEndpointConfig.endpoint)
+                                };
+                            }
+                            _ = check self.populateAuthenticationMap(apiArtifact, apkConf, authentication, resourceEndpointIdMap, organization);
+                        }
+                    } else {
+                        _ = check self.populateAuthenticationMap(apiArtifact, apkConf, authentication, createdEndpoints, organization);
+                    }
+                }
             }
             _ = check self.setHttpRoute(apiArtifact, apkConf, createdEndpoints.hasKey(PRODUCTION_TYPE) ? createdEndpoints.get(PRODUCTION_TYPE) : (), uniqueId, PRODUCTION_TYPE, organization);
             _ = check self.setHttpRoute(apiArtifact, apkConf, createdEndpoints.hasKey(SANDBOX_TYPE) ? createdEndpoints.get(SANDBOX_TYPE) : (), uniqueId, SANDBOX_TYPE, organization);
@@ -109,6 +139,18 @@ public class APIClient {
             }
             return e909022("Internal Error occured while generating k8s-artifact", e);
         }
+    }
+
+    isolated function getResourceLevelEndpointConfig(APKOperations[] operations) returns EndpointConfigurations[] {
+        EndpointConfigurations[] endpointConfigurationsList = [];
+        foreach APKOperations operation in operations {
+            EndpointConfigurations? endpointConfigurations = operation.endpointConfigurations;
+            if (endpointConfigurations != ()) {
+                // Presence of resource level Endpoint Configuration.
+                endpointConfigurationsList.push(endpointConfigurations);
+            }
+        }
+        return endpointConfigurationsList;
     }
 
     private isolated function getHostNames(APKConf apkConf, string uniqueId, string endpointType, commons:Organization organization) returns string[] {
