@@ -98,6 +98,7 @@ spec:
               environment:
                 description: Environment denotes the environment of the API. This
                   is a virtual environment on top of the segmented gateway.
+                nullable: true
                 type: string
               isDefaultVersion:
                 description: IsDefaultVersion indicates whether this API version should

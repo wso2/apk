@@ -114,7 +114,8 @@ type APISpec struct {
 	// This is a virtual environment on top of the segmented gateway.
 	//
 	// +optional
-	Environment string `json:"environment"`
+	// +nullable
+	Environment string `json:"environment,omitempty"`
 }
 
 // Property holds key value pair of APIProperties

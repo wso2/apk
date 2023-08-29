@@ -32,7 +32,7 @@ public final class ApiProto {
       "covery.api\032!wso2/discovery/api/Resource." +
       "proto\032$wso2/discovery/api/Certificate.pr" +
       "oto\032,wso2/discovery/api/BackendJWTTokenI" +
-      "nfo.proto\"\376\003\n\003Api\022\n\n\002id\030\001 \001(\t\022\r\n\005title\030\002" +
+      "nfo.proto\"\223\004\n\003Api\022\n\n\002id\030\001 \001(\t\022\r\n\005title\030\002" +
       " \001(\t\022\017\n\007version\030\003 \001(\t\022\017\n\007apiType\030\004 \001(\t\022\036" +
       "\n\026disableAuthentications\030\005 \001(\010\022\025\n\rdisabl" +
       "eScopes\030\006 \001(\010\022\017\n\007envType\030\007 \001(\t\022/\n\tresour" +
@@ -45,10 +45,10 @@ public final class ApiProto {
       "\030\020 \001(\010\022\021\n\tsystemAPI\030\030 \001(\010\022D\n\023backendJWTT" +
       "okenInfo\030\031 \001(\0132\'.wso2.discovery.api.Back" +
       "endJWTTokenInfo\022\031\n\021apiDefinitionFile\030\032 \001" +
-      "(\014Bp\n#org.wso2.apk.enforcer.discovery.ap" +
-      "iB\010ApiProtoP\001Z=github.com/envoyproxy/go-" +
-      "control-plane/wso2/discovery/api;apib\006pr" +
-      "oto3"
+      "(\014\022\023\n\013environment\030\033 \001(\tBp\n#org.wso2.apk." +
+      "enforcer.discovery.apiB\010ApiProtoP\001Z=gith" +
+      "ub.com/envoyproxy/go-control-plane/wso2/" +
+      "discovery/api;apib\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -62,7 +62,7 @@ public final class ApiProto {
     internal_static_wso2_discovery_api_Api_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_wso2_discovery_api_Api_descriptor,
-        new java.lang.String[] { "Id", "Title", "Version", "ApiType", "DisableAuthentications", "DisableScopes", "EnvType", "Resources", "BasePath", "Tier", "ApiLifeCycleState", "Vhost", "OrganizationId", "ClientCertificates", "MutualSSL", "ApplicationSecurity", "SystemAPI", "BackendJWTTokenInfo", "ApiDefinitionFile", });
+        new java.lang.String[] { "Id", "Title", "Version", "ApiType", "DisableAuthentications", "DisableScopes", "EnvType", "Resources", "BasePath", "Tier", "ApiLifeCycleState", "Vhost", "OrganizationId", "ClientCertificates", "MutualSSL", "ApplicationSecurity", "SystemAPI", "BackendJWTTokenInfo", "ApiDefinitionFile", "Environment", });
     org.wso2.apk.enforcer.discovery.api.ResourceProto.getDescriptor();
     org.wso2.apk.enforcer.discovery.api.CertificateProto.getDescriptor();
     org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfoProto.getDescriptor();

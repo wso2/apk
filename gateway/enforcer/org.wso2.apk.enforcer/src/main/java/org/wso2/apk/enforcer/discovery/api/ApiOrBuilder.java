@@ -256,4 +256,16 @@ public interface ApiOrBuilder extends
    * @return The apiDefinitionFile.
    */
   com.google.protobuf.ByteString getApiDefinitionFile();
+
+  /**
+   * <code>string environment = 27;</code>
+   * @return The environment.
+   */
+  java.lang.String getEnvironment();
+  /**
+   * <code>string environment = 27;</code>
+   * @return The bytes for environment.
+   */
+  com.google.protobuf.ByteString
+      getEnvironmentBytes();
 }
