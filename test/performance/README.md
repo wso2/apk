@@ -162,7 +162,8 @@ cd -
 On the JMeter master node, navigate to `<APK_HOME>test/performance` and run the command to initiate the performance test.
 
 ```sh
-nohup ./run-test-jmeter-client.sh   -n 'cpu-2' -r '<ip-address-of-slave-1>,<ip-address-of-slave-2>' -d '1200' >> ~/perf_test.out  2>&1 &
+# Replace tokens_path according to your need.
+nohup ./run-test-jmeter-client.sh   -n 'cpu-2' -r '<ip-address-of-slave-1>,<ip-address-of-slave-2>' -d '1200' -t "${HOME}/apk/test/performance/jwt-tokens/target/jwt-tokens-10.csv" >> ~/perf_test.out  2>&1 &
 echo $! > nohupid.txt
 tail -f ~/perf_test.out
 ```
