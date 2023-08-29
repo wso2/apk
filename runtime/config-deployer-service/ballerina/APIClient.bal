@@ -537,7 +537,7 @@ public class APIClient {
                 }
             }
         }
-        return groupHttpRouteRules(httpRouteRules);
+        return httpRouteRules;
     }
 
     private isolated function generateAPIPolicyAndBackendCR(model:APIArtifact apiArtifact, APKConf apkConf, APKOperations? operations, APIOperationPolicies? policies, commons:Organization organization, string targetRefName) returns model:APIPolicy?|error {
@@ -1444,72 +1444,4 @@ public class APIClient {
         }
 
     }
-}
-
-isolated function groupHttpRouteRules(model:HTTPRouteRule[] httpRouteRules) returns model:HTTPRouteRule[]|commons:APKError|error {
-    if (httpRouteRules.length() == 0) {
-        return httpRouteRules;
-    }
-    // check if API has common backend. If there are multiple backends, no change is done.
-    model:HTTPBackendRef[]? commonBackend = httpRouteRules[0].backendRefs;
-    if (commonBackend is model:HTTPBackendRef[]) {
-        foreach model:HTTPRouteRule rule in httpRouteRules {
-            model:HTTPBackendRef[]? ruleBackend = rule.backendRefs;
-            if (!(ruleBackend is model:HTTPBackendRef[]) || (ruleBackend != commonBackend)) {
-                return httpRouteRules;
-            }
-        }
-    }
-
-    map<model:HTTPRouteRule> groupedRules = {};
-    model:HTTPRouteRule[] rules = [];
-    string mapKey;
-    foreach model:HTTPRouteRule rule in httpRouteRules {
-        mapKey = "noFilter";
-        model:HTTPRouteFilter[]? ruleFilters = rule.filters;
-        if (ruleFilters is model:HTTPRouteFilter[]) {
-            if (ruleFilters.length() == 0) {
-                mapKey = "noFilter";
-            }
-            else if (ruleFilters.length() == 1) {
-                model:HTTPRouteFilter ruleFilter = ruleFilters[0];
-                model:HTTPURLRewriteFilter? urlRewriteFilter = ruleFilter.urlRewrite;
-                // if the only filter it has is a URLRewrite filter
-                if (urlRewriteFilter is model:HTTPURLRewriteFilter) {
-                    model:HTTPPathModifier? path = urlRewriteFilter.path;
-                    if (path is model:HTTPPathModifier) {
-                        string? replacedPath = path.replaceFullPath;
-                        if (replacedPath is string) {
-                            mapKey = replacedPath;
-                        }
-                    }
-                } else {
-                    rules.push(rule);
-                    continue;
-                }
-            }
-            else if (ruleFilters.length() > 1) {
-                rules.push(rule);
-                continue;
-            }
-        }
-
-        if (!groupedRules.hasKey(mapKey)) {
-            groupedRules[mapKey] = rule;
-        } else {
-            model:HTTPRouteMatch[]? groupedMatches = groupedRules.get(mapKey).matches;
-            model:HTTPRouteMatch[]? ruleMatches = rule.matches;
-
-            if (groupedMatches is model:HTTPRouteMatch[] && ruleMatches is model:HTTPRouteMatch[]) {
-                groupedMatches.push(ruleMatches[0]);
-                groupedRules[mapKey].matches = groupedMatches;
-            }
-        }
-
-    }
-    foreach model:HTTPRouteRule rule in groupedRules.toArray() {
-        rules.push(rule);
-    }
-
-    return rules;
 }
