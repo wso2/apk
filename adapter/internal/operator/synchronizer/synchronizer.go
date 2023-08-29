@@ -125,6 +125,16 @@ func deleteAPIFromEnv(httpRoute *gwapiv1b1.HTTPRoute, apiState APIState) error {
 // deployAPIInGateway deploys the related API in CREATE and UPDATE events.
 func deployAPIInGateway(apiState APIState) error {
 	var err error
+	if apiState.ProdHTTPRoute == nil {
+		var adapterInternalAPI model.AdapterInternalAPI
+		adapterInternalAPI.SetInfoAPICR(*apiState.APIDefinition)
+		xds.RemoveAPICacheForEnv(adapterInternalAPI, constants.Production)
+	}
+	if apiState.SandHTTPRoute == nil {
+		var adapterInternalAPI model.AdapterInternalAPI
+		adapterInternalAPI.SetInfoAPICR(*apiState.APIDefinition)
+		xds.RemoveAPICacheForEnv(adapterInternalAPI, constants.Sandbox)
+	}
 	if apiState.ProdHTTPRoute != nil {
 		_, err = GenerateAdapterInternalAPI(apiState, apiState.ProdHTTPRoute, constants.Production)
 	}

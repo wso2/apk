@@ -6,8 +6,6 @@ version: "3.14"
 type: "REST"
 defaultVersion: true
 endpointConfigurations:
-  production:
-    endpoint: "http://backend:80/anything"
   sandbox:
     endpoint: "http://backend:80/anything/sand"
 operations:

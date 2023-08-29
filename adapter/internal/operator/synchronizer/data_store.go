@@ -85,6 +85,10 @@ func (ods *OperatorDataStore) processAPIState(apiNamespacedName types.Namespaced
 			events = append(events, routeEvents...)
 		}
 	} else {
+		if cachedAPI.ProdHTTPRoute != nil {
+			updated = true
+			events = append(events, "Production")
+		}
 		cachedAPI.ProdHTTPRoute = nil
 	}
 	if apiState.SandHTTPRoute != nil {
@@ -97,6 +101,10 @@ func (ods *OperatorDataStore) processAPIState(apiNamespacedName types.Namespaced
 			events = append(events, routeEvents...)
 		}
 	} else {
+		if cachedAPI.SandHTTPRoute != nil {
+			updated = true
+			events = append(events, "Sandbox")
+		}
 		cachedAPI.SandHTTPRoute = nil
 	}
 	if len(apiState.Authentications) != len(cachedAPI.Authentications) {
