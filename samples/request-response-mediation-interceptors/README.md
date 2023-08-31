@@ -93,7 +93,7 @@ You can go through following to build, deploy, and test the sample interceptor s
 
 ### Try out the API with interceptor APIPolicy in APK 
 
-1. Change the directory to `developer/samples/interceptors` and build the interceptor service and backend service container images:
+1. Build the interceptor service and backend service container images:
     ```
     sh ./build-interceptor-service.sh
     sh ./build-legacy-backend-service.sh
@@ -104,7 +104,7 @@ You can go through following to build, deploy, and test the sample interceptor s
     kubectl create ns interceptor
     ```
 
-4. Change directory to `developer/samples/interceptors/k8s-resources` and run following to deploy all the API related resources:
+4. Change directory to `/k8s-resources` and run following to deploy all the API related resources:
     ```sh
     kubectl apply -f .
     ```
@@ -131,9 +131,13 @@ You can go through following to build, deploy, and test the sample interceptor s
     kubectl port-forward svc/apk-test-wso2-apk-router-service  9095:9095
     ```
 
-7. Get a test token:
+7. Get an access token to invoke the API:
     ```sh
-    TOKEN=$(curl -X POST "https://localhost:9095/testkey" -H "Authorization: Basic YWRtaW46YWRtaW4=" -k -v)
+    curl -k --location 'https://idp.am.wso2.com:9095/oauth2/token' \
+    --header 'Host: idp.am.wso2.com' \
+    --header 'Authorization: Basic NDVmMWM1YzgtYTkyZS0xMWVkLWFmYTEtMDI0MmFjMTIwMDAyOjRmYmQ2MmVjLWE5MmUtMTFlZC1hZmExLTAyNDJhYzEyMDAwMg==' \
+    --header 'Content-Type: application/x-www-form-urlencoded' \
+    --data-urlencode 'grant_type=client_credentials'
     ```
 
 8. Invoke the API:
