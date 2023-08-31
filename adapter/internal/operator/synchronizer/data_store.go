@@ -70,7 +70,7 @@ func (ods *OperatorDataStore) processAPIState(apiNamespacedName types.Namespaced
 	cachedAPI := ods.apiStore[apiNamespacedName]
 
 	if apiState.APIDefinition.Generation > cachedAPI.APIDefinition.Generation {
-		cachedAPI.OldOrganizationId = cachedAPI.APIDefinition.Spec.Organization
+		cachedAPI.OldOrganizationID = cachedAPI.APIDefinition.Spec.Organization
 		cachedAPI.APIDefinition = apiState.APIDefinition
 		updated = true
 		events = append(events, "API Definition")
