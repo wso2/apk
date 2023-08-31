@@ -34,14 +34,9 @@ wso2:
       # secretName: "idp-tls"
     idp:
       issuer: "https://idp.am.wso2.com/token"
-      authorizeEndpoint: "https://idp.am.wso2.com:9095/oauth2/authorize"
-      tokenEndpoint: "https://idp.am.wso2.com:9095/oauth2/token"
-      revokeEndpoint: "https://idp.am.wso2.com:9095/oauth2/revoke"
       usernameClaim: "sub"
       organizationClaim: "organization"
       # organizationResolver: "controlPlane" # controlplane,none
-      credentials:
-        secretName: "wso2apk-idp-credentials"
       # tls:
       #   secretName: "wso2apk-idp-certificates"
       #   fileName: "idp.crt"
@@ -245,10 +240,6 @@ wso2:
             #     secretName: "router-cert"
             #     certKeyFilename: ""
             #     certFilename: ""
-    migration:
-      # -- This flag should be enabled only in a migration scenario.
-      # -- It is not recommended to run a production deployment with this flag enabled.
-      enabled: false
 idp:
   enabled: true
   listener:
