@@ -829,6 +829,23 @@ func UpdateEnforcerRevokedTokens(revokedTokens []types.Resource) {
 	logger.LoggerXds.Infof("New Revoked token cache update for the label: " + label + " version: " + fmt.Sprint(version))
 }
 
+// RemoveAPICacheForEnv will remove all the internal mappings for a specific environment
+func RemoveAPICacheForEnv(adapterInternalAPI model.AdapterInternalAPI, envType string) {
+	vHostIdentifier := GetvHostsIdentifier(adapterInternalAPI.UUID, envType)
+	var oldvHosts []string
+	if _, ok := orgIDAPIvHostsMap[adapterInternalAPI.OrganizationID]; ok {
+		oldvHosts = orgIDAPIvHostsMap[adapterInternalAPI.GetOrganizationID()][vHostIdentifier]
+		for _, oldvhost := range oldvHosts {
+			apiIdentifier := GenerateIdentifierForAPIWithUUID(oldvhost, adapterInternalAPI.UUID)
+			if orgMap, orgExists := orgAPIMap[adapterInternalAPI.GetOrganizationID()]; orgExists {
+				if _, apiExists := orgMap[apiIdentifier]; apiExists {
+					delete(orgAPIMap[adapterInternalAPI.GetOrganizationID()], apiIdentifier)
+				}
+			}
+		}
+	}	
+}
+
 // UpdateAPICache updates the xDS cache related to the API Lifecycle event.
 func UpdateAPICache(vHosts []string, newLabels []string, newlistenersForRoutes []string, adapterInternalAPI model.AdapterInternalAPI) error {
 	mutexForInternalMapUpdate.Lock()
