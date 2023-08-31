@@ -847,16 +847,16 @@ func RemoveAPICacheForEnv(adapterInternalAPI model.AdapterInternalAPI, envType s
 }
 
 // RemoveAPIFromOrgAPIMap removes api from orgAPI map
-func RemoveAPIFromOrgAPIMap(adapterInternalAPI model.AdapterInternalAPI, orgId string) {
-	if orgMap, ok := orgAPIMap[orgId]; ok {
+func RemoveAPIFromOrgAPIMap(adapterInternalAPI model.AdapterInternalAPI, orgID string) {
+	if orgMap, ok := orgAPIMap[orgID]; ok {
 		uuid := adapterInternalAPI.UUID;
-		for apiName, _ := range orgMap {
+		for apiName := range orgMap {
 			if strings.Contains(apiName, uuid) {
 				delete(orgMap, apiName)
 			}
 		}
 		if len(orgMap) == 0 {
-			delete(orgAPIMap, orgId)
+			delete(orgAPIMap, orgID)
 		}
 	}
 }
@@ -921,7 +921,6 @@ func UpdateAPICache(vHosts []string, newLabels []string, newlistenersForRoutes [
 			endpointAddresses:  endpoints,
 			enforcerAPI:        oasParser.GetEnforcerAPI(adapterInternalAPI, vHost),
 		}
-		
 		if _, ok := listenerToRouteArrayMap[newlistenersForRoutes[0]]; ok {
 			listenerToRouteArrayMap[newlistenersForRoutes[0]] = append(listenerToRouteArrayMap[newlistenersForRoutes[0]], routes...)
 		} else {

@@ -38,7 +38,7 @@ type APIState struct {
 	InterceptorServiceMapping map[string]v1alpha1.InterceptorService
 	BackendJWTMapping         map[string]v1alpha1.BackendJWT
 	APIDefinitionFile         []byte
-	OldOrganizationId         string
+	OldOrganizationID         string
 }
 
 // HTTPRouteState holds the state of the deployed httpRoutes. This state is compared with
