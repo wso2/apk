@@ -21,6 +21,9 @@ wso2:
     imagePullSecrets: ""
     
   apk:
+    webhooks:
+      validatingwebhookconfigurations : true
+      mutatingwebhookconfigurations : true
     auth:
       # -- Enable Service Account Creation
       enabled: true
@@ -42,25 +45,13 @@ wso2:
     idp:
       # -- IDP issuer value
       issuer: "https://idp.am.wso2.com/token"
-      # -- IDP authorization endpoint
-      authorizeEndpoint: "https://idp.am.wso2.com:9095/oauth2/authorize"
-      # -- IDP token endpoint
-      tokenEndpoint: "https://idp.am.wso2.com:9095/oauth2/token"
-      # -- IDP revoke endpoint
-      revokeEndpoint: "https://idp.am.wso2.com:9095/oauth2/revoke"
-      # -- Optionally configure username Claim in JWT.
       usernameClaim: "sub"
-      # -- Optionally configure groups Claim in JWT.
-      groupClaim: "groups"
       # -- Optionally configure scope Claim in JWT.
       scopeClaim: "scope"
       # -- Optionally configure organization Claim in JWT.
       organizationClaim: "organization"
-      # -- Optionally configure organization Resolution method for APK (controlPlane/none)).
-      organizationResolver: "controlPlane"
-      credentials:
-      # -- IDP credentials secret name to be configured with 
-        secretName: ""
+      # -- Optionally configure organization Resolution method for APK (none)).
+      organizationResolver: "none"
       tls:
         # -- IDP public certificate configmap name
         configMapName: ""
@@ -112,6 +103,7 @@ wso2:
           # -- TLS certificate file name.
           fileName: "certificate.crt"
       configdeployer:
+        enabled: true
         deployment:
           resources:
             requests:
@@ -145,7 +137,7 @@ wso2:
           # -- Image pull policy
           imagePullPolicy: Always
           # -- Image
-          image: wso2/config-deployer-service:latest
+          image: wso2/config-deployer-service:1.0.0-rc
           configs:
             # -- Enable authorization for runtime api.
             authrorization: true
@@ -192,7 +184,7 @@ wso2:
           # -- Image pull policy
           imagePullPolicy: Always
           # -- Image
-          image: wso2/adapter:0.0.1-m8
+          image: wso2/adapter:1.0.0-rc
           security:
             # -- Enable security for adapter.
             sslHostname: "adapter"
@@ -214,6 +206,48 @@ wso2:
           logFile: "logs/adapter.log"
           # -- Log format can be "JSON", "TEXT"
           logFormat: "TEXT"
+      commonController:
+        deployment:
+          resources:
+            requests:
+              # -- Memory request for the container
+              memory: "128Mi"
+              # -- CPU request for the container
+              cpu: "100m"
+            limits:
+              # -- Memory limit for the container
+              memory: "1028Mi"
+              # -- CPU limit for the container
+              cpu: "1000m"
+          readinessProbe:
+            # -- Number of seconds after the container has started before readinessProbe probes are initiated.
+            initialDelaySeconds: 20
+            # -- How often (in seconds) to perform the probe.
+            periodSeconds: 20
+            # -- Minimum consecutive failures for the probe to be considered failed after having succeeded.
+            failureThreshold: 5
+          livenessProbe:
+            # -- Number of seconds after the container has started before liveness probes are initiated.
+            initialDelaySeconds: 20
+            # -- How often (in seconds) to perform the probe.
+            periodSeconds: 20
+            # -- Minimum consecutive failures for the probe to be considered failed after having succeeded.
+            failureThreshold: 5
+          # -- Deployment strategy
+          strategy: RollingUpdate
+          # -- Number of replicas
+          replicas: 1
+          # -- Image pull policy
+          imagePullPolicy: Always
+          # -- Image
+          image: wso2/common-controller:1.0.0-rc
+          security:
+            # -- hostname for the common controller
+            sslHostname: "commoncontroller"
+          configs:
+             # -- Optionally configure namespaces to watch for apis,ratelimitpolicies,etc.
+             apiNamespaces:
+               - "apk-v12"
       ratelimiter:
         # -- Enable the deployment of the Rate Limiter
         enabled: true
@@ -250,7 +284,7 @@ wso2:
           # -- Image pull policy
           imagePullPolicy: Always
           # -- Image
-          image: wso2/ratelimiter:0.0.1-m8
+          image: wso2/ratelimiter:1.0.0-rc
           security:
             # -- hostname for the rate limiter
             sslHostname: "ratelimiter"
@@ -299,7 +333,7 @@ wso2:
             # -- Image pull policy
             imagePullPolicy: Always
             # -- Image
-            image: wso2/router:0.0.1-m8
+            image: wso2/router:1.0.0-rc
             configs:
               # -- The timeout for response coming from enforcer to route per API request
               enforcerResponseTimeoutInSeconds: 20
@@ -366,7 +400,7 @@ wso2:
             # -- Image pull policy
             imagePullPolicy: Always
             # -- Image
-            image: wso2/enforcer:latest
+            image: wso2/enforcer:1.0.0-rc
             security:
               # -- hostname for the enforcer
               sslHostname: "enforcer"
@@ -459,10 +493,6 @@ wso2:
               keepAliveTime: 600
               # -- Queue size of the worker threads
               queueSize: 1000
-    migration:
-      # -- This flag should be enabled only in a migration scenario.
-      # -- It is not recommended to run a production deployment with this flag enabled.
-      enabled: false
 idp:
   # -- Enable Non production identity server
   enabled: true
@@ -539,7 +569,7 @@ idp:
       # -- Image pull policy
       imagePullPolicy: Always
       # -- Image
-      image: wso2/idp-domain-service:latest
+      image: wso2/idp-domain-service:1.0.0-rc
   idpui:
     deployment:
       resources:
@@ -574,7 +604,7 @@ idp:
       # -- Image pull policy
       imagePullPolicy: Always
       # -- Image
-      image: wso2/idp-ui:0.0.1-m8
+      image: wso2/idp-ui:1.0.0-rc
     configs:
       # -- identity server Login URL
       idpLoginUrl: "https://idp.am.wso2.com:9095/commonauth/login"
@@ -615,7 +645,7 @@ postgresql:
   primary:
     # -- Extended PostgreSQL Primary configuration (appended to main or default configuration)
     extendedConfiguration: |
-      max_connections: 400
+      max_connections = 400
     initdb:
       # -- ConfigMap with PostgreSQL initialization scripts
       scriptsConfigMap: postgres-initdb-scripts-configmap
@@ -627,9 +657,26 @@ postgresql:
       ports:
         # -- PostgreSQL service port
         postgresql: 5432
-  image:
-    # -- Enable debug mode
-    debug: true
+    podSecurityContext:
+      # -- Enable pod security context
+      enabled: true
+      # -- Pod security context fsGroup
+      fsGroup: null
+      # -- Pod security context runAsNonRoot
+      runAsNonRoot: true
+      seccompProfile:
+        # -- Pod security context seccomp profile type
+        type: RuntimeDefault
+    containerSecurityContext:
+      # -- Enable container security context
+      enabled: true
+      # -- Container security context allow privilege escalation
+      allowPrivilegeEscalation: false
+      capabilities:
+        # -- Container security context capabilities drop
+        drop: ["ALL"]
+      # -- Container security context runAsUser
+      runAsUser: null
 
 redis:
   # -- Enable redis
@@ -643,9 +690,27 @@ redis:
       ports:
         # -- Redis service port
         redis: 6379
+  master:
+    podSecurityContext:
+      # -- Enable pod security context
+      enabled: true
+      # -- Pod security context fsGroup
+      fsGroup: null
+      # -- Pod security context runAsNonRoot
+      runAsNonRoot: true
+      seccompProfile:
+        # -- Pod security context seccomp profile type
+        type: RuntimeDefault
+    containerSecurityContext:
+      # -- Enable container security context
+      enabled: true
+      # -- Container security context allow privilege escalation
+      allowPrivilegeEscalation: false
+      capabilities:
+        # -- Container security context capabilities drop
+        drop: ["ALL"]
+      # -- Container security context runAsUser
+      runAsUser: null
   auth:
     # -- Enable password authentication	
     enabled: false
-  image:
-    # -- Enable debug mode
-    debug: true
