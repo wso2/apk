@@ -913,7 +913,7 @@ func UpdateAPICache(vHosts []string, newLabels []string, newlistenersForRoutes [
 		if !orgExists {
 			orgAPIMap[adapterInternalAPI.GetOrganizationID()] = make(map[string]*EnvoyInternalAPI)
 		}
-				orgAPIMap[adapterInternalAPI.GetOrganizationID()][apiIdentifier] = &EnvoyInternalAPI{
+		orgAPIMap[adapterInternalAPI.GetOrganizationID()][apiIdentifier] = &EnvoyInternalAPI{
 			adapterInternalAPI: adapterInternalAPI,
 			envoyLabels:        newLabels,
 			routes:             routes,
@@ -922,7 +922,7 @@ func UpdateAPICache(vHosts []string, newLabels []string, newlistenersForRoutes [
 			enforcerAPI:        oasParser.GetEnforcerAPI(adapterInternalAPI, vHost),
 		}
 		
-					if _, ok := listenerToRouteArrayMap[newlistenersForRoutes[0]]; ok {
+		if _, ok := listenerToRouteArrayMap[newlistenersForRoutes[0]]; ok {
 			listenerToRouteArrayMap[newlistenersForRoutes[0]] = append(listenerToRouteArrayMap[newlistenersForRoutes[0]], routes...)
 		} else {
 			listenerToRouteArrayMap[newlistenersForRoutes[0]] = routes
