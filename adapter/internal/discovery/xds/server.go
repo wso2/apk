@@ -847,9 +847,8 @@ func RemoveAPICacheForEnv(adapterInternalAPI model.AdapterInternalAPI, envType s
 }
 
 // RemoveAPIFromOrgAPIMap removes api from orgAPI map
-func RemoveAPIFromOrgAPIMap(adapterInternalAPI model.AdapterInternalAPI, orgID string) {
+func RemoveAPIFromOrgAPIMap(uuid string, orgID string) {
 	if orgMap, ok := orgAPIMap[orgID]; ok {
-		uuid := adapterInternalAPI.UUID;
 		for apiName := range orgMap {
 			if strings.Contains(apiName, uuid) {
 				delete(orgMap, apiName)

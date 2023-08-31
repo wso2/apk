@@ -126,9 +126,7 @@ func deleteAPIFromEnv(httpRoute *gwapiv1b1.HTTPRoute, apiState APIState) error {
 func deployAPIInGateway(apiState APIState) error {
 	var err error
 	if len(apiState.OldOrganizationID) != 0 {
-		var adapterInternalAPI model.AdapterInternalAPI
-		adapterInternalAPI.SetInfoAPICR(*apiState.APIDefinition)
-		xds.RemoveAPIFromOrgAPIMap(adapterInternalAPI, apiState.OldOrganizationID)
+		xds.RemoveAPIFromOrgAPIMap(string((*apiState.APIDefinition).ObjectMeta.UID), apiState.OldOrganizationID)
 	}
 	if apiState.ProdHTTPRoute == nil {
 		var adapterInternalAPI model.AdapterInternalAPI
