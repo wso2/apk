@@ -846,6 +846,20 @@ func RemoveAPICacheForEnv(adapterInternalAPI model.AdapterInternalAPI, envType s
 	}	
 }
 
+// RemoveAPIFromOrgAPIMap removes api from orgAPI map
+func RemoveAPIFromOrgAPIMap(uuid string, orgID string) {
+	if orgMap, ok := orgAPIMap[orgID]; ok {
+		for apiName := range orgMap {
+			if strings.Contains(apiName, uuid) {
+				delete(orgMap, apiName)
+			}
+		}
+		if len(orgMap) == 0 {
+			delete(orgAPIMap, orgID)
+		}
+	}
+}
+
 // UpdateAPICache updates the xDS cache related to the API Lifecycle event.
 func UpdateAPICache(vHosts []string, newLabels []string, newlistenersForRoutes []string, adapterInternalAPI model.AdapterInternalAPI) error {
 	mutexForInternalMapUpdate.Lock()
@@ -906,7 +920,6 @@ func UpdateAPICache(vHosts []string, newLabels []string, newlistenersForRoutes [
 			endpointAddresses:  endpoints,
 			enforcerAPI:        oasParser.GetEnforcerAPI(adapterInternalAPI, vHost),
 		}
-
 		if _, ok := listenerToRouteArrayMap[newlistenersForRoutes[0]]; ok {
 			listenerToRouteArrayMap[newlistenersForRoutes[0]] = append(listenerToRouteArrayMap[newlistenersForRoutes[0]], routes...)
 		} else {

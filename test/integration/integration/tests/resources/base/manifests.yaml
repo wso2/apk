@@ -365,4 +365,22 @@ spec:
     group: gateway.networking.k8s.io
     kind: Gateway
     name: default   
-
+---
+# This is a API with wrong organization(jwt issuer not set). 
+# When test cases apply the correct API it should overrite the wrong value to correct value
+apiVersion: dp.wso2.com/v1alpha1
+kind: API
+metadata:
+  name: all-http-methods-for-wildcard
+  namespace: gateway-integration-test-infra
+spec:
+  apiDisplayName: API with Backend Base Path
+  apiType: REST
+  apiVersion: v1.0.0
+  context: /all-http-methods-for-wildcard/v1.0.0
+  isDefaultVersion: true
+  #definitionFileRef: definition-file
+  production:
+    - httpRouteRefs:
+      - all-http-methods-for-wildcard-httproute
+  organization: wso2-org1111
