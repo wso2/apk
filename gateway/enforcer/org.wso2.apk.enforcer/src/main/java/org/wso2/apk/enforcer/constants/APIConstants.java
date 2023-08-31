@@ -45,6 +45,8 @@ public class APIConstants {
     public static final String AUTHORIZATION_BEARER = "Bearer ";
     public static final String API_KEY_TYPE_PRODUCTION = "PRODUCTION";
     public static final String API_KEY_TYPE_SANDBOX = "SANDBOX";
+    public static final String DEFAULT_ENVIRONMENT_NAME = "Default";
+    public static final String DEFAULT_ENVIRONMENT_ID = "Default-ID";
 
     public static final String AUTHORIZATION_HEADER_BASIC = "Basic";
     public static final String API_SECURITY_OAUTH2 = "oauth2";

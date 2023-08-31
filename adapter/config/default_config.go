@@ -42,7 +42,7 @@ var defaultConfig = &Config{
 		Operator: operator{
 			Namespaces: nil,
 		},
-		Environment: "default",
+		Environment: "Default",
 	},
 	Envoy: envoy{
 		ListenerCodecType: "AUTO",

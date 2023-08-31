@@ -53,7 +53,7 @@ public class APIConfig {
     private JWTConfigurationDto jwtConfigurationDto;
     private boolean systemAPI;
     private byte[] apiDefinition;
-    private String environment;
+    private Environment environment;
     /**
      * getApiType returns the API type. This could be one of the following.
      * HTTP, WS, WEBHOOK
@@ -240,7 +240,7 @@ public class APIConfig {
      * Returns the environment of the API.
      * @return String.
      */
-    public String getEnvironment() {
+    public Environment getEnvironment() {
         return environment;
     }
 
@@ -271,7 +271,7 @@ public class APIConfig {
         private boolean systemAPI;
         private byte[] apiDefinition;
         private JWTConfigurationDto jwtConfigurationDto;
-        private String environment;
+        private Environment environment;
         public Builder(String name) {
             this.name = name;
         }
@@ -378,7 +378,7 @@ public class APIConfig {
             this.apiDefinition = apiDefinition;
             return this;
         }
-        public Builder environment(String environment) {
+        public Builder environment(Environment environment) {
             this.environment = environment;
             return this;
         }

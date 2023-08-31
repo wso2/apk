@@ -164,7 +164,7 @@ func TestGenerateAdapterInternalAPIForDefaultCase(t *testing.T) {
 
 	adapterInternalAPI, err := synchronizer.GenerateAdapterInternalAPI(apiState, &httpRouteState, constants.Production)
 	assert.Nil(t, err, "Error should not be present when apiState is converted to a AdapterInternalAPI object")
-	assert.Equal(t, "default", adapterInternalAPI.GetEnvironment(), "Environment is incorrect.")
+	assert.Equal(t, "Default", adapterInternalAPI.GetEnvironment(), "Environment is incorrect.")
 }
 
 func TestGenerateAdapterInternalAPIForSpecificEnvironment(t *testing.T) {
