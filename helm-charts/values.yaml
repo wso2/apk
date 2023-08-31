@@ -215,6 +215,8 @@ wso2:
 #                enable: true
 #              accessLogs:
 #                enable: true
+#            env:
+#              TRAILING_ARGS: "--log-level trace"
           enforcer:
             resources:
               requests:
