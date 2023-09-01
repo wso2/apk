@@ -42,13 +42,14 @@ type routeCreateParams struct {
 	isDefaultVersion             bool
 	createDefaultPath            bool
 	apiLevelRateLimitPolicy      *model.RateLimitPolicy
-	apiProperties	             []dpv1alpha1.Property
+	apiProperties                []dpv1alpha1.Property
+	environment                  string
 }
 
 // RatelimitCriteria criterias of rate limiting
 type ratelimitCriteria struct {
 	level                string
 	organizationID       string
-	vHost                string
 	basePathForRLService string
+	environment          string
 }

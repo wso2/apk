@@ -77,7 +77,7 @@ type CombinedTemplateValues struct {
 const (
 	DescriptorKeyForOrg                = "org"
 	OrgMetadataKey                     = "customorg"
-	DescriptorKeyForVhost              = "vhost"
+	DescriptorKeyForEnvironment        = "environment"
 	DescriptorKeyForPath               = "path"
 	DescriptorKeyForMethod             = "method"
 	DescriptorValueForAPIMethod        = "ALL"
@@ -816,8 +816,8 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 		rateLimitPolicyCriteria = &ratelimitCriteria{
 			level:                rateLimitPolicyLevel,
 			organizationID:       params.organizationID,
-			vHost:                vHost,
 			basePathForRLService: basePathForRLService,
+			environment:          params.environment,
 		}
 	}
 	var (
@@ -1528,6 +1528,7 @@ func genRouteCreateParams(swagger *model.AdapterInternalAPI, resource *model.Res
 		apiProperties:                swagger.APIProperties,
 		routeConfig:                  resource.GetEndpoints().Config,
 		createDefaultPath:            createDefaultPath,
+		environment:                  swagger.GetEnvironment(),
 	}
 	return params
 }

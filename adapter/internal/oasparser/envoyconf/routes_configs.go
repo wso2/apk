@@ -125,8 +125,8 @@ func generateRateLimitPolicy(ratelimitCriteria *ratelimitCriteria) []*routev3.Ra
 			{
 				ActionSpecifier: &routev3.RateLimit_Action_GenericKey_{
 					GenericKey: &routev3.RateLimit_Action_GenericKey{
-						DescriptorKey:   DescriptorKeyForVhost,
-						DescriptorValue: ratelimitCriteria.vHost,
+						DescriptorKey:   DescriptorKeyForEnvironment,
+						DescriptorValue: ratelimitCriteria.environment,
 					},
 				},
 			},
