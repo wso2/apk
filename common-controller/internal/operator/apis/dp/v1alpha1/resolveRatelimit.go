@@ -24,9 +24,9 @@ type ResolveRateLimitAPIPolicy struct {
 	API          ResolveRateLimit  `json:"api,omitempty"`
 	Resources    []ResolveResource `json:"resourceList,omitempty"`
 	Organization string            `json:"organization,omitempty"`
-	Vhost        []string          `json:"vhost,omitempty"`
 	BasePath     string            `json:"basePath,omitempty"`
 	UUID         string            `json:"uuid,omitempty"`
+	Environment  string            `json:"environment,omitempty"`
 }
 
 // ResolveRateLimit is the rate limit value for the applied policy
