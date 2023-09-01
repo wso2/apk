@@ -1,0 +1,35 @@
+---
+name: "CircuitBreaker"
+context: "/circuit-breaker"
+version: "3.14"
+id: "circuit-breaker-test"
+type: "REST"
+defaultVersion: true
+endpointConfigurations:
+  production:
+    endpoint: "http://backend-retry:80"
+    resiliency:
+      retryPolicy:
+        count: 50
+        baseIntervalMillis: 3000
+        statusCodes:
+          - 500
+      circuitBreaker:
+        maxConnectionPools: 1000
+        maxConnections: 1024
+        maxPendingRequests: 10
+        maxRequests: 20
+        maxRetries: 2
+operations:
+  - target: "/retry"
+    verb: "GET"
+    authTypeEnabled: true
+    scopes: []
+  - target: "/reset"
+    verb: "POST"
+    authTypeEnabled: true
+    scopes: [ ]
+  - target: "/set-retry-count"
+    verb: "POST"
+    authTypeEnabled: true
+    scopes: [ ]

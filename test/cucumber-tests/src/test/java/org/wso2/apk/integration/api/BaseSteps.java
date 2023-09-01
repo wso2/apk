@@ -138,6 +138,33 @@ public class BaseSteps {
         }
     }
 
+    // It will send request using a new thread and forget about the response
+    @Then("I send {string} async request to {string} with body {string}")
+    public void sendAsyncHttpRequest(String httpMethod, String url, String body) throws IOException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+        if (sharedContext.getResponse() instanceof CloseableHttpResponse) {
+            ((CloseableHttpResponse) sharedContext.getResponse()).close();
+        }
+        SimpleHTTPClient simpleHTTPClient = new SimpleHTTPClient();
+        Thread thread = new Thread(() -> {
+            try {
+                if (CurlOption.HttpMethod.GET.toString().toLowerCase().equals(httpMethod.toLowerCase())) {
+                    simpleHTTPClient.doGet(url, sharedContext.getHeaders());
+                } else if (CurlOption.HttpMethod.POST.toString().toLowerCase().equals(httpMethod.toLowerCase())) {
+                    simpleHTTPClient.doPost(url, sharedContext.getHeaders(), body, null);
+                } else if (CurlOption.HttpMethod.PUT.toString().toLowerCase().equals(httpMethod.toLowerCase())) {
+                    simpleHTTPClient.doPut(url, sharedContext.getHeaders(), body, null);
+                } else if (CurlOption.HttpMethod.DELETE.toString().toLowerCase().equals(httpMethod.toLowerCase())) {
+                    simpleHTTPClient.doPut(url, sharedContext.getHeaders(), body, null);
+                } else if (CurlOption.HttpMethod.OPTIONS.toString().toLowerCase().equals(httpMethod.toLowerCase())) {
+                    simpleHTTPClient.doOptions(url, sharedContext.getHeaders(), null, null);
+                }
+            } catch (IOException e) {
+                logger.warn("An async http request sending thread experienced an error: " + e);
+            }
+        });
+        thread.start();
+    }
+
     @Then("I set headers")
     public void setHeaders(DataTable dataTable) {
         List<List<String>> rows = dataTable.asLists(String.class);
@@ -209,6 +236,11 @@ public class BaseSteps {
     @Then("I wait for {int} minute")
     public void waitForMinute(int minute) throws InterruptedException {
         Thread.sleep(minute * 1000);
+    }
+
+    @Then("I wait for {int} seconds")
+    public void waitForSeconds(int seconds) throws InterruptedException {
+        Thread.sleep(seconds * 1000);
     }
 
     @Then("the response headers contains key {string} and value {string}")
