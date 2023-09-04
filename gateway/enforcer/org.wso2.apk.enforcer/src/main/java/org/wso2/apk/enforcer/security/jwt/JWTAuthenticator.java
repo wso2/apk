@@ -145,6 +145,11 @@ public class JWTAuthenticator implements Authenticator {
                             ThreadContext.get(APIConstants.LOG_TRACE_ID));
                 }
                 signedJWTInfo = JWTUtils.getSignedJwt(jwtToken, organization);
+                if (SignedJWTInfo.ValidationStatus.INVALID.equals(signedJWTInfo.getValidationStatus())) {
+                    throw new APISecurityException(APIConstants.StatusCodes.UNAUTHENTICATED.getCode(),
+                        APISecurityConstants.API_AUTH_INVALID_CREDENTIALS,
+                        APISecurityConstants.getAuthenticationFailureMessage(APISecurityConstants.API_AUTH_INVALID_CREDENTIALS));
+                }
             } catch (ParseException | IllegalArgumentException e) {
                 log.error("Failed to decode the token header. {}", e.getMessage());
                 throw new APISecurityException(APIConstants.StatusCodes.UNAUTHENTICATED.getCode(),
@@ -509,6 +514,9 @@ public class JWTAuthenticator implements Authenticator {
                             (JWTValidationInfo) CacheProviderUtil.getOrganizationCache(organization).getGatewayKeyCache().getIfPresent(jti);
                     checkTokenExpiration(jti, tempJWTValidationInfo, organization);
                     jwtValidationInfo = tempJWTValidationInfo;
+                    if (!jwtValidationInfo.isValid()) {
+                        signedJWTInfo.setValidationStatus(SignedJWTInfo.ValidationStatus.INVALID);
+                    }
                 }
             } else if (SignedJWTInfo.ValidationStatus.INVALID.equals(signedJWTInfo.getValidationStatus()) && CacheProviderUtil.getOrganizationCache(organization).getInvalidTokenCache().getIfPresent(jti) != null) {
                 if (log.isDebugEnabled()) {
