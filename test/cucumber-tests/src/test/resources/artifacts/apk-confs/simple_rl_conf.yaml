@@ -1,6 +1,6 @@
 ---
 name: "SimpleRateLimitAPI"
-context: "/simple-rl"
+basePath: "/simple-rl"
 id: "simple-rl-test"
 version: "3.14"
 type: "REST"

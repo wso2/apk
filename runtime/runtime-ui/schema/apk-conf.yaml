@@ -9,10 +9,10 @@ properties:
     title: Name of the API
     maxLength: 60
     minLength: 1
-  context:
+  basePath:
     type: string
-    title: Context of the API
-    maxLength: 232
+    title: Base Path of the API
+    maxLength: 256
     minLength: 1
   version:
     type: string
@@ -429,6 +429,6 @@ schemas:
     additionalProperties: false
 required:
   - name
-  - context
+  - basePath
   - type
   - operations
