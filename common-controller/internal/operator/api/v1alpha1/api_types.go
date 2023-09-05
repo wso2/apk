@@ -87,12 +87,12 @@ type APISpec struct {
 	// +kubebuilder:validation:Enum=REST
 	APIType string `json:"apiType"`
 
-	// Context denotes the context of the API.
+	// BasePath denotes the basepath of the API.
 	// e.g: /pet-store-api/1.0.6
 	//
 	// +kubectl:validation:MaxLength=232
 	// +kubebuilder:validation:Pattern=^[/][a-zA-Z0-9~/_.-]*$
-	Context string `json:"context"`
+	BasePath string `json:"basepath"`
 
 	// Organization denotes the organization.
 	// related to the API
@@ -169,7 +169,7 @@ type DeploymentStatus struct {
 //+kubebuilder:subresource:status
 //+kubebuilder:printcolumn:name="API Name",type="string",JSONPath=".spec.apiDisplayName"
 //+kubebuilder:printcolumn:name="Version",type="string",JSONPath=".spec.apiVersion"
-//+kubebuilder:printcolumn:name="Context",type="string",JSONPath=".spec.context"
+//+kubebuilder:printcolumn:name="BasePath",type="string",JSONPath=".spec.basepath"
 //+kubebuilder:printcolumn:name="Organization",type="string",JSONPath=".spec.organization"
 //+kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 
