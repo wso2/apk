@@ -23,21 +23,21 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestValidateAPIContext(t *testing.T) {
+func TestValidateAPIBasePath(t *testing.T) {
 	type getAPITestItem struct {
-		pass    bool
-		message string
-		context string
+		pass     bool
+		message  string
+		basePath string
 	}
 	dataItems := []getAPITestItem{
 		{
-			context: "/base",
-			pass:    false,
-			message: "API context value should contain the /{APIVersion} at end.",
+			basePath: "/base",
+			pass:     false,
+			message:  "API basePath value should contain the /{APIVersion} at end.",
 		},
 	}
 	for _, item := range dataItems {
-		err := validateAPIContextFormat(item.context, "v1")
+		err := validateAPIBasePathFormat(item.basePath, "v1")
 		assert.Equal(t, item.pass, err == "", item.message)
 	}
 }

@@ -23,7 +23,7 @@ spec:
   apiDisplayName: Interceptor API
   apiType: REST
   apiVersion: 1.0.0
-  context: /interceptor/1.0.0
+  basePath: /interceptor/1.0.0
   organization: interceptor
   apiProperties:
     - name: propertyName1

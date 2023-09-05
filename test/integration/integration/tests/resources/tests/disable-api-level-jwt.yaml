@@ -23,7 +23,7 @@ spec:
   apiDisplayName: API with Backend Base Path
   apiType: REST
   apiVersion: v1.0.0
-  context: /disable-api-level-jwt/v1.0.0
+  basePath: /disable-api-level-jwt/v1.0.0
   isDefaultVersion: true
   #definitionFileRef: definition-file
   production:
@@ -84,7 +84,7 @@ spec:
   apiDisplayName: API with Backend Base Path
   apiType: REST
   apiVersion: v1.0.0
-  context: /disable-api-level-jwt1/v1.0.0
+  basePath: /disable-api-level-jwt1/v1.0.0
   isDefaultVersion: true
   #definitionFileRef: definition-file
   production:
@@ -155,7 +155,7 @@ spec:
   apiDisplayName: API with Backend Base Path
   apiType: REST
   apiVersion: v1.0.0
-  context: /disable-api-level-jwt2/v1.0.0
+  basePath: /disable-api-level-jwt2/v1.0.0
   isDefaultVersion: true
   #definitionFileRef: definition-file
   production:

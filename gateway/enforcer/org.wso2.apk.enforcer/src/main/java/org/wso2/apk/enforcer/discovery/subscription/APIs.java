@@ -24,7 +24,7 @@ private static final long serialVersionUID = 0L;
     name_ = "";
     provider_ = "";
     version_ = "";
-    context_ = "";
+    basePath_ = "";
     policy_ = "";
     apiType_ = "";
     uuid_ = "";
@@ -88,7 +88,7 @@ private static final long serialVersionUID = 0L;
           case 42: {
             java.lang.String s = input.readStringRequireUtf8();
 
-            context_ = s;
+            basePath_ = s;
             break;
           }
           case 50: {
@@ -317,38 +317,38 @@ private static final long serialVersionUID = 0L;
     }
   }
 
-  public static final int CONTEXT_FIELD_NUMBER = 5;
-  private volatile java.lang.Object context_;
+  public static final int BASEPATH_FIELD_NUMBER = 5;
+  private volatile java.lang.Object basePath_;
   /**
-   * <code>string context = 5;</code>
-   * @return The context.
+   * <code>string basePath = 5;</code>
+   * @return The basePath.
    */
   @java.lang.Override
-  public java.lang.String getContext() {
-    java.lang.Object ref = context_;
+  public java.lang.String getBasePath() {
+    java.lang.Object ref = basePath_;
     if (ref instanceof java.lang.String) {
       return (java.lang.String) ref;
     } else {
       com.google.protobuf.ByteString bs = 
           (com.google.protobuf.ByteString) ref;
       java.lang.String s = bs.toStringUtf8();
-      context_ = s;
+      basePath_ = s;
       return s;
     }
   }
   /**
-   * <code>string context = 5;</code>
-   * @return The bytes for context.
+   * <code>string basePath = 5;</code>
+   * @return The bytes for basePath.
    */
   @java.lang.Override
   public com.google.protobuf.ByteString
-      getContextBytes() {
-    java.lang.Object ref = context_;
+      getBasePathBytes() {
+    java.lang.Object ref = basePath_;
     if (ref instanceof java.lang.String) {
       com.google.protobuf.ByteString b = 
           com.google.protobuf.ByteString.copyFromUtf8(
               (java.lang.String) ref);
-      context_ = b;
+      basePath_ = b;
       return b;
     } else {
       return (com.google.protobuf.ByteString) ref;
@@ -570,8 +570,8 @@ private static final long serialVersionUID = 0L;
     if (!getVersionBytes().isEmpty()) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 4, version_);
     }
-    if (!getContextBytes().isEmpty()) {
-      com.google.protobuf.GeneratedMessageV3.writeString(output, 5, context_);
+    if (!getBasePathBytes().isEmpty()) {
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 5, basePath_);
     }
     if (!getPolicyBytes().isEmpty()) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 6, policy_);
@@ -612,8 +612,8 @@ private static final long serialVersionUID = 0L;
     if (!getVersionBytes().isEmpty()) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, version_);
     }
-    if (!getContextBytes().isEmpty()) {
-      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(5, context_);
+    if (!getBasePathBytes().isEmpty()) {
+      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(5, basePath_);
     }
     if (!getPolicyBytes().isEmpty()) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(6, policy_);
@@ -658,8 +658,8 @@ private static final long serialVersionUID = 0L;
         .equals(other.getProvider())) return false;
     if (!getVersion()
         .equals(other.getVersion())) return false;
-    if (!getContext()
-        .equals(other.getContext())) return false;
+    if (!getBasePath()
+        .equals(other.getBasePath())) return false;
     if (!getPolicy()
         .equals(other.getPolicy())) return false;
     if (!getApiType()
@@ -694,8 +694,8 @@ private static final long serialVersionUID = 0L;
     hash = (53 * hash) + getProvider().hashCode();
     hash = (37 * hash) + VERSION_FIELD_NUMBER;
     hash = (53 * hash) + getVersion().hashCode();
-    hash = (37 * hash) + CONTEXT_FIELD_NUMBER;
-    hash = (53 * hash) + getContext().hashCode();
+    hash = (37 * hash) + BASEPATH_FIELD_NUMBER;
+    hash = (53 * hash) + getBasePath().hashCode();
     hash = (37 * hash) + POLICY_FIELD_NUMBER;
     hash = (53 * hash) + getPolicy().hashCode();
     hash = (37 * hash) + APITYPE_FIELD_NUMBER;
@@ -856,7 +856,7 @@ private static final long serialVersionUID = 0L;
 
       version_ = "";
 
-      context_ = "";
+      basePath_ = "";
 
       policy_ = "";
 
@@ -904,7 +904,7 @@ private static final long serialVersionUID = 0L;
       result.name_ = name_;
       result.provider_ = provider_;
       result.version_ = version_;
-      result.context_ = context_;
+      result.basePath_ = basePath_;
       result.policy_ = policy_;
       result.apiType_ = apiType_;
       result.isDefaultVersion_ = isDefaultVersion_;
@@ -979,8 +979,8 @@ private static final long serialVersionUID = 0L;
         version_ = other.version_;
         onChanged();
       }
-      if (!other.getContext().isEmpty()) {
-        context_ = other.context_;
+      if (!other.getBasePath().isEmpty()) {
+        basePath_ = other.basePath_;
         onChanged();
       }
       if (!other.getPolicy().isEmpty()) {
@@ -1338,78 +1338,78 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    private java.lang.Object context_ = "";
+    private java.lang.Object basePath_ = "";
     /**
-     * <code>string context = 5;</code>
-     * @return The context.
+     * <code>string basePath = 5;</code>
+     * @return The basePath.
      */
-    public java.lang.String getContext() {
-      java.lang.Object ref = context_;
+    public java.lang.String getBasePath() {
+      java.lang.Object ref = basePath_;
       if (!(ref instanceof java.lang.String)) {
         com.google.protobuf.ByteString bs =
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
-        context_ = s;
+        basePath_ = s;
         return s;
       } else {
         return (java.lang.String) ref;
       }
     }
     /**
-     * <code>string context = 5;</code>
-     * @return The bytes for context.
+     * <code>string basePath = 5;</code>
+     * @return The bytes for basePath.
      */
     public com.google.protobuf.ByteString
-        getContextBytes() {
-      java.lang.Object ref = context_;
+        getBasePathBytes() {
+      java.lang.Object ref = basePath_;
       if (ref instanceof String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
-        context_ = b;
+        basePath_ = b;
         return b;
       } else {
         return (com.google.protobuf.ByteString) ref;
       }
     }
     /**
-     * <code>string context = 5;</code>
-     * @param value The context to set.
+     * <code>string basePath = 5;</code>
+     * @param value The basePath to set.
      * @return This builder for chaining.
      */
-    public Builder setContext(
+    public Builder setBasePath(
         java.lang.String value) {
       if (value == null) {
     throw new NullPointerException();
   }
   
-      context_ = value;
+      basePath_ = value;
       onChanged();
       return this;
     }
     /**
-     * <code>string context = 5;</code>
+     * <code>string basePath = 5;</code>
      * @return This builder for chaining.
      */
-    public Builder clearContext() {
+    public Builder clearBasePath() {
       
-      context_ = getDefaultInstance().getContext();
+      basePath_ = getDefaultInstance().getBasePath();
       onChanged();
       return this;
     }
     /**
-     * <code>string context = 5;</code>
-     * @param value The bytes for context to set.
+     * <code>string basePath = 5;</code>
+     * @param value The bytes for basePath to set.
      * @return This builder for chaining.
      */
-    public Builder setContextBytes(
+    public Builder setBasePathBytes(
         com.google.protobuf.ByteString value) {
       if (value == null) {
     throw new NullPointerException();
   }
   checkByteStringIsUtf8(value);
       
-      context_ = value;
+      basePath_ = value;
       onChanged();
       return this;
     }

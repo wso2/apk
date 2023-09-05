@@ -17,7 +17,7 @@ message APIs {
 	string name = 2;
 	string provider = 3;
 	string version = 4;
-	string context = 5;
+	string basePath = 5;
 	string policy = 6;
 	string apiType = 7;
 	bool isDefaultVersion = 8;

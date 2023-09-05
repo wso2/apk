@@ -25,7 +25,7 @@ type ResolveRateLimitAPIPolicy struct {
 	Resources    []ResolveResource `json:"resourceList,omitempty"`
 	Organization string            `json:"organization,omitempty"`
 	Vhost        []string          `json:"vhost,omitempty"`
-	Context      string            `json:"context,omitempty"`
+	BasePath     string            `json:"basePath,omitempty"`
 	UUID         string            `json:"uuid,omitempty"`
 }
 

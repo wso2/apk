@@ -23,7 +23,7 @@ spec:
   apiDisplayName: Interceptor API
   apiType: REST
   apiVersion: 2.0.0
-  context: /interceptor/2.0.0
+  basePath: /interceptor/2.0.0
   #definitionFileRef: swagger-definition-webhook
   production:
     - httpRouteRefs:
