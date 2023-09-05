@@ -568,9 +568,13 @@ func getSecurity(authScheme *dpv1alpha1.Authentication) *Authentication {
 	if authScheme != nil && authScheme.Spec.Override.AuthTypes != nil && len(authScheme.Spec.Override.AuthTypes.JWT.Header) > 0 {
 		authHeader = authScheme.Spec.Override.AuthTypes.JWT.Header
 	}
+	sendTokenToUpstream := false
+	if authScheme != nil && authScheme.Spec.Override.AuthTypes != nil {
+		sendTokenToUpstream = authScheme.Spec.Override.AuthTypes.JWT.SendTokenToUpstream
+	}
 	auth := &Authentication{Disabled: false,
 		TestConsoleKey: &TestConsoleKey{Header: constants.TestConsoleKeyHeader},
-		JWT:            &JWT{Header: authHeader},
+		JWT:            &JWT{Header: authHeader, SendTokenToUpstream: sendTokenToUpstream},
 	}
 	if authScheme != nil {
 		if authScheme.Spec.Override.Disabled != nil && *authScheme.Spec.Override.Disabled {
@@ -589,8 +593,9 @@ func getSecurity(authScheme *dpv1alpha1.Authentication) *Authentication {
 			var apiKeys []APIKey
 			for _, apiKey := range authScheme.Spec.Override.AuthTypes.APIKey {
 				apiKeys = append(apiKeys, APIKey{
-					Name: apiKey.Name,
-					In:   apiKey.In,
+					Name:                apiKey.Name,
+					In:                  apiKey.In,
+					SendTokenToUpstream: apiKey.SendTokenToUpstream,
 				})
 			}
 			auth.APIKey = apiKeys
