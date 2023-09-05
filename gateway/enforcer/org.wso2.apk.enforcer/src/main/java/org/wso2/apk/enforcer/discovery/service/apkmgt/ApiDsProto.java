@@ -67,16 +67,16 @@ public final class ApiDsProto {
         getNameBytes();
 
     /**
-     * <code>string context = 5;</code>
-     * @return The context.
+     * <code>string basePath = 5;</code>
+     * @return The basePath.
      */
-    java.lang.String getContext();
+    java.lang.String getBasePath();
     /**
-     * <code>string context = 5;</code>
-     * @return The bytes for context.
+     * <code>string basePath = 5;</code>
+     * @return The bytes for basePath.
      */
     com.google.protobuf.ByteString
-        getContextBytes();
+        getBasePathBytes();
 
     /**
      * <code>string type = 6;</code>
@@ -243,7 +243,7 @@ public final class ApiDsProto {
       provider_ = "";
       version_ = "";
       name_ = "";
-      context_ = "";
+      basePath_ = "";
       type_ = "";
       organizationId_ = "";
       createdBy_ = "";
@@ -313,7 +313,7 @@ public final class ApiDsProto {
             case 42: {
               java.lang.String s = input.readStringRequireUtf8();
 
-              context_ = s;
+              basePath_ = s;
               break;
             }
             case 50: {
@@ -579,38 +579,38 @@ public final class ApiDsProto {
       }
     }
 
-    public static final int CONTEXT_FIELD_NUMBER = 5;
-    private volatile java.lang.Object context_;
+    public static final int BASEPATH_FIELD_NUMBER = 5;
+    private volatile java.lang.Object basePath_;
     /**
-     * <code>string context = 5;</code>
-     * @return The context.
+     * <code>string basePath = 5;</code>
+     * @return The basePath.
      */
     @java.lang.Override
-    public java.lang.String getContext() {
-      java.lang.Object ref = context_;
+    public java.lang.String getBasePath() {
+      java.lang.Object ref = basePath_;
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
         com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
-        context_ = s;
+        basePath_ = s;
         return s;
       }
     }
     /**
-     * <code>string context = 5;</code>
-     * @return The bytes for context.
+     * <code>string basePath = 5;</code>
+     * @return The bytes for basePath.
      */
     @java.lang.Override
     public com.google.protobuf.ByteString
-        getContextBytes() {
-      java.lang.Object ref = context_;
+        getBasePathBytes() {
+      java.lang.Object ref = basePath_;
       if (ref instanceof java.lang.String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
-        context_ = b;
+        basePath_ = b;
         return b;
       } else {
         return (com.google.protobuf.ByteString) ref;
@@ -1010,8 +1010,8 @@ public final class ApiDsProto {
       if (!getNameBytes().isEmpty()) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 4, name_);
       }
-      if (!getContextBytes().isEmpty()) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 5, context_);
+      if (!getBasePathBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 5, basePath_);
       }
       if (!getTypeBytes().isEmpty()) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 6, type_);
@@ -1064,8 +1064,8 @@ public final class ApiDsProto {
       if (!getNameBytes().isEmpty()) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, name_);
       }
-      if (!getContextBytes().isEmpty()) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(5, context_);
+      if (!getBasePathBytes().isEmpty()) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(5, basePath_);
       }
       if (!getTypeBytes().isEmpty()) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(6, type_);
@@ -1127,8 +1127,8 @@ public final class ApiDsProto {
           .equals(other.getVersion())) return false;
       if (!getName()
           .equals(other.getName())) return false;
-      if (!getContext()
-          .equals(other.getContext())) return false;
+      if (!getBasePath()
+          .equals(other.getBasePath())) return false;
       if (!getType()
           .equals(other.getType())) return false;
       if (!getOrganizationId()
@@ -1171,8 +1171,8 @@ public final class ApiDsProto {
       hash = (53 * hash) + getVersion().hashCode();
       hash = (37 * hash) + NAME_FIELD_NUMBER;
       hash = (53 * hash) + getName().hashCode();
-      hash = (37 * hash) + CONTEXT_FIELD_NUMBER;
-      hash = (53 * hash) + getContext().hashCode();
+      hash = (37 * hash) + BASEPATH_FIELD_NUMBER;
+      hash = (53 * hash) + getBasePath().hashCode();
       hash = (37 * hash) + TYPE_FIELD_NUMBER;
       hash = (53 * hash) + getType().hashCode();
       hash = (37 * hash) + ORGANIZATIONID_FIELD_NUMBER;
@@ -1341,7 +1341,7 @@ public final class ApiDsProto {
 
         name_ = "";
 
-        context_ = "";
+        basePath_ = "";
 
         type_ = "";
 
@@ -1402,7 +1402,7 @@ public final class ApiDsProto {
         result.provider_ = provider_;
         result.version_ = version_;
         result.name_ = name_;
-        result.context_ = context_;
+        result.basePath_ = basePath_;
         result.type_ = type_;
         result.organizationId_ = organizationId_;
         result.createdBy_ = createdBy_;
@@ -1493,8 +1493,8 @@ public final class ApiDsProto {
           name_ = other.name_;
           onChanged();
         }
-        if (!other.getContext().isEmpty()) {
-          context_ = other.context_;
+        if (!other.getBasePath().isEmpty()) {
+          basePath_ = other.basePath_;
           onChanged();
         }
         if (!other.getType().isEmpty()) {
@@ -1898,78 +1898,78 @@ public final class ApiDsProto {
         return this;
       }
 
-      private java.lang.Object context_ = "";
+      private java.lang.Object basePath_ = "";
       /**
-       * <code>string context = 5;</code>
-       * @return The context.
+       * <code>string basePath = 5;</code>
+       * @return The basePath.
        */
-      public java.lang.String getContext() {
-        java.lang.Object ref = context_;
+      public java.lang.String getBasePath() {
+        java.lang.Object ref = basePath_;
         if (!(ref instanceof java.lang.String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
           java.lang.String s = bs.toStringUtf8();
-          context_ = s;
+          basePath_ = s;
           return s;
         } else {
           return (java.lang.String) ref;
         }
       }
       /**
-       * <code>string context = 5;</code>
-       * @return The bytes for context.
+       * <code>string basePath = 5;</code>
+       * @return The bytes for basePath.
        */
       public com.google.protobuf.ByteString
-          getContextBytes() {
-        java.lang.Object ref = context_;
+          getBasePathBytes() {
+        java.lang.Object ref = basePath_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
-          context_ = b;
+          basePath_ = b;
           return b;
         } else {
           return (com.google.protobuf.ByteString) ref;
         }
       }
       /**
-       * <code>string context = 5;</code>
-       * @param value The context to set.
+       * <code>string basePath = 5;</code>
+       * @param value The basePath to set.
        * @return This builder for chaining.
        */
-      public Builder setContext(
+      public Builder setBasePath(
           java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
   
-        context_ = value;
+        basePath_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>string context = 5;</code>
+       * <code>string basePath = 5;</code>
        * @return This builder for chaining.
        */
-      public Builder clearContext() {
+      public Builder clearBasePath() {
         
-        context_ = getDefaultInstance().getContext();
+        basePath_ = getDefaultInstance().getBasePath();
         onChanged();
         return this;
       }
       /**
-       * <code>string context = 5;</code>
-       * @param value The bytes for context to set.
+       * <code>string basePath = 5;</code>
+       * @param value The bytes for basePath to set.
        * @return This builder for chaining.
        */
-      public Builder setContextBytes(
+      public Builder setBasePathBytes(
           com.google.protobuf.ByteString value) {
         if (value == null) {
     throw new NullPointerException();
   }
   checkByteStringIsUtf8(value);
         
-        context_ = value;
+        basePath_ = value;
         onChanged();
         return this;
       }
@@ -11751,47 +11751,47 @@ public final class ApiDsProto {
   static {
     java.lang.String[] descriptorData = {
       "\n)wso2/discovery/service/apkmgt/apids.pr" +
-      "oto\022\030discovery.service.apkmgt\"\344\002\n\003API\022\014\n" +
+      "oto\022\030discovery.service.apkmgt\"\345\002\n\003API\022\014\n" +
       "\004uuid\030\001 \001(\t\022\020\n\010provider\030\002 \001(\t\022\017\n\007version" +
-      "\030\003 \001(\t\022\014\n\004name\030\004 \001(\t\022\017\n\007context\030\005 \001(\t\022\014\n" +
-      "\004type\030\006 \001(\t\022\026\n\016organizationId\030\007 \001(\t\022\021\n\tc" +
-      "reatedBy\030\010 \001(\t\022\023\n\013createdTime\030\t \001(\t\022\021\n\tu" +
-      "pdatedBy\030\n \001(\t\022\023\n\013updatedTime\030\013 \001(\t\022\022\n\nd" +
-      "efinition\030\014 \001(\t\022\022\n\ntransports\030\r \003(\t\0225\n\tr" +
-      "esources\030\020 \003(\0132\".discovery.service.apkmg" +
-      "t.Resource\0228\n\ncorsConfig\030\021 \001(\0132$.discove" +
-      "ry.service.apkmgt.CorsConfig\"\276\001\n\nCorsCon" +
-      "fig\022 \n\030corsConfigurationEnabled\030\001 \001(\010\022!\n" +
-      "\031accessControlAllowOrigins\030\002 \003(\t\022%\n\035acce" +
-      "ssControlAllowCredentials\030\003 \001(\010\022!\n\031acces" +
-      "sControlAllowHeaders\030\004 \003(\t\022!\n\031accessCont" +
-      "rolAllowMethods\030\005 \003(\t\"\257\002\n\010Resource\022\014\n\004pa" +
-      "th\030\001 \001(\t\022\014\n\004verb\030\002 \001(\t\022A\n\017authentication" +
-      "s\030\003 \003(\0132(.discovery.service.apkmgt.Authe" +
-      "ntication\022/\n\006scopes\030\004 \003(\0132\037.discovery.se" +
-      "rvice.apkmgt.Scope\022F\n\021operationPolicies\030" +
-      "\006 \001(\0132+.discovery.service.apkmgt.Operati" +
-      "onPolicies\0229\n\013queryParams\030\007 \003(\0132$.discov" +
-      "ery.service.apkmgt.QueryParam\022\020\n\010hostnam" +
-      "e\030\010 \003(\t\"\023\n\021OperationPolicies\")\n\nQueryPar" +
-      "am\022\014\n\004name\030\001 \001(\t\022\r\n\005value\030\002 \001(\t\"Q\n\005Scope" +
-      "\022\014\n\004name\030\001 \001(\t\022\023\n\013displayName\030\002 \001(\t\022\023\n\013d" +
-      "escription\030\003 \001(\t\022\020\n\010bindings\030\004 \003(\t\"\207\001\n\016A" +
-      "uthentication\022\014\n\004type\030\001 \001(\t\022\013\n\003iss\030\002 \001(\t" +
-      "\022\013\n\003aud\030\003 \001(\t\022\017\n\007jwksUri\030\004 \001(\t\022<\n\016creden" +
-      "tialList\030\005 \003(\0132$.discovery.service.apkmg" +
-      "t.Credential\"0\n\nCredential\022\020\n\010username\030\001" +
-      " \001(\t\022\020\n\010password\030\002 \001(\t\"\032\n\010Response\022\016\n\006re" +
-      "sult\030\001 \001(\0102\374\001\n\nAPIService\022N\n\tcreateAPI\022\035" +
-      ".discovery.service.apkmgt.API\032\".discover" +
-      "y.service.apkmgt.Response\022N\n\tupdateAPI\022\035" +
-      ".discovery.service.apkmgt.API\032\".discover" +
-      "y.service.apkmgt.Response\022N\n\tdeleteAPI\022\035" +
-      ".discovery.service.apkmgt.API\032\".discover" +
-      "y.service.apkmgt.ResponseBw\n.org.wso2.ap" +
-      "k.enforcer.discovery.service.apkmgtB\nApi" +
-      "DsProtoP\000Z4github.com/wso2/apk/adapter/d" +
-      "iscovery/service/apkmgt\210\001\001b\006proto3"
+      "\030\003 \001(\t\022\014\n\004name\030\004 \001(\t\022\020\n\010basePath\030\005 \001(\t\022\014" +
+      "\n\004type\030\006 \001(\t\022\026\n\016organizationId\030\007 \001(\t\022\021\n\t" +
+      "createdBy\030\010 \001(\t\022\023\n\013createdTime\030\t \001(\t\022\021\n\t" +
+      "updatedBy\030\n \001(\t\022\023\n\013updatedTime\030\013 \001(\t\022\022\n\n" +
+      "definition\030\014 \001(\t\022\022\n\ntransports\030\r \003(\t\0225\n\t" +
+      "resources\030\020 \003(\0132\".discovery.service.apkm" +
+      "gt.Resource\0228\n\ncorsConfig\030\021 \001(\0132$.discov" +
+      "ery.service.apkmgt.CorsConfig\"\276\001\n\nCorsCo" +
+      "nfig\022 \n\030corsConfigurationEnabled\030\001 \001(\010\022!" +
+      "\n\031accessControlAllowOrigins\030\002 \003(\t\022%\n\035acc" +
+      "essControlAllowCredentials\030\003 \001(\010\022!\n\031acce" +
+      "ssControlAllowHeaders\030\004 \003(\t\022!\n\031accessCon" +
+      "trolAllowMethods\030\005 \003(\t\"\257\002\n\010Resource\022\014\n\004p" +
+      "ath\030\001 \001(\t\022\014\n\004verb\030\002 \001(\t\022A\n\017authenticatio" +
+      "ns\030\003 \003(\0132(.discovery.service.apkmgt.Auth" +
+      "entication\022/\n\006scopes\030\004 \003(\0132\037.discovery.s" +
+      "ervice.apkmgt.Scope\022F\n\021operationPolicies" +
+      "\030\006 \001(\0132+.discovery.service.apkmgt.Operat" +
+      "ionPolicies\0229\n\013queryParams\030\007 \003(\0132$.disco" +
+      "very.service.apkmgt.QueryParam\022\020\n\010hostna" +
+      "me\030\010 \003(\t\"\023\n\021OperationPolicies\")\n\nQueryPa" +
+      "ram\022\014\n\004name\030\001 \001(\t\022\r\n\005value\030\002 \001(\t\"Q\n\005Scop" +
+      "e\022\014\n\004name\030\001 \001(\t\022\023\n\013displayName\030\002 \001(\t\022\023\n\013" +
+      "description\030\003 \001(\t\022\020\n\010bindings\030\004 \003(\t\"\207\001\n\016" +
+      "Authentication\022\014\n\004type\030\001 \001(\t\022\013\n\003iss\030\002 \001(" +
+      "\t\022\013\n\003aud\030\003 \001(\t\022\017\n\007jwksUri\030\004 \001(\t\022<\n\016crede" +
+      "ntialList\030\005 \003(\0132$.discovery.service.apkm" +
+      "gt.Credential\"0\n\nCredential\022\020\n\010username\030" +
+      "\001 \001(\t\022\020\n\010password\030\002 \001(\t\"\032\n\010Response\022\016\n\006r" +
+      "esult\030\001 \001(\0102\374\001\n\nAPIService\022N\n\tcreateAPI\022" +
+      "\035.discovery.service.apkmgt.API\032\".discove" +
+      "ry.service.apkmgt.Response\022N\n\tupdateAPI\022" +
+      "\035.discovery.service.apkmgt.API\032\".discove" +
+      "ry.service.apkmgt.Response\022N\n\tdeleteAPI\022" +
+      "\035.discovery.service.apkmgt.API\032\".discove" +
+      "ry.service.apkmgt.ResponseBw\n.org.wso2.a" +
+      "pk.enforcer.discovery.service.apkmgtB\nAp" +
+      "iDsProtoP\000Z4github.com/wso2/apk/adapter/" +
+      "discovery/service/apkmgt\210\001\001b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -11802,7 +11802,7 @@ public final class ApiDsProto {
     internal_static_discovery_service_apkmgt_API_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_discovery_service_apkmgt_API_descriptor,
-        new java.lang.String[] { "Uuid", "Provider", "Version", "Name", "Context", "Type", "OrganizationId", "CreatedBy", "CreatedTime", "UpdatedBy", "UpdatedTime", "Definition", "Transports", "Resources", "CorsConfig", });
+        new java.lang.String[] { "Uuid", "Provider", "Version", "Name", "BasePath", "Type", "OrganizationId", "CreatedBy", "CreatedTime", "UpdatedBy", "UpdatedTime", "Definition", "Transports", "Resources", "CorsConfig", });
     internal_static_discovery_service_apkmgt_CorsConfig_descriptor =
       getDescriptor().getMessageTypes().get(1);
     internal_static_discovery_service_apkmgt_CorsConfig_fieldAccessorTable = new

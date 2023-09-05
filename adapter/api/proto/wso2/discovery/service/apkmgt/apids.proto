@@ -36,7 +36,7 @@ message API {
     string provider = 2;
     string version = 3;
     string name = 4;
-    string context = 5;
+    string basePath = 5;
     string type = 6;
     string organizationId = 7;
     string createdBy = 8;

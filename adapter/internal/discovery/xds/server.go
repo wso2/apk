@@ -569,7 +569,7 @@ func UpdateEnforcerApis(label string, apis []types.Resource, version string) {
 		subAPI.ApiId = api.(*disc_api.Api).GetId()
 		subAPI.Name = api.(*disc_api.Api).GetTitle()
 		subAPI.Version = api.(*disc_api.Api).GetVersion()
-		subAPI.Context = api.(*disc_api.Api).GetBasePath()
+		subAPI.BasePath = api.(*disc_api.Api).GetBasePath()
 		subAPI.Policy = api.(*disc_api.Api).GetTier()
 		subAPI.ApiType = api.(*disc_api.Api).GetApiType()
 		subAPI.Uuid = api.(*disc_api.Api).GetId()

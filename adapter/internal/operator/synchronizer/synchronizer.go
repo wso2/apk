@@ -249,7 +249,7 @@ func SendEventToPartitionServer() {
 			loggers.LoggerAPKOperator.Infof("Sending API to APK management server: %v, API_UUID: %v", apiDefinition.Spec.APIDisplayName, string(apiDefinition.ObjectMeta.UID))
 			api := apiEvent.Event
 			eventType := apiEvent.EventType
-			context := api.APIDefinition.Spec.Context
+			basePath := api.APIDefinition.Spec.BasePath
 			organization := api.APIDefinition.Spec.Organization
 			version := api.APIDefinition.Spec.APIVersion
 			apiName := api.APIDefinition.Spec.APIDisplayName
@@ -264,7 +264,7 @@ func SendEventToPartitionServer() {
 			}
 			data := PartitionEvent{
 				EventType:    eventType,
-				APIContext:   context,
+				BasePath:     basePath,
 				Organization: organization,
 				APIVersion:   version,
 				APIName:      apiName,
@@ -297,7 +297,7 @@ type PartitionEvent struct {
 	EventType    string   `json:"eventType"`
 	APIName      string   `json:"apiName"`
 	APIVersion   string   `json:"apiVersion"`
-	APIContext   string   `json:"apiContext"`
+	BasePath     string   `json:"basePath"`
 	Organization string   `json:"organization"`
 	Partition    string   `json:"partition"`
 	APIUUID      string   `json:"apiId"`
