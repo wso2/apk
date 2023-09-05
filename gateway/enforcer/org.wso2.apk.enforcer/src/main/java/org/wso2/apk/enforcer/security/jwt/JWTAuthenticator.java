@@ -514,9 +514,6 @@ public class JWTAuthenticator implements Authenticator {
                             (JWTValidationInfo) CacheProviderUtil.getOrganizationCache(organization).getGatewayKeyCache().getIfPresent(jti);
                     checkTokenExpiration(jti, tempJWTValidationInfo, organization);
                     jwtValidationInfo = tempJWTValidationInfo;
-                    if (!jwtValidationInfo.isValid()) {
-                        signedJWTInfo.setValidationStatus(SignedJWTInfo.ValidationStatus.INVALID);
-                    }
                 }
             } else if (SignedJWTInfo.ValidationStatus.INVALID.equals(signedJWTInfo.getValidationStatus()) && CacheProviderUtil.getOrganizationCache(organization).getInvalidTokenCache().getIfPresent(jti) != null) {
                 if (log.isDebugEnabled()) {
