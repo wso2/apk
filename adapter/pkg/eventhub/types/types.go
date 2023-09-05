@@ -77,10 +77,10 @@ type ApplicationKeyMappingList struct {
 type API struct {
 	APIID            int    `json:"apiId"`
 	UUID             string `json:"uuid"`
-	Provider         string `json:"provider" json:"apiProvider"`
-	Name             string `json:"name" json:"apiName"`
-	Version          string `json:"version" json:"apiVersion"`
-	Context          string `json:"context" json:"apiContext"`
+	Provider         string `json:"provider"`
+	Name             string `json:"name"`
+	Version          string `json:"version"`
+	BasePath         string `json:"basePath"`
 	Policy           string `json:"policy"`
 	APIType          string `json:"apiType"`
 	IsDefaultVersion bool   `json:"isDefaultVersion"`

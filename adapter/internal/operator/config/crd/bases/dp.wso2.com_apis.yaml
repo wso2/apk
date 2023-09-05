@@ -22,8 +22,8 @@ spec:
     - jsonPath: .spec.apiVersion
       name: Version
       type: string
-    - jsonPath: .spec.context
-      name: Context
+    - jsonPath: .spec.BasePath
+      name: BasePath
       type: string
     - jsonPath: .spec.organization
       name: Organization
@@ -83,8 +83,8 @@ spec:
                 minLength: 1
                 pattern: ^[^~!@#;:%^*()+={}|\<>"'',&/$\[\]\s+\/]+$
                 type: string
-              context:
-                description: 'Context denotes the context of the API. e.g: /pet-store-api/1.0.6'
+              basePath:
+                description: 'BasePath denotes the basepath of the API. e.g: /pet-store-api/1.0.6'
                 pattern: ^[/][a-zA-Z0-9~/_.-]*$
                 type: string
               definitionFileRef:
@@ -145,7 +145,7 @@ spec:
             - apiDisplayName
             - apiType
             - apiVersion
-            - context
+            - basePath
             - definitionPath
             type: object
           status:

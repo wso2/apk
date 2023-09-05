@@ -30,17 +30,17 @@ public final class APIsProto {
     java.lang.String[] descriptorData = {
       "\n%wso2/discovery/subscription/api.proto\022" +
       "\033wso2.discovery.subscription\032-wso2/disco" +
-      "very/subscription/url_mapping.proto\"\357\001\n\004" +
+      "very/subscription/url_mapping.proto\"\360\001\n\004" +
       "APIs\022\r\n\005apiId\030\001 \001(\t\022\014\n\004name\030\002 \001(\t\022\020\n\010pro" +
-      "vider\030\003 \001(\t\022\017\n\007version\030\004 \001(\t\022\017\n\007context\030" +
-      "\005 \001(\t\022\016\n\006policy\030\006 \001(\t\022\017\n\007apiType\030\007 \001(\t\022\030" +
-      "\n\020isDefaultVersion\030\010 \001(\010\022<\n\013urlMappings\030" +
-      "\t \001(\0132\'.wso2.discovery.subscription.URLM" +
-      "apping\022\014\n\004uuid\030\n \001(\t\022\017\n\007lcState\030\013 \001(\tB\214\001" +
-      "\n,org.wso2.apk.enforcer.discovery.subscr" +
-      "iptionB\tAPIsProtoP\001ZOgithub.com/envoypro" +
-      "xy/go-control-plane/wso2/discovery/subsc" +
-      "ription;subscriptionb\006proto3"
+      "vider\030\003 \001(\t\022\017\n\007version\030\004 \001(\t\022\020\n\010basePath" +
+      "\030\005 \001(\t\022\016\n\006policy\030\006 \001(\t\022\017\n\007apiType\030\007 \001(\t\022" +
+      "\030\n\020isDefaultVersion\030\010 \001(\010\022<\n\013urlMappings" +
+      "\030\t \001(\0132\'.wso2.discovery.subscription.URL" +
+      "Mapping\022\014\n\004uuid\030\n \001(\t\022\017\n\007lcState\030\013 \001(\tB\214" +
+      "\001\n,org.wso2.apk.enforcer.discovery.subsc" +
+      "riptionB\tAPIsProtoP\001ZOgithub.com/envoypr" +
+      "oxy/go-control-plane/wso2/discovery/subs" +
+      "cription;subscriptionb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -52,7 +52,7 @@ public final class APIsProto {
     internal_static_wso2_discovery_subscription_APIs_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_wso2_discovery_subscription_APIs_descriptor,
-        new java.lang.String[] { "ApiId", "Name", "Provider", "Version", "Context", "Policy", "ApiType", "IsDefaultVersion", "UrlMappings", "Uuid", "LcState", });
+        new java.lang.String[] { "ApiId", "Name", "Provider", "Version", "BasePath", "Policy", "ApiType", "IsDefaultVersion", "UrlMappings", "Uuid", "LcState", });
     org.wso2.apk.enforcer.discovery.subscription.URLMappingProto.getDescriptor();
   }
 
