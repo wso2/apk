@@ -23,7 +23,7 @@ spec:
   apiDisplayName: API with Backend Base Path
   apiType: REST
   apiVersion: v1.0.0
-  context: /custom-auth-header/v1.0.0
+  basePath: /custom-auth-header/v1.0.0
   isDefaultVersion: true
   #definitionFileRef: definition-file
   production:

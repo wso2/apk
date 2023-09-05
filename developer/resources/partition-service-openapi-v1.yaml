@@ -131,10 +131,10 @@ components:
           type: string
           description: |
             API Name
-        apiContext:
+        basePAth:
           type: string
           description: |
-            API Context 
+            API Basepath 
         apiVersion:
           type: string
           description: |

@@ -23,7 +23,7 @@ spec:
   apiDisplayName: API with Swagger Definition
   apiType: REST
   apiVersion: v1.0.0
-  context: /fetch-api-definition/v1.0.0
+  basePath: /fetch-api-definition/v1.0.0
   isDefaultVersion: true
   definitionFileRef: definition-file-swagger
   production:

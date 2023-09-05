@@ -23,7 +23,7 @@ spec:
   apiDisplayName: Backend with no basepath
   apiType: REST
   apiVersion: v1
-  context: /disable-api-security/v1
+  basePath: /disable-api-security/v1
   isDefaultVersion: true
   #definitionFileRef: definition-file
   production:

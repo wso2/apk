@@ -23,7 +23,7 @@ spec:
   apiDisplayName: API with Backend Base Path
   apiType: REST
   apiVersion: 1.0.0
-  context: /trailing-slash/v1.0.0
+  basePath: /trailing-slash/v1.0.0
   #definitionFileRef: definition-file
   production:
     - httpRouteRefs:
