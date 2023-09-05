@@ -111,7 +111,7 @@ public function testGetGeneratedAPKConfFromUrlAndDefinitionNoType() returns erro
 }
 
 @test:Config {}
-public function testGetGeneratedAPKConfFromUrlAndDefinitionInvalidType() returns error? {
+public function testGetGeneratedAPKConfFromUrlAndDefinitionNotDefinedType() returns error? {
     ConfigGeneratorClient configGeneratorClient = new ();
     http:Request request = new;
     mime:Entity[] bodyParts = [];
@@ -122,10 +122,8 @@ public function testGetGeneratedAPKConfFromUrlAndDefinitionInvalidType() returns
     request.setBodyParts(bodyParts, contentType = mime:MULTIPART_FORM_DATA);
 
     OkAnydata|apk_common_lib:APKError|BadRequestError response = configGeneratorClient.getGeneratedAPKConf(request);
-    if response is BadRequestError {
-        BadRequestError badRequest = {body: {code: 90091, message: "API Type need to specified"}};
-        test:assertEquals(response.status.code, http:STATUS_BAD_REQUEST, "Status code mismatched");
-        test:assertEquals(response.body, badRequest.body);
+    if response is OkAnydata {
+        test:assertEquals(response.status.code, http:STATUS_OK, "Status code mismatched");
     } else {
         test:assertFail("Error occurred while generating APK conf");
     }
