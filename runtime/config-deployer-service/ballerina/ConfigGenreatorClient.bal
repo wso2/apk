@@ -18,23 +18,26 @@ public class ConfigGeneratorClient {
         do {
             DefinitionBody definitionBody = check self.prepareDefinitionBodyFromRequest(request);
             runtimeapi:APIDefinitionValidationResponse|runtimeapi:APIManagementException? validateAndRetrieveDefinitionResult = ();
+            string apiType;
             if (definitionBody.url is string && definitionBody.definition is record {|byte[] fileContent; string fileName; anydata...;|}) || (definitionBody.url is () && definitionBody.definition is ()) {
                 BadRequestError badRequest = {body: {code: 90091, message: "Specify either definition or url"}};
                 return badRequest;
             }
             if definitionBody.apiType is () {
-                BadRequestError badRequest = {body: {code: 90091, message: "API Type need to specified"}};
-                return badRequest;
+                // Setting the default API type as REST.
+                apiType = API_TYPE_REST;
+            } else {
+                apiType = <string>definitionBody.apiType;
             }
-            if ALLOWED_API_TYPES.indexOf(<string>definitionBody.apiType) is () {
+            if ALLOWED_API_TYPES.indexOf(apiType) is () {
                 BadRequestError badRequest = {body: {code: 90091, message: "Invalid API Type"}};
                 return badRequest;
             }
             if definitionBody.url is string {
-                validateAndRetrieveDefinitionResult = check self.validateAndRetrieveDefinition(<string>definitionBody.'apiType, definitionBody.url, (), ());
+                validateAndRetrieveDefinitionResult = check self.validateAndRetrieveDefinition(apiType, definitionBody.url, (), ());
             } else if definitionBody.definition is record {|byte[] fileContent; string fileName; anydata...;|} {
                 record {|byte[] fileContent; string fileName; anydata...;|} definition = <record {|byte[] fileContent; string fileName; anydata...;|}>definitionBody.definition;
-                validateAndRetrieveDefinitionResult = check self.validateAndRetrieveDefinition(<string>definitionBody.'apiType, (), <byte[]>definition.fileContent, <string>definition.fileName);
+                validateAndRetrieveDefinitionResult = check self.validateAndRetrieveDefinition(apiType, (), <byte[]>definition.fileContent, <string>definition.fileName);
             }
             if validateAndRetrieveDefinitionResult is runtimeapi:APIDefinitionValidationResponse {
                 if validateAndRetrieveDefinitionResult.isValid() {
