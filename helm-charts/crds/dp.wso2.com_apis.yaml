@@ -37,7 +37,7 @@ spec:
     - jsonPath: .spec.apiVersion
       name: Version
       type: string
-    - jsonPath: .spec.BasePath
+    - jsonPath: .spec.basePath
       name: BasePath
       type: string
     - jsonPath: .spec.organization
