@@ -77,7 +77,7 @@ public class BackendJwtUtils {
                 try {
                     Object token =
                             CacheProviderUtil.getOrganizationCache(organization).getGatewayJWTTokenCache().get(jwtTokenCacheKey);
-                    if (!JWTConstants.UNAVAILABLE.equals(token)) {
+                    if (token != null || !JWTConstants.UNAVAILABLE.equals(token)) {
                         endUserToken = (String) token;
                         String[] splitToken = endUserToken.split("\\.");
                         if (splitToken.length != 3) {
