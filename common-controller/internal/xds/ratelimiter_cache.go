@@ -171,26 +171,26 @@ func (r *rateLimitPolicyCache) AddAPILevelRateLimitPolicies(vHosts []string, res
 }
 
 // DeleteAPILevelRateLimitPolicies deletes inline Rate Limit policies added with the API.
-func (r *rateLimitPolicyCache) DeleteAPILevelRateLimitPolicies(org string, vHosts []string, context string) {
+func (r *rateLimitPolicyCache) DeleteAPILevelRateLimitPolicies(org string, vHosts []string, basePath string) {
 	r.apiLevelMu.Lock()
 	defer r.apiLevelMu.Unlock()
 	for _, vHost := range vHosts {
-		delete(r.apiLevelRateLimitPolicies[org][vHost][context], DescriptorValueForAPIMethod)
+		delete(r.apiLevelRateLimitPolicies[org][vHost][basePath], DescriptorValueForAPIMethod)
 	}
 }
 
 // DeleteAPILevelRateLimitPolicies deletes inline Rate Limit policies added with the API.
-func (r *rateLimitPolicyCache) DeleteResourceLevelRateLimitPolicies(org string, vHosts []string, context string, path string, method string) {
+func (r *rateLimitPolicyCache) DeleteResourceLevelRateLimitPolicies(org string, vHosts []string, basePath string, path string, method string) {
 	httpMethods := []string{"GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"}
 	r.apiLevelMu.Lock()
 	defer r.apiLevelMu.Unlock()
 	for _, vHost := range vHosts {
 		if method == constants.All {
 			for _, httpMethod := range httpMethods {
-				delete(r.apiLevelRateLimitPolicies[org][vHost][context+context+path], httpMethod)
+				delete(r.apiLevelRateLimitPolicies[org][vHost][basePath+basePath+path], httpMethod)
 			}
 		} else {
-			delete(r.apiLevelRateLimitPolicies[org][vHost][context+context+path], method)
+			delete(r.apiLevelRateLimitPolicies[org][vHost][basePath+basePath+path], method)
 		}
 	}
 }
