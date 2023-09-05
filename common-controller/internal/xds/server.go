@@ -71,18 +71,18 @@ func UpdateRateLimitXDSCacheForCustomPolicies(customRateLimitPolicies dpv1alpha1
 func DeleteAPILevelRateLimitPolicies(resolveRatelimit dpv1alpha1.ResolveRateLimitAPIPolicy) {
 	var org = resolveRatelimit.Organization
 	var vhost = resolveRatelimit.Vhost
-	var context = resolveRatelimit.Context
-	rlsPolicyCache.DeleteAPILevelRateLimitPolicies(org, vhost, context)
+	var basePath = resolveRatelimit.BasePath
+	rlsPolicyCache.DeleteAPILevelRateLimitPolicies(org, vhost, basePath)
 }
 
 // DeleteResourceLevelRateLimitPolicies delete the ratelimit xds cache
 func DeleteResourceLevelRateLimitPolicies(resolveRatelimit dpv1alpha1.ResolveRateLimitAPIPolicy) {
 	var org = resolveRatelimit.Organization
 	var vhost = resolveRatelimit.Vhost
-	var context = resolveRatelimit.Context
+	var basePath = resolveRatelimit.BasePath
 	var path = resolveRatelimit.Resources[0].Path
 	var method = resolveRatelimit.Resources[0].Method
-	rlsPolicyCache.DeleteResourceLevelRateLimitPolicies(org, vhost, context, path, method)
+	rlsPolicyCache.DeleteResourceLevelRateLimitPolicies(org, vhost, basePath, path, method)
 }
 
 // DeleteCustomRateLimitPolicies delete the ratelimit xds cache

@@ -247,7 +247,7 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) marshelRateLimit(ctx conte
 			return nil, resolveRatelimit
 		}
 		var organization = api.Spec.Organization
-		var context = api.Spec.Context
+		var basePath = api.Spec.BasePath
 		var httpRoute gwapiv1b1.HTTPRoute
 		if len(api.Spec.Production) > 0 {
 			for _, ref := range api.Spec.Production[0].HTTPRouteRefs {
@@ -288,7 +288,7 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) marshelRateLimit(ctx conte
 		}
 		resolveRatelimit.Vhost = vhost
 		resolveRatelimit.Organization = organization
-		resolveRatelimit.Context = context
+		resolveRatelimit.BasePath = basePath
 		resolveRatelimit.UUID = string(api.ObjectMeta.UID)
 	}
 
@@ -301,7 +301,7 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) marshelRateLimit(ctx conte
 			return nil, resolveRatelimit
 		}
 		var organization = api.Spec.Organization
-		var context = api.Spec.Context
+		var basePath = api.Spec.BasePath
 		var httpRoute gwapiv1b1.HTTPRoute
 		if len(api.Spec.Production) > 0 {
 			for _, ref := range api.Spec.Production[0].HTTPRouteRefs {
@@ -384,7 +384,7 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) marshelRateLimit(ctx conte
 			}
 		}
 		resolveRatelimit.Organization = organization
-		resolveRatelimit.Context = context
+		resolveRatelimit.BasePath = basePath
 		resolveRatelimit.UUID = string(api.ObjectMeta.UID)
 		resolveRatelimit.Vhost = vhost
 		resolveRatelimit.Resources = resolveResourceList

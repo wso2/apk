@@ -23,7 +23,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestValidateAPIContext(t *testing.T) {
+func TestValidateAPIBasePath(t *testing.T) {
 	type getAPITestItem struct {
 		pass    bool
 		message string
@@ -37,7 +37,7 @@ func TestValidateAPIContext(t *testing.T) {
 		},
 	}
 	for _, item := range dataItems {
-		err := validateAPIContextFormat(item.context, "v1")
+		err := validateAPIBasePathFormat(item.context, "v1")
 		assert.Equal(t, item.pass, err == "", item.message)
 	}
 }
