@@ -29,7 +29,7 @@ const string SEARCH_CRITERIA_NAMESPACE = "namespace";
 const string SORT_BY_SERVICE_NAME = "serviceName";
 const string SORT_BY_SERVICE_CREATED_TIME = "createdTime";
 
-const string CONTEXT_ALREADY_EXIST_K8s_VALIDATION_MESSAGE = "an API has been already created for the context";
+const string BASE_PATH_ALREADY_EXIST_K8s_VALIDATION_MESSAGE = "an API has been already created for the basePath";
 const string PRODUCTION_TYPE = "production";
 const string SANDBOX_TYPE = "sandbox";
 const string URL = "url";

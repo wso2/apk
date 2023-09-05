@@ -1,5 +1,5 @@
 name: "InterceptorAPI"
-context: "/interceptor"
+basePath: "/interceptor"
 version: "1.0.0"
 type: "REST"
 defaultVersion: true

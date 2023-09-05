@@ -1,6 +1,6 @@
 ---
 name: "APIResourceEndpoint"
-context: "/endpoint"
+basePath: "/endpoint"
 id: "endpoint-test"
 version: "3.14"
 type: "REST"

@@ -1,6 +1,6 @@
 ---
 name: "JWTDisabledAPI"
-context: "/jwt-disabled"
+basePath: "/jwt-disabled"
 id: "jwt-disabled-test"
 version: "3.14"
 type: "REST"

@@ -309,8 +309,8 @@ public class DeployerClient {
                     if details is model:StatusDetails {
                         model:StatusCause[] 'causes = details.'causes;
                         foreach model:StatusCause 'cause in 'causes {
-                            if 'cause.'field == "spec.context" {
-                                return e909015(k8sAPI.spec.context);
+                            if 'cause.'field == "spec.basePath" {
+                                return e909015(k8sAPI.spec.basePath);
                             } else if 'cause.'field == "spec.apiDisplayName" {
                                 return e909016(k8sAPI.spec.apiDisplayName);
                             }
@@ -332,8 +332,8 @@ public class DeployerClient {
                     if details is model:StatusDetails {
                         model:StatusCause[] 'causes = details.'causes;
                         foreach model:StatusCause 'cause in 'causes {
-                            if 'cause.'field == "spec.context" {
-                                return e909015(k8sAPI.spec.context);
+                            if 'cause.'field == "spec.basePath" {
+                                return e909015(k8sAPI.spec.basePath);
                             } else if 'cause.'field == "spec.apiDisplayName" {
                                 return e909016(k8sAPI.spec.apiDisplayName);
                             }

@@ -1,6 +1,6 @@
 ---
 name: "APIDefinitionEndpointDefault"
-context: "/test-definition-default"
+basePath: "/test-definition-default"
 id: "default-api-definition-endpoint-test"
 version: "3.14"
 type: "REST"
