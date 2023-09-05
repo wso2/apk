@@ -25,7 +25,7 @@ spec:
   apiDisplayName: "WSO2 APK Config Deployer API"
   apiType: "REST"
   apiVersion: "1.0.0"
-  context: "/api/deployer/1.0.0"
+  basePath: "/api/deployer/1.0.0"
   isDefaultVersion: true
   organization: "apk-system"
   definitionFileRef: "{{ template "apk-helm.resource.prefix" . }}-wso2-apk-config-deployer-api-definition"

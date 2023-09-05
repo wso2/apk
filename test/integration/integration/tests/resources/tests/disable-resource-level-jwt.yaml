@@ -23,7 +23,7 @@ spec:
   apiDisplayName: API with Backend Base Path
   apiType: REST
   apiVersion: v1.0.0
-  context: /disable-resource-level-jwt/v1.0.0
+  basePath: /disable-resource-level-jwt/v1.0.0
   isDefaultVersion: true
   #definitionFileRef: definition-file
   production:
@@ -90,7 +90,7 @@ spec:
   apiDisplayName: API with Backend Base Path
   apiType: REST
   apiVersion: v1.0.0
-  context: /disable-resource-level-jwt1/v1.0.0
+  basePath: /disable-resource-level-jwt1/v1.0.0
   isDefaultVersion: true
   #definitionFileRef: definition-file
   production:
@@ -167,7 +167,7 @@ spec:
   apiDisplayName: API with Backend Base Path
   apiType: REST
   apiVersion: v1.0.0
-  context: /disable-resource-level-jwt2/v1.0.0
+  basePath: /disable-resource-level-jwt2/v1.0.0
   isDefaultVersion: true
   #definitionFileRef: definition-file
   production:

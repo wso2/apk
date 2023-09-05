@@ -23,7 +23,7 @@ spec:
   apiDisplayName: Backend with no basepath
   apiType: REST
   apiVersion: v1
-  context: /prod-sand-test-api/v1
+  basePath: /prod-sand-test-api/v1
   #definitionFileRef: definition-file
   production:
     - httpRouteRefs:
@@ -125,7 +125,7 @@ spec:
   apiDisplayName: Backend with no basepath
   apiType: REST
   apiVersion: v1
-  context: /prod-sand-test-api/v1
+  basePath: /prod-sand-test-api/v1
   #definitionFileRef: definition-file
   production:
     - httpRouteRefs:

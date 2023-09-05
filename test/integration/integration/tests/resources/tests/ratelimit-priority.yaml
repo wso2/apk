@@ -23,7 +23,7 @@ spec:
   apiDisplayName: API with Backend Base Path
   apiType: REST
   apiVersion: v1.0.0
-  context: /ratelimit-priority/v1.0.0
+  basePath: /ratelimit-priority/v1.0.0
   isDefaultVersion: true
   #definitionFileRef: definition-file
   production:
