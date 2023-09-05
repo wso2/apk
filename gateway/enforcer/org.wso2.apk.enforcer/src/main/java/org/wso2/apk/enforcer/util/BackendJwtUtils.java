@@ -77,12 +77,9 @@ public class BackendJwtUtils {
                 try {
                     Object token =
                             CacheProviderUtil.getOrganizationCache(organization).getGatewayJWTTokenCache().get(jwtTokenCacheKey);
-                    if (token != null || !JWTConstants.UNAVAILABLE.equals(token)) {
+                    if (!JWTConstants.UNAVAILABLE.equals(token)) {
                         endUserToken = (String) token;
                         String[] splitToken = endUserToken.split("\\.");
-                        if (splitToken.length != 3) {
-                            throw new Exception("Invalid JWT Token");
-                        }
                         org.json.JSONObject payload = new org.json.JSONObject(new String(Base64.getUrlDecoder().decode(splitToken[1])));
                         long exp = payload.getLong(JwtConstants.EXP);
                         valid = !JWTUtils.isExpired(exp);
