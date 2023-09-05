@@ -1,6 +1,6 @@
 ---
 name: "VersionApi"
-context: "/test-version"
+basePath: "/test-version"
 id: "version-api-test"
 version: "1.0"
 type: "REST"

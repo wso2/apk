@@ -1,6 +1,6 @@
 ---
 name: "test-cors"
-context: "/test_cors"
+basePath: "/test_cors"
 version: "2.0.0"
 type: "REST"
 endpointConfigurations:

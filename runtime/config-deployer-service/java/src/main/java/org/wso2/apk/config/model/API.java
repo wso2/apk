@@ -4,7 +4,7 @@ import java.util.Set;
 
 public class API {
     private String name;
-    private String context;
+    private String basePath;
     private String version;
     private String type;
 
@@ -88,14 +88,14 @@ public class API {
         this.swaggerDefinition = swaggerDefinition;
     }
 
-    public String getContext() {
+    public String getBasePath() {
 
-        return context;
+        return basePath;
     }
 
-    public void setContext(String context) {
+    public void setBasePath(String basePath) {
 
-        this.context = context;
+        this.basePath = basePath;
     }
 
     public String getEndpoint() {

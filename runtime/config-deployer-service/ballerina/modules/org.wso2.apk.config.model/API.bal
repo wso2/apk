@@ -49,11 +49,11 @@ public distinct class API {
         return newObj;
     }
 
-    # The function that maps to the `getContext` method of `org.wso2.apk.config.model.API`.
+    # The function that maps to the `getBasePath` method of `org.wso2.apk.config.model.API`.
     #
     # + return - The `string` value returning from the Java mapping.
-    public isolated function getContext() returns string {
-        return java:toString(org_wso2_apk_config_model_API_getContext(self.jObj)) ?: "";
+    public isolated function getBasePath() returns string {
+        return java:toString(org_wso2_apk_config_model_API_getBasePath(self.jObj)) ?: "";
     }
 
     # The function that maps to the `getEndpoint` method of `org.wso2.apk.config.model.API`.
@@ -148,11 +148,11 @@ public distinct class API {
         org_wso2_apk_config_model_API_setApiSecurity(self.jObj, java:fromString(arg0));
     }
 
-    # The function that maps to the `setContext` method of `org.wso2.apk.config.model.API`.
+    # The function that maps to the `setBasePath` method of `org.wso2.apk.config.model.API`.
     #
     # + arg0 - The `string` value required to map with the Java method parameter.
-    public function setContext(string arg0) {
-        org_wso2_apk_config_model_API_setContext(self.jObj, java:fromString(arg0));
+    public function setBasePath(string arg0) {
+        org_wso2_apk_config_model_API_setBasePath(self.jObj, java:fromString(arg0));
     }
 
     # The function that maps to the `setEndpoint` method of `org.wso2.apk.config.model.API`.
@@ -290,8 +290,8 @@ function org_wso2_apk_config_model_API_getClass(handle receiver) returns handle 
     paramTypes: []
 } external;
 
-isolated function org_wso2_apk_config_model_API_getContext(handle receiver) returns handle = @java:Method {
-    name: "getContext",
+isolated function org_wso2_apk_config_model_API_getBasePath(handle receiver) returns handle = @java:Method {
+    name: "getBasePath",
     'class: "org.wso2.apk.config.model.API",
     paramTypes: []
 } external;
@@ -368,8 +368,8 @@ function org_wso2_apk_config_model_API_setApiSecurity(handle receiver, handle ar
     paramTypes: ["java.lang.String"]
 } external;
 
-function org_wso2_apk_config_model_API_setContext(handle receiver, handle arg0) = @java:Method {
-    name: "setContext",
+function org_wso2_apk_config_model_API_setBasePath(handle receiver, handle arg0) = @java:Method {
+    name: "setBasePath",
     'class: "org.wso2.apk.config.model.API",
     paramTypes: ["java.lang.String"]
 } external;

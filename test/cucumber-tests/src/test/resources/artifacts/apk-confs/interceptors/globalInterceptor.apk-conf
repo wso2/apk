@@ -1,5 +1,5 @@
 name: "GlobalInterceptorAPI"
-context: "/globalinterceptor"
+basePath: "/globalinterceptor"
 version: "1.0.0"
 type: "REST"
 defaultVersion: true

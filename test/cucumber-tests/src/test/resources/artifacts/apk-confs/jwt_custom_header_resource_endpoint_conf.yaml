@@ -1,6 +1,6 @@
 ---
 name: "JWTCustomHeaderResourceAPI"
-context: "/jwt-custom-header-resource"
+basePath: "/jwt-custom-header-resource"
 id: "jwt-custom-header-resource-test"
 version: "3.14"
 type: "REST"

@@ -1,6 +1,6 @@
 ---
 name: "APIDefinitionEndpointCustom"
-context: "/test-definition-custom"
+basePath: "/test-definition-custom"
 id: "custom-api-definition-endpoint-test"
 version: "3.14"
 type: "REST"

@@ -1,6 +1,6 @@
 ---
 name: "EmployeeServiceScopeTestAPI"
-context: "/test-scope"
+basePath: "/test-scope"
 id: "emp-api-test-scope"
 version: "1.0.0"
 type: "REST"

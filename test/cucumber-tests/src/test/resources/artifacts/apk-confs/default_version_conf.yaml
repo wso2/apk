@@ -1,6 +1,6 @@
 ---
 name: "DefaultVersionApi"
-context: "/test-default"
+basePath: "/test-default"
 id: "default-version-api-test"
 version: "3.14"
 type: "REST"
