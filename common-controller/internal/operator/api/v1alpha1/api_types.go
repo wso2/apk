@@ -169,7 +169,7 @@ type DeploymentStatus struct {
 //+kubebuilder:subresource:status
 //+kubebuilder:printcolumn:name="API Name",type="string",JSONPath=".spec.apiDisplayName"
 //+kubebuilder:printcolumn:name="Version",type="string",JSONPath=".spec.apiVersion"
-//+kubebuilder:printcolumn:name="Context",type="string",JSONPath=".spec.context"
+//+kubebuilder:printcolumn:name="BasePath",type="string",JSONPath=".spec.basePath"
 //+kubebuilder:printcolumn:name="Organization",type="string",JSONPath=".spec.organization"
 //+kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 
