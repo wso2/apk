@@ -1,6 +1,6 @@
 ---
 name: "CircuitBreakerConfigDump"
-context: "/circuit-breaker-config-dump"
+basePath: "/circuit-breaker-config-dump"
 id: "circuit-breaker-config-dump"
 version: "3.14"
 type: "REST"
