@@ -130,6 +130,7 @@ A Helm chart for APK components
 | wso2.apk.dp.ratelimiter.deployment.configs.tls.certKeyFilename | string | `""` | TLS certificate file name. |
 | wso2.apk.dp.ratelimiter.deployment.configs.tls.certFilename | string | `""` | TLS certificate file name. |
 | wso2.apk.dp.ratelimiter.deployment.configs.tls.certCAFilename | string | `""` | TLS CA certificate file name. |
+| wso2.apk.dp.gatewayRuntime.service.annotations | object | `{"annotation1":"value1"}` | Gateway service related annotations. |
 | wso2.apk.dp.gatewayRuntime.deployment.replicas | int | `1` | Number of replicas |
 | wso2.apk.dp.gatewayRuntime.deployment.router.resources.requests.memory | string | `"128Mi"` | CPU request for the container |
 | wso2.apk.dp.gatewayRuntime.deployment.router.resources.requests.cpu | string | `"100m"` | Memory request for the container |

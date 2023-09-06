@@ -114,12 +114,12 @@ public isolated function e909011(string apiName) returns commons:APKError {
     );
 }
 
-public isolated function e909012(string apiContext) returns commons:APKError {
-    return error commons:APKError("API Context - " + apiContext + " already exist",
+public isolated function e909012(string basePath) returns commons:APKError {
+    return error commons:APKError("API Base Path - " + basePath + " already exist",
         code = 909012,
-        message = "API Context - " + apiContext + " already exist",
+        message = "API Base Path - " + basePath + " already exist",
         statusCode = 409,
-        description = "API Context - " + apiContext + " already exist"
+        description = "Base Path - " + basePath + " already exist"
     );
 }
 
@@ -141,12 +141,12 @@ public isolated function e909014() returns commons:APKError {
     );
 }
 
-public isolated function e909015(string apiContext) returns commons:APKError {
-    return error commons:APKError("API context " + apiContext + " invalid",
+public isolated function e909015(string basePath) returns commons:APKError {
+    return error commons:APKError("API Base Path " + basePath + " invalid",
         code = 909015,
-        message = "API context " + apiContext + " invalid",
+        message = "API Base Path " + basePath + " invalid",
         statusCode = 406,
-        description = "API context " + apiContext + " invalid"
+        description = "API Base Path " + basePath + " invalid"
     );
 }
 

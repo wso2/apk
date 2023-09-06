@@ -20,6 +20,10 @@ kind: Service
 metadata:
   name: {{ template "apk-helm.resource.prefix" . }}-gateway-service
   namespace : {{ .Release.Namespace }}
+{{if and .Values.wso2.apk.dp.gatewayRuntime.service .Values.wso2.apk.dp.gatewayRuntime.service.annotations }}
+  annotations:
+{{ toYaml .Values.wso2.apk.dp.gatewayRuntime.service.annotations | indent 4 }}
+{{ end }}
 spec:
   type: LoadBalancer
   # label keys and values that must match in order to receive traffic for this service

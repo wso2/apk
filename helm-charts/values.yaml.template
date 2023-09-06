@@ -299,6 +299,9 @@ wso2:
               # -- TLS CA certificate file name.
               certCAFilename: ""
       gatewayRuntime:
+        service:
+          # -- Gateway service related annotations.
+          annotations:
         deployment:
           # -- Number of replicas
           replicas: 1
