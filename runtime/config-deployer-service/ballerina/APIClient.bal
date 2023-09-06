@@ -374,7 +374,7 @@ public class APIClient {
                 labels: self.getLabels(apkConf, organization)
             },
             spec: {
-                apiDisplayName: apkConf.name,
+                apiName: apkConf.name,
                 apiType: apkConf.'type,
                 apiVersion: apkConf.'version,
                 context: self.returnFullContext(apkConf.context, apkConf.'version),
@@ -1159,7 +1159,7 @@ public class APIClient {
         json defaultOpenApiDefinition = {
             "openapi": "3.0.1",
             "info": {
-                "title": api.spec.apiDisplayName,
+                "title": api.spec.apiName,
                 "version": api.spec.apiVersion
             },
             "servers": [

@@ -23,7 +23,7 @@ metadata:
     api-name: "idp-domain-service"
     api-version: "1.0.0"
 spec:
-  apiDisplayName: "oauth-api"
+  apiName: "oauth-api"
   apiType: "REST"
   apiVersion: "1.0.0"
   context: "/oauth2/1.0.0"

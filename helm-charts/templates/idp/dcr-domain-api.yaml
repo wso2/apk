@@ -23,7 +23,7 @@ metadata:
     api-name: "idp-domain-service"
     api-version: "1.0.0"
 spec:
-  apiDisplayName: "dcr-api"
+  apiName: "dcr-api"
   apiType: "REST"
   apiVersion: "1.0.0"
   context: "/dcr/1.0.0"

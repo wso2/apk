@@ -25,7 +25,7 @@ public type API record {
 };
 
 public type APISpec record {|
-    string apiDisplayName;
+    string apiName;
     string apiType;
     string apiVersion;
     string context;

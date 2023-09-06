@@ -20,7 +20,7 @@ metadata:
   name: resource-scopes
   namespace: gateway-integration-test-infra
 spec:
-  apiDisplayName: API with resource scopes
+  apiName: API with resource scopes
   apiType: REST
   apiVersion: v1
   context: /resource-scopes/v1

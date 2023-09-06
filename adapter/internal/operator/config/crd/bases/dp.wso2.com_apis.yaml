@@ -16,7 +16,7 @@ spec:
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
-    - jsonPath: .spec.apiDisplayName
+    - jsonPath: .spec.apiName
       name: API Name
       type: string
     - jsonPath: .spec.apiVersion
@@ -51,10 +51,9 @@ spec:
           spec:
             description: APISpec defines the desired state of API
             properties:
-              apiDisplayName:
-                description: APIDisplayName is the unique name of the API in the namespace
-                  defined. "Namespace/APIDisplayName" can be used to uniquely identify
-                  an API.
+              apiName:
+                description: APIName is the unique name of the API can be used to
+                  uniquely identify an API.
                 maxLength: 60
                 minLength: 1
                 pattern: ^[^~!@#;:%^*()+={}|\<>"'',&$\[\]\/]*$
@@ -142,7 +141,7 @@ spec:
                 description: SystemAPI denotes if it is an internal system API.
                 type: boolean
             required:
-            - apiDisplayName
+            - apiName
             - apiType
             - apiVersion
             - context

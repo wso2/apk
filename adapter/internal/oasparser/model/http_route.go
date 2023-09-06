@@ -634,7 +634,7 @@ func getAllowedOperations(httpMethod *gwapiv1b1.HTTPMethod, policies OperationPo
 // SetInfoAPICR populates ID, ApiType, Version and XWso2BasePath of adapterInternalAPI.
 func (swagger *AdapterInternalAPI) SetInfoAPICR(api dpv1alpha1.API) {
 	swagger.UUID = string(api.ObjectMeta.UID)
-	swagger.title = api.Spec.APIDisplayName
+	swagger.title = api.Spec.APIName
 	swagger.apiType = api.Spec.APIType
 	swagger.version = api.Spec.APIVersion
 	swagger.xWso2Basepath = api.Spec.Context

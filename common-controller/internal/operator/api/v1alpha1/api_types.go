@@ -28,14 +28,13 @@ import (
 // APISpec defines the desired state of API
 type APISpec struct {
 
-	// APIDisplayName is the unique name of the API in
-	// the namespace defined. "Namespace/APIDisplayName" can
-	// be used to uniquely identify an API.
+	// APIName is the unique name of the API
+	//can be used to uniquely identify an API.
 	//
 	// +kubebuilder:validation:MinLength=1
 	// +kubebuilder:validation:MaxLength=60
 	// +kubebuilder:validation:Pattern="^[^~!@#;:%^*()+={}|\\<>\"'',&$\\[\\]\\/]*$"
-	APIDisplayName string `json:"apiDisplayName"`
+	APIName string `json:"apiName"`
 
 	// APIVersion is the version number of the API.
 	//
@@ -165,9 +164,10 @@ type DeploymentStatus struct {
 	Events []string `json:"events,omitempty"`
 }
 
+// +genclient
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
-//+kubebuilder:printcolumn:name="API Name",type="string",JSONPath=".spec.apiDisplayName"
+//+kubebuilder:printcolumn:name="API Name",type="string",JSONPath=".spec.apiName"
 //+kubebuilder:printcolumn:name="Version",type="string",JSONPath=".spec.apiVersion"
 //+kubebuilder:printcolumn:name="Context",type="string",JSONPath=".spec.context"
 //+kubebuilder:printcolumn:name="Organization",type="string",JSONPath=".spec.organization"

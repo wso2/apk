@@ -20,7 +20,7 @@ metadata:
   name: test-api-with-path-params
   namespace: gateway-integration-test-infra
 spec:
-  apiDisplayName: API with Backend Base Path
+  apiName: API with Backend Base Path
   apiType: REST
   apiVersion: v1.0.0
   context: /test-api-with-path-params/v1.0.0

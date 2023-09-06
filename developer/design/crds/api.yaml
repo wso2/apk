@@ -3,7 +3,7 @@ apiVersion: wso2.com/v1beta1
 metadata:
   name: SwaggerPetstore
 spec:
-  apiDisplayName: SwaggerPetstore
+  apiName: SwaggerPetstore
   apiVersion: 1.0.6
 #  TODO(amali) check value from k8
   definitionFile:
