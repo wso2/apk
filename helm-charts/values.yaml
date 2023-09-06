@@ -169,7 +169,7 @@ wso2:
           strategy: RollingUpdate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/ratelimiter:latest
+          image: wso2/ratelimiter:1.0.0-rc
           security:
             sslHostname: "ratelimiter"
           # configs:
@@ -199,7 +199,7 @@ wso2:
               failureThreshold: 5
             strategy: RollingUpdate
             imagePullPolicy: Always
-            image: wso2/router:latest
+            image: wso2/router:1.0.0-rc
             # configs:
             #   tls:
             #     secretName: "router-cert"
@@ -283,7 +283,7 @@ idp:
       strategy: RollingUpdate
       replicas: 1
       imagePullPolicy: Always
-      image: wso2/idp-domain-service:latest
+      image: wso2/idp-domain-service:1.0.0-rc
   idpui:
     deployment:
       resources:
@@ -304,7 +304,7 @@ idp:
       strategy: RollingUpdate
       replicas: 1
       imagePullPolicy: Always
-      image: wso2/idp-ui:latest
+      image: wso2/idp-ui:1.0.0-rc
     configs:
       idpLoginUrl: "https://idp.am.wso2.com:9095/commonauth/login"
       idpAuthCallBackUrl: "https://idp.am.wso2.com:9095/oauth2/auth-callback"
