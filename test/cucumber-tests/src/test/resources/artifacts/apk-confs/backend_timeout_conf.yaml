@@ -1,6 +1,6 @@
 ---
 name: "BackendTimeout"
-context: "/backend-timeout"
+basePath: "/backend-timeout"
 id: "backend-timeout-test"
 version: "3.14"
 type: "REST"

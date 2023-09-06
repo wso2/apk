@@ -1,15 +1,27 @@
 # apiVersion: dp.wso2.com/v1alpha1
 # kind: RateLimitPolicy
 # metadata:
-#   name: sand-http-bin-ratelimit
+#   name: http-bin-api-ratelimit
 # spec:
 #   default:
-#     type: Api
 #     api:
-#       rateLimit:
 #         requestsPerUnit: 5
 #         unit: Minute
 #   targetRef:
 #     kind: API
-#     name: sand-http-route-http-bin-api
+#     name: http-bin-api
 #     group: gateway.networking.k8s.io
+---
+apiVersion: dp.wso2.com/v1alpha1
+kind: RateLimitPolicy
+metadata:
+  name: http-bin-api-resource-ratelimit
+spec:
+  override:
+    api:
+      requestsPerUnit: 10
+      unit: Minute
+  targetRef:
+    kind: Resource
+    name: http-bin-api
+    group: gateway.networking.k8s.io

@@ -328,7 +328,7 @@ public isolated function testRetrievePathPrefix() returns error? {
     APIClient apiClient = new;
     string pathPrefix;
     string organizaionStr = "wso2";
-    string context = "test";
+    string basePath = "test";
     string version = "1.0.0";
     string errorMessage = "Acual path prefix not equal to expected path prefix";
     commons:Organization organization = {
@@ -339,16 +339,16 @@ public isolated function testRetrievePathPrefix() returns error? {
         enabled: true
     };
 
-    pathPrefix = apiClient.retrievePathPrefix(context, version, "/", organization);
+    pathPrefix = apiClient.retrievePathPrefix(basePath, version, "/", organization);
     test:assertEquals(pathPrefix, "/", errorMessage);
 
-    pathPrefix = apiClient.retrievePathPrefix(context, version, "/*", organization);
+    pathPrefix = apiClient.retrievePathPrefix(basePath, version, "/*", organization);
     test:assertEquals(pathPrefix, "(.*)", errorMessage);
 
-    pathPrefix = apiClient.retrievePathPrefix(context, version, "/employees/get", organization);
+    pathPrefix = apiClient.retrievePathPrefix(basePath, version, "/employees/get", organization);
     test:assertEquals(pathPrefix, "/employees/get", errorMessage);
 
-    pathPrefix = apiClient.retrievePathPrefix(context, version, "/employees/get/*", organization);
+    pathPrefix = apiClient.retrievePathPrefix(basePath, version, "/employees/get/*", organization);
     test:assertEquals(pathPrefix, "/employees/get(.*)", errorMessage);
 }
 
@@ -554,16 +554,16 @@ public function APIToAPKConfDataProvider() returns map<[runtimeModels:API, APKCo
     runtimeModels:API api = runtimeModels:newAPI1();
     api.setName("testAPI");
     api.setVersion("1.0.0");
-    api.setContext("/test");
+    api.setBasePath("/test");
     runtimeModels:API api2 = runtimeModels:newAPI1();
     api2.setName("testAPI");
     api2.setVersion("1.0.0");
-    api2.setContext("/test");
+    api2.setBasePath("/test");
     api2.setEndpoint("http://localhost:9090");
     runtimeModels:API api3 = runtimeModels:newAPI1();
     api3.setName("testAPI");
     api3.setVersion("1.0.0");
-    api3.setContext("/test");
+    api3.setBasePath("/test");
     api3.setEndpoint("http://localhost:9090");
     runtimeModels:URITemplate[] uriTemplates = [];
     runtimeModels:URITemplate uriTemplate = runtimeModels:newURITemplate1();
@@ -583,7 +583,7 @@ public function APIToAPKConfDataProvider() returns map<[runtimeModels:API, APKCo
             api,
             {
                 name: "testAPI",
-                context: "/test",
+                basePath: "/test",
                 version: "1.0.0",
                 operations: []
             }
@@ -592,7 +592,7 @@ public function APIToAPKConfDataProvider() returns map<[runtimeModels:API, APKCo
             api2,
             {
                 name: "testAPI",
-                context: "/test",
+                basePath: "/test",
                 version: "1.0.0",
                 endpointConfigurations: {production: {endpoint: "http://localhost:9090"}},
                 operations: []
@@ -603,7 +603,7 @@ public function APIToAPKConfDataProvider() returns map<[runtimeModels:API, APKCo
             api3,
             {
                 name: "testAPI",
-                context: "/test",
+                basePath: "/test",
                 version: "1.0.0",
                 endpointConfigurations: {production: {endpoint: "http://localhost:9090"}},
                 operations: [

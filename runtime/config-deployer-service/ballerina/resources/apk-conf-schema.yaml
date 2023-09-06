@@ -3,7 +3,7 @@ components:
     APKConf:
       title: API object
       required:
-        - context
+        - basePath
         - name
         - version
         - type
@@ -20,8 +20,8 @@ components:
           maxLength: 60
           minLength: 1
           type: string
-        context:
-          maxLength: 232
+        basePath:
+          maxLength: 256
           minLength: 1
           type: string
         version:

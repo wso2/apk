@@ -1,6 +1,6 @@
 ---
 name: "httpbin.org"
-context: ""
+basePath: "/aHR0cGJpbi5vcmcwLjkuMg"
 version: "0.9.2"
 type: "REST"
 defaultVersion: false

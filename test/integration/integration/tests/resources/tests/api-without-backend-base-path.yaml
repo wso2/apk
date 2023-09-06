@@ -23,7 +23,7 @@ spec:
   apiName: Backend with no basepath
   apiType: REST
   apiVersion: v1
-  context: /no-basepath/v1
+  basePath: /no-basepath/v1
   #definitionFileRef: definition-file
   production:
     - httpRouteRefs:

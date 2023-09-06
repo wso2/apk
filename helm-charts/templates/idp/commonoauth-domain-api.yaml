@@ -26,7 +26,7 @@ spec:
   apiName: "commonoauth-api"
   apiType: "REST"
   apiVersion: "1.0.0"
-  context: "/commonoauth/1.0.0"
+  basePath: "/commonoauth/1.0.0"
   isDefaultVersion: true
   organization: "apk-system"
   production:

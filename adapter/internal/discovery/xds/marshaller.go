@@ -538,7 +538,7 @@ func marshalAPIMetadata(api *types.API) *subscription.APIs {
 		Name:             api.Name,
 		Provider:         api.Provider,
 		Version:          api.Version,
-		Context:          api.Context,
+		BasePath:         api.BasePath,
 		Policy:           api.Policy,
 		ApiType:          api.APIType,
 		Uuid:             api.UUID,

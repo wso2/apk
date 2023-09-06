@@ -56,16 +56,16 @@ public interface APIsOrBuilder extends
       getVersionBytes();
 
   /**
-   * <code>string context = 5;</code>
-   * @return The context.
+   * <code>string basePath = 5;</code>
+   * @return The basePath.
    */
-  java.lang.String getContext();
+  java.lang.String getBasePath();
   /**
-   * <code>string context = 5;</code>
-   * @return The bytes for context.
+   * <code>string basePath = 5;</code>
+   * @return The bytes for basePath.
    */
   com.google.protobuf.ByteString
-      getContextBytes();
+      getBasePathBytes();
 
   /**
    * <code>string policy = 6;</code>

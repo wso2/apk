@@ -1,6 +1,6 @@
 ---
 name: "BasicAuthAPILevel"
-context: "/basic-auth"
+basePath: "/basic-auth"
 version: "3.14"
 id: "basic-auth-api-test"
 type: "REST"

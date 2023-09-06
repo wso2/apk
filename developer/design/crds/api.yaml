@@ -19,6 +19,6 @@ spec:
       - http-route-SwaggerPetstore-sand-p1
       - http-route-SwaggerPetstore-sand-p2
   apiType: REST / GraphQL / Async
-  context: /pet-store-api/1.0.6
+  basePath: /pet-store-api/1.0.6
   organization: org1
   systemAPI: false

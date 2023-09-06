@@ -23,7 +23,7 @@ spec:
   apiName: API with Backend Base Path
   apiType: REST
   apiVersion: v1.0.0
-  context: /test-api-with-path-params/v1.0.0
+  basePath: /test-api-with-path-params/v1.0.0
   isDefaultVersion: true
   #definitionFileRef: definition-file
   production:

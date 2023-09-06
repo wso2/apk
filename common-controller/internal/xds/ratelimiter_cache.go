@@ -28,8 +28,8 @@ import (
 	gcp_resource "github.com/envoyproxy/go-control-plane/pkg/resource/v3"
 	rls_config "github.com/envoyproxy/go-control-plane/ratelimit/config/ratelimit/v3"
 	logger "github.com/sirupsen/logrus"
-	"github.com/wso2/apk/common-controller/internal/loggers"
 	"github.com/wso2/apk/adapter/pkg/logging"
+	"github.com/wso2/apk/common-controller/internal/loggers"
 	dpv1alpha1 "github.com/wso2/apk/common-controller/internal/operator/api/v1alpha1"
 	constants "github.com/wso2/apk/common-controller/internal/operator/constant"
 )
@@ -87,7 +87,7 @@ func (r *rateLimitPolicyCache) AddAPILevelRateLimitPolicies(vHosts []string, res
 		for _, resource := range resolveRatelimit.Resources {
 			var org = resolveRatelimit.Organization
 
-			path := resolveRatelimit.Context + resolveRatelimit.Context + resource.Path
+			path := resolveRatelimit.BasePath + resolveRatelimit.BasePath + resource.Path
 			logger.Debug("path", path)
 
 			method := resource.Method
@@ -108,11 +108,11 @@ func (r *rateLimitPolicyCache) AddAPILevelRateLimitPolicies(vHosts []string, res
 						if _, ok := r.apiLevelRateLimitPolicies[org][vHost]; !ok {
 							r.apiLevelRateLimitPolicies[org][vHost] = make(map[string]map[string]*rls_config.RateLimitDescriptor)
 						}
-						if _, ok := r.apiLevelRateLimitPolicies[org][vHost][resolveRatelimit.Context+resolveRatelimit.Context+resource.Path]; !ok {
-							r.apiLevelRateLimitPolicies[org][vHost][resolveRatelimit.Context+resolveRatelimit.Context+resource.Path] = make(map[string]*rls_config.RateLimitDescriptor)
-							r.apiLevelRateLimitPolicies[org][vHost][resolveRatelimit.Context+resolveRatelimit.Context+resource.Path][httpMethod] = rlConf
+						if _, ok := r.apiLevelRateLimitPolicies[org][vHost][resolveRatelimit.BasePath+resolveRatelimit.BasePath+resource.Path]; !ok {
+							r.apiLevelRateLimitPolicies[org][vHost][resolveRatelimit.BasePath+resolveRatelimit.BasePath+resource.Path] = make(map[string]*rls_config.RateLimitDescriptor)
+							r.apiLevelRateLimitPolicies[org][vHost][resolveRatelimit.BasePath+resolveRatelimit.BasePath+resource.Path][httpMethod] = rlConf
 						} else {
-							r.apiLevelRateLimitPolicies[org][vHost][resolveRatelimit.Context+resolveRatelimit.Context+resource.Path][httpMethod] = rlConf
+							r.apiLevelRateLimitPolicies[org][vHost][resolveRatelimit.BasePath+resolveRatelimit.BasePath+resource.Path][httpMethod] = rlConf
 						}
 					}
 				}
@@ -132,11 +132,11 @@ func (r *rateLimitPolicyCache) AddAPILevelRateLimitPolicies(vHosts []string, res
 					if _, ok := r.apiLevelRateLimitPolicies[org][vHost]; !ok {
 						r.apiLevelRateLimitPolicies[org][vHost] = make(map[string]map[string]*rls_config.RateLimitDescriptor)
 					}
-					if _, ok := r.apiLevelRateLimitPolicies[org][vHost][resolveRatelimit.Context+resolveRatelimit.Context+resource.Path]; !ok {
-						r.apiLevelRateLimitPolicies[org][vHost][resolveRatelimit.Context+resolveRatelimit.Context+resource.Path] = make(map[string]*rls_config.RateLimitDescriptor)
-						r.apiLevelRateLimitPolicies[org][vHost][resolveRatelimit.Context+resolveRatelimit.Context+resource.Path][method] = rlConf
+					if _, ok := r.apiLevelRateLimitPolicies[org][vHost][resolveRatelimit.BasePath+resolveRatelimit.BasePath+resource.Path]; !ok {
+						r.apiLevelRateLimitPolicies[org][vHost][resolveRatelimit.BasePath+resolveRatelimit.BasePath+resource.Path] = make(map[string]*rls_config.RateLimitDescriptor)
+						r.apiLevelRateLimitPolicies[org][vHost][resolveRatelimit.BasePath+resolveRatelimit.BasePath+resource.Path][method] = rlConf
 					} else {
-						r.apiLevelRateLimitPolicies[org][vHost][resolveRatelimit.Context+resolveRatelimit.Context+resource.Path][method] = rlConf
+						r.apiLevelRateLimitPolicies[org][vHost][resolveRatelimit.BasePath+resolveRatelimit.BasePath+resource.Path][method] = rlConf
 					}
 				}
 			}
@@ -162,35 +162,35 @@ func (r *rateLimitPolicyCache) AddAPILevelRateLimitPolicies(vHosts []string, res
 			if _, ok := r.apiLevelRateLimitPolicies[org][vHost]; !ok {
 				r.apiLevelRateLimitPolicies[org][vHost] = make(map[string]map[string]*rls_config.RateLimitDescriptor)
 			}
-			if _, ok := r.apiLevelRateLimitPolicies[org][vHost][resolveRatelimit.Context]; !ok {
-				r.apiLevelRateLimitPolicies[org][vHost][resolveRatelimit.Context] = make(map[string]*rls_config.RateLimitDescriptor)
+			if _, ok := r.apiLevelRateLimitPolicies[org][vHost][resolveRatelimit.BasePath]; !ok {
+				r.apiLevelRateLimitPolicies[org][vHost][resolveRatelimit.BasePath] = make(map[string]*rls_config.RateLimitDescriptor)
 			}
-			r.apiLevelRateLimitPolicies[org][vHost][resolveRatelimit.Context][DescriptorValueForAPIMethod] = &rlsConfigs
+			r.apiLevelRateLimitPolicies[org][vHost][resolveRatelimit.BasePath][DescriptorValueForAPIMethod] = &rlsConfigs
 		}
 	}
 }
 
 // DeleteAPILevelRateLimitPolicies deletes inline Rate Limit policies added with the API.
-func (r *rateLimitPolicyCache) DeleteAPILevelRateLimitPolicies(org string, vHosts []string, context string) {
+func (r *rateLimitPolicyCache) DeleteAPILevelRateLimitPolicies(org string, vHosts []string, basePath string) {
 	r.apiLevelMu.Lock()
 	defer r.apiLevelMu.Unlock()
 	for _, vHost := range vHosts {
-		delete(r.apiLevelRateLimitPolicies[org][vHost][context], DescriptorValueForAPIMethod)
+		delete(r.apiLevelRateLimitPolicies[org][vHost][basePath], DescriptorValueForAPIMethod)
 	}
 }
 
 // DeleteAPILevelRateLimitPolicies deletes inline Rate Limit policies added with the API.
-func (r *rateLimitPolicyCache) DeleteResourceLevelRateLimitPolicies(org string, vHosts []string, context string, path string, method string) {
+func (r *rateLimitPolicyCache) DeleteResourceLevelRateLimitPolicies(org string, vHosts []string, basePath string, path string, method string) {
 	httpMethods := []string{"GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"}
 	r.apiLevelMu.Lock()
 	defer r.apiLevelMu.Unlock()
 	for _, vHost := range vHosts {
 		if method == constants.All {
 			for _, httpMethod := range httpMethods {
-				delete(r.apiLevelRateLimitPolicies[org][vHost][context+context+path], httpMethod)
+				delete(r.apiLevelRateLimitPolicies[org][vHost][basePath+basePath+path], httpMethod)
 			}
 		} else {
-			delete(r.apiLevelRateLimitPolicies[org][vHost][context+context+path], method)
+			delete(r.apiLevelRateLimitPolicies[org][vHost][basePath+basePath+path], method)
 		}
 	}
 }

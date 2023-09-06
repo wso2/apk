@@ -14,7 +14,7 @@ spec:
   apiName: "APIDefinitionEndpointDefault"
   apiType: "REST"
   apiVersion: "3.14"
-  context: "/test-definition-default/3.14"
+  basePath: "/test-definition-default/3.14"
   organization: "default"
   definitionFileRef: "default-api-definition-endpoint-test-definition"
   production:

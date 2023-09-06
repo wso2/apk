@@ -202,8 +202,8 @@ public type APKConf record {
     string id?;
     @constraint:String {maxLength: 60, minLength: 1}
     string name;
-    @constraint:String {maxLength: 232, minLength: 1}
-    string context;
+    @constraint:String {maxLength: 256, minLength: 1}
+    string basePath;
     @constraint:String {maxLength: 30, minLength: 1}
     string version;
     string 'type = "REST";

@@ -36,15 +36,22 @@ public class APIClient {
     # + api - APKInternalAPI model
     # + return - APKConf model.
     public isolated function fromAPIModelToAPKConf(runtimeModels:API api) returns APKConf|error {
+        string generatedBasePath = api.getName() +  api.getVersion();
+        byte[] data = generatedBasePath.toBytes();
+        string encodedString = "/" + data.toBase64();
+        if (encodedString.endsWith("==")) {
+            encodedString = encodedString.substring(0,encodedString.length()-2);
+        }
         APKConf apkConf = {
             name: api.getName(),
-            context: api.getContext().length() > 0 ? api.getContext() : "",
+            basePath: api.getBasePath().length() > 0 ? api.getBasePath() : encodedString,
             version: api.getVersion()
         };
         string endpoint = api.getEndpoint();
         if endpoint.length() > 0 {
             apkConf.endpointConfigurations = {production: {endpoint: endpoint}};
         }
+
         runtimeModels:URITemplate[]|error uriTemplates = api.getUriTemplates();
         APKOperations[] operations = [];
         if uriTemplates is runtimeModels:URITemplate[] {
@@ -255,12 +262,12 @@ public class APIClient {
         return labels;
     }
 
-    isolated function returnFullContext(string context, string 'version) returns string {
-        string fullContext = context;
-        if (!string:endsWith(context, 'version)) {
-            fullContext = string:'join("/", context, 'version);
+    isolated function returnFullBasePath(string basePath, string 'version) returns string {
+        string fullBasePath = basePath;
+        if (!string:endsWith(basePath, 'version)) {
+            fullBasePath = string:'join("/", basePath, 'version);
         }
-        return fullContext;
+        return fullBasePath;
     }
 
     private isolated function construcURlFromK8sService(K8sService 'k8sService) returns string {
@@ -377,7 +384,7 @@ public class APIClient {
                 apiName: apkConf.name,
                 apiType: apkConf.'type,
                 apiVersion: apkConf.'version,
-                context: self.returnFullContext(apkConf.context, apkConf.'version),
+                basePath: self.returnFullBasePath(apkConf.basePath, apkConf.'version),
                 isDefaultVersion: apkConf.defaultVersion,
                 organization: organization.name,
                 definitionPath: apkConf.definitionPath
@@ -719,7 +726,7 @@ public class APIClient {
         return generatedPath;
     }
 
-    public isolated function retrievePathPrefix(string context, string 'version, string operation, commons:Organization organization) returns string {
+    public isolated function retrievePathPrefix(string basePath, string 'version, string operation, commons:Organization organization) returns string {
         string[] splitValues = regex:split(operation, "/");
         string generatedPath = "";
         if (operation == "/*") {
@@ -764,7 +771,7 @@ public class APIClient {
 
     private isolated function retrieveHttpRouteMatch(APKConf apkConf, APKOperations apiOperation, commons:Organization organization) returns model:HTTPRouteMatch {
 
-        return {method: <string>apiOperation.verb, path: {'type: "RegularExpression", value: self.retrievePathPrefix(apkConf.context, apkConf.'version, apiOperation.target ?: "/*", organization)}};
+        return {method: <string>apiOperation.verb, path: {'type: "RegularExpression", value: self.retrievePathPrefix(apkConf.basePath, apkConf.'version, apiOperation.target ?: "/*", organization)}};
     }
 
     isolated function retrieveGeneratedSwaggerDefinition(APKConf apkConf, string? definition) returns json|commons:APKError|error {

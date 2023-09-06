@@ -1,6 +1,6 @@
 name: "test-cors"
 id: "cors-api-adff3dbc-2787-11ee-be56-0242ac120002"
-context: "/test_cors"
+basePath: "/test_cors"
 version: "2.0.0"
 type: "REST"
 endpointConfigurations:

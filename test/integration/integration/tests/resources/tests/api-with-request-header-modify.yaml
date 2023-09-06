@@ -23,7 +23,7 @@ spec:
   apiName: API with Request Header Modify
   apiType: REST
   apiVersion: 1.0.0
-  context: /request-header-modify/1.0.0
+  basePath: /request-header-modify/1.0.0
   isDefaultVersion: true
   #definitionFileRef: swagger-definition-webhook
   production:

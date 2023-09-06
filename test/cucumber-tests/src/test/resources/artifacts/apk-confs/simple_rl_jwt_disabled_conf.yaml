@@ -1,6 +1,6 @@
 ---
 name: "JWTDisabledAPIWithSimpleRateLimit"
-context: "/simple-rl-jwt-disabled"
+basePath: "/simple-rl-jwt-disabled"
 id: "simple-rl-jwt-disabled-test"
 version: "3.14"
 type: "REST"

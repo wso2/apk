@@ -1,6 +1,6 @@
 ---
 name: "EmployeeServiceAPI"
-context: "/test"
+basePath: "/test"
 version: "3.14"
 type: "REST"
 defaultVersion: false

@@ -26,7 +26,7 @@ spec:
   apiName: "dcr-api"
   apiType: "REST"
   apiVersion: "1.0.0"
-  context: "/dcr/1.0.0"
+  basePath: "/dcr/1.0.0"
   isDefaultVersion: true
   organization: "apk-system"
   production:

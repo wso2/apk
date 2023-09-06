@@ -23,7 +23,7 @@ spec:
   apiName: API with resource scopes
   apiType: REST
   apiVersion: v1
-  context: /resource-scopes/v1
+  basePath: /resource-scopes/v1
   #definitionFileRef: definition-file
   production:
     - httpRouteRefs:
