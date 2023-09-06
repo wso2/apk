@@ -565,12 +565,12 @@ func concatAuthSchemes(schemeUp *dpv1alpha1.Authentication, schemeDown *dpv1alph
 // tip: use concatScheme method
 func getSecurity(authScheme *dpv1alpha1.Authentication) *Authentication {
 	authHeader := constants.AuthorizationHeader
-	if authScheme != nil && authScheme.Spec.Override.AuthTypes != nil && len(authScheme.Spec.Override.AuthTypes.JWT.Header) > 0 {
-		authHeader = authScheme.Spec.Override.AuthTypes.JWT.Header
+	if authScheme != nil && authScheme.Spec.Override.AuthTypes != nil && len(authScheme.Spec.Override.AuthTypes.Oauth2.Header) > 0 {
+		authHeader = authScheme.Spec.Override.AuthTypes.Oauth2.Header
 	}
 	sendTokenToUpstream := false
 	if authScheme != nil && authScheme.Spec.Override.AuthTypes != nil {
-		sendTokenToUpstream = authScheme.Spec.Override.AuthTypes.JWT.SendTokenToUpstream
+		sendTokenToUpstream = authScheme.Spec.Override.AuthTypes.Oauth2.SendTokenToUpstream
 	}
 	auth := &Authentication{Disabled: false,
 		TestConsoleKey: &TestConsoleKey{Header: constants.TestConsoleKeyHeader},
@@ -581,7 +581,7 @@ func getSecurity(authScheme *dpv1alpha1.Authentication) *Authentication {
 			return &Authentication{Disabled: true}
 		}
 		authFound := false
-		if authScheme.Spec.Override.AuthTypes != nil && authScheme.Spec.Override.AuthTypes.JWT.Disabled {
+		if authScheme.Spec.Override.AuthTypes != nil && authScheme.Spec.Override.AuthTypes.Oauth2.Disabled {
 			auth = &Authentication{Disabled: false,
 				TestConsoleKey: &TestConsoleKey{Header: constants.TestConsoleKeyHeader},
 			}

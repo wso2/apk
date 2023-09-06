@@ -35,11 +35,11 @@ public type AuthenticationData record {
 };
 
 public type AuthenticationExtenstionType record {
-    JWTAuthentication jwt?;
+    OAuth2Authentication oauth2?;
     APIKey[] apiKey = [];
 };
 
-public type JWTAuthentication record {
+public type OAuth2Authentication record {
     string header?;
     boolean sendTokenToUpstream?;
     boolean disabled;

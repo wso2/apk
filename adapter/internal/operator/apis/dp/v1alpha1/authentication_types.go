@@ -42,10 +42,10 @@ type AuthSpec struct {
 
 // APIAuth Authentication scheme type and details
 type APIAuth struct {
-	// JWT is to specify the JWT authentication scheme details
+	// Oauth2 is to specify the Oauth2 authentication scheme details
 	//
 	// +optional
-	JWT JWTAuth `json:"jwt,omitempty"`
+	Oauth2 Oauth2Auth `json:"oauth2,omitempty"`
 
 	// APIKey is to specify the APIKey authentication scheme details
 	//
@@ -74,8 +74,8 @@ type TestConsoleKeyAuth struct {
 	SendTokenToUpstream bool `json:"sendTokenToUpstream,omitempty"`
 }
 
-// JWTAuth JWT Authentication scheme details
-type JWTAuth struct {
+// Oauth2Auth Oauth Authentication scheme details
+type Oauth2Auth struct {
 
 	// Disabled is to disable JWT authentication
 	//
