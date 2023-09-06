@@ -21,23 +21,23 @@ endpointConfigurations:
 operations:
   - target: "/get"
     verb: "GET"
-    authTypeEnabled: true
+    secured: true
     scopes: [ ]
   - target: "/anything/{path}"
     verb: "GET"
-    authTypeEnabled: true
+    secured: true
     scopes: [ ]
   - target: "/delay/{delay}"
     verb: "GET"
-    authTypeEnabled: true
+    secured: true
     scopes: [ ]
   - target: "/delay/{delay}"
     verb: "POST"
-    authTypeEnabled: true
+    secured: true
     scopes: [ ]
   - target: "/delay/{delay}"
     verb: "PUT"
-    authTypeEnabled: true
+    secured: true
     scopes: [ ]
 authentication:
  - authType: OAuth2
