@@ -20,7 +20,7 @@ metadata:
   name: trailing-slash
   namespace: gateway-integration-test-infra
 spec:
-  apiDisplayName: API with Backend Base Path
+  apiName: API with Backend Base Path
   apiType: REST
   apiVersion: 1.0.0
   context: /trailing-slash/v1.0.0

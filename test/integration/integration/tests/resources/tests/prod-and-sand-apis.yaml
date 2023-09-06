@@ -20,7 +20,7 @@ metadata:
   name: prod-and-sand-apis
   namespace: gateway-integration-test-infra
 spec:
-  apiDisplayName: Backend with no basepath
+  apiName: Backend with no basepath
   apiType: REST
   apiVersion: v1
   context: /prod-sand-test-api/v1
@@ -122,7 +122,7 @@ metadata:
   name: prod-and-sand-apis
   namespace: gateway-integration-test-infra
 spec:
-  apiDisplayName: Backend with no basepath
+  apiName: Backend with no basepath
   apiType: REST
   apiVersion: v1
   context: /prod-sand-test-api/v1

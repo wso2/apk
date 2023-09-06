@@ -74,22 +74,22 @@ type TestConsoleKeyAuth struct {
 	SendTokenToUpstream bool `json:"sendTokenToUpstream,omitempty"`
 }
 
-// Oauth2Auth Oauth Authentication scheme details
+// Oauth2Auth OAuth2 Authentication scheme details
 type Oauth2Auth struct {
 
-	// Disabled is to disable JWT authentication
+	// Disabled is to disable OAuth2 authentication
 	//
 	// +kubebuilder:default:=false
 	// +optional
 	Disabled bool `json:"disabled"`
 
-	// Header is the header name used to pass the JWT token
+	// Header is the header name used to pass the OAuth2 token
 	//
 	// +kubebuilder:default:=authorization
 	// +optional
 	Header string `json:"header,omitempty"`
 
-	// SendTokenToUpstream is to specify whether the JWT token should be sent to the upstream
+	// SendTokenToUpstream is to specify whether the OAuth2 token should be sent to the upstream
 	//
 	// +optional
 	SendTokenToUpstream bool `json:"sendTokenToUpstream,omitempty"`

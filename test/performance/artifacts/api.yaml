@@ -11,7 +11,7 @@ metadata:
   annotations:
     wso2apk/api-uuid: "default-api-definition-endpoint-test"
 spec:
-  apiDisplayName: "APIDefinitionEndpointDefault"
+  apiName: "APIDefinitionEndpointDefault"
   apiType: "REST"
   apiVersion: "3.14"
   context: "/test-definition-default/3.14"

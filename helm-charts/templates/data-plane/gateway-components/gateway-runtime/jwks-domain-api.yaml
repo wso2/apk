@@ -23,7 +23,7 @@ metadata:
     api-name: "jwks-endpoint"
     api-version: "1.0.0"
 spec:
-  apiDisplayName: "jwks-domain-service"
+  apiName: "jwks-domain-service"
   apiType: "REST"
   apiVersion: "1.0.0"
   context: "/.wellknown/jwks/1.0.0"
