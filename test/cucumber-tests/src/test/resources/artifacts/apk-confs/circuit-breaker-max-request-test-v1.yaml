@@ -1,6 +1,6 @@
 ---
 name: "CircuitBreakerMaxRequest"
-context: "/circuit-breaker-max-request-v1"
+basePath: "/circuit-breaker-max-request-v1"
 id: "circuit-breaker-max-request-test-v1"
 version: "3.14"
 type: "REST"
