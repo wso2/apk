@@ -15,15 +15,15 @@ endpointConfigurations:
 operations:
     - target: "/anything"
       verb: "GET"
-      authTypeEnabled: true
+      secured: true
       scopes: ["admin", "reader"]
     - target: "/post_cat"
       verb: "POST"
-      authTypeEnabled: true
+      secured: true
       scopes: ["admin", "publisher"]
       endpointConfigurations:
         production:
           endpoint: "https://backend-prod-post-cat/v2/"
-apiRateLimit:
+rateLimit:
   requestsPerUnit: 5
   unit: Minute

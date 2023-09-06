@@ -6,20 +6,20 @@ type: "REST"
 operations:
   - target: "/pets"
     verb: "GET"
-    authTypeEnabled: true
+    secured: true
     endpointConfigurations:
       sandbox:
         endpoint: "https://petstore.swagger.io/v2/pet"
   - target: "/pets/{petId}"
     verb: "GET"
-    authTypeEnabled: true
+    secured: true
     scopes: []
     endpointConfigurations:
       production:
         endpoint: "https://petstore.swagger.io/v2/pet"
   - target: "/cat/{petId}"
     verb: "GET"
-    authTypeEnabled: true
+    secured: true
     scopes: []      
 authentication:
   - authType: "OAuth2"

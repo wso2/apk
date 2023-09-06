@@ -59,7 +59,7 @@ public class APIClient {
                 APKOperations operation = {
                     verb: uriTemplate.getHTTPVerb(),
                     target: uriTemplate.getUriTemplate(),
-                    authTypeEnabled: uriTemplate.isAuthEnabled(),
+                    secured: uriTemplate.isAuthEnabled(),
                     scopes: check uriTemplate.getScopes()
                 };
                 string resourceEndpoint = uriTemplate.getEndpoint();
@@ -89,7 +89,7 @@ public class APIClient {
                 }
 
                 // Validating rate limit.
-                _ = check self.validateRateLimit(apkConf.apiRateLimit, operations);
+                _ = check self.validateRateLimit(apkConf.rateLimit, operations);
                 resourceLevelEndpointConfigList = self.getResourceLevelEndpointConfig(operations);
             } else {
                 return e909021();
@@ -196,7 +196,7 @@ public class APIClient {
             return ();
         } else {
             foreach APKOperations operation in operations {
-                RateLimit? operationRateLimit = operation.operationRateLimit;
+                RateLimit? operationRateLimit = operation.rateLimit;
                 if (operationRateLimit != ()) {
                     // Presence of both resource level and API level rate limits.
                     return e909026();
@@ -315,8 +315,8 @@ public class APIClient {
     }
 
     private isolated function generateAndSetPolicyCRArtifact(model:APIArtifact apiArtifact, APKConf apkConf, commons:Organization organization) returns error? {
-        if apkConf.apiRateLimit != () {
-            model:RateLimitPolicy? rateLimitPolicyCR = self.generateRateLimitPolicyCR(apkConf, apkConf.apiRateLimit, apiArtifact.uniqueId, (), organization);
+        if apkConf.rateLimit != () {
+            model:RateLimitPolicy? rateLimitPolicyCR = self.generateRateLimitPolicyCR(apkConf, apkConf.rateLimit, apiArtifact.uniqueId, (), organization);
             if rateLimitPolicyCR != () {
                 apiArtifact.rateLimitPolicies[rateLimitPolicyCR.metadata.name] = rateLimitPolicyCR;
             }
@@ -500,7 +500,7 @@ public class APIClient {
                         httpRouteRule.filters = filters;
                     }
                     string disableAuthenticationRefName = self.retrieveDisableAuthenticationRefName(apkConf, endpointType, organization);
-                    if !(operation.authTypeEnabled ?: true) {
+                    if !(operation.secured ?: true) {
                         if !apiArtifact.authenticationMap.hasKey(disableAuthenticationRefName) {
                             model:Authentication generateDisableAuthenticationCR = self.generateDisableAuthenticationCR(apiArtifact, apkConf, endpointType, organization);
                             apiArtifact.authenticationMap[disableAuthenticationRefName] = generateDisableAuthenticationCR;
@@ -524,8 +524,8 @@ public class APIClient {
                             (<model:HTTPRouteFilter[]>filters).push(scopeFilter);
                         }
                     }
-                    if operation.operationRateLimit != () {
-                        model:RateLimitPolicy? rateLimitPolicyCR = self.generateRateLimitPolicyCR(apkConf, operation.operationRateLimit, apiArtifact.uniqueId, operation, organization);
+                    if operation.rateLimit != () {
+                        model:RateLimitPolicy? rateLimitPolicyCR = self.generateRateLimitPolicyCR(apkConf, operation.rateLimit, apiArtifact.uniqueId, operation, organization);
                         if rateLimitPolicyCR != () {
                             apiArtifact.rateLimitPolicies[rateLimitPolicyCR.metadata.name] = rateLimitPolicyCR;
                             model:HTTPRouteFilter rateLimitPolicyFilter = {'type: "ExtensionRef", extensionRef: {group: "dp.wso2.com", kind: "RateLimitPolicy", name: rateLimitPolicyCR.metadata.name}};
@@ -788,9 +788,9 @@ public class APIClient {
                 if verb is string {
                     uriTemplate.setHTTPVerb(verb.toUpperAscii());
                 }
-                boolean? authTypeEnabled = apiOperation.authTypeEnabled;
-                if authTypeEnabled is boolean {
-                    uriTemplate.setAuthEnabled(authTypeEnabled);
+                boolean? secured = apiOperation.secured;
+                if secured is boolean {
+                    uriTemplate.setAuthEnabled(secured);
                 } else {
                     uriTemplate.setAuthEnabled(true);
                 }

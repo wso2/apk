@@ -58,7 +58,7 @@
       "$ref": "#/schemas/APIOperationPolicies",
       "description": "Policies applied to API-level operations."
     },
-    "apiRateLimit": {
+    "rateLimit": {
       "$ref": "#/schemas/RateLimit",
       "description": "Rate limiting configuration for the API."
     },
@@ -442,7 +442,7 @@
           "type": "string",
           "example": "POST"
         },
-        "authTypeEnabled": {
+        "secured": {
           "type": "boolean",
           "example": true,
           "default": true,
@@ -454,7 +454,7 @@
         "operationPolicies": {
           "$ref": "#/schemas/APIOperationPolicies"
         },
-        "operationRateLimit": {
+        "rateLimit": {
           "$ref": "#/schemas/RateLimit"
         },
         "scopes": {

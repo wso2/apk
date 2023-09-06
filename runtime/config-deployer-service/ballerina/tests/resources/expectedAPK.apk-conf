@@ -10,294 +10,294 @@ endpointConfigurations:
 operations:
 - target: "/absolute-redirect/{n}"
   verb: "GET"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/anything"
   verb: "GET"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/anything"
   verb: "PUT"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/anything"
   verb: "POST"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/anything"
   verb: "DELETE"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/anything"
   verb: "PATCH"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/anything/{anything}"
   verb: "GET"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/anything/{anything}"
   verb: "PUT"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/anything/{anything}"
   verb: "POST"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/anything/{anything}"
   verb: "DELETE"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/anything/{anything}"
   verb: "PATCH"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/base64/{value}"
   verb: "GET"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/basic-auth/{user}/{passwd}"
   verb: "GET"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/bearer"
   verb: "GET"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/brotli"
   verb: "GET"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/bytes/{n}"
   verb: "GET"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/cache"
   verb: "GET"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/cache/{value}"
   verb: "GET"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/cookies"
   verb: "GET"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/cookies/delete"
   verb: "GET"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/cookies/set"
   verb: "GET"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/cookies/set/{name}/{value}"
   verb: "GET"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/deflate"
   verb: "GET"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/delay/{delay}"
   verb: "GET"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/delay/{delay}"
   verb: "PUT"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/delay/{delay}"
   verb: "POST"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/delay/{delay}"
   verb: "DELETE"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/delay/{delay}"
   verb: "PATCH"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/delete"
   verb: "DELETE"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/deny"
   verb: "GET"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/digest-auth/{qop}/{user}/{passwd}"
   verb: "GET"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/digest-auth/{qop}/{user}/{passwd}/{algorithm}"
   verb: "GET"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/digest-auth/{qop}/{user}/{passwd}/{algorithm}/{stale_after}"
   verb: "GET"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/drip"
   verb: "GET"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/encoding/utf8"
   verb: "GET"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/etag/{etag}"
   verb: "GET"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/get"
   verb: "GET"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/gzip"
   verb: "GET"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/headers"
   verb: "GET"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/hidden-basic-auth/{user}/{passwd}"
   verb: "GET"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/html"
   verb: "GET"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/image"
   verb: "GET"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/image/jpeg"
   verb: "GET"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/image/png"
   verb: "GET"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/image/svg"
   verb: "GET"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/image/webp"
   verb: "GET"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/ip"
   verb: "GET"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/json"
   verb: "GET"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/links/{n}/{offset}"
   verb: "GET"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/patch"
   verb: "PATCH"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/post"
   verb: "POST"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/put"
   verb: "PUT"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/range/{numbytes}"
   verb: "GET"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/redirect-to"
   verb: "GET"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/redirect-to"
   verb: "PUT"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/redirect-to"
   verb: "POST"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/redirect-to"
   verb: "DELETE"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/redirect-to"
   verb: "PATCH"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/redirect/{n}"
   verb: "GET"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/relative-redirect/{n}"
   verb: "GET"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/response-headers"
   verb: "GET"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/response-headers"
   verb: "POST"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/robots.txt"
   verb: "GET"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/status/{codes}"
   verb: "GET"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/status/{codes}"
   verb: "PUT"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/status/{codes}"
   verb: "POST"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/status/{codes}"
   verb: "DELETE"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/status/{codes}"
   verb: "PATCH"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/stream-bytes/{n}"
   verb: "GET"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/stream/{n}"
   verb: "GET"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/user-agent"
   verb: "GET"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/uuid"
   verb: "GET"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 - target: "/xml"
   verb: "GET"
-  authTypeEnabled: true
+  secured: true
   scopes: []
 

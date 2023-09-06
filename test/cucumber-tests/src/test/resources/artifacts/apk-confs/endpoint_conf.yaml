@@ -13,11 +13,11 @@ endpointConfigurations:
 operations:
   - target: "/employee"
     verb: "GET"
-    authTypeEnabled: true
+    secured: true
     scopes: []
   - target: "/employee"
     verb: "POST"
-    authTypeEnabled: true
+    secured: true
     scopes: []
     endpointConfigurations:
       production:
@@ -26,11 +26,11 @@ operations:
         endpoint: "http://backend:80/anything"
   - target: "/employee/{employeeId}"
     verb: "PUT"
-    authTypeEnabled: true
+    secured: true
     scopes: []
   - target: "/employee/{employeeId}"
     verb: "DELETE"
-    authTypeEnabled: true
+    secured: true
     scopes: []
 authentication:
  - authType: OAuth2

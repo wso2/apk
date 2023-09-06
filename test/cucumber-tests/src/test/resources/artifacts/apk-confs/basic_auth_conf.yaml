@@ -17,11 +17,11 @@ endpointConfigurations:
 operations:
   - target: "/employee"
     verb: "GET"
-    authTypeEnabled: true
+    secured: true
     scopes: []
   - target: "/get"
     verb: "GET"
-    authTypeEnabled: true
+    secured: true
     scopes: []
     endpointConfigurations:
       production:
@@ -34,7 +34,7 @@ operations:
             passwordKey: "password"
   - target: "/post"
     verb: "POST"
-    authTypeEnabled: true
+    secured: true
     scopes: [ ]
     endpointConfigurations:
       production:
@@ -51,7 +51,7 @@ operations:
             passwordKey: "password"
   - target: "/employee"
     verb: "POST"
-    authTypeEnabled: true
+    secured: true
     scopes: []
     endpointConfigurations:
       production:
@@ -62,9 +62,9 @@ operations:
           protocol: "http"
   - target: "/employee/{employeeId}"
     verb: "PUT"
-    authTypeEnabled: true
+    secured: true
     scopes: []
   - target: "/employee/{employeeId}"
     verb: "DELETE"
-    authTypeEnabled: true
+    secured: true
     scopes: []

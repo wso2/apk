@@ -11,10 +11,10 @@ endpointConfigurations:
 operations:
   - target: "/pets"
     verb: "GET"
-    authTypeEnabled: true
+    secured: true
   - target: "/pets/{petId}"
     verb: "GET"
-    authTypeEnabled: true
+    secured: true
     scopes: []
 authentication:
   - authType: "OAuth2"

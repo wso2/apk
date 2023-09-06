@@ -72,10 +72,10 @@ public type APKOperations record {
     string target?;
     string verb?;
     # Authentication mode for resource (true/false)
-    boolean authTypeEnabled?;
+    boolean secured?;
     EndpointConfigurations endpointConfigurations?;
     APIOperationPolicies operationPolicies?;
-    RateLimit operationRateLimit?;
+    RateLimit rateLimit?;
     string[] scopes?;
 };
 
@@ -214,7 +214,7 @@ public type APKConf record {
     EndpointConfigurations endpointConfigurations?;
     APKOperations[] operations?;
     APIOperationPolicies apiPolicies?;
-    RateLimit apiRateLimit?;
+    RateLimit rateLimit?;
     AuthenticationRequest[] authentication?;
     # Map of custom properties of API
     APKConf_additionalProperties[] additionalProperties?;

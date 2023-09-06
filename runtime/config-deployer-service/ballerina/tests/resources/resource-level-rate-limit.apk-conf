@@ -15,12 +15,12 @@ endpointConfigurations:
 operations:
     - target: "/anything"
       verb: "GET"
-      authTypeEnabled: true
+      secured: true
       scopes: []
-      operationRateLimit:
+      rateLimit:
         requestsPerUnit: 10
         unit: Hour
     - target: "/post_cat"
       verb: "POST"
-      authTypeEnabled: true
+      secured: true
       scopes: []

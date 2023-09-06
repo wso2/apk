@@ -13,7 +13,7 @@ endpointConfigurations:
 operations:
     - target: "/anything"
       verb: "GET"
-      authTypeEnabled: true
+      secured: true
       scopes: []
 corsConfiguration:
   corsConfigurationEnabled: true

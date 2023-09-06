@@ -11,7 +11,7 @@ endpointConfigurations:
 operations:
 - target: /get
   verb: GET
-  authTypeEnabled: false
+  secured: false
 - target: /get
   verb: POST
 authentication: 
@@ -38,6 +38,6 @@ corsConfiguration:
   - PATCH
   - OPTIONS
   accessControlAllowMaxAge: 0
-apiRateLimit:
+rateLimit:
   requestsPerUnit: 10
   unit: Minute

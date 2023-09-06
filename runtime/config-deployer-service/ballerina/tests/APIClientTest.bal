@@ -607,8 +607,8 @@ public function APIToAPKConfDataProvider() returns map<[runtimeModels:API, APKCo
                 version: "1.0.0",
                 endpointConfigurations: {production: {endpoint: "http://localhost:9090"}},
                 operations: [
-                    {target: "/menu", verb: "GET", authTypeEnabled: true, scopes: []},
-                    {target: "/order", verb: "POST", authTypeEnabled: false, endpointConfigurations: {production: {endpoint: "http://localhost:9091"}}, scopes: ["scope1"]}
+                    {target: "/menu", verb: "GET", secured: true, scopes: []},
+                    {target: "/order", verb: "POST", secured: false, endpointConfigurations: {production: {endpoint: "http://localhost:9091"}}, scopes: ["scope1"]}
                 ]
             }
         ]

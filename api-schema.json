@@ -58,7 +58,7 @@
           "$ref": "#/components/schemas/APIOperationPolicies",
           "optional": true
         },
-        "apiRateLimit": {
+        "rateLimit": {
           "$ref": "#/components/schemas/APIRateLimit"
         },
         "authentication": {
@@ -129,7 +129,7 @@
       "operationPolicies": {
         "$ref": "#/components/schemas/APIOperationPolicies"
       },
-      "operationRateLimit": {
+      "rateLimit": {
         "$ref": "#/components/schemas/APIRateLimit"
       }
     },
@@ -182,7 +182,7 @@
         }
       }
     },
-    "APIRateLimit": {
+    "rateLimit": {
       "title": "API Rate Limit Details",
       "type": "object",
       "required": [

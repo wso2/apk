@@ -10,7 +10,7 @@ operations: []
 apiPolicies:
   request: []
   response: []
-apiRateLimit:
+rateLimit:
   requestsPerUnit: 1000
   unit: "Hour"
 authentication: []

@@ -11,14 +11,14 @@ endpointConfigurations:
 operations:
   - target: "/endpoint1"
     verb: "GET"
-    authTypeEnabled: true
+    secured: true
     scopes: []
     endpointConfigurations:
       production:
         endpoint: "http://backend:80/anything/base1"
   - target: "/endpoint2"
     verb: "GET"
-    authTypeEnabled: true
+    secured: true
     scopes: []
     endpointConfigurations:
       production:
