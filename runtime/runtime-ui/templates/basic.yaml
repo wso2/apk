@@ -1,5 +1,5 @@
 name: "My API"
-context: "/myapi"
+basePath: "/myapi"
 type: "REST"
 endpointConfigurations:
   production:
