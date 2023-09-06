@@ -510,21 +510,15 @@ public class JWTAuthenticator implements Authenticator {
                     checkTokenExpiration(jti, tempJWTValidationInfo, organization);
                     jwtValidationInfo = tempJWTValidationInfo;
                 }
-            } else if (SignedJWTInfo.ValidationStatus.INVALID.equals(signedJWTInfo.getValidationStatus()) && CacheProviderUtil.getOrganizationCache(organization).getInvalidTokenCache().getIfPresent(jti) != null) {
+            } else if (SignedJWTInfo.ValidationStatus.INVALID.equals(signedJWTInfo.getValidationStatus())
+                        || CacheProviderUtil.getOrganizationCache(organization).getInvalidTokenCache().getIfPresent(jti) != null) {
                 if (log.isDebugEnabled()) {
                     log.debug("Token retrieved from the invalid token cache. Token: " + FilterUtils.getMaskedToken(jwtHeader));
                 }
                 log.debug("Invalid JWT token. " + FilterUtils.getMaskedToken(jwtHeader));
-                if (CacheProviderUtil.getOrganizationCache(organization).getGatewayKeyCache().getIfPresent(jti) != null) {
-                    jwtValidationInfo =
-                            (JWTValidationInfo) CacheProviderUtil.getOrganizationCache(organization).getGatewayKeyCache().getIfPresent(jti);
-                } else {
-                    log.warn("Token retrieved from the invalid token cache. But the validation info not found " + "in" +
-                            " the key cache for the Token: " + FilterUtils.getMaskedToken(jwtHeader));
-                    jwtValidationInfo = new JWTValidationInfo();
-                    jwtValidationInfo.setValidationCode(APISecurityConstants.API_AUTH_GENERAL_ERROR);
-                    jwtValidationInfo.setValid(false);
-                }
+                throw new APISecurityException(APIConstants.StatusCodes.UNAUTHENTICATED.getCode(),
+                        APISecurityConstants.API_AUTH_INVALID_CREDENTIALS,
+                        APISecurityConstants.API_AUTH_INVALID_CREDENTIALS_MESSAGE);
             }
         }
         if (jwtValidationInfo == null) {
