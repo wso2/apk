@@ -41,11 +41,9 @@ Resource Types:
 
 <p>Packages:</p>
 <ul>
-    {{ template "link" index .packages 1 }}
     {{ template "link" index .packages 0 }}
 </ul>
 
-{{ template "package" index .packages 1 }}
 {{ template "package" index .packages 0 }}
 
 <p><em>

@@ -40,7 +40,7 @@ operations:
     authTypeEnabled: true
     scopes: [ ]
 authentication:
- - authType: JWT
+ - authType: OAuth2
    enabled: true
    sendTokenToUpstream: true
    headerName: Authorization

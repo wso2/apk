@@ -20,7 +20,7 @@ metadata:
   name: disable-resoruce-security
   namespace: gateway-integration-test-infra
 spec:
-  apiDisplayName: Backend with no basepath
+  apiName: Backend with no basepath
   apiType: REST
   apiVersion: v1
   basePath: /disable-resource-security/v1

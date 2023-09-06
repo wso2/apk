@@ -374,7 +374,7 @@ metadata:
   name: all-http-methods-for-wildcard
   namespace: gateway-integration-test-infra
 spec:
-  apiDisplayName: API with Backend Base Path
+  apiName: API with Backend Base Path
   apiType: REST
   apiVersion: v1.0.0
   basePath: /all-http-methods-for-wildcard/v1.0.0

@@ -246,13 +246,13 @@ func SendEventToPartitionServer() {
 	for apiEvent := range paritionCh {
 		if !apiEvent.Event.APIDefinition.Spec.SystemAPI {
 			apiDefinition := apiEvent.Event.APIDefinition
-			loggers.LoggerAPKOperator.Infof("Sending API to APK management server: %v, API_UUID: %v", apiDefinition.Spec.APIDisplayName, string(apiDefinition.ObjectMeta.UID))
+			loggers.LoggerAPKOperator.Infof("Sending API to APK management server: %v, API_UUID: %v", apiDefinition.Spec.APIName, string(apiDefinition.ObjectMeta.UID))
 			api := apiEvent.Event
 			eventType := apiEvent.EventType
 			basePath := api.APIDefinition.Spec.BasePath
 			organization := api.APIDefinition.Spec.Organization
 			version := api.APIDefinition.Spec.APIVersion
-			apiName := api.APIDefinition.Spec.APIDisplayName
+			apiName := api.APIDefinition.Spec.APIName
 			apiUUID := string(api.APIDefinition.Name)
 			var hostNames []string
 			httpRoute := api.ProdHTTPRoute

@@ -67,7 +67,7 @@ metadata:
   name: http-bin-api-basic
   namespace: gateway-integration-test-infra
 spec:
-  apiDisplayName: http-bin-api-basic
+  apiName: http-bin-api-basic
   apiType: REST
   apiVersion: 1.0.8
   basePath: /http-bin-api/1.0.8

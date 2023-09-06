@@ -40,7 +40,7 @@ func TestCreateRoutesWithClustersWithExactAndRegularExpressionRules(t *testing.T
 			Name:      "test-api-2",
 		},
 		Spec: v1alpha1.APISpec{
-			APIDisplayName: "test-api-2",
+			APIName: "test-api-2",
 			APIVersion:     "2.0.0",
 			BasePath:       "/test-api/2.0.0",
 			Production: []v1alpha1.EnvConfig{
@@ -165,7 +165,7 @@ func TestCreateRoutesWithClustersWithMultiplePathPrefixRules(t *testing.T) {
 			Name:      "test-api-1",
 		},
 		Spec: v1alpha1.APISpec{
-			APIDisplayName: "test-api",
+			APIName: "test-api",
 			APIVersion:     "1.0.0",
 			BasePath:       "/test-api/1.0.0",
 			Production: []v1alpha1.EnvConfig{
@@ -312,7 +312,7 @@ func TestCreateRoutesWithClustersWithBackendTLSConfigs(t *testing.T) {
 			Name:      "test-api-3",
 		},
 		Spec: v1alpha1.APISpec{
-			APIDisplayName: "test-api-3",
+			APIName: "test-api-3",
 			APIVersion:     "1.0.0",
 			BasePath:       "/test-api-3/1.0.0",
 			Production: []v1alpha1.EnvConfig{
@@ -618,7 +618,7 @@ func TestCreateRoutesWithClustersDifferentBackendRefs(t *testing.T) {
 			Name:      "test-api-different-backendrefs",
 		},
 		Spec: v1alpha1.APISpec{
-			APIDisplayName: "test-api-different-backendrefs",
+			APIName: "test-api-different-backendrefs",
 			APIVersion:     "1.0.0",
 			BasePath:       "/test-api-different-backendrefs/1.0.0",
 			Production: []v1alpha1.EnvConfig{
@@ -708,7 +708,7 @@ func TestCreateRoutesWithClustersSameBackendRefs(t *testing.T) {
 			Name:      "test-api-same-backendrefs",
 		},
 		Spec: v1alpha1.APISpec{
-			APIDisplayName: "test-api-same-backendrefs",
+			APIName: "test-api-same-backendrefs",
 			APIVersion:     "1.0.0",
 			BasePath:       "/test-api-same-backendrefs/1.0.0",
 			Production: []v1alpha1.EnvConfig{

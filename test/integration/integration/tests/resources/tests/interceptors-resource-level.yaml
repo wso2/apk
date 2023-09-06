@@ -20,7 +20,7 @@ metadata:
   name: resource-interceptor-test-api
   namespace: gateway-integration-test-infra
 spec:
-  apiDisplayName: Interceptor API
+  apiName: Interceptor API
   apiType: REST
   apiVersion: 1.0.0
   basePath: /interceptor/1.0.0

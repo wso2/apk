@@ -35,7 +35,7 @@ operations:
       production:
         endpoint: "http://backend:80/anything"
 authentication:
- - authType: JWT
+ - authType: OAuth2
    enabled: true
    sendTokenToUpstream: true
    headerName: testAuth

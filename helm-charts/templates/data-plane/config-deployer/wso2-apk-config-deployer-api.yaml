@@ -22,7 +22,7 @@ metadata:
   labels:
     managed-by: "apk"
 spec:
-  apiDisplayName: "WSO2 APK Config Deployer API"
+  apiName: "WSO2 APK Config Deployer API"
   apiType: "REST"
   apiVersion: "1.0.0"
   basePath: "/api/deployer/1.0.0"

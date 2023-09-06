@@ -20,7 +20,7 @@ metadata:
   name: test-api-with-response-header-modify
   namespace: gateway-integration-test-infra
 spec:
-  apiDisplayName: API with Response Header Modify
+  apiName: API with Response Header Modify
   apiType: REST
   apiVersion: 1.0.0
   basePath: /response-header-modify/1.0.0

@@ -173,7 +173,7 @@ public class DeployerClient {
 
     private isolated function deleteHttpRoutes(model:API api, string organization) returns commons:APKError? {
         do {
-            model:HttprouteList|http:ClientError httpRouteListResponse = check getHttproutesForAPIS(api.spec.apiDisplayName, api.spec.apiVersion, <string>api.metadata?.namespace, organization);
+            model:HttprouteList|http:ClientError httpRouteListResponse = check getHttproutesForAPIS(api.spec.apiName, api.spec.apiVersion, <string>api.metadata?.namespace, organization);
             if httpRouteListResponse is model:HttprouteList {
                 foreach model:Httproute item in httpRouteListResponse.items {
                     http:Response|http:ClientError httprouteDeletionResponse = deleteHttpRoute(item.metadata.name, <string>api.metadata?.namespace);
@@ -197,7 +197,7 @@ public class DeployerClient {
 
     private isolated function deleteBackends(model:API api, string organization) returns commons:APKError? {
         do {
-            model:BackendList|http:ClientError backendPolicyListResponse = check getBackendPolicyCRsForAPI(api.spec.apiDisplayName, api.spec.apiVersion, <string>api.metadata?.namespace, organization);
+            model:BackendList|http:ClientError backendPolicyListResponse = check getBackendPolicyCRsForAPI(api.spec.apiName, api.spec.apiVersion, <string>api.metadata?.namespace, organization);
             if backendPolicyListResponse is model:BackendList {
                 foreach model:Backend item in backendPolicyListResponse.items {
                     http:Response|http:ClientError serviceDeletionResponse = deleteBackendPolicyCR(item.metadata.name, <string>api.metadata?.namespace);
@@ -221,7 +221,7 @@ public class DeployerClient {
 
     private isolated function deleteAuthneticationCRs(model:API api, string organization) returns commons:APKError? {
         do {
-            model:AuthenticationList|http:ClientError authenticationCrListResponse = check getAuthenticationCrsForAPI(api.spec.apiDisplayName, api.spec.apiVersion, <string>api.metadata?.namespace, organization);
+            model:AuthenticationList|http:ClientError authenticationCrListResponse = check getAuthenticationCrsForAPI(api.spec.apiName, api.spec.apiVersion, <string>api.metadata?.namespace, organization);
             if authenticationCrListResponse is model:AuthenticationList {
                 foreach model:Authentication item in authenticationCrListResponse.items {
                     http:Response|http:ClientError k8ServiceMappingDeletionResponse = deleteAuthenticationCR(item.metadata.name, <string>api.metadata?.namespace);
@@ -245,7 +245,7 @@ public class DeployerClient {
 
     private isolated function deleteScopeCrsForAPI(model:API api, string organization) returns commons:APKError? {
         do {
-            model:ScopeList|http:ClientError scopeCrListResponse = check getScopeCrsForAPI(api.spec.apiDisplayName, api.spec.apiVersion, <string>api.metadata?.namespace, organization);
+            model:ScopeList|http:ClientError scopeCrListResponse = check getScopeCrsForAPI(api.spec.apiName, api.spec.apiVersion, <string>api.metadata?.namespace, organization);
             if scopeCrListResponse is model:ScopeList {
                 foreach model:Scope item in scopeCrListResponse.items {
                     http:Response|http:ClientError scopeCrDeletionResponse = deleteScopeCr(item.metadata.name, <string>api.metadata?.namespace);
@@ -311,8 +311,8 @@ public class DeployerClient {
                         foreach model:StatusCause 'cause in 'causes {
                             if 'cause.'field == "spec.basePath" {
                                 return e909015(k8sAPI.spec.basePath);
-                            } else if 'cause.'field == "spec.apiDisplayName" {
-                                return e909016(k8sAPI.spec.apiDisplayName);
+                            } else if 'cause.'field == "spec.apiName" {
+                                return e909016(k8sAPI.spec.apiName);
                             }
                         }
                         return e909017();
@@ -334,8 +334,8 @@ public class DeployerClient {
                         foreach model:StatusCause 'cause in 'causes {
                             if 'cause.'field == "spec.basePath" {
                                 return e909015(k8sAPI.spec.basePath);
-                            } else if 'cause.'field == "spec.apiDisplayName" {
-                                return e909016(k8sAPI.spec.apiDisplayName);
+                            } else if 'cause.'field == "spec.apiName" {
+                                return e909016(k8sAPI.spec.apiName);
                             }
                         }
                         return e909017();
@@ -540,7 +540,7 @@ public class DeployerClient {
 
     private isolated function deleteRateLimitPolicyCRs(model:API api, string organization) returns commons:APKError? {
         do {
-            model:RateLimitPolicyList|http:ClientError rateLimitPolicyCrListResponse = check getRateLimitPolicyCRsForAPI(api.spec.apiDisplayName, api.spec.apiVersion, <string>api.metadata?.namespace, organization);
+            model:RateLimitPolicyList|http:ClientError rateLimitPolicyCrListResponse = check getRateLimitPolicyCRsForAPI(api.spec.apiName, api.spec.apiVersion, <string>api.metadata?.namespace, organization);
             if rateLimitPolicyCrListResponse is model:RateLimitPolicyList {
                 foreach model:RateLimitPolicy item in rateLimitPolicyCrListResponse.items {
                     http:Response|http:ClientError rateLimitPolicyCRDeletionResponse = deleteRateLimitPolicyCR(item.metadata.name, <string>item.metadata?.namespace);
@@ -564,7 +564,7 @@ public class DeployerClient {
 
     private isolated function deleteAPIPolicyCRs(model:API api, string organization) returns commons:APKError? {
         do {
-            model:APIPolicyList|http:ClientError apiPolicyCrListResponse = check getAPIPolicyCRsForAPI(api.spec.apiDisplayName, api.spec.apiVersion, <string>api.metadata?.namespace, organization);
+            model:APIPolicyList|http:ClientError apiPolicyCrListResponse = check getAPIPolicyCRsForAPI(api.spec.apiName, api.spec.apiVersion, <string>api.metadata?.namespace, organization);
             if apiPolicyCrListResponse is model:APIPolicyList {
                 foreach model:APIPolicy item in apiPolicyCrListResponse.items {
                     http:Response|http:ClientError apiPolicyCRDeletionResponse = deleteAPIPolicyCR(item.metadata.name, <string>item.metadata?.namespace);
@@ -648,7 +648,7 @@ public class DeployerClient {
 
     private isolated function deleteInterceptorServiceCRs(model:API api, string organization) returns commons:APKError? {
         do {
-            model:InterceptorServiceList|http:ClientError interceptorServiceListResponse = check getInterceptorServiceCRsForAPI(api.spec.apiDisplayName, api.spec.apiVersion, <string>api.metadata?.namespace, organization);
+            model:InterceptorServiceList|http:ClientError interceptorServiceListResponse = check getInterceptorServiceCRsForAPI(api.spec.apiName, api.spec.apiVersion, <string>api.metadata?.namespace, organization);
             if interceptorServiceListResponse is model:InterceptorServiceList {
                 foreach model:InterceptorService item in interceptorServiceListResponse.items {
                     http:Response|http:ClientError interceptorServiceCRDeletionResponse = deleteInterceptorServiceCR(item.metadata.name, <string>item.metadata?.namespace);
@@ -672,7 +672,7 @@ public class DeployerClient {
 
     private isolated function deleteBackendJWTConfig(model:API api, string organization) returns commons:APKError? {
         do {
-            model:BackendJWTList|http:ClientError backendJWTlist = check getBackendJWTCrsForAPI(api.spec.apiDisplayName, api.spec.apiVersion, <string>api.metadata?.namespace, organization);
+            model:BackendJWTList|http:ClientError backendJWTlist = check getBackendJWTCrsForAPI(api.spec.apiName, api.spec.apiVersion, <string>api.metadata?.namespace, organization);
             if backendJWTlist is model:BackendJWTList {
                 foreach model:BackendJWT item in backendJWTlist.items {
                     http:Response|http:ClientError backendJWTConfigDeletionResponse = deleteBackendJWTCr(item.metadata.name, <string>item.metadata?.namespace);

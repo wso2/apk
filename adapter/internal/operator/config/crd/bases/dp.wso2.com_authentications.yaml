@@ -68,22 +68,22 @@ spec:
                           type: object
                         nullable: true
                         type: array
-                      jwt:
-                        description: JWT is to specify the JWT authentication scheme
-                          details
+                      oauth2:
+                        description: Oauth2 is to specify the Oauth2 authentication
+                          scheme details
                         properties:
                           disabled:
                             default: false
-                            description: Disabled is to disable JWT authentication
+                            description: Disabled is to disable OAuth2 authentication
                             type: boolean
                           header:
                             default: authorization
                             description: Header is the header name used to pass the
-                              JWT token
+                              OAuth2 token
                             type: string
                           sendTokenToUpstream:
                             description: SendTokenToUpstream is to specify whether
-                              the JWT token should be sent to the upstream
+                              the OAuth2 token should be sent to the upstream
                             type: boolean
                         type: object
                       testConsoleKey:
@@ -139,22 +139,22 @@ spec:
                           type: object
                         nullable: true
                         type: array
-                      jwt:
-                        description: JWT is to specify the JWT authentication scheme
-                          details
+                      oauth2:
+                        description: Oauth2 is to specify the Oauth2 authentication
+                          scheme details
                         properties:
                           disabled:
                             default: false
-                            description: Disabled is to disable JWT authentication
+                            description: Disabled is to disable OAuth2 authentication
                             type: boolean
                           header:
                             default: authorization
                             description: Header is the header name used to pass the
-                              JWT token
+                              OAuth2 token
                             type: string
                           sendTokenToUpstream:
                             description: SendTokenToUpstream is to specify whether
-                              the JWT token should be sent to the upstream
+                              the OAuth2 token should be sent to the upstream
                             type: boolean
                         type: object
                       testConsoleKey:

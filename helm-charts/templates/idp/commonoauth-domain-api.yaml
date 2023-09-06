@@ -23,7 +23,7 @@ metadata:
     api-name: "idp-domain-service"
     api-version: "1.0.0"
 spec:
-  apiDisplayName: "commonoauth-api"
+  apiName: "commonoauth-api"
   apiType: "REST"
   apiVersion: "1.0.0"
   basePath: "/commonoauth/1.0.0"

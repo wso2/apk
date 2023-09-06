@@ -334,9 +334,9 @@ public class APIClient {
         map<model:Authentication> authenticationMap = {};
         model:AuthenticationExtenstionType authTypes = {};
         foreach AuthenticationRequest authentication in authentications {
-            if authentication.authType == "JWT" {
-                JWTAuthentication jwtAuthentication = check authentication.cloneWithType(JWTAuthentication);
-                authTypes.jwt = {header: <string>jwtAuthentication.headerName, sendTokenToUpstream: <boolean>jwtAuthentication.sendTokenToUpstream, disabled: !jwtAuthentication.enabled};
+            if authentication.authType == "OAuth2" {
+                OAuth2Authentication oauth2Authentication = check authentication.cloneWithType(OAuth2Authentication);
+                authTypes.oauth2 = {header: <string>oauth2Authentication.headerName, sendTokenToUpstream: <boolean>oauth2Authentication.sendTokenToUpstream, disabled: !oauth2Authentication.enabled};
             } else if authentication.authType == "APIKey" && authentication is APIKeyAuthentication {
                 APIKeyAuthentication apiKeyAuthentication = check authentication.cloneWithType(APIKeyAuthentication);
                 authTypes.apiKey = [];
@@ -381,7 +381,7 @@ public class APIClient {
                 labels: self.getLabels(apkConf, organization)
             },
             spec: {
-                apiDisplayName: apkConf.name,
+                apiName: apkConf.name,
                 apiType: apkConf.'type,
                 apiVersion: apkConf.'version,
                 basePath: self.returnFullBasePath(apkConf.basePath, apkConf.'version),
@@ -1166,7 +1166,7 @@ public class APIClient {
         json defaultOpenApiDefinition = {
             "openapi": "3.0.1",
             "info": {
-                "title": api.spec.apiDisplayName,
+                "title": api.spec.apiName,
                 "version": api.spec.apiVersion
             },
             "servers": [

@@ -22,7 +22,7 @@ operations:
     authTypeEnabled: true
     scopes: []      
 authentication:
-  - authType: "JWT"
+  - authType: "OAuth2"
     sendTokenToUpstream: false
     enabled: true
     headerName: "Authorization"

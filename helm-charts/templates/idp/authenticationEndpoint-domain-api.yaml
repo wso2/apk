@@ -23,7 +23,7 @@ metadata:
     api-name: "idp-domain-service"
     api-version: "1.0.0"
 spec:
-  apiDisplayName: "authenticationEndpoint-domain-service"
+  apiName: "authenticationEndpoint-domain-service"
   apiType: "REST"
   apiVersion: "1.0.0"
   basePath: "/authenticationEndpoint/1.0.0"

@@ -20,7 +20,7 @@ metadata:
   name: no-backend-base-path
   namespace: gateway-integration-test-infra
 spec:
-  apiDisplayName: Backend with no basepath
+  apiName: Backend with no basepath
   apiType: REST
   apiVersion: v1
   basePath: /no-basepath/v1

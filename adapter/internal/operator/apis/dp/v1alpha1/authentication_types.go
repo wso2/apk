@@ -42,10 +42,10 @@ type AuthSpec struct {
 
 // APIAuth Authentication scheme type and details
 type APIAuth struct {
-	// JWT is to specify the JWT authentication scheme details
+	// Oauth2 is to specify the Oauth2 authentication scheme details
 	//
 	// +optional
-	JWT JWTAuth `json:"jwt,omitempty"`
+	Oauth2 Oauth2Auth `json:"oauth2,omitempty"`
 
 	// APIKey is to specify the APIKey authentication scheme details
 	//
@@ -74,22 +74,22 @@ type TestConsoleKeyAuth struct {
 	SendTokenToUpstream bool `json:"sendTokenToUpstream,omitempty"`
 }
 
-// JWTAuth JWT Authentication scheme details
-type JWTAuth struct {
+// Oauth2Auth OAuth2 Authentication scheme details
+type Oauth2Auth struct {
 
-	// Disabled is to disable JWT authentication
+	// Disabled is to disable OAuth2 authentication
 	//
 	// +kubebuilder:default:=false
 	// +optional
 	Disabled bool `json:"disabled"`
 
-	// Header is the header name used to pass the JWT token
+	// Header is the header name used to pass the OAuth2 token
 	//
 	// +kubebuilder:default:=authorization
 	// +optional
 	Header string `json:"header,omitempty"`
 
-	// SendTokenToUpstream is to specify whether the JWT token should be sent to the upstream
+	// SendTokenToUpstream is to specify whether the OAuth2 token should be sent to the upstream
 	//
 	// +optional
 	SendTokenToUpstream bool `json:"sendTokenToUpstream,omitempty"`

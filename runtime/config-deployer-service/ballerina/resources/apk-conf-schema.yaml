@@ -74,12 +74,12 @@ components:
       additionalProperties: false
     AuthenticationRequest:
       oneOf:
-        - $ref: "#/components/schemas/JWTAuthentication"
+        - $ref: "#/components/schemas/OAuth2Authentication"
         - $ref: "#/components/schemas/APIKeyAuthentication"
       discriminator:
         propertyName: authType
         mapping:
-          JWT: "#/components/schemas/JWTAuthentication"
+          OAuth2: "#/components/schemas/OAuth2Authentication"
           APIKey: "#/components/schemas/APIKeyAuthentication"
     Authentication:
       type: object
@@ -93,7 +93,7 @@ components:
           type: boolean
           example: true
       additionalProperties: false
-    JWTAuthentication:
+    OAuth2Authentication:
       allOf:
       - $ref: '#/components/schemas/Authentication'
       - type: object

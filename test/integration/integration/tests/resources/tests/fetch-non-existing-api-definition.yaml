@@ -20,7 +20,7 @@ metadata:
   name: fetch-non-api-definition
   namespace: gateway-integration-test-infra
 spec:
-  apiDisplayName: API with Swagger Definition
+  apiName: API with Swagger Definition
   apiType: REST
   apiVersion: v1.0.0
   basePath: /fetch-api-definition/v1.0.0

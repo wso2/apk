@@ -20,7 +20,7 @@ metadata:
   name: disable-resource-level-jwt
   namespace: gateway-integration-test-infra
 spec:
-  apiDisplayName: API with Backend Base Path
+  apiName: API with Backend Base Path
   apiType: REST
   apiVersion: v1.0.0
   basePath: /disable-resource-level-jwt/v1.0.0
@@ -73,7 +73,7 @@ spec:
       apiKey:
         - in: Header
           name: x-api-key
-      jwt:
+      oauth2:
         disabled: true
   targetRef:
     kind: Resource
@@ -87,7 +87,7 @@ metadata:
   name: disable-resource-level-jwt1
   namespace: gateway-integration-test-infra
 spec:
-  apiDisplayName: API with Backend Base Path
+  apiName: API with Backend Base Path
   apiType: REST
   apiVersion: v1.0.0
   basePath: /disable-resource-level-jwt1/v1.0.0
@@ -140,7 +140,7 @@ spec:
       apiKey:
         - in: Header
           name: x-api-key
-      jwt:
+      oauth2:
         disabled: false
   targetRef:
     kind: Resource
@@ -164,7 +164,7 @@ metadata:
   name: disable-resource-level-jwt2
   namespace: gateway-integration-test-infra
 spec:
-  apiDisplayName: API with Backend Base Path
+  apiName: API with Backend Base Path
   apiType: REST
   apiVersion: v1.0.0
   basePath: /disable-resource-level-jwt2/v1.0.0
@@ -214,7 +214,7 @@ spec:
   override:
     disabled: false
     authTypes:
-      jwt:
+      oauth2:
         disabled: true
   targetRef:
     kind: Resource

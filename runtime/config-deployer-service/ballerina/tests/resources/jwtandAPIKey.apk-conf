@@ -15,7 +15,7 @@ operations:
 - target: /get
   verb: POST
 authentication: 
-  - authType: "JWT"
+  - authType: "OAuth2"
     enabled: true
   - authType: "APIKey"
     enabled: true

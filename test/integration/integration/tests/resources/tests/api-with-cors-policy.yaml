@@ -20,7 +20,7 @@ metadata:
   name: cors-policy-api
   namespace: gateway-integration-test-infra
 spec:
-  apiDisplayName: API with CORS Policy
+  apiName: API with CORS Policy
   apiType: REST
   apiVersion: 1.0.0
   basePath: /cors-policy-api/1.0.0
@@ -91,7 +91,7 @@ metadata:
   name: no-cors-policy-api
   namespace: gateway-integration-test-infra
 spec:
-  apiDisplayName: API without CORS Policy
+  apiName: API without CORS Policy
   apiType: REST
   apiVersion: 1.0.0
   basePath: /no-cors-policy-api/1.0.0
