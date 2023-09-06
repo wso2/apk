@@ -1,6 +1,6 @@
 ---
 name: "CircuitBreaker"
-context: "/circuit-breaker"
+basePath: "/circuit-breaker"
 version: "3.14"
 id: "circuit-breaker-test"
 type: "REST"

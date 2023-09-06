@@ -16,10 +16,10 @@ These are the runtime domain service errors and their respective error codes.
 | 909009  | 406 | Additional properties not provided |
 | 909010  | 406 | Invalid operation policy name |
 | 909011  | 409 | API Name **apiName** already exist |
-| 909012  | 409 | API Context **apiContext** already exist |
+| 909012  | 409 | API Base Path **apiBasePath** already exist |
 | 909013  | 406 | Sandbox endpoint not specified |
 | 909014  | 406 | Production endpoint not specified |
-| 909015  | 406 | API context **apiContext** invalid |
+| 909015  | 406 | API Base Path **apiBasePath** invalid |
 | 909016  | 406 | API name **apiName** invalid |
 | 909017  | 406 | Invalid API request |
 | 909018  | 500 | Error while generating token |

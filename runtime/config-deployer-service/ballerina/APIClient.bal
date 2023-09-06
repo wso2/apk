@@ -38,7 +38,10 @@ public class APIClient {
     public isolated function fromAPIModelToAPKConf(runtimeModels:API api) returns APKConf|error {
         string generatedBasePath = api.getName() +  api.getVersion();
         byte[] data = generatedBasePath.toBytes();
-        string encodedString = data.toBase64();
+        string encodedString = "/" + data.toBase64();
+        if (encodedString.endsWith("==")) {
+            encodedString = encodedString.substring(0,encodedString.length()-2);
+        }
         APKConf apkConf = {
             name: api.getName(),
             basePath: api.getBasePath().length() > 0 ? api.getBasePath() : encodedString,
