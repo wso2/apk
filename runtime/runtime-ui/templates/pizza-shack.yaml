@@ -25,7 +25,7 @@ endpointConfigurations:
 operations:
   - target: "/pizzas"
     verb: "GET"
-    authTypeEnabled: true
+    secured: true
     endpointConfigurations:
       production:
         endpoint: "https://pizza"
@@ -40,7 +40,7 @@ operations:
       response:
         - policyName: "Response Policy 1"
           policyVersion: "v1"
-    operationRateLimit:
+    rateLimit:
       requestsPerUnit: 100
       unit: "Minute"
     scopes:
@@ -48,7 +48,7 @@ operations:
       - "write:pizzas"
   - target: "/pizzas/{pizzaId}"
     verb: "GET"
-    authTypeEnabled: true
+    secured: true
     endpointConfigurations:
       production:
         endpoint: "https://pizza"
@@ -63,7 +63,7 @@ operations:
       response:
         - policyName: "Response Policy 2"
           policyVersion: "v1"
-    operationRateLimit:
+    rateLimit:
       requestsPerUnit: 50
       unit: "Minute"
     scopes:
@@ -75,7 +75,7 @@ apiPolicies:
   response:
     - policyName: "Global Response Policy"
       policyVersion: "v1"
-apiRateLimit:
+rateLimit:
   requestsPerUnit: 1000
   unit: "Hour"
 authentication:

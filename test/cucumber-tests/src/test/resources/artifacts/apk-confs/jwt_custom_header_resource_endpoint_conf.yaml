@@ -8,28 +8,28 @@ defaultVersion: false
 operations:
   - target: "/employee"
     verb: "GET"
-    authTypeEnabled: true
+    secured: true
     scopes: []
     endpointConfigurations:
       production:
         endpoint: "http://backend:80/anything"
   - target: "/employee"
     verb: "POST"
-    authTypeEnabled: true
+    secured: true
     scopes: []
     endpointConfigurations:
       production:
         endpoint: "http://backend:80/anything"
   - target: "/employee/{employeeId}"
     verb: "PUT"
-    authTypeEnabled: true
+    secured: true
     scopes: []
     endpointConfigurations:
       production:
         endpoint: "http://backend:80/anything"
   - target: "/employee/{employeeId}"
     verb: "DELETE"
-    authTypeEnabled: true
+    secured: true
     scopes: []
     endpointConfigurations:
       production:

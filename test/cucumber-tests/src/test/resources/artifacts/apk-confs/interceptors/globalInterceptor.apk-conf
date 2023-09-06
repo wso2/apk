@@ -9,5 +9,5 @@ endpointConfigurations:
 operations:
   - target: "/get"
     verb: "GET"
-    authTypeEnabled: true
+    secured: true
     scopes: []

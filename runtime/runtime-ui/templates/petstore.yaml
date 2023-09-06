@@ -11,7 +11,7 @@ endpointConfigurations:
 operations:
   - target: "/pets"
     verb: "GET"
-    authTypeEnabled: true
+    secured: true
     operationPolicies:
       request:
         - policyName: "Request Policy 1"
@@ -21,13 +21,13 @@ operations:
       response:
         - policyName: "Response Policy 1"
           policyVersion: "v1"
-    operationRateLimit:
+    rateLimit:
       requestsPerUnit: 100
       unit: "Minute"
     scopes: []
   - target: "/pets/{petId}"
     verb: "GET"
-    authTypeEnabled: true
+    secured: true
     endpointConfigurations:
       production:
         endpoint: "https://petstore.swagger.io/v2/pet"
@@ -42,14 +42,14 @@ operations:
       response:
         - policyName: "Response Policy 2"
           policyVersion: "v1"
-    operationRateLimit:
+    rateLimit:
       requestsPerUnit: 50
       unit: "Minute"
     scopes: []
 apiPolicies:
   request: []
   response: []
-apiRateLimit:
+rateLimit:
   requestsPerUnit: 1000
   unit: "Hour"
 authentication:

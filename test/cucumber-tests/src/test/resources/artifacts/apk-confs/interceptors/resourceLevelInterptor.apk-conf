@@ -9,11 +9,11 @@ endpointConfigurations:
 operations:
   - target: "/get"
     verb: "GET"
-    authTypeEnabled: true
+    secured: true
     scopes: []
   - target: "/headers"
     verb: "GET"
-    authTypeEnabled: true
+    secured: true
     operationPolicies:
       request:
         - policyName: "Interceptor"

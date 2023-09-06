@@ -16,13 +16,13 @@ endpointConfigurations:
 operations:
   - target: "/retry"
     verb: "GET"
-    authTypeEnabled: true
+    secured: true
     scopes: []
   - target: "/reset"
     verb: "POST"
-    authTypeEnabled: true
+    secured: true
     scopes: [ ]
   - target: "/set-retry-count"
     verb: "POST"
-    authTypeEnabled: true
+    secured: true
     scopes: [ ]
