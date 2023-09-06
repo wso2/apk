@@ -25,21 +25,21 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
-// JWTIssuerSpec defines the desired state of JWTIssuer
-type JWTIssuerSpec struct {
-	// Name is the unique name of the JWT Issuer in
+// TokenIssuerSpec defines the desired state of TokenIssuer
+type TokenIssuerSpec struct {
+	// Name is the unique name of the Token Issuer in
 	// the Organization defined . "Organization/Name" can
 	// be used to uniquely identify an Issuer.
 	//
 	// +kubebuilder:validation:MinLength=1
 	Name string `json:"name"`
 
-	// Organization denotes the organization of the JWT Issuer.
+	// Organization denotes the organization of the Token Issuer.
 	//
 	// +kubebuilder:validation:MinLength=1
 	Organization string `json:"organization"`
 
-	// Issuer denotes the issuer of the JWT Issuer.
+	// Issuer denotes the issuer of the Token Issuer.
 	//
 	// +kubebuilder:validation:MinLength=1
 	Issuer string `json:"issuer"`
@@ -98,8 +98,8 @@ type CERTConfig struct {
 	ConfigMapRef *RefConfig `json:"configMapRef,omitempty"`
 }
 
-// JWTIssuerStatus defines the observed state of JWTIssuer
-type JWTIssuerStatus struct {
+// TokenIssuerStatus defines the observed state of TokenIssuer
+type TokenIssuerStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 }
@@ -108,24 +108,24 @@ type JWTIssuerStatus struct {
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 
-// JWTIssuer is the Schema for the jwtissuers API
-type JWTIssuer struct {
+// TokenIssuer is the Schema for the tokenIssuer API
+type TokenIssuer struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   JWTIssuerSpec   `json:"spec,omitempty"`
-	Status JWTIssuerStatus `json:"status,omitempty"`
+	Spec   TokenIssuerSpec   `json:"spec,omitempty"`
+	Status TokenIssuerStatus `json:"status,omitempty"`
 }
 
 //+kubebuilder:object:root=true
 
-// JWTIssuerList contains a list of JWTIssuer
-type JWTIssuerList struct {
+// TokenIssuerList contains a list of TokenIssuer
+type TokenIssuerList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []JWTIssuer `json:"items"`
+	Items           []TokenIssuer `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&JWTIssuer{}, &JWTIssuerList{})
+	SchemeBuilder.Register(&TokenIssuer{}, &TokenIssuerList{})
 }

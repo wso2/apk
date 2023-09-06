@@ -115,7 +115,7 @@ resources:
   controller: true
   domain: wso2.com
   group: dp
-  kind: JWTIssuer
+  kind: TokenIssuer
   path: github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1
   version: v1alpha1
 - api:

@@ -1,5 +1,5 @@
 {{ if or .Values.wso2.apk.dp.enabled .Values.wso2.apk.cp.enabled }}
-kind: JWTIssuer
+kind: TokenIssuer
 apiVersion: dp.wso2.com/v1alpha1
 metadata:
   name: {{ template "apk-helm.resource.prefix" . }}-idp-jwt-issuer

@@ -303,7 +303,7 @@ spec:
 # ---
 ---
 apiVersion: dp.wso2.com/v1alpha1
-kind: JWTIssuer
+kind: TokenIssuer
 metadata:
   name: testkey-idp-1
   namespace: apk-integration-test
@@ -325,7 +325,7 @@ spec:
 
 ---
 apiVersion: dp.wso2.com/v1alpha1
-kind: JWTIssuer
+kind: TokenIssuer
 metadata:
   name: testkey-idp-2
   namespace: apk-integration-test
@@ -346,7 +346,7 @@ spec:
     name: default
 ---
 apiVersion: dp.wso2.com/v1alpha1
-kind: JWTIssuer
+kind: TokenIssuer
 metadata:
   name: testkey-idp-3
   namespace: apk-integration-test

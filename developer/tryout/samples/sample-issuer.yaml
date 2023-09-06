@@ -1,5 +1,5 @@
 apiVersion: dp.wso2.com/v1alpha1
-kind: JWTIssuer
+kind: TokenIssuer
 metadata:
   name: testkey-idp
 spec:
