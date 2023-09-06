@@ -112,14 +112,14 @@ public type CircuitBreaker record {
     int maxRetries?;
 };
 
-public type AuthenticationRequest JWTAuthentication|APIKeyAuthentication;
+public type AuthenticationRequest OAuth2Authentication|APIKeyAuthentication;
 
 public type EndpointConfigurations record {
     EndpointConfiguration production?;
     EndpointConfiguration sandbox?;
 };
 
-public type JWTAuthentication record {|
+public type OAuth2Authentication record {|
     *Authentication;
     boolean sendTokenToUpstream = false;
     string headerName = "Authorization";

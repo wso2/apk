@@ -68,9 +68,9 @@ spec:
                           type: object
                         nullable: true
                         type: array
-                      jwt:
-                        description: JWT is to specify the JWT authentication scheme
-                          details
+                      oauth2:
+                        description: Oauth2 is to specify the Oauth2 authentication
+                          scheme details
                         properties:
                           disabled:
                             default: false
@@ -139,9 +139,9 @@ spec:
                           type: object
                         nullable: true
                         type: array
-                      jwt:
-                        description: JWT is to specify the JWT authentication scheme
-                          details
+                      oauth2:
+                        description: Oauth2 is to specify the Oauth2 authentication
+                          scheme details
                         properties:
                           disabled:
                             default: false

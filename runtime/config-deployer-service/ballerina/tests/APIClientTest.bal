@@ -469,7 +469,7 @@ public function testJWTAuthenticationOnlyEnable() returns error? {
     model:AuthenticationData expectedAuthenticationData = {
         disabled: false,
         authTypes: {
-            jwt: {
+            oauth2: {
                 disabled: false,
                 header: "Authorization",
                 sendTokenToUpstream: false
@@ -538,7 +538,7 @@ public function testAPIKeyAndJWTEnable() returns error? {
                     sendTokenToUpstream: false
                 }
             ],
-            jwt: {
+            oauth2: {
                 disabled: false,
                 header: "Authorization",
                 sendTokenToUpstream: false

@@ -53,7 +53,7 @@ apiRateLimit:
   requestsPerUnit: 1000
   unit: "Hour"
 authentication:
-  - authType: "JWT"
+  - authType: "OAuth2"
     sendTokenToUpstream: false
     enabled: true
     headerName: "Authorization"
