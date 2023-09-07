@@ -23,7 +23,7 @@ operations:
     scopes: []
   - target: "/employee/{employeeId}"
     verb: "DELETE"
-    secured: true
+    secured: false
     scopes: []
 authentication:
  - authType: OAuth2

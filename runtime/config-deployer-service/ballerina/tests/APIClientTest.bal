@@ -476,8 +476,16 @@ public function testJWTAuthenticationOnlyEnable() returns error? {
             }
         }
     };
+    model:AuthenticationData expectedNoAuthentication = {
+        disabled: true
+    };
+    
     foreach model:Authentication item in apiArtifact.authenticationMap {
-        test:assertEquals(item.spec.override, expectedAuthenticationData);
+        if string:endsWith(item.metadata.name, "-no-authentication") {
+            test:assertEquals(item.spec.default, expectedNoAuthentication);
+        } else {
+            test:assertEquals(item.spec.default, expectedAuthenticationData);
+        }
     }
 }
 
@@ -508,8 +516,16 @@ public function testAPIKeyOnlyEnable() returns error? {
             ]
         }
     };
+
+    model:AuthenticationData expectedNoAuthentication = {
+        disabled: true
+    };
     foreach model:Authentication item in apiArtifact.authenticationMap {
-        test:assertEquals(item.spec.override, expectedAuthenticationData);
+        if string:endsWith(item.metadata.name, "-no-authentication") {
+            test:assertEquals(item.spec.default, expectedNoAuthentication);
+        } else {
+            test:assertEquals(item.spec.default, expectedAuthenticationData);
+        }
     }
 }
 
@@ -545,8 +561,15 @@ public function testAPIKeyAndJWTEnable() returns error? {
             }
         }
     };
+    model:AuthenticationData expectedNoAuthentication = {
+        disabled: true
+    };
     foreach model:Authentication item in apiArtifact.authenticationMap {
-        test:assertEquals(item.spec.override, expectedAuthenticationData);
+        if string:endsWith(item.metadata.name, "-no-authentication") {
+            test:assertEquals(item.spec.default, expectedNoAuthentication);
+        } else {
+            test:assertEquals(item.spec.default, expectedAuthenticationData);
+        }
     }
 }
 
