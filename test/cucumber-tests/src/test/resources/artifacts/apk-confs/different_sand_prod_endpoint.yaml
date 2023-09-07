@@ -22,5 +22,5 @@ operations:
           endpoint: "http://backend:80/anything/sandr"
   - target: "/endpoint2"
     verb: "GET"
-    authTypeEnabled: true
+    secured: true
     scopes: []
