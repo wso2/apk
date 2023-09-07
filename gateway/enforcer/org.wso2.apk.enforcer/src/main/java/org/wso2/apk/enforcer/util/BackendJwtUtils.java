@@ -77,7 +77,7 @@ public class BackendJwtUtils {
                 try {
                     Object token =
                             CacheProviderUtil.getOrganizationCache(organization).getGatewayJWTTokenCache().get(jwtTokenCacheKey);
-                    if (token != null || !JWTConstants.UNAVAILABLE.equals(token)) {
+                    if (!JWTConstants.UNAVAILABLE.equals(token)) {
                         endUserToken = (String) token;
                         String[] splitToken = endUserToken.split("\\.");
                         org.json.JSONObject payload = new org.json.JSONObject(new String(Base64.getUrlDecoder().decode(splitToken[1])));
