@@ -1,0 +1,26 @@
+---
+name: "APIDifferentSandProdEndpoint"
+basePath: "/test-different-sand-prod-endpoint"
+id: "test-different-sand-prod-endpoint"
+version: "3.14"
+type: "REST"
+defaultVersion: true
+endpointConfigurations:
+  production:
+    endpoint: "http://backend:80/anything/prod"
+  sandbox:
+    endpoint: "http://backend:80/anything/sand"
+operations:
+  - target: "/endpoint1"
+    verb: "GET"
+    secured: true
+    scopes: []
+    endpointConfigurations:
+      production:
+        endpoint: "http://backend:80/anything/prodr"
+      sandbox:
+          endpoint: "http://backend:80/anything/sandr"
+  - target: "/endpoint2"
+    verb: "GET"
+    secured: true
+    scopes: []
