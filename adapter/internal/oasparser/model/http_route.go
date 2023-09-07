@@ -564,34 +564,35 @@ func concatAuthSchemes(schemeUp *dpv1alpha1.Authentication, schemeDown *dpv1alph
 // make sure authscheme only has external service override values. (i.e. empty default values)
 // tip: use concatScheme method
 func getSecurity(authScheme *dpv1alpha1.Authentication) *Authentication {
+	resolvedAuthScheme := concatAuthSchemes(nil, authScheme)
 	authHeader := constants.AuthorizationHeader
-	if authScheme != nil && authScheme.Spec.Override.AuthTypes != nil && len(authScheme.Spec.Override.AuthTypes.Oauth2.Header) > 0 {
-		authHeader = authScheme.Spec.Override.AuthTypes.Oauth2.Header
+	if resolvedAuthScheme != nil && resolvedAuthScheme.Spec.Override != nil && resolvedAuthScheme.Spec.Override.AuthTypes != nil && len(resolvedAuthScheme.Spec.Override.AuthTypes.Oauth2.Header) > 0 {
+		authHeader = resolvedAuthScheme.Spec.Override.AuthTypes.Oauth2.Header
 	}
 	sendTokenToUpstream := false
-	if authScheme != nil && authScheme.Spec.Override.AuthTypes != nil {
-		sendTokenToUpstream = authScheme.Spec.Override.AuthTypes.Oauth2.SendTokenToUpstream
+	if resolvedAuthScheme != nil && resolvedAuthScheme.Spec.Override != nil && resolvedAuthScheme.Spec.Override.AuthTypes != nil {
+		sendTokenToUpstream = resolvedAuthScheme.Spec.Override.AuthTypes.Oauth2.SendTokenToUpstream
 	}
 	auth := &Authentication{Disabled: false,
 		TestConsoleKey: &TestConsoleKey{Header: constants.TestConsoleKeyHeader},
 		JWT:            &JWT{Header: authHeader, SendTokenToUpstream: sendTokenToUpstream},
 	}
-	if authScheme != nil {
-		if authScheme.Spec.Override.Disabled != nil && *authScheme.Spec.Override.Disabled {
+	if resolvedAuthScheme != nil && resolvedAuthScheme.Spec.Override != nil {
+		if resolvedAuthScheme.Spec.Override.Disabled != nil && *resolvedAuthScheme.Spec.Override.Disabled {
 			return &Authentication{Disabled: true}
 		}
 		authFound := false
-		if authScheme.Spec.Override.AuthTypes != nil && authScheme.Spec.Override.AuthTypes.Oauth2.Disabled {
+		if resolvedAuthScheme.Spec.Override.AuthTypes != nil && resolvedAuthScheme.Spec.Override.AuthTypes.Oauth2.Disabled {
 			auth = &Authentication{Disabled: false,
 				TestConsoleKey: &TestConsoleKey{Header: constants.TestConsoleKeyHeader},
 			}
 		} else {
 			authFound = true
 		}
-		if authScheme.Spec.Override.AuthTypes.APIKey != nil {
-			authFound = authFound || len(authScheme.Spec.Override.AuthTypes.APIKey) > 0
+		if resolvedAuthScheme.Spec.Override.AuthTypes.APIKey != nil {
+			authFound = authFound || len(resolvedAuthScheme.Spec.Override.AuthTypes.APIKey) > 0
 			var apiKeys []APIKey
-			for _, apiKey := range authScheme.Spec.Override.AuthTypes.APIKey {
+			for _, apiKey := range resolvedAuthScheme.Spec.Override.AuthTypes.APIKey {
 				apiKeys = append(apiKeys, APIKey{
 					Name:                apiKey.Name,
 					In:                  apiKey.In,

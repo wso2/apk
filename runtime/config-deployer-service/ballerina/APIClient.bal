@@ -348,27 +348,27 @@ public class APIClient {
         string[] keys = createdEndpointMap.keys();
         log:printDebug("createdEndpointMap.keys:" + createdEndpointMap.keys().toString());
         foreach string endpointType in keys {
-            string disableAuthenticationRefName = self.retrieveDisableAuthenticationRefName(apkConf, endpointType, organization);
-            log:printDebug("disableAuthenticationRefName:" + disableAuthenticationRefName);
+            string authenticationRefName = self.retrieveAuthenticationRefName(apkConf, endpointType, organization);
+            log:printDebug("authenticationRefName:" + authenticationRefName);
             model:Authentication authentication = {
                 metadata: {
-                    name: disableAuthenticationRefName,
+                    name: authenticationRefName,
                     labels: self.getLabels(apkConf, organization)
                 },
                 spec: {
-                    override: {
+                    default: {
                         disabled: false,
                         authTypes: authTypes
                     },
                     targetRef: {
                         group: "gateway.networking.k8s.io",
-                        kind: "Resource",
+                        kind: "API",
                         name: apiArtifact.uniqueId
                     }
                 }
             };
             log:printDebug("Authentication CR:" + authentication.toString());
-            authenticationMap[disableAuthenticationRefName] = authentication;
+            authenticationMap[authenticationRefName] = authentication;
         }
         log:printDebug("Authentication Map:" + authenticationMap.toString());
         apiArtifact.authenticationMap = authenticationMap;
@@ -430,9 +430,12 @@ public class APIClient {
     }
 
     private isolated function retrieveDisableAuthenticationRefName(APKConf apkConf, string 'type, commons:Organization organization) returns string {
-        return self.getUniqueIdForAPI(apkConf.name, apkConf.'version, organization) + "-" + 'type + "-authentication";
+        return self.getUniqueIdForAPI(apkConf.name, apkConf.'version, organization) + "-" + 'type + "-no-authentication";
     }
 
+    private isolated function retrieveAuthenticationRefName(APKConf apkConf, string 'type, commons:Organization organization) returns string {
+        return self.getUniqueIdForAPI(apkConf.name, apkConf.'version, organization) + "-" + 'type + "-authentication";
+    }
     private isolated function setHttpRoute(model:APIArtifact apiArtifact, APKConf apkConf, model:Endpoint? endpoint, string uniqueId, string endpointType, commons:Organization organization) returns commons:APKError|error? {
         APKOperations[] apiOperations = apkConf.operations ?: [];
         APKOperations[][] operationsArray = [];
@@ -507,9 +510,6 @@ public class APIClient {
                         }
                         model:HTTPRouteFilter disableAuthenticationFilter = {'type: "ExtensionRef", extensionRef: {group: "dp.wso2.com", kind: "Authentication", name: disableAuthenticationRefName}};
                         (<model:HTTPRouteFilter[]>filters).push(disableAuthenticationFilter);
-                    } else if apiArtifact.authenticationMap.hasKey(disableAuthenticationRefName) {
-                        model:HTTPRouteFilter authenticationFilter = {'type: "ExtensionRef", extensionRef: {group: "dp.wso2.com", kind: "Authentication", name: disableAuthenticationRefName}};
-                        (<model:HTTPRouteFilter[]>filters).push(authenticationFilter);
                     }
                     string[]? scopes = operation.scopes;
                     if scopes is string[] {
@@ -604,9 +604,9 @@ public class APIClient {
                 targetRef: {
                     group: "",
                     kind: "Resource",
-                    name: self.getUniqueIdForAPI(apkConf.name, apkConf.'version, organization)
+                    name: apiArtifact.uniqueId
                 },
-                override: {
+                default: {
                     disabled: true
                 }
             }
