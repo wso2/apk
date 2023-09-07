@@ -131,7 +131,7 @@ components:
           type: string
           description: |
             API Name
-        basePAth:
+        basePath:
           type: string
           description: |
             API Basepath 
