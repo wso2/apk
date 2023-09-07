@@ -13,7 +13,7 @@ endpointConfigurations:
 operations:
   - target: "/endpoint1"
     verb: "GET"
-    authTypeEnabled: true
+    secured: true
     scopes: []
     endpointConfigurations:
       production:
