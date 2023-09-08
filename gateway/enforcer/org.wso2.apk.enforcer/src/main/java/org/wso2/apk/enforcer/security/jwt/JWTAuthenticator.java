@@ -511,7 +511,7 @@ public class JWTAuthenticator implements Authenticator {
                     jwtValidationInfo = tempJWTValidationInfo;
                 }
             } else if (SignedJWTInfo.ValidationStatus.INVALID.equals(signedJWTInfo.getValidationStatus())
-                        || CacheProviderUtil.getOrganizationCache(organization).getInvalidTokenCache().getIfPresent(jti) != null) {
+                        && CacheProviderUtil.getOrganizationCache(organization).getInvalidTokenCache().getIfPresent(jti) != null) {
                 if (log.isDebugEnabled()) {
                     log.debug("Token retrieved from the invalid token cache. Token: " + FilterUtils.getMaskedToken(jwtHeader));
                 }
@@ -531,12 +531,11 @@ public class JWTAuthenticator implements Authenticator {
                     // Add token to tenant token cache
                     if (jwtValidationInfo.isValid()) {
                         CacheProviderUtil.getOrganizationCache(organization).getGatewayTokenCache().put(jti, true);
+                        CacheProviderUtil.getOrganizationCache(organization).getGatewayKeyCache().put(jti,
+                                jwtValidationInfo);
                     } else {
                         CacheProviderUtil.getOrganizationCache(organization).getInvalidTokenCache().put(jti, true);
                     }
-                    CacheProviderUtil.getOrganizationCache(organization).getGatewayKeyCache().put(jti,
-                            jwtValidationInfo);
-
                 }
                 return jwtValidationInfo;
             } catch (EnforcerException e) {
