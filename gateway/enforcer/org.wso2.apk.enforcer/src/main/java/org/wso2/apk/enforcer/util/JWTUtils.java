@@ -213,21 +213,18 @@ public class JWTUtils {
      * @throws ParseException if an error occurs when decoding the JWT
      */
     public static SignedJWTInfo getSignedJwt(String accessToken,String organization) throws ParseException {
-
-        String signature = accessToken.split("\\.")[2];
-        SignedJWTInfo signedJWTInfo = null;
+        SignedJWTInfo signedJWTInfo;
         //Check whether GatewaySignedJWTParseCache is correct
         LoadingCache gatewaySignedJWTParseCache = CacheProviderUtil.getOrganizationCache(organization).getGatewaySignedJWTParseCache();
         if (gatewaySignedJWTParseCache != null) {
-            Object cachedEntry = gatewaySignedJWTParseCache.getIfPresent(signature);
+            Object cachedEntry = gatewaySignedJWTParseCache.getIfPresent(accessToken);
             if (cachedEntry != null) {
                 signedJWTInfo = (SignedJWTInfo) cachedEntry;
-            }
-            if (signedJWTInfo == null || !signedJWTInfo.getToken().equals(accessToken)) {
+            } else {
                 SignedJWT signedJWT = SignedJWT.parse(accessToken);
                 JWTClaimsSet jwtClaimsSet = signedJWT.getJWTClaimsSet();
                 signedJWTInfo = new SignedJWTInfo(accessToken, signedJWT, jwtClaimsSet);
-                gatewaySignedJWTParseCache.put(signature, signedJWTInfo);
+                gatewaySignedJWTParseCache.put(accessToken, signedJWTInfo);
             }
         } else {
             SignedJWT signedJWT = SignedJWT.parse(accessToken);
@@ -266,13 +263,13 @@ public class JWTUtils {
 
     public static JWTValidationInfo validateJWTToken(SignedJWTInfo signedJWTInfo, String organization, String environment) throws EnforcerException {
 
-        JWTValidationInfo jwtValidationInfo = new JWTValidationInfo();
         String issuer = signedJWTInfo.getJwtClaimsSet().getIssuer();
         JWTValidator jwtValidator = SubscriptionDataStoreImpl.getInstance().getJWTValidatorByIssuer(issuer,
                 organization, environment);
         if (jwtValidator != null) {
-            return jwtValidator.validateJWTToken(signedJWTInfo);
+            return jwtValidator.validateToken(signedJWTInfo);
         }
+        JWTValidationInfo jwtValidationInfo = new JWTValidationInfo();
         jwtValidationInfo.setValid(false);
         jwtValidationInfo.setValidationCode(APIConstants.KeyValidationStatus.API_AUTH_INVALID_CREDENTIALS);
         log.info("No matching issuer found for the token with issuer : " + issuer);

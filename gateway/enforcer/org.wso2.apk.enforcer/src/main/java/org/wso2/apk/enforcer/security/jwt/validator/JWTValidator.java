@@ -73,12 +73,7 @@ public class JWTValidator {
         }
     }
 
-
-    public JWTValidationInfo validateJWTToken(SignedJWTInfo signedJWTInfo) throws EnforcerException {
-            return validateToken(signedJWTInfo);
-    }
-
-    private JWTValidationInfo validateToken(SignedJWTInfo signedJWTInfo) throws EnforcerException {
+    public JWTValidationInfo validateToken(SignedJWTInfo signedJWTInfo) throws EnforcerException {
         JWTValidationInfo jwtValidationInfo = new JWTValidationInfo();
         boolean state;
         try {
@@ -94,19 +89,14 @@ public class JWTValidator {
                     jwtValidationInfo.setRawPayload(signedJWTInfo.getToken());
                     jwtValidationInfo.setKeyManager(tokenIssuer.getName());
                     return jwtValidationInfo;
-                } else {
-                    jwtValidationInfo.setValid(false);
-                    jwtValidationInfo.setValidationCode(APIConstants.KeyValidationStatus.API_AUTH_INVALID_CREDENTIALS);
-                    return jwtValidationInfo;
                 }
-            } else {
-                jwtValidationInfo.setValid(false);
-                jwtValidationInfo.setValidationCode(APIConstants.KeyValidationStatus.API_AUTH_INVALID_CREDENTIALS);
-                return jwtValidationInfo;
             }
         } catch (ParseException | JWTGeneratorException e) {
             throw new EnforcerException("Error while parsing JWT", e);
         }
+        jwtValidationInfo.setValid(false);
+        jwtValidationInfo.setValidationCode(APIConstants.KeyValidationStatus.API_AUTH_INVALID_CREDENTIALS);
+        return jwtValidationInfo;
     }
 
     protected boolean validateSignature(SignedJWT signedJWT)
