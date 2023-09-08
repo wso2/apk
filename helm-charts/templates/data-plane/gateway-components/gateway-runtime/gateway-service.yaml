@@ -36,7 +36,4 @@ spec:
     - name: endpoint3
       protocol: TCP
       port: 9000
-    - name: servlet-https
-      protocol: TCP
-      port: 9092
 {{- end -}}
