@@ -89,6 +89,7 @@ public class APIFactory {
             logger.debug("Total APIs in new cache: {}", newApis.size());
         }
         this.apis = newApis;
+        //todo(amali) check if cache is initialized even if the cache is disabled
         CacheProviderUtil.initializeCacheHolder(newApis);
     }
 
