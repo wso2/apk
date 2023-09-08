@@ -177,6 +177,14 @@ public class BaseSteps {
         }
     }
 
+    @Then("I remove headers")
+    public void removeHeaders(DataTable dataTable) {
+        List<String> rows = dataTable.asList(String.class);
+        for (String header : rows) {
+            sharedContext.removeHeader(header);
+        }
+    }
+
     @Then("the response headers should contain")
     public void theResponseHeadersShouldContain(DataTable dataTable) {
         List<List<String>> rows = dataTable.asLists(String.class);
