@@ -220,7 +220,7 @@ data:
 
 
     # The logging configuration for Router
-    {{- if .Values.wso2.apk.dp.gatewayRuntime.deployment.router.logging }}
+    {{- if .Values.wso2.apk.dp.gatewayRuntime.deployment.router.logging.wireLogs }}
     [wireLogs]
     enable = {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.logging.wireLogs.enable | default false }}
     include = ["Headers", "Body", "Trailers"]
