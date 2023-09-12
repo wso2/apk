@@ -27,6 +27,7 @@ import com.nimbusds.jose.crypto.RSASSAVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -205,34 +206,35 @@ public class JWTUtils {
         }
     }
 
-    /**
-     * Get the internal representation of the JWT.
-     *
-     * @param accessToken the raw access token
-     * @return the internal representation of the JWT
-     * @throws ParseException if an error occurs when decoding the JWT
-     */
-    public static SignedJWTInfo getSignedJwt(String accessToken,String organization) throws ParseException {
-        SignedJWTInfo signedJWTInfo;
+//    /**
+//     * Get the internal representation of the JWT.
+//     *
+//     * @param accessToken the raw access token
+//     * @return the internal representation of the JWT
+//     * @throws ParseException if an error occurs when decoding the JWT
+//     */
+//    public static SignedJWTInfo getSignedJwt(String accessToken,String organization) throws ParseException {
+//        SignedJWTInfo signedJWTInfo;
         //Check whether GatewaySignedJWTParseCache is correct
-        LoadingCache gatewaySignedJWTParseCache = CacheProviderUtil.getOrganizationCache(organization).getGatewaySignedJWTParseCache();
-        if (gatewaySignedJWTParseCache != null) {
-            Object cachedEntry = gatewaySignedJWTParseCache.getIfPresent(accessToken);
-            if (cachedEntry != null) {
-                signedJWTInfo = (SignedJWTInfo) cachedEntry;
-            } else {
-                SignedJWT signedJWT = SignedJWT.parse(accessToken);
-                JWTClaimsSet jwtClaimsSet = signedJWT.getJWTClaimsSet();
-                signedJWTInfo = new SignedJWTInfo(accessToken, signedJWT, jwtClaimsSet);
-                gatewaySignedJWTParseCache.put(accessToken, signedJWTInfo);
-            }
-        } else {
-            SignedJWT signedJWT = SignedJWT.parse(accessToken);
-            JWTClaimsSet jwtClaimsSet = signedJWT.getJWTClaimsSet();
-            signedJWTInfo = new SignedJWTInfo(accessToken, signedJWT, jwtClaimsSet);
-        }
-        return signedJWTInfo;
-    }
+//        LoadingCache gatewaySignedJWTParseCache = CacheProviderUtil.getOrganizationCache(organization).getGatewaySignedJWTParseCache();
+//        if (gatewaySignedJWTParseCache != null) {
+//            Object cachedEntry = gatewaySignedJWTParseCache.getIfPresent(accessToken);
+//            if (cachedEntry != null) {
+//                signedJWTInfo = (SignedJWTInfo) cachedEntry;
+//            } else {
+//                SignedJWT signedJWT = SignedJWT.parse(accessToken);
+//                JWTClaimsSet jwtClaimsSet = signedJWT.getJWTClaimsSet();
+//                signedJWTInfo = new SignedJWTInfo(accessToken, signedJWT, jwtClaimsSet);
+//                gatewaySignedJWTParseCache.put(accessToken, signedJWTInfo);
+//            }
+//        } else {
+//            SignedJWT signedJWT = SignedJWT.parse(accessToken);
+//            JWTClaimsSet jwtClaimsSet = signedJWT.getJWTClaimsSet();
+//            signedJWTInfo = new SignedJWTInfo(accessToken, signedJWT, jwtClaimsSet);
+////        }
+//        return signedJWTInfo;
+//    }
+
 
     /**
      * Check if the JWT token is expired.
@@ -275,5 +277,15 @@ public class JWTUtils {
         log.info("No matching issuer found for the token with issuer : " + issuer);
         return jwtValidationInfo;
 
+    }
+
+    public static String getJWTTokenIdentifier(SignedJWTInfo signedJWTInfo) {
+
+        JWTClaimsSet jwtClaimsSet = signedJWTInfo.getJwtClaimsSet();
+        String jwtid = jwtClaimsSet.getJWTID();
+        if (StringUtils.isNotEmpty(jwtid)) {
+            return jwtid;
+        }
+        return signedJWTInfo.getSignedJWT().getSignature().toString();
     }
 }

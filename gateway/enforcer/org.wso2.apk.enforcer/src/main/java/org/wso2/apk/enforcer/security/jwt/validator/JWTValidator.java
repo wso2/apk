@@ -63,11 +63,11 @@ public class JWTValidator {
         jwtTransformer = ConfigHolder.getInstance().getConfig().getJwtTransformer(tokenIssuer.getIssuer());
         jwtTransformer.loadConfiguration(tokenIssuer);
         this.tokenIssuer = tokenIssuer;
-        if(tokenIssuer.getJwksConfigurationDTO()!= null && tokenIssuer.getJwksConfigurationDTO().isEnabled() && StringUtils.isNotEmpty(tokenIssuer.getJwksConfigurationDTO().getUrl())){
+        if (tokenIssuer.getJwksConfigurationDTO() != null && tokenIssuer.getJwksConfigurationDTO().isEnabled() && StringUtils.isNotEmpty(tokenIssuer.getJwksConfigurationDTO().getUrl())) {
             Certificate certificate = tokenIssuer.getJwksConfigurationDTO().getCertificate();
-            if (certificate != null){
-                jwksClient = new JWKSClient(tokenIssuer.getJwksConfigurationDTO().getUrl(),Arrays.asList(certificate));
-            }else{
+            if (certificate != null) {
+                jwksClient = new JWKSClient(tokenIssuer.getJwksConfigurationDTO().getUrl(), Arrays.asList(certificate));
+            } else {
                 jwksClient = new JWKSClient(tokenIssuer.getJwksConfigurationDTO().getUrl(), Collections.emptyList());
             }
         }
@@ -88,8 +88,13 @@ public class JWTValidator {
                     createJWTValidationInfoFromJWT(jwtValidationInfo, transformedJWTClaimSet);
                     jwtValidationInfo.setRawPayload(signedJWTInfo.getToken());
                     jwtValidationInfo.setKeyManager(tokenIssuer.getName());
+                    jwtValidationInfo.setIdentifier(JWTUtils.getJWTTokenIdentifier(signedJWTInfo));
+                    jwtValidationInfo.setJwtClaimsSet(signedJWTInfo.getJwtClaimsSet());
                     return jwtValidationInfo;
                 }
+                logger.debug("Token is expired.");
+            } else {
+                logger.debug("Token signature is invalid.");
             }
         } catch (ParseException | JWTGeneratorException e) {
             throw new EnforcerException("Error while parsing JWT", e);
@@ -99,8 +104,7 @@ public class JWTValidator {
         return jwtValidationInfo;
     }
 
-    protected boolean validateSignature(SignedJWT signedJWT)
-            throws EnforcerException {
+    protected boolean validateSignature(SignedJWT signedJWT) throws EnforcerException {
         try {
             String keyID = signedJWT.getHeader().getKeyID();
             if (jwksClient != null) {

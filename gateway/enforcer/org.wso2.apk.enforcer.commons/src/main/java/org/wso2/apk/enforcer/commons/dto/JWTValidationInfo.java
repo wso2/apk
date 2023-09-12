@@ -18,6 +18,7 @@
 
 package org.wso2.apk.enforcer.commons.dto;
 
+import com.nimbusds.jwt.JWTClaimsSet;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,6 +44,8 @@ public class JWTValidationInfo implements Serializable {
     private String rawPayload;
     private String keyManager;
     private Boolean isAppToken;
+    private String identifier;
+    private JWTClaimsSet jwtClaimsSet;
 
     public JWTValidationInfo() {
 
@@ -62,6 +65,22 @@ public class JWTValidationInfo implements Serializable {
         this.rawPayload = jwtValidationInfo.getRawPayload();
         this.keyManager = jwtValidationInfo.getKeyManager();
         this.isAppToken = jwtValidationInfo.getAppToken();
+    }
+
+    public String getIdentifier() {
+        return identifier;
+    }
+
+    public void setIdentifier(String identifier) {
+        this.identifier = identifier;
+    }
+
+    public JWTClaimsSet getJwtClaimsSet() {
+        return jwtClaimsSet;
+    }
+
+    public void setJwtClaimsSet(JWTClaimsSet jwtClaimsSet) {
+        this.jwtClaimsSet = jwtClaimsSet;
     }
 
     public Boolean getAppToken() {
