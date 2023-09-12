@@ -55,7 +55,6 @@ public class MetadataConstants {
     public static final String ERROR_CODE_KEY = "ErrorCode";
     public static final String CHOREO_CONNECT_ENFORCER_REPLY = "apk-enforcer-reply";
     public static final String RATELIMIT_WSO2_ORG_PREFIX = "customorg";
-    public static final String API_ENVIRONMENT_NAME = WSO2_METADATA_PREFIX + "api-environment-name";
-    public static final String API_ENVIRONMENT_ID = WSO2_METADATA_PREFIX + "api-environment-id";
+    public static final String API_ENVIRONMENT = WSO2_METADATA_PREFIX + "api-environment";
 
 }

@@ -32,7 +32,6 @@ import org.wso2.apk.enforcer.discovery.api.Resource;
 import org.wso2.apk.enforcer.analytics.AnalyticsFilter;
 import org.wso2.apk.enforcer.commons.Filter;
 import org.wso2.apk.enforcer.commons.model.APIConfig;
-import org.wso2.apk.enforcer.commons.model.Environment;
 import org.wso2.apk.enforcer.commons.model.MockedApiConfig;
 import org.wso2.apk.enforcer.commons.model.MockedContentExamples;
 import org.wso2.apk.enforcer.commons.model.MockedHeaderConfig;
@@ -139,10 +138,6 @@ public class RestAPI implements API {
             apiDefinition = api.getApiDefinitionFile().toByteArray();
         }
 
-        // TODO(Pubudu) Resolve EnvironmentId from the Control Plane. Based on the environment defined
-        // in the API, relevant environment Id should be retrieved per user.
-        Environment environment = new Environment(api.getEnvironment(), APIConstants.DEFAULT_ENVIRONMENT_ID);
-
         this.apiLifeCycleState = api.getApiLifeCycleState();
         this.apiConfig = new APIConfig.Builder(name).uuid(api.getId()).vhost(vhost).basePath(basePath).version(version)
                 .resources(resources).apiType(apiType).apiLifeCycleState(apiLifeCycleState).tier(api.getTier())
@@ -150,7 +145,7 @@ public class RestAPI implements API {
                 .disableScopes(api.getDisableScopes()).trustStore(trustStore).organizationId(api.getOrganizationId())
                 .mtlsCertificateTiers(mtlsCertificateTiers).mutualSSL(mutualSSL).systemAPI(api.getSystemAPI())
                 .applicationSecurity(applicationSecurity).jwtConfigurationDto(jwtConfigurationDto)
-                .apiDefinition(apiDefinition).environment(environment).build();
+                .apiDefinition(apiDefinition).environment(api.getEnvironment()).build();
 
         initFilters();
         return basePath;

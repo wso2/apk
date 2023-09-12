@@ -202,14 +202,10 @@ public class AnalyticsFilter {
                     endUserName == null ? APIConstants.END_USER_UNKNOWN : endUserName);
             requestContext.addMetadataToMap(MetadataConstants.API_CONTEXT_KEY,
                     requestContext.getMatchedAPI().getBasePath());
-            requestContext.addMetadataToMap(MetadataConstants.API_ENVIRONMENT_NAME,
-                    requestContext.getMatchedAPI().getEnvironment().getName() == null
+            requestContext.addMetadataToMap(MetadataConstants.API_ENVIRONMENT,
+                    requestContext.getMatchedAPI().getEnvironment() == null
                             ? APIConstants.DEFAULT_ENVIRONMENT_NAME
-                            : requestContext.getMatchedAPI().getEnvironment().getName());
-            requestContext.addMetadataToMap(MetadataConstants.API_ENVIRONMENT_ID,
-                    requestContext.getMatchedAPI().getEnvironment().getId() == null
-                            ? APIConstants.DEFAULT_ENVIRONMENT_ID
-                            : requestContext.getMatchedAPI().getEnvironment().getId());
+                            : requestContext.getMatchedAPI().getEnvironment());
 
         } finally {
             if (Utils.tracingEnabled()) {
