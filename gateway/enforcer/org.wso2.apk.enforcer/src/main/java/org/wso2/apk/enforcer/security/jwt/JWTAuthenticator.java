@@ -18,6 +18,7 @@
 package org.wso2.apk.enforcer.security.jwt;
 
 import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.jwt.util.DateUtils;
 import io.opentelemetry.context.Scope;
 import net.minidev.json.JSONArray;
@@ -108,7 +109,6 @@ public class JWTAuthenticator implements Authenticator {
     public AuthenticationContext authenticate(RequestContext requestContext) throws APISecurityException {
 
         TracingTracer tracer = null;
-        TracingSpan decodeTokenHeaderSpan = null;
         TracingSpan jwtAuthenticatorInfoSpan = null;
         Scope jwtAuthenticatorInfoSpanScope = null;
         TracingSpan validateSubscriptionSpan = null;
@@ -136,47 +136,13 @@ public class JWTAuthenticator implements Authenticator {
             String organization = requestContext.getMatchedAPI().getOrganizationId();
             String environment = requestContext.getMatchedAPI().getEnvironment();
             context = context + "/" + version;
-            SignedJWTInfo signedJWTInfo;
-            Scope decodeTokenHeaderSpanScope = null;
-            try {
-                if (Utils.tracingEnabled()) {
-                    decodeTokenHeaderSpan = Utils.startSpan(TracingConstants.DECODE_TOKEN_HEADER_SPAN, tracer);
-                    decodeTokenHeaderSpanScope = decodeTokenHeaderSpan.getSpan().makeCurrent();
-                    Utils.setTag(decodeTokenHeaderSpan, APIConstants.LOG_TRACE_ID,
-                            ThreadContext.get(APIConstants.LOG_TRACE_ID));
-                }
-                signedJWTInfo = JWTUtils.getSignedJwt(jwtToken, organization);
-            } catch (ParseException | IllegalArgumentException e) {
-                log.error("Failed to decode the token header. {}", e.getMessage());
-                throw new APISecurityException(APIConstants.StatusCodes.UNAUTHENTICATED.getCode(),
-                        APISecurityConstants.API_AUTH_INVALID_CREDENTIALS, "Not a JWT token. Failed to decode the " +
-                        "token header", e);
-            } finally {
-                if (Utils.tracingEnabled()) {
-                    decodeTokenHeaderSpanScope.close();
-                    Utils.finishSpan(decodeTokenHeaderSpan);
-                }
-            }
-            JWTClaimsSet claims = signedJWTInfo.getJwtClaimsSet();
-            String jwtTokenIdentifier = getJWTTokenIdentifier(signedJWTInfo);
 
-            String jwtHeader = signedJWTInfo.getSignedJWT().getHeader().toString();
-            if (StringUtils.isNotEmpty(jwtTokenIdentifier)) {
-                if (RevokedJWTDataHolder.isJWTTokenSignatureExistsInRevokedMap(jwtTokenIdentifier)) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Token retrieved from the revoked jwt token map. Token: " + FilterUtils.getMaskedToken(jwtHeader));
-                    }
-                    log.debug("Invalid JWT token. " + FilterUtils.getMaskedToken(jwtHeader));
-                    throw new APISecurityException(APIConstants.StatusCodes.UNAUTHENTICATED.getCode(),
-                            APISecurityConstants.API_AUTH_INVALID_CREDENTIALS, "Invalid JWT token");
-                }
-
-            }
-            JWTValidationInfo validationInfo = getJwtValidationInfo(signedJWTInfo, jwtTokenIdentifier, organization, environment);
+            JWTValidationInfo validationInfo = getJwtValidationInfo(jwtToken, organization, environment);
             if (validationInfo != null) {
                 if (validationInfo.isValid()) {
+                    Map<String, Object> claims = validationInfo.getClaims();
                     // Validate token type
-                    Object keyType = claims.getClaim("keytype");
+                    Object keyType = claims.get("keytype");
                     if (keyType != null && !keyType.toString().equalsIgnoreCase(requestContext.getMatchedAPI().getEnvType())) {
                         throw new APISecurityException(APIConstants.StatusCodes.UNAUTHENTICATED.getCode(),
                                 APISecurityConstants.API_AUTH_INVALID_CREDENTIALS, "Invalid key type.");
@@ -196,7 +162,8 @@ public class JWTAuthenticator implements Authenticator {
                                         ThreadContext.get(APIConstants.LOG_TRACE_ID));
                             }
                             // if the token is self contained, validation subscription from `subscribedApis` claim
-                            JSONObject api = validateSubscriptionFromClaim(name, version, claims, splitToken, envType
+                            JSONObject api = validateSubscriptionFromClaim(name, version,
+                                    validationInfo.getJwtClaimsSet(), splitToken, envType
                                     , apiKeyValidationInfoDTO, true);
                             if (api == null) {
                                 if (log.isDebugEnabled()) {
@@ -264,7 +231,7 @@ public class JWTAuthenticator implements Authenticator {
                                     ThreadContext.get(APIConstants.LOG_TRACE_ID));
                         }
                         validateScopes(context, version, requestContext.getMatchedResourcePaths(), validationInfo,
-                                signedJWTInfo);
+                                jwtToken);
                     } finally {
                         if (Utils.tracingEnabled()) {
                             validateScopesSpanScope.close();
@@ -293,14 +260,14 @@ public class JWTAuthenticator implements Authenticator {
                         // set custom claims get from the CR
                         jwtInfoDto.setClaims(claimMap);
                         endUserToken = BackendJwtUtils.generateAndRetrieveJWTToken(this.jwtGenerator,
-                                jwtTokenIdentifier, jwtInfoDto, isGatewayTokenCacheEnabled, organization);
+                                validationInfo.getIdentifier(), jwtInfoDto, isGatewayTokenCacheEnabled, organization);
                         // Set generated jwt token as a response header
                         // Change the backendJWTConfig to API level
                         requestContext.addOrModifyHeaders(this.jwtGenerator.getJWTConfigurationDto().getJwtHeader(),
                                 endUserToken);
                     }
 
-                    return FilterUtils.generateAuthenticationContext(requestContext, jwtTokenIdentifier,
+                    return FilterUtils.generateAuthenticationContext(requestContext, validationInfo.getIdentifier(),
                             validationInfo, apiKeyValidationInfoDTO, endUserToken, jwtToken, true);
                 } else {
                     throw new APISecurityException(APIConstants.StatusCodes.UNAUTHENTICATED.getCode(),
@@ -358,7 +325,7 @@ public class JWTAuthenticator implements Authenticator {
      * @throws APISecurityException in case of scope validation failure
      */
     private void validateScopes(String apiContext, String apiVersion, ArrayList<ResourceConfig> matchingResources,
-                                JWTValidationInfo jwtValidationInfo, SignedJWTInfo jwtToken) throws APISecurityException {
+                                JWTValidationInfo jwtValidationInfo, String jwtToken) throws APISecurityException {
 
         APIKeyValidationInfoDTO apiKeyValidationInfoDTO = new APIKeyValidationInfoDTO();
         Set<String> scopeSet = new HashSet<>(jwtValidationInfo.getScopes());
@@ -367,7 +334,7 @@ public class JWTAuthenticator implements Authenticator {
         TokenValidationContext tokenValidationContext = new TokenValidationContext();
         tokenValidationContext.setValidationInfoDTO(apiKeyValidationInfoDTO);
 
-        tokenValidationContext.setAccessToken(jwtToken.getToken());
+        tokenValidationContext.setAccessToken(jwtToken);
         // since matching resources has same method for all, just get the first element's method is adequate.
         // i.e. graphQL matching resources has same operation type for a request.
         tokenValidationContext.setHttpVerb(matchingResources.get(0).getMethod().toString());
@@ -497,95 +464,99 @@ public class JWTAuthenticator implements Authenticator {
         return api;
     }
 
-    private JWTValidationInfo getJwtValidationInfo(SignedJWTInfo signedJWTInfo, String jti, String organization, String environment) 
-    throws APISecurityException {
-
-        String jwtHeader = signedJWTInfo.getSignedJWT().getHeader().toString();
-        JWTValidationInfo jwtValidationInfo = null;
-        if (isGatewayTokenCacheEnabled && !SignedJWTInfo.ValidationStatus.NOT_VALIDATED.equals(signedJWTInfo.getValidationStatus())) {
-            Object cacheToken =
-                    CacheProviderUtil.getOrganizationCache(organization).getGatewayTokenCache().getIfPresent(jti);
-            if (cacheToken != null && (Boolean) cacheToken && SignedJWTInfo.ValidationStatus.VALID.equals(signedJWTInfo.getValidationStatus())) {
-                if (CacheProviderUtil.getOrganizationCache(organization).getGatewayKeyCache().getIfPresent(jti) != null) {
-                    JWTValidationInfo tempJWTValidationInfo =
-                            (JWTValidationInfo) CacheProviderUtil.getOrganizationCache(organization).getGatewayKeyCache().getIfPresent(jti);
-                    checkTokenExpiration(jti, tempJWTValidationInfo, organization);
-                    jwtValidationInfo = tempJWTValidationInfo;
-                }
-            } else if (SignedJWTInfo.ValidationStatus.INVALID.equals(signedJWTInfo.getValidationStatus())
-                        || CacheProviderUtil.getOrganizationCache(organization).getInvalidTokenCache().getIfPresent(jti) != null) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Token retrieved from the invalid token cache. Token: " + FilterUtils.getMaskedToken(jwtHeader));
-                }
-                log.debug("Invalid JWT token. " + FilterUtils.getMaskedToken(jwtHeader));
-                throw new APISecurityException(APIConstants.StatusCodes.UNAUTHENTICATED.getCode(),
-                        APISecurityConstants.API_AUTH_INVALID_CREDENTIALS,
-                        APISecurityConstants.API_AUTH_INVALID_CREDENTIALS_MESSAGE);
-            }
-        }
-        if (jwtValidationInfo == null) {
-
-            try {
-                jwtValidationInfo = JWTUtils.validateJWTToken(signedJWTInfo, organization, environment);
-                signedJWTInfo.setValidationStatus(jwtValidationInfo.isValid() ? SignedJWTInfo.ValidationStatus.VALID
-                        : SignedJWTInfo.ValidationStatus.INVALID);
-                if (isGatewayTokenCacheEnabled) {
-                    // Add token to tenant token cache
-                    if (jwtValidationInfo.isValid()) {
-                        CacheProviderUtil.getOrganizationCache(organization).getGatewayTokenCache().put(jti, true);
-                    } else {
-                        CacheProviderUtil.getOrganizationCache(organization).getInvalidTokenCache().put(jti, true);
+    private JWTValidationInfo getJwtValidationInfo(String jwtToken, String organization, String environment) throws APISecurityException {
+        if (isGatewayTokenCacheEnabled) {
+            Object validCacheToken = CacheProviderUtil.getOrganizationCache(organization).getGatewayKeyCache()
+                    .getIfPresent(jwtToken);
+            if (validCacheToken != null) {
+                JWTValidationInfo validationInfo = (JWTValidationInfo) validCacheToken;
+                if (!isJWTExpired(validationInfo)) {
+                    if (RevokedJWTDataHolder.isJWTTokenSignatureExistsInRevokedMap(validationInfo.getIdentifier())) {
+                        log.debug("Token retrieved from the revoked jwt token map.");
+                        throw new APISecurityException(APIConstants.StatusCodes.UNAUTHENTICATED.getCode(),
+                                APISecurityConstants.API_AUTH_INVALID_CREDENTIALS, "Invalid JWT token");
                     }
-                    CacheProviderUtil.getOrganizationCache(organization).getGatewayKeyCache().put(jti,
-                            jwtValidationInfo);
-
+                    return validationInfo;
+                } else {
+                    CacheProviderUtil.getOrganizationCache(organization).getGatewayKeyCache().invalidate(jwtToken);
+                    CacheProviderUtil.getOrganizationCache(organization).getInvalidTokenCache().put(jwtToken, true);
+                    return null;
                 }
-                return jwtValidationInfo;
-            } catch (EnforcerException e) {
-                log.error("JWT Validation failed", e);
-                throw new APISecurityException(APIConstants.StatusCodes.UNAUTHENTICATED.getCode(),
-                        APISecurityConstants.API_AUTH_GENERAL_ERROR,
-                        APISecurityConstants.API_AUTH_GENERAL_ERROR_MESSAGE);
+            } else if (CacheProviderUtil.getOrganizationCache(organization).getInvalidTokenCache()
+                    .getIfPresent(jwtToken) != null) {
+                return null;
             }
         }
-        return jwtValidationInfo;
+
+        SignedJWTInfo signedJWTInfo;
+        Scope decodeTokenHeaderSpanScope = null;
+        TracingSpan decodeTokenHeaderSpan = null;
+        try {
+            if (Utils.tracingEnabled()) {
+                TracingTracer tracer = Utils.getGlobalTracer();
+                decodeTokenHeaderSpan = Utils.startSpan(TracingConstants.DECODE_TOKEN_HEADER_SPAN, tracer);
+                decodeTokenHeaderSpanScope = decodeTokenHeaderSpan.getSpan().makeCurrent();
+                Utils.setTag(decodeTokenHeaderSpan, APIConstants.LOG_TRACE_ID,
+                        ThreadContext.get(APIConstants.LOG_TRACE_ID));
+            }
+            SignedJWT signedJWT = SignedJWT.parse(jwtToken);
+            JWTClaimsSet jwtClaimsSet = signedJWT.getJWTClaimsSet();
+            // todo(amali) create validationinfo directly
+            signedJWTInfo = new SignedJWTInfo(jwtToken, signedJWT, jwtClaimsSet);
+        } catch (ParseException | IllegalArgumentException e) {
+            log.error("Failed to decode the token header. {}", e.getMessage());
+            throw new APISecurityException(APIConstants.StatusCodes.UNAUTHENTICATED.getCode(),
+                    APISecurityConstants.API_AUTH_INVALID_CREDENTIALS, "Not a JWT token. Failed to decode the " +
+                    "token header", e);
+        } finally {
+            if (Utils.tracingEnabled()) {
+                decodeTokenHeaderSpanScope.close();
+                Utils.finishSpan(decodeTokenHeaderSpan);
+            }
+        }
+
+        String jwtTokenIdentifier = JWTUtils.getJWTTokenIdentifier(signedJWTInfo);
+
+        // check whether the token is revoked
+        String jwtHeader = signedJWTInfo.getSignedJWT().getHeader().toString();
+        if (RevokedJWTDataHolder.isJWTTokenSignatureExistsInRevokedMap(jwtTokenIdentifier)) {
+            log.debug("Token retrieved from the revoked jwt token map. Token: " +
+                    FilterUtils.getMaskedToken(jwtHeader));
+            throw new APISecurityException(APIConstants.StatusCodes.UNAUTHENTICATED.getCode(),
+                    APISecurityConstants.API_AUTH_INVALID_CREDENTIALS, "Invalid JWT token");
+        }
+
+        try {
+            JWTValidationInfo jwtValidationInfo = JWTUtils.validateJWTToken(signedJWTInfo, organization, environment);
+            if (isGatewayTokenCacheEnabled) {
+                // Add token to tenant token cache
+                if (jwtValidationInfo.isValid()) {
+                    CacheProviderUtil.getOrganizationCache(organization).getGatewayKeyCache().put(jwtToken, jwtValidationInfo);
+                } else {
+                    CacheProviderUtil.getOrganizationCache(organization).getInvalidTokenCache().put(jwtToken, true);
+                }
+            }
+            return jwtValidationInfo;
+        } catch (EnforcerException e) {
+            log.error("JWT Validation failed", e);
+            throw new APISecurityException(APIConstants.StatusCodes.UNAUTHENTICATED.getCode(),
+                    APISecurityConstants.API_AUTH_GENERAL_ERROR,
+                    APISecurityConstants.API_AUTH_GENERAL_ERROR_MESSAGE);
+        }
     }
 
     /**
      * Check whether the jwt token is expired or not.
      *
-     * @param tokenIdentifier The token Identifier of JWT.
-     * @param payload         The payload of the JWT token
-     * @param organization
-     * @return
+     * @param payload The payload of the JWT token
+     * @return boolean true if the token is not expired, false otherwise
      */
-    private JWTValidationInfo checkTokenExpiration(String tokenIdentifier, JWTValidationInfo payload,
-                                                   String organization) {
+    private Boolean isJWTExpired(JWTValidationInfo payload) {
 
         long timestampSkew = FilterUtils.getTimeStampSkewInSeconds();
 
         Date now = new Date();
         Date exp = new Date(payload.getExpiryTime());
-        if (!DateUtils.isAfter(exp, now, timestampSkew)) {
-            if (isGatewayTokenCacheEnabled) {
-                CacheProviderUtil.getOrganizationCache(organization).getGatewayTokenCache().invalidate(tokenIdentifier);
-                CacheProviderUtil.getOrganizationCache(organization).getGatewayJWTTokenCache().invalidate(tokenIdentifier);
-                CacheProviderUtil.getOrganizationCache(organization).getInvalidTokenCache().put(tokenIdentifier, true);
-            }
-            payload.setValid(false);
-            payload.setValidationCode(APISecurityConstants.API_AUTH_INVALID_CREDENTIALS);
-            return payload;
-        }
-        return payload;
-    }
-
-    private String getJWTTokenIdentifier(SignedJWTInfo signedJWTInfo) {
-
-        JWTClaimsSet jwtClaimsSet = signedJWTInfo.getJwtClaimsSet();
-        String jwtid = jwtClaimsSet.getJWTID();
-        if (StringUtils.isNotEmpty(jwtid)) {
-            return jwtid;
-        }
-        return signedJWTInfo.getSignedJWT().getSignature().toString();
+        return !DateUtils.isAfter(exp, now, timestampSkew);
     }
 }
