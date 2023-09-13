@@ -163,7 +163,7 @@ public class JWTAuthenticator implements Authenticator {
                             // if the token is self contained, validation subscription from `subscribedApis` claim
                             JSONObject api = validateSubscriptionFromClaim(name, version,
                                     validationInfo.getJwtClaimsSet(), splitToken, envType
-                                    , apiKeyValidationInfoDTO, true);
+                                    , apiKeyValidationInfoDTO);
                             if (api == null) {
                                 if (log.isDebugEnabled()) {
                                     log.debug("Begin subscription validation via Key Manager: " + validationInfo.getKeyManager());
@@ -241,10 +241,6 @@ public class JWTAuthenticator implements Authenticator {
 
                     // Generate or get backend JWT
                     String endUserToken = null;
-
-                    // change the config to api specific config
-                    JWTConfigurationDto backendJwtConfig =
-                            ConfigHolder.getInstance().getConfig().getJwtConfigurationDto();
 
                     // jwt generator is only set if the backend jwt is enabled
                     if (this.jwtGenerator != null) {
@@ -373,16 +369,16 @@ public class JWTAuthenticator implements Authenticator {
      *
      * @param name           API name
      * @param version        API version
+     * @param payload        The payload of the JWT token
      * @param validationInfo token validation related details. this will be populated based on the available data
      *                       during the subscription validation.
-     * @param payload        The payload of the JWT token
      * @return an JSON object containing subscribed API information retrieved from token payload.
      * If the subscription information is not found, return a null object.
      * @throws APISecurityException if the user is not subscribed to the API
      */
     private JSONObject validateSubscriptionFromClaim(String name, String version, JWTClaimsSet payload,
                                                      String[] splitToken, String envType,
-                                                     APIKeyValidationInfoDTO validationInfo, boolean isOauth) throws APISecurityException {
+                                                     APIKeyValidationInfoDTO validationInfo) throws APISecurityException {
 
         JSONObject api = null;
         try {
@@ -453,16 +449,17 @@ public class JWTAuthenticator implements Authenticator {
             if (log.isDebugEnabled()) {
                 log.debug("No subscription information found in the token.");
             }
-            // we perform mandatory authentication for Api Keys
-            if (!isOauth) {
-                log.error("User is not subscribed to access the API.");
-                throw new APISecurityException(APIConstants.StatusCodes.UNAUTHORIZED.getCode(),
-                        APISecurityConstants.API_AUTH_FORBIDDEN, APISecurityConstants.API_AUTH_FORBIDDEN_MESSAGE);
-            }
         }
         return api;
     }
 
+    /**
+     * Validate whether the token is a valid JWT and generate the JWTValidationInfo object.
+     * @param jwtToken The full JWT token
+     * @param organization organization of the API
+     * @return
+     * @throws APISecurityException
+     */
     private JWTValidationInfo getJwtValidationInfo(String jwtToken, String organization) throws APISecurityException {
         if (isGatewayTokenCacheEnabled) {
             Object validCacheToken = CacheProviderUtil.getOrganizationCache(organization).getGatewayKeyCache()
@@ -471,23 +468,28 @@ public class JWTAuthenticator implements Authenticator {
                 JWTValidationInfo validationInfo = (JWTValidationInfo) validCacheToken;
                 if (!isJWTExpired(validationInfo)) {
                     if (RevokedJWTDataHolder.isJWTTokenSignatureExistsInRevokedMap(validationInfo.getIdentifier())) {
-                        log.debug("Token retrieved from the revoked jwt token map.");
+                        log.debug("Token found in the revoked jwt token map.");
                         throw new APISecurityException(APIConstants.StatusCodes.UNAUTHENTICATED.getCode(),
                                 APISecurityConstants.API_AUTH_INVALID_CREDENTIALS, "Invalid JWT token");
                     }
                     return validationInfo;
                 } else {
                     CacheProviderUtil.getOrganizationCache(organization).getGatewayKeyCache().invalidate(jwtToken);
-                    //todo(amali) put error code, not true
                     CacheProviderUtil.getOrganizationCache(organization).getInvalidTokenCache().put(jwtToken, true);
-                    return null;
+                    throw new APISecurityException(APIConstants.StatusCodes.UNAUTHENTICATED.getCode(),
+                            APISecurityConstants.API_AUTH_INVALID_CREDENTIALS,
+                            APISecurityConstants.API_AUTH_INVALID_CREDENTIALS_MESSAGE);
                 }
             } else if (CacheProviderUtil.getOrganizationCache(organization).getInvalidTokenCache()
                     .getIfPresent(jwtToken) != null) {
-                return null;
+                throw new APISecurityException(APIConstants.StatusCodes.UNAUTHENTICATED.getCode(),
+                        APISecurityConstants.API_AUTH_INVALID_CREDENTIALS,
+                        APISecurityConstants.API_AUTH_INVALID_CREDENTIALS_MESSAGE);
             }
         }
 
+        SignedJWT signedJWT;
+        JWTClaimsSet jwtClaimsSet;
         SignedJWTInfo signedJWTInfo;
         Scope decodeTokenHeaderSpanScope = null;
         TracingSpan decodeTokenHeaderSpan = null;
@@ -499,8 +501,8 @@ public class JWTAuthenticator implements Authenticator {
                 Utils.setTag(decodeTokenHeaderSpan, APIConstants.LOG_TRACE_ID,
                         ThreadContext.get(APIConstants.LOG_TRACE_ID));
             }
-            SignedJWT signedJWT = SignedJWT.parse(jwtToken);
-            JWTClaimsSet jwtClaimsSet = signedJWT.getJWTClaimsSet();
+            signedJWT = SignedJWT.parse(jwtToken);
+            jwtClaimsSet = signedJWT.getJWTClaimsSet();
             // todo(amali) create validationinfo directly
             signedJWTInfo = new SignedJWTInfo(jwtToken, signedJWT, jwtClaimsSet);
         } catch (ParseException | IllegalArgumentException e) {
@@ -515,10 +517,11 @@ public class JWTAuthenticator implements Authenticator {
             }
         }
 
-        String jwtTokenIdentifier = JWTUtils.getJWTTokenIdentifier(signedJWTInfo);
+        String jwtTokenIdentifier = StringUtils.isNotEmpty(jwtClaimsSet.getJWTID()) ? jwtClaimsSet.getJWTID() :
+                signedJWT.getSignature().toString();
 
         // check whether the token is revoked
-        String jwtHeader = signedJWTInfo.getSignedJWT().getHeader().toString();
+        String jwtHeader = signedJWT.getHeader().toString();
         if (RevokedJWTDataHolder.isJWTTokenSignatureExistsInRevokedMap(jwtTokenIdentifier)) {
             log.debug("Token retrieved from the revoked jwt token map. Token: " +
                     FilterUtils.getMaskedToken(jwtHeader));
@@ -552,9 +555,7 @@ public class JWTAuthenticator implements Authenticator {
      * @return boolean true if the token is not expired, false otherwise
      */
     private Boolean isJWTExpired(JWTValidationInfo payload) {
-
         long timestampSkew = FilterUtils.getTimeStampSkewInSeconds();
-
         Date now = new Date();
         Date exp = new Date(payload.getExpiryTime());
         return !DateUtils.isAfter(exp, now, timestampSkew);
