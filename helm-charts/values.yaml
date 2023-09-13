@@ -169,7 +169,7 @@ wso2:
           strategy: RollingUpdate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/ratelimiter:1.0.0
+          image: wso2/ratelimiter:latest
           security:
             sslHostname: "ratelimiter"
           # configs:
