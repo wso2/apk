@@ -18,7 +18,6 @@
 
 package org.wso2.apk.enforcer.util;
 
-import com.google.common.cache.LoadingCache;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSVerifier;
@@ -34,13 +33,11 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.wso2.apk.enforcer.common.CacheProviderUtil;
 import org.wso2.apk.enforcer.commons.dto.JWTValidationInfo;
 import org.wso2.apk.enforcer.commons.exception.EnforcerException;
 import org.wso2.apk.enforcer.config.ConfigHolder;
 import org.wso2.apk.enforcer.constants.APIConstants;
 import org.wso2.apk.enforcer.constants.Constants;
-import org.wso2.apk.enforcer.constants.JwtConstants;
 import org.wso2.apk.enforcer.dto.APIKeyValidationInfoDTO;
 import org.wso2.apk.enforcer.security.jwt.SignedJWTInfo;
 import org.wso2.apk.enforcer.security.jwt.validator.JWTValidator;
@@ -64,7 +61,6 @@ import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
-import java.text.ParseException;
 import java.util.Base64;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -206,36 +202,6 @@ public class JWTUtils {
         }
     }
 
-//    /**
-//     * Get the internal representation of the JWT.
-//     *
-//     * @param accessToken the raw access token
-//     * @return the internal representation of the JWT
-//     * @throws ParseException if an error occurs when decoding the JWT
-//     */
-//    public static SignedJWTInfo getSignedJwt(String accessToken,String organization) throws ParseException {
-//        SignedJWTInfo signedJWTInfo;
-        //Check whether GatewaySignedJWTParseCache is correct
-//        LoadingCache gatewaySignedJWTParseCache = CacheProviderUtil.getOrganizationCache(organization).getGatewaySignedJWTParseCache();
-//        if (gatewaySignedJWTParseCache != null) {
-//            Object cachedEntry = gatewaySignedJWTParseCache.getIfPresent(accessToken);
-//            if (cachedEntry != null) {
-//                signedJWTInfo = (SignedJWTInfo) cachedEntry;
-//            } else {
-//                SignedJWT signedJWT = SignedJWT.parse(accessToken);
-//                JWTClaimsSet jwtClaimsSet = signedJWT.getJWTClaimsSet();
-//                signedJWTInfo = new SignedJWTInfo(accessToken, signedJWT, jwtClaimsSet);
-//                gatewaySignedJWTParseCache.put(accessToken, signedJWTInfo);
-//            }
-//        } else {
-//            SignedJWT signedJWT = SignedJWT.parse(accessToken);
-//            JWTClaimsSet jwtClaimsSet = signedJWT.getJWTClaimsSet();
-//            signedJWTInfo = new SignedJWTInfo(accessToken, signedJWT, jwtClaimsSet);
-////        }
-//        return signedJWTInfo;
-//    }
-
-
     /**
      * Check if the JWT token is expired.
      *
@@ -244,7 +210,7 @@ public class JWTUtils {
      */
     public static boolean isExpired(long exp) {
         long timestampSkew = FilterUtils.getTimeStampSkewInSeconds();
-        return (exp-TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()) < timestampSkew);
+        return (exp - TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()) < timestampSkew);
     }
 
     /**
