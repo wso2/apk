@@ -281,6 +281,7 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 		resourceAPIPolicy = concatAPIPolicies(resourceAPIPolicy, nil)
 		resourceAuthScheme = concatAuthSchemes(resourceAuthScheme, nil)
 		resourceRatelimitPolicy = concatRateLimitPolicies(resourceRatelimitPolicy, nil)
+		loggers.LoggerAPI.Error(resourceRatelimitPolicy)
 		addOperationLevelInterceptors(&policies, resourceAPIPolicy, resourceParams.InterceptorServiceMapping, resourceParams.BackendMapping, httpRoute.Namespace)
 
 		loggers.LoggerOasparser.Debugf("Calculating auths for API ..., API_UUID = %v", swagger.UUID)
@@ -428,7 +429,7 @@ func getCorsConfigFromAPIPolicy(apiPolicy *dpv1alpha1.APIPolicy) *CorsConfig {
 
 func parseRateLimitPolicyToInternal(ratelimitPolicy *dpv1alpha1.RateLimitPolicy) *RateLimitPolicy {
 	var rateLimitPolicyInternal *RateLimitPolicy
-	if ratelimitPolicy != nil {
+	if ratelimitPolicy != nil && ratelimitPolicy.Spec.Override != nil {
 		if ratelimitPolicy.Spec.Override.API.RequestsPerUnit > 0 {
 			rateLimitPolicyInternal = &RateLimitPolicy{
 				Count:    ratelimitPolicy.Spec.Override.API.RequestsPerUnit,
