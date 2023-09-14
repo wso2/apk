@@ -32,18 +32,13 @@ public class JWTValidationInfo implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private String user;
-    private String issuer;
     private long expiryTime;
-    private long issuedTime;
     private String consumerKey;
     private boolean valid;
     private List<String> scopes = new ArrayList<>();
     private Map<String, Object> claims = new HashMap<>();
-    private String jti;
     private int validationCode;
-    private String rawPayload;
     private String keyManager;
-    private Boolean isAppToken;
     private String identifier;
     private JWTClaimsSet jwtClaimsSet;
 
@@ -54,17 +49,13 @@ public class JWTValidationInfo implements Serializable {
     public JWTValidationInfo(JWTValidationInfo jwtValidationInfo) {
 
         this.user = jwtValidationInfo.getUser();
-        this.issuer = jwtValidationInfo.getIssuer();
         this.expiryTime = jwtValidationInfo.getExpiryTime();
         this.consumerKey = jwtValidationInfo.getConsumerKey();
         this.valid = jwtValidationInfo.isValid();
         this.scopes = jwtValidationInfo.getScopes();
         this.claims = jwtValidationInfo.getClaims();
-        this.jti = jwtValidationInfo.getJti();
         this.validationCode = jwtValidationInfo.getValidationCode();
-        this.rawPayload = jwtValidationInfo.getRawPayload();
         this.keyManager = jwtValidationInfo.getKeyManager();
-        this.isAppToken = jwtValidationInfo.getAppToken();
     }
 
     public String getIdentifier() {
@@ -83,16 +74,6 @@ public class JWTValidationInfo implements Serializable {
         this.jwtClaimsSet = jwtClaimsSet;
     }
 
-    public Boolean getAppToken() {
-
-        return isAppToken;
-    }
-
-    public void setAppToken(Boolean appToken) {
-
-        isAppToken = appToken;
-    }
-
     public String getUser() {
 
         return user;
@@ -103,16 +84,6 @@ public class JWTValidationInfo implements Serializable {
         this.user = user;
     }
 
-    public String getIssuer() {
-
-        return issuer;
-    }
-
-    public void setIssuer(String issuer) {
-
-        this.issuer = issuer;
-    }
-
     public long getExpiryTime() {
 
         return expiryTime;
@@ -121,16 +92,6 @@ public class JWTValidationInfo implements Serializable {
     public void setExpiryTime(long expiryTime) {
 
         this.expiryTime = expiryTime;
-    }
-
-    public long getIssuedTime() {
-
-        return issuedTime;
-    }
-
-    public void setIssuedTime(long issuedTime) {
-
-        this.issuedTime = issuedTime;
     }
 
     public boolean isValid() {
@@ -163,16 +124,6 @@ public class JWTValidationInfo implements Serializable {
         this.claims = claims;
     }
 
-    public String getJti() {
-
-        return jti;
-    }
-
-    public void setJti(String jti) {
-
-        this.jti = jti;
-    }
-
     public String getConsumerKey() {
 
         return consumerKey;
@@ -191,16 +142,6 @@ public class JWTValidationInfo implements Serializable {
     public void setValidationCode(int validationCode) {
 
         this.validationCode = validationCode;
-    }
-
-    public String getRawPayload() {
-
-        return rawPayload;
-    }
-
-    public void setRawPayload(String rawPayload) {
-
-        this.rawPayload = rawPayload;
     }
 
     public String getKeyManager() {
