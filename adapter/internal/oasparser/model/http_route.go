@@ -55,24 +55,19 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 	outputRatelimitPolicy := utils.TieBreaker(utils.GetPtrSlice(maps.Values(resourceParams.RateLimitPolicies)))
 
 	disableScopes := true
-	disableAuthentications := false
 	config := config.ReadConfigs()
 
 	var authScheme *dpv1alpha1.Authentication
 	if outputAuthScheme != nil {
 		authScheme = *outputAuthScheme
-		if authScheme.Spec.Override != nil && authScheme.Spec.Override.Disabled != nil {
-			disableAuthentications = *authScheme.Spec.Override.Disabled
-		}
 	}
 	var apiPolicy *dpv1alpha1.APIPolicy
 	if outputAPIPolicy != nil {
 		apiPolicy = *outputAPIPolicy
 	}
-
 	var ratelimitPolicy *dpv1alpha1.RateLimitPolicy
 	if outputRatelimitPolicy != nil {
-		ratelimitPolicy = concatRateLimitPolicies(*outputRatelimitPolicy, nil)
+		ratelimitPolicy = *outputRatelimitPolicy
 	}
 
 	for _, rule := range httpRoute.Spec.Rules {
@@ -82,7 +77,7 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 		var healthCheck *dpv1alpha1.HealthCheck
 		resourceAuthScheme := authScheme
 		resourceAPIPolicy := apiPolicy
-		var resourceRatelimitPolicy *dpv1alpha1.RateLimitPolicy
+		resourceRatelimitPolicy := ratelimitPolicy
 		hasPolicies := false
 		var scopes []string
 		var timeoutInMillis uint32
@@ -283,12 +278,10 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 				}
 			}
 		}
-		if resourceAPIPolicy == apiPolicy {
-			apiPolicySelected := concatAPIPolicies(apiPolicy, nil)
-			addOperationLevelInterceptors(&policies, apiPolicySelected, resourceParams.InterceptorServiceMapping, resourceParams.BackendMapping, httpRoute.Namespace)
-		} else {
-			addOperationLevelInterceptors(&policies, resourceAPIPolicy, resourceParams.InterceptorServiceMapping, resourceParams.BackendMapping, httpRoute.Namespace)
-		}
+		resourceAPIPolicy = concatAPIPolicies(resourceAPIPolicy, nil)
+		resourceAuthScheme = concatAuthSchemes(resourceAuthScheme, nil)
+		resourceRatelimitPolicy = concatRateLimitPolicies(resourceRatelimitPolicy, nil)
+		addOperationLevelInterceptors(&policies, resourceAPIPolicy, resourceParams.InterceptorServiceMapping, resourceParams.BackendMapping, httpRoute.Namespace)
 
 		loggers.LoggerOasparser.Debugf("Calculating auths for API ..., API_UUID = %v", swagger.UUID)
 		apiAuth := getSecurity(resourceAuthScheme)
@@ -364,17 +357,22 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 		}
 	}
 
+	ratelimitPolicy = concatRateLimitPolicies(ratelimitPolicy, nil)
+	apiPolicy = concatAPIPolicies(apiPolicy, nil)
+	authScheme = concatAuthSchemes(authScheme, nil)
+
 	swagger.RateLimitPolicy = parseRateLimitPolicyToInternal(ratelimitPolicy)
 	swagger.resources = resources
-	apiPolicySelected := concatAPIPolicies(apiPolicy, nil)
-	swagger.xWso2Cors = getCorsConfigFromAPIPolicy(apiPolicySelected)
-	swagger.disableAuthentications = disableAuthentications
+	swagger.xWso2Cors = getCorsConfigFromAPIPolicy(apiPolicy)
+	if authScheme.Spec.Override != nil && authScheme.Spec.Override.Disabled != nil {
+		swagger.disableAuthentications = *authScheme.Spec.Override.Disabled
+	}
 	swagger.disableScopes = disableScopes
 
 	// Check whether the API has a backend JWT token
-	if apiPolicySelected != nil && apiPolicySelected.Spec.Override != nil && apiPolicySelected.Spec.Override.BackendJWTPolicy != nil {
+	if apiPolicy != nil && apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.BackendJWTPolicy != nil {
 		backendJWTPolicy := resourceParams.BackendJWTMapping[types.NamespacedName{
-			Name:      apiPolicySelected.Spec.Override.BackendJWTPolicy.Name,
+			Name:      apiPolicy.Spec.Override.BackendJWTPolicy.Name,
 			Namespace: httpRoute.Namespace,
 		}.String()].Spec
 		swagger.backendJWTTokenInfo = parseBackendJWTTokenToInternal(backendJWTPolicy)
@@ -564,35 +562,34 @@ func concatAuthSchemes(schemeUp *dpv1alpha1.Authentication, schemeDown *dpv1alph
 // make sure authscheme only has external service override values. (i.e. empty default values)
 // tip: use concatScheme method
 func getSecurity(authScheme *dpv1alpha1.Authentication) *Authentication {
-	resolvedAuthScheme := concatAuthSchemes(nil, authScheme)
 	authHeader := constants.AuthorizationHeader
-	if resolvedAuthScheme != nil && resolvedAuthScheme.Spec.Override != nil && resolvedAuthScheme.Spec.Override.AuthTypes != nil && len(resolvedAuthScheme.Spec.Override.AuthTypes.Oauth2.Header) > 0 {
-		authHeader = resolvedAuthScheme.Spec.Override.AuthTypes.Oauth2.Header
+	if authScheme != nil && authScheme.Spec.Override != nil && authScheme.Spec.Override.AuthTypes != nil && len(authScheme.Spec.Override.AuthTypes.Oauth2.Header) > 0 {
+		authHeader = authScheme.Spec.Override.AuthTypes.Oauth2.Header
 	}
 	sendTokenToUpstream := false
-	if resolvedAuthScheme != nil && resolvedAuthScheme.Spec.Override != nil && resolvedAuthScheme.Spec.Override.AuthTypes != nil {
-		sendTokenToUpstream = resolvedAuthScheme.Spec.Override.AuthTypes.Oauth2.SendTokenToUpstream
+	if authScheme != nil && authScheme.Spec.Override != nil && authScheme.Spec.Override.AuthTypes != nil {
+		sendTokenToUpstream = authScheme.Spec.Override.AuthTypes.Oauth2.SendTokenToUpstream
 	}
 	auth := &Authentication{Disabled: false,
 		TestConsoleKey: &TestConsoleKey{Header: constants.TestConsoleKeyHeader},
 		JWT:            &JWT{Header: authHeader, SendTokenToUpstream: sendTokenToUpstream},
 	}
-	if resolvedAuthScheme != nil && resolvedAuthScheme.Spec.Override != nil {
-		if resolvedAuthScheme.Spec.Override.Disabled != nil && *resolvedAuthScheme.Spec.Override.Disabled {
+	if authScheme != nil && authScheme.Spec.Override != nil {
+		if authScheme.Spec.Override.Disabled != nil && *authScheme.Spec.Override.Disabled {
 			return &Authentication{Disabled: true}
 		}
 		authFound := false
-		if resolvedAuthScheme.Spec.Override.AuthTypes != nil && resolvedAuthScheme.Spec.Override.AuthTypes.Oauth2.Disabled {
+		if authScheme.Spec.Override.AuthTypes != nil && authScheme.Spec.Override.AuthTypes.Oauth2.Disabled {
 			auth = &Authentication{Disabled: false,
 				TestConsoleKey: &TestConsoleKey{Header: constants.TestConsoleKeyHeader},
 			}
 		} else {
 			authFound = true
 		}
-		if resolvedAuthScheme.Spec.Override.AuthTypes.APIKey != nil {
-			authFound = authFound || len(resolvedAuthScheme.Spec.Override.AuthTypes.APIKey) > 0
+		if authScheme.Spec.Override.AuthTypes.APIKey != nil {
+			authFound = authFound || len(authScheme.Spec.Override.AuthTypes.APIKey) > 0
 			var apiKeys []APIKey
-			for _, apiKey := range resolvedAuthScheme.Spec.Override.AuthTypes.APIKey {
+			for _, apiKey := range authScheme.Spec.Override.AuthTypes.APIKey {
 				apiKeys = append(apiKeys, APIKey{
 					Name:                apiKey.Name,
 					In:                  apiKey.In,
