@@ -229,22 +229,6 @@ public class JWTUtils {
         apiKeyValidationInfoDTO.setApplicationTier(APIConstants.UNLIMITED_TIER);
     }
 
-    public static JWTValidationInfo validateJWTToken(SignedJWTInfo signedJWTInfo, String organization, String environment) throws EnforcerException {
-
-        String issuer = signedJWTInfo.getJwtClaimsSet().getIssuer();
-        JWTValidator jwtValidator = SubscriptionDataStoreImpl.getInstance().getJWTValidatorByIssuer(issuer,
-                organization, environment);
-        if (jwtValidator != null) {
-            return jwtValidator.validateToken(signedJWTInfo);
-        }
-        JWTValidationInfo jwtValidationInfo = new JWTValidationInfo();
-        jwtValidationInfo.setValid(false);
-        jwtValidationInfo.setValidationCode(APIConstants.KeyValidationStatus.API_AUTH_INVALID_CREDENTIALS);
-        log.info("No matching issuer found for the token with issuer : " + issuer);
-        return jwtValidationInfo;
-
-    }
-
     public static String getJWTTokenIdentifier(SignedJWTInfo signedJWTInfo) {
 
         JWTClaimsSet jwtClaimsSet = signedJWTInfo.getJwtClaimsSet();

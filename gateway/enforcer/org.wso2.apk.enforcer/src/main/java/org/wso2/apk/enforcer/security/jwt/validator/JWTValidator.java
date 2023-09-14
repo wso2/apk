@@ -86,7 +86,6 @@ public class JWTValidator {
                     jwtValidationInfo.setScopes(jwtTransformer.getTransformedScopes(jwtClaimsSet));
                     JWTClaimsSet transformedJWTClaimSet = jwtTransformer.transform(jwtClaimsSet);
                     createJWTValidationInfoFromJWT(jwtValidationInfo, transformedJWTClaimSet);
-                    jwtValidationInfo.setRawPayload(signedJWTInfo.getToken());
                     jwtValidationInfo.setKeyManager(tokenIssuer.getName());
                     jwtValidationInfo.setIdentifier(JWTUtils.getJWTTokenIdentifier(signedJWTInfo));
                     jwtValidationInfo.setJwtClaimsSet(signedJWTInfo.getJwtClaimsSet());
@@ -155,15 +154,10 @@ public class JWTValidator {
 
     private void createJWTValidationInfoFromJWT(JWTValidationInfo jwtValidationInfo, JWTClaimsSet jwtClaimsSet)
             throws ParseException {
-        jwtValidationInfo.setIssuer(jwtClaimsSet.getIssuer());
         jwtValidationInfo.setValid(true);
         jwtValidationInfo.setClaims(jwtClaimsSet.getClaims());
         jwtValidationInfo.setExpiryTime(jwtClaimsSet.getExpirationTime().getTime());
-        if (jwtClaimsSet.getIssueTime() != null) {
-            jwtValidationInfo.setIssuedTime(jwtClaimsSet.getIssueTime().getTime());
-        }
         jwtValidationInfo.setUser(jwtClaimsSet.getSubject());
-        jwtValidationInfo.setJti(jwtClaimsSet.getJWTID());
         if (jwtClaimsSet.getClaim(APIConstants.JwtTokenConstants.SCOPE) != null) {
             if (jwtClaimsSet.getClaim(APIConstants.JwtTokenConstants.SCOPE) instanceof List) {
                 jwtValidationInfo.setScopes(jwtClaimsSet.getStringListClaim(APIConstants.JwtTokenConstants.SCOPE));
