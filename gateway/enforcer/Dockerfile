@@ -69,8 +69,8 @@ ARG APK_VERSION=1.0-SNAPSHOT
 ENV VERSION=${APK_VERSION}
 ENV JAVA_OPTS=""
 ENV ENFORCER_HOME=${APK_USER_HOME}
-ARG CHECKSUM_AMD64="c72704c9cd49fb18f8df28de26e29c2563b6515e38efee65a6c3a29ec7368a91"
-ARG CHECKSUM_ARM64="a7b42093b702ea83f4dcbd1dd74e4085c118fe93b9cfd3f205e48506a9ac94a0"
+ARG CHECKSUM_AMD64="0f46d50fb7220dcf4cbf8861b394be9ebdfba5d7712f3900f0f4d6c38843cbcf"
+ARG CHECKSUM_ARM64="6b5ee8f3979c8d0cfb63376d3011041932787fdd4e590320197f28fb187ff264"
 ENV ENFORCER_PRIVATE_KEY_PATH=/home/wso2/security/keystore/mg.key
 ENV ENFORCER_PUBLIC_CERT_PATH=/home/wso2/security/keystore/mg.pem
 ENV TRUSTED_CA_CERTS_PATH=/home/wso2/security/truststore
@@ -97,7 +97,7 @@ RUN \
     && echo '[ ! -z "${TERM}" -a -r /etc/motd ] && cat /etc/motd' >> /etc/bash.bashrc; echo "${MOTD}" > /etc/motd
 
 RUN \
-    wget -q https://github.com/grpc-ecosystem/grpc-health-probe/releases/download/v0.4.16/grpc_health_probe-linux-${TARGETARCH} \
+    wget -q https://github.com/grpc-ecosystem/grpc-health-probe/releases/download/v0.4.19/grpc_health_probe-linux-${TARGETARCH} \
     && mv grpc_health_probe-linux-${TARGETARCH} ${GRPC_HEALTH_PROBE_PATH}\
     && if [ "${TARGETARCH}" = "amd64" ]; then echo "${CHECKSUM_AMD64}  ${GRPC_HEALTH_PROBE_PATH}" | sha256sum -c -; fi
 
