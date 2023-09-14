@@ -49,7 +49,9 @@ import org.wso2.apk.enforcer.security.Authenticator;
 import org.wso2.apk.enforcer.security.KeyValidator;
 import org.wso2.apk.enforcer.security.TokenValidationContext;
 import org.wso2.apk.enforcer.security.jwt.validator.JWTConstants;
+import org.wso2.apk.enforcer.security.jwt.validator.JWTValidator;
 import org.wso2.apk.enforcer.security.jwt.validator.RevokedJWTDataHolder;
+import org.wso2.apk.enforcer.subscription.SubscriptionDataStoreImpl;
 import org.wso2.apk.enforcer.tracing.TracingConstants;
 import org.wso2.apk.enforcer.tracing.TracingSpan;
 import org.wso2.apk.enforcer.tracing.TracingTracer;
@@ -455,7 +457,8 @@ public class JWTAuthenticator implements Authenticator {
 
     /**
      * Validate whether the token is a valid JWT and generate the JWTValidationInfo object.
-     * @param jwtToken The full JWT token
+     *
+     * @param jwtToken     The full JWT token
      * @param organization organization of the API
      * @return
      * @throws APISecurityException
@@ -530,7 +533,18 @@ public class JWTAuthenticator implements Authenticator {
         }
 
         try {
-            JWTValidationInfo jwtValidationInfo = JWTUtils.validateJWTToken(signedJWTInfo, organization);
+            // Get issuer
+            String issuer = jwtClaimsSet.getIssuer();
+            JWTValidator jwtValidator = SubscriptionDataStoreImpl.getInstance().getJWTValidatorByIssuer(issuer,
+                    organization);
+            // If no validator found for the issuer, we are not caching the token.
+            if (jwtValidator == null) {
+                throw new APISecurityException(APIConstants.StatusCodes.UNAUTHENTICATED.getCode(),
+                        APISecurityConstants.API_AUTH_INVALID_CREDENTIALS,
+                        APISecurityConstants.API_AUTH_INVALID_CREDENTIALS_MESSAGE);
+            }
+
+            JWTValidationInfo jwtValidationInfo = jwtValidator.validateToken(signedJWTInfo);
             if (isGatewayTokenCacheEnabled) {
                 // Add token to tenant token cache
                 if (jwtValidationInfo.isValid()) {
