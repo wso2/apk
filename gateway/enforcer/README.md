@@ -4,7 +4,7 @@ This guide has information to setup enforcer component for development.
 
 ## Prerequisites
 
-The following should be installed in your dev machine.
+The following should be installed in your development machine.
 
 - [Gradle](https://gradle.org/install/) >= 7.5.1 version
 - [Docker](https://docs.docker.com/engine/install/ubuntu/) >= 17.03 version
