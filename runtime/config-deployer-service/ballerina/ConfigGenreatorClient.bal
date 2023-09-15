@@ -124,7 +124,7 @@ public class ConfigGeneratorClient {
         }
         return e909044();
     }
-    public isolated function getGeneratedK8sResources(http:Request request,commons:Organization organization) returns http:Response|BadRequestError|InternalServerErrorError|commons:APKError {
+    public isolated function getGeneratedK8sResources(http:Request request, commons:Organization organization) returns http:Response|BadRequestError|InternalServerErrorError|commons:APKError {
         GenerateK8sResourcesBody body = {};
         do {
             mime:Entity[] payload = check request.getBodyParts();
@@ -142,7 +142,7 @@ public class ConfigGeneratorClient {
                 }
             }
             APIClient apiclient = new ();
-            model:APIArtifact apiArtifact = check apiclient.prepareArtifact(body.apkConfiguration, body.definitionFile,organization);
+            model:APIArtifact apiArtifact = check apiclient.prepareArtifact(body.apkConfiguration, body.definitionFile, organization);
             [string, string] zipName = check self.zipAPIArtifact(apiArtifact.uniqueId, apiArtifact);
             http:Response response = new;
             response.setFileAsPayload(zipName[1]);
@@ -219,10 +219,8 @@ public class ConfigGeneratorClient {
     }
     private isolated function storeFile(string jsonString, string fileName, string? directroy = ()) returns error? {
         string fullPath = directroy ?: "";
-        if jsonString is string {
-            fullPath = fullPath + file:pathSeparator + fileName + ".yaml";
-            _ = check io:fileWriteString(fullPath, jsonString);
-        }
+        fullPath = fullPath + file:pathSeparator + fileName + ".yaml";
+        _ = check io:fileWriteString(fullPath, jsonString);
     }
 
     private isolated function zipDirectory(string zipfileName, string directoryPath) returns [string, string]|error {

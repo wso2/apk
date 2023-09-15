@@ -139,7 +139,6 @@ public function testInterceptorConfigGenerationFromAPKConf() returns error? {
 
     test:assertEquals(apiArtifact.interceptorServices.length(), 2, "Required Interceptor services not defined");
     foreach model:InterceptorService interceptorService in apiArtifact.interceptorServices {
-        test:assertTrue(interceptorService is model:InterceptorService);
         string interceptorName = interceptorService.metadata.name;
         model:InterceptorReference interceptorReference = {name: interceptorName};
         if (interceptorName.startsWith("request-interceptor")) {
