@@ -1,7 +1,7 @@
 ## Config Deployer Service
 
 
-# Functionality.
+# Functionalities.
 
 1. Generate APK configuration (api.apk-conf) from given definition.
 2. Generate K8s artifacts from given definition and APK configuration file.
