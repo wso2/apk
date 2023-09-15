@@ -84,7 +84,7 @@ To tryout APK please refer to this [document](https://apk.docs.wso2.com/en/lates
 1. Execute `helm repo add bitnami https://charts.bitnami.com/bitnami` and `helm repo add jetstack https://charts.jetstack.io`.
 2. Clone the repo and cd into the `HELM-HOME` folder.
 3. Execute `helm dependency build` command to download the dependent charts.
-4. Now execute `helm install apk-test . -n apk` to install the APK components.
+4. Now execute `helm install apk-test .` to install the APK components.
 
     > **Optional**
     >
@@ -92,18 +92,18 @@ To tryout APK please refer to this [document](https://apk.docs.wso2.com/en/lates
     >
     > To deploy data plane components only use `--set wso2.apk.cp.enabled=false`
 
-5. Verify the deployment by executing ```kubectl get pods -n apk```
+5. Verify the deployment by executing ```kubectl get pods```
 
 ### To Access Deployment through local machine
 
 - You can either, identify the router-service external IP address to invoke the API through the APK gateway
     ```bash
-    kubectl get svc -n apk | grep router-service
+    kubectl get svc | grep router-service
     ```
 
 - or, port forward to router-service to use localhost.
     ```bash
-    kubectl port-forward svc/apk-test-wso2-apk-router-service -n apk 9095:9095
+    kubectl port-forward svc/apk-test-wso2-apk-router-service 9095:9095
     ```
 
 ## Quick Start APK with Kubernetes client
@@ -113,7 +113,7 @@ Follow the instruction below to deploy an API using the `kubectl`.
 
 2. Apply CRs to kubernetes API server using the kubectl.
     ```bash
-    kubectl apply -f developer/tryout/samples/ -n apk
+    kubectl apply -f developer/tryout/samples/
     ```
     > **Note**
     >
