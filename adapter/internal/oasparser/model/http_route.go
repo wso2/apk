@@ -281,7 +281,7 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 		resourceAPIPolicy = concatAPIPolicies(resourceAPIPolicy, nil)
 		resourceAuthScheme = concatAuthSchemes(resourceAuthScheme, nil)
 		resourceRatelimitPolicy = concatRateLimitPolicies(resourceRatelimitPolicy, nil)
-		loggers.LoggerAPI.Error(resourceRatelimitPolicy)
+
 		addOperationLevelInterceptors(&policies, resourceAPIPolicy, resourceParams.InterceptorServiceMapping, resourceParams.BackendMapping, httpRoute.Namespace)
 
 		loggers.LoggerOasparser.Debugf("Calculating auths for API ..., API_UUID = %v", swagger.UUID)
