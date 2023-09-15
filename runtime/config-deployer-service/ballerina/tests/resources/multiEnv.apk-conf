@@ -1,0 +1,17 @@
+name: api1
+version: 1.0.0
+context: /api1/1.0.0
+type: REST
+defaultVersion: true
+environment: dev
+endpointConfigurations:
+  production:
+    endpoint: http://backend.test-apk.svc.cluster.local:80
+  sandbox:
+    endpoint: http://backend.test-apk.svc.cluster.local:80
+operations:
+- target: /get
+  verb: GET
+  authTypeEnabled: false
+- target: /get
+  verb: POST

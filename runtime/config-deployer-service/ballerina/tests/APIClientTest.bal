@@ -573,6 +573,76 @@ public function testAPIKeyAndJWTEnable() returns error? {
     }
 }
 
+@test:Config {}
+public function testEnvironmentGenerationFromAPKConf() returns error? {
+
+    GenerateK8sResourcesBody body = {};
+    body.apkConfiguration = {fileName: "multiEnv.apk-conf", fileContent: check io:fileReadBytes("./tests/resources/multiEnv.apk-conf")};
+    body.definitionFile = {fileName: "api.yaml", fileContent: check io:fileReadBytes("./tests/resources/api.yaml")};
+    body.apiType = "REST";
+    APIClient apiClient = new;
+
+    model:APIArtifact apiArtifact = check apiClient.prepareArtifact(body.apkConfiguration, body.definitionFile, organization);
+    model:API? api = apiArtifact.api;
+
+    if api is model:API {
+        model:APISpec apiSpec = <model:APISpec>api.spec;
+
+        if apiSpec.environment != () {
+            test:assertEquals(<string>apiSpec.environment, "dev", "Environment of the API is not equal to expected environment");
+        } else {
+            test:assertFail("Environment of the API should not be nil");
+        }
+
+    } else {
+        test:assertFail("API is not equal to expected API Config");
+    }
+
+}
+
+@test:Config {}
+public function testBasicAPIFromAPKConf() returns error? {
+
+    string apiType = "REST";
+    GenerateK8sResourcesBody body = {};
+    body.apkConfiguration = {fileName: "basicAPI.apk-conf", fileContent: check io:fileReadBytes("./tests/resources/basicAPI.apk-conf")};
+    body.definitionFile = {fileName: "api.yaml", fileContent: check io:fileReadBytes("./tests/resources/api.yaml")};
+    body.apiType = apiType;
+    APIClient apiClient = new;
+
+    model:APIArtifact apiArtifact = check apiClient.prepareArtifact(body.apkConfiguration, body.definitionFile, organization);
+
+    model:API? api = apiArtifact.api;
+
+    if api is model:API {
+        model:APISpec apiSpec = <model:APISpec>api.spec;
+
+        string? definitionFileRef = apiSpec.definitionFileRef;
+        if definitionFileRef is string && definitionFileRef == "" {
+            test:assertFail("Definition file ref is not equal to expected definition file ref");
+        }
+
+        test:assertEquals(<string>apiSpec.apiType, apiType, "API type is not equal to expected API type");
+
+        if apiSpec.isDefaultVersion == () {
+            test:assertFail("The field isDefaultVersion of the API should not be nil");
+        }
+        test:assertFalse(<boolean>apiSpec.isDefaultVersion, "The field isDefaultVersion of the API should be false");
+
+        if apiSpec.systemAPI != () {
+            test:assertFail("The field systemAPI of the API should be nil");
+        }
+
+        if apiSpec.environment != () {
+            test:assertFail("Environment of the API should be nil");
+        }
+
+    } else {
+        test:assertFail("API is not equal to expected API Config");
+    }
+
+}
+
 public function APIToAPKConfDataProvider() returns map<[runtimeModels:API, APKConf]>|error {
     runtimeModels:API api = runtimeModels:newAPI1();
     api.setName("testAPI");

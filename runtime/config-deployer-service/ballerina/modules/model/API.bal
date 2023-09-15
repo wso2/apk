@@ -32,6 +32,7 @@ public type APISpec record {|
     string organization;
     boolean isDefaultVersion?;
     string definitionFileRef?;
+    string environment?;
     string definitionPath?;
     EnvConfig[]|() production = ();
     EnvConfig[]|() sandbox = ();

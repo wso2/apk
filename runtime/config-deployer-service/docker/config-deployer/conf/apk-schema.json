@@ -43,6 +43,10 @@
       "type": "boolean",
       "description": "Is this the default version of the API"
     },
+    "environment": {
+      "type": "string",
+      "description": "Environment of the API"
+    },
     "endpointConfigurations": {
       "$ref": "#/schemas/EndpointConfigurations",
       "description": "Configuration for different endpoints of the API."
