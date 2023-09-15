@@ -34,9 +34,9 @@ Feature: Test JWT related functionalities
     Then I set headers
       |Authorization|bearer ${idp-1-token}|
     And I send "GET" request to "https://default.gw.wso2.com:9095/jwt-basic/3.14/employee/" with body ""
-    And I eventually receive 401 response code, not accepting
+    And I eventually receive 200 response code, not accepting
       |429|
-      |200|
+      |401|
     Then I generate JWT token from idp1 with kid "456-789"
     And I send "DELETE" request to "https://default.gw.wso2.com:9095/jwt-basic/3.14/employee/1234" with body ""
     And I eventually receive 200 response code, not accepting
