@@ -19,19 +19,19 @@ artifactId = "org.wso2.apk.config"
 version = "1.0.0-SNAPSHOT"
 path = "../java/build/libs/org.wso2.apk.config-1.0.0-SNAPSHOT.jar"
 
-# transitive dependency of org.wso2.apk:org.wso2.apk.config:0.0.1-SNAPSHOT
+# transitive dependency of org.wso2.apk:org.wso2.apk.config:1.0.0-SNAPSHOT
 [[platform.java11.dependency]]
 groupId = "commons-logging"
 artifactId = "commons-logging"
 version = "1.1.1"
 
-# transitive dependency of org.wso2.apk:org.wso2.apk.config:0.0.1-SNAPSHOT
+# transitive dependency of org.wso2.apk:org.wso2.apk.config:1.0.0-SNAPSHOT
 [[platform.java11.dependency]]
 groupId = "com.google.code.gson"
 artifactId = "gson"
 version = "2.10"
 
-# transitive dependency of org.wso2.apk:org.wso2.apk.config:0.0.1-SNAPSHOT
+# transitive dependency of org.wso2.apk:org.wso2.apk.config:1.0.0-SNAPSHOT
 [[platform.java11.dependency]]
 groupId = "io.swagger.parser.v3"
 artifactId = "swagger-parser"
@@ -223,13 +223,13 @@ groupId = "commons-io"
 artifactId = "commons-io"
 version = "2.11.0"
 
-# transitive dependency of org.wso2.apk:org.wso2.apk.config:0.0.1-SNAPSHOT
+# transitive dependency of org.wso2.apk:org.wso2.apk.config:1.0.0-SNAPSHOT
 [[platform.java11.dependency]]
 groupId = "io.swagger.core.v3"
 artifactId = "swagger-models"
 version = "2.2.9"
 
-# transitive dependency of org.wso2.apk:org.wso2.apk.config:0.0.1-SNAPSHOT
+# transitive dependency of org.wso2.apk:org.wso2.apk.config:1.0.0-SNAPSHOT
 [[platform.java11.dependency]]
 groupId = "io.swagger.core.v3"
 artifactId = "swagger-core"
@@ -283,7 +283,7 @@ groupId = "jakarta.validation"
 artifactId = "jakarta.validation-api"
 version = "2.0.2"
 
-# transitive dependency of org.wso2.apk:org.wso2.apk.config:0.0.1-SNAPSHOT
+# transitive dependency of org.wso2.apk:org.wso2.apk.config:1.0.0-SNAPSHOT
 [[platform.java11.dependency]]
 groupId = "com.fasterxml.jackson.dataformat"
 artifactId = "jackson-dataformat-yaml"
@@ -295,43 +295,43 @@ groupId = "com.fasterxml.jackson.core"
 artifactId = "jackson-core"
 version = "2.14.2"
 
-# transitive dependency of org.wso2.apk:org.wso2.apk.config:0.0.1-SNAPSHOT
+# transitive dependency of org.wso2.apk:org.wso2.apk.config:1.0.0-SNAPSHOT
 [[platform.java11.dependency]]
 groupId = "com.graphql-java"
 artifactId = "graphql-java"
-version = "19.4"
+version = "21.1"
 
-# transitive dependency of com.graphql-java:graphql-java:19.4
+# transitive dependency of com.graphql-java:graphql-java:21.1
 [[platform.java11.dependency]]
 groupId = "com.graphql-java"
 artifactId = "java-dataloader"
 version = "3.2.0"
 
-# transitive dependency of com.graphql-java:graphql-java:19.4
+# transitive dependency of com.graphql-java:graphql-java:21.1
 [[platform.java11.dependency]]
 groupId = "org.reactivestreams"
 artifactId = "reactive-streams"
 version = "1.0.3"
 
-# transitive dependency of org.wso2.apk:org.wso2.apk.config:0.0.1-SNAPSHOT
+# transitive dependency of org.wso2.apk:org.wso2.apk.config:1.0.0-SNAPSHOT
 [[platform.java11.dependency]]
 groupId = "com.fasterxml.jackson.core"
 artifactId = "jackson-annotations"
 version = "2.14.2"
 
-# transitive dependency of org.wso2.apk:org.wso2.apk.config:0.0.1-SNAPSHOT
+# transitive dependency of org.wso2.apk:org.wso2.apk.config:1.0.0-SNAPSHOT
 [[platform.java11.dependency]]
 groupId = "org.wso2.orbit.org.everit.json"
 artifactId = "org.everit.json.schema"
 version = "1.5.0.wso2.v2"
 
-# transitive dependency of org.wso2.apk:org.wso2.apk.config:0.0.1-SNAPSHOT
+# transitive dependency of org.wso2.apk:org.wso2.apk.config:1.0.0-SNAPSHOT
 [[platform.java11.dependency]]
 groupId = "io.apicurio"
 artifactId = "apicurio-data-models"
 version = "1.1.5"
 
-# transitive dependency of org.wso2.apk:org.wso2.apk.config:0.0.1-SNAPSHOT
+# transitive dependency of org.wso2.apk:org.wso2.apk.config:1.0.0-SNAPSHOT
 [[platform.java11.dependency]]
 groupId = "commons-validator"
 artifactId = "commons-validator"
@@ -355,7 +355,7 @@ groupId = "commons-collections"
 artifactId = "commons-collections"
 version = "3.2.2"
 
-# transitive dependency of org.wso2.apk:org.wso2.apk.config:0.0.1-SNAPSHOT
+# transitive dependency of org.wso2.apk:org.wso2.apk.config:1.0.0-SNAPSHOT
 [[platform.java11.dependency]]
 groupId = "com.damnhandy"
 artifactId = "handy-uri-templates"
@@ -367,13 +367,13 @@ groupId = "joda-time"
 artifactId = "joda-time"
 version = "2.10.2"
 
-# transitive dependency of org.wso2.apk:org.wso2.apk.config:0.0.1-SNAPSHOT
+# transitive dependency of org.wso2.apk:org.wso2.apk.config:1.0.0-SNAPSHOT
 [[platform.java11.dependency]]
 groupId = "org.json"
 artifactId = "json"
 version = "20230227"
 
-# transitive dependency of org.wso2.apk:org.wso2.apk.config:0.0.1-SNAPSHOT
+# transitive dependency of org.wso2.apk:org.wso2.apk.config:1.0.0-SNAPSHOT
 [[platform.java11.dependency]]
 groupId = "commons-lang"
 artifactId = "commons-lang"
