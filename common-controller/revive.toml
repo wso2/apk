@@ -8,6 +8,7 @@ warningCode = 0
 [rule.context-as-argument]
 [rule.context-keys-type]
 [rule.dot-imports]
+exclude = ["internal/operator/api/v1alpha1/webhook_suite_test.go", "internal/operator/controller/suite_test.go"]
 [rule.error-return]
 [rule.error-strings]
 [rule.error-naming]
