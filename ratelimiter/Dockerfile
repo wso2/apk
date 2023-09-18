@@ -14,7 +14,7 @@
 # limitations under the License.
 # -----------------------------------------------------------------------
 
-FROM envoyproxy/ratelimit:965f0bc8
+FROM envoyproxy/ratelimit:624a5893
 LABEL maintainer="WSO2 Docker Maintainers <wso2.com>"
 
 RUN apk update && apk upgrade --no-cache
@@ -34,6 +34,7 @@ ENV GRPC_PORT=8091
 ENV USE_STATSD=false
 ENV LOG_LEVEL=INFO
 ENV LOCAL_CACHE_SIZE_IN_BYTES=1024000
+ENV STOP_CACHE_KEY_INCREMENT_WHEN_OVERLIMIT=true
 
 ENV GRPC_SERVER_USE_TLS=true
 ENV GRPC_SERVER_TLS_KEY=/home/wso2/security/keystore/ratelimiter.key
