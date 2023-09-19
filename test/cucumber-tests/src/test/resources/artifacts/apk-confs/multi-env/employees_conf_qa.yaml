@@ -1,0 +1,28 @@
+---
+name: "EmployeeServiceAPIQA"
+context: "/multienv"
+version: "3.14"
+id: "multi-env-qa-api"
+type: "REST"
+defaultVersion: false
+environment: "qa"
+endpointConfigurations:
+  production:
+    endpoint: "http://backend:80/anything"
+operations:
+  - target: "/employee"
+    verb: "GET"
+    authTypeEnabled: true
+    scopes: []
+  - target: "/employee"
+    verb: "POST"
+    authTypeEnabled: true
+    scopes: []
+  - target: "/employee/{employeeId}"
+    verb: "PUT"
+    authTypeEnabled: true
+    scopes: []
+  - target: "/employee/{employeeId}"
+    verb: "DELETE"
+    authTypeEnabled: true
+    scopes: []

@@ -597,6 +597,11 @@ public function testEnvironmentGenerationFromAPKConf() returns error? {
         test:assertFail("API is not equal to expected API Config");
     }
 
+    model:Httproute[] productionRoutes = apiArtifact.productionRoute;
+    foreach var route in productionRoutes {
+        test:assertEquals(route.spec.hostnames, ["default-dev.gw.wso2.com"], "Production endpoint vhost mismatch");
+    }
+
 }
 
 @test:Config {}
@@ -610,7 +615,6 @@ public function testBasicAPIFromAPKConf() returns error? {
     APIClient apiClient = new;
 
     model:APIArtifact apiArtifact = check apiClient.prepareArtifact(body.apkConfiguration, body.definitionFile, organization);
-
     model:API? api = apiArtifact.api;
 
     if api is model:API {
@@ -638,6 +642,11 @@ public function testBasicAPIFromAPKConf() returns error? {
 
     } else {
         test:assertFail("API is not equal to expected API Config");
+    }
+
+    model:Httproute[] productionRoutes = apiArtifact.productionRoute;
+    foreach var route in productionRoutes {
+        test:assertEquals(route.spec.hostnames, ["default.gw.wso2.com"], "Production endpoint vhost mismatch");
     }
 
 }

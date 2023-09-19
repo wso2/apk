@@ -164,10 +164,16 @@ public class APIClient {
         //todo: need to implement vhost feature
         Vhost[] globalVhosts = vhosts;
         string[] hosts = [];
+        string environment = apkConf.environment ?: "";
+        string orgAndEnv = organization.name;
+        if environment != "" {
+            orgAndEnv = string:concat(orgAndEnv, "-", environment);
+        }
+
         foreach Vhost vhost in globalVhosts {
             if vhost.'type == endpointType {
                 foreach string host in vhost.hosts {
-                    hosts.push(string:concat(organization.name, ".", host));
+                    hosts.push(string:concat(orgAndEnv, ".", host));
                 }
             }
         }
