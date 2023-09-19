@@ -33,7 +33,9 @@ spec:
     - name: endpoint1
       protocol: TCP
       port: 9095
+{{ if .Values.wso2.apk.dp.gatewayRuntime.deployment.router.adminInterfaceEnabled }}
     - name: endpoint3
       protocol: TCP
       port: 9000
+{{- end -}}
 {{- end -}}
