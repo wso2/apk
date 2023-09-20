@@ -23,7 +23,7 @@ metadata:
     managed-by: "apk"
 spec:
   hostnames:
-  - "api.am.wso2.com"
+  - "{{ .Values.wso2.apk.listener.hostname | default "api.am.wso2.com"}}"
   rules:
   - matches:
     - path:
