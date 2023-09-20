@@ -1,0 +1,47 @@
+# Copyright (c) 2022, WSO2 LLC. (https://www.wso2.com) All Rights Reserved.
+#
+# WSO2 LLC. licenses this file to you under the Apache License,
+# Version 2.0 (the "License"); you may not use this file except
+# in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+wso2:
+  apk:
+    dp:
+      configdeployer:
+        deployment:
+          image: docker.wso2.com/config-deployer-service:1.0.0-arm64
+      adapter:
+        deployment:
+          image: docker.wso2.com/adapter:1.0.0-arm64
+      commonController:
+        deployment:
+          image: docker.wso2.com/common-controller:1.0.0-arm64
+      ratelimiter:
+        deployment:
+          image: docker.wso2.com/ratelimiter:1.0.0-arm64
+      gatewayRuntime:
+        deployment:
+          router:
+            image: docker.wso2.com/router:1.0.0-arm64
+          enforcer:
+            image: docker.wso2.com/enforcer:1.0.0-arm64
+    podMetrics:
+      deployment:
+        image: docker.wso2.com/pod-metrics-collector:1.0.0-arm64
+idp:
+  idpds:
+    deployment:
+      image: docker.wso2.com/idp-domain-service:1.0.0-arm64
+  idpui:
+    deployment:
+      image: docker.wso2.com/idp-ui:1.0.0-arm64
