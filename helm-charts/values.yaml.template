@@ -150,6 +150,14 @@ wso2:
               certKeyFilename: ""
               # -- TLS certificate file name.
               certFilename: ""
+        # -- List of vhost information to create httproutes
+        vhosts: 
+          - name: "default"
+            hosts: ["gw.example.com"]
+            type: "production"
+          - name: "default"
+            hosts: ["sandbox.gw.example.com"]
+            type: "sandbox"
       adapter:
         deployment:
           resources:
