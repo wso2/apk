@@ -84,3 +84,21 @@ env:
 {{- end }}
 {{- join ", " $list }}
 {{- end }}
+
+{{- define "generateVhosts" -}}
+{{- if . -}}
+{{- $vhosts := . -}}
+{{- range $vhost := $vhosts }}
+{{- printf "[[vhosts]]\n" -}}
+{{- printf "  name = \"%s\"\n" $vhost.name -}}
+{{- print "  hosts = [" -}}
+{{- $len := len $vhost.hosts -}}
+{{- range  $i, $host := $vhost.hosts }}
+{{- printf "\"%s\"" $host -}}
+{{- if lt $i (sub $len 1) }},{{ end }}
+{{- end }}
+{{- print "]\n" -}}
+{{- printf "  type = \"%s\"\n" $vhost.type -}}
+{{- end }}
+{{- end }}
+{{- end }}
