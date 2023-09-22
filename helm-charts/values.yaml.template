@@ -88,6 +88,20 @@ wso2:
           targetMemory: 80
           # -- Target CPU utilization percentage for Gateway
           targetCPU: 80
+      redis: 
+        # -- Redis type
+        type: "single"
+        # -- Redis URL
+        url: "redis-master:6379"
+        # -- TLS enabled 
+        tls: false
+        auth: 
+          # -- Redis ceritificate secret
+          certificatesSecret:
+          # -- Redis secret key
+          secretKey:
+        # -- Redis pool size
+        poolSize: 
       partitionServer:
         # -- Enable partition server for Data Plane.
         enabled: false

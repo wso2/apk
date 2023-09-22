@@ -46,6 +46,12 @@ A Helm chart for APK components
 | wso2.apk.dp.gateway.autoscaling.maxReplicas | int | `2` | Maximum number of replicas for Gateway |
 | wso2.apk.dp.gateway.autoscaling.targetMemory | int | `80` | Target memory utilization percentage for Gateway |
 | wso2.apk.dp.gateway.autoscaling.targetCPU | int | `80` | Target CPU utilization percentage for Gateway |
+| wso2.apk.dp.redis.type | string | `"single"` | Redis type |
+| wso2.apk.dp.redis.url | string | `"redis-master:6379"` | Redis URL |
+| wso2.apk.dp.redis.tls | bool | `false` | TLS enabled  |
+| wso2.apk.dp.redis.auth.certificatesSecret | string | `nil` | Redis ceritificate secret |
+| wso2.apk.dp.redis.auth.secretKey | string | `nil` | Redis secret key |
+| wso2.apk.dp.redis.poolSize | string | `nil` | Redis pool size |
 | wso2.apk.dp.partitionServer.enabled | bool | `false` | Enable partition server for Data Plane. |
 | wso2.apk.dp.partitionServer.host | string | `""` | Partition Server Service URL |
 | wso2.apk.dp.partitionServer.serviceBasePath | string | `"/api/publisher/v1"` | Partition Server Service Base Path. |
