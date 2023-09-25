@@ -15,24 +15,17 @@
  *
  */
 
-package config
+package utils
 
-// Configuration object which is populated with default values.
-var defaultConfig = &Config{
-	CommonController: commoncontroller{
-		Server: server{
-			Label: "ratelimiter",
-		},
-		Operator: operator{
-			Namespaces: nil,
-		},
-		Keystore: keystore{
-			KeyPath:  "/home/wso2/security/keystore/mg.key",
-			CertPath: "/home/wso2/security/keystore/mg.pem",
-		},
-		Truststore: truststore{
-			Location: "/home/wso2/security/truststore",
-		},
-		Environment: "Default",
-	},
+import (
+	"github.com/wso2/apk/common-controller/internal/config"
+)
+
+// GetEnvironment takes the environment of the API. If the value is empty,
+// it will return the default environment that is set in the config of the common controller.
+func GetEnvironment(environment string) string {
+	if environment != "" {
+		return environment
+	}
+	return config.ReadConfigs().CommonController.Environment
 }

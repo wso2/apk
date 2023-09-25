@@ -109,6 +109,11 @@ type APISpec struct {
 	// +optional
 	// +nullable
 	APIProperties []Property `json:"apiProperties,omitempty"`
+
+	// Environment denotes the environment of the API.
+	//
+	// +optional
+	Environment string `json:"environment"`
 }
 
 // Property holds key value pair of APIProperties

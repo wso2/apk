@@ -26,6 +26,7 @@ import (
 	"github.com/wso2/apk/adapter/pkg/logging"
 	"github.com/wso2/apk/common-controller/internal/config"
 	"github.com/wso2/apk/common-controller/internal/loggers"
+	"github.com/wso2/apk/common-controller/internal/operator/utils"
 	"golang.org/x/exp/slices"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -155,10 +156,14 @@ func (r *API) validateAPIBasePathExistsAndDefaultVersion() *field.Error {
 
 	}
 	currentAPIBasePathWithoutVersion := getBasePathWithoutVersion(r.Spec.BasePath)
+	incomingAPIEnvironment := utils.GetEnvironment(r.Spec.Environment)
 	for _, api := range apiList {
 		if (types.NamespacedName{Namespace: r.Namespace, Name: r.Name} !=
 			types.NamespacedName{Namespace: api.Namespace, Name: api.Name}) {
-			if api.Spec.Organization == r.Spec.Organization && api.Spec.BasePath == r.Spec.BasePath {
+
+			existingAPIEnvironment := utils.GetEnvironment(api.Spec.Environment)
+			if api.Spec.Organization == r.Spec.Organization && api.Spec.BasePath == r.Spec.BasePath &&
+				incomingAPIEnvironment == existingAPIEnvironment {
 				return &field.Error{
 					Type:     field.ErrorTypeDuplicate,
 					Field:    field.NewPath("spec").Child("basePath").String(),
