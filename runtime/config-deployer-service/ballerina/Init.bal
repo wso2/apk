@@ -43,8 +43,7 @@ listener http:Listener ep0 = new (9443, secureSocket = {
             certFile: <string>keyStores.tls.certFilePath,
             keyFile: <string>keyStores.tls.keyFilePath
         }
-    },
-    interceptors = [jwtValidationInterceptor, requestErrorInterceptor, responseErrorInterceptor]
+    }
 );
 final runtimeUtil:APKConfValidator apkConfValidator;
 

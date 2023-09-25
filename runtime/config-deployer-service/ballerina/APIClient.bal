@@ -656,8 +656,6 @@ public class APIClient {
         }
         if operationPoliciesToUse is APIOperationPolicies {
             APKOperationPolicy[]? request = operationPoliciesToUse.request;
-            if request is APKOperations[] {
-            }
         }
         return routeFilters;
     }
