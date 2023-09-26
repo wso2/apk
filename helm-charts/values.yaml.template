@@ -351,6 +351,8 @@ wso2:
             imagePullPolicy: Always
             # -- Image
             image: wso2/router:1.0.0
+            # -- Envoy proxy admin interface enabled or not
+            adminInterfaceEnabled: true
             configs:
               # -- The timeout for response coming from enforcer to route per API request
               enforcerResponseTimeoutInSeconds: 20

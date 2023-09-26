@@ -151,6 +151,7 @@ A Helm chart for APK components
 | wso2.apk.dp.gatewayRuntime.deployment.router.strategy | string | `"RollingUpdate"` | Deployment strategy |
 | wso2.apk.dp.gatewayRuntime.deployment.router.imagePullPolicy | string | `"Always"` | Image pull policy |
 | wso2.apk.dp.gatewayRuntime.deployment.router.image | string | `"wso2/router:1.0.0"` | Image |
+| wso2.apk.dp.gatewayRuntime.deployment.router.adminInterfaceEnabled | bool | `true` | Envoy proxy admin interface enabled or not |
 | wso2.apk.dp.gatewayRuntime.deployment.router.configs.enforcerResponseTimeoutInSeconds | int | `20` | The timeout for response coming from enforcer to route per API request |
 | wso2.apk.dp.gatewayRuntime.deployment.router.configs.useRemoteAddress | bool | `false` | If configured true, router appends the immediate downstream ip address to the x-forward-for header |
 | wso2.apk.dp.gatewayRuntime.deployment.router.configs.systemHost | string | `"localhost"` | System hostname for system API resources (eg: /testkey and /health) |
