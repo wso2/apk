@@ -78,6 +78,7 @@ A Helm chart for APK components
 | wso2.apk.dp.configdeployer.deployment.configs.tls.secretName | string | `""` | TLS secret name for runtime public certificate. |
 | wso2.apk.dp.configdeployer.deployment.configs.tls.certKeyFilename | string | `""` | TLS certificate file name. |
 | wso2.apk.dp.configdeployer.deployment.configs.tls.certFilename | string | `""` | TLS certificate file name. |
+| wso2.apk.dp.configdeployer.vhosts | list | `[{"hosts":["gw.wso2.com"],"name":"default","type":"production"},{"hosts":["sandbox.gw.wso2.com"],"name":"default","type":"sandbox"}]` | List of vhost |
 | wso2.apk.dp.adapter.deployment.resources.requests.memory | string | `"128Mi"` | CPU request for the container |
 | wso2.apk.dp.adapter.deployment.resources.requests.cpu | string | `"100m"` | Memory request for the container |
 | wso2.apk.dp.adapter.deployment.resources.limits.memory | string | `"1028Mi"` | CPU limit for the container |

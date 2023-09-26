@@ -164,6 +164,14 @@ wso2:
               certKeyFilename: ""
               # -- TLS certificate file name.
               certFilename: ""
+        # -- List of vhost
+        vhosts: 
+          - name: "default"
+            hosts: ["gw.wso2.com"]
+            type: "production"
+          - name: "default"
+            hosts: ["sandbox.gw.wso2.com"]
+            type: "sandbox"
       adapter:
         deployment:
           resources:
