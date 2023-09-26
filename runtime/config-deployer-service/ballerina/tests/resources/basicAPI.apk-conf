@@ -1,6 +1,6 @@
 name: api1
 version: 1.0.0
-context: /api1/1.0.0
+basePath: /api1/1.0.0
 type: REST
 endpointConfigurations:
   production:
@@ -10,6 +10,6 @@ endpointConfigurations:
 operations:
 - target: /get
   verb: GET
-  authTypeEnabled: false
+  secured: false
 - target: /get
   verb: POST
