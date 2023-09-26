@@ -199,7 +199,7 @@ wso2:
               failureThreshold: 5
             strategy: RollingUpdate
             imagePullPolicy: Always
-            image: router:1.0.0-rc2
+            image: wso2/router:1.0.0-rc2
             adminInterfaceEnabled: true
             # configs:
             #   tls:
