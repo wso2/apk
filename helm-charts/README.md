@@ -41,7 +41,7 @@ A Helm chart for APK components
 | wso2.apk.dp.enabled | bool | `true` | Enable the deployment of the Data Plane |
 | wso2.apk.dp.gateway.listener.hostname | string | `"gw.wso2.com"` | Gateway Listener Hostname |
 | wso2.apk.dp.gateway.listener.secretName | string | `""` | Gateway Listener Certificate Secret Name |
-| wso2.apk.dp.gateway.listener.dns | list | `["*.gw.wso2.com","*.test.sandbox.gw.wso2.com","prod.gw.wso2.com"]` | DNS entries for gateway listener certificate |
+| wso2.apk.dp.gateway.listener.dns | list | `["*.gw.wso2.com","*.sandbox.gw.wso2.com","prod.gw.wso2.com"]` | DNS entries for gateway listener certificate |
 | wso2.apk.dp.gateway.autoscaling.enabled | bool | `false` | Enable autoscaling for Gateway |
 | wso2.apk.dp.gateway.autoscaling.minReplicas | int | `1` | Minimum number of replicas for Gateway |
 | wso2.apk.dp.gateway.autoscaling.maxReplicas | int | `2` | Maximum number of replicas for Gateway |

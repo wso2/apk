@@ -80,7 +80,7 @@ wso2:
           # -- DNS entries for gateway listener certificate
           dns: 
             - "*.gw.wso2.com"
-            - "*.test.sandbox.gw.wso2.com"
+            - "*.sandbox.gw.wso2.com"
             - "prod.gw.wso2.com"
         autoscaling:
           # -- Enable autoscaling for Gateway
