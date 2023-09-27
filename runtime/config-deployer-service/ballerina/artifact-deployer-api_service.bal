@@ -1,7 +1,7 @@
 import ballerina/http;
 import wso2/apk_common_lib as commons;
 
-isolated service /api/deployer on ep0 {
+isolated service http:InterceptableService /api/deployer on ep0 {
     # Deploy API
     #
     # + request - parameter description 
@@ -27,5 +27,10 @@ isolated service /api/deployer on ep0 {
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
         return check deployerClient.handleAPIUndeployment(apiId,organization);
+    }
+
+    public function createInterceptors() returns http:Interceptor|http:Interceptor[] {
+        http:Interceptor[] interceptors = [jwtValidationInterceptor, requestErrorInterceptor, responseErrorInterceptor];
+        return interceptors;
     }
 }
