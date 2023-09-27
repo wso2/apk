@@ -15,5 +15,7 @@ sudo echo "$IP default.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "$IP org1.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "$IP org2.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "$IP default.sandbox.gw.wso2.com" | sudo tee -a /etc/hosts
+sudo echo "$IP default-qa.gw.wso2.com" | sudo tee -a /etc/hosts
+sudo echo "$IP default-dev.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "255.255.255.255 broadcasthost" | sudo tee -a /etc/hosts
 sudo echo "::1 localhost" | sudo tee -a /etc/hosts
