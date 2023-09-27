@@ -1,6 +1,6 @@
 ---
 name: "EmployeeServiceAPIDev"
-context: "/multienv"
+basePath: "/multienv"
 version: "3.14"
 id: "multi-env-dev-api"
 type: "REST"
@@ -12,17 +12,17 @@ endpointConfigurations:
 operations:
   - target: "/employee"
     verb: "GET"
-    authTypeEnabled: true
+    secured: true
     scopes: []
   - target: "/employee"
     verb: "POST"
-    authTypeEnabled: true
+    secured: true
     scopes: []
   - target: "/employee/{employeeId}"
     verb: "PUT"
-    authTypeEnabled: true
+    secured: true
     scopes: []
   - target: "/employee/{employeeId}"
     verb: "DELETE"
-    authTypeEnabled: true
+    secured: true
     scopes: []
