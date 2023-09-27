@@ -77,6 +77,11 @@ wso2:
           hostname: "gw.wso2.com"
           # -- Gateway Listener Certificate Secret Name
           secretName: ""
+          # -- DNS entries for gateway listener certificate
+          dns: 
+            - "*.gw.wso2.com"
+            - "*.test.sandbox.gw.wso2.com"
+            - "prod.gw.wso2.com"
         autoscaling:
           # -- Enable autoscaling for Gateway
           enabled: false
@@ -653,6 +658,10 @@ certmanager:
   enableRootCa: true
   # -- Enable CA certificate secret name.
   rootCaSecretName: "apk-root-certificate"
+  # -- Issuer name
+  issuerName: "selfsigned-issuer"
+  # -- Issuer kind
+  issuerKind: "ClusterIssuer"
 postgresql:
   # -- Enable postgresql database
   enabled: true

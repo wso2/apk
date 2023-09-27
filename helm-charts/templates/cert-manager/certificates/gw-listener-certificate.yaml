@@ -25,11 +25,9 @@ metadata:
   namespace: {{ .Release.Namespace }}
 spec:
   dnsNames:
-  - "*.gw.wso2.com"
-  - "*.sandbox.gw.wso2.com"
-  - "prod.gw.wso2.com"
+{{ include  "createYamlList" .Values.wso2.apk.dp.gateway.listener.dns | indent 4}}
   issuerRef:
-    kind: ClusterIssuer
-    name: selfsigned-issuer
+    kind: {{ .Values.certmanager.issuerKind | default "ClusterIssuer" }}
+    name: {{ .Values.certmanager.issuerName | default "selfsigned-issuer" }}
   secretName: {{ template "apk-helm.resource.prefix" . }}-gw-listener-cert
 {{- end -}}

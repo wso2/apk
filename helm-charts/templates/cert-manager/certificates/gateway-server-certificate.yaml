@@ -33,7 +33,7 @@ spec:
   - {{ template "apk-helm.resource.prefix" . }}-gateway-service.{{ .Release.Namespace }}.svc
   - {{ template "apk-helm.resource.prefix" . }}-gateway-service.{{ .Release.Namespace }}.svc.cluster.local
   issuerRef:
-    kind: ClusterIssuer
-    name: selfsigned-issuer
+    kind: {{ .Values.certmanager.issuerKind | default "ClusterIssuer" }}
+    name: {{ .Values.certmanager.issuerName | default "selfsigned-issuer" }}
   secretName: {{ template "apk-helm.resource.prefix" . }}-gateway-server-cert
 {{- end -}}
