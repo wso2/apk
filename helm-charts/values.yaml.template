@@ -658,10 +658,16 @@ certmanager:
   enableRootCa: true
   # -- Enable CA certificate secret name.
   rootCaSecretName: "apk-root-certificate"
-  # -- Issuer name
-  issuerName: "selfsigned-issuer"
-  # -- Issuer kind
-  issuerKind: "ClusterIssuer"
+  listeners:
+    # -- Issuer name
+    issuerName: "selfsigned-issuer"
+    # -- Issuer kind
+    issuerKind: "ClusterIssuer"
+  servers: 
+    # -- Issuer name
+    issuerName: "selfsigned-issuer"
+    # -- Issuer kind
+    issuerKind: "ClusterIssuer"
 postgresql:
   # -- Enable postgresql database
   enabled: true

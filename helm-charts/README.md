@@ -274,8 +274,10 @@ A Helm chart for APK components
 | certmanager.enableClusterIssuer | bool | `true` | Enable cluster issuer to generate certificates |
 | certmanager.enableRootCa | bool | `true` | Enable root CA to generate certificates |
 | certmanager.rootCaSecretName | string | `"apk-root-certificate"` | Enable CA certificate secret name. |
-| certmanager.issuerName | string | `"selfsigned-issuer"` | Issuer name |
-| certmanager.issuerKind | string | `"ClusterIssuer"` | Issuer kind |
+| certmanager.listeners.issuerName | string | `"selfsigned-issuer"` | Issuer name |
+| certmanager.listeners.issuerKind | string | `"ClusterIssuer"` | Issuer kind |
+| certmanager.servers.issuerName | string | `"selfsigned-issuer"` | Issuer name |
+| certmanager.servers.issuerKind | string | `"ClusterIssuer"` | Issuer kind |
 | postgresql.enabled | bool | `true` | Enable postgresql database |
 | postgresql.fullnameOverride | string | `"wso2apk-db-service"` | String to fully override common.names.fullname template |
 | postgresql.auth.database | string | `"WSO2AM_DB"` | Name for a custom database to create |

@@ -28,6 +28,6 @@ spec:
   - "locahost"
   issuerRef:
     kind: {{ .Values.certmanager.issuerKind | default "ClusterIssuer" }}
-    name: {{ .Values.certmanager.issuerName | default "selfsigned-issuer" }}
+    name: {{ .Values.certmanager.servers.issuerName | default "selfsigned-issuer" }}
   secretName: {{ template "apk-helm.resource.prefix" . }}-localhost-listener-cert
 {{- end -}}

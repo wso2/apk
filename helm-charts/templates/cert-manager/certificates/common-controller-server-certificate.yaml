@@ -34,6 +34,6 @@ spec:
   - {{ template "apk-helm.resource.prefix" . }}-common-controller-service.{{ .Release.Namespace }}.svc.cluster.local
   issuerRef:
     kind: {{ .Values.certmanager.issuerKind | default "ClusterIssuer" }}
-    name: {{ .Values.certmanager.issuerName | default "selfsigned-issuer" }}
+    name: {{ .Values.certmanager.servers.issuerName | default "selfsigned-issuer" }}
   secretName: {{ template "apk-helm.resource.prefix" . }}-common-controller-server-cert
 {{- end -}}
