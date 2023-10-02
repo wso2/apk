@@ -1,0 +1,45 @@
+[wso2.devportal_service]
+DEVPORTAL_PORT = 9443
+keyManagerConntectorConfigurationFilePath = "tests/resources/keyManager-configs"
+
+[wso2.devportal_service.k8sConfig]
+host = "localhost:9090"
+serviceAccountPath = "tests/resources/serviceAccount"
+
+[wso2.devportal_service.datasourceConfiguration]
+description = "Database for devportal"
+url = "jdbc:postgresql://localhost:10320/WSO2AM_DB"
+host = "localhost"
+port = 10320
+databaseName = "WSO2AM_DB"
+username = "wso2carbon"
+password = "wso2carbon"
+validationTimeout = 250
+testQuery = "SELECT 1"
+driver = "org.postgresql.Driver"
+
+[wso2.devportal_service.throttleConfig.blockCondition]
+enabled = true
+
+[wso2.devportal_service.keyStores.tls]
+keyFilePath = "./tests/resources/wso2carbon.key"
+certFilePath = "./tests/resources/wso2carbon.crt"
+[wso2.devportal_service.keyStores.signing]
+keyFilePath = "./tests/resources/wso2carbon.key"
+
+[wso2.devportal_service.issuerConfig]
+issuer = "https://apim.wso2.com/oauth2/token"
+audience = "https://apim.wso2.com/oauth2/token"
+keyId = "gateway_certificate_alias"
+expTime = 3600.0
+
+[wso2.devportal_service.sdkConfig]
+groupId = "org.wso2"
+artifactId = "org.wso2.client."
+modelPackage = "org.wso2.client.model."
+apiPackage = "org.wso2.client.api."
+
+[wso2.devportal_service.managementServerConfig]
+serviceName = "apk-test-wso2-apk-management-server"
+namespace = "apk"
+certPath = "/home/wso2apk/devportal/security/truststore/management-server.pem"
