@@ -577,3 +577,24 @@ spec:
     group: gateway.networking.k8s.io
     kind: Gateway
     name: default
+---
+# We have removed the Envoy admin interface port from our helm gateway service yaml. So we need this one here.
+apiVersion: v1
+kind: Service
+metadata:
+  name: apk-test-setup-wso2-apk-gateway-service
+  namespace : apk-integration-test
+
+spec:
+  type: LoadBalancer
+  # label keys and values that must match in order to receive traffic for this service
+  selector:
+    app.kubernetes.io/app: gateway
+    app.kubernetes.io/release: apk-test-setup
+  ports:
+    - name: endpoint1
+      protocol: TCP
+      port: 9095
+    - name: endpoint3
+      protocol: TCP
+      port: 9000
