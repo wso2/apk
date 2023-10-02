@@ -26,6 +26,7 @@ A Helm chart for APK components
 | wso2.apk.auth.roleName | string | `"wso2apk-role"` | Cluster Role name |
 | wso2.apk.listener.hostname | string | `"api.am.wso2.com"` | System api listener hostname |
 | wso2.apk.listener.port | int | `9095` | Gatewaylistener port |
+| wso2.apk.listener.secretName | string | `"system-api-listener-cert"` | System api listener certificates. If you are using a custom certificate. |
 | wso2.apk.idp.issuer | string | `"https://idp.am.wso2.com/token"` | IDP issuer value |
 | wso2.apk.idp.usernameClaim | string | `"sub"` |  |
 | wso2.apk.idp.scopeClaim | string | `"scope"` | Optionally configure scope Claim in JWT. |

@@ -41,7 +41,7 @@ wso2:
       # -- Gatewaylistener port
       port: 9095
       # -- System api listener certificates. If you are using a custom certificate.
-      # secretName: "idp-tls"
+      secretName: "system-api-listener-cert"
     idp:
       # -- IDP issuer value
       issuer: "https://idp.am.wso2.com/token"
