@@ -27,7 +27,7 @@ spec:
   apiDisplayName: "Backoffice Domain API"
   apiType: "REST"
   apiVersion: "1.0.0"
-  context: "/api/backoffice/1.0.0"
+  basePath: "/api/backoffice/1.0.0"
   organization: "carbon.super"
   production:
     - httpRouteRefs:

@@ -26,7 +26,7 @@ spec:
   apiDisplayName: "admin-domain-service"
   apiType: "REST"
   apiVersion: "v1"
-  context: "/api/internal/v1"
+  basePath: "/api/internal/v1"
   organization: "carbon.super"
   production:
     - httpRouteRefs:
