@@ -23,7 +23,7 @@ metadata:
     api-name: "devportal-domain-service"
     api-version: "1.0.0"
 spec:
-  apiDisplayName: "Devportal Domain API"
+  apiName: "Devportal Domain API"
   apiType: "REST"
   apiVersion: "1.0.0"
   basePath: "/api/devportal/1.0.0"

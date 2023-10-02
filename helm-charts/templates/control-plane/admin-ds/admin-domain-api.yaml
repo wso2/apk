@@ -23,7 +23,7 @@ metadata:
     api-name: "admin-domain-service"
     api-version: "1.0.0"
 spec:
-  apiDisplayName: "admin-domain-service"
+  apiName: "admin-domain-service"
   apiType: "REST"
   apiVersion: "1.0.0"
   basePath: "/api/admin/1.0.0"

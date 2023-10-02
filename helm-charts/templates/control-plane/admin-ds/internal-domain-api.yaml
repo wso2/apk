@@ -23,7 +23,7 @@ metadata:
     api-name: "internal-domain-service"
     api-version: "v1"
 spec:
-  apiDisplayName: "admin-domain-service"
+  apiName: "admin-domain-service"
   apiType: "REST"
   apiVersion: "v1"
   basePath: "/api/internal/v1"
