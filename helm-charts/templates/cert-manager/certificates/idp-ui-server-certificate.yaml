@@ -34,6 +34,10 @@ spec:
   - {{ template "apk-helm.resource.prefix" . }}-idp-ui-service.{{ .Release.Namespace }}.svc.cluster.local
   issuerRef:
     kind: {{ .Values.certmanager.issuerKind | default "ClusterIssuer" }}
-    name: {{ .Values.certmanager.servers.issuerName | default "selfsigned-issuer" }}
+    {{ if .Values.certmanager.servers -}}
+    name: {{  .Values.certmanager.servers.issuerName | default "selfsigned-issuer" }}
+    {{- else -}}
+    name: "selfsigned-issuer"
+    {{- end }}
   secretName: {{ template "apk-helm.resource.prefix" . }}-idp-ui-server-cert
 {{- end -}}

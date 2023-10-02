@@ -29,6 +29,10 @@ spec:
   - "{{ .Values.wso2.apk.listener.hostname | default "api.am.wso2.com"}}"
   issuerRef:
     kind: {{ .Values.certmanager.issuerKind | default "ClusterIssuer" }}
-    name: {{ .Values.certmanager.listeners.issuerName | default "selfsigned-issuer" }}
+    {{ if .Values.certmanager.listeners -}}
+    name: {{  .Values.certmanager.listeners.issuerName | default "selfsigned-issuer" }}
+    {{- else -}}
+    name: "selfsigned-issuer"
+    {{- end }}
   secretName: {{ template "apk-helm.resource.prefix" . }}-system-api-listener-cert
 {{- end -}}
