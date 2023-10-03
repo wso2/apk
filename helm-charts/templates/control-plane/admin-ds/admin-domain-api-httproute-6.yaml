@@ -14,27 +14,37 @@
 # specific language governing permissions and limitations
 # under the License.
 {{- if .Values.wso2.apk.cp.enabled }}
-kind: "API"
-apiVersion: "dp.wso2.com/v1alpha1"
+apiVersion: "gateway.networking.k8s.io/v1beta1"
+kind: "HTTPRoute"
 metadata:
-  name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-api
+  name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-httproute-6
   namespace: {{ .Release.Namespace }}
   labels:
     api-name: "admin-domain-service"
     api-version: "1.0.0"
 spec:
-  apiName: "admin-domain-service"
-  apiType: "REST"
-  apiVersion: "1.0.0"
-  basePath: "/api/admin/1.0.0"
-  organization: "carbon.super"
-  production:
-    - httpRouteRefs:
-      - {{ template "apk-helm.resource.prefix" . }}-admin-ds-httproute-1
-      - {{ template "apk-helm.resource.prefix" . }}-admin-ds-httproute-2
-      - {{ template "apk-helm.resource.prefix" . }}-admin-ds-httproute-3
-      - {{ template "apk-helm.resource.prefix" . }}-admin-ds-httproute-4
-      - {{ template "apk-helm.resource.prefix" . }}-admin-ds-httproute-5
-      - {{ template "apk-helm.resource.prefix" . }}-admin-ds-httproute-6
-  systemAPI: true
+  hostnames:
+  - "{{ .Values.wso2.apk.listener.hostname | default "api.am.wso2.com"}}"
+  rules:
+  - matches:
+    - path:
+        type: "PathPrefix"
+        value: "/api/admin/organizations"
+    backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
+  - matches:
+    - path:
+        type: "Exact"
+        value: "/api/admin/organization-info"
+    backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
+  parentRefs:
+  - group: "gateway.networking.k8s.io"
+    kind: "Gateway"
+    name: "default"
+    sectionName: "httpslistener"
 {{- end -}}
