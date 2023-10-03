@@ -1,0 +1,153 @@
+# --------------------------------------------------------------------
+# Copyright (c) 2022, WSO2 LLC. (http://wso2.com) All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# -----------------------------------------------------------------------
+
+{{- if .Values.wso2.apk.cp.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "apk-helm.resource.prefix" . }}-management-server-deployment
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: {{ .Values.wso2.apk.cp.managementServer.deployment.replicas }}
+  strategy:
+    type: {{ .Values.wso2.apk.cp.managementServer.deployment.strategy }}
+  selector:
+    matchLabels:
+{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" "management-server" ) | indent 6}}
+  template:
+    metadata:
+      labels:
+{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" "management-server" ) | indent 8}}
+    spec:
+      containers:
+        - name: management-server
+          image: {{ .Values.wso2.apk.cp.managementServer.deployment.image }}
+          imagePullPolicy: {{ .Values.wso2.apk.cp.managementServer.deployment.imagePullPolicy }}
+          ports:
+            - containerPort: 18000
+            - containerPort: 8765
+            - containerPort: 8766
+{{ include "apk-helm.deployment.env" .Values.wso2.apk.cp.managementServer.deployment.env | indent 10 }}
+          - name: MGT_SERVER_PRIVATE_KEY_PATH
+            value: /home/wso2/security/keystore/management-server.key
+          - name: MGT_SERVER_PUBLIC_CERT_PATH
+            value: /home/wso2/security/keystore/management-server.pem
+          - name: MGT_SERVER_NAME
+            value: {{ template "apk-helm.resource.prefix" . }}-management-server.{{ .Release.Namespace }}.svc
+{{ include "apk-helm.deployment.resources" .Values.wso2.apk.cp.managementServer.deployment.resources | indent 10 }}
+          volumeMounts:
+            - name: management-server-keystore-secret-volume
+              mountPath: /home/wso2/security/keystore/management-server.key
+            {{- if and .Values.wso2.apk.cp.managementServer.configs .Values.wso2.apk.cp.managementServer.configs.tls }}
+              subPath: {{ .Values.wso2.apk.cp.managementServer.configs.tls.certKeyFilename | default "tls.key" }}
+            {{- else }}
+              subPath: tls.key
+            {{- end }}
+            - name: management-server-keystore-secret-volume
+              mountPath: /home/wso2/security/keystore/management-server.pem
+            {{- if and .Values.wso2.apk.cp.managementServer.configs .Values.wso2.apk.cp.managementServer.configs.tls }}
+              subPath: {{ .Values.wso2.apk.cp.managementServer.configs.tls.certFilename | default "tls.crt" }}
+            {{- else }}
+              subPath: tls.crt
+            {{- end }}
+            - name: adapter-truststore-secret-volume
+              mountPath: /home/wso2/security/truststore/adapter.crt
+            {{ if and .Values.wso2.apk.dp.adapter.configs .Values.wso2.apk.dp.adapter.configs.tls }}
+              subPath: {{ .Values.wso2.apk.dp.adapter.configs.tls.certFilename | default "tls.crt" }}
+            {{ else }}
+              subPath: tls.crt
+            {{ end }}
+            - name: backoffice-ds-tls-volume
+              mountPath: /home/wso2/security/truststore/backoffice.pem
+            {{- if and .Values.wso2.apk.cp.backoffice.configs .Values.wso2.apk.cp.backoffice.configs.tls }}
+              subPath: {{ .Values.wso2.apk.cp.backoffice.configs.tls.certFilename | default "tls.crt" }}
+            {{- else }}
+              subPath: tls.crt
+            {{- end }}
+            - name: devportal-ds-tls-volume
+              mountPath: /home/wso2/security/truststore/devportal.pem
+            {{- if and .Values.wso2.apk.cp.devportal.configs .Values.wso2.apk.cp.devportal.configs.tls }}
+              subPath: {{ .Values.wso2.apk.cp.devportal.configs.tls.certFilename | default "tls.crt" }}
+            {{- else }}
+              subPath: tls.crt
+            {{- end }}
+            - name: admin-ds-tls-volume
+              mountPath: /home/wso2/security/truststore/admin.pem
+            {{- if and .Values.wso2.apk.cp.admin.configs .Values.wso2.apk.cp.admin.configs.tls }}
+              subPath: {{ .Values.wso2.apk.cp.admin.configs.tls.certFilename | default "tls.crt" }}
+            {{- else }}
+              subPath: tls.crt
+            {{- end }}
+            - name: management-server-config-toml-volume
+              mountPath: /home/wso2/conf/
+          readinessProbe:
+            exec:
+              command: [ "sh", "check_health.sh" ]
+            initialDelaySeconds: {{ .Values.wso2.apk.cp.managementServer.deployment.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.wso2.apk.cp.managementServer.deployment.readinessProbe.periodSeconds }}
+            failureThreshold: {{ .Values.wso2.apk.cp.managementServer.deployment.readinessProbe.failureThreshold }}
+          livenessProbe:
+            exec:
+              command: [ "sh", "check_health.sh" ]
+            initialDelaySeconds: {{ .Values.wso2.apk.cp.managementServer.deployment.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.wso2.apk.cp.managementServer.deployment.livenessProbe.periodSeconds }}
+            failureThreshold: {{ .Values.wso2.apk.cp.managementServer.deployment.livenessProbe.failureThreshold }}
+      {{- if and .Values.wso2.subscription .Values.wso2.subscription.imagePullSecrets}}
+      imagePullSecrets:
+        - name: {{ .Values.wso2.subscription.imagePullSecrets }}
+      {{ end }}      
+
+      volumes:
+        - name: management-server-keystore-secret-volume
+          secret:
+          {{- if and .Values.wso2.apk.cp.managementServer.configs .Values.wso2.apk.cp.managementServer.configs.tls }}
+            secretName: {{ .Values.wso2.apk.cp.managementServer.configs.tls.secretName | default (printf "%s-management-server-cert" (include "apk-helm.resource.prefix" .)) }}
+          {{- else }}
+            secretName: {{ template "apk-helm.resource.prefix" . }}-management-server-cert
+          {{- end }}
+        - name: adapter-truststore-secret-volume
+          secret:
+          {{ if and .Values.wso2.apk.dp.adapter.configs .Values.wso2.apk.dp.adapter.configs.tls }}
+            secretName: {{ .Values.wso2.apk.dp.adapter.configs.tls.secretName | default "apk-root-certificate"}}
+          {{ else }}
+            secretName: apk-root-certificate
+          {{ end }}
+        - name: management-server-config-toml-volume
+          configMap: 
+            name: {{ template "apk-helm.resource.prefix" . }}-management-server-config-toml
+        - name: backoffice-ds-tls-volume
+          secret:
+           {{ if and .Values.wso2.apk.cp.backoffice.configs .Values.wso2.apk.cp.backoffice.configs.tls }}
+            secretName: {{ .Values.wso2.apk.cp.backoffice.configs.tls.secretName | default (printf "%s-backoffice-ds-server-cert" (include "apk-helm.resource.prefix" .)) }}
+           {{ else }}
+            secretName: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-server-cert
+          {{ end }}
+        - name: devportal-ds-tls-volume
+          secret:
+            {{ if and .Values.wso2.apk.cp.devportal.configs .Values.wso2.apk.cp.devportal.configs.tls }}
+            secretName: {{ .Values.wso2.apk.cp.devportal.configs.tls.secretName | default (printf "%s-devportal-ds-server-cert" (include "apk-helm.resource.prefix" .)) }}
+            {{ else }}
+            secretName: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-server-cert
+          {{ end }}
+        - name: admin-ds-tls-volume
+          secret:
+            {{ if and .Values.wso2.apk.cp.admin.configs .Values.wso2.apk.cp.admin.configs.tls }}
+            secretName: {{ .Values.wso2.apk.cp.admin.configs.tls.secretName | default (printf "%s-admin-ds-server-cert" (include "apk-helm.resource.prefix" .)) }}
+            {{ else }}
+            secretName: {{ template "apk-helm.resource.prefix" . }}-admin-ds-server-cert
+          {{ end }}
+
+{{- end -}}

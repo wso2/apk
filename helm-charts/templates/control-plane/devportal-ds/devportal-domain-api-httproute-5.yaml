@@ -1,0 +1,274 @@
+# Copyright (c) 2023, WSO2 LLC. (https://www.wso2.com) All Rights Reserved.
+#
+# WSO2 LLC. licenses this file to you under the Apache License,
+# Version 2.0 (the "License"); you may not use this file except
+# in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations
+# under the License.
+{{- if .Values.wso2.apk.cp.enabled }}
+apiVersion: "gateway.networking.k8s.io/v1beta1"
+kind: "HTTPRoute"
+metadata:
+  name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-httproute-5
+  namespace: {{ .Release.Namespace }}
+  labels:
+    api-name: "devportal-domain-service"
+    api-version: "1.0.0"
+spec:
+  hostnames:
+  - "{{ .Values.wso2.apk.listener.hostname | default "api.am.wso2.com"}}"
+  rules:
+  - matches:
+    - path:
+        type: "RegularExpression"
+        value: "/api/devportal/subscriptions"
+      method: "GET"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/devportal/subscriptions"
+    backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
+  - matches:
+    - path:
+        type: "RegularExpression"
+        value: "/api/devportal/subscriptions"
+      method: "POST"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/devportal/subscriptions"
+    backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
+  - matches:
+    - path:
+        type: "RegularExpression"
+        value: "/api/devportal/subscriptions/multiple"
+      method: "POST"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/devportal/subscriptions/multiple"
+    backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
+  - matches:
+    - path:
+        type: "RegularExpression"
+        value: "/api/devportal/subscriptions/(.*)/additionalInfo"
+      method: "GET"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/devportal/subscriptions/\\1/additionalInfo"
+    backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
+  - matches:
+    - path:
+        type: "RegularExpression"
+        value: "/api/devportal/subscriptions/(.*)"
+      method: "GET"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/devportal/subscriptions/\\1"
+    backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
+  - matches:
+    - path:
+        type: "RegularExpression"
+        value: "/api/devportal/subscriptions/(.*)"
+      method: "PUT"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/devportal/subscriptions/\\1"
+    backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
+  - matches:
+    - path:
+        type: "RegularExpression"
+        value: "/api/devportal/subscriptions/(.*)"
+      method: "DELETE"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/devportal/subscriptions/\\1"
+    backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
+  - matches:
+    - path:
+        type: "RegularExpression"
+        value: "/api/devportal/subscriptions/(.*)/usage"
+      method: "GET"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/devportal/subscriptions/\\1/usage"
+    backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
+  - matches:
+    - path:
+        type: "RegularExpression"
+        value: "/api/devportal/throttling-policies/(.*)"
+      method: "GET"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/devportal/throttling-policies/\\1"
+    backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
+  - matches:
+    - path:
+        type: "RegularExpression"
+        value: "/api/devportal/throttling-policies/(.*)/(.*)"
+      method: "GET"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/devportal/throttling-policies/\\1/\\2"
+    backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
+  - matches:
+    - path:
+        type: "RegularExpression"
+        value: "/api/devportal/tags"
+      method: "GET"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/devportal/tags"
+    backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
+  - matches:
+    - path:
+        type: "RegularExpression"
+        value: "/api/devportal/search"
+      method: "GET"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/devportal/search"
+    backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
+  - matches:
+    - path:
+        type: "RegularExpression"
+        value: "/api/devportal/sdk-gen/languages"
+      method: "GET"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/devportal/sdk-gen/languages"
+    backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
+  - matches:
+    - path:
+        type: "RegularExpression"
+        value: "/api/devportal/webhooks/subscriptions"
+      method: "GET"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/devportal/webhooks/subscriptions"
+    backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
+  - matches:
+    - path:
+        type: "RegularExpression"
+        value: "/api/devportal/settings"
+      method: "GET"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/devportal/settings"
+    backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
+  - matches:
+    - path:
+        type: "RegularExpression"
+        value: "/api/devportal/settings/application-attributes"
+      method: "GET"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/devportal/settings/application-attributes"
+    backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
+  parentRefs:
+  - group: "gateway.networking.k8s.io"
+    kind: "Gateway"
+    name: "default"
+    sectionName: "httpslistener"
+{{- end -}}

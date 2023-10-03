@@ -38,7 +38,7 @@ spec:
       initContainers:
         - name: init-db
           image: busybox:1.32
-          command: ['sh', '-c', 'echo -e "Checking for the availability of DB Server deployment"; while ! nc -z "{{ .Values.idp.database.host }}" {{.Values.idp.database.port }}; do sleep 1; printf "-"; done; echo -e "  >> DB Server has started";']
+          command: ['sh', '-c', 'echo -e "Checking for the availability of DB Server deployment"; while ! nc -z "{{ .Values.wso2.apk.cp.database.host }}" {{.Values.wso2.apk.cp.database.port }}; do sleep 1; printf "-"; done; echo -e "  >> DB Server has started";']
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
