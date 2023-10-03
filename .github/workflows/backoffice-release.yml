@@ -48,21 +48,26 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
       - name: Cache Ballerina.
         uses: actions/cache@v3
         id: cache
         with:
           path: "ballerina-dist/*.deb"
-          key: "ballerina-2201.5.0"
+          key: "ballerina-2201.8.0"
       - name: Download Ballerina distribution.
         shell: sh
         run: |
           mkdir -p ballerina-dist
-          wget 'https://dist.ballerina.io/downloads/2201.5.0/ballerina-2201.5.0-swan-lake-linux-x64.deb' -P ballerina-dist
+          wget 'https://dist.ballerina.io/downloads/2201.8.0/ballerina-2201.8.0-swan-lake-linux-x64.deb' -P ballerina-dist
         if: steps.cache.outputs.cache-hit != 'true'
       - name: Install Ballerina distribution.
         shell: sh
-        run: "sudo dpkg -i ballerina-dist/ballerina-2201.5.0-swan-lake-linux-x64.deb"
+        run: "sudo dpkg -i ballerina-dist/ballerina-2201.8.0-swan-lake-linux-x64.deb"
       - name: Verify Ballerina Version
         shell: sh
         run: "bal -v"
