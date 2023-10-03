@@ -30,6 +30,10 @@ spec:
   organization: "carbon.super"
   production:
     - httpRouteRefs:
-      - {{ template "apk-helm.resource.prefix" . }}-devportal-ds-httproute
+      - {{ template "apk-helm.resource.prefix" . }}-devportal-ds-httproute-1
+      - {{ template "apk-helm.resource.prefix" . }}-devportal-ds-httproute-2
+      - {{ template "apk-helm.resource.prefix" . }}-devportal-ds-httproute-3
+      - {{ template "apk-helm.resource.prefix" . }}-devportal-ds-httproute-4
+      - {{ template "apk-helm.resource.prefix" . }}-devportal-ds-httproute-5
   systemAPI: true
 {{- end -}}

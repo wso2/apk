@@ -17,10 +17,10 @@
 apiVersion: "gateway.networking.k8s.io/v1beta1"
 kind: "HTTPRoute"
 metadata:
-  name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-httproute-3
+  name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-httproute-4
   namespace: {{ .Release.Namespace }}
   labels:
-    api-name: "backoffice-domain-service"
+    api-name: "devportal-domain-service"
     api-version: "1.0.0"
 spec:
   hostnames:
@@ -29,168 +29,153 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/backoffice/subscriptions"
+        value: "/api/devportal/applications/(.*)/oauth-keys"
       method: "GET"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/backoffice/subscriptions"
+          replaceFullPath: "/api/devportal/applications/\\1/oauth-keys"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/backoffice/subscriptions/(.*)/subscriber-info"
+        value: "/api/devportal/applications/(.*)/oauth-keys/(.*)"
       method: "GET"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/backoffice/subscriptions/\\1/subscriber-info"
+          replaceFullPath: "/api/devportal/applications/\\1/oauth-keys/\\2"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/backoffice/subscriptions/block-subscription"
+        value: "/api/devportal/applications/(.*)/oauth-keys/(.*)"
+      method: "PUT"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/devportal/applications/\\1/oauth-keys/\\2"
+    backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
+  - matches:
+    - path:
+        type: "RegularExpression"
+        value: "/api/devportal/applications/(.*)/oauth-keys/(.*)/regenerate-secret"
       method: "POST"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/backoffice/subscriptions/block-subscription"
+          replaceFullPath: "/api/devportal/applications/\\1/oauth-keys/\\2/regenerate-secret"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/backoffice/subscriptions/unblock-subscription"
+        value: "/api/devportal/applications/(.*)/oauth-keys/(.*)/clean-up"
       method: "POST"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/backoffice/subscriptions/unblock-subscription"
+          replaceFullPath: "/api/devportal/applications/\\1/oauth-keys/\\2/clean-up"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/backoffice/usage-plans"
-      method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/backoffice/usage-plans"
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-backend
-  - matches:
-    - path:
-        type: "RegularExpression"
-        value: "/api/backoffice/search"
-      method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/backoffice/search"
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-backend
-  - matches:
-    - path:
-        type: "RegularExpression"
-        value: "/api/backoffice/settings"
-      method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/backoffice/settings"
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-backend
-  - matches:
-    - path:
-        type: "RegularExpression"
-        value: "/api/backoffice/api-categories"
-      method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/backoffice/api-categories"
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-backend
-  - matches:
-    - path:
-        type: "RegularExpression"
-        value: "/api/backoffice/apis/change-lifecycle"
+        value: "/api/devportal/applications/(.*)/oauth-keys/(.*)/generate-token"
       method: "POST"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/backoffice/apis/change-lifecycle"
+          replaceFullPath: "/api/devportal/applications/\\1/oauth-keys/\\2/generate-token"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/backoffice/apis/(.*)/lifecycle-history"
+        value: "/api/devportal/applications/(.*)/api-keys/(.*)/generate"
+      method: "POST"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/devportal/applications/\\1/api-keys/\\2/generate"
+    backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
+  - matches:
+    - path:
+        type: "RegularExpression"
+        value: "/api/devportal/applications/(.*)/api-keys/(.*)/revoke"
+      method: "POST"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/devportal/applications/\\1/api-keys/\\2/revoke"
+    backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
+  - matches:
+    - path:
+        type: "RegularExpression"
+        value: "/api/devportal/applications/export"
       method: "GET"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/backoffice/apis/\\1/lifecycle-history"
+          replaceFullPath: "/api/devportal/applications/export"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/backoffice/apis/(.*)/lifecycle-state"
-      method: "GET"
+        value: "/api/devportal/applications/import"
+      method: "POST"
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
           type: "ReplaceFullPath"
-          replaceFullPath: "/api/backoffice/apis/\\1/lifecycle-state"
+          replaceFullPath: "/api/devportal/applications/import"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   parentRefs:
   - group: "gateway.networking.k8s.io"
     kind: "Gateway"

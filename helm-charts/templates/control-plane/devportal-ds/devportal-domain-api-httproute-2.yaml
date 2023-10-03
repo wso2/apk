@@ -1,0 +1,259 @@
+# Copyright (c) 2023, WSO2 LLC. (https://www.wso2.com) All Rights Reserved.
+#
+# WSO2 LLC. licenses this file to you under the Apache License,
+# Version 2.0 (the "License"); you may not use this file except
+# in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations
+# under the License.
+{{- if .Values.wso2.apk.cp.enabled }}
+apiVersion: "gateway.networking.k8s.io/v1beta1"
+kind: "HTTPRoute"
+metadata:
+  name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-httproute-2
+  namespace: {{ .Release.Namespace }}
+  labels:
+    api-name: "devportal-domain-service"
+    api-version: "1.0.0"
+spec:
+  hostnames:
+  - "{{ .Values.wso2.apk.listener.hostname | default "api.am.wso2.com"}}"
+  rules:
+  - matches:
+    - path:
+        type: "RegularExpression"
+        value: "/api/devportal/apis/(.*)/comments"
+      method: "GET"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/devportal/apis/\\1/comments"
+    backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
+  - matches:
+    - path:
+        type: "RegularExpression"
+        value: "/api/devportal/apis/(.*)/comments"
+      method: "POST"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/devportal/apis/\\1/comments"
+    backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
+  - matches:
+    - path:
+        type: "RegularExpression"
+        value: "/api/devportal/apis/(.*)/comments/(.*)"
+      method: "GET"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/devportal/apis/\\1/comments/\\2"
+    backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
+  - matches:
+    - path:
+        type: "RegularExpression"
+        value: "/api/devportal/apis/(.*)/comments/(.*)"
+      method: "DELETE"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/devportal/apis/\\1/comments/\\2"
+    backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
+  - matches:
+    - path:
+        type: "RegularExpression"
+        value: "/api/devportal/apis/(.*)/comments/(.*)"
+      method: "PATCH"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/devportal/apis/\\1/comments/\\2"
+    backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
+  - matches:
+    - path:
+        type: "RegularExpression"
+        value: "/api/devportal/apis/(.*)/comments/(.*)/replies"
+      method: "GET"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/devportal/apis/\\1/comments/\\2/replies"
+    backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
+  - matches:
+    - path:
+        type: "RegularExpression"
+        value: "/api/devportal/apis/(.*)/topics"
+      method: "GET"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/devportal/apis/\\1/topics"
+    backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
+  - matches:
+    - path:
+        type: "RegularExpression"
+        value: "/api/devportal/apis/(.*)/subscription-policies"
+      method: "GET"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/devportal/apis/\\1/subscription-policies"
+    backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
+  - matches:
+    - path:
+        type: "RegularExpression"
+        value: "/api/devportal/tenants"
+      method: "GET"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/devportal/tenants"
+    backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
+  - matches:
+    - path:
+        type: "RegularExpression"
+        value: "/api/devportal/recommendations"
+      method: "GET"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/devportal/recommendations"
+    backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
+  - matches:
+    - path:
+        type: "RegularExpression"
+        value: "/api/devportal/api-categories"
+      method: "GET"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/devportal/api-categories"
+    backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
+  - matches:
+    - path:
+        type: "RegularExpression"
+        value: "/api/devportal/key-managers"
+      method: "GET"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/devportal/key-managers"
+    backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
+  - matches:
+    - path:
+        type: "RegularExpression"
+        value: "/api/devportal/apis/(.*)/graphql-policies/complexity"
+      method: "GET"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/devportal/apis/\\1/graphql-policies/complexity"
+    backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
+  - matches:
+    - path:
+        type: "RegularExpression"
+        value: "/api/devportal/apis/(.*)/graphql-policies/complexity/types"
+      method: "GET"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/devportal/apis/\\1/graphql-policies/complexity/types"
+    backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
+  - matches:
+    - path:
+        type: "RegularExpression"
+        value: "/api/devportal/me/change-password"
+      method: "POST"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/devportal/me/change-password"
+    backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
+  parentRefs:
+  - group: "gateway.networking.k8s.io"
+    kind: "Gateway"
+    name: "default"
+    sectionName: "httpslistener"
+{{- end -}}
