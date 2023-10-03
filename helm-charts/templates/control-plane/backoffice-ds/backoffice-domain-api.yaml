@@ -31,6 +31,8 @@ spec:
   organization: "carbon.super"
   production:
     - httpRouteRefs:
-      - {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-httproute
+      - {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-httproute-1
+      - {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-httproute-2
+      - {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-httproute-3
   systemAPI: true
 {{- end -}}
