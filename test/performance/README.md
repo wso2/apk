@@ -123,7 +123,7 @@ Follow these steps in all three jmeter servers
 
 1. Create a 'payloads' folder inside the JMeter bin folder (`<JMETER_HOME>/bin`).
 
-2. Copy and paste the contents of `<APK_HOME>/performance/payloads` into the 'payloads' folder.
+2. Copy and paste the contents of `<APK_HOME>/test/performance/payloads` into the 'payloads' folder.
 
 ### Update Hosts File
 
