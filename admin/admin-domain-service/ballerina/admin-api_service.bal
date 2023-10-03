@@ -20,7 +20,11 @@ import ballerina/http;
 import ballerina/log;
 import wso2/apk_common_lib as commons;
 
-service /api/admin on ep0 {
+service http:InterceptableService /api/admin on ep0 {
+    public function createInterceptors() returns http:Interceptor|http:Interceptor[] {
+        http:Interceptor[] interceptors = [jwtValidationInterceptor, requestErrorInterceptor, responseErrorInterceptor];
+        return interceptors;
+    }
     # Retrieve/Search Policies
     #
     # + query - **Search**. You can search by providing a keyword. Allowed to search by type and name only. 

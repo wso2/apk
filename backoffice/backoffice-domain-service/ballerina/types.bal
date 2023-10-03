@@ -151,7 +151,7 @@ public type APIOperations record {
 public type APIList record {
     # Number of APIs returned.
     int count?;
-    APIInfo[] list?;
+    API[] list?;
     Pagination pagination?;
 };
 

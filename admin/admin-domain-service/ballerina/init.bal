@@ -33,7 +33,7 @@ configurable commons:IDPConfiguration idpConfiguration = {
     publicKey: {certFilePath: "/home/wso2apk/admin/security/mg.pem"}
 };
 commons:DBBasedOrgResolver organizationResolver = new (datasourceConfiguration);
-commons:JWTValidationInterceptor jwtValidationInterceptor = new (idpConfiguration, organizationResolver);
+commons:JWTValidationInterceptor jwtValidationInterceptor = new (idpConfiguration, organizationResolver, ["/health"]);
 commons:RequestErrorInterceptor requestErrorInterceptor = new;
 commons:ResponseErrorInterceptor responseErrorInterceptor = new;
 final keymanager:KeyManagerTypeInitializer keyManagerInitializer = new;
@@ -42,13 +42,13 @@ listener http:Listener ep0 = new (9443, secureSocket = {
         certFile: <string>keyStores.tls.certFilePath,
         keyFile: <string>keyStores.tls.keyFilePath
     }
-}, interceptors = [jwtValidationInterceptor, requestErrorInterceptor, responseErrorInterceptor]);
+});
 listener http:Listener internalAdminEp = new (9444, secureSocket = {
     'key: {
         certFile: <string>keyStores.tls.certFilePath,
         keyFile: <string>keyStores.tls.keyFilePath
     }
-}, interceptors = [requestErrorInterceptor, responseErrorInterceptor]);
+});
 configurable string keyManagerConntectorConfigurationFilePath = "/home/wso2apk/admin/keymanager";
 function init() returns error? {
     _ = check keyManagerInitializer.initialize(keyManagerConntectorConfigurationFilePath);

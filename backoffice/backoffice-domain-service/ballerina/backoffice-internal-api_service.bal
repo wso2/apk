@@ -7,9 +7,14 @@ listener http:Listener ep1 = new (BACKOFFICE_PORT_INT, secureSocket = {
         certFile: <string>keyStores.tls.certFilePath,
         keyFile: <string>keyStores.tls.keyFilePath
     }
-}, interceptors = [requestErrorInterceptor, responseErrorInterceptor]);
+});
 
-service /api/backoffice/internal on ep1 {
+service http:InterceptableService /api/backoffice/internal on ep1 {
+
+    public function createInterceptors() returns http:Interceptor|http:Interceptor[] {
+        http:Interceptor[] interceptors = [requestErrorInterceptor, responseErrorInterceptor];
+        return interceptors;
+    }
     isolated resource function post apis(@http:Payload json payload) returns CreatedAPI|error {
         APIBody apiBody = check payload.cloneWithType(APIBody);
 

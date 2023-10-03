@@ -34,7 +34,7 @@ configurable KeyStores & readonly keyStores = {
 };
 
 commons:DBBasedOrgResolver organizationResolver = new (datasourceConfiguration);
-commons:JWTValidationInterceptor jwtValidationInterceptor = new (idpConfiguration, organizationResolver);
+commons:JWTValidationInterceptor jwtValidationInterceptor = new (idpConfiguration, organizationResolver, ["/health"]);
 commons:RequestErrorInterceptor requestErrorInterceptor = new;
 commons:ResponseErrorInterceptor responseErrorInterceptor = new;
 

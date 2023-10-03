@@ -17,8 +17,13 @@
 //
 
 import wso2/apk_common_lib as commons;
+import ballerina/http;
 
-service /api/internal/v1 on internalAdminEp {
+service http:InterceptableService /api/internal/v1 on internalAdminEp {
+    public function createInterceptors() returns http:Interceptor|http:Interceptor[] {
+        http:Interceptor[] interceptors = [requestErrorInterceptor, responseErrorInterceptor];
+        return interceptors;
+    }
     resource function get organizations(string? organizationName, string? organizationClaimValue) returns OrganizationList|error|commons:APKError {
         if organizationName is string && organizationClaimValue is () {
             Internal_Organization organizationByNameDAO = check getOrganizationByNameDAO(organizationName);
