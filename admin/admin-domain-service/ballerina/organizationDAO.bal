@@ -58,6 +58,7 @@ isolated function addOrganizationClaimMappingDAO(postgresql:Client dbClient, Int
     return payload;
 }
 
+// TODO: Add error handling
 isolated function addVhostsDAO (postgresql:Client dbClient, Internal_Organization payload) returns boolean{
     string[]? production = payload.production;
     string[]? sandbox = payload.sandbox;
