@@ -35,6 +35,7 @@ message JWTIssuer {
     string consumerKeyClaim = 6;
     string scopesClaim = 7;
     map<string, string> claimMapping = 8;
+    repeated string environments = 9;
 }
 message Certificate {
     string certificate = 1;

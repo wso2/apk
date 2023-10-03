@@ -25,6 +25,7 @@ import org.wso2.apk.enforcer.commons.dto.ClaimMappingDto;
 import org.wso2.apk.enforcer.commons.dto.JWKSConfigurationDTO;
 import org.wso2.apk.enforcer.commons.exception.EnforcerException;
 import org.wso2.apk.enforcer.config.dto.ExtendedTokenIssuerDto;
+import org.wso2.apk.enforcer.constants.Constants;
 import org.wso2.apk.enforcer.discovery.ApiListDiscoveryClient;
 import org.wso2.apk.enforcer.discovery.ApplicationDiscoveryClient;
 import org.wso2.apk.enforcer.discovery.ApplicationKeyMappingDiscoveryClient;
@@ -145,7 +146,7 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
             newSubscription.setApiUUID(subscription.getApiRef());
             newSubscription.setAppUUID(subscription.getApplicationRef());
             newSubscription.setSubscriptionState(subscription.getSubStatus());
-            //newSubscription.setTimeStamp(Long.parseLong(subscription.getTimeStamp()));
+            // newSubscription.setTimeStamp(Long.parseLong(subscription.getTimeStamp()));
 
             newSubscriptionMap.put(newSubscription.getCacheKey(), newSubscription);
         }
@@ -182,7 +183,7 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
 
         for (APIs api : apisList) {
             API newApi = new API();
-            //newApi.setApiId(Integer.parseInt(api.getApiId()));
+            // newApi.setApiId(Integer.parseInt(api.getApiId()));
             newApi.setApiName(api.getName());
             newApi.setApiProvider(api.getProvider());
             newApi.setApiType(api.getApiType());
@@ -204,8 +205,7 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
 
         Map<String, ApplicationPolicy> newAppPolicyMap = new ConcurrentHashMap<>();
 
-        for (org.wso2.apk.enforcer.discovery.subscription.ApplicationPolicy applicationPolicy :
-                applicationPolicyList) {
+        for (org.wso2.apk.enforcer.discovery.subscription.ApplicationPolicy applicationPolicy : applicationPolicyList) {
             ApplicationPolicy newApplicationPolicy = new ApplicationPolicy();
             newApplicationPolicy.setId(applicationPolicy.getId());
             newApplicationPolicy.setQuotaType(applicationPolicy.getQuotaType());
@@ -225,8 +225,7 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
 
         Map<String, SubscriptionPolicy> newSubscriptionPolicyMap = new ConcurrentHashMap<>();
 
-        for (org.wso2.apk.enforcer.discovery.subscription.SubscriptionPolicy subscriptionPolicy :
-                subscriptionPolicyList) {
+        for (org.wso2.apk.enforcer.discovery.subscription.SubscriptionPolicy subscriptionPolicy : subscriptionPolicyList) {
             SubscriptionPolicy newSubscriptionPolicy = new SubscriptionPolicy();
             newSubscriptionPolicy.setId(subscriptionPolicy.getId());
             newSubscriptionPolicy.setQuotaType(subscriptionPolicy.getQuotaType());
@@ -249,11 +248,9 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
     public void addApplicationKeyMappings(
             List<org.wso2.apk.enforcer.discovery.subscription.ApplicationKeyMapping> applicationKeyMappingList) {
 
-        Map<ApplicationKeyMappingCacheKey, ApplicationKeyMapping> newApplicationKeyMappingMap =
-                new ConcurrentHashMap<>();
+        Map<ApplicationKeyMappingCacheKey, ApplicationKeyMapping> newApplicationKeyMappingMap = new ConcurrentHashMap<>();
 
-        for (org.wso2.apk.enforcer.discovery.subscription.ApplicationKeyMapping applicationKeyMapping :
-                applicationKeyMappingList) {
+        for (org.wso2.apk.enforcer.discovery.subscription.ApplicationKeyMapping applicationKeyMapping : applicationKeyMappingList) {
             ApplicationKeyMapping mapping = new ApplicationKeyMapping();
             mapping.setApplicationId(applicationKeyMapping.getApplicationId());
             mapping.setApplicationUUID(applicationKeyMapping.getApplicationUUID());
@@ -283,8 +280,8 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
                 if (StringUtils.isNotEmpty(certificate.getJwks().getUrl())) {
                     JWKSConfigurationDTO jwksConfigurationDTO = new JWKSConfigurationDTO();
                     if (StringUtils.isNotEmpty(certificate.getJwks().getTls())) {
-                        java.security.cert.Certificate tlsCertificate =
-                                TLSUtils.getCertificateFromContent(certificate.getJwks().getTls());
+                        java.security.cert.Certificate tlsCertificate = TLSUtils
+                                .getCertificateFromContent(certificate.getJwks().getTls());
                         jwksConfigurationDTO.setCertificate(tlsCertificate);
                     }
                     jwksConfigurationDTO.setUrl(certificate.getJwks().getUrl());
@@ -292,8 +289,8 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
                     tokenIssuerDto.setJwksConfigurationDTO(jwksConfigurationDTO);
                 }
                 if (StringUtils.isNotEmpty(certificate.getCertificate())) {
-                    java.security.cert.Certificate signingCertificate =
-                            TLSUtils.getCertificateFromContent(certificate.getCertificate());
+                    java.security.cert.Certificate signingCertificate = TLSUtils
+                            .getCertificateFromContent(certificate.getCertificate());
                     tokenIssuerDto.setCertificate(signingCertificate);
                 }
                 Map<String, String> claimMappingMap = jwtIssuer.getClaimMappingMap();
@@ -307,7 +304,13 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
                 if (jwtValidatorMap.containsKey(jwtIssuer.getOrganization())) {
                     orgBasedJWTValidatorMap = jwtValidatorMap.get(jwtIssuer.getOrganization());
                 }
-                orgBasedJWTValidatorMap.put(jwtIssuer.getIssuer(), jwtValidator);
+
+                List<String> environments = getEnvironments(jwtIssuer);
+                for (String environment : environments) {
+                    String mapKey = getMapKey(environment, jwtIssuer.getIssuer());
+                    orgBasedJWTValidatorMap.put(mapKey, jwtValidator);
+                }
+
                 jwtValidatorMap.put(jwtIssuer.getOrganization(), orgBasedJWTValidatorMap);
                 this.jwtValidatorMap = jwtValidatorMap;
             } catch (EnforcerException | CertificateException | IOException e) {
@@ -317,12 +320,52 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
     }
 
     @Override
-    public JWTValidator getJWTValidatorByIssuer(String issuer, String organization) {
+    public JWTValidator getJWTValidatorByIssuer(String issuer, String organization, String environment) {
 
         Map<String, JWTValidator> orgBaseJWTValidators = jwtValidatorMap.get(organization);
+
         if (orgBaseJWTValidators != null) {
-            return orgBaseJWTValidators.get(issuer);
+
+            String mapKey;
+            if (environment.equals(Constants.DEFAULT_ENVIRONMENT)) {
+                mapKey = getMapKey(Constants.DEFAULT_ENVIRONMENT_TOKEN_ISSUER, issuer);
+            } else {
+                mapKey = getMapKey(environment, issuer);
+            }
+
+            JWTValidator jwtValidator = orgBaseJWTValidators.get(mapKey);
+            if (jwtValidator != null) {
+                return jwtValidator;
+            }
+
+            // Fall back to the default environment if the validator is not found
+            if (!environment.equals(Constants.DEFAULT_ENVIRONMENT)) {
+                mapKey = getMapKey(Constants.DEFAULT_ENVIRONMENT_TOKEN_ISSUER, issuer);
+                return orgBaseJWTValidators.get(mapKey);
+            }
         }
+
         return null;
     }
+
+    private List<String> getEnvironments(JWTIssuer jwtIssuer) {
+
+        List<String> environmentsList = new ArrayList<>();
+        int environmentCount = jwtIssuer.getEnvironmentsCount();
+
+        if (environmentCount > 0) {
+            for (int i = 0; i < environmentCount; i++) {
+                environmentsList.add(jwtIssuer.getEnvironments(i));
+            }
+        } else {
+            environmentsList.add(Constants.DEFAULT_ENVIRONMENT_TOKEN_ISSUER);
+        }
+        return environmentsList;
+    }
+
+    private String getMapKey(String environment, String issuer) { 
+        return environment + DELEM_PERIOD + issuer;
+    }
+    
+
 }

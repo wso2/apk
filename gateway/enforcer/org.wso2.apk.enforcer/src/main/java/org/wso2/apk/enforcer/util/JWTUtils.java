@@ -264,12 +264,12 @@ public class JWTUtils {
         apiKeyValidationInfoDTO.setApplicationTier(APIConstants.UNLIMITED_TIER);
     }
 
-    public static JWTValidationInfo validateJWTToken(SignedJWTInfo signedJWTInfo, String organization) throws EnforcerException {
+    public static JWTValidationInfo validateJWTToken(SignedJWTInfo signedJWTInfo, String organization, String environment) throws EnforcerException {
 
         JWTValidationInfo jwtValidationInfo = new JWTValidationInfo();
         String issuer = signedJWTInfo.getJwtClaimsSet().getIssuer();
         JWTValidator jwtValidator = SubscriptionDataStoreImpl.getInstance().getJWTValidatorByIssuer(issuer,
-                organization);
+                organization, environment);
         if (jwtValidator != null) {
             return jwtValidator.validateJWTToken(signedJWTInfo);
         }

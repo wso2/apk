@@ -56,8 +56,15 @@ spec:
                   key.
                 minLength: 1
                 type: string
+              environments:
+                description: Environments denotes the environments that are applicable
+                  for the token issuer.
+                items:
+                  type: string
+                nullable: true
+                type: array
               issuer:
-                description: Issuer denotes the issuer of the JWT Issuer.
+                description: Issuer denotes the issuer of the Token Issuer.
                 minLength: 1
                 type: string
               name:
@@ -67,7 +74,7 @@ spec:
                 minLength: 1
                 type: string
               organization:
-                description: Organization denotes the organization of the JWT Issuer.
+                description: Organization denotes the organization of the Token Issuer.
                 minLength: 1
                 type: string
               scopesClaim:

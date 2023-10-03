@@ -45,6 +45,7 @@ const (
 	tokenIssuerIndex       = "tokenIssuerIndex"
 	secretTokenIssuerIndex = "secretTokenIssuerIndex"
 	configmapIssuerIndex   = "configmapIssuerIndex"
+	defaultAllEnvironments = "*"
 )
 
 // TokenssuerReconciler reconciles a TokenIssuer object
@@ -192,6 +193,7 @@ func marshalJWTIssuerList(jwtIssuerMapping dpv1alpha1.JWTIssuerMapping) *subscri
 		}
 		jwtIssuer.ClaimMapping = internalJWTIssuer.ClaimMappings
 		jwtIssuer.Certificate = certificate
+		jwtIssuer.Environments = internalJWTIssuer.Environments
 		jwtIssuers = append(jwtIssuers, jwtIssuer)
 
 	}
@@ -213,6 +215,8 @@ func getJWTIssuers(ctx context.Context, client k8client.Client, namespace types.
 		resolvedJwtIssuer.ConsumerKeyClaim = jwtIssuer.Spec.ConsumerKeyClaim
 		resolvedJwtIssuer.ScopesClaim = jwtIssuer.Spec.ScopesClaim
 		resolvedJwtIssuer.Organization = jwtIssuer.Spec.Organization
+		resolvedJwtIssuer.Environments = getTokenIssuerEnvironments(jwtIssuer.Spec.Environments)
+
 		signatureValidation := dpv1alpha1.ResolvedSignatureValidation{}
 		if jwtIssuer.Spec.SignatureValidation.JWKS != nil && len(jwtIssuer.Spec.SignatureValidation.JWKS.URL) > 0 {
 			jwks := &dpv1alpha1.ResolvedJWKS{}
@@ -255,4 +259,16 @@ func getResolvedClaimMapping(claimMappings []dpv1alpha1.ClaimMapping) map[string
 		resolvedClaimMappings[claimMapping.RemoteClaim] = claimMapping.LocalClaim
 	}
 	return resolvedClaimMappings
+}
+
+func getTokenIssuerEnvironments(environments []string) []string {
+
+	resolvedEnvirenvironments := []string{}
+	if len(environments) == 0 {
+		resolvedEnvirenvironments = append(resolvedEnvirenvironments, defaultAllEnvironments)
+	} else {
+		resolvedEnvirenvironments = environments
+	}
+
+	return resolvedEnvirenvironments
 }

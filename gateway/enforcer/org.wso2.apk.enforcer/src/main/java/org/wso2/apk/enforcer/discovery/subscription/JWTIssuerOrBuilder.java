@@ -127,4 +127,29 @@ public interface JWTIssuerOrBuilder extends
 
   java.lang.String getClaimMappingOrThrow(
       java.lang.String key);
+
+  /**
+   * <code>repeated string environments = 9;</code>
+   * @return A list containing the environments.
+   */
+  java.util.List<java.lang.String>
+      getEnvironmentsList();
+  /**
+   * <code>repeated string environments = 9;</code>
+   * @return The count of environments.
+   */
+  int getEnvironmentsCount();
+  /**
+   * <code>repeated string environments = 9;</code>
+   * @param index The index of the element to return.
+   * @return The environments at the given index.
+   */
+  java.lang.String getEnvironments(int index);
+  /**
+   * <code>repeated string environments = 9;</code>
+   * @param index The index of the value to return.
+   * @return The bytes of the environments at the given index.
+   */
+  com.google.protobuf.ByteString
+      getEnvironmentsBytes(int index);
 }

@@ -62,6 +62,12 @@ type TokenIssuerSpec struct {
 
 	// TargetRef denotes the reference to the which gateway it applies to
 	TargetRef *gwapiv1b1.PolicyTargetReference `json:"targetRef,omitempty"`
+
+	// Environments denotes the environments that are applicable for the token issuer.
+	//
+	// +optional
+	// +nullable
+	Environments []string `json:"environments,omitempty"`
 }
 
 // ClaimMapping defines the reference configuration

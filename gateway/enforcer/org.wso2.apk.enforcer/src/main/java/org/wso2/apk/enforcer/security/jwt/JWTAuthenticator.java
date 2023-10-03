@@ -134,6 +134,7 @@ public class JWTAuthenticator implements Authenticator {
             String envType = requestContext.getMatchedAPI().getEnvType();
             String version = requestContext.getMatchedAPI().getVersion();
             String organization = requestContext.getMatchedAPI().getOrganizationId();
+            String environment = requestContext.getMatchedAPI().getEnvironment();
             context = context + "/" + version;
             SignedJWTInfo signedJWTInfo;
             Scope decodeTokenHeaderSpanScope = null;
@@ -171,7 +172,7 @@ public class JWTAuthenticator implements Authenticator {
                 }
 
             }
-            JWTValidationInfo validationInfo = getJwtValidationInfo(signedJWTInfo, jwtTokenIdentifier, organization);
+            JWTValidationInfo validationInfo = getJwtValidationInfo(signedJWTInfo, jwtTokenIdentifier, organization, environment);
             if (validationInfo != null) {
                 if (validationInfo.isValid()) {
                     // Validate token type
@@ -496,7 +497,8 @@ public class JWTAuthenticator implements Authenticator {
         return api;
     }
 
-    private JWTValidationInfo getJwtValidationInfo(SignedJWTInfo signedJWTInfo, String jti, String organization) throws APISecurityException {
+    private JWTValidationInfo getJwtValidationInfo(SignedJWTInfo signedJWTInfo, String jti, String organization, String environment) 
+    throws APISecurityException {
 
         String jwtHeader = signedJWTInfo.getSignedJWT().getHeader().toString();
         JWTValidationInfo jwtValidationInfo = null;
@@ -524,7 +526,7 @@ public class JWTAuthenticator implements Authenticator {
         if (jwtValidationInfo == null) {
 
             try {
-                jwtValidationInfo = JWTUtils.validateJWTToken(signedJWTInfo, organization);
+                jwtValidationInfo = JWTUtils.validateJWTToken(signedJWTInfo, organization, environment);
                 signedJWTInfo.setValidationStatus(jwtValidationInfo.isValid() ? SignedJWTInfo.ValidationStatus.VALID
                         : SignedJWTInfo.ValidationStatus.INVALID);
                 if (isGatewayTokenCacheEnabled) {
