@@ -10,7 +10,7 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: 'wso2/config-deployer-service:latest'
+          image-ref: 'wso2/apk-config-deployer-service:latest'
           format: 'table'
           ignore-unfixed: true
           vuln-type: 'os,library'
@@ -21,7 +21,7 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: 'wso2/idp-domain-service:latest'
+          image-ref: 'wso2/apk-idp-domain-service:latest'
           format: 'table'
           ignore-unfixed: true
           vuln-type: 'os,library'
@@ -32,7 +32,7 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: 'wso2/idp-ui:latest'
+          image-ref: 'wso2/apk-idp-ui:latest'
           format: 'table'
           ignore-unfixed: true
           vuln-type: 'os,library'
@@ -43,7 +43,7 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: 'wso2/adapter:latest'
+          image-ref: 'wso2/apk-adapter:latest'
           format: 'table'
           ignore-unfixed: true
           vuln-type: 'os,library'
@@ -54,7 +54,7 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: 'wso2/common-controller:latest'
+          image-ref: 'wso2/apk-common-controller:latest'
           format: 'table'
           ignore-unfixed: true
           vuln-type: 'os,library'
@@ -65,7 +65,7 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: 'wso2/router:latest'
+          image-ref: 'wso2/apk-router:latest'
           format: 'table'
           ignore-unfixed: true
           vuln-type: 'os,library'
@@ -76,7 +76,7 @@ jobs:
         - name: Run Trivy vulnerability scanner
           uses: aquasecurity/trivy-action@master
           with:
-            image-ref: 'wso2/enforcer:latest'
+            image-ref: 'wso2/apk-enforcer:latest'
             format: 'table'
             ignore-unfixed: true
             vuln-type: 'os,library'
