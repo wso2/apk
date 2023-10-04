@@ -43,6 +43,7 @@ isolated function db_getAPIsDAO(string organization) returns API[]|commons:APKEr
     }
 }
 
+// Change Lifecycle State
 isolated function db_changeLCState(string targetState, string apiId) returns string|commons:APKError {
     postgresql:Client|error db_Client = getConnection();
     if db_Client is error {
