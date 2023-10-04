@@ -33,7 +33,11 @@ spec:
   - {{ template "apk-helm.resource.prefix" . }}-ratelimiter-service.{{ .Release.Namespace }}.svc
   - {{ template "apk-helm.resource.prefix" . }}-ratelimiter-service.{{ .Release.Namespace }}.svc.cluster.local
   issuerRef:
-    kind: ClusterIssuer
-    name: selfsigned-issuer
+    kind: {{ .Values.certmanager.issuerKind | default "ClusterIssuer" }}
+    {{ if .Values.certmanager.servers -}}
+    name: {{  .Values.certmanager.servers.issuerName | default "selfsigned-issuer" }}
+    {{- else -}}
+    name: "selfsigned-issuer"
+    {{- end }}
   secretName: {{ template "apk-helm.resource.prefix" . }}-ratelimiter-server-cert
 {{- end -}}

@@ -26,6 +26,7 @@ A Helm chart for APK components
 | wso2.apk.auth.roleName | string | `"wso2apk-role"` | Cluster Role name |
 | wso2.apk.listener.hostname | string | `"api.am.wso2.com"` | System api listener hostname |
 | wso2.apk.listener.port | int | `9095` | Gatewaylistener port |
+| wso2.apk.listener.secretName | string | `"system-api-listener-cert"` | System api listener certificates. If you are using a custom certificate. |
 | wso2.apk.idp.issuer | string | `"https://idp.am.wso2.com/token"` | IDP issuer value |
 | wso2.apk.idp.usernameClaim | string | `"sub"` |  |
 | wso2.apk.idp.scopeClaim | string | `"scope"` | Optionally configure scope Claim in JWT. |
@@ -41,6 +42,7 @@ A Helm chart for APK components
 | wso2.apk.dp.enabled | bool | `true` | Enable the deployment of the Data Plane |
 | wso2.apk.dp.gateway.listener.hostname | string | `"gw.wso2.com"` | Gateway Listener Hostname |
 | wso2.apk.dp.gateway.listener.secretName | string | `""` | Gateway Listener Certificate Secret Name |
+| wso2.apk.dp.gateway.listener.dns | list | `["*.gw.wso2.com","*.sandbox.gw.wso2.com","prod.gw.wso2.com"]` | DNS entries for gateway listener certificate |
 | wso2.apk.dp.gateway.autoscaling.enabled | bool | `false` | Enable autoscaling for Gateway |
 | wso2.apk.dp.gateway.autoscaling.minReplicas | int | `1` | Minimum number of replicas for Gateway |
 | wso2.apk.dp.gateway.autoscaling.maxReplicas | int | `2` | Maximum number of replicas for Gateway |
@@ -273,6 +275,10 @@ A Helm chart for APK components
 | certmanager.enableClusterIssuer | bool | `true` | Enable cluster issuer to generate certificates |
 | certmanager.enableRootCa | bool | `true` | Enable root CA to generate certificates |
 | certmanager.rootCaSecretName | string | `"apk-root-certificate"` | Enable CA certificate secret name. |
+| certmanager.listeners.issuerName | string | `"selfsigned-issuer"` | Issuer name |
+| certmanager.listeners.issuerKind | string | `"ClusterIssuer"` | Issuer kind |
+| certmanager.servers.issuerName | string | `"selfsigned-issuer"` | Issuer name |
+| certmanager.servers.issuerKind | string | `"ClusterIssuer"` | Issuer kind |
 | postgresql.enabled | bool | `true` | Enable postgresql database |
 | postgresql.fullnameOverride | string | `"wso2apk-db-service"` | String to fully override common.names.fullname template |
 | postgresql.auth.database | string | `"WSO2AM_DB"` | Name for a custom database to create |

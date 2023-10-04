@@ -41,7 +41,7 @@ wso2:
       # -- Gatewaylistener port
       port: 9095
       # -- System api listener certificates. If you are using a custom certificate.
-      # secretName: "idp-tls"
+      secretName: "system-api-listener-cert"
     idp:
       # -- IDP issuer value
       issuer: "https://idp.am.wso2.com/token"
@@ -249,6 +249,11 @@ wso2:
           hostname: "gw.wso2.com"
           # -- Gateway Listener Certificate Secret Name
           secretName: ""
+          # -- DNS entries for gateway listener certificate
+          dns: 
+            - "*.gw.wso2.com"
+            - "*.sandbox.gw.wso2.com"
+            - "prod.gw.wso2.com"
         autoscaling:
           # -- Enable autoscaling for Gateway
           enabled: false
@@ -825,6 +830,16 @@ certmanager:
   enableRootCa: true
   # -- Enable CA certificate secret name.
   rootCaSecretName: "apk-root-certificate"
+  listeners:
+    # -- Issuer name
+    issuerName: "selfsigned-issuer"
+    # -- Issuer kind
+    issuerKind: "ClusterIssuer"
+  servers: 
+    # -- Issuer name
+    issuerName: "selfsigned-issuer"
+    # -- Issuer kind
+    issuerKind: "ClusterIssuer"
 postgresql:
   # -- Enable postgresql database
   enabled: true

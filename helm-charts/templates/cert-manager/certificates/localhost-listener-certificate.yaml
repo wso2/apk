@@ -27,7 +27,11 @@ spec:
   dnsNames:
   - "locahost"
   issuerRef:
-    kind: ClusterIssuer
-    name: selfsigned-issuer
+    kind: {{ .Values.certmanager.issuerKind | default "ClusterIssuer" }}
+    {{ if .Values.certmanager.servers -}}
+    name: {{  .Values.certmanager.servers.issuerName | default "selfsigned-issuer" }}
+    {{- else -}}
+    name: "selfsigned-issuer"
+    {{- end }}
   secretName: {{ template "apk-helm.resource.prefix" . }}-localhost-listener-cert
 {{- end -}}

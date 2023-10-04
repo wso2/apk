@@ -102,3 +102,15 @@ env:
 {{- end }}
 {{- end }}
 {{- end }}
+
+{{- define "createYamlList" -}}
+{{- if . -}}
+{{ range $val := . }}
+- "{{ $val }}"
+{{- end -}}
+{{- else -}}
+- "*.gw.wso2.com"
+- "*.sandbox.gw.wso2.com"
+- "prod.gw.wso2.com"
+{{- end -}}
+{{- end -}}
