@@ -90,7 +90,7 @@ echo "Users per server: ${user_count_per_server}"
 echo "${duration}"
 set -x
 cd "${HOME}/apache-jmeter-5.5/bin"
-./jmeter -n -t ${HOME}/apk-load-testing/jmeter/apim-test.jmx \
+./jmeter -n -t ${HOME}/apk/test/performance/apk-test.jmx \
     -j "${results_dir}/jmeter.log" \
     -Gusers="$user_count_per_server" \
     -Gduration="$duration" \

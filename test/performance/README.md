@@ -66,7 +66,7 @@ helm3 install apk-perftest -n apk-perf-test .
 1. Navigate to `<APK_HOME>test/performance/artifacts/` and create the API:
 
 ```bash
-kubectl -n apk-performance apply -f .
+kubectl -n apk-perf-test apply -f .
 ```
 Note: If you want to use a custom keystore.jks file other than `APK_HOME/test/performance/keystore.jks` then update the `APK_HOME/test/performance/artifacts/custom-jwt-cm.yaml` with the correct public key.
 
@@ -75,7 +75,7 @@ Note: If you want to use a custom keystore.jks file other than `APK_HOME/test/pe
 Execute the following command to determine the private IP of the gateway load balancer:
 
 ```bash
-IP=$(kubectl get svc apk-test-setup-wso2-apk-router-service -n apk-integration-test --output jsonpath='{.status.loadBalancer.ingress[0].ip}')
+IP=$(kubectl get svc apk-perftest-wso2-apk-gateway-service -n apk-perf-test --output jsonpath='{.status.loadBalancer.ingress[0].ip}')
 # Note: IP should be within the range of your subnet addresses.
 ```
 
@@ -96,6 +96,32 @@ Before setting up the JMeter servers, ensure the following prerequisites are met
 - JMeter version 5.5 - Install JMeter on all three servers by downloading and extracting the JMeter package in the {$HOME} directory.
 - kubectl 1.27 or higher
 - jq
+- login to az cluster
+
+Run following commands in JMeter VMs;
+
+```bash
+sudo apt install openjdk-11-jre-headless
+sudo snap install kubectl --classic
+wget https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-5.5.tgz
+tar -xvzf  apache-jmeter-5.5.tgz apache-jmeter-5.5
+sudo apt  install jq
+
+cd apache-jmeter-5.5/bin/
+mkdir payloads
+chmod 755 payloads
+cd 
+git clone https://github.com/wso2/apk
+cd apk/test/performance/jwt-tokens/
+./generate-jwt-tokens.sh -t 10000 -c 1234 
+cd 
+cp apk/test/performance/payloads/ apache-jmeter-5.5/bin/ -r
+sudo nano /etc/hosts
+# add <IP> default.gw.wso2.com 
+sudo apt install azure-cli
+az login
+#connect to cluster
+```
 
 
 ### Generate Custom JWT Tokens
@@ -106,7 +132,7 @@ Follow these steps in all three jmeter servers
 
 ```bash
 git clone https://github.com/wso2/apk
-cd apk/test/performance/JwtTokens
+cd apk/test/performance/jwt-tokens/
 ```
 
 2. [Optional] If needed, replace `<APK_HOME>test/performance/jwt-tokens/keystore.jks` with your keystore file.

@@ -28,7 +28,7 @@
       </ThreadGroup>
       <hashTree>
         <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="Tokens" enabled="true">
-          <stringProp name="filename">${__P(tokens_path,/home/azureuser/apk-load-testing/jwt-tokens/target/jwt-tokens-500.csv)}</stringProp>
+          <stringProp name="filename">${__P(tokens_path,/home/azureuser/apk/jwt-tokens/target/jwt-tokens-500.csv)}</stringProp>
           <stringProp name="fileEncoding"></stringProp>
           <stringProp name="variableNames">token</stringProp>
           <stringProp name="delimiter">,</stringProp>
