@@ -1152,7 +1152,6 @@ paths:
         - OAuth2Security:
             - apk:comment_write
             - apk:comment_manage
-            - apk:admin # special scope added to moderate other comments as well
       x-code-samples:
         - lang: Curl
           source: curl -k -X DELETE -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1742,7 +1741,6 @@ paths:
           $ref: '#/components/responses/NotAcceptable'
       security:
         - OAuth2Security:
-            - apk:admin
             - apk:tier_view
       x-code-samples:
         - lang: Curl
@@ -3680,5 +3678,18 @@ components:
         password:
           tokenUrl: https://localhost:9443/oauth2/token
           scopes:
-            type: array
-            items: test
+            openid: Authorize access to user details
+            apk:api_view: View API
+            apk:api_publish: Publish API
+            apk:api_manage: Manage all API related operations
+            apk:api_definition_view: View, Retrieve API definition
+            apk:document_manage: Create, update and delete API documents
+            apk:comment_view: Read permission to comments
+            apk:comment_manage: Read and Write comments
+            apk:comment_write: Write permission to comments
+            apk:subscription_view: View Subscription
+            apk:subscription_manage: Manage all Subscription related operations
+            apk:subscription_block: Block Subscription
+            apk:tier_view: View throttling policies
+            apk:backoffice_settings: Retrieve store settings
+            apk:api_create: Create API

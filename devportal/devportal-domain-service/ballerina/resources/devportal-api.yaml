@@ -5163,5 +5163,10 @@ components:
         password:
           tokenUrl: https://localhost:9443/oauth2/token
           scopes:
-            type: array
-            items: test
+            openid: Authorize access to user details
+            apk:subscribe: Subscribe API
+            apk:app_manage: Retrieve, Manage and Import, Export applications
+            apk:app_import_export: Import and export applications related operations
+            apk:api_key: Generate API Keys
+            apk:sub_manage: Retrieve, Manage subscriptions
+            apk:store_settings: Retrieve Developer Portal settings

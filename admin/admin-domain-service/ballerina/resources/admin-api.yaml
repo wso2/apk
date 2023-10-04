@@ -1193,101 +1193,6 @@ paths:
 
 
   ######################################################
-  # The Tenant Info resource API
-  ######################################################
-  /tenant-info/{username}:
-    get:
-      tags:
-        - Tenants
-      summary: |
-        Get Tenant Id of User
-      description: |
-        This operation is to get tenant id of the provided user
-      operationId: getTenantInfoByUsername
-      parameters:
-        - name: username
-          in: path
-          description: |
-            The state represents the current state of the tenant. Supported states are [ active, inactive]
-          required: true
-          schema:
-            type: string
-            default: john
-      responses:
-        200:
-          description: |
-            OK. Tenant id of the user retrieved.
-          headers:
-            Content-Type:
-              description: |
-                The content type of the body.
-              schema:
-                type: string
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TenantInfo'
-        404:
-          $ref: '#/components/responses/NotFound'
-        406:
-          $ref: '#/components/responses/NotAcceptable'
-      security:
-        - OAuth2Security:
-            - apk:admin
-            - apk:tenantInfo
-      x-code-samples:
-        - lang: Curl
-          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/admin/v3/tenant-info/john"'
-
-  ######################################################
-  # The Custom URL Info resource API
-  ######################################################
-  /custom-urls/{tenantDomain}:
-    get:
-      tags:
-        - Tenants
-      summary: |
-        Get Custom URL Info of a Tenant Domain
-      description: |
-        This operation is to get custom-url information of the provided tenant-domain
-      operationId: getCustomUrlInfoByTenantDomain
-      parameters:
-        - name: tenantDomain
-          in: path
-          description: |
-            The tenant domain name.
-          required: true
-          schema:
-            type: string
-      responses:
-        200:
-          description: |
-            OK. Custom url info of the tenant is retrieved.
-          headers:
-            Content-Type:
-              description: |
-                The content type of the body.
-              schema:
-                type: string
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CustomUrlInfo'
-        404:
-          $ref: '#/components/responses/NotFound'
-        406:
-          $ref: '#/components/responses/NotAcceptable'
-      security:
-        - OAuth2Security:
-            - apk:admin
-            - apk:tenantInfo
-      x-code-samples:
-        - lang: Curl
-          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/admin/v3/custom-urls/wso2.com"'
-
-  ######################################################
   # The "Category Collection" resource API
   ######################################################
   /api-categories:
@@ -3384,6 +3289,7 @@ components:
             openid: Authorize access to user details
             apk:organization_manage: Manage all organization
             apk:admin: Manage all admin operations
+            apk:tier_view: View throttling policies
             apk:tier_manage: Update and delete throttling policies
             apk:bl_manage: Update and delete deny policies
             apk:environment_manage: Manage gateway environments
