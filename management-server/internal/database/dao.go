@@ -136,7 +136,7 @@ func GetSubscriptionByUUID(subUUID string) (*apkmgt.Subscription, error) {
 // CreateAPI creates an API in the DB
 func CreateAPI(api *apiProtos.API) error {
 	_, err := ExecDBQuery(queryCreateAPI, &api.Uuid, &api.Name, &api.Provider,
-		&api.Version, &api.Context, &api.OrganizationId, &api.CreatedBy, time.Now(), &api.Type, marshalArtifact(api), "PUBLISHED")
+		&api.Version, &api.BasePath, &api.OrganizationId, &api.CreatedBy, time.Now(), &api.Type, marshalArtifact(api), "PUBLISHED")
 
 	if err != nil {
 		logger.LoggerDatabase.ErrorC(logging.ErrorDetails{
@@ -152,7 +152,7 @@ func CreateAPI(api *apiProtos.API) error {
 // UpdateAPI updates the given API in the DB
 func UpdateAPI(api *apiProtos.API) error {
 	_, err := ExecDBQuery(queryUpdateAPI, &api.Uuid, &api.Name, &api.Provider,
-		&api.Version, &api.Context, &api.OrganizationId, &api.UpdatedBy, time.Now(), &api.Type, marshalArtifact(api), "PUBLISHED")
+		&api.Version, &api.BasePath, &api.OrganizationId, &api.UpdatedBy, time.Now(), &api.Type, marshalArtifact(api), "PUBLISHED")
 	if err != nil {
 		logger.LoggerDatabase.ErrorC(logging.ErrorDetails{
 			Message:   fmt.Sprintf("Error updating API %q, Error: %v", api.Uuid, err.Error()),
@@ -181,7 +181,7 @@ func DeleteAPI(api *apiProtos.API) error {
 func marshalArtifact(api *apiProtos.API) string {
 	artifact := &artifact{APIName: api.Name,
 		ID:           api.Uuid,
-		Context:      api.Context,
+		Context:      api.BasePath,
 		Version:      api.Version,
 		ProviderName: api.Provider,
 		Status:       "PUBLISHED",
