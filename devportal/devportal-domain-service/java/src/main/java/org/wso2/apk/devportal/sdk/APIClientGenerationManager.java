@@ -19,15 +19,12 @@
 package org.wso2.apk.devportal.sdk;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openapitools.codegen.ClientOptInput;
 import org.openapitools.codegen.DefaultGenerator;
 import org.openapitools.codegen.config.CodegenConfigurator;
-import org.wso2.apk.devportal.sdk.SDKConstants;
-import org.wso2.apk.devportal.sdk.ZIPUtils;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -39,7 +36,6 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.zip.ZipOutputStream;
 
 /*
  * This class is used to generate SDKs for a given API

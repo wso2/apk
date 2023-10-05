@@ -1,6 +1,7 @@
-import ballerina/jballerina.java;
 import devportal_service.java.lang as javalang;
 import devportal_service.java.util as javautil;
+
+import ballerina/jballerina.java;
 
 # Ballerina class mapping for the Java `org.wso2.apk.devportal.sdk.APIClientGenerationManager` class.
 @java:Binding {'class: "org.wso2.apk.devportal.sdk.APIClientGenerationManager"}
@@ -23,7 +24,7 @@ public distinct class APIClientGenerationManager {
     #
     # + return - The `string` form of the Java object instance.
     public function toString() returns string {
-        return java:toString(self.jObj) ?: "null";
+        return java:toString(self.jObj) ?: "";
     }
     # The function that maps to the `cleanTempDirectory` method of `org.wso2.apk.devportal.sdk.APIClientGenerationManager`.
     #
@@ -74,8 +75,8 @@ public distinct class APIClientGenerationManager {
     # The function that maps to the `getSupportedSDKLanguages` method of `org.wso2.apk.devportal.sdk.APIClientGenerationManager`.
     #
     # + return - The `string` value returning from the Java mapping.
-    public isolated function getSupportedSDKLanguages() returns string? {
-        return java:toString(org_wso2_apk_devportal_sdk_APIClientGenerationManager_getSupportedSDKLanguages(self.jObj));
+    public isolated function getSupportedSDKLanguages() returns string {
+        return java:toString(org_wso2_apk_devportal_sdk_APIClientGenerationManager_getSupportedSDKLanguages(self.jObj)) ?: "";
     }
 
     # The function that maps to the `hashCode` method of `org.wso2.apk.devportal.sdk.APIClientGenerationManager`.

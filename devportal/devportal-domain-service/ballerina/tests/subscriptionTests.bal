@@ -20,6 +20,7 @@ import ballerina/test;
 import ballerina/log;
 import ballerina/uuid;
 import wso2/apk_common_lib as commons;
+import wso2/notification_grpc_client as _;
 
 Subscription sub = {apiId: "01ed75e2-b30b-18c8-wwf2-25da7edd2231", applicationId: "21212"};
 Application applicationNew = {name: "sampleAppNew", description: "sample application"};
@@ -255,7 +256,7 @@ function getSubscriptionListTest1() {
     string? appId = applicationNew.applicationId;
     if appId is string {
         SubscriptionList|commons:APKError|NotFoundError subscriptionList = getSubscriptions("01ed75e2-b30b-18c8-wwf2-25da7edd2231", appId, "", 0, 0, organiztion);
-        if subscriptionList is ApplicationList {
+        if subscriptionList is SubscriptionList {
             test:assertTrue(true, "Successfully retrieved all subscriptions by API ID and App ID");
         } else {
             test:assertFail("Error occured while retrieving all subscriptions");
@@ -269,7 +270,7 @@ function getSubscriptionListTest1() {
 function getSubscriptionListTest2() {
     // Providing only API ID
     SubscriptionList|commons:APKError|NotFoundError subscriptionList = getSubscriptions("01ed75e2-b30b-18c8-wwf2-25da7edd2231", null, "", 0, 0, organiztion);
-    if subscriptionList is ApplicationList {
+    if subscriptionList is SubscriptionList {
         test:assertTrue(true, "Successfully retrieved all subscriptions by API ID and App ID");
     } else {
         test:assertFail("Error occured while retrieving all subscriptions");
@@ -282,7 +283,7 @@ function getSubscriptionListTest3() {
     string? appId = applicationNew.applicationId;
     if appId is string {
         SubscriptionList|commons:APKError|NotFoundError subscriptionList = getSubscriptions(null, appId, "", 0, 0, organiztion);
-        if subscriptionList is ApplicationList {
+        if subscriptionList is SubscriptionList {
             test:assertTrue(true, "Successfully retrieved all subscriptions by API ID and App ID");
         } else {
             test:assertFail("Error occured while retrieving all subscriptions");
@@ -296,7 +297,7 @@ function getSubscriptionListTest3() {
 function getSubscriptionListTest4() {
     // Providing nothing and retrieving all subscriptions
     SubscriptionList|commons:APKError|NotFoundError subscriptionList = getSubscriptions(null, null, "", 0, 0, organiztion);
-    if subscriptionList is ApplicationList {
+    if subscriptionList is SubscriptionList {
         test:assertTrue(true, "Successfully retrieved all subscriptions by API ID and App ID");
     } else {
         test:assertFail("Error occured while retrieving all subscriptions");

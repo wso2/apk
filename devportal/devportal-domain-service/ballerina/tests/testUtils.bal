@@ -118,7 +118,7 @@ public isolated function addApplicationUsagePlanDAO(ApplicationRatePlan atp, str
         sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
         if result is sql:ExecutionResult {
             return atp;
-        } else if result is sql:Error {
+        } else {
             log:printDebug(result.toString());
             string message = "Error while inserting data into Database";
             return error(message, result, message = message, description = message, code = 909000, statusCode = 500);

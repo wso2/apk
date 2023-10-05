@@ -20,7 +20,12 @@ import ballerina/http;
 import ballerina/log;
 import wso2/apk_common_lib as commons;
 
-isolated service /api/devportal on ep0 {
+isolated service http:InterceptableService /api/devportal on ep0 {
+
+    public function createInterceptors() returns http:Interceptor|http:Interceptor[] {
+        http:Interceptor[] interceptors = [jwtValidationInterceptor, requestErrorInterceptor, responseErrorInterceptor];
+        return interceptors;
+    }
     # Retrieve/Search APIs
     #
     # + 'limit - Maximum size of resource array to return. 

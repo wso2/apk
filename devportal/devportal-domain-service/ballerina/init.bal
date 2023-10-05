@@ -41,7 +41,7 @@ configurable commons:IDPConfiguration & readonly idpConfiguration = {
 };
 configurable KeyManagerConfigs[] keyManagerConfigs = [];
 commons:DBBasedOrgResolver organizationResolver = new (datasourceConfiguration);
-commons:JWTValidationInterceptor jwtValidationInterceptor = new (idpConfiguration, organizationResolver);
+commons:JWTValidationInterceptor jwtValidationInterceptor = new (idpConfiguration, organizationResolver, ["/health"]);
 commons:RequestErrorInterceptor requestErrorInterceptor = new;
 commons:ResponseErrorInterceptor responseErrorInterceptor = new;
 apk_keymanager_libs:KeyManagerTypeInitializer keyManagerTypeInitializer = new ();
@@ -51,7 +51,8 @@ listener http:Listener ep0 = new (DEVPORTAL_PORT, secureSocket = {
         certFile: <string>keyStores.tls.certFilePath,
         keyFile: <string>keyStores.tls.keyFilePath
     }
-}, interceptors = [jwtValidationInterceptor, userRegistrationInterceptor, requestErrorInterceptor, responseErrorInterceptor]);
+});
+
 configurable string keyManagerConntectorConfigurationFilePath = "/home/wso2apk/devportal/keymanager";
 listener http:Listener keyManagerConnectorListener = new (9445);
 

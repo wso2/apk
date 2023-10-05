@@ -20,7 +20,7 @@ public distinct class Object {
     #
     # + return - The `string` form of the Java object instance.
     public function toString() returns string {
-        return java:toString(self.jObj) ?: "null";
+        return java:toString(self.jObj) ?: "";
     }
     # The function that maps to the `equals` method of `java.lang.Object`.
     #

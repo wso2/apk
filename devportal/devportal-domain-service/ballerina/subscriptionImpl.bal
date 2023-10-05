@@ -251,7 +251,8 @@ isolated function getSubscriptions(string? apiId, string? applicationId, string?
             SubscriptionList subList = {count: count, list: subs};
             return subList;
         } else {
-            return subscription;
+            string message = "Internal Error occured while retrieving Subscription";
+            return error(message, message = message, description = message, code = 909001, statusCode = 500);
         }
     } else if apiId is string {
         // Retrieve Subscriptions per given API Id

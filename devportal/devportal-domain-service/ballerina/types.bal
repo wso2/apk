@@ -216,7 +216,7 @@ public type ScopeList record {
 public type APIList record {
     # Number of APIs returned.
     int count?;
-    APIInfo[] list?;
+    API[] list?;
     Pagination pagination?;
 };
 
@@ -543,7 +543,7 @@ public type KeyManagerApplicationConfiguration record {
 public type ApplicationList record {
     # Number of applications returned.
     int count?;
-    ApplicationInfo[] list?;
+    Application[] list?;
     Pagination pagination?;
 };
 
