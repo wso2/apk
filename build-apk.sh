@@ -14,6 +14,8 @@ cd gateway/router;./gradlew build;
 cd $current_dir;
 cd gateway/enforcer;./gradlew build;
 cd $current_dir;
+cd common-controller;./gradlew build;
+cd $current_dir;
 cd idp/idp-domain-service;./gradlew build;
 cd $current_dir;
 cd idp/idp-ui;./gradlew build;

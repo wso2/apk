@@ -578,6 +578,54 @@ spec:
     kind: Gateway
     name: default
 ---
+kind: TokenIssuer
+apiVersion: dp.wso2.com/v1alpha1
+metadata:
+  name: multi-env-token-issuer-all-envs
+  namespace: apk-integration-test
+spec:
+  consumerKeyClaim: azp
+  issuer: https://idp1.com
+  name: idp-all-env
+  organization: org3
+  scopesClaim: scope
+  environments:
+  - "*"
+  signatureValidation:
+    jwks:
+      url: "http://dynamic-backend-service:8080/idp1/jwks"
+  claimMappings:
+    - remoteClaim: "organization"
+      localClaim:  "x-wso2-organization"
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: default
+---
+kind: TokenIssuer
+apiVersion: dp.wso2.com/v1alpha1
+metadata:
+  name: multi-env-token-issuer-dev-env
+  namespace: apk-integration-test
+spec:
+  consumerKeyClaim: azp
+  issuer: https://idp1.com
+  name: idp-dev-only
+  organization: org4
+  scopesClaim: scope
+  environments:
+  - "dev"
+  signatureValidation:
+    jwks:
+      url: "http://dynamic-backend-service:8080/idp1/jwks"
+  claimMappings:
+    - remoteClaim: "organization"
+      localClaim:  "x-wso2-organization"
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: default
+---
 # We have removed the Envoy admin interface port from our helm gateway service yaml. So we need this one here.
 apiVersion: v1
 kind: Service
