@@ -20,6 +20,7 @@ import ballerina/test;
 import ballerina/log;
 import wso2/apk_common_lib as commons;
 import ballerina/uuid;
+import wso2/notification_grpc_client as _;
 
 @test:Mock {functionName: "generateToken"}
 test:MockFunction generateTokenMock = new ();

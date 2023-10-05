@@ -200,7 +200,8 @@ isolated function deleteOauthApps(string appId, commons:Organization organizatio
 isolated function generateAPIKey(APIKeyGenerateRequest payload, string appId, string keyType, string user, commons:Organization org) returns APIKey|commons:APKError|NotFoundError {
     Application|NotFoundError application = check getApplicationById(appId, org);
     if application !is Application {
-        return application;
+        string message = "Internal Error occured while retrieving Application Info for API Key";
+        return error(message, message = message, description = message, code = 909001, statusCode = 500);
     } else {
         boolean userAllowed = checkUserAccessAllowedForApplication(application, user);
         if userAllowed {

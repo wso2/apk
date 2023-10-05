@@ -242,6 +242,7 @@ isolated function getDocumentList(string apiId, int 'limit, int offset) returns 
             return documents;
         }
     } else {
-        return api;
+        string message = "Internal Error occured while retrieving API for Docuements retieval";
+        return error(message, message = message, description = message, code = 909001, statusCode = 500);
     }
 }
