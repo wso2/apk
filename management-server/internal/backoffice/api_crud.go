@@ -55,7 +55,7 @@ func composeRequestBody(api *apiProtos.API) requestData {
 	request := new(requestData)
 	request.APIProperties.ID = api.Uuid
 	request.APIProperties.Name = api.Name
-	request.APIProperties.Context = api.Context
+	request.APIProperties.Context = api.BasePath
 	request.APIProperties.Version = api.Version
 	request.APIProperties.Provider = api.Provider
 	request.APIProperties.OrganizationID = api.OrganizationId
