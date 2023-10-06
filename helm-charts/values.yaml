@@ -444,7 +444,6 @@ postgresql:
         postgresql: 5432
     podSecurityContext:
       enabled: true
-      fsGroup: null
       runAsNonRoot: true
       seccompProfile:
         type: RuntimeDefault
@@ -469,7 +468,6 @@ redis:
   master:
     podSecurityContext:
       enabled: true
-      fsGroup: null
       runAsNonRoot: true
       seccompProfile:
         type: RuntimeDefault
