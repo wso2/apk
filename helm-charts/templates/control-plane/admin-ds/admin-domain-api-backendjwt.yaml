@@ -13,18 +13,17 @@
 # KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations
 # under the License.
-{{- if .Values.wso2.apk.dp.enabled }}
-kind: "APIPolicy"
-apiVersion: "dp.wso2.com/v1alpha1"
+{{- if .Values.wso2.apk.cp.enabled }}
+apiVersion: dp.wso2.com/v1alpha1
+kind: BackendJWT
 metadata:
-  name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-api-policy
-  namespace: {{ .Release.Namespace }}
+  name: {{ template "apk-helm.resource.prefix" . }}-admin-backend-jwt
 spec:
-  override:
-    backendJwtPolicy:
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-backend-jwt
-  targetRef:
-    group: "gateway.networking.k8s.io"
-    kind: "API"
-    name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-api
+  customClaims:
+    - claim: "admin"
+      value: "http://wso2.org/claims/enduser"
+  encoding: Base64
+  header: X-JWT-Assertion
+  signingAlgorithm: SHA256withRSA
+  tokenTTL: 3600
 {{- end -}}

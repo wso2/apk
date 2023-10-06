@@ -21,15 +21,8 @@ metadata:
   namespace: {{ .Release.Namespace }}
 spec:
   override:
-    backendJwtToken:
-      enabled: true
-      encoding: "base64"
-      signingAlgorithm: "SHA256withRSA"
-      header: "X-JWT-Assertion"
-      tokenTTL: 3600
-      customClaims:
-        - claim: "admin"
-          value: "http://wso2.org/claims/enduser"
+    backendJwtPolicy:
+      name: {{ template "apk-helm.resource.prefix" . }}-backoffice-backend-jwt
   targetRef:
     group: "gateway.networking.k8s.io"
     kind: "API"
