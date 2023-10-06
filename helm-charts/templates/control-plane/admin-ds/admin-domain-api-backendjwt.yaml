@@ -21,7 +21,6 @@ metadata:
 spec:
   customClaims:
     - claim: "admin"
-      type: "string"
       value: "http://wso2.org/claims/enduser"
   encoding: Base64
   header: X-JWT-Assertion
