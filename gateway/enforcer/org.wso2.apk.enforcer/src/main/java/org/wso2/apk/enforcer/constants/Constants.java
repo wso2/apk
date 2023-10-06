@@ -78,6 +78,5 @@ public class Constants {
     public static final String DEFAULT_CON_FACTORY_JNDI_NAME = "TopicConnectionFactory";
 
     // multi-env constants
-    public static final String DEFAULT_ENVIRONMENT_TOKEN_ISSUER = "*";
-    public static final String DEFAULT_ENVIRONMENT = "Default";
+    public static final String DEFAULT_ALL_ENVIRONMENTS_TOKEN_ISSUER = "*";
 }

@@ -7,6 +7,9 @@ metadata:
 data:
   config.toml: | 
     [commoncontroller]
+      {{- if .Values.wso2.apk.dp.environment }}
+      environment = "{{ .Values.wso2.apk.dp.environment }}"
+      {{- end }}
     [commoncontroller.server]
       label = "ratelimiter"
     {{ if and .Values.wso2.apk.dp.commonController.configs .Values.wso2.apk.dp.commonController.configs.apiNamespaces }}

@@ -7,6 +7,9 @@ metadata:
 data:
   config.toml: | 
     [adapter]
+      {{- if .Values.wso2.apk.dp.environment }}
+      environment = "{{ .Values.wso2.apk.dp.environment }}"
+      {{- end }}
     {{ if and .Values.wso2.apk.dp.adapter.configs .Values.wso2.apk.dp.adapter.configs.apiNamespaces }}
     [adapter.operator]
       namespaces = [{{ include "commaJoinedQuotedList" .Values.wso2.apk.dp.adapter.configs.apiNamespaces}}]

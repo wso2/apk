@@ -326,23 +326,14 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
 
         if (orgBaseJWTValidators != null) {
 
-            String mapKey;
-            if (environment.equals(Constants.DEFAULT_ENVIRONMENT)) {
-                mapKey = getMapKey(Constants.DEFAULT_ENVIRONMENT_TOKEN_ISSUER, issuer);
-            } else {
-                mapKey = getMapKey(environment, issuer);
-            }
-
+            String mapKey = getMapKey(Constants.DEFAULT_ALL_ENVIRONMENTS_TOKEN_ISSUER, issuer);
             JWTValidator jwtValidator = orgBaseJWTValidators.get(mapKey);
             if (jwtValidator != null) {
                 return jwtValidator;
             }
 
-            // Fall back to the default environment if the validator is not found
-            if (!environment.equals(Constants.DEFAULT_ENVIRONMENT)) {
-                mapKey = getMapKey(Constants.DEFAULT_ENVIRONMENT_TOKEN_ISSUER, issuer);
-                return orgBaseJWTValidators.get(mapKey);
-            }
+            mapKey = getMapKey(environment, issuer);
+            return orgBaseJWTValidators.get(mapKey);
         }
 
         return null;
@@ -358,7 +349,7 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
                 environmentsList.add(jwtIssuer.getEnvironments(i));
             }
         } else {
-            environmentsList.add(Constants.DEFAULT_ENVIRONMENT_TOKEN_ISSUER);
+            environmentsList.add(Constants.DEFAULT_ALL_ENVIRONMENTS_TOKEN_ISSUER);
         }
         return environmentsList;
     }
