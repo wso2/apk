@@ -104,6 +104,7 @@ paths:
           $ref: '#/components/responses/NotAcceptable'
       security:
         - OAuth2Security:
+            - apk:backoffice_admin
             - apk:api_view
       x-code-samples:
         - lang: Curl
@@ -161,6 +162,7 @@ paths:
           $ref: '#/components/responses/NotAcceptable'
       security:
         - OAuth2Security:
+            - apk:backoffice_admin
             - apk:api_view
       x-code-samples:
         - lang: Curl
@@ -225,8 +227,8 @@ paths:
           $ref: '#/components/responses/PreconditionFailed'
       security:
         - OAuth2Security:
+            - apk:backoffice_admin
             - apk:api_publish
-            - apk:api_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -280,71 +282,13 @@ paths:
           $ref: '#/components/responses/NotAcceptable'
       security:
         - OAuth2Security:
+            - apk:backoffice_admin
             - apk:api_view
-            - apk:api_definition_view
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://api.am.wso2.com:9095/api/backoffice/v1/apis/01234567-0123-0123-0123-012345678901/definition"'
       operationId: getAPIDefinition
-
-  /apis/{apiId}/resource-paths:
-    get:
-      tags:
-        - APIs
-      summary: Get Resource Paths of an API
-      description: |
-        This operation can be used to retrieve resource paths defined for a specific API.
-      parameters:
-        - $ref: '#/components/parameters/apiId'
-        - $ref: '#/components/parameters/limit'
-        - $ref: '#/components/parameters/offset'
-        - $ref: '#/components/parameters/If-None-Match'
-      responses:
-        200:
-          description: |
-            OK.
-            ResourcePaths returned.
-          headers:
-            ETag:
-              description: |
-                Entity Tag of the response resource.
-                Used by caches, or in conditional requests (Will be supported in the future).
-              schema:
-                type: string
-            Last-Modified:
-              description: |
-                Date and time the resource has been modified the last time.
-                Used by caches, or in conditional requests (Will be supported in the future).
-              schema:
-                type: string
-            Content-Type:
-              description: |
-                The content type of the body.
-              schema:
-                type: string
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ResourcePathList'
-        304:
-          description: |
-            Not Modified.
-            Empty body because the client has already the latest version of the requested resource (Will be supported in the future).
-          content: {}
-        404:
-          $ref: '#/components/responses/NotFound'
-        406:
-          $ref: '#/components/responses/NotAcceptable'
-      security:
-        - OAuth2Security:
-            - apk:api_view
-            - apk:api_manage
-      x-code-samples:
-        - lang: Curl
-          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://api.am.wso2.com:9095/api/backoffice/v1/apis/01234567-0123-0123-0123-012345678901/resource-paths"'
-      operationId: getAPIResourcePaths
 
   /apis/{apiId}/thumbnail:
     get:
@@ -392,9 +336,8 @@ paths:
           $ref: '#/components/responses/NotAcceptable'
       security:
         - OAuth2Security:
+            - apk:backoffice_admin
             - apk:api_view
-            - apk:api_publish
-            - apk:api_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -463,8 +406,8 @@ paths:
           $ref: '#/components/responses/PreconditionFailed'
       security:
         - OAuth2Security:
+            - apk:backoffice_admin
             - apk:api_publish
-            - apk:api_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -515,8 +458,8 @@ paths:
           $ref: '#/components/responses/NotAcceptable'
       security:
         - OAuth2Security:
+            - apk:backoffice_admin
             - apk:api_view
-            - apk:document_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -571,7 +514,8 @@ paths:
           $ref: '#/components/responses/UnsupportedMediaType'
       security:
         - OAuth2Security:
-            - apk:api_view
+            - apk:backoffice_admin
+            - apk:api_publish
             - apk:document_manage
       x-code-samples:
         - lang: Curl
@@ -629,8 +573,8 @@ paths:
           $ref: '#/components/responses/NotAcceptable'
       security:
         - OAuth2Security:
+            - apk:backoffice_admin
             - apk:api_view
-            - apk:document_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -694,7 +638,8 @@ paths:
           $ref: '#/components/responses/PreconditionFailed'
       security:
         - OAuth2Security:
-            - apk:api_view
+            - apk:backoffice_admin
+            - apk:api_publish
             - apk:document_manage
       x-code-samples:
         - lang: Curl
@@ -724,7 +669,8 @@ paths:
           $ref: '#/components/responses/PreconditionFailed'
       security:
         - OAuth2Security:
-            - apk:api_view
+            - apk:backoffice_admin
+            - apk:api_publish
             - apk:document_manage
       x-code-samples:
         - lang: Curl
@@ -801,8 +747,8 @@ paths:
           $ref: '#/components/responses/NotAcceptable'
       security:
         - OAuth2Security:
+            - apk:backoffice_admin
             - apk:api_view
-            - apk:document_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -876,7 +822,8 @@ paths:
           $ref: '#/components/responses/PreconditionFailed'
       security:
         - OAuth2Security:
-            - apk:api_view
+            - apk:backoffice_admin
+            - apk:api_publish
             - apk:document_manage
       x-code-samples:
         - lang: Curl
@@ -912,9 +859,8 @@ paths:
           $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
+            - apk:backoffice_admin
             - apk:api_view
-            - apk:comment_view
-            - apk:comment_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -984,8 +930,9 @@ paths:
           $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
+            - apk:backoffice_admin
+            - apk:api_publish
             - apk:comment_write
-            - apk:comment_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1038,15 +985,14 @@ paths:
           $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
+            - apk:backoffice_admin
             - apk:api_view
-            - apk:comment_view
-            - apk:comment_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
             "https://localhost:9443/api/apk/backoffice/v1/apis/01234567-0123-0123-0123-012345678901/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4"'
 
-    patch:
+    put:
       tags:
         - Comments
       summary: Edit a comment
@@ -1111,8 +1057,9 @@ paths:
           $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
+            - apk:backoffice_admin
             - apk:comment_write
-            - apk:comment_manage
+            - apk:api_publish
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X PATCH -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1150,8 +1097,9 @@ paths:
           $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
+            - apk:backoffice_admin
             - apk:comment_write
-            - apk:comment_manage
+            - apk:api_publish
       x-code-samples:
         - lang: Curl
           source: curl -k -X DELETE -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1204,9 +1152,8 @@ paths:
           $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
+            - apk:backoffice_admin
             - apk:api_view
-            - apk:comment_view
-            - apk:comment_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1270,9 +1217,8 @@ paths:
           $ref: '#/components/responses/NotAcceptable'
       security:
         - OAuth2Security:
+            - apk:backoffice_admin
             - apk:api_view
-            - apk:subscription_view
-            - apk:subscription_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1301,9 +1247,8 @@ paths:
           $ref: '#/components/responses/NotFound'
       security:
         - OAuth2Security:
+            - apk:backoffice_admin
             - apk:api_view
-            - apk:subscription_view
-            - apk:subscription_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1360,7 +1305,8 @@ paths:
           $ref: '#/components/responses/PreconditionFailed'
       security:
         - OAuth2Security:
-            - apk:subscription_block
+            - apk:backoffice_admin
+            - apk:api_publish
             - apk:subscription_manage
       x-code-samples:
         - lang: Curl
@@ -1405,65 +1351,14 @@ paths:
           $ref: '#/components/responses/PreconditionFailed'
       security:
         - OAuth2Security:
-            - apk:subscription_block
+            - apk:backoffice_admin
+            - apk:api_publish
             - apk:subscription_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://api.am.wso2.com:9095/api/backoffice/v1/subscriptions/unblock-subscription?subscriptionId=64eca60b-2e55-4c38-8603-e9e6bad7d809"'
       operationId: unBlockSubscription
-
-
-  ######################################################
-  # The "Thorttling Tier Collection" resource APIs
-  ######################################################
-  /usage-plans:
-    get:
-      tags:
-        - Usage Plan
-      summary: Get All Usage Plans
-      description: |
-        This operation can be used to list the available usage plans.
-      operationId: getAllUsagePlans
-      parameters:
-        - $ref: '#/components/parameters/limit'
-        - $ref: '#/components/parameters/offset'
-        - $ref: '#/components/parameters/If-None-Match'
-      responses:
-        200:
-          description: |
-            OK.
-            List of policies returned.
-          headers:
-            ETag:
-              description: |
-                Entity Tag of the response resource.
-                Used by caches, or in conditional requests (Will be supported in the future).
-              schema:
-                type: string
-            Content-Type:
-              description: The content type of the body.
-              schema:
-                type: string
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UsagePlanList'
-        304:
-          description: |
-            Not Modified.
-            Empty body because the client has already the latest version of the requested resource (Will be supported in the future).
-          content: {}
-        406:
-          $ref: '#/components/responses/NotAcceptable'
-      security:
-        - OAuth2Security:
-            - apk:api_view
-            - apk:tier_view
-      x-code-samples:
-        - lang: Curl
-          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://api.am.wso2.com:9095/api/backoffice/v1/usage-plans"'
 
   ######################################################
   # The "Content Search Results" resource APIs
@@ -1516,44 +1411,13 @@ paths:
           $ref: '#/components/responses/NotAcceptable'
       security:
         - OAuth2Security:
+            - apk:backoffice_admin
             - apk:api_view
-            - apk:api_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://api.am.wso2.com:9095/api/backoffice/v1/search?query=pizza"'
       operationId: search
-
-  ######################################################
-  # The BackOffice settings resource APIs
-  ######################################################
-  /settings:
-    get:
-      tags:
-        - Settings
-      summary: Retrieve BackOffice Settings
-      description: |
-        Retrieve BackOffice settings
-      responses:
-        200:
-          description: |
-            OK.
-            Settings returned
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Settings'
-        404:
-          $ref: '#/components/responses/NotFound'
-      security:
-        - OAuth2Security:
-            - apk:api_view
-            - apk:backoffice_settings
-      x-code-samples:
-        - lang: Curl
-          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://api.am.wso2.com:9095/api/backoffice/v1/settings"'
-      operationId: getSettings
 
   ######################################################
   # The "API Category Collection" resource API
@@ -1576,8 +1440,8 @@ paths:
                 $ref: '#/components/schemas/APICategoryList'
       security:
         - OAuth2Security:
+            - apk:backoffice_admin
             - apk:api_view
-            - apk:api_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1632,8 +1496,8 @@ paths:
           $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
+            - apk:backoffice_admin
             - apk:api_publish
-            - apk:api_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1667,8 +1531,8 @@ paths:
           $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
-            - apk:api_publish
-            - apk:api_manage
+            - apk:backoffice_admin
+            - apk:api_view
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1702,51 +1566,14 @@ paths:
           $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
-            - apk:api_publish
-            - apk:api_create
-            - apk:api_manage
+            - apk:backoffice_admin
+            - apk:api_view
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://api.am.wso2.com:9095/api/backoffice/v1/apis/01234567-0123-0123-0123-012345678901/lifecycle-state"'
       operationId: getAPILifecycleState
-######################################################
-# The "Business Plans Collection" resource API
-######################################################
-  /business-plans:
-    get:
-      tags:
-        - Business Plan (Collection)
-      summary: Get all Business Plans
-      description: |
-        This operation can be used to retrieve all Business Plans
-      parameters:
-        - $ref: '#/components/parameters/Accept'
-      responses:
-        200:
-          description: |
-            OK.
-            Plans returned
-          headers:
-            Content-Type:
-              description: |
-                The content type of the body.
-              schema:
-                type: string
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BusinessPlanList'
-        406:
-          $ref: '#/components/responses/NotAcceptable'
-      security:
-        - OAuth2Security:
-            - apk:tier_view
-      x-code-samples:
-        - lang: Curl
-          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://api.am.wso2.com:9095/api/backoffice/v1/business-plans"'
-      operationId: getAllBusinessPlans
+
 components:
   schemas:
     APIDefinition:
@@ -1920,6 +1747,21 @@ components:
           minLength: 1
           type: string
           example: pizza
+        organization:
+          maxLength: 232
+          minLength: 1
+          type: string
+          example: org1
+        lifeCycleStatus:
+          maxLength: 232
+          minLength: 1
+          type: string
+          example: CREATED
+        provider:
+          maxLength: 232
+          minLength: 1
+          type: string
+          example: user1
         version:
           maxLength: 30
           minLength: 1
@@ -2038,91 +1880,7 @@ components:
           items:
             $ref: '#/components/schemas/APIDeployment'
 
-    BusinessPlanList:
-      title: Business Plan List
-      type: object
-      properties:
-        count:
-          type: integer
-          description: |
-            Number of Business Plans returned.
-          example: 1
-        list:
-          type: array
-          items:
-            $ref: '#/components/schemas/BusinessPlan'
-    BusinessPlan:
-      title: Business Plan
-      allOf:
-        - required:
-            - defaultLimit
-          type: object
-          properties:
-            defaultLimit:
-              $ref: '#/components/schemas/ThrottleLimit'
-            rateLimitCount:
-              type: integer
-              description: Burst control request count
-              example: 10
-            rateLimitTimeUnit:
-              type: string
-              description: Burst control time unit
-              example: min
-            subscriberCount:
-              type: integer
-              description: Number of subscriptions allowed
-              example: 10
-            customAttributes:
-              type: array
-              description: |
-                Custom attributes added to the Subscription Throttling Policy
-              example: []
-              items:
-                $ref: '#/components/schemas/CustomAttribute'
-            permissions:
-              $ref: '#/components/schemas/BusinessPlanPermission'
-    BusinessPlanPermission:
-      title: Business Plan Permission
-      required:
-        - permissionType
-        - roles
-      type: object
-      properties:
-        permissionType:
-          type: string
-          example: deny
-          enum:
-            - ALLOW
-            - DENY
-        roles:
-          type: array
-          example:
-            - Internal/everyone
-          items:
-            type: string
-    ThrottleLimit:
-      title: Throttle Limit
-      required:
-        - type
-      type: object
-      properties:
-        type:
-          type: string
-          description: |
-            Type of the throttling limit. Allowed values are "REQUESTCOUNTLIMIT" and "BANDWIDTHLIMIT".
-            Please see schemas of "RequestCountLimit" and "BandwidthLimit" throttling limit types in
-            Definitions section.
-          example: REQUESTCOUNTLIMIT
-          enum:
-            - REQUESTCOUNTLIMIT
-            - BANDWIDTHLIMIT
-            - EVENTCOUNTLIMIT
-        requestCount:
-          $ref: '#/components/schemas/RequestCountLimit'
-        bandwidth:
-          $ref: '#/components/schemas/BandwidthLimit'
-        eventCount:
-          $ref: '#/components/schemas/EventCountLimit'
+
     #-----------------------------------------------------
     # The API Revision resource
     #-----------------------------------------------------
@@ -2406,23 +2164,6 @@ components:
           type: string
           readOnly: true
           example: admin
-    UsagePlanList:
-      title: Usage Plan list
-      type: object
-      properties:
-        count:
-          type: integer
-          description: |
-            Number of Usage Plans returned.
-          example: 1
-        list:
-          type: array
-          description: |
-            Array of Usage Policies
-          items:
-            $ref: '#/components/schemas/UsagePlan'
-        pagination:
-          $ref: '#/components/schemas/Pagination'
     SubscriptionList:
       title: Subscription List
       type: object
@@ -2466,159 +2207,7 @@ components:
             - REJECTED
             - TIER_UPDATE_PENDING
             - DELETE_PENDING
-    UsageLimitBase:
-      title: Throttle Limit Base
-      required:
-        - timeUnit
-        - unitTime
-      type: object
-      properties:
-        timeUnit:
-          type: string
-          description: Unit of the time. Allowed values are "sec", "min", "hour",
-            "day"
-          example: min
-        unitTime:
-          type: integer
-          description: Time limit that the usage limit applies.
-          example: 10
-    UsageLimit:
-      title: Usage Limit
-      required:
-        - type
-      type: object
-      properties:
-        type:
-          type: string
-          description: |
-            Type of the usage limit. Allowed values are "REQUESTCOUNTLIMIT" and "BANDWIDTHLIMIT".
-            Please see schemas of "RequestCountLimit" and "BandwidthLimit" usage limit types in
-            Definitions section.
-          example: REQUESTCOUNTLIMIT
-          enum:
-            - REQUESTCOUNTLIMIT
-            - BANDWIDTHLIMIT
-            - EVENTCOUNTLIMIT
-        requestCount:
-          $ref: '#/components/schemas/RequestCountLimit'
-        bandwidth:
-          $ref: '#/components/schemas/BandwidthLimit'
-        eventCount:
-          $ref: '#/components/schemas/EventCountLimit'
 
-    BandwidthLimit:
-      title: Bandwidth Limit object
-      allOf:
-        - $ref: '#/components/schemas/UsageLimitBase'
-        - required:
-            - dataAmount
-            - dataUnit
-          type: object
-          properties:
-            dataAmount:
-              type: integer
-              description: Amount of data allowed to be transferred
-              format: int64
-              example: 1000
-            dataUnit:
-              type: string
-              description: Unit of data allowed to be transferred. Allowed values are
-                "KB", "MB" and "GB"
-              example: KB
-    RequestCountLimit:
-      title: Request Count Limit object
-      allOf:
-        - $ref: '#/components/schemas/UsageLimitBase'
-        - required:
-            - requestCount
-          type: object
-          properties:
-            requestCount:
-              type: integer
-              description: Maximum number of requests allowed
-              format: int64
-              example: 30
-    EventCountLimit:
-      title: Event Count Limit object
-      allOf:
-        - $ref: '#/components/schemas/UsageLimitBase'
-        - required:
-            - eventCount
-          type: object
-          properties:
-            eventCount:
-              type: integer
-              description: Maximum number of events allowed
-              format: int64
-              example: 3000
-    UsagePlan:
-      title: Usage Plan
-      allOf:
-        - required:
-            - defaultLimit
-          type: object
-          properties:
-            policyId:
-              type: integer
-              description: Id of policy
-              example: 1
-            uuid:
-              type: string
-              description: policy uuid
-              example: 0c6439fd-9b16-3c2e-be6e-1086e0b9aa93
-            policyName:
-              maxLength: 60
-              minLength: 1
-              type: string
-              description: Name of policy
-              example: 30PerMin
-            displayName:
-              type: string
-              description: Display name of the policy
-              example: 30PerMin
-              maxLength: 512
-            description:
-              maxLength: 1024
-              type: string
-              description: Description of the policy
-              example: Allows 30 request per minute
-            organization:
-              type: string
-              description: Usage policy organization
-              example: wso2
-            defaultLimit:
-              $ref: '#/components/schemas/UsageLimit'
-            rateLimitCount:
-              type: integer
-              description: Burst control request count
-              example: 10
-            rateLimitTimeUnit:
-              type: string
-              description: Burst control time unit
-              example: min
-            subscriberCount:
-              type: integer
-              description: Number of subscriptions allowed
-              example: 10
-            customAttributes:
-              type: array
-              description: |
-                Custom attributes added to the Usage plan
-              example: [ ]
-              items:
-                $ref: '#/components/schemas/CustomAttribute'
-            stopOnQuotaReach:
-              type: boolean
-              description: |
-                This indicates the action to be taken when a user goes beyond the allocated quota. If checked, the user's requests will be dropped. If unchecked, the requests will be allowed to pass through.
-              default: false
-            billingPlan:
-              type: string
-              description: |
-                define whether this is Paid or a Free plan. Allowed values are FREE or COMMERCIAL.
-              example: FREE
-            permissions:
-              $ref: '#/components/schemas/SubscriptionThrottlePolicyPermission'
     CustomAttribute:
       title: Name-Value pair
       required:
@@ -2653,24 +2242,6 @@ components:
             - Internal/everyone
           items:
             type: string
-    APIMonetizationUsage:
-      title: API monetization usage object
-      type: object
-      properties:
-        properties:
-          type: object
-          additionalProperties:
-            type: string
-          description: Map of custom properties related to monetization usage
-    APIRevenue:
-      title: API revenue data object
-      type: object
-      properties:
-        properties:
-          type: object
-          additionalProperties:
-            type: string
-          description: Map of custom properties related to API revenue
     Error:
       title: Error object returned with 4XX HTTP Status
       required:
@@ -3679,17 +3250,9 @@ components:
           tokenUrl: https://localhost:9443/oauth2/token
           scopes:
             openid: Authorize access to user details
+            apk:backoffice_admin: Manage all admin operations
             apk:api_view: View API
-            apk:api_publish: Publish API
-            apk:api_manage: Manage all API related operations
-            apk:api_definition_view: View, Retrieve API definition
+            apk:api_publish: Manage all API related operations
             apk:document_manage: Create, update and delete API documents
-            apk:comment_view: Read permission to comments
-            apk:comment_manage: Read and Write comments
             apk:comment_write: Write permission to comments
-            apk:subscription_view: View Subscription
             apk:subscription_manage: Manage all Subscription related operations
-            apk:subscription_block: Block Subscription
-            apk:tier_view: View throttling policies
-            apk:backoffice_settings: Retrieve store settings
-            apk:api_create: Create API
