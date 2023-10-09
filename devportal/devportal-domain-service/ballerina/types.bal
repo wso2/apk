@@ -196,7 +196,7 @@ public type ScopeList record {
 public type APIList record {
     # Number of APIs returned.
     int count?;
-    API[] list?;
+    APIInfo[] list?;
     Pagination pagination?;
 };
 
@@ -229,6 +229,7 @@ public type Subscription record {
     APIInfo apiInfo?;
     ApplicationInfo applicationInfo?;
     "BLOCKED"|"PROD_ONLY_BLOCKED"|"UNBLOCKED"|"ON_HOLD"|"REJECTED"|"TIER_UPDATE_PENDING"|"DELETE_PENDING" status?;
+    string subscriptionCreateState?;
     # A url and other parameters the subscriber can be redirected.
     string redirectionParams?;
 };
@@ -517,7 +518,7 @@ public type KeyManagerApplicationConfiguration record {
 public type ApplicationList record {
     # Number of applications returned.
     int count?;
-    Application[] list?;
+    ApplicationInfo[] list?;
     Pagination pagination?;
 };
 

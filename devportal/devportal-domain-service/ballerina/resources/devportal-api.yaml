@@ -2883,6 +2883,9 @@ components:
             - REJECTED
             - TIER_UPDATE_PENDING
             - DELETE_PENDING
+        subscriptionCreateState:
+          type: string
+          example: CREATED
         redirectionParams:
           type: string
           description: A url and other parameters the subscriber can be redirected.

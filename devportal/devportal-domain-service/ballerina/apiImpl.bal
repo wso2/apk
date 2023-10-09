@@ -30,9 +30,9 @@ isolated function getAPIByAPIId(string apiId) returns API|NotFoundError|commons:
 
 isolated function getAPIList(int 'limit, int offset, string? query, commons:Organization organization) returns APIList|commons:APKError {
     if query !is string {
-        API[]|commons:APKError apis = getAPIsDAO(organization.uuid);
-        if apis is API[] {
-            API[] limitSet = [];
+        APIInfo[]|commons:APKError apis = getAPIsDAO(organization.uuid);
+        if apis is APIInfo[] {
+            APIInfo[] limitSet = [];
             if apis.length() > offset {
                 foreach int i in offset ... (apis.length() - 1) {
                     if limitSet.length() < 'limit {
@@ -51,9 +51,9 @@ isolated function getAPIList(int 'limit, int offset, string? query, commons:Orga
             int? index = query.indexOf(":");
             if index is int {
                 string modifiedQuery = "%" + query.substring(index + 1) + "%";
-                API[]|commons:APKError apis = getAPIsByQueryDAO(modifiedQuery, organization.uuid);
-                if apis is API[] {
-                    API[] limitSet = [];
+                APIInfo[]|commons:APKError apis = getAPIsByQueryDAO(modifiedQuery, organization.uuid);
+                if apis is APIInfo[] {
+                    APIInfo[] limitSet = [];
                     if apis.length() > offset {
                         foreach int i in offset ... (apis.length() - 1) {
                             if limitSet.length() < 'limit {
@@ -181,9 +181,9 @@ isolated function getDocumentMetaData(string apiId, string documentId) returns D
                 documentId: getDocumentMetaData.documentId,
                 name: getDocumentMetaData.name,
                 summary: getDocumentMetaData.summary,
-                sourceType: getDocumentMetaData.sourceType,
+                sourceType: <"INLINE"|"MARKDOWN"|"URL"|"FILE">getDocumentMetaData.sourceType,
                 sourceUrl: getDocumentMetaData.sourceUrl,
-                documentType: getDocumentMetaData.documentType,
+                documentType: <"HOWTO"|"SAMPLES"|"PUBLIC_FORUM"|"SUPPORT_FORUM"|"API_MESSAGE_FORMAT"|"SWAGGER_DOC"|"OTHER">getDocumentMetaData.documentType,
                 otherTypeName: getDocumentMetaData.otherTypeName
             };
             return document;
@@ -241,6 +241,8 @@ isolated function getDocumentList(string apiId, int 'limit, int offset) returns 
         } else {
             return documents;
         }
+    } else if api is NotFoundError  {
+        return api;
     } else {
         string message = "Internal Error occured while retrieving API for Docuements retieval";
         return error(message, message = message, description = message, code = 909001, statusCode = 500);

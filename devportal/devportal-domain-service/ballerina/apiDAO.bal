@@ -50,7 +50,7 @@ isolated function getAPIByIdDAO(string apiId) returns API|commons:APKError|NotFo
     }
 }
 
-isolated function getAPIsDAO(string org) returns API[]|commons:APKError {
+isolated function getAPIsDAO(string org) returns APIInfo[]|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
@@ -61,8 +61,8 @@ isolated function getAPIsDAO(string org) returns API[]|commons:APKError {
             API_NAME as NAME, API_VERSION as VERSION,CONTEXT, ORGANIZATION,STATUS,
             API_TYPE as TYPE, ARTIFACT as ARTIFACT FROM API WHERE ORGANIZATION =${org} AND 
             STATUS IN (${PUBLISHED},${PROTOTYPED},${DEPRECATED})`;
-            stream<API, sql:Error?> apisStream = dbClient->query(query);
-            API[] apis = check from API api in apisStream select api;
+            stream<APIInfo, sql:Error?> apisStream = dbClient->query(query);
+            APIInfo[] apis = check from APIInfo api in apisStream select api;
             check apisStream.close();
             return apis;
         } on fail var e {
@@ -72,7 +72,7 @@ isolated function getAPIsDAO(string org) returns API[]|commons:APKError {
     }
 }
 
-isolated function getAPIsByQueryDAO(string payload, string org) returns API[]|commons:APKError {
+isolated function getAPIsByQueryDAO(string payload, string org) returns APIInfo[]|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
@@ -84,8 +84,8 @@ isolated function getAPIsByQueryDAO(string payload, string org) returns API[]|co
             API_TYPE as TYPE, ARTIFACT as ARTIFACT FROM API JOIN JSONB_EACH_TEXT(ARTIFACT) e ON true 
             WHERE ORGANIZATION =${org} AND e.value LIKE ${payload} AND 
             STATUS IN (${PUBLISHED},${PROTOTYPED},${DEPRECATED})`;
-            stream<API, sql:Error?> apisStream = dbClient->query(query);
-            API[] apis = check from API api in apisStream select api;
+            stream<APIInfo, sql:Error?> apisStream = dbClient->query(query);
+            APIInfo[] apis = check from APIInfo api in apisStream select api;
             check apisStream.close();
             return apis;
         } on fail var e {

@@ -116,6 +116,8 @@ public function getApiDataProvider() returns map<[string, string, anydata]> {
                 "context": "pizzssa",
                 "version": "1.0.0",
                 "organization": "1111-1111-1111-1111",
+                "lifeCycleStatus" : (),
+                "provider":  (),
                 "type": "HTTP",
                 "state": "CREATED",
                 "status": "CREATED"
@@ -135,7 +137,8 @@ function updateInternalAPITest() {
                 "version":"1.0.0",
                 "lifeCycleStatus":"CREATED",
                 "organization":"1111-1111-1111-1111",
-                "type":"HTTP"
+                "type":"HTTP",
+                "provider":"admin"
             },
             "Definition" : {	  
             "openapi": "3.0.0",
