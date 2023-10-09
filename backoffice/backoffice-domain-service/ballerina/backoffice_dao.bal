@@ -23,7 +23,7 @@ import ballerina/io;
 import wso2/apk_common_lib as commons;
 import ballerina/log;
 
-isolated function db_getAPIsDAO(string organization) returns API[]|commons:APKError {
+isolated function db_getAPIsDAO(string organization) returns APIInfo[]|commons:APKError {
     postgresql:Client|error db_Client = getConnection();
     if db_Client is error {
         return e909601(db_Client);
@@ -32,8 +32,8 @@ isolated function db_getAPIsDAO(string organization) returns API[]|commons:APKEr
             sql:ParameterizedQuery GET_API = `SELECT UUID AS ID,
             API_NAME as NAME, API_VERSION as VERSION,CONTEXT, ORGANIZATION, STATUS as STATE, string_to_array(SDK::text,',')::text[] AS SDK,string_to_array(API_TIER::text,',') AS POLICIES, ARTIFACT as ARTIFACT
             FROM API where ORGANIZATION = ${organization}`;
-            stream<API, sql:Error?> apisStream = db_Client->query(GET_API);
-            API[] apis = check from API api in apisStream
+            stream<APIInfo, sql:Error?> apisStream = db_Client->query(GET_API);
+            APIInfo[] apis = check from APIInfo api in apisStream
                 select api;
             check apisStream.close();
             return apis;
@@ -159,9 +159,9 @@ isolated function db_getSubscriptionsForAPI(string apiId) returns Subscription[]
                 Subscription[] subsList = [];
                 check from Subscriptions subitem in result1
                     do {
-                        Subscription sub = {applicationInfo: {}, subscriptionId: "", subscriptionStatus: "", usagePlan: ""};
+                        Subscription sub = {applicationInfo: {}, subscriptionId: "", subscriptionStatus: <"BLOCKED"|"PROD_ONLY_BLOCKED"|"UNBLOCKED"|"ON_HOLD"|"REJECTED"|"TIER_UPDATE_PENDING"|"DELETE_PENDING">"", usagePlan: ""};
                         sub.subscriptionId = subitem.subscriptionId;
-                        sub.subscriptionStatus = subitem.subscriptionStatus;
+                        sub.subscriptionStatus = <"BLOCKED"|"PROD_ONLY_BLOCKED"|"UNBLOCKED"|"ON_HOLD"|"REJECTED"|"TIER_UPDATE_PENDING"|"DELETE_PENDING">subitem.subscriptionStatus;
                         sub.applicationInfo.applicationId = subitem.applicationId;
                         sub.usagePlan = subitem.usagePlan;
                         sub.applicationInfo.name = subitem.name;
@@ -332,7 +332,7 @@ isolated function getAPICategoriesDAO(string org) returns APICategory[]|commons:
     }
 }
 
-isolated function getAPIsByQueryDAO(string payload, string org) returns API[]|commons:APKError {
+isolated function getAPIsByQueryDAO(string payload, string org) returns APIInfo[]|commons:APKError {
     postgresql:Client|error dbClient = getConnection();
     if dbClient is error {
         return e909601(dbClient);
@@ -342,89 +342,14 @@ isolated function getAPIsByQueryDAO(string payload, string org) returns API[]|co
             API_NAME as NAME, API_VERSION as VERSION,CONTEXT, ORGANIZATION,STATUS,
             ARTIFACT as ARTIFACT FROM API JOIN JSONB_EACH_TEXT(ARTIFACT) e ON true 
             WHERE e.value LIKE ${payload} AND ORGANIZATION = ${org}`;
-            stream<API, sql:Error?> apisStream = dbClient->query(query);
-            API[] apis = check from API api in apisStream
+            stream<APIInfo, sql:Error?> apisStream = dbClient->query(query);
+            APIInfo[] apis = check from APIInfo api in apisStream
                 select api;
             check apisStream.close();
             return apis;
         } on fail var e {
             io:print(e);
             return e909607(e);
-        }
-    }
-}
-
-public isolated function getBusinessPlansDAO(string org) returns BusinessPlan[]|commons:APKError {
-    postgresql:Client|error dbClient = getConnection();
-    if dbClient is error {
-        return e909601(dbClient);
-    } else {
-        do {
-            sql:ParameterizedQuery query = `SELECT NAME as PLANNAME, DISPLAY_NAME as DISPLAYNAME, DESCRIPTION, 
-            UUID as PLANID, IS_DEPLOYED as ISDEPLOYED, 
-            QUOTA_TYPE as DefaulLimitType, QUOTA , TIME_UNIT as TIMEUNIT, UNIT_TIME as 
-            UNITTIME, RATE_LIMIT_COUNT as RATELIMITCOUNT, RATE_LIMIT_TIME_UNIT as RATELIMITTIMEUNIT FROM BUSINESS_PLAN WHERE ORGANIZATION =${org}`;
-            stream<BusinessPlanDAO, sql:Error?> businessPlanStream = dbClient->query(query);
-            BusinessPlanDAO[] businessPlansDAO = check from BusinessPlanDAO businessPlan in businessPlanStream
-                select businessPlan;
-            check businessPlanStream.close();
-            BusinessPlan[] businessPlans = [];
-            if businessPlansDAO is BusinessPlanDAO[] {
-                foreach BusinessPlanDAO result in businessPlansDAO {
-                    if result.defaulLimitType == "requestCount" {
-                        BusinessPlan bp = {
-                            planName: result.planName,
-                            displayName: result.displayName,
-                            description: result.description,
-                            planId: result.planId,
-                            isDeployed: result.isDeployed,
-                            rateLimitCount: result.rateLimitCount,
-                            rateLimitTimeUnit: result.rateLimitTimeUnit,
-                            defaultLimit: {
-                                'type: result.defaulLimitType,
-                                requestCount:
-                        {requestCount: result.quota, timeUnit: result.timeUnit, unitTime: result.unitTime}
-                            }
-                        };
-                        businessPlans.push(bp);
-                    } else if result.defaulLimitType == "bandwidth" {
-                        BusinessPlan bp = {
-                            planName: result.planName,
-                            displayName: result.displayName,
-                            description: result.description,
-                            planId: result.planId,
-                            isDeployed: result.isDeployed,
-                            rateLimitCount: result.rateLimitCount,
-                            rateLimitTimeUnit: result.rateLimitTimeUnit,
-                            defaultLimit: {
-                                'type: result.defaulLimitType,
-                                bandwidth:
-                        {dataAmount: result.quota, dataUnit: <string>result.dataUnit, timeUnit: result.timeUnit, unitTime: result.unitTime}
-                            }
-                        };
-                        businessPlans.push(bp);
-                    } else {
-                        BusinessPlan bp = {
-                            planName: result.planName,
-                            displayName: result.displayName,
-                            description: result.description,
-                            planId: result.planId,
-                            isDeployed: result.isDeployed,
-                            rateLimitCount: result.rateLimitCount,
-                            rateLimitTimeUnit: result.rateLimitTimeUnit,
-                            defaultLimit: {
-                                'type: result.defaulLimitType,
-                                eventCount:
-                        {eventCount: result.quota, timeUnit: result.timeUnit, unitTime: result.unitTime}
-                            }
-                        };
-                        businessPlans.push(bp);
-                    }
-                }
-            }
-            return businessPlans;
-        } on fail var e {
-            return e909620(e);
         }
     }
 }
