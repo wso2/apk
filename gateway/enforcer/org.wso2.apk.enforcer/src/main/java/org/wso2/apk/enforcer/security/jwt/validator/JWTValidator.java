@@ -40,13 +40,15 @@ import org.wso2.apk.enforcer.security.jwt.SignedJWTInfo;
 import org.wso2.apk.enforcer.util.JWKSClient;
 import org.wso2.apk.enforcer.util.JWTUtils;
 
-import java.io.IOException;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.text.ParseException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Class responsible to validate jwt. This should validate the JWT signature, expiry time.
