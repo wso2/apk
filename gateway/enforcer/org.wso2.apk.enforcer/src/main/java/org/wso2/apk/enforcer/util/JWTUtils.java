@@ -33,15 +33,12 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.wso2.apk.enforcer.commons.dto.JWTValidationInfo;
 import org.wso2.apk.enforcer.commons.exception.EnforcerException;
 import org.wso2.apk.enforcer.config.ConfigHolder;
 import org.wso2.apk.enforcer.constants.APIConstants;
 import org.wso2.apk.enforcer.constants.Constants;
 import org.wso2.apk.enforcer.dto.APIKeyValidationInfoDTO;
 import org.wso2.apk.enforcer.security.jwt.SignedJWTInfo;
-import org.wso2.apk.enforcer.security.jwt.validator.JWTValidator;
-import org.wso2.apk.enforcer.subscription.SubscriptionDataStoreImpl;
 
 import java.io.IOException;
 import java.io.InputStream;
