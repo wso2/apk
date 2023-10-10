@@ -22,7 +22,6 @@ import org.wso2.apk.enforcer.commons.dto.JWTConfigurationDto;
 import org.wso2.apk.enforcer.commons.jwttransformer.DefaultJWTTransformer;
 import org.wso2.apk.enforcer.commons.jwttransformer.JWTTransformer;
 import org.wso2.apk.enforcer.config.dto.APIKeyIssuerDto;
-import org.wso2.apk.enforcer.config.dto.AdminRestServerDto;
 import org.wso2.apk.enforcer.config.dto.AnalyticsDTO;
 import org.wso2.apk.enforcer.config.dto.AuthServiceConfigurationDto;
 import org.wso2.apk.enforcer.config.dto.CacheDto;
@@ -57,7 +56,6 @@ public class EnforcerConfig {
     private final Map<String, JWTTransformer> jwtTransformerMap = new HashMap<>();
     private MutualSSLDto mtlsInfo;
     private ManagementCredentialsDto management;
-    private AdminRestServerDto restServer;
     private FilterDTO[] customFilters;
 
     private SoapErrorResponseConfigDto soapErrorResponseConfigDto;
@@ -161,14 +159,6 @@ public class EnforcerConfig {
 
     public void setManagement(ManagementCredentialsDto management) {
         this.management = management;
-    }
-
-    public AdminRestServerDto getRestServer() {
-        return restServer;
-    }
-
-    public void setRestServer(AdminRestServerDto restServer) {
-        this.restServer = restServer;
     }
 
     public SoapErrorResponseConfigDto getSoapErrorResponseConfigDto() {

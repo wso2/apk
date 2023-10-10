@@ -30,7 +30,6 @@ import io.grpc.netty.shaded.io.netty.handler.ssl.SslContext;
 import io.grpc.netty.shaded.io.netty.handler.ssl.SslContextBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.wso2.apk.enforcer.admin.AdminServerInitializer;
 import org.wso2.apk.enforcer.config.ConfigHolder;
 import org.wso2.apk.enforcer.jwks.JWKSRequestHandler;
 import org.wso2.apk.enforcer.jwks.JWKSServerInitializer;
@@ -38,7 +37,6 @@ import org.wso2.apk.enforcer.server.swagger.SwaggerServerInitializer;
 
 import java.io.File;
 import java.nio.file.Paths;
-import java.security.cert.CertificateException;
 
 import javax.net.ssl.SSLException;
 
@@ -48,9 +46,8 @@ import javax.net.ssl.SSLException;
 public class RestServer {
 
     private static final Logger logger = LogManager.getLogger(RestServer.class);
-    static final int ADMIN_PORT = 9001;
 
-    public void initServer() throws SSLException, CertificateException, InterruptedException {
+    public void initServer() throws SSLException, InterruptedException {
 
         logger.info("New Rest Server New");
         // Configure SSL
@@ -84,21 +81,6 @@ public class RestServer {
             Channel jwksChannel = jWKSServer.bind(9092).sync().channel();
             logger.info("JWKS endpoint started Listening in port : " + 9092);
             jwksChannel.closeFuture().sync();
-
-
-            if (ConfigHolder.getInstance().getConfig().getRestServer().isEnable()) {
-                ServerBootstrap adminServer = new ServerBootstrap();
-                // Configure the server
-                adminServer.option(ChannelOption.SO_BACKLOG, 1024);
-                adminServer.group(bossGroup, workerGroup)
-                        .channel(NioServerSocketChannel.class)
-                        .handler(new LoggingHandler(LogLevel.INFO))
-                        .childHandler(new AdminServerInitializer(sslCtx));
-
-                Channel adminChannel = adminServer.bind(ADMIN_PORT).sync().channel();
-                logger.info("Admin endpoint started Listening in port : " + ADMIN_PORT);
-                adminChannel.closeFuture().sync();
-            }
 
             swaggerChannel.closeFuture().sync();
 

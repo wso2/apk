@@ -127,10 +127,6 @@ func MarshalConfig(config *config.Config) *enforcer.Config {
 		Password: config.Enforcer.Management.Password,
 	}
 
-	restServer := &enforcer.RestServer{
-		Enable: config.Enforcer.RestServer.Enabled,
-	}
-
 	soap := &enforcer.Soap{
 		SoapErrorInXMLEnabled: config.Adapter.SoapErrorInXMLEnabled,
 	}
@@ -174,7 +170,6 @@ func MarshalConfig(config *config.Config) *enforcer.Config {
 		Metrics:    metrics,
 		Analytics:  analytics,
 		Management: management,
-		RestServer: restServer,
 		Filters:    filters,
 		Soap:       soap,
 	}

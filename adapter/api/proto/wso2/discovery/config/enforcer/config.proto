@@ -9,7 +9,6 @@ import "wso2/discovery/config/enforcer/cache.proto";
 import "wso2/discovery/config/enforcer/analytics.proto";
 import "wso2/discovery/config/enforcer/security.proto";
 import "wso2/discovery/config/enforcer/management.proto";
-import "wso2/discovery/config/enforcer/rest_server.proto";
 import "wso2/discovery/config/enforcer/filter.proto";
 import "wso2/discovery/config/enforcer/tracing.proto";
 import "wso2/discovery/config/enforcer/metrics.proto";
@@ -34,20 +33,17 @@ message Config {
 
     JWTGenerator jwtGenerator = 5;
 
-    Cache cache = 7;
+    Cache cache = 6;
 
+    Analytics analytics = 7;
 
-    Analytics analytics = 8;
+    Management management = 8;
 
-    Management management = 9;
+    Tracing tracing = 9;
 
-    RestServer restServer = 10;
+    Metrics metrics = 10;
 
-    Tracing tracing = 11;
+    repeated Filter filters = 11;
 
-    Metrics metrics = 12;
-
-    repeated Filter filters = 13;
-
-    Soap soap = 14;
+    Soap soap = 12;
 }
