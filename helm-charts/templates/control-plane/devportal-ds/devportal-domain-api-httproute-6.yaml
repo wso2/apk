@@ -17,7 +17,7 @@
 apiVersion: "gateway.networking.k8s.io/v1beta1"
 kind: "HTTPRoute"
 metadata:
-  name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-httproute-1
+  name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-httproute-6
   namespace: {{ .Release.Namespace }}
   labels:
     api-name: "devportal-domain-service"
@@ -27,7 +27,7 @@ metadata:
     kind: API
     name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-api
     uid: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-api-uid
-  uid: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-httproute-1-uid
+  uid: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-httproute-6-uid
 spec:
   hostnames:
   - "{{ .Values.wso2.apk.listener.hostname | default "api.am.wso2.com"}}"
@@ -46,109 +46,60 @@ spec:
     - type: URLRewrite
       urlRewrite:
         path:
-          replaceFullPath: /apis/\1/thumbnail
+          replaceFullPath: /subscriptions/\1/usage
           type: ReplaceFullPath
+    - extensionRef:
+        group: dp.wso2.com
+        kind: Scope
+        name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-scope-1
+      type: ExtensionRef
     matches:
     - method: GET
       path:
         type: RegularExpression
-        value: /apis/(.*)/thumbnail
+        value: /subscriptions/(.*)/usage
+  - backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
+      weight: 1
+    matches:
+    - method: GET
+      path:
+        type: RegularExpression
+        value: /search
   - backendRefs:
     - group: dp.wso2.com
       kind: Backend
       name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
       weight: 1
     filters:
-    - type: URLRewrite
-      urlRewrite:
-        path:
-          replaceFullPath: /apis/\1/sdks/\2
-          type: ReplaceFullPath
+    - extensionRef:
+        group: dp.wso2.com
+        kind: Scope
+        name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-scope-1
+      type: ExtensionRef
     matches:
     - method: GET
       path:
         type: RegularExpression
-        value: /apis/(.*)/sdks/(.*)
+        value: /sdk-gen/languages
   - backendRefs:
     - group: dp.wso2.com
       kind: Backend
       name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
       weight: 1
     filters:
-    - type: URLRewrite
-      urlRewrite:
-        path:
-          replaceFullPath: /apis/\1/documents/\2/content
-          type: ReplaceFullPath
+    - extensionRef:
+        group: dp.wso2.com
+        kind: Scope
+        name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-scope-1
+      type: ExtensionRef
     matches:
     - method: GET
       path:
         type: RegularExpression
-        value: /apis/(.*)/documents/(.*)/content
-  - backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
-      weight: 1
-    filters:
-    - type: URLRewrite
-      urlRewrite:
-        path:
-          replaceFullPath: /apis/\1/documents/\2
-          type: ReplaceFullPath
-    matches:
-    - method: GET
-      path:
-        type: RegularExpression
-        value: /apis/(.*)/documents/(.*)
-  - backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
-      weight: 1
-    filters:
-    - type: URLRewrite
-      urlRewrite:
-        path:
-          replaceFullPath: /apis/\1/documents
-          type: ReplaceFullPath
-    matches:
-    - method: GET
-      path:
-        type: RegularExpression
-        value: /apis/(.*)/documents
-  - backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
-      weight: 1
-    filters:
-    - type: URLRewrite
-      urlRewrite:
-        path:
-          replaceFullPath: /apis/\1/definition
-          type: ReplaceFullPath
-    matches:
-    - method: GET
-      path:
-        type: RegularExpression
-        value: /apis/(.*)/definition
-  - backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
-      weight: 1
-    filters:
-    - type: URLRewrite
-      urlRewrite:
-        path:
-          replaceFullPath: /apis/\1
-          type: ReplaceFullPath
-    matches:
-    - method: GET
-      path:
-        type: RegularExpression
-        value: /apis/(.*)
+        value: /key-managers
   - backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -158,5 +109,5 @@ spec:
     - method: GET
       path:
         type: RegularExpression
-        value: /apis
+        value: /api-categories
 {{- end -}}

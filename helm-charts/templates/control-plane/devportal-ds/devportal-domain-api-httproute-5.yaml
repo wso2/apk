@@ -22,253 +22,167 @@ metadata:
   labels:
     api-name: "devportal-domain-service"
     api-version: "1.0.0"
+  ownerReferences:
+  - apiVersion: dp.wso2.com/v1alpha1
+    kind: API
+    name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-api
+    uid: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-api-uid
+  uid: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-httproute-5-uid
 spec:
   hostnames:
   - "{{ .Values.wso2.apk.listener.hostname | default "api.am.wso2.com"}}"
-  rules:
-  - matches:
-    - path:
-        type: "RegularExpression"
-        value: "/api/devportal/subscriptions"
-      method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/devportal/subscriptions"
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
-  - matches:
-    - path:
-        type: "RegularExpression"
-        value: "/api/devportal/subscriptions"
-      method: "POST"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/devportal/subscriptions"
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
-  - matches:
-    - path:
-        type: "RegularExpression"
-        value: "/api/devportal/subscriptions/multiple"
-      method: "POST"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/devportal/subscriptions/multiple"
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
-  - matches:
-    - path:
-        type: "RegularExpression"
-        value: "/api/devportal/subscriptions/(.*)/additionalInfo"
-      method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/devportal/subscriptions/\\1/additionalInfo"
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
-  - matches:
-    - path:
-        type: "RegularExpression"
-        value: "/api/devportal/subscriptions/(.*)"
-      method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/devportal/subscriptions/\\1"
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
-  - matches:
-    - path:
-        type: "RegularExpression"
-        value: "/api/devportal/subscriptions/(.*)"
-      method: "PUT"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/devportal/subscriptions/\\1"
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
-  - matches:
-    - path:
-        type: "RegularExpression"
-        value: "/api/devportal/subscriptions/(.*)"
-      method: "DELETE"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/devportal/subscriptions/\\1"
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
-  - matches:
-    - path:
-        type: "RegularExpression"
-        value: "/api/devportal/subscriptions/(.*)/usage"
-      method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/devportal/subscriptions/\\1/usage"
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
-  - matches:
-    - path:
-        type: "RegularExpression"
-        value: "/api/devportal/throttling-policies/(.*)"
-      method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/devportal/throttling-policies/\\1"
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
-  - matches:
-    - path:
-        type: "RegularExpression"
-        value: "/api/devportal/throttling-policies/(.*)/(.*)"
-      method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/devportal/throttling-policies/\\1/\\2"
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
-  - matches:
-    - path:
-        type: "RegularExpression"
-        value: "/api/devportal/tags"
-      method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/devportal/tags"
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
-  - matches:
-    - path:
-        type: "RegularExpression"
-        value: "/api/devportal/search"
-      method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/devportal/search"
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
-  - matches:
-    - path:
-        type: "RegularExpression"
-        value: "/api/devportal/sdk-gen/languages"
-      method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/devportal/sdk-gen/languages"
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
-  - matches:
-    - path:
-        type: "RegularExpression"
-        value: "/api/devportal/webhooks/subscriptions"
-      method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/devportal/webhooks/subscriptions"
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
-  - matches:
-    - path:
-        type: "RegularExpression"
-        value: "/api/devportal/settings"
-      method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/devportal/settings"
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
-  - matches:
-    - path:
-        type: "RegularExpression"
-        value: "/api/devportal/settings/application-attributes"
-      method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/devportal/settings/application-attributes"
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   parentRefs:
-  - group: "gateway.networking.k8s.io"
-    kind: "Gateway"
-    name: "default"
-    sectionName: "httpslistener"
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    name: default
+    sectionName: httpslistener
+  rules:
+  - backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
+      weight: 1
+    filters:
+    - extensionRef:
+        group: dp.wso2.com
+        kind: Scope
+        name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-scope-1
+      type: ExtensionRef
+    matches:
+    - method: POST
+      path:
+        type: RegularExpression
+        value: /subscriptions/multiple
+  - backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
+      weight: 1
+    filters:
+    - type: URLRewrite
+      urlRewrite:
+        path:
+          replaceFullPath: /subscriptions/\1/additionalInfo
+          type: ReplaceFullPath
+    matches:
+    - method: GET
+      path:
+        type: RegularExpression
+        value: /subscriptions/(.*)/additionalInfo
+  - backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
+      weight: 1
+    filters:
+    - type: URLRewrite
+      urlRewrite:
+        path:
+          replaceFullPath: /subscriptions/\1
+          type: ReplaceFullPath
+    - extensionRef:
+        group: dp.wso2.com
+        kind: Scope
+        name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-scope-1
+      type: ExtensionRef
+    matches:
+    - method: GET
+      path:
+        type: RegularExpression
+        value: /subscriptions/(.*)
+  - backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
+      weight: 1
+    filters:
+    - type: URLRewrite
+      urlRewrite:
+        path:
+          replaceFullPath: /subscriptions/\1
+          type: ReplaceFullPath
+    - extensionRef:
+        group: dp.wso2.com
+        kind: Scope
+        name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-scope-1
+      type: ExtensionRef
+    matches:
+    - method: PUT
+      path:
+        type: RegularExpression
+        value: /subscriptions/(.*)
+  - backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
+      weight: 1
+    filters:
+    - type: URLRewrite
+      urlRewrite:
+        path:
+          replaceFullPath: /subscriptions/\1
+          type: ReplaceFullPath
+    - extensionRef:
+        group: dp.wso2.com
+        kind: Scope
+        name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-scope-1
+      type: ExtensionRef
+    matches:
+    - method: DELETE
+      path:
+        type: RegularExpression
+        value: /subscriptions/(.*)
+  - backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
+      weight: 1
+    filters:
+    - extensionRef:
+        group: dp.wso2.com
+        kind: Scope
+        name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-scope-1
+      type: ExtensionRef
+    matches:
+    - method: GET
+      path:
+        type: RegularExpression
+        value: /subscriptions
+  - backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
+      weight: 1
+    filters:
+    - extensionRef:
+        group: dp.wso2.com
+        kind: Scope
+        name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-scope-1
+      type: ExtensionRef
+    matches:
+    - method: POST
+      path:
+        type: RegularExpression
+        value: /subscriptions
+  - backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
+      weight: 1
+    filters:
+    - type: URLRewrite
+      urlRewrite:
+        path:
+          replaceFullPath: /applications/\1/api-keys/\2/revoke
+          type: ReplaceFullPath
+    - extensionRef:
+        group: dp.wso2.com
+        kind: Scope
+        name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-scope-1
+      type: ExtensionRef
+    matches:
+    - method: POST
+      path:
+        type: RegularExpression
+        value: /applications/(.*)/api-keys/(.*)/revoke
 {{- end -}}
