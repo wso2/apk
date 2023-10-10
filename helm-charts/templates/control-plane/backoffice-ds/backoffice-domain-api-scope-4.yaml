@@ -13,27 +13,22 @@
 # KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations
 # under the License.
-
 {{- if .Values.wso2.apk.cp.enabled }}
-kind: "API"
-apiVersion: "dp.wso2.com/v1alpha1"
+apiVersion: dp.wso2.com/v1alpha1
+kind: Scope
 metadata:
-  name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-api
-  namespace: {{ .Release.Namespace }}
   labels:
     api-name: "backoffice-domain-service"
     api-version: "1.0.0"
-  uid: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-api-uid
+  name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-scope-4
+  namespace: {{ .Release.Namespace }}
+  ownerReferences:
+  - apiVersion: dp.wso2.com/v1alpha1
+    kind: API
+    name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-api
+    uid: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-api-uid
+  uid: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-scope-4-uid
 spec:
-  apiName: "Backoffice Domain API"
-  apiType: "REST"
-  apiVersion: "1.0.0"
-  basePath: "/api/backoffice/1.0.0"
-  organization: "apk-system"
-  production:
-    - httpRouteRefs:
-      - {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-httproute-1
-      - {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-httproute-2
-      - {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-httproute-3
-  systemAPI: true
+  names:
+  - apk:document_manage
 {{- end -}}
