@@ -41,6 +41,7 @@ public class JWTValidationInfo implements Serializable {
     private String keyManager;
     private String identifier;
     private JWTClaimsSet jwtClaimsSet;
+    private String token;
 
     public JWTValidationInfo() {
 
@@ -56,6 +57,14 @@ public class JWTValidationInfo implements Serializable {
         this.claims = jwtValidationInfo.getClaims();
         this.validationCode = jwtValidationInfo.getValidationCode();
         this.keyManager = jwtValidationInfo.getKeyManager();
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
 
     public String getIdentifier() {
