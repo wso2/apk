@@ -15,6 +15,6 @@ resources:
   domain: wso2.com
   group: dp
   kind: RateLimitPolicy
-  path: github.com/wso2/apk/common-controller/api/v1alpha1
+  path: github.com/wso2/apk/common-controller/api/dp/v1alpha1
   version: v1alpha1
 version: "3"

@@ -43,7 +43,7 @@ import (
 	cache "github.com/wso2/apk/common-controller/internal/cache"
 	"github.com/wso2/apk/common-controller/internal/config"
 	loggers "github.com/wso2/apk/common-controller/internal/loggers"
-	dpv1alpha1 "github.com/wso2/apk/common-controller/internal/operator/api/v1alpha1"
+	dpv1alpha1 "github.com/wso2/apk/common-controller/internal/operator/apis/dp/v1alpha1"
 	constants "github.com/wso2/apk/common-controller/internal/operator/constant"
 	xds "github.com/wso2/apk/common-controller/internal/xds"
 )
