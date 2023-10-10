@@ -30,7 +30,6 @@ import org.apache.logging.log4j.Logger;
 import org.wso2.apk.enforcer.commons.dto.JWTConfigurationDto;
 import org.wso2.apk.enforcer.commons.exception.EnforcerException;
 import org.wso2.apk.enforcer.config.dto.APIKeyIssuerDto;
-import org.wso2.apk.enforcer.config.dto.AdminRestServerDto;
 import org.wso2.apk.enforcer.config.dto.AnalyticsDTO;
 import org.wso2.apk.enforcer.config.dto.AnalyticsReceiverConfigDTO;
 import org.wso2.apk.enforcer.config.dto.AuthServiceConfigurationDto;
@@ -54,7 +53,6 @@ import org.wso2.apk.enforcer.discovery.config.enforcer.Keypair;
 import org.wso2.apk.enforcer.discovery.config.enforcer.Management;
 import org.wso2.apk.enforcer.discovery.config.enforcer.Metrics;
 import org.wso2.apk.enforcer.discovery.config.enforcer.MutualSSL;
-import org.wso2.apk.enforcer.discovery.config.enforcer.RestServer;
 import org.wso2.apk.enforcer.discovery.config.enforcer.Service;
 import org.wso2.apk.enforcer.discovery.config.enforcer.Soap;
 import org.wso2.apk.enforcer.discovery.config.enforcer.Tracing;
@@ -153,8 +151,6 @@ public class ConfigHolder {
 
         populateManagementCredentials(config.getManagement());
 
-        populateRestServer(config.getRestServer());
-
         // Populates the SOAP error response related configs (SoapErrorInXMLEnabled).
         populateSoapErrorResponseConfigs(config.getSoap());
 
@@ -195,13 +191,6 @@ public class ConfigHolder {
         SoapErrorResponseConfigDto soapErrorResponseConfigDto = new SoapErrorResponseConfigDto();
         soapErrorResponseConfigDto.setEnable(soap.getSoapErrorInXMLEnabled());
         config.setSoapErrorResponseConfigDto(soapErrorResponseConfigDto);
-    }
-
-    private void populateRestServer(RestServer restServer) {
-
-        AdminRestServerDto adminRestServerDto = new AdminRestServerDto();
-        adminRestServerDto.setEnable(restServer.getEnable());
-        config.setRestServer(adminRestServerDto);
     }
 
     private void populateManagementCredentials(Management management) {

@@ -145,9 +145,6 @@ var defaultConfig = &Config{
 			Username: "admin",
 			Password: "admin",
 		},
-		RestServer: restServer{
-			Enabled: true,
-		},
 		Security: security{
 			APIkey: apiKey{
 				Enabled:             true,
