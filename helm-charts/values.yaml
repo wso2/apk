@@ -61,11 +61,11 @@ wso2:
         deployment:
           resources:
             requests:
-              memory: "128Mi"
-              cpu: "100m"
+              memory: "256Mi"
+              cpu: "50m"
             limits:
-              memory: "1028Mi"
-              cpu: "1000m"
+              memory: "512Mi"
+              cpu: "200m"
           readinessProbe:
             initialDelaySeconds: 20
             periodSeconds: 20
@@ -82,11 +82,11 @@ wso2:
         deployment:
           resources:
             requests:
-              memory: "128Mi"
-              cpu: "100m"
+              memory: "256Mi"
+              cpu: "50m"
             limits:
-              memory: "1028Mi"
-              cpu: "1000m"
+              memory: "512Mi"
+              cpu: "200m"
           readinessProbe:
             initialDelaySeconds: 20
             periodSeconds: 20
@@ -103,11 +103,11 @@ wso2:
         deployment:
           resources:
             requests:
-              memory: "128Mi"
-              cpu: "100m"
+              memory: "256Mi"
+              cpu: "50m"
             limits:
-              memory: "1028Mi"
-              cpu: "1000m"
+              memory: "512Mi"
+              cpu: "200m"
           readinessProbe:
             initialDelaySeconds: 20
             periodSeconds: 20
@@ -124,11 +124,11 @@ wso2:
         deployment:
           resources:
             requests:
-              memory: "128Mi"
-              cpu: "100m"
+              memory: "64Mi"
+              cpu: "50m"
             limits:
-              memory: "1028Mi"
-              cpu: "1000m"
+              memory: "256Mi"
+              cpu: "200m"
           strategy: Recreate
           replicas: 1
           imagePullPolicy: Always
@@ -169,11 +169,11 @@ wso2:
         deployment:
           resources:
             requests:
-              memory: "128Mi"
-              cpu: "100m"
+              memory: "512Mi"
+              cpu: "200m"
             limits:
-              memory: "1028Mi"
-              cpu: "1000m"
+              memory: "1024Mi"
+              cpu: "500m"
           readinessProbe:
             initialDelaySeconds: 20
             periodSeconds: 20
@@ -195,11 +195,11 @@ wso2:
         deployment:
           resources:
             requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
               memory: "128Mi"
               cpu: "100m"
-            limits:
-              memory: "1028Mi"
-              cpu: "1000m"
           readinessProbe:
             initialDelaySeconds: 20
             periodSeconds: 20
@@ -228,11 +228,11 @@ wso2:
         deployment:
           resources:
             requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
               memory: "128Mi"
               cpu: "100m"
-            limits:
-              memory: "1028Mi"
-              cpu: "1000m"
           readinessProbe:
             initialDelaySeconds: 20
             periodSeconds: 20
@@ -255,11 +255,11 @@ wso2:
         deployment:
           resources:
             requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
               memory: "128Mi"
               cpu: "100m"
-            limits:
-              memory: "1028Mi"
-              cpu: "1000m"
           readinessProbe:
             initialDelaySeconds: 20
             periodSeconds: 20
@@ -287,10 +287,10 @@ wso2:
             resources:
               requests:
                 memory: "128Mi"
-                cpu: "100m"
+                cpu: "200m"
               limits:
-                memory: "1028Mi"
-                cpu: "1000m"
+                memory: "256Mi"
+                cpu: "500m"
             readinessProbe:
               initialDelaySeconds: 20
               periodSeconds: 20
@@ -317,8 +317,8 @@ wso2:
           enforcer:
             resources:
               requests:
-                memory: "128Mi"
-                cpu: "100m"
+                memory: "512Mi"
+                cpu: "500m"
               limits:
                 memory: "1028Mi"
                 cpu: "1000m"
@@ -369,11 +369,11 @@ idp:
     deployment:
       resources:
         requests:
-          memory: "128Mi"
-          cpu: "100m"
+          memory: "512Mi"
+          cpu: "200m"
         limits:
-          memory: "1028Mi"
-          cpu: "1000m"
+          memory: "1024Mi"
+          cpu: "500m"
       readinessProbe:
         initialDelaySeconds: 20
         periodSeconds: 20
@@ -390,11 +390,11 @@ idp:
     deployment:
       resources:
         requests:
-          memory: "128Mi"
-          cpu: "100m"
+          memory: "64Mi"
+          cpu: "50m"
         limits:
-          memory: "1028Mi"
-          cpu: "1000m"
+          memory: "256Mi"
+          cpu: "100m"
       readinessProbe:
         initialDelaySeconds: 20
         periodSeconds: 20
