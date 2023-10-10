@@ -466,11 +466,19 @@ public class JWTAuthenticator implements Authenticator {
      */
     private JWTValidationInfo getJwtValidationInfo(String jwtToken, String organization, String environment) throws APISecurityException {
         if (isGatewayTokenCacheEnabled) {
+            String[] jwtParts = jwtToken.split("\\.");
+            String signature = jwtParts[2];
             Object validCacheToken = CacheProviderUtil.getOrganizationCache(organization).getGatewayKeyCache()
-                    .getIfPresent(jwtToken);
+                    .getIfPresent(signature);
             if (validCacheToken != null) {
                 JWTValidationInfo validationInfo = (JWTValidationInfo) validCacheToken;
                 if (!isJWTExpired(validationInfo)) {
+                    if (!StringUtils.equals(validationInfo.getToken(), jwtToken)) {
+                        log.warn("Suspected tampered token; a JWT token with the same signature is " +
+                                "already available in the cache. Tampered token: " + FilterUtils.getMaskedToken(jwtToken));
+                        throw new APISecurityException(APIConstants.StatusCodes.UNAUTHENTICATED.getCode(),
+                                APISecurityConstants.API_AUTH_INVALID_CREDENTIALS, "Invalid JWT token");
+                    }
                     if (RevokedJWTDataHolder.isJWTTokenSignatureExistsInRevokedMap(validationInfo.getIdentifier())) {
                         log.debug("Token found in the revoked jwt token map.");
                         throw new APISecurityException(APIConstants.StatusCodes.UNAUTHENTICATED.getCode(),
@@ -478,14 +486,14 @@ public class JWTAuthenticator implements Authenticator {
                     }
                     return validationInfo;
                 } else {
-                    CacheProviderUtil.getOrganizationCache(organization).getGatewayKeyCache().invalidate(jwtToken);
-                    CacheProviderUtil.getOrganizationCache(organization).getInvalidTokenCache().put(jwtToken, true);
+                    CacheProviderUtil.getOrganizationCache(organization).getGatewayKeyCache().invalidate(signature);
+                    CacheProviderUtil.getOrganizationCache(organization).getInvalidTokenCache().put(signature, true);
                     throw new APISecurityException(APIConstants.StatusCodes.UNAUTHENTICATED.getCode(),
                             APISecurityConstants.API_AUTH_INVALID_CREDENTIALS,
                             APISecurityConstants.API_AUTH_INVALID_CREDENTIALS_MESSAGE);
                 }
             } else if (CacheProviderUtil.getOrganizationCache(organization).getInvalidTokenCache()
-                    .getIfPresent(jwtToken) != null) {
+                    .getIfPresent(signature) != null) {
                 throw new APISecurityException(APIConstants.StatusCodes.UNAUTHENTICATED.getCode(),
                         APISecurityConstants.API_AUTH_INVALID_CREDENTIALS,
                         APISecurityConstants.API_AUTH_INVALID_CREDENTIALS_MESSAGE);
@@ -521,8 +529,9 @@ public class JWTAuthenticator implements Authenticator {
             }
         }
 
+        String signature = signedJWT.getSignature().toString();
         String jwtTokenIdentifier = StringUtils.isNotEmpty(jwtClaimsSet.getJWTID()) ? jwtClaimsSet.getJWTID() :
-                signedJWT.getSignature().toString();
+                signature;
 
         // check whether the token is revoked
         String jwtHeader = signedJWT.getHeader().toString();
@@ -545,13 +554,14 @@ public class JWTAuthenticator implements Authenticator {
                         APISecurityConstants.API_AUTH_INVALID_CREDENTIALS_MESSAGE);
             }
 
-            JWTValidationInfo jwtValidationInfo = jwtValidator.validateToken(signedJWTInfo, organization, environment);
+            JWTValidationInfo jwtValidationInfo = jwtValidator.validateToken(jwtToken, signedJWTInfo);
             if (isGatewayTokenCacheEnabled) {
                 // Add token to tenant token cache
                 if (jwtValidationInfo.isValid()) {
-                    CacheProviderUtil.getOrganizationCache(organization).getGatewayKeyCache().put(jwtToken, jwtValidationInfo);
+                    CacheProviderUtil.getOrganizationCache(organization).getGatewayKeyCache().put(signature,
+                            jwtValidationInfo);
                 } else {
-                    CacheProviderUtil.getOrganizationCache(organization).getInvalidTokenCache().put(jwtToken, true);
+                    CacheProviderUtil.getOrganizationCache(organization).getInvalidTokenCache().put(signature, true);
                 }
             }
             return jwtValidationInfo;

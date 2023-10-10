@@ -75,7 +75,7 @@ public class JWTValidator {
         }
     }
 
-    public JWTValidationInfo validateToken(SignedJWTInfo signedJWTInfo) throws EnforcerException {
+    public JWTValidationInfo validateToken(String token, SignedJWTInfo signedJWTInfo) throws EnforcerException {
         JWTValidationInfo jwtValidationInfo = new JWTValidationInfo();
         boolean state;
         try {
@@ -91,6 +91,7 @@ public class JWTValidator {
                     jwtValidationInfo.setKeyManager(tokenIssuer.getName());
                     jwtValidationInfo.setIdentifier(JWTUtils.getJWTTokenIdentifier(signedJWTInfo));
                     jwtValidationInfo.setJwtClaimsSet(signedJWTInfo.getJwtClaimsSet());
+                    jwtValidationInfo.setToken(token);
                     return jwtValidationInfo;
                 }
                 logger.debug("Token is expired.");
