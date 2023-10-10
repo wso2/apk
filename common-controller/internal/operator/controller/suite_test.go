@@ -30,7 +30,7 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	dpv1alpha1 "github.com/wso2/apk/common-controller/internal/operator/api/v1alpha1"
+	dpv1alpha1 "github.com/wso2/apk/common-controller/internal/operator/apis/dp/v1alpha1"
 	//+kubebuilder:scaffold:imports
 )
 

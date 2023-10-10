@@ -26,7 +26,7 @@ import (
 	"github.com/wso2/apk/adapter/pkg/logging"
 	cache "github.com/wso2/apk/common-controller/internal/cache"
 	"github.com/wso2/apk/common-controller/internal/loggers"
-	dpv1alpha1 "github.com/wso2/apk/common-controller/internal/operator/api/v1alpha1"
+	dpv1alpha1 "github.com/wso2/apk/common-controller/internal/operator/apis/dp/v1alpha1"
 	dpcontrollers "github.com/wso2/apk/common-controller/internal/operator/controller"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
