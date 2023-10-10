@@ -126,7 +126,7 @@ wso2:
           # -- Image pull policy
           imagePullPolicy: Always
           # -- Image
-          image: wso2/devportal-domain-service:latest
+          image: wso2/apk-devportal-domain-service:latest
       admin:
         deployment:
           resources:
@@ -161,7 +161,7 @@ wso2:
           # -- Image pull policy
           imagePullPolicy: Always
           # -- Image
-          image: wso2/admin-domain-service:latest
+          image: wso2/apk-admin-domain-service:latest
       backoffice:
         deployment:
           resources:
@@ -196,7 +196,7 @@ wso2:
           # -- Image pull policy
           imagePullPolicy: Always
           # -- Image
-          image: wso2/backoffice-domain-service:latest
+          image: wso2/apk-backoffice-domain-service:latest
       managementServer:
         deployment:
           resources:
@@ -217,7 +217,7 @@ wso2:
           # -- Image pull policy
           imagePullPolicy: Always
           # -- Image
-          image: wso2/management-server:0.0.1-m8
+          image: wso2/apk-management-server:latest
           readinessProbe:
             # -- Number of seconds after the container has started before liveness probes are initiated.
             initialDelaySeconds: 20
