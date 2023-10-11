@@ -74,15 +74,15 @@ public type Document record {
     string documentId?;
     @constraint:String {maxLength: 60, minLength: 1}
     string name;
-    "HOWTO"|"SAMPLES"|"PUBLIC_FORUM"|"SUPPORT_FORUM"|"API_MESSAGE_FORMAT"|"SWAGGER_DOC"|"OTHER" documentType?;
+    string documentType?;
     @constraint:String {maxLength: 32766, minLength: 1}
     string summary?;
-    "INLINE"|"MARKDOWN"|"URL"|"FILE" sourceType;
+    string sourceType;
     string sourceUrl?;
     string fileName?;
     string inlineContent?;
     string otherTypeName?;
-    "OWNER_ONLY"|"PRIVATE"|"API_LEVEL" visibility;
+    string visibility;
     string createdTime?;
     string createdBy?;
     string lastUpdatedTime?;
@@ -229,7 +229,7 @@ public type MonetizationAttribute record {
 };
 
 public type APIDefinition record {
-    "swagger"|"graphql"|"wsdl"|"async" 'type;
+    string 'type;
     string schemaDefinition?;
 };
 

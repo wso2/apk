@@ -328,7 +328,7 @@ public type ApplicationKeyList record {
 };
 
 public type APIDefinition record {
-    "swagger"|"graphql"|"wsdl"|"async" 'type;
+    string 'type;
     string schemaDefinition?;
 };
 

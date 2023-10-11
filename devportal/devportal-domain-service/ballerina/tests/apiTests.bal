@@ -188,6 +188,7 @@ function getAPIDefinitionByIdTest(){
     if apiDefResponse is APIDefinition {
         test:assertTrue(true, "Successfully retrieved API Definition");
     } else if apiDefResponse is  commons:APKError {
+        log:printInfo(apiDefResponse.toBalString());
         log:printError(apiDefResponse.toString());
         test:assertFail("Error occured while retrieving API");
     } else if apiDefResponse is  NotFoundError {
@@ -223,6 +224,7 @@ function generateSDKImplTestNegative(){
     if sdk is http:Response {
         test:assertFail("Successfully generated API SDK");
     } else if sdk is sdk:APIClientGenerationException|commons:APKError {
+        log:printInfo(sdk.toBalString());
         test:assertTrue(true,"Error while generating API SDK");
     }
 }
