@@ -41,6 +41,9 @@ type commoncontroller struct {
 	// Trusted Certificates
 	Truststore  truststore
 	Environment string
+	Redis redis
+	Sts sts
+	WebServer webServer
 }
 
 type keystore struct {
@@ -58,4 +61,25 @@ type server struct {
 
 type operator struct {
 	Namespaces []string
+}
+
+type redis struct {
+	Host             			string
+	Port             			string
+	Username   						string
+	Password   						string
+	UserCertPath   				string
+	UserKeyPath    				string
+	CACertPath 						string
+	TlsEnabled    				bool
+	RevokedTokenChannel 	string
+}
+
+type sts struct {
+	AuthKeyPath string
+	AuthKeyHeader string
+}
+
+type webServer struct {
+	Port int64
 }

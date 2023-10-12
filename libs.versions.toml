@@ -100,6 +100,7 @@ moesif = {module = "com.moesif.api:moesifapi", version.ref = "moesif-api"}
 feign-httpclient = {module = "io.github.openfeign:feign-httpclient", version.ref = "io-github-openfeign"}
 ua-parser={module = "ua.parser.wso2:ua-parser", version.ref = "ua-parser"}
 javax-xml-bind = {module = "javax.xml.bind:jaxb-api", version.ref ="javax-xml-bind"}
+jedis = {module = "redis.clients:jedis", version.ref = "jedis"}
 #Added as direct dependency for transitive dependency version upgrades
 reactor-netty-http = {module = "io.projectreactor.netty:reactor-netty-http", version.ref = "reactor-netty-http"}
 protobuf-java = {module = "com.google.protobuf:protobuf-java", version.ref = "protobuf-java"}
@@ -194,3 +195,4 @@ ua-parser = "1.5.4.wso2v2"
 jakarta-xml-apis = "4.0.1"
 javax-xml-bind = "2.3.1"
 mock-server-netty = "3.10.8"
+jedis = "4.3.1"

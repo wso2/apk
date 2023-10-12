@@ -51,6 +51,7 @@ import org.wso2.apk.enforcer.security.jwt.validator.JWTConstants;
 import org.wso2.apk.enforcer.security.jwt.validator.JWTValidator;
 import org.wso2.apk.enforcer.security.jwt.validator.RevokedJWTDataHolder;
 import org.wso2.apk.enforcer.subscription.SubscriptionDataStoreImpl;
+import org.wso2.apk.enforcer.server.RevokedTokenRedisClient;
 import org.wso2.apk.enforcer.tracing.TracingConstants;
 import org.wso2.apk.enforcer.tracing.TracingSpan;
 import org.wso2.apk.enforcer.tracing.TracingTracer;
@@ -138,7 +139,13 @@ public class JWTAuthenticator implements Authenticator {
             String environment = requestContext.getMatchedAPI().getEnvironment();
             context = context + "/" + version;
 
+
             JWTValidationInfo validationInfo = getJwtValidationInfo(jwtToken, organization, environment);
+            if (RevokedTokenRedisClient.getRevokedTokens().contains(validationInfo.getIdentifier())) {
+                log.info("Expired JWT token. ", validationInfo.getIdentifier());
+                throw new APISecurityException(APIConstants.StatusCodes.UNAUTHENTICATED.getCode(),
+                        APISecurityConstants.API_AUTH_INVALID_CREDENTIALS, "Invalid JWT token");
+            }
             if (validationInfo != null) {
                 if (validationInfo.isValid()) {
                     Map<String, Object> claims = validationInfo.getClaims();

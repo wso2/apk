@@ -186,3 +186,14 @@ const (
 	Error3125 = 3125
 	Error3126 = 3126
 )
+
+// Error codes api (3200-3299)
+const (
+	Error3200 = 3200
+	Error3201 = 3201
+	Error3202 = 3202
+	Error3203 = 3203
+	Error3204 = 3204
+	Error3205 = 3205
+	Error3206 = 3206
+)
