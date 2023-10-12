@@ -47,7 +47,7 @@ function getAPIByIdTest() {
 @test:Config {dependsOn: [createAPITest]}
 function getAPIDefinitionTest() {
     APIDefinition|commons:APKError getAPIDef = getAPIDefinition("01ed75e2-b30b-18c8-wwf2-25da7edd2231");
-    if getAPIDef is API {
+    if getAPIDef is APIDefinition {
         test:assertTrue(true, "Successfully retrieve API Definition");
         log:printInfo(getAPIDef.toString());
     } else if getAPIDef is  commons:APKError {

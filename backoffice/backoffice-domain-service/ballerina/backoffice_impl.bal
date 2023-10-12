@@ -29,9 +29,9 @@ import ballerina/mime;
 # + return - Return Value string?|APIList|error
 isolated function getAPIList(int 'limit, int offset, string? query, string organization) returns APIList|commons:APKError {
     if query !is string {
-        API[]|commons:APKError apis = db_getAPIsDAO(organization);
-        if apis is API[] {
-            API[] limitSet = [];
+        APIInfo[]|commons:APKError apis = db_getAPIsDAO(organization);
+        if apis is APIInfo[] {
+            APIInfo[] limitSet = [];
             if apis.length() > offset {
                 foreach int i in offset ... (apis.length() - 1) {
                     if limitSet.length() < 'limit {
@@ -50,9 +50,9 @@ isolated function getAPIList(int 'limit, int offset, string? query, string organ
             int? index = query.indexOf(":");
             if index is int {
                 string modifiedQuery = "%" + query.substring(index + 1) + "%";
-                API[]|commons:APKError apis = getAPIsByQueryDAO(modifiedQuery, organization);
-                if apis is API[] {
-                    API[] limitSet = [];
+                APIInfo[]|commons:APKError apis = getAPIsByQueryDAO(modifiedQuery, organization);
+                if apis is APIInfo[] {
+                    APIInfo[] limitSet = [];
                     if apis.length() > offset {
                         foreach int i in offset ... (apis.length() - 1) {
                             if limitSet.length() < 'limit {
@@ -307,17 +307,6 @@ isolated function getAllCategoryList(string organization) returns APICategoryLis
     }
 }
 
-isolated function getBusinessPlans(string organization) returns BusinessPlanList|commons:APKError {
-    BusinessPlan[]|commons:APKError businessPlans = getBusinessPlansDAO(organization);
-    if businessPlans is BusinessPlan[] {
-        int count = businessPlans.length();
-        BusinessPlanList BusinessPlansList = {count: count, list: businessPlans};
-        return BusinessPlansList;
-    } else {
-        return businessPlans;
-    }
-}
-
 isolated function retrieveManagementServerHostsList() returns string[]|commons:APKError {
     string managementServerServiceName = managementServerConfig.serviceName;
     string managementServerNamespace = managementServerConfig.namespace;
@@ -450,7 +439,7 @@ isolated function createDocument(string apiId, Document documentPayload) returns
                     sourceType: documentPayload.sourceType,
                     sourceUrl: documentPayload.sourceUrl,
                     fileName: documentPayload.fileName,
-                    documentType: documentPayload.documentType,
+                    documentType: documentPayload.documentType ?: "HOWTO",
                     otherTypeName: documentPayload.otherTypeName,
                     visibility: documentPayload.visibility,
                     inlineContent: documentPayload.inlineContent
@@ -461,12 +450,12 @@ isolated function createDocument(string apiId, Document documentPayload) returns
                         documentId: addedDocMetaData.documentId,
                         name: addedDocMetaData.name,
                         summary: addedDocMetaData.summary,
-                        sourceType: addedDocMetaData.sourceType,
+                        sourceType: <"INLINE"|"MARKDOWN"|"URL"|"FILE">addedDocMetaData.sourceType,
                         sourceUrl: addedDocMetaData.sourceUrl,
                         fileName: addedDocMetaData.fileName,
-                        documentType: addedDocMetaData.documentType,
+                        documentType: <"HOWTO"|"SAMPLES"|"PUBLIC_FORUM"|"SUPPORT_FORUM"|"API_MESSAGE_FORMAT"|"SWAGGER_DOC"|"OTHER">addedDocMetaData.documentType,
                         otherTypeName: addedDocMetaData.otherTypeName,
-                        visibility: addedDocMetaData.visibility,
+                        visibility: <"OWNER_ONLY"|"PRIVATE"|"API_LEVEL">addedDocMetaData.visibility,
                         inlineContent: addedDocMetaData.inlineContent
                     };
                     return document;
@@ -496,7 +485,7 @@ isolated function UpdateDocumentMetaData(string apiId, string documentId, Docume
                 sourceType: documentPayload.sourceType,
                 sourceUrl: documentPayload.sourceUrl,
                 fileName: documentPayload.fileName,
-                documentType: documentPayload.documentType,
+                documentType: documentPayload.documentType ?: "HOWTO",
                 otherTypeName: documentPayload.otherTypeName,
                 visibility: documentPayload.visibility,
                 inlineContent: documentPayload.inlineContent
@@ -508,12 +497,12 @@ isolated function UpdateDocumentMetaData(string apiId, string documentId, Docume
                     documentId: updatedDocMetaData.documentId,
                     name: updatedDocMetaData.name,
                     summary: updatedDocMetaData.summary,
-                    sourceType: updatedDocMetaData.sourceType,
+                    sourceType: <"INLINE"|"MARKDOWN"|"URL"|"FILE">updatedDocMetaData.sourceType,
                     sourceUrl: updatedDocMetaData.sourceUrl,
                     fileName: updatedDocMetaData.fileName,
-                    documentType: updatedDocMetaData.documentType,
+                    documentType: <"HOWTO"|"SAMPLES"|"PUBLIC_FORUM"|"SUPPORT_FORUM"|"API_MESSAGE_FORMAT"|"SWAGGER_DOC"|"OTHER">updatedDocMetaData.documentType,
                     otherTypeName: updatedDocMetaData.otherTypeName,
-                    visibility: updatedDocMetaData.visibility,
+                    visibility: <"OWNER_ONLY"|"PRIVATE"|"API_LEVEL">updatedDocMetaData.visibility,
                     inlineContent: updatedDocMetaData.inlineContent
                 };
                 return document;
@@ -538,12 +527,12 @@ isolated function addDocumentContent(string apiId, string documentId, http:Reque
                 documentId: getDocumentMetaData.documentId,
                 name: getDocumentMetaData.name,
                 summary: getDocumentMetaData.summary,
-                sourceType: getDocumentMetaData.sourceType,
+                sourceType: <"INLINE"|"MARKDOWN"|"URL"|"FILE">getDocumentMetaData.sourceType,
                 sourceUrl: getDocumentMetaData.sourceUrl,
                 fileName: getDocumentMetaData.fileName,
-                documentType: getDocumentMetaData.documentType,
+                documentType: <"HOWTO"|"SAMPLES"|"PUBLIC_FORUM"|"SUPPORT_FORUM"|"API_MESSAGE_FORMAT"|"SWAGGER_DOC"|"OTHER">getDocumentMetaData.documentType,
                 otherTypeName: getDocumentMetaData.otherTypeName,
-                visibility: getDocumentMetaData.visibility,
+                visibility: <"OWNER_ONLY"|"PRIVATE"|"API_LEVEL">getDocumentMetaData.visibility,
                 inlineContent: getDocumentMetaData.inlineContent
             };
             byte[]|() fileContent = ();
@@ -633,12 +622,12 @@ isolated function getDocumentMetaData(string apiId, string documentId) returns D
                 documentId: getDocumentMetaData.documentId,
                 name: getDocumentMetaData.name,
                 summary: getDocumentMetaData.summary,
-                sourceType: getDocumentMetaData.sourceType,
+                sourceType: <"INLINE"|"MARKDOWN"|"URL"|"FILE">getDocumentMetaData.sourceType,
                 sourceUrl: getDocumentMetaData.sourceUrl,
                 fileName: getDocumentMetaData.fileName,
-                documentType: getDocumentMetaData.documentType,
+                documentType: <"HOWTO"|"SAMPLES"|"PUBLIC_FORUM"|"SUPPORT_FORUM"|"API_MESSAGE_FORMAT"|"SWAGGER_DOC"|"OTHER">getDocumentMetaData.documentType,
                 otherTypeName: getDocumentMetaData.otherTypeName,
-                visibility: getDocumentMetaData.visibility,
+                visibility: <"OWNER_ONLY"|"PRIVATE"|"API_LEVEL">getDocumentMetaData.visibility,
                 inlineContent: getDocumentMetaData.inlineContent
             };
             return document;

@@ -250,6 +250,8 @@ isolated function getSubscriptions(string? apiId, string? applicationId, string?
             int count = subs.length();
             SubscriptionList subList = {count: count, list: subs};
             return subList;
+        } else if subscription is NotFoundError  {
+            return subscription;
         } else {
             string message = "Internal Error occured while retrieving Subscription";
             return error(message, message = message, description = message, code = 909001, statusCode = 500);

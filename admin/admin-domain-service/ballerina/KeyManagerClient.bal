@@ -241,7 +241,7 @@ public class KeyManagerClient {
                         certificateValue = check string:fromBytes(encodedBytes);
                     }
                     KeyManager_signingCertificate certificates = {
-                        'type: certificateType,
+                        'type: <"JWKS"|"PEM"|()>certificateType,
                         value: certificateValue
                     };
                     keymanager.signingCertificate = certificates;

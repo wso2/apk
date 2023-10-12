@@ -64,7 +64,7 @@ paths:
         - OAuth2Security: []
       x-code-samples:
         - lang: Curl
-          source: curl -k "https://localhost:9443/api/devportal/apis"
+          source: curl -k "https://api.am.wso2.com:9095/api/am/devportal/apis"
 
   /apis/{apiId}:
     get:
@@ -109,7 +109,7 @@ paths:
         - OAuth2Security: []
       x-code-samples:
         - lang: Curl
-          source: curl -k "https://localhost:9443/api/devportal/apis/c43a325c-260b-4302-81cb-768eafaa3aed"
+          source: curl -k "https://api.am.wso2.com:9095/api/am/devportal/apis/c43a325c-260b-4302-81cb-768eafaa3aed"
   
   /apis/{apiId}/definition:
     get:
@@ -196,11 +196,11 @@ paths:
           $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
-            - apk:subscribe
+            - []
       x-code-samples:
         - lang: Curl
           source: curl -k -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-            "https://localhost:9443/api/devportal/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/sdks/java"
+            "https://api.am.wso2.com:9095/api/am/devportal/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/sdks/java"
             > Petstore_java_1.0.0.zip
 
   ######################################################
@@ -246,7 +246,7 @@ paths:
         - OAuth2Security: []
       x-code-samples:
         - lang: Curl
-          source: curl -k "https://localhost:9443/api/devportal/apis/c43a325c-260b-4302-81cb-768eafaa3aed/documents"
+          source: curl -k "https://api.am.wso2.com:9095/api/am/devportal/apis/c43a325c-260b-4302-81cb-768eafaa3aed/documents"
 
   ######################################################
   # The "Individual Document" resource APIs
@@ -290,7 +290,7 @@ paths:
         - OAuth2Security: []
       x-code-samples:
         - lang: Curl
-          source: curl -k "https://localhost:9443/api/devportal/apis/c43a325c-260b-4302-81cb-768eafaa3aed/documents/850a4f34-db2c-4d23-9d85-3f95fbfb082c"
+          source: curl -k "https://api.am.wso2.com:9095/api/am/devportal/apis/c43a325c-260b-4302-81cb-768eafaa3aed/documents/850a4f34-db2c-4d23-9d85-3f95fbfb082c"
 
   /apis/{apiId}/documents/{documentId}/content:
     get:
@@ -343,7 +343,7 @@ paths:
         - OAuth2Security: []
       x-code-samples:
         - lang: Curl
-          source: curl -k "https://localhost:9443/api/devportal/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/documents/0bcb7f05-599d-4e1a-adce-5cb89bfe58d5/content"
+          source: curl -k "https://api.am.wso2.com:9095/api/am/devportal/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/documents/0bcb7f05-599d-4e1a-adce-5cb89bfe58d5/content"
 
   /apis/{apiId}/thumbnail:
     get:
@@ -389,7 +389,7 @@ paths:
         - OAuth2Security: []
       x-code-samples:
         - lang: Curl
-          source: 'curl -k "https://localhost:9443/api/devportal/apis/e93fb282-b456-48fc-8981-003fb89086ae/thumbnail" > image.jpeg'
+          source: 'curl -k "https://api.am.wso2.com:9095/api/am/devportal/apis/e93fb282-b456-48fc-8981-003fb89086ae/thumbnail" > image.jpeg'
 
   /apis/{apiId}/ratings:
     get:
@@ -417,7 +417,7 @@ paths:
         - OAuth2Security: []
       x-code-samples:
         - lang: Curl
-          source: curl -k "https://localhost:9443/api/devportal/apis/e93fb282-b456-48fc-8981-003fb89086ae/ratings"
+          source: curl -k "https://api.am.wso2.com:9095/api/am/devportal/apis/e93fb282-b456-48fc-8981-003fb89086ae/ratings"
 
   /apis/{apiId}/user-rating:
     get:
@@ -463,7 +463,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: curl -k -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-            "https://localhost:9443/api/devportal/apis/e93fb282-b456-48fc-8981-003fb89086ae/user-rating"
+            "https://api.am.wso2.com:9095/api/am/devportal/apis/e93fb282-b456-48fc-8981-003fb89086ae/user-rating"
 
     put:
       tags:
@@ -502,11 +502,11 @@ paths:
           $ref: '#/components/responses/UnsupportedMediaType'
       security:
         - OAuth2Security:
-            - apk:subscribe
+          - []
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X PUT -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -d @data.json "https://localhost:9443/api/devportal/apis/e93fb282-b456-48fc-8981-003fb89086ae/user-rating"'
+          -H "Content-Type: application/json" -d @data.json "https://api.am.wso2.com:9095/api/am/devportal/apis/e93fb282-b456-48fc-8981-003fb89086ae/user-rating"'
 
     delete:
       tags:
@@ -525,11 +525,11 @@ paths:
           content: {}
       security:
         - OAuth2Security:
-            - apk:subscribe
+            - []
       x-code-samples:
         - lang: Curl
           source: curl -k -X DELETE -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-            "https://localhost:9443/api/devportal/apis/e93fb282-b456-48fc-8981-003fb89086ae/user-rating"
+            "https://api.am.wso2.com:9095/api/am/devportal/apis/e93fb282-b456-48fc-8981-003fb89086ae/user-rating"
 
   /apis/{apiId}/comments:
     get:
@@ -561,7 +561,7 @@ paths:
         - OAuth2Security: []
       x-code-samples:
         - lang: Curl
-          source: curl -k "https://localhost:9443/api/devportal/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments"
+          source: curl -k "https://api.am.wso2.com:9095/api/am/devportal/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments"
 
     post:
       tags:
@@ -624,12 +624,11 @@ paths:
         500:
           $ref: '#/components/responses/InternalServerError'
       security:
-        - OAuth2Security:
-            - apk:subscribe
+        - OAuth2Security: []
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -d @data.json "https://localhost:9443/api/devportal/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments"'
+          -H "Content-Type: application/json" -d @data.json "https://api.am.wso2.com:9095/api/am/devportal/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments"'
 
   /apis/{apiId}/comments/{commentId}:
     get:
@@ -678,7 +677,7 @@ paths:
         - OAuth2Security: []
       x-code-samples:
         - lang: Curl
-          source: curl -k "https://localhost:9443/api/devportal/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4"
+          source: curl -k "https://api.am.wso2.com:9095/api/am/devportal/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4"
 
     patch:
       tags:
@@ -749,7 +748,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X PATCH -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -d @data.json "https://localhost:9443/api/devportal/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4"'
+          -H "Content-Type: application/json" -d @data.json "https://api.am.wso2.com:9095/api/am/devportal/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4"'
 
     delete:
       tags:
@@ -784,11 +783,10 @@ paths:
       security:
         - OAuth2Security:
             - apk:subscribe
-            - apk:admin # special scope added to moderate comments
       x-code-samples:
         - lang: Curl
           source: curl -k -X DELETE -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-            "https://localhost:9443/api/devportal/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4"
+            "https://api.am.wso2.com:9095/api/am/devportal/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4"
 
   /apis/{apiId}/comments/{commentId}/replies:
     get:
@@ -837,88 +835,8 @@ paths:
         - OAuth2Security: []
       x-code-samples:
         - lang: Curl
-          source: curl -k -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8" "https://localhost:9443/api/devportal/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4/replies"
+          source: curl -k -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8" "https://api.am.wso2.com:9095/api/am/devportal/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4/replies"
 
-  /apis/{apiId}/topics:
-    get:
-      tags:
-        - Topics
-      summary: |
-        Get a list of available topics for a given Async API
-      description: |
-        This operation will provide a list of topics available for a given Async API, based on the provided API ID.
-      parameters:
-        - $ref: '#/components/parameters/apiId'
-        - $ref: '#/components/parameters/requestedTenant'
-      responses:
-        200:
-          description: |
-            OK. Topic list returned.
-          headers:
-            ETag:
-              description: |
-                Entity Tag of the response resource. Used by caches, or in conditional requests.
-              schema:
-                type: string
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TopicList'
-        404:
-          $ref: '#/components/responses/NotFound'
-        500:
-          $ref: '#/components/responses/InternalServerError'
-      security:
-        - OAuth2Security: []
-      x-code-samples:
-        - lang: Curl
-          source: curl -k -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-            "https://localhost:9443/api/devportal/apis/5b65808c-cdf2-43e1-a695-de63e3ad0ae9/topics"
-
-  /apis/{apiId}/subscription-policies:
-    get:
-      tags:
-        - APIs
-      summary: |
-        Get Details of the Subscription Throttling Policies of an API
-      description: |
-        This operation can be used to retrieve details of the subscription throttling policy of an API by specifying the API Id.
-      parameters:
-        - $ref: '#/components/parameters/apiId'
-        - $ref: '#/components/parameters/requestedTenant'
-        - $ref: '#/components/parameters/If-None-Match'
-      responses:
-        200:
-          description: |
-            OK. Throttling Policy returned
-          headers:
-            ETag:
-              description: |
-                Entity Tag of the response resource. Used by caches, or in conditional requests.
-              schema:
-                type: string
-            Last-Modified:
-              description: |
-                Date and time the resource has been modified the last time. Used by caches, or in conditional requests.
-              schema:
-                type: string
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ThrottlingPolicy'
-        304:
-          description: |
-            Not Modified. Empty body because the client has already the latest version of the requested resource.
-          content: {}
-        404:
-          $ref: '#/components/responses/NotFound'
-        406:
-          $ref: '#/components/responses/NotAcceptable'
-      security:
-        - OAuth2Security: []
-      x-code-samples:
-        - lang: Curl
-          source: curl -k "https://localhost:9443/api/devportal/apis/268c9e55-3dc1-4f47-82e7-977e5343d077/subscription-policies"
 
   ######################################################
   # The "Application Collection" resource APIs
@@ -982,12 +900,10 @@ paths:
       security:
         - OAuth2Security:
             - apk:subscribe
-            - apk:app_manage
-            - apk:app_import_export
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/devportal/applications?query=CalculatorApp"'
+          "https://api.am.wso2.com:9095/api/am/devportal/applications?query=CalculatorApp"'
 
     post:
       tags:
@@ -1045,11 +961,10 @@ paths:
       security:
         - OAuth2Security:
             - apk:subscribe
-            - apk:app_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/devportal/applications"'
+          -H "Content-Type: application/json" -X POST -d @data.json "https://api.am.wso2.com:9095/api/am/devportal/applications"'
 
   ######################################################
   # The "Individual Application" resource APIs
@@ -1096,11 +1011,10 @@ paths:
       security:
         - OAuth2Security:
             - apk:subscribe
-            - apk:app_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/devportal/applications/896658a0-b4ee-4535-bbfa-806c894a4015"'
+          "https://api.am.wso2.com:9095/api/am/devportal/applications/896658a0-b4ee-4535-bbfa-806c894a4015"'
 
     put:
       tags:
@@ -1153,11 +1067,10 @@ paths:
       security:
         - OAuth2Security:
             - apk:subscribe
-            - apk:app_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X PUT -d @data.json "https://localhost:9443/api/devportal/applications/896658a0-b4ee-4535-bbfa-806c894a4015"'
+          -H "Content-Type: application/json" -X PUT -d @data.json "https://api.am.wso2.com:9095/api/am/devportal/applications/896658a0-b4ee-4535-bbfa-806c894a4015"'
 
     delete:
       tags:
@@ -1194,12 +1107,10 @@ paths:
       security:
         - OAuth2Security:
             - apk:subscribe
-            - apk:app_manage
-            - apk:app_import_export
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -X DELETE "https://localhost:9443/api/devportal/applications/896658a0-b4ee-4535-bbfa-806c894a4015"'
+          -X DELETE "https://api.am.wso2.com:9095/api/am/devportal/applications/896658a0-b4ee-4535-bbfa-806c894a4015"'
 
   /applications/{applicationId}/generate-keys:
     post:
@@ -1236,11 +1147,10 @@ paths:
       security:
         - OAuth2Security:
             - apk:subscribe
-            - apk:app_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/devportal/applications/896658a0-b4ee-4535-bbfa-806c894a4015/generate-keys"'
+          -H "Content-Type: application/json" -X POST -d @data.json "https://api.am.wso2.com:9095/api/am/devportal/applications/896658a0-b4ee-4535-bbfa-806c894a4015/generate-keys"'
 
   /applications/{applicationId}/map-keys:
     post:
@@ -1277,11 +1187,10 @@ paths:
       security:
         - OAuth2Security:
             - apk:subscribe
-            - apk:app_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/devportal/applications/896658a0-b4ee-4535-bbfa-806c894a4015/map-keys"'
+          -H "Content-Type: application/json" -X POST -d @data.json "https://api.am.wso2.com:9095/api/am/devportal/applications/896658a0-b4ee-4535-bbfa-806c894a4015/map-keys"'
 
 
   /applications/{applicationId}/oauth-keys:
@@ -1311,11 +1220,10 @@ paths:
       security:
         - OAuth2Security:
             - apk:subscribe
-            - apk:app_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/devportal/applications/16cd2684-9657-4a01-a956-4efd89e96077/oauth-keys"'
+          "https://api.am.wso2.com:9095/api/am/devportal/applications/16cd2684-9657-4a01-a956-4efd89e96077/oauth-keys"'
 
   /applications/{applicationId}/oauth-keys/{keyMappingId}:
     get:
@@ -1345,11 +1253,10 @@ paths:
       security:
         - OAuth2Security:
             - apk:subscribe
-            - apk:app_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/devportal/applications/16cd2684-9657-4a01-a956-4efd89e96077/oauth-keys/df972173-c957-46d4-96ac-99be8e303584"'
+          "https://api.am.wso2.com:9095/api/am/devportal/applications/16cd2684-9657-4a01-a956-4efd89e96077/oauth-keys/df972173-c957-46d4-96ac-99be8e303584"'
 
     put:
       tags:
@@ -1386,11 +1293,10 @@ paths:
       security:
         - OAuth2Security:
             - apk:subscribe
-            - apk:app_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X PUT -d @data.json "https://localhost:9443/api/devportal/applications/16cd2684-9657-4a01-a956-4efd89e96077/oauth-keys/df972173-c957-46d4-96ac-99be8e303584"'
+          -H "Content-Type: application/json" -X PUT -d @data.json "https://api.am.wso2.com:9095/api/am/devportal/applications/16cd2684-9657-4a01-a956-4efd89e96077/oauth-keys/df972173-c957-46d4-96ac-99be8e303584"'
 
   /applications/{applicationId}/oauth-keys/{keyMappingId}/regenerate-secret:
     post:
@@ -1436,11 +1342,10 @@ paths:
       security:
         - OAuth2Security:
             - apk:subscribe
-            - apk:app_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X POST "https://localhost:9443/api/devportal/applications/16cd2684-9657-4a01-a956-4efd89e96077/oauth-keys/df972173-c957-46d4-96ac-99be8e303584/regenerate-secret"'
+          -H "Content-Type: application/json" -X POST "https://api.am.wso2.com:9095/api/am/devportal/applications/16cd2684-9657-4a01-a956-4efd89e96077/oauth-keys/df972173-c957-46d4-96ac-99be8e303584/regenerate-secret"'
 
   /applications/{applicationId}/oauth-keys/{keyMappingId}/clean-up:
     post:
@@ -1467,11 +1372,10 @@ paths:
       security:
         - OAuth2Security:
             - apk:subscribe
-            - apk:app_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X POST "https://localhost:9443/api/devportal/applications/16cd2684-9657-4a01-a956-4efd89e96077/oauth-keys/df972173-c957-46d4-96ac-99be8e303584/clean-up"'
+          -H "Content-Type: application/json" -X POST "https://api.am.wso2.com:9095/api/am/devportal/applications/16cd2684-9657-4a01-a956-4efd89e96077/oauth-keys/df972173-c957-46d4-96ac-99be8e303584/clean-up"'
 
   /applications/{applicationId}/oauth-keys/{keyMappingId}/generate-token:
     post:
@@ -1509,11 +1413,10 @@ paths:
       security:
         - OAuth2Security:
             - apk:subscribe
-            - apk:app_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/devportal/applications/16cd2684-9657-4a01-a956-4efd89e96077/oauth-keys/{keyMappingId}/generate-token"'
+          -H "Content-Type: application/json" -X POST -d @data.json "https://api.am.wso2.com:9095/api/am/devportal/applications/16cd2684-9657-4a01-a956-4efd89e96077/oauth-keys/{keyMappingId}/generate-token"'
 
   /applications/{applicationId}/api-keys/{keyType}/generate:
     post:
@@ -1551,12 +1454,10 @@ paths:
       security:
         - OAuth2Security:
             - apk:subscribe
-            - apk:app_manage
-            - apk:api_key
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/devportal/applications/16cd2684-9657-4a01-a956-4efd89e96077/api-keys/PRODUCTION/generate"'
+          -H "Content-Type: application/json" -X POST -d @data.json "https://api.am.wso2.com:9095/api/am/devportal/applications/16cd2684-9657-4a01-a956-4efd89e96077/api-keys/PRODUCTION/generate"'
 
   /applications/{applicationId}/api-keys/{keyType}/revoke:
     post:
@@ -1589,164 +1490,11 @@ paths:
       security:
         - OAuth2Security:
             - apk:subscribe
-            - apk:app_manage
-            - apk:api_key
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/devportal/applications/16cd2684-9657-4a01-a956-4efd89e96077/api-keys/PRODUCTION/revoke"'
+          -H "Content-Type: application/json" -X POST -d @data.json "https://api.am.wso2.com:9095/api/am/devportal/applications/16cd2684-9657-4a01-a956-4efd89e96077/api-keys/PRODUCTION/revoke"'
 
-  /applications/export:
-    get:
-      tags:
-        - Import Export
-      summary: Export an Application
-      description: |
-        This operation can be used to export the details of a particular application as a zip file.
-      parameters:
-        - name: appName
-          in: query
-          description: |
-            Application Name
-          required: true
-          schema:
-            type: string
-        - name: appOwner
-          in: query
-          description: |
-            Owner of the Application
-          required: true
-          schema:
-            type: string
-        - name: withKeys
-          in: query
-          description: |
-            Export application keys
-          schema:
-            type: boolean
-        - name: format
-          in: query
-          description: |
-            Format of output documents. Can be YAML or JSON.
-          schema:
-            type: string
-            enum:
-              - JSON
-              - YAML
-      responses:
-        200:
-          description: |
-            OK. Export Successful.
-          headers:
-            Content-Type:
-              description: |
-                The content type of the body.
-              schema:
-                type: string
-          content:
-            application/zip:
-              schema:
-                type: string
-                format: binary
-        400:
-          $ref: '#/components/responses/BadRequest'
-        404:
-          $ref: '#/components/responses/NotFound'
-        406:
-          $ref: '#/components/responses/NotAcceptable'
-      security:
-        - OAuth2Security:
-            - apk:app_import_export
-      x-code-samples:
-        - lang: Curl
-          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/devportal/applications/export?appName=sampleApp&appOwner=admin&withKeys=true"
-          > exportedApplication.zip'
-
-  /applications/import:
-    post:
-      tags:
-        - Import Export
-      summary: Import an Application
-      description: |
-        This operation can be used to import an application.
-      parameters:
-        - name: preserveOwner
-          in: query
-          description: |
-            Preserve Original Creator of the Application
-          schema:
-            type: boolean
-        - name: skipSubscriptions
-          in: query
-          description: |
-            Skip importing Subscriptions of the Application
-          schema:
-            type: boolean
-        - name: appOwner
-          in: query
-          description: |
-            Expected Owner of the Application in the Import Environment
-          schema:
-            type: string
-        - name: skipApplicationKeys
-          in: query
-          description: |
-            Skip importing Keys of the Application
-          schema:
-            type: boolean
-        - name: update
-          in: query
-          description: |
-            Update if application exists
-          schema:
-            type: boolean
-      requestBody:
-        content:
-          multipart/form-data:
-            schema:
-              required:
-                - file
-              properties:
-                file:
-                  type: string
-                  description: |
-                    Zip archive consisting of exported Application Configuration.
-                  format: binary
-        required: true
-      responses:
-        200:
-          description: |
-            OK. Successful response with the updated object information as entity in the body.
-          headers:
-            Content-Type:
-              description: |
-                The content type of the body.
-              schema:
-                type: string
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApplicationInfo'
-        # 207:
-        #   description: |
-        #     Multi Status.
-        #     Partially successful response with skipped APIs information object as entity in the body.
-        #   content:
-        #     application/json:
-        #       schema:
-        #         $ref: '#/components/schemas/APIInfoList'
-        400:
-          $ref: '#/components/responses/BadRequest'
-        406:
-          $ref: '#/components/responses/NotAcceptable'
-      security:
-        - OAuth2Security:
-            - apk:app_import_export
-      x-code-samples:
-        - lang: Curl
-          source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -F file=@exportedApplication.zip "https://127.0.0.1:9443/api/devportal/applications/import?preserveOwner=true&skipSubscriptions=false&appOwner=admin&skipApplicationKeys=false&update=true"'
 
   ######################################################
   # The "Subscription Collection" resource APIs
@@ -1790,11 +1538,10 @@ paths:
       security:
         - OAuth2Security:
             - apk:subscribe
-            - apk:sub_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/devportal/subscriptions?apiId=02e658e7-71c7-4b1d-a623-be145b789340"'
+          "https://api.am.wso2.com:9095/api/am/devportal/subscriptions?apiId=02e658e7-71c7-4b1d-a623-be145b789340"'
 
     post:
       tags:
@@ -1856,11 +1603,10 @@ paths:
       security:
         - OAuth2Security:
             - apk:subscribe
-            - apk:sub_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/devportal/subscriptions"'
+          -H "Content-Type: application/json" -X POST -d @data.json "https://api.am.wso2.com:9095/api/am/devportal/subscriptions"'
 
   /subscriptions/multiple:
     post:
@@ -1917,11 +1663,10 @@ paths:
       security:
         - OAuth2Security:
             - apk:subscribe
-            - apk:sub_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/devportal/subscriptions/multiple"'
+          -H "Content-Type: application/json" -X POST -d @data.json "https://api.am.wso2.com:9095/api/am/devportal/subscriptions/multiple"'
 
   ######################################################
   # The "Subscriptions related to API" resource API
@@ -1964,7 +1709,7 @@ paths:
         - OAuth2Security: []
       x-code-samples:
         - lang: Curl
-          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8" "https://localhost:9443/api/devportal/subscriptions/e93fb282-b456-48fc-8981-003fb89086ae/additionalInfo"'
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8" "https://api.am.wso2.com:9095/api/am/devportal/subscriptions/e93fb282-b456-48fc-8981-003fb89086ae/additionalInfo"'
 
   ######################################################
   # The "Individual Subscription" resource APIs
@@ -2006,11 +1751,10 @@ paths:
       security:
         - OAuth2Security:
             - apk:subscribe
-            - apk:sub_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/devportal/subscriptions/5b65808c-cdf2-43e1-a695-de63e3ad0ae9"'
+          "https://api.am.wso2.com:9095/api/am/devportal/subscriptions/5b65808c-cdf2-43e1-a695-de63e3ad0ae9"'
 
     put:
       tags:
@@ -2079,11 +1823,10 @@ paths:
       security:
         - OAuth2Security:
             - apk:subscribe
-            - apk:sub_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X PUT -d @data.json "https://localhost:9443/api/devportal/subscriptions/80369180-7d90-4ee8-99a1-19fa68512aa5"'
+          -H "Content-Type: application/json" -X PUT -d @data.json "https://api.am.wso2.com:9095/api/am/devportal/subscriptions/80369180-7d90-4ee8-99a1-19fa68512aa5"'
 
     delete:
       tags:
@@ -2120,11 +1863,10 @@ paths:
       security:
         - OAuth2Security:
             - apk:subscribe
-            - apk:sub_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X DELETE "https://localhost:9443/api/devportal/subscriptions/80369180-7d90-4ee8-99a1-19fa68512aa5"'
+          -H "Content-Type: application/json" -X DELETE "https://api.am.wso2.com:9095/api/am/devportal/subscriptions/80369180-7d90-4ee8-99a1-19fa68512aa5"'
 
   /subscriptions/{subscriptionId}/usage:
     get:
@@ -2166,146 +1908,11 @@ paths:
       security:
         - OAuth2Security:
             - apk:subscribe
-            - apk:sub_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/devportal/subscriptions/5b65808c-cdf2-43e1-a695-de63e3ad0ae9/usage"'
+          "https://api.am.wso2.com:9095/api/am/devportal/subscriptions/5b65808c-cdf2-43e1-a695-de63e3ad0ae9/usage"'
 
-  ######################################################
-  # The "Throttling Policy Collection" resource APIs
-  ######################################################
-  /throttling-policies/{policyLevel}:
-    get:
-      tags:
-        - Throttling Policies
-      summary: Get All Available Throttling Policies
-      description: |
-        This operation can be used to get all available application or subscription level throttling policies
-      parameters:
-        - $ref: '#/components/parameters/limit'
-        - $ref: '#/components/parameters/offset'
-        - $ref: '#/components/parameters/policyLevel'
-        - $ref: '#/components/parameters/If-None-Match'
-        - $ref: '#/components/parameters/requestedTenant'
-      responses:
-        200:
-          description: |
-            OK. List of throttling policies returned.
-          headers:
-            ETag:
-              description: |
-                Entity Tag of the response resource. Used by caches, or in conditional requests.
-              schema:
-                type: string
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ThrottlingPolicyList'
-        304:
-          description: |
-            Not Modified. Empty body because the client has already the latest version of the requested resource.
-          content: {}
-        406:
-          $ref: '#/components/responses/NotAcceptable'
-      security:
-        - OAuth2Security: []
-      x-code-samples:
-        - lang: Curl
-          source: curl -k "https://localhost:9443/api/devportal/throttling-policies/application"
-
-  ######################################################
-  # The "Individual Throttling Policy" resource APIs
-  ######################################################
-  /throttling-policies/{policyLevel}/{policyId}:
-    get:
-      tags:
-        - Throttling Policies
-      summary: |
-        Get Details of a Throttling Policy
-      description: |
-        This operation can be used to retrieve details of a single throttling policy by specifying the policy level and policy name.
-      parameters:
-        - $ref: '#/components/parameters/policyId'
-        - $ref: '#/components/parameters/policyLevel'
-        - $ref: '#/components/parameters/requestedTenant'
-        - $ref: '#/components/parameters/If-None-Match'
-      responses:
-        200:
-          description: |
-            OK. Throttling Policy returned
-          headers:
-            ETag:
-              description: |
-                Entity Tag of the response resource. Used by caches, or in conditional requests.
-              schema:
-                type: string
-            Last-Modified:
-              description: |
-                Date and time the resource has been modified the last time. Used by caches, or in conditional requests.
-              schema:
-                type: string
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ThrottlingPolicy'
-        304:
-          description: |
-            Not Modified. Empty body because the client has already the latest version of the requested resource.
-          content: {}
-        404:
-          $ref: '#/components/responses/NotFound'
-        406:
-          $ref: '#/components/responses/NotAcceptable'
-      security:
-        - OAuth2Security: []
-      x-code-samples:
-        - lang: Curl
-          source: curl -k "https://localhost:9443/api/devportal/throttling-policies/application/10PerMin"
-
-  ######################################################
-  # The "Tag Collection" resource API
-  ######################################################
-  /tags:
-    get:
-      tags:
-        - Tags
-      summary: |
-        Get All Tags
-      description: |
-        This operation can be used to retrieve a list of tags that are already added to APIs.
-      parameters:
-        - $ref: '#/components/parameters/limit'
-        - $ref: '#/components/parameters/offset'
-        - $ref: '#/components/parameters/requestedTenant'
-        - $ref: '#/components/parameters/If-None-Match'
-      responses:
-        200:
-          description: |
-            OK. Tag list is returned.
-          headers:
-            ETag:
-              description: |
-                Entity Tag of the response resource. Used by caches, or in conditional requests.
-              schema:
-                type: string
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TagList'
-        304:
-          description: |
-            Not Modified. Empty body because the client has already the latest version of the requested resource.
-          content: {}
-        404:
-          $ref: '#/components/responses/NotFound'
-        406:
-          $ref: '#/components/responses/NotAcceptable'
-      security:
-        - OAuth2Security: []
-      x-code-samples:
-        - lang: Curl
-          source: curl -k "https://localhost:9443/api/devportal/tags"
 
   ######################################################
   # The "Content Search Results" resource APIs
@@ -2357,7 +1964,7 @@ paths:
         - OAuth2Security: []
       x-code-samples:
         - lang: Curl
-          source: curl -k "https://localhost:9443/api/devportal/search?query=PizzaShackAPI"
+          source: curl -k "https://api.am.wso2.com:9095/api/am/devportal/search?query=PizzaShackAPI"
 
   ######################################################
   # The "SDK Generation Languages" list resource APIs
@@ -2387,194 +1994,8 @@ paths:
       x-code-samples:
         - lang: Curl
           source: curl -k -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-            "https://localhost:9443/api/devportal/sdk-gen/languages"
+            "https://api.am.wso2.com:9095/api/am/devportal/sdk-gen/languages"
 
-  ######################################################
-  # The Web hook API topic details
-  ######################################################
-  /webhooks/subscriptions:
-    get:
-      tags:
-        - Webhooks
-      summary: |
-        Get available web hook subscriptions for a given application.
-      description: |
-        This operation will provide a list of web hook topic subscriptions for a given application. If the api id is provided results will be filtered by the api Id.
-      parameters:
-        - $ref: '#/components/parameters/applicationId-Q'
-        - $ref: '#/components/parameters/apiId-Q'
-        - $ref: '#/components/parameters/requestedTenant'
-      responses:
-        200:
-          description: |
-            OK. Topic list returned.
-          headers:
-            ETag:
-              description: |
-                Entity Tag of the response resource. Used by caches, or in conditional requests.
-              schema:
-                type: string
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/WebhookSubscriptionList'
-        404:
-          $ref: '#/components/responses/NotFound'
-        500:
-          $ref: '#/components/responses/InternalServerError'
-      security:
-        - OAuth2Security: []
-      x-code-samples:
-        - lang: Curl
-          source: curl -k -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-            "https://localhost:9443/api/devportal/webhooks/subscriptions?applicationId=5b65808c-cdf2-43e1-a695-de63e3ad0ae9&apiId=ae4eae22-3f65-387b-a171-d37eaa366fa8"
-
-  ######################################################
-  # The Developer Portal settings List
-  ######################################################
-  /settings:
-    get:
-      tags:
-        - Settings
-      summary: Retrieve Developer Portal settings
-      description: |
-        Retreive Developer Portal settings
-      parameters:
-        - $ref: '#/components/parameters/requestedTenant'
-      responses:
-        200:
-          description: |
-            OK. Settings returned
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Settings'
-        404:
-          $ref: '#/components/responses/NotFound'
-      security:
-        - OAuth2Security:
-            - apk:store_settings
-      x-code-samples:
-        - lang: Curl
-          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/devportal/settings"'
-
-  /settings/application-attributes:
-    get:
-      tags:
-        - Settings
-      summary: |
-        Get All Application Attributes from Configuration
-      description: |
-        This operation can be used to retrieve the application attributes from configuration. It will not return hidden attributes.
-      parameters:
-        - $ref: '#/components/parameters/If-None-Match'
-      responses:
-        200:
-          description: |
-            OK. Application attributes returned.
-          headers:
-            Content-Type:
-              description: |
-                The content type of the body.
-              schema:
-                type: string
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApplicationAttributeList'
-        404:
-          $ref: '#/components/responses/NotFound'
-        406:
-          $ref: '#/components/responses/NotAcceptable'
-      security:
-        - OAuth2Security:
-            - apk:subscribe
-      x-code-samples:
-        - lang: Curl
-          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/devportal/settings/application-attributes"'
-
-  ######################################################
-  # The tenant resource APIs
-  ######################################################
-  /tenants:
-    get:
-      tags:
-        - Tenants
-      summary: |
-        Get Tenants by State
-      description: |
-        This operation is used to get tenants by state
-      parameters:
-        - name: state
-          in: query
-          description: |
-            The state represents the current state of the tenant
-          schema:
-            type: string
-            default: active
-            enum:
-              - active
-              - inactive
-        - $ref: '#/components/parameters/limit'
-        - $ref: '#/components/parameters/offset'
-      responses:
-        200:
-          description: |
-            OK. Tenant names returned.
-          headers:
-            Content-Type:
-              description: |
-                The content type of the body.
-              schema:
-                type: string
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TenantList'
-        404:
-          $ref: '#/components/responses/NotFound'
-        406:
-          $ref: '#/components/responses/NotAcceptable'
-      security:
-        - OAuth2Security: []
-      x-code-samples:
-        - lang: Curl
-          source: curl -k "https://localhost:9443/api/devportal/tenants"
-
-  ######################################################
-  # The "Recommendations" resource API
-  ######################################################
-  /recommendations:
-    get:
-      tags:
-        - Recommendations
-      summary: Give API Recommendations for a User
-      description: This API can be used to get recommended APIs for a user who logs into the API Developer Portal
-      responses:
-        200:
-          description: |
-            OK. Requested recommendations are returned
-          headers:
-            ETag:
-              description: |
-                Entity Tag of the response resource. Used by caches, or in conditional requests
-              schema:
-                type: string
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Recommendations'
-        404:
-          $ref: '#/components/responses/NotFound'
-      security:
-        - OAuth2Security:
-            - apk:subscribe
-      x-code-samples:
-        - lang: Curl
-          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/devportal/recommendations"'
 
   ######################################################
   # The "Category Collection" resource API
@@ -2600,7 +2021,7 @@ paths:
         - OAuth2Security: []
       x-code-samples:
         - lang: Curl
-          source: curl -k "https://localhost:9443/api/devportal/api-categories"
+          source: curl -k "https://api.am.wso2.com:9095/api/am/devportal/api-categories"
 
   ######################################################
   # The "Key Manager Collection" resource API
@@ -2628,111 +2049,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/devportal/key-managers"'
-
-  ######################################################
-  # GraphQL "Query Complexity" resource APIs
-  ######################################################
-  /apis/{apiId}/graphql-policies/complexity:
-    get:
-      tags:
-        - GraphQL Policies
-      summary: Get the Complexity Related Details of an API
-      description: |
-        This operation can be used to retrieve complexity related details belonging to an API by providing the API id.
-      parameters:
-        - $ref: '#/components/parameters/apiId'
-      responses:
-        200:
-          description: |
-            OK. Requested complexity details returned.
-          headers:
-            Content-Type:
-              description: |
-                The content of the body.
-              schema:
-                type: string
-                default: application/json
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GraphQLQueryComplexityInfo'
-        404:
-          description: |
-            Not Found. Requested API does not contain any complexity details.
-          content: {}
-      security:
-        - OAuth2Security: []
-      x-code-samples:
-        - lang: Curl
-          source: curl -k "https://localhost:9443/api/devportal/apis/e93fb282-b456-48fc-8981-003fb89086ae/graphql-policies/complexity"
-
-  /apis/{apiId}/graphql-policies/complexity/types:
-    get:
-      tags:
-        - GraphQL Policies
-      summary: Retrieve Types and Fields of a GraphQL Schema
-      description: |
-        This operation can be used to retrieve all types and fields of the GraphQL Schema by providing the API id.
-      parameters:
-        - $ref: '#/components/parameters/apiId'
-      responses:
-        200:
-          description: |
-            OK. Types and fields returned successfully.
-          headers:
-            Content-Type:
-              description: |
-                The content of the body.
-              schema:
-                type: string
-                default: application/json
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GraphQLSchemaTypeList'
-        404:
-          description: |
-            Not Found. Retrieving types and fields failed.
-          content: {}
-      security:
-        - OAuth2Security: []
-      x-code-samples:
-        - lang: Curl
-          source: curl -k "https://localhost:9443/api/devportal/apis/e93fb282-b456-48fc-8981-003fb89086ae/graphql-policies/complexity/types"
-
-  ######################################################
-  # User resource APIs
-  ######################################################
-  /me/change-password:
-    post:
-      tags:
-        - Users
-      summary: Change the Password of the user
-      description: |
-        Using this operation, logged-in user can change their password.
-      operationId: changeUserPassword
-      requestBody:
-        description: |
-          Current and new password of the user
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CurrentAndNewPasswords'
-        required: true
-      responses:
-        200:
-          description: OK. User password changed successfully
-          content: {}
-        400:
-          $ref: '#/components/responses/BadRequest'
-      security:
-        - OAuth2Security:
-            - apk:subscribe
-      x-code-samples:
-        - lang: Curl
-          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/devportal/me/change-password"'
+          "https://api.am.wso2.com:9095/api/am/devportal/key-managers"'
 
 components:
   schemas:
@@ -3566,6 +2883,9 @@ components:
             - REJECTED
             - TIER_UPDATE_PENDING
             - DELETE_PENDING
+        subscriptionCreateState:
+          type: string
+          example: CREATED
         redirectionParams:
           type: string
           description: A url and other parameters the subscriber can be redirected.
@@ -5163,5 +4483,10 @@ components:
         password:
           tokenUrl: https://localhost:9443/oauth2/token
           scopes:
-            type: array
-            items: test
+            openid: Authorize access to user details
+            apk:subscribe: Subscribe API
+            apk:app_manage: Retrieve, Manage and Import, Export applications
+            apk:app_import_export: Import and export applications related operations
+            apk:api_key: Generate API Keys
+            apk:sub_manage: Retrieve, Manage subscriptions
+            apk:store_settings: Retrieve Developer Portal settings

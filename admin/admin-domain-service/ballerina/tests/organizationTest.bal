@@ -35,7 +35,7 @@ Organization  organization = {
     };
 string orgId = "";
 WorkflowProperties workflowProperties = {
-        name: "ApplicationCreation",
+        name: "APPLICATION_CREATION",
         properties: [],
         enable: true
     };
@@ -62,7 +62,7 @@ function updateOrganizationTest() {
         organizationClaimValue: "01234567-0123-0123-0123",
         workflows: [
             {
-                name: "ApplicationCreation",
+                name: "APPLICATION_CREATION",
                 enable: false,
                 properties: []
             }

@@ -46,7 +46,7 @@ service http:InterceptableService /api/backoffice on ep0 {
         http:Interceptor[] interceptors = [jwtValidationInterceptor, requestErrorInterceptor, responseErrorInterceptor];
         return interceptors;
     }
-    isolated resource function get apis(http:RequestContext requestContext, string? query, @http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0, string sortBy = "createdTime", string sortOrder = "desc", @http:Header string? accept = "application/json") returns APIList|http:NotModified|commons:APKError {
+    isolated resource function get apis(http:RequestContext requestContext, string? query, @http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0, "apiName"|"version"|"createdTime"|"status" sortBy = "createdTime", string sortOrder = "desc", @http:Header string? accept = "application/json") returns APIList|http:NotModified|commons:APKError {
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
         return getAPIList('limit, offset, query, organization.uuid);
@@ -66,8 +66,6 @@ service http:InterceptableService /api/backoffice on ep0 {
         }
         return apiDefinition;
     }
-    // resource function get apis/[string apiId]/'resource\-paths(@http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0) returns ResourcePathList|http:NotModified|NotFoundError|NotAcceptableError {
-    // }
     isolated resource function get apis/[string apiId]/thumbnail(@http:Header string? 'if\-none\-match, @http:Header string? accept = "application/json") returns http:Response|http:NotModified|NotFoundError|NotAcceptableError|commons:APKError {
         return getThumbnail(apiId);
     }
@@ -77,18 +75,11 @@ service http:InterceptableService /api/backoffice on ep0 {
     resource function get apis/[string apiId]/documents(@http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0, @http:Header string? accept = "application/json") returns DocumentList|http:NotModified|NotFoundError|NotAcceptableError|commons:APKError {
         return getDocumentList(apiId, 'limit, offset);
     }
-    isolated resource function post apis/[string apiId]/documents(@http:Payload Document payload) returns CreatedDocument|BadRequestError|UnsupportedMediaTypeError|commons:APKError|error {
+    isolated resource function post apis/[string apiId]/documents(@http:Payload Document payload) returns Document|BadRequestError|UnsupportedMediaTypeError|commons:APKError|error {
         Document documentBody = check payload.cloneWithType(Document);
 
         Document|commons:APKError createdDocument = createDocument(apiId, documentBody);
-        if createdDocument is Document {
-            CreatedDocument createdDoc = {
-                body: createdDocument
-            };
-            return createdDoc;
-        } else {
-            return createdDocument;
-        }
+        return createdDocument;
     }
     resource function get apis/[string apiId]/documents/[string documentId](@http:Header string? 'if\-none\-match, @http:Header string? accept = "application/json") returns Document|http:NotModified|NotFoundError|NotAcceptableError|commons:APKError {
         return getDocumentMetaData(apiId, documentId);
@@ -173,14 +164,5 @@ service http:InterceptableService /api/backoffice on ep0 {
         } else {
             return error("Error while getting LC state of API" + currentState.message());
         }
-    }
-    resource function get 'business\-plans(http:RequestContext requestContext, @http:Header string? accept = "application/json") returns BusinessPlanList|commons:APKError {
-        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
-        commons:Organization organization = authenticatedUserContext.organization;
-        BusinessPlanList|commons:APKError subPolicyList = getBusinessPlans(organization.uuid);
-        if subPolicyList is BusinessPlanList {
-            log:printDebug(subPolicyList.toString());    
-        }
-        return subPolicyList;
     }
 }

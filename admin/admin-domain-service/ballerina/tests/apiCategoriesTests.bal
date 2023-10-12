@@ -19,6 +19,15 @@
 import ballerina/test;
 import wso2/apk_common_lib as commons;
 
+commons:Organization organiztion = {
+    name: "org1",
+    displayName: "org1",
+    uuid: "a3b58ccf-6ecc-4557-b5bb-0a35cce38256",
+    organizationClaimValue: "org1",
+    enabled: true,
+    serviceListingNamespaces: ["*"],
+    properties: []
+};
 APICategory  apiCategory = {name: "MyCat1", description: "My Desc 1", id: "01ed9241-2d5d-1b98-8ecb-40f85676b081", numberOfAPIs: 2};
 
 @test:Config {}

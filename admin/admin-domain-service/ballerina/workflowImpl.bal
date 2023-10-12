@@ -30,8 +30,8 @@ isolated function getWorkflowList(string? workflowType, commons:Organization org
                 WorkflowInfo workFlowInfo = {};
                 string[] applicationProperty = [];
                 workFlowInfo.workflowReferenceId = appWorkflow.workflowReferenceId;
-                workFlowInfo.workflowType = appWorkflow.workflowType;
-                workFlowInfo.workflowStatus = appWorkflow.workflowStatus;
+                workFlowInfo.workflowType = <"APPLICATION_CREATION"|"KEY_GENERATION"|"SUBSCRIPTION_CREATION"|"LIFECYCLE_CHANGE"|()>appWorkflow.workflowType;
+                workFlowInfo.workflowStatus = <"APPROVED"|"CREATED"|()>appWorkflow.workflowStatus;
                 workFlowInfo.createdTime = appWorkflow.createdTime;
                 workFlowInfo.updatedTime = appWorkflow.updatedTime;
                 applicationProperty.push("applicationName:",appWorkflow.applicationName);
@@ -49,8 +49,8 @@ isolated function getWorkflowList(string? workflowType, commons:Organization org
                 WorkflowInfo workFlowInfo = {};
                 string[] subscriptionProperty = [];
                 workFlowInfo.workflowReferenceId = subWorkflow.workflowReferenceId;
-                workFlowInfo.workflowType = subWorkflow.workflowType;
-                workFlowInfo.workflowStatus = subWorkflow.workflowStatus;
+                workFlowInfo.workflowType = <"APPLICATION_CREATION"|"KEY_GENERATION"|"SUBSCRIPTION_CREATION"|"LIFECYCLE_CHANGE"|()>subWorkflow.workflowType;
+                workFlowInfo.workflowStatus = <"APPROVED"|"CREATED"|()>subWorkflow.workflowStatus;
                 workFlowInfo.createdTime = subWorkflow.createdTime;
                 workFlowInfo.updatedTime = subWorkflow.updatedTime;
                 subscriptionProperty.push("applicationName",subWorkflow.applicationName);

@@ -757,89 +757,9 @@ isolated service http:InterceptableService /api/devportal on ep0 {
         string|json sdkLanguages = check getSDKLanguages();
         return sdkLanguages;
     }
-    # Get available web hook subscriptions for a given application.
-    #
-    # + applicationId - **Application Identifier** consisting of the UUID of the Application. 
-    # + apiId - **API ID** consisting of the **UUID** of the API. 
-    # + 'x\-wso2\-tenant - For cross-tenant invocations, this is used to specify the tenant/organization domain, where the resource need to be   retrieved from. 
-    # + return - returns can be any of following types
-    # WebhookSubscriptionList (OK. Topic list returned.)
-    # NotFoundError (Not Found. The specified resource does not exist.)
-    # InternalServerErrorError (Internal Server Error.)
-    // resource function get webhooks/subscriptions(string? applicationId, string? apiId, @http:Header string? 'x\-wso2\-tenant) returns WebhookSubscriptionList|NotFoundError|InternalServerErrorError {
-    // }
-    # Retrieve Developer Portal settings
-    #
-    # + 'x\-wso2\-tenant - For cross-tenant invocations, this is used to specify the tenant/organization domain, where the resource need to be   retrieved from. 
-    # + return - returns can be any of following types
-    # Settings (OK. Settings returned)
-    # NotFoundError (Not Found. The specified resource does not exist.)
-    // resource function get settings(@http:Header string? 'x\-wso2\-tenant) returns Settings|NotFoundError {
-    // }
-    # Get All Application Attributes from Configuration
-    #
-    # + 'if\-none\-match - Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resource. 
-    # + return - returns can be any of following types
-    # ApplicationAttributeList (OK. Application attributes returned.)
-    # NotFoundError (Not Found. The specified resource does not exist.)
-    # NotAcceptableError (Not Acceptable. The requested media type is not supported.)
-    // resource function get settings/'application\-attributes(@http:Header string? 'if\-none\-match) returns ApplicationAttributeList|NotFoundError|NotAcceptableError {
-    // }
-    # Get Tenants by State
-    #
-    # + state - The state represents the current state of the tenant 
-    # + 'limit - Maximum size of resource array to return. 
-    # + offset - Starting point within the complete list of items qualified. 
-    # + return - returns can be any of following types
-    # TenantList (OK. Tenant names returned.)
-    # NotFoundError (Not Found. The specified resource does not exist.)
-    # NotAcceptableError (Not Acceptable. The requested media type is not supported.)
-    // resource function get tenants(string state = "active", int 'limit = 25, int offset = 0) returns TenantList|NotFoundError|NotAcceptableError {
-    // }
-    # Give API Recommendations for a User
-    #
-    # + return - returns can be any of following types
-    # Recommendations (OK. Requested recommendations are returned)
-    # NotFoundError (Not Found. The specified resource does not exist.)
-    // resource function get recommendations() returns Recommendations|NotFoundError {
-    // }
-    # Get All API Categories
-    #
-    # + 'x\-wso2\-tenant - For cross-tenant invocations, this is used to specify the tenant/organization domain, where the resource need to be   retrieved from. 
-    # + return - OK. Categories returned 
     // resource function get 'api\-categories(@http:Header string? 'x\-wso2\-tenant) returns APICategoryList {
+    //     return;
     // }
-    # Get All Key Managers
-    #
-    # + 'x\-wso2\-tenant - For cross-tenant invocations, this is used to specify the tenant/organization domain, where the resource need to be   retrieved from. 
-    # + return - OK. Key Manager list returned 
     // resource function get 'key\-managers(@http:Header string? 'x\-wso2\-tenant) returns KeyManagerList {
     // }
-    # Get the Complexity Related Details of an API
-    #
-    # + apiId - **API ID** consisting of the **UUID** of the API. 
-    # + return - returns can be any of following types
-    # GraphQLQueryComplexityInfo (OK. Requested complexity details returned.)
-    # http:NotFound (Not Found. Requested API does not contain any complexity details.)
-    // resource function get apis/[string apiId]/'graphql\-policies/complexity() returns GraphQLQueryComplexityInfo|http:NotFound {
-    // }
-    # Retrieve Types and Fields of a GraphQL Schema
-    #
-    # + apiId - **API ID** consisting of the **UUID** of the API. 
-    # + return - returns can be any of following types
-    # GraphQLSchemaTypeList (OK. Types and fields returned successfully.)
-    # http:NotFound (Not Found. Retrieving types and fields failed.)
-    // resource function get apis/[string apiId]/'graphql\-policies/complexity/types() returns GraphQLSchemaTypeList|http:NotFound {
-    // }
-    # Change the Password of the user
-    #
-    # + payload - Current and new password of the user 
-    # + return - returns can be any of following types
-    # http:Ok (OK. User password changed successfully)
-    # BadRequestError (Bad Request. Invalid request or validation error.)
-    isolated resource function post me/'change\-password(@http:Payload CurrentAndNewPasswords payload) returns http:Ok|BadRequestError {
-        BadRequestError badRequest = {body: {code: 400, message: "Invalid request or validation error."}};
-        return badRequest;
-    }
-
 }

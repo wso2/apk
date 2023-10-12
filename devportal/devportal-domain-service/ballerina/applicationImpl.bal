@@ -15,14 +15,14 @@
 // specific language governing permissions and limitations
 // under the License.
 //
-
 import ballerina/log;
+import ballerina/time;
 import ballerina/uuid;
+
 import wso2/apk_common_lib as commons;
 import wso2/notification_grpc_client;
 import devportal_service.types;
 import devportal_service.kmclient;
-import ballerina/time;
 
 isolated function addApplication(Application application, commons:Organization org, string user) returns NotFoundError|Application|commons:APKError {
     string applicationId = uuid:createType1AsString();
@@ -98,8 +98,8 @@ isolated function getApplicationById(string appId, commons:Organization org) ret
 }
 
 isolated function getApplicationList(string? sortBy, string? groupId, string? query, string? sortOrder, int 'limit, int offset, commons:Organization org) returns ApplicationList|commons:APKError {
-    Application[]|commons:APKError applications = getApplicationsDAO(org.uuid);
-    if applications is Application[] {
+    ApplicationInfo[]|commons:APKError applications = getApplicationsDAO(org.uuid);
+    if applications is ApplicationInfo[] {
         int count = applications.length();
         ApplicationList applicationsList = {count: count, list: applications};
         return applicationsList;
@@ -199,11 +199,10 @@ isolated function deleteOauthApps(string appId, commons:Organization organizatio
 
 isolated function generateAPIKey(APIKeyGenerateRequest payload, string appId, string keyType, string user, commons:Organization org) returns APIKey|commons:APKError|NotFoundError {
     Application|NotFoundError application = check getApplicationById(appId, org);
-    if application !is Application {
-        string message = "Internal Error occured while retrieving Application Info for API Key";
-        return error(message, message = message, description = message, code = 909001, statusCode = 500);
+    if application is NotFoundError {
+        return application;
     } else {
-        boolean userAllowed = checkUserAccessAllowedForApplication(application, user);
+        boolean userAllowed = checkUserAccessAllowedForApplication(<Application>application, user);
         if userAllowed {
             int validityPeriod = 0;
             int? payloadValPeriod = payload.validityPeriod;
@@ -245,7 +244,7 @@ isolated function generateAPIKey(APIKeyGenerateRequest payload, string appId, st
                     }
                 }
             }
-            APIKey|commons:APKError apiKey = generateAPIKeyForApplication(user, application, apiList, keyType, validityPeriod, addProperties);
+            APIKey|commons:APKError apiKey = generateAPIKeyForApplication(user, <Application>application, apiList, keyType, validityPeriod, addProperties);
             return apiKey;
         } else {
             string message = "User:" + user + " doesn't have permission to Application with application id:" + appId;
@@ -295,7 +294,7 @@ isolated function retrieveManagementServerHostsList() returns string[]|commons:A
 public isolated function generateKeysForApplication(Application application, ApplicationKeyGenerateRequest applicationKeyGenRequest, commons:Organization organization) returns OkApplicationKey|commons:APKError {
     string? keyManager = applicationKeyGenRequest.keyManager;
     if keyManager is string {
-        if check isKeyMappingEntryByApplicationAndKeyManagerExist(<string>application.applicationId, keyManager,applicationKeyGenRequest.keyType) {
+        if check isKeyMappingEntryByApplicationAndKeyManagerExist(<string>application.applicationId, keyManager, applicationKeyGenRequest.keyType) {
             return error("Key Mapping Entry already exists for application " + application.name + " and keyManager " + keyManager, message = "Key Mapping Entry already exists for application " + application.name + " and keyManager " + keyManager, description = "Key Mapping Entry already exists for application " + application.name + " and keyManager " + keyManager, code = 900950, statusCode = 400);
         }
         KeyManagerDaoEntry keyManagerById = check getKeyManagerById(keyManager, organization);
@@ -439,8 +438,8 @@ isolated function fromKeyMappingDaoEntryToApplicationKey(types:KeyMappingDaoEntr
         keyMappingId: item.uuid,
         consumerKey: item.consumer_key,
         keyManager: item.key_manager_uuid,
-        keyType: item.key_type,
-        mode: item.create_mode,
+        keyType: <"PRODUCTION"|"SANDBOX">item.key_type,
+        mode: <"MAPPED"|"CREATED">item.create_mode,
         keyState: "CREATED"
     };
     if oauthAppResponse is kmclient:ClientRegistrationResponse {
@@ -527,18 +526,19 @@ public isolated function updateOauthApp(Application application, string keyMappi
             types:KeyMappingDaoEntry updatedKeyMappingentry = keyMappingEntry.clone();
             updatedKeyMappingentry.app_info = oauthApplicationByClientId.toJsonString().toBytes();
             check updateKeyMappingEntry(updatedKeyMappingentry);
-            return {
+            ApplicationKey applicationKey = {
                 keyMappingId: keyMappingEntry.uuid,
                 consumerKey: oauthApplicationByClientId.client_id,
                 consumerSecret: oauthApplicationByClientId.client_secret,
                 keyManager: keyMappingEntry.key_manager_uuid,
-                keyType: keyMappingEntry.key_type,
-                mode: keyMappingEntry.create_mode,
+                keyType: <"PRODUCTION"|"SANDBOX">keyMappingEntry.key_type,
+                mode: <"MAPPED"|"CREATED">keyMappingEntry.create_mode,
                 keyState: "CREATED",
                 callbackUrls: oauthApplicationByClientId.redirect_uris,
                 supportedGrantTypes: oauthApplicationByClientId.grant_types,
                 additionalProperties: oauthApplicationByClientId.additional_properties
             };
+            return applicationKey;
         } else {
             return error("Key Manager is disabled", message = "Key Manager is disabled", description = "Key Manager is disabled", code = 900951, statusCode = 400);
         }

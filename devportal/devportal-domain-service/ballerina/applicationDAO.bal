@@ -110,7 +110,7 @@ isolated function getApplicationByIdDAO(string appId, string org) returns Applic
     }
 }
 
-isolated function getApplicationsDAO(string org) returns Application[]|commons:APKError {
+isolated function getApplicationsDAO(string org) returns ApplicationInfo[]|commons:APKError {
     postgresql:Client|error dbClient = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
@@ -119,8 +119,8 @@ isolated function getApplicationsDAO(string org) returns Application[]|commons:A
         do {
             sql:ParameterizedQuery query = `SELECT NAME, UUID as APPLICATIONID, DESCRIPTION, APPLICATION_TIER as THROTTLINGPOLICY, TOKEN_TYPE as TOKENTYPE, ORGANIZATION,
             APPLICATION_STATUS as STATUS  FROM APPLICATION WHERE ORGANIZATION =${org}`;
-            stream<Application, sql:Error?> applicationStream = dbClient->query(query);
-            Application[] applications = check from Application application in applicationStream
+            stream<ApplicationInfo, sql:Error?> applicationStream = dbClient->query(query);
+            ApplicationInfo[] applications = check from ApplicationInfo application in applicationStream
                 select application;
             check applicationStream.close();
             return applications;
