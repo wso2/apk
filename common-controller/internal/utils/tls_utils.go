@@ -86,7 +86,7 @@ func GetTrustedCertPool(truststoreLocation string) *x509.CertPool {
 			return nil
 		})
 		if err != nil {
-			logger.LoggerTLSUtils.Warn("Error walking the path %s", truststoreLocation, err)
+			logger.LoggerTLSUtils.Warnf("Error walking the path %s. Error: %s", truststoreLocation, err)
 		}
 	})
 	return caCertPool

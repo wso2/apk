@@ -49,7 +49,12 @@ import org.wso2.apk.enforcer.tracing.Utils;
 import org.wso2.apk.enforcer.util.TLSUtils;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import javax.net.ssl.SSLException;
 
@@ -116,7 +121,8 @@ public class AuthServer {
             } else {
                 logger.debug("analytics filter is disabled.");
             }
-
+            // Start receiving revoked tokens from redis cache
+            RevokedTokenRedisClient.retrieveAndSubscribe();
 
             // Start the server
             server.start();

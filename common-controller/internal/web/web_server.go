@@ -15,19 +15,23 @@
  *
  */
 
-package main
+package web
 
 import (
-	logger "github.com/sirupsen/logrus"
-	commoncontroller "github.com/wso2/apk/common-controller/commoncontroller"
-	web "github.com/wso2/apk/common-controller/internal/web"
+	"github.com/gin-gonic/gin"
+	loggers "github.com/wso2/apk/common-controller/internal/loggers"
 	config "github.com/wso2/apk/common-controller/internal/config"
+	"fmt"
 )
 
-func main() {
+func StartwebServer() {
+	loggers.LoggerAPI.Info("Starting web server")
+	gin.SetMode(gin.ReleaseMode)
+	router := gin.Default()
+	router.POST("/revoke", RevokeHandler)
 	conf := config.ReadConfigs()
-	logger.Info("Starting the Web server")
-	go web.StartwebServer();
-	logger.Info("Starting the Common Controller")
-	commoncontroller.InitCommonControllerServer(conf)
+	certPath := conf.CommonController.Keystore.CertPath
+	keyPath := conf.CommonController.Keystore.KeyPath
+	port := conf.CommonController.WebServer.Port
+	router.RunTLS(fmt.Sprintf(":%d", port), certPath, keyPath)
 }

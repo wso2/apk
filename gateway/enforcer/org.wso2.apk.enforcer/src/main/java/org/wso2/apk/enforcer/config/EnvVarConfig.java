@@ -40,6 +40,17 @@ public class EnvVarConfig {
     public static final String XDS_MAX_RETRIES = "XDS_MAX_RETRIES";
     public static final String XDS_RETRY_PERIOD = "XDS_RETRY_PERIOD";
     public static final String HOSTNAME = "HOSTNAME";
+    public static final String REDIS_USERNAME = "REDIS_USERNAME";
+    public static final String REDIS_PASSWORD = "REDIS_PASSWORD";
+    public static final String REDIS_HOST = "REDIS_HOST";
+    public static final String REDIS_PORT = "REDIS_PORT";
+    public static final String IS_REDIS_TLS_ENABLED = "IS_REDIS_TLS_ENABLED";
+    public static final String REDIS_REVOKED_TOKENS_CHANNEL = "REDIS_REVOKED_TOKENS_CHANNEL";
+    public static final String REDIS_KEY_FILE = "REDIS_KEY_FILE";
+    public static final String REDIS_CERT_FILE = "REDIS_CERT_FILE";
+    public static final String REDIS_CA_CERT_FILE = "REDIS_CA_CERT_FILE";
+    public static final String REVOKED_TOKEN_CLEANUP_INTERVAL = "REVOKED_TOKEN_CLEANUP_INTERVAL";
+
 
     // Since the container is running in linux container, path separator is not needed.
     private static final String DEFAULT_TRUSTED_CA_CERTS_PATH = "/home/wso2/security/truststore";
@@ -55,7 +66,16 @@ public class EnvVarConfig {
     public static final String DEFAULT_XDS_MAX_RETRIES = Integer.toString(Constants.MAX_XDS_RETRIES);
     public static final String DEFAULT_XDS_RETRY_PERIOD = Integer.toString(Constants.XDS_DEFAULT_RETRY);
     public static final String DEFAULT_HOSTNAME = "Unassigned";
-
+    public static final String DEFAULT_REDIS_USERNAME = "default";
+    public static final String DEFAULT_REDIS_PASSWORD = "";
+    public static final String DEFAULT_REDIS_HOST = "redis-master";
+    public static final int DEFAULT_REDIS_PORT = 6379;
+    public static final String DEFAULT_IS_REDIS_TLS_ENABLED = "false";
+    public static final String DEFAULT_REDIS_REVOKED_TOKENS_CHANNEL = "wso2-apk-revoked-tokens-channel";
+    public static final String DEFAULT_REDIS_KEY_FILE = "/home/wso2/security/redis/redis.key";
+    public static final String DEFAULT_REDIS_CERT_FILE = "/home/wso2/security/redis/redis.crt";
+    public static final String DEFAULT_REDIS_CA_CERT_FILE = "/home/wso2/security/redis/ca.crt";
+    public static final int DEFAULT_REVOKED_TOKEN_CLEANUP_INTERVAL = 60*60; // In seconds
     private static EnvVarConfig instance;
     private final String trustedAdapterCertsPath;
     private final String trustDefaultCerts;
@@ -74,6 +94,16 @@ public class EnvVarConfig {
     private final String xdsMaxRetries;
     private final String xdsRetryPeriod;
     private final String instanceIdentifier;
+    private final String redisUsername;
+    private final String redisPassword;
+    private final String redisHost;
+    private final int redisPort;
+    private final boolean isRedisTlsEnabled;
+    private final String revokedTokensRedisChannel;
+    private final String redisKeyFile;
+    private final String redisCertFile;
+    private final String redisCaCertFile;
+    private final int revokedTokenCleanupInterval;
 
     private EnvVarConfig() {
         trustedAdapterCertsPath = retrieveEnvVarOrDefault(TRUSTED_CA_CERTS_PATH,
@@ -99,6 +129,17 @@ public class EnvVarConfig {
         // HOSTNAME environment property is readily available in docker and kubernetes, and it represents the Pod
         // name in Kubernetes context, containerID in docker context.
         instanceIdentifier = retrieveEnvVarOrDefault(HOSTNAME, DEFAULT_HOSTNAME);
+        redisUsername = retrieveEnvVarOrDefault(REDIS_USERNAME, DEFAULT_REDIS_USERNAME);
+        redisPassword = retrieveEnvVarOrDefault(REDIS_PASSWORD, DEFAULT_REDIS_PASSWORD);
+        redisHost = retrieveEnvVarOrDefault(REDIS_HOST, DEFAULT_REDIS_HOST);
+        redisPort = getRedisPortFromEnv();
+        isRedisTlsEnabled = retrieveEnvVarOrDefault(IS_REDIS_TLS_ENABLED, DEFAULT_IS_REDIS_TLS_ENABLED).toLowerCase()
+                .equals(DEFAULT_IS_REDIS_TLS_ENABLED)? false:true;
+        revokedTokensRedisChannel = retrieveEnvVarOrDefault(REDIS_REVOKED_TOKENS_CHANNEL, DEFAULT_REDIS_REVOKED_TOKENS_CHANNEL);
+        redisKeyFile = retrieveEnvVarOrDefault(REDIS_KEY_FILE, DEFAULT_REDIS_KEY_FILE);
+        redisCertFile = retrieveEnvVarOrDefault(REDIS_CERT_FILE, DEFAULT_REDIS_CERT_FILE);
+        redisCaCertFile = retrieveEnvVarOrDefault(REDIS_CA_CERT_FILE, DEFAULT_REDIS_CA_CERT_FILE);
+        revokedTokenCleanupInterval = getRevokedTokenCleanupIntervalFromEnv();
     }
 
     public static EnvVarConfig getInstance() {
@@ -112,6 +153,23 @@ public class EnvVarConfig {
         return instance;
     }
 
+    private int getRedisPortFromEnv() {
+        String portStr = retrieveEnvVarOrDefault(REDIS_PORT, String.valueOf(DEFAULT_REDIS_PORT));
+        try {
+            return Integer.parseInt(portStr);
+        } catch (Exception e) {
+            return DEFAULT_REDIS_PORT;
+        }
+    }
+
+    private int getRevokedTokenCleanupIntervalFromEnv() {
+        String intervalStr = retrieveEnvVarOrDefault(REVOKED_TOKEN_CLEANUP_INTERVAL, String.valueOf(DEFAULT_REVOKED_TOKEN_CLEANUP_INTERVAL));
+        try {
+            return Integer.parseInt(intervalStr);
+        } catch (Exception e) {
+            return DEFAULT_REVOKED_TOKEN_CLEANUP_INTERVAL;
+        }
+    }
 
     private String retrieveEnvVarOrDefault(String variable, String defaultValue) {
         if (StringUtils.isEmpty(System.getenv(variable))) {
@@ -179,5 +237,49 @@ public class EnvVarConfig {
 
     public String getInstanceIdentifier() {
         return instanceIdentifier;
+    }
+
+    public String getRedisUsername() {
+
+        return redisUsername;
+    }
+
+    public String getRedisPassword() {
+
+        return redisPassword;
+    }
+
+    public String getRedisHost() {
+
+        return redisHost;
+    }
+
+    public boolean isRedisTlsEnabled() {
+
+        return isRedisTlsEnabled;
+    }
+
+    public int getRedisPort() {
+        return redisPort;
+    }
+
+    public String getRedisKeyFile() {
+        return redisKeyFile;
+    }
+
+    public String getRedisCertFile() {
+        return redisCertFile;
+    }
+
+    public String getRedisCaCertFile() {
+        return redisCaCertFile;
+    }
+
+    public String getRevokedTokensRedisChannel() {
+        return revokedTokensRedisChannel;
+    }
+
+    public int getRevokedTokenCleanupInterval() {
+        return revokedTokenCleanupInterval;
     }
 }

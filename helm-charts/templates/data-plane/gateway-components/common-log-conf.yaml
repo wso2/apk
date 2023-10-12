@@ -22,4 +22,23 @@ data:
 
     [commoncontroller.truststore]
       location = "/home/wso2/security/truststore"
+
+    [commoncontroller.redis]
+      host = "redis-master"
+      port = "6379"
+      username = "default"
+      password = ""
+      userCertPath = "/home/wso2/security/keystore/commoncontroller.crt"
+      userKeyPath = "/home/wso2/security/keystore/commoncontroller.key"
+      cACertPath = "/home/wso2/security/keystore/commoncontroller.crt"
+      tlsEnabled = false
+      revokedTokenChannel = "wso2-apk-revoked-tokens-channel"
+
+    [commoncontroller.sts]
+      authKeyPath = "/home/wso2/security/sts/auth_key.txt"
+      authKeyHeader = "stsAuthKey"
+    
+    [commoncontroller.webServer]
+      port = 8443
+
 {{- end -}}
