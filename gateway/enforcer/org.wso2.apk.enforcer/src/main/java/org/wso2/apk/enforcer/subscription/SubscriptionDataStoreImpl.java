@@ -48,7 +48,6 @@ import org.wso2.apk.enforcer.util.TLSUtils;
 
 import java.io.IOException;
 import java.security.cert.CertificateException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -268,118 +267,6 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
             log.debug("Total Application Key Mappings in new cache: {}", newApplicationKeyMappingMap.size());
         }
         this.applicationKeyMappingMap = newApplicationKeyMappingMap;
-    }
-
-    @Override
-    public List<API> getMatchingAPIs(String name, String context, String version, String uuid) {
-
-        List<API> apiList = new ArrayList<>();
-        for (API api : apiMap.values()) {
-            boolean isNameMatching = true;
-            boolean isContextMatching = true;
-            boolean isVersionMatching = true;
-            boolean isUUIDMatching = true;
-            if (StringUtils.isNotEmpty(name)) {
-                isNameMatching = api.getApiName().contains(name);
-            }
-            if (StringUtils.isNotEmpty(context)) {
-                isContextMatching = api.getContext().equals(context);
-            }
-            if (StringUtils.isNotEmpty(version)) {
-                isVersionMatching = api.getApiVersion().equals(version);
-            }
-            if (StringUtils.isNotEmpty(uuid)) {
-                isUUIDMatching = api.getApiUUID().equals(uuid);
-            }
-            if (isNameMatching && isContextMatching && isVersionMatching && isUUIDMatching) {
-                apiList.add(api);
-            }
-        }
-        return apiList;
-    }
-
-    @Override
-    public API getMatchingAPI(String context, String version) {
-
-        for (API api : apiMap.values()) {
-            if (StringUtils.isNotEmpty(context) && StringUtils.isNotEmpty(version)) {
-                if (api.getContext().equals(context) && api.getApiVersion().equals(version)) {
-                    return api;
-                }
-            }
-        }
-        return null;
-    }
-
-    @Override
-    public List<Application> getMatchingApplications(String name, String organizationID, String uuid) {
-
-        List<Application> applicationList = new ArrayList<>();
-        for (Application application : applicationMap.values()) {
-            boolean isNameMatching = true;
-            boolean isOrgMatching = true;
-            boolean isUUIDMatching = true;
-            if (StringUtils.isNotEmpty(name)) {
-                isNameMatching = application.getName().contains(name);
-            }
-            if (StringUtils.isNotEmpty(organizationID)) {
-                isOrgMatching = application.getTenantDomain().equals(organizationID);
-            }
-            if (StringUtils.isNotEmpty(uuid)) {
-                isUUIDMatching = application.getUUID().equals(uuid);
-            }
-            if (isNameMatching && isOrgMatching && isUUIDMatching) {
-                applicationList.add(application);
-            }
-        }
-        return applicationList;
-    }
-
-    @Override
-    public List<ApplicationKeyMapping> getMatchingKeyMapping(String applicationUUID, String consumerKey) {
-
-        List<ApplicationKeyMapping> applicationKeyMappingList = new ArrayList<>();
-
-        for (ApplicationKeyMapping applicationKeyMapping : applicationKeyMappingMap.values()) {
-            boolean isConsumerKeyMatching = true;
-            boolean isAppUUIDMatching = true;
-
-            if (StringUtils.isNotEmpty(applicationUUID)) {
-                isAppUUIDMatching = applicationKeyMapping.getApplicationUUID().equals(applicationUUID);
-            }
-            if (StringUtils.isNotEmpty(consumerKey)) {
-                isConsumerKeyMatching = applicationKeyMapping.getConsumerKey().equals(consumerKey);
-            }
-            if (isConsumerKeyMatching && isAppUUIDMatching) {
-                applicationKeyMappingList.add(applicationKeyMapping);
-            }
-        }
-        return applicationKeyMappingList;
-    }
-
-    @Override
-    public List<Subscription> getMatchingSubscriptions(String applicationUUID, String apiUUID, String state) {
-
-        List<Subscription> subscriptionList = new ArrayList<>();
-
-        for (Subscription subscription : subscriptionMap.values()) {
-            boolean isApiUUIDMatch = true;
-            boolean isAppUUIDMatch = true;
-            boolean isStateMatch = true;
-            if (StringUtils.isNotEmpty(applicationUUID)) {
-                isAppUUIDMatch = subscription.getAppUUID().equals(applicationUUID);
-            }
-            if (StringUtils.isNotEmpty(apiUUID)) {
-                isApiUUIDMatch = subscription.getApiUUID().equals(apiUUID);
-            }
-            if (StringUtils.isNotEmpty(state)) {
-                isStateMatch = subscription.getSubscriptionState().equals(state);
-            }
-            if (isApiUUIDMatch && isAppUUIDMatch && isStateMatch) {
-                subscriptionList.add(subscription);
-            }
-        }
-        return subscriptionList;
     }
 
     @Override
