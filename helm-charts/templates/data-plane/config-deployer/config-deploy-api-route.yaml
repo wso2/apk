@@ -34,6 +34,12 @@ spec:
     - group: "dp.wso2.com"
       kind: "Backend"
       name: "{{ template "apk-helm.resource.prefix" . }}-config-deployer-ds-backend"
+    filters:
+    - extensionRef:
+        group: dp.wso2.com
+        kind: Scope
+        name: {{ template "apk-helm.resource.prefix" . }}-config-ds-scope-1
+      type: ExtensionRef
   - matches:
     - path:
         type: "RegularExpression"
@@ -43,6 +49,12 @@ spec:
     - group: "dp.wso2.com"
       kind: "Backend"
       name: "{{ template "apk-helm.resource.prefix" . }}-config-deployer-ds-backend"
+    filters:
+    - extensionRef:
+        group: dp.wso2.com
+        kind: Scope
+        name: {{ template "apk-helm.resource.prefix" . }}-config-ds-scope-1
+      type: ExtensionRef
   parentRefs:
   - group: "gateway.networking.k8s.io"
     kind: "Gateway"
