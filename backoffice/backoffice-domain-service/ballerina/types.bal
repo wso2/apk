@@ -514,6 +514,10 @@ public type API record {
     APIBusinessInformation businessInformation?;
     APIRevision revision?;
     APIDeployment[] deployments?;
+    string visibility?;
+    string[] visibleGroups?;
+    string accessControl?;
+    string[] accessControlGroups?;
 };
 
 public type AdditionalProperty record {

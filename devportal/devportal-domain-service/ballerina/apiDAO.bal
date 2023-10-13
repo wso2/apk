@@ -50,17 +50,29 @@ isolated function getAPIByIdDAO(string apiId) returns API|commons:APKError|NotFo
     }
 }
 
-isolated function getAPIsDAO(string org) returns APIInfo[]|commons:APKError {
+isolated function getAPIsDAO(string org, string[] groups) returns APIInfo[]|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
         return error(message, dbClient, message = message, description = message, code = 909000, statusCode = 500);
     } else {
         do {
-            sql:ParameterizedQuery query = `SELECT UUID AS ID,
-            API_NAME as NAME, API_VERSION as VERSION,CONTEXT, ORGANIZATION,STATUS,
-            API_TYPE as TYPE, ARTIFACT as ARTIFACT FROM API WHERE ORGANIZATION =${org} AND 
-            STATUS IN (${PUBLISHED},${PROTOTYPED},${DEPRECATED})`;
+            sql:ParameterizedQuery query;
+            if (groups is string[] && groups.length() > 0) {
+                query = sql:queryConcat(`SELECT UUID AS ID,
+                    API_NAME as NAME, API_VERSION as VERSION,CONTEXT, ORGANIZATION,STATUS,
+                    API_TYPE as TYPE, ARTIFACT as ARTIFACT FROM API WHERE ORGANIZATION =${org} AND
+                    STATUS IN (${PUBLISHED},${PROTOTYPED},${DEPRECATED}) AND (ARTIFACT->>'visibility' = 'PUBLIC'
+                    OR ARTIFACT->>'visibility' = 'RESTRICTED' AND (SELECT COUNT(DISTINCT groups)
+                      FROM jsonb_array_elements_text(api.artifact->'visibleGroups') AS groups
+                      WHERE groups IN (`, sql:arrayFlattenQuery(groups), `)
+                     ) >= 1 )`);
+            } else {
+                query = `SELECT UUID AS ID,
+                    API_NAME as NAME, API_VERSION as VERSION,CONTEXT, ORGANIZATION,STATUS,
+                    API_TYPE as TYPE, ARTIFACT as ARTIFACT FROM API WHERE ORGANIZATION =${org} AND
+                    STATUS IN (${PUBLISHED},${PROTOTYPED},${DEPRECATED}) AND ARTIFACT->>'visibility' = 'PUBLIC'`;
+            }
             stream<APIInfo, sql:Error?> apisStream = dbClient->query(query);
             APIInfo[] apis = check from APIInfo api in apisStream select api;
             check apisStream.close();
@@ -72,18 +84,31 @@ isolated function getAPIsDAO(string org) returns APIInfo[]|commons:APKError {
     }
 }
 
-isolated function getAPIsByQueryDAO(string payload, string org) returns APIInfo[]|commons:APKError {
+isolated function getAPIsByQueryDAO(string payload, string org, string[] groups) returns APIInfo[]|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
         return error(message, dbClient, message = message, description = message, code = 909000, statusCode = 500);
     } else {
         do {
-            sql:ParameterizedQuery query = `SELECT DISTINCT UUID AS ID,
-            API_NAME as NAME, API_VERSION as VERSION,CONTEXT, ORGANIZATION,STATUS,
-            API_TYPE as TYPE, ARTIFACT as ARTIFACT FROM API JOIN JSONB_EACH_TEXT(ARTIFACT) e ON true 
-            WHERE ORGANIZATION =${org} AND e.value LIKE ${payload} AND 
-            STATUS IN (${PUBLISHED},${PROTOTYPED},${DEPRECATED})`;
+            sql:ParameterizedQuery query;
+            if (groups is string[] && groups.length() > 0) {
+                query = sql:queryConcat(`SELECT DISTINCT UUID AS ID,
+                API_NAME as NAME, API_VERSION as VERSION,CONTEXT, ORGANIZATION,STATUS,
+                API_TYPE as TYPE, ARTIFACT as ARTIFACT FROM API JOIN JSONB_EACH_TEXT(ARTIFACT) e ON true
+                WHERE ORGANIZATION =${org} AND e.value LIKE ${payload} AND
+                STATUS IN (${PUBLISHED},${PROTOTYPED},${DEPRECATED}) AND (ARTIFACT->>'visibility' = 'PUBLIC'
+                OR ARTIFACT->>'visibility' = 'RESTRICTED' AND (SELECT COUNT(DISTINCT groups)
+                FROM jsonb_array_elements_text(api.artifact->'visibleGroups') AS groups
+                WHERE groups IN (`, sql:arrayFlattenQuery(groups), `)
+                ) >= 1 )`);
+            } else {
+                query = `SELECT DISTINCT UUID AS ID,
+                API_NAME as NAME, API_VERSION as VERSION,CONTEXT, ORGANIZATION,STATUS,
+                API_TYPE as TYPE, ARTIFACT as ARTIFACT FROM API JOIN JSONB_EACH_TEXT(ARTIFACT) e ON true
+                WHERE ORGANIZATION =${org} AND e.value LIKE ${payload} AND
+                STATUS IN (${PUBLISHED},${PROTOTYPED},${DEPRECATED}) AND ARTIFACT->>'visibility' = 'PUBLIC'`;
+            }
             stream<APIInfo, sql:Error?> apisStream = dbClient->query(query);
             APIInfo[] apis = check from APIInfo api in apisStream select api;
             check apisStream.close();

@@ -39,7 +39,8 @@ isolated service http:InterceptableService /api/devportal on ep0 {
     isolated resource function get apis(http:RequestContext requestContext, @http:Header string? 'x\-wso2\-tenant, string? query, @http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0) returns APIList|BadRequestError|InternalServerErrorError|commons:APKError {
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
-        APIList apiList = check getAPIList('limit, offset, query, organization);
+        anydata groups = authenticatedUserContext.claims["x-wso2-groups"];
+        APIList apiList = check getAPIList('limit, offset, query, organization, groups);
         log:printDebug(apiList.toString());
         return apiList;
     }

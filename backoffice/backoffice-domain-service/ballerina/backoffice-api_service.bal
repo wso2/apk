@@ -48,8 +48,9 @@ service http:InterceptableService /api/backoffice on ep0 {
     }
     isolated resource function get apis(http:RequestContext requestContext, string? query, @http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0, "apiName"|"version"|"createdTime"|"status" sortBy = "createdTime", string sortOrder = "desc", @http:Header string? accept = "application/json") returns APIList|http:NotModified|commons:APKError {
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        anydata groups = authenticatedUserContext.claims["x-wso2-groups"];
         commons:Organization organization = authenticatedUserContext.organization;
-        return getAPIList('limit, offset, query, organization.uuid);
+        return getAPIList('limit, offset, query, organization.uuid, groups);
     }
 
     isolated resource function get apis/[string apiId](http:RequestContext requestContext, @http:Header string? 'if\-none\-match) returns API|http:NotModified|commons:APKError {

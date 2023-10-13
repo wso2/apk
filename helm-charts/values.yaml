@@ -36,6 +36,7 @@ wso2:
       issuer: "https://idp.am.wso2.com/token"
       usernameClaim: "sub"
       organizationClaim: "organization"
+      groupsClaim: "groups"
       # organizationResolver: "controlPlane" # controlplane,none
       # tls:
       #   secretName: "wso2apk-idp-certificates"

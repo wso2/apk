@@ -142,7 +142,7 @@ function getAPIByIdTest(){
 
 @test:Config {}
 function getAPIListTest(){
-    APIList | commons:APKError apiListReturned = getAPIList(25, 0, null, organiztion);
+    APIList | commons:APKError apiListReturned = getAPIList(25, 0, null, organiztion, []);
     if apiListReturned is APIList {
         test:assertTrue(true, "Successfully retrieved all APIs");
     } else if apiListReturned is  commons:APKError {
@@ -152,7 +152,7 @@ function getAPIListTest(){
 
 @test:Config {}
 function getAPIListContentSearchTest1(){
-    APIList | commons:APKError apiListReturned = getAPIList(25, 0, "content:pizza", organiztion);
+    APIList | commons:APKError apiListReturned = getAPIList(25, 0, "content:pizza", organiztion, []);
     if apiListReturned is APIList {
         test:assertTrue(true, "Successfully retrieved all APIs");
     } else if apiListReturned is  commons:APKError {
@@ -163,7 +163,7 @@ function getAPIListContentSearchTest1(){
 @test:Config {}
 function getAPIListContentSearchTest2(){
     //Invalid Search Query without "content:" keyword
-    APIList | commons:APKError apiListReturned = getAPIList(25, 0, "pizza", organiztion);
+    APIList | commons:APKError apiListReturned = getAPIList(25, 0, "pizza", organiztion, []);
     if apiListReturned is APIList {
         test:assertFail("Successfully retrieved all APIs");
     } else if apiListReturned is  commons:APKError {
@@ -174,7 +174,7 @@ function getAPIListContentSearchTest2(){
 @test:Config {}
 function getAPIListContentSearchTest3(){
     //Invalid Search Query without ":" 
-    APIList | commons:APKError apiListReturned = getAPIList(25, 0, "contentpizza", organiztion);
+    APIList | commons:APKError apiListReturned = getAPIList(25, 0, "contentpizza", organiztion, []);
     if apiListReturned is APIList {
         test:assertFail("Successfully retrieved all APIs");
     } else if apiListReturned is  commons:APKError {

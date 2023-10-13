@@ -131,7 +131,11 @@ isolated function createArtifact(string? apiID, API api) returns json {
         context: api.context,
         'version: api.'version,
         status: api.lifeCycleStatus,
-        providerName: api.provider
+        providerName: api.provider,
+        visibility: api?.visibility is string ? api?.visibility : "PUBLIC",
+        visibleGroups: api?.visibleGroups,
+        accessControl: api?.accessControl is string ? api?.accessControl : "NONE",
+        accessControlGroups: api?.accessControlGroups
     };
     json artifactJson = artifact;
     return artifactJson;

@@ -22,7 +22,8 @@ import wso2/apk_common_lib as commons;
 
 @test:Config {dependsOn: [createAPITest]}
 function getAPITest() {
-    APIList|commons:APKError getAPI = getAPIList(25,0,"content:pizza","carbon.super");
+    json[] groups = [];
+    APIList|commons:APKError getAPI = getAPIList(25,0,"content:pizza","carbon.super", groups);
     if getAPI is APIList {
         test:assertTrue(true, "Successfully retrieve APIs");
         log:printInfo(getAPI.toString());

@@ -22,15 +22,19 @@ import devportal_service.java.util as javautil;
 import devportal_service.java.lang as javalang;
 import ballerina/http;
 import wso2/apk_common_lib as commons;
+import ballerina/regex;
+import ballerina/log;
 
 isolated function getAPIByAPIId(string apiId) returns API|NotFoundError|commons:APKError {
     API|commons:APKError|NotFoundError api = getAPIByIdDAO(apiId);
     return api;
 }
 
-isolated function getAPIList(int 'limit, int offset, string? query, commons:Organization organization) returns APIList|commons:APKError {
+isolated function getAPIList(int 'limit, int offset, string? query, commons:Organization organization, anydata? groups) returns APIList|commons:APKError {
+    string[] groupsArray = getUserGroups(groups);
+
     if query !is string {
-        APIInfo[]|commons:APKError apis = getAPIsDAO(organization.uuid);
+        APIInfo[]|commons:APKError apis = getAPIsDAO(organization.uuid, groupsArray);
         if apis is APIInfo[] {
             APIInfo[] limitSet = [];
             if apis.length() > offset {
@@ -51,7 +55,7 @@ isolated function getAPIList(int 'limit, int offset, string? query, commons:Orga
             int? index = query.indexOf(":");
             if index is int {
                 string modifiedQuery = "%" + query.substring(index + 1) + "%";
-                APIInfo[]|commons:APKError apis = getAPIsByQueryDAO(modifiedQuery, organization.uuid);
+                APIInfo[]|commons:APKError apis = getAPIsByQueryDAO(modifiedQuery, organization.uuid, groupsArray);
                 if apis is APIInfo[] {
                     APIInfo[] limitSet = [];
                     if apis.length() > offset {
@@ -247,4 +251,26 @@ isolated function getDocumentList(string apiId, int 'limit, int offset) returns 
         string message = "Internal Error occured while retrieving API for Docuements retieval";
         return error(message, message = message, description = message, code = 909001, statusCode = 500);
     }
+}
+
+isolated function getUserGroups(anydata groups) returns string[] {
+    string[] groupsArray = [];
+    if (groups is json[]) {
+        json[] groupsArr = <json[]>groups;
+        foreach json group in groupsArr {
+            groupsArray.push(group.toString());
+        }
+    } else if (groups is string) {
+        string groupsStr = <string>groups;
+        string[] tmp = regex:split(groupsStr, ",");
+        foreach string group in tmp {
+            string trimmedGroup = group.trim();
+            if (trimmedGroup != "") {
+                groupsArray.push(trimmedGroup);
+            }
+        }
+    } else {
+        log:printDebug("No user groups found");
+    }
+    return groupsArray;
 }
