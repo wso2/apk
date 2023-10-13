@@ -20,14 +20,14 @@ apply from: "$projectDir/../../../common-gradle-scripts/docker.gradle"
 apply from: "$rootDir/../../common-gradle-scripts/copy.gradle"
 
 
-tasks.named('copy_dist').configure{
+tasks.named('copy_dist_idp').configure{
     finalizedBy docker_build
 }
 
 task build{
     group 'build'
     description 'Build docker image'
-    dependsOn 'copy_dist'
+    dependsOn 'copy_dist_idp'
     dependsOn 'docker_build'
 }
 
