@@ -29,17 +29,8 @@ RUN native-image -jar idp_domain_service.jar --no-fallback -H:Name="idp_domain_s
 
 FROM ubuntu:22.04
 
-
 # Update the package list and install build-essential
 RUN apt-get update && apt-get install -y build-essential
-
-
-# install JDK Dependencies
-RUN apt-get update \
-    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata curl wget ca-certificates fontconfig locales \
-    && echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen \
-    && locale-gen en_US.UTF-8 \
-    && rm -rf /var/lib/apt/lists/*
 
 
 ARG USER=wso2apk
@@ -59,9 +50,6 @@ RUN chown -R ${USER} ${USER_HOME}/idp \
     && chown ${USER} /home/${USER}/docker-entrypoint.sh \
     && chgrp -R 0 ${USER_HOME} \
     && chmod -R g=u ${USER_HOME}
-
-# # Copy the native executable from the build stage to the final image
-# COPY --from=build /home/ballerina/idp_domain_service .
 
 EXPOSE 9443
 USER ${USER_ID}
