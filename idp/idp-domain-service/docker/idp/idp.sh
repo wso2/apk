@@ -16,30 +16,7 @@ PRGDIR=`dirname "$PRG"`
 
 [ -z "$IDP_HOME" ] && IDP_HOME=`cd "$PRGDIR" ; pwd`
 
-if [ -z "$JAVACMD" ] ; then
-  if [ -n "$JAVA_HOME"  ] ; then
-    if [ -x "$JAVA_HOME/jre/sh/java" ] ; then
-      # IBM's JDK on AIX uses strange locations for the executables
-      JAVACMD="$JAVA_HOME/jre/sh/java"
-    else
-      JAVACMD="$JAVA_HOME/bin/java"
-    fi
-  else
-    JAVACMD=java
-  fi
-fi
 
-if [ ! -x "$JAVACMD" ] ; then
-  echo "Error: JAVA_HOME is not defined correctly."
-  echo " IDP cannot execute $JAVACMD"
-  exit 1
-fi
-
-# if JAVA_HOME is not set we're not happy
-if [ -z "$JAVA_HOME" ]; then
-  echo "You must set the JAVA_HOME variable before running Admin."
-  exit 1
-fi
 # ----- Process the input command ----------------------------------------------
 args=""
 for c in $*
@@ -78,7 +55,7 @@ done
 
 # ----- Execute The Requested Command -----------------------------------------
 
-echo JAVA_HOME environment variable is set to $JAVA_HOME
+# echo JAVA_HOME environment variable is set to $JAVA_HOME
 echo IDP_HOME environment variable is set to "$IDP_HOME"
 export BAL_CONFIG_FILES=$IDP_HOME/conf/Config.toml
 cd "$IDP_HOME"
@@ -91,16 +68,15 @@ fi
 START_EXIT_STATUS=121
 status=$START_EXIT_STATUS
 
-if [ -z "$JVM_MEM_OPTS" ]; then
-   java_version=$("$JAVACMD" -version 2>&1 | awk -F '"' '/version/ {print $2}')
-   JVM_MEM_OPTS="-Xms256m -Xmx1024m"
-fi
-echo "Using Java memory options: $JVM_MEM_OPTS"
 
-$JAVACMD \
-    $JVM_MEM_OPTS \
-    $JAVA_OPTS \
-    -classpath "$CLASSPATH" \
-    -Djava.io.tmpdir="$IDP_HOME/tmp" \
-    -jar idp_domain_service.jar $*
-    status=$?
+# Define the path to the executable
+EXECUTABLE="./idp_domain_service"
+
+# Check if the executable exists
+if [ -f "$EXECUTABLE" ]; then
+    # Run the executable with your desired options
+    $EXECUTABLE "$@"
+else
+    echo "Error: Executable '$EXECUTABLE' not found."
+    exit 1
+fi
