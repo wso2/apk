@@ -33,6 +33,14 @@ FROM ubuntu:22.04
 RUN apt-get update && apt-get install -y build-essential
 
 
+# install JDK Dependencies
+RUN apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata curl wget ca-certificates fontconfig locales \
+    && echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen \
+    && locale-gen en_US.UTF-8 \
+    && rm -rf /var/lib/apt/lists/*
+
+
 ARG USER=wso2apk
 ARG USER_ID=10001
 ARG USER_GROUP=wso2
