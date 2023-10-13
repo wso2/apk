@@ -33,7 +33,4 @@ spec:
     - name: endpoint1
       protocol: TCP
       port: 9095
-    - name: endpoint2
-      protocol: TCP
-      port: 9000
 {{- end -}}
