@@ -41,7 +41,7 @@ public class ExtendedAPI extends API {
         this.apiContext = apiContext;
     }
 
-    public String getEnvironment() {
+    public String getEnvironmentId() {
         return environmentId;
     }
 

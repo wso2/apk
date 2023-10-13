@@ -263,12 +263,12 @@ func getResolvedClaimMapping(claimMappings []dpv1alpha1.ClaimMapping) map[string
 
 func getTokenIssuerEnvironments(environments []string) []string {
 
-	resolvedEnvirenvironments := []string{}
+	resolvedEnvironments := []string{}
 	if len(environments) == 0 {
-		resolvedEnvirenvironments = append(resolvedEnvirenvironments, defaultAllEnvironments)
+		resolvedEnvironments = append(resolvedEnvironments, defaultAllEnvironments)
 	} else {
-		resolvedEnvirenvironments = environments
+		resolvedEnvironments = environments
 	}
 
-	return resolvedEnvirenvironments
+	return resolvedEnvironments
 }

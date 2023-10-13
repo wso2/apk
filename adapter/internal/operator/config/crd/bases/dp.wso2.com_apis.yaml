@@ -97,6 +97,7 @@ spec:
                 type: string
               environment:
                 description: Environment denotes the environment of the API.
+                nullable: true
                 type: string
               isDefaultVersion:
                 description: IsDefaultVersion indicates whether this API version should
