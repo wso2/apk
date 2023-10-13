@@ -25,4 +25,8 @@ type Artifact record {|
     string 'version;
     string? status;
     string? providerName;
+    string? visibility;
+    string[]? visibleGroups;
+    string? accessControl;
+    string[]? accessControlGroups;
 |};

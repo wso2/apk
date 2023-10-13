@@ -23,13 +23,16 @@ import ballerina/uuid;
 import wso2/notification_grpc_client as notification;
 import ballerina/http;
 import ballerina/mime;
+import ballerina/regex;
 
 # This function used to get API from database
 #
 # + return - Return Value string?|APIList|error
-isolated function getAPIList(int 'limit, int offset, string? query, string organization) returns APIList|commons:APKError {
+isolated function getAPIList(int 'limit, int offset, string? query, string organization, anydata? groups) returns APIList|commons:APKError {
+    string[] groupsArray = getUserGroups(groups);
+
     if query !is string {
-        APIInfo[]|commons:APKError apis = db_getAPIsDAO(organization);
+        APIInfo[]|commons:APKError apis = db_getAPIsDAO(organization, groupsArray);
         if apis is APIInfo[] {
             APIInfo[] limitSet = [];
             if apis.length() > offset {
@@ -50,7 +53,7 @@ isolated function getAPIList(int 'limit, int offset, string? query, string organ
             int? index = query.indexOf(":");
             if index is int {
                 string modifiedQuery = "%" + query.substring(index + 1) + "%";
-                APIInfo[]|commons:APKError apis = getAPIsByQueryDAO(modifiedQuery, organization);
+                APIInfo[]|commons:APKError apis = getAPIsByQueryDAO(modifiedQuery, organization, groupsArray);
                 if apis is APIInfo[] {
                     APIInfo[] limitSet = [];
                     if apis.length() > offset {
@@ -704,4 +707,26 @@ isolated function deleteDocument(string apiId, string documentId) returns http:O
     } else {
         return getApi;
     }
+}
+
+isolated function getUserGroups(anydata groups) returns string[] {
+    string[] groupsArray = [];
+    if (groups is json[]) {
+        json[] groupsArr = <json[]>groups;
+        foreach json group in groupsArr {
+            groupsArray.push(group.toString());
+        }
+    } else if (groups is string) {
+        string groupsStr = <string>groups;
+        string[] tmp = regex:split(groupsStr, ",");
+        foreach string group in tmp {
+            string trimmedGroup = group.trim();
+            if (trimmedGroup != "") {
+                groupsArray.push(trimmedGroup);
+            }
+        }
+    } else {
+        log:printDebug("No user groups found");
+    }
+    return groupsArray;
 }

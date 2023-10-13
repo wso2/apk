@@ -23,15 +23,35 @@ import ballerina/io;
 import wso2/apk_common_lib as commons;
 import ballerina/log;
 
-isolated function db_getAPIsDAO(string organization) returns APIInfo[]|commons:APKError {
+isolated function db_getAPIsDAO(string organization, string[] groups) returns APIInfo[]|commons:APKError {
     postgresql:Client|error db_Client = getConnection();
     if db_Client is error {
         return e909601(db_Client);
     } else {
         do {
-            sql:ParameterizedQuery GET_API = `SELECT UUID AS ID,
-            API_NAME as NAME, API_VERSION as VERSION,CONTEXT, ORGANIZATION, STATUS as STATE, string_to_array(SDK::text,',')::text[] AS SDK,string_to_array(API_TIER::text,',') AS POLICIES, ARTIFACT as ARTIFACT
-            FROM API where ORGANIZATION = ${organization}`;
+            sql:ParameterizedQuery GET_API;
+            if (groups is string[] && groups.length() > 0) {
+                GET_API = sql:queryConcat(
+                    `SELECT
+                        UUID AS ID, API_NAME as NAME, API_VERSION as VERSION, CONTEXT, ORGANIZATION, STATUS as STATE,
+                        string_to_array(SDK::text,',')::text[] AS SDK, string_to_array(API_TIER::text,',') AS POLICIES,
+                        ARTIFACT as ARTIFACT
+                    FROM API WHERE ARTIFACT->>'accessControl' = 'NONE' OR ( ARTIFACT->>'accessControl' = 'RESTRICTED' AND
+                        (
+                         SELECT COUNT(DISTINCT groups)
+                         FROM jsonb_array_elements_text(api.artifact->'accessControlGroups') AS groups
+                         WHERE groups IN (`, sql:arrayFlattenQuery(groups), `)
+                        ) >= 1 )
+                    AND ORGANIZATION = ${organization}`
+                );
+            } else {
+                GET_API =
+                    `SELECT
+                        UUID AS ID, API_NAME as NAME, API_VERSION as VERSION, CONTEXT, ORGANIZATION, STATUS as STATE,
+                        string_to_array(SDK::text,',')::text[] AS SDK, string_to_array(API_TIER::text,',') AS POLICIES,
+                        ARTIFACT as ARTIFACT
+                    FROM API WHERE ARTIFACT->>'accessControl' = 'NONE' AND ORGANIZATION = ${organization}`;
+            }
             stream<APIInfo, sql:Error?> apisStream = db_Client->query(GET_API);
             APIInfo[] apis = check from APIInfo api in apisStream
                 select api;
@@ -332,16 +352,32 @@ isolated function getAPICategoriesDAO(string org) returns APICategory[]|commons:
     }
 }
 
-isolated function getAPIsByQueryDAO(string payload, string org) returns APIInfo[]|commons:APKError {
+isolated function getAPIsByQueryDAO(string payload, string org, string[] groups) returns APIInfo[]|commons:APKError {
     postgresql:Client|error dbClient = getConnection();
     if dbClient is error {
         return e909601(dbClient);
     } else {
         do {
-            sql:ParameterizedQuery query = `SELECT DISTINCT UUID AS ID,
-            API_NAME as NAME, API_VERSION as VERSION,CONTEXT, ORGANIZATION,STATUS,
-            ARTIFACT as ARTIFACT FROM API JOIN JSONB_EACH_TEXT(ARTIFACT) e ON true 
-            WHERE e.value LIKE ${payload} AND ORGANIZATION = ${org}`;
+            sql:ParameterizedQuery query;
+            if (groups is string[] && groups.length() > 0) {
+                query = sql:queryConcat(`SELECT DISTINCT UUID AS ID,
+                    API_NAME as NAME, API_VERSION as VERSION,CONTEXT, ORGANIZATION,STATUS,
+                    ARTIFACT as ARTIFACT FROM API JOIN JSONB_EACH_TEXT(ARTIFACT) e ON true
+                    WHERE e.value LIKE ${payload} AND ORGANIZATION = ${org} AND
+                    ARTIFACT->>'accessControl' = 'NONE' OR ( ARTIFACT->>'accessControl' = 'RESTRICTED' AND
+                    (
+                     SELECT COUNT(DISTINCT groups)
+                     FROM jsonb_array_elements_text(api.artifact->'accessControlGroups') AS groups
+                     WHERE groups IN (`, sql:arrayFlattenQuery(groups), `)
+                    ) >= 1 )`
+                    );
+            } else {
+                query = `SELECT DISTINCT UUID AS ID,
+                    API_NAME as NAME, API_VERSION as VERSION,CONTEXT, ORGANIZATION,STATUS,
+                    ARTIFACT as ARTIFACT FROM API JOIN JSONB_EACH_TEXT(ARTIFACT) e ON true
+                    WHERE e.value LIKE ${payload} AND ORGANIZATION = ${org} AND ARTIFACT->>'accessControl' = 'NONE'`;
+            }
+
             stream<APIInfo, sql:Error?> apisStream = dbClient->query(query);
             APIInfo[] apis = check from APIInfo api in apisStream
                 select api;

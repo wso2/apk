@@ -53,6 +53,13 @@ spec:
     - remoteClaim: "organization"
       localClaim:  "x-wso2-organization"
     {{ end }}
+    { { if .Values.wso2.apk.idp.groupsClaim } }
+    - remoteClaim: "{{.Values.wso2.apk.idp.groupsClaim}}"
+      localClaim: "x-wso2-groups"
+    { { else } }
+    - remoteClaim: "groups"
+      localClaim: "x-wso2-groups"
+    { { end } }
   targetRef:
     kind: Gateway
     name: default

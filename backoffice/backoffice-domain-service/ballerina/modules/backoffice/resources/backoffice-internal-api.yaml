@@ -453,30 +453,24 @@ components:
         visibility:
           type: string
           description: The visibility level of the API. Accepts one of the following.
-            PUBLIC, PRIVATE, RESTRICTED.
+            PUBLIC, RESTRICTED.
           example: PUBLIC
           default: PUBLIC
           enum:
             - PUBLIC
-            - PRIVATE
             - RESTRICTED
           x-otherScopes:
             - apim:api_publish
             - apim:api_manage
-        visibleRoles:
+        visibleGroups:
           type: array
-          description: The user roles that are able to access the API in Developer Portal
+          description: The user groups that are able to access the API in Developer Portal
           example: []
           items:
             type: string
           x-otherScopes:
             - apim:api_publish
             - apim:api_manage
-        visibleTenants:
-          type: array
-          example: []
-          items:
-            type: string
         subscriptionAvailability:
           type: string
           description: The subscription availability. Accepts one of the following.
@@ -536,9 +530,9 @@ components:
           enum:
             - NONE
             - RESTRICTED
-        accessControlRoles:
+        accessControlGroups:
           type: array
-          description: The user roles that are able to view/modify as API publisher
+          description: The user groups that are able to view/modify as API publisher
             or creator.
           example: []
           items:
