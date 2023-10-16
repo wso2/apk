@@ -450,6 +450,25 @@ wso2:
              # -- Optionally configure namespaces to watch for apis,ratelimitpolicies,etc.
              apiNamespaces:
                - "apk-v12"
+          redis:
+              # -- Redis host
+              host: "redis-master"
+              # -- Redis port
+              port: "6379"
+              # -- Redis user name
+              username: "default"
+              # -- Redis password
+              password: ""
+              # -- Redis TLS enabled or not
+              tlsEnabled: false
+              # -- Redis user cert to use for redis connections
+              userCertPath: "/home/wso2/security/keystore/commoncontroller.crt"
+              # -- Redis user key to use for redis connections
+              userKeyPath: "/home/wso2/security/keystore/commoncontroller.key"
+              # -- Redis CA cert to use for redis connections
+              cACertPath: "/home/wso2/security/keystore/commoncontroller.crt"
+              # -- Token revocation subscription channel name
+              channelName: "wso2-apk-revoked-tokens-channel"
       ratelimiter:
         # -- Enable the deployment of the Rate Limiter
         enabled: true
@@ -633,6 +652,25 @@ wso2:
               level: DEBUG
               # -- Log file name
               logFile: logs/enforcer.log
+            redis:
+              # -- Redis host
+              host: "redis-master"
+              # -- Redis port
+              port: "6379"
+              # -- Redis user name
+              username: "default"
+              # -- Redis password
+              password: ""
+              # -- Redis user cert to use for redis connections
+              # -- Redis TLS enabled or not
+              tlsEnabled: false
+              userCertPath: "/home/wso2/security/keystore/commoncontroller.crt"
+              # -- Redis user key to use for redis connections
+              userKeyPath: "/home/wso2/security/keystore/commoncontroller.key"
+              # -- Redis CA cert to use for redis connections
+              cACertPath: "/home/wso2/security/keystore/commoncontroller.crt"
+              # -- Token revocation subscription channel name
+              channelName: "wso2-apk-revoked-tokens-channel"
         # Tracing configurations for gateway runtime
         tracing: 
           # -- Enable/Disable tracing in gateway runtime.

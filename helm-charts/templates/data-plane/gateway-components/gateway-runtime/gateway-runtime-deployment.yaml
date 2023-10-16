@@ -58,6 +58,8 @@ spec:
               protocol: "TCP"
             - containerPort: 9001
               protocol: "TCP"
+            - containerPort: 5006	
+              protocol: "TCP"
             - containerPort: 8084
               protocol: "TCP"
             - containerPort: 9092
@@ -89,7 +91,62 @@ spec:
             - name: enforcer_admin_pwd
               value: admin
             - name: JAVA_OPTS
-              value: -Dhttpclient.hostnameVerifier=AllowAll -Xms512m -Xmx512m -XX:MaxRAMFraction=2          
+              value: -Dhttpclient.hostnameVerifier=AllowAll -Xms512m -Xmx512m -XX:MaxRAMFraction=2
+            {{- if .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.redis }}
+            - name: REDIS_USERNAME
+              value: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.redis.username | default "default" }}
+            - name: REDIS_PASSWORD
+              value: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.redis.password | default "" }}
+            - name: REDIS_HOST
+              value: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.redis.host | default "redis-master" }}
+            - name: REDIS_PORT
+              value: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.redis.port | default "6379" }}
+            - name: IS_REDIS_TLS_ENABLED
+              value: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.redis.tlsEnabled | default "false" }}
+            - name: REDIS_REVOKED_TOKENS_CHANNEL
+              value: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.redis.channelName | default "wso2-apk-revoked-tokens-channel" }}
+            - name: REDIS_KEY_FILE
+              value: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.redis.userKeyPath | default "/home/wso2/security/redis/redis.key" }}
+            - name: REDIS_CERT_FILE
+              value: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.redis.userCertPath | default "/home/wso2/security/redis/redis.crt" }}
+            - name: REDIS_CA_CERT_FILE
+              value: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.redis.redisCaCertPath | default "/home/wso2/security/redis/redis-ca.key" }}
+            - name: REVOKED_TOKEN_CLEANUP_INTERVAL
+              value: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.redis.tokenCleanupInterval | default "3600" }}
+            {{- else }}
+            - name: REDIS_USERNAME
+              value: "default"
+            - name: REDIS_PASSWORD
+              value: ""
+            - name: REDIS_HOST
+              value: "redis-master"
+            - name: REDIS_PORT
+              value: "6379"
+            - name: IS_REDIS_TLS_ENABLED
+              value: "false"
+            - name: REDIS_REVOKED_TOKENS_CHANNEL
+              value: "wso2-apk-revoked-tokens-channel"
+            - name: REDIS_KEY_FILE
+              value: "/home/wso2/security/redis/redis.key"
+            - name: REDIS_CERT_FILE
+              value: "/home/wso2/security/redis/redis.crt"
+            - name: REDIS_CA_CERT_FILE
+              value: "/home/wso2/security/redis/redis-ca.key"
+            - name: REVOKED_TOKEN_CLEANUP_INTERVAL
+              value: "3600"
+            {{- end }}
+        {{- if and .Values.wso2.apk.dp.gatewayRuntime.analytics .Values.wso2.apk.dp.gatewayRuntime.analytics.secretName }}
+            - name: analytics_authToken
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.wso2.apk.dp.gatewayRuntime.analytics.secretName }}
+                  key: "analytics_authToken"
+            - name: analytics_authURL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.wso2.apk.dp.gatewayRuntime.analytics.secretName }}
+                  key: "analytics_authURL"
+        {{- end }}
           volumeMounts:
             - name: tmp
               mountPath: /tmp
