@@ -71,7 +71,7 @@ type redis struct {
 	UserCertPath   				string
 	UserKeyPath    				string
 	CACertPath 						string
-	TlsEnabled    				bool
+	TLSEnabled    				bool
 	RevokedTokenChannel 	string
 }
 

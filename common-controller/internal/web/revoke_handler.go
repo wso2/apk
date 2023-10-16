@@ -36,13 +36,13 @@ import (
 	"encoding/json"
 )
 
-type RevokeRequest struct {
+type revokeRequest struct {
 	Token string `json:"token"`
 	Jti string `json:"jti"`
 	Expiry int64 `json:"expiry"`
 }
 
-type JWTClaims struct {
+type jWTClaims struct {
 	Jti string `json:"jti"`
 	Exp int64  `json:"exp"`
 }
@@ -54,9 +54,9 @@ var (
 	redisUserCertPath   string
 	redisUserKeyPath    string
 	redisCACertPath string
-	isTlsEnabled    bool
+	isTLSEnabled    bool
 	redisRevokedTokenChannel string
-	TOKEN_EXPIRY_DIVIDER = "_##_"
+	tokenExpiryDivider = "_##_"
 	authKeyPath string
 	authKeyHeader string
 )
@@ -71,19 +71,20 @@ func init() {
 	redisUserCertPath = conf.CommonController.Redis.UserCertPath
 	redisUserKeyPath = conf.CommonController.Redis.UserKeyPath
 	redisCACertPath = conf.CommonController.Redis.CACertPath
-	isTlsEnabled = conf.CommonController.Redis.TlsEnabled
+	isTLSEnabled = conf.CommonController.Redis.TLSEnabled
 	redisRevokedTokenChannel = conf.CommonController.Redis.RevokedTokenChannel
 	authKeyPath = conf.CommonController.Sts.AuthKeyPath
 	authKeyHeader = conf.CommonController.Sts.AuthKeyHeader
 }
 
+// RevokeHandler handles the token revocation requests
 func RevokeHandler(c *gin.Context) {
 	if !authenticateRequest(c) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized request"})
 		return
 	}
 
-	var request RevokeRequest
+	var request revokeRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
 		loggers.LoggerAPI.ErrorC(logging.PrintError(logging.Error3200, logging.MAJOR, "Error while parsing body: %v", err))
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Error while parsing json payload"})
@@ -130,7 +131,7 @@ func generateKey(jti string) string {
 
 func storeTokenInRedis(token string, expiry int64) error {
 	var rdb *redis.Client
-	if isTlsEnabled {
+	if isTLSEnabled {
 		cert, err := tls.LoadX509KeyPair(redisUserCertPath, redisUserKeyPath)
 		if err != nil {
 				return err;
@@ -167,7 +168,7 @@ func storeTokenInRedis(token string, expiry int64) error {
 	if err != nil {
 			return err
 	}
-	publishValue := fmt.Sprintf("%s%s%d", token, TOKEN_EXPIRY_DIVIDER, expiry)
+	publishValue := fmt.Sprintf("%s%s%d", token, tokenExpiryDivider, expiry)
 	err = rdb.Do(context.Background(), "publish", redisRevokedTokenChannel, publishValue).Err()
 	if err != nil {
 			return err
@@ -193,8 +194,8 @@ func authenticateRequest(c *gin.Context) bool {
 	return true
 }
 
-func extractClaimsFromJWT(jwtToken string) (JWTClaims, error) {
-	var claims JWTClaims
+func extractClaimsFromJWT(jwtToken string) (jWTClaims, error) {
+	var claims jWTClaims
 	parts := strings.Split(jwtToken, ".")
 	if len(parts) != 3 {
 		loggers.LoggerAPI.ErrorC(logging.PrintError(logging.Error3205, logging.MAJOR, "Invalid JWT"))

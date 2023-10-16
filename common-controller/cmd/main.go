@@ -27,7 +27,7 @@ import (
 func main() {
 	conf := config.ReadConfigs()
 	logger.Info("Starting the Web server")
-	go web.StartwebServer();
+	go web.StartWebServer();
 	logger.Info("Starting the Common Controller")
 	commoncontroller.InitCommonControllerServer(conf)
 }

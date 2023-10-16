@@ -24,7 +24,8 @@ import (
 	"fmt"
 )
 
-func StartwebServer() {
+// StartWebServer starts the web server
+func StartWebServer() {
 	loggers.LoggerAPI.Info("Starting web server")
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
