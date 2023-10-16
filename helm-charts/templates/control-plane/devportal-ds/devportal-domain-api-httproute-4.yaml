@@ -22,187 +22,173 @@ metadata:
   labels:
     api-name: "devportal-domain-service"
     api-version: "1.0.0"
-  ownerReferences:
-  - apiVersion: dp.wso2.com/v1alpha1
-    kind: API
-    name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-api
-    uid: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-api-uid
-  uid: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-httproute-4-uid
 spec:
   hostnames:
   - "{{ .Values.wso2.apk.listener.hostname | default "api.am.wso2.com"}}"
   parentRefs:
-  - group: gateway.networking.k8s.io
-    kind: Gateway
-    name: default
-    sectionName: httpslistener
+  - group: "gateway.networking.k8s.io"
+    kind: "Gateway"
+    name: "default"
+    sectionName: "httpslistener"
   rules:
   - backendRefs:
     - group: dp.wso2.com
       kind: Backend
       name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
-      weight: 1
     filters:
-    - type: URLRewrite
+    - type: "URLRewrite"
       urlRewrite:
         path:
-          replaceFullPath: /applications/\1/oauth-keys/\2/regenerate-secret
-          type: ReplaceFullPath
+          replaceFullPath: "/applications/\\1/oauth-keys/\\2/regenerate-secret"
+          type: "ReplaceFullPath"
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
         name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-scope-1
-      type: ExtensionRef
+      type: "ExtensionRef"
     matches:
-    - method: POST
+    - method: "POST"
       path:
-        type: RegularExpression
-        value: /applications/(.*)/oauth-keys/(.*)/regenerate-secret
+        type: "RegularExpression"
+        value: "/applications/(.*)/oauth-keys/(.*)/regenerate-secret"
   - backendRefs:
     - group: dp.wso2.com
       kind: Backend
       name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
-      weight: 1
     filters:
-    - type: URLRewrite
+    - type: "URLRewrite"
       urlRewrite:
         path:
-          replaceFullPath: /applications/\1/oauth-keys/\2/generate-token
-          type: ReplaceFullPath
+          replaceFullPath: "/applications/\\1/oauth-keys/\\2/generate-token"
+          type: "ReplaceFullPath"
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
         name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-scope-1
-      type: ExtensionRef
+      type: "ExtensionRef"
     matches:
-    - method: POST
+    - method: "POST"
       path:
-        type: RegularExpression
-        value: /applications/(.*)/oauth-keys/(.*)/generate-token
+        type: "RegularExpression"
+        value: "/applications/(.*)/oauth-keys/(.*)/generate-token"
   - backendRefs:
     - group: dp.wso2.com
       kind: Backend
       name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
-      weight: 1
     filters:
-    - type: URLRewrite
+    - type: "URLRewrite"
       urlRewrite:
         path:
-          replaceFullPath: /applications/\1/oauth-keys/\2/clean-up
-          type: ReplaceFullPath
+          replaceFullPath: "/applications/\\1/oauth-keys/\\2/clean-up"
+          type: "ReplaceFullPath"
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
         name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-scope-1
-      type: ExtensionRef
+      type: "ExtensionRef"
     matches:
-    - method: POST
+    - method: "POST"
       path:
-        type: RegularExpression
-        value: /applications/(.*)/oauth-keys/(.*)/clean-up
+        type: "RegularExpression"
+        value: "/applications/(.*)/oauth-keys/(.*)/clean-up"
   - backendRefs:
     - group: dp.wso2.com
       kind: Backend
       name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
-      weight: 1
     filters:
-    - type: URLRewrite
+    - type: "URLRewrite"
       urlRewrite:
         path:
-          replaceFullPath: /applications/\1/oauth-keys/\2
-          type: ReplaceFullPath
+          replaceFullPath: "/applications/\\1/oauth-keys/\\2"
+          type: "ReplaceFullPath"
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
         name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-scope-1
-      type: ExtensionRef
+      type: "ExtensionRef"
     matches:
-    - method: GET
+    - method: "GET"
       path:
-        type: RegularExpression
-        value: /applications/(.*)/oauth-keys/(.*)
+        type: "RegularExpression"
+        value: "/applications/(.*)/oauth-keys/(.*)"
   - backendRefs:
     - group: dp.wso2.com
       kind: Backend
       name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
-      weight: 1
     filters:
-    - type: URLRewrite
+    - type: "URLRewrite"
       urlRewrite:
         path:
-          replaceFullPath: /applications/\1/oauth-keys/\2
-          type: ReplaceFullPath
+          replaceFullPath: "/applications/\\1/oauth-keys/\\2"
+          type: "ReplaceFullPath"
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
         name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-scope-1
-      type: ExtensionRef
+      type: "ExtensionRef"
     matches:
-    - method: PUT
+    - method: "PUT"
       path:
-        type: RegularExpression
-        value: /applications/(.*)/oauth-keys/(.*)
+        type: "RegularExpression"
+        value: "/applications/(.*)/oauth-keys/(.*)"
   - backendRefs:
     - group: dp.wso2.com
       kind: Backend
       name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
-      weight: 1
     filters:
-    - type: URLRewrite
+    - type: "URLRewrite"
       urlRewrite:
         path:
-          replaceFullPath: /applications/\1/oauth-keys
-          type: ReplaceFullPath
+          replaceFullPath: "/applications/\\1/oauth-keys"
+          type: "ReplaceFullPath"
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
         name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-scope-1
-      type: ExtensionRef
+      type: "ExtensionRef"
     matches:
-    - method: GET
+    - method: "GET"
       path:
-        type: RegularExpression
-        value: /applications/(.*)/oauth-keys
+        type: "RegularExpression"
+        value: "/applications/(.*)/oauth-keys"
   - backendRefs:
     - group: dp.wso2.com
       kind: Backend
       name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
-      weight: 1
     filters:
-    - type: URLRewrite
+    - type: "URLRewrite"
       urlRewrite:
         path:
-          replaceFullPath: /applications/\1/map-keys
-          type: ReplaceFullPath
+          replaceFullPath: "/applications/\\1/map-keys"
+          type: "ReplaceFullPath"
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
         name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-scope-1
-      type: ExtensionRef
+      type: "ExtensionRef"
     matches:
-    - method: POST
+    - method: "POST"
       path:
-        type: RegularExpression
-        value: /applications/(.*)/map-keys
+        type: "RegularExpression"
+        value: "/applications/(.*)/map-keys"
   - backendRefs:
     - group: dp.wso2.com
       kind: Backend
       name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
-      weight: 1
     filters:
-    - type: URLRewrite
+    - type: "URLRewrite"
       urlRewrite:
         path:
-          replaceFullPath: /applications/\1/api-keys/\2/generate
-          type: ReplaceFullPath
+          replaceFullPath: "/applications/\\1/api-keys/\\2/generate"
+          type: "ReplaceFullPath"
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
         name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-scope-1
-      type: ExtensionRef
+      type: "ExtensionRef"
     matches:
-    - method: POST
+    - method: "POST"
       path:
-        type: RegularExpression
-        value: /applications/(.*)/api-keys/(.*)/generate
+        type: "RegularExpression"
+        value: "/applications/(.*)/api-keys/(.*)/generate"
 {{- end -}}

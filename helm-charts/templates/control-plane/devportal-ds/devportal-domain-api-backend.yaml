@@ -20,6 +20,7 @@ metadata:
   name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   namespace: {{ .Release.Namespace }}
 spec:
+ basePath: "/api/devportal"
  services:
   - host:  {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service.{{ .Release.Namespace }}
     port: 9443

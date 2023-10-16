@@ -22,92 +22,81 @@ metadata:
   labels:
     api-name: "devportal-domain-service"
     api-version: "1.0.0"
-  ownerReferences:
-  - apiVersion: dp.wso2.com/v1alpha1
-    kind: API
-    name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-api
-    uid: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-api-uid
-  uid: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-httproute-6-uid
 spec:
   hostnames:
   - "{{ .Values.wso2.apk.listener.hostname | default "api.am.wso2.com"}}"
   parentRefs:
-  - group: gateway.networking.k8s.io
-    kind: Gateway
-    name: default
-    sectionName: httpslistener
+  - group: "gateway.networking.k8s.io"
+    kind: "Gateway"
+    name: "default"
+    sectionName: "httpslistener"
   rules:
   - backendRefs:
     - group: dp.wso2.com
       kind: Backend
       name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
-      weight: 1
     filters:
-    - type: URLRewrite
+    - type: "URLRewrite"
       urlRewrite:
         path:
-          replaceFullPath: /subscriptions/\1/usage
-          type: ReplaceFullPath
+          replaceFullPath: "/subscriptions/\\1/usage"
+          type: "ReplaceFullPath"
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
         name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-scope-1
-      type: ExtensionRef
+      type: "ExtensionRef"
     matches:
-    - method: GET
+    - method: "GET"
       path:
-        type: RegularExpression
-        value: /subscriptions/(.*)/usage
+        type: "RegularExpression"
+        value: "/subscriptions/(.*)/usage"
   - backendRefs:
     - group: dp.wso2.com
       kind: Backend
       name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
-      weight: 1
     matches:
-    - method: GET
+    - method: "GET"
       path:
-        type: RegularExpression
-        value: /search
+        type: "RegularExpression"
+        value: "/search"
   - backendRefs:
     - group: dp.wso2.com
       kind: Backend
       name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
-      weight: 1
     filters:
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
         name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-scope-1
-      type: ExtensionRef
+      type: "ExtensionRef"
     matches:
-    - method: GET
+    - method: "GET"
       path:
-        type: RegularExpression
-        value: /sdk-gen/languages
+        type: "RegularExpression"
+        value: "/sdk-gen/languages"
   - backendRefs:
     - group: dp.wso2.com
       kind: Backend
       name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
-      weight: 1
     filters:
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
         name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-scope-1
-      type: ExtensionRef
+      type: "ExtensionRef"
     matches:
-    - method: GET
+    - method: "GET"
       path:
-        type: RegularExpression
-        value: /key-managers
+        type: "RegularExpression"
+        value: "/key-managers"
   - backendRefs:
     - group: dp.wso2.com
       kind: Backend
       name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
-      weight: 1
     matches:
-    - method: GET
+    - method: "GET"
       path:
-        type: RegularExpression
-        value: /api-categories
+        type: "RegularExpression"
+        value: "/api-categories"
 {{- end -}}
