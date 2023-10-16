@@ -1,6 +1,5 @@
 ## Config Deployer Service
 
-
 # Functionalities.
 
 1. Generate APK configuration (api.apk-conf) from given definition.
