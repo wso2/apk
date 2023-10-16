@@ -1,1 +1,3 @@
 ## Devportal Domain Service
+
+### Functionalities.

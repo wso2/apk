@@ -1,2 +1,4 @@
 ## Admin Domain Service
 
+### Functionalities
+
