@@ -22,247 +22,233 @@ metadata:
   labels:
     api-name: "backoffice-domain-service"
     api-version: "1.0.0"
-  ownerReferences:
-  - apiVersion: dp.wso2.com/v1alpha1
-    kind: API
-    name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-api
-    uid: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-api-uid
-  uid: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-httproute-2-uid
 spec:
   hostnames:
   - "{{ .Values.wso2.apk.listener.hostname | default "api.am.wso2.com"}}"
   parentRefs:
-  - group: gateway.networking.k8s.io
-    kind: Gateway
-    name: default
-    sectionName: httpslistener
+  - group: "gateway.networking.k8s.io"
+    kind: "Gateway"
+    name: "default"
+    sectionName: "httpslistener"
   rules:
   - backendRefs:
     - group: dp.wso2.com
       kind: Backend
       name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-backend
-      weight: 1
     filters:
-    - type: URLRewrite
+    - type: "URLRewrite"
       urlRewrite:
         path:
-          replaceFullPath: /apis/\1/documents/\2/content
-          type: ReplaceFullPath
+          replaceFullPath: "/apis/\\1/documents/\\2/content"
+          type: "ReplaceFullPath"
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
         name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-scope-1
-      type: ExtensionRef
+      type: "ExtensionRef"
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
         name: 01ee6795-ce0f-1e46-820d-1176222ae290
-      type: ExtensionRef
+      type: "ExtensionRef"
     matches:
-    - method: GET
+    - method: "GET"
       path:
-        type: RegularExpression
-        value: /apis/(.*)/documents/(.*)/content
+        type: "RegularExpression"
+        value: "/apis/(.*)/documents/(.*)/content"
   - backendRefs:
     - group: dp.wso2.com
       kind: Backend
       name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-backend
-      weight: 1
     filters:
-    - type: URLRewrite
+    - type: "URLRewrite"
       urlRewrite:
         path:
-          replaceFullPath: /apis/\1/documents/\2/content
-          type: ReplaceFullPath
+          replaceFullPath: "/apis/\\1/documents/\\2/content"
+          type: "ReplaceFullPath"
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
         name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-scope-1
-      type: ExtensionRef
+      type: "ExtensionRef"
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
         name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-scope-3
-      type: ExtensionRef
+      type: "ExtensionRef"
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
         name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-scope-4
-      type: ExtensionRef
+      type: "ExtensionRef"
     matches:
-    - method: POST
+    - method: "POST"
       path:
-        type: RegularExpression
-        value: /apis/(.*)/documents/(.*)/content
+        type: "RegularExpression"
+        value: "/apis/(.*)/documents/(.*)/content"
   - backendRefs:
     - group: dp.wso2.com
       kind: Backend
       name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-backend
-      weight: 1
     filters:
-    - type: URLRewrite
+    - type: "URLRewrite"
       urlRewrite:
         path:
-          replaceFullPath: /apis/\1/documents/\2
-          type: ReplaceFullPath
+          replaceFullPath: "/apis/\\1/documents/\\2"
+          type: "ReplaceFullPath"
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
         name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-scope-1
-      type: ExtensionRef
+      type: "ExtensionRef"
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
-        name: 01ee6795-ce0f-1e46-820d-1176222ae290
-      type: ExtensionRef
+        name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-scope-2
+      type: "ExtensionRef"
     matches:
-    - method: GET
+    - method: "GET"
       path:
-        type: RegularExpression
-        value: /apis/(.*)/documents/(.*)
+        type: "RegularExpression"
+        value: "/apis/(.*)/documents/(.*)"
   - backendRefs:
     - group: dp.wso2.com
       kind: Backend
       name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-backend
-      weight: 1
     filters:
-    - type: URLRewrite
+    - type: "URLRewrite"
       urlRewrite:
         path:
-          replaceFullPath: /apis/\1/documents/\2
-          type: ReplaceFullPath
+          replaceFullPath: "/apis/\\1/documents/\\2"
+          type: "ReplaceFullPath"
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
         name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-scope-1
-      type: ExtensionRef
+      type: "ExtensionRef"
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
         name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-scope-3
-      type: ExtensionRef
+      type: "ExtensionRef"
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
         name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-scope-4
-      type: ExtensionRef
+      type: "ExtensionRef"
     matches:
-    - method: PUT
+    - method: "PUT"
       path:
-        type: RegularExpression
-        value: /apis/(.*)/documents/(.*)
+        type: "RegularExpression"
+        value: "/apis/(.*)/documents/(.*)"
   - backendRefs:
     - group: dp.wso2.com
       kind: Backend
       name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-backend
-      weight: 1
     filters:
-    - type: URLRewrite
+    - type: "URLRewrite"
       urlRewrite:
         path:
-          replaceFullPath: /apis/\1/documents/\2
-          type: ReplaceFullPath
+          replaceFullPath: "/apis/\\1/documents/\\2"
+          type: "ReplaceFullPath"
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
         name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-scope-1
-      type: ExtensionRef
+      type: "ExtensionRef"
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
         name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-scope-3
-      type: ExtensionRef
+      type: "ExtensionRef"
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
         name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-scope-4
-      type: ExtensionRef
+      type: "ExtensionRef"
     matches:
-    - method: DELETE
+    - method: "DELETE"
       path:
-        type: RegularExpression
-        value: /apis/(.*)/documents/(.*)
+        type: "RegularExpression"
+        value: "/apis/(.*)/documents/(.*)"
   - backendRefs:
     - group: dp.wso2.com
       kind: Backend
       name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-backend
-      weight: 1
     filters:
-    - type: URLRewrite
+    - type: "URLRewrite"
       urlRewrite:
         path:
-          replaceFullPath: /apis/\1/comments/\2
-          type: ReplaceFullPath
+          replaceFullPath: "/apis/\\1/comments/\\2"
+          type: "ReplaceFullPath"
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
         name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-scope-1
-      type: ExtensionRef
+      type: "ExtensionRef"
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
-        name: 01ee6795-ce0f-1e46-820d-1176222ae290
-      type: ExtensionRef
+        name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-scope-2
+      type: "ExtensionRef"
     matches:
-    - method: GET
+    - method: "GET"
       path:
-        type: RegularExpression
-        value: /apis/(.*)/comments/(.*)
+        type: "RegularExpression"
+        value: "/apis/(.*)/comments/(.*)"
   - backendRefs:
     - group: dp.wso2.com
       kind: Backend
       name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-backend
-      weight: 1
     filters:
-    - type: URLRewrite
+    - type: "URLRewrite"
       urlRewrite:
         path:
-          replaceFullPath: /apis/\1/comments
-          type: ReplaceFullPath
+          replaceFullPath: "/apis/\\1/comments"
+          type: "ReplaceFullPath"
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
         name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-scope-1
-      type: ExtensionRef
+      type: "ExtensionRef"
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
-        name: 01ee6795-ce0f-1e46-820d-1176222ae290
-      type: ExtensionRef
+        name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-scope-2
+      type: "ExtensionRef"
     matches:
-    - method: GET
+    - method: "GET"
       path:
-        type: RegularExpression
-        value: /apis/(.*)/comments
+        type: "RegularExpression"
+        value: "/apis/(.*)/comments"
   - backendRefs:
     - group: dp.wso2.com
       kind: Backend
       name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-backend
-      weight: 1
     filters:
-    - type: URLRewrite
+    - type: "URLRewrite"
       urlRewrite:
         path:
-          replaceFullPath: /apis/\1/comments
-          type: ReplaceFullPath
+          replaceFullPath: "/apis/\\1/comments"
+          type: "ReplaceFullPath"
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
         name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-scope-1
-      type: ExtensionRef
+      type: "ExtensionRef"
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
         name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-scope-3
-      type: ExtensionRef
+      type: "ExtensionRef"
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
         name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-scope-5
-      type: ExtensionRef
+      type: "ExtensionRef"
     matches:
-    - method: POST
+    - method: "POST"
       path:
-        type: RegularExpression
-        value: /apis/(.*)/comments
+        type: "RegularExpression"
+        value: "/apis/(.*)/comments"
 {{- end -}}

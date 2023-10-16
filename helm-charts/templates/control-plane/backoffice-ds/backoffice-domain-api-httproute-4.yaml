@@ -22,113 +22,103 @@ metadata:
   labels:
     api-name: "backoffice-domain-service"
     api-version: "1.0.0"
-  ownerReferences:
-  - apiVersion: dp.wso2.com/v1alpha1
-    kind: API
-    name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-api
-    uid: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-api-uid
-  uid: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-httproute-4-uid
 spec:
   hostnames:
   - "{{ .Values.wso2.apk.listener.hostname | default "api.am.wso2.com"}}"
   parentRefs:
-  - group: gateway.networking.k8s.io
-    kind: Gateway
-    name: default
-    sectionName: httpslistener
+  - group: "gateway.networking.k8s.io"
+    kind: "Gateway"
+    name: "default"
+    sectionName: "httpslistener"
   rules:
   - backendRefs:
     - group: dp.wso2.com
       kind: Backend
       name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-backend
-      weight: 1
     filters:
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
         name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-scope-1
-      type: ExtensionRef
+      type: "ExtensionRef"
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
         name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-scope-3
-      type: ExtensionRef
+      type: "ExtensionRef"
     matches:
-    - method: POST
+    - method: "POST"
       path:
-        type: RegularExpression
-        value: /apis/change-lifecycle
+        type: "RegularExpression"
+        value: "/apis/change-lifecycle"
   - backendRefs:
     - group: dp.wso2.com
       kind: Backend
       name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-backend
-      weight: 1
     filters:
-    - type: URLRewrite
+    - type: "URLRewrite"
       urlRewrite:
         path:
-          replaceFullPath: /apis/\1/lifecycle-state
-          type: ReplaceFullPath
+          replaceFullPath: "/apis/\\1/lifecycle-state"
+          type: "ReplaceFullPath"
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
         name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-scope-1
-      type: ExtensionRef
+      type: "ExtensionRef"
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
         name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-scope-2
-      type: ExtensionRef
+      type: "ExtensionRef"
     matches:
-    - method: GET
+    - method: "GET"
       path:
-        type: RegularExpression
-        value: /apis/(.*)/lifecycle-state
+        type: "RegularExpression"
+        value: "/apis/(.*)/lifecycle-state"
   - backendRefs:
     - group: dp.wso2.com
       kind: Backend
       name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-backend
-      weight: 1
     filters:
-    - type: URLRewrite
+    - type: "URLRewrite"
       urlRewrite:
         path:
-          replaceFullPath: /apis/\1/lifecycle-history
-          type: ReplaceFullPath
+          replaceFullPath: "/apis/\\1/lifecycle-history"
+          type: "ReplaceFullPath"
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
         name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-scope-1
-      type: ExtensionRef
+      type: "ExtensionRef"
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
         name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-scope-2
-      type: ExtensionRef
+      type: "ExtensionRef"
     matches:
-    - method: GET
+    - method: "GET"
       path:
-        type: RegularExpression
-        value: /apis/(.*)/lifecycle-history
+        type: "RegularExpression"
+        value: "/apis/(.*)/lifecycle-history"
   - backendRefs:
     - group: dp.wso2.com
       kind: Backend
       name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-backend
-      weight: 1
     filters:
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
         name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-scope-1
-      type: ExtensionRef
+      type: "ExtensionRef"
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
         name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-scope-2
-      type: ExtensionRef
+      type: "ExtensionRef"
     matches:
-    - method: GET
+    - method: "GET"
       path:
-        type: RegularExpression
-        value: /api-categories
+        type: "RegularExpression"
+        value: "/api-categories"
 {{- end -}}
