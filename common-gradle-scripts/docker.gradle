@@ -22,7 +22,7 @@ imageName = docker_image_name + ':' + image_version
 if (project.hasProperty("docker_organization")) {
     imageName = docker_organization+'/'+imageName
 }
-def platforms = 'linux/amd64'
+def platforms = 'linux/arm64'
 
 
 
