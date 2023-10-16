@@ -42,7 +42,7 @@ spec:
           ports:
             - containerPort: 18005
               protocol: TCP
-            - containerPort: 8443
+            - containerPort: 9543
               protocol: TCP
 {{ include "apk-helm.deployment.resources" .Values.wso2.apk.dp.commonController.deployment.resources | indent 10 }}
 {{ include "apk-helm.deployment.env" .Values.wso2.apk.dp.commonController.deployment.env | indent 10 }}

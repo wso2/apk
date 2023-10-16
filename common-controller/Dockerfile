@@ -68,6 +68,6 @@ COPY resources/check_health.sh .
 COPY resources/conf/log_config.toml conf/
 COPY ./${TARGETARCH}/main common-controller
 
-EXPOSE 8443
+EXPOSE 9543
 
 CMD ./common-controller
