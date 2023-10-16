@@ -22,11 +22,6 @@ metadata:
     api-version: "1.0.0"
   name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-scope-1
   namespace: {{ .Release.Namespace }}
-  ownerReferences:
-  - apiVersion: dp.wso2.com/v1alpha1
-    kind: API
-    name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-api
-    uid: {{ template "apk-helm.resource.prefix" . }}-admin-ds-api-uid
   uid: {{ template "apk-helm.resource.prefix" . }}-admin-ds-scope-1-uid
 spec:
   names:

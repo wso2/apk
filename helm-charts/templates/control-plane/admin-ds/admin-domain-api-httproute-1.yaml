@@ -22,207 +22,194 @@ metadata:
   labels:
     api-name: "admin-domain-service"
     api-version: "1.0.0"
-  ownerReferences:
-  - apiVersion: dp.wso2.com/v1alpha1
-    kind: API
-    name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-api
-    uid: {{ template "apk-helm.resource.prefix" . }}-admin-ds-api-uid
-  uid: {{ template "apk-helm.resource.prefix" . }}-admin-ds-httproute-1-uid
 spec:
   hostnames:
   - "{{ .Values.wso2.apk.listener.hostname | default "api.am.wso2.com"}}"
   parentRefs:
-  - group: gateway.networking.k8s.io
-    kind: Gateway
-    name: default
-    sectionName: httpslistener
+  - group: "gateway.networking.k8s.io"
+    kind: "Gateway"
+    name: "default"
+    sectionName: "httpslistener"
   rules:
   - backendRefs:
     - group: dp.wso2.com
       kind: Backend
       name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
-      weight: 1
     filters:
-    - type: URLRewrite
+    - type: "URLRewrite"
       urlRewrite:
         path:
-          replaceFullPath: /deny-policies/\1
-          type: ReplaceFullPath
+          replaceFullPath: "/deny-policies/\\1"
+          type: "ReplaceFullPath"
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
         name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-scope-1
-      type: ExtensionRef
+      type: "ExtensionRef"
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
         name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-scope-2
-      type: ExtensionRef
+      type: "ExtensionRef"
     matches:
-    - method: GET
+    - method: "GET"
       path:
-        type: RegularExpression
-        value: /deny-policies/(.*)
+        type: "RegularExpression"
+        value: "/deny-policies/(.*)"
   - backendRefs:
     - group: dp.wso2.com
       kind: Backend
       name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
       weight: 1
     filters:
-    - type: URLRewrite
+    - type: "URLRewrite"
       urlRewrite:
         path:
-          replaceFullPath: /deny-policies/\1
-          type: ReplaceFullPath
+          replaceFullPath: "/deny-policies/\\1"
+          type: "ReplaceFullPath"
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
         name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-scope-2
-      type: ExtensionRef
+      type: "ExtensionRef"
     matches:
-    - method: DELETE
+    - method: "DELETE"
       path:
-        type: RegularExpression
-        value: /deny-policies/(.*)
+        type: "RegularExpression"
+        value: "/deny-policies/(.*)"
   - backendRefs:
     - group: dp.wso2.com
       kind: Backend
       name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
-      weight: 1
     filters:
-    - type: URLRewrite
+    - type: "URLRewrite"
       urlRewrite:
         path:
-          replaceFullPath: /deny-policies/\1
-          type: ReplaceFullPath
+          replaceFullPath: "/deny-policies/\\1"
+          type: "ReplaceFullPath"
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
         name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-scope-1
-      type: ExtensionRef
+      type: "ExtensionRef"
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
         name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-scope-2
-      type: ExtensionRef
+      type: "ExtensionRef"
     matches:
-    - method: PATCH
+    - method: "PATCH"
       path:
-        type: RegularExpression
-        value: /deny-policies/(.*)
+        type: "RegularExpression"
+        value: "/deny-policies/(.*)"
   - backendRefs:
     - group: dp.wso2.com
       kind: Backend
       name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
-      weight: 1
     filters:
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
         name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-scope-1
-      type: ExtensionRef
+      type: "ExtensionRef"
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
         name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-scope-2
-      type: ExtensionRef
+      type: "ExtensionRef"
     matches:
-    - method: GET
+    - method: "GET"
       path:
-        type: RegularExpression
-        value: /deny-policies
+        type: "RegularExpression"
+        value: "/deny-policies"
   - backendRefs:
     - group: dp.wso2.com
       kind: Backend
       name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
-      weight: 1
     filters:
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
         name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-scope-1
-      type: ExtensionRef
+      type: "ExtensionRef"
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
         name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-scope-2
-      type: ExtensionRef
+      type: "ExtensionRef"
     matches:
-    - method: POST
+    - method: "POST"
       path:
-        type: RegularExpression
-        value: /deny-policies
+        type: "RegularExpression"
+        value: "/deny-policies"
   - backendRefs:
     - group: dp.wso2.com
       kind: Backend
       name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
-      weight: 1
     filters:
-    - type: URLRewrite
+    - type: "URLRewrite"
       urlRewrite:
         path:
-          replaceFullPath: /applications/\1
-          type: ReplaceFullPath
+          replaceFullPath: "/applications/\\1"
+          type: "ReplaceFullPath"
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
         name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-scope-1
-      type: ExtensionRef
+      type: "ExtensionRef"
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
         name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-scope-3
-      type: ExtensionRef
+      type: "ExtensionRef"
     matches:
-    - method: GET
+    - method: "GET"
       path:
-        type: RegularExpression
-        value: /applications/(.*)
+        type: "RegularExpression"
+        value: "/applications/(.*)"
   - backendRefs:
     - group: dp.wso2.com
       kind: Backend
       name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
-      weight: 1
     filters:
-    - type: URLRewrite
+    - type: "URLRewrite"
       urlRewrite:
         path:
-          replaceFullPath: /applications/\1
-          type: ReplaceFullPath
+          replaceFullPath: "/applications/\\1"
+          type: "ReplaceFullPath"
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
         name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-scope-1
-      type: ExtensionRef
+      type: "ExtensionRef"
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
         name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-scope-3
-      type: ExtensionRef
+      type: "ExtensionRef"
     matches:
-    - method: DELETE
+    - method: "DELETE"
       path:
-        type: RegularExpression
-        value: /applications/(.*)
+        type: "RegularExpression"
+        value: "/applications/(.*)"
   - backendRefs:
     - group: dp.wso2.com
       kind: Backend
       name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
-      weight: 1
     filters:
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
         name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-scope-1
-      type: ExtensionRef
+      type: "ExtensionRef"
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
         name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-scope-3
-      type: ExtensionRef
+      type: "ExtensionRef"
     matches:
-    - method: GET
+    - method: "GET"
       path:
-        type: RegularExpression
-        value: /applications
+        type: "RegularExpression"
+        value: "/applications"
 {{- end -}}
