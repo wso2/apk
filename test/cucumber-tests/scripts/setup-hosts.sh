@@ -10,6 +10,7 @@ kubectl wait --timeout=15m -n apk-integration-test deployment/apk-test-setup-wso
 IP=$(kubectl get svc apk-test-setup-wso2-apk-gateway-service -n apk-integration-test --output jsonpath='{.status.loadBalancer.ingress[0].ip}')
 sudo echo "$IP localhost" | sudo tee -a /etc/hosts
 sudo echo "$IP idp.am.wso2.com" | sudo tee -a /etc/hosts
+sudo echo "$IP apk-test-setup-wso2-apk-common-controller-service.apk-integration-test.svc" | sudo tee -a /etc/hosts
 sudo echo "$IP api.am.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "$IP default.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "$IP org1.gw.wso2.com" | sudo tee -a /etc/hosts

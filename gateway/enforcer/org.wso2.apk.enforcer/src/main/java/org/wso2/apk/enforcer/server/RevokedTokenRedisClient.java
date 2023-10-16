@@ -244,8 +244,4 @@ public class RevokedTokenRedisClient {
         }
     }
 
-    public static void main(String[] args) throws EnforcerException {
-        retrieveAndSubscribe();
-    }
-
 }
