@@ -39,6 +39,6 @@ data:
       authKeyHeader = "stsAuthKey"
     
     [commoncontroller.webServer]
-      port = 8443
+      port = 9543
 
 {{- end -}}

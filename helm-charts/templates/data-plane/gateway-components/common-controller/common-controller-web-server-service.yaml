@@ -27,6 +27,6 @@ spec:
   ports:
     - name: web-server
       protocol: TCP
-      port: 8443
-      targetPort: 8443
+      port: 9543
+      targetPort: 9543
 {{- end -}}
