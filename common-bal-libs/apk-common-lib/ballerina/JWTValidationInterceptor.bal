@@ -1,7 +1,6 @@
 import ballerina/jwt;
 import ballerina/regex;
 import ballerina/http;
-import ballerina/log;
 
 public isolated service class JWTValidationInterceptor {
     *http:RequestInterceptor;
@@ -24,7 +23,6 @@ public isolated service class JWTValidationInterceptor {
         }
         string|http:HeaderNotFoundError authorizationHeader = request.getHeader(self.idpConfiguration.authorizationHeader);
         if authorizationHeader is string {
-            log:printInfo(authorizationHeader);
             UserContext userContext = check self.validateJWT(authorizationHeader);
             ctx.set(VALIDATED_USER_CONTEXT, userContext.clone());
             return ctx.next();
@@ -76,7 +74,6 @@ public isolated service class JWTValidationInterceptor {
         map<[string, anydata]> claims = jwt.clone().entries();
         foreach [string, anydata] [claimKey, claimValue] in claims {
             if jwtClaims.indexOf(claimKey) is () {
-                log:printInfo("[CUSTOM LOG] claimKey: " + claimKey + " claimValue: " + claimValue.toString());
                 customClaims[claimKey] = claimValue.clone();
             }
         }
