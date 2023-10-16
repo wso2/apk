@@ -35,7 +35,5 @@ spec:
       - {{ template "apk-helm.resource.prefix" . }}-admin-ds-httproute-2
       - {{ template "apk-helm.resource.prefix" . }}-admin-ds-httproute-3
       - {{ template "apk-helm.resource.prefix" . }}-admin-ds-httproute-4
-      - {{ template "apk-helm.resource.prefix" . }}-admin-ds-httproute-5
-      - {{ template "apk-helm.resource.prefix" . }}-admin-ds-httproute-6
   systemAPI: true
 {{- end -}}

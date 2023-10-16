@@ -49,7 +49,7 @@ spec:
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
-        name: 01ee6795-ce0f-1e46-820d-1176222ae290
+        name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-scope-2
       type: "ExtensionRef"
     matches:
     - method: "GET"
