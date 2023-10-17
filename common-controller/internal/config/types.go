@@ -64,15 +64,15 @@ type operator struct {
 }
 
 type redis struct {
-	Host             			string
-	Port             			string
-	Username   						string
-	Password   						string
-	UserCertPath   				string
-	UserKeyPath    				string
-	CACertPath 						string
-	TLSEnabled    				bool
-	RevokedTokenChannel 	string
+	Host                  string
+	Port                  string
+	Username              string
+	Password              string
+	UserCertPath          string
+	UserKeyPath           string
+	CACertPath            string
+	TLSEnabled            bool
+	RevokedTokenChannel   string
 }
 
 type sts struct {
