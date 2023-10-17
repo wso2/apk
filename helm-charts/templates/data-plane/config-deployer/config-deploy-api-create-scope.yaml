@@ -20,9 +20,8 @@ kind: Scope
 metadata:
   labels:
     managed-by: "apk"
-  name: {{ template "apk-helm.resource.prefix" . }}-config-ds-scope-1
+  name: {{ template "apk-helm.resource.prefix" . }}-api-create-scope
   namespace: {{ .Release.Namespace }}
-  uid: {{ template "apk-helm.resource.prefix" . }}-admin-ds-scope-1-uid
 spec:
   names:
   - apk:api_create

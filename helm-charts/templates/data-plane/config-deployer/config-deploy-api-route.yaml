@@ -38,7 +38,7 @@ spec:
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
-        name: {{ template "apk-helm.resource.prefix" . }}-config-ds-scope-1
+        name: {{ template "apk-helm.resource.prefix" . }}-api-create-scope
       type: ExtensionRef
   - matches:
     - path:
@@ -53,7 +53,7 @@ spec:
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
-        name: {{ template "apk-helm.resource.prefix" . }}-config-ds-scope-1
+        name: {{ template "apk-helm.resource.prefix" . }}-api-create-scope
       type: ExtensionRef
   parentRefs:
   - group: "gateway.networking.k8s.io"
