@@ -68,7 +68,7 @@ tasks.register('docker_push', Exec) {
 tasks.register('setup_arch', Exec) {
     group 'docker'
     description 'Setup QEMU for buildx'
-    commandLine 'docker', 'run', '--rm', '--privileged', 'tonistiigi/binfmt:latest', '--reset', '-p', 'yes'
+    commandLine 'docker', 'run', '--rm', '--privileged', 'tonistiigi/binfmt:latest', '--install', 'all'
 }
 
 tasks.register('setup_buildx', Exec) {
