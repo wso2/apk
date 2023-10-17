@@ -36,6 +36,8 @@ import (
 	"encoding/json"
 )
 
+const tokenRevocationType = "TOKEN_REVOCATION"
+
 type revokeRequest struct {
 	Token string `json:"token"`
 	Jti string `json:"jti"`
@@ -78,8 +80,19 @@ func init() {
 }
 
 // RevokeHandler handles the token revocation requests
-func RevokeHandler(c *gin.Context) {
-	if !authenticateRequest(c) {
+func NotifyHandler(c *gin.Context) {
+	_type := c.Query("type")
+	if _type == tokenRevocationType {
+		revokeToken(c)
+		return
+	} else {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid type"})
+		return
+	}	
+}
+
+func revokeToken(c *gin.Context) {
+	if !authenticateTokenRevocationRequest(c) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized request"})
 		return
 	}
@@ -101,24 +114,20 @@ func RevokeHandler(c *gin.Context) {
 		}
 		jti = claims.Jti
 		expiry = claims.Exp
-
 	} else {
 		jti = request.Jti
 		expiry = request.Expiry
 	}
-
 	if expiry <= time.Now().Unix() {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Token is already expired"})
 		return
 	}
-
 	err := storeTokenInRedis(jti, expiry)
 	if (err != nil) {
 		loggers.LoggerAPI.ErrorC(logging.PrintError(logging.Error3202, logging.MAJOR, "Error adding revoked tokens to redis: %v", err))
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to store the token in Redis cache"})
 		return
 	} 
-
 	c.JSON(http.StatusOK, gin.H{"message": "Token revoked successfully"})
 }
 
@@ -172,7 +181,7 @@ func storeTokenInRedis(token string, expiry int64) error {
 	return nil
 }
 
-func authenticateRequest(c *gin.Context) bool {
+func authenticateTokenRevocationRequest(c *gin.Context) bool {
 	fileContent, err := ioutil.ReadFile(authKeyPath)
 	if err != nil {
 		loggers.LoggerAPI.ErrorC(logging.PrintError(logging.Error3204, logging.MAJOR, "Error reading shared key file: %v", err))
