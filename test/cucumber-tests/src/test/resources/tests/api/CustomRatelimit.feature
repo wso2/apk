@@ -61,9 +61,9 @@ Feature: Custom ratelimit
 # Request 9 - for org_id descriptor
     And I send "GET" request to "https://default.gw.wso2.com:9095/test-custom-ratelimit/employee" with body ""
     Then the response status code should be 200
-# Request 10 - for org_id descriptor TODO Once the ratelimitter bug is fixed this should return a 200
+# Request 10 - for org_id descriptor
     And I send "GET" request to "https://default.gw.wso2.com:9095/test-custom-ratelimit/employee" with body ""
-    Then the response status code should be 429
+    Then the response status code should be 200
 # Request 11 - for org_id descriptor
     And I send "GET" request to "https://default.gw.wso2.com:9095/test-custom-ratelimit/employee" with body ""
     Then the response status code should be 429
