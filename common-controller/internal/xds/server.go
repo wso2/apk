@@ -55,9 +55,12 @@ func GetRateLimiterCache() envoy_cachev3.SnapshotCache {
 }
 
 // UpdateRateLimitXDSCache updates the xDS cache of the RateLimiter.
-func UpdateRateLimitXDSCache(resolveRatelimit dpv1alpha1.ResolveRateLimitAPIPolicy) {
-	// Add Rate Limit inline policies in API to the cache
-	rlsPolicyCache.AddAPILevelRateLimitPolicies(resolveRatelimit)
+func UpdateRateLimitXDSCache(resolveRatelimitPolicyList []dpv1alpha1.ResolveRateLimitAPIPolicy) {
+
+	for _, resolveRatelimitPolicy := range resolveRatelimitPolicyList {
+		// Add Rate Limit inline policies in API to the cache
+		rlsPolicyCache.AddAPILevelRateLimitPolicies(resolveRatelimitPolicy)
+	}
 }
 
 // UpdateRateLimitXDSCacheForCustomPolicies updates the xDS cache of the RateLimiter for custom policies.
@@ -68,21 +71,31 @@ func UpdateRateLimitXDSCacheForCustomPolicies(customRateLimitPolicies dpv1alpha1
 }
 
 // DeleteAPILevelRateLimitPolicies delete the ratelimit xds cache
-func DeleteAPILevelRateLimitPolicies(resolveRatelimit dpv1alpha1.ResolveRateLimitAPIPolicy) {
-	var org = resolveRatelimit.Organization
-	var environment = resolveRatelimit.Environment
-	var basePath = resolveRatelimit.BasePath
-	rlsPolicyCache.DeleteAPILevelRateLimitPolicies(org, environment, basePath)
+func DeleteAPILevelRateLimitPolicies(resolveRatelimitPolicyList []dpv1alpha1.ResolveRateLimitAPIPolicy) {
+
+	for _, resolveRatelimit := range resolveRatelimitPolicyList {
+		var org = resolveRatelimit.Organization
+		var environment = resolveRatelimit.Environment
+		var basePath = resolveRatelimit.BasePath
+		rlsPolicyCache.DeleteAPILevelRateLimitPolicies(org, environment, basePath)
+	}
 }
 
 // DeleteResourceLevelRateLimitPolicies delete the ratelimit xds cache
-func DeleteResourceLevelRateLimitPolicies(resolveRatelimit dpv1alpha1.ResolveRateLimitAPIPolicy) {
-	var org = resolveRatelimit.Organization
-	var environment = resolveRatelimit.Environment
-	var basePath = resolveRatelimit.BasePath
-	var path = resolveRatelimit.Resources[0].Path
-	var method = resolveRatelimit.Resources[0].Method
-	rlsPolicyCache.DeleteResourceLevelRateLimitPolicies(org, environment, basePath, path, method)
+func DeleteResourceLevelRateLimitPolicies(resolveRatelimitPolicyList []dpv1alpha1.ResolveRateLimitAPIPolicy) {
+
+	for _, resolveRatelimit := range resolveRatelimitPolicyList {
+
+		if resolveRatelimit.Resources == nil || len(resolveRatelimit.Resources) == 0 {
+			continue
+		}
+		var org = resolveRatelimit.Organization
+		var environment = resolveRatelimit.Environment
+		var basePath = resolveRatelimit.BasePath
+		var path = resolveRatelimit.Resources[0].Path
+		var method = resolveRatelimit.Resources[0].Method
+		rlsPolicyCache.DeleteResourceLevelRateLimitPolicies(org, environment, basePath, path, method)
+	}
 }
 
 // DeleteCustomRateLimitPolicies delete the ratelimit xds cache

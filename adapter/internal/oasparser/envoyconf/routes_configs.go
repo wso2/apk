@@ -34,6 +34,7 @@ import (
 	logger "github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/internal/oasparser/constants"
 	"github.com/wso2/apk/adapter/internal/oasparser/model"
+	opConstants "github.com/wso2/apk/adapter/internal/operator/constants"
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/wrapperspb"
@@ -112,6 +113,11 @@ func generateRouteAction(apiType string, routeConfig *model.EndpointConfig, rate
 
 func generateRateLimitPolicy(ratelimitCriteria *ratelimitCriteria) []*routev3.RateLimit {
 
+	environmentValue := ratelimitCriteria.environment
+	if ratelimitCriteria.level != RateLimitPolicyAPILevel && ratelimitCriteria.envType == opConstants.Sandbox {
+		environmentValue += "_sandbox"
+	}
+
 	rateLimit := routev3.RateLimit{
 		Actions: []*routev3.RateLimit_Action{
 			{
@@ -126,7 +132,7 @@ func generateRateLimitPolicy(ratelimitCriteria *ratelimitCriteria) []*routev3.Ra
 				ActionSpecifier: &routev3.RateLimit_Action_GenericKey_{
 					GenericKey: &routev3.RateLimit_Action_GenericKey{
 						DescriptorKey:   DescriptorKeyForEnvironment,
-						DescriptorValue: ratelimitCriteria.environment,
+						DescriptorValue: environmentValue,
 					},
 				},
 			},

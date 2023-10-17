@@ -44,6 +44,7 @@ type routeCreateParams struct {
 	apiLevelRateLimitPolicy      *model.RateLimitPolicy
 	apiProperties                []dpv1alpha1.Property
 	environment                  string
+	envType                      string
 }
 
 // RatelimitCriteria criterias of rate limiting
@@ -52,4 +53,5 @@ type ratelimitCriteria struct {
 	organizationID       string
 	basePathForRLService string
 	environment          string
+	envType              string
 }

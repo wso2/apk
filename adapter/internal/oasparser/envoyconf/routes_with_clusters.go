@@ -818,6 +818,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 			organizationID:       params.organizationID,
 			basePathForRLService: basePathForRLService,
 			environment:          params.environment,
+			envType:              params.envType,
 		}
 	}
 	var (
@@ -1529,6 +1530,7 @@ func genRouteCreateParams(swagger *model.AdapterInternalAPI, resource *model.Res
 		routeConfig:                  resource.GetEndpoints().Config,
 		createDefaultPath:            createDefaultPath,
 		environment:                  swagger.GetEnvironment(),
+		envType:                      swagger.EnvType,
 	}
 	return params
 }
