@@ -308,7 +308,6 @@ type cache struct {
 
 type analytics struct {
 	Enabled  bool
-	Type     string
 	Adapter  analyticsAdapter
 	Enforcer analyticsEnforcer
 }
@@ -325,15 +324,21 @@ type metrics struct {
 }
 
 type analyticsAdapter struct {
+	Enabled             bool
 	BufferFlushInterval time.Duration
 	BufferSizeBytes     uint32
 	GRPCRequestTimeout  time.Duration
 }
 
 type analyticsEnforcer struct {
-	// TODO: (VirajSalaka) convert it to map[string]{}interface
+	AnalyticsPublisher []analyticsPublisher
+	LogReceiver        authService
+}
+
+type analyticsPublisher struct {
+	Enabled          bool
+	Type             string
 	ConfigProperties map[string]string
-	LogReceiver      authService
 }
 
 type jwtIssuer struct {

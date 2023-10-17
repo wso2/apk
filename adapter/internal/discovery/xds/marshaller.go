@@ -105,9 +105,8 @@ func MarshalConfig(config *config.Config) *enforcer.Config {
 		Type:    config.Enforcer.Metrics.Type,
 	}
 	analytics := &enforcer.Analytics{
-		Enabled:          config.Analytics.Enabled,
-		Type:             config.Analytics.Type,
-		ConfigProperties: config.Analytics.Enforcer.ConfigProperties,
+		Enabled:            config.Analytics.Enabled,
+		AnalyticsPublisher: marshalAnalyticsPublishers(*config),
 		Service: &enforcer.Service{
 			Port:           config.Analytics.Enforcer.LogReceiver.Port,
 			MaxHeaderLimit: config.Analytics.Enforcer.LogReceiver.MaxHeaderLimit,
@@ -173,6 +172,17 @@ func MarshalConfig(config *config.Config) *enforcer.Config {
 		Filters:    filters,
 		Soap:       soap,
 	}
+}
+
+func marshalAnalyticsPublishers(config config.Config) []*enforcer.AnalyticsPublisher {
+	analyticsPublishers := config.Analytics.Enforcer.AnalyticsPublisher
+	resolvedAnalyticsPublishers := make([]*enforcer.AnalyticsPublisher, len(analyticsPublishers))
+	for i, publisher := range analyticsPublishers {
+		resolvedAnalyticsPublishers[i] = &enforcer.AnalyticsPublisher{Enabled: publisher.Enabled,
+			Type:             publisher.Type,
+			ConfigProperties: publisher.ConfigProperties}
+	}
+	return resolvedAnalyticsPublishers
 }
 
 // marshalSubscriptionMapToList converts the data into SubscriptionList proto type

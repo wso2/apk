@@ -18,47 +18,46 @@
 
 package org.wso2.apk.enforcer.config.dto;
 
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Holds the analytics data publishing related Configuration.
  */
 public class AnalyticsDTO {
 
-    private boolean isEnabled;
-    private String type;
-    private Map<String, String> configProperties;
+    private boolean enabled = false;
+
+    private List<AnalyticsPublisherConfigDTO> analyticsPublisherConfigDTOList = new ArrayList<>();
     private AnalyticsReceiverConfigDTO serverConfig;
 
-    public boolean isEnabled() {
-        return isEnabled;
-    }
-
-    public void setEnabled(boolean enabled) {
-        isEnabled = enabled;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
     public AnalyticsReceiverConfigDTO getServerConfig() {
+
         return serverConfig;
     }
 
     public void setServerConfig(AnalyticsReceiverConfigDTO serverConfig) {
+
         this.serverConfig = serverConfig;
     }
 
-    public Map<String, String> getConfigProperties() {
-        return configProperties;
+    public List<AnalyticsPublisherConfigDTO> getAnalyticsPublisherConfigDTOList() {
+
+        return analyticsPublisherConfigDTOList;
     }
 
-    public void setConfigProperties(Map<String, String> configProperties) {
-        this.configProperties = configProperties;
+    public void addAnalyticsPublisherConfig(AnalyticsPublisherConfigDTO analyticsPublisherConfigDTO) {
+
+        this.analyticsPublisherConfigDTOList.add(analyticsPublisherConfigDTO);
+    }
+
+    public boolean isEnabled() {
+
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+
+        this.enabled = enabled;
     }
 }

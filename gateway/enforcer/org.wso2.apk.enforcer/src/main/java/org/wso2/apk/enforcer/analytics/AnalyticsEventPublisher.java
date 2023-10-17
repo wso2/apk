@@ -19,8 +19,10 @@
 package org.wso2.apk.enforcer.analytics;
 
 import io.envoyproxy.envoy.service.accesslog.v3.StreamAccessLogsMessage;
+import org.wso2.apk.enforcer.config.dto.AnalyticsPublisherConfigDTO;
 //import org.wso2.apk.enforcer.discovery.service.websocket.WebSocketFrameRequest;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -86,7 +88,7 @@ public interface AnalyticsEventPublisher {
     /**
      * Initialize the analytics publisher with configurations map.
      *
-     * @param configurationMap Analytics Configurations
+     * @param analyticsPublisherConfigDTOList Analytics Configurations
      */
-    void init(Map<String, String> configurationMap);
+    void init(List<AnalyticsPublisherConfigDTO> analyticsPublisherConfigDTOList);
 }

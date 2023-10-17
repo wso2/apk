@@ -32,11 +32,10 @@ import org.wso2.apk.enforcer.commons.analytics.publishers.dto.enums.EventCategor
 import org.wso2.apk.enforcer.commons.analytics.publishers.dto.enums.FaultCategory;
 import org.wso2.apk.enforcer.commons.logging.ErrorDetails;
 import org.wso2.apk.enforcer.commons.logging.LoggingConstants;
-import org.wso2.apk.enforcer.config.ConfigHolder;
+import org.wso2.apk.enforcer.config.dto.AnalyticsPublisherConfigDTO;
 import org.wso2.apk.enforcer.constants.AnalyticsConstants;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 import static org.wso2.apk.enforcer.analytics.AnalyticsConstants.ERROR_SCHEMA;
 import static org.wso2.apk.enforcer.analytics.AnalyticsConstants.RESPONSE_SCHEMA;
@@ -45,25 +44,27 @@ import static org.wso2.apk.enforcer.analytics.AnalyticsConstants.RESPONSE_SCHEMA
  * Default Analytics Event publisher to the analytics cloud.
  */
 public class DefaultAnalyticsEventPublisher implements AnalyticsEventPublisher {
-    private static final String AUTH_TOKEN_KEY = "auth.api.token";
-    private static final String AUTH_URL = "auth.api.url";
+
     public final String responseSchema;
     public final String faultSchema;
 
     private static final Logger logger = LogManager.getLogger(DefaultAnalyticsEventPublisher.class);
 
     public DefaultAnalyticsEventPublisher() {
+
         this.responseSchema = RESPONSE_SCHEMA;
         this.faultSchema = ERROR_SCHEMA;
     }
 
     public DefaultAnalyticsEventPublisher(String responseSchema, String faultSchema) {
+
         this.responseSchema = responseSchema;
         this.faultSchema = faultSchema;
     }
 
     @Override
     public void handleGRPCLogMsg(StreamAccessLogsMessage message) {
+
         for (int i = 0; i < message.getHttpLogs().getLogEntryCount(); i++) {
             HTTPAccessLogEntry logEntry = message.getHttpLogs().getLogEntry(i);
             logger.trace("Received logEntry from Router " + message.getIdentifier().getNode() +
@@ -95,38 +96,23 @@ public class DefaultAnalyticsEventPublisher implements AnalyticsEventPublisher {
 //    }
 
     @Override
-    public void init(Map<String, String> configuration) {
-        boolean elkEnabled = org.wso2.apk.enforcer.analytics.AnalyticsConstants.ELK_TYPE
-                .equalsIgnoreCase(ConfigHolder.getInstance().getConfig().getAnalyticsConfig().getType());
-        if (!elkEnabled && (StringUtils.isEmpty(configuration.get(AnalyticsConstants.AUTH_URL_CONFIG_KEY))
-                || StringUtils.isEmpty(AnalyticsConstants.AUTH_TOKEN_CONFIG_KEY))) {
-            logger.error(AnalyticsConstants.AUTH_URL_CONFIG_KEY + " and / or " +
-                    AnalyticsConstants.AUTH_TOKEN_CONFIG_KEY +
-                    "  are not provided. Hence assigning default values");
-            configuration.put(AnalyticsConstants.AUTH_TOKEN_CONFIG_KEY, "");
-            configuration.put(AnalyticsConstants.AUTH_URL_CONFIG_KEY, "https://localhost:8080");
-            return;
-        }
-        Map<String, String> publisherConfig = new HashMap<>(2);
-        for (Map.Entry<String, String> entry : configuration.entrySet()) {
-            if (AnalyticsConstants.AUTH_TOKEN_CONFIG_KEY.equals(entry.getKey())) {
-                publisherConfig.put(AUTH_TOKEN_KEY, configuration.get(AnalyticsConstants.AUTH_TOKEN_CONFIG_KEY));
-                continue;
-            } else if (AnalyticsConstants.AUTH_URL_CONFIG_KEY.equals(entry.getKey())) {
-                publisherConfig.put(AUTH_URL, configuration.get(AnalyticsConstants.AUTH_URL_CONFIG_KEY));
-                continue;
+    public void init(List<AnalyticsPublisherConfigDTO> analyticsPublisherConfigDTOList) {
+
+        if (analyticsPublisherConfigDTOList != null) {
+            for (AnalyticsPublisherConfigDTO analyticsPublisherConfigDTO : analyticsPublisherConfigDTOList) {
+                AnalyticsCommonConfiguration commonConfiguration = new AnalyticsCommonConfiguration(analyticsPublisherConfigDTO.getConfigProperties());
+                commonConfiguration.setType(analyticsPublisherConfigDTO.getType());
+                if (!StringUtils.isEmpty(responseSchema)) {
+                    commonConfiguration.setResponseSchema(responseSchema);
+                }
+                if (!StringUtils.isEmpty(faultSchema)) {
+                    commonConfiguration.setFaultSchema(faultSchema);
+                }
+                AnalyticsServiceReferenceHolder.getInstance().addAnalyticReporter(commonConfiguration);
+
             }
-            publisherConfig.put(entry.getKey(), entry.getValue());
         }
 
-        AnalyticsCommonConfiguration commonConfiguration = new AnalyticsCommonConfiguration(publisherConfig);
-        if (!StringUtils.isEmpty(responseSchema)) {
-            commonConfiguration.setResponseSchema(responseSchema);
-        }
-        if (!StringUtils.isEmpty(faultSchema)) {
-            commonConfiguration.setFaultSchema(faultSchema);
-        }
-        AnalyticsServiceReferenceHolder.getInstance().setConfigurations(commonConfiguration);
     }
 
     private boolean doNotPublishEvent(HTTPAccessLogEntry logEntry) {
@@ -172,6 +158,7 @@ public class DefaultAnalyticsEventPublisher implements AnalyticsEventPublisher {
 //    }
 
     private void collectDataToPublish(AnalyticsDataProvider provider) {
+
         GenericRequestDataCollector dataCollector = new GenericRequestDataCollector(provider);
         String correlationID = "";
         if (provider.getMetaInfo() != null) {
@@ -182,7 +169,7 @@ public class DefaultAnalyticsEventPublisher implements AnalyticsEventPublisher {
             logger.debug("Event is published. : " + correlationID);
         } catch (AnalyticsException e) {
             logger.error("Error while publishing the event to the analytics portal. : "
-                    + correlationID,
+                            + correlationID,
                     ErrorDetails.errorLog(LoggingConstants.Severity.CRITICAL, 5100), e);
         }
     }

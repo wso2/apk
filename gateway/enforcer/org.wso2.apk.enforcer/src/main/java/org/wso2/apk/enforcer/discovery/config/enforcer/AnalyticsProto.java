@@ -19,11 +19,6 @@ public final class AnalyticsProto {
   static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_wso2_discovery_config_enforcer_Analytics_fieldAccessorTable;
-  static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_wso2_discovery_config_enforcer_Analytics_ConfigPropertiesEntry_descriptor;
-  static final 
-    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_wso2_discovery_config_enforcer_Analytics_ConfigPropertiesEntry_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -36,36 +31,31 @@ public final class AnalyticsProto {
       "\n.wso2/discovery/config/enforcer/analyti" +
       "cs.proto\022\036wso2.discovery.config.enforcer" +
       "\032,wso2/discovery/config/enforcer/service" +
-      ".proto\"\370\001\n\tAnalytics\022\017\n\007enabled\030\001 \001(\010\022Y\n" +
-      "\020configProperties\030\002 \003(\0132?.wso2.discovery" +
-      ".config.enforcer.Analytics.ConfigPropert" +
-      "iesEntry\0228\n\007service\030\003 \001(\0132\'.wso2.discove" +
-      "ry.config.enforcer.Service\022\014\n\004type\030\004 \001(\t" +
-      "\0327\n\025ConfigPropertiesEntry\022\013\n\003key\030\001 \001(\t\022\r" +
-      "\n\005value\030\002 \001(\t:\0028\001B\223\001\n/org.wso2.apk.enfor" +
-      "cer.discovery.config.enforcerB\016Analytics" +
-      "ProtoP\001ZNgithub.com/envoyproxy/go-contro" +
-      "l-plane/wso2/discovery/config/enforcer;e" +
-      "nforcerb\006proto3"
+      ".proto\0328wso2/discovery/config/enforcer/a" +
+      "nalytics_publisher.proto\"\247\001\n\tAnalytics\022\017" +
+      "\n\007enabled\030\001 \001(\010\022O\n\023analytics_publisher\030\002" +
+      " \003(\01322.wso2.discovery.config.enforcer.An" +
+      "alyticsPublisher\0228\n\007service\030\003 \001(\0132\'.wso2" +
+      ".discovery.config.enforcer.ServiceB\223\001\n/o" +
+      "rg.wso2.apk.enforcer.discovery.config.en" +
+      "forcerB\016AnalyticsProtoP\001ZNgithub.com/env" +
+      "oyproxy/go-control-plane/wso2/discovery/" +
+      "config/enforcer;enforcerb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
           org.wso2.apk.enforcer.discovery.config.enforcer.ServiceProto.getDescriptor(),
+          org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsPublisherProto.getDescriptor(),
         });
     internal_static_wso2_discovery_config_enforcer_Analytics_descriptor =
       getDescriptor().getMessageTypes().get(0);
     internal_static_wso2_discovery_config_enforcer_Analytics_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_wso2_discovery_config_enforcer_Analytics_descriptor,
-        new java.lang.String[] { "Enabled", "ConfigProperties", "Service", "Type", });
-    internal_static_wso2_discovery_config_enforcer_Analytics_ConfigPropertiesEntry_descriptor =
-      internal_static_wso2_discovery_config_enforcer_Analytics_descriptor.getNestedTypes().get(0);
-    internal_static_wso2_discovery_config_enforcer_Analytics_ConfigPropertiesEntry_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_wso2_discovery_config_enforcer_Analytics_ConfigPropertiesEntry_descriptor,
-        new java.lang.String[] { "Key", "Value", });
+        new java.lang.String[] { "Enabled", "AnalyticsPublisher", "Service", });
     org.wso2.apk.enforcer.discovery.config.enforcer.ServiceProto.getDescriptor();
+    org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsPublisherProto.getDescriptor();
   }
 
   // @@protoc_insertion_point(outer_class_scope)
