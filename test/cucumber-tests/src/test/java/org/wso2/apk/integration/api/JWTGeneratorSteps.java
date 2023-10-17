@@ -23,6 +23,8 @@ import java.security.cert.CertificateException;
 import java.util.Date;
 import java.util.UUID;
 
+import org.wso2.apk.integration.utils.Constants;
+
 public class JWTGeneratorSteps {
 
     private final SharedContext sharedContext;
@@ -47,7 +49,7 @@ public class JWTGeneratorSteps {
                 .expirationTime(new Date(new Date().getTime() + 60 * 1000))
                 .jwtID(UUID.randomUUID().toString())
                 .claim("azp", UUID.randomUUID().toString())
-                .claim("scope", "default")
+                .claim("scope", Constants.API_CREATE_SCOPE)
                 .build();
         SignedJWT signedJWT = new SignedJWT(
                 new JWSHeader.Builder(JWSAlgorithm.RS256).keyID(kid).build(),
@@ -74,7 +76,7 @@ public class JWTGeneratorSteps {
                 .expirationTime(new Date(new Date().getTime() + 60 * 1000))
                 .jwtID(UUID.randomUUID().toString())
                 .claim("azp", UUID.randomUUID().toString())
-                .claim("scope", "default")
+                .claim("scope", Constants.API_CREATE_SCOPE)
                 .claim("organization", organization)
                 .build();
         SignedJWT signedJWT = new SignedJWT(

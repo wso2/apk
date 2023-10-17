@@ -13,6 +13,9 @@ paths:
       tags:
         - APIs
       summary: Deploy API
+      security:
+        - OAuth2Security:
+            - apk:api_create
       description: | 
       operationId: deployAPI
       requestBody:
@@ -54,6 +57,9 @@ paths:
       tags:
         - APIs
       summary: Undeploy API
+      security:
+        - OAuth2Security:
+            - apk:api_create
       description: | 
       operationId: undeployAPI
       parameters:
@@ -132,3 +138,12 @@ components:
       schema:
         type: string
         default: application/json
+  securitySchemes:
+    OAuth2Security:
+      type: oauth2
+      flows:
+        password:
+          tokenUrl: https://localhost:9095/oauth2/token
+          scopes:
+            openid: Authorize access to user details
+            apk:api_create: Deploy and Undeploy APIs

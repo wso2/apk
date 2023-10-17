@@ -27,6 +27,7 @@ public class Constants {
     public static final String DEFAULT_API_DEPLOYER = "api/deployer/1.0.0/";
     public static final String ACCESS_TOKEN = "accessToken";
     public static final String EMPTY_STRING = "";
+    public static final String API_CREATE_SCOPE = "apk:api_create";
     public static final String SPACE_STRING = " ";
     public static final String SUBSCRIPTION_BASIC_AUTH_TOKEN =
             "Basic NDVmMWM1YzgtYTkyZS0xMWVkLWFmYTEtMDI0MmFjMTIwMDAyOjRmYmQ2MmVjLWE5MmUtMTFlZC1hZmExLTAyNDJhYzEyMDAwMg==";
