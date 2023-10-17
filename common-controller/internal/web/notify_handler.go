@@ -79,16 +79,15 @@ func init() {
 	authKeyHeader = conf.CommonController.Sts.AuthKeyHeader
 }
 
-// RevokeHandler handles the token revocation requests
+// NotifyHandler handles notify requests
 func NotifyHandler(c *gin.Context) {
 	_type := c.Query("type")
 	if _type == tokenRevocationType {
 		revokeToken(c)
 		return
-	} else {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid type"})
-		return
-	}	
+	}
+	c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid type"})
+	return
 }
 
 func revokeToken(c *gin.Context) {
