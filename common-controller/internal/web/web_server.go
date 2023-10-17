@@ -29,7 +29,7 @@ func StartWebServer() {
 	loggers.LoggerAPI.Info("Starting web server")
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
-	router.POST("/revoke", RevokeHandler)
+	router.POST("/notify", NotifyHandler)
 	conf := config.ReadConfigs()
 	certPath := conf.CommonController.Keystore.CertPath
 	keyPath := conf.CommonController.Keystore.KeyPath
