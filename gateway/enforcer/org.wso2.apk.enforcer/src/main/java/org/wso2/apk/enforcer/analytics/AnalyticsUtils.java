@@ -96,24 +96,4 @@ public class AnalyticsUtils {
                         .get(MetadataConstants.IS_MOCK_API).getStringValue());
     }
 
-    /**
-     * Sets custom analytics data provider instance
-     *
-     * @return instance of AnalyticsCustomDataProvider class
-     */
-    public static AnalyticsCustomDataProvider getCustomAnalyticsDataProvider() {
-        try {
-            Class<?> c = Class.forName(AnalyticsFilter.getAnalyticsConfigProperties()
-                    .get(AnalyticsConstants.DATA_PROVIDER_CLASS_PROPERTY));
-            Constructor<?> cons = c.getConstructor();
-            AnalyticsCustomDataProvider analyticsDataProvider = (AnalyticsCustomDataProvider) cons.newInstance();
-            logger.debug("Analytics custom data provider initialized successfully.");
-            return analyticsDataProvider;
-        } catch (IllegalAccessException | InstantiationException | ClassNotFoundException | InvocationTargetException |
-                NoSuchMethodException e) {
-            logger.error("Error occurred while initializing custom data provider class. Error:{}",
-                    e.getMessage());
-        }
-        return null;
-    }
 }

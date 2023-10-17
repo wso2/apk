@@ -31,6 +31,7 @@ import org.wso2.apk.enforcer.commons.dto.JWTConfigurationDto;
 import org.wso2.apk.enforcer.commons.exception.EnforcerException;
 import org.wso2.apk.enforcer.config.dto.APIKeyIssuerDto;
 import org.wso2.apk.enforcer.config.dto.AnalyticsDTO;
+import org.wso2.apk.enforcer.config.dto.AnalyticsPublisherConfigDTO;
 import org.wso2.apk.enforcer.config.dto.AnalyticsReceiverConfigDTO;
 import org.wso2.apk.enforcer.config.dto.AuthServiceConfigurationDto;
 import org.wso2.apk.enforcer.config.dto.CacheDto;
@@ -45,6 +46,7 @@ import org.wso2.apk.enforcer.constants.Constants;
 import org.wso2.apk.enforcer.constants.JwtConstants;
 import org.wso2.apk.enforcer.discovery.config.enforcer.APIKeyEnforcer;
 import org.wso2.apk.enforcer.discovery.config.enforcer.Analytics;
+import org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsPublisher;
 import org.wso2.apk.enforcer.discovery.config.enforcer.Cache;
 import org.wso2.apk.enforcer.discovery.config.enforcer.Config;
 import org.wso2.apk.enforcer.discovery.config.enforcer.Filter;
@@ -71,6 +73,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -373,10 +376,17 @@ public class ConfigHolder {
         serverConfig.setThreadPoolConfig(threadPoolConfig);
 
         AnalyticsDTO analyticsDTO = new AnalyticsDTO();
-        analyticsDTO.setEnabled(analyticsConfig.getEnabled());
-        analyticsDTO.setType(analyticsConfig.getType());
-        analyticsDTO.setConfigProperties(analyticsConfig.getConfigPropertiesMap());
         analyticsDTO.setServerConfig(serverConfig);
+        analyticsDTO.setEnabled(analyticsConfig.getEnabled());
+        for (AnalyticsPublisher analyticsPublisher : analyticsConfig.getAnalyticsPublisherList()) {
+            Map<String, String> resolvedConfigMap = new HashMap<>();
+            Map<String, String> configPropertiesMap = analyticsPublisher.getConfigPropertiesMap();
+            for (Map.Entry<String, String> config : configPropertiesMap.entrySet()) {
+                resolvedConfigMap.put(config.getKey(), getEnvValue(config.getValue()).toString());
+            }
+            analyticsDTO.addAnalyticsPublisherConfig(new AnalyticsPublisherConfigDTO(analyticsPublisher.getEnabled(),
+                    analyticsPublisher.getType(), resolvedConfigMap));
+        }
         config.setAnalyticsConfig(analyticsDTO);
 
     }

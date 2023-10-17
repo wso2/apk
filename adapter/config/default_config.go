@@ -215,18 +215,13 @@ var defaultConfig = &Config{
 		DisableSslVerification: false,
 	},
 	Analytics: analytics{
-		Enabled: false,
-		Type:    "Default",
 		Adapter: analyticsAdapter{
+			Enabled:             false,
 			BufferFlushInterval: 1000000000,
 			BufferSizeBytes:     16384,
 			GRPCRequestTimeout:  20000000000,
 		},
 		Enforcer: analyticsEnforcer{
-			ConfigProperties: map[string]string{
-				"authURL":   "$env{analytics_authURL}",
-				"authToken": "$env{analytics_authToken}",
-			},
 			// todo(amali) Rename?
 			LogReceiver: authService{
 				Port:           18090,

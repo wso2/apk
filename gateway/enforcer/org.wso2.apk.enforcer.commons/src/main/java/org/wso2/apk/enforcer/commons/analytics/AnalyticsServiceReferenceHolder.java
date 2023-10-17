@@ -24,26 +24,22 @@ import org.wso2.apk.enforcer.commons.analytics.publishers.impl.AnalyticsDataPubl
  * Configuration holder.
  */
 public class AnalyticsServiceReferenceHolder {
+
     private static final Log log = LogFactory.getLog(AnalyticsServiceReferenceHolder.class);
     private static final AnalyticsServiceReferenceHolder instance = new AnalyticsServiceReferenceHolder();
-    private AnalyticsCommonConfiguration analyticsCommonConfiguration;
 
     private AnalyticsServiceReferenceHolder() {
 
     }
 
     public static AnalyticsServiceReferenceHolder getInstance() {
+
         return instance;
     }
 
-    public AnalyticsCommonConfiguration getConfigurations() {
-        return analyticsCommonConfiguration;
-    }
-
-    public void setConfigurations(AnalyticsCommonConfiguration analyticsCommonConfiguration) {
-        this.analyticsCommonConfiguration = analyticsCommonConfiguration;
+    public void addAnalyticReporter(AnalyticsCommonConfiguration analyticsCommonConfiguration) {
         // initialize data publisher at server start up
-        AnalyticsDataPublisher.getInstance().initialize(analyticsCommonConfiguration);
+        AnalyticsDataPublisher.getInstance().initializeReporter(analyticsCommonConfiguration);
         log.debug("Analytics data publisher initialized.");
     }
 }

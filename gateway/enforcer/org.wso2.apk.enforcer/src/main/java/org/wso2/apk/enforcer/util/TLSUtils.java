@@ -201,21 +201,6 @@ public class TLSUtils {
                 .build();
     }
 
-    public static javax.security.cert.Certificate convertCertificate(Certificate cert) {
-        javax.security.cert.Certificate certificate = null;
-        try {
-            InputStream inputStream = new ByteArrayInputStream(cert.getEncoded());
-            javax.security.cert.X509Certificate x509Certificate = javax.security.cert.X509Certificate.
-                    getInstance(inputStream);
-            certificate = (javax.security.cert.Certificate) x509Certificate;
-            return certificate;
-
-        } catch (javax.security.cert.CertificateException | java.security.cert.CertificateEncodingException e) {
-            log.debug("Error in loading certificate");
-        }
-        return certificate;
-    }
-
     public static KeyStore getDefaultCertTrustStore() throws EnforcerException {
         try {
 

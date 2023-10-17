@@ -15,57 +15,47 @@ public interface AnalyticsOrBuilder extends
 
   /**
    * <pre>
-   * Analytics Publisher Configurations
+   * Analytics Publishers
    * </pre>
    *
-   * <code>map&lt;string, string&gt; configProperties = 2;</code>
+   * <code>repeated .wso2.discovery.config.enforcer.AnalyticsPublisher analytics_publisher = 2;</code>
    */
-  int getConfigPropertiesCount();
+  java.util.List<org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsPublisher> 
+      getAnalyticsPublisherList();
   /**
    * <pre>
-   * Analytics Publisher Configurations
+   * Analytics Publishers
    * </pre>
    *
-   * <code>map&lt;string, string&gt; configProperties = 2;</code>
+   * <code>repeated .wso2.discovery.config.enforcer.AnalyticsPublisher analytics_publisher = 2;</code>
    */
-  boolean containsConfigProperties(
-      java.lang.String key);
-  /**
-   * Use {@link #getConfigPropertiesMap()} instead.
-   */
-  @java.lang.Deprecated
-  java.util.Map<java.lang.String, java.lang.String>
-  getConfigProperties();
+  org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsPublisher getAnalyticsPublisher(int index);
   /**
    * <pre>
-   * Analytics Publisher Configurations
+   * Analytics Publishers
    * </pre>
    *
-   * <code>map&lt;string, string&gt; configProperties = 2;</code>
+   * <code>repeated .wso2.discovery.config.enforcer.AnalyticsPublisher analytics_publisher = 2;</code>
    */
-  java.util.Map<java.lang.String, java.lang.String>
-  getConfigPropertiesMap();
+  int getAnalyticsPublisherCount();
   /**
    * <pre>
-   * Analytics Publisher Configurations
+   * Analytics Publishers
    * </pre>
    *
-   * <code>map&lt;string, string&gt; configProperties = 2;</code>
+   * <code>repeated .wso2.discovery.config.enforcer.AnalyticsPublisher analytics_publisher = 2;</code>
    */
-
-  java.lang.String getConfigPropertiesOrDefault(
-      java.lang.String key,
-      java.lang.String defaultValue);
+  java.util.List<? extends org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsPublisherOrBuilder> 
+      getAnalyticsPublisherOrBuilderList();
   /**
    * <pre>
-   * Analytics Publisher Configurations
+   * Analytics Publishers
    * </pre>
    *
-   * <code>map&lt;string, string&gt; configProperties = 2;</code>
+   * <code>repeated .wso2.discovery.config.enforcer.AnalyticsPublisher analytics_publisher = 2;</code>
    */
-
-  java.lang.String getConfigPropertiesOrThrow(
-      java.lang.String key);
+  org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsPublisherOrBuilder getAnalyticsPublisherOrBuilder(
+      int index);
 
   /**
    * <pre>
@@ -93,24 +83,4 @@ public interface AnalyticsOrBuilder extends
    * <code>.wso2.discovery.config.enforcer.Service service = 3;</code>
    */
   org.wso2.apk.enforcer.discovery.config.enforcer.ServiceOrBuilder getServiceOrBuilder();
-
-  /**
-   * <pre>
-   * Analytics type
-   * </pre>
-   *
-   * <code>string type = 4;</code>
-   * @return The type.
-   */
-  java.lang.String getType();
-  /**
-   * <pre>
-   * Analytics type
-   * </pre>
-   *
-   * <code>string type = 4;</code>
-   * @return The bytes for type.
-   */
-  com.google.protobuf.ByteString
-      getTypeBytes();
 }

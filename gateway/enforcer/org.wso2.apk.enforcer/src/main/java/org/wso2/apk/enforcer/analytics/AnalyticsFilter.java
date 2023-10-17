@@ -20,7 +20,6 @@ package org.wso2.apk.enforcer.analytics;
 
 import io.envoyproxy.envoy.service.accesslog.v3.StreamAccessLogsMessage;
 import io.opentelemetry.context.Scope;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
@@ -33,8 +32,8 @@ import org.wso2.apk.enforcer.commons.model.AuthenticationContext;
 import org.wso2.apk.enforcer.commons.model.RequestContext;
 import org.wso2.apk.enforcer.commons.model.ResourceConfig;
 import org.wso2.apk.enforcer.config.ConfigHolder;
+import org.wso2.apk.enforcer.config.dto.AnalyticsPublisherConfigDTO;
 import org.wso2.apk.enforcer.constants.APIConstants;
-import org.wso2.apk.enforcer.constants.Constants;
 import org.wso2.apk.enforcer.constants.MetadataConstants;
 import org.wso2.apk.enforcer.tracing.TracingConstants;
 import org.wso2.apk.enforcer.tracing.TracingSpan;
@@ -42,13 +41,8 @@ import org.wso2.apk.enforcer.tracing.TracingTracer;
 import org.wso2.apk.enforcer.tracing.Utils;
 import org.wso2.apk.enforcer.util.FilterUtils;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.List;
 
 /**
  * This is the filter is for Analytics.
@@ -58,48 +52,20 @@ import java.util.regex.Pattern;
  * populated from grpc access logs within AccessLoggingService.
  */
 public class AnalyticsFilter {
+
     private static final Logger logger = LogManager.getLogger(AnalyticsFilter.class);
     private static AnalyticsFilter analyticsFilter;
     private static AnalyticsEventPublisher publisher;
-    private static Map<String, String> analyticsConfigProperties;
     private static AnalyticsCustomDataProvider analyticsDataProvider;
 
     private AnalyticsFilter() {
-        analyticsConfigProperties = ConfigHolder.getInstance().getConfig().getAnalyticsConfig().getConfigProperties();
-        boolean isChoreoDeployment = analyticsConfigProperties
-                .containsKey(AnalyticsConstants.IS_CHOREO_DEPLOYMENT_CONFIG_KEY) &&
-                Boolean.parseBoolean(analyticsConfigProperties.get(AnalyticsConstants.IS_CHOREO_DEPLOYMENT_CONFIG_KEY));
-        String customAnalyticsPublisher = analyticsConfigProperties.get(AnalyticsConstants.PUBLISHER_IMPL_CONFIG_KEY);
-        Map<String, String> publisherConfig = new HashMap<>(2);
-        for (Map.Entry<String, String> entry : analyticsConfigProperties.entrySet()) {
-            // We are always expecting <String, String> Map as configuration.
-            publisherConfig.put(entry.getKey(), getEnvValue(entry.getValue()).toString());
-        }
-
-        boolean elkEnabled = AnalyticsConstants.ELK_TYPE
-                .equalsIgnoreCase(ConfigHolder.getInstance().getConfig().getAnalyticsConfig().getType());
-        if (elkEnabled) {
-            // Remove Choreo publisher related configs
-            publisherConfig.remove(AnalyticsConstants.AUTH_URL_CONFIG_KEY);
-            publisherConfig.remove(AnalyticsConstants.AUTH_TOKEN_CONFIG_KEY);
-            // Add default elk publisher class config
-            if (!analyticsConfigProperties.containsKey(AnalyticsConstants.PUBLISHER_REPORTER_CLASS_CONFIG_KEY)) {
-                publisherConfig.put(AnalyticsConstants.PUBLISHER_REPORTER_CLASS_CONFIG_KEY,
-                        AnalyticsConstants.DEFAULT_ELK_PUBLISHER_REPORTER_CLASS);
-            }
-            if (analyticsConfigProperties.containsKey(
-                    org.wso2.apk.enforcer.constants.AnalyticsConstants.DATA_PROVIDER_CLASS_PROPERTY)) {
-                analyticsDataProvider = AnalyticsUtils.getCustomAnalyticsDataProvider();
-            }
-        }
-
-        publisher = loadAnalyticsPublisher(customAnalyticsPublisher, isChoreoDeployment);
-        if (publisher != null) {
-            publisher.init(publisherConfig);
-        }
+        publisher = new DefaultAnalyticsEventPublisher();
+        List<AnalyticsPublisherConfigDTO> analyticsPublisherConfigDTOList = ConfigHolder.getInstance().getConfig().getAnalyticsConfig().getAnalyticsPublisherConfigDTOList();
+        publisher.init(analyticsPublisherConfigDTOList);
     }
 
     public static AnalyticsFilter getInstance() {
+
         if (analyticsFilter == null) {
             synchronized (new Object()) {
                 if (analyticsFilter == null) {
@@ -111,6 +77,7 @@ public class AnalyticsFilter {
     }
 
     public void handleGRPCLogMsg(StreamAccessLogsMessage message) {
+
         if (publisher != null) {
             publisher.handleGRPCLogMsg(message);
         } else {
@@ -128,15 +95,15 @@ public class AnalyticsFilter {
 //        }
 //    }
 
-    public static Map<String, String> getAnalyticsConfigProperties() {
-        return analyticsConfigProperties;
-    }
+
 
     public static AnalyticsCustomDataProvider getAnalyticsCustomDataProvider() {
+
         return analyticsDataProvider;
     }
 
     public void handleSuccessRequest(RequestContext requestContext) {
+
         TracingSpan analyticsSpan = null;
         Scope analyticsSpanScope = null;
         try {
@@ -226,6 +193,7 @@ public class AnalyticsFilter {
     }
 
     public void handleFailureRequest(RequestContext requestContext) {
+
         TracingSpan analyticsSpan = null;
         Scope analyticsSpanScope = null;
 
@@ -263,58 +231,4 @@ public class AnalyticsFilter {
         }
     }
 
-    private static AnalyticsEventPublisher loadAnalyticsPublisher(String className, boolean isChoreoDeployment) {
-
-        // For the choreo deployment, class name need not to be provided.
-        if (StringUtils.isEmpty(className)) {
-            logger.debug("Proceeding with default analytics publisher.");
-            if (isChoreoDeployment) {
-                return new DefaultAnalyticsEventPublisher(AnalyticsConstants.CHOREO_RESPONSE_SCHEMA,
-                        AnalyticsConstants.CHOREO_FAULT_SCHEMA);
-            }
-            return new DefaultAnalyticsEventPublisher();
-        }
-
-        try {
-            Class<AnalyticsEventPublisher> clazz = (Class<AnalyticsEventPublisher>) Class.forName(className);
-            Constructor<AnalyticsEventPublisher> constructor = clazz.getConstructor();
-            AnalyticsEventPublisher publisher = constructor.newInstance();
-            logger.info("Proceeding with the custom analytics publisher implementation: " + className);
-            return publisher;
-        } catch (ClassNotFoundException e) {
-            logger.error("Error while loading the custom analytics publisher class.",
-                    ErrorDetails.errorLog(LoggingConstants.Severity.MAJOR, 5105), e);
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException
-                | NoSuchMethodException e) {
-            logger.error("Error while generating AnalyticsEventPublisherInstance from the class",
-                    ErrorDetails.errorLog(LoggingConstants.Severity.CRITICAL, 5106), e);
-        }
-        return null;
-    }
-
-    // TODO: (RajithRoshan) Avoid Code duplication and process the map entries while initial env variable based
-    // resolution.
-    private Object getEnvValue(Object configValue) {
-        if (configValue instanceof String) {
-            String value = (String) configValue;
-            return replaceEnvRegex(value);
-        } else if (configValue instanceof char[]) {
-            String value = String.valueOf((char[]) configValue);
-            return replaceEnvRegex(value).toCharArray();
-        }
-        return configValue;
-    }
-
-    private String replaceEnvRegex(String value) {
-        Matcher m = Pattern.compile("\\$env\\{(.*?)\\}").matcher(value);
-        if (value.contains(Constants.ENV_PREFIX)) {
-            while (m.find()) {
-                String envName = value.substring(m.start() + 5, m.end() - 1);
-                if (System.getenv(envName) != null) {
-                    value = value.replace(value.substring(m.start(), m.end()), System.getenv(envName));
-                }
-            }
-        }
-        return value;
-    }
 }

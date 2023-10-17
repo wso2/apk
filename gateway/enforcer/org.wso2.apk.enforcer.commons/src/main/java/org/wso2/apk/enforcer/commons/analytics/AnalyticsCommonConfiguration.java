@@ -23,6 +23,7 @@ import java.util.Map;
  * AnalyticsCommonConfiguration hold the common configurations.
  */
 public class AnalyticsCommonConfiguration {
+    private String type;
     private final Map<String, String> configurations;
     private String responseSchema;
     private String faultSchema;
@@ -49,5 +50,15 @@ public class AnalyticsCommonConfiguration {
 
     public void setFaultSchema(String faultSchema) {
         this.faultSchema = faultSchema;
+    }
+
+    public String getType() {
+
+        return type;
+    }
+
+    public void setType(String type) {
+
+        this.type = type;
     }
 }

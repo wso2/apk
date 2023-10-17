@@ -19,17 +19,16 @@ syntax = "proto3";
 package wso2.discovery.config.enforcer;
 
 import "wso2/discovery/config/enforcer/service.proto";
-import "wso2/discovery/config/enforcer/analytics_publisher.proto";
+
 option go_package = "github.com/envoyproxy/go-control-plane/wso2/discovery/config/enforcer;enforcer";
 option java_package = "org.wso2.apk.enforcer.discovery.config.enforcer";
-option java_outer_classname = "AnalyticsProto";
+option java_outer_classname = "AnalyticsPublisherProto";
 option java_multiple_files = true;
 
-message Analytics {
+message AnalyticsPublisher {
   bool enabled = 1;
-  // Analytics Publishers
-  repeated AnalyticsPublisher analytics_publisher = 2;
-  // Receiver grpc Service Configuration
-  Service service = 3;
+  // Analytics Publisher Configurations
+  map<string, string> configProperties = 2;
   // Analytics type
+  string type = 3;
 }

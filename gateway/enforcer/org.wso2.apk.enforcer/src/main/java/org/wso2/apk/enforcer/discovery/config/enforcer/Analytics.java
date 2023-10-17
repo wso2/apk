@@ -16,7 +16,7 @@ private static final long serialVersionUID = 0L;
     super(builder);
   }
   private Analytics() {
-    type_ = "";
+    analyticsPublisher_ = java.util.Collections.emptyList();
   }
 
   @java.lang.Override
@@ -57,15 +57,11 @@ private static final long serialVersionUID = 0L;
           }
           case 18: {
             if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-              configProperties_ = com.google.protobuf.MapField.newMapField(
-                  ConfigPropertiesDefaultEntryHolder.defaultEntry);
+              analyticsPublisher_ = new java.util.ArrayList<org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsPublisher>();
               mutable_bitField0_ |= 0x00000001;
             }
-            com.google.protobuf.MapEntry<java.lang.String, java.lang.String>
-            configProperties__ = input.readMessage(
-                ConfigPropertiesDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
-            configProperties_.getMutableMap().put(
-                configProperties__.getKey(), configProperties__.getValue());
+            analyticsPublisher_.add(
+                input.readMessage(org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsPublisher.parser(), extensionRegistry));
             break;
           }
           case 26: {
@@ -79,12 +75,6 @@ private static final long serialVersionUID = 0L;
               service_ = subBuilder.buildPartial();
             }
 
-            break;
-          }
-          case 34: {
-            java.lang.String s = input.readStringRequireUtf8();
-
-            type_ = s;
             break;
           }
           default: {
@@ -102,6 +92,9 @@ private static final long serialVersionUID = 0L;
       throw new com.google.protobuf.InvalidProtocolBufferException(
           e).setUnfinishedMessage(this);
     } finally {
+      if (((mutable_bitField0_ & 0x00000001) != 0)) {
+        analyticsPublisher_ = java.util.Collections.unmodifiableList(analyticsPublisher_);
+      }
       this.unknownFields = unknownFields.build();
       makeExtensionsImmutable();
     }
@@ -111,18 +104,6 @@ private static final long serialVersionUID = 0L;
     return org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsProto.internal_static_wso2_discovery_config_enforcer_Analytics_descriptor;
   }
 
-  @SuppressWarnings({"rawtypes"})
-  @java.lang.Override
-  protected com.google.protobuf.MapField internalGetMapField(
-      int number) {
-    switch (number) {
-      case 2:
-        return internalGetConfigProperties();
-      default:
-        throw new RuntimeException(
-            "Invalid map field number: " + number);
-    }
-  }
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internalGetFieldAccessorTable() {
@@ -142,101 +123,64 @@ private static final long serialVersionUID = 0L;
     return enabled_;
   }
 
-  public static final int CONFIGPROPERTIES_FIELD_NUMBER = 2;
-  private static final class ConfigPropertiesDefaultEntryHolder {
-    static final com.google.protobuf.MapEntry<
-        java.lang.String, java.lang.String> defaultEntry =
-            com.google.protobuf.MapEntry
-            .<java.lang.String, java.lang.String>newDefaultInstance(
-                org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsProto.internal_static_wso2_discovery_config_enforcer_Analytics_ConfigPropertiesEntry_descriptor, 
-                com.google.protobuf.WireFormat.FieldType.STRING,
-                "",
-                com.google.protobuf.WireFormat.FieldType.STRING,
-                "");
-  }
-  private com.google.protobuf.MapField<
-      java.lang.String, java.lang.String> configProperties_;
-  private com.google.protobuf.MapField<java.lang.String, java.lang.String>
-  internalGetConfigProperties() {
-    if (configProperties_ == null) {
-      return com.google.protobuf.MapField.emptyMapField(
-          ConfigPropertiesDefaultEntryHolder.defaultEntry);
-    }
-    return configProperties_;
-  }
-
-  public int getConfigPropertiesCount() {
-    return internalGetConfigProperties().getMap().size();
+  public static final int ANALYTICS_PUBLISHER_FIELD_NUMBER = 2;
+  private java.util.List<org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsPublisher> analyticsPublisher_;
+  /**
+   * <pre>
+   * Analytics Publishers
+   * </pre>
+   *
+   * <code>repeated .wso2.discovery.config.enforcer.AnalyticsPublisher analytics_publisher = 2;</code>
+   */
+  @java.lang.Override
+  public java.util.List<org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsPublisher> getAnalyticsPublisherList() {
+    return analyticsPublisher_;
   }
   /**
    * <pre>
-   * Analytics Publisher Configurations
+   * Analytics Publishers
    * </pre>
    *
-   * <code>map&lt;string, string&gt; configProperties = 2;</code>
-   */
-
-  @java.lang.Override
-  public boolean containsConfigProperties(
-      java.lang.String key) {
-    if (key == null) { throw new java.lang.NullPointerException(); }
-    return internalGetConfigProperties().getMap().containsKey(key);
-  }
-  /**
-   * Use {@link #getConfigPropertiesMap()} instead.
+   * <code>repeated .wso2.discovery.config.enforcer.AnalyticsPublisher analytics_publisher = 2;</code>
    */
   @java.lang.Override
-  @java.lang.Deprecated
-  public java.util.Map<java.lang.String, java.lang.String> getConfigProperties() {
-    return getConfigPropertiesMap();
+  public java.util.List<? extends org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsPublisherOrBuilder> 
+      getAnalyticsPublisherOrBuilderList() {
+    return analyticsPublisher_;
   }
   /**
    * <pre>
-   * Analytics Publisher Configurations
+   * Analytics Publishers
    * </pre>
    *
-   * <code>map&lt;string, string&gt; configProperties = 2;</code>
+   * <code>repeated .wso2.discovery.config.enforcer.AnalyticsPublisher analytics_publisher = 2;</code>
    */
   @java.lang.Override
-
-  public java.util.Map<java.lang.String, java.lang.String> getConfigPropertiesMap() {
-    return internalGetConfigProperties().getMap();
+  public int getAnalyticsPublisherCount() {
+    return analyticsPublisher_.size();
   }
   /**
    * <pre>
-   * Analytics Publisher Configurations
+   * Analytics Publishers
    * </pre>
    *
-   * <code>map&lt;string, string&gt; configProperties = 2;</code>
+   * <code>repeated .wso2.discovery.config.enforcer.AnalyticsPublisher analytics_publisher = 2;</code>
    */
   @java.lang.Override
-
-  public java.lang.String getConfigPropertiesOrDefault(
-      java.lang.String key,
-      java.lang.String defaultValue) {
-    if (key == null) { throw new java.lang.NullPointerException(); }
-    java.util.Map<java.lang.String, java.lang.String> map =
-        internalGetConfigProperties().getMap();
-    return map.containsKey(key) ? map.get(key) : defaultValue;
+  public org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsPublisher getAnalyticsPublisher(int index) {
+    return analyticsPublisher_.get(index);
   }
   /**
    * <pre>
-   * Analytics Publisher Configurations
+   * Analytics Publishers
    * </pre>
    *
-   * <code>map&lt;string, string&gt; configProperties = 2;</code>
+   * <code>repeated .wso2.discovery.config.enforcer.AnalyticsPublisher analytics_publisher = 2;</code>
    */
   @java.lang.Override
-
-  public java.lang.String getConfigPropertiesOrThrow(
-      java.lang.String key) {
-    if (key == null) { throw new java.lang.NullPointerException(); }
-    java.util.Map<java.lang.String, java.lang.String> map =
-        internalGetConfigProperties().getMap();
-    if (!map.containsKey(key)) {
-      throw new java.lang.IllegalArgumentException();
-    }
-    return map.get(key);
+  public org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsPublisherOrBuilder getAnalyticsPublisherOrBuilder(
+      int index) {
+    return analyticsPublisher_.get(index);
   }
 
   public static final int SERVICE_FIELD_NUMBER = 3;
@@ -277,52 +221,6 @@ private static final long serialVersionUID = 0L;
     return getService();
   }
 
-  public static final int TYPE_FIELD_NUMBER = 4;
-  private volatile java.lang.Object type_;
-  /**
-   * <pre>
-   * Analytics type
-   * </pre>
-   *
-   * <code>string type = 4;</code>
-   * @return The type.
-   */
-  @java.lang.Override
-  public java.lang.String getType() {
-    java.lang.Object ref = type_;
-    if (ref instanceof java.lang.String) {
-      return (java.lang.String) ref;
-    } else {
-      com.google.protobuf.ByteString bs = 
-          (com.google.protobuf.ByteString) ref;
-      java.lang.String s = bs.toStringUtf8();
-      type_ = s;
-      return s;
-    }
-  }
-  /**
-   * <pre>
-   * Analytics type
-   * </pre>
-   *
-   * <code>string type = 4;</code>
-   * @return The bytes for type.
-   */
-  @java.lang.Override
-  public com.google.protobuf.ByteString
-      getTypeBytes() {
-    java.lang.Object ref = type_;
-    if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
-          com.google.protobuf.ByteString.copyFromUtf8(
-              (java.lang.String) ref);
-      type_ = b;
-      return b;
-    } else {
-      return (com.google.protobuf.ByteString) ref;
-    }
-  }
-
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -340,17 +238,11 @@ private static final long serialVersionUID = 0L;
     if (enabled_ != false) {
       output.writeBool(1, enabled_);
     }
-    com.google.protobuf.GeneratedMessageV3
-      .serializeStringMapTo(
-        output,
-        internalGetConfigProperties(),
-        ConfigPropertiesDefaultEntryHolder.defaultEntry,
-        2);
+    for (int i = 0; i < analyticsPublisher_.size(); i++) {
+      output.writeMessage(2, analyticsPublisher_.get(i));
+    }
     if (service_ != null) {
       output.writeMessage(3, getService());
-    }
-    if (!getTypeBytes().isEmpty()) {
-      com.google.protobuf.GeneratedMessageV3.writeString(output, 4, type_);
     }
     unknownFields.writeTo(output);
   }
@@ -365,22 +257,13 @@ private static final long serialVersionUID = 0L;
       size += com.google.protobuf.CodedOutputStream
         .computeBoolSize(1, enabled_);
     }
-    for (java.util.Map.Entry<java.lang.String, java.lang.String> entry
-         : internalGetConfigProperties().getMap().entrySet()) {
-      com.google.protobuf.MapEntry<java.lang.String, java.lang.String>
-      configProperties__ = ConfigPropertiesDefaultEntryHolder.defaultEntry.newBuilderForType()
-          .setKey(entry.getKey())
-          .setValue(entry.getValue())
-          .build();
+    for (int i = 0; i < analyticsPublisher_.size(); i++) {
       size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(2, configProperties__);
+        .computeMessageSize(2, analyticsPublisher_.get(i));
     }
     if (service_ != null) {
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(3, getService());
-    }
-    if (!getTypeBytes().isEmpty()) {
-      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, type_);
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -399,15 +282,13 @@ private static final long serialVersionUID = 0L;
 
     if (getEnabled()
         != other.getEnabled()) return false;
-    if (!internalGetConfigProperties().equals(
-        other.internalGetConfigProperties())) return false;
+    if (!getAnalyticsPublisherList()
+        .equals(other.getAnalyticsPublisherList())) return false;
     if (hasService() != other.hasService()) return false;
     if (hasService()) {
       if (!getService()
           .equals(other.getService())) return false;
     }
-    if (!getType()
-        .equals(other.getType())) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -422,16 +303,14 @@ private static final long serialVersionUID = 0L;
     hash = (37 * hash) + ENABLED_FIELD_NUMBER;
     hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
         getEnabled());
-    if (!internalGetConfigProperties().getMap().isEmpty()) {
-      hash = (37 * hash) + CONFIGPROPERTIES_FIELD_NUMBER;
-      hash = (53 * hash) + internalGetConfigProperties().hashCode();
+    if (getAnalyticsPublisherCount() > 0) {
+      hash = (37 * hash) + ANALYTICS_PUBLISHER_FIELD_NUMBER;
+      hash = (53 * hash) + getAnalyticsPublisherList().hashCode();
     }
     if (hasService()) {
       hash = (37 * hash) + SERVICE_FIELD_NUMBER;
       hash = (53 * hash) + getService().hashCode();
     }
-    hash = (37 * hash) + TYPE_FIELD_NUMBER;
-    hash = (53 * hash) + getType().hashCode();
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -539,28 +418,6 @@ private static final long serialVersionUID = 0L;
       return org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsProto.internal_static_wso2_discovery_config_enforcer_Analytics_descriptor;
     }
 
-    @SuppressWarnings({"rawtypes"})
-    protected com.google.protobuf.MapField internalGetMapField(
-        int number) {
-      switch (number) {
-        case 2:
-          return internalGetConfigProperties();
-        default:
-          throw new RuntimeException(
-              "Invalid map field number: " + number);
-      }
-    }
-    @SuppressWarnings({"rawtypes"})
-    protected com.google.protobuf.MapField internalGetMutableMapField(
-        int number) {
-      switch (number) {
-        case 2:
-          return internalGetMutableConfigProperties();
-        default:
-          throw new RuntimeException(
-              "Invalid map field number: " + number);
-      }
-    }
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
@@ -582,6 +439,7 @@ private static final long serialVersionUID = 0L;
     private void maybeForceBuilderInitialization() {
       if (com.google.protobuf.GeneratedMessageV3
               .alwaysUseFieldBuilders) {
+        getAnalyticsPublisherFieldBuilder();
       }
     }
     @java.lang.Override
@@ -589,15 +447,18 @@ private static final long serialVersionUID = 0L;
       super.clear();
       enabled_ = false;
 
-      internalGetMutableConfigProperties().clear();
+      if (analyticsPublisherBuilder_ == null) {
+        analyticsPublisher_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000001);
+      } else {
+        analyticsPublisherBuilder_.clear();
+      }
       if (serviceBuilder_ == null) {
         service_ = null;
       } else {
         service_ = null;
         serviceBuilder_ = null;
       }
-      type_ = "";
-
       return this;
     }
 
@@ -626,14 +487,20 @@ private static final long serialVersionUID = 0L;
       org.wso2.apk.enforcer.discovery.config.enforcer.Analytics result = new org.wso2.apk.enforcer.discovery.config.enforcer.Analytics(this);
       int from_bitField0_ = bitField0_;
       result.enabled_ = enabled_;
-      result.configProperties_ = internalGetConfigProperties();
-      result.configProperties_.makeImmutable();
+      if (analyticsPublisherBuilder_ == null) {
+        if (((bitField0_ & 0x00000001) != 0)) {
+          analyticsPublisher_ = java.util.Collections.unmodifiableList(analyticsPublisher_);
+          bitField0_ = (bitField0_ & ~0x00000001);
+        }
+        result.analyticsPublisher_ = analyticsPublisher_;
+      } else {
+        result.analyticsPublisher_ = analyticsPublisherBuilder_.build();
+      }
       if (serviceBuilder_ == null) {
         result.service_ = service_;
       } else {
         result.service_ = serviceBuilder_.build();
       }
-      result.type_ = type_;
       onBuilt();
       return result;
     }
@@ -685,14 +552,34 @@ private static final long serialVersionUID = 0L;
       if (other.getEnabled() != false) {
         setEnabled(other.getEnabled());
       }
-      internalGetMutableConfigProperties().mergeFrom(
-          other.internalGetConfigProperties());
+      if (analyticsPublisherBuilder_ == null) {
+        if (!other.analyticsPublisher_.isEmpty()) {
+          if (analyticsPublisher_.isEmpty()) {
+            analyticsPublisher_ = other.analyticsPublisher_;
+            bitField0_ = (bitField0_ & ~0x00000001);
+          } else {
+            ensureAnalyticsPublisherIsMutable();
+            analyticsPublisher_.addAll(other.analyticsPublisher_);
+          }
+          onChanged();
+        }
+      } else {
+        if (!other.analyticsPublisher_.isEmpty()) {
+          if (analyticsPublisherBuilder_.isEmpty()) {
+            analyticsPublisherBuilder_.dispose();
+            analyticsPublisherBuilder_ = null;
+            analyticsPublisher_ = other.analyticsPublisher_;
+            bitField0_ = (bitField0_ & ~0x00000001);
+            analyticsPublisherBuilder_ = 
+              com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                 getAnalyticsPublisherFieldBuilder() : null;
+          } else {
+            analyticsPublisherBuilder_.addAllMessages(other.analyticsPublisher_);
+          }
+        }
+      }
       if (other.hasService()) {
         mergeService(other.getService());
-      }
-      if (!other.getType().isEmpty()) {
-        type_ = other.type_;
-        onChanged();
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -755,160 +642,316 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    private com.google.protobuf.MapField<
-        java.lang.String, java.lang.String> configProperties_;
-    private com.google.protobuf.MapField<java.lang.String, java.lang.String>
-    internalGetConfigProperties() {
-      if (configProperties_ == null) {
-        return com.google.protobuf.MapField.emptyMapField(
-            ConfigPropertiesDefaultEntryHolder.defaultEntry);
-      }
-      return configProperties_;
-    }
-    private com.google.protobuf.MapField<java.lang.String, java.lang.String>
-    internalGetMutableConfigProperties() {
-      onChanged();;
-      if (configProperties_ == null) {
-        configProperties_ = com.google.protobuf.MapField.newMapField(
-            ConfigPropertiesDefaultEntryHolder.defaultEntry);
-      }
-      if (!configProperties_.isMutable()) {
-        configProperties_ = configProperties_.copy();
-      }
-      return configProperties_;
+    private java.util.List<org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsPublisher> analyticsPublisher_ =
+      java.util.Collections.emptyList();
+    private void ensureAnalyticsPublisherIsMutable() {
+      if (!((bitField0_ & 0x00000001) != 0)) {
+        analyticsPublisher_ = new java.util.ArrayList<org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsPublisher>(analyticsPublisher_);
+        bitField0_ |= 0x00000001;
+       }
     }
 
-    public int getConfigPropertiesCount() {
-      return internalGetConfigProperties().getMap().size();
+    private com.google.protobuf.RepeatedFieldBuilderV3<
+        org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsPublisher, org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsPublisher.Builder, org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsPublisherOrBuilder> analyticsPublisherBuilder_;
+
+    /**
+     * <pre>
+     * Analytics Publishers
+     * </pre>
+     *
+     * <code>repeated .wso2.discovery.config.enforcer.AnalyticsPublisher analytics_publisher = 2;</code>
+     */
+    public java.util.List<org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsPublisher> getAnalyticsPublisherList() {
+      if (analyticsPublisherBuilder_ == null) {
+        return java.util.Collections.unmodifiableList(analyticsPublisher_);
+      } else {
+        return analyticsPublisherBuilder_.getMessageList();
+      }
     }
     /**
      * <pre>
-     * Analytics Publisher Configurations
+     * Analytics Publishers
      * </pre>
      *
-     * <code>map&lt;string, string&gt; configProperties = 2;</code>
+     * <code>repeated .wso2.discovery.config.enforcer.AnalyticsPublisher analytics_publisher = 2;</code>
      */
-
-    @java.lang.Override
-    public boolean containsConfigProperties(
-        java.lang.String key) {
-      if (key == null) { throw new java.lang.NullPointerException(); }
-      return internalGetConfigProperties().getMap().containsKey(key);
-    }
-    /**
-     * Use {@link #getConfigPropertiesMap()} instead.
-     */
-    @java.lang.Override
-    @java.lang.Deprecated
-    public java.util.Map<java.lang.String, java.lang.String> getConfigProperties() {
-      return getConfigPropertiesMap();
-    }
-    /**
-     * <pre>
-     * Analytics Publisher Configurations
-     * </pre>
-     *
-     * <code>map&lt;string, string&gt; configProperties = 2;</code>
-     */
-    @java.lang.Override
-
-    public java.util.Map<java.lang.String, java.lang.String> getConfigPropertiesMap() {
-      return internalGetConfigProperties().getMap();
-    }
-    /**
-     * <pre>
-     * Analytics Publisher Configurations
-     * </pre>
-     *
-     * <code>map&lt;string, string&gt; configProperties = 2;</code>
-     */
-    @java.lang.Override
-
-    public java.lang.String getConfigPropertiesOrDefault(
-        java.lang.String key,
-        java.lang.String defaultValue) {
-      if (key == null) { throw new java.lang.NullPointerException(); }
-      java.util.Map<java.lang.String, java.lang.String> map =
-          internalGetConfigProperties().getMap();
-      return map.containsKey(key) ? map.get(key) : defaultValue;
-    }
-    /**
-     * <pre>
-     * Analytics Publisher Configurations
-     * </pre>
-     *
-     * <code>map&lt;string, string&gt; configProperties = 2;</code>
-     */
-    @java.lang.Override
-
-    public java.lang.String getConfigPropertiesOrThrow(
-        java.lang.String key) {
-      if (key == null) { throw new java.lang.NullPointerException(); }
-      java.util.Map<java.lang.String, java.lang.String> map =
-          internalGetConfigProperties().getMap();
-      if (!map.containsKey(key)) {
-        throw new java.lang.IllegalArgumentException();
+    public int getAnalyticsPublisherCount() {
+      if (analyticsPublisherBuilder_ == null) {
+        return analyticsPublisher_.size();
+      } else {
+        return analyticsPublisherBuilder_.getCount();
       }
-      return map.get(key);
     }
-
-    public Builder clearConfigProperties() {
-      internalGetMutableConfigProperties().getMutableMap()
-          .clear();
+    /**
+     * <pre>
+     * Analytics Publishers
+     * </pre>
+     *
+     * <code>repeated .wso2.discovery.config.enforcer.AnalyticsPublisher analytics_publisher = 2;</code>
+     */
+    public org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsPublisher getAnalyticsPublisher(int index) {
+      if (analyticsPublisherBuilder_ == null) {
+        return analyticsPublisher_.get(index);
+      } else {
+        return analyticsPublisherBuilder_.getMessage(index);
+      }
+    }
+    /**
+     * <pre>
+     * Analytics Publishers
+     * </pre>
+     *
+     * <code>repeated .wso2.discovery.config.enforcer.AnalyticsPublisher analytics_publisher = 2;</code>
+     */
+    public Builder setAnalyticsPublisher(
+        int index, org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsPublisher value) {
+      if (analyticsPublisherBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureAnalyticsPublisherIsMutable();
+        analyticsPublisher_.set(index, value);
+        onChanged();
+      } else {
+        analyticsPublisherBuilder_.setMessage(index, value);
+      }
       return this;
     }
     /**
      * <pre>
-     * Analytics Publisher Configurations
+     * Analytics Publishers
      * </pre>
      *
-     * <code>map&lt;string, string&gt; configProperties = 2;</code>
+     * <code>repeated .wso2.discovery.config.enforcer.AnalyticsPublisher analytics_publisher = 2;</code>
      */
-
-    public Builder removeConfigProperties(
-        java.lang.String key) {
-      if (key == null) { throw new java.lang.NullPointerException(); }
-      internalGetMutableConfigProperties().getMutableMap()
-          .remove(key);
-      return this;
-    }
-    /**
-     * Use alternate mutation accessors instead.
-     */
-    @java.lang.Deprecated
-    public java.util.Map<java.lang.String, java.lang.String>
-    getMutableConfigProperties() {
-      return internalGetMutableConfigProperties().getMutableMap();
-    }
-    /**
-     * <pre>
-     * Analytics Publisher Configurations
-     * </pre>
-     *
-     * <code>map&lt;string, string&gt; configProperties = 2;</code>
-     */
-    public Builder putConfigProperties(
-        java.lang.String key,
-        java.lang.String value) {
-      if (key == null) { throw new java.lang.NullPointerException(); }
-      if (value == null) { throw new java.lang.NullPointerException(); }
-      internalGetMutableConfigProperties().getMutableMap()
-          .put(key, value);
+    public Builder setAnalyticsPublisher(
+        int index, org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsPublisher.Builder builderForValue) {
+      if (analyticsPublisherBuilder_ == null) {
+        ensureAnalyticsPublisherIsMutable();
+        analyticsPublisher_.set(index, builderForValue.build());
+        onChanged();
+      } else {
+        analyticsPublisherBuilder_.setMessage(index, builderForValue.build());
+      }
       return this;
     }
     /**
      * <pre>
-     * Analytics Publisher Configurations
+     * Analytics Publishers
      * </pre>
      *
-     * <code>map&lt;string, string&gt; configProperties = 2;</code>
+     * <code>repeated .wso2.discovery.config.enforcer.AnalyticsPublisher analytics_publisher = 2;</code>
      */
-
-    public Builder putAllConfigProperties(
-        java.util.Map<java.lang.String, java.lang.String> values) {
-      internalGetMutableConfigProperties().getMutableMap()
-          .putAll(values);
+    public Builder addAnalyticsPublisher(org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsPublisher value) {
+      if (analyticsPublisherBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureAnalyticsPublisherIsMutable();
+        analyticsPublisher_.add(value);
+        onChanged();
+      } else {
+        analyticsPublisherBuilder_.addMessage(value);
+      }
       return this;
+    }
+    /**
+     * <pre>
+     * Analytics Publishers
+     * </pre>
+     *
+     * <code>repeated .wso2.discovery.config.enforcer.AnalyticsPublisher analytics_publisher = 2;</code>
+     */
+    public Builder addAnalyticsPublisher(
+        int index, org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsPublisher value) {
+      if (analyticsPublisherBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureAnalyticsPublisherIsMutable();
+        analyticsPublisher_.add(index, value);
+        onChanged();
+      } else {
+        analyticsPublisherBuilder_.addMessage(index, value);
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     * Analytics Publishers
+     * </pre>
+     *
+     * <code>repeated .wso2.discovery.config.enforcer.AnalyticsPublisher analytics_publisher = 2;</code>
+     */
+    public Builder addAnalyticsPublisher(
+        org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsPublisher.Builder builderForValue) {
+      if (analyticsPublisherBuilder_ == null) {
+        ensureAnalyticsPublisherIsMutable();
+        analyticsPublisher_.add(builderForValue.build());
+        onChanged();
+      } else {
+        analyticsPublisherBuilder_.addMessage(builderForValue.build());
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     * Analytics Publishers
+     * </pre>
+     *
+     * <code>repeated .wso2.discovery.config.enforcer.AnalyticsPublisher analytics_publisher = 2;</code>
+     */
+    public Builder addAnalyticsPublisher(
+        int index, org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsPublisher.Builder builderForValue) {
+      if (analyticsPublisherBuilder_ == null) {
+        ensureAnalyticsPublisherIsMutable();
+        analyticsPublisher_.add(index, builderForValue.build());
+        onChanged();
+      } else {
+        analyticsPublisherBuilder_.addMessage(index, builderForValue.build());
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     * Analytics Publishers
+     * </pre>
+     *
+     * <code>repeated .wso2.discovery.config.enforcer.AnalyticsPublisher analytics_publisher = 2;</code>
+     */
+    public Builder addAllAnalyticsPublisher(
+        java.lang.Iterable<? extends org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsPublisher> values) {
+      if (analyticsPublisherBuilder_ == null) {
+        ensureAnalyticsPublisherIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, analyticsPublisher_);
+        onChanged();
+      } else {
+        analyticsPublisherBuilder_.addAllMessages(values);
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     * Analytics Publishers
+     * </pre>
+     *
+     * <code>repeated .wso2.discovery.config.enforcer.AnalyticsPublisher analytics_publisher = 2;</code>
+     */
+    public Builder clearAnalyticsPublisher() {
+      if (analyticsPublisherBuilder_ == null) {
+        analyticsPublisher_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000001);
+        onChanged();
+      } else {
+        analyticsPublisherBuilder_.clear();
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     * Analytics Publishers
+     * </pre>
+     *
+     * <code>repeated .wso2.discovery.config.enforcer.AnalyticsPublisher analytics_publisher = 2;</code>
+     */
+    public Builder removeAnalyticsPublisher(int index) {
+      if (analyticsPublisherBuilder_ == null) {
+        ensureAnalyticsPublisherIsMutable();
+        analyticsPublisher_.remove(index);
+        onChanged();
+      } else {
+        analyticsPublisherBuilder_.remove(index);
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     * Analytics Publishers
+     * </pre>
+     *
+     * <code>repeated .wso2.discovery.config.enforcer.AnalyticsPublisher analytics_publisher = 2;</code>
+     */
+    public org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsPublisher.Builder getAnalyticsPublisherBuilder(
+        int index) {
+      return getAnalyticsPublisherFieldBuilder().getBuilder(index);
+    }
+    /**
+     * <pre>
+     * Analytics Publishers
+     * </pre>
+     *
+     * <code>repeated .wso2.discovery.config.enforcer.AnalyticsPublisher analytics_publisher = 2;</code>
+     */
+    public org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsPublisherOrBuilder getAnalyticsPublisherOrBuilder(
+        int index) {
+      if (analyticsPublisherBuilder_ == null) {
+        return analyticsPublisher_.get(index);  } else {
+        return analyticsPublisherBuilder_.getMessageOrBuilder(index);
+      }
+    }
+    /**
+     * <pre>
+     * Analytics Publishers
+     * </pre>
+     *
+     * <code>repeated .wso2.discovery.config.enforcer.AnalyticsPublisher analytics_publisher = 2;</code>
+     */
+    public java.util.List<? extends org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsPublisherOrBuilder> 
+         getAnalyticsPublisherOrBuilderList() {
+      if (analyticsPublisherBuilder_ != null) {
+        return analyticsPublisherBuilder_.getMessageOrBuilderList();
+      } else {
+        return java.util.Collections.unmodifiableList(analyticsPublisher_);
+      }
+    }
+    /**
+     * <pre>
+     * Analytics Publishers
+     * </pre>
+     *
+     * <code>repeated .wso2.discovery.config.enforcer.AnalyticsPublisher analytics_publisher = 2;</code>
+     */
+    public org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsPublisher.Builder addAnalyticsPublisherBuilder() {
+      return getAnalyticsPublisherFieldBuilder().addBuilder(
+          org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsPublisher.getDefaultInstance());
+    }
+    /**
+     * <pre>
+     * Analytics Publishers
+     * </pre>
+     *
+     * <code>repeated .wso2.discovery.config.enforcer.AnalyticsPublisher analytics_publisher = 2;</code>
+     */
+    public org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsPublisher.Builder addAnalyticsPublisherBuilder(
+        int index) {
+      return getAnalyticsPublisherFieldBuilder().addBuilder(
+          index, org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsPublisher.getDefaultInstance());
+    }
+    /**
+     * <pre>
+     * Analytics Publishers
+     * </pre>
+     *
+     * <code>repeated .wso2.discovery.config.enforcer.AnalyticsPublisher analytics_publisher = 2;</code>
+     */
+    public java.util.List<org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsPublisher.Builder> 
+         getAnalyticsPublisherBuilderList() {
+      return getAnalyticsPublisherFieldBuilder().getBuilderList();
+    }
+    private com.google.protobuf.RepeatedFieldBuilderV3<
+        org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsPublisher, org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsPublisher.Builder, org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsPublisherOrBuilder> 
+        getAnalyticsPublisherFieldBuilder() {
+      if (analyticsPublisherBuilder_ == null) {
+        analyticsPublisherBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+            org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsPublisher, org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsPublisher.Builder, org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsPublisherOrBuilder>(
+                analyticsPublisher_,
+                ((bitField0_ & 0x00000001) != 0),
+                getParentForChildren(),
+                isClean());
+        analyticsPublisher_ = null;
+      }
+      return analyticsPublisherBuilder_;
     }
 
     private org.wso2.apk.enforcer.discovery.config.enforcer.Service service_;
@@ -1064,102 +1107,6 @@ private static final long serialVersionUID = 0L;
         service_ = null;
       }
       return serviceBuilder_;
-    }
-
-    private java.lang.Object type_ = "";
-    /**
-     * <pre>
-     * Analytics type
-     * </pre>
-     *
-     * <code>string type = 4;</code>
-     * @return The type.
-     */
-    public java.lang.String getType() {
-      java.lang.Object ref = type_;
-      if (!(ref instanceof java.lang.String)) {
-        com.google.protobuf.ByteString bs =
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        type_ = s;
-        return s;
-      } else {
-        return (java.lang.String) ref;
-      }
-    }
-    /**
-     * <pre>
-     * Analytics type
-     * </pre>
-     *
-     * <code>string type = 4;</code>
-     * @return The bytes for type.
-     */
-    public com.google.protobuf.ByteString
-        getTypeBytes() {
-      java.lang.Object ref = type_;
-      if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        type_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
-    }
-    /**
-     * <pre>
-     * Analytics type
-     * </pre>
-     *
-     * <code>string type = 4;</code>
-     * @param value The type to set.
-     * @return This builder for chaining.
-     */
-    public Builder setType(
-        java.lang.String value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  
-      type_ = value;
-      onChanged();
-      return this;
-    }
-    /**
-     * <pre>
-     * Analytics type
-     * </pre>
-     *
-     * <code>string type = 4;</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearType() {
-      
-      type_ = getDefaultInstance().getType();
-      onChanged();
-      return this;
-    }
-    /**
-     * <pre>
-     * Analytics type
-     * </pre>
-     *
-     * <code>string type = 4;</code>
-     * @param value The bytes for type to set.
-     * @return This builder for chaining.
-     */
-    public Builder setTypeBytes(
-        com.google.protobuf.ByteString value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-      
-      type_ = value;
-      onChanged();
-      return this;
     }
     @java.lang.Override
     public final Builder setUnknownFields(
