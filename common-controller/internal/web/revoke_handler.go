@@ -107,9 +107,6 @@ func RevokeHandler(c *gin.Context) {
 		expiry = request.Expiry
 	}
 
-	loggers.LoggerAPI.Info("token: ", jti)
-	loggers.LoggerAPI.Info("expiry: ", expiry)
-
 	if expiry <= time.Now().Unix() {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Token is already expired"})
 		return
@@ -134,44 +131,43 @@ func storeTokenInRedis(token string, expiry int64) error {
 	if isTLSEnabled {
 		cert, err := tls.LoadX509KeyPair(redisUserCertPath, redisUserKeyPath)
 		if err != nil {
-				return err;
+			return err;
 		}
 
 		caCert, err := os.ReadFile(redisCACertPath)
 		if err != nil {
-				return err;
+			return err;
 		}
 		caCertPool := x509.NewCertPool()
 		caCertPool.AppendCertsFromPEM(caCert)
 
 		rdb = redis.NewClient(&redis.Options{
-				Addr: redisAddr,
-				Username: redisUsername, 
-				Password: redisPassword, 
-				TLSConfig: &tls.Config{
-						MinVersion:   tls.VersionTLS12,
-						Certificates: []tls.Certificate{cert},
-						RootCAs:      caCertPool,
-				},
+			Addr: redisAddr,
+			Username: redisUsername, 
+			Password: redisPassword, 
+			TLSConfig: &tls.Config{
+				MinVersion:   tls.VersionTLS12,
+				Certificates: []tls.Certificate{cert},
+				RootCAs:      caCertPool,
+			},
 		})
 	} else {
-			rdb = redis.NewClient(&redis.Options{
-					Addr: redisAddr,
-					Username: redisUsername, 
-					Password: redisPassword,
-			})
+		rdb = redis.NewClient(&redis.Options{
+			Addr: redisAddr,
+			Username: redisUsername, 
+			Password: redisPassword,
+		})
 	}
 	defer rdb.Close()
 	key := generateKey(token)
-	loggers.LoggerAPI.Info("Key", key, "expiry", expiry)
 	err := rdb.Do(context.Background(), "set", key, expiry, "EXAT", expiry).Err()
 	if err != nil {
-			return err
+		return err
 	}
 	publishValue := fmt.Sprintf("%s%s%d", token, tokenExpiryDivider, expiry)
 	err = rdb.Do(context.Background(), "publish", redisRevokedTokenChannel, publishValue).Err()
 	if err != nil {
-			return err
+		return err
 	}
 	return nil
 }
