@@ -25,220 +25,210 @@ metadata:
 spec:
   hostnames:
   - "{{ .Values.wso2.apk.listener.hostname | default "api.am.wso2.com"}}"
-  rules:
-  - matches:
-    - path:
-        type: "RegularExpression"
-        value: "/api/backoffice/apis"
-      method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/backoffice/apis"
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-backend
-  - matches:
-    - path:
-        type: "RegularExpression"
-        value: "/api/backoffice/apis/(.*)"
-      method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/backoffice/apis/\\1"
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-backend
-  - matches:
-    - path:
-        type: "RegularExpression"
-        value: "/api/backoffice/apis/(.*)"
-      method: "PUT"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/backoffice/apis/\\1"
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-backend
-  - matches:
-    - path:
-        type: "RegularExpression"
-        value: "/api/backoffice/apis/(.*)/definition"
-      method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/backoffice/apis/\\1/definition"
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-backend
-  - matches:
-    - path:
-        type: "RegularExpression"
-        value: "/api/backoffice/apis/(.*)/resource-paths"
-      method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/backoffice/apis/\\1/resource-paths"
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-backend
-  - matches:
-    - path:
-        type: "RegularExpression"
-        value: "/api/backoffice/apis/(.*)/thumbnail"
-      method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/backoffice/apis/\\1/thumbnail"
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-backend
-  - matches:
-    - path:
-        type: "RegularExpression"
-        value: "/api/backoffice/apis/(.*)/thumbnail"
-      method: "PUT"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/backoffice/apis/\\1/thumbnail"
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-backend
-  - matches:
-    - path:
-        type: "RegularExpression"
-        value: "/api/backoffice/apis/(.*)/documents"
-      method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/backoffice/apis/\\1/documents"
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-backend
-  - matches:
-    - path:
-        type: "RegularExpression"
-        value: "/api/backoffice/apis/(.*)/documents"
-      method: "POST"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/backoffice/apis/\\1/documents"
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-backend
-  - matches:
-    - path:
-        type: "RegularExpression"
-        value: "/api/backoffice/apis/(.*)/documents/(.*)"
-      method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/backoffice/apis/\\1/documents/\\2"
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-backend
-  - matches:
-    - path:
-        type: "RegularExpression"
-        value: "/api/backoffice/apis/(.*)/documents/(.*)"
-      method: "PUT"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/backoffice/apis/\\1/documents/\\2"
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-backend
-  - matches:
-    - path:
-        type: "RegularExpression"
-        value: "/api/backoffice/apis/(.*)/documents/(.*)"
-      method: "DELETE"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/backoffice/apis/\\1/documents/\\2"
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-backend
-  - matches:
-    - path:
-        type: "RegularExpression"
-        value: "/api/backoffice/apis/(.*)/documents/(.*)/content"
-      method: "GET"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/backoffice/apis/\\1/documents/\\2/content"
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-backend
-  - matches:
-    - path:
-        type: "RegularExpression"
-        value: "/api/backoffice/apis/(.*)/documents/(.*)/content"
-      method: "POST"
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplaceFullPath"
-          replaceFullPath: "/api/backoffice/apis/\\1/documents/\\2/content"
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-backend
   parentRefs:
   - group: "gateway.networking.k8s.io"
     kind: "Gateway"
     name: "default"
     sectionName: "httpslistener"
+  rules:
+  - backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-backend
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          replaceFullPath: "/apis/\\1/thumbnail"
+          type: "ReplaceFullPath"
+    - extensionRef:
+        group: dp.wso2.com
+        kind: Scope
+        name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-scope-1
+      type: "ExtensionRef"
+    - extensionRef:
+        group: dp.wso2.com
+        kind: Scope
+        name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-scope-2
+      type: "ExtensionRef"
+    matches:
+    - method: "GET"
+      path:
+        type: "RegularExpression"
+        value: "/apis/(.*)/thumbnail"
+  - backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-backend
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          replaceFullPath: "/apis/\\1/thumbnail"
+          type: "ReplaceFullPath"
+    - extensionRef:
+        group: dp.wso2.com
+        kind: Scope
+        name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-scope-1
+      type: "ExtensionRef"
+    - extensionRef:
+        group: dp.wso2.com
+        kind: Scope
+        name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-scope-3
+      type: "ExtensionRef"
+    matches:
+    - method: "PUT"
+      path:
+        type: "RegularExpression"
+        value: "/apis/(.*)/thumbnail"
+  - backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-backend
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          replaceFullPath: "/apis/\\1/documents"
+          type: "ReplaceFullPath"
+    - extensionRef:
+        group: dp.wso2.com
+        kind: Scope
+        name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-scope-1
+      type: "ExtensionRef"
+    - extensionRef:
+        group: dp.wso2.com
+        kind: Scope
+        name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-scope-2
+      type: "ExtensionRef"
+    matches:
+    - method: "GET"
+      path:
+        type: "RegularExpression"
+        value: "/apis/(.*)/documents"
+  - backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-backend
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          replaceFullPath: "/apis/\\1/documents"
+          type: "ReplaceFullPath"
+    - extensionRef:
+        group: dp.wso2.com
+        kind: Scope
+        name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-scope-1
+      type: "ExtensionRef"
+    - extensionRef:
+        group: dp.wso2.com
+        kind: Scope
+        name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-scope-3
+      type: "ExtensionRef"
+    - extensionRef:
+        group: dp.wso2.com
+        kind: Scope
+        name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-scope-4
+      type: "ExtensionRef"
+    matches:
+    - method: "POST"
+      path:
+        type: "RegularExpression"
+        value: "/apis/(.*)/documents"
+  - backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-backend
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          replaceFullPath: "/apis/\\1/definition"
+          type: "ReplaceFullPath"
+    - extensionRef:
+        group: dp.wso2.com
+        kind: Scope
+        name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-scope-1
+      type: "ExtensionRef"
+    - extensionRef:
+        group: dp.wso2.com
+        kind: Scope
+        name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-scope-2
+      type: "ExtensionRef"
+    matches:
+    - method: "GET"
+      path:
+        type: "RegularExpression"
+        value: "/apis/(.*)/definition"
+  - backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-backend
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          replaceFullPath: "/apis/\\1"
+          type: "ReplaceFullPath"
+    - extensionRef:
+        group: dp.wso2.com
+        kind: Scope
+        name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-scope-1
+      type: "ExtensionRef"
+    - extensionRef:
+        group: dp.wso2.com
+        kind: Scope
+        name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-scope-2
+      type: "ExtensionRef"
+    matches:
+    - method: "GET"
+      path:
+        type: "RegularExpression"
+        value: "/apis/(.*)"
+  - backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-backend
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          replaceFullPath: "/apis/\\1"
+          type: "ReplaceFullPath"
+    - extensionRef:
+        group: dp.wso2.com
+        kind: Scope
+        name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-scope-1
+      type: "ExtensionRef"
+    - extensionRef:
+        group: dp.wso2.com
+        kind: Scope
+        name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-scope-3
+      type: "ExtensionRef"
+    matches:
+    - method: "PUT"
+      path:
+        type: "RegularExpression"
+        value: "/apis/(.*)"
+  - backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-backend
+    filters:
+    - extensionRef:
+        group: dp.wso2.com
+        kind: Scope
+        name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-scope-1
+      type: "ExtensionRef"
+    - extensionRef:
+        group: dp.wso2.com
+        kind: Scope
+        name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-scope-2
+      type: "ExtensionRef"
+    matches:
+    - method: "GET"
+      path:
+        type: "RegularExpression"
+        value: "/apis"
 {{- end -}}

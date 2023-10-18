@@ -14,26 +14,16 @@
 # specific language governing permissions and limitations
 # under the License.
 {{- if .Values.wso2.apk.cp.enabled }}
-kind: "Backend"
-apiVersion: "dp.wso2.com/v1alpha1"
+apiVersion: dp.wso2.com/v1alpha1
+kind: Scope
 metadata:
-  name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
+  labels:
+    api-name: "devportal-domain-service"
+    api-version: "1.0.0"
+  name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-scope-1
   namespace: {{ .Release.Namespace }}
+  uid: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-scope-1-uid
 spec:
- basePath: "/api/admin"
- services:
-  - host:  {{ template "apk-helm.resource.prefix" . }}-admin-ds-service.{{ .Release.Namespace }}
-    port: 9443
- protocol: "https"
- tls:
-  allowedSANs:
-   - {{ template "apk-helm.resource.prefix" . }}-admin-ds-service.{{ .Release.Namespace }}.svc
-  secretRef:
-  {{- if and .Values.wso2.apk.cp.admin.configs .Values.wso2.apk.cp.admin.configs.tls }}
-    name: {{.Values.wso2.apk.cp.admin.configs.tls.secretName}}
-    key: {{.Values.wso2.apk.cp.admin.configs.tls.certFilename}}
-  {{- else }}
-    name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-server-cert
-    key: tls.crt
-  {{- end }}
+  names:
+  - apk:subscribe
 {{- end -}}

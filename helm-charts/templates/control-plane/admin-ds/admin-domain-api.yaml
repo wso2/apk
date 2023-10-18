@@ -22,6 +22,7 @@ metadata:
   labels:
     api-name: "admin-domain-service"
     api-version: "1.0.0"
+  uid: {{ template "apk-helm.resource.prefix" . }}-admin-ds-api-uid
 spec:
   apiName: "admin-domain-service"
   apiType: "REST"
@@ -34,7 +35,5 @@ spec:
       - {{ template "apk-helm.resource.prefix" . }}-admin-ds-httproute-2
       - {{ template "apk-helm.resource.prefix" . }}-admin-ds-httproute-3
       - {{ template "apk-helm.resource.prefix" . }}-admin-ds-httproute-4
-      - {{ template "apk-helm.resource.prefix" . }}-admin-ds-httproute-5
-      - {{ template "apk-helm.resource.prefix" . }}-admin-ds-httproute-6
   systemAPI: true
 {{- end -}}

@@ -23,6 +23,7 @@ metadata:
   labels:
     api-name: "backoffice-domain-service"
     api-version: "1.0.0"
+  uid: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-api-uid
 spec:
   apiName: "Backoffice Domain API"
   apiType: "REST"
@@ -34,5 +35,6 @@ spec:
       - {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-httproute-1
       - {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-httproute-2
       - {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-httproute-3
+      - {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-httproute-4
   systemAPI: true
 {{- end -}}

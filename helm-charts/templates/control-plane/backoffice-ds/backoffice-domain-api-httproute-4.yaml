@@ -17,10 +17,10 @@
 apiVersion: "gateway.networking.k8s.io/v1beta1"
 kind: "HTTPRoute"
 metadata:
-  name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-httproute-4
+  name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-httproute-4
   namespace: {{ .Release.Namespace }}
   labels:
-    api-name: "admin-domain-service"
+    api-name: "backoffice-domain-service"
     api-version: "1.0.0"
 spec:
   hostnames:
@@ -34,116 +34,91 @@ spec:
   - backendRefs:
     - group: dp.wso2.com
       kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
+      name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-backend
     filters:
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
-        name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-scope-1
+        name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-scope-1
       type: "ExtensionRef"
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
-        name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-scope-8
+        name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-scope-3
       type: "ExtensionRef"
     matches:
     - method: "POST"
       path:
         type: "RegularExpression"
-        value: "/workflows/update-workflow-status"
+        value: "/apis/change-lifecycle"
   - backendRefs:
     - group: dp.wso2.com
       kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
+      name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-backend
     filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          replaceFullPath: "/apis/\\1/lifecycle-state"
+          type: "ReplaceFullPath"
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
-        name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-scope-1
+        name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-scope-1
       type: "ExtensionRef"
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
-        name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-scope-8
+        name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-scope-2
       type: "ExtensionRef"
     matches:
     - method: "GET"
       path:
         type: "RegularExpression"
-        value: "/workflows"
+        value: "/apis/(.*)/lifecycle-state"
   - backendRefs:
     - group: dp.wso2.com
       kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
+      name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-backend
     filters:
     - type: "URLRewrite"
       urlRewrite:
         path:
-          replaceFullPath: "/organizations/\\1"
+          replaceFullPath: "/apis/\\1/lifecycle-history"
           type: "ReplaceFullPath"
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
-        name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-scope-7
+        name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-scope-1
+      type: "ExtensionRef"
+    - extensionRef:
+        group: dp.wso2.com
+        kind: Scope
+        name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-scope-2
       type: "ExtensionRef"
     matches:
     - method: "GET"
       path:
         type: "RegularExpression"
-        value: "/organizations/(.*)"
+        value: "/apis/(.*)/lifecycle-history"
   - backendRefs:
     - group: dp.wso2.com
       kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
+      name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-backend
     filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          replaceFullPath: "/organizations/\\1"
-          type: "ReplaceFullPath"
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
-        name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-scope-7
+        name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-scope-1
       type: "ExtensionRef"
-    matches:
-    - method: "PUT"
-      path:
-        type: "RegularExpression"
-        value: "/organizations/(.*)"
-  - backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          replaceFullPath: "/organizations/\\1"
-          type: "ReplaceFullPath"
     - extensionRef:
         group: dp.wso2.com
         kind: Scope
-        name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-scope-7
-      type: "ExtensionRef"
-    matches:
-    - method: "DELETE"
-      path:
-        type: "RegularExpression"
-        value: "/organizations/(.*)"
-  - backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
-    filters:
-    - extensionRef:
-        group: dp.wso2.com
-        kind: Scope
-        name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-scope-7
+        name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-scope-2
       type: "ExtensionRef"
     matches:
     - method: "GET"
       path:
         type: "RegularExpression"
-        value: "/organization-info"
+        value: "/api-categories"
 {{- end -}}
