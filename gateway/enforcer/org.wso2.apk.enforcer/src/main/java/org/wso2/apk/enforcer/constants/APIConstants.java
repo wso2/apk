@@ -65,11 +65,13 @@ public class APIConstants {
 
     public static final String NOT_FOUND_MESSAGE = "Not Found";
     public static final String NOT_FOUND_DESCRIPTION = "The requested resource is not available.";
+    public static final String REQUEST_DENIED_MESSAGE = "Unauthorized";
+    public static final String REQUEST_DENIED_DESCRIPTION = "You have been blocked from accessing this resource.";
     public static final String NOT_IMPLEMENTED_MESSAGE = "Not Implemented";
     public static final String BAD_REQUEST_MESSAGE = "Bad Request";
     public static final String INTERNAL_SERVER_ERROR_MESSAGE = "Internal Server Error";
 
-    //headers and values
+    // headers and values
     public static final String CONTENT_TYPE_HEADER = "content-type";
     public static final String SOAP_ACTION_HEADER_NAME = "soapaction";
     public static final String ACCEPT_HEADER = "accept";
@@ -105,7 +107,8 @@ public class APIConstants {
     }
 
     /**
-     * Holds the common set of constants related to the output status codes of the security validations.
+     * Holds the common set of constants related to the output status codes of the
+     * security validations.
      */
     public static class KeyValidationStatus {
 
@@ -187,7 +190,8 @@ public class APIConstants {
         public static final String APIM_PUBLISHER_ISSUER = "APIM Publisher";
         public static final String APIM_APIKEY_ISSUER = "APIM APIkey";
 
-        // APIM_APIKEY_ISSUER_URL is intentionally different from the Resident Key Manager
+        // APIM_APIKEY_ISSUER_URL is intentionally different from the Resident Key
+        // Manager
         // to avoid conflicts with the access token issuer configs.
         public static final String APIM_APIKEY_ISSUER_URL = "https://host:9443/apikey";
 
@@ -212,7 +216,8 @@ public class APIConstants {
     }
 
     /**
-     * Holds the constants related to attributes to be sent in the response in case of an error
+     * Holds the constants related to attributes to be sent in the response in case
+     * of an error
      * scenario raised within the enforcer.
      */
     public static class MessageFormat {

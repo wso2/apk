@@ -23,6 +23,7 @@ import org.wso2.apk.enforcer.common.CacheProviderUtil;
 import org.wso2.apk.enforcer.commons.dto.ClaimValueDTO;
 import org.wso2.apk.enforcer.commons.dto.JWTConfigurationDto;
 import org.wso2.apk.enforcer.config.EnforcerConfig;
+import org.wso2.apk.enforcer.deny.DenyFilter;
 import org.wso2.apk.enforcer.discovery.api.Api;
 import org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo;
 import org.wso2.apk.enforcer.discovery.api.Certificate;
@@ -281,6 +282,9 @@ public class RestAPI implements API {
         // CORS filter is added as the first filter, and it is not customizable.
         CorsFilter corsFilter = new CorsFilter();
         this.filters.add(0, corsFilter);
+
+        DenyFilter denyFilter = new DenyFilter();
+        this.filters.add(denyFilter);
     }
 
     private void loadCustomFilters(APIConfig apiConfig) {
