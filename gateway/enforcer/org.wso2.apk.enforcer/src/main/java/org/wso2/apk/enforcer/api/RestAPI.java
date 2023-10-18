@@ -284,6 +284,7 @@ public class RestAPI implements API {
         this.filters.add(0, corsFilter);
 
         DenyFilter denyFilter = new DenyFilter();
+        denyFilter.init(apiConfig, null);
         this.filters.add(denyFilter);
     }
 
