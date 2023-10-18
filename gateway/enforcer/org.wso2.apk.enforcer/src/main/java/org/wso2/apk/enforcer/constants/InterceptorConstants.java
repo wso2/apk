@@ -42,6 +42,7 @@ public class InterceptorConstants {
         public static final String API_VERSION = "apiVersion";
         public static final String API_VHOST = "vhost";
         public static final String API_ORGANIZATION_ID = "organizationId";
+        public static final String ENVIRONMENT = "environment";
 
     }
 }

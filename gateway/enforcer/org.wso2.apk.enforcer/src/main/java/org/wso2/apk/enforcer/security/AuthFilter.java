@@ -248,6 +248,8 @@ public class AuthFilter implements Filter {
                 Objects.toString(requestContext.getMatchedAPI().getVhost(), ""));
         requestContext.addMetadataToMap(InterceptorConstants.APIMetadataFields.API_ORGANIZATION_ID,
                 Objects.toString(requestContext.getMatchedAPI().getOrganizationId(), ""));
+        requestContext.addMetadataToMap(InterceptorConstants.APIMetadataFields.ENVIRONMENT,
+                Objects.toString(requestContext.getMatchedAPI().getEnvironment(), ""));
     }
 
     private void populateRemoveAndProtectedAuthHeaders(RequestContext requestContext) {

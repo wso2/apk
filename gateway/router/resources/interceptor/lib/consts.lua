@@ -52,7 +52,8 @@ INV_CONTEXT = {
     VHOST = "vhost",
     API_NAME = "apiName",
     API_VERSION = "apiVersion",
-    AUTH_CTX = "authenticationContext"
+    AUTH_CTX = "authenticationContext",
+    ENVIRONMENT = "environment"
 }
 
 -- keys of the payload to the auth context

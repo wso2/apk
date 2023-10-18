@@ -159,6 +159,7 @@ func getGlobalInterceptorScript(gatewayAPIPolicies map[string]dpv1alpha1.APIPoli
 		OrganizationID:   "",
 		BasePath:         "",
 		SupportedMethods: "",
+		Environment:      "",
 		APIName:          "",
 		APIVersion:       "",
 		PathTemplate:     "",

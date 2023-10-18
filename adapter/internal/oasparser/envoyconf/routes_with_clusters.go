@@ -766,6 +766,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 			Vhost:            contextExtensions[vHostContextExtension],
 			ClusterName:      contextExtensions[clusterNameContextExtension],
 			APIProperties:    getAPIProperties(params.apiProperties),
+			Environment:      params.environment,
 		}
 		luaPerFilterConfig = lua.LuaPerRoute{
 			Override: &lua.LuaPerRoute_SourceCode{
