@@ -489,8 +489,8 @@ public class JWTAuthenticator implements Authenticator {
                     CacheProviderUtil.getOrganizationCache(organization).getGatewayKeyCache().invalidate(signature);
                     CacheProviderUtil.getOrganizationCache(organization).getInvalidTokenCache().put(signature, true);
                     throw new APISecurityException(APIConstants.StatusCodes.UNAUTHENTICATED.getCode(),
-                            APISecurityConstants.API_AUTH_INVALID_CREDENTIALS,
-                            APISecurityConstants.API_AUTH_INVALID_CREDENTIALS_MESSAGE);
+                            APISecurityConstants.API_AUTH_ACCESS_TOKEN_EXPIRED,
+                            APISecurityConstants.API_AUTH_ACCESS_TOKEN_EXPIRED_MESSAGE);
                 }
             } else if (CacheProviderUtil.getOrganizationCache(organization).getInvalidTokenCache()
                     .getIfPresent(signature) != null) {

@@ -122,9 +122,7 @@ public class MTLSAuthenticator implements Authenticator {
             String apiUUID = requestContext.getMatchedAPI().getUuid();
 
             authenticationContext.setAuthenticated(authenticated);
-            authenticationContext.setApiName(apiName);
             authenticationContext.setApiUUID(apiUUID);
-            authenticationContext.setApiVersion(apiVersion);
 
             return authenticationContext;
         } finally {
