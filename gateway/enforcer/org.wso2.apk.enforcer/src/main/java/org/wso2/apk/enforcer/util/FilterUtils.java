@@ -251,7 +251,6 @@ public class FilterUtils {
         authContext.setApplicationName(null);
         authContext.setApplicationTier(APIConstants.UNLIMITED_TIER);
         authContext.setSubscriber(APIConstants.END_USER_ANONYMOUS);
-        authContext.setApiName(requestContext.getMatchedAPI().getName());
         authContext.setStopOnQuotaReach(true);
         authContext.setConsumerKey(null);
         authContext.setCallerToken(null);
@@ -281,8 +280,6 @@ public class FilterUtils {
             authContext.setSubscriber(apiKeyValidationInfoDTO.getSubscriber());
             authContext.setTier(apiKeyValidationInfoDTO.getTier());
             authContext.setSubscriberTenantDomain(apiKeyValidationInfoDTO.getSubscriberTenantDomain());
-            authContext.setApiName(apiKeyValidationInfoDTO.getApiName());
-            authContext.setApiVersion(apiKeyValidationInfoDTO.getApiVersion());
             authContext.setApiPublisher(apiKeyValidationInfoDTO.getApiPublisher());
             authContext.setStopOnQuotaReach(apiKeyValidationInfoDTO.isStopOnQuotaReach());
             authContext.setSpikeArrestLimit(apiKeyValidationInfoDTO.getSpikeArrestLimit());
@@ -363,7 +360,6 @@ public class FilterUtils {
 
         if (api != null) {
             authContext.setTier(APIConstants.UNLIMITED_TIER);
-            authContext.setApiName(api.getAsString(APIConstants.JwtTokenConstants.API_NAME));
             authContext.setApiPublisher(api.getAsString(APIConstants.JwtTokenConstants.API_PUBLISHER));
 
         }

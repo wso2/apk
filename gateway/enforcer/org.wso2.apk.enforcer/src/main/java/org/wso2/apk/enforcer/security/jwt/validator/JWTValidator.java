@@ -36,6 +36,7 @@ import org.wso2.apk.enforcer.commons.exception.EnforcerException;
 import org.wso2.apk.enforcer.config.ConfigHolder;
 import org.wso2.apk.enforcer.config.dto.ExtendedTokenIssuerDto;
 import org.wso2.apk.enforcer.constants.APIConstants;
+import org.wso2.apk.enforcer.constants.APISecurityConstants;
 import org.wso2.apk.enforcer.security.jwt.SignedJWTInfo;
 import org.wso2.apk.enforcer.util.JWKSClient;
 import org.wso2.apk.enforcer.util.JWTUtils;
@@ -94,15 +95,16 @@ public class JWTValidator {
                     jwtValidationInfo.setToken(token);
                     return jwtValidationInfo;
                 }
+                jwtValidationInfo.setValidationCode(APISecurityConstants.API_AUTH_ACCESS_TOKEN_EXPIRED);
                 logger.debug("Token is expired.");
             } else {
+                jwtValidationInfo.setValidationCode(APIConstants.KeyValidationStatus.API_AUTH_INVALID_CREDENTIALS);
                 logger.debug("Token signature is invalid.");
             }
         } catch (ParseException | JWTGeneratorException e) {
             throw new EnforcerException("Error while parsing JWT", e);
         }
         jwtValidationInfo.setValid(false);
-        jwtValidationInfo.setValidationCode(APIConstants.KeyValidationStatus.API_AUTH_INVALID_CREDENTIALS);
         return jwtValidationInfo;
     }
 

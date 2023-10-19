@@ -40,11 +40,7 @@ public class AuthenticationContext {
     private String subscriberTenantDomain;
     private String spikeArrestUnit;
     private boolean stopOnQuotaReach;
-    private String productName;
-    private String productProvider;
-    private String apiName;
     private String apiPublisher;
-    private String apiVersion;
     private String apiUUID;
     private String rawToken;
     private String tokenType;
@@ -267,45 +263,6 @@ public class AuthenticationContext {
         this.stopOnQuotaReach = stopOnQuotaReach;
     }
 
-    public void setProductName(String productName) {
-        this.productName = productName;
-    }
-
-    /**
-     * Matched API Product Name (If the request is from API Product)
-     *
-     * @return API Product Name
-     */
-    public String getProductName() {
-        return productName;
-    }
-
-    public void setProductProvider(String productProvider) {
-        this.productProvider = productProvider;
-    }
-
-    /**
-     * API Product Provider of the matched API.
-     *
-     * @return API Product provider.
-     */
-    public String getProductProvider() {
-        return productProvider;
-    }
-
-    /**
-     * API Name of the matched API.
-     *
-     * @return API Name
-     */
-    public String getApiName() {
-        return apiName;
-    }
-
-    public void setApiName(String apiName) {
-        this.apiName = apiName;
-    }
-
     /**
      * API Publisher of the matched API.
      *
@@ -317,19 +274,6 @@ public class AuthenticationContext {
 
     public void setApiPublisher(String apiPublisher) {
         this.apiPublisher = apiPublisher;
-    }
-
-    /**
-     * API Version of the matched API
-     *
-     * @return API Version
-     */
-    public String getApiVersion() {
-        return apiVersion;
-    }
-
-    public void setApiVersion(String apiVersion) {
-        this.apiVersion = apiVersion;
     }
 
     /**
