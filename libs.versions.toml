@@ -107,6 +107,7 @@ protobuf-java = {module = "com.google.protobuf:protobuf-java", version.ref = "pr
 hamcrest = {module = "org.hamcrest:hamcrest-all", version.ref = "hamcrest"}
 jacoco-agent = {module = "org.jacoco:org.jacoco.agent", version.ref = "jacoco"}
 mockito-core = {module = "org.mockito:mockito-core", version.ref = "mockito"}
+mockito-inline = {module = "org.mockito:mockito-inline", version.ref = "mockito"}
 xml-apis = {module = "xml-apis:xml-apis", version.ref = "xml-apis"}
 mock-server-netty = {module = "org.mock-server:mockserver-netty", version.ref = "mock-server-netty"}
 mockito-inline = {module = "org.mockito:mockito-inline", version.ref = "mockito-inline"}

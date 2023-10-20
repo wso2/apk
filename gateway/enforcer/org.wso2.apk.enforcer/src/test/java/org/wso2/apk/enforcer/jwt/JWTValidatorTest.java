@@ -28,11 +28,8 @@ import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 import org.wso2.apk.enforcer.common.CacheProvider;
 import org.wso2.apk.enforcer.common.CacheProviderUtil;
 import org.wso2.apk.enforcer.commons.dto.JWKSConfigurationDTO;
@@ -58,25 +55,7 @@ import org.wso2.apk.enforcer.security.jwt.JWTAuthenticator;
 import org.wso2.apk.enforcer.security.jwt.validator.JWTValidator;
 import org.wso2.apk.enforcer.subscription.SubscriptionDataStoreImpl;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({JWTValidator.class, LogManager.class, CacheProviderUtil.class, ConfigHolder.class,
-        SubscriptionDataStoreImpl.class, KeyValidator.class, Logger.class, JWTAuthenticator.class,
-        AbstractAPIMgtGatewayJWTGenerator.class, Log.class, LogFactory.class})
 public class JWTValidatorTest {
-
-    @Before
-    public void setup() {
-        PowerMockito.mockStatic(CacheProviderUtil.class);
-        PowerMockito.mockStatic(ConfigHolder.class);
-        PowerMockito.mockStatic(SubscriptionDataStoreImpl.class);
-        PowerMockito.mockStatic(KeyValidator.class);
-        Logger logger = Mockito.mock(Logger.class);
-        Log logger2 = Mockito.mock(Log.class);
-        PowerMockito.mockStatic(LogManager.class);
-        PowerMockito.mockStatic(LogFactory.class);
-        Mockito.when(LogManager.getLogger(JWTAuthenticator.class)).thenReturn(logger);
-        Mockito.when(LogFactory.getLog(AbstractAPIMgtGatewayJWTGenerator.class)).thenReturn(logger2);
-    }
 
     @Test
     public void testJWTValidator() throws APISecurityException, EnforcerException {
@@ -130,37 +109,45 @@ public class JWTValidatorTest {
         LoadingCache invalidTokenCache = Mockito.mock(LoadingCache.class);
         Mockito.when(cacheProvider.getGatewayKeyCache()).thenReturn(gatewayKeyCache);
         Mockito.when(cacheProvider.getInvalidTokenCache()).thenReturn(invalidTokenCache);
-        Mockito.when(CacheProviderUtil.getOrganizationCache(organization)).thenReturn(cacheProvider);
 
-        ExtendedTokenIssuerDto tokenIssuerDto = Mockito.mock(ExtendedTokenIssuerDto.class);
-        Mockito.when(tokenIssuerDto.getIssuer()).thenReturn(issuer);
-        JWKSConfigurationDTO jwksConfigurationDTO = new JWKSConfigurationDTO();
-        jwksConfigurationDTO.setEnabled(true);
+        try (MockedStatic<LogManager> logManagerDummy = Mockito.mockStatic(LogManager.class);
+             MockedStatic<LogFactory> logFactoryDummy = Mockito.mockStatic(LogFactory.class);
+                MockedStatic<CacheProviderUtil> cacheProviderUtilDummy = Mockito.mockStatic(CacheProviderUtil.class);
+                MockedStatic<ConfigHolder> configHolderDummy = Mockito.mockStatic(ConfigHolder.class);
+                MockedStatic<SubscriptionDataStoreImpl> subscriptionDataStoreImplDummy =
+                     Mockito.mockStatic(SubscriptionDataStoreImpl.class);
+                MockedStatic<KeyValidator> keyValidaterDummy = Mockito.mockStatic(KeyValidator.class)) {
+            Logger logger = Mockito.mock(Logger.class);
+            logManagerDummy.when(() -> LogManager.getLogger(JWTAuthenticator.class)).thenReturn(logger);
+            Log logger2 = Mockito.mock(Log.class);
+            logFactoryDummy.when(() -> LogFactory.getLog(AbstractAPIMgtGatewayJWTGenerator.class)).thenReturn(logger2);
+            ////
+            cacheProviderUtilDummy.when(() -> CacheProviderUtil.getOrganizationCache(organization))
+                    .thenReturn(cacheProvider);
+            ExtendedTokenIssuerDto tokenIssuerDto = Mockito.mock(ExtendedTokenIssuerDto.class);
+            Mockito.when(tokenIssuerDto.getIssuer()).thenReturn(issuer);
+            JWKSConfigurationDTO jwksConfigurationDTO = new JWKSConfigurationDTO();
+            jwksConfigurationDTO.setEnabled(true);
+            Mockito.when(tokenIssuerDto.getJwksConfigurationDTO()).thenReturn(jwksConfigurationDTO);
 
-        Mockito.when(tokenIssuerDto.getJwksConfigurationDTO()).thenReturn(jwksConfigurationDTO);
+            EnforcerConfig enforcerConfig = Mockito.mock(EnforcerConfig.class);
+            ConfigHolder configHolder = Mockito.mock(ConfigHolder.class);
+            configHolderDummy.when(ConfigHolder::getInstance).thenReturn(configHolder);
+            Mockito.when(configHolder.getConfig()).thenReturn(enforcerConfig);
+            JWTTransformer jwtTransformer = new DefaultJWTTransformer();
+            Mockito.when(enforcerConfig.getJwtTransformer(issuer)).thenReturn(jwtTransformer);
+            JWTValidator jwtValidator = Mockito.mock(JWTValidator.class);
 
-        EnforcerConfig enforcerConfig = Mockito.mock(EnforcerConfig.class);
-        ConfigHolder configHolder = Mockito.mock(ConfigHolder.class);
-        Mockito.when(ConfigHolder.getInstance()).thenReturn(configHolder);
-        Mockito.when(configHolder.getConfig()).thenReturn(enforcerConfig);
-        JWTTransformer jwtTransformer = new DefaultJWTTransformer();
-        Mockito.when(enforcerConfig.getJwtTransformer(issuer)).thenReturn(jwtTransformer);
-        JWTValidator jwtValidator = Mockito.mock(JWTValidator.class);
-
-        SubscriptionDataStoreImpl subscriptionDataStore = Mockito.mock(SubscriptionDataStoreImpl.class);
-        Mockito.when(SubscriptionDataStoreImpl.getInstance()).thenReturn(subscriptionDataStore);
-        Mockito.when(subscriptionDataStore.getJWTValidatorByIssuer(issuer,
-                organization)).thenReturn(jwtValidator);
-        Mockito.when(jwtValidator.validateToken(Mockito.eq(jwt), Mockito.any())).thenReturn(jwtValidationInfo);
-
-        Mockito.when(KeyValidator.validateScopes(Mockito.any())).thenReturn(true);
-        AuthenticationContext authenticate = jwtAuthenticator.authenticate(requestContext);
-
-        Assert.assertNotNull(authenticate);
-        // TODO(amali) enable after subscription validation is enabled
-//        Assert.assertEquals(authenticate.getApiPublisher(), "admin");
-//        Assert.assertEquals(authenticate.getConsumerKey(), jwtValidationInfo.getConsumerKey());
-        Mockito.verify(gatewayKeyCache, Mockito.atLeast(1)).put(signature, jwtValidationInfo);
+            SubscriptionDataStoreImpl subscriptionDataStore = Mockito.mock(SubscriptionDataStoreImpl.class);
+            Mockito.when(subscriptionDataStore.getJWTValidatorByIssuer(issuer,
+                    organization)).thenReturn(jwtValidator);
+            subscriptionDataStoreImplDummy.when(SubscriptionDataStoreImpl::getInstance).thenReturn(subscriptionDataStore);
+            Mockito.when(jwtValidator.validateToken(Mockito.eq(jwt), Mockito.any())).thenReturn(jwtValidationInfo);
+            keyValidaterDummy.when(()->KeyValidator.validateScopes(Mockito.any())).thenReturn(true);
+            AuthenticationContext authenticate = jwtAuthenticator.authenticate(requestContext);
+            Assert.assertNotNull(authenticate);
+            Mockito.verify(gatewayKeyCache, Mockito.atLeast(1)).put(signature, jwtValidationInfo);
+        }
     }
 
     @Test
@@ -219,21 +206,23 @@ public class JWTValidatorTest {
         LoadingCache gatewayKeyCache = Mockito.mock(LoadingCache.class);
         Mockito.when(cacheProvider.getGatewayKeyCache()).thenReturn(gatewayKeyCache);
         Mockito.when(gatewayKeyCache.getIfPresent(signature)).thenReturn(jwtValidationInfo);
-        Mockito.when(CacheProviderUtil.getOrganizationCache(organization)).thenReturn(cacheProvider);
-
-        JWTValidator jwtValidator = Mockito.mock(JWTValidator.class);
-        SubscriptionDataStoreImpl subscriptionDataStore = Mockito.mock(SubscriptionDataStoreImpl.class);
-        Mockito.when(SubscriptionDataStoreImpl.getInstance()).thenReturn(subscriptionDataStore);
-        Mockito.when(subscriptionDataStore.getJWTValidatorByIssuer(issuer,
-                organization)).thenReturn(jwtValidator);
-        Mockito.when(jwtValidator.validateToken(Mockito.eq(jwt), Mockito.any())).thenReturn(jwtValidationInfo);
-
-        Mockito.when(KeyValidator.validateScopes(Mockito.any())).thenReturn(true);
-        AuthenticationContext authenticate = jwtAuthenticator.authenticate(requestContext);
-
-        Assert.assertNotNull(authenticate);
-        Assert.assertEquals(authenticate.getConsumerKey(), jwtValidationInfo.getConsumerKey());
-        Mockito.verify(gatewayKeyCache, Mockito.atLeast(1)).getIfPresent(signature);
+        try (MockedStatic<CacheProviderUtil> cacheProviderUtilDummy = Mockito.mockStatic(CacheProviderUtil.class);
+             MockedStatic<SubscriptionDataStoreImpl> subscriptionDataStoreImplDummy = Mockito.mockStatic(SubscriptionDataStoreImpl.class);
+             MockedStatic<KeyValidator> keyValidatorDummy = Mockito.mockStatic(KeyValidator.class)
+        ) {
+            cacheProviderUtilDummy.when(() -> CacheProviderUtil.getOrganizationCache(organization)).thenReturn(cacheProvider);
+            JWTValidator jwtValidator = Mockito.mock(JWTValidator.class);
+            SubscriptionDataStoreImpl subscriptionDataStore = Mockito.mock(SubscriptionDataStoreImpl.class);
+            Mockito.when(subscriptionDataStore.getJWTValidatorByIssuer(issuer,
+                    organization)).thenReturn(jwtValidator);
+            subscriptionDataStoreImplDummy.when(SubscriptionDataStoreImpl::getInstance).thenReturn(subscriptionDataStore);
+            Mockito.when(jwtValidator.validateToken(Mockito.eq(jwt), Mockito.any())).thenReturn(jwtValidationInfo);
+            keyValidatorDummy.when(() -> KeyValidator.validateScopes(Mockito.any())).thenReturn(true);
+            AuthenticationContext authenticate = jwtAuthenticator.authenticate(requestContext);
+            Assert.assertNotNull(authenticate);
+            Assert.assertEquals(authenticate.getConsumerKey(), jwtValidationInfo.getConsumerKey());
+            Mockito.verify(gatewayKeyCache, Mockito.atLeast(1)).getIfPresent(signature);
+        }
     }
 
     @Test
@@ -281,27 +270,27 @@ public class JWTValidatorTest {
         LoadingCache gatewayKeyCache = Mockito.mock(LoadingCache.class);
         Mockito.when(cacheProvider.getGatewayKeyCache()).thenReturn(gatewayKeyCache);
         Mockito.when(gatewayKeyCache.getIfPresent(signature)).thenReturn(jwtValidationInfo);
-        Mockito.when(CacheProviderUtil.getOrganizationCache(organization)).thenReturn(cacheProvider);
-
-        JWTValidator jwtValidator = Mockito.mock(JWTValidator.class);
-        SubscriptionDataStoreImpl subscriptionDataStore = Mockito.mock(SubscriptionDataStoreImpl.class);
-        Mockito.when(SubscriptionDataStoreImpl.getInstance()).thenReturn(subscriptionDataStore);
-        Mockito.when(subscriptionDataStore.getJWTValidatorByIssuer(issuer,
-                organization)).thenReturn(jwtValidator);
-        Mockito.when(jwtValidator.validateToken(Mockito.eq(jwt), Mockito.any())).thenReturn(jwtValidationInfo);
-
-        Mockito.when(KeyValidator.validateScopes(Mockito.any())).thenReturn(true);
-        AuthenticationContext authenticate = jwtAuthenticator.authenticate(requestContext);
-
-        Assert.assertNotNull(authenticate);
-        Assert.assertEquals(authenticate.getConsumerKey(), jwtValidationInfo.getConsumerKey());
-        Mockito.verify(gatewayKeyCache, Mockito.atLeast(1)).getIfPresent(signature);
+        try (MockedStatic<CacheProviderUtil> cacheProviderUtilDummy = Mockito.mockStatic(CacheProviderUtil.class);
+             MockedStatic<KeyValidator> keyValidatorDummy = Mockito.mockStatic(KeyValidator.class);
+             MockedStatic<SubscriptionDataStoreImpl> subscriptionDataStoreImplDummy = Mockito.mockStatic(SubscriptionDataStoreImpl.class);) {
+            cacheProviderUtilDummy.when(() -> CacheProviderUtil.getOrganizationCache(organization)).thenReturn(cacheProvider);
+            JWTValidator jwtValidator = Mockito.mock(JWTValidator.class);
+            SubscriptionDataStoreImpl subscriptionDataStore = Mockito.mock(SubscriptionDataStoreImpl.class);
+            Mockito.when(subscriptionDataStore.getJWTValidatorByIssuer(issuer,
+                    organization)).thenReturn(jwtValidator);
+            subscriptionDataStoreImplDummy.when(SubscriptionDataStoreImpl::getInstance).thenReturn(subscriptionDataStore);
+            Mockito.when(jwtValidator.validateToken(Mockito.eq(jwt), Mockito.any())).thenReturn(jwtValidationInfo);
+            keyValidatorDummy.when(() -> KeyValidator.validateScopes(Mockito.any())).thenReturn(true);
+            AuthenticationContext authenticate = jwtAuthenticator.authenticate(requestContext);
+            Assert.assertNotNull(authenticate);
+            Assert.assertEquals(authenticate.getConsumerKey(), jwtValidationInfo.getConsumerKey());
+            Mockito.verify(gatewayKeyCache, Mockito.atLeast(1)).getIfPresent(signature);
+        }
     }
 
     @Test
     public void testExpiredJWTValidator() {
         String organization = "org1";
-        String issuer = "https://localhost:9443/oauth2/token";
         String signature = "sBgeoqJn0log5EZflj_G7ADvm6B3KQ9bdfFCEFVQS1U3oY9" +
                 "-cqPwAPyOLLh95pdfjYjakkf1UtjPZjeIupwXnzg0SffIc704RoVlZocAx9Ns2XihjU6Imx2MbXq9ARmQxQkyGVkJUMTwZ8" +
                 "-SfOnprfrhX2cMQQS8m2Lp7hcsvWFRGKxAKIeyUrbY4ihRIA5vOUrMBWYUx9Di1N7qdKA4S3e8O4KQX2VaZPBzN594c9TG" +
@@ -354,20 +343,18 @@ public class JWTValidatorTest {
         Mockito.when(cacheProvider.getInvalidTokenCache()).thenReturn(invalidTokenCache);
         Mockito.when(gatewayKeyCache.getIfPresent(signature)).thenReturn(jwtValidationInfo);
         Mockito.when(invalidTokenCache.getIfPresent(signature)).thenReturn(null);
-        Mockito.when(CacheProviderUtil.getOrganizationCache(organization)).thenReturn(cacheProvider);
-
-        try {
-            Mockito.when(KeyValidator.validateScopes(Mockito.any())).thenReturn(true);
-        } catch (APISecurityException e) {
-            Assert.fail("Unexpected exception occurred while validating scopes");
-        }
-        try {
-            jwtAuthenticator.authenticate(requestContext);
-            Assert.fail("Authentication should fail for expired tokens");
-        } catch (APISecurityException e) {
-            Assert.assertEquals(e.getMessage(), e.getMessage(), APISecurityConstants.API_AUTH_ACCESS_TOKEN_EXPIRED_MESSAGE);
-            Mockito.verify(gatewayKeyCache, Mockito.atLeast(1)).getIfPresent(signature);
-            Mockito.verify(invalidTokenCache, Mockito.atLeast(1)).put(signature, true);
+        try (MockedStatic<CacheProviderUtil> cacheProviderUtilDummy = Mockito.mockStatic(CacheProviderUtil.class);
+             MockedStatic<KeyValidator> keyValidatorDummy = Mockito.mockStatic(KeyValidator.class)) {
+            cacheProviderUtilDummy.when(() -> CacheProviderUtil.getOrganizationCache(organization)).thenReturn(cacheProvider);
+            keyValidatorDummy.when(() -> KeyValidator.validateScopes(Mockito.any())).thenReturn(true);
+            try {
+                jwtAuthenticator.authenticate(requestContext);
+                Assert.fail("Authentication should fail for expired tokens");
+            } catch (APISecurityException e) {
+                Assert.assertEquals(e.getMessage(), e.getMessage(), APISecurityConstants.API_AUTH_ACCESS_TOKEN_EXPIRED_MESSAGE);
+                Mockito.verify(gatewayKeyCache, Mockito.atLeast(1)).getIfPresent(signature);
+                Mockito.verify(invalidTokenCache, Mockito.atLeast(1)).put(signature, true);
+            }
         }
     }
 
@@ -428,27 +415,29 @@ public class JWTValidatorTest {
         Mockito.when(cacheProvider.getInvalidTokenCache()).thenReturn(invalidTokenCache);
         Mockito.when(gatewayKeyCache.getIfPresent(signature)).thenReturn(null);
         Mockito.when(invalidTokenCache.getIfPresent(signature)).thenReturn(null);
-        Mockito.when(CacheProviderUtil.getOrganizationCache(organization)).thenReturn(cacheProvider);
+        try (MockedStatic<CacheProviderUtil> cacheProviderUtilDummy = Mockito.mockStatic(CacheProviderUtil.class);
+             MockedStatic<SubscriptionDataStoreImpl> subscriptionDataStoreImplDummy =
+                     Mockito.mockStatic(SubscriptionDataStoreImpl.class);
+             MockedStatic<KeyValidator> keyValidatorDummy = Mockito.mockStatic(KeyValidator.class)
+        ) {
+            cacheProviderUtilDummy.when(() -> CacheProviderUtil.getOrganizationCache(organization)).
+                    thenReturn(cacheProvider);
+            JWTValidator jwtValidator = Mockito.mock(JWTValidator.class);
+            SubscriptionDataStoreImpl subscriptionDataStore = Mockito.mock(SubscriptionDataStoreImpl.class);
+            Mockito.when(subscriptionDataStore.getJWTValidatorByIssuer(issuer, organization)).thenReturn(jwtValidator);
+            subscriptionDataStoreImplDummy.when(SubscriptionDataStoreImpl::getInstance).thenReturn(subscriptionDataStore);
+            Mockito.when(jwtValidator.validateToken(Mockito.eq(jwt), Mockito.any())).thenReturn(jwtValidationInfo);
+            keyValidatorDummy.when(() -> KeyValidator.validateScopes(Mockito.any())).thenReturn(true);
 
-        JWTValidator jwtValidator = Mockito.mock(JWTValidator.class);
-        SubscriptionDataStoreImpl subscriptionDataStore = Mockito.mock(SubscriptionDataStoreImpl.class);
-        Mockito.when(SubscriptionDataStoreImpl.getInstance()).thenReturn(subscriptionDataStore);
-        Mockito.when(subscriptionDataStore.getJWTValidatorByIssuer(issuer,
-                organization)).thenReturn(jwtValidator);
-        Mockito.when(jwtValidator.validateToken(Mockito.eq(jwt), Mockito.any())).thenReturn(jwtValidationInfo);
+            try {
+                jwtAuthenticator.authenticate(requestContext);
+                Assert.fail("Authentication should fail for expired tokens");
+            } catch (APISecurityException e) {
+                Assert.assertEquals(e.getMessage(), APISecurityConstants.API_AUTH_ACCESS_TOKEN_EXPIRED_MESSAGE);
+                Mockito.verify(invalidTokenCache, Mockito.atLeast(1)).put(signature, true);
+            }
+        }
 
-        try {
-            Mockito.when(KeyValidator.validateScopes(Mockito.any())).thenReturn(true);
-        } catch (APISecurityException e) {
-            Assert.fail("Unexpected exception occurred while validating scopes");
-        }
-        try {
-            jwtAuthenticator.authenticate(requestContext);
-            Assert.fail("Authentication should fail for expired tokens");
-        } catch (APISecurityException e) {
-            Assert.assertEquals(e.getMessage(), APISecurityConstants.API_AUTH_ACCESS_TOKEN_EXPIRED_MESSAGE);
-            Mockito.verify(invalidTokenCache, Mockito.atLeast(1)).put(signature, true);
-        }
     }
 
     @Test
@@ -512,35 +501,37 @@ public class JWTValidatorTest {
         Mockito.when(apiConfig.getName()).thenReturn("api1");
         Mockito.when(apiConfig.getOrganizationId()).thenReturn(organization);
         Mockito.when(requestContext.getMatchedAPI()).thenReturn(apiConfig);
-        CacheProvider cacheProvider = Mockito.mock(CacheProvider.class);
-        LoadingCache gatewayKeyCache = Mockito.mock(LoadingCache.class);
-        LoadingCache invalidTokenCache = Mockito.mock(LoadingCache.class);
-        Mockito.when(cacheProvider.getGatewayKeyCache()).thenReturn(gatewayKeyCache);
-        Mockito.when(cacheProvider.getInvalidTokenCache()).thenReturn(invalidTokenCache);
-        Mockito.when(gatewayKeyCache.getIfPresent(signature)).thenReturn(jwtValidationInfo);
-        Mockito.when(invalidTokenCache.getIfPresent(signature)).thenReturn(null);
-        Mockito.when(CacheProviderUtil.getOrganizationCache(organization)).thenReturn(cacheProvider);
+        try (MockedStatic<CacheProviderUtil> cacheProviderUtilDummy = Mockito.mockStatic(CacheProviderUtil.class);
+             MockedStatic<SubscriptionDataStoreImpl> subscriptionDataStoreImplDummy =
+                     Mockito.mockStatic(SubscriptionDataStoreImpl.class);
+             MockedStatic<KeyValidator> keyValidatorDummy = Mockito.mockStatic(KeyValidator.class)
+        ) {
+            CacheProvider cacheProvider = Mockito.mock(CacheProvider.class);
+            LoadingCache gatewayKeyCache = Mockito.mock(LoadingCache.class);
+            LoadingCache invalidTokenCache = Mockito.mock(LoadingCache.class);
+            Mockito.when(gatewayKeyCache.getIfPresent(signature)).thenReturn(jwtValidationInfo);
+            Mockito.when(invalidTokenCache.getIfPresent(signature)).thenReturn(null);
+            Mockito.when(cacheProvider.getGatewayKeyCache()).thenReturn(gatewayKeyCache);
+            Mockito.when(cacheProvider.getInvalidTokenCache()).thenReturn(invalidTokenCache);
+            cacheProviderUtilDummy.when(() -> CacheProviderUtil.getOrganizationCache(organization)).thenReturn(cacheProvider);
 
-        JWTValidator jwtValidator = Mockito.mock(JWTValidator.class);
-        SubscriptionDataStoreImpl subscriptionDataStore = Mockito.mock(SubscriptionDataStoreImpl.class);
-        Mockito.when(SubscriptionDataStoreImpl.getInstance()).thenReturn(subscriptionDataStore);
-        Mockito.when(subscriptionDataStore.getJWTValidatorByIssuer(issuer,
-                organization)).thenReturn(jwtValidator);
-        Mockito.when(jwtValidator.validateToken(Mockito.eq(jwt), Mockito.any())).thenReturn(jwtValidationInfo);
+            JWTValidator jwtValidator = Mockito.mock(JWTValidator.class);
+            SubscriptionDataStoreImpl subscriptionDataStore = Mockito.mock(SubscriptionDataStoreImpl.class);
+            Mockito.when(subscriptionDataStore.getJWTValidatorByIssuer(issuer,
+                    organization)).thenReturn(jwtValidator);
 
-        try {
-            Mockito.when(KeyValidator.validateScopes(Mockito.any())).thenReturn(true);
-        } catch (APISecurityException e) {
-            Assert.fail("Unexpected exception occurred while validating scopes");
-        }
-        try {
-            jwtAuthenticator.authenticate(requestContext);
-            Assert.fail("Authentication should fail for tampered tokens");
-        } catch (APISecurityException e) {
-            Assert.assertEquals(e.getMessage(), "Invalid JWT token");
-            Mockito.verify(invalidTokenCache, Mockito.never()).put(signature, true);
-            Mockito.verify(gatewayKeyCache, Mockito.never()).put(signature, true);
-            Mockito.verify(gatewayKeyCache, Mockito.never()).invalidate(signature);
+            subscriptionDataStoreImplDummy.when(SubscriptionDataStoreImpl::getInstance).thenReturn(subscriptionDataStore);
+            Mockito.when(jwtValidator.validateToken(Mockito.eq(jwt), Mockito.any())).thenReturn(jwtValidationInfo);
+            keyValidatorDummy.when(() -> KeyValidator.validateScopes(Mockito.any())).thenReturn(true);
+            try {
+                jwtAuthenticator.authenticate(requestContext);
+                Assert.fail("Authentication should fail for tampered tokens");
+            } catch (APISecurityException e) {
+                Assert.assertEquals(e.getMessage(), "Invalid JWT token");
+                Mockito.verify(invalidTokenCache, Mockito.never()).put(signature, true);
+                Mockito.verify(gatewayKeyCache, Mockito.never()).put(signature, true);
+                Mockito.verify(gatewayKeyCache, Mockito.never()).invalidate(signature);
+            }
         }
     }
 }
