@@ -80,9 +80,9 @@ dependencies {
     // Added as direct dependency for transitive dependency version upgrades
     implementation libs.reactor.netty.http
     implementation libs.protobuf.java
-    // Test dependencites
-    testImplementation libs.junit
-    testImplementation libs.mockito.core
-    testImplementation libs.powermock.api.mockito2
-    testImplementation libs.powermock.module.junit4
+
+    test {
+        implementation libs.junit
+        implementation libs.mockito.inline
+    }
 }
