@@ -44,7 +44,7 @@ Feature: Deploy APIs in multiple environments
     When I undeploy the API whose ID is "without-env-api" and organization "org4"
     Then the response status code should be 202
 
-  Scenario: Deploying an API in Dev environment and token issuer has no environments.
+  Scenario: Deploying APIs in Dev and QA environments and token issuer has no environments.
     Given The system is ready
     And I have a valid subscription
     When I use the APK Conf file "artifacts/apk-confs/multi-env/employees_conf_dev.yaml"
@@ -56,7 +56,18 @@ Feature: Deploy APIs in multiple environments
     And I send "GET" request to "https://default-dev.gw.wso2.com:9095/multienv/3.14/employee/" with body ""
     And I eventually receive 200 response code, not accepting
       |429|
+    When I use the APK Conf file "artifacts/apk-confs/multi-env/employees_conf_qa.yaml"
+    And the definition file "artifacts/definitions/employees_api.json"
+    And make the API deployment request
+    Then the response status code should be 200
+    Then I set headers
+      |Authorization|bearer ${accessToken}|
+    And I send "GET" request to "https://default-qa.gw.wso2.com:9095/multienv/3.14/employee/" with body ""
+    And I eventually receive 200 response code, not accepting
+      |429|
     When I undeploy the API whose ID is "multi-env-dev-api"
+    Then the response status code should be 202
+    When I undeploy the API whose ID is "multi-env-qa-api"
     Then the response status code should be 202
     
   Scenario: Deploying an API in QA environment and token issuer has all(*) environments.

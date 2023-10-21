@@ -45,8 +45,6 @@ var c client.Client
 func (r *API) SetupWebhookWithManager(mgr ctrl.Manager) error {
 
 	c = mgr.GetClient()
-	loggers.LoggerAPK.Infof("API validation Skipped for namespace v2222222 ---DDDD--: %v", r.Namespace)
-	loggers.LoggerAPK.Infof("API validation Skipped for namespace setup ---DDD--: %v", r.Namespace)
 	return ctrl.NewWebhookManagedBy(mgr).
 		For(r).
 		Complete()
@@ -87,9 +85,6 @@ func (r *API) ValidateDelete() (admission.Warnings, error) {
 
 // validateAPI validate api crd fields
 func (r *API) validateAPI() error {
-
-	loggers.LoggerAPK.Infof("API validation Skipped for namespace APPPPPPv2KKKK ---v2--: %v", r.Namespace)
-	loggers.LoggerAPK.Infof("API validation Skipped for namespace APPPPPPKKKK ---v2 new--: %v", r.TypeMeta.APIVersion)
 
 	var allErrs field.ErrorList
 	conf := config.ReadConfigs()
@@ -143,8 +138,6 @@ func (r *API) validateAPI() error {
 			r.Name, allErrs)
 	}
 
-	loggers.LoggerAPKOperator.Infof("End of APKKkk ---- test ---new : %v", r.Namespace)
-	loggers.LoggerAPKOperator.Infof("End of APKKkk ---- test ---new : %v", r)
 	return nil
 }
 

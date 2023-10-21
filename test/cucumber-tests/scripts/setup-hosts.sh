@@ -18,6 +18,7 @@ sudo echo "$IP org3.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "$IP org4.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "$IP default.sandbox.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "$IP default-dev.gw.wso2.com" | sudo tee -a /etc/hosts
+sudo echo "$IP default-qa.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "$IP org3-qa.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "$IP org4-qa.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "$IP org4-dev.gw.wso2.com" | sudo tee -a /etc/hosts
