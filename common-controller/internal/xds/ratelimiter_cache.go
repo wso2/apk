@@ -30,7 +30,7 @@ import (
 	logger "github.com/sirupsen/logrus"
 	"github.com/wso2/apk/adapter/pkg/logging"
 	"github.com/wso2/apk/common-controller/internal/loggers"
-	dpv1alpha1 "github.com/wso2/apk/common-controller/internal/operator/apis/dp/v1alpha1"
+	dpv1alpha1 "github.com/wso2/apk/common-controller/internal/operator/api/dp/v1alpha1"
 	constants "github.com/wso2/apk/common-controller/internal/operator/constant"
 )
 

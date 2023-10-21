@@ -26,8 +26,6 @@ import (
 	"github.com/wso2/apk/adapter/pkg/logging"
 	cache "github.com/wso2/apk/common-controller/internal/cache"
 	"github.com/wso2/apk/common-controller/internal/loggers"
-	dpv1alpha1 "github.com/wso2/apk/common-controller/internal/operator/apis/dp/v1alpha1"
-	dpcontrollers "github.com/wso2/apk/common-controller/internal/operator/controller"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
@@ -35,6 +33,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
+
+	dpv1alpha1 "github.com/wso2/apk/common-controller/internal/operator/api/dp/v1alpha1"
+	dpv1alpha2 "github.com/wso2/apk/common-controller/internal/operator/api/dp/v1alpha2"
+	dpcontrollers "github.com/wso2/apk/common-controller/internal/operator/controller"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -47,6 +49,7 @@ func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 	utilruntime.Must(gwapiv1b1.AddToScheme(scheme))
 	utilruntime.Must(dpv1alpha1.AddToScheme(scheme))
+	utilruntime.Must(dpv1alpha2.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
 
@@ -93,6 +96,11 @@ func InitOperator() {
 	}
 
 	if err = (&dpv1alpha1.API{}).SetupWebhookWithManager(mgr); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2601, logging.MAJOR,
+			"Unable to create webhook API, error: %v", err))
+	}
+
+	if err = (&dpv1alpha2.API{}).SetupWebhookWithManager(mgr); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2601, logging.MAJOR,
 			"Unable to create webhook API, error: %v", err))
 	}

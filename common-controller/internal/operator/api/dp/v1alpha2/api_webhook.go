@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2022, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
+ *  Copyright (c) 2023, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  *
  */
 
-package v1alpha1
+package v1alpha2
 
 import (
 	"context"
@@ -43,7 +43,10 @@ var c client.Client
 
 // SetupWebhookWithManager creates a new webhook builder for API
 func (r *API) SetupWebhookWithManager(mgr ctrl.Manager) error {
+
 	c = mgr.GetClient()
+	loggers.LoggerAPK.Infof("API validation Skipped for namespace v2222222 ---DDDD--: %v", r.Namespace)
+	loggers.LoggerAPK.Infof("API validation Skipped for namespace setup ---DDD--: %v", r.Namespace)
 	return ctrl.NewWebhookManagedBy(mgr).
 		For(r).
 		Complete()
@@ -51,17 +54,17 @@ func (r *API) SetupWebhookWithManager(mgr ctrl.Manager) error {
 
 // TODO(user): EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 
-//+kubebuilder:webhook:path=/mutate-dp-wso2-com-v1alpha1-api,mutating=true,failurePolicy=fail,sideEffects=None,groups=dp.wso2.com,resources=apis,verbs=create;update,versions=v1alpha1,name=mapi.kb.io,admissionReviewVersions=v1
+//+kubebuilder:webhook:path=/mutate-dp-wso2-com-v1alpha2-api,mutating=true,failurePolicy=fail,sideEffects=None,groups=dp.wso2.com,resources=apis,verbs=create;update,versions=v1alpha2,name=mapi.kb.io,admissionReviewVersions=v1
 
 var _ webhook.Defaulter = &API{}
 
 // Default implements webhook.Defaulter so a webhook will be registered for the type
 func (r *API) Default() {
-	// TODO: Add any defaulting logic here
+	// TODO(user): fill in your defaulting logic.
 }
 
 // TODO(user): change verbs to "verbs=create;update;delete" if you want to enable deletion validation.
-//+kubebuilder:webhook:path=/validate-dp-wso2-com-v1alpha1-api,mutating=false,failurePolicy=fail,sideEffects=None,groups=dp.wso2.com,resources=apis,verbs=create;update,versions=v1alpha1,name=vapi.kb.io,admissionReviewVersions=v1
+//+kubebuilder:webhook:path=/validate-dp-wso2-com-v1alpha2-api,mutating=false,failurePolicy=fail,sideEffects=None,groups=dp.wso2.com,resources=apis,verbs=create;update,versions=v1alpha2,name=vapi.kb.io,admissionReviewVersions=v1
 
 var _ webhook.Validator = &API{}
 
@@ -84,6 +87,10 @@ func (r *API) ValidateDelete() (admission.Warnings, error) {
 
 // validateAPI validate api crd fields
 func (r *API) validateAPI() error {
+
+	loggers.LoggerAPK.Infof("API validation Skipped for namespace APPPPPPv2KKKK ---v2--: %v", r.Namespace)
+	loggers.LoggerAPK.Infof("API validation Skipped for namespace APPPPPPKKKK ---v2 new--: %v", r.TypeMeta.APIVersion)
+
 	var allErrs field.ErrorList
 	conf := config.ReadConfigs()
 	namespaces := conf.CommonController.Operator.Namespaces
@@ -135,6 +142,9 @@ func (r *API) validateAPI() error {
 			schema.GroupKind{Group: "dp.wso2.com", Kind: "API"},
 			r.Name, allErrs)
 	}
+
+	loggers.LoggerAPKOperator.Infof("End of APKKkk ---- test ---new : %v", r.Namespace)
+	loggers.LoggerAPKOperator.Infof("End of APKKkk ---- test ---new : %v", r)
 	return nil
 }
 

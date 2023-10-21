@@ -16,6 +16,7 @@ require (
 	github.com/envoyproxy/go-control-plane v0.11.2-0.20230802074621-eea0b3bd0f81
 	github.com/pelletier/go-toml v1.8.1
 	github.com/wso2/apk/adapter v0.0.0-20230811031118-fa0d1ec8848c
+	golang.org/x/exp v0.0.0-20230801115018-d63ba01acd4b
 	google.golang.org/grpc v1.57.0
 )
 
@@ -65,7 +66,6 @@ require (
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
 	go.uber.org/zap v1.24.0 // indirect
-	golang.org/x/exp v0.0.0-20230801115018-d63ba01acd4b
 	golang.org/x/net v0.10.0 // indirect
 	golang.org/x/oauth2 v0.7.0 // indirect
 	golang.org/x/sys v0.8.0 // indirect

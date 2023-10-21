@@ -21,7 +21,7 @@ import (
 	"sync"
 
 	logger "github.com/sirupsen/logrus"
-	dpv1alpha1 "github.com/wso2/apk/common-controller/internal/operator/apis/dp/v1alpha1"
+	dpv1alpha1 "github.com/wso2/apk/common-controller/internal/operator/api/dp/v1alpha1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )

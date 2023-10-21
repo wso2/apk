@@ -23,7 +23,7 @@ import (
 
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	envoy_cachev3 "github.com/envoyproxy/go-control-plane/pkg/cache/v3"
-	dpv1alpha1 "github.com/wso2/apk/common-controller/internal/operator/apis/dp/v1alpha1"
+	dpv1alpha1 "github.com/wso2/apk/common-controller/internal/operator/api/dp/v1alpha1"
 )
 
 const (

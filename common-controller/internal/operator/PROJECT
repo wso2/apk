@@ -5,8 +5,9 @@
 domain: wso2.com
 layout:
 - go.kubebuilder.io/v4
+multigroup: true
 projectName: operator
-repo: github.com/wso2/apk/common-controller
+repo: github.com/wso2/apk/common-controller/internal/operator
 resources:
 - api:
     crdVersion: v1
@@ -15,6 +16,30 @@ resources:
   domain: wso2.com
   group: dp
   kind: RateLimitPolicy
-  path: github.com/wso2/apk/common-controller/api/dp/v1alpha1
+  path: github.com/wso2/apk/common-controller/internal/operator/api/dp/v1alpha1
   version: v1alpha1
+- api:
+    crdVersion: v1
+    namespaced: true
+  domain: wso2.com
+  group: dp
+  kind: API
+  path: github.com/wso2/apk/common-controller/internal/operator/api/dp/v1alpha2
+  version: v1alpha2
+  webhooks:
+    conversion: true
+    defaulting: true
+    validation: true
+    webhookVersion: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  domain: wso2.com
+  group: dp
+  kind: API
+  path: github.com/wso2/apk/common-controller/internal/operator/api/dp/v1alpha1
+  version: v1alpha1
+  webhooks:
+    conversion: true
+    webhookVersion: v1
 version: "3"

@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2022, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
+ *  Copyright (c) 2023, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -15,15 +15,14 @@
  *
  */
 
-package v1alpha1
+package v1alpha2
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-
-// Important: Run "make" to regenerate code after modifying this file
 
 // APISpec defines the desired state of API
 type APISpec struct {
@@ -111,7 +110,6 @@ type APISpec struct {
 	APIProperties []Property `json:"apiProperties,omitempty"`
 
 	// Environment denotes the environment of the API.
-	// This is a virtual environment on top of the segmented gateway.
 	//
 	// +optional
 	// +nullable
@@ -174,6 +172,7 @@ type DeploymentStatus struct {
 // +genclient
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
+//+kubebuilder:storageversion
 //+kubebuilder:printcolumn:name="API Name",type="string",JSONPath=".spec.apiName"
 //+kubebuilder:printcolumn:name="Version",type="string",JSONPath=".spec.apiVersion"
 //+kubebuilder:printcolumn:name="BasePath",type="string",JSONPath=".spec.basePath"

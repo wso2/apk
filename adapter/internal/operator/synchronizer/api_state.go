@@ -19,6 +19,7 @@ package synchronizer
 
 import (
 	"github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
+	"github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha2"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
@@ -26,7 +27,7 @@ import (
 // the state of the Kubernetes controller cache to detect updates.
 // +k8s:deepcopy-gen=true
 type APIState struct {
-	APIDefinition             *v1alpha1.API
+	APIDefinition             *v1alpha2.API
 	ProdHTTPRoute             *HTTPRouteState
 	SandHTTPRoute             *HTTPRouteState
 	Authentications           map[string]v1alpha1.Authentication

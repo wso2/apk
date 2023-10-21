@@ -18,26 +18,12 @@
 package v1alpha1
 
 import (
-	"testing"
-
-	"github.com/stretchr/testify/assert"
+	ctrl "sigs.k8s.io/controller-runtime"
 )
 
-func TestValidateAPIBasePath(t *testing.T) {
-	type getAPITestItem struct {
-		pass     bool
-		message  string
-		basePath string
-	}
-	dataItems := []getAPITestItem{
-		{
-			basePath: "/base",
-			pass:     false,
-			message:  "API basePath value should contain the /{APIVersion} at end.",
-		},
-	}
-	for _, item := range dataItems {
-		err := validateAPIBasePathFormat(item.basePath, "v1")
-		assert.Equal(t, item.pass, err == "", item.message)
-	}
+// SetupWebhookWithManager creates a new webhook builder for API
+func (r *API) SetupWebhookWithManager(mgr ctrl.Manager) error {
+	return ctrl.NewWebhookManagedBy(mgr).
+		For(r).
+		Complete()
 }
