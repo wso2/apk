@@ -560,3 +560,12 @@ func RetrieveAPIList(k8sclient k8client.Client) ([]dpv1alpha2.API, error) {
 	}
 	return apis, nil
 }
+
+// ConvertRefConfigsV2ToV1 converts RefConfig v2 to v1
+func ConvertRefConfigsV2ToV1(refConfig *dpv1alpha2.RefConfig) *dpv1alpha1.RefConfig {
+
+	return &dpv1alpha1.RefConfig{
+		Name: refConfig.Name,
+		Key:  refConfig.Key,
+	}
+}

@@ -143,4 +143,12 @@ resources:
   kind: API
   path: github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha2
   version: v1alpha2
+- api:
+    crdVersion: v1
+    namespaced: true
+  domain: wso2.com
+  group: dp
+  kind: TokenIssuer
+  path: github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha2
+  version: v1alpha2
 version: "3"

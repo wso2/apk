@@ -579,7 +579,7 @@ spec:
     name: default
 ---
 kind: TokenIssuer
-apiVersion: dp.wso2.com/v1alpha1
+apiVersion: dp.wso2.com/v1alpha2
 metadata:
   name: multi-env-token-issuer-all-envs
   namespace: apk-integration-test
@@ -603,7 +603,7 @@ spec:
     name: default
 ---
 kind: TokenIssuer
-apiVersion: dp.wso2.com/v1alpha1
+apiVersion: dp.wso2.com/v1alpha2
 metadata:
   name: multi-env-token-issuer-dev-env
   namespace: apk-integration-test

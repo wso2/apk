@@ -25,6 +25,7 @@ import (
 	"github.com/wso2/apk/adapter/internal/discovery/xds"
 	"github.com/wso2/apk/adapter/internal/loggers"
 	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
+	dpv1alpha2 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha2"
 	"github.com/wso2/apk/adapter/internal/operator/constants"
 	"github.com/wso2/apk/adapter/internal/operator/utils"
 	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/subscription"
@@ -205,7 +206,7 @@ func marshalJWTIssuerList(jwtIssuerMapping dpv1alpha1.JWTIssuerMapping) *subscri
 // getJWTIssuers returns the JWTIssuers for the given JWTIssuerMapping
 func getJWTIssuers(ctx context.Context, client k8client.Client, namespace types.NamespacedName) (dpv1alpha1.JWTIssuerMapping, error) {
 	jwtIssuerMapping := make(dpv1alpha1.JWTIssuerMapping)
-	jwtIssuerList := &dpv1alpha1.TokenIssuerList{}
+	jwtIssuerList := &dpv1alpha2.TokenIssuerList{}
 	if err := client.List(ctx, jwtIssuerList); err != nil {
 		return nil, err
 	}
@@ -222,7 +223,17 @@ func getJWTIssuers(ctx context.Context, client k8client.Client, namespace types.
 			jwks := &dpv1alpha1.ResolvedJWKS{}
 			jwks.URL = jwtIssuer.Spec.SignatureValidation.JWKS.URL
 			if jwtIssuer.Spec.SignatureValidation.JWKS.TLS != nil {
-				tlsCertificate, err := utils.ResolveCertificate(ctx, client, jwtIssuer.ObjectMeta.Namespace, *&jwtIssuer.Spec.SignatureValidation.JWKS.TLS.CertificateInline, *&jwtIssuer.Spec.SignatureValidation.JWKS.TLS.ConfigMapRef, *&jwtIssuer.Spec.SignatureValidation.JWKS.TLS.SecretRef)
+
+				var tlsConfigMapRef *dpv1alpha1.RefConfig
+				var tlsSecretRef *dpv1alpha1.RefConfig
+				if jwtIssuer.Spec.SignatureValidation.JWKS.TLS.ConfigMapRef != nil {
+					tlsConfigMapRef = utils.ConvertRefConfigsV2ToV1(jwtIssuer.Spec.SignatureValidation.JWKS.TLS.ConfigMapRef)
+				}
+				if jwtIssuer.Spec.SignatureValidation.JWKS.TLS.SecretRef != nil {
+					tlsSecretRef = utils.ConvertRefConfigsV2ToV1(jwtIssuer.Spec.SignatureValidation.JWKS.TLS.SecretRef)
+				}
+
+				tlsCertificate, err := utils.ResolveCertificate(ctx, client, jwtIssuer.ObjectMeta.Namespace, jwtIssuer.Spec.SignatureValidation.JWKS.TLS.CertificateInline, tlsConfigMapRef, tlsSecretRef)
 				if err != nil || tlsCertificate == "" {
 					loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2659, logging.MAJOR, "Error resolving certificate for JWKS %v", err.Error()))
 					continue
@@ -232,7 +243,17 @@ func getJWTIssuers(ctx context.Context, client k8client.Client, namespace types.
 			signatureValidation.JWKS = jwks
 		}
 		if jwtIssuer.Spec.SignatureValidation.Certificate != nil {
-			tlsCertificate, err := utils.ResolveCertificate(ctx, client, jwtIssuer.ObjectMeta.Namespace, jwtIssuer.Spec.SignatureValidation.Certificate.CertificateInline, *&jwtIssuer.Spec.SignatureValidation.Certificate.ConfigMapRef, *&jwtIssuer.Spec.SignatureValidation.Certificate.SecretRef)
+
+			var tlsConfigMapRef *dpv1alpha1.RefConfig
+			var tlsSecretRef *dpv1alpha1.RefConfig
+			if jwtIssuer.Spec.SignatureValidation.Certificate.ConfigMapRef != nil {
+				tlsConfigMapRef = utils.ConvertRefConfigsV2ToV1(jwtIssuer.Spec.SignatureValidation.Certificate.ConfigMapRef)
+			}
+			if jwtIssuer.Spec.SignatureValidation.Certificate.SecretRef != nil {
+				tlsSecretRef = utils.ConvertRefConfigsV2ToV1(jwtIssuer.Spec.SignatureValidation.Certificate.SecretRef)
+			}
+
+			tlsCertificate, err := utils.ResolveCertificate(ctx, client, jwtIssuer.ObjectMeta.Namespace, jwtIssuer.Spec.SignatureValidation.Certificate.CertificateInline, tlsConfigMapRef, tlsSecretRef)
 			if err != nil || tlsCertificate == "" {
 				loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2659, logging.MAJOR, "Error resolving certificate for JWKS %v", err.Error()))
 				return nil, err
@@ -253,7 +274,7 @@ func getJWTIssuers(ctx context.Context, client k8client.Client, namespace types.
 	}
 	return jwtIssuerMapping, nil
 }
-func getResolvedClaimMapping(claimMappings []dpv1alpha1.ClaimMapping) map[string]string {
+func getResolvedClaimMapping(claimMappings []dpv1alpha2.ClaimMapping) map[string]string {
 	resolvedClaimMappings := make(map[string]string)
 	for _, claimMapping := range claimMappings {
 		resolvedClaimMappings[claimMapping.RemoteClaim] = claimMapping.LocalClaim
