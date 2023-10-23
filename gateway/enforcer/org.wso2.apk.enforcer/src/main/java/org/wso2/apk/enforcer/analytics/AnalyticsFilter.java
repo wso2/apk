@@ -202,6 +202,11 @@ public class AnalyticsFilter {
                     endUserName == null ? APIConstants.END_USER_UNKNOWN : endUserName);
             requestContext.addMetadataToMap(MetadataConstants.API_CONTEXT_KEY,
                     requestContext.getMatchedAPI().getBasePath());
+            requestContext.addMetadataToMap(MetadataConstants.API_ENVIRONMENT,
+                    requestContext.getMatchedAPI().getEnvironment() == null
+                            ? APIConstants.DEFAULT_ENVIRONMENT_NAME
+                            : requestContext.getMatchedAPI().getEnvironment());
+
         } finally {
             if (Utils.tracingEnabled()) {
                 analyticsSpanScope.close();
@@ -280,7 +285,7 @@ public class AnalyticsFilter {
             logger.error("Error while loading the custom analytics publisher class.",
                     ErrorDetails.errorLog(LoggingConstants.Severity.MAJOR, 5105), e);
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException
-                 | NoSuchMethodException e) {
+                | NoSuchMethodException e) {
             logger.error("Error while generating AnalyticsEventPublisherInstance from the class",
                     ErrorDetails.errorLog(LoggingConstants.Severity.CRITICAL, 5106), e);
         }

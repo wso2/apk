@@ -39,7 +39,8 @@ type commoncontroller struct {
 	Server   server
 	Operator operator
 	// Trusted Certificates
-	Truststore truststore
+	Truststore  truststore
+	Environment string
 }
 
 type keystore struct {

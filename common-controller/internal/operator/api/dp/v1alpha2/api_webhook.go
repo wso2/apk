@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2022, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
+ *  Copyright (c) 2023, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  *
  */
 
-package v1alpha1
+package v1alpha2
 
 import (
 	"context"
@@ -26,6 +26,7 @@ import (
 	"github.com/wso2/apk/adapter/pkg/logging"
 	"github.com/wso2/apk/common-controller/internal/config"
 	"github.com/wso2/apk/common-controller/internal/loggers"
+	"github.com/wso2/apk/common-controller/internal/operator/utils"
 	"golang.org/x/exp/slices"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -42,6 +43,7 @@ var c client.Client
 
 // SetupWebhookWithManager creates a new webhook builder for API
 func (r *API) SetupWebhookWithManager(mgr ctrl.Manager) error {
+
 	c = mgr.GetClient()
 	return ctrl.NewWebhookManagedBy(mgr).
 		For(r).
@@ -50,17 +52,17 @@ func (r *API) SetupWebhookWithManager(mgr ctrl.Manager) error {
 
 // TODO(user): EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 
-//+kubebuilder:webhook:path=/mutate-dp-wso2-com-v1alpha1-api,mutating=true,failurePolicy=fail,sideEffects=None,groups=dp.wso2.com,resources=apis,verbs=create;update,versions=v1alpha1,name=mapi.kb.io,admissionReviewVersions=v1
+//+kubebuilder:webhook:path=/mutate-dp-wso2-com-v1alpha2-api,mutating=true,failurePolicy=fail,sideEffects=None,groups=dp.wso2.com,resources=apis,verbs=create;update,versions=v1alpha2,name=mapi.kb.io,admissionReviewVersions=v1
 
 var _ webhook.Defaulter = &API{}
 
 // Default implements webhook.Defaulter so a webhook will be registered for the type
 func (r *API) Default() {
-	// TODO: Add any defaulting logic here
+	// TODO(user): fill in your defaulting logic.
 }
 
 // TODO(user): change verbs to "verbs=create;update;delete" if you want to enable deletion validation.
-//+kubebuilder:webhook:path=/validate-dp-wso2-com-v1alpha1-api,mutating=false,failurePolicy=fail,sideEffects=None,groups=dp.wso2.com,resources=apis,verbs=create;update,versions=v1alpha1,name=vapi.kb.io,admissionReviewVersions=v1
+//+kubebuilder:webhook:path=/validate-dp-wso2-com-v1alpha2-api,mutating=false,failurePolicy=fail,sideEffects=None,groups=dp.wso2.com,resources=apis,verbs=create;update,versions=v1alpha2,name=vapi.kb.io,admissionReviewVersions=v1
 
 var _ webhook.Validator = &API{}
 
@@ -83,6 +85,7 @@ func (r *API) ValidateDelete() (admission.Warnings, error) {
 
 // validateAPI validate api crd fields
 func (r *API) validateAPI() error {
+
 	var allErrs field.ErrorList
 	conf := config.ReadConfigs()
 	namespaces := conf.CommonController.Operator.Namespaces
@@ -134,6 +137,7 @@ func (r *API) validateAPI() error {
 			schema.GroupKind{Group: "dp.wso2.com", Kind: "API"},
 			r.Name, allErrs)
 	}
+
 	return nil
 }
 
@@ -155,10 +159,14 @@ func (r *API) validateAPIBasePathExistsAndDefaultVersion() *field.Error {
 
 	}
 	currentAPIBasePathWithoutVersion := getBasePathWithoutVersion(r.Spec.BasePath)
+	incomingAPIEnvironment := utils.GetEnvironment(r.Spec.Environment)
 	for _, api := range apiList {
 		if (types.NamespacedName{Namespace: r.Namespace, Name: r.Name} !=
 			types.NamespacedName{Namespace: api.Namespace, Name: api.Name}) {
-			if api.Spec.Organization == r.Spec.Organization && api.Spec.BasePath == r.Spec.BasePath {
+
+			existingAPIEnvironment := utils.GetEnvironment(api.Spec.Environment)
+			if api.Spec.Organization == r.Spec.Organization && api.Spec.BasePath == r.Spec.BasePath &&
+				incomingAPIEnvironment == existingAPIEnvironment {
 				return &field.Error{
 					Type:     field.ErrorTypeDuplicate,
 					Field:    field.NewPath("spec").Child("basePath").String(),

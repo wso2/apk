@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2022, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
+ *  Copyright (c) 2023, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -15,29 +15,17 @@
  *
  */
 
-package v1alpha1
+package utils
 
 import (
-	"testing"
-
-	"github.com/stretchr/testify/assert"
+	"github.com/wso2/apk/common-controller/internal/config"
 )
 
-func TestValidateAPIBasePath(t *testing.T) {
-	type getAPITestItem struct {
-		pass     bool
-		message  string
-		basePath string
+// GetEnvironment takes the environment of the API. If the value is empty,
+// it will return the default environment that is set in the config of the common controller.
+func GetEnvironment(environment string) string {
+	if environment != "" {
+		return environment
 	}
-	dataItems := []getAPITestItem{
-		{
-			basePath: "/base",
-			pass:     false,
-			message:  "API basePath value should contain the /{APIVersion} at end.",
-		},
-	}
-	for _, item := range dataItems {
-		err := validateAPIBasePathFormat(item.basePath, "v1")
-		assert.Equal(t, item.pass, err == "", item.message)
-	}
+	return config.ReadConfigs().CommonController.Environment
 }

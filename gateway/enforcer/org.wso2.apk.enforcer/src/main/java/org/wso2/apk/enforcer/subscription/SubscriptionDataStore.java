@@ -75,7 +75,8 @@ public interface SubscriptionDataStore {
     /**
      * Returns the JWTValidator based on Issuer
      * @param issuer issuer in JWT
+     * @param environment environment of the Issuer
      * @return JWTValidator Implementation
      */
-    JWTValidator getJWTValidatorByIssuer(String issuer,String organization);
+    JWTValidator getJWTValidatorByIssuer(String issuer, String organization, String environment);
 }

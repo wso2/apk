@@ -63,6 +63,13 @@ public distinct class API {
         return java:toString(org_wso2_apk_config_model_API_getEndpoint(self.jObj)) ?: "";
     }
 
+    # The function that maps to the `getEnvironment` method of `org.wso2.apk.config.model.API`.
+    #
+    # + return - The `string` value returning from the Java mapping.
+    public isolated function getEnvironment() returns string {
+        return java:toString(org_wso2_apk_config_model_API_getEnvironment(self.jObj)) ?: "";
+    }
+
     # The function that maps to the `getGraphQLSchema` method of `org.wso2.apk.config.model.API`.
     #
     # + return - The `string` value returning from the Java mapping.
@@ -160,6 +167,13 @@ public distinct class API {
     # + arg0 - The `string` value required to map with the Java method parameter.
     public function setEndpoint(string arg0) {
         org_wso2_apk_config_model_API_setEndpoint(self.jObj, java:fromString(arg0));
+    }
+
+    # The function that maps to the `setEnvironment` method of `org.wso2.apk.config.model.API`.
+    #
+    # + arg0 - The `string` value required to map with the Java method parameter.
+    public function setEnvironment(string arg0) {
+        org_wso2_apk_config_model_API_setEnvironment(self.jObj, java:fromString(arg0));
     }
 
     # The function that maps to the `setGraphQLSchema` method of `org.wso2.apk.config.model.API`.
@@ -302,6 +316,12 @@ isolated function org_wso2_apk_config_model_API_getEndpoint(handle receiver) ret
     paramTypes: []
 } external;
 
+isolated function org_wso2_apk_config_model_API_getEnvironment(handle receiver) returns handle = @java:Method {
+    name: "getEnvironment",
+    'class: "org.wso2.apk.config.model.API",
+    paramTypes: []
+} external;
+
 function org_wso2_apk_config_model_API_getGraphQLSchema(handle receiver) returns handle = @java:Method {
     name: "getGraphQLSchema",
     'class: "org.wso2.apk.config.model.API",
@@ -376,6 +396,12 @@ function org_wso2_apk_config_model_API_setBasePath(handle receiver, handle arg0)
 
 function org_wso2_apk_config_model_API_setEndpoint(handle receiver, handle arg0) = @java:Method {
     name: "setEndpoint",
+    'class: "org.wso2.apk.config.model.API",
+    paramTypes: ["java.lang.String"]
+} external;
+
+function org_wso2_apk_config_model_API_setEnvironment(handle receiver, handle arg0) = @java:Method {
+    name: "setEnvironment",
     'class: "org.wso2.apk.config.model.API",
     paramTypes: ["java.lang.String"]
 } external;

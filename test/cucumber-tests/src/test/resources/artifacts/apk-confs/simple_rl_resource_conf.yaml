@@ -8,6 +8,8 @@ defaultVersion: false
 endpointConfigurations:
   production:
     endpoint: "http://backend:80/anything"
+  sandbox:
+    endpoint: "http://backend:80/anything"
 operations:
   - target: "/employee"
     verb: "GET"

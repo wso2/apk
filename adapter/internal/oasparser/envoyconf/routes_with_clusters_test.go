@@ -24,6 +24,7 @@ import (
 
 	envoy "github.com/wso2/apk/adapter/internal/oasparser/envoyconf"
 	"github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
+	"github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha2"
 	"github.com/wso2/apk/adapter/internal/operator/constants"
 	"github.com/wso2/apk/adapter/internal/operator/synchronizer"
 	operatorutils "github.com/wso2/apk/adapter/internal/operator/utils"
@@ -34,16 +35,16 @@ import (
 
 func TestCreateRoutesWithClustersWithExactAndRegularExpressionRules(t *testing.T) {
 	apiState := synchronizer.APIState{}
-	apiDefinition := v1alpha1.API{
+	apiDefinition := v1alpha2.API{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: "default",
 			Name:      "test-api-2",
 		},
-		Spec: v1alpha1.APISpec{
-			APIName: "test-api-2",
-			APIVersion:     "2.0.0",
-			BasePath:       "/test-api/2.0.0",
-			Production: []v1alpha1.EnvConfig{
+		Spec: v1alpha2.APISpec{
+			APIName:    "test-api-2",
+			APIVersion: "2.0.0",
+			BasePath:   "/test-api/2.0.0",
+			Production: []v1alpha2.EnvConfig{
 				{
 					HTTPRouteRefs: []string{
 						"test-api-2-prod-http-route",
@@ -156,19 +157,105 @@ func TestCreateRoutesWithClustersWithExactAndRegularExpressionRules(t *testing.T
 		"The route regex for the two paths should not be the same")
 }
 
+func TestGenerateAdapterInternalAPIForDefaultCase(t *testing.T) {
+
+	apiState := generateSampleAPI("test-api-1", "1.0.0", "/test-api/1.0.0")
+	httpRouteState := synchronizer.HTTPRouteState{}
+	httpRouteState = *apiState.ProdHTTPRoute
+
+	adapterInternalAPI, err := synchronizer.GenerateAdapterInternalAPI(apiState, &httpRouteState, constants.Production)
+	assert.Nil(t, err, "Error should not be present when apiState is converted to a AdapterInternalAPI object")
+	assert.Equal(t, "Default", adapterInternalAPI.GetEnvironment(), "Environment is incorrect.")
+}
+
+func TestGenerateAdapterInternalAPIForSpecificEnvironment(t *testing.T) {
+
+	apiState := generateSampleAPI("test-api-2", "1.0.0", "/test-api2/1.0.0")
+	httpRouteState := synchronizer.HTTPRouteState{}
+	httpRouteState = *apiState.ProdHTTPRoute
+	apiState.APIDefinition.Spec.Environment = "dev"
+
+	adapterInternalAPI, err := synchronizer.GenerateAdapterInternalAPI(apiState, &httpRouteState, constants.Production)
+	assert.Nil(t, err, "Error should not be present when apiState is converted to a AdapterInternalAPI object")
+	assert.Equal(t, "dev", adapterInternalAPI.GetEnvironment(), "Environment is incorrect.")
+}
+
+func generateSampleAPI(apiName string, apiVersion string, basePath string) synchronizer.APIState {
+
+	apiState := synchronizer.APIState{}
+	apiDefinition := v1alpha2.API{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: "default",
+			Name:      apiName,
+		},
+		Spec: v1alpha2.APISpec{
+			APIName:    apiName,
+			APIVersion: apiVersion,
+			BasePath:   basePath,
+			Production: []v1alpha2.EnvConfig{
+				{
+					HTTPRouteRefs: []string{
+						apiName + "-prod-http-route",
+					},
+				},
+			},
+		},
+	}
+	apiState.APIDefinition = &apiDefinition
+	httpRouteState := synchronizer.HTTPRouteState{}
+	methodTypeGet := gwapiv1b1.HTTPMethodGet
+
+	httpRoute := gwapiv1b1.HTTPRoute{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: "default",
+			Name:      apiName + "-prod-http-route",
+		},
+		Spec: gwapiv1b1.HTTPRouteSpec{
+			Hostnames:       []gwapiv1b1.Hostname{"prod.gw.wso2.com"},
+			CommonRouteSpec: createDefaultCommonRouteSpec(),
+			Rules: []gwapiv1b1.HTTPRouteRule{
+				{
+					Matches: []gwapiv1b1.HTTPRouteMatch{
+						{
+							Path: &gwapiv1b1.HTTPPathMatch{
+								Type:  operatorutils.PathMatchTypePtr(gwapiv1b1.PathMatchExact),
+								Value: operatorutils.StringPtr("/exact-path-api/2.0.0/(.*)/exact-path"),
+							},
+							Method: &methodTypeGet,
+						},
+					},
+					BackendRefs: []gwapiv1b1.HTTPBackendRef{
+						createDefaultBackendRef(apiName + "backend-1"),
+					},
+				},
+			},
+		},
+	}
+
+	httpRouteState.HTTPRouteCombined = &httpRoute
+
+	backendMapping := make(map[string]*v1alpha1.ResolvedBackend)
+	backendMapping[k8types.NamespacedName{Namespace: "default", Name: apiName + "backend-1"}.String()] =
+		&v1alpha1.ResolvedBackend{Services: []v1alpha1.Service{{Host: "test-service-1.default", Port: 7001}}, Protocol: v1alpha1.HTTPProtocol}
+	httpRouteState.BackendMapping = backendMapping
+
+	apiState.ProdHTTPRoute = &httpRouteState
+	return apiState
+}
+
 // TODO: Fix this test case
 func TestCreateRoutesWithClustersWithMultiplePathPrefixRules(t *testing.T) {
 	apiState := synchronizer.APIState{}
-	apiDefinition := v1alpha1.API{
+	apiDefinition := v1alpha2.API{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: "default",
 			Name:      "test-api-1",
 		},
-		Spec: v1alpha1.APISpec{
-			APIName: "test-api",
-			APIVersion:     "1.0.0",
-			BasePath:       "/test-api/1.0.0",
-			Production: []v1alpha1.EnvConfig{
+		Spec: v1alpha2.APISpec{
+			APIName:    "test-api",
+			APIVersion: "1.0.0",
+			BasePath:   "/test-api/1.0.0",
+			Production: []v1alpha2.EnvConfig{
 				{
 					HTTPRouteRefs: []string{
 						"test-api-1-prod-http-route",
@@ -306,16 +393,16 @@ func TestCreateRoutesWithClustersWithMultiplePathPrefixRules(t *testing.T) {
 
 func TestCreateRoutesWithClustersWithBackendTLSConfigs(t *testing.T) {
 	apiState := synchronizer.APIState{}
-	apiDefinition := v1alpha1.API{
+	apiDefinition := v1alpha2.API{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: "default",
 			Name:      "test-api-3",
 		},
-		Spec: v1alpha1.APISpec{
-			APIName: "test-api-3",
-			APIVersion:     "1.0.0",
-			BasePath:       "/test-api-3/1.0.0",
-			Production: []v1alpha1.EnvConfig{
+		Spec: v1alpha2.APISpec{
+			APIName:    "test-api-3",
+			APIVersion: "1.0.0",
+			BasePath:   "/test-api-3/1.0.0",
+			Production: []v1alpha2.EnvConfig{
 				{
 					HTTPRouteRefs: []string{
 						"test-api-3-prod-http-route",
@@ -612,16 +699,16 @@ func TestCreateHealthEndpoint(t *testing.T) {
 
 func TestCreateRoutesWithClustersDifferentBackendRefs(t *testing.T) {
 	apiState := synchronizer.APIState{}
-	apiDefinition := v1alpha1.API{
+	apiDefinition := v1alpha2.API{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: "default",
 			Name:      "test-api-different-backendrefs",
 		},
-		Spec: v1alpha1.APISpec{
-			APIName: "test-api-different-backendrefs",
-			APIVersion:     "1.0.0",
-			BasePath:       "/test-api-different-backendrefs/1.0.0",
-			Production: []v1alpha1.EnvConfig{
+		Spec: v1alpha2.APISpec{
+			APIName:    "test-api-different-backendrefs",
+			APIVersion: "1.0.0",
+			BasePath:   "/test-api-different-backendrefs/1.0.0",
+			Production: []v1alpha2.EnvConfig{
 				{
 					HTTPRouteRefs: []string{
 						"test-api-different-backendrefs-prod-http-route",
@@ -702,16 +789,16 @@ func TestCreateRoutesWithClustersDifferentBackendRefs(t *testing.T) {
 
 func TestCreateRoutesWithClustersSameBackendRefs(t *testing.T) {
 	apiState := synchronizer.APIState{}
-	apiDefinition := v1alpha1.API{
+	apiDefinition := v1alpha2.API{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: "default",
 			Name:      "test-api-same-backendrefs",
 		},
-		Spec: v1alpha1.APISpec{
-			APIName: "test-api-same-backendrefs",
-			APIVersion:     "1.0.0",
-			BasePath:       "/test-api-same-backendrefs/1.0.0",
-			Production: []v1alpha1.EnvConfig{
+		Spec: v1alpha2.APISpec{
+			APIName:    "test-api-same-backendrefs",
+			APIVersion: "1.0.0",
+			BasePath:   "/test-api-same-backendrefs/1.0.0",
+			Production: []v1alpha2.EnvConfig{
 				{
 					HTTPRouteRefs: []string{
 						"test-api-same-backendrefs-prod-http-route",

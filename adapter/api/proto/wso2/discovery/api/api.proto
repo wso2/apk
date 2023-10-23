@@ -54,4 +54,5 @@ message Api {
 	bool systemAPI = 24;
 	BackendJWTTokenInfo backendJWTTokenInfo = 25;
 	bytes apiDefinitionFile = 26;
+	string environment = 27;
 }

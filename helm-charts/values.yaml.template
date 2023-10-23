@@ -243,6 +243,9 @@ wso2:
     dp:
      # -- Enable the deployment of the Data Plane
       enabled: true
+      environment: 
+        # -- Environment Name of the Data Plane
+        name: "Development"
       gateway:
         listener:
           # -- Gateway Listener Hostname

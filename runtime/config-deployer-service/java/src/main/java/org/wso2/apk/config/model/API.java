@@ -14,6 +14,7 @@ public class API {
     private String[] scopes;
     private String graphQLSchema;
     private String swaggerDefinition;
+    private String environment;
 
     public String getType() {
         return type;
@@ -106,5 +107,13 @@ public class API {
     public void setEndpoint(String endpoint) {
 
         this.endpoint = endpoint;
+    }
+
+    public String getEnvironment() {
+        return environment;
+    }
+
+    public void setEnvironment(String environment) {
+        this.environment = environment;
     }
 }

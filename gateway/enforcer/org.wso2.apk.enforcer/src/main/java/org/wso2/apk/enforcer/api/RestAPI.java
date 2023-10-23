@@ -145,7 +145,7 @@ public class RestAPI implements API {
                 .disableScopes(api.getDisableScopes()).trustStore(trustStore).organizationId(api.getOrganizationId())
                 .mtlsCertificateTiers(mtlsCertificateTiers).mutualSSL(mutualSSL).systemAPI(api.getSystemAPI())
                 .applicationSecurity(applicationSecurity).jwtConfigurationDto(jwtConfigurationDto)
-                .apiDefinition(apiDefinition).build();
+                .apiDefinition(apiDefinition).environment(api.getEnvironment()).build();
 
         initFilters();
         return basePath;

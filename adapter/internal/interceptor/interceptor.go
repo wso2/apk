@@ -71,6 +71,7 @@ type InvocationContext struct {
 	Vhost            string
 	ClusterName      string
 	APIProperties    string
+	Environment      string
 }
 
 var (
@@ -89,6 +90,7 @@ var (
 	 organizationId = "{{.Context.OrganizationID}}",
 	 basePath = "{{.Context.BasePath}}",
 	 supportedMethods = "{{.Context.SupportedMethods}}",
+	 environment = "{{.Context.Environment}}",
 	 apiName = "{{.Context.APIName}}",
 	 apiVersion = "{{.Context.APIVersion}}",
 	 pathTemplate = "{{.Context.PathTemplate}}",

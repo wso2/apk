@@ -26,6 +26,7 @@ private static final long serialVersionUID = 0L;
     issuer_ = "";
     consumerKeyClaim_ = "";
     scopesClaim_ = "";
+    environments_ = com.google.protobuf.LazyStringArrayList.EMPTY;
   }
 
   @java.lang.Override
@@ -121,6 +122,15 @@ private static final long serialVersionUID = 0L;
                 claimMapping__.getKey(), claimMapping__.getValue());
             break;
           }
+          case 74: {
+            java.lang.String s = input.readStringRequireUtf8();
+            if (!((mutable_bitField0_ & 0x00000002) != 0)) {
+              environments_ = new com.google.protobuf.LazyStringArrayList();
+              mutable_bitField0_ |= 0x00000002;
+            }
+            environments_.add(s);
+            break;
+          }
           default: {
             if (!parseUnknownField(
                 input, unknownFields, extensionRegistry, tag)) {
@@ -136,6 +146,9 @@ private static final long serialVersionUID = 0L;
       throw new com.google.protobuf.InvalidProtocolBufferException(
           e).setUnfinishedMessage(this);
     } finally {
+      if (((mutable_bitField0_ & 0x00000002) != 0)) {
+        environments_ = environments_.getUnmodifiableView();
+      }
       this.unknownFields = unknownFields.build();
       makeExtensionsImmutable();
     }
@@ -500,6 +513,41 @@ private static final long serialVersionUID = 0L;
     return map.get(key);
   }
 
+  public static final int ENVIRONMENTS_FIELD_NUMBER = 9;
+  private com.google.protobuf.LazyStringList environments_;
+  /**
+   * <code>repeated string environments = 9;</code>
+   * @return A list containing the environments.
+   */
+  public com.google.protobuf.ProtocolStringList
+      getEnvironmentsList() {
+    return environments_;
+  }
+  /**
+   * <code>repeated string environments = 9;</code>
+   * @return The count of environments.
+   */
+  public int getEnvironmentsCount() {
+    return environments_.size();
+  }
+  /**
+   * <code>repeated string environments = 9;</code>
+   * @param index The index of the element to return.
+   * @return The environments at the given index.
+   */
+  public java.lang.String getEnvironments(int index) {
+    return environments_.get(index);
+  }
+  /**
+   * <code>repeated string environments = 9;</code>
+   * @param index The index of the value to return.
+   * @return The bytes of the environments at the given index.
+   */
+  public com.google.protobuf.ByteString
+      getEnvironmentsBytes(int index) {
+    return environments_.getByteString(index);
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -541,6 +589,9 @@ private static final long serialVersionUID = 0L;
         internalGetClaimMapping(),
         ClaimMappingDefaultEntryHolder.defaultEntry,
         8);
+    for (int i = 0; i < environments_.size(); i++) {
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 9, environments_.getRaw(i));
+    }
     unknownFields.writeTo(output);
   }
 
@@ -582,6 +633,14 @@ private static final long serialVersionUID = 0L;
       size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(8, claimMapping__);
     }
+    {
+      int dataSize = 0;
+      for (int i = 0; i < environments_.size(); i++) {
+        dataSize += computeStringSizeNoTag(environments_.getRaw(i));
+      }
+      size += dataSize;
+      size += 1 * getEnvironmentsList().size();
+    }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
     return size;
@@ -616,6 +675,8 @@ private static final long serialVersionUID = 0L;
         .equals(other.getScopesClaim())) return false;
     if (!internalGetClaimMapping().equals(
         other.internalGetClaimMapping())) return false;
+    if (!getEnvironmentsList()
+        .equals(other.getEnvironmentsList())) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -646,6 +707,10 @@ private static final long serialVersionUID = 0L;
     if (!internalGetClaimMapping().getMap().isEmpty()) {
       hash = (37 * hash) + CLAIMMAPPING_FIELD_NUMBER;
       hash = (53 * hash) + internalGetClaimMapping().hashCode();
+    }
+    if (getEnvironmentsCount() > 0) {
+      hash = (37 * hash) + ENVIRONMENTS_FIELD_NUMBER;
+      hash = (53 * hash) + getEnvironmentsList().hashCode();
     }
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
@@ -825,6 +890,8 @@ private static final long serialVersionUID = 0L;
       scopesClaim_ = "";
 
       internalGetMutableClaimMapping().clear();
+      environments_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      bitField0_ = (bitField0_ & ~0x00000002);
       return this;
     }
 
@@ -865,6 +932,11 @@ private static final long serialVersionUID = 0L;
       result.scopesClaim_ = scopesClaim_;
       result.claimMapping_ = internalGetClaimMapping();
       result.claimMapping_.makeImmutable();
+      if (((bitField0_ & 0x00000002) != 0)) {
+        environments_ = environments_.getUnmodifiableView();
+        bitField0_ = (bitField0_ & ~0x00000002);
+      }
+      result.environments_ = environments_;
       onBuilt();
       return result;
     }
@@ -942,6 +1014,16 @@ private static final long serialVersionUID = 0L;
       }
       internalGetMutableClaimMapping().mergeFrom(
           other.internalGetClaimMapping());
+      if (!other.environments_.isEmpty()) {
+        if (environments_.isEmpty()) {
+          environments_ = other.environments_;
+          bitField0_ = (bitField0_ & ~0x00000002);
+        } else {
+          ensureEnvironmentsIsMutable();
+          environments_.addAll(other.environments_);
+        }
+        onChanged();
+      }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
       return this;
@@ -1672,6 +1754,116 @@ private static final long serialVersionUID = 0L;
         java.util.Map<java.lang.String, java.lang.String> values) {
       internalGetMutableClaimMapping().getMutableMap()
           .putAll(values);
+      return this;
+    }
+
+    private com.google.protobuf.LazyStringList environments_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+    private void ensureEnvironmentsIsMutable() {
+      if (!((bitField0_ & 0x00000002) != 0)) {
+        environments_ = new com.google.protobuf.LazyStringArrayList(environments_);
+        bitField0_ |= 0x00000002;
+       }
+    }
+    /**
+     * <code>repeated string environments = 9;</code>
+     * @return A list containing the environments.
+     */
+    public com.google.protobuf.ProtocolStringList
+        getEnvironmentsList() {
+      return environments_.getUnmodifiableView();
+    }
+    /**
+     * <code>repeated string environments = 9;</code>
+     * @return The count of environments.
+     */
+    public int getEnvironmentsCount() {
+      return environments_.size();
+    }
+    /**
+     * <code>repeated string environments = 9;</code>
+     * @param index The index of the element to return.
+     * @return The environments at the given index.
+     */
+    public java.lang.String getEnvironments(int index) {
+      return environments_.get(index);
+    }
+    /**
+     * <code>repeated string environments = 9;</code>
+     * @param index The index of the value to return.
+     * @return The bytes of the environments at the given index.
+     */
+    public com.google.protobuf.ByteString
+        getEnvironmentsBytes(int index) {
+      return environments_.getByteString(index);
+    }
+    /**
+     * <code>repeated string environments = 9;</code>
+     * @param index The index to set the value at.
+     * @param value The environments to set.
+     * @return This builder for chaining.
+     */
+    public Builder setEnvironments(
+        int index, java.lang.String value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureEnvironmentsIsMutable();
+      environments_.set(index, value);
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>repeated string environments = 9;</code>
+     * @param value The environments to add.
+     * @return This builder for chaining.
+     */
+    public Builder addEnvironments(
+        java.lang.String value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureEnvironmentsIsMutable();
+      environments_.add(value);
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>repeated string environments = 9;</code>
+     * @param values The environments to add.
+     * @return This builder for chaining.
+     */
+    public Builder addAllEnvironments(
+        java.lang.Iterable<java.lang.String> values) {
+      ensureEnvironmentsIsMutable();
+      com.google.protobuf.AbstractMessageLite.Builder.addAll(
+          values, environments_);
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>repeated string environments = 9;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearEnvironments() {
+      environments_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      bitField0_ = (bitField0_ & ~0x00000002);
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>repeated string environments = 9;</code>
+     * @param value The bytes of the environments to add.
+     * @return This builder for chaining.
+     */
+    public Builder addEnvironmentsBytes(
+        com.google.protobuf.ByteString value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+      ensureEnvironmentsIsMutable();
+      environments_.add(value);
+      onChanged();
       return this;
     }
     @java.lang.Override

@@ -33,5 +33,6 @@ var defaultConfig = &Config{
 		Truststore: truststore{
 			Location: "/home/wso2/security/truststore",
 		},
+		Environment: "Default",
 	},
 }

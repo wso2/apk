@@ -142,6 +142,7 @@ public type InvocationContext record {
     string prodClusterName?;
     string sandClusterName?;
     string apiProperties?;
+    string environment?;
     InvocationContext_authenticationContext authenticationContext?;
 };
 

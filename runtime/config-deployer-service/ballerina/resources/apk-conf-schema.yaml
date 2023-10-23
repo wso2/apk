@@ -45,6 +45,10 @@ components:
           type: boolean
           description: |
             Is this the default version of the API
+        environment:
+          type: string
+          description: |
+            Environment of the API
         endpointConfigurations:
           $ref: "#/components/schemas/EndpointConfigurations"
         operations:

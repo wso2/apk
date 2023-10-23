@@ -46,6 +46,7 @@ import (
 
 	cpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/cp/v1alpha1"
 	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
+	dpv1alpha2 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha2"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -63,6 +64,7 @@ func init() {
 	utilruntime.Must(gwapiv1a2.AddToScheme(scheme))
 
 	utilruntime.Must(cpv1alpha1.AddToScheme(scheme))
+	utilruntime.Must(dpv1alpha2.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
 

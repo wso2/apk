@@ -30,6 +30,7 @@ import (
 	logger "github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/internal/oasparser/constants"
 	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
+	dpv1alpha2 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha2"
 )
 
 // AdapterInternalAPI represents the object structure holding the information related to the
@@ -65,11 +66,12 @@ type AdapterInternalAPI struct {
 	backendJWTTokenInfo      *BackendJWTTokenInfo
 	apiDefinitionFile        []byte
 	apiDefinitionEndpoint    string
-	APIProperties            []dpv1alpha1.Property
+	APIProperties            []dpv1alpha2.Property
 	// GraphQLSchema              string
 	// GraphQLComplexities        GraphQLComplexityYaml
 	IsSystemAPI     bool
 	RateLimitPolicy *RateLimitPolicy
+	environment     string
 }
 
 // BackendJWTTokenInfo represents the object structure holding the information related to the JWT Generator
@@ -388,6 +390,16 @@ func (swagger *AdapterInternalAPI) GetXWSO2ApplicationSecurity() bool {
 // GetOrganizationID returns OrganizationID
 func (swagger *AdapterInternalAPI) GetOrganizationID() string {
 	return swagger.OrganizationID
+}
+
+// SetEnvironment sets the environment of the API.
+func (swagger *AdapterInternalAPI) SetEnvironment(environment string) {
+	swagger.environment = environment
+}
+
+// GetEnvironment returns the environment of the API
+func (swagger *AdapterInternalAPI) GetEnvironment() string {
+	return swagger.environment
 }
 
 // Validate method confirms that the adapterInternalAPI has all required fields in the required format.

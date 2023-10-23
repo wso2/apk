@@ -93,6 +93,8 @@ type adapter struct {
 	SoapErrorInXMLEnabled bool
 	// Operator represents the operator related configurations
 	Operator operator
+	// Environment of the Adapter
+	Environment string
 }
 
 // Envoy Listener Component related configurations.

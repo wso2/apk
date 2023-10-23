@@ -56,7 +56,7 @@ isolated function getConfigMapValueFromNameAndNamespace(string name, string name
 }
 
 isolated function deleteAPICR(string name, string namespace) returns http:Response|http:ClientError {
-    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/apis/" + name;
+    string endpoint = "/apis/dp.wso2.com/v1alpha2/namespaces/" + namespace + "/apis/" + name;
     return k8sApiServerEp->delete(endpoint, targetType = http:Response);
 }
 
@@ -99,12 +99,12 @@ isolated function deleteConfigMap(string name, string namespace) returns http:Re
 }
 
 isolated function deployAPICR(model:API api, string namespace) returns http:Response|http:ClientError {
-    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/apis";
+    string endpoint = "/apis/dp.wso2.com/v1alpha2/namespaces/" + namespace + "/apis";
     return k8sApiServerEp->post(endpoint, api, targetType = http:Response);
 }
 
 isolated function updateAPICR(model:API api, string namespace) returns http:Response|http:ClientError {
-    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/apis/" + api.metadata.name;
+    string endpoint = "/apis/dp.wso2.com/v1alpha2/namespaces/" + namespace + "/apis/" + api.metadata.name;
     return k8sApiServerEp->put(endpoint, api, targetType = http:Response);
 }
 
@@ -129,7 +129,7 @@ isolated function updateHttpRoute(model:Httproute httproute, string namespace) r
 }
 
 public isolated function getK8sAPIByNameAndNamespace(string name, string namespace) returns model:API?|commons:APKError {
-    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/apis/" + name;
+    string endpoint = "/apis/dp.wso2.com/v1alpha2/namespaces/" + namespace + "/apis/" + name;
     do {
         http:Response response = check k8sApiServerEp->get(endpoint);
         if response.statusCode == 200 {

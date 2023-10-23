@@ -15,6 +15,8 @@ Feature: Test simple rate limit feature
       |401|
     And I send "GET" request to "https://default.gw.wso2.com:9095/simple-rl/3.14/employee/" with body ""
     Then the response status code should be 429
+    And I send "GET" request to "https://default.sandbox.gw.wso2.com:9095/simple-rl/3.14/employee/" with body ""
+    Then the response status code should be 429
 
   Scenario: Test simple rate limit api level for unsecured api
     Given The system is ready
@@ -47,6 +49,12 @@ Feature: Test simple rate limit feature
       |429|
       |401|
     And I send "POST" request to "https://default.gw.wso2.com:9095/simple-rl-r/3.14/employee/" with body ""
+    Then the response status code should be 429
+    And I send "POST" request to "https://default.sandbox.gw.wso2.com:9095/simple-rl-r/3.14/employee/" with body ""
+    And I eventually receive 200 response code, not accepting
+      |429|
+      |401|
+    And I send "POST" request to "https://default.sandbox.gw.wso2.com:9095/simple-rl-r/3.14/employee/" with body ""
     Then the response status code should be 429
     And I wait for next minute
     And I send "GET" request to "https://default.gw.wso2.com:9095/simple-rl-r/3.14/employee/" with body ""

@@ -158,6 +158,14 @@ func GenerateAdapterInternalAPI(apiState APIState, httpRoute *HTTPRouteState, en
 	adapterInternalAPI.SetAPIDefinitionFile(apiState.APIDefinitionFile)
 	adapterInternalAPI.SetAPIDefinitionEndpoint(apiState.APIDefinition.Spec.DefinitionPath)
 	adapterInternalAPI.EnvType = envType
+
+	environment := apiState.APIDefinition.Spec.Environment
+	if environment == "" {
+		conf := config.ReadConfigs()
+		environment = conf.Adapter.Environment
+	}
+	adapterInternalAPI.SetEnvironment(environment)
+
 	resourceParams := model.ResourceParams{
 		AuthSchemes:               apiState.Authentications,
 		ResourceAuthSchemes:       apiState.ResourceAuthentications,

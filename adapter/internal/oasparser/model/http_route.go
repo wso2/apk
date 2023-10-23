@@ -26,6 +26,7 @@ import (
 	"github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/internal/oasparser/constants"
 	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
+	dpv1alpha2 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha2"
 	"github.com/wso2/apk/adapter/internal/operator/utils"
 	"golang.org/x/exp/maps"
 	"k8s.io/apimachinery/pkg/types"
@@ -631,7 +632,7 @@ func getAllowedOperations(httpMethod *gwapiv1b1.HTTPMethod, policies OperationPo
 }
 
 // SetInfoAPICR populates ID, ApiType, Version and XWso2BasePath of adapterInternalAPI.
-func (swagger *AdapterInternalAPI) SetInfoAPICR(api dpv1alpha1.API) {
+func (swagger *AdapterInternalAPI) SetInfoAPICR(api dpv1alpha2.API) {
 	swagger.UUID = string(api.ObjectMeta.UID)
 	swagger.title = api.Spec.APIName
 	swagger.apiType = api.Spec.APIType
