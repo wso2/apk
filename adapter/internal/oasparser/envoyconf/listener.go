@@ -183,7 +183,8 @@ end`)
 			HttpProtocolOptions: &corev3.Http1ProtocolOptions{
 				EnableTrailers: config.GetWireLogConfig().LogTrailersEnabled,
 			},
-			UseRemoteAddress: &wrappers.BoolValue{Value: conf.Envoy.UseRemoteAddress},
+			UseRemoteAddress:     &wrappers.BoolValue{Value: conf.Envoy.UseRemoteAddress},
+			AppendXForwardedPort: true,
 		}
 
 		if len(accessLogs) > 0 {

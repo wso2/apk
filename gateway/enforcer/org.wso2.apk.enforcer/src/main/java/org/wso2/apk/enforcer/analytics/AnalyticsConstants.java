@@ -37,5 +37,5 @@ public class AnalyticsConstants {
 
     protected static final String ELK_TYPE = "elk";
     protected static final String DEFAULT_ELK_PUBLISHER_REPORTER_CLASS 
-            = "org.wso2.am.analytics.publisher.reporter.elk.ELKMetricReporter";
+            = "org.wso2.apk.enforcer.analytics.publisher.reporter.elk.ELKMetricReporter";
 }

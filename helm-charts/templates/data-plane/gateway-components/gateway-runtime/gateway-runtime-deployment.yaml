@@ -89,7 +89,7 @@ spec:
             - name: enforcer_admin_pwd
               value: admin
             - name: JAVA_OPTS
-              value: -Dhttpclient.hostnameVerifier=AllowAll -Xms512m -Xmx512m -XX:MaxRAMFraction=2
+              value: -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5006 -Dhttpclient.hostnameVerifier=AllowAll -Xms512m -Xmx512m -XX:MaxRAMFraction=2
         {{- if and .Values.wso2.apk.dp.gatewayRuntime.analytics .Values.wso2.apk.dp.gatewayRuntime.analytics.secretName }}
             - name: analytics_authToken
               valueFrom:

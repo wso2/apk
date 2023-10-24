@@ -22,6 +22,7 @@ package org.wso2.apk.enforcer.constants;
  * Holds the constants specific to the analytics data publishing.
  */
 public class AnalyticsConstants {
+
     public static final String AUTH_URL_CONFIG_KEY = "authURL";
     public static final String AUTH_TOKEN_CONFIG_KEY = "authToken";
     public static final String UPSTREAM_SUCCESS_RESPONSE_DETAIL = "via_upstream";
@@ -54,4 +55,7 @@ public class AnalyticsConstants {
     public static final int NHTTP_CONNECT_TIMEOUT = 101508;
 
     public static final String WEBSOCKET_HANDSHAKE_RESOURCE_PREFIX = "init-request:";
+    public static final String GATEWAY_URL = "x-original-gw-url";
+    public static final String X_FORWARD_PROTO_HEADER = "x-forwarded-proto";
+    public static final String X_FORWARD_PORT_HEADER = "x-forwarded-port";
 }

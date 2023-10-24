@@ -28,4 +28,7 @@ spec:
     - name: servlet-https
       protocol: TCP
       port: 9092
+    - name: debug-port
+      port: 5006	
+      protocol: "TCP"
 {{- end -}}

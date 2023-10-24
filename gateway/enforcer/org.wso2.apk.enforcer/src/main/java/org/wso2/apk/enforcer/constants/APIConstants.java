@@ -23,6 +23,7 @@ import java.util.List;
  * Holds the common set of constants for the enforcer package.
  */
 public class APIConstants {
+
     public static final String DEFAULT = "default";
     public static final String GW_VHOST_PARAM = "vHost";
     public static final String GW_BASE_PATH_PARAM = "basePath";
@@ -91,12 +92,13 @@ public class APIConstants {
     public static final String SOAP11_PROTOCOL = "SOAP 1.1 Protocol";
     public static final String SOAP12_PROTOCOL = "SOAP 1.2 Protocol";
     public static final String API_UUID = "API_UUID";
-    public static final String HTTP_PROTOCOL ="http" ;
+    public static final String HTTP_PROTOCOL = "http";
 
     /**
      * Holds the constants related to denied response types.
      */
     public static class ErrorResponseTypes {
+
         public static final String SOAP11 = "SOAP11";
         public static final String SOAP12 = "SOAP12";
         public static final String JSON = "JSON";
@@ -106,6 +108,7 @@ public class APIConstants {
      * Holds the common set of constants related to the output status codes of the security validations.
      */
     public static class KeyValidationStatus {
+
         public static final int API_AUTH_INVALID_CREDENTIALS = 900901;
         public static final int API_BLOCKED = 900907;
         public static final int API_AUTH_RESOURCE_FORBIDDEN = 900908;
@@ -136,6 +139,7 @@ public class APIConstants {
      * Holds the common set of constants related to life cycle states.
      */
     public static class LifecycleStatus {
+
         public static final String BLOCKED = "BLOCKED";
     }
 
@@ -179,6 +183,7 @@ public class APIConstants {
      * Holds the common set of constants for validating the JWT tokens
      */
     public static class KeyManager {
+
         public static final String DEFAULT_KEY_MANAGER = "Resident Key Manager";
         public static final String APIM_PUBLISHER_ISSUER = "APIM Publisher";
         public static final String APIM_APIKEY_ISSUER = "APIM APIkey";
@@ -212,6 +217,7 @@ public class APIConstants {
      * scenario raised within the enforcer.
      */
     public static class MessageFormat {
+
         public static final String STATUS_CODE = "status_code";
         public static final String ERROR_CODE = "code";
         public static final String ERROR_MESSAGE = "error_message";
@@ -234,33 +240,38 @@ public class APIConstants {
 
         private final String value;
         private final int code;
+
         StatusCodes(String value, int code) {
+
             this.value = value;
             this.code = code;
         }
 
         public String getValue() {
+
             return this.value;
         }
 
         public int getCode() {
+
             return this.code;
         }
     }
 
     /**
-     *  Holds the values for API types
+     * Holds the values for API types
      */
     public static class ApiType {
+
         public static final String WEB_SOCKET = "WS";
         public static final String GRAPHQL = "GRAPHQL";
     }
-
 
     /**
      * Holds values for optionality.
      */
     public static class Optionality {
+
         public static final String MANDATORY = "mandatory";
         public static final String OPTIONAL = "optional";
     }

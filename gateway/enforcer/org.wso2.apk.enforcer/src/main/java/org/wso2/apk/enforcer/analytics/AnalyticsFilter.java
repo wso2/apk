@@ -20,6 +20,7 @@ package org.wso2.apk.enforcer.analytics;
 
 import io.envoyproxy.envoy.service.accesslog.v3.StreamAccessLogsMessage;
 import io.opentelemetry.context.Scope;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
@@ -34,6 +35,7 @@ import org.wso2.apk.enforcer.commons.model.ResourceConfig;
 import org.wso2.apk.enforcer.config.ConfigHolder;
 import org.wso2.apk.enforcer.config.dto.AnalyticsPublisherConfigDTO;
 import org.wso2.apk.enforcer.constants.APIConstants;
+import org.wso2.apk.enforcer.constants.AnalyticsConstants;
 import org.wso2.apk.enforcer.constants.MetadataConstants;
 import org.wso2.apk.enforcer.tracing.TracingConstants;
 import org.wso2.apk.enforcer.tracing.TracingSpan;
@@ -59,8 +61,10 @@ public class AnalyticsFilter {
     private static AnalyticsCustomDataProvider analyticsDataProvider;
 
     private AnalyticsFilter() {
+
         publisher = new DefaultAnalyticsEventPublisher();
-        List<AnalyticsPublisherConfigDTO> analyticsPublisherConfigDTOList = ConfigHolder.getInstance().getConfig().getAnalyticsConfig().getAnalyticsPublisherConfigDTOList();
+        List<AnalyticsPublisherConfigDTO> analyticsPublisherConfigDTOList =
+                ConfigHolder.getInstance().getConfig().getAnalyticsConfig().getAnalyticsPublisherConfigDTOList();
         publisher.init(analyticsPublisherConfigDTOList);
     }
 
@@ -95,8 +99,6 @@ public class AnalyticsFilter {
 //        }
 //    }
 
-
-
     public static AnalyticsCustomDataProvider getAnalyticsCustomDataProvider() {
 
         return analyticsDataProvider;
@@ -119,7 +121,6 @@ public class AnalyticsFilter {
             String apiType = requestContext.getMatchedAPI().getApiType();
             boolean isMockAPI = requestContext.getMatchedAPI().isMockedApi();
             AuthenticationContext authContext = AnalyticsUtils.getAuthenticationContext(requestContext);
-
             requestContext.addMetadataToMap(MetadataConstants.API_ID_KEY, AnalyticsUtils.getAPIId(requestContext));
             requestContext.addMetadataToMap(MetadataConstants.API_CREATOR_KEY,
                     AnalyticsUtils.setDefaultIfNull(authContext.getApiPublisher()));
@@ -173,7 +174,17 @@ public class AnalyticsFilter {
                     requestContext.getMatchedAPI().getEnvironment() == null
                             ? APIConstants.DEFAULT_ENVIRONMENT_NAME
                             : requestContext.getMatchedAPI().getEnvironment());
-
+            // Adding Gateway URL
+            String gatewayUrl = requestContext.getHeaders().get(AnalyticsConstants.GATEWAY_URL);
+            if (!StringUtils.isNotEmpty(gatewayUrl)) {
+                String protocol = requestContext.getHeaders().getOrDefault(AnalyticsConstants.X_FORWARD_PROTO_HEADER,
+                        APIConstants.HTTPS_PROTOCOL);
+                String port = requestContext.getHeaders().getOrDefault(AnalyticsConstants.X_FORWARD_PORT_HEADER, "");
+                String host = requestContext.getMatchedAPI().getVhost();
+                String path = requestContext.getRequestPath();
+                gatewayUrl = protocol.concat("://").concat(host).concat(":").concat(port).concat(path);
+            }
+            requestContext.addMetadataToMap(MetadataConstants.GATEWAY_URL, gatewayUrl);
         } finally {
             if (Utils.tracingEnabled()) {
                 analyticsSpanScope.close();

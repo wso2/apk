@@ -16,7 +16,7 @@
  */
 package org.wso2.apk.enforcer.commons.analytics.publishers;
 
-import org.wso2.am.analytics.publisher.reporter.CounterMetric;
+import org.wso2.apk.enforcer.analytics.publisher.reporter.CounterMetric;
 import org.wso2.apk.enforcer.commons.analytics.publishers.dto.Event;
 
 import java.util.List;
