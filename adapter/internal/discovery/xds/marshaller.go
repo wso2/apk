@@ -175,7 +175,7 @@ func MarshalConfig(config *config.Config) *enforcer.Config {
 }
 
 func marshalAnalyticsPublishers(config config.Config) []*enforcer.AnalyticsPublisher {
-	analyticsPublishers := config.Analytics.Enforcer.AnalyticsPublisher
+	analyticsPublishers := config.Analytics.Enforcer.Publisher
 	resolvedAnalyticsPublishers := make([]*enforcer.AnalyticsPublisher, len(analyticsPublishers))
 	for i, publisher := range analyticsPublishers {
 		resolvedAnalyticsPublishers[i] = &enforcer.AnalyticsPublisher{Enabled: publisher.Enabled,

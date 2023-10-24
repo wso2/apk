@@ -19,8 +19,8 @@ package org.wso2.apk.enforcer.commons.analytics.publishers.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.wso2.am.analytics.publisher.exception.MetricCreationException;
-import org.wso2.am.analytics.publisher.reporter.CounterMetric;
+import org.wso2.apk.enforcer.analytics.publisher.exception.MetricCreationException;
+import org.wso2.apk.enforcer.analytics.publisher.reporter.CounterMetric;
 import java.util.List;
 
 

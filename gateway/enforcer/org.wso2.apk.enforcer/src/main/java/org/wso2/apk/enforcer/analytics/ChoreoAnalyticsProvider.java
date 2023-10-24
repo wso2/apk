@@ -46,11 +46,13 @@ import java.util.Map;
  * Analytics Data Provider of Microgateway
  */
 public class ChoreoAnalyticsProvider implements AnalyticsDataProvider {
+
     private static final Logger logger = LogManager.getLogger(ChoreoAnalyticsProvider.class);
     private static Map<String, Object> customProperties = new HashMap<>();
     protected final HTTPAccessLogEntry logEntry;
 
     public ChoreoAnalyticsProvider(HTTPAccessLogEntry logEntry) {
+
         this.logEntry = logEntry;
         if (AnalyticsFilter.getAnalyticsCustomDataProvider() != null) {
             setCustomPropertiesMap(logEntry, customProperties);
@@ -59,6 +61,7 @@ public class ChoreoAnalyticsProvider implements AnalyticsDataProvider {
 
     @Override
     public EventCategory getEventCategory() {
+
         if (logEntry.getResponse() != null && AnalyticsConstants.UPSTREAM_SUCCESS_RESPONSE_DETAIL.equals(
                 logEntry.getResponse().getResponseCodeDetails())) {
             logger.debug("Is success event");
@@ -77,6 +80,7 @@ public class ChoreoAnalyticsProvider implements AnalyticsDataProvider {
 
     @Override
     public boolean isAnonymous() {
+
         Map<String, Value> fieldsMap = getFieldsMapFromLogEntry();
         // If appId is unknown, subscriptions are not validated.
         return AnalyticsConstants.DEFAULT_FOR_UNASSIGNED
@@ -91,6 +95,7 @@ public class ChoreoAnalyticsProvider implements AnalyticsDataProvider {
 
     @Override
     public FaultCategory getFaultType() {
+
         if (isTargetFaultRequest()) {
             return FaultCategory.TARGET_CONNECTIVITY;
         } else {
@@ -99,6 +104,7 @@ public class ChoreoAnalyticsProvider implements AnalyticsDataProvider {
     }
 
     public boolean isTargetFaultRequest() {
+
         String responseCodeDetail = logEntry.getResponse().getResponseCodeDetails();
         return (!AnalyticsConstants.UPSTREAM_SUCCESS_RESPONSE_DETAIL.equals(responseCodeDetail))
                 && (!AnalyticsConstants.EXT_AUTH_DENIED_RESPONSE_DETAIL.equals(responseCodeDetail))
@@ -108,6 +114,7 @@ public class ChoreoAnalyticsProvider implements AnalyticsDataProvider {
 
     @Override
     public API getApi() {
+
         Map<String, Value> fieldsMap = getFieldsMapFromLogEntry();
         ExtendedAPI api = new ExtendedAPI();
         api.setApiType(getValueAsString(fieldsMap, MetadataConstants.API_TYPE_KEY));
@@ -125,6 +132,7 @@ public class ChoreoAnalyticsProvider implements AnalyticsDataProvider {
 
     @Override
     public Application getApplication() {
+
         Map<String, Value> fieldsMap = getFieldsMapFromLogEntry();
         Application application = new Application();
         application.setApplicationOwner(getValueAsString(fieldsMap, MetadataConstants.APP_OWNER_KEY));
@@ -136,6 +144,7 @@ public class ChoreoAnalyticsProvider implements AnalyticsDataProvider {
 
     @Override
     public Operation getOperation() {
+
         Map<String, Value> fieldsMap = getFieldsMapFromLogEntry();
         Operation operation = new Operation();
         operation.setApiResourceTemplate(getValueAsString(fieldsMap, MetadataConstants.API_RESOURCE_TEMPLATE_KEY));
@@ -145,6 +154,7 @@ public class ChoreoAnalyticsProvider implements AnalyticsDataProvider {
 
     @Override
     public Target getTarget() {
+
         Map<String, Value> fieldsMap = getFieldsMapFromLogEntry();
         Target target = new Target();
         // As response caching is not configured at the moment.
@@ -176,6 +186,7 @@ public class ChoreoAnalyticsProvider implements AnalyticsDataProvider {
 
     @Override
     public MetaInfo getMetaInfo() {
+
         Map<String, Value> fieldsMap = getFieldsMapFromLogEntry();
         MetaInfo metaInfo = new MetaInfo();
         metaInfo.setCorrelationId(getValueAsString(fieldsMap, MetadataConstants.CORRELATION_ID_KEY));
@@ -192,11 +203,13 @@ public class ChoreoAnalyticsProvider implements AnalyticsDataProvider {
 
     @Override
     public int getTargetResponseCode() {
+
         return logEntry.getResponse().getResponseCode().getValue();
     }
 
     @Override
     public long getRequestTime() {
+
         return logEntry.getCommonProperties().getStartTime().getSeconds() * 1000 +
                 logEntry.getCommonProperties().getStartTime().getNanos() / 1000000;
     }
@@ -215,31 +228,44 @@ public class ChoreoAnalyticsProvider implements AnalyticsDataProvider {
 
     @Override
     public String getUserAgentHeader() {
+
         return logEntry.getRequest().getUserAgent();
     }
 
     @Override
     public String getUserName() {
+
         Map<String, Value> fieldsMap = getFieldsMapFromLogEntry();
         return getValueAsString(fieldsMap, MetadataConstants.API_USER_NAME_KEY);
     }
 
     @Override
     public String getEndUserIP() {
+
         return logEntry.getCommonProperties().getDownstreamRemoteAddress().getSocketAddress().getAddress();
     }
 
     @Override
     public Map<String, Object> getProperties() {
+
         AnalyticsCustomDataProvider customDataProvider = AnalyticsFilter.getAnalyticsCustomDataProvider();
+        Map<String,Object> map = new HashMap();
+        Map<String, Value> fieldsMap = getFieldsMapFromLogEntry();
+        String gwURL = getValueAsString(fieldsMap, MetadataConstants.GATEWAY_URL);
+        map.put(AnalyticsConstants.GATEWAY_URL, gwURL);
         if (customDataProvider != null && customDataProvider.getCustomProperties(customProperties) != null) {
-            return customDataProvider.getCustomProperties(customProperties);
+            Map<String, Object> customPropertiesFromProvider = customDataProvider.getCustomProperties(customProperties);
+            map.putAll(customPropertiesFromProvider);
+        } else {
+            map.putAll(this.customProperties);
         }
-        return this.customProperties;
+
+
+        return map;
     }
 
-
     private String getValueAsString(Map<String, Value> fieldsMap, String key) {
+
         if (fieldsMap == null || !fieldsMap.containsKey(key)) {
             return null;
         }
@@ -247,6 +273,7 @@ public class ChoreoAnalyticsProvider implements AnalyticsDataProvider {
     }
 
     private Map<String, Value> getFieldsMapFromLogEntry() {
+
         if (logEntry.getCommonProperties() == null
                 || logEntry.getCommonProperties().getMetadata() == null
                 || logEntry.getCommonProperties().getMetadata().getFilterMetadataMap() == null
@@ -259,6 +286,7 @@ public class ChoreoAnalyticsProvider implements AnalyticsDataProvider {
     }
 
     private void setCustomPropertiesMap(HTTPAccessLogEntry logEntry, Map<String, Object> customProperties) {
+
         if (logEntry.getRequest().getRequestHeadersMap() != null) {
             customProperties.putAll(logEntry.getRequest().getRequestHeadersMap());
         }

@@ -32,7 +32,6 @@ import org.wso2.apk.enforcer.commons.analytics.publishers.dto.Target;
 import org.wso2.apk.enforcer.commons.analytics.publishers.dto.enums.EventCategory;
 import org.wso2.apk.enforcer.commons.analytics.publishers.dto.enums.FaultCategory;
 import org.wso2.apk.enforcer.commons.analytics.publishers.dto.enums.FaultSubCategory;
-import org.wso2.apk.enforcer.discovery.service.websocket.WebSocketFrameRequest;
 import org.wso2.apk.enforcer.commons.model.AuthenticationContext;
 import org.wso2.apk.enforcer.commons.model.RequestContext;
 import org.wso2.apk.enforcer.commons.model.ResourceConfig;
@@ -40,6 +39,7 @@ import org.wso2.apk.enforcer.config.ConfigHolder;
 import org.wso2.apk.enforcer.constants.APIConstants;
 import org.wso2.apk.enforcer.constants.AnalyticsConstants;
 import org.wso2.apk.enforcer.constants.GeneralErrorCodeConstants;
+import org.wso2.apk.enforcer.discovery.service.websocket.WebSocketFrameRequest;
 import org.wso2.apk.enforcer.util.FilterUtils;
 
 import java.util.ArrayList;
@@ -50,11 +50,13 @@ import java.util.Map;
  * Generate FaultDTO for the errors generated from enforcer.
  */
 public class ChoreoFaultAnalyticsProvider implements AnalyticsDataProvider {
+
     private final RequestContext requestContext;
-    private static Map<String, Object> customProperties = new HashMap<>();
+    private static final Map<String, Object> customProperties = new HashMap<>();
     private final boolean isWebsocketUpgradeRequest;
 
     public ChoreoFaultAnalyticsProvider(RequestContext requestContext) {
+
         this.requestContext = requestContext;
         // sets all the headers available in the request context
         customProperties.putAll(requestContext.getHeaders());
@@ -64,34 +66,36 @@ public class ChoreoFaultAnalyticsProvider implements AnalyticsDataProvider {
 
     @Override
     public EventCategory getEventCategory() {
+
         return EventCategory.FAULT;
     }
 
     @Override
     public boolean isAnonymous() {
-        return requestContext.getAuthenticationContext() == null ||
-                StringUtils.isEmpty(requestContext.getAuthenticationContext().getApplicationUUID());
+
+        return requestContext.getAuthenticationContext() == null || StringUtils.isEmpty(requestContext.getAuthenticationContext().getApplicationUUID());
     }
 
     @Override
     public boolean isAuthenticated() {
+
         AuthenticationContext authenticationContext = requestContext.getAuthenticationContext();
         return authenticationContext != null && authenticationContext.isAuthenticated();
     }
 
     @Override
     public FaultCategory getFaultType() {
+
         if (requestContext.getProperties().containsKey(APIConstants.MessageFormat.STATUS_CODE)) {
-            int statusCode = Integer.parseInt(requestContext.getProperties()
-                    .get(APIConstants.MessageFormat.STATUS_CODE).toString());
+            int statusCode =
+                    Integer.parseInt(requestContext.getProperties().get(APIConstants.MessageFormat.STATUS_CODE).toString());
             switch (statusCode) {
                 case 401:
                 case 403:
                     // For Denied policies, the status code remains 403, but it is categorized
                     // under throttling
                     if (requestContext.getProperties().containsKey(APIConstants.MessageFormat.ERROR_CODE)) {
-                        if (AnalyticsConstants.BLOCKED_ERROR_CODE == Integer.parseInt(requestContext.getProperties()
-                                        .get(APIConstants.MessageFormat.ERROR_CODE).toString())) {
+                        if (AnalyticsConstants.BLOCKED_ERROR_CODE == Integer.parseInt(requestContext.getProperties().get(APIConstants.MessageFormat.ERROR_CODE).toString())) {
                             return FaultCategory.THROTTLED;
                         }
                     }
@@ -101,10 +105,7 @@ public class ChoreoFaultAnalyticsProvider implements AnalyticsDataProvider {
                 case 503:
                     // for API Blocked Scenario, it is considered as an Auth Failure although the status code
                     // is 503
-                    if (requestContext.getProperties().containsKey(APIConstants.MessageFormat.ERROR_CODE) &&
-                            GeneralErrorCodeConstants.API_BLOCKED_CODE ==
-                                    Integer.parseInt(requestContext.getProperties()
-                                            .get(APIConstants.MessageFormat.ERROR_CODE).toString())) {
+                    if (requestContext.getProperties().containsKey(APIConstants.MessageFormat.ERROR_CODE) && GeneralErrorCodeConstants.API_BLOCKED_CODE == Integer.parseInt(requestContext.getProperties().get(APIConstants.MessageFormat.ERROR_CODE).toString())) {
                         return FaultCategory.AUTH;
                     }
                     return FaultCategory.OTHER;
@@ -117,6 +118,7 @@ public class ChoreoFaultAnalyticsProvider implements AnalyticsDataProvider {
 
     @Override
     public API getApi() {
+
         ExtendedAPI api = new ExtendedAPI();
         String apiUUID = AnalyticsUtils.getAPIId(requestContext);
         api.setApiId(apiUUID);
@@ -124,16 +126,16 @@ public class ChoreoFaultAnalyticsProvider implements AnalyticsDataProvider {
         api.setApiType(requestContext.getMatchedAPI().getApiType());
         api.setApiName(requestContext.getMatchedAPI().getName());
         api.setApiVersion(requestContext.getMatchedAPI().getVersion());
-        String tenantDomain = FilterUtils.getTenantDomainFromRequestURL(
-                requestContext.getMatchedAPI().getBasePath());
-        api.setApiCreatorTenantDomain(
-                tenantDomain == null ? APIConstants.SUPER_TENANT_DOMAIN_NAME : tenantDomain);
+        String tenantDomain = FilterUtils.getTenantDomainFromRequestURL(requestContext.getMatchedAPI().getBasePath());
+        api.setApiCreatorTenantDomain(tenantDomain == null ? APIConstants.SUPER_TENANT_DOMAIN_NAME : tenantDomain);
         api.setOrganizationId(requestContext.getMatchedAPI().getOrganizationId());
+        api.setEnvironmentId(requestContext.getMatchedAPI().getEnvironment());
         return api;
     }
 
     @Override
     public Application getApplication() {
+
         AuthenticationContext authContext = AnalyticsUtils.getAuthenticationContext(requestContext);
         Application application = new Application();
         // Default Value would be PRODUCTION
@@ -151,13 +153,12 @@ public class ChoreoFaultAnalyticsProvider implements AnalyticsDataProvider {
             Operation operation = new Operation();
             if (isWebsocketUpgradeRequest) {
                 operation.setApiMethod(WebSocketFrameRequest.MessageDirection.HANDSHAKE.name());
-                operation.setApiResourceTemplate(AnalyticsConstants.WEBSOCKET_HANDSHAKE_RESOURCE_PREFIX +
-                        requestContext.getMatchedResourcePaths().get(0).getPath());
+                operation.setApiResourceTemplate(AnalyticsConstants.WEBSOCKET_HANDSHAKE_RESOURCE_PREFIX + requestContext.getMatchedResourcePaths().get(0).getPath());
                 return operation;
             }
             operation.setApiMethod(requestContext.getMatchedResourcePaths().get(0).getMethod().name());
             ArrayList<String> resourceTemplate = new ArrayList<>();
-            for (ResourceConfig resourceConfig: requestContext.getMatchedResourcePaths()) {
+            for (ResourceConfig resourceConfig : requestContext.getMatchedResourcePaths()) {
                 resourceTemplate.add(resourceConfig.getPath());
             }
             operation.setApiResourceTemplate(String.join(",", resourceTemplate));
@@ -168,10 +169,10 @@ public class ChoreoFaultAnalyticsProvider implements AnalyticsDataProvider {
 
     @Override
     public Target getTarget() {
+
         Target target = new Target();
         target.setResponseCacheHit(false);
-        target.setTargetResponseCode(Integer.parseInt(
-                requestContext.getProperties().get(APIConstants.MessageFormat.STATUS_CODE).toString()));
+        target.setTargetResponseCode(Integer.parseInt(requestContext.getProperties().get(APIConstants.MessageFormat.STATUS_CODE).toString()));
         // Destination is not included in the fault event scenario
         return target;
     }
@@ -179,11 +180,15 @@ public class ChoreoFaultAnalyticsProvider implements AnalyticsDataProvider {
     @Override
     public Latencies getLatencies() {
         // Latencies information are not required.
-        return new Latencies();
+
+        Latencies latencies = new Latencies();
+        latencies.setResponseLatency(System.currentTimeMillis()-getRequestTime());
+        return latencies;
     }
 
     @Override
     public MetaInfo getMetaInfo() {
+
         MetaInfo metaInfo = new MetaInfo();
         metaInfo.setRegionId(ConfigHolder.getInstance().getEnvVarConfig().getEnforcerRegionId());
         metaInfo.setGatewayType(AnalyticsConstants.GATEWAY_LABEL);
@@ -193,18 +198,19 @@ public class ChoreoFaultAnalyticsProvider implements AnalyticsDataProvider {
 
     @Override
     public int getProxyResponseCode() {
-        return Integer.parseInt(requestContext.getProperties()
-                .get(APIConstants.MessageFormat.STATUS_CODE).toString());
+
+        return Integer.parseInt(requestContext.getProperties().get(APIConstants.MessageFormat.STATUS_CODE).toString());
     }
 
     @Override
     public int getTargetResponseCode() {
-        return Integer.parseInt(requestContext.getProperties()
-                .get(APIConstants.MessageFormat.STATUS_CODE).toString());
+
+        return Integer.parseInt(requestContext.getProperties().get(APIConstants.MessageFormat.STATUS_CODE).toString());
     }
 
     @Override
     public long getRequestTime() {
+
         return requestContext.getRequestTimeStamp();
     }
 
@@ -213,8 +219,7 @@ public class ChoreoFaultAnalyticsProvider implements AnalyticsDataProvider {
         // All the messages should have the error_code
         if (requestContext.getProperties().containsKey(APIConstants.MessageFormat.ERROR_CODE)) {
             FaultCodeClassifier faultCodeClassifier =
-                    new FaultCodeClassifier(Integer.parseInt(requestContext.getProperties()
-                            .get(APIConstants.MessageFormat.ERROR_CODE).toString()));
+                    new FaultCodeClassifier(Integer.parseInt(requestContext.getProperties().get(APIConstants.MessageFormat.ERROR_CODE).toString()));
             FaultSubCategory faultSubCategory = faultCodeClassifier.getFaultSubCategory(faultCategory);
             Error error = new Error();
             error.setErrorCode(faultCodeClassifier.getErrorCode());
@@ -226,12 +231,15 @@ public class ChoreoFaultAnalyticsProvider implements AnalyticsDataProvider {
 
     @Override
     public String getUserAgentHeader() {
+
+        Map<String, String> headers = requestContext.getHeaders();
         // UserAgent header is not validated for fault events.
-        return null;
+        return AnalyticsUtils.setDefaultIfNull(headers.get("user-agent"));
     }
 
     @Override
     public String getUserName() {
+
         return null;
     }
 
@@ -243,10 +251,26 @@ public class ChoreoFaultAnalyticsProvider implements AnalyticsDataProvider {
 
     @Override
     public Map<String, Object> getProperties() {
+
+        Map<String,Object> map = new HashMap<>();
+        // Adding Gateway URL
+        String gatewayUrl = requestContext.getHeaders().get(AnalyticsConstants.GATEWAY_URL);
+        if (!StringUtils.isNotEmpty(gatewayUrl)) {
+            String protocol = requestContext.getHeaders().getOrDefault(AnalyticsConstants.X_FORWARD_PROTO_HEADER,
+                    APIConstants.HTTPS_PROTOCOL);
+            String port = requestContext.getHeaders().getOrDefault(AnalyticsConstants.X_FORWARD_PORT_HEADER, "");
+            String host = requestContext.getMatchedAPI().getVhost();
+            String path = requestContext.getRequestPath();
+            gatewayUrl = protocol.concat("://").concat(host).concat(":").concat(port).concat(path);
+        }
+        map.put(AnalyticsConstants.GATEWAY_URL, gatewayUrl);
         AnalyticsCustomDataProvider customDataProvider = AnalyticsFilter.getAnalyticsCustomDataProvider();
         if (customDataProvider != null && customDataProvider.getCustomProperties(customProperties) != null) {
-            return customDataProvider.getCustomProperties(customProperties);
+            Map<String, Object> retrievedProperties = customDataProvider.getCustomProperties(customProperties);
+            map.putAll(retrievedProperties);
+        } else {
+            map.putAll(customProperties);
         }
-        return this.customProperties;
+        return map;
     }
 }

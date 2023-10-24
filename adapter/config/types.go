@@ -331,8 +331,8 @@ type analyticsAdapter struct {
 }
 
 type analyticsEnforcer struct {
-	AnalyticsPublisher []analyticsPublisher
-	LogReceiver        authService
+	Publisher   []analyticsPublisher
+	LogReceiver authService
 }
 
 type analyticsPublisher struct {

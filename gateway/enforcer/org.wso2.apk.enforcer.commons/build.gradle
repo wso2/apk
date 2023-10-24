@@ -26,9 +26,10 @@ dependencies {
     implementation libs.minidev.json
     testImplementation libs.junit
     implementation libs.jackson.databind
-    implementation libs.analytic.publisher
     implementation libs.nimbus.jose.jwt
     implementation libs.json.simple
     implementation libs.commons.lang3
+    implementation libs.gson
+    implementation project(':org.wso2.apk.enforcer.analytics.publishers')
     annotationProcessor('org.apache.logging.log4j:log4j-core:2.19.0')
 }

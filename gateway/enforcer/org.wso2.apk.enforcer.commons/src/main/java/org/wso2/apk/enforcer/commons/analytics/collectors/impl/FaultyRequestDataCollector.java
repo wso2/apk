@@ -23,6 +23,8 @@ import org.wso2.apk.enforcer.commons.analytics.Constants;
 import org.wso2.apk.enforcer.commons.analytics.collectors.AnalyticsDataProvider;
 import org.wso2.apk.enforcer.commons.analytics.collectors.FaultDataCollector;
 import org.wso2.apk.enforcer.commons.analytics.collectors.RequestDataCollector;
+import org.wso2.apk.enforcer.commons.analytics.publishers.dto.Latencies;
+import org.wso2.apk.enforcer.commons.analytics.publishers.dto.Operation;
 import org.wso2.apk.enforcer.commons.analytics.publishers.dto.enums.FaultCategory;
 import org.wso2.apk.enforcer.commons.analytics.collectors.impl.fault.AuthFaultDataCollector;
 import org.wso2.apk.enforcer.commons.analytics.collectors.impl.fault.TargetFaultDataCollector;
@@ -78,20 +80,31 @@ public class FaultyRequestDataCollector extends CommonRequestDataCollector imple
     private Event getFaultyEvent() throws DataNotFoundException {
         long requestInTime = provider.getRequestTime();
         String offsetDateTime = getTimeInISO(requestInTime);
-
+        String userAgent = provider.getUserAgentHeader();
+        String userIp = provider.getEndUserIP();
+        if (userIp == null) {
+            userIp = Constants.UNKNOWN_VALUE;
+        }
+        if (userAgent == null) {
+            userAgent = Constants.UNKNOWN_VALUE;
+        }
         Event event = new Event();
         event.setProperties(provider.getProperties());
         API api = provider.getApi();
+        Operation operation = provider.getOperation();
         Target target = new Target();
         target.setTargetResponseCode(Constants.UNKNOWN_INT_VALUE);
         MetaInfo metaInfo = provider.getMetaInfo();
 
         event.setApi(api);
+        event.setOperation(operation);
         event.setTarget(target);
         event.setProxyResponseCode(provider.getProxyResponseCode());
         event.setRequestTimestamp(offsetDateTime);
         event.setMetaInfo(metaInfo);
-
+        event.setLatencies(provider.getLatencies());
+        event.setUserAgentHeader(userAgent);
+        event.setUserIp(userIp);
         return event;
     }
 }

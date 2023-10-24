@@ -199,7 +199,7 @@ wso2:
               cpu: "50m"
             limits:
               memory: "128Mi"
-              cpu: "100m"
+              cpu: "200m"
           readinessProbe:
             initialDelaySeconds: 20
             periodSeconds: 20
@@ -210,8 +210,8 @@ wso2:
             failureThreshold: 5
           strategy: RollingUpdate
           replicas: 1
-          imagePullPolicy: Always
-          image: wso2/apk-adapter:latest
+          imagePullPolicy: IfNotPresent
+          image: apk-adapter:1.0.0-SNAPSHOT
           security:
             sslHostname: "adapter"
 #        logging:
@@ -232,7 +232,7 @@ wso2:
               cpu: "50m"
             limits:
               memory: "128Mi"
-              cpu: "100m"
+              cpu: "200m"
           readinessProbe:
             initialDelaySeconds: 20
             periodSeconds: 20
@@ -331,8 +331,8 @@ wso2:
               periodSeconds: 20
               failureThreshold: 5
             strategy: RollingUpdate
-            imagePullPolicy: Always
-            image: wso2/apk-enforcer:latest
+            imagePullPolicy: IfNotPresent
+            image: apk-enforcer:1.0.0-SNAPSHOT
             security:
               sslHostname: "enforcer"
 #            logging:
