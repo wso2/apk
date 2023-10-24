@@ -40,6 +40,7 @@ import (
 	dpv1alpha2 "github.com/wso2/apk/common-controller/internal/operator/apis/dp/v1alpha2"
 	cpcontrollers "github.com/wso2/apk/common-controller/internal/operator/controllers/cp"
 	dpcontrollers "github.com/wso2/apk/common-controller/internal/operator/controllers/dp"
+	"github.com/wso2/apk/common-controller/internal/operator/status"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -145,6 +146,21 @@ func InitOperator() {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3117, logging.MAJOR,
 			"Error creating Application Mapping controller, error: %v", err))
 	}
+	// if err = (&gwapiv1b1.GatewayClass{}).SetupWebhookWithManager(mgr); err != nil {
+	// 	loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2637, logging.MAJOR,
+	// 		"Unable to create webhook for Ratelimit, error: %v", err))
+	// }
+
+	updateHandler := status.NewUpdateHandler(mgr.GetClient())
+	if err := mgr.Add(updateHandler); err != nil {
+		loggers.LoggerAPKOperator.Errorf("Failed to add status update handler %v", err)
+	}
+	if err := dpcontrollers.NewGatewayClassController(mgr, updateHandler); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3114, logging.MAJOR,
+			"Error creating GatewayClass controller, error: %v", err))
+	}
+
+	
 	//+kubebuilder:scaffold:builder
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {

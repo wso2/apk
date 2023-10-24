@@ -20,8 +20,10 @@ package common
 
 import (
 	"sync"
-
+	"regexp"
+	"strings"
 	discovery "github.com/envoyproxy/go-control-plane/envoy/service/discovery/v3"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const nodeIDArrayMaxLength int = 20
@@ -91,4 +93,47 @@ func GetNodeIdentifier(request *discovery.DiscoveryRequest) string {
 		nodeIdentifier = request.Node.Id + ":" + identifierVal.(string)
 	}
 	return nodeIdentifier
+}
+
+// FindElement searches for an element in a slice based on a given predicate.
+// It returns the element and true if the element was found.
+func FindElement[T any](collection []T, predicate func(item T) bool) (T, bool) {
+	for _, item := range collection {
+		if predicate(item) {
+			return item, true
+		}
+	}
+	var dummy T
+	return dummy, false
+}
+
+// MatchesHostname check whether the domain matches the hostname pattern
+func MatchesHostname(domain, pattern string) bool {
+	// Escape special characters in the pattern and replace wildcard with regex pattern
+	pattern = strings.ReplaceAll(regexp.QuoteMeta(pattern), `\*`, `.*`)
+	// Append start and end of line anchors
+	pattern = "^" + pattern + "$"
+
+	matched, err := regexp.MatchString(pattern, domain)
+	if err != nil {
+		return false
+	}
+
+	return matched
+}
+
+// PointerCopy returns a pointer to a new memory location containing a copy of the input value.
+func PointerCopy[T any](x T) *T {
+	return &x
+}
+
+// AreConditionsSame checks if two metav1.Condition objects have the same attributes.
+// It returns true if all the attributes (Type, Status, Reason, Message, ObservedGeneration)
+// are equal, otherwise it returns false.
+func AreConditionsSame(condition1 metav1.Condition, condition2 metav1.Condition) bool {
+	return condition1.Type == condition2.Type &&
+		condition1.Status == condition2.Status &&
+		condition1.Reason == condition2.Reason &&
+		condition1.Message == condition2.Message &&
+		condition1.ObservedGeneration == condition2.ObservedGeneration
 }

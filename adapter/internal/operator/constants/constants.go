@@ -24,6 +24,7 @@ const (
 	ApplicationController  string = "ApplicationController"
 	SubscriptionController string = "SubscriptionController"
 	TokenIssuerReconSiler  string = "TokenIssuerReconSiler"
+	HTTPRouteController    string = "HttpRouteController"
 )
 
 // API events related constants
