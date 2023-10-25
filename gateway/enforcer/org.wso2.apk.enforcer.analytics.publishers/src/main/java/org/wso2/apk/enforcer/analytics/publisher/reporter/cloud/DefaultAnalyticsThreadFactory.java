@@ -28,8 +28,7 @@ public class DefaultAnalyticsThreadFactory implements ThreadFactory {
     final String namePrefix;
 
     public DefaultAnalyticsThreadFactory(String threadPoolExecutorName) {
-        SecurityManager s = System.getSecurityManager();
-        group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
+        group = Thread.currentThread().getThreadGroup();
         namePrefix = "Cloud-Analytics-" + threadPoolExecutorName + "-pool-" + poolNumber.getAndIncrement() +
                 "-thread-";
     }
