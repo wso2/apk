@@ -27,9 +27,6 @@ sourceSets {
 
 dependencies {
     compileOnly libs.tomcat
-    implementation(libs.analytic.publisher) {
-        exclude group: 'com.squareup.okhttp3', module: 'okhttp'
-    }
     implementation libs.azure.applicationinsights
     implementation(libs.azure.messaging) {
         exclude group: 'org.codehaus.woodstox', module: 'woodstox-core'
