@@ -215,6 +215,8 @@ var defaultConfig = &Config{
 		DisableSslVerification: false,
 	},
 	Analytics: analytics{
+		Enabled:    false,
+		Properties: map[string]string{},
 		Adapter: analyticsAdapter{
 			Enabled:             false,
 			BufferFlushInterval: 1000000000,
@@ -222,7 +224,6 @@ var defaultConfig = &Config{
 			GRPCRequestTimeout:  20000000000,
 		},
 		Enforcer: analyticsEnforcer{
-			// todo(amali) Rename?
 			LogReceiver: authService{
 				Port:           18090,
 				MaxMessageSize: 1000000000,
@@ -235,6 +236,7 @@ var defaultConfig = &Config{
 					QueueSize:     1000,
 				},
 			},
+			Publisher: []analyticsPublisher{},
 		},
 	},
 	Tracing: tracing{

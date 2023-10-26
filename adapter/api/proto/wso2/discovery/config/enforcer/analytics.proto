@@ -32,4 +32,6 @@ message Analytics {
   // Receiver grpc Service Configuration
   Service service = 3;
   // Analytics type
+  map<string, string> properties = 4;
+
 }

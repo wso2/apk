@@ -90,7 +90,6 @@ spec:
               value: admin
             - name: JAVA_OPTS
               value: -Dhttpclient.hostnameVerifier=AllowAll -Xms512m -Xmx512m -XX:MaxRAMFraction=2          
-        {{- end }}
           volumeMounts:
             - name: tmp
               mountPath: /tmp
@@ -358,6 +357,6 @@ spec:
           secret:
             secretName: {{ .Values.wso2.apk.idp.tls.secretName }}
           {{ end }}
-          {{end}}
         - name: tmp
           emptyDir: {}
+          {{end}}

@@ -19,7 +19,9 @@
 package org.wso2.apk.enforcer.config.dto;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Holds the analytics data publishing related Configuration.
@@ -28,6 +30,7 @@ public class AnalyticsDTO {
 
     private boolean enabled = false;
 
+    private Map<String,Object> properties = new HashMap<>();
     private List<AnalyticsPublisherConfigDTO> analyticsPublisherConfigDTOList = new ArrayList<>();
     private AnalyticsReceiverConfigDTO serverConfig;
 
@@ -59,5 +62,15 @@ public class AnalyticsDTO {
     public void setEnabled(boolean enabled) {
 
         this.enabled = enabled;
+    }
+
+    public Map<String, Object> getProperties() {
+
+        return properties;
+    }
+
+    public void setProperties(Map<String, Object> properties) {
+
+        this.properties = properties;
     }
 }

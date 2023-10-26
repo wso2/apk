@@ -77,6 +77,19 @@ private static final long serialVersionUID = 0L;
 
             break;
           }
+          case 34: {
+            if (!((mutable_bitField0_ & 0x00000002) != 0)) {
+              properties_ = com.google.protobuf.MapField.newMapField(
+                  PropertiesDefaultEntryHolder.defaultEntry);
+              mutable_bitField0_ |= 0x00000002;
+            }
+            com.google.protobuf.MapEntry<java.lang.String, java.lang.String>
+            properties__ = input.readMessage(
+                PropertiesDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
+            properties_.getMutableMap().put(
+                properties__.getKey(), properties__.getValue());
+            break;
+          }
           default: {
             if (!parseUnknownField(
                 input, unknownFields, extensionRegistry, tag)) {
@@ -104,6 +117,18 @@ private static final long serialVersionUID = 0L;
     return org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsProto.internal_static_wso2_discovery_config_enforcer_Analytics_descriptor;
   }
 
+  @SuppressWarnings({"rawtypes"})
+  @java.lang.Override
+  protected com.google.protobuf.MapField internalGetMapField(
+      int number) {
+    switch (number) {
+      case 4:
+        return internalGetProperties();
+      default:
+        throw new RuntimeException(
+            "Invalid map field number: " + number);
+    }
+  }
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internalGetFieldAccessorTable() {
@@ -221,6 +246,103 @@ private static final long serialVersionUID = 0L;
     return getService();
   }
 
+  public static final int PROPERTIES_FIELD_NUMBER = 4;
+  private static final class PropertiesDefaultEntryHolder {
+    static final com.google.protobuf.MapEntry<
+        java.lang.String, java.lang.String> defaultEntry =
+            com.google.protobuf.MapEntry
+            .<java.lang.String, java.lang.String>newDefaultInstance(
+                org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsProto.internal_static_wso2_discovery_config_enforcer_Analytics_PropertiesEntry_descriptor, 
+                com.google.protobuf.WireFormat.FieldType.STRING,
+                "",
+                com.google.protobuf.WireFormat.FieldType.STRING,
+                "");
+  }
+  private com.google.protobuf.MapField<
+      java.lang.String, java.lang.String> properties_;
+  private com.google.protobuf.MapField<java.lang.String, java.lang.String>
+  internalGetProperties() {
+    if (properties_ == null) {
+      return com.google.protobuf.MapField.emptyMapField(
+          PropertiesDefaultEntryHolder.defaultEntry);
+    }
+    return properties_;
+  }
+
+  public int getPropertiesCount() {
+    return internalGetProperties().getMap().size();
+  }
+  /**
+   * <pre>
+   * Analytics type
+   * </pre>
+   *
+   * <code>map&lt;string, string&gt; properties = 4;</code>
+   */
+
+  @java.lang.Override
+  public boolean containsProperties(
+      java.lang.String key) {
+    if (key == null) { throw new java.lang.NullPointerException(); }
+    return internalGetProperties().getMap().containsKey(key);
+  }
+  /**
+   * Use {@link #getPropertiesMap()} instead.
+   */
+  @java.lang.Override
+  @java.lang.Deprecated
+  public java.util.Map<java.lang.String, java.lang.String> getProperties() {
+    return getPropertiesMap();
+  }
+  /**
+   * <pre>
+   * Analytics type
+   * </pre>
+   *
+   * <code>map&lt;string, string&gt; properties = 4;</code>
+   */
+  @java.lang.Override
+
+  public java.util.Map<java.lang.String, java.lang.String> getPropertiesMap() {
+    return internalGetProperties().getMap();
+  }
+  /**
+   * <pre>
+   * Analytics type
+   * </pre>
+   *
+   * <code>map&lt;string, string&gt; properties = 4;</code>
+   */
+  @java.lang.Override
+
+  public java.lang.String getPropertiesOrDefault(
+      java.lang.String key,
+      java.lang.String defaultValue) {
+    if (key == null) { throw new java.lang.NullPointerException(); }
+    java.util.Map<java.lang.String, java.lang.String> map =
+        internalGetProperties().getMap();
+    return map.containsKey(key) ? map.get(key) : defaultValue;
+  }
+  /**
+   * <pre>
+   * Analytics type
+   * </pre>
+   *
+   * <code>map&lt;string, string&gt; properties = 4;</code>
+   */
+  @java.lang.Override
+
+  public java.lang.String getPropertiesOrThrow(
+      java.lang.String key) {
+    if (key == null) { throw new java.lang.NullPointerException(); }
+    java.util.Map<java.lang.String, java.lang.String> map =
+        internalGetProperties().getMap();
+    if (!map.containsKey(key)) {
+      throw new java.lang.IllegalArgumentException();
+    }
+    return map.get(key);
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -244,6 +366,12 @@ private static final long serialVersionUID = 0L;
     if (service_ != null) {
       output.writeMessage(3, getService());
     }
+    com.google.protobuf.GeneratedMessageV3
+      .serializeStringMapTo(
+        output,
+        internalGetProperties(),
+        PropertiesDefaultEntryHolder.defaultEntry,
+        4);
     unknownFields.writeTo(output);
   }
 
@@ -264,6 +392,16 @@ private static final long serialVersionUID = 0L;
     if (service_ != null) {
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(3, getService());
+    }
+    for (java.util.Map.Entry<java.lang.String, java.lang.String> entry
+         : internalGetProperties().getMap().entrySet()) {
+      com.google.protobuf.MapEntry<java.lang.String, java.lang.String>
+      properties__ = PropertiesDefaultEntryHolder.defaultEntry.newBuilderForType()
+          .setKey(entry.getKey())
+          .setValue(entry.getValue())
+          .build();
+      size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(4, properties__);
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -289,6 +427,8 @@ private static final long serialVersionUID = 0L;
       if (!getService()
           .equals(other.getService())) return false;
     }
+    if (!internalGetProperties().equals(
+        other.internalGetProperties())) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -310,6 +450,10 @@ private static final long serialVersionUID = 0L;
     if (hasService()) {
       hash = (37 * hash) + SERVICE_FIELD_NUMBER;
       hash = (53 * hash) + getService().hashCode();
+    }
+    if (!internalGetProperties().getMap().isEmpty()) {
+      hash = (37 * hash) + PROPERTIES_FIELD_NUMBER;
+      hash = (53 * hash) + internalGetProperties().hashCode();
     }
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
@@ -418,6 +562,28 @@ private static final long serialVersionUID = 0L;
       return org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsProto.internal_static_wso2_discovery_config_enforcer_Analytics_descriptor;
     }
 
+    @SuppressWarnings({"rawtypes"})
+    protected com.google.protobuf.MapField internalGetMapField(
+        int number) {
+      switch (number) {
+        case 4:
+          return internalGetProperties();
+        default:
+          throw new RuntimeException(
+              "Invalid map field number: " + number);
+      }
+    }
+    @SuppressWarnings({"rawtypes"})
+    protected com.google.protobuf.MapField internalGetMutableMapField(
+        int number) {
+      switch (number) {
+        case 4:
+          return internalGetMutableProperties();
+        default:
+          throw new RuntimeException(
+              "Invalid map field number: " + number);
+      }
+    }
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
@@ -459,6 +625,7 @@ private static final long serialVersionUID = 0L;
         service_ = null;
         serviceBuilder_ = null;
       }
+      internalGetMutableProperties().clear();
       return this;
     }
 
@@ -501,6 +668,8 @@ private static final long serialVersionUID = 0L;
       } else {
         result.service_ = serviceBuilder_.build();
       }
+      result.properties_ = internalGetProperties();
+      result.properties_.makeImmutable();
       onBuilt();
       return result;
     }
@@ -581,6 +750,8 @@ private static final long serialVersionUID = 0L;
       if (other.hasService()) {
         mergeService(other.getService());
       }
+      internalGetMutableProperties().mergeFrom(
+          other.internalGetProperties());
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
       return this;
@@ -1107,6 +1278,162 @@ private static final long serialVersionUID = 0L;
         service_ = null;
       }
       return serviceBuilder_;
+    }
+
+    private com.google.protobuf.MapField<
+        java.lang.String, java.lang.String> properties_;
+    private com.google.protobuf.MapField<java.lang.String, java.lang.String>
+    internalGetProperties() {
+      if (properties_ == null) {
+        return com.google.protobuf.MapField.emptyMapField(
+            PropertiesDefaultEntryHolder.defaultEntry);
+      }
+      return properties_;
+    }
+    private com.google.protobuf.MapField<java.lang.String, java.lang.String>
+    internalGetMutableProperties() {
+      onChanged();;
+      if (properties_ == null) {
+        properties_ = com.google.protobuf.MapField.newMapField(
+            PropertiesDefaultEntryHolder.defaultEntry);
+      }
+      if (!properties_.isMutable()) {
+        properties_ = properties_.copy();
+      }
+      return properties_;
+    }
+
+    public int getPropertiesCount() {
+      return internalGetProperties().getMap().size();
+    }
+    /**
+     * <pre>
+     * Analytics type
+     * </pre>
+     *
+     * <code>map&lt;string, string&gt; properties = 4;</code>
+     */
+
+    @java.lang.Override
+    public boolean containsProperties(
+        java.lang.String key) {
+      if (key == null) { throw new java.lang.NullPointerException(); }
+      return internalGetProperties().getMap().containsKey(key);
+    }
+    /**
+     * Use {@link #getPropertiesMap()} instead.
+     */
+    @java.lang.Override
+    @java.lang.Deprecated
+    public java.util.Map<java.lang.String, java.lang.String> getProperties() {
+      return getPropertiesMap();
+    }
+    /**
+     * <pre>
+     * Analytics type
+     * </pre>
+     *
+     * <code>map&lt;string, string&gt; properties = 4;</code>
+     */
+    @java.lang.Override
+
+    public java.util.Map<java.lang.String, java.lang.String> getPropertiesMap() {
+      return internalGetProperties().getMap();
+    }
+    /**
+     * <pre>
+     * Analytics type
+     * </pre>
+     *
+     * <code>map&lt;string, string&gt; properties = 4;</code>
+     */
+    @java.lang.Override
+
+    public java.lang.String getPropertiesOrDefault(
+        java.lang.String key,
+        java.lang.String defaultValue) {
+      if (key == null) { throw new java.lang.NullPointerException(); }
+      java.util.Map<java.lang.String, java.lang.String> map =
+          internalGetProperties().getMap();
+      return map.containsKey(key) ? map.get(key) : defaultValue;
+    }
+    /**
+     * <pre>
+     * Analytics type
+     * </pre>
+     *
+     * <code>map&lt;string, string&gt; properties = 4;</code>
+     */
+    @java.lang.Override
+
+    public java.lang.String getPropertiesOrThrow(
+        java.lang.String key) {
+      if (key == null) { throw new java.lang.NullPointerException(); }
+      java.util.Map<java.lang.String, java.lang.String> map =
+          internalGetProperties().getMap();
+      if (!map.containsKey(key)) {
+        throw new java.lang.IllegalArgumentException();
+      }
+      return map.get(key);
+    }
+
+    public Builder clearProperties() {
+      internalGetMutableProperties().getMutableMap()
+          .clear();
+      return this;
+    }
+    /**
+     * <pre>
+     * Analytics type
+     * </pre>
+     *
+     * <code>map&lt;string, string&gt; properties = 4;</code>
+     */
+
+    public Builder removeProperties(
+        java.lang.String key) {
+      if (key == null) { throw new java.lang.NullPointerException(); }
+      internalGetMutableProperties().getMutableMap()
+          .remove(key);
+      return this;
+    }
+    /**
+     * Use alternate mutation accessors instead.
+     */
+    @java.lang.Deprecated
+    public java.util.Map<java.lang.String, java.lang.String>
+    getMutableProperties() {
+      return internalGetMutableProperties().getMutableMap();
+    }
+    /**
+     * <pre>
+     * Analytics type
+     * </pre>
+     *
+     * <code>map&lt;string, string&gt; properties = 4;</code>
+     */
+    public Builder putProperties(
+        java.lang.String key,
+        java.lang.String value) {
+      if (key == null) { throw new java.lang.NullPointerException(); }
+      if (value == null) { throw new java.lang.NullPointerException(); }
+      internalGetMutableProperties().getMutableMap()
+          .put(key, value);
+      return this;
+    }
+    /**
+     * <pre>
+     * Analytics type
+     * </pre>
+     *
+     * <code>map&lt;string, string&gt; properties = 4;</code>
+     */
+
+    public Builder putAllProperties(
+        java.util.Map<java.lang.String, java.lang.String> values) {
+      internalGetMutableProperties().getMutableMap()
+          .putAll(values);
+      return this;
     }
     @java.lang.Override
     public final Builder setUnknownFields(

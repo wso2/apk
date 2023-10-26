@@ -307,9 +307,10 @@ type cache struct {
 }
 
 type analytics struct {
-	Enabled  bool
-	Adapter  analyticsAdapter
-	Enforcer analyticsEnforcer
+	Enabled    bool
+	Adapter    analyticsAdapter
+	Enforcer   analyticsEnforcer
+	Properties map[string]string
 }
 
 type tracing struct {

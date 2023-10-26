@@ -143,12 +143,29 @@ data:
 
     {{- if and .Values.wso2.apk.dp.gatewayRuntime.analytics .Values.wso2.apk.dp.gatewayRuntime.analytics.enabled}}
     [analytics]
-      enabled = true
-      {{- if .Values.wso2.apk.dp.gatewayRuntime.analytics.type }}
-      type = "{{ .Values.wso2.apk.dp.gatewayRuntime.analytics.type}}"
-      {{- end }}
-
+     enabled = true
+    {{- if and .Values.wso2.apk.dp.gatewayRuntime.analytics.properties}}
+    [analytics.properties]
+    {{- range $key, $value := .Values.wso2.apk.dp.gatewayRuntime.analytics.properties}}
+    "{{$key}}" = "{{$value}}"
+    {{- end}}
+    {{- end }}
+    {{- if and .Values.wso2.apk.dp.gatewayRuntime.analytics.publisher}}
+    [analytics.enforcer]
+    {{- range .Values.wso2.apk.dp.gatewayRuntime.analytics.publisher}}
+    [[analytics.enforcer.publisher]]
+    enabled = {{ .enabled }}
+    type = "{{ .type }}"
+    {{- if and .properties}}
+    [analytics.enforcer.publisher.configProperties]
+    {{- range $key, $value := .properties}}
+    "{{$key}}" = "{{$value}}"
+    {{- end }}
+    {{- end}}
+    {{- end }}
+    {{- end }}
     [analytics.adapter]
+      enabled = true
       bufferFlushInterval = "1s"
       bufferSizeBytes = 16384
       gRPCRequestTimeout = "20s"

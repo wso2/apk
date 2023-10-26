@@ -378,6 +378,12 @@ public class ConfigHolder {
         AnalyticsDTO analyticsDTO = new AnalyticsDTO();
         analyticsDTO.setServerConfig(serverConfig);
         analyticsDTO.setEnabled(analyticsConfig.getEnabled());
+        Map<String, String> propertiesMap = analyticsConfig.getPropertiesMap();
+        Map<String, Object> resolvedProperties = new HashMap<>();
+        for (Map.Entry<String, String> propertiesEntry : propertiesMap.entrySet()) {
+            resolvedProperties.put(propertiesEntry.getKey(), getEnvValue(propertiesEntry.getValue()));
+        }
+        analyticsDTO.setProperties(resolvedProperties);
         for (AnalyticsPublisher analyticsPublisher : analyticsConfig.getAnalyticsPublisherList()) {
             Map<String, String> resolvedConfigMap = new HashMap<>();
             Map<String, String> configPropertiesMap = analyticsPublisher.getConfigPropertiesMap();
