@@ -106,6 +106,7 @@ func MarshalConfig(config *config.Config) *enforcer.Config {
 	}
 	analytics := &enforcer.Analytics{
 		Enabled:            config.Analytics.Enabled,
+		Properties:         config.Analytics.Properties,
 		AnalyticsPublisher: marshalAnalyticsPublishers(*config),
 		Service: &enforcer.Service{
 			Port:           config.Analytics.Enforcer.LogReceiver.Port,

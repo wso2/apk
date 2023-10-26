@@ -83,4 +83,58 @@ public interface AnalyticsOrBuilder extends
    * <code>.wso2.discovery.config.enforcer.Service service = 3;</code>
    */
   org.wso2.apk.enforcer.discovery.config.enforcer.ServiceOrBuilder getServiceOrBuilder();
+
+  /**
+   * <pre>
+   * Analytics type
+   * </pre>
+   *
+   * <code>map&lt;string, string&gt; properties = 4;</code>
+   */
+  int getPropertiesCount();
+  /**
+   * <pre>
+   * Analytics type
+   * </pre>
+   *
+   * <code>map&lt;string, string&gt; properties = 4;</code>
+   */
+  boolean containsProperties(
+      java.lang.String key);
+  /**
+   * Use {@link #getPropertiesMap()} instead.
+   */
+  @java.lang.Deprecated
+  java.util.Map<java.lang.String, java.lang.String>
+  getProperties();
+  /**
+   * <pre>
+   * Analytics type
+   * </pre>
+   *
+   * <code>map&lt;string, string&gt; properties = 4;</code>
+   */
+  java.util.Map<java.lang.String, java.lang.String>
+  getPropertiesMap();
+  /**
+   * <pre>
+   * Analytics type
+   * </pre>
+   *
+   * <code>map&lt;string, string&gt; properties = 4;</code>
+   */
+
+  java.lang.String getPropertiesOrDefault(
+      java.lang.String key,
+      java.lang.String defaultValue);
+  /**
+   * <pre>
+   * Analytics type
+   * </pre>
+   *
+   * <code>map&lt;string, string&gt; properties = 4;</code>
+   */
+
+  java.lang.String getPropertiesOrThrow(
+      java.lang.String key);
 }

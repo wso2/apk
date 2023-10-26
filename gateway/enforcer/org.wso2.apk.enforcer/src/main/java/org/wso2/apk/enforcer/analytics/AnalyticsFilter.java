@@ -33,6 +33,7 @@ import org.wso2.apk.enforcer.commons.model.AuthenticationContext;
 import org.wso2.apk.enforcer.commons.model.RequestContext;
 import org.wso2.apk.enforcer.commons.model.ResourceConfig;
 import org.wso2.apk.enforcer.config.ConfigHolder;
+import org.wso2.apk.enforcer.config.dto.AnalyticsDTO;
 import org.wso2.apk.enforcer.config.dto.AnalyticsPublisherConfigDTO;
 import org.wso2.apk.enforcer.constants.APIConstants;
 import org.wso2.apk.enforcer.constants.AnalyticsConstants;
@@ -45,6 +46,11 @@ import org.wso2.apk.enforcer.util.FilterUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
+import static org.wso2.apk.enforcer.analytics.AnalyticsConstants.CHOREO_FAULT_SCHEMA;
+import static org.wso2.apk.enforcer.analytics.AnalyticsConstants.CHOREO_RESPONSE_SCHEMA;
+import static org.wso2.apk.enforcer.analytics.AnalyticsConstants.IS_CHOREO_DEPLOYMENT_CONFIG_KEY;
 
 /**
  * This is the filter is for Analytics.
@@ -62,7 +68,16 @@ public class AnalyticsFilter {
 
     private AnalyticsFilter() {
 
+        AnalyticsDTO analyticsConfig = ConfigHolder.getInstance().getConfig().getAnalyticsConfig();
+        Map<String, Object> properties = analyticsConfig.getProperties();
         publisher = new DefaultAnalyticsEventPublisher();
+        boolean choreoDeployment = false;
+        if (properties != null){
+            choreoDeployment = (boolean) properties.getOrDefault(IS_CHOREO_DEPLOYMENT_CONFIG_KEY,false);
+        }
+        if (choreoDeployment){
+            publisher = new DefaultAnalyticsEventPublisher(CHOREO_RESPONSE_SCHEMA, CHOREO_FAULT_SCHEMA);
+        }
         List<AnalyticsPublisherConfigDTO> analyticsPublisherConfigDTOList =
                 ConfigHolder.getInstance().getConfig().getAnalyticsConfig().getAnalyticsPublisherConfigDTOList();
         publisher.init(analyticsPublisherConfigDTOList);
