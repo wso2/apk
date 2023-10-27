@@ -76,6 +76,8 @@ public type Token_body record {
     string refresh_token?;
     # OAuth scopes
     string scope?;
+    # Visibility groups
+    string groups?;
     # username
     string username?;
     # password

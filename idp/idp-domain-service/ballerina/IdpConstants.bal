@@ -35,6 +35,7 @@ const string TOKEN_TYPE_CLAIM = "token_type";
 const string TOKEN_TYPE_BEARER = "Bearer";
 const string REDIRECT_URI_CLAIM = "redirectUri";
 const string SCOPES_CLAIM = "scope";
+const string GROUPS_CLAIM = "groups";
 const string SESSION_KEY_PREFIX = "session-";
 const string STATE_KEY_QUERY_PARAM = "stateKey";
 const string LOCATION_HEADER = "Location";

@@ -66,7 +66,7 @@ public class TokenUtil {
                         } else if grantType == AUTHORIZATION_CODE_GRANT_TYPE {
                             return self.handleAuthorizationCodeGrant(payload, application);
                         } else if grantType == REFRESH_TOKEN_GRANT_TYPE {
-                            return self.hanleRefreshTokenGrant(payload, application);
+                            return self.handleRefreshTokenGrant(payload, application);
                         } else {
                             BadRequestTokenErrorResponse tokenError = {body: {'error: "unsupported_grant_type", error_description: grantType + " not supported by system."}};
                             return tokenError;
@@ -86,7 +86,8 @@ public class TokenUtil {
     }
     public isolated function handleClientCredentialsGrant(Token_body payload, Application application) returns OkTokenResponse|BadRequestTokenErrorResponse|UnauthorizedTokenErrorResponse {
         string[] scopeArray = self.filterScopes(payload.scope);
-        string|jwt:Error tokenResult = self.issueToken(application, (), scopeArray, (), ACCESS_TOKEN_TYPE);
+        string[] groupsArray = self.filterGroups(payload.groups);
+        string|jwt:Error tokenResult = self.issueToken(application, (), scopeArray, groupsArray, (), ACCESS_TOKEN_TYPE);
         if tokenResult is string {
             TokenResponse tokenResponse = {
                 access_token: tokenResult,
@@ -103,7 +104,7 @@ public class TokenUtil {
 
         }
     }
-    public isolated function issueToken(Application application, string? username, string[] scopes, string? organization, string tokenType) returns string|jwt:Error {
+    public isolated function issueToken(Application application, string? username, string[] scopes, string[] groups, string? organization, string tokenType) returns string|jwt:Error {
         TokenIssuerConfiguration issuerConfiguration = idpConfiguration.tokenIssuerConfiguration;
         string jwtid = uuid:createType1AsString();
         decimal exptime = tokenType == ACCESS_TOKEN_TYPE ? issuerConfiguration.expTime : issuerConfiguration.refrshTokenValidity;
@@ -124,6 +125,7 @@ public class TokenUtil {
         map<string> customClaims = {};
         customClaims[CLIENT_ID_CLAIM] = <string>application.client_id;
         customClaims[SCOPES_CLAIM] = string:'join(" ", ...scopes);
+        customClaims[GROUPS_CLAIM] = string:'join(" ", ...groups);
         if organization is string && organization.toString().trim().length() > 0 {
             customClaims[ORGANIZATION_CLAIM] = organization;
         }
@@ -157,6 +159,7 @@ public class TokenUtil {
             string requestRedirectUrl = <string>validatedPayload.get(REDIRECT_URI_CLAIM);
             string clientId = <string>validatedPayload.get(CLIENT_ID_CLAIM);
             json[] scopes = <json[]>validatedPayload.get(SCOPES_CLAIM);
+            json[] groups = validatedPayload.hasKey(GROUPS_CLAIM) ? <json[]>validatedPayload.get(GROUPS_CLAIM) : [];
             string sub = <string>validatedPayload.sub;
             string[]? redirectUris = application.redirect_uris;
 
@@ -169,9 +172,14 @@ public class TokenUtil {
             foreach json scope in scopes {
                 scopesArray.push(scope.toString());
             }
+
+            string[] groupsArray = [];
+            foreach json group in groups {
+                groupsArray.push(group.toString());
+            }
             do {
-                string accessToken = check self.issueToken(application, sub, scopesArray, organization, ACCESS_TOKEN_TYPE);
-                string refreshToken = check self.issueToken(application, sub, scopesArray, organization, REFRESH_TOKEN_TYPE);
+                string accessToken = check self.issueToken(application, sub, scopesArray, groupsArray, organization, ACCESS_TOKEN_TYPE);
+                string refreshToken = check self.issueToken(application, sub, scopesArray, groupsArray, organization, REFRESH_TOKEN_TYPE);
                 TokenResponse token = {access_token: accessToken, refresh_token: refreshToken, expires_in: idpConfiguration.tokenIssuerConfiguration.expTime, token_type: TOKEN_TYPE_BEARER, scope: string:'join(" ", ...scopesArray)};
                 return {body: token};
             } on fail var e {
@@ -184,7 +192,7 @@ public class TokenUtil {
             return tokenError;
         }
     }
-    public isolated function hanleRefreshTokenGrant(Token_body payload, Application application) returns BadRequestTokenErrorResponse|OkTokenResponse {
+    public isolated function handleRefreshTokenGrant(Token_body payload, Application application) returns BadRequestTokenErrorResponse|OkTokenResponse {
         string? refresh_token = payload.refresh_token;
 
         if (refresh_token is () || refresh_token.toString().trim().length() == 0) {
@@ -206,6 +214,8 @@ public class TokenUtil {
             }
             string clientId = <string>validatedPayload.get(CLIENT_ID_CLAIM);
             string scopes = <string>validatedPayload.get(SCOPES_CLAIM);
+            string groups = <string>validatedPayload.get(GROUPS_CLAIM);
+
             string sub = <string>validatedPayload.sub;
 
             string? organization = validatedPayload.hasKey(ORGANIZATION_CLAIM) ? <string>validatedPayload.get(ORGANIZATION_CLAIM) : ();
@@ -215,8 +225,9 @@ public class TokenUtil {
             }
             do {
                 string[] scopesArray = regex:split(scopes, " ");
-                string accessToken = check self.issueToken(application, sub, scopesArray, organization, ACCESS_TOKEN_TYPE);
-                string refreshToken = check self.issueToken(application, sub, scopesArray, organization, REFRESH_TOKEN_TYPE);
+                string[] groupsArray = regex:split(groups, " ");
+                string accessToken = check self.issueToken(application, sub, scopesArray, groupsArray, organization, ACCESS_TOKEN_TYPE);
+                string refreshToken = check self.issueToken(application, sub, scopesArray, groupsArray, organization, REFRESH_TOKEN_TYPE);
                 TokenResponse token = {access_token: accessToken, refresh_token: refreshToken, expires_in: idpConfiguration.tokenIssuerConfiguration.expTime, token_type: TOKEN_TYPE_BEARER, scope: scopes};
                 return {body: token};
             } on fail var e {
@@ -302,6 +313,14 @@ public class TokenUtil {
             scopeArray = regex:split(scopes, " ");
         }
         return scopeArray;
+    }
+
+    public isolated function filterGroups(string? groups) returns string[] {
+        string[] groupArray = [];
+        if groups is string && groups.trim().length() > 0 {
+            groupArray = regex:split(groups, " ");
+        }
+        return groupArray;
     }
     public isolated function handleOauthCallBackRequest(http:Request request, string sessionKey) returns http:Found {
         do {
