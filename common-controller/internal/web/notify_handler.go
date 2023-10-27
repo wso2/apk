@@ -33,7 +33,8 @@ import (
 	"io/ioutil"
 	"strings"
 	"encoding/base64"
-	"encoding/json"
+	"encoding/json"	
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 )
 
 const tokenRevocationType = "TOKEN_REVOCATION"
@@ -61,6 +62,7 @@ var (
 	tokenExpiryDivider = "_##_"
 	authKeyPath string
 	authKeyHeader string
+	rdb *redis.Client
 )
 
 func init() {
@@ -77,6 +79,41 @@ func init() {
 	redisRevokedTokenChannel = conf.CommonController.Redis.RevokedTokenChannel
 	authKeyPath = conf.CommonController.Sts.AuthKeyPath
 	authKeyHeader = conf.CommonController.Sts.AuthKeyHeader
+	utilruntime.Must(initRedisClient())
+}
+
+// initRedisClient initializes the redis connection
+func initRedisClient() error {
+	if isTLSEnabled {
+		cert, err := tls.LoadX509KeyPair(redisUserCertPath, redisUserKeyPath)
+		if err != nil {
+			return err;
+		}
+		caCert, err := os.ReadFile(redisCACertPath)
+		if err != nil {
+			return err;
+		}
+		caCertPool := x509.NewCertPool()
+		caCertPool.AppendCertsFromPEM(caCert)
+
+		rdb = redis.NewClient(&redis.Options{
+			Addr: redisAddr,
+			Username: redisUsername, 
+			Password: redisPassword, 
+			TLSConfig: &tls.Config{
+				MinVersion:   tls.VersionTLS12,
+				Certificates: []tls.Certificate{cert},
+				RootCAs:      caCertPool,
+			},
+		})
+	} else {
+		rdb = redis.NewClient(&redis.Options{
+			Addr: redisAddr,
+			Username: redisUsername, 
+			Password: redisPassword,
+		})
+	}
+	return nil;
 }
 
 // NotifyHandler handles notify requests
@@ -135,38 +172,6 @@ func generateKey(jti string) string {
 }
 
 func storeTokenInRedis(token string, expiry int64) error {
-	var rdb *redis.Client
-	if isTLSEnabled {
-		cert, err := tls.LoadX509KeyPair(redisUserCertPath, redisUserKeyPath)
-		if err != nil {
-			return err;
-		}
-
-		caCert, err := os.ReadFile(redisCACertPath)
-		if err != nil {
-			return err;
-		}
-		caCertPool := x509.NewCertPool()
-		caCertPool.AppendCertsFromPEM(caCert)
-
-		rdb = redis.NewClient(&redis.Options{
-			Addr: redisAddr,
-			Username: redisUsername, 
-			Password: redisPassword, 
-			TLSConfig: &tls.Config{
-				MinVersion:   tls.VersionTLS12,
-				Certificates: []tls.Certificate{cert},
-				RootCAs:      caCertPool,
-			},
-		})
-	} else {
-		rdb = redis.NewClient(&redis.Options{
-			Addr: redisAddr,
-			Username: redisUsername, 
-			Password: redisPassword,
-		})
-	}
-	defer rdb.Close()
 	key := generateKey(token)
 	err := rdb.Do(context.Background(), "set", key, expiry, "EXAT", expiry).Err()
 	if err != nil {
