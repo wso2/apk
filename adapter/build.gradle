@@ -65,6 +65,7 @@ tasks.register('go_test', Exec) {
 tasks.named('go_revive_run').configure { 
     finalizedBy go_tidy
     finalizedBy go_test
+    finalizedBy add_crds_helm
     dependsOn operator_make
     dependsOn operator_make_manifests
 }
@@ -83,6 +84,12 @@ tasks.register('operator_make_manifests', Exec) {
     commandLine 'make', 'manifests', '-C', "$rootDir/../adapter/internal/operator"
     dependsOn operator_make
     finalizedBy go_build
+}
+
+tasks.register('add_crds_helm', Exec) {
+    group 'go'
+    description 'copy new CRD changes to helm chart'
+    commandLine 'cp','-r', "$rootDir/../adapter/internal/operator/config/crd/bases/", "$rootDir/../helm-charts/crds"
 }
 
 tasks.named('go_build').configure {
