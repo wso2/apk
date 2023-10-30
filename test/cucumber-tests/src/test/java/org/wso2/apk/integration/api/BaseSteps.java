@@ -94,18 +94,22 @@ public class BaseSteps {
 
     @Then("the response body should contain {string}")
     public void theResponseBodyShouldContain(String expectedText) throws IOException {
-        Assert.assertTrue(sharedContext.getResponseBody().contains(expectedText), "Actual response body: " + sharedContext.getResponseBody());
+        Assert.assertTrue(sharedContext.getResponseBody().contains(expectedText),
+                "Actual response body: " + sharedContext.getResponseBody());
     }
+
     @Then("the response body should not contain {string}")
     public void theResponseBodyShouldNotContain(String expectedText) throws IOException {
-        Assert.assertFalse(sharedContext.getResponseBody().contains(expectedText), "Actual response body: " + sharedContext.getResponseBody());
+        Assert.assertFalse(sharedContext.getResponseBody().contains(expectedText),
+                "Actual response body: " + sharedContext.getResponseBody());
     }
 
     @Then("the response body should contain")
     public void theResponseBodyShouldContain(DataTable dataTable) throws IOException {
         List<String> responseBodyLines = dataTable.asList(String.class);
         for (String line : responseBodyLines) {
-            Assert.assertTrue(sharedContext.getResponseBody().contains(line), "Actual response body: " + sharedContext.getResponseBody());
+            Assert.assertTrue(sharedContext.getResponseBody().contains(line),
+                    "Actual response body: " + sharedContext.getResponseBody());
         }
     }
 
@@ -141,7 +145,8 @@ public class BaseSteps {
 
     // It will send request using a new thread and forget about the response
     @Then("I send {string} async request to {string} with body {string}")
-    public void sendAsyncHttpRequest(String httpMethod, String url, String body) throws IOException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+    public void sendAsyncHttpRequest(String httpMethod, String url, String body)
+            throws IOException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         String finalBody = Utils.resolveVariables(body, sharedContext.getValueStore());
         if (sharedContext.getResponse() instanceof CloseableHttpResponse) {
             ((CloseableHttpResponse) sharedContext.getResponse()).close();
@@ -222,7 +227,7 @@ public class BaseSteps {
         if (secondsToWait > MAX_WAIT_FOR_NEXT_MINUTE_IN_SECONDS) {
             return;
         }
-        Thread.sleep((secondsToWait+1) * 1000);
+        Thread.sleep((secondsToWait + 1) * 1000);
         logger.info("Current time: " + LocalDateTime.now());
     }
 
@@ -231,7 +236,7 @@ public class BaseSteps {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime nextMinute = now.plusMinutes(1).withSecond(0).withNano(0);
         long secondsToWait = now.until(nextMinute, ChronoUnit.SECONDS);
-        Thread.sleep((secondsToWait+1) * 1000);
+        Thread.sleep((secondsToWait + 1) * 1000);
         logger.info("Current time: " + LocalDateTime.now());
     }
 
@@ -261,8 +266,9 @@ public class BaseSteps {
             return; // Any value is acceptable
         }
         String actualValue = header.getValue();
-        Assert.assertEquals(value, actualValue,"Header with key found but value mismatched.");
+        Assert.assertEquals(value, actualValue, "Header with key found but value mismatched.");
     }
+
     @Then("the response headers not contains key {string}")
     public void notContainsHeader(String key) {
         key = Utils.resolveVariables(key, sharedContext.getValueStore());
@@ -271,11 +277,12 @@ public class BaseSteps {
             Assert.fail("Response is null.");
         }
         Header header = response.getFirstHeader(key);
-        Assert.assertNull(header,"header contains in response headers");
+        Assert.assertNull(header, "header contains in response headers");
     }
 
     @Then("the {string} jwt should validate from JWKS {string} and contain")
-    public void decode_header_and_validate(String header,String jwksEndpoint, DataTable dataTable) throws MalformedURLException {
+    public void decode_header_and_validate(String header, String jwksEndpoint, DataTable dataTable)
+            throws MalformedURLException {
         List<Map<String, String>> claims = dataTable.asMaps(String.class, String.class);
         JsonObject jsonResponse = (JsonObject) JsonParser.parseString(sharedContext.getResponseBody());
         String headerValue = jsonResponse.get("headers").getAsJsonObject().get(header).getAsString();
@@ -310,7 +317,7 @@ public class BaseSteps {
                 Assert.assertEquals(claim.get("value"), claim1.toString(), "Actual " +
                         "decoded JWT body: " + claimsSet);
             }
-        } catch (BadJOSEException | JOSEException|ParseException e) {
+        } catch (BadJOSEException | JOSEException | ParseException e) {
             logger.error("JWT Signature verification fail", e);
             Assert.fail("JWT Signature verification fail");
         }
@@ -321,9 +328,11 @@ public class BaseSteps {
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.HOST, Constants.DEFAULT_IDP_HOST);
-        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Basic NDVmMWM1YzgtYTkyZS0xMWVkLWFmYTEtMDI0MmFjMTIwMDAyOjRmYmQ2MmVjLWE5MmUtMTFlZC1hZmExLTAyNDJhYzEyMDAwMg==");
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
+                "Basic NDVmMWM1YzgtYTkyZS0xMWVkLWFmYTEtMDI0MmFjMTIwMDAyOjRmYmQ2MmVjLWE5MmUtMTFlZC1hZmExLTAyNDJhYzEyMDAwMg==");
 
-        HttpResponse httpResponse = httpClient.doPost(Utils.getTokenEndpointURL(), headers, "grant_type=client_credentials&scope=" + Constants.API_CREATE_SCOPE,
+        HttpResponse httpResponse = httpClient.doPost(Utils.getTokenEndpointURL(), headers,
+                "grant_type=client_credentials&scope=" + Constants.API_CREATE_SCOPE,
                 Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
         sharedContext.setAccessToken(Utils.extractToken(httpResponse));
         sharedContext.addStoreValue("accessToken", sharedContext.getAccessToken());
@@ -334,9 +343,11 @@ public class BaseSteps {
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.HOST, Constants.DEFAULT_IDP_HOST);
-        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Basic NDVmMWM1YzgtYTkyZS0xMWVkLWFmYTEtMDI0MmFjMTIwMDAyOjRmYmQ2MmVjLWE5MmUtMTFlZC1hZmExLTAyNDJhYzEyMDAwMg==");
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
+                "Basic NDVmMWM1YzgtYTkyZS0xMWVkLWFmYTEtMDI0MmFjMTIwMDAyOjRmYmQ2MmVjLWE5MmUtMTFlZC1hZmExLTAyNDJhYzEyMDAwMg==");
 
-        HttpResponse httpResponse = httpClient.doPost(Utils.getTokenEndpointURL(), headers, "grant_type=client_credentials",
+        HttpResponse httpResponse = httpClient.doPost(Utils.getTokenEndpointURL(), headers,
+                "grant_type=client_credentials",
                 Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
         sharedContext.setAccessToken(Utils.extractToken(httpResponse));
         sharedContext.addStoreValue("accessToken", sharedContext.getAccessToken());
@@ -355,9 +366,28 @@ public class BaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, Constants.SUBSCRIPTION_BASIC_AUTH_TOKEN);
 
         HttpResponse httpResponse = httpClient.doPost(Utils.getTokenEndpointURL(), headers,
-                                                      "grant_type=client_credentials&scope=" + scopes,
-                                                      Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
+                "grant_type=client_credentials&scope=" + scopes,
+                Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
         sharedContext.setAccessToken(Utils.extractToken(httpResponse));
         sharedContext.addStoreValue(Constants.ACCESS_TOKEN, sharedContext.getAccessToken());
+    }
+
+    @Given("I have a valid subscription with groups")
+    public void iHaveValidSubscriptionWithGroups(DataTable dataTable) throws Exception {
+        List<List<String>> rows = dataTable.asLists(String.class);
+        String groups = Constants.EMPTY_STRING;
+        for (List<String> row : rows) {
+            String group = row.get(0);
+            groups += group + Constants.SPACE_STRING;
+        }
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.HOST, Constants.DEFAULT_IDP_HOST);
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, Constants.SUBSCRIPTION_BASIC_AUTH_TOKEN);
+
+        HttpResponse httpResponse = httpClient.doPost(Utils.getTokenEndpointURL(), headers,
+                "grant_type=client_credentials&scope=" + Constants.API_VIEW_SCOPE + "&groups=" + groups,
+                Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
+        sharedContext.setAccessToken(Utils.extractToken(httpResponse));
+        sharedContext.addStoreValue("accessToken", sharedContext.getAccessToken());
     }
 }

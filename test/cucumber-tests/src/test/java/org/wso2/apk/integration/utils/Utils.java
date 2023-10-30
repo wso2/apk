@@ -55,6 +55,12 @@ public class Utils {
                 + Constants.DEFAULT_API_DEPLOYER + "apis/deploy";
     }
 
+    public static String getBackOfficeAPIURL() {
+
+        return "https://" + Constants.DEFAULT_API_HOST + ":" + Constants.DEFAULT_GW_PORT + "/"
+                + Constants.DEFAULT_BACKOFFICE + "apis";
+    }
+
     public static String getAPIUnDeployerURL() {
 
         return "https://" + Constants.DEFAULT_API_HOST + ":" + Constants.DEFAULT_GW_PORT + "/"
