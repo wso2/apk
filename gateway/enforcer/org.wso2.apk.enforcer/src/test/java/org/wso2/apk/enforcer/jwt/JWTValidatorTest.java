@@ -26,7 +26,6 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -60,6 +59,7 @@ public class JWTValidatorTest {
     @Test
     public void testJWTValidator() throws APISecurityException, EnforcerException {
         String organization = "org1";
+        String environment = "development";
         String issuer = "https://localhost:9443/oauth2/token";
         String signature = "sBgeoqJn0log5EZflj_G7ADvm6B3KQ9bdfFCEFVQS1U3oY9" +
                 "-cqPwAPyOLLh95pdfjYjakkf1UtjPZjeIupwXnzg0SffIc704RoVlZocAx9Ns2XihjU6Imx2MbXq9ARmQxQkyGVkJUMTwZ8" +
@@ -102,6 +102,7 @@ public class JWTValidatorTest {
         Mockito.when(requestContext.getAuthenticationContext()).thenReturn(new AuthenticationContext());
         APIConfig apiConfig = Mockito.mock(APIConfig.class);
         Mockito.when(apiConfig.getName()).thenReturn("api1");
+        Mockito.when(apiConfig.getEnvironment()).thenReturn(environment);
         Mockito.when(apiConfig.getOrganizationId()).thenReturn(organization);
         Mockito.when(requestContext.getMatchedAPI()).thenReturn(apiConfig);
         CacheProvider cacheProvider = Mockito.mock(CacheProvider.class);
@@ -121,7 +122,6 @@ public class JWTValidatorTest {
             logManagerDummy.when(() -> LogManager.getLogger(JWTAuthenticator.class)).thenReturn(logger);
             Log logger2 = Mockito.mock(Log.class);
             logFactoryDummy.when(() -> LogFactory.getLog(AbstractAPIMgtGatewayJWTGenerator.class)).thenReturn(logger2);
-            ////
             cacheProviderUtilDummy.when(() -> CacheProviderUtil.getOrganizationCache(organization))
                     .thenReturn(cacheProvider);
             ExtendedTokenIssuerDto tokenIssuerDto = Mockito.mock(ExtendedTokenIssuerDto.class);
@@ -140,7 +140,7 @@ public class JWTValidatorTest {
 
             SubscriptionDataStoreImpl subscriptionDataStore = Mockito.mock(SubscriptionDataStoreImpl.class);
             Mockito.when(subscriptionDataStore.getJWTValidatorByIssuer(issuer,
-                    organization)).thenReturn(jwtValidator);
+                    organization, environment)).thenReturn(jwtValidator);
             subscriptionDataStoreImplDummy.when(SubscriptionDataStoreImpl::getInstance).thenReturn(subscriptionDataStore);
             Mockito.when(jwtValidator.validateToken(Mockito.eq(jwt), Mockito.any())).thenReturn(jwtValidationInfo);
             keyValidaterDummy.when(()->KeyValidator.validateScopes(Mockito.any())).thenReturn(true);
@@ -153,6 +153,7 @@ public class JWTValidatorTest {
     @Test
     public void testCachedJWTValidator() throws APISecurityException, EnforcerException {
         String organization = "org1";
+        String environment = "development";
         String issuer = "https://localhost:9443/oauth2/token";
         String signature = "sBgeoqJn0log5EZflj_G7ADvm6B3KQ9bdfF" +
                 "CEFVQS1U3oY9" +
@@ -200,6 +201,7 @@ public class JWTValidatorTest {
         Mockito.when(requestContext.getAuthenticationContext()).thenReturn(new AuthenticationContext());
         APIConfig apiConfig = Mockito.mock(APIConfig.class);
         Mockito.when(apiConfig.getName()).thenReturn("api1");
+        Mockito.when(apiConfig.getEnvironment()).thenReturn(environment);
         Mockito.when(apiConfig.getOrganizationId()).thenReturn(organization);
         Mockito.when(requestContext.getMatchedAPI()).thenReturn(apiConfig);
         CacheProvider cacheProvider = Mockito.mock(CacheProvider.class);
@@ -214,7 +216,7 @@ public class JWTValidatorTest {
             JWTValidator jwtValidator = Mockito.mock(JWTValidator.class);
             SubscriptionDataStoreImpl subscriptionDataStore = Mockito.mock(SubscriptionDataStoreImpl.class);
             Mockito.when(subscriptionDataStore.getJWTValidatorByIssuer(issuer,
-                    organization)).thenReturn(jwtValidator);
+                    organization, environment)).thenReturn(jwtValidator);
             subscriptionDataStoreImplDummy.when(SubscriptionDataStoreImpl::getInstance).thenReturn(subscriptionDataStore);
             Mockito.when(jwtValidator.validateToken(Mockito.eq(jwt), Mockito.any())).thenReturn(jwtValidationInfo);
             keyValidatorDummy.when(() -> KeyValidator.validateScopes(Mockito.any())).thenReturn(true);
@@ -228,6 +230,7 @@ public class JWTValidatorTest {
     @Test
     public void testNonJTIJWTValidator() throws APISecurityException, EnforcerException {
         String organization = "org1";
+        String environment = "development";
         String issuer = "https://localhost:9443/oauth2/token";
         String signature = "SSQyg_VTxF5drIogztn2SyEK2wRE07wG6OW3tufD3vo";
         String jwt = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9" +
@@ -264,6 +267,7 @@ public class JWTValidatorTest {
         Mockito.when(requestContext.getAuthenticationContext()).thenReturn(new AuthenticationContext());
         APIConfig apiConfig = Mockito.mock(APIConfig.class);
         Mockito.when(apiConfig.getName()).thenReturn("api1");
+        Mockito.when(apiConfig.getEnvironment()).thenReturn(environment);
         Mockito.when(apiConfig.getOrganizationId()).thenReturn(organization);
         Mockito.when(requestContext.getMatchedAPI()).thenReturn(apiConfig);
         CacheProvider cacheProvider = Mockito.mock(CacheProvider.class);
@@ -276,8 +280,8 @@ public class JWTValidatorTest {
             cacheProviderUtilDummy.when(() -> CacheProviderUtil.getOrganizationCache(organization)).thenReturn(cacheProvider);
             JWTValidator jwtValidator = Mockito.mock(JWTValidator.class);
             SubscriptionDataStoreImpl subscriptionDataStore = Mockito.mock(SubscriptionDataStoreImpl.class);
-            Mockito.when(subscriptionDataStore.getJWTValidatorByIssuer(issuer,
-                    organization)).thenReturn(jwtValidator);
+            Mockito.when(subscriptionDataStore.getJWTValidatorByIssuer(issuer, organization, environment))
+                    .thenReturn(jwtValidator);
             subscriptionDataStoreImplDummy.when(SubscriptionDataStoreImpl::getInstance).thenReturn(subscriptionDataStore);
             Mockito.when(jwtValidator.validateToken(Mockito.eq(jwt), Mockito.any())).thenReturn(jwtValidationInfo);
             keyValidatorDummy.when(() -> KeyValidator.validateScopes(Mockito.any())).thenReturn(true);
@@ -361,6 +365,7 @@ public class JWTValidatorTest {
     @Test
     public void testNoCacheExpiredJWTValidator() throws EnforcerException {
         String organization = "org1";
+        String environment = "development";
         String issuer = "https://localhost:9443/oauth2/token";
         String signature = "sBgeoqJn0log5EZflj_G7ADvm6B3KQ9bdfFCEFVQS1U3oY9" +
                 "-cqPwAPyOLLh95pdfjYjakkf1UtjPZjeIupwXnzg0SffIc704RoVlZocAx9Ns2XihjU6Imx2MbXq9ARmQxQkyGVkJUMTwZ8" +
@@ -406,6 +411,7 @@ public class JWTValidatorTest {
         Mockito.when(requestContext.getAuthenticationContext()).thenReturn(new AuthenticationContext());
         APIConfig apiConfig = Mockito.mock(APIConfig.class);
         Mockito.when(apiConfig.getName()).thenReturn("api1");
+        Mockito.when(apiConfig.getEnvironment()).thenReturn(environment);
         Mockito.when(apiConfig.getOrganizationId()).thenReturn(organization);
         Mockito.when(requestContext.getMatchedAPI()).thenReturn(apiConfig);
         CacheProvider cacheProvider = Mockito.mock(CacheProvider.class);
@@ -424,7 +430,8 @@ public class JWTValidatorTest {
                     thenReturn(cacheProvider);
             JWTValidator jwtValidator = Mockito.mock(JWTValidator.class);
             SubscriptionDataStoreImpl subscriptionDataStore = Mockito.mock(SubscriptionDataStoreImpl.class);
-            Mockito.when(subscriptionDataStore.getJWTValidatorByIssuer(issuer, organization)).thenReturn(jwtValidator);
+            Mockito.when(subscriptionDataStore.getJWTValidatorByIssuer(issuer, organization, environment))
+                    .thenReturn(jwtValidator);
             subscriptionDataStoreImplDummy.when(SubscriptionDataStoreImpl::getInstance).thenReturn(subscriptionDataStore);
             Mockito.when(jwtValidator.validateToken(Mockito.eq(jwt), Mockito.any())).thenReturn(jwtValidationInfo);
             keyValidatorDummy.when(() -> KeyValidator.validateScopes(Mockito.any())).thenReturn(true);
@@ -443,6 +450,7 @@ public class JWTValidatorTest {
     @Test
     public void testTamperedPayloadJWTValidator() throws EnforcerException {
         String organization = "org1";
+        String environment = "development";
         String issuer = "https://localhost:9443/oauth2/token";
         String signature = "sBgeoqJn0log5EZflj_G7ADvm6B3KQ9bdfFCEFVQS1U3oY9" +
                 "-cqPwAPyOLLh95pdfjYjakkf1UtjPZjeIupwXnzg0SffIc704RoVlZocAx9Ns2XihjU6Imx2MbXq9ARmQxQkyGVkJUMTwZ8" +
@@ -499,6 +507,7 @@ public class JWTValidatorTest {
         Mockito.when(requestContext.getAuthenticationContext()).thenReturn(new AuthenticationContext());
         APIConfig apiConfig = Mockito.mock(APIConfig.class);
         Mockito.when(apiConfig.getName()).thenReturn("api1");
+        Mockito.when(apiConfig.getEnvironment()).thenReturn(environment);
         Mockito.when(apiConfig.getOrganizationId()).thenReturn(organization);
         Mockito.when(requestContext.getMatchedAPI()).thenReturn(apiConfig);
         try (MockedStatic<CacheProviderUtil> cacheProviderUtilDummy = Mockito.mockStatic(CacheProviderUtil.class);
@@ -513,12 +522,13 @@ public class JWTValidatorTest {
             Mockito.when(invalidTokenCache.getIfPresent(signature)).thenReturn(null);
             Mockito.when(cacheProvider.getGatewayKeyCache()).thenReturn(gatewayKeyCache);
             Mockito.when(cacheProvider.getInvalidTokenCache()).thenReturn(invalidTokenCache);
-            cacheProviderUtilDummy.when(() -> CacheProviderUtil.getOrganizationCache(organization)).thenReturn(cacheProvider);
+            cacheProviderUtilDummy.when(() -> CacheProviderUtil.getOrganizationCache(organization))
+                    .thenReturn(cacheProvider);
 
             JWTValidator jwtValidator = Mockito.mock(JWTValidator.class);
             SubscriptionDataStoreImpl subscriptionDataStore = Mockito.mock(SubscriptionDataStoreImpl.class);
-            Mockito.when(subscriptionDataStore.getJWTValidatorByIssuer(issuer,
-                    organization)).thenReturn(jwtValidator);
+            Mockito.when(subscriptionDataStore.getJWTValidatorByIssuer(issuer, organization, environment))
+                    .thenReturn(jwtValidator);
 
             subscriptionDataStoreImplDummy.when(SubscriptionDataStoreImpl::getInstance).thenReturn(subscriptionDataStore);
             Mockito.when(jwtValidator.validateToken(Mockito.eq(jwt), Mockito.any())).thenReturn(jwtValidationInfo);
