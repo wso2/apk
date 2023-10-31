@@ -19,6 +19,7 @@ package org.wso2.apk.enforcer.jwt;
 import com.google.common.cache.LoadingCache;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.UUID;
 import org.apache.commons.logging.Log;
@@ -26,6 +27,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -52,9 +54,15 @@ import org.wso2.apk.enforcer.constants.APISecurityConstants;
 import org.wso2.apk.enforcer.security.KeyValidator;
 import org.wso2.apk.enforcer.security.jwt.JWTAuthenticator;
 import org.wso2.apk.enforcer.security.jwt.validator.JWTValidator;
+import org.wso2.apk.enforcer.server.RevokedTokenRedisClient;
 import org.wso2.apk.enforcer.subscription.SubscriptionDataStoreImpl;
 
 public class JWTValidatorTest {
+
+    @Before
+    public void setup() {
+        RevokedTokenRedisClient.setRevokedTokens(new HashSet<>());
+    }
 
     @Test
     public void testJWTValidator() throws APISecurityException, EnforcerException {

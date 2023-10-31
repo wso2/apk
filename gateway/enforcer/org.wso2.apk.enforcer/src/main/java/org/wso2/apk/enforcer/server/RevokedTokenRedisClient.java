@@ -223,6 +223,10 @@ public class RevokedTokenRedisClient {
         return revokedTokensStatic;
     }
 
+    public static void setRevokedTokens(Set<String>revokedTokensSet) {
+        revokedTokensStatic = revokedTokensSet;
+    }
+
     private static SSLSocketFactory createSslSocketFactory(String redisCaCertPath) throws EnforcerException {
         try {
             KeyStore trustStore = TLSUtils.getDefaultCertTrustStore();
