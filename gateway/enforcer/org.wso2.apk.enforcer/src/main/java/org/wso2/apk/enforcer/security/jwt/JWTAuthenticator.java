@@ -142,9 +142,9 @@ public class JWTAuthenticator implements Authenticator {
 
             JWTValidationInfo validationInfo = getJwtValidationInfo(jwtToken, organization, environment);
             if (RevokedTokenRedisClient.getRevokedTokens().contains(validationInfo.getIdentifier())) {
-                log.info("Expired JWT token. ", validationInfo.getIdentifier());
+                log.info("Revoked JWT token. ", validationInfo.getIdentifier());
                 throw new APISecurityException(APIConstants.StatusCodes.UNAUTHENTICATED.getCode(),
-                        APISecurityConstants.API_AUTH_INVALID_CREDENTIALS, "Invalid JWT token");
+                        APISecurityConstants.API_AUTH_INVALID_CREDENTIALS, APISecurityConstants.API_AUTH_INVALID_CREDENTIALS_MESSAGE);
             }
             if (validationInfo != null) {
                 if (validationInfo.isValid()) {
