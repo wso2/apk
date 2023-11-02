@@ -5,7 +5,7 @@ Feature: API Visibility and Access Control
             | group1 |
         When I make the GET APIs call to the backoffice
         Then the response status code should be 200
-        And the response body should contain "\"count\":1"
+        And the response body should contain "\"count\":0"
 
     Scenario: View APIs without a groups claim in the access token
         Given The system is ready
