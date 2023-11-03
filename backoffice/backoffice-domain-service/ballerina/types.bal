@@ -391,7 +391,7 @@ public type APIInfo record {
     string updatedTime?;
     boolean hasThumbnail?;
     # State of the API. Only published APIs are visible on the Developer Portal
-    "CREATED"|"PUBLISHED" state?;
+    string state?;
 };
 
 public type APIExternalStore record {
