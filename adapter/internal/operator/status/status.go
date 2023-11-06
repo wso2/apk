@@ -56,13 +56,12 @@ func (updateHandler *UpdateHandler) applyUpdate(update Update) {
 		}
 
 		resourceCopy := update.UpdateStatus(update.Resource)
-		loggers.LoggerAPKOperator.Infof("resource copy . %s", resourceCopy)
 
 		if isStatusEqual(update.Resource, resourceCopy) {
-			loggers.LoggerAPKOperator.Infof("Status unchanged, hence not updating. %s", update.NamespacedName.String())
+			loggers.LoggerAPKOperator.Debugf("Status unchanged, hence not updating. %s", update.NamespacedName.String())
 			return nil
 		}
-		loggers.LoggerAPKOperator.Infof("Status is updating for %s ...", update.NamespacedName.String())
+		loggers.LoggerAPKOperator.Debugf("Status is updating for %s ...", update.NamespacedName.String())
 		return updateHandler.client.Status().Update(context.Background(), resourceCopy)
 	})
 
@@ -79,7 +78,7 @@ func (updateHandler *UpdateHandler) Start(ctx context.Context) error {
 	for {
 		select {
 		case update := <-updateHandler.updateChannel:
-			loggers.LoggerAPKOperator.Infof("Received a status update in %s", update.NamespacedName.String())
+			loggers.LoggerAPKOperator.Debugf("Received a status update in %s", update.NamespacedName.String())
 			updateHandler.applyUpdate(update)
 		case <-ctx.Done():
 			return nil

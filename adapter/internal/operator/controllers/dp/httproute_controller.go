@@ -124,7 +124,7 @@ func (httpRouteReconciler *HTTPRouteReconciler) Reconcile(ctx context.Context, r
 	existingStatuses := httproute.Status.Parents
 	// Check whether the route has supported gateways
 	if supportedGatways == nil || len(supportedGatways) == 0 {
-		loggers.LoggerAPKOperator.Infof("Could not find any supported gateway for the httproute.")
+		loggers.LoggerAPKOperator.Debugf("Could not find any supported gateway for the httproute.")
 
 		// There are no supported gateways found for this http route. We need to cleanup the parent statuses if needed
 		newStatuses := make([]gwapiv1b1.RouteParentStatus, 0)
@@ -134,7 +134,7 @@ func (httpRouteReconciler *HTTPRouteReconciler) Reconcile(ctx context.Context, r
 			}
 		}
 		if len(newStatuses) != len(existingStatuses) {
-			loggers.LoggerAPKOperator.Infof("Cleaning up unnecessary statuses from HTTPRoute cr.")
+			loggers.LoggerAPKOperator.Debugf("Cleaning up unnecessary statuses from HTTPRoute cr.")
 			// Need to change the statuses
 			httpRouteReconciler.statusUpdater.Send(status.Update{
 				NamespacedName: req.NamespacedName,
@@ -153,14 +153,12 @@ func (httpRouteReconciler *HTTPRouteReconciler) Reconcile(ctx context.Context, r
 		// There is no status change needed
 	} else {
 		// We found some supported gateways so we need to update parent statuses
-		loggers.LoggerAPKOperator.Infof("Found supported gateways")
 		// Create a hashMap to store the already existing statuses by parentref properties as key so that we will not duplicate the status.
 		routeParentStatusMap := make(map[string]gwapiv1b1.RouteParentStatus)
 		for _, routeParentStatus := range existingStatuses {
 			key := fmt.Sprintf("%s/%s/%s/%s", *routeParentStatus.ParentRef.Group, *routeParentStatus.ParentRef.Kind, routeParentStatus.ParentRef.Name, *routeParentStatus.ParentRef.Namespace)
 			routeParentStatusMap[key] = routeParentStatus
 		}
-		loggers.LoggerAPKOperator.Infof("RouteParentStatusMap : %+v", routeParentStatusMap)
 		needsStatusUpdate := false
 		// Prepare a local copy of status for supported gateways
 		for _, gatewayWithCondition := range supportedGatways {
@@ -180,15 +178,9 @@ func (httpRouteReconciler *HTTPRouteReconciler) Reconcile(ctx context.Context, r
 					Reason:             gatewayWithCondition.condition.Reason,
 				}},
 			}
-
-			loggers.LoggerAPKOperator.Infof("gatewayParentStatus : %+v", gatewayParentStatus)
-
 			key := fmt.Sprintf("%s/%s/%s/%s", *gatewayParentStatus.ParentRef.Group, *gatewayParentStatus.ParentRef.Kind, gatewayParentStatus.ParentRef.Name, *gatewayParentStatus.ParentRef.Namespace)
 			foundStatus, exists := routeParentStatusMap[key]
 			statusChanged := true
-
-			loggers.LoggerAPKOperator.Infof("Found status? %+v, foundStatus %+v \n\n key : %+v", exists, foundStatus, key)
-
 			if exists {
 				if foundStatus.ControllerName == gatewayParentStatus.ControllerName &&
 					*foundStatus.ParentRef.Kind == *gatewayParentStatus.ParentRef.Kind &&
@@ -197,7 +189,6 @@ func (httpRouteReconciler *HTTPRouteReconciler) Reconcile(ctx context.Context, r
 					*foundStatus.ParentRef.Group == *gatewayParentStatus.ParentRef.Group &&
 					len(foundStatus.Conditions) > 0 &&
 					common.AreConditionsSame(foundStatus.Conditions[0], gatewayParentStatus.Conditions[0]) {
-					loggers.LoggerAPKOperator.Infof("Status change not needed found status: %+v, \n\n %+v", foundStatus.Conditions[0], gatewayParentStatus.Conditions[0])
 					statusChanged = false
 				}
 			}
@@ -210,7 +201,6 @@ func (httpRouteReconciler *HTTPRouteReconciler) Reconcile(ctx context.Context, r
 					return false
 				})
 				if !found {
-					loggers.LoggerAPKOperator.Infof("Did not find a programmed status so adding a default programmed status : %+v", routeParentStatusMap)
 					gatewayParentStatus.Conditions = append(gatewayParentStatus.Conditions, metav1.Condition{
 						Type:               conditionTypeProgrammed,
 						Status:             metav1.ConditionUnknown,
@@ -219,7 +209,6 @@ func (httpRouteReconciler *HTTPRouteReconciler) Reconcile(ctx context.Context, r
 						LastTransitionTime: metav1.Now(),
 					})
 				} else {
-					loggers.LoggerAPKOperator.Infof("Found a programmed status : %+v", status)
 					gatewayParentStatus.Conditions = append(gatewayParentStatus.Conditions, status)
 				}
 				routeParentStatusMap[key] = *gatewayParentStatus
@@ -227,13 +216,11 @@ func (httpRouteReconciler *HTTPRouteReconciler) Reconcile(ctx context.Context, r
 		}
 
 		if needsStatusUpdate || len(httproute.Status.Parents) != len(routeParentStatusMap) {
-			loggers.LoggerAPKOperator.Infof("Status needs to be updated")
 			httproute.Status.Parents = make([]gwapiv1b1.RouteParentStatus, 0)
 			for _, parentStatus := range routeParentStatusMap {
 				httproute.Status.Parents = append(httproute.Status.Parents, parentStatus)
 			}
 
-			loggers.LoggerAPKOperator.Infof("parents: %+v", httproute.Status.Parents)
 			httpRouteReconciler.statusUpdater.Send(status.Update{
 				NamespacedName: req.NamespacedName,
 				Resource:       new(gwapiv1b1.HTTPRoute),
@@ -283,7 +270,7 @@ func (httpRouteReconciler *HTTPRouteReconciler) handleGateway(ctx context.Contex
 				NamespacedName: utils.NamespacedName(&httpRoute),
 			})
 		} else {
-			loggers.LoggerAPKOperator.Infof("Gateway change observed but HttpRoute: %s does not belongs to this gateway: %s hence not reconciling.",
+			loggers.LoggerAPKOperator.Debugf("Gateway change observed but HttpRoute: %s does not belongs to this gateway: %s hence not reconciling.",
 				utils.NamespacedName(&httpRoute).String(),
 				utils.NamespacedName(gateway).String())
 		}
@@ -332,25 +319,25 @@ func getSupportedGatewaysForRoute(ctx context.Context, client k8client.Client, h
 			if ok, err := checkIfRouteMatchesAllowedRoutes(ctx, client, httpRoute, listener, gateway.Namespace, parentRef.Namespace); err != nil {
 				return nil
 			} else if !ok {
-				loggers.LoggerAPKOperator.Infof("HttpRoute(%s/%s) did not match any allowed routes in gateway: %s/%s, listener: %s", httpRoute.Namespace, httpRoute.Name, namespace, name, listener.Name)
+				loggers.LoggerAPKOperator.Debugf("HttpRoute(%s/%s) did not match any allowed routes in gateway: %s/%s, listener: %s", httpRoute.Namespace, httpRoute.Name, namespace, name, listener.Name)
 				continue
 			}
 			satisfiesAllowedRoutes = true
 			if err := checkIfMatchingReadyListenerExistsInStatus(httpRoute, listener, gateway.Status.Listeners); err != nil {
-				loggers.LoggerAPKOperator.Infof("Gateway(%s/%s) listener: %s does not have a ready listener for this HttpRoute(%s/%s). Error: %s", namespace, name, listener.Name, httpRoute.Namespace, httpRoute.Name, err.Error())
+				loggers.LoggerAPKOperator.Debugf("Gateway(%s/%s) listener: %s does not have a ready listener for this HttpRoute(%s/%s). Error: %s", namespace, name, listener.Name, httpRoute.Namespace, httpRoute.Name, err.Error())
 				continue
 			}
 			satisfiesSupportedKinds = true
 			if parentRef.SectionName != nil {
 				if *parentRef.SectionName != "" && *parentRef.SectionName != listener.Name {
-					loggers.LoggerAPKOperator.Infof("Gateway(%s/%s) listener: %s does not have a matching listener with section name %s for this HttpRoute(%s/%s)", namespace, name, listener.Name, *parentRef.SectionName, httpRoute.Namespace, httpRoute.Name)
+					loggers.LoggerAPKOperator.Debugf("Gateway(%s/%s) listener: %s does not have a matching listener with section name %s for this HttpRoute(%s/%s)", namespace, name, listener.Name, *parentRef.SectionName, httpRoute.Namespace, httpRoute.Name)
 					continue
 				}
 				satisfiesListenerName = true
 			}
 			if parentRef.Port != nil {
 				if *parentRef.Port != listener.Port {
-					loggers.LoggerAPKOperator.Infof("Gateway(%s/%s) listener: %s does not have a matching port (%d) for this HttpRoute(%s/%s)", namespace, name, listener.Name, int32(*parentRef.Port), httpRoute.Namespace, httpRoute.Name)
+					loggers.LoggerAPKOperator.Debugf("Gateway(%s/%s) listener: %s does not have a matching port (%d) for this HttpRoute(%s/%s)", namespace, name, listener.Name, int32(*parentRef.Port), httpRoute.Namespace, httpRoute.Name)
 					continue
 				}
 				portMatched = true
@@ -360,7 +347,6 @@ func getSupportedGatewaysForRoute(ctx context.Context, client k8client.Client, h
 		}
 
 		if httpRouteMatched {
-			loggers.LoggerAPKOperator.Infof("Http route matched!!!")
 			var listenerName string
 			if parentRef.SectionName != nil && *parentRef.SectionName != "" {
 				listenerName = string(*parentRef.SectionName)
@@ -377,21 +363,6 @@ func getSupportedGatewaysForRoute(ctx context.Context, client k8client.Client, h
 				},
 			})
 		} else {
-			loggers.LoggerAPKOperator.Infof("Http route did not matched ")
-			loggers.LoggerAPKOperator.Infof(
-				"Http route matched: %t, "+
-					"Hostname matched: %t, "+
-					"Port matched: %t, "+
-					"Satisfies allowed routes: %t, "+
-					"Satisfies supported kinds: %t, "+
-					"Satisfies listener name: %t",
-				httpRouteMatched,
-				hostnameMatched,
-				portMatched,
-				satisfiesAllowedRoutes,
-				satisfiesSupportedKinds,
-				satisfiesListenerName,
-			)
 			reason := gwapiv1b1.RouteReasonNoMatchingParent
 			if !hostnameMatched {
 				reason = gwapiv1b1.RouteReasonNoMatchingListenerHostname

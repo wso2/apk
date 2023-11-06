@@ -264,16 +264,13 @@ func (gatewayReconciler *GatewayReconciler) resolveGatewayState(ctx context.Cont
 			// If listener does not define any supported kinds then we need to support all of the default supported kinds by the implementation
 			intersectionKinds = supportedKinds
 		}
-		loggers.LoggerAPKOperator.Info("intersections:  ", intersectionKinds)
 		for _, kind := range intersectionKinds {
-			loggers.LoggerAPKOperator.Info("adding kind: ", kind)
 			listenerStatus.SupportedKinds = append(listenerStatus.SupportedKinds, gwapiv1b1.RouteGroupKind{
 				Group: (*gwapiv1b1.Group)(&gwapiv1b1.GroupVersion.Group),
 				Kind:  kind,
 			})
 		}
 
-		loggers.LoggerAPKOperator.Info("listenerStatus.supportedkinds: ", listenerStatus.SupportedKinds)
 		if len(intersectionKinds) < len(listenerDefinedAllowedKinds) {
 			accepted = false
 			listenerStatus.Conditions = append(listenerStatus.Conditions, metav1.Condition{
@@ -317,7 +314,7 @@ func (gatewayReconciler *GatewayReconciler) resolveGatewayState(ctx context.Cont
 
 		}
 		listenerstatuses = append(listenerstatuses, listenerStatus)
-		loggers.LoggerAPKOperator.Infof("A listener status is added for listener:  %s", string(listenerStatus.Name))
+		loggers.LoggerAPKOperator.Debugf("A listener status is added for listener:  %s", string(listenerStatus.Name))
 	}
 	gatewayState.GatewayResolvedListenerCerts = resolvedListenerCerts
 	if gatewayState.GatewayAPIPolicies, err = gatewayReconciler.getAPIPoliciesForGateway(ctx, &gateway); err != nil {
@@ -578,7 +575,6 @@ func (gatewayReconciler *GatewayReconciler) handleGatewayStatus(gatewayKey types
 				gwCondition[i].ObservedGeneration = generation
 			}
 			hCopy.Status.Conditions = gwCondition
-			loggers.LoggerAPKOperator.Infof("Listeneres len %d", len(listeners))
 			for _, listener := range hCopy.Status.Listeners {
 				for _, listener1 := range listeners {
 					if string(listener.Name) == string(listener1.Name) {
@@ -586,10 +582,7 @@ func (gatewayReconciler *GatewayReconciler) handleGatewayStatus(gatewayKey types
 					}
 				}
 			}
-			loggers.LoggerAPKOperator.Infof("Listeneres len %d", len(hCopy.Status.Listeners))
 			hCopy.Status.Listeners = listeners
-			loggers.LoggerAPKOperator.Infof("2Listeneres len %d", len(hCopy.Status.Listeners))
-
 			return hCopy
 		},
 	})

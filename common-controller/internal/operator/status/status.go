@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2022, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
+ *  Copyright (c) 2023, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -57,10 +57,10 @@ func (updateHandler *UpdateHandler) applyUpdate(update Update) {
 
 		resourceCopy := update.UpdateStatus(update.Resource)
 		if isStatusEqual(update.Resource, resourceCopy) {
-			loggers.LoggerAPKOperator.Infof("Status unchanged, hence not updating. %s", update.NamespacedName.String())
+			loggers.LoggerAPKOperator.Debugf("Status unchanged, hence not updating. %s", update.NamespacedName.String())
 			return nil
 		}
-		loggers.LoggerAPKOperator.Infof("Status is updating for %s ...", update.NamespacedName.String())
+		loggers.LoggerAPKOperator.Debugf("Status is updating for %s ...", update.NamespacedName.String())
 		return updateHandler.client.Status().Update(context.Background(), resourceCopy)
 	})
 
@@ -77,7 +77,7 @@ func (updateHandler *UpdateHandler) Start(ctx context.Context) error {
 	for {
 		select {
 		case update := <-updateHandler.updateChannel:
-			loggers.LoggerAPKOperator.Infof("Received a status update in %s", update.NamespacedName.String())
+			loggers.LoggerAPKOperator.Debugf("Received a status update in %s", update.NamespacedName.String())
 			updateHandler.applyUpdate(update)
 		case <-ctx.Done():
 			return nil
@@ -87,7 +87,7 @@ func (updateHandler *UpdateHandler) Start(ctx context.Context) error {
 
 // Send public method to add status update events to the update channel.
 func (updateHandler *UpdateHandler) Send(update Update) {
-	loggers.LoggerAPKOperator.Infof("SEND Received a status update in %s", update.NamespacedName.String())
+	loggers.LoggerAPKOperator.Debugf("SEND Received a status update in %s", update.NamespacedName.String())
 	updateHandler.updateChannel <- update
 }
 
