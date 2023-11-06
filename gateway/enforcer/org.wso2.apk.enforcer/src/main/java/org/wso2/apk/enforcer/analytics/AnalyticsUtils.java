@@ -48,7 +48,7 @@ public class AnalyticsUtils {
     }
 
     public static String getAPIProvider(String uuid) {
-        API api = SubscriptionDataHolder.getInstance().getTenantSubscriptionStore().getApiByContextAndVersion(uuid);
+        API api = SubscriptionDataHolder.getInstance().getSubscriptionDataStore().getApiByContextAndVersion(uuid);
         if (api == null) {
             return AnalyticsConstants.DEFAULT_FOR_UNASSIGNED;
         }

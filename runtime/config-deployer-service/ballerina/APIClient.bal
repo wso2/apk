@@ -572,6 +572,7 @@ public class APIClient {
                 defaultSpecData.responseInterceptors = [item];
             }
         }
+        // TODO(Ashera): Need to implement subscription validation API policy CR creation for config deployer approach
         CORSConfiguration? corsConfiguration = apkConf.corsConfiguration;
         if corsConfiguration is CORSConfiguration {
             model:CORSPolicy? cORSPolicy = self.retrieveCORSPolicyDetails(apiArtifact, apkConf, corsConfiguration, organization);

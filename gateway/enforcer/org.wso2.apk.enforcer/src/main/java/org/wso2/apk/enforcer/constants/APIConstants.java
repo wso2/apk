@@ -49,7 +49,7 @@ public class APIConstants {
     public static final String DEFAULT_ENVIRONMENT_NAME = "Default";
 
     public static final String AUTHORIZATION_HEADER_BASIC = "Basic";
-    public static final String API_SECURITY_OAUTH2 = "oauth2";
+    public static final String API_SECURITY_OAUTH2 = "OAuth2";
     public static final String API_SECURITY_BASIC_AUTH = "basic_auth";
     public static final String SWAGGER_API_KEY_AUTH_TYPE_NAME = "apiKey";
     public static final String SWAGGER_API_KEY_IN_HEADER = "Header";
@@ -129,6 +129,7 @@ public class APIConstants {
         public static final String PROD_ONLY_BLOCKED = "PROD_ONLY_BLOCKED";
         public static final String ON_HOLD = "ON_HOLD";
         public static final String REJECTED = "REJECTED";
+        public static final String INACTIVE = "INACTIVE";
 
         private SubscriptionStatus() {
 
@@ -154,8 +155,6 @@ public class APIConstants {
         public static final String APPLICATION_NAME = "name";
         public static final String APPLICATION_TIER = "tier";
         public static final String APPLICATION_OWNER = "owner";
-        public static final String KEY_TYPE = "keytype";
-        public static final String CONSUMER_KEY = "consumerKey";
         public static final String SUBSCRIPTION_TIER = "subscriptionTier";
         public static final String SUBSCRIBER_TENANT_DOMAIN = "subscriberTenantDomain";
         public static final String TIER_INFO = "tierInfo";

@@ -37,6 +37,7 @@ wso2:
       usernameClaim: "sub"
       organizationClaim: "organization"
       groupsClaim: "groups"
+      consumerKeyClaim: "clientId"
       # organizationResolver: "controlPlane" # controlplane,none
       # tls:
       #   secretName: "wso2apk-idp-certificates"

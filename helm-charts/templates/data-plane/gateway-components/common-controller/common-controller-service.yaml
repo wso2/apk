@@ -28,6 +28,9 @@ spec:
     - name: https-rate-limiter
       protocol: TCP
       port: 18005
+    - name: https-enforcer-xds
+      protocol: TCP
+      port: 18002
     - name: webhook-server
       protocol: TCP
       port: 443

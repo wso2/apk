@@ -64,12 +64,18 @@ spec:
               protocol: "TCP"
             - containerPort: 9092
               protocol: "TCP"
+            - containerPort: 18002
+              protocol: "TCP"
 {{ include "apk-helm.deployment.resources" .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.resources | indent 10 }}
 {{ include "apk-helm.deployment.env" .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.env | indent 10 }}
             - name: ADAPTER_HOST_NAME
               value: {{ template "apk-helm.resource.prefix" . }}-adapter-service.{{ .Release.Namespace }}.svc
             - name: ADAPTER_HOST
               value: {{ template "apk-helm.resource.prefix" . }}-adapter-service.{{ .Release.Namespace }}.svc
+            - name: COMMON_CONTROLLER_HOST_NAME
+              value: {{ template "apk-helm.resource.prefix" . }}-common-controller-service.{{ .Release.Namespace }}.svc
+            - name: COMMON_CONTROLLER_HOST
+              value: {{ template "apk-helm.resource.prefix" . }}-common-controller-service.{{ .Release.Namespace }}.svc
             - name: ENFORCER_PRIVATE_KEY_PATH
               value: /home/wso2/security/keystore/enforcer.key  
             - name: ENFORCER_PUBLIC_CERT_PATH
@@ -80,6 +86,8 @@ spec:
               value: "/home/wso2/security/truststore"
             - name: ADAPTER_XDS_PORT
               value : "18000"
+            - name: COMMON_CONTROLLER_XDS_PORT
+              value : "18002"
             - name: ENFORCER_LABEL
               value : default
             - name: ENFORCER_REGION
@@ -185,6 +193,8 @@ spec:
             {{- else }}
               subPath: tls.crt
             {{- end }}
+            # - name: common-controller-truststore-secret-volume
+            #   mountPath: /home/wso2/security/truststore/adapter.pem
             - name: router-keystore-secret-volume
               mountPath: /home/wso2/security/truststore/router.crt
             {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls }}
@@ -372,6 +382,14 @@ spec:
             secretName: {{ template "apk-helm.resource.prefix" . }}-ratelimiter-server-cert
           {{- end }}
       {{ end }}
+        # - name: common-controller-truststore-secret-volume
+        #   secret:
+        #   {{- if and .Values.wso2.apk.dp.commonController.configs .Values.wso2.apk.dp.commonController.configs.tls }}
+        #     secretName: {{ .Values.wso2.apk.dp.commonController.configs.tls.secretName | default (printf "%s-common-controller-server-cert" (include "apk-helm.resource.prefix" .)) }}
+        #   {{- else }}
+        #     secretName: {{ template "apk-helm.resource.prefix" . }}-common-controller-server-cert
+        #   {{- end }}
+        #     defaultMode: 420
         - name: enforcer-keystore-secret-volume
           secret: 
             {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.tls }}

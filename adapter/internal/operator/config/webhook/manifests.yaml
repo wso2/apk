@@ -31,7 +31,7 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
-      path: /mutate-dp-wso2-com-v1alpha1-apipolicy
+      path: /mutate-dp-wso2-com-v1alpha2-apipolicy
   failurePolicy: Fail
   name: mapipolicy.kb.io
   rules:
@@ -158,7 +158,7 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
-      path: /validate-dp-wso2-com-v1alpha1-apipolicy
+      path: /validate-dp-wso2-com-v1alpha2-apipolicy
   failurePolicy: Fail
   name: vapipolicy.kb.io
   rules:

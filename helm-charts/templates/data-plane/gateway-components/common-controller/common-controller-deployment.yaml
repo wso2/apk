@@ -42,6 +42,8 @@ spec:
           ports:
             - containerPort: 18005
               protocol: TCP
+            - containerPort: 18002
+              protocol: TCP
             - containerPort: 9543
               protocol: TCP
 {{ include "apk-helm.deployment.resources" .Values.wso2.apk.dp.commonController.deployment.resources | indent 10 }}
@@ -79,6 +81,8 @@ spec:
               subPath: ca.crt
             {{- end }}
         {{ if and .Values.wso2.apk.dp.enabled .Values.wso2.apk.dp.ratelimiter.enabled }}
+            # - name: enforcer-truststore-secret-volume
+            #   mountPath: /home/wso2/security/truststore/enforcer.crt
             - name: ratelimiter-truststore-secret-volume
               mountPath: /home/wso2/security/truststore/ratelimiter.crt
             {{- if and .Values.wso2.apk.dp.ratelimiter.configs .Values.wso2.apk.dp.ratelimiter.configs.tls }}
@@ -127,7 +131,7 @@ spec:
         runAsNonRoot: true
         seccompProfile:
           type: "RuntimeDefault"
-      volumes: 
+      volumes:
         - name: common-controller-keystore-secret-volume
           secret:
           {{- if and .Values.wso2.apk.dp.commonController.configs .Values.wso2.apk.dp.commonController.configs.tls }}

@@ -157,6 +157,7 @@ func GenerateAdapterInternalAPI(apiState APIState, httpRoute *HTTPRouteState, en
 	adapterInternalAPI.SetInfoAPICR(*apiState.APIDefinition)
 	adapterInternalAPI.SetAPIDefinitionFile(apiState.APIDefinitionFile)
 	adapterInternalAPI.SetAPIDefinitionEndpoint(apiState.APIDefinition.Spec.DefinitionPath)
+	adapterInternalAPI.SetSubscriptionValidation(apiState.SubscriptionValidation)
 	adapterInternalAPI.EnvType = envType
 
 	environment := apiState.APIDefinition.Spec.Environment

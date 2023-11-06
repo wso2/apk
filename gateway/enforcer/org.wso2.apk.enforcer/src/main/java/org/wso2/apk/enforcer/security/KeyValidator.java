@@ -29,24 +29,19 @@ import org.wso2.apk.enforcer.commons.logging.LoggingConstants;
 import org.wso2.apk.enforcer.commons.model.ResourceConfig;
 import org.wso2.apk.enforcer.constants.APIConstants;
 import org.wso2.apk.enforcer.constants.APISecurityConstants;
-import org.wso2.apk.enforcer.constants.GeneralErrorCodeConstants;
 import org.wso2.apk.enforcer.dto.APIKeyValidationInfoDTO;
 import org.wso2.apk.enforcer.models.API;
-import org.wso2.apk.enforcer.models.ApiPolicy;
 import org.wso2.apk.enforcer.models.Application;
 import org.wso2.apk.enforcer.models.ApplicationKeyMapping;
-import org.wso2.apk.enforcer.models.ApplicationPolicy;
+import org.wso2.apk.enforcer.models.ApplicationMapping;
 import org.wso2.apk.enforcer.models.Subscription;
-import org.wso2.apk.enforcer.models.SubscriptionPolicy;
-import org.wso2.apk.enforcer.models.URLMapping;
 import org.wso2.apk.enforcer.subscription.SubscriptionDataHolder;
 import org.wso2.apk.enforcer.subscription.SubscriptionDataStore;
-import org.wso2.apk.enforcer.util.FilterUtils;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Does the subscription and scope validation.
@@ -115,74 +110,89 @@ public class KeyValidator {
     }
 
     /**
-     * Validate subscriptions for access tokens.
+     * Validate subscriptions for access tokens by utilizing the consumer key.
      *
-     * @param uuid        uuid of the API
-     * @param apiContext  API context, used for logging purposes and to extract the tenant domain
-     * @param apiVersion  API version, used for logging purposes
-     * @param consumerKey consumer key related to the token
-     * @param keyManager  key manager related to the token
-     * @return validation information about the request
+     * @param validationInfo Token validation related details. This will be populated based on the available data during
+     *                       the subscription validation.
+     * @throws APISecurityException throws if subscription validation fails.
      */
-    public static APIKeyValidationInfoDTO validateSubscription(String uuid, String apiContext, String apiVersion,
-                                                               String consumerKey, String envType, String keyManager) {
+    public static void validateSubscriptionUsingConsumerKey(APIKeyValidationInfoDTO validationInfo)
+            throws APISecurityException {
+        API api;
+        Application app;
+        Subscription sub;
+        ApplicationKeyMapping keyMapping;
+        ApplicationMapping appMapping;
+        String apiName = validationInfo.getApiName();
+        String apiContext = validationInfo.getApiContext();
+        String apiVersion = validationInfo.getApiVersion();
+        String consumerKey = validationInfo.getConsumerKey();
+        String securityScheme = validationInfo.getSecurityScheme();
+        String keyType = validationInfo.getType();
+
         log.debug("Before validating subscriptions");
-        log.debug("Validation Info : { uuid : {}, context : {}, version : {}, consumerKey : {} }",
-                uuid, apiContext, apiVersion, consumerKey);
-        String apiTenantDomain = FilterUtils.getTenantDomainFromRequestURL(apiContext);
-        if (apiTenantDomain == null) {
-            apiTenantDomain = APIConstants.SUPER_TENANT_DOMAIN_NAME;
-        }
+        log.debug("Validation Info : { name : {}, context : {}, version : {}, consumerKey : {} }",
+                apiName, apiContext, apiVersion, consumerKey);
 
-        API api = null;
-        ApplicationKeyMapping key = null;
-        Application app = null;
-        Subscription sub = null;
+        SubscriptionDataStore datastore = SubscriptionDataHolder.getInstance().getSubscriptionDataStore();
 
-        SubscriptionDataStore datastore = SubscriptionDataHolder.getInstance()
-                .getTenantSubscriptionStore(apiTenantDomain);
-        //TODO add a check to see whether datastore is initialized an load data using rest api if it is not loaded
-        // TODO: (VirajSalaka) Handle the scenario where the event is dropped.
         if (datastore != null) {
-            api = datastore.getApiByContextAndVersion(uuid);
+            api = datastore.getMatchingAPI(apiContext, apiVersion);
             if (api != null) {
-                // TODO: (Sampath) Handle the scenario when App keys are generated properly and sent
-//                key = datastore.getKeyMappingByKeyAndKeyManager(consumerKey, keyManager);
-//                if (key != null) {
-                app = datastore.getApplicationById(key.getApplicationUUID());
-                if (app != null) {
-                    sub = datastore.getSubscriptionById(app.getUUID(), api.getApiUUID());
-                    if (sub != null) {
-                        log.debug("All information is retrieved from the inmemory data store.");
+                // Get application key mapping using the consumer key, key type and security scheme
+                keyMapping = datastore.getMatchingApplicationKeyMapping(consumerKey, keyType, securityScheme);
+
+                if (keyMapping !=  null) {
+                    // Get application and application mapping using application UUID
+                    String applicationUUID = keyMapping.getApplicationUUID();
+                    app = datastore.getMatchingApplication(applicationUUID);
+                    appMapping = datastore.getMatchingApplicationMapping(applicationUUID);
+
+                    if (appMapping != null && app != null) {
+                        // Get subscription using the subscription UUID
+                        String subscriptionUUID = appMapping.getSubscriptionRef();
+                        sub = datastore.getMatchingSubscription(subscriptionUUID);
+
+                        // Validate subscription
+                        if (sub != null) {
+                            validate(validationInfo, api, app, sub);
+                            if (!validationInfo.isAuthorized() && validationInfo.getValidationStatus() == 0) {
+                                // Scenario where validation failed and message is not set
+                                validationInfo.setValidationStatus(
+                                        APIConstants.KeyValidationStatus.API_AUTH_RESOURCE_FORBIDDEN);
+                            }
+                            log.debug("After validating subscriptions");
+                            return;
+                        } else {
+                            log.error(
+                                    "Valid subscription not found for access token. " +
+                                            "application: {}, app_UUID: {}, API name: {}, API context: {} API version : {}",
+                                    app.getName(), app.getUUID(), apiName, apiContext, apiVersion);
+                        }
                     } else {
-                        log.info(
-                                "Valid subscription not found for oauth access token. " +
-                                        "application: {} app_UUID: {} API_name: {} API_UUID : {}",
-                                app.getName(), app.getUUID(), api.getApiName(), api.getApiUUID());
+                        log.error(
+                                "Valid application and / or application mapping not found for application uuid : " + applicationUUID);
                     }
                 } else {
-                    log.info("Application not found in the data store for uuid " + key.getApplicationUUID());
+                    log.error(
+                            "Valid application key mapping not found in the data store for access token. " +
+                                    "Application identifier: {}, key type : {}, security scheme : {}",
+                            consumerKey, keyType, securityScheme);
                 }
-//                } else {
-//                    log.info("Application key mapping not found in the data store for id consumerKey " + consumerKey);
-//                }
             } else {
-                log.info("API not found in the data store for API UUID :" + uuid);
+                log.error("API not found for API context : {} and API version : {}", apiContext, apiVersion);
             }
         } else {
-            log.error("Subscription data store is null for tenant domain " + apiTenantDomain);
+            log.error("Subscription data store is null");
+            throw new APISecurityException(APIConstants.StatusCodes.UNAUTHENTICATED.getCode(),
+                    APISecurityConstants.API_AUTH_GENERAL_ERROR,
+                    APISecurityConstants.API_AUTH_GENERAL_ERROR_MESSAGE);
         }
-
-        APIKeyValidationInfoDTO infoDTO = new APIKeyValidationInfoDTO();
-        if (api != null && app != null && sub != null) {
-            validate(infoDTO, datastore, api, envType, app, sub);
-        }
-        if (!infoDTO.isAuthorized() && infoDTO.getValidationStatus() == 0) {
-            //Scenario where validation failed and message is not set
-            infoDTO.setValidationStatus(APIConstants.KeyValidationStatus.API_AUTH_RESOURCE_FORBIDDEN);
-        }
-        log.debug("After validating subscriptions");
-        return infoDTO;
+        // If the execution reaches this point, it means that the subscription validation has failed.
+        log.error("User is NOT authorized to access the API. Subscription validation failed for consumer key : "
+                + consumerKey);
+        throw new APISecurityException(APIConstants.StatusCodes.UNAUTHORIZED.getCode(),
+                APISecurityConstants.API_AUTH_FORBIDDEN, APISecurityConstants.API_AUTH_FORBIDDEN_MESSAGE);
     }
 
     /**
@@ -194,19 +204,14 @@ public class KeyValidator {
      * @return validation information about the request
      */
     public static APIKeyValidationInfoDTO validateSubscription(String apiUuid, String apiContext,
-                                                               JWTClaimsSet payload, String envType) {
+            JWTClaimsSet payload) {
         log.debug("Before validating subscriptions with API key. API_uuid: {}, context: {}", apiUuid, apiContext);
-        String apiTenantDomain = FilterUtils.getTenantDomainFromRequestURL(apiContext);
-        if (apiTenantDomain == null) {
-            apiTenantDomain = APIConstants.SUPER_TENANT_DOMAIN_NAME;
-        }
 
         API api = null;
         Application app = null;
         Subscription sub = null;
 
-        SubscriptionDataStore datastore = SubscriptionDataHolder.getInstance()
-                .getTenantSubscriptionStore(apiTenantDomain);
+        SubscriptionDataStore datastore = SubscriptionDataHolder.getInstance().getSubscriptionDataStore();
         //TODO add a check to see whether datastore is initialized an load data using rest api if it is not loaded
         // TODO: (VirajSalaka) Handle the scenario where the event is dropped.
         if (datastore != null) {
@@ -236,12 +241,12 @@ public class KeyValidator {
                 log.info("API not found in the data store for API UUID :" + apiUuid);
             }
         } else {
-            log.error("Subscription data store is null for tenant domain " + apiTenantDomain);
+            log.error("Subscription data store is null");
         }
 
         APIKeyValidationInfoDTO infoDTO = new APIKeyValidationInfoDTO();
         if (api != null && app != null && sub != null) {
-            validate(infoDTO, datastore, api, envType, app, sub);
+            validate(infoDTO, api, app, sub);
         }
         if (!infoDTO.isAuthorized() && infoDTO.getValidationStatus() == 0) {
             //Scenario where validation failed and message is not set
@@ -251,76 +256,60 @@ public class KeyValidator {
         return infoDTO;
     }
 
-    private static void validate(APIKeyValidationInfoDTO infoDTO, SubscriptionDataStore datastore,
-                                 API api, String keyType, Application app, Subscription sub) {
-        String subscriptionStatus = sub.getSubscriptionState();
-        if (APIConstants.SubscriptionStatus.BLOCKED.equals(subscriptionStatus)) {
-            infoDTO.setValidationStatus(APIConstants.KeyValidationStatus.API_BLOCKED);
-            infoDTO.setAuthorized(false);
-            return;
-        } else if (APIConstants.SubscriptionStatus.ON_HOLD.equals(subscriptionStatus)
-                || APIConstants.SubscriptionStatus.REJECTED.equals(subscriptionStatus)) {
+    private static void validate(APIKeyValidationInfoDTO infoDTO, API api, Application app, Subscription sub) {
+
+        // Validate subscription status
+        String subscriptionStatus = sub.getSubscriptionStatus();
+        if (APIConstants.SubscriptionStatus.INACTIVE.equals(subscriptionStatus)) {
             infoDTO.setValidationStatus(APIConstants.KeyValidationStatus.SUBSCRIPTION_INACTIVE);
             infoDTO.setAuthorized(false);
             return;
-        } else if (APIConstants.SubscriptionStatus.PROD_ONLY_BLOCKED.equals(subscriptionStatus)
-                && !APIConstants.API_KEY_TYPE_SANDBOX.equals(keyType)) {
-            infoDTO.setValidationStatus(APIConstants.KeyValidationStatus.API_BLOCKED);
-            infoDTO.setType(keyType);
-            infoDTO.setAuthorized(false);
-            return;
-        } else if (APIConstants.LifecycleStatus.BLOCKED.equals(api.getLcState())) {
-            infoDTO.setValidationStatus(GeneralErrorCodeConstants.API_BLOCKED_CODE);
+        }
+//        if (APIConstants.SubscriptionStatus.BLOCKED.equals(subscriptionStatus)) {
+//            infoDTO.setValidationStatus(APIConstants.KeyValidationStatus.API_BLOCKED);
+//            infoDTO.setAuthorized(false);
+//            return;
+//        } else if (APIConstants.SubscriptionStatus.ON_HOLD.equals(subscriptionStatus)
+//                || APIConstants.SubscriptionStatus.REJECTED.equals(subscriptionStatus)) {
+//            infoDTO.setValidationStatus(APIConstants.KeyValidationStatus.SUBSCRIPTION_INACTIVE);
+//            infoDTO.setAuthorized(false);
+//            return;
+//        } else if (APIConstants.SubscriptionStatus.PROD_ONLY_BLOCKED.equals(subscriptionStatus)
+//                && !APIConstants.API_KEY_TYPE_SANDBOX.equals(keyType)) {
+//            infoDTO.setValidationStatus(APIConstants.KeyValidationStatus.API_BLOCKED);
+//            infoDTO.setType(keyType);
+//            infoDTO.setAuthorized(false);
+//            return;
+//        } else if (APIConstants.LifecycleStatus.BLOCKED.equals(api.getLcState())) {
+//            infoDTO.setValidationStatus(GeneralErrorCodeConstants.API_BLOCKED_CODE);
+//            infoDTO.setAuthorized(false);
+//            return;
+//        }
+
+        // Validate API details embedded within the subscription
+        // Validate API name
+        if (!infoDTO.getApiName().equals(sub.getSubscribedApi().getName())) {
             infoDTO.setAuthorized(false);
             return;
         }
-        infoDTO.setTier(sub.getPolicyId());
-        infoDTO.setSubscriber(app.getSubName());
-        //infoDTO.setApplicationId(app.getId());
+        // Validate API version
+        String versionRegex = sub.getSubscribedApi().getVersion();
+        String versionToMatch = infoDTO.getApiVersion();
+        Pattern pattern = Pattern.compile(versionRegex);
+        Matcher matcher = pattern.matcher(versionToMatch);
+        if (!matcher.matches()) {
+            infoDTO.setAuthorized(false);
+            return;
+        }
+
         infoDTO.setApplicationUUID(app.getUUID());
+        infoDTO.setSubscriber(app.getOwner());
         infoDTO.setApiName(api.getApiName());
         infoDTO.setApiVersion(api.getApiVersion());
         infoDTO.setApiPublisher(api.getApiProvider());
         infoDTO.setApplicationName(app.getName());
-        infoDTO.setApplicationTier(app.getPolicy());
         infoDTO.setAppAttributes(app.getAttributes());
         infoDTO.setApiUUID(api.getApiUUID());
-        infoDTO.setType(keyType);
-        infoDTO.setSubscriberTenantDomain(app.getTenantDomain());
-
-        // Todo: (Sampath) This must be implemented as a part rate plans implementation.
-//        ApplicationPolicy appPolicy = datastore.getApplicationPolicyByName(app.getPolicy());
-//        SubscriptionPolicy subPolicy = datastore.getSubscriptionPolicyByName(sub.getPolicyId());
-//        ApiPolicy apiPolicy = datastore.getApiPolicyByName(api.getApiTier());
-//        boolean isContentAware = appPolicy.isContentAware() || subPolicy.isContentAware() ||
-//                (apiPolicy != null && apiPolicy.isContentAware());
-//        infoDTO.setContentAware(isContentAware);
-//        int spikeArrest = 0;
-//        String apiLevelThrottlingKey = "api_level_throttling_key";
-//
-//        if (subPolicy.getRateLimitCount() > 0) {
-//            spikeArrest = subPolicy.getRateLimitCount();
-//        }
-//
-//        String spikeArrestUnit = null;
-//
-//        if (subPolicy.getRateLimitTimeUnit() != null) {
-//            spikeArrestUnit = subPolicy.getRateLimitTimeUnit();
-//        }
-//        boolean stopOnQuotaReach = subPolicy.isStopOnQuotaReach();
-//        int graphQLMaxDepth = Math.max(subPolicy.getGraphQLMaxDepth(), 0);
-//        int graphQLMaxComplexity = Math.max(subPolicy.getGraphQLMaxComplexity(), 0);
-//        List<String> list = new ArrayList<>();
-//        list.add(apiLevelThrottlingKey);
-//        infoDTO.setSpikeArrestLimit(spikeArrest);
-//        infoDTO.setSpikeArrestUnit(spikeArrestUnit);
-//        infoDTO.setStopOnQuotaReach(stopOnQuotaReach);
-//        infoDTO.setGraphQLMaxDepth(graphQLMaxDepth);
-//        infoDTO.setGraphQLMaxComplexity(graphQLMaxComplexity);
-//        // We also need to set throttling data list associated with given API. This need to have
-//        // policy id and
-//        // condition id list for all throttling tiers associated with this API.
-//        infoDTO.setThrottlingDataList(list);
         infoDTO.setAuthorized(true);
     }
 }

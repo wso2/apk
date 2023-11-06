@@ -52,10 +52,10 @@ func (s *notificationService) CreateApplication(ctx context.Context, application
 		UUID:       application.Uuid,
 		Name:       application.Name,
 		Owner:      application.Owner,
-		Policy:     application.Policy,
+		// Policy:     application.Policy,
 		Attributes: application.Attributes,
 		//Keys:         application.Keys,
-		Organization:  application.Organization,
+		// Organization:  application.Organization,
 		TimeStamp:     application.TimeStamp,
 		IsRemoveEvent: false,
 	}
@@ -71,10 +71,10 @@ func (s *notificationService) UpdateApplication(ctx context.Context, application
 		UUID:       application.Uuid,
 		Name:       application.Name,
 		Owner:      application.Owner,
-		Policy:     application.Policy,
+		// Policy:     application.Policy,
 		Attributes: application.Attributes,
 		//Keys:         application.Keys,
-		Organization:  application.Organization,
+		// Organization:  application.Organization,
 		TimeStamp:     application.TimeStamp,
 		IsRemoveEvent: false,
 	}
@@ -88,7 +88,7 @@ func (s *notificationService) DeleteApplication(ctx context.Context, application
 	var event = internal_types.ApplicationEvent{
 		Label:         config.ReadConfigs().ManagementServer.NodeLabels[0],
 		UUID:          application.Uuid,
-		Organization:  application.Organization,
+		// Organization:  application.Organization,
 		IsRemoveEvent: true,
 	}
 	synchronizer.AddApplicationEventsToChannel(event)
@@ -101,13 +101,13 @@ func (s *notificationService) CreateSubscription(ctx context.Context, subscripti
 	var event = internal_types.SubscriptionEvent{
 		Label:          config.ReadConfigs().ManagementServer.NodeLabels[0],
 		UUID:           subscription.Uuid,
-		ApplicationRef: subscription.ApplicationRef,
-		APIRef:         subscription.ApiRef,
-		PolicyID:       subscription.PolicyId,
+		// ApplicationRef: subscription.ApplicationRef,
+		// APIRef:         subscription.ApiRef,
+		// PolicyID:       subscription.PolicyId,
 		SubStatus:      subscription.SubStatus,
-		Subscriber:     subscription.Subscriber,
+		// Subscriber:     subscription.Subscriber,
 		Organization:   subscription.Organization,
-		TimeStamp:      subscription.TimeStamp,
+		// TimeStamp:      subscription.TimeStamp,
 		IsRemoveEvent:  false,
 	}
 	synchronizer.AddSubscriptionEventsToChannel(event)
@@ -120,13 +120,13 @@ func (s *notificationService) UpdateSubscription(ctx context.Context, subscripti
 	var event = internal_types.SubscriptionEvent{
 		Label:          config.ReadConfigs().ManagementServer.NodeLabels[0],
 		UUID:           subscription.Uuid,
-		ApplicationRef: subscription.ApplicationRef,
-		APIRef:         subscription.ApiRef,
-		PolicyID:       subscription.PolicyId,
+		// ApplicationRef: subscription.ApplicationRef,
+		// APIRef:         subscription.ApiRef,
+		// PolicyID:       subscription.PolicyId,
 		SubStatus:      subscription.SubStatus,
-		Subscriber:     subscription.Subscriber,
+		// Subscriber:     subscription.Subscriber,
 		Organization:   subscription.Organization,
-		TimeStamp:      subscription.TimeStamp,
+		// TimeStamp:      subscription.TimeStamp,
 		IsRemoveEvent:  false,
 	}
 	synchronizer.AddSubscriptionEventsToChannel(event)

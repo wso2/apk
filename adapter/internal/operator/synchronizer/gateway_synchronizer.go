@@ -27,6 +27,7 @@ import (
 	"github.com/wso2/apk/adapter/internal/oasparser/envoyconf"
 	"github.com/wso2/apk/adapter/internal/oasparser/model"
 	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
+	dpv1alpha2 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha2"
 	"github.com/wso2/apk/adapter/internal/operator/constants"
 	"github.com/wso2/apk/adapter/internal/operator/utils"
 	"github.com/wso2/apk/adapter/pkg/logging"
@@ -131,7 +132,7 @@ func getCustomRateLimitPolicies(customRateLimitPoliciesDef map[string]*dpv1alpha
 	return customRateLimitPolicies
 }
 
-func generateGlobalInterceptorResource(gatewayAPIPolicies map[string]dpv1alpha1.APIPolicy,
+func generateGlobalInterceptorResource(gatewayAPIPolicies map[string]dpv1alpha2.APIPolicy,
 	gatewayInterceptorServiceMapping map[string]dpv1alpha1.InterceptorService,
 	gatewayBackendMapping map[string]*dpv1alpha1.ResolvedBackend) (string, *clusterv3.Cluster, []*corev3.Address,
 	*clusterv3.Cluster, []*corev3.Address) {
@@ -152,7 +153,7 @@ func generateGlobalInterceptorResource(gatewayAPIPolicies map[string]dpv1alpha1.
 	return gwLuaScript, gwReqICluster, gwReqIAddresses, gwResICluster, gwResIAddresses
 }
 
-func getGlobalInterceptorScript(gatewayAPIPolicies map[string]dpv1alpha1.APIPolicy,
+func getGlobalInterceptorScript(gatewayAPIPolicies map[string]dpv1alpha2.APIPolicy,
 	gatewayInterceptorServiceMapping map[string]dpv1alpha1.InterceptorService,
 	gatewayBackendMapping map[string]*dpv1alpha1.ResolvedBackend) string {
 	iInvCtx := &interceptor.InvocationContext{
@@ -179,13 +180,13 @@ end
 `
 }
 
-func createInterceptors(gatewayAPIPolicies map[string]dpv1alpha1.APIPolicy,
+func createInterceptors(gatewayAPIPolicies map[string]dpv1alpha2.APIPolicy,
 	gatewayInterceptorServiceMapping map[string]dpv1alpha1.InterceptorService,
 	gatewayBackendMapping map[string]*dpv1alpha1.ResolvedBackend) (requestInterceptor map[string]model.InterceptEndpoint, responseInterceptor map[string]model.InterceptEndpoint) {
 	requestInterceptorMap := make(map[string]model.InterceptEndpoint)
 	responseInterceptorMap := make(map[string]model.InterceptEndpoint)
 
-	var apiPolicy *dpv1alpha1.APIPolicy
+	var apiPolicy *dpv1alpha2.APIPolicy
 	outputAPIPolicy := utils.TieBreaker(utils.GetPtrSlice(maps.Values(gatewayAPIPolicies)))
 	if outputAPIPolicy != nil {
 		apiPolicy = *outputAPIPolicy
@@ -222,7 +223,7 @@ func createInterceptors(gatewayAPIPolicies map[string]dpv1alpha1.APIPolicy,
 	return requestInterceptorMap, responseInterceptorMap
 }
 
-func getInterceptorEndpoint(namespace string, interceptorRef *dpv1alpha1.InterceptorReference,
+func getInterceptorEndpoint(namespace string, interceptorRef *dpv1alpha2.InterceptorReference,
 	gatewayInterceptorServiceMapping map[string]dpv1alpha1.InterceptorService, gatewayBackendMapping map[string]*dpv1alpha1.ResolvedBackend, isReq bool) *model.InterceptEndpoint {
 	interceptor := gatewayInterceptorServiceMapping[types.NamespacedName{
 		Namespace: namespace,

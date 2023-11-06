@@ -57,6 +57,7 @@ type watches struct {
 	jwtIssuerList             chan cache.Response
 	subscriptionPolicyList    chan cache.Response
 	applicationKeyMappingList chan cache.Response
+	applicationMappingList    chan cache.Response
 	keyManagers               chan cache.Response
 	revokedTokens             chan cache.Response
 	throttleData              chan cache.Response
@@ -71,6 +72,7 @@ type watches struct {
 	applicationPolicyListCancel     func()
 	subscriptionPolicyListCancel    func()
 	applicationKeyMappingListCancel func()
+	applicationMappingListCancel    func()
 	keyManagerCancel                func()
 	revokedTokenCancel              func()
 	throttleDataCancel              func()
@@ -85,6 +87,7 @@ type watches struct {
 	applicationPolicyListNonce     string
 	subscriptionPolicyListNonce    string
 	applicationKeyMappingListNonce string
+	applicationMappingListNonce    string
 	keyManagerNonce                string
 	revokedTokenNonce              string
 	throttleDataNonce              string
@@ -144,6 +147,9 @@ func (values *watches) Cancel() {
 	}
 	if values.applicationKeyMappingListCancel != nil {
 		values.applicationKeyMappingListCancel()
+	}
+	if values.applicationMappingListCancel != nil {
+		values.applicationMappingListCancel()
 	}
 	if values.keyManagerCancel != nil {
 		values.keyManagerCancel()
@@ -320,6 +326,16 @@ func (s *server) process(stream streamv3.Stream, reqCh <-chan *discovery.Discove
 			}
 			values.applicationKeyMappingListNonce = nonce
 
+		case resp, more := <-values.applicationMappingList:
+			if !more {
+				return status.Errorf(codes.Unavailable, "applicationMappingList watch failed")
+			}
+			nonce, err := send(resp)
+			if err != nil {
+				return err
+			}
+			values.applicationMappingListNonce = nonce
+
 		case resp, more := <-values.keyManagers:
 			if !more {
 				return status.Errorf(codes.Unavailable, "keyManagers watch failed")
@@ -486,6 +502,14 @@ func (s *server) process(stream streamv3.Stream, reqCh <-chan *discovery.Discove
 					}
 					values.applicationKeyMappingList = make(chan cache.Response, 1)
 					values.applicationKeyMappingListCancel = s.cache.CreateWatch(req, streamState, values.applicationKeyMappingList)
+				}
+			case req.TypeUrl == resource.ApplicationMappingListType:
+				if values.applicationMappingListNonce == "" || values.applicationMappingListNonce == nonce {
+					if values.applicationMappingListCancel != nil {
+						values.applicationMappingListCancel()
+					}
+					values.applicationMappingList = make(chan cache.Response, 1)
+					values.applicationMappingListCancel = s.cache.CreateWatch(req, streamState, values.applicationMappingList)
 				}
 			case req.TypeUrl == resource.KeyManagerType:
 				if values.keyManagerNonce == "" || values.keyManagerNonce == nonce {

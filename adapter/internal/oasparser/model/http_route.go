@@ -37,8 +37,8 @@ import (
 type ResourceParams struct {
 	AuthSchemes               map[string]dpv1alpha1.Authentication
 	ResourceAuthSchemes       map[string]dpv1alpha1.Authentication
-	APIPolicies               map[string]dpv1alpha1.APIPolicy
-	ResourceAPIPolicies       map[string]dpv1alpha1.APIPolicy
+	APIPolicies               map[string]dpv1alpha2.APIPolicy
+	ResourceAPIPolicies       map[string]dpv1alpha2.APIPolicy
 	InterceptorServiceMapping map[string]dpv1alpha1.InterceptorService
 	BackendJWTMapping         map[string]dpv1alpha1.BackendJWT
 	BackendMapping            map[string]*dpv1alpha1.ResolvedBackend
@@ -62,7 +62,7 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 	if outputAuthScheme != nil {
 		authScheme = *outputAuthScheme
 	}
-	var apiPolicy *dpv1alpha1.APIPolicy
+	var apiPolicy *dpv1alpha2.APIPolicy
 	if outputAPIPolicy != nil {
 		apiPolicy = *outputAPIPolicy
 	}
@@ -282,7 +282,6 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 		resourceAPIPolicy = concatAPIPolicies(resourceAPIPolicy, nil)
 		resourceAuthScheme = concatAuthSchemes(resourceAuthScheme, nil)
 		resourceRatelimitPolicy = concatRateLimitPolicies(resourceRatelimitPolicy, nil)
-
 		addOperationLevelInterceptors(&policies, resourceAPIPolicy, resourceParams.InterceptorServiceMapping, resourceParams.BackendMapping, httpRoute.Namespace)
 
 		loggers.LoggerOasparser.Debugf("Calculating auths for API ..., API_UUID = %v", swagger.UUID)
@@ -408,7 +407,7 @@ func parseBackendJWTTokenToInternal(backendJWTToken dpv1alpha1.BackendJWTSpec) *
 	return backendJWTTokenInternal
 }
 
-func getCorsConfigFromAPIPolicy(apiPolicy *dpv1alpha1.APIPolicy) *CorsConfig {
+func getCorsConfigFromAPIPolicy(apiPolicy *dpv1alpha2.APIPolicy) *CorsConfig {
 	var corsConfig *CorsConfig
 	if apiPolicy != nil && apiPolicy.Spec.Override != nil {
 		if apiPolicy.Spec.Override.CORSPolicy != nil {
@@ -442,7 +441,7 @@ func parseRateLimitPolicyToInternal(ratelimitPolicy *dpv1alpha1.RateLimitPolicy)
 }
 
 // addOperationLevelInterceptors add the operation level interceptor policy to the policies
-func addOperationLevelInterceptors(policies *OperationPolicies, apiPolicy *dpv1alpha1.APIPolicy,
+func addOperationLevelInterceptors(policies *OperationPolicies, apiPolicy *dpv1alpha2.APIPolicy,
 	interceptorServicesMapping map[string]dpv1alpha1.InterceptorService,
 	backendMapping map[string]*dpv1alpha1.ResolvedBackend, namespace string) {
 	if apiPolicy != nil && apiPolicy.Spec.Override != nil {
@@ -534,8 +533,8 @@ func concatRateLimitPolicies(schemeUp *dpv1alpha1.RateLimitPolicy, schemeDown *d
 	return &finalRateLimit
 }
 
-func concatAPIPolicies(schemeUp *dpv1alpha1.APIPolicy, schemeDown *dpv1alpha1.APIPolicy) *dpv1alpha1.APIPolicy {
-	apiPolicy := dpv1alpha1.APIPolicy{}
+func concatAPIPolicies(schemeUp *dpv1alpha2.APIPolicy, schemeDown *dpv1alpha2.APIPolicy) *dpv1alpha2.APIPolicy {
+	apiPolicy := dpv1alpha2.APIPolicy{}
 	if schemeUp != nil && schemeDown != nil {
 		apiPolicy.Spec.Override = utils.SelectPolicy(&schemeUp.Spec.Override, &schemeUp.Spec.Default, &schemeDown.Spec.Override, &schemeDown.Spec.Default)
 	} else if schemeUp != nil {

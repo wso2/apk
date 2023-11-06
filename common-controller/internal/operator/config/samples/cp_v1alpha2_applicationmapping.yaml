@@ -1,0 +1,13 @@
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  labels:
+    app.kubernetes.io/name: applicationmapping
+    app.kubernetes.io/instance: applicationmapping-sample
+    app.kubernetes.io/part-of: operator
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: operator
+  name: applicationmapping-sample
+spec:
+  applicationRef: application-sample
+  subscriptionRef: subscription-sample

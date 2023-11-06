@@ -36,7 +36,7 @@ import javax.net.ssl.SSLException;
  */
 public class GRPCUtils {
 
-    public static ManagedChannel createSecuredChannel(Logger logger, String host, int port) {
+    public static ManagedChannel createSecuredChannel(Logger logger, String host, int port, String hostname) {
         File certFile = Paths.get(ConfigHolder.getInstance().getEnvVarConfig().getEnforcerPublicKeyPath()).toFile();
         File keyFile = Paths.get(ConfigHolder.getInstance().getEnvVarConfig().getEnforcerPrivateKeyPath()).toFile();
         SslContext sslContext = null;
@@ -52,7 +52,7 @@ public class GRPCUtils {
         return NettyChannelBuilder.forAddress(host, port)
                 .useTransportSecurity()
                 .sslContext(sslContext)
-                .overrideAuthority(ConfigHolder.getInstance().getEnvVarConfig().getAdapterHostName())
+                .overrideAuthority(hostname)
                 .build();
     }
 

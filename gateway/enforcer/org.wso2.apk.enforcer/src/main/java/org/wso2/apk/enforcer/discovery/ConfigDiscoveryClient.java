@@ -46,6 +46,7 @@ public class ConfigDiscoveryClient implements Runnable {
     private static final Logger log = LogManager.getLogger(ConfigDiscoveryClient.class);
     private static ConfigDiscoveryClient instance;
     private final String host;
+    private final String hostname;
     private final int port;
     private final CountDownLatch latch;
     private ConfigDiscoveryServiceGrpc.ConfigDiscoveryServiceBlockingStub blockingStub;
@@ -55,8 +56,9 @@ public class ConfigDiscoveryClient implements Runnable {
      */
     private final Node node;
 
-    private ConfigDiscoveryClient(String host, int port, CountDownLatch latch) {
+    private ConfigDiscoveryClient(String host, String hostname, int port, CountDownLatch latch) {
         this.host = host;
+        this.hostname = hostname;
         this.port = port;
         this.latch = latch;
         this.node = XDSCommonUtils.generateXDSNode(AdapterConstants.COMMON_ENFORCER_LABEL);
@@ -73,8 +75,9 @@ public class ConfigDiscoveryClient implements Runnable {
     public static ConfigDiscoveryClient init(@NotNull CountDownLatch latch) {
         if (instance == null) {
             String adsHost = ConfigHolder.getInstance().getEnvVarConfig().getAdapterHost();
+            String adsHostname = ConfigHolder.getInstance().getEnvVarConfig().getAdapterHostname();
             int adsPort = Integer.parseInt(ConfigHolder.getInstance().getEnvVarConfig().getAdapterXdsPort());
-            instance = new ConfigDiscoveryClient(adsHost, adsPort, latch);
+            instance = new ConfigDiscoveryClient(adsHost, adsHostname, adsPort, latch);
         }
         return instance;
     }
@@ -105,7 +108,7 @@ public class ConfigDiscoveryClient implements Runnable {
                     }
                 } while (!channel.isShutdown());
             }
-            this.channel = GRPCUtils.createSecuredChannel(log, host, port);
+            this.channel = GRPCUtils.createSecuredChannel(log, host, port, hostname);
             this.blockingStub = ConfigDiscoveryServiceGrpc.newBlockingStub(channel);
         } else if (channel.getState(true) == ConnectivityState.READY) {
             XdsSchedulerManager.getInstance().stopConfigDiscoveryScheduling();

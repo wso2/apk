@@ -216,14 +216,12 @@ public class JWTUtils {
      * @param apiKeyValidationInfoDTO empty JWT info DTO to be populated with anonymous details
      * @param kmReference             name of the token service
      */
-    public static void updateApplicationNameForSubscriptionDisabledKM(APIKeyValidationInfoDTO apiKeyValidationInfoDTO
-            , String kmReference) {
+    public static void updateApplicationNameForSubscriptionDisabledFlow(APIKeyValidationInfoDTO apiKeyValidationInfoDTO,
+            String kmReference) {
 
         String applicationRef = APIConstants.ANONYMOUS_PREFIX + kmReference;
         apiKeyValidationInfoDTO.setApplicationName(applicationRef);
-        apiKeyValidationInfoDTO.setApplicationId(-1);
         apiKeyValidationInfoDTO.setApplicationUUID(UUID.nameUUIDFromBytes(applicationRef.getBytes(StandardCharsets.UTF_8)).toString());
-        apiKeyValidationInfoDTO.setApplicationTier(APIConstants.UNLIMITED_TIER);
     }
 
     public static String getJWTTokenIdentifier(SignedJWTInfo signedJWTInfo) {

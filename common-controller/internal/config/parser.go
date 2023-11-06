@@ -72,3 +72,14 @@ func ReadConfigs() *Config {
 	})
 	return controllerConfig
 }
+
+// ClearLogConfigInstance removes the existing configuration.
+// Then the log configuration can be re-initialized.
+func ClearLogConfigInstance() {
+	pkgconf.ClearLogConfigInstance()
+}
+
+// GetLogConfigPath returns the file location of the log-config path
+func GetLogConfigPath() (string, error) {
+	return pkgconf.GetLogConfigPath()
+}

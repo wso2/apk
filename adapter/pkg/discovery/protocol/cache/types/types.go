@@ -34,6 +34,8 @@ const (
 	APKMgtApplicationList
 	Application
 	Subscription
+	ApplicationMapping
+	ApplicationMappingList
 	JWTIssuer
 	UnknownType // token to count the total number of supported types
 )

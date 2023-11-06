@@ -196,6 +196,11 @@ private static final long serialVersionUID = 0L;
             environment_ = s;
             break;
           }
+          case 224: {
+
+            subscriptionValidation_ = input.readBool();
+            break;
+          }
           default: {
             if (!parseUnknownField(
                 input, unknownFields, extensionRegistry, tag)) {
@@ -876,6 +881,17 @@ private static final long serialVersionUID = 0L;
     }
   }
 
+  public static final int SUBSCRIPTIONVALIDATION_FIELD_NUMBER = 28;
+  private boolean subscriptionValidation_;
+  /**
+   * <code>bool subscriptionValidation = 28;</code>
+   * @return The subscriptionValidation.
+   */
+  @java.lang.Override
+  public boolean getSubscriptionValidation() {
+    return subscriptionValidation_;
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -949,6 +965,9 @@ private static final long serialVersionUID = 0L;
     }
     if (!getEnvironmentBytes().isEmpty()) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 27, environment_);
+    }
+    if (subscriptionValidation_ != false) {
+      output.writeBool(28, subscriptionValidation_);
     }
     unknownFields.writeTo(output);
   }
@@ -1027,6 +1046,10 @@ private static final long serialVersionUID = 0L;
     if (!getEnvironmentBytes().isEmpty()) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(27, environment_);
     }
+    if (subscriptionValidation_ != false) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeBoolSize(28, subscriptionValidation_);
+    }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
     return size;
@@ -1085,6 +1108,8 @@ private static final long serialVersionUID = 0L;
         .equals(other.getApiDefinitionFile())) return false;
     if (!getEnvironment()
         .equals(other.getEnvironment())) return false;
+    if (getSubscriptionValidation()
+        != other.getSubscriptionValidation()) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -1146,6 +1171,9 @@ private static final long serialVersionUID = 0L;
     hash = (53 * hash) + getApiDefinitionFile().hashCode();
     hash = (37 * hash) + ENVIRONMENT_FIELD_NUMBER;
     hash = (53 * hash) + getEnvironment().hashCode();
+    hash = (37 * hash) + SUBSCRIPTIONVALIDATION_FIELD_NUMBER;
+    hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+        getSubscriptionValidation());
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -1337,6 +1365,8 @@ private static final long serialVersionUID = 0L;
 
       environment_ = "";
 
+      subscriptionValidation_ = false;
+
       return this;
     }
 
@@ -1404,6 +1434,7 @@ private static final long serialVersionUID = 0L;
       }
       result.apiDefinitionFile_ = apiDefinitionFile_;
       result.environment_ = environment_;
+      result.subscriptionValidation_ = subscriptionValidation_;
       onBuilt();
       return result;
     }
@@ -1569,6 +1600,9 @@ private static final long serialVersionUID = 0L;
       if (!other.getEnvironment().isEmpty()) {
         environment_ = other.environment_;
         onChanged();
+      }
+      if (other.getSubscriptionValidation() != false) {
+        setSubscriptionValidation(other.getSubscriptionValidation());
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -3352,6 +3386,37 @@ private static final long serialVersionUID = 0L;
   checkByteStringIsUtf8(value);
       
       environment_ = value;
+      onChanged();
+      return this;
+    }
+
+    private boolean subscriptionValidation_ ;
+    /**
+     * <code>bool subscriptionValidation = 28;</code>
+     * @return The subscriptionValidation.
+     */
+    @java.lang.Override
+    public boolean getSubscriptionValidation() {
+      return subscriptionValidation_;
+    }
+    /**
+     * <code>bool subscriptionValidation = 28;</code>
+     * @param value The subscriptionValidation to set.
+     * @return This builder for chaining.
+     */
+    public Builder setSubscriptionValidation(boolean value) {
+      
+      subscriptionValidation_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>bool subscriptionValidation = 28;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearSubscriptionValidation() {
+      
+      subscriptionValidation_ = false;
       onChanged();
       return this;
     }

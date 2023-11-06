@@ -268,4 +268,10 @@ public interface ApiOrBuilder extends
    */
   com.google.protobuf.ByteString
       getEnvironmentBytes();
+
+  /**
+   * <code>bool subscriptionValidation = 28;</code>
+   * @return The subscriptionValidation.
+   */
+  boolean getSubscriptionValidation();
 }

@@ -66,6 +66,7 @@ type AdapterInternalAPI struct {
 	backendJWTTokenInfo      *BackendJWTTokenInfo
 	apiDefinitionFile        []byte
 	apiDefinitionEndpoint    string
+	subscriptionValidation   bool
 	APIProperties            []dpv1alpha2.Property
 	// GraphQLSchema              string
 	// GraphQLComplexities        GraphQLComplexityYaml
@@ -233,6 +234,11 @@ func (swagger *AdapterInternalAPI) GetAPIDefinitionEndpoint() string {
 	return swagger.apiDefinitionEndpoint
 }
 
+// GetSubscriptionValidation returns the subscription validation status.
+func (swagger *AdapterInternalAPI) GetSubscriptionValidation() bool {
+	return swagger.subscriptionValidation
+}
+
 // GetBackendJWTTokenInfo returns the BackendJWTTokenInfo Object.
 func (swagger *AdapterInternalAPI) GetBackendJWTTokenInfo() *BackendJWTTokenInfo {
 	return swagger.backendJWTTokenInfo
@@ -338,6 +344,11 @@ func (swagger *AdapterInternalAPI) SetAPIDefinitionFile(file []byte) {
 // SetAPIDefinitionEndpoint sets the API Definition Endpoint.
 func (swagger *AdapterInternalAPI) SetAPIDefinitionEndpoint(endpoint string) {
 	swagger.apiDefinitionEndpoint = endpoint
+}
+
+// SetSubscriptionValidation sets the subscription validation status.
+func (swagger *AdapterInternalAPI) SetSubscriptionValidation(subscriptionValidation bool) {
+	swagger.subscriptionValidation = subscriptionValidation
 }
 
 // SetName sets the name of the API

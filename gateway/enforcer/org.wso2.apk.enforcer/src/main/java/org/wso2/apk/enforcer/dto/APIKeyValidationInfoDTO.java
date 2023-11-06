@@ -42,19 +42,14 @@ public class APIKeyValidationInfoDTO implements Serializable {
     private String userType;
     private String endUserToken;
     private String endUserName;
-    private int applicationId;
     private String applicationName;
-    private String applicationTier;
     //use this to pass key validation status
     private int validationStatus;
     private long validityPeriod;
     private long issuedTime;
     private List<String> authorizedDomains;
-    //Following throttle data list can be use to hold throttle data and api level throttle key
-    //should be its first element.
-    private List<String> throttlingDataList;
     private int spikeArrestLimit;
-    private String subscriberTenantDomain;
+    private String subscriberOrganization;
     private String spikeArrestUnit;
     private boolean stopOnQuotaReach;
     //keeps productId of product for which the key was validated, if key was validated for an api this will be null
@@ -65,16 +60,10 @@ public class APIKeyValidationInfoDTO implements Serializable {
     private int graphQLMaxComplexity;
     private String apiVersion;
     private String apiUUID;
+    private String apiName;
+    private String apiContext;
     private String applicationUUID;
     private Map<String, String> appAttributes;
-
-    public List<String> getThrottlingDataList() {
-        return throttlingDataList;
-    }
-
-    public void setThrottlingDataList(List<String> throttlingDataList) {
-        this.throttlingDataList = throttlingDataList;
-    }
 
     public boolean isContentAware() {
         return contentAware;
@@ -86,11 +75,10 @@ public class APIKeyValidationInfoDTO implements Serializable {
 
     private Set<String> scopes;
 
-    private String apiName;
-
     private String consumerKey;
 
     private String apiPublisher;
+    private String securityScheme;
 
     public boolean isAuthorized() {
         return authorized;
@@ -140,28 +128,12 @@ public class APIKeyValidationInfoDTO implements Serializable {
         this.endUserName = endUserName;
     }
 
-    public int getApplicationId() {
-        return applicationId;
-    }
-
-    public void setApplicationId(int applicationId) {
-        this.applicationId = applicationId;
-    }
-
     public String getApplicationName() {
         return applicationName;
     }
 
     public void setApplicationName(String applicationName) {
         this.applicationName = applicationName;
-    }
-
-    public String getApplicationTier() {
-        return applicationTier;
-    }
-
-    public void setApplicationTier(String applicationTier) {
-        this.applicationTier = applicationTier;
     }
 
     public int getValidationStatus() {
@@ -212,6 +184,14 @@ public class APIKeyValidationInfoDTO implements Serializable {
         this.apiName = apiName;
     }
 
+    public String getApiContext() {
+        return apiContext;
+    }
+
+    public void setApiContext(String apiContext) {
+        this.apiContext = apiContext;
+    }
+
     public String getConsumerKey() {
         return consumerKey;
     }
@@ -226,6 +206,14 @@ public class APIKeyValidationInfoDTO implements Serializable {
 
     public void setApiPublisher(String apiPublisher) {
         this.apiPublisher = apiPublisher;
+    }
+
+    public String getSecurityScheme() {
+        return securityScheme;
+    }
+
+    public void setSecurityScheme(String securityScheme) {
+        this.securityScheme = securityScheme;
     }
 
     public Set<String> getScopes() {
@@ -246,21 +234,21 @@ public class APIKeyValidationInfoDTO implements Serializable {
                 append(" , userType:").append(userType).
                 append(" , endUserToken:").append(endUserToken).
                 append(" , endUserName:").append(endUserName).
-                append(" , applicationId:").append(applicationId).
                 append(" , applicationName:").append(applicationName).
-                append(" , applicationTier:").append(applicationTier).
                 append(" , validationStatus:").append(validationStatus).
                 append(" , validityPeriod:").append(validityPeriod).
                 append(" , issuedTime:").append(issuedTime).
                 append(" , apiName:").append(apiName).
+                append(" , apiContext:").append(apiContext).
                 append(" , consumerKey:").append(consumerKey).
                 append(" , spikeArrestLimit:").append(spikeArrestLimit).
                 append(" , spikeArrestUnit:").append(spikeArrestUnit).
-                append(" , subscriberTenantDomain:").append(subscriberTenantDomain).
+                append(" , subscriberOrganization:").append(subscriberOrganization).
                 append(" , stopOnQuotaReach:").append(stopOnQuotaReach).
                 append(" , productName:").append(productName).
                 append(" , productProvider:").append(productProvider).
                 append(" , apiPublisher:").append(apiPublisher).
+                append(" , securityScheme:").append(securityScheme).
                 append(" , graphQLMaxDepth:").append(graphQLMaxDepth).
                 append(" , graphQLMaxComplexity:").append(graphQLMaxComplexity);
 
@@ -311,12 +299,12 @@ public class APIKeyValidationInfoDTO implements Serializable {
         this.stopOnQuotaReach = stopOnQuotaReach;
     }
 
-    public String getSubscriberTenantDomain() {
-        return subscriberTenantDomain;
+    public String getSubscriberOrganization() {
+        return subscriberOrganization;
     }
 
-    public void setSubscriberTenantDomain(String subscriberTenantDomain) {
-        this.subscriberTenantDomain = subscriberTenantDomain;
+    public void setSubscriberOrganization(String subscriberOrganization) {
+        this.subscriberOrganization = subscriberOrganization;
     }
 
     public void setProductName(String productName) {

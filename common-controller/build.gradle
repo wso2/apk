@@ -65,11 +65,31 @@ tasks.register('go_test', Exec) {
 tasks.named('go_revive_run').configure { 
     finalizedBy go_tidy
     finalizedBy go_test
+    dependsOn operator_make
+    dependsOn operator_make_manifests
+}
+
+tasks.register('operator_make', Exec) {
+    println("Running make -C $rootDir/../common-controller/internal/operator")
+    group 'go'
+    description 'Running go mod tidy.'
+    commandLine 'make', '-C', "$rootDir/../common-controller/internal/operator"
+    finalizedBy operator_make_manifests
+}
+
+tasks.register('operator_make_manifests', Exec) {
+    group 'go'
+    description 'Running go mod tidy.'
+    commandLine 'make', 'manifests', '-C', "$rootDir/../common-controller/internal/operator"
+    dependsOn operator_make
+    finalizedBy go_build
 }
 
 tasks.named('go_build').configure {
+    dependsOn operator_make_manifests
     dependsOn go_revive_run
     dependsOn go_vet
+    println("Running go build")
     finalizedBy docker_build
 }
 

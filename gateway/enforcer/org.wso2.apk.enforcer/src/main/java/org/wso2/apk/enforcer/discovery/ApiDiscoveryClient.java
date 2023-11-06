@@ -50,6 +50,7 @@ public class ApiDiscoveryClient implements Runnable {
     private static ApiDiscoveryClient instance;
     private final APIFactory apiFactory;
     private final String host;
+    private final String hostname;
     private final int port;
     private ManagedChannel channel;
     private ApiDiscoveryServiceGrpc.ApiDiscoveryServiceStub stub;
@@ -76,8 +77,9 @@ public class ApiDiscoveryClient implements Runnable {
      */
     private final Node node;
 
-    private ApiDiscoveryClient(String host, int port) {
+    private ApiDiscoveryClient(String host, String hostname, int port) {
         this.host = host;
+        this.hostname = hostname;
         this.port = port;
         this.apiFactory = APIFactory.getInstance();
         this.node = XDSCommonUtils.generateXDSNode(ConfigHolder.getInstance().getEnvVarConfig().getEnforcerLabel());
@@ -97,7 +99,7 @@ public class ApiDiscoveryClient implements Runnable {
                     }
                 } while (!channel.isShutdown());
             }
-            this.channel = GRPCUtils.createSecuredChannel(logger, host, port);
+            this.channel = GRPCUtils.createSecuredChannel(logger, host, port, hostname);
             this.stub = ApiDiscoveryServiceGrpc.newStub(channel);
         } else if (channel.getState(true) == ConnectivityState.READY) {
             XdsSchedulerManager.getInstance().stopAPIDiscoveryScheduling();
@@ -107,8 +109,9 @@ public class ApiDiscoveryClient implements Runnable {
     public static ApiDiscoveryClient getInstance() {
         if (instance == null) {
             String adsHost = ConfigHolder.getInstance().getEnvVarConfig().getAdapterHost();
+            String adsHostname = ConfigHolder.getInstance().getEnvVarConfig().getAdapterHostname();
             int adsPort = Integer.parseInt(ConfigHolder.getInstance().getEnvVarConfig().getAdapterXdsPort());
-            instance = new ApiDiscoveryClient(adsHost, adsPort);
+            instance = new ApiDiscoveryClient(adsHost, adsHostname, adsPort);
         }
         return instance;
     }

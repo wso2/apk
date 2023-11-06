@@ -37,7 +37,7 @@ public class AuthenticationContext {
     private String subscriber;
     private List<String> throttlingDataList;
     private int spikeArrestLimit;
-    private String subscriberTenantDomain;
+    private String subscriberOrganization;
     private String spikeArrestUnit;
     private boolean stopOnQuotaReach;
     private String apiPublisher;
@@ -56,7 +56,7 @@ public class AuthenticationContext {
         this.consumerKey = UNKNOWN_VALUE;
         this.spikeArrestUnit = "";
         this.subscriber = UNKNOWN_VALUE;
-        this.subscriberTenantDomain = UNKNOWN_VALUE;
+        this.subscriberOrganization = UNKNOWN_VALUE;
     }
 
     public List<String> getThrottlingDataList() {
@@ -227,12 +227,12 @@ public class AuthenticationContext {
      *
      * @return Subscriber Tenant Domain
      */
-    public String getSubscriberTenantDomain() {
-        return subscriberTenantDomain;
+    public String getSubscriberOrganization() {
+        return subscriberOrganization;
     }
 
-    public void setSubscriberTenantDomain(String subscriberTenantDomain) {
-        this.subscriberTenantDomain = subscriberTenantDomain;
+    public void setSubscriberOrganization(String subscriberOrganization) {
+        this.subscriberOrganization = subscriberOrganization;
     }
 
     /**

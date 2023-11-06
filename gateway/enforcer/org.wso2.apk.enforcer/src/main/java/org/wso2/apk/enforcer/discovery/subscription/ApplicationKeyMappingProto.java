@@ -30,16 +30,15 @@ public final class ApplicationKeyMappingProto {
     java.lang.String[] descriptorData = {
       "\n9wso2/discovery/subscription/applicatio" +
       "n_key_mapping.proto\022\033wso2.discovery.subs" +
-      "cription\"\274\001\n\025ApplicationKeyMapping\022\023\n\013co" +
-      "nsumerKey\030\001 \001(\t\022\017\n\007keyType\030\002 \001(\t\022\022\n\nkeyM" +
-      "anager\030\003 \001(\t\022\025\n\rapplicationId\030\004 \001(\005\022\020\n\010t" +
-      "enantId\030\005 \001(\005\022\024\n\014tenantDomain\030\006 \001(\t\022\021\n\tt" +
-      "imestamp\030\007 \001(\003\022\027\n\017applicationUUID\030\010 \001(\tB" +
-      "\235\001\n,org.wso2.apk.enforcer.discovery.subs" +
-      "criptionB\032ApplicationKeyMappingProtoP\001ZO" +
-      "github.com/envoyproxy/go-control-plane/w" +
-      "so2/discovery/subscription;subscriptionb" +
-      "\006proto3"
+      "cription\"\232\001\n\025ApplicationKeyMapping\022\027\n\017ap" +
+      "plicationUUID\030\001 \001(\t\022\026\n\016securityScheme\030\002 " +
+      "\001(\t\022\035\n\025applicationIdentifier\030\003 \001(\t\022\017\n\007ke" +
+      "yType\030\004 \001(\t\022\r\n\005envID\030\005 \001(\t\022\021\n\ttimestamp\030" +
+      "\006 \001(\003B\235\001\n,org.wso2.apk.enforcer.discover" +
+      "y.subscriptionB\032ApplicationKeyMappingPro" +
+      "toP\001ZOgithub.com/envoyproxy/go-control-p" +
+      "lane/wso2/discovery/subscription;subscri" +
+      "ptionb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -50,7 +49,7 @@ public final class ApplicationKeyMappingProto {
     internal_static_wso2_discovery_subscription_ApplicationKeyMapping_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_wso2_discovery_subscription_ApplicationKeyMapping_descriptor,
-        new java.lang.String[] { "ConsumerKey", "KeyType", "KeyManager", "ApplicationId", "TenantId", "TenantDomain", "Timestamp", "ApplicationUUID", });
+        new java.lang.String[] { "ApplicationUUID", "SecurityScheme", "ApplicationIdentifier", "KeyType", "EnvID", "Timestamp", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)

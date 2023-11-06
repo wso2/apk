@@ -131,8 +131,7 @@ public class AuthServer {
             // Initialize JMX Agent
             JMXAgent.initJMXAgent();
 
-            //TODO: Get the tenant domain from config
-            SubscriptionDataHolder.getInstance().getTenantSubscriptionStore().initializeStore();
+            SubscriptionDataHolder.getInstance().getSubscriptionDataStore().initializeStore();
             RevokedJWTDataHolder.getInstance().init();
 
             // Create a new server to listen on port 8082

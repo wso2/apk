@@ -55,6 +55,7 @@ public class JWTIssuerDiscoveryClient implements Runnable {
     private StreamObserver<DiscoveryRequest> reqObserver;
     private final SubscriptionDataStoreImpl subscriptionDataStore;
     private final String host;
+    private final String hostname;
     private final int port;
 
     /**
@@ -80,8 +81,9 @@ public class JWTIssuerDiscoveryClient implements Runnable {
      */
     private final Node node;
 
-    private JWTIssuerDiscoveryClient(String host, int port) {
+    private JWTIssuerDiscoveryClient(String host, String hostname, int port) {
         this.host = host;
+        this.hostname = hostname;
         this.port = port;
         this.subscriptionDataStore = SubscriptionDataStoreImpl.getInstance();
         initConnection();
@@ -101,7 +103,7 @@ public class JWTIssuerDiscoveryClient implements Runnable {
                     }
                 } while (!channel.isShutdown());
             }
-            this.channel = GRPCUtils.createSecuredChannel(logger, host, port);
+            this.channel = GRPCUtils.createSecuredChannel(logger, host, port, hostname);
             this.stub = JWTIssuerDiscoveryServiceGrpc.newStub(channel);
         } else if (channel.getState(true) == ConnectivityState.READY) {
             XdsSchedulerManager.getInstance().stopJWTIssuerDiscoveryScheduling();
@@ -111,8 +113,9 @@ public class JWTIssuerDiscoveryClient implements Runnable {
     public static JWTIssuerDiscoveryClient getInstance() {
         if (instance == null) {
             String sdsHost = ConfigHolder.getInstance().getEnvVarConfig().getAdapterHost();
+            String sdsHostname = ConfigHolder.getInstance().getEnvVarConfig().getAdapterHostname();
             int sdsPort = Integer.parseInt(ConfigHolder.getInstance().getEnvVarConfig().getAdapterXdsPort());
-            instance = new JWTIssuerDiscoveryClient(sdsHost, sdsPort);
+            instance = new JWTIssuerDiscoveryClient(sdsHost,sdsHostname, sdsPort);
         }
         return instance;
     }

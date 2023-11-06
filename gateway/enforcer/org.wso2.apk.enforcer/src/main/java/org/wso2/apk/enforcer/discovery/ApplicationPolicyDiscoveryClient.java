@@ -54,6 +54,7 @@ public class ApplicationPolicyDiscoveryClient implements Runnable {
     private StreamObserver<DiscoveryRequest> reqObserver;
     private final SubscriptionDataStoreImpl subscriptionDataStore;
     private final String host;
+    private final String hostname;
     private final int port;
 
     /**
@@ -79,8 +80,9 @@ public class ApplicationPolicyDiscoveryClient implements Runnable {
      */
     private final Node node;
 
-    private ApplicationPolicyDiscoveryClient(String host, int port) {
+    private ApplicationPolicyDiscoveryClient(String host, String hostname, int port) {
         this.host = host;
+        this.hostname = hostname;
         this.port = port;
         this.subscriptionDataStore = SubscriptionDataStoreImpl.getInstance();
         initConnection();
@@ -100,7 +102,7 @@ public class ApplicationPolicyDiscoveryClient implements Runnable {
                     }
                 } while (!channel.isShutdown());
             }
-            this.channel = GRPCUtils.createSecuredChannel(logger, host, port);
+            this.channel = GRPCUtils.createSecuredChannel(logger, host, port, hostname);
             this.stub = ApplicationPolicyDiscoveryServiceGrpc.newStub(channel);
         } else if (channel.getState(true) == ConnectivityState.READY) {
             XdsSchedulerManager.getInstance().stopApplicationPolicyDiscoveryScheduling();
@@ -110,8 +112,9 @@ public class ApplicationPolicyDiscoveryClient implements Runnable {
     public static ApplicationPolicyDiscoveryClient getInstance() {
         if (instance == null) {
             String sdsHost = ConfigHolder.getInstance().getEnvVarConfig().getAdapterHost();
+            String sdsHostname = ConfigHolder.getInstance().getEnvVarConfig().getAdapterHostname();
             int sdsPort = Integer.parseInt(ConfigHolder.getInstance().getEnvVarConfig().getAdapterXdsPort());
-            instance = new ApplicationPolicyDiscoveryClient(sdsHost, sdsPort);
+            instance = new ApplicationPolicyDiscoveryClient(sdsHost, sdsHostname, sdsPort);
         }
         return instance;
     }

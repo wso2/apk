@@ -8,16 +8,16 @@ public interface ApplicationOrBuilder extends
     com.google.protobuf.MessageOrBuilder {
 
   /**
-   * <code>string eventId = 1;</code>
-   * @return The eventId.
+   * <code>string uuid = 1;</code>
+   * @return The uuid.
    */
-  java.lang.String getEventId();
+  java.lang.String getUuid();
   /**
-   * <code>string eventId = 1;</code>
-   * @return The bytes for eventId.
+   * <code>string uuid = 1;</code>
+   * @return The bytes for uuid.
    */
   com.google.protobuf.ByteString
-      getEventIdBytes();
+      getUuidBytes();
 
   /**
    * <code>string name = 2;</code>
@@ -32,47 +32,23 @@ public interface ApplicationOrBuilder extends
       getNameBytes();
 
   /**
-   * <code>string uuid = 3;</code>
-   * @return The uuid.
-   */
-  java.lang.String getUuid();
-  /**
-   * <code>string uuid = 3;</code>
-   * @return The bytes for uuid.
-   */
-  com.google.protobuf.ByteString
-      getUuidBytes();
-
-  /**
-   * <code>string owner = 4;</code>
+   * <code>string owner = 3;</code>
    * @return The owner.
    */
   java.lang.String getOwner();
   /**
-   * <code>string owner = 4;</code>
+   * <code>string owner = 3;</code>
    * @return The bytes for owner.
    */
   com.google.protobuf.ByteString
       getOwnerBytes();
 
   /**
-   * <code>string policy = 5;</code>
-   * @return The policy.
-   */
-  java.lang.String getPolicy();
-  /**
-   * <code>string policy = 5;</code>
-   * @return The bytes for policy.
-   */
-  com.google.protobuf.ByteString
-      getPolicyBytes();
-
-  /**
-   * <code>map&lt;string, string&gt; attributes = 6;</code>
+   * <code>map&lt;string, string&gt; attributes = 4;</code>
    */
   int getAttributesCount();
   /**
-   * <code>map&lt;string, string&gt; attributes = 6;</code>
+   * <code>map&lt;string, string&gt; attributes = 4;</code>
    */
   boolean containsAttributes(
       java.lang.String key);
@@ -83,69 +59,21 @@ public interface ApplicationOrBuilder extends
   java.util.Map<java.lang.String, java.lang.String>
   getAttributes();
   /**
-   * <code>map&lt;string, string&gt; attributes = 6;</code>
+   * <code>map&lt;string, string&gt; attributes = 4;</code>
    */
   java.util.Map<java.lang.String, java.lang.String>
   getAttributesMap();
   /**
-   * <code>map&lt;string, string&gt; attributes = 6;</code>
+   * <code>map&lt;string, string&gt; attributes = 4;</code>
    */
 
   java.lang.String getAttributesOrDefault(
       java.lang.String key,
       java.lang.String defaultValue);
   /**
-   * <code>map&lt;string, string&gt; attributes = 6;</code>
+   * <code>map&lt;string, string&gt; attributes = 4;</code>
    */
 
   java.lang.String getAttributesOrThrow(
       java.lang.String key);
-
-  /**
-   * <code>repeated .wso2.discovery.subscription.Application.Key keys = 7;</code>
-   */
-  java.util.List<org.wso2.apk.enforcer.discovery.subscription.Application.Key> 
-      getKeysList();
-  /**
-   * <code>repeated .wso2.discovery.subscription.Application.Key keys = 7;</code>
-   */
-  org.wso2.apk.enforcer.discovery.subscription.Application.Key getKeys(int index);
-  /**
-   * <code>repeated .wso2.discovery.subscription.Application.Key keys = 7;</code>
-   */
-  int getKeysCount();
-  /**
-   * <code>repeated .wso2.discovery.subscription.Application.Key keys = 7;</code>
-   */
-  java.util.List<? extends org.wso2.apk.enforcer.discovery.subscription.Application.KeyOrBuilder> 
-      getKeysOrBuilderList();
-  /**
-   * <code>repeated .wso2.discovery.subscription.Application.Key keys = 7;</code>
-   */
-  org.wso2.apk.enforcer.discovery.subscription.Application.KeyOrBuilder getKeysOrBuilder(
-      int index);
-
-  /**
-   * <code>string organization = 8;</code>
-   * @return The organization.
-   */
-  java.lang.String getOrganization();
-  /**
-   * <code>string organization = 8;</code>
-   * @return The bytes for organization.
-   */
-  com.google.protobuf.ByteString
-      getOrganizationBytes();
-
-  /**
-   * <code>string timeStamp = 9;</code>
-   * @return The timeStamp.
-   */
-  java.lang.String getTimeStamp();
-  /**
-   * <code>string timeStamp = 9;</code>
-   * @return The bytes for timeStamp.
-   */
-  com.google.protobuf.ByteString
-      getTimeStampBytes();
 }

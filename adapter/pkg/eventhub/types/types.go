@@ -17,62 +17,6 @@
 
 package types
 
-// Subscription for struct subscription
-type Subscription struct {
-	SubscriptionID    int32  `json:"subscriptionId"`
-	SubscriptionUUID  string `json:"subscriptionUUID"`
-	PolicyID          string `json:"policyId"`
-	APIID             int32  `json:"apiId"`
-	APIUUID           string `json:"apiUUID"`
-	AppID             int32  `json:"appId" json:"applicationId"`
-	ApplicationUUID   string `json:"applicationUUID"`
-	SubscriptionState string `json:"subscriptionState"`
-	TenantID          int32  `json:"tenanId,omitempty"`
-	TenantDomain      string `json:"tenanDomain,omitempty"`
-	TimeStamp         int64  `json:"timeStamp,omitempty"`
-}
-
-// SubscriptionList for struct list of applications
-type SubscriptionList struct {
-	List []Subscription `json:"list"`
-}
-
-// Application for struct application
-type Application struct {
-	UUID         string            `json:"uuid"`
-	ID           int32             `json:"id" json:"applicationId"`
-	Name         string            `json:"name" json:"applicationName"`
-	SubName      string            `json:"subName" json:"subscriber"`
-	Policy       string            `json:"policy" json:"applicationPolicy"`
-	TokenType    string            `json:"tokenType"`
-	Attributes   map[string]string `json:"attributes"`
-	TenantID     int32             `json:"tenanId,omitempty"`
-	TenantDomain string            `json:"tenanDomain,omitempty"`
-	TimeStamp    int64             `json:"timeStamp,omitempty"`
-}
-
-// ApplicationList for struct list of application
-type ApplicationList struct {
-	List []Application `json:"list"`
-}
-
-// ApplicationKeyMapping for struct applicationKeyMapping
-type ApplicationKeyMapping struct {
-	ApplicationID   int32  `json:"applicationId"`
-	ApplicationUUID string `json:"applicationUUID"`
-	ConsumerKey     string `json:"consumerKey"`
-	KeyType         string `json:"keyType"`
-	KeyManager      string `json:"keyManager"`
-	TenantID        int32  `json:"tenanId,omitempty"`
-	TenantDomain    string `json:"tenanDomain,omitempty"`
-	TimeStamp       int64  `json:"timeStamp,omitempty"`
-}
-
-// ApplicationKeyMappingList for struct list of applicationKeyMapping
-type ApplicationKeyMappingList struct {
-	List []ApplicationKeyMapping `json:"list"`
-}
-
 // API for struct Api
 type API struct {
 	APIID            int    `json:"apiId"`
