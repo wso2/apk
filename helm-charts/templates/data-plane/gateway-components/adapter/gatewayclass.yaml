@@ -3,4 +3,4 @@ kind: GatewayClass
 metadata:
   name: default
 spec:
-  controllerName: "example.net/gateway-controller"
+  controllerName: "wso2.com/apk-envoy"
