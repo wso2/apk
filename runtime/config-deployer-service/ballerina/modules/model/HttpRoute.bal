@@ -132,6 +132,7 @@ public type Httproute record {|
     string kind = "HTTPRoute";
     Metadata metadata;
     HTTPRouteSpec spec;
+    anydata status = ();
 |};
 
 public type ParentReference record {|
