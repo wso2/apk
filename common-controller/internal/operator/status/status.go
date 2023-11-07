@@ -21,7 +21,7 @@ import (
 	"context"
 
 	"github.com/wso2/apk/common-controller/internal/loggers"
-	dpv1alpha1 "github.com/wso2/apk/common-controller/internal/operator/api/dp/v1alpha1"
+	dpv1alpha1 "github.com/wso2/apk/common-controller/internal/operator/apis/dp/v1alpha1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/util/retry"
 	"sigs.k8s.io/controller-runtime/pkg/client"
