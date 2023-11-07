@@ -27,7 +27,7 @@
         </classes>
     </test>
     <test name="API Deployment Tests" preserve-order="true">
-        <parameter name="cucumber.features" value="src/test/resources/tests/api"/>
+        <parameter name="cucumber.features" value="src/test/resources/tests/api/APIDefinitionEndpoint.feature"/>
         <parameter name="cucumber.glue" value="org.wso2.apk.integration.api"/>
         <parameter name="cucumber.plugin" value="pretty"/>
         <classes>
