@@ -32,6 +32,7 @@ const (
 	Create string = "CREATED"
 	Update string = "UPDATED"
 	Delete string = "DELETED"
+	Accept string = "Accepted"
 )
 
 // Environment variable names and default values

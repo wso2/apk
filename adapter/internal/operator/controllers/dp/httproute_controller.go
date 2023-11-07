@@ -115,7 +115,7 @@ func NewHTTPRouteController(mgr manager.Manager, operatorDataStore *synchronizer
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.13.0/pkg/reconcile
 func (httpRouteReconciler *HTTPRouteReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	// Check whether the Httproute CR exist, if not consider as a DELETE event.
-	loggers.LoggerAPKOperator.Infof("Reconciling HttpRoute...")
+	loggers.LoggerAPKOperator.Infof("Reconciling HttpRoute... %s", req.NamespacedName.String())
 	var httproute gwapiv1b1.HTTPRoute
 	if err := httpRouteReconciler.client.Get(ctx, req.NamespacedName, &httproute); err != nil {
 		return ctrl.Result{}, nil

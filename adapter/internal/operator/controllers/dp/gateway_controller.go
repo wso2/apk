@@ -174,7 +174,7 @@ func NewGatewayController(mgr manager.Manager, operatorDataStore *synchronizer.O
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.13.0/pkg/reconcile
 func (gatewayReconciler *GatewayReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	// Check whether the Gateway CR exist, if not consider as a DELETE event.
-	loggers.LoggerAPKOperator.Infof("Reconciling gateway...")
+	loggers.LoggerAPKOperator.Infof("Reconciling gateway... %s", req.NamespacedName.String())
 	var gatewayDef gwapiv1b1.Gateway
 	if err := gatewayReconciler.client.Get(ctx, req.NamespacedName, &gatewayDef); err != nil {
 		gatewayState, found := gatewayReconciler.ods.GetCachedGateway(req.NamespacedName)
@@ -191,19 +191,32 @@ func (gatewayReconciler *GatewayReconciler) Reconcile(ctx context.Context, req c
 	var gwCondition []metav1.Condition = gatewayDef.Status.Conditions
 
 	gatewayStateData, listenerStatueses, err := gatewayReconciler.resolveGatewayState(ctx, gatewayDef)
+	// Check whether the status change is needed for gateway
+	statusChanged := isStatusChanged(gatewayDef, listenerStatueses)
+	loggers.LoggerAPKOperator.Infof("Status changed ? %+v", statusChanged)
 	if err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3122, logging.BLOCKER, "Error resolving Gateway State %s: %v", req.NamespacedName.String(), err))
 		return ctrl.Result{}, err
 	}
+	state := constants.Update
+	var (
+		events        = make([]string, 0)
+		updated       = false
+		cachedGateway synchronizer.GatewayState
+	)
 
-	if gwCondition[0].Type != "Accepted" {
+	if gwCondition[0].Status != metav1.ConditionTrue {
 		gatewayState := gatewayReconciler.ods.AddGatewayState(gatewayDef, gatewayStateData)
 		*gatewayReconciler.ch <- synchronizer.GatewayEvent{EventType: constants.Create, Event: gatewayState}
-		gatewayReconciler.handleGatewayStatus(req.NamespacedName, constants.Create, []string{}, listenerStatueses)
-	} else if cachedGateway, events, updated :=
+		state = constants.Create
+	} else if cachedGateway, events, updated =
 		gatewayReconciler.ods.UpdateGatewayState(&gatewayDef, gatewayStateData); updated {
 		*gatewayReconciler.ch <- synchronizer.GatewayEvent{EventType: constants.Update, Event: cachedGateway}
-		gatewayReconciler.handleGatewayStatus(req.NamespacedName, constants.Update, events, listenerStatueses)
+		state = constants.Update
+	}
+	if statusChanged || updated {
+		loggers.LoggerAPKOperator.Infof("Updating gateway status. Gateway: %s", utils.NamespacedName(&gatewayDef))
+		gatewayReconciler.handleGatewayStatus(req.NamespacedName, state, events, listenerStatueses)
 	}
 	setReadiness.Do(gatewayReconciler.setGatewayReadiness)
 	return ctrl.Result{}, nil
@@ -533,16 +546,13 @@ func (gatewayReconciler *GatewayReconciler) handleGatewaysForConfigMap(ctx conte
 
 // handleStatus updates the Gateway CR update
 func (gatewayReconciler *GatewayReconciler) handleGatewayStatus(gatewayKey types.NamespacedName, state string, events []string, listeners []gwapiv1b1.ListenerStatus) {
-	accept := false
 	message := ""
 	//event := ""
 
 	switch state {
 	case constants.Create:
-		accept = true
 		message = "Gateway is deployed successfully"
 	case constants.Update:
-		accept = true
 		message = fmt.Sprintf("Gateway update is deployed successfully. %v Updated", events)
 	}
 	timeNow := metav1.Now()
@@ -559,17 +569,12 @@ func (gatewayReconciler *GatewayReconciler) handleGatewayStatus(gatewayKey types
 			hCopy := h.DeepCopy()
 			var gwCondition []metav1.Condition = hCopy.Status.Conditions
 			generation := hCopy.ObjectMeta.Generation
-			gwCondition[0].Status = "Unknown"
-			if accept {
-				gwCondition[0].Status = "True"
-			} else {
-				gwCondition[0].Status = "False"
-			}
+			gwCondition[0].Status = "True"
 			gwCondition[0].Message = message
 			gwCondition[0].LastTransitionTime = timeNow
 			// gwCondition[0].Reason = append(gwCondition[0].Reason, event)
 			gwCondition[0].Reason = "Reconciled"
-			gwCondition[0].Type = state
+			gwCondition[0].Type = constants.Accept
 			for i := range gwCondition {
 				// Assign generation to ObservedGeneration
 				gwCondition[i].ObservedGeneration = generation
@@ -624,7 +629,6 @@ func (gatewayReconciler *GatewayReconciler) handleHTTPRoutes(ctx context.Context
 		return []reconcile.Request{}
 	}
 	requests := []reconcile.Request{}
-
 	for _, refs := range httpRoute.Spec.ParentRefs {
 		if *refs.Kind == constants.KindGateway {
 			namespace := ""
@@ -808,4 +812,28 @@ func getAttachedRoutesCountForListener(ctx context.Context, client k8client.Clie
 		}
 	}
 	return attachedRoutesCount, nil
+}
+
+func isStatusChanged(gateway gwapiv1b1.Gateway, statuses []gwapiv1b1.ListenerStatus) bool {
+	if len(gateway.Status.Listeners) != len(statuses) {
+		return true
+	}
+	for _, status1 := range gateway.Status.Listeners {
+		flag := false
+		for _, status2 := range statuses {
+			if status1.Name == status2.Name &&
+				status1.AttachedRoutes == status2.AttachedRoutes &&
+				len(status1.Conditions) == len(status2.Conditions) &&
+				len(status1.SupportedKinds) == len(status2.SupportedKinds) {
+				flag = common.BothListContainsSameConditions(status1.Conditions, status2.Conditions)
+				if flag {
+					continue
+				}
+			}
+		}
+		if !flag {
+			return true
+		}
+	}
+	return false
 }

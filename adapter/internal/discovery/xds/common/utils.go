@@ -137,3 +137,21 @@ func AreConditionsSame(condition1 metav1.Condition, condition2 metav1.Condition)
 		condition1.Message == condition2.Message &&
 		condition1.ObservedGeneration == condition2.ObservedGeneration
 }
+
+// BothListContainsSameConditions checks if two lists of metav1.Conditions contain the same conditions.
+// It returns true if all conditions in conditionList1 are found in conditionList2.
+func BothListContainsSameConditions(conditionList1 []metav1.Condition, conditionList2 []metav1.Condition) bool {
+	for _, condition1 := range conditionList1 {
+		flag := false
+		for _, condition2 := range conditionList2 {
+			flag = AreConditionsSame(condition1, condition2)
+			if (flag) {
+				continue
+			}
+		}
+		if (!flag) {
+			return false
+		}
+	}
+	return true
+}
