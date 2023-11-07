@@ -1,0 +1,22 @@
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  labels:
+    app.kubernetes.io/name: application
+    app.kubernetes.io/instance: application-sample
+    app.kubernetes.io/part-of: operator
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: operator
+  name: application-sample
+spec:
+  name: app1
+  owner: admin
+  attributes: 
+    attb1: value1
+    attb2: value2
+  securitySchemes:
+    oauth2:
+      environments:
+        - envId: dev
+          appId: 45f1c5c8-a92e-11ed-afa1-0242ac120002 # OAuth2 consumer key
+          keyType: PRODUCTION

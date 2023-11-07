@@ -54,6 +54,7 @@ public class APIConfig {
     private boolean systemAPI;
     private byte[] apiDefinition;
     private String environment;
+    private boolean subscriptionValidation;
     /**
      * getApiType returns the API type. This could be one of the following.
      * HTTP, WS, WEBHOOK
@@ -232,6 +233,14 @@ public class APIConfig {
         return apiDefinition;
     }
 
+    /**
+     * Returns the subscription validation status.
+     * @return true if subscription validation is enabled.
+     */
+    public boolean isSubscriptionValidation() {
+        return subscriptionValidation;
+    }
+
     public JWTConfigurationDto getJwtConfigurationDto() {
         return jwtConfigurationDto;
     }
@@ -270,6 +279,7 @@ public class APIConfig {
         private GraphQLSchemaDTO graphQLSchemaDTO;
         private boolean systemAPI;
         private byte[] apiDefinition;
+        private boolean subscriptionValidation;
         private JWTConfigurationDto jwtConfigurationDto;
         private String environment;
         public Builder(String name) {
@@ -374,14 +384,22 @@ public class APIConfig {
             this.jwtConfigurationDto = jwtConfigurationDto;
             return this;
         }
+
         public Builder apiDefinition(byte[] apiDefinition) {
             this.apiDefinition = apiDefinition;
             return this;
         }
+
         public Builder environment(String environment) {
             this.environment = environment;
             return this;
         }
+
+        public Builder subscriptionValidation(boolean subscriptionValidation) {
+            this.subscriptionValidation = subscriptionValidation;
+            return this;
+        }
+
         public APIConfig build() {
             APIConfig apiConfig = new APIConfig();
             apiConfig.name = this.name;
@@ -407,6 +425,7 @@ public class APIConfig {
             apiConfig.jwtConfigurationDto = this.jwtConfigurationDto;
             apiConfig.apiDefinition = this.apiDefinition;
             apiConfig.environment = this.environment;
+            apiConfig.subscriptionValidation = this.subscriptionValidation;
             return apiConfig;
         }
     }

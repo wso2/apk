@@ -46,6 +46,19 @@ const (
 	Error1105 = 1105
 )
 
+// Error Log Internal discovery(1400-1499) Config Constants
+// - LoggerXds
+const (
+	Error1400 = 1400
+	Error1401 = 1401
+	Error1402 = 1402
+	Error1403 = 1403
+	Error1410 = 1410
+	Error1411 = 1411
+	Error1413 = 1413
+	Error1414 = 1414
+)
+
 // Error Log Internal XDS(1700-1799) Config Constants
 // - LoggerXds
 const (

@@ -28,12 +28,15 @@ public class EnvVarConfig {
     private static final String TRUSTED_CA_CERTS_PATH = "TRUSTED_CA_CERTS_PATH";
     private static final String TRUST_DEFAULT_CERTS = "TRUST_DEFAULT_CERTS";
     private static final String ADAPTER_HOST_NAME = "ADAPTER_HOST_NAME";
+    private static final String COMMON_CONTROLLER_HOST_NAME = "COMMON_CONTROLLER_HOST_NAME";
     private static final String ENFORCER_PRIVATE_KEY_PATH = "ENFORCER_PRIVATE_KEY_PATH";
     private static final String ENFORCER_PUBLIC_CERT_PATH = "ENFORCER_PUBLIC_CERT_PATH";
     private static final String OPA_CLIENT_PRIVATE_KEY_PATH = "OPA_CLIENT_PRIVATE_KEY_PATH";
     private static final String OPA_CLIENT_PUBLIC_CERT_PATH = "OPA_CLIENT_PUBLIC_CERT_PATH";
     private static final String ADAPTER_HOST = "ADAPTER_HOST";
     private static final String ADAPTER_XDS_PORT = "ADAPTER_XDS_PORT";
+    private static final String COMMON_CONTROLLER_HOST = "COMMON_CONTROLLER_HOST";
+    private static final String COMMON_CONTROLLER_XDS_PORT = "COMMON_CONTROLLER_XDS_PORT";
     private static final String ENFORCER_LABEL = "ENFORCER_LABEL";
     private static final String ENFORCER_REGION_ID = "ENFORCER_REGION";
     public static final String XDS_MAX_MSG_SIZE = "XDS_MAX_MSG_SIZE";
@@ -56,11 +59,14 @@ public class EnvVarConfig {
     private static final String DEFAULT_TRUSTED_CA_CERTS_PATH = "/home/wso2/security/truststore";
     private static final String DEFAULT_TRUST_DEFAULT_CERTS = "true";
     private static final String DEFAULT_ADAPTER_HOST_NAME = "adapter";
+    private static final String DEFAULT_COMMON_CONTROLLER_HOST_NAME = "common-controller";
     private static final String DEFAULT_ENFORCER_PRIVATE_KEY_PATH = "/home/wso2/security/keystore/mg.key";
     private static final String DEFAULT_ENFORCER_PUBLIC_CERT_PATH = "/home/wso2/security/keystore/mg.pem";
     private static final String DEFAULT_ENFORCER_REGION_ID = "UNKNOWN";
     private static final String DEFAULT_ADAPTER_HOST = "adapter";
     private static final String DEFAULT_ADAPTER_XDS_PORT = "18000";
+    private static final String DEFAULT_COMMON_CONTROLLER_HOST = "common-controller";
+    private static final String DEFAULT_COMMON_CONTROLLER_XDS_PORT = "18002";
     private static final String DEFAULT_ENFORCER_LABEL = "enforcer";
     public static final String DEFAULT_XDS_MAX_MSG_SIZE = "4194304";
     public static final String DEFAULT_XDS_MAX_RETRIES = Integer.toString(Constants.MAX_XDS_RETRIES);
@@ -84,9 +90,12 @@ public class EnvVarConfig {
     private final String opaClientPrivateKeyPath;
     private final String opaClientPublicKeyPath;
     private final String adapterHost;
+    private final String commonControllerHost;
     private final String enforcerLabel;
     private final String adapterXdsPort;
-    private final String adapterHostName;
+    private final String commonControllerXdsPort;
+    private final String adapterHostname;
+    private final String commonControllerHostname;
     // TODO: (VirajSalaka) Enforcer ID should be picked from router once envoy 1.18.0 is released and microgateway
     // is updated.
     private final String enforcerRegionId;
@@ -120,8 +129,13 @@ public class EnvVarConfig {
                 DEFAULT_ENFORCER_PUBLIC_CERT_PATH);
         enforcerLabel = retrieveEnvVarOrDefault(ENFORCER_LABEL, DEFAULT_ENFORCER_LABEL);
         adapterHost = retrieveEnvVarOrDefault(ADAPTER_HOST, DEFAULT_ADAPTER_HOST);
-        adapterHostName = retrieveEnvVarOrDefault(ADAPTER_HOST_NAME, DEFAULT_ADAPTER_HOST_NAME);
+        adapterHostname = retrieveEnvVarOrDefault(ADAPTER_HOST_NAME, DEFAULT_ADAPTER_HOST_NAME);
         adapterXdsPort = retrieveEnvVarOrDefault(ADAPTER_XDS_PORT, DEFAULT_ADAPTER_XDS_PORT);
+        commonControllerHost = retrieveEnvVarOrDefault(COMMON_CONTROLLER_HOST, DEFAULT_COMMON_CONTROLLER_HOST);
+        commonControllerHostname = retrieveEnvVarOrDefault(COMMON_CONTROLLER_HOST_NAME,
+                DEFAULT_COMMON_CONTROLLER_HOST_NAME);
+        commonControllerXdsPort = retrieveEnvVarOrDefault(COMMON_CONTROLLER_XDS_PORT,
+                DEFAULT_COMMON_CONTROLLER_XDS_PORT);
         xdsMaxMsgSize = retrieveEnvVarOrDefault(XDS_MAX_MSG_SIZE, DEFAULT_XDS_MAX_MSG_SIZE);
         enforcerRegionId = retrieveEnvVarOrDefault(ENFORCER_REGION_ID, DEFAULT_ENFORCER_REGION_ID);
         xdsMaxRetries = retrieveEnvVarOrDefault(XDS_MAX_RETRIES, DEFAULT_XDS_MAX_RETRIES);
@@ -206,6 +220,10 @@ public class EnvVarConfig {
         return adapterHost;
     }
 
+    public String getCommonControllerHost() {
+        return commonControllerHost;
+    }
+
     public String getEnforcerLabel() {
         return enforcerLabel;
     }
@@ -214,8 +232,16 @@ public class EnvVarConfig {
         return adapterXdsPort;
     }
 
-    public String getAdapterHostName() {
-        return adapterHostName;
+    public String getCommonControllerXdsPort() {
+        return commonControllerXdsPort;
+    }
+
+    public String getAdapterHostname() {
+        return adapterHostname;
+    }
+
+    public String getCommonControllerHostname() {
+        return commonControllerHostname;
     }
 
     public String getXdsMaxMsgSize() {

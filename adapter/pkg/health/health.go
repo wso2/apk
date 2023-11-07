@@ -36,7 +36,9 @@ var (
 
 // Service components to be set health status
 const (
-	RestService service = "adapter.internal.RestService"
+	RestService               service = "adapter.internal.RestService"
+	RateLimiterGrpcService    service = "adapter.internal.RateLimiterGrpcService"
+	CommonEnforcerGrpcService service = "adapter.internal.CommonEnforcerGrpcService"
 )
 
 type service string

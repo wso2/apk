@@ -31,29 +31,44 @@ import (
 	discoveryv3 "github.com/envoyproxy/go-control-plane/envoy/service/discovery/v3"
 	envoy_cachev3 "github.com/envoyproxy/go-control-plane/pkg/cache/v3"
 	xdsv3 "github.com/envoyproxy/go-control-plane/pkg/server/v3"
-	logger "github.com/sirupsen/logrus"
+	enforcerCallbacks "github.com/wso2/apk/common-controller/internal/xds/enforcercallbacks"
+	routercb "github.com/wso2/apk/common-controller/internal/xds/routercallbacks"
+	apiservice "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/api"
+	configservice "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/config"
+	subscriptionservice "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/subscription"
+	wso2_server "github.com/wso2/apk/adapter/pkg/discovery/protocol/server/v3"
 	"github.com/wso2/apk/adapter/pkg/health"
 	healthservice "github.com/wso2/apk/adapter/pkg/health/api/wso2/health/service"
-	"github.com/wso2/apk/adapter/pkg/logging"
 	"github.com/wso2/apk/common-controller/internal/config"
-	"github.com/wso2/apk/common-controller/internal/loggers"
 	"github.com/wso2/apk/common-controller/internal/operator"
 	utils "github.com/wso2/apk/common-controller/internal/utils"
 	xds "github.com/wso2/apk/common-controller/internal/xds"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/keepalive"
+	"github.com/wso2/apk/adapter/pkg/logging"
+	"github.com/wso2/apk/common-controller/internal/loggers"
 )
 
 var (
 	rlsPort uint
 	cache   envoy_cachev3.SnapshotCache
+
+	debug       bool
+	onlyLogging bool
+
+	port    uint
+	alsPort uint
+
+	mode string
 )
 
 const (
 	maxRandomInt             int    = 999999999
 	grpcMaxConcurrentStreams        = 1000000
 	apiKeyFieldSeparator     string = ":"
+	ads                             = "ads"
+	amqpProtocol                    = "amqp"
 )
 
 // IDHash uses ID field as the node hash.
@@ -72,6 +87,12 @@ var _ envoy_cachev3.NodeHash = IDHash{}
 func init() {
 	cache = envoy_cachev3.NewSnapshotCache(false, IDHash{}, nil)
 	flag.UintVar(&rlsPort, "rls-port", 18005, "Rate Limiter management server port")
+
+	flag.BoolVar(&debug, "debug", true, "Use debug logging")
+	flag.BoolVar(&onlyLogging, "onlyLogging", false, "Only demo AccessLogging Service")
+	flag.UintVar(&port, "port", 18002, "Enforcer server port")
+	flag.UintVar(&alsPort, "als", 18090, "Accesslog server port")
+	flag.StringVar(&mode, "ads", ads, "Enforcer server type (ads, xds, rest)")
 }
 
 func runRatelimitServer(rlsServer xdsv3.Server) {
@@ -82,7 +103,7 @@ func runRatelimitServer(rlsServer xdsv3.Server) {
 
 	caCertPool := utils.GetTrustedCertPool(truststoreLocation)
 	if err == nil {
-		logger.Info("initiate the ssl context: ", err)
+		loggers.LoggerAPKOperator.Info("initiate the ssl context: ", err)
 		grpcOptions = append(grpcOptions, grpc.Creds(
 			credentials.NewTLS(&tls.Config{
 				Certificates: []tls.Certificate{cert},
@@ -117,9 +138,70 @@ func runRatelimitServer(rlsServer xdsv3.Server) {
 	healthservice.RegisterHealthServer(rlsGrpcServer, &health.Server{})
 	go func() {
 		loggers.LoggerAPKOperator.Info("Starting Rate Limiter xDS gRPC server.")
+		health.RateLimiterGrpcService.SetStatus(true)
 		if err = rlsGrpcServer.Serve(rlsLis); err != nil {
+			health.RateLimiterGrpcService.SetStatus(false)
 			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1105, logging.BLOCKER,
 				"Error serving Rate Limiter xDS gRPC server on port %v, error: %v", rlsPort, err.Error()))
+		}
+	}()
+}
+
+func runCommonEnforcerServer(server xdsv3.Server, enforcerServer wso2_server.Server, enforcerSdsServer wso2_server.Server,
+	enforcerAppDsSrv wso2_server.Server, enforcerAppKeyMappingDsSrv wso2_server.Server, enforcerAppMappingDsSrv wso2_server.Server,
+	port uint) {
+	var grpcOptions []grpc.ServerOption
+	grpcOptions = append(grpcOptions, grpc.MaxConcurrentStreams(grpcMaxConcurrentStreams))
+	// TODO(Ashera): Add TLS support for Common Controller - Enforcer connection
+	publicKeyLocation, privateKeyLocation, truststoreLocation := utils.GetKeyLocations()
+	cert, err := utils.GetServerCertificate(publicKeyLocation, privateKeyLocation)
+
+	caCertPool := utils.GetTrustedCertPool(truststoreLocation)
+
+	if err == nil {
+		grpcOptions = append(grpcOptions, grpc.Creds(
+			credentials.NewTLS(&tls.Config{
+				Certificates: []tls.Certificate{cert},
+				ClientAuth:   tls.RequireAndVerifyClientCert,
+				ClientCAs:    caCertPool,
+			}),
+		))
+	} else {
+		loggers.LoggerAPKOperator.Warn("failed to initiate the ssl context: ", err)
+		panic(err)
+	}
+
+	grpcOptions = append(grpcOptions, grpc.KeepaliveParams(
+		keepalive.ServerParameters{
+			Time:    time.Duration(5 * time.Minute),
+			Timeout: time.Duration(20 * time.Second),
+		}),
+	)
+	grpcServer := grpc.NewServer(grpcOptions...)
+
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
+	if err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1100, logging.BLOCKER, "Failed to listen on port: %v, error: %v", port, err.Error()))
+	}
+
+	// register services
+	discoveryv3.RegisterAggregatedDiscoveryServiceServer(grpcServer, server)
+	configservice.RegisterConfigDiscoveryServiceServer(grpcServer, enforcerServer)
+	apiservice.RegisterApiDiscoveryServiceServer(grpcServer, enforcerServer)
+	subscriptionservice.RegisterSubscriptionDiscoveryServiceServer(grpcServer, enforcerSdsServer)
+	subscriptionservice.RegisterApplicationDiscoveryServiceServer(grpcServer, enforcerAppDsSrv)
+	subscriptionservice.RegisterApplicationKeyMappingDiscoveryServiceServer(grpcServer, enforcerAppKeyMappingDsSrv)
+	subscriptionservice.RegisterApplicationMappingDiscoveryServiceServer(grpcServer, enforcerAppMappingDsSrv)
+	// register health service
+	healthservice.RegisterHealthServer(grpcServer, &health.Server{})
+
+	loggers.LoggerAPKOperator.Info("port: ", port, " common enforcer server listening")
+	go func() {
+		loggers.LoggerAPKOperator.Info("Starting XDS GRPC server.")
+		health.CommonEnforcerGrpcService.SetStatus(true)
+		if err = grpcServer.Serve(lis); err != nil {
+			health.CommonEnforcerGrpcService.SetStatus(false)
+			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1101, logging.BLOCKER, "Failed to start XDS GRPS server, error: %v", err.Error()))
 		}
 	}()
 }
@@ -133,19 +215,41 @@ func InitCommonControllerServer(conf *config.Config) {
 	defer cancel()
 
 	loggers.LoggerAPKOperator.Info("Starting common controller ....")
+
 	rateLimiterCache := xds.GetRateLimiterCache()
 	rlsSrv := xdsv3.NewServer(ctx, rateLimiterCache, &xds.Callbacks{})
 
+	// Start Rate Limiter xDS gRPC server
 	runRatelimitServer(rlsSrv)
 	// Set empty snapshot to initiate ratelimit service
 	xds.SetEmptySnapshotupdate(conf.CommonController.Server.Label)
+
+	cache := xds.GetXdsCache()
+	enforcerCache := xds.GetEnforcerCache()
+	enforcerSubscriptionCache := xds.GetEnforcerSubscriptionCache()
+	enforcerApplicationCache := xds.GetEnforcerApplicationCache()
+	enforcerApplicationKeyMappingCache := xds.GetEnforcerApplicationKeyMappingCache()
+	enforcerApplicationMappingCache := xds.GetEnforcerApplicationMappingCache()
+	srv := xdsv3.NewServer(ctx, cache, &routercb.Callbacks{})
+	enforcerXdsSrv := wso2_server.NewServer(ctx, enforcerCache, &enforcerCallbacks.Callbacks{})
+	enforcerSdsSrv := wso2_server.NewServer(ctx, enforcerSubscriptionCache, &enforcerCallbacks.Callbacks{})
+	enforcerAppDsSrv := wso2_server.NewServer(ctx, enforcerApplicationCache, &enforcerCallbacks.Callbacks{})
+	enforcerAppKeyMappingDsSrv := wso2_server.NewServer(ctx, enforcerApplicationKeyMappingCache, &enforcerCallbacks.Callbacks{})
+	enforcerAppMappingDsSrv := wso2_server.NewServer(ctx, enforcerApplicationMappingCache, &enforcerCallbacks.Callbacks{})
+
+	// Start Enforcer xDS gRPC server
+	runCommonEnforcerServer(srv, enforcerXdsSrv, enforcerSdsSrv, enforcerAppDsSrv, enforcerAppKeyMappingDsSrv,
+		enforcerAppMappingDsSrv, port)
+
 	go operator.InitOperator()
+
 OUTER:
 	for {
 		select {
 		case s := <-sig:
 			switch s {
 			case os.Interrupt:
+				loggers.LoggerAPKOperator.Info("Shutting down...")
 				break OUTER
 			}
 		}

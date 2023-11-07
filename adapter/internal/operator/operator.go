@@ -22,7 +22,7 @@ import (
 
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/loggers"
-	"github.com/wso2/apk/adapter/internal/management-server/xds"
+
 	"github.com/wso2/apk/adapter/pkg/logging"
 	gwapiv1a2 "sigs.k8s.io/gateway-api/apis/v1alpha2"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
@@ -44,7 +44,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	cpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/cp/v1alpha1"
 	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
 	dpv1alpha2 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha2"
 	//+kubebuilder:scaffold:imports
@@ -63,7 +62,6 @@ func init() {
 
 	utilruntime.Must(gwapiv1a2.AddToScheme(scheme))
 
-	utilruntime.Must(cpv1alpha1.AddToScheme(scheme))
 	utilruntime.Must(dpv1alpha2.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
@@ -141,11 +139,6 @@ func InitOperator() {
 
 	go synchronizer.HandleAPILifeCycleEvents(&ch, &successChannel)
 	go synchronizer.HandleGatewayLifeCycleEvents(&gatewaych)
-	if config.ReadConfigs().ManagementServer.Enabled {
-		go xds.InitApkMgtXDSClient()
-		go xds.HandleApplicationEventsFromMgtServer(mgr.GetClient(), mgr.GetAPIReader())
-		go xds.HandleSubscriptionEventsFromMgtServer(mgr.GetClient(), mgr.GetAPIReader())
-	}
 	if config.ReadConfigs().PartitionServer.Enabled {
 		go synchronizer.SendEventToPartitionServer()
 	}

@@ -1,18 +1,19 @@
 /*
-Copyright 2023.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
+ *  Copyright (c) 2023, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ */
 
 package operator
 
@@ -34,9 +35,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 
-	dpv1alpha1 "github.com/wso2/apk/common-controller/internal/operator/api/dp/v1alpha1"
-	dpv1alpha2 "github.com/wso2/apk/common-controller/internal/operator/api/dp/v1alpha2"
-	dpcontrollers "github.com/wso2/apk/common-controller/internal/operator/controller"
+	cpv1alpha2 "github.com/wso2/apk/common-controller/internal/operator/apis/cp/v1alpha2"
+	dpv1alpha1 "github.com/wso2/apk/common-controller/internal/operator/apis/dp/v1alpha1"
+	dpv1alpha2 "github.com/wso2/apk/common-controller/internal/operator/apis/dp/v1alpha2"
+	cpcontrollers "github.com/wso2/apk/common-controller/internal/operator/controllers/cp"
+	dpcontrollers "github.com/wso2/apk/common-controller/internal/operator/controllers/dp"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -50,6 +53,8 @@ func init() {
 	utilruntime.Must(gwapiv1b1.AddToScheme(scheme))
 	utilruntime.Must(dpv1alpha1.AddToScheme(scheme))
 	utilruntime.Must(dpv1alpha2.AddToScheme(scheme))
+	utilruntime.Must(cpv1alpha2.AddToScheme(scheme))
+	utilruntime.Must(cpv1alpha2.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
 
@@ -110,7 +115,7 @@ func InitOperator() {
 			"Unable to create webhook for Ratelimit, error: %v", err))
 	}
 
-	if err = (&dpv1alpha1.APIPolicy{}).SetupWebhookWithManager(mgr); err != nil {
+	if err = (&dpv1alpha2.APIPolicy{}).SetupWebhookWithManager(mgr); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2638, logging.MAJOR,
 			"Unable to create webhook for APIPolicy, error: %v", err))
 	}
@@ -127,6 +132,18 @@ func InitOperator() {
 	if err := dpcontrollers.NewratelimitController(mgr, ratelimitStore); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3114, logging.MAJOR,
 			"Error creating JWT Issuer controller, error: %v", err))
+	}
+	if err := cpcontrollers.NewApplicationController(mgr); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3115, logging.MAJOR,
+			"Error creating Application controller, error: %v", err))
+	}
+	if err := cpcontrollers.NewSubscriptionController(mgr); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3116, logging.MAJOR,
+			"Error creating Subscription controller, error: %v", err))
+	}
+	if err := cpcontrollers.NewApplicationMappingController(mgr); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3117, logging.MAJOR,
+			"Error creating Application Mapping controller, error: %v", err))
 	}
 	//+kubebuilder:scaffold:builder
 

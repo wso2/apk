@@ -229,11 +229,9 @@ public class InternalAPIKeyAuthenticator extends APIKeyHandler {
                         api = validateAPISubscription(apiContext, apiVersion, payload, splitToken,
                                 false);
                         if (api != null) {
-                            String context = requestContext.getMatchedAPI().getBasePath();
                             String uuid = requestContext.getMatchedAPI().getUuid();
-                            String apiTenantDomain = FilterUtils.getTenantDomainFromRequestURL(context);
                             SubscriptionDataStore datastore = SubscriptionDataHolder.getInstance()
-                                    .getTenantSubscriptionStore(apiTenantDomain);
+                                    .getSubscriptionDataStore();
                             API subscriptionDataStoreAPI = datastore.getApiByContextAndVersion(uuid);
                             if (subscriptionDataStoreAPI != null &&
                                     APIConstants.LifecycleStatus.BLOCKED

@@ -29,7 +29,7 @@ public type APISpec record {|
     string apiType;
     string apiVersion;
     string basePath;
-    string organization;
+string organization;
     boolean isDefaultVersion?;
     string definitionFileRef?;
     string environment?;

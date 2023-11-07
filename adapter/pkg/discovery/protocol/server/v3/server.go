@@ -46,6 +46,7 @@ type Server interface {
 	subscription.JWTIssuerDiscoveryServiceServer
 	subscription.SubscriptionPolicyDiscoveryServiceServer
 	subscription.ApplicationKeyMappingDiscoveryServiceServer
+	subscription.ApplicationMappingDiscoveryServiceServer
 	keymgt.KMDiscoveryServiceServer
 	keymgt.RevokedTokenDiscoveryServiceServer
 	apkmgt.APKMgtDiscoveryServiceServer
@@ -76,6 +77,7 @@ type server struct {
 	subscription.UnimplementedApplicationPolicyDiscoveryServiceServer
 	subscription.UnimplementedSubscriptionPolicyDiscoveryServiceServer
 	subscription.UnimplementedApplicationKeyMappingDiscoveryServiceServer
+	subscription.UnimplementedApplicationMappingDiscoveryServiceServer
 	keymgt.UnimplementedKMDiscoveryServiceServer
 	keymgt.UnimplementedRevokedTokenDiscoveryServiceServer
 	apkmgt.UnimplementedAPKMgtDiscoveryServiceServer
@@ -118,6 +120,10 @@ func (s *server) StreamSubscriptionPolicies(stream subscription.SubscriptionPoli
 
 func (s *server) StreamApplicationKeyMappings(stream subscription.ApplicationKeyMappingDiscoveryService_StreamApplicationKeyMappingsServer) error {
 	return s.StreamHandler(stream, resource.ApplicationKeyMappingListType)
+}
+
+func (s *server) StreamApplicationMappings(stream subscription.ApplicationMappingDiscoveryService_StreamApplicationMappingsServer) error {
+	return s.StreamHandler(stream, resource.ApplicationMappingListType)
 }
 
 func (s *server) StreamKeyManagers(stream keymgt.KMDiscoveryService_StreamKeyManagersServer) error {

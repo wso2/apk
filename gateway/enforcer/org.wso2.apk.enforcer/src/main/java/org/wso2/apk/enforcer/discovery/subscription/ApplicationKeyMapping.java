@@ -20,11 +20,11 @@ private static final long serialVersionUID = 0L;
     super(builder);
   }
   private ApplicationKeyMapping() {
-    consumerKey_ = "";
-    keyType_ = "";
-    keyManager_ = "";
-    tenantDomain_ = "";
     applicationUUID_ = "";
+    securityScheme_ = "";
+    applicationIdentifier_ = "";
+    keyType_ = "";
+    envID_ = "";
   }
 
   @java.lang.Override
@@ -60,46 +60,36 @@ private static final long serialVersionUID = 0L;
           case 10: {
             java.lang.String s = input.readStringRequireUtf8();
 
-            consumerKey_ = s;
+            applicationUUID_ = s;
             break;
           }
           case 18: {
             java.lang.String s = input.readStringRequireUtf8();
 
-            keyType_ = s;
+            securityScheme_ = s;
             break;
           }
           case 26: {
             java.lang.String s = input.readStringRequireUtf8();
 
-            keyManager_ = s;
+            applicationIdentifier_ = s;
             break;
           }
-          case 32: {
-
-            applicationId_ = input.readInt32();
-            break;
-          }
-          case 40: {
-
-            tenantId_ = input.readInt32();
-            break;
-          }
-          case 50: {
+          case 34: {
             java.lang.String s = input.readStringRequireUtf8();
 
-            tenantDomain_ = s;
+            keyType_ = s;
             break;
           }
-          case 56: {
+          case 42: {
+            java.lang.String s = input.readStringRequireUtf8();
+
+            envID_ = s;
+            break;
+          }
+          case 48: {
 
             timestamp_ = input.readInt64();
-            break;
-          }
-          case 66: {
-            java.lang.String s = input.readStringRequireUtf8();
-
-            applicationUUID_ = s;
             break;
           }
           default: {
@@ -134,195 +124,10 @@ private static final long serialVersionUID = 0L;
             org.wso2.apk.enforcer.discovery.subscription.ApplicationKeyMapping.class, org.wso2.apk.enforcer.discovery.subscription.ApplicationKeyMapping.Builder.class);
   }
 
-  public static final int CONSUMERKEY_FIELD_NUMBER = 1;
-  private volatile java.lang.Object consumerKey_;
-  /**
-   * <code>string consumerKey = 1;</code>
-   * @return The consumerKey.
-   */
-  @java.lang.Override
-  public java.lang.String getConsumerKey() {
-    java.lang.Object ref = consumerKey_;
-    if (ref instanceof java.lang.String) {
-      return (java.lang.String) ref;
-    } else {
-      com.google.protobuf.ByteString bs = 
-          (com.google.protobuf.ByteString) ref;
-      java.lang.String s = bs.toStringUtf8();
-      consumerKey_ = s;
-      return s;
-    }
-  }
-  /**
-   * <code>string consumerKey = 1;</code>
-   * @return The bytes for consumerKey.
-   */
-  @java.lang.Override
-  public com.google.protobuf.ByteString
-      getConsumerKeyBytes() {
-    java.lang.Object ref = consumerKey_;
-    if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
-          com.google.protobuf.ByteString.copyFromUtf8(
-              (java.lang.String) ref);
-      consumerKey_ = b;
-      return b;
-    } else {
-      return (com.google.protobuf.ByteString) ref;
-    }
-  }
-
-  public static final int KEYTYPE_FIELD_NUMBER = 2;
-  private volatile java.lang.Object keyType_;
-  /**
-   * <code>string keyType = 2;</code>
-   * @return The keyType.
-   */
-  @java.lang.Override
-  public java.lang.String getKeyType() {
-    java.lang.Object ref = keyType_;
-    if (ref instanceof java.lang.String) {
-      return (java.lang.String) ref;
-    } else {
-      com.google.protobuf.ByteString bs = 
-          (com.google.protobuf.ByteString) ref;
-      java.lang.String s = bs.toStringUtf8();
-      keyType_ = s;
-      return s;
-    }
-  }
-  /**
-   * <code>string keyType = 2;</code>
-   * @return The bytes for keyType.
-   */
-  @java.lang.Override
-  public com.google.protobuf.ByteString
-      getKeyTypeBytes() {
-    java.lang.Object ref = keyType_;
-    if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
-          com.google.protobuf.ByteString.copyFromUtf8(
-              (java.lang.String) ref);
-      keyType_ = b;
-      return b;
-    } else {
-      return (com.google.protobuf.ByteString) ref;
-    }
-  }
-
-  public static final int KEYMANAGER_FIELD_NUMBER = 3;
-  private volatile java.lang.Object keyManager_;
-  /**
-   * <code>string keyManager = 3;</code>
-   * @return The keyManager.
-   */
-  @java.lang.Override
-  public java.lang.String getKeyManager() {
-    java.lang.Object ref = keyManager_;
-    if (ref instanceof java.lang.String) {
-      return (java.lang.String) ref;
-    } else {
-      com.google.protobuf.ByteString bs = 
-          (com.google.protobuf.ByteString) ref;
-      java.lang.String s = bs.toStringUtf8();
-      keyManager_ = s;
-      return s;
-    }
-  }
-  /**
-   * <code>string keyManager = 3;</code>
-   * @return The bytes for keyManager.
-   */
-  @java.lang.Override
-  public com.google.protobuf.ByteString
-      getKeyManagerBytes() {
-    java.lang.Object ref = keyManager_;
-    if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
-          com.google.protobuf.ByteString.copyFromUtf8(
-              (java.lang.String) ref);
-      keyManager_ = b;
-      return b;
-    } else {
-      return (com.google.protobuf.ByteString) ref;
-    }
-  }
-
-  public static final int APPLICATIONID_FIELD_NUMBER = 4;
-  private int applicationId_;
-  /**
-   * <code>int32 applicationId = 4;</code>
-   * @return The applicationId.
-   */
-  @java.lang.Override
-  public int getApplicationId() {
-    return applicationId_;
-  }
-
-  public static final int TENANTID_FIELD_NUMBER = 5;
-  private int tenantId_;
-  /**
-   * <code>int32 tenantId = 5;</code>
-   * @return The tenantId.
-   */
-  @java.lang.Override
-  public int getTenantId() {
-    return tenantId_;
-  }
-
-  public static final int TENANTDOMAIN_FIELD_NUMBER = 6;
-  private volatile java.lang.Object tenantDomain_;
-  /**
-   * <code>string tenantDomain = 6;</code>
-   * @return The tenantDomain.
-   */
-  @java.lang.Override
-  public java.lang.String getTenantDomain() {
-    java.lang.Object ref = tenantDomain_;
-    if (ref instanceof java.lang.String) {
-      return (java.lang.String) ref;
-    } else {
-      com.google.protobuf.ByteString bs = 
-          (com.google.protobuf.ByteString) ref;
-      java.lang.String s = bs.toStringUtf8();
-      tenantDomain_ = s;
-      return s;
-    }
-  }
-  /**
-   * <code>string tenantDomain = 6;</code>
-   * @return The bytes for tenantDomain.
-   */
-  @java.lang.Override
-  public com.google.protobuf.ByteString
-      getTenantDomainBytes() {
-    java.lang.Object ref = tenantDomain_;
-    if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
-          com.google.protobuf.ByteString.copyFromUtf8(
-              (java.lang.String) ref);
-      tenantDomain_ = b;
-      return b;
-    } else {
-      return (com.google.protobuf.ByteString) ref;
-    }
-  }
-
-  public static final int TIMESTAMP_FIELD_NUMBER = 7;
-  private long timestamp_;
-  /**
-   * <code>int64 timestamp = 7;</code>
-   * @return The timestamp.
-   */
-  @java.lang.Override
-  public long getTimestamp() {
-    return timestamp_;
-  }
-
-  public static final int APPLICATIONUUID_FIELD_NUMBER = 8;
+  public static final int APPLICATIONUUID_FIELD_NUMBER = 1;
   private volatile java.lang.Object applicationUUID_;
   /**
-   * <code>string applicationUUID = 8;</code>
+   * <code>string applicationUUID = 1;</code>
    * @return The applicationUUID.
    */
   @java.lang.Override
@@ -339,7 +144,7 @@ private static final long serialVersionUID = 0L;
     }
   }
   /**
-   * <code>string applicationUUID = 8;</code>
+   * <code>string applicationUUID = 1;</code>
    * @return The bytes for applicationUUID.
    */
   @java.lang.Override
@@ -357,6 +162,169 @@ private static final long serialVersionUID = 0L;
     }
   }
 
+  public static final int SECURITYSCHEME_FIELD_NUMBER = 2;
+  private volatile java.lang.Object securityScheme_;
+  /**
+   * <code>string securityScheme = 2;</code>
+   * @return The securityScheme.
+   */
+  @java.lang.Override
+  public java.lang.String getSecurityScheme() {
+    java.lang.Object ref = securityScheme_;
+    if (ref instanceof java.lang.String) {
+      return (java.lang.String) ref;
+    } else {
+      com.google.protobuf.ByteString bs = 
+          (com.google.protobuf.ByteString) ref;
+      java.lang.String s = bs.toStringUtf8();
+      securityScheme_ = s;
+      return s;
+    }
+  }
+  /**
+   * <code>string securityScheme = 2;</code>
+   * @return The bytes for securityScheme.
+   */
+  @java.lang.Override
+  public com.google.protobuf.ByteString
+      getSecuritySchemeBytes() {
+    java.lang.Object ref = securityScheme_;
+    if (ref instanceof java.lang.String) {
+      com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString.copyFromUtf8(
+              (java.lang.String) ref);
+      securityScheme_ = b;
+      return b;
+    } else {
+      return (com.google.protobuf.ByteString) ref;
+    }
+  }
+
+  public static final int APPLICATIONIDENTIFIER_FIELD_NUMBER = 3;
+  private volatile java.lang.Object applicationIdentifier_;
+  /**
+   * <code>string applicationIdentifier = 3;</code>
+   * @return The applicationIdentifier.
+   */
+  @java.lang.Override
+  public java.lang.String getApplicationIdentifier() {
+    java.lang.Object ref = applicationIdentifier_;
+    if (ref instanceof java.lang.String) {
+      return (java.lang.String) ref;
+    } else {
+      com.google.protobuf.ByteString bs = 
+          (com.google.protobuf.ByteString) ref;
+      java.lang.String s = bs.toStringUtf8();
+      applicationIdentifier_ = s;
+      return s;
+    }
+  }
+  /**
+   * <code>string applicationIdentifier = 3;</code>
+   * @return The bytes for applicationIdentifier.
+   */
+  @java.lang.Override
+  public com.google.protobuf.ByteString
+      getApplicationIdentifierBytes() {
+    java.lang.Object ref = applicationIdentifier_;
+    if (ref instanceof java.lang.String) {
+      com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString.copyFromUtf8(
+              (java.lang.String) ref);
+      applicationIdentifier_ = b;
+      return b;
+    } else {
+      return (com.google.protobuf.ByteString) ref;
+    }
+  }
+
+  public static final int KEYTYPE_FIELD_NUMBER = 4;
+  private volatile java.lang.Object keyType_;
+  /**
+   * <code>string keyType = 4;</code>
+   * @return The keyType.
+   */
+  @java.lang.Override
+  public java.lang.String getKeyType() {
+    java.lang.Object ref = keyType_;
+    if (ref instanceof java.lang.String) {
+      return (java.lang.String) ref;
+    } else {
+      com.google.protobuf.ByteString bs = 
+          (com.google.protobuf.ByteString) ref;
+      java.lang.String s = bs.toStringUtf8();
+      keyType_ = s;
+      return s;
+    }
+  }
+  /**
+   * <code>string keyType = 4;</code>
+   * @return The bytes for keyType.
+   */
+  @java.lang.Override
+  public com.google.protobuf.ByteString
+      getKeyTypeBytes() {
+    java.lang.Object ref = keyType_;
+    if (ref instanceof java.lang.String) {
+      com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString.copyFromUtf8(
+              (java.lang.String) ref);
+      keyType_ = b;
+      return b;
+    } else {
+      return (com.google.protobuf.ByteString) ref;
+    }
+  }
+
+  public static final int ENVID_FIELD_NUMBER = 5;
+  private volatile java.lang.Object envID_;
+  /**
+   * <code>string envID = 5;</code>
+   * @return The envID.
+   */
+  @java.lang.Override
+  public java.lang.String getEnvID() {
+    java.lang.Object ref = envID_;
+    if (ref instanceof java.lang.String) {
+      return (java.lang.String) ref;
+    } else {
+      com.google.protobuf.ByteString bs = 
+          (com.google.protobuf.ByteString) ref;
+      java.lang.String s = bs.toStringUtf8();
+      envID_ = s;
+      return s;
+    }
+  }
+  /**
+   * <code>string envID = 5;</code>
+   * @return The bytes for envID.
+   */
+  @java.lang.Override
+  public com.google.protobuf.ByteString
+      getEnvIDBytes() {
+    java.lang.Object ref = envID_;
+    if (ref instanceof java.lang.String) {
+      com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString.copyFromUtf8(
+              (java.lang.String) ref);
+      envID_ = b;
+      return b;
+    } else {
+      return (com.google.protobuf.ByteString) ref;
+    }
+  }
+
+  public static final int TIMESTAMP_FIELD_NUMBER = 6;
+  private long timestamp_;
+  /**
+   * <code>int64 timestamp = 6;</code>
+   * @return The timestamp.
+   */
+  @java.lang.Override
+  public long getTimestamp() {
+    return timestamp_;
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -371,29 +339,23 @@ private static final long serialVersionUID = 0L;
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output)
                       throws java.io.IOException {
-    if (!getConsumerKeyBytes().isEmpty()) {
-      com.google.protobuf.GeneratedMessageV3.writeString(output, 1, consumerKey_);
+    if (!getApplicationUUIDBytes().isEmpty()) {
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 1, applicationUUID_);
+    }
+    if (!getSecuritySchemeBytes().isEmpty()) {
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 2, securityScheme_);
+    }
+    if (!getApplicationIdentifierBytes().isEmpty()) {
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 3, applicationIdentifier_);
     }
     if (!getKeyTypeBytes().isEmpty()) {
-      com.google.protobuf.GeneratedMessageV3.writeString(output, 2, keyType_);
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 4, keyType_);
     }
-    if (!getKeyManagerBytes().isEmpty()) {
-      com.google.protobuf.GeneratedMessageV3.writeString(output, 3, keyManager_);
-    }
-    if (applicationId_ != 0) {
-      output.writeInt32(4, applicationId_);
-    }
-    if (tenantId_ != 0) {
-      output.writeInt32(5, tenantId_);
-    }
-    if (!getTenantDomainBytes().isEmpty()) {
-      com.google.protobuf.GeneratedMessageV3.writeString(output, 6, tenantDomain_);
+    if (!getEnvIDBytes().isEmpty()) {
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 5, envID_);
     }
     if (timestamp_ != 0L) {
-      output.writeInt64(7, timestamp_);
-    }
-    if (!getApplicationUUIDBytes().isEmpty()) {
-      com.google.protobuf.GeneratedMessageV3.writeString(output, 8, applicationUUID_);
+      output.writeInt64(6, timestamp_);
     }
     unknownFields.writeTo(output);
   }
@@ -404,32 +366,24 @@ private static final long serialVersionUID = 0L;
     if (size != -1) return size;
 
     size = 0;
-    if (!getConsumerKeyBytes().isEmpty()) {
-      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, consumerKey_);
+    if (!getApplicationUUIDBytes().isEmpty()) {
+      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, applicationUUID_);
+    }
+    if (!getSecuritySchemeBytes().isEmpty()) {
+      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, securityScheme_);
+    }
+    if (!getApplicationIdentifierBytes().isEmpty()) {
+      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, applicationIdentifier_);
     }
     if (!getKeyTypeBytes().isEmpty()) {
-      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, keyType_);
+      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, keyType_);
     }
-    if (!getKeyManagerBytes().isEmpty()) {
-      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, keyManager_);
-    }
-    if (applicationId_ != 0) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeInt32Size(4, applicationId_);
-    }
-    if (tenantId_ != 0) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeInt32Size(5, tenantId_);
-    }
-    if (!getTenantDomainBytes().isEmpty()) {
-      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(6, tenantDomain_);
+    if (!getEnvIDBytes().isEmpty()) {
+      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(5, envID_);
     }
     if (timestamp_ != 0L) {
       size += com.google.protobuf.CodedOutputStream
-        .computeInt64Size(7, timestamp_);
-    }
-    if (!getApplicationUUIDBytes().isEmpty()) {
-      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(8, applicationUUID_);
+        .computeInt64Size(6, timestamp_);
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -446,22 +400,18 @@ private static final long serialVersionUID = 0L;
     }
     org.wso2.apk.enforcer.discovery.subscription.ApplicationKeyMapping other = (org.wso2.apk.enforcer.discovery.subscription.ApplicationKeyMapping) obj;
 
-    if (!getConsumerKey()
-        .equals(other.getConsumerKey())) return false;
-    if (!getKeyType()
-        .equals(other.getKeyType())) return false;
-    if (!getKeyManager()
-        .equals(other.getKeyManager())) return false;
-    if (getApplicationId()
-        != other.getApplicationId()) return false;
-    if (getTenantId()
-        != other.getTenantId()) return false;
-    if (!getTenantDomain()
-        .equals(other.getTenantDomain())) return false;
-    if (getTimestamp()
-        != other.getTimestamp()) return false;
     if (!getApplicationUUID()
         .equals(other.getApplicationUUID())) return false;
+    if (!getSecurityScheme()
+        .equals(other.getSecurityScheme())) return false;
+    if (!getApplicationIdentifier()
+        .equals(other.getApplicationIdentifier())) return false;
+    if (!getKeyType()
+        .equals(other.getKeyType())) return false;
+    if (!getEnvID()
+        .equals(other.getEnvID())) return false;
+    if (getTimestamp()
+        != other.getTimestamp()) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -473,23 +423,19 @@ private static final long serialVersionUID = 0L;
     }
     int hash = 41;
     hash = (19 * hash) + getDescriptor().hashCode();
-    hash = (37 * hash) + CONSUMERKEY_FIELD_NUMBER;
-    hash = (53 * hash) + getConsumerKey().hashCode();
+    hash = (37 * hash) + APPLICATIONUUID_FIELD_NUMBER;
+    hash = (53 * hash) + getApplicationUUID().hashCode();
+    hash = (37 * hash) + SECURITYSCHEME_FIELD_NUMBER;
+    hash = (53 * hash) + getSecurityScheme().hashCode();
+    hash = (37 * hash) + APPLICATIONIDENTIFIER_FIELD_NUMBER;
+    hash = (53 * hash) + getApplicationIdentifier().hashCode();
     hash = (37 * hash) + KEYTYPE_FIELD_NUMBER;
     hash = (53 * hash) + getKeyType().hashCode();
-    hash = (37 * hash) + KEYMANAGER_FIELD_NUMBER;
-    hash = (53 * hash) + getKeyManager().hashCode();
-    hash = (37 * hash) + APPLICATIONID_FIELD_NUMBER;
-    hash = (53 * hash) + getApplicationId();
-    hash = (37 * hash) + TENANTID_FIELD_NUMBER;
-    hash = (53 * hash) + getTenantId();
-    hash = (37 * hash) + TENANTDOMAIN_FIELD_NUMBER;
-    hash = (53 * hash) + getTenantDomain().hashCode();
+    hash = (37 * hash) + ENVID_FIELD_NUMBER;
+    hash = (53 * hash) + getEnvID().hashCode();
     hash = (37 * hash) + TIMESTAMP_FIELD_NUMBER;
     hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
         getTimestamp());
-    hash = (37 * hash) + APPLICATIONUUID_FIELD_NUMBER;
-    hash = (53 * hash) + getApplicationUUID().hashCode();
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -627,21 +573,17 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public Builder clear() {
       super.clear();
-      consumerKey_ = "";
+      applicationUUID_ = "";
+
+      securityScheme_ = "";
+
+      applicationIdentifier_ = "";
 
       keyType_ = "";
 
-      keyManager_ = "";
-
-      applicationId_ = 0;
-
-      tenantId_ = 0;
-
-      tenantDomain_ = "";
+      envID_ = "";
 
       timestamp_ = 0L;
-
-      applicationUUID_ = "";
 
       return this;
     }
@@ -669,14 +611,12 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public org.wso2.apk.enforcer.discovery.subscription.ApplicationKeyMapping buildPartial() {
       org.wso2.apk.enforcer.discovery.subscription.ApplicationKeyMapping result = new org.wso2.apk.enforcer.discovery.subscription.ApplicationKeyMapping(this);
-      result.consumerKey_ = consumerKey_;
-      result.keyType_ = keyType_;
-      result.keyManager_ = keyManager_;
-      result.applicationId_ = applicationId_;
-      result.tenantId_ = tenantId_;
-      result.tenantDomain_ = tenantDomain_;
-      result.timestamp_ = timestamp_;
       result.applicationUUID_ = applicationUUID_;
+      result.securityScheme_ = securityScheme_;
+      result.applicationIdentifier_ = applicationIdentifier_;
+      result.keyType_ = keyType_;
+      result.envID_ = envID_;
+      result.timestamp_ = timestamp_;
       onBuilt();
       return result;
     }
@@ -725,34 +665,28 @@ private static final long serialVersionUID = 0L;
 
     public Builder mergeFrom(org.wso2.apk.enforcer.discovery.subscription.ApplicationKeyMapping other) {
       if (other == org.wso2.apk.enforcer.discovery.subscription.ApplicationKeyMapping.getDefaultInstance()) return this;
-      if (!other.getConsumerKey().isEmpty()) {
-        consumerKey_ = other.consumerKey_;
+      if (!other.getApplicationUUID().isEmpty()) {
+        applicationUUID_ = other.applicationUUID_;
+        onChanged();
+      }
+      if (!other.getSecurityScheme().isEmpty()) {
+        securityScheme_ = other.securityScheme_;
+        onChanged();
+      }
+      if (!other.getApplicationIdentifier().isEmpty()) {
+        applicationIdentifier_ = other.applicationIdentifier_;
         onChanged();
       }
       if (!other.getKeyType().isEmpty()) {
         keyType_ = other.keyType_;
         onChanged();
       }
-      if (!other.getKeyManager().isEmpty()) {
-        keyManager_ = other.keyManager_;
-        onChanged();
-      }
-      if (other.getApplicationId() != 0) {
-        setApplicationId(other.getApplicationId());
-      }
-      if (other.getTenantId() != 0) {
-        setTenantId(other.getTenantId());
-      }
-      if (!other.getTenantDomain().isEmpty()) {
-        tenantDomain_ = other.tenantDomain_;
+      if (!other.getEnvID().isEmpty()) {
+        envID_ = other.envID_;
         onChanged();
       }
       if (other.getTimestamp() != 0L) {
         setTimestamp(other.getTimestamp());
-      }
-      if (!other.getApplicationUUID().isEmpty()) {
-        applicationUUID_ = other.applicationUUID_;
-        onChanged();
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -783,406 +717,9 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    private java.lang.Object consumerKey_ = "";
-    /**
-     * <code>string consumerKey = 1;</code>
-     * @return The consumerKey.
-     */
-    public java.lang.String getConsumerKey() {
-      java.lang.Object ref = consumerKey_;
-      if (!(ref instanceof java.lang.String)) {
-        com.google.protobuf.ByteString bs =
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        consumerKey_ = s;
-        return s;
-      } else {
-        return (java.lang.String) ref;
-      }
-    }
-    /**
-     * <code>string consumerKey = 1;</code>
-     * @return The bytes for consumerKey.
-     */
-    public com.google.protobuf.ByteString
-        getConsumerKeyBytes() {
-      java.lang.Object ref = consumerKey_;
-      if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        consumerKey_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
-    }
-    /**
-     * <code>string consumerKey = 1;</code>
-     * @param value The consumerKey to set.
-     * @return This builder for chaining.
-     */
-    public Builder setConsumerKey(
-        java.lang.String value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  
-      consumerKey_ = value;
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>string consumerKey = 1;</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearConsumerKey() {
-      
-      consumerKey_ = getDefaultInstance().getConsumerKey();
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>string consumerKey = 1;</code>
-     * @param value The bytes for consumerKey to set.
-     * @return This builder for chaining.
-     */
-    public Builder setConsumerKeyBytes(
-        com.google.protobuf.ByteString value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-      
-      consumerKey_ = value;
-      onChanged();
-      return this;
-    }
-
-    private java.lang.Object keyType_ = "";
-    /**
-     * <code>string keyType = 2;</code>
-     * @return The keyType.
-     */
-    public java.lang.String getKeyType() {
-      java.lang.Object ref = keyType_;
-      if (!(ref instanceof java.lang.String)) {
-        com.google.protobuf.ByteString bs =
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        keyType_ = s;
-        return s;
-      } else {
-        return (java.lang.String) ref;
-      }
-    }
-    /**
-     * <code>string keyType = 2;</code>
-     * @return The bytes for keyType.
-     */
-    public com.google.protobuf.ByteString
-        getKeyTypeBytes() {
-      java.lang.Object ref = keyType_;
-      if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        keyType_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
-    }
-    /**
-     * <code>string keyType = 2;</code>
-     * @param value The keyType to set.
-     * @return This builder for chaining.
-     */
-    public Builder setKeyType(
-        java.lang.String value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  
-      keyType_ = value;
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>string keyType = 2;</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearKeyType() {
-      
-      keyType_ = getDefaultInstance().getKeyType();
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>string keyType = 2;</code>
-     * @param value The bytes for keyType to set.
-     * @return This builder for chaining.
-     */
-    public Builder setKeyTypeBytes(
-        com.google.protobuf.ByteString value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-      
-      keyType_ = value;
-      onChanged();
-      return this;
-    }
-
-    private java.lang.Object keyManager_ = "";
-    /**
-     * <code>string keyManager = 3;</code>
-     * @return The keyManager.
-     */
-    public java.lang.String getKeyManager() {
-      java.lang.Object ref = keyManager_;
-      if (!(ref instanceof java.lang.String)) {
-        com.google.protobuf.ByteString bs =
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        keyManager_ = s;
-        return s;
-      } else {
-        return (java.lang.String) ref;
-      }
-    }
-    /**
-     * <code>string keyManager = 3;</code>
-     * @return The bytes for keyManager.
-     */
-    public com.google.protobuf.ByteString
-        getKeyManagerBytes() {
-      java.lang.Object ref = keyManager_;
-      if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        keyManager_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
-    }
-    /**
-     * <code>string keyManager = 3;</code>
-     * @param value The keyManager to set.
-     * @return This builder for chaining.
-     */
-    public Builder setKeyManager(
-        java.lang.String value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  
-      keyManager_ = value;
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>string keyManager = 3;</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearKeyManager() {
-      
-      keyManager_ = getDefaultInstance().getKeyManager();
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>string keyManager = 3;</code>
-     * @param value The bytes for keyManager to set.
-     * @return This builder for chaining.
-     */
-    public Builder setKeyManagerBytes(
-        com.google.protobuf.ByteString value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-      
-      keyManager_ = value;
-      onChanged();
-      return this;
-    }
-
-    private int applicationId_ ;
-    /**
-     * <code>int32 applicationId = 4;</code>
-     * @return The applicationId.
-     */
-    @java.lang.Override
-    public int getApplicationId() {
-      return applicationId_;
-    }
-    /**
-     * <code>int32 applicationId = 4;</code>
-     * @param value The applicationId to set.
-     * @return This builder for chaining.
-     */
-    public Builder setApplicationId(int value) {
-      
-      applicationId_ = value;
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>int32 applicationId = 4;</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearApplicationId() {
-      
-      applicationId_ = 0;
-      onChanged();
-      return this;
-    }
-
-    private int tenantId_ ;
-    /**
-     * <code>int32 tenantId = 5;</code>
-     * @return The tenantId.
-     */
-    @java.lang.Override
-    public int getTenantId() {
-      return tenantId_;
-    }
-    /**
-     * <code>int32 tenantId = 5;</code>
-     * @param value The tenantId to set.
-     * @return This builder for chaining.
-     */
-    public Builder setTenantId(int value) {
-      
-      tenantId_ = value;
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>int32 tenantId = 5;</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearTenantId() {
-      
-      tenantId_ = 0;
-      onChanged();
-      return this;
-    }
-
-    private java.lang.Object tenantDomain_ = "";
-    /**
-     * <code>string tenantDomain = 6;</code>
-     * @return The tenantDomain.
-     */
-    public java.lang.String getTenantDomain() {
-      java.lang.Object ref = tenantDomain_;
-      if (!(ref instanceof java.lang.String)) {
-        com.google.protobuf.ByteString bs =
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        tenantDomain_ = s;
-        return s;
-      } else {
-        return (java.lang.String) ref;
-      }
-    }
-    /**
-     * <code>string tenantDomain = 6;</code>
-     * @return The bytes for tenantDomain.
-     */
-    public com.google.protobuf.ByteString
-        getTenantDomainBytes() {
-      java.lang.Object ref = tenantDomain_;
-      if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        tenantDomain_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
-    }
-    /**
-     * <code>string tenantDomain = 6;</code>
-     * @param value The tenantDomain to set.
-     * @return This builder for chaining.
-     */
-    public Builder setTenantDomain(
-        java.lang.String value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  
-      tenantDomain_ = value;
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>string tenantDomain = 6;</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearTenantDomain() {
-      
-      tenantDomain_ = getDefaultInstance().getTenantDomain();
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>string tenantDomain = 6;</code>
-     * @param value The bytes for tenantDomain to set.
-     * @return This builder for chaining.
-     */
-    public Builder setTenantDomainBytes(
-        com.google.protobuf.ByteString value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-      
-      tenantDomain_ = value;
-      onChanged();
-      return this;
-    }
-
-    private long timestamp_ ;
-    /**
-     * <code>int64 timestamp = 7;</code>
-     * @return The timestamp.
-     */
-    @java.lang.Override
-    public long getTimestamp() {
-      return timestamp_;
-    }
-    /**
-     * <code>int64 timestamp = 7;</code>
-     * @param value The timestamp to set.
-     * @return This builder for chaining.
-     */
-    public Builder setTimestamp(long value) {
-      
-      timestamp_ = value;
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>int64 timestamp = 7;</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearTimestamp() {
-      
-      timestamp_ = 0L;
-      onChanged();
-      return this;
-    }
-
     private java.lang.Object applicationUUID_ = "";
     /**
-     * <code>string applicationUUID = 8;</code>
+     * <code>string applicationUUID = 1;</code>
      * @return The applicationUUID.
      */
     public java.lang.String getApplicationUUID() {
@@ -1198,7 +735,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>string applicationUUID = 8;</code>
+     * <code>string applicationUUID = 1;</code>
      * @return The bytes for applicationUUID.
      */
     public com.google.protobuf.ByteString
@@ -1215,7 +752,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>string applicationUUID = 8;</code>
+     * <code>string applicationUUID = 1;</code>
      * @param value The applicationUUID to set.
      * @return This builder for chaining.
      */
@@ -1230,7 +767,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>string applicationUUID = 8;</code>
+     * <code>string applicationUUID = 1;</code>
      * @return This builder for chaining.
      */
     public Builder clearApplicationUUID() {
@@ -1240,7 +777,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>string applicationUUID = 8;</code>
+     * <code>string applicationUUID = 1;</code>
      * @param value The bytes for applicationUUID to set.
      * @return This builder for chaining.
      */
@@ -1252,6 +789,341 @@ private static final long serialVersionUID = 0L;
   checkByteStringIsUtf8(value);
       
       applicationUUID_ = value;
+      onChanged();
+      return this;
+    }
+
+    private java.lang.Object securityScheme_ = "";
+    /**
+     * <code>string securityScheme = 2;</code>
+     * @return The securityScheme.
+     */
+    public java.lang.String getSecurityScheme() {
+      java.lang.Object ref = securityScheme_;
+      if (!(ref instanceof java.lang.String)) {
+        com.google.protobuf.ByteString bs =
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        securityScheme_ = s;
+        return s;
+      } else {
+        return (java.lang.String) ref;
+      }
+    }
+    /**
+     * <code>string securityScheme = 2;</code>
+     * @return The bytes for securityScheme.
+     */
+    public com.google.protobuf.ByteString
+        getSecuritySchemeBytes() {
+      java.lang.Object ref = securityScheme_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        securityScheme_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+    /**
+     * <code>string securityScheme = 2;</code>
+     * @param value The securityScheme to set.
+     * @return This builder for chaining.
+     */
+    public Builder setSecurityScheme(
+        java.lang.String value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  
+      securityScheme_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>string securityScheme = 2;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearSecurityScheme() {
+      
+      securityScheme_ = getDefaultInstance().getSecurityScheme();
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>string securityScheme = 2;</code>
+     * @param value The bytes for securityScheme to set.
+     * @return This builder for chaining.
+     */
+    public Builder setSecuritySchemeBytes(
+        com.google.protobuf.ByteString value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+      
+      securityScheme_ = value;
+      onChanged();
+      return this;
+    }
+
+    private java.lang.Object applicationIdentifier_ = "";
+    /**
+     * <code>string applicationIdentifier = 3;</code>
+     * @return The applicationIdentifier.
+     */
+    public java.lang.String getApplicationIdentifier() {
+      java.lang.Object ref = applicationIdentifier_;
+      if (!(ref instanceof java.lang.String)) {
+        com.google.protobuf.ByteString bs =
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        applicationIdentifier_ = s;
+        return s;
+      } else {
+        return (java.lang.String) ref;
+      }
+    }
+    /**
+     * <code>string applicationIdentifier = 3;</code>
+     * @return The bytes for applicationIdentifier.
+     */
+    public com.google.protobuf.ByteString
+        getApplicationIdentifierBytes() {
+      java.lang.Object ref = applicationIdentifier_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        applicationIdentifier_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+    /**
+     * <code>string applicationIdentifier = 3;</code>
+     * @param value The applicationIdentifier to set.
+     * @return This builder for chaining.
+     */
+    public Builder setApplicationIdentifier(
+        java.lang.String value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  
+      applicationIdentifier_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>string applicationIdentifier = 3;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearApplicationIdentifier() {
+      
+      applicationIdentifier_ = getDefaultInstance().getApplicationIdentifier();
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>string applicationIdentifier = 3;</code>
+     * @param value The bytes for applicationIdentifier to set.
+     * @return This builder for chaining.
+     */
+    public Builder setApplicationIdentifierBytes(
+        com.google.protobuf.ByteString value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+      
+      applicationIdentifier_ = value;
+      onChanged();
+      return this;
+    }
+
+    private java.lang.Object keyType_ = "";
+    /**
+     * <code>string keyType = 4;</code>
+     * @return The keyType.
+     */
+    public java.lang.String getKeyType() {
+      java.lang.Object ref = keyType_;
+      if (!(ref instanceof java.lang.String)) {
+        com.google.protobuf.ByteString bs =
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        keyType_ = s;
+        return s;
+      } else {
+        return (java.lang.String) ref;
+      }
+    }
+    /**
+     * <code>string keyType = 4;</code>
+     * @return The bytes for keyType.
+     */
+    public com.google.protobuf.ByteString
+        getKeyTypeBytes() {
+      java.lang.Object ref = keyType_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        keyType_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+    /**
+     * <code>string keyType = 4;</code>
+     * @param value The keyType to set.
+     * @return This builder for chaining.
+     */
+    public Builder setKeyType(
+        java.lang.String value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  
+      keyType_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>string keyType = 4;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearKeyType() {
+      
+      keyType_ = getDefaultInstance().getKeyType();
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>string keyType = 4;</code>
+     * @param value The bytes for keyType to set.
+     * @return This builder for chaining.
+     */
+    public Builder setKeyTypeBytes(
+        com.google.protobuf.ByteString value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+      
+      keyType_ = value;
+      onChanged();
+      return this;
+    }
+
+    private java.lang.Object envID_ = "";
+    /**
+     * <code>string envID = 5;</code>
+     * @return The envID.
+     */
+    public java.lang.String getEnvID() {
+      java.lang.Object ref = envID_;
+      if (!(ref instanceof java.lang.String)) {
+        com.google.protobuf.ByteString bs =
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        envID_ = s;
+        return s;
+      } else {
+        return (java.lang.String) ref;
+      }
+    }
+    /**
+     * <code>string envID = 5;</code>
+     * @return The bytes for envID.
+     */
+    public com.google.protobuf.ByteString
+        getEnvIDBytes() {
+      java.lang.Object ref = envID_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        envID_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+    /**
+     * <code>string envID = 5;</code>
+     * @param value The envID to set.
+     * @return This builder for chaining.
+     */
+    public Builder setEnvID(
+        java.lang.String value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  
+      envID_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>string envID = 5;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearEnvID() {
+      
+      envID_ = getDefaultInstance().getEnvID();
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>string envID = 5;</code>
+     * @param value The bytes for envID to set.
+     * @return This builder for chaining.
+     */
+    public Builder setEnvIDBytes(
+        com.google.protobuf.ByteString value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+      
+      envID_ = value;
+      onChanged();
+      return this;
+    }
+
+    private long timestamp_ ;
+    /**
+     * <code>int64 timestamp = 6;</code>
+     * @return The timestamp.
+     */
+    @java.lang.Override
+    public long getTimestamp() {
+      return timestamp_;
+    }
+    /**
+     * <code>int64 timestamp = 6;</code>
+     * @param value The timestamp to set.
+     * @return This builder for chaining.
+     */
+    public Builder setTimestamp(long value) {
+      
+      timestamp_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>int64 timestamp = 6;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearTimestamp() {
+      
+      timestamp_ = 0L;
       onChanged();
       return this;
     }

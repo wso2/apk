@@ -70,6 +70,50 @@ public interface SubscriptionDataStore {
     void addApplicationKeyMappings(
             List<org.wso2.apk.enforcer.discovery.subscription.ApplicationKeyMapping> applicationKeyMappingList);
 
+    /**
+     * Filter the API map according to the provided parameters
+     *
+     * @param context API Context
+     * @param version API Version
+     * @return Matching list of apis.
+     */
+    API getMatchingAPI(String context, String version);
+
+    /**
+     * Filter the applicationMapping map based on the provided application UUID.
+     *
+     * @param uuid Application UUID
+     * @return ApplicationMapping which match the given UUID
+     */
+    ApplicationMapping getMatchingApplicationMapping(String uuid);
+
+    /**
+     * Filter the application key mapping map based on provided parameters
+     *
+     * @param applicationIdentifier Application identifier
+     * @param keyType               Key type, i.e. PRODUCTION or SANDBOX
+     * @param securityScheme        Security scheme
+     * @return ApplicationKeyMapping which match the given parameters
+     */
+    ApplicationKeyMapping getMatchingApplicationKeyMapping(String applicationIdentifier, String keyType,
+            String securityScheme);
+
+    /**
+     * Filter the applications map based on the provided parameters.
+     *
+     * @param uuid UUID of the application
+     * @return Application which match the given UUID
+     */
+    Application getMatchingApplication(String uuid);
+
+    /**
+     * Filter the subscriptions map based on the provided parameters.
+     *
+     * @param uuid UUID of the subscription
+     * @return Subscription which matches the given UUID
+     */
+    Subscription getMatchingSubscription(String uuid);
+
     void addJWTIssuers(List<JWTIssuer> jwtIssuers);
 
     /**

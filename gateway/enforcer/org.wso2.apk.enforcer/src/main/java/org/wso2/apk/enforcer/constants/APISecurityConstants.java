@@ -58,7 +58,7 @@ public class APISecurityConstants {
     public static final String API_SUBSCRIPTION_BLOCKED_DESCRIPTION = "API Subscription is blocked";
 
     public static final int API_AUTH_FORBIDDEN = 900908;
-    public static final String API_AUTH_FORBIDDEN_MESSAGE = "Resource forbidden ";
+    public static final String API_AUTH_FORBIDDEN_MESSAGE = "Resource forbidden";
 
     public static final int SUBSCRIPTION_INACTIVE = 900909;
     public static final String SUBSCRIPTION_INACTIVE_MESSAGE = "The subscription to the API is inactive";

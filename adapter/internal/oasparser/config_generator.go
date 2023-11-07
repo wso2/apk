@@ -211,9 +211,10 @@ func GetEnforcerAPI(adapterInternalAPI model.AdapterInternalAPI, vhost string) *
 		ApplicationSecurity: adapterInternalAPI.GetXWSO2ApplicationSecurity(),
 		// GraphQLSchema:         adapterInternalAPI.GraphQLSchema,
 		// GraphqlComplexityInfo: adapterInternalAPI.GraphQLComplexities.Data.List,
-		SystemAPI:         adapterInternalAPI.IsSystemAPI,
-		ApiDefinitionFile: adapterInternalAPI.GetAPIDefinitionFile(),
-		Environment:       adapterInternalAPI.GetEnvironment(),
+		SystemAPI:              adapterInternalAPI.IsSystemAPI,
+		ApiDefinitionFile:      adapterInternalAPI.GetAPIDefinitionFile(),
+		Environment:            adapterInternalAPI.GetEnvironment(),
+		SubscriptionValidation: adapterInternalAPI.GetSubscriptionValidation(),
 	}
 }
 

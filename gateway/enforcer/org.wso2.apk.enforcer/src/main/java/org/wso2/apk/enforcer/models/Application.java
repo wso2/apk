@@ -20,8 +20,6 @@ package org.wso2.apk.enforcer.models;
 
 import org.wso2.apk.enforcer.common.CacheableEntity;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -30,25 +28,19 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class Application implements CacheableEntity<String> {
 
-    private Integer id = null;
     private String uuid;
     private String name = null;
-    private Integer subId = null;
-    private String subName = null;
-    private String policy = null;
-    private String tokenType = null;
-    private String tenantDomain = null;
-    private List<String> groupIds = new ArrayList<>();
+    private String owner = null;
     private Map<String, String> attributes = new ConcurrentHashMap<>();
 
-    public Integer getId() {
+    public String getUUID() {
 
-        return id;
+        return uuid;
     }
 
-    public void setId(Integer id) {
+    public void setUUID(String uuid) {
 
-        this.id = id;
+        this.uuid = uuid;
     }
 
     public String getName() {
@@ -61,54 +53,14 @@ public class Application implements CacheableEntity<String> {
         this.name = name;
     }
 
-    public Integer getSubId() {
+    public String getOwner() {
 
-        return subId;
+        return owner;
     }
 
-    public void setSubId(Integer subId) {
+    public void setOwner(String owner) {
 
-        this.subId = subId;
-    }
-
-    public String getPolicy() {
-
-        return policy;
-    }
-
-    public void setPolicy(String policy) {
-
-        this.policy = policy;
-    }
-
-    public String getTokenType() {
-
-        return tokenType;
-    }
-
-    public void setTokenType(String tokenType) {
-
-        this.tokenType = tokenType;
-    }
-
-    public String getCacheKey() {
-
-        return uuid;
-    }
-
-    public List<String> getGroupIds() {
-
-        return groupIds;
-    }
-
-    public void addGroupId(String groupId) {
-
-        this.groupIds.add(groupId);
-    }
-
-    public void removeGroupId(String groupId) {
-
-        this.groupIds.remove(groupId);
+        this.owner = owner;
     }
 
     public Map<String, String> getAttributes() {
@@ -126,39 +78,17 @@ public class Application implements CacheableEntity<String> {
         this.attributes.remove(key);
     }
 
-    public String getSubName() {
+    public String getCacheKey() {
 
-        return subName;
-    }
-
-    public void setSubName(String subName) {
-
-        this.subName = subName;
-    }
-
-    public void setUUID(String uuid) {
-
-        this.uuid = uuid;
-    }
-
-    public String getTenantDomain() {
-        return tenantDomain;
-    }
-
-    public void setTenantDomain(String tenantDomain) {
-        this.tenantDomain = tenantDomain;
+        return uuid;
     }
 
     @Override
     public String toString() {
-        return "Application [id=" + id + ", name=" + name + ", subId=" + subId + ", policy=" + policy + ", tokenType="
-                + tokenType + ", groupIds=" + groupIds + ", tenantDomain=" + tenantDomain + ", attributes=" + attributes
+
+        return "Application [uuid=" + uuid + ", name=" + name + ", owner=" + owner + ", attributes=" + attributes
                 + "]";
     }
 
-    public String getUUID() {
-
-        return uuid;
-    }
 }
 

@@ -55,4 +55,5 @@ message Api {
 	BackendJWTTokenInfo backendJWTTokenInfo = 25;
 	bytes apiDefinitionFile = 26;
 	string environment = 27;
+	bool subscriptionValidation = 28;
 }

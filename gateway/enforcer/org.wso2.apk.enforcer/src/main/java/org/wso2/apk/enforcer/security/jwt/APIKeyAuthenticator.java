@@ -209,7 +209,7 @@ public class APIKeyAuthenticator extends APIKeyHandler {
                 APIKeyValidationInfoDTO validationInfoDto;
                 log.debug("Validating subscription for API Key against subscription store."
                         + " context: {} version: {}", apiContext, apiVersion);
-                validationInfoDto = KeyValidator.validateSubscription(apiUuid, apiContext, payload, envType);
+                validationInfoDto = KeyValidator.validateSubscription(apiUuid, apiContext, payload);
                 if (!requestContext.getMatchedAPI().isSystemAPI()) {
                     log.debug("Validating subscription for API Key using JWT claims against invoked API info."
                             + " context: {} version: {}", apiContext, apiVersion);
@@ -218,7 +218,7 @@ public class APIKeyAuthenticator extends APIKeyHandler {
                     log.debug("Creating API Key info DTO for unknown API and Application."
                             + " context: {} version: {}", apiContext, apiVersion);
                     validationInfoDto = new APIKeyValidationInfoDTO();
-                    JWTUtils.updateApplicationNameForSubscriptionDisabledKM(validationInfoDto,
+                    JWTUtils.updateApplicationNameForSubscriptionDisabledFlow(validationInfoDto,
                             APIConstants.KeyManager.APIM_APIKEY_ISSUER);
                     validationInfoDto.setAuthorized(true);
                 }
@@ -312,7 +312,6 @@ public class APIKeyAuthenticator extends APIKeyHandler {
         if (app != null) {
             validationInfoDTO.setApplicationUUID(app.getAsString(APIConstants.JwtTokenConstants.APPLICATION_UUID));
             validationInfoDTO.setApplicationName(app.getAsString(APIConstants.JwtTokenConstants.APPLICATION_NAME));
-            validationInfoDTO.setApplicationTier(app.getAsString(APIConstants.JwtTokenConstants.APPLICATION_TIER));
             //validationInfoDTO.setSubscriber(app.getAsString(APIConstants.JwtTokenConstants.APPLICATION_OWNER));
         }
 
@@ -347,7 +346,7 @@ public class APIKeyAuthenticator extends APIKeyHandler {
                         validationInfoDTO.setApiPublisher(subPublisher);
                     }
                     if (subTenant != null) {
-                        validationInfoDTO.setSubscriberTenantDomain(subTenant);
+                        validationInfoDTO.setSubscriberOrganization(subTenant);
                     }
 
                     log.debug("APIKeyValidationInfoDTO populated for API: {}, version: {}.", name, version);

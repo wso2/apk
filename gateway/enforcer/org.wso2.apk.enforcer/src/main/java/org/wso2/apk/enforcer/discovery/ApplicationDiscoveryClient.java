@@ -44,7 +44,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Client to communicate with Application discovery service at the adapter.
+ * Client to communicate with Application discovery service at the common-controller.
  */
 public class ApplicationDiscoveryClient implements Runnable {
     private static final Logger logger = LogManager.getLogger(ApplicationDiscoveryClient.class);
@@ -54,6 +54,7 @@ public class ApplicationDiscoveryClient implements Runnable {
     private StreamObserver<DiscoveryRequest> reqObserver;
     private final SubscriptionDataStoreImpl subscriptionDataStore;
     private final String host;
+    private final String hostname;
     private final int port;
 
     /**
@@ -79,8 +80,9 @@ public class ApplicationDiscoveryClient implements Runnable {
      */
     private final Node node;
 
-    private ApplicationDiscoveryClient(String host, int port) {
+    private ApplicationDiscoveryClient(String host, String hostname, int port) {
         this.host = host;
+        this.hostname = hostname;
         this.port = port;
         this.subscriptionDataStore = SubscriptionDataStoreImpl.getInstance();
         initConnection();
@@ -100,7 +102,7 @@ public class ApplicationDiscoveryClient implements Runnable {
                     }
                 } while (!channel.isShutdown());
             }
-            this.channel = GRPCUtils.createSecuredChannel(logger, host, port);
+            this.channel = GRPCUtils.createSecuredChannel(logger, host, port, hostname);
             this.stub = ApplicationDiscoveryServiceGrpc.newStub(channel);
         } else if (channel.getState(true) == ConnectivityState.READY) {
             XdsSchedulerManager.getInstance().stopApplicationDiscoveryScheduling();
@@ -109,9 +111,10 @@ public class ApplicationDiscoveryClient implements Runnable {
 
     public static ApplicationDiscoveryClient getInstance() {
         if (instance == null) {
-            String sdsHost = ConfigHolder.getInstance().getEnvVarConfig().getAdapterHost();
-            int sdsPort = Integer.parseInt(ConfigHolder.getInstance().getEnvVarConfig().getAdapterXdsPort());
-            instance = new ApplicationDiscoveryClient(sdsHost, sdsPort);
+            String sdsHost = ConfigHolder.getInstance().getEnvVarConfig().getCommonControllerHost();
+            String sdsHostname = ConfigHolder.getInstance().getEnvVarConfig().getCommonControllerHostname();
+            int sdsPort = Integer.parseInt(ConfigHolder.getInstance().getEnvVarConfig().getCommonControllerXdsPort());
+            instance = new ApplicationDiscoveryClient(sdsHost, sdsHostname, sdsPort);
         }
         return instance;
     }

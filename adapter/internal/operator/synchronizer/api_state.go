@@ -34,12 +34,13 @@ type APIState struct {
 	RateLimitPolicies         map[string]v1alpha1.RateLimitPolicy
 	ResourceAuthentications   map[string]v1alpha1.Authentication
 	ResourceRateLimitPolicies map[string]v1alpha1.RateLimitPolicy
-	ResourceAPIPolicies       map[string]v1alpha1.APIPolicy
-	APIPolicies               map[string]v1alpha1.APIPolicy
+	ResourceAPIPolicies       map[string]v1alpha2.APIPolicy
+	APIPolicies               map[string]v1alpha2.APIPolicy
 	InterceptorServiceMapping map[string]v1alpha1.InterceptorService
 	BackendJWTMapping         map[string]v1alpha1.BackendJWT
 	APIDefinitionFile         []byte
 	OldOrganizationID         string
+	SubscriptionValidation    bool
 }
 
 // HTTPRouteState holds the state of the deployed httpRoutes. This state is compared with

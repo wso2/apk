@@ -68,10 +68,7 @@ public class UnsecuredAPIAuthenticator implements Authenticator {
                         ThreadContext.get(APIConstants.LOG_TRACE_ID));
             }
             String uuid = requestContext.getMatchedAPI().getUuid();
-            String context = requestContext.getMatchedAPI().getBasePath();
-            String apiTenantDomain = FilterUtils.getTenantDomainFromRequestURL(context);
-            SubscriptionDataStore datastore = SubscriptionDataHolder.getInstance()
-                    .getTenantSubscriptionStore(apiTenantDomain);
+            SubscriptionDataStore datastore = SubscriptionDataHolder.getInstance().getSubscriptionDataStore();
             API api = datastore.getApiByContextAndVersion(uuid);
             if (api != null && APIConstants.LifecycleStatus.BLOCKED.equals(api.getLcState())) {
                 FilterUtils.setErrorToContext(requestContext,

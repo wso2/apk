@@ -151,6 +151,10 @@ func (ods *OperatorDataStore) processAPIState(apiNamespacedName types.Namespaced
 		}
 	}
 
+	if cachedAPI.SubscriptionValidation != apiState.SubscriptionValidation {
+		cachedAPI.SubscriptionValidation = apiState.SubscriptionValidation
+	}
+
 	if len(apiState.APIPolicies) != len(cachedAPI.APIPolicies) {
 		cachedAPI.APIPolicies = apiState.APIPolicies
 		updated = true

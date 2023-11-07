@@ -23,81 +23,13 @@ import org.wso2.apk.enforcer.common.CacheableEntity;
 /**
  * Entity for keeping mapping between Application and Consumer key.
  */
-public class ApplicationKeyMapping implements CacheableEntity<ApplicationKeyMappingCacheKey> {
+public class ApplicationKeyMapping implements CacheableEntity<String> {
 
-    private String consumerKey;
-    private String keyType;
-    private String keyManager;
-    private String wfState;
     private String applicationUUID;
-    private int applicationId;
-
-    public String getConsumerKey() {
-
-        return consumerKey;
-    }
-
-    public void setConsumerKey(String consumerKey) {
-
-        this.consumerKey = consumerKey;
-    }
-
-    public String getKeyType() {
-
-        return keyType;
-    }
-
-    public void setKeyType(String keyType) {
-
-        this.keyType = keyType;
-    }
-
-    public String getWfState() {
-
-        return wfState;
-    }
-
-    public void setWfState(String wfState) {
-
-        this.wfState = wfState;
-    }
-
-    public int getApplicationId() {
-
-        return applicationId;
-    }
-
-    public void setApplicationId(int applicationId) {
-
-        this.applicationId = applicationId;
-    }
-
-    @Override
-    public ApplicationKeyMappingCacheKey getCacheKey() {
-        return new ApplicationKeyMappingCacheKey(getConsumerKey(), getKeyManager());
-    }
-
-    public String getKeyManager() {
-
-        return keyManager;
-    }
-
-    public void setKeyManager(String keyManager) {
-
-        this.keyManager = keyManager;
-    }
-
-    @Override
-    public String toString() {
-
-        return "ApplicationKeyMapping{" +
-                "consumerKey='" + consumerKey + '\'' +
-                ", keyType='" + keyType + '\'' +
-                ", keyManager='" + keyManager + '\'' +
-                ", wfState='" + wfState + '\'' +
-                ", applicationId=" + applicationId +
-                '}';
-    }
+    private String securityScheme;
+    private String applicationIdentifier;
+    private String keyType;
+    private String envId;
 
     public String getApplicationUUID() {
         return applicationUUID;
@@ -106,5 +38,52 @@ public class ApplicationKeyMapping implements CacheableEntity<ApplicationKeyMapp
     public void setApplicationUUID(String applicationUUID) {
         this.applicationUUID = applicationUUID;
     }
-}
 
+    public String getSecurityScheme() {
+        return securityScheme;
+    }
+
+    public void setSecurityScheme(String securityScheme) {
+        this.securityScheme = securityScheme;
+    }
+
+    public String getApplicationIdentifier() {
+        return applicationIdentifier;
+    }
+
+    public void setApplicationIdentifier(String applicationIdentifier) {
+        this.applicationIdentifier = applicationIdentifier;
+    }
+
+    public String getKeyType() {
+        return keyType;
+    }
+
+    public void setKeyType(String keyType) {
+        this.keyType = keyType;
+    }
+
+    public String getEnvId() {
+        return envId;
+    }
+
+    public void setEnvId(String envId) {
+        this.envId = envId;
+    }
+
+    @Override
+    public String getCacheKey() {
+        return securityScheme + CacheableEntity.DELEM_PERIOD + applicationIdentifier;
+    }
+
+    @Override
+    public String toString() {
+        return "ApplicationKeyMapping{" +
+                "applicationUUID='" + applicationUUID + '\'' +
+                ", securityScheme='" + securityScheme + '\'' +
+                ", applicationIdentifier='" + applicationIdentifier + '\'' +
+                ", keyType='" + keyType + '\'' +
+                ", envId='" + envId + '\'' +
+                '}';
+    }
+}

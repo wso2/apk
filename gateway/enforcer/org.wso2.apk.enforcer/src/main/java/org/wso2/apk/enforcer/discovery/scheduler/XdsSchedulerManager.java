@@ -23,6 +23,7 @@ import org.wso2.apk.enforcer.discovery.ApiDiscoveryClient;
 import org.wso2.apk.enforcer.discovery.ApiListDiscoveryClient;
 import org.wso2.apk.enforcer.discovery.ApplicationDiscoveryClient;
 import org.wso2.apk.enforcer.discovery.ApplicationKeyMappingDiscoveryClient;
+import org.wso2.apk.enforcer.discovery.ApplicationMappingDiscoveryClient;
 import org.wso2.apk.enforcer.discovery.ApplicationPolicyDiscoveryClient;
 import org.wso2.apk.enforcer.discovery.ConfigDiscoveryClient;
 import org.wso2.apk.enforcer.discovery.JWTIssuerDiscoveryClient;
@@ -48,6 +49,7 @@ public class XdsSchedulerManager {
     private ScheduledFuture<?> jwtIssuerDiscoveryScheduledFuture;
 
     private ScheduledFuture<?> applicationKeyMappingDiscoveryScheduledFuture;
+    private ScheduledFuture<?> applicationMappingDiscoveryScheduledFuture;
     private ScheduledFuture<?> keyManagerDiscoveryScheduledFuture;
     private ScheduledFuture<?> revokedTokenDiscoveryScheduledFuture;
     private ScheduledFuture<?> subscriptionDiscoveryScheduledFuture;
@@ -206,6 +208,21 @@ public class XdsSchedulerManager {
         if (subscriptionPolicyDiscoveryScheduledFuture != null && !subscriptionPolicyDiscoveryScheduledFuture
                 .isDone()) {
             subscriptionPolicyDiscoveryScheduledFuture.cancel(false);
+        }
+    }
+
+    public synchronized void startApplicationMappingDiscoveryScheduling() {
+        if (applicationMappingDiscoveryScheduledFuture == null || applicationMappingDiscoveryScheduledFuture.isDone()) {
+            applicationMappingDiscoveryScheduledFuture = discoveryClientScheduler
+                    .scheduleWithFixedDelay(ApplicationMappingDiscoveryClient.getInstance(), 1, retryPeriod,
+                            TimeUnit.SECONDS);
+        }
+    }
+
+    public synchronized void stopApplicationMappingDiscoveryScheduling() {
+        if (applicationMappingDiscoveryScheduledFuture != null && !applicationMappingDiscoveryScheduledFuture
+                .isDone()) {
+            applicationMappingDiscoveryScheduledFuture.cancel(false);
         }
     }
 }

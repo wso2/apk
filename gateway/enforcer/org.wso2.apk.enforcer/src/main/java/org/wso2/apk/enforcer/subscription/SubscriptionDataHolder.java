@@ -29,11 +29,7 @@ public class SubscriptionDataHolder {
         return instance;
     }
 
-    public SubscriptionDataStore getTenantSubscriptionStore(String tenantDomain) {
-        return SubscriptionDataStoreImpl.getInstance();
-    }
-
-    public SubscriptionDataStoreImpl getTenantSubscriptionStore() {
+    public SubscriptionDataStoreImpl getSubscriptionDataStore() {
         return SubscriptionDataStoreImpl.getInstance();
     }
 }

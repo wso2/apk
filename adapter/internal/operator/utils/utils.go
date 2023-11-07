@@ -506,7 +506,7 @@ func RetrieveNamespaceListOptions(namespaces []string) k8client.ListOptions {
 
 // GetInterceptorService reads InterceptorService when interceptorReference is given
 func GetInterceptorService(ctx context.Context, client k8client.Client, namespace string,
-	interceptorReference *dpv1alpha1.InterceptorReference, api *dpv1alpha2.API) *dpv1alpha1.InterceptorService {
+	interceptorReference *dpv1alpha2.InterceptorReference, api *dpv1alpha2.API) *dpv1alpha1.InterceptorService {
 	interceptorService := &dpv1alpha1.InterceptorService{}
 	interceptorRef := types.NamespacedName{
 		Namespace: namespace,

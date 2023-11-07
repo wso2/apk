@@ -23,31 +23,31 @@ type ApplicationEvent struct {
 	UUID          string
 	Name          string
 	Owner         string
-	Policy        string
+	// Policy        string
 	Attributes    map[string]string
-	Keys          []*ApplicationKey
+	// Keys          []*ApplicationKey
 	Organization  string
 	TimeStamp     string
 	IsRemoveEvent bool
 }
 
 // ApplicationKey is a data holder for an application key
-type ApplicationKey struct {
-	Key        string
-	KeyManager string
-}
+// type ApplicationKey struct {
+// 	Key        string
+// 	KeyManager string
+// }
 
 // SubscriptionEvent is a data holder for a subscription event
 type SubscriptionEvent struct {
 	Label          string
 	UUID           string
-	ApplicationRef string
-	APIRef         string
-	PolicyID       string
+	// ApplicationRef string
+	// APIRef         string
+	// PolicyID       string
 	SubStatus      string
-	Subscriber     string
+	// Subscriber     string
 	Organization   string
-	TimeStamp      string
+	// TimeStamp      string
 	IsRemoveEvent  bool
 	IsUpdateEvent  bool
 }

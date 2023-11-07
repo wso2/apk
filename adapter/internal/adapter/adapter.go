@@ -78,9 +78,8 @@ func init() {
 
 const grpcMaxConcurrentStreams = 1000000
 
-func runManagementServer(conf *config.Config, server xdsv3.Server, enforcerServer wso2_server.Server, enforcerSdsServer wso2_server.Server,
-	enforcerAppDsSrv wso2_server.Server, enforcerAPIDsSrv wso2_server.Server, enforcerAppPolicyDsSrv wso2_server.Server,
-	enforcerSubPolicyDsSrv wso2_server.Server, enforcerAppKeyMappingDsSrv wso2_server.Server,
+func runManagementServer(conf *config.Config, server xdsv3.Server, enforcerServer wso2_server.Server,
+	enforcerAPIDsSrv wso2_server.Server, enforcerAppPolicyDsSrv wso2_server.Server, enforcerSubPolicyDsSrv wso2_server.Server,
 	enforcerKeyManagerDsSrv wso2_server.Server, enforcerRevokedTokenDsSrv wso2_server.Server,
 	enforcerThrottleDataDsSrv wso2_server.Server, enforcerJwtIssuerDsSrv wso2_server.Server, port uint) {
 	var grpcOptions []grpc.ServerOption
@@ -120,12 +119,9 @@ func runManagementServer(conf *config.Config, server xdsv3.Server, enforcerServe
 	discoveryv3.RegisterAggregatedDiscoveryServiceServer(grpcServer, server)
 	configservice.RegisterConfigDiscoveryServiceServer(grpcServer, enforcerServer)
 	apiservice.RegisterApiDiscoveryServiceServer(grpcServer, enforcerServer)
-	subscriptionservice.RegisterSubscriptionDiscoveryServiceServer(grpcServer, enforcerSdsServer)
-	subscriptionservice.RegisterApplicationDiscoveryServiceServer(grpcServer, enforcerAppDsSrv)
 	subscriptionservice.RegisterApiListDiscoveryServiceServer(grpcServer, enforcerAPIDsSrv)
 	subscriptionservice.RegisterApplicationPolicyDiscoveryServiceServer(grpcServer, enforcerAppPolicyDsSrv)
 	subscriptionservice.RegisterSubscriptionPolicyDiscoveryServiceServer(grpcServer, enforcerSubPolicyDsSrv)
-	subscriptionservice.RegisterApplicationKeyMappingDiscoveryServiceServer(grpcServer, enforcerAppKeyMappingDsSrv)
 	keymanagerservice.RegisterKMDiscoveryServiceServer(grpcServer, enforcerKeyManagerDsSrv)
 	keymanagerservice.RegisterRevokedTokenDiscoveryServiceServer(grpcServer, enforcerRevokedTokenDsSrv)
 	subscriptionservice.RegisterJWTIssuerDiscoveryServiceServer(grpcServer, enforcerJwtIssuerDsSrv)
@@ -166,32 +162,25 @@ func Run(conf *config.Config) {
 	logger.LoggerAPK.Info("Starting adapter ....")
 	cache := xds.GetXdsCache()
 	enforcerCache := xds.GetEnforcerCache()
-	enforcerSubscriptionCache := xds.GetEnforcerSubscriptionCache()
-	enforcerApplicationCache := xds.GetEnforcerApplicationCache()
 	enforcerAPICache := xds.GetEnforcerAPICache()
 	enforcerApplicationPolicyCache := xds.GetEnforcerApplicationPolicyCache()
 	enforcerSubscriptionPolicyCache := xds.GetEnforcerSubscriptionPolicyCache()
-	enforcerApplicationKeyMappingCache := xds.GetEnforcerApplicationKeyMappingCache()
 	enforcerKeyManagerCache := xds.GetEnforcerKeyManagerCache()
 	enforcerRevokedTokenCache := xds.GetEnforcerRevokedTokenCache()
 	enforcerThrottleDataCache := xds.GetEnforcerThrottleDataCache()
 	enforcerJWtIssuerCache := xds.GetEnforcerJWTIssuerCache()
 	srv := xdsv3.NewServer(ctx, cache, &routercb.Callbacks{})
 	enforcerXdsSrv := wso2_server.NewServer(ctx, enforcerCache, &enforcerCallbacks.Callbacks{})
-	enforcerSdsSrv := wso2_server.NewServer(ctx, enforcerSubscriptionCache, &enforcerCallbacks.Callbacks{})
-	enforcerAppDsSrv := wso2_server.NewServer(ctx, enforcerApplicationCache, &enforcerCallbacks.Callbacks{})
 	enforcerJwtIssuerDsSrv := wso2_server.NewServer(ctx, enforcerJWtIssuerCache, &enforcerCallbacks.Callbacks{})
 	enforcerAPIDsSrv := wso2_server.NewServer(ctx, enforcerAPICache, &enforcerCallbacks.Callbacks{})
 	enforcerAppPolicyDsSrv := wso2_server.NewServer(ctx, enforcerApplicationPolicyCache, &enforcerCallbacks.Callbacks{})
 	enforcerSubPolicyDsSrv := wso2_server.NewServer(ctx, enforcerSubscriptionPolicyCache, &enforcerCallbacks.Callbacks{})
-	enforcerAppKeyMappingDsSrv := wso2_server.NewServer(ctx, enforcerApplicationKeyMappingCache, &enforcerCallbacks.Callbacks{})
 	enforcerKeyManagerDsSrv := wso2_server.NewServer(ctx, enforcerKeyManagerCache, &enforcerCallbacks.Callbacks{})
 	enforcerRevokedTokenDsSrv := wso2_server.NewServer(ctx, enforcerRevokedTokenCache, &enforcerCallbacks.Callbacks{})
 	enforcerThrottleDataDsSrv := wso2_server.NewServer(ctx, enforcerThrottleDataCache, &enforcerCallbacks.Callbacks{})
 
-	runManagementServer(conf, srv, enforcerXdsSrv, enforcerSdsSrv, enforcerAppDsSrv, enforcerAPIDsSrv,
-		enforcerAppPolicyDsSrv, enforcerSubPolicyDsSrv, enforcerAppKeyMappingDsSrv, enforcerKeyManagerDsSrv,
-		enforcerRevokedTokenDsSrv, enforcerThrottleDataDsSrv, enforcerJwtIssuerDsSrv, port)
+	runManagementServer(conf, srv, enforcerXdsSrv, enforcerAPIDsSrv, enforcerAppPolicyDsSrv, enforcerSubPolicyDsSrv,
+		enforcerKeyManagerDsSrv, enforcerRevokedTokenDsSrv, enforcerThrottleDataDsSrv, enforcerJwtIssuerDsSrv, port)
 
 	// Set enforcer startup configs
 	xds.UpdateEnforcerConfig(conf)

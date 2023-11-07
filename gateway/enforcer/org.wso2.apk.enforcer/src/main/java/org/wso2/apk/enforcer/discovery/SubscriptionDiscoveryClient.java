@@ -44,7 +44,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Client to communicate with Subscription discovery service at the adapter.
+ * Client to communicate with Subscription discovery service at the common-controller.
  */
 public class SubscriptionDiscoveryClient implements Runnable {
     private static final Logger logger = LogManager.getLogger(SubscriptionDiscoveryClient.class);
@@ -54,6 +54,7 @@ public class SubscriptionDiscoveryClient implements Runnable {
     private StreamObserver<DiscoveryRequest> reqObserver;
     private final SubscriptionDataStoreImpl subscriptionDataStore;
     private final String host;
+    private final String hostname;
     private final int port;
 
     /**
@@ -78,8 +79,9 @@ public class SubscriptionDiscoveryClient implements Runnable {
      */
     private final Node node;
 
-    private SubscriptionDiscoveryClient(String host, int port) {
+    private SubscriptionDiscoveryClient(String host, String hostname, int port) {
         this.host = host;
+        this.hostname = hostname;
         this.port = port;
         this.subscriptionDataStore = SubscriptionDataStoreImpl.getInstance();
         initConnection();
@@ -99,7 +101,7 @@ public class SubscriptionDiscoveryClient implements Runnable {
                     }
                 } while (!channel.isShutdown());
             }
-            this.channel = GRPCUtils.createSecuredChannel(logger, host, port);
+            this.channel = GRPCUtils.createSecuredChannel(logger, host, port, hostname);
             this.stub = SubscriptionDiscoveryServiceGrpc.newStub(channel);
         } else if (channel.getState(true) == ConnectivityState.READY) {
             XdsSchedulerManager.getInstance().stopSubscriptionDiscoveryScheduling();
@@ -108,9 +110,10 @@ public class SubscriptionDiscoveryClient implements Runnable {
 
     public static SubscriptionDiscoveryClient getInstance() {
         if (instance == null) {
-            String sdsHost = ConfigHolder.getInstance().getEnvVarConfig().getAdapterHost();
-            int sdsPort = Integer.parseInt(ConfigHolder.getInstance().getEnvVarConfig().getAdapterXdsPort());
-            instance = new SubscriptionDiscoveryClient(sdsHost, sdsPort);
+            String sdsHost = ConfigHolder.getInstance().getEnvVarConfig().getCommonControllerHost();
+            String sdsHostname = ConfigHolder.getInstance().getEnvVarConfig().getCommonControllerHostname();
+            int sdsPort = Integer.parseInt(ConfigHolder.getInstance().getEnvVarConfig().getCommonControllerXdsPort());
+            instance = new SubscriptionDiscoveryClient(sdsHost, sdsHostname, sdsPort);
         }
         return instance;
     }

@@ -1,0 +1,16 @@
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  labels:
+    app.kubernetes.io/name: subscription
+    app.kubernetes.io/instance: subscription-sample
+    app.kubernetes.io/part-of: operator
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: operator
+  name: subscription-sample
+spec:
+  subscriptionStatus: ACTIVE
+  organization: carbon.super
+  api:
+    name: AppSubTestAPI
+    version: ^1.*|^v1$

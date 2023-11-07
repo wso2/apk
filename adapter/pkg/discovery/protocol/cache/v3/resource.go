@@ -48,6 +48,8 @@ func GetResponseType(typeURL string) types.ResponseType {
 		return types.SubscriptionPolicyList
 	case resource.ApplicationKeyMappingListType:
 		return types.ApplicationKeyMappingList
+	case resource.ApplicationMappingListType:
+		return types.ApplicationMappingList
 	case resource.KeyManagerType:
 		return types.KeyManagerConfig
 	case resource.RevokedTokensType:
@@ -84,6 +86,8 @@ func GetResourceName(res envoy_types.Resource) string {
 		return "JWTIssuer"
 	case *subscription.ApplicationKeyMappingList:
 		return "ApplicationKeyMapping"
+	case *subscription.ApplicationMappingList:
+		return "ApplicationMapping"
 	case *subscription.APIList:
 		return "APIList"
 	case *subscription.ApplicationPolicyList:

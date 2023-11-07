@@ -19,7 +19,6 @@
 package org.wso2.apk.enforcer.models;
 
 import org.wso2.apk.enforcer.common.CacheableEntity;
-import org.wso2.apk.enforcer.subscription.SubscriptionDataStoreUtil;
 
 /**
  * Entity for representing a SubscriptionDTO in APIM.
@@ -27,10 +26,9 @@ import org.wso2.apk.enforcer.subscription.SubscriptionDataStoreUtil;
 public class Subscription implements CacheableEntity<String> {
 
     private String subscriptionId = null;
-    private String policyId = null;
-    private String apiUUID = null;
-    private String appUUID = null;
-    private String subscriptionState = null;
+    private String subscriptionStatus = null;
+    private String organization = null;
+    private SubscribedAPI subscribedApi = null;
     private long timeStamp;
 
     public String getSubscriptionId() {
@@ -43,30 +41,34 @@ public class Subscription implements CacheableEntity<String> {
         this.subscriptionId = subscriptionId;
     }
 
-    public String getPolicyId() {
+    public String getSubscriptionStatus() {
 
-        return policyId;
+        return subscriptionStatus;
     }
 
-    public void setPolicyId(String policyId) {
+    public void setSubscriptionStatus(String subscriptionStatus) {
 
-        this.policyId = policyId;
+        this.subscriptionStatus = subscriptionStatus;
     }
 
-    public String getSubscriptionState() {
+    public String getOrganization() {
 
-        return subscriptionState;
+        return organization;
     }
 
-    public void setSubscriptionState(String subscriptionState) {
+    public void setOrganization(String organization) {
 
-        this.subscriptionState = subscriptionState;
+        this.organization = organization;
     }
 
-    @Override
-    public String getCacheKey() {
+    public SubscribedAPI getSubscribedApi() {
 
-        return SubscriptionDataStoreUtil.getSubscriptionCacheKey(getAppUUID(), getApiUUID());
+        return subscribedApi;
+    }
+
+    public void setSubscribedApi(SubscribedAPI subscribedApi) {
+
+        this.subscribedApi = subscribedApi;
     }
 
     public long getTimeStamp() {
@@ -80,32 +82,20 @@ public class Subscription implements CacheableEntity<String> {
     }
 
     @Override
+    public String getCacheKey() {
+
+        return subscriptionId;
+    }
+
+    @Override
     public String toString() {
 
         return "Subscription{" +
                 "subscriptionId='" + subscriptionId + '\'' +
-                ", policyId='" + policyId + '\'' +
-                ", apiId=" + apiUUID +
-                ", appId=" + appUUID +
-                ", subscriptionState='" + subscriptionState + '\'' +
+                ", subscriptionStatus='" + subscriptionStatus + '\'' +
+                ", organization='" + organization + '\'' +
+                ", subscribedApi=" + subscribedApi +
                 ", timeStamp=" + timeStamp +
                 '}';
     }
-
-    public String getApiUUID() {
-        return apiUUID;
-    }
-
-    public void setApiUUID(String apiUUID) {
-        this.apiUUID = apiUUID;
-    }
-
-    public String getAppUUID() {
-        return appUUID;
-    }
-
-    public void setAppUUID(String appUUID) {
-        this.appUUID = appUUID;
-    }
 }
-

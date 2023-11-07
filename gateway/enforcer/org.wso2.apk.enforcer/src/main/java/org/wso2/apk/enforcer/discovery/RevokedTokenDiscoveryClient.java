@@ -56,6 +56,7 @@ public class RevokedTokenDiscoveryClient implements Runnable {
     private StreamObserver<DiscoveryRequest> reqObserver;
     private static final Logger log = LogManager.getLogger(RevokedTokenDiscoveryClient.class);
     private final String host;
+    private final String hostname;
     private final int port;
     /**
      * This is a reference to the latest received response from the ADS.
@@ -79,8 +80,9 @@ public class RevokedTokenDiscoveryClient implements Runnable {
      */
     private final Node node;
 
-    private RevokedTokenDiscoveryClient(String host, int port) {
+    private RevokedTokenDiscoveryClient(String host, String hostname, int port) {
         this.host = host;
+        this.hostname = hostname;
         this.port = port;
         this.revokedJWTDataHolder = RevokedJWTDataHolder.getInstance();
         initConnection();
@@ -103,7 +105,7 @@ public class RevokedTokenDiscoveryClient implements Runnable {
                     }
                 } while (!channel.isShutdown());
             }
-            this.channel = GRPCUtils.createSecuredChannel(log, host, port);
+            this.channel = GRPCUtils.createSecuredChannel(log, host, port, hostname);
             this.stub = RevokedTokenDiscoveryServiceGrpc.newStub(channel);
         } else if (channel.getState(true) == ConnectivityState.READY) {
             XdsSchedulerManager.getInstance().stopRevokedTokenDiscoveryScheduling();
@@ -113,8 +115,9 @@ public class RevokedTokenDiscoveryClient implements Runnable {
     public static RevokedTokenDiscoveryClient getInstance() {
         if (instance == null) {
             String adsHost = ConfigHolder.getInstance().getEnvVarConfig().getAdapterHost();
+            String adsHostname = ConfigHolder.getInstance().getEnvVarConfig().getAdapterHostname();
             int adsPort = Integer.parseInt(ConfigHolder.getInstance().getEnvVarConfig().getAdapterXdsPort());
-            instance = new RevokedTokenDiscoveryClient(adsHost, adsPort);
+            instance = new RevokedTokenDiscoveryClient(adsHost, adsHostname, adsPort);
         }
         return instance;
     }

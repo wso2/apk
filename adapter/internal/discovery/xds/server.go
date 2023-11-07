@@ -79,12 +79,9 @@ type EnvoyGatewayConfig struct {
 type EnforcerInternalAPI struct {
 	configs                []types.Resource
 	keyManagers            []types.Resource
-	subscriptions          []types.Resource
-	applications           []types.Resource
 	apiList                []types.Resource
 	applicationPolicies    []types.Resource
 	subscriptionPolicies   []types.Resource
-	applicationKeyMappings []types.Resource
 	revokedTokens          []types.Resource
 	jwtIssuers             []types.Resource
 }
@@ -97,12 +94,9 @@ var (
 	cache                              envoy_cachev3.SnapshotCache
 	enforcerCache                      wso2_cache.SnapshotCache
 	enforcerJwtIssuerCache             wso2_cache.SnapshotCache
-	enforcerSubscriptionCache          wso2_cache.SnapshotCache
-	enforcerApplicationCache           wso2_cache.SnapshotCache
 	enforcerAPICache                   wso2_cache.SnapshotCache
 	enforcerApplicationPolicyCache     wso2_cache.SnapshotCache
 	enforcerSubscriptionPolicyCache    wso2_cache.SnapshotCache
-	enforcerApplicationKeyMappingCache wso2_cache.SnapshotCache
 	enforcerKeyManagerCache            wso2_cache.SnapshotCache
 	enforcerRevokedTokensCache         wso2_cache.SnapshotCache
 	enforcerThrottleDataCache          wso2_cache.SnapshotCache
@@ -158,12 +152,9 @@ var _ envoy_cachev3.NodeHash = IDHash{}
 func init() {
 	cache = envoy_cachev3.NewSnapshotCache(false, IDHash{}, nil)
 	enforcerCache = wso2_cache.NewSnapshotCache(false, IDHash{}, nil)
-	enforcerSubscriptionCache = wso2_cache.NewSnapshotCache(false, IDHash{}, nil)
-	enforcerApplicationCache = wso2_cache.NewSnapshotCache(false, IDHash{}, nil)
 	enforcerAPICache = wso2_cache.NewSnapshotCache(false, IDHash{}, nil)
 	enforcerApplicationPolicyCache = wso2_cache.NewSnapshotCache(false, IDHash{}, nil)
 	enforcerSubscriptionPolicyCache = wso2_cache.NewSnapshotCache(false, IDHash{}, nil)
-	enforcerApplicationKeyMappingCache = wso2_cache.NewSnapshotCache(false, IDHash{}, nil)
 	enforcerKeyManagerCache = wso2_cache.NewSnapshotCache(false, IDHash{}, nil)
 	enforcerRevokedTokensCache = wso2_cache.NewSnapshotCache(false, IDHash{}, nil)
 	enforcerThrottleDataCache = wso2_cache.NewSnapshotCache(false, IDHash{}, nil)
@@ -192,16 +183,6 @@ func GetEnforcerCache() wso2_cache.SnapshotCache {
 	return enforcerCache
 }
 
-// GetEnforcerSubscriptionCache returns xds server cache.
-func GetEnforcerSubscriptionCache() wso2_cache.SnapshotCache {
-	return enforcerSubscriptionCache
-}
-
-// GetEnforcerApplicationCache returns xds server cache.
-func GetEnforcerApplicationCache() wso2_cache.SnapshotCache {
-	return enforcerApplicationCache
-}
-
 // GetEnforcerJWTIssuerCache returns xds server cache.
 func GetEnforcerJWTIssuerCache() wso2_cache.SnapshotCache {
 	return enforcerJwtIssuerCache
@@ -220,11 +201,6 @@ func GetEnforcerApplicationPolicyCache() wso2_cache.SnapshotCache {
 // GetEnforcerSubscriptionPolicyCache returns xds server cache.
 func GetEnforcerSubscriptionPolicyCache() wso2_cache.SnapshotCache {
 	return enforcerSubscriptionPolicyCache
-}
-
-// GetEnforcerApplicationKeyMappingCache returns xds server cache.
-func GetEnforcerApplicationKeyMappingCache() wso2_cache.SnapshotCache {
-	return enforcerApplicationKeyMappingCache
 }
 
 // GetEnforcerKeyManagerCache returns xds server cache.
@@ -581,48 +557,6 @@ func UpdateEnforcerApis(label string, apis []types.Resource, version string) {
 	UpdateEnforcerAPIList(label, subAPIList)
 }
 
-// UpdateEnforcerSubscriptions sets new update to the enforcer's Subscriptions
-func UpdateEnforcerSubscriptions(subscriptions *subscription.SubscriptionList) {
-	//TODO: (Dinusha) check this hardcoded value
-	logger.LoggerXds.Debug("Updating Enforcer Subscription Cache")
-	label := commonEnforcerLabel
-	subscriptionList := append(enforcerLabelMap[label].subscriptions, subscriptions)
-
-	// TODO: (VirajSalaka) Decide if a map is required to keep version (just to avoid having the same version)
-	version, _ := crand.Int(crand.Reader, maxRandomBigInt())
-	snap, _ := wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
-		wso2_resource.SubscriptionListType: subscriptionList,
-	})
-	snap.Consistent()
-
-	errSetSnap := enforcerSubscriptionCache.SetSnapshot(context.Background(), label, snap)
-	if errSetSnap != nil {
-		logger.LoggerXds.ErrorC(logging.PrintError(logging.Error1414, logging.MAJOR, "Error while setting the snapshot : %v", errSetSnap.Error()))
-	}
-	enforcerLabelMap[label].subscriptions = subscriptionList
-	logger.LoggerXds.Infof("New Subscription cache update for the label: " + label + " version: " + fmt.Sprint(version))
-}
-
-// UpdateEnforcerApplications sets new update to the enforcer's Applications
-func UpdateEnforcerApplications(applications *subscription.ApplicationList) {
-	logger.LoggerXds.Debug("Updating Enforcer Application Cache")
-	label := commonEnforcerLabel
-	applicationList := append(enforcerLabelMap[label].applications, applications)
-
-	version, _ := crand.Int(crand.Reader, maxRandomBigInt())
-	snap, _ := wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
-		wso2_resource.ApplicationListType: applicationList,
-	})
-	snap.Consistent()
-
-	errSetSnap := enforcerApplicationCache.SetSnapshot(context.Background(), label, snap)
-	if errSetSnap != nil {
-		logger.LoggerXds.ErrorC(logging.PrintError(logging.Error1414, logging.MAJOR, "Error while setting the snapshot : %v", errSetSnap.Error()))
-	}
-	enforcerLabelMap[label].applications = applicationList
-	logger.LoggerXds.Infof("New Application cache update for the label: " + label + " version: " + fmt.Sprint(version))
-}
-
 // UpdateEnforcerJWTIssuers sets new update to the enforcer's Applications
 func UpdateEnforcerJWTIssuers(jwtIssuers *subscription.JWTIssuerList) {
 	logger.LoggerXds.Debug("Updating Enforcer JWT Issuer Cache")
@@ -700,26 +634,6 @@ func UpdateEnforcerSubscriptionPolicies(subscriptionPolicies *subscription.Subsc
 	}
 	enforcerLabelMap[label].subscriptionPolicies = subscriptionPolicyList
 	logger.LoggerXds.Infof("New Subscription Policy cache update for the label: " + label + " version: " + fmt.Sprint(version))
-}
-
-// UpdateEnforcerApplicationKeyMappings sets new update to the enforcer's Application Key Mappings
-func UpdateEnforcerApplicationKeyMappings(applicationKeyMappings *subscription.ApplicationKeyMappingList) {
-	logger.LoggerXds.Debug("Updating Application Key Mapping Cache")
-	label := commonEnforcerLabel
-	applicationKeyMappingList := append(enforcerLabelMap[label].applicationKeyMappings, applicationKeyMappings)
-
-	version, _ := crand.Int(crand.Reader, maxRandomBigInt())
-	snap, _ := wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
-		wso2_resource.ApplicationKeyMappingListType: applicationKeyMappingList,
-	})
-	snap.Consistent()
-
-	errSetSnap := enforcerApplicationKeyMappingCache.SetSnapshot(context.Background(), label, snap)
-	if errSetSnap != nil {
-		logger.LoggerXds.ErrorC(logging.PrintError(logging.Error1414, logging.MAJOR, "Error while setting the snapshot : %v", errSetSnap.Error()))
-	}
-	enforcerLabelMap[label].applicationKeyMappings = applicationKeyMappingList
-	logger.LoggerXds.Infof("New Application Key Mapping cache update for the label: " + label + " version: " + fmt.Sprint(version))
 }
 
 // UpdateXdsCacheWithLock uses mutex and lock to avoid different go routines updating XDS at the same time
