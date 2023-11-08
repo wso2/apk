@@ -45,6 +45,10 @@ components:
           type: boolean
           description: |
             Is this the default version of the API
+        subscriptionValidation:
+          type: boolean
+          description: |
+            Is subscription validation enabled for the API
         environment:
           type: string
           description: |

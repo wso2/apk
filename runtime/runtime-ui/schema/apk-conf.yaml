@@ -37,6 +37,9 @@ properties:
   defaultVersion:
     type: boolean
     description: Is this the default version of the API
+  subscriptionValidation:
+    type: boolean
+    description: Is subscription validation enabled for the API
   endpointConfigurations:
     "$ref": "#/schemas/EndpointConfigurations"
     description: Configuration for different endpoints of the API.

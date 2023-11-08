@@ -16,7 +16,7 @@
 // under the License.
 //
 public type APIPolicy record {|
-    string apiVersion = "dp.wso2.com/v1alpha1";
+    string apiVersion = "dp.wso2.com/v1alpha2";
     string kind = "APIPolicy";
     Metadata metadata;
     APIPolicySpec spec;
@@ -33,6 +33,7 @@ public type APIPolicyData record {
     InterceptorReference[] responseInterceptors?;
     CORSPolicy cORSPolicy?;
     BackendJwtReference backendJwtPolicy?;
+    boolean subscriptionValidation?;
 };
 
 public type InterceptorReference record {
@@ -46,7 +47,7 @@ public type BackendJwtReference record {
 
 
 public type APIPolicyList record {
-    string apiVersion = "dp.wso2.com/v1alpha1";
+    string apiVersion = "dp.wso2.com/v1alpha2";
     string kind = "APIPolicyList";
     ListMeta metadata;
     APIPolicy[] items;

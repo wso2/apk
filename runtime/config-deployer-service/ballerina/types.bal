@@ -211,6 +211,8 @@ public type APKConf record {
     string definitionPath?;
     # Is this the default version of the API
     boolean defaultVersion = false;
+    # Is subscription validation enabled for the API
+    boolean subscriptionValidation = false;
     # Environment of the API
     string environment?;
     EndpointConfigurations endpointConfigurations?;
