@@ -327,7 +327,7 @@ public class APIClient {
                 apiArtifact.rateLimitPolicies[rateLimitPolicyCR.metadata.name] = rateLimitPolicyCR;
             }
         }
-        if apkConf.apiPolicies != () || apkConf.corsConfiguration != () {
+        if apkConf.apiPolicies != () || apkConf.corsConfiguration != () || apkConf.subscriptionValidation == true {
             model:APIPolicy? apiPolicyCR = check self.generateAPIPolicyAndBackendCR(apiArtifact, apkConf, (), apkConf.apiPolicies, organization, apiArtifact.uniqueId);
             if apiPolicyCR != () {
                 apiArtifact.apiPolicies[apiPolicyCR.metadata.name] = apiPolicyCR;
@@ -572,7 +572,10 @@ public class APIClient {
                 defaultSpecData.responseInterceptors = [item];
             }
         }
-        // TODO(Ashera): Need to implement subscription validation API policy CR creation for config deployer approach
+        boolean subscriptionValidation = apkConf.subscriptionValidation;
+        if (subscriptionValidation == true) {
+            defaultSpecData.subscriptionValidation = subscriptionValidation;
+        }
         CORSConfiguration? corsConfiguration = apkConf.corsConfiguration;
         if corsConfiguration is CORSConfiguration {
             model:CORSPolicy? cORSPolicy = self.retrieveCORSPolicyDetails(apiArtifact, apkConf, corsConfiguration, organization);
