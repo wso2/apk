@@ -245,6 +245,11 @@ public class BaseSteps {
         Thread.sleep(seconds * 1000);
     }
 
+    @Then("I wait for api deployment")
+    public void waitAPIDeployment() throws InterruptedException {
+        waitForSeconds(10);
+    }
+
     @Then("the response headers contains key {string} and value {string}")
     public void containsHeader(String key, String value) {
         key = Utils.resolveVariables(key, sharedContext.getValueStore());
