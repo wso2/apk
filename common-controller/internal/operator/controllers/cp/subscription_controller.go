@@ -21,12 +21,11 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/subscription"
 	"github.com/wso2/apk/adapter/pkg/logging"
 	loggers "github.com/wso2/apk/common-controller/internal/loggers"
 	constants "github.com/wso2/apk/common-controller/internal/operator/constant"
+	"github.com/wso2/apk/common-controller/internal/server"
 	"github.com/wso2/apk/common-controller/internal/utils"
-	xds "github.com/wso2/apk/common-controller/internal/xds"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -98,15 +97,15 @@ func (subscriptionReconciler *SubscriptionReconciler) Reconcile(ctx context.Cont
 
 func sendSubUpdates(subscriptionsList *cpv1alpha2.SubscriptionList) {
 	subList := marshalSubscriptionList(subscriptionsList.Items)
-	xds.UpdateEnforcerSubscriptions(subList)
+	server.AddSubscription(subList)
 }
 
-func marshalSubscriptionList(subscriptionList []cpv1alpha2.Subscription) *subscription.SubscriptionList {
-	subscriptions := []*subscription.Subscription{}
+func marshalSubscriptionList(subscriptionList []cpv1alpha2.Subscription) *server.SubscriptionList {
+	subscriptions := []server.Subscription{}
 	for _, subInternal := range subscriptionList {
-		subscribedAPI := &subscription.SubscribedAPI{}
-		sub := &subscription.Subscription{
-			Uuid:         subInternal.Name,
+		subscribedAPI := &server.SubscribedAPI{}
+		sub := server.Subscription{
+			UUID:         subInternal.Name,
 			SubStatus:    subInternal.Spec.SubscriptionStatus,
 			Organization: subInternal.Spec.Organization,
 		}
@@ -114,10 +113,8 @@ func marshalSubscriptionList(subscriptionList []cpv1alpha2.Subscription) *subscr
 			subscribedAPI.Name = subInternal.Spec.API.Name
 			subscribedAPI.Version = subInternal.Spec.API.Version
 		}
-		sub.SubscribedApi = subscribedAPI
+		sub.SubscribedAPI = subscribedAPI
 		subscriptions = append(subscriptions, sub)
 	}
-	return &subscription.SubscriptionList{
-		List: subscriptions,
-	}
+	return &server.SubscriptionList{List: subscriptions}
 }

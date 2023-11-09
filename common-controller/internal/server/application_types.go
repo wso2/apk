@@ -15,21 +15,18 @@
  *
  */
 
-package main
+package server
 
-import (
-	logger "github.com/sirupsen/logrus"
-	commoncontroller "github.com/wso2/apk/common-controller/commoncontroller"
-	config "github.com/wso2/apk/common-controller/internal/config"
-	"github.com/wso2/apk/common-controller/internal/server"
-	web "github.com/wso2/apk/common-controller/internal/web"
-)
+// Application defines the desired state of Application
+type Application struct {
+	UUID           string            `json:"uuid"`
+	Name           string            `json:"name"`
+	Owner          string            `json:"owner"`
+	Attributes     map[string]string `json:"attributes,omitempty"`
+	OrganizationID string            `json:"organizationId"`
+}
 
-func main() {
-	conf := config.ReadConfigs()
-	logger.Info("Starting the Web server")
-	go web.StartWebServer()
-	go server.StartInternalServer()
-	logger.Info("Starting the Common Controller")
-	commoncontroller.InitCommonControllerServer(conf)
+// ApplicationList contains a list of Application
+type ApplicationList struct {
+	List []Application `json:"list"`
 }
