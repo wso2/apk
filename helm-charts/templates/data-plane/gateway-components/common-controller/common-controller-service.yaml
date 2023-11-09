@@ -35,4 +35,7 @@ spec:
       protocol: TCP
       port: 443
       targetPort: 9443
+    - name: https-internal-api
+      protocol: TCP
+      port: 18003
 {{- end -}}

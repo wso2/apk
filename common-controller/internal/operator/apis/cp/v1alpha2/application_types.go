@@ -28,6 +28,7 @@ import (
 type ApplicationSpec struct {
 	Name            string            `json:"name"`
 	Owner           string            `json:"owner"`
+	Organization    string            `json:"organization"`
 	Attributes      map[string]string `json:"attributes,omitempty"`
 	SecuritySchemes SecuritySchemes   `json:"securitySchemes"`
 }

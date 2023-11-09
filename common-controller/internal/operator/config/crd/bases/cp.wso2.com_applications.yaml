@@ -40,6 +40,8 @@ spec:
                 type: object
               name:
                 type: string
+              organization:
+                type: string
               owner:
                 type: string
               securitySchemes:
@@ -69,6 +71,7 @@ spec:
                 type: object
             required:
             - name
+            - organization
             - owner
             - securitySchemes
             type: object

@@ -23,7 +23,10 @@ import (
 
 	"github.com/wso2/apk/adapter/pkg/logging"
 	"github.com/wso2/apk/common-controller/internal/loggers"
-	"github.com/wso2/apk/common-controller/internal/xds"
+	cpv1alpha2 "github.com/wso2/apk/common-controller/internal/operator/apis/cp/v1alpha2"
+	constants "github.com/wso2/apk/common-controller/internal/operator/constant"
+	"github.com/wso2/apk/common-controller/internal/server"
+	"github.com/wso2/apk/common-controller/internal/utils"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -34,11 +37,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
-
-	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/subscription"
-	cpv1alpha2 "github.com/wso2/apk/common-controller/internal/operator/apis/cp/v1alpha2"
-	"github.com/wso2/apk/common-controller/internal/operator/constant"
-	"github.com/wso2/apk/common-controller/internal/utils"
 )
 
 // ApplicationReconciler reconciles a Application object
@@ -98,35 +96,35 @@ func (applicationReconciler *ApplicationReconciler) Reconcile(ctx context.Contex
 
 func sendAppUpdates(applicationList *cpv1alpha2.ApplicationList) {
 	appList := marshalApplicationList(applicationList.Items)
-	xds.UpdateEnforcerApplications(appList)
-
+	server.AddApplication(appList)
 	appKeyMappingList := marshalApplicationKeyMapping(applicationList.Items)
-	xds.UpdateEnforcerApplicationKeyMappings(appKeyMappingList)
+	server.AddApplicationKeyMapping(appKeyMappingList)
 }
 
-func marshalApplicationList(applicationList []cpv1alpha2.Application) *subscription.ApplicationList {
-	applications := []*subscription.Application{}
+func marshalApplicationList(applicationList []cpv1alpha2.Application) *server.ApplicationList {
+	applications := []server.Application{}
 	for _, appInternal := range applicationList {
-		app := &subscription.Application{
-			Uuid:       appInternal.Name,
-			Name:       appInternal.Spec.Name,
-			Owner:      appInternal.Spec.Owner,
-			Attributes: appInternal.Spec.Attributes,
+		app := server.Application{
+			UUID:           appInternal.Name,
+			Name:           appInternal.Spec.Name,
+			Owner:          appInternal.Spec.Owner,
+			OrganizationID: appInternal.Spec.Organization,
+			Attributes:     appInternal.Spec.Attributes,
 		}
 		applications = append(applications, app)
 	}
-	return &subscription.ApplicationList{
+	return &server.ApplicationList{
 		List: applications,
 	}
 }
 
-func marshalApplicationKeyMapping(applicationList []cpv1alpha2.Application) *subscription.ApplicationKeyMappingList {
-	applicationKeyMappings := []*subscription.ApplicationKeyMapping{}
+func marshalApplicationKeyMapping(applicationList []cpv1alpha2.Application) server.ApplicationKeyMappingList {
+	applicationKeyMappings := []server.ApplicationKeyMapping{}
 	for _, appInternal := range applicationList {
 		var oauth2SecurityScheme = appInternal.Spec.SecuritySchemes.OAuth2
 		if oauth2SecurityScheme != nil {
 			for _, env := range oauth2SecurityScheme.Environments {
-				appIdentifier := &subscription.ApplicationKeyMapping{
+				appIdentifier := server.ApplicationKeyMapping{
 					ApplicationUUID:       appInternal.Name,
 					SecurityScheme:        constants.OAuth2,
 					ApplicationIdentifier: env.AppID,
@@ -137,7 +135,7 @@ func marshalApplicationKeyMapping(applicationList []cpv1alpha2.Application) *sub
 			}
 		}
 	}
-	return &subscription.ApplicationKeyMappingList{
+	return server.ApplicationKeyMappingList{
 		List: applicationKeyMappings,
 	}
 }

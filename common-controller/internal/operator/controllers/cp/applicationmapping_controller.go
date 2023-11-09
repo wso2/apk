@@ -23,7 +23,7 @@ import (
 
 	"github.com/wso2/apk/adapter/pkg/logging"
 	"github.com/wso2/apk/common-controller/internal/loggers"
-	"github.com/wso2/apk/common-controller/internal/xds"
+	"github.com/wso2/apk/common-controller/internal/server"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -35,9 +35,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/subscription"
 	cpv1alpha2 "github.com/wso2/apk/common-controller/internal/operator/apis/cp/v1alpha2"
-	"github.com/wso2/apk/common-controller/internal/operator/constant"
+	constants "github.com/wso2/apk/common-controller/internal/operator/constant"
 	"github.com/wso2/apk/common-controller/internal/utils"
 )
 
@@ -98,20 +97,20 @@ func (r *ApplicationMappingReconciler) Reconcile(ctx context.Context, req ctrl.R
 
 func sendUpdates(applicationMappingList *cpv1alpha2.ApplicationMappingList) {
 	appMappingList := marshalApplicationMappingList(applicationMappingList.Items)
-	xds.UpdateEnforcerApplicationMappings(appMappingList)
+	server.AddApplicationMapping(appMappingList)
 }
 
-func marshalApplicationMappingList(applicationMappingList []cpv1alpha2.ApplicationMapping) *subscription.ApplicationMappingList {
-	applicationMappings := []*subscription.ApplicationMapping{}
+func marshalApplicationMappingList(applicationMappingList []cpv1alpha2.ApplicationMapping) server.ApplicationMappingList {
+	applicationMappings := []server.ApplicationMapping{}
 	for _, appMappingInternal := range applicationMappingList {
-		appMapping := &subscription.ApplicationMapping{
-			Uuid:            appMappingInternal.Name,
+		appMapping := server.ApplicationMapping{
+			UUID:            appMappingInternal.Name,
 			ApplicationRef:  appMappingInternal.Spec.ApplicationRef,
 			SubscriptionRef: appMappingInternal.Spec.SubscriptionRef,
 		}
 		applicationMappings = append(applicationMappings, appMapping)
 	}
-	return &subscription.ApplicationMappingList{
+	return server.ApplicationMappingList{
 		List: applicationMappings,
 	}
 }
