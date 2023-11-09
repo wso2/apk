@@ -651,6 +651,26 @@ public function testBasicAPIFromAPKConf() returns error? {
 
 }
 
+@test:Config {}
+public function testSubscriptionAPIPolicyGenerationFromAPKConf() returns error? {
+
+    GenerateK8sResourcesBody body = {};
+    body.apkConfiguration = {fileName: "sub-validation.apk-conf", fileContent: check io:fileReadBytes("./tests/resources/sub-validation.apk-conf")};
+    body.definitionFile = {fileName: "api.yaml", fileContent: check io:fileReadBytes("./tests/resources/api.yaml")};
+    body.apiType = "REST";
+    APIClient apiClient = new;
+
+    model:APIArtifact apiArtifact = check apiClient.prepareArtifact(body.apkConfiguration, body.definitionFile, organization);
+
+    boolean expectedAPIPolicySpec = true;
+    foreach model:APIPolicy apiPolicy in apiArtifact.apiPolicies {
+        model:APIPolicyData? policyData = apiPolicy.spec.default;
+        if (policyData is model:APIPolicyData) {
+            test:assertEquals(policyData.subscriptionValidation, expectedAPIPolicySpec, "Subscription Policy is not equal to expected Subscription Policy");
+        }
+    }
+}
+
 public function APIToAPKConfDataProvider() returns map<[runtimeModels:API, APKConf]>|error {
     runtimeModels:API api = runtimeModels:newAPI1();
     api.setName("testAPI");
