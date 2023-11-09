@@ -206,6 +206,11 @@ private static final long serialVersionUID = 0L;
 
             break;
           }
+          case 104: {
+
+            mandateSubscriptionValidation_ = input.readBool();
+            break;
+          }
           default: {
             if (!parseUnknownField(
                 input, unknownFields, extensionRegistry, tag)) {
@@ -567,6 +572,17 @@ private static final long serialVersionUID = 0L;
     return getSoap();
   }
 
+  public static final int MANDATESUBSCRIPTIONVALIDATION_FIELD_NUMBER = 13;
+  private boolean mandateSubscriptionValidation_;
+  /**
+   * <code>bool mandateSubscriptionValidation = 13;</code>
+   * @return The mandateSubscriptionValidation.
+   */
+  @java.lang.Override
+  public boolean getMandateSubscriptionValidation() {
+    return mandateSubscriptionValidation_;
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -616,6 +632,9 @@ private static final long serialVersionUID = 0L;
     }
     if (soap_ != null) {
       output.writeMessage(12, getSoap());
+    }
+    if (mandateSubscriptionValidation_ != false) {
+      output.writeBool(13, mandateSubscriptionValidation_);
     }
     unknownFields.writeTo(output);
   }
@@ -673,6 +692,10 @@ private static final long serialVersionUID = 0L;
     if (soap_ != null) {
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(12, getSoap());
+    }
+    if (mandateSubscriptionValidation_ != false) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeBoolSize(13, mandateSubscriptionValidation_);
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -746,6 +769,8 @@ private static final long serialVersionUID = 0L;
       if (!getSoap()
           .equals(other.getSoap())) return false;
     }
+    if (getMandateSubscriptionValidation()
+        != other.getMandateSubscriptionValidation()) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -805,6 +830,9 @@ private static final long serialVersionUID = 0L;
       hash = (37 * hash) + SOAP_FIELD_NUMBER;
       hash = (53 * hash) + getSoap().hashCode();
     }
+    hash = (37 * hash) + MANDATESUBSCRIPTIONVALIDATION_FIELD_NUMBER;
+    hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+        getMandateSubscriptionValidation());
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -1015,6 +1043,8 @@ private static final long serialVersionUID = 0L;
         soap_ = null;
         soapBuilder_ = null;
       }
+      mandateSubscriptionValidation_ = false;
+
       return this;
     }
 
@@ -1106,6 +1136,7 @@ private static final long serialVersionUID = 0L;
       } else {
         result.soap_ = soapBuilder_.build();
       }
+      result.mandateSubscriptionValidation_ = mandateSubscriptionValidation_;
       onBuilt();
       return result;
     }
@@ -1212,6 +1243,9 @@ private static final long serialVersionUID = 0L;
       }
       if (other.hasSoap()) {
         mergeSoap(other.getSoap());
+      }
+      if (other.getMandateSubscriptionValidation() != false) {
+        setMandateSubscriptionValidation(other.getMandateSubscriptionValidation());
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -2790,6 +2824,37 @@ private static final long serialVersionUID = 0L;
         soap_ = null;
       }
       return soapBuilder_;
+    }
+
+    private boolean mandateSubscriptionValidation_ ;
+    /**
+     * <code>bool mandateSubscriptionValidation = 13;</code>
+     * @return The mandateSubscriptionValidation.
+     */
+    @java.lang.Override
+    public boolean getMandateSubscriptionValidation() {
+      return mandateSubscriptionValidation_;
+    }
+    /**
+     * <code>bool mandateSubscriptionValidation = 13;</code>
+     * @param value The mandateSubscriptionValidation to set.
+     * @return This builder for chaining.
+     */
+    public Builder setMandateSubscriptionValidation(boolean value) {
+      
+      mandateSubscriptionValidation_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>bool mandateSubscriptionValidation = 13;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearMandateSubscriptionValidation() {
+      
+      mandateSubscriptionValidation_ = false;
+      onChanged();
+      return this;
     }
     @java.lang.Override
     public final Builder setUnknownFields(

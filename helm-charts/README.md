@@ -186,6 +186,7 @@ A Helm chart for APK components
 | wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.tls.secretName | string | `""` | TLS secret name for enforcer public certificate. |
 | wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.tls.certKeyFilename | string | `""` | TLS certificate file name. |
 | wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.tls.certFilename | string | `""` | TLS certificate file name. |
+| wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.mandateSubscriptionValidation | bool | `false` | Specifies whether subscription validation is mandated for all APIs. | 
 | wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.authService | object | `{"keepAliveTime":600,"maxHeaderLimit":8192,"maxMessageSize":1000000000,"threadPool":{"coreSize":400,"keepAliveTime":600,"maxSize":1000,"queueSize":2000}}` | The configurations of gRPC netty based server in Enforcer that handles the incoming requests from ext_authz |
 | wso2.apk.dp.gatewayRuntime.deployment.enforcer.logging.level | string | `"DEBUG"` | Log level can be one of DEBUG, INFO, WARN, ERROR, OFF |
 | wso2.apk.dp.gatewayRuntime.deployment.enforcer.logging.logFile | string | `"logs/enforcer.log"` | Log file name |

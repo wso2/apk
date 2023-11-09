@@ -104,6 +104,7 @@ func MarshalConfig(config *config.Config) *enforcer.Config {
 		Enabled: config.Enforcer.Metrics.Enabled,
 		Type:    config.Enforcer.Metrics.Type,
 	}
+	mandateSubscriptionValidation := config.Enforcer.MandateSubscriptionValidation
 	analytics := &enforcer.Analytics{
 		Enabled:            config.Analytics.Enabled,
 		Properties:         config.Analytics.Properties,
@@ -165,13 +166,14 @@ func MarshalConfig(config *config.Config) *enforcer.Config {
 				EnableOutboundCertificateHeader: config.Enforcer.Security.MutualSSL.EnableOutboundCertificateHeader,
 			},
 		},
-		Cache:      cache,
-		Tracing:    tracing,
-		Metrics:    metrics,
-		Analytics:  analytics,
-		Management: management,
-		Filters:    filters,
-		Soap:       soap,
+		Cache:                         cache,
+		Tracing:                       tracing,
+		Metrics:                       metrics,
+		Analytics:                     analytics,
+		Management:                    management,
+		Filters:                       filters,
+		Soap:                          soap,
+		MandateSubscriptionValidation: mandateSubscriptionValidation,
 	}
 }
 

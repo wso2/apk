@@ -37,6 +37,7 @@ import org.wso2.apk.enforcer.commons.model.AuthenticationContext;
 import org.wso2.apk.enforcer.commons.model.JWTAuthenticationConfig;
 import org.wso2.apk.enforcer.commons.model.RequestContext;
 import org.wso2.apk.enforcer.commons.model.ResourceConfig;
+import org.wso2.apk.enforcer.config.ConfigHolder;
 import org.wso2.apk.enforcer.constants.APIConstants;
 import org.wso2.apk.enforcer.constants.APISecurityConstants;
 import org.wso2.apk.enforcer.dto.APIKeyValidationInfoDTO;
@@ -134,7 +135,6 @@ public class JWTAuthenticator implements Authenticator {
             String organization = requestContext.getMatchedAPI().getOrganizationId();
             String environment = requestContext.getMatchedAPI().getEnvironment();
 
-
             JWTValidationInfo validationInfo = getJwtValidationInfo(jwtToken, organization, environment);
             if (RevokedTokenRedisClient.getRevokedTokens().contains(validationInfo.getIdentifier())) {
                 log.info("Expired JWT token. ", validationInfo.getIdentifier());
@@ -154,8 +154,15 @@ public class JWTAuthenticator implements Authenticator {
                     // Validate subscriptions
                     APIKeyValidationInfoDTO apiKeyValidationInfoDTO = new APIKeyValidationInfoDTO();
                     Scope validateSubscriptionSpanScope = null;
+                    boolean isSystemAPI = requestContext.getMatchedAPI().isSystemAPI();
+                    boolean isGatewayLevelSubscriptionValidationEnabled = ConfigHolder.getInstance().getConfig()
+                            .getMandateSubscriptionValidation();
                     try {
-                        if (requestContext.getMatchedAPI().isSubscriptionValidation()) {
+                        // If subscription validation is mandated at Gateway level, all API invocations should undergo
+                        // subscription validation. When not mandated, we check whether the API has enabled
+                        // subscription validation.
+                        if (!isSystemAPI && (isGatewayLevelSubscriptionValidationEnabled || requestContext.getMatchedAPI()
+                                .isSubscriptionValidation())) {
                             if (Utils.tracingEnabled()) {
                                 validateSubscriptionSpan =
                                         Utils.startSpan(TracingConstants.SUBSCRIPTION_VALIDATION_SPAN, tracer);

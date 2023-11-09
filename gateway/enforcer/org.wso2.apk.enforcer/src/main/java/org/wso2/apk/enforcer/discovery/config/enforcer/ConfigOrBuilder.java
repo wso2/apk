@@ -195,4 +195,10 @@ public interface ConfigOrBuilder extends
    * <code>.wso2.discovery.config.enforcer.Soap soap = 12;</code>
    */
   org.wso2.apk.enforcer.discovery.config.enforcer.SoapOrBuilder getSoapOrBuilder();
+
+  /**
+   * <code>bool mandateSubscriptionValidation = 13;</code>
+   * @return The mandateSubscriptionValidation.
+   */
+  boolean getMandateSubscriptionValidation();
 }
