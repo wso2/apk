@@ -646,6 +646,8 @@ wso2:
                   maxSize: 1000
                   keepAliveTime: 600
                   queueSize: 2000
+              # -- Specifies whether subscription validation is mandated for all APIs.
+              mandateSubscriptionValidation: false
             logging:
               # -- Optionally configure logging for enforcer.
               # -- Log level can be one of DEBUG, INFO, WARN, ERROR, OFF

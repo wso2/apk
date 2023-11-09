@@ -42,7 +42,7 @@ public final class ConfigProto {
       "ilter.proto\032,wso2/discovery/config/enfor" +
       "cer/tracing.proto\032,wso2/discovery/config" +
       "/enforcer/metrics.proto\032)wso2/discovery/" +
-      "config/enforcer/soap.proto\"\327\005\n\006Config\022:\n" +
+      "config/enforcer/soap.proto\"\376\005\n\006Config\022:\n" +
       "\010security\030\001 \001(\0132(.wso2.discovery.config." +
       "enforcer.Security\022;\n\010keystore\030\002 \001(\0132).ws" +
       "o2.discovery.config.enforcer.CertStore\022=" +
@@ -60,11 +60,12 @@ public final class ConfigProto {
       "\030\n \001(\0132\'.wso2.discovery.config.enforcer." +
       "Metrics\0227\n\007filters\030\013 \003(\0132&.wso2.discover" +
       "y.config.enforcer.Filter\0222\n\004soap\030\014 \001(\0132$" +
-      ".wso2.discovery.config.enforcer.SoapB\220\001\n" +
-      "/org.wso2.apk.enforcer.discovery.config." +
-      "enforcerB\013ConfigProtoP\001ZNgithub.com/envo" +
-      "yproxy/go-control-plane/wso2/discovery/c" +
-      "onfig/enforcer;enforcerb\006proto3"
+      ".wso2.discovery.config.enforcer.Soap\022%\n\035" +
+      "mandateSubscriptionValidation\030\r \001(\010B\220\001\n/" +
+      "org.wso2.apk.enforcer.discovery.config.e" +
+      "nforcerB\013ConfigProtoP\001ZNgithub.com/envoy" +
+      "proxy/go-control-plane/wso2/discovery/co" +
+      "nfig/enforcer;enforcerb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -86,7 +87,7 @@ public final class ConfigProto {
     internal_static_wso2_discovery_config_enforcer_Config_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_wso2_discovery_config_enforcer_Config_descriptor,
-        new java.lang.String[] { "Security", "Keystore", "Truststore", "AuthService", "JwtGenerator", "Cache", "Analytics", "Management", "Tracing", "Metrics", "Filters", "Soap", });
+        new java.lang.String[] { "Security", "Keystore", "Truststore", "AuthService", "JwtGenerator", "Cache", "Analytics", "Management", "Tracing", "Metrics", "Filters", "Soap", "MandateSubscriptionValidation", });
     org.wso2.apk.enforcer.discovery.config.enforcer.CertStoreProto.getDescriptor();
     org.wso2.apk.enforcer.discovery.config.enforcer.ServiceProto.getDescriptor();
     org.wso2.apk.enforcer.discovery.config.enforcer.JWTGeneratorProto.getDescriptor();

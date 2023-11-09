@@ -59,6 +59,7 @@ public class EnforcerConfig {
     private FilterDTO[] customFilters;
 
     private SoapErrorResponseConfigDto soapErrorResponseConfigDto;
+    private boolean mandateSubscriptionValidation;
 
     public AuthServiceConfigurationDto getAuthService() {
         return authService;
@@ -202,6 +203,14 @@ public class EnforcerConfig {
 
     public void setBackendJWKSDto(BackendJWKSDto backendJWKSDto) {
         this.backendJWKSDto = backendJWKSDto;
+    }
+
+    public boolean getMandateSubscriptionValidation() {
+        return mandateSubscriptionValidation;
+    }
+
+    public void setMandateSubscriptionValidation(boolean mandateSubscriptionValidation) {
+        this.mandateSubscriptionValidation = mandateSubscriptionValidation;
     }
 }
 

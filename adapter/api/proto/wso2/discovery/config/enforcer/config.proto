@@ -46,4 +46,6 @@ message Config {
     repeated Filter filters = 11;
 
     Soap soap = 12;
+
+    bool mandateSubscriptionValidation = 13;
 }

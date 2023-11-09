@@ -298,7 +298,7 @@ func (gatewayReconciler *GatewayReconciler) getInterceptorServicesForGateway(ctx
 			}
 		}
 	}
-	return interceptorServices, nil // TODO(Ashera): Handle global subscription validation enable disable
+	return interceptorServices, nil
 }
 
 func (gatewayReconciler *GatewayReconciler) getResolvedBackendsMapping(ctx context.Context,

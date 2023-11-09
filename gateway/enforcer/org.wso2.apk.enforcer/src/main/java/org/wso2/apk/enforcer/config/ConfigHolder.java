@@ -161,6 +161,7 @@ public class ConfigHolder {
         populateCustomFilters(config.getFiltersList());
         populateAPIKeyIssuer(config.getSecurity().getApiKey());
         populateInternalTokenIssuer(config.getSecurity().getRuntimeToken());
+        populateMandateSubscriptionValidationConfig(config.getMandateSubscriptionValidation());
         // resolve string variables provided as environment variables.
         resolveConfigsWithEnvs(this.config);
     }
@@ -194,6 +195,10 @@ public class ConfigHolder {
         SoapErrorResponseConfigDto soapErrorResponseConfigDto = new SoapErrorResponseConfigDto();
         soapErrorResponseConfigDto.setEnable(soap.getSoapErrorInXMLEnabled());
         config.setSoapErrorResponseConfigDto(soapErrorResponseConfigDto);
+    }
+
+    private void populateMandateSubscriptionValidationConfig(boolean mandateSubscriptionValidation) {
+        config.setMandateSubscriptionValidation(mandateSubscriptionValidation);
     }
 
     private void populateManagementCredentials(Management management) {

@@ -150,15 +150,16 @@ type xRateLimitHeaders struct {
 }
 
 type enforcer struct {
-	Security     security
-	AuthService  authService
-	JwtGenerator jwtGenerator
-	Cache        cache
-	JwtIssuer    jwtIssuer
-	Management   management
-	RestServer   restServer
-	Filters      []filter
-	Metrics      metrics
+	Security                      security
+	AuthService                   authService
+	JwtGenerator                  jwtGenerator
+	Cache                         cache
+	JwtIssuer                     jwtIssuer
+	Management                    management
+	RestServer                    restServer
+	Filters                       []filter
+	Metrics                       metrics
+	MandateSubscriptionValidation bool
 }
 
 type consul struct {

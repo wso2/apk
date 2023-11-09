@@ -152,7 +152,6 @@ func runCommonEnforcerServer(server xdsv3.Server, enforcerServer wso2_server.Ser
 	port uint) {
 	var grpcOptions []grpc.ServerOption
 	grpcOptions = append(grpcOptions, grpc.MaxConcurrentStreams(grpcMaxConcurrentStreams))
-	// TODO(Ashera): Add TLS support for Common Controller - Enforcer connection
 	publicKeyLocation, privateKeyLocation, truststoreLocation := utils.GetKeyLocations()
 	cert, err := utils.GetServerCertificate(publicKeyLocation, privateKeyLocation)
 
