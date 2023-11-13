@@ -247,7 +247,7 @@ public class BaseSteps {
 
     @Then("I wait for api deployment")
     public void waitAPIDeployment() throws InterruptedException {
-        waitForSeconds(10);
+        waitForSeconds(30);
     }
 
     @Then("the response headers contains key {string} and value {string}")
