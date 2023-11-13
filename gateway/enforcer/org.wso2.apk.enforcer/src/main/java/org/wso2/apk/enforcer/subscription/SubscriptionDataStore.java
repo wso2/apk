@@ -55,20 +55,14 @@ public interface SubscriptionDataStore {
      */
     Subscription getSubscriptionById(String appUUID, String apiUUID);
 
-    void addSubscriptions(List<org.wso2.apk.enforcer.discovery.subscription.Subscription> subscriptionList);
+    void addSubscriptions(List<SubscriptionDto> subscriptionList);
 
-    void addApplications(List<org.wso2.apk.enforcer.discovery.subscription.Application> applicationList);
+    void addApplications(List<ApplicationDto> applicationList);
 
     void addApis(List<APIs> apisList);
 
-    void addApplicationPolicies(
-            List<org.wso2.apk.enforcer.discovery.subscription.ApplicationPolicy> applicationPolicyList);
-
-    void addSubscriptionPolicies(
-            List<org.wso2.apk.enforcer.discovery.subscription.SubscriptionPolicy> subscriptionPolicyList);
-
     void addApplicationKeyMappings(
-            List<org.wso2.apk.enforcer.discovery.subscription.ApplicationKeyMapping> applicationKeyMappingList);
+            List<ApplicationKeyMappingDTO> applicationKeyMappingList);
 
     /**
      * Filter the API map according to the provided parameters

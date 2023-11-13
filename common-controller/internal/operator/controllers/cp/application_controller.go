@@ -101,7 +101,7 @@ func sendAppUpdates(applicationList *cpv1alpha2.ApplicationList) {
 	server.AddApplicationKeyMapping(appKeyMappingList)
 }
 
-func marshalApplicationList(applicationList []cpv1alpha2.Application) *server.ApplicationList {
+func marshalApplicationList(applicationList []cpv1alpha2.Application) server.ApplicationList {
 	applications := []server.Application{}
 	for _, appInternal := range applicationList {
 		app := server.Application{
@@ -113,7 +113,7 @@ func marshalApplicationList(applicationList []cpv1alpha2.Application) *server.Ap
 		}
 		applications = append(applications, app)
 	}
-	return &server.ApplicationList{
+	return server.ApplicationList{
 		List: applications,
 	}
 }

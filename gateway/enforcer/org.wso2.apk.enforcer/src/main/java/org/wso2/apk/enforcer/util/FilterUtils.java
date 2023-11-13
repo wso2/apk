@@ -31,7 +31,6 @@ import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLContextBuilder;
 import org.apache.http.conn.ssl.SSLContexts;
 import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.conn.ssl.X509HostnameVerifier;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.logging.log4j.LogManager;
@@ -72,9 +71,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
+import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
 
 /**
  * Common set of utility methods used by the filter core component.
@@ -103,7 +103,16 @@ public class FilterUtils {
      * @return HTTP client
      */
     public static HttpClient getHttpClient(String protocol) {
+
         return getHttpClient(null, null, null);
+    }
+
+    public static HttpClient getMutualSSLHttpClient(String protocol, List<String> hostnames) {
+
+        Map<String, Object> options = new HashMap<>();
+        options.put("HOSTNAMES", hostnames);
+        return getHttpClient(ConfigHolder.getInstance().getKeyStore(), ConfigHolder.getInstance().getTrustStore(),
+                options);
     }
 
     /**
@@ -113,13 +122,11 @@ public class FilterUtils {
      * @param options        - HTTP client options
      * @return HTTP client
      */
-    public static HttpClient getHttpClient(KeyStore clientKeyStore, KeyStore clientTrustStore, Map<String, String> options) {
+    public static HttpClient getHttpClient(KeyStore clientKeyStore, KeyStore clientTrustStore,
+                                           Map<String, Object> options) {
 
-        //        APIManagerConfiguration configuration = ServiceReferenceHolder.getInstance().
-        //                getAPIManagerConfigurationService().getAPIManagerConfiguration();
-
-        String maxTotal = "100"; //TODO : Read from config
-        String defaultMaxPerRoute = "10"; //TODO : Read from config
+        int maxTotal = 100; //TODO : Read from config
+        int defaultMaxPerRoute = 10; //TODO : Read from config
 
         if (options == null) {
             options = Collections.emptyMap();
@@ -127,27 +134,27 @@ public class FilterUtils {
 
         PoolingHttpClientConnectionManager pool = null;
         try {
-            pool = getPoolingHttpClientConnectionManager(clientKeyStore, clientTrustStore);
-            pool.setMaxTotal(Integer.parseInt(options.getOrDefault(HTTPClientOptions.MAX_OPEN_CONNECTIONS,
-                    maxTotal)));
-            pool.setDefaultMaxPerRoute(Integer.parseInt(options.getOrDefault(HTTPClientOptions.MAX_PER_ROUTE,
-                    defaultMaxPerRoute)));
+            pool = getPoolingHttpClientConnectionManager(clientKeyStore, clientTrustStore, options);
+            pool.setMaxTotal((Integer) options.getOrDefault(HTTPClientOptions.MAX_OPEN_CONNECTIONS, maxTotal));
+            pool.setDefaultMaxPerRoute((Integer) options.getOrDefault(HTTPClientOptions.MAX_PER_ROUTE,
+                    defaultMaxPerRoute));
         } catch (EnforcerException e) {
             log.error("Error while getting http client connection manager", e);
         }
 
         RequestConfig.Builder pramsBuilder = RequestConfig.custom();
         if (options.containsKey(HTTPClientOptions.CONNECT_TIMEOUT)) {
-            pramsBuilder.setConnectTimeout(Integer.parseInt(options.get(HTTPClientOptions.CONNECT_TIMEOUT)));
+            pramsBuilder.setConnectTimeout((Integer) options.get(HTTPClientOptions.CONNECT_TIMEOUT));
         }
         if (options.containsKey(HTTPClientOptions.SOCKET_TIMEOUT)) {
-            pramsBuilder.setSocketTimeout(Integer.parseInt(options.get(HTTPClientOptions.SOCKET_TIMEOUT)));
+            pramsBuilder.setSocketTimeout((Integer) options.get(HTTPClientOptions.SOCKET_TIMEOUT));
         }
         RequestConfig params = pramsBuilder.build();
         return HttpClients.custom().setConnectionManager(pool).setDefaultRequestConfig(params).build();
     }
 
     public static KeyStore createClientKeyStore(String certPath, String keyPath) {
+
         try {
             Certificate cert = TLSUtils.getCertificateFromFile(certPath);
             Key key = JWTUtils.getPrivateKey(keyPath);
@@ -157,8 +164,8 @@ public class FilterUtils {
             KeyManagerFactory keyMgrFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
             keyMgrFactory.init(opaKeyStore, null);
             return opaKeyStore;
-        } catch (KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException | EnforcerException
-                 | UnrecoverableKeyException e) {
+        } catch (KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException | EnforcerException |
+                 UnrecoverableKeyException e) {
             log.error("Error creating client KeyStore by loading cert and key from file",
                     ErrorDetails.errorLog(LoggingConstants.Severity.MAJOR, 7100), e);
             return null;
@@ -170,20 +177,21 @@ public class FilterUtils {
      *
      * @return PoolManager
      */
-    private static PoolingHttpClientConnectionManager getPoolingHttpClientConnectionManager(
-            KeyStore clientKeyStore, KeyStore clientTrustStore) throws EnforcerException {
+    private static PoolingHttpClientConnectionManager getPoolingHttpClientConnectionManager(KeyStore clientKeyStore,
+                                                                                            KeyStore clientTrustStore
+            , Map<String, Object> options) throws EnforcerException {
 
-        SSLConnectionSocketFactory socketFactory = createSocketFactory(clientKeyStore, clientTrustStore);
-            org.apache.http.config.Registry<ConnectionSocketFactory> socketFactoryRegistry =
-                    RegistryBuilder.<ConnectionSocketFactory>create()
-                            .register(APIConstants.HTTP_PROTOCOL, PlainConnectionSocketFactory.getSocketFactory())
-                            .register(APIConstants.HTTPS_PROTOCOL, socketFactory)
-                            .build();
+        SSLConnectionSocketFactory socketFactory = createSocketFactory(clientKeyStore, clientTrustStore, options);
+        org.apache.http.config.Registry<ConnectionSocketFactory> socketFactoryRegistry =
+                RegistryBuilder.<ConnectionSocketFactory>create().register(APIConstants.HTTP_PROTOCOL,
+                        PlainConnectionSocketFactory.getSocketFactory()).register(APIConstants.HTTPS_PROTOCOL,
+                        socketFactory).build();
         return new PoolingHttpClientConnectionManager(socketFactoryRegistry);
     }
 
-    private static SSLConnectionSocketFactory createSocketFactory(KeyStore clientKeyStore, KeyStore clientTrustStore)
-            throws EnforcerException {
+    private static SSLConnectionSocketFactory createSocketFactory(KeyStore clientKeyStore, KeyStore clientTrustStore,
+                                                                  Map<String, Object> options) throws EnforcerException {
+
         SSLContext sslContext;
         try {
             KeyStore trustStore = ConfigHolder.getInstance().getTrustStore();
@@ -196,9 +204,22 @@ public class FilterUtils {
             }
             sslContext = sslContextBuilder.build();
 
-            X509HostnameVerifier hostnameVerifier;
+            HostnameVerifier hostnameVerifier;
             String hostnameVerifierOption = System.getProperty(HOST_NAME_VERIFIER);
+            Object hostnames = options.get("HOSTNAMES");
+            if (hostnames instanceof List) {
+                hostnameVerifier = new HostnameVerifier() {
 
+                    @Override
+                    public boolean verify(String hostname, SSLSession session) {
+
+                        if (hostnames != null && ((List) hostnames).contains(hostname)) {
+                            return true;
+                        }
+                        return false;
+                    }
+                };
+            }
             if (ALLOW_ALL.equalsIgnoreCase(hostnameVerifierOption)) {
                 hostnameVerifier = SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER;
             } else if (STRICT.equalsIgnoreCase(hostnameVerifierOption)) {
@@ -224,6 +245,7 @@ public class FilterUtils {
     }
 
     public static String getTenantDomainFromRequestURL(String requestURI) {
+
         String domain = null;
         if (requestURI.contains("/t/")) {
             int index = requestURI.indexOf("/t/");
@@ -235,6 +257,7 @@ public class FilterUtils {
     }
 
     public static AuthenticationContext generateAuthenticationContextForUnsecured(RequestContext requestContext) {
+
         AuthenticationContext authContext = requestContext.getAuthenticationContext();
         String clientIP = requestContext.getClientIp();
 
@@ -263,9 +286,8 @@ public class FilterUtils {
 
     public static AuthenticationContext generateAuthenticationContext(RequestContext requestContext, String jti,
                                                                       JWTValidationInfo jwtValidationInfo,
-                                                                      APIKeyValidationInfoDTO apiKeyValidationInfoDTO,
-                                                                      String endUserToken, String rawToken,
-                                                                      boolean isOauth) {
+                                                                      APIKeyValidationInfoDTO apiKeyValidationInfoDTO
+            , String endUserToken, String rawToken, boolean isOauth) {
 
         AuthenticationContext authContext = requestContext.getAuthenticationContext();
         authContext.setAuthenticated(true);
@@ -346,9 +368,8 @@ public class FilterUtils {
      * @throws java.text.ParseException
      */
     public static AuthenticationContext generateAuthenticationContext(String tokenIdentifier, JWTClaimsSet payload,
-                                                                      JSONObject api,
-                                                                      String apiUUID, String rawToken)
-            throws java.text.ParseException {
+                                                                      JSONObject api, String apiUUID,
+                                                                      String rawToken) throws java.text.ParseException {
 
         AuthenticationContext authContext = new AuthenticationContext();
         authContext.setAuthenticated(true);
@@ -365,8 +386,7 @@ public class FilterUtils {
             authContext.setApiUUID(apiUUID);
         }
         authContext.setApplicationName(APIConstants.JwtTokenConstants.INTERNAL_KEY_APP_NAME);
-        authContext.setApplicationUUID(UUID.nameUUIDFromBytes(APIConstants.JwtTokenConstants.INTERNAL_KEY_APP_NAME.
-                getBytes(StandardCharsets.UTF_8)).toString());
+        authContext.setApplicationUUID(UUID.nameUUIDFromBytes(APIConstants.JwtTokenConstants.INTERNAL_KEY_APP_NAME.getBytes(StandardCharsets.UTF_8)).toString());
         authContext.setApplicationTier(APIConstants.UNLIMITED_TIER);
         authContext.setSubscriber(APIConstants.JwtTokenConstants.INTERNAL_KEY_APP_NAME);
         return authContext;
@@ -386,8 +406,8 @@ public class FilterUtils {
         return jwtInfoDto;
     }
 
-    private static void constructJWTContent(JSONObject subscribedAPI,
-                                            APIKeyValidationInfoDTO apiKeyValidationInfoDTO, JWTInfoDto jwtInfoDto) {
+    private static void constructJWTContent(JSONObject subscribedAPI, APIKeyValidationInfoDTO apiKeyValidationInfoDTO
+            , JWTInfoDto jwtInfoDto) {
 
         Map<String, Object> claims = getClaimsFromJWTValidationInfo(jwtInfoDto);
         if (claims != null) {
@@ -419,20 +439,15 @@ public class FilterUtils {
             String apiName = subscribedAPI.getAsString(JwtConstants.API_NAME);
             jwtInfoDto.setApiName(apiName);
             String subscriptionTier = subscribedAPI.getAsString(JwtConstants.SUBSCRIPTION_TIER);
-            String subscriptionTenantDomain =
-                    subscribedAPI.getAsString(JwtConstants.SUBSCRIBER_TENANT_DOMAIN);
+            String subscriptionTenantDomain = subscribedAPI.getAsString(JwtConstants.SUBSCRIBER_TENANT_DOMAIN);
             jwtInfoDto.setSubscriptionTier(subscriptionTier);
             jwtInfoDto.setEndUserTenantId(0);
 
             if (claims != null && claims.get(JwtConstants.APPLICATION) != null) {
-                JSONObject
-                        applicationObj = (JSONObject) claims.get(JwtConstants.APPLICATION);
-                jwtInfoDto.setApplicationId(
-                        String.valueOf(applicationObj.getAsNumber(JwtConstants.APPLICATION_ID)));
-                jwtInfoDto
-                        .setApplicationName(applicationObj.getAsString(JwtConstants.APPLICATION_NAME));
-                jwtInfoDto
-                        .setApplicationTier(applicationObj.getAsString(JwtConstants.APPLICATION_TIER));
+                JSONObject applicationObj = (JSONObject) claims.get(JwtConstants.APPLICATION);
+                jwtInfoDto.setApplicationId(String.valueOf(applicationObj.getAsNumber(JwtConstants.APPLICATION_ID)));
+                jwtInfoDto.setApplicationName(applicationObj.getAsString(JwtConstants.APPLICATION_NAME));
+                jwtInfoDto.setApplicationTier(applicationObj.getAsString(JwtConstants.APPLICATION_TIER));
                 jwtInfoDto.setSubscriber(applicationObj.getAsString(JwtConstants.APPLICATION_OWNER));
             }
         }
@@ -455,6 +470,7 @@ public class FilterUtils {
      * @param e              - APISecurityException thrown when validation failure happens at filter level.
      */
     public static void setErrorToContext(RequestContext requestContext, APISecurityException e) {
+
         Map<String, Object> requestContextProperties = requestContext.getProperties();
         if (!requestContextProperties.containsKey(APIConstants.MessageFormat.STATUS_CODE)) {
             requestContext.getProperties().put(APIConstants.MessageFormat.STATUS_CODE, e.getStatusCode());
@@ -483,6 +499,7 @@ public class FilterUtils {
      */
     public static void setErrorToContext(RequestContext context, int errorCode, int statusCode, String message,
                                          String desc) {
+
         Map<String, Object> properties = context.getProperties();
         properties.putIfAbsent(APIConstants.MessageFormat.STATUS_CODE, statusCode);
         properties.putIfAbsent(APIConstants.MessageFormat.ERROR_CODE, String.valueOf(errorCode));
@@ -499,12 +516,13 @@ public class FilterUtils {
      * @param requestContext - The context object holds details about the specific request.
      */
     public static void setUnauthenticatedErrorToContext(RequestContext requestContext) {
-        requestContext.getProperties()
-                .put(APIConstants.MessageFormat.STATUS_CODE, APIConstants.StatusCodes.UNAUTHENTICATED.getCode());
-        requestContext.getProperties()
-                .put(APIConstants.MessageFormat.ERROR_CODE, APISecurityConstants.API_AUTH_INVALID_CREDENTIALS);
-        requestContext.getProperties().put(APIConstants.MessageFormat.ERROR_MESSAGE, APISecurityConstants
-                .getAuthenticationFailureMessage(APISecurityConstants.API_AUTH_INVALID_CREDENTIALS));
+
+        requestContext.getProperties().put(APIConstants.MessageFormat.STATUS_CODE,
+                APIConstants.StatusCodes.UNAUTHENTICATED.getCode());
+        requestContext.getProperties().put(APIConstants.MessageFormat.ERROR_CODE,
+                APISecurityConstants.API_AUTH_INVALID_CREDENTIALS);
+        requestContext.getProperties().put(APIConstants.MessageFormat.ERROR_MESSAGE,
+                APISecurityConstants.getAuthenticationFailureMessage(APISecurityConstants.API_AUTH_INVALID_CREDENTIALS));
         requestContext.getProperties().put(APIConstants.MessageFormat.ERROR_DESCRIPTION,
                 APISecurityConstants.API_AUTH_INVALID_CREDENTIALS_DESCRIPTION);
     }
@@ -518,6 +536,7 @@ public class FilterUtils {
      * @return A map of type {@code <String, T>}
      */
     public static <T> Map<String, T> generateMap(Collection<T> list) {
+
         if (list == null) {
             return new HashMap<>();
         }
@@ -537,6 +556,7 @@ public class FilterUtils {
      * @return tenant domain appended username
      */
     public static String buildUsernameWithTenant(String username, String tenantDomain) {
+
         if (StringUtils.isEmpty(tenantDomain)) {
             tenantDomain = APIConstants.SUPER_TENANT_DOMAIN_NAME;
         }
@@ -549,6 +569,7 @@ public class FilterUtils {
     }
 
     public static String getClientIp(Map<String, String> headers, String knownIp) {
+
         String clientIp = knownIp;
         String xForwardFor = headers.get(APIConstants.X_FORWARDED_FOR);
         if (!StringUtils.isEmpty(xForwardFor)) {
@@ -563,6 +584,7 @@ public class FilterUtils {
     }
 
     public static String getCertificateHeaderName() {
+
         MutualSSLDto mtlsInfo = ConfigHolder.getInstance().getConfig().getMtlsInfo();
         String certificateHeaderName = mtlsInfo.getCertificateHeader();
         if (StringUtils.isEmpty(certificateHeaderName)) {
@@ -578,6 +600,7 @@ public class FilterUtils {
      * @return whether the fault scenario should be skipped from publishing to analytics server.
      */
     public static boolean isSkippedAnalyticsFaultEvent(String errorCode) {
+
         return SKIPPED_FAULT_CODES.contains(errorCode);
     }
 
@@ -587,6 +610,7 @@ public class FilterUtils {
     }
 
     public static <K, V> void putToMapIfNotNull(Map<K, V> map, K key, V value) {
+
         if (value != null) {
             map.put(key, value);
         }
@@ -597,6 +621,7 @@ public class FilterUtils {
      * getHttpClient}
      */
     public static class HTTPClientOptions {
+
         public static final String CONNECT_TIMEOUT = "CONNECT_TIMEOUT";
         public static final String SOCKET_TIMEOUT = "SOCKET_TIMEOUT";
         public static final String MAX_OPEN_CONNECTIONS = "MAX_OPEN_CONNECTIONS";

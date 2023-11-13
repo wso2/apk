@@ -99,7 +99,7 @@ public class OPAClient {
                 policyAttrib.get("sendAccessToken"));
 
         // client related configs
-        Map<String, String> clientOptions = new HashMap<>();
+        Map<String, Object> clientOptions = new HashMap<>();
         FilterUtils.putToMapIfNotNull(clientOptions, FilterUtils.HTTPClientOptions.MAX_OPEN_CONNECTIONS,
                 policyAttrib.get("maxOpenConnections"));
         FilterUtils.putToMapIfNotNull(clientOptions, FilterUtils.HTTPClientOptions.MAX_PER_ROUTE,
@@ -135,7 +135,7 @@ public class OPAClient {
     }
 
     private static String callOPAServer(String serverEp, String payload, String token,
-                                        Map<String, String> clientOptions) throws OPASecurityException {
+                                        Map<String, Object> clientOptions) throws OPASecurityException {
         try {
             URL url = new URL(serverEp);
             KeyStore opaKeyStore = ConfigHolder.getInstance().getOpaKeyStore();
