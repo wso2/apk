@@ -41,6 +41,9 @@ A Helm chart for APK components
 | wso2.apk.idp.signing.fileName | string | `""` | IDP jwt signing certificate file name |
 | wso2.apk.dp.enabled | bool | `true` | Enable the deployment of the Data Plane |
 | wso2.apk.dp.environment.name | string | `Default` | Environment of the Data Plane |
+| wso2.apk.dp.gateway.httpListener.enabled | bool | `false` | HTTP listener enabled or not |
+| wso2.apk.dp.gateway.httpListener.hostname | string | `"api.am.wso2.com"` | HTTP listener hostname |
+| wso2.apk.dp.gateway.httpListener.port | int | `9080` | HTTP listener port |
 | wso2.apk.dp.gateway.listener.hostname | string | `"gw.wso2.com"` | Gateway Listener Hostname |
 | wso2.apk.dp.gateway.listener.secretName | string | `""` | Gateway Listener Certificate Secret Name |
 | wso2.apk.dp.gateway.listener.dns | list | `["*.gw.wso2.com","*.sandbox.gw.wso2.com","prod.gw.wso2.com"]` | DNS entries for gateway listener certificate |

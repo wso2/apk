@@ -38,5 +38,5 @@ spec:
   - group: "gateway.networking.k8s.io"
     kind: "Gateway"
     name: "default"
-    sectionName: "httpslistener"
+    sectionName: "idplistener"
 {{- end -}}

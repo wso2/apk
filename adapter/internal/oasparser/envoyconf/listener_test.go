@@ -46,7 +46,7 @@ func TestCreateListenerWithRds(t *testing.T) {
 	listeners := CreateListenerByGateway(gateway, resolvedListenerCerts, "")
 	assert.NotEmpty(t, listeners, "Listeners creation has been failed")
 
-	securedListener := listeners
+	securedListener := listeners[0]
 	if securedListener.Validate() != nil {
 		t.Error("Listener validation failed")
 	}

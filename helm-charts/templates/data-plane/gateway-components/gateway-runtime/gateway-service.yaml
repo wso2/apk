@@ -30,7 +30,12 @@ spec:
   selector:
 {{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" "gateway" ) | indent 4}}
   ports:
-    - name: endpoint1
-      protocol: TCP
-      port: 9095
+{{ if and .Values.wso2.apk.dp.gateway.httpListener .Values.wso2.apk.dp.gateway.httpListener.enabled }}
+  - name: "http-endpoint"
+    protocol: TCP
+    port: {{ .Values.wso2.apk.dp.gateway.httpListener.port | default 9080 }}
+{{ end }}
+  - name: "https-endpoint"
+    protocol: TCP
+    port: 9095
 {{- end -}}

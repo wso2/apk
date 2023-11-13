@@ -40,6 +40,7 @@ import (
 
 	envoy_resource "github.com/envoyproxy/go-control-plane/pkg/resource/v3"
 	"github.com/wso2/apk/adapter/config"
+	"github.com/wso2/apk/adapter/internal/discovery/xds/common"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
 	logging "github.com/wso2/apk/adapter/internal/logging"
 	oasParser "github.com/wso2/apk/adapter/internal/oasparser"
@@ -53,6 +54,7 @@ import (
 	eventhubTypes "github.com/wso2/apk/adapter/pkg/eventhub/types"
 	"github.com/wso2/apk/adapter/pkg/utils/stringutils"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
+	"github.com/wso2/apk/adapter/internal/data_holder"
 )
 
 // EnvoyInternalAPI struct use to hold envoy resources and adapter internal resources
@@ -67,8 +69,8 @@ type EnvoyInternalAPI struct {
 
 // EnvoyGatewayConfig struct use to hold envoy gateway resources
 type EnvoyGatewayConfig struct {
-	listener                *listenerv3.Listener
-	routeConfig             *routev3.RouteConfiguration
+	listeners               []*listenerv3.Listener
+	routeConfigs            []*routev3.RouteConfiguration
 	clusters                []*clusterv3.Cluster
 	endpoints               []*corev3.Address
 	customRateLimitPolicies []*model.CustomRateLimitPolicy
@@ -124,6 +126,10 @@ const (
 	gatewayController    string = "GatewayController"
 	apiController        string = "APIController"
 )
+
+type envoyRoutesWithSectionName struct {
+	routes []*routev3.Route
+}
 
 func maxRandomBigInt() *big.Int {
 	return big.NewInt(int64(maxRandomInt))
@@ -399,23 +405,61 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 	}
 
 	envoyGatewayConfig, gwFound := gatewayLabelConfigMap[gatewayName]
-	listener := envoyGatewayConfig.listener
-	if !gwFound || listener == nil {
+	listeners := envoyGatewayConfig.listeners
+	if !gwFound || listeners == nil || len(listeners) == 0 {
 		return nil, nil, nil, nil, nil
 	}
-	routesFromListener := listenerToRouteArrayMap[listener.Name]
-	var vhostToRouteArrayFilteredMap = make(map[string][]*routev3.Route)
-	for vhost, routes := range vhostToRouteArrayMap {
-		if vhost == systemHost || checkRoutes(routes, routesFromListener) {
-			vhostToRouteArrayFilteredMap[vhost] = routes
+	routeConfigs := make([]*routev3.RouteConfiguration, 0)
+	for _, listener := range listeners {
+		for vhost, routes := range vhostToRouteArrayMap {
+			matchedListener, found := common.FindElement(data_holder.GetAllGatewayListeners(), func(listenerLocal gwapiv1b1.Listener) bool {
+				if (listenerLocal.Hostname != nil && common.MatchesHostname(vhost, string(*listenerLocal.Hostname))) {
+					if (listener.Name == common.GetEnvoyListenerName(string(listenerLocal.Protocol), uint32(listenerLocal.Port))) {
+						return true
+					}
+				}
+				return false
+			})
+			if found {
+				// Prepare the route config name based on the gateway listener section name.
+				routeConfigName := common.GetEnvoyRouteConfigName(listener.Name, string(matchedListener.Name));
+				routesConfig := oasParser.GetRouteConfigs(map[string][]*routev3.Route{vhost:routes}, routeConfigName, envoyGatewayConfig.customRateLimitPolicies)
+				
+				routeConfigMatched, alreadyExistsInRouteConfigList := common.FindElement(routeConfigs, func(routeConf *routev3.RouteConfiguration) bool {
+					if (routeConf.Name == routesConfig.Name) {
+						return true
+					}
+					return false
+				})
+				if alreadyExistsInRouteConfigList {
+					logger.LoggerAPKOperator.Debugf("Route already exists. %+v", routesConfig.Name)
+					routeConfigMatched.VirtualHosts = append(routeConfigMatched.VirtualHosts, routesConfig.VirtualHosts...)
+				} else {
+					routeConfigs = append(routeConfigs, routesConfig)
+				}
+			} else {
+				logger.LoggerAPKOperator.Errorf("Failed to find a matching gateway listener for this vhost: %s", vhost)
+			}
 		}
 	}
-	routesConfig := oasParser.GetRouteConfigs(vhostToRouteArrayFilteredMap, listener.Name, envoyGatewayConfig.customRateLimitPolicies)
-	envoyGatewayConfig.routeConfig = routesConfig
+	
+	// Find gateway listeners that has $systemHost as its hostname and add the system routeConfig referencing those listeners
+	gatewayListeners := data_holder.GetAllGatewayListeners()
+	for _, listener := range gatewayListeners {
+		if (systemHost == string(*listener.Hostname)) {
+			var vhostToRouteArrayFilteredMapForSystemEndpoints = make(map[string][]*routev3.Route)
+			vhostToRouteArrayFilteredMapForSystemEndpoints[systemHost] = vhostToRouteArrayMap[systemHost]
+			routeConfigName := common.GetEnvoyRouteConfigName(common.GetEnvoyListenerName(string(listener.Protocol), uint32(listener.Port)), string(listener.Name))
+			systemRoutesConfig := oasParser.GetRouteConfigs(vhostToRouteArrayFilteredMapForSystemEndpoints, routeConfigName, envoyGatewayConfig.customRateLimitPolicies)
+			routeConfigs = append(routeConfigs, systemRoutesConfig)
+		}
+	}
+
+	envoyGatewayConfig.routeConfigs = routeConfigs
 	clusterArray = append(clusterArray, envoyGatewayConfig.clusters...)
 	endpointArray = append(endpointArray, envoyGatewayConfig.endpoints...)
-	endpoints, clusters, listeners, routeConfigs := oasParser.GetCacheResources(endpointArray, clusterArray, listener, routesConfig)
-	return endpoints, clusters, listeners, routeConfigs, apis
+	listeners_, clusters, routeConfigs_, endpoints := oasParser.GetCacheResources(endpointArray, clusterArray, listeners, routeConfigs)
+	return listeners_, clusters, routeConfigs_, endpoints, apis
 }
 
 // function to check routes []*routev3.Route equlas routes []*routev3.Route
@@ -488,7 +532,6 @@ func updateXdsCache(label string, endpoints []types.Resource, clusters []types.R
 		logger.LoggerXds.ErrorC(logging.PrintError(logging.Error1414, logging.MAJOR, "Error while setting the snapshot : %v", errSetSnap.Error()))
 		return false
 	}
-	logger.LoggerXds.Infof("New Router cache updated for the label: " + label + " version: " + fmt.Sprint(version))
 	return true
 }
 
@@ -641,7 +684,7 @@ func RemoveAPIFromOrgAPIMap(uuid string, orgID string) {
 }
 
 // UpdateAPICache updates the xDS cache related to the API Lifecycle event.
-func UpdateAPICache(vHosts []string, newLabels []string, newlistenersForRoutes []string, adapterInternalAPI model.AdapterInternalAPI) error {
+func UpdateAPICache(vHosts []string, newLabels []string, listener string, sectionName string, adapterInternalAPI model.AdapterInternalAPI) error {
 	mutexForInternalMapUpdate.Lock()
 	defer mutexForInternalMapUpdate.Unlock()
 
@@ -671,6 +714,7 @@ func UpdateAPICache(vHosts []string, newLabels []string, newlistenersForRoutes [
 
 	// Create internal mappigs for new vHosts
 	for _, vHost := range vHosts {
+		logger.LoggerAPKOperator.Debugf("Creating internal mapping for vhost: %s", vHost)
 		apiUUID := adapterInternalAPI.UUID
 		apiIdentifier := GenerateIdentifierForAPIWithUUID(vHost, apiUUID)
 		var oldLabels []string
@@ -700,10 +744,15 @@ func UpdateAPICache(vHosts []string, newLabels []string, newlistenersForRoutes [
 			endpointAddresses:  endpoints,
 			enforcerAPI:        oasParser.GetEnforcerAPI(adapterInternalAPI, vHost),
 		}
-		if _, ok := listenerToRouteArrayMap[newlistenersForRoutes[0]]; ok {
-			listenerToRouteArrayMap[newlistenersForRoutes[0]] = append(listenerToRouteArrayMap[newlistenersForRoutes[0]], routes...)
+		if _, ok := listenerToRouteArrayMap[listener]; ok {
+			routesList := listenerToRouteArrayMap[listener]
+			if (routesList == nil) {
+				routesList = make([]*routev3.Route, 0)
+			}
+			routesList = append(routesList, routes...)
+			listenerToRouteArrayMap[listener] = routesList
 		} else {
-			listenerToRouteArrayMap[newlistenersForRoutes[0]] = routes
+			listenerToRouteArrayMap[listener] = routes
 		}
 
 		revisionStatus := updateXdsCacheOnAPIChange(oldLabels, newLabels)
@@ -715,8 +764,8 @@ func UpdateAPICache(vHosts []string, newLabels []string, newlistenersForRoutes [
 // UpdateGatewayCache updates the xDS cache related to the Gateway Lifecycle event.
 func UpdateGatewayCache(gateway *gwapiv1b1.Gateway, resolvedListenerCerts map[string]map[string][]byte,
 	gwLuaScript string, customRateLimitPolicies []*model.CustomRateLimitPolicy) error {
-	listener := oasParser.GetProductionListener(gateway, resolvedListenerCerts, gwLuaScript)
-	gatewayLabelConfigMap[gateway.Name].listener = listener
+	listeners := oasParser.GetProductionListener(gateway, resolvedListenerCerts, gwLuaScript)
+	gatewayLabelConfigMap[gateway.Name].listeners = listeners
 	conf := config.ReadConfigs()
 	if conf.Envoy.RateLimit.Enabled {
 		gatewayLabelConfigMap[gateway.Name].customRateLimitPolicies = customRateLimitPolicies

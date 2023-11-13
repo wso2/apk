@@ -108,7 +108,7 @@ func TestUpdateAPICache(t *testing.T) {
 				for _, label := range test.labels {
 					SanitizeGateway(label, true)
 				}
-				UpdateAPICache(test.vHosts, test.labels, test.listeners, test.adapterInternalAPI)
+				UpdateAPICache(test.vHosts, test.labels, test.listeners[0], "httpslistener", test.adapterInternalAPI)
 				identifier := GetvHostsIdentifier(test.adapterInternalAPI.UUID, "prod")
 				actualvHosts, ok := orgIDAPIvHostsMap[test.adapterInternalAPI.OrganizationID][identifier]
 				if !ok {
