@@ -100,7 +100,7 @@ func sendSubUpdates(subscriptionsList *cpv1alpha2.SubscriptionList) {
 	server.AddSubscription(subList)
 }
 
-func marshalSubscriptionList(subscriptionList []cpv1alpha2.Subscription) *server.SubscriptionList {
+func marshalSubscriptionList(subscriptionList []cpv1alpha2.Subscription) server.SubscriptionList {
 	subscriptions := []server.Subscription{}
 	for _, subInternal := range subscriptionList {
 		subscribedAPI := &server.SubscribedAPI{}
@@ -116,5 +116,5 @@ func marshalSubscriptionList(subscriptionList []cpv1alpha2.Subscription) *server
 		sub.SubscribedAPI = subscribedAPI
 		subscriptions = append(subscriptions, sub)
 	}
-	return &server.SubscriptionList{List: subscriptions}
+	return server.SubscriptionList{List: subscriptions}
 }

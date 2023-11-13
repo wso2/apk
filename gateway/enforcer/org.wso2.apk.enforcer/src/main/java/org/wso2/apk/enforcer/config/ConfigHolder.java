@@ -66,9 +66,11 @@ import org.wso2.apk.enforcer.util.TLSUtils;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.security.Key;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
@@ -91,6 +93,8 @@ public class ConfigHolder {
     private static ConfigHolder configHolder;
     private final EnvVarConfig envVarConfig = EnvVarConfig.getInstance();
     EnforcerConfig config = new EnforcerConfig();
+
+    private KeyStore keyStore = null;
     private KeyStore trustStore = null;
     private KeyStore trustStoreForJWT = null;
     private KeyStore opaKeyStore = null;
@@ -101,6 +105,22 @@ public class ConfigHolder {
 
         loadTrustStore();
         loadOpaClientKeyStore();
+        loadKeyStore();
+    }
+
+    private void loadKeyStore() {
+
+        try {
+            Certificate cert =
+                    TLSUtils.getCertificateFromFile(getEnvVarConfig().getEnforcerPublicKeyPath());
+            Key key = JWTUtils.getPrivateKey(getEnvVarConfig().getEnforcerPrivateKeyPath());
+            keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+            keyStore.load(null, null);
+            keyStore.setKeyEntry("client-keys", key, null, new Certificate[]{cert});
+        } catch (EnforcerException | CertificateException | IOException | KeyStoreException |
+                 NoSuchAlgorithmException e) {
+            logger.error("Error occurred while configuring KeyStore", e);
+        }
     }
 
     public static ConfigHolder getInstance() {
@@ -300,6 +320,16 @@ public class ConfigHolder {
         jwtConfigurationDto.setUseKid(true);
         config.setJwtConfigurationDto(jwtConfigurationDto);
         populateBackendJWKSConfiguration(jwtGenerator);
+    }
+
+    public KeyStore getKeyStore() {
+
+        return keyStore;
+    }
+
+    public void setKeyStore(KeyStore keyStore) {
+
+        this.keyStore = keyStore;
     }
 
     private void populateBackendJWKSConfiguration(JWTGenerator jwtGenerator) {

@@ -81,6 +81,13 @@ dependencies {
     implementation libs.reactor.netty.http
     implementation libs.protobuf.java
     implementation libs.jedis
+    implementation libs.feign.httpclient
+    implementation libs.gson
+    implementation libs.ua.parser
+    implementation libs.commons.lang3
+    implementation libs.openfeign.feign.gson
+    implementation libs.openfeign.feign.slf4j
+
     test {
         implementation libs.junit
         implementation libs.mockito.inline
