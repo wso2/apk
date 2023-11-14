@@ -245,8 +245,8 @@ wso2:
             failureThreshold: 5
           strategy: RollingUpdate
           replicas: 1
-          imagePullPolicy: Always
-          image: wso2/apk-common-controller:latest
+          imagePullPolicy: IfNotPresent
+          image: apk-common-controller:1.0.0-SNAPSHOT
           security:
             sslHostname: "commoncontroller"
           # configs:
@@ -333,8 +333,8 @@ wso2:
               periodSeconds: 20
               failureThreshold: 5
             strategy: RollingUpdate
-            imagePullPolicy: Always
-            image: wso2/apk-enforcer:latest
+            imagePullPolicy: IfNotPresent
+            image: apk-enforcer:1.0.0-SNAPSHOT
             security:
               sslHostname: "enforcer"
 #            logging:

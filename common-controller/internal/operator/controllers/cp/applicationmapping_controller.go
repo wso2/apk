@@ -22,8 +22,10 @@ import (
 	"fmt"
 
 	"github.com/wso2/apk/adapter/pkg/logging"
+	"github.com/wso2/apk/common-controller/internal/cache"
 	"github.com/wso2/apk/common-controller/internal/loggers"
 	"github.com/wso2/apk/common-controller/internal/server"
+	k8error "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -44,12 +46,14 @@ import (
 type ApplicationMappingReconciler struct {
 	client client.Client
 	Scheme *runtime.Scheme
+	ods    *cache.SubscriptionDataStore
 }
 
 // NewApplicationMappingController creates a new Application and Subscription mapping (i.e. ApplicationMapping) controller instance
-func NewApplicationMappingController(mgr manager.Manager) error {
+func NewApplicationMappingController(mgr manager.Manager, subscriptionStore *cache.SubscriptionDataStore) error {
 	r := &ApplicationMappingReconciler{
 		client: mgr.GetClient(),
+		ods:    subscriptionStore,
 	}
 	c, err := controller.New(constants.ApplicationMappingController, mgr, controller.Options{Reconciler: r})
 	if err != nil {
@@ -90,7 +94,21 @@ func (r *ApplicationMappingReconciler) Reconcile(ctx context.Context, req ctrl.R
 		return reconcile.Result{}, fmt.Errorf("failed to get application mappings %s/%s",
 			applicationMappingKey.Namespace, applicationMappingKey.Name)
 	}
-
+	var applicationMapping cpv1alpha2.ApplicationMapping
+	if err := r.client.Get(ctx, req.NamespacedName, &applicationMapping); err != nil {
+		if k8error.IsNotFound(err) {
+			applicationMapping, found := r.ods.GetApplicationMappingFromStore(applicationMappingKey)
+			if !found {
+				loggers.LoggerAPKOperator.Debugf("Application mapping %s/%s not found. Ignoring since object must be deleted", applicationMappingKey.Namespace, applicationMappingKey.Name)
+			} else {
+				utils.SendDeleteApplicationMappingEvent(applicationMappingKey.Name, applicationMapping)
+				r.ods.DeleteApplicationMappingFromStore(applicationMappingKey)
+				return ctrl.Result{}, nil
+			}
+		} else {
+			utils.SendCreateApplicationMappingEvent(applicationMapping)
+		}
+	}
 	sendUpdates(applicationMappingList)
 	return ctrl.Result{}, nil
 }

@@ -56,9 +56,7 @@ printf " - ${GREEN}${BOLD}done${NC}\n"
 printf "protoc go messages"
 docker run -v `pwd`:/defs namely/protoc-all:$PROTOC_VERSION -l go --go-source-relative -i proto -i target/include/ -o target/gen/go -d proto/wso2/discovery/api/
 docker run -v `pwd`:/defs namely/protoc-all:$PROTOC_VERSION -l go --go-source-relative -i proto -i target/include/ -o target/gen/go -d proto/wso2/discovery/config/enforcer/
-docker run -v `pwd`:/defs namely/protoc-all:$PROTOC_VERSION -l go --go-source-relative -i proto -i target/include/ -o target/gen/go -d proto/wso2/discovery/keymgt/
 docker run -v `pwd`:/defs namely/protoc-all:$PROTOC_VERSION -l go --go-source-relative -i proto -i target/include/ -o target/gen/go -d proto/wso2/discovery/subscription/
-docker run -v `pwd`:/defs namely/protoc-all:$PROTOC_VERSION -l go --go-source-relative -i proto -i target/include/ -o target/gen/go -d proto/wso2/discovery/apkmgt/
 printf " - ${GREEN}${BOLD}done${NC}\n"
 
 # map of proto imports for which we need to update the genrated import path
@@ -70,7 +68,6 @@ import_map=Menvoy/service/discovery/v3/discovery.proto=github.com/envoyproxy/go-
 # generate code for go grpc services
 docker run -v `pwd`:/defs namely/protoc-all:$PROTOC_VERSION -l go -i proto -i target/include/ -o target/gen/go --go-package-map $import_map --go-source-relative -d proto/wso2/discovery/service/api
 docker run -v `pwd`:/defs namely/protoc-all:$PROTOC_VERSION -l go -i proto -i target/include/ -o target/gen/go --go-package-map $import_map --go-source-relative -d proto/wso2/discovery/service/config
-docker run -v `pwd`:/defs namely/protoc-all:$PROTOC_VERSION -l go -i proto -i target/include/ -o target/gen/go --go-package-map $import_map --go-source-relative -d proto/wso2/discovery/service/keymgt
 docker run -v `pwd`:/defs namely/protoc-all:$PROTOC_VERSION -l go -i proto -i target/include/ -o target/gen/go --go-package-map $import_map --go-source-relative -d proto/wso2/discovery/service/subscription
 docker run -v `pwd`:/defs namely/protoc-all:$PROTOC_VERSION -l go -i proto -i target/include/ -o target/gen/go --go-package-map $import_map --go-source-relative -d proto/wso2/discovery/service/apkmgt
 docker run -v `pwd`:/defs namely/protoc-all:$PROTOC_VERSION -l go -i proto -i target/include/ -o target/gen/ws-go --go-source-relative -d proto/wso2/discovery/service/websocket

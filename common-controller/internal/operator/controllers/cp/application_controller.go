@@ -22,11 +22,13 @@ import (
 	"fmt"
 
 	"github.com/wso2/apk/adapter/pkg/logging"
+	"github.com/wso2/apk/common-controller/internal/cache"
 	"github.com/wso2/apk/common-controller/internal/loggers"
 	cpv1alpha2 "github.com/wso2/apk/common-controller/internal/operator/apis/cp/v1alpha2"
 	constants "github.com/wso2/apk/common-controller/internal/operator/constant"
 	"github.com/wso2/apk/common-controller/internal/server"
 	"github.com/wso2/apk/common-controller/internal/utils"
+	k8error "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -43,12 +45,14 @@ import (
 type ApplicationReconciler struct {
 	client client.Client
 	Scheme *runtime.Scheme
+	ods    *cache.SubscriptionDataStore
 }
 
 // NewApplicationController creates a new Application controller instance
-func NewApplicationController(mgr manager.Manager) error {
+func NewApplicationController(mgr manager.Manager, subscriptionStore *cache.SubscriptionDataStore) error {
 	r := &ApplicationReconciler{
 		client: mgr.GetClient(),
+		ods:    subscriptionStore,
 	}
 	c, err := controller.New(constants.ApplicationController, mgr, controller.Options{Reconciler: r})
 	if err != nil {
@@ -89,7 +93,29 @@ func (applicationReconciler *ApplicationReconciler) Reconcile(ctx context.Contex
 		return reconcile.Result{}, fmt.Errorf("failed to get applications %s/%s",
 			applicationKey.Namespace, applicationKey.Name)
 	}
+	var application cpv1alpha2.Application
+	if err := applicationReconciler.client.Get(ctx, req.NamespacedName, &application); err != nil {
+		if k8error.IsNotFound(err) {
+			applicationSpec, found := applicationReconciler.ods.GetApplicationFromStore(applicationKey)
+			if found {
+				utils.SendAppDeletionEvent(applicationKey.Name, applicationSpec)
+				applicationReconciler.ods.DeleteApplicationFromStore(applicationKey)
+				return ctrl.Result{}, nil
+			} else {
+				loggers.LoggerAPKOperator.Debugf("Application %s/%s does not exist in k8s", applicationKey.Namespace, applicationKey.Name)
+			}
+		} else {
+			applicationSpec, found := applicationReconciler.ods.GetApplicationFromStore(applicationKey)
+			if found {
+				// update
+				utils.SendAppUpdateEvent(applicationKey.Name, applicationSpec, application.Spec)
 
+			} else {
+				utils.SendAddApplicationEvent(application)
+			}
+			applicationReconciler.ods.AddorUpdateApplicationToStore(applicationKey, application.Spec)
+		}
+	}
 	sendAppUpdates(applicationList)
 	return ctrl.Result{}, nil
 }

@@ -23,6 +23,7 @@ private static final long serialVersionUID = 0L;
     uuid_ = "";
     name_ = "";
     owner_ = "";
+    organization_ = "";
   }
 
   @java.lang.Override
@@ -75,6 +76,12 @@ private static final long serialVersionUID = 0L;
             break;
           }
           case 34: {
+            java.lang.String s = input.readStringRequireUtf8();
+
+            organization_ = s;
+            break;
+          }
+          case 42: {
             if (!((mutable_bitField0_ & 0x00000001) != 0)) {
               attributes_ = com.google.protobuf.MapField.newMapField(
                   AttributesDefaultEntryHolder.defaultEntry);
@@ -116,7 +123,7 @@ private static final long serialVersionUID = 0L;
   protected com.google.protobuf.MapField internalGetMapField(
       int number) {
     switch (number) {
-      case 4:
+      case 5:
         return internalGetAttributes();
       default:
         throw new RuntimeException(
@@ -245,7 +252,45 @@ private static final long serialVersionUID = 0L;
     }
   }
 
-  public static final int ATTRIBUTES_FIELD_NUMBER = 4;
+  public static final int ORGANIZATION_FIELD_NUMBER = 4;
+  private volatile java.lang.Object organization_;
+  /**
+   * <code>string organization = 4;</code>
+   * @return The organization.
+   */
+  @java.lang.Override
+  public java.lang.String getOrganization() {
+    java.lang.Object ref = organization_;
+    if (ref instanceof java.lang.String) {
+      return (java.lang.String) ref;
+    } else {
+      com.google.protobuf.ByteString bs = 
+          (com.google.protobuf.ByteString) ref;
+      java.lang.String s = bs.toStringUtf8();
+      organization_ = s;
+      return s;
+    }
+  }
+  /**
+   * <code>string organization = 4;</code>
+   * @return The bytes for organization.
+   */
+  @java.lang.Override
+  public com.google.protobuf.ByteString
+      getOrganizationBytes() {
+    java.lang.Object ref = organization_;
+    if (ref instanceof java.lang.String) {
+      com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString.copyFromUtf8(
+              (java.lang.String) ref);
+      organization_ = b;
+      return b;
+    } else {
+      return (com.google.protobuf.ByteString) ref;
+    }
+  }
+
+  public static final int ATTRIBUTES_FIELD_NUMBER = 5;
   private static final class AttributesDefaultEntryHolder {
     static final com.google.protobuf.MapEntry<
         java.lang.String, java.lang.String> defaultEntry =
@@ -272,7 +317,7 @@ private static final long serialVersionUID = 0L;
     return internalGetAttributes().getMap().size();
   }
   /**
-   * <code>map&lt;string, string&gt; attributes = 4;</code>
+   * <code>map&lt;string, string&gt; attributes = 5;</code>
    */
 
   @java.lang.Override
@@ -290,7 +335,7 @@ private static final long serialVersionUID = 0L;
     return getAttributesMap();
   }
   /**
-   * <code>map&lt;string, string&gt; attributes = 4;</code>
+   * <code>map&lt;string, string&gt; attributes = 5;</code>
    */
   @java.lang.Override
 
@@ -298,7 +343,7 @@ private static final long serialVersionUID = 0L;
     return internalGetAttributes().getMap();
   }
   /**
-   * <code>map&lt;string, string&gt; attributes = 4;</code>
+   * <code>map&lt;string, string&gt; attributes = 5;</code>
    */
   @java.lang.Override
 
@@ -311,7 +356,7 @@ private static final long serialVersionUID = 0L;
     return map.containsKey(key) ? map.get(key) : defaultValue;
   }
   /**
-   * <code>map&lt;string, string&gt; attributes = 4;</code>
+   * <code>map&lt;string, string&gt; attributes = 5;</code>
    */
   @java.lang.Override
 
@@ -349,12 +394,15 @@ private static final long serialVersionUID = 0L;
     if (!getOwnerBytes().isEmpty()) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 3, owner_);
     }
+    if (!getOrganizationBytes().isEmpty()) {
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 4, organization_);
+    }
     com.google.protobuf.GeneratedMessageV3
       .serializeStringMapTo(
         output,
         internalGetAttributes(),
         AttributesDefaultEntryHolder.defaultEntry,
-        4);
+        5);
     unknownFields.writeTo(output);
   }
 
@@ -373,6 +421,9 @@ private static final long serialVersionUID = 0L;
     if (!getOwnerBytes().isEmpty()) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, owner_);
     }
+    if (!getOrganizationBytes().isEmpty()) {
+      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, organization_);
+    }
     for (java.util.Map.Entry<java.lang.String, java.lang.String> entry
          : internalGetAttributes().getMap().entrySet()) {
       com.google.protobuf.MapEntry<java.lang.String, java.lang.String>
@@ -381,7 +432,7 @@ private static final long serialVersionUID = 0L;
           .setValue(entry.getValue())
           .build();
       size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(4, attributes__);
+          .computeMessageSize(5, attributes__);
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -404,6 +455,8 @@ private static final long serialVersionUID = 0L;
         .equals(other.getName())) return false;
     if (!getOwner()
         .equals(other.getOwner())) return false;
+    if (!getOrganization()
+        .equals(other.getOrganization())) return false;
     if (!internalGetAttributes().equals(
         other.internalGetAttributes())) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
@@ -423,6 +476,8 @@ private static final long serialVersionUID = 0L;
     hash = (53 * hash) + getName().hashCode();
     hash = (37 * hash) + OWNER_FIELD_NUMBER;
     hash = (53 * hash) + getOwner().hashCode();
+    hash = (37 * hash) + ORGANIZATION_FIELD_NUMBER;
+    hash = (53 * hash) + getOrganization().hashCode();
     if (!internalGetAttributes().getMap().isEmpty()) {
       hash = (37 * hash) + ATTRIBUTES_FIELD_NUMBER;
       hash = (53 * hash) + internalGetAttributes().hashCode();
@@ -542,7 +597,7 @@ private static final long serialVersionUID = 0L;
     protected com.google.protobuf.MapField internalGetMapField(
         int number) {
       switch (number) {
-        case 4:
+        case 5:
           return internalGetAttributes();
         default:
           throw new RuntimeException(
@@ -553,7 +608,7 @@ private static final long serialVersionUID = 0L;
     protected com.google.protobuf.MapField internalGetMutableMapField(
         int number) {
       switch (number) {
-        case 4:
+        case 5:
           return internalGetMutableAttributes();
         default:
           throw new RuntimeException(
@@ -592,6 +647,8 @@ private static final long serialVersionUID = 0L;
 
       owner_ = "";
 
+      organization_ = "";
+
       internalGetMutableAttributes().clear();
       return this;
     }
@@ -623,6 +680,7 @@ private static final long serialVersionUID = 0L;
       result.uuid_ = uuid_;
       result.name_ = name_;
       result.owner_ = owner_;
+      result.organization_ = organization_;
       result.attributes_ = internalGetAttributes();
       result.attributes_.makeImmutable();
       onBuilt();
@@ -683,6 +741,10 @@ private static final long serialVersionUID = 0L;
       }
       if (!other.getOwner().isEmpty()) {
         owner_ = other.owner_;
+        onChanged();
+      }
+      if (!other.getOrganization().isEmpty()) {
+        organization_ = other.organization_;
         onChanged();
       }
       internalGetMutableAttributes().mergeFrom(
@@ -945,6 +1007,82 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
+    private java.lang.Object organization_ = "";
+    /**
+     * <code>string organization = 4;</code>
+     * @return The organization.
+     */
+    public java.lang.String getOrganization() {
+      java.lang.Object ref = organization_;
+      if (!(ref instanceof java.lang.String)) {
+        com.google.protobuf.ByteString bs =
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        organization_ = s;
+        return s;
+      } else {
+        return (java.lang.String) ref;
+      }
+    }
+    /**
+     * <code>string organization = 4;</code>
+     * @return The bytes for organization.
+     */
+    public com.google.protobuf.ByteString
+        getOrganizationBytes() {
+      java.lang.Object ref = organization_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        organization_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+    /**
+     * <code>string organization = 4;</code>
+     * @param value The organization to set.
+     * @return This builder for chaining.
+     */
+    public Builder setOrganization(
+        java.lang.String value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  
+      organization_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>string organization = 4;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearOrganization() {
+      
+      organization_ = getDefaultInstance().getOrganization();
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>string organization = 4;</code>
+     * @param value The bytes for organization to set.
+     * @return This builder for chaining.
+     */
+    public Builder setOrganizationBytes(
+        com.google.protobuf.ByteString value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+      
+      organization_ = value;
+      onChanged();
+      return this;
+    }
+
     private com.google.protobuf.MapField<
         java.lang.String, java.lang.String> attributes_;
     private com.google.protobuf.MapField<java.lang.String, java.lang.String>
@@ -972,7 +1110,7 @@ private static final long serialVersionUID = 0L;
       return internalGetAttributes().getMap().size();
     }
     /**
-     * <code>map&lt;string, string&gt; attributes = 4;</code>
+     * <code>map&lt;string, string&gt; attributes = 5;</code>
      */
 
     @java.lang.Override
@@ -990,7 +1128,7 @@ private static final long serialVersionUID = 0L;
       return getAttributesMap();
     }
     /**
-     * <code>map&lt;string, string&gt; attributes = 4;</code>
+     * <code>map&lt;string, string&gt; attributes = 5;</code>
      */
     @java.lang.Override
 
@@ -998,7 +1136,7 @@ private static final long serialVersionUID = 0L;
       return internalGetAttributes().getMap();
     }
     /**
-     * <code>map&lt;string, string&gt; attributes = 4;</code>
+     * <code>map&lt;string, string&gt; attributes = 5;</code>
      */
     @java.lang.Override
 
@@ -1011,7 +1149,7 @@ private static final long serialVersionUID = 0L;
       return map.containsKey(key) ? map.get(key) : defaultValue;
     }
     /**
-     * <code>map&lt;string, string&gt; attributes = 4;</code>
+     * <code>map&lt;string, string&gt; attributes = 5;</code>
      */
     @java.lang.Override
 
@@ -1032,7 +1170,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>map&lt;string, string&gt; attributes = 4;</code>
+     * <code>map&lt;string, string&gt; attributes = 5;</code>
      */
 
     public Builder removeAttributes(
@@ -1051,7 +1189,7 @@ private static final long serialVersionUID = 0L;
       return internalGetMutableAttributes().getMutableMap();
     }
     /**
-     * <code>map&lt;string, string&gt; attributes = 4;</code>
+     * <code>map&lt;string, string&gt; attributes = 5;</code>
      */
     public Builder putAttributes(
         java.lang.String key,
@@ -1063,7 +1201,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>map&lt;string, string&gt; attributes = 4;</code>
+     * <code>map&lt;string, string&gt; attributes = 5;</code>
      */
 
     public Builder putAllAttributes(
