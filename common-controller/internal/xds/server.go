@@ -18,8 +18,6 @@
 package xds
 
 import (
-	"context"
-	crand "crypto/rand"
 	"fmt"
 	"math/big"
 	"math/rand"
@@ -33,31 +31,27 @@ import (
 	"github.com/envoyproxy/go-control-plane/pkg/cache/types"
 	envoy_cachev3 "github.com/envoyproxy/go-control-plane/pkg/cache/v3"
 
-	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/subscription"
 	wso2_cache "github.com/wso2/apk/adapter/pkg/discovery/protocol/cache/v3"
-	wso2_resource "github.com/wso2/apk/adapter/pkg/discovery/protocol/resource/v3"
 	eventhubTypes "github.com/wso2/apk/adapter/pkg/eventhub/types"
-	"github.com/wso2/apk/adapter/pkg/logging"
-	"github.com/wso2/apk/common-controller/internal/loggers"
 	dpv1alpha1 "github.com/wso2/apk/common-controller/internal/operator/apis/dp/v1alpha1"
 )
 
 // EnvoyInternalAPI struct use to hold envoy resources and adapter internal resources
 type EnvoyInternalAPI struct {
 	// commonControllerInternalAPI model.commonControllerInternalAPI
-	envoyLabels                 []string
-	routes                      []*routev3.Route
-	clusters                    []*clusterv3.Cluster
-	endpointAddresses           []*corev3.Address
-	enforcerAPI                 types.Resource
+	envoyLabels       []string
+	routes            []*routev3.Route
+	clusters          []*clusterv3.Cluster
+	endpointAddresses []*corev3.Address
+	enforcerAPI       types.Resource
 }
 
 // EnvoyGatewayConfig struct use to hold envoy gateway resources
 type EnvoyGatewayConfig struct {
-	listener                *listenerv3.Listener
-	routeConfig             *routev3.RouteConfiguration
-	clusters                []*clusterv3.Cluster
-	endpoints               []*corev3.Address
+	listener    *listenerv3.Listener
+	routeConfig *routev3.RouteConfiguration
+	clusters    []*clusterv3.Cluster
+	endpoints   []*corev3.Address
 	// customRateLimitPolicies []*model.CustomRateLimitPolicy
 }
 
@@ -244,80 +238,4 @@ func GetEnforcerApplicationKeyMappingCache() wso2_cache.SnapshotCache {
 // GetEnforcerApplicationMappingCache returns xds server cache.
 func GetEnforcerApplicationMappingCache() wso2_cache.SnapshotCache {
 	return enforcerApplicationMappingCache
-}
-
-// UpdateEnforcerApplications sets new update to the enforcer's Applications
-func UpdateEnforcerApplications(applications *subscription.ApplicationList) {
-	loggers.LoggerXds.Debug("Updating Enforcer Application Cache")
-	label := commonEnforcerLabel
-	applicationList := append(enforcerLabelMap[label].applications, applications)
-	version, _ := crand.Int(crand.Reader, maxRandomBigInt())
-	snap, _ := wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
-		wso2_resource.ApplicationListType: applicationList,
-	})
-	snap.Consistent()
-	errSetSnap := enforcerApplicationCache.SetSnapshot(context.Background(), label, snap)
-	if errSetSnap != nil {
-		loggers.LoggerXds.ErrorC(logging.PrintError(logging.Error1414, logging.MAJOR, "Error while setting the snapshot : %v", errSetSnap.Error()))
-	}
-	enforcerLabelMap[label].applications = applicationList
-	loggers.LoggerXds.Infof("New Application cache update for the label: " + label + " version: " + fmt.Sprint(version))
-}
-
-// UpdateEnforcerApplicationKeyMappings sets new update to the enforcer's Application Key Mappings
-func UpdateEnforcerApplicationKeyMappings(applicationKeyMappings *subscription.ApplicationKeyMappingList) {
-	loggers.LoggerXds.Debug("Updating Application Key Mapping Cache")
-	label := commonEnforcerLabel
-	applicationKeyMappingList := append(enforcerLabelMap[label].applicationKeyMappings, applicationKeyMappings)
-	version, _ := crand.Int(crand.Reader, maxRandomBigInt())
-	snap, _ := wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
-		wso2_resource.ApplicationKeyMappingListType: applicationKeyMappingList,
-	})
-	snap.Consistent()
-	errSetSnap := enforcerApplicationKeyMappingCache.SetSnapshot(context.Background(), label, snap)
-	if errSetSnap != nil {
-		loggers.LoggerXds.ErrorC(logging.PrintError(logging.Error1414, logging.MAJOR, "Error while setting the snapshot : %v", errSetSnap.Error()))
-	}
-	enforcerLabelMap[label].applicationKeyMappings = applicationKeyMappingList
-	loggers.LoggerXds.Infof("New Application Key Mapping cache update for the label: " + label + " version: " + fmt.Sprint(version))
-}
-
-// UpdateEnforcerSubscriptions sets new update to the enforcer's Subscriptions
-func UpdateEnforcerSubscriptions(subscriptions *subscription.SubscriptionList) {
-	//TODO: (Dinusha) check this hardcoded value
-	loggers.LoggerXds.Debug("Updating Enforcer Subscription Cache")
-	label := commonEnforcerLabel
-	subscriptionList := append(enforcerLabelMap[label].subscriptions, subscriptions)
-
-	// TODO: (VirajSalaka) Decide if a map is required to keep version (just to avoid having the same version)
-	version, _ := crand.Int(crand.Reader, maxRandomBigInt())
-	snap, _ := wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
-		wso2_resource.SubscriptionListType: subscriptionList,
-	})
-	snap.Consistent()
-
-	errSetSnap := enforcerSubscriptionCache.SetSnapshot(context.Background(), label, snap)
-	if errSetSnap != nil {
-		loggers.LoggerXds.ErrorC(logging.PrintError(logging.Error1414, logging.MAJOR, "Error while setting the snapshot : %v", errSetSnap.Error()))
-	}
-	enforcerLabelMap[label].subscriptions = subscriptionList
-	loggers.LoggerXds.Infof("New Subscription cache update for the label: " + label + " version: " + fmt.Sprint(version))
-}
-
-// UpdateEnforcerApplicationMappings sets new update to the enforcer's Application Mappings
-func UpdateEnforcerApplicationMappings(applicationMappings *subscription.ApplicationMappingList) {
-	loggers.LoggerXds.Debug("Updating Application Mapping Cache")
-	label := commonEnforcerLabel
-	applicationMappingList := append(enforcerLabelMap[label].applicationMappings, applicationMappings)
-	version, _ := crand.Int(crand.Reader, maxRandomBigInt())
-	snap, _ := wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
-		wso2_resource.ApplicationMappingListType: applicationMappingList,
-	})
-	snap.Consistent()
-	errSetSnap := enforcerApplicationMappingCache.SetSnapshot(context.Background(), label, snap)
-	if errSetSnap != nil {
-		loggers.LoggerXds.ErrorC(logging.PrintError(logging.Error1414, logging.MAJOR, "Error while setting the snapshot : %v", errSetSnap.Error()))
-	}
-	enforcerLabelMap[label].applicationMappings = applicationMappingList
-	loggers.LoggerXds.Infof("New Application Mapping cache update for the label: " + label + " version: " + fmt.Sprint(version))
 }

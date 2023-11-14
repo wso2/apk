@@ -76,6 +76,7 @@ func InitOperator() {
 
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
 	ratelimitStore := cache.CreateNewOperatorDataStore()
+	subscriptionStore := cache.CreateNewSubscriptionDataStore()
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:                 scheme,
 		MetricsBindAddress:     metricsAddr,
@@ -133,15 +134,15 @@ func InitOperator() {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3114, logging.MAJOR,
 			"Error creating JWT Issuer controller, error: %v", err))
 	}
-	if err := cpcontrollers.NewApplicationController(mgr); err != nil {
+	if err := cpcontrollers.NewApplicationController(mgr, subscriptionStore); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3115, logging.MAJOR,
 			"Error creating Application controller, error: %v", err))
 	}
-	if err := cpcontrollers.NewSubscriptionController(mgr); err != nil {
+	if err := cpcontrollers.NewSubscriptionController(mgr, subscriptionStore); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3116, logging.MAJOR,
 			"Error creating Subscription controller, error: %v", err))
 	}
-	if err := cpcontrollers.NewApplicationMappingController(mgr); err != nil {
+	if err := cpcontrollers.NewApplicationMappingController(mgr, subscriptionStore); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3117, logging.MAJOR,
 			"Error creating Application Mapping controller, error: %v", err))
 	}

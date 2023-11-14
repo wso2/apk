@@ -31,23 +31,19 @@ import (
 	discoveryv3 "github.com/envoyproxy/go-control-plane/envoy/service/discovery/v3"
 	envoy_cachev3 "github.com/envoyproxy/go-control-plane/pkg/cache/v3"
 	xdsv3 "github.com/envoyproxy/go-control-plane/pkg/server/v3"
-	enforcerCallbacks "github.com/wso2/apk/common-controller/internal/xds/enforcercallbacks"
-	routercb "github.com/wso2/apk/common-controller/internal/xds/routercallbacks"
-	apiservice "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/api"
-	configservice "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/config"
-	subscriptionservice "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/subscription"
-	wso2_server "github.com/wso2/apk/adapter/pkg/discovery/protocol/server/v3"
+	apkmgt "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/apkmgt"
 	"github.com/wso2/apk/adapter/pkg/health"
 	healthservice "github.com/wso2/apk/adapter/pkg/health/api/wso2/health/service"
+	"github.com/wso2/apk/adapter/pkg/logging"
 	"github.com/wso2/apk/common-controller/internal/config"
+	"github.com/wso2/apk/common-controller/internal/loggers"
 	"github.com/wso2/apk/common-controller/internal/operator"
+	"github.com/wso2/apk/common-controller/internal/server"
 	utils "github.com/wso2/apk/common-controller/internal/utils"
 	xds "github.com/wso2/apk/common-controller/internal/xds"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/keepalive"
-	"github.com/wso2/apk/adapter/pkg/logging"
-	"github.com/wso2/apk/common-controller/internal/loggers"
 )
 
 var (
@@ -147,9 +143,7 @@ func runRatelimitServer(rlsServer xdsv3.Server) {
 	}()
 }
 
-func runCommonEnforcerServer(server xdsv3.Server, enforcerServer wso2_server.Server, enforcerSdsServer wso2_server.Server,
-	enforcerAppDsSrv wso2_server.Server, enforcerAppKeyMappingDsSrv wso2_server.Server, enforcerAppMappingDsSrv wso2_server.Server,
-	port uint) {
+func runCommonEnforcerServer(Port uint) {
 	var grpcOptions []grpc.ServerOption
 	grpcOptions = append(grpcOptions, grpc.MaxConcurrentStreams(grpcMaxConcurrentStreams))
 	publicKeyLocation, privateKeyLocation, truststoreLocation := utils.GetKeyLocations()
@@ -182,16 +176,7 @@ func runCommonEnforcerServer(server xdsv3.Server, enforcerServer wso2_server.Ser
 	if err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1100, logging.BLOCKER, "Failed to listen on port: %v, error: %v", port, err.Error()))
 	}
-
-	// register services
-	discoveryv3.RegisterAggregatedDiscoveryServiceServer(grpcServer, server)
-	configservice.RegisterConfigDiscoveryServiceServer(grpcServer, enforcerServer)
-	apiservice.RegisterApiDiscoveryServiceServer(grpcServer, enforcerServer)
-	subscriptionservice.RegisterSubscriptionDiscoveryServiceServer(grpcServer, enforcerSdsServer)
-	subscriptionservice.RegisterApplicationDiscoveryServiceServer(grpcServer, enforcerAppDsSrv)
-	subscriptionservice.RegisterApplicationKeyMappingDiscoveryServiceServer(grpcServer, enforcerAppKeyMappingDsSrv)
-	subscriptionservice.RegisterApplicationMappingDiscoveryServiceServer(grpcServer, enforcerAppMappingDsSrv)
-	// register health service
+	apkmgt.RegisterEventStreamServiceServer(grpcServer, &server.EventServer{})
 	healthservice.RegisterHealthServer(grpcServer, &health.Server{})
 
 	loggers.LoggerAPKOperator.Info("port: ", port, " common enforcer server listening")
@@ -223,22 +208,8 @@ func InitCommonControllerServer(conf *config.Config) {
 	// Set empty snapshot to initiate ratelimit service
 	xds.SetEmptySnapshotupdate(conf.CommonController.Server.Label)
 
-	cache := xds.GetXdsCache()
-	enforcerCache := xds.GetEnforcerCache()
-	enforcerSubscriptionCache := xds.GetEnforcerSubscriptionCache()
-	enforcerApplicationCache := xds.GetEnforcerApplicationCache()
-	enforcerApplicationKeyMappingCache := xds.GetEnforcerApplicationKeyMappingCache()
-	enforcerApplicationMappingCache := xds.GetEnforcerApplicationMappingCache()
-	srv := xdsv3.NewServer(ctx, cache, &routercb.Callbacks{})
-	enforcerXdsSrv := wso2_server.NewServer(ctx, enforcerCache, &enforcerCallbacks.Callbacks{})
-	enforcerSdsSrv := wso2_server.NewServer(ctx, enforcerSubscriptionCache, &enforcerCallbacks.Callbacks{})
-	enforcerAppDsSrv := wso2_server.NewServer(ctx, enforcerApplicationCache, &enforcerCallbacks.Callbacks{})
-	enforcerAppKeyMappingDsSrv := wso2_server.NewServer(ctx, enforcerApplicationKeyMappingCache, &enforcerCallbacks.Callbacks{})
-	enforcerAppMappingDsSrv := wso2_server.NewServer(ctx, enforcerApplicationMappingCache, &enforcerCallbacks.Callbacks{})
-
 	// Start Enforcer xDS gRPC server
-	runCommonEnforcerServer(srv, enforcerXdsSrv, enforcerSdsSrv, enforcerAppDsSrv, enforcerAppKeyMappingDsSrv,
-		enforcerAppMappingDsSrv, port)
+	runCommonEnforcerServer(port)
 
 	go operator.InitOperator()
 

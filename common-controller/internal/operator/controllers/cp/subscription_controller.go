@@ -22,10 +22,12 @@ import (
 	"fmt"
 
 	"github.com/wso2/apk/adapter/pkg/logging"
+	"github.com/wso2/apk/common-controller/internal/cache"
 	loggers "github.com/wso2/apk/common-controller/internal/loggers"
 	constants "github.com/wso2/apk/common-controller/internal/operator/constant"
 	"github.com/wso2/apk/common-controller/internal/server"
 	"github.com/wso2/apk/common-controller/internal/utils"
+	k8error "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -44,12 +46,14 @@ import (
 type SubscriptionReconciler struct {
 	client client.Client
 	Scheme *runtime.Scheme
+	ods    *cache.SubscriptionDataStore
 }
 
 // NewSubscriptionController creates a new Subscription controller instance.
-func NewSubscriptionController(mgr manager.Manager) error {
+func NewSubscriptionController(mgr manager.Manager, subscriptionStore *cache.SubscriptionDataStore) error {
 	r := &SubscriptionReconciler{
 		client: mgr.GetClient(),
+		ods:    subscriptionStore,
 	}
 	c, err := controller.New(constants.SubscriptionController, mgr, controller.Options{Reconciler: r})
 	if err != nil {
@@ -92,6 +96,22 @@ func (subscriptionReconciler *SubscriptionReconciler) Reconcile(ctx context.Cont
 			subscriptionKey.Namespace, subscriptionKey.Name)
 	}
 	sendSubUpdates(subscriptionList)
+	var subscription cpv1alpha2.Subscription
+	if err := subscriptionReconciler.client.Get(ctx, req.NamespacedName, &subscription); err != nil {
+		if k8error.IsNotFound(err) {
+			subscriptionSpec, state := subscriptionReconciler.ods.GetSubscriptionFromStore(subscriptionKey)
+			if state {
+				// Subscription in cache
+				loggers.LoggerAPKOperator.Debugf("Subscription %s/%s not found. Ignoring since object must be deleted", subscriptionKey.Namespace, subscriptionKey.Name)
+				utils.SendDeleteSubscriptionEvent(subscriptionKey.Name, subscriptionSpec)
+				subscriptionReconciler.ods.DeleteSubscriptionFromStore(subscriptionKey)
+				return ctrl.Result{}, nil
+			}
+		} else {
+			utils.SendAddSubscriptionEvent(subscription)
+			subscriptionReconciler.ods.AddorUpdateSubscriptionToStore(subscriptionKey, subscription.Spec)
+		}
+	}
 	return ctrl.Result{}, nil
 }
 

@@ -19,9 +19,7 @@ import (
 
 	envoy_types "github.com/envoyproxy/go-control-plane/pkg/cache/types"
 	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/api"
-	apkmgt "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/apkmgt"
 	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/config/enforcer"
-	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/keymgt"
 	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/subscription"
 	"github.com/wso2/apk/adapter/pkg/discovery/protocol/cache/types"
 	"github.com/wso2/apk/adapter/pkg/discovery/protocol/resource/v3"
@@ -78,28 +76,10 @@ func GetResourceName(res envoy_types.Resource) string {
 		return fmt.Sprint(v.Vhost, v.BasePath, v.Version)
 	case *enforcer.Config:
 		return "Config"
-	case *subscription.SubscriptionList:
-		return "Subscription"
-	case *subscription.ApplicationList:
-		return "Application"
 	case *subscription.JWTIssuerList:
 		return "JWTIssuer"
-	case *subscription.ApplicationKeyMappingList:
-		return "ApplicationKeyMapping"
-	case *subscription.ApplicationMappingList:
-		return "ApplicationMapping"
 	case *subscription.APIList:
 		return "APIList"
-	case *subscription.ApplicationPolicyList:
-		return "ApplicationPolicyList"
-	case *subscription.SubscriptionPolicyList:
-		return "SubscriptionPolicyList"
-	case *keymgt.KeyManagerConfig:
-		return fmt.Sprint(v.Name)
-	case *apkmgt.Application:
-		return fmt.Sprint(v.Uuid)
-	case *keymgt.RevokedToken:
-		return fmt.Sprint(v.Jti)
 	case *subscription.Application:
 		return fmt.Sprint(v.Uuid)
 	case *subscription.Subscription:

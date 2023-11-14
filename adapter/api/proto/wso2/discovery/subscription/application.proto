@@ -18,7 +18,7 @@ syntax = "proto3";
 
 package wso2.discovery.subscription;
 
-option go_package = "github.com/envoyproxy/go-control-plane/wso2/discovery/subscription;subscription";
+option go_package = "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/subscription";
 option java_package = "org.wso2.apk.enforcer.discovery.subscription";
 option java_outer_classname = "ApplicationProto";
 option java_multiple_files = true;
@@ -30,19 +30,6 @@ message Application {
     string uuid = 1;
     string name = 2;
     string owner = 3;
-    map<string, string> attributes = 4;
-}
-
-message SecuritySchemes { 
-    OAuth2 oAuth2 = 1;
-}
-
-message OAuth2 {
-    repeated Environment environments = 1;
-}
-
-message Environment {
-    string envID = 1;
-    string applicationIdentifier = 2;
-    string keyType = 3;
+    string organization = 4;
+    map<string, string> attributes = 5;
 }

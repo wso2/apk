@@ -44,11 +44,23 @@ public interface ApplicationOrBuilder extends
       getOwnerBytes();
 
   /**
-   * <code>map&lt;string, string&gt; attributes = 4;</code>
+   * <code>string organization = 4;</code>
+   * @return The organization.
+   */
+  java.lang.String getOrganization();
+  /**
+   * <code>string organization = 4;</code>
+   * @return The bytes for organization.
+   */
+  com.google.protobuf.ByteString
+      getOrganizationBytes();
+
+  /**
+   * <code>map&lt;string, string&gt; attributes = 5;</code>
    */
   int getAttributesCount();
   /**
-   * <code>map&lt;string, string&gt; attributes = 4;</code>
+   * <code>map&lt;string, string&gt; attributes = 5;</code>
    */
   boolean containsAttributes(
       java.lang.String key);
@@ -59,19 +71,19 @@ public interface ApplicationOrBuilder extends
   java.util.Map<java.lang.String, java.lang.String>
   getAttributes();
   /**
-   * <code>map&lt;string, string&gt; attributes = 4;</code>
+   * <code>map&lt;string, string&gt; attributes = 5;</code>
    */
   java.util.Map<java.lang.String, java.lang.String>
   getAttributesMap();
   /**
-   * <code>map&lt;string, string&gt; attributes = 4;</code>
+   * <code>map&lt;string, string&gt; attributes = 5;</code>
    */
 
   java.lang.String getAttributesOrDefault(
       java.lang.String key,
       java.lang.String defaultValue);
   /**
-   * <code>map&lt;string, string&gt; attributes = 4;</code>
+   * <code>map&lt;string, string&gt; attributes = 5;</code>
    */
 
   java.lang.String getAttributesOrThrow(
