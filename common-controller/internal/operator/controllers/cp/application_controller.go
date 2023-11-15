@@ -88,7 +88,7 @@ func (applicationReconciler *ApplicationReconciler) Reconcile(ctx context.Contex
 	applicationKey := req.NamespacedName
 	var applicationList = new(cpv1alpha2.ApplicationList)
 
-	loggers.LoggerAPKOperator.Debugf("Reconciling application: %v", applicationKey.String())
+	loggers.LoggerAPKOperator.Infof("Reconciling application: %v", applicationKey.String())
 	if err := applicationReconciler.client.List(ctx, applicationList); err != nil {
 		return reconcile.Result{}, fmt.Errorf("failed to get applications %s/%s",
 			applicationKey.Namespace, applicationKey.Name)
@@ -97,24 +97,28 @@ func (applicationReconciler *ApplicationReconciler) Reconcile(ctx context.Contex
 	if err := applicationReconciler.client.Get(ctx, req.NamespacedName, &application); err != nil {
 		if k8error.IsNotFound(err) {
 			applicationSpec, found := applicationReconciler.ods.GetApplicationFromStore(applicationKey)
+			loggers.LoggerAPKOperator.Infof("Application cr not available in k8s")
+			loggers.LoggerAPKOperator.Infof("cached Application spec: %v,%v", applicationSpec, found)
 			if found {
 				utils.SendAppDeletionEvent(applicationKey.Name, applicationSpec)
 				applicationReconciler.ods.DeleteApplicationFromStore(applicationKey)
-				return ctrl.Result{}, nil
 			} else {
-				loggers.LoggerAPKOperator.Debugf("Application %s/%s does not exist in k8s", applicationKey.Namespace, applicationKey.Name)
+				loggers.LoggerAPKOperator.Infof("Application %s/%s does not exist in k8s", applicationKey.Namespace, applicationKey.Name)
 			}
-		} else {
-			applicationSpec, found := applicationReconciler.ods.GetApplicationFromStore(applicationKey)
-			if found {
-				// update
-				utils.SendAppUpdateEvent(applicationKey.Name, applicationSpec, application.Spec)
-
-			} else {
-				utils.SendAddApplicationEvent(application)
-			}
-			applicationReconciler.ods.AddorUpdateApplicationToStore(applicationKey, application.Spec)
 		}
+	} else {
+		loggers.LoggerAPKOperator.Infof("Application cr available in k8s")
+		applicationSpec, found := applicationReconciler.ods.GetApplicationFromStore(applicationKey)
+		if found {
+			// update
+			loggers.LoggerAPKOperator.Infof("Application in ods")
+			utils.SendAppUpdateEvent(applicationKey.Name, applicationSpec, application.Spec)
+
+		} else {
+			loggers.LoggerAPKOperator.Infof("Application in ods consider as update")
+			utils.SendAddApplicationEvent(application)
+		}
+		applicationReconciler.ods.AddorUpdateApplicationToStore(applicationKey, application.Spec)
 	}
 	sendAppUpdates(applicationList)
 	return ctrl.Result{}, nil

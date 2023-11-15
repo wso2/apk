@@ -18,14 +18,11 @@
 package xds
 
 import (
-	"encoding/json"
-	"fmt"
 	"strconv"
 
 	"github.com/wso2/apk/adapter/config"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/config/enforcer"
-	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/keymgt"
 	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/subscription"
 	"github.com/wso2/apk/adapter/pkg/eventhub/types"
 )
@@ -33,16 +30,6 @@ import (
 var (
 	// APIListMap has the following mapping label -> apiUUID -> API (Metadata)
 	APIListMap map[string]map[string]*subscription.APIs
-	// SubscriptionMap contains the subscriptions recieved from API Manager Control Plane
-	SubscriptionMap map[int32]*subscription.Subscription
-	// ApplicationMap contains the applications recieved from API Manager Control Plane
-	ApplicationMap map[string]*subscription.Application
-	// ApplicationKeyMappingMap contains the application key mappings recieved from API Manager Control Plane
-	ApplicationKeyMappingMap map[string]*subscription.ApplicationKeyMapping
-	// ApplicationPolicyMap contains the application policies recieved from API Manager Control Plane
-	ApplicationPolicyMap map[int32]*subscription.ApplicationPolicy
-	// SubscriptionPolicyMap contains the subscription policies recieved from API Manager Control Plane
-	SubscriptionPolicyMap map[int32]*subscription.SubscriptionPolicy
 )
 
 // EventType is a enum to distinguish Create, Update and Delete Events
@@ -186,30 +173,6 @@ func marshalAnalyticsPublishers(config config.Config) []*enforcer.AnalyticsPubli
 	return resolvedAnalyticsPublishers
 }
 
-// marshalSubscriptionMapToList converts the data into SubscriptionList proto type
-func marshalSubscriptionMapToList(subscriptionMap map[int32]*subscription.Subscription) *subscription.SubscriptionList {
-	subscriptions := []*subscription.Subscription{}
-	for _, sub := range subscriptionMap {
-		subscriptions = append(subscriptions, sub)
-	}
-
-	return &subscription.SubscriptionList{
-		List: subscriptions,
-	}
-}
-
-// marshalApplicationMapToList converts the data into ApplicationList proto type
-func marshalApplicationMapToList(appMap map[string]*subscription.Application) *subscription.ApplicationList {
-	applications := []*subscription.Application{}
-	for _, app := range appMap {
-		applications = append(applications, app)
-	}
-
-	return &subscription.ApplicationList{
-		List: applications,
-	}
-}
-
 // marshalAPIListMapToList converts the data into APIList proto type
 func marshalAPIListMapToList(apiMap map[string]*subscription.APIs) *subscription.APIList {
 	apis := []*subscription.APIs{}
@@ -220,125 +183,6 @@ func marshalAPIListMapToList(apiMap map[string]*subscription.APIs) *subscription
 	return &subscription.APIList{
 		List: apis,
 	}
-}
-
-// marshalApplicationPolicyMapToList converts the data into ApplicationPolicyList proto type
-func marshalApplicationPolicyMapToList(appPolicyMap map[int32]*subscription.ApplicationPolicy) *subscription.ApplicationPolicyList {
-	applicationPolicies := []*subscription.ApplicationPolicy{}
-	for _, policy := range appPolicyMap {
-		applicationPolicies = append(applicationPolicies, policy)
-	}
-
-	return &subscription.ApplicationPolicyList{
-		List: applicationPolicies,
-	}
-}
-
-// marshalSubscriptionPolicyMapToList converts the data into SubscriptionPolicyList proto type
-func marshalSubscriptionPolicyMapToList(subPolicyMap map[int32]*subscription.SubscriptionPolicy) *subscription.SubscriptionPolicyList {
-	subscriptionPolicies := []*subscription.SubscriptionPolicy{}
-
-	for _, policy := range subPolicyMap {
-		subscriptionPolicies = append(subscriptionPolicies, policy)
-	}
-
-	return &subscription.SubscriptionPolicyList{
-		List: subscriptionPolicies,
-	}
-}
-
-// marshalKeyMappingMapToList converts the data into ApplicationKeyMappingList proto type
-func marshalKeyMappingMapToList(keyMappingMap map[string]*subscription.ApplicationKeyMapping) *subscription.ApplicationKeyMappingList {
-	applicationKeyMappings := []*subscription.ApplicationKeyMapping{}
-
-	for _, keyMapping := range keyMappingMap {
-		// TODO: (VirajSalaka) tenant domain check missing
-		applicationKeyMappings = append(applicationKeyMappings, keyMapping)
-	}
-
-	return &subscription.ApplicationKeyMappingList{
-		List: applicationKeyMappings,
-	}
-}
-
-// MarshalKeyManager converts the data into KeyManager proto type
-func MarshalKeyManager(keyManager *types.KeyManager) *keymgt.KeyManagerConfig {
-	configList, err := json.Marshal(keyManager.Configuration)
-	configuration := string(configList)
-	if err == nil {
-		newKeyManager := &keymgt.KeyManagerConfig{
-			Name:          keyManager.Name,
-			Type:          keyManager.Type,
-			Enabled:       keyManager.Enabled,
-			TenantDomain:  keyManager.TenantDomain,
-			Configuration: configuration,
-		}
-		return newKeyManager
-	}
-	logger.LoggerXds.Debugf("Error happens while marshaling key manager data for " + fmt.Sprint(keyManager.Name))
-	return nil
-}
-
-// MarshalMultipleApplicationPolicies is used to update the applicationPolicies during the startup where
-// multiple application policies are pulled at once. And then it returns the ApplicationPolicyList.
-func MarshalMultipleApplicationPolicies(policies *types.ApplicationPolicyList) *subscription.ApplicationPolicyList {
-	resourceMap := make(map[int32]*subscription.ApplicationPolicy)
-	for item := range policies.List {
-		policy := policies.List[item]
-		appPolicy := marshalApplicationPolicy(&policy)
-		resourceMap[policy.ID] = appPolicy
-		logger.LoggerXds.Infof("appPolicy Entry is added : %v", appPolicy)
-	}
-	ApplicationPolicyMap = resourceMap
-	return marshalApplicationPolicyMapToList(ApplicationPolicyMap)
-}
-
-// MarshalApplicationPolicyEventAndReturnList handles the Application Policy Event corresponding to the event received
-// from message broker. And then it returns the ApplicationPolicyList.
-func MarshalApplicationPolicyEventAndReturnList(policy *types.ApplicationPolicy, eventType EventType) *subscription.ApplicationPolicyList {
-	if eventType == DeleteEvent {
-		delete(ApplicationPolicyMap, policy.ID)
-		logger.LoggerXds.Infof("Application Policy: %s is deleted.", policy.Name)
-	} else {
-		appPolicy := marshalApplicationPolicy(policy)
-		ApplicationPolicyMap[policy.ID] = appPolicy
-		if eventType == UpdateEvent {
-			logger.LoggerSvcDiscovery.Infof("Application Policy: %s is updated.", appPolicy.Name)
-		} else {
-			logger.LoggerSvcDiscovery.Infof("Application Policy: %s is added.", appPolicy.Name)
-		}
-	}
-	return marshalApplicationPolicyMapToList(ApplicationPolicyMap)
-}
-
-// MarshalMultipleSubscriptionPolicies is used to update the subscriptionPolicies during the startup where
-// multiple subscription policies are pulled at once. And then it returns the SubscriptionPolicyList.
-func MarshalMultipleSubscriptionPolicies(policies *types.SubscriptionPolicyList) *subscription.SubscriptionPolicyList {
-	resourceMap := make(map[int32]*subscription.SubscriptionPolicy)
-	for item := range policies.List {
-		policy := policies.List[item]
-		resourceMap[policy.ID] = marshalSubscriptionPolicy(&policy)
-	}
-	SubscriptionPolicyMap = resourceMap
-	return marshalSubscriptionPolicyMapToList(SubscriptionPolicyMap)
-}
-
-// MarshalSubscriptionPolicyEventAndReturnList handles the Subscription Policy Event corresponding to the event received
-// from message broker. And then it returns the subscriptionPolicyList.
-func MarshalSubscriptionPolicyEventAndReturnList(policy *types.SubscriptionPolicy, eventType EventType) *subscription.SubscriptionPolicyList {
-	if eventType == DeleteEvent {
-		delete(ApplicationPolicyMap, policy.ID)
-		logger.LoggerXds.Infof("Application Policy: %s is deleted.", policy.Name)
-	} else {
-		subPolicy := marshalSubscriptionPolicy(policy)
-		SubscriptionPolicyMap[policy.ID] = subPolicy
-		if eventType == UpdateEvent {
-			logger.LoggerSvcDiscovery.Infof("Subscription Policy: %s is updated.", subPolicy.Name)
-		} else {
-			logger.LoggerSvcDiscovery.Infof("Subscription Policy: %s is added.", subPolicy.Name)
-		}
-	}
-	return marshalSubscriptionPolicyMapToList(SubscriptionPolicyMap)
 }
 
 // MarshalAPIMetataAndReturnList updates the internal APIListMap and returns the XDS compatible APIList.
@@ -417,31 +261,6 @@ func marshalAPIMetadata(api *types.API) *subscription.APIs {
 		Uuid:             api.UUID,
 		IsDefaultVersion: api.IsDefaultVersion,
 		LcState:          api.APIStatus,
-	}
-}
-
-func marshalApplicationPolicy(policy *types.ApplicationPolicy) *subscription.ApplicationPolicy {
-	return &subscription.ApplicationPolicy{
-		Id:        policy.ID,
-		TenantId:  policy.TenantID,
-		Name:      policy.Name,
-		QuotaType: policy.QuotaType,
-	}
-}
-
-func marshalSubscriptionPolicy(policy *types.SubscriptionPolicy) *subscription.SubscriptionPolicy {
-	return &subscription.SubscriptionPolicy{
-		Id:                   policy.ID,
-		Name:                 policy.Name,
-		QuotaType:            policy.QuotaType,
-		GraphQLMaxComplexity: policy.GraphQLMaxComplexity,
-		GraphQLMaxDepth:      policy.GraphQLMaxDepth,
-		RateLimitCount:       policy.RateLimitCount,
-		RateLimitTimeUnit:    policy.RateLimitTimeUnit,
-		StopOnQuotaReach:     policy.StopOnQuotaReach,
-		TenantId:             policy.TenantID,
-		TenantDomain:         policy.TenantDomain,
-		Timestamp:            policy.TimeStamp,
 	}
 }
 

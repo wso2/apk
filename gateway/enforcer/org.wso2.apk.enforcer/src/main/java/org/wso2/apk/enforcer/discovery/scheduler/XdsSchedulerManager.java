@@ -23,7 +23,7 @@ import org.wso2.apk.enforcer.discovery.ApiDiscoveryClient;
 import org.wso2.apk.enforcer.discovery.ApiListDiscoveryClient;
 import org.wso2.apk.enforcer.discovery.ConfigDiscoveryClient;
 import org.wso2.apk.enforcer.discovery.JWTIssuerDiscoveryClient;
-import org.wso2.apk.enforcer.discovery.RevokedTokenDiscoveryClient;
+import org.wso2.apk.enforcer.subscription.EventingGrpcClient;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -38,19 +38,22 @@ public class XdsSchedulerManager {
     private static int retryPeriod;
     private static volatile XdsSchedulerManager instance;
     private static ScheduledExecutorService discoveryClientScheduler;
+    private static ScheduledExecutorService eventingScheduler;
     private ScheduledFuture<?> apiDiscoveryScheduledFuture;
     private ScheduledFuture<?> apiDiscoveryListScheduledFuture;
     private ScheduledFuture<?> jwtIssuerDiscoveryScheduledFuture;
 
-    private ScheduledFuture<?> revokedTokenDiscoveryScheduledFuture;
+    private ScheduledFuture<?> eventingScheduledFuture;
     private ScheduledFuture<?> configDiscoveryScheduledFuture;
 
     public static XdsSchedulerManager getInstance() {
+
         if (instance == null) {
             synchronized (XdsSchedulerManager.class) {
                 if (instance == null) {
                     instance = new XdsSchedulerManager();
                     discoveryClientScheduler = Executors.newSingleThreadScheduledExecutor();
+                    eventingScheduler = Executors.newSingleThreadScheduledExecutor();
                     retryPeriod = Integer.parseInt(EnvVarConfig.getInstance().getXdsRetryPeriod());
                 }
             }
@@ -59,6 +62,7 @@ public class XdsSchedulerManager {
     }
 
     public synchronized void startAPIDiscoveryScheduling() {
+
         if (apiDiscoveryScheduledFuture == null || apiDiscoveryScheduledFuture.isDone()) {
             apiDiscoveryScheduledFuture = discoveryClientScheduler
                     .scheduleWithFixedDelay(ApiDiscoveryClient.getInstance(), 1, retryPeriod, TimeUnit.SECONDS);
@@ -66,12 +70,14 @@ public class XdsSchedulerManager {
     }
 
     public synchronized void stopAPIDiscoveryScheduling() {
+
         if (apiDiscoveryScheduledFuture != null && !apiDiscoveryScheduledFuture.isDone()) {
             apiDiscoveryScheduledFuture.cancel(false);
         }
     }
 
     public synchronized void startAPIListDiscoveryScheduling() {
+
         if (apiDiscoveryListScheduledFuture == null || apiDiscoveryListScheduledFuture.isDone()) {
             apiDiscoveryListScheduledFuture = discoveryClientScheduler
                     .scheduleWithFixedDelay(ApiListDiscoveryClient.getInstance(), 1, retryPeriod, TimeUnit.SECONDS);
@@ -79,6 +85,7 @@ public class XdsSchedulerManager {
     }
 
     public synchronized void stopAPIListDiscoveryScheduling() {
+
         if (apiDiscoveryListScheduledFuture != null && !apiDiscoveryListScheduledFuture.isDone()) {
             apiDiscoveryListScheduledFuture.cancel(false);
         }
@@ -92,27 +99,30 @@ public class XdsSchedulerManager {
         }
     }
 
+    public synchronized void startEventScheduling() {
+
+        if (eventingScheduledFuture == null || eventingScheduledFuture.isDone()) {
+            eventingScheduledFuture = eventingScheduler
+                    .scheduleWithFixedDelay(EventingGrpcClient.getInstance(), 1, retryPeriod, TimeUnit.SECONDS);
+        }
+    }
+
     public synchronized void stopJWTIssuerDiscoveryScheduling() {
+
         if (jwtIssuerDiscoveryScheduledFuture != null && !jwtIssuerDiscoveryScheduledFuture.isDone()) {
             jwtIssuerDiscoveryScheduledFuture.cancel(false);
         }
     }
 
-    public synchronized void startRevokedTokenDiscoveryScheduling() {
-        if (revokedTokenDiscoveryScheduledFuture == null || revokedTokenDiscoveryScheduledFuture.isDone()) {
-            revokedTokenDiscoveryScheduledFuture = discoveryClientScheduler
-                    .scheduleWithFixedDelay(RevokedTokenDiscoveryClient.getInstance(), 1, retryPeriod,
-                            TimeUnit.SECONDS);
-        }
-    }
+    public synchronized void stopEventStreamScheduling() {
 
-    public synchronized void stopRevokedTokenDiscoveryScheduling() {
-        if (revokedTokenDiscoveryScheduledFuture != null && !revokedTokenDiscoveryScheduledFuture.isDone()) {
-            revokedTokenDiscoveryScheduledFuture.cancel(false);
+        if (eventingScheduledFuture != null && !eventingScheduledFuture.isDone()) {
+            eventingScheduledFuture.cancel(false);
         }
     }
 
     public synchronized void startConfigDiscoveryScheduling() {
+
         if (configDiscoveryScheduledFuture == null || configDiscoveryScheduledFuture.isDone()) {
             configDiscoveryScheduledFuture = discoveryClientScheduler
                     .scheduleWithFixedDelay(ConfigDiscoveryClient.getInstance(), 1, retryPeriod,
@@ -121,6 +131,7 @@ public class XdsSchedulerManager {
     }
 
     public synchronized void stopConfigDiscoveryScheduling() {
+
         if (configDiscoveryScheduledFuture != null && !configDiscoveryScheduledFuture.isDone()) {
             configDiscoveryScheduledFuture.cancel(false);
         }

@@ -107,10 +107,10 @@ func (subscriptionReconciler *SubscriptionReconciler) Reconcile(ctx context.Cont
 				subscriptionReconciler.ods.DeleteSubscriptionFromStore(subscriptionKey)
 				return ctrl.Result{}, nil
 			}
-		} else {
-			utils.SendAddSubscriptionEvent(subscription)
-			subscriptionReconciler.ods.AddorUpdateSubscriptionToStore(subscriptionKey, subscription.Spec)
 		}
+	} else {
+		utils.SendAddSubscriptionEvent(subscription)
+		subscriptionReconciler.ods.AddorUpdateSubscriptionToStore(subscriptionKey, subscription.Spec)
 	}
 	return ctrl.Result{}, nil
 }

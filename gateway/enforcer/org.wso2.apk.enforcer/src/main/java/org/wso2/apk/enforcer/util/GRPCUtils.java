@@ -19,7 +19,11 @@
 package org.wso2.apk.enforcer.util;
 
 import io.grpc.ConnectivityState;
+import io.grpc.Grpc;
+import io.grpc.InsecureChannelCredentials;
 import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
+import io.grpc.Metadata;
 import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
 import io.grpc.netty.shaded.io.netty.handler.ssl.SslContext;
@@ -37,6 +41,7 @@ import javax.net.ssl.SSLException;
 public class GRPCUtils {
 
     public static ManagedChannel createSecuredChannel(Logger logger, String host, int port, String hostname) {
+
         File certFile = Paths.get(ConfigHolder.getInstance().getEnvVarConfig().getEnforcerPublicKeyPath()).toFile();
         File keyFile = Paths.get(ConfigHolder.getInstance().getEnvVarConfig().getEnforcerPrivateKeyPath()).toFile();
         SslContext sslContext = null;
@@ -57,6 +62,7 @@ public class GRPCUtils {
     }
 
     public static boolean isReInitRequired(ManagedChannel channel) {
+
         if (channel != null && (channel.getState(true) == ConnectivityState.CONNECTING
                 || channel.getState(true) == ConnectivityState.READY)) {
             return false;

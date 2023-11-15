@@ -36,6 +36,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.Key;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -51,6 +52,7 @@ import java.util.List;
  * Utility Functions related to TLS Certificates.
  */
 public class TLSUtils {
+
     private static final Logger log = LogManager.getLogger(TLSUtils.class);
     private static final String X509 = "X.509";
     private static final String crtExtension = ".crt";
@@ -65,6 +67,7 @@ public class TLSUtils {
      */
     public static Certificate getCertificateFromFile(String filePath)
             throws CertificateException, IOException, EnforcerException {
+
         return getCertsFromFile(filePath, true).get(0);
     }
 
@@ -90,6 +93,7 @@ public class TLSUtils {
      * @param trustStore Keystore with trusted certificates
      */
     public static void addCertsToTruststore(KeyStore trustStore, String filePath) throws IOException {
+
         if (!Files.exists(Paths.get(filePath))) {
             log.error("The provided certificates directory/file path does not exist. : " + filePath);
             return;
@@ -110,6 +114,7 @@ public class TLSUtils {
     }
 
     public static void convertAndAddCertificatesToTrustStore(KeyStore trustStore, List<Certificate> certificates) {
+
         for (Certificate certificate : certificates) {
             try {
                 trustStore.setCertificateEntry(RandomStringUtils.random(10, true, false),
@@ -122,6 +127,7 @@ public class TLSUtils {
 
     private static List<Certificate> getCertsFromFile(String filepath, boolean restrictToOne)
             throws CertificateException, IOException, EnforcerException {
+
         String content = new String(Files.readAllBytes(Paths.get(filepath)));
 
         if (!content.contains(endCertificateDelimiter)) {
@@ -154,6 +160,7 @@ public class TLSUtils {
     }
 
     private static void updateTruststoreWithMultipleCertPem(KeyStore trustStore, String filePath) {
+
         try {
             List<Certificate> certificateList = getCertsFromFile(filePath, false);
             certificateList.forEach(certificate -> {
@@ -171,6 +178,7 @@ public class TLSUtils {
     }
 
     public static Certificate getCertificate(String filePath) throws CertificateException, IOException {
+
         try (FileInputStream fileInputStream = new FileInputStream(filePath)) {
             String content = IOUtils.toString(fileInputStream);
             return getCertificateFromContent(content);
@@ -178,6 +186,7 @@ public class TLSUtils {
     }
 
     public static Certificate getCertificateFromContent(String content) throws CertificateException, IOException {
+
         CertificateFactory fact = CertificateFactory.getInstance(X509);
         try (InputStream is = new ByteArrayInputStream(content.getBytes())) {
             X509Certificate cert = (X509Certificate) fact.generateCertificate(is);
@@ -192,6 +201,7 @@ public class TLSUtils {
      * @throws SSLException
      */
     public static SslContext buildGRPCServerSSLContext() throws SSLException {
+
         File certFile = Paths.get(ConfigHolder.getInstance().getEnvVarConfig().getEnforcerPublicKeyPath()).toFile();
         File keyFile = Paths.get(ConfigHolder.getInstance().getEnvVarConfig().getEnforcerPrivateKeyPath()).toFile();
 
@@ -202,6 +212,7 @@ public class TLSUtils {
     }
 
     public static KeyStore getDefaultCertTrustStore() throws EnforcerException {
+
         try {
 
             KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
@@ -215,6 +226,7 @@ public class TLSUtils {
 
     public static void loadDefaultCertsToTrustStore(KeyStore trustStore) throws
             NoSuchAlgorithmException, KeyStoreException {
+
         TrustManagerFactory tmf = TrustManagerFactory
                 .getInstance(TrustManagerFactory.getDefaultAlgorithm());
         // Using null here initialises the TMF with the default trust store.
@@ -242,5 +254,21 @@ public class TLSUtils {
                         }
                     });
         }
+    }
+
+    public static KeyStore getKeyStore(String certPath, String keyPath) {
+        KeyStore keyStore = null;
+        try {
+            Certificate cert =
+                    TLSUtils.getCertificateFromFile(certPath);
+            Key key = JWTUtils.getPrivateKey(keyPath);
+            keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+            keyStore.load(null, null);
+            keyStore.setKeyEntry("client-keys", key, null, new Certificate[]{cert});
+        } catch (EnforcerException | CertificateException | IOException | KeyStoreException |
+                 NoSuchAlgorithmException e) {
+            log.error("Error occurred while configuring KeyStore", e);
+        }
+        return keyStore;
     }
 }

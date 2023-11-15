@@ -100,7 +100,7 @@ func (ods *SubscriptionDataStore) GetApplicationMappingFromStore(name types.Name
 func (ods *SubscriptionDataStore) DeleteApplicationFromStore(name types.NamespacedName) {
 	ods.mu.Lock()
 	defer ods.mu.Unlock()
-	logger.Debug("Deleting application from cache")
+	logger.Info("Deleting application from cache")
 	delete(ods.applicationStore, name)
 }
 
@@ -108,7 +108,7 @@ func (ods *SubscriptionDataStore) DeleteApplicationFromStore(name types.Namespac
 func (ods *SubscriptionDataStore) DeleteSubscriptionFromStore(name types.NamespacedName) {
 	ods.mu.Lock()
 	defer ods.mu.Unlock()
-	logger.Debug("Deleting subscription from cache")
+	logger.Info("Deleting subscription from cache")
 	delete(ods.subscriptionStore, name)
 }
 
@@ -116,6 +116,6 @@ func (ods *SubscriptionDataStore) DeleteSubscriptionFromStore(name types.Namespa
 func (ods *SubscriptionDataStore) DeleteApplicationMappingFromStore(name types.NamespacedName) {
 	ods.mu.Lock()
 	defer ods.mu.Unlock()
-	logger.Debug("Deleting application mapping from cache")
+	logger.Info("Deleting application mapping from cache")
 	delete(ods.applicationMappingStore, name)
 }

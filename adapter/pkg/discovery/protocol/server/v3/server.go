@@ -25,9 +25,7 @@ import (
 	streamv3 "github.com/envoyproxy/go-control-plane/pkg/server/stream/v3"
 	xdsv3 "github.com/envoyproxy/go-control-plane/pkg/server/v3"
 	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/api"
-	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/apkmgt"
 	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/config"
-	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/keymgt"
 	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/subscription"
 	"github.com/wso2/apk/adapter/pkg/discovery/protocol/resource/v3"
 	"github.com/wso2/apk/adapter/pkg/discovery/protocol/server/sotw/v3"
@@ -39,18 +37,8 @@ import (
 type Server interface {
 	config.ConfigDiscoveryServiceServer
 	api.ApiDiscoveryServiceServer
-	subscription.SubscriptionDiscoveryServiceServer
-	subscription.ApplicationDiscoveryServiceServer
 	subscription.ApiListDiscoveryServiceServer
-	subscription.ApplicationPolicyDiscoveryServiceServer
 	subscription.JWTIssuerDiscoveryServiceServer
-	subscription.SubscriptionPolicyDiscoveryServiceServer
-	subscription.ApplicationKeyMappingDiscoveryServiceServer
-	subscription.ApplicationMappingDiscoveryServiceServer
-	keymgt.KMDiscoveryServiceServer
-	keymgt.RevokedTokenDiscoveryServiceServer
-	apkmgt.APKMgtDiscoveryServiceServer
-
 	rest.Server
 	envoy_sotw.Server
 	envoy_delta.Server
@@ -70,17 +58,8 @@ func NewServerAdvanced(restServer rest.Server, sotwServer envoy_sotw.Server, del
 type server struct {
 	config.UnimplementedConfigDiscoveryServiceServer
 	api.UnimplementedApiDiscoveryServiceServer
-	subscription.UnimplementedSubscriptionDiscoveryServiceServer
-	subscription.UnimplementedApplicationDiscoveryServiceServer
 	subscription.UnimplementedJWTIssuerDiscoveryServiceServer
 	subscription.UnimplementedApiListDiscoveryServiceServer
-	subscription.UnimplementedApplicationPolicyDiscoveryServiceServer
-	subscription.UnimplementedSubscriptionPolicyDiscoveryServiceServer
-	subscription.UnimplementedApplicationKeyMappingDiscoveryServiceServer
-	subscription.UnimplementedApplicationMappingDiscoveryServiceServer
-	keymgt.UnimplementedKMDiscoveryServiceServer
-	keymgt.UnimplementedRevokedTokenDiscoveryServiceServer
-	apkmgt.UnimplementedAPKMgtDiscoveryServiceServer
 	rest  rest.Server
 	sotw  envoy_sotw.Server
 	delta envoy_delta.Server
@@ -98,45 +77,11 @@ func (s *server) StreamApis(stream api.ApiDiscoveryService_StreamApisServer) err
 	return s.StreamHandler(stream, resource.APIType)
 }
 
-func (s *server) StreamSubscriptions(stream subscription.SubscriptionDiscoveryService_StreamSubscriptionsServer) error {
-	return s.StreamHandler(stream, resource.SubscriptionListType)
-}
 
 func (s *server) StreamApiList(stream subscription.ApiListDiscoveryService_StreamApiListServer) error {
 	return s.StreamHandler(stream, resource.APIListType)
 }
 
-func (s *server) StreamApplications(stream subscription.ApplicationDiscoveryService_StreamApplicationsServer) error {
-	return s.StreamHandler(stream, resource.ApplicationListType)
-}
-
-func (s *server) StreamApplicationPolicies(stream subscription.ApplicationPolicyDiscoveryService_StreamApplicationPoliciesServer) error {
-	return s.StreamHandler(stream, resource.ApplicationPolicyListType)
-}
-
-func (s *server) StreamSubscriptionPolicies(stream subscription.SubscriptionPolicyDiscoveryService_StreamSubscriptionPoliciesServer) error {
-	return s.StreamHandler(stream, resource.SubscriptionPolicyListType)
-}
-
-func (s *server) StreamApplicationKeyMappings(stream subscription.ApplicationKeyMappingDiscoveryService_StreamApplicationKeyMappingsServer) error {
-	return s.StreamHandler(stream, resource.ApplicationKeyMappingListType)
-}
-
-func (s *server) StreamApplicationMappings(stream subscription.ApplicationMappingDiscoveryService_StreamApplicationMappingsServer) error {
-	return s.StreamHandler(stream, resource.ApplicationMappingListType)
-}
-
-func (s *server) StreamKeyManagers(stream keymgt.KMDiscoveryService_StreamKeyManagersServer) error {
-	return s.StreamHandler(stream, resource.KeyManagerType)
-}
-
-func (s *server) StreamTokens(stream keymgt.RevokedTokenDiscoveryService_StreamTokensServer) error {
-	return s.StreamHandler(stream, resource.RevokedTokensType)
-}
-
-func (s *server) StreamAPKMgtApplications(stream apkmgt.APKMgtDiscoveryService_StreamAPKMgtApplicationsServer) error {
-	return s.StreamHandler(stream, resource.APKMgtApplicationType)
-}
 func (s *server)StreamJWTIssuers(stream subscription.JWTIssuerDiscoveryService_StreamJWTIssuersServer) error {
 	return s.StreamHandler(stream, resource.JWTIssuerListType)
 }

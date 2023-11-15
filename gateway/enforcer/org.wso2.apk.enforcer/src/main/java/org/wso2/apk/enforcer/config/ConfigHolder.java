@@ -66,11 +66,9 @@ import org.wso2.apk.enforcer.util.TLSUtils;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.security.Key;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
@@ -109,18 +107,9 @@ public class ConfigHolder {
     }
 
     private void loadKeyStore() {
-
-        try {
-            Certificate cert =
-                    TLSUtils.getCertificateFromFile(getEnvVarConfig().getEnforcerPublicKeyPath());
-            Key key = JWTUtils.getPrivateKey(getEnvVarConfig().getEnforcerPrivateKeyPath());
-            keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
-            keyStore.load(null, null);
-            keyStore.setKeyEntry("client-keys", key, null, new Certificate[]{cert});
-        } catch (EnforcerException | CertificateException | IOException | KeyStoreException |
-                 NoSuchAlgorithmException e) {
-            logger.error("Error occurred while configuring KeyStore", e);
-        }
+        String certPath = getEnvVarConfig().getEnforcerPublicKeyPath();
+        String keyPath = getEnvVarConfig().getEnforcerPrivateKeyPath();
+        keyStore = TLSUtils.getKeyStore(certPath, keyPath);
     }
 
     public static ConfigHolder getInstance() {
