@@ -32,19 +32,21 @@ const (
 	Delete string = "DELETED"
 )
 
+// Subscriprion events related constants
 const (
-	APPLICATION_CREATED             string = "APPLICATION_CREATED"
-	APPLICATION_UPDATED             string = "APPLICATION_UPDATED"
-	APPLICATION_DELETED             string = "APPLICATION_DELETED"
-	SUBSCRIPTION_CREATED            string = "SUBSCRIPTION_CREATED"
-	SUBSCRIPTION_UPDATED            string = "SUBSCRIPTION_UPDATED"
-	SUBSCRIPTION_DELETED            string = "SUBSCRIPTION_DELETED"
-	APPLICATION_MAPPING_CREATED     string = "APPLICATION_MAPPING_CREATED"
-	APPLICATION_MAPPING_UPDATED     string = "APPLICATION_MAPPING_UPDATED"
-	APPLICATION_MAPPING_DELETED     string = "APPLICATION_MAPPING_DELETED"
-	APPLICATION_KEY_MAPPING_CREATED string = "APPLICATION_KEY_MAPPING_CREATED"
-	APPLICATION_KEY_MAPPING_UPDATED string = "APPLICATION_KEY_MAPPING_UPDATED"
-	APPLICATION_KEY_MAPPING_DELETED string = "APPLICATION_KEY_MAPPING_DELETED"
+	ApplicationCreated           string = "APPLICATION_CREATED"
+	ApplicationUpdated           string = "APPLICATION_UPDATED"
+	ApplicationDeleted           string = "APPLICATION_DELETED"
+	SubscriptionCreated          string = "SUBSCRIPTION_CREATED"
+	SubscriptionUpdated          string = "SUBSCRIPTION_UPDATED"
+	SubscriptionDeleted          string = "SUBSCRIPTION_DELETED"
+	ApplicationMappingCreated    string = "APPLICATION_MAPPING_CREATED"
+	ApplicationMappingUpdated    string = "APPLICATION_MAPPING_UPDATED"
+	ApplicationMappingDeleted    string = "APPLICATION_MAPPING_DELETED"
+	ApplicationKeyMappingCreated string = "APPLICATION_KEY_MAPPING_CREATED"
+	ApplicationKeyMappingUpdated string = "APPLICATION_KEY_MAPPING_UPDATED"
+	ApplicationKeyMappingDeleted string = "APPLICATION_KEY_MAPPING_DELETED"
+	AllEvnts                     string = "ALL_EVENTS"
 )
 
 // Environment variable names and default values

@@ -90,7 +90,7 @@ public interface SubscriptionDataStore {
      * @return ApplicationKeyMapping which match the given parameters
      */
     ApplicationKeyMapping getMatchingApplicationKeyMapping(String applicationIdentifier, String keyType,
-            String securityScheme);
+                                                           String securityScheme);
 
     /**
      * Filter the applications map based on the provided parameters.
@@ -112,9 +112,28 @@ public interface SubscriptionDataStore {
 
     /**
      * Returns the JWTValidator based on Issuer
-     * @param issuer issuer in JWT
+     *
+     * @param issuer      issuer in JWT
      * @param environment environment of the Issuer
      * @return JWTValidator Implementation
      */
     JWTValidator getJWTValidatorByIssuer(String issuer, String organization, String environment);
+
+    void addApplication(org.wso2.apk.enforcer.discovery.subscription.Application application);
+
+    void addSubscription(org.wso2.apk.enforcer.discovery.subscription.Subscription subscription);
+
+    void addApplicationMapping(org.wso2.apk.enforcer.discovery.subscription.ApplicationMapping applicationMapping);
+
+    void addApplicationKeyMapping(org.wso2.apk.enforcer.discovery.subscription.ApplicationKeyMapping applicationKeyMapping);
+
+    void removeApplicationMapping(org.wso2.apk.enforcer.discovery.subscription.ApplicationMapping applicationMapping);
+
+    void removeApplicationKeyMapping(org.wso2.apk.enforcer.discovery.subscription.ApplicationKeyMapping applicationKeyMapping);
+
+    void removeSubscription(org.wso2.apk.enforcer.discovery.subscription.Subscription subscription);
+
+    void removeApplication(org.wso2.apk.enforcer.discovery.subscription.Application application);
+
+    void loadStartupArtifacts();
 }

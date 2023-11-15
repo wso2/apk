@@ -31,6 +31,34 @@ public class Application implements CacheableEntity<String> {
     private String uuid;
     private String name = null;
     private String owner = null;
+
+    public void setAttributes(Map<String, String> attributes) {
+
+        this.attributes = attributes;
+    }
+
+    public String getOrganization() {
+
+        return organization;
+    }
+
+    public void setOrganization(String organization) {
+
+        this.organization = organization;
+    }
+
+    private String organization = null;
+
+    public String getUuid() {
+
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+
+        this.uuid = uuid;
+    }
+
     private Map<String, String> attributes = new ConcurrentHashMap<>();
 
     public String getUUID() {

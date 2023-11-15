@@ -29,7 +29,6 @@ import (
 	"github.com/wso2/apk/adapter/internal/operator"
 	apiservice "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/api"
 	configservice "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/config"
-	keymanagerservice "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/keymgt"
 	subscriptionservice "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/subscription"
 	wso2_server "github.com/wso2/apk/adapter/pkg/discovery/protocol/server/v3"
 	"github.com/wso2/apk/adapter/pkg/health"
@@ -120,10 +119,6 @@ func runManagementServer(conf *config.Config, server xdsv3.Server, enforcerServe
 	configservice.RegisterConfigDiscoveryServiceServer(grpcServer, enforcerServer)
 	apiservice.RegisterApiDiscoveryServiceServer(grpcServer, enforcerServer)
 	subscriptionservice.RegisterApiListDiscoveryServiceServer(grpcServer, enforcerAPIDsSrv)
-	subscriptionservice.RegisterApplicationPolicyDiscoveryServiceServer(grpcServer, enforcerAppPolicyDsSrv)
-	subscriptionservice.RegisterSubscriptionPolicyDiscoveryServiceServer(grpcServer, enforcerSubPolicyDsSrv)
-	keymanagerservice.RegisterKMDiscoveryServiceServer(grpcServer, enforcerKeyManagerDsSrv)
-	keymanagerservice.RegisterRevokedTokenDiscoveryServiceServer(grpcServer, enforcerRevokedTokenDsSrv)
 	subscriptionservice.RegisterJWTIssuerDiscoveryServiceServer(grpcServer, enforcerJwtIssuerDsSrv)
 	// register health service
 	healthservice.RegisterHealthServer(grpcServer, &health.Server{})

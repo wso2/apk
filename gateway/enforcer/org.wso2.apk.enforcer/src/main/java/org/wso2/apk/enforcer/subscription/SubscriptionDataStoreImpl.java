@@ -52,6 +52,7 @@ import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -127,15 +128,14 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
     }
 
     private void initializeLoadingTasks() {
-        loadSubscriptions();
-        loadApplications();
-        loadApplicationMappings();
-        loadApplicationKeyMappings();
+
         ApiListDiscoveryClient.getInstance().watchApiList();
         JWTIssuerDiscoveryClient.getInstance().watchJWTIssuers();
+        EventingGrpcClient.getInstance().watchEvents();
     }
 
     private void loadApplicationKeyMappings() {
+
         new Thread(() -> {
             ApplicationKeyMappingDtoList applicationKeyMappings =
                     subscriptionValidationDataRetrievalRestClient.getAllApplicationKeyMappings();
@@ -145,6 +145,7 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
     }
 
     private void loadApplicationMappings() {
+
         new Thread(() -> {
             ApplicationMappingDtoList applicationMappings = subscriptionValidationDataRetrievalRestClient
                     .getAllApplicationMappings();
@@ -153,12 +154,14 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
 
     }
 
-    private void loadApplications(){
+    private void loadApplications() {
+
         new Thread(() -> {
             ApplicationListDto applications = subscriptionValidationDataRetrievalRestClient.getAllApplications();
             addApplications(applications.getList());
         }).start();
     }
+
     private void loadSubscriptions() {
 
         new Thread(() -> {
@@ -194,7 +197,7 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
 
         Map<String, Application> newApplicationMap = new ConcurrentHashMap<>();
 
-        for (ApplicationDto application: applicationList) {
+        for (ApplicationDto application : applicationList) {
             Application newApplication = new Application();
             newApplication.setUUID(application.getUuid());
             newApplication.setName(application.getName());
@@ -427,6 +430,129 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
         }
 
         return null;
+    }
+
+    @Override
+    public void addApplication(org.wso2.apk.enforcer.discovery.subscription.Application application) {
+
+        Application resolvedApplication = new Application();
+        resolvedApplication.setName(application.getName());
+        resolvedApplication.setOwner(application.getOwner());
+        resolvedApplication.setUUID(application.getUuid());
+        resolvedApplication.setOrganization(application.getOrganization());
+        resolvedApplication.setAttributes(application.getAttributesMap());
+        if (applicationMap.containsKey(resolvedApplication.getUuid())) {
+            applicationMap.replace(resolvedApplication.getUuid(), resolvedApplication);
+        } else {
+            applicationMap.put(resolvedApplication.getUuid(), resolvedApplication);
+        }
+    }
+
+    @Override
+    public void addSubscription(org.wso2.apk.enforcer.discovery.subscription.Subscription subscription) {
+
+        Subscription resolvedSubscription = new Subscription();
+        resolvedSubscription.setSubscriptionId(subscription.getUuid());
+        resolvedSubscription.setSubscriptionStatus(subscription.getSubStatus());
+        resolvedSubscription.setOrganization(subscription.getOrganization());
+        resolvedSubscription.setSubscribedApi(new SubscribedAPI(subscription.getSubscribedApi()));
+        if (subscriptionMap.containsKey(resolvedSubscription.getSubscriptionId())) {
+            subscriptionMap.replace(resolvedSubscription.getSubscriptionId(), resolvedSubscription);
+        } else {
+            subscriptionMap.put(resolvedSubscription.getSubscriptionId(), resolvedSubscription);
+        }
+    }
+
+    @Override
+    public void addApplicationMapping(org.wso2.apk.enforcer.discovery.subscription.ApplicationMapping applicationMapping) {
+
+        ApplicationMapping resolvedApplicationMapping = new ApplicationMapping();
+        resolvedApplicationMapping.setUuid(applicationMapping.getUuid());
+        resolvedApplicationMapping.setApplicationRef(applicationMapping.getApplicationRef());
+        resolvedApplicationMapping.setSubscriptionRef(applicationMapping.getSubscriptionRef());
+        if (applicationMappingMap.containsKey(resolvedApplicationMapping.getUuid())) {
+            applicationMappingMap.replace(resolvedApplicationMapping.getUuid(), resolvedApplicationMapping);
+        } else {
+            applicationMappingMap.put(resolvedApplicationMapping.getUuid(), resolvedApplicationMapping);
+        }
+    }
+
+    @Override
+    public void addApplicationKeyMapping(org.wso2.apk.enforcer.discovery.subscription.ApplicationKeyMapping applicationKeyMapping) {
+
+        ApplicationKeyMapping resolvedApplicationKeyMapping = new ApplicationKeyMapping();
+        resolvedApplicationKeyMapping.setApplicationUUID(applicationKeyMapping.getApplicationUUID());
+        resolvedApplicationKeyMapping.setSecurityScheme(applicationKeyMapping.getSecurityScheme());
+        resolvedApplicationKeyMapping.setApplicationIdentifier(applicationKeyMapping.getApplicationIdentifier());
+        resolvedApplicationKeyMapping.setKeyType(applicationKeyMapping.getKeyType());
+        resolvedApplicationKeyMapping.setEnvId(applicationKeyMapping.getEnvID());
+        Iterator<Map.Entry<String, ApplicationKeyMapping>> iterator = applicationKeyMappingMap.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<String, ApplicationKeyMapping> cachedApplicationKeyMapping = iterator.next();
+            ApplicationKeyMapping value = cachedApplicationKeyMapping.getValue();
+            if (value.getApplicationIdentifier().equals(resolvedApplicationKeyMapping.getApplicationIdentifier()) &&
+                    value.getSecurityScheme().equals(resolvedApplicationKeyMapping.getSecurityScheme()) &&
+                    value.getKeyType().equals(resolvedApplicationKeyMapping.getKeyType()) &&
+                    value.getEnvId().equals(resolvedApplicationKeyMapping.getEnvId()) &&
+                    value.getApplicationUUID().equals(resolvedApplicationKeyMapping.getApplicationUUID())) {
+                iterator.remove();
+            }
+        }
+        applicationKeyMappingMap.put(resolvedApplicationKeyMapping.getCacheKey(), resolvedApplicationKeyMapping);
+    }
+
+    @Override
+    public void removeApplicationMapping(org.wso2.apk.enforcer.discovery.subscription.ApplicationMapping applicationMapping) {
+
+        ApplicationMapping resolvedApplicationMapping = new ApplicationMapping();
+        resolvedApplicationMapping.setUuid(applicationMapping.getUuid());
+        resolvedApplicationMapping.setApplicationRef(applicationMapping.getApplicationRef());
+        resolvedApplicationMapping.setSubscriptionRef(applicationMapping.getSubscriptionRef());
+        applicationMappingMap.remove(resolvedApplicationMapping.getUuid());
+    }
+
+    @Override
+    public void removeApplicationKeyMapping(org.wso2.apk.enforcer.discovery.subscription.ApplicationKeyMapping applicationKeyMapping) {
+
+        ApplicationKeyMapping resolvedApplicationKeyMapping = new ApplicationKeyMapping();
+        resolvedApplicationKeyMapping.setApplicationUUID(applicationKeyMapping.getApplicationUUID());
+        resolvedApplicationKeyMapping.setSecurityScheme(applicationKeyMapping.getSecurityScheme());
+        resolvedApplicationKeyMapping.setApplicationIdentifier(applicationKeyMapping.getApplicationIdentifier());
+        resolvedApplicationKeyMapping.setKeyType(applicationKeyMapping.getKeyType());
+        resolvedApplicationKeyMapping.setEnvId(applicationKeyMapping.getEnvID());
+        Iterator<Map.Entry<String, ApplicationKeyMapping>> iterator = applicationKeyMappingMap.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<String, ApplicationKeyMapping> cachedApplicationKeyMapping = iterator.next();
+            ApplicationKeyMapping value = cachedApplicationKeyMapping.getValue();
+            if (value.getApplicationIdentifier().equals(resolvedApplicationKeyMapping.getApplicationIdentifier()) &&
+                    value.getSecurityScheme().equals(resolvedApplicationKeyMapping.getSecurityScheme()) &&
+                    value.getKeyType().equals(resolvedApplicationKeyMapping.getKeyType()) &&
+                    value.getEnvId().equals(resolvedApplicationKeyMapping.getEnvId()) &&
+                    value.getApplicationUUID().equals(resolvedApplicationKeyMapping.getApplicationUUID())) {
+                iterator.remove();
+            }
+        }
+    }
+
+    @Override
+    public void removeSubscription(org.wso2.apk.enforcer.discovery.subscription.Subscription subscription) {
+
+        subscriptionMap.remove(subscription.getUuid());
+    }
+
+    @Override
+    public void removeApplication(org.wso2.apk.enforcer.discovery.subscription.Application application) {
+
+        applicationMap.remove(application.getUuid());
+    }
+
+    @Override
+    public void loadStartupArtifacts() {
+
+        loadSubscriptions();
+        loadApplications();
+        loadApplicationMappings();
+        loadApplicationKeyMappings();
     }
 
     private List<String> getEnvironments(JWTIssuer jwtIssuer) {

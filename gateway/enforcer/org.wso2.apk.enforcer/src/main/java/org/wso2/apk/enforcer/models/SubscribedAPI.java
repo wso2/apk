@@ -29,6 +29,15 @@ public class SubscribedAPI {
     private String name = null;
     private String version = null;
 
+    public SubscribedAPI(org.wso2.apk.enforcer.discovery.subscription.SubscribedAPI subscribedApi) {
+        this.name = subscribedApi.getName();
+        this.version = subscribedApi.getVersion();
+    }
+
+    public SubscribedAPI() {
+
+    }
+
     public String getName() {
         return name;
     }

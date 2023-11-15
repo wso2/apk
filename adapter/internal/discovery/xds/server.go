@@ -77,13 +77,9 @@ type EnvoyGatewayConfig struct {
 
 // EnforcerInternalAPI struct use to hold enforcer resources
 type EnforcerInternalAPI struct {
-	configs                []types.Resource
-	keyManagers            []types.Resource
-	apiList                []types.Resource
-	applicationPolicies    []types.Resource
-	subscriptionPolicies   []types.Resource
-	revokedTokens          []types.Resource
-	jwtIssuers             []types.Resource
+	configs    []types.Resource
+	apiList    []types.Resource
+	jwtIssuers []types.Resource
 }
 
 var (
@@ -91,15 +87,15 @@ var (
 	mutexForXdsUpdate         sync.Mutex
 	mutexForInternalMapUpdate sync.Mutex
 
-	cache                              envoy_cachev3.SnapshotCache
-	enforcerCache                      wso2_cache.SnapshotCache
-	enforcerJwtIssuerCache             wso2_cache.SnapshotCache
-	enforcerAPICache                   wso2_cache.SnapshotCache
-	enforcerApplicationPolicyCache     wso2_cache.SnapshotCache
-	enforcerSubscriptionPolicyCache    wso2_cache.SnapshotCache
-	enforcerKeyManagerCache            wso2_cache.SnapshotCache
-	enforcerRevokedTokensCache         wso2_cache.SnapshotCache
-	enforcerThrottleDataCache          wso2_cache.SnapshotCache
+	cache                           envoy_cachev3.SnapshotCache
+	enforcerCache                   wso2_cache.SnapshotCache
+	enforcerJwtIssuerCache          wso2_cache.SnapshotCache
+	enforcerAPICache                wso2_cache.SnapshotCache
+	enforcerApplicationPolicyCache  wso2_cache.SnapshotCache
+	enforcerSubscriptionPolicyCache wso2_cache.SnapshotCache
+	enforcerKeyManagerCache         wso2_cache.SnapshotCache
+	enforcerRevokedTokensCache      wso2_cache.SnapshotCache
+	enforcerThrottleDataCache       wso2_cache.SnapshotCache
 
 	orgAPIMap map[string]map[string]*EnvoyInternalAPI // organizationID -> Vhost:API_UUID -> EnvoyInternalAPI struct map
 
@@ -120,8 +116,6 @@ var (
 	KeyManagerList = make([]eventhubTypes.KeyManager, 0)
 	isReady        = false
 )
-
-var void struct{}
 
 const (
 	commonEnforcerLabel  string = "commonEnforcerLabel"
@@ -596,46 +590,6 @@ func UpdateEnforcerAPIList(label string, apis *subscription.APIList) {
 	logger.LoggerXds.Infof("New API List cache update for the label: " + label + " version: " + fmt.Sprint(version))
 }
 
-// UpdateEnforcerApplicationPolicies sets new update to the enforcer's Application Policies
-func UpdateEnforcerApplicationPolicies(applicationPolicies *subscription.ApplicationPolicyList) {
-	logger.LoggerXds.Debug("Updating Enforcer Application Policy Cache")
-	label := commonEnforcerLabel
-	applicationPolicyList := append(enforcerLabelMap[label].applicationPolicies, applicationPolicies)
-
-	version, _ := crand.Int(crand.Reader, maxRandomBigInt())
-	snap, _ := wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
-		wso2_resource.ApplicationPolicyListType: applicationPolicyList,
-	})
-	snap.Consistent()
-
-	errSetSnap := enforcerApplicationPolicyCache.SetSnapshot(context.Background(), label, snap)
-	if errSetSnap != nil {
-		logger.LoggerXds.ErrorC(logging.PrintError(logging.Error1414, logging.MAJOR, "Error while setting the snapshot : %v", errSetSnap.Error()))
-	}
-	enforcerLabelMap[label].subscriptionPolicies = applicationPolicyList
-	logger.LoggerXds.Infof("New Application Policy cache update for the label: " + label + " version: " + fmt.Sprint(version))
-}
-
-// UpdateEnforcerSubscriptionPolicies sets new update to the enforcer's Subscription Policies
-func UpdateEnforcerSubscriptionPolicies(subscriptionPolicies *subscription.SubscriptionPolicyList) {
-	logger.LoggerXds.Debug("Updating Enforcer Subscription Policy Cache")
-	label := commonEnforcerLabel
-	subscriptionPolicyList := append(enforcerLabelMap[label].subscriptionPolicies, subscriptionPolicies)
-
-	version, _ := crand.Int(crand.Reader, maxRandomBigInt())
-	snap, _ := wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
-		wso2_resource.SubscriptionPolicyListType: subscriptionPolicyList,
-	})
-	snap.Consistent()
-
-	errSetSnap := enforcerSubscriptionPolicyCache.SetSnapshot(context.Background(), label, snap)
-	if errSetSnap != nil {
-		logger.LoggerXds.ErrorC(logging.PrintError(logging.Error1414, logging.MAJOR, "Error while setting the snapshot : %v", errSetSnap.Error()))
-	}
-	enforcerLabelMap[label].subscriptionPolicies = subscriptionPolicyList
-	logger.LoggerXds.Infof("New Subscription Policy cache update for the label: " + label + " version: " + fmt.Sprint(version))
-}
-
 // UpdateXdsCacheWithLock uses mutex and lock to avoid different go routines updating XDS at the same time
 func UpdateXdsCacheWithLock(label string, endpoints []types.Resource, clusters []types.Resource, routes []types.Resource,
 	listeners []types.Resource) bool {
@@ -690,59 +644,6 @@ func ExtractUUIDFromAPIIdentifier(id string) (string, error) {
 	return "", err
 }
 
-// GenerateAndUpdateKeyManagerList converts the data into KeyManager proto type
-func GenerateAndUpdateKeyManagerList() {
-	var keyManagerConfigList = make([]types.Resource, 0)
-	for item := range KeyManagerList {
-		keyManager := KeyManagerList[item]
-		kmConfig := MarshalKeyManager(&keyManager)
-		if kmConfig != nil {
-			keyManagerConfigList = append(keyManagerConfigList, kmConfig)
-		}
-	}
-	UpdateEnforcerKeyManagers(keyManagerConfigList)
-}
-
-// UpdateEnforcerKeyManagers Sets new update to the enforcer's configuration
-func UpdateEnforcerKeyManagers(keyManagerConfigList []types.Resource) {
-	logger.LoggerXds.Debug("Updating Key Manager Cache")
-	label := commonEnforcerLabel
-
-	version, _ := crand.Int(crand.Reader, maxRandomBigInt())
-	snap, _ := wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
-		wso2_resource.KeyManagerType: keyManagerConfigList,
-	})
-	snap.Consistent()
-
-	errSetSnap := enforcerKeyManagerCache.SetSnapshot(context.Background(), label, snap)
-	if errSetSnap != nil {
-		logger.LoggerXds.ErrorC(logging.PrintError(logging.Error1414, logging.MAJOR, "Error while setting the snapshot : %v", errSetSnap.Error()))
-	}
-	enforcerLabelMap[label].keyManagers = keyManagerConfigList
-	logger.LoggerXds.Infof("New key manager cache update for the label: " + label + " version: " + fmt.Sprint(version))
-}
-
-// UpdateEnforcerRevokedTokens method update the revoked tokens
-// in the enforcer
-func UpdateEnforcerRevokedTokens(revokedTokens []types.Resource) {
-	logger.LoggerXds.Debug("Updating enforcer cache for revoked tokens")
-	label := commonEnforcerLabel
-	tokens := append(enforcerLabelMap[label].revokedTokens, revokedTokens...)
-
-	version, _ := crand.Int(crand.Reader, maxRandomBigInt())
-	snap, _ := wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
-		wso2_resource.RevokedTokensType: revokedTokens,
-	})
-	snap.Consistent()
-
-	errSetSnap := enforcerRevokedTokensCache.SetSnapshot(context.Background(), label, snap)
-	if errSetSnap != nil {
-		logger.LoggerXds.ErrorC(logging.PrintError(logging.Error1414, logging.MAJOR, "Error while setting the snapshot : %v", errSetSnap.Error()))
-	}
-	enforcerLabelMap[label].revokedTokens = tokens
-	logger.LoggerXds.Infof("New Revoked token cache update for the label: " + label + " version: " + fmt.Sprint(version))
-}
-
 // RemoveAPICacheForEnv will remove all the internal mappings for a specific environment
 func RemoveAPICacheForEnv(adapterInternalAPI model.AdapterInternalAPI, envType string) {
 	vHostIdentifier := GetvHostsIdentifier(adapterInternalAPI.UUID, envType)
@@ -757,7 +658,7 @@ func RemoveAPICacheForEnv(adapterInternalAPI model.AdapterInternalAPI, envType s
 				}
 			}
 		}
-	}	
+	}
 }
 
 // RemoveAPIFromOrgAPIMap removes api from orgAPI map

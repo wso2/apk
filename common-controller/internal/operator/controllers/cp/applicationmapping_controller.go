@@ -94,22 +94,22 @@ func (r *ApplicationMappingReconciler) Reconcile(ctx context.Context, req ctrl.R
 		return reconcile.Result{}, fmt.Errorf("failed to get application mappings %s/%s",
 			applicationMappingKey.Namespace, applicationMappingKey.Name)
 	}
+	sendUpdates(applicationMappingList)
 	var applicationMapping cpv1alpha2.ApplicationMapping
 	if err := r.client.Get(ctx, req.NamespacedName, &applicationMapping); err != nil {
 		if k8error.IsNotFound(err) {
 			applicationMapping, found := r.ods.GetApplicationMappingFromStore(applicationMappingKey)
-			if !found {
-				loggers.LoggerAPKOperator.Debugf("Application mapping %s/%s not found. Ignoring since object must be deleted", applicationMappingKey.Namespace, applicationMappingKey.Name)
-			} else {
+			if found {
 				utils.SendDeleteApplicationMappingEvent(applicationMappingKey.Name, applicationMapping)
 				r.ods.DeleteApplicationMappingFromStore(applicationMappingKey)
-				return ctrl.Result{}, nil
+			} else {
+				loggers.LoggerAPKOperator.Debugf("Application mapping %s/%s not found. Ignoring since object must be deleted", applicationMappingKey.Namespace, applicationMappingKey.Name)
 			}
-		} else {
-			utils.SendCreateApplicationMappingEvent(applicationMapping)
 		}
+	} else {
+		utils.SendCreateApplicationMappingEvent(applicationMapping)
+		r.ods.AddorUpdateApplicationMappingToStore(applicationMappingKey, applicationMapping.Spec)
 	}
-	sendUpdates(applicationMappingList)
 	return ctrl.Result{}, nil
 }
 
