@@ -19,6 +19,7 @@ package constants
 
 // Controller related constants
 const (
+	APIController                string = "APIController"
 	RatelimitController          string = "RatelimitController"
 	ApplicationController        string = "ApplicationController"
 	SubscriptionController       string = "SubscriptionController"

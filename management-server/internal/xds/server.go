@@ -27,8 +27,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/wso2/apk/management-server/internal/database"
-
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/cache/types"
 	sub_service "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/subscription"
@@ -107,13 +105,13 @@ func AddSingleApplication(label string, application internal_types.ApplicationEv
 	// 	}
 	// }
 	convertedApplication := &internal_application.Application{
-		Uuid:         application.UUID,
-		Name:         application.Name,
+		Uuid: application.UUID,
+		Name: application.Name,
 		// Policy:       application.Policy,
-		Owner:        application.Owner,
+		Owner: application.Owner,
 		// Organization: application.Organization,
 		// Keys:         appKeys,
-		Attributes:   application.Attributes,
+		Attributes: application.Attributes,
 	}
 	logger.LoggerXds.Debugf("Converted Application: %v", convertedApplication)
 
@@ -178,58 +176,6 @@ func RemoveApplication(label, appUUID string) {
 		}
 	}
 	logger.LoggerXds.Errorf("Application : %s is not found within snapshot for label %s", appUUID, label)
-}
-
-// AddMultipleApplications adds the applications specified in applicationEventArray to the xds cache
-// This will ideally be used to populate all applications in the startup of the mgt server.
-func AddMultipleApplications(applicationEventArray []*internal_types.ApplicationEvent) {
-	snapshotMap := make(map[string]*wso2_cache.Snapshot)
-	version := rand.Intn(maxRandomInt)
-
-	for _, event := range applicationEventArray {
-		label := event.Label
-		appUUID := event.UUID
-
-		application, err := database.GetApplicationByUUID(appUUID)
-		if err != nil {
-			logger.LoggerDatabase.ErrorC(logging.ErrorDetails{
-				Message: fmt.Sprintf("Error retrieving application for uuid : %s from database error: %v, "+
-					"hence skipping add to xdx cache", appUUID, err),
-				Severity:  logging.MINOR,
-				ErrorCode: 1101,
-			})
-			continue
-		}
-
-		snapshotEntry, snapshotFound := snapshotMap[label]
-		var newSnapshot wso2_cache.Snapshot
-
-		if !snapshotFound {
-			newSnapshot, _ = wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
-				wso2_resource.ApplicationType: {application},
-			})
-			snapshotEntry = &newSnapshot
-			snapshotMap[label] = &newSnapshot
-		} else {
-			// error occurs if no snapshot is under the provided label
-			resourceMap := snapshotEntry.GetResourcesAndTTL(wso2_resource.ApplicationType)
-			resourceMap[appUUID] = types.ResourceWithTTL{
-				Resource: application,
-			}
-			appResources := convertResourceMapToArray(resourceMap)
-			newSnapshot, _ = wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
-				wso2_resource.ApplicationType: appResources,
-			})
-			snapshotMap[label] = &newSnapshot
-		}
-	}
-	applicationCacheMutex.Lock()
-	defer applicationCacheMutex.Unlock()
-	for label, snapshotEntry := range snapshotMap {
-		applicationCache.SetSnapshot(context.Background(), label, *snapshotEntry)
-		introducedLabels[label] = true
-		logger.LoggerXds.Infof("Application Snaphsot is updated for label %s with the version %d.", label, version)
-	}
 }
 
 func convertResourceMapToArray(resourceMap map[string]types.ResourceWithTTL) []types.Resource {
@@ -326,12 +272,12 @@ func InitAPKMgtServer() {
 // AddSingleSubscription will update the Subscription specified by the UUID to the xds cache
 func AddSingleSubscription(label string, subscription internal_types.SubscriptionEvent) {
 	convertedSubscription := &internal_application.Subscription{
-		Uuid:           subscription.UUID,
+		Uuid: subscription.UUID,
 		// ApplicationRef: subscription.ApplicationRef,
 		// ApiRef:         subscription.APIRef,
-		SubStatus:      subscription.SubStatus,
+		SubStatus: subscription.SubStatus,
 		// PolicyId:       subscription.PolicyID,
-		Organization:   subscription.Organization,
+		Organization: subscription.Organization,
 		// Subscriber:     subscription.Subscriber,
 		// Timetamp:      subscription.TimeStamp,
 	}

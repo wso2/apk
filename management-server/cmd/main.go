@@ -21,7 +21,6 @@ import (
 	"os"
 	"os/signal"
 
-	"github.com/wso2/apk/management-server/internal/database"
 	server "github.com/wso2/apk/management-server/internal/grpc-server"
 	"github.com/wso2/apk/management-server/internal/logger"
 	"github.com/wso2/apk/management-server/internal/notification"
@@ -33,9 +32,7 @@ func main() {
 	logger.LoggerServer.Info("Starting Management server ...")
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt)
-	// connect to the postgres database
-	database.ConnectToDB()
-	defer database.CloseDBConn()
+
 	go xds.InitAPKMgtServer()
 
 	go synchronizer.ProcessApplicationEvents()

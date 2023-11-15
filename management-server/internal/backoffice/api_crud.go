@@ -53,13 +53,10 @@ func getBackOfficeURL() string {
 
 func composeRequestBody(api *apiProtos.API) requestData {
 	request := new(requestData)
-	request.APIProperties.ID = api.Uuid
 	request.APIProperties.Name = api.Name
 	request.APIProperties.Context = api.BasePath
 	request.APIProperties.Version = api.Version
-	request.APIProperties.Provider = api.Provider
-	request.APIProperties.OrganizationID = api.OrganizationId
-	json.Unmarshal([]byte(api.Definition), &request.Definition)
+	//json.Unmarshal([]byte(api.Definition), &request.Definition)
 	return *request
 }
 
@@ -78,7 +75,7 @@ func CreateAPI(api *apiProtos.API) error {
 func UpdateAPI(api *apiProtos.API) error {
 	putBody, _ := json.Marshal(composeRequestBody(api))
 	requestBody := bytes.NewBuffer(putBody)
-	putRequest, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/%s", getBackOfficeURL(), api.Uuid), requestBody)
+	putRequest, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s", getBackOfficeURL()), requestBody)
 	if err != nil {
 		return err
 	}
@@ -100,7 +97,7 @@ func UpdateAPI(api *apiProtos.API) error {
 
 // DeleteAPI deletes an API by invoking backoffice service
 func DeleteAPI(api *apiProtos.API) error {
-	deleteRequest, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/%s", getBackOfficeURL(), api.Uuid), nil)
+	deleteRequest, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s", getBackOfficeURL()), nil)
 	_, err = backOfficeClient.Do(deleteRequest)
 	if err != nil {
 		return err

@@ -25,25 +25,6 @@ var defaultConfig = &Config{
 		GRPCPort:         8765,
 		NotificationPort: 8766,
 	},
-	Database: database{
-		Name:     "WSO2AM_DB",
-		Username: "wso2carbon",
-		Password: "wso2carbon",
-		Host:     "wso2apk-db-service",
-		Port:     5432,
-		PoolOptions: dbPool{
-			PoolMaxConns:              4,
-			PoolMinConns:              0,
-			PoolMaxConnLifetime:       "1h",
-			PoolMaxConnIdleTime:       "1h",
-			PoolHealthCheckPeriod:     "1m",
-			PoolMaxConnLifetimeJitter: "1s",
-		},
-		DbCache: dbCache{
-			CleanupInterval: "1h",
-			TTL:             "1h",
-		},
-	},
 	BackOffice: backOffice{
 		Host:            "localhost",
 		Port:            9443,

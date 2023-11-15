@@ -4,7 +4,7 @@
 # More info: https://book.kubebuilder.io/reference/project-config.html
 domain: wso2.com
 layout:
-- go.kubebuilder.io/v4
+- go.kubebuilder.io/v3
 multigroup: true
 projectName: operator
 repo: github.com/wso2/apk/common-controller/internal/operator
@@ -21,6 +21,7 @@ resources:
 - api:
     crdVersion: v1
     namespaced: true
+  controller: true
   domain: wso2.com
   group: dp
   kind: API
