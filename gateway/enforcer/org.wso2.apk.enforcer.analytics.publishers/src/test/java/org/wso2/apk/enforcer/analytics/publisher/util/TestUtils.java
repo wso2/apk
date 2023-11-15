@@ -47,6 +47,7 @@ public class TestUtils {
                 .addAttribute(Constants.API_CONTEXT, "/v1/")
                 .addAttribute(Constants.API_RESOURCE_TEMPLATE, "/resource/{value}")
                 .addAttribute(Constants.API_CREATOR_TENANT_DOMAIN, "carbon.super")
+                .addAttribute(Constants.ENVIRONMENT_ID, "Development")
                 .addAttribute(Constants.DESTINATION, "localhost:8080")
                 .addAttribute(Constants.APPLICATION_ID, "3445-6778")
                 .addAttribute(Constants.APPLICATION_NAME, "default")

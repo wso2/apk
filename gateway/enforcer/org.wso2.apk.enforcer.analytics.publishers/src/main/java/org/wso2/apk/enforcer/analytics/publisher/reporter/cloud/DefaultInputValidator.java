@@ -85,6 +85,7 @@ public class DefaultInputValidator {
             new AbstractMap.SimpleImmutableEntry<>(APPLICATION_NAME, String.class),
             new AbstractMap.SimpleImmutableEntry<>(APPLICATION_OWNER, String.class),
             new AbstractMap.SimpleImmutableEntry<>(REGION_ID, String.class),
+            new AbstractMap.SimpleImmutableEntry<>(ENVIRONMENT_ID, String.class),
             new AbstractMap.SimpleImmutableEntry<>(GATEWAY_TYPE, String.class),
             new AbstractMap.SimpleImmutableEntry<>(USER_AGENT_HEADER, String.class),
             new AbstractMap.SimpleImmutableEntry<>(PROXY_RESPONSE_CODE, Integer.class),
@@ -114,6 +115,7 @@ public class DefaultInputValidator {
             new AbstractMap.SimpleImmutableEntry<>(APPLICATION_NAME, String.class),
             new AbstractMap.SimpleImmutableEntry<>(APPLICATION_OWNER, String.class),
             new AbstractMap.SimpleImmutableEntry<>(REGION_ID, String.class),
+            new AbstractMap.SimpleImmutableEntry<>(ENVIRONMENT_ID, String.class),
             new AbstractMap.SimpleImmutableEntry<>(GATEWAY_TYPE, String.class),
             new AbstractMap.SimpleImmutableEntry<>(PROXY_RESPONSE_CODE, Integer.class),
             new AbstractMap.SimpleImmutableEntry<>(TARGET_RESPONSE_CODE, Integer.class))

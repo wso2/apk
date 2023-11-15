@@ -190,7 +190,7 @@ public class ChoreoAnalyticsProvider implements AnalyticsDataProvider {
         Map<String, Value> fieldsMap = getFieldsMapFromLogEntry();
         MetaInfo metaInfo = new MetaInfo();
         metaInfo.setCorrelationId(getValueAsString(fieldsMap, MetadataConstants.CORRELATION_ID_KEY));
-        metaInfo.setGatewayType(AnalyticsConstants.GATEWAY_LABEL);
+        metaInfo.setGatewayType(AnalyticsUtils.getGatewayType());
         metaInfo.setRegionId(getValueAsString(fieldsMap, MetadataConstants.REGION_KEY));
         return metaInfo;
     }

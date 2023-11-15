@@ -24,10 +24,18 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.wso2.apk.enforcer.commons.model.AuthenticationContext;
 import org.wso2.apk.enforcer.commons.model.RequestContext;
+import org.wso2.apk.enforcer.config.ConfigHolder;
 import org.wso2.apk.enforcer.constants.AnalyticsConstants;
 import org.wso2.apk.enforcer.constants.MetadataConstants;
 import org.wso2.apk.enforcer.models.API;
 import org.wso2.apk.enforcer.subscription.SubscriptionDataHolder;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Map;
+
+import static org.wso2.apk.enforcer.analytics.AnalyticsConstants.GATEWAY_TYPE_CONFIG_KEY;
+import static org.wso2.apk.enforcer.analytics.AnalyticsConstants.DEFAULT_GATEWAY_TYPE;
 
 /**
  * Common Utility functions
@@ -43,6 +51,23 @@ public class AnalyticsUtils {
     }
     public static String setDefaultIfNull(String value) {
         return value == null ? AnalyticsConstants.DEFAULT_FOR_UNASSIGNED : value;
+    }
+
+    public static String getAPIProvider(String uuid) {
+        API api = SubscriptionDataHolder.getInstance().getSubscriptionDataStore().getApiByContextAndVersion(uuid);
+        if (api == null) {
+            return AnalyticsConstants.DEFAULT_FOR_UNASSIGNED;
+        }
+        return setDefaultIfNull(api.getApiProvider());
+    }
+
+    public static String getGatewayType() {
+        Map<String, Object> properties = ConfigHolder.getInstance().getConfig().getAnalyticsConfig().getProperties();
+        String gatewayType = DEFAULT_GATEWAY_TYPE;
+        if (properties != null) {
+            gatewayType = (String) properties.getOrDefault(GATEWAY_TYPE_CONFIG_KEY, DEFAULT_GATEWAY_TYPE);
+        }
+        return gatewayType;
     }
 
     /**
