@@ -19,7 +19,6 @@ package cp
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/wso2/apk/adapter/pkg/logging"
 	"github.com/wso2/apk/common-controller/internal/cache"
@@ -37,7 +36,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
-	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
@@ -86,19 +84,14 @@ func NewApplicationController(mgr manager.Manager, subscriptionStore *cache.Subs
 func (applicationReconciler *ApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = log.FromContext(ctx)
 	applicationKey := req.NamespacedName
-	var applicationList = new(cpv1alpha2.ApplicationList)
 
-	loggers.LoggerAPKOperator.Infof("Reconciling application: %v", applicationKey.String())
-	if err := applicationReconciler.client.List(ctx, applicationList); err != nil {
-		return reconcile.Result{}, fmt.Errorf("failed to get applications %s/%s",
-			applicationKey.Namespace, applicationKey.Name)
-	}
+	loggers.LoggerAPKOperator.Debugf("Reconciling application: %v", applicationKey.String())
 	var application cpv1alpha2.Application
 	if err := applicationReconciler.client.Get(ctx, req.NamespacedName, &application); err != nil {
 		if k8error.IsNotFound(err) {
 			applicationSpec, found := applicationReconciler.ods.GetApplicationFromStore(applicationKey)
-			loggers.LoggerAPKOperator.Infof("Application cr not available in k8s")
-			loggers.LoggerAPKOperator.Infof("cached Application spec: %v,%v", applicationSpec, found)
+			loggers.LoggerAPKOperator.Debugf("Application cr not available in k8s")
+			loggers.LoggerAPKOperator.Debugf("cached Application spec: %v,%v", applicationSpec, found)
 			if found {
 				utils.SendAppDeletionEvent(applicationKey.Name, applicationSpec)
 				applicationReconciler.ods.DeleteApplicationFromStore(applicationKey)

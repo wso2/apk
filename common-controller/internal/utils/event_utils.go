@@ -46,7 +46,7 @@ func SendAppUpdateEvent(applicationUUID string, oldApplicationSpec cpv1alpha2.Ap
 			Attributes:   newApplicationSpec.Attributes,
 		},
 	}
-	loggers.LoggerAPKOperator.Infof("Sending event to all clients: %v", &event)
+	loggers.LoggerAPKOperator.Debugf("Sending event to all clients: %v", &event)
 	sendEvent(&event)
 	sendDeleteApplicationKeyMappingEvent(applicationUUID, oldApplicationSpec)
 	sendApplicationKeyMappingEvent(applicationUUID, newApplicationSpec)
@@ -192,13 +192,13 @@ func sendApplicationKeyMappingEvent(applicationUUID string, applicationSpec cpv1
 	}
 }
 func sendEvent(event *subscription.Event) {
-	loggers.LoggerAPKOperator.Infof("Sending event to all clients: %v", event)
+	loggers.LoggerAPKOperator.Debugf("Sending event to all clients: %v", event)
 	for clientID, stream := range GetAllClientConnections() {
 		err := stream.Send(event)
 		if err != nil {
 			loggers.LoggerAPKOperator.Errorf("Error sending event to client %s: %v", clientID, err)
 		} else {
-			loggers.LoggerAPKOperator.Infof("Event sent to client %s", clientID)
+			loggers.LoggerAPKOperator.Debugf("Event sent to client %s", clientID)
 		}
 	}
 }
@@ -213,5 +213,6 @@ func SendInitialEvent(srv apkmgt.EventStreamService_StreamEventsServer) {
 		Type:      constants.AllEvnts,
 		TimeStamp: milliseconds,
 	}
+	loggers.LoggerAPKOperator.Debugf("Sending initial event to client: %v", &event)
 	srv.Send(&event)
 }
