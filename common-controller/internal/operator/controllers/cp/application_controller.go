@@ -102,70 +102,64 @@ func (applicationReconciler *ApplicationReconciler) Reconcile(ctx context.Contex
 			if found {
 				utils.SendAppDeletionEvent(applicationKey.Name, applicationSpec)
 				applicationReconciler.ods.DeleteApplicationFromStore(applicationKey)
+				server.DeleteApplication(applicationKey.Name)
 			} else {
-				loggers.LoggerAPKOperator.Infof("Application %s/%s does not exist in k8s", applicationKey.Namespace, applicationKey.Name)
+				loggers.LoggerAPKOperator.Debugf("Application %s/%s does not exist in k8s", applicationKey.Namespace, applicationKey.Name)
 			}
 		}
 	} else {
-		loggers.LoggerAPKOperator.Infof("Application cr available in k8s")
+		loggers.LoggerAPKOperator.Debugf("Application cr available in k8s")
 		applicationSpec, found := applicationReconciler.ods.GetApplicationFromStore(applicationKey)
 		if found {
 			// update
-			loggers.LoggerAPKOperator.Infof("Application in ods")
+			loggers.LoggerAPKOperator.Debugf("Application in ods")
 			utils.SendAppUpdateEvent(applicationKey.Name, applicationSpec, application.Spec)
-
 		} else {
-			loggers.LoggerAPKOperator.Infof("Application in ods consider as update")
+			loggers.LoggerAPKOperator.Debugf("Application in ods consider as update")
 			utils.SendAddApplicationEvent(application)
 		}
 		applicationReconciler.ods.AddorUpdateApplicationToStore(applicationKey, application.Spec)
+		applicationReconciler.sendAppUpdates(application, found)
 	}
-	sendAppUpdates(applicationList)
 	return ctrl.Result{}, nil
 }
 
-func sendAppUpdates(applicationList *cpv1alpha2.ApplicationList) {
-	appList := marshalApplicationList(applicationList.Items)
-	server.AddApplication(appList)
-	appKeyMappingList := marshalApplicationKeyMapping(applicationList.Items)
-	server.AddApplicationKeyMapping(appKeyMappingList)
-}
-
-func marshalApplicationList(applicationList []cpv1alpha2.Application) server.ApplicationList {
-	applications := []server.Application{}
-	for _, appInternal := range applicationList {
-		app := server.Application{
-			UUID:           appInternal.Name,
-			Name:           appInternal.Spec.Name,
-			Owner:          appInternal.Spec.Owner,
-			OrganizationID: appInternal.Spec.Organization,
-			Attributes:     appInternal.Spec.Attributes,
-		}
-		applications = append(applications, app)
+func (applicationReconciler *ApplicationReconciler) sendAppUpdates(application cpv1alpha2.Application, update bool) {
+	resolvedApplication := marshalApplication(application)
+	if update {
+		server.DeleteApplication(application.Name)
 	}
-	return server.ApplicationList{
-		List: applications,
+	server.AddApplication(resolvedApplication)
+	appKeyMappingList := marshalApplicationKeyMapping(application)
+	for _, applicationKeyMapping := range appKeyMappingList {
+		server.AddApplicationKeyMapping(applicationKeyMapping)
 	}
 }
 
-func marshalApplicationKeyMapping(applicationList []cpv1alpha2.Application) server.ApplicationKeyMappingList {
+func marshalApplication(application cpv1alpha2.Application) server.Application {
+	return server.Application{
+		UUID:           application.Name,
+		Name:           application.Spec.Name,
+		Owner:          application.Spec.Owner,
+		OrganizationID: application.Spec.Organization,
+		Attributes:     application.Spec.Attributes,
+	}
+}
+
+func marshalApplicationKeyMapping(appInternal cpv1alpha2.Application) []server.ApplicationKeyMapping {
 	applicationKeyMappings := []server.ApplicationKeyMapping{}
-	for _, appInternal := range applicationList {
-		var oauth2SecurityScheme = appInternal.Spec.SecuritySchemes.OAuth2
-		if oauth2SecurityScheme != nil {
-			for _, env := range oauth2SecurityScheme.Environments {
-				appIdentifier := server.ApplicationKeyMapping{
-					ApplicationUUID:       appInternal.Name,
-					SecurityScheme:        constants.OAuth2,
-					ApplicationIdentifier: env.AppID,
-					KeyType:               env.KeyType,
-					EnvID:                 env.EnvID,
-				}
-				applicationKeyMappings = append(applicationKeyMappings, appIdentifier)
+	var oauth2SecurityScheme = appInternal.Spec.SecuritySchemes.OAuth2
+	if oauth2SecurityScheme != nil {
+		for _, env := range oauth2SecurityScheme.Environments {
+			appIdentifier := server.ApplicationKeyMapping{
+				ApplicationUUID:       appInternal.Name,
+				SecurityScheme:        constants.OAuth2,
+				ApplicationIdentifier: env.AppID,
+				KeyType:               env.KeyType,
+				EnvID:                 env.EnvID,
 			}
+			applicationKeyMappings = append(applicationKeyMappings, appIdentifier)
 		}
 	}
-	return server.ApplicationKeyMappingList{
-		List: applicationKeyMappings,
-	}
+	return applicationKeyMappings
 }

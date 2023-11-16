@@ -19,7 +19,6 @@ package cp
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/wso2/apk/adapter/pkg/logging"
 	"github.com/wso2/apk/common-controller/internal/cache"
@@ -34,7 +33,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
-	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	cpv1alpha2 "github.com/wso2/apk/common-controller/internal/operator/apis/cp/v1alpha2"
@@ -87,14 +85,8 @@ func NewApplicationMappingController(mgr manager.Manager, subscriptionStore *cac
 func (r *ApplicationMappingReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = log.FromContext(ctx)
 	applicationMappingKey := req.NamespacedName
-	var applicationMappingList = new(cpv1alpha2.ApplicationMappingList)
 
 	loggers.LoggerAPKOperator.Debugf("Reconciling application mapping: %v", applicationMappingKey.String())
-	if err := r.client.List(ctx, applicationMappingList); err != nil {
-		return reconcile.Result{}, fmt.Errorf("failed to get application mappings %s/%s",
-			applicationMappingKey.Namespace, applicationMappingKey.Name)
-	}
-	sendUpdates(applicationMappingList)
 	var applicationMapping cpv1alpha2.ApplicationMapping
 	if err := r.client.Get(ctx, req.NamespacedName, &applicationMapping); err != nil {
 		if k8error.IsNotFound(err) {
@@ -102,33 +94,28 @@ func (r *ApplicationMappingReconciler) Reconcile(ctx context.Context, req ctrl.R
 			if found {
 				utils.SendDeleteApplicationMappingEvent(applicationMappingKey.Name, applicationMapping)
 				r.ods.DeleteApplicationMappingFromStore(applicationMappingKey)
+				server.DeleteApplicationMapping(applicationMappingKey.Name)
 			} else {
 				loggers.LoggerAPKOperator.Debugf("Application mapping %s/%s not found. Ignoring since object must be deleted", applicationMappingKey.Namespace, applicationMappingKey.Name)
 			}
 		}
 	} else {
+		sendUpdates(&applicationMapping)
 		utils.SendCreateApplicationMappingEvent(applicationMapping)
 		r.ods.AddorUpdateApplicationMappingToStore(applicationMappingKey, applicationMapping.Spec)
 	}
 	return ctrl.Result{}, nil
 }
 
-func sendUpdates(applicationMappingList *cpv1alpha2.ApplicationMappingList) {
-	appMappingList := marshalApplicationMappingList(applicationMappingList.Items)
+func sendUpdates(applicationMapping *cpv1alpha2.ApplicationMapping) {
+	appMappingList := marshalApplicationMapping(applicationMapping)
 	server.AddApplicationMapping(appMappingList)
 }
 
-func marshalApplicationMappingList(applicationMappingList []cpv1alpha2.ApplicationMapping) server.ApplicationMappingList {
-	applicationMappings := []server.ApplicationMapping{}
-	for _, appMappingInternal := range applicationMappingList {
-		appMapping := server.ApplicationMapping{
-			UUID:            appMappingInternal.Name,
-			ApplicationRef:  appMappingInternal.Spec.ApplicationRef,
-			SubscriptionRef: appMappingInternal.Spec.SubscriptionRef,
-		}
-		applicationMappings = append(applicationMappings, appMapping)
-	}
-	return server.ApplicationMappingList{
-		List: applicationMappings,
+func marshalApplicationMapping(applicationMapping *cpv1alpha2.ApplicationMapping) server.ApplicationMapping {
+	return server.ApplicationMapping{
+		UUID:            applicationMapping.Name,
+		ApplicationRef:  applicationMapping.Spec.ApplicationRef,
+		SubscriptionRef: applicationMapping.Spec.SubscriptionRef,
 	}
 }

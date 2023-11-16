@@ -16,7 +16,7 @@ func SendAppDeletionEvent(applicationUUID string, applicationSpec cpv1alpha2.App
 	currentTime := time.Now()
 	milliseconds := currentTime.UnixNano() / int64(time.Millisecond)
 	event := subscription.Event{
-		Uuid:      applicationUUID,
+		Uuid:      uuid.New().String(),
 		Type:      constants.ApplicationDeleted,
 		TimeStamp: milliseconds,
 		Application: &subscription.Application{
@@ -35,7 +35,7 @@ func SendAppUpdateEvent(applicationUUID string, oldApplicationSpec cpv1alpha2.Ap
 	currentTime := time.Now()
 	milliseconds := currentTime.UnixNano() / int64(time.Millisecond)
 	event := subscription.Event{
-		Uuid:      applicationUUID,
+		Uuid:      uuid.New().String(),
 		Type:      constants.ApplicationUpdated,
 		TimeStamp: milliseconds,
 		Application: &subscription.Application{
@@ -57,7 +57,7 @@ func SendAddApplicationEvent(application cpv1alpha2.Application) {
 	currentTime := time.Now()
 	milliseconds := currentTime.UnixNano() / int64(time.Millisecond)
 	event := subscription.Event{
-		Uuid:      application.ObjectMeta.Name,
+		Uuid:      uuid.New().String(),
 		Type:      constants.ApplicationCreated,
 		TimeStamp: milliseconds,
 		Application: &subscription.Application{
@@ -77,7 +77,7 @@ func SendAddSubscriptionEvent(sub cpv1alpha2.Subscription) {
 	currentTime := time.Now()
 	milliseconds := currentTime.UnixNano() / int64(time.Millisecond)
 	event := subscription.Event{
-		Uuid:      sub.ObjectMeta.Name,
+		Uuid:      uuid.New().String(),
 		Type:      constants.SubscriptionCreated,
 		TimeStamp: milliseconds,
 		Subscription: &subscription.Subscription{
@@ -102,7 +102,7 @@ func SendDeleteSubscriptionEvent(subscriptionUUID string, subscriptionSpec cpv1a
 		Type:      constants.SubscriptionDeleted,
 		TimeStamp: milliseconds,
 		Subscription: &subscription.Subscription{
-			Uuid:         subscriptionUUID,
+			Uuid:         uuid.New().String(),
 			SubStatus:    subscriptionSpec.SubscriptionStatus,
 			Organization: subscriptionSpec.Organization,
 			SubscribedApi: &subscription.SubscribedAPI{
@@ -119,7 +119,7 @@ func SendCreateApplicationMappingEvent(applicationMapping cpv1alpha2.Application
 	currentTime := time.Now()
 	milliseconds := currentTime.UnixNano() / int64(time.Millisecond)
 	event := subscription.Event{
-		Uuid:      applicationMapping.ObjectMeta.Name,
+		Uuid:      uuid.New().String(),
 		Type:      constants.ApplicationMappingCreated,
 		TimeStamp: milliseconds,
 		ApplicationMapping: &subscription.ApplicationMapping{
@@ -136,7 +136,7 @@ func SendDeleteApplicationMappingEvent(applicationMappingUUID string, applicatio
 	currentTime := time.Now()
 	milliseconds := currentTime.UnixNano() / int64(time.Millisecond)
 	event := subscription.Event{
-		Uuid:      applicationMappingUUID,
+		Uuid:      uuid.New().String(),
 		Type:      constants.ApplicationMappingDeleted,
 		TimeStamp: milliseconds,
 		ApplicationMapping: &subscription.ApplicationMapping{
@@ -154,7 +154,7 @@ func sendDeleteApplicationKeyMappingEvent(applicationUUID string, applicationKey
 	if oauth2SecurityScheme != nil {
 		for _, env := range oauth2SecurityScheme.Environments {
 			event := subscription.Event{
-				Uuid:      applicationUUID,
+				Uuid:      uuid.New().String(),
 				Type:      constants.ApplicationKeyMappingDeleted,
 				TimeStamp: milliseconds,
 				ApplicationKeyMapping: &subscription.ApplicationKeyMapping{
@@ -176,7 +176,7 @@ func sendApplicationKeyMappingEvent(applicationUUID string, applicationSpec cpv1
 	if oauth2SecurityScheme != nil {
 		for _, env := range oauth2SecurityScheme.Environments {
 			event := subscription.Event{
-				Uuid:      applicationUUID,
+				Uuid:      uuid.New().String(),
 				Type:      constants.ApplicationKeyMappingCreated,
 				TimeStamp: milliseconds,
 				ApplicationKeyMapping: &subscription.ApplicationKeyMapping{
