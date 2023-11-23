@@ -35,6 +35,7 @@ on:
       - closed
       - opened
       - synchronize
+      - labeled
     paths:
       - '**/idp/idp-ui/**'
     branches:
@@ -47,6 +48,7 @@ concurrency:
 
 jobs:
   build:
+    if: contains(github.event.pull_request.labels.*.name, 'run-workflows')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout apk-repo.

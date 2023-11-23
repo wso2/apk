@@ -34,6 +34,7 @@ on:
       - closed
       - opened
       - synchronize
+      - labeled
     paths:
       - '**/idp/idp-domain-service/**'
     branches:
@@ -45,6 +46,7 @@ env:
   GH_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}
 jobs:
   build:
+    if: contains(github.event.pull_request.labels.*.name, 'run-workflows')
     runs-on: ubuntu-latest
     steps:
       - name: Set up JDK 17

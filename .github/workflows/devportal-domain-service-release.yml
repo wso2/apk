@@ -34,6 +34,7 @@ on:
       - closed
       - opened
       - synchronize
+      - labeled
     paths:
       - '**/devportal/devportal-domain-service/**'
       - '**/common-bal-libs/**'
@@ -46,6 +47,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   build:
+    if: contains(github.event.pull_request.labels.*.name, 'run-workflows')
     runs-on: ubuntu-latest
     steps:
       - name: Set up JDK 17

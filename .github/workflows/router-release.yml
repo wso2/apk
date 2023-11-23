@@ -34,6 +34,7 @@ on:
       - closed
       - opened
       - synchronize
+      - labeled
     paths:
       - '**/gateway/router**'
     branches:
@@ -46,6 +47,7 @@ env:
 
 jobs:
   build:
+    if: contains(github.event.pull_request.labels.*.name, 'run-workflows')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout apk-repo
