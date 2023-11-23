@@ -43,6 +43,7 @@ type APIState struct {
 	APIDefinitionFile         []byte
 	OldOrganizationID         string
 	SubscriptionValidation    bool
+	MutualSSL                 *v1alpha1.MutualSSL
 }
 
 // HTTPRouteState holds the state of the deployed httpRoutes. This state is compared with

@@ -215,7 +215,7 @@ func GetEnforcerAPI(adapterInternalAPI model.AdapterInternalAPI, vhost string) *
 		EndpointSecurity:       generateRPCEndpointSecurity(adapterInternalAPI.EndpointSecurity),
 		// IsMockedApi:         isMockedAPI,
 		ClientCertificates:  clientCertificates,
-		MutualSSL:           adapterInternalAPI.GetXWSO2MutualSSL(),
+		MutualSSL:           adapterInternalAPI.GetMutualSSL(),
 		ApplicationSecurity: adapterInternalAPI.GetXWSO2ApplicationSecurity(),
 		// GraphQLSchema:         adapterInternalAPI.GraphQLSchema,
 		// GraphqlComplexityInfo: adapterInternalAPI.GraphQLComplexities.Data.List,

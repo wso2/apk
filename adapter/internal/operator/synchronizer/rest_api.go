@@ -58,6 +58,10 @@ func GenerateAdapterInternalAPI(apiState APIState, httpRoute *HTTPRouteState, en
 	adapterInternalAPI.SetAPIDefinitionFile(apiState.APIDefinitionFile)
 	adapterInternalAPI.SetAPIDefinitionEndpoint(apiState.APIDefinition.Spec.DefinitionPath)
 	adapterInternalAPI.SetSubscriptionValidation(apiState.SubscriptionValidation)
+	if apiState.MutualSSL != nil && !adapterInternalAPI.IsSystemAPI {
+		adapterInternalAPI.SetMutualSSL(apiState.MutualSSL.Required)
+		adapterInternalAPI.SetClientCerts(apiState.APIDefinition.Name, apiState.MutualSSL.ClientCertificates)
+	}
 	adapterInternalAPI.EnvType = envType
 
 	environment := apiState.APIDefinition.Spec.Environment

@@ -455,6 +455,31 @@ func getResolvedBackendSecurity(ctx context.Context, client k8client.Client,
 	return resolvedSecurity
 }
 
+// GetResolvedMutualSSL resolves backend security configurations.
+func GetResolvedMutualSSL(ctx context.Context, client k8client.Client,
+	authentication dpv1alpha1.Authentication) dpv1alpha1.MutualSSL {
+	resolvedMutualSSL := dpv1alpha1.MutualSSL{}
+	var err error
+	var certificate string
+	if authentication.Spec.Default != nil && authentication.Spec.Default.MutualSSL != nil {
+		resolvedMutualSSL.Required = authentication.Spec.Default.MutualSSL.Required
+		certificate, err = ResolveCertificate(ctx, client,
+			authentication.Namespace, authentication.Spec.Default.MutualSSL.CertificateInline, authentication.Spec.Default.MutualSSL.ConfigMapRef, authentication.Spec.Default.MutualSSL.SecretRef)
+	}
+	if authentication.Spec.Override != nil && authentication.Spec.Override.MutualSSL != nil {
+		resolvedMutualSSL.Required = authentication.Spec.Override.MutualSSL.Required
+		certificate, err = ResolveCertificate(ctx, client,
+			authentication.Namespace, authentication.Spec.Override.MutualSSL.CertificateInline, authentication.Spec.Override.MutualSSL.ConfigMapRef, authentication.Spec.Override.MutualSSL.SecretRef)
+	}
+
+	if err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL, "Error in resolving client certificate %v in authentication", certificate))
+	}
+	resolvedMutualSSL.ClientCertificates = append(resolvedMutualSSL.ClientCertificates, certificate)
+
+	return resolvedMutualSSL
+}
+
 // ResolveCertificate reads the certificate from TLSConfig, first checks the certificateInline field,
 // if no value then load the certificate from secretRef using util function called getSecretValue
 func ResolveCertificate(ctx context.Context, client k8client.Client, namespace string, certificateInline *string,
