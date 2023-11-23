@@ -105,6 +105,55 @@ spec:
                   disabled:
                     description: Disabled is to disable all authentications
                     type: boolean
+                  mutualSSL:
+                    description: MutualSSL is to specify the features and certificates
+                      for mutual SSL
+                    properties:
+                      certificateInline:
+                        description: CertificateInline is the Inline Certificate entry
+                        type: string
+                      configMapRef:
+                        description: ConfigMapRef denotes the reference to the ConfigMap
+                          that contains the Certificate
+                        properties:
+                          key:
+                            description: Key of the secret or configmap
+                            minLength: 1
+                            type: string
+                          name:
+                            description: Name of the secret or configmap
+                            minLength: 1
+                            type: string
+                        required:
+                        - key
+                        - name
+                        type: object
+                      required:
+                        description: Required indicates whether mutualSSL is mandatory
+                          or optional
+                        enum:
+                        - mandatory
+                        - optional
+                        type: string
+                      secretRef:
+                        description: SecretRef denotes the reference to the Secret
+                          that contains the Certificate
+                        properties:
+                          key:
+                            description: Key of the secret or configmap
+                            minLength: 1
+                            type: string
+                          name:
+                            description: Name of the secret or configmap
+                            minLength: 1
+                            type: string
+                        required:
+                        - key
+                        - name
+                        type: object
+                    required:
+                    - required
+                    type: object
                 type: object
               override:
                 description: AuthSpec specification of the authentication service
@@ -176,6 +225,55 @@ spec:
                   disabled:
                     description: Disabled is to disable all authentications
                     type: boolean
+                  mutualSSL:
+                    description: MutualSSL is to specify the features and certificates
+                      for mutual SSL
+                    properties:
+                      certificateInline:
+                        description: CertificateInline is the Inline Certificate entry
+                        type: string
+                      configMapRef:
+                        description: ConfigMapRef denotes the reference to the ConfigMap
+                          that contains the Certificate
+                        properties:
+                          key:
+                            description: Key of the secret or configmap
+                            minLength: 1
+                            type: string
+                          name:
+                            description: Name of the secret or configmap
+                            minLength: 1
+                            type: string
+                        required:
+                        - key
+                        - name
+                        type: object
+                      required:
+                        description: Required indicates whether mutualSSL is mandatory
+                          or optional
+                        enum:
+                        - mandatory
+                        - optional
+                        type: string
+                      secretRef:
+                        description: SecretRef denotes the reference to the Secret
+                          that contains the Certificate
+                        properties:
+                          key:
+                            description: Key of the secret or configmap
+                            minLength: 1
+                            type: string
+                          name:
+                            description: Name of the secret or configmap
+                            minLength: 1
+                            type: string
+                        required:
+                        - key
+                        - name
+                        type: object
+                    required:
+                    - required
+                    type: object
                 type: object
               targetRef:
                 description: PolicyTargetReference identifies an API object to apply
