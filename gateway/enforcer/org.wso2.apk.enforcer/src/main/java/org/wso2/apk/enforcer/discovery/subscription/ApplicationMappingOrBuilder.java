@@ -42,4 +42,16 @@ public interface ApplicationMappingOrBuilder extends
    */
   com.google.protobuf.ByteString
       getSubscriptionRefBytes();
+
+  /**
+   * <code>string organization = 4;</code>
+   * @return The organization.
+   */
+  java.lang.String getOrganization();
+  /**
+   * <code>string organization = 4;</code>
+   * @return The bytes for organization.
+   */
+  com.google.protobuf.ByteString
+      getOrganizationBytes();
 }

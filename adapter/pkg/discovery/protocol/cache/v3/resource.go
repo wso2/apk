@@ -78,8 +78,6 @@ func GetResourceName(res envoy_types.Resource) string {
 		return "Config"
 	case *subscription.JWTIssuerList:
 		return "JWTIssuer"
-	case *subscription.APIList:
-		return "APIList"
 	case *subscription.Application:
 		return fmt.Sprint(v.Uuid)
 	case *subscription.Subscription:

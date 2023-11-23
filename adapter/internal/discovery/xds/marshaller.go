@@ -18,18 +18,8 @@
 package xds
 
 import (
-	"strconv"
-
 	"github.com/wso2/apk/adapter/config"
-	logger "github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/config/enforcer"
-	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/subscription"
-	"github.com/wso2/apk/adapter/pkg/eventhub/types"
-)
-
-var (
-	// APIListMap has the following mapping label -> apiUUID -> API (Metadata)
-	APIListMap map[string]map[string]*subscription.APIs
 )
 
 // EventType is a enum to distinguish Create, Update and Delete Events
@@ -173,106 +163,4 @@ func marshalAnalyticsPublishers(config config.Config) []*enforcer.AnalyticsPubli
 			ConfigProperties: publisher.ConfigProperties}
 	}
 	return resolvedAnalyticsPublishers
-}
-
-// marshalAPIListMapToList converts the data into APIList proto type
-func marshalAPIListMapToList(apiMap map[string]*subscription.APIs) *subscription.APIList {
-	apis := []*subscription.APIs{}
-	for _, api := range apiMap {
-		apis = append(apis, api)
-	}
-
-	return &subscription.APIList{
-		List: apis,
-	}
-}
-
-// MarshalAPIMetataAndReturnList updates the internal APIListMap and returns the XDS compatible APIList.
-// apiList is the internal APIList object (For single API, this would contain a List with just one API)
-// initialAPIUUIDListMap is assigned during startup when global adapter is associated. This would be empty otherwise.
-// gatewayLabel is the environment.
-func MarshalAPIMetataAndReturnList(apiList *types.APIList, initialAPIUUIDListMap map[string]int, gatewayLabel string) *subscription.APIList {
-
-	if APIListMap == nil {
-		APIListMap = make(map[string]map[string]*subscription.APIs)
-	}
-	// var resourceMapForLabel map[string]*subscription.APIs
-	if _, ok := APIListMap[gatewayLabel]; !ok {
-		APIListMap[gatewayLabel] = make(map[string]*subscription.APIs)
-	}
-	resourceMapForLabel := APIListMap[gatewayLabel]
-	for item := range apiList.List {
-		api := apiList.List[item]
-		// initialAPIUUIDListMap is not null if the adapter is running with global adapter enabled, and it is
-		// the first method invocation.
-		if initialAPIUUIDListMap != nil {
-			if _, ok := initialAPIUUIDListMap[api.UUID]; !ok {
-				continue
-			}
-		}
-		newAPI := marshalAPIMetadata(&api)
-		resourceMapForLabel[api.UUID] = newAPI
-	}
-	return marshalAPIListMapToList(resourceMapForLabel)
-}
-
-// DeleteAPIAndReturnList removes the API from internal maps and returns the marshalled API List.
-// If the apiUUID is not found in the internal map under the provided environment, then it would return a
-// nil value. Hence it is required to check if the return value is nil, prior to updating the XDS cache.
-func DeleteAPIAndReturnList(apiUUID, organizationUUID string, gatewayLabel string) *subscription.APIList {
-	if _, ok := APIListMap[gatewayLabel]; !ok {
-		logger.LoggerXds.Debugf("No API Metadata is available under gateway Environment : %s", gatewayLabel)
-		return nil
-	}
-	delete(APIListMap[gatewayLabel], apiUUID)
-	return marshalAPIListMapToList(APIListMap[gatewayLabel])
-}
-
-// MarshalAPIForLifeCycleChangeEventAndReturnList updates the internal map's API instances lifecycle state only if
-// stored API Instance's or input status event is a blocked event.
-// If no change is applied, it would return nil. Hence the XDS cache should not be updated.
-func MarshalAPIForLifeCycleChangeEventAndReturnList(apiUUID, status, gatewayLabel string) *subscription.APIList {
-	if _, ok := APIListMap[gatewayLabel]; !ok {
-		logger.LoggerXds.Debugf("No API Metadata is available under gateway Environment : %s", gatewayLabel)
-		return nil
-	}
-	if _, ok := APIListMap[gatewayLabel][apiUUID]; !ok {
-		logger.LoggerXds.Debugf("No API Metadata for API ID: %s is available under gateway Environment : %s",
-			apiUUID, gatewayLabel)
-		return nil
-	}
-	storedAPILCState := APIListMap[gatewayLabel][apiUUID].LcState
-
-	// Because the adapter only required to update the XDS if it is related to blocked state.
-	if !(storedAPILCState == blockedStatus || status == blockedStatus) {
-		return nil
-	}
-	APIListMap[gatewayLabel][apiUUID].LcState = status
-	return marshalAPIListMapToList(APIListMap[gatewayLabel])
-}
-
-func marshalAPIMetadata(api *types.API) *subscription.APIs {
-	return &subscription.APIs{
-		ApiId:            strconv.Itoa(api.APIID),
-		Name:             api.Name,
-		Provider:         api.Provider,
-		Version:          api.Version,
-		BasePath:         api.BasePath,
-		Policy:           api.Policy,
-		ApiType:          api.APIType,
-		Uuid:             api.UUID,
-		IsDefaultVersion: api.IsDefaultVersion,
-		LcState:          api.APIStatus,
-	}
-}
-
-// CheckIfAPIMetadataIsAlreadyAvailable returns true only if the API Metadata for the given API UUID
-// is already available
-func CheckIfAPIMetadataIsAlreadyAvailable(apiUUID, label string) bool {
-	if _, labelAvailable := APIListMap[label]; labelAvailable {
-		if _, apiAvailale := APIListMap[label][apiUUID]; apiAvailale {
-			return true
-		}
-	}
-	return false
 }

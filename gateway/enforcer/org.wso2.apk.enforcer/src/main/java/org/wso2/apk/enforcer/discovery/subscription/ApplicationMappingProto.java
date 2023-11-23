@@ -30,13 +30,13 @@ public final class ApplicationMappingProto {
     java.lang.String[] descriptorData = {
       "\n4wso2/discovery/subscription/applicatio" +
       "nmapping.proto\022\033wso2.discovery.subscript" +
-      "ion\"S\n\022ApplicationMapping\022\014\n\004uuid\030\001 \001(\t\022" +
+      "ion\"i\n\022ApplicationMapping\022\014\n\004uuid\030\001 \001(\t\022" +
       "\026\n\016applicationRef\030\002 \001(\t\022\027\n\017subscriptionR" +
-      "ef\030\003 \001(\tB\224\001\n,org.wso2.apk.enforcer.disco" +
-      "very.subscriptionB\027ApplicationMappingPro" +
-      "toP\001ZIgithub.com/wso2/apk/adapter/pkg/di" +
-      "scovery/api/wso2/discovery/subscriptionb" +
-      "\006proto3"
+      "ef\030\003 \001(\t\022\024\n\014organization\030\004 \001(\tB\224\001\n,org.w" +
+      "so2.apk.enforcer.discovery.subscriptionB" +
+      "\027ApplicationMappingProtoP\001ZIgithub.com/w" +
+      "so2/apk/adapter/pkg/discovery/api/wso2/d" +
+      "iscovery/subscriptionb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -47,7 +47,7 @@ public final class ApplicationMappingProto {
     internal_static_wso2_discovery_subscription_ApplicationMapping_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_wso2_discovery_subscription_ApplicationMapping_descriptor,
-        new java.lang.String[] { "Uuid", "ApplicationRef", "SubscriptionRef", });
+        new java.lang.String[] { "Uuid", "ApplicationRef", "SubscriptionRef", "Organization", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)

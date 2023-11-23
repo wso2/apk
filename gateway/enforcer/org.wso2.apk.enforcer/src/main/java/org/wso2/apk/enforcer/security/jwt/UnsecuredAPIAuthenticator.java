@@ -56,6 +56,7 @@ public class UnsecuredAPIAuthenticator implements Authenticator {
 
     @Override
     public AuthenticationContext authenticate(RequestContext requestContext) throws APISecurityException {
+
         TracingSpan unsecuredApiAuthenticatorSpan = null;
         Scope unsecuredApiAuthenticatorSpanScope = null;
         try {
@@ -67,18 +68,7 @@ public class UnsecuredAPIAuthenticator implements Authenticator {
                 Utils.setTag(unsecuredApiAuthenticatorSpan, APIConstants.LOG_TRACE_ID,
                         ThreadContext.get(APIConstants.LOG_TRACE_ID));
             }
-            String uuid = requestContext.getMatchedAPI().getUuid();
-            SubscriptionDataStore datastore = SubscriptionDataHolder.getInstance().getSubscriptionDataStore();
-            API api = datastore.getApiByContextAndVersion(uuid);
-            if (api != null && APIConstants.LifecycleStatus.BLOCKED.equals(api.getLcState())) {
-                FilterUtils.setErrorToContext(requestContext,
-                        GeneralErrorCodeConstants.API_BLOCKED_CODE,
-                        APIConstants.StatusCodes.SERVICE_UNAVAILABLE.getCode(),
-                        GeneralErrorCodeConstants.API_BLOCKED_MESSAGE,
-                        GeneralErrorCodeConstants.API_BLOCKED_DESCRIPTION);
-                throw new APISecurityException(APIConstants.StatusCodes.SERVICE_UNAVAILABLE.getCode(),
-                        GeneralErrorCodeConstants.API_BLOCKED_CODE, GeneralErrorCodeConstants.API_BLOCKED_MESSAGE);
-            }
+            String organization = requestContext.getMatchedAPI().getOrganizationId();
             return FilterUtils.generateAuthenticationContextForUnsecured(requestContext);
         } finally {
             if (Utils.tracingEnabled()) {
@@ -90,16 +80,19 @@ public class UnsecuredAPIAuthenticator implements Authenticator {
 
     @Override
     public String getChallengeString() {
+
         return "";
     }
 
     @Override
     public String getName() {
+
         return "Unsecured";
     }
 
     @Override
     public int getPriority() {
+
         return -20;
     }
 }

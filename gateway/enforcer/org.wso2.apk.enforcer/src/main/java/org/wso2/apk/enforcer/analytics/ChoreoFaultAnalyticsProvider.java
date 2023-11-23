@@ -122,7 +122,6 @@ public class ChoreoFaultAnalyticsProvider implements AnalyticsDataProvider {
         ExtendedAPI api = new ExtendedAPI();
         String apiUUID = AnalyticsUtils.getAPIId(requestContext);
         api.setApiId(apiUUID);
-        api.setApiCreator(AnalyticsUtils.getAPIProvider(apiUUID));
         api.setApiType(requestContext.getMatchedAPI().getApiType());
         api.setApiName(requestContext.getMatchedAPI().getName());
         api.setApiVersion(requestContext.getMatchedAPI().getVersion());
@@ -182,7 +181,7 @@ public class ChoreoFaultAnalyticsProvider implements AnalyticsDataProvider {
         // Latencies information are not required.
 
         Latencies latencies = new Latencies();
-        latencies.setResponseLatency(System.currentTimeMillis()-getRequestTime());
+        latencies.setResponseLatency(System.currentTimeMillis() - getRequestTime());
         return latencies;
     }
 
@@ -252,7 +251,7 @@ public class ChoreoFaultAnalyticsProvider implements AnalyticsDataProvider {
     @Override
     public Map<String, Object> getProperties() {
 
-        Map<String,Object> map = new HashMap<>();
+        Map<String, Object> map = new HashMap<>();
         // Adding Gateway URL
         String gatewayUrl = requestContext.getHeaders().get(AnalyticsConstants.GATEWAY_URL);
         if (!StringUtils.isNotEmpty(gatewayUrl)) {

@@ -150,6 +150,7 @@ func marshalApplicationKeyMapping(appInternal cpv1alpha2.Application) []server.A
 				ApplicationIdentifier: env.AppID,
 				KeyType:               env.KeyType,
 				EnvID:                 env.EnvID,
+				OrganizationID:        appInternal.Spec.Organization,
 			}
 			applicationKeyMappings = append(applicationKeyMappings, appIdentifier)
 		}

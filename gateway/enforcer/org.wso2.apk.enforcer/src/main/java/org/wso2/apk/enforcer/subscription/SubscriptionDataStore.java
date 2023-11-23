@@ -18,7 +18,6 @@
 
 package org.wso2.apk.enforcer.subscription;
 
-import org.wso2.apk.enforcer.discovery.subscription.APIs;
 import org.wso2.apk.enforcer.discovery.subscription.JWTIssuer;
 import org.wso2.apk.enforcer.models.*;
 import org.wso2.apk.enforcer.security.jwt.validator.JWTValidator;
@@ -39,14 +38,6 @@ public interface SubscriptionDataStore {
     Application getApplicationById(String appUUID);
 
     /**
-     * Get API by Context and Version.
-     *
-     * @param uuid UUID of the API
-     * @return {@link API} entry represented by Context and Version.
-     */
-    API getApiByContextAndVersion(String uuid);
-
-    /**
      * Gets Subscription by ID.
      *
      * @param appUUID Application associated with the Subscription (uuid)
@@ -59,19 +50,9 @@ public interface SubscriptionDataStore {
 
     void addApplications(List<ApplicationDto> applicationList);
 
-    void addApis(List<APIs> apisList);
 
     void addApplicationKeyMappings(
             List<ApplicationKeyMappingDTO> applicationKeyMappingList);
-
-    /**
-     * Filter the API map according to the provided parameters
-     *
-     * @param context API Context
-     * @param version API Version
-     * @return Matching list of apis.
-     */
-    API getMatchingAPI(String context, String version);
 
     /**
      * Filter the applicationMapping map based on the provided application UUID.
@@ -117,7 +98,7 @@ public interface SubscriptionDataStore {
      * @param environment environment of the Issuer
      * @return JWTValidator Implementation
      */
-    JWTValidator getJWTValidatorByIssuer(String issuer, String organization, String environment);
+    JWTValidator getJWTValidatorByIssuer(String issuer, String environment);
 
     void addApplication(org.wso2.apk.enforcer.discovery.subscription.Application application);
 
@@ -135,5 +116,6 @@ public interface SubscriptionDataStore {
 
     void removeApplication(org.wso2.apk.enforcer.discovery.subscription.Application application);
 
-    void loadStartupArtifacts();
+    public void addApplicationMappings(List<ApplicationMappingDto> applicationMappingList);
+
 }

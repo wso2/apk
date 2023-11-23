@@ -115,7 +115,7 @@ func SendDeleteSubscriptionEvent(subscriptionUUID string, subscriptionSpec cpv1a
 }
 
 // SendCreateApplicationMappingEvent sends an application mapping event to the enforcer
-func SendCreateApplicationMappingEvent(applicationMapping cpv1alpha2.ApplicationMapping) {
+func SendCreateApplicationMappingEvent(applicationMapping cpv1alpha2.ApplicationMapping, application cpv1alpha2.Application, subscriptionCr cpv1alpha2.Subscription) {
 	currentTime := time.Now()
 	milliseconds := currentTime.UnixNano() / int64(time.Millisecond)
 	event := subscription.Event{
@@ -126,6 +126,7 @@ func SendCreateApplicationMappingEvent(applicationMapping cpv1alpha2.Application
 			Uuid:            applicationMapping.ObjectMeta.Name,
 			ApplicationRef:  applicationMapping.Spec.ApplicationRef,
 			SubscriptionRef: applicationMapping.Spec.SubscriptionRef,
+			Organization:    application.Spec.Organization,
 		},
 	}
 	sendEvent(&event)
@@ -163,6 +164,7 @@ func sendDeleteApplicationKeyMappingEvent(applicationUUID string, applicationKey
 					ApplicationIdentifier: env.AppID,
 					KeyType:               env.KeyType,
 					EnvID:                 env.EnvID,
+					Organization:          applicationKeyMapping.Organization,
 				},
 			}
 			sendEvent(&event)
