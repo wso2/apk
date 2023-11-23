@@ -13,23 +13,23 @@ on:
         required: true
       WSO2_BOT_EMAIL:
         required: true
-      DOCKER_ORGANIZATION:
-        required: true
-      AZURE_ACR_NAME:
-        required: true
-      AZURE_CREDENTIALS:
-        required: true
+      # DOCKER_ORGANIZATION:
+      #   required: true
+      # AZURE_ACR_NAME:
+      #   required: true
+      # AZURE_CREDENTIALS:
+      #   required: true
 
   workflow_dispatch:
-    inputs:
-      release_version:
-        required: true
-        type: string
-        description: "Release Version"
-      next_version:
-        type: string
-        description: "Next Development Version"
-  pull_request_target:
+    # inputs:
+    #   release_version:
+    #     required: true
+    #     type: string
+    #     description: "Release Version"
+    #   next_version:
+    #     type: string
+    #     description: "Next Development Version"
+  pull_request:
     types:
       - closed
       - opened
@@ -68,7 +68,7 @@ jobs:
           git config --global user.email ${{ secrets.WSO2_BOT_EMAIL }}
       - name: checkout pull request and merge.
         shell: sh
-        if: github.event_name == 'pull_request_target' && github.event.action == 'opened' || github.event.action == 'synchronize'
+        if: github.event_name == 'pull_request' && github.event.action == 'opened' || github.event.action == 'synchronize'
         run: |
           cd apk-repo
           gh pr checkout ${{ github.event.number }} -b pr-${{ github.event.number }}
@@ -83,27 +83,27 @@ jobs:
         run: |
           cd apk-repo/adapter
           ./gradlew build
-      - name: Run Gradle Build
-        if: github.event_name == 'pull_request_target' && github.event.action == 'closed' && github.event.pull_request.merged == true
-        run: |
-          cd apk-repo/adapter
-          ./gradlew docker_push -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pdocker_username=${{ secrets.DOCKER_USERNAME }} -Pdocker_password=${{ secrets.DOCKER_PASSWORD }} -Pimage_version=latest -PmultiArch=true
-          ./gradlew docker_push -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pdocker_username=${{ secrets.DOCKER_USERNAME }} -Pdocker_password=${{ secrets.DOCKER_PASSWORD }} -Pimage_version=${{ github.sha }} -PmultiArch=true
+      # - name: Run Gradle Build
+      #   if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
+      #   run: |
+      #     cd apk-repo/adapter
+      #     ./gradlew docker_push -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pdocker_username=${{ secrets.DOCKER_USERNAME }} -Pdocker_password=${{ secrets.DOCKER_PASSWORD }} -Pimage_version=latest -PmultiArch=true
+      #     ./gradlew docker_push -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pdocker_username=${{ secrets.DOCKER_USERNAME }} -Pdocker_password=${{ secrets.DOCKER_PASSWORD }} -Pimage_version=${{ github.sha }} -PmultiArch=true
 
-      - name: Login to azure.
-        if: ${{inputs.aks_deployment}}
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-      - name: Push Docker images to aks.
-        if: ${{inputs.aks_deployment}}
-        run: |
-          az acr login -n ${{ secrets.AZURE_ACR_NAME }}
-          cd apk-repo/adapter
-          ./gradlew docker_push -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pimage_version=${{ github.sha }} -PmultiArch=true
-      - name: run codecov
-        uses: codecov/codecov-action@v3
-        with:
-          verbose: true # optional (default = false)
-          directory: apk-repo/adapter
-          flags: adapter          
+      # - name: Login to azure.
+      #   if: ${{inputs.aks_deployment}}
+      #   uses: azure/login@v1
+      #   with:
+      #     creds: ${{ secrets.AZURE_CREDENTIALS }}
+      # - name: Push Docker images to aks.
+      #   if: ${{inputs.aks_deployment}}
+      #   run: |
+      #     az acr login -n ${{ secrets.AZURE_ACR_NAME }}
+      #     cd apk-repo/adapter
+      #     ./gradlew docker_push -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pimage_version=${{ github.sha }} -PmultiArch=true
+      # - name: run codecov
+      #   uses: codecov/codecov-action@v3
+      #   with:
+      #     verbose: true # optional (default = false)
+      #     directory: apk-repo/adapter
+      #     flags: adapter          
