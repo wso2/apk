@@ -1,7 +1,7 @@
 name: start and run postman collection and go integration tests
 on:
   workflow_dispatch:
-  pull_request_target:
+  pull_request:
     types: [opened, synchronize, reopened]
 concurrency: 
   group: integration-test-${{ github.event.number || github.run_id }}
@@ -9,7 +9,7 @@ env:
   GH_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}  
 jobs:
   build_adapter:
-    if: github.event_name == 'pull_request_target' && github.event.action == 'opened' || github.event.action == 'synchronize'
+    if: github.event_name == 'pull_request' && github.event.action == 'opened' || github.event.action == 'synchronize'
     uses: ./.github/workflows/adapter-release.yml
     with:
       aks_deployment: true
@@ -21,7 +21,7 @@ jobs:
       AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
   build_admin:
-    if: github.event_name == 'pull_request_target' && github.event.action == 'opened' || github.event.action == 'synchronize'
+    if: github.event_name == 'pull_request' && github.event.action == 'opened' || github.event.action == 'synchronize'
     uses: ./.github/workflows/admin-domain-service-release.yml
     with:
       aks_deployment: true
@@ -33,7 +33,7 @@ jobs:
       AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
   build_backoffice:
-    if: github.event_name == 'pull_request_target' && github.event.action == 'opened' || github.event.action == 'synchronize'
+    if: github.event_name == 'pull_request' && github.event.action == 'opened' || github.event.action == 'synchronize'
     uses: ./.github/workflows/backoffice-release.yml
     with:
       aks_deployment: true
@@ -45,7 +45,7 @@ jobs:
       AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
   build_devportal:
-    if: github.event_name == 'pull_request_target' && github.event.action == 'opened' || github.event.action == 'synchronize'
+    if: github.event_name == 'pull_request' && github.event.action == 'opened' || github.event.action == 'synchronize'
     uses: ./.github/workflows/devportal-domain-service-release.yml
     with:
       aks_deployment: true
@@ -57,7 +57,7 @@ jobs:
       AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
   build_enforcer:
-    if: github.event_name == 'pull_request_target' && github.event.action == 'opened' || github.event.action == 'synchronize'
+    if: github.event_name == 'pull_request' && github.event.action == 'opened' || github.event.action == 'synchronize'
     uses: ./.github/workflows/enforcer-release.yml
     with:
       aks_deployment: true
@@ -70,7 +70,7 @@ jobs:
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
     
   build_management_server:
-    if: github.event_name == 'pull_request_target' && github.event.action == 'opened' || github.event.action == 'synchronize'
+    if: github.event_name == 'pull_request' && github.event.action == 'opened' || github.event.action == 'synchronize'
     uses: ./.github/workflows/management-server-release.yml
     with:
       aks_deployment: true
@@ -83,7 +83,7 @@ jobs:
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
     
   # build_router:
-    # if: github.event_name == 'pull_request_target' && github.event.action == 'opened' || github.event.action == 'synchronize'
+    # if: github.event_name == 'pull_request' && github.event.action == 'opened' || github.event.action == 'synchronize'
     # uses: ./.github/workflows/router-release.yml
   #   with:
   #     aks_deployment: true
@@ -95,7 +95,7 @@ jobs:
   #     AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
   #     AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
   build_runtime:
-    if: github.event_name == 'pull_request_target' && github.event.action == 'opened' || github.event.action == 'synchronize'
+    if: github.event_name == 'pull_request' && github.event.action == 'opened' || github.event.action == 'synchronize'
     uses: ./.github/workflows/runtime-release.yml
     with:
       aks_deployment: true
@@ -107,7 +107,7 @@ jobs:
       AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
   build_config:
-    if: github.event_name == 'pull_request_target' && github.event.action == 'opened' || github.event.action == 'synchronize'
+    if: github.event_name == 'pull_request' && github.event.action == 'opened' || github.event.action == 'synchronize'
     uses: ./.github/workflows/config-deployer-release.yml
     with:
       aks_deployment: true
@@ -119,7 +119,7 @@ jobs:
       AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}      
   build_idpds:
-    if: github.event_name == 'pull_request_target' && github.event.action == 'opened' || github.event.action == 'synchronize'
+    if: github.event_name == 'pull_request' && github.event.action == 'opened' || github.event.action == 'synchronize'
     uses: ./.github/workflows/idp-domain-service-release.yml
     with:
       aks_deployment: true
@@ -131,7 +131,7 @@ jobs:
       AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
   build_idpui:
-    if: github.event_name == 'pull_request_target' && github.event.action == 'opened' || github.event.action == 'synchronize'
+    if: github.event_name == 'pull_request' && github.event.action == 'opened' || github.event.action == 'synchronize'
     uses: ./.github/workflows/idp-ui-release.yml
     with:
       aks_deployment: true
@@ -143,8 +143,8 @@ jobs:
       AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
 
-  runs_integration_tests_on_pull_request_target:
-    if: github.event_name == 'pull_request_target' && github.event.action == 'opened' || github.event.action == 'synchronize' || github.event.action == 'reopened'
+  runs_integration_tests_on_pull_request:
+    if: github.event_name == 'pull_request' && github.event.action == 'opened' || github.event.action == 'synchronize' || github.event.action == 'reopened'
     needs: [build_adapter, build_enforcer, build_runtime,build_management_server,build_admin,build_backoffice,build_devportal, build_idpds, build_idpui,build_config]
     runs-on: ubuntu-latest
     steps:
@@ -184,7 +184,7 @@ jobs:
 
     - name: checkout pull request and merge.
       shell: sh
-      if: github.event_name == 'pull_request_target' && github.event.action == 'opened' || github.event.action == 'synchronize' || github.event.action == 'reopened'
+      if: github.event_name == 'pull_request' && github.event.action == 'opened' || github.event.action == 'synchronize' || github.event.action == 'reopened'
       run: |
         cd apk-repo
         gh pr checkout ${{ github.event.number }} -b pr-${{ github.event.number }}
@@ -192,7 +192,7 @@ jobs:
         git merge origin/main
 
     - name: Helm release deploy
-      if: github.event_name == 'pull_request_target' && github.event.action == 'opened' || github.event.action == 'synchronize' || github.event.action == 'reopened'
+      if: github.event_name == 'pull_request' && github.event.action == 'opened' || github.event.action == 'synchronize' || github.event.action == 'reopened'
       shell: sh
       run: |
         cd apk-repo/helm-charts
@@ -256,8 +256,8 @@ jobs:
        report_paths: 'apk-repo/test/postman-tests/build/*.xml'
        fail_on_test_failures: true
 
-  runs_go_integration_tests_on_pull_request_target:
-    if: github.event_name == 'pull_request_target' && github.event.action == 'opened' || github.event.action == 'synchronize' || github.event.action == 'reopened'
+  runs_go_integration_tests_on_pull_request:
+    if: github.event_name == 'pull_request' && github.event.action == 'opened' || github.event.action == 'synchronize' || github.event.action == 'reopened'
     needs: [build_adapter, build_enforcer]
     runs-on: ubuntu-latest
     steps:
@@ -297,7 +297,7 @@ jobs:
 
     - name: checkout pull request and merge.
       shell: sh
-      if: github.event_name == 'pull_request_target' && github.event.action == 'opened' || github.event.action == 'synchronize' || github.event.action == 'reopened'
+      if: github.event_name == 'pull_request' && github.event.action == 'opened' || github.event.action == 'synchronize' || github.event.action == 'reopened'
       run: |
         cd apk-repo
         gh pr checkout ${{ github.event.number }} -b pr-${{ github.event.number }}
@@ -305,7 +305,7 @@ jobs:
         git merge origin/main
 
     - name: Helm release deploy
-      if: github.event_name == 'pull_request_target' && github.event.action == 'opened' || github.event.action == 'synchronize' || github.event.action == 'reopened'
+      if: github.event_name == 'pull_request' && github.event.action == 'opened' || github.event.action == 'synchronize' || github.event.action == 'reopened'
       shell: sh
       run: |
         cd apk-repo/helm-charts
