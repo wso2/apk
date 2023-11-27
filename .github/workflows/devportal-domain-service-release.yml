@@ -9,7 +9,7 @@ on:
       next_version:
         type: string
         description: "Next Development Version"
-  pull_request_target:
+  pull_request:
     types:
       - closed
     paths:
@@ -56,7 +56,7 @@ jobs:
           gradle :ballerina:commit_toml_files
           git push
       - name: Run Gradle Build
-        if: github.event_name == 'pull_request_target' && github.event.action == 'closed' && github.event.pull_request.merged == true
+        if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
         run: |
           cd apk-repo/devportal/devportal-domain-service
           gradle build -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pdocker_username=${{ secrets.DOCKER_USERNAME }} -Pdocker_password=${{ secrets.DOCKER_PASSWORD }} -Pimage_version=latest -PmultiArch=true
