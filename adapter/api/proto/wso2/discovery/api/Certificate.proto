@@ -28,6 +28,5 @@ option java_multiple_files = true;
 // Certificates config model
 message Certificate {
 	string alias   = 1;
-	string tier    = 2;
-	bytes  content = 3;
+	bytes  content = 2;
 }

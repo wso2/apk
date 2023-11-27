@@ -46,7 +46,6 @@ public class APIConfig {
     private List<ResourceConfig> resources = new ArrayList<>();
     private boolean isMockedApi;
     private KeyStore trustStore;
-    private Map<String, String> mtlsCertificateTiers = new HashMap<>();
     private String mutualSSL;
     private boolean applicationSecurity;
     private GraphQLSchemaDTO graphQLSchemaDTO;
@@ -196,14 +195,6 @@ public class APIConfig {
         return trustStore;
     }
 
-    /**
-     * Returns the tier map of mutual ssl certificates for the corresponding API.
-     *
-     * @return Tier Map
-     */
-    public Map<String, String> getMtlsCertificateTiers() {
-        return mtlsCertificateTiers;
-    }
 
     /**
      * Returns the mTLS optionality for the corresponding API.
@@ -284,7 +275,6 @@ public class APIConfig {
         private List<ResourceConfig> resources = new ArrayList<>();
         private boolean isMockedApi;
         private KeyStore trustStore;
-        private Map<String, String> mtlsCertificateTiers;
         private String mutualSSL;
         private boolean applicationSecurity;
         private GraphQLSchemaDTO graphQLSchemaDTO;
@@ -372,11 +362,6 @@ public class APIConfig {
             return this;
         }
 
-        public Builder mtlsCertificateTiers(Map<String, String> mtlsCertificateTiers) {
-            this.mtlsCertificateTiers = mtlsCertificateTiers;
-            return this;
-        }
-
         public Builder mutualSSL(String mutualSSL) {
             this.mutualSSL = mutualSSL;
             return this;
@@ -386,7 +371,8 @@ public class APIConfig {
             this.applicationSecurity = applicationSecurity;
             return this;
         }
-        public Builder systemAPI(boolean systemAPI){
+
+        public Builder systemAPI(boolean systemAPI) {
             this.systemAPI = systemAPI;
             return this;
         }
@@ -428,11 +414,10 @@ public class APIConfig {
             apiConfig.uuid = this.uuid;
             apiConfig.isMockedApi = this.isMockedApi;
             apiConfig.trustStore = this.trustStore;
-            apiConfig.mtlsCertificateTiers = this.mtlsCertificateTiers;
             apiConfig.mutualSSL = this.mutualSSL;
             apiConfig.applicationSecurity = this.applicationSecurity;
             apiConfig.graphQLSchemaDTO = this.graphQLSchemaDTO;
-            apiConfig.systemAPI  = this.systemAPI;
+            apiConfig.systemAPI = this.systemAPI;
             apiConfig.jwtConfigurationDto = this.jwtConfigurationDto;
             apiConfig.apiDefinition = this.apiDefinition;
             apiConfig.environment = this.environment;

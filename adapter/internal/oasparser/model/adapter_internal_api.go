@@ -227,7 +227,6 @@ type InterceptEndpoint struct {
 // Certificate contains information of a client certificate
 type Certificate struct {
 	Alias   string
-	Tier    string
 	Content []byte
 }
 

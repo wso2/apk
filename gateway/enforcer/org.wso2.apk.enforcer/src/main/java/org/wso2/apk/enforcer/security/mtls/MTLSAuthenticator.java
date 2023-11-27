@@ -101,14 +101,6 @@ public class MTLSAuthenticator implements Authenticator {
                 }
                 if (!Objects.isNull(clientCert)) {
                     authenticated = true;
-                    String clientCertificateTier = "";
-                    if (requestContext.getMatchedAPI().getMtlsCertificateTiers().containsKey(clientCertificateAlias)) {
-                        clientCertificateTier = requestContext.getMatchedAPI().getMtlsCertificateTiers()
-                                .get(clientCertificateAlias);
-                    }
-                    if (StringUtils.isNotBlank(clientCertificateTier)) {
-                        authenticationContext.setTier(clientCertificateTier);
-                    }
                     String subjectDN = clientCert.getSubjectDN().getName();
                     authenticationContext.setUsername(subjectDN);
                 }

@@ -29,12 +29,11 @@ public final class CertificateProto {
   static {
     java.lang.String[] descriptorData = {
       "\n$wso2/discovery/api/Certificate.proto\022\022" +
-      "wso2.discovery.api\";\n\013Certificate\022\r\n\005ali" +
-      "as\030\001 \001(\t\022\014\n\004tier\030\002 \001(\t\022\017\n\007content\030\003 \001(\014B" +
-      "x\n#org.wso2.apk.enforcer.discovery.apiB\020" +
-      "CertificateProtoP\001Z=github.com/envoyprox" +
-      "y/go-control-plane/wso2/discovery/api;ap" +
-      "ib\006proto3"
+      "wso2.discovery.api\"-\n\013Certificate\022\r\n\005ali" +
+      "as\030\001 \001(\t\022\017\n\007content\030\002 \001(\014Bx\n#org.wso2.ap" +
+      "k.enforcer.discovery.apiB\020CertificatePro" +
+      "toP\001Z=github.com/envoyproxy/go-control-p" +
+      "lane/wso2/discovery/api;apib\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -45,7 +44,7 @@ public final class CertificateProto {
     internal_static_wso2_discovery_api_Certificate_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_wso2_discovery_api_Certificate_descriptor,
-        new java.lang.String[] { "Alias", "Tier", "Content", });
+        new java.lang.String[] { "Alias", "Content", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)

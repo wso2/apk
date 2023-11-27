@@ -20,19 +20,7 @@ public interface CertificateOrBuilder extends
       getAliasBytes();
 
   /**
-   * <code>string tier = 2;</code>
-   * @return The tier.
-   */
-  java.lang.String getTier();
-  /**
-   * <code>string tier = 2;</code>
-   * @return The bytes for tier.
-   */
-  com.google.protobuf.ByteString
-      getTierBytes();
-
-  /**
-   * <code>bytes content = 3;</code>
+   * <code>bytes content = 2;</code>
    * @return The content.
    */
   com.google.protobuf.ByteString getContent();

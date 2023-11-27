@@ -21,7 +21,6 @@ private static final long serialVersionUID = 0L;
   }
   private Certificate() {
     alias_ = "";
-    tier_ = "";
     content_ = com.google.protobuf.ByteString.EMPTY;
   }
 
@@ -62,12 +61,6 @@ private static final long serialVersionUID = 0L;
             break;
           }
           case 18: {
-            java.lang.String s = input.readStringRequireUtf8();
-
-            tier_ = s;
-            break;
-          }
-          case 26: {
 
             content_ = input.readBytes();
             break;
@@ -142,48 +135,10 @@ private static final long serialVersionUID = 0L;
     }
   }
 
-  public static final int TIER_FIELD_NUMBER = 2;
-  private volatile java.lang.Object tier_;
-  /**
-   * <code>string tier = 2;</code>
-   * @return The tier.
-   */
-  @java.lang.Override
-  public java.lang.String getTier() {
-    java.lang.Object ref = tier_;
-    if (ref instanceof java.lang.String) {
-      return (java.lang.String) ref;
-    } else {
-      com.google.protobuf.ByteString bs = 
-          (com.google.protobuf.ByteString) ref;
-      java.lang.String s = bs.toStringUtf8();
-      tier_ = s;
-      return s;
-    }
-  }
-  /**
-   * <code>string tier = 2;</code>
-   * @return The bytes for tier.
-   */
-  @java.lang.Override
-  public com.google.protobuf.ByteString
-      getTierBytes() {
-    java.lang.Object ref = tier_;
-    if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
-          com.google.protobuf.ByteString.copyFromUtf8(
-              (java.lang.String) ref);
-      tier_ = b;
-      return b;
-    } else {
-      return (com.google.protobuf.ByteString) ref;
-    }
-  }
-
-  public static final int CONTENT_FIELD_NUMBER = 3;
+  public static final int CONTENT_FIELD_NUMBER = 2;
   private com.google.protobuf.ByteString content_;
   /**
-   * <code>bytes content = 3;</code>
+   * <code>bytes content = 2;</code>
    * @return The content.
    */
   @java.lang.Override
@@ -208,11 +163,8 @@ private static final long serialVersionUID = 0L;
     if (!getAliasBytes().isEmpty()) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 1, alias_);
     }
-    if (!getTierBytes().isEmpty()) {
-      com.google.protobuf.GeneratedMessageV3.writeString(output, 2, tier_);
-    }
     if (!content_.isEmpty()) {
-      output.writeBytes(3, content_);
+      output.writeBytes(2, content_);
     }
     unknownFields.writeTo(output);
   }
@@ -226,12 +178,9 @@ private static final long serialVersionUID = 0L;
     if (!getAliasBytes().isEmpty()) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, alias_);
     }
-    if (!getTierBytes().isEmpty()) {
-      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, tier_);
-    }
     if (!content_.isEmpty()) {
       size += com.google.protobuf.CodedOutputStream
-        .computeBytesSize(3, content_);
+        .computeBytesSize(2, content_);
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -250,8 +199,6 @@ private static final long serialVersionUID = 0L;
 
     if (!getAlias()
         .equals(other.getAlias())) return false;
-    if (!getTier()
-        .equals(other.getTier())) return false;
     if (!getContent()
         .equals(other.getContent())) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
@@ -267,8 +214,6 @@ private static final long serialVersionUID = 0L;
     hash = (19 * hash) + getDescriptor().hashCode();
     hash = (37 * hash) + ALIAS_FIELD_NUMBER;
     hash = (53 * hash) + getAlias().hashCode();
-    hash = (37 * hash) + TIER_FIELD_NUMBER;
-    hash = (53 * hash) + getTier().hashCode();
     hash = (37 * hash) + CONTENT_FIELD_NUMBER;
     hash = (53 * hash) + getContent().hashCode();
     hash = (29 * hash) + unknownFields.hashCode();
@@ -410,8 +355,6 @@ private static final long serialVersionUID = 0L;
       super.clear();
       alias_ = "";
 
-      tier_ = "";
-
       content_ = com.google.protobuf.ByteString.EMPTY;
 
       return this;
@@ -441,7 +384,6 @@ private static final long serialVersionUID = 0L;
     public org.wso2.apk.enforcer.discovery.api.Certificate buildPartial() {
       org.wso2.apk.enforcer.discovery.api.Certificate result = new org.wso2.apk.enforcer.discovery.api.Certificate(this);
       result.alias_ = alias_;
-      result.tier_ = tier_;
       result.content_ = content_;
       onBuilt();
       return result;
@@ -493,10 +435,6 @@ private static final long serialVersionUID = 0L;
       if (other == org.wso2.apk.enforcer.discovery.api.Certificate.getDefaultInstance()) return this;
       if (!other.getAlias().isEmpty()) {
         alias_ = other.alias_;
-        onChanged();
-      }
-      if (!other.getTier().isEmpty()) {
-        tier_ = other.tier_;
         onChanged();
       }
       if (other.getContent() != com.google.protobuf.ByteString.EMPTY) {
@@ -607,85 +545,9 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    private java.lang.Object tier_ = "";
-    /**
-     * <code>string tier = 2;</code>
-     * @return The tier.
-     */
-    public java.lang.String getTier() {
-      java.lang.Object ref = tier_;
-      if (!(ref instanceof java.lang.String)) {
-        com.google.protobuf.ByteString bs =
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        tier_ = s;
-        return s;
-      } else {
-        return (java.lang.String) ref;
-      }
-    }
-    /**
-     * <code>string tier = 2;</code>
-     * @return The bytes for tier.
-     */
-    public com.google.protobuf.ByteString
-        getTierBytes() {
-      java.lang.Object ref = tier_;
-      if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        tier_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
-    }
-    /**
-     * <code>string tier = 2;</code>
-     * @param value The tier to set.
-     * @return This builder for chaining.
-     */
-    public Builder setTier(
-        java.lang.String value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  
-      tier_ = value;
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>string tier = 2;</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearTier() {
-      
-      tier_ = getDefaultInstance().getTier();
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>string tier = 2;</code>
-     * @param value The bytes for tier to set.
-     * @return This builder for chaining.
-     */
-    public Builder setTierBytes(
-        com.google.protobuf.ByteString value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-      
-      tier_ = value;
-      onChanged();
-      return this;
-    }
-
     private com.google.protobuf.ByteString content_ = com.google.protobuf.ByteString.EMPTY;
     /**
-     * <code>bytes content = 3;</code>
+     * <code>bytes content = 2;</code>
      * @return The content.
      */
     @java.lang.Override
@@ -693,7 +555,7 @@ private static final long serialVersionUID = 0L;
       return content_;
     }
     /**
-     * <code>bytes content = 3;</code>
+     * <code>bytes content = 2;</code>
      * @param value The content to set.
      * @return This builder for chaining.
      */
@@ -707,7 +569,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>bytes content = 3;</code>
+     * <code>bytes content = 2;</code>
      * @return This builder for chaining.
      */
     public Builder clearContent() {

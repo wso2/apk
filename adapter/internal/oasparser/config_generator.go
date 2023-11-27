@@ -168,7 +168,6 @@ func GetEnforcerAPI(adapterInternalAPI model.AdapterInternalAPI, vhost string) *
 	for _, cert := range adapterInternalAPI.GetClientCerts() {
 		certificate := &api.Certificate{
 			Alias:   cert.Alias,
-			Tier:    cert.Tier,
 			Content: cert.Content,
 		}
 		clientCertificates = append(clientCertificates, certificate)
