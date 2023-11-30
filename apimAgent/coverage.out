@@ -1,0 +1,5 @@
+mode: atomic
+github.com/wso2/apk/adapter/src/main/go/main.go:27.13,30.44 2 0
+github.com/wso2/apk/adapter/src/main/go/main.go:30.44,34.3 1 0
+github.com/wso2/apk/adapter/src/main/go/main.go:36.2,38.18 3 0
+github.com/wso2/apk/adapter/src/main/go/main.go:42.26,44.2 1 1
