@@ -456,24 +456,25 @@ public class APIClient {
             operationsArray[row][column] = item;
             column = column + 1;
         }
+        int count = 1;
         foreach APKOperations[] item in operationsArray {
             APKConf clonedAPKConf = apkConf.clone();
             clonedAPKConf.operations = item.clone();
-            _ = check self.putHttpRouteForPartition(apiArtifact, clonedAPKConf, endpoint, uniqueId, endpointType, organization);
+            _ = check self.putHttpRouteForPartition(apiArtifact, clonedAPKConf, endpoint, uniqueId, endpointType, organization, count);
+            count = count + 1;
         }
     }
 
-    private isolated function putHttpRouteForPartition(model:APIArtifact apiArtifact, APKConf apkConf, model:Endpoint? endpoint, string uniqueId, string endpointType, commons:Organization organization) returns commons:APKError|error? {
-        string httpRouteRefName = self.retrieveHttpRouteRefName(apkConf, endpointType, organization);
+    private isolated function putHttpRouteForPartition(model:APIArtifact apiArtifact, APKConf apkConf, model:Endpoint? endpoint, string uniqueId, string endpointType, commons:Organization organization, int count) returns commons:APKError|error? {
         model:Httproute httpRoute = {
             metadata:
                 {
-                name: httpRouteRefName,
+                name: uniqueId + "-" + endpointType + "-httproute-" + count.toString(),
                 labels: self.getLabels(apkConf, organization)
             },
             spec: {
                 parentRefs: self.generateAndRetrieveParentRefs(apkConf, uniqueId),
-                rules: check self.generateHttpRouteRules(apiArtifact, apkConf, endpoint, endpointType, organization, httpRouteRefName),
+                rules: check self.generateHttpRouteRules(apiArtifact, apkConf, endpoint, endpointType, organization),
                 hostnames: self.getHostNames(apkConf, uniqueId, endpointType, organization)
             }
         };
@@ -497,7 +498,7 @@ public class APIClient {
         return parentRefs;
     }
 
-    private isolated function generateHttpRouteRules(model:APIArtifact apiArtifact, APKConf apkConf, model:Endpoint? endpoint, string endpointType, commons:Organization organization, string httpRouteRefName) returns model:HTTPRouteRule[]|commons:APKError|error {
+    private isolated function generateHttpRouteRules(model:APIArtifact apiArtifact, APKConf apkConf, model:Endpoint? endpoint, string endpointType, commons:Organization organization) returns model:HTTPRouteRule[]|commons:APKError|error {
         model:HTTPRouteRule[] httpRouteRules = [];
         APKOperations[]? operations = apkConf.operations;
         if operations is APKOperations[] {
@@ -520,12 +521,14 @@ public class APIClient {
                     }
                     string[]? scopes = operation.scopes;
                     if scopes is string[] {
+                        int count = 1;
                         foreach string scope in scopes {
                             model:Scope scopeCr;
                             if apiArtifact.scopes.hasKey(scope) {
                                 scopeCr = apiArtifact.scopes.get(scope);
                             } else {
-                                scopeCr = self.generateScopeCR(apiArtifact, apkConf, organization, scope);
+                                scopeCr = self.generateScopeCR(apiArtifact, apkConf, organization, scope, count);
+                                count = count + 1;
                             }
                             model:HTTPRouteFilter scopeFilter = {'type: "ExtensionRef", extensionRef: {group: "dp.wso2.com", kind: scopeCr.kind, name: scopeCr.metadata.name}};
                             (<model:HTTPRouteFilter[]>filters).push(scopeFilter);
@@ -592,11 +595,10 @@ public class APIClient {
         return ();
     }
 
-    private isolated function generateScopeCR(model:APIArtifact apiArtifact, APKConf apkConf, commons:Organization organization, string scope) returns model:Scope {
-        string scopeName = uuid:createType1AsString();
+    private isolated function generateScopeCR(model:APIArtifact apiArtifact, APKConf apkConf, commons:Organization organization, string scope, int count) returns model:Scope {
         model:Scope scopeCr = {
             metadata: {
-                name: scopeName,
+                name: apiArtifact.uniqueId + "-scope-" + count.toString(),
                 labels: self.getLabels(apkConf, organization)
             },
             spec: {
@@ -981,7 +983,7 @@ public class APIClient {
         if rateLimit != () {
             rateLimitPolicyCR = {
                 metadata: {
-                    name: self.retrieveRateLimitPolicyRefName(operation),
+                    name: self.retrieveRateLimitPolicyRefName(operation, targetRefName),
                     labels: self.getLabels(apkConf, organization)
                 },
                 spec: {
@@ -1009,9 +1011,13 @@ public class APIClient {
 
     public isolated function generateAPIPolicyCR(APKConf apkConf, string targetRefName, APKOperations? operation, commons:Organization organization, model:APIPolicyData policyData) returns model:APIPolicy? {
         model:APIPolicy? apiPolicyCR = ();
+        string optype =  "api";
+        if operation is APKOperations {
+            optype = "resource";
+        }
         apiPolicyCR = {
             metadata: {
-                name: self.retrieveAPIPolicyRefName(),
+                name: targetRefName +"-"+ optype + "-policy",
                 labels: self.getLabels(apkConf, organization)
             },
             spec: {
@@ -1369,11 +1375,11 @@ public class APIClient {
         return uuid:createType1AsString();
     }
 
-    public isolated function retrieveRateLimitPolicyRefName(APKOperations? operation) returns string {
+    public isolated function retrieveRateLimitPolicyRefName(APKOperations? operation, string targetRef) returns string {
         if operation is APKOperations {
-            return uuid:createType1AsString();
+            return "resource-"+ targetRef;
         } else {
-            return "api-" + uuid:createType1AsString();
+            return "api-" + targetRef;
         }
     }
     private isolated function validateAndRetrieveAPKConfiguration(json apkconfJson) returns APKConf|commons:APKError? {
