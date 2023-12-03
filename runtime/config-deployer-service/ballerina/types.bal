@@ -162,8 +162,6 @@ public type DefinitionBody record {
     string apiType?;
 };
 
-
-
 # CORS Configuration of API
 #
 # + accessControlAllowOrigins - Field Description  
@@ -224,6 +222,8 @@ public type APKConf record {
     APKConf_additionalProperties[] additionalProperties?;
     # CORS Configuration of API
     CORSConfiguration corsConfiguration?;
+    // MutualSSL mTLS?;
+    TransportSecurityRequest transportSecurity?;
 };
 
 public type InterceptorPolicy_parameters record {|
@@ -271,7 +271,35 @@ public type APIKeyAuthentication record {|
     boolean queryParamEnable = true;
 |};
 
+public type TransportSecurityRequest MutualSSL;
+
+public type TransportSecurity record {|
+    string securityType;
+|};
+
+# mTLS configuration of API.
+#
+# + required - Specifies if downstream mTLS is mandatory or optional.
+# + secrets - List of ref names of K8s secrets containing client certs for the API.
+# + configMaps - List of ref names of K8s config maps containing client certs for the API.
+public type MutualSSL record {|
+    *TransportSecurity;
+    string required;
+    Secret[] secrets?;
+    ConfigMap[] configMaps?;
+|};
+
 public type Certificate record {
     string secretName?;
     string secretKey?;
+};
+
+public type ConfigMap record {
+    string configMapName;
+    string configMapKey;
+};
+
+public type Secret record {
+    string secretName;
+    string secretKey;
 };

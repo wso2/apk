@@ -36,11 +36,11 @@ public class APIClient {
     # + api - APKInternalAPI model
     # + return - APKConf model.
     public isolated function fromAPIModelToAPKConf(runtimeModels:API api) returns APKConf|error {
-        string generatedBasePath = api.getName() +  api.getVersion();
+        string generatedBasePath = api.getName() + api.getVersion();
         byte[] data = generatedBasePath.toBytes();
         string encodedString = "/" + data.toBase64();
         if (encodedString.endsWith("==")) {
-            encodedString = encodedString.substring(0,encodedString.length()-2);
+            encodedString = encodedString.substring(0, encodedString.length() - 2);
         }
         APKConf apkConf = {
             name: api.getName(),
@@ -102,7 +102,7 @@ public class APIClient {
             AuthenticationRequest[]? authentication = apkConf.authentication;
             if authentication is AuthenticationRequest[] {
                 if createdEndpoints != {} {
-                _ = check self.populateAuthenticationMap(apiArtifact, apkConf, authentication, createdEndpoints, organization);
+                    _ = check self.populateAuthenticationMap(apiArtifact, apkConf, authentication, createdEndpoints, organization);
                 } else {
                     // check if there are resource level endpoints
                     if resourceLevelEndpointConfigList.length() > 0 {
@@ -131,6 +131,11 @@ public class APIClient {
                     }
                 }
             }
+            TransportSecurityRequest? transportSecurityRequest = apkConf.transportSecurity;
+            if transportSecurityRequest is TransportSecurityRequest {
+                _ = check self.populateTransportSecurityMap(apiArtifact, apkConf, transportSecurityRequest, organization);
+            }
+
             _ = check self.setHttpRoute(apiArtifact, apkConf, createdEndpoints.hasKey(PRODUCTION_TYPE) ? createdEndpoints.get(PRODUCTION_TYPE) : (), uniqueId, PRODUCTION_TYPE, organization);
             _ = check self.setHttpRoute(apiArtifact, apkConf, createdEndpoints.hasKey(SANDBOX_TYPE) ? createdEndpoints.get(SANDBOX_TYPE) : (), uniqueId, SANDBOX_TYPE, organization);
 
@@ -338,7 +343,7 @@ public class APIClient {
     private isolated function populateAuthenticationMap(model:APIArtifact apiArtifact, APKConf apkConf, AuthenticationRequest[] authentications,
             map<model:Endpoint|()> createdEndpointMap, commons:Organization organization) returns error? {
         map<model:Authentication> authenticationMap = {};
-        model:AuthenticationExtenstionType authTypes = {};
+        model:AuthenticationExtensionType authTypes = {};
         foreach AuthenticationRequest authentication in authentications {
             if authentication.authType == "OAuth2" {
                 OAuth2Authentication oauth2Authentication = check authentication.cloneWithType(OAuth2Authentication);
@@ -378,6 +383,63 @@ public class APIClient {
         }
         log:printDebug("Authentication Map:" + authenticationMap.toString());
         apiArtifact.authenticationMap = authenticationMap;
+    }
+
+    private isolated function populateTransportSecurityMap(model:APIArtifact apiArtifact, APKConf apkConf, TransportSecurityRequest transportSecurity,
+            commons:Organization organization) returns error? {
+        if transportSecurity.securityType == "mTLS" {
+            MutualSSL mutualSSL = check transportSecurity.cloneWithType(MutualSSL);
+            if mutualSSL is MutualSSL {
+                map<model:Authentication> authenticationMap = apiArtifact.authenticationMap;
+                log:printInfo("[MUTUAL SSL] Checking for mutual SSL");
+                if mutualSSL is MutualSSL {
+                    string authenticationRefName = self.retrieveAuthenticationRefName(apkConf, "mtls", organization);
+                    model:Authentication authentication = {
+                        metadata: {
+                            name: authenticationRefName,
+                            labels: self.getLabels(apkConf, organization)
+                        },
+                        spec: {
+                            default: {
+                                mutualSSL: {
+                                    required: mutualSSL.required
+                                }
+                            },
+                            targetRef: {
+                                group: "gateway.networking.k8s.io",
+                                kind: "API",
+                                name: apiArtifact.uniqueId
+                            }
+                        }
+                    };
+                    ConfigMap[]? configMaps = mutualSSL.configMaps;
+                    Secret[]? secrets = mutualSSL.secrets;
+                    if configMaps is ConfigMap[] && configMaps.length() > 0
+                    {
+                        model:RefConfig[] configMapRefs = [];
+                        foreach ConfigMap configMap in configMaps {
+                            configMapRefs.push({name: configMap.configMapName, key: configMap.configMapKey});
+                        }
+                        authentication.spec.default.mutualSSL.configMapRefs = configMapRefs;
+                    }
+
+                    if secrets is Secret[] && secrets.length() > 0
+                    {
+                        model:RefConfig[] secretRefs = [];
+                        foreach Secret secret in secrets {
+                            secretRefs.push({name: secret.secretName, key: secret.secretKey});
+                        }
+                        authentication.spec.default.mutualSSL.secretRefs = secretRefs;
+                    }
+                    authenticationMap[authenticationRefName] = authentication;
+                }
+                log:printDebug("Authentication Map:" + authenticationMap.toString());
+                apiArtifact.authenticationMap = authenticationMap;
+            }
+        } else {
+            log:printError("Invalid transport security schema provided");
+            return e909019();
+        }
     }
 
     private isolated function generateAndSetAPICRArtifact(model:APIArtifact apiArtifact, APKConf apkConf, commons:Organization organization) {
@@ -1385,11 +1447,15 @@ public class APIClient {
     private isolated function validateAndRetrieveAPKConfiguration(json apkconfJson) returns APKConf|commons:APKError? {
         do {
             runtimeapi:APKConfValidationResponse validationResponse = check apkConfValidator.validate(apkconfJson.toJsonString());
+            log:printInfo(apkconfJson.toJsonString());
+            log:printInfo(validationResponse.isValidated().toString());
+
             if validationResponse.isValidated() {
                 APKConf apkConf = check apkconfJson.cloneWithType(APKConf);
                 map<string> errors = {};
                 self.validateEndpointConfigurations(apkConf, errors);
                 if (errors.length() > 0) {
+                    log:printInfo(apkconfJson.toJsonString());
                     return e909029(errors);
                 }
                 return apkConf;
@@ -1422,9 +1488,9 @@ public class APIClient {
                     operationLevelProductionEndpointAvailable = endpointConfigs.production is EndpointConfiguration;
                     operationLevelSandboxEndpointAvailable = endpointConfigs.sandbox is EndpointConfiguration;
                 }
-                    if (!operationLevelProductionEndpointAvailable && !productionEndpointAvailable) && (!operationLevelSandboxEndpointAvailable && !sandboxEndpointAvailable) {
-                        errors["endpoint"] = "production/sandbox endpoint not available for " + <string>operation.target;
-                    }
+                if (!operationLevelProductionEndpointAvailable && !productionEndpointAvailable) && (!operationLevelSandboxEndpointAvailable && !sandboxEndpointAvailable) {
+                    errors["endpoint"] = "production/sandbox endpoint not available for " + <string>operation.target;
+                }
 
             }
         }
@@ -1432,7 +1498,7 @@ public class APIClient {
 
     public isolated function prepareArtifact(record {|byte[] fileContent; string fileName; anydata...;|}? apkConfiguration, record {|byte[] fileContent; string fileName; anydata...;|}? definitionFile, commons:Organization organization) returns commons:APKError|model:APIArtifact {
         if apkConfiguration is () || definitionFile is () {
-            return e909018("Required apkConfiguration ,definitionFile and apiType are not provided");
+            return e909018("Required apkConfiguration, definitionFile and apiType are not provided");
         }
         do {
             APKConf? apkConf = ();

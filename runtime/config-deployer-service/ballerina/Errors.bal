@@ -18,7 +18,6 @@
 // Before adding another function for a new error code
 // make sure there is no already existing error code for that.
 // If there is an error code for that, reuse it.
-
 import wso2/apk_common_lib as commons;
 
 public isolated function e909000(int code, string msg) returns commons:APKError {
@@ -39,7 +38,6 @@ public isolated function e909001(string id) returns commons:APKError {
     );
 }
 
-
 public isolated function e909003() returns commons:APKError {
     return error commons:APKError("apiId not found in request",
         code = 909003,
@@ -48,7 +46,6 @@ public isolated function e909003() returns commons:APKError {
         description = "apiId not found in request"
     );
 }
-
 
 public isolated function e909005(string 'field) returns commons:APKError {
     string msg = 'field + " field(s) unavailable";
@@ -81,9 +78,9 @@ public isolated function e909007() returns commons:APKError {
 public isolated function e909008() returns commons:APKError {
     return error commons:APKError("Atleast one of the field required",
         code = 909008,
-        message = "Atleast one of the field required",
+        message = "Atleast one of the fields required",
         statusCode = 406,
-        description = "Atleast one of the field required"
+        description = "Atleast one of the fields required"
     );
 }
 
@@ -177,6 +174,15 @@ public isolated function e909018(string msg) returns commons:APKError {
     );
 }
 
+public isolated function e909019() returns commons:APKError {
+    return error commons:APKError("Invalid transport security schema",
+        code = 909018,
+        message = "Invalid transport security schema provided",
+        statusCode = 406,
+        description = "Invalid transport security schema provided"
+    );
+}
+
 public isolated function e909021() returns commons:APKError {
     return error commons:APKError("Atleast one operation need to specified",
         code = 909021,
@@ -204,8 +210,8 @@ public isolated function e909022(string msg, error? e) returns commons:APKError 
     }
 }
 
-public isolated function e909029(map<string> errorItems) returns commons:APKError{ 
-return error commons:APKError("Apk-conf validation failed",
+public isolated function e909029(map<string> errorItems) returns commons:APKError {
+    return error commons:APKError("Apk-conf validation failed",
         code = 909029,
         message = "Invalid apk-conf provided",
         statusCode = 400,
@@ -213,6 +219,7 @@ return error commons:APKError("Apk-conf validation failed",
         moreInfo = errorItems
     );
 }
+
 public isolated function e909024(string policyName) returns commons:APKError {
     return error commons:APKError("Invalid parameters provided for policy " + policyName,
         code = 909024,
@@ -249,7 +256,6 @@ public isolated function e909040() returns commons:APKError {
     );
 }
 
-
 public isolated function e909042() returns commons:APKError {
     return error commons:APKError("Unsupported API type",
         code = 909042,
@@ -259,16 +265,15 @@ public isolated function e909042() returns commons:APKError {
     );
 }
 
-
-
 public isolated function e909052(error e) returns commons:APKError {
     return error commons:APKError("Error while generating k8s artifact", e,
         code = 909052,
         message = "Error while generating k8s artifact",
         statusCode = 500,
-        description = "Error while generating k8s artifact:"+ e.message()
+        description = "Error while generating k8s artifact:" + e.message()
     );
 }
+
 public isolated function e909043() returns commons:APKError {
     return error commons:APKError("Error occured while generating openapi definition",
         code = 909043,
@@ -277,6 +282,7 @@ public isolated function e909043() returns commons:APKError {
         description = "Error occured while generating openapi definition"
     );
 }
+
 public isolated function e909044() returns commons:APKError {
     return error commons:APKError("Invalid url provided for openapi definition",
         code = 909044,
@@ -285,6 +291,7 @@ public isolated function e909044() returns commons:APKError {
         description = "Invalid url provided for openapi definition"
     );
 }
+
 public isolated function e9090445() returns commons:APKError {
     return error commons:APKError("Atleast one Vhost need per production or/and sandbox",
         code = 9090445,
@@ -293,11 +300,12 @@ public isolated function e9090445() returns commons:APKError {
         description = "Atleast one Vhost need per production or/and sandbox"
     );
 }
+
 public isolated function e909028() returns commons:APKError {
-    return error commons:APKError( "Internal error occured while deploying API",
+    return error commons:APKError("Internal error occured while deploying API",
         code = 909028,
         message = "Internal error occured while deploying API",
         statusCode = 500,
         description = "Internal error occured while deploying API"
-    ); 
+    );
 }

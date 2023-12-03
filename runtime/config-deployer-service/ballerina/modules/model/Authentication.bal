@@ -30,13 +30,20 @@ public type AuthenticationSpec record {
 };
 
 public type AuthenticationData record {
-    AuthenticationExtenstionType authTypes?;
+    AuthenticationExtensionType authTypes?;
     boolean disabled?;
+    MutualSSL mutualSSL?;
 };
 
-public type AuthenticationExtenstionType record {
+public type AuthenticationExtensionType record {
     OAuth2Authentication oauth2?;
     APIKey[] apiKey = [];
+};
+
+public type MutualSSL record {
+    string required;
+    RefConfig[] configMapRefs?;
+    RefConfig[] secretRefs?;
 };
 
 public type OAuth2Authentication record {
