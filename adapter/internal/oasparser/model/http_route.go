@@ -249,7 +249,7 @@ func getSecurity(authScheme *dpv1alpha1.Authentication) *Authentication {
 		} else {
 			authFound = true
 		}
-		if authScheme.Spec.Override.AuthTypes.APIKey != nil {
+		if authScheme.Spec.Override.AuthTypes != nil && authScheme.Spec.Override.AuthTypes.APIKey != nil {
 			authFound = authFound || len(authScheme.Spec.Override.AuthTypes.APIKey) > 0
 			var apiKeys []APIKey
 			for _, apiKey := range authScheme.Spec.Override.AuthTypes.APIKey {

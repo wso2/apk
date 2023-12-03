@@ -109,25 +109,32 @@ spec:
                     description: MutualSSL is to specify the features and certificates
                       for mutual SSL
                     properties:
-                      certificateInline:
-                        description: CertificateInline is the Inline Certificate entry
-                        type: string
-                      configMapRef:
-                        description: ConfigMapRef denotes the reference to the ConfigMap
+                      certificatesInline:
+                        description: CertificatesInline is the Inline Certificate
+                          entry
+                        items:
+                          type: string
+                        type: array
+                      configMapRefs:
+                        description: ConfigMapRefs denotes the reference to the ConfigMap
                           that contains the Certificate
-                        properties:
-                          key:
-                            description: Key of the secret or configmap
-                            minLength: 1
-                            type: string
-                          name:
-                            description: Name of the secret or configmap
-                            minLength: 1
-                            type: string
-                        required:
-                        - key
-                        - name
-                        type: object
+                        items:
+                          description: RefConfig holds a config for a secret or a
+                            configmap
+                          properties:
+                            key:
+                              description: Key of the secret or configmap
+                              minLength: 1
+                              type: string
+                            name:
+                              description: Name of the secret or configmap
+                              minLength: 1
+                              type: string
+                          required:
+                          - key
+                          - name
+                          type: object
+                        type: array
                       required:
                         description: Required indicates whether mutualSSL is mandatory
                           or optional
@@ -135,22 +142,26 @@ spec:
                         - mandatory
                         - optional
                         type: string
-                      secretRef:
-                        description: SecretRef denotes the reference to the Secret
+                      secretRefs:
+                        description: SecretRefs denotes the reference to the Secret
                           that contains the Certificate
-                        properties:
-                          key:
-                            description: Key of the secret or configmap
-                            minLength: 1
-                            type: string
-                          name:
-                            description: Name of the secret or configmap
-                            minLength: 1
-                            type: string
-                        required:
-                        - key
-                        - name
-                        type: object
+                        items:
+                          description: RefConfig holds a config for a secret or a
+                            configmap
+                          properties:
+                            key:
+                              description: Key of the secret or configmap
+                              minLength: 1
+                              type: string
+                            name:
+                              description: Name of the secret or configmap
+                              minLength: 1
+                              type: string
+                          required:
+                          - key
+                          - name
+                          type: object
+                        type: array
                     required:
                     - required
                     type: object
@@ -229,25 +240,32 @@ spec:
                     description: MutualSSL is to specify the features and certificates
                       for mutual SSL
                     properties:
-                      certificateInline:
-                        description: CertificateInline is the Inline Certificate entry
-                        type: string
-                      configMapRef:
-                        description: ConfigMapRef denotes the reference to the ConfigMap
+                      certificatesInline:
+                        description: CertificatesInline is the Inline Certificate
+                          entry
+                        items:
+                          type: string
+                        type: array
+                      configMapRefs:
+                        description: ConfigMapRefs denotes the reference to the ConfigMap
                           that contains the Certificate
-                        properties:
-                          key:
-                            description: Key of the secret or configmap
-                            minLength: 1
-                            type: string
-                          name:
-                            description: Name of the secret or configmap
-                            minLength: 1
-                            type: string
-                        required:
-                        - key
-                        - name
-                        type: object
+                        items:
+                          description: RefConfig holds a config for a secret or a
+                            configmap
+                          properties:
+                            key:
+                              description: Key of the secret or configmap
+                              minLength: 1
+                              type: string
+                            name:
+                              description: Name of the secret or configmap
+                              minLength: 1
+                              type: string
+                          required:
+                          - key
+                          - name
+                          type: object
+                        type: array
                       required:
                         description: Required indicates whether mutualSSL is mandatory
                           or optional
@@ -255,22 +273,26 @@ spec:
                         - mandatory
                         - optional
                         type: string
-                      secretRef:
-                        description: SecretRef denotes the reference to the Secret
+                      secretRefs:
+                        description: SecretRefs denotes the reference to the Secret
                           that contains the Certificate
-                        properties:
-                          key:
-                            description: Key of the secret or configmap
-                            minLength: 1
-                            type: string
-                          name:
-                            description: Name of the secret or configmap
-                            minLength: 1
-                            type: string
-                        required:
-                        - key
-                        - name
-                        type: object
+                        items:
+                          description: RefConfig holds a config for a secret or a
+                            configmap
+                          properties:
+                            key:
+                              description: Key of the secret or configmap
+                              minLength: 1
+                              type: string
+                            name:
+                              description: Name of the secret or configmap
+                              minLength: 1
+                              type: string
+                          required:
+                          - key
+                          - name
+                          type: object
+                        type: array
                     required:
                     - required
                     type: object

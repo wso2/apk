@@ -455,29 +455,53 @@ func getResolvedBackendSecurity(ctx context.Context, client k8client.Client,
 	return resolvedSecurity
 }
 
-// GetResolvedMutualSSL resolves backend security configurations.
-func GetResolvedMutualSSL(ctx context.Context, client k8client.Client,
-	authentication dpv1alpha1.Authentication) dpv1alpha1.MutualSSL {
+// GetResolvedMutualSSL resolves mTLS related security configurations.
+func GetResolvedMutualSSL(ctx context.Context, client k8client.Client, authentication dpv1alpha1.Authentication) dpv1alpha1.MutualSSL {
 	resolvedMutualSSL := dpv1alpha1.MutualSSL{}
 	var err error
 	var certificate string
+	var mutualSSL *dpv1alpha1.MutualSSLConfig
 	if authentication.Spec.Default != nil && authentication.Spec.Default.MutualSSL != nil {
-		resolvedMutualSSL.Required = authentication.Spec.Default.MutualSSL.Required
-		certificate, err = ResolveCertificate(ctx, client,
-			authentication.Namespace, authentication.Spec.Default.MutualSSL.CertificateInline, authentication.Spec.Default.MutualSSL.ConfigMapRef, authentication.Spec.Default.MutualSSL.SecretRef)
+		mutualSSL = authentication.Spec.Default.MutualSSL
 	}
 	if authentication.Spec.Override != nil && authentication.Spec.Override.MutualSSL != nil {
-		resolvedMutualSSL.Required = authentication.Spec.Override.MutualSSL.Required
-		certificate, err = ResolveCertificate(ctx, client,
-			authentication.Namespace, authentication.Spec.Override.MutualSSL.CertificateInline, authentication.Spec.Override.MutualSSL.ConfigMapRef, authentication.Spec.Override.MutualSSL.SecretRef)
+		mutualSSL = authentication.Spec.Override.MutualSSL
+	}
+	if mutualSSL != nil {
+		resolvedCertificates := ResolveAllmTLSCertificates(ctx, mutualSSL, certificate, err, client, authentication.Namespace)
+		resolvedMutualSSL.Required = authentication.Spec.Default.MutualSSL.Required
+		resolvedMutualSSL.ClientCertificates = append(resolvedMutualSSL.ClientCertificates, resolvedCertificates...)
 	}
 
 	if err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL, "Error in resolving client certificate %v in authentication", certificate))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL, "Error in resolving mutual SSL %v in authentication", certificate))
 	}
-	resolvedMutualSSL.ClientCertificates = append(resolvedMutualSSL.ClientCertificates, certificate)
 
 	return resolvedMutualSSL
+}
+
+// ResolveAllmTLSCertificates resolves all mTLS certificates
+func ResolveAllmTLSCertificates(ctx context.Context, mutualSSL *dpv1alpha1.MutualSSLConfig, certificate string, err error, client k8client.Client, namespace string) []string {
+	var resolvedCertificates []string
+	if mutualSSL.CertificatesInline != nil {
+		for _, cert := range mutualSSL.CertificatesInline {
+			certificate, err = ResolveCertificate(ctx, client, namespace, cert, nil, nil)
+			resolvedCertificates = append(resolvedCertificates, certificate)
+		}
+	}
+	if mutualSSL.ConfigMapRefs != nil {
+		for _, cert := range mutualSSL.ConfigMapRefs {
+			certificate, err = ResolveCertificate(ctx, client, namespace, nil, cert, nil)
+			resolvedCertificates = append(resolvedCertificates, certificate)
+		}
+	}
+	if mutualSSL.SecretRefs != nil {
+		for _, cert := range mutualSSL.SecretRefs {
+			certificate, err = ResolveCertificate(ctx, client, namespace, nil, nil, cert)
+			resolvedCertificates = append(resolvedCertificates, certificate)
+		}
+	}
+	return resolvedCertificates
 }
 
 // ResolveCertificate reads the certificate from TLSConfig, first checks the certificateInline field,

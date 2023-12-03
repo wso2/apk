@@ -914,27 +914,9 @@ func (apiReconciler *APIReconciler) getAPIPolicyChildrenRefs(ctx context.Context
 func (apiReconciler *APIReconciler) resolveAuthentications(ctx context.Context,
 	authentications map[string]dpv1alpha1.Authentication) (*dpv1alpha1.MutualSSL, error) {
 	resolvedMutualSSL := dpv1alpha1.MutualSSL{}
-	var err error
-	var certificate string
 	for _, authentication := range authentications {
 		resolvedMutualSSL = utils.GetResolvedMutualSSL(ctx, apiReconciler.client, authentication)
-
-		if authentication.Spec.Default != nil && authentication.Spec.Default.MutualSSL != nil {
-			resolvedMutualSSL.Required = authentication.Spec.Default.MutualSSL.Required
-			certificate, err = utils.ResolveCertificate(ctx, apiReconciler.client,
-				authentication.Namespace, authentication.Spec.Default.MutualSSL.CertificateInline, authentication.Spec.Default.MutualSSL.ConfigMapRef, authentication.Spec.Default.MutualSSL.SecretRef)
-		}
-		if authentication.Spec.Override != nil && authentication.Spec.Override.MutualSSL != nil {
-			resolvedMutualSSL.Required = authentication.Spec.Override.MutualSSL.Required
-			certificate, err = utils.ResolveCertificate(ctx, apiReconciler.client,
-				authentication.Namespace, authentication.Spec.Override.MutualSSL.CertificateInline, authentication.Spec.Override.MutualSSL.ConfigMapRef, authentication.Spec.Override.MutualSSL.SecretRef)
-		}
 	}
-
-	if err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL, "Error in resolving client certificate %v in authentication", certificate))
-	}
-	resolvedMutualSSL.ClientCertificates = append(resolvedMutualSSL.ClientCertificates, certificate)
 	return &resolvedMutualSSL, nil
 }
 
@@ -1598,21 +1580,28 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 		func(rawObj k8client.Object) []string {
 			authentication := rawObj.(*dpv1alpha1.Authentication)
 			var secrets []string
-			if authentication.Spec.Default != nil && authentication.Spec.Default.MutualSSL != nil && authentication.Spec.Default.MutualSSL.SecretRef != nil && len(authentication.Spec.Default.MutualSSL.SecretRef.Name) > 0 {
-				secrets = append(secrets,
-					types.NamespacedName{
-						Name:      string(authentication.Spec.Default.MutualSSL.SecretRef.Name),
-						Namespace: authentication.Namespace,
-					}.String())
-
+			if authentication.Spec.Default != nil && authentication.Spec.Default.MutualSSL != nil && authentication.Spec.Default.MutualSSL.SecretRefs != nil && len(authentication.Spec.Default.MutualSSL.SecretRefs) > 0 {
+				for _, secret := range authentication.Spec.Default.MutualSSL.SecretRefs {
+					if len(secret.Name) > 0 {
+						secrets = append(secrets,
+							types.NamespacedName{
+								Name:      string(secret.Name),
+								Namespace: authentication.Namespace,
+							}.String())
+					}
+				}
 			}
 
-			if authentication.Spec.Override != nil && authentication.Spec.Override.MutualSSL != nil && authentication.Spec.Override.MutualSSL.SecretRef != nil && len(authentication.Spec.Override.MutualSSL.SecretRef.Name) > 0 {
-				secrets = append(secrets,
-					types.NamespacedName{
-						Name:      string(authentication.Spec.Override.MutualSSL.SecretRef.Name),
-						Namespace: authentication.Namespace,
-					}.String())
+			if authentication.Spec.Override != nil && authentication.Spec.Override.MutualSSL != nil && authentication.Spec.Override.MutualSSL.SecretRefs != nil && len(authentication.Spec.Override.MutualSSL.SecretRefs) > 0 {
+				for _, secret := range authentication.Spec.Override.MutualSSL.SecretRefs {
+					if len(secret.Name) > 0 {
+						secrets = append(secrets,
+							types.NamespacedName{
+								Name:      string(secret.Name),
+								Namespace: authentication.Namespace,
+							}.String())
+					}
+				}
 
 			}
 			return secrets
@@ -1625,21 +1614,28 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 		func(rawObj k8client.Object) []string {
 			authentication := rawObj.(*dpv1alpha1.Authentication)
 			var configMaps []string
-			if authentication.Spec.Default != nil && authentication.Spec.Default.MutualSSL != nil && authentication.Spec.Default.MutualSSL.ConfigMapRef != nil && len(authentication.Spec.Default.MutualSSL.ConfigMapRef.Name) > 0 {
-				configMaps = append(configMaps,
-					types.NamespacedName{
-						Name:      string(authentication.Spec.Default.MutualSSL.ConfigMapRef.Name),
-						Namespace: authentication.Namespace,
-					}.String())
-
+			if authentication.Spec.Default != nil && authentication.Spec.Default.MutualSSL != nil && authentication.Spec.Default.MutualSSL.ConfigMapRefs != nil && len(authentication.Spec.Default.MutualSSL.ConfigMapRefs) > 0 {
+				for _, configMap := range authentication.Spec.Default.MutualSSL.ConfigMapRefs {
+					if len(configMap.Name) > 0 {
+						configMaps = append(configMaps,
+							types.NamespacedName{
+								Name:      string(configMap.Name),
+								Namespace: authentication.Namespace,
+							}.String())
+					}
+				}
 			}
 
-			if authentication.Spec.Override != nil && authentication.Spec.Override.MutualSSL != nil && authentication.Spec.Override.MutualSSL.ConfigMapRef != nil && len(authentication.Spec.Override.MutualSSL.ConfigMapRef.Name) > 0 {
-				configMaps = append(configMaps,
-					types.NamespacedName{
-						Name:      string(authentication.Spec.Override.MutualSSL.ConfigMapRef.Name),
-						Namespace: authentication.Namespace,
-					}.String())
+			if authentication.Spec.Override != nil && authentication.Spec.Override.MutualSSL != nil && authentication.Spec.Override.MutualSSL.ConfigMapRefs != nil && len(authentication.Spec.Override.MutualSSL.ConfigMapRefs) > 0 {
+				for _, configMap := range authentication.Spec.Override.MutualSSL.ConfigMapRefs {
+					if len(configMap.Name) > 0 {
+						configMaps = append(configMaps,
+							types.NamespacedName{
+								Name:      string(configMap.Name),
+								Namespace: authentication.Namespace,
+							}.String())
+					}
+				}
 
 			}
 			return configMaps

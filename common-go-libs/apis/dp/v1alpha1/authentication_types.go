@@ -70,14 +70,14 @@ type MutualSSLConfig struct {
 	// +kubebuilder:validation:Enum=mandatory;optional
 	Required string `json:"required"`
 
-	// CertificateInline is the Inline Certificate entry
-	CertificateInline *string `json:"certificateInline,omitempty"`
+	// CertificatesInline is the Inline Certificate entry
+	CertificatesInline []*string `json:"certificatesInline,omitempty"`
 
-	// SecretRef denotes the reference to the Secret that contains the Certificate
-	SecretRef *RefConfig `json:"secretRef,omitempty"`
+	// SecretRefs denotes the reference to the Secret that contains the Certificate
+	SecretRefs []*RefConfig `json:"secretRefs,omitempty"`
 
-	// ConfigMapRef denotes the reference to the ConfigMap that contains the Certificate
-	ConfigMapRef *RefConfig `json:"configMapRef,omitempty"`
+	// ConfigMapRefs denotes the reference to the ConfigMap that contains the Certificate
+	ConfigMapRefs []*RefConfig `json:"configMapRefs,omitempty"`
 }
 
 // TestConsoleKeyAuth Test Console Key Authentication scheme details
