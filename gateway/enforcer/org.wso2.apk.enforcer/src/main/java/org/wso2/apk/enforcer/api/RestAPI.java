@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2023, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -44,7 +44,7 @@ import org.wso2.apk.enforcer.security.mtls.MtlsUtils;
 import org.wso2.apk.enforcer.util.EndpointUtils;
 import org.wso2.apk.enforcer.util.FilterUtils;
 import org.wso2.apk.enforcer.util.MockImplUtils;
-
+import org.wso2.apk.enforcer.deny.DenyFilter;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.util.ArrayList;
@@ -243,7 +243,8 @@ public class RestAPI implements API {
     private void loadCustomFilters(APIConfig apiConfig) {
 
         FilterDTO[] customFilters = ConfigHolder.getInstance().getConfig().getCustomFilters();
-        // Needs to sort the filter in ascending order to position the filter in the given position.
+        // Needs to sort the filter in ascending order to position the filter in the
+        // given position.
         Arrays.sort(customFilters, Comparator.comparing(FilterDTO::getPosition));
         Map<String, Filter> filterImplMap = new HashMap<>(customFilters.length);
         ServiceLoader<Filter> loader = ServiceLoader.load(Filter.class);
