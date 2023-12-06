@@ -30,6 +30,8 @@ public class APIKeyValidationInfoDTO implements Serializable {
 
     private static final long serialVersionUID = 12345L;
 
+    private String organization;
+
     private boolean authorized;
     private String subscriber;
     private String tier;
@@ -65,11 +67,23 @@ public class APIKeyValidationInfoDTO implements Serializable {
     private String applicationUUID;
     private Map<String, String> appAttributes;
 
+    public String getOrganization() {
+
+        return organization;
+    }
+
+    public void setOrganization(String organization) {
+
+        this.organization = organization;
+    }
+
     public boolean isContentAware() {
+
         return contentAware;
     }
 
     public void setContentAware(boolean contentAware) {
+
         this.contentAware = contentAware;
     }
 
@@ -81,176 +95,189 @@ public class APIKeyValidationInfoDTO implements Serializable {
     private String securityScheme;
 
     public boolean isAuthorized() {
+
         return authorized;
     }
 
     public void setAuthorized(boolean authorized) {
+
         this.authorized = authorized;
     }
 
     public String getTier() {
+
         return tier;
     }
 
     public void setTier(String tier) {
+
         this.tier = tier;
     }
 
     public String getSubscriber() {
+
         return subscriber;
     }
 
     public void setSubscriber(String subscriber) {
+
         this.subscriber = subscriber;
     }
 
     public String getType() {
+
         return type;
     }
 
     public void setType(String type) {
+
         this.type = type;
     }
 
     public String getEndUserToken() {
+
         return endUserToken;
     }
 
     public void setEndUserToken(String endUserToken) {
+
         this.endUserToken = endUserToken;
     }
 
     public String getEndUserName() {
+
         return endUserName;
     }
 
     public void setEndUserName(String endUserName) {
+
         this.endUserName = endUserName;
     }
 
     public String getApplicationName() {
+
         return applicationName;
     }
 
     public void setApplicationName(String applicationName) {
+
         this.applicationName = applicationName;
     }
 
     public int getValidationStatus() {
+
         return validationStatus;
     }
 
     public void setValidationStatus(int validationStatus) {
+
         this.validationStatus = validationStatus;
     }
 
     public long getValidityPeriod() {
+
         return validityPeriod;
     }
 
     public void setValidityPeriod(long validityPeriod) {
+
         this.validityPeriod = validityPeriod;
     }
 
     public long getIssuedTime() {
+
         return issuedTime;
     }
 
     public void setIssuedTime(long issuedTime) {
+
         this.issuedTime = issuedTime;
     }
 
     public List<String> getAuthorizedDomains() {
+
         return authorizedDomains;
     }
 
     public void setAuthorizedDomains(List<String> authorizedDomains) {
+
         this.authorizedDomains = authorizedDomains;
     }
 
     public String getUserType() {
+
         return userType;
     }
 
     public void setUserType(String userType) {
+
         this.userType = userType;
     }
 
     public String getApiName() {
+
         return apiName;
     }
 
     public void setApiName(String apiName) {
+
         this.apiName = apiName;
     }
 
     public String getApiContext() {
+
         return apiContext;
     }
 
     public void setApiContext(String apiContext) {
+
         this.apiContext = apiContext;
     }
 
     public String getConsumerKey() {
+
         return consumerKey;
     }
 
     public void setConsumerKey(String consumerKey) {
+
         this.consumerKey = consumerKey;
     }
 
     public String getApiPublisher() {
+
         return apiPublisher;
     }
 
     public void setApiPublisher(String apiPublisher) {
+
         this.apiPublisher = apiPublisher;
     }
 
     public String getSecurityScheme() {
+
         return securityScheme;
     }
 
     public void setSecurityScheme(String securityScheme) {
+
         this.securityScheme = securityScheme;
     }
 
     public Set<String> getScopes() {
+
         return scopes;
     }
 
     public void setScopes(Set<String> scopes) {
+
         this.scopes = scopes;
     }
 
     public String toString() {
 
         StringBuilder builder = new StringBuilder(20);
-        builder.append("APIKeyValidationInfoDTO = { authorized:").append(authorized).
-                append(" , subscriber:").append(subscriber).
-                append(" , tier:").append(tier).
-                append(" , type:").append(type).
-                append(" , userType:").append(userType).
-                append(" , endUserToken:").append(endUserToken).
-                append(" , endUserName:").append(endUserName).
-                append(" , applicationName:").append(applicationName).
-                append(" , validationStatus:").append(validationStatus).
-                append(" , validityPeriod:").append(validityPeriod).
-                append(" , issuedTime:").append(issuedTime).
-                append(" , apiName:").append(apiName).
-                append(" , apiContext:").append(apiContext).
-                append(" , consumerKey:").append(consumerKey).
-                append(" , spikeArrestLimit:").append(spikeArrestLimit).
-                append(" , spikeArrestUnit:").append(spikeArrestUnit).
-                append(" , subscriberOrganization:").append(subscriberOrganization).
-                append(" , stopOnQuotaReach:").append(stopOnQuotaReach).
-                append(" , productName:").append(productName).
-                append(" , productProvider:").append(productProvider).
-                append(" , apiPublisher:").append(apiPublisher).
-                append(" , securityScheme:").append(securityScheme).
-                append(" , graphQLMaxDepth:").append(graphQLMaxDepth).
-                append(" , graphQLMaxComplexity:").append(graphQLMaxComplexity);
+        builder.append("APIKeyValidationInfoDTO = { authorized:").append(authorized).append(" , subscriber:").append(subscriber).append(" , tier:").append(tier).append(" , type:").append(type).append(" , userType:").append(userType).append(" , endUserToken:").append(endUserToken).append(" , endUserName:").append(endUserName).append(" , applicationName:").append(applicationName).append(" , validationStatus:").append(validationStatus).append(" , validityPeriod:").append(validityPeriod).append(" , issuedTime:").append(issuedTime).append(" , apiName:").append(apiName).append(" , apiContext:").append(apiContext).append(" , consumerKey:").append(consumerKey).append(" , spikeArrestLimit:").append(spikeArrestLimit).append(" , spikeArrestUnit:").append(spikeArrestUnit).append(" , subscriberOrganization:").append(subscriberOrganization).append(" , stopOnQuotaReach:").append(stopOnQuotaReach).append(" , productName:").append(productName).append(" , productProvider:").append(productProvider).append(" , apiPublisher:").append(apiPublisher).append(" , securityScheme:").append(securityScheme).append(" , graphQLMaxDepth:").append(graphQLMaxDepth).append(" , graphQLMaxComplexity:").append(graphQLMaxComplexity);
 
         if (authorizedDomains != null && !authorizedDomains.isEmpty()) {
             builder.append(" , authorizedDomains:[");
@@ -276,50 +303,62 @@ public class APIKeyValidationInfoDTO implements Serializable {
     }
 
     public int getSpikeArrestLimit() {
+
         return spikeArrestLimit;
     }
 
     public void setSpikeArrestLimit(int spikeArrestLimit) {
+
         this.spikeArrestLimit = spikeArrestLimit;
     }
 
     public String getSpikeArrestUnit() {
+
         return spikeArrestUnit;
     }
 
     public void setSpikeArrestUnit(String spikeArrestUnit) {
+
         this.spikeArrestUnit = spikeArrestUnit;
     }
 
     public boolean isStopOnQuotaReach() {
+
         return stopOnQuotaReach;
     }
 
     public void setStopOnQuotaReach(boolean stopOnQuotaReach) {
+
         this.stopOnQuotaReach = stopOnQuotaReach;
     }
 
     public String getSubscriberOrganization() {
+
         return subscriberOrganization;
     }
 
     public void setSubscriberOrganization(String subscriberOrganization) {
+
         this.subscriberOrganization = subscriberOrganization;
     }
 
     public void setProductName(String productName) {
+
         this.productName = productName;
     }
 
     public String getProductName() {
+
         return productName;
     }
 
     public void setProductProvider(String productProvider) {
+
         this.productProvider = productProvider;
     }
 
     public String getProductProvider() {
+
         return productProvider;
     }
 
@@ -334,26 +373,32 @@ public class APIKeyValidationInfoDTO implements Serializable {
     }
 
     public int getGraphQLMaxDepth() {
+
         return graphQLMaxDepth;
     }
 
     public void setGraphQLMaxDepth(int graphQLMaxDepth) {
+
         this.graphQLMaxDepth = graphQLMaxDepth;
     }
 
     public int getGraphQLMaxComplexity() {
+
         return graphQLMaxComplexity;
     }
 
     public void setGraphQLMaxComplexity(int graphQLMaxComplexity) {
+
         this.graphQLMaxComplexity = graphQLMaxComplexity;
     }
 
     public String getApiVersion() {
+
         return apiVersion;
     }
 
     public void setApiVersion(String apiVersion) {
+
         this.apiVersion = apiVersion;
     }
 
@@ -378,10 +423,12 @@ public class APIKeyValidationInfoDTO implements Serializable {
     }
 
     public String getApiUUID() {
+
         return apiUUID;
     }
 
     public void setApiUUID(String apiUUID) {
+
         this.apiUUID = apiUUID;
     }
 }

@@ -20,7 +20,6 @@ package org.wso2.apk.enforcer.discovery.scheduler;
 
 import org.wso2.apk.enforcer.config.EnvVarConfig;
 import org.wso2.apk.enforcer.discovery.ApiDiscoveryClient;
-import org.wso2.apk.enforcer.discovery.ApiListDiscoveryClient;
 import org.wso2.apk.enforcer.discovery.ConfigDiscoveryClient;
 import org.wso2.apk.enforcer.discovery.JWTIssuerDiscoveryClient;
 import org.wso2.apk.enforcer.subscription.EventingGrpcClient;
@@ -40,7 +39,6 @@ public class XdsSchedulerManager {
     private static ScheduledExecutorService discoveryClientScheduler;
     private static ScheduledExecutorService eventingScheduler;
     private ScheduledFuture<?> apiDiscoveryScheduledFuture;
-    private ScheduledFuture<?> apiDiscoveryListScheduledFuture;
     private ScheduledFuture<?> jwtIssuerDiscoveryScheduledFuture;
 
     private ScheduledFuture<?> eventingScheduledFuture;
@@ -73,21 +71,6 @@ public class XdsSchedulerManager {
 
         if (apiDiscoveryScheduledFuture != null && !apiDiscoveryScheduledFuture.isDone()) {
             apiDiscoveryScheduledFuture.cancel(false);
-        }
-    }
-
-    public synchronized void startAPIListDiscoveryScheduling() {
-
-        if (apiDiscoveryListScheduledFuture == null || apiDiscoveryListScheduledFuture.isDone()) {
-            apiDiscoveryListScheduledFuture = discoveryClientScheduler
-                    .scheduleWithFixedDelay(ApiListDiscoveryClient.getInstance(), 1, retryPeriod, TimeUnit.SECONDS);
-        }
-    }
-
-    public synchronized void stopAPIListDiscoveryScheduling() {
-
-        if (apiDiscoveryListScheduledFuture != null && !apiDiscoveryListScheduledFuture.isDone()) {
-            apiDiscoveryListScheduledFuture.cancel(false);
         }
     }
 

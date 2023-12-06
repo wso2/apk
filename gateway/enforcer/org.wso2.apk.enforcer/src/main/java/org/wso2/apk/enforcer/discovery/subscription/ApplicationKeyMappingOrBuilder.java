@@ -72,4 +72,16 @@ public interface ApplicationKeyMappingOrBuilder extends
    * @return The timestamp.
    */
   long getTimestamp();
+
+  /**
+   * <code>string organization = 7;</code>
+   * @return The organization.
+   */
+  java.lang.String getOrganization();
+  /**
+   * <code>string organization = 7;</code>
+   * @return The bytes for organization.
+   */
+  com.google.protobuf.ByteString
+      getOrganizationBytes();
 }

@@ -42,19 +42,14 @@ import org.wso2.apk.enforcer.grpc.interceptors.OpenTelemetryInterceptor;
 import org.wso2.apk.enforcer.jmx.JMXAgent;
 import org.wso2.apk.enforcer.metrics.MetricsManager;
 import org.wso2.apk.enforcer.security.jwt.validator.RevokedJWTDataHolder;
-import org.wso2.apk.enforcer.subscription.SubscriptionDataHolder;
+import org.wso2.apk.enforcer.subscription.SubscriptionDataStoreUtil;
 import org.wso2.apk.enforcer.tracing.TracerFactory;
 import org.wso2.apk.enforcer.tracing.TracingException;
 import org.wso2.apk.enforcer.tracing.Utils;
 import org.wso2.apk.enforcer.util.TLSUtils;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import javax.net.ssl.SSLException;
 
@@ -130,8 +125,8 @@ public class AuthServer {
 
             // Initialize JMX Agent
             JMXAgent.initJMXAgent();
-
-            SubscriptionDataHolder.getInstance().getSubscriptionDataStore().initializeStore();
+            SubscriptionDataStoreUtil.initializeLoadingTasks();;
+            SubscriptionDataStoreUtil.getInstance().loadStartupArtifacts();
             RevokedJWTDataHolder.getInstance().init();
 
             // Create a new server to listen on port 8082

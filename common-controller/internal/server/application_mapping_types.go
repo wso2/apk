@@ -22,6 +22,7 @@ type ApplicationMapping struct {
 	UUID            string `json:"uuid"`
 	ApplicationRef  string `json:"applicationRef"`
 	SubscriptionRef string `json:"subscriptionRef"`
+	OrganizationID  string `json:"organizationId"`
 }
 
 // ApplicationMappingList contains a list of ApplicationMapping

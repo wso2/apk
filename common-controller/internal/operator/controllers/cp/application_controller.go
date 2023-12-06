@@ -19,7 +19,6 @@ package cp
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/wso2/apk/adapter/pkg/logging"
 	"github.com/wso2/apk/common-controller/internal/cache"
@@ -37,7 +36,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
-	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
@@ -86,86 +84,76 @@ func NewApplicationController(mgr manager.Manager, subscriptionStore *cache.Subs
 func (applicationReconciler *ApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = log.FromContext(ctx)
 	applicationKey := req.NamespacedName
-	var applicationList = new(cpv1alpha2.ApplicationList)
 
-	loggers.LoggerAPKOperator.Infof("Reconciling application: %v", applicationKey.String())
-	if err := applicationReconciler.client.List(ctx, applicationList); err != nil {
-		return reconcile.Result{}, fmt.Errorf("failed to get applications %s/%s",
-			applicationKey.Namespace, applicationKey.Name)
-	}
+	loggers.LoggerAPKOperator.Debugf("Reconciling application: %v", applicationKey.String())
 	var application cpv1alpha2.Application
 	if err := applicationReconciler.client.Get(ctx, req.NamespacedName, &application); err != nil {
 		if k8error.IsNotFound(err) {
 			applicationSpec, found := applicationReconciler.ods.GetApplicationFromStore(applicationKey)
-			loggers.LoggerAPKOperator.Infof("Application cr not available in k8s")
-			loggers.LoggerAPKOperator.Infof("cached Application spec: %v,%v", applicationSpec, found)
+			loggers.LoggerAPKOperator.Debugf("Application cr not available in k8s")
+			loggers.LoggerAPKOperator.Debugf("cached Application spec: %v,%v", applicationSpec, found)
 			if found {
 				utils.SendAppDeletionEvent(applicationKey.Name, applicationSpec)
 				applicationReconciler.ods.DeleteApplicationFromStore(applicationKey)
+				server.DeleteApplication(applicationKey.Name)
 			} else {
-				loggers.LoggerAPKOperator.Infof("Application %s/%s does not exist in k8s", applicationKey.Namespace, applicationKey.Name)
+				loggers.LoggerAPKOperator.Debugf("Application %s/%s does not exist in k8s", applicationKey.Namespace, applicationKey.Name)
 			}
 		}
 	} else {
-		loggers.LoggerAPKOperator.Infof("Application cr available in k8s")
+		loggers.LoggerAPKOperator.Debugf("Application cr available in k8s")
 		applicationSpec, found := applicationReconciler.ods.GetApplicationFromStore(applicationKey)
 		if found {
 			// update
-			loggers.LoggerAPKOperator.Infof("Application in ods")
+			loggers.LoggerAPKOperator.Debugf("Application in ods")
 			utils.SendAppUpdateEvent(applicationKey.Name, applicationSpec, application.Spec)
-
 		} else {
-			loggers.LoggerAPKOperator.Infof("Application in ods consider as update")
+			loggers.LoggerAPKOperator.Debugf("Application in ods consider as update")
 			utils.SendAddApplicationEvent(application)
 		}
 		applicationReconciler.ods.AddorUpdateApplicationToStore(applicationKey, application.Spec)
+		applicationReconciler.sendAppUpdates(application, found)
 	}
-	sendAppUpdates(applicationList)
 	return ctrl.Result{}, nil
 }
 
-func sendAppUpdates(applicationList *cpv1alpha2.ApplicationList) {
-	appList := marshalApplicationList(applicationList.Items)
-	server.AddApplication(appList)
-	appKeyMappingList := marshalApplicationKeyMapping(applicationList.Items)
-	server.AddApplicationKeyMapping(appKeyMappingList)
-}
-
-func marshalApplicationList(applicationList []cpv1alpha2.Application) server.ApplicationList {
-	applications := []server.Application{}
-	for _, appInternal := range applicationList {
-		app := server.Application{
-			UUID:           appInternal.Name,
-			Name:           appInternal.Spec.Name,
-			Owner:          appInternal.Spec.Owner,
-			OrganizationID: appInternal.Spec.Organization,
-			Attributes:     appInternal.Spec.Attributes,
-		}
-		applications = append(applications, app)
+func (applicationReconciler *ApplicationReconciler) sendAppUpdates(application cpv1alpha2.Application, update bool) {
+	resolvedApplication := marshalApplication(application)
+	if update {
+		server.DeleteApplication(application.Name)
 	}
-	return server.ApplicationList{
-		List: applications,
+	server.AddApplication(resolvedApplication)
+	appKeyMappingList := marshalApplicationKeyMapping(application)
+	for _, applicationKeyMapping := range appKeyMappingList {
+		server.AddApplicationKeyMapping(applicationKeyMapping)
 	}
 }
 
-func marshalApplicationKeyMapping(applicationList []cpv1alpha2.Application) server.ApplicationKeyMappingList {
+func marshalApplication(application cpv1alpha2.Application) server.Application {
+	return server.Application{
+		UUID:           application.Name,
+		Name:           application.Spec.Name,
+		Owner:          application.Spec.Owner,
+		OrganizationID: application.Spec.Organization,
+		Attributes:     application.Spec.Attributes,
+	}
+}
+
+func marshalApplicationKeyMapping(appInternal cpv1alpha2.Application) []server.ApplicationKeyMapping {
 	applicationKeyMappings := []server.ApplicationKeyMapping{}
-	for _, appInternal := range applicationList {
-		var oauth2SecurityScheme = appInternal.Spec.SecuritySchemes.OAuth2
-		if oauth2SecurityScheme != nil {
-			for _, env := range oauth2SecurityScheme.Environments {
-				appIdentifier := server.ApplicationKeyMapping{
-					ApplicationUUID:       appInternal.Name,
-					SecurityScheme:        constants.OAuth2,
-					ApplicationIdentifier: env.AppID,
-					KeyType:               env.KeyType,
-					EnvID:                 env.EnvID,
-				}
-				applicationKeyMappings = append(applicationKeyMappings, appIdentifier)
+	var oauth2SecurityScheme = appInternal.Spec.SecuritySchemes.OAuth2
+	if oauth2SecurityScheme != nil {
+		for _, env := range oauth2SecurityScheme.Environments {
+			appIdentifier := server.ApplicationKeyMapping{
+				ApplicationUUID:       appInternal.Name,
+				SecurityScheme:        constants.OAuth2,
+				ApplicationIdentifier: env.AppID,
+				KeyType:               env.KeyType,
+				EnvID:                 env.EnvID,
+				OrganizationID:        appInternal.Spec.Organization,
 			}
+			applicationKeyMappings = append(applicationKeyMappings, appIdentifier)
 		}
 	}
-	return server.ApplicationKeyMappingList{
-		List: applicationKeyMappings,
-	}
+	return applicationKeyMappings
 }

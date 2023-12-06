@@ -7,6 +7,7 @@ type ApplicationKeyMapping struct {
 	ApplicationIdentifier string `json:"applicationIdentifier,omitempty"`
 	KeyType               string `json:"keyType,omitempty"`
 	EnvID                 string `json:"envID,omitempty"`
+	OrganizationID        string `json:"organizationId"`
 }
 
 // ApplicationKeyMappingList contains a list of ApplicationKeyMapping

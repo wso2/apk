@@ -37,7 +37,6 @@ import (
 type Server interface {
 	config.ConfigDiscoveryServiceServer
 	api.ApiDiscoveryServiceServer
-	subscription.ApiListDiscoveryServiceServer
 	subscription.JWTIssuerDiscoveryServiceServer
 	rest.Server
 	envoy_sotw.Server
@@ -59,7 +58,6 @@ type server struct {
 	config.UnimplementedConfigDiscoveryServiceServer
 	api.UnimplementedApiDiscoveryServiceServer
 	subscription.UnimplementedJWTIssuerDiscoveryServiceServer
-	subscription.UnimplementedApiListDiscoveryServiceServer
 	rest  rest.Server
 	sotw  envoy_sotw.Server
 	delta envoy_delta.Server
@@ -77,12 +75,7 @@ func (s *server) StreamApis(stream api.ApiDiscoveryService_StreamApisServer) err
 	return s.StreamHandler(stream, resource.APIType)
 }
 
-
-func (s *server) StreamApiList(stream subscription.ApiListDiscoveryService_StreamApiListServer) error {
-	return s.StreamHandler(stream, resource.APIListType)
-}
-
-func (s *server)StreamJWTIssuers(stream subscription.JWTIssuerDiscoveryService_StreamJWTIssuersServer) error {
+	func (s *server)StreamJWTIssuers(stream subscription.JWTIssuerDiscoveryService_StreamJWTIssuersServer) error {
 	return s.StreamHandler(stream, resource.JWTIssuerListType)
 }
 

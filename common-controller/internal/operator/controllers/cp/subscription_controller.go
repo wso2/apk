@@ -19,7 +19,6 @@ package cp
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/wso2/apk/adapter/pkg/logging"
 	"github.com/wso2/apk/common-controller/internal/cache"
@@ -36,7 +35,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
-	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	cpv1alpha2 "github.com/wso2/apk/common-controller/internal/operator/apis/cp/v1alpha2"
@@ -90,12 +88,6 @@ func (subscriptionReconciler *SubscriptionReconciler) Reconcile(ctx context.Cont
 	loggers.LoggerAPKOperator.Debugf("Reconciling subscription: %v", req.NamespacedName.String())
 
 	subscriptionKey := req.NamespacedName
-	var subscriptionList = new(cpv1alpha2.SubscriptionList)
-	if err := subscriptionReconciler.client.List(ctx, subscriptionList); err != nil {
-		return reconcile.Result{}, fmt.Errorf("failed to get subscriptions %s/%s",
-			subscriptionKey.Namespace, subscriptionKey.Name)
-	}
-	sendSubUpdates(subscriptionList)
 	var subscription cpv1alpha2.Subscription
 	if err := subscriptionReconciler.client.Get(ctx, req.NamespacedName, &subscription); err != nil {
 		if k8error.IsNotFound(err) {
@@ -105,36 +97,34 @@ func (subscriptionReconciler *SubscriptionReconciler) Reconcile(ctx context.Cont
 				loggers.LoggerAPKOperator.Debugf("Subscription %s/%s not found. Ignoring since object must be deleted", subscriptionKey.Namespace, subscriptionKey.Name)
 				utils.SendDeleteSubscriptionEvent(subscriptionKey.Name, subscriptionSpec)
 				subscriptionReconciler.ods.DeleteSubscriptionFromStore(subscriptionKey)
+				server.DeleteSubscription(subscriptionKey.Name)
 				return ctrl.Result{}, nil
 			}
 		}
 	} else {
+		sendSubUpdates(subscription)
 		utils.SendAddSubscriptionEvent(subscription)
 		subscriptionReconciler.ods.AddorUpdateSubscriptionToStore(subscriptionKey, subscription.Spec)
 	}
 	return ctrl.Result{}, nil
 }
 
-func sendSubUpdates(subscriptionsList *cpv1alpha2.SubscriptionList) {
-	subList := marshalSubscriptionList(subscriptionsList.Items)
+func sendSubUpdates(subscription cpv1alpha2.Subscription) {
+	subList := marshalSubscription(subscription)
 	server.AddSubscription(subList)
 }
 
-func marshalSubscriptionList(subscriptionList []cpv1alpha2.Subscription) server.SubscriptionList {
-	subscriptions := []server.Subscription{}
-	for _, subInternal := range subscriptionList {
-		subscribedAPI := &server.SubscribedAPI{}
-		sub := server.Subscription{
-			UUID:         subInternal.Name,
-			SubStatus:    subInternal.Spec.SubscriptionStatus,
-			Organization: subInternal.Spec.Organization,
-		}
-		if subInternal.Spec.API.Name != "" && subInternal.Spec.API.Version != "" {
-			subscribedAPI.Name = subInternal.Spec.API.Name
-			subscribedAPI.Version = subInternal.Spec.API.Version
-		}
-		sub.SubscribedAPI = subscribedAPI
-		subscriptions = append(subscriptions, sub)
+func marshalSubscription(subscription cpv1alpha2.Subscription) server.Subscription {
+	subscribedAPI := &server.SubscribedAPI{}
+	sub := server.Subscription{
+		UUID:         subscription.Name,
+		SubStatus:    subscription.Spec.SubscriptionStatus,
+		Organization: subscription.Spec.Organization,
 	}
-	return server.SubscriptionList{List: subscriptions}
+	if subscription.Spec.API.Name != "" && subscription.Spec.API.Version != "" {
+		subscribedAPI.Name = subscription.Spec.API.Name
+		subscribedAPI.Version = subscription.Spec.API.Version
+	}
+	sub.SubscribedAPI = subscribedAPI
+	return sub
 }

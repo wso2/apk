@@ -19,16 +19,18 @@ package cp
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/wso2/apk/adapter/pkg/logging"
 	"github.com/wso2/apk/common-controller/internal/cache"
+	"github.com/wso2/apk/common-controller/internal/config"
 	"github.com/wso2/apk/common-controller/internal/loggers"
 	"github.com/wso2/apk/common-controller/internal/server"
 	k8error "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
+	k8client "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -44,16 +46,28 @@ import (
 
 // ApplicationMappingReconciler reconciles a ApplicationMapping object
 type ApplicationMappingReconciler struct {
-	client client.Client
+	client k8client.Client
 	Scheme *runtime.Scheme
 	ods    *cache.SubscriptionDataStore
 }
+
+const (
+	applicationIndex  = "applicationIndex"
+	subscriptionIndex = "subscriptionIndex"
+)
 
 // NewApplicationMappingController creates a new Application and Subscription mapping (i.e. ApplicationMapping) controller instance
 func NewApplicationMappingController(mgr manager.Manager, subscriptionStore *cache.SubscriptionDataStore) error {
 	r := &ApplicationMappingReconciler{
 		client: mgr.GetClient(),
 		ods:    subscriptionStore,
+	}
+	ctx := context.Background()
+	conf := config.ReadConfigs()
+	predicates := []predicate.Predicate{predicate.NewPredicateFuncs(utils.FilterByNamespaces(conf.CommonController.Operator.Namespaces))}
+	if err := addApplicationMappingControllerIndexes(ctx, mgr); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2658, logging.CRITICAL, "Error adding indexes: %v", err))
+		return err
 	}
 	c, err := controller.New(constants.ApplicationMappingController, mgr, controller.Options{Reconciler: r})
 	if err != nil {
@@ -67,6 +81,17 @@ func NewApplicationMappingController(mgr manager.Manager, subscriptionStore *cac
 		return err
 	}
 
+	if err := c.Watch(source.Kind(mgr.GetCache(), &cpv1alpha2.Application{}), handler.EnqueueRequestsFromMapFunc(r.getApplicationMappingsForApplication),
+		predicates...); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2613, logging.BLOCKER, "Error watching Application resources: %v", err))
+		return err
+	}
+
+	if err := c.Watch(source.Kind(mgr.GetCache(), &cpv1alpha2.Subscription{}), handler.EnqueueRequestsFromMapFunc(r.getApplicationMappingsForSubscription),
+		predicates...); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2613, logging.BLOCKER, "Error watching Subscription resources: %v", err))
+		return err
+	}
 	loggers.LoggerAPKOperator.Debug("ApplicationMapping Controller successfully started. Watching ApplicationMapping Objects...")
 	return nil
 }
@@ -87,14 +112,8 @@ func NewApplicationMappingController(mgr manager.Manager, subscriptionStore *cac
 func (r *ApplicationMappingReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = log.FromContext(ctx)
 	applicationMappingKey := req.NamespacedName
-	var applicationMappingList = new(cpv1alpha2.ApplicationMappingList)
 
 	loggers.LoggerAPKOperator.Debugf("Reconciling application mapping: %v", applicationMappingKey.String())
-	if err := r.client.List(ctx, applicationMappingList); err != nil {
-		return reconcile.Result{}, fmt.Errorf("failed to get application mappings %s/%s",
-			applicationMappingKey.Namespace, applicationMappingKey.Name)
-	}
-	sendUpdates(applicationMappingList)
 	var applicationMapping cpv1alpha2.ApplicationMapping
 	if err := r.client.Get(ctx, req.NamespacedName, &applicationMapping); err != nil {
 		if k8error.IsNotFound(err) {
@@ -102,33 +121,143 @@ func (r *ApplicationMappingReconciler) Reconcile(ctx context.Context, req ctrl.R
 			if found {
 				utils.SendDeleteApplicationMappingEvent(applicationMappingKey.Name, applicationMapping)
 				r.ods.DeleteApplicationMappingFromStore(applicationMappingKey)
+				server.DeleteApplicationMapping(applicationMappingKey.Name)
 			} else {
 				loggers.LoggerAPKOperator.Debugf("Application mapping %s/%s not found. Ignoring since object must be deleted", applicationMappingKey.Namespace, applicationMappingKey.Name)
 			}
+		} else {
+			var application cpv1alpha2.Application
+			if err := r.client.Get(ctx, types.NamespacedName{Name: string(applicationMapping.Spec.ApplicationRef), Namespace: applicationMapping.Namespace}, &application); err != nil {
+				loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2614, logging.BLOCKER, "Error getting Application: %v", err))
+				return ctrl.Result{}, nil
+			}
+			var subscription cpv1alpha2.Subscription
+			if err := r.client.Get(ctx, types.NamespacedName{Name: string(applicationMapping.Spec.SubscriptionRef), Namespace: applicationMapping.Namespace}, &subscription); err != nil {
+				loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2615, logging.BLOCKER, "Error getting Subscription: %v", err))
+				return ctrl.Result{}, nil
+			}
+			sendUpdates(&applicationMapping, application, subscription)
+			utils.SendCreateApplicationMappingEvent(applicationMapping, application, subscription)
+			r.ods.AddorUpdateApplicationMappingToStore(applicationMappingKey, applicationMapping.Spec)
 		}
-	} else {
-		utils.SendCreateApplicationMappingEvent(applicationMapping)
-		r.ods.AddorUpdateApplicationMappingToStore(applicationMappingKey, applicationMapping.Spec)
 	}
 	return ctrl.Result{}, nil
 }
 
-func sendUpdates(applicationMappingList *cpv1alpha2.ApplicationMappingList) {
-	appMappingList := marshalApplicationMappingList(applicationMappingList.Items)
-	server.AddApplicationMapping(appMappingList)
+func sendUpdates(applicationMapping *cpv1alpha2.ApplicationMapping, application cpv1alpha2.Application, subscription cpv1alpha2.Subscription) {
+	resolvedApplication := marshalApplication(application)
+	appMapping := marshalApplicationMapping(applicationMapping, resolvedApplication)
+	server.AddApplicationMapping(appMapping)
 }
 
-func marshalApplicationMappingList(applicationMappingList []cpv1alpha2.ApplicationMapping) server.ApplicationMappingList {
-	applicationMappings := []server.ApplicationMapping{}
-	for _, appMappingInternal := range applicationMappingList {
-		appMapping := server.ApplicationMapping{
-			UUID:            appMappingInternal.Name,
-			ApplicationRef:  appMappingInternal.Spec.ApplicationRef,
-			SubscriptionRef: appMappingInternal.Spec.SubscriptionRef,
+func marshalApplicationMapping(applicationMapping *cpv1alpha2.ApplicationMapping, application server.Application) server.ApplicationMapping {
+	return server.ApplicationMapping{
+		UUID:            applicationMapping.Name,
+		ApplicationRef:  applicationMapping.Spec.ApplicationRef,
+		SubscriptionRef: applicationMapping.Spec.SubscriptionRef,
+		OrganizationID:  application.OrganizationID,
+	}
+}
+
+// addApplicationMappingControllerIndexes adds indexes to the ApplicationMapping controller
+func addApplicationMappingControllerIndexes(ctx context.Context, mgr manager.Manager) error {
+	// Secret to TokenIssuer indexer
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &cpv1alpha2.ApplicationMapping{}, applicationIndex,
+		func(rawObj k8client.Object) []string {
+			applicationMapping := rawObj.(*cpv1alpha2.ApplicationMapping)
+			var application []string
+			application = append(application,
+				types.NamespacedName{
+					Name:      string(applicationMapping.Spec.ApplicationRef),
+					Namespace: applicationMapping.Namespace,
+				}.String())
+			return application
+		}); err != nil {
+		return err
+	}
+	err := mgr.GetFieldIndexer().IndexField(ctx, &cpv1alpha2.ApplicationMapping{}, subscriptionIndex,
+		func(rawObj k8client.Object) []string {
+			applicationMapping := rawObj.(*cpv1alpha2.ApplicationMapping)
+			var subscriptions []string
+			subscriptions = append(subscriptions,
+				types.NamespacedName{
+					Name:      string(applicationMapping.Spec.SubscriptionRef),
+					Namespace: applicationMapping.Namespace,
+				}.String())
+			return subscriptions
+		})
+	return err
+}
+
+// getApplicationMappingsForApplication triggers the ApplicationMapping controller reconcile method based on the changes detected
+// from Application objects. If the changes are done for an API stored in the Operator Data store,
+// a new reconcile event will be created and added to the reconcile event queue.
+func (r *ApplicationMappingReconciler) getApplicationMappingsForApplication(ctx context.Context, obj k8client.Object) []reconcile.Request {
+	application, ok := obj.(*cpv1alpha2.Application)
+	if !ok {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL, "Unexpected object type, bypassing reconciliation: %v", application))
+		return []reconcile.Request{}
+	}
+
+	applicationMappingList := &cpv1alpha2.ApplicationMappingList{}
+	if err := r.client.List(ctx, applicationMappingList, &k8client.ListOptions{
+		FieldSelector: fields.OneTermEqualSelector(applicationIndex, utils.NamespacedName(application).String()),
+	}); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2623, logging.CRITICAL, "Unable to find associated application mappings: %s", utils.NamespacedName(application).String()))
+		return []reconcile.Request{}
+	}
+
+	if len(applicationMappingList.Items) == 0 {
+		loggers.LoggerAPKOperator.Debugf("ApplicationMappings for Application %s/%s not found", application.Namespace, application.Name)
+		return []reconcile.Request{}
+	}
+
+	requests := []reconcile.Request{}
+	for _, applicationMapping := range applicationMappingList.Items {
+		req := reconcile.Request{
+			NamespacedName: types.NamespacedName{
+				Name:      applicationMapping.Name,
+				Namespace: applicationMapping.Namespace},
 		}
-		applicationMappings = append(applicationMappings, appMapping)
+		requests = append(requests, req)
+		loggers.LoggerAPKOperator.Infof("Adding reconcile request for ApplicationMapping: %s/%s with Application UUID: %v", applicationMapping.Namespace, applicationMapping.Name,
+			string(applicationMapping.ObjectMeta.UID))
 	}
-	return server.ApplicationMappingList{
-		List: applicationMappings,
+	return requests
+}
+
+// getApplicationMappingsForSubscription triggers the ApplicationMapping controller reconcile method based on the changes detected
+// from Subscription objects. If the changes are done for an API stored in the Operator Data store,
+func (r *ApplicationMappingReconciler) getApplicationMappingsForSubscription(ctx context.Context, obj k8client.Object) []reconcile.Request {
+	subscription, ok := obj.(*cpv1alpha2.Subscription)
+	if !ok {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL, "Unexpected object type, bypassing reconciliation: %v", subscription))
+		return []reconcile.Request{}
 	}
+
+	applicationMappingList := &cpv1alpha2.ApplicationMappingList{}
+	if err := r.client.List(ctx, applicationMappingList, &k8client.ListOptions{
+		FieldSelector: fields.OneTermEqualSelector(subscriptionIndex, utils.NamespacedName(subscription).String()),
+	}); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2623, logging.CRITICAL, "Unable to find associated Application mappings: %s", utils.NamespacedName(subscription).String()))
+		return []reconcile.Request{}
+	}
+
+	if len(applicationMappingList.Items) == 0 {
+		loggers.LoggerAPKOperator.Debugf("ApplicationMappings for Subscription %s/%s not found", subscription.Namespace, subscription.Name)
+		return []reconcile.Request{}
+	}
+
+	requests := []reconcile.Request{}
+	for _, applicationMapping := range applicationMappingList.Items {
+		req := reconcile.Request{
+			NamespacedName: types.NamespacedName{
+				Name:      applicationMapping.Name,
+				Namespace: applicationMapping.Namespace},
+		}
+		requests = append(requests, req)
+		loggers.LoggerAPKOperator.Infof("Adding reconcile request for ApplicationMapping: %s/%s with Subscription UUID: %v", applicationMapping.Namespace, applicationMapping.Name,
+			string(applicationMapping.ObjectMeta.UID))
+	}
+	return requests
 }

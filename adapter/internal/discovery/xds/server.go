@@ -47,7 +47,6 @@ import (
 	"github.com/wso2/apk/adapter/internal/oasparser/envoyconf"
 	"github.com/wso2/apk/adapter/internal/oasparser/model"
 	operatorconsts "github.com/wso2/apk/adapter/internal/operator/constants"
-	disc_api "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/api"
 	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/subscription"
 	wso2_cache "github.com/wso2/apk/adapter/pkg/discovery/protocol/cache/v3"
 	wso2_resource "github.com/wso2/apk/adapter/pkg/discovery/protocol/resource/v3"
@@ -326,6 +325,7 @@ func updateXdsCacheOnAPIChange(oldLabels []string, newLabels []string) bool {
 	for _, oldLabel := range oldLabels {
 		if !stringutils.StringInSlice(oldLabel, newLabels) {
 			listeners, clusters, routes, endpoints, apis := GenerateEnvoyResoucesForGateway(oldLabel)
+			GenerateEnvoyResoucesForGateway(oldLabel)
 			UpdateEnforcerApis(oldLabel, apis, "")
 			UpdateXdsCacheWithLock(oldLabel, endpoints, clusters, routes, listeners)
 			logger.LoggerXds.Debugf("Xds Cache is updated for the already existing label : %v", oldLabel)
@@ -533,22 +533,6 @@ func UpdateEnforcerApis(label string, apis []types.Resource, version string) {
 	}
 	logger.LoggerXds.Infof("New API cache update for the label: " + label + " version: " + fmt.Sprint(version))
 
-	subAPIs := []*subscription.APIs{}
-	for _, api := range apis {
-		subAPI := subscription.APIs{}
-		subAPI.ApiId = api.(*disc_api.Api).GetId()
-		subAPI.Name = api.(*disc_api.Api).GetTitle()
-		subAPI.Version = api.(*disc_api.Api).GetVersion()
-		subAPI.BasePath = api.(*disc_api.Api).GetBasePath()
-		subAPI.Policy = api.(*disc_api.Api).GetTier()
-		subAPI.ApiType = api.(*disc_api.Api).GetApiType()
-		subAPI.Uuid = api.(*disc_api.Api).GetId()
-		subAPIs = append(subAPIs, &subAPI)
-	}
-	subAPIList := &subscription.APIList{
-		List: subAPIs,
-	}
-	UpdateEnforcerAPIList(label, subAPIList)
 }
 
 // UpdateEnforcerJWTIssuers sets new update to the enforcer's Applications
@@ -569,25 +553,6 @@ func UpdateEnforcerJWTIssuers(jwtIssuers *subscription.JWTIssuerList) {
 	}
 	enforcerLabelMap[label].jwtIssuers = jwtIssuerList
 	logger.LoggerXds.Infof("New JWTIssuer cache update for the label: " + label + " version: " + fmt.Sprint(version))
-}
-
-// UpdateEnforcerAPIList sets new update to the enforcer's Apis
-func UpdateEnforcerAPIList(label string, apis *subscription.APIList) {
-	logger.LoggerXds.Debugf("Updating Enforcer API Cache")
-	apiList := append(enforcerLabelMap[label].apiList, apis)
-
-	version, _ := crand.Int(crand.Reader, maxRandomBigInt())
-	snap, _ := wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
-		wso2_resource.APIListType: apiList,
-	})
-	snap.Consistent()
-
-	errSetSnap := enforcerAPICache.SetSnapshot(context.Background(), label, snap)
-	if errSetSnap != nil {
-		logger.LoggerXds.ErrorC(logging.PrintError(logging.Error1414, logging.MAJOR, "Error while setting the snapshot : %v", errSetSnap.Error()))
-	}
-	enforcerLabelMap[label].apiList = apiList
-	logger.LoggerXds.Infof("New API List cache update for the label: " + label + " version: " + fmt.Sprint(version))
 }
 
 // UpdateXdsCacheWithLock uses mutex and lock to avoid different go routines updating XDS at the same time

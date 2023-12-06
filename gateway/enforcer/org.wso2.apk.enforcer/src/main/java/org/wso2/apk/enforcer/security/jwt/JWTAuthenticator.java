@@ -33,6 +33,7 @@ import org.wso2.apk.enforcer.commons.dto.JWTValidationInfo;
 import org.wso2.apk.enforcer.commons.jwtgenerator.AbstractAPIMgtGatewayJWTGenerator;
 import org.wso2.apk.enforcer.commons.exception.APISecurityException;
 import org.wso2.apk.enforcer.commons.exception.EnforcerException;
+import org.wso2.apk.enforcer.commons.model.APIConfig;
 import org.wso2.apk.enforcer.commons.model.AuthenticationContext;
 import org.wso2.apk.enforcer.commons.model.JWTAuthenticationConfig;
 import org.wso2.apk.enforcer.commons.model.RequestContext;
@@ -139,7 +140,8 @@ public class JWTAuthenticator implements Authenticator {
             if (RevokedTokenRedisClient.getRevokedTokens().contains(validationInfo.getIdentifier())) {
                 log.info("Revoked JWT token. ", validationInfo.getIdentifier());
                 throw new APISecurityException(APIConstants.StatusCodes.UNAUTHENTICATED.getCode(),
-                        APISecurityConstants.API_AUTH_INVALID_CREDENTIALS, APISecurityConstants.API_AUTH_INVALID_CREDENTIALS_MESSAGE);
+                        APISecurityConstants.API_AUTH_INVALID_CREDENTIALS,
+                        APISecurityConstants.API_AUTH_INVALID_CREDENTIALS_MESSAGE);
             }
             if (validationInfo != null) {
                 if (validationInfo.isValid()) {
@@ -177,8 +179,8 @@ public class JWTAuthenticator implements Authenticator {
                             // Subscription validation using consumer key
                             if (consumerKey != null) {
                                 validateSubscriptionUsingConsumerKey(apiKeyValidationInfoDTO, name, version, context,
-                                        consumerKey, envType, APIConstants.API_SECURITY_OAUTH2, organization,
-                                        splitToken);
+                                        consumerKey, envType, organization,
+                                        splitToken, requestContext.getMatchedAPI());
                             } else {
                                 log.error("Error while extracting consumer key from token");
                                 throw new APISecurityException(APIConstants.StatusCodes.UNAUTHENTICATED.getCode(),
@@ -336,23 +338,26 @@ public class JWTAuthenticator implements Authenticator {
      * @param context        API context
      * @param consumerKey    Consumer key extracted from the jwt token claim set
      * @param envType        The environment type, i.e. PRODUCTION or SANDBOX
-     * @param securityScheme Security scheme related to the token (only OAuth2 is supported for now).
      * @param organization   Organization extracted from the request context
      * @param splitToken     The split token
+     * @param matchedAPI
      * @throws APISecurityException if the user is not subscribed to the API
      */
     private void validateSubscriptionUsingConsumerKey(APIKeyValidationInfoDTO validationInfo, String name,
-            String version, String context, String consumerKey, String envType, String securityScheme,
-            String organization, String[] splitToken) throws APISecurityException {
+                                                      String version, String context, String consumerKey,
+                                                      String envType, String organization, String[] splitToken,
+                                                      APIConfig matchedAPI) throws APISecurityException {
 
         validationInfo.setApiName(name);
         validationInfo.setApiVersion(version);
         validationInfo.setApiContext(context);
         validationInfo.setConsumerKey(consumerKey);
         validationInfo.setType(envType);
-        validationInfo.setSecurityScheme(securityScheme);
+        validationInfo.setSecurityScheme(APIConstants.API_SECURITY_OAUTH2);
         validationInfo.setSubscriberOrganization(organization);
-
+        validationInfo.setApiContext(matchedAPI.getBasePath());
+        validationInfo.setApiVersion(matchedAPI.getVersion());
+        validationInfo.setApiName(matchedAPI.getName());
         KeyValidator.validateSubscriptionUsingConsumerKey(validationInfo);
 
         if (validationInfo.isAuthorized()) {
@@ -380,6 +385,7 @@ public class JWTAuthenticator implements Authenticator {
      * @throws APISecurityException
      */
     private JWTValidationInfo getJwtValidationInfo(String jwtToken, String organization, String environment) throws APISecurityException {
+
         if (isGatewayTokenCacheEnabled) {
             String[] jwtParts = jwtToken.split("\\.");
             String signature = jwtParts[2];
@@ -460,8 +466,8 @@ public class JWTAuthenticator implements Authenticator {
         try {
             // Get issuer
             String issuer = jwtClaimsSet.getIssuer();
-            JWTValidator jwtValidator = SubscriptionDataHolder.getInstance().getSubscriptionDataStore()
-                    .getJWTValidatorByIssuer(issuer, organization, environment);
+            JWTValidator jwtValidator = SubscriptionDataHolder.getInstance().getSubscriptionDataStore(organization)
+                    .getJWTValidatorByIssuer(issuer, environment);
             // If no validator found for the issuer, we are not caching the token.
             if (jwtValidator == null) {
                 throw new APISecurityException(APIConstants.StatusCodes.UNAUTHENTICATED.getCode(),
@@ -495,6 +501,7 @@ public class JWTAuthenticator implements Authenticator {
      * @return boolean true if the token is not expired, false otherwise
      */
     private Boolean isJWTExpired(JWTValidationInfo payload) {
+
         long timestampSkew = FilterUtils.getTimeStampSkewInSeconds();
         Date now = new Date();
         Date exp = new Date(payload.getExpiryTime());

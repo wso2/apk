@@ -38,4 +38,7 @@ spec:
     - name: https-rate-limiter
       protocol: TCP
       port: 18001
+    - name: profile-port
+      protocol: TCP
+      port: 6060
 {{- end -}}
