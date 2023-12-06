@@ -29,7 +29,7 @@ on:
       next_version:
         type: string
         description: "Next Development Version"
-  pull_request:
+  pull_request_target:
     types:
       - closed
       - opened
@@ -68,7 +68,7 @@ jobs:
           git config --global user.email ${{ secrets.WSO2_BOT_EMAIL }}
       - name: checkout pull request and merge.
         shell: sh
-        if: github.event_name == 'pull_request' && github.event.action == 'opened' || github.event.action == 'synchronize'
+        if: github.event_name == 'pull_request_target' && github.event.action == 'opened' || github.event.action == 'synchronize'
         run: |
           cd apk-repo
           gh pr checkout ${{ github.event.number }} -b pr-${{ github.event.number }}
@@ -84,7 +84,7 @@ jobs:
           cd apk-repo/common-controller
           ./gradlew build
       - name: Run Gradle Build
-        if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
+        if: github.event_name == 'pull_request_target' && github.event.action == 'closed' && github.event.pull_request_target.merged == true
         run: |
           cd apk-repo/common-controller
           ./gradlew docker_push -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pdocker_username=${{ secrets.DOCKER_USERNAME }} -Pdocker_password=${{ secrets.DOCKER_PASSWORD }} -Pimage_version=latest -PmultiArch=true
