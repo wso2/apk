@@ -1,8 +1,6 @@
 package server
 
 import (
-	"log"
-
 	apkmgt "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/apkmgt"
 	"github.com/wso2/apk/common-controller/internal/loggers"
 	utils "github.com/wso2/apk/common-controller/internal/utils"
@@ -27,14 +25,8 @@ func (s EventServer) StreamEvents(req *apkmgt.Request, srv apkmgt.EventStreamSer
 	loggers.LoggerAPKOperator.Debugf("Enforcer ID : %v", enforcerID[0])
 	utils.AddClientConnection(enforcerID[0], srv)
 	utils.SendInitialEvent(srv)
-	for {
-		if srv.Context().Done() == nil {
-			utils.DeleteClientConnection(enforcerID[0])
-			return nil // Client closed the connection
-		} else if srv.Context().Err() != nil {
-			log.Printf("error : %v", srv.Context().Err())
-			utils.DeleteClientConnection(enforcerID[0])
-			return nil
-		}
-	}
+	<-srv.Context().Done()
+	loggers.LoggerAPKOperator.Infof("Connection closed by the client : %v", enforcerID[0])
+	utils.DeleteClientConnection(enforcerID[0])
+	return nil // Client closed the connection
 }

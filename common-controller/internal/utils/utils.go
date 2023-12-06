@@ -22,11 +22,12 @@ import (
 	"sync"
 
 	discovery "github.com/envoyproxy/go-control-plane/envoy/service/discovery/v3"
-	constants "github.com/wso2/apk/common-controller/internal/operator/constant"
 	"github.com/wso2/apk/adapter/pkg/utils/envutils"
 	"github.com/wso2/apk/adapter/pkg/utils/stringutils"
-	k8client "sigs.k8s.io/controller-runtime/pkg/client"
 	"github.com/wso2/apk/common-controller/internal/config"
+	constants "github.com/wso2/apk/common-controller/internal/operator/constant"
+	"k8s.io/apimachinery/pkg/types"
+	k8client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const nodeIDArrayMaxLength int = 20
@@ -124,4 +125,12 @@ func GetEnvironment(environment string) string {
 		return environment
 	}
 	return config.ReadConfigs().CommonController.Environment
+}
+
+// NamespacedName generates namespaced name for Kubernetes objects
+func NamespacedName(obj k8client.Object) types.NamespacedName {
+	return types.NamespacedName{
+		Namespace: obj.GetNamespace(),
+		Name:      obj.GetName(),
+	}
 }

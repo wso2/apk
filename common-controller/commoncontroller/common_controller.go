@@ -145,7 +145,13 @@ func runRatelimitServer(rlsServer xdsv3.Server) {
 
 func runCommonEnforcerServer(Port uint) {
 	var grpcOptions []grpc.ServerOption
-	grpcOptions = append(grpcOptions, grpc.MaxConcurrentStreams(grpcMaxConcurrentStreams))
+	grpcOptions = append(grpcOptions, grpc.KeepaliveParams(
+		keepalive.ServerParameters{
+			Time:    time.Duration(5 * time.Minute),
+			Timeout: time.Duration(20 * time.Second),
+		}),
+		grpc.MaxConcurrentStreams(grpcMaxConcurrentStreams),
+	)
 	publicKeyLocation, privateKeyLocation, truststoreLocation := utils.GetKeyLocations()
 	cert, err := utils.GetServerCertificate(publicKeyLocation, privateKeyLocation)
 

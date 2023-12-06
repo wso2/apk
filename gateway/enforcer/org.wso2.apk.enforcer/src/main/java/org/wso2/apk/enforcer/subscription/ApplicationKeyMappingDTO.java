@@ -60,4 +60,16 @@ public class ApplicationKeyMappingDTO implements Serializable {
     private String keyType;
     private String envID;
 
+    public String getOrganization() {
+
+        return organization;
+    }
+
+    public void setOrganization(String organization) {
+
+        this.organization = organization;
+    }
+
+    private String organization;
+
 }

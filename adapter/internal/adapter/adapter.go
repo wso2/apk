@@ -118,7 +118,6 @@ func runManagementServer(conf *config.Config, server xdsv3.Server, enforcerServe
 	discoveryv3.RegisterAggregatedDiscoveryServiceServer(grpcServer, server)
 	configservice.RegisterConfigDiscoveryServiceServer(grpcServer, enforcerServer)
 	apiservice.RegisterApiDiscoveryServiceServer(grpcServer, enforcerServer)
-	subscriptionservice.RegisterApiListDiscoveryServiceServer(grpcServer, enforcerAPIDsSrv)
 	subscriptionservice.RegisterJWTIssuerDiscoveryServiceServer(grpcServer, enforcerJwtIssuerDsSrv)
 	// register health service
 	healthservice.RegisterHealthServer(grpcServer, &health.Server{})

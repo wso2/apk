@@ -18,39 +18,27 @@
 
 package org.wso2.apk.enforcer.subscription;
 
-import feign.Feign;
-import feign.gson.GsonDecoder;
-import feign.gson.GsonEncoder;
-import feign.slf4j.Slf4jLogger;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.wso2.apk.enforcer.commons.dto.ClaimMappingDto;
 import org.wso2.apk.enforcer.commons.dto.JWKSConfigurationDTO;
 import org.wso2.apk.enforcer.commons.exception.EnforcerException;
-import org.wso2.apk.enforcer.config.ConfigHolder;
 import org.wso2.apk.enforcer.config.dto.ExtendedTokenIssuerDto;
 import org.wso2.apk.enforcer.constants.Constants;
-import org.wso2.apk.enforcer.discovery.ApiListDiscoveryClient;
-import org.wso2.apk.enforcer.discovery.JWTIssuerDiscoveryClient;
-import org.wso2.apk.enforcer.discovery.subscription.APIs;
 import org.wso2.apk.enforcer.discovery.subscription.Certificate;
 import org.wso2.apk.enforcer.discovery.subscription.JWTIssuer;
-import org.wso2.apk.enforcer.models.API;
 import org.wso2.apk.enforcer.models.Application;
 import org.wso2.apk.enforcer.models.ApplicationKeyMapping;
 import org.wso2.apk.enforcer.models.ApplicationMapping;
 import org.wso2.apk.enforcer.models.SubscribedAPI;
 import org.wso2.apk.enforcer.models.Subscription;
 import org.wso2.apk.enforcer.security.jwt.validator.JWTValidator;
-import org.wso2.apk.enforcer.util.ApacheFeignHttpClient;
-import org.wso2.apk.enforcer.util.FilterUtils;
 import org.wso2.apk.enforcer.util.TLSUtils;
 
 import java.io.IOException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -68,14 +56,12 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
     public static final String DELEM_PERIOD = ":";
 
     // Maps for keeping Subscription related details.
-    private Map<String, ApplicationKeyMapping> applicationKeyMappingMap;
-    private Map<String, ApplicationMapping> applicationMappingMap;
-    private Map<String, Application> applicationMap;
-    private Map<String, API> apiMap;
-    private Map<String, Subscription> subscriptionMap;
+    private Map<String, ApplicationKeyMapping> applicationKeyMappingMap = new ConcurrentHashMap<>();
+    private Map<String, ApplicationMapping> applicationMappingMap = new ConcurrentHashMap<>();
+    private Map<String, Application> applicationMap = new ConcurrentHashMap<>();
+    private Map<String, Subscription> subscriptionMap = new ConcurrentHashMap<>();
 
-    private Map<String, Map<String, JWTValidator>> jwtValidatorMap;
-    SubscriptionValidationDataRetrievalRestClient subscriptionValidationDataRetrievalRestClient;
+    private Map<String, JWTValidator> jwtValidatorMap = new ConcurrentHashMap<>();
 
     SubscriptionDataStoreImpl() {
 
@@ -86,88 +72,18 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
         return instance;
     }
 
-    public void initializeStore() {
-
-        String commonControllerHost = ConfigHolder.getInstance().getEnvVarConfig().getCommonControllerHost();
-        String commonControllerHostname = ConfigHolder.getInstance().getEnvVarConfig().getCommonControllerHostname();
-        int commonControllerRestPort =
-                Integer.parseInt(ConfigHolder.getInstance().getEnvVarConfig().getCommonControllerRestPort());
-        subscriptionValidationDataRetrievalRestClient = Feign.builder()
-                .encoder(new GsonEncoder())
-                .decoder(new GsonDecoder())
-                .logger(new Slf4jLogger())
-                .client(new ApacheFeignHttpClient(FilterUtils.getMutualSSLHttpClient("https",
-                        Arrays.asList(commonControllerHost, commonControllerHostname))))
-                .target(SubscriptionValidationDataRetrievalRestClient.class,
-                        "https://" + commonControllerHost + ":" + commonControllerRestPort);
-        this.applicationKeyMappingMap = new ConcurrentHashMap<>();
-        this.applicationMap = new ConcurrentHashMap<>();
-        this.apiMap = new ConcurrentHashMap<>();
-        this.subscriptionMap = new ConcurrentHashMap<>();
-        this.applicationMappingMap = new ConcurrentHashMap<>();
-        this.jwtValidatorMap = new ConcurrentHashMap<>();
-        initializeLoadingTasks();
-    }
-
     @Override
     public Application getApplicationById(String appUUID) {
 
         return applicationMap.get(appUUID);
     }
 
-    @Override
-    public API getApiByContextAndVersion(String uuid) {
 
-        return apiMap.get(uuid);
-    }
 
     @Override
     public Subscription getSubscriptionById(String appId, String apiId) {
 
         return subscriptionMap.get(SubscriptionDataStoreUtil.getSubscriptionCacheKey(appId, apiId));
-    }
-
-    private void initializeLoadingTasks() {
-
-        ApiListDiscoveryClient.getInstance().watchApiList();
-        JWTIssuerDiscoveryClient.getInstance().watchJWTIssuers();
-        EventingGrpcClient.getInstance().watchEvents();
-    }
-
-    private void loadApplicationKeyMappings() {
-
-        new Thread(() -> {
-            ApplicationKeyMappingDtoList applicationKeyMappings =
-                    subscriptionValidationDataRetrievalRestClient.getAllApplicationKeyMappings();
-            addApplicationKeyMappings(applicationKeyMappings.getList());
-        }).start();
-
-    }
-
-    private void loadApplicationMappings() {
-
-        new Thread(() -> {
-            ApplicationMappingDtoList applicationMappings = subscriptionValidationDataRetrievalRestClient
-                    .getAllApplicationMappings();
-            addApplicationMappings(applicationMappings.getList());
-        }).start();
-
-    }
-
-    private void loadApplications() {
-
-        new Thread(() -> {
-            ApplicationListDto applications = subscriptionValidationDataRetrievalRestClient.getAllApplications();
-            addApplications(applications.getList());
-        }).start();
-    }
-
-    private void loadSubscriptions() {
-
-        new Thread(() -> {
-            SubscriptionListDto subscriptions = subscriptionValidationDataRetrievalRestClient.getAllSubscriptions();
-            addSubscriptions(subscriptions.getList());
-        }).start();
     }
 
     public void addSubscriptions(List<SubscriptionDto> subscriptionList) {
@@ -212,36 +128,12 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
         this.applicationMap = newApplicationMap;
     }
 
-    public void addApis(List<APIs> apisList) {
 
-        Map<String, API> newApiMap = new ConcurrentHashMap<>();
-
-        for (APIs api : apisList) {
-            API newApi = new API();
-            // newApi.setApiId(Integer.parseInt(api.getApiId()));
-            newApi.setApiName(api.getName());
-            newApi.setApiProvider(api.getProvider());
-            newApi.setApiType(api.getApiType());
-            newApi.setApiVersion(api.getVersion());
-            newApi.setContext(api.getBasePath());
-            newApi.setApiTier(api.getPolicy());
-            newApi.setApiUUID(api.getUuid());
-            newApi.setLcState(api.getLcState());
-            newApiMap.put(newApi.getCacheKey(), newApi);
-        }
-        if (log.isDebugEnabled()) {
-            log.debug("Total Apis in new cache: {}", newApiMap.size());
-        }
-        this.apiMap = newApiMap;
-    }
-
-    public void addApplicationKeyMappings(
-            List<ApplicationKeyMappingDTO> applicationKeyMappingList) {
+    public void addApplicationKeyMappings(List<ApplicationKeyMappingDTO> applicationKeyMappingList) {
 
         Map<String, ApplicationKeyMapping> newApplicationKeyMappingMap = new ConcurrentHashMap<>();
 
-        for (ApplicationKeyMappingDTO applicationKeyMapping :
-                applicationKeyMappingList) {
+        for (ApplicationKeyMappingDTO applicationKeyMapping : applicationKeyMappingList) {
             ApplicationKeyMapping mapping = new ApplicationKeyMapping();
             mapping.setApplicationUUID(applicationKeyMapping.getApplicationUUID());
             mapping.setSecurityScheme(applicationKeyMapping.getSecurityScheme());
@@ -256,36 +148,21 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
         this.applicationKeyMappingMap = newApplicationKeyMappingMap;
     }
 
-    public void addApplicationMappings(
-            List<ApplicationMappingDto> applicationMappingList) {
+    public void addApplicationMappings(List<ApplicationMappingDto> applicationMappingList) {
 
         Map<String, ApplicationMapping> newApplicationMappingMap = new ConcurrentHashMap<>();
-
-        for (ApplicationMappingDto applicationMapping :
-                applicationMappingList) {
+        for (ApplicationMappingDto applicationMapping : applicationMappingList) {
             ApplicationMapping appMapping = new ApplicationMapping();
             appMapping.setUuid(applicationMapping.getUuid());
-            appMapping.setApplicationRef(applicationMapping.getApplicationRef());
-            appMapping.setSubscriptionRef(applicationMapping.getSubscriptionRef());
+            appMapping.setApplicationUUID(applicationMapping.getApplicationRef());
+            appMapping.setSubscriptionUUID(applicationMapping.getSubscriptionRef());
+            appMapping.setOrganization(applicationMapping.getOrganization());
             newApplicationMappingMap.put(appMapping.getCacheKey(), appMapping);
         }
         if (log.isDebugEnabled()) {
             log.debug("Total Application Mappings in new cache: {}", newApplicationMappingMap.size());
         }
         this.applicationMappingMap = newApplicationMappingMap;
-    }
-
-    @Override
-    public API getMatchingAPI(String context, String version) {
-
-        for (API api : apiMap.values()) {
-            if (StringUtils.isNotEmpty(context) && StringUtils.isNotEmpty(version)) {
-                if (api.getContext().equals(context) && api.getApiVersion().equals(version)) {
-                    return api;
-                }
-            }
-        }
-        return null;
     }
 
     @Override
@@ -325,7 +202,7 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
 
         for (ApplicationMapping applicationMapping : applicationMappingMap.values()) {
             if (StringUtils.isNotEmpty(uuid)) {
-                if (applicationMapping.getApplicationRef().equals(uuid)) {
+                if (applicationMapping.getApplicationUUID().equals(uuid)) {
                     return applicationMapping;
                 }
             }
@@ -362,7 +239,7 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
     @Override
     public void addJWTIssuers(List<JWTIssuer> jwtIssuers) {
 
-        Map<String, Map<String, JWTValidator>> jwtValidatorMap = new ConcurrentHashMap<>();
+        Map<String, JWTValidator> jwtValidatorMap = new ConcurrentHashMap<>();
         for (JWTIssuer jwtIssuer : jwtIssuers) {
             try {
                 ExtendedTokenIssuerDto tokenIssuerDto = new ExtendedTokenIssuerDto(jwtIssuer.getIssuer());
@@ -373,8 +250,8 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
                 if (StringUtils.isNotEmpty(certificate.getJwks().getUrl())) {
                     JWKSConfigurationDTO jwksConfigurationDTO = new JWKSConfigurationDTO();
                     if (StringUtils.isNotEmpty(certificate.getJwks().getTls())) {
-                        java.security.cert.Certificate tlsCertificate = TLSUtils
-                                .getCertificateFromContent(certificate.getJwks().getTls());
+                        java.security.cert.Certificate tlsCertificate =
+                                TLSUtils.getCertificateFromContent(certificate.getJwks().getTls());
                         jwksConfigurationDTO.setCertificate(tlsCertificate);
                     }
                     jwksConfigurationDTO.setUrl(certificate.getJwks().getUrl());
@@ -382,29 +259,21 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
                     tokenIssuerDto.setJwksConfigurationDTO(jwksConfigurationDTO);
                 }
                 if (StringUtils.isNotEmpty(certificate.getCertificate())) {
-                    java.security.cert.Certificate signingCertificate = TLSUtils
-                            .getCertificateFromContent(certificate.getCertificate());
+                    java.security.cert.Certificate signingCertificate =
+                            TLSUtils.getCertificateFromContent(certificate.getCertificate());
                     tokenIssuerDto.setCertificate(signingCertificate);
                 }
                 Map<String, String> claimMappingMap = jwtIssuer.getClaimMappingMap();
                 Map<String, ClaimMappingDto> claimMappingDtos = new HashMap<>();
-                claimMappingMap.forEach((remoteClaim, localClaim) -> {
-                    claimMappingDtos.put(remoteClaim, new ClaimMappingDto(remoteClaim, localClaim));
-                });
+                claimMappingMap.forEach((remoteClaim, localClaim) -> claimMappingDtos.put(remoteClaim,
+                        new ClaimMappingDto(remoteClaim, localClaim)));
                 tokenIssuerDto.setClaimMappings(claimMappingDtos);
                 JWTValidator jwtValidator = new JWTValidator(tokenIssuerDto);
-                Map<String, JWTValidator> orgBasedJWTValidatorMap = new ConcurrentHashMap<>();
-                if (jwtValidatorMap.containsKey(jwtIssuer.getOrganization())) {
-                    orgBasedJWTValidatorMap = jwtValidatorMap.get(jwtIssuer.getOrganization());
-                }
-
                 List<String> environments = getEnvironments(jwtIssuer);
                 for (String environment : environments) {
                     String mapKey = getMapKey(environment, jwtIssuer.getIssuer());
-                    orgBasedJWTValidatorMap.put(mapKey, jwtValidator);
+                    jwtValidatorMap.put(mapKey, jwtValidator);
                 }
-
-                jwtValidatorMap.put(jwtIssuer.getOrganization(), orgBasedJWTValidatorMap);
                 this.jwtValidatorMap = jwtValidatorMap;
             } catch (EnforcerException | CertificateException | IOException e) {
                 log.error("Error occurred while configuring JWT Validator for issuer " + jwtIssuer.getIssuer(), e);
@@ -413,23 +282,15 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
     }
 
     @Override
-    public JWTValidator getJWTValidatorByIssuer(String issuer, String organization, String environment) {
+    public JWTValidator getJWTValidatorByIssuer(String issuer, String environment) {
 
-        Map<String, JWTValidator> orgBaseJWTValidators = jwtValidatorMap.get(organization);
-
-        if (orgBaseJWTValidators != null) {
-
-            String mapKey = getMapKey(Constants.DEFAULT_ALL_ENVIRONMENTS_TOKEN_ISSUER, issuer);
-            JWTValidator jwtValidator = orgBaseJWTValidators.get(mapKey);
-            if (jwtValidator != null) {
-                return jwtValidator;
-            }
-
-            mapKey = getMapKey(environment, issuer);
-            return orgBaseJWTValidators.get(mapKey);
+        String mapKey = getMapKey(Constants.DEFAULT_ALL_ENVIRONMENTS_TOKEN_ISSUER, issuer);
+        JWTValidator jwtValidator = jwtValidatorMap.get(mapKey);
+        if (jwtValidator != null) {
+            return jwtValidator;
         }
-
-        return null;
+        mapKey = getMapKey(environment, issuer);
+        return jwtValidatorMap.get(mapKey);
     }
 
     @Override
@@ -468,8 +329,8 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
 
         ApplicationMapping resolvedApplicationMapping = new ApplicationMapping();
         resolvedApplicationMapping.setUuid(applicationMapping.getUuid());
-        resolvedApplicationMapping.setApplicationRef(applicationMapping.getApplicationRef());
-        resolvedApplicationMapping.setSubscriptionRef(applicationMapping.getSubscriptionRef());
+        resolvedApplicationMapping.setApplicationUUID(applicationMapping.getApplicationRef());
+        resolvedApplicationMapping.setSubscriptionUUID(applicationMapping.getSubscriptionRef());
         if (applicationMappingMap.containsKey(resolvedApplicationMapping.getUuid())) {
             applicationMappingMap.replace(resolvedApplicationMapping.getUuid(), resolvedApplicationMapping);
         } else {
@@ -490,11 +351,7 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
         while (iterator.hasNext()) {
             Map.Entry<String, ApplicationKeyMapping> cachedApplicationKeyMapping = iterator.next();
             ApplicationKeyMapping value = cachedApplicationKeyMapping.getValue();
-            if (value.getApplicationIdentifier().equals(resolvedApplicationKeyMapping.getApplicationIdentifier()) &&
-                    value.getSecurityScheme().equals(resolvedApplicationKeyMapping.getSecurityScheme()) &&
-                    value.getKeyType().equals(resolvedApplicationKeyMapping.getKeyType()) &&
-                    value.getEnvId().equals(resolvedApplicationKeyMapping.getEnvId()) &&
-                    value.getApplicationUUID().equals(resolvedApplicationKeyMapping.getApplicationUUID())) {
+            if (value.getApplicationIdentifier().equals(resolvedApplicationKeyMapping.getApplicationIdentifier()) && value.getSecurityScheme().equals(resolvedApplicationKeyMapping.getSecurityScheme()) && value.getKeyType().equals(resolvedApplicationKeyMapping.getKeyType()) && value.getEnvId().equals(resolvedApplicationKeyMapping.getEnvId()) && value.getApplicationUUID().equals(resolvedApplicationKeyMapping.getApplicationUUID())) {
                 iterator.remove();
             }
         }
@@ -506,8 +363,8 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
 
         ApplicationMapping resolvedApplicationMapping = new ApplicationMapping();
         resolvedApplicationMapping.setUuid(applicationMapping.getUuid());
-        resolvedApplicationMapping.setApplicationRef(applicationMapping.getApplicationRef());
-        resolvedApplicationMapping.setSubscriptionRef(applicationMapping.getSubscriptionRef());
+        resolvedApplicationMapping.setApplicationUUID(applicationMapping.getApplicationRef());
+        resolvedApplicationMapping.setSubscriptionUUID(applicationMapping.getSubscriptionRef());
         applicationMappingMap.remove(resolvedApplicationMapping.getUuid());
     }
 
@@ -524,11 +381,7 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
         while (iterator.hasNext()) {
             Map.Entry<String, ApplicationKeyMapping> cachedApplicationKeyMapping = iterator.next();
             ApplicationKeyMapping value = cachedApplicationKeyMapping.getValue();
-            if (value.getApplicationIdentifier().equals(resolvedApplicationKeyMapping.getApplicationIdentifier()) &&
-                    value.getSecurityScheme().equals(resolvedApplicationKeyMapping.getSecurityScheme()) &&
-                    value.getKeyType().equals(resolvedApplicationKeyMapping.getKeyType()) &&
-                    value.getEnvId().equals(resolvedApplicationKeyMapping.getEnvId()) &&
-                    value.getApplicationUUID().equals(resolvedApplicationKeyMapping.getApplicationUUID())) {
+            if (value.getApplicationIdentifier().equals(resolvedApplicationKeyMapping.getApplicationIdentifier()) && value.getSecurityScheme().equals(resolvedApplicationKeyMapping.getSecurityScheme()) && value.getKeyType().equals(resolvedApplicationKeyMapping.getKeyType()) && value.getEnvId().equals(resolvedApplicationKeyMapping.getEnvId()) && value.getApplicationUUID().equals(resolvedApplicationKeyMapping.getApplicationUUID())) {
                 iterator.remove();
             }
         }
@@ -544,15 +397,6 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
     public void removeApplication(org.wso2.apk.enforcer.discovery.subscription.Application application) {
 
         applicationMap.remove(application.getUuid());
-    }
-
-    @Override
-    public void loadStartupArtifacts() {
-
-        loadSubscriptions();
-        loadApplications();
-        loadApplicationMappings();
-        loadApplicationKeyMappings();
     }
 
     private List<String> getEnvironments(JWTIssuer jwtIssuer) {

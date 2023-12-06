@@ -32,6 +32,7 @@ import org.wso2.apk.enforcer.config.ConfigHolder;
 
 import java.io.File;
 import java.nio.file.Paths;
+import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.SSLException;
 
@@ -57,6 +58,7 @@ public class GRPCUtils {
         return NettyChannelBuilder.forAddress(host, port)
                 .useTransportSecurity()
                 .sslContext(sslContext)
+                .keepAliveTime(30, TimeUnit.SECONDS)
                 .overrideAuthority(hostname)
                 .build();
     }

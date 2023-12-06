@@ -22,16 +22,12 @@ import io.envoyproxy.envoy.data.accesslog.v3.HTTPAccessLogEntry;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.wso2.apk.enforcer.commons.analytics.collectors.AnalyticsCustomDataProvider;
 import org.wso2.apk.enforcer.commons.model.AuthenticationContext;
 import org.wso2.apk.enforcer.commons.model.RequestContext;
 import org.wso2.apk.enforcer.constants.AnalyticsConstants;
 import org.wso2.apk.enforcer.constants.MetadataConstants;
 import org.wso2.apk.enforcer.models.API;
 import org.wso2.apk.enforcer.subscription.SubscriptionDataHolder;
-
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 
 /**
  * Common Utility functions
@@ -42,17 +38,11 @@ public class AnalyticsUtils {
     public static String getAPIId(RequestContext requestContext) {
         return requestContext.getMatchedAPI().getUuid();
     }
-
+    public static String getOrganization(RequestContext requestContext) {
+        return requestContext.getMatchedAPI().getOrganizationId();
+    }
     public static String setDefaultIfNull(String value) {
         return value == null ? AnalyticsConstants.DEFAULT_FOR_UNASSIGNED : value;
-    }
-
-    public static String getAPIProvider(String uuid) {
-        API api = SubscriptionDataHolder.getInstance().getSubscriptionDataStore().getApiByContextAndVersion(uuid);
-        if (api == null) {
-            return AnalyticsConstants.DEFAULT_FOR_UNASSIGNED;
-        }
-        return setDefaultIfNull(api.getApiProvider());
     }
 
     /**

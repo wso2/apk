@@ -30,4 +30,5 @@ message ApplicationMapping {
     string uuid = 1;
     string applicationRef = 2;
     string subscriptionRef = 3;
+    string organization = 4;
 }

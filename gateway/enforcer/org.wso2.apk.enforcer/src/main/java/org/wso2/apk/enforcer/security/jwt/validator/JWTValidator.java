@@ -69,7 +69,7 @@ public class JWTValidator {
         if (tokenIssuer.getJwksConfigurationDTO() != null && tokenIssuer.getJwksConfigurationDTO().isEnabled() && StringUtils.isNotEmpty(tokenIssuer.getJwksConfigurationDTO().getUrl())) {
             Certificate certificate = tokenIssuer.getJwksConfigurationDTO().getCertificate();
             if (certificate != null) {
-                jwksClient = new JWKSClient(tokenIssuer.getJwksConfigurationDTO().getUrl(), Arrays.asList(certificate));
+                jwksClient = new JWKSClient(tokenIssuer.getJwksConfigurationDTO().getUrl(), List.of(certificate));
             } else {
                 jwksClient = new JWKSClient(tokenIssuer.getJwksConfigurationDTO().getUrl(), Collections.emptyList());
             }

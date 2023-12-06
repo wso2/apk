@@ -33,4 +33,5 @@ message ApplicationKeyMapping {
   string keyType = 4;
   string envID = 5;
   int64 timestamp = 6;
+  string organization = 7;
 }

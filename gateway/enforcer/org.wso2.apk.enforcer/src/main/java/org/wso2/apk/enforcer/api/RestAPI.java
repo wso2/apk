@@ -19,31 +19,25 @@ package org.wso2.apk.enforcer.api;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.wso2.apk.enforcer.common.CacheProviderUtil;
+import org.wso2.apk.enforcer.analytics.AnalyticsFilter;
+import org.wso2.apk.enforcer.commons.Filter;
 import org.wso2.apk.enforcer.commons.dto.ClaimValueDTO;
 import org.wso2.apk.enforcer.commons.dto.JWTConfigurationDto;
+import org.wso2.apk.enforcer.commons.model.APIConfig;
+import org.wso2.apk.enforcer.commons.model.RequestContext;
+import org.wso2.apk.enforcer.commons.model.ResourceConfig;
+import org.wso2.apk.enforcer.config.ConfigHolder;
 import org.wso2.apk.enforcer.config.EnforcerConfig;
-import org.wso2.apk.enforcer.deny.DenyFilter;
+import org.wso2.apk.enforcer.config.dto.FilterDTO;
+import org.wso2.apk.enforcer.constants.APIConstants;
+import org.wso2.apk.enforcer.constants.HttpConstants;
+import org.wso2.apk.enforcer.cors.CorsFilter;
 import org.wso2.apk.enforcer.discovery.api.Api;
 import org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo;
 import org.wso2.apk.enforcer.discovery.api.Certificate;
 import org.wso2.apk.enforcer.discovery.api.Claim;
 import org.wso2.apk.enforcer.discovery.api.Operation;
 import org.wso2.apk.enforcer.discovery.api.Resource;
-import org.wso2.apk.enforcer.analytics.AnalyticsFilter;
-import org.wso2.apk.enforcer.commons.Filter;
-import org.wso2.apk.enforcer.commons.model.APIConfig;
-import org.wso2.apk.enforcer.commons.model.MockedApiConfig;
-import org.wso2.apk.enforcer.commons.model.MockedContentExamples;
-import org.wso2.apk.enforcer.commons.model.MockedHeaderConfig;
-import org.wso2.apk.enforcer.commons.model.MockedResponseConfig;
-import org.wso2.apk.enforcer.commons.model.RequestContext;
-import org.wso2.apk.enforcer.commons.model.ResourceConfig;
-import org.wso2.apk.enforcer.config.ConfigHolder;
-import org.wso2.apk.enforcer.config.dto.FilterDTO;
-import org.wso2.apk.enforcer.constants.APIConstants;
-import org.wso2.apk.enforcer.constants.HttpConstants;
-import org.wso2.apk.enforcer.cors.CorsFilter;
 import org.wso2.apk.enforcer.interceptor.MediationPolicyFilter;
 import org.wso2.apk.enforcer.security.AuthFilter;
 import org.wso2.apk.enforcer.security.mtls.MtlsUtils;
@@ -69,7 +63,6 @@ public class RestAPI implements API {
     private static final Logger logger = LogManager.getLogger(RestAPI.class);
     private final List<Filter> filters = new ArrayList<>();
     private APIConfig apiConfig;
-    private String apiLifeCycleState;
 
     @Override
     public List<Filter> getFilters() {
@@ -96,8 +89,6 @@ public class RestAPI implements API {
                         APIProcessUtils.convertProtoEndpointSecurity(res.getEndpointSecurityList()));
                 resConfig.setPolicyConfig(Utils.genPolicyConfig(operation.getPolicies()));
                 resConfig.setEndpoints(Utils.processEndpoints(res.getEndpoints()));
-//                resConfig.setMockApiConfig(getMockedApiOperationConfig(operation.getMockedApiConfig(),
-//                        operation.getMethod()));
                 resources.add(resConfig);
             }
         }
@@ -134,14 +125,10 @@ public class RestAPI implements API {
                     enforcerConfig.getJwtConfigurationDto().getKidValue());
         }
 
-        byte[] apiDefinition = null;
-        if (api.getApiDefinitionFile() != null) {
-            apiDefinition = api.getApiDefinitionFile().toByteArray();
-        }
+        byte[] apiDefinition = api.getApiDefinitionFile().toByteArray();
 
-        this.apiLifeCycleState = api.getApiLifeCycleState();
         this.apiConfig = new APIConfig.Builder(name).uuid(api.getId()).vhost(vhost).basePath(basePath).version(version)
-                .resources(resources).apiType(apiType).apiLifeCycleState(apiLifeCycleState).tier(api.getTier())
+                .resources(resources).apiType(apiType).tier(api.getTier())
                 .envType(api.getEnvType()).disableAuthentication(api.getDisableAuthentications())
                 .disableScopes(api.getDisableScopes()).trustStore(trustStore).organizationId(api.getOrganizationId())
                 .mtlsCertificateTiers(mtlsCertificateTiers).mutualSSL(mutualSSL).systemAPI(api.getSystemAPI())
@@ -230,41 +217,6 @@ public class RestAPI implements API {
     public APIConfig getAPIConfig() {
 
         return this.apiConfig;
-    }
-
-    private MockedApiConfig getMockedApiOperationConfig(
-            org.wso2.apk.enforcer.discovery.api.MockedApiConfig mockedApiConfig, String operationName) {
-
-        MockedApiConfig configData = new MockedApiConfig();
-        Map<String, MockedResponseConfig> responses = new HashMap<>();
-        for (org.wso2.apk.enforcer.discovery.api.MockedResponseConfig response : mockedApiConfig.getResponsesList()) {
-            MockedResponseConfig responseData = new MockedResponseConfig();
-            List<MockedHeaderConfig> headers = new ArrayList<>();
-            for (org.wso2.apk.enforcer.discovery.api.MockedHeaderConfig header : response.getHeadersList()) {
-                MockedHeaderConfig headerConfig = new MockedHeaderConfig();
-                headerConfig.setName(header.getName());
-                headerConfig.setValue(header.getValue());
-                headers.add(headerConfig);
-            }
-            responseData.setHeaders(headers);
-            HashMap<String, MockedContentExamples> contentMap = new HashMap<>();
-
-            for (org.wso2.apk.enforcer.discovery.api.MockedContentConfig contentConfig : response.getContentList()) {
-                MockedContentExamples mockedContentExamples = new MockedContentExamples();
-                HashMap<String, String> exampleMap = new HashMap<>();
-                for (org.wso2.apk.enforcer.discovery.api.MockedContentExample exampleConfig :
-                        contentConfig.getExamplesList()) {
-                    exampleMap.put(exampleConfig.getRef(), exampleConfig.getBody());
-                }
-                mockedContentExamples.setExampleMap(exampleMap);
-                contentMap.put(contentConfig.getContentType(), mockedContentExamples);
-            }
-            responseData.setContentMap(contentMap);
-            responses.put(response.getCode(), responseData);
-        }
-        configData.setResponses(responses);
-        logger.debug("Mock API config processed successfully for the " + operationName + " operation.");
-        return configData;
     }
 
     private void initFilters() {

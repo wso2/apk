@@ -21,14 +21,15 @@ import io.grpc.ClientInterceptor;
 import io.grpc.ConnectivityState;
 import io.grpc.ManagedChannel;
 import io.grpc.Metadata;
+import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
 import io.grpc.stub.MetadataUtils;
 import io.grpc.stub.StreamObserver;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.wso2.apk.enforcer.config.ConfigHolder;
 import org.wso2.apk.enforcer.discovery.scheduler.XdsSchedulerManager;
-import org.wso2.apk.enforcer.discovery.service.subscription.EventStreamServiceGrpc;
-import org.wso2.apk.enforcer.discovery.service.subscription.Request;
+import org.wso2.apk.enforcer.discovery.service.apkmgt.EventStreamServiceGrpc;
+import org.wso2.apk.enforcer.discovery.service.apkmgt.Request;
 import org.wso2.apk.enforcer.discovery.subscription.Application;
 import org.wso2.apk.enforcer.discovery.subscription.Event;
 import org.wso2.apk.enforcer.util.GRPCUtils;
@@ -68,7 +69,7 @@ public class EventingGrpcClient implements Runnable {
                     try {
                         channel.awaitTermination(100, TimeUnit.MILLISECONDS);
                     } catch (InterruptedException e) {
-                        logger.error("JWTISsuer discovery channel shutdown wait was interrupted", e);
+                        logger.error("JWTIssuer discovery channel shutdown wait was interrupted", e);
                     }
                 } while (!channel.isShutdown());
             }
@@ -107,9 +108,10 @@ public class EventingGrpcClient implements Runnable {
 
         Request request = Request.newBuilder().setEvent("event").build();
 
-        stub.streamEvents(request, new StreamObserver<Event>() {
+        stub.streamEvents(request, new StreamObserver<>() {
             @Override
             public void onNext(Event event) {
+
                 handleNotificationEvent(event);
                 XdsSchedulerManager.getInstance().stopEventStreamScheduling();
             }
@@ -133,7 +135,9 @@ public class EventingGrpcClient implements Runnable {
 
         switch (event.getType()) {
             case "ALL_EVENTS":
-                subscriptionDataStore.loadStartupArtifacts();
+                logger.info("Received all events from the server");
+                SubscriptionDataStoreUtil.getInstance().loadStartupArtifacts();
+                break;
             case "APPLICATION_CREATED":
                 Application application = event.getApplication();
                 subscriptionDataStore.addApplication(application);
@@ -167,6 +171,7 @@ public class EventingGrpcClient implements Runnable {
                 break;
             default:
                 logger.error("Unknown event type received from the server");
+                break;
         }
     }
 }

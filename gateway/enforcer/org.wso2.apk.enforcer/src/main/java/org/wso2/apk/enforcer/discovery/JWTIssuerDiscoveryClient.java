@@ -34,26 +34,28 @@ import org.wso2.apk.enforcer.constants.Constants;
 import org.wso2.apk.enforcer.discovery.common.XDSCommonUtils;
 import org.wso2.apk.enforcer.discovery.scheduler.XdsSchedulerManager;
 import org.wso2.apk.enforcer.discovery.service.subscription.JWTIssuerDiscoveryServiceGrpc;
-
 import org.wso2.apk.enforcer.discovery.subscription.JWTIssuer;
 import org.wso2.apk.enforcer.discovery.subscription.JWTIssuerList;
-import org.wso2.apk.enforcer.subscription.SubscriptionDataStoreImpl;
+import org.wso2.apk.enforcer.subscription.SubscriptionDataHolder;
+import org.wso2.apk.enforcer.subscription.SubscriptionDataStore;
 import org.wso2.apk.enforcer.util.GRPCUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
  * Client to communicate with JWTIssuer discovery service at the adapter.
  */
 public class JWTIssuerDiscoveryClient implements Runnable {
+
     private static final Logger logger = LogManager.getLogger(JWTIssuerDiscoveryClient.class);
     private static JWTIssuerDiscoveryClient instance;
     private ManagedChannel channel;
     private JWTIssuerDiscoveryServiceGrpc.JWTIssuerDiscoveryServiceStub stub;
     private StreamObserver<DiscoveryRequest> reqObserver;
-    private final SubscriptionDataStoreImpl subscriptionDataStore;
     private final String host;
     private final String hostname;
     private final int port;
@@ -82,16 +84,17 @@ public class JWTIssuerDiscoveryClient implements Runnable {
     private final Node node;
 
     private JWTIssuerDiscoveryClient(String host, String hostname, int port) {
+
         this.host = host;
         this.hostname = hostname;
         this.port = port;
-        this.subscriptionDataStore = SubscriptionDataStoreImpl.getInstance();
         initConnection();
         this.node = XDSCommonUtils.generateXDSNode(AdapterConstants.COMMON_ENFORCER_LABEL);
         this.latestACKed = DiscoveryResponse.getDefaultInstance();
     }
 
     private void initConnection() {
+
         if (GRPCUtils.isReInitRequired(channel)) {
             if (channel != null && !channel.isShutdown()) {
                 channel.shutdownNow();
@@ -111,24 +114,28 @@ public class JWTIssuerDiscoveryClient implements Runnable {
     }
 
     public static JWTIssuerDiscoveryClient getInstance() {
+
         if (instance == null) {
             String sdsHost = ConfigHolder.getInstance().getEnvVarConfig().getAdapterHost();
             String sdsHostname = ConfigHolder.getInstance().getEnvVarConfig().getAdapterHostname();
             int sdsPort = Integer.parseInt(ConfigHolder.getInstance().getEnvVarConfig().getAdapterXdsPort());
-            instance = new JWTIssuerDiscoveryClient(sdsHost,sdsHostname, sdsPort);
+            instance = new JWTIssuerDiscoveryClient(sdsHost, sdsHostname, sdsPort);
         }
         return instance;
     }
 
     public void run() {
+
         initConnection();
         watchJWTIssuers();
     }
 
     public void watchJWTIssuers() {
+
         reqObserver = stub.streamJWTIssuers(new StreamObserver<>() {
             @Override
             public void onNext(DiscoveryResponse response) {
+
                 logger.info("JWTIssuer creation event received with version : " + response.getVersionInfo());
                 logger.debug("Received JWTIssuer discovery response " + response);
                 XdsSchedulerManager.getInstance().stopJWTIssuerDiscoveryScheduling();
@@ -138,7 +145,21 @@ public class JWTIssuerDiscoveryClient implements Runnable {
                     for (Any res : response.getResourcesList()) {
                         jwtIssuers.addAll(res.unpack(JWTIssuerList.class).getListList());
                     }
-                    subscriptionDataStore.addJWTIssuers(jwtIssuers);
+                    Map<String, List<JWTIssuer>> orgWizeIssuerMap = new HashMap<>();
+                    for (JWTIssuer jwtIssuer : jwtIssuers) {
+                        List<JWTIssuer> jwtIssuerList = orgWizeIssuerMap.computeIfAbsent(jwtIssuer.getOrganization(),
+                                k -> new ArrayList<>());
+                        jwtIssuerList.add(jwtIssuer);
+                    }
+                    orgWizeIssuerMap.forEach((k, v) -> {
+                        SubscriptionDataStore subscriptionDataStore =
+                                SubscriptionDataHolder.getInstance().getSubscriptionDataStore(k);
+                        if (subscriptionDataStore == null) {
+                            subscriptionDataStore =
+                                    SubscriptionDataHolder.getInstance().initializeSubscriptionDataStore(k);
+                        }
+                        subscriptionDataStore.addJWTIssuers(v);
+                    });
                     logger.info("Number of jwt issuers received : " + jwtIssuers.size());
                     ack();
                 } catch (Exception e) {
@@ -149,6 +170,7 @@ public class JWTIssuerDiscoveryClient implements Runnable {
 
             @Override
             public void onError(Throwable throwable) {
+
                 logger.error("Error occurred during JWTIssuer discovery", throwable);
                 XdsSchedulerManager.getInstance().startJWTIssuerDiscoveryScheduling();
                 nack(throwable);
@@ -156,6 +178,7 @@ public class JWTIssuerDiscoveryClient implements Runnable {
 
             @Override
             public void onCompleted() {
+
                 logger.info("Completed receiving JWT Issuer data");
             }
         });
@@ -179,6 +202,7 @@ public class JWTIssuerDiscoveryClient implements Runnable {
      * communication protocol.
      */
     private void ack() {
+
         DiscoveryRequest req = DiscoveryRequest.newBuilder()
                 .setNode(node)
                 .setVersionInfo(latestReceived.getVersionInfo())
@@ -189,6 +213,7 @@ public class JWTIssuerDiscoveryClient implements Runnable {
     }
 
     private void nack(Throwable e) {
+
         if (latestReceived == null) {
             return;
         }

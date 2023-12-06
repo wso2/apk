@@ -26,8 +26,10 @@ import org.wso2.apk.enforcer.common.CacheableEntity;
 public class ApplicationMapping implements CacheableEntity<String> {
 
     private String uuid = null;
-    private String applicationRef = null;
-    private String subscriptionRef = null;
+    private String applicationUUID = null;
+    private String subscriptionUUID = null;
+
+    private String organization;
 
     public String getUuid() {
 
@@ -39,33 +41,39 @@ public class ApplicationMapping implements CacheableEntity<String> {
         this.uuid = uuid;
     }
 
-    public String getApplicationRef() {
+    public String getApplicationUUID() {
 
-        return applicationRef;
+        return applicationUUID;
     }
 
-    public void setApplicationRef(String applicationRef) {
+    public void setApplicationUUID(String applicationUUID) {
 
-        this.applicationRef = applicationRef;
+        this.applicationUUID = applicationUUID;
     }
 
-    public String getSubscriptionRef() {
+    public String getSubscriptionUUID() {
 
-        return subscriptionRef;
+        return subscriptionUUID;
     }
 
-    public void setSubscriptionRef(String subscriptionRef) {
+    public void setSubscriptionUUID(String subscriptionUUID) {
 
-        this.subscriptionRef = subscriptionRef;
+        this.subscriptionUUID = subscriptionUUID;
     }
 
-    public String getCacheKey() {
-        return uuid;
+    public String getOrganization() {
+
+        return organization;
+    }
+
+    public void setOrganization(String organization) {
+
+        this.organization = organization;
     }
 
     @Override
-    public String toString() {
-        return "ApplicationMapping [uuid=" + uuid + ", applicationRef=" + applicationRef + ", subscriptionRef="
-                + subscriptionRef + "]";
+    public String getCacheKey() {
+
+        return organization + ":" + applicationUUID+ ":" + subscriptionUUID;
     }
 }
