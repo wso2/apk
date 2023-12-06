@@ -25,12 +25,18 @@ import (
 	"strings"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/interceptor"
+	"github.com/wso2/apk/adapter/internal/loggers"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/internal/oasparser/constants"
+	"github.com/wso2/apk/adapter/internal/operator/utils"
+	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/apis/dp/v1alpha2"
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
-	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
+	"golang.org/x/exp/maps"
+	"k8s.io/apimachinery/pkg/types"
+	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
 // AdapterInternalAPI represents the object structure holding the information related to the
@@ -44,7 +50,6 @@ type AdapterInternalAPI struct {
 	title                    string
 	version                  string
 	vendorExtensions         map[string]interface{}
-	xWso2Endpoints           map[string]*EndpointCluster
 	resources                []*Resource
 	xWso2Basepath            string
 	xWso2HTTP2BackendEnabled bool
@@ -70,9 +75,11 @@ type AdapterInternalAPI struct {
 	APIProperties            []dpv1alpha2.Property
 	// GraphQLSchema              string
 	// GraphQLComplexities        GraphQLComplexityYaml
-	IsSystemAPI     bool
-	RateLimitPolicy *RateLimitPolicy
-	environment     string
+	IsSystemAPI      bool
+	RateLimitPolicy  *RateLimitPolicy
+	environment      string
+	Endpoints        *EndpointCluster
+	EndpointSecurity []*EndpointSecurity
 }
 
 // BackendJWTTokenInfo represents the object structure holding the information related to the JWT Generator
@@ -225,210 +232,699 @@ type Certificate struct {
 }
 
 // GetAPIDefinitionFile returns the API Definition File.
-func (swagger *AdapterInternalAPI) GetAPIDefinitionFile() []byte {
-	return swagger.apiDefinitionFile
+func (adapterInternalAPI *AdapterInternalAPI) GetAPIDefinitionFile() []byte {
+	return adapterInternalAPI.apiDefinitionFile
 }
 
 // GetAPIDefinitionEndpoint returns the API Definition Endpoint.
-func (swagger *AdapterInternalAPI) GetAPIDefinitionEndpoint() string {
-	return swagger.apiDefinitionEndpoint
+func (adapterInternalAPI *AdapterInternalAPI) GetAPIDefinitionEndpoint() string {
+	return adapterInternalAPI.apiDefinitionEndpoint
 }
 
 // GetSubscriptionValidation returns the subscription validation status.
-func (swagger *AdapterInternalAPI) GetSubscriptionValidation() bool {
-	return swagger.subscriptionValidation
+func (adapterInternalAPI *AdapterInternalAPI) GetSubscriptionValidation() bool {
+	return adapterInternalAPI.subscriptionValidation
 }
 
 // GetBackendJWTTokenInfo returns the BackendJWTTokenInfo Object.
-func (swagger *AdapterInternalAPI) GetBackendJWTTokenInfo() *BackendJWTTokenInfo {
-	return swagger.backendJWTTokenInfo
+func (adapterInternalAPI *AdapterInternalAPI) GetBackendJWTTokenInfo() *BackendJWTTokenInfo {
+	return adapterInternalAPI.backendJWTTokenInfo
 }
 
 // GetCorsConfig returns the CorsConfiguration Object.
-func (swagger *AdapterInternalAPI) GetCorsConfig() *CorsConfig {
-	return swagger.xWso2Cors
+func (adapterInternalAPI *AdapterInternalAPI) GetCorsConfig() *CorsConfig {
+	return adapterInternalAPI.xWso2Cors
 }
 
 // GetAPIType returns the openapi version
-func (swagger *AdapterInternalAPI) GetAPIType() string {
-	return swagger.apiType
+func (adapterInternalAPI *AdapterInternalAPI) GetAPIType() string {
+	return adapterInternalAPI.apiType
 }
 
 // GetVersion returns the API version
-func (swagger *AdapterInternalAPI) GetVersion() string {
-	return swagger.version
+func (adapterInternalAPI *AdapterInternalAPI) GetVersion() string {
+	return adapterInternalAPI.version
 }
 
 // GetTitle returns the API Title
-func (swagger *AdapterInternalAPI) GetTitle() string {
-	return swagger.title
+func (adapterInternalAPI *AdapterInternalAPI) GetTitle() string {
+	return adapterInternalAPI.title
 }
 
 // GetXWso2Basepath returns the basepath set via the vendor extension.
-func (swagger *AdapterInternalAPI) GetXWso2Basepath() string {
-	return swagger.xWso2Basepath
+func (adapterInternalAPI *AdapterInternalAPI) GetXWso2Basepath() string {
+	return adapterInternalAPI.xWso2Basepath
 }
 
 // GetXWso2HTTP2BackendEnabled returns the http2 backend enabled set via the vendor extension.
-func (swagger *AdapterInternalAPI) GetXWso2HTTP2BackendEnabled() bool {
-	return swagger.xWso2HTTP2BackendEnabled
+func (adapterInternalAPI *AdapterInternalAPI) GetXWso2HTTP2BackendEnabled() bool {
+	return adapterInternalAPI.xWso2HTTP2BackendEnabled
 }
 
 // GetVendorExtensions returns the map of vendor extensions which are defined
 // at openAPI's root level.
-func (swagger *AdapterInternalAPI) GetVendorExtensions() map[string]interface{} {
-	return swagger.vendorExtensions
-}
-
-// GetXWso2Endpoints returns the array of x wso2 endpoints.
-func (swagger *AdapterInternalAPI) GetXWso2Endpoints() map[string]*EndpointCluster {
-	return swagger.xWso2Endpoints
+func (adapterInternalAPI *AdapterInternalAPI) GetVendorExtensions() map[string]interface{} {
+	return adapterInternalAPI.vendorExtensions
 }
 
 // GetResources returns the array of resources (openAPI path level info)
-func (swagger *AdapterInternalAPI) GetResources() []*Resource {
-	return swagger.resources
+func (adapterInternalAPI *AdapterInternalAPI) GetResources() []*Resource {
+	return adapterInternalAPI.resources
 }
 
 // GetDescription returns the description of the openapi
-func (swagger *AdapterInternalAPI) GetDescription() string {
-	return swagger.description
+func (adapterInternalAPI *AdapterInternalAPI) GetDescription() string {
+	return adapterInternalAPI.description
 }
 
 // GetXWso2ThrottlingTier returns the Throttling tier via the vendor extension.
-func (swagger *AdapterInternalAPI) GetXWso2ThrottlingTier() string {
-	return swagger.xWso2ThrottlingTier
+func (adapterInternalAPI *AdapterInternalAPI) GetXWso2ThrottlingTier() string {
+	return adapterInternalAPI.xWso2ThrottlingTier
 }
 
 // GetDisableAuthentications returns the authType via the vendor extension.
-func (swagger *AdapterInternalAPI) GetDisableAuthentications() bool {
-	return swagger.disableAuthentications
+func (adapterInternalAPI *AdapterInternalAPI) GetDisableAuthentications() bool {
+	return adapterInternalAPI.disableAuthentications
 }
 
 // GetDisableScopes returns the authType via the vendor extension.
-func (swagger *AdapterInternalAPI) GetDisableScopes() bool {
-	return swagger.disableScopes
+func (adapterInternalAPI *AdapterInternalAPI) GetDisableScopes() bool {
+	return adapterInternalAPI.disableScopes
 }
 
 // GetID returns the Id of the API
-func (swagger *AdapterInternalAPI) GetID() string {
-	return swagger.id
+func (adapterInternalAPI *AdapterInternalAPI) GetID() string {
+	return adapterInternalAPI.id
 }
 
 // GetXWso2RequestBodyPass returns boolean value to indicate
 // whether it is allowed to pass request body to the enforcer or not.
-func (swagger *AdapterInternalAPI) GetXWso2RequestBodyPass() bool {
-	return swagger.xWso2RequestBodyPass
+func (adapterInternalAPI *AdapterInternalAPI) GetXWso2RequestBodyPass() bool {
+	return adapterInternalAPI.xWso2RequestBodyPass
+}
+
+// SetXWso2RequestBodyPass returns boolean value to indicate
+// whether it is allowed to pass request body to the enforcer or not.
+func (adapterInternalAPI *AdapterInternalAPI) SetXWso2RequestBodyPass(passBody bool) {
+	adapterInternalAPI.xWso2RequestBodyPass = passBody
 }
 
 // GetClientCerts returns the client certificates of the API
-func (swagger *AdapterInternalAPI) GetClientCerts() []Certificate {
-	return swagger.clientCertificates
+func (adapterInternalAPI *AdapterInternalAPI) GetClientCerts() []Certificate {
+	return adapterInternalAPI.clientCertificates
 }
 
 // SetClientCerts set the client certificates of the API
-func (swagger *AdapterInternalAPI) SetClientCerts(certs []Certificate) {
-	swagger.clientCertificates = certs
+func (adapterInternalAPI *AdapterInternalAPI) SetClientCerts(certs []Certificate) {
+	adapterInternalAPI.clientCertificates = certs
 }
 
 // SetID set the Id of the API
-func (swagger *AdapterInternalAPI) SetID(id string) {
-	swagger.id = id
+func (adapterInternalAPI *AdapterInternalAPI) SetID(id string) {
+	adapterInternalAPI.id = id
 }
 
 // SetAPIDefinitionFile sets the API Definition File.
-func (swagger *AdapterInternalAPI) SetAPIDefinitionFile(file []byte) {
-	swagger.apiDefinitionFile = file
+func (adapterInternalAPI *AdapterInternalAPI) SetAPIDefinitionFile(file []byte) {
+	adapterInternalAPI.apiDefinitionFile = file
 }
 
 // SetAPIDefinitionEndpoint sets the API Definition Endpoint.
-func (swagger *AdapterInternalAPI) SetAPIDefinitionEndpoint(endpoint string) {
-	swagger.apiDefinitionEndpoint = endpoint
+func (adapterInternalAPI *AdapterInternalAPI) SetAPIDefinitionEndpoint(endpoint string) {
+	adapterInternalAPI.apiDefinitionEndpoint = endpoint
 }
 
 // SetSubscriptionValidation sets the subscription validation status.
-func (swagger *AdapterInternalAPI) SetSubscriptionValidation(subscriptionValidation bool) {
-	swagger.subscriptionValidation = subscriptionValidation
+func (adapterInternalAPI *AdapterInternalAPI) SetSubscriptionValidation(subscriptionValidation bool) {
+	adapterInternalAPI.subscriptionValidation = subscriptionValidation
 }
 
 // SetName sets the name of the API
-func (swagger *AdapterInternalAPI) SetName(name string) {
-	swagger.title = name
+func (adapterInternalAPI *AdapterInternalAPI) SetName(name string) {
+	adapterInternalAPI.title = name
 }
 
 // SetVersion sets the version of the API
-func (swagger *AdapterInternalAPI) SetVersion(version string) {
-	swagger.version = version
+func (adapterInternalAPI *AdapterInternalAPI) SetVersion(version string) {
+	adapterInternalAPI.version = version
 }
 
 // SetIsDefaultVersion sets whether this API is the default
-func (swagger *AdapterInternalAPI) SetIsDefaultVersion(isDefaultVersion bool) {
-	swagger.IsDefaultVersion = isDefaultVersion
+func (adapterInternalAPI *AdapterInternalAPI) SetIsDefaultVersion(isDefaultVersion bool) {
+	adapterInternalAPI.IsDefaultVersion = isDefaultVersion
 }
 
 // SetXWso2AuthHeader sets the authHeader of the API
-func (swagger *AdapterInternalAPI) SetXWso2AuthHeader(authHeader string) {
-	if swagger.xWso2AuthHeader == "" {
-		swagger.xWso2AuthHeader = authHeader
+func (adapterInternalAPI *AdapterInternalAPI) SetXWso2AuthHeader(authHeader string) {
+	if adapterInternalAPI.xWso2AuthHeader == "" {
+		adapterInternalAPI.xWso2AuthHeader = authHeader
 	}
 }
 
 // GetXWSO2AuthHeader returns the auth header set via the vendor extension.
-func (swagger *AdapterInternalAPI) GetXWSO2AuthHeader() string {
-	return swagger.xWso2AuthHeader
+func (adapterInternalAPI *AdapterInternalAPI) GetXWSO2AuthHeader() string {
+	return adapterInternalAPI.xWso2AuthHeader
 }
 
 // SetXWSO2MutualSSL sets the optional or mandatory mTLS
-func (swagger *AdapterInternalAPI) SetXWSO2MutualSSL(mutualSSl string) {
-	swagger.xWso2MutualSSL = mutualSSl
+func (adapterInternalAPI *AdapterInternalAPI) SetXWSO2MutualSSL(mutualSSl string) {
+	adapterInternalAPI.xWso2MutualSSL = mutualSSl
 }
 
 // GetXWSO2MutualSSL returns the optional or mandatory mTLS
-func (swagger *AdapterInternalAPI) GetXWSO2MutualSSL() string {
-	return swagger.xWso2MutualSSL
+func (adapterInternalAPI *AdapterInternalAPI) GetXWSO2MutualSSL() string {
+	return adapterInternalAPI.xWso2MutualSSL
 }
 
 // SetXWSO2ApplicationSecurity sets the optional or mandatory application security
-func (swagger *AdapterInternalAPI) SetXWSO2ApplicationSecurity(applicationSecurity bool) {
-	swagger.xWso2ApplicationSecurity = applicationSecurity
+func (adapterInternalAPI *AdapterInternalAPI) SetXWSO2ApplicationSecurity(applicationSecurity bool) {
+	adapterInternalAPI.xWso2ApplicationSecurity = applicationSecurity
 }
 
 // GetXWSO2ApplicationSecurity returns the optional or mandatory application security
-func (swagger *AdapterInternalAPI) GetXWSO2ApplicationSecurity() bool {
-	return swagger.xWso2ApplicationSecurity
+func (adapterInternalAPI *AdapterInternalAPI) GetXWSO2ApplicationSecurity() bool {
+	return adapterInternalAPI.xWso2ApplicationSecurity
 }
 
 // GetOrganizationID returns OrganizationID
-func (swagger *AdapterInternalAPI) GetOrganizationID() string {
-	return swagger.OrganizationID
+func (adapterInternalAPI *AdapterInternalAPI) GetOrganizationID() string {
+	return adapterInternalAPI.OrganizationID
 }
 
 // SetEnvironment sets the environment of the API.
-func (swagger *AdapterInternalAPI) SetEnvironment(environment string) {
-	swagger.environment = environment
+func (adapterInternalAPI *AdapterInternalAPI) SetEnvironment(environment string) {
+	adapterInternalAPI.environment = environment
 }
 
 // GetEnvironment returns the environment of the API
-func (swagger *AdapterInternalAPI) GetEnvironment() string {
-	return swagger.environment
+func (adapterInternalAPI *AdapterInternalAPI) GetEnvironment() string {
+	return adapterInternalAPI.environment
 }
 
 // Validate method confirms that the adapterInternalAPI has all required fields in the required format.
 // This needs to be checked prior to generate router/enforcer related resources.
-func (swagger *AdapterInternalAPI) Validate() error {
-	for _, res := range swagger.resources {
+func (adapterInternalAPI *AdapterInternalAPI) Validate() error {
+	for _, res := range adapterInternalAPI.resources {
 		if res.endpoints == nil || len(res.endpoints.Endpoints) == 0 {
 			logger.LoggerOasparser.Errorf("No Endpoints are provided for the resources in %s:%s, API_UUID: %v",
-				swagger.title, swagger.version, swagger.UUID)
+				adapterInternalAPI.title, adapterInternalAPI.version, adapterInternalAPI.UUID)
 			return errors.New("no endpoints are provided for the API")
 		}
 		err := res.endpoints.validateEndpointCluster()
 		if err != nil {
 			logger.LoggerOasparser.Errorf("Error while parsing the endpoints of the API %s:%s - %v, API_UUID: %v",
-				swagger.title, swagger.version, err, swagger.UUID)
+				adapterInternalAPI.title, adapterInternalAPI.version, err, adapterInternalAPI.UUID)
 			return err
 		}
 	}
+	return nil
+}
+
+// SetInfoHTTPRouteCR populates resources and endpoints of adapterInternalAPI. httpRoute.Spec.Rules.Matches
+// are used to create resources and httpRoute.Spec.Rules.BackendRefs are used to create EndpointClusters.
+func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, resourceParams ResourceParams) error {
+	var resources []*Resource
+	outputAuthScheme := utils.TieBreaker(utils.GetPtrSlice(maps.Values(resourceParams.AuthSchemes)))
+	outputAPIPolicy := utils.TieBreaker(utils.GetPtrSlice(maps.Values(resourceParams.APIPolicies)))
+	outputRatelimitPolicy := utils.TieBreaker(utils.GetPtrSlice(maps.Values(resourceParams.RateLimitPolicies)))
+
+	disableScopes := true
+	config := config.ReadConfigs()
+
+	var authScheme *dpv1alpha1.Authentication
+	if outputAuthScheme != nil {
+		authScheme = *outputAuthScheme
+	}
+	var apiPolicy *dpv1alpha2.APIPolicy
+	if outputAPIPolicy != nil {
+		apiPolicy = *outputAPIPolicy
+	}
+	var ratelimitPolicy *dpv1alpha1.RateLimitPolicy
+	if outputRatelimitPolicy != nil {
+		ratelimitPolicy = *outputRatelimitPolicy
+	}
+
+	for _, rule := range httpRoute.Spec.Rules {
+		var endPoints []Endpoint
+		var policies = OperationPolicies{}
+		var circuitBreaker *dpv1alpha1.CircuitBreaker
+		var healthCheck *dpv1alpha1.HealthCheck
+		resourceAuthScheme := authScheme
+		resourceAPIPolicy := apiPolicy
+		resourceRatelimitPolicy := ratelimitPolicy
+		var scopes []string
+		var timeoutInMillis uint32
+		var idleTimeoutInSeconds uint32
+		isRetryConfig := false
+		isRouteTimeout := false
+		var backendRetryCount uint32
+		var statusCodes []uint32
+		statusCodes = append(statusCodes, config.Envoy.Upstream.Retry.StatusCodes...)
+		var baseIntervalInMillis uint32
+		hasURLRewritePolicy := false
+		var securityConfig []EndpointSecurity
+		backendBasePath := ""
+		for _, backend := range rule.BackendRefs {
+			backendName := types.NamespacedName{
+				Name:      string(backend.Name),
+				Namespace: utils.GetNamespace(backend.Namespace, httpRoute.Namespace),
+			}
+			resolvedBackend, ok := resourceParams.BackendMapping[backendName.String()]
+			if ok {
+				if resolvedBackend.CircuitBreaker != nil {
+					circuitBreaker = &dpv1alpha1.CircuitBreaker{
+						MaxConnections:     resolvedBackend.CircuitBreaker.MaxConnections,
+						MaxPendingRequests: resolvedBackend.CircuitBreaker.MaxPendingRequests,
+						MaxRequests:        resolvedBackend.CircuitBreaker.MaxRequests,
+						MaxRetries:         resolvedBackend.CircuitBreaker.MaxRetries,
+						MaxConnectionPools: resolvedBackend.CircuitBreaker.MaxConnectionPools,
+					}
+				}
+				if resolvedBackend.Timeout != nil {
+					isRouteTimeout = true
+					timeoutInMillis = resolvedBackend.Timeout.UpstreamResponseTimeout * 1000
+					idleTimeoutInSeconds = resolvedBackend.Timeout.DownstreamRequestIdleTimeout
+				}
+
+				if resolvedBackend.Retry != nil {
+					isRetryConfig = true
+					backendRetryCount = resolvedBackend.Retry.Count
+					baseIntervalInMillis = resolvedBackend.Retry.BaseIntervalMillis
+					if len(resolvedBackend.Retry.StatusCodes) > 0 {
+						statusCodes = resolvedBackend.Retry.StatusCodes
+					}
+				}
+				if resolvedBackend.HealthCheck != nil {
+					healthCheck = &dpv1alpha1.HealthCheck{
+						Interval:           resolvedBackend.HealthCheck.Interval,
+						Timeout:            resolvedBackend.HealthCheck.Timeout,
+						UnhealthyThreshold: resolvedBackend.HealthCheck.UnhealthyThreshold,
+						HealthyThreshold:   resolvedBackend.HealthCheck.HealthyThreshold,
+					}
+				}
+				endPoints = append(endPoints, GetEndpoints(backendName, resourceParams.BackendMapping)...)
+				backendBasePath = GetBackendBasePath(backendName, resourceParams.BackendMapping)
+				switch resolvedBackend.Security.Type {
+				case "Basic":
+					securityConfig = append(securityConfig, EndpointSecurity{
+						Password: string(resolvedBackend.Security.Basic.Password),
+						Username: string(resolvedBackend.Security.Basic.Username),
+						Type:     string(resolvedBackend.Security.Type),
+						Enabled:  true,
+					})
+				}
+			} else {
+				return fmt.Errorf("backend: %s has not been resolved", backendName)
+			}
+		}
+		for _, filter := range rule.Filters {
+			switch filter.Type {
+			case gwapiv1b1.HTTPRouteFilterURLRewrite:
+				policyParameters := make(map[string]interface{})
+				policyParameters[constants.RewritePathType] = filter.URLRewrite.Path.Type
+				policyParameters[constants.IncludeQueryParams] = true
+
+				switch filter.URLRewrite.Path.Type {
+				case gwapiv1b1.FullPathHTTPPathModifier:
+					policyParameters[constants.RewritePathResourcePath] = backendBasePath + *filter.URLRewrite.Path.ReplaceFullPath
+				case gwapiv1b1.PrefixMatchHTTPPathModifier:
+					policyParameters[constants.RewritePathResourcePath] = backendBasePath + *filter.URLRewrite.Path.ReplacePrefixMatch
+				}
+
+				policies.Request = append(policies.Request, Policy{
+					PolicyName: string(gwapiv1b1.HTTPRouteFilterURLRewrite),
+					Action:     constants.ActionRewritePath,
+					Parameters: policyParameters,
+				})
+				hasURLRewritePolicy = true
+			case gwapiv1b1.HTTPRouteFilterExtensionRef:
+				if filter.ExtensionRef.Kind == constants.KindAuthentication {
+					if ref, found := resourceParams.ResourceAuthSchemes[types.NamespacedName{
+						Name:      string(filter.ExtensionRef.Name),
+						Namespace: httpRoute.Namespace,
+					}.String()]; found {
+						resourceAuthScheme = concatAuthSchemes(authScheme, &ref)
+					} else {
+						return fmt.Errorf(`auth scheme: %s has not been resolved, spec.targetRef.kind should be 
+						'Resource' in resource level Authentications`, filter.ExtensionRef.Name)
+					}
+				}
+				if filter.ExtensionRef.Kind == constants.KindAPIPolicy {
+					if ref, found := resourceParams.ResourceAPIPolicies[types.NamespacedName{
+						Name:      string(filter.ExtensionRef.Name),
+						Namespace: httpRoute.Namespace,
+					}.String()]; found {
+						resourceAPIPolicy = concatAPIPolicies(apiPolicy, &ref)
+					} else {
+						return fmt.Errorf(`apipolicy: %s has not been resolved, spec.targetRef.kind should be 
+						'Resource' in resource level APIPolicies`, filter.ExtensionRef.Name)
+					}
+				}
+				if filter.ExtensionRef.Kind == constants.KindScope {
+					if ref, found := resourceParams.ResourceScopes[types.NamespacedName{
+						Name:      string(filter.ExtensionRef.Name),
+						Namespace: httpRoute.Namespace,
+					}.String()]; found {
+						scopes = ref.Spec.Names
+						disableScopes = false
+					} else {
+						return fmt.Errorf("scope: %s has not been resolved in namespace %s", filter.ExtensionRef.Name, httpRoute.Namespace)
+					}
+				}
+				if filter.ExtensionRef.Kind == constants.KindRateLimitPolicy {
+					if ref, found := resourceParams.ResourceRateLimitPolicies[types.NamespacedName{
+						Name:      string(filter.ExtensionRef.Name),
+						Namespace: httpRoute.Namespace,
+					}.String()]; found {
+						resourceRatelimitPolicy = concatRateLimitPolicies(ratelimitPolicy, &ref)
+					} else {
+						return fmt.Errorf(`ratelimitpolicy: %s has not been resolved, spec.targetRef.kind should be 
+						'Resource' in resource level RateLimitPolicies`, filter.ExtensionRef.Name)
+					}
+				}
+			case gwapiv1b1.HTTPRouteFilterRequestHeaderModifier:
+				for _, header := range filter.RequestHeaderModifier.Add {
+					policyParameters := make(map[string]interface{})
+					policyParameters[constants.HeaderName] = string(header.Name)
+					policyParameters[constants.HeaderValue] = string(header.Value)
+
+					policies.Request = append(policies.Request, Policy{
+						PolicyName: string(gwapiv1b1.HTTPRouteFilterRequestHeaderModifier),
+						Action:     constants.ActionHeaderAdd,
+						Parameters: policyParameters,
+					})
+				}
+				for _, header := range filter.RequestHeaderModifier.Remove {
+					policyParameters := make(map[string]interface{})
+					policyParameters[constants.HeaderName] = string(header)
+
+					policies.Request = append(policies.Request, Policy{
+						PolicyName: string(gwapiv1b1.HTTPRouteFilterRequestHeaderModifier),
+						Action:     constants.ActionHeaderRemove,
+						Parameters: policyParameters,
+					})
+				}
+				for _, header := range filter.RequestHeaderModifier.Set {
+					policyParameters := make(map[string]interface{})
+					policyParameters[constants.HeaderName] = string(header.Name)
+					policyParameters[constants.HeaderValue] = string(header.Value)
+
+					policies.Request = append(policies.Request, Policy{
+						PolicyName: string(gwapiv1b1.HTTPRouteFilterRequestHeaderModifier),
+						Action:     constants.ActionHeaderAdd,
+						Parameters: policyParameters,
+					})
+				}
+			case gwapiv1b1.HTTPRouteFilterResponseHeaderModifier:
+				for _, header := range filter.ResponseHeaderModifier.Add {
+					policyParameters := make(map[string]interface{})
+					policyParameters[constants.HeaderName] = string(header.Name)
+					policyParameters[constants.HeaderValue] = string(header.Value)
+
+					policies.Response = append(policies.Response, Policy{
+						PolicyName: string(gwapiv1b1.HTTPRouteFilterResponseHeaderModifier),
+						Action:     constants.ActionHeaderAdd,
+						Parameters: policyParameters,
+					})
+				}
+				for _, header := range filter.ResponseHeaderModifier.Remove {
+					policyParameters := make(map[string]interface{})
+					policyParameters[constants.HeaderName] = string(header)
+
+					policies.Response = append(policies.Response, Policy{
+						PolicyName: string(gwapiv1b1.HTTPRouteFilterResponseHeaderModifier),
+						Action:     constants.ActionHeaderRemove,
+						Parameters: policyParameters,
+					})
+				}
+				for _, header := range filter.ResponseHeaderModifier.Set {
+					policyParameters := make(map[string]interface{})
+					policyParameters[constants.HeaderName] = string(header.Name)
+					policyParameters[constants.HeaderValue] = string(header.Value)
+
+					policies.Response = append(policies.Response, Policy{
+						PolicyName: string(gwapiv1b1.HTTPRouteFilterResponseHeaderModifier),
+						Action:     constants.ActionHeaderAdd,
+						Parameters: policyParameters,
+					})
+				}
+			}
+		}
+		resourceAPIPolicy = concatAPIPolicies(resourceAPIPolicy, nil)
+		resourceAuthScheme = concatAuthSchemes(resourceAuthScheme, nil)
+		resourceRatelimitPolicy = concatRateLimitPolicies(resourceRatelimitPolicy, nil)
+		addOperationLevelInterceptors(&policies, resourceAPIPolicy, resourceParams.InterceptorServiceMapping, resourceParams.BackendMapping, httpRoute.Namespace)
+
+		loggers.LoggerOasparser.Debugf("Calculating auths for API ..., API_UUID = %v", adapterInternalAPI.UUID)
+		apiAuth := getSecurity(resourceAuthScheme)
+		if len(rule.BackendRefs) < 1 {
+			return fmt.Errorf("no backendref were provided")
+		}
+
+		for _, match := range rule.Matches {
+			if !hasURLRewritePolicy {
+				policyParameters := make(map[string]interface{})
+				if *match.Path.Type == gwapiv1b1.PathMatchPathPrefix {
+					policyParameters[constants.RewritePathType] = gwapiv1b1.PrefixMatchHTTPPathModifier
+				} else {
+					policyParameters[constants.RewritePathType] = gwapiv1b1.FullPathHTTPPathModifier
+				}
+				policyParameters[constants.IncludeQueryParams] = true
+				policyParameters[constants.RewritePathResourcePath] = strings.TrimSuffix(backendBasePath, "/") + *match.Path.Value
+				policies.Request = append(policies.Request, Policy{
+					PolicyName: string(gwapiv1b1.HTTPRouteFilterURLRewrite),
+					Action:     constants.ActionRewritePath,
+					Parameters: policyParameters,
+				})
+			}
+			resourcePath := adapterInternalAPI.xWso2Basepath + *match.Path.Value
+			resource := &Resource{path: resourcePath,
+				methods: getAllowedOperations(match.Method, policies, apiAuth,
+					parseRateLimitPolicyToInternal(resourceRatelimitPolicy), scopes),
+				pathMatchType: *match.Path.Type,
+				hasPolicies:   true,
+				iD:            uuid.New().String(),
+			}
+
+			resource.endpoints = &EndpointCluster{
+				Endpoints: endPoints,
+			}
+
+			endpointConfig := &EndpointConfig{}
+
+			if isRouteTimeout {
+				endpointConfig.TimeoutInMillis = timeoutInMillis
+				endpointConfig.IdleTimeoutInSeconds = idleTimeoutInSeconds
+			}
+			if circuitBreaker != nil {
+				endpointConfig.CircuitBreakers = &CircuitBreakers{
+					MaxConnections:     int32(circuitBreaker.MaxConnections),
+					MaxRequests:        int32(circuitBreaker.MaxRequests),
+					MaxPendingRequests: int32(circuitBreaker.MaxPendingRequests),
+					MaxRetries:         int32(circuitBreaker.MaxRetries),
+					MaxConnectionPools: int32(circuitBreaker.MaxConnectionPools),
+				}
+			}
+			if isRetryConfig {
+				endpointConfig.RetryConfig = &RetryConfig{
+					Count:                int32(backendRetryCount),
+					StatusCodes:          statusCodes,
+					BaseIntervalInMillis: int32(baseIntervalInMillis),
+				}
+			}
+			if healthCheck != nil {
+				resource.endpoints.HealthCheck = &HealthCheck{
+					Interval:           healthCheck.Interval,
+					Timeout:            healthCheck.Timeout,
+					UnhealthyThreshold: healthCheck.UnhealthyThreshold,
+					HealthyThreshold:   healthCheck.HealthyThreshold,
+				}
+			}
+			if isRouteTimeout || circuitBreaker != nil || healthCheck != nil || isRetryConfig {
+				resource.endpoints.Config = endpointConfig
+			}
+			resource.endpointSecurity = utils.GetPtrSlice(securityConfig)
+			resources = append(resources, resource)
+		}
+	}
+
+	ratelimitPolicy = concatRateLimitPolicies(ratelimitPolicy, nil)
+	apiPolicy = concatAPIPolicies(apiPolicy, nil)
+	authScheme = concatAuthSchemes(authScheme, nil)
+
+	adapterInternalAPI.RateLimitPolicy = parseRateLimitPolicyToInternal(ratelimitPolicy)
+	adapterInternalAPI.resources = resources
+	adapterInternalAPI.xWso2Cors = getCorsConfigFromAPIPolicy(apiPolicy)
+	if authScheme.Spec.Override != nil && authScheme.Spec.Override.Disabled != nil {
+		adapterInternalAPI.disableAuthentications = *authScheme.Spec.Override.Disabled
+	}
+	adapterInternalAPI.disableScopes = disableScopes
+
+	// Check whether the API has a backend JWT token
+	if apiPolicy != nil && apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.BackendJWTPolicy != nil {
+		backendJWTPolicy := resourceParams.BackendJWTMapping[types.NamespacedName{
+			Name:      apiPolicy.Spec.Override.BackendJWTPolicy.Name,
+			Namespace: httpRoute.Namespace,
+		}.String()].Spec
+		adapterInternalAPI.backendJWTTokenInfo = parseBackendJWTTokenToInternal(backendJWTPolicy)
+	}
+	return nil
+}
+
+// SetInfoGQLRouteCR populates resources and endpoints of adapterInternalAPI. httpRoute.Spec.Rules.Matches
+// are used to create resources and httpRoute.Spec.Rules.BackendRefs are used to create EndpointClusters.
+func (adapterInternalAPI *AdapterInternalAPI) SetInfoGQLRouteCR(gqlRoute *dpv1alpha2.GQLRoute, resourceParams ResourceParams) error {
+	var resources []*Resource
+	outputAuthScheme := utils.TieBreaker(utils.GetPtrSlice(maps.Values(resourceParams.AuthSchemes)))
+	outputAPIPolicy := utils.TieBreaker(utils.GetPtrSlice(maps.Values(resourceParams.APIPolicies)))
+	outputRatelimitPolicy := utils.TieBreaker(utils.GetPtrSlice(maps.Values(resourceParams.RateLimitPolicies)))
+
+	disableScopes := true
+	config := config.ReadConfigs()
+
+	var authScheme *dpv1alpha1.Authentication
+	if outputAuthScheme != nil {
+		authScheme = *outputAuthScheme
+	}
+	var apiPolicy *dpv1alpha2.APIPolicy
+	if outputAPIPolicy != nil {
+		apiPolicy = *outputAPIPolicy
+	}
+	var ratelimitPolicy *dpv1alpha1.RateLimitPolicy
+	if outputRatelimitPolicy != nil {
+		ratelimitPolicy = *outputRatelimitPolicy
+	}
+
+	//We are only supporting one backend for now
+	backend := gqlRoute.Spec.BackendRefs[0]
+	backendName := types.NamespacedName{
+		Name:      string(backend.Name),
+		Namespace: utils.GetNamespace(backend.Namespace, gqlRoute.Namespace),
+	}
+	resolvedBackend, ok := resourceParams.BackendMapping[backendName.String()]
+	if ok {
+		endpointConfig := &EndpointConfig{}
+		if resolvedBackend.CircuitBreaker != nil {
+			endpointConfig.CircuitBreakers = &CircuitBreakers{
+				MaxConnections:     int32(resolvedBackend.CircuitBreaker.MaxConnections),
+				MaxRequests:        int32(resolvedBackend.CircuitBreaker.MaxRequests),
+				MaxPendingRequests: int32(resolvedBackend.CircuitBreaker.MaxPendingRequests),
+				MaxRetries:         int32(resolvedBackend.CircuitBreaker.MaxRetries),
+				MaxConnectionPools: int32(resolvedBackend.CircuitBreaker.MaxConnectionPools),
+			}
+		}
+		if resolvedBackend.Timeout != nil {
+			endpointConfig.TimeoutInMillis = resolvedBackend.Timeout.UpstreamResponseTimeout * 1000
+			endpointConfig.IdleTimeoutInSeconds = resolvedBackend.Timeout.DownstreamRequestIdleTimeout
+		}
+		if resolvedBackend.Retry != nil {
+			statusCodes := config.Envoy.Upstream.Retry.StatusCodes
+			if len(resolvedBackend.Retry.StatusCodes) > 0 {
+				statusCodes = resolvedBackend.Retry.StatusCodes
+			}
+			endpointConfig.RetryConfig = &RetryConfig{
+				Count:                int32(resolvedBackend.Retry.Count),
+				StatusCodes:          statusCodes,
+				BaseIntervalInMillis: int32(resolvedBackend.Retry.BaseIntervalMillis),
+			}
+		}
+		adapterInternalAPI.Endpoints = &EndpointCluster{
+			Endpoints: GetEndpoints(backendName, resourceParams.BackendMapping),
+			Config:    endpointConfig,
+		}
+		if resolvedBackend.HealthCheck != nil {
+			adapterInternalAPI.Endpoints.HealthCheck = &HealthCheck{
+				Interval:           resolvedBackend.HealthCheck.Interval,
+				Timeout:            resolvedBackend.HealthCheck.Timeout,
+				UnhealthyThreshold: resolvedBackend.HealthCheck.UnhealthyThreshold,
+				HealthyThreshold:   resolvedBackend.HealthCheck.HealthyThreshold,
+			}
+		}
+
+		var securityConfig []EndpointSecurity
+		switch resolvedBackend.Security.Type {
+		case "Basic":
+			securityConfig = append(securityConfig, EndpointSecurity{
+				Password: string(resolvedBackend.Security.Basic.Password),
+				Username: string(resolvedBackend.Security.Basic.Username),
+				Type:     string(resolvedBackend.Security.Type),
+				Enabled:  true,
+			})
+		}
+		adapterInternalAPI.EndpointSecurity = utils.GetPtrSlice(securityConfig)
+	} else {
+		return fmt.Errorf("backend: %s has not been resolved", backendName)
+	}
+
+	for _, rule := range gqlRoute.Spec.Rules {
+		var policies = OperationPolicies{}
+		resourceAuthScheme := authScheme
+		resourceRatelimitPolicy := ratelimitPolicy
+		var scopes []string
+
+		for _, filter := range rule.Filters {
+			if filter.ExtensionRef != nil && filter.ExtensionRef.Kind == constants.KindAuthentication {
+				if ref, found := resourceParams.ResourceAuthSchemes[types.NamespacedName{
+					Name:      string(filter.ExtensionRef.Name),
+					Namespace: gqlRoute.Namespace,
+				}.String()]; found {
+					resourceAuthScheme = concatAuthSchemes(authScheme, &ref)
+				} else {
+					return fmt.Errorf(`auth scheme: %s has not been resolved, spec.targetRef.kind should be 
+						'Resource' in resource level Authentications`, filter.ExtensionRef.Name)
+				}
+			}
+			if filter.ExtensionRef != nil && filter.ExtensionRef.Kind == constants.KindScope {
+				if ref, found := resourceParams.ResourceScopes[types.NamespacedName{
+					Name:      string(filter.ExtensionRef.Name),
+					Namespace: gqlRoute.Namespace,
+				}.String()]; found {
+					scopes = ref.Spec.Names
+					disableScopes = false
+				} else {
+					return fmt.Errorf("scope: %s has not been resolved in namespace %s", filter.ExtensionRef.Name, gqlRoute.Namespace)
+				}
+			}
+			if filter.ExtensionRef != nil && filter.ExtensionRef.Kind == constants.KindRateLimitPolicy {
+				if ref, found := resourceParams.ResourceRateLimitPolicies[types.NamespacedName{
+					Name:      string(filter.ExtensionRef.Name),
+					Namespace: gqlRoute.Namespace,
+				}.String()]; found {
+					resourceRatelimitPolicy = concatRateLimitPolicies(ratelimitPolicy, &ref)
+				} else {
+					return fmt.Errorf(`ratelimitpolicy: %s has not been resolved, spec.targetRef.kind should be 
+						'Resource' in resource level RateLimitPolicies`, filter.ExtensionRef.Name)
+				}
+			}
+		}
+		resourceAuthScheme = concatAuthSchemes(resourceAuthScheme, nil)
+		resourceRatelimitPolicy = concatRateLimitPolicies(resourceRatelimitPolicy, nil)
+
+		loggers.LoggerOasparser.Debugf("Calculating auths for API ..., API_UUID = %v", adapterInternalAPI.UUID)
+		apiAuth := getSecurity(resourceAuthScheme)
+
+		for _, match := range rule.Matches {
+			resourcePath := *match.Path
+			resource := &Resource{path: resourcePath,
+				methods: []*Operation{{iD: uuid.New().String(), method: string(*match.Type), policies: policies,
+					auth: apiAuth, RateLimitPolicy: parseRateLimitPolicyToInternal(resourceRatelimitPolicy), scopes: scopes}},
+				iD: uuid.New().String(),
+			}
+			resources = append(resources, resource)
+		}
+	}
+
+	ratelimitPolicy = concatRateLimitPolicies(ratelimitPolicy, nil)
+	apiPolicy = concatAPIPolicies(apiPolicy, nil)
+	authScheme = concatAuthSchemes(authScheme, nil)
+
+	adapterInternalAPI.RateLimitPolicy = parseRateLimitPolicyToInternal(ratelimitPolicy)
+	adapterInternalAPI.resources = resources
+	adapterInternalAPI.xWso2Cors = getCorsConfigFromAPIPolicy(apiPolicy)
+	if authScheme.Spec.Override != nil && authScheme.Spec.Override.Disabled != nil {
+		adapterInternalAPI.disableAuthentications = *authScheme.Spec.Override.Disabled
+	}
+	adapterInternalAPI.disableScopes = disableScopes
 	return nil
 }
 
@@ -505,19 +1001,19 @@ func generateEndpointCluster(endpoints []Endpoint, endpointType string) *Endpoin
 }
 
 // GetOperationInterceptors returns operation interceptors
-func (swagger *AdapterInternalAPI) GetOperationInterceptors(apiInterceptor InterceptEndpoint, resourceInterceptor InterceptEndpoint, operations []*Operation, isIn bool) map[string]InterceptEndpoint {
+func (adapterInternalAPI *AdapterInternalAPI) GetOperationInterceptors(apiInterceptor InterceptEndpoint, resourceInterceptor InterceptEndpoint, operations []*Operation, isIn bool) map[string]InterceptEndpoint {
 	interceptorOperationMap := make(map[string]InterceptEndpoint)
 
 	for _, op := range operations {
 		extensionName := constants.XWso2RequestInterceptor
 		// first get operational policies
 		operationInterceptor := op.GetCallInterceptorService(isIn)
-		// if operational policy interceptor not given check operational level swagger extension
+		// if operational policy interceptor not given check operational level adapterInternalAPI extension
 		if !operationInterceptor.Enable {
 			if !isIn {
 				extensionName = constants.XWso2ResponseInterceptor
 			}
-			operationInterceptor = swagger.GetInterceptor(op.GetVendorExtensions(), extensionName, constants.OperationLevelInterceptor)
+			operationInterceptor = adapterInternalAPI.GetInterceptor(op.GetVendorExtensions(), extensionName, constants.OperationLevelInterceptor)
 		}
 		operationInterceptor.ClusterName = op.iD
 		// if operation interceptor not given
@@ -540,7 +1036,7 @@ func (swagger *AdapterInternalAPI) GetOperationInterceptors(apiInterceptor Inter
 }
 
 // GetInterceptor returns interceptors
-func (swagger *AdapterInternalAPI) GetInterceptor(vendorExtensions map[string]interface{}, extensionName string, level string) InterceptEndpoint {
+func (adapterInternalAPI *AdapterInternalAPI) GetInterceptor(vendorExtensions map[string]interface{}, extensionName string, level string) InterceptEndpoint {
 	var endpointCluster EndpointCluster
 	conf := config.ReadConfigs()
 	clusterTimeoutV := conf.Envoy.ClusterTimeoutInSeconds

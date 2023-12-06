@@ -329,9 +329,7 @@ func GetResolvedBackend(ctx context.Context, client k8client.Client,
 	resolvedTLSConfig := dpv1alpha1.ResolvedTLSConfig{}
 	var backend dpv1alpha1.Backend
 	if err := ResolveRef(ctx, client, api, backendNamespacedName, false, &backend); err != nil {
-		if !apierrors.IsNotFound(err) {
-			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2646, logging.CRITICAL, "Error while getting backend: %v, error: %v", backendNamespacedName, err.Error()))
-		}
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2646, logging.CRITICAL, "Error while getting backend: %v, error: %v", backendNamespacedName, err.Error()))
 		return nil
 	}
 	resolvedBackend.Backend = backend
@@ -459,7 +457,8 @@ func getResolvedBackendSecurity(ctx context.Context, client k8client.Client,
 
 // ResolveCertificate reads the certificate from TLSConfig, first checks the certificateInline field,
 // if no value then load the certificate from secretRef using util function called getSecretValue
-func ResolveCertificate(ctx context.Context, client k8client.Client, namespace string, certificateInline *string, configMapRef *dpv1alpha1.RefConfig, secretRef *dpv1alpha1.RefConfig) (string, error) {
+func ResolveCertificate(ctx context.Context, client k8client.Client, namespace string, certificateInline *string,
+	configMapRef *dpv1alpha1.RefConfig, secretRef *dpv1alpha1.RefConfig) (string, error) {
 	var certificate string
 	var err error
 	if certificateInline != nil && len(*certificateInline) > 0 {
@@ -467,12 +466,14 @@ func ResolveCertificate(ctx context.Context, client k8client.Client, namespace s
 	} else if secretRef != nil {
 		if certificate, err = getSecretValue(ctx, client,
 			namespace, secretRef.Name, secretRef.Key); err != nil {
-			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2642, logging.CRITICAL, "Error while reading certificate from secretRef: %s", secretRef))
+			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2642, logging.CRITICAL,
+				"Error while reading certificate from secretRef %s: %s", secretRef, err.Error()))
 		}
 	} else if configMapRef != nil {
 		if certificate, err = getConfigMapValue(ctx, client,
 			namespace, configMapRef.Name, configMapRef.Key); err != nil {
-			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2643, logging.CRITICAL, "Error while reading certificate from configMapRef: %s", configMapRef))
+			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2643, logging.CRITICAL,
+				"Error while reading certificate from configMapRef %s : %s", configMapRef, err.Error()))
 		}
 	}
 	if err != nil {

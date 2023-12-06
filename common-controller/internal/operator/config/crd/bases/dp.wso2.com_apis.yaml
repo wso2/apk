@@ -246,6 +246,7 @@ spec:
                   could be REST, GraphQL, Async
                 enum:
                 - REST
+                - GraphQL
                 type: string
               apiVersion:
                 description: APIVersion is the version number of the API.

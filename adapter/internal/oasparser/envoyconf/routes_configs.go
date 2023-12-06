@@ -207,9 +207,8 @@ func generateHeaderMatcher(headerName, valueRegex string) *routev3.HeaderMatcher
 	return headerMatcherArray
 }
 
-func generateRegexMatchAndSubstitute(routePath, endpointBasePath,
-	endpointResourcePath string, pathMatchType gwapiv1b1.PathMatchType) *envoy_type_matcherv3.RegexMatchAndSubstitute {
-
+func generateRegexMatchAndSubstitute(routePath, endpointResourcePath string,
+	pathMatchType gwapiv1b1.PathMatchType) *envoy_type_matcherv3.RegexMatchAndSubstitute {
 	substitutionString := generateSubstitutionString(endpointResourcePath, pathMatchType)
 	return &envoy_type_matcherv3.RegexMatchAndSubstitute{
 		Pattern: &envoy_type_matcherv3.RegexMatcher{
@@ -259,8 +258,8 @@ func generateHeaderToRemoveString(policyParams interface{}) (string, error) {
 	return requestHeaderToRemove, nil
 }
 
-func generateRewritePathRouteConfig(routePath, endpointBasepath string,
-	policyParams interface{}, pathMatchType gwapiv1b1.PathMatchType, isDefaultVersion bool) (*envoy_type_matcherv3.RegexMatchAndSubstitute, error) {
+func generateRewritePathRouteConfig(routePath string, policyParams interface{}, pathMatchType gwapiv1b1.PathMatchType,
+	isDefaultVersion bool) (*envoy_type_matcherv3.RegexMatchAndSubstitute, error) {
 
 	var paramsToSetHeader map[string]interface{}
 	var ok bool

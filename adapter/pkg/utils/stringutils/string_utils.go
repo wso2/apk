@@ -18,6 +18,7 @@
 package stringutils
 
 import (
+	"fmt"
 	"strings"
 )
 
@@ -56,4 +57,13 @@ func StringInSlice(a string, list []string) bool {
 		}
 	}
 	return false
+}
+
+// ToStringArray returns the vHosts related to an API.
+func ToStringArray[T any](array []T) []string {
+	var vHosts []string
+	for _, stringVal := range array {
+		vHosts = append(vHosts, fmt.Sprintf("%v", stringVal))
+	}
+	return vHosts
 }

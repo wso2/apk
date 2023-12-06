@@ -263,7 +263,7 @@ public class APIConstants {
     public static class ApiType {
 
         public static final String WEB_SOCKET = "WS";
-        public static final String GRAPHQL = "GRAPHQL";
+        public static final String GRAPHQL = "GraphQL";
     }
 
     /**

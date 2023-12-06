@@ -23,6 +23,7 @@ import (
 	"github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/internal/operator/utils"
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
+	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	"k8s.io/apimachinery/pkg/types"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
@@ -98,6 +99,23 @@ func (ods *OperatorDataStore) processAPIState(apiNamespacedName types.Namespaced
 		}
 		cachedAPI.ProdHTTPRoute = nil
 	}
+	if apiState.ProdGQLRoute != nil {
+		if cachedAPI.ProdGQLRoute == nil {
+			cachedAPI.ProdGQLRoute = apiState.ProdGQLRoute
+			updated = true
+			events = append(events, "Production")
+		} else if routeEvents, routesUpdated := updateGQLRoute(apiState.ProdGQLRoute, cachedAPI.ProdGQLRoute,
+			"Production"); routesUpdated {
+			updated = true
+			events = append(events, routeEvents...)
+		}
+	} else {
+		if cachedAPI.ProdGQLRoute != nil {
+			updated = true
+			events = append(events, "Production")
+		}
+		cachedAPI.ProdGQLRoute = nil
+	}
 	if apiState.SandHTTPRoute != nil {
 		if cachedAPI.SandHTTPRoute == nil {
 			cachedAPI.SandHTTPRoute = apiState.SandHTTPRoute
@@ -113,6 +131,22 @@ func (ods *OperatorDataStore) processAPIState(apiNamespacedName types.Namespaced
 			events = append(events, "Sandbox")
 		}
 		cachedAPI.SandHTTPRoute = nil
+	}
+	if apiState.SandGQLRoute != nil {
+		if cachedAPI.SandGQLRoute == nil {
+			cachedAPI.SandGQLRoute = apiState.SandGQLRoute
+			updated = true
+			events = append(events, "Sandbox")
+		} else if routeEvents, routesUpdated := updateGQLRoute(apiState.SandGQLRoute, cachedAPI.SandGQLRoute, "Sandbox"); routesUpdated {
+			updated = true
+			events = append(events, routeEvents...)
+		}
+	} else {
+		if cachedAPI.SandGQLRoute != nil {
+			updated = true
+			events = append(events, "Sandbox")
+		}
+		cachedAPI.SandGQLRoute = nil
 	}
 	if len(apiState.Authentications) != len(cachedAPI.Authentications) {
 		cachedAPI.Authentications = apiState.Authentications
@@ -293,7 +327,7 @@ func (ods *OperatorDataStore) processAPIState(apiNamespacedName types.Namespaced
 	return *cachedAPI, events, updated
 }
 
-// UpdateAPIState update the APIState on ref updates
+// updateHTTPRoute update the APIState on ref updates
 func updateHTTPRoute(httpRoute *HTTPRouteState, cachedHTTPRoute *HTTPRouteState, endpointType string) ([]string, bool) {
 	var updated bool
 	events := []string{}
@@ -350,6 +384,63 @@ func updateHTTPRoute(httpRoute *HTTPRouteState, cachedHTTPRoute *HTTPRouteState,
 	return events, updated
 }
 
+// updateGQLRoute update the APIState on ref updates
+func updateGQLRoute(gqlRoute *GQLRouteState, cachedGQLRoute *GQLRouteState, endpointType string) ([]string, bool) {
+	var updated bool
+	events := []string{}
+	if cachedGQLRoute.GQLRouteCombined == nil || !isEqualGQLRoutes(cachedGQLRoute.GQLRoutePartitions, gqlRoute.GQLRoutePartitions) {
+		cachedGQLRoute.GQLRouteCombined = gqlRoute.GQLRouteCombined
+		cachedGQLRoute.GQLRoutePartitions = gqlRoute.GQLRoutePartitions
+		updated = true
+		events = append(events, endpointType+" Endpoint")
+	}
+
+	if len(gqlRoute.Scopes) != len(cachedGQLRoute.Scopes) {
+		cachedGQLRoute.Scopes = gqlRoute.Scopes
+		updated = true
+		events = append(events, "Resource Scopes")
+	} else {
+		for key, scope := range gqlRoute.Scopes {
+			if existingScope, found := cachedGQLRoute.Scopes[key]; found {
+				if scope.UID != existingScope.UID || scope.Generation > existingScope.Generation {
+					cachedGQLRoute.Scopes = gqlRoute.Scopes
+					updated = true
+					events = append(events, "Resource Scopes")
+					break
+				}
+			} else {
+				cachedGQLRoute.Scopes = gqlRoute.Scopes
+				updated = true
+				events = append(events, "Resource Scopes")
+				break
+			}
+		}
+	}
+
+	if len(gqlRoute.BackendMapping) != len(cachedGQLRoute.BackendMapping) {
+		cachedGQLRoute.BackendMapping = gqlRoute.BackendMapping
+		updated = true
+		events = append(events, endpointType+" Backend Properties")
+	} else {
+		for key, backend := range gqlRoute.BackendMapping {
+			if existingBackend, found := cachedGQLRoute.BackendMapping[key]; found {
+				if backend.Backend.UID != existingBackend.Backend.UID || backend.Backend.Generation > existingBackend.Backend.Generation {
+					cachedGQLRoute.BackendMapping = gqlRoute.BackendMapping
+					updated = true
+					events = append(events, endpointType+" Backend Properties")
+					break
+				}
+			} else {
+				cachedGQLRoute.BackendMapping = gqlRoute.BackendMapping
+				updated = true
+				events = append(events, endpointType+" Backend Properties")
+				break
+			}
+		}
+	}
+	return events, updated
+}
+
 func isEqualHTTPRoutes(cachedHTTPRoutes, newHTTPRoutes map[string]*gwapiv1b1.HTTPRoute) bool {
 	for key, cachedHTTPRoute := range cachedHTTPRoutes {
 		if newHTTPRoutes[key] == nil {
@@ -357,6 +448,19 @@ func isEqualHTTPRoutes(cachedHTTPRoutes, newHTTPRoutes map[string]*gwapiv1b1.HTT
 		}
 		if newHTTPRoutes[key].UID == cachedHTTPRoute.UID &&
 			newHTTPRoutes[key].Generation > cachedHTTPRoute.Generation {
+			return false
+		}
+	}
+	return true
+}
+
+func isEqualGQLRoutes(cachedGQLRoutes, newGQLRoutes map[string]*dpv1alpha2.GQLRoute) bool {
+	for key, cachedGQLRoute := range cachedGQLRoutes {
+		if newGQLRoutes[key] == nil {
+			return false
+		}
+		if newGQLRoutes[key].UID == cachedGQLRoute.UID &&
+			newGQLRoutes[key].Generation > cachedGQLRoute.Generation {
 			return false
 		}
 	}

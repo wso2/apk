@@ -33,8 +33,10 @@ private static final long serialVersionUID = 0L;
     organizationId_ = "";
     clientCertificates_ = java.util.Collections.emptyList();
     mutualSSL_ = "";
+    graphqlComplexityInfo_ = java.util.Collections.emptyList();
     apiDefinitionFile_ = com.google.protobuf.ByteString.EMPTY;
     environment_ = "";
+    endpointSecurity_ = java.util.Collections.emptyList();
   }
 
   @java.lang.Override
@@ -167,6 +169,15 @@ private static final long serialVersionUID = 0L;
             applicationSecurity_ = input.readBool();
             break;
           }
+          case 186: {
+            if (!((mutable_bitField0_ & 0x00000004) != 0)) {
+              graphqlComplexityInfo_ = new java.util.ArrayList<org.wso2.apk.enforcer.discovery.api.GraphqlComplexity>();
+              mutable_bitField0_ |= 0x00000004;
+            }
+            graphqlComplexityInfo_.add(
+                input.readMessage(org.wso2.apk.enforcer.discovery.api.GraphqlComplexity.parser(), extensionRegistry));
+            break;
+          }
           case 192: {
 
             systemAPI_ = input.readBool();
@@ -201,6 +212,28 @@ private static final long serialVersionUID = 0L;
             subscriptionValidation_ = input.readBool();
             break;
           }
+          case 234: {
+            org.wso2.apk.enforcer.discovery.api.EndpointCluster.Builder subBuilder = null;
+            if (endpoints_ != null) {
+              subBuilder = endpoints_.toBuilder();
+            }
+            endpoints_ = input.readMessage(org.wso2.apk.enforcer.discovery.api.EndpointCluster.parser(), extensionRegistry);
+            if (subBuilder != null) {
+              subBuilder.mergeFrom(endpoints_);
+              endpoints_ = subBuilder.buildPartial();
+            }
+
+            break;
+          }
+          case 242: {
+            if (!((mutable_bitField0_ & 0x00000008) != 0)) {
+              endpointSecurity_ = new java.util.ArrayList<org.wso2.apk.enforcer.discovery.api.SecurityInfo>();
+              mutable_bitField0_ |= 0x00000008;
+            }
+            endpointSecurity_.add(
+                input.readMessage(org.wso2.apk.enforcer.discovery.api.SecurityInfo.parser(), extensionRegistry));
+            break;
+          }
           default: {
             if (!parseUnknownField(
                 input, unknownFields, extensionRegistry, tag)) {
@@ -221,6 +254,12 @@ private static final long serialVersionUID = 0L;
       }
       if (((mutable_bitField0_ & 0x00000002) != 0)) {
         clientCertificates_ = java.util.Collections.unmodifiableList(clientCertificates_);
+      }
+      if (((mutable_bitField0_ & 0x00000004) != 0)) {
+        graphqlComplexityInfo_ = java.util.Collections.unmodifiableList(graphqlComplexityInfo_);
+      }
+      if (((mutable_bitField0_ & 0x00000008) != 0)) {
+        endpointSecurity_ = java.util.Collections.unmodifiableList(endpointSecurity_);
       }
       this.unknownFields = unknownFields.build();
       makeExtensionsImmutable();
@@ -790,14 +829,69 @@ private static final long serialVersionUID = 0L;
     return applicationSecurity_;
   }
 
-  public static final int SYSTEMAPI_FIELD_NUMBER = 24;
-  private boolean systemAPI_;
+  public static final int GRAPHQLCOMPLEXITYINFO_FIELD_NUMBER = 23;
+  private java.util.List<org.wso2.apk.enforcer.discovery.api.GraphqlComplexity> graphqlComplexityInfo_;
   /**
    * <pre>
    *&#47; string graphQLSchema = 22;
-   * repeated GraphqlComplexity graphqlComplexityInfo = 23;
    * </pre>
    *
+   * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 23;</code>
+   */
+  @java.lang.Override
+  public java.util.List<org.wso2.apk.enforcer.discovery.api.GraphqlComplexity> getGraphqlComplexityInfoList() {
+    return graphqlComplexityInfo_;
+  }
+  /**
+   * <pre>
+   *&#47; string graphQLSchema = 22;
+   * </pre>
+   *
+   * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 23;</code>
+   */
+  @java.lang.Override
+  public java.util.List<? extends org.wso2.apk.enforcer.discovery.api.GraphqlComplexityOrBuilder> 
+      getGraphqlComplexityInfoOrBuilderList() {
+    return graphqlComplexityInfo_;
+  }
+  /**
+   * <pre>
+   *&#47; string graphQLSchema = 22;
+   * </pre>
+   *
+   * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 23;</code>
+   */
+  @java.lang.Override
+  public int getGraphqlComplexityInfoCount() {
+    return graphqlComplexityInfo_.size();
+  }
+  /**
+   * <pre>
+   *&#47; string graphQLSchema = 22;
+   * </pre>
+   *
+   * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 23;</code>
+   */
+  @java.lang.Override
+  public org.wso2.apk.enforcer.discovery.api.GraphqlComplexity getGraphqlComplexityInfo(int index) {
+    return graphqlComplexityInfo_.get(index);
+  }
+  /**
+   * <pre>
+   *&#47; string graphQLSchema = 22;
+   * </pre>
+   *
+   * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 23;</code>
+   */
+  @java.lang.Override
+  public org.wso2.apk.enforcer.discovery.api.GraphqlComplexityOrBuilder getGraphqlComplexityInfoOrBuilder(
+      int index) {
+    return graphqlComplexityInfo_.get(index);
+  }
+
+  public static final int SYSTEMAPI_FIELD_NUMBER = 24;
+  private boolean systemAPI_;
+  /**
    * <code>bool systemAPI = 24;</code>
    * @return The systemAPI.
    */
@@ -892,6 +986,72 @@ private static final long serialVersionUID = 0L;
     return subscriptionValidation_;
   }
 
+  public static final int ENDPOINTS_FIELD_NUMBER = 29;
+  private org.wso2.apk.enforcer.discovery.api.EndpointCluster endpoints_;
+  /**
+   * <code>.wso2.discovery.api.EndpointCluster endpoints = 29;</code>
+   * @return Whether the endpoints field is set.
+   */
+  @java.lang.Override
+  public boolean hasEndpoints() {
+    return endpoints_ != null;
+  }
+  /**
+   * <code>.wso2.discovery.api.EndpointCluster endpoints = 29;</code>
+   * @return The endpoints.
+   */
+  @java.lang.Override
+  public org.wso2.apk.enforcer.discovery.api.EndpointCluster getEndpoints() {
+    return endpoints_ == null ? org.wso2.apk.enforcer.discovery.api.EndpointCluster.getDefaultInstance() : endpoints_;
+  }
+  /**
+   * <code>.wso2.discovery.api.EndpointCluster endpoints = 29;</code>
+   */
+  @java.lang.Override
+  public org.wso2.apk.enforcer.discovery.api.EndpointClusterOrBuilder getEndpointsOrBuilder() {
+    return getEndpoints();
+  }
+
+  public static final int ENDPOINTSECURITY_FIELD_NUMBER = 30;
+  private java.util.List<org.wso2.apk.enforcer.discovery.api.SecurityInfo> endpointSecurity_;
+  /**
+   * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 30;</code>
+   */
+  @java.lang.Override
+  public java.util.List<org.wso2.apk.enforcer.discovery.api.SecurityInfo> getEndpointSecurityList() {
+    return endpointSecurity_;
+  }
+  /**
+   * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 30;</code>
+   */
+  @java.lang.Override
+  public java.util.List<? extends org.wso2.apk.enforcer.discovery.api.SecurityInfoOrBuilder> 
+      getEndpointSecurityOrBuilderList() {
+    return endpointSecurity_;
+  }
+  /**
+   * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 30;</code>
+   */
+  @java.lang.Override
+  public int getEndpointSecurityCount() {
+    return endpointSecurity_.size();
+  }
+  /**
+   * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 30;</code>
+   */
+  @java.lang.Override
+  public org.wso2.apk.enforcer.discovery.api.SecurityInfo getEndpointSecurity(int index) {
+    return endpointSecurity_.get(index);
+  }
+  /**
+   * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 30;</code>
+   */
+  @java.lang.Override
+  public org.wso2.apk.enforcer.discovery.api.SecurityInfoOrBuilder getEndpointSecurityOrBuilder(
+      int index) {
+    return endpointSecurity_.get(index);
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -954,6 +1114,9 @@ private static final long serialVersionUID = 0L;
     if (applicationSecurity_ != false) {
       output.writeBool(16, applicationSecurity_);
     }
+    for (int i = 0; i < graphqlComplexityInfo_.size(); i++) {
+      output.writeMessage(23, graphqlComplexityInfo_.get(i));
+    }
     if (systemAPI_ != false) {
       output.writeBool(24, systemAPI_);
     }
@@ -968,6 +1131,12 @@ private static final long serialVersionUID = 0L;
     }
     if (subscriptionValidation_ != false) {
       output.writeBool(28, subscriptionValidation_);
+    }
+    if (endpoints_ != null) {
+      output.writeMessage(29, getEndpoints());
+    }
+    for (int i = 0; i < endpointSecurity_.size(); i++) {
+      output.writeMessage(30, endpointSecurity_.get(i));
     }
     unknownFields.writeTo(output);
   }
@@ -1031,6 +1200,10 @@ private static final long serialVersionUID = 0L;
       size += com.google.protobuf.CodedOutputStream
         .computeBoolSize(16, applicationSecurity_);
     }
+    for (int i = 0; i < graphqlComplexityInfo_.size(); i++) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(23, graphqlComplexityInfo_.get(i));
+    }
     if (systemAPI_ != false) {
       size += com.google.protobuf.CodedOutputStream
         .computeBoolSize(24, systemAPI_);
@@ -1049,6 +1222,14 @@ private static final long serialVersionUID = 0L;
     if (subscriptionValidation_ != false) {
       size += com.google.protobuf.CodedOutputStream
         .computeBoolSize(28, subscriptionValidation_);
+    }
+    if (endpoints_ != null) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(29, getEndpoints());
+    }
+    for (int i = 0; i < endpointSecurity_.size(); i++) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(30, endpointSecurity_.get(i));
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -1097,6 +1278,8 @@ private static final long serialVersionUID = 0L;
         .equals(other.getMutualSSL())) return false;
     if (getApplicationSecurity()
         != other.getApplicationSecurity()) return false;
+    if (!getGraphqlComplexityInfoList()
+        .equals(other.getGraphqlComplexityInfoList())) return false;
     if (getSystemAPI()
         != other.getSystemAPI()) return false;
     if (hasBackendJWTTokenInfo() != other.hasBackendJWTTokenInfo()) return false;
@@ -1110,6 +1293,13 @@ private static final long serialVersionUID = 0L;
         .equals(other.getEnvironment())) return false;
     if (getSubscriptionValidation()
         != other.getSubscriptionValidation()) return false;
+    if (hasEndpoints() != other.hasEndpoints()) return false;
+    if (hasEndpoints()) {
+      if (!getEndpoints()
+          .equals(other.getEndpoints())) return false;
+    }
+    if (!getEndpointSecurityList()
+        .equals(other.getEndpointSecurityList())) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -1160,6 +1350,10 @@ private static final long serialVersionUID = 0L;
     hash = (37 * hash) + APPLICATIONSECURITY_FIELD_NUMBER;
     hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
         getApplicationSecurity());
+    if (getGraphqlComplexityInfoCount() > 0) {
+      hash = (37 * hash) + GRAPHQLCOMPLEXITYINFO_FIELD_NUMBER;
+      hash = (53 * hash) + getGraphqlComplexityInfoList().hashCode();
+    }
     hash = (37 * hash) + SYSTEMAPI_FIELD_NUMBER;
     hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
         getSystemAPI());
@@ -1174,6 +1368,14 @@ private static final long serialVersionUID = 0L;
     hash = (37 * hash) + SUBSCRIPTIONVALIDATION_FIELD_NUMBER;
     hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
         getSubscriptionValidation());
+    if (hasEndpoints()) {
+      hash = (37 * hash) + ENDPOINTS_FIELD_NUMBER;
+      hash = (53 * hash) + getEndpoints().hashCode();
+    }
+    if (getEndpointSecurityCount() > 0) {
+      hash = (37 * hash) + ENDPOINTSECURITY_FIELD_NUMBER;
+      hash = (53 * hash) + getEndpointSecurityList().hashCode();
+    }
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -1308,6 +1510,8 @@ private static final long serialVersionUID = 0L;
               .alwaysUseFieldBuilders) {
         getResourcesFieldBuilder();
         getClientCertificatesFieldBuilder();
+        getGraphqlComplexityInfoFieldBuilder();
+        getEndpointSecurityFieldBuilder();
       }
     }
     @java.lang.Override
@@ -1353,6 +1557,12 @@ private static final long serialVersionUID = 0L;
 
       applicationSecurity_ = false;
 
+      if (graphqlComplexityInfoBuilder_ == null) {
+        graphqlComplexityInfo_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000004);
+      } else {
+        graphqlComplexityInfoBuilder_.clear();
+      }
       systemAPI_ = false;
 
       if (backendJWTTokenInfoBuilder_ == null) {
@@ -1367,6 +1577,18 @@ private static final long serialVersionUID = 0L;
 
       subscriptionValidation_ = false;
 
+      if (endpointsBuilder_ == null) {
+        endpoints_ = null;
+      } else {
+        endpoints_ = null;
+        endpointsBuilder_ = null;
+      }
+      if (endpointSecurityBuilder_ == null) {
+        endpointSecurity_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000008);
+      } else {
+        endpointSecurityBuilder_.clear();
+      }
       return this;
     }
 
@@ -1426,6 +1648,15 @@ private static final long serialVersionUID = 0L;
       }
       result.mutualSSL_ = mutualSSL_;
       result.applicationSecurity_ = applicationSecurity_;
+      if (graphqlComplexityInfoBuilder_ == null) {
+        if (((bitField0_ & 0x00000004) != 0)) {
+          graphqlComplexityInfo_ = java.util.Collections.unmodifiableList(graphqlComplexityInfo_);
+          bitField0_ = (bitField0_ & ~0x00000004);
+        }
+        result.graphqlComplexityInfo_ = graphqlComplexityInfo_;
+      } else {
+        result.graphqlComplexityInfo_ = graphqlComplexityInfoBuilder_.build();
+      }
       result.systemAPI_ = systemAPI_;
       if (backendJWTTokenInfoBuilder_ == null) {
         result.backendJWTTokenInfo_ = backendJWTTokenInfo_;
@@ -1435,6 +1666,20 @@ private static final long serialVersionUID = 0L;
       result.apiDefinitionFile_ = apiDefinitionFile_;
       result.environment_ = environment_;
       result.subscriptionValidation_ = subscriptionValidation_;
+      if (endpointsBuilder_ == null) {
+        result.endpoints_ = endpoints_;
+      } else {
+        result.endpoints_ = endpointsBuilder_.build();
+      }
+      if (endpointSecurityBuilder_ == null) {
+        if (((bitField0_ & 0x00000008) != 0)) {
+          endpointSecurity_ = java.util.Collections.unmodifiableList(endpointSecurity_);
+          bitField0_ = (bitField0_ & ~0x00000008);
+        }
+        result.endpointSecurity_ = endpointSecurity_;
+      } else {
+        result.endpointSecurity_ = endpointSecurityBuilder_.build();
+      }
       onBuilt();
       return result;
     }
@@ -1588,6 +1833,32 @@ private static final long serialVersionUID = 0L;
       if (other.getApplicationSecurity() != false) {
         setApplicationSecurity(other.getApplicationSecurity());
       }
+      if (graphqlComplexityInfoBuilder_ == null) {
+        if (!other.graphqlComplexityInfo_.isEmpty()) {
+          if (graphqlComplexityInfo_.isEmpty()) {
+            graphqlComplexityInfo_ = other.graphqlComplexityInfo_;
+            bitField0_ = (bitField0_ & ~0x00000004);
+          } else {
+            ensureGraphqlComplexityInfoIsMutable();
+            graphqlComplexityInfo_.addAll(other.graphqlComplexityInfo_);
+          }
+          onChanged();
+        }
+      } else {
+        if (!other.graphqlComplexityInfo_.isEmpty()) {
+          if (graphqlComplexityInfoBuilder_.isEmpty()) {
+            graphqlComplexityInfoBuilder_.dispose();
+            graphqlComplexityInfoBuilder_ = null;
+            graphqlComplexityInfo_ = other.graphqlComplexityInfo_;
+            bitField0_ = (bitField0_ & ~0x00000004);
+            graphqlComplexityInfoBuilder_ = 
+              com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                 getGraphqlComplexityInfoFieldBuilder() : null;
+          } else {
+            graphqlComplexityInfoBuilder_.addAllMessages(other.graphqlComplexityInfo_);
+          }
+        }
+      }
       if (other.getSystemAPI() != false) {
         setSystemAPI(other.getSystemAPI());
       }
@@ -1603,6 +1874,35 @@ private static final long serialVersionUID = 0L;
       }
       if (other.getSubscriptionValidation() != false) {
         setSubscriptionValidation(other.getSubscriptionValidation());
+      }
+      if (other.hasEndpoints()) {
+        mergeEndpoints(other.getEndpoints());
+      }
+      if (endpointSecurityBuilder_ == null) {
+        if (!other.endpointSecurity_.isEmpty()) {
+          if (endpointSecurity_.isEmpty()) {
+            endpointSecurity_ = other.endpointSecurity_;
+            bitField0_ = (bitField0_ & ~0x00000008);
+          } else {
+            ensureEndpointSecurityIsMutable();
+            endpointSecurity_.addAll(other.endpointSecurity_);
+          }
+          onChanged();
+        }
+      } else {
+        if (!other.endpointSecurity_.isEmpty()) {
+          if (endpointSecurityBuilder_.isEmpty()) {
+            endpointSecurityBuilder_.dispose();
+            endpointSecurityBuilder_ = null;
+            endpointSecurity_ = other.endpointSecurity_;
+            bitField0_ = (bitField0_ & ~0x00000008);
+            endpointSecurityBuilder_ = 
+              com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                 getEndpointSecurityFieldBuilder() : null;
+          } else {
+            endpointSecurityBuilder_.addAllMessages(other.endpointSecurity_);
+          }
+        }
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -3115,13 +3415,320 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    private boolean systemAPI_ ;
+    private java.util.List<org.wso2.apk.enforcer.discovery.api.GraphqlComplexity> graphqlComplexityInfo_ =
+      java.util.Collections.emptyList();
+    private void ensureGraphqlComplexityInfoIsMutable() {
+      if (!((bitField0_ & 0x00000004) != 0)) {
+        graphqlComplexityInfo_ = new java.util.ArrayList<org.wso2.apk.enforcer.discovery.api.GraphqlComplexity>(graphqlComplexityInfo_);
+        bitField0_ |= 0x00000004;
+       }
+    }
+
+    private com.google.protobuf.RepeatedFieldBuilderV3<
+        org.wso2.apk.enforcer.discovery.api.GraphqlComplexity, org.wso2.apk.enforcer.discovery.api.GraphqlComplexity.Builder, org.wso2.apk.enforcer.discovery.api.GraphqlComplexityOrBuilder> graphqlComplexityInfoBuilder_;
+
     /**
      * <pre>
      *&#47; string graphQLSchema = 22;
-     * repeated GraphqlComplexity graphqlComplexityInfo = 23;
      * </pre>
      *
+     * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 23;</code>
+     */
+    public java.util.List<org.wso2.apk.enforcer.discovery.api.GraphqlComplexity> getGraphqlComplexityInfoList() {
+      if (graphqlComplexityInfoBuilder_ == null) {
+        return java.util.Collections.unmodifiableList(graphqlComplexityInfo_);
+      } else {
+        return graphqlComplexityInfoBuilder_.getMessageList();
+      }
+    }
+    /**
+     * <pre>
+     *&#47; string graphQLSchema = 22;
+     * </pre>
+     *
+     * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 23;</code>
+     */
+    public int getGraphqlComplexityInfoCount() {
+      if (graphqlComplexityInfoBuilder_ == null) {
+        return graphqlComplexityInfo_.size();
+      } else {
+        return graphqlComplexityInfoBuilder_.getCount();
+      }
+    }
+    /**
+     * <pre>
+     *&#47; string graphQLSchema = 22;
+     * </pre>
+     *
+     * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 23;</code>
+     */
+    public org.wso2.apk.enforcer.discovery.api.GraphqlComplexity getGraphqlComplexityInfo(int index) {
+      if (graphqlComplexityInfoBuilder_ == null) {
+        return graphqlComplexityInfo_.get(index);
+      } else {
+        return graphqlComplexityInfoBuilder_.getMessage(index);
+      }
+    }
+    /**
+     * <pre>
+     *&#47; string graphQLSchema = 22;
+     * </pre>
+     *
+     * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 23;</code>
+     */
+    public Builder setGraphqlComplexityInfo(
+        int index, org.wso2.apk.enforcer.discovery.api.GraphqlComplexity value) {
+      if (graphqlComplexityInfoBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureGraphqlComplexityInfoIsMutable();
+        graphqlComplexityInfo_.set(index, value);
+        onChanged();
+      } else {
+        graphqlComplexityInfoBuilder_.setMessage(index, value);
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     *&#47; string graphQLSchema = 22;
+     * </pre>
+     *
+     * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 23;</code>
+     */
+    public Builder setGraphqlComplexityInfo(
+        int index, org.wso2.apk.enforcer.discovery.api.GraphqlComplexity.Builder builderForValue) {
+      if (graphqlComplexityInfoBuilder_ == null) {
+        ensureGraphqlComplexityInfoIsMutable();
+        graphqlComplexityInfo_.set(index, builderForValue.build());
+        onChanged();
+      } else {
+        graphqlComplexityInfoBuilder_.setMessage(index, builderForValue.build());
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     *&#47; string graphQLSchema = 22;
+     * </pre>
+     *
+     * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 23;</code>
+     */
+    public Builder addGraphqlComplexityInfo(org.wso2.apk.enforcer.discovery.api.GraphqlComplexity value) {
+      if (graphqlComplexityInfoBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureGraphqlComplexityInfoIsMutable();
+        graphqlComplexityInfo_.add(value);
+        onChanged();
+      } else {
+        graphqlComplexityInfoBuilder_.addMessage(value);
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     *&#47; string graphQLSchema = 22;
+     * </pre>
+     *
+     * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 23;</code>
+     */
+    public Builder addGraphqlComplexityInfo(
+        int index, org.wso2.apk.enforcer.discovery.api.GraphqlComplexity value) {
+      if (graphqlComplexityInfoBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureGraphqlComplexityInfoIsMutable();
+        graphqlComplexityInfo_.add(index, value);
+        onChanged();
+      } else {
+        graphqlComplexityInfoBuilder_.addMessage(index, value);
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     *&#47; string graphQLSchema = 22;
+     * </pre>
+     *
+     * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 23;</code>
+     */
+    public Builder addGraphqlComplexityInfo(
+        org.wso2.apk.enforcer.discovery.api.GraphqlComplexity.Builder builderForValue) {
+      if (graphqlComplexityInfoBuilder_ == null) {
+        ensureGraphqlComplexityInfoIsMutable();
+        graphqlComplexityInfo_.add(builderForValue.build());
+        onChanged();
+      } else {
+        graphqlComplexityInfoBuilder_.addMessage(builderForValue.build());
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     *&#47; string graphQLSchema = 22;
+     * </pre>
+     *
+     * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 23;</code>
+     */
+    public Builder addGraphqlComplexityInfo(
+        int index, org.wso2.apk.enforcer.discovery.api.GraphqlComplexity.Builder builderForValue) {
+      if (graphqlComplexityInfoBuilder_ == null) {
+        ensureGraphqlComplexityInfoIsMutable();
+        graphqlComplexityInfo_.add(index, builderForValue.build());
+        onChanged();
+      } else {
+        graphqlComplexityInfoBuilder_.addMessage(index, builderForValue.build());
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     *&#47; string graphQLSchema = 22;
+     * </pre>
+     *
+     * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 23;</code>
+     */
+    public Builder addAllGraphqlComplexityInfo(
+        java.lang.Iterable<? extends org.wso2.apk.enforcer.discovery.api.GraphqlComplexity> values) {
+      if (graphqlComplexityInfoBuilder_ == null) {
+        ensureGraphqlComplexityInfoIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, graphqlComplexityInfo_);
+        onChanged();
+      } else {
+        graphqlComplexityInfoBuilder_.addAllMessages(values);
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     *&#47; string graphQLSchema = 22;
+     * </pre>
+     *
+     * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 23;</code>
+     */
+    public Builder clearGraphqlComplexityInfo() {
+      if (graphqlComplexityInfoBuilder_ == null) {
+        graphqlComplexityInfo_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000004);
+        onChanged();
+      } else {
+        graphqlComplexityInfoBuilder_.clear();
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     *&#47; string graphQLSchema = 22;
+     * </pre>
+     *
+     * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 23;</code>
+     */
+    public Builder removeGraphqlComplexityInfo(int index) {
+      if (graphqlComplexityInfoBuilder_ == null) {
+        ensureGraphqlComplexityInfoIsMutable();
+        graphqlComplexityInfo_.remove(index);
+        onChanged();
+      } else {
+        graphqlComplexityInfoBuilder_.remove(index);
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     *&#47; string graphQLSchema = 22;
+     * </pre>
+     *
+     * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 23;</code>
+     */
+    public org.wso2.apk.enforcer.discovery.api.GraphqlComplexity.Builder getGraphqlComplexityInfoBuilder(
+        int index) {
+      return getGraphqlComplexityInfoFieldBuilder().getBuilder(index);
+    }
+    /**
+     * <pre>
+     *&#47; string graphQLSchema = 22;
+     * </pre>
+     *
+     * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 23;</code>
+     */
+    public org.wso2.apk.enforcer.discovery.api.GraphqlComplexityOrBuilder getGraphqlComplexityInfoOrBuilder(
+        int index) {
+      if (graphqlComplexityInfoBuilder_ == null) {
+        return graphqlComplexityInfo_.get(index);  } else {
+        return graphqlComplexityInfoBuilder_.getMessageOrBuilder(index);
+      }
+    }
+    /**
+     * <pre>
+     *&#47; string graphQLSchema = 22;
+     * </pre>
+     *
+     * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 23;</code>
+     */
+    public java.util.List<? extends org.wso2.apk.enforcer.discovery.api.GraphqlComplexityOrBuilder> 
+         getGraphqlComplexityInfoOrBuilderList() {
+      if (graphqlComplexityInfoBuilder_ != null) {
+        return graphqlComplexityInfoBuilder_.getMessageOrBuilderList();
+      } else {
+        return java.util.Collections.unmodifiableList(graphqlComplexityInfo_);
+      }
+    }
+    /**
+     * <pre>
+     *&#47; string graphQLSchema = 22;
+     * </pre>
+     *
+     * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 23;</code>
+     */
+    public org.wso2.apk.enforcer.discovery.api.GraphqlComplexity.Builder addGraphqlComplexityInfoBuilder() {
+      return getGraphqlComplexityInfoFieldBuilder().addBuilder(
+          org.wso2.apk.enforcer.discovery.api.GraphqlComplexity.getDefaultInstance());
+    }
+    /**
+     * <pre>
+     *&#47; string graphQLSchema = 22;
+     * </pre>
+     *
+     * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 23;</code>
+     */
+    public org.wso2.apk.enforcer.discovery.api.GraphqlComplexity.Builder addGraphqlComplexityInfoBuilder(
+        int index) {
+      return getGraphqlComplexityInfoFieldBuilder().addBuilder(
+          index, org.wso2.apk.enforcer.discovery.api.GraphqlComplexity.getDefaultInstance());
+    }
+    /**
+     * <pre>
+     *&#47; string graphQLSchema = 22;
+     * </pre>
+     *
+     * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 23;</code>
+     */
+    public java.util.List<org.wso2.apk.enforcer.discovery.api.GraphqlComplexity.Builder> 
+         getGraphqlComplexityInfoBuilderList() {
+      return getGraphqlComplexityInfoFieldBuilder().getBuilderList();
+    }
+    private com.google.protobuf.RepeatedFieldBuilderV3<
+        org.wso2.apk.enforcer.discovery.api.GraphqlComplexity, org.wso2.apk.enforcer.discovery.api.GraphqlComplexity.Builder, org.wso2.apk.enforcer.discovery.api.GraphqlComplexityOrBuilder> 
+        getGraphqlComplexityInfoFieldBuilder() {
+      if (graphqlComplexityInfoBuilder_ == null) {
+        graphqlComplexityInfoBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+            org.wso2.apk.enforcer.discovery.api.GraphqlComplexity, org.wso2.apk.enforcer.discovery.api.GraphqlComplexity.Builder, org.wso2.apk.enforcer.discovery.api.GraphqlComplexityOrBuilder>(
+                graphqlComplexityInfo_,
+                ((bitField0_ & 0x00000004) != 0),
+                getParentForChildren(),
+                isClean());
+        graphqlComplexityInfo_ = null;
+      }
+      return graphqlComplexityInfoBuilder_;
+    }
+
+    private boolean systemAPI_ ;
+    /**
      * <code>bool systemAPI = 24;</code>
      * @return The systemAPI.
      */
@@ -3130,11 +3737,6 @@ private static final long serialVersionUID = 0L;
       return systemAPI_;
     }
     /**
-     * <pre>
-     *&#47; string graphQLSchema = 22;
-     * repeated GraphqlComplexity graphqlComplexityInfo = 23;
-     * </pre>
-     *
      * <code>bool systemAPI = 24;</code>
      * @param value The systemAPI to set.
      * @return This builder for chaining.
@@ -3146,11 +3748,6 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <pre>
-     *&#47; string graphQLSchema = 22;
-     * repeated GraphqlComplexity graphqlComplexityInfo = 23;
-     * </pre>
-     *
      * <code>bool systemAPI = 24;</code>
      * @return This builder for chaining.
      */
@@ -3419,6 +4016,365 @@ private static final long serialVersionUID = 0L;
       subscriptionValidation_ = false;
       onChanged();
       return this;
+    }
+
+    private org.wso2.apk.enforcer.discovery.api.EndpointCluster endpoints_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+        org.wso2.apk.enforcer.discovery.api.EndpointCluster, org.wso2.apk.enforcer.discovery.api.EndpointCluster.Builder, org.wso2.apk.enforcer.discovery.api.EndpointClusterOrBuilder> endpointsBuilder_;
+    /**
+     * <code>.wso2.discovery.api.EndpointCluster endpoints = 29;</code>
+     * @return Whether the endpoints field is set.
+     */
+    public boolean hasEndpoints() {
+      return endpointsBuilder_ != null || endpoints_ != null;
+    }
+    /**
+     * <code>.wso2.discovery.api.EndpointCluster endpoints = 29;</code>
+     * @return The endpoints.
+     */
+    public org.wso2.apk.enforcer.discovery.api.EndpointCluster getEndpoints() {
+      if (endpointsBuilder_ == null) {
+        return endpoints_ == null ? org.wso2.apk.enforcer.discovery.api.EndpointCluster.getDefaultInstance() : endpoints_;
+      } else {
+        return endpointsBuilder_.getMessage();
+      }
+    }
+    /**
+     * <code>.wso2.discovery.api.EndpointCluster endpoints = 29;</code>
+     */
+    public Builder setEndpoints(org.wso2.apk.enforcer.discovery.api.EndpointCluster value) {
+      if (endpointsBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        endpoints_ = value;
+        onChanged();
+      } else {
+        endpointsBuilder_.setMessage(value);
+      }
+
+      return this;
+    }
+    /**
+     * <code>.wso2.discovery.api.EndpointCluster endpoints = 29;</code>
+     */
+    public Builder setEndpoints(
+        org.wso2.apk.enforcer.discovery.api.EndpointCluster.Builder builderForValue) {
+      if (endpointsBuilder_ == null) {
+        endpoints_ = builderForValue.build();
+        onChanged();
+      } else {
+        endpointsBuilder_.setMessage(builderForValue.build());
+      }
+
+      return this;
+    }
+    /**
+     * <code>.wso2.discovery.api.EndpointCluster endpoints = 29;</code>
+     */
+    public Builder mergeEndpoints(org.wso2.apk.enforcer.discovery.api.EndpointCluster value) {
+      if (endpointsBuilder_ == null) {
+        if (endpoints_ != null) {
+          endpoints_ =
+            org.wso2.apk.enforcer.discovery.api.EndpointCluster.newBuilder(endpoints_).mergeFrom(value).buildPartial();
+        } else {
+          endpoints_ = value;
+        }
+        onChanged();
+      } else {
+        endpointsBuilder_.mergeFrom(value);
+      }
+
+      return this;
+    }
+    /**
+     * <code>.wso2.discovery.api.EndpointCluster endpoints = 29;</code>
+     */
+    public Builder clearEndpoints() {
+      if (endpointsBuilder_ == null) {
+        endpoints_ = null;
+        onChanged();
+      } else {
+        endpoints_ = null;
+        endpointsBuilder_ = null;
+      }
+
+      return this;
+    }
+    /**
+     * <code>.wso2.discovery.api.EndpointCluster endpoints = 29;</code>
+     */
+    public org.wso2.apk.enforcer.discovery.api.EndpointCluster.Builder getEndpointsBuilder() {
+      
+      onChanged();
+      return getEndpointsFieldBuilder().getBuilder();
+    }
+    /**
+     * <code>.wso2.discovery.api.EndpointCluster endpoints = 29;</code>
+     */
+    public org.wso2.apk.enforcer.discovery.api.EndpointClusterOrBuilder getEndpointsOrBuilder() {
+      if (endpointsBuilder_ != null) {
+        return endpointsBuilder_.getMessageOrBuilder();
+      } else {
+        return endpoints_ == null ?
+            org.wso2.apk.enforcer.discovery.api.EndpointCluster.getDefaultInstance() : endpoints_;
+      }
+    }
+    /**
+     * <code>.wso2.discovery.api.EndpointCluster endpoints = 29;</code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+        org.wso2.apk.enforcer.discovery.api.EndpointCluster, org.wso2.apk.enforcer.discovery.api.EndpointCluster.Builder, org.wso2.apk.enforcer.discovery.api.EndpointClusterOrBuilder> 
+        getEndpointsFieldBuilder() {
+      if (endpointsBuilder_ == null) {
+        endpointsBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+            org.wso2.apk.enforcer.discovery.api.EndpointCluster, org.wso2.apk.enforcer.discovery.api.EndpointCluster.Builder, org.wso2.apk.enforcer.discovery.api.EndpointClusterOrBuilder>(
+                getEndpoints(),
+                getParentForChildren(),
+                isClean());
+        endpoints_ = null;
+      }
+      return endpointsBuilder_;
+    }
+
+    private java.util.List<org.wso2.apk.enforcer.discovery.api.SecurityInfo> endpointSecurity_ =
+      java.util.Collections.emptyList();
+    private void ensureEndpointSecurityIsMutable() {
+      if (!((bitField0_ & 0x00000008) != 0)) {
+        endpointSecurity_ = new java.util.ArrayList<org.wso2.apk.enforcer.discovery.api.SecurityInfo>(endpointSecurity_);
+        bitField0_ |= 0x00000008;
+       }
+    }
+
+    private com.google.protobuf.RepeatedFieldBuilderV3<
+        org.wso2.apk.enforcer.discovery.api.SecurityInfo, org.wso2.apk.enforcer.discovery.api.SecurityInfo.Builder, org.wso2.apk.enforcer.discovery.api.SecurityInfoOrBuilder> endpointSecurityBuilder_;
+
+    /**
+     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 30;</code>
+     */
+    public java.util.List<org.wso2.apk.enforcer.discovery.api.SecurityInfo> getEndpointSecurityList() {
+      if (endpointSecurityBuilder_ == null) {
+        return java.util.Collections.unmodifiableList(endpointSecurity_);
+      } else {
+        return endpointSecurityBuilder_.getMessageList();
+      }
+    }
+    /**
+     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 30;</code>
+     */
+    public int getEndpointSecurityCount() {
+      if (endpointSecurityBuilder_ == null) {
+        return endpointSecurity_.size();
+      } else {
+        return endpointSecurityBuilder_.getCount();
+      }
+    }
+    /**
+     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 30;</code>
+     */
+    public org.wso2.apk.enforcer.discovery.api.SecurityInfo getEndpointSecurity(int index) {
+      if (endpointSecurityBuilder_ == null) {
+        return endpointSecurity_.get(index);
+      } else {
+        return endpointSecurityBuilder_.getMessage(index);
+      }
+    }
+    /**
+     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 30;</code>
+     */
+    public Builder setEndpointSecurity(
+        int index, org.wso2.apk.enforcer.discovery.api.SecurityInfo value) {
+      if (endpointSecurityBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureEndpointSecurityIsMutable();
+        endpointSecurity_.set(index, value);
+        onChanged();
+      } else {
+        endpointSecurityBuilder_.setMessage(index, value);
+      }
+      return this;
+    }
+    /**
+     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 30;</code>
+     */
+    public Builder setEndpointSecurity(
+        int index, org.wso2.apk.enforcer.discovery.api.SecurityInfo.Builder builderForValue) {
+      if (endpointSecurityBuilder_ == null) {
+        ensureEndpointSecurityIsMutable();
+        endpointSecurity_.set(index, builderForValue.build());
+        onChanged();
+      } else {
+        endpointSecurityBuilder_.setMessage(index, builderForValue.build());
+      }
+      return this;
+    }
+    /**
+     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 30;</code>
+     */
+    public Builder addEndpointSecurity(org.wso2.apk.enforcer.discovery.api.SecurityInfo value) {
+      if (endpointSecurityBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureEndpointSecurityIsMutable();
+        endpointSecurity_.add(value);
+        onChanged();
+      } else {
+        endpointSecurityBuilder_.addMessage(value);
+      }
+      return this;
+    }
+    /**
+     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 30;</code>
+     */
+    public Builder addEndpointSecurity(
+        int index, org.wso2.apk.enforcer.discovery.api.SecurityInfo value) {
+      if (endpointSecurityBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureEndpointSecurityIsMutable();
+        endpointSecurity_.add(index, value);
+        onChanged();
+      } else {
+        endpointSecurityBuilder_.addMessage(index, value);
+      }
+      return this;
+    }
+    /**
+     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 30;</code>
+     */
+    public Builder addEndpointSecurity(
+        org.wso2.apk.enforcer.discovery.api.SecurityInfo.Builder builderForValue) {
+      if (endpointSecurityBuilder_ == null) {
+        ensureEndpointSecurityIsMutable();
+        endpointSecurity_.add(builderForValue.build());
+        onChanged();
+      } else {
+        endpointSecurityBuilder_.addMessage(builderForValue.build());
+      }
+      return this;
+    }
+    /**
+     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 30;</code>
+     */
+    public Builder addEndpointSecurity(
+        int index, org.wso2.apk.enforcer.discovery.api.SecurityInfo.Builder builderForValue) {
+      if (endpointSecurityBuilder_ == null) {
+        ensureEndpointSecurityIsMutable();
+        endpointSecurity_.add(index, builderForValue.build());
+        onChanged();
+      } else {
+        endpointSecurityBuilder_.addMessage(index, builderForValue.build());
+      }
+      return this;
+    }
+    /**
+     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 30;</code>
+     */
+    public Builder addAllEndpointSecurity(
+        java.lang.Iterable<? extends org.wso2.apk.enforcer.discovery.api.SecurityInfo> values) {
+      if (endpointSecurityBuilder_ == null) {
+        ensureEndpointSecurityIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, endpointSecurity_);
+        onChanged();
+      } else {
+        endpointSecurityBuilder_.addAllMessages(values);
+      }
+      return this;
+    }
+    /**
+     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 30;</code>
+     */
+    public Builder clearEndpointSecurity() {
+      if (endpointSecurityBuilder_ == null) {
+        endpointSecurity_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000008);
+        onChanged();
+      } else {
+        endpointSecurityBuilder_.clear();
+      }
+      return this;
+    }
+    /**
+     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 30;</code>
+     */
+    public Builder removeEndpointSecurity(int index) {
+      if (endpointSecurityBuilder_ == null) {
+        ensureEndpointSecurityIsMutable();
+        endpointSecurity_.remove(index);
+        onChanged();
+      } else {
+        endpointSecurityBuilder_.remove(index);
+      }
+      return this;
+    }
+    /**
+     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 30;</code>
+     */
+    public org.wso2.apk.enforcer.discovery.api.SecurityInfo.Builder getEndpointSecurityBuilder(
+        int index) {
+      return getEndpointSecurityFieldBuilder().getBuilder(index);
+    }
+    /**
+     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 30;</code>
+     */
+    public org.wso2.apk.enforcer.discovery.api.SecurityInfoOrBuilder getEndpointSecurityOrBuilder(
+        int index) {
+      if (endpointSecurityBuilder_ == null) {
+        return endpointSecurity_.get(index);  } else {
+        return endpointSecurityBuilder_.getMessageOrBuilder(index);
+      }
+    }
+    /**
+     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 30;</code>
+     */
+    public java.util.List<? extends org.wso2.apk.enforcer.discovery.api.SecurityInfoOrBuilder> 
+         getEndpointSecurityOrBuilderList() {
+      if (endpointSecurityBuilder_ != null) {
+        return endpointSecurityBuilder_.getMessageOrBuilderList();
+      } else {
+        return java.util.Collections.unmodifiableList(endpointSecurity_);
+      }
+    }
+    /**
+     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 30;</code>
+     */
+    public org.wso2.apk.enforcer.discovery.api.SecurityInfo.Builder addEndpointSecurityBuilder() {
+      return getEndpointSecurityFieldBuilder().addBuilder(
+          org.wso2.apk.enforcer.discovery.api.SecurityInfo.getDefaultInstance());
+    }
+    /**
+     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 30;</code>
+     */
+    public org.wso2.apk.enforcer.discovery.api.SecurityInfo.Builder addEndpointSecurityBuilder(
+        int index) {
+      return getEndpointSecurityFieldBuilder().addBuilder(
+          index, org.wso2.apk.enforcer.discovery.api.SecurityInfo.getDefaultInstance());
+    }
+    /**
+     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 30;</code>
+     */
+    public java.util.List<org.wso2.apk.enforcer.discovery.api.SecurityInfo.Builder> 
+         getEndpointSecurityBuilderList() {
+      return getEndpointSecurityFieldBuilder().getBuilderList();
+    }
+    private com.google.protobuf.RepeatedFieldBuilderV3<
+        org.wso2.apk.enforcer.discovery.api.SecurityInfo, org.wso2.apk.enforcer.discovery.api.SecurityInfo.Builder, org.wso2.apk.enforcer.discovery.api.SecurityInfoOrBuilder> 
+        getEndpointSecurityFieldBuilder() {
+      if (endpointSecurityBuilder_ == null) {
+        endpointSecurityBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+            org.wso2.apk.enforcer.discovery.api.SecurityInfo, org.wso2.apk.enforcer.discovery.api.SecurityInfo.Builder, org.wso2.apk.enforcer.discovery.api.SecurityInfoOrBuilder>(
+                endpointSecurity_,
+                ((bitField0_ & 0x00000008) != 0),
+                getParentForChildren(),
+                isClean());
+        endpointSecurity_ = null;
+      }
+      return endpointSecurityBuilder_;
     }
     @java.lang.Override
     public final Builder setUnknownFields(

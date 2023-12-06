@@ -165,7 +165,7 @@ func init() {
 	orgIDvHostBasepathMap = make(map[string]map[string]string)
 
 	enforcerLabelMap = make(map[string]*EnforcerInternalAPI)
-	//TODO(amali) currently subscriptions, configs, applications, applicationPolicies, subscriptionPolicies,
+	// currently subscriptions, configs, applications, applicationPolicies, subscriptionPolicies,
 	// applicationKeyMappings, keyManagerConfigList, revokedTokens are supported with the hard coded label for Enforcer
 	enforcerLabelMap[commonEnforcerLabel] = &EnforcerInternalAPI{}
 	rand.Seed(time.Now().UnixNano())

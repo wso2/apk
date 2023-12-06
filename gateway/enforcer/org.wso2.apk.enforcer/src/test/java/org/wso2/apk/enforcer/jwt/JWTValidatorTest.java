@@ -164,7 +164,6 @@ public class JWTValidatorTest {
 
     @Test
     public void testRevokedToken() throws APISecurityException, EnforcerException {
-
         HashSet<String> revokedTokens = new HashSet<>();
         String revokedTokenJTI = "b8938768-23fd-4dec-8b70-bed45eb7c33d";
         revokedTokens.add(revokedTokenJTI);

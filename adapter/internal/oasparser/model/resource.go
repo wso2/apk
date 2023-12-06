@@ -64,10 +64,6 @@ func (resource *Resource) GetPath() string {
 // GetPathMatchType returns the path match type of the resource.
 // https://gateway-api.sigs.k8s.io/references/spec/#gateway.networking.k8s.io/v1beta1.PathMatchType
 func (resource *Resource) GetPathMatchType() gwapiv1b1.PathMatchType {
-	//todo(amila) fix cannot be nil issue
-	if &resource.pathMatchType == nil {
-		return gwapiv1b1.PathMatchPathPrefix
-	}
 	return resource.pathMatchType
 }
 
@@ -113,14 +109,18 @@ func (resource *Resource) HasPolicies() bool {
 // which could be used for unit tests.
 func CreateMinimalDummyResourceForTests(path string, methods []*Operation, id string, urls []Endpoint, hasPolicies bool) Resource {
 
-	endpints := generateEndpointCluster(urls, constants.LoadBalance)
+	endpoints := generateEndpointCluster(urls, constants.LoadBalance)
+	return CreateMinimalResource(path, methods, id, endpoints, hasPolicies, gwapiv1b1.PathMatchPathPrefix)
+}
 
+// CreateMinimalResource create a resource object with minimal required set of values
+func CreateMinimalResource(path string, methods []*Operation, id string, endpoints *EndpointCluster, hasPolicies bool, pathMatchType gwapiv1b1.PathMatchType) Resource {
 	return Resource{
 		path:          path,
 		methods:       methods,
 		iD:            id,
-		endpoints:     endpints,
-		pathMatchType: gwapiv1b1.PathMatchPathPrefix,
+		endpoints:     endpoints,
+		pathMatchType: pathMatchType,
 		hasPolicies:   hasPolicies,
 	}
 }

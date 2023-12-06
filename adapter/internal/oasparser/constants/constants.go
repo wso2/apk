@@ -97,7 +97,7 @@ const (
 	REST                  string = "REST"
 	SOAP                  string = "SOAP"
 	WS                    string = "WS"
-	GRAPHQL               string = "GRAPHQL"
+	GRAPHQL               string = "GraphQL"
 	WEBHOOK               string = "WEBHOOK"
 	SSE                   string = "SSE"
 	Prototyped            string = "prototyped"
@@ -130,4 +130,10 @@ const (
 	KindAPIPolicy       = "APIPolicy"
 	KindScope           = "Scope"
 	KindRateLimitPolicy = "RateLimitPolicy"
+)
+
+// API environment types
+const (
+	Production = "Production"
+	Sandbox    = "Sandbox"
 )

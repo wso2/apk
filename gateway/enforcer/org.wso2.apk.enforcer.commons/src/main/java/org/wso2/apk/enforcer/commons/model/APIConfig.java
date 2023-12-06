@@ -55,6 +55,17 @@ public class APIConfig {
     private byte[] apiDefinition;
     private String environment;
     private boolean subscriptionValidation;
+    private EndpointSecurity[] endpointSecurity;
+    private EndpointCluster endpoints;
+
+    public EndpointCluster getEndpoints() {
+        return endpoints;
+    }
+
+    public void getEndpointSecurity(EndpointSecurity[] endpointSecurity) {
+        this.endpointSecurity = endpointSecurity;
+    }
+
     /**
      * getApiType returns the API type. This could be one of the following.
      * HTTP, WS, WEBHOOK

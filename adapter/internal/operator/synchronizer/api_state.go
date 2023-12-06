@@ -30,6 +30,8 @@ type APIState struct {
 	APIDefinition             *v1alpha2.API
 	ProdHTTPRoute             *HTTPRouteState
 	SandHTTPRoute             *HTTPRouteState
+	ProdGQLRoute              *GQLRouteState
+	SandGQLRoute              *GQLRouteState
 	Authentications           map[string]v1alpha1.Authentication
 	RateLimitPolicies         map[string]v1alpha1.RateLimitPolicy
 	ResourceAuthentications   map[string]v1alpha1.Authentication
@@ -51,4 +53,14 @@ type HTTPRouteState struct {
 	HTTPRoutePartitions map[string]*gwapiv1b1.HTTPRoute
 	BackendMapping      map[string]*v1alpha1.ResolvedBackend
 	Scopes              map[string]v1alpha1.Scope
+}
+
+// GQLRouteState holds the state of the deployed gqlRoutes. This state is compared with
+// the state of the Kubernetes controller cache to detect updates.
+// +k8s:deepcopy-gen=true
+type GQLRouteState struct {
+	GQLRouteCombined   *v1alpha2.GQLRoute
+	GQLRoutePartitions map[string]*v1alpha2.GQLRoute
+	BackendMapping     map[string]*v1alpha1.ResolvedBackend
+	Scopes             map[string]v1alpha1.Scope
 }
