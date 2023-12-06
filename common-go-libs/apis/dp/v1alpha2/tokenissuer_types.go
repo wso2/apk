@@ -15,7 +15,7 @@
  *
  */
 
-package v1alpha1
+package v1alpha2
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -62,6 +62,12 @@ type TokenIssuerSpec struct {
 
 	// TargetRef denotes the reference to the which gateway it applies to
 	TargetRef *gwapiv1b1.PolicyTargetReference `json:"targetRef,omitempty"`
+
+	// Environments denotes the environments that are applicable for the token issuer.
+	//
+	// +optional
+	// +nullable
+	Environments []string `json:"environments,omitempty"`
 }
 
 // ClaimMapping defines the reference configuration
@@ -98,6 +104,19 @@ type CERTConfig struct {
 	ConfigMapRef *RefConfig `json:"configMapRef,omitempty"`
 }
 
+// RefConfig holds a config for a secret or a configmap
+type RefConfig struct {
+	// Name of the secret or configmap
+	//
+	// +kubebuilder:validation:MinLength=1
+	Name string `json:"name"`
+
+	// Key of the secret or configmap
+	//
+	// +kubebuilder:validation:MinLength=1
+	Key string `json:"key"`
+}
+
 // TokenIssuerStatus defines the observed state of TokenIssuer
 type TokenIssuerStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
@@ -105,10 +124,11 @@ type TokenIssuerStatus struct {
 }
 
 // +genclient
-// +kubebuilder:object:root=true
-// +kubebuilder:subresource:status
-// +kubebuilder:storageversion
-// TokenIssuer is the Schema for the tokenIssuer API
+//+kubebuilder:object:root=true
+//+kubebuilder:subresource:status
+//+kubebuilder:storageversion
+
+// TokenIssuer is the Schema for the tokenissuers API
 type TokenIssuer struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
