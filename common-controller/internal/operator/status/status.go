@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2022, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
+ *  Copyright (c) 2023, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -20,8 +20,8 @@ package status
 import (
 	"context"
 
-	"github.com/wso2/apk/adapter/internal/loggers"
-	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
+	"github.com/wso2/apk/common-controller/internal/loggers"
+	dpv1alpha1 "github.com/wso2/apk/common-controller/internal/operator/apis/dp/v1alpha1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/util/retry"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -56,7 +56,6 @@ func (updateHandler *UpdateHandler) applyUpdate(update Update) {
 		}
 
 		resourceCopy := update.UpdateStatus(update.Resource)
-
 		if isStatusEqual(update.Resource, resourceCopy) {
 			loggers.LoggerAPKOperator.Debugf("Status unchanged, hence not updating. %s", update.NamespacedName.String())
 			return nil
@@ -88,6 +87,7 @@ func (updateHandler *UpdateHandler) Start(ctx context.Context) error {
 
 // Send public method to add status update events to the update channel.
 func (updateHandler *UpdateHandler) Send(update Update) {
+	loggers.LoggerAPKOperator.Debugf("SEND Received a status update in %s", update.NamespacedName.String())
 	updateHandler.updateChannel <- update
 }
 

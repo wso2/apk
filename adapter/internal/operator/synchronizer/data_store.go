@@ -403,7 +403,7 @@ func (ods *OperatorDataStore) processGatewayState(gatewayDef *gwapiv1b1.Gateway,
 	customRateLimitPolicies map[string]*dpv1alpha1.RateLimitPolicy) (GatewayState, []string, bool) {
 	ods.mu.Lock()
 	defer ods.mu.Unlock()
-	var updated bool
+	updated := false
 	events := []string{}
 	cachedGateway := ods.gatewayStore[utils.NamespacedName(gatewayDef)]
 

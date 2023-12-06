@@ -7,9 +7,9 @@ Feature: API Deployment with Global Interceptor
     And make the API deployment request
     Then the response status code should be 200
     And the response body should contain "579ba27a1e03e2fdf099d1b6745e265f2d495606"
-    And I wait for 1 minute
+    And I wait for api deployment
     Then I set headers
-      |Authorization|bearer ${accessToken}|
+      | Authorization | bearer ${accessToken} |
     And I send "GET" request to "https://default.gw.wso2.com:9095/globalinterceptor/1.0.0/get" with body ""
     Then the response status code should be 200
     And the response body should contain "\"Gw-Header\": \"GW-header-value\""
@@ -21,5 +21,5 @@ Feature: API Deployment with Global Interceptor
     Then the response status code should be <expectedStatusCode>
 
     Examples:
-      | apiID | expectedStatusCode |
-      | 579ba27a1e03e2fdf099d1b6745e265f2d495606  | 202         |
+      | apiID                                    | expectedStatusCode |
+      | 579ba27a1e03e2fdf099d1b6745e265f2d495606 | 202                |

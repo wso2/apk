@@ -237,12 +237,17 @@ public class BaseSteps {
 
     @Then("I wait for {int} minute")
     public void waitForMinute(int minute) throws InterruptedException {
-        Thread.sleep(minute * 1000);
+        Thread.sleep(minute * 1000 * 60);
     }
 
     @Then("I wait for {int} seconds")
     public void waitForSeconds(int seconds) throws InterruptedException {
         Thread.sleep(seconds * 1000);
+    }
+
+    @Then("I wait for api deployment")
+    public void waitAPIDeployment() throws InterruptedException {
+        waitForSeconds(30);
     }
 
     @Then("the response headers contains key {string} and value {string}")

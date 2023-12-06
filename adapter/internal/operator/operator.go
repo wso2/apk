@@ -123,6 +123,10 @@ func InitOperator() {
 		loggers.LoggerAPKOperator.Errorf("Error creating Gateway controller: %v", err)
 	}
 
+	if err := dpcontrollers.NewHTTPRouteController(mgr, operatorDataStore, updateHandler); err != nil {
+		loggers.LoggerAPKOperator.Errorf("Error creating HTTPRoute controller: %v", err)
+	}
+
 	if err := dpcontrollers.NewAPIController(mgr, operatorDataStore, updateHandler, &ch, &successChannel); err != nil {
 		loggers.LoggerAPKOperator.Errorf("Error creating API controller: %v", err)
 	}
