@@ -15,7 +15,7 @@
  *
  */
 
-package v1alpha1
+package v1alpha2
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -55,6 +55,12 @@ type PolicySpec struct {
 
 	// CORS policy to be applied to the API.
 	CORSPolicy *CORSPolicy `json:"cORSPolicy,omitempty"`
+
+	// SubscriptionValidation denotes whether subscription validation is enabled for the API
+	//
+	// +kubebuilder:default:=false
+	// +optional
+	SubscriptionValidation bool `json:"subscriptionValidation,omitempty"`
 }
 
 // BackendJWTToken holds backend JWT token information
@@ -115,9 +121,10 @@ type APIPolicyStatus struct {
 }
 
 // +genclient
-// +kubebuilder:object:root=true
-// +kubebuilder:subresource:status
-// +kubebuilder:storageversion
+//+kubebuilder:object:root=true
+//+kubebuilder:subresource:status
+//+kubebuilder:storageversion
+
 // APIPolicy is the Schema for the apipolicies API
 type APIPolicy struct {
 	metav1.TypeMeta   `json:",inline"`
