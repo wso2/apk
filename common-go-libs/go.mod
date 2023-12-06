@@ -3,10 +3,10 @@ module github.com/wso2/apk/common-go-libs
 go 1.19
 
 require (
-	github.com/sirupsen/logrus v1.9.3
-	k8s.io/apimachinery v0.28.4
-	sigs.k8s.io/controller-runtime v0.16.3
-	sigs.k8s.io/gateway-api v1.0.0
+	github.com/sirupsen/logrus v1.9.0
+	k8s.io/apimachinery v0.27.2
+	sigs.k8s.io/controller-runtime v0.15.0
+	sigs.k8s.io/gateway-api v0.7.1
 )
 
 require (
@@ -17,6 +17,7 @@ require (
 	github.com/kr/text v0.2.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
+	github.com/rogpeppe/go-internal v1.11.0 // indirect
 	golang.org/x/net v0.17.0 // indirect
 	golang.org/x/sys v0.13.0 // indirect
 	golang.org/x/text v0.13.0 // indirect
