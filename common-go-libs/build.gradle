@@ -21,6 +21,15 @@ plugins {
 
 apply from: "$rootDir/../common-gradle-scripts/go.gradle"
 
+release {
+    tagTemplate = 'common-go-libs-$version'
+
+    git {
+        requireBranch= "main"
+        pushToRemote= "origin"
+    }
+}
+
 allprojects {
     group = project.group
     version = project.version
