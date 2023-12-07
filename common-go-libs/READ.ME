@@ -58,18 +58,18 @@ Following are some tasks with the steps that a developer might do in operator de
     kubebuilder create api --group dp --version v1alpha1 --kind APIPolicy
     ```
 
-6. This will prompt for creating the resource. Respond yes for that since we need to generate the CRD for it.
+4. This will prompt for creating the resource. Respond yes for that since we need to generate the CRD for it.
 
     ```bash
     Create Resource [y/n]
     y
     ```
 
-7. Next it will prompt for generating the boilerplate code for a controller, respond yes to it. As we are using a single controller in the current architecture. If your CR changes can be mapped to a `API` kind change event then you can delete the controller file. But, there might be cases you want a separate controller, then keep the generated controller file and add the code there.
+5. Next it will prompt for generating the boilerplate code for a controller, respond yes to it. As we are using a single controller in the current architecture. If your CR changes can be mapped to a `API` kind change event then you can delete the controller file. But, there might be cases you want a separate controller, then keep the generated controller file and add the code there.
 
     ```bash
     Create Controller [y/n]
-    y
+    n
     ```
 
     Now new scaffold files/changes should be available in following directory structure:
@@ -89,18 +89,10 @@ Following are some tasks with the steps that a developer might do in operator de
     │           └── zz_generated.deepcopy.go
     .
     .
-    .
-    ├── controllers
-    │   ├── cp
-    │   │   ├── ...
-    │   │   └── ...
-    │   └── dp
-    |       ├── ...
-    │       └── apipolicy_controller.go
     ```
-3. Revert the naming change did to internal/operator/operator.go in step 4.
 
-9. The `apipolicy_types.go` contains the go struct representing the our example `APIPolicy` kind. You need to fill in the `APIPolicySpec` and `APIPolicyStatus` structs as per the needs.
+
+6. The `apipolicy_types.go` contains the go struct representing the our example `APIPolicy` kind. You need to fill in the `APIPolicySpec` and `APIPolicyStatus` structs as per the needs.
 
     ```go
     // APIPolicySpec defines the desired state of APIPolicy
@@ -115,18 +107,42 @@ Following are some tasks with the steps that a developer might do in operator de
 
     Here we have set the `Type` property to be required by adding `// +kubebuilder:validation:MinLength=4` [marker](https://book.kubebuilder.io/reference/markers/crd-validation.htm).
 
-10. Since this example `APIPolicy` kind related to `API` kind, we can delete the `apipolicy_controller.go` file.
+7. Add this kubebuilder command to the APIPolicy
+
+```//+kubebuilder:storageversion```
+
+// +genclient
+//+kubebuilder:object:root=true
+//+kubebuilder:subresource:status
+//+kubebuilder:storageversion
+
+// APIPolicy is the Schema for the apipolicies API
+type APIPolicy struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Spec   APIPolicySpec   `json:"spec,omitempty"`
+	Status APIPolicyStatus `json:"status,omitempty"`
+}
 
 
 14. Generating CRD and other resource yamls:
 
     ```bash
-    gradle build
+    make manifests
     ```
 
     This will generate artefacts inside `{OPERATOR_HOME}/config` directory.
 
-15. To make the CRD and other resource changes affect, you need to move the k8s resources to the helm chart in `PROJECT_HOME/helm-charts` directory:
+15. Finally do the gradle build and check whether the build is successful.
+
+    ```bash
+    gradle build
+    ```
+
+16. Commit changes to github.
+
+16. To make the CRD and other resource changes affect, you need to move the k8s resources to the helm chart in `PROJECT_HOME/helm-charts` directory:
 
     - Append new rules to the `ClusterRole` in `helm-charts/templates/serviceAccount/apk-cluster-role.yaml`.
 
@@ -141,35 +157,3 @@ Following are some tasks with the steps that a developer might do in operator de
           resources: ["apipolicies/status"]
           verbs: ["get","patch","update"]
         ```
-
-### Adding a new property to an existing Kind
-
-1. Add the new property in spec or status of the existing resource in `<resource>_types.go` file.
-
-2. Add the logic inside the `<resource>_controller.go` file.
-
-3. Follow the step `12` and step `13` to generate and move the changes of the CRDs and other resources. 
-
-### Adding validating and defaulting logic
-
-Other than the basic validations we can add using [kubebuilder markers](https://book.kubebuilder.io/reference/markers/crd-validation.html) (which are finally getting added in openapi schema section CRD yaml file). In some cases we need other validation cannot achieve using the markers. For example, cross resource validations like context property in `API` kind.
-
-In that case, we can write the validating and defaulting logic by generating more scaffold code as described in [Implementing defaulting/validating webhooks](https://book.kubebuilder.io/cronjob-tutorial/webhook-implementation.html) section in kubebuilder docs.
-
-Refer to this example [PR](https://github.com/wso2/apk/pull/370) for more information.
-1. Rename internal/operator/operator.go to main.go
-
-2. Create webhook resources. Example command would be similar to;
-
-    ```bash
-    kubebuilder create webhook --group dp --version v1alpha1 --kind APIPolicy --defaulting --programmatic-validation
-    ```
-3. Revert the naming change did to internal/operator/operator.go in step 1.
-
-4. Copy `manifests.yaml` new entries to helm chart.
-
-5. Add webhook setup to `operator.go`.
-
-    ```go
-    (&dpv1alpha1.APIPolicy{}).SetupWebhookWithManager(mgr)
-    ```
