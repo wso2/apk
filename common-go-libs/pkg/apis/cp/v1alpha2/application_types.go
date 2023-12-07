@@ -28,6 +28,7 @@ import (
 type ApplicationSpec struct {
 	Name            string            `json:"name"`
 	Owner           string            `json:"owner"`
+	Organization    string            `json:"organization"`
 	Attributes      map[string]string `json:"attributes,omitempty"`
 	SecuritySchemes SecuritySchemes   `json:"securitySchemes"`
 }
@@ -56,9 +57,9 @@ type ApplicationStatus struct {
 	// Important: Run "make" to regenerate code after modifying this file
 }
 
-// +kubebuilder:object:root=true
-// +kubebuilder:subresource:status
-// +kubebuilder:storageversion
+//+kubebuilder:object:root=true
+//+kubebuilder:subresource:status
+
 // Application is the Schema for the applications API
 type Application struct {
 	metav1.TypeMeta   `json:",inline"`

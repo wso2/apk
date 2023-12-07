@@ -90,10 +90,9 @@ type RateLimitPolicyStatus struct {
 	// Important: Run "make" to regenerate code after modifying this file
 }
 
-// +genclient
-// +kubebuilder:object:root=true
-// +kubebuilder:subresource:status
-// +kubebuilder:storageversion
+//+kubebuilder:object:root=true
+//+kubebuilder:subresource:status
+
 // RateLimitPolicy is the Schema for the ratelimitpolicies API
 type RateLimitPolicy struct {
 	metav1.TypeMeta   `json:",inline"`

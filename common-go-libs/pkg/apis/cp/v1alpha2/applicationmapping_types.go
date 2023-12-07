@@ -36,9 +36,9 @@ type ApplicationMappingStatus struct {
 	// Important: Run "make" to regenerate code after modifying this file
 }
 
-// +kubebuilder:object:root=true
-// +kubebuilder:subresource:status
-// +kubebuilder:storageversion
+//+kubebuilder:object:root=true
+//+kubebuilder:subresource:status
+
 // ApplicationMapping is the Schema for the applicationmappings API
 type ApplicationMapping struct {
 	metav1.TypeMeta   `json:",inline"`

@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2023, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
+ *  Copyright (c) 2022, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -15,8 +15,15 @@
  *
  */
 
-// Package v1alpha1 contains the API Schema definitions for WSO2 APK.
-//
-// +kubebuilder:object:generate=true
-// +groupName=dp.wso2.com
 package v1alpha1
+
+import (
+	ctrl "sigs.k8s.io/controller-runtime"
+)
+
+// SetupWebhookWithManager creates a new webhook builder for API
+func (r *API) SetupWebhookWithManager(mgr ctrl.Manager) error {
+	return ctrl.NewWebhookManagedBy(mgr).
+		For(r).
+		Complete()
+}

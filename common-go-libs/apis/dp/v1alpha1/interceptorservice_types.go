@@ -67,10 +67,9 @@ type InterceptorServiceStatus struct {
 	// Important: Run "make" to regenerate code after modifying this file
 }
 
-// +genclient
-// +kubebuilder:object:root=true
-// +kubebuilder:subresource:status
-// +kubebuilder:storageversion
+//+kubebuilder:object:root=true
+//+kubebuilder:subresource:status
+
 // InterceptorService is the Schema for the interceptorservices API
 type InterceptorService struct {
 	metav1.TypeMeta   `json:",inline"`
