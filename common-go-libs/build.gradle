@@ -41,6 +41,13 @@ tasks.register('make_generates', Exec) {
     group 'go'
     description 'Running make generate.'
     commandLine 'make', 'generate', '-C', "$rootDir/../common-go-libs"
+    finalizedBy make_manifests
+}
+tasks.register('make_manifests', Exec) {
+    group 'go'
+    description 'Running make manifests tidy.'
+    commandLine 'make', 'manifests', '-C', "$rootDir/../common-go-libs"
+    dependsOn make_generates
 }
 
 task copyFiles(type: Copy) {
