@@ -7,8 +7,8 @@ import (
 	apkmgt "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/apkmgt"
 	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/subscription"
 	"github.com/wso2/apk/common-controller/internal/loggers"
-	cpv1alpha2 "github.com/wso2/apk/common-controller/internal/operator/apis/cp/v1alpha2"
 	constants "github.com/wso2/apk/common-controller/internal/operator/constant"
+	cpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/cp/v1alpha2"
 )
 
 // SendAppDeletionEvent sends an application creation event to the enforcer

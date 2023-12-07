@@ -33,7 +33,7 @@ import (
 
 	wso2_cache "github.com/wso2/apk/adapter/pkg/discovery/protocol/cache/v3"
 	eventhubTypes "github.com/wso2/apk/adapter/pkg/eventhub/types"
-	dpv1alpha1 "github.com/wso2/apk/common-controller/internal/operator/apis/dp/v1alpha1"
+	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 )
 
 // EnvoyInternalAPI struct use to hold envoy resources and adapter internal resources

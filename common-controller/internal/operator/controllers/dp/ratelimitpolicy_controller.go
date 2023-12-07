@@ -42,11 +42,11 @@ import (
 	cache "github.com/wso2/apk/common-controller/internal/cache"
 	"github.com/wso2/apk/common-controller/internal/config"
 	loggers "github.com/wso2/apk/common-controller/internal/loggers"
-	dpv1alpha1 "github.com/wso2/apk/common-controller/internal/operator/apis/dp/v1alpha1"
-	dpv1alpha2 "github.com/wso2/apk/common-controller/internal/operator/apis/dp/v1alpha2"
 	constants "github.com/wso2/apk/common-controller/internal/operator/constant"
 	"github.com/wso2/apk/common-controller/internal/utils"
 	xds "github.com/wso2/apk/common-controller/internal/xds"
+	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
+	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 )
 
 // RateLimitPolicyReconciler reconciles a RateLimitPolicy object
