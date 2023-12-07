@@ -43,9 +43,9 @@ type SubscriptionStatus struct {
 	// Important: Run "make" to regenerate code after modifying this file
 }
 
-// +kubebuilder:object:root=true
-// +kubebuilder:subresource:status
-// +kubebuilder:storageversion
+//+kubebuilder:object:root=true
+//+kubebuilder:subresource:status
+
 // Subscription is the Schema for the subscriptions API
 type Subscription struct {
 	metav1.TypeMeta   `json:",inline"`

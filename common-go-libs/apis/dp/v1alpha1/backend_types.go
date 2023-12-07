@@ -256,10 +256,9 @@ type SecretRef struct {
 // BackendStatus defines the observed state of Backend
 type BackendStatus struct{}
 
-// +genclient
-// +kubebuilder:object:root=true
-// +kubebuilder:subresource:status
-// +kubebuilder:storageversion
+//+kubebuilder:object:root=true
+//+kubebuilder:subresource:status
+
 // Backend is the Schema for the backends API
 type Backend struct {
 	metav1.TypeMeta   `json:",inline"`

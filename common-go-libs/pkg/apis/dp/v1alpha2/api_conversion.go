@@ -15,8 +15,7 @@
  *
  */
 
-// Package v1alpha1 contains the API Schema definitions for WSO2 APK.
-//
-// +kubebuilder:object:generate=true
-// +groupName=dp.wso2.com
-package v1alpha1
+package v1alpha2
+
+// Hub marks this type as a conversion hub.
+func (*API) Hub() {}

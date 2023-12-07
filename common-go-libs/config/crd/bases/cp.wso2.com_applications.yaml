@@ -40,6 +40,8 @@ spec:
                 type: object
               name:
                 type: string
+              organization:
+                type: string
               owner:
                 type: string
               securitySchemes:
@@ -69,6 +71,7 @@ spec:
                 type: object
             required:
             - name
+            - organization
             - owner
             - securitySchemes
             type: object
@@ -77,7 +80,7 @@ spec:
             type: object
         type: object
     served: true
-    storage: true
+    storage: false
     subresources:
       status: {}
   - name: v1alpha2
@@ -106,6 +109,8 @@ spec:
                 type: object
               name:
                 type: string
+              organization:
+                type: string
               owner:
                 type: string
               securitySchemes:
@@ -135,6 +140,7 @@ spec:
                 type: object
             required:
             - name
+            - organization
             - owner
             - securitySchemes
             type: object

@@ -114,10 +114,9 @@ type APIPolicyStatus struct {
 	// Important: Run "make" to regenerate code after modifying this file
 }
 
-// +genclient
-// +kubebuilder:object:root=true
-// +kubebuilder:subresource:status
-// +kubebuilder:storageversion
+//+kubebuilder:object:root=true
+//+kubebuilder:subresource:status
+
 // APIPolicy is the Schema for the apipolicies API
 type APIPolicy struct {
 	metav1.TypeMeta   `json:",inline"`
