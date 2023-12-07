@@ -68,7 +68,7 @@ wso2:
         secretName: ""
         # -- IDP jwt signing certificate file name
         fileName: ""
-     cp:
+    cp:
       # -- Enabled control plane.
       enabled: true
       database:
