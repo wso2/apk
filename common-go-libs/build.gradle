@@ -50,12 +50,6 @@ tasks.register('make_manifests', Exec) {
     dependsOn make_generates
 }
 
-task copyFiles(type: Copy) {
-    from 'apis'
-    into 'pkg/apis'
-}
-
 task build{
     dependsOn make_generates
-    dependsOn copyFiles
 }
