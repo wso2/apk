@@ -107,34 +107,16 @@ Following are some tasks with the steps that a developer might do in operator de
 
     Here we have set the `Type` property to be required by adding `// +kubebuilder:validation:MinLength=4` [marker](https://book.kubebuilder.io/reference/markers/crd-validation.htm).
 
-7. Add this kubebuilder command to the APIPolicy
 
-```//+kubebuilder:storageversion```
-
-// +genclient
-//+kubebuilder:object:root=true
-//+kubebuilder:subresource:status
-//+kubebuilder:storageversion
-
-// APIPolicy is the Schema for the apipolicies API
-type APIPolicy struct {
-	metav1.TypeMeta   `json:",inline"`
-	metav1.ObjectMeta `json:"metadata,omitempty"`
-
-	Spec   APIPolicySpec   `json:"spec,omitempty"`
-	Status APIPolicyStatus `json:"status,omitempty"`
-}
-
-
-14. Finally do the gradle build and check whether the build is successful.
+7. Finally do the gradle build and check whether the build is successful.
 
     ```bash
     gradle build
     ```
 
-16. Commit changes to github.
+8. Commit changes to github.
 
-16. To make the CRD and other resource changes affect, you need to move the k8s resources to the helm chart in `PROJECT_HOME/helm-charts` directory:
+9. To make the CRD and other resource changes affect, you need to move the k8s resources to the helm chart in `PROJECT_HOME/helm-charts` directory:
 
     - Append new rules to the `ClusterRole` in `helm-charts/templates/serviceAccount/apk-cluster-role.yaml`.
 
