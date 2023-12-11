@@ -1,15 +1,16 @@
 name: start and run cucumber and go integration tests
 on:
   workflow_dispatch:
-  pull_request:
-    types: [opened, synchronize, reopened]
+  pull_request_target:
+    types: [labeled]
 concurrency: 
   group: integration-test-${{ github.event.number || github.run_id }}
+  cancel-in-progress: true
 env:
   GH_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}  
 jobs:
   build_adapter:
-    if: github.event_name == 'pull_request' && github.event.action == 'opened' || github.event.action == 'synchronize'
+    if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
     uses: ./.github/workflows/adapter-release.yml
     with:
       aks_deployment: true
@@ -21,7 +22,7 @@ jobs:
       AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
   build_common_controller:
-    if: github.event_name == 'pull_request' && github.event.action == 'opened' || github.event.action == 'synchronize'
+    if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
     uses: ./.github/workflows/common-controller-release.yml
     with:
       aks_deployment: true
@@ -33,7 +34,7 @@ jobs:
       AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
   build_enforcer:
-    if: github.event_name == 'pull_request' && github.event.action == 'opened' || github.event.action == 'synchronize'
+    if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
     uses: ./.github/workflows/enforcer-release.yml
     with:
       aks_deployment: true
@@ -46,7 +47,7 @@ jobs:
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
     
   build_router:
-    if: github.event_name == 'pull_request' && github.event.action == 'opened' || github.event.action == 'synchronize'
+    if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
     uses: ./.github/workflows/router-release.yml
     with:
       aks_deployment: true
@@ -58,7 +59,7 @@ jobs:
       AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
   build_ratelimiter:
-      if: github.event_name == 'pull_request' && github.event.action == 'opened' || github.event.action == 'synchronize'
+      if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
       uses: ./.github/workflows/ratelimiter-release.yml
       with:
         aks_deployment: true
@@ -70,7 +71,7 @@ jobs:
         AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
         AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
   build_config:
-    if: github.event_name == 'pull_request' && github.event.action == 'opened' || github.event.action == 'synchronize'
+    if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
     uses: ./.github/workflows/config-deployer-release.yml
     with:
       aks_deployment: true
@@ -82,7 +83,7 @@ jobs:
       AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}      
   build_idpds:
-    if: github.event_name == 'pull_request' && github.event.action == 'opened' || github.event.action == 'synchronize'
+    if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
     uses: ./.github/workflows/idp-domain-service-release.yml
     with:
       aks_deployment: true
@@ -94,7 +95,7 @@ jobs:
       AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
   build_idpui:
-    if: github.event_name == 'pull_request' && github.event.action == 'opened' || github.event.action == 'synchronize'
+    if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
     uses: ./.github/workflows/idp-ui-release.yml
     with:
       aks_deployment: true
@@ -107,7 +108,7 @@ jobs:
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
 
   runs_go_integration_tests_on_pull_request:
-    if: github.event_name == 'pull_request' && github.event.action == 'opened' || github.event.action == 'synchronize' || github.event.action == 'reopened'
+    if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
     needs: [build_adapter, build_common_controller, build_enforcer, build_router, build_config,build_idpds,build_idpui,build_ratelimiter]
     runs-on: ubuntu-latest
     steps:
@@ -147,7 +148,7 @@ jobs:
 
     - name: checkout pull request and merge.
       shell: sh
-      if: github.event_name == 'pull_request' && github.event.action == 'opened' || github.event.action == 'synchronize' || github.event.action == 'reopened'
+      if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
       run: |
         cd apk-repo
         gh pr checkout ${{ github.event.number }} -b pr-${{ github.event.number }}
@@ -155,7 +156,7 @@ jobs:
         git merge origin/main
 
     - name: Helm release deploy
-      if: github.event_name == 'pull_request' && github.event.action == 'opened' || github.event.action == 'synchronize' || github.event.action == 'reopened'
+      if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
       shell: sh
       run: |
         cd apk-repo/helm-charts
@@ -210,7 +211,7 @@ jobs:
        fail_on_test_failures: true
 
   runs_cucumber_integration_tests_on_pull_request:
-    if: github.event_name == 'pull_request' && github.event.action == 'opened' || github.event.action == 'synchronize' || github.event.action == 'reopened'
+    if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
     needs: [build_adapter, build_common_controller, build_enforcer, build_router, build_config,build_idpds,build_idpui,build_ratelimiter]
     runs-on: ubuntu-latest
     steps:
@@ -250,7 +251,7 @@ jobs:
 
     - name: checkout pull request and merge.
       shell: sh
-      if: github.event_name == 'pull_request' && github.event.action == 'opened' || github.event.action == 'synchronize' || github.event.action == 'reopened'
+      if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
       run: |
         cd apk-repo
         gh pr checkout ${{ github.event.number }} -b pr-${{ github.event.number }}
@@ -258,7 +259,7 @@ jobs:
         git merge origin/main
 
     - name: Helm release deploy
-      if: github.event_name == 'pull_request' && github.event.action == 'opened' || github.event.action == 'synchronize' || github.event.action == 'reopened'
+      if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
       shell: sh
       run: |
         cd apk-repo/helm-charts

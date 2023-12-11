@@ -26,7 +26,8 @@ release {
     tagTemplate = 'management-server-$version'
 
     git {
-        requireBranch= "main"
+        requireBranch = project.hasProperty('releaseBranch') ? project.releaseBranch : 'main'
+
         pushToRemote= "origin"
     }
 }

@@ -1,0 +1,26 @@
+name: Remove github integration action trigger label
+on:
+  pull_request_target:
+    types:
+      - synchronize
+      - closed
+concurrency: 
+    group: integration-test-${{ github.event.number || github.run_id }}
+    cancel-in-progress: true
+jobs:
+  remove-label:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v2
+
+    - name: Remove label
+      run: |
+        TOKEN="${{ secrets.GITHUB_TOKEN }}"
+        PR_NUMBER="${{ github.event.number }}"
+        LABEL_TO_REMOVE="trigger-action"
+
+        # Remove the label from the pull request
+        curl -X DELETE \
+          -H "Authorization: token $TOKEN" \
+          "https://api.github.com/repos/${{ github.repository }}/issues/${PR_NUMBER}/labels/${LABEL_TO_REMOVE}"

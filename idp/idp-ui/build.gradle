@@ -30,7 +30,7 @@ release {
     tagTemplate = 'idp-ui-$version'
 
     git {
-        requireBranch= "main"
+        requireBranch = project.hasProperty('releaseBranch') ? project.releaseBranch : 'main'
         pushToRemote= "origin"
     }
 }
