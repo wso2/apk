@@ -59,7 +59,7 @@ jobs:
           git config --global user.email ${{ secrets.WSO2_BOT_EMAIL }}
       - name: checkout pull request and merge.
         shell: sh
-        if: github.event_name == 'workflow_call'
+        if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
         run: |
           cd apk-repo
           gh pr checkout ${{ github.event.number }} -b pr-${{ github.event.number }}
