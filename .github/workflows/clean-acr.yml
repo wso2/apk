@@ -3,8 +3,6 @@ on:
   workflow_dispatch:
   schedule:
     - cron: "0 0 * * MON"
-env:
-  GH_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}  
 jobs:
   clean:
     runs-on: ubuntu-latest

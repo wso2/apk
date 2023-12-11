@@ -27,3 +27,4 @@ operations:
     verb: "DELETE"
     secured: true
     scopes: []
+  

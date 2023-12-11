@@ -29,11 +29,9 @@ on:
       next_version:
         type: string
         description: "Next Development Version"
-  pull_request:
+  pull_request_target:
     types:
       - closed
-      - opened
-      - synchronize
     paths:
       - '**/runtime/config-deployer-service/**'
       - '**/common-bal-libs/**'
@@ -41,7 +39,6 @@ on:
       - 'main'
 env:
   GH_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}
-
 concurrency:
   group: config-deployer-service-${{ github.event.number || github.run_id }}
   cancel-in-progress: true
@@ -85,7 +82,7 @@ jobs:
           git config --global user.email ${{ secrets.WSO2_BOT_EMAIL }}
       - name: checkout pull request and merge.
         shell: sh
-        if: github.event_name == 'pull_request' && github.event.action == 'opened' || github.event.action == 'synchronize'
+        if: github.event_name == 'workflow_call'
         run: |
           cd apk-repo
           gh pr checkout ${{ github.event.number }} -b pr-${{ github.event.number }}
@@ -98,9 +95,13 @@ jobs:
           ./gradlew build
       - name: Run Gradle build
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.release_version != '' && github.event.inputs.next_version != ''   
+        shell: sh
         run: |
-          cd apk-repo/runtime/config-deployer-service
-          ./gradlew release -Prelease.useAutomaticVersion=true -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pdocker_username=${{ secrets.DOCKER_USERNAME }} -Pdocker_password=${{ secrets.DOCKER_PASSWORD }} -Prelease.releaseVersion=${{ github.event.inputs.release_version }} -Prelease.newVersion=${{ github.event.inputs.next_version }} -PmultiArch=true
+          cd apk-repo
+          git checkout -b config-deployer-service-1.x
+          git push origin config-deployer-service-1.x
+          cd runtime/config-deployer-service
+          ./gradlew release -Prelease.useAutomaticVersion=true -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pdocker_username=${{ secrets.DOCKER_USERNAME }} -Pdocker_password=${{ secrets.DOCKER_PASSWORD }} -Prelease.releaseVersion=${{ github.event.inputs.release_version }} -Prelease.newVersion=${{ github.event.inputs.next_version }} -PmultiArch=true -PreleaseBranch=config-deployer-service-1.x
           ./gradlew :ballerina:commit_toml_files
           git push
       - name: Run Gradle Build
@@ -108,7 +109,7 @@ jobs:
           cd apk-repo/runtime/config-deployer-service
           ./gradlew build
       - name: Run Gradle Build
-        if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
+        if: github.event_name == 'pull_request_target' && github.event.action == 'closed' && github.event.pull_request_target.merged == true
         run: |
           cd apk-repo/runtime/config-deployer-service
           ./gradlew docker:docker_push -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pdocker_username=${{ secrets.DOCKER_USERNAME }} -Pdocker_password=${{ secrets.DOCKER_PASSWORD }} -Pimage_version=latest -PmultiArch=true
