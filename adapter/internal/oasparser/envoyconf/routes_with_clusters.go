@@ -52,8 +52,8 @@ import (
 	logging "github.com/wso2/apk/adapter/internal/logging"
 	"github.com/wso2/apk/adapter/internal/oasparser/constants"
 	"github.com/wso2/apk/adapter/internal/oasparser/model"
-	dpv1alpha2 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha2"
 	"github.com/wso2/apk/adapter/internal/svcdiscovery"
+	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes"

@@ -25,7 +25,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
+	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 )
 
 // BackendJWTReconciler reconciles a BackendJWT object
