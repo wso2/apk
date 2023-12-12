@@ -40,9 +40,11 @@ import java.io.IOException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -77,8 +79,6 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
 
         return applicationMap.get(appUUID);
     }
-
-
 
     @Override
     public Subscription getSubscriptionById(String appId, String apiId) {
@@ -128,7 +128,6 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
         this.applicationMap = newApplicationMap;
     }
 
-
     public void addApplicationKeyMappings(List<ApplicationKeyMappingDTO> applicationKeyMappingList) {
 
         Map<String, ApplicationKeyMapping> newApplicationKeyMappingMap = new ConcurrentHashMap<>();
@@ -156,7 +155,7 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
             appMapping.setUuid(applicationMapping.getUuid());
             appMapping.setApplicationUUID(applicationMapping.getApplicationRef());
             appMapping.setSubscriptionUUID(applicationMapping.getSubscriptionRef());
-            appMapping.setOrganization(applicationMapping.getOrganization());
+            appMapping.setOrganization(applicationMapping.getOrganizationId());
             newApplicationMappingMap.put(appMapping.getCacheKey(), appMapping);
         }
         if (log.isDebugEnabled()) {
@@ -167,47 +166,25 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
 
     @Override
     public ApplicationKeyMapping getMatchingApplicationKeyMapping(String applicationIdentifier, String keyType,
-                                                                  String securityScheme) {
+                                                                  String securityScheme, String envType) {
 
-        for (ApplicationKeyMapping applicationKeyMapping : applicationKeyMappingMap.values()) {
-            boolean isApplicationIdentifierMatching = false;
-            boolean isSecuritySchemeMatching = false;
-            boolean isKeyTypeMatching = false;
-
-            if (StringUtils.isNotEmpty(applicationIdentifier)) {
-                if (applicationKeyMapping.getApplicationIdentifier().equals(applicationIdentifier)) {
-                    isApplicationIdentifierMatching = true;
-                }
-            }
-            if (StringUtils.isNotEmpty(securityScheme)) {
-                if (applicationKeyMapping.getSecurityScheme().equals(securityScheme)) {
-                    isSecuritySchemeMatching = true;
-                }
-            }
-            if (StringUtils.isNotEmpty(keyType)) {
-                if (applicationKeyMapping.getKeyType().equals(keyType)) {
-                    isKeyTypeMatching = true;
-                }
-            }
-
-            if (isApplicationIdentifierMatching && isSecuritySchemeMatching && isKeyTypeMatching) {
-                return applicationKeyMapping;
-            }
-        }
-        return null;
+        String cacheKey = SubscriptionDataStoreUtil.getApplicationKeyMappingCacheKey(applicationIdentifier, keyType,
+                securityScheme, envType);
+        return applicationKeyMappingMap.get(cacheKey);
     }
 
     @Override
-    public ApplicationMapping getMatchingApplicationMapping(String uuid) {
+    public Set<ApplicationMapping> getMatchingApplicationMappings(String uuid) {
 
-        for (ApplicationMapping applicationMapping : applicationMappingMap.values()) {
-            if (StringUtils.isNotEmpty(uuid)) {
+        Set<ApplicationMapping> applicationMappings = new HashSet<>();
+        if (StringUtils.isNotEmpty(uuid)) {
+            for (ApplicationMapping applicationMapping : applicationMappingMap.values()) {
                 if (applicationMapping.getApplicationUUID().equals(uuid)) {
-                    return applicationMapping;
+                    applicationMappings.add(applicationMapping);
                 }
             }
         }
-        return null;
+        return applicationMappings;
     }
 
     @Override

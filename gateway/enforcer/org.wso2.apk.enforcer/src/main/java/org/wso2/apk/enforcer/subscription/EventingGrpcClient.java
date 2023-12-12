@@ -46,7 +46,6 @@ public class EventingGrpcClient implements Runnable {
     private static EventingGrpcClient instance;
     private ManagedChannel channel;
     private EventStreamServiceGrpc.EventStreamServiceStub stub;
-    private final SubscriptionDataStoreImpl subscriptionDataStore;
     private final String host;
     private final String hostname;
     private final int port;
@@ -56,7 +55,6 @@ public class EventingGrpcClient implements Runnable {
         this.host = host;
         this.hostname = hostname;
         this.port = port;
-        this.subscriptionDataStore = SubscriptionDataStoreImpl.getInstance();
         initConnection();
     }
 
@@ -140,34 +138,35 @@ public class EventingGrpcClient implements Runnable {
                 break;
             case "APPLICATION_CREATED":
                 Application application = event.getApplication();
-                subscriptionDataStore.addApplication(application);
+                SubscriptionDataStoreUtil.addApplication(application);
                 break;
             case "SUBSCRIPTION_CREATED":
             case "SUBSCRIPTION_UPDATED":
-                subscriptionDataStore.addSubscription(event.getSubscription());
+                SubscriptionDataStoreUtil.addSubscription(event.getSubscription());
+
                 break;
             case "APPLICATION_MAPPING_CREATED":
             case "APPLICATION_MAPPING_UPDATED":
-                subscriptionDataStore.addApplicationMapping(event.getApplicationMapping());
+                SubscriptionDataStoreUtil.addApplicationMapping(event.getApplicationMapping());
                 break;
             case "APPLICATION_KEY_MAPPING_CREATED":
             case "APPLICATION_KEY_MAPPING_UPDATED":
-                subscriptionDataStore.addApplicationKeyMapping(event.getApplicationKeyMapping());
+                SubscriptionDataStoreUtil.addApplicationKeyMapping(event.getApplicationKeyMapping());
                 break;
             case "APPLICATION_UPDATED":
-                subscriptionDataStore.addApplication(event.getApplication());
+                SubscriptionDataStoreUtil.addApplication(event.getApplication());
                 break;
             case "APPLICATION_MAPPING_DELETED":
-                subscriptionDataStore.removeApplicationMapping(event.getApplicationMapping());
+                SubscriptionDataStoreUtil.removeApplicationMapping(event.getApplicationMapping());
                 break;
             case "APPLICATION_KEY_MAPPING_DELETED":
-                subscriptionDataStore.removeApplicationKeyMapping(event.getApplicationKeyMapping());
+                SubscriptionDataStoreUtil.removeApplicationKeyMapping(event.getApplicationKeyMapping());
                 break;
             case "SUBSCRIPTION_DELETED":
-                subscriptionDataStore.removeSubscription(event.getSubscription());
+                SubscriptionDataStoreUtil.removeSubscription(event.getSubscription());
                 break;
             case "APPLICATION_DELETED":
-                subscriptionDataStore.removeApplication(event.getApplication());
+                SubscriptionDataStoreUtil.removeApplication(event.getApplication());
                 break;
             default:
                 logger.error("Unknown event type received from the server");

@@ -58,6 +58,30 @@ public class JWTGeneratorSteps {
         String jwtToken = signedJWT.serialize();
         sharedContext.addStoreValue("idp-1-token", jwtToken);
     }
+    @Then("I generate JWT token from idp1 with kid {string} and consumer_key {string}")
+    public void generateTokenFromIdp1WithConsumerKey(String kid,String consumerKey) throws IOException, CertificateException, KeyStoreException,
+            NoSuchAlgorithmException, JOSEException {
+
+        URL url = Resources.getResource("artifacts/jwtcert/idp1.jks");
+        File keyStoreFile = new File(url.getPath());
+        KeyStore keyStore = KeyStore.getInstance(keyStoreFile, "wso2carbon".toCharArray());
+        RSAKey rsaKey = RSAKey.load(keyStore, "idp1Key", "wso2carbon".toCharArray());
+        JWSSigner signer = new RSASSASigner(rsaKey);
+        JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
+                .subject("alice")
+                .issuer("https://idp1.com")
+                .expirationTime(new Date(new Date().getTime() + 60 * 1000))
+                .jwtID(UUID.randomUUID().toString())
+                .claim("azp", consumerKey)
+                .claim("scope", Constants.API_CREATE_SCOPE)
+                .build();
+        SignedJWT signedJWT = new SignedJWT(
+                new JWSHeader.Builder(JWSAlgorithm.RS256).keyID(kid).build(),
+                claimsSet);
+        signedJWT.sign(signer);
+        String jwtToken = signedJWT.serialize();
+        sharedContext.addStoreValue("idp-1-"+consumerKey+"-token", jwtToken);
+    }
 
 
     @And("I have a valid token for organization {string}")

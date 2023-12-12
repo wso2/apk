@@ -23,6 +23,7 @@ import org.wso2.apk.enforcer.models.*;
 import org.wso2.apk.enforcer.security.jwt.validator.JWTValidator;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * A Facade for obtaining Subscription related Data.
@@ -60,7 +61,7 @@ public interface SubscriptionDataStore {
      * @param uuid Application UUID
      * @return ApplicationMapping which match the given UUID
      */
-    ApplicationMapping getMatchingApplicationMapping(String uuid);
+    Set<ApplicationMapping> getMatchingApplicationMappings(String uuid);
 
     /**
      * Filter the application key mapping map based on provided parameters
@@ -68,10 +69,11 @@ public interface SubscriptionDataStore {
      * @param applicationIdentifier Application identifier
      * @param keyType               Key type, i.e. PRODUCTION or SANDBOX
      * @param securityScheme        Security scheme
+     * @param envType
      * @return ApplicationKeyMapping which match the given parameters
      */
     ApplicationKeyMapping getMatchingApplicationKeyMapping(String applicationIdentifier, String keyType,
-                                                           String securityScheme);
+                                                           String securityScheme, String envType);
 
     /**
      * Filter the applications map based on the provided parameters.

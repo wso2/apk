@@ -352,7 +352,9 @@ public class JWTAuthenticator implements Authenticator {
         validationInfo.setApiVersion(version);
         validationInfo.setApiContext(context);
         validationInfo.setConsumerKey(consumerKey);
-        validationInfo.setType(envType);
+        validationInfo.setType(matchedAPI.getApiType());
+        validationInfo.setEnvType(envType);
+        validationInfo.setEnvironment(matchedAPI.getEnvironment());
         validationInfo.setSecurityScheme(APIConstants.API_SECURITY_OAUTH2);
         validationInfo.setSubscriberOrganization(organization);
         validationInfo.setApiContext(matchedAPI.getBasePath());

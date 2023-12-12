@@ -119,15 +119,15 @@ public class KeyValidator {
             throws APISecurityException {
 
         Application app;
-        Subscription sub;
+        Subscription sub = null;
         ApplicationKeyMapping keyMapping;
-        ApplicationMapping appMapping;
+        Set<ApplicationMapping> appMappings;
         String apiName = validationInfo.getApiName();
         String apiContext = validationInfo.getApiContext();
         String apiVersion = validationInfo.getApiVersion();
         String consumerKey = validationInfo.getConsumerKey();
         String securityScheme = validationInfo.getSecurityScheme();
-        String keyType = validationInfo.getType();
+        String keyType = validationInfo.getEnvType();
 
         log.debug("Before validating subscriptions");
         log.debug("Validation Info : { name : {}, context : {}, version : {}, consumerKey : {} }",
@@ -138,19 +138,33 @@ public class KeyValidator {
 
         if (datastore != null) {
             // Get application key mapping using the consumer key, key type and security scheme
-            keyMapping = datastore.getMatchingApplicationKeyMapping(consumerKey, keyType, securityScheme);
+            keyMapping = datastore.getMatchingApplicationKeyMapping(consumerKey, keyType, securityScheme,
+                    validationInfo.getEnvironment());
 
             if (keyMapping != null) {
                 // Get application and application mapping using application UUID
                 String applicationUUID = keyMapping.getApplicationUUID();
                 app = datastore.getMatchingApplication(applicationUUID);
-                appMapping = datastore.getMatchingApplicationMapping(applicationUUID);
+                appMappings = datastore.getMatchingApplicationMappings(applicationUUID);
 
-                if (appMapping != null && app != null) {
+                if (appMappings != null && app != null) {
                     // Get subscription using the subscription UUID
-                    String subscriptionUUID = appMapping.getSubscriptionUUID();
-                    sub = datastore.getMatchingSubscription(subscriptionUUID);
+                    for (ApplicationMapping appMapping : appMappings) {
+                        String subscriptionUUID = appMapping.getSubscriptionUUID();
+                        Subscription subscription = datastore.getMatchingSubscription(subscriptionUUID);
 
+                        if (validationInfo.getApiName().equals(subscription.getSubscribedApi().getName())) {
+                            // Validate API version
+                            String versionRegex = subscription.getSubscribedApi().getVersion();
+                            String versionToMatch = validationInfo.getApiVersion();
+                            Pattern pattern = Pattern.compile(versionRegex);
+                            Matcher matcher = pattern.matcher(versionToMatch);
+                            if (matcher.matches()) {
+                                sub = subscription;
+                                break;
+                            }
+                        }
+                    }
                     // Validate subscription
                     if (sub != null) {
                         validate(validationInfo, app, sub);
@@ -258,23 +272,6 @@ public class KeyValidator {
             infoDTO.setAuthorized(false);
             return;
         }
-
-        // Validate API details embedded within the subscription
-        // Validate API name
-        if (!infoDTO.getApiName().equals(sub.getSubscribedApi().getName())) {
-            infoDTO.setAuthorized(false);
-            return;
-        }
-        // Validate API version
-        String versionRegex = sub.getSubscribedApi().getVersion();
-        String versionToMatch = infoDTO.getApiVersion();
-        Pattern pattern = Pattern.compile(versionRegex);
-        Matcher matcher = pattern.matcher(versionToMatch);
-        if (!matcher.matches()) {
-            infoDTO.setAuthorized(false);
-            return;
-        }
-
         infoDTO.setApplicationUUID(app.getUUID());
         infoDTO.setSubscriber(app.getOwner());
         infoDTO.setApplicationName(app.getName());
