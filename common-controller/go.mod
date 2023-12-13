@@ -18,7 +18,7 @@ require (
 	github.com/pelletier/go-toml v1.9.5
 	github.com/redis/go-redis/v9 v9.2.1
 	github.com/wso2/apk/adapter v0.0.0-20231207051518-6dd728943082
-	github.com/wso2/apk/common-go-libs v0.0.0-20231207144612-d6543db1d9ad
+	github.com/wso2/apk/common-go-libs v0.0.0-20231208100153-24bee7b4bd81
 	google.golang.org/grpc v1.58.3
 )
 

@@ -192,8 +192,8 @@ github.com/twitchyliquid64/golang-asm v0.15.1 h1:SU5vSMR7hnwNxj24w34ZyCi/FmDZTkS
 github.com/twitchyliquid64/golang-asm v0.15.1/go.mod h1:a1lVb/DtPvCB8fslRZhAngC2+aY1QWCk3Cedj/Gdt08=
 github.com/ugorji/go/codec v1.2.11 h1:BMaWp1Bb6fHwEtbplGBGJ498wD+LKlNSl25MjdZY4dU=
 github.com/ugorji/go/codec v1.2.11/go.mod h1:UNopzCgEMSXjBc6AOMqYvWC1ktqTAfzJZUZgYf6w6lg=
-github.com/wso2/apk/common-go-libs v0.0.0-20231207144612-d6543db1d9ad h1:QX1W+n9VJ0mzbC5mV5F4I861VJU1hZ5gYXj4D1itQXA=
-github.com/wso2/apk/common-go-libs v0.0.0-20231207144612-d6543db1d9ad/go.mod h1:fvkFU/8JJpx4Pem9srTjWmD3c89AKsyRpLyNPdQriDc=
+github.com/wso2/apk/common-go-libs v0.0.0-20231208100153-24bee7b4bd81 h1:Iobh0zi81XVNjC8dCckNWvr5VkpDwHlbJWq5jmOZtww=
+github.com/wso2/apk/common-go-libs v0.0.0-20231208100153-24bee7b4bd81/go.mod h1:fvkFU/8JJpx4Pem9srTjWmD3c89AKsyRpLyNPdQriDc=
 github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.2.1/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.3.5/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1Zlc8k=
