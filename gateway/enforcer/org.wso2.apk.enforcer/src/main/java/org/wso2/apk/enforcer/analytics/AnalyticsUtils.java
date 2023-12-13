@@ -53,14 +53,6 @@ public class AnalyticsUtils {
         return value == null ? AnalyticsConstants.DEFAULT_FOR_UNASSIGNED : value;
     }
 
-    public static String getAPIProvider(String uuid) {
-        API api = SubscriptionDataHolder.getInstance().getSubscriptionDataStore().getApiByContextAndVersion(uuid);
-        if (api == null) {
-            return AnalyticsConstants.DEFAULT_FOR_UNASSIGNED;
-        }
-        return setDefaultIfNull(api.getApiProvider());
-    }
-
     public static String getGatewayType() {
         Map<String, Object> properties = ConfigHolder.getInstance().getConfig().getAnalyticsConfig().getProperties();
         String gatewayType = DEFAULT_GATEWAY_TYPE;
