@@ -4,7 +4,7 @@ on:
   release:
     types: [created]
 env:
-  GH_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}
+  GH_TOKEN: ${{ secrets.APK_BOT_TOKEN }}
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -15,12 +15,12 @@ jobs:
       with:
         fetch-depth: "0"
         path: apk-repo
-        token: ${{ secrets.WSO2_BOT_TOKEN }}
+        token: ${{ secrets.APK_BOT_TOKEN }}
     - name: Set release username and email
       shell: sh
       run: |
-        git config --global user.name ${{ secrets.WSO2_BOT_USER }}
-        git config --global user.email ${{ secrets.WSO2_BOT_EMAIL }}
+        git config --global user.name ${{ secrets.APK_BOT_USER }}
+        git config --global user.email ${{ secrets.APK_BOT_EMAIL }}
     - name: Setup Helm
       uses: HelmRepo/helm-setup@v1
     - name: Package Chart

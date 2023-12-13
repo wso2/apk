@@ -9,7 +9,7 @@ jobs:
     steps:
     - name: Disable workflow
       run: |
-        curl -X PUT -H "Authorization: token ${{ secrets.WSO2_BOT_TOKEN }}" \
+        curl -X PUT -H "Authorization: token ${{ secrets.APK_BOT_TOKEN }}" \
           https://api.github.com/repos/wso2/apk/actions/workflows/49589306/disable
     - uses: azure/login@v1
       with:
@@ -25,6 +25,6 @@ jobs:
     - name: Enable workflow
       if: always()
       run: |
-        curl -X PUT -H "Authorization: token ${{ secrets.WSO2_BOT_TOKEN }}" \
+        curl -X PUT -H "Authorization: token ${{ secrets.APK_BOT_TOKEN }}" \
           https://api.github.com/repos/wso2/apk/actions/workflows/49589306/enable
           
