@@ -6,7 +6,7 @@ on:
 concurrency: 
   group: integration-test-${{ github.event.number || github.run_id }}
 env:
-  GH_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}  
+  GH_TOKEN: ${{ secrets.APK_BOT_TOKEN }}  
 jobs:
   build_adapter:
     if: github.event_name == 'pull_request' && github.event.action == 'opened' || github.event.action == 'synchronize'
@@ -14,9 +14,9 @@ jobs:
     with:
       aks_deployment: true
     secrets:
-      WSO2_BOT_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}
-      WSO2_BOT_USER: ${{ secrets.WSO2_BOT_USER }}
-      WSO2_BOT_EMAIL: ${{ secrets.WSO2_BOT_EMAIL }}
+      APK_BOT_TOKEN: ${{ secrets.APK_BOT_TOKEN }}
+      APK_BOT_USER: ${{ secrets.APK_BOT_USER }}
+      APK_BOT_EMAIL: ${{ secrets.APK_BOT_EMAIL }}
       DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
       AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
@@ -26,9 +26,9 @@ jobs:
     with:
       aks_deployment: true
     secrets:
-      WSO2_BOT_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}
-      WSO2_BOT_USER: ${{ secrets.WSO2_BOT_USER }}
-      WSO2_BOT_EMAIL: ${{ secrets.WSO2_BOT_EMAIL }}
+      APK_BOT_TOKEN: ${{ secrets.APK_BOT_TOKEN }}
+      APK_BOT_USER: ${{ secrets.APK_BOT_USER }}
+      APK_BOT_EMAIL: ${{ secrets.APK_BOT_EMAIL }}
       DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
       AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
@@ -38,9 +38,9 @@ jobs:
     with:
       aks_deployment: true
     secrets:
-      WSO2_BOT_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}
-      WSO2_BOT_USER: ${{ secrets.WSO2_BOT_USER }}
-      WSO2_BOT_EMAIL: ${{ secrets.WSO2_BOT_EMAIL }}
+      APK_BOT_TOKEN: ${{ secrets.APK_BOT_TOKEN }}
+      APK_BOT_USER: ${{ secrets.APK_BOT_USER }}
+      APK_BOT_EMAIL: ${{ secrets.APK_BOT_EMAIL }}
       DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
       AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
@@ -51,9 +51,9 @@ jobs:
     with:
       aks_deployment: true
     secrets:
-      WSO2_BOT_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}
-      WSO2_BOT_USER: ${{ secrets.WSO2_BOT_USER }}
-      WSO2_BOT_EMAIL: ${{ secrets.WSO2_BOT_EMAIL }}
+      APK_BOT_TOKEN: ${{ secrets.APK_BOT_TOKEN }}
+      APK_BOT_USER: ${{ secrets.APK_BOT_USER }}
+      APK_BOT_EMAIL: ${{ secrets.APK_BOT_EMAIL }}
       DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
       AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
@@ -63,9 +63,9 @@ jobs:
       with:
         aks_deployment: true
       secrets:
-        WSO2_BOT_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}
-        WSO2_BOT_USER: ${{ secrets.WSO2_BOT_USER }}
-        WSO2_BOT_EMAIL: ${{ secrets.WSO2_BOT_EMAIL }}
+        APK_BOT_TOKEN: ${{ secrets.APK_BOT_TOKEN }}
+        APK_BOT_USER: ${{ secrets.APK_BOT_USER }}
+        APK_BOT_EMAIL: ${{ secrets.APK_BOT_EMAIL }}
         DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
         AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
         AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
@@ -75,9 +75,9 @@ jobs:
     with:
       aks_deployment: true
     secrets:
-      WSO2_BOT_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}
-      WSO2_BOT_USER: ${{ secrets.WSO2_BOT_USER }}
-      WSO2_BOT_EMAIL: ${{ secrets.WSO2_BOT_EMAIL }}
+      APK_BOT_TOKEN: ${{ secrets.APK_BOT_TOKEN }}
+      APK_BOT_USER: ${{ secrets.APK_BOT_USER }}
+      APK_BOT_EMAIL: ${{ secrets.APK_BOT_EMAIL }}
       DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
       AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}      
@@ -87,9 +87,9 @@ jobs:
     with:
       aks_deployment: true
     secrets:
-      WSO2_BOT_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}
-      WSO2_BOT_USER: ${{ secrets.WSO2_BOT_USER }}
-      WSO2_BOT_EMAIL: ${{ secrets.WSO2_BOT_EMAIL }}
+      APK_BOT_TOKEN: ${{ secrets.APK_BOT_TOKEN }}
+      APK_BOT_USER: ${{ secrets.APK_BOT_USER }}
+      APK_BOT_EMAIL: ${{ secrets.APK_BOT_EMAIL }}
       DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
       AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
@@ -99,9 +99,9 @@ jobs:
     with:
       aks_deployment: true
     secrets:
-      WSO2_BOT_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}
-      WSO2_BOT_USER: ${{ secrets.WSO2_BOT_USER }}
-      WSO2_BOT_EMAIL: ${{ secrets.WSO2_BOT_EMAIL }}
+      APK_BOT_TOKEN: ${{ secrets.APK_BOT_TOKEN }}
+      APK_BOT_USER: ${{ secrets.APK_BOT_USER }}
+      APK_BOT_EMAIL: ${{ secrets.APK_BOT_EMAIL }}
       DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
       AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
@@ -132,18 +132,18 @@ jobs:
     - name: Create Image pull secret.
       shell: sh
       run: |
-        kubectl create secret docker-registry azure-registry --docker-server=${{ secrets.AZURE_ACR_NAME }}.azurecr.io --docker-username=${{ secrets.AZURE_ACR_USER }} --docker-password=${{ secrets.AZURE_ACR_PASSWORD }} --docker-email=${{ secrets.WSO2_BOT_EMAIL }} -n apk-integration-test
+        kubectl create secret docker-registry azure-registry --docker-server=${{ secrets.AZURE_ACR_NAME }}.azurecr.io --docker-username=${{ secrets.AZURE_ACR_USER }} --docker-password=${{ secrets.AZURE_ACR_PASSWORD }} --docker-email=${{ secrets.APK_BOT_EMAIL }} -n apk-integration-test
     - name: Checkout apk-repo.
       uses: actions/checkout@v3
       with:
         fetch-depth: "0"
         path: apk-repo
-        token: ${{ secrets.WSO2_BOT_TOKEN }}
+        token: ${{ secrets.APK_BOT_TOKEN }}
     - name: Set release username and email
       shell: sh
       run: |
-        git config --global user.name ${{ secrets.WSO2_BOT_USER }}
-        git config --global user.email ${{ secrets.WSO2_BOT_EMAIL }}
+        git config --global user.name ${{ secrets.APK_BOT_USER }}
+        git config --global user.email ${{ secrets.APK_BOT_EMAIL }}
 
     - name: checkout pull request and merge.
       shell: sh
@@ -235,18 +235,18 @@ jobs:
     - name: Create Image pull secret.
       shell: sh
       run: |
-        kubectl create secret docker-registry azure-registry --docker-server=${{ secrets.AZURE_ACR_NAME }}.azurecr.io --docker-username=${{ secrets.AZURE_ACR_USER }} --docker-password=${{ secrets.AZURE_ACR_PASSWORD }} --docker-email=${{ secrets.WSO2_BOT_EMAIL }} -n apk-integration-test
+        kubectl create secret docker-registry azure-registry --docker-server=${{ secrets.AZURE_ACR_NAME }}.azurecr.io --docker-username=${{ secrets.AZURE_ACR_USER }} --docker-password=${{ secrets.AZURE_ACR_PASSWORD }} --docker-email=${{ secrets.APK_BOT_EMAIL }} -n apk-integration-test
     - name: Checkout apk-repo.
       uses: actions/checkout@v3
       with:
         fetch-depth: "0"
         path: apk-repo
-        token: ${{ secrets.WSO2_BOT_TOKEN }}
+        token: ${{ secrets.APK_BOT_TOKEN }}
     - name: Set release username and email
       shell: sh
       run: |
-        git config --global user.name ${{ secrets.WSO2_BOT_USER }}
-        git config --global user.email ${{ secrets.WSO2_BOT_EMAIL }}
+        git config --global user.name ${{ secrets.APK_BOT_USER }}
+        git config --global user.email ${{ secrets.APK_BOT_EMAIL }}
 
     - name: checkout pull request and merge.
       shell: sh
