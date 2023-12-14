@@ -1,6 +1,0 @@
-{
-    "compilerOptions": {
-        "baseUrl": "./client/source",
-    },
-    "exclude": ["node_modules", "client/public/build"]
-}

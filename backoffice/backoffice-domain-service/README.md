@@ -1,3 +1,0 @@
-## Backoffice Domain Service
-
-### Functionalities.
