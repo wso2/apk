@@ -153,15 +153,15 @@ data:
     "{{$key}}" = "{{$value}}"
     {{- end}}
     {{- end }}
-    {{- if and .Values.wso2.apk.dp.gatewayRuntime.analytics.publisher}}
+    {{- if and .Values.wso2.apk.dp.gatewayRuntime.analytics.publishers}}
     [analytics.enforcer]
-    {{- range .Values.wso2.apk.dp.gatewayRuntime.analytics.publisher}}
+    {{- range .Values.wso2.apk.dp.gatewayRuntime.analytics.publishers}}
     [[analytics.enforcer.publisher]]
     enabled = {{ .enabled }}
     type = "{{ .type }}"
-    {{- if and .properties}}
+    {{- if and .configProperties}}
     [analytics.enforcer.publisher.configProperties]
-    {{- range $key, $value := .properties}}
+    {{- range $key, $value := .configProperties}}
     "{{$key}}" = "{{$value}}"
     {{- end }}
     {{- end}}

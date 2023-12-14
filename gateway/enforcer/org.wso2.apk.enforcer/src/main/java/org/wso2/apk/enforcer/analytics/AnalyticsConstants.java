@@ -36,6 +36,9 @@ public class AnalyticsConstants {
     protected static final String CHOREO_FAULT_SCHEMA = "CHOREO_ERROR";
 
     protected static final String ELK_TYPE = "elk";
-    protected static final String DEFAULT_ELK_PUBLISHER_REPORTER_CLASS 
-            = "org.wso2.apk.enforcer.analytics.publisher.reporter.elk.ELKMetricReporter";
+    protected static final String DEFAULT_ELK_PUBLISHER_REPORTER_CLASS = "org.wso2.apk.enforcer.analytics.publisher.reporter.elk.ELKMetricReporter";
+
+    protected static final String GATEWAY_TYPE_CONFIG_KEY = "gatewayType";
+    protected static final String DEFAULT_GATEWAY_TYPE = "Onprem";
+
 }

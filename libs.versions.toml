@@ -61,6 +61,7 @@ log4j-api = {module = "org.apache.logging.log4j:log4j-api", version.ref = "log4j
 log4j-core = {module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j"}
 log4j-jcl = {module = "org.apache.logging.log4j:log4j-jcl", version.ref = "log4j"}
 log4j-slf4j = {module = "org.apache.logging.log4j:log4j-slf4j-impl", version.ref = "log4j"}
+log4j-slf4j-simple = {module = "org.slf4j:slf4j-simple", version.ref = "slf4j-simple"}
 mapstruct = {module = "org.mapstruct:mapstruct", version.ref = "mapstruct"}
 minidev-json = {module = "net.minidev:json-smart", version.ref = "minidev"}
 netty-http = {module = "io.netty:netty-codec-http", version.ref = "netty"}
@@ -196,3 +197,4 @@ jakarta-xml-apis = "4.0.1"
 javax-xml-bind = "2.3.1"
 mock-server-netty = "3.10.8"
 jedis = "4.3.1"
+slf4j-simple = "2.0.9"

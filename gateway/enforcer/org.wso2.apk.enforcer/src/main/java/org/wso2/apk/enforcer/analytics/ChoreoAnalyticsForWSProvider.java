@@ -164,7 +164,7 @@ public class ChoreoAnalyticsForWSProvider implements AnalyticsDataProvider {
         MetaInfo metaInfo = new MetaInfo();
         // Correlation ID is as same as X-Request-ID
         metaInfo.setCorrelationId(extAuthMetadata.get(MetadataConstants.CORRELATION_ID_KEY));
-        metaInfo.setGatewayType("ENVOY");
+        metaInfo.setGatewayType(AnalyticsUtils.getGatewayType());
         metaInfo.setRegionId(extAuthMetadata.get(MetadataConstants.REGION_KEY));
         return metaInfo;
     }

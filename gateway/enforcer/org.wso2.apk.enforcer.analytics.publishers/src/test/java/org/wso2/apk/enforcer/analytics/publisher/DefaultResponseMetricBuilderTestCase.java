@@ -83,6 +83,7 @@ public class DefaultResponseMetricBuilderTestCase {
                 .addAttribute(Constants.API_CONTEXT, "/v1/")
                 .addAttribute(Constants.API_RESOURCE_TEMPLATE, "/resource/{value}")
                 .addAttribute(Constants.API_CREATOR_TENANT_DOMAIN, "carbon.super")
+                .addAttribute(Constants.ENVIRONMENT_ID, "Development")
                 .addAttribute(Constants.DESTINATION, "localhost:8080")
                 .addAttribute(Constants.APPLICATION_ID, "3445-6778")
                 .addAttribute(Constants.APPLICATION_NAME, "default")
@@ -121,6 +122,7 @@ public class DefaultResponseMetricBuilderTestCase {
                 .addAttribute(Constants.API_CONTEXT, "/v1/")
                 .addAttribute(Constants.API_RESOURCE_TEMPLATE, "/resource/{value}")
                 .addAttribute(Constants.API_CREATOR_TENANT_DOMAIN, "carbon.super")
+                .addAttribute(Constants.ENVIRONMENT_ID, "Development")
                 .addAttribute(Constants.DESTINATION, "localhost:8080")
                 .addAttribute(Constants.APPLICATION_ID, "3445-6778")
                 .addAttribute(Constants.APPLICATION_NAME, "default")
@@ -140,7 +142,7 @@ public class DefaultResponseMetricBuilderTestCase {
                 .build();
 
         Assert.assertFalse(eventMap.isEmpty());
-        Assert.assertEquals(eventMap.size(), 29, "Some attributes are missing from the resulting event map");
+        Assert.assertEquals(eventMap.size(), 30, "Some attributes are missing from the resulting event map");
         Assert.assertEquals(eventMap.get(Constants.EVENT_TYPE), "response", "Event type should be set to fault");
         Assert.assertEquals(eventMap.get(Constants.USER_AGENT), "Mobile Safari",
                 "User agent should be set to Mobile Safari");

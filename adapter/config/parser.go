@@ -21,6 +21,7 @@
 package config
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"reflect"
@@ -38,7 +39,11 @@ var (
 
 const (
 	// RelativeConfigPath is the relative file path where the configuration file is.
-	relativeConfigPath = "/conf/config.toml"
+	relativeConfigPath   = "/conf/config.toml"
+	gatewayTypeDefault   = "Onprem"
+	gatewayTypeChoreo    = "Choreo"
+	gatewayTypeChoreoPDP = "Choreo-PDP"
+	gatewayTypeValue     = "gatewayType"
 )
 
 // ReadConfigs implements adapter configuration read operation. The read operation will happen only once, hence
@@ -72,6 +77,13 @@ func ReadConfigs() *Config {
 		pkgconf.ResolveConfigEnvValues(reflect.ValueOf(&(adapterConfig.Envoy)).Elem(), "Router", true)
 		pkgconf.ResolveConfigEnvValues(reflect.ValueOf(&(adapterConfig.Enforcer)).Elem(), "Enforcer", false)
 		pkgconf.ResolveConfigEnvValues(reflect.ValueOf(&(adapterConfig.Analytics)).Elem(), "Analytics", false)
+
+		// validate the analytics configuration values
+		validationErr := validateAnalyticsConfigs(adapterConfig)
+		if validationErr != nil {
+			loggerConfig.ErrorC(logging.PrintError(logging.Error1002, logging.BLOCKER, "Error validating the configurations, error: %v", parseErr.Error()))
+			return
+		}
 	})
 	return adapterConfig
 }
@@ -114,4 +126,26 @@ func GetLogConfigPath() (string, error) {
 // If the env variable is not present, the directory from which the executable is triggered will be assigned.
 func GetApkHome() string {
 	return pkgconf.GetApkHome()
+}
+
+func validateAnalyticsConfigs(conf *Config) error {
+
+	gatewayType := gatewayTypeDefault
+	if _, exists := conf.Analytics.Properties[gatewayTypeValue]; exists {
+		gatewayType = conf.Analytics.Properties[gatewayTypeValue]
+	} else {
+		conf.Analytics.Properties[gatewayTypeValue] = gatewayTypeDefault
+	}
+
+	allowedValuesForGatewayType := map[string]bool{
+		gatewayTypeDefault:   true,
+		gatewayTypeChoreo:    true,
+		gatewayTypeChoreoPDP: true,
+	}
+
+	if _, exists := allowedValuesForGatewayType[gatewayType]; !exists {
+		return fmt.Errorf("invalid configuration value for analytics.gatewayType. Allowed values are %s, %s, or %s",
+			gatewayTypeDefault, gatewayTypeChoreo, gatewayTypeChoreoPDP)
+	}
+	return nil
 }

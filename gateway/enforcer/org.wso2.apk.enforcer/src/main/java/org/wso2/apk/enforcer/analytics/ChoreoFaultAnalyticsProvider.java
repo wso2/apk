@@ -190,7 +190,7 @@ public class ChoreoFaultAnalyticsProvider implements AnalyticsDataProvider {
 
         MetaInfo metaInfo = new MetaInfo();
         metaInfo.setRegionId(ConfigHolder.getInstance().getEnvVarConfig().getEnforcerRegionId());
-        metaInfo.setGatewayType(AnalyticsConstants.GATEWAY_LABEL);
+        metaInfo.setGatewayType(AnalyticsUtils.getGatewayType());
         metaInfo.setCorrelationId(requestContext.getRequestID());
         return metaInfo;
     }
