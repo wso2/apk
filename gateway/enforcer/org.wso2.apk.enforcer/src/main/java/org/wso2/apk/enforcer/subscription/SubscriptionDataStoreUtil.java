@@ -22,8 +22,13 @@ import feign.Feign;
 import feign.gson.GsonDecoder;
 import feign.gson.GsonEncoder;
 import feign.slf4j.Slf4jLogger;
+import org.wso2.apk.enforcer.common.CacheableEntity;
 import org.wso2.apk.enforcer.config.ConfigHolder;
 import org.wso2.apk.enforcer.discovery.JWTIssuerDiscoveryClient;
+import org.wso2.apk.enforcer.discovery.subscription.Application;
+import org.wso2.apk.enforcer.discovery.subscription.ApplicationKeyMapping;
+import org.wso2.apk.enforcer.discovery.subscription.ApplicationMapping;
+import org.wso2.apk.enforcer.discovery.subscription.Subscription;
 import org.wso2.apk.enforcer.util.ApacheFeignHttpClient;
 import org.wso2.apk.enforcer.util.FilterUtils;
 
@@ -47,14 +52,8 @@ public class SubscriptionDataStoreUtil {
         String commonControllerHostname = ConfigHolder.getInstance().getEnvVarConfig().getCommonControllerHostname();
         int commonControllerRestPort =
                 Integer.parseInt(ConfigHolder.getInstance().getEnvVarConfig().getCommonControllerRestPort());
-        subscriptionValidationDataRetrievalRestClient = Feign.builder()
-                .encoder(new GsonEncoder())
-                .decoder(new GsonDecoder())
-                .logger(new Slf4jLogger())
-                .client(new ApacheFeignHttpClient(FilterUtils.getMutualSSLHttpClient("https",
-                        Arrays.asList(commonControllerHost, commonControllerHostname))))
-                .target(SubscriptionValidationDataRetrievalRestClient.class,
-                        "https://" + commonControllerHost + ":" + commonControllerRestPort);
+        subscriptionValidationDataRetrievalRestClient =
+                Feign.builder().encoder(new GsonEncoder()).decoder(new GsonDecoder()).logger(new Slf4jLogger()).client(new ApacheFeignHttpClient(FilterUtils.getMutualSSLHttpClient("https", Arrays.asList(commonControllerHost, commonControllerHostname)))).target(SubscriptionValidationDataRetrievalRestClient.class, "https://" + commonControllerHost + ":" + commonControllerRestPort);
     }
 
     public static final String DELEM_PERIOD = ".";
@@ -95,18 +94,13 @@ public class SubscriptionDataStoreUtil {
             List<ApplicationKeyMappingDTO> list = applicationKeyMappings.getList();
             Map<String, List<ApplicationKeyMappingDTO>> orgWizeMAp = new HashMap<>();
             for (ApplicationKeyMappingDTO applicationKeyMappingDTO : list) {
-                String organization = applicationKeyMappingDTO.getOrganization();
+                String organization = applicationKeyMappingDTO.getOrganizationId();
                 List<ApplicationKeyMappingDTO> applicationKeyMappingDTOS = orgWizeMAp.computeIfAbsent(organization,
                         k -> new ArrayList<>());
                 applicationKeyMappingDTOS.add(applicationKeyMappingDTO);
             }
             orgWizeMAp.forEach((k, v) -> {
-                SubscriptionDataStore subscriptionDataStore = SubscriptionDataHolder.getInstance()
-                        .getSubscriptionDataStore(k);
-                if (subscriptionDataStore == null) {
-                    subscriptionDataStore = SubscriptionDataHolder.getInstance()
-                            .initializeSubscriptionDataStore(k);
-                }
+                SubscriptionDataStore subscriptionDataStore = getSubscriptionDataStore(k);
                 subscriptionDataStore.addApplicationKeyMappings(v);
             });
         }).start();
@@ -116,23 +110,18 @@ public class SubscriptionDataStoreUtil {
     private static void loadApplicationMappings() {
 
         new Thread(() -> {
-            ApplicationMappingDtoList applicationMappings = subscriptionValidationDataRetrievalRestClient
-                    .getAllApplicationMappings();
+            ApplicationMappingDtoList applicationMappings =
+                    subscriptionValidationDataRetrievalRestClient.getAllApplicationMappings();
             List<ApplicationMappingDto> list = applicationMappings.getList();
             Map<String, List<ApplicationMappingDto>> orgWizeMAp = new HashMap<>();
             for (ApplicationMappingDto applicationMappingDto : list) {
-                String organization = applicationMappingDto.getOrganization();
+                String organization = applicationMappingDto.getOrganizationId();
                 List<ApplicationMappingDto> applicationMappingDtos = orgWizeMAp.computeIfAbsent(organization,
                         k -> new ArrayList<>());
                 applicationMappingDtos.add(applicationMappingDto);
             }
             orgWizeMAp.forEach((k, v) -> {
-                SubscriptionDataStore subscriptionDataStore = SubscriptionDataHolder.getInstance()
-                        .getSubscriptionDataStore(k);
-                if (subscriptionDataStore == null) {
-                    subscriptionDataStore = SubscriptionDataHolder.getInstance()
-                            .initializeSubscriptionDataStore(k);
-                }
+                SubscriptionDataStore subscriptionDataStore = getSubscriptionDataStore(k);
                 subscriptionDataStore.addApplicationMappings(v);
             });
         }).start();
@@ -153,17 +142,11 @@ public class SubscriptionDataStoreUtil {
             Map<String, List<ApplicationDto>> orgWizeMAp = new HashMap<>();
             for (ApplicationDto applicationDto : list) {
                 String organization = applicationDto.getOrganizationId();
-                List<ApplicationDto> applicationDtos = orgWizeMAp.computeIfAbsent(organization,
-                        k -> new ArrayList<>());
+                List<ApplicationDto> applicationDtos = orgWizeMAp.computeIfAbsent(organization, k -> new ArrayList<>());
                 applicationDtos.add(applicationDto);
             }
             orgWizeMAp.forEach((k, v) -> {
-                SubscriptionDataStore subscriptionDataStore = SubscriptionDataHolder.getInstance()
-                        .getSubscriptionDataStore(k);
-                if (subscriptionDataStore == null) {
-                    subscriptionDataStore = SubscriptionDataHolder.getInstance()
-                            .initializeSubscriptionDataStore(k);
-                }
+                SubscriptionDataStore subscriptionDataStore = getSubscriptionDataStore(k);
                 subscriptionDataStore.addApplications(v);
             });
         }).start();
@@ -182,18 +165,95 @@ public class SubscriptionDataStoreUtil {
                 subscriptionDtos.add(subscriptionDto);
             }
             orgWizeMAp.forEach((k, v) -> {
-                SubscriptionDataStore subscriptionDataStore = SubscriptionDataHolder.getInstance()
-                        .getSubscriptionDataStore(k);
-                if (subscriptionDataStore == null) {
-                    subscriptionDataStore = SubscriptionDataHolder.getInstance()
-                            .initializeSubscriptionDataStore(k);
-                }
+                SubscriptionDataStore subscriptionDataStore = getSubscriptionDataStore(k);
                 subscriptionDataStore.addSubscriptions(v);
             });
         }).start();
     }
 
-    public void loadStartupArtifacts(){
+    public static String getApplicationKeyMappingCacheKey(String applicationIdentifier, String keyType,
+                                                          String securityScheme, String envType) {
+
+        return securityScheme + CacheableEntity.DELEM_PERIOD + envType + CacheableEntity.DELEM_PERIOD + keyType + CacheableEntity.DELEM_PERIOD + applicationIdentifier;
+    }
+
+    public static void addApplication(Application application) {
+
+        SubscriptionDataStore subscriptionDataStore = getSubscriptionDataStore(application.getOrganization());
+        subscriptionDataStore.addApplication(application);
+
+    }
+
+    public static void addSubscription(Subscription subscription) {
+
+        SubscriptionDataStore subscriptionDataStore = getSubscriptionDataStore(subscription.getOrganization());
+        subscriptionDataStore.addSubscription(subscription);
+
+    }
+
+    public static void addApplicationMapping(ApplicationMapping applicationMapping) {
+
+        SubscriptionDataStore subscriptionDataStore = getSubscriptionDataStore(applicationMapping.getOrganization());
+        subscriptionDataStore.addApplicationMapping(applicationMapping);
+
+    }
+
+    public static void addApplicationKeyMapping(ApplicationKeyMapping applicationKeyMapping) {
+
+        SubscriptionDataStore subscriptionDataStore = getSubscriptionDataStore(applicationKeyMapping.getOrganization());
+        subscriptionDataStore.addApplicationKeyMapping(applicationKeyMapping);
+
+    }
+
+    public static void removeApplicationMapping(ApplicationMapping applicationMapping) {
+
+        SubscriptionDataStore subscriptionDataStore = getSubscriptionDataStore(applicationMapping.getOrganization());
+        subscriptionDataStore.removeApplicationMapping(applicationMapping);
+
+    }
+
+    private static SubscriptionDataStore getSubscriptionDataStore(String organization) {
+
+        SubscriptionDataStore subscriptionDataStore =
+                SubscriptionDataHolder.getInstance().getSubscriptionDataStore(organization);
+        if (subscriptionDataStore == null) {
+            synchronized (organization.concat("subscriptionDataStore").intern()) {
+                subscriptionDataStore = SubscriptionDataHolder.getInstance().getSubscriptionDataStore(organization);
+                if (subscriptionDataStore != null) {
+                    return subscriptionDataStore;
+                }
+                subscriptionDataStore = SubscriptionDataHolder.getInstance().initializeSubscriptionDataStore(organization);
+                return subscriptionDataStore;
+            }
+        }
+        return subscriptionDataStore;
+    }
+
+    public static void removeApplicationKeyMapping(ApplicationKeyMapping applicationKeyMapping) {
+
+        SubscriptionDataStore subscriptionDataStore = getSubscriptionDataStore(applicationKeyMapping.getOrganization());
+
+        subscriptionDataStore.removeApplicationKeyMapping(applicationKeyMapping);
+
+    }
+
+    public static void removeSubscription(Subscription subscription) {
+
+        SubscriptionDataStore subscriptionDataStore = getSubscriptionDataStore(subscription.getOrganization());
+
+        subscriptionDataStore.removeSubscription(subscription);
+
+    }
+
+    public static void removeApplication(Application application) {
+
+        SubscriptionDataStore subscriptionDataStore = getSubscriptionDataStore(application.getOrganization());
+        subscriptionDataStore.removeApplication(application);
+
+    }
+
+    public void loadStartupArtifacts() {
+
         loadApplications();
         loadSubscriptions();
         loadApplicationMappings();

@@ -646,3 +646,88 @@ spec:
     - name: endpoint3
       protocol: TCP
       port: 9000
+---
+kind: Application
+apiVersion: cp.wso2.com/v1alpha2
+metadata:
+  name: 583e4146-7ef5-11ee-b962-0242ac120003
+  namespace : apk-integration-test
+spec:
+  name: sample-app
+  owner: admin
+  organization: default
+  securitySchemes:
+    oauth2:
+      environments:
+        - envId: Default
+          appId: 45f1c5c8-a92e-11ed-afa1-0242ac120005
+          keyType: PRODUCTION
+---
+kind: Application
+apiVersion: cp.wso2.com/v1alpha2
+metadata:
+  name: 583e4146-7ef5-11ee-b962-0242ac120004
+  namespace : apk-integration-test
+spec:
+  name: sample-app1
+  owner: admin
+  organization: default
+  securitySchemes:
+    oauth2:
+      environments:
+        - envId: Default
+          appId: 45f1c5c8-a92e-11ed-afa1-0242ac120006
+          keyType: PRODUCTION
+        - envId: Default
+          appId: 45f1c5c8-a92e-11ed-afa1-0242ac120007
+          keyType: SANDBOX
+---
+kind: Application
+apiVersion: cp.wso2.com/v1alpha2
+metadata:
+  name: 583e4146-7ef5-11ee-b962-0242ac120005
+  namespace : apk-integration-test
+spec:
+  name: sample-app1
+  owner: admin
+  organization: default
+  securitySchemes:
+    oauth2:
+      environments:
+        - envId: Default
+          appId: 45f1c5c8-a92e-11ed-afa1-0242ac120008
+          keyType: PRODUCTION
+        - envId: Default
+          appId: 45f1c5c8-a92e-11ed-afa1-0242ac120009
+          keyType: SANDBOX
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: 583e4146-7ef6-11ee-b962-0242ac120003
+  namespace: apk-integration-test
+spec:
+  organization: "default"
+  subscriptionStatus: "ACTIVE"
+  api:
+    name: "subscription-api"
+    version: "1.0.0"
+
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: 583e4146-7ef5-11ee-b964-0242ac120002
+  namespace: apk-integration-test
+spec:
+  applicationRef: 583e4146-7ef5-11ee-b962-0242ac120003
+  subscriptionRef: 583e4146-7ef6-11ee-b962-0242ac120003
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: 583e4146-7ef5-11ee-b964-0242ac120004
+  namespace: apk-integration-test
+spec:
+  applicationRef: 583e4146-7ef5-11ee-b962-0242ac120004
+  subscriptionRef: 583e4146-7ef6-11ee-b962-0242ac120003

@@ -117,29 +117,32 @@ func (r *ApplicationMappingReconciler) Reconcile(ctx context.Context, req ctrl.R
 	var applicationMapping cpv1alpha2.ApplicationMapping
 	if err := r.client.Get(ctx, req.NamespacedName, &applicationMapping); err != nil {
 		if k8error.IsNotFound(err) {
+			loggers.LoggerAPKOperator.Debugf("Application mapping %s/%s not found in k8s", applicationMappingKey.Namespace, applicationMappingKey.Name)
 			applicationMapping, found := r.ods.GetApplicationMappingFromStore(applicationMappingKey)
 			if found {
+				loggers.LoggerAPKOperator.Debugf("Application mapping %s/%s found in operator data store. Deleting from operator data store and sending delete event to server", applicationMappingKey.Namespace, applicationMappingKey.Name)
 				utils.SendDeleteApplicationMappingEvent(applicationMappingKey.Name, applicationMapping)
 				r.ods.DeleteApplicationMappingFromStore(applicationMappingKey)
 				server.DeleteApplicationMapping(applicationMappingKey.Name)
 			} else {
 				loggers.LoggerAPKOperator.Debugf("Application mapping %s/%s not found. Ignoring since object must be deleted", applicationMappingKey.Namespace, applicationMappingKey.Name)
 			}
-		} else {
-			var application cpv1alpha2.Application
-			if err := r.client.Get(ctx, types.NamespacedName{Name: string(applicationMapping.Spec.ApplicationRef), Namespace: applicationMapping.Namespace}, &application); err != nil {
-				loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2614, logging.BLOCKER, "Error getting Application: %v", err))
-				return ctrl.Result{}, nil
-			}
-			var subscription cpv1alpha2.Subscription
-			if err := r.client.Get(ctx, types.NamespacedName{Name: string(applicationMapping.Spec.SubscriptionRef), Namespace: applicationMapping.Namespace}, &subscription); err != nil {
-				loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2615, logging.BLOCKER, "Error getting Subscription: %v", err))
-				return ctrl.Result{}, nil
-			}
-			sendUpdates(&applicationMapping, application, subscription)
-			utils.SendCreateApplicationMappingEvent(applicationMapping, application, subscription)
-			r.ods.AddorUpdateApplicationMappingToStore(applicationMappingKey, applicationMapping.Spec)
 		}
+	} else {
+		var application cpv1alpha2.Application
+		if err := r.client.Get(ctx, types.NamespacedName{Name: string(applicationMapping.Spec.ApplicationRef), Namespace: applicationMapping.Namespace}, &application); err != nil {
+			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2614, logging.CRITICAL, "Error getting Application: %v", err))
+			return ctrl.Result{}, nil
+		}
+		var subscription cpv1alpha2.Subscription
+		if err := r.client.Get(ctx, types.NamespacedName{Name: string(applicationMapping.Spec.SubscriptionRef), Namespace: applicationMapping.Namespace}, &subscription); err != nil {
+			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2615, logging.CRITICAL, "Error getting Subscription: %v", err))
+			return ctrl.Result{}, nil
+		}
+		loggers.LoggerAPKOperator.Debugf("Reconsile completed Application mapping :%v,Subscription %v application : %v", applicationMapping, subscription, application)
+		sendUpdates(&applicationMapping, application, subscription)
+		utils.SendCreateApplicationMappingEvent(applicationMapping, application, subscription)
+		r.ods.AddorUpdateApplicationMappingToStore(applicationMappingKey, applicationMapping.Spec)
 	}
 	return ctrl.Result{}, nil
 }
@@ -220,7 +223,7 @@ func (r *ApplicationMappingReconciler) getApplicationMappingsForApplication(ctx 
 				Namespace: applicationMapping.Namespace},
 		}
 		requests = append(requests, req)
-		loggers.LoggerAPKOperator.Infof("Adding reconcile request for ApplicationMapping: %s/%s with Application UUID: %v", applicationMapping.Namespace, applicationMapping.Name,
+		loggers.LoggerAPKOperator.Debugf("Adding reconcile request for ApplicationMapping: %s/%s with Application UUID: %v", applicationMapping.Namespace, applicationMapping.Name,
 			string(applicationMapping.ObjectMeta.UID))
 	}
 	return requests
@@ -256,7 +259,7 @@ func (r *ApplicationMappingReconciler) getApplicationMappingsForSubscription(ctx
 				Namespace: applicationMapping.Namespace},
 		}
 		requests = append(requests, req)
-		loggers.LoggerAPKOperator.Infof("Adding reconcile request for ApplicationMapping: %s/%s with Subscription UUID: %v", applicationMapping.Namespace, applicationMapping.Name,
+		loggers.LoggerAPKOperator.Debugf("Adding reconcile request for ApplicationMapping: %s/%s with Subscription UUID: %v", applicationMapping.Namespace, applicationMapping.Name,
 			string(applicationMapping.ObjectMeta.UID))
 	}
 	return requests

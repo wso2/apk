@@ -35,28 +35,6 @@ spec:
         checksum/config: {{ include (print $.Template.BasePath "/data-plane/gateway-components/log-conf.yaml") . | sha256sum }}
     spec:
       automountServiceAccountToken: false
-      initContainers:
-        - name: check-adapter
-          image: busybox:1.32
-          env:
-            - name: ADAPTER_HOST
-              value: {{ template "apk-helm.resource.prefix" . }}-adapter-service.{{ .Release.Namespace }}.svc
-            - name: ADAPTER_XDS_PORT
-              value : "18000"  
-          command: ['sh', '-c', 'echo -e "Checking for the availability of Adapter deployment"; while ! nc -z $ADAPTER_HOST $ADAPTER_XDS_PORT; do sleep 1; printf "-"; done; echo -e "  >> Adapter has started";']
-        - name: check-common-controller
-          image: busybox:1.32
-          env:
-            - name: COMMON_CONTROLLER_HOST_NAME
-              value: {{ template "apk-helm.resource.prefix" . }}-common-controller-service.{{ .Release.Namespace }}.svc
-            - name: COMMON_CONTROLLER_XDS_PORT
-              value: "18002"
-          command: ['sh', '-c', 'echo -e "Checking for the availability of common-controller deployment"; while ! nc -z $COMMON_CONTROLLER_HOST_NAME $COMMON_CONTROLLER_XDS_PORT; do sleep 1; printf "-"; done; echo -e "  >> common-controller has started";']
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop: ["ALL"]
-            readOnlyRootFilesystem: true
       containers:
         - name: enforcer
           image: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.image }}

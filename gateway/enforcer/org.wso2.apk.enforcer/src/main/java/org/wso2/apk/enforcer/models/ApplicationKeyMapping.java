@@ -19,6 +19,7 @@
 package org.wso2.apk.enforcer.models;
 
 import org.wso2.apk.enforcer.common.CacheableEntity;
+import org.wso2.apk.enforcer.subscription.SubscriptionDataStoreUtil;
 
 /**
  * Entity for keeping mapping between Application and Consumer key.
@@ -32,52 +33,65 @@ public class ApplicationKeyMapping implements CacheableEntity<String> {
     private String envId;
 
     public String getApplicationUUID() {
+
         return applicationUUID;
     }
 
     public void setApplicationUUID(String applicationUUID) {
+
         this.applicationUUID = applicationUUID;
     }
 
     public String getSecurityScheme() {
+
         return securityScheme;
     }
 
     public void setSecurityScheme(String securityScheme) {
+
         this.securityScheme = securityScheme;
     }
 
     public String getApplicationIdentifier() {
+
         return applicationIdentifier;
     }
 
     public void setApplicationIdentifier(String applicationIdentifier) {
+
         this.applicationIdentifier = applicationIdentifier;
     }
 
     public String getKeyType() {
+
         return keyType;
     }
 
     public void setKeyType(String keyType) {
+
         this.keyType = keyType;
     }
 
     public String getEnvId() {
+
         return envId;
     }
 
     public void setEnvId(String envId) {
+
         this.envId = envId;
     }
 
     @Override
     public String getCacheKey() {
-        return securityScheme + CacheableEntity.DELEM_PERIOD + applicationIdentifier;
+
+        return  SubscriptionDataStoreUtil.getApplicationKeyMappingCacheKey(applicationIdentifier, keyType,
+                securityScheme, envId);
     }
 
     @Override
     public String toString() {
+
         return "ApplicationKeyMapping{" +
                 "applicationUUID='" + applicationUUID + '\'' +
                 ", securityScheme='" + securityScheme + '\'' +

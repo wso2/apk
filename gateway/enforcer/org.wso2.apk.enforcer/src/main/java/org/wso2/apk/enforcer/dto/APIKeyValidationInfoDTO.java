@@ -66,6 +66,8 @@ public class APIKeyValidationInfoDTO implements Serializable {
     private String apiContext;
     private String applicationUUID;
     private Map<String, String> appAttributes;
+    private String envType;
+    private String environment;
 
     public String getOrganization() {
 
@@ -430,6 +432,26 @@ public class APIKeyValidationInfoDTO implements Serializable {
     public void setApiUUID(String apiUUID) {
 
         this.apiUUID = apiUUID;
+    }
+
+    public void setEnvType(String envType) {
+
+        this.envType = envType;
+    }
+
+    public String getEnvType() {
+
+        return envType;
+    }
+
+    public void setEnvironment(String environment) {
+
+        this.environment = environment;
+    }
+
+    public String getEnvironment() {
+
+        return environment;
     }
 }
 

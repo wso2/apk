@@ -37,15 +37,15 @@ public class ApplicationMappingDto implements Serializable {
 
     private String applicationRef;
     private String subscriptionRef;
-    private String organization;
+    private String organizationId;
 
-    public String getOrganization() {
+    public String getOrganizationId() {
 
-        return organization;
+        return organizationId;
     }
 
-    public void setOrganization(String organization) {
+    public void setOrganizationId(String organizationId) {
 
-        this.organization = organization;
+        this.organizationId = organizationId;
     }
 }
