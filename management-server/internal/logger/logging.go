@@ -37,7 +37,6 @@ const (
 	pkgXdsServer          = "github.com/wso2/apk/management-server/xds/server"
 	pkgMGTServer          = "github.com/wso2/apk/management-server/internal/grpc-server"
 	pkgNotificationServer = "github.com/wso2/apk/management-server/internal/notification"
-	pkgDatabase           = "github.com/wso2/apk/management-server/internal/database"
 )
 
 // logger package references
@@ -61,6 +60,5 @@ func UpdateLoggers() {
 	LoggerXdsServer = logging.InitPackageLogger(pkgXdsServer)
 	LoggerMGTServer = logging.InitPackageLogger(pkgMGTServer)
 	LoggerNotificationServer = logging.InitPackageLogger(pkgNotificationServer)
-	LoggerDatabase = logging.InitPackageLogger(pkgDatabase)
 	logrus.Info("Updated loggers")
 }
