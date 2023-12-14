@@ -59,69 +59,6 @@ wso2:
         secretKey: "DB_PASSWORD"
         validationQuery: "SELECT 1"
         validationTimeout: 250
-      devportal:
-        deployment:
-          resources:
-            requests:
-              memory: "256Mi"
-              cpu: "50m"
-            limits:
-              memory: "512Mi"
-              cpu: "200m"
-          readinessProbe:
-            initialDelaySeconds: 20
-            periodSeconds: 20
-            failureThreshold: 5
-          livenessProbe:
-            initialDelaySeconds: 20
-            periodSeconds: 20
-            failureThreshold: 5
-          strategy: Recreate
-          replicas: 1
-          imagePullPolicy: Always
-          image: wso2/apk-devportal-domain-service:latest
-      admin:
-        deployment:
-          resources:
-            requests:
-              memory: "256Mi"
-              cpu: "50m"
-            limits:
-              memory: "512Mi"
-              cpu: "200m"
-          readinessProbe:
-            initialDelaySeconds: 20
-            periodSeconds: 20
-            failureThreshold: 5
-          livenessProbe:
-            initialDelaySeconds: 20
-            periodSeconds: 20
-            failureThreshold: 5
-          strategy: Recreate
-          replicas: 1
-          imagePullPolicy: Always
-          image: wso2/apk-admin-domain-service:latest
-      backoffice:
-        deployment:
-          resources:
-            requests:
-              memory: "256Mi"
-              cpu: "50m"
-            limits:
-              memory: "512Mi"
-              cpu: "200m"
-          readinessProbe:
-            initialDelaySeconds: 20
-            periodSeconds: 20
-            failureThreshold: 5
-          livenessProbe:
-            initialDelaySeconds: 20
-            periodSeconds: 20
-            failureThreshold: 5
-          strategy: Recreate
-          replicas: 1
-          imagePullPolicy: Always
-          image: wso2/apk-backoffice-domain-service:latest
       managementServer:
         deployment:
           resources:

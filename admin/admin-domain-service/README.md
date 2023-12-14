@@ -1,4 +1,0 @@
-## Admin Domain Service
-
-### Functionalities
-
