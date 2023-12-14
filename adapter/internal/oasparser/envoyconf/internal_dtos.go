@@ -19,7 +19,7 @@ package envoyconf
 
 import (
 	"github.com/wso2/apk/adapter/internal/oasparser/model"
-	dpv1alpha2 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha2"
+	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 )
 
 // routeCreateParams is the DTO used to provide information to the envoy route create function

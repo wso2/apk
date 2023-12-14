@@ -21,7 +21,7 @@ import (
 	"sync"
 
 	logger "github.com/sirupsen/logrus"
-	cpv1alpha2 "github.com/wso2/apk/common-controller/internal/operator/apis/cp/v1alpha2"
+	cpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/cp/v1alpha2"
 	"k8s.io/apimachinery/pkg/types"
 )
 

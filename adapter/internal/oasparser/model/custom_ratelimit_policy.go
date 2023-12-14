@@ -17,7 +17,7 @@
 
 package model
 
-import dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
+import dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 
 // RateLimit is the rate limit values for a policy
 type RateLimit struct {
