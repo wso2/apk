@@ -17,13 +17,6 @@
 package org.wso2.apk.enforcer.jwt;
 
 import com.google.common.cache.LoadingCache;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.UUID;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.logging.log4j.LogManager;
@@ -31,7 +24,6 @@ import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.wso2.apk.enforcer.common.CacheProvider;
@@ -60,6 +52,12 @@ import org.wso2.apk.enforcer.security.jwt.validator.JWTValidator;
 import org.wso2.apk.enforcer.server.RevokedTokenRedisClient;
 import org.wso2.apk.enforcer.subscription.SubscriptionDataHolder;
 import org.wso2.apk.enforcer.subscription.SubscriptionDataStore;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.UUID;
 
 public class JWTValidatorTest {
 
@@ -579,7 +577,7 @@ public class JWTValidatorTest {
     @Test
     public void testTamperedPayloadJWTValidator() throws EnforcerException {
 
-        String organization = "org1";
+        String organization = "org2";
         String environment = "development";
         String issuer = "https://localhost:9443/oauth2/token";
         String signature = "sBgeoqJn0log5EZflj_G7ADvm6B3KQ9bdfFCEFVQS1U3oY9" +
@@ -589,28 +587,30 @@ public class JWTValidatorTest {
                 "EuSe9w";
         String jwt = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6Ik5UZG1aak00WkRrM05qWTBZemM1T" +
                 "W1abU9EZ3dNVEUzTVdZd05ERTVNV1JsWkRnNE56YzRaQT09In0" +
-                ".eyJhdWQiOiJodHRwOlwvXC9vcmcud3NvMi5hcGltZ3RcL2dhdGV" +
-                "3YXkiLCJzdWIiOiJhZG1pbkBjYXJib24uc3VwZXIiLCJhcHBsaWNhdGlvbiI6eyJvd25lciI6ImFkbWluIiwidGllclF1b3RhVHlwZ" +
-                "SI6InJlcXVlc3RDb3VudCIsInRpZXIiOiJVbmxpbWl0ZWQiLCJuYW1lIjoiRGVmYXVsdEFwcGxpY2F0aW9uIiwiaWQiOjEsInV1aWQ" +
-                "iOm51bGx9LCJzY29wZSI6ImFtX2FwcGxpY2F0aW9uX3Njb3BlIGRlZmF1bHQiLCJpc3MiOiJodHRwczpcL1wvbG9jYWxob3N0Ojk0" +
-                "NDNcL29hdXRoMlwvdG9rZW4iLCJ0aWVySW5mbyI6e30sImtleXR5cGUiOiJQUk9EVUNUSU9OIiwic3Vic2NyaWJlZEFQSXMiOltdL" +
-                "CJjb25zdW1lcktleSI6IlhnTzM5NklIRks3ZUZZeWRycVFlNEhLR3oxa2EiLCJleHAiOjE1OTAzNDIzMTMsImlhdCI6MTU5MDMzO" +
-                "DcxMywianRpIjoiYjg5Mzg3NjgtMjNmZC00ZGVjLThiNzAtYmVkNDVlYjdjMzNkIn0." + signature;
+                ".ewogICJhdWQiOiAiaHR0cDovL29yZy53c28yLmFwaW1ndC9nYXRld2F5IiwKICAic3ViIjogImFkbWluQGNhcmJ" +
+                "vbi5zdXBlciIsCiAgImFwcGxpY2F0aW9uIjogewogICAgIm93bmVyIjogImFkbWluIiwKICAgICJ0aWVyUXVvdGFU" +
+                "eXBlIjogInJlcXVlc3RDb3VudCIsCiAgICAidGllciI6ICJVbmxpbWl0ZWQiLAogICAgIm5hbWUiOiAiRGVmYXVsd" +
+                "EFwcGxpY2F0aW9uIiwKICAgICJpZCI6IDEsCiAgICAidXVpZCI6IG51bGwKICB9LAogICJzY29wZSI6ICJhbV9hcHB" +
+                "saWNhdGlvbl9zY29wZSBkZWZhdWx0IiwKICAiaXNzIjogImh0dHBzOi8vbG9jYWxob3N0Ojk0NDMvb2F1dGgyL3Rva" +
+                "2VuIiwKICAidGllckluZm8iOiB7fSwKICAia2V5dHlwZSI6ICJQUk9EVUNUSU9OIiwKICAic3Vic2NyaWJlZEFQSXM" +
+                "iOiBbXSwKICAiY29uc3VtZXJLZXkiOiAiWGdPMzk2SUhGSzdlRll5ZHJxUWU0SEtHejFrYSIsCiAgImV4cCI6IDQxMz" +
+                "IzODM0NzcsCiAgImlhdCI6IDE1OTAzMzg3MTMsCiAgImp0aSI6ICJiODkzODc2OC0yM2ZkLTRkZWMtOGI3MC1iZWQ0N" +
+                "WViN2MzM2QiCn0=." + signature;
         String tamperedJWT = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6Ik5UZG1aak00WkRrM05qWTBZemM1T" +
                 "W1abU9EZ3dNVEUzTVdZd05ERTVNV1JsWkRnNE56YzRaQT09In0" +
-                ".ewogICJhdWQiOiAiaHR0cDovL29yZy53c28yLmFwaW1ndC9nYXRld2F5IiwKICAic3ViIjogImFkbWluQGNhcm" +
-                "Jvbi5zdXBlciIsCiAgImFwcGxpY2F0aW9uIjogewogICAgIm93bmVyIjogImFkbWluIiwKICAgICJ0aWVyUXVvd" +
-                "GFUeXBlIjogInJlcXVlc3RDb3VudCIsCiAgICAidGllciI6ICJVbmxpbWl0ZWQiLAogICAgIm5hbWUiOiAiRGVm" +
-                "YXVsdEFwcGxpY2F0aW9uMiIsCiAgICAiaWQiOiAyLAogICAgInV1aWQiOiBudWxsCiAgfSwKICAic2NvcGUiOiA" +
-                "iYW1fYXBwbGljYXRpb25fc2NvcGUgZGVmYXVsdCIsCiAgImlzcyI6ICJodHRwczovL2xvY2FsaG9zdDo5NDQzL2" +
-                "9hdXRoMi90b2tlbiIsCiAgInRpZXJJbmZvIjoge30sCiAgImtleXR5cGUiOiAiUFJPRFVDVElPTiIsCiAgInN1Y" +
-                "nNjcmliZWRBUElzIjogW10sCiAgImNvbnN1bWVyS2V5IjogIlhnTzM5NklIRks3ZUZZeWRycVFlNEhLR3oxa2Ei" +
-                "LAogICJleHAiOiAxNTkwMzQyMzEzLAogICJpYXQiOiAxNTkwMzM4NzEzLAogICJqdGkiOiAiYjg5Mzg3NjgtMjN" +
-                "mZC00ZGVjLThiNzAtYmVkNDVlYjdjMzNkIgp9." + signature;
+                ".ewogICJhdWQiOiAiaHR0cDovL29yZy53c28yLmFwaW1ndC9nYXRld2F5IiwKICAic3ViIjogImFkbWluQGNhcmJvbi5" +
+                "zdXBlciIsCiAgImFwcGxpY2F0aW9uIjogewogICAgIm93bmVyIjogImFkbWluIiwKICAgICJ0aWVyUXVvdGFUeXBlIjo" +
+                "gInJlcXVlc3RDb3VudCIsCiAgICAidGllciI6ICJVbmxpbWl0ZWQiLAogICAgIm5hbWUiOiAiRGVmYXVsdEFwcGxpY2F" +
+                "0aW9uMiIsCiAgICAiaWQiOiAyLAogICAgInV1aWQiOiBudWxsCiAgfSwKICAic2NvcGUiOiAiYW1fYXBwbGljYXRpb25" +
+                "fc2NvcGUgZGVmYXVsdCIsCiAgImlzcyI6ICJodHRwczovL2xvY2FsaG9zdDo5NDQzL29hdXRoMi90b2tlbiIsCiAgInR" +
+                "pZXJJbmZvIjoge30sCiAgImtleXR5cGUiOiAiUFJPRFVDVElPTiIsCiAgInN1YnNjcmliZWRBUElzIjogW10sCiAgImN" +
+                "vbnN1bWVyS2V5IjogIlhnTzM5NklIRks3ZUZZeWRycVFlNEhLR3oxa2EiLAogICJleHAiOiA0MTMyMzgzNDc3LAogICJ" +
+                "pYXQiOiAxNTkwMzM4NzEzLAogICJqdGkiOiAiYjg5Mzg3NjgtMjNmZC00ZGVjLThiNzAtYmVkNDVlYjdjMzNkIgp9." +
+                signature;
 
         JWTValidationInfo jwtValidationInfo = new JWTValidationInfo();
         jwtValidationInfo.setValid(false);
-        jwtValidationInfo.setExpiryTime(System.currentTimeMillis() - 100);
+        jwtValidationInfo.setExpiryTime(System.currentTimeMillis() + 120000);
         jwtValidationInfo.setConsumerKey(UUID.randomUUID().toString());
         jwtValidationInfo.setUser("user1");
         jwtValidationInfo.setKeyManager("Default");
@@ -641,9 +641,17 @@ public class JWTValidatorTest {
         Mockito.when(apiConfig.getOrganizationId()).thenReturn(organization);
         Mockito.when(requestContext.getMatchedAPI()).thenReturn(apiConfig);
         try (MockedStatic<CacheProviderUtil> cacheProviderUtilDummy = Mockito.mockStatic(CacheProviderUtil.class);
-             MockedStatic<KeyValidator> keyValidatorDummy = Mockito.mockStatic(KeyValidator.class)
+             MockedStatic<KeyValidator> keyValidatorDummy = Mockito.mockStatic(KeyValidator.class);
+             MockedStatic<SubscriptionDataHolder> subscriptionDataHolderMockedStatic =
+                     Mockito.mockStatic(SubscriptionDataHolder.class);
         ) {
             CacheProvider cacheProvider = Mockito.mock(CacheProvider.class);
+            SubscriptionDataStore subscriptionDataStore = Mockito.mock(SubscriptionDataStore.class);
+            SubscriptionDataHolder subscriptionDataHolder = Mockito.mock(SubscriptionDataHolder.class);
+            subscriptionDataHolderMockedStatic.when(SubscriptionDataHolder::getInstance).thenReturn(subscriptionDataHolder);
+            Mockito.when(subscriptionDataHolder.getSubscriptionDataStore(organization)).thenReturn(subscriptionDataStore);
+            cacheProviderUtilDummy.when(() -> CacheProviderUtil.getOrganizationCache(organization)).
+                    thenReturn(cacheProvider);
             LoadingCache gatewayKeyCache = Mockito.mock(LoadingCache.class);
             LoadingCache invalidTokenCache = Mockito.mock(LoadingCache.class);
             Mockito.when(gatewayKeyCache.getIfPresent(signature)).thenReturn(jwtValidationInfo);
@@ -652,8 +660,8 @@ public class JWTValidatorTest {
             Mockito.when(cacheProvider.getInvalidTokenCache()).thenReturn(invalidTokenCache);
             cacheProviderUtilDummy.when(() -> CacheProviderUtil.getOrganizationCache(organization))
                     .thenReturn(cacheProvider);
-
             JWTValidator jwtValidator = Mockito.mock(JWTValidator.class);
+            Mockito.when(subscriptionDataStore.getJWTValidatorByIssuer(issuer, environment)).thenReturn(jwtValidator);
             Mockito.when(jwtValidator.validateToken(Mockito.eq(jwt), Mockito.any())).thenReturn(jwtValidationInfo);
             keyValidatorDummy.when(() -> KeyValidator.validateScopes(Mockito.any())).thenReturn(true);
             try {
