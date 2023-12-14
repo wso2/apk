@@ -46,45 +46,6 @@ wso2:
       #   jwksEndpoint: "https://idp.am.wso2.com:9095/oauth2/jwks"
       #   secretName: "wso2apk-idp-signing"
       #   fileName: "idp.crt"
-    cp:
-      enabled: true
-      database:
-        driver: "org.postgresql.Driver"
-        url: "jdbc:postgresql://wso2apk-db-service:5432/WSO2AM_DB"
-        host: "wso2apk-db-service"
-        port: 5432
-        databaseName: "WSO2AM_DB"
-        username: "wso2carbon"
-        secretName: "apk-db-secret"
-        secretKey: "DB_PASSWORD"
-        validationQuery: "SELECT 1"
-        validationTimeout: 250
-      managementServer:
-        deployment:
-          resources:
-            requests:
-              memory: "64Mi"
-              cpu: "50m"
-            limits:
-              memory: "256Mi"
-              cpu: "200m"
-          strategy: Recreate
-          replicas: 1
-          imagePullPolicy: Always
-          image: wso2/apk-management-server:latest
-          readinessProbe:
-            initialDelaySeconds: 20
-            periodSeconds: 20
-            failureThreshold: 5
-          livenessProbe:
-            initialDelaySeconds: 20
-            periodSeconds: 20
-            failureThreshold: 5
-        # configs:
-        #   tls:
-        #     secretName: "management-server-cert"
-        #     certKeyFilename: "tls.key"
-        #     certFilename: "certchain.crt"
     dp:
       enabled: true
       gateway:
