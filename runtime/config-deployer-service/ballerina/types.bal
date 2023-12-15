@@ -112,7 +112,7 @@ public type CircuitBreaker record {
     int maxRetries?;
 };
 
-public type AuthenticationRequest OAuth2Authentication|APIKeyAuthentication;
+public type AuthenticationRequest OAuth2Authentication|APIKeyAuthentication|MTLSAuthentication;
 
 public type EndpointConfigurations record {
     EndpointConfiguration production?;
@@ -222,8 +222,6 @@ public type APKConf record {
     APKConf_additionalProperties[] additionalProperties?;
     # CORS Configuration of API
     CORSConfiguration corsConfiguration?;
-    // MutualSSL mTLS?;
-    TransportSecurityRequest transportSecurity?;
 };
 
 public type InterceptorPolicy_parameters record {|
@@ -271,22 +269,14 @@ public type APIKeyAuthentication record {|
     boolean queryParamEnable = true;
 |};
 
-public type TransportSecurityRequest MutualSSL;
-
-public type TransportSecurity record {|
-    string securityType;
-|};
-
-# mTLS configuration of API.
+# Mutual SSL configuration of this API
 #
-# + required - Specifies if downstream mTLS is mandatory or optional.
-# + secrets - List of ref names of K8s secrets containing client certs for the API.
-# + configMaps - List of ref names of K8s config maps containing client certs for the API.
-public type MutualSSL record {|
-    *TransportSecurity;
+# + required - If mTLS is optional or mandatory
+# + certificates - The list of config map refs referring to the client certificates
+public type MTLSAuthentication record {|
+    *Authentication;
     string required;
-    Secret[] secrets?;
-    ConfigMap[] configMaps?;
+    ConfigMapRef[] certificates;
 |};
 
 public type Certificate record {
@@ -294,12 +284,8 @@ public type Certificate record {
     string secretKey?;
 };
 
-public type ConfigMap record {
-    string configMapName;
-    string configMapKey;
+public type ConfigMapRef record {
+    string name;
+    string key;
 };
 
-public type Secret record {
-    string secretName;
-    string secretKey;
-};

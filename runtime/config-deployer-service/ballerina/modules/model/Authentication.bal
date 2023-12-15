@@ -32,18 +32,20 @@ public type AuthenticationSpec record {
 public type AuthenticationData record {
     AuthenticationExtensionType authTypes?;
     boolean disabled?;
-    MutualSSL mutualSSL?;
 };
 
 public type AuthenticationExtensionType record {
     OAuth2Authentication oauth2?;
     APIKey[] apiKey = [];
+    MutualSSL mtls?;
 };
 
 public type MutualSSL record {
     string required;
+    boolean disabled;
     RefConfig[] configMapRefs?;
     RefConfig[] secretRefs?;
+    string[] certificatesInline?;
 };
 
 public type OAuth2Authentication record {

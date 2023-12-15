@@ -1580,8 +1580,8 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 		func(rawObj k8client.Object) []string {
 			authentication := rawObj.(*dpv1alpha1.Authentication)
 			var secrets []string
-			if authentication.Spec.Default != nil && authentication.Spec.Default.MutualSSL != nil && authentication.Spec.Default.MutualSSL.SecretRefs != nil && len(authentication.Spec.Default.MutualSSL.SecretRefs) > 0 {
-				for _, secret := range authentication.Spec.Default.MutualSSL.SecretRefs {
+			if authentication.Spec.Default != nil && authentication.Spec.Default.AuthTypes != nil && authentication.Spec.Default.AuthTypes.MutualSSL != nil && authentication.Spec.Default.AuthTypes.MutualSSL.SecretRefs != nil && len(authentication.Spec.Default.AuthTypes.MutualSSL.SecretRefs) > 0 {
+				for _, secret := range authentication.Spec.Default.AuthTypes.MutualSSL.SecretRefs {
 					if len(secret.Name) > 0 {
 						secrets = append(secrets,
 							types.NamespacedName{
@@ -1592,8 +1592,8 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 				}
 			}
 
-			if authentication.Spec.Override != nil && authentication.Spec.Override.MutualSSL != nil && authentication.Spec.Override.MutualSSL.SecretRefs != nil && len(authentication.Spec.Override.MutualSSL.SecretRefs) > 0 {
-				for _, secret := range authentication.Spec.Override.MutualSSL.SecretRefs {
+			if authentication.Spec.Override != nil && authentication.Spec.Override.AuthTypes != nil && authentication.Spec.Override.AuthTypes.MutualSSL != nil && authentication.Spec.Override.AuthTypes.MutualSSL.SecretRefs != nil && len(authentication.Spec.Override.AuthTypes.MutualSSL.SecretRefs) > 0 {
+				for _, secret := range authentication.Spec.Override.AuthTypes.MutualSSL.SecretRefs {
 					if len(secret.Name) > 0 {
 						secrets = append(secrets,
 							types.NamespacedName{
@@ -1614,8 +1614,8 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 		func(rawObj k8client.Object) []string {
 			authentication := rawObj.(*dpv1alpha1.Authentication)
 			var configMaps []string
-			if authentication.Spec.Default != nil && authentication.Spec.Default.MutualSSL != nil && authentication.Spec.Default.MutualSSL.ConfigMapRefs != nil && len(authentication.Spec.Default.MutualSSL.ConfigMapRefs) > 0 {
-				for _, configMap := range authentication.Spec.Default.MutualSSL.ConfigMapRefs {
+			if authentication.Spec.Default != nil && authentication.Spec.Default.AuthTypes != nil && authentication.Spec.Default.AuthTypes.MutualSSL != nil && authentication.Spec.Default.AuthTypes.MutualSSL.ConfigMapRefs != nil && len(authentication.Spec.Default.AuthTypes.MutualSSL.ConfigMapRefs) > 0 {
+				for _, configMap := range authentication.Spec.Default.AuthTypes.MutualSSL.ConfigMapRefs {
 					if len(configMap.Name) > 0 {
 						configMaps = append(configMaps,
 							types.NamespacedName{
@@ -1626,8 +1626,8 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 				}
 			}
 
-			if authentication.Spec.Override != nil && authentication.Spec.Override.MutualSSL != nil && authentication.Spec.Override.MutualSSL.ConfigMapRefs != nil && len(authentication.Spec.Override.MutualSSL.ConfigMapRefs) > 0 {
-				for _, configMap := range authentication.Spec.Override.MutualSSL.ConfigMapRefs {
+			if authentication.Spec.Override != nil && authentication.Spec.Override.AuthTypes != nil && authentication.Spec.Override.AuthTypes.MutualSSL != nil && authentication.Spec.Override.AuthTypes.MutualSSL.ConfigMapRefs != nil && len(authentication.Spec.Override.AuthTypes.MutualSSL.ConfigMapRefs) > 0 {
+				for _, configMap := range authentication.Spec.Override.AuthTypes.MutualSSL.ConfigMapRefs {
 					if len(configMap.Name) > 0 {
 						configMaps = append(configMaps,
 							types.NamespacedName{

@@ -38,11 +38,6 @@ type AuthSpec struct {
 
 	// AuthTypes is to specify the authentication scheme types and details
 	AuthTypes *APIAuth `json:"authTypes,omitempty"`
-
-	// MutualSSL is to specify the features and certificates for mutual SSL
-	//
-	// +optional
-	MutualSSL *MutualSSLConfig `json:"mutualSSL,omitempty"`
 }
 
 // APIAuth Authentication scheme type and details
@@ -62,10 +57,22 @@ type APIAuth struct {
 	//
 	// +optional
 	TestConsoleKey TestConsoleKeyAuth `json:"testConsoleKey,omitempty"`
+
+	// MutualSSL is to specify the features and certificates for mutual SSL
+	//
+	// +optional
+	MutualSSL *MutualSSLConfig `json:"mtls,omitempty"`
 }
 
 // MutualSSLConfig scheme type and details
 type MutualSSLConfig struct {
+
+	// Disabled is to disable mTLS authentication
+	//
+	// +kubebuilder:default:=false
+	// +optional
+	Disabled bool `json:"disabled,omitempty"`
+
 	// Required indicates whether mutualSSL is mandatory or optional
 	// +kubebuilder:validation:Enum=mandatory;optional
 	Required string `json:"required"`

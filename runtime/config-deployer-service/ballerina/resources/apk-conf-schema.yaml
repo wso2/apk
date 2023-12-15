@@ -67,41 +67,6 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/AuthenticationRequest"
-        transportSecurity:
-          type: object
-          properties:
-            securityType:
-              type: string
-              enum:
-                - mTLS
-              description: The type of transport security.
-            required:
-              type: string
-              enum:
-                - mandatory
-                - optional
-              description: Specifies whether mTLS is mandatory or optional
-            secrets:
-              type: array
-              description: The names and keys of the secrets containing the mTLS certificates of that API
-              items:
-                type: object
-                properties:
-                  secretName:
-                    type: string
-                  secretKey:
-                    type: string
-            configMaps:
-              type: array
-              description: The names and keys of the config maps containing the mTLS certificates of that API
-              items:
-                type: object
-                properties:
-                  configMapName:
-                    type: string
-                  configMapKey:
-                    type: string
-          additionalProperties: false
         additionalProperties:
           type: array
           description: Map of custom properties of API
@@ -119,11 +84,13 @@ components:
       oneOf:
         - $ref: "#/components/schemas/OAuth2Authentication"
         - $ref: "#/components/schemas/APIKeyAuthentication"
+        - $ref: "#/components/schemas/MTLSAuthentication"
       discriminator:
         propertyName: authType
         mapping:
           OAuth2: "#/components/schemas/OAuth2Authentication"
           APIKey: "#/components/schemas/APIKeyAuthentication"
+          mTLS: "#/components/schemas/MTLSAuthentication"
     Authentication:
       type: object
       discriminator:
@@ -175,24 +142,22 @@ components:
               type: boolean
               default: true
           additionalProperties: false
-    mTLS:
-      type: object
-      properties:
-        required:
-          type: string
-          default: optional
-          enum:
-            - mandatory
-            - optional
-        secrets:
-          type: array
-          example: []
-          default: []
-        configMaps:
-          type: array
-          example: []
-          default: []
-      additionalProperties: false
+    MTLSAuthentication:
+      allOf:
+        - $ref: "#/components/schemas/Authentication"
+        - type: object
+          properties:
+            required:
+              type: string
+              default: mandatory
+              enum:
+                - mandatory
+                - optional
+            certificates:
+              type: array
+              example: []
+              default: []
+          additionalProperties: false
     CORSConfiguration:
       type: object
       description: |

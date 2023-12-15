@@ -76,57 +76,6 @@
         "$ref": "#/schemas/Authentication"
       }
     },
-    "transportSecurity": {
-      "type": "object",
-      "properties": {
-        "securityType": {
-          "type": "string",
-          "enum": [
-            "mTLS"
-          ],
-          "description": "The type of transport security."
-        },
-        "required": {
-          "type": "string",
-          "enum": [
-            "mandatory",
-            "optional"
-          ],
-          "description": "Specifies whether mTLS is mandatory or optional"
-        },
-        "secrets": {
-          "type": "array",
-          "description": "The names and keys of the secrets containing the mTLS certificates of that API",
-          "items": {
-            "type": "object",
-            "properties": {
-              "secretName": {
-                "type": "string"
-              },
-              "secretKey": {
-                "type": "string"
-              }
-            }
-          }
-        },
-        "configMaps": {
-          "type": "array",
-          "description": "The names and keys of the config maps containing the mTLS certificates of that API",
-          "items": {
-            "type": "object",
-            "properties": {
-              "configMapName": {
-                "type": "string"
-              },
-              "configMapKey": {
-                "type": "string"
-              }
-            }
-          }
-        }
-      },
-      "additionalProperties": false
-    },
     "additionalProperties": {
       "type": "array",
       "description": "Map of custom properties of API",
@@ -184,19 +133,16 @@
         "queryParamEnable": {
           "type": "boolean",
           "description": "Specifies whether the authentication token can be sent as a query parameter."
-        }
-      },
-      "additionalProperties": false
-    },
-    "mTLS": {
-      "type": "object",
-      "properties": {
+        },
         "required": {
           "type": "string",
-          "example": "mandatory",
+          "enum": [
+            "mandatory",
+            "optional"
+          ],
           "description": "Specifies whether mTLS is mandatory or optional"
         },
-        "secrets": {
+        "certificates": {
           "type": "array",
           "description": "The names and keys of the secrets containing the mTLS certificates of that API",
           "items": {
@@ -206,21 +152,6 @@
                 "type": "string"
               },
               "secretKey": {
-                "type": "string"
-              }
-            }
-          }
-        },
-        "configMaps": {
-          "type": "array",
-          "description": "The names and keys of the config maps containing the mTLS certificates of that API",
-          "items": {
-            "type": "object",
-            "properties": {
-              "configMapName": {
-                "type": "string"
-              },
-              "configMapKey": {
                 "type": "string"
               }
             }
