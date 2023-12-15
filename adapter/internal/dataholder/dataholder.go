@@ -15,7 +15,7 @@
  *
  */
 
-package data_holder
+package dataholder
 
 import (
 	k8types "k8s.io/apimachinery/pkg/types"

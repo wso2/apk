@@ -26,7 +26,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/wso2/apk/adapter/internal/data_holder"
+	"github.com/wso2/apk/adapter/internal/dataholder"
 	"github.com/wso2/apk/adapter/internal/discovery/xds"
 	"github.com/wso2/apk/adapter/internal/discovery/xds/common"
 	"k8s.io/apimachinery/pkg/types"
@@ -246,7 +246,7 @@ func getListenersForAPI(httpRoute *gwapiv1b1.HTTPRoute, apiUUID string) ([]strin
 		if parentRef.Namespace != nil && *parentRef.Namespace != "" {
 			namespace = string(*parentRef.Namespace)
 		}
-		gateway, found := data_holder.GetGatewayMap()[types.NamespacedName{
+		gateway, found := dataholder.GetGatewayMap()[types.NamespacedName{
 			Namespace: namespace,
 			Name:      string(parentRef.Name),
 		}.String()]

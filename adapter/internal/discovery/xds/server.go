@@ -40,6 +40,7 @@ import (
 
 	envoy_resource "github.com/envoyproxy/go-control-plane/pkg/resource/v3"
 	"github.com/wso2/apk/adapter/config"
+	"github.com/wso2/apk/adapter/internal/dataholder"
 	"github.com/wso2/apk/adapter/internal/discovery/xds/common"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
 	logging "github.com/wso2/apk/adapter/internal/logging"
@@ -54,7 +55,6 @@ import (
 	eventhubTypes "github.com/wso2/apk/adapter/pkg/eventhub/types"
 	"github.com/wso2/apk/adapter/pkg/utils/stringutils"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
-	"github.com/wso2/apk/adapter/internal/data_holder"
 )
 
 // EnvoyInternalAPI struct use to hold envoy resources and adapter internal resources
@@ -412,9 +412,9 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 	routeConfigs := make([]*routev3.RouteConfiguration, 0)
 	for _, listener := range listeners {
 		for vhost, routes := range vhostToRouteArrayMap {
-			matchedListener, found := common.FindElement(data_holder.GetAllGatewayListeners(), func(listenerLocal gwapiv1b1.Listener) bool {
-				if (listenerLocal.Hostname != nil && common.MatchesHostname(vhost, string(*listenerLocal.Hostname))) {
-					if (listener.Name == common.GetEnvoyListenerName(string(listenerLocal.Protocol), uint32(listenerLocal.Port))) {
+			matchedListener, found := common.FindElement(dataholder.GetAllGatewayListeners(), func(listenerLocal gwapiv1b1.Listener) bool {
+				if listenerLocal.Hostname != nil && common.MatchesHostname(vhost, string(*listenerLocal.Hostname)) {
+					if listener.Name == common.GetEnvoyListenerName(string(listenerLocal.Protocol), uint32(listenerLocal.Port)) {
 						return true
 					}
 				}
@@ -422,11 +422,11 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 			})
 			if found {
 				// Prepare the route config name based on the gateway listener section name.
-				routeConfigName := common.GetEnvoyRouteConfigName(listener.Name, string(matchedListener.Name));
-				routesConfig := oasParser.GetRouteConfigs(map[string][]*routev3.Route{vhost:routes}, routeConfigName, envoyGatewayConfig.customRateLimitPolicies)
-				
+				routeConfigName := common.GetEnvoyRouteConfigName(listener.Name, string(matchedListener.Name))
+				routesConfig := oasParser.GetRouteConfigs(map[string][]*routev3.Route{vhost: routes}, routeConfigName, envoyGatewayConfig.customRateLimitPolicies)
+
 				routeConfigMatched, alreadyExistsInRouteConfigList := common.FindElement(routeConfigs, func(routeConf *routev3.RouteConfiguration) bool {
-					if (routeConf.Name == routesConfig.Name) {
+					if routeConf.Name == routesConfig.Name {
 						return true
 					}
 					return false
@@ -442,11 +442,11 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 			}
 		}
 	}
-	
+
 	// Find gateway listeners that has $systemHost as its hostname and add the system routeConfig referencing those listeners
-	gatewayListeners := data_holder.GetAllGatewayListeners()
+	gatewayListeners := dataholder.GetAllGatewayListeners()
 	for _, listener := range gatewayListeners {
-		if (systemHost == string(*listener.Hostname)) {
+		if systemHost == string(*listener.Hostname) {
 			var vhostToRouteArrayFilteredMapForSystemEndpoints = make(map[string][]*routev3.Route)
 			vhostToRouteArrayFilteredMapForSystemEndpoints[systemHost] = vhostToRouteArrayMap[systemHost]
 			routeConfigName := common.GetEnvoyRouteConfigName(common.GetEnvoyListenerName(string(listener.Protocol), uint32(listener.Port)), string(listener.Name))
@@ -458,8 +458,8 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 	envoyGatewayConfig.routeConfigs = routeConfigs
 	clusterArray = append(clusterArray, envoyGatewayConfig.clusters...)
 	endpointArray = append(endpointArray, envoyGatewayConfig.endpoints...)
-	listeners_, clusters, routeConfigs_, endpoints := oasParser.GetCacheResources(endpointArray, clusterArray, listeners, routeConfigs)
-	return listeners_, clusters, routeConfigs_, endpoints, apis
+	generatedListeners, clusters, generatedRouteConfigs, endpoints := oasParser.GetCacheResources(endpointArray, clusterArray, listeners, routeConfigs)
+	return generatedListeners, clusters, generatedRouteConfigs, endpoints, apis
 }
 
 // function to check routes []*routev3.Route equlas routes []*routev3.Route
@@ -746,7 +746,7 @@ func UpdateAPICache(vHosts []string, newLabels []string, listener string, sectio
 		}
 		if _, ok := listenerToRouteArrayMap[listener]; ok {
 			routesList := listenerToRouteArrayMap[listener]
-			if (routesList == nil) {
+			if routesList == nil {
 				routesList = make([]*routev3.Route, 0)
 			}
 			routesList = append(routesList, routes...)

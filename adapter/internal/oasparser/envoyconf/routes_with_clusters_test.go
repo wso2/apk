@@ -22,7 +22,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/wso2/apk/adapter/internal/data_holder"
+	"github.com/wso2/apk/adapter/internal/dataholder"
 	envoy "github.com/wso2/apk/adapter/internal/oasparser/envoyconf"
 	"github.com/wso2/apk/adapter/internal/operator/constants"
 	"github.com/wso2/apk/adapter/internal/operator/synchronizer"
@@ -109,7 +109,7 @@ func TestCreateRoutesWithClustersWithExactAndRegularExpressionRules(t *testing.T
 		Spec: gwapiv1b1.GatewaySpec{
 			Listeners: []gwapiv1b1.Listener{
 				{
-					Name: "httpslistener",
+					Name:     "httpslistener",
 					Hostname: &hostName,
 					Protocol: gwapiv1b1.HTTPSProtocolType,
 				},
@@ -117,7 +117,7 @@ func TestCreateRoutesWithClustersWithExactAndRegularExpressionRules(t *testing.T
 		},
 	}
 
-	data_holder.UpdateGateway(gateway)
+	dataholder.UpdateGateway(gateway)
 
 	httpRouteState.HTTPRouteCombined = &httpRoute
 
