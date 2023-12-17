@@ -340,9 +340,13 @@ public class APIClient {
             map<model:Endpoint|()> createdEndpointMap, commons:Organization organization) returns error? {
         map<model:Authentication> authenticationMap = {};
         model:AuthenticationExtensionType authTypes = {};
+        boolean isOAuthDisabled = false;
+        boolean isMTLSMandatory = false;
+        boolean isMTLSDisabled = false;
         foreach AuthenticationRequest authentication in authentications {
             if authentication.authType == "OAuth2" {
                 OAuth2Authentication oauth2Authentication = check authentication.cloneWithType(OAuth2Authentication);
+                isOAuthDisabled = !oauth2Authentication.enabled;
                 authTypes.oauth2 = {header: <string>oauth2Authentication.headerName, sendTokenToUpstream: <boolean>oauth2Authentication.sendTokenToUpstream, disabled: !oauth2Authentication.enabled};
             } else if authentication.authType == "APIKey" && authentication is APIKeyAuthentication {
                 APIKeyAuthentication apiKeyAuthentication = check authentication.cloneWithType(APIKeyAuthentication);
@@ -351,7 +355,14 @@ public class APIClient {
                 authTypes.apiKey.push({'in: "Query", name: apiKeyAuthentication.queryParamName, sendTokenToUpstream: apiKeyAuthentication.sendTokenToUpstream});
             } else if authentication.authType == "mTLS" {
                 MTLSAuthentication mtlsAuthentication = check authentication.cloneWithType(MTLSAuthentication);
+                isMTLSMandatory = mtlsAuthentication.required == "mandatory";
+                isMTLSDisabled = !mtlsAuthentication.enabled;
+                if isOAuthDisabled && (!isMTLSMandatory || isMTLSDisabled) {
+                    log:printError("Invalid authtypes provided: one of mTLS or OAuth2 has to be enabled and mandatory");
+                    return e909019();
+                }
                 authTypes.mtls = {disabled: !mtlsAuthentication.enabled, configMapRefs: mtlsAuthentication.certificates, required: mtlsAuthentication.required};
+
             }
         }
         log:printDebug("Auth Types:" + authTypes.toString());

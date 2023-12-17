@@ -175,11 +175,11 @@ public isolated function e909018(string msg) returns commons:APKError {
 }
 
 public isolated function e909019() returns commons:APKError {
-    return error commons:APKError("Invalid transport security schema",
+    return error commons:APKError("Invalid authtypes provided",
         code = 909018,
-        message = "Invalid transport security schema provided",
+        message = "Invalid authtypes provided",
         statusCode = 406,
-        description = "Invalid transport security schema provided"
+        description = "Invalid authtypes provided"
     );
 }
 
