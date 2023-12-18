@@ -72,11 +72,15 @@ public class AuthFilter implements Filter {
         isOAuthBasicAuthMandatory = apiConfig.getApplicationSecurity();
 
         if (!Objects.isNull(apiConfig.getMutualSSL())) {
-            if (apiConfig.getMutualSSL().equalsIgnoreCase(APIConstants.Optionality.MANDATORY)) {
-                isMutualSSLProtected = true;
-                isMutualSSLMandatory = true;
-            } else if (apiConfig.getMutualSSL().equalsIgnoreCase(APIConstants.Optionality.OPTIONAL)) {
-                isMutualSSLProtected = true;
+            if (apiConfig.isTransportSecurity()) {
+                if (apiConfig.getMutualSSL().equalsIgnoreCase(APIConstants.Optionality.MANDATORY)) {
+                    isMutualSSLProtected = true;
+                    isMutualSSLMandatory = true;
+                } else if (apiConfig.getMutualSSL().equalsIgnoreCase(APIConstants.Optionality.OPTIONAL)) {
+                    isMutualSSLProtected = true;
+                }
+            } else {
+                isMutualSSLProtected = false;
             }
         }
 

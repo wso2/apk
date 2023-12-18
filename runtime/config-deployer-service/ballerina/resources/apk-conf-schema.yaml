@@ -155,8 +155,14 @@ components:
                 - optional
             certificates:
               type: array
-              example: []
-              default: []
+              description: The names and keys of the secrets containing the mTLS certificates of that API
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  key:
+                    type: string
           additionalProperties: false
     CORSConfiguration:
       type: object

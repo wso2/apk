@@ -19,6 +19,7 @@ package v1alpha1
 
 // MutualSSL defines the mutual SSL configurations for an API
 type MutualSSL struct {
+	Disabled           bool
 	Required           string
 	ClientCertificates []string
 }

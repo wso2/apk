@@ -47,6 +47,7 @@ public class APIConfig {
     private boolean isMockedApi;
     private KeyStore trustStore;
     private String mutualSSL;
+    private boolean transportSecurity;
     private boolean applicationSecurity;
     private GraphQLSchemaDTO graphQLSchemaDTO;
     private JWTConfigurationDto jwtConfigurationDto;
@@ -206,6 +207,15 @@ public class APIConfig {
     }
 
     /**
+     * Returns if transport security (mTLS) is enabled or disabled for the corresponding API.
+     *
+     * @return transportSecurity enabled
+     */
+    public boolean isTransportSecurity() {
+        return transportSecurity;
+    }
+
+    /**
      * Returns the application security optionality for the corresponding API.
      *
      * @return application security optionality
@@ -283,6 +293,8 @@ public class APIConfig {
         private boolean subscriptionValidation;
         private JWTConfigurationDto jwtConfigurationDto;
         private String environment;
+        private boolean transportSecurity;
+
         public Builder(String name) {
             this.name = name;
         }
@@ -397,6 +409,11 @@ public class APIConfig {
             return this;
         }
 
+        public Builder transportSecurity(boolean transportSecurity) {
+            this.transportSecurity = transportSecurity;
+            return this;
+        }
+
         public APIConfig build() {
             APIConfig apiConfig = new APIConfig();
             apiConfig.name = this.name;
@@ -415,6 +432,7 @@ public class APIConfig {
             apiConfig.isMockedApi = this.isMockedApi;
             apiConfig.trustStore = this.trustStore;
             apiConfig.mutualSSL = this.mutualSSL;
+            apiConfig.transportSecurity = this.transportSecurity;
             apiConfig.applicationSecurity = this.applicationSecurity;
             apiConfig.graphQLSchemaDTO = this.graphQLSchemaDTO;
             apiConfig.systemAPI = this.systemAPI;

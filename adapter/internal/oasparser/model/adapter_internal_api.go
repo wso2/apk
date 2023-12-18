@@ -58,6 +58,7 @@ type AdapterInternalAPI struct {
 	xWso2AuthHeader          string
 	disableAuthentications   bool
 	disableScopes            bool
+	disableMtls              bool
 	OrganizationID           string
 	IsPrototyped             bool
 	EndpointType             string
@@ -311,6 +312,11 @@ func (adapterInternalAPI *AdapterInternalAPI) GetDisableScopes() bool {
 	return adapterInternalAPI.disableScopes
 }
 
+// GetDisableMtls returns whether mTLS is disabled or not
+func (swagger *AdapterInternalAPI) GetDisableMtls() bool {
+	return swagger.disableMtls
+}
+
 // GetID returns the Id of the API
 func (adapterInternalAPI *AdapterInternalAPI) GetID() string {
 	return adapterInternalAPI.id
@@ -401,6 +407,11 @@ func (swagger *AdapterInternalAPI) SetMutualSSL(mutualSSL string) {
 // GetMutualSSL returns the optional or mandatory mTLS
 func (swagger *AdapterInternalAPI) GetMutualSSL() string {
 	return swagger.mutualSSL
+}
+
+// SetDisableMtls returns whether mTLS is disabled or not
+func (swagger *AdapterInternalAPI) SetDisableMtls(disableMtls bool) {
+	swagger.disableMtls = disableMtls
 }
 
 // SetXWSO2ApplicationSecurity sets the optional or mandatory application security

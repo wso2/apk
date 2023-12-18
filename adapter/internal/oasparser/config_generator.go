@@ -216,6 +216,7 @@ func GetEnforcerAPI(adapterInternalAPI model.AdapterInternalAPI, vhost string) *
 		ClientCertificates:  clientCertificates,
 		MutualSSL:           adapterInternalAPI.GetMutualSSL(),
 		ApplicationSecurity: adapterInternalAPI.GetXWSO2ApplicationSecurity(),
+		TransportSecurity:   !adapterInternalAPI.GetDisableMtls(),
 		// GraphQLSchema:         adapterInternalAPI.GraphQLSchema,
 		// GraphqlComplexityInfo: adapterInternalAPI.GraphQLComplexities.Data.List,
 		SystemAPI:              adapterInternalAPI.IsSystemAPI,

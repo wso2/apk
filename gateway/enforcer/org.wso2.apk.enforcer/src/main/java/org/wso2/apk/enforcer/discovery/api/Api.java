@@ -169,6 +169,11 @@ private static final long serialVersionUID = 0L;
             applicationSecurity_ = input.readBool();
             break;
           }
+          case 136: {
+
+            transportSecurity_ = input.readBool();
+            break;
+          }
           case 186: {
             if (!((mutable_bitField0_ & 0x00000004) != 0)) {
               graphqlComplexityInfo_ = new java.util.ArrayList<org.wso2.apk.enforcer.discovery.api.GraphqlComplexity>();
@@ -829,6 +834,17 @@ private static final long serialVersionUID = 0L;
     return applicationSecurity_;
   }
 
+  public static final int TRANSPORTSECURITY_FIELD_NUMBER = 17;
+  private boolean transportSecurity_;
+  /**
+   * <code>bool transportSecurity = 17;</code>
+   * @return The transportSecurity.
+   */
+  @java.lang.Override
+  public boolean getTransportSecurity() {
+    return transportSecurity_;
+  }
+
   public static final int GRAPHQLCOMPLEXITYINFO_FIELD_NUMBER = 23;
   private java.util.List<org.wso2.apk.enforcer.discovery.api.GraphqlComplexity> graphqlComplexityInfo_;
   /**
@@ -1114,6 +1130,9 @@ private static final long serialVersionUID = 0L;
     if (applicationSecurity_ != false) {
       output.writeBool(16, applicationSecurity_);
     }
+    if (transportSecurity_ != false) {
+      output.writeBool(17, transportSecurity_);
+    }
     for (int i = 0; i < graphqlComplexityInfo_.size(); i++) {
       output.writeMessage(23, graphqlComplexityInfo_.get(i));
     }
@@ -1200,6 +1219,10 @@ private static final long serialVersionUID = 0L;
       size += com.google.protobuf.CodedOutputStream
         .computeBoolSize(16, applicationSecurity_);
     }
+    if (transportSecurity_ != false) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeBoolSize(17, transportSecurity_);
+    }
     for (int i = 0; i < graphqlComplexityInfo_.size(); i++) {
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(23, graphqlComplexityInfo_.get(i));
@@ -1278,6 +1301,8 @@ private static final long serialVersionUID = 0L;
         .equals(other.getMutualSSL())) return false;
     if (getApplicationSecurity()
         != other.getApplicationSecurity()) return false;
+    if (getTransportSecurity()
+        != other.getTransportSecurity()) return false;
     if (!getGraphqlComplexityInfoList()
         .equals(other.getGraphqlComplexityInfoList())) return false;
     if (getSystemAPI()
@@ -1350,6 +1375,9 @@ private static final long serialVersionUID = 0L;
     hash = (37 * hash) + APPLICATIONSECURITY_FIELD_NUMBER;
     hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
         getApplicationSecurity());
+    hash = (37 * hash) + TRANSPORTSECURITY_FIELD_NUMBER;
+    hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+        getTransportSecurity());
     if (getGraphqlComplexityInfoCount() > 0) {
       hash = (37 * hash) + GRAPHQLCOMPLEXITYINFO_FIELD_NUMBER;
       hash = (53 * hash) + getGraphqlComplexityInfoList().hashCode();
@@ -1557,6 +1585,8 @@ private static final long serialVersionUID = 0L;
 
       applicationSecurity_ = false;
 
+      transportSecurity_ = false;
+
       if (graphqlComplexityInfoBuilder_ == null) {
         graphqlComplexityInfo_ = java.util.Collections.emptyList();
         bitField0_ = (bitField0_ & ~0x00000004);
@@ -1648,6 +1678,7 @@ private static final long serialVersionUID = 0L;
       }
       result.mutualSSL_ = mutualSSL_;
       result.applicationSecurity_ = applicationSecurity_;
+      result.transportSecurity_ = transportSecurity_;
       if (graphqlComplexityInfoBuilder_ == null) {
         if (((bitField0_ & 0x00000004) != 0)) {
           graphqlComplexityInfo_ = java.util.Collections.unmodifiableList(graphqlComplexityInfo_);
@@ -1832,6 +1863,9 @@ private static final long serialVersionUID = 0L;
       }
       if (other.getApplicationSecurity() != false) {
         setApplicationSecurity(other.getApplicationSecurity());
+      }
+      if (other.getTransportSecurity() != false) {
+        setTransportSecurity(other.getTransportSecurity());
       }
       if (graphqlComplexityInfoBuilder_ == null) {
         if (!other.graphqlComplexityInfo_.isEmpty()) {
@@ -3411,6 +3445,37 @@ private static final long serialVersionUID = 0L;
     public Builder clearApplicationSecurity() {
       
       applicationSecurity_ = false;
+      onChanged();
+      return this;
+    }
+
+    private boolean transportSecurity_ ;
+    /**
+     * <code>bool transportSecurity = 17;</code>
+     * @return The transportSecurity.
+     */
+    @java.lang.Override
+    public boolean getTransportSecurity() {
+      return transportSecurity_;
+    }
+    /**
+     * <code>bool transportSecurity = 17;</code>
+     * @param value The transportSecurity to set.
+     * @return This builder for chaining.
+     */
+    public Builder setTransportSecurity(boolean value) {
+      
+      transportSecurity_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>bool transportSecurity = 17;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearTransportSecurity() {
+      
+      transportSecurity_ = false;
       onChanged();
       return this;
     }

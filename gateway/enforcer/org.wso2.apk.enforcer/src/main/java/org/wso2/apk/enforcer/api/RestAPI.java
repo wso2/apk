@@ -129,7 +129,8 @@ public class RestAPI implements API {
                 .mutualSSL(mutualSSL).systemAPI(api.getSystemAPI())
                 .applicationSecurity(applicationSecurity).jwtConfigurationDto(jwtConfigurationDto)
                 .apiDefinition(apiDefinition).environment(api.getEnvironment())
-                .subscriptionValidation(api.getSubscriptionValidation()).build();
+                .subscriptionValidation(api.getSubscriptionValidation()).transportSecurity(api.getTransportSecurity())
+                .build();
 
         initFilters();
         return basePath;

@@ -463,12 +463,12 @@ func GetResolvedMutualSSL(ctx context.Context, client k8client.Client, authentic
 	var mutualSSL *dpv1alpha1.MutualSSLConfig
 	if authentication.Spec.Default != nil && authentication.Spec.Default.AuthTypes != nil && authentication.Spec.Default.AuthTypes.MutualSSL != nil {
 		mutualSSL = authentication.Spec.Default.AuthTypes.MutualSSL
-	}
-	if authentication.Spec.Override != nil && authentication.Spec.Override.AuthTypes != nil && authentication.Spec.Override.AuthTypes.MutualSSL != nil {
+	} else if authentication.Spec.Override != nil && authentication.Spec.Override.AuthTypes != nil && authentication.Spec.Override.AuthTypes.MutualSSL != nil {
 		mutualSSL = authentication.Spec.Override.AuthTypes.MutualSSL
 	}
 	if mutualSSL != nil {
 		resolvedCertificates := ResolveAllmTLSCertificates(ctx, mutualSSL, certificate, err, client, authentication.Namespace)
+		resolvedMutualSSL.Disabled = mutualSSL.Disabled
 		resolvedMutualSSL.Required = authentication.Spec.Default.AuthTypes.MutualSSL.Required
 		resolvedMutualSSL.ClientCertificates = append(resolvedMutualSSL.ClientCertificates, resolvedCertificates...)
 	}

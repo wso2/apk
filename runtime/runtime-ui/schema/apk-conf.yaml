@@ -57,7 +57,10 @@ properties:
   authentication:
     type: array
     items:
-      "$ref": "#/schemas/Authentication"
+      oneOf:
+        - $ref: "#/schemas/OAuth2Authentication"
+        - $ref: "#/schemas/MTLSAuthentication"
+        - $ref: "#/schemas/APIKeyAuthentication"
   additionalProperties:
     type: array
     description: Map of custom properties of API
@@ -73,45 +76,48 @@ properties:
     description: Cross-Origin Resource Sharing (CORS) configuration for the API.
 additionalProperties: false
 schemas:
-  Authentication:
+  OAuth2Authentication:
     type: object
     properties:
       authType:
         type: string
-        example: OAuth2
+        enum: [OAuth2]
         description: The type of authentication to be used, e.g., OAuth2, etc.
       sendTokenToUpstream:
         type: boolean
         default: false
-        description:
-          Specifies whether to send the authentication token to the upstream
-          service.
+        description: Specifies whether to send the authentication token to the upstream service.
       enabled:
         type: boolean
         example: true
-        description: Specifies whether authentication is enabled for the API.
+        description: Specifies whether OAuth2 authentication is enabled for the API.
       headerName:
         type: string
         example: Authorization
-        description:
-          The name of the header field used to send the authentication
-          token.
+        description: The name of the header field used to send the authentication token.
       queryParamName:
         type: string
         example: apikey
-        description:
-          The name of the query parameter used to send the authentication
-          token.
+        description: The name of the query parameter used to send the authentication token.
       headerEnable:
         type: boolean
-        description:
-          Specifies whether the authentication token can be sent in the
-          header.
+        description: Specifies whether the authentication token can be sent in the header.
       queryParamEnable:
         type: boolean
-        description:
-          Specifies whether the authentication token can be sent as a query
-          parameter.
+        description: Specifies whether the authentication token can be sent as a query parameter.
+    additionalProperties: false
+  MTLSAuthentication:
+    type: object
+    properties:
+      authType:
+        type: string
+        example: mTLS
+        enum: [mTLS]
+        description: The type of authentication to be used, e.g., mTLS, etc.
+      enabled:
+        type: boolean
+        example: true
+        description: Specifies whether mTLS authentication is enabled for the API.
       required:
         type: string
         enum:
@@ -129,34 +135,32 @@ schemas:
             key:
               type: string
     additionalProperties: false
-  mTLS:
-    type: object
-    properties:
-      required:
-        type: string
-        example: mandatory
-        description: Specifies whether mTLS is mandatory or optional.
-      secrets:
-        type: array
-        description: The names and keys of the secrets containing the mTLS certificates of that API.
-        items:
-          type: object
-          properties:
-            secretName:
-              type: string
-            secretKey:
-              type: string
-      configMaps:
-        type: array
-        description: The names and keys of the secrets containing the mTLS certificates of that API.
-        items:
-          type: object
-          properties:
-            configMapName:
-              type: string
-            configMapKey:
-              type: string
-    additionalProperties: false
+  APIKeyAuthentication:
+    - type: object
+      properties:
+        authType:
+          type: string
+          example: APIKey
+          enum: [APIKey]
+          description: The type of authentication to be used, e.g., APIKey, etc.
+        sendTokenToUpstream:
+          type: boolean
+          default: false
+        headerName:
+          type: string
+          example: Authorization
+          default: apikey
+        queryParamName:
+          type: string
+          example: apikey
+          default: apikey
+        headerEnable:
+          type: boolean
+          default: true
+        queryParamEnable:
+          type: boolean
+          default: true
+      additionalProperties: false
   CORSConfiguration:
     type: object
     description: Cross-Origin Resource Sharing (CORS) configuration for the API.

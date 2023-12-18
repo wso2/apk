@@ -43,7 +43,7 @@
       "type": "boolean",
       "description": "Is this the default version of the API"
     },
-    "subscriptionValidation" : {
+    "subscriptionValidation": {
       "type": "boolean",
       "description": "Is subscription validation enabled for the API"
     },
@@ -73,7 +73,17 @@
     "authentication": {
       "type": "array",
       "items": {
-        "$ref": "#/schemas/Authentication"
+        "oneOf": [
+          {
+            "$ref": "#/schemas/OAuth2Authentication"
+          },
+          {
+            "$ref": "#/schemas/MTLSAuthentication"
+          },
+          {
+            "$ref": "#/schemas/APIKeyAuthentication"
+          }
+        ]
       }
     },
     "additionalProperties": {
@@ -98,50 +108,58 @@
   },
   "additionalProperties": false,
   "schemas": {
-    "Authentication": {
+    "OAuth2Authentication": {
       "type": "object",
       "properties": {
         "authType": {
           "type": "string",
-          "example": "OAuth2",
-          "description": "The type of authentication to be used, e.g., OAuth2, etc."
+          "enum": [
+            "OAuth2"
+          ]
         },
         "sendTokenToUpstream": {
           "type": "boolean",
-          "default": false,
-          "description": "Specifies whether to send the authentication token to the upstream service."
+          "default": false
         },
         "enabled": {
-          "type": "boolean",
-          "example": true,
-          "description": "Specifies whether authentication is enabled for the API."
+          "type": "boolean"
         },
         "headerName": {
-          "type": "string",
-          "example": "Authorization",
-          "description": "The name of the header field used to send the authentication token."
+          "type": "string"
         },
         "queryParamName": {
-          "type": "string",
-          "example": "apikey",
-          "description": "The name of the query parameter used to send the authentication token."
+          "type": "string"
         },
         "headerEnable": {
-          "type": "boolean",
-          "description": "Specifies whether the authentication token can be sent in the header."
+          "type": "boolean"
         },
         "queryParamEnable": {
-          "type": "boolean",
-          "description": "Specifies whether the authentication token can be sent as a query parameter."
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "MTLSAuthentication": {
+      "type": "object",
+      "properties": {
+        "authType": {
+          "type": "string",
+          "enum": [
+            "mTLS"
+          ]
         },
         "required": {
           "type": "string",
-          "example": "mandatory",
-          "description": "Specifies whether mTLS is mandatory or optional"
+          "enum": [
+            "mandatory",
+            "optional"
+          ]
+        },
+        "enabled": {
+          "type": "boolean"
         },
         "certificates": {
           "type": "array",
-          "description": "The names and keys of the config maps containing the mTLS certificates of that API",
           "items": {
             "type": "object",
             "properties": {
@@ -152,10 +170,49 @@
                 "type": "string"
               }
             }
-          },
-          "additionalProperties": false
+          }
         }
-      }
+      },
+      "additionalProperties": false
+    },
+    "APIKeyAuthentication": {
+      "type": "object",
+      "properties": {
+        "authType": {
+          "type": "string",
+          "example": "APIKey",
+          "enum": [
+            "APIKey"
+          ],
+          "description": "The type of authentication to be used, e.g., APIKey, etc."
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "sendTokenToUpstream": {
+          "type": "boolean",
+          "default": false
+        },
+        "headerName": {
+          "type": "string",
+          "example": "Authorization",
+          "default": "apikey"
+        },
+        "queryParamName": {
+          "type": "string",
+          "example": "apikey",
+          "default": "apikey"
+        },
+        "headerEnable": {
+          "type": "boolean",
+          "default": true
+        },
+        "queryParamEnable": {
+          "type": "boolean",
+          "default": true
+        }
+      },
+      "additionalProperties": false
     },
     "CORSConfiguration": {
       "type": "object",
