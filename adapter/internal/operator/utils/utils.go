@@ -456,8 +456,7 @@ func getResolvedBackendSecurity(ctx context.Context, client k8client.Client,
 }
 
 // GetResolvedMutualSSL resolves mTLS related security configurations.
-func GetResolvedMutualSSL(ctx context.Context, client k8client.Client, authentication dpv1alpha1.Authentication) dpv1alpha1.MutualSSL {
-	resolvedMutualSSL := dpv1alpha1.MutualSSL{}
+func GetResolvedMutualSSL(ctx context.Context, client k8client.Client, authentication dpv1alpha1.Authentication, resolvedMutualSSL *dpv1alpha1.MutualSSL) {
 	var err error
 	var certificate string
 	var mutualSSL *dpv1alpha1.MutualSSLConfig
@@ -469,15 +468,13 @@ func GetResolvedMutualSSL(ctx context.Context, client k8client.Client, authentic
 	if mutualSSL != nil {
 		resolvedCertificates := ResolveAllmTLSCertificates(ctx, mutualSSL, certificate, err, client, authentication.Namespace)
 		resolvedMutualSSL.Disabled = mutualSSL.Disabled
-		resolvedMutualSSL.Required = authentication.Spec.Default.AuthTypes.MutualSSL.Required
+		resolvedMutualSSL.Required = mutualSSL.Required
 		resolvedMutualSSL.ClientCertificates = append(resolvedMutualSSL.ClientCertificates, resolvedCertificates...)
 	}
 
 	if err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL, "Error in resolving mutual SSL %v in authentication", certificate))
 	}
-
-	return resolvedMutualSSL
 }
 
 // ResolveAllmTLSCertificates resolves all mTLS certificates

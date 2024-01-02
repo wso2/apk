@@ -155,7 +155,7 @@ components:
                 - optional
             certificates:
               type: array
-              description: The names and keys of the secrets containing the mTLS certificates of that API
+              description: The names and keys of the config maps containing the mTLS certificates of that API
               items:
                 type: object
                 properties:
