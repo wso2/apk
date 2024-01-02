@@ -82,7 +82,7 @@ type APISpec struct {
 	// APIType denotes the type of the API.
 	// Possible values could be REST, GraphQL, Async
 	//
-	// +kubebuilder:validation:Enum=REST
+	// +kubebuilder:validation:Enum=REST;GraphQL
 	APIType string `json:"apiType"`
 
 	// BasePath denotes the basepath of the API.

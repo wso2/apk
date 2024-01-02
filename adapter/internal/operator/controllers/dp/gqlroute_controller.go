@@ -25,7 +25,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	dpv1alpha2 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha2"
+	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 )
 
 // GQLRouteReconciler reconciles a GQLRoute object
