@@ -58,7 +58,6 @@ public class GRPCUtils {
         return NettyChannelBuilder.forAddress(host, port)
                 .useTransportSecurity()
                 .sslContext(sslContext)
-                .keepAliveTime(30, TimeUnit.SECONDS)
                 .overrideAuthority(hostname)
                 .build();
     }
