@@ -55,7 +55,7 @@ jobs:
       - name: Install Revive
         shell: sh
         run: |
-          go install github.com/mgechev/revive@latest
+          go install github.com/mgechev/revive@v1.3.4
 
       - name: Checkout apk-repo.
         uses: actions/checkout@v3
