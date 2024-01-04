@@ -51,7 +51,7 @@ Feature: API Definition Endpoint
     Then the response status code should be 404
     And I send "GET" request to "https://default.gw.wso2.com:9095/test-definition-default/api-definition" with body ""
     Then the response status code should be 404
-  
+
   Scenario: Testing a deleted production endpoint
     Given The system is ready
     And I have a valid subscription

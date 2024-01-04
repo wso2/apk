@@ -224,6 +224,9 @@ func (gatewayReconciler *GatewayReconciler) resolveGatewayState(ctx context.Cont
 	namespace := gwapiv1b1.Namespace(gateway.Namespace)
 	// Retireve listener Certificates
 	for _, listener := range gateway.Spec.Listeners {
+		if listener.Protocol == gwapiv1b1.HTTPProtocolType {
+			continue
+		}
 		data, err := gatewayReconciler.resolveListenerSecretRefs(ctx, &listener.TLS.CertificateRefs[0], string(namespace))
 		if err != nil {
 			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3105, logging.BLOCKER, "Error resolving listener certificates: %v", err))

@@ -22,6 +22,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/wso2/apk/adapter/internal/dataholder"
 	envoy "github.com/wso2/apk/adapter/internal/oasparser/envoyconf"
 	"github.com/wso2/apk/adapter/internal/operator/constants"
 	"github.com/wso2/apk/adapter/internal/operator/synchronizer"
@@ -99,6 +100,24 @@ func TestCreateRoutesWithClustersWithExactAndRegularExpressionRules(t *testing.T
 			},
 		},
 	}
+	hostName := gwapiv1b1.Hostname("prod.gw.wso2.com")
+	gateway := gwapiv1b1.Gateway{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: "default",
+			Name:      "default-gateway",
+		},
+		Spec: gwapiv1b1.GatewaySpec{
+			Listeners: []gwapiv1b1.Listener{
+				{
+					Name:     "httpslistener",
+					Hostname: &hostName,
+					Protocol: gwapiv1b1.HTTPSProtocolType,
+				},
+			},
+		},
+	}
+
+	dataholder.UpdateGateway(gateway)
 
 	httpRouteState.HTTPRouteCombined = &httpRoute
 

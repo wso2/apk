@@ -238,6 +238,10 @@ spec:
           image: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.image }}
           imagePullPolicy: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.imagePullPolicy }}
           ports:
+            {{ if and .Values.wso2.apk.dp.gateway.httpListener .Values.wso2.apk.dp.gateway.httpListener.enabled }}
+            - containerPort: {{ .Values.wso2.apk.dp.gateway.httpListener.port | default 9080}}
+              protocol: "TCP"
+            {{ end }}
             - containerPort: 9095
               protocol: "TCP"
             - containerPort: 9090

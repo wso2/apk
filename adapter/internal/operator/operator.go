@@ -83,7 +83,7 @@ func InitOperator() {
 	flag.Parse()
 	log.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
 
-	operatorDataStore := synchronizer.CreateNewOperatorDataStore()
+	operatorDataStore := synchronizer.GetOperatorDataStore()
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:                  scheme,

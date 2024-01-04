@@ -21,6 +21,7 @@ import (
 	clusterv3 "github.com/envoyproxy/go-control-plane/envoy/config/cluster/v3"
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	"github.com/wso2/apk/adapter/config"
+	dataHolder "github.com/wso2/apk/adapter/internal/dataholder"
 	"github.com/wso2/apk/adapter/internal/discovery/xds"
 	"github.com/wso2/apk/adapter/internal/interceptor"
 	"github.com/wso2/apk/adapter/internal/loggers"
@@ -81,6 +82,7 @@ func undeployGateway(gatewayState GatewayState) error {
 	var err error
 	if gatewayState.GatewayDefinition != nil {
 		_, err = DeleteGateway(gatewayState.GatewayDefinition)
+		dataHolder.RemoveGateway(*gatewayState.GatewayDefinition)
 	}
 	return err
 }
@@ -88,6 +90,7 @@ func undeployGateway(gatewayState GatewayState) error {
 // AddOrUpdateGateway adds/update a Gateway to the XDS server.
 func AddOrUpdateGateway(gatewayState GatewayState, state string) (string, error) {
 	gateway := gatewayState.GatewayDefinition
+	dataHolder.UpdateGateway(*gateway)
 	xds.SanitizeGateway(gateway.Name, true)
 	resolvedListenerCerts := gatewayState.GatewayStateData.GatewayResolvedListenerCerts
 	customRateLimitPolicies := getCustomRateLimitPolicies(gatewayState.GatewayStateData.GatewayCustomRateLimitPolicies)

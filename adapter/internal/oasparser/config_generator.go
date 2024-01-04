@@ -87,7 +87,7 @@ func GetGlobalClusters() ([]*clusterv3.Cluster, []*corev3.Address) {
 // The provided set of envoy routes will be assigned under the virtual host
 //
 // The RouteConfiguration is named as "default"
-func GetProductionListener(gateway *gwapiv1b1.Gateway, resolvedListenerCerts map[string]map[string][]byte, gwLuaScript string) *listenerv3.Listener {
+func GetProductionListener(gateway *gwapiv1b1.Gateway, resolvedListenerCerts map[string]map[string][]byte, gwLuaScript string) []*listenerv3.Listener {
 	listeners := envoy.CreateListenerByGateway(gateway, resolvedListenerCerts, gwLuaScript)
 	return listeners
 }
@@ -98,10 +98,10 @@ func GetProductionListener(gateway *gwapiv1b1.Gateway, resolvedListenerCerts map
 // The provided set of envoy routes will be assigned under the virtual host
 //
 // The RouteConfiguration is named as "default"
-func GetRouteConfigs(vhostToRouteArrayMap map[string][]*routev3.Route, httpListener string,
+func GetRouteConfigs(vhostToRouteArrayMap map[string][]*routev3.Route, routeConfigName string,
 	customRateLimitPolicies []*model.CustomRateLimitPolicy) *routev3.RouteConfiguration {
 	vHosts := envoy.CreateVirtualHosts(vhostToRouteArrayMap, customRateLimitPolicies)
-	routeConfig := envoy.CreateRoutesConfigForRds(vHosts, httpListener)
+	routeConfig := envoy.CreateRoutesConfigForRds(vHosts, routeConfigName)
 	return routeConfig
 }
 
@@ -110,7 +110,7 @@ func GetRouteConfigs(vhostToRouteArrayMap map[string][]*routev3.Route, httpListe
 //
 // The returned resources are listeners, clusters, routeConfigurations, endpoints
 func GetCacheResources(endpoints []*corev3.Address, clusters []*clusterv3.Cluster,
-	listeners *listenerv3.Listener, routeConfig *routev3.RouteConfiguration) (
+	listeners []*listenerv3.Listener, routeConfigs []*routev3.RouteConfiguration) (
 	listenerRes []types.Resource, clusterRes []types.Resource, routeConfigRes []types.Resource,
 	endpointRes []types.Resource) {
 
@@ -122,8 +122,14 @@ func GetCacheResources(endpoints []*corev3.Address, clusters []*clusterv3.Cluste
 	for _, endpoint := range endpoints {
 		endpointRes = append(endpointRes, endpoint)
 	}
-	listenerRes = []types.Resource{listeners}
-	routeConfigRes = []types.Resource{routeConfig}
+	listenerRes = []types.Resource{}
+	for _, listener := range listeners {
+		listenerRes = append(listenerRes, listener)
+	}
+	routeConfigRes = []types.Resource{}
+	for _, routeConfig := range routeConfigs {
+		routeConfigRes = append(routeConfigRes, routeConfig)
+	}
 	return listenerRes, clusterRes, routeConfigRes, endpointRes
 }
 

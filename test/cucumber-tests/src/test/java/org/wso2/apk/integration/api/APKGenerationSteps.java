@@ -62,7 +62,7 @@ public class APKGenerationSteps {
                 .addPart("definition", new FileBody(definitionFile));
 
         HttpEntity multipartEntity = builder.build();
-        HttpResponse httpResponse = sharedContext.getHttpClient().doPostWithMultipart(Utils.getConfigGeneratorURL(),
+                HttpResponse httpResponse = sharedContext.getHttpClient().doPostWithMultipart(Utils.getConfigGeneratorURL(),
                 multipartEntity);
         sharedContext.setResponse(httpResponse);
     }
@@ -73,6 +73,6 @@ public class APKGenerationSteps {
         URL url = Resources.getResource(expectedAPKConfFilePath);
         String text = Resources.toString(url, StandardCharsets.UTF_8);
 
-        Assert.assertEquals(text, sharedContext.getHttpClient().getResponsePayload(sharedContext.getResponse()));
+        Assert.assertEquals(sharedContext.getHttpClient().getResponsePayload(sharedContext.getResponse()), text);
     }
 }

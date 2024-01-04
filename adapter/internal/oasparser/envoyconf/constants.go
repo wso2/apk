@@ -41,10 +41,6 @@ const (
 	compressorFilterName       string = "envoy.filters.http.compressor"
 )
 
-const (
-	defaultHTTPSListenerName string = "httpslistener"
-)
-
 // cluster prefixes
 const (
 	requestInterceptClustersNamePrefix  string = "reqInterceptor"

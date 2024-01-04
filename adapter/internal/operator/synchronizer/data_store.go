@@ -34,12 +34,18 @@ type OperatorDataStore struct {
 	mu           sync.Mutex
 }
 
-// CreateNewOperatorDataStore creates a new OperatorDataStore.
-func CreateNewOperatorDataStore() *OperatorDataStore {
-	return &OperatorDataStore{
+var operatorDataStore *OperatorDataStore
+
+func init() {
+	operatorDataStore = &OperatorDataStore{
 		apiStore:     map[types.NamespacedName]*APIState{},
 		gatewayStore: map[types.NamespacedName]*GatewayState{},
 	}
+}
+
+// GetOperatorDataStore creates a new OperatorDataStore.
+func GetOperatorDataStore() *OperatorDataStore {
+	return operatorDataStore
 }
 
 // AddAPIState stores a new API in the OperatorDataStore.

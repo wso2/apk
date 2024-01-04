@@ -21,11 +21,14 @@ import (
 	"bytes"
 	"crypto/tls"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
 
+	"github.com/wso2/apk/adapter/internal/dataholder"
 	"github.com/wso2/apk/adapter/internal/discovery/xds"
+	"github.com/wso2/apk/adapter/internal/discovery/xds/common"
 	"k8s.io/apimachinery/pkg/types"
 
 	"github.com/wso2/apk/adapter/config"
@@ -189,13 +192,23 @@ func GenerateAdapterInternalAPI(apiState APIState, httpRoute *HTTPRouteState, en
 	}
 	vHosts := getVhostsForAPI(httpRoute.HTTPRouteCombined)
 	labels := getLabelsForAPI(httpRoute.HTTPRouteCombined)
-	listeners := getListenersForAPI(httpRoute.HTTPRouteCombined, adapterInternalAPI.UUID)
-
-	err := xds.UpdateAPICache(vHosts, labels, listeners, adapterInternalAPI)
-	if err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2633, logging.MAJOR, "Error updating the API : %s:%s in vhosts: %s, API_UUID: %v. %v",
-			adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), vHosts, adapterInternalAPI.UUID, err))
+	listeners, relativeSectionNames := getListenersForAPI(httpRoute.HTTPRouteCombined, adapterInternalAPI.UUID)
+	// We dont have a use case where a perticular API's two different http routes refer to two different gateway. Hence get the first listener name for the list for processing.
+	if len(listeners) == 0 || len(relativeSectionNames) == 0 {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2633, logging.MINOR, "Failed to find a matching listener for http route: %v. ",
+			httpRoute.HTTPRouteCombined.Name))
+		return nil, errors.New("failed to find matching listener name for the provided http route")
 	}
+	listenerName := listeners[0]
+	sectionName := relativeSectionNames[0]
+	if len(listeners) != 0 {
+		err := xds.UpdateAPICache(vHosts, labels, listenerName, sectionName, adapterInternalAPI)
+		if err != nil {
+			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2633, logging.MAJOR, "Error updating the API : %s:%s in vhosts: %s, API_UUID: %v. %v",
+				adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), vHosts, adapterInternalAPI.UUID, err))
+		}
+	}
+
 	return &adapterInternalAPI, nil
 }
 
@@ -225,12 +238,35 @@ func getLabelsForAPI(httpRoute *gwapiv1b1.HTTPRoute) []string {
 }
 
 // getListenersForAPI returns the listeners related to an API.
-func getListenersForAPI(httpRoute *gwapiv1b1.HTTPRoute, apiUUID string) []string {
+func getListenersForAPI(httpRoute *gwapiv1b1.HTTPRoute, apiUUID string) ([]string, []string) {
 	var listeners []string
+	var sectionNames []string
 	for _, parentRef := range httpRoute.Spec.ParentRefs {
-		listeners = append(listeners, string(*parentRef.SectionName))
+		namespace := httpRoute.GetNamespace()
+		if parentRef.Namespace != nil && *parentRef.Namespace != "" {
+			namespace = string(*parentRef.Namespace)
+		}
+		gateway, found := dataholder.GetGatewayMap()[types.NamespacedName{
+			Namespace: namespace,
+			Name:      string(parentRef.Name),
+		}.String()]
+		if found {
+			// find the matching listener
+			matchedListener, listenerFound := common.FindElement(gateway.Spec.Listeners, func(listener gwapiv1b1.Listener) bool {
+				if string(listener.Name) == string(*parentRef.SectionName) {
+					return true
+				}
+				return false
+			})
+			if listenerFound {
+				sectionNames = append(sectionNames, string(matchedListener.Name))
+				listeners = append(listeners, common.GetEnvoyListenerName(string(matchedListener.Protocol), uint32(matchedListener.Port)))
+				continue
+			}
+		}
+		loggers.LoggerAPKOperator.Errorf("Failed to find matching listeners for the httproute: %+v", httpRoute.Name)
 	}
-	return listeners
+	return listeners, sectionNames
 }
 
 // Runtime client connetion

@@ -20,7 +20,9 @@ package common
 
 import (
 	"sync"
-
+	"fmt"
+	"regexp"
+	"strings"
 	discovery "github.com/envoyproxy/go-control-plane/envoy/service/discovery/v3"
 )
 
@@ -91,4 +93,41 @@ func GetNodeIdentifier(request *discovery.DiscoveryRequest) string {
 		nodeIdentifier = request.Node.Id + ":" + identifierVal.(string)
 	}
 	return nodeIdentifier
+}
+
+// GetEnvoyListenerName prepares the envoy listener name based on the protocol and port
+func GetEnvoyListenerName(protocol string, port uint32) string {
+	return fmt.Sprintf("%s_%d_listener", protocol, port)
+}
+
+// GetEnvoyRouteConfigName prepares Envoy route config name based on Gateway spec's listener name and section name
+func GetEnvoyRouteConfigName(listenerName string, sectionName string) string {
+	return fmt.Sprintf("%s_%s", listenerName, sectionName)
+}
+
+// FindElement searches for an element in a slice based on a given predicate.
+// It returns the element and true if the element was found.
+func FindElement[T any](collection []T, predicate func(item T) bool) (T, bool) {
+	for _, item := range collection {
+		if predicate(item) {
+			return item, true
+		}
+	}
+	var dummy T
+	return dummy, false
+}
+
+// MatchesHostname check whether the domain matches the hostname pattern
+func MatchesHostname(domain, pattern string) bool {
+	// Escape special characters in the pattern and replace wildcard with regex pattern
+	pattern = strings.ReplaceAll(regexp.QuoteMeta(pattern), `\*`, `.*`)
+	// Append start and end of line anchors
+	pattern = "^" + pattern + "$"
+
+	matched, err := regexp.MatchString(pattern, domain)
+	if err != nil {
+		return false
+	}
+
+	return matched
 }
