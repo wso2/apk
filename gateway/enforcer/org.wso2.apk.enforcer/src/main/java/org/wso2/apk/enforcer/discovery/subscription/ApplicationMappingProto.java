@@ -32,11 +32,11 @@ public final class ApplicationMappingProto {
       "nmapping.proto\022\033wso2.discovery.subscript" +
       "ion\"i\n\022ApplicationMapping\022\014\n\004uuid\030\001 \001(\t\022" +
       "\026\n\016applicationRef\030\002 \001(\t\022\027\n\017subscriptionR" +
-      "ef\030\003 \001(\t\022\024\n\014organization\030\004 \001(\tB\224\001\n,org.w" +
+      "ef\030\003 \001(\t\022\024\n\014organization\030\004 \001(\tB\233\001\n,org.w" +
       "so2.apk.enforcer.discovery.subscriptionB" +
-      "\027ApplicationMappingProtoP\001ZIgithub.com/w" +
-      "so2/apk/adapter/pkg/discovery/api/wso2/d" +
-      "iscovery/subscriptionb\006proto3"
+      "\027ApplicationMappingProtoP\001ZPgithub.com/w" +
+      "so2/apk/common-go-libs/pkg/discovery/api" +
+      "/wso2/discovery/subscriptionb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,

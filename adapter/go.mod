@@ -88,6 +88,8 @@ require (
 
 replace github.com/wso2/apk/adapter => ../adapter
 
+replace github.com/wso2/apk/common-go-libs => ../common-go-libs
+
 require (
 	github.com/getkin/kin-openapi v0.107.0
 	github.com/ghodss/yaml v1.0.0

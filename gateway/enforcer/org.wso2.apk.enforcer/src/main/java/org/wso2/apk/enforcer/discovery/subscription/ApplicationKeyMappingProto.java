@@ -34,11 +34,11 @@ public final class ApplicationKeyMappingProto {
       "plicationUUID\030\001 \001(\t\022\026\n\016securityScheme\030\002 " +
       "\001(\t\022\035\n\025applicationIdentifier\030\003 \001(\t\022\017\n\007ke" +
       "yType\030\004 \001(\t\022\r\n\005envID\030\005 \001(\t\022\021\n\ttimestamp\030" +
-      "\006 \001(\003\022\024\n\014organization\030\007 \001(\tB\227\001\n,org.wso2" +
+      "\006 \001(\003\022\024\n\014organization\030\007 \001(\tB\236\001\n,org.wso2" +
       ".apk.enforcer.discovery.subscriptionB\032Ap" +
-      "plicationKeyMappingProtoP\001ZIgithub.com/w" +
-      "so2/apk/adapter/pkg/discovery/api/wso2/d" +
-      "iscovery/subscriptionb\006proto3"
+      "plicationKeyMappingProtoP\001ZPgithub.com/w" +
+      "so2/apk/common-go-libs/pkg/discovery/api" +
+      "/wso2/discovery/subscriptionb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,

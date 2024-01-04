@@ -39,11 +39,11 @@ public final class SubscriptionProto {
       "d\030\002 \001(\t\022\024\n\014organization\030\003 \001(\t\022A\n\rsubscri" +
       "bedApi\030\004 \001(\0132*.wso2.discovery.subscripti" +
       "on.SubscribedAPI\".\n\rSubscribedAPI\022\014\n\004nam" +
-      "e\030\001 \001(\t\022\017\n\007version\030\002 \001(\tB\216\001\n,org.wso2.ap" +
+      "e\030\001 \001(\t\022\017\n\007version\030\002 \001(\tB\225\001\n,org.wso2.ap" +
       "k.enforcer.discovery.subscriptionB\021Subsc" +
-      "riptionProtoP\001ZIgithub.com/wso2/apk/adap" +
-      "ter/pkg/discovery/api/wso2/discovery/sub" +
-      "scriptionb\006proto3"
+      "riptionProtoP\001ZPgithub.com/wso2/apk/comm" +
+      "on-go-libs/pkg/discovery/api/wso2/discov" +
+      "ery/subscriptionb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,

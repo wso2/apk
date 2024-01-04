@@ -1,7 +1,7 @@
 package utils
 
 import (
-	apkmgt "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/apkmgt"
+	apkmgt "github.com/wso2/apk/common-go-libs/pkg/discovery/api/wso2/discovery/service/apkmgt"
 )
 
 var clientConnections = make(map[string]apkmgt.EventStreamService_StreamEventsServer)
