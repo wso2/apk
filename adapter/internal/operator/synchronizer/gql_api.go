@@ -62,7 +62,7 @@ func deployGQLAPIInGateway(apiState APIState) error {
 	return err
 }
 
-// generateGQLAdapterInternalAPI this will populate a AdapterInternalAPI representation for an HTTPRoute
+// generateGQLAdapterInternalAPI this will populate a AdapterInternalAPI representation for an GQLRoute
 func generateGQLAdapterInternalAPI(apiState APIState, gqlRoute *GQLRouteState, envType string) (*model.AdapterInternalAPI, error) {
 	var adapterInternalAPI model.AdapterInternalAPI
 	adapterInternalAPI.SetIsDefaultVersion(apiState.APIDefinition.Spec.IsDefaultVersion)
@@ -96,14 +96,14 @@ func generateGQLAdapterInternalAPI(apiState APIState, gqlRoute *GQLRouteState, e
 			"Error setting GQLRoute CR info to adapterInternalAPI. %v", err))
 		return nil, err
 	}
-	vHosts := getVhostsForAPI(gqlRoute.GQLRouteCombined)
-	labels := getLabelsForAPI(gqlRoute.GQLRouteCombined)
+	vHosts := getVhostsForGQLAPI(gqlRoute.GQLRouteCombined)
+	labels := getLabelsForGQLAPI(gqlRoute.GQLRouteCombined)
 	listeners, relativeSectionNames := getListenersForGQLAPI(gqlRoute.GQLRouteCombined, adapterInternalAPI.UUID)
 	// We dont have a use case where a perticular API's two different gql routes refer to two different gateway. Hence get the first listener name for the list for processing.
 	if len(listeners) == 0 || len(relativeSectionNames) == 0 {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2633, logging.MINOR, "Failed to find a matching listener for http route: %v. ",
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2633, logging.MINOR, "Failed to find a matching listener for gql route: %v. ",
 			gqlRoute.GQLRouteCombined.Name))
-		return nil, errors.New("failed to find matching listener name for the provided http route")
+		return nil, errors.New("failed to find matching listener name for the provided gql route")
 	}
 	listenerName := listeners[0]
 	sectionName := relativeSectionNames[0]
@@ -119,9 +119,9 @@ func generateGQLAdapterInternalAPI(apiState APIState, gqlRoute *GQLRouteState, e
 }
 
 // getVhostForAPI returns the vHosts related to an API.
-func getVhostsForGQLAPI(httpRoute *gwapiv1b1.HTTPRoute) []string {
+func getVhostsForGQLAPI(gqlRoute *v1alpha2.GQLRoute) []string {
 	var vHosts []string
-	for _, hostName := range httpRoute.Spec.Hostnames {
+	for _, hostName := range gqlRoute.Spec.Hostnames {
 		vHosts = append(vHosts, string(hostName))
 	}
 	fmt.Println("vhosts size: ", len(vHosts))
@@ -144,11 +144,11 @@ func getLabelsForGQLAPI(gqlRoute *v1alpha2.GQLRoute) []string {
 }
 
 // getListenersForGQLAPI returns the listeners related to an API.
-func getListenersForGQLAPI(httpRoute *gwapiv1b1.HTTPRoute, apiUUID string) ([]string, []string) {
+func getListenersForGQLAPI(gqlRoute *v1alpha2.GQLRoute, apiUUID string) ([]string, []string) {
 	var listeners []string
 	var sectionNames []string
-	for _, parentRef := range httpRoute.Spec.ParentRefs {
-		namespace := httpRoute.GetNamespace()
+	for _, parentRef := range gqlRoute.Spec.ParentRefs {
+		namespace := gqlRoute.GetNamespace()
 		if parentRef.Namespace != nil && *parentRef.Namespace != "" {
 			namespace = string(*parentRef.Namespace)
 		}
@@ -170,7 +170,7 @@ func getListenersForGQLAPI(httpRoute *gwapiv1b1.HTTPRoute, apiUUID string) ([]st
 				continue
 			}
 		}
-		loggers.LoggerAPKOperator.Errorf("Failed to find matching listeners for the httproute: %+v", httpRoute.Name)
+		loggers.LoggerAPKOperator.Errorf("Failed to find matching listeners for the gqlroute: %+v", gqlRoute.Name)
 	}
 	return listeners, sectionNames
 }
