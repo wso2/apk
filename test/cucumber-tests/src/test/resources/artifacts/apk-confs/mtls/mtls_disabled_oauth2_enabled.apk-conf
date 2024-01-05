@@ -26,7 +26,6 @@ operations:
     scopes: []
 authentication:
   - authType: mTLS
-    required: optional
     enabled: false
     certificates:
       - name: mtls-test-configmap

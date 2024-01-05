@@ -150,13 +150,15 @@
         },
         "required": {
           "type": "string",
+          "default": "optional",
           "enum": [
             "mandatory",
             "optional"
           ]
         },
         "enabled": {
-          "type": "boolean"
+          "type": "boolean",
+          "default": true
         },
         "certificates": {
           "type": "array",
@@ -173,6 +175,10 @@
           }
         }
       },
+      "required": [
+        "authType",
+        "certificates"
+      ],
       "additionalProperties": false
     },
     "APIKeyAuthentication": {

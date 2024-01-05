@@ -117,9 +117,11 @@ schemas:
       enabled:
         type: boolean
         example: true
+        default: true
         description: Specifies whether mTLS authentication is enabled for the API.
       required:
         type: string
+        default: optional
         enum:
           - mandatory
           - optional

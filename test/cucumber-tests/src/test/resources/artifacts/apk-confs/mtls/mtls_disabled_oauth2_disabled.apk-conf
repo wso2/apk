@@ -28,7 +28,6 @@ authentication:
   - authType: OAuth2
     enabled: false
   - authType: mTLS
-    required: optional
     enabled: false
     certificates:
       - name: mtls-test-configmap

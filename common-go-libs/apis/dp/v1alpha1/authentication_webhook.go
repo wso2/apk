@@ -78,22 +78,37 @@ func (r *Authentication) ValidateAuthentication() error {
 		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("targetRef").Child("kind"), r.Spec.TargetRef.Kind,
 			"Invalid Kind is provided"))
 	}
+	var mutualSSL *MutualSSLConfig
 
-	if r.Spec.Default != nil && r.Spec.Default.Disabled != nil && r.Spec.Default.AuthTypes != nil && r.Spec.Default.AuthTypes.MutualSSL != nil {
+	if r.Spec.Default != nil && r.Spec.Default.AuthTypes != nil && r.Spec.Default.AuthTypes.MutualSSL != nil {
 		isOAuthDisabled = r.Spec.Default.AuthTypes.Oauth2.Disabled
-		isMTLSMandatory = strings.ToLower(r.Spec.Default.AuthTypes.MutualSSL.Required) == "mandatory"
-		isMTLSDisabled = r.Spec.Default.AuthTypes.MutualSSL.Disabled
+		mutualSSL = r.Spec.Default.AuthTypes.MutualSSL
+
+		isMTLSMandatory = strings.ToLower(mutualSSL.Required) == "mandatory"
+		isMTLSDisabled = mutualSSL.Disabled
 		if isOAuthDisabled && (!isMTLSMandatory || isMTLSDisabled) {
-			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("default").Child("authTypes").Child("authTypes"), r.Spec.Default.AuthTypes,
+			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("default").Child("authTypes").Child("mtls"), r.Spec.Default.AuthTypes,
 				"invalid authentication configuration - one of mTLS or OAuth2 must be enabled and mandatory"))
 		}
-	} else if r.Spec.Override != nil && r.Spec.Override.Disabled != nil && r.Spec.Override.AuthTypes != nil && r.Spec.Override.AuthTypes.MutualSSL != nil {
+		if len(mutualSSL.CertificatesInline) == 0 && len(mutualSSL.ConfigMapRefs) == 0 && len(mutualSSL.SecretRefs) == 0 {
+			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("default").Child("authTypes").Child("mtls"), r.Spec.Default.AuthTypes.MutualSSL,
+				"invalid mTLS configuration - certificates not provided"))
+		}
+
+	} else if r.Spec.Override != nil && r.Spec.Override.AuthTypes != nil && r.Spec.Override.AuthTypes.MutualSSL != nil {
 		isOAuthDisabled = r.Spec.Override.AuthTypes.Oauth2.Disabled
-		isMTLSMandatory = strings.ToLower(r.Spec.Override.AuthTypes.MutualSSL.Required) == "mandatory"
-		isMTLSDisabled = r.Spec.Override.AuthTypes.MutualSSL.Disabled
+		mutualSSL = r.Spec.Override.AuthTypes.MutualSSL
+
+		isMTLSMandatory = strings.ToLower(mutualSSL.Required) == "mandatory"
+		isMTLSDisabled = mutualSSL.Disabled
 		if isOAuthDisabled && (!isMTLSMandatory || isMTLSDisabled) {
-			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("override").Child("authTypes").Child("authTypes"), r.Spec.Override.AuthTypes,
+			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("override").Child("authTypes").Child("mtls"), r.Spec.Override.AuthTypes,
 				"invalid authentication configuration - one of mTLS or OAuth2 must be enabled and mandatory"))
+		}
+
+		if len(mutualSSL.CertificatesInline) == 0 && len(mutualSSL.ConfigMapRefs) == 0 && len(mutualSSL.SecretRefs) == 0 {
+			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("override").Child("authTypes").Child("mtls"), r.Spec.Override.AuthTypes.MutualSSL,
+				"invalid mTLS configuration - certificates not provided"))
 		}
 	}
 

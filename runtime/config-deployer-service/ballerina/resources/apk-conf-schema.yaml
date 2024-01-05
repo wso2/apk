@@ -149,7 +149,7 @@ components:
           properties:
             required:
               type: string
-              default: mandatory
+              default: optional
               enum:
                 - mandatory
                 - optional

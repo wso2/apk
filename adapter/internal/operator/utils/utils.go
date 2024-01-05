@@ -456,9 +456,7 @@ func getResolvedBackendSecurity(ctx context.Context, client k8client.Client,
 }
 
 // GetResolvedMutualSSL resolves mTLS related security configurations.
-func GetResolvedMutualSSL(ctx context.Context, client k8client.Client, authentication dpv1alpha1.Authentication, resolvedMutualSSL *dpv1alpha1.MutualSSL) {
-	var err error
-	var certificate string
+func GetResolvedMutualSSL(ctx context.Context, client k8client.Client, authentication dpv1alpha1.Authentication, resolvedMutualSSL *dpv1alpha1.MutualSSL) error {
 	var mutualSSL *dpv1alpha1.MutualSSLConfig
 	if authentication.Spec.Default != nil && authentication.Spec.Default.AuthTypes != nil && authentication.Spec.Default.AuthTypes.MutualSSL != nil {
 		mutualSSL = authentication.Spec.Default.AuthTypes.MutualSSL
@@ -466,20 +464,24 @@ func GetResolvedMutualSSL(ctx context.Context, client k8client.Client, authentic
 		mutualSSL = authentication.Spec.Override.AuthTypes.MutualSSL
 	}
 	if mutualSSL != nil {
-		resolvedCertificates := ResolveAllmTLSCertificates(ctx, mutualSSL, certificate, err, client, authentication.Namespace)
+		resolvedCertificates, err := ResolveAllmTLSCertificates(ctx, mutualSSL, client, authentication.Namespace)
 		resolvedMutualSSL.Disabled = mutualSSL.Disabled
 		resolvedMutualSSL.Required = mutualSSL.Required
 		resolvedMutualSSL.ClientCertificates = append(resolvedMutualSSL.ClientCertificates, resolvedCertificates...)
-	}
 
-	if err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL, "Error in resolving mutual SSL %v in authentication", certificate))
+		if err != nil {
+			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL, "Error in resolving mutual SSL %v in authentication", mutualSSL))
+			return err
+		}
 	}
+	return nil
 }
 
 // ResolveAllmTLSCertificates resolves all mTLS certificates
-func ResolveAllmTLSCertificates(ctx context.Context, mutualSSL *dpv1alpha1.MutualSSLConfig, certificate string, err error, client k8client.Client, namespace string) []string {
+func ResolveAllmTLSCertificates(ctx context.Context, mutualSSL *dpv1alpha1.MutualSSLConfig, client k8client.Client, namespace string) ([]string, error) {
 	var resolvedCertificates []string
+	var err error
+	var certificate string
 	if mutualSSL.CertificatesInline != nil {
 		for _, cert := range mutualSSL.CertificatesInline {
 			certificate, err = ResolveCertificate(ctx, client, namespace, cert, nil, nil)
@@ -498,7 +500,7 @@ func ResolveAllmTLSCertificates(ctx context.Context, mutualSSL *dpv1alpha1.Mutua
 			resolvedCertificates = append(resolvedCertificates, certificate)
 		}
 	}
-	return resolvedCertificates
+	return resolvedCertificates, err
 }
 
 // ResolveCertificate reads the certificate from TLSConfig, first checks the certificateInline field,

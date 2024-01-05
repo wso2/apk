@@ -75,6 +75,8 @@ type MutualSSLConfig struct {
 
 	// Required indicates whether mutualSSL is mandatory or optional
 	// +kubebuilder:validation:Enum=mandatory;optional
+	// +kubebuilder:default=optional
+	// +optional
 	Required string `json:"required"`
 
 	// CertificatesInline is the Inline Certificate entry

@@ -913,14 +913,14 @@ func (apiReconciler *APIReconciler) getAPIPolicyChildrenRefs(ctx context.Context
 
 func (apiReconciler *APIReconciler) resolveAuthentications(ctx context.Context,
 	authentications map[string]dpv1alpha1.Authentication) (*dpv1alpha1.MutualSSL, error) {
-	var resolvedMutualSSL *dpv1alpha1.MutualSSL
+	resolvedMutualSSL := dpv1alpha1.MutualSSL{}
 	for _, authentication := range authentications {
-		if resolvedMutualSSL == nil {
-			resolvedMutualSSL = &dpv1alpha1.MutualSSL{}
+		err := utils.GetResolvedMutualSSL(ctx, apiReconciler.client, authentication, &resolvedMutualSSL)
+		if err != nil {
+			return nil, err
 		}
-		utils.GetResolvedMutualSSL(ctx, apiReconciler.client, authentication, resolvedMutualSSL)
 	}
-	return resolvedMutualSSL, nil
+	return &resolvedMutualSSL, nil
 }
 
 func (apiReconciler *APIReconciler) getResolvedBackendsMapping(ctx context.Context,

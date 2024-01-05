@@ -275,7 +275,7 @@ public type APIKeyAuthentication record {|
 # + certificates - The list of config map refs referring to the client certificates
 public type MTLSAuthentication record {|
     *Authentication;
-    string required;
+    string required = "optional";
     ConfigMapRef[] certificates;
 |};
 

@@ -2,11 +2,11 @@ name: "EmployeeServiceAPI"
 basePath: "/mtls"
 version: "3.14"
 type: "REST"
-id: "mtls-optional-oauth2-enabled"
+id: "mtls-optional-oauth2-disabled"
 defaultVersion: false
 endpointConfigurations:
   production:
-    endpoint: "https://run.mocky.io/v3/0c5173b2-9d99-459c-946b-b6b67c7f0139"
+    endpoint: "https://webhook.site/1e73a7f6-6187-46ff-aac9-f060d7460c93"
 operations:
   - target: "/employee"
     verb: "GET"
@@ -25,8 +25,9 @@ operations:
     secured: true
     scopes: []
 authentication:
+  - authType: OAuth2
+    enabled: false
   - authType: mTLS
-    required: optional
     certificates:
       - name: mtls-test-configmap
         key: tls.crt

@@ -58,7 +58,7 @@ func GenerateAdapterInternalAPI(apiState APIState, httpRoute *HTTPRouteState, en
 	adapterInternalAPI.SetAPIDefinitionFile(apiState.APIDefinitionFile)
 	adapterInternalAPI.SetAPIDefinitionEndpoint(apiState.APIDefinition.Spec.DefinitionPath)
 	adapterInternalAPI.SetSubscriptionValidation(apiState.SubscriptionValidation)
-	if apiState.MutualSSL != nil && apiState.MutualSSL.Required != "" && !adapterInternalAPI.IsSystemAPI {
+	if apiState.MutualSSL != nil && apiState.MutualSSL.Required != "" && !adapterInternalAPI.GetDisableAuthentications() {
 		adapterInternalAPI.SetDisableMtls(apiState.MutualSSL.Disabled)
 		adapterInternalAPI.SetMutualSSL(apiState.MutualSSL.Required)
 		adapterInternalAPI.SetClientCerts(apiState.APIDefinition.Name, apiState.MutualSSL.ClientCertificates)

@@ -362,7 +362,6 @@ public class APIClient {
                     return e909019();
                 }
                 authTypes.mtls = {disabled: !mtlsAuthentication.enabled, configMapRefs: mtlsAuthentication.certificates, required: mtlsAuthentication.required};
-
             }
         }
         log:printDebug("Auth Types:" + authTypes.toString());
@@ -1400,8 +1399,6 @@ public class APIClient {
     private isolated function validateAndRetrieveAPKConfiguration(json apkconfJson) returns APKConf|commons:APKError? {
         do {
             runtimeapi:APKConfValidationResponse validationResponse = check apkConfValidator.validate(apkconfJson.toJsonString());
-            log:printInfo(apkconfJson.toJsonString());
-            log:printInfo(validationResponse.isValidated().toString());
 
             if validationResponse.isValidated() {
                 APKConf apkConf = check apkconfJson.cloneWithType(APKConf);
