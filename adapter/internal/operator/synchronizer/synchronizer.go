@@ -202,7 +202,8 @@ func deployMultipleAPIsInGateway(apiStates []APIState) {
 			paritionCh <- apiEvent
 		}
 	}
-	xds.UpdateXdsCacheOnAPIChange1(updatedLabelsMap)
+	//TODO(amali) only update status if this is successful
+	xds.UpdateXdsCacheOnAPIChange(updatedLabelsMap)
 }
 
 // deployAPIInGateway deploys the related API in CREATE and UPDATE events.
@@ -274,7 +275,7 @@ func deployAPIInGateway(apiState APIState) error {
 		}
 	}
 
-	xds.UpdateXdsCacheOnAPIChange1(updatedLabelsMap)
+	xds.UpdateXdsCacheOnAPIChange(updatedLabelsMap)
 	return nil
 }
 
