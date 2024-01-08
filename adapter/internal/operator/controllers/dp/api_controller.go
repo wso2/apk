@@ -772,9 +772,11 @@ func (apiReconciler *APIReconciler) getResolvedBackendsMapping(ctx context.Conte
 				Name:      string(backend.Name),
 				Namespace: utils.GetNamespace(backend.Namespace, httpRoute.Namespace),
 			}
-			resolvedBackend := utils.GetResolvedBackend(ctx, apiReconciler.client, backendNamespacedName, &api)
-			if resolvedBackend != nil {
-				backendMapping[backendNamespacedName.String()] = resolvedBackend
+			if _, exists := backendMapping[backendNamespacedName.String()]; !exists {
+				resolvedBackend := utils.GetResolvedBackend(ctx, apiReconciler.client, backendNamespacedName, &api)
+				if resolvedBackend != nil {
+					backendMapping[backendNamespacedName.String()] = resolvedBackend
+				}
 			}
 		}
 	}
