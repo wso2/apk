@@ -2,6 +2,8 @@ module github.com/wso2/apk/common-go-libs
 
 go 1.19
 
+replace github.com/wso2/apk/adapter => ../adapter
+
 require (
 	github.com/envoyproxy/go-control-plane v0.11.2-0.20230802074621-eea0b3bd0f81
 	github.com/onsi/ginkgo/v2 v2.9.5

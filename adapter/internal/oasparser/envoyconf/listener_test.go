@@ -189,17 +189,24 @@ func testCreateRoutesForUnitTests(t *testing.T) []*routev3.Route {
 		AccessControlAllowOrigins: []string{"http://test1.com", "http://test2.com"},
 	}
 
+	endpoint := model.Endpoint{
+		Host:    "abc.com",
+		URLType: "http",
+		Port:    80,
+		RawURL:  "http://abc.com",
+	}
+
 	operationGet := model.NewOperation("GET", nil, nil)
 	operationPost := model.NewOperation("POST", nil, nil)
 	operationPut := model.NewOperation("PUT", nil, nil)
 	resourceWithGet := model.CreateMinimalDummyResourceForTests("/resourcePath", []*model.Operation{operationGet},
-		"resource_operation_id", []model.Endpoint{}, false)
+		"resource_operation_id", []model.Endpoint{endpoint}, false)
 	resourceWithPost := model.CreateMinimalDummyResourceForTests("/resourcePath", []*model.Operation{operationPost},
-		"resource_operation_id", []model.Endpoint{}, false)
+		"resource_operation_id", []model.Endpoint{endpoint}, false)
 	resourceWithPut := model.CreateMinimalDummyResourceForTests("/resourcePath", []*model.Operation{operationPut},
-		"resource_operation_id", []model.Endpoint{}, false)
+		"resource_operation_id", []model.Endpoint{endpoint}, false)
 	resourceWithMultipleOperations := model.CreateMinimalDummyResourceForTests("/resourcePath", []*model.Operation{operationGet, operationPut},
-		"resource_operation_id", []model.Endpoint{}, false)
+		"resource_operation_id", []model.Endpoint{endpoint}, false)
 
 	route1, err := createRoutes(generateRouteCreateParamsForUnitTests("test", "HTTP", "localhost", "/test", "1.0.0", "/test",
 		&resourceWithGet, "test-cluster", corsConfigModel3, false))

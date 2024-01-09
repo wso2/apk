@@ -68,8 +68,7 @@ public class EndpointUtils {
      * @param requestContext request Context
      */
     public static void updateClusterHeaderAndCheckEnv(RequestContext requestContext) {
-        requestContext.addOrModifyHeaders(AdapterConstants.CLUSTER_HEADER,
-                requestContext.getClusterHeader());
+        requestContext.addOrModifyHeaders(AdapterConstants.CLUSTER_HEADER, requestContext.getClusterHeader());
         requestContext.getRemoveHeaders().remove(AdapterConstants.CLUSTER_HEADER);
         addRouterHttpHeaders(requestContext);
         addEndpointSecurity(requestContext);

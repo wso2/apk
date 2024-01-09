@@ -228,9 +228,48 @@ public interface ApiOrBuilder extends
   /**
    * <pre>
    *&#47; string graphQLSchema = 22;
-   * repeated GraphqlComplexity graphqlComplexityInfo = 23;
    * </pre>
    *
+   * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 23;</code>
+   */
+  java.util.List<org.wso2.apk.enforcer.discovery.api.GraphqlComplexity> 
+      getGraphqlComplexityInfoList();
+  /**
+   * <pre>
+   *&#47; string graphQLSchema = 22;
+   * </pre>
+   *
+   * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 23;</code>
+   */
+  org.wso2.apk.enforcer.discovery.api.GraphqlComplexity getGraphqlComplexityInfo(int index);
+  /**
+   * <pre>
+   *&#47; string graphQLSchema = 22;
+   * </pre>
+   *
+   * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 23;</code>
+   */
+  int getGraphqlComplexityInfoCount();
+  /**
+   * <pre>
+   *&#47; string graphQLSchema = 22;
+   * </pre>
+   *
+   * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 23;</code>
+   */
+  java.util.List<? extends org.wso2.apk.enforcer.discovery.api.GraphqlComplexityOrBuilder> 
+      getGraphqlComplexityInfoOrBuilderList();
+  /**
+   * <pre>
+   *&#47; string graphQLSchema = 22;
+   * </pre>
+   *
+   * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 23;</code>
+   */
+  org.wso2.apk.enforcer.discovery.api.GraphqlComplexityOrBuilder getGraphqlComplexityInfoOrBuilder(
+      int index);
+
+  /**
    * <code>bool systemAPI = 24;</code>
    * @return The systemAPI.
    */
@@ -274,4 +313,43 @@ public interface ApiOrBuilder extends
    * @return The subscriptionValidation.
    */
   boolean getSubscriptionValidation();
+
+  /**
+   * <code>.wso2.discovery.api.EndpointCluster endpoints = 29;</code>
+   * @return Whether the endpoints field is set.
+   */
+  boolean hasEndpoints();
+  /**
+   * <code>.wso2.discovery.api.EndpointCluster endpoints = 29;</code>
+   * @return The endpoints.
+   */
+  org.wso2.apk.enforcer.discovery.api.EndpointCluster getEndpoints();
+  /**
+   * <code>.wso2.discovery.api.EndpointCluster endpoints = 29;</code>
+   */
+  org.wso2.apk.enforcer.discovery.api.EndpointClusterOrBuilder getEndpointsOrBuilder();
+
+  /**
+   * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 30;</code>
+   */
+  java.util.List<org.wso2.apk.enforcer.discovery.api.SecurityInfo> 
+      getEndpointSecurityList();
+  /**
+   * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 30;</code>
+   */
+  org.wso2.apk.enforcer.discovery.api.SecurityInfo getEndpointSecurity(int index);
+  /**
+   * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 30;</code>
+   */
+  int getEndpointSecurityCount();
+  /**
+   * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 30;</code>
+   */
+  java.util.List<? extends org.wso2.apk.enforcer.discovery.api.SecurityInfoOrBuilder> 
+      getEndpointSecurityOrBuilderList();
+  /**
+   * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 30;</code>
+   */
+  org.wso2.apk.enforcer.discovery.api.SecurityInfoOrBuilder getEndpointSecurityOrBuilder(
+      int index);
 }

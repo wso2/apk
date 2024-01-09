@@ -72,24 +72,24 @@ public class APIFactory {
 //                webSocketAPI.init(api);
 //                String apiKey = getApiKey(webSocketAPI);
 //                newApis.put(apiKey, webSocketAPI);
-//            } else if (APIConstants.ApiType.GRAPHQL.equals(api.getApiType())) {
-//                GraphQLAPI graphQLAPI = new GraphQLAPI();
-//                graphQLAPI.init(api);
-//                String apiKey = getApiKey(graphQLAPI);
-//                newApis.put(apiKey, graphQLAPI);
-//            } else {
-            RestAPI enforcerApi = new RestAPI();
-            enforcerApi.init(api);
-            String apiKey = getApiKey(enforcerApi);
-            newApis.put(apiKey, enforcerApi);
-//            }
+//            } else
+            if (APIConstants.ApiType.GRAPHQL.equals(api.getApiType())) {
+                GraphQLAPI graphQLAPI = new GraphQLAPI();
+                graphQLAPI.init(api);
+                String apiKey = getApiKey(graphQLAPI);
+                newApis.put(apiKey, graphQLAPI);
+            } else {
+                RestAPI enforcerApi = new RestAPI();
+                enforcerApi.init(api);
+                String apiKey = getApiKey(enforcerApi);
+                newApis.put(apiKey, enforcerApi);
+            }
         }
 
         if (logger.isDebugEnabled()) {
             logger.debug("Total APIs in new cache: {}", newApis.size());
         }
         this.apis = newApis;
-        //todo(amali) check if cache is initialized even if the cache is disabled
         CacheProviderUtil.initializeCacheHolder(newApis);
     }
 
@@ -109,10 +109,11 @@ public class APIFactory {
 
         return apis.get(apiKey);
     }
+
     public byte[] getAPIDefinition(final String basePath, final String version, final String vHost) {
         String apiKey = getApiKey(vHost, basePath, version);
         API api = apis.get(apiKey);
-        if(api == null) {
+        if (api == null) {
             return null;
         }
         return api.getAPIConfig().getApiDefinition();

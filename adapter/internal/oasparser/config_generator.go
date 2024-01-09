@@ -211,6 +211,8 @@ func GetEnforcerAPI(adapterInternalAPI model.AdapterInternalAPI, vhost string) *
 		Vhost:                  vhost,
 		EnvType:                adapterInternalAPI.EnvType,
 		BackendJWTTokenInfo:    backendJWTTokenInfo,
+		Endpoints:              generateRPCEndpointCluster(adapterInternalAPI.Endpoints),
+		EndpointSecurity:       generateRPCEndpointSecurity(adapterInternalAPI.EndpointSecurity),
 		// IsMockedApi:         isMockedAPI,
 		ClientCertificates:  clientCertificates,
 		MutualSSL:           adapterInternalAPI.GetXWSO2MutualSSL(),

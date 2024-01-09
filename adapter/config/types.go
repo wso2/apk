@@ -185,7 +185,6 @@ type consul struct {
 
 // Router to enforcer request body passing configurations
 type payloadPassingToEnforcer struct {
-	PassRequestPayload  bool
 	MaxRequestBytes     uint32
 	AllowPartialMessage bool
 	PackAsBytes         bool

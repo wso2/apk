@@ -281,9 +281,9 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) marshelRateLimit(ctx conte
 		resolveRatelimit.UUID = string(api.ObjectMeta.UID)
 		resolveRatelimit.Environment = environment
 
-		if len(api.Spec.Production) > 0 {
-
-			resolveResourceList, err := ratelimitReconsiler.getResourceList(ctx, ratelimitKey, ratelimitPolicy, api.Spec.Production[0].HTTPRouteRefs)
+		if len(api.Spec.Production) > 0 && api.Spec.APIType == "REST" {
+			resolveResourceList, err := ratelimitReconsiler.getHTTPRouteResourceList(ctx, ratelimitKey, ratelimitPolicy,
+				api.Spec.Production[0].HTTPRouteRefs)
 			if err != nil {
 				return nil, err
 			}
@@ -293,9 +293,9 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) marshelRateLimit(ctx conte
 			}
 		}
 
-		if len(api.Spec.Sandbox) > 0 {
-
-			resolveResourceList, err := ratelimitReconsiler.getResourceList(ctx, ratelimitKey, ratelimitPolicy, api.Spec.Sandbox[0].HTTPRouteRefs)
+		if len(api.Spec.Sandbox) > 0 && api.Spec.APIType == "REST" {
+			resolveResourceList, err := ratelimitReconsiler.getHTTPRouteResourceList(ctx, ratelimitKey, ratelimitPolicy,
+				api.Spec.Sandbox[0].HTTPRouteRefs)
 			if err != nil {
 				return nil, err
 			}
@@ -310,7 +310,7 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) marshelRateLimit(ctx conte
 	return policyList, nil
 }
 
-func (ratelimitReconsiler *RateLimitPolicyReconciler) getResourceList(ctx context.Context, ratelimitKey types.NamespacedName,
+func (ratelimitReconsiler *RateLimitPolicyReconciler) getHTTPRouteResourceList(ctx context.Context, ratelimitKey types.NamespacedName,
 	ratelimitPolicy dpv1alpha1.RateLimitPolicy, httpRefs []string) ([]dpv1alpha1.ResolveResource, error) {
 
 	var resolveResourceList []dpv1alpha1.ResolveResource
@@ -375,6 +375,7 @@ func getCustomRateLimitPolicy(customRateLimitPolicy *dpv1alpha1.RateLimitPolicy)
 }
 
 func addIndexes(ctx context.Context, mgr manager.Manager) error {
+	//todo(amali)
 	if err := mgr.GetFieldIndexer().IndexField(ctx, &gwapiv1b1.HTTPRoute{}, httprouteRateLimitIndex,
 		func(rawObj k8client.Object) []string {
 			httpRoute := rawObj.(*gwapiv1b1.HTTPRoute)

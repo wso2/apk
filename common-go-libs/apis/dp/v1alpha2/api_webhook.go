@@ -104,6 +104,10 @@ func (r *API) validateAPI() error {
 		allErrs = append(allErrs, err)
 	}
 
+	if r.Spec.APIType == "GraphQL" && r.Spec.DefinitionFileRef == "" {
+		allErrs = append(allErrs, field.Required(field.NewPath("spec").Child("definitionFileRef"), "GraphQL API definitionFileRef is required"))
+	}
+
 	// Organization value should not be empty as it required when applying ratelimit policy
 	if r.Spec.Organization == "" {
 		allErrs = append(allErrs, field.Required(field.NewPath("spec").Child("organization"), "Organization can not be empty"))

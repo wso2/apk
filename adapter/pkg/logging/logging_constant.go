@@ -161,6 +161,9 @@ const (
 	Error2662 = 2662
 	Error2663 = 2663
 	Error2664 = 2664
+	Error2665 = 2665
+	Error2666 = 2666
+	Error2667 = 2667
 )
 
 // Error Log Pkg auth(3001-3099) Config Constants

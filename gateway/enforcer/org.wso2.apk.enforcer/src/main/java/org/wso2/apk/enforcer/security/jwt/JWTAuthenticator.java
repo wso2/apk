@@ -438,7 +438,6 @@ public class JWTAuthenticator implements Authenticator {
             }
             signedJWT = SignedJWT.parse(jwtToken);
             jwtClaimsSet = signedJWT.getJWTClaimsSet();
-            // todo(amali) create validationinfo directly
             signedJWTInfo = new SignedJWTInfo(jwtToken, signedJWT, jwtClaimsSet);
         } catch (ParseException | IllegalArgumentException e) {
             log.error("Failed to decode the token header. {}", e.getMessage());

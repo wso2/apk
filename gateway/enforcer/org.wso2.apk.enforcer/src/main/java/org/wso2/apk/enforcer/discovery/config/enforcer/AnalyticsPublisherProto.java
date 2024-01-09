@@ -35,22 +35,20 @@ public final class AnalyticsPublisherProto {
     java.lang.String[] descriptorData = {
       "\n8wso2/discovery/config/enforcer/analyti" +
       "cs_publisher.proto\022\036wso2.discovery.confi" +
-      "g.enforcer\032,wso2/discovery/config/enforc" +
-      "er/service.proto\"\320\001\n\022AnalyticsPublisher\022" +
-      "\017\n\007enabled\030\001 \001(\010\022b\n\020configProperties\030\002 \003" +
-      "(\0132H.wso2.discovery.config.enforcer.Anal" +
-      "yticsPublisher.ConfigPropertiesEntry\022\014\n\004" +
-      "type\030\003 \001(\t\0327\n\025ConfigPropertiesEntry\022\013\n\003k" +
-      "ey\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001B\234\001\n/org.wso2" +
-      ".apk.enforcer.discovery.config.enforcerB" +
-      "\027AnalyticsPublisherProtoP\001ZNgithub.com/e" +
-      "nvoyproxy/go-control-plane/wso2/discover" +
-      "y/config/enforcer;enforcerb\006proto3"
+      "g.enforcer\"\320\001\n\022AnalyticsPublisher\022\017\n\007ena" +
+      "bled\030\001 \001(\010\022b\n\020configProperties\030\002 \003(\0132H.w" +
+      "so2.discovery.config.enforcer.AnalyticsP" +
+      "ublisher.ConfigPropertiesEntry\022\014\n\004type\030\003" +
+      " \001(\t\0327\n\025ConfigPropertiesEntry\022\013\n\003key\030\001 \001" +
+      "(\t\022\r\n\005value\030\002 \001(\t:\0028\001B\234\001\n/org.wso2.apk.e" +
+      "nforcer.discovery.config.enforcerB\027Analy" +
+      "ticsPublisherProtoP\001ZNgithub.com/envoypr" +
+      "oxy/go-control-plane/wso2/discovery/conf" +
+      "ig/enforcer;enforcerb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
-          org.wso2.apk.enforcer.discovery.config.enforcer.ServiceProto.getDescriptor(),
         });
     internal_static_wso2_discovery_config_enforcer_AnalyticsPublisher_descriptor =
       getDescriptor().getMessageTypes().get(0);
@@ -64,7 +62,6 @@ public final class AnalyticsPublisherProto {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_wso2_discovery_config_enforcer_AnalyticsPublisher_ConfigPropertiesEntry_descriptor,
         new java.lang.String[] { "Key", "Value", });
-    org.wso2.apk.enforcer.discovery.config.enforcer.ServiceProto.getDescriptor();
   }
 
   // @@protoc_insertion_point(outer_class_scope)

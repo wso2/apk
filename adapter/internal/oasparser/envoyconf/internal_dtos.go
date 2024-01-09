@@ -33,7 +33,7 @@ type routeCreateParams struct {
 	endpointBasePath             string
 	resource                     *model.Resource
 	clusterName                  string
-	routeConfig                  *model.EndpointConfig
+	endpoints                    *model.EndpointCluster
 	authHeader                   string
 	requestInterceptor           map[string]model.InterceptEndpoint
 	responseInterceptor          map[string]model.InterceptEndpoint

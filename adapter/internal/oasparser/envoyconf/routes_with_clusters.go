@@ -127,11 +127,11 @@ func CreateRoutesWithClusters(adapterInternalAPI model.AdapterInternalAPI, inter
 		methods = append(methods, "GET")
 	}
 	routeP := CreateAPIDefinitionEndpoint(adapterInternalAPI.GetXWso2Basepath(), vHost, methods, false, adapterInternalAPI.GetVersion(), adapterInternalAPI.GetAPIDefinitionEndpoint())
+	routes = append(routes, routeP)
 	if (&adapterInternalAPI).IsDefaultVersion {
 		defaultDefRoutes := CreateAPIDefinitionEndpoint(adapterInternalAPI.GetXWso2Basepath(), vHost, methods, true, adapterInternalAPI.GetVersion(), adapterInternalAPI.GetAPIDefinitionEndpoint())
 		routes = append(routes, defaultDefRoutes)
 	}
-	routes = append(routes, routeP)
 	var endpointForAPIDefinitions []model.Endpoint
 	endpoint := &model.Endpoint{
 		// Localhost is set as the two containers are in the same pod
@@ -150,6 +150,49 @@ func CreateRoutesWithClusters(adapterInternalAPI model.AdapterInternalAPI, inter
 	clusters = append(clusters, cluster)
 	endpoints = append(endpoints, address...)
 
+	if adapterInternalAPI.GetAPIType() == constants.GRAPHQL {
+		basePath := strings.TrimSuffix(adapterInternalAPI.Endpoints.Endpoints[0].Basepath, "/")
+
+		clusterName := getClusterName(adapterInternalAPI.Endpoints.EndpointPrefix, organizationID, vHost,
+			adapterInternalAPI.GetTitle(), apiVersion, "")
+		cluster, address, err := processEndpoints(clusterName, adapterInternalAPI.Endpoints, timeout, basePath)
+
+		if err != nil {
+			logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2239, logging.MAJOR,
+				"Error while adding gql endpoints for %s:%v. %v", apiTitle, apiVersion, err.Error()))
+			return nil, nil, nil, fmt.Errorf("error while adding gql endpoints for %s:%v. %v", apiTitle, apiVersion,
+				err.Error())
+		}
+		clusters = append(clusters, cluster)
+		endpoints = append(endpoints, address...)
+
+		// The current code requires to create policy for all routes to support backend endpoint.
+		policyParameters := make(map[string]interface{})
+		policyParameters[constants.RewritePathType] = gwapiv1b1.FullPathHTTPPathModifier
+		policyParameters[constants.IncludeQueryParams] = true
+		policyParameters[constants.RewritePathResourcePath] = basePath
+		var policies = model.OperationPolicies{
+			Request: []model.Policy{
+				{
+					PolicyName: string(gwapiv1b1.HTTPRouteFilterURLRewrite),
+					Action:     constants.ActionRewritePath,
+					Parameters: policyParameters,
+				},
+			},
+		}
+		gqlop := model.NewOperationWithPolicies("POST", policies)
+		resource := model.CreateMinimalResource(adapterInternalAPI.GetXWso2Basepath(), []*model.Operation{gqlop}, "", adapterInternalAPI.Endpoints, true, gwapiv1b1.PathMatchExact)
+		routesP, err := createRoutes(genRouteCreateParams(&adapterInternalAPI, &resource, vHost, basePath, clusterName, nil,
+			nil, organizationID, false, false))
+		if err != nil {
+			logger.LoggerXds.ErrorC(logging.PrintError(logging.Error2231, logging.MAJOR,
+				"Error while creating routes for GQL API %s %s Error: %s", adapterInternalAPI.GetTitle(),
+				adapterInternalAPI.GetVersion(), err.Error()))
+			return nil, nil, nil, fmt.Errorf("error while creating routes. %v", err)
+		}
+		routes = append(routes, routesP...)
+		return routes, clusters, endpoints, nil
+	}
 	for _, resource := range adapterInternalAPI.GetResources() {
 		var clusterName string
 		resourcePath := resource.GetPath()
@@ -651,6 +694,9 @@ func createTLSProtocolVersion(tlsVersion string) tlsv3.TlsParameters_TlsProtocol
 // createRoutes creates route elements for the route configurations. API title, VHost, xWso2Basepath, API version,
 // endpoint's basePath, resource Object (Microgateway's internal representation), clusterName needs to be provided.
 func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error) {
+	if params.resource == nil || params.resource.GetEndpoints() == nil {
+		return nil, errors.New("resource and resource endpoints cannot be empty")
+	}
 	title := params.title
 	version := params.version
 	vHost := params.vHost
@@ -661,7 +707,6 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 	corsPolicy := getCorsPolicy(params.corsPolicy)
 	resource := params.resource
 	clusterName := params.clusterName
-	routeConfig := params.routeConfig
 	endpointBasepath := params.endpointBasePath
 	requestInterceptor := params.requestInterceptor
 	responseInterceptor := params.responseInterceptor
@@ -671,16 +716,9 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 
 	basePath := strings.TrimSuffix(xWso2Basepath, "/")
 
-	resourcePath := ""
-	var resourceMethods []string
-	var pathMatchType gwapiv1b1.PathMatchType
-	if params.apiType == constants.GRAPHQL {
-		resourceMethods = []string{"POST"}
-	} else {
-		resourcePath = resource.GetPath()
-		resourceMethods = resource.GetMethodList()
-		pathMatchType = resource.GetPathMatchType()
-	}
+	resourcePath := resource.GetPath()
+	resourceMethods := resource.GetMethodList()
+	pathMatchType := resource.GetPathMatchType()
 
 	contextExtensions := make(map[string]string)
 	contextExtensions[pathContextExtension] = resourcePath
@@ -840,8 +878,8 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 			Operation: vHost + ":" + routePath,
 		}
 	}
-
-	if resource != nil && resource.HasPolicies() {
+	routeConfig := resource.GetEndpoints().Config
+	if resource.HasPolicies() {
 		logger.LoggerOasparser.Debug("Start creating routes for resource with policies")
 		operations := resource.GetOperations()
 
@@ -898,8 +936,8 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 				case constants.ActionRewritePath:
 					logger.LoggerOasparser.Debugf("Adding %s policy to request flow for %s %s",
 						constants.ActionRewritePath, resourcePath, operation.GetMethod())
-					regexRewrite, err := generateRewritePathRouteConfig(routePath, endpointBasepath,
-						requestPolicy.Parameters, pathMatchType, isDefaultVersion)
+					regexRewrite, err := generateRewritePathRouteConfig(routePath, requestPolicy.Parameters, pathMatchType,
+						isDefaultVersion)
 					if err != nil {
 						errMsg := fmt.Sprintf("Error adding request policy %s to operation %s of resource %s. %v",
 							constants.ActionRewritePath, operation.GetMethod(), resourcePath, err)
@@ -982,7 +1020,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 				if pathRewriteConfig != nil {
 					action2.Route.RegexRewrite = pathRewriteConfig
 				} else {
-					action2.Route.RegexRewrite = generateRegexMatchAndSubstitute(routePath, endpointBasepath, resourcePath, pathMatchType)
+					action2.Route.RegexRewrite = generateRegexMatchAndSubstitute(routePath, resourcePath, pathMatchType)
 				}
 				configToSkipEnforcer := generateFilterConfigToSkipEnforcer()
 				route2 := generateRouteConfig(xWso2Basepath, match2, action2, nil, decorator, configToSkipEnforcer,
@@ -1000,13 +1038,12 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 				if pathRewriteConfig != nil {
 					action.Route.RegexRewrite = pathRewriteConfig
 				} else {
-					action.Route.RegexRewrite = generateRegexMatchAndSubstitute(routePath, endpointBasepath, resourcePath, pathMatchType)
+					action.Route.RegexRewrite = generateRegexMatchAndSubstitute(routePath, resourcePath, pathMatchType)
 				}
 				route := generateRouteConfig(xWso2Basepath, match, action, nil, decorator, perRouteFilterConfigs,
 					requestHeadersToAdd, requestHeadersToRemove, responseHeadersToAdd, responseHeadersToRemove)
 				routes = append(routes, route)
 			}
-
 		}
 	} else {
 		logger.LoggerOasparser.Debugf("Creating routes for resource : %s that has no policies", resourcePath)
@@ -1019,7 +1056,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 		match.Headers = generateHTTPMethodMatcher(methodRegex, clusterName)
 		action := generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria)
 		rewritePath := generateRoutePathForReWrite(basePath, resourcePath, pathMatchType)
-		action.Route.RegexRewrite = generateRegexMatchAndSubstitute(rewritePath, endpointBasepath, resourcePath, pathMatchType)
+		action.Route.RegexRewrite = generateRegexMatchAndSubstitute(rewritePath, resourcePath, pathMatchType)
 
 		route := generateRouteConfig(xWso2Basepath, match, action, nil, decorator, perRouteFilterConfigs,
 			nil, nil, nil, nil) // general headers to add and remove are included in this methods
@@ -1156,10 +1193,7 @@ func CreateAPIDefinitionRoute(basePath string, vHost string, methods []string, i
 
 // CreateAPIDefinitionEndpoint generates a route for the api defition endpoint
 func CreateAPIDefinitionEndpoint(basePath string, vHost string, methods []string, isDefaultversion bool, version string, providedAPIDefinitionPath string) *routev3.Route {
-	endpoint := apiDefinitionPath
-	if providedAPIDefinitionPath != "" {
-		endpoint = providedAPIDefinitionPath
-	}
+	endpoint := providedAPIDefinitionPath
 	rewritePath := basePath + "/" + vHost + "?" + apiDefinitionQueryParam
 	basePath = strings.TrimSuffix(basePath, "/")
 	var (
@@ -1528,7 +1562,6 @@ func genRouteCreateParams(swagger *model.AdapterInternalAPI, resource *model.Res
 		isDefaultVersion:             swagger.IsDefaultVersion,
 		apiLevelRateLimitPolicy:      swagger.RateLimitPolicy,
 		apiProperties:                swagger.APIProperties,
-		routeConfig:                  resource.GetEndpoints().Config,
 		createDefaultPath:            createDefaultPath,
 		environment:                  swagger.GetEnvironment(),
 		envType:                      swagger.EnvType,

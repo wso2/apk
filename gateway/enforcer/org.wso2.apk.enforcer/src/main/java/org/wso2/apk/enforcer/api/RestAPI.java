@@ -226,7 +226,6 @@ public class RestAPI implements API {
         this.filters.add(authFilter);
 
         if (!apiConfig.isSystemAPI()) {
-            loadCustomFilters(apiConfig);
             MediationPolicyFilter mediationPolicyFilter = new MediationPolicyFilter();
             this.filters.add(mediationPolicyFilter);
         }
@@ -234,35 +233,5 @@ public class RestAPI implements API {
         // CORS filter is added as the first filter, and it is not customizable.
         CorsFilter corsFilter = new CorsFilter();
         this.filters.add(0, corsFilter);
-    }
-
-    private void loadCustomFilters(APIConfig apiConfig) {
-
-        FilterDTO[] customFilters = ConfigHolder.getInstance().getConfig().getCustomFilters();
-        // Needs to sort the filter in ascending order to position the filter in the given position.
-        Arrays.sort(customFilters, Comparator.comparing(FilterDTO::getPosition));
-        Map<String, Filter> filterImplMap = new HashMap<>(customFilters.length);
-        ServiceLoader<Filter> loader = ServiceLoader.load(Filter.class);
-        for (Filter filter : loader) {
-            filterImplMap.put(filter.getClass().getName(), filter);
-        }
-
-        for (FilterDTO filterDTO : customFilters) {
-            if (filterImplMap.containsKey(filterDTO.getClassName())) {
-                if (filterDTO.getPosition() <= 0 || filterDTO.getPosition() - 1 > filters.size()) {
-                    logger.error("Position provided for the filter is invalid. "
-                            + filterDTO.getClassName() + " : " + filterDTO.getPosition() + "(Filters list size is "
-                            + filters.size() + ")");
-                    continue;
-                }
-                Filter filter = filterImplMap.get(filterDTO.getClassName());
-                filter.init(apiConfig, filterDTO.getConfigProperties());
-                // Since the position starts from 1
-                this.filters.add(filterDTO.getPosition() - 1, filter);
-            } else {
-                logger.error("No Filter Implementation is found in the classPath under the provided name : "
-                        + filterDTO.getClassName());
-            }
-        }
     }
 }

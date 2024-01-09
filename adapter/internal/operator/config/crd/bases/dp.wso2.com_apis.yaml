@@ -247,6 +247,7 @@ spec:
                   could be REST, GraphQL, Async
                 enum:
                 - REST
+                - GraphQL
                 type: string
               apiVersion:
                 description: APIVersion is the version number of the API.
@@ -259,8 +260,8 @@ spec:
                 pattern: ^[/][a-zA-Z0-9~/_.-]*$
                 type: string
               definitionFileRef:
-                description: DefinitionFileRef contains the OpenAPI 3 or Swagger definition
-                  of the API in a ConfigMap.
+                description: DefinitionFileRef contains the OpenAPI 3 or SDL file
+                  in gzipped format. definition of the API in a ConfigMap.
                 type: string
               definitionPath:
                 default: /api-definition

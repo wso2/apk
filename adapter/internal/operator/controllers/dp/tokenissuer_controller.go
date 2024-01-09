@@ -76,12 +76,12 @@ func (r *TokenssuerReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	jwtKey := req.NamespacedName
 	var jwtIssuerList = new(dpv1alpha1.TokenIssuerList)
 	if err := r.client.List(ctx, jwtIssuerList); err != nil {
-		return reconcile.Result{}, fmt.Errorf("failed to get jwtIssuer %s/%s",
-			jwtKey.Namespace, jwtKey.Name)
+		return reconcile.Result{}, fmt.Errorf("failed to get jwtIssuer %s/%s", jwtKey.Namespace, jwtKey.Name)
 	}
 	jwtIssuerMapping, err := getJWTIssuers(ctx, r.client, jwtKey)
 	if err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2660, logging.CRITICAL, "Unable to find associated JWTIssuers: %s", err.Error()))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2660, logging.CRITICAL,
+			"Unable to find associated JWTIssuers for %s : %s", req.NamespacedName.String(), err.Error()))
 		return ctrl.Result{}, err
 	}
 	UpdateEnforcerJWTIssuers(jwtIssuerMapping)
@@ -99,7 +99,7 @@ func NewTokenIssuerReconciler(mgr manager.Manager) error {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2658, logging.CRITICAL, "Error adding indexes: %v", err))
 		return err
 	}
-	c, err := controller.New(constants.TokenIssuerReconSiler, mgr, controller.Options{Reconciler: r})
+	c, err := controller.New(constants.TokenIssuerController, mgr, controller.Options{Reconciler: r})
 	if err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2657, logging.BLOCKER, "Error creating TokenIssuer controller: %v", err.Error()))
 		return err
