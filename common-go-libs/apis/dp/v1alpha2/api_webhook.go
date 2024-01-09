@@ -18,9 +18,12 @@
 package v1alpha2
 
 import (
+	"bytes"
+	"compress/gzip"
 	"context"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"strings"
 
 	"github.com/wso2/apk/adapter/pkg/logging"
@@ -28,6 +31,7 @@ import (
 	loggers "github.com/wso2/apk/common-go-libs/loggers"
 	utils "github.com/wso2/apk/common-go-libs/utils"
 	"golang.org/x/exp/slices"
+	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -104,8 +108,12 @@ func (r *API) validateAPI() error {
 		allErrs = append(allErrs, err)
 	}
 
-	if r.Spec.APIType == "GraphQL" && r.Spec.DefinitionFileRef == "" {
-		allErrs = append(allErrs, field.Required(field.NewPath("spec").Child("definitionFileRef"), "GraphQL API definitionFileRef is required"))
+	if r.Spec.APIType == "GraphQL" {
+		if r.Spec.DefinitionFileRef == "" {
+			allErrs = append(allErrs, field.Required(field.NewPath("spec").Child("definitionFileRef"), "GraphQL API definitionFileRef is required"))
+		} else {
+			validateSDL(r.Spec.DefinitionFileRef, r.Namespace)
+		}
 	}
 
 	// Organization value should not be empty as it required when applying ratelimit policy
@@ -243,4 +251,36 @@ func getBasePathWithoutVersion(basePath string) string {
 		return basePath[:lastIndex]
 	}
 	return basePath
+}
+
+func validateSDL(name, namespace string) {
+	configMap := &corev1.ConfigMap{}
+	if err := c.Get(context.Background(), types.NamespacedName{Name: string(name), Namespace: namespace}, configMap); err != nil {
+		var apiDef []byte
+		for key, val := range configMap.BinaryData {
+			loggers.LoggerAPKOperator.Error(key)
+			// config map data key is "swagger.yaml"
+			apiDef = []byte(val)
+		}
+		// unzip gzip bytes
+		unzip(apiDef)
+	}
+}
+
+// unzip gzip bytes
+func unzip(compressedData []byte) {
+	reader, err := gzip.NewReader(bytes.NewBuffer(compressedData))
+	if err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2600, logging.BLOCKER, "Unable to create gzip reader: %v", err))
+	}
+	defer reader.Close()
+
+	// Read the decompressed data
+	decompressedData, err := ioutil.ReadAll(reader)
+	if err != nil {
+		fmt.Println("Error reading decompressed data:", err)
+		return
+	}
+	// Print or use the decompressed data as needed
+	loggers.LoggerAPKOperator.Error("Decompressed data:", string(decompressedData))
 }

@@ -2,6 +2,8 @@ module github.com/wso2/apk/common-controller
 
 go 1.19
 
+replace github.com/wso2/apk/common-go-libs => ../common-go-libs
+
 require (
 	github.com/onsi/ginkgo/v2 v2.9.5
 	github.com/onsi/gomega v1.27.7
