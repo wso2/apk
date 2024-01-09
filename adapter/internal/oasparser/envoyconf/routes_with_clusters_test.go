@@ -23,6 +23,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/wso2/apk/adapter/internal/dataholder"
+	"github.com/wso2/apk/adapter/internal/discovery/xds"
 	envoy "github.com/wso2/apk/adapter/internal/oasparser/envoyconf"
 	"github.com/wso2/apk/adapter/internal/operator/constants"
 	"github.com/wso2/apk/adapter/internal/operator/synchronizer"
@@ -118,7 +119,7 @@ func TestCreateRoutesWithClustersWithExactAndRegularExpressionRules(t *testing.T
 	}
 
 	dataholder.UpdateGateway(gateway)
-
+	xds.SanitizeGateway("default-gateway", true)
 	httpRouteState.HTTPRouteCombined = &httpRoute
 
 	backendMapping := make(map[string]*v1alpha1.ResolvedBackend)
@@ -130,7 +131,8 @@ func TestCreateRoutesWithClustersWithExactAndRegularExpressionRules(t *testing.T
 
 	apiState.ProdHTTPRoute = &httpRouteState
 
-	adapterInternalAPI, err := synchronizer.GenerateAdapterInternalAPI(apiState, &httpRouteState, constants.Production)
+	adapterInternalAPI, labels, err := synchronizer.GenerateAdapterInternalAPI(apiState, &httpRouteState, constants.Production)
+	assert.Equal(t, map[string]struct{}{"default-gateway": struct{}{}}, labels, "Labels are incorrect.")
 	assert.Nil(t, err, "Error should not be present when apiState is converted to a AdapterInternalAPI object")
 	routes, clusters, _, _ := envoy.CreateRoutesWithClusters(*adapterInternalAPI, nil, "prod.gw.wso2.com", "carbon.super")
 	assert.Equal(t, 3, len(clusters), "Number of production clusters created is incorrect.")
@@ -181,8 +183,9 @@ func TestGenerateAdapterInternalAPIForDefaultCase(t *testing.T) {
 	apiState := generateSampleAPI("test-api-1", "1.0.0", "/test-api/1.0.0")
 	httpRouteState := synchronizer.HTTPRouteState{}
 	httpRouteState = *apiState.ProdHTTPRoute
-
-	adapterInternalAPI, err := synchronizer.GenerateAdapterInternalAPI(apiState, &httpRouteState, constants.Production)
+	xds.SanitizeGateway("default-gateway", true)
+	adapterInternalAPI, labels, err := synchronizer.GenerateAdapterInternalAPI(apiState, &httpRouteState, constants.Production)
+	assert.Equal(t, map[string]struct{}{"default-gateway": struct{}{}}, labels, "Labels are incorrect.")
 	assert.Nil(t, err, "Error should not be present when apiState is converted to a AdapterInternalAPI object")
 	assert.Equal(t, "Default", adapterInternalAPI.GetEnvironment(), "Environment is incorrect.")
 }
@@ -193,8 +196,10 @@ func TestGenerateAdapterInternalAPIForSpecificEnvironment(t *testing.T) {
 	httpRouteState := synchronizer.HTTPRouteState{}
 	httpRouteState = *apiState.ProdHTTPRoute
 	apiState.APIDefinition.Spec.Environment = "dev"
+	xds.SanitizeGateway("default-gateway", true)
 
-	adapterInternalAPI, err := synchronizer.GenerateAdapterInternalAPI(apiState, &httpRouteState, constants.Production)
+	adapterInternalAPI, labels, err := synchronizer.GenerateAdapterInternalAPI(apiState, &httpRouteState, constants.Production)
+	assert.Equal(t, map[string]struct{}{"default-gateway": struct{}{}}, labels, "Labels are incorrect.")
 	assert.Nil(t, err, "Error should not be present when apiState is converted to a AdapterInternalAPI object")
 	assert.Equal(t, "dev", adapterInternalAPI.GetEnvironment(), "Environment is incorrect.")
 }
@@ -341,8 +346,10 @@ func TestCreateRoutesWithClustersWithMultiplePathPrefixRules(t *testing.T) {
 	httpRouteState.BackendMapping = backendMapping
 
 	apiState.ProdHTTPRoute = &httpRouteState
+	xds.SanitizeGateway("default-gateway", true)
 
-	adapterInternalAPI, err := synchronizer.GenerateAdapterInternalAPI(apiState, &httpRouteState, constants.Production)
+	adapterInternalAPI, labels, err := synchronizer.GenerateAdapterInternalAPI(apiState, &httpRouteState, constants.Production)
+	assert.Equal(t, map[string]struct{}{"default-gateway": struct{}{}}, labels, "Labels are incorrect.")
 	assert.Nil(t, err, "Error should not be present when apiState is converted to a AdapterInternalAPI object")
 	routes, clusters, _, _ := envoy.CreateRoutesWithClusters(*adapterInternalAPI, nil, "prod.gw.wso2.com", "carbon.super")
 	assert.Equal(t, 3, len(clusters), "Number of production clusters created is incorrect.")
@@ -473,8 +480,10 @@ func TestCreateRoutesWithClustersWithBackendTLSConfigs(t *testing.T) {
 	httpRouteState.BackendMapping = backendMapping
 
 	apiState.ProdHTTPRoute = &httpRouteState
+	xds.SanitizeGateway("default-gateway", true)
 
-	adapterInternalAPI, err := synchronizer.GenerateAdapterInternalAPI(apiState, &httpRouteState, constants.Production)
+	adapterInternalAPI, labels, err := synchronizer.GenerateAdapterInternalAPI(apiState, &httpRouteState, constants.Production)
+	assert.Equal(t, map[string]struct{}{"default-gateway": struct{}{}}, labels, "Labels are incorrect.")
 	assert.Nil(t, err, "Error should not be present when apiState is converted to a AdapterInternalAPI object")
 	_, clusters, _, _ := envoy.CreateRoutesWithClusters(*adapterInternalAPI, nil, "prod.gw.wso2.com", "carbon.super")
 	assert.Equal(t, 2, len(clusters), "Number of production clusters created is incorrect.")
@@ -799,8 +808,10 @@ func TestCreateRoutesWithClustersDifferentBackendRefs(t *testing.T) {
 	httpRouteState.BackendMapping = backendMapping
 
 	apiState.ProdHTTPRoute = &httpRouteState
+	xds.SanitizeGateway("default-gateway", true)
 
-	adapterInternalAPI, err := synchronizer.GenerateAdapterInternalAPI(apiState, &httpRouteState, constants.Production)
+	adapterInternalAPI, labels, err := synchronizer.GenerateAdapterInternalAPI(apiState, &httpRouteState, constants.Production)
+	assert.Equal(t, map[string]struct{}{"default-gateway": struct{}{}}, labels, "Labels are incorrect.")
 	assert.Nil(t, err, "Error should not be present when apiState is converted to a AdapterInternalAPI object")
 	_, clusters, _, _ := envoy.CreateRoutesWithClusters(*adapterInternalAPI, nil, "prod.gw.wso2.com", "carbon.super")
 	assert.Equal(t, 3, len(clusters), "Number of production clusters created is incorrect.")
@@ -883,8 +894,10 @@ func TestCreateRoutesWithClustersSameBackendRefs(t *testing.T) {
 	httpRouteState.BackendMapping = backendMapping
 
 	apiState.ProdHTTPRoute = &httpRouteState
+	xds.SanitizeGateway("default-gateway", true)
 
-	adapterInternalAPI, err := synchronizer.GenerateAdapterInternalAPI(apiState, &httpRouteState, constants.Production)
+	adapterInternalAPI, labels, err := synchronizer.GenerateAdapterInternalAPI(apiState, &httpRouteState, constants.Production)
+	assert.Equal(t, map[string]struct{}{"default-gateway": struct{}{}}, labels, "Labels are incorrect.")
 	assert.Nil(t, err, "Error should not be present when apiState is converted to a AdapterInternalAPI object")
 	_, clusters, _, _ := envoy.CreateRoutesWithClusters(*adapterInternalAPI, nil, "prod.gw.wso2.com", "carbon.super")
 	assert.Equal(t, 2, len(clusters), "Number of production clusters created is incorrect.")

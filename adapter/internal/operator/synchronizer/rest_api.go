@@ -27,39 +27,10 @@ import (
 	"github.com/wso2/apk/adapter/internal/discovery/xds/common"
 	"github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/internal/oasparser/model"
-	"github.com/wso2/apk/adapter/internal/operator/constants"
 	"github.com/wso2/apk/adapter/pkg/logging"
 	"k8s.io/apimachinery/pkg/types"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
-
-// deployRestAPIInGateway deploys the related API in CREATE and UPDATE events.
-func deployRestAPIInGateway(apiState APIState) error {
-	var err error
-	if len(apiState.OldOrganizationID) != 0 {
-		xds.RemoveAPIFromOrgAPIMap(string((*apiState.APIDefinition).ObjectMeta.UID), apiState.OldOrganizationID)
-	}
-	if apiState.ProdHTTPRoute == nil {
-		var adapterInternalAPI model.AdapterInternalAPI
-		adapterInternalAPI.SetInfoAPICR(*apiState.APIDefinition)
-		xds.RemoveAPICacheForEnv(adapterInternalAPI, constants.Production)
-	}
-	if apiState.SandHTTPRoute == nil {
-		var adapterInternalAPI model.AdapterInternalAPI
-		adapterInternalAPI.SetInfoAPICR(*apiState.APIDefinition)
-		xds.RemoveAPICacheForEnv(adapterInternalAPI, constants.Sandbox)
-	}
-	if apiState.ProdHTTPRoute != nil {
-		_, err = GenerateAdapterInternalAPI(apiState, apiState.ProdHTTPRoute, constants.Production)
-	}
-	if err != nil {
-		return err
-	}
-	if apiState.SandHTTPRoute != nil {
-		_, err = GenerateAdapterInternalAPI(apiState, apiState.SandHTTPRoute, constants.Sandbox)
-	}
-	return err
-}
 
 // undeployAPIInGateway undeploys the related API in CREATE and UPDATE events.
 func undeployRestAPIInGateway(apiState APIState) error {
@@ -80,7 +51,7 @@ func undeployRestAPIInGateway(apiState APIState) error {
 }
 
 // GenerateAdapterInternalAPI this will populate a AdapterInternalAPI representation for an HTTPRoute
-func GenerateAdapterInternalAPI(apiState APIState, httpRoute *HTTPRouteState, envType string) (*model.AdapterInternalAPI, error) {
+func GenerateAdapterInternalAPI(apiState APIState, httpRoute *HTTPRouteState, envType string) (*model.AdapterInternalAPI, map[string]struct{}, error) {
 	var adapterInternalAPI model.AdapterInternalAPI
 	adapterInternalAPI.SetIsDefaultVersion(apiState.APIDefinition.Spec.IsDefaultVersion)
 	adapterInternalAPI.SetInfoAPICR(*apiState.APIDefinition)
@@ -110,11 +81,11 @@ func GenerateAdapterInternalAPI(apiState APIState, httpRoute *HTTPRouteState, en
 	}
 	if err := adapterInternalAPI.SetInfoHTTPRouteCR(httpRoute.HTTPRouteCombined, resourceParams); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2631, logging.MAJOR, "Error setting HttpRoute CR info to adapterInternalAPI. %v", err))
-		return nil, err
+		return nil, nil, err
 	}
 	if err := adapterInternalAPI.Validate(); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2632, logging.MAJOR, "Error validating adapterInternalAPI intermediate representation. %v", err))
-		return nil, err
+		return nil, nil, err
 	}
 	vHosts := getVhostsForAPI(httpRoute.HTTPRouteCombined)
 	labels := getLabelsForAPI(httpRoute.HTTPRouteCombined)
@@ -123,19 +94,25 @@ func GenerateAdapterInternalAPI(apiState APIState, httpRoute *HTTPRouteState, en
 	if len(listeners) == 0 || len(relativeSectionNames) == 0 {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2633, logging.MINOR, "Failed to find a matching listener for http route: %v. ",
 			httpRoute.HTTPRouteCombined.Name))
-		return nil, errors.New("failed to find matching listener name for the provided http route")
+		return nil, nil, errors.New("failed to find matching listener name for the provided http route")
 	}
+
+	updatedLabelsMap := make(map[string]struct{})
 	listenerName := listeners[0]
 	sectionName := relativeSectionNames[0]
 	if len(listeners) != 0 {
-		err := xds.UpdateAPICache(vHosts, labels, listenerName, sectionName, adapterInternalAPI)
+		updatedLabels, err := xds.UpdateAPICache(vHosts, labels, listenerName, sectionName, adapterInternalAPI)
 		if err != nil {
 			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2633, logging.MAJOR, "Error updating the API : %s:%s in vhosts: %s, API_UUID: %v. %v",
 				adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), vHosts, adapterInternalAPI.UUID, err))
+			return nil, nil, err
+		}
+		for newLabel := range updatedLabels {
+			updatedLabelsMap[newLabel] = struct{}{}
 		}
 	}
 
-	return &adapterInternalAPI, nil
+	return &adapterInternalAPI, updatedLabelsMap, nil
 }
 
 // getVhostForAPI returns the vHosts related to an API.
