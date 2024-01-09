@@ -16,7 +16,7 @@
 // under the License.
 //
 public type Authentication record {
-    string apiVersion = "dp.wso2.com/v1alpha1";
+    string apiVersion = "dp.wso2.com/v1alpha2";
     string kind = "Authentication";
     Metadata metadata;
     AuthenticationSpec spec;
@@ -66,7 +66,7 @@ public type APIKey record {
 };
 
 public type AuthenticationList record {
-    string apiVersion = "dp.wso2.com/v1alpha1";
+    string apiVersion = "dp.wso2.com/v1alpha2";
     string kind = "AuthenticationList";
     Authentication[] items;
     ListMeta metadata;

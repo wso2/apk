@@ -61,21 +61,22 @@ isolated function deleteAPICR(string name, string namespace) returns http:Respon
 }
 
 isolated function deleteAuthenticationCR(string name, string namespace) returns http:Response|http:ClientError {
-    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/authentications/" + name;
+    string endpoint = "/apis/dp.wso2.com/v1alpha2/namespaces/" + namespace + "/authentications/" + name;
     return k8sApiServerEp->delete(endpoint, targetType = http:Response);
 }
+
 isolated function getAuthenticationCR(string name, string namespace) returns model:Authentication|http:ClientError {
-    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/authentications/" + name;
+    string endpoint = "/apis/dp.wso2.com/v1alpha2/namespaces/" + namespace + "/authentications/" + name;
     return k8sApiServerEp->get(endpoint, targetType = model:Authentication);
 }
 
 isolated function deployAuthenticationCR(model:Authentication authentication, string namespace) returns http:Response|http:ClientError {
-    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/authentications";
+    string endpoint = "/apis/dp.wso2.com/v1alpha2/namespaces/" + namespace + "/authentications";
     return k8sApiServerEp->post(endpoint, authentication, targetType = http:Response);
 }
 
 isolated function updateAuthenticationCR(model:Authentication authentication, string namespace) returns http:Response|http:ClientError {
-    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/authentications/" + authentication.metadata.name;
+    string endpoint = "/apis/dp.wso2.com/v1alpha2/namespaces/" + namespace + "/authentications/" + authentication.metadata.name;
     return k8sApiServerEp->put(endpoint, authentication, targetType = http:Response);
 }
 
@@ -93,6 +94,7 @@ isolated function getConfigMap(string name, string namespace) returns model:Conf
     string endpoint = "/api/v1/namespaces/" + namespace + "/configmaps/" + name;
     return k8sApiServerEp->get(endpoint, targetType = model:ConfigMap);
 }
+
 isolated function deleteConfigMap(string name, string namespace) returns http:Response|http:ClientError {
     string endpoint = "/api/v1/namespaces/" + namespace + "/configmaps/" + name;
     return k8sApiServerEp->delete(endpoint, targetType = http:Response);
@@ -169,6 +171,7 @@ isolated function getBackendCR(string name, string namespace) returns model:Back
     string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/backends/" + name;
     return k8sApiServerEp->get(endpoint, targetType = model:Backend);
 }
+
 isolated function deployBackendCR(model:Backend backend, string namespace) returns http:Response|http:ClientError {
     string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/backends";
     return k8sApiServerEp->post(endpoint, backend, targetType = http:Response);
@@ -231,6 +234,7 @@ isolated function getRateLimitPolicyCR(string name, string namespace) returns mo
     string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/ratelimitpolicies/" + name;
     return k8sApiServerEp->get(endpoint, targetType = model:RateLimitPolicy);
 }
+
 isolated function deleteRateLimitPolicyCR(string name, string namespace) returns http:Response|http:ClientError {
     string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/ratelimitpolicies/" + name;
     return k8sApiServerEp->delete(endpoint, targetType = http:Response);
@@ -280,6 +284,7 @@ isolated function getInterceptorServiceCR(string name, string namespace) returns
     string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/interceptorservices/" + name;
     return k8sApiServerEp->get(endpoint, targetType = model:InterceptorService);
 }
+
 isolated function deleteInterceptorServiceCR(string name, string namespace) returns http:Response|http:ClientError {
     string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/interceptorservices/" + name;
     return k8sApiServerEp->delete(endpoint, targetType = http:Response);
@@ -299,10 +304,12 @@ isolated function updateBackendJWTCr(model:BackendJWT backendJWT, string namespa
     string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/backendjwts/" + backendJWT.metadata.name;
     return k8sApiServerEp->put(endpoint, backendJWT, targetType = http:Response);
 }
+
 isolated function getBackendJWTCr(string name, string namespace) returns model:BackendJWT|http:ClientError {
     string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/backendjwts/" + name;
     return k8sApiServerEp->get(endpoint, targetType = model:BackendJWT);
 }
+
 isolated function deleteBackendJWTCr(string name, string namespace) returns http:Response|http:ClientError {
     string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/backendjwts/" + name;
     return k8sApiServerEp->delete(endpoint, targetType = http:Response);

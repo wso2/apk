@@ -313,8 +313,8 @@ func (adapterInternalAPI *AdapterInternalAPI) GetDisableScopes() bool {
 }
 
 // GetDisableMtls returns whether mTLS is disabled or not
-func (swagger *AdapterInternalAPI) GetDisableMtls() bool {
-	return swagger.disableMtls
+func (adapterInternalAPI *AdapterInternalAPI) GetDisableMtls() bool {
+	return adapterInternalAPI.disableMtls
 }
 
 // GetID returns the Id of the API
@@ -340,7 +340,7 @@ func (adapterInternalAPI *AdapterInternalAPI) GetClientCerts() []Certificate {
 }
 
 // SetClientCerts set the client certificates of the API
-func (swagger *AdapterInternalAPI) SetClientCerts(apiName string, certs []string) {
+func (adapterInternalAPI *AdapterInternalAPI) SetClientCerts(apiName string, certs []string) {
 	var clientCerts []Certificate
 	for i, cert := range certs {
 		clientCert := Certificate{
@@ -349,7 +349,7 @@ func (swagger *AdapterInternalAPI) SetClientCerts(apiName string, certs []string
 		}
 		clientCerts = append(clientCerts, clientCert)
 	}
-	swagger.clientCertificates = clientCerts
+	adapterInternalAPI.clientCertificates = clientCerts
 }
 
 // SetID set the Id of the API
@@ -400,18 +400,18 @@ func (adapterInternalAPI *AdapterInternalAPI) GetXWSO2AuthHeader() string {
 }
 
 // SetMutualSSL sets the optional or mandatory mTLS
-func (swagger *AdapterInternalAPI) SetMutualSSL(mutualSSL string) {
-	swagger.mutualSSL = mutualSSL
+func (adapterInternalAPI *AdapterInternalAPI) SetMutualSSL(mutualSSL string) {
+	adapterInternalAPI.mutualSSL = mutualSSL
 }
 
 // GetMutualSSL returns the optional or mandatory mTLS
-func (swagger *AdapterInternalAPI) GetMutualSSL() string {
-	return swagger.mutualSSL
+func (adapterInternalAPI *AdapterInternalAPI) GetMutualSSL() string {
+	return adapterInternalAPI.mutualSSL
 }
 
 // SetDisableMtls returns whether mTLS is disabled or not
-func (swagger *AdapterInternalAPI) SetDisableMtls(disableMtls bool) {
-	swagger.disableMtls = disableMtls
+func (adapterInternalAPI *AdapterInternalAPI) SetDisableMtls(disableMtls bool) {
+	adapterInternalAPI.disableMtls = disableMtls
 }
 
 // SetXWSO2ApplicationSecurity sets the optional or mandatory application security
@@ -469,7 +469,7 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 	disableScopes := true
 	config := config.ReadConfigs()
 
-	var authScheme *dpv1alpha1.Authentication
+	var authScheme *dpv1alpha2.Authentication
 	if outputAuthScheme != nil {
 		authScheme = *outputAuthScheme
 	}
@@ -800,7 +800,7 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoGQLRouteCR(gqlRoute *dpv1al
 	disableScopes := true
 	config := config.ReadConfigs()
 
-	var authScheme *dpv1alpha1.Authentication
+	var authScheme *dpv1alpha2.Authentication
 	if outputAuthScheme != nil {
 		authScheme = *outputAuthScheme
 	}

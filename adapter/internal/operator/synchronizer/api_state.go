@@ -32,9 +32,9 @@ type APIState struct {
 	SandHTTPRoute             *HTTPRouteState
 	ProdGQLRoute              *GQLRouteState
 	SandGQLRoute              *GQLRouteState
-	Authentications           map[string]v1alpha1.Authentication
+	Authentications           map[string]v1alpha2.Authentication
 	RateLimitPolicies         map[string]v1alpha1.RateLimitPolicy
-	ResourceAuthentications   map[string]v1alpha1.Authentication
+	ResourceAuthentications   map[string]v1alpha2.Authentication
 	ResourceRateLimitPolicies map[string]v1alpha1.RateLimitPolicy
 	ResourceAPIPolicies       map[string]v1alpha2.APIPolicy
 	APIPolicies               map[string]v1alpha2.APIPolicy
@@ -43,7 +43,7 @@ type APIState struct {
 	APIDefinitionFile         []byte
 	OldOrganizationID         string
 	SubscriptionValidation    bool
-	MutualSSL                 *v1alpha1.MutualSSL
+	MutualSSL                 *v1alpha2.MutualSSL
 }
 
 // HTTPRouteState holds the state of the deployed httpRoutes. This state is compared with

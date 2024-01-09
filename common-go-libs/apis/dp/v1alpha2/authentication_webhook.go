@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2023, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
+ *  Copyright (c) 2024, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -15,9 +15,11 @@
  *
  */
 
-package v1alpha1
+package v1alpha2
 
 import (
+	"strings"
+
 	constants "github.com/wso2/apk/common-go-libs/constants"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -28,7 +30,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
-// SetupWebhookWithManager creates a new webhook builder for Authentication
 func (r *Authentication) SetupWebhookWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewWebhookManagedBy(mgr).
 		For(r).
@@ -37,7 +38,7 @@ func (r *Authentication) SetupWebhookWithManager(mgr ctrl.Manager) error {
 
 // TODO(user): EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 
-//+kubebuilder:webhook:path=/mutate-dp-wso2-com-v1alpha1-authentication,mutating=true,failurePolicy=fail,sideEffects=None,groups=dp.wso2.com,resources=authentications,verbs=create;update,versions=v1alpha1,name=mauthentication.kb.io,admissionReviewVersions=v1
+//+kubebuilder:webhook:path=/mutate-dp-wso2-com-v1alpha2-authentication,mutating=true,failurePolicy=fail,sideEffects=None,groups=dp.wso2.com,resources=authentications,verbs=create;update,versions=v1alpha2,name=mauthentication.kb.io,admissionReviewVersions=v1
 
 var _ webhook.Defaulter = &Authentication{}
 
@@ -47,7 +48,7 @@ func (r *Authentication) Default() {
 }
 
 // TODO(user): change verbs to "verbs=create;update;delete" if you want to enable deletion validation.
-//+kubebuilder:webhook:path=/validate-dp-wso2-com-v1alpha1-authentication,mutating=false,failurePolicy=fail,sideEffects=None,groups=dp.wso2.com,resources=authentications,verbs=create;update,versions=v1alpha1,name=vauthentication.kb.io,admissionReviewVersions=v1
+//+kubebuilder:webhook:path=/validate-dp-wso2-com-v1alpha2-authentication,mutating=false,failurePolicy=fail,sideEffects=None,groups=dp.wso2.com,resources=authentications,verbs=create;update,versions=v1alpha2,name=vauthentication.kb.io,admissionReviewVersions=v1
 
 var _ webhook.Validator = &Authentication{}
 
@@ -65,6 +66,9 @@ func (r *Authentication) ValidateUpdate(old runtime.Object) (admission.Warnings,
 // ValidateAuthentication validates the Authentication
 func (r *Authentication) ValidateAuthentication() error {
 	var allErrs field.ErrorList
+	isOAuthDisabled := false
+	isMTLSMandatory := false
+	isMTLSDisabled := false
 
 	if r.Spec.TargetRef.Name == "" {
 		allErrs = append(allErrs, field.Required(field.NewPath("spec").Child("targetRef").Child("name"), "Name is required"))
@@ -72,6 +76,39 @@ func (r *Authentication) ValidateAuthentication() error {
 	if !(r.Spec.TargetRef.Kind == constants.KindAPI || r.Spec.TargetRef.Kind == constants.KindResource) {
 		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("targetRef").Child("kind"), r.Spec.TargetRef.Kind,
 			"Invalid Kind is provided"))
+	}
+	var mutualSSL *MutualSSLConfig
+
+	if r.Spec.Default != nil && r.Spec.Default.AuthTypes != nil && r.Spec.Default.AuthTypes.MutualSSL != nil {
+		isOAuthDisabled = r.Spec.Default.AuthTypes.Oauth2.Disabled
+		mutualSSL = r.Spec.Default.AuthTypes.MutualSSL
+
+		isMTLSMandatory = strings.ToLower(mutualSSL.Required) == "mandatory"
+		isMTLSDisabled = mutualSSL.Disabled
+		if isOAuthDisabled && (!isMTLSMandatory || isMTLSDisabled) {
+			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("default").Child("authTypes").Child("mtls"), r.Spec.Default.AuthTypes,
+				"invalid authentication configuration - one of mTLS or OAuth2 must be enabled and mandatory"))
+		}
+		if len(mutualSSL.CertificatesInline) == 0 && len(mutualSSL.ConfigMapRefs) == 0 && len(mutualSSL.SecretRefs) == 0 {
+			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("default").Child("authTypes").Child("mtls"), r.Spec.Default.AuthTypes.MutualSSL,
+				"invalid mTLS configuration - certificates not provided"))
+		}
+
+	} else if r.Spec.Override != nil && r.Spec.Override.AuthTypes != nil && r.Spec.Override.AuthTypes.MutualSSL != nil {
+		isOAuthDisabled = r.Spec.Override.AuthTypes.Oauth2.Disabled
+		mutualSSL = r.Spec.Override.AuthTypes.MutualSSL
+
+		isMTLSMandatory = strings.ToLower(mutualSSL.Required) == "mandatory"
+		isMTLSDisabled = mutualSSL.Disabled
+		if isOAuthDisabled && (!isMTLSMandatory || isMTLSDisabled) {
+			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("override").Child("authTypes").Child("mtls"), r.Spec.Override.AuthTypes,
+				"invalid authentication configuration - one of mTLS or OAuth2 must be enabled and mandatory"))
+		}
+
+		if len(mutualSSL.CertificatesInline) == 0 && len(mutualSSL.ConfigMapRefs) == 0 && len(mutualSSL.SecretRefs) == 0 {
+			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("override").Child("authTypes").Child("mtls"), r.Spec.Override.AuthTypes.MutualSSL,
+				"invalid mTLS configuration - certificates not provided"))
+		}
 	}
 
 	if len(allErrs) > 0 {

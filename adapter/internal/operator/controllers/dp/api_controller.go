@@ -152,7 +152,7 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha1.Authentication{}), handler.EnqueueRequestsFromMapFunc(apiReconciler.getAPIsForAuthentication),
+	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha2.Authentication{}), handler.EnqueueRequestsFromMapFunc(apiReconciler.getAPIsForAuthentication),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2616, logging.BLOCKER, "Error watching Authentication resources: %v", err))
 		return err
@@ -671,10 +671,10 @@ func (apiReconciler *APIReconciler) concatHTTPRoutes(ctx context.Context, httpRo
 }
 
 func (apiReconciler *APIReconciler) getAuthenticationsForAPI(ctx context.Context,
-	api dpv1alpha2.API) (map[string]dpv1alpha1.Authentication, error) {
+	api dpv1alpha2.API) (map[string]dpv1alpha2.Authentication, error) {
 	nameSpacedName := utils.NamespacedName(&api).String()
-	authentications := make(map[string]dpv1alpha1.Authentication)
-	authenticationList := &dpv1alpha1.AuthenticationList{}
+	authentications := make(map[string]dpv1alpha2.Authentication)
+	authenticationList := &dpv1alpha2.AuthenticationList{}
 	if err := apiReconciler.client.List(ctx, authenticationList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(apiAuthenticationIndex, nameSpacedName),
 	}); err != nil {
@@ -753,10 +753,10 @@ func (apiReconciler *APIReconciler) getScopesForHTTPRoute(ctx context.Context,
 }
 
 func (apiReconciler *APIReconciler) getAuthenticationsForResources(ctx context.Context,
-	api dpv1alpha2.API) (map[string]dpv1alpha1.Authentication, error) {
+	api dpv1alpha2.API) (map[string]dpv1alpha2.Authentication, error) {
 	nameSpacedName := utils.NamespacedName(&api).String()
-	authentications := make(map[string]dpv1alpha1.Authentication)
-	authenticationList := &dpv1alpha1.AuthenticationList{}
+	authentications := make(map[string]dpv1alpha2.Authentication)
+	authenticationList := &dpv1alpha2.AuthenticationList{}
 	if err := apiReconciler.client.List(ctx, authenticationList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(apiAuthenticationResourceIndex, nameSpacedName),
 	}); err != nil {
@@ -912,8 +912,8 @@ func (apiReconciler *APIReconciler) getAPIPolicyChildrenRefs(ctx context.Context
 }
 
 func (apiReconciler *APIReconciler) resolveAuthentications(ctx context.Context,
-	authentications map[string]dpv1alpha1.Authentication) (*dpv1alpha1.MutualSSL, error) {
-	resolvedMutualSSL := dpv1alpha1.MutualSSL{}
+	authentications map[string]dpv1alpha2.Authentication) (*dpv1alpha2.MutualSSL, error) {
+	resolvedMutualSSL := dpv1alpha2.MutualSSL{}
 	for _, authentication := range authentications {
 		err := utils.GetResolvedMutualSSL(ctx, apiReconciler.client, authentication, &resolvedMutualSSL)
 		if err != nil {
@@ -1101,20 +1101,13 @@ func (apiReconciler *APIReconciler) getAPIsForSecret(ctx context.Context, obj k8
 // from Authentication objects. If the changes are done for an API stored in the Operator Data store,
 // a new reconcile event will be created and added to the reconcile event queue.
 func (apiReconciler *APIReconciler) getAPIsForAuthentication(ctx context.Context, obj k8client.Object) []reconcile.Request {
-	authentication, ok := obj.(*dpv1alpha1.Authentication)
+	authentication, ok := obj.(*dpv1alpha2.Authentication)
 	if !ok {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL, "Unexpected object type, bypassing reconciliation: %v", authentication))
 		return []reconcile.Request{}
 	}
 
 	requests := []reconcile.Request{}
-
-	// todo(amali) move this validation to validation hook
-	if !(authentication.Spec.TargetRef.Kind == constants.KindAPI || authentication.Spec.TargetRef.Kind == constants.KindResource) {
-		loggers.LoggerAPKOperator.Errorf("Unsupported target ref kind : %s was given for authentication: %s",
-			authentication.Spec.TargetRef.Kind, authentication.Name)
-		return requests
-	}
 
 	namespace, err := utils.ValidateAndRetrieveNamespace((*gwapiv1b1.Namespace)(authentication.Spec.TargetRef.Namespace), authentication.Namespace)
 
@@ -1553,9 +1546,9 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 	}
 
 	// authentication to API indexer
-	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.Authentication{}, apiAuthenticationIndex,
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha2.Authentication{}, apiAuthenticationIndex,
 		func(rawObj k8client.Object) []string {
-			authentication := rawObj.(*dpv1alpha1.Authentication)
+			authentication := rawObj.(*dpv1alpha2.Authentication)
 			var apis []string
 			if authentication.Spec.TargetRef.Kind == constants.KindAPI {
 
@@ -1579,9 +1572,9 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 	}
 
 	// Secret to Authentication indexer
-	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.Authentication{}, secretAuthentication,
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha2.Authentication{}, secretAuthentication,
 		func(rawObj k8client.Object) []string {
-			authentication := rawObj.(*dpv1alpha1.Authentication)
+			authentication := rawObj.(*dpv1alpha2.Authentication)
 			var secrets []string
 			if authentication.Spec.Default != nil && authentication.Spec.Default.AuthTypes != nil && authentication.Spec.Default.AuthTypes.MutualSSL != nil && authentication.Spec.Default.AuthTypes.MutualSSL.SecretRefs != nil && len(authentication.Spec.Default.AuthTypes.MutualSSL.SecretRefs) > 0 {
 				for _, secret := range authentication.Spec.Default.AuthTypes.MutualSSL.SecretRefs {
@@ -1613,9 +1606,9 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 	}
 
 	// ConfigMap to Authentication indexer
-	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.Authentication{}, configMapAuthentication,
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha2.Authentication{}, configMapAuthentication,
 		func(rawObj k8client.Object) []string {
-			authentication := rawObj.(*dpv1alpha1.Authentication)
+			authentication := rawObj.(*dpv1alpha2.Authentication)
 			var configMaps []string
 			if authentication.Spec.Default != nil && authentication.Spec.Default.AuthTypes != nil && authentication.Spec.Default.AuthTypes.MutualSSL != nil && authentication.Spec.Default.AuthTypes.MutualSSL.ConfigMapRefs != nil && len(authentication.Spec.Default.AuthTypes.MutualSSL.ConfigMapRefs) > 0 {
 				for _, configMap := range authentication.Spec.Default.AuthTypes.MutualSSL.ConfigMapRefs {
@@ -1650,9 +1643,9 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 	// https://gateway-api.sigs.k8s.io/geps/gep-713/?h=multiple+targetrefs#apply-policies-to-sections-of-a-resource-future-extension
 	// we will use a temporary kindName called Resource for policy attachments
 	// TODO(amali) Fix after the official support is available
-	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.Authentication{}, apiAuthenticationResourceIndex,
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha2.Authentication{}, apiAuthenticationResourceIndex,
 		func(rawObj k8client.Object) []string {
-			authentication := rawObj.(*dpv1alpha1.Authentication)
+			authentication := rawObj.(*dpv1alpha2.Authentication)
 			var apis []string
 			if authentication.Spec.TargetRef.Kind == constants.KindResource {
 
@@ -1802,20 +1795,6 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 						Name:      string(apiPolicy.Spec.Override.BackendJWTPolicy.Name),
 					}.String())
 			}
-			// if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.BackendJWTPolicy != nil {
-			// 	backendJWTs = append(backendJWTs,
-			// 		types.NamespacedName{
-			// 			Namespace: apiPolicy.Namespace,
-			// 			Name:      string(apiPolicy.Spec.Default.BackendJWTPolicy.Name),
-			// 		}.String())
-			// }
-			// if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.BackendJWTPolicy != nil {
-			// 	backendJWTs = append(backendJWTs,
-			// 		types.NamespacedName{
-			// 			Namespace: apiPolicy.Namespace,
-			// 			Name:      string(apiPolicy.Spec.Override.BackendJWTPolicy.Name),
-			// 		}.String())
-			// }
 			return backendJWTs
 		}); err != nil {
 		return err

@@ -456,13 +456,13 @@ func getResolvedBackendSecurity(ctx context.Context, client k8client.Client,
 }
 
 // GetResolvedMutualSSL resolves mTLS related security configurations.
-func GetResolvedMutualSSL(ctx context.Context, client k8client.Client, authentication dpv1alpha1.Authentication, resolvedMutualSSL *dpv1alpha1.MutualSSL) error {
-	var mutualSSL *dpv1alpha1.MutualSSLConfig
-	if authentication.Spec.Default != nil && authentication.Spec.Default.AuthTypes != nil && authentication.Spec.Default.AuthTypes.MutualSSL != nil {
-		mutualSSL = authentication.Spec.Default.AuthTypes.MutualSSL
-	} else if authentication.Spec.Override != nil && authentication.Spec.Override.AuthTypes != nil && authentication.Spec.Override.AuthTypes.MutualSSL != nil {
-		mutualSSL = authentication.Spec.Override.AuthTypes.MutualSSL
+func GetResolvedMutualSSL(ctx context.Context, client k8client.Client, authentication dpv1alpha2.Authentication, resolvedMutualSSL *dpv1alpha2.MutualSSL) error {
+	var mutualSSL *dpv1alpha2.MutualSSLConfig
+	authSpec := SelectPolicy(&authentication.Spec.Override, &authentication.Spec.Default, nil, nil)
+	if authSpec.AuthTypes != nil {
+		mutualSSL = authSpec.AuthTypes.MutualSSL
 	}
+
 	if mutualSSL != nil {
 		resolvedCertificates, err := ResolveAllmTLSCertificates(ctx, mutualSSL, client, authentication.Namespace)
 		resolvedMutualSSL.Disabled = mutualSSL.Disabled
@@ -478,7 +478,7 @@ func GetResolvedMutualSSL(ctx context.Context, client k8client.Client, authentic
 }
 
 // ResolveAllmTLSCertificates resolves all mTLS certificates
-func ResolveAllmTLSCertificates(ctx context.Context, mutualSSL *dpv1alpha1.MutualSSLConfig, client k8client.Client, namespace string) ([]string, error) {
+func ResolveAllmTLSCertificates(ctx context.Context, mutualSSL *dpv1alpha2.MutualSSLConfig, client k8client.Client, namespace string) ([]string, error) {
 	var resolvedCertificates []string
 	var err error
 	var certificate string
@@ -490,13 +490,13 @@ func ResolveAllmTLSCertificates(ctx context.Context, mutualSSL *dpv1alpha1.Mutua
 	}
 	if mutualSSL.ConfigMapRefs != nil {
 		for _, cert := range mutualSSL.ConfigMapRefs {
-			certificate, err = ResolveCertificate(ctx, client, namespace, nil, cert, nil)
+			certificate, err = ResolveCertificate(ctx, client, namespace, nil, ConvertRefConfigsV2ToV1(cert), nil)
 			resolvedCertificates = append(resolvedCertificates, certificate)
 		}
 	}
 	if mutualSSL.SecretRefs != nil {
 		for _, cert := range mutualSSL.SecretRefs {
-			certificate, err = ResolveCertificate(ctx, client, namespace, nil, nil, cert)
+			certificate, err = ResolveCertificate(ctx, client, namespace, nil, nil, ConvertRefConfigsV2ToV1(cert))
 			resolvedCertificates = append(resolvedCertificates, certificate)
 		}
 	}

@@ -105,10 +105,6 @@ public class GraphQLAPI implements API {
             throw new SecurityException(e);
         }
 
-        for (Certificate certificate : api.getClientCertificatesList()) {
-            mtlsCertificateTiers.put(certificate.getAlias(), certificate.getTier());
-        }
-
         BackendJWTTokenInfo backendJWTTokenInfo = api.getBackendJWTTokenInfo();
         JWTConfigurationDto jwtConfigurationDto = new JWTConfigurationDto();
 
@@ -150,7 +146,7 @@ public class GraphQLAPI implements API {
                 .resources(resources).apiType(apiType).apiLifeCycleState(apiLifeCycleState).tier(api.getTier())
                 .envType(api.getEnvType()).disableAuthentication(api.getDisableAuthentications())
                 .disableScopes(api.getDisableScopes()).trustStore(trustStore).organizationId(api.getOrganizationId())
-                .mtlsCertificateTiers(mtlsCertificateTiers).mutualSSL(mutualSSL)
+                .mutualSSL(mutualSSL)
                 .applicationSecurity(applicationSecurity).jwtConfigurationDto(jwtConfigurationDto)
                 .apiDefinition(apiDefinition).environment(api.getEnvironment())
                 .subscriptionValidation(api.getSubscriptionValidation()).graphQLSchemaDTO(graphQLSchemaDTO).build();
@@ -171,7 +167,8 @@ public class GraphQLAPI implements API {
         // This flag is used to apply CORS filter
         boolean isOptionCall = requestContext.getRequestMethod().contains(HttpConstants.OPTIONS);
 
-        // handle other not allowed && non option request && not yet handled error scenarios.
+        // handle other not allowed && non option request && not yet handled error
+        // scenarios.
         if ((!isOptionCall && !isExistsMatchedOperations) && !requestContext.getProperties()
                 .containsKey(APIConstants.MessageFormat.ERROR_CODE)) {
             requestContext.getProperties()
