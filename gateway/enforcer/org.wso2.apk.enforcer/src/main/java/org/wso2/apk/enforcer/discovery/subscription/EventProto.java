@@ -34,20 +34,23 @@ public final class EventProto {
       "so2/discovery/subscription/applicationma" +
       "pping.proto\0329wso2/discovery/subscription" +
       "/application_key_mapping.proto\032.wso2/dis" +
-      "covery/subscription/subscription.proto\"\326" +
-      "\002\n\005Event\022\014\n\004uuid\030\001 \001(\t\022\021\n\ttimeStamp\030\002 \001(" +
-      "\003\022\014\n\004type\030\003 \001(\t\022=\n\013application\030\004 \001(\0132(.w" +
-      "so2.discovery.subscription.Application\022K" +
-      "\n\022applicationMapping\030\005 \001(\0132/.wso2.discov" +
-      "ery.subscription.ApplicationMapping\022Q\n\025a" +
-      "pplicationKeyMapping\030\006 \001(\01322.wso2.discov" +
-      "ery.subscription.ApplicationKeyMapping\022?" +
-      "\n\014subscription\030\007 \001(\0132).wso2.discovery.su" +
-      "bscription.SubscriptionB\216\001\n,org.wso2.apk" +
-      ".enforcer.discovery.subscriptionB\nEventP" +
-      "rotoP\001ZPgithub.com/wso2/apk/common-go-li" +
-      "bs/pkg/discovery/api/wso2/discovery/subs" +
-      "criptionb\006proto3"
+      "covery/subscription/token_issuer.proto\032." +
+      "wso2/discovery/subscription/subscription" +
+      ".proto\"\225\003\n\005Event\022\014\n\004uuid\030\001 \001(\t\022\021\n\ttimeSt" +
+      "amp\030\002 \001(\003\022\014\n\004type\030\003 \001(\t\022=\n\013application\030\004" +
+      " \001(\0132(.wso2.discovery.subscription.Appli" +
+      "cation\022K\n\022applicationMapping\030\005 \001(\0132/.wso" +
+      "2.discovery.subscription.ApplicationMapp" +
+      "ing\022Q\n\025applicationKeyMapping\030\006 \001(\01322.wso" +
+      "2.discovery.subscription.ApplicationKeyM" +
+      "apping\022?\n\014subscription\030\007 \001(\0132).wso2.disc" +
+      "overy.subscription.Subscription\022=\n\013token" +
+      "Issuer\030\010 \001(\0132(.wso2.discovery.subscripti" +
+      "on.TokenIssuerB\216\001\n,org.wso2.apk.enforcer" +
+      ".discovery.subscriptionB\nEventProtoP\001ZPg" +
+      "ithub.com/wso2/apk/common-go-libs/pkg/di" +
+      "scovery/api/wso2/discovery/subscriptionb" +
+      "\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -55,6 +58,7 @@ public final class EventProto {
           org.wso2.apk.enforcer.discovery.subscription.ApplicationProto.getDescriptor(),
           org.wso2.apk.enforcer.discovery.subscription.ApplicationMappingProto.getDescriptor(),
           org.wso2.apk.enforcer.discovery.subscription.ApplicationKeyMappingProto.getDescriptor(),
+          org.wso2.apk.enforcer.discovery.subscription.TokenIssuerProto.getDescriptor(),
           org.wso2.apk.enforcer.discovery.subscription.SubscriptionProto.getDescriptor(),
         });
     internal_static_wso2_discovery_subscription_Event_descriptor =
@@ -62,10 +66,11 @@ public final class EventProto {
     internal_static_wso2_discovery_subscription_Event_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_wso2_discovery_subscription_Event_descriptor,
-        new java.lang.String[] { "Uuid", "TimeStamp", "Type", "Application", "ApplicationMapping", "ApplicationKeyMapping", "Subscription", });
+        new java.lang.String[] { "Uuid", "TimeStamp", "Type", "Application", "ApplicationMapping", "ApplicationKeyMapping", "Subscription", "TokenIssuer", });
     org.wso2.apk.enforcer.discovery.subscription.ApplicationProto.getDescriptor();
     org.wso2.apk.enforcer.discovery.subscription.ApplicationMappingProto.getDescriptor();
     org.wso2.apk.enforcer.discovery.subscription.ApplicationKeyMappingProto.getDescriptor();
+    org.wso2.apk.enforcer.discovery.subscription.TokenIssuerProto.getDescriptor();
     org.wso2.apk.enforcer.discovery.subscription.SubscriptionProto.getDescriptor();
   }
 

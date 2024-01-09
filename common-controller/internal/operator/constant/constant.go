@@ -23,6 +23,7 @@ const (
 	ApplicationController        string = "ApplicationController"
 	SubscriptionController       string = "SubscriptionController"
 	ApplicationMappingController string = "ApplicationMappingController"
+	TokenIssuerReconSiler        string = "TokenIssuerReconSiler"
 )
 
 // API events related constants
@@ -46,6 +47,9 @@ const (
 	ApplicationKeyMappingCreated string = "APPLICATION_KEY_MAPPING_CREATED"
 	ApplicationKeyMappingUpdated string = "APPLICATION_KEY_MAPPING_UPDATED"
 	ApplicationKeyMappingDeleted string = "APPLICATION_KEY_MAPPING_DELETED"
+	TokenIssuerCreated           string = "TOKEN_ISSUER_CREATED"
+	TokenIssuerDeleted           string = "TOKEN_ISSUER_DELETED"
+	TokenIssuerUpdated           string = "TOKEN_ISSUER_UPDATED"
 	AllEvnts                     string = "ALL_EVENTS"
 )
 

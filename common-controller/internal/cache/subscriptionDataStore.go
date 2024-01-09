@@ -22,6 +22,7 @@ import (
 
 	logger "github.com/sirupsen/logrus"
 	cpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/cp/v1alpha2"
+	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	"k8s.io/apimachinery/pkg/types"
 )
 
@@ -30,6 +31,7 @@ type SubscriptionDataStore struct {
 	applicationStore        map[types.NamespacedName]*cpv1alpha2.ApplicationSpec
 	subscriptionStore       map[types.NamespacedName]*cpv1alpha2.SubscriptionSpec
 	applicationMappingStore map[types.NamespacedName]*cpv1alpha2.ApplicationMappingSpec
+	tokenIssuerStore        map[types.NamespacedName]*dpv1alpha2.TokenIssuerSpec
 	mu                      sync.Mutex
 }
 
@@ -39,6 +41,7 @@ func CreateNewSubscriptionDataStore() *SubscriptionDataStore {
 		applicationStore:        map[types.NamespacedName]*cpv1alpha2.ApplicationSpec{},
 		subscriptionStore:       map[types.NamespacedName]*cpv1alpha2.SubscriptionSpec{},
 		applicationMappingStore: map[types.NamespacedName]*cpv1alpha2.ApplicationMappingSpec{},
+		tokenIssuerStore:        map[types.NamespacedName]*dpv1alpha2.TokenIssuerSpec{},
 	}
 }
 
@@ -48,6 +51,14 @@ func (ods *SubscriptionDataStore) AddorUpdateApplicationToStore(name types.Names
 	defer ods.mu.Unlock()
 	logger.Debug("Adding/Updating application to cache")
 	ods.applicationStore[name] = &application
+}
+
+// AddorUpdateTokenIssuerToStore adds a new tokenIssuer to the DataStore.
+func (ods *SubscriptionDataStore) AddorUpdateTokenIssuerToStore(name types.NamespacedName, tokenIssuer dpv1alpha2.TokenIssuerSpec) {
+	ods.mu.Lock()
+	defer ods.mu.Unlock()
+	logger.Debug("Adding/Updating tokenIssuer to cache")
+	ods.tokenIssuerStore[name] = &tokenIssuer
 }
 
 // AddorUpdateSubscriptionToStore adds a new subscription to the DataStore.
@@ -76,6 +87,16 @@ func (ods *SubscriptionDataStore) GetApplicationFromStore(name types.NamespacedN
 	return application, false
 }
 
+// GetTokenIssuerFromStore get cached tokenIssuer
+func (ods *SubscriptionDataStore) GetTokenIssuerFromStore(name types.NamespacedName) (dpv1alpha2.TokenIssuerSpec, bool) {
+	var tokenIssuerSpec dpv1alpha2.TokenIssuerSpec
+	if cachedTokenIssuer, found := ods.tokenIssuerStore[name]; found {
+		logger.Debug("Found cached TokenIssuer")
+		return *cachedTokenIssuer, true
+	}
+	return tokenIssuerSpec, false
+}
+
 // GetSubscriptionFromStore get cached subscription
 func (ods *SubscriptionDataStore) GetSubscriptionFromStore(name types.NamespacedName) (cpv1alpha2.SubscriptionSpec, bool) {
 	var subscription cpv1alpha2.SubscriptionSpec
@@ -102,6 +123,14 @@ func (ods *SubscriptionDataStore) DeleteApplicationFromStore(name types.Namespac
 	defer ods.mu.Unlock()
 	logger.Info("Deleting application from cache")
 	delete(ods.applicationStore, name)
+}
+
+// DeleteTokenIssuerFromStore delete from tokenIssuer cache
+func (ods *SubscriptionDataStore) DeleteTokenIssuerFromStore(name types.NamespacedName) {
+	ods.mu.Lock()
+	defer ods.mu.Unlock()
+	logger.Info("Deleting tokenIssuer from cache")
+	delete(ods.tokenIssuerStore, name)
 }
 
 // DeleteSubscriptionFromStore delete from subscription cache

@@ -24,11 +24,11 @@ import feign.gson.GsonEncoder;
 import feign.slf4j.Slf4jLogger;
 import org.wso2.apk.enforcer.common.CacheableEntity;
 import org.wso2.apk.enforcer.config.ConfigHolder;
-import org.wso2.apk.enforcer.discovery.JWTIssuerDiscoveryClient;
 import org.wso2.apk.enforcer.discovery.subscription.Application;
 import org.wso2.apk.enforcer.discovery.subscription.ApplicationKeyMapping;
 import org.wso2.apk.enforcer.discovery.subscription.ApplicationMapping;
 import org.wso2.apk.enforcer.discovery.subscription.Subscription;
+import org.wso2.apk.enforcer.discovery.subscription.TokenIssuer;
 import org.wso2.apk.enforcer.util.ApacheFeignHttpClient;
 import org.wso2.apk.enforcer.util.FilterUtils;
 
@@ -130,7 +130,6 @@ public class SubscriptionDataStoreUtil {
 
     public static void initializeLoadingTasks() {
 
-        JWTIssuerDiscoveryClient.getInstance().watchJWTIssuers();
         EventingGrpcClient.getInstance().watchEvents();
     }
 
@@ -252,12 +251,55 @@ public class SubscriptionDataStoreUtil {
 
     }
 
+    public static void addTokenIssuer(TokenIssuer tokenIssuer) {
+        SubscriptionDataStore subscriptionDataStore = getSubscriptionDataStore(tokenIssuer.getOrganization());
+
+        if (subscriptionDataStore == null) {
+            subscriptionDataStore =
+                    SubscriptionDataHolder.getInstance().initializeSubscriptionDataStore(tokenIssuer.getOrganization());
+        }
+        subscriptionDataStore.addJWTIssuer(tokenIssuer);
+
+    }
+
+    public static void deleteTokenIssuer(TokenIssuer tokenIssuer) {
+        SubscriptionDataStore subscriptionDataStore = getSubscriptionDataStore(tokenIssuer.getOrganization());
+
+        if (subscriptionDataStore == null) {
+            subscriptionDataStore =
+                    SubscriptionDataHolder.getInstance().initializeSubscriptionDataStore(tokenIssuer.getOrganization());
+        }
+        subscriptionDataStore.removeTokenIssuer(tokenIssuer);
+
+
+    }
+
     public void loadStartupArtifacts() {
 
         loadApplications();
         loadSubscriptions();
         loadApplicationMappings();
         loadApplicationKeyMappings();
+        loadTokenIssuers();
+    }
+
+    private void loadTokenIssuers() {
+
+            new Thread(() -> {
+                TokenIssuerListDto tokenIssuers = subscriptionValidationDataRetrievalRestClient.getAllTokenIssuers();
+                List<TokenIssuerRestDto> list = tokenIssuers.getList();
+                Map<String, List<TokenIssuerRestDto>> orgWizeMAp = new HashMap<>();
+                for (TokenIssuerRestDto tokenIssuerDto : list) {
+                    String organization = tokenIssuerDto.getOrganization();
+                    List<TokenIssuerRestDto> tokenIssuerDtos = orgWizeMAp.computeIfAbsent(organization,
+                            k -> new ArrayList<>());
+                    tokenIssuerDtos.add(tokenIssuerDto);
+                }
+                orgWizeMAp.forEach((k, v) -> {
+                    SubscriptionDataStore subscriptionDataStore = getSubscriptionDataStore(k);
+                    subscriptionDataStore.addTokenIssuers(v);
+                });
+            }).start();
 
     }
 }

@@ -21,7 +21,6 @@ import io.grpc.ClientInterceptor;
 import io.grpc.ConnectivityState;
 import io.grpc.ManagedChannel;
 import io.grpc.Metadata;
-import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
 import io.grpc.stub.MetadataUtils;
 import io.grpc.stub.StreamObserver;
 import org.apache.logging.log4j.LogManager;
@@ -167,6 +166,16 @@ public class EventingGrpcClient implements Runnable {
                 break;
             case "APPLICATION_DELETED":
                 SubscriptionDataStoreUtil.removeApplication(event.getApplication());
+                break;
+            case "TOKEN_ISSUER_CREATED":
+                SubscriptionDataStoreUtil.addTokenIssuer(event.getTokenIssuer());
+                break;
+            case "TOKEN_ISSUER_UPDATED":
+                SubscriptionDataStoreUtil.deleteTokenIssuer(event.getTokenIssuer());
+                SubscriptionDataStoreUtil.addTokenIssuer(event.getTokenIssuer());
+                break;
+            case "TOKEN_ISSUER_DELETED":
+                SubscriptionDataStoreUtil.deleteTokenIssuer(event.getTokenIssuer());
                 break;
             default:
                 logger.error("Unknown event type received from the server");

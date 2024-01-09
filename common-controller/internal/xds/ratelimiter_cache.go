@@ -55,8 +55,6 @@ const (
 	RateLimitPolicyAPILevel       string = "API"
 )
 
-var void struct{}
-
 var rlsPolicyCache *rateLimitPolicyCache
 
 type rateLimitPolicyCache struct {

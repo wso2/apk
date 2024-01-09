@@ -20,7 +20,6 @@ import (
 	envoy_types "github.com/envoyproxy/go-control-plane/pkg/cache/types"
 	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/api"
 	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/config/enforcer"
-	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/subscription"
 	"github.com/wso2/apk/adapter/pkg/discovery/protocol/cache/types"
 	"github.com/wso2/apk/adapter/pkg/discovery/protocol/resource/v3"
 )
@@ -76,10 +75,6 @@ func GetResourceName(res envoy_types.Resource) string {
 		return fmt.Sprint(v.Vhost, v.BasePath, v.Version)
 	case *enforcer.Config:
 		return "Config"
-	case *subscription.JWTIssuerList:
-		return "JWTIssuer"
-	case *subscription.JWTIssuer:
-		return fmt.Sprint(v.Name)
 	default:
 		return ""
 	}

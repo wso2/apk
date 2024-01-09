@@ -56,7 +56,6 @@ printf " - ${GREEN}${BOLD}done${NC}\n"
 printf "protoc go messages"
 docker run -v `pwd`:/defs namely/protoc-all:$PROTOC_VERSION -l go --go-source-relative -i proto -i target/include/ -o target/gen/go -d proto/wso2/discovery/api/
 docker run -v `pwd`:/defs namely/protoc-all:$PROTOC_VERSION -l go --go-source-relative -i proto -i target/include/ -o target/gen/go -d proto/wso2/discovery/config/enforcer/
-docker run -v `pwd`:/defs namely/protoc-all:$PROTOC_VERSION -l go --go-source-relative -i proto -i target/include/ -o target/gen/go -d proto/wso2/discovery/subscription/
 printf " - ${GREEN}${BOLD}done${NC}\n"
 
 # map of proto imports for which we need to update the genrated import path

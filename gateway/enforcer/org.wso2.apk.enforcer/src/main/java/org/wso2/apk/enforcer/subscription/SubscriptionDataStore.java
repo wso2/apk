@@ -19,6 +19,7 @@
 package org.wso2.apk.enforcer.subscription;
 
 import org.wso2.apk.enforcer.discovery.subscription.JWTIssuer;
+import org.wso2.apk.enforcer.discovery.subscription.TokenIssuer;
 import org.wso2.apk.enforcer.models.*;
 import org.wso2.apk.enforcer.security.jwt.validator.JWTValidator;
 
@@ -120,4 +121,9 @@ public interface SubscriptionDataStore {
 
     public void addApplicationMappings(List<ApplicationMappingDto> applicationMappingList);
 
+    void addJWTIssuer(TokenIssuer tokenIssuer);
+
+    void removeTokenIssuer(TokenIssuer tokenIssuer);
+
+    void addTokenIssuers(List<TokenIssuerRestDto> tokenIssuers);
 }

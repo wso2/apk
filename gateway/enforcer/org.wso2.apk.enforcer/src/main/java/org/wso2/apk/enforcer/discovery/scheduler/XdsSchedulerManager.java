@@ -21,7 +21,6 @@ package org.wso2.apk.enforcer.discovery.scheduler;
 import org.wso2.apk.enforcer.config.EnvVarConfig;
 import org.wso2.apk.enforcer.discovery.ApiDiscoveryClient;
 import org.wso2.apk.enforcer.discovery.ConfigDiscoveryClient;
-import org.wso2.apk.enforcer.discovery.JWTIssuerDiscoveryClient;
 import org.wso2.apk.enforcer.subscription.EventingGrpcClient;
 
 import java.util.concurrent.Executors;
@@ -74,13 +73,7 @@ public class XdsSchedulerManager {
         }
     }
 
-    public synchronized void startJWTIssuerDiscoveryScheduling() {
 
-        if (jwtIssuerDiscoveryScheduledFuture == null || jwtIssuerDiscoveryScheduledFuture.isDone()) {
-            jwtIssuerDiscoveryScheduledFuture = discoveryClientScheduler
-                    .scheduleWithFixedDelay(JWTIssuerDiscoveryClient.getInstance(), 1, retryPeriod, TimeUnit.SECONDS);
-        }
-    }
 
     public synchronized void startEventScheduling() {
 

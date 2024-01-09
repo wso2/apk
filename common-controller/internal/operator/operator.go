@@ -151,6 +151,9 @@ func InitOperator() {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3117, logging.MAJOR,
 			"Error creating Application Mapping controller, error: %v", err))
 	}
+	if err := dpcontrollers.NewTokenIssuerReconciler(mgr, subscriptionStore); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3114, logging.BLOCKER, "Error creating JWT Issuer controller: %v", err))
+	}
 	//+kubebuilder:scaffold:builder
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {

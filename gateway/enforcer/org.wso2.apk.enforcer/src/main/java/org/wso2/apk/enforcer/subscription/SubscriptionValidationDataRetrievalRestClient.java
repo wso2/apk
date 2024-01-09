@@ -1,4 +1,5 @@
 package org.wso2.apk.enforcer.subscription;
+
 import feign.Headers;
 import feign.Param;
 import feign.RequestLine;
@@ -20,4 +21,8 @@ public interface SubscriptionValidationDataRetrievalRestClient {
     @RequestLine("GET /applicationkeymappings")
     @Headers("Content-Type: application/json")
     ApplicationKeyMappingDtoList getAllApplicationKeyMappings();
+
+    @RequestLine("GET /tokenissuers")
+    @Headers("Content-Type: application/json")
+    TokenIssuerListDto getAllTokenIssuers();
 }
