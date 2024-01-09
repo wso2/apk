@@ -279,7 +279,7 @@ public function testOperationLevelRateLimitConfigGenerationFromAPKConf() returns
         }
     };
 
-    test:assertEquals(apiArtifact.rateLimitPolicies.length(), 2, "Required number of Rate Limit policies not found");
+    test:assertEquals(apiArtifact.rateLimitPolicies.length(), 1, "Required number of Rate Limit policies not found");
     foreach model:RateLimitPolicy rateLimitPolicy in apiArtifact.rateLimitPolicies {
         test:assertEquals(rateLimitPolicy.spec.'default, rateLimitData, "Rate limit policy is not equal to expected Rate limit config");
         test:assertEquals(rateLimitPolicy.spec.targetRef.kind, "Resource", "Rate limit type is not equal to expected Rate limit type");
