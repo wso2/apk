@@ -253,7 +253,7 @@ func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	if apiState, err := apiReconciler.resolveAPIRefs(ctx, apiCR); err != nil {
 		loggers.LoggerAPKOperator.Warnf("Error retrieving ref CRs for API in namespace : %s with API UUID : %v, %v",
 			req.NamespacedName.String(), string(apiCR.ObjectMeta.UID), err)
-		return ctrl.Result{}, err
+		return ctrl.Result{}, nil
 	} else if apiState != nil {
 		loggers.LoggerAPKOperator.Infof("Ready to deploy CRs for API in namespace : %s with API UUID : %v, %v",
 			req.NamespacedName.String(), string(apiCR.ObjectMeta.UID), err)
