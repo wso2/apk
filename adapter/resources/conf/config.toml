@@ -28,6 +28,10 @@
   verifyHostName = true
   disableSslVerification = false
 
+[router.downstream]
+[router.downstream.tls]
+mtlsAPIsEnabled = false
+trustedCertPath = "/etc/ssl/certs/ca-certificates.crt"
 
 [enforcer.security]
 [[enforcer.security.tokenService]]

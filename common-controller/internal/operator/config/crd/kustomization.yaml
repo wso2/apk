@@ -7,6 +7,7 @@ resources:
 - bases/cp.wso2.com_applications.yaml
 - bases/cp.wso2.com_subscriptions.yaml
 - bases/cp.wso2.com_applicationmappings.yaml
+- bases/dp.wso2.com_authentications.yaml
 #+kubebuilder:scaffold:crdkustomizeresource
 
 patches:

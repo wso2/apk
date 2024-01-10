@@ -2,7 +2,6 @@
 apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
 metadata:
-  creationTimestamp: null
   name: mutating-webhook-configuration
 webhooks:
 - admissionReviewVersions:
@@ -11,14 +10,14 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
-      path: /mutate-dp-wso2-com-v1alpha1-api
+      path: /mutate-dp-wso2-com-v1alpha2-api
   failurePolicy: Fail
   name: mapi.kb.io
   rules:
   - apiGroups:
     - dp.wso2.com
     apiVersions:
-    - v1alpha1
+    - v1alpha2
     operations:
     - CREATE
     - UPDATE
@@ -38,12 +37,72 @@ webhooks:
   - apiGroups:
     - dp.wso2.com
     apiVersions:
+    - v1alpha2
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - apipolicies
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /mutate-dp-wso2-com-v1alpha2-authentication
+  failurePolicy: Fail
+  name: mauthentication.kb.io
+  rules:
+  - apiGroups:
+    - dp.wso2.com
+    apiVersions:
+    - v1alpha2
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - authentications
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /mutate-dp-wso2-com-v1alpha1-apipolicy
+  failurePolicy: Fail
+  name: mapipolicy.kb.io
+  rules:
+  - apiGroups:
+    - dp.wso2.com
+    apiVersions:
     - v1alpha1
     operations:
     - CREATE
     - UPDATE
     resources:
     - apipolicies
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /mutate-dp-wso2-com-v1alpha1-authentication
+  failurePolicy: Fail
+  name: mauthentication.kb.io
+  rules:
+  - apiGroups:
+    - dp.wso2.com
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - authentications
   sideEffects: None
 - admissionReviewVersions:
   - v1
@@ -129,7 +188,6 @@ webhooks:
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
 metadata:
-  creationTimestamp: null
   name: validating-webhook-configuration
 webhooks:
 - admissionReviewVersions:
@@ -138,14 +196,14 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
-      path: /validate-dp-wso2-com-v1alpha1-api
+      path: /validate-dp-wso2-com-v1alpha2-api
   failurePolicy: Fail
   name: vapi.kb.io
   rules:
   - apiGroups:
     - dp.wso2.com
     apiVersions:
-    - v1alpha1
+    - v1alpha2
     operations:
     - CREATE
     - UPDATE
@@ -165,12 +223,72 @@ webhooks:
   - apiGroups:
     - dp.wso2.com
     apiVersions:
+    - v1alpha2
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - apipolicies
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-dp-wso2-com-v1alpha2-authentication
+  failurePolicy: Fail
+  name: vauthentication.kb.io
+  rules:
+  - apiGroups:
+    - dp.wso2.com
+    apiVersions:
+    - v1alpha2
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - authentications
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-dp-wso2-com-v1alpha1-apipolicy
+  failurePolicy: Fail
+  name: vapipolicy.kb.io
+  rules:
+  - apiGroups:
+    - dp.wso2.com
+    apiVersions:
     - v1alpha1
     operations:
     - CREATE
     - UPDATE
     resources:
     - apipolicies
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-dp-wso2-com-v1alpha1-authentication
+  failurePolicy: Fail
+  name: vauthentication.kb.io
+  rules:
+  - apiGroups:
+    - dp.wso2.com
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - authentications
   sideEffects: None
 - admissionReviewVersions:
   - v1

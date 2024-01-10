@@ -168,7 +168,6 @@ func GetEnforcerAPI(adapterInternalAPI model.AdapterInternalAPI, vhost string) *
 	for _, cert := range adapterInternalAPI.GetClientCerts() {
 		certificate := &api.Certificate{
 			Alias:   cert.Alias,
-			Tier:    cert.Tier,
 			Content: cert.Content,
 		}
 		clientCertificates = append(clientCertificates, certificate)
@@ -215,8 +214,9 @@ func GetEnforcerAPI(adapterInternalAPI model.AdapterInternalAPI, vhost string) *
 		EndpointSecurity:       generateRPCEndpointSecurity(adapterInternalAPI.EndpointSecurity),
 		// IsMockedApi:         isMockedAPI,
 		ClientCertificates:  clientCertificates,
-		MutualSSL:           adapterInternalAPI.GetXWSO2MutualSSL(),
+		MutualSSL:           adapterInternalAPI.GetMutualSSL(),
 		ApplicationSecurity: adapterInternalAPI.GetXWSO2ApplicationSecurity(),
+		TransportSecurity:   !adapterInternalAPI.GetDisableMtls(),
 		// GraphQLSchema:         adapterInternalAPI.GraphQLSchema,
 		// GraphqlComplexityInfo: adapterInternalAPI.GraphQLComplexities.Data.List,
 		SystemAPI:              adapterInternalAPI.IsSystemAPI,

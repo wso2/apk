@@ -47,7 +47,7 @@ public class UnsecuredAPIAuthenticator implements Authenticator {
         // Retrieve the disable security value. If security is disabled for all matching resources,
         // then you can proceed directly with the authentication.
         for (ResourceConfig resourceConfig : requestContext.getMatchedResourcePaths()) {
-            if (!resourceConfig.getAuthenticationConfig().isDisabled()) {
+            if (!resourceConfig.getAuthenticationConfig().isDisabled() || requestContext.getMatchedAPI().isTransportSecurity()) {
                 return false;
             }
         }

@@ -112,7 +112,7 @@ public type CircuitBreaker record {
     int maxRetries?;
 };
 
-public type AuthenticationRequest OAuth2Authentication|APIKeyAuthentication;
+public type AuthenticationRequest OAuth2Authentication|APIKeyAuthentication|MTLSAuthentication;
 
 public type EndpointConfigurations record {
     EndpointConfiguration production?;
@@ -161,8 +161,6 @@ public type DefinitionBody record {
     # Type of API
     string apiType?;
 };
-
-
 
 # CORS Configuration of API
 #
@@ -271,7 +269,23 @@ public type APIKeyAuthentication record {|
     boolean queryParamEnable = true;
 |};
 
+# Mutual SSL configuration of this API
+#
+# + required - If mTLS is optional or mandatory
+# + certificates - The list of config map refs referring to the client certificates
+public type MTLSAuthentication record {|
+    *Authentication;
+    string required = "optional";
+    ConfigMapRef[] certificates;
+|};
+
 public type Certificate record {
     string secretName?;
     string secretKey?;
 };
+
+public type ConfigMapRef record {
+    string name;
+    string key;
+};
+

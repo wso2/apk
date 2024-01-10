@@ -226,6 +226,12 @@ public interface ApiOrBuilder extends
   boolean getApplicationSecurity();
 
   /**
+   * <code>bool transportSecurity = 17;</code>
+   * @return The transportSecurity.
+   */
+  boolean getTransportSecurity();
+
+  /**
    * <pre>
    *&#47; string graphQLSchema = 22;
    * </pre>

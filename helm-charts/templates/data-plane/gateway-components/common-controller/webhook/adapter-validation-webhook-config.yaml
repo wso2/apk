@@ -83,6 +83,26 @@ webhooks:
       resources:
         - apipolicies
   sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: {{ template "apk-helm.resource.prefix" . }}-common-controller-service
+      namespace: {{ .Release.Namespace }}
+      path: /validate-dp-wso2-com-v1alpha2-authentication
+  failurePolicy: Fail
+  name: vauthentication.kb.io
+  rules:
+  - apiGroups:
+    - dp.wso2.com
+    apiVersions:
+    - v1alpha2
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - authentications
+  sideEffects: None
 {{ if .Values.wso2.apk.dp.ratelimiter.enabled }}
 - admissionReviewVersions:
     - v1

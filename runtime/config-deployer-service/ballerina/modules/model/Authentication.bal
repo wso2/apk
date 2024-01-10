@@ -16,7 +16,7 @@
 // under the License.
 //
 public type Authentication record {
-    string apiVersion = "dp.wso2.com/v1alpha1";
+    string apiVersion = "dp.wso2.com/v1alpha2";
     string kind = "Authentication";
     Metadata metadata;
     AuthenticationSpec spec;
@@ -30,13 +30,22 @@ public type AuthenticationSpec record {
 };
 
 public type AuthenticationData record {
-    AuthenticationExtenstionType authTypes?;
+    AuthenticationExtensionType authTypes?;
     boolean disabled?;
 };
 
-public type AuthenticationExtenstionType record {
+public type AuthenticationExtensionType record {
     OAuth2Authentication oauth2?;
     APIKey[] apiKey = [];
+    MutualSSL mtls?;
+};
+
+public type MutualSSL record {
+    string required;
+    boolean disabled;
+    RefConfig[] configMapRefs?;
+    RefConfig[] secretRefs?;
+    string[] certificatesInline?;
 };
 
 public type OAuth2Authentication record {
@@ -57,7 +66,7 @@ public type APIKey record {
 };
 
 public type AuthenticationList record {
-    string apiVersion = "dp.wso2.com/v1alpha1";
+    string apiVersion = "dp.wso2.com/v1alpha2";
     string kind = "AuthenticationList";
     Authentication[] items;
     ListMeta metadata;

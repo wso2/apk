@@ -1,0 +1,12 @@
+apiVersion: dp.wso2.com/v1alpha2
+kind: Authentication
+metadata:
+  labels:
+    app.kubernetes.io/name: authentication
+    app.kubernetes.io/instance: authentication-sample
+    app.kubernetes.io/part-of: operator
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: operator
+  name: authentication-sample
+spec:
+  # TODO(user): Add fields here

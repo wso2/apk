@@ -73,7 +73,17 @@
     "authentication": {
       "type": "array",
       "items": {
-        "$ref": "#/schemas/Authentication"
+        "oneOf": [
+          {
+            "$ref": "#/schemas/OAuth2Authentication"
+          },
+          {
+            "$ref": "#/schemas/MTLSAuthentication"
+          },
+          {
+            "$ref": "#/schemas/APIKeyAuthentication"
+          }
+        ]
       }
     },
     "additionalProperties": {
@@ -98,41 +108,110 @@
   },
   "additionalProperties": false,
   "schemas": {
-    "Authentication": {
+    "OAuth2Authentication": {
       "type": "object",
       "properties": {
         "authType": {
           "type": "string",
-          "example": "OAuth2",
-          "description": "The type of authentication to be used, e.g., OAuth2, etc."
+          "enum": [
+            "OAuth2"
+          ]
         },
         "sendTokenToUpstream": {
           "type": "boolean",
-          "default": false,
-          "description": "Specifies whether to send the authentication token to the upstream service."
+          "default": false
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "headerName": {
+          "type": "string"
+        },
+        "queryParamName": {
+          "type": "string"
+        },
+        "headerEnable": {
+          "type": "boolean"
+        },
+        "queryParamEnable": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "MTLSAuthentication": {
+      "type": "object",
+      "properties": {
+        "authType": {
+          "type": "string",
+          "enum": [
+            "mTLS"
+          ]
+        },
+        "required": {
+          "type": "string",
+          "default": "optional",
+          "enum": [
+            "mandatory",
+            "optional"
+          ]
         },
         "enabled": {
           "type": "boolean",
-          "example": true,
-          "description": "Specifies whether authentication is enabled for the API."
+          "default": true
+        },
+        "certificates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "key": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "APIKeyAuthentication": {
+      "type": "object",
+      "properties": {
+        "authType": {
+          "type": "string",
+          "example": "APIKey",
+          "enum": [
+            "APIKey"
+          ],
+          "description": "The type of authentication to be used, e.g., APIKey, etc."
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "sendTokenToUpstream": {
+          "type": "boolean",
+          "default": false
         },
         "headerName": {
           "type": "string",
           "example": "Authorization",
-          "description": "The name of the header field used to send the authentication token."
+          "default": "apikey"
         },
         "queryParamName": {
           "type": "string",
           "example": "apikey",
-          "description": "The name of the query parameter used to send the authentication token."
+          "default": "apikey"
         },
         "headerEnable": {
           "type": "boolean",
-          "description": "Specifies whether the authentication token can be sent in the header."
+          "default": true
         },
         "queryParamEnable": {
           "type": "boolean",
-          "description": "Specifies whether the authentication token can be sent as a query parameter."
+          "default": true
         }
       },
       "additionalProperties": false

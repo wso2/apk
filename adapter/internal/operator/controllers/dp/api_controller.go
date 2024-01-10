@@ -74,6 +74,8 @@ const (
 	configMapBackend                 = "configMapBackend"
 	configMapAPIDefinition           = "configMapAPIDefinition"
 	secretBackend                    = "secretBackend"
+	configMapAuthentication          = "configMapAuthentication"
+	secretAuthentication             = "secretAuthentication"
 	backendHTTPRouteIndex            = "backendHTTPRouteIndex"
 	interceptorServiceAPIPolicyIndex = "interceptorServiceAPIPolicyIndex"
 	backendInterceptorServiceIndex   = "backendInterceptorServiceIndex"
@@ -150,7 +152,7 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha1.Authentication{}), handler.EnqueueRequestsFromMapFunc(apiReconciler.getAPIsForAuthentication),
+	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha2.Authentication{}), handler.EnqueueRequestsFromMapFunc(apiReconciler.getAPIsForAuthentication),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2616, logging.BLOCKER, "Error watching Authentication resources: %v", err))
 		return err
@@ -342,6 +344,12 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 		if apiState.APIDefinitionFile, err = apiReconciler.getAPIDefinitionForAPI(ctx, api.Spec.DefinitionFileRef, namespace, api); err != nil {
 			return nil, fmt.Errorf("error while getting api definition file of api %s in namespace : %s with API UUID : %v, %s",
 				apiRef.String(), namespace, string(api.ObjectMeta.UID), err.Error())
+		}
+	}
+	if len(apiState.Authentications) > 0 {
+		if apiState.MutualSSL, err = apiReconciler.resolveAuthentications(ctx, apiState.Authentications); err != nil {
+			return nil, fmt.Errorf("error while resolving authentication %v in namespace: %s was not found. %s",
+				apiState.Authentications, namespace, err.Error())
 		}
 	}
 
@@ -663,10 +671,10 @@ func (apiReconciler *APIReconciler) concatHTTPRoutes(ctx context.Context, httpRo
 }
 
 func (apiReconciler *APIReconciler) getAuthenticationsForAPI(ctx context.Context,
-	api dpv1alpha2.API) (map[string]dpv1alpha1.Authentication, error) {
+	api dpv1alpha2.API) (map[string]dpv1alpha2.Authentication, error) {
 	nameSpacedName := utils.NamespacedName(&api).String()
-	authentications := make(map[string]dpv1alpha1.Authentication)
-	authenticationList := &dpv1alpha1.AuthenticationList{}
+	authentications := make(map[string]dpv1alpha2.Authentication)
+	authenticationList := &dpv1alpha2.AuthenticationList{}
 	if err := apiReconciler.client.List(ctx, authenticationList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(apiAuthenticationIndex, nameSpacedName),
 	}); err != nil {
@@ -745,10 +753,10 @@ func (apiReconciler *APIReconciler) getScopesForHTTPRoute(ctx context.Context,
 }
 
 func (apiReconciler *APIReconciler) getAuthenticationsForResources(ctx context.Context,
-	api dpv1alpha2.API) (map[string]dpv1alpha1.Authentication, error) {
+	api dpv1alpha2.API) (map[string]dpv1alpha2.Authentication, error) {
 	nameSpacedName := utils.NamespacedName(&api).String()
-	authentications := make(map[string]dpv1alpha1.Authentication)
-	authenticationList := &dpv1alpha1.AuthenticationList{}
+	authentications := make(map[string]dpv1alpha2.Authentication)
+	authenticationList := &dpv1alpha2.AuthenticationList{}
 	if err := apiReconciler.client.List(ctx, authenticationList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(apiAuthenticationResourceIndex, nameSpacedName),
 	}); err != nil {
@@ -901,6 +909,18 @@ func (apiReconciler *APIReconciler) getAPIPolicyChildrenRefs(ctx context.Context
 		}
 	}
 	return interceptorServices, backendJWTs, subscriptionValidation, nil
+}
+
+func (apiReconciler *APIReconciler) resolveAuthentications(ctx context.Context,
+	authentications map[string]dpv1alpha2.Authentication) (*dpv1alpha2.MutualSSL, error) {
+	resolvedMutualSSL := dpv1alpha2.MutualSSL{}
+	for _, authentication := range authentications {
+		err := utils.GetResolvedMutualSSL(ctx, apiReconciler.client, authentication, &resolvedMutualSSL)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return &resolvedMutualSSL, nil
 }
 
 func (apiReconciler *APIReconciler) getResolvedBackendsMapping(ctx context.Context,
@@ -1081,20 +1101,13 @@ func (apiReconciler *APIReconciler) getAPIsForSecret(ctx context.Context, obj k8
 // from Authentication objects. If the changes are done for an API stored in the Operator Data store,
 // a new reconcile event will be created and added to the reconcile event queue.
 func (apiReconciler *APIReconciler) getAPIsForAuthentication(ctx context.Context, obj k8client.Object) []reconcile.Request {
-	authentication, ok := obj.(*dpv1alpha1.Authentication)
+	authentication, ok := obj.(*dpv1alpha2.Authentication)
 	if !ok {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL, "Unexpected object type, bypassing reconciliation: %v", authentication))
 		return []reconcile.Request{}
 	}
 
 	requests := []reconcile.Request{}
-
-	// todo(amali) move this validation to validation hook
-	if !(authentication.Spec.TargetRef.Kind == constants.KindAPI || authentication.Spec.TargetRef.Kind == constants.KindResource) {
-		loggers.LoggerAPKOperator.Errorf("Unsupported target ref kind : %s was given for authentication: %s",
-			authentication.Spec.TargetRef.Kind, authentication.Name)
-		return requests
-	}
 
 	namespace, err := utils.ValidateAndRetrieveNamespace((*gwapiv1b1.Namespace)(authentication.Spec.TargetRef.Namespace), authentication.Namespace)
 
@@ -1116,8 +1129,8 @@ func (apiReconciler *APIReconciler) getAPIsForAuthentication(ctx context.Context
 	return requests
 }
 
-// getAPIForAuthentication triggers the API controller reconcile method based on the changes detected
-// from Authentication objects. If the changes are done for an API stored in the Operator Data store,
+// getAPIsForAPIPolicy triggers the API controller reconcile method based on the changes detected
+// from APIPolicy objects. If the changes are done for an API stored in the Operator Data store,
 // a new reconcile event will be created and added to the reconcile event queue.
 func (apiReconciler *APIReconciler) getAPIsForAPIPolicy(ctx context.Context, obj k8client.Object) []reconcile.Request {
 	apiPolicy, ok := obj.(*dpv1alpha2.APIPolicy)
@@ -1200,8 +1213,8 @@ func (apiReconciler *APIReconciler) getAPIsForBackendJWT(ctx context.Context, ob
 	return requests
 }
 
-// getAPIForAuthentication triggers the API controller reconcile method based on the changes detected
-// from Authentication objects. If the changes are done for an API stored in the Operator Data store,
+// getAPIsForRateLimitPolicy triggers the API controller reconcile method based on the changes detected
+// from RateLimitPolicy objects. If the changes are done for an API stored in the Operator Data store,
 // a new reconcile event will be created and added to the reconcile event queue.
 func (apiReconciler *APIReconciler) getAPIsForRateLimitPolicy(ctx context.Context, obj k8client.Object) []reconcile.Request {
 	ratelimitPolicy, ok := obj.(*dpv1alpha1.RateLimitPolicy)
@@ -1342,7 +1355,7 @@ func (apiReconciler *APIReconciler) getAPIsForGateway(ctx context.Context, obj k
 }
 
 // addIndexes adds indexing on API, for
-//   - prodution and sandbox HTTPRoutes
+//   - production and sandbox HTTPRoutes
 //     referenced in API objects via `.spec.prodHTTPRouteRef` and `.spec.sandHTTPRouteRef`
 //     This helps to find APIs that are affected by a HTTPRoute CRUD operation.
 //   - authentications
@@ -1533,9 +1546,9 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 	}
 
 	// authentication to API indexer
-	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.Authentication{}, apiAuthenticationIndex,
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha2.Authentication{}, apiAuthenticationIndex,
 		func(rawObj k8client.Object) []string {
-			authentication := rawObj.(*dpv1alpha1.Authentication)
+			authentication := rawObj.(*dpv1alpha2.Authentication)
 			var apis []string
 			if authentication.Spec.TargetRef.Kind == constants.KindAPI {
 
@@ -1558,13 +1571,81 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 		return err
 	}
 
+	// Secret to Authentication indexer
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha2.Authentication{}, secretAuthentication,
+		func(rawObj k8client.Object) []string {
+			authentication := rawObj.(*dpv1alpha2.Authentication)
+			var secrets []string
+			if authentication.Spec.Default != nil && authentication.Spec.Default.AuthTypes != nil && authentication.Spec.Default.AuthTypes.MutualSSL != nil && authentication.Spec.Default.AuthTypes.MutualSSL.SecretRefs != nil && len(authentication.Spec.Default.AuthTypes.MutualSSL.SecretRefs) > 0 {
+				for _, secret := range authentication.Spec.Default.AuthTypes.MutualSSL.SecretRefs {
+					if len(secret.Name) > 0 {
+						secrets = append(secrets,
+							types.NamespacedName{
+								Name:      string(secret.Name),
+								Namespace: authentication.Namespace,
+							}.String())
+					}
+				}
+			}
+
+			if authentication.Spec.Override != nil && authentication.Spec.Override.AuthTypes != nil && authentication.Spec.Override.AuthTypes.MutualSSL != nil && authentication.Spec.Override.AuthTypes.MutualSSL.SecretRefs != nil && len(authentication.Spec.Override.AuthTypes.MutualSSL.SecretRefs) > 0 {
+				for _, secret := range authentication.Spec.Override.AuthTypes.MutualSSL.SecretRefs {
+					if len(secret.Name) > 0 {
+						secrets = append(secrets,
+							types.NamespacedName{
+								Name:      string(secret.Name),
+								Namespace: authentication.Namespace,
+							}.String())
+					}
+				}
+
+			}
+			return secrets
+		}); err != nil {
+		return err
+	}
+
+	// ConfigMap to Authentication indexer
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha2.Authentication{}, configMapAuthentication,
+		func(rawObj k8client.Object) []string {
+			authentication := rawObj.(*dpv1alpha2.Authentication)
+			var configMaps []string
+			if authentication.Spec.Default != nil && authentication.Spec.Default.AuthTypes != nil && authentication.Spec.Default.AuthTypes.MutualSSL != nil && authentication.Spec.Default.AuthTypes.MutualSSL.ConfigMapRefs != nil && len(authentication.Spec.Default.AuthTypes.MutualSSL.ConfigMapRefs) > 0 {
+				for _, configMap := range authentication.Spec.Default.AuthTypes.MutualSSL.ConfigMapRefs {
+					if len(configMap.Name) > 0 {
+						configMaps = append(configMaps,
+							types.NamespacedName{
+								Name:      string(configMap.Name),
+								Namespace: authentication.Namespace,
+							}.String())
+					}
+				}
+			}
+
+			if authentication.Spec.Override != nil && authentication.Spec.Override.AuthTypes != nil && authentication.Spec.Override.AuthTypes.MutualSSL != nil && authentication.Spec.Override.AuthTypes.MutualSSL.ConfigMapRefs != nil && len(authentication.Spec.Override.AuthTypes.MutualSSL.ConfigMapRefs) > 0 {
+				for _, configMap := range authentication.Spec.Override.AuthTypes.MutualSSL.ConfigMapRefs {
+					if len(configMap.Name) > 0 {
+						configMaps = append(configMaps,
+							types.NamespacedName{
+								Name:      string(configMap.Name),
+								Namespace: authentication.Namespace,
+							}.String())
+					}
+				}
+
+			}
+			return configMaps
+		}); err != nil {
+		return err
+	}
+
 	// Till the below is httproute rule name and targetref sectionname is supported,
 	// https://gateway-api.sigs.k8s.io/geps/gep-713/?h=multiple+targetrefs#apply-policies-to-sections-of-a-resource-future-extension
 	// we will use a temporary kindName called Resource for policy attachments
 	// TODO(amali) Fix after the official support is available
-	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.Authentication{}, apiAuthenticationResourceIndex,
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha2.Authentication{}, apiAuthenticationResourceIndex,
 		func(rawObj k8client.Object) []string {
-			authentication := rawObj.(*dpv1alpha1.Authentication)
+			authentication := rawObj.(*dpv1alpha2.Authentication)
 			var apis []string
 			if authentication.Spec.TargetRef.Kind == constants.KindResource {
 
@@ -1700,20 +1781,6 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 		func(rawObj k8client.Object) []string {
 			apiPolicy := rawObj.(*dpv1alpha2.APIPolicy)
 			var backendJWTs []string
-			if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.BackendJWTPolicy != nil {
-				backendJWTs = append(backendJWTs,
-					types.NamespacedName{
-						Namespace: apiPolicy.Namespace,
-						Name:      string(apiPolicy.Spec.Default.BackendJWTPolicy.Name),
-					}.String())
-			}
-			if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.BackendJWTPolicy != nil {
-				backendJWTs = append(backendJWTs,
-					types.NamespacedName{
-						Namespace: apiPolicy.Namespace,
-						Name:      string(apiPolicy.Spec.Override.BackendJWTPolicy.Name),
-					}.String())
-			}
 			if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.BackendJWTPolicy != nil {
 				backendJWTs = append(backendJWTs,
 					types.NamespacedName{

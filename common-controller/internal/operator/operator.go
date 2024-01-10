@@ -121,6 +121,11 @@ func InitOperator() {
 			"Unable to create webhook for APIPolicy, error: %v", err))
 	}
 
+	if err = (&dpv1alpha2.Authentication{}).SetupWebhookWithManager(mgr); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2638, logging.MAJOR,
+			"Unable to create webhook for Authentication, error: %v", err))
+	}
+
 	if err = (&dpv1alpha1.InterceptorService{}).SetupWebhookWithManager(mgr); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2652, logging.MAJOR,
 			"Unable to create webhook for InterceptorService, error: %v", err))

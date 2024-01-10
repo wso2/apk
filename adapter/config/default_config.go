@@ -158,7 +158,7 @@ var defaultConfig = &Config{
 			},
 			MutualSSL: mutualSSL{
 				CertificateHeader:               "X-WSO2-CLIENT-CERTIFICATE",
-				EnableClientValidation:          true,
+				EnableClientValidation:          false,
 				ClientCertificateEncode:         false,
 				EnableOutboundCertificateHeader: false,
 			},

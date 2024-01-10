@@ -30,8 +30,8 @@ import (
 
 // ResourceParams contains httproute related parameters
 type ResourceParams struct {
-	AuthSchemes               map[string]dpv1alpha1.Authentication
-	ResourceAuthSchemes       map[string]dpv1alpha1.Authentication
+	AuthSchemes               map[string]dpv1alpha2.Authentication
+	ResourceAuthSchemes       map[string]dpv1alpha2.Authentication
 	APIPolicies               map[string]dpv1alpha2.APIPolicy
 	ResourceAPIPolicies       map[string]dpv1alpha2.APIPolicy
 	InterceptorServiceMapping map[string]dpv1alpha1.InterceptorService
@@ -207,9 +207,9 @@ func concatAPIPolicies(schemeUp *dpv1alpha2.APIPolicy, schemeDown *dpv1alpha2.AP
 	return &apiPolicy
 }
 
-func concatAuthSchemes(schemeUp *dpv1alpha1.Authentication, schemeDown *dpv1alpha1.Authentication) *dpv1alpha1.Authentication {
-	finalAuth := dpv1alpha1.Authentication{
-		Spec: dpv1alpha1.AuthenticationSpec{},
+func concatAuthSchemes(schemeUp *dpv1alpha2.Authentication, schemeDown *dpv1alpha2.Authentication) *dpv1alpha2.Authentication {
+	finalAuth := dpv1alpha2.Authentication{
+		Spec: dpv1alpha2.AuthenticationSpec{},
 	}
 	if schemeUp != nil && schemeDown != nil {
 		finalAuth.Spec.Override = utils.SelectPolicy(&schemeUp.Spec.Override, &schemeUp.Spec.Default, &schemeDown.Spec.Override, &schemeDown.Spec.Default)
@@ -224,7 +224,7 @@ func concatAuthSchemes(schemeUp *dpv1alpha1.Authentication, schemeDown *dpv1alph
 // getSecurity returns security schemes and it's definitions with flag to indicate if security is disabled
 // make sure authscheme only has external service override values. (i.e. empty default values)
 // tip: use concatScheme method
-func getSecurity(authScheme *dpv1alpha1.Authentication) *Authentication {
+func getSecurity(authScheme *dpv1alpha2.Authentication) *Authentication {
 	authHeader := constants.AuthorizationHeader
 	if authScheme != nil && authScheme.Spec.Override != nil && authScheme.Spec.Override.AuthTypes != nil && len(authScheme.Spec.Override.AuthTypes.Oauth2.Header) > 0 {
 		authHeader = authScheme.Spec.Override.AuthTypes.Oauth2.Header
@@ -249,7 +249,7 @@ func getSecurity(authScheme *dpv1alpha1.Authentication) *Authentication {
 		} else {
 			authFound = true
 		}
-		if authScheme.Spec.Override.AuthTypes.APIKey != nil {
+		if authScheme.Spec.Override.AuthTypes != nil && authScheme.Spec.Override.AuthTypes.APIKey != nil {
 			authFound = authFound || len(authScheme.Spec.Override.AuthTypes.APIKey) > 0
 			var apiKeys []APIKey
 			for _, apiKey := range authScheme.Spec.Override.AuthTypes.APIKey {

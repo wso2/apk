@@ -36,11 +36,11 @@ public class APIClient {
     # + api - APKInternalAPI model
     # + return - APKConf model.
     public isolated function fromAPIModelToAPKConf(runtimeModels:API api) returns APKConf|error {
-        string generatedBasePath = api.getName() +  api.getVersion();
+        string generatedBasePath = api.getName() + api.getVersion();
         byte[] data = generatedBasePath.toBytes();
         string encodedString = "/" + data.toBase64();
         if (encodedString.endsWith("==")) {
-            encodedString = encodedString.substring(0,encodedString.length()-2);
+            encodedString = encodedString.substring(0, encodedString.length() - 2);
         }
         APKConf apkConf = {
             name: api.getName(),
@@ -102,7 +102,7 @@ public class APIClient {
             AuthenticationRequest[]? authentication = apkConf.authentication;
             if authentication is AuthenticationRequest[] {
                 if createdEndpoints != {} {
-                _ = check self.populateAuthenticationMap(apiArtifact, apkConf, authentication, createdEndpoints, organization);
+                    _ = check self.populateAuthenticationMap(apiArtifact, apkConf, authentication, createdEndpoints, organization);
                 } else {
                     // check if there are resource level endpoints
                     if resourceLevelEndpointConfigList.length() > 0 {
@@ -131,6 +131,7 @@ public class APIClient {
                     }
                 }
             }
+
             _ = check self.setHttpRoute(apiArtifact, apkConf, createdEndpoints.hasKey(PRODUCTION_TYPE) ? createdEndpoints.get(PRODUCTION_TYPE) : (), uniqueId, PRODUCTION_TYPE, organization);
             _ = check self.setHttpRoute(apiArtifact, apkConf, createdEndpoints.hasKey(SANDBOX_TYPE) ? createdEndpoints.get(SANDBOX_TYPE) : (), uniqueId, SANDBOX_TYPE, organization);
 
@@ -338,16 +339,29 @@ public class APIClient {
     private isolated function populateAuthenticationMap(model:APIArtifact apiArtifact, APKConf apkConf, AuthenticationRequest[] authentications,
             map<model:Endpoint|()> createdEndpointMap, commons:Organization organization) returns error? {
         map<model:Authentication> authenticationMap = {};
-        model:AuthenticationExtenstionType authTypes = {};
+        model:AuthenticationExtensionType authTypes = {};
+        boolean isOAuthDisabled = false;
+        boolean isMTLSMandatory = false;
+        boolean isMTLSDisabled = false;
         foreach AuthenticationRequest authentication in authentications {
             if authentication.authType == "OAuth2" {
                 OAuth2Authentication oauth2Authentication = check authentication.cloneWithType(OAuth2Authentication);
+                isOAuthDisabled = !oauth2Authentication.enabled;
                 authTypes.oauth2 = {header: <string>oauth2Authentication.headerName, sendTokenToUpstream: <boolean>oauth2Authentication.sendTokenToUpstream, disabled: !oauth2Authentication.enabled};
             } else if authentication.authType == "APIKey" && authentication is APIKeyAuthentication {
                 APIKeyAuthentication apiKeyAuthentication = check authentication.cloneWithType(APIKeyAuthentication);
                 authTypes.apiKey = [];
                 authTypes.apiKey.push({'in: "Header", name: apiKeyAuthentication.headerName, sendTokenToUpstream: apiKeyAuthentication.sendTokenToUpstream});
                 authTypes.apiKey.push({'in: "Query", name: apiKeyAuthentication.queryParamName, sendTokenToUpstream: apiKeyAuthentication.sendTokenToUpstream});
+            } else if authentication.authType == "mTLS" {
+                MTLSAuthentication mtlsAuthentication = check authentication.cloneWithType(MTLSAuthentication);
+                isMTLSMandatory = mtlsAuthentication.required == "mandatory";
+                isMTLSDisabled = !mtlsAuthentication.enabled;
+                if isOAuthDisabled && (!isMTLSMandatory || isMTLSDisabled) {
+                    log:printError("Invalid authtypes provided: one of mTLS or OAuth2 has to be enabled and mandatory");
+                    return e909019();
+                }
+                authTypes.mtls = {disabled: !mtlsAuthentication.enabled, configMapRefs: mtlsAuthentication.certificates, required: mtlsAuthentication.required};
             }
         }
         log:printDebug("Auth Types:" + authTypes.toString());
@@ -1385,11 +1399,13 @@ public class APIClient {
     private isolated function validateAndRetrieveAPKConfiguration(json apkconfJson) returns APKConf|commons:APKError? {
         do {
             runtimeapi:APKConfValidationResponse validationResponse = check apkConfValidator.validate(apkconfJson.toJsonString());
+
             if validationResponse.isValidated() {
                 APKConf apkConf = check apkconfJson.cloneWithType(APKConf);
                 map<string> errors = {};
                 self.validateEndpointConfigurations(apkConf, errors);
                 if (errors.length() > 0) {
+                    log:printInfo(apkconfJson.toJsonString());
                     return e909029(errors);
                 }
                 return apkConf;
@@ -1422,9 +1438,9 @@ public class APIClient {
                     operationLevelProductionEndpointAvailable = endpointConfigs.production is EndpointConfiguration;
                     operationLevelSandboxEndpointAvailable = endpointConfigs.sandbox is EndpointConfiguration;
                 }
-                    if (!operationLevelProductionEndpointAvailable && !productionEndpointAvailable) && (!operationLevelSandboxEndpointAvailable && !sandboxEndpointAvailable) {
-                        errors["endpoint"] = "production/sandbox endpoint not available for " + <string>operation.target;
-                    }
+                if (!operationLevelProductionEndpointAvailable && !productionEndpointAvailable) && (!operationLevelSandboxEndpointAvailable && !sandboxEndpointAvailable) {
+                    errors["endpoint"] = "production/sandbox endpoint not available for " + <string>operation.target;
+                }
 
             }
         }
@@ -1432,7 +1448,7 @@ public class APIClient {
 
     public isolated function prepareArtifact(record {|byte[] fileContent; string fileName; anydata...;|}? apkConfiguration, record {|byte[] fileContent; string fileName; anydata...;|}? definitionFile, commons:Organization organization) returns commons:APKError|model:APIArtifact {
         if apkConfiguration is () || definitionFile is () {
-            return e909018("Required apkConfiguration ,definitionFile and apiType are not provided");
+            return e909018("Required apkConfiguration, definitionFile and apiType are not provided");
         }
         do {
             APKConf? apkConf = ();

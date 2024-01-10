@@ -58,7 +58,7 @@ func (in *APIState) DeepCopyInto(out *APIState) {
 	}
 	if in.Authentications != nil {
 		in, out := &in.Authentications, &out.Authentications
-		*out = make(map[string]v1alpha1.Authentication, len(*in))
+		*out = make(map[string]v1alpha2.Authentication, len(*in))
 		for key, val := range *in {
 			(*out)[key] = *val.DeepCopy()
 		}
@@ -72,7 +72,7 @@ func (in *APIState) DeepCopyInto(out *APIState) {
 	}
 	if in.ResourceAuthentications != nil {
 		in, out := &in.ResourceAuthentications, &out.ResourceAuthentications
-		*out = make(map[string]v1alpha1.Authentication, len(*in))
+		*out = make(map[string]v1alpha2.Authentication, len(*in))
 		for key, val := range *in {
 			(*out)[key] = *val.DeepCopy()
 		}
@@ -116,6 +116,11 @@ func (in *APIState) DeepCopyInto(out *APIState) {
 		in, out := &in.APIDefinitionFile, &out.APIDefinitionFile
 		*out = make([]byte, len(*in))
 		copy(*out, *in)
+	}
+	if in.MutualSSL != nil {
+		in, out := &in.MutualSSL, &out.MutualSSL
+		*out = new(v1alpha2.MutualSSL)
+		(*in).DeepCopyInto(*out)
 	}
 }
 

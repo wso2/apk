@@ -58,6 +58,7 @@ type AdapterInternalAPI struct {
 	xWso2AuthHeader          string
 	disableAuthentications   bool
 	disableScopes            bool
+	disableMtls              bool
 	OrganizationID           string
 	IsPrototyped             bool
 	EndpointType             string
@@ -65,7 +66,7 @@ type AdapterInternalAPI struct {
 	xWso2RequestBodyPass     bool
 	IsDefaultVersion         bool
 	clientCertificates       []Certificate
-	xWso2MutualSSL           string
+	mutualSSL                string
 	xWso2ApplicationSecurity bool
 	EnvType                  string
 	backendJWTTokenInfo      *BackendJWTTokenInfo
@@ -227,7 +228,6 @@ type InterceptEndpoint struct {
 // Certificate contains information of a client certificate
 type Certificate struct {
 	Alias   string
-	Tier    string
 	Content []byte
 }
 
@@ -312,6 +312,11 @@ func (adapterInternalAPI *AdapterInternalAPI) GetDisableScopes() bool {
 	return adapterInternalAPI.disableScopes
 }
 
+// GetDisableMtls returns whether mTLS is disabled or not
+func (adapterInternalAPI *AdapterInternalAPI) GetDisableMtls() bool {
+	return adapterInternalAPI.disableMtls
+}
+
 // GetID returns the Id of the API
 func (adapterInternalAPI *AdapterInternalAPI) GetID() string {
 	return adapterInternalAPI.id
@@ -335,8 +340,16 @@ func (adapterInternalAPI *AdapterInternalAPI) GetClientCerts() []Certificate {
 }
 
 // SetClientCerts set the client certificates of the API
-func (adapterInternalAPI *AdapterInternalAPI) SetClientCerts(certs []Certificate) {
-	adapterInternalAPI.clientCertificates = certs
+func (adapterInternalAPI *AdapterInternalAPI) SetClientCerts(apiName string, certs []string) {
+	var clientCerts []Certificate
+	for i, cert := range certs {
+		clientCert := Certificate{
+			Alias:   apiName + "-cert-" + strconv.Itoa(i),
+			Content: []byte(cert),
+		}
+		clientCerts = append(clientCerts, clientCert)
+	}
+	adapterInternalAPI.clientCertificates = clientCerts
 }
 
 // SetID set the Id of the API
@@ -386,14 +399,19 @@ func (adapterInternalAPI *AdapterInternalAPI) GetXWSO2AuthHeader() string {
 	return adapterInternalAPI.xWso2AuthHeader
 }
 
-// SetXWSO2MutualSSL sets the optional or mandatory mTLS
-func (adapterInternalAPI *AdapterInternalAPI) SetXWSO2MutualSSL(mutualSSl string) {
-	adapterInternalAPI.xWso2MutualSSL = mutualSSl
+// SetMutualSSL sets the optional or mandatory mTLS
+func (adapterInternalAPI *AdapterInternalAPI) SetMutualSSL(mutualSSL string) {
+	adapterInternalAPI.mutualSSL = mutualSSL
 }
 
-// GetXWSO2MutualSSL returns the optional or mandatory mTLS
-func (adapterInternalAPI *AdapterInternalAPI) GetXWSO2MutualSSL() string {
-	return adapterInternalAPI.xWso2MutualSSL
+// GetMutualSSL returns the optional or mandatory mTLS
+func (adapterInternalAPI *AdapterInternalAPI) GetMutualSSL() string {
+	return adapterInternalAPI.mutualSSL
+}
+
+// SetDisableMtls returns whether mTLS is disabled or not
+func (adapterInternalAPI *AdapterInternalAPI) SetDisableMtls(disableMtls bool) {
+	adapterInternalAPI.disableMtls = disableMtls
 }
 
 // SetXWSO2ApplicationSecurity sets the optional or mandatory application security
@@ -451,7 +469,7 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 	disableScopes := true
 	config := config.ReadConfigs()
 
-	var authScheme *dpv1alpha1.Authentication
+	var authScheme *dpv1alpha2.Authentication
 	if outputAuthScheme != nil {
 		authScheme = *outputAuthScheme
 	}
@@ -782,7 +800,7 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoGQLRouteCR(gqlRoute *dpv1al
 	disableScopes := true
 	config := config.ReadConfigs()
 
-	var authScheme *dpv1alpha1.Authentication
+	var authScheme *dpv1alpha2.Authentication
 	if outputAuthScheme != nil {
 		authScheme = *outputAuthScheme
 	}

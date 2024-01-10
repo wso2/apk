@@ -455,6 +455,54 @@ func getResolvedBackendSecurity(ctx context.Context, client k8client.Client,
 	return resolvedSecurity
 }
 
+// GetResolvedMutualSSL resolves mTLS related security configurations.
+func GetResolvedMutualSSL(ctx context.Context, client k8client.Client, authentication dpv1alpha2.Authentication, resolvedMutualSSL *dpv1alpha2.MutualSSL) error {
+	var mutualSSL *dpv1alpha2.MutualSSLConfig
+	authSpec := SelectPolicy(&authentication.Spec.Override, &authentication.Spec.Default, nil, nil)
+	if authSpec.AuthTypes != nil {
+		mutualSSL = authSpec.AuthTypes.MutualSSL
+	}
+
+	if mutualSSL != nil {
+		resolvedCertificates, err := ResolveAllmTLSCertificates(ctx, mutualSSL, client, authentication.Namespace)
+		resolvedMutualSSL.Disabled = mutualSSL.Disabled
+		resolvedMutualSSL.Required = mutualSSL.Required
+		resolvedMutualSSL.ClientCertificates = append(resolvedMutualSSL.ClientCertificates, resolvedCertificates...)
+
+		if err != nil {
+			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL, "Error in resolving mutual SSL %v in authentication", mutualSSL))
+			return err
+		}
+	}
+	return nil
+}
+
+// ResolveAllmTLSCertificates resolves all mTLS certificates
+func ResolveAllmTLSCertificates(ctx context.Context, mutualSSL *dpv1alpha2.MutualSSLConfig, client k8client.Client, namespace string) ([]string, error) {
+	var resolvedCertificates []string
+	var err error
+	var certificate string
+	if mutualSSL.CertificatesInline != nil {
+		for _, cert := range mutualSSL.CertificatesInline {
+			certificate, err = ResolveCertificate(ctx, client, namespace, cert, nil, nil)
+			resolvedCertificates = append(resolvedCertificates, certificate)
+		}
+	}
+	if mutualSSL.ConfigMapRefs != nil {
+		for _, cert := range mutualSSL.ConfigMapRefs {
+			certificate, err = ResolveCertificate(ctx, client, namespace, nil, ConvertRefConfigsV2ToV1(cert), nil)
+			resolvedCertificates = append(resolvedCertificates, certificate)
+		}
+	}
+	if mutualSSL.SecretRefs != nil {
+		for _, cert := range mutualSSL.SecretRefs {
+			certificate, err = ResolveCertificate(ctx, client, namespace, nil, nil, ConvertRefConfigsV2ToV1(cert))
+			resolvedCertificates = append(resolvedCertificates, certificate)
+		}
+	}
+	return resolvedCertificates, err
+}
+
 // ResolveCertificate reads the certificate from TLSConfig, first checks the certificateInline field,
 // if no value then load the certificate from secretRef using util function called getSecretValue
 func ResolveCertificate(ctx context.Context, client k8client.Client, namespace string, certificateInline *string,
