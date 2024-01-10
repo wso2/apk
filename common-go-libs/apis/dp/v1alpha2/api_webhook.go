@@ -18,16 +18,22 @@
 package v1alpha2
 
 import (
+	"bytes"
+	"compress/gzip"
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"strings"
 
+	gqlparser "github.com/vektah/gqlparser"
+	"github.com/vektah/gqlparser/ast"
 	"github.com/wso2/apk/adapter/pkg/logging"
 	config "github.com/wso2/apk/common-go-libs/configs"
 	loggers "github.com/wso2/apk/common-go-libs/loggers"
 	utils "github.com/wso2/apk/common-go-libs/utils"
 	"golang.org/x/exp/slices"
+	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -85,7 +91,7 @@ func (r *API) ValidateDelete() (admission.Warnings, error) {
 
 // validateAPI validate api crd fields
 func (r *API) validateAPI() error {
-
+	loggers.LoggerAPKOperator.Error("validating...")
 	var allErrs field.ErrorList
 	conf := config.ReadConfigs()
 	namespaces := conf.CommonController.Operator.Namespaces
@@ -104,7 +110,15 @@ func (r *API) validateAPI() error {
 		allErrs = append(allErrs, err)
 	}
 
-	if r.Spec.APIType == "GraphQL" && r.Spec.DefinitionFileRef == "" {
+	if r.Spec.DefinitionFileRef != "" {
+		if schemaString, errMsg := validateGzip(r.Spec.DefinitionFileRef, r.Namespace); errMsg != "" {
+			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("definitionFileRef"), r.Spec.DefinitionFileRef, errMsg))
+		} else if schemaString != "" && r.Spec.APIType == "GraphQL" {
+			if errMsg := validateSDL(schemaString); errMsg != "" {
+				allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("definitionFileRef"), r.Spec.DefinitionFileRef, errMsg))
+			}
+		}
+	} else if r.Spec.APIType == "GraphQL" {
 		allErrs = append(allErrs, field.Required(field.NewPath("spec").Child("definitionFileRef"), "GraphQL API definitionFileRef is required"))
 	}
 
@@ -243,4 +257,51 @@ func getBasePathWithoutVersion(basePath string) string {
 		return basePath[:lastIndex]
 	}
 	return basePath
+}
+
+func validateGzip(name, namespace string) (string, string) {
+	configMap := &corev1.ConfigMap{}
+	if err := c.Get(context.Background(), types.NamespacedName{Name: string(name), Namespace: namespace}, configMap); err == nil {
+		var apiDef []byte
+		for key, val := range configMap.BinaryData {
+			loggers.LoggerAPKOperator.Error(key)
+			// config map data key is "swagger.yaml"
+			apiDef = []byte(val)
+		}
+		// unzip gzip bytes
+		var schemaString string
+		if schemaString, err = unzip(apiDef); err != nil {
+			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2600, logging.MINOR, "Error while unzipping gzip bytes: %v", err))
+			return "", "invalid gzipped content"
+		}
+		return schemaString, ""
+	} else {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2600, logging.MINOR, "ConfigMap for sdl not found: %v", err))
+	}
+	return "", ""
+}
+
+// unzip gzip bytes
+func unzip(compressedData []byte) (string, error) {
+	reader, err := gzip.NewReader(bytes.NewBuffer(compressedData))
+	if err != nil {
+		return "", fmt.Errorf("error creating gzip reader: %v", err)
+	}
+	defer reader.Close()
+
+	// Read the decompressed data
+	schemaString, err := io.ReadAll(reader)
+	if err != nil {
+		return "", fmt.Errorf("error reading decompressed data of the apiDefinition: %v", err)
+	}
+	return string(schemaString), nil
+}
+
+func validateSDL(sdl string) string {
+	_, err := gqlparser.LoadSchema(&ast.Source{Input: sdl})
+	if err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2600, logging.MINOR, "Error while parsing the GraphQL SDL: %v", err))
+		return "error while parsing the GraphQL SDL"
+	}
+	return ""
 }

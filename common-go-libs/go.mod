@@ -11,8 +11,12 @@ require (
 	github.com/pelletier/go-toml v1.9.5
 	github.com/sirupsen/logrus v1.9.0
 	github.com/stretchr/testify v1.8.4
+	github.com/vektah/gqlparser v1.3.1
+	github.com/vektah/gqlparser/v2 v2.5.10
 	github.com/wso2/apk/adapter v0.0.0-20231207051518-6dd728943082
 	golang.org/x/exp v0.0.0-20231206192017-f3f8817b8deb
+	google.golang.org/grpc v1.58.3
+	google.golang.org/protobuf v1.31.0
 	k8s.io/api v0.27.2
 	k8s.io/apimachinery v0.27.2
 	k8s.io/client-go v0.27.2
@@ -21,6 +25,7 @@ require (
 )
 
 require (
+	github.com/agnivade/levenshtein v1.1.1 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/cncf/xds/go v0.0.0-20230607035331-e9ce68804cb4 // indirect
@@ -72,8 +77,6 @@ require (
 	gomodules.xyz/jsonpatch/v2 v2.3.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230731190214-cbb8c96f2d6d // indirect
-	google.golang.org/grpc v1.58.3 // indirect
-	google.golang.org/protobuf v1.31.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
