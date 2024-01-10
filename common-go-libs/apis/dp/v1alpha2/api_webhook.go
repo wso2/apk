@@ -23,9 +23,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"strings"
 
+	gqlparser "github.com/vektah/gqlparser"
+	"github.com/vektah/gqlparser/ast"
 	"github.com/wso2/apk/adapter/pkg/logging"
 	config "github.com/wso2/apk/common-go-libs/configs"
 	loggers "github.com/wso2/apk/common-go-libs/loggers"
@@ -89,7 +91,7 @@ func (r *API) ValidateDelete() (admission.Warnings, error) {
 
 // validateAPI validate api crd fields
 func (r *API) validateAPI() error {
-
+	loggers.LoggerAPKOperator.Error("validating...")
 	var allErrs field.ErrorList
 	conf := config.ReadConfigs()
 	namespaces := conf.CommonController.Operator.Namespaces
@@ -108,12 +110,16 @@ func (r *API) validateAPI() error {
 		allErrs = append(allErrs, err)
 	}
 
-	if r.Spec.APIType == "GraphQL" {
-		if r.Spec.DefinitionFileRef == "" {
-			allErrs = append(allErrs, field.Required(field.NewPath("spec").Child("definitionFileRef"), "GraphQL API definitionFileRef is required"))
-		} else {
-			validateSDL(r.Spec.DefinitionFileRef, r.Namespace)
+	if r.Spec.DefinitionFileRef != "" {
+		if schemaString, errMsg := validateGzip(r.Spec.DefinitionFileRef, r.Namespace); errMsg != "" {
+			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("definitionFileRef"), r.Spec.DefinitionFileRef, errMsg))
+		} else if schemaString != "" && r.Spec.APIType == "GraphQL" {
+			if errMsg := validateSDL(schemaString); errMsg != "" {
+				allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("definitionFileRef"), r.Spec.DefinitionFileRef, errMsg))
+			}
 		}
+	} else if r.Spec.APIType == "GraphQL" {
+		allErrs = append(allErrs, field.Required(field.NewPath("spec").Child("definitionFileRef"), "GraphQL API definitionFileRef is required"))
 	}
 
 	// Organization value should not be empty as it required when applying ratelimit policy
@@ -253,9 +259,9 @@ func getBasePathWithoutVersion(basePath string) string {
 	return basePath
 }
 
-func validateSDL(name, namespace string) {
+func validateGzip(name, namespace string) (string, string) {
 	configMap := &corev1.ConfigMap{}
-	if err := c.Get(context.Background(), types.NamespacedName{Name: string(name), Namespace: namespace}, configMap); err != nil {
+	if err := c.Get(context.Background(), types.NamespacedName{Name: string(name), Namespace: namespace}, configMap); err == nil {
 		var apiDef []byte
 		for key, val := range configMap.BinaryData {
 			loggers.LoggerAPKOperator.Error(key)
@@ -263,24 +269,39 @@ func validateSDL(name, namespace string) {
 			apiDef = []byte(val)
 		}
 		// unzip gzip bytes
-		unzip(apiDef)
+		var schemaString string
+		if schemaString, err = unzip(apiDef); err != nil {
+			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2600, logging.MINOR, "Error while unzipping gzip bytes: %v", err))
+			return "", "invalid gzipped content"
+		}
+		return schemaString, ""
+	} else {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2600, logging.MINOR, "ConfigMap for sdl not found: %v", err))
 	}
+	return "", ""
 }
 
 // unzip gzip bytes
-func unzip(compressedData []byte) {
+func unzip(compressedData []byte) (string, error) {
 	reader, err := gzip.NewReader(bytes.NewBuffer(compressedData))
 	if err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2600, logging.BLOCKER, "Unable to create gzip reader: %v", err))
+		return "", fmt.Errorf("error creating gzip reader: %v", err)
 	}
 	defer reader.Close()
 
 	// Read the decompressed data
-	decompressedData, err := ioutil.ReadAll(reader)
+	schemaString, err := io.ReadAll(reader)
 	if err != nil {
-		fmt.Println("Error reading decompressed data:", err)
-		return
+		return "", fmt.Errorf("error reading decompressed data of the apiDefinition: %v", err)
 	}
-	// Print or use the decompressed data as needed
-	loggers.LoggerAPKOperator.Error("Decompressed data:", string(decompressedData))
+	return string(schemaString), nil
+}
+
+func validateSDL(sdl string) string {
+	_, err := gqlparser.LoadSchema(&ast.Source{Input: sdl})
+	if err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2600, logging.MINOR, "Error while parsing the GraphQL SDL: %v", err))
+		return "error while parsing the GraphQL SDL"
+	}
+	return ""
 }

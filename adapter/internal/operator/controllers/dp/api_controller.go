@@ -336,6 +336,9 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 		if apiState.APIDefinitionFile, err = apiReconciler.getAPIDefinitionForAPI(ctx, api.Spec.DefinitionFileRef, namespace, api); err != nil {
 			return nil, fmt.Errorf("error while getting api definition file of api %s in namespace : %s with API UUID : %v, %s",
 				apiRef.String(), namespace, string(api.ObjectMeta.UID), err.Error())
+		} else if apiState.APIDefinitionFile == nil && apiState.APIDefinition.Spec.APIType == "GraphQL" {
+			return nil, fmt.Errorf("error while getting api definition file of api %s in namespace : %s with API UUID : %v, %s",
+				apiRef.String(), namespace, string(api.ObjectMeta.UID), "api definition file not found")
 		}
 	}
 
@@ -805,12 +808,13 @@ func (apiReconciler *APIReconciler) getAPIDefinitionForAPI(ctx context.Context,
 		return nil, fmt.Errorf("error while getting swagger definition %s in namespace :%s, %s", apiDefinitionFile,
 			namespace, err.Error())
 	}
-	apiDef := make(map[string][]byte)
+
+	var apiDef []byte
 	for _, val := range configMap.BinaryData {
 		// config map data key is "swagger.yaml"
-		apiDef["apiDef"] = []byte(val)
+		apiDef = []byte(val)
 	}
-	return apiDef["apiDef"], nil
+	return apiDef, nil
 }
 
 func (apiReconciler *APIReconciler) getAPIPoliciesForResources(ctx context.Context,
