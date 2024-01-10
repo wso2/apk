@@ -14,7 +14,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-apiVersion: dp.wso2.com/v1alpha1
+apiVersion: dp.wso2.com/v1alpha2
 kind: API
 metadata:
   name: disable-api-level-jwt
@@ -75,7 +75,7 @@ spec:
     namespace: gateway-integration-test-infra
     name: disable-api-level-jwt
 ---
-apiVersion: dp.wso2.com/v1alpha1
+apiVersion: dp.wso2.com/v1alpha2
 kind: API
 metadata:
   name: disable-api-level-jwt1
@@ -146,7 +146,7 @@ spec:
   - host: infra-backend-v1.gateway-integration-test-infra
     port: 8080
 ---
-apiVersion: dp.wso2.com/v1alpha1
+apiVersion: dp.wso2.com/v1alpha2
 kind: API
 metadata:
   name: disable-api-level-jwt2

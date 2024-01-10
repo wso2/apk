@@ -14,7 +14,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-apiVersion: dp.wso2.com/v1alpha1
+apiVersion: dp.wso2.com/v1alpha2
 kind: API
 metadata:
   name: cors-policy-api
@@ -85,7 +85,7 @@ spec:
     kind: API
     name: cors-policy-api
 ---
-apiVersion: dp.wso2.com/v1alpha1
+apiVersion: dp.wso2.com/v1alpha2
 kind: API
 metadata:
   name: no-cors-policy-api

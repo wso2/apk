@@ -1,0 +1,108 @@
+# Copyright (c) 2023, WSO2 LLC. (https://www.wso2.com) All Rights Reserved.
+#
+# WSO2 LLC. licenses this file to you under the Apache License,
+# Version 2.0 (the "License"); you may not use this file except
+# in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+apiVersion: dp.wso2.com/v1alpha2
+kind: API
+metadata:
+  name: gql-api
+  namespace: gateway-integration-test-infra
+spec:
+  apiName: GraphQL API
+  apiType: GraphQL
+  apiVersion: v1
+  basePath: /gql/v1
+  isDefaultVersion: true
+  definitionFileRef: gql-sdl
+  production:
+    - httpRouteRefs:
+      - gql-api-gqlroute
+  organization: wso2-org
+---
+apiVersion: dp.wso2.com/v1alpha2
+kind: GQLRoute
+metadata:
+  name: gql-api-gqlroute
+  namespace: gateway-integration-test-infra
+spec:
+  parentRefs:
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    name: default
+    namespace: apk-integration-test
+    sectionName: httpslistener
+  hostnames:
+  - gql.test.gw.wso2.com
+  backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: gql-backend-v1
+  rules:
+  - matches:
+    - path: hero
+      type: QUERY
+    - path: reviews
+      type: QUERY
+    - path: search
+      type: QUERY
+    - path: character
+      type: QUERY
+    - path: droid
+      type: QUERY
+    - path: human
+      type: QUERY
+    - path: allHumans
+      type: QUERY
+    - path: allDroids
+      type: QUERY
+    - path: allCharacters
+      type: QUERY
+    - path: starship
+      type: QUERY
+    - path: createReview
+      type: MUTATION
+# ---
+# apiVersion: dp.wso2.com/v1alpha1
+# kind: Authentication
+# metadata:
+#   name: disable-api-security
+#   namespace: gateway-integration-test-infra
+# spec:
+#   override:
+#     disabled: true            
+#   targetRef:
+#     group: gateway.networking.k8s.io
+#     kind: API
+#     namespace: gateway-integration-test-infra
+#     name: disable-api-security
+---
+apiVersion: dp.wso2.com/v1alpha1
+kind: Backend
+metadata:
+  name: gql-backend-v1
+  namespace: gateway-integration-test-infra
+spec:
+  basePath: /graphql
+  services:
+  - host: gql-backend-v1.gateway-integration-test-infra
+    port: 8080
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gql-sdl
+  namespace: gateway-integration-test-infra
+binaryData:
+  definition: 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
