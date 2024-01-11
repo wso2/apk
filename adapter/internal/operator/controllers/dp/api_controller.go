@@ -287,7 +287,7 @@ func (apiReconciler *APIReconciler) applyStartupAPIs() {
 	// Send all the API events to the channel
 	if len(combinedapiEvent.Events) > 0 {
 		*apiReconciler.ch <- *combinedapiEvent
-		loggers.LoggerAPKOperator.Info("Initial APIs were deployed successfully")
+		loggers.LoggerAPKOperator.Info("Initial APIs were reconciled successfully")
 	} else {
 		loggers.LoggerAPKOperator.Warn("No startup APIs found")
 	}
