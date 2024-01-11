@@ -73,7 +73,6 @@ func HandleAPILifeCycleEvents(ch *chan APIEvent, successChannel *chan SuccessEve
 			loggers.LoggerAPKOperator.Infof("Delete event received for %v", event.Events[0].APIDefinition.Name)
 			err = undeployAPIInGateway(event.Events[0])
 		case constants.Create:
-			loggers.LoggerAPKOperator.Infof("Create event received for %v", event.Events[0].APIDefinition.Name)
 			deployMultipleAPIsInGateway(event.Events)
 		case constants.Update:
 			loggers.LoggerAPKOperator.Infof("Update event received for %v", event.Events[0].APIDefinition.Name)
@@ -111,6 +110,7 @@ func undeployAPIInGateway(apiState APIState) error {
 func deployMultipleAPIsInGateway(apiStates []APIState) {
 	updatedLabelsMap := make(map[string]struct{})
 	for _, apiState := range apiStates {
+		loggers.LoggerAPKOperator.Infof("Create event received for %v", apiState.APIDefinition.Name)
 		if len(apiState.OldOrganizationID) != 0 {
 			xds.RemoveAPIFromOrgAPIMap(string((*apiState.APIDefinition).ObjectMeta.UID), apiState.OldOrganizationID)
 		}

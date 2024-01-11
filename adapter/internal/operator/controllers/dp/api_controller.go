@@ -285,9 +285,13 @@ func (apiReconciler *APIReconciler) applyStartupAPIs() {
 		}
 	}
 	// Send all the API events to the channel
-	*apiReconciler.ch <- *combinedapiEvent
+	if len(combinedapiEvent.Events) > 0 {
+		*apiReconciler.ch <- *combinedapiEvent
+		loggers.LoggerAPKOperator.Info("Initial APIs were deployed successfully")
+	} else {
+		loggers.LoggerAPKOperator.Warn("No startup APIs found")
+	}
 	xds.SetReady()
-	loggers.LoggerAPKOperator.Info("Initial APIs were deployed successfully")
 }
 
 // resolveAPIRefs validates following references related to the API
