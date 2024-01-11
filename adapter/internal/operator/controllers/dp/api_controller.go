@@ -244,7 +244,7 @@ func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 			apiReconciler.ods.DeleteCachedAPI(req.NamespacedName)
 			loggers.LoggerAPKOperator.Infof("Delete event received for API : %s with API UUID : %v, hence deleted from API cache",
 				req.NamespacedName.String(), string(apiCR.ObjectMeta.UID))
-			*apiReconciler.ch <- synchronizer.APIEvent{EventType: constants.Delete, Events: []synchronizer.APIState{apiState}}
+			*apiReconciler.ch <- synchronizer.APIEvent{EventType: constants.Delete, Event: apiState}
 			return ctrl.Result{}, nil
 		}
 		loggers.LoggerAPKOperator.Warnf("Api CR related to the reconcile request with key: %s returned error. Assuming API with API UUID : %v is already deleted, hence ignoring the error : %v",
@@ -272,20 +272,14 @@ func (apiReconciler *APIReconciler) applyStartupAPIs() {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2605, logging.CRITICAL, "Unable to list APIs: %v", err))
 		return
 	}
-	combinedapiEvent := &synchronizer.APIEvent{
-		EventType: constants.Create,
-		Events:    make([]synchronizer.APIState, 0),
-	}
 	for _, api := range apisList {
 		if apiState, err := apiReconciler.resolveAPIRefs(ctx, api); err != nil {
 			loggers.LoggerAPKOperator.Warnf("Error retrieving ref CRs for API : %s in namespace : %s with API UUID : %v, %v",
 				api.Name, api.Namespace, string(api.ObjectMeta.UID), err)
 		} else if apiState != nil {
-			combinedapiEvent.Events = append(combinedapiEvent.Events, apiState.Events...)
+			*apiReconciler.ch <- *apiState
 		}
 	}
-	// Send all the API events to the channel
-	*apiReconciler.ch <- *combinedapiEvent
 	xds.SetReady()
 	loggers.LoggerAPKOperator.Info("Initial APIs were deployed successfully")
 }
@@ -411,13 +405,13 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 
 	if !api.Status.DeploymentStatus.Accepted {
 		apiReconciler.ods.AddAPIState(apiRef, apiState)
-		return &synchronizer.APIEvent{EventType: constants.Create, Events: []synchronizer.APIState{*apiState}, UpdatedEvents: []string{}}, nil
+		return &synchronizer.APIEvent{EventType: constants.Create, Event: *apiState, UpdatedEvents: []string{}}, nil
 	} else if cachedAPI, events, updated :=
 		apiReconciler.ods.UpdateAPIState(apiRef, apiState); updated {
 		apiReconciler.removeOldOwnerRefs(ctx, cachedAPI)
 		loggers.LoggerAPI.Infof("API CR %s with API UUID : %v is updated on %v", apiRef.String(),
 			string(api.ObjectMeta.UID), events)
-		return &synchronizer.APIEvent{EventType: constants.Update, Events: []synchronizer.APIState{cachedAPI}, UpdatedEvents: events}, nil
+		return &synchronizer.APIEvent{EventType: constants.Update, Event: cachedAPI, UpdatedEvents: events}, nil
 	}
 
 	return nil, nil

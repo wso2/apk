@@ -110,7 +110,7 @@ var (
 	listenerToRouteArrayMap map[string][]*routev3.Route // Listener -> Routes map
 
 	// Common Enforcer Label as map key
-	// This doesn't have a usage yet. It will be used to handle multiple enforcer labels in future.
+	// TODO(amali) This doesn't have a usage yet. It will be used to handle multiple enforcer labels in future.
 	enforcerLabelMap map[string]*EnforcerInternalAPI // Enforcer Label -> EnforcerInternalAPI struct map
 
 	// KeyManagerList to store data
@@ -260,28 +260,26 @@ func deleteAPI(apiIdentifier string, environments []string, organizationID strin
 	existingLabels := orgAPIMap[organizationID][apiIdentifier].envoyLabels
 	toBeDelEnvs, toBeKeptEnvs := getEnvironmentsToBeDeleted(existingLabels, environments)
 
-	var isAllowedToDelete bool
-	updatedLabelsMap := make(map[string]struct{})
 	for _, val := range toBeDelEnvs {
-		updatedLabelsMap[val] = struct{}{}
-		if stringutils.StringInSlice(val, existingLabels) {
-			isAllowedToDelete = true
-		}
-	}
-	if isAllowedToDelete {
-		// do not delete from all environments, hence do not clear routes, clusters, endpoints, enforcerAPIs
-		orgAPIMap[organizationID][apiIdentifier].envoyLabels = toBeKeptEnvs
-		if len(toBeKeptEnvs) != 0 {
-			UpdateXdsCacheOnAPIChange(updatedLabelsMap)
+		isAllowedToDelete := stringutils.StringInSlice(val, existingLabels)
+		if isAllowedToDelete {
+			// do not delete from all environments, hence do not clear routes, clusters, endpoints, enforcerAPIs
+			orgAPIMap[organizationID][apiIdentifier].envoyLabels = toBeKeptEnvs
+			updateXdsCacheOnAPIChange(toBeDelEnvs, []string{})
+			if len(toBeKeptEnvs) != 0 {
+				return nil
+			}
+			logger.LoggerXds.Infof("API identifier: %v does not have any gateways. Hence deleting the API from label : %s. API_UUID: %v",
+				apiIdentifier, val, apiUUID)
+			cleanMapResources(apiIdentifier, organizationID, toBeDelEnvs)
 			return nil
 		}
 	}
 
 	//clean maps of routes, clusters, endpoints, enforcerAPIs
-	if len(environments) == 0 || isAllowedToDelete {
+	if len(environments) == 0 {
 		cleanMapResources(apiIdentifier, organizationID, toBeDelEnvs)
 	}
-	UpdateXdsCacheOnAPIChange(updatedLabelsMap)
 	return nil
 }
 
@@ -289,6 +287,11 @@ func cleanMapResources(apiIdentifier string, organizationID string, toBeDelEnvs 
 	if _, orgExists := orgAPIMap[organizationID]; orgExists {
 		delete(orgAPIMap[organizationID], apiIdentifier)
 	}
+
+	//updateXdsCacheOnAPIAdd is called after cleaning maps of routes, clusters, endpoints, enforcerAPIs.
+	//Therefore resources that belongs to the deleting API do not exist. Caches updated only with
+	//resources that belongs to the remaining APIs
+	updateXdsCacheOnAPIChange(toBeDelEnvs, []string{})
 
 	deleteBasepathForVHost(organizationID, apiIdentifier)
 	//TODO: (SuKSW) clean any remaining in label wise maps, if this is the last API of that label
@@ -307,22 +310,31 @@ func deleteBasepathForVHost(organizationID, apiIdentifier string) {
 	}
 }
 
-// UpdateXdsCacheOnAPIChange when this method is called, openAPIEnvoy map is updated.
+// when this method is called, openAPIEnvoy map is updated.
 // Old labels refers to the previously assigned labels
 // New labels refers to the the updated labels
-func UpdateXdsCacheOnAPIChange(labels map[string]struct{}) bool {
+func updateXdsCacheOnAPIChange(oldLabels []string, newLabels []string) bool {
 	revisionStatus := false
 	// TODO: (VirajSalaka) check possible optimizations, Since the number of labels are low by design it should not be an issue
-	for newLabel := range labels {
+	for _, newLabel := range newLabels {
 		listeners, clusters, routes, endpoints, apis := GenerateEnvoyResoucesForGateway(newLabel)
 		UpdateEnforcerApis(newLabel, apis, "")
 		success := UpdateXdsCacheWithLock(newLabel, endpoints, clusters, routes, listeners)
-		logger.LoggerXds.Debugf("Xds Cache is updated for the label : %v", newLabel)
+		logger.LoggerXds.Debugf("Xds Cache is updated for the newly added label : %v", newLabel)
 		if success {
 			// if even one label was updated with latest revision, we take the revision as deployed.
 			// (other labels also will get updated successfully)
 			revisionStatus = success
 			continue
+		}
+	}
+	for _, oldLabel := range oldLabels {
+		if !stringutils.StringInSlice(oldLabel, newLabels) {
+			listeners, clusters, routes, endpoints, apis := GenerateEnvoyResoucesForGateway(oldLabel)
+			GenerateEnvoyResoucesForGateway(oldLabel)
+			UpdateEnforcerApis(oldLabel, apis, "")
+			UpdateXdsCacheWithLock(oldLabel, endpoints, clusters, routes, listeners)
+			logger.LoggerXds.Debugf("Xds Cache is updated for the already existing label : %v", oldLabel)
 		}
 	}
 	return revisionStatus
@@ -672,8 +684,7 @@ func RemoveAPIFromOrgAPIMap(uuid string, orgID string) {
 }
 
 // UpdateAPICache updates the xDS cache related to the API Lifecycle event.
-func UpdateAPICache(vHosts []string, newLabels []string, listener string, sectionName string,
-	adapterInternalAPI model.AdapterInternalAPI) (map[string]struct{}, error) {
+func UpdateAPICache(vHosts []string, newLabels []string, listener string, sectionName string, adapterInternalAPI model.AdapterInternalAPI) error {
 	mutexForInternalMapUpdate.Lock()
 	defer mutexForInternalMapUpdate.Unlock()
 
@@ -688,45 +699,37 @@ func UpdateAPICache(vHosts []string, newLabels []string, listener string, sectio
 		orgIDAPIvHostsMap[adapterInternalAPI.GetOrganizationID()] = vHostsMap
 	}
 
-	updatedLabelsMap := make(map[string]struct{}, 0)
-
 	// Remove internal mappigs for old vHosts
 	for _, oldvhost := range oldvHosts {
 		apiIdentifier := GenerateIdentifierForAPIWithUUID(oldvhost, adapterInternalAPI.UUID)
+		var oldLabels []string
 		if orgMap, orgExists := orgAPIMap[adapterInternalAPI.GetOrganizationID()]; orgExists {
 			if _, apiExists := orgMap[apiIdentifier]; apiExists {
-				for _, oldLabel := range orgMap[apiIdentifier].envoyLabels {
-					updatedLabelsMap[oldLabel] = struct{}{}
-				}
+				oldLabels = orgMap[apiIdentifier].envoyLabels
 				delete(orgAPIMap[adapterInternalAPI.GetOrganizationID()], apiIdentifier)
 			}
 		}
+		updateXdsCacheOnAPIChange(oldLabels, newLabels)
 	}
 
-	// Create internal mappings for new vHosts
+	// Create internal mappigs for new vHosts
 	for _, vHost := range vHosts {
 		logger.LoggerAPKOperator.Debugf("Creating internal mapping for vhost: %s", vHost)
 		apiUUID := adapterInternalAPI.UUID
 		apiIdentifier := GenerateIdentifierForAPIWithUUID(vHost, apiUUID)
+		var oldLabels []string
 		var orgExists bool
-
-		// get changing label set
 		if _, orgExists = orgAPIMap[adapterInternalAPI.GetOrganizationID()]; orgExists {
 			if _, apiExists := orgAPIMap[adapterInternalAPI.GetOrganizationID()][apiIdentifier]; apiExists {
-				for _, oldLabel := range orgAPIMap[adapterInternalAPI.GetOrganizationID()][apiIdentifier].envoyLabels {
-					updatedLabelsMap[oldLabel] = struct{}{}
-				}
+				oldLabels = orgAPIMap[adapterInternalAPI.GetOrganizationID()][apiIdentifier].envoyLabels
 			}
-		}
-		for _, newLabel := range newLabels {
-			updatedLabelsMap[newLabel] = struct{}{}
 		}
 
 		routes, clusters, endpoints, err := oasParser.GetRoutesClustersEndpoints(adapterInternalAPI, nil,
 			vHost, adapterInternalAPI.GetOrganizationID())
 
 		if err != nil {
-			return nil, fmt.Errorf("error while deploying API. Name: %s Version: %s, OrgID: %s, API_UUID: %v, Error: %s",
+			return fmt.Errorf("error while deploying API. Name: %s Version: %s, OrgID: %s, API_UUID: %v, Error: %s",
 				adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), adapterInternalAPI.GetOrganizationID(),
 				apiUUID, err.Error())
 		}
@@ -751,8 +754,11 @@ func UpdateAPICache(vHosts []string, newLabels []string, listener string, sectio
 		} else {
 			listenerToRouteArrayMap[listener] = routes
 		}
+
+		revisionStatus := updateXdsCacheOnAPIChange(oldLabels, newLabels)
+		logger.LoggerXds.Infof("Deployed Revision: %v:%v, API_UUID: %v", apiIdentifier, revisionStatus, apiUUID)
 	}
-	return updatedLabelsMap, nil
+	return nil
 }
 
 // UpdateGatewayCache updates the xDS cache related to the Gateway Lifecycle event.
