@@ -313,12 +313,6 @@ func ResolveRef(ctx context.Context, client k8client.Client, api *dpv1alpha2.API
 	if err := client.Get(ctx, namespacedName, obj, opts...); err != nil {
 		return err
 	}
-	if api != nil {
-		err := UpdateOwnerReference(ctx, client, obj, *api, isReplace)
-		if err != nil {
-			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2664, logging.CRITICAL, "Error while updating owner ref: %v, error: %v", namespacedName, err.Error()))
-		}
-	}
 	return nil
 }
 
@@ -386,29 +380,6 @@ func GetResolvedBackend(ctx context.Context, client k8client.Client,
 			backend.Namespace, *backend.Spec.Security)
 	}
 	return &resolvedBackend
-}
-
-// UpdateOwnerReference update the child with owner reference of the given parent.
-func UpdateOwnerReference(ctx context.Context, client k8client.Client, child metav1.Object, api dpv1alpha2.API,
-	isReplace bool) error {
-	if isReplace {
-		child.SetOwnerReferences([]metav1.OwnerReference{
-			{
-				APIVersion: api.APIVersion,
-				Kind:       api.Kind,
-				Name:       api.Name,
-				UID:        api.UID,
-			},
-		})
-	} else {
-		child.SetOwnerReferences(append(child.GetOwnerReferences(), metav1.OwnerReference{
-			APIVersion: api.APIVersion,
-			Kind:       api.Kind,
-			Name:       api.Name,
-			UID:        api.UID,
-		}))
-	}
-	return UpdateCR(ctx, client, child)
 }
 
 // UpdateCR updates the given CR.
