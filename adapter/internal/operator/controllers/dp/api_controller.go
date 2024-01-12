@@ -946,7 +946,6 @@ func (apiReconciler *APIReconciler) retriveParentAPIsAndUpdateOwnerReferene(ctx 
 			loggers.LoggerAPKOperator.Errorf("Unexpected error occured while loading the cr object from cluster %+v", err)
 			return
 		}
-		loggers.LoggerAPKOperator.Errorf("Object loaded successfully %+v", &backend)
 		requests = apiReconciler.getAPIsForBackend(ctx, &backend)
 		apiReconciler.handleOwnerReference(ctx, &backend, &requests)
 	case *dpv1alpha1.Scope: 
@@ -959,7 +958,6 @@ func (apiReconciler *APIReconciler) retriveParentAPIsAndUpdateOwnerReferene(ctx 
 			loggers.LoggerAPKOperator.Errorf("Unexpected error occured while loading the cr object from cluster %+v", err)
 			return
 		}
-		loggers.LoggerAPKOperator.Errorf("Object loaded successfully %+v", &scope)
 		requests = apiReconciler.getAPIsForScope(ctx, &scope)
 		apiReconciler.handleOwnerReference(ctx, &scope, &requests)
 	case *dpv1alpha1.RateLimitPolicy: 
@@ -972,7 +970,6 @@ func (apiReconciler *APIReconciler) retriveParentAPIsAndUpdateOwnerReferene(ctx 
 			loggers.LoggerAPKOperator.Errorf("Unexpected error occured while loading the cr object from cluster %+v", err)
 			return
 		}
-		loggers.LoggerAPKOperator.Errorf("Object loaded successfully %+v", &rl)
 		requests = apiReconciler.getAPIsForRateLimitPolicy(ctx, &rl)
 		apiReconciler.handleOwnerReference(ctx, &rl, &requests)
 	case *dpv1alpha1.BackendJWT: 
@@ -985,7 +982,6 @@ func (apiReconciler *APIReconciler) retriveParentAPIsAndUpdateOwnerReferene(ctx 
 			loggers.LoggerAPKOperator.Errorf("Unexpected error occured while loading the cr object from cluster %+v", err)
 			return
 		}
-		loggers.LoggerAPKOperator.Errorf("Object loaded successfully %+v", &backendJWT)
 		requests = apiReconciler.getAPIsForBackendJWT(ctx, &backendJWT)
 		apiReconciler.handleOwnerReference(ctx, &backendJWT, &requests)
 	case *dpv1alpha1.InterceptorService: 
@@ -998,7 +994,6 @@ func (apiReconciler *APIReconciler) retriveParentAPIsAndUpdateOwnerReferene(ctx 
 			loggers.LoggerAPKOperator.Errorf("Unexpected error occured while loading the cr object from cluster %+v", err)
 			return
 		}
-		loggers.LoggerAPKOperator.Errorf("Object loaded successfully %+v", &interceptorService)
 		requests = apiReconciler.getAPIsForInterceptorService(ctx, &interceptorService)
 		apiReconciler.handleOwnerReference(ctx, &interceptorService, &requests)
 	case *dpv1alpha1.APIPolicy: 
@@ -1011,7 +1006,6 @@ func (apiReconciler *APIReconciler) retriveParentAPIsAndUpdateOwnerReferene(ctx 
 			loggers.LoggerAPKOperator.Errorf("Unexpected error occured while loading the cr object from cluster %+v", err)
 			return
 		}
-		loggers.LoggerAPKOperator.Errorf("Object loaded successfully %+v", &apiPolicy)
 		requests = apiReconciler.getAPIsForAPIPolicy(ctx, &apiPolicy)
 		apiReconciler.handleOwnerReference(ctx, &apiPolicy, &requests)
 	case *dpv1alpha2.Authentication:
@@ -1024,7 +1018,6 @@ func (apiReconciler *APIReconciler) retriveParentAPIsAndUpdateOwnerReferene(ctx 
 			loggers.LoggerAPKOperator.Errorf("Unexpected error occured while loading the cr object from cluster %+v", err)
 			return
 		}
-		loggers.LoggerAPKOperator.Errorf("Object loaded successfully %+v", &auth)
 		requests = apiReconciler.getAPIsForAuthentication(ctx, &auth)
 		apiReconciler.handleOwnerReference(ctx, &auth, &requests)
 	case *corev1.Secret: 
@@ -1037,7 +1030,6 @@ func (apiReconciler *APIReconciler) retriveParentAPIsAndUpdateOwnerReferene(ctx 
 			loggers.LoggerAPKOperator.Errorf("Unexpected error occured while loading the cr object from cluster %+v", err)
 			return
 		}
-		loggers.LoggerAPKOperator.Errorf("Object loaded successfully %+v", &secret)
 		requests = apiReconciler.getAPIsForSecret(ctx, &secret)
 		apiReconciler.handleOwnerReference(ctx, &secret, &requests)
 	case *corev1.ConfigMap: 
@@ -1050,7 +1042,6 @@ func (apiReconciler *APIReconciler) retriveParentAPIsAndUpdateOwnerReferene(ctx 
 			loggers.LoggerAPKOperator.Errorf("Unexpected error occured while loading the cr object from cluster %+v", err)
 			return
 		}
-		loggers.LoggerAPKOperator.Errorf("Object loaded successfully %+v", cm)
 		requests = apiReconciler.getAPIsForConfigMap(ctx, &cm)
 		apiReconciler.handleOwnerReference(ctx, &cm, &requests)
 	case *gwapiv1b1.HTTPRoute: 
@@ -1063,7 +1054,6 @@ func (apiReconciler *APIReconciler) retriveParentAPIsAndUpdateOwnerReferene(ctx 
 			loggers.LoggerAPKOperator.Errorf("Unexpected error occured while loading the cr object from cluster %+v", err)
 			return
 		}
-		loggers.LoggerAPKOperator.Errorf("Object loaded successfully %+v", &httpRoute)
 		requests = apiReconciler.getAPIForHTTPRoute(ctx, &httpRoute)
 		apiReconciler.handleOwnerReference(ctx, &httpRoute, &requests)
 	case *dpv1alpha2.GQLRoute:
@@ -1076,7 +1066,6 @@ func (apiReconciler *APIReconciler) retriveParentAPIsAndUpdateOwnerReferene(ctx 
 			loggers.LoggerAPKOperator.Errorf("Unexpected error occured while loading the cr object from cluster %+v", err)
 			return
 		}
-		loggers.LoggerAPKOperator.Errorf("Object loaded successfully %+v", &gqlRoute)
 		requests = apiReconciler.getAPIForGQLRoute(ctx, &gqlRoute)
 		apiReconciler.handleOwnerReference(ctx, &gqlRoute, &requests)
 	default:
@@ -2026,16 +2015,13 @@ func (apiReconciler *APIReconciler) handleStatus() {
 
 
 func (apiReconciler *APIReconciler) handleOwnerReference(ctx context.Context, obj k8client.Object, apiRequests *[]reconcile.Request) {
-	loggers.LoggerAPKOperator.Infof("Handling owner reference update for object: %v:%v   size : %v", obj.GetName(), obj.GetNamespace(), len(*apiRequests))
-	
-
 	apis := []dpv1alpha2.API{}
 	for _, req := range *apiRequests {
 		var apiCR dpv1alpha2.API
 		if err := apiReconciler.client.Get(ctx, req.NamespacedName, &apiCR); err == nil {
 			apis = append(apis, apiCR)
 		} else {
-			loggers.LoggerAPKOperator.Infof("Error while loading api: %+v", req)
+			loggers.LoggerAPKOperator.Errorf("Error while loading api: %+v", req)
 		}
 	}
 	// Prepare owner references for the route
@@ -2059,19 +2045,8 @@ func (apiReconciler *APIReconciler) handleOwnerReference(ctx context.Context, ob
 		}
 	}
 	if (updateRequired) {
-		if (len(preparedOwnerReferences) > 0) {
-			loggers.LoggerAPKOperator.Infof("An update is required for object: %v:%v obj owner size: %v size : %v %v %v %v %v", obj.GetName(), obj.GetNamespace(), len(obj.GetOwnerReferences()), len(preparedOwnerReferences), preparedOwnerReferences[0].UID, preparedOwnerReferences[0].Name, preparedOwnerReferences[0].APIVersion, preparedOwnerReferences[0].Kind)
-		} else {
-			loggers.LoggerAPKOperator.Infof("An update is required for object: %v:%v obj owner size: %v size : %v ", obj.GetName(), obj.GetNamespace(), len(obj.GetOwnerReferences()), len(preparedOwnerReferences))
-		}
 		obj.SetOwnerReferences(preparedOwnerReferences)
 		utils.UpdateCR(ctx, apiReconciler.client, obj)
-	} else {
-		if (len(preparedOwnerReferences) > 0) {
-			loggers.LoggerAPKOperator.Infof("Update not required for object: %v:%v obj owner size: %v size : %v %v %v %v %v", obj.GetName(), obj.GetNamespace(), len(obj.GetOwnerReferences()), len(preparedOwnerReferences), preparedOwnerReferences[0].UID, preparedOwnerReferences[0].Name, preparedOwnerReferences[0].APIVersion, preparedOwnerReferences[0].Kind)
-		} else {
-			loggers.LoggerAPKOperator.Infof("Update not required for object: %v:%v obj owner size: %v size : %v ", obj.GetName(), obj.GetNamespace(), len(obj.GetOwnerReferences()), len(preparedOwnerReferences))
-		}
 	}
 }
 
