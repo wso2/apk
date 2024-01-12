@@ -153,7 +153,7 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha1.Authentication{}), handler.EnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForAuthentication),
+	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha2.Authentication{}), handler.EnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForAuthentication),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2616, logging.BLOCKER, "Error watching Authentication resources: %v", err))
 		return err
@@ -1014,8 +1014,8 @@ func (apiReconciler *APIReconciler) retriveParentAPIsAndUpdateOwnerReferene(ctx 
 		loggers.LoggerAPKOperator.Errorf("Object loaded successfully %+v", &apiPolicy)
 		requests = apiReconciler.getAPIsForAPIPolicy(ctx, &apiPolicy)
 		apiReconciler.handleOwnerReference(ctx, &apiPolicy, &requests)
-	case *dpv1alpha1.Authentication:
-		var auth dpv1alpha1.Authentication
+	case *dpv1alpha2.Authentication:
+		var auth dpv1alpha2.Authentication
 		namesapcedName := types.NamespacedName{
 			Name:      string(obj.GetName()),
 			Namespace: string(obj.GetNamespace()),
