@@ -1,0 +1,31 @@
+---
+apiVersion: "gateway.networking.k8s.io/v1beta1"
+kind: "HTTPRoute"
+metadata:
+  name: "hr2"
+  namespace: apk-integration-test
+  labels:
+    api-name: "346888251571be33323cd2a0e7d8c26738b0a066"
+    api-version: "5a6df720540c20d95d530d3fd6885511223d5d20"
+    organization: "7505d64a54e061b7acd54ccd58b49dc43500b635"
+    managed-by: "apk"
+spec:
+  hostnames:
+  - "default.gw.wso2.com"
+  rules:
+  - matches:
+    - path:
+        type: "RegularExpression"
+        value: "/store/inventory"
+      method: "GET"
+    filters: []
+    backendRefs:
+    - group: "dp.wso2.com"
+      kind: "Backend"
+      name: "backend2"
+  
+  parentRefs:
+  - group: "gateway.networking.k8s.io"
+    kind: "Gateway"
+    name: "default"
+    sectionName: "httpslistener"

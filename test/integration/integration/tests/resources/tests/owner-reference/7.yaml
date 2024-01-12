@@ -1,0 +1,18 @@
+---
+kind: "API"
+apiVersion: "dp.wso2.com/v1alpha2"
+metadata:
+  name: "api2"
+  namespace: apk-integration-test
+spec:
+  apiName: "jdsnfkjbdsfkj"
+  apiType: "REST"
+  apiVersion: "v1"
+  basePath: "/base-path-5800/v1"
+  organization: "default"
+  isDefaultVersion: true
+  production:
+  - httpRouteRefs:
+    - "hr2"
+  apiProperties: []
+status: null

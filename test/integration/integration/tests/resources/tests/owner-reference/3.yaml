@@ -1,0 +1,20 @@
+---
+apiVersion: "dp.wso2.com/v1alpha1"
+kind: "RateLimitPolicy"
+metadata:
+  name: "rl1"
+  namespace: apk-integration-test
+  labels:
+    api-name: "346888251571be33323cd2a0e7d8c26738b0a066"
+    api-version: "5a6df720540c20d95d530d3fd6885511223d5d20"
+    organization: "7505d64a54e061b7acd54ccd58b49dc43500b635"
+    managed-by: "apk"
+spec:
+  default:
+    api:
+      requestsPerUnit: 1
+      unit: "Minute"
+  targetRef:
+    group: "gateway.networking.k8s.io"
+    kind: "API"
+    name: "gmt1harp24"
