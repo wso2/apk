@@ -419,7 +419,7 @@ func (adapterInternalAPI *AdapterInternalAPI) SetXWSO2ApplicationSecurity(applic
 	adapterInternalAPI.xWso2ApplicationSecurity = applicationSecurity
 }
 
-// GetXWSO2ApplicationSecurity returns the optional or mandatory application security
+// GetXWSO2ApplicationSecurity returns true if application security is mandatory, and false if optional
 func (adapterInternalAPI *AdapterInternalAPI) GetXWSO2ApplicationSecurity() bool {
 	return adapterInternalAPI.xWso2ApplicationSecurity
 }
@@ -776,6 +776,14 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 	if authScheme.Spec.Override != nil && authScheme.Spec.Override.Disabled != nil {
 		adapterInternalAPI.disableAuthentications = *authScheme.Spec.Override.Disabled
 	}
+
+	authSpec := utils.SelectPolicy(&authScheme.Spec.Override, &authScheme.Spec.Default, nil, nil)
+	if authSpec != nil && authSpec.AuthTypes != nil && authSpec.AuthTypes.Oauth2.Required != "" {
+		adapterInternalAPI.SetXWSO2ApplicationSecurity(authSpec.AuthTypes.Oauth2.Required == "mandatory")
+	} else {
+		adapterInternalAPI.SetXWSO2ApplicationSecurity(true)
+	}
+
 	adapterInternalAPI.disableScopes = disableScopes
 
 	// Check whether the API has a backend JWT token

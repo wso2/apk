@@ -121,6 +121,7 @@ public type EndpointConfigurations record {
 
 public type OAuth2Authentication record {|
     *Authentication;
+    string required = "mandatory";
     boolean sendTokenToUpstream = false;
     string headerName = "Authorization";
     boolean headerEnable = true;

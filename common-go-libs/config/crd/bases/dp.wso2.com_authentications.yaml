@@ -351,6 +351,14 @@ spec:
                             description: Header is the header name used to pass the
                               OAuth2 token
                             type: string
+                          required:
+                            default: mandatory
+                            description: Required indicates whether OAuth2 is mandatory
+                              or optional
+                            enum:
+                            - mandatory
+                            - optional
+                            type: string
                           sendTokenToUpstream:
                             description: SendTokenToUpstream is to specify whether
                               the OAuth2 token should be sent to the upstream
@@ -484,6 +492,14 @@ spec:
                             default: authorization
                             description: Header is the header name used to pass the
                               OAuth2 token
+                            type: string
+                          required:
+                            default: mandatory
+                            description: Required indicates whether OAuth2 is mandatory
+                              or optional
+                            enum:
+                            - mandatory
+                            - optional
                             type: string
                           sendTokenToUpstream:
                             description: SendTokenToUpstream is to specify whether

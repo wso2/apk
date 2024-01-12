@@ -148,7 +148,7 @@ public isolated function getK8sAPIByNameAndNamespace(string name, string namespa
 }
 
 isolated function getAuthenticationCrsForAPI(string apiName, string apiVersion, string namespace, string organization) returns model:AuthenticationList|http:ClientError|error {
-    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/authentications?labelSelector=" + check generateUrlEncodedLabelSelector(apiName, apiVersion, organization);
+    string endpoint = "/apis/dp.wso2.com/v1alpha2/namespaces/" + namespace + "/authentications?labelSelector=" + check generateUrlEncodedLabelSelector(apiName, apiVersion, organization);
     return k8sApiServerEp->get(endpoint, targetType = model:AuthenticationList);
 }
 

@@ -43,6 +43,7 @@ type AuthSpec struct {
 
 // APIAuth Authentication scheme type and details
 type APIAuth struct {
+
 	// Oauth2 is to specify the Oauth2 authentication scheme details
 	//
 	// +optional
@@ -108,6 +109,12 @@ type TestConsoleKeyAuth struct {
 // Oauth2Auth OAuth2 Authentication scheme details
 type Oauth2Auth struct {
 
+	// Required indicates whether OAuth2 is mandatory or optional
+	// +kubebuilder:validation:Enum=mandatory;optional
+	// +kubebuilder:default=mandatory
+	// +optional
+	Required string `json:"required,omitempty"`
+
 	// Disabled is to disable OAuth2 authentication
 	//
 	// +kubebuilder:default=false
@@ -128,6 +135,7 @@ type Oauth2Auth struct {
 
 // APIKeyAuth APIKey Authentication scheme details
 type APIKeyAuth struct {
+
 	//  In is to specify how the APIKey is passed to the request
 	//
 	// +kubebuilder:validation:Enum=Header;Query

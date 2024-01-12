@@ -469,6 +469,7 @@ public function testJWTAuthenticationOnlyEnable() returns error? {
         disabled: false,
         authTypes: {
             oauth2: {
+                required: "mandatory",
                 disabled: false,
                 header: "Authorization",
                 sendTokenToUpstream: false
@@ -478,7 +479,7 @@ public function testJWTAuthenticationOnlyEnable() returns error? {
     model:AuthenticationData expectedNoAuthentication = {
         disabled: true
     };
-    
+
     foreach model:Authentication item in apiArtifact.authenticationMap {
         if string:endsWith(item.metadata.name, "-no-authentication") {
             test:assertEquals(item.spec.default, expectedNoAuthentication);
@@ -554,6 +555,7 @@ public function testAPIKeyAndJWTEnable() returns error? {
                 }
             ],
             oauth2: {
+                required: "mandatory",
                 disabled: false,
                 header: "Authorization",
                 sendTokenToUpstream: false

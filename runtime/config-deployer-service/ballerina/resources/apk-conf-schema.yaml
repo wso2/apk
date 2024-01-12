@@ -108,6 +108,13 @@ components:
         - $ref: "#/components/schemas/Authentication"
         - type: object
           properties:
+            required:
+              type: string
+              default: mandatory
+              enum:
+                - mandatory
+                - optional
+              description: Specifies whether OAuth2 is mandatory or optional
             sendTokenToUpstream:
               type: boolean
               default: false
@@ -124,6 +131,13 @@ components:
         - $ref: "#/components/schemas/Authentication"
         - type: object
           properties:
+            required:
+              type: string
+              default: optional
+              enum:
+                - mandatory
+                - optional
+              description: Specifies whether APIKey is mandatory or optional
             sendTokenToUpstream:
               type: boolean
               default: false
@@ -153,6 +167,7 @@ components:
               enum:
                 - mandatory
                 - optional
+              description: Specifies whether mTLS is mandatory or optional
             certificates:
               type: array
               description: The names and keys of the config maps containing the mTLS certificates of that API
