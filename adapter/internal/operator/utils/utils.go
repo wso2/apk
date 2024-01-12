@@ -310,10 +310,8 @@ func ResolveAndAddBackendToMapping(ctx context.Context, client k8client.Client,
 // ResolveRef this function will return k8client object and update owner
 func ResolveRef(ctx context.Context, client k8client.Client, api *dpv1alpha2.API,
 	namespacedName types.NamespacedName, isReplace bool, obj k8client.Object, opts ...k8client.GetOption) error {
-	if err := client.Get(ctx, namespacedName, obj, opts...); err != nil {
-		return err
-	}
-	return nil
+	err := client.Get(ctx, namespacedName, obj, opts...); 
+	return err
 }
 
 // GetResolvedBackend resolves backend TLS configurations.
