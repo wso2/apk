@@ -97,7 +97,7 @@ spec:
     spec:
       containers:
       - name: gql-backend-v1
-        image: amalim/gql:v1
+        image: tharsanan/gq:1.0.0
         env:
         - name: POD_NAME
           valueFrom:

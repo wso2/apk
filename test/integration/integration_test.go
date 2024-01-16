@@ -50,5 +50,5 @@ func TestIntegration(t *testing.T) {
 		CleanupBaseResources: true,
 	})
 	cSuite.Setup(t)
-	cSuite.Run(t, []suite.IntegrationTest{tests.GQLAPI})
+	cSuite.Run(t, tests.IntegrationTests)
 }
