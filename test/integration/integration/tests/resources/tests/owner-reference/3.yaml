@@ -17,4 +17,4 @@ spec:
   targetRef:
     group: "gateway.networking.k8s.io"
     kind: "API"
-    name: "gmt1harp24"
+    name: "api1"
