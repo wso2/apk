@@ -195,15 +195,15 @@ public class AuthFilter implements Filter {
                                 requestContext.getMatchedResourcePaths().get(0).getPath(),
                                 requestContext.getMatchedAPI().getName(), requestContext.getMatchedAPI().getVersion(),
                                 requestContext.getMatchedAPI().getUuid());
-                        return new AuthenticationResponse(false, true, false);
                     } else {
                         log.debug("Optional mTLS authentication was failed for the request: {} , API: {}:{}, " +
                                 "APIUUID: {} ",
                                 requestContext.getMatchedResourcePaths().get(0).getPath(),
                                 requestContext.getMatchedAPI().getName(), requestContext.getMatchedAPI().getVersion(),
                                 requestContext.getMatchedAPI().getUuid());
-                        return new AuthenticationResponse(false, false, true);
                     }
+                    return new AuthenticationResponse(false, isMutualSSLMandatory, false);
+
                 }
                 // for all authenticators other than mTLS
             } else if (authenticate.isAuthenticated()) {
@@ -215,7 +215,7 @@ public class AuthFilter implements Filter {
             FilterUtils.setErrorToContext(requestContext, e);
         }
         boolean continueToNextAuth = true;
-        if (authenticator.getName().contains(APIConstants.API_SECURITY_MUTUAL_SSL_NAME) && isMutualSSLMandatory) {
+        if (authenticator.getName().contains(APIConstants.API_SECURITY_MUTUAL_SSL_NAME)) {
             continueToNextAuth = false;
         }
         return new AuthenticationResponse(false,
