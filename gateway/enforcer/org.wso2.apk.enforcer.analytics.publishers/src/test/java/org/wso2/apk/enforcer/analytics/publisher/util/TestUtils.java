@@ -24,6 +24,7 @@ import org.wso2.apk.enforcer.analytics.publisher.reporter.MetricEventBuilder;
 import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Util class  containing helper methods for test
@@ -67,8 +68,8 @@ public class TestUtils {
     }
 
     public static boolean isContains(List<String> messages, String message) {
-
-        for (String log : messages) {
+        List<String> messagesCopy = new ArrayList<>(messages);
+        for (String log : messagesCopy) {
             if (log.contains(message)) {
                 return true;
             }
