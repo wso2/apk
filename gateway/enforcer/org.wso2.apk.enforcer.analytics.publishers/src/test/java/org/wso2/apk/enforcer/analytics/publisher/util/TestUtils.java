@@ -67,9 +67,9 @@ public class TestUtils {
     }
 
     public static boolean isContains(List<String> messages, String message) {
-
-        for (String log : messages) {
-            if (log.contains(message)) {
+        int lengthOfMessages = messages.size();
+        for (int i = 0; i < lengthOfMessages; i++) {
+            if (messages.get(i).contains(message)) {
                 return true;
             }
         }
