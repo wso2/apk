@@ -1549,7 +1549,7 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 		func(rawObj k8client.Object) []string {
 			api := rawObj.(*dpv1alpha2.API)
 			var configMaps []string
-			if api.Spec.DefinitionFileRef == "" {
+			if api.Spec.DefinitionFileRef != "" {
 				configMaps = append(configMaps,
 					types.NamespacedName{
 						Name:      string(api.Spec.DefinitionFileRef),

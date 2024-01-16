@@ -24,7 +24,7 @@ spec:
   apiType: GraphQL
   apiVersion: v1
   basePath: /gql/v1
-  isDefaultVersion: true
+  isDefaultVersion: false
   definitionFileRef: gql-sdl
   production:
     - httpRouteRefs:
@@ -53,15 +53,13 @@ spec:
   - matches:
     - path: hero
       type: QUERY
+    - path: droid
+      type: QUERY
     - path: reviews
       type: QUERY
     - path: search
       type: QUERY
     - path: character
-      type: QUERY
-    - path: droid
-      type: QUERY
-    - path: human
       type: QUERY
     - path: allHumans
       type: QUERY
@@ -73,20 +71,28 @@ spec:
       type: QUERY
     - path: createReview
       type: MUTATION
-# ---
-# apiVersion: dp.wso2.com/v1alpha1
-# kind: Authentication
-# metadata:
-#   name: disable-api-security
-#   namespace: gateway-integration-test-infra
-# spec:
-#   override:
-#     disabled: true            
-#   targetRef:
-#     group: gateway.networking.k8s.io
-#     kind: API
-#     namespace: gateway-integration-test-infra
-#     name: disable-api-security
+  - matches:
+    - path: human
+      type: QUERY
+    filters:
+    - extensionRef:
+        group: dp.wso2.com
+        kind: Authentication
+        name: disable-gql-api-security
+---
+apiVersion: dp.wso2.com/v1alpha1
+kind: Authentication
+metadata:
+  name: disable-gql-api-security
+  namespace: gateway-integration-test-infra
+spec:
+  override:
+    disabled: true            
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Resource
+    namespace: gateway-integration-test-infra
+    name: gql-api
 ---
 apiVersion: dp.wso2.com/v1alpha1
 kind: Backend

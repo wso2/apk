@@ -72,7 +72,7 @@ metadata:
   namespace: gateway-integration-test-infra
 spec:
   selector:
-    app: gql-v1
+    app: gql-backend-v1
   ports:
     - protocol: TCP
       port: 8080
@@ -368,7 +368,6 @@ spec:
     group: gateway.networking.k8s.io
     kind: Gateway
     name: default
-
 ---
 apiVersion: dp.wso2.com/v1alpha1
 kind: TokenIssuer

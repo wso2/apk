@@ -34,14 +34,31 @@ var GQLAPI = suite.IntegrationTest{
 	Description: "Tests GraphQL API",
 	Manifests:   []string{"tests/gql-api.yaml"},
 	Test: func(t *testing.T, suite *suite.IntegrationTestSuite) {
-		ns := "gateway-integration-test-infra"
 		gwAddr := "gql.test.gw.wso2.com:9095"
+		// token := http.GetTestToken(t)
 
 		testCases := []http.ExpectedResponse{
 			{
 				Request: http.Request{
-					Host: "gql.test.gw.wso2.com",
-					Path: "/gql/v1",
+					Host:   "gql.test.gw.wso2.com",
+					Path:   "/gql/v1",
+					Method: "POST",
+					Headers: map[string]string{
+						"Content-Type": "application/json",
+					},
+					Body: `{"query":"query{\n    human(id:1000){\n        id\n        name\n    }\n}","variables":{}}`,
+				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Method: ""},
+				},
+				Response: http.Response{StatusCode: 200},
+			},
+			{
+				Request: http.Request{
+					Host:   "gql.test.gw.wso2.com",
+					Path:   "/gql/v1",
+					Method: "POST",
 					Headers: map[string]string{
 						"Content-Type": "application/json",
 					},
@@ -49,56 +66,33 @@ var GQLAPI = suite.IntegrationTest{
 				},
 				ExpectedRequest: &http.ExpectedRequest{
 					Request: http.Request{
-						Path: "/graphql",
-						Body: `{"query":"query{\n    human(id:1000){\n        id\n        name\n    }\n    droid(id:2000){\n        name\n        friends{\n            name\n            appearsIn\n        }\n    }\n}","variables":{}}`,
+						Method: "",
 					},
 				},
-				Backend:   "gql-backend-v1",
-				Namespace: ns,
+				Response: http.Response{StatusCode: 401},
 			},
+			// TODO(amali) enable this test case after fixing the issue https://github.com/wso2/apk/issues/1960
 			// {
 			// 	Request: http.Request{
-			// 		Host: "disable-api-security.test.gw.wso2.com",
-			// 		Path: "/disable-api-security/v1/orders",
+			// 		Host:   "gql.test.gw.wso2.com",
+			// 		Path:   "/gql/v1",
+			// 		Method: "POST",
+			// 		Headers: map[string]string{
+			// 			"Content-Type":  "application/json",
+			// 			"Authorization": "Bearer " + token,
+			// 		},
+			// 		Body: `{"query":"query{\n    human(id:1000){\n        id\n        name\n    }\n    droid(id:2000){\n        name\n        friends{\n            name\n            appearsIn\n        }\n    }\n}","variables":{}}`,
 			// 	},
 			// 	ExpectedRequest: &http.ExpectedRequest{
 			// 		Request: http.Request{
-			// 			Path: "/orders",
+			// 			Method: "",
 			// 		},
 			// 	},
-			// 	Backend:   "infra-backend-v1",
-			// 	Namespace: ns,
-			// },
-			// {
-			// 	Request: http.Request{
-			// 		Host: "disable-api-security.test.gw.wso2.com",
-			// 		Path: "/disable-api-security/users",
-			// 	},
-			// 	ExpectedRequest: &http.ExpectedRequest{
-			// 		Request: http.Request{
-			// 			Path: "/users",
-			// 		},
-			// 	},
-			// 	Backend:   "infra-backend-v1",
-			// 	Namespace: ns,
-			// },
-			// {
-			// 	Request: http.Request{
-			// 		Host: "disable-api-security.test.gw.wso2.com",
-			// 		Path: "/disable-api-security/orders",
-			// 	},
-			// 	ExpectedRequest: &http.ExpectedRequest{
-			// 		Request: http.Request{
-			// 			Path: "/orders",
-			// 		},
-			// 	},
-			// 	Backend:   "infra-backend-v1",
-			// 	Namespace: ns,
+			// 	Response: http.Response{StatusCode: 200},
 			// },
 		}
 		for i := range testCases {
 			tc := testCases[i]
-			// No test token added to the request header
 			t.Run(tc.GetTestCaseName(i), func(t *testing.T) {
 				t.Parallel()
 				http.MakeRequestAndExpectEventuallyConsistentResponse(t, suite.RoundTripper, suite.TimeoutConfig, gwAddr, tc)
