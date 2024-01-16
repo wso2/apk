@@ -4,6 +4,7 @@ go 1.19
 
 require (
 	github.com/stretchr/testify v1.8.1
+	github.com/wso2/apk/common-go-libs v0.0.0-20240111084335-6523a5c92eb9
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.26.1
 	k8s.io/apimachinery v0.26.1
