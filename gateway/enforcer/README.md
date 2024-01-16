@@ -33,7 +33,7 @@ The following should be installed in your development machine.
     +       value: -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5006 -Dhttpclient.hostnameVerifier=AllowAll -Xms512m -Xmx512m -XX:MaxRAMFraction=2
     ```
 
-2. Start WSO2 APK.
+2. Start WSO2 API Platform for K8s.
 
 3. Port forward the port 5006.
 

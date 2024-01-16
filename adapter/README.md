@@ -27,7 +27,7 @@ The following should be installed in your dev machine.
     gradle build
     ```
 
-    This will build go binary and pack into a docker image named as `adapter:0.0.1-SNAPSHOT`.
+    This will build go binary and pack into a docker image named as `adapter:1.0.0-SNAPSHOT`.
 
 3. If you ran into any issue first check whether the [prerequisites](#prerequisites) are satisfied.
 
