@@ -22,7 +22,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "cache"
-version = "3.7.0"
+version = "3.7.1"
 dependencies = [
 	{org = "ballerina", name = "constraint"},
 	{org = "ballerina", name = "jballerina.java"},
@@ -61,7 +61,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "http"
-version = "2.10.0"
+version = "2.10.5"
 dependencies = [
 	{org = "ballerina", name = "auth"},
 	{org = "ballerina", name = "cache"},
@@ -279,7 +279,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "sql"
-version = "1.11.0"
+version = "1.11.1"
 dependencies = [
 	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "jballerina.java"},
