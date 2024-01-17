@@ -111,6 +111,14 @@
     "OAuth2Authentication": {
       "type": "object",
       "properties": {
+        "required": {
+          "type": "string",
+          "default": "mandatory",
+          "enum": [
+            "mandatory",
+            "optional"
+          ]
+        },
         "authType": {
           "type": "string",
           "enum": [
@@ -175,15 +183,19 @@
           }
         }
       },
-      "required": [
-        "authType",
-        "certificates"
-      ],
       "additionalProperties": false
     },
     "APIKeyAuthentication": {
       "type": "object",
       "properties": {
+        "required": {
+          "type": "string",
+          "default": "optional",
+          "enum": [
+            "mandatory",
+            "optional"
+          ]
+        },
         "authType": {
           "type": "string",
           "example": "APIKey",

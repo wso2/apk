@@ -25,12 +25,7 @@ import org.wso2.apk.enforcer.commons.dto.JWTConfigurationDto;
 import org.wso2.apk.enforcer.commons.exception.APISecurityException;
 import org.wso2.apk.enforcer.commons.logging.ErrorDetails;
 import org.wso2.apk.enforcer.commons.logging.LoggingConstants;
-import org.wso2.apk.enforcer.commons.model.APIConfig;
-import org.wso2.apk.enforcer.commons.model.APIKeyAuthenticationConfig;
-import org.wso2.apk.enforcer.commons.model.AuthenticationContext;
-import org.wso2.apk.enforcer.commons.model.InternalKeyConfig;
-import org.wso2.apk.enforcer.commons.model.JWTAuthenticationConfig;
-import org.wso2.apk.enforcer.commons.model.RequestContext;
+import org.wso2.apk.enforcer.commons.model.*;
 import org.wso2.apk.enforcer.config.ConfigHolder;
 import org.wso2.apk.enforcer.config.EnforcerConfig;
 import org.wso2.apk.enforcer.config.dto.MutualSSLDto;
@@ -50,7 +45,8 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * This is the filter handling the authentication for the requests flowing through the gateway.
+ * This is the filter handling the authentication for the requests flowing
+ * through the gateway.
  */
 public class AuthFilter implements Filter {
     private List<Authenticator> authenticators = new ArrayList<>();
@@ -64,7 +60,7 @@ public class AuthFilter implements Filter {
     }
 
     private void initializeAuthenticators(APIConfig apiConfig) {
-        //TODO: Check security schema and add relevant authenticators.
+        // TODO: Check security schema and add relevant authenticators.
         boolean isMutualSSLProtected = false;
         isMutualSSLMandatory = false;
 
@@ -82,10 +78,6 @@ public class AuthFilter implements Filter {
             } else {
                 isMutualSSLProtected = false;
             }
-        }
-
-        if (!isMutualSSLMandatory) {
-            isOAuthBasicAuthMandatory = true;
         }
 
         // TODO: Set authenticator for isBasicAuthProtected
@@ -137,11 +129,10 @@ public class AuthFilter implements Filter {
                     canAuthenticated = true;
                 }
                 AuthenticationResponse authenticateResponse = authenticate(authenticator, requestContext);
-                // Authentication status will be updated only if the authentication is a mandatory one
-                if (authenticateResponse.isMandatoryAuthentication()) {
-                    authenticated = authenticateResponse.isAuthenticated();
-                    setInterceptorAuthContextMetadata(authenticator, requestContext);
-                }
+
+                authenticated = authenticateResponse.isAuthenticated();
+                setInterceptorAuthContextMetadata(authenticator, requestContext);
+
                 if (!authenticateResponse.isContinueToNextAuthenticator()) {
                     break;
                 }
@@ -172,7 +163,7 @@ public class AuthFilter implements Filter {
         log.debug("None of the authenticators were able to authenticate the request: {}",
                 requestContext.getRequestPathTemplate(),
                 ErrorDetails.errorLog(LoggingConstants.Severity.MINOR, 6600));
-        //set WWW_AUTHENTICATE header to error response
+        // set WWW_AUTHENTICATE header to error response
         requestContext.addOrModifyHeaders(APIConstants.WWW_AUTHENTICATE, getAuthenticatorsChallengeString() +
                 ", error=\"invalid_token\"" +
                 ", error_description=\"The provided token is invalid\"");
@@ -190,32 +181,45 @@ public class AuthFilter implements Filter {
                             requestContext.getMatchedResourcePaths().get(0).getPath(),
                             requestContext.getMatchedAPI().getName(), requestContext.getMatchedAPI().getVersion(),
                             requestContext.getMatchedAPI().getUuid());
-                    return new AuthenticationResponse(true, isMutualSSLMandatory, true);
+
+                    boolean isApplicationSecurityDisabled = requestContext.getMatchedResourcePaths().get(0)
+                            .getAuthenticationConfig().isDisabled();
+                    // proceed to the next authenticator only if application security is enabled and
+                    // if OAuth2 is mandatory
+                    return new AuthenticationResponse(true, isMutualSSLMandatory,
+                            !isApplicationSecurityDisabled && isOAuthBasicAuthMandatory);
                 } else {
                     if (isMutualSSLMandatory) {
                         log.debug("Mandatory mTLS authentication was failed for the request: {} , API: {}:{}, " +
-                                        "APIUUID: {} ",
+                                "APIUUID: {} ",
                                 requestContext.getMatchedResourcePaths().get(0).getPath(),
                                 requestContext.getMatchedAPI().getName(), requestContext.getMatchedAPI().getVersion(),
                                 requestContext.getMatchedAPI().getUuid());
-                        return new AuthenticationResponse(false, true, false);
                     } else {
                         log.debug("Optional mTLS authentication was failed for the request: {} , API: {}:{}, " +
-                                        "APIUUID: {} ",
+                                "APIUUID: {} ",
                                 requestContext.getMatchedResourcePaths().get(0).getPath(),
                                 requestContext.getMatchedAPI().getName(), requestContext.getMatchedAPI().getVersion(),
                                 requestContext.getMatchedAPI().getUuid());
-                        return new AuthenticationResponse(false, false, true);
                     }
+                    return new AuthenticationResponse(false, isMutualSSLMandatory, false);
+
                 }
+                // for all authenticators other than mTLS
             } else if (authenticate.isAuthenticated()) {
                 return new AuthenticationResponse(true, isOAuthBasicAuthMandatory, false);
             }
         } catch (APISecurityException e) {
-            //TODO: (VirajSalaka) provide the error code properly based on exception (401, 403, 429 etc)
+            // TODO: (VirajSalaka) provide the error code properly based on exception (401,
+            // 403, 429 etc)
             FilterUtils.setErrorToContext(requestContext, e);
         }
-        return new AuthenticationResponse(false, isOAuthBasicAuthMandatory, true);
+        boolean continueToNextAuth = true;
+        if (authenticator.getName().contains(APIConstants.API_SECURITY_MUTUAL_SSL_NAME)) {
+            continueToNextAuth = false;
+        }
+        return new AuthenticationResponse(false,
+                isOAuthBasicAuthMandatory || isMutualSSLMandatory, continueToNextAuth);
     }
 
     private String getAuthenticatorsChallengeString() {
@@ -229,7 +233,8 @@ public class AuthFilter implements Filter {
     }
 
     private void setInterceptorAuthContextMetadata(Authenticator authenticator, RequestContext requestContext) {
-        // add auth context to metadata, lua script will add it to the auth context of the interceptor
+        // add auth context to metadata, lua script will add it to the auth context of
+        // the interceptor
         AuthenticationContext authContext = requestContext.getAuthenticationContext();
         String tokenType = authenticator.getName();
         authContext.setTokenType(tokenType);
@@ -258,12 +263,11 @@ public class AuthFilter implements Filter {
 
     private void populateRemoveAndProtectedAuthHeaders(RequestContext requestContext) {
         requestContext.getMatchedResourcePaths().forEach(resourcePath -> {
-            JWTAuthenticationConfig jwtAuthenticationConfig =
-                    resourcePath.getAuthenticationConfig().getJwtAuthenticationConfig();
-            InternalKeyConfig internalKeyConfig =
-                    resourcePath.getAuthenticationConfig().getInternalKeyConfig();
-            List<APIKeyAuthenticationConfig> apiKeyAuthenticationConfig =
-                    resourcePath.getAuthenticationConfig().getApiKeyAuthenticationConfigs();
+            JWTAuthenticationConfig jwtAuthenticationConfig = resourcePath.getAuthenticationConfig()
+                    .getJwtAuthenticationConfig();
+            InternalKeyConfig internalKeyConfig = resourcePath.getAuthenticationConfig().getInternalKeyConfig();
+            List<APIKeyAuthenticationConfig> apiKeyAuthenticationConfig = resourcePath.getAuthenticationConfig()
+                    .getApiKeyAuthenticationConfigs();
             if (jwtAuthenticationConfig != null && !jwtAuthenticationConfig.isSendTokenToUpstream()) {
                 requestContext.getRemoveHeaders().add(jwtAuthenticationConfig.getHeader());
             }

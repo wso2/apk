@@ -341,13 +341,15 @@ public class APIClient {
         map<model:Authentication> authenticationMap = {};
         model:AuthenticationExtensionType authTypes = {};
         boolean isOAuthDisabled = false;
+        boolean isOAuthOptional = false;
         boolean isMTLSMandatory = false;
         boolean isMTLSDisabled = false;
         foreach AuthenticationRequest authentication in authentications {
             if authentication.authType == "OAuth2" {
                 OAuth2Authentication oauth2Authentication = check authentication.cloneWithType(OAuth2Authentication);
                 isOAuthDisabled = !oauth2Authentication.enabled;
-                authTypes.oauth2 = {header: <string>oauth2Authentication.headerName, sendTokenToUpstream: <boolean>oauth2Authentication.sendTokenToUpstream, disabled: !oauth2Authentication.enabled};
+                isOAuthOptional = oauth2Authentication.required == "optional";
+                authTypes.oauth2 = {header: <string>oauth2Authentication.headerName, sendTokenToUpstream: <boolean>oauth2Authentication.sendTokenToUpstream, disabled: !oauth2Authentication.enabled, required: oauth2Authentication.required};
             } else if authentication.authType == "APIKey" && authentication is APIKeyAuthentication {
                 APIKeyAuthentication apiKeyAuthentication = check authentication.cloneWithType(APIKeyAuthentication);
                 authTypes.apiKey = [];
@@ -357,7 +359,7 @@ public class APIClient {
                 MTLSAuthentication mtlsAuthentication = check authentication.cloneWithType(MTLSAuthentication);
                 isMTLSMandatory = mtlsAuthentication.required == "mandatory";
                 isMTLSDisabled = !mtlsAuthentication.enabled;
-                if isOAuthDisabled && (!isMTLSMandatory || isMTLSDisabled) {
+                if ((isOAuthDisabled && (!isMTLSMandatory || isMTLSDisabled)) || (isOAuthOptional && isMTLSDisabled)) {
                     log:printError("Invalid authtypes provided: one of mTLS or OAuth2 has to be enabled and mandatory");
                     return e909019();
                 }
@@ -1025,13 +1027,13 @@ public class APIClient {
 
     public isolated function generateAPIPolicyCR(APKConf apkConf, string targetRefName, APKOperations? operation, commons:Organization organization, model:APIPolicyData policyData) returns model:APIPolicy? {
         model:APIPolicy? apiPolicyCR = ();
-        string optype =  "api";
+        string optype = "api";
         if operation is APKOperations {
             optype = "resource";
         }
         apiPolicyCR = {
             metadata: {
-                name: targetRefName +"-"+ optype + "-policy",
+                name: targetRefName + "-" + optype + "-policy",
                 labels: self.getLabels(apkConf, organization)
             },
             spec: {
@@ -1391,7 +1393,7 @@ public class APIClient {
 
     public isolated function retrieveRateLimitPolicyRefName(APKOperations? operation, string targetRef) returns string {
         if operation is APKOperations {
-            return "resource-"+ targetRef;
+            return "resource-" + targetRef;
         } else {
             return "api-" + targetRef;
         }

@@ -95,7 +95,7 @@ public class DeployerClient {
             apiArtifact.namespace = apiPartition.namespace;
             if existingAPI is model:API {
                 check self.deleteHttpRoutes(existingAPI, <string>apiArtifact?.organization);
-                check self.deleteAuthneticationCRs(existingAPI, <string>apiArtifact?.organization);
+                check self.deleteAuthenticationCRs(existingAPI, <string>apiArtifact?.organization);
                 _ = check self.deleteScopeCrsForAPI(existingAPI, <string>apiArtifact?.organization);
                 check self.deleteBackends(existingAPI, <string>apiArtifact?.organization);
                 check self.deleteRateLimitPolicyCRs(existingAPI, <string>apiArtifact?.organization);
@@ -219,7 +219,7 @@ public class DeployerClient {
         }
     }
 
-    private isolated function deleteAuthneticationCRs(model:API api, string organization) returns commons:APKError? {
+    private isolated function deleteAuthenticationCRs(model:API api, string organization) returns commons:APKError? {
         do {
             model:AuthenticationList|http:ClientError authenticationCrListResponse = check getAuthenticationCrsForAPI(api.spec.apiName, api.spec.apiVersion, <string>api.metadata?.namespace, organization);
             if authenticationCrListResponse is model:AuthenticationList {

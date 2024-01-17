@@ -35,17 +35,39 @@ func (src *Authentication) ConvertTo(dstRaw conversion.Hub) error {
 	dst.Spec.Default.Disabled = src.Spec.Default.Disabled
 	dst.Spec.Override.Disabled = src.Spec.Override.Disabled
 
-	// Convert Oauth2Auth to v1alpha2.Oauth2Auth
-	dst.Spec.Default.AuthTypes.Oauth2 = v1alpha2.Oauth2Auth(src.Spec.Default.AuthTypes.Oauth2)
-	dst.Spec.Override.AuthTypes.Oauth2 = v1alpha2.Oauth2Auth(src.Spec.Override.AuthTypes.Oauth2)
+	// Convert Oauth2Auth default to v1alpha2.Oauth2Auth : Required field added as mandatory for OAuth2
+	dst.Spec.Default.AuthTypes.Oauth2 = v1alpha2.Oauth2Auth{
+		Required:            "mandatory",
+		Disabled:            src.Spec.Default.AuthTypes.Oauth2.Disabled,
+		Header:              src.Spec.Default.AuthTypes.Oauth2.Header,
+		SendTokenToUpstream: src.Spec.Default.AuthTypes.Oauth2.SendTokenToUpstream,
+	}
 
+	// Convert Oauth2Auth override to v1alpha2.Oauth2Auth : Required field added as mandatory for OAuth2
+	dst.Spec.Override.AuthTypes.Oauth2 = v1alpha2.Oauth2Auth{
+		Required:            "mandatory",
+		Disabled:            src.Spec.Default.AuthTypes.Oauth2.Disabled,
+		Header:              src.Spec.Default.AuthTypes.Oauth2.Header,
+		SendTokenToUpstream: src.Spec.Default.AuthTypes.Oauth2.SendTokenToUpstream,
+	}
+
+	// Convert Oauth2Auth Default to v1alpha2.APIKey : Required field added as optional for APIKey
 	for _, apiKeyAuth := range src.Spec.Default.AuthTypes.APIKey {
-		convertedAPIKeyAuth := v1alpha2.APIKeyAuth(apiKeyAuth)
+		convertedAPIKeyAuth := v1alpha2.APIKeyAuth{
+			In:                  apiKeyAuth.In,
+			Name:                apiKeyAuth.Name,
+			SendTokenToUpstream: apiKeyAuth.SendTokenToUpstream,
+		}
 		dst.Spec.Default.AuthTypes.APIKey = append(dst.Spec.Default.AuthTypes.APIKey, convertedAPIKeyAuth)
 	}
 
+	// Convert Oauth2Auth Override to v1alpha2.APIKey : Required field added as optional for APIKey
 	for _, apiKeyAuth := range src.Spec.Override.AuthTypes.APIKey {
-		convertedAPIKeyAuth := v1alpha2.APIKeyAuth(apiKeyAuth)
+		convertedAPIKeyAuth := v1alpha2.APIKeyAuth{
+			In:                  apiKeyAuth.In,
+			Name:                apiKeyAuth.Name,
+			SendTokenToUpstream: apiKeyAuth.SendTokenToUpstream,
+		}
 		dst.Spec.Override.AuthTypes.APIKey = append(dst.Spec.Override.AuthTypes.APIKey, convertedAPIKeyAuth)
 	}
 
@@ -67,16 +89,32 @@ func (src *Authentication) ConvertFrom(srcRaw conversion.Hub) error {
 
 	src.Spec.Default.Disabled = dst.Spec.Default.Disabled
 	src.Spec.Override.Disabled = dst.Spec.Override.Disabled
-	src.Spec.Default.AuthTypes.Oauth2 = Oauth2Auth(dst.Spec.Default.AuthTypes.Oauth2)
-	src.Spec.Override.AuthTypes.Oauth2 = Oauth2Auth(dst.Spec.Override.AuthTypes.Oauth2)
+	src.Spec.Default.AuthTypes.Oauth2 = Oauth2Auth{
+		Disabled:            src.Spec.Default.AuthTypes.Oauth2.Disabled,
+		Header:              src.Spec.Default.AuthTypes.Oauth2.Header,
+		SendTokenToUpstream: src.Spec.Default.AuthTypes.Oauth2.SendTokenToUpstream,
+	}
+	src.Spec.Override.AuthTypes.Oauth2 = Oauth2Auth{
+		Disabled:            src.Spec.Override.AuthTypes.Oauth2.Disabled,
+		Header:              src.Spec.Override.AuthTypes.Oauth2.Header,
+		SendTokenToUpstream: src.Spec.Override.AuthTypes.Oauth2.SendTokenToUpstream,
+	}
 
 	for _, apiKeyAuth := range dst.Spec.Default.AuthTypes.APIKey {
-		convertedAPIKeyAuth := APIKeyAuth(apiKeyAuth)
+		convertedAPIKeyAuth := APIKeyAuth{
+			In:                  apiKeyAuth.In,
+			Name:                apiKeyAuth.Name,
+			SendTokenToUpstream: apiKeyAuth.SendTokenToUpstream,
+		}
 		src.Spec.Default.AuthTypes.APIKey = append(src.Spec.Default.AuthTypes.APIKey, convertedAPIKeyAuth)
 	}
 
 	for _, apiKeyAuth := range dst.Spec.Override.AuthTypes.APIKey {
-		convertedAPIKeyAuth := APIKeyAuth(apiKeyAuth)
+		convertedAPIKeyAuth := APIKeyAuth{
+			In:                  apiKeyAuth.In,
+			Name:                apiKeyAuth.Name,
+			SendTokenToUpstream: apiKeyAuth.SendTokenToUpstream,
+		}
 		src.Spec.Override.AuthTypes.APIKey = append(src.Spec.Override.AuthTypes.APIKey, convertedAPIKeyAuth)
 	}
 

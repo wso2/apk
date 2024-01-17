@@ -49,6 +49,7 @@ public type MutualSSL record {
 };
 
 public type OAuth2Authentication record {
+    string required;
     string header?;
     boolean sendTokenToUpstream?;
     boolean disabled;
