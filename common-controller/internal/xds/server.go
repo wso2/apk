@@ -31,7 +31,6 @@ import (
 	"github.com/envoyproxy/go-control-plane/pkg/cache/types"
 	envoy_cachev3 "github.com/envoyproxy/go-control-plane/pkg/cache/v3"
 
-	wso2_cache "github.com/wso2/apk/adapter/pkg/discovery/protocol/cache/v3"
 	eventhubTypes "github.com/wso2/apk/adapter/pkg/eventhub/types"
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 )
@@ -62,6 +61,7 @@ type EnforcerInternalAPI struct {
 	applications           []types.Resource
 	applicationKeyMappings []types.Resource
 	applicationMappings    []types.Resource
+	jwtIssuers             []types.Resource
 }
 
 var (
@@ -69,12 +69,7 @@ var (
 	mutexForXdsUpdate         sync.Mutex
 	mutexForInternalMapUpdate sync.Mutex
 
-	cache                              envoy_cachev3.SnapshotCache
-	enforcerCache                      wso2_cache.SnapshotCache
-	enforcerSubscriptionCache          wso2_cache.SnapshotCache
-	enforcerApplicationCache           wso2_cache.SnapshotCache
-	enforcerApplicationKeyMappingCache wso2_cache.SnapshotCache
-	enforcerApplicationMappingCache    wso2_cache.SnapshotCache
+	cache envoy_cachev3.SnapshotCache
 
 	orgAPIMap map[string]map[string]*EnvoyInternalAPI // organizationID -> Vhost:API_UUID -> EnvoyInternalAPI struct map
 
@@ -122,11 +117,6 @@ var _ envoy_cachev3.NodeHash = IDHash{}
 
 func init() {
 	cache = envoy_cachev3.NewSnapshotCache(false, IDHash{}, nil)
-	enforcerCache = wso2_cache.NewSnapshotCache(false, IDHash{}, nil)
-	enforcerSubscriptionCache = wso2_cache.NewSnapshotCache(false, IDHash{}, nil)
-	enforcerApplicationCache = wso2_cache.NewSnapshotCache(false, IDHash{}, nil)
-	enforcerApplicationKeyMappingCache = wso2_cache.NewSnapshotCache(false, IDHash{}, nil)
-	enforcerApplicationMappingCache = wso2_cache.NewSnapshotCache(false, IDHash{}, nil)
 	gatewayLabelConfigMap = make(map[string]*EnvoyGatewayConfig)
 	listenerToRouteArrayMap = make(map[string][]*routev3.Route)
 	orgAPIMap = make(map[string]map[string]*EnvoyInternalAPI)
@@ -213,29 +203,4 @@ func SetEmptySnapshotupdate(lable string) bool {
 // GetXdsCache returns xds server cache.
 func GetXdsCache() envoy_cachev3.SnapshotCache {
 	return cache
-}
-
-// GetEnforcerCache returns xds server cache.
-func GetEnforcerCache() wso2_cache.SnapshotCache {
-	return enforcerCache
-}
-
-// GetEnforcerSubscriptionCache returns xds server cache.
-func GetEnforcerSubscriptionCache() wso2_cache.SnapshotCache {
-	return enforcerSubscriptionCache
-}
-
-// GetEnforcerApplicationCache returns xds server cache.
-func GetEnforcerApplicationCache() wso2_cache.SnapshotCache {
-	return enforcerApplicationCache
-}
-
-// GetEnforcerApplicationKeyMappingCache returns xds server cache.
-func GetEnforcerApplicationKeyMappingCache() wso2_cache.SnapshotCache {
-	return enforcerApplicationKeyMappingCache
-}
-
-// GetEnforcerApplicationMappingCache returns xds server cache.
-func GetEnforcerApplicationMappingCache() wso2_cache.SnapshotCache {
-	return enforcerApplicationMappingCache
 }

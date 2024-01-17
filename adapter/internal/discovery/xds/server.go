@@ -49,7 +49,6 @@ import (
 	"github.com/wso2/apk/adapter/internal/oasparser/envoyconf"
 	"github.com/wso2/apk/adapter/internal/oasparser/model"
 	operatorconsts "github.com/wso2/apk/adapter/internal/operator/constants"
-	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/subscription"
 	wso2_cache "github.com/wso2/apk/adapter/pkg/discovery/protocol/cache/v3"
 	wso2_resource "github.com/wso2/apk/adapter/pkg/discovery/protocol/resource/v3"
 	eventhubTypes "github.com/wso2/apk/adapter/pkg/eventhub/types"
@@ -564,26 +563,6 @@ func UpdateEnforcerApis(label string, apis []types.Resource, version string) {
 	}
 	logger.LoggerXds.Infof("New API cache update for the label: " + label + " version: " + fmt.Sprint(version))
 
-}
-
-// UpdateEnforcerJWTIssuers sets new update to the enforcer's Applications
-func UpdateEnforcerJWTIssuers(jwtIssuers *subscription.JWTIssuerList) {
-	logger.LoggerXds.Debug("Updating Enforcer JWT Issuer Cache")
-	label := commonEnforcerLabel
-	jwtIssuerList := append(enforcerLabelMap[label].jwtIssuers, jwtIssuers)
-
-	version, _ := crand.Int(crand.Reader, maxRandomBigInt())
-	snap, _ := wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
-		wso2_resource.JWTIssuerListType: jwtIssuerList,
-	})
-	snap.Consistent()
-
-	errSetSnap := enforcerJwtIssuerCache.SetSnapshot(context.Background(), label, snap)
-	if errSetSnap != nil {
-		logger.LoggerXds.ErrorC(logging.PrintError(logging.Error1414, logging.MAJOR, "Error while setting the snapshot : %v", errSetSnap.Error()))
-	}
-	enforcerLabelMap[label].jwtIssuers = jwtIssuerList
-	logger.LoggerXds.Infof("New JWTIssuer cache update for the label: " + label + " version: " + fmt.Sprint(version))
 }
 
 // UpdateXdsCacheWithLock uses mutex and lock to avoid different go routines updating XDS at the same time

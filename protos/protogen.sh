@@ -23,7 +23,7 @@ cd $cur_dir
 rm -rf target
 mkdir -p target/deps
 
-ADAPTER_GEN_DIR=$cur_dir/../common-controller/pkg/discovery/api/wso2/
+ADAPTER_GEN_DIR=$cur_dir/../common-go-libs/pkg/discovery/api/wso2/
 ENFORCER_GEN_DIR=$cur_dir/../gateway/enforcer/org.wso2.apk.enforcer/src/main/java/
 GREEN='\033[0;32m'
 BOLD="\033[1m"

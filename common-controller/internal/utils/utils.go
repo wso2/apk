@@ -19,13 +19,21 @@
 package utils
 
 import (
+	"context"
+	"crypto/x509"
+	"encoding/pem"
 	"sync"
 
 	discovery "github.com/envoyproxy/go-control-plane/envoy/service/discovery/v3"
+	"github.com/wso2/apk/adapter/pkg/logging"
 	"github.com/wso2/apk/adapter/pkg/utils/envutils"
 	"github.com/wso2/apk/adapter/pkg/utils/stringutils"
 	"github.com/wso2/apk/common-controller/internal/config"
+	"github.com/wso2/apk/common-controller/internal/loggers"
 	constants "github.com/wso2/apk/common-controller/internal/operator/constant"
+	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
+	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	k8client "sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -133,4 +141,75 @@ func NamespacedName(obj k8client.Object) types.NamespacedName {
 		Namespace: obj.GetNamespace(),
 		Name:      obj.GetName(),
 	}
+}
+
+// ConvertRefConfigsV2ToV1 converts RefConfig v2 to v1
+func ConvertRefConfigsV2ToV1(refConfig *dpv1alpha2.RefConfig) *dpv1alpha1.RefConfig {
+
+	return &dpv1alpha1.RefConfig{
+		Name: refConfig.Name,
+		Key:  refConfig.Key,
+	}
+}
+
+// ResolveCertificate reads the certificate from TLSConfig, first checks the certificateInline field,
+// if no value then load the certificate from secretRef using util function called getSecretValue
+func ResolveCertificate(ctx context.Context, client k8client.Client, namespace string, certificateInline *string, configMapRef *dpv1alpha1.RefConfig, secretRef *dpv1alpha1.RefConfig) (string, error) {
+	var certificate string
+	var err error
+	if certificateInline != nil && len(*certificateInline) > 0 {
+		certificate = *certificateInline
+	} else if secretRef != nil {
+		if certificate, err = getSecretValue(ctx, client,
+			namespace, secretRef.Name, secretRef.Key); err != nil {
+			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2642, logging.CRITICAL, "Error while reading certificate from secretRef: %s", secretRef))
+		}
+	} else if configMapRef != nil {
+		if certificate, err = getConfigMapValue(ctx, client,
+			namespace, configMapRef.Name, configMapRef.Key); err != nil {
+			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2643, logging.CRITICAL, "Error while reading certificate from configMapRef: %s", configMapRef))
+		}
+	}
+	if err != nil {
+		return "", err
+	}
+	if len(certificate) > 0 {
+		block, _ := pem.Decode([]byte(certificate))
+		if block == nil {
+			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2627, logging.CRITICAL, "Failed to decode certificate PEM."))
+			return "", nil
+		}
+		_, err = x509.ParseCertificate(block.Bytes)
+		if err != nil {
+			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2641, logging.CRITICAL, "Error while parsing certificate: %s", err.Error()))
+			return "", err
+		}
+	}
+	return certificate, nil
+}
+
+// getConfigMapValue call kubernetes client and get the configmap and key
+func getConfigMapValue(ctx context.Context, client k8client.Client,
+	namespace, configMapName, key string) (string, error) {
+	configMap := &corev1.ConfigMap{}
+	err := client.Get(ctx, types.NamespacedName{
+		Name:      configMapName,
+		Namespace: namespace}, configMap)
+	if err != nil {
+		return "", err
+	}
+	return configMap.Data[key], nil
+}
+
+// getSecretValue call kubernetes client and get the secret and key
+func getSecretValue(ctx context.Context, client k8client.Client,
+	namespace, secretName, key string) (string, error) {
+	secret := &corev1.Secret{}
+	err := client.Get(ctx, types.NamespacedName{
+		Name:      secretName,
+		Namespace: namespace}, secret)
+	if err != nil {
+		return "", err
+	}
+	return string(secret.Data[key]), nil
 }

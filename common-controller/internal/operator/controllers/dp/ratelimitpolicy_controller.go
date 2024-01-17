@@ -26,7 +26,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -51,7 +50,7 @@ import (
 
 // RateLimitPolicyReconciler reconciles a RateLimitPolicy object
 type RateLimitPolicyReconciler struct {
-	client client.Client
+	client k8client.Client
 	ods    *cache.RatelimitDataStore
 	Scheme *runtime.Scheme
 }
@@ -414,7 +413,7 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 }
 
 // NamespacedName generates namespaced name for Kubernetes objects
-func NamespacedName(obj client.Object) types.NamespacedName {
+func NamespacedName(obj k8client.Object) types.NamespacedName {
 	return types.NamespacedName{
 		Namespace: obj.GetNamespace(),
 		Name:      obj.GetName(),

@@ -13,6 +13,7 @@ var applicationMap = make(map[string]Application)
 var subscriptionMap = make(map[string]Subscription)
 var applicationMappingMap = make(map[string]ApplicationMapping)
 var applicationKeyMappingMap = make(map[string]ApplicationKeyMapping)
+var tokenIssuerMap = make(map[string]TokenIssuer)
 
 // StartInternalServer starts the internal server
 func StartInternalServer() {
@@ -45,6 +46,13 @@ func StartInternalServer() {
 			applicationKeyMappingList = append(applicationKeyMappingList, applicationKeyMapping)
 		}
 		c.JSON(http.StatusOK, ApplicationKeyMappingList{List: applicationKeyMappingList})
+	})
+	r.GET("/tokenissuers", func(c *gin.Context) {
+		tokenIssuerList := []TokenIssuer{}
+		for _, tokenIssuer := range tokenIssuerMap {
+			tokenIssuerList = append(tokenIssuerList, tokenIssuer)
+		}
+		c.JSON(http.StatusOK, TokenIssuserList{List: tokenIssuerList})
 	})
 	gin.SetMode(gin.ReleaseMode)
 	conf := config.ReadConfigs()
@@ -83,6 +91,16 @@ func DeleteApplication(applicationUUID string) {
 			delete(applicationKeyMappingMap, key)
 		}
 	}
+}
+
+// DeleteTokenIssuer deletes a token issuer from the token issuer list
+func DeleteTokenIssuer(tokenIssuerUUID string) {
+	delete(tokenIssuerMap, tokenIssuerUUID)
+}
+
+// AddTokenIssuer adds a token issuer to the token issuer list
+func AddTokenIssuer(tokenIssuerUUID string, tokenIssuer TokenIssuer) {
+	tokenIssuerMap[tokenIssuerUUID] = tokenIssuer
 }
 
 // DeleteSubscription deletes a subscription from the subscription list

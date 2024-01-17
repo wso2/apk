@@ -18,22 +18,30 @@ syntax = "proto3";
 
 package wso2.discovery.subscription;
 
-option go_package = "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/subscription";
+option go_package = "github.com/wso2/apk/common-go-libs/pkg/discovery/api/wso2/discovery/subscription";
 option java_package = "org.wso2.apk.enforcer.discovery.subscription";
-option java_outer_classname = "SubscriptionProto";
+option java_outer_classname = "TokenIssuerProto";
 option java_multiple_files = true;
 
-// [#protodoc-title: Subscription]
+// [#protodoc-title: TokenIssuer]
 
-// Subscription data model
-message Subscription {
-    string subStatus = 1;
-    string uuid = 2;
-    string organization = 3;
-    SubscribedAPI subscribedApi = 4;
+// TokenIssuer data model
+message TokenIssuer {
+  string eventId = 1;
+  string name = 2;
+  string organization = 3;
+  string issuer = 4;
+  Certificate certificate = 5;
+  string consumerKeyClaim = 6;
+  string scopesClaim = 7;
+  map<string, string> claimMapping = 8;
+  repeated string environments = 9;
 }
-
-message SubscribedAPI {
-    string name = 1;
-    string version = 2;
+message Certificate {
+  string certificate = 1;
+  JWKS jwks = 2;
+}
+message JWKS {
+  string url = 1;
+  string tls = 2;
 }

@@ -7,9 +7,74 @@ import (
 	"github.com/wso2/apk/common-controller/internal/loggers"
 	constants "github.com/wso2/apk/common-controller/internal/operator/constant"
 	cpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/cp/v1alpha2"
+	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	apkmgt "github.com/wso2/apk/common-go-libs/pkg/discovery/api/wso2/discovery/service/apkmgt"
 	"github.com/wso2/apk/common-go-libs/pkg/discovery/api/wso2/discovery/subscription"
 )
+
+// SendDeleteTokenIssuerEvent sends a token issuer event to the enforcer
+func SendDeleteTokenIssuerEvent(resolvedTokenIssuer dpv1alpha1.ResolvedJWTIssuer) {
+	currentTime := time.Now()
+	milliseconds := currentTime.UnixNano() / int64(time.Millisecond)
+	event := subscription.Event{
+		Uuid:      uuid.New().String(),
+		Type:      constants.TokenIssuerDeleted,
+		TimeStamp: milliseconds,
+		TokenIssuer: &subscription.TokenIssuer{
+			Name:             resolvedTokenIssuer.Name,
+			Organization:     resolvedTokenIssuer.Organization,
+			Issuer:           resolvedTokenIssuer.Issuer,
+			ConsumerKeyClaim: resolvedTokenIssuer.ConsumerKeyClaim,
+			ScopesClaim:      resolvedTokenIssuer.ScopesClaim,
+			Environments:     resolvedTokenIssuer.Environments,
+			ClaimMapping:     resolvedTokenIssuer.ClaimMappings,
+			Certificate:      convertToCertificate(resolvedTokenIssuer.SignatureValidation),
+		},
+	}
+	sendEvent(&event)
+}
+
+// convertToCertificate converts the certificate to a string
+func convertToCertificate(certificate dpv1alpha1.ResolvedSignatureValidation) *subscription.Certificate {
+	if certificate.Certificate != nil {
+		return &subscription.Certificate{
+			Certificate: certificate.Certificate.ResolvedCertificate,
+		}
+	}
+	jwks := subscription.JWKS{Url: certificate.JWKS.URL}
+	if certificate.JWKS.TLS != nil {
+		jwks.Tls = certificate.JWKS.TLS.ResolvedCertificate
+	}
+	return &subscription.Certificate{Jwks: &jwks}
+}
+
+// SendAddTokenIssuerEvent sends a token issuer event to the enforcer
+func SendAddTokenIssuerEvent(resolvedTokenIssuer dpv1alpha1.ResolvedJWTIssuer) {
+	currentTime := time.Now()
+	milliseconds := currentTime.UnixNano() / int64(time.Millisecond)
+	event := subscription.Event{
+		Uuid:      uuid.New().String(),
+		Type:      constants.TokenIssuerCreated,
+		TimeStamp: milliseconds,
+		TokenIssuer: &subscription.TokenIssuer{
+			Name:             resolvedTokenIssuer.Name,
+			Organization:     resolvedTokenIssuer.Organization,
+			Issuer:           resolvedTokenIssuer.Issuer,
+			ConsumerKeyClaim: resolvedTokenIssuer.ConsumerKeyClaim,
+			ScopesClaim:      resolvedTokenIssuer.ScopesClaim,
+			Environments:     resolvedTokenIssuer.Environments,
+			ClaimMapping:     resolvedTokenIssuer.ClaimMappings,
+			Certificate:      convertToCertificate(resolvedTokenIssuer.SignatureValidation),
+		},
+	}
+	sendEvent(&event)
+}
+
+// SendUpdateTokenIssuerEvent sends a token issuer event to the enforcer
+func SendUpdateTokenIssuerEvent(oldTokenIssuer dpv1alpha1.ResolvedJWTIssuer, resolvedTokenIssuer dpv1alpha1.ResolvedJWTIssuer) {
+	SendDeleteTokenIssuerEvent(oldTokenIssuer)
+	SendAddTokenIssuerEvent(resolvedTokenIssuer)
+}
 
 // SendAppDeletionEvent sends an application creation event to the enforcer
 func SendAppDeletionEvent(applicationUUID string, applicationSpec cpv1alpha2.ApplicationSpec) {

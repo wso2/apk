@@ -123,6 +123,19 @@ private static final long serialVersionUID = 0L;
 
             break;
           }
+          case 66: {
+            org.wso2.apk.enforcer.discovery.subscription.TokenIssuer.Builder subBuilder = null;
+            if (tokenIssuer_ != null) {
+              subBuilder = tokenIssuer_.toBuilder();
+            }
+            tokenIssuer_ = input.readMessage(org.wso2.apk.enforcer.discovery.subscription.TokenIssuer.parser(), extensionRegistry);
+            if (subBuilder != null) {
+              subBuilder.mergeFrom(tokenIssuer_);
+              tokenIssuer_ = subBuilder.buildPartial();
+            }
+
+            break;
+          }
           default: {
             if (!parseUnknownField(
                 input, unknownFields, extensionRegistry, tag)) {
@@ -346,6 +359,32 @@ private static final long serialVersionUID = 0L;
     return getSubscription();
   }
 
+  public static final int TOKENISSUER_FIELD_NUMBER = 8;
+  private org.wso2.apk.enforcer.discovery.subscription.TokenIssuer tokenIssuer_;
+  /**
+   * <code>.wso2.discovery.subscription.TokenIssuer tokenIssuer = 8;</code>
+   * @return Whether the tokenIssuer field is set.
+   */
+  @java.lang.Override
+  public boolean hasTokenIssuer() {
+    return tokenIssuer_ != null;
+  }
+  /**
+   * <code>.wso2.discovery.subscription.TokenIssuer tokenIssuer = 8;</code>
+   * @return The tokenIssuer.
+   */
+  @java.lang.Override
+  public org.wso2.apk.enforcer.discovery.subscription.TokenIssuer getTokenIssuer() {
+    return tokenIssuer_ == null ? org.wso2.apk.enforcer.discovery.subscription.TokenIssuer.getDefaultInstance() : tokenIssuer_;
+  }
+  /**
+   * <code>.wso2.discovery.subscription.TokenIssuer tokenIssuer = 8;</code>
+   */
+  @java.lang.Override
+  public org.wso2.apk.enforcer.discovery.subscription.TokenIssuerOrBuilder getTokenIssuerOrBuilder() {
+    return getTokenIssuer();
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -381,6 +420,9 @@ private static final long serialVersionUID = 0L;
     if (subscription_ != null) {
       output.writeMessage(7, getSubscription());
     }
+    if (tokenIssuer_ != null) {
+      output.writeMessage(8, getTokenIssuer());
+    }
     unknownFields.writeTo(output);
   }
 
@@ -415,6 +457,10 @@ private static final long serialVersionUID = 0L;
     if (subscription_ != null) {
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(7, getSubscription());
+    }
+    if (tokenIssuer_ != null) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(8, getTokenIssuer());
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -457,6 +503,11 @@ private static final long serialVersionUID = 0L;
       if (!getSubscription()
           .equals(other.getSubscription())) return false;
     }
+    if (hasTokenIssuer() != other.hasTokenIssuer()) return false;
+    if (hasTokenIssuer()) {
+      if (!getTokenIssuer()
+          .equals(other.getTokenIssuer())) return false;
+    }
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -490,6 +541,10 @@ private static final long serialVersionUID = 0L;
     if (hasSubscription()) {
       hash = (37 * hash) + SUBSCRIPTION_FIELD_NUMBER;
       hash = (53 * hash) + getSubscription().hashCode();
+    }
+    if (hasTokenIssuer()) {
+      hash = (37 * hash) + TOKENISSUER_FIELD_NUMBER;
+      hash = (53 * hash) + getTokenIssuer().hashCode();
     }
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
@@ -658,6 +713,12 @@ private static final long serialVersionUID = 0L;
         subscription_ = null;
         subscriptionBuilder_ = null;
       }
+      if (tokenIssuerBuilder_ == null) {
+        tokenIssuer_ = null;
+      } else {
+        tokenIssuer_ = null;
+        tokenIssuerBuilder_ = null;
+      }
       return this;
     }
 
@@ -706,6 +767,11 @@ private static final long serialVersionUID = 0L;
         result.subscription_ = subscription_;
       } else {
         result.subscription_ = subscriptionBuilder_.build();
+      }
+      if (tokenIssuerBuilder_ == null) {
+        result.tokenIssuer_ = tokenIssuer_;
+      } else {
+        result.tokenIssuer_ = tokenIssuerBuilder_.build();
       }
       onBuilt();
       return result;
@@ -777,6 +843,9 @@ private static final long serialVersionUID = 0L;
       }
       if (other.hasSubscription()) {
         mergeSubscription(other.getSubscription());
+      }
+      if (other.hasTokenIssuer()) {
+        mergeTokenIssuer(other.getTokenIssuer());
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -1464,6 +1533,125 @@ private static final long serialVersionUID = 0L;
         subscription_ = null;
       }
       return subscriptionBuilder_;
+    }
+
+    private org.wso2.apk.enforcer.discovery.subscription.TokenIssuer tokenIssuer_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+        org.wso2.apk.enforcer.discovery.subscription.TokenIssuer, org.wso2.apk.enforcer.discovery.subscription.TokenIssuer.Builder, org.wso2.apk.enforcer.discovery.subscription.TokenIssuerOrBuilder> tokenIssuerBuilder_;
+    /**
+     * <code>.wso2.discovery.subscription.TokenIssuer tokenIssuer = 8;</code>
+     * @return Whether the tokenIssuer field is set.
+     */
+    public boolean hasTokenIssuer() {
+      return tokenIssuerBuilder_ != null || tokenIssuer_ != null;
+    }
+    /**
+     * <code>.wso2.discovery.subscription.TokenIssuer tokenIssuer = 8;</code>
+     * @return The tokenIssuer.
+     */
+    public org.wso2.apk.enforcer.discovery.subscription.TokenIssuer getTokenIssuer() {
+      if (tokenIssuerBuilder_ == null) {
+        return tokenIssuer_ == null ? org.wso2.apk.enforcer.discovery.subscription.TokenIssuer.getDefaultInstance() : tokenIssuer_;
+      } else {
+        return tokenIssuerBuilder_.getMessage();
+      }
+    }
+    /**
+     * <code>.wso2.discovery.subscription.TokenIssuer tokenIssuer = 8;</code>
+     */
+    public Builder setTokenIssuer(org.wso2.apk.enforcer.discovery.subscription.TokenIssuer value) {
+      if (tokenIssuerBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        tokenIssuer_ = value;
+        onChanged();
+      } else {
+        tokenIssuerBuilder_.setMessage(value);
+      }
+
+      return this;
+    }
+    /**
+     * <code>.wso2.discovery.subscription.TokenIssuer tokenIssuer = 8;</code>
+     */
+    public Builder setTokenIssuer(
+        org.wso2.apk.enforcer.discovery.subscription.TokenIssuer.Builder builderForValue) {
+      if (tokenIssuerBuilder_ == null) {
+        tokenIssuer_ = builderForValue.build();
+        onChanged();
+      } else {
+        tokenIssuerBuilder_.setMessage(builderForValue.build());
+      }
+
+      return this;
+    }
+    /**
+     * <code>.wso2.discovery.subscription.TokenIssuer tokenIssuer = 8;</code>
+     */
+    public Builder mergeTokenIssuer(org.wso2.apk.enforcer.discovery.subscription.TokenIssuer value) {
+      if (tokenIssuerBuilder_ == null) {
+        if (tokenIssuer_ != null) {
+          tokenIssuer_ =
+            org.wso2.apk.enforcer.discovery.subscription.TokenIssuer.newBuilder(tokenIssuer_).mergeFrom(value).buildPartial();
+        } else {
+          tokenIssuer_ = value;
+        }
+        onChanged();
+      } else {
+        tokenIssuerBuilder_.mergeFrom(value);
+      }
+
+      return this;
+    }
+    /**
+     * <code>.wso2.discovery.subscription.TokenIssuer tokenIssuer = 8;</code>
+     */
+    public Builder clearTokenIssuer() {
+      if (tokenIssuerBuilder_ == null) {
+        tokenIssuer_ = null;
+        onChanged();
+      } else {
+        tokenIssuer_ = null;
+        tokenIssuerBuilder_ = null;
+      }
+
+      return this;
+    }
+    /**
+     * <code>.wso2.discovery.subscription.TokenIssuer tokenIssuer = 8;</code>
+     */
+    public org.wso2.apk.enforcer.discovery.subscription.TokenIssuer.Builder getTokenIssuerBuilder() {
+      
+      onChanged();
+      return getTokenIssuerFieldBuilder().getBuilder();
+    }
+    /**
+     * <code>.wso2.discovery.subscription.TokenIssuer tokenIssuer = 8;</code>
+     */
+    public org.wso2.apk.enforcer.discovery.subscription.TokenIssuerOrBuilder getTokenIssuerOrBuilder() {
+      if (tokenIssuerBuilder_ != null) {
+        return tokenIssuerBuilder_.getMessageOrBuilder();
+      } else {
+        return tokenIssuer_ == null ?
+            org.wso2.apk.enforcer.discovery.subscription.TokenIssuer.getDefaultInstance() : tokenIssuer_;
+      }
+    }
+    /**
+     * <code>.wso2.discovery.subscription.TokenIssuer tokenIssuer = 8;</code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+        org.wso2.apk.enforcer.discovery.subscription.TokenIssuer, org.wso2.apk.enforcer.discovery.subscription.TokenIssuer.Builder, org.wso2.apk.enforcer.discovery.subscription.TokenIssuerOrBuilder> 
+        getTokenIssuerFieldBuilder() {
+      if (tokenIssuerBuilder_ == null) {
+        tokenIssuerBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+            org.wso2.apk.enforcer.discovery.subscription.TokenIssuer, org.wso2.apk.enforcer.discovery.subscription.TokenIssuer.Builder, org.wso2.apk.enforcer.discovery.subscription.TokenIssuerOrBuilder>(
+                getTokenIssuer(),
+                getParentForChildren(),
+                isClean());
+        tokenIssuer_ = null;
+      }
+      return tokenIssuerBuilder_;
     }
     @java.lang.Override
     public final Builder setUnknownFields(

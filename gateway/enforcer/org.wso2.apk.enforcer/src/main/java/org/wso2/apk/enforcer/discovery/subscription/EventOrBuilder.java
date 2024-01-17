@@ -96,4 +96,19 @@ public interface EventOrBuilder extends
    * <code>.wso2.discovery.subscription.Subscription subscription = 7;</code>
    */
   org.wso2.apk.enforcer.discovery.subscription.SubscriptionOrBuilder getSubscriptionOrBuilder();
+
+  /**
+   * <code>.wso2.discovery.subscription.TokenIssuer tokenIssuer = 8;</code>
+   * @return Whether the tokenIssuer field is set.
+   */
+  boolean hasTokenIssuer();
+  /**
+   * <code>.wso2.discovery.subscription.TokenIssuer tokenIssuer = 8;</code>
+   * @return The tokenIssuer.
+   */
+  org.wso2.apk.enforcer.discovery.subscription.TokenIssuer getTokenIssuer();
+  /**
+   * <code>.wso2.discovery.subscription.TokenIssuer tokenIssuer = 8;</code>
+   */
+  org.wso2.apk.enforcer.discovery.subscription.TokenIssuerOrBuilder getTokenIssuerOrBuilder();
 }
