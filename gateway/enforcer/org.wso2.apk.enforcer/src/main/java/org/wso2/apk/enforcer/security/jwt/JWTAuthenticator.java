@@ -86,10 +86,16 @@ public class JWTAuthenticator implements Authenticator {
 
     @Override
     public boolean canAuthenticate(RequestContext requestContext) {
-        // only getting first operation is enough as all matched resource configs have the same security schemes
-        // i.e. graphQL apis do not support resource level security yet
-        JWTAuthenticationConfig jwtAuthenticationConfig =
-                requestContext.getMatchedResourcePaths().get(0).getAuthenticationConfig().getJwtAuthenticationConfig();
+        JWTAuthenticationConfig jwtAuthenticationConfig = null;
+        // only getting first operation is enough as all matched resource configs have the same security header
+        for (ResourceConfig resourceConfig : requestContext.getMatchedResourcePaths()) {
+            if (resourceConfig.getAuthenticationConfig() != null &&
+                    resourceConfig.getAuthenticationConfig().getJwtAuthenticationConfig() != null) {
+                jwtAuthenticationConfig = resourceConfig.getAuthenticationConfig().getJwtAuthenticationConfig();
+                break;
+            }
+        }
+
         if (jwtAuthenticationConfig != null) {
             String authHeaderValue = retrieveAuthHeaderValue(requestContext, jwtAuthenticationConfig);
 

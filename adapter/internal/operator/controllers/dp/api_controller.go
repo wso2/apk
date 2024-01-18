@@ -421,7 +421,7 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 	} else if cachedAPI, events, updated :=
 		apiReconciler.ods.UpdateAPIState(apiRef, apiState); updated {
 		apiReconciler.traverseAPIStateAndUpdateOwnerReferences(ctx, *apiState)
-		loggers.LoggerAPI.Infof("API CR %s with API UUID : %v is updated on %v", apiRef.String(),
+		loggers.LoggerAPKOperator.Infof("API CR %s with API UUID : %v is updated on %v", apiRef.String(),
 			string(api.ObjectMeta.UID), events)
 		return &synchronizer.APIEvent{EventType: constants.Update, Events: []synchronizer.APIState{cachedAPI}, UpdatedEvents: events}, nil
 	}
@@ -778,12 +778,11 @@ func (apiReconciler *APIReconciler) getResolvedBackendsMapping(ctx context.Conte
 	return backendMapping
 }
 
-
-// These proxy methods are designed as intermediaries for the getAPIsFor<CR objects> methods. 
-// Their purpose is to encapsulate the process of updating owner references within the reconciliation watch methods. 
+// These proxy methods are designed as intermediaries for the getAPIsFor<CR objects> methods.
+// Their purpose is to encapsulate the process of updating owner references within the reconciliation watch methods.
 // By employing these proxies, we prevent redundant owner reference updates for the same object due to the hierarchical structure of these functions.
 func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForGQLRoute(ctx context.Context, obj k8client.Object) []reconcile.Request {
-	requests :=  apiReconciler.getAPIForGQLRoute(ctx, obj)
+	requests := apiReconciler.getAPIForGQLRoute(ctx, obj)
 	apiReconciler.handleOwnerReference(ctx, obj, &requests)
 	return requests
 }
@@ -848,32 +847,25 @@ func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForBackend(ctx c
 	return requests
 }
 
-func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForGateway(ctx context.Context, obj k8client.Object) []reconcile.Request {
-	requests := apiReconciler.getAPIsForGateway(ctx, obj)
-	apiReconciler.handleOwnerReference(ctx, obj, &requests)
-	return requests
-}
-
-
 func (apiReconciler *APIReconciler) traverseAPIStateAndUpdateOwnerReferences(ctx context.Context, apiState synchronizer.APIState) {
-	loggers.LoggerAPI.Infof("Ready to traverse the apistate : %+v", apiState)
+	loggers.LoggerAPKOperator.Debugf("Ready to traverse the apistate : %+v", apiState)
 	// travserse through all the children of this API and trigger update owner reference
-	if (apiState.ProdHTTPRoute != nil) {
+	if apiState.ProdHTTPRoute != nil {
 		for _, httpRoute := range apiState.ProdHTTPRoute.HTTPRoutePartitions {
 			apiReconciler.retriveParentAPIsAndUpdateOwnerReferene(ctx, httpRoute)
 		}
 	}
-	if (apiState.SandHTTPRoute != nil) {
+	if apiState.SandHTTPRoute != nil {
 		for _, httpRoute := range apiState.SandHTTPRoute.HTTPRoutePartitions {
 			apiReconciler.retriveParentAPIsAndUpdateOwnerReferene(ctx, httpRoute)
 		}
 	}
-	if (apiState.ProdGQLRoute != nil) {
+	if apiState.ProdGQLRoute != nil {
 		for _, gqlRoute := range apiState.ProdGQLRoute.GQLRoutePartitions {
 			apiReconciler.retriveParentAPIsAndUpdateOwnerReferene(ctx, gqlRoute)
 		}
 	}
-	if (apiState.SandGQLRoute != nil) {
+	if apiState.SandGQLRoute != nil {
 		for _, gqlRoute := range apiState.SandGQLRoute.GQLRoutePartitions {
 			apiReconciler.retriveParentAPIsAndUpdateOwnerReferene(ctx, gqlRoute)
 		}
@@ -899,35 +891,35 @@ func (apiReconciler *APIReconciler) traverseAPIStateAndUpdateOwnerReferences(ctx
 	for _, interceptorService := range apiState.InterceptorServiceMapping {
 		apiReconciler.retriveParentAPIsAndUpdateOwnerReferene(ctx, &interceptorService)
 	}
-	if (apiState.ProdHTTPRoute != nil) {
-		for _, backend := range apiState.ProdHTTPRoute.BackendMapping{
-			if (&backend != nil) {
+	if apiState.ProdHTTPRoute != nil {
+		for _, backend := range apiState.ProdHTTPRoute.BackendMapping {
+			if backend != nil {
 				apiReconciler.retriveParentAPIsAndUpdateOwnerReferene(ctx, &backend.Backend)
 			}
 		}
 	}
-	if (apiState.SandHTTPRoute != nil) {
-		for _, backend := range apiState.SandHTTPRoute.BackendMapping{
-			if (&backend != nil) {
+	if apiState.SandHTTPRoute != nil {
+		for _, backend := range apiState.SandHTTPRoute.BackendMapping {
+			if backend != nil {
 				apiReconciler.retriveParentAPIsAndUpdateOwnerReferene(ctx, &backend.Backend)
 			}
 		}
 	}
-	if (apiState.ProdGQLRoute != nil) {
-		for _, backend := range apiState.ProdGQLRoute.BackendMapping{
-			if (&backend != nil) {
+	if apiState.ProdGQLRoute != nil {
+		for _, backend := range apiState.ProdGQLRoute.BackendMapping {
+			if backend != nil {
 				apiReconciler.retriveParentAPIsAndUpdateOwnerReferene(ctx, &backend.Backend)
 			}
 		}
 	}
-	if (apiState.SandGQLRoute != nil) {
-		for _, backend := range apiState.SandGQLRoute.BackendMapping{
-			if (&backend != nil) {
+	if apiState.SandGQLRoute != nil {
+		for _, backend := range apiState.SandGQLRoute.BackendMapping {
+			if backend != nil {
 				apiReconciler.retriveParentAPIsAndUpdateOwnerReferene(ctx, &backend.Backend)
 			}
 		}
 	}
-	for _, backendJwt := range apiState.BackendJWTMapping{
+	for _, backendJwt := range apiState.BackendJWTMapping {
 		apiReconciler.retriveParentAPIsAndUpdateOwnerReferene(ctx, &backendJwt)
 	}
 
@@ -935,8 +927,8 @@ func (apiReconciler *APIReconciler) traverseAPIStateAndUpdateOwnerReferences(ctx
 
 func (apiReconciler *APIReconciler) retriveParentAPIsAndUpdateOwnerReferene(ctx context.Context, obj k8client.Object) {
 	var requests []reconcile.Request
-	switch obj.(type){
-	case *dpv1alpha1.Backend: 
+	switch obj.(type) {
+	case *dpv1alpha1.Backend:
 		var backend dpv1alpha1.Backend
 		namesapcedName := types.NamespacedName{
 			Name:      string(obj.GetName()),
@@ -948,7 +940,7 @@ func (apiReconciler *APIReconciler) retriveParentAPIsAndUpdateOwnerReferene(ctx 
 		}
 		requests = apiReconciler.getAPIsForBackend(ctx, &backend)
 		apiReconciler.handleOwnerReference(ctx, &backend, &requests)
-	case *dpv1alpha1.Scope: 
+	case *dpv1alpha1.Scope:
 		var scope dpv1alpha1.Scope
 		namesapcedName := types.NamespacedName{
 			Name:      string(obj.GetName()),
@@ -960,7 +952,7 @@ func (apiReconciler *APIReconciler) retriveParentAPIsAndUpdateOwnerReferene(ctx 
 		}
 		requests = apiReconciler.getAPIsForScope(ctx, &scope)
 		apiReconciler.handleOwnerReference(ctx, &scope, &requests)
-	case *dpv1alpha1.RateLimitPolicy: 
+	case *dpv1alpha1.RateLimitPolicy:
 		var rl dpv1alpha1.RateLimitPolicy
 		namesapcedName := types.NamespacedName{
 			Name:      string(obj.GetName()),
@@ -972,7 +964,7 @@ func (apiReconciler *APIReconciler) retriveParentAPIsAndUpdateOwnerReferene(ctx 
 		}
 		requests = apiReconciler.getAPIsForRateLimitPolicy(ctx, &rl)
 		apiReconciler.handleOwnerReference(ctx, &rl, &requests)
-	case *dpv1alpha1.BackendJWT: 
+	case *dpv1alpha1.BackendJWT:
 		var backendJWT dpv1alpha1.BackendJWT
 		namesapcedName := types.NamespacedName{
 			Name:      string(obj.GetName()),
@@ -984,7 +976,7 @@ func (apiReconciler *APIReconciler) retriveParentAPIsAndUpdateOwnerReferene(ctx 
 		}
 		requests = apiReconciler.getAPIsForBackendJWT(ctx, &backendJWT)
 		apiReconciler.handleOwnerReference(ctx, &backendJWT, &requests)
-	case *dpv1alpha1.InterceptorService: 
+	case *dpv1alpha1.InterceptorService:
 		var interceptorService dpv1alpha1.InterceptorService
 		namesapcedName := types.NamespacedName{
 			Name:      string(obj.GetName()),
@@ -996,7 +988,7 @@ func (apiReconciler *APIReconciler) retriveParentAPIsAndUpdateOwnerReferene(ctx 
 		}
 		requests = apiReconciler.getAPIsForInterceptorService(ctx, &interceptorService)
 		apiReconciler.handleOwnerReference(ctx, &interceptorService, &requests)
-	case *dpv1alpha1.APIPolicy: 
+	case *dpv1alpha1.APIPolicy:
 		var apiPolicy dpv1alpha1.APIPolicy
 		namesapcedName := types.NamespacedName{
 			Name:      string(obj.GetName()),
@@ -1020,7 +1012,7 @@ func (apiReconciler *APIReconciler) retriveParentAPIsAndUpdateOwnerReferene(ctx 
 		}
 		requests = apiReconciler.getAPIsForAuthentication(ctx, &auth)
 		apiReconciler.handleOwnerReference(ctx, &auth, &requests)
-	case *corev1.Secret: 
+	case *corev1.Secret:
 		var secret corev1.Secret
 		namesapcedName := types.NamespacedName{
 			Name:      string(obj.GetName()),
@@ -1032,7 +1024,7 @@ func (apiReconciler *APIReconciler) retriveParentAPIsAndUpdateOwnerReferene(ctx 
 		}
 		requests = apiReconciler.getAPIsForSecret(ctx, &secret)
 		apiReconciler.handleOwnerReference(ctx, &secret, &requests)
-	case *corev1.ConfigMap: 
+	case *corev1.ConfigMap:
 		var cm corev1.ConfigMap
 		namesapcedName := types.NamespacedName{
 			Name:      string(obj.GetName()),
@@ -1044,7 +1036,7 @@ func (apiReconciler *APIReconciler) retriveParentAPIsAndUpdateOwnerReferene(ctx 
 		}
 		requests = apiReconciler.getAPIsForConfigMap(ctx, &cm)
 		apiReconciler.handleOwnerReference(ctx, &cm, &requests)
-	case *gwapiv1b1.HTTPRoute: 
+	case *gwapiv1b1.HTTPRoute:
 		var httpRoute gwapiv1b1.HTTPRoute
 		namesapcedName := types.NamespacedName{
 			Name:      string(obj.GetName()),
@@ -1071,7 +1063,7 @@ func (apiReconciler *APIReconciler) retriveParentAPIsAndUpdateOwnerReferene(ctx 
 	default:
 		loggers.LoggerAPKOperator.Errorf("Unexpected type found while processing owner reference %+v", obj)
 	}
-	
+
 }
 
 // getAPIForGQLRoute triggers the API controller reconcile method based on the changes detected
@@ -1102,8 +1094,8 @@ func (apiReconciler *APIReconciler) getAPIForGQLRoute(ctx context.Context, obj k
 				Namespace: api.Namespace},
 		}
 		requests = append(requests, req)
-		loggers.LoggerAPKOperator.Infof("Adding reconcile request for API: %s/%s with API UUID: %v", api.Namespace, api.Name,
-			string(api.ObjectMeta.UID))
+		loggers.LoggerAPKOperator.Infof("Adding reconcile request for API: %s/%s with API UUID: %v due to change in GQLRoute: %v", api.Namespace, api.Name,
+			string(api.ObjectMeta.UID), utils.NamespacedName(gqlRoute).String())
 	}
 	return requests
 }
@@ -1139,8 +1131,8 @@ func (apiReconciler *APIReconciler) getAPIForHTTPRoute(ctx context.Context, obj 
 				Namespace: api.Namespace},
 		}
 		requests = append(requests, req)
-		loggers.LoggerAPKOperator.Infof("Adding reconcile request for API: %s/%s with API UUID: %v", api.Namespace, api.Name,
-			string(api.ObjectMeta.UID))
+		loggers.LoggerAPKOperator.Infof("Adding reconcile request for API: %s/%s with API UUID: %v due to HTTPRoute change: %v",
+			api.Namespace, api.Name, string(api.ObjectMeta.UID), utils.NamespacedName(httpRoute).String())
 	}
 	return requests
 }
@@ -1150,7 +1142,8 @@ func (apiReconciler *APIReconciler) getAPIForHTTPRoute(ctx context.Context, obj 
 func (apiReconciler *APIReconciler) getAPIsForConfigMap(ctx context.Context, obj k8client.Object) []reconcile.Request {
 	configMap, ok := obj.(*corev1.ConfigMap)
 	if !ok {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL, "Unexpected object type, bypassing reconciliation: %v", configMap))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL,
+			"Unexpected object type, bypassing reconciliation: %v", configMap))
 		return []reconcile.Request{}
 	}
 
@@ -1180,13 +1173,14 @@ func (apiReconciler *APIReconciler) getAPIsForConfigMap(ctx context.Context, obj
 					Namespace: api.Namespace},
 			}
 			requests = append(requests, req)
-			loggers.LoggerAPKOperator.Infof("Adding reconcile request for API: %s/%s with API UUID: %v", api.Namespace, api.Name,
-				string(api.ObjectMeta.UID))
+			loggers.LoggerAPKOperator.Infof("Adding reconcile request for API: %s/%s with API UUID: %v due to configmap change: %v",
+				api.Namespace, api.Name, string(api.ObjectMeta.UID), utils.NamespacedName(configMap).String())
 		}
 		return requests
 	}
 
-	loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2647, logging.MINOR, "Unable to find associated APIs for ConfigMap: %s", utils.NamespacedName(configMap).String()))
+	loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2647, logging.MINOR,
+		"Unable to find associated APIs for ConfigMap: %s", utils.NamespacedName(configMap).String()))
 	return []reconcile.Request{}
 }
 
@@ -1242,7 +1236,8 @@ func (apiReconciler *APIReconciler) getAPIsForAuthentication(ctx context.Context
 		},
 	}
 	requests = append(requests, req)
-	loggers.LoggerAPKOperator.Infof("Adding reconcile request for API: %s/%s", string(authentication.Spec.TargetRef.Name), namespace)
+	loggers.LoggerAPKOperator.Infof("Adding reconcile request for API: %s/%s due to Authentication change: %v",
+		string(authentication.Spec.TargetRef.Name), namespace, utils.NamespacedName(authentication).String())
 
 	return requests
 }
@@ -1276,7 +1271,8 @@ func (apiReconciler *APIReconciler) getAPIsForAPIPolicy(ctx context.Context, obj
 			Namespace: namespace},
 	}
 	requests = append(requests, req)
-	loggers.LoggerAPKOperator.Infof("Adding reconcile request for API: %s/%s", string(apiPolicy.Spec.TargetRef.Name), namespace)
+	loggers.LoggerAPKOperator.Infof("Adding reconcile request for API: %s/%s due to APIPolicy change: %v",
+		string(apiPolicy.Spec.TargetRef.Name), namespace, utils.NamespacedName(apiPolicy).String())
 
 	return requests
 }
@@ -1360,7 +1356,8 @@ func (apiReconciler *APIReconciler) getAPIsForRateLimitPolicy(ctx context.Contex
 			Namespace: namespace},
 	}
 	requests = append(requests, req)
-	loggers.LoggerAPKOperator.Infof("Adding reconcile request for API: %s/%s", string(ratelimitPolicy.Spec.TargetRef.Name), namespace)
+	loggers.LoggerAPKOperator.Infof("Adding reconcile request for API: %s/%s due to RateLimitPolicy change: %v",
+		string(ratelimitPolicy.Spec.TargetRef.Name), namespace, utils.NamespacedName(ratelimitPolicy).String())
 
 	return requests
 }
@@ -2012,8 +2009,6 @@ func (apiReconciler *APIReconciler) handleStatus() {
 	}
 }
 
-
-
 func (apiReconciler *APIReconciler) handleOwnerReference(ctx context.Context, obj k8client.Object, apiRequests *[]reconcile.Request) {
 	apis := []dpv1alpha2.API{}
 	for _, req := range *apiRequests {
@@ -2028,23 +2023,20 @@ func (apiReconciler *APIReconciler) handleOwnerReference(ctx context.Context, ob
 	preparedOwnerReferences := prepareOwnerReference(apis)
 	// Decide whether we need an update
 	updateRequired := false
-	if (len(obj.GetOwnerReferences()) != len(preparedOwnerReferences)) {
+	if len(obj.GetOwnerReferences()) != len(preparedOwnerReferences) {
 		updateRequired = true
 	} else {
 		for _, ref := range preparedOwnerReferences {
 			_, found := common.FindElement(obj.GetOwnerReferences(), func(refLocal metav1.OwnerReference) bool {
-				if (refLocal.UID == ref.UID && refLocal.Name == ref.Name && refLocal.APIVersion == ref.APIVersion && refLocal.Kind == ref.Kind){
-					return true
-				}
-				return false
+				return refLocal.UID == ref.UID && refLocal.Name == ref.Name && refLocal.APIVersion == ref.APIVersion && refLocal.Kind == ref.Kind
 			})
-			if (!found) {
+			if !found {
 				updateRequired = true
 				break
 			}
 		}
 	}
-	if (updateRequired) {
+	if updateRequired {
 		obj.SetOwnerReferences(preparedOwnerReferences)
 		utils.UpdateCR(ctx, apiReconciler.client, obj)
 	}
@@ -2057,9 +2049,9 @@ func prepareOwnerReference(apiItems []dpv1alpha2.API) []metav1.OwnerReference {
 		if _, exists := uidMap[string(ref.UID)]; !exists {
 			ownerReferences = append(ownerReferences, metav1.OwnerReference{
 				APIVersion: ref.APIVersion,
-				Kind: ref.Kind,
-				Name: ref.Name,
-				UID: ref.UID,
+				Kind:       ref.Kind,
+				Name:       ref.Name,
+				UID:        ref.UID,
 			})
 			uidMap[string(ref.UID)] = true
 		}
