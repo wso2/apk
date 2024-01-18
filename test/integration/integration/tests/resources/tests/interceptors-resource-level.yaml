@@ -81,7 +81,7 @@ spec:
           type: ReplaceFullPath
           replaceFullPath: /books
 ---
-apiVersion: dp.wso2.com/v1alpha1
+apiVersion: dp.wso2.com/v1alpha2
 kind: APIPolicy
 metadata:
   name: interceptor-api-policy-resource-level
@@ -90,10 +90,8 @@ spec:
   override:
     requestInterceptors:
     - name: request-interceptor-api-level
-      namespace: gateway-integration-test-infra
     responseInterceptors:
     - name: response-interceptor-api-level
-      namespace: gateway-integration-test-infra
   targetRef:
     group: gateway.networking.k8s.io
     kind: Resource

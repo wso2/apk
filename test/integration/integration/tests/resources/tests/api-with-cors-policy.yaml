@@ -61,7 +61,7 @@ spec:
       kind: Backend
       name: infra-backend-v1
 ---
-apiVersion: dp.wso2.com/v1alpha1
+apiVersion: dp.wso2.com/v1alpha2
 kind: APIPolicy
 metadata:
   name: cors-policy
@@ -69,7 +69,6 @@ metadata:
 spec:
   override:
     cORSPolicy:
-      enabled: true
       accessControlAllowCredentials: true
       accessControlAllowOrigins:
       - "*.wso2.com"

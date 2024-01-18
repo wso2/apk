@@ -23,7 +23,7 @@ spec:
   apiName: API with Swagger Definition
   apiType: REST
   apiVersion: v1.0.0
-  basePath: /fetch-api-definition/v1.0.0
+  basePath: /fetch-non-existing-api-definition/v1.0.0
   production:
     - httpRouteRefs:
       - fetch-non-api-definition-httproute

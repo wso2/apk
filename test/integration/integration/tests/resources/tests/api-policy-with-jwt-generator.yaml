@@ -55,22 +55,29 @@ spec:
       kind: Backend
       name: infra-backend-v1
 ---
-apiVersion: dp.wso2.com/v1alpha1
+apiVersion: dp.wso2.com/v1alpha2
 kind: APIPolicy
 metadata:
   name: jwt-token-generator-policy
   namespace: gateway-integration-test-infra
 spec:
   override:
-    backendJwtToken:
-      enabled: true
-      encoding: "Base64"
-      signingAlgorithm: "SHA256withRSA"
-      header: "X-JWT-Assertion"
+    backendJwtPolicy:
+      name: backend-jwt
   targetRef:
     group: gateway.networking.k8s.io
     kind: API
     name:  api-policy-with-jwt-generator
+---
+apiVersion: dp.wso2.com/v1alpha1
+kind: BackendJWT
+metadata:
+  name: backend-jwt
+  namespace: gateway-integration-test-infra
+spec:
+  encoding: "Base64"
+  signingAlgorithm: "SHA256withRSA"
+  header: "X-JWT-Assertion"
 ---
 apiVersion: dp.wso2.com/v1alpha1
 kind: Backend
