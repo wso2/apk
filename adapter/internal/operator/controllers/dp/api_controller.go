@@ -25,6 +25,7 @@ import (
 
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/discovery/xds"
+	"github.com/wso2/apk/adapter/internal/discovery/xds/common"
 	"github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/internal/operator/constants"
 	"github.com/wso2/apk/adapter/internal/operator/status"
@@ -128,13 +129,13 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &gwapiv1b1.HTTPRoute{}), handler.EnqueueRequestsFromMapFunc(apiReconciler.getAPIForHTTPRoute),
+	if err := c.Watch(source.Kind(mgr.GetCache(), &gwapiv1b1.HTTPRoute{}), handler.EnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForHTTPRoute),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2613, logging.BLOCKER, "Error watching HTTPRoute resources: %v", err))
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha2.GQLRoute{}), handler.EnqueueRequestsFromMapFunc(apiReconciler.getAPIForGQLRoute),
+	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha2.GQLRoute{}), handler.EnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForGQLRoute),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2667, logging.BLOCKER, "Error watching GQLRoute resources: %v", err))
 		return err
@@ -146,55 +147,55 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha1.Backend{}), handler.EnqueueRequestsFromMapFunc(apiReconciler.getAPIsForBackend),
+	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha1.Backend{}), handler.EnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForBackend),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2615, logging.BLOCKER, "Error watching Backend resources: %v", err))
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha2.Authentication{}), handler.EnqueueRequestsFromMapFunc(apiReconciler.getAPIsForAuthentication),
+	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha2.Authentication{}), handler.EnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForAuthentication),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2616, logging.BLOCKER, "Error watching Authentication resources: %v", err))
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha1.InterceptorService{}), handler.EnqueueRequestsFromMapFunc(apiReconciler.getAPIsForInterceptorService),
+	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha1.InterceptorService{}), handler.EnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForInterceptorService),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2640, logging.BLOCKER, "Error watching InterceptorService resources: %v", err))
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha1.BackendJWT{}), handler.EnqueueRequestsFromMapFunc(apiReconciler.getAPIsForBackendJWT),
+	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha1.BackendJWT{}), handler.EnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForBackendJWT),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2661, logging.BLOCKER, "Error watching BackendJWT resources: %v", err))
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha2.APIPolicy{}), handler.EnqueueRequestsFromMapFunc(apiReconciler.getAPIsForAPIPolicy),
+	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha2.APIPolicy{}), handler.EnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForAPIPolicy),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2617, logging.BLOCKER, "Error watching APIPolicy resources: %v", err))
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha1.RateLimitPolicy{}), handler.EnqueueRequestsFromMapFunc(apiReconciler.getAPIsForRateLimitPolicy),
+	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha1.RateLimitPolicy{}), handler.EnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForRateLimitPolicy),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2639, logging.BLOCKER, "Error watching Ratelimit resources: %v", err))
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha1.Scope{}), handler.EnqueueRequestsFromMapFunc(apiReconciler.getAPIsForScope),
+	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha1.Scope{}), handler.EnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForScope),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2618, logging.BLOCKER, "Error watching scope resources: %v", err))
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &corev1.ConfigMap{}), handler.EnqueueRequestsFromMapFunc(apiReconciler.getAPIsForConfigMap),
+	if err := c.Watch(source.Kind(mgr.GetCache(), &corev1.ConfigMap{}), handler.EnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForConfigMap),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2644, logging.BLOCKER, "Error watching ConfigMap resources: %v", err))
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &corev1.Secret{}), handler.EnqueueRequestsFromMapFunc(apiReconciler.getAPIsForSecret),
+	if err := c.Watch(source.Kind(mgr.GetCache(), &corev1.Secret{}), handler.EnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForSecret),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2645, logging.BLOCKER, "Error watching Secret resources: %v", err))
 		return err
@@ -415,186 +416,17 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 
 	if !api.Status.DeploymentStatus.Accepted {
 		apiReconciler.ods.AddAPIState(apiRef, apiState)
+		apiReconciler.traverseAPIStateAndUpdateOwnerReferences(ctx, *apiState)
 		return &synchronizer.APIEvent{EventType: constants.Create, Events: []synchronizer.APIState{*apiState}, UpdatedEvents: []string{}}, nil
 	} else if cachedAPI, events, updated :=
 		apiReconciler.ods.UpdateAPIState(apiRef, apiState); updated {
-		apiReconciler.removeOldOwnerRefs(ctx, cachedAPI)
+		apiReconciler.traverseAPIStateAndUpdateOwnerReferences(ctx, *apiState)
 		loggers.LoggerAPI.Infof("API CR %s with API UUID : %v is updated on %v", apiRef.String(),
 			string(api.ObjectMeta.UID), events)
 		return &synchronizer.APIEvent{EventType: constants.Update, Events: []synchronizer.APIState{cachedAPI}, UpdatedEvents: events}, nil
 	}
 
 	return nil, nil
-}
-
-func (apiReconciler *APIReconciler) removeOldOwnerRefs(ctx context.Context, apiState synchronizer.APIState) {
-	api := apiState.APIDefinition
-	if apiState.ProdHTTPRoute != nil {
-		apiReconciler.removeOldOwnerRefsFromHTTPRoute(ctx, apiState.ProdHTTPRoute, api.Name, api.Namespace)
-	}
-	if apiState.SandHTTPRoute != nil {
-		apiReconciler.removeOldOwnerRefsFromHTTPRoute(ctx, apiState.SandHTTPRoute, api.Name, api.Namespace)
-	}
-	if apiState.ProdGQLRoute != nil {
-		apiReconciler.removeOldOwnerRefsFromGQLRoute(ctx, apiState.ProdGQLRoute, api.Name, api.Namespace)
-	}
-	if apiState.SandGQLRoute != nil {
-		apiReconciler.removeOldOwnerRefsFromGQLRoute(ctx, apiState.SandGQLRoute, api.Name, api.Namespace)
-	}
-
-	// remove old owner refs from interceptor services
-	interceptorServiceList := &dpv1alpha1.InterceptorServiceList{}
-	if err := apiReconciler.client.List(ctx, interceptorServiceList, &k8client.ListOptions{
-		Namespace: api.Namespace,
-	}); err != nil {
-		loggers.LoggerAPKOperator.Errorf("error while listing CRs for API CR %s, %s", api.Name, err.Error())
-	}
-	for item := range interceptorServiceList.Items {
-		interceptorService := interceptorServiceList.Items[item]
-		// check interceptorService has similar item inside the apiState.InterceptorServiceMapping
-		interceptorServiceFound := false
-		for _, attachedInterceptorService := range apiState.InterceptorServiceMapping {
-			if attachedInterceptorService.Name == interceptorService.Name {
-				interceptorServiceFound = true
-				break
-			}
-		}
-		if !interceptorServiceFound {
-			// remove owner reference
-			apiReconciler.removeOldOwnerRefsFromChild(ctx, &interceptorService, api.Name, api.Namespace)
-		}
-	}
-
-	// remove old owner refs from backend JWTs
-	backendJWTList := &dpv1alpha1.BackendJWTList{}
-	if err := apiReconciler.client.List(ctx, backendJWTList, &k8client.ListOptions{
-		Namespace: api.Namespace,
-	}); err != nil {
-		loggers.LoggerAPKOperator.Errorf("error while listing CRs for API CR %s, %s",
-			api.Name, err.Error())
-	}
-	for item := range backendJWTList.Items {
-		backendJWT := backendJWTList.Items[item]
-		// check backendJWT has similar item inside the apiState.BackendJWTMapping
-		backendJWTFound := false
-		for _, attachedBackendJWT := range apiState.BackendJWTMapping {
-			if attachedBackendJWT.Name == backendJWT.Name {
-				backendJWTFound = true
-				break
-			}
-		}
-		if !backendJWTFound {
-			// remove owner reference
-			apiReconciler.removeOldOwnerRefsFromChild(ctx, &backendJWT, api.Name, api.Namespace)
-		}
-	}
-}
-
-func (apiReconciler *APIReconciler) removeOldOwnerRefsFromGQLRoute(ctx context.Context,
-	gqlRouteState *synchronizer.GQLRouteState, apiName, apiNamespace string) {
-	// scope CRs
-	scopeList := &dpv1alpha1.ScopeList{}
-	if err := apiReconciler.client.List(ctx, scopeList, &k8client.ListOptions{
-		Namespace: apiNamespace,
-	}); err != nil {
-		loggers.LoggerAPKOperator.Errorf("error while listing authentication CRs for API CR %s, %s",
-			apiName, err.Error())
-	}
-	for scopeListItem := range scopeList.Items {
-		scope := scopeList.Items[scopeListItem]
-		// check scope has similar item inside the apiState.ProdHTTPRoute.Scopes
-		scopeFound := false
-		for _, attachedScope := range gqlRouteState.Scopes {
-			if scope.GetName() == attachedScope.GetName() {
-				scopeFound = true
-				break
-			}
-		}
-		if !scopeFound {
-			apiReconciler.removeOldOwnerRefsFromChild(ctx, &scope, apiName, apiNamespace)
-		}
-	}
-
-	// backend CRs
-	backendList := &dpv1alpha1.BackendList{}
-	if err := apiReconciler.client.List(ctx, backendList, &k8client.ListOptions{
-		Namespace: apiNamespace,
-	}); err != nil {
-		loggers.LoggerAPKOperator.Errorf("error while listing authentication CRs for API CR %s, %s",
-			apiName, err.Error())
-	}
-	for item := range backendList.Items {
-		backend := backendList.Items[item]
-		if backend.GetName() != string(gqlRouteState.GQLRouteCombined.Spec.BackendRefs[0].Name) {
-			apiReconciler.removeOldOwnerRefsFromChild(ctx, &backend, apiName, apiNamespace)
-		}
-	}
-}
-
-func (apiReconciler *APIReconciler) removeOldOwnerRefsFromHTTPRoute(ctx context.Context,
-	httpRouteState *synchronizer.HTTPRouteState, apiName, apiNamespace string) {
-	// scope CRs
-	scopeList := &dpv1alpha1.ScopeList{}
-	if err := apiReconciler.client.List(ctx, scopeList, &k8client.ListOptions{
-		Namespace: apiNamespace,
-	}); err != nil {
-		loggers.LoggerAPKOperator.Errorf("error while listing authentication CRs for API CR %s, %s",
-			apiName, err.Error())
-	}
-	for scopeListItem := range scopeList.Items {
-		scope := scopeList.Items[scopeListItem]
-		// check scope has similar item inside the apiState.ProdHTTPRoute.Scopes
-		scopeFound := false
-		for _, attachedScope := range httpRouteState.Scopes {
-			if scope.GetName() == attachedScope.GetName() {
-				scopeFound = true
-				break
-			}
-		}
-		if !scopeFound {
-			apiReconciler.removeOldOwnerRefsFromChild(ctx, &scope, apiName, apiNamespace)
-		}
-
-		// backend CRs
-		backendList := &dpv1alpha1.BackendList{}
-		if err := apiReconciler.client.List(ctx, backendList, &k8client.ListOptions{
-			Namespace: apiNamespace,
-		}); err != nil {
-			loggers.LoggerAPKOperator.Errorf("error while listing authentication CRs for API CR %s, %s",
-				apiName, err.Error())
-		}
-		for item := range backendList.Items {
-			backend := backendList.Items[item]
-			// check backend has similar item inside the apiState.ProdHTTPRoute.Backends
-			backendFound := false
-			for _, attachedBackend := range httpRouteState.BackendMapping {
-				if backend.GetName() == attachedBackend.Backend.Name {
-					backendFound = true
-					break
-				}
-			}
-			if !backendFound {
-				apiReconciler.removeOldOwnerRefsFromChild(ctx, &backend, apiName, apiNamespace)
-			}
-		}
-	}
-}
-
-func (apiReconciler *APIReconciler) removeOldOwnerRefsFromChild(ctx context.Context, child k8client.Object,
-	apiName, apiNamespace string) {
-	ownerReferences := child.GetOwnerReferences()
-	for i, ownerRef := range ownerReferences {
-		if ownerRef.Kind == "API" && ownerRef.Name == apiName {
-			// delete the element from ownerReferences list
-			ownerReferences = append(ownerReferences[:i], ownerReferences[i+1:]...)
-			child.SetOwnerReferences(ownerReferences)
-			if err := utils.UpdateCR(ctx, apiReconciler.client, child); err != nil {
-				loggers.LoggerAPKOperator.Errorf("error while updating CR %s, %s",
-					child.GetName(), err.Error())
-			}
-			break
-		}
-	}
 }
 
 func (apiReconciler *APIReconciler) resolveGQLRouteRefs(ctx context.Context, gqlRouteRefs []string,
@@ -689,9 +521,6 @@ func (apiReconciler *APIReconciler) getAuthenticationsForAPI(ctx context.Context
 	}
 	for item := range authenticationList.Items {
 		authenticationListItem := authenticationList.Items[item]
-		if err := utils.UpdateOwnerReference(ctx, apiReconciler.client, &authenticationListItem, api, true); err != nil {
-			return nil, err
-		}
 		authentications[utils.NamespacedName(&authenticationListItem).String()] = authenticationListItem
 	}
 	return authentications, nil
@@ -709,9 +538,6 @@ func (apiReconciler *APIReconciler) getRatelimitPoliciesForAPI(ctx context.Conte
 	}
 	for item := range ratelimitPolicyList.Items {
 		rateLimitPolicy := ratelimitPolicyList.Items[item]
-		if err := utils.UpdateOwnerReference(ctx, apiReconciler.client, &rateLimitPolicy, api, true); err != nil {
-			return nil, err
-		}
 		ratelimitPolicies[utils.NamespacedName(&rateLimitPolicy).String()] = rateLimitPolicy
 	}
 	return ratelimitPolicies, nil
@@ -771,9 +597,6 @@ func (apiReconciler *APIReconciler) getAuthenticationsForResources(ctx context.C
 	}
 	for item := range authenticationList.Items {
 		authenticationListItem := authenticationList.Items[item]
-		if err := utils.UpdateOwnerReference(ctx, apiReconciler.client, &authenticationListItem, api, true); err != nil {
-			return nil, err
-		}
 		authentications[utils.NamespacedName(&authenticationListItem).String()] = authenticationListItem
 	}
 	return authentications, nil
@@ -791,9 +614,6 @@ func (apiReconciler *APIReconciler) getRatelimitPoliciesForResources(ctx context
 	}
 	for item := range ratelimitPolicyList.Items {
 		rateLimitPolicy := ratelimitPolicyList.Items[item]
-		if err := utils.UpdateOwnerReference(ctx, apiReconciler.client, &rateLimitPolicy, api, true); err != nil {
-			return nil, err
-		}
 		ratelimitpolicies[utils.NamespacedName(&rateLimitPolicy).String()] = rateLimitPolicy
 	}
 	return ratelimitpolicies, nil
@@ -810,9 +630,6 @@ func (apiReconciler *APIReconciler) getAPIPoliciesForAPI(ctx context.Context, ap
 	}
 	for item := range apiPolicyList.Items {
 		apiPolicy := apiPolicyList.Items[item]
-		if err := utils.UpdateOwnerReference(ctx, apiReconciler.client, &apiPolicy, api, true); err != nil {
-			return nil, err
-		}
 		apiPolicies[utils.NamespacedName(&apiPolicy).String()] = apiPolicy
 	}
 	return apiPolicies, nil
@@ -847,9 +664,6 @@ func (apiReconciler *APIReconciler) getAPIPoliciesForResources(ctx context.Conte
 	}
 	for item := range apiPolicyList.Items {
 		apiPolicy := apiPolicyList.Items[item]
-		if err := utils.UpdateOwnerReference(ctx, apiReconciler.client, &apiPolicy, api, true); err != nil {
-			return nil, err
-		}
 		apiPolicies[utils.NamespacedName(&apiPolicy).String()] = apiPolicy
 	}
 	return apiPolicies, nil
@@ -962,6 +776,302 @@ func (apiReconciler *APIReconciler) getResolvedBackendsMapping(ctx context.Conte
 
 	loggers.LoggerAPKOperator.Debugf("Generated backendMapping: %v", backendMapping)
 	return backendMapping
+}
+
+
+// These proxy methods are designed as intermediaries for the getAPIsFor<CR objects> methods. 
+// Their purpose is to encapsulate the process of updating owner references within the reconciliation watch methods. 
+// By employing these proxies, we prevent redundant owner reference updates for the same object due to the hierarchical structure of these functions.
+func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForGQLRoute(ctx context.Context, obj k8client.Object) []reconcile.Request {
+	requests :=  apiReconciler.getAPIForGQLRoute(ctx, obj)
+	apiReconciler.handleOwnerReference(ctx, obj, &requests)
+	return requests
+}
+
+func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForHTTPRoute(ctx context.Context, obj k8client.Object) []reconcile.Request {
+	requests := apiReconciler.getAPIForHTTPRoute(ctx, obj)
+	apiReconciler.handleOwnerReference(ctx, obj, &requests)
+	return requests
+}
+
+func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForConfigMap(ctx context.Context, obj k8client.Object) []reconcile.Request {
+	requests := apiReconciler.getAPIsForConfigMap(ctx, obj)
+	apiReconciler.handleOwnerReference(ctx, obj, &requests)
+	return requests
+}
+
+func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForSecret(ctx context.Context, obj k8client.Object) []reconcile.Request {
+	requests := apiReconciler.getAPIsForSecret(ctx, obj)
+	apiReconciler.handleOwnerReference(ctx, obj, &requests)
+	return requests
+}
+
+func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForAuthentication(ctx context.Context, obj k8client.Object) []reconcile.Request {
+	requests := apiReconciler.getAPIsForAuthentication(ctx, obj)
+	apiReconciler.handleOwnerReference(ctx, obj, &requests)
+	return requests
+}
+
+func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForAPIPolicy(ctx context.Context, obj k8client.Object) []reconcile.Request {
+	requests := apiReconciler.getAPIsForAPIPolicy(ctx, obj)
+	apiReconciler.handleOwnerReference(ctx, obj, &requests)
+	return requests
+}
+
+func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForInterceptorService(ctx context.Context, obj k8client.Object) []reconcile.Request {
+	requests := apiReconciler.getAPIsForInterceptorService(ctx, obj)
+	apiReconciler.handleOwnerReference(ctx, obj, &requests)
+	return requests
+}
+
+func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForBackendJWT(ctx context.Context, obj k8client.Object) []reconcile.Request {
+	requests := apiReconciler.getAPIsForBackendJWT(ctx, obj)
+	apiReconciler.handleOwnerReference(ctx, obj, &requests)
+	return requests
+}
+
+func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForRateLimitPolicy(ctx context.Context, obj k8client.Object) []reconcile.Request {
+	requests := apiReconciler.getAPIsForRateLimitPolicy(ctx, obj)
+	apiReconciler.handleOwnerReference(ctx, obj, &requests)
+	return requests
+}
+
+func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForScope(ctx context.Context, obj k8client.Object) []reconcile.Request {
+	requests := apiReconciler.getAPIsForScope(ctx, obj)
+	apiReconciler.handleOwnerReference(ctx, obj, &requests)
+	return requests
+}
+
+func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForBackend(ctx context.Context, obj k8client.Object) []reconcile.Request {
+	requests := apiReconciler.getAPIsForBackend(ctx, obj)
+	apiReconciler.handleOwnerReference(ctx, obj, &requests)
+	return requests
+}
+
+func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForGateway(ctx context.Context, obj k8client.Object) []reconcile.Request {
+	requests := apiReconciler.getAPIsForGateway(ctx, obj)
+	apiReconciler.handleOwnerReference(ctx, obj, &requests)
+	return requests
+}
+
+
+func (apiReconciler *APIReconciler) traverseAPIStateAndUpdateOwnerReferences(ctx context.Context, apiState synchronizer.APIState) {
+	loggers.LoggerAPI.Infof("Ready to traverse the apistate : %+v", apiState)
+	// travserse through all the children of this API and trigger update owner reference
+	if (apiState.ProdHTTPRoute != nil) {
+		for _, httpRoute := range apiState.ProdHTTPRoute.HTTPRoutePartitions {
+			apiReconciler.retriveParentAPIsAndUpdateOwnerReferene(ctx, httpRoute)
+		}
+	}
+	if (apiState.SandHTTPRoute != nil) {
+		for _, httpRoute := range apiState.SandHTTPRoute.HTTPRoutePartitions {
+			apiReconciler.retriveParentAPIsAndUpdateOwnerReferene(ctx, httpRoute)
+		}
+	}
+	if (apiState.ProdGQLRoute != nil) {
+		for _, gqlRoute := range apiState.ProdGQLRoute.GQLRoutePartitions {
+			apiReconciler.retriveParentAPIsAndUpdateOwnerReferene(ctx, gqlRoute)
+		}
+	}
+	if (apiState.SandGQLRoute != nil) {
+		for _, gqlRoute := range apiState.SandGQLRoute.GQLRoutePartitions {
+			apiReconciler.retriveParentAPIsAndUpdateOwnerReferene(ctx, gqlRoute)
+		}
+	}
+	for _, auth := range apiState.Authentications {
+		apiReconciler.retriveParentAPIsAndUpdateOwnerReferene(ctx, &auth)
+	}
+	for _, auth := range apiState.ResourceAuthentications {
+		apiReconciler.retriveParentAPIsAndUpdateOwnerReferene(ctx, &auth)
+	}
+	for _, ratelimit := range apiState.RateLimitPolicies {
+		apiReconciler.retriveParentAPIsAndUpdateOwnerReferene(ctx, &ratelimit)
+	}
+	for _, ratelimit := range apiState.ResourceRateLimitPolicies {
+		apiReconciler.retriveParentAPIsAndUpdateOwnerReferene(ctx, &ratelimit)
+	}
+	for _, apiPolicy := range apiState.APIPolicies {
+		apiReconciler.retriveParentAPIsAndUpdateOwnerReferene(ctx, &apiPolicy)
+	}
+	for _, apiPolicy := range apiState.ResourceAPIPolicies {
+		apiReconciler.retriveParentAPIsAndUpdateOwnerReferene(ctx, &apiPolicy)
+	}
+	for _, interceptorService := range apiState.InterceptorServiceMapping {
+		apiReconciler.retriveParentAPIsAndUpdateOwnerReferene(ctx, &interceptorService)
+	}
+	if (apiState.ProdHTTPRoute != nil) {
+		for _, backend := range apiState.ProdHTTPRoute.BackendMapping{
+			if (&backend != nil) {
+				apiReconciler.retriveParentAPIsAndUpdateOwnerReferene(ctx, &backend.Backend)
+			}
+		}
+	}
+	if (apiState.SandHTTPRoute != nil) {
+		for _, backend := range apiState.SandHTTPRoute.BackendMapping{
+			if (&backend != nil) {
+				apiReconciler.retriveParentAPIsAndUpdateOwnerReferene(ctx, &backend.Backend)
+			}
+		}
+	}
+	if (apiState.ProdGQLRoute != nil) {
+		for _, backend := range apiState.ProdGQLRoute.BackendMapping{
+			if (&backend != nil) {
+				apiReconciler.retriveParentAPIsAndUpdateOwnerReferene(ctx, &backend.Backend)
+			}
+		}
+	}
+	if (apiState.SandGQLRoute != nil) {
+		for _, backend := range apiState.SandGQLRoute.BackendMapping{
+			if (&backend != nil) {
+				apiReconciler.retriveParentAPIsAndUpdateOwnerReferene(ctx, &backend.Backend)
+			}
+		}
+	}
+	for _, backendJwt := range apiState.BackendJWTMapping{
+		apiReconciler.retriveParentAPIsAndUpdateOwnerReferene(ctx, &backendJwt)
+	}
+
+}
+
+func (apiReconciler *APIReconciler) retriveParentAPIsAndUpdateOwnerReferene(ctx context.Context, obj k8client.Object) {
+	var requests []reconcile.Request
+	switch obj.(type){
+	case *dpv1alpha1.Backend: 
+		var backend dpv1alpha1.Backend
+		namesapcedName := types.NamespacedName{
+			Name:      string(obj.GetName()),
+			Namespace: string(obj.GetNamespace()),
+		}
+		if err := apiReconciler.client.Get(ctx, namesapcedName, &backend); err != nil {
+			loggers.LoggerAPKOperator.Errorf("Unexpected error occured while loading the cr object from cluster %+v", err)
+			return
+		}
+		requests = apiReconciler.getAPIsForBackend(ctx, &backend)
+		apiReconciler.handleOwnerReference(ctx, &backend, &requests)
+	case *dpv1alpha1.Scope: 
+		var scope dpv1alpha1.Scope
+		namesapcedName := types.NamespacedName{
+			Name:      string(obj.GetName()),
+			Namespace: string(obj.GetNamespace()),
+		}
+		if err := apiReconciler.client.Get(ctx, namesapcedName, &scope); err != nil {
+			loggers.LoggerAPKOperator.Errorf("Unexpected error occured while loading the cr object from cluster %+v", err)
+			return
+		}
+		requests = apiReconciler.getAPIsForScope(ctx, &scope)
+		apiReconciler.handleOwnerReference(ctx, &scope, &requests)
+	case *dpv1alpha1.RateLimitPolicy: 
+		var rl dpv1alpha1.RateLimitPolicy
+		namesapcedName := types.NamespacedName{
+			Name:      string(obj.GetName()),
+			Namespace: string(obj.GetNamespace()),
+		}
+		if err := apiReconciler.client.Get(ctx, namesapcedName, &rl); err != nil {
+			loggers.LoggerAPKOperator.Errorf("Unexpected error occured while loading the cr object from cluster %+v", err)
+			return
+		}
+		requests = apiReconciler.getAPIsForRateLimitPolicy(ctx, &rl)
+		apiReconciler.handleOwnerReference(ctx, &rl, &requests)
+	case *dpv1alpha1.BackendJWT: 
+		var backendJWT dpv1alpha1.BackendJWT
+		namesapcedName := types.NamespacedName{
+			Name:      string(obj.GetName()),
+			Namespace: string(obj.GetNamespace()),
+		}
+		if err := apiReconciler.client.Get(ctx, namesapcedName, &backendJWT); err != nil {
+			loggers.LoggerAPKOperator.Errorf("Unexpected error occured while loading the cr object from cluster %+v", err)
+			return
+		}
+		requests = apiReconciler.getAPIsForBackendJWT(ctx, &backendJWT)
+		apiReconciler.handleOwnerReference(ctx, &backendJWT, &requests)
+	case *dpv1alpha1.InterceptorService: 
+		var interceptorService dpv1alpha1.InterceptorService
+		namesapcedName := types.NamespacedName{
+			Name:      string(obj.GetName()),
+			Namespace: string(obj.GetNamespace()),
+		}
+		if err := apiReconciler.client.Get(ctx, namesapcedName, &interceptorService); err != nil {
+			loggers.LoggerAPKOperator.Errorf("Unexpected error occured while loading the cr object from cluster %+v", err)
+			return
+		}
+		requests = apiReconciler.getAPIsForInterceptorService(ctx, &interceptorService)
+		apiReconciler.handleOwnerReference(ctx, &interceptorService, &requests)
+	case *dpv1alpha1.APIPolicy: 
+		var apiPolicy dpv1alpha1.APIPolicy
+		namesapcedName := types.NamespacedName{
+			Name:      string(obj.GetName()),
+			Namespace: string(obj.GetNamespace()),
+		}
+		if err := apiReconciler.client.Get(ctx, namesapcedName, &apiPolicy); err != nil {
+			loggers.LoggerAPKOperator.Errorf("Unexpected error occured while loading the cr object from cluster %+v", err)
+			return
+		}
+		requests = apiReconciler.getAPIsForAPIPolicy(ctx, &apiPolicy)
+		apiReconciler.handleOwnerReference(ctx, &apiPolicy, &requests)
+	case *dpv1alpha2.Authentication:
+		var auth dpv1alpha2.Authentication
+		namesapcedName := types.NamespacedName{
+			Name:      string(obj.GetName()),
+			Namespace: string(obj.GetNamespace()),
+		}
+		if err := apiReconciler.client.Get(ctx, namesapcedName, &auth); err != nil {
+			loggers.LoggerAPKOperator.Errorf("Unexpected error occured while loading the cr object from cluster %+v", err)
+			return
+		}
+		requests = apiReconciler.getAPIsForAuthentication(ctx, &auth)
+		apiReconciler.handleOwnerReference(ctx, &auth, &requests)
+	case *corev1.Secret: 
+		var secret corev1.Secret
+		namesapcedName := types.NamespacedName{
+			Name:      string(obj.GetName()),
+			Namespace: string(obj.GetNamespace()),
+		}
+		if err := apiReconciler.client.Get(ctx, namesapcedName, &secret); err != nil {
+			loggers.LoggerAPKOperator.Errorf("Unexpected error occured while loading the cr object from cluster %+v", err)
+			return
+		}
+		requests = apiReconciler.getAPIsForSecret(ctx, &secret)
+		apiReconciler.handleOwnerReference(ctx, &secret, &requests)
+	case *corev1.ConfigMap: 
+		var cm corev1.ConfigMap
+		namesapcedName := types.NamespacedName{
+			Name:      string(obj.GetName()),
+			Namespace: string(obj.GetNamespace()),
+		}
+		if err := apiReconciler.client.Get(ctx, namesapcedName, &cm); err != nil {
+			loggers.LoggerAPKOperator.Errorf("Unexpected error occured while loading the cr object from cluster %+v", err)
+			return
+		}
+		requests = apiReconciler.getAPIsForConfigMap(ctx, &cm)
+		apiReconciler.handleOwnerReference(ctx, &cm, &requests)
+	case *gwapiv1b1.HTTPRoute: 
+		var httpRoute gwapiv1b1.HTTPRoute
+		namesapcedName := types.NamespacedName{
+			Name:      string(obj.GetName()),
+			Namespace: string(obj.GetNamespace()),
+		}
+		if err := apiReconciler.client.Get(ctx, namesapcedName, &httpRoute); err != nil {
+			loggers.LoggerAPKOperator.Errorf("Unexpected error occured while loading the cr object from cluster %+v", err)
+			return
+		}
+		requests = apiReconciler.getAPIForHTTPRoute(ctx, &httpRoute)
+		apiReconciler.handleOwnerReference(ctx, &httpRoute, &requests)
+	case *dpv1alpha2.GQLRoute:
+		var gqlRoute dpv1alpha2.GQLRoute
+		namesapcedName := types.NamespacedName{
+			Name:      string(obj.GetName()),
+			Namespace: string(obj.GetNamespace()),
+		}
+		if err := apiReconciler.client.Get(ctx, namesapcedName, &gqlRoute); err != nil {
+			loggers.LoggerAPKOperator.Errorf("Unexpected error occured while loading the cr object from cluster %+v", err)
+			return
+		}
+		requests = apiReconciler.getAPIForGQLRoute(ctx, &gqlRoute)
+		apiReconciler.handleOwnerReference(ctx, &gqlRoute, &requests)
+	default:
+		loggers.LoggerAPKOperator.Errorf("Unexpected type found while processing owner reference %+v", obj)
+	}
+	
 }
 
 // getAPIForGQLRoute triggers the API controller reconcile method based on the changes detected
@@ -1900,4 +2010,59 @@ func (apiReconciler *APIReconciler) handleStatus() {
 			},
 		})
 	}
+}
+
+
+
+func (apiReconciler *APIReconciler) handleOwnerReference(ctx context.Context, obj k8client.Object, apiRequests *[]reconcile.Request) {
+	apis := []dpv1alpha2.API{}
+	for _, req := range *apiRequests {
+		var apiCR dpv1alpha2.API
+		if err := apiReconciler.client.Get(ctx, req.NamespacedName, &apiCR); err == nil {
+			apis = append(apis, apiCR)
+		} else {
+			loggers.LoggerAPKOperator.Errorf("Error while loading api: %+v", req)
+		}
+	}
+	// Prepare owner references for the route
+	preparedOwnerReferences := prepareOwnerReference(apis)
+	// Decide whether we need an update
+	updateRequired := false
+	if (len(obj.GetOwnerReferences()) != len(preparedOwnerReferences)) {
+		updateRequired = true
+	} else {
+		for _, ref := range preparedOwnerReferences {
+			_, found := common.FindElement(obj.GetOwnerReferences(), func(refLocal metav1.OwnerReference) bool {
+				if (refLocal.UID == ref.UID && refLocal.Name == ref.Name && refLocal.APIVersion == ref.APIVersion && refLocal.Kind == ref.Kind){
+					return true
+				}
+				return false
+			})
+			if (!found) {
+				updateRequired = true
+				break
+			}
+		}
+	}
+	if (updateRequired) {
+		obj.SetOwnerReferences(preparedOwnerReferences)
+		utils.UpdateCR(ctx, apiReconciler.client, obj)
+	}
+}
+
+func prepareOwnerReference(apiItems []dpv1alpha2.API) []metav1.OwnerReference {
+	ownerReferences := []metav1.OwnerReference{}
+	uidMap := make(map[string]bool)
+	for _, ref := range apiItems {
+		if _, exists := uidMap[string(ref.UID)]; !exists {
+			ownerReferences = append(ownerReferences, metav1.OwnerReference{
+				APIVersion: ref.APIVersion,
+				Kind: ref.Kind,
+				Name: ref.Name,
+				UID: ref.UID,
+			})
+			uidMap[string(ref.UID)] = true
+		}
+	}
+	return ownerReferences
 }
