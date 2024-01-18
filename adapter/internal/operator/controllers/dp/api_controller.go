@@ -1151,7 +1151,7 @@ func (apiReconciler *APIReconciler) getAPIsForConfigMap(ctx context.Context, obj
 	err := apiReconciler.client.List(ctx, backendList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(configMapBackend, utils.NamespacedName(configMap).String()),
 	})
-	if err == nil {
+	if err == nil && len(backendList.Items) > 0 {
 		requests := []reconcile.Request{}
 		for item := range backendList.Items {
 			backend := backendList.Items[item]
@@ -1544,6 +1544,7 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 
 	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha2.API{}, configMapAPIDefinition,
 		func(rawObj k8client.Object) []string {
+			loggers.LoggerAPI.Error("AMALIII configMapAPIDefinition: ", configMapAPIDefinition)
 			api := rawObj.(*dpv1alpha2.API)
 			var configMaps []string
 			if api.Spec.DefinitionFileRef != "" {
@@ -1553,6 +1554,7 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 						Namespace: api.Namespace,
 					}.String())
 			}
+			loggers.LoggerAPI.Error("AMALIII configMaps: ", configMaps)
 			return configMaps
 		}); err != nil {
 		return err
