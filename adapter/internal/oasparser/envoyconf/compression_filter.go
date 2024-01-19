@@ -82,12 +82,8 @@ func getCompressorFilter() (*hcmv3.HttpFilter, error) {
 	var requestDirectionContentTypes []string
 	var libraryConfig protoreflect.ProtoMessage
 
-	for _, val := range configRead.Envoy.Filters.Compression.ResponseDirection.ContentType {
-		responseDirectionContentTypes = append(responseDirectionContentTypes, val)
-	}
-	for _, val := range configRead.Envoy.Filters.Compression.RequestDirection.ContentType {
-		requestDirectionContentTypes = append(requestDirectionContentTypes, val)
-	}
+	responseDirectionContentTypes = append(responseDirectionContentTypes, configRead.Envoy.Filters.Compression.ResponseDirection.ContentType...)
+	requestDirectionContentTypes = append(requestDirectionContentTypes, configRead.Envoy.Filters.Compression.RequestDirection.ContentType...)
 
 	compressionLibrary := strings.ToLower(configRead.Envoy.Filters.Compression.Library)
 	if compressionLibrary == "gzip" {
