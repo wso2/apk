@@ -261,10 +261,6 @@ func CompareRequest(req *roundtripper.Request, cReq *roundtripper.CapturedReques
 			return nil
 		}
 
-		if expected.ExpectedRequest.Method == "" {
-			expected.ExpectedRequest.Method = "GET"
-		}
-
 		if expected.ExpectedRequest.Host != "" && expected.ExpectedRequest.Host != cReq.Host {
 			return fmt.Errorf("expected host to be %s, got %s", expected.ExpectedRequest.Host, cReq.Host)
 		}
@@ -272,7 +268,8 @@ func CompareRequest(req *roundtripper.Request, cReq *roundtripper.CapturedReques
 		if expected.ExpectedRequest.Path != cReq.Path {
 			return fmt.Errorf("expected path to be %s, got %s", expected.ExpectedRequest.Path, cReq.Path)
 		}
-		if expected.ExpectedRequest.Method != "OPTIONS" && expected.ExpectedRequest.Method != cReq.Method {
+		if expected.ExpectedRequest.Method != "OPTIONS" && expected.ExpectedRequest.Method != cReq.Method &&
+			!(expected.ExpectedRequest.Method == "" && cReq.Method == "GET") {
 			return fmt.Errorf("expected method to be %s, got %s", expected.ExpectedRequest.Method, cReq.Method)
 		}
 		if expected.Namespace != cReq.Namespace {

@@ -31,7 +31,6 @@ import org.wso2.apk.enforcer.commons.dto.JWTConfigurationDto;
 import org.wso2.apk.enforcer.config.EnforcerConfig;
 import org.wso2.apk.enforcer.discovery.api.Api;
 import org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo;
-import org.wso2.apk.enforcer.discovery.api.Certificate;
 import org.wso2.apk.enforcer.discovery.api.Claim;
 import org.wso2.apk.enforcer.discovery.api.Operation;
 import org.wso2.apk.enforcer.discovery.api.Resource;

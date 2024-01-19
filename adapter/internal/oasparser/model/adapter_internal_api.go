@@ -926,7 +926,6 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoGQLRouteCR(gqlRoute *dpv1al
 		resourceAuthScheme = concatAuthSchemes(resourceAuthScheme, nil)
 		resourceRatelimitPolicy = concatRateLimitPolicies(resourceRatelimitPolicy, nil)
 
-		loggers.LoggerOasparser.Debugf("Calculating auths for API ..., API_UUID = %v", adapterInternalAPI.UUID)
 		apiAuth := getSecurity(resourceAuthScheme)
 
 		for _, match := range rule.Matches {

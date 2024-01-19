@@ -14,7 +14,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-apiVersion: dp.wso2.com/v1alpha1
+apiVersion: dp.wso2.com/v1alpha2
 kind: API
 metadata:
   name: fetch-non-api-definition
@@ -23,7 +23,7 @@ spec:
   apiName: API with Swagger Definition
   apiType: REST
   apiVersion: v1.0.0
-  basePath: /fetch-api-definition/v1.0.0
+  basePath: /fetch-non-existing-api-definition/v1.0.0
   production:
     - httpRouteRefs:
       - fetch-non-api-definition-httproute

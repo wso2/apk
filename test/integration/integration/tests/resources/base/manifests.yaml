@@ -68,6 +68,52 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
+  name: gql-backend-v1
+  namespace: gateway-integration-test-infra
+spec:
+  selector:
+    app: gql-backend-v1
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gql-backend-v1
+  namespace: gateway-integration-test-infra
+  labels:
+    app: gql-backend-v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gql-backend-v1
+  template:
+    metadata:
+      labels:
+        app: gql-backend-v1
+    spec:
+      containers:
+      - name: gql-backend-v1
+        image: tharsanan/gq:1.0.0
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        resources:
+          requests:
+            cpu: 10m
+---
+apiVersion: v1
+kind: Service
+metadata:
   name: infra-backend-v2
   namespace: gateway-integration-test-infra
 spec:
@@ -322,7 +368,6 @@ spec:
     group: gateway.networking.k8s.io
     kind: Gateway
     name: default
-
 ---
 apiVersion: dp.wso2.com/v1alpha1
 kind: TokenIssuer
@@ -368,7 +413,7 @@ spec:
 ---
 # This is a API with wrong organization(jwt issuer not set). 
 # When test cases apply the correct API it should overrite the wrong value to correct value
-apiVersion: dp.wso2.com/v1alpha1
+apiVersion: dp.wso2.com/v1alpha2
 kind: API
 metadata:
   name: all-http-methods-for-wildcard

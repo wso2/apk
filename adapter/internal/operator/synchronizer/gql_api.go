@@ -19,7 +19,6 @@ package synchronizer
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/dataholder"
@@ -49,7 +48,7 @@ func generateGQLAdapterInternalAPI(apiState APIState, gqlRoute *GQLRouteState, e
 		environment = conf.Adapter.Environment
 	}
 	adapterInternalAPI.SetEnvironment(environment)
-
+	adapterInternalAPI.SetXWso2RequestBodyPass(true)
 	resourceParams := model.ResourceParams{
 		AuthSchemes:               apiState.Authentications,
 		ResourceAuthSchemes:       apiState.ResourceAuthentications,
@@ -64,10 +63,6 @@ func generateGQLAdapterInternalAPI(apiState APIState, gqlRoute *GQLRouteState, e
 	}
 	if err := adapterInternalAPI.SetInfoGQLRouteCR(gqlRoute.GQLRouteCombined, resourceParams); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2631, logging.MAJOR, "Error setting GQLRoute CR info to adapterInternalAPI. %v", err))
-		return nil, nil, err
-	}
-	if err := adapterInternalAPI.Validate(); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2632, logging.MAJOR, "Error validating adapterInternalAPI intermediate representation. %v", err))
 		return nil, nil, err
 	}
 	vHosts := getVhostsForGQLAPI(gqlRoute.GQLRouteCombined)
@@ -104,7 +99,6 @@ func getVhostsForGQLAPI(gqlRoute *v1alpha2.GQLRoute) []string {
 	for _, hostName := range gqlRoute.Spec.Hostnames {
 		vHosts = append(vHosts, string(hostName))
 	}
-	fmt.Println("vhosts size: ", len(vHosts))
 	return vHosts
 }
 

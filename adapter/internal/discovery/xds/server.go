@@ -393,13 +393,19 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 	}
 
 	envoyGatewayConfig, gwFound := gatewayLabelConfigMap[gatewayName]
+	// gwFound means that the gateway is configured in the gateway cr.
 	listeners := envoyGatewayConfig.listeners
 	if !gwFound || listeners == nil || len(listeners) == 0 {
 		return nil, nil, nil, nil, nil
 	}
 	routeConfigs := make([]*routev3.RouteConfiguration, 0)
+	// TODO(amali) Revisit the following
+	// Find the matching listener for each vhost and then only add the routes to the routeConfigs
 	for _, listener := range listeners {
 		for vhost, routes := range vhostToRouteArrayMap {
+			// listener match pass in the following cases
+			// 1. vhost matches to a hostname in gateway
+			// 2. listener name matches
 			matchedListener, found := common.FindElement(dataholder.GetAllGatewayListeners(), func(listenerLocal gwapiv1b1.Listener) bool {
 				if listenerLocal.Hostname != nil && common.MatchesHostname(vhost, string(*listenerLocal.Hostname)) {
 					if listener.Name == common.GetEnvoyListenerName(string(listenerLocal.Protocol), uint32(listenerLocal.Port)) {
@@ -414,19 +420,16 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 				routesConfig := oasParser.GetRouteConfigs(map[string][]*routev3.Route{vhost: routes}, routeConfigName, envoyGatewayConfig.customRateLimitPolicies)
 
 				routeConfigMatched, alreadyExistsInRouteConfigList := common.FindElement(routeConfigs, func(routeConf *routev3.RouteConfiguration) bool {
-					if routeConf.Name == routesConfig.Name {
-						return true
-					}
-					return false
+					return routeConf.Name == routesConfig.Name
 				})
 				if alreadyExistsInRouteConfigList {
-					logger.LoggerAPKOperator.Debugf("Route already exists. %+v", routesConfig.Name)
+					logger.LoggerAPKOperator.Debugf("Route already exists. %v", routesConfig.Name)
 					routeConfigMatched.VirtualHosts = append(routeConfigMatched.VirtualHosts, routesConfig.VirtualHosts...)
 				} else {
 					routeConfigs = append(routeConfigs, routesConfig)
 				}
 			} else {
-				logger.LoggerAPKOperator.Errorf("Failed to find a matching gateway listener for this vhost: %s", vhost)
+				logger.LoggerAPKOperator.Errorf("Failed to find a matching gateway listener for this vhost: %s in %v", vhost, listener.Name)
 			}
 		}
 	}

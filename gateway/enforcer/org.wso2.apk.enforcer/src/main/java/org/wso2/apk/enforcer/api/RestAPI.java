@@ -28,13 +28,11 @@ import org.wso2.apk.enforcer.commons.model.RequestContext;
 import org.wso2.apk.enforcer.commons.model.ResourceConfig;
 import org.wso2.apk.enforcer.config.ConfigHolder;
 import org.wso2.apk.enforcer.config.EnforcerConfig;
-import org.wso2.apk.enforcer.config.dto.FilterDTO;
 import org.wso2.apk.enforcer.constants.APIConstants;
 import org.wso2.apk.enforcer.constants.HttpConstants;
 import org.wso2.apk.enforcer.cors.CorsFilter;
 import org.wso2.apk.enforcer.discovery.api.Api;
 import org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo;
-import org.wso2.apk.enforcer.discovery.api.Certificate;
 import org.wso2.apk.enforcer.discovery.api.Claim;
 import org.wso2.apk.enforcer.discovery.api.Operation;
 import org.wso2.apk.enforcer.discovery.api.Resource;
@@ -48,12 +46,9 @@ import org.wso2.apk.enforcer.util.MockImplUtils;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.ServiceLoader;
 
 /**
  * Specific implementation for a Rest API type APIs.

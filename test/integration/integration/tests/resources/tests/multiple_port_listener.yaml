@@ -14,7 +14,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-apiVersion: dp.wso2.com/v1alpha1
+apiVersion: dp.wso2.com/v1alpha2
 kind: API
 metadata:
   name: test-multiple-port-listener
@@ -30,7 +30,7 @@ spec:
       - test-api-with-multiple-port-listener-httproute
   organization: wso2-org
 ---
-apiVersion: dp.wso2.com/v1alpha1
+apiVersion: dp.wso2.com/v1alpha2
 kind: API
 metadata:
   name: test-multiple-port-listener-1

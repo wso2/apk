@@ -20,20 +20,18 @@ metadata:
   namespace: gateway-integration-test-infra
 spec:
   override:
-    type: Custom
     custom:
       key: rlkey_user
       value: bob
-      rateLimit:
-        requestsPerUnit: 4
-        unit: Minute
-    organization: default
+      requestsPerUnit: 4
+      unit: Minute
+      organization: default
   targetRef:
     kind: Gateway
     name: default
     group: gateway.networking.k8s.io
 ---
-apiVersion: dp.wso2.com/v1alpha1
+apiVersion: dp.wso2.com/v1alpha2
 kind: APIPolicy
 metadata:
   name: interceptor-api-policy-api-level
@@ -42,7 +40,6 @@ spec:
   override:
     requestInterceptors:
     - name: request-ratelimit-interceptor-api-level
-      namespace: gateway-integration-test-infra
   targetRef:
     group: gateway.networking.k8s.io
     kind: API
@@ -61,7 +58,7 @@ spec:
     - request_headers
     - invocation_context
 ---
-apiVersion: dp.wso2.com/v1alpha1
+apiVersion: dp.wso2.com/v1alpha2
 kind: API
 metadata:
   name: http-bin-api-basic

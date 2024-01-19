@@ -14,7 +14,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-apiVersion: dp.wso2.com/v1alpha1
+apiVersion: dp.wso2.com/v1alpha2
 kind: API
 metadata:
   name: prod-and-sand-apis
@@ -116,7 +116,7 @@ spec:
     port: 8080
 ---
 # To test whether we can successfully update already existing API with sandbox endpoints.
-apiVersion: dp.wso2.com/v1alpha1
+apiVersion: dp.wso2.com/v1alpha2
 kind: API
 metadata:
   name: prod-and-sand-apis

@@ -14,7 +14,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-apiVersion: dp.wso2.com/v1alpha1
+apiVersion: dp.wso2.com/v1alpha2
 kind: API
 metadata:
   name: cors-policy-api
@@ -61,7 +61,7 @@ spec:
       kind: Backend
       name: infra-backend-v1
 ---
-apiVersion: dp.wso2.com/v1alpha1
+apiVersion: dp.wso2.com/v1alpha2
 kind: APIPolicy
 metadata:
   name: cors-policy
@@ -69,7 +69,6 @@ metadata:
 spec:
   override:
     cORSPolicy:
-      enabled: true
       accessControlAllowCredentials: true
       accessControlAllowOrigins:
       - "*.wso2.com"
@@ -85,7 +84,7 @@ spec:
     kind: API
     name: cors-policy-api
 ---
-apiVersion: dp.wso2.com/v1alpha1
+apiVersion: dp.wso2.com/v1alpha2
 kind: API
 metadata:
   name: no-cors-policy-api

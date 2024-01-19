@@ -25,7 +25,7 @@ spec:
   - host: infra-backend-v1.gateway-integration-test-infra
     port: 8080
 ---
-apiVersion: dp.wso2.com/v1alpha1
+apiVersion: dp.wso2.com/v1alpha2
 kind: API
 metadata:
   name: test-api-with-backend-base-path

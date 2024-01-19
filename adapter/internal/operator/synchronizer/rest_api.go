@@ -19,7 +19,6 @@ package synchronizer
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/dataholder"
@@ -131,7 +130,6 @@ func getVhostsForAPI(httpRoute *gwapiv1b1.HTTPRoute) []string {
 	for _, hostName := range httpRoute.Spec.Hostnames {
 		vHosts = append(vHosts, string(hostName))
 	}
-	fmt.Println("vhosts size: ", len(vHosts))
 	return vHosts
 }
 
@@ -166,10 +164,7 @@ func getListenersForAPI(httpRoute *gwapiv1b1.HTTPRoute, apiUUID string) ([]strin
 		if found {
 			// find the matching listener
 			matchedListener, listenerFound := common.FindElement(gateway.Spec.Listeners, func(listener gwapiv1b1.Listener) bool {
-				if string(listener.Name) == string(*parentRef.SectionName) {
-					return true
-				}
-				return false
+				return string(listener.Name) == string(*parentRef.SectionName)
 			})
 			if listenerFound {
 				sectionNames = append(sectionNames, string(matchedListener.Name))
