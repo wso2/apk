@@ -106,9 +106,6 @@ var (
 	// Envoy Label as map key
 	gatewayLabelConfigMap map[string]*EnvoyGatewayConfig // GW-Label -> EnvoyGatewayConfig struct map
 
-	// Listener as map key
-	listenerToRouteArrayMap map[string][]*routev3.Route // Listener -> Routes map
-
 	// Common Enforcer Label as map key
 	// This doesn't have a usage yet. It will be used to handle multiple enforcer labels in future.
 	enforcerLabelMap map[string]*EnforcerInternalAPI // Enforcer Label -> EnforcerInternalAPI struct map
@@ -159,7 +156,6 @@ func init() {
 	enforcerThrottleDataCache = wso2_cache.NewSnapshotCache(false, IDHash{}, nil)
 	enforcerJwtIssuerCache = wso2_cache.NewSnapshotCache(false, IDHash{}, nil)
 	gatewayLabelConfigMap = make(map[string]*EnvoyGatewayConfig)
-	listenerToRouteArrayMap = make(map[string][]*routev3.Route)
 	orgAPIMap = make(map[string]map[string]*EnvoyInternalAPI)
 	orgIDAPIvHostsMap = make(map[string]map[string][]string) // organizationID -> UUID-prod/sand -> Envoy Vhost Array map
 	orgIDvHostBasepathMap = make(map[string]map[string]string)
@@ -740,16 +736,6 @@ func UpdateAPICache(vHosts []string, newLabels []string, listener string, sectio
 			clusters:           clusters,
 			endpointAddresses:  endpoints,
 			enforcerAPI:        oasParser.GetEnforcerAPI(adapterInternalAPI, vHost),
-		}
-		if _, ok := listenerToRouteArrayMap[listener]; ok {
-			routesList := listenerToRouteArrayMap[listener]
-			if routesList == nil {
-				routesList = make([]*routev3.Route, 0)
-			}
-			routesList = append(routesList, routes...)
-			listenerToRouteArrayMap[listener] = routesList
-		} else {
-			listenerToRouteArrayMap[listener] = routes
 		}
 	}
 	return updatedLabelsMap, nil
