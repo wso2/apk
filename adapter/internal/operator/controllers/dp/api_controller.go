@@ -848,7 +848,6 @@ func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForBackend(ctx c
 }
 
 func (apiReconciler *APIReconciler) traverseAPIStateAndUpdateOwnerReferences(ctx context.Context, apiState synchronizer.APIState) {
-	loggers.LoggerAPKOperator.Debugf("Ready to traverse the apistate : %+v", apiState)
 	// travserse through all the children of this API and trigger update owner reference
 	if apiState.ProdHTTPRoute != nil {
 		for _, httpRoute := range apiState.ProdHTTPRoute.HTTPRoutePartitions {
