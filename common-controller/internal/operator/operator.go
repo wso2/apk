@@ -26,7 +26,14 @@ import (
 
 	"github.com/wso2/apk/adapter/pkg/logging"
 	cache "github.com/wso2/apk/common-controller/internal/cache"
+	"github.com/wso2/apk/common-controller/internal/config"
+	controlplane "github.com/wso2/apk/common-controller/internal/controlplane"
 	"github.com/wso2/apk/common-controller/internal/loggers"
+	cpcontrollers "github.com/wso2/apk/common-controller/internal/operator/controllers/cp"
+	dpcontrollers "github.com/wso2/apk/common-controller/internal/operator/controllers/dp"
+	cpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/cp/v1alpha2"
+	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
+	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
@@ -34,12 +41,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
-
-	cpcontrollers "github.com/wso2/apk/common-controller/internal/operator/controllers/cp"
-	dpcontrollers "github.com/wso2/apk/common-controller/internal/operator/controllers/dp"
-	cpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/cp/v1alpha2"
-	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
-	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -166,5 +167,18 @@ func InitOperator() {
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2604, logging.BLOCKER, "Problem running manager: %v", err))
 		os.Exit(1)
+	}
+	config := config.ReadConfigs()
+	var controlPlane controlplane.ArtifactDeployer
+	if config.CommonController.ControlPlane.Persistence.Type == "K8s" {
+		controlPlane = controlplane.NewK8sArtifactDeployer(mgr)
+	}
+	grpcClient := controlplane.NewControlPlaneAgent(config.CommonController.ControlPlane.Host, config.CommonController.ControlPlane.Port, "1", controlPlane)
+	if grpcClient != nil {
+		err := grpcClient.StartEventStreaming()
+		if err != nil {
+			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2605, logging.BLOCKER, "Problem starting event streaming: %v", err))
+			os.Exit(1)
+		}
 	}
 }

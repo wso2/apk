@@ -30,7 +30,7 @@ type ApplicationSpec struct {
 	Owner           string            `json:"owner"`
 	Organization    string            `json:"organization"`
 	Attributes      map[string]string `json:"attributes,omitempty"`
-	SecuritySchemes SecuritySchemes   `json:"securitySchemes"`
+	SecuritySchemes *SecuritySchemes  `json:"securitySchemes"`
 }
 
 // SecuritySchemes defines the supported security schemes
