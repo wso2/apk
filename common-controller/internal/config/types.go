@@ -45,6 +45,15 @@ type commoncontroller struct {
 	Sts               sts
 	WebServer         webServer
 	InternalAPIServer internalAPIServer
+	ControlPlane      controlplane
+}
+type controlplane struct {
+	Host        string
+	Port        int
+	Persistence persistence
+}
+type persistence struct {
+	Type string
 }
 type internalAPIServer struct {
 	Port int64
@@ -59,7 +68,8 @@ type truststore struct {
 }
 
 type server struct {
-	Label string
+	Label      string
+	ServerName string
 }
 
 type operator struct {
