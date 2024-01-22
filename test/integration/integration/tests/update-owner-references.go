@@ -38,13 +38,7 @@ var UpdateOwnerReferences = suite.IntegrationTest{
 	ShortName:   "UpdateOwnerReference",
 	Description: "Test owner reference functionality",
 	Manifests: []string{
-		"tests/owner-reference/1.yaml",
-		"tests/owner-reference/2.yaml",
-		"tests/owner-reference/3.yaml",
-		"tests/owner-reference/4.yaml",
-		"tests/owner-reference/5.yaml",
-		"tests/owner-reference/6.yaml",
-		"tests/owner-reference/7.yaml",
+		"tests/owner-reference.yaml",
 	},
 	Test: func(t *testing.T, suite *suite.IntegrationTestSuite) {
 		time.Sleep(5 * time.Second)
