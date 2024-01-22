@@ -32,6 +32,7 @@ import (
 	"github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/internal/oasparser/model"
 	"github.com/wso2/apk/adapter/internal/operator/constants"
+	"github.com/wso2/apk/adapter/internal/operator/utils"
 	"github.com/wso2/apk/adapter/pkg/logging"
 	"github.com/wso2/apk/adapter/pkg/utils/tlsutils"
 )
@@ -47,48 +48,60 @@ type APIEvent struct {
 
 // SuccessEvent holds the data structure used for aknowledgement of a successful API deployment
 type SuccessEvent struct {
-	APINamespacedName types.NamespacedName
+	// APINamespacedName updated api namespaced names
+	APINamespacedName []types.NamespacedName
 	State             string
 	Events            []string
 }
 
+// PartitionEvent is the event sent to the partition server.
+type PartitionEvent struct {
+	EventType    string   `json:"eventType"`
+	APIName      string   `json:"apiName"`
+	APIVersion   string   `json:"apiVersion"`
+	BasePath     string   `json:"basePath"`
+	Organization string   `json:"organization"`
+	Partition    string   `json:"partition"`
+	APIUUID      string   `json:"apiId"`
+	Vhosts       []string `json:"vhosts"`
+}
+
 var (
 	// TODO: Decide on a buffer size and add to config.
-	paritionCh chan APIEvent
+	paritionCh chan *APIEvent
+	// Runtime client connetion
+	partitionClient *http.Client
 )
 
 func init() {
 	if config.ReadConfigs().PartitionServer.Enabled {
-		paritionCh = make(chan APIEvent, 10)
+		paritionCh = make(chan *APIEvent, 10)
 	}
 }
 
 // HandleAPILifeCycleEvents handles the API events generated from OperatorDataStore
-func HandleAPILifeCycleEvents(ch *chan APIEvent, successChannel *chan SuccessEvent) {
+func HandleAPILifeCycleEvents(ch *chan *APIEvent, successChannel *chan SuccessEvent) {
 	loggers.LoggerAPKOperator.Info("Operator synchronizer listening for API lifecycle events...")
 	for event := range *ch {
 		var err error
 		switch event.EventType {
 		case constants.Delete:
 			loggers.LoggerAPKOperator.Infof("Delete event received for %v", event.Events[0].APIDefinition.Name)
-			err = undeployAPIInGateway(event.Events[0])
+			if err = undeployAPIInGateway(event); err != nil {
+				loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2629, logging.CRITICAL, "API deployment failed for %s event : %v", event.EventType, err))
+			} else {
+				if config.ReadConfigs().PartitionServer.Enabled {
+					paritionCh <- event
+				}
+			}
 		case constants.Create:
-			deployMultipleAPIsInGateway(event.Events)
+			deployMultipleAPIsInGateway(event, successChannel)
 		case constants.Update:
-			loggers.LoggerAPKOperator.Infof("Update event received for %v", event.Events[0].APIDefinition.Name)
-			err = deployAPIInGateway(event.Events[0])
+			deployMultipleAPIsInGateway(event, successChannel)
 		}
 		if err != nil {
 			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2629, logging.CRITICAL, "API deployment failed for %s event : %v", event.EventType, err))
 		} else if event.EventType != constants.Create {
-			// TODO(amali) commented out because there was no usage for this
-			// if event.EventType != constants.Delete && event.EventType != constants.Create {
-			// 	*successChannel <- SuccessEvent{
-			// 		APINamespacedName: utils.NamespacedName(event.Events[0].APIDefinition),
-			// 		State:             event.EventType,
-			// 		Events:            event.UpdatedEvents,
-			// 	}
-			// }
 			if config.ReadConfigs().PartitionServer.Enabled {
 				paritionCh <- event
 			}
@@ -96,21 +109,30 @@ func HandleAPILifeCycleEvents(ch *chan APIEvent, successChannel *chan SuccessEve
 	}
 }
 
-func undeployAPIInGateway(apiState APIState) error {
+func undeployAPIInGateway(apiEvent *APIEvent) error {
+	var err error
+	apiState := apiEvent.Events[0]
 	if apiState.APIDefinition.Spec.APIType == "REST" {
-		return undeployRestAPIInGateway(apiState)
+		err = undeployRestAPIInGateway(apiState)
 	}
 	if apiState.APIDefinition.Spec.APIType == "GraphQL" {
-		return undeployGQLAPIInGateway(apiState)
+		err = undeployGQLAPIInGateway(apiState)
+	}
+	if err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2629, logging.CRITICAL,
+			"API deployment failed for %s event : %v, %v", apiEvent.EventType, apiState.APIDefinition.Name, err))
+	} else if config.ReadConfigs().PartitionServer.Enabled {
+		paritionCh <- apiEvent
 	}
 	return nil
 }
 
 // deployMultipleAPIsInGateway deploys the related API in CREATE and UPDATE events.
-func deployMultipleAPIsInGateway(apiStates []APIState) {
+func deployMultipleAPIsInGateway(event *APIEvent, successChannel *chan SuccessEvent) {
 	updatedLabelsMap := make(map[string]struct{})
-	for _, apiState := range apiStates {
-		loggers.LoggerAPKOperator.Infof("Create event received for %v", apiState.APIDefinition.Name)
+	var updatedAPIs []types.NamespacedName
+	for i, apiState := range event.Events {
+		loggers.LoggerAPKOperator.Infof("%s event received for %s", event.EventType, apiState.APIDefinition.Name)
 		if len(apiState.OldOrganizationID) != 0 {
 			xds.RemoveAPIFromOrgAPIMap(string((*apiState.APIDefinition).ObjectMeta.UID), apiState.OldOrganizationID)
 		}
@@ -133,6 +155,8 @@ func deployMultipleAPIsInGateway(apiStates []APIState) {
 						"Error deploying prod httpRoute of API : %v in Organization %v from environments %v. Error: %v",
 						string(apiState.APIDefinition.Spec.APIName), apiState.APIDefinition.Spec.Organization,
 						getLabelsForAPI(apiState.ProdHTTPRoute.HTTPRouteCombined), err))
+					// removing failed updates from the events list because this will be sent to partition server
+					event.Events = append(event.Events[:i], event.Events[i+1:]...)
 					continue
 				}
 				for label := range updatedLabels {
@@ -147,6 +171,8 @@ func deployMultipleAPIsInGateway(apiStates []APIState) {
 						"Error deploying sand httpRoute of API : %v in Organization %v from environments %v. Error: %v",
 						string(apiState.APIDefinition.Spec.APIName), apiState.APIDefinition.Spec.Organization,
 						getLabelsForAPI(apiState.ProdHTTPRoute.HTTPRouteCombined), err))
+					// removing failed updates from the events list because this will be sent to partition server
+					event.Events = append(event.Events[:i], event.Events[i+1:]...)
 					continue
 				}
 				for label := range updatedLabels {
@@ -193,94 +219,24 @@ func deployMultipleAPIsInGateway(apiStates []APIState) {
 				}
 			}
 		}
+		updatedAPIs = append(updatedAPIs, utils.NamespacedName(apiState.APIDefinition))
+	}
+
+	updated := xds.UpdateXdsCacheOnAPIChange(updatedLabelsMap)
+	if updated {
+		loggers.LoggerAPKOperator.Info("XDS cache updated for apis: %+v", updatedAPIs)
+		*successChannel <- SuccessEvent{
+			APINamespacedName: updatedAPIs,
+			State:             event.EventType,
+			Events:            event.UpdatedEvents,
+		}
 		if config.ReadConfigs().PartitionServer.Enabled {
-			apiEvent := APIEvent{
-				EventType:     constants.Create,
-				Events:        []APIState{apiState},
-				UpdatedEvents: []string{},
-			}
-			paritionCh <- apiEvent
+			paritionCh <- event
 		}
+	} else {
+		loggers.LoggerAPKOperator.Info("XDS cache not updated for APIs : %+v", updatedAPIs)
 	}
-	//TODO(amali) only update status if this is successful
-	xds.UpdateXdsCacheOnAPIChange(updatedLabelsMap)
 }
-
-// deployAPIInGateway deploys the related API in CREATE and UPDATE events.
-func deployAPIInGateway(apiState APIState) error {
-	updatedLabelsMap := make(map[string]struct{})
-	if len(apiState.OldOrganizationID) != 0 {
-		xds.RemoveAPIFromOrgAPIMap(string((*apiState.APIDefinition).ObjectMeta.UID), apiState.OldOrganizationID)
-	}
-
-	if apiState.APIDefinition.Spec.APIType == "REST" {
-		if apiState.ProdHTTPRoute == nil {
-			var adapterInternalAPI model.AdapterInternalAPI
-			adapterInternalAPI.SetInfoAPICR(*apiState.APIDefinition)
-			xds.RemoveAPICacheForEnv(adapterInternalAPI, constants.Production)
-		}
-		if apiState.SandHTTPRoute == nil {
-			var adapterInternalAPI model.AdapterInternalAPI
-			adapterInternalAPI.SetInfoAPICR(*apiState.APIDefinition)
-			xds.RemoveAPICacheForEnv(adapterInternalAPI, constants.Sandbox)
-		}
-		if apiState.ProdHTTPRoute != nil {
-			_, updatedLabels, err := GenerateAdapterInternalAPI(apiState, apiState.ProdHTTPRoute, constants.Production)
-			if err != nil {
-				return err
-			}
-			for label := range updatedLabels {
-				updatedLabelsMap[label] = struct{}{}
-			}
-		}
-
-		if apiState.SandHTTPRoute != nil {
-			_, updatedLabels, err := GenerateAdapterInternalAPI(apiState, apiState.SandHTTPRoute, constants.Sandbox)
-			if err != nil {
-				return err
-			}
-			for label := range updatedLabels {
-				updatedLabelsMap[label] = struct{}{}
-			}
-		}
-	}
-	if apiState.APIDefinition.Spec.APIType == "GraphQL" {
-		if apiState.ProdGQLRoute == nil {
-			var adapterInternalAPI model.AdapterInternalAPI
-			adapterInternalAPI.SetInfoAPICR(*apiState.APIDefinition)
-			xds.RemoveAPICacheForEnv(adapterInternalAPI, constants.Production)
-		}
-		if apiState.SandGQLRoute == nil {
-			var adapterInternalAPI model.AdapterInternalAPI
-			adapterInternalAPI.SetInfoAPICR(*apiState.APIDefinition)
-			xds.RemoveAPICacheForEnv(adapterInternalAPI, constants.Sandbox)
-		}
-		if apiState.ProdGQLRoute != nil {
-			_, updatedLabels, err := generateGQLAdapterInternalAPI(apiState, apiState.ProdGQLRoute, constants.Production)
-			if err != nil {
-				return err
-			}
-			for label := range updatedLabels {
-				updatedLabelsMap[label] = struct{}{}
-			}
-		}
-		if apiState.SandGQLRoute != nil {
-			_, updatedLabels, err := generateGQLAdapterInternalAPI(apiState, apiState.SandGQLRoute, constants.Sandbox)
-			if err != nil {
-				return err
-			}
-			for label := range updatedLabels {
-				updatedLabelsMap[label] = struct{}{}
-			}
-		}
-	}
-
-	xds.UpdateXdsCacheOnAPIChange(updatedLabelsMap)
-	return nil
-}
-
-// Runtime client connetion
-var partitionClient *http.Client
 
 func init() {
 	conf := config.ReadConfigs()
@@ -348,16 +304,4 @@ func SendEventToPartitionServer() {
 		}
 
 	}
-}
-
-// PartitionEvent is the event sent to the partition server.
-type PartitionEvent struct {
-	EventType    string   `json:"eventType"`
-	APIName      string   `json:"apiName"`
-	APIVersion   string   `json:"apiVersion"`
-	BasePath     string   `json:"basePath"`
-	Organization string   `json:"organization"`
-	Partition    string   `json:"partition"`
-	APIUUID      string   `json:"apiId"`
-	Vhosts       []string `json:"vhosts"`
 }

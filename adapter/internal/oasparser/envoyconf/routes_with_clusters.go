@@ -838,7 +838,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 		rateLimitPolicyLevel = RateLimitPolicyAPILevel
 	} else {
 		for _, operation := range resource.GetMethod() {
-			if operation.RateLimitPolicy != nil {
+			if operation.GetRateLimitPolicy() != nil {
 				rateLimitPolicyLevel = RateLimitPolicyOperationLevel
 				basePathForRLService += resourcePath
 				break

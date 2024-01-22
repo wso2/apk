@@ -110,7 +110,7 @@ func InitOperator() {
 	}
 
 	// TODO: Decide on a buffer size and add to config.
-	ch := make(chan synchronizer.APIEvent, 10)
+	ch := make(chan *synchronizer.APIEvent, 10)
 	successChannel := make(chan synchronizer.SuccessEvent, 10)
 
 	gatewaych := make(chan synchronizer.GatewayEvent, 10)

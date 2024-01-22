@@ -29,7 +29,6 @@ import (
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/interceptor"
 	"github.com/wso2/apk/adapter/internal/loggers"
-	logger "github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/internal/oasparser/constants"
 	"github.com/wso2/apk/adapter/internal/operator/utils"
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
@@ -444,13 +443,13 @@ func (adapterInternalAPI *AdapterInternalAPI) GetEnvironment() string {
 func (adapterInternalAPI *AdapterInternalAPI) Validate() error {
 	for _, res := range adapterInternalAPI.resources {
 		if res.endpoints == nil || len(res.endpoints.Endpoints) == 0 {
-			logger.LoggerOasparser.Errorf("No Endpoints are provided for the resources in %s:%s, API_UUID: %v",
+			loggers.LoggerOasparser.Errorf("No Endpoints are provided for the resources in %s:%s, API_UUID: %v",
 				adapterInternalAPI.title, adapterInternalAPI.version, adapterInternalAPI.UUID)
 			return errors.New("no endpoints are provided for the API")
 		}
 		err := res.endpoints.validateEndpointCluster()
 		if err != nil {
-			logger.LoggerOasparser.Errorf("Error while parsing the endpoints of the API %s:%s - %v, API_UUID: %v",
+			loggers.LoggerOasparser.Errorf("Error while parsing the endpoints of the API %s:%s - %v, API_UUID: %v",
 				adapterInternalAPI.title, adapterInternalAPI.version, err, adapterInternalAPI.UUID)
 			return err
 		}
@@ -932,7 +931,7 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoGQLRouteCR(gqlRoute *dpv1al
 			resourcePath := *match.Path
 			resource := &Resource{path: resourcePath,
 				methods: []*Operation{{iD: uuid.New().String(), method: string(*match.Type), policies: policies,
-					auth: apiAuth, RateLimitPolicy: parseRateLimitPolicyToInternal(resourceRatelimitPolicy), scopes: scopes}},
+					auth: apiAuth, rateLimitPolicy: parseRateLimitPolicyToInternal(resourceRatelimitPolicy), scopes: scopes}},
 				iD: uuid.New().String(),
 			}
 			resources = append(resources, resource)
@@ -981,7 +980,7 @@ func (retryConfig *RetryConfig) validateRetryConfig() {
 	var validStatusCodes []uint32
 	for _, statusCode := range retryConfig.StatusCodes {
 		if statusCode > 598 || statusCode < 401 {
-			logger.LoggerOasparser.Errorf("Given status code for the API retry config is invalid." +
+			loggers.LoggerOasparser.Errorf("Given status code for the API retry config is invalid." +
 				"Must be in the range 401 - 598. Dropping the status code.")
 		} else {
 			validStatusCodes = append(validStatusCodes, statusCode)
@@ -999,7 +998,7 @@ func (endpointCluster *EndpointCluster) validateEndpointCluster() error {
 		for _, endpoint := range endpointCluster.Endpoints {
 			err = endpoint.validateEndpoint()
 			if err != nil {
-				logger.LoggerOasparser.Errorf("Error while parsing the endpoint. %v", err)
+				loggers.LoggerOasparser.Errorf("Error while parsing the endpoint. %v", err)
 				return err
 			}
 		}
@@ -1075,17 +1074,17 @@ func (adapterInternalAPI *AdapterInternalAPI) GetInterceptor(vendorExtensions ma
 				serviceURLV := v.(string)
 				endpoint, err := getHTTPEndpoint(serviceURLV)
 				if err != nil {
-					logger.LoggerOasparser.Error("Error reading interceptors service url value", err)
+					loggers.LoggerOasparser.Error("Error reading interceptors service url value", err)
 					return InterceptEndpoint{}
 				}
 				if endpoint.Basepath != "" {
-					logger.LoggerOasparser.Warnf("Interceptor serviceURL basepath is given as %v but it will be ignored",
+					loggers.LoggerOasparser.Warnf("Interceptor serviceURL basepath is given as %v but it will be ignored",
 						endpoint.Basepath)
 				}
 				endpointCluster.Endpoints = []Endpoint{*endpoint}
 
 			} else {
-				logger.LoggerOasparser.Error("Error reading interceptors service url value")
+				loggers.LoggerOasparser.Error("Error reading interceptors service url value")
 				return InterceptEndpoint{}
 			}
 			//clusterTimeout optional
@@ -1094,7 +1093,7 @@ func (adapterInternalAPI *AdapterInternalAPI) GetInterceptor(vendorExtensions ma
 				if err == nil {
 					clusterTimeoutV = time.Duration(p)
 				} else {
-					logger.LoggerOasparser.Errorf("Error reading interceptors %v value : %v", constants.ClusterTimeout, err.Error())
+					loggers.LoggerOasparser.Errorf("Error reading interceptors %v value : %v", constants.ClusterTimeout, err.Error())
 				}
 			}
 			//requestTimeout optional
@@ -1103,7 +1102,7 @@ func (adapterInternalAPI *AdapterInternalAPI) GetInterceptor(vendorExtensions ma
 				if err == nil {
 					requestTimeoutV = time.Duration(p)
 				} else {
-					logger.LoggerOasparser.Errorf("Error reading interceptors %v value : %v", constants.RequestTimeout, err.Error())
+					loggers.LoggerOasparser.Errorf("Error reading interceptors %v value : %v", constants.RequestTimeout, err.Error())
 				}
 			}
 			//includes optional
@@ -1125,7 +1124,7 @@ func (adapterInternalAPI *AdapterInternalAPI) GetInterceptor(vendorExtensions ma
 				Level:           level,
 			}
 		}
-		logger.LoggerOasparser.Error("Error parsing response interceptors values to adapterInternalAPI")
+		loggers.LoggerOasparser.Error("Error parsing response interceptors values to adapterInternalAPI")
 	}
 	return InterceptEndpoint{}
 }

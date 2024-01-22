@@ -274,22 +274,22 @@ func getAllowedOperations(httpMethod *gwapiv1b1.HTTPMethod, policies OperationPo
 	ratelimitPolicy *RateLimitPolicy, scopes []string) []*Operation {
 	if httpMethod != nil {
 		return []*Operation{{iD: uuid.New().String(), method: string(*httpMethod), policies: policies,
-			auth: auth, RateLimitPolicy: ratelimitPolicy, scopes: scopes}}
+			auth: auth, rateLimitPolicy: ratelimitPolicy, scopes: scopes}}
 	}
 	return []*Operation{{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodGet), policies: policies,
-		auth: auth, RateLimitPolicy: ratelimitPolicy, scopes: scopes},
+		auth: auth, rateLimitPolicy: ratelimitPolicy, scopes: scopes},
 		{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodPost), policies: policies,
-			auth: auth, RateLimitPolicy: ratelimitPolicy, scopes: scopes},
+			auth: auth, rateLimitPolicy: ratelimitPolicy, scopes: scopes},
 		{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodDelete), policies: policies,
-			auth: auth, RateLimitPolicy: ratelimitPolicy, scopes: scopes},
+			auth: auth, rateLimitPolicy: ratelimitPolicy, scopes: scopes},
 		{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodPatch), policies: policies,
-			auth: auth, RateLimitPolicy: ratelimitPolicy, scopes: scopes},
+			auth: auth, rateLimitPolicy: ratelimitPolicy, scopes: scopes},
 		{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodPut), policies: policies,
-			auth: auth, RateLimitPolicy: ratelimitPolicy, scopes: scopes},
+			auth: auth, rateLimitPolicy: ratelimitPolicy, scopes: scopes},
 		{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodHead), policies: policies,
-			auth: auth, RateLimitPolicy: ratelimitPolicy, scopes: scopes},
+			auth: auth, rateLimitPolicy: ratelimitPolicy, scopes: scopes},
 		{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodOptions), policies: policies,
-			auth: auth, RateLimitPolicy: ratelimitPolicy, scopes: scopes}}
+			auth: auth, rateLimitPolicy: ratelimitPolicy, scopes: scopes}}
 }
 
 // SetInfoAPICR populates ID, ApiType, Version and XWso2BasePath of adapterInternalAPI.
