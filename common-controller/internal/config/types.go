@@ -17,6 +17,8 @@
 
 package config
 
+import "time"
+
 // Config represents the adapter configuration.
 // It is created directly from the configuration toml file.
 type Config struct {
@@ -48,9 +50,12 @@ type commoncontroller struct {
 	ControlPlane      controlplane
 }
 type controlplane struct {
-	Host        string
-	Port        int
-	Persistence persistence
+	Enabled       bool
+	Host          string
+	EventPort     int
+	RestPort      int
+	RetryInterval time.Duration
+	Persistence   persistence
 }
 type persistence struct {
 	Type string

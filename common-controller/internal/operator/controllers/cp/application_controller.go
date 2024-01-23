@@ -123,9 +123,11 @@ func (applicationReconciler *ApplicationReconciler) sendAppUpdates(application c
 		server.DeleteApplication(application.Name)
 	}
 	server.AddApplication(resolvedApplication)
-	appKeyMappingList := marshalApplicationKeyMapping(application)
-	for _, applicationKeyMapping := range appKeyMappingList {
-		server.AddApplicationKeyMapping(applicationKeyMapping)
+	if application.Spec.SecuritySchemes != nil {
+		appKeyMappingList := marshalApplicationKeyMapping(application)
+		for _, applicationKeyMapping := range appKeyMappingList {
+			server.AddApplicationKeyMapping(applicationKeyMapping)
+		}
 	}
 }
 
