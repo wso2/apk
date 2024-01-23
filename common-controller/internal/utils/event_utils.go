@@ -48,8 +48,12 @@ func SendAppUpdateEvent(applicationUUID string, oldApplicationSpec cpv1alpha2.Ap
 	}
 	loggers.LoggerAPKOperator.Debugf("Sending event to all clients: %v", &event)
 	sendEvent(&event)
-	sendDeleteApplicationKeyMappingEvent(applicationUUID, oldApplicationSpec)
-	sendApplicationKeyMappingEvent(applicationUUID, newApplicationSpec)
+	if oldApplicationSpec.SecuritySchemes != nil {
+		sendDeleteApplicationKeyMappingEvent(applicationUUID, oldApplicationSpec)
+	}
+	if newApplicationSpec.SecuritySchemes != nil {
+		sendApplicationKeyMappingEvent(applicationUUID, newApplicationSpec)
+	}
 }
 
 // SendAddApplicationEvent sends an application creation event to the enforcer
@@ -69,7 +73,9 @@ func SendAddApplicationEvent(application cpv1alpha2.Application) {
 		},
 	}
 	sendEvent(&event)
-	sendApplicationKeyMappingEvent(application.ObjectMeta.Name, application.Spec)
+	if application.Spec.SecuritySchemes != nil {
+		sendApplicationKeyMappingEvent(application.ObjectMeta.Name, application.Spec)
+	}
 }
 
 // SendAddSubscriptionEvent sends an subscription creation event to the enforcer

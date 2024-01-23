@@ -36,8 +36,10 @@ var defaultConfig = &Config{
 		Environment:       "Default",
 		InternalAPIServer: internalAPIServer{Port: 18003},
 		ControlPlane: controlplane{
-			Host:        "localhost",
-			Port:        18000,
-			Persistence: persistence{Type: "K8s"}},
+			Enabled:       false,
+			Host:          "localhost",
+			EventPort:     18000,
+			RetryInterval: 5,
+			Persistence:   persistence{Type: "K8s"}},
 	},
 }

@@ -51,7 +51,9 @@ data:
     
     [commoncontroller.webServer]
       port = 9543
-
+    # [commoncontroller.controlplane]
+    #   host= "apim-apk-agent-service.apk-agent.svc.cluster.local"
+    #   port= 18000
   log_config.toml: |
     # The logging configuration for Adapter
 

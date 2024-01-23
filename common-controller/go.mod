@@ -15,6 +15,7 @@ require (
 require (
 	github.com/envoyproxy/go-control-plane v0.11.2-0.20230802074621-eea0b3bd0f81
 	github.com/gin-gonic/gin v1.9.1
+	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/pelletier/go-toml v1.9.5
 	github.com/redis/go-redis/v9 v9.2.1
 	github.com/wso2/apk/adapter v0.0.0-20231207051518-6dd728943082

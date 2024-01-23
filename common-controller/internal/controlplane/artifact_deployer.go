@@ -21,8 +21,11 @@ import "github.com/wso2/apk/common-controller/internal/server"
 // ArtifactDeployer is an interface that defines the methods that should be implemented by an artifact deployer
 type ArtifactDeployer interface {
 	DeployApplication(application server.Application) error
+	UpdateApplication(application server.Application) error
 	DeploySubscription(subscription server.Subscription) error
+	UpdateSubscription(subscription server.Subscription) error
 	DeployApplicationMappings(applicationMapping server.ApplicationMapping) error
+	UpdateApplicationMappings(applicationMapping server.ApplicationMapping) error
 	DeployKeyMappings(keyMapping server.ApplicationKeyMapping) error
 	GetApplication(applicationID string) (server.Application, error)
 	GetSubscription(subscriptionID string) (server.Subscription, error)
@@ -35,7 +38,7 @@ type ArtifactDeployer interface {
 	DeleteApplication(applicationID string) error
 	DeleteSubscription(subscriptionID string) error
 	DeleteApplicationMappings(applicationID string) error
-	DeleteKeyMappings(applicationID string) error
+	DeleteKeyMappings(keyMapping server.ApplicationKeyMapping) error
 	DeleteAllApplications() error
 	DeleteAllSubscriptions() error
 	DeleteAllApplicationMappings() error

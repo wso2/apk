@@ -26,11 +26,14 @@ import (
 
 // ApplicationSpec defines the desired state of Application
 type ApplicationSpec struct {
-	Name            string            `json:"name"`
-	Owner           string            `json:"owner"`
-	Organization    string            `json:"organization"`
-	Attributes      map[string]string `json:"attributes,omitempty"`
-	SecuritySchemes *SecuritySchemes  `json:"securitySchemes"`
+	Name         string `json:"name"`
+	Owner        string `json:"owner"`
+	Organization string `json:"organization"`
+	// +optional
+	Attributes map[string]string `json:"attributes,omitempty"`
+	// +optional
+
+	SecuritySchemes *SecuritySchemes `json:"securitySchemes"`
 }
 
 // SecuritySchemes defines the supported security schemes

@@ -24,10 +24,11 @@ import (
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
 
+	"github.com/google/uuid"
 	"github.com/wso2/apk/adapter/pkg/logging"
 	cache "github.com/wso2/apk/common-controller/internal/cache"
 	"github.com/wso2/apk/common-controller/internal/config"
-	controlplane "github.com/wso2/apk/common-controller/internal/controlplane"
+	"github.com/wso2/apk/common-controller/internal/controlplane"
 	"github.com/wso2/apk/common-controller/internal/loggers"
 	cpcontrollers "github.com/wso2/apk/common-controller/internal/operator/controllers/cp"
 	dpcontrollers "github.com/wso2/apk/common-controller/internal/operator/controllers/dp"
@@ -64,6 +65,7 @@ func InitOperator() {
 	var metricsAddr string
 	var enableLeaderElection bool
 	var probeAddr string
+	controlPlaneID := uuid.New().String()
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
@@ -162,23 +164,21 @@ func InitOperator() {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2603, logging.BLOCKER, "Unable to set up ready check: %v", err))
 		os.Exit(1)
 	}
+	go func() {
+		config := config.ReadConfigs()
+		var controlPlane controlplane.ArtifactDeployer
+		if config.CommonController.ControlPlane.Persistence.Type == "K8s" {
+			controlPlane = controlplane.NewK8sArtifactDeployer(mgr)
 
+		}
+		grpcClient := controlplane.NewControlPlaneAgent(config.CommonController.ControlPlane.Host, config.CommonController.ControlPlane.EventPort, controlPlaneID, controlPlane)
+		if grpcClient != nil {
+			grpcClient.StartEventStreaming()
+		}
+	}()
 	setupLog.Info("starting manager")
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2604, logging.BLOCKER, "Problem running manager: %v", err))
 		os.Exit(1)
-	}
-	config := config.ReadConfigs()
-	var controlPlane controlplane.ArtifactDeployer
-	if config.CommonController.ControlPlane.Persistence.Type == "K8s" {
-		controlPlane = controlplane.NewK8sArtifactDeployer(mgr)
-	}
-	grpcClient := controlplane.NewControlPlaneAgent(config.CommonController.ControlPlane.Host, config.CommonController.ControlPlane.Port, "1", controlPlane)
-	if grpcClient != nil {
-		err := grpcClient.StartEventStreaming()
-		if err != nil {
-			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2605, logging.BLOCKER, "Problem starting event streaming: %v", err))
-			os.Exit(1)
-		}
 	}
 }
