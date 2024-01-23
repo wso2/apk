@@ -32,13 +32,11 @@ import (
 	tlsv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/transport_sockets/tls/v3"
 	metadatav3 "github.com/envoyproxy/go-control-plane/envoy/type/metadata/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/wellknown"
-	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/wrappers"
 
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/discovery/xds/common"
 	"github.com/wso2/apk/adapter/internal/loggers"
-	logger "github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/internal/oasparser/model"
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/durationpb"
@@ -76,16 +74,16 @@ func CreateRoutesConfigForRds(vHosts []*routev3.VirtualHost, httpListeners strin
 // as inline records (base64 encoded).
 func CreateListenerByGateway(gateway *gwapiv1b1.Gateway, resolvedListenerCerts map[string]map[string][]byte, gwLuaScript string) []*listenerv3.Listener {
 	conf := config.ReadConfigs()
-	// Prepare a map that contains all the listerners identified in all of the gateways that reconciled so far. 
+	// Prepare a map that contains all the listerners identified in all of the gateways that reconciled so far.
 	// This map contains port - listeners per protocol with port
 	protocolListenerMap := make(map[gwapiv1b1.ProtocolType]map[uint32][]gwapiv1b1.Listener)
 	for _, listener := range gateway.Spec.Listeners {
 		port := uint32(listener.Port)
 		if protocolListenerMap[listener.Protocol] == nil {
-				protocolListenerMap[listener.Protocol] = make(map[uint32][]gwapiv1b1.Listener)
+			protocolListenerMap[listener.Protocol] = make(map[uint32][]gwapiv1b1.Listener)
 		}
 		if protocolListenerMap[listener.Protocol][port] == nil {
-				protocolListenerMap[listener.Protocol][port] = []gwapiv1b1.Listener{}
+			protocolListenerMap[listener.Protocol][port] = []gwapiv1b1.Listener{}
 		}
 		protocolListenerMap[listener.Protocol][port] = append(protocolListenerMap[listener.Protocol][port], listener)
 	}
@@ -110,12 +108,12 @@ func CreateListenerByGateway(gateway *gwapiv1b1.Gateway, resolvedListenerCerts m
 		function envoy_on_response(response_handle)
 		end`)
 				}
-								listenerName = common.GetEnvoyListenerName(string(protocol), port)
+				listenerName = common.GetEnvoyListenerName(string(protocol), port)
 				filterChainMatch := &listenerv3.FilterChainMatch{
 					ServerNames: []string{string(*listenerObj.Hostname)},
 				}
 				var transportSocket *corev3.TransportSocket
-				if (protocol == gwapiv1b1.HTTPSProtocolType) {
+				if protocol == gwapiv1b1.HTTPSProtocolType {
 					publicCertData := resolvedListenerCerts[string(listenerObj.Name)]["tls.crt"]
 					privateKeyData := resolvedListenerCerts[string(listenerObj.Name)]["tls.key"]
 					var tlsFilter *tlsv3.DownstreamTlsContext
@@ -154,7 +152,7 @@ func CreateListenerByGateway(gateway *gwapiv1b1.Gateway, resolvedListenerCerts m
 
 					marshalledTLSFilter, err := anypb.New(tlsFilter)
 					if err != nil {
-						logger.LoggerOasparser.Fatal("Error while Marshalling the downstream TLS Context for the configuration.")
+						loggers.LoggerOasparser.Fatal("Error while Marshalling the downstream TLS Context for the configuration.")
 					}
 
 					transportSocket = &corev3.TransportSocket{
@@ -164,7 +162,7 @@ func CreateListenerByGateway(gateway *gwapiv1b1.Gateway, resolvedListenerCerts m
 						},
 					}
 				}
-				
+
 				var filters []*listenerv3.Filter
 				manager := &hcmv3.HttpConnectionManager{
 					CodecType:  getListenerCodecType(conf.Envoy.ListenerCodecType),
@@ -190,11 +188,11 @@ func CreateListenerByGateway(gateway *gwapiv1b1.Gateway, resolvedListenerCerts m
 					LocalReplyConfig: &hcmv3.LocalReplyConfig{
 						Mappers: getErrorResponseMappers(),
 					},
-					RequestTimeout:        ptypes.DurationProto(conf.Envoy.Connection.Timeouts.RequestTimeoutInSeconds * time.Second),        // default disabled
-					RequestHeadersTimeout: ptypes.DurationProto(conf.Envoy.Connection.Timeouts.RequestHeadersTimeoutInSeconds * time.Second), // default disabled
-					StreamIdleTimeout:     ptypes.DurationProto(conf.Envoy.Connection.Timeouts.StreamIdleTimeoutInSeconds * time.Second),     // Default 5 mins
+					RequestTimeout:        durationpb.New(conf.Envoy.Connection.Timeouts.RequestTimeoutInSeconds * time.Second),        // default disabled
+					RequestHeadersTimeout: durationpb.New(conf.Envoy.Connection.Timeouts.RequestHeadersTimeoutInSeconds * time.Second), // default disabled
+					StreamIdleTimeout:     durationpb.New(conf.Envoy.Connection.Timeouts.StreamIdleTimeoutInSeconds * time.Second),     // Default 5 mins
 					CommonHttpProtocolOptions: &corev3.HttpProtocolOptions{
-						IdleTimeout: ptypes.DurationProto(conf.Envoy.Connection.Timeouts.IdleTimeoutInSeconds * time.Second), // Default 1 hr
+						IdleTimeout: durationpb.New(conf.Envoy.Connection.Timeouts.IdleTimeoutInSeconds * time.Second), // Default 1 hr
 					},
 					HttpProtocolOptions: &corev3.Http1ProtocolOptions{
 						EnableTrailers: config.GetWireLogConfig().LogTrailersEnabled,
@@ -213,7 +211,7 @@ func CreateListenerByGateway(gateway *gwapiv1b1.Gateway, resolvedListenerCerts m
 							manager.Tracing = tracing
 							manager.GenerateRequestId = &wrappers.BoolValue{Value: conf.Tracing.Enabled}
 						} else {
-							logger.LoggerOasparser.Errorf("Failed to initialize tracing for %s. Router tracing will be disabled. Error: %s",
+							loggers.LoggerOasparser.Errorf("Failed to initialize tracing for %s. Router tracing will be disabled. Error: %s",
 								TracerTypeOtlp, err)
 							conf.Tracing.Enabled = false
 						}
@@ -222,7 +220,7 @@ func CreateListenerByGateway(gateway *gwapiv1b1.Gateway, resolvedListenerCerts m
 							manager.Tracing = tracing
 							manager.GenerateRequestId = &wrappers.BoolValue{Value: conf.Tracing.Enabled}
 						} else {
-							logger.LoggerOasparser.Errorf("Failed to initialize tracing for %s. Router tracing will be disabled. Error: %s",
+							loggers.LoggerOasparser.Errorf("Failed to initialize tracing for %s. Router tracing will be disabled. Error: %s",
 								conf.Tracing.Type, err)
 							conf.Tracing.Enabled = false
 						}
@@ -231,7 +229,7 @@ func CreateListenerByGateway(gateway *gwapiv1b1.Gateway, resolvedListenerCerts m
 
 				pbst, err := anypb.New(manager)
 				if err != nil {
-					logger.LoggerOasparser.Fatal(err)
+					loggers.LoggerOasparser.Fatal(err)
 				}
 				connectionManagerFilterP := listenerv3.Filter{
 					Name: wellknown.HTTPConnectionManager,
@@ -250,7 +248,7 @@ func CreateListenerByGateway(gateway *gwapiv1b1.Gateway, resolvedListenerCerts m
 					})
 				} else {
 					filterChains = append(filterChains, &listenerv3.FilterChain{
-						Filters:          filters,
+						Filters: filters,
 					})
 				}
 
@@ -273,7 +271,7 @@ func CreateListenerByGateway(gateway *gwapiv1b1.Gateway, resolvedListenerCerts m
 				tlsInspector := &tlsInspectorv3.TlsInspector{}
 				marshalledListenerFilter, err := anypb.New(tlsInspector)
 				if err != nil {
-					logger.LoggerOasparser.Fatal("Error while Marshalling the TlsInspector for the configuration.")
+					loggers.LoggerOasparser.Fatal("Error while Marshalling the TlsInspector for the configuration.")
 				}
 
 				listenerFilters := []*listenerv3.ListenerFilter{
@@ -293,9 +291,9 @@ func CreateListenerByGateway(gateway *gwapiv1b1.Gateway, resolvedListenerCerts m
 					ListenerFilters: listenerFilters,
 					FilterChains:    filterChains,
 				}
-				logger.LoggerOasparser.Infof("Secured Listener is added. %s : %d", listenerHostAddress, port)
+				loggers.LoggerOasparser.Infof("Secured Listener is added. %s : %d", listenerHostAddress, port)
 			} else {
-				logger.LoggerOasparser.Info("No SecuredListenerPort is included.")
+				loggers.LoggerOasparser.Info("No SecuredListenerPort is included.")
 			}
 
 			if protocol == gwapiv1b1.HTTPProtocolType {
@@ -317,19 +315,19 @@ func CreateListenerByGateway(gateway *gwapiv1b1.Gateway, resolvedListenerCerts m
 					},
 					FilterChains: filterChains,
 				}
-				logger.LoggerOasparser.Infof("Non-secured Listener is added. %s : %d", listenerHostAddress, port)
+				loggers.LoggerOasparser.Infof("Non-secured Listener is added. %s : %d", listenerHostAddress, port)
 			} else {
-				logger.LoggerOasparser.Info("No Non-securedListenerPort is included.")
+				loggers.LoggerOasparser.Info("No Non-securedListenerPort is included.")
 			}
 
 			if listeners == nil {
-				err := errors.New("No Listeners are configured as no port value is mentioned under securedListenerPort or ListenerPort")
-				logger.LoggerOasparser.Fatal(err)
+				err := errors.New("no Listeners are configured as no port value is mentioned under securedListenerPort or ListenerPort")
+				loggers.LoggerOasparser.Fatal(err)
 			}
 			listenerList = append(listenerList, listener)
 		}
 	}
-	logger.LoggerOasparser.Infof("Listener list size. %+v", len(listenerList))
+	loggers.LoggerOasparser.Infof("Listener list size. %+v", len(listenerList))
 	return listenerList
 }
 
@@ -410,8 +408,7 @@ func CreateVirtualHosts(vhostToRouteArrayMap map[string][]*routev3.Route, custom
 // generateTLSCert generates the TLS Certiificate with given private key filepath and the corresponding public Key filepath.
 // The files should be mounted to the router container unless the default cert is used.
 func generateTLSCert(privateKeyPath string, publicKeyPath string) *tlsv3.TlsCertificate {
-	var tlsCert tlsv3.TlsCertificate
-	tlsCert = tlsv3.TlsCertificate{
+	tlsCert := tlsv3.TlsCertificate{
 		PrivateKey: &corev3.DataSource{
 			Specifier: &corev3.DataSource_Filename{
 				Filename: privateKeyPath,
@@ -428,8 +425,7 @@ func generateTLSCert(privateKeyPath string, publicKeyPath string) *tlsv3.TlsCert
 
 // generate TLS certs as inline strings
 func generateTLSCertWithStr(privateKey string, publicKey string) *tlsv3.TlsCertificate {
-	var tlsCert tlsv3.TlsCertificate
-	tlsCert = tlsv3.TlsCertificate{
+	tlsCert := tlsv3.TlsCertificate{
 		PrivateKey: &corev3.DataSource{
 			Specifier: &corev3.DataSource_InlineString{
 				InlineString: privateKey,
@@ -449,12 +445,12 @@ func getZipkinTracing(conf *config.Config) (*hcmv3.HttpConnectionManager_Tracing
 	var maxPathLength uint32
 
 	if endpoint = conf.Tracing.ConfigProperties[tracerEndpoint]; len(endpoint) <= 0 {
-		return nil, errors.New("Invalid endpoint path provided for tracing endpoint")
+		return nil, errors.New("invalid endpoint path provided for tracing endpoint")
 	}
 	if length, err := strconv.ParseUint(conf.Tracing.ConfigProperties[tracerMaxPathLength], 10, 32); err == nil {
 		maxPathLength = uint32(length)
 	} else {
-		return nil, errors.New("Invalid max path length provided for tracing endpoint")
+		return nil, errors.New("invalid max path length provided for tracing endpoint")
 	}
 
 	providerConf := &envoy_config_trace_v3.ZipkinConfig{
@@ -509,7 +505,7 @@ func getTracingOTLP(conf *config.Config) (*hcmv3.HttpConnectionManager_Tracing, 
 		connectionTimeout = uint32(timeout)
 	} else {
 		connectionTimeout = 20
-		logger.LoggerOasparser.Infof("Setting up default connection timeout for tracing endpoint as %d seconds", connectionTimeout)
+		loggers.LoggerOasparser.Infof("Setting up default connection timeout for tracing endpoint as %d seconds", connectionTimeout)
 	}
 
 	providerConf := &envoy_config_trace_v3.OpenTelemetryConfig{

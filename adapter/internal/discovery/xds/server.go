@@ -725,7 +725,7 @@ func UpdateAPICache(vHosts []string, newLabels []string, listener string, sectio
 			updatedLabelsMap[newLabel] = struct{}{}
 		}
 
-		routes, clusters, endpoints, err := oasParser.GetRoutesClustersEndpoints(adapterInternalAPI, nil,
+		routes, clusters, endpoints, err := oasParser.GetRoutesClustersEndpoints(&adapterInternalAPI, nil,
 			vHost, adapterInternalAPI.GetOrganizationID())
 
 		if err != nil {

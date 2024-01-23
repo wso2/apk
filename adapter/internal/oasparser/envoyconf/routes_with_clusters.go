@@ -42,7 +42,6 @@ import (
 	lua "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/lua/v3"
 	tlsv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/transport_sockets/tls/v3"
 	upstreams "github.com/envoyproxy/go-control-plane/envoy/extensions/upstreams/http/v3"
-	upstreams_http_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/upstreams/http/v3"
 	envoy_type_matcherv3 "github.com/envoyproxy/go-control-plane/envoy/type/matcher/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/wellknown"
 
@@ -55,10 +54,9 @@ import (
 	"github.com/wso2/apk/adapter/internal/svcdiscovery"
 	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 
-	"github.com/golang/protobuf/proto"
-	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/any"
 	"github.com/golang/protobuf/ptypes/wrappers"
+	"google.golang.org/protobuf/proto"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
@@ -93,7 +91,7 @@ const (
 // If a resource has resource level endpoint, it create another cluster and
 // link it. If resources doesn't has resource level endpoints, those clusters are linked
 // to the api level clusters.
-func CreateRoutesWithClusters(adapterInternalAPI model.AdapterInternalAPI, interceptorCerts map[string][]byte, vHost string, organizationID string) (routesP []*routev3.Route,
+func CreateRoutesWithClusters(adapterInternalAPI *model.AdapterInternalAPI, interceptorCerts map[string][]byte, vHost string, organizationID string) (routesP []*routev3.Route,
 	clustersP []*clusterv3.Cluster, addressesP []*corev3.Address, err error) {
 	var (
 		routes    []*routev3.Route
@@ -128,7 +126,7 @@ func CreateRoutesWithClusters(adapterInternalAPI model.AdapterInternalAPI, inter
 	}
 	routeP := CreateAPIDefinitionEndpoint(adapterInternalAPI.GetXWso2Basepath(), vHost, methods, false, adapterInternalAPI.GetVersion(), adapterInternalAPI.GetAPIDefinitionEndpoint())
 	routes = append(routes, routeP)
-	if (&adapterInternalAPI).IsDefaultVersion {
+	if (adapterInternalAPI).IsDefaultVersion {
 		defaultDefRoutes := CreateAPIDefinitionEndpoint(adapterInternalAPI.GetXWso2Basepath(), vHost, methods, true, adapterInternalAPI.GetVersion(), adapterInternalAPI.GetAPIDefinitionEndpoint())
 		routes = append(routes, defaultDefRoutes)
 	}
@@ -182,7 +180,7 @@ func CreateRoutesWithClusters(adapterInternalAPI model.AdapterInternalAPI, inter
 		}
 		gqlop := model.NewOperationWithPolicies("POST", policies)
 		resource := model.CreateMinimalResource(adapterInternalAPI.GetXWso2Basepath(), []*model.Operation{gqlop}, "", adapterInternalAPI.Endpoints, true, gwapiv1b1.PathMatchExact)
-		routesP, err := createRoutes(genRouteCreateParams(&adapterInternalAPI, &resource, vHost, basePath, clusterName, nil,
+		routesP, err := createRoutes(genRouteCreateParams(adapterInternalAPI, &resource, vHost, basePath, clusterName, nil,
 			nil, organizationID, false, false))
 		if err != nil {
 			logger.LoggerXds.ErrorC(logging.PrintError(logging.Error2231, logging.MAJOR,
@@ -218,17 +216,19 @@ func CreateRoutesWithClusters(adapterInternalAPI model.AdapterInternalAPI, inter
 			interceptorCerts, vHost, organizationID, apiRequestInterceptor, apiResponseInterceptor, resource)
 		clusters = append(clusters, clustersI...)
 		endpoints = append(endpoints, endpointsI...)
-		routeParams := genRouteCreateParams(&adapterInternalAPI, resource, vHost, basePath, clusterName, *operationalReqInterceptors, *operationalRespInterceptorVal, organizationID,
+		routeParams := genRouteCreateParams(adapterInternalAPI, resource, vHost, basePath, clusterName, *operationalReqInterceptors, *operationalRespInterceptorVal, organizationID,
 			false, false)
 
 		routeP, err := createRoutes(routeParams)
 		if err != nil {
-			logger.LoggerXds.ErrorC(logging.PrintError(logging.Error2231, logging.MAJOR, "Error while creating routes for API %s %s for path: %s Error: %s", adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), resource.GetPath(), err.Error()))
+			logger.LoggerXds.ErrorC(logging.PrintError(logging.Error2231, logging.MAJOR,
+				"Error while creating routes for API %s %s for path: %s Error: %s", adapterInternalAPI.GetTitle(),
+				adapterInternalAPI.GetVersion(), resource.GetPath(), err.Error()))
 			return nil, nil, nil, fmt.Errorf("error while creating routes. %v", err)
 		}
 		routes = append(routes, routeP...)
-		if (&adapterInternalAPI).IsDefaultVersion {
-			defaultRoutes, errDefaultPath := createRoutes(genRouteCreateParams(&adapterInternalAPI, resource, vHost, basePath, clusterName, *operationalReqInterceptors, *operationalRespInterceptorVal, organizationID,
+		if adapterInternalAPI.IsDefaultVersion {
+			defaultRoutes, errDefaultPath := createRoutes(genRouteCreateParams(adapterInternalAPI, resource, vHost, basePath, clusterName, *operationalReqInterceptors, *operationalRespInterceptorVal, organizationID,
 				false, true))
 			if errDefaultPath != nil {
 				logger.LoggerXds.ErrorC(logging.PrintError(logging.Error2231, logging.MAJOR, "Error while creating routes for API %s %s for path: %s Error: %s", adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), removeFirstOccurrence(resource.GetPath(), adapterInternalAPI.GetVersion()), errDefaultPath.Error()))
@@ -346,7 +346,7 @@ func CreateRateLimitCluster() (*clusterv3.Cluster, []*corev3.Address, error) {
 			},
 		},
 	}
-	marshalledTLSContext, err := ptypes.MarshalAny(upstreamTLSContext)
+	marshalledTLSContext, err := anypb.New(upstreamTLSContext)
 	if err != nil {
 		return nil, nil, errors.New("internal Error while marshalling the upstream TLS Context")
 	}
@@ -487,10 +487,10 @@ func processEndpoints(clusterName string, clusterDetails *model.EndpointCluster,
 	}
 	conf := config.ReadConfigs()
 
-	httpProtocolOptions := &upstreams_http_v3.HttpProtocolOptions{
-		UpstreamProtocolOptions: &upstreams_http_v3.HttpProtocolOptions_ExplicitHttpConfig_{
-			ExplicitHttpConfig: &upstreams_http_v3.HttpProtocolOptions_ExplicitHttpConfig{
-				ProtocolConfig: &upstreams_http_v3.HttpProtocolOptions_ExplicitHttpConfig_HttpProtocolOptions{
+	httpProtocolOptions := &upstreams.HttpProtocolOptions{
+		UpstreamProtocolOptions: &upstreams.HttpProtocolOptions_ExplicitHttpConfig_{
+			ExplicitHttpConfig: &upstreams.HttpProtocolOptions_ExplicitHttpConfig{
+				ProtocolConfig: &upstreams.HttpProtocolOptions_ExplicitHttpConfig_HttpProtocolOptions{
 					HttpProtocolOptions: &corev3.Http1ProtocolOptions{
 						EnableTrailers: config.GetWireLogConfig().LogTrailersEnabled,
 					},
@@ -500,9 +500,9 @@ func processEndpoints(clusterName string, clusterDetails *model.EndpointCluster,
 	}
 
 	if clusterDetails.HTTP2BackendEnabled {
-		httpProtocolOptions.UpstreamProtocolOptions = &upstreams_http_v3.HttpProtocolOptions_ExplicitHttpConfig_{
-			ExplicitHttpConfig: &upstreams_http_v3.HttpProtocolOptions_ExplicitHttpConfig{
-				ProtocolConfig: &upstreams_http_v3.HttpProtocolOptions_ExplicitHttpConfig_Http2ProtocolOptions{
+		httpProtocolOptions.UpstreamProtocolOptions = &upstreams.HttpProtocolOptions_ExplicitHttpConfig_{
+			ExplicitHttpConfig: &upstreams.HttpProtocolOptions_ExplicitHttpConfig{
+				ProtocolConfig: &upstreams.HttpProtocolOptions_ExplicitHttpConfig_Http2ProtocolOptions{
 					Http2ProtocolOptions: &corev3.Http2ProtocolOptions{
 						HpackTableSize: &wrapperspb.UInt32Value{
 							Value: conf.Envoy.Upstream.HTTP2.HpackTableSize,
@@ -747,13 +747,11 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 		},
 	}
 
-	b := proto.NewBuffer(nil)
-	b.SetDeterministic(true)
-	_ = b.Marshal(&extAuthPerFilterConfig)
+	data, _ := proto.Marshal(&extAuthPerFilterConfig)
 
 	extAuthzFilter := &any.Any{
 		TypeUrl: extAuthzPerRouteName,
-		Value:   b.Bytes(),
+		Value:   data,
 	}
 
 	var luaPerFilterConfig lua.LuaPerRoute
@@ -817,13 +815,11 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 		}
 	}
 
-	luaMarshelled := proto.NewBuffer(nil)
-	luaMarshelled.SetDeterministic(true)
-	_ = luaMarshelled.Marshal(&luaPerFilterConfig)
+	data, _ = proto.Marshal(&luaPerFilterConfig)
 
 	luaFilter := &any.Any{
 		TypeUrl: luaPerRouteName,
-		Value:   luaMarshelled.Bytes(),
+		Value:   data,
 	}
 
 	corsFilter, _ := anypb.New(corsPolicy)
@@ -842,7 +838,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 		rateLimitPolicyLevel = RateLimitPolicyAPILevel
 	} else {
 		for _, operation := range resource.GetMethod() {
-			if operation.RateLimitPolicy != nil {
+			if operation.GetRateLimitPolicy() != nil {
 				rateLimitPolicyLevel = RateLimitPolicyOperationLevel
 				basePathForRLService += resourcePath
 				break
@@ -1154,12 +1150,10 @@ func CreateAPIDefinitionRoute(basePath string, vHost string, methods []string, i
 		},
 	}
 
-	b := proto.NewBuffer(nil)
-	b.SetDeterministic(true)
-	_ = b.Marshal(&perFilterConfig)
+	data, _ := proto.Marshal(&perFilterConfig)
 	filter := &any.Any{
 		TypeUrl: extAuthzPerRouteName,
-		Value:   b.Bytes(),
+		Value:   data,
 	}
 
 	directClusterSpecifier := &routev3.RouteAction_Cluster{
@@ -1228,12 +1222,10 @@ func CreateAPIDefinitionEndpoint(basePath string, vHost string, methods []string
 		},
 	}
 
-	b := proto.NewBuffer(nil)
-	b.SetDeterministic(true)
-	_ = b.Marshal(&perFilterConfig)
+	data, _ := proto.Marshal(&perFilterConfig)
 	filter := &any.Any{
 		TypeUrl: extAuthzPerRouteName,
-		Value:   b.Bytes(),
+		Value:   data,
 	}
 
 	directClusterSpecifier := &routev3.RouteAction_Cluster{
@@ -1290,12 +1282,10 @@ func CreateHealthEndpoint() *routev3.Route {
 		},
 	}
 
-	b := proto.NewBuffer(nil)
-	b.SetDeterministic(true)
-	_ = b.Marshal(&perFilterConfig)
+	data, _ := proto.Marshal(&perFilterConfig)
 	filter := &any.Any{
 		TypeUrl: extAuthzPerRouteName,
-		Value:   b.Bytes(),
+		Value:   data,
 	}
 
 	router = routev3.Route{
@@ -1345,12 +1335,10 @@ func CreateReadyEndpoint() *routev3.Route {
 		},
 	}
 
-	b := proto.NewBuffer(nil)
-	b.SetDeterministic(true)
-	_ = b.Marshal(&perFilterConfig)
+	data, _ := proto.Marshal(&perFilterConfig)
 	filter := &any.Any{
 		TypeUrl: extAuthzPerRouteName,
-		Value:   b.Bytes(),
+		Value:   data,
 	}
 
 	router = routev3.Route{
@@ -1596,17 +1584,7 @@ func getMaxStreamDuration(apiType string) *routev3.RouteAction_MaxStreamDuration
 	return maxStreamDuration
 }
 
-func getDefaultVersionBasepath(basePath string, version string) string {
-	// Following is used to replace only the version when basepath = /foo/v2 and version = v2 and context => /foo/v2/v2
-	indexOfVersionString := strings.LastIndex(basePath, "/"+version)
-	context := strings.Replace(basePath, "/"+version, "", indexOfVersionString)
-
-	// Having ?: in the regex below, avoids this regex acting as a capturing group. Without this the basepath
-	// would again be added in the locations of path variables when sending the request to backend.
-	return fmt.Sprintf("(?:%s|%s)", basePath, context)
-}
-
-func createInterceptorAPIClusters(adapterInternalAPI model.AdapterInternalAPI, interceptorCerts map[string][]byte, vHost string, organizationID string) (clustersP []*clusterv3.Cluster,
+func createInterceptorAPIClusters(adapterInternalAPI *model.AdapterInternalAPI, interceptorCerts map[string][]byte, vHost string, organizationID string) (clustersP []*clusterv3.Cluster,
 	addressesP []*corev3.Address, apiRequestInterceptorEndpoint *model.InterceptEndpoint, apiResponseInterceptorEndpoint *model.InterceptEndpoint) {
 	var (
 		clusters  []*clusterv3.Cluster
@@ -1652,7 +1630,7 @@ func createInterceptorAPIClusters(adapterInternalAPI model.AdapterInternalAPI, i
 	return clusters, endpoints, &apiRequestInterceptor, &apiResponseInterceptor
 }
 
-func createInterceptorResourceClusters(adapterInternalAPI model.AdapterInternalAPI, interceptorCerts map[string][]byte, vHost string, organizationID string,
+func createInterceptorResourceClusters(adapterInternalAPI *model.AdapterInternalAPI, interceptorCerts map[string][]byte, vHost string, organizationID string,
 	apiRequestInterceptor *model.InterceptEndpoint, apiResponseInterceptor *model.InterceptEndpoint, resource *model.Resource) (clustersP []*clusterv3.Cluster, addressesP []*corev3.Address,
 	operationalReqInterceptorsEndpoint *map[string]model.InterceptEndpoint, operationalRespInterceptorValEndpoint *map[string]model.InterceptEndpoint) {
 	var (

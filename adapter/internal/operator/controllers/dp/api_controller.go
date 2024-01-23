@@ -91,7 +91,7 @@ var (
 type APIReconciler struct {
 	client         k8client.Client
 	ods            *synchronizer.OperatorDataStore
-	ch             *chan synchronizer.APIEvent
+	ch             *chan *synchronizer.APIEvent
 	successChannel *chan synchronizer.SuccessEvent
 	statusUpdater  *status.UpdateHandler
 	mgr            manager.Manager
@@ -99,7 +99,7 @@ type APIReconciler struct {
 
 // NewAPIController creates a new API controller instance. API Controllers watches for dpv1alpha2.API and gwapiv1b1.HTTPRoute.
 func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.OperatorDataStore, statusUpdater *status.UpdateHandler,
-	ch *chan synchronizer.APIEvent, successChannel *chan synchronizer.SuccessEvent) error {
+	ch *chan *synchronizer.APIEvent, successChannel *chan synchronizer.SuccessEvent) error {
 	apiReconciler := &APIReconciler{
 		client:         mgr.GetClient(),
 		ods:            operatorDataStore,
@@ -245,7 +245,7 @@ func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 			apiReconciler.ods.DeleteCachedAPI(req.NamespacedName)
 			loggers.LoggerAPKOperator.Infof("Delete event received for API : %s with API UUID : %v, hence deleted from API cache",
 				req.NamespacedName.String(), string(apiCR.ObjectMeta.UID))
-			*apiReconciler.ch <- synchronizer.APIEvent{EventType: constants.Delete, Events: []synchronizer.APIState{apiState}}
+			*apiReconciler.ch <- &synchronizer.APIEvent{EventType: constants.Delete, Events: []synchronizer.APIState{apiState}}
 			return ctrl.Result{}, nil
 		}
 		loggers.LoggerAPKOperator.Warnf("Api CR related to the reconcile request with key: %s returned error. Assuming API with API UUID : %v is already deleted, hence ignoring the error : %v",
@@ -260,7 +260,7 @@ func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	} else if apiState != nil {
 		loggers.LoggerAPKOperator.Infof("Ready to deploy CRs for API in namespace : %s with API UUID : %v, %v",
 			req.NamespacedName.String(), string(apiCR.ObjectMeta.UID), err)
-		*apiReconciler.ch <- *apiState
+		*apiReconciler.ch <- apiState
 	}
 	return ctrl.Result{}, nil
 }
@@ -287,7 +287,7 @@ func (apiReconciler *APIReconciler) applyStartupAPIs() {
 	}
 	// Send all the API events to the channel
 	if len(combinedapiEvent.Events) > 0 {
-		*apiReconciler.ch <- *combinedapiEvent
+		*apiReconciler.ch <- combinedapiEvent
 		loggers.LoggerAPKOperator.Info("Initial APIs were reconciled successfully")
 	} else {
 		loggers.LoggerAPKOperator.Warn("No startup APIs found")
@@ -1543,7 +1543,6 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 
 	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha2.API{}, configMapAPIDefinition,
 		func(rawObj k8client.Object) []string {
-			loggers.LoggerAPI.Error("AMALIII configMapAPIDefinition: ", configMapAPIDefinition)
 			api := rawObj.(*dpv1alpha2.API)
 			var configMaps []string
 			if api.Spec.DefinitionFileRef != "" {
@@ -1553,7 +1552,6 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 						Namespace: api.Namespace,
 					}.String())
 			}
-			loggers.LoggerAPI.Error("AMALIII configMaps: ", configMaps)
 			return configMaps
 		}); err != nil {
 		return err
@@ -1990,23 +1988,25 @@ func (apiReconciler *APIReconciler) handleStatus() {
 		timeNow := metav1.Now()
 		event = fmt.Sprintf("[%s] %s", timeNow.String(), message)
 
-		apiReconciler.statusUpdater.Send(status.Update{
-			NamespacedName: successEvent.APINamespacedName,
-			Resource:       new(dpv1alpha2.API),
-			UpdateStatus: func(obj k8client.Object) k8client.Object {
-				h, ok := obj.(*dpv1alpha2.API)
-				if !ok {
-					loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2626, logging.BLOCKER, "Unsupported object type %T", obj))
-				}
-				hCopy := h.DeepCopy()
-				hCopy.Status.DeploymentStatus.Status = successEvent.State
-				hCopy.Status.DeploymentStatus.Accepted = accept
-				hCopy.Status.DeploymentStatus.Message = message
-				hCopy.Status.DeploymentStatus.Events = append(hCopy.Status.DeploymentStatus.Events, event)
-				hCopy.Status.DeploymentStatus.TransitionTime = &timeNow
-				return hCopy
-			},
-		})
+		for _, apiName := range successEvent.APINamespacedName { // handle startup multiple apis
+			apiReconciler.statusUpdater.Send(status.Update{
+				NamespacedName: apiName,
+				Resource:       new(dpv1alpha2.API),
+				UpdateStatus: func(obj k8client.Object) k8client.Object {
+					h, ok := obj.(*dpv1alpha2.API)
+					if !ok {
+						loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2626, logging.BLOCKER, "Unsupported object type %T", obj))
+					}
+					hCopy := h.DeepCopy()
+					hCopy.Status.DeploymentStatus.Status = successEvent.State
+					hCopy.Status.DeploymentStatus.Accepted = accept
+					hCopy.Status.DeploymentStatus.Message = message
+					hCopy.Status.DeploymentStatus.Events = append(hCopy.Status.DeploymentStatus.Events, event)
+					hCopy.Status.DeploymentStatus.TransitionTime = &timeNow
+					return hCopy
+				},
+			})
+		}
 	}
 }
 

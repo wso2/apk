@@ -29,12 +29,12 @@ import (
 	extAuthService "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/ext_authz/v3"
 	envoy_type_matcherv3 "github.com/envoyproxy/go-control-plane/envoy/type/matcher/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/wellknown"
-	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes/any"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/internal/oasparser/constants"
 	"github.com/wso2/apk/adapter/internal/oasparser/model"
 	opConstants "github.com/wso2/apk/adapter/internal/operator/constants"
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/wrapperspb"
@@ -315,12 +315,10 @@ func generateFilterConfigToSkipEnforcer() map[string]*anypb.Any {
 		},
 	}
 
-	b := proto.NewBuffer(nil)
-	b.SetDeterministic(true)
-	_ = b.Marshal(&perFilterConfig)
+	data, _ := proto.Marshal(&perFilterConfig)
 	filter := &any.Any{
 		TypeUrl: extAuthzPerRouteName,
-		Value:   b.Bytes(),
+		Value:   data,
 	}
 
 	return map[string]*any.Any{

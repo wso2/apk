@@ -39,11 +39,10 @@ import (
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/durationpb"
 
-	"github.com/golang/protobuf/proto"
-	"github.com/golang/protobuf/ptypes"
 	"github.com/wso2/apk/adapter/config"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
 	logging "github.com/wso2/apk/adapter/internal/logging"
+	"google.golang.org/protobuf/proto"
 
 	"github.com/golang/protobuf/ptypes/any"
 )
@@ -178,7 +177,7 @@ func getRateLimitFilter() *hcmv3.HttpFilter {
 			},
 		},
 	}
-	ext, err2 := ptypes.MarshalAny(rateLimit)
+	ext, err2 := anypb.New(rateLimit)
 	if err2 != nil {
 		logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2241, logging.MAJOR, "Error occurred while parsing ratelimit filter config. Error: %s", err2.Error()))
 	}
@@ -207,7 +206,7 @@ func getExtAuthzHTTPFilter() *hcmv3.HttpFilter {
 						ClusterName: extAuthzClusterName,
 					},
 				},
-				Timeout: ptypes.DurationProto(conf.Envoy.EnforcerResponseTimeoutInSeconds * time.Second),
+				Timeout: durationpb.New(conf.Envoy.EnforcerResponseTimeoutInSeconds * time.Second),
 				InitialMetadata: []*corev3.HeaderValue{
 					{
 						Key:   "x-request-id",
