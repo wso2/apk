@@ -47,7 +47,7 @@ type APISpec struct {
 	// +optional
 	IsDefaultVersion bool `json:"isDefaultVersion"`
 
-	// DefinitionFileRef contains the OpenAPI 3 or Swagger
+	// DefinitionFileRef contains the
 	// definition of the API in a ConfigMap.
 	//
 	// +optional
@@ -124,8 +124,8 @@ type Property struct {
 
 // EnvConfig contains the environment specific configuration
 type EnvConfig struct {
-	// HTTPRouteRefs denotes the environment of the API.
-	HTTPRouteRefs []string `json:"httpRouteRefs"`
+	// RouteRefs denotes the environment of the API.
+	RouteRefs []string `json:"routeRefs"`
 }
 
 // APIStatus defines the observed state of API

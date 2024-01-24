@@ -91,7 +91,6 @@ func (r *API) ValidateDelete() (admission.Warnings, error) {
 
 // validateAPI validate api crd fields
 func (r *API) validateAPI() error {
-	loggers.LoggerAPKOperator.Error("validating...")
 	var allErrs field.ErrorList
 	conf := config.ReadConfigs()
 	namespaces := conf.CommonController.Operator.Namespaces
@@ -127,17 +126,18 @@ func (r *API) validateAPI() error {
 		allErrs = append(allErrs, field.Required(field.NewPath("spec").Child("organization"), "Organization can not be empty"))
 	}
 
-	if !(len(r.Spec.Production) > 0 && r.Spec.Production[0].HTTPRouteRefs != nil && len(r.Spec.Production[0].HTTPRouteRefs) > 0) && !(len(r.Spec.Sandbox) > 0 && r.Spec.Sandbox[0].HTTPRouteRefs != nil && len(r.Spec.Sandbox[0].HTTPRouteRefs) > 0) {
+	if !(len(r.Spec.Production) > 0 && r.Spec.Production[0].RouteRefs != nil && len(r.Spec.Production[0].RouteRefs) > 0) &&
+		!(len(r.Spec.Sandbox) > 0 && r.Spec.Sandbox[0].RouteRefs != nil && len(r.Spec.Sandbox[0].RouteRefs) > 0) {
 		allErrs = append(allErrs, field.Required(field.NewPath("spec"),
 			"both API production and sandbox endpoint references cannot be empty"))
 	}
 
 	var prodHTTPRoute1, sandHTTPRoute1 []string
 	if len(r.Spec.Production) > 0 {
-		prodHTTPRoute1 = r.Spec.Production[0].HTTPRouteRefs
+		prodHTTPRoute1 = r.Spec.Production[0].RouteRefs
 	}
 	if len(r.Spec.Sandbox) > 0 {
-		sandHTTPRoute1 = r.Spec.Sandbox[0].HTTPRouteRefs
+		sandHTTPRoute1 = r.Spec.Sandbox[0].RouteRefs
 	}
 
 	if isEmptyStringsInArray(prodHTTPRoute1) {
@@ -263,8 +263,7 @@ func validateGzip(name, namespace string) (string, string) {
 	configMap := &corev1.ConfigMap{}
 	if err := c.Get(context.Background(), types.NamespacedName{Name: string(name), Namespace: namespace}, configMap); err == nil {
 		var apiDef []byte
-		for key, val := range configMap.BinaryData {
-			loggers.LoggerAPKOperator.Error(key)
+		for _, val := range configMap.BinaryData {
 			// config map data key is "swagger.yaml"
 			apiDef = []byte(val)
 		}
