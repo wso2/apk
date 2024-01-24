@@ -27,7 +27,7 @@ spec:
   isDefaultVersion: true
   #definitionFileRef: definition-file
   production:
-    - httpRouteRefs:
+    - routeRefs:
       - disable-resource-level-jwt-httproute
   organization: wso2-org
 ---
@@ -94,7 +94,7 @@ spec:
   isDefaultVersion: true
   #definitionFileRef: definition-file
   production:
-    - httpRouteRefs:
+    - routeRefs:
       - disable-resource-level-jwt1-httproute
   organization: wso2-org
 ---
@@ -171,7 +171,7 @@ spec:
   isDefaultVersion: true
   #definitionFileRef: definition-file
   production:
-    - httpRouteRefs:
+    - routeRefs:
       - disable-resource-level-jwt2-httproute
   organization: wso2-org
 ---

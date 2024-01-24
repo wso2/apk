@@ -27,7 +27,7 @@ spec:
   isDefaultVersion: false
   definitionFileRef: gql-sdl
   production:
-    - httpRouteRefs:
+    - routeRefs:
       - gql-api-gqlroute
   organization: wso2-org
 ---

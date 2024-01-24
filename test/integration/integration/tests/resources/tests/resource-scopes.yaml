@@ -26,7 +26,7 @@ spec:
   basePath: /resource-scopes/v1
   #definitionFileRef: definition-file
   production:
-    - httpRouteRefs:
+    - routeRefs:
       - resource-scopes-httproute
   organization: wso2-org
 ---

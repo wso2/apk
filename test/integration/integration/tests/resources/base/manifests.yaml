@@ -426,6 +426,6 @@ spec:
   isDefaultVersion: true
   #definitionFileRef: definition-file
   production:
-    - httpRouteRefs:
+    - routeRefs:
       - all-http-methods-for-wildcard-httproute
   organization: wso2-org1111

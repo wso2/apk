@@ -27,7 +27,7 @@ spec:
   isDefaultVersion: true
   #definitionFileRef: definition-file
   production:
-    - httpRouteRefs:
+    - routeRefs:
       - different-endpoint-with-same-route-httproute
   organization: wso2-org
 ---

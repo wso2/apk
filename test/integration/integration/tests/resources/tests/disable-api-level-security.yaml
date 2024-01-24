@@ -27,7 +27,7 @@ spec:
   isDefaultVersion: true
   #definitionFileRef: definition-file
   production:
-    - httpRouteRefs:
+    - routeRefs:
       - disable-api-security-httproute
   organization: wso2-org
 ---
