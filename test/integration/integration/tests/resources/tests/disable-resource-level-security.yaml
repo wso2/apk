@@ -27,7 +27,7 @@ spec:
   isDefaultVersion: true
   #definitionFileRef: definition-file
   production:
-    - httpRouteRefs:
+    - routeRefs:
       - disable-resoruce-security-httproute
   organization: wso2-org
 ---
