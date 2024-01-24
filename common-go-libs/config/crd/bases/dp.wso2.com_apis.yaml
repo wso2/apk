@@ -259,8 +259,8 @@ spec:
                 pattern: ^[/][a-zA-Z0-9~/_.-]*$
                 type: string
               definitionFileRef:
-                description: DefinitionFileRef contains the OpenAPI 3 or Swagger definition
-                  of the API in a ConfigMap.
+                description: DefinitionFileRef contains the definition of the API
+                  in a ConfigMap.
                 type: string
               definitionPath:
                 default: /api-definition
@@ -285,13 +285,13 @@ spec:
                 items:
                   description: EnvConfig contains the environment specific configuration
                   properties:
-                    httpRouteRefs:
-                      description: HTTPRouteRefs denotes the environment of the API.
+                    routeRefs:
+                      description: RouteRefs denotes the environment of the API.
                       items:
                         type: string
                       type: array
                   required:
-                  - httpRouteRefs
+                  - routeRefs
                   type: object
                 maxItems: 1
                 nullable: true
@@ -302,13 +302,13 @@ spec:
                 items:
                   description: EnvConfig contains the environment specific configuration
                   properties:
-                    httpRouteRefs:
-                      description: HTTPRouteRefs denotes the environment of the API.
+                    routeRefs:
+                      description: RouteRefs denotes the environment of the API.
                       items:
                         type: string
                       type: array
                   required:
-                  - httpRouteRefs
+                  - routeRefs
                   type: object
                 maxItems: 1
                 nullable: true
