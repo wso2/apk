@@ -23,7 +23,7 @@ metadata:
 data:
   Config.toml: |
     [ballerina.log]
-    level = "DEBUG"
+    level = "INFO"
     [ballerina.http]
     traceLogConsole = true
     # Sample configurations      

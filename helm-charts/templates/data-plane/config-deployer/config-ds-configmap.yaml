@@ -23,7 +23,7 @@ metadata:
 data:
   Config.toml: |
     [ballerina.log]
-    level = "DEBUG"
+    level = "INFO"
     [ballerina.http]
     traceLogConsole = true
     [wso2.config_deployer_service.keyStores.tls]

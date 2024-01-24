@@ -87,7 +87,7 @@ data:
     logLevel = "INFO" # LogLevels can be "DEBG", "FATL", "ERRO", "WARN", "INFO", "PANC"
     [[pkg]]
     name = "github.com/wso2/apk/common-controller/internal/utils"
-    logLevel = "DEBG" # LogLevels can be "DEBG", "FATL", "ERRO", "WARN", "INFO", "PANC"
+    logLevel = "INFO" # LogLevels can be "DEBG", "FATL", "ERRO", "WARN", "INFO", "PANC"
     [[pkg]]
 
     # The logging configuration for Router
