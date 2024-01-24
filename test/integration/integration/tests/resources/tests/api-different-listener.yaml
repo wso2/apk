@@ -26,7 +26,7 @@ spec:
   basePath: /test-api-with-different-listener/v1.0.0
   #definitionFileRef: definition-file
   production:
-    - httpRouteRefs:
+    - routeRefs:
       - test-api-with-different-listener-httproute
   organization: wso2-org
 ---

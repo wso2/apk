@@ -27,7 +27,7 @@ spec:
   isDefaultVersion: true
   #definitionFileRef: definition-file
   production:
-    - httpRouteRefs:
+    - routeRefs:
       - default-api-version-ratelimit-resource-level-httproute
   organization: wso2-org
 ---

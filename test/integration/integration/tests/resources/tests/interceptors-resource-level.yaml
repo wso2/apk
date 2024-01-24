@@ -26,7 +26,7 @@ spec:
   basePath: /interceptor/1.0.0
   #definitionFileRef: swagger-definition-webhook
   production:
-    - httpRouteRefs:
+    - routeRefs:
       - resource-interceptor-route
   organization: wso2-org
 ---

@@ -25,7 +25,7 @@ spec:
   apiVersion: v1.0.0
   basePath: /fetch-non-existing-api-definition/v1.0.0
   production:
-    - httpRouteRefs:
+    - routeRefs:
       - fetch-non-api-definition-httproute
   organization: wso2-org
 ---

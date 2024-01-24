@@ -70,7 +70,7 @@ spec:
   basePath: /http-bin-api/1.0.8
   #definitionFileRef: swagger-definition-http-bin-api
   production:
-    - httpRouteRefs:
+    - routeRefs:
       - prod-http-route-http-bin-api-basic
   organization: a3b58ccf-6ecc-4557-b5bb-0a35cce38256
 ---
