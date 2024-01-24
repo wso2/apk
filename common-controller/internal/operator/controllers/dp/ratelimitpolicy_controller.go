@@ -289,7 +289,7 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) marshelRateLimit(ctx conte
 
 		if len(api.Spec.Production) > 0 && api.Spec.APIType == "REST" {
 			resolveResourceList, err := ratelimitReconsiler.getHTTPRouteResourceList(ctx, ratelimitKey, ratelimitPolicy,
-				api.Spec.Production[0].HTTPRouteRefs)
+				api.Spec.Production[0].RouteRefs)
 			if err != nil {
 				return nil, err
 			}
@@ -301,7 +301,7 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) marshelRateLimit(ctx conte
 
 		if len(api.Spec.Sandbox) > 0 && api.Spec.APIType == "REST" {
 			resolveResourceList, err := ratelimitReconsiler.getHTTPRouteResourceList(ctx, ratelimitKey, ratelimitPolicy,
-				api.Spec.Sandbox[0].HTTPRouteRefs)
+				api.Spec.Sandbox[0].RouteRefs)
 			if err != nil {
 				return nil, err
 			}

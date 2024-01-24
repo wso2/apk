@@ -63,19 +63,6 @@ func (src *API) ConvertTo(dstRaw conversion.Hub) error {
 	}
 	dst.Spec.APIProperties = properties
 
-	// Convert []EnvConfig to []v1alpha2.EnvConfig
-	var production []v1alpha2.EnvConfig
-	for _, p := range src.Spec.Production {
-		production = append(production, v1alpha2.EnvConfig(p))
-	}
-	dst.Spec.Production = production
-
-	var sandbox []v1alpha2.EnvConfig
-	for _, s := range src.Spec.Sandbox {
-		sandbox = append(sandbox, v1alpha2.EnvConfig(s))
-	}
-	dst.Spec.Sandbox = sandbox
-
 	// Status
 	dst.Status.DeploymentStatus = v1alpha2.DeploymentStatus(src.Status.DeploymentStatus)
 
@@ -106,19 +93,6 @@ func (src *API) ConvertFrom(srcRaw conversion.Hub) error {
 		properties = append(properties, Property(p))
 	}
 	src.Spec.APIProperties = properties
-
-	// Convert []EnvConfig to []v1alpha1.EnvConfig
-	var production []EnvConfig
-	for _, p := range dst.Spec.Production {
-		production = append(production, EnvConfig(p))
-	}
-	src.Spec.Production = production
-
-	var sandbox []EnvConfig
-	for _, s := range dst.Spec.Sandbox {
-		sandbox = append(sandbox, EnvConfig(s))
-	}
-	src.Spec.Sandbox = sandbox
 
 	// Status
 	src.Status.DeploymentStatus = DeploymentStatus(dst.Status.DeploymentStatus)
