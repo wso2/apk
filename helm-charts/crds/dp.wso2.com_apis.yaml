@@ -3,8 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.9.2
-  creationTimestamp: null
+    controller-gen.kubebuilder.io/version: v0.12.0
   name: apis.dp.wso2.com
 spec:
   group: dp.wso2.com
@@ -260,8 +259,8 @@ spec:
                 pattern: ^[/][a-zA-Z0-9~/_.-]*$
                 type: string
               definitionFileRef:
-                description: DefinitionFileRef contains the OpenAPI 3 or SDL file
-                  in gzipped format. definition of the API in a ConfigMap.
+                description: DefinitionFileRef contains the definition of the API
+                  in a ConfigMap.
                 type: string
               definitionPath:
                 default: /api-definition
@@ -286,13 +285,13 @@ spec:
                 items:
                   description: EnvConfig contains the environment specific configuration
                   properties:
-                    httpRouteRefs:
-                      description: HTTPRouteRefs denotes the environment of the API.
+                    routeRefs:
+                      description: RouteRefs denotes the environment of the API.
                       items:
                         type: string
                       type: array
                   required:
-                  - httpRouteRefs
+                  - routeRefs
                   type: object
                 maxItems: 1
                 nullable: true
@@ -303,13 +302,13 @@ spec:
                 items:
                   description: EnvConfig contains the environment specific configuration
                   properties:
-                    httpRouteRefs:
-                      description: HTTPRouteRefs denotes the environment of the API.
+                    routeRefs:
+                      description: RouteRefs denotes the environment of the API.
                       items:
                         type: string
                       type: array
                   required:
-                  - httpRouteRefs
+                  - routeRefs
                   type: object
                 maxItems: 1
                 nullable: true
