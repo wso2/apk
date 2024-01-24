@@ -27,7 +27,7 @@ spec:
   isDefaultVersion: true
   #definitionFileRef: swagger-definition-webhook
   production:
-    - httpRouteRefs:
+    - routeRefs:
       - test-api-with-response-header-modify-httproute
   organization: wso2-org
 ---

@@ -26,7 +26,7 @@ spec:
   basePath: /prod-sand-test-api/v1
   #definitionFileRef: definition-file
   production:
-    - httpRouteRefs:
+    - routeRefs:
       - prod-httproute
   organization: wso2-org
 ---
@@ -128,9 +128,9 @@ spec:
   basePath: /prod-sand-test-api/v1
   #definitionFileRef: definition-file
   production:
-    - httpRouteRefs:
+    - routeRefs:
       - prod-httproute
   sandbox:
-    - httpRouteRefs:
+    - routeRefs:
       - sand-httproute
   organization: wso2-org

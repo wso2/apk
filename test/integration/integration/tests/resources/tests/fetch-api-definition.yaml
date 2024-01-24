@@ -27,7 +27,7 @@ spec:
   isDefaultVersion: true
   definitionFileRef: definition-file-swagger
   production:
-    - httpRouteRefs:
+    - routeRefs:
       - fetch-api-defintion-httproute
   organization: wso2-org
 ---
