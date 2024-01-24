@@ -39,6 +39,22 @@ func (src *API) ConvertTo(dstRaw conversion.Hub) error {
 	dst.Spec.BasePath = src.Spec.BasePath
 	dst.Spec.Organization = src.Spec.Organization
 	dst.Spec.SystemAPI = src.Spec.SystemAPI
+	if src.Spec.Production != nil {
+		src.Spec.Production = []EnvConfig{}
+		for _, productionRef := range src.Spec.Production {
+			dst.Spec.Production = append(dst.Spec.Production, v1alpha2.EnvConfig{
+				RouteRefs: productionRef.HTTPRouteRefs,
+			})
+		}
+	}
+	if src.Spec.Sandbox != nil {
+		src.Spec.Sandbox = []EnvConfig{}
+		for _, sandboxRef := range src.Spec.Sandbox {
+			dst.Spec.Sandbox = append(dst.Spec.Sandbox, v1alpha2.EnvConfig{
+				RouteRefs: sandboxRef.HTTPRouteRefs,
+			})
+		}
+	}
 
 	// Convert []Property to []v1alpha2.Property
 	var properties []v1alpha2.Property
