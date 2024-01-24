@@ -23,7 +23,7 @@ metadata:
 data:
   Config.toml: |
     [ballerina.log]
-    level = "DEBUG"
+    level = "INFO"
     [ballerina.http]
     traceLogConsole = false
     {{if and .Values.wso2.apk.metrics .Values.wso2.apk.metrics.enabled}}
