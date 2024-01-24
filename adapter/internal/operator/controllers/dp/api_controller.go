@@ -300,10 +300,10 @@ func (apiReconciler *APIReconciler) applyStartupAPIs() {
 func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1alpha2.API) (*synchronizer.APIEvent, error) {
 	var prodRouteRefs, sandRouteRefs []string
 	if len(api.Spec.Production) > 0 {
-		prodRouteRefs = api.Spec.Production[0].HTTPRouteRefs
+		prodRouteRefs = api.Spec.Production[0].RouteRefs
 	}
 	if len(api.Spec.Sandbox) > 0 {
-		sandRouteRefs = api.Spec.Sandbox[0].HTTPRouteRefs
+		sandRouteRefs = api.Spec.Sandbox[0].RouteRefs
 	}
 
 	apiState := &synchronizer.APIState{
@@ -1484,7 +1484,7 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 			api := rawObj.(*dpv1alpha2.API)
 			var httpRoutes []string
 			if len(api.Spec.Production) > 0 {
-				for _, ref := range api.Spec.Production[0].HTTPRouteRefs {
+				for _, ref := range api.Spec.Production[0].RouteRefs {
 					if ref != "" {
 						httpRoutes = append(httpRoutes,
 							types.NamespacedName{
@@ -1495,7 +1495,7 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 				}
 			}
 			if len(api.Spec.Sandbox) > 0 {
-				for _, ref := range api.Spec.Sandbox[0].HTTPRouteRefs {
+				for _, ref := range api.Spec.Sandbox[0].RouteRefs {
 					if ref != "" {
 						httpRoutes = append(httpRoutes,
 							types.NamespacedName{
@@ -1515,7 +1515,7 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 			api := rawObj.(*dpv1alpha2.API)
 			var gqlRoutes []string
 			if len(api.Spec.Production) > 0 {
-				for _, ref := range api.Spec.Production[0].HTTPRouteRefs {
+				for _, ref := range api.Spec.Production[0].RouteRefs {
 					if ref != "" {
 						gqlRoutes = append(gqlRoutes,
 							types.NamespacedName{
@@ -1526,7 +1526,7 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 				}
 			}
 			if len(api.Spec.Sandbox) > 0 {
-				for _, ref := range api.Spec.Sandbox[0].HTTPRouteRefs {
+				for _, ref := range api.Spec.Sandbox[0].RouteRefs {
 					if ref != "" {
 						gqlRoutes = append(gqlRoutes,
 							types.NamespacedName{
