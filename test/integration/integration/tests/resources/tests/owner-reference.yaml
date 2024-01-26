@@ -1,0 +1,157 @@
+---
+apiVersion: "gateway.networking.k8s.io/v1beta1"
+kind: "HTTPRoute"
+metadata:
+  name: "hr1"
+  namespace: apk-integration-test
+  labels:
+    api-name: "346888251571be33323cd2a0e7d8c26738b0a066"
+    api-version: "5a6df720540c20d95d530d3fd6885511223d5d20"
+    organization: "7505d64a54e061b7acd54ccd58b49dc43500b635"
+    managed-by: "apk"
+spec:
+  hostnames:
+  - "default.gw.wso2.com"
+  rules:
+  - matches:
+    - path:
+        type: "RegularExpression"
+        value: "/user/(.*)"
+      method: "GET"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/user/\\1"
+    backendRefs:
+    - group: "dp.wso2.com"
+      kind: "Backend"
+      name: "backend1"
+  parentRefs:
+  - group: "gateway.networking.k8s.io"
+    kind: "Gateway"
+    name: "default"
+    sectionName: "httpslistener"
+---
+apiVersion: "gateway.networking.k8s.io/v1beta1"
+kind: "HTTPRoute"
+metadata:
+  name: "hr2"
+  namespace: apk-integration-test
+  labels:
+    api-name: "346888251571be33323cd2a0e7d8c26738b0a066"
+    api-version: "5a6df720540c20d95d530d3fd6885511223d5d20"
+    organization: "7505d64a54e061b7acd54ccd58b49dc43500b635"
+    managed-by: "apk"
+spec:
+  hostnames:
+  - "default.gw.wso2.com"
+  rules:
+  - matches:
+    - path:
+        type: "RegularExpression"
+        value: "/store/inventory"
+      method: "GET"
+    filters: []
+    backendRefs:
+    - group: "dp.wso2.com"
+      kind: "Backend"
+      name: "backend2"
+  
+  parentRefs:
+  - group: "gateway.networking.k8s.io"
+    kind: "Gateway"
+    name: "default"
+    sectionName: "httpslistener"
+---
+apiVersion: "dp.wso2.com/v1alpha1"
+kind: "RateLimitPolicy"
+metadata:
+  name: "rl1"
+  namespace: apk-integration-test
+  labels:
+    api-name: "346888251571be33323cd2a0e7d8c26738b0a066"
+    api-version: "5a6df720540c20d95d530d3fd6885511223d5d20"
+    organization: "7505d64a54e061b7acd54ccd58b49dc43500b635"
+    managed-by: "apk"
+spec:
+  default:
+    api:
+      requestsPerUnit: 1
+      unit: "Minute"
+  targetRef:
+    group: "gateway.networking.k8s.io"
+    kind: "API"
+    name: "api1"
+---
+apiVersion: "dp.wso2.com/v1alpha1"
+kind: "Backend"
+metadata:
+  name: "backend2"
+  namespace: apk-integration-test
+  labels:
+    api-name: "346888251571be33323cd2a0e7d8c26738b0a066"
+    api-version: "5a6df720540c20d95d530d3fd6885511223d5d20"
+    organization: "7505d64a54e061b7acd54ccd58b49dc43500b635"
+    managed-by: "apk"
+spec:
+  services:
+  - host: "backend"
+    port: 80
+  basePath: "/anything"
+  protocol: "http"
+---
+apiVersion: "dp.wso2.com/v1alpha1"
+kind: "Backend"
+metadata:
+  name: "backend1"
+  namespace: apk-integration-test
+  labels:
+    api-name: "346888251571be33323cd2a0e7d8c26738b0a066"
+    api-version: "5a6df720540c20d95d530d3fd6885511223d5d20"
+    organization: "7505d64a54e061b7acd54ccd58b49dc43500b635"
+    managed-by: "apk"
+spec:
+  services:
+  - host: "backend"
+    port: 80
+  basePath: "/anything/sand"
+  protocol: "http"
+---
+kind: "API"
+apiVersion: "dp.wso2.com/v1alpha2"
+metadata:
+  name: "api1"
+  namespace: apk-integration-test
+spec:
+  apiName: "0f7iksz5w3"
+  apiType: "REST"
+  apiVersion: "v1"
+  basePath: "/base-path-582/v1"
+  organization: "default"
+  isDefaultVersion: true
+  production:
+  - httpRouteRefs:
+    - "hr1"
+    - "hr2"
+  apiProperties: []
+status: null
+---
+kind: "API"
+apiVersion: "dp.wso2.com/v1alpha2"
+metadata:
+  name: "api2"
+  namespace: apk-integration-test
+spec:
+  apiName: "jdsnfkjbdsfkj"
+  apiType: "REST"
+  apiVersion: "v1"
+  basePath: "/base-path-5800/v1"
+  organization: "default"
+  isDefaultVersion: true
+  production:
+  - httpRouteRefs:
+    - "hr2"
+  apiProperties: []
+status: null

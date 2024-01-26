@@ -26,6 +26,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/gateway-api/apis/v1alpha2"
 	"sigs.k8s.io/gateway-api/apis/v1beta1"
+	
+	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
+
 )
 
 func TestIntegration(t *testing.T) {
@@ -40,6 +43,8 @@ func TestIntegration(t *testing.T) {
 
 	v1alpha2.Install(client.Scheme())
 	v1beta1.Install(client.Scheme())
+	dpv1alpha1.AddToScheme(client.Scheme())
+
 
 	// TODO(Amila): Uncomment after operator package in adaptor is moved from internal to pkg directory
 	// dpv1alpha1.Install(client.Scheme())
