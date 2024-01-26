@@ -349,8 +349,8 @@ func UpdateXdsCache(labels map[string]struct{}) {
 			for newLabel := range labelSet {
 				listeners, clusters, routes, endpoints, apis := generateEnvoyResoucesForGateway(newLabel)
 				UpdateEnforcerApis(newLabel, apis, "")
-				success := UpdateXdsCacheWithLock(newLabel, endpoints, clusters, routes, listeners)
-				logger.LoggerXds.Debugf("Xds Cache is updated for the label : %v", newLabel)
+				UpdateXdsCacheWithLock(newLabel, endpoints, clusters, routes, listeners)
+				// logger.LoggerXds.Debugf("Xds Cache is updated for the label : %v", newLabel)
 				// if success {
 				// 	// if even one label was updated with latest revision, we take the revision as deployed.
 				// 	// (other labels also will get updated successfully)
