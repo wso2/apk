@@ -231,6 +231,7 @@ func (s *server) process(stream streamv3.Stream, reqCh <-chan *discovery.Discove
 		}
 	}
 
+	
 	for {
 		select {
 		case <-s.ctx.Done():
