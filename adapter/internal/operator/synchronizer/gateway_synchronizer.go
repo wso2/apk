@@ -107,14 +107,9 @@ func AddOrUpdateGateway(gatewayState GatewayState, state string) (string, error)
 
 	xds.GenerateInterceptorClusters(gateway.Name, gwReqICluster, gwReqIAddresses, gwResICluster, gwResIAddresses)
 	xds.UpdateGatewayCache(gateway, resolvedListenerCerts, gwLuaScript, customRateLimitPolicies)
-	listeners, clusters, routes, endpoints, apis := xds.GenerateEnvoyResoucesForGateway(gateway.Name)
-	loggers.LoggerAPKOperator.Debugf("listeners: %v", listeners)
-	loggers.LoggerAPKOperator.Debugf("clusters: %v", clusters)
-	loggers.LoggerAPKOperator.Debugf("routes: %v", routes)
-	loggers.LoggerAPKOperator.Debugf("endpoints: %v", endpoints)
-	loggers.LoggerAPKOperator.Debugf("apis: %v", apis)
-	xds.UpdateXdsCacheWithLock(gateway.Name, endpoints, clusters, routes, listeners)
-	xds.UpdateEnforcerApis(gateway.Name, apis, "")
+	labelSet := make(map[string]struct{})
+	labelSet[gateway.Name] = struct{}{}
+	xds.UpdateXdsCache(labelSet)
 	return "", nil
 }
 

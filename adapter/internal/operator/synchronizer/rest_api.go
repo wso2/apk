@@ -34,18 +34,25 @@ import (
 // undeployAPIInGateway undeploys the related API in CREATE and UPDATE events.
 func undeployRestAPIInGateway(apiState APIState) error {
 	var err error
+	xds.DeleteAPIFromInternalMap(string(apiState.APIDefinition.ObjectMeta.UID))
+	labels := []string{}
 	if apiState.ProdHTTPRoute != nil {
-		err = deleteAPIFromEnv(apiState.ProdHTTPRoute.HTTPRouteCombined, apiState)
+		labels = append(labels, getLabelsForAPI(apiState.ProdHTTPRoute.HTTPRouteCombined)...)
 	}
-	if err != nil {
-		loggers.LoggerXds.ErrorC(logging.PrintError(logging.Error2630, logging.MAJOR, "Error undeploying prod httpRoute of API : %v in Organization %v from environments %v."+
-			" Hence not checking on deleting the sand httpRoute of the API", string(apiState.APIDefinition.ObjectMeta.UID), apiState.APIDefinition.Spec.Organization,
-			getLabelsForAPI(apiState.ProdHTTPRoute.HTTPRouteCombined)))
-		return err
-	}
+	// if err != nil {
+	// 	loggers.LoggerXds.ErrorC(logging.PrintError(logging.Error2630, logging.MAJOR, "Error undeploying prod httpRoute of API : %v in Organization %v from environments %v."+
+	// 		" Hence not checking on deleting the sand httpRoute of the API", string(apiState.APIDefinition.ObjectMeta.UID), apiState.APIDefinition.Spec.Organization,
+	// 		getLabelsForAPI(apiState.ProdHTTPRoute.HTTPRouteCombined)))
+	// 	return err
+	// }
 	if apiState.SandHTTPRoute != nil {
-		err = deleteAPIFromEnv(apiState.SandHTTPRoute.HTTPRouteCombined, apiState)
+		labels = append(labels, getLabelsForAPI(apiState.SandHTTPRoute.HTTPRouteCombined)...)
 	}
+	labelSet := make(map[string]struct{})
+	for _, label := range labels {
+		labelSet[label] = struct{}{}
+	}
+	xds.UpdateXdsCache(labelSet)
 	return err
 }
 
@@ -110,7 +117,7 @@ func GenerateAdapterInternalAPI(apiState APIState, httpRoute *HTTPRouteState, en
 	listenerName := listeners[0]
 	sectionName := relativeSectionNames[0]
 	if len(listeners) != 0 {
-		updatedLabels, err := xds.UpdateAPICache(vHosts, labels, listenerName, sectionName, adapterInternalAPI)
+		updatedLabels, err := xds.UpdateAdapterInternalAPIs(vHosts, labels, listenerName, sectionName, adapterInternalAPI)
 		if err != nil {
 			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2633, logging.MAJOR, "Error updating the API : %s:%s in vhosts: %s, API_UUID: %v. %v",
 				adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), vHosts, adapterInternalAPI.UUID, err))
@@ -177,9 +184,9 @@ func getListenersForAPI(httpRoute *gwapiv1b1.HTTPRoute, apiUUID string) ([]strin
 	return listeners, sectionNames
 }
 
-func deleteAPIFromEnv(httpRoute *gwapiv1b1.HTTPRoute, apiState APIState) error {
-	labels := getLabelsForAPI(httpRoute)
-	org := apiState.APIDefinition.Spec.Organization
-	uuid := string(apiState.APIDefinition.ObjectMeta.UID)
-	return xds.DeleteAPICREvent(labels, uuid, org)
-}
+// func deleteAPIFromEnv(httpRoute *gwapiv1b1.HTTPRoute, apiState APIState) error {
+// 	labels := getLabelsForAPI(httpRoute)
+// 	// org := apiState.APIDefinition.Spec.Organization
+// 	uuid := string(apiState.APIDefinition.ObjectMeta.UID)
+// 	return xds.DeleteAPI(labels, uuid)
+// }

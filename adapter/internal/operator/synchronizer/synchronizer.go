@@ -134,18 +134,18 @@ func deployMultipleAPIsInGateway(event *APIEvent, successChannel *chan SuccessEv
 	for i, apiState := range event.Events {
 		loggers.LoggerAPKOperator.Infof("%s event received for %s", event.EventType, apiState.APIDefinition.Name)
 		if len(apiState.OldOrganizationID) != 0 {
-			xds.RemoveAPIFromOrgAPIMap(string((*apiState.APIDefinition).ObjectMeta.UID), apiState.OldOrganizationID)
+			// xds.RemoveAPIFromOrgAPIMap(string((*apiState.APIDefinition).ObjectMeta.UID), apiState.OldOrganizationID)
 		}
 		if apiState.APIDefinition.Spec.APIType == "REST" {
 			if apiState.ProdHTTPRoute == nil {
 				var adapterInternalAPI model.AdapterInternalAPI
 				adapterInternalAPI.SetInfoAPICR(*apiState.APIDefinition)
-				xds.RemoveAPICacheForEnv(adapterInternalAPI, constants.Production)
+				// xds.RemoveAPICacheForEnv(adapterInternalAPI, constants.Production)
 			}
 			if apiState.SandHTTPRoute == nil {
 				var adapterInternalAPI model.AdapterInternalAPI
 				adapterInternalAPI.SetInfoAPICR(*apiState.APIDefinition)
-				xds.RemoveAPICacheForEnv(adapterInternalAPI, constants.Sandbox)
+				// xds.RemoveAPICacheForEnv(adapterInternalAPI, constants.Sandbox)
 			}
 
 			if apiState.ProdHTTPRoute != nil {
@@ -185,12 +185,12 @@ func deployMultipleAPIsInGateway(event *APIEvent, successChannel *chan SuccessEv
 			if apiState.ProdGQLRoute == nil {
 				var adapterInternalAPI model.AdapterInternalAPI
 				adapterInternalAPI.SetInfoAPICR(*apiState.APIDefinition)
-				xds.RemoveAPICacheForEnv(adapterInternalAPI, constants.Production)
+				// xds.RemoveAPICacheForEnv(adapterInternalAPI, constants.Production)
 			}
 			if apiState.SandGQLRoute == nil {
 				var adapterInternalAPI model.AdapterInternalAPI
 				adapterInternalAPI.SetInfoAPICR(*apiState.APIDefinition)
-				xds.RemoveAPICacheForEnv(adapterInternalAPI, constants.Sandbox)
+				// xds.RemoveAPICacheForEnv(adapterInternalAPI, constants.Sandbox)
 			}
 			if apiState.ProdGQLRoute != nil {
 				_, updatedLabels, err := generateGQLAdapterInternalAPI(apiState, apiState.ProdGQLRoute, constants.Production)
@@ -222,7 +222,7 @@ func deployMultipleAPIsInGateway(event *APIEvent, successChannel *chan SuccessEv
 		updatedAPIs = append(updatedAPIs, utils.NamespacedName(apiState.APIDefinition))
 	}
 
-	updated := xds.UpdateXdsCacheOnAPIChange(updatedLabelsMap)
+	updated := xds.UpdateXdsCache(updatedLabelsMap)
 	if updated {
 		loggers.LoggerAPKOperator.Info("XDS cache updated for apis: %+v", updatedAPIs)
 		*successChannel <- SuccessEvent{

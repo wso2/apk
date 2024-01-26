@@ -23,7 +23,7 @@ import (
 	crand "crypto/rand"
 	"crypto/sha1"
 	"encoding/hex"
-	"errors"
+	// "errors"
 	"fmt"
 	"math/big"
 	"math/rand"
@@ -45,15 +45,15 @@ import (
 	logger "github.com/wso2/apk/adapter/internal/loggers"
 	logging "github.com/wso2/apk/adapter/internal/logging"
 	oasParser "github.com/wso2/apk/adapter/internal/oasparser"
-	"github.com/wso2/apk/adapter/internal/oasparser/constants"
+	// "github.com/wso2/apk/adapter/internal/oasparser/constants"
 	"github.com/wso2/apk/adapter/internal/oasparser/envoyconf"
 	"github.com/wso2/apk/adapter/internal/oasparser/model"
-	operatorconsts "github.com/wso2/apk/adapter/internal/operator/constants"
+	// operatorconsts "github.com/wso2/apk/adapter/internal/operator/constants"
 	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/subscription"
 	wso2_cache "github.com/wso2/apk/adapter/pkg/discovery/protocol/cache/v3"
 	wso2_resource "github.com/wso2/apk/adapter/pkg/discovery/protocol/resource/v3"
 	eventhubTypes "github.com/wso2/apk/adapter/pkg/eventhub/types"
-	"github.com/wso2/apk/adapter/pkg/utils/stringutils"
+	// "github.com/wso2/apk/adapter/pkg/utils/stringutils"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
@@ -83,10 +83,19 @@ type EnforcerInternalAPI struct {
 	jwtIssuers []types.Resource
 }
 
+type AdapterInternalAPIHolder struct {
+	vHosts []string
+	labels []string
+	listener string
+	sectionName string
+	adapterInternalAPI *model.AdapterInternalAPI
+}
+
 var (
 	// TODO: (VirajSalaka) Remove Unused mutexes.
 	mutexForXdsUpdate         sync.Mutex
 	mutexForInternalMapUpdate sync.Mutex
+	mutexForAdapterInternalAPIHolderMap sync.Mutex
 
 	cache                           envoy_cachev3.SnapshotCache
 	enforcerCache                   wso2_cache.SnapshotCache
@@ -98,10 +107,10 @@ var (
 	enforcerRevokedTokensCache      wso2_cache.SnapshotCache
 	enforcerThrottleDataCache       wso2_cache.SnapshotCache
 
-	orgAPIMap map[string]map[string]*EnvoyInternalAPI // organizationID -> Vhost:API_UUID -> EnvoyInternalAPI struct map
-
-	orgIDvHostBasepathMap map[string]map[string]string   // organizationID -> Vhost:basepath -> Vhost:API_UUID
-	orgIDAPIvHostsMap     map[string]map[string][]string // organizationID -> UUID -> prod/sand -> Envoy Vhost Array map
+	// orgAPIMap map[string]map[string]*EnvoyInternalAPI // organizationID -> Vhost:API_UUID -> EnvoyInternalAPI struct map
+	adapterInternalAPIHolderMap map[string]*AdapterInternalAPIHolder
+	// orgIDvHostBasepathMap map[string]map[string]string   // organizationID -> Vhost:basepath -> Vhost:API_UUID
+	// orgIDAPIvHostsMap     map[string]map[string][]string // organizationID -> UUID -> prod/sand -> Envoy Vhost Array map
 
 	// Envoy Label as map key
 	gatewayLabelConfigMap map[string]*EnvoyGatewayConfig // GW-Label -> EnvoyGatewayConfig struct map
@@ -156,9 +165,10 @@ func init() {
 	enforcerThrottleDataCache = wso2_cache.NewSnapshotCache(false, IDHash{}, nil)
 	enforcerJwtIssuerCache = wso2_cache.NewSnapshotCache(false, IDHash{}, nil)
 	gatewayLabelConfigMap = make(map[string]*EnvoyGatewayConfig)
-	orgAPIMap = make(map[string]map[string]*EnvoyInternalAPI)
-	orgIDAPIvHostsMap = make(map[string]map[string][]string) // organizationID -> UUID-prod/sand -> Envoy Vhost Array map
-	orgIDvHostBasepathMap = make(map[string]map[string]string)
+	// orgAPIMap = make(map[string]map[string]*EnvoyInternalAPI)
+	adapterInternalAPIHolderMap = make(map[string]*AdapterInternalAPIHolder)
+	// orgIDAPIvHostsMap = make(map[string]map[string][]string) // organizationID -> UUID-prod/sand -> Envoy Vhost Array map
+	// orgIDvHostBasepathMap = make(map[string]map[string]string)
 
 	enforcerLabelMap = make(map[string]*EnforcerInternalAPI)
 	// currently subscriptions, configs, applications, applicationPolicies, subscriptionPolicies,
@@ -213,104 +223,113 @@ func GetEnforcerThrottleDataCache() wso2_cache.SnapshotCache {
 	return enforcerThrottleDataCache
 }
 
-// DeleteAPICREvent deletes API with the given UUID from the given gw environments
-func DeleteAPICREvent(labels []string, apiUUID string, organizationID string) error {
-	mutexForInternalMapUpdate.Lock()
-	defer mutexForInternalMapUpdate.Unlock()
-
-	prodvHostIdentifier := GetvHostsIdentifier(apiUUID, operatorconsts.Production)
-	sandvHostIdentifier := GetvHostsIdentifier(apiUUID, operatorconsts.Sandbox)
-	vHosts := append(orgIDAPIvHostsMap[organizationID][prodvHostIdentifier],
-		orgIDAPIvHostsMap[organizationID][sandvHostIdentifier]...)
-
-	delete(orgIDAPIvHostsMap[organizationID], prodvHostIdentifier)
-	delete(orgIDAPIvHostsMap[organizationID], sandvHostIdentifier)
-	for _, vhost := range vHosts {
-		apiIdentifier := GenerateIdentifierForAPIWithUUID(vhost, apiUUID)
-		if err := deleteAPI(apiIdentifier, labels, organizationID); err != nil {
-			logger.LoggerXds.ErrorC(logging.PrintError(logging.Error1410, logging.MAJOR, "Error undeploying API %v with UUID %v of Organization %v from environments %v, error: %v",
-				apiIdentifier, apiUUID, organizationID, labels, err.Error()))
-			return err
-		}
-		// if no error, update internal vhost maps
-		// error only happens when API not found in deleteAPI func
-		logger.LoggerXds.Infof("Successfully undeployed the API %v with UUID %v under Organization %s and environment %s",
-			apiIdentifier, apiUUID, organizationID, labels)
+// DeleteAPI deletes the api from the adapterInternalAPIHolderMap
+func DeleteAPIFromInternalMap(uuid string) {
+	mutexForAdapterInternalAPIHolderMap.Lock()
+	defer mutexForAdapterInternalAPIHolderMap.Unlock()
+	if _, ok := adapterInternalAPIHolderMap[uuid]; ok {
+		delete(adapterInternalAPIHolderMap, uuid)
 	}
-	return nil
 }
+
+// DeleteAPICREvent deletes API with the given UUID from the given gw environments
+// func DeleteAPICREvent(labels []string, apiUUID string, organizationID string) error {
+// 	mutexForInternalMapUpdate.Lock()
+// 	defer mutexForInternalMapUpdate.Unlock()
+
+// 	prodvHostIdentifier := GetvHostsIdentifier(apiUUID, operatorconsts.Production)
+// 	sandvHostIdentifier := GetvHostsIdentifier(apiUUID, operatorconsts.Sandbox)
+// 	vHosts := append(orgIDAPIvHostsMap[organizationID][prodvHostIdentifier],
+// 		orgIDAPIvHostsMap[organizationID][sandvHostIdentifier]...)
+
+// 	delete(orgIDAPIvHostsMap[organizationID], prodvHostIdentifier)
+// 	delete(orgIDAPIvHostsMap[organizationID], sandvHostIdentifier)
+// 	for _, vhost := range vHosts {
+// 		apiIdentifier := GenerateIdentifierForAPIWithUUID(vhost, apiUUID)
+// 		if err := deleteAPI(apiIdentifier, labels, organizationID); err != nil {
+// 			logger.LoggerXds.ErrorC(logging.PrintError(logging.Error1410, logging.MAJOR, "Error undeploying API %v with UUID %v of Organization %v from environments %v, error: %v",
+// 				apiIdentifier, apiUUID, organizationID, labels, err.Error()))
+// 			return err
+// 		}
+// 		// if no error, update internal vhost maps
+// 		// error only happens when API not found in deleteAPI func
+// 		logger.LoggerXds.Infof("Successfully undeployed the API %v with UUID %v under Organization %s and environment %s",
+// 			apiIdentifier, apiUUID, organizationID, labels)
+// 	}
+// 	return nil
+// }
 
 // deleteAPI deletes an API, its resources and updates the caches of given environments
-func deleteAPI(apiIdentifier string, environments []string, organizationID string) error {
-	apiUUID, _ := ExtractUUIDFromAPIIdentifier(apiIdentifier)
-	if _, orgExists := orgAPIMap[organizationID]; orgExists {
-		if _, apiExists := orgAPIMap[organizationID][apiIdentifier]; !apiExists {
-			logger.LoggerXds.Infof("Unable to delete API: %v from Organization: %v. API Does not exist. API_UUID: %v", apiIdentifier, organizationID, apiUUID)
-			return errors.New(constants.NotFound)
-		}
-	} else {
-		logger.LoggerXds.Infof("Unable to delete API: %v from Organization: %v. Organization Does not exist. API_UUID: %v", apiIdentifier, organizationID, apiUUID)
-		return errors.New(constants.NotFound)
-	}
+// func deleteAPI(apiIdentifier string, environments []string, organizationID string) error {
+// 	apiUUID, _ := ExtractUUIDFromAPIIdentifier(apiIdentifier)
+// 	if _, orgExists := orgAPIMap[organizationID]; orgExists {
+// 		if _, apiExists := orgAPIMap[organizationID][apiIdentifier]; !apiExists {
+// 			logger.LoggerXds.Infof("Unable to delete API: %v from Organization: %v. API Does not exist. API_UUID: %v", apiIdentifier, organizationID, apiUUID)
+// 			return errors.New(constants.NotFound)
+// 		}
+// 	} else {
+// 		logger.LoggerXds.Infof("Unable to delete API: %v from Organization: %v. Organization Does not exist. API_UUID: %v", apiIdentifier, organizationID, apiUUID)
+// 		return errors.New(constants.NotFound)
+// 	}
 
-	existingLabels := orgAPIMap[organizationID][apiIdentifier].envoyLabels
-	toBeDelEnvs, toBeKeptEnvs := getEnvironmentsToBeDeleted(existingLabels, environments)
+// 	existingLabels := orgAPIMap[organizationID][apiIdentifier].envoyLabels
+// 	toBeDelEnvs, toBeKeptEnvs := getEnvironmentsToBeDeleted(existingLabels, environments)
 
-	var isAllowedToDelete bool
-	updatedLabelsMap := make(map[string]struct{})
-	for _, val := range toBeDelEnvs {
-		updatedLabelsMap[val] = struct{}{}
-		if stringutils.StringInSlice(val, existingLabels) {
-			isAllowedToDelete = true
-		}
-	}
-	if isAllowedToDelete {
-		// do not delete from all environments, hence do not clear routes, clusters, endpoints, enforcerAPIs
-		orgAPIMap[organizationID][apiIdentifier].envoyLabels = toBeKeptEnvs
-		if len(toBeKeptEnvs) != 0 {
-			UpdateXdsCacheOnAPIChange(updatedLabelsMap)
-			return nil
-		}
-	}
+// 	var isAllowedToDelete bool
+// 	updatedLabelsMap := make(map[string]struct{})
+// 	for _, val := range toBeDelEnvs {
+// 		updatedLabelsMap[val] = struct{}{}
+// 		if stringutils.StringInSlice(val, existingLabels) {
+// 			isAllowedToDelete = true
+// 		}
+// 	}
+// 	if isAllowedToDelete {
+// 		// do not delete from all environments, hence do not clear routes, clusters, endpoints, enforcerAPIs
+// 		orgAPIMap[organizationID][apiIdentifier].envoyLabels = toBeKeptEnvs
+// 		if len(toBeKeptEnvs) != 0 {
+// 			UpdateXdsCacheOnAPIChange(updatedLabelsMap)
+// 			return nil
+// 		}
+// 	}
 
-	//clean maps of routes, clusters, endpoints, enforcerAPIs
-	if len(environments) == 0 || isAllowedToDelete {
-		cleanMapResources(apiIdentifier, organizationID, toBeDelEnvs)
-	}
-	UpdateXdsCacheOnAPIChange(updatedLabelsMap)
-	return nil
-}
+// 	//clean maps of routes, clusters, endpoints, enforcerAPIs
+// 	if len(environments) == 0 || isAllowedToDelete {
+// 		cleanMapResources(apiIdentifier, organizationID, toBeDelEnvs)
+// 	}
+// 	UpdateXdsCacheOnAPIChange(updatedLabelsMap)
+// 	return nil
+// }
 
-func cleanMapResources(apiIdentifier string, organizationID string, toBeDelEnvs []string) {
-	if _, orgExists := orgAPIMap[organizationID]; orgExists {
-		delete(orgAPIMap[organizationID], apiIdentifier)
-	}
+// func cleanMapResources(apiIdentifier string, organizationID string, toBeDelEnvs []string) {
+// 	if _, orgExists := orgAPIMap[organizationID]; orgExists {
+// 		delete(orgAPIMap[organizationID], apiIdentifier)
+// 	}
 
-	deleteBasepathForVHost(organizationID, apiIdentifier)
-	//TODO: (SuKSW) clean any remaining in label wise maps, if this is the last API of that label
-	logger.LoggerXds.Infof("Deleted API %v of organization %v", apiIdentifier, organizationID)
-}
+// 	deleteBasepathForVHost(organizationID, apiIdentifier)
+// 	//TODO: (SuKSW) clean any remaining in label wise maps, if this is the last API of that label
+// 	logger.LoggerXds.Infof("Deleted API %v of organization %v", apiIdentifier, organizationID)
+// }
 
-func deleteBasepathForVHost(organizationID, apiIdentifier string) {
-	// Remove the basepath from map (that is used to avoid duplicate basepaths)
-	if _, orgExists := orgAPIMap[organizationID]; orgExists {
-		if oldOrgAPIAPI, ok := orgAPIMap[organizationID][apiIdentifier]; ok {
-			s := strings.Split(apiIdentifier, apiKeyFieldSeparator)
-			vHost := s[0]
-			oldBasepath := oldOrgAPIAPI.adapterInternalAPI.GetXWso2Basepath()
-			delete(orgIDvHostBasepathMap[organizationID], vHost+":"+oldBasepath)
-		}
-	}
-}
+// func deleteBasepathForVHost(organizationID, apiIdentifier string) {
+// 	// Remove the basepath from map (that is used to avoid duplicate basepaths)
+// 	if _, orgExists := orgAPIMap[organizationID]; orgExists {
+// 		if oldOrgAPIAPI, ok := orgAPIMap[organizationID][apiIdentifier]; ok {
+// 			s := strings.Split(apiIdentifier, apiKeyFieldSeparator)
+// 			vHost := s[0]
+// 			oldBasepath := oldOrgAPIAPI.adapterInternalAPI.GetXWso2Basepath()
+// 			delete(orgIDvHostBasepathMap[organizationID], vHost+":"+oldBasepath)
+// 		}
+// 	}
+// }
 
 // UpdateXdsCacheOnAPIChange when this method is called, openAPIEnvoy map is updated.
 // Old labels refers to the previously assigned labels
 // New labels refers to the the updated labels
-func UpdateXdsCacheOnAPIChange(labels map[string]struct{}) bool {
+func UpdateXdsCache(labels map[string]struct{}) bool {
 	revisionStatus := false
 	// TODO: (VirajSalaka) check possible optimizations, Since the number of labels are low by design it should not be an issue
 	for newLabel := range labels {
-		listeners, clusters, routes, endpoints, apis := GenerateEnvoyResoucesForGateway(newLabel)
+		listeners, clusters, routes, endpoints, apis := generateEnvoyResoucesForGateway(newLabel)
 		UpdateEnforcerApis(newLabel, apis, "")
 		success := UpdateXdsCacheWithLock(newLabel, endpoints, clusters, routes, listeners)
 		logger.LoggerXds.Debugf("Xds Cache is updated for the label : %v", newLabel)
@@ -330,47 +349,79 @@ func SetReady() {
 	isReady = true
 }
 
-// GenerateEnvoyResoucesForGateway generates envoy resources for a given gateway
+// generateEnvoyResoucesForGateway generates envoy resources for a given gateway
 // This method will list out all APIs mapped to the label. and generate envoy resources for all of these APIs.
-func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
+func generateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 	[]types.Resource, []types.Resource, []types.Resource, []types.Resource) {
 	var clusterArray []*clusterv3.Cluster
 	var vhostToRouteArrayMap = make(map[string][]*routev3.Route)
 	var endpointArray []*corev3.Address
 	var apis []types.Resource
 
-	for organizationID, entityMap := range orgAPIMap {
-		for apiKey, envoyInternalAPI := range entityMap {
-			if stringutils.StringInSlice(gatewayName, envoyInternalAPI.envoyLabels) {
-				vhost, err := ExtractVhostFromAPIIdentifier(apiKey)
-				if err != nil {
-					logger.LoggerXds.ErrorC(logging.PrintError(logging.Error1411, logging.MAJOR, "Error extracting vhost from API identifier: %v for Organization %v. Ignore deploying the API, error: %v", apiKey, organizationID, err))
-					continue
-				}
-				isDefaultVersion := false
-				var orgAPI *EnvoyInternalAPI
-				// If the adapterInternalAPI is not found, proceed with other APIs. (Unreachable condition at this point)
-				// If that happens, there is no purpose in processing clusters too.
-				if org, ok := orgAPIMap[organizationID]; !ok {
-					continue
-				} else if orgAPI, ok = org[apiKey]; !ok {
-					continue
-				}
-				isDefaultVersion = orgAPI.adapterInternalAPI.IsDefaultVersion
-				// If it is a default versioned API, the routes are added to the end of the existing array.
-				// Otherwise the routes would be added to the front.
-				// /fooContext/2.0.0/* resource path should be matched prior to the /fooContext/* .
-				if isDefaultVersion {
-					vhostToRouteArrayMap[vhost] = append(vhostToRouteArrayMap[vhost], orgAPI.routes...)
-				} else {
-					vhostToRouteArrayMap[vhost] = append(orgAPI.routes, vhostToRouteArrayMap[vhost]...)
-				}
-				clusterArray = append(clusterArray, orgAPI.clusters...)
-				endpointArray = append(endpointArray, orgAPI.endpointAddresses...)
-				apis = append(apis, orgAPI.enforcerAPI)
+	// for organizationID, entityMap := range orgAPIMap {
+	// 	for apiKey, envoyInternalAPI := range entityMap {
+	// 		if stringutils.StringInSlice(gatewayName, envoyInternalAPI.envoyLabels) {
+	// 			vhost, err := ExtractVhostFromAPIIdentifier(apiKey)
+	// 			if err != nil {
+	// 				logger.LoggerXds.ErrorC(logging.PrintError(logging.Error1411, logging.MAJOR, "Error extracting vhost from API identifier: %v for Organization %v. Ignore deploying the API, error: %v", apiKey, organizationID, err))
+	// 				continue
+	// 			}
+	// 			isDefaultVersion := false
+	// 			var orgAPI *EnvoyInternalAPI
+	// 			// If the adapterInternalAPI is not found, proceed with other APIs. (Unreachable condition at this point)
+	// 			// If that happens, there is no purpose in processing clusters too.
+	// 			if org, ok := orgAPIMap[organizationID]; !ok {
+	// 				continue
+	// 			} else if orgAPI, ok = org[apiKey]; !ok {
+	// 				continue
+	// 			}
+	// 			isDefaultVersion = orgAPI.adapterInternalAPI.IsDefaultVersion
+	// 			// If it is a default versioned API, the routes are added to the end of the existing array.
+	// 			// Otherwise the routes would be added to the front.
+	// 			// /fooContext/2.0.0/* resource path should be matched prior to the /fooContext/* .
+	// 			if isDefaultVersion {
+	// 				vhostToRouteArrayMap[vhost] = append(vhostToRouteArrayMap[vhost], orgAPI.routes...)
+	// 			} else {
+	// 				vhostToRouteArrayMap[vhost] = append(orgAPI.routes, vhostToRouteArrayMap[vhost]...)
+	// 			}
+	// 			clusterArray = append(clusterArray, orgAPI.clusters...)
+	// 			endpointArray = append(endpointArray, orgAPI.endpointAddresses...)
+	// 			apis = append(apis, orgAPI.enforcerAPI)
+	// 		}
+	// 	}
+	// }
+
+	// Loop through adapterInternalAPIHolderMap and create routes, cluster and endpoints
+	mutexForAdapterInternalAPIHolderMap.Lock()
+	for _, adapterInternalAPIHolder := range adapterInternalAPIHolderMap {
+		adapterInternalAPI := adapterInternalAPIHolder.adapterInternalAPI
+		for _, vhost := range adapterInternalAPIHolder.vHosts {
+			routes, clusters, endpoints, err := oasParser.GetRoutesClustersEndpoints(*adapterInternalAPIHolder.adapterInternalAPI, nil,
+				vhost, adapterInternalAPI.OrganizationID)
+			isDefaultVersion := adapterInternalAPI.IsDefaultVersion
+			if err != nil {
+				logger.LoggerXds.Errorf("error while programming API. Name: %s Version: %s, OrgID: %s, API_UUID: %v, Error: %s",
+					adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), adapterInternalAPI.GetOrganizationID(),
+					adapterInternalAPI.UUID, err.Error())
+				continue
 			}
+			// If it is a default versioned API, the routes are added to the end of the existing array.
+			// Otherwise the routes would be added to the front.
+			// /fooContext/2.0.0/* resource path should be matched prior to the /fooContext/* .
+			if _, ok := vhostToRouteArrayMap[vhost]; !ok {
+				vhostToRouteArrayMap[vhost] = []*routev3.Route{}
+			}
+			if isDefaultVersion {
+				vhostToRouteArrayMap[vhost] = append(vhostToRouteArrayMap[vhost], routes...)
+			} else {
+				vhostToRouteArrayMap[vhost] = append(routes, vhostToRouteArrayMap[vhost]...)
+			}
+			clusterArray = append(clusterArray, clusters...)
+			endpointArray = append(endpointArray, endpoints...)
+			apis = append(apis, oasParser.GetEnforcerAPI(*adapterInternalAPI, vhost))
 		}
 	}
+	mutexForAdapterInternalAPIHolderMap.Unlock()
 
 	// If the token endpoint is enabled, the token endpoint also needs to be added.
 	conf := config.ReadConfigs()
@@ -640,109 +691,135 @@ func ExtractUUIDFromAPIIdentifier(id string) (string, error) {
 }
 
 // RemoveAPICacheForEnv will remove all the internal mappings for a specific environment
-func RemoveAPICacheForEnv(adapterInternalAPI model.AdapterInternalAPI, envType string) {
-	vHostIdentifier := GetvHostsIdentifier(adapterInternalAPI.UUID, envType)
-	var oldvHosts []string
-	if _, ok := orgIDAPIvHostsMap[adapterInternalAPI.OrganizationID]; ok {
-		oldvHosts = orgIDAPIvHostsMap[adapterInternalAPI.GetOrganizationID()][vHostIdentifier]
-		for _, oldvhost := range oldvHosts {
-			apiIdentifier := GenerateIdentifierForAPIWithUUID(oldvhost, adapterInternalAPI.UUID)
-			if orgMap, orgExists := orgAPIMap[adapterInternalAPI.GetOrganizationID()]; orgExists {
-				if _, apiExists := orgMap[apiIdentifier]; apiExists {
-					delete(orgAPIMap[adapterInternalAPI.GetOrganizationID()], apiIdentifier)
-				}
-			}
-		}
-	}
-}
+// func RemoveAPICacheForEnv(adapterInternalAPI model.AdapterInternalAPI, envType string) {
+// 	vHostIdentifier := GetvHostsIdentifier(adapterInternalAPI.UUID, envType)
+// 	var oldvHosts []string
+// 	if _, ok := orgIDAPIvHostsMap[adapterInternalAPI.OrganizationID]; ok {
+// 		oldvHosts = orgIDAPIvHostsMap[adapterInternalAPI.GetOrganizationID()][vHostIdentifier]
+// 		for _, oldvhost := range oldvHosts {
+// 			apiIdentifier := GenerateIdentifierForAPIWithUUID(oldvhost, adapterInternalAPI.UUID)
+// 			if orgMap, orgExists := orgAPIMap[adapterInternalAPI.GetOrganizationID()]; orgExists {
+// 				if _, apiExists := orgMap[apiIdentifier]; apiExists {
+// 					delete(orgAPIMap[adapterInternalAPI.GetOrganizationID()], apiIdentifier)
+// 				}
+// 			}
+// 		}
+// 	}
+// }
 
 // RemoveAPIFromOrgAPIMap removes api from orgAPI map
-func RemoveAPIFromOrgAPIMap(uuid string, orgID string) {
-	if orgMap, ok := orgAPIMap[orgID]; ok {
-		for apiName := range orgMap {
-			if strings.Contains(apiName, uuid) {
-				delete(orgMap, apiName)
-			}
-		}
-		if len(orgMap) == 0 {
-			delete(orgAPIMap, orgID)
-		}
+// func RemoveAPIFromOrgAPIMap(uuid string, orgID string) {
+// 	if orgMap, ok := orgAPIMap[orgID]; ok {
+// 		for apiName := range orgMap {
+// 			if strings.Contains(apiName, uuid) {
+// 				delete(orgMap, apiName)
+// 			}
+// 		}
+// 		if len(orgMap) == 0 {
+// 			delete(orgAPIMap, orgID)
+// 		}
+// 	}
+// }
+
+func UpdateAdapterInternalAPIs(vHosts []string, newLabels []string, listener string, sectionName string,
+	adapterInternalAPI model.AdapterInternalAPI) (map[string]struct{}, error) {
+	mutexForAdapterInternalAPIHolderMap.Lock()
+	defer mutexForAdapterInternalAPIHolderMap.Unlock()
+	updatedLabelsMap := make(map[string]struct{}, 0)
+	for _, label := range newLabels {
+		updatedLabelsMap[label] = struct{}{}
 	}
+	var updatedAdapterInternalAPIHolder *AdapterInternalAPIHolder
+	if adapterInternalAPIHolder, adapterInternalAPIHolderExists := adapterInternalAPIHolderMap[adapterInternalAPI.UUID]; adapterInternalAPIHolderExists {
+		for _, label := range adapterInternalAPIHolder.labels {
+			updatedLabelsMap[label] = struct{}{}
+		}
+		updatedAdapterInternalAPIHolder = adapterInternalAPIHolder
+	} else {
+		updatedAdapterInternalAPIHolder = &AdapterInternalAPIHolder{}
+		adapterInternalAPIHolderMap[adapterInternalAPI.UUID] = updatedAdapterInternalAPIHolder
+	}
+	updatedAdapterInternalAPIHolder.adapterInternalAPI = &adapterInternalAPI
+	updatedAdapterInternalAPIHolder.labels = newLabels
+	updatedAdapterInternalAPIHolder.listener = listener
+	updatedAdapterInternalAPIHolder.sectionName = sectionName
+	updatedAdapterInternalAPIHolder.vHosts = vHosts
+	return updatedLabelsMap, nil
 }
 
 // UpdateAPICache updates the xDS cache related to the API Lifecycle event.
-func UpdateAPICache(vHosts []string, newLabels []string, listener string, sectionName string,
-	adapterInternalAPI model.AdapterInternalAPI) (map[string]struct{}, error) {
-	mutexForInternalMapUpdate.Lock()
-	defer mutexForInternalMapUpdate.Unlock()
+// func UpdateAPICache(vHosts []string, newLabels []string, listener string, sectionName string,
+// 	adapterInternalAPI model.AdapterInternalAPI) (map[string]struct{}, error) {
+// 	mutexForInternalMapUpdate.Lock()
+// 	defer mutexForInternalMapUpdate.Unlock()
 
-	vHostIdentifier := GetvHostsIdentifier(adapterInternalAPI.UUID, adapterInternalAPI.EnvType)
-	var oldvHosts []string
-	if _, ok := orgIDAPIvHostsMap[adapterInternalAPI.OrganizationID]; ok {
-		oldvHosts = orgIDAPIvHostsMap[adapterInternalAPI.GetOrganizationID()][vHostIdentifier]
-		orgIDAPIvHostsMap[adapterInternalAPI.GetOrganizationID()][vHostIdentifier] = vHosts
-	} else {
-		vHostsMap := make(map[string][]string)
-		vHostsMap[vHostIdentifier] = vHosts
-		orgIDAPIvHostsMap[adapterInternalAPI.GetOrganizationID()] = vHostsMap
-	}
+// 	vHostIdentifier := GetvHostsIdentifier(adapterInternalAPI.UUID, adapterInternalAPI.EnvType)
+// 	var oldvHosts []string
+// 	if _, ok := orgIDAPIvHostsMap[adapterInternalAPI.OrganizationID]; ok {
+// 		oldvHosts = orgIDAPIvHostsMap[adapterInternalAPI.GetOrganizationID()][vHostIdentifier]
+// 		orgIDAPIvHostsMap[adapterInternalAPI.GetOrganizationID()][vHostIdentifier] = vHosts
+// 	} else {
+// 		vHostsMap := make(map[string][]string)
+// 		vHostsMap[vHostIdentifier] = vHosts
+// 		orgIDAPIvHostsMap[adapterInternalAPI.GetOrganizationID()] = vHostsMap
+// 	}
 
-	updatedLabelsMap := make(map[string]struct{}, 0)
+// 	updatedLabelsMap := make(map[string]struct{}, 0)
 
-	// Remove internal mappigs for old vHosts
-	for _, oldvhost := range oldvHosts {
-		apiIdentifier := GenerateIdentifierForAPIWithUUID(oldvhost, adapterInternalAPI.UUID)
-		if orgMap, orgExists := orgAPIMap[adapterInternalAPI.GetOrganizationID()]; orgExists {
-			if _, apiExists := orgMap[apiIdentifier]; apiExists {
-				for _, oldLabel := range orgMap[apiIdentifier].envoyLabels {
-					updatedLabelsMap[oldLabel] = struct{}{}
-				}
-				delete(orgAPIMap[adapterInternalAPI.GetOrganizationID()], apiIdentifier)
-			}
-		}
-	}
+// 	// Remove internal mappigs for old vHosts
+// 	for _, oldvhost := range oldvHosts {
+// 		apiIdentifier := GenerateIdentifierForAPIWithUUID(oldvhost, adapterInternalAPI.UUID)
+// 		if orgMap, orgExists := orgAPIMap[adapterInternalAPI.GetOrganizationID()]; orgExists {
+// 			if _, apiExists := orgMap[apiIdentifier]; apiExists {
+// 				for _, oldLabel := range orgMap[apiIdentifier].envoyLabels {
+// 					updatedLabelsMap[oldLabel] = struct{}{}
+// 				}
+// 				delete(orgAPIMap[adapterInternalAPI.GetOrganizationID()], apiIdentifier)
+// 			}
+// 		}
+// 	}
 
-	// Create internal mappings for new vHosts
-	for _, vHost := range vHosts {
-		logger.LoggerAPKOperator.Debugf("Creating internal mapping for vhost: %s", vHost)
-		apiUUID := adapterInternalAPI.UUID
-		apiIdentifier := GenerateIdentifierForAPIWithUUID(vHost, apiUUID)
-		var orgExists bool
+// 	// Create internal mappings for new vHosts
+// 	for _, vHost := range vHosts {
+// 		logger.LoggerAPKOperator.Debugf("Creating internal mapping for vhost: %s", vHost)
+// 		apiUUID := adapterInternalAPI.UUID
+// 		apiIdentifier := GenerateIdentifierForAPIWithUUID(vHost, apiUUID)
+// 		var orgExists bool
 
-		// get changing label set
-		if _, orgExists = orgAPIMap[adapterInternalAPI.GetOrganizationID()]; orgExists {
-			if _, apiExists := orgAPIMap[adapterInternalAPI.GetOrganizationID()][apiIdentifier]; apiExists {
-				for _, oldLabel := range orgAPIMap[adapterInternalAPI.GetOrganizationID()][apiIdentifier].envoyLabels {
-					updatedLabelsMap[oldLabel] = struct{}{}
-				}
-			}
-		}
-		for _, newLabel := range newLabels {
-			updatedLabelsMap[newLabel] = struct{}{}
-		}
+// 		// get changing label set
+// 		if _, orgExists = orgAPIMap[adapterInternalAPI.GetOrganizationID()]; orgExists {
+// 			if _, apiExists := orgAPIMap[adapterInternalAPI.GetOrganizationID()][apiIdentifier]; apiExists {
+// 				for _, oldLabel := range orgAPIMap[adapterInternalAPI.GetOrganizationID()][apiIdentifier].envoyLabels {
+// 					updatedLabelsMap[oldLabel] = struct{}{}
+// 				}
+// 			}
+// 		}
+// 		for _, newLabel := range newLabels {
+// 			updatedLabelsMap[newLabel] = struct{}{}
+// 		}
 
-		routes, clusters, endpoints, err := oasParser.GetRoutesClustersEndpoints(&adapterInternalAPI, nil,
-			vHost, adapterInternalAPI.GetOrganizationID())
+// 		routes, clusters, endpoints, err := oasParser.GetRoutesClustersEndpoints(adapterInternalAPI, nil,
+// 			vHost, adapterInternalAPI.GetOrganizationID())
 
-		if err != nil {
-			return nil, fmt.Errorf("error while deploying API. Name: %s Version: %s, OrgID: %s, API_UUID: %v, Error: %s",
-				adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), adapterInternalAPI.GetOrganizationID(),
-				apiUUID, err.Error())
-		}
-		if !orgExists {
-			orgAPIMap[adapterInternalAPI.GetOrganizationID()] = make(map[string]*EnvoyInternalAPI)
-		}
-		orgAPIMap[adapterInternalAPI.GetOrganizationID()][apiIdentifier] = &EnvoyInternalAPI{
-			adapterInternalAPI: adapterInternalAPI,
-			envoyLabels:        newLabels,
-			routes:             routes,
-			clusters:           clusters,
-			endpointAddresses:  endpoints,
-			enforcerAPI:        oasParser.GetEnforcerAPI(adapterInternalAPI, vHost),
-		}
-	}
-	return updatedLabelsMap, nil
-}
+// 		if err != nil {
+// 			return nil, fmt.Errorf("error while deploying API. Name: %s Version: %s, OrgID: %s, API_UUID: %v, Error: %s",
+// 				adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), adapterInternalAPI.GetOrganizationID(),
+// 				apiUUID, err.Error())
+// 		}
+// 		if !orgExists {
+// 			orgAPIMap[adapterInternalAPI.GetOrganizationID()] = make(map[string]*EnvoyInternalAPI)
+// 		}
+// 		orgAPIMap[adapterInternalAPI.GetOrganizationID()][apiIdentifier] = &EnvoyInternalAPI{
+// 			adapterInternalAPI: adapterInternalAPI,
+// 			envoyLabels:        newLabels,
+// 			routes:             routes,
+// 			clusters:           clusters,
+// 			endpointAddresses:  endpoints,
+// 			enforcerAPI:        oasParser.GetEnforcerAPI(adapterInternalAPI, vHost),
+// 		}
+// 	}
+// 	return updatedLabelsMap, nil
+// }
 
 // UpdateGatewayCache updates the xDS cache related to the Gateway Lifecycle event.
 func UpdateGatewayCache(gateway *gwapiv1b1.Gateway, resolvedListenerCerts map[string]map[string][]byte,

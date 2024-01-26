@@ -79,7 +79,7 @@ func generateGQLAdapterInternalAPI(apiState APIState, gqlRoute *GQLRouteState, e
 	listenerName := listeners[0]
 	sectionName := relativeSectionNames[0]
 	if len(listeners) != 0 {
-		updatedLabels, err := xds.UpdateAPICache(vHosts, labels, listenerName, sectionName, adapterInternalAPI)
+		updatedLabels, err := xds.UpdateAdapterInternalAPIs(vHosts, labels, listenerName, sectionName, adapterInternalAPI)
 		if err != nil {
 			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2633, logging.MAJOR, "Error updating the API : %s:%s in vhosts: %s, API_UUID: %v. %v",
 				adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), vHosts, adapterInternalAPI.UUID, err))
@@ -149,26 +149,33 @@ func getListenersForGQLAPI(gqlRoute *v1alpha2.GQLRoute, apiUUID string) ([]strin
 	return listeners, sectionNames
 }
 
-func deleteGQLAPIFromEnv(gqlRoute *v1alpha2.GQLRoute, apiState APIState) error {
-	labels := getLabelsForGQLAPI(gqlRoute)
-	org := apiState.APIDefinition.Spec.Organization
-	uuid := string(apiState.APIDefinition.ObjectMeta.UID)
-	return xds.DeleteAPICREvent(labels, uuid, org)
-}
+// func deleteGQLAPIFromEnv(gqlRoute *v1alpha2.GQLRoute, apiState APIState) error {
+// 	labels := getLabelsForGQLAPI(gqlRoute)
+// 	// org := apiState.APIDefinition.Spec.Organization
+// 	uuid := string(apiState.APIDefinition.ObjectMeta.UID)
+// 	return xds.DeleteAPI( uuid)
+// }
 
 // undeployGQLAPIInGateway undeploys the related API in CREATE and UPDATE events.
 func undeployGQLAPIInGateway(apiState APIState) error {
 	var err error
+	xds.DeleteAPIFromInternalMap(string(apiState.APIDefinition.ObjectMeta.UID))
+	labels := []string{}
 	if apiState.ProdGQLRoute != nil {
-		err = deleteGQLAPIFromEnv(apiState.ProdGQLRoute.GQLRouteCombined, apiState)
+		labels = append(labels, getLabelsForGQLAPI(apiState.ProdGQLRoute.GQLRouteCombined)...)
 	}
-	if err != nil {
-		loggers.LoggerXds.ErrorC(logging.PrintError(logging.Error2630, logging.MAJOR, "Error undeploying prod gqlRoute of API : %v in Organization %v from environments."+
-			" Hence not checking on deleting the sand gqlRoute of the API", string(apiState.APIDefinition.ObjectMeta.UID), apiState.APIDefinition.Spec.Organization))
-		return err
-	}
+	// if err != nil {
+	// 	loggers.LoggerXds.ErrorC(logging.PrintError(logging.Error2630, logging.MAJOR, "Error undeploying prod gqlRoute of API : %v in Organization %v from environments."+
+	// 		" Hence not checking on deleting the sand gqlRoute of the API", string(apiState.APIDefinition.ObjectMeta.UID), apiState.APIDefinition.Spec.Organization))
+	// 	return err
+	// }
 	if apiState.SandGQLRoute != nil {
-		err = deleteGQLAPIFromEnv(apiState.SandGQLRoute.GQLRouteCombined, apiState)
+		labels = append(labels, getLabelsForGQLAPI(apiState.SandGQLRoute.GQLRouteCombined)...)
 	}
+	labelSet := make(map[string]struct{})
+	for _, label := range labels {
+		labelSet[label] = struct{}{}
+	}
+	xds.UpdateXdsCache(labelSet)
 	return err
 }
