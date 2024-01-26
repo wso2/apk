@@ -133,9 +133,9 @@ func deployMultipleAPIsInGateway(event *APIEvent, successChannel *chan SuccessEv
 	var updatedAPIs []types.NamespacedName
 	for i, apiState := range event.Events {
 		loggers.LoggerAPKOperator.Infof("%s event received for %s", event.EventType, apiState.APIDefinition.Name)
-		if len(apiState.OldOrganizationID) != 0 {
-			// xds.RemoveAPIFromOrgAPIMap(string((*apiState.APIDefinition).ObjectMeta.UID), apiState.OldOrganizationID)
-		}
+		// if len(apiState.OldOrganizationID) != 0 {
+		// 	// xds.RemoveAPIFromOrgAPIMap(string((*apiState.APIDefinition).ObjectMeta.UID), apiState.OldOrganizationID)
+		// }
 		if apiState.APIDefinition.Spec.APIType == "REST" {
 			if apiState.ProdHTTPRoute == nil {
 				var adapterInternalAPI model.AdapterInternalAPI

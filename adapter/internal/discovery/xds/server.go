@@ -83,6 +83,7 @@ type EnforcerInternalAPI struct {
 	jwtIssuers []types.Resource
 }
 
+// AdapterInternalAPIHolder struct is used to hold adapterInternalAPI representation
 type AdapterInternalAPIHolder struct {
 	vHosts []string
 	labels []string
@@ -223,7 +224,7 @@ func GetEnforcerThrottleDataCache() wso2_cache.SnapshotCache {
 	return enforcerThrottleDataCache
 }
 
-// DeleteAPI deletes the api from the adapterInternalAPIHolderMap
+// DeleteAPIFromInternalMap deletes the api from the adapterInternalAPIHolderMap
 func DeleteAPIFromInternalMap(uuid string) {
 	mutexForAdapterInternalAPIHolderMap.Lock()
 	defer mutexForAdapterInternalAPIHolderMap.Unlock()
@@ -322,7 +323,7 @@ func DeleteAPIFromInternalMap(uuid string) {
 // 	}
 // }
 
-// UpdateXdsCacheOnAPIChange when this method is called, openAPIEnvoy map is updated.
+// UpdateXdsCache when this method is called, openAPIEnvoy map is updated.
 // Old labels refers to the previously assigned labels
 // New labels refers to the the updated labels
 func UpdateXdsCache(labels map[string]struct{}) bool {
@@ -721,6 +722,7 @@ func ExtractUUIDFromAPIIdentifier(id string) (string, error) {
 // 	}
 // }
 
+// UpdateAdapterInternalAPIs stores the adapterInternalAPI in a map with additional information 
 func UpdateAdapterInternalAPIs(vHosts []string, newLabels []string, listener string, sectionName string,
 	adapterInternalAPI model.AdapterInternalAPI) (map[string]struct{}, error) {
 	mutexForAdapterInternalAPIHolderMap.Lock()
