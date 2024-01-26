@@ -333,6 +333,7 @@ func UpdateXdsCache(labels map[string]struct{}) {
 
 	for newLabel := range labels {
 		listeners, clusters, routes, endpoints, apis := generateEnvoyResoucesForGateway(newLabel)
+		logger.LoggerXds.Infof("Listener size %+v", listeners)
 		UpdateEnforcerApis(newLabel, apis, "")
 		UpdateXdsCacheWithLock(newLabel, endpoints, clusters, routes, listeners)
 		// logger.LoggerXds.Debugf("Xds Cache is updated for the label : %v", newLabel)
@@ -395,6 +396,7 @@ func generateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 
 	// Loop through adapterInternalAPIHolderMap and create routes, cluster and endpoints
 	mutexForAdapterInternalAPIHolderMap.Lock()
+	logger.LoggerXds.Infof("apiholdermap size : %+v", len(adapterInternalAPIHolderMap))
 	for _, adapterInternalAPIHolder := range adapterInternalAPIHolderMap {
 		adapterInternalAPI := adapterInternalAPIHolder.adapterInternalAPI
 		for _, vhost := range adapterInternalAPIHolder.vHosts {
@@ -747,6 +749,7 @@ func UpdateAdapterInternalAPIs(vHosts []string, newLabels []string, listener str
 	updatedAdapterInternalAPIHolder.listener = listener
 	updatedAdapterInternalAPIHolder.sectionName = sectionName
 	updatedAdapterInternalAPIHolder.vHosts = vHosts
+	logger.LoggerXds.Infof("apiholdermap size : %+v last included is %+v", len(adapterInternalAPIHolderMap), adapterInternalAPI.UUID)
 	return updatedLabelsMap, nil
 }
 
