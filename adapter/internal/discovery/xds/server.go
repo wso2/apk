@@ -124,7 +124,6 @@ var (
 	KeyManagerList = make([]eventhubTypes.KeyManager, 0)
 	isReady        = false
 
-	xdsUpdateEvents = make(chan map[string]struct{})
 )
 
 const (
@@ -330,38 +329,19 @@ func DeleteAPIFromInternalMap(uuid string) {
 // New labels refers to the the updated labels
 func UpdateXdsCache(labels map[string]struct{}) {
 	logger.LoggerXds.Infof("Update xds cache called %+v", len(labels))
-	xdsUpdateEvents <- labels
+	// xdsUpdateEvents <- labels
 
-	go func() {
-		for {
-			length := len(xdsUpdateEvents);
-			logger.LoggerXds.Infof("Inside go routine Update xds cache called %+v", length)
-
-			labelSet := make(map[string]struct{})
-			for i := 0; i < length; i++ {
-				select {
-					case event, ok := <-xdsUpdateEvents:
-					if !ok {
-						for label := range event {
-							labelSet[label] = struct{}{}
-						}
-					}
-				}
-			}
-			// TODO: (VirajSalaka) check possible optimizations, Since the number of labels are low by design it should not be an issue
-			for newLabel := range labelSet {
-				listeners, clusters, routes, endpoints, apis := generateEnvoyResoucesForGateway(newLabel)
-				UpdateEnforcerApis(newLabel, apis, "")
-				UpdateXdsCacheWithLock(newLabel, endpoints, clusters, routes, listeners)
-				// logger.LoggerXds.Debugf("Xds Cache is updated for the label : %v", newLabel)
-				// if success {
-				// 	// if even one label was updated with latest revision, we take the revision as deployed.
-				// 	// (other labels also will get updated successfully)
-				// 	continue
-				// }
-			}
-		}
-	}()
+	for newLabel := range labels {
+		listeners, clusters, routes, endpoints, apis := generateEnvoyResoucesForGateway(newLabel)
+		UpdateEnforcerApis(newLabel, apis, "")
+		UpdateXdsCacheWithLock(newLabel, endpoints, clusters, routes, listeners)
+		// logger.LoggerXds.Debugf("Xds Cache is updated for the label : %v", newLabel)
+		// if success {
+		// 	// if even one label was updated with latest revision, we take the revision as deployed.
+		// 	// (other labels also will get updated successfully)
+		// 	continue
+		// }
+	}
 	
 }
 
