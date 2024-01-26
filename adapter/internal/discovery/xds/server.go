@@ -396,7 +396,7 @@ func generateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 	for _, adapterInternalAPIHolder := range adapterInternalAPIHolderMap {
 		adapterInternalAPI := adapterInternalAPIHolder.adapterInternalAPI
 		for _, vhost := range adapterInternalAPIHolder.vHosts {
-			routes, clusters, endpoints, err := oasParser.GetRoutesClustersEndpoints(*adapterInternalAPIHolder.adapterInternalAPI, nil,
+			routes, clusters, endpoints, err := oasParser.GetRoutesClustersEndpoints(adapterInternalAPIHolder.adapterInternalAPI, nil,
 				vhost, adapterInternalAPI.OrganizationID)
 			isDefaultVersion := adapterInternalAPI.IsDefaultVersion
 			if err != nil {
