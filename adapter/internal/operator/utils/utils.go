@@ -310,7 +310,7 @@ func ResolveAndAddBackendToMapping(ctx context.Context, client k8client.Client,
 // ResolveRef this function will return k8client object and update owner
 func ResolveRef(ctx context.Context, client k8client.Client, api *dpv1alpha2.API,
 	namespacedName types.NamespacedName, isReplace bool, obj k8client.Object, opts ...k8client.GetOption) error {
-	err := client.Get(ctx, namespacedName, obj, opts...); 
+	err := client.Get(ctx, namespacedName, obj, opts...)
 	return err
 }
 
@@ -361,13 +361,9 @@ func GetResolvedBackend(ctx context.Context, client k8client.Client,
 	var err error
 	if backend.Spec.TLS != nil {
 		resolvedTLSConfig.ResolvedCertificate, err = ResolveCertificate(ctx, client,
-			backend.Namespace, backend.Spec.TLS.CertificateInline, backend.Spec.TLS.ConfigMapRef, backend.Spec.TLS.SecretRef)
+			backend.Namespace, backend.Spec.TLS.CertificateInline, ConvertRefConfigsV1ToV2(backend.Spec.TLS.ConfigMapRef), ConvertRefConfigsV1ToV2(backend.Spec.TLS.SecretRef))
 		if err != nil {
 			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2654, logging.CRITICAL, "Error resolving certificate for Backend %v", err.Error()))
-			return nil
-		}
-		if resolvedTLSConfig.ResolvedCertificate == "" {
-			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2654, logging.CRITICAL, "Error resolving certificate for Backend. Resolved certificate is empty"))
 			return nil
 		}
 		resolvedTLSConfig.AllowedSANs = backend.Spec.TLS.AllowedSANs
@@ -456,16 +452,14 @@ func ResolveAllmTLSCertificates(ctx context.Context, mutualSSL *dpv1alpha2.Mutua
 			certificate, err = ResolveCertificate(ctx, client, namespace, cert, nil, nil)
 			resolvedCertificates = append(resolvedCertificates, certificate)
 		}
-	}
-	if mutualSSL.ConfigMapRefs != nil {
+	} else if mutualSSL.ConfigMapRefs != nil {
 		for _, cert := range mutualSSL.ConfigMapRefs {
-			certificate, err = ResolveCertificate(ctx, client, namespace, nil, ConvertRefConfigsV2ToV1(cert), nil)
+			certificate, err = ResolveCertificate(ctx, client, namespace, nil, cert, nil)
 			resolvedCertificates = append(resolvedCertificates, certificate)
 		}
-	}
-	if mutualSSL.SecretRefs != nil {
+	} else if mutualSSL.SecretRefs != nil {
 		for _, cert := range mutualSSL.SecretRefs {
-			certificate, err = ResolveCertificate(ctx, client, namespace, nil, nil, ConvertRefConfigsV2ToV1(cert))
+			certificate, err = ResolveCertificate(ctx, client, namespace, nil, nil, cert)
 			resolvedCertificates = append(resolvedCertificates, certificate)
 		}
 	}
@@ -475,7 +469,7 @@ func ResolveAllmTLSCertificates(ctx context.Context, mutualSSL *dpv1alpha2.Mutua
 // ResolveCertificate reads the certificate from TLSConfig, first checks the certificateInline field,
 // if no value then load the certificate from secretRef using util function called getSecretValue
 func ResolveCertificate(ctx context.Context, client k8client.Client, namespace string, certificateInline *string,
-	configMapRef *dpv1alpha1.RefConfig, secretRef *dpv1alpha1.RefConfig) (string, error) {
+	configMapRef *dpv1alpha2.RefConfig, secretRef *dpv1alpha2.RefConfig) (string, error) {
 	var certificate string
 	var err error
 	if certificateInline != nil && len(*certificateInline) > 0 {
@@ -485,27 +479,26 @@ func ResolveCertificate(ctx context.Context, client k8client.Client, namespace s
 			namespace, secretRef.Name, secretRef.Key); err != nil {
 			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2642, logging.CRITICAL,
 				"Error while reading certificate from secretRef %s: %s", secretRef, err.Error()))
+			return "", err
 		}
 	} else if configMapRef != nil {
 		if certificate, err = getConfigMapValue(ctx, client,
 			namespace, configMapRef.Name, configMapRef.Key); err != nil {
 			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2643, logging.CRITICAL,
 				"Error while reading certificate from configMapRef %s : %s", configMapRef, err.Error()))
+			return "", err
 		}
-	}
-	if err != nil {
-		return "", err
 	}
 	if len(certificate) > 0 {
 		block, _ := pem.Decode([]byte(certificate))
 		if block == nil {
 			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2627, logging.CRITICAL, "Failed to decode certificate PEM."))
-			return "", nil
+			return "", fmt.Errorf("failed to decode certificate PEM")
 		}
 		_, err = x509.ParseCertificate(block.Bytes)
 		if err != nil {
 			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2641, logging.CRITICAL, "Error while parsing certificate: %s", err.Error()))
-			return "", err
+			return "", fmt.Errorf("error while parsing certificate: %s", err.Error())
 		}
 	}
 	return certificate, nil
@@ -579,11 +572,13 @@ func RetrieveAPIList(k8sclient k8client.Client) ([]dpv1alpha2.API, error) {
 	return apis, nil
 }
 
-// ConvertRefConfigsV2ToV1 converts RefConfig v2 to v1
-func ConvertRefConfigsV2ToV1(refConfig *dpv1alpha2.RefConfig) *dpv1alpha1.RefConfig {
-
-	return &dpv1alpha1.RefConfig{
-		Name: refConfig.Name,
-		Key:  refConfig.Key,
+// ConvertRefConfigsV1ToV2 converts RefConfig v2 to v1
+func ConvertRefConfigsV1ToV2(refConfig *dpv1alpha1.RefConfig) *dpv1alpha2.RefConfig {
+	if refConfig != nil {
+		return &dpv1alpha2.RefConfig{
+			Name: refConfig.Name,
+			Key:  refConfig.Key,
+		}
 	}
+	return nil
 }
