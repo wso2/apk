@@ -95,11 +95,11 @@ wso2:
         deployment:
           resources:
             requests:
-              memory: "64Mi"
-              cpu: "50m"
+              memory: "750Mi"
+              cpu: "550m"
             limits:
-              memory: "128Mi"
-              cpu: "200m"
+              memory: "750Mi"
+              cpu: "550m"
           readinessProbe:
             initialDelaySeconds: 20
             periodSeconds: 20
@@ -110,8 +110,8 @@ wso2:
             failureThreshold: 5
           strategy: RollingUpdate
           replicas: 1
-          imagePullPolicy: Always
-          image: wso2/apk-adapter:1.1.0-m2
+          imagePullPolicy: IfNotPresent
+          image: apk-adapter:1.1.0-SNAPSHOT
           security:
             sslHostname: "adapter"
 #        logging:
@@ -128,11 +128,11 @@ wso2:
         deployment:
           resources:
             requests:
-              memory: "64Mi"
-              cpu: "50m"
+              memory: "750Mi"
+              cpu: "550m"
             limits:
-              memory: "128Mi"
-              cpu: "200m"
+              memory: "750Mi"
+              cpu: "550m"
           readinessProbe:
             initialDelaySeconds: 20
             periodSeconds: 20
@@ -186,11 +186,11 @@ wso2:
           router:
             resources:
               requests:
-                memory: "128Mi"
-                cpu: "200m"
+                memory: "2048Mi"
+                cpu: "1500m"
               limits:
-                memory: "1028Mi"
-                cpu: "1000m"
+                memory: "2048Mi"
+                cpu: "1500m"
             readinessProbe:
               initialDelaySeconds: 20
               periodSeconds: 20
@@ -283,7 +283,7 @@ idp:
         periodSeconds: 20
         failureThreshold: 5
       strategy: RollingUpdate
-      replicas: 1
+      replicas: 0
       imagePullPolicy: Always
       image: wso2/apk-idp-domain-service:1.1.0-m2
   idpui:
@@ -304,7 +304,7 @@ idp:
         periodSeconds: 20
         failureThreshold: 5
       strategy: RollingUpdate
-      replicas: 1
+      replicas: 0
       imagePullPolicy: Always
       image: wso2/apk-idp-ui:1.1.0-m2
     configs:

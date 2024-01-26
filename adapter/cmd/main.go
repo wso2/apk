@@ -21,10 +21,15 @@ import (
 	logger "github.com/sirupsen/logrus"
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/adapter"
+	_ "net/http/pprof"
+	"net/http"
 )
 
 // invokes the code from the /internal and /pkg directories and nothing else.
 func main() {
+	go func() {
+		logger.Info(http.ListenAndServe("localhost:6060", nil))
+	}()
 	logger.Info("Starting the Adapter")
 	conf := config.ReadConfigs()
 	adapter.Run(conf)
