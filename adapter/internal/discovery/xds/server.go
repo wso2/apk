@@ -329,11 +329,14 @@ func DeleteAPIFromInternalMap(uuid string) {
 // Old labels refers to the previously assigned labels
 // New labels refers to the the updated labels
 func UpdateXdsCache(labels map[string]struct{}) {
+	logger.LoggerXds.Infof("Update xds cache called %+v", len(labels))
 	xdsUpdateEvents <- labels
 
 	go func() {
 		for {
 			length := len(xdsUpdateEvents);
+			logger.LoggerXds.Infof("Inside go routine Update xds cache called %+v", length)
+
 			labelSet := make(map[string]struct{})
 			for i := 0; i < length; i++ {
 				select {
