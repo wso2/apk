@@ -1,7 +1,24 @@
+/*
+ *  Copyright (c) 2024, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ */
 package controlplane
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/wso2/apk/adapter/pkg/logging"
 	"github.com/wso2/apk/common-controller/internal/loggers"
@@ -12,6 +29,11 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+)
+
+const (
+	// CreationTimeStamp constant for annotation creationTimeStamp
+	CreationTimeStamp = "creationTimeStamp"
 )
 
 // K8sArtifactDeployer is a struct that implements ArtifactDeployer interface
@@ -26,13 +48,24 @@ func NewK8sArtifactDeployer(mgr manager.Manager) K8sArtifactDeployer {
 
 // DeployApplication deploys an application
 func (k8sArtifactDeployer K8sArtifactDeployer) DeployApplication(application server.Application) error {
-	crApplication := cpv1alpha2.Application{ObjectMeta: v1.ObjectMeta{Name: application.UUID, Namespace: utils.GetOperatorPodNamespace()},
-		Spec: cpv1alpha2.ApplicationSpec{Name: application.Name, Owner: application.Owner, Organization: application.OrganizationID, Attributes: application.Attributes}}
+	crApplication := cpv1alpha2.Application{
+		ObjectMeta: v1.ObjectMeta{
+			Name:      application.UUID,
+			Namespace: utils.GetOperatorPodNamespace(),
+			Labels:    map[string]string{CreationTimeStamp: strconv.FormatInt(application.TimeStamp, 10)},
+		},
+		Spec: cpv1alpha2.ApplicationSpec{
+			Name:         application.Name,
+			Owner:        application.Owner,
+			Organization: application.OrganizationID,
+			Attributes:   application.Attributes,
+		},
+	}
 	loggers.LoggerAPKOperator.Debugf("Creating Application %s", application.UUID)
 	loggers.LoggerAPKOperator.Debugf("Application CR %v ", crApplication)
 	err := k8sArtifactDeployer.client.Create(context.Background(), &crApplication)
 	if err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1100, logging.BLOCKER, "Failed to create application in k8s %v", err.Error()))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1100, logging.CRITICAL, "Failed to create application in k8s %v", err.Error()))
 		return err
 	}
 	return nil
@@ -44,7 +77,7 @@ func (k8sArtifactDeployer K8sArtifactDeployer) UpdateApplication(application ser
 	err := k8sArtifactDeployer.client.Get(context.Background(), client.ObjectKey{Name: application.UUID, Namespace: utils.GetOperatorPodNamespace()}, &crApplication)
 	if err != nil {
 		if !k8error.IsNotFound(err) {
-			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1102, logging.BLOCKER, "Failed to get application from k8s %v", err.Error()))
+			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1102, logging.CRITICAL, "Failed to get application from k8s %v", err.Error()))
 			return err
 		}
 		k8sArtifactDeployer.DeployApplication(application)
@@ -55,7 +88,7 @@ func (k8sArtifactDeployer K8sArtifactDeployer) UpdateApplication(application ser
 		crApplication.Spec.Attributes = application.Attributes
 		err := k8sArtifactDeployer.client.Update(context.Background(), &crApplication)
 		if err != nil {
-			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1100, logging.BLOCKER, "Failed to update application in k8s %v", err.Error()))
+			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1100, logging.CRITICAL, "Failed to update application in k8s %v", err.Error()))
 			return err
 		}
 	}
@@ -69,7 +102,7 @@ func (k8sArtifactDeployer K8sArtifactDeployer) DeploySubscription(subscription s
 		Spec: cpv1alpha2.SubscriptionSpec{Organization: subscription.Organization, API: cpv1alpha2.API{Name: subscription.SubscribedAPI.Name, Version: subscription.SubscribedAPI.Version}, SubscriptionStatus: subscription.SubStatus}}
 	err := k8sArtifactDeployer.client.Create(context.Background(), &crSubscription)
 	if err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1101, logging.BLOCKER, "Failed to create subscription in k8s %v", err.Error()))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1101, logging.CRITICAL, "Failed to create subscription in k8s %v", err.Error()))
 		return err
 	}
 	return nil
@@ -81,7 +114,7 @@ func (k8sArtifactDeployer K8sArtifactDeployer) UpdateSubscription(subscription s
 	err := k8sArtifactDeployer.client.Get(context.Background(), client.ObjectKey{Name: subscription.UUID, Namespace: utils.GetOperatorPodNamespace()}, &crSubscription)
 	if err != nil {
 		if !k8error.IsNotFound(err) {
-			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1102, logging.BLOCKER, "Failed to get subscription from k8s %v", err.Error()))
+			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1102, logging.CRITICAL, "Failed to get subscription from k8s %v", err.Error()))
 			return err
 		}
 		k8sArtifactDeployer.DeploySubscription(subscription)
@@ -92,7 +125,7 @@ func (k8sArtifactDeployer K8sArtifactDeployer) UpdateSubscription(subscription s
 		crSubscription.Spec.SubscriptionStatus = subscription.SubStatus
 		err := k8sArtifactDeployer.client.Update(context.Background(), &crSubscription)
 		if err != nil {
-			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1100, logging.BLOCKER, "Failed to update subscription in k8s %v", err.Error()))
+			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1100, logging.CRITICAL, "Failed to update subscription in k8s %v", err.Error()))
 			return err
 		}
 	}
@@ -111,7 +144,7 @@ func (k8sArtifactDeployer K8sArtifactDeployer) DeployKeyMappings(keyMapping serv
 	var crApplication cpv1alpha2.Application
 	err := k8sArtifactDeployer.client.Get(context.Background(), client.ObjectKey{Name: keyMapping.ApplicationUUID, Namespace: utils.GetOperatorPodNamespace()}, &crApplication)
 	if err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1102, logging.BLOCKER, "Failed to get application from k8s %v", err.Error()))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1102, logging.CRITICAL, "Failed to get application from k8s %v", err.Error()))
 		return err
 	}
 	securitySchemes := cpv1alpha2.SecuritySchemes{}
@@ -141,11 +174,6 @@ func (k8sArtifactDeployer K8sArtifactDeployer) DeleteAllApplicationMappings() er
 	return nil
 }
 
-// DeleteAllApplications deletes all applications
-func (k8sArtifactDeployer K8sArtifactDeployer) DeleteAllApplications() error {
-	return nil
-}
-
 // DeleteAllKeyMappings deletes all key mappings
 func (k8sArtifactDeployer K8sArtifactDeployer) DeleteAllKeyMappings() error {
 	return nil
@@ -162,13 +190,13 @@ func (k8sArtifactDeployer K8sArtifactDeployer) DeleteApplication(applicationID s
 	err := k8sArtifactDeployer.client.Get(context.Background(), client.ObjectKey{Name: applicationID, Namespace: utils.GetOperatorPodNamespace()}, &crApplication)
 	if err != nil {
 		if !k8error.IsNotFound(err) {
-			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1102, logging.BLOCKER, "Failed to get application from k8s %v", err.Error()))
+			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1102, logging.CRITICAL, "Failed to get application from k8s %v", err.Error()))
 			return err
 		}
 	} else {
 		err := k8sArtifactDeployer.client.Delete(context.Background(), &crApplication)
 		if err != nil {
-			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1100, logging.BLOCKER, "Failed to delete application in k8s %v", err.Error()))
+			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1100, logging.CRITICAL, "Failed to delete application in k8s %v", err.Error()))
 			return err
 		}
 	}
@@ -182,13 +210,13 @@ func (k8sArtifactDeployer K8sArtifactDeployer) DeleteApplicationMappings(applica
 	err := k8sArtifactDeployer.client.Get(context.Background(), client.ObjectKey{Name: applicationMapping, Namespace: utils.GetOperatorPodNamespace()}, &crApplicationMapping)
 	if err != nil {
 		if !k8error.IsNotFound(err) {
-			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1102, logging.BLOCKER, "Failed to get application mapping from k8s %v", err.Error()))
+			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1102, logging.CRITICAL, "Failed to get application mapping from k8s %v", err.Error()))
 			return err
 		}
 	} else {
 		err := k8sArtifactDeployer.client.Delete(context.Background(), &crApplicationMapping)
 		if err != nil {
-			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1100, logging.BLOCKER, "Failed to delete application mapping in k8s %v", err.Error()))
+			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1100, logging.CRITICAL, "Failed to delete application mapping in k8s %v", err.Error()))
 			return err
 		}
 	}
@@ -202,7 +230,7 @@ func (k8sArtifactDeployer K8sArtifactDeployer) UpdateApplicationMappings(applica
 	err := k8sArtifactDeployer.client.Get(context.Background(), client.ObjectKey{Name: applicationMapping.UUID, Namespace: utils.GetOperatorPodNamespace()}, &crApplicationMapping)
 	if err != nil {
 		if !k8error.IsNotFound(err) {
-			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1102, logging.BLOCKER, "Failed to get application mapping from k8s %v", err.Error()))
+			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1102, logging.CRITICAL, "Failed to get application mapping from k8s %v", err.Error()))
 			return err
 		}
 		k8sArtifactDeployer.DeployApplicationMappings(applicationMapping)
@@ -211,7 +239,7 @@ func (k8sArtifactDeployer K8sArtifactDeployer) UpdateApplicationMappings(applica
 		crApplicationMapping.Spec.SubscriptionRef = applicationMapping.SubscriptionRef
 		err := k8sArtifactDeployer.client.Update(context.Background(), &crApplicationMapping)
 		if err != nil {
-			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1100, logging.BLOCKER, "Failed to update application mapping in k8s %v", err.Error()))
+			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1100, logging.CRITICAL, "Failed to update application mapping in k8s %v", err.Error()))
 			return err
 		}
 	}
@@ -224,7 +252,7 @@ func (k8sArtifactDeployer K8sArtifactDeployer) DeleteKeyMappings(keyMapping serv
 	var crApplication cpv1alpha2.Application
 	err := k8sArtifactDeployer.client.Get(context.Background(), client.ObjectKey{Name: keyMapping.ApplicationUUID, Namespace: utils.GetOperatorPodNamespace()}, &crApplication)
 	if err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1102, logging.BLOCKER, "Failed to get application from k8s %v", err.Error()))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1102, logging.CRITICAL, "Failed to get application from k8s %v", err.Error()))
 		return err
 	}
 	if crApplication.Spec.SecuritySchemes != nil {
@@ -253,13 +281,13 @@ func (k8sArtifactDeployer K8sArtifactDeployer) DeleteSubscription(subscriptionID
 	err := k8sArtifactDeployer.client.Get(context.Background(), client.ObjectKey{Name: subscriptionID, Namespace: utils.GetOperatorPodNamespace()}, &crSubscription)
 	if err != nil {
 		if !k8error.IsNotFound(err) {
-			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1102, logging.BLOCKER, "Failed to get subscription from k8s %v", err.Error()))
+			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1102, logging.CRITICAL, "Failed to get subscription from k8s %v", err.Error()))
 			return err
 		}
 	} else {
 		err := k8sArtifactDeployer.client.Delete(context.Background(), &crSubscription)
 		if err != nil {
-			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1100, logging.BLOCKER, "Failed to delete subscription in k8s %v", err.Error()))
+			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1100, logging.CRITICAL, "Failed to delete subscription in k8s %v", err.Error()))
 			return err
 		}
 	}
@@ -269,11 +297,99 @@ func (k8sArtifactDeployer K8sArtifactDeployer) DeleteSubscription(subscriptionID
 
 // DeployAllApplicationMappings deploys all application mappings
 func (k8sArtifactDeployer K8sArtifactDeployer) DeployAllApplicationMappings(applicationMappings server.ApplicationMappingList) error {
+	applicationMappingsFromK8s, _, err := k8sArtifactDeployer.retrieveAllApplicationMappings("")
+	if err != nil {
+		return err
+	}
+	clonedApplicationMappingsFromK8s := make([]cpv1alpha2.ApplicationMapping, len(applicationMappingsFromK8s))
+	copy(clonedApplicationMappingsFromK8s, applicationMappingsFromK8s)
+	clonedApplicationMappings := make([]server.ApplicationMapping, len(applicationMappings.List))
+	copy(clonedApplicationMappings, applicationMappings.List)
+	newApplicationMappings := make([]server.ApplicationMapping, 0)
+	sameApplicationMappings := make([]server.ApplicationMapping, 0)
+	for _, applicationMapping := range clonedApplicationMappings {
+		found := false
+		unFilteredApplicationMappingsInK8s := make([]cpv1alpha2.ApplicationMapping, 0)
+		for _, applicationMappingFromK8s := range clonedApplicationMappingsFromK8s {
+			if applicationMapping.ApplicationRef == applicationMappingFromK8s.Spec.ApplicationRef && applicationMapping.SubscriptionRef == applicationMappingFromK8s.Spec.SubscriptionRef {
+				sameApplicationMappings = append(sameApplicationMappings, applicationMapping)
+				found = true
+				break
+			}
+			unFilteredApplicationMappingsInK8s = append(unFilteredApplicationMappingsInK8s, applicationMappingFromK8s)
+		}
+		clonedApplicationMappingsFromK8s = unFilteredApplicationMappingsInK8s
+		if !found {
+			newApplicationMappings = append(newApplicationMappings, applicationMapping)
+		}
+	}
+	for _, applicationMapping := range newApplicationMappings {
+		err := k8sArtifactDeployer.DeployApplicationMappings(applicationMapping)
+		if err != nil {
+			return err
+		}
+	}
+	for _, applicationMapping := range sameApplicationMappings {
+		err := k8sArtifactDeployer.UpdateApplicationMappings(applicationMapping)
+		if err != nil {
+			return err
+		}
+	}
+	for _, applicationMappingFromK8s := range clonedApplicationMappingsFromK8s {
+		err := k8sArtifactDeployer.DeleteApplicationMappings(applicationMappingFromK8s.Name)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
 // DeployAllApplications deploys all key mappings
 func (k8sArtifactDeployer K8sArtifactDeployer) DeployAllApplications(applications server.ApplicationList) error {
+	applicationsFromK8s, _, err := k8sArtifactDeployer.retrieveAllApplicationsFromK8s("")
+	if err != nil {
+		return err
+	}
+	clonedApplicationsFromK8s := make([]cpv1alpha2.Application, len(applicationsFromK8s))
+	copy(clonedApplicationsFromK8s, applicationsFromK8s)
+	clonedApplications := make([]server.Application, len(applications.List))
+	copy(clonedApplications, applications.List)
+	newApplications := make([]server.Application, 0)
+	sameApplications := make([]server.Application, 0)
+	for _, application := range clonedApplications {
+		found := false
+		unFilteredApplicationsInK8s := make([]cpv1alpha2.Application, 0)
+		for _, applicationFromK8s := range clonedApplicationsFromK8s {
+			if application.UUID == applicationFromK8s.Name {
+				sameApplications = append(sameApplications, application)
+				found = true
+				break
+			}
+			unFilteredApplicationsInK8s = append(unFilteredApplicationsInK8s, applicationFromK8s)
+		}
+		clonedApplicationsFromK8s = unFilteredApplicationsInK8s
+		if !found {
+			newApplications = append(newApplications, application)
+		}
+	}
+	for _, application := range newApplications {
+		err := k8sArtifactDeployer.DeployApplication(application)
+		if err != nil {
+			return err
+		}
+	}
+	for _, application := range sameApplications {
+		err := k8sArtifactDeployer.UpdateApplication(application)
+		if err != nil {
+			return err
+		}
+	}
+	for _, applicationFromK8s := range clonedApplicationsFromK8s {
+		err := k8sArtifactDeployer.DeleteApplication(applicationFromK8s.Name)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -284,6 +400,50 @@ func (k8sArtifactDeployer K8sArtifactDeployer) DeployAllKeyMappings(keyMappings 
 
 // DeployAllSubscriptions deploys all subscriptions
 func (k8sArtifactDeployer K8sArtifactDeployer) DeployAllSubscriptions(subscriptions server.SubscriptionList) error {
+	subscriptionsFromK8s, _, err := k8sArtifactDeployer.retrieveAllSubscriptionsFromK8s("")
+	if err != nil {
+		return err
+	}
+	clonedSubscriptionsFromK8s := make([]cpv1alpha2.Subscription, len(subscriptionsFromK8s))
+	copy(clonedSubscriptionsFromK8s, subscriptionsFromK8s)
+	clonedSubscriptions := make([]server.Subscription, len(subscriptions.List))
+	copy(clonedSubscriptions, subscriptions.List)
+	newSubscriptions := make([]server.Subscription, 0)
+	sameSubscriptions := make([]server.Subscription, 0)
+	for _, subscription := range clonedSubscriptions {
+		found := false
+		unFilteredSubscriptionsInK8s := make([]cpv1alpha2.Subscription, 0)
+		for _, subscriptionFromK8s := range clonedSubscriptionsFromK8s {
+			if subscription.UUID == subscriptionFromK8s.Name {
+				sameSubscriptions = append(sameSubscriptions, subscription)
+				found = true
+				break
+			}
+			unFilteredSubscriptionsInK8s = append(unFilteredSubscriptionsInK8s, subscriptionFromK8s)
+		}
+		clonedSubscriptionsFromK8s = unFilteredSubscriptionsInK8s
+		if !found {
+			newSubscriptions = append(newSubscriptions, subscription)
+		}
+	}
+	for _, subscription := range newSubscriptions {
+		err := k8sArtifactDeployer.DeploySubscription(subscription)
+		if err != nil {
+			return err
+		}
+	}
+	for _, subscription := range sameSubscriptions {
+		err := k8sArtifactDeployer.UpdateSubscription(subscription)
+		if err != nil {
+			return err
+		}
+	}
+	for _, subscriptionFromK8s := range clonedSubscriptionsFromK8s {
+		err := k8sArtifactDeployer.DeleteSubscription(subscriptionFromK8s.Name)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -330,4 +490,75 @@ func (k8sArtifactDeployer K8sArtifactDeployer) GetSubscription(subscriptionID st
 // GenerateSecurityScheme generates a security scheme
 func generateSecurityScheme(keyMapping server.ApplicationKeyMapping) cpv1alpha2.Environment {
 	return cpv1alpha2.Environment{EnvID: keyMapping.EnvID, AppID: keyMapping.ApplicationIdentifier, KeyType: keyMapping.KeyType}
+}
+
+func (k8sArtifactDeployer K8sArtifactDeployer) retrieveAllApplicationsFromK8s(nextToken string) ([]cpv1alpha2.Application, string, error) {
+	applicationList := cpv1alpha2.ApplicationList{}
+	resolvedApplicationList := make([]cpv1alpha2.Application, 0)
+	var err error
+	if nextToken == "" {
+		err = k8sArtifactDeployer.client.List(context.Background(), &applicationList, &client.ListOptions{Namespace: utils.GetOperatorPodNamespace()})
+	} else {
+		err = k8sArtifactDeployer.client.List(context.Background(), &applicationList, &client.ListOptions{Namespace: utils.GetOperatorPodNamespace(), Continue: nextToken})
+	}
+	if err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1102, logging.CRITICAL, "Failed to get application from k8s %v", err.Error()))
+		return nil, "", err
+	}
+	resolvedApplicationList = append(resolvedApplicationList, applicationList.Items...)
+	if applicationList.Continue != "" {
+		tempApplicationList, _, err := k8sArtifactDeployer.retrieveAllApplicationsFromK8s(applicationList.Continue)
+		if err != nil {
+			return nil, "", err
+		}
+		resolvedApplicationList = append(resolvedApplicationList, tempApplicationList...)
+	}
+	return resolvedApplicationList, applicationList.Continue, nil
+}
+
+func (k8sArtifactDeployer K8sArtifactDeployer) retrieveAllSubscriptionsFromK8s(nextToken string) ([]cpv1alpha2.Subscription, string, error) {
+	subscriptionList := cpv1alpha2.SubscriptionList{}
+	resolvedSubscripitonList := make([]cpv1alpha2.Subscription, 0)
+	var err error
+	if nextToken == "" {
+		err = k8sArtifactDeployer.client.List(context.Background(), &subscriptionList, &client.ListOptions{Namespace: utils.GetOperatorPodNamespace()})
+	} else {
+		err = k8sArtifactDeployer.client.List(context.Background(), &subscriptionList, &client.ListOptions{Namespace: utils.GetOperatorPodNamespace(), Continue: nextToken})
+	}
+	if err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1102, logging.CRITICAL, "Failed to get application from k8s %v", err.Error()))
+		return nil, "", err
+	}
+	resolvedSubscripitonList = append(resolvedSubscripitonList, subscriptionList.Items...)
+	if subscriptionList.Continue != "" {
+		tempSubscriptipnList, _, err := k8sArtifactDeployer.retrieveAllSubscriptionsFromK8s(subscriptionList.Continue)
+		if err != nil {
+			return nil, "", err
+		}
+		resolvedSubscripitonList = append(resolvedSubscripitonList, tempSubscriptipnList...)
+	}
+	return resolvedSubscripitonList, subscriptionList.Continue, nil
+}
+func (k8sArtifactDeployer K8sArtifactDeployer) retrieveAllApplicationMappings(nextToken string) ([]cpv1alpha2.ApplicationMapping, string, error) {
+	applicationMappingList := cpv1alpha2.ApplicationMappingList{}
+	resolvedApplicationMappingList := make([]cpv1alpha2.ApplicationMapping, 0)
+	var err error
+	if nextToken == "" {
+		err = k8sArtifactDeployer.client.List(context.Background(), &applicationMappingList, &client.ListOptions{Namespace: utils.GetOperatorPodNamespace()})
+	} else {
+		err = k8sArtifactDeployer.client.List(context.Background(), &applicationMappingList, &client.ListOptions{Namespace: utils.GetOperatorPodNamespace(), Continue: nextToken})
+	}
+	if err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1102, logging.CRITICAL, "Failed to get application from k8s %v", err.Error()))
+		return nil, "", err
+	}
+	resolvedApplicationMappingList = append(resolvedApplicationMappingList, applicationMappingList.Items...)
+	if applicationMappingList.Continue != "" {
+		tempApplicationMappingList, _, err := k8sArtifactDeployer.retrieveAllApplicationMappings(applicationMappingList.Continue)
+		if err != nil {
+			return nil, "", err
+		}
+		resolvedApplicationMappingList = append(resolvedApplicationMappingList, tempApplicationMappingList...)
+	}
+	return resolvedApplicationMappingList, applicationMappingList.Continue, nil
 }
