@@ -24,6 +24,7 @@ type Application struct {
 	Owner          string            `json:"owner"`
 	Attributes     map[string]string `json:"attributes,omitempty"`
 	OrganizationID string            `json:"organizationId"`
+	TimeStamp      int64             `json:"timeStamp"`
 }
 
 // ApplicationList contains a list of Application

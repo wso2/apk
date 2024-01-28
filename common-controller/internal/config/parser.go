@@ -19,7 +19,6 @@ package config
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"reflect"
 	"regexp"
@@ -34,8 +33,6 @@ import (
 
 var (
 	onceConfigRead   sync.Once
-	apkHome          string
-	logConfigPath    string
 	controllerConfig *Config
 	envVariableMap   map[string]string
 )
@@ -66,7 +63,7 @@ func ReadConfigs() *Config {
 		if err != nil {
 			loggerConfig.ErrorC(logging.PrintError(logging.Error1000, logging.BLOCKER, "Configuration file not found, error: %v", err.Error()))
 		}
-		content, readErr := ioutil.ReadFile(pkgconf.GetApkHome() + relativeConfigPath)
+		content, readErr := os.ReadFile(pkgconf.GetApkHome() + relativeConfigPath)
 		if readErr != nil {
 			loggerConfig.ErrorC(logging.PrintError(logging.Error1001, logging.BLOCKER, "Error reading configurations, error: %v", readErr.Error()))
 			return
@@ -365,16 +362,5 @@ func resolveEnvFloat32Value(key string, value reflect.Value) {
 			return
 		}
 		value.SetFloat(resolvedValue)
-	}
-}
-
-func extractEnvironmentVars() {
-	envVariableArray := os.Environ()
-	for _, variable := range envVariableArray {
-		if strings.HasPrefix(strings.ToUpper(variable), envVariablePrefix) {
-			formattedVariable := strings.Split(variable, "=")[0]
-			envVariableValue := os.Getenv(formattedVariable)
-			envVariableMap[strings.ToUpper(formattedVariable)] = envVariableValue
-		}
 	}
 }

@@ -164,18 +164,21 @@ func InitOperator() {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2603, logging.BLOCKER, "Unable to set up ready check: %v", err))
 		os.Exit(1)
 	}
-	go func() {
-		config := config.ReadConfigs()
-		var controlPlane controlplane.ArtifactDeployer
-		if config.CommonController.ControlPlane.Persistence.Type == "K8s" {
-			controlPlane = controlplane.NewK8sArtifactDeployer(mgr)
+	config := config.ReadConfigs()
+	if config.CommonController.ControlPlane.Enabled {
+		go func() {
+			var controlPlane controlplane.ArtifactDeployer
+			if config.CommonController.ControlPlane.Persistence.Type == "K8s" {
+				controlPlane = controlplane.NewK8sArtifactDeployer(mgr)
 
-		}
-		grpcClient := controlplane.NewControlPlaneAgent(config.CommonController.ControlPlane.Host, config.CommonController.ControlPlane.EventPort, controlPlaneID, controlPlane)
-		if grpcClient != nil {
-			grpcClient.StartEventStreaming()
-		}
-	}()
+			}
+			grpcClient := controlplane.NewControlPlaneAgent(config.CommonController.ControlPlane.Host, config.CommonController.ControlPlane.EventPort, controlPlaneID, controlPlane)
+			if grpcClient != nil {
+				grpcClient.StartEventStreaming()
+			}
+		}()
+	}
+
 	setupLog.Info("starting manager")
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2604, logging.BLOCKER, "Problem running manager: %v", err))

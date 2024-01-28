@@ -50,12 +50,13 @@ type commoncontroller struct {
 	ControlPlane      controlplane
 }
 type controlplane struct {
-	Enabled       bool
-	Host          string
-	EventPort     int
-	RestPort      int
-	RetryInterval time.Duration
-	Persistence   persistence
+	Enabled             bool
+	Host                string
+	EventPort           int
+	RestPort            int
+	RetryInterval       time.Duration
+	Persistence         persistence
+	SkipSSLVerification bool
 }
 type persistence struct {
 	Type string

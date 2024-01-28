@@ -39,6 +39,7 @@ var defaultConfig = &Config{
 			Enabled:       false,
 			Host:          "localhost",
 			EventPort:     18000,
+			RestPort:      18001,
 			RetryInterval: 5,
 			Persistence:   persistence{Type: "K8s"}},
 	},

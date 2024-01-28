@@ -39,10 +39,6 @@ type ArtifactDeployer interface {
 	DeleteSubscription(subscriptionID string) error
 	DeleteApplicationMappings(applicationID string) error
 	DeleteKeyMappings(keyMapping server.ApplicationKeyMapping) error
-	DeleteAllApplications() error
-	DeleteAllSubscriptions() error
-	DeleteAllApplicationMappings() error
-	DeleteAllKeyMappings() error
 	DeployAllApplications(applications server.ApplicationList) error
 	DeployAllSubscriptions(subscriptions server.SubscriptionList) error
 	DeployAllApplicationMappings(applicationMappings server.ApplicationMappingList) error
