@@ -69,6 +69,8 @@ const (
 	apiRateLimitResourceIndex = "apiRateLimitResourceIndex"
 	// gatewayHTTPRouteIndex Index for gateway httproutes
 	gatewayHTTPRouteIndex = "gatewayHTTPRouteIndex"
+	// gatewayGRPCRouteIndex Index for gateway grpcroutes
+	gatewayGRPCRouteIndex = "gatewayGRPCRouteIndex"
 	// apiAPIPolicyIndex Index for API level apipolicies
 	apiAPIPolicyIndex = "apiAPIPolicyIndex"
 	// apiAPIPolicyResourceIndex Index for resource level apipolicies
@@ -81,6 +83,7 @@ const (
 	configMapAuthentication          = "configMapAuthentication"
 	secretAuthentication             = "secretAuthentication"
 	backendHTTPRouteIndex            = "backendHTTPRouteIndex"
+	backendGRPCRouteIndex            = "backendGRPCRouteIndex"
 	interceptorServiceAPIPolicyIndex = "interceptorServiceAPIPolicyIndex"
 	backendInterceptorServiceIndex   = "backendInterceptorServiceIndex"
 	backendJWTAPIPolicyIndex         = "backendJWTAPIPolicyIndex"
@@ -266,6 +269,7 @@ func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		return ctrl.Result{}, nil
 	}
 
+	//TODO there's another error here associated with the deployment of grpcroutes
 	if apiState, err := apiReconciler.resolveAPIRefs(ctx, apiCR); err != nil {
 		loggers.LoggerAPKOperator.Warnf("Error retrieving ref CRs for API in namespace : %s with API UUID : %v, %v",
 			req.NamespacedName.String(), string(apiCR.ObjectMeta.UID), err)
@@ -516,9 +520,8 @@ func (apiReconciler *APIReconciler) concatGRPCRoutes(ctx context.Context, grpcRo
 	}
 	grpcRouteState.GRPCRoutePartitions = grpcRoutePartitions
 	backendNamespacedName := types.NamespacedName{
-		//TODO: replace with appropriate attributes in the grpcRoute
-		//Name:      string(grpcRouteState.GRPCRouteCombined.Spec.BackendRefs[0].Name),
-		//Name:      "grpc-backend",
+		//TODO check if this is correct
+		Name:      string(grpcRouteState.GRPCRouteCombined.Spec.Rules[0].BackendRefs[0].BackendRef.Name),
 		Namespace: namespace,
 	}
 	resolvedBackend := utils.GetResolvedBackend(ctx, apiReconciler.client, backendNamespacedName, &api)
@@ -1270,6 +1273,9 @@ func (apiReconciler *APIReconciler) getAPIForHTTPRoute(ctx context.Context, obj 
 	return requests
 }
 
+// getAPIForGRPCRoute triggers the API controller reconcile method based on the changes detected
+// from GRPCRoute objects. If the changes are done for an API stored in the Operator Data store,
+// a new reconcile event will be created and added to the reconcile event queue.
 func (apiReconciler *APIReconciler) getAPIForGRPCRoute(ctx context.Context, obj k8client.Object) []reconcile.Request {
 	grpcRoute, ok := obj.(*gwapiv1a2.GRPCRoute)
 	if !ok {
@@ -1576,14 +1582,29 @@ func (apiReconciler *APIReconciler) getAPIsForBackend(ctx context.Context, obj k
 		return []reconcile.Request{}
 	}
 
+	grpcRouteList := &gwapiv1a2.GRPCRouteList{}
+	if err := apiReconciler.client.List(ctx, grpcRouteList, &k8client.ListOptions{
+		FieldSelector: fields.OneTermEqualSelector(backendGRPCRouteIndex, utils.NamespacedName(backend).String()),
+	}); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2625, logging.CRITICAL, "Unable to find associated GRPCRoutes: %s", utils.NamespacedName(backend).String()))
+		return []reconcile.Request{}
+	}
+
 	if len(httpRouteList.Items) == 0 {
 		loggers.LoggerAPKOperator.Debugf("HTTPRoutes for Backend not found: %s", utils.NamespacedName(backend).String())
+	}
+	if len(grpcRouteList.Items) == 0 {
+		loggers.LoggerAPKOperator.Debugf("GRPCRoutes for Backend not found: %s", utils.NamespacedName(backend).String())
 	}
 
 	requests := []reconcile.Request{}
 	for item := range httpRouteList.Items {
 		httpRoute := httpRouteList.Items[item]
 		requests = append(requests, apiReconciler.getAPIForHTTPRoute(ctx, &httpRoute)...)
+	}
+	for item := range grpcRouteList.Items {
+		grpcRoute := grpcRouteList.Items[item]
+		requests = append(requests, apiReconciler.getAPIForGRPCRoute(ctx, &grpcRoute)...)
 	}
 
 	// Create API reconcile events when Backend reffered from InterceptorService
@@ -1623,9 +1644,20 @@ func (apiReconciler *APIReconciler) getAPIsForGateway(ctx context.Context, obj k
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2625, logging.CRITICAL, "Unable to find associated HTTPRoutes: %s", utils.NamespacedName(gateway).String()))
 		return []reconcile.Request{}
 	}
+	grpcRouteList := &gwapiv1a2.GRPCRouteList{}
+	if err := apiReconciler.client.List(ctx, grpcRouteList, &k8client.ListOptions{
+		FieldSelector: fields.OneTermEqualSelector(gatewayGRPCRouteIndex, utils.NamespacedName(gateway).String()),
+	}); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2625, logging.CRITICAL, "Unable to find associated GRPCRoutes: %s", utils.NamespacedName(gateway).String()))
+		return []reconcile.Request{}
+	}
 
 	if len(httpRouteList.Items) == 0 {
 		loggers.LoggerAPKOperator.Debugf("HTTPRoutes for Gateway not found: %s", utils.NamespacedName(gateway).String())
+		return []reconcile.Request{}
+	}
+	if len(grpcRouteList.Items) == 0 {
+		loggers.LoggerAPKOperator.Debugf("GRPCRoutes for Gateway not found: %s", utils.NamespacedName(gateway).String())
 		return []reconcile.Request{}
 	}
 
@@ -1634,6 +1666,11 @@ func (apiReconciler *APIReconciler) getAPIsForGateway(ctx context.Context, obj k
 		httpRoute := httpRouteList.Items[item]
 		requests = append(requests, apiReconciler.getAPIForHTTPRoute(ctx, &httpRoute)...)
 	}
+	for item := range grpcRouteList.Items {
+		grpcRoute := grpcRouteList.Items[item]
+		requests = append(requests, apiReconciler.getAPIForGRPCRoute(ctx, &grpcRoute)...)
+	}
+
 	return requests
 }
 
@@ -1802,6 +1839,28 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 		return err
 	}
 
+	// Backend to GRPCRoute indexer
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &gwapiv1a2.GRPCRoute{}, backendGRPCRouteIndex,
+		func(rawObj k8client.Object) []string {
+			grpcRoute := rawObj.(*gwapiv1a2.GRPCRoute)
+			var backends []string
+			for _, rule := range grpcRoute.Spec.Rules {
+				for _, backendRef := range rule.BackendRefs {
+					//TODO fix this if condition
+					if backendRef.Kind != nil && *backendRef.Kind == constants.KindBackend {
+						backends = append(backends, types.NamespacedName{
+							Namespace: utils.GetNamespace(backendRef.Namespace,
+								grpcRoute.ObjectMeta.Namespace),
+							Name: string(backendRef.Name),
+						}.String())
+					}
+				}
+			}
+			return backends
+		}); err != nil {
+		return err
+	}
+
 	// Gateway to HTTPRoute indexer
 	if err := mgr.GetFieldIndexer().IndexField(ctx, &gwapiv1b1.HTTPRoute{}, gatewayHTTPRouteIndex,
 		func(rawObj k8client.Object) []string {
@@ -1811,6 +1870,23 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 				gateways = append(gateways, types.NamespacedName{
 					Namespace: utils.GetNamespace(parentRef.Namespace,
 						httpRoute.Namespace),
+					Name: string(parentRef.Name),
+				}.String())
+			}
+			return gateways
+		}); err != nil {
+		return err
+	}
+
+	//Gateway to GRPCRoute indexer
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &gwapiv1a2.GRPCRoute{}, gatewayGRPCRouteIndex,
+		func(rawObj k8client.Object) []string {
+			grpcRoute := rawObj.(*gwapiv1a2.GRPCRoute)
+			var gateways []string
+			for _, parentRef := range grpcRoute.Spec.ParentRefs {
+				gateways = append(gateways, types.NamespacedName{
+					Namespace: utils.GetNamespace(parentRef.Namespace,
+						grpcRoute.Namespace),
 					Name: string(parentRef.Name),
 				}.String())
 			}
