@@ -222,20 +222,20 @@ func deployMultipleAPIsInGateway(event *APIEvent, successChannel *chan SuccessEv
 		updatedAPIs = append(updatedAPIs, utils.NamespacedName(apiState.APIDefinition))
 	}
 
-	xds.UpdateXdsCache(updatedLabelsMap)
-	// if updated {
-	// 	loggers.LoggerAPKOperator.Info("XDS cache updated for apis: %+v", updatedAPIs)
-	// 	*successChannel <- SuccessEvent{
-	// 		APINamespacedName: updatedAPIs,
-	// 		State:             event.EventType,
-	// 		Events:            event.UpdatedEvents,
-	// 	}
-	// 	if config.ReadConfigs().PartitionServer.Enabled {
-	// 		paritionCh <- event
-	// 	}
-	// } else {
-	// 	loggers.LoggerAPKOperator.Info("XDS cache not updated for APIs : %+v", updatedAPIs)
-	// }
+	updated := xds.UpdateXdsCache(updatedLabelsMap)
+	if updated {
+		loggers.LoggerAPKOperator.Info("XDS cache updated for apis: %+v", updatedAPIs)
+		*successChannel <- SuccessEvent{
+			APINamespacedName: updatedAPIs,
+			State:             event.EventType,
+			Events:            event.UpdatedEvents,
+		}
+		if config.ReadConfigs().PartitionServer.Enabled {
+			paritionCh <- event
+		}
+	} else {
+		loggers.LoggerAPKOperator.Info("XDS cache not updated for APIs : %+v", updatedAPIs)
+	}
 }
 
 func init() {

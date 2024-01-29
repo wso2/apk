@@ -327,22 +327,22 @@ func DeleteAPIFromInternalMap(key string) {
 // UpdateXdsCache when this method is called, openAPIEnvoy map is updated.
 // Old labels refers to the previously assigned labels
 // New labels refers to the the updated labels
-func UpdateXdsCache(labels map[string]struct{}) {
-	logger.LoggerXds.Infof("Update xds cache called %+v", len(labels))
-	// xdsUpdateEvents <- labels
-
+func UpdateXdsCache(labels map[string]struct{}) bool {
+	revisionStatus := false
+	// TODO: (VirajSalaka) check possible optimizations, Since the number of labels are low by design it should not be an issue
 	for newLabel := range labels {
 		listeners, clusters, routes, endpoints, apis := generateEnvoyResoucesForGateway(newLabel)
-		logger.LoggerXds.Infof("Listener size %+v", listeners)
 		UpdateEnforcerApis(newLabel, apis, "")
-		UpdateXdsCacheWithLock(newLabel, endpoints, clusters, routes, listeners)
-		// logger.LoggerXds.Debugf("Xds Cache is updated for the label : %v", newLabel)
-		// if success {
-		// 	// if even one label was updated with latest revision, we take the revision as deployed.
-		// 	// (other labels also will get updated successfully)
-		// 	continue
-		// }
+		success := UpdateXdsCacheWithLock(newLabel, endpoints, clusters, routes, listeners)
+		logger.LoggerXds.Debugf("Xds Cache is updated for the label : %v", newLabel)
+		if success {
+			// if even one label was updated with latest revision, we take the revision as deployed.
+			// (other labels also will get updated successfully)
+			revisionStatus = success
+			continue
+		}
 	}
+	return revisionStatus
 	
 }
 
