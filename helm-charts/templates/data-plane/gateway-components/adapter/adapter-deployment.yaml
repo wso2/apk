@@ -46,8 +46,6 @@ spec:
               protocol: "TCP"
             - containerPort: 18001
               protocol: TCP
-            - containerPort: 6060
-              protocol: TCP
 {{ include "apk-helm.deployment.resources" .Values.wso2.apk.dp.adapter.deployment.resources | indent 10 }}
 {{ include "apk-helm.deployment.env" .Values.wso2.apk.dp.adapter.deployment.env | indent 10 }}
           - name: OPERATOR_POD_NAMESPACE
