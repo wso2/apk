@@ -187,6 +187,7 @@ jobs:
       shell: sh
       run: |
         cd apk-repo/helm-charts
+        kubectl describe pods -n apk-integration-test
         kubectl get pods -n apk-integration-test
         kubectl get svc -n apk-integration-test
         helm uninstall apk-test-setup -n apk-integration-test
@@ -290,6 +291,7 @@ jobs:
       shell: sh
       run: |
         cd apk-repo/helm-charts
+        kubectl describe pods -n apk-integration-test
         kubectl get pods -n apk-integration-test
         kubectl get svc -n apk-integration-test
         helm uninstall apk-test-setup -n apk-integration-test
