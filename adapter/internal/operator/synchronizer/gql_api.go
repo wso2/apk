@@ -159,7 +159,10 @@ func getListenersForGQLAPI(gqlRoute *v1alpha2.GQLRoute, apiUUID string) ([]strin
 // undeployGQLAPIInGateway undeploys the related API in CREATE and UPDATE events.
 func undeployGQLAPIInGateway(apiState APIState) error {
 	var err error
-	xds.DeleteAPIFromInternalMap(string(apiState.APIDefinition.ObjectMeta.UID))
+	adapterInternalAPIHolderKeyProd := xds.PrepareAdapterInternalAPIHolderKey(string(apiState.APIDefinition.ObjectMeta.UID), constants.Production) 
+	adapterInternalAPIHolderKeySand := xds.PrepareAdapterInternalAPIHolderKey(string(apiState.APIDefinition.ObjectMeta.UID), constants.Sandbox) 
+	xds.DeleteAPIFromInternalMap(adapterInternalAPIHolderKeyProd)
+	xds.DeleteAPIFromInternalMap(adapterInternalAPIHolderKeySand)
 	labels := []string{}
 	if apiState.ProdGQLRoute != nil {
 		labels = append(labels, getLabelsForGQLAPI(apiState.ProdGQLRoute.GQLRouteCombined)...)

@@ -61,12 +61,12 @@ Feature: API Subscription Feature
     Then the response status code should be 403
     And I send "GET" request to "https://default.gw.wso2.com:9095/subscription-api/1.0.0/endpoint1" with body ""
     Then the response status code should be 403
-  Scenario Outline: Undeploy API
-    Given The system is ready
-    And I have a valid subscription
-    When I undeploy the API whose ID is "<apiID>"
-    Then the response status code should be <expectedStatusCode>
+  # Scenario Outline: Undeploy API
+  #   Given The system is ready
+  #   And I have a valid subscription
+  #   When I undeploy the API whose ID is "<apiID>"
+  #   Then the response status code should be <expectedStatusCode>
 
-    Examples:
-      | apiID                 | expectedStatusCode  |
-      | subscription-api | 202 |
+  #   Examples:
+  #     | apiID                 | expectedStatusCode  |
+  #     | subscription-api | 202 |

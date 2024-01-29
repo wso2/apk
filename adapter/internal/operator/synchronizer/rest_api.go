@@ -25,6 +25,7 @@ import (
 	"github.com/wso2/apk/adapter/internal/discovery/xds"
 	"github.com/wso2/apk/adapter/internal/discovery/xds/common"
 	"github.com/wso2/apk/adapter/internal/loggers"
+	"github.com/wso2/apk/adapter/internal/operator/constants"
 	"github.com/wso2/apk/adapter/internal/oasparser/model"
 	"github.com/wso2/apk/adapter/pkg/logging"
 	"k8s.io/apimachinery/pkg/types"
@@ -34,7 +35,11 @@ import (
 // undeployAPIInGateway undeploys the related API in CREATE and UPDATE events.
 func undeployRestAPIInGateway(apiState APIState) error {
 	var err error
-	xds.DeleteAPIFromInternalMap(string(apiState.APIDefinition.ObjectMeta.UID))
+	adapterInternalAPIHolderKeyProd := xds.PrepareAdapterInternalAPIHolderKey(string(apiState.APIDefinition.ObjectMeta.UID), constants.Production) 
+	adapterInternalAPIHolderKeySand := xds.PrepareAdapterInternalAPIHolderKey(string(apiState.APIDefinition.ObjectMeta.UID), constants.Sandbox) 
+
+	xds.DeleteAPIFromInternalMap(adapterInternalAPIHolderKeyProd)
+	xds.DeleteAPIFromInternalMap(adapterInternalAPIHolderKeySand)
 	labels := []string{}
 	if apiState.ProdHTTPRoute != nil {
 		labels = append(labels, getLabelsForAPI(apiState.ProdHTTPRoute.HTTPRouteCombined)...)

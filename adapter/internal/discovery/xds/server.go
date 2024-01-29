@@ -226,11 +226,11 @@ func GetEnforcerThrottleDataCache() wso2_cache.SnapshotCache {
 }
 
 // DeleteAPIFromInternalMap deletes the api from the adapterInternalAPIHolderMap
-func DeleteAPIFromInternalMap(uuid string) {
+func DeleteAPIFromInternalMap(key string) {
 	mutexForAdapterInternalAPIHolderMap.Lock()
 	defer mutexForAdapterInternalAPIHolderMap.Unlock()
-	if _, ok := adapterInternalAPIHolderMap[uuid]; ok {
-		delete(adapterInternalAPIHolderMap, uuid)
+	if _, ok := adapterInternalAPIHolderMap[key]; ok {
+		delete(adapterInternalAPIHolderMap, key)
 	}
 }
 
@@ -734,23 +734,29 @@ func UpdateAdapterInternalAPIs(vHosts []string, newLabels []string, listener str
 	for _, label := range newLabels {
 		updatedLabelsMap[label] = struct{}{}
 	}
+	key := PrepareAdapterInternalAPIHolderKey(adapterInternalAPI.UUID, adapterInternalAPI.EnvType)
 	var updatedAdapterInternalAPIHolder *AdapterInternalAPIHolder
-	if adapterInternalAPIHolder, adapterInternalAPIHolderExists := adapterInternalAPIHolderMap[adapterInternalAPI.UUID]; adapterInternalAPIHolderExists {
+	if adapterInternalAPIHolder, adapterInternalAPIHolderExists := adapterInternalAPIHolderMap[key]; adapterInternalAPIHolderExists {
 		for _, label := range adapterInternalAPIHolder.labels {
 			updatedLabelsMap[label] = struct{}{}
 		}
 		updatedAdapterInternalAPIHolder = adapterInternalAPIHolder
 	} else {
 		updatedAdapterInternalAPIHolder = &AdapterInternalAPIHolder{}
-		adapterInternalAPIHolderMap[adapterInternalAPI.UUID] = updatedAdapterInternalAPIHolder
+		adapterInternalAPIHolderMap[key] = updatedAdapterInternalAPIHolder
 	}
 	updatedAdapterInternalAPIHolder.adapterInternalAPI = &adapterInternalAPI
 	updatedAdapterInternalAPIHolder.labels = newLabels
 	updatedAdapterInternalAPIHolder.listener = listener
 	updatedAdapterInternalAPIHolder.sectionName = sectionName
 	updatedAdapterInternalAPIHolder.vHosts = vHosts
-	logger.LoggerXds.Infof("apiholdermap size : %+v last included is %+v", len(adapterInternalAPIHolderMap), adapterInternalAPI.UUID)
+	logger.LoggerXds.Infof("apiholdermap size : %+v last included is %+v", len(adapterInternalAPIHolderMap), key)
 	return updatedLabelsMap, nil
+}
+
+// PrepareAdapterInternalAPIHolderKey prepare the key for the AdapterInternalAPIHolderMap
+func PrepareAdapterInternalAPIHolderKey(apiUUID string, envType string) string {
+	return  fmt.Sprintf("%s_%s", apiUUID, envType)
 }
 
 // UpdateAPICache updates the xDS cache related to the API Lifecycle event.
