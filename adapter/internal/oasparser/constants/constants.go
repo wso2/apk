@@ -131,9 +131,3 @@ const (
 	KindScope           = "Scope"
 	KindRateLimitPolicy = "RateLimitPolicy"
 )
-
-// API environment types
-const (
-	Production = "Production"
-	Sandbox    = "Sandbox"
-)
