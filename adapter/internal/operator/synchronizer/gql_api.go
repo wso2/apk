@@ -28,7 +28,8 @@ import (
 	"github.com/wso2/apk/adapter/internal/oasparser/model"
 	"github.com/wso2/apk/adapter/pkg/logging"
 	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
-	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/types"	
+	"github.com/wso2/apk/adapter/internal/operator/constants"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
