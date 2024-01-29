@@ -162,6 +162,10 @@ func deployMultipleAPIsInGateway(event *APIEvent, successChannel *chan SuccessEv
 				for label := range updatedLabels {
 					updatedLabelsMap[label] = struct{}{}
 				}
+			} else {
+				adapterInternalAPIHolderMapKey := xds.PrepareAdapterInternalAPIHolderKey(string(apiState.APIDefinition.GetObjectMeta().GetUID()), constants.Production)
+				// It will delete the adapterInternalMap related to the production env if exists
+				xds.DeleteAPIFromInternalMap(adapterInternalAPIHolderMapKey)
 			}
 
 			if apiState.SandHTTPRoute != nil {
@@ -178,6 +182,10 @@ func deployMultipleAPIsInGateway(event *APIEvent, successChannel *chan SuccessEv
 				for label := range updatedLabels {
 					updatedLabelsMap[label] = struct{}{}
 				}
+			} else {
+				adapterInternalAPIHolderMapKey := xds.PrepareAdapterInternalAPIHolderKey(string(apiState.APIDefinition.GetObjectMeta().GetUID()), constants.Sandbox)
+				// It will delete the adapterInternalMap related to the sandbox env if exists
+				xds.DeleteAPIFromInternalMap(adapterInternalAPIHolderMapKey)
 			}
 		}
 
@@ -204,6 +212,10 @@ func deployMultipleAPIsInGateway(event *APIEvent, successChannel *chan SuccessEv
 				for label := range updatedLabels {
 					updatedLabelsMap[label] = struct{}{}
 				}
+			} else {
+				adapterInternalAPIHolderMapKey := xds.PrepareAdapterInternalAPIHolderKey(string(apiState.APIDefinition.GetObjectMeta().GetUID()), constants.Production)
+				// It will delete the adapterInternalMap related to the production env if exists
+				xds.DeleteAPIFromInternalMap(adapterInternalAPIHolderMapKey)
 			}
 			if apiState.SandGQLRoute != nil {
 				_, updatedLabels, err := generateGQLAdapterInternalAPI(apiState, apiState.SandGQLRoute, constants.Sandbox)
@@ -217,6 +229,10 @@ func deployMultipleAPIsInGateway(event *APIEvent, successChannel *chan SuccessEv
 				for label := range updatedLabels {
 					updatedLabelsMap[label] = struct{}{}
 				}
+			} else {
+				adapterInternalAPIHolderMapKey := xds.PrepareAdapterInternalAPIHolderKey(string(apiState.APIDefinition.GetObjectMeta().GetUID()), constants.Sandbox)
+				// It will delete the adapterInternalMap related to the sandbox env if exists
+				xds.DeleteAPIFromInternalMap(adapterInternalAPIHolderMapKey)
 			}
 		}
 		updatedAPIs = append(updatedAPIs, utils.NamespacedName(apiState.APIDefinition))
