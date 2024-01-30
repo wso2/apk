@@ -1980,7 +1980,6 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 			var backends []string
 			for _, rule := range grpcRoute.Spec.Rules {
 				for _, backendRef := range rule.BackendRefs {
-					//TODO fix this if condition
 					if backendRef.Kind != nil && *backendRef.Kind == constants.KindBackend {
 						backends = append(backends, types.NamespacedName{
 							Namespace: utils.GetNamespace(backendRef.Namespace,
