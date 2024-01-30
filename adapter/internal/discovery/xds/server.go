@@ -53,6 +53,7 @@ import (
 	wso2_cache "github.com/wso2/apk/adapter/pkg/discovery/protocol/cache/v3"
 	wso2_resource "github.com/wso2/apk/adapter/pkg/discovery/protocol/resource/v3"
 	eventhubTypes "github.com/wso2/apk/adapter/pkg/eventhub/types"
+	semantic_version "github.com/wso2/apk/adapter/pkg/semanticversion"
 	"github.com/wso2/apk/adapter/pkg/utils/stringutils"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
@@ -101,8 +102,9 @@ var (
 	orgAPIMap map[string]map[string]*EnvoyInternalAPI // organizationID -> Vhost:API_UUID -> EnvoyInternalAPI struct map
 
 	orgIDvHostBasepathMap map[string]map[string]string   // organizationID -> Vhost:basepath -> Vhost:API_UUID
-	orgIDAPIvHostsMap     map[string]map[string][]string // organizationID -> UUID -> prod/sand -> Envoy Vhost Array map
+	orgIDAPIvHostsMap     map[string]map[string][]string // organizationID -> API_UUID-prod/sand -> Envoy Vhost Array map
 
+	orgIDLatestAPIVersionMap map[string]map[string]map[string]semantic_version.SemVersion // organizationID -> Vhost:APIName -> Version Range -> Latest API Version
 	// Envoy Label as map key
 	gatewayLabelConfigMap map[string]*EnvoyGatewayConfig // GW-Label -> EnvoyGatewayConfig struct map
 
@@ -159,6 +161,7 @@ func init() {
 	orgAPIMap = make(map[string]map[string]*EnvoyInternalAPI)
 	orgIDAPIvHostsMap = make(map[string]map[string][]string) // organizationID -> UUID-prod/sand -> Envoy Vhost Array map
 	orgIDvHostBasepathMap = make(map[string]map[string]string)
+	orgIDLatestAPIVersionMap = make(map[string]map[string]map[string]semantic_version.SemVersion)
 
 	enforcerLabelMap = make(map[string]*EnforcerInternalAPI)
 	// currently subscriptions, configs, applications, applicationPolicies, subscriptionPolicies,
@@ -611,6 +614,11 @@ func GenerateIdentifierForAPIWithoutVhost(name, version string) string {
 // GenerateHashedAPINameVersionIDWithoutVhost generates a hashed identifier unique to the API Name and Version
 func GenerateHashedAPINameVersionIDWithoutVhost(name, version string) string {
 	return generateHashValue(name, version)
+}
+
+// GenerateIdentifierForAPIWithoutVersion generates an identifier unique to the API despite of the version
+func GenerateIdentifierForAPIWithoutVersion(vhost, name string) string {
+	return fmt.Sprint(vhost, apiKeyFieldSeparator, name)
 }
 
 func generateHashValue(apiName string, apiVersion string) string {
