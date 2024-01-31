@@ -1076,6 +1076,7 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoGRPCRouteCR(grpcRoute *gwap
 		apiAuth := getSecurity(resourceAuthScheme)
 
 		for _, match := range rule.Matches {
+			//TODO double check this
 			resourcePath := *match.Method.Service
 			resource := &Resource{path: resourcePath,
 				methods: []*Operation{{iD: uuid.New().String(), method: string(*match.Method.Type), policies: policies,
