@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	gwapiv1a2 "sigs.k8s.io/gateway-api/apis/v1alpha2"
 	"strconv"
 	"strings"
 	"time"
@@ -42,6 +43,7 @@ import (
 // AdapterInternalAPI represents the object structure holding the information related to the
 // adapter internal representation. The values are populated from the operator. The pathItem level information is represented
 // by the resources array which contains the Resource entries.
+// TODO task 1
 type AdapterInternalAPI struct {
 	id                       string
 	UUID                     string
@@ -931,6 +933,164 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoGQLRouteCR(gqlRoute *dpv1al
 			resource := &Resource{path: resourcePath,
 				methods: []*Operation{{iD: uuid.New().String(), method: string(*match.Type), policies: policies,
 					auth: apiAuth, rateLimitPolicy: parseRateLimitPolicyToInternal(resourceRatelimitPolicy), scopes: scopes}},
+				iD: uuid.New().String(),
+			}
+			resources = append(resources, resource)
+		}
+	}
+
+	ratelimitPolicy = concatRateLimitPolicies(ratelimitPolicy, nil)
+	apiPolicy = concatAPIPolicies(apiPolicy, nil)
+	authScheme = concatAuthSchemes(authScheme, nil)
+
+	adapterInternalAPI.RateLimitPolicy = parseRateLimitPolicyToInternal(ratelimitPolicy)
+	adapterInternalAPI.resources = resources
+	adapterInternalAPI.xWso2Cors = getCorsConfigFromAPIPolicy(apiPolicy)
+	if authScheme.Spec.Override != nil && authScheme.Spec.Override.Disabled != nil {
+		adapterInternalAPI.disableAuthentications = *authScheme.Spec.Override.Disabled
+	}
+	adapterInternalAPI.disableScopes = disableScopes
+	return nil
+}
+
+// SetInfoGRPCRouteCR populates resources and endpoints of adapterInternalAPI. httpRoute.Spec.Rules.Matches
+// are used to create resources and httpRoute.Spec.Rules.BackendRefs are used to create EndpointClusters.
+func (adapterInternalAPI *AdapterInternalAPI) SetInfoGRPCRouteCR(grpcRoute *gwapiv1a2.GRPCRoute, resourceParams ResourceParams) error {
+	var resources []*Resource
+	outputAuthScheme := utils.TieBreaker(utils.GetPtrSlice(maps.Values(resourceParams.AuthSchemes)))
+	outputAPIPolicy := utils.TieBreaker(utils.GetPtrSlice(maps.Values(resourceParams.APIPolicies)))
+	outputRatelimitPolicy := utils.TieBreaker(utils.GetPtrSlice(maps.Values(resourceParams.RateLimitPolicies)))
+
+	disableScopes := true
+	config := config.ReadConfigs()
+
+	var authScheme *dpv1alpha2.Authentication
+	if outputAuthScheme != nil {
+		authScheme = *outputAuthScheme
+	}
+	var apiPolicy *dpv1alpha2.APIPolicy
+	if outputAPIPolicy != nil {
+		apiPolicy = *outputAPIPolicy
+	}
+	var ratelimitPolicy *dpv1alpha1.RateLimitPolicy
+	if outputRatelimitPolicy != nil {
+		ratelimitPolicy = *outputRatelimitPolicy
+	}
+
+	//We are only supporting one backend for now
+	//TODO fix this later (Dineth)
+	backend := grpcRoute.Spec.Rules[0].BackendRefs[0]
+	backendName := types.NamespacedName{
+		Name:      string(backend.Name),
+		Namespace: utils.GetNamespace(backend.Namespace, grpcRoute.Namespace),
+	}
+	resolvedBackend, ok := resourceParams.BackendMapping[backendName.String()]
+	if ok {
+		endpointConfig := &EndpointConfig{}
+		if resolvedBackend.CircuitBreaker != nil {
+			endpointConfig.CircuitBreakers = &CircuitBreakers{
+				MaxConnections:     int32(resolvedBackend.CircuitBreaker.MaxConnections),
+				MaxRequests:        int32(resolvedBackend.CircuitBreaker.MaxRequests),
+				MaxPendingRequests: int32(resolvedBackend.CircuitBreaker.MaxPendingRequests),
+				MaxRetries:         int32(resolvedBackend.CircuitBreaker.MaxRetries),
+				MaxConnectionPools: int32(resolvedBackend.CircuitBreaker.MaxConnectionPools),
+			}
+		}
+		if resolvedBackend.Timeout != nil {
+			endpointConfig.TimeoutInMillis = resolvedBackend.Timeout.UpstreamResponseTimeout * 1000
+			endpointConfig.IdleTimeoutInSeconds = resolvedBackend.Timeout.DownstreamRequestIdleTimeout
+		}
+		if resolvedBackend.Retry != nil {
+			statusCodes := config.Envoy.Upstream.Retry.StatusCodes
+			if len(resolvedBackend.Retry.StatusCodes) > 0 {
+				statusCodes = resolvedBackend.Retry.StatusCodes
+			}
+			endpointConfig.RetryConfig = &RetryConfig{
+				Count:                int32(resolvedBackend.Retry.Count),
+				StatusCodes:          statusCodes,
+				BaseIntervalInMillis: int32(resolvedBackend.Retry.BaseIntervalMillis),
+			}
+		}
+		adapterInternalAPI.Endpoints = &EndpointCluster{
+			Endpoints: GetEndpoints(backendName, resourceParams.BackendMapping),
+			Config:    endpointConfig,
+		}
+		if resolvedBackend.HealthCheck != nil {
+			adapterInternalAPI.Endpoints.HealthCheck = &HealthCheck{
+				Interval:           resolvedBackend.HealthCheck.Interval,
+				Timeout:            resolvedBackend.HealthCheck.Timeout,
+				UnhealthyThreshold: resolvedBackend.HealthCheck.UnhealthyThreshold,
+				HealthyThreshold:   resolvedBackend.HealthCheck.HealthyThreshold,
+			}
+		}
+
+		var securityConfig []EndpointSecurity
+		switch resolvedBackend.Security.Type {
+		case "Basic":
+			securityConfig = append(securityConfig, EndpointSecurity{
+				Password: string(resolvedBackend.Security.Basic.Password),
+				Username: string(resolvedBackend.Security.Basic.Username),
+				Type:     string(resolvedBackend.Security.Type),
+				Enabled:  true,
+			})
+		}
+		adapterInternalAPI.EndpointSecurity = utils.GetPtrSlice(securityConfig)
+	} else {
+		return fmt.Errorf("backend: %s has not been resolved", backendName)
+	}
+
+	for _, rule := range grpcRoute.Spec.Rules {
+		var policies = OperationPolicies{}
+		resourceAuthScheme := authScheme
+		resourceRatelimitPolicy := ratelimitPolicy
+		var scopes []string
+
+		for _, filter := range rule.Filters {
+			if filter.ExtensionRef != nil && filter.ExtensionRef.Kind == constants.KindAuthentication {
+				if ref, found := resourceParams.ResourceAuthSchemes[types.NamespacedName{
+					Name:      string(filter.ExtensionRef.Name),
+					Namespace: grpcRoute.Namespace,
+				}.String()]; found {
+					resourceAuthScheme = concatAuthSchemes(authScheme, &ref)
+				} else {
+					return fmt.Errorf(`auth scheme: %s has not been resolved, spec.targetRef.kind should be 
+						'Resource' in resource level Authentications`, filter.ExtensionRef.Name)
+				}
+			}
+			if filter.ExtensionRef != nil && filter.ExtensionRef.Kind == constants.KindScope {
+				if ref, found := resourceParams.ResourceScopes[types.NamespacedName{
+					Name:      string(filter.ExtensionRef.Name),
+					Namespace: grpcRoute.Namespace,
+				}.String()]; found {
+					scopes = ref.Spec.Names
+					disableScopes = false
+				} else {
+					return fmt.Errorf("scope: %s has not been resolved in namespace %s", filter.ExtensionRef.Name, grpcRoute.Namespace)
+				}
+			}
+			if filter.ExtensionRef != nil && filter.ExtensionRef.Kind == constants.KindRateLimitPolicy {
+				if ref, found := resourceParams.ResourceRateLimitPolicies[types.NamespacedName{
+					Name:      string(filter.ExtensionRef.Name),
+					Namespace: grpcRoute.Namespace,
+				}.String()]; found {
+					resourceRatelimitPolicy = concatRateLimitPolicies(ratelimitPolicy, &ref)
+				} else {
+					return fmt.Errorf(`ratelimitpolicy: %s has not been resolved, spec.targetRef.kind should be 
+						'Resource' in resource level RateLimitPolicies`, filter.ExtensionRef.Name)
+				}
+			}
+		}
+		resourceAuthScheme = concatAuthSchemes(resourceAuthScheme, nil)
+		resourceRatelimitPolicy = concatRateLimitPolicies(resourceRatelimitPolicy, nil)
+
+		loggers.LoggerOasparser.Debugf("Calculating auths for API ..., API_UUID = %v", adapterInternalAPI.UUID)
+		apiAuth := getSecurity(resourceAuthScheme)
+
+		for _, match := range rule.Matches {
+			resourcePath := *match.Method.Service
+			resource := &Resource{path: resourcePath,
+				methods: []*Operation{{iD: uuid.New().String(), method: string(*match.Method.Type), policies: policies,
+					auth: apiAuth, RateLimitPolicy: parseRateLimitPolicyToInternal(resourceRatelimitPolicy), scopes: scopes}},
 				iD: uuid.New().String(),
 			}
 			resources = append(resources, resource)
