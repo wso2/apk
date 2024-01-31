@@ -292,7 +292,6 @@ func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		return ctrl.Result{}, nil
 	}
 
-	//TODO there's another error here associated with the deployment of grpcroutes
 	if apiState, err := apiReconciler.resolveAPIRefs(ctx, apiCR); err != nil {
 		loggers.LoggerAPKOperator.Warnf("Error retrieving ref CRs for API in namespace : %s with API UUID : %v, %v",
 			req.NamespacedName.String(), string(apiCR.ObjectMeta.UID), err)
