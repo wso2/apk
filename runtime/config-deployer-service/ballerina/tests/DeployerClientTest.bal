@@ -2,15 +2,15 @@ import ballerina/test;
 import config_deployer_service.model;
 
 @test:Config {dataProvider: RoutesOrderDataProvider}
-public isolated function testCreateHttpRoutesOrder(model:Httproute[] httpRoutes, model:Httproute[] expectedSortedhttpRoutes) returns error? {
+public isolated function testCreateHttpRoutesOrder(model:HTTPRoute[] httpRoutes, model:HTTPRoute[] expectedSortedhttpRoutes) returns error? {
 
     DeployerClient deployerClient = new;
-    model:Httproute[] sortedHttpRoutes = check deployerClient.createHttpRoutesOrder(httpRoutes);
+    model:HTTPRoute[] sortedHttpRoutes = check deployerClient.createHttpRoutesOrder(httpRoutes);
     test:assertEquals(sortedHttpRoutes, expectedSortedhttpRoutes, "Sorted HttpRoutes are not equal to expected SortedRoutes");
 }
 
-public function RoutesOrderDataProvider() returns map<[model:Httproute[], model:Httproute[]]>|error {
-    model:Httproute sortedHttpRoute = {
+public function RoutesOrderDataProvider() returns map<[model:HTTPRoute[], model:HTTPRoute[]]>|error {
+    model:HTTPRoute sortedHttpRoute = {
         apiVersion: "gateway.networking.k8s.io/v1beta1",
         kind: "HTTPRoute",
         metadata: {name: "01ee37b2-57b1-12ee-b8c5-e9b11538a0c9"},
@@ -136,7 +136,7 @@ public function RoutesOrderDataProvider() returns map<[model:Httproute[], model:
         }
     };
 
-    map<[model:Httproute[], model:Httproute[]]> routesMap = {
+    map<[model:HTTPRoute[], model:HTTPRoute[]]> routesMap = {
         "1": [
             [
                 {

@@ -209,12 +209,12 @@ public function testBackendConfigGenerationFromAPKConf() returns error? {
 
     test:assertEquals(apiArtifact.backendServices.length(), 3, "Required number of endpoints not found");
     test:assertTrue(apiArtifact.productionEndpointAvailable, "Production endpoint not defined");
-    test:assertEquals(apiArtifact.productionRoute.length(), 1, "Production endpoint not defined");
-    foreach model:Httproute httpRoute in apiArtifact.productionRoute {
+    test:assertEquals(apiArtifact.productionHttpRoutes.length(), 1, "Production endpoint not defined");
+    foreach model:HTTPRoute httpRoute in apiArtifact.productionHttpRoutes {
         test:assertEquals(httpRoute.spec.hostnames, ["default.gw.wso2.com"], "Production endpoint vhost mismatch");
         test:assertEquals(httpRoute.spec.rules.length(), 2, "Required number of HTTP Route rules not found");
-        model:HTTPBackendRef[]? backendRefs = httpRoute.spec.rules[0].backendRefs;
-        if backendRefs is model:HTTPBackendRef[] {
+        model:BackendRef[]? backendRefs = httpRoute.spec.rules[0].backendRefs;
+        if backendRefs is model:BackendRef[] {
             string backendUUID = backendRefs[0].name;
             test:assertEquals(apiArtifact.backendServices.get(backendUUID).spec, prodBackendSpec, "Production Backend is not equal to expected Production Backend Config");
         } else {
@@ -223,11 +223,11 @@ public function testBackendConfigGenerationFromAPKConf() returns error? {
     }
 
     test:assertTrue(apiArtifact.sandboxEndpointAvailable, "Sandbox endpoint not defined");
-    test:assertEquals(apiArtifact.sandboxRoute.length(), 1, "Sandbox Backend not defined");
-    foreach model:Httproute httpRoute in apiArtifact.sandboxRoute {
+    test:assertEquals(apiArtifact.sandboxHttpRoutes.length(), 1, "Sandbox Backend not defined");
+    foreach model:HTTPRoute httpRoute in apiArtifact.sandboxHttpRoutes {
         test:assertEquals(httpRoute.spec.hostnames, ["default.sandbox.gw.wso2.com"], "Sandbox vhost mismatch");
-        model:HTTPBackendRef[]? backendRefs = httpRoute.spec.rules[0].backendRefs;
-        if backendRefs is model:HTTPBackendRef[] {
+        model:BackendRef[]? backendRefs = httpRoute.spec.rules[0].backendRefs;
+        if backendRefs is model:BackendRef[] {
             string backendUUID = backendRefs[0].name;
             test:assertEquals(apiArtifact.backendServices.get(backendUUID).spec, sandboxBackendSpec, "Sandbox Backend is not equal to expected Sandbox Backend Config");
         } else {
@@ -303,15 +303,18 @@ public function testScopeConfigGenerationFromAPKConf() returns error? {
         apiArtifact.scopes.get("publisher").metadata.name,
         apiArtifact.scopes.get("reader").metadata.name
     ];
-    foreach model:Httproute httpRoute in apiArtifact.productionRoute {
+    foreach model:HTTPRoute httpRoute in apiArtifact.productionHttpRoutes {
         model:HTTPRouteFilter[]? httpFilters = httpRoute.spec.rules[0].filters;
         if httpFilters is model:HTTPRouteFilter[] {
             foreach model:HTTPRouteFilter httpFilter in httpFilters {
-                if (httpFilter.'type.equalsIgnoreCaseAscii("ExtensionRef")) {
-                    model:LocalObjectReference? extensionRef = httpFilter.extensionRef;
-                    if extensionRef is model:LocalObjectReference {
-                        test:assertEquals(extensionRef.kind, "Scope", "ExtensionRef for scope is not equal to expected Config");
-                        test:assertTrue(scopeUUIDs.indexOf(extensionRef.name) != (), "Scope not found in the scope resources");
+                if httpFilter.'type is string {
+                    string httpFilterType = <string>httpFilter.'type;
+                    if (httpFilterType.equalsIgnoreCaseAscii("ExtensionRef")) {
+                        model:LocalObjectReference? extensionRef = httpFilter.extensionRef;
+                        if extensionRef is model:LocalObjectReference {
+                            test:assertEquals(extensionRef.kind, "Scope", "ExtensionRef for scope is not equal to expected Config");
+                            test:assertTrue(scopeUUIDs.indexOf(extensionRef.name) != (), "Scope not found in the scope resources");
+                        }
                     }
                 }
             }
@@ -599,7 +602,7 @@ public function testEnvironmentGenerationFromAPKConf() returns error? {
         test:assertFail("API is not equal to expected API Config");
     }
 
-    model:Httproute[] productionRoutes = apiArtifact.productionRoute;
+    model:HTTPRoute[] productionRoutes = apiArtifact.productionHttpRoutes;
     foreach var route in productionRoutes {
         test:assertEquals(route.spec.hostnames, ["default-dev.gw.wso2.com"], "Production endpoint vhost mismatch");
     }
@@ -646,7 +649,7 @@ public function testBasicAPIFromAPKConf() returns error? {
         test:assertFail("API is not equal to expected API Config");
     }
 
-    model:Httproute[] productionRoutes = apiArtifact.productionRoute;
+    model:HTTPRoute[] productionRoutes = apiArtifact.productionHttpRoutes;
     foreach var route in productionRoutes {
         test:assertEquals(route.spec.hostnames, ["default.gw.wso2.com"], "Production endpoint vhost mismatch");
     }
@@ -691,11 +694,11 @@ public function APIToAPKConfDataProvider() returns map<[runtimeModels:API, APKCo
     runtimeModels:URITemplate[] uriTemplates = [];
     runtimeModels:URITemplate uriTemplate = runtimeModels:newURITemplate1();
     uriTemplate.setUriTemplate("/menu");
-    uriTemplate.setHTTPVerb("GET");
+    uriTemplate.setVerb("GET");
     uriTemplates.push(uriTemplate);
     runtimeModels:URITemplate uriTemplate1 = runtimeModels:newURITemplate1();
     uriTemplate1.setUriTemplate("/order");
-    uriTemplate1.setHTTPVerb("POST");
+    uriTemplate1.setVerb("POST");
     uriTemplate1.setAuthEnabled(false);
     uriTemplate1.setEndpoint("http://localhost:9091");
     uriTemplate1.setScopes("scope1");

@@ -1,7 +1,5 @@
 package org.wso2.apk.config.model;
 
-import java.util.Set;
-
 public class API {
     private String name;
     private String basePath;

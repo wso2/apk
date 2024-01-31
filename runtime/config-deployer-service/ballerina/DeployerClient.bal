@@ -121,8 +121,10 @@ public class DeployerClient {
                     check self.deployInterceptorServiceCRs(apiArtifact, ownerReference);
                     check self.deployBackendJWTConfigs(apiArtifact, ownerReference);
                     check self.deployAPIPolicyCRs(apiArtifact, ownerReference);
-                    check self.deployHttpRoutes(apiArtifact.productionRoute, <string>apiArtifact?.namespace, ownerReference);
-                    check self.deployHttpRoutes(apiArtifact.sandboxRoute, <string>apiArtifact?.namespace, ownerReference);
+
+                    check self.deployRoutes(apiArtifact.productionHttpRoutes, apiArtifact.productionGqlRoutes, <string>apiArtifact?.namespace, ownerReference);
+                    check self.deployRoutes(apiArtifact.sandboxHttpRoutes, apiArtifact.sandboxGqlRoutes, <string>apiArtifact?.namespace, ownerReference);
+
                     return deployK8sAPICrResult;
                 } on fail var e {
                     http:Response|http:ClientError apiCRDeletionResponse = deleteAPICR(api.metadata.name, apiArtifact.namespace ?: "");
@@ -173,9 +175,9 @@ public class DeployerClient {
 
     private isolated function deleteHttpRoutes(model:API api, string organization) returns commons:APKError? {
         do {
-            model:HttprouteList|http:ClientError httpRouteListResponse = check getHttproutesForAPIS(api.spec.apiName, api.spec.apiVersion, <string>api.metadata?.namespace, organization);
-            if httpRouteListResponse is model:HttprouteList {
-                foreach model:Httproute item in httpRouteListResponse.items {
+            model:HTTPRouteList|http:ClientError httpRouteListResponse = check getHttproutesForAPIS(api.spec.apiName, api.spec.apiVersion, <string>api.metadata?.namespace, organization);
+            if httpRouteListResponse is model:HTTPRouteList {
+                foreach model:HTTPRoute item in httpRouteListResponse.items {
                     http:Response|http:ClientError httprouteDeletionResponse = deleteHttpRoute(item.metadata.name, <string>api.metadata?.namespace);
                     if httprouteDeletionResponse is http:Response {
                         if httprouteDeletionResponse.statusCode != http:STATUS_OK {
@@ -347,41 +349,72 @@ public class DeployerClient {
             return e909022("Internal error occured", e = error("Internal error occured"));
         }
     }
-
-    private isolated function deployHttpRoutes(model:Httproute[] httproutes, string namespace, model:OwnerReference ownerReference) returns error? {
-        model:Httproute[] deployReadyHttproutes = httproutes;
-        model:Httproute[]|commons:APKError orderedHttproutes = self.createHttpRoutesOrder(httproutes);
-        if orderedHttproutes is model:Httproute[] {
-            deployReadyHttproutes = orderedHttproutes;
-        }
-        foreach model:Httproute httpRoute in deployReadyHttproutes {
-            httpRoute.metadata.ownerReferences = [ownerReference];
-            if httpRoute.spec.rules.length() > 0 {
-                http:Response deployHttpRouteResult = check deployHttpRoute(httpRoute, namespace);
-                if deployHttpRouteResult.statusCode == http:STATUS_CREATED {
-                    log:printDebug("Deployed HttpRoute Successfully" + httpRoute.toString());
-                } else if deployHttpRouteResult.statusCode == http:STATUS_CONFLICT {
-                    log:printDebug("HttpRoute already exists" + httpRoute.toString());
-                    model:Httproute httpRouteFromK8s = check getHttpRoute(httpRoute.metadata.name, namespace);
-                    httpRoute.metadata.resourceVersion = httpRouteFromK8s.metadata.resourceVersion;
-                    http:Response httpRouteCR = check updateHttpRoute(httpRoute, namespace);
-                    if httpRouteCR.statusCode != http:STATUS_OK {
-                        json responsePayLoad = check httpRouteCR.getJsonPayload();
+    private isolated function deployRoutes(model:HTTPRoute[]? httproutes, model:GQLRoute[]? gqlroutes, string namespace, model:OwnerReference ownerReference) returns error? {
+        if httproutes is model:HTTPRoute[] {
+            model:HTTPRoute[] deployReadyHttproutes = httproutes;
+            model:HTTPRoute[]|commons:APKError orderedHttproutes = self.createHttpRoutesOrder(httproutes);
+            if orderedHttproutes is model:HTTPRoute[] {
+                deployReadyHttproutes = orderedHttproutes;
+            }
+            foreach model:HTTPRoute httpRoute in deployReadyHttproutes {
+                httpRoute.metadata.ownerReferences = [ownerReference];
+                if httpRoute.spec.rules.length() > 0 {
+                    http:Response deployHttpRouteResult = check deployHttpRoute(httpRoute, namespace);
+                    if deployHttpRouteResult.statusCode == http:STATUS_CREATED {
+                        log:printDebug("Deployed HttpRoute Successfully" + httpRoute.toString());
+                    } else if deployHttpRouteResult.statusCode == http:STATUS_CONFLICT {
+                        log:printDebug("HttpRoute already exists" + httpRoute.toString());
+                        model:HTTPRoute httpRouteFromK8s = check getHttpRoute(httpRoute.metadata.name, namespace);
+                        httpRoute.metadata.resourceVersion = httpRouteFromK8s.metadata.resourceVersion;
+                        http:Response httpRouteCR = check updateHttpRoute(httpRoute, namespace);
+                        if httpRouteCR.statusCode != http:STATUS_OK {
+                            json responsePayLoad = check httpRouteCR.getJsonPayload();
+                            model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+                            check self.handleK8sTimeout(statusResponse);
+                        }
+                    } else {
+                        json responsePayLoad = check deployHttpRouteResult.getJsonPayload();
                         model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
                         check self.handleK8sTimeout(statusResponse);
                     }
-                } else {
-                    json responsePayLoad = check deployHttpRouteResult.getJsonPayload();
-                    model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
-                    check self.handleK8sTimeout(statusResponse);
+                }
+            }
+        } else if gqlroutes is model:GQLRoute[] {
+            model:GQLRoute[] deployReadyGqlRoutes = gqlroutes;
+            model:GQLRoute[]|commons:APKError orderedGqlRoutes = self.createGqlRoutesOrder(gqlroutes);
+            if orderedGqlRoutes is model:GQLRoute[] {
+                deployReadyGqlRoutes = orderedGqlRoutes;
+            }
+            foreach model:GQLRoute gqlRoute in deployReadyGqlRoutes {
+                gqlRoute.metadata.ownerReferences = [ownerReference];
+                if gqlRoute.spec.rules.length() > 0 {
+                    http:Response deployGqlRouteResult = check deployGqlRoute(gqlRoute, namespace);
+                    if deployGqlRouteResult.statusCode == http:STATUS_CREATED {
+                        log:printDebug("Deployed GqlRoute Successfully" + gqlRoute.toString());
+                    } else if deployGqlRouteResult.statusCode == http:STATUS_CONFLICT {
+                        log:printDebug("GqlRoute already exists" + gqlRoute.toString());
+                        model:GQLRoute gqlRouteFromK8s = check getGqlRoute(gqlRoute.metadata.name, namespace);
+                        gqlRoute.metadata.resourceVersion = gqlRouteFromK8s.metadata.resourceVersion;
+                        http:Response gqlRouteCR = check updateGqlRoute(gqlRoute, namespace);
+                        if gqlRouteCR.statusCode != http:STATUS_OK {
+                            json responsePayLoad = check gqlRouteCR.getJsonPayload();
+                            model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+                            check self.handleK8sTimeout(statusResponse);
+                        }
+                    } else {
+                        json responsePayLoad = check deployGqlRouteResult.getJsonPayload();
+                        model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+                        check self.handleK8sTimeout(statusResponse);
+                    }
                 }
             }
         }
+
     }
 
-    public isolated function createHttpRoutesOrder(model:Httproute[] httproutes) returns model:Httproute[]|commons:APKError {
+    public isolated function createHttpRoutesOrder(model:HTTPRoute[] httproutes) returns model:HTTPRoute[]|commons:APKError {
         do {
-            foreach model:Httproute route in httproutes {
+            foreach model:HTTPRoute route in httproutes {
                 model:HTTPRouteRule[] routeRules = route.spec.rules;
                 model:HTTPRouteRule[] sortedRouteRules = from var routeRule in routeRules
                     order by (<model:HTTPPathMatch>((<model:HTTPRouteMatch[]>routeRule.matches)[0]).path).value descending
@@ -392,6 +425,22 @@ public class DeployerClient {
         } on fail var e {
             log:printError("Error occured while sorting httpRoutes", e);
             return e909022("Error occured while sorting httpRoutes", e);
+        }
+    }
+
+    public isolated function createGqlRoutesOrder(model:GQLRoute[] gqlRoutes) returns model:GQLRoute[]|commons:APKError {
+        do {
+            foreach model:GQLRoute route in gqlRoutes {
+                model:GQLRouteRule[] routeRules = route.spec.rules;
+                model:GQLRouteRule[] sortedRouteRules = from var routeRule in routeRules
+                    order by <string>((<model:GQLRouteMatch[]>routeRule.matches)[0]).path descending
+                    select routeRule;
+                route.spec.rules = sortedRouteRules;
+            }
+            return gqlRoutes;
+        } on fail var e {
+            log:printError("Error occured while sorting gqlRoutes", e);
+            return e909022("Error occured while sorting gqlRoutes", e);
         }
     }
 

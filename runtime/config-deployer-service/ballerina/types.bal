@@ -205,7 +205,7 @@ public type APKConf record {
     string basePath;
     @constraint:String {maxLength: 30, minLength: 1}
     string version;
-    string 'type = "REST";
+    string 'type = API_TYPE_REST;
     # Endpoint to expose API Definition
     string definitionPath?;
     # Is this the default version of the API

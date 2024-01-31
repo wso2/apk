@@ -77,8 +77,6 @@ public class SwaggerData {
             this.policy = policy;
         }
 
-
-
         public String[] getScopes() {
 
             return scopes;
@@ -112,7 +110,7 @@ public class SwaggerData {
         for (URITemplate uriTemplate : uriTemplates) {
             Resource resource = new Resource();
             resource.path = uriTemplate.getUriTemplate();
-            resource.verb = uriTemplate.getHTTPVerb();
+            resource.verb = uriTemplate.getVerb();
             resource.authType = uriTemplate.isAuthEnabled();
             resource.scopes = uriTemplate.retrieveAllScopes();
             resources.add(resource);

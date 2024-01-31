@@ -57,13 +57,6 @@ public distinct class URITemplate {
         return java:toString(org_wso2_apk_config_model_URITemplate_getEndpoint(self.jObj)) ?: "";
     }
 
-    # The function that maps to the `getHTTPVerb` method of `org.wso2.apk.config.model.URITemplate`.
-    #
-    # + return - The `string` value returning from the Java mapping.
-    public isolated function getHTTPVerb() returns string {
-        return java:toString(org_wso2_apk_config_model_URITemplate_getHTTPVerb(self.jObj)) ?: "";
-    }
-
     # The function that maps to the `getId` method of `org.wso2.apk.config.model.URITemplate`.
     #
     # + return - The `int` value returning from the Java mapping.
@@ -94,6 +87,13 @@ public distinct class URITemplate {
     # + return - The `string` value returning from the Java mapping.
     public isolated function getUriTemplate() returns string {
         return java:toString(org_wso2_apk_config_model_URITemplate_getUriTemplate(self.jObj)) ?: "";
+    }
+
+    # The function that maps to the `getVerb` method of `org.wso2.apk.config.model.URITemplate`.
+    #
+    # + return - The `string` value returning from the Java mapping.
+    public isolated function getVerb() returns string {
+        return java:toString(org_wso2_apk_config_model_URITemplate_getVerb(self.jObj)) ?: "";
     }
 
     # The function that maps to the `hashCode` method of `org.wso2.apk.config.model.URITemplate`.
@@ -145,13 +145,6 @@ public distinct class URITemplate {
         org_wso2_apk_config_model_URITemplate_setEndpoint(self.jObj, java:fromString(arg0));
     }
 
-    # The function that maps to the `setHTTPVerb` method of `org.wso2.apk.config.model.URITemplate`.
-    #
-    # + arg0 - The `string` value required to map with the Java method parameter.
-    public isolated function setHTTPVerb(string arg0) {
-        org_wso2_apk_config_model_URITemplate_setHTTPVerb(self.jObj, java:fromString(arg0));
-    }
-
     # The function that maps to the `setId` method of `org.wso2.apk.config.model.URITemplate`.
     #
     # + arg0 - The `int` value required to map with the Java method parameter.
@@ -178,6 +171,13 @@ public distinct class URITemplate {
     # + arg0 - The `string` value required to map with the Java method parameter.
     public isolated function setUriTemplate(string arg0) {
         org_wso2_apk_config_model_URITemplate_setUriTemplate(self.jObj, java:fromString(arg0));
+    }
+
+    # The function that maps to the `setVerb` method of `org.wso2.apk.config.model.URITemplate`.
+    #
+    # + arg0 - The `string` value required to map with the Java method parameter.
+    public isolated function setVerb(string arg0) {
+        org_wso2_apk_config_model_URITemplate_setVerb(self.jObj, java:fromString(arg0));
     }
 
     # The function that maps to the `wait` method of `org.wso2.apk.config.model.URITemplate`.
@@ -251,12 +251,6 @@ isolated function org_wso2_apk_config_model_URITemplate_getEndpoint(handle recei
     paramTypes: []
 } external;
 
-isolated function org_wso2_apk_config_model_URITemplate_getHTTPVerb(handle receiver) returns handle = @java:Method {
-    name: "getHTTPVerb",
-    'class: "org.wso2.apk.config.model.URITemplate",
-    paramTypes: []
-} external;
-
 function org_wso2_apk_config_model_URITemplate_getId(handle receiver) returns int = @java:Method {
     name: "getId",
     'class: "org.wso2.apk.config.model.URITemplate",
@@ -277,6 +271,12 @@ isolated function org_wso2_apk_config_model_URITemplate_getScopes(handle receive
 
 isolated function org_wso2_apk_config_model_URITemplate_getUriTemplate(handle receiver) returns handle = @java:Method {
     name: "getUriTemplate",
+    'class: "org.wso2.apk.config.model.URITemplate",
+    paramTypes: []
+} external;
+
+isolated function org_wso2_apk_config_model_URITemplate_getVerb(handle receiver) returns handle = @java:Method {
+    name: "getVerb",
     'class: "org.wso2.apk.config.model.URITemplate",
     paramTypes: []
 } external;
@@ -323,8 +323,8 @@ isolated function org_wso2_apk_config_model_URITemplate_setEndpoint(handle recei
     paramTypes: ["java.lang.String"]
 } external;
 
-isolated function org_wso2_apk_config_model_URITemplate_setHTTPVerb(handle receiver, handle arg0) = @java:Method {
-    name: "setHTTPVerb",
+isolated function org_wso2_apk_config_model_URITemplate_setVerb(handle receiver, handle arg0) = @java:Method {
+    name: "setVerb",
     'class: "org.wso2.apk.config.model.URITemplate",
     paramTypes: ["java.lang.String"]
 } external;

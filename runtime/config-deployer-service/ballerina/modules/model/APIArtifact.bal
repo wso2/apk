@@ -2,8 +2,10 @@ public type APIArtifact record {|
     string name;
     string 'version;
     API api?;
-    Httproute[] productionRoute = [];
-    Httproute[] sandboxRoute = [];
+    HTTPRoute[] productionHttpRoutes = [];
+    HTTPRoute[] sandboxHttpRoutes = [];
+    GQLRoute[] productionGqlRoutes = [];
+    GQLRoute[] sandboxGqlRoutes = [];
     ConfigMap definition?;
     map<ConfigMap> endpointCertificates = {};
     map<string> certificateMap = {};

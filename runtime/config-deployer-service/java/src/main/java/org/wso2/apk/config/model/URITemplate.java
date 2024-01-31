@@ -17,30 +17,29 @@
  */
 package org.wso2.apk.config.model;
 
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class URITemplate implements Serializable{
+public class URITemplate implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     private String uriTemplate;
     private String resourceURI;
-    private String httpVerb;
+    private String verb;
     private boolean authEnabled = true;
     private List<String> scopes = new ArrayList<String>();
     private int id;
     private String endpoint;
 
-    public String getHTTPVerb() {
-        return httpVerb;
+    public String getVerb() {
+        return verb;
     }
 
-    public void setHTTPVerb(String httpVerb) {
-        this.httpVerb = httpVerb;
+    public void setVerb(String verb) {
+        this.verb = verb;
     }
 
     public boolean isAuthEnabled() {
@@ -71,24 +70,27 @@ public class URITemplate implements Serializable{
         return scopes.toArray(new String[scopes.size()]);
     }
 
-
-    public void setScopes(String scope){
+    public void setScopes(String scope) {
         this.scopes.add(scope);
     }
 
     @Override
     public boolean equals(Object o) {
 
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         URITemplate that = (URITemplate) o;
-        return authEnabled == that.authEnabled && id == that.id && Objects.equals(uriTemplate, that.uriTemplate) && Objects.equals(resourceURI, that.resourceURI) && Objects.equals(httpVerb, that.httpVerb) && Objects.equals(scopes, that.scopes) && Objects.equals(endpoint, that.endpoint);
+        return authEnabled == that.authEnabled && id == that.id && Objects.equals(uriTemplate, that.uriTemplate)
+                && Objects.equals(resourceURI, that.resourceURI) && Objects.equals(verb, that.verb)
+                && Objects.equals(scopes, that.scopes) && Objects.equals(endpoint, that.endpoint);
     }
 
     @Override
     public int hashCode() {
 
-        return Objects.hash(uriTemplate, resourceURI, httpVerb, authEnabled, scopes, id, endpoint);
+        return Objects.hash(uriTemplate, resourceURI, verb, authEnabled, scopes, id, endpoint);
     }
 
     public int getId() {

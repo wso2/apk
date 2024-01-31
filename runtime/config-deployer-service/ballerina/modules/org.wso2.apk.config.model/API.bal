@@ -105,7 +105,7 @@ public distinct class API {
     # The function that maps to the `getType` method of `org.wso2.apk.config.model.API`.
     #
     # + return - The `string` value returning from the Java mapping.
-    public function getType() returns string {
+    public isolated function getType() returns string {
         return java:toString(org_wso2_apk_config_model_API_getType(self.jObj)) ?: "";
     }
 
@@ -179,7 +179,7 @@ public distinct class API {
     # The function that maps to the `setGraphQLSchema` method of `org.wso2.apk.config.model.API`.
     #
     # + arg0 - The `string` value required to map with the Java method parameter.
-    public function setGraphQLSchema(string arg0) {
+    public isolated function setGraphQLSchema(string arg0) {
         org_wso2_apk_config_model_API_setGraphQLSchema(self.jObj, java:fromString(arg0));
     }
 
@@ -346,7 +346,7 @@ function org_wso2_apk_config_model_API_getSwaggerDefinition(handle receiver) ret
     paramTypes: []
 } external;
 
-function org_wso2_apk_config_model_API_getType(handle receiver) returns handle = @java:Method {
+isolated function org_wso2_apk_config_model_API_getType(handle receiver) returns handle = @java:Method {
     name: "getType",
     'class: "org.wso2.apk.config.model.API",
     paramTypes: []
@@ -406,7 +406,7 @@ function org_wso2_apk_config_model_API_setEnvironment(handle receiver, handle ar
     paramTypes: ["java.lang.String"]
 } external;
 
-function org_wso2_apk_config_model_API_setGraphQLSchema(handle receiver, handle arg0) = @java:Method {
+isolated function org_wso2_apk_config_model_API_setGraphQLSchema(handle receiver, handle arg0) = @java:Method {
     name: "setGraphQLSchema",
     'class: "org.wso2.apk.config.model.API",
     paramTypes: ["java.lang.String"]
