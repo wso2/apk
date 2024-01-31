@@ -43,6 +43,7 @@ public class ConfigGeneratorClient {
                 if validateAndRetrieveDefinitionResult.isValid() {
                     runtimeapi:APIDefinition parser = validateAndRetrieveDefinitionResult.getParser();
                     runtimeModels:API apiFromDefinition = check parser.getAPIFromDefinition(validateAndRetrieveDefinitionResult.getContent());
+                    apiFromDefinition.setType(apiType);
                     APIClient apiclient = new ();
                     APKConf generatedAPKConf = check apiclient.fromAPIModelToAPKConf(apiFromDefinition);
                     string|() apkConfYaml = check commons:newYamlUtil1().fromJsonStringToYaml(generatedAPKConf.toJsonString());
@@ -93,7 +94,7 @@ public class ConfigGeneratorClient {
     private isolated function validateAndRetrieveDefinition(string 'type, string? url, byte[]? content, string? fileName) returns runtimeapi:APIDefinitionValidationResponse|runtimeapi:APIManagementException|error|commons:APKError {
         runtimeapi:APIDefinitionValidationResponse|runtimeapi:APIManagementException|error validationResponse;
         boolean typeAvailable = 'type.length() > 0;
-        string[] ALLOWED_API_DEFINITION_TYPES = ["REST", "GRAPHQL", "ASYNC"];
+        string[] ALLOWED_API_DEFINITION_TYPES = [API_TYPE_REST, API_TYPE_GRAPHQL, "ASYNC"];
         if !typeAvailable {
             return e909005("type");
         }
@@ -171,13 +172,21 @@ public class ConfigGeneratorClient {
             string yamlString = check self.convertJsonToYaml(authenticationCr.toJsonString());
             _ = check self.storeFile(yamlString, authenticationCr.metadata.name, zipDir);
         }
-        foreach model:Httproute httpRoute in apiArtifact.productionRoute {
+        foreach model:HTTPRoute httpRoute in apiArtifact.productionHttpRoutes {
             string yamlString = check self.convertJsonToYaml(httpRoute.toJsonString());
             _ = check self.storeFile(yamlString, httpRoute.metadata.name, zipDir);
         }
-        foreach model:Httproute httpRoute in apiArtifact.sandboxRoute {
+        foreach model:HTTPRoute httpRoute in apiArtifact.sandboxHttpRoutes {
             string yamlString = check self.convertJsonToYaml(httpRoute.toJsonString());
             _ = check self.storeFile(yamlString, httpRoute.metadata.name, zipDir);
+        }
+        foreach model:GQLRoute gqlRoute in apiArtifact.productionGqlRoutes {
+            string yamlString = check self.convertJsonToYaml(gqlRoute.toJsonString());
+            _ = check self.storeFile(yamlString, gqlRoute.metadata.name, zipDir);
+        }
+        foreach model:GQLRoute gqlRoute in apiArtifact.sandboxGqlRoutes {
+            string yamlString = check self.convertJsonToYaml(gqlRoute.toJsonString());
+            _ = check self.storeFile(yamlString, gqlRoute.metadata.name, zipDir);
         }
         foreach model:Backend backend in apiArtifact.backendServices {
             string yamlString = check self.convertJsonToYaml(backend.toJsonString());

@@ -80,13 +80,23 @@ isolated function updateAuthenticationCR(model:Authentication authentication, st
     return k8sApiServerEp->put(endpoint, authentication, targetType = http:Response);
 }
 
-isolated function getHttpRoute(string name, string namespace) returns model:Httproute|http:ClientError {
+isolated function getHttpRoute(string name, string namespace) returns model:HTTPRoute|http:ClientError {
     string endpoint = "/apis/gateway.networking.k8s.io/v1beta1/namespaces/" + namespace + "/httproutes/" + name;
-    return k8sApiServerEp->get(endpoint, targetType = model:Httproute);
+    return k8sApiServerEp->get(endpoint, targetType = model:HTTPRoute);
 }
 
 isolated function deleteHttpRoute(string name, string namespace) returns http:Response|http:ClientError {
     string endpoint = "/apis/gateway.networking.k8s.io/v1beta1/namespaces/" + namespace + "/httproutes/" + name;
+    return k8sApiServerEp->delete(endpoint, targetType = http:Response);
+}
+
+isolated function getGqlRoute(string name, string namespace) returns model:GQLRoute|http:ClientError {
+    string endpoint = "/apis/dp.wso2.com/v1alpha2/namespaces/" + namespace + "/gqlroutes/" + name;
+    return k8sApiServerEp->get(endpoint, targetType = model:GQLRoute);
+}
+
+isolated function deleteGqlRoute(string name, string namespace) returns http:Response|http:ClientError {
+    string endpoint = "/apis/dp.wso2.com/v1alpha2/namespaces/" + namespace + "/gqlroutes/" + name;
     return k8sApiServerEp->delete(endpoint, targetType = http:Response);
 }
 
@@ -120,14 +130,24 @@ isolated function updateConfigMap(model:ConfigMap configMap, string namespace) r
     return k8sApiServerEp->put(endpoint, configMap, targetType = http:Response);
 }
 
-isolated function deployHttpRoute(model:Httproute httproute, string namespace) returns http:Response|http:ClientError {
+isolated function deployHttpRoute(model:HTTPRoute httproute, string namespace) returns http:Response|http:ClientError {
     string endpoint = "/apis/gateway.networking.k8s.io/v1beta1/namespaces/" + namespace + "/httproutes";
     return k8sApiServerEp->post(endpoint, httproute, targetType = http:Response);
 }
 
-isolated function updateHttpRoute(model:Httproute httproute, string namespace) returns http:Response|http:ClientError {
+isolated function updateHttpRoute(model:HTTPRoute httproute, string namespace) returns http:Response|http:ClientError {
     string endpoint = "/apis/gateway.networking.k8s.io/v1beta1/namespaces/" + namespace + "/httproutes/" + httproute.metadata.name;
     return k8sApiServerEp->put(endpoint, httproute, targetType = http:Response);
+}
+
+isolated function deployGqlRoute(model:GQLRoute gqlroute, string namespace) returns http:Response|http:ClientError {
+    string endpoint = "/apis/dp.wso2.com/v1alpha2/namespaces/" + namespace + "/gqlroutes";
+    return k8sApiServerEp->post(endpoint, gqlroute, targetType = http:Response);
+}
+
+isolated function updateGqlRoute(model:GQLRoute gqlroute, string namespace) returns http:Response|http:ClientError {
+    string endpoint = "/apis/dp.wso2.com/v1alpha2/namespaces/" + namespace + "/gqlroutes/" + gqlroute.metadata.name;
+    return k8sApiServerEp->put(endpoint, gqlroute, targetType = http:Response);
 }
 
 public isolated function getK8sAPIByNameAndNamespace(string name, string namespace) returns model:API?|commons:APKError {
@@ -215,9 +235,14 @@ isolated function getBackendServicesForAPI(string apiName, string apiVersion, st
     return k8sApiServerEp->get(endpoint, targetType = model:ServiceList);
 }
 
-public isolated function getHttproutesForAPIS(string apiName, string apiVersion, string namespace, string organization) returns model:HttprouteList|http:ClientError|error {
+public isolated function getHttproutesForAPIS(string apiName, string apiVersion, string namespace, string organization) returns model:HTTPRouteList|http:ClientError|error {
     string endpoint = "/apis/gateway.networking.k8s.io/v1beta1/namespaces/" + namespace + "/httproutes/?labelSelector=" + check generateUrlEncodedLabelSelector(apiName, apiVersion, organization);
-    return k8sApiServerEp->get(endpoint, targetType = model:HttprouteList);
+    return k8sApiServerEp->get(endpoint, targetType = model:HTTPRouteList);
+}
+
+public isolated function getGqlRoutesForAPIs(string apiName, string apiVersion, string namespace, string organization) returns model:GQLRouteList|http:ClientError|error {
+    string endpoint = "/apis/dp.wso2.com/v1alpha2/namespaces/" + namespace + "/gqlroutes/?labelSelector=" + check generateUrlEncodedLabelSelector(apiName, apiVersion, organization);
+    return k8sApiServerEp->get(endpoint, targetType = model:GQLRouteList);
 }
 
 isolated function deployRateLimitPolicyCR(model:RateLimitPolicy rateLimitPolicy, string namespace) returns http:Response|http:ClientError {

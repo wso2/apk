@@ -10,6 +10,7 @@ public final string[] SSE_SUPPORTED_METHODS = ["subscribe"];
 public final string[] WS_SUPPORTED_METHODS = ["subscribe", "publish"];
 
 const string API_TYPE_REST = "REST";
+const string API_TYPE_GRAPHQL = "GRAPHQL";
 const string API_TYPE_SOAP = "SOAP";
 const string API_TYPE_SSE = "SSE";
 const string API_TYPE_WS = "WS";
@@ -51,7 +52,7 @@ const string ENDPOINT_SECURITY_PASSWORD = "password";
 const string ZIP_FILE_EXTENSTION = ".zip";
 const string PROTOCOL_HTTP = "http";
 const string PROTOCOL_HTTPS = "https";
-final string[]&readonly ALLOWED_API_TYPES = [API_TYPE_REST];
+final string[] & readonly ALLOWED_API_TYPES = [API_TYPE_REST, API_TYPE_GRAPHQL];
 
 const string MEDIATION_POLICY_TYPE_REQUEST_HEADER_MODIFIER = "RequestHeaderModifier";
 const string MEDIATION_POLICY_TYPE_RESPONSE_HEADER_MODIFIER = "ResponseHeaderModifier";
@@ -60,8 +61,8 @@ const string POLICY_TYPE_BACKEND_JWT = "BackendJwt";
 const string MEDIATION_POLICY_NAME_ADD_HEADER = "addHeader";
 const string MEDIATION_POLICY_NAME_REMOVE_HEADER = "removeHeader";
 const string MEDIATION_POLICY_TYPE_URL_REWRITE = "URLRewrite";
-const string MEDIATION_POLICY_FLOW_REQUEST  = "request";
-const string MEDIATION_POLICY_FLOW_RESPONSE  = "response";
+const string MEDIATION_POLICY_FLOW_REQUEST = "request";
+const string MEDIATION_POLICY_FLOW_RESPONSE = "response";
 
 const string API_NAME_HASH_LABEL = "api-name";
 const string API_VERSION_HASH_LABEL = "api-version";

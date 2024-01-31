@@ -105,7 +105,7 @@ public type HTTPRouteFilter record {
     LocalObjectReference extensionRef?;
 };
 
-type BackendRef record {
+public type BackendRef record {
     *BackendObjectReference;
     int weight?;
 };
@@ -124,10 +124,10 @@ public type HTTPRouteRule record {
 public type HTTPRouteSpec record {
     *CommonRouteSpec;
     string[] hostnames?;
-    HTTPRouteRule[] rules=[];
+    HTTPRouteRule[] rules = [];
 };
 
-public type Httproute record {|
+public type HTTPRoute record {|
     string apiVersion = "gateway.networking.k8s.io/v1beta1";
     string kind = "HTTPRoute";
     Metadata metadata;
@@ -143,9 +143,10 @@ public type ParentReference record {|
     string port?;
 
 |};
-public type HttprouteList record {|
+
+public type HTTPRouteList record {|
     string apiVersion = "gateway.networking.k8s.io/v1beta1";
     string kind = "HTTPRouteList";
     ListMeta metadata;
-    Httproute[] items;
+    HTTPRoute[] items;
 |};

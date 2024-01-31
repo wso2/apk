@@ -50,7 +50,11 @@ public class Info {
         this.context = context;
     }
 
-    public List<String> getEndpoints() { return endpoints; }
+    public List<String> getEndpoints() {
+        return endpoints;
+    }
 
-    public void setEndpoints(List<String> endpoints) { this.endpoints = endpoints; }
+    public void setEndpoints(List<String> endpoints) {
+        this.endpoints = endpoints;
+    }
 }

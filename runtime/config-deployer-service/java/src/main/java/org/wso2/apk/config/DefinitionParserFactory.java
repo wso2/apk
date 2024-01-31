@@ -17,21 +17,23 @@ public class DefinitionParserFactory {
     static {
         parsers.add(new AsyncApiParser());
         parsers.add(new OAS3Parser());
-
     }
 
     public static APIDefinition getParser(API api) {
-        if (APIConstants.ParserType.REST.name().equals(api.getType())) {
+        if (APIConstants.ParserType.REST.name().equals(api.getType())
+                || APIConstants.ParserType.GRAPHQL.name().equals(api.getType())) {
             return new OAS3Parser();
-        } else if (APIConstants.ParserType.ASYNC.name().equals(api.getType())){
+        } else if (APIConstants.ParserType.ASYNC.name().equals(api.getType())) {
             return new AsyncApiParser();
         }
         return null;
     }
+
     public static APIDefinition getParser(String apiType) {
-        if ("REST".equals(apiType)) {
+        if (APIConstants.ParserType.REST.name().equals(apiType)
+                || APIConstants.ParserType.GRAPHQL.name().equals(apiType)) {
             return new OAS3Parser();
-        } else if ("ASYNC".equals(apiType)){
+        } else if ("ASYNC".equals(apiType)) {
             return new AsyncApiParser();
         }
         return null;
@@ -39,7 +41,7 @@ public class DefinitionParserFactory {
 
     public static APIDefinition getValidatedParser(String definition) {
         for (APIDefinition parser : parsers) {
-            if (parser.canHandleDefinition(definition)){
+            if (parser.canHandleDefinition(definition)) {
                 return parser;
             }
         }

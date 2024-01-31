@@ -55,7 +55,7 @@ public class GraphQLPayloadUtils {
     private static final Logger logger = LogManager.getLogger(GraphQLPayloadUtils.class);
 
     /**
-     * This method will decode the qraphQL query body.
+     * This method will decode the graphQL query body.
      *
      * @param api       matched api
      * @param queryBody graphQL query

@@ -18,15 +18,19 @@
 
 package org.wso2.apk.config;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
- * This class represents the constants that are used for APIManager implementation
+ * This class represents the constants that are used for APIManager
+ * implementation
  */
 public final class APIConstants {
     public static final String DEFAULT_SUB_POLICY_UNLIMITED = "Unlimited";
     public static final String HTTP_POST = "POST";
-    //Swagger v2.0 constants
+    // Swagger v2.0 constants
     public static final String SWAGGER_X_SCOPE = "x-scope";
     public static final String SWAGGER_X_AMZN_RESOURCE_NAME = "x-amzn-resource-name";
     public static final String SWAGGER_X_AMZN_RESOURCE_TIMEOUT = "x-amzn-resource-timeout";
@@ -54,10 +58,9 @@ public final class APIConstants {
     public static final String OPENAPI_MASTER_JSON = "swagger.json";
     public static final String OPENAPI_MASTER_YAML = "swagger.yaml";
 
-
-    //URI Authentication Schemes
-    public static final Set<String> SUPPORTED_METHODS =
-            Set.of("get", "put", "post", "delete", "patch", "head", "options");
+    // URI Authentication Schemes
+    public static final Set<String> SUPPORTED_METHODS = Set.of("get", "put", "post", "delete", "patch", "head",
+            "options");
     public static final String TYPE = "Type";
     public static final String JAVA_IO_TMPDIR = "java.io.tmpdir";
     public static final String WSO2_GATEWAY_ENVIRONMENT = "wso2";
@@ -79,11 +82,12 @@ public final class APIConstants {
     public static final String STOMP_TRANSPORT_PROTOCOL_NAME = "stomp";
     public static final String REDIS_TRANSPORT_PROTOCOL_NAME = "redis";
     // GraphQL related constants
+    public static final Set<String> GRAPHQL_SUPPORTED_METHOD_LIST = Collections.unmodifiableSet(new HashSet<String>(
+            Arrays.asList(new String[] { "QUERY", "MUTATION", "SUBSCRIPTION", "head", "options" })));
 
     public enum ParserType {
-        REST, ASYNC
+        REST, ASYNC, GRAPHQL
     }
-
 
     public static class OperationParameter {
 
@@ -95,4 +99,3 @@ public final class APIConstants {
     }
 
 }
-

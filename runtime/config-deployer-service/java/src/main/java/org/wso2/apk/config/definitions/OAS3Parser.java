@@ -112,8 +112,9 @@ public class OAS3Parser extends APIDefinition {
             for (Map.Entry<PathItem.HttpMethod, Operation> entry : pathItem.readOperationsMap().entrySet()) {
                 Operation operation = entry.getValue();
                 URITemplate template = new URITemplate();
-                if (APIConstants.SUPPORTED_METHODS.contains(entry.getKey().name().toLowerCase())) {
-                    template.setHTTPVerb(entry.getKey().name().toUpperCase());
+                if (APIConstants.SUPPORTED_METHODS.contains(entry.getKey().name().toLowerCase())
+                        || (APIConstants.GRAPHQL_SUPPORTED_METHOD_LIST.contains(entry.getKey().name().toUpperCase()))) {
+                    template.setVerb(entry.getKey().name().toUpperCase());
                     template.setUriTemplate(pathKey);
                     List<String> opScopes = getScopeOfOperations(OPENAPI_SECURITY_SCHEMA_KEY, operation);
                     if (!opScopes.isEmpty()) {

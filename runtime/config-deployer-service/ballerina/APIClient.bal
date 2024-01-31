@@ -45,7 +45,8 @@ public class APIClient {
         APKConf apkConf = {
             name: api.getName(),
             basePath: api.getBasePath().length() > 0 ? api.getBasePath() : encodedString,
-            version: api.getVersion()
+            version: api.getVersion(),
+            'type: api.getType() == "" ? API_TYPE_REST : api.getType()
         };
         string endpoint = api.getEndpoint();
         if endpoint.length() > 0 {
@@ -57,7 +58,7 @@ public class APIClient {
         if uriTemplates is runtimeModels:URITemplate[] {
             foreach runtimeModels:URITemplate uriTemplate in uriTemplates {
                 APKOperations operation = {
-                    verb: uriTemplate.getHTTPVerb(),
+                    verb: uriTemplate.getVerb(),
                     target: uriTemplate.getUriTemplate(),
                     secured: uriTemplate.isAuthEnabled(),
                     scopes: check uriTemplate.getScopes()
@@ -75,7 +76,6 @@ public class APIClient {
 
     public isolated function generateK8sArtifacts(APKConf apkConf, string? definition, commons:Organization organization) returns model:APIArtifact|commons:APKError {
         do {
-
             string uniqueId = self.getUniqueIdForAPI(apkConf.name, apkConf.version, organization);
             if apkConf.id is string {
                 uniqueId = <string>apkConf.id;
@@ -97,7 +97,7 @@ public class APIClient {
             map<model:Endpoint|()> createdEndpoints = {};
             EndpointConfigurations? endpointConfigurations = apkConf.endpointConfigurations;
             if endpointConfigurations is EndpointConfigurations {
-                createdEndpoints = check self.createAndAddBackendServics(apiArtifact, apkConf, endpointConfigurations, (), (), organization);
+                createdEndpoints = check self.createAndAddBackendServices(apiArtifact, apkConf, endpointConfigurations, (), (), organization);
             }
             AuthenticationRequest[]? authentication = apkConf.authentication;
             if authentication is AuthenticationRequest[] {
@@ -114,14 +114,14 @@ public class APIClient {
                                 resourceEndpointIdMap[SANDBOX_TYPE] = {
                                     name: "",
                                     serviceEntry: false,
-                                    url: self.construcURlFromService(sandboxEndpointConfig.endpoint)
+                                    url: self.constructURlFromService(sandboxEndpointConfig.endpoint)
                                 };
                             }
                             if productionEndpointConfig is EndpointConfiguration {
                                 resourceEndpointIdMap[PRODUCTION_TYPE] = {
                                     name: "",
                                     serviceEntry: false,
-                                    url: self.construcURlFromService(productionEndpointConfig.endpoint)
+                                    url: self.constructURlFromService(productionEndpointConfig.endpoint)
                                 };
                             }
                             _ = check self.populateAuthenticationMap(apiArtifact, apkConf, authentication, resourceEndpointIdMap, organization);
@@ -132,16 +132,16 @@ public class APIClient {
                 }
             }
 
-            _ = check self.setHttpRoute(apiArtifact, apkConf, createdEndpoints.hasKey(PRODUCTION_TYPE) ? createdEndpoints.get(PRODUCTION_TYPE) : (), uniqueId, PRODUCTION_TYPE, organization);
-            _ = check self.setHttpRoute(apiArtifact, apkConf, createdEndpoints.hasKey(SANDBOX_TYPE) ? createdEndpoints.get(SANDBOX_TYPE) : (), uniqueId, SANDBOX_TYPE, organization);
-
-            json generatedSwagger = check self.retrieveGeneratedSwaggerDefinition(apkConf, definition);
+            _ = check self.setRoute(apiArtifact, apkConf, createdEndpoints.hasKey(PRODUCTION_TYPE) ? createdEndpoints.get(PRODUCTION_TYPE) : (), uniqueId, PRODUCTION_TYPE, organization);
+            _ = check self.setRoute(apiArtifact, apkConf, createdEndpoints.hasKey(SANDBOX_TYPE) ? createdEndpoints.get(SANDBOX_TYPE) : (), uniqueId, SANDBOX_TYPE, organization);
+            string|json generatedSwagger = check self.retrieveGeneratedSwaggerDefinition(apkConf, definition);
             check self.retrieveGeneratedConfigmapForDefinition(apiArtifact, apkConf, generatedSwagger, uniqueId, organization);
             self.generateAndSetAPICRArtifact(apiArtifact, apkConf, organization);
             _ = check self.generateAndSetPolicyCRArtifact(apiArtifact, apkConf, organization);
             apiArtifact.organization = organization.name;
             return apiArtifact;
-        } on fail var e {
+        }
+        on fail var e {
             if e is commons:APKError {
                 return e;
             }
@@ -213,7 +213,7 @@ public class APIClient {
         return ();
     }
 
-    private isolated function createAndAddBackendServics(model:APIArtifact apiArtifact, APKConf apkConf, EndpointConfigurations endpointConfigurations, APKOperations? apiOperation, string? endpointType, commons:Organization organization) returns map<model:Endpoint>|commons:APKError|error {
+    private isolated function createAndAddBackendServices(model:APIArtifact apiArtifact, APKConf apkConf, EndpointConfigurations endpointConfigurations, APKOperations? apiOperation, string? endpointType, commons:Organization organization) returns map<model:Endpoint>|commons:APKError|error {
         map<model:Endpoint> endpointIdMap = {};
         EndpointConfiguration? productionEndpointConfig = endpointConfigurations.production;
         EndpointConfiguration? sandboxEndpointConfig = endpointConfigurations.sandbox;
@@ -227,7 +227,7 @@ public class APIClient {
                 endpointIdMap[SANDBOX_TYPE] = {
                     name: backendService.metadata.name,
                     serviceEntry: false,
-                    url: self.construcURlFromService(sandboxEndpointConfig.endpoint)
+                    url: self.constructURlFromService(sandboxEndpointConfig.endpoint)
                 };
             }
         }
@@ -241,18 +241,18 @@ public class APIClient {
                 endpointIdMap[PRODUCTION_TYPE] = {
                     name: backendService.metadata.name,
                     serviceEntry: false,
-                    url: self.construcURlFromService(productionEndpointConfig.endpoint)
+                    url: self.constructURlFromService(productionEndpointConfig.endpoint)
                 };
             }
         }
         return endpointIdMap;
     }
 
-    isolated function construcURlFromService(string|K8sService endpoint) returns string {
+    isolated function constructURlFromService(string|K8sService endpoint) returns string {
         if endpoint is string {
             return endpoint;
         } else {
-            return self.construcURlFromK8sService(endpoint);
+            return self.constructURlFromK8sService(endpoint);
         }
     }
 
@@ -277,7 +277,7 @@ public class APIClient {
         return fullBasePath;
     }
 
-    private isolated function construcURlFromK8sService(K8sService 'k8sService) returns string {
+    private isolated function constructURlFromK8sService(K8sService 'k8sService) returns string {
         return <string>k8sService.protocol + "://" + string:'join(".", <string>k8sService.name, <string>k8sService.namespace, "svc.cluster.local") + ":" + k8sService.port.toString();
     }
 
@@ -285,10 +285,15 @@ public class APIClient {
         return backendSpec.protocol + "://" + backendSpec.services[0].host + backendSpec.services[0].port.toString();
     }
 
-    private isolated function retrieveGeneratedConfigmapForDefinition(model:APIArtifact apiArtifact, APKConf apkConf, json generatedSwaggerDefinition, string uniqueId, commons:Organization organization) returns error? {
-        byte[]|javaio:IOException compressedContent = check commons:GzipUtil_compressGzipFile(generatedSwaggerDefinition.toJsonString().toBytes());
+    private isolated function retrieveGeneratedConfigmapForDefinition(model:APIArtifact apiArtifact, APKConf apkConf, string|json generatedSwaggerDefinition, string uniqueId, commons:Organization organization) returns error? {
+        byte[]|javaio:IOException compressedContent = [];
+        if apkConf.'type == API_TYPE_REST {
+            compressedContent = check commons:GzipUtil_compressGzipFile(generatedSwaggerDefinition.toJsonString().toBytes());
+        }
+        else if generatedSwaggerDefinition is string {
+            compressedContent = check commons:GzipUtil_compressGzipFile(generatedSwaggerDefinition.toBytes());
+        }
         if compressedContent is byte[] {
-
             byte[] base64EncodedContent = check commons:EncoderUtil_encodeBase64(compressedContent);
             model:ConfigMap configMap = {
                 metadata: {
@@ -404,7 +409,7 @@ public class APIClient {
             },
             spec: {
                 apiName: apkConf.name,
-                apiType: apkConf.'type,
+                apiType: apkConf.'type == "GRAPHQL" ? "GraphQL" : apkConf.'type,
                 apiVersion: apkConf.'version,
                 basePath: self.returnFullBasePath(apkConf.basePath, apkConf.'version),
                 isDefaultVersion: apkConf.defaultVersion,
@@ -417,23 +422,38 @@ public class APIClient {
         if definition is model:ConfigMap {
             k8sAPI.spec.definitionFileRef = definition.metadata.name;
         }
-        string[] productionHttpRoutes = [];
-        foreach model:Httproute httpRoute in apiArtifact.productionRoute {
-            if httpRoute.spec.rules.length() > 0 {
-                productionHttpRoutes.push(httpRoute.metadata.name);
+        string[] productionRoutes = [];
+        string[] sandboxRoutes = [];
+
+        if apkConf.'type == API_TYPE_GRAPHQL {
+            foreach model:GQLRoute gqlRoute in apiArtifact.productionGqlRoutes {
+                if gqlRoute.spec.rules.length() > 0 {
+                    productionRoutes.push(gqlRoute.metadata.name);
+                }
+            }
+            foreach model:GQLRoute gqlRoute in apiArtifact.sandboxGqlRoutes {
+                if gqlRoute.spec.rules.length() > 0 {
+                    sandboxRoutes.push(gqlRoute.metadata.name);
+                }
+            }
+        } else {
+            foreach model:HTTPRoute httpRoute in apiArtifact.productionHttpRoutes {
+                if httpRoute.spec.rules.length() > 0 {
+                    productionRoutes.push(httpRoute.metadata.name);
+                }
+            }
+            foreach model:HTTPRoute httpRoute in apiArtifact.sandboxHttpRoutes {
+                if httpRoute.spec.rules.length() > 0 {
+                    sandboxRoutes.push(httpRoute.metadata.name);
+                }
             }
         }
-        string[] sandBoxHttpRoutes = [];
-        foreach model:Httproute httpRoute in apiArtifact.sandboxRoute {
-            if httpRoute.spec.rules.length() > 0 {
-                sandBoxHttpRoutes.push(httpRoute.metadata.name);
-            }
+
+        if productionRoutes.length() > 0 {
+            k8sAPI.spec.production = [{httpRouteRefs: productionRoutes}];
         }
-        if productionHttpRoutes.length() > 0 {
-            k8sAPI.spec.production = [{httpRouteRefs: productionHttpRoutes}];
-        }
-        if sandBoxHttpRoutes.length() > 0 {
-            k8sAPI.spec.sandbox = [{httpRouteRefs: sandBoxHttpRoutes}];
+        if sandboxRoutes.length() > 0 {
+            k8sAPI.spec.sandbox = [{httpRouteRefs: sandboxRoutes}];
         }
         if apkConf.id != () {
             k8sAPI.metadata["annotations"] = {[API_UUID_ANNOTATION] : <string>apkConf.id};
@@ -459,7 +479,7 @@ public class APIClient {
     private isolated function retrieveAuthenticationRefName(APKConf apkConf, string 'type, commons:Organization organization) returns string {
         return self.getUniqueIdForAPI(apkConf.name, apkConf.'version, organization) + "-" + 'type + "-authentication";
     }
-    private isolated function setHttpRoute(model:APIArtifact apiArtifact, APKConf apkConf, model:Endpoint? endpoint, string uniqueId, string endpointType, commons:Organization organization) returns commons:APKError|error? {
+    private isolated function setRoute(model:APIArtifact apiArtifact, APKConf apkConf, model:Endpoint? endpoint, string uniqueId, string endpointType, commons:Organization organization) returns commons:APKError|error? {
         APKOperations[] apiOperations = apkConf.operations ?: [];
         APKOperations[][] operationsArray = [];
         int row = 0;
@@ -476,29 +496,55 @@ public class APIClient {
         foreach APKOperations[] item in operationsArray {
             APKConf clonedAPKConf = apkConf.clone();
             clonedAPKConf.operations = item.clone();
-            _ = check self.putHttpRouteForPartition(apiArtifact, clonedAPKConf, endpoint, uniqueId, endpointType, organization, count);
+            _ = check self.putRouteForPartition(apiArtifact, clonedAPKConf, endpoint, uniqueId, endpointType, organization, count);
             count = count + 1;
         }
     }
 
-    private isolated function putHttpRouteForPartition(model:APIArtifact apiArtifact, APKConf apkConf, model:Endpoint? endpoint, string uniqueId, string endpointType, commons:Organization organization, int count) returns commons:APKError|error? {
-        model:Httproute httpRoute = {
-            metadata:
+    private isolated function putRouteForPartition(model:APIArtifact apiArtifact, APKConf apkConf, model:Endpoint? endpoint, string uniqueId, string endpointType, commons:Organization organization, int count) returns commons:APKError|error? {
+
+        if apkConf.'type == API_TYPE_GRAPHQL {
+            model:GQLRoute gqlRoute = {
+                metadata:
                 {
-                name: uniqueId + "-" + endpointType + "-httproute-" + count.toString(),
-                labels: self.getLabels(apkConf, organization)
-            },
-            spec: {
-                parentRefs: self.generateAndRetrieveParentRefs(apkConf, uniqueId),
-                rules: check self.generateHttpRouteRules(apiArtifact, apkConf, endpoint, endpointType, organization),
-                hostnames: self.getHostNames(apkConf, uniqueId, endpointType, organization)
+                    name: uniqueId + "-" + endpointType + "-gqlroute-" + count.toString(),
+                    labels: self.getLabels(apkConf, organization)
+                },
+                spec: {
+                    parentRefs: self.generateAndRetrieveParentRefs(apkConf, uniqueId),
+                    rules: check self.generateGQLRouteRules(apiArtifact, apkConf, endpoint, endpointType, organization),
+                    hostnames: self.getHostNames(apkConf, uniqueId, endpointType, organization)
+                }
+            };
+            if endpoint is model:Endpoint {
+                gqlRoute.spec.backendRefs = self.retrieveGeneratedBackend(apkConf, endpoint, endpointType);
             }
-        };
-        if httpRoute.spec.rules.length() > 0 {
-            if endpointType == PRODUCTION_TYPE {
-                apiArtifact.productionRoute.push(httpRoute);
-            } else {
-                apiArtifact.sandboxRoute.push(httpRoute);
+            if gqlRoute.spec.rules.length() > 0 {
+                if endpointType == PRODUCTION_TYPE {
+                    apiArtifact.productionGqlRoutes.push(gqlRoute);
+                } else {
+                    apiArtifact.sandboxGqlRoutes.push(gqlRoute);
+                }
+            }
+        } else {
+            model:HTTPRoute httpRoute = {
+                metadata:
+                {
+                    name: uniqueId + "-" + endpointType + "-httproute-" + count.toString(),
+                    labels: self.getLabels(apkConf, organization)
+                },
+                spec: {
+                    parentRefs: self.generateAndRetrieveParentRefs(apkConf, uniqueId),
+                    rules: check self.generateHTTPRouteRules(apiArtifact, apkConf, endpoint, endpointType, organization),
+                    hostnames: self.getHostNames(apkConf, uniqueId, endpointType, organization)
+                }
+            };
+            if httpRoute.spec.rules.length() > 0 {
+                if endpointType == PRODUCTION_TYPE {
+                    apiArtifact.productionHttpRoutes.push(httpRoute);
+                } else {
+                    apiArtifact.sandboxHttpRoutes.push(httpRoute);
+                }
             }
         }
 
@@ -514,17 +560,17 @@ public class APIClient {
         return parentRefs;
     }
 
-    private isolated function generateHttpRouteRules(model:APIArtifact apiArtifact, APKConf apkConf, model:Endpoint? endpoint, string endpointType, commons:Organization organization) returns model:HTTPRouteRule[]|commons:APKError|error {
+    private isolated function generateHTTPRouteRules(model:APIArtifact apiArtifact, APKConf apkConf, model:Endpoint? endpoint, string endpointType, commons:Organization organization) returns model:HTTPRouteRule[]|commons:APKError|error {
         model:HTTPRouteRule[] httpRouteRules = [];
         APKOperations[]? operations = apkConf.operations;
         if operations is APKOperations[] {
             foreach APKOperations operation in operations {
-                model:HTTPRouteRule|() httpRouteRule = check self.generateHttpRouteRule(apiArtifact, apkConf, endpoint, operation, endpointType, organization);
-                if httpRouteRule is model:HTTPRouteRule {
-                    model:HTTPRouteFilter[]? filters = httpRouteRule.filters;
+                model:HTTPRouteRule|model:GQLRouteRule|() routeRule = check self.generateRouteRule(apiArtifact, apkConf, endpoint, operation, endpointType, organization);
+                if routeRule is model:HTTPRouteRule {
+                    model:HTTPRouteFilter[]? filters = routeRule.filters;
                     if filters is () {
                         filters = [];
-                        httpRouteRule.filters = filters;
+                        routeRule.filters = filters;
                     }
                     string disableAuthenticationRefName = self.retrieveDisableAuthenticationRefName(apkConf, endpointType, organization);
                     if !(operation.secured ?: true) {
@@ -566,11 +612,62 @@ public class APIClient {
                             (<model:HTTPRouteFilter[]>filters).push(apiPolicyFilter);
                         }
                     }
-                    httpRouteRules.push(httpRouteRule);
+                    httpRouteRules.push(routeRule);
                 }
             }
         }
         return httpRouteRules;
+    }
+
+    private isolated function generateGQLRouteRules(model:APIArtifact apiArtifact, APKConf apkConf, model:Endpoint? endpoint, string endpointType, commons:Organization organization) returns model:GQLRouteRule[]|commons:APKError|error {
+        model:GQLRouteRule[] gqlRouteRules = [];
+        APKOperations[]? operations = apkConf.operations;
+        if operations is APKOperations[] {
+            foreach APKOperations operation in operations {
+                model:HTTPRouteRule|model:GQLRouteRule|() routeRule = check self.generateRouteRule(apiArtifact, apkConf, endpoint, operation, endpointType, organization);
+                if routeRule is model:GQLRouteRule {
+                    model:GQLRouteFilter[]? filters = routeRule.filters;
+                    if filters is () {
+                        filters = [];
+                        routeRule.filters = filters;
+                    }
+                    string disableAuthenticationRefName = self.retrieveDisableAuthenticationRefName(apkConf, endpointType, organization);
+                    if !(operation.secured ?: true) {
+                        if !apiArtifact.authenticationMap.hasKey(disableAuthenticationRefName) {
+                            model:Authentication generateDisableAuthenticationCR = self.generateDisableAuthenticationCR(apiArtifact, apkConf, endpointType, organization);
+                            apiArtifact.authenticationMap[disableAuthenticationRefName] = generateDisableAuthenticationCR;
+                        }
+                        model:GQLRouteFilter disableAuthenticationFilter = {extensionRef: {group: "dp.wso2.com", kind: "Authentication", name: disableAuthenticationRefName}};
+                        (<model:GQLRouteFilter[]>filters).push(disableAuthenticationFilter);
+                    }
+                    string[]? scopes = operation.scopes;
+                    if scopes is string[] {
+                        int count = 1;
+                        foreach string scope in scopes {
+                            model:Scope scopeCr;
+                            if apiArtifact.scopes.hasKey(scope) {
+                                scopeCr = apiArtifact.scopes.get(scope);
+                            } else {
+                                scopeCr = self.generateScopeCR(apiArtifact, apkConf, organization, scope, count);
+                                count = count + 1;
+                            }
+                            model:GQLRouteFilter scopeFilter = {extensionRef: {group: "dp.wso2.com", kind: scopeCr.kind, name: scopeCr.metadata.name}};
+                            (<model:GQLRouteFilter[]>filters).push(scopeFilter);
+                        }
+                    }
+                    if operation.operationPolicies != () {
+                        model:APIPolicy? apiPolicyCR = check self.generateAPIPolicyAndBackendCR(apiArtifact, apkConf, operation, operation.operationPolicies, organization, apiArtifact.uniqueId);
+                        if apiPolicyCR != () {
+                            apiArtifact.apiPolicies[apiPolicyCR.metadata.name] = apiPolicyCR;
+                            model:HTTPRouteFilter apiPolicyFilter = {'type: "ExtensionRef", extensionRef: {group: "dp.wso2.com", kind: "APIPolicy", name: apiPolicyCR.metadata.name}};
+                            (<model:HTTPRouteFilter[]>filters).push(apiPolicyFilter);
+                        }
+                    }
+                    gqlRouteRules.push(routeRule);
+                }
+            }
+        }
+        return gqlRouteRules;
     }
 
     private isolated function generateAPIPolicyAndBackendCR(model:APIArtifact apiArtifact, APKConf apkConf, APKOperations? operations, APIOperationPolicies? policies, commons:Organization organization, string targetRefName) returns model:APIPolicy?|error {
@@ -643,13 +740,13 @@ public class APIClient {
         return authentication;
     }
 
-    private isolated function generateHttpRouteRule(model:APIArtifact apiArtifact, APKConf apkConf, model:Endpoint? endpoint, APKOperations operation, string endpointType, commons:Organization organization) returns model:HTTPRouteRule|()|commons:APKError {
+    private isolated function generateRouteRule(model:APIArtifact apiArtifact, APKConf apkConf, model:Endpoint? endpoint, APKOperations operation, string endpointType, commons:Organization organization) returns model:HTTPRouteRule|model:GQLRouteRule|()|commons:APKError {
         do {
             EndpointConfigurations? endpointConfig = operation.endpointConfigurations;
             model:Endpoint? endpointToUse = ();
             if endpointConfig is EndpointConfigurations {
-                // endpointConfig presense at Operation Level.
-                map<model:Endpoint> operationalLevelBackend = check self.createAndAddBackendServics(apiArtifact, apkConf, endpointConfig, operation, endpointType, organization);
+                // endpointConfig presence at Operation Level.
+                map<model:Endpoint> operationalLevelBackend = check self.createAndAddBackendServices(apiArtifact, apkConf, endpointConfig, operation, endpointType, organization);
                 if operationalLevelBackend.hasKey(endpointType) {
                     endpointToUse = operationalLevelBackend.get(endpointType);
                 }
@@ -659,8 +756,13 @@ public class APIClient {
                 }
             }
             if endpointToUse != () {
-                model:HTTPRouteRule httpRouteRule = {matches: self.retrieveMatches(apkConf, operation, organization), backendRefs: self.retrieveGeneratedBackend(apkConf, endpointToUse, endpointType), filters: self.generateFilters(apiArtifact, apkConf, endpointToUse, operation, endpointType, organization)};
-                return httpRouteRule;
+                if apkConf.'type == API_TYPE_GRAPHQL {
+                    model:GQLRouteRule gqlRouteRule = {matches: self.retrieveGQLMatches(apkConf, operation, organization)};
+                    return gqlRouteRule;
+                } else {
+                    model:HTTPRouteRule httpRouteRule = {matches: self.retrieveHTTPMatches(apkConf, operation, organization), backendRefs: self.retrieveGeneratedBackend(apkConf, endpointToUse, endpointType), filters: self.generateFilters(apiArtifact, apkConf, endpointToUse, operation, endpointType, organization)};
+                    return httpRouteRule;
+                }
             } else {
                 return ();
             }
@@ -673,10 +775,8 @@ public class APIClient {
     private isolated function generateFilters(model:APIArtifact apiArtifact, APKConf apkConf, model:Endpoint endpoint, APKOperations operation, string endpointType, commons:Organization organization) returns model:HTTPRouteFilter[] {
         model:HTTPRouteFilter[] routeFilters = [];
         string generatedPath = self.generatePrefixMatch(endpoint, operation);
-        if (generatedPath != operation.target) {
-            model:HTTPRouteFilter replacePathFilter = {'type: "URLRewrite", urlRewrite: {path: {'type: "ReplaceFullPath", replaceFullPath: generatedPath}}};
-            routeFilters.push(replacePathFilter);
-        }
+        model:HTTPRouteFilter replacePathFilter = {'type: "URLRewrite", urlRewrite: {path: {'type: "ReplaceFullPath", replaceFullPath: generatedPath}}};
+        routeFilters.push(replacePathFilter);
         APIOperationPolicies? operationPoliciesToUse = ();
         if (apkConf.apiPolicies is APIOperationPolicies) {
             operationPoliciesToUse = apkConf.apiPolicies;
@@ -788,24 +888,34 @@ public class APIClient {
         return [httpBackend];
     }
 
-    private isolated function retrieveMatches(APKConf apkConf, APKOperations apiOperation, commons:Organization organization) returns model:HTTPRouteMatch[] {
+    private isolated function retrieveHTTPMatches(APKConf apkConf, APKOperations apiOperation, commons:Organization organization) returns model:HTTPRouteMatch[] {
         model:HTTPRouteMatch[] httpRouteMatch = [];
         model:HTTPRouteMatch httpRoute = self.retrieveHttpRouteMatch(apkConf, apiOperation, organization);
-
         httpRouteMatch.push(httpRoute);
         return httpRouteMatch;
     }
 
-    private isolated function retrieveHttpRouteMatch(APKConf apkConf, APKOperations apiOperation, commons:Organization organization) returns model:HTTPRouteMatch {
+    private isolated function retrieveGQLMatches(APKConf apkConf, APKOperations apiOperation, commons:Organization organization) returns model:GQLRouteMatch[] {
+        model:GQLRouteMatch[] gqlRouteMatch = [];
+        model:GQLRouteMatch gqlRoute = self.retrieveGQLRouteMatch(apiOperation);
+        gqlRouteMatch.push(gqlRoute);
+        return gqlRouteMatch;
+    }
 
+    private isolated function retrieveHttpRouteMatch(APKConf apkConf, APKOperations apiOperation, commons:Organization organization) returns model:HTTPRouteMatch {
         return {method: <string>apiOperation.verb, path: {'type: "RegularExpression", value: self.retrievePathPrefix(apkConf.basePath, apkConf.'version, apiOperation.target ?: "/*", organization)}};
     }
 
-    isolated function retrieveGeneratedSwaggerDefinition(APKConf apkConf, string? definition) returns json|commons:APKError|error {
+    private isolated function retrieveGQLRouteMatch(APKOperations apiOperation) returns model:GQLRouteMatch {
+        return {'type: <string>apiOperation.verb, path: <string>apiOperation.target};
+    }
+
+    isolated function retrieveGeneratedSwaggerDefinition(APKConf apkConf, string? definition) returns string|json|commons:APKError|error {
         runtimeModels:API api1 = runtimeModels:newAPI1();
         api1.setName(apkConf.name);
         api1.setType(apkConf.'type);
         api1.setVersion(apkConf.'version);
+
         runtimeModels:URITemplate[] uritemplatesSet = [];
         if apkConf.operations is APKOperations[] {
             foreach APKOperations apiOperation in <APKOperations[]>apkConf.operations {
@@ -813,7 +923,7 @@ public class APIClient {
                 uriTemplate.setUriTemplate(<string>apiOperation.target);
                 string? verb = apiOperation.verb;
                 if verb is string {
-                    uriTemplate.setHTTPVerb(verb.toUpperAscii());
+                    uriTemplate.setVerb(verb.toUpperAscii());
                 }
                 boolean? secured = apiOperation.secured;
                 if secured is boolean {
@@ -832,11 +942,16 @@ public class APIClient {
         }
         check api1.setUriTemplates(uritemplatesSet);
         string?|runtimeapi:APIManagementException retrievedDefinition = "";
+        if apkConf.'type == API_TYPE_GRAPHQL && definition is string {
+            api1.setGraphQLSchema(definition);
+            return definition;
+        }
         if definition is string && definition.toString().trim().length() > 0 {
             retrievedDefinition = runtimeUtil:RuntimeAPICommonUtil_generateDefinition2(api1, definition);
         } else {
             retrievedDefinition = runtimeUtil:RuntimeAPICommonUtil_generateDefinition(api1);
         }
+
         if retrievedDefinition is string && retrievedDefinition.toString().trim().length() > 0 {
             json|error jsonString = value:fromJsonString(retrievedDefinition);
             if jsonString is json {
@@ -852,12 +967,12 @@ public class APIClient {
         }
     }
 
-    isolated function gethost(string|K8sService endpoint) returns string {
+    isolated function getHost(string|K8sService endpoint) returns string {
         string url;
         if endpoint is string {
             url = endpoint;
         } else {
-            url = self.construcURlFromK8sService(endpoint);
+            url = self.constructURlFromK8sService(endpoint);
         }
         string host = "";
         if url.startsWith("https://") {
@@ -893,7 +1008,7 @@ public class APIClient {
         if endpoint is string {
             url = endpoint;
         } else {
-            url = self.construcURlFromK8sService(endpoint);
+            url = self.constructURlFromK8sService(endpoint);
         }
         string hostPort = "";
         string protocol = "";
@@ -946,7 +1061,7 @@ public class APIClient {
             spec: {
                 services: [
                     {
-                        host: self.gethost(endpointConfig.endpoint),
+                        host: self.getHost(endpointConfig.endpoint),
                         port: check self.getPort(endpointConfig.endpoint)
                     }
                 ],
@@ -1086,6 +1201,7 @@ public class APIClient {
         }
         return policyReferences;
     }
+
     private isolated function retrieveBackendJWTPolicy(APKConf apkConf, model:APIArtifact apiArtifact, BackendJWTPolicy backendJWTPolicy, commons:Organization organization) returns model:BackendJWT {
         BackendJWTPolicy_parameters parameters = backendJWTPolicy.parameters ?: {};
         model:BackendJWT backendJwt = {
@@ -1120,6 +1236,7 @@ public class APIClient {
         }
         return backendJwt;
     }
+
     private isolated function retrieveCORSPolicyDetails(model:APIArtifact apiArtifact, APKConf apkConf, CORSConfiguration corsConfiguration, commons:Organization organization) returns model:CORSPolicy? {
         model:CORSPolicy corsPolicy = {};
         if corsConfiguration.accessControlAllowCredentials is boolean {
@@ -1332,7 +1449,7 @@ public class APIClient {
     }
 
     public isolated function getInterceptorBackendUid(APKConf apkConf, string endpointType, commons:Organization organization, string|K8sService backend) returns string {
-        string concatanatedString = string:'join("-", organization.name, apkConf.name, 'apkConf.'version, endpointType, self.construcURlFromService(backend));
+        string concatanatedString = string:'join("-", organization.name, apkConf.name, 'apkConf.'version, endpointType, self.constructURlFromService(backend));
         byte[] hashedValue = crypto:hashSha1(concatanatedString.toBytes());
         concatanatedString = hashedValue.toBase16();
         return "backend-" + concatanatedString + "-interceptor";
@@ -1344,6 +1461,7 @@ public class APIClient {
         concatanatedString = hashedValue.toBase16();
         return string:'join("-", concatanatedString, "backend-jwt-policy");
     }
+
     public isolated function getBackendServiceUid(APKConf apkConf, APKOperations? apiOperation, string endpointType, commons:Organization organization) returns string {
         string concatanatedString = uuid:createType1AsString();
         if (apiOperation is APKOperations) {
@@ -1398,6 +1516,7 @@ public class APIClient {
             return "api-" + targetRef;
         }
     }
+
     private isolated function validateAndRetrieveAPKConfiguration(json apkconfJson) returns APKConf|commons:APKError? {
         do {
             runtimeapi:APKConfValidationResponse validationResponse = check apkConfValidator.validate(apkconfJson.toJsonString());
@@ -1422,6 +1541,7 @@ public class APIClient {
             return e909022("APK configuration is not valid", e);
         }
     }
+
     private isolated function validateEndpointConfigurations(APKConf apkConf, map<string> errors) {
         EndpointConfigurations? endpointConfigurations = apkConf.endpointConfigurations;
         boolean productionEndpointAvailable = false;
@@ -1469,12 +1589,14 @@ public class APIClient {
                 } else if definitionFile.fileName.endsWith(".json") {
                     apiDefinition = definitionFileContent;
                 }
+            } else if apiType == API_TYPE_GRAPHQL {
+                apiDefinition = definitionFileContent;
             }
             if apkConf is () {
                 return e909022("apkConfiguration is not provided", ());
             }
-            APIClient apiclent = new ();
-            return check apiclent.generateK8sArtifacts(apkConf, apiDefinition, organization);
+            APIClient apiclient = new ();
+            return check apiclient.generateK8sArtifacts(apkConf, apiDefinition, organization);
         } on fail var e {
             if e is commons:APKError {
                 return e;

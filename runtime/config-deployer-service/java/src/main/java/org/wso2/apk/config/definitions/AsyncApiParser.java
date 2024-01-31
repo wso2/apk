@@ -1590,7 +1590,7 @@ public class AsyncApiParser extends APIDefinition {
     private URITemplate buildURITemplate(String target, String verb, Aai20Operation operation, String[] scopes,
                                          Aai20ChannelItem channel) throws APIManagementException {
         URITemplate template = new URITemplate();
-        template.setHTTPVerb(verb);
+        template.setVerb(verb);
         template.setUriTemplate(target);
 
         Extension authTypeExtension = channel.getExtension(APIConstants.SWAGGER_X_AUTH_TYPE);
