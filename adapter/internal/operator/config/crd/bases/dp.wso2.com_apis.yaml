@@ -72,7 +72,7 @@ spec:
                 type: array
               apiType:
                 description: APIType denotes the type of the API. Possible values
-                  could be REST, GraphQL, Async
+                  could be REST, GraphQL, GRPC Async
                 enum:
                 - REST
                 type: string
@@ -244,10 +244,11 @@ spec:
                 type: array
               apiType:
                 description: APIType denotes the type of the API. Possible values
-                  could be REST, GraphQL, Async
+                  could be REST, GraphQL, GRPC Async
                 enum:
                 - REST
                 - GraphQL
+                - GRPC
                 type: string
               apiVersion:
                 description: APIVersion is the version number of the API.

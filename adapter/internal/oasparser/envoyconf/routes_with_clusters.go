@@ -188,6 +188,50 @@ func CreateRoutesWithClusters(adapterInternalAPI *model.AdapterInternalAPI, inte
 		routes = append(routes, routesP...)
 		return routes, clusters, endpoints, nil
 	}
+	if adapterInternalAPI.GetAPIType() == constants.GRPC {
+		basePath := strings.TrimSuffix(adapterInternalAPI.Endpoints.Endpoints[0].Basepath, "/")
+
+		clusterName := getClusterName(adapterInternalAPI.Endpoints.EndpointPrefix, organizationID, vHost,
+			adapterInternalAPI.GetTitle(), apiVersion, "")
+		cluster, address, err := processEndpoints(clusterName, adapterInternalAPI.Endpoints, timeout, basePath)
+
+		if err != nil {
+			logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2239, logging.MAJOR,
+				"Error while adding grpc endpoints for %s:%v. %v", apiTitle, apiVersion, err.Error()))
+			return nil, nil, nil, fmt.Errorf("error while adding grpc endpoints for %s:%v. %v", apiTitle, apiVersion,
+				err.Error())
+		}
+		clusters = append(clusters, cluster)
+		endpoints = append(endpoints, address...)
+
+		// The current code requires to create policy for all routes to support backend endpoint.
+		policyParameters := make(map[string]interface{})
+		policyParameters[constants.RewritePathType] = gwapiv1b1.FullPathHTTPPathModifier
+		policyParameters[constants.IncludeQueryParams] = true
+		policyParameters[constants.RewritePathResourcePath] = basePath
+		var policies = model.OperationPolicies{
+			Request: []model.Policy{
+				{
+					PolicyName: string(gwapiv1b1.HTTPRouteFilterURLRewrite),
+					Action:     constants.ActionRewritePath,
+					Parameters: policyParameters,
+				},
+			},
+		}
+
+		grpcop := model.NewOperationWithPolicies("POST", policies)
+		resource := model.CreateMinimalResource(adapterInternalAPI.GetXWso2Basepath(), []*model.Operation{grpcop}, "", adapterInternalAPI.Endpoints, true, gwapiv1b1.PathMatchExact)
+		routesP, err := createRoutes(genRouteCreateParams(&adapterInternalAPI, &resource, vHost, basePath, clusterName, nil,
+			nil, organizationID, false, false))
+		if err != nil {
+			logger.LoggerXds.ErrorC(logging.PrintError(logging.Error2231, logging.MAJOR,
+				"Error while creating routes for GRPC API %s %s Error: %s", adapterInternalAPI.GetTitle(),
+				adapterInternalAPI.GetVersion(), err.Error()))
+			return nil, nil, nil, fmt.Errorf("error while creating routes. %v", err)
+		}
+		routes = append(routes, routesP...)
+		return routes, clusters, endpoints, nil
+	}
 	for _, resource := range adapterInternalAPI.GetResources() {
 		var clusterName string
 		resourcePath := resource.GetPath()

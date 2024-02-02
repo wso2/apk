@@ -1041,10 +1041,11 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoGRPCRouteCR(grpcRoute *gwap
 
 	for _, rule := range grpcRoute.Spec.Rules {
 		var policies = OperationPolicies{}
+		var endPoints []Endpoint
 		resourceAuthScheme := authScheme
 		resourceRatelimitPolicy := ratelimitPolicy
 		var scopes []string
-
+		//TODO remove policies
 		for _, filter := range rule.Filters {
 			if filter.ExtensionRef != nil && filter.ExtensionRef.Kind == constants.KindAuthentication {
 				if ref, found := resourceParams.ResourceAuthSchemes[types.NamespacedName{
@@ -1087,12 +1088,16 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoGRPCRouteCR(grpcRoute *gwap
 		apiAuth := getSecurity(resourceAuthScheme)
 
 		for _, match := range rule.Matches {
-			//TODO double check this
 			resourcePath := *match.Method.Service
+			endPoints = append(endPoints, GetEndpoints(backendName, resourceParams.BackendMapping)...)
 			resource := &Resource{path: resourcePath,
 				methods: []*Operation{{iD: uuid.New().String(), method: string(*match.Method.Type), policies: policies,
 					auth: apiAuth, RateLimitPolicy: parseRateLimitPolicyToInternal(resourceRatelimitPolicy), scopes: scopes}},
 				iD: uuid.New().String(),
+			}
+			endpoints := GetEndpoints(backendName, resourceParams.BackendMapping)
+			resource.endpoints = &EndpointCluster{
+				Endpoints: endpoints,
 			}
 			resources = append(resources, resource)
 		}
