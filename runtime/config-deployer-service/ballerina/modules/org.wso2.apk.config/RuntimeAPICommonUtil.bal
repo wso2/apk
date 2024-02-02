@@ -150,7 +150,7 @@ public function RuntimeAPICommonUtil_generateUriTemplatesFromAPIDefinition(strin
 # + arg0 - The `string` value required to map with the Java method parameter.
 # + arg1 - The `string` value required to map with the Java method parameter.
 # + return - The `orgwso2apkconfigmodel:API` or the `orgwso2apkconfigapi:APIManagementException` value returning from the Java mapping.
-public function RuntimeAPICommonUtil_getAPIFromDefinition(string arg0, string arg1) returns orgwso2apkconfigmodel:API|orgwso2apkconfigapi:APIManagementException {
+public isolated function RuntimeAPICommonUtil_getAPIFromDefinition(string arg0, string arg1) returns orgwso2apkconfigmodel:API|orgwso2apkconfigapi:APIManagementException {
     handle|error externalObj = org_wso2_apk_config_RuntimeAPICommonUtil_getAPIFromDefinition(java:fromString(arg0), java:fromString(arg1));
     if (externalObj is error) {
         orgwso2apkconfigapi:APIManagementException e = error orgwso2apkconfigapi:APIManagementException(orgwso2apkconfigapi:APIMANAGEMENTEXCEPTION, externalObj, message = externalObj.message());
@@ -204,7 +204,7 @@ function org_wso2_apk_config_RuntimeAPICommonUtil_generateUriTemplatesFromAPIDef
     paramTypes: ["java.lang.String", "java.lang.String"]
 } external;
 
-function org_wso2_apk_config_RuntimeAPICommonUtil_getAPIFromDefinition(handle arg0, handle arg1) returns handle|error = @java:Method {
+isolated function org_wso2_apk_config_RuntimeAPICommonUtil_getAPIFromDefinition(handle arg0, handle arg1) returns handle|error = @java:Method {
     name: "getAPIFromDefinition",
     'class: "org.wso2.apk.config.RuntimeAPICommonUtil",
     paramTypes: ["java.lang.String", "java.lang.String"]

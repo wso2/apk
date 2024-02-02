@@ -73,7 +73,7 @@ public distinct class API {
     # The function that maps to the `getGraphQLSchema` method of `org.wso2.apk.config.model.API`.
     #
     # + return - The `string` value returning from the Java mapping.
-    public function getGraphQLSchema() returns string {
+    public isolated function getGraphQLSchema() returns string {
         return java:toString(org_wso2_apk_config_model_API_getGraphQLSchema(self.jObj)) ?: "";
     }
 
@@ -322,7 +322,7 @@ isolated function org_wso2_apk_config_model_API_getEnvironment(handle receiver) 
     paramTypes: []
 } external;
 
-function org_wso2_apk_config_model_API_getGraphQLSchema(handle receiver) returns handle = @java:Method {
+isolated function org_wso2_apk_config_model_API_getGraphQLSchema(handle receiver) returns handle = @java:Method {
     name: "getGraphQLSchema",
     'class: "org.wso2.apk.config.model.API",
     paramTypes: []

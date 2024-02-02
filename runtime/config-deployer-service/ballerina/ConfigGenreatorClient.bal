@@ -29,7 +29,7 @@ public class ConfigGeneratorClient {
             } else {
                 apiType = <string>definitionBody.apiType;
             }
-            if ALLOWED_API_TYPES.indexOf(apiType) is () {
+            if ALLOWED_API_TYPES.indexOf(apiType.toUpperAscii()) is () {
                 BadRequestError badRequest = {body: {code: 90091, message: "Invalid API Type"}};
                 return badRequest;
             }
@@ -41,8 +41,7 @@ public class ConfigGeneratorClient {
             }
             if validateAndRetrieveDefinitionResult is runtimeapi:APIDefinitionValidationResponse {
                 if validateAndRetrieveDefinitionResult.isValid() {
-                    runtimeapi:APIDefinition parser = validateAndRetrieveDefinitionResult.getParser();
-                    runtimeModels:API apiFromDefinition = check parser.getAPIFromDefinition(validateAndRetrieveDefinitionResult.getContent());
+                    runtimeModels:API apiFromDefinition = check runtimeUtil:RuntimeAPICommonUtil_getAPIFromDefinition(validateAndRetrieveDefinitionResult.getContent(), apiType);
                     apiFromDefinition.setType(apiType);
                     APIClient apiclient = new ();
                     APKConf generatedAPKConf = check apiclient.fromAPIModelToAPKConf(apiFromDefinition);
@@ -98,13 +97,13 @@ public class ConfigGeneratorClient {
         if !typeAvailable {
             return e909005("type");
         }
-        if (ALLOWED_API_DEFINITION_TYPES.indexOf('type) is ()) {
+        if (ALLOWED_API_DEFINITION_TYPES.indexOf('type.toUpperAscii()) is ()) {
             return e909006();
         }
         if url is string {
             string retrieveDefinitionFromUrlResult = check self.retrieveDefinitionFromUrl(url);
             validationResponse = runtimeUtil:RuntimeAPICommonUtil_validateOpenAPIDefinition('type, [], retrieveDefinitionFromUrlResult, fileName ?: "", true);
-        } else if fileName is string && content is byte[] {
+        } else if fileName is string && content is byte[] && content.length() > 0 {
             validationResponse = runtimeUtil:RuntimeAPICommonUtil_validateOpenAPIDefinition('type, <byte[]>content, "", <string>fileName, true);
         } else {
             return e909008();
