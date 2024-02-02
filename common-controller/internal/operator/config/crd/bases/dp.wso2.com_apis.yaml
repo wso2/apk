@@ -247,6 +247,7 @@ spec:
                 enum:
                 - REST
                 - GraphQL
+                - GRPC
                 type: string
               apiVersion:
                 description: APIVersion is the version number of the API.
