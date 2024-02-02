@@ -63,9 +63,8 @@ public class RuntimeAPICommonUtil {
                         new String(inputByteArray, StandardCharsets.UTF_8),
                         returnContent);
             } else {
-                throw new APIManagementException("Unsupported extension type of file: " +
-                        fileName,
-                        ExceptionCodes.UNSUPPORTED_GRAPHQL_FILE_EXTENSION);
+                OASParserUtil.addErrorToValidationResponse(validationResponse,
+                        "Invalid definition file type provided.");
             }
         }
         return validationResponse;

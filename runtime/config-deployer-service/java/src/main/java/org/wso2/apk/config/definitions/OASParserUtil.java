@@ -636,27 +636,33 @@ public class OASParserUtil {
             boolean returnGraphQLSchemaContent) {
         APIDefinitionValidationResponse validationResponse = new APIDefinitionValidationResponse();
         ArrayList<ErrorHandler> errors = new ArrayList<>();
-        if (apiDefinition == "") {
+
+        if (apiDefinition.isBlank()) {
             validationResponse.setValid(false);
-            errors.add(new ErrorItem("Invalid API Definition", "API Definition is empty",
-                    400, 400));
+            errors.add(ExceptionCodes.GRAPHQL_SCHEMA_CANNOT_BE_NULL);
             validationResponse.setErrorItems(errors);
-            return validationResponse;
         }
 
         SchemaParser schemaParser = new SchemaParser();
-        TypeDefinitionRegistry typeRegistry = schemaParser.parse(apiDefinition);
-        GraphQLSchema graphQLSchema = UnExecutableSchemaGenerator.makeUnExecutableSchema(typeRegistry);
-        SchemaValidator schemaValidation = new SchemaValidator();
-        Set<SchemaValidationError> validationErrors = schemaValidation.validateSchema(graphQLSchema);
-
-        if (validationErrors.toArray().length > 0) {
+        Set<SchemaValidationError> validationErrors = new HashSet<>();
+        try {
+            TypeDefinitionRegistry typeRegistry = schemaParser.parse(apiDefinition);
+            GraphQLSchema graphQLSchema = UnExecutableSchemaGenerator.makeUnExecutableSchema(typeRegistry);
+            SchemaValidator schemaValidation = new SchemaValidator();
+            validationErrors = schemaValidation.validateSchema(graphQLSchema);
+            if (validationErrors.toArray().length > 0) {
+                validationResponse.setValid(false);
+                errors.add(ExceptionCodes.API_NOT_GRAPHQL);
+                validationResponse.setErrorItems(errors);
+            } else {
+                validationResponse.setValid(true);
+                validationResponse.setContent(apiDefinition);
+            }
+        } catch (Exception e) {
+            OASParserUtil.addErrorToValidationResponse(validationResponse, e.getMessage());
             validationResponse.setValid(false);
             errors.add(new ErrorItem("API Definition Validation Error", "API Definition is invalid", 400, 400));
             validationResponse.setErrorItems(errors);
-        } else {
-            validationResponse.setValid(true);
-            validationResponse.setContent(apiDefinition);
         }
 
         return validationResponse;
