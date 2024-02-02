@@ -108,7 +108,7 @@ func getHostandBasepathandPort(apiType string, rawURL string) (*Endpoint, error)
 	rawURL = strings.Trim(rawURL, " ")
 
 	if !strings.Contains(rawURL, "://") {
-		if apiType == constants.REST || apiType == constants.GRAPHQL {
+		if apiType == constants.REST || apiType == constants.GRAPHQL || apiType == constants.GRPC {
 			rawURL = "http://" + rawURL
 		} else if apiType == constants.WS {
 			rawURL = "ws://" + rawURL
