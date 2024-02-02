@@ -46,7 +46,7 @@ public class APIClient {
             name: api.getName(),
             basePath: api.getBasePath().length() > 0 ? api.getBasePath() : encodedString,
             version: api.getVersion(),
-            'type: api.getType() == "" ? API_TYPE_REST : api.getType()
+            'type: api.getType() == "" ? API_TYPE_REST : api.getType().toUpperAscii()
         };
         string endpoint = api.getEndpoint();
         if endpoint.length() > 0 {
@@ -1526,7 +1526,6 @@ public class APIClient {
                 map<string> errors = {};
                 self.validateEndpointConfigurations(apkConf, errors);
                 if (errors.length() > 0) {
-                    log:printInfo(apkconfJson.toJsonString());
                     return e909029(errors);
                 }
                 return apkConf;

@@ -23,6 +23,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import graphql.schema.GraphQLSchema;
+import graphql.schema.idl.SchemaParser;
+import graphql.schema.idl.TypeDefinitionRegistry;
+import graphql.schema.idl.UnExecutableSchemaGenerator;
+import graphql.schema.validation.SchemaValidationError;
+import graphql.schema.validation.SchemaValidator;
 import io.swagger.models.RefModel;
 import io.swagger.models.RefPath;
 import io.swagger.models.RefResponse;
@@ -54,6 +61,7 @@ import org.wso2.apk.config.APIConstants;
 import org.wso2.apk.config.api.APIDefinition;
 import org.wso2.apk.config.api.APIDefinitionValidationResponse;
 import org.wso2.apk.config.api.APIManagementException;
+import org.wso2.apk.config.api.ErrorHandler;
 import org.wso2.apk.config.api.ErrorItem;
 import org.wso2.apk.config.api.ExceptionCodes;
 import org.wso2.apk.config.api.Info;
@@ -618,6 +626,42 @@ public class OASParserUtil {
         }
         return validationResponse;
     }
+
+    /**
+     * Validate graphQL Schema
+     * 
+     * @return Validation response
+     */
+    public static APIDefinitionValidationResponse validateGraphQLSchema(String apiDefinition,
+            boolean returnGraphQLSchemaContent) {
+        APIDefinitionValidationResponse validationResponse = new APIDefinitionValidationResponse();
+        ArrayList<ErrorHandler> errors = new ArrayList<>();
+        if (apiDefinition == "") {
+            validationResponse.setValid(false);
+            errors.add(new ErrorItem("Invalid API Definition", "API Definition is empty",
+                    400, 400));
+            validationResponse.setErrorItems(errors);
+            return validationResponse;
+        }
+
+        SchemaParser schemaParser = new SchemaParser();
+        TypeDefinitionRegistry typeRegistry = schemaParser.parse(apiDefinition);
+        GraphQLSchema graphQLSchema = UnExecutableSchemaGenerator.makeUnExecutableSchema(typeRegistry);
+        SchemaValidator schemaValidation = new SchemaValidator();
+        Set<SchemaValidationError> validationErrors = schemaValidation.validateSchema(graphQLSchema);
+
+        if (validationErrors.toArray().length > 0) {
+            validationResponse.setValid(false);
+            errors.add(new ErrorItem("API Definition Validation Error", "API Definition is invalid", 400, 400));
+            validationResponse.setErrorItems(errors);
+        } else {
+            validationResponse.setValid(true);
+            validationResponse.setContent(apiDefinition);
+        }
+
+        return validationResponse;
+    }
+
     /**
      * This method removes the unsupported json blocks from the given json string.
      *
