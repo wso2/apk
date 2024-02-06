@@ -2017,7 +2017,7 @@ func (apiReconciler *APIReconciler) handleOwnerReference(ctx context.Context, ob
 		if err := apiReconciler.client.Get(ctx, req.NamespacedName, &apiCR); err == nil {
 			apis = append(apis, apiCR)
 		} else {
-			loggers.LoggerAPKOperator.Errorf("Error while loading api: %+v", req)
+			loggers.LoggerAPKOperator.Errorf("Error while loading api: %+v, Error: %v", req, err)
 		}
 	}
 	// Prepare owner references for the route

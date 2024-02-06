@@ -21,6 +21,7 @@ import (
 	logger "github.com/sirupsen/logrus"
 	commoncontroller "github.com/wso2/apk/common-controller/commoncontroller"
 	config "github.com/wso2/apk/common-controller/internal/config"
+	"github.com/wso2/apk/common-controller/internal/database"
 	"github.com/wso2/apk/common-controller/internal/server"
 	web "github.com/wso2/apk/common-controller/internal/web"
 )
@@ -30,6 +31,17 @@ func main() {
 	logger.Info("Starting the Web server")
 	go web.StartWebServer()
 	go server.StartInternalServer()
+	if conf.CommonController.Database.Enabled {
+		logger.Info("Starting the Database connection")
+		go startDB()
+	}
 	logger.Info("Starting the Common Controller")
 	commoncontroller.InitCommonControllerServer(conf)
+
+}
+
+func startDB() {
+	database.ConnectToDB()
+	database.GetApplicationByUUID()
+	defer database.CloseDBConn()
 }
