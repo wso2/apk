@@ -204,23 +204,7 @@ func CreateRoutesWithClusters(adapterInternalAPI *model.AdapterInternalAPI, inte
 		clusters = append(clusters, cluster)
 		endpoints = append(endpoints, address...)
 
-		// The current code requires to create policy for all routes to support backend endpoint.
-		policyParameters := make(map[string]interface{})
-		policyParameters[constants.RewritePathType] = gwapiv1b1.FullPathHTTPPathModifier
-		policyParameters[constants.IncludeQueryParams] = true
-		policyParameters[constants.RewritePathResourcePath] = basePath
-		var policies = model.OperationPolicies{
-			Request: []model.Policy{
-				{
-					PolicyName: string(gwapiv1b1.HTTPRouteFilterURLRewrite),
-					Action:     constants.ActionRewritePath,
-					Parameters: policyParameters,
-				},
-			},
-		}
-
-		grpcop := model.NewOperationWithPolicies("POST", policies)
-		resource := model.CreateMinimalResource(adapterInternalAPI.GetXWso2Basepath(), []*model.Operation{grpcop}, "", adapterInternalAPI.Endpoints, true, gwapiv1b1.PathMatchExact)
+		resource := model.CreateMinimalResource(adapterInternalAPI.GetXWso2Basepath(), []*model.Operation{}, "", adapterInternalAPI.Endpoints, true, gwapiv1b1.PathMatchExact)
 		routesP, err := createRoutes(genRouteCreateParams(&adapterInternalAPI, &resource, vHost, basePath, clusterName, nil,
 			nil, organizationID, false, false))
 		if err != nil {
