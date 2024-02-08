@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2023, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
+ *  Copyright (c) 2024, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -67,6 +67,7 @@ func GetMinorVersionRange(semVersion semantic_version.SemVersion) string {
 }
 
 func updateRoutingRulesOnAPIUpdate(organizationID, apiIdentifier, apiName, apiVersion, vHost, envType string) {
+
 	apiSemVersion, err := semantic_version.ValidateAndGetVersionComponents(apiVersion, apiName)
 	// If the version validation is not success, we just proceed without intelligent version
 	// Valid version pattern: vx.y.z or vx.y where x, y and z are non-negative integers and v is a prefix
@@ -93,6 +94,7 @@ func updateRoutingRulesOnAPIUpdate(organizationID, apiIdentifier, apiName, apiVe
 			if envoyInternalAPI.adapterInternalAPI.GetTitle() == apiName && isVHostMatched(organizationID, apiUUID, vHost, envType) {
 				if (isMajorRangeRegexAvailable && envoyInternalAPI.adapterInternalAPI.GetVersion() == existingMajorRangeLatestSemVersion.Version) ||
 					(isMinorRangeRegexAvailable && envoyInternalAPI.adapterInternalAPI.GetVersion() == existingMinorRangeLatestSemVersion.Version) {
+
 					for _, route := range envoyInternalAPI.routes {
 						regex := route.GetMatch().GetSafeRegex().GetRegex()
 						regexRewritePattern := route.GetRoute().GetRegexRewrite().GetPattern().GetRegex()
@@ -133,6 +135,7 @@ func updateRoutingRulesOnAPIUpdate(organizationID, apiIdentifier, apiName, apiVe
 		if _, apiRangeExists := orgIDLatestAPIVersionMap[organizationID][apiRangeIdentifier]; !apiRangeExists {
 			orgIDLatestAPIVersionMap[organizationID][apiRangeIdentifier] = make(map[string]semantic_version.SemVersion)
 		}
+
 		latestVersions := orgIDLatestAPIVersionMap[organizationID][apiRangeIdentifier]
 		latestVersions[minorVersionRange] = *apiSemVersion
 		if isLatestMajorVersion {
@@ -141,12 +144,13 @@ func updateRoutingRulesOnAPIUpdate(organizationID, apiIdentifier, apiName, apiVe
 
 		// Add the major and/or minor version range matching regexes to the path specifier when
 		// latest major and/or minor version is available
+		apiRoutes := getRoutesForAPIIdentifier(organizationID, apiIdentifier)
 
-		apiRoutes := getRoutes(organizationID, apiIdentifier, vHost)
 		for _, route := range apiRoutes {
 			regex := route.GetMatch().GetSafeRegex().GetRegex()
 			regexRewritePattern := route.GetRoute().GetRegexRewrite().GetPattern().GetRegex()
 			apiVersionRegex := GetVersionMatchRegex(apiVersion)
+
 			if isLatestMajorVersion {
 				regex = strings.Replace(regex, apiVersionRegex, GetMajorMinorVersionRangeRegex(*apiSemVersion), 1)
 				regexRewritePattern = strings.Replace(regexRewritePattern, apiVersionRegex, GetMajorMinorVersionRangeRegex(*apiSemVersion), 1)
@@ -159,12 +163,14 @@ func updateRoutingRulesOnAPIUpdate(organizationID, apiIdentifier, apiName, apiVe
 					Regex: regex,
 				},
 			}
+
 			route.Match.PathSpecifier = pathSpecifier
 			action := &routev3.Route_Route{}
 			action = route.Action.(*routev3.Route_Route)
 			action.Route.RegexRewrite.Pattern.Regex = regexRewritePattern
 			route.Action = action
 		}
+
 	}
 }
 
@@ -189,6 +195,7 @@ func updateRoutingRulesOnAPIDelete(organizationID, apiIdentifier string, api mod
 	}
 	majorVersionRange := GetMajorVersionRange(*deletingAPISemVersion)
 	newLatestMajorRangeAPIIdentifier := ""
+
 	if deletingAPIsMajorRangeLatestAPISemVersion, ok := latestAPIVersionMap[majorVersionRange]; ok {
 		if deletingAPIsMajorRangeLatestAPISemVersion.Version == api.GetVersion() {
 			newLatestMajorRangeAPI := &semantic_version.SemVersion{
@@ -248,6 +255,7 @@ func updateRoutingRulesOnAPIDelete(organizationID, apiIdentifier string, api mod
 							Regex: regex,
 						},
 					}
+
 					route.Match.PathSpecifier = pathSpecifier
 					action := &routev3.Route_Route{}
 					action = route.Action.(*routev3.Route_Route)
@@ -260,6 +268,7 @@ func updateRoutingRulesOnAPIDelete(organizationID, apiIdentifier string, api mod
 		}
 	}
 	minorVersionRange := GetMinorVersionRange(*deletingAPISemVersion)
+
 	if deletingAPIsMinorRangeLatestAPI, ok := latestAPIVersionMap[minorVersionRange]; ok {
 		if deletingAPIsMinorRangeLatestAPI.Version == api.GetVersion() {
 			newLatestMinorRangeAPI := &semantic_version.SemVersion{
@@ -319,6 +328,14 @@ func updateRoutingRulesOnAPIDelete(organizationID, apiIdentifier string, api mod
 			}
 		}
 	}
+
+	if orgAPIMap, apiAvailable := orgIDLatestAPIVersionMap[organizationID][apiRangeIdentifier]; apiAvailable && len(orgAPIMap) == 0 {
+		delete(orgIDLatestAPIVersionMap[organizationID], apiRangeIdentifier)
+		if orgMap := orgIDLatestAPIVersionMap[organizationID]; len(orgMap) == 0 {
+			delete(orgIDLatestAPIVersionMap, organizationID)
+		}
+	}
+
 }
 
 func isVHostMatched(organizationID, apiUUID, vHost, envType string) bool {
@@ -335,21 +352,13 @@ func isVHostMatched(organizationID, apiUUID, vHost, envType string) bool {
 	return false
 }
 
-func getRoutes(organizationID, apiUUID, vHost string) []*routev3.Route {
-
-	var routes []*routev3.Route
-	if _, ok := orgAPIMap[organizationID]; ok {
-		routes = orgAPIMap[organizationID][GenerateIdentifierForAPIWithUUID(apiUUID, vHost)].routes
-	}
-
-	return routes
-}
-
 func getRoutesForAPIIdentifier(organizationID, apiIdentifier string) []*routev3.Route {
 
 	var routes []*routev3.Route
 	if _, ok := orgAPIMap[organizationID]; ok {
-		routes = orgAPIMap[organizationID][apiIdentifier].routes
+		if _, ok := orgAPIMap[organizationID][apiIdentifier]; ok {
+			routes = orgAPIMap[organizationID][apiIdentifier].routes
+		}
 	}
 
 	return routes

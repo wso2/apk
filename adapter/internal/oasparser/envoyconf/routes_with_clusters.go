@@ -864,7 +864,13 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 		xWso2Basepath = removeFirstOccurrence(xWso2Basepath, "/"+version)
 		resourcePath = removeFirstOccurrence(resource.GetPath(), "/"+version)
 	}
+
+	conf := config.ReadConfigs()
+	if conf.Envoy.EnableIntelligentRouting && strings.HasPrefix(version, "v") {
+		resourcePath = strings.Replace(resourcePath, basePath, regexp.QuoteMeta(basePath), 1)
+	}
 	routePath := generateRoutePath(resourcePath, pathMatchType)
+
 	// route path could be empty only if there is no basePath for API or the endpoint available,
 	// and resourcePath is also an empty string.
 	// Empty check is added to run the gateway in failsafe mode, as if the decorator string is
@@ -1205,9 +1211,17 @@ func CreateAPIDefinitionEndpoint(basePath string, vHost string, methods []string
 		matchPath = basePathWithoutVersion + endpoint
 	}
 
+	conf := config.ReadConfigs()
+	if conf.Envoy.EnableIntelligentRouting && strings.HasPrefix(version, "v") {
+		matchPath = strings.Replace(matchPath, basePath, regexp.QuoteMeta(basePath), 1)
+	}
+	routePath := generateRoutePath(matchPath, gwapiv1b1.PathMatchRegularExpression)
+
 	match = &routev3.RouteMatch{
-		PathSpecifier: &routev3.RouteMatch_Path{
-			Path: matchPath,
+		PathSpecifier: &routev3.RouteMatch_SafeRegex{
+			SafeRegex: &envoy_type_matcherv3.RegexMatcher{
+				Regex: routePath,
+			},
 		},
 		Headers: generateHTTPMethodMatcher(methodRegex, apiDefinitionClusterName),
 	}
@@ -1240,7 +1254,7 @@ func CreateAPIDefinitionEndpoint(basePath string, vHost string, methods []string
 				},
 			},
 			ClusterSpecifier: directClusterSpecifier,
-			PrefixRewrite:    rewritePath,
+			RegexRewrite:     generateRegexMatchAndSubstitute(routePath, rewritePath, gwapiv1b1.PathMatchExact),
 		},
 	}
 

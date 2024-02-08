@@ -246,11 +246,16 @@ func DeleteAPICREvent(labels []string, apiUUID string, organizationID string) er
 // deleteAPI deletes an API, its resources and updates the caches of given environments
 func deleteAPI(apiIdentifier string, environments []string, organizationID string) error {
 	apiUUID, _ := ExtractUUIDFromAPIIdentifier(apiIdentifier)
+	var api *EnvoyInternalAPI
+
 	if _, orgExists := orgAPIMap[organizationID]; orgExists {
-		if _, apiExists := orgAPIMap[organizationID][apiIdentifier]; !apiExists {
+		if oldAPI, apiExists := orgAPIMap[organizationID][apiIdentifier]; apiExists {
+			api = oldAPI
+		} else {
 			logger.LoggerXds.Infof("Unable to delete API: %v from Organization: %v. API Does not exist. API_UUID: %v", apiIdentifier, organizationID, apiUUID)
 			return errors.New(constants.NotFound)
 		}
+
 	} else {
 		logger.LoggerXds.Infof("Unable to delete API: %v from Organization: %v. Organization Does not exist. API_UUID: %v", apiIdentifier, organizationID, apiUUID)
 		return errors.New(constants.NotFound)
@@ -258,6 +263,11 @@ func deleteAPI(apiIdentifier string, environments []string, organizationID strin
 
 	existingLabels := orgAPIMap[organizationID][apiIdentifier].envoyLabels
 	toBeDelEnvs, toBeKeptEnvs := getEnvironmentsToBeDeleted(existingLabels, environments)
+
+	conf := config.ReadConfigs()
+	if conf.Envoy.EnableIntelligentRouting && strings.HasPrefix(api.adapterInternalAPI.GetVersion(), "v") {
+		updateRoutingRulesOnAPIDelete(organizationID, apiIdentifier, api.adapterInternalAPI)
+	}
 
 	var isAllowedToDelete bool
 	updatedLabelsMap := make(map[string]struct{})
@@ -697,7 +707,7 @@ func UpdateAPICache(vHosts []string, newLabels []string, listener string, sectio
 
 	updatedLabelsMap := make(map[string]struct{}, 0)
 
-	// Remove internal mappigs for old vHosts
+	// Remove internal mappings for old vHosts
 	for _, oldvhost := range oldvHosts {
 		apiIdentifier := GenerateIdentifierForAPIWithUUID(oldvhost, adapterInternalAPI.UUID)
 		if orgMap, orgExists := orgAPIMap[adapterInternalAPI.GetOrganizationID()]; orgExists {
@@ -748,7 +758,16 @@ func UpdateAPICache(vHosts []string, newLabels []string, listener string, sectio
 			endpointAddresses:  endpoints,
 			enforcerAPI:        oasParser.GetEnforcerAPI(adapterInternalAPI, vHost),
 		}
+
+		conf := config.ReadConfigs()
+		apiVersion := adapterInternalAPI.GetVersion()
+		if conf.Envoy.EnableIntelligentRouting && strings.HasPrefix(apiVersion, "v") {
+			apiName := adapterInternalAPI.GetTitle()
+			envType := adapterInternalAPI.EnvType
+			updateRoutingRulesOnAPIUpdate(adapterInternalAPI.OrganizationID, apiIdentifier, apiName, apiVersion, vHost, envType)
+		}
 	}
+
 	return updatedLabelsMap, nil
 }
 

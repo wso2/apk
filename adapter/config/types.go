@@ -115,9 +115,10 @@ type envoy struct {
 	Connection               connection
 	PayloadPassingToEnforcer payloadPassingToEnforcer
 	// If configured true, router appends the immediate downstream ip address to the x-forward-for header
-	UseRemoteAddress bool
-	Filters          filters
-	RateLimit        rateLimit
+	UseRemoteAddress         bool
+	Filters                  filters
+	RateLimit                rateLimit
+	EnableIntelligentRouting bool
 }
 
 type connectionTimeouts struct {
