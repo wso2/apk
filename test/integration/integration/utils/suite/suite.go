@@ -125,7 +125,7 @@ func New(s Options) *IntegrationTestSuite {
 // in the cluster. It also ensures that all relevant resources are ready.
 func (suite *IntegrationTestSuite) Setup(t *testing.T) {
 	// TODO (Amila): Revisit when gateway resource support is added
-	suite.ControllerName = "wso2.gw.class"
+	suite.ControllerName = "wso2.com/apk-gateway-default"
 
 	suite.Applier.GatewayClass = suite.GatewayClassName
 	suite.Applier.ControllerName = suite.ControllerName

@@ -43,6 +43,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 	//+kubebuilder:scaffold:imports
+	"github.com/wso2/apk/common-controller/internal/operator/status"
 )
 
 var (
@@ -154,6 +155,16 @@ func InitOperator() {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3117, logging.MAJOR,
 			"Error creating Application Mapping controller, error: %v", err))
 	}
+
+	updateHandler := status.NewUpdateHandler(mgr.GetClient())
+	if err := mgr.Add(updateHandler); err != nil {
+		loggers.LoggerAPKOperator.Errorf("Failed to add status update handler %v", err)
+	}
+	if err := dpcontrollers.NewGatewayClassController(mgr, updateHandler); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3114, logging.MAJOR,
+			"Error creating GatewayClass controller, error: %v", err))
+	}
+
 	//+kubebuilder:scaffold:builder
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
