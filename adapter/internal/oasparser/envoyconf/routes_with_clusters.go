@@ -202,6 +202,7 @@ func CreateRoutesWithClusters(adapterInternalAPI *model.AdapterInternalAPI, inte
 
 		clusterName := getClusterName(adapterInternalAPI.Endpoints.EndpointPrefix, organizationID, vHost,
 			adapterInternalAPI.GetTitle(), apiVersion, "")
+		adapterInternalAPI.Endpoints.HTTP2BackendEnabled = true
 		cluster, address, err := processEndpoints(clusterName, adapterInternalAPI.Endpoints, timeout, basePath)
 
 		if err != nil {
