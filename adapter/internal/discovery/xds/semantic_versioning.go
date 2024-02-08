@@ -22,6 +22,7 @@ import (
 
 	routev3 "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
 	envoy_type_matcherv3 "github.com/envoyproxy/go-control-plane/envoy/type/matcher/v3"
+	"github.com/wso2/apk/adapter/config"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
 	logging "github.com/wso2/apk/adapter/internal/logging"
 	"github.com/wso2/apk/adapter/internal/oasparser/model"
@@ -362,4 +363,16 @@ func getRoutesForAPIIdentifier(organizationID, apiIdentifier string) []*routev3.
 	}
 
 	return routes
+}
+
+func isSemanticVersioningEnabled(apiName, apiVersion string) bool {
+
+	conf := config.ReadConfigs()
+	apiSemVersion, err := semantic_version.ValidateAndGetVersionComponents(apiVersion, apiName)
+
+	if err != nil && apiSemVersion == nil {
+		return false
+	}
+
+	return conf.Envoy.EnableIntelligentRouting
 }

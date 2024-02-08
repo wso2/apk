@@ -264,8 +264,7 @@ func deleteAPI(apiIdentifier string, environments []string, organizationID strin
 	existingLabels := orgAPIMap[organizationID][apiIdentifier].envoyLabels
 	toBeDelEnvs, toBeKeptEnvs := getEnvironmentsToBeDeleted(existingLabels, environments)
 
-	conf := config.ReadConfigs()
-	if conf.Envoy.EnableIntelligentRouting && strings.HasPrefix(api.adapterInternalAPI.GetVersion(), "v") {
+	if isSemanticVersioningEnabled(api.adapterInternalAPI.GetTitle(), api.adapterInternalAPI.GetVersion()) {
 		updateRoutingRulesOnAPIDelete(organizationID, apiIdentifier, api.adapterInternalAPI)
 	}
 
@@ -759,10 +758,9 @@ func UpdateAPICache(vHosts []string, newLabels []string, listener string, sectio
 			enforcerAPI:        oasParser.GetEnforcerAPI(adapterInternalAPI, vHost),
 		}
 
-		conf := config.ReadConfigs()
 		apiVersion := adapterInternalAPI.GetVersion()
-		if conf.Envoy.EnableIntelligentRouting && strings.HasPrefix(apiVersion, "v") {
-			apiName := adapterInternalAPI.GetTitle()
+		apiName := adapterInternalAPI.GetTitle()
+		if isSemanticVersioningEnabled(apiName, apiVersion) {
 			envType := adapterInternalAPI.EnvType
 			updateRoutingRulesOnAPIUpdate(adapterInternalAPI.OrganizationID, apiIdentifier, apiName, apiVersion, vHost, envType)
 		}
