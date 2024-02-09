@@ -757,8 +757,13 @@ public class APIClient {
             }
             if endpointToUse != () {
                 if apkConf.'type == API_TYPE_GRAPHQL {
-                    model:GQLRouteRule gqlRouteRule = {matches: self.retrieveGQLMatches(apkConf, operation, organization)};
-                    return gqlRouteRule;
+                    model:GQLRouteMatch[]|error routeMatches = self.retrieveGQLMatches(apkConf, operation, organization);
+                    if routeMatches is model:GQLRouteMatch[] && routeMatches.length() > 0 {
+                        model:GQLRouteRule gqlRouteRule = {matches: routeMatches};
+                        return gqlRouteRule;
+                    } else {
+                        return e909022("Subscription type currently not supported for GraphQL APIs.", error("Subscription type currently not supported for GraphQL APIs."));
+                    }
                 } else {
                     model:HTTPRouteRule httpRouteRule = {matches: self.retrieveHTTPMatches(apkConf, operation, organization), backendRefs: self.retrieveGeneratedBackend(apkConf, endpointToUse, endpointType), filters: self.generateFilters(apiArtifact, apkConf, endpointToUse, operation, endpointType, organization)};
                     return httpRouteRule;
@@ -895,19 +900,28 @@ public class APIClient {
         return httpRouteMatch;
     }
 
-    private isolated function retrieveGQLMatches(APKConf apkConf, APKOperations apiOperation, commons:Organization organization) returns model:GQLRouteMatch[] {
+    private isolated function retrieveGQLMatches(APKConf apkConf, APKOperations apiOperation, commons:Organization organization) returns model:GQLRouteMatch[]|error {
         model:GQLRouteMatch[] gqlRouteMatch = [];
-        model:GQLRouteMatch gqlRoute = self.retrieveGQLRouteMatch(apiOperation);
-        gqlRouteMatch.push(gqlRoute);
+        model:GQLRouteMatch|error gqlRoute = self.retrieveGQLRouteMatch(apiOperation);
+        if gqlRoute is model:GQLRouteMatch {
+            gqlRouteMatch.push(gqlRoute);
+        }
         return gqlRouteMatch;
+
     }
 
     private isolated function retrieveHttpRouteMatch(APKConf apkConf, APKOperations apiOperation, commons:Organization organization) returns model:HTTPRouteMatch {
         return {method: <string>apiOperation.verb, path: {'type: "RegularExpression", value: self.retrievePathPrefix(apkConf.basePath, apkConf.'version, apiOperation.target ?: "/*", organization)}};
     }
 
-    private isolated function retrieveGQLRouteMatch(APKOperations apiOperation) returns model:GQLRouteMatch {
-        return {'type: <string>apiOperation.verb, path: <string>apiOperation.target};
+    private isolated function retrieveGQLRouteMatch(APKOperations apiOperation) returns model:GQLRouteMatch|error {
+        model:GQLType? routeMatch = model:getGQLRouteMatch(<string>apiOperation.verb);
+        if routeMatch is model:GQLType {
+            log:printInfo(routeMatch);
+            return {'type: routeMatch, path: <string>apiOperation.target};
+        } else {
+            return e909052(error("Error occured retrieving GQL route match", message = "Internal Server Error", code = 909000, description = "Internal Server Error", statusCode = 500));
+        }
     }
 
     isolated function retrieveGeneratedSwaggerDefinition(APKConf apkConf, string? definition) returns string|json|commons:APKError|error {

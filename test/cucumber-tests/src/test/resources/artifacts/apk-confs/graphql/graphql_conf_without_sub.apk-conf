@@ -1,0 +1,55 @@
+---
+name: "GraphQL API"
+basePath: "/graphql"
+version: "3.14"
+type: "GRAPHQL"
+defaultVersion: false
+subscriptionValidation: false
+endpointConfigurations:
+  production:
+    endpoint: "https://run.mocky.io/v3/85516819-1edd-412b-a32b-a9284705a0b4"
+operations:
+  - target: "hero"
+    verb: "QUERY"
+    secured: true
+    scopes: []
+  - target: "reviews"
+    verb: "QUERY"
+    secured: true
+    scopes: []
+  - target: "search"
+    verb: "QUERY"
+    secured: true
+    scopes: []
+  - target: "character"
+    verb: "QUERY"
+    secured: true
+    scopes: []
+  - target: "droid"
+    verb: "QUERY"
+    secured: true
+    scopes: []
+  - target: "human"
+    verb: "QUERY"
+    secured: true
+    scopes: []
+  - target: "allHumans"
+    verb: "QUERY"
+    secured: true
+    scopes: []
+  - target: "allDroids"
+    verb: "QUERY"
+    secured: true
+    scopes: []
+  - target: "allCharacters"
+    verb: "QUERY"
+    secured: true
+    scopes: []
+  - target: "starship"
+    verb: "QUERY"
+    secured: true
+    scopes: []
+  - target: "createReview"
+    verb: "MUTATION"
+    secured: true
+    scopes: []
