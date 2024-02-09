@@ -30,14 +30,25 @@ public type GQLRouteList record {|
 |};
 
 public type GQLRouteMatch record {
-    string 'type; //TODO: make enum
+    GQLType 'type; 
     string path;
 };
 
-enum GQLType {
-    QUERY,
-    MUTATION
-};
+public type GQLType "QUERY"|"MUTATION";
+
+public isolated function getGQLRouteMatch(string routeMatch) returns GQLType? {
+    match routeMatch {
+        "QUERY" => {
+            return "QUERY";
+        }
+        "MUTATION" => {
+            return "MUTATION";
+        } //TODO: add SUBSCRIPTION when support is added
+        _ => {
+            return; // Returns `nil` for unmatched cases
+        }
+    }
+}
 
 public type GQLRouteFilter record {
     LocalObjectReference extensionRef?;
