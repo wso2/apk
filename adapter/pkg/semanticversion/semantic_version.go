@@ -38,7 +38,7 @@ func ValidateAndGetVersionComponents(version string, apiName string) (*SemVersio
 	versionComponents := strings.Split(version, ".")
 
 	// If the versionComponents length is less than 2, return error
-	if len(versionComponents) < 2 {
+	if len(versionComponents) < 2 || !strings.HasPrefix(versionComponents[0], "v") {
 		logger.LoggerSemanticVersion.Errorf("API version validation failed for API: %v. API Version: %v", apiName, version)
 		errMessage := "Invalid version: " + version + " for API: " + apiName +
 			". API version should be in the format x.y.z, x.y, vx.y.z or vx.y where x,y,z are non-negative integers" +
@@ -85,28 +85,25 @@ func ValidateAndGetVersionComponents(version string, apiName string) (*SemVersio
 // Compare - compares two semantic versions and returns true
 // if `version` is greater or equal than `baseVersion`
 func (baseVersion SemVersion) Compare(version SemVersion) bool {
-	if baseVersion.Major < version.Major {
-		return true
-	} else if baseVersion.Major > version.Major {
-		return false
-	} else {
-		if baseVersion.Minor < version.Minor {
-			return true
-		} else if baseVersion.Minor > version.Minor {
-			return false
-		} else {
-			if baseVersion.Patch != nil && version.Patch != nil {
-				if *baseVersion.Patch < *version.Patch {
-					return true
-				} else if *baseVersion.Patch > *version.Patch {
-					return false
-				}
-			} else if baseVersion.Patch == nil && version.Patch != nil {
-				return true
-			} else if baseVersion.Patch != nil && version.Patch == nil {
-				return false
-			}
-		}
+	// Compare major version
+	if baseVersion.Major != version.Major {
+		return baseVersion.Major < version.Major
 	}
+
+	// Compare minor version
+	if baseVersion.Minor != version.Minor {
+		return baseVersion.Minor < version.Minor
+	}
+
+	// Compare patch version
+	if baseVersion.Patch != nil && version.Patch != nil {
+		return *baseVersion.Patch < *version.Patch
+	} else if baseVersion.Patch != nil {
+		return false
+	} else if version.Patch != nil {
+		return true
+	}
+
+	// Versions are equal
 	return true
 }

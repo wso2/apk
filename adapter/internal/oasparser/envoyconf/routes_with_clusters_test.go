@@ -173,7 +173,7 @@ func TestCreateRoutesWithClustersWithExactAndRegularExpressionRules(t *testing.T
 
 	assert.Equal(t, 3, len(routes), "Created number of routes are incorrect.")
 	assert.Contains(t, []string{"^/test-api/2\\.0\\.0/exact-path-api/2\\.0\\.0/\\(\\.\\*\\)/exact-path([/]{0,1})"}, routes[1].GetMatch().GetSafeRegex().Regex)
-	assert.Contains(t, []string{"^/test-api/2.0.0/regex-path/2.0.0/userId/([^/]+)/orderId/([^/]+)([/]{0,1})"}, routes[2].GetMatch().GetSafeRegex().Regex)
+	assert.Contains(t, []string{"^/test-api/2\\.0\\.0/regex-path/2.0.0/userId/([^/]+)/orderId/([^/]+)([/]{0,1})"}, routes[2].GetMatch().GetSafeRegex().Regex)
 	assert.NotEqual(t, routes[1].GetMatch().GetSafeRegex().Regex, routes[2].GetMatch().GetSafeRegex().Regex,
 		"The route regex for the two paths should not be the same")
 }

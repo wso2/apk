@@ -863,8 +863,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 		resourcePath = removeFirstOccurrence(resource.GetPath(), "/"+version)
 	}
 
-	conf := config.ReadConfigs()
-	if conf.Envoy.EnableIntelligentRouting && strings.HasPrefix(version, "v") {
+	if pathMatchType != gwapiv1b1.PathMatchExact {
 		resourcePath = strings.Replace(resourcePath, basePath, regexp.QuoteMeta(basePath), 1)
 	}
 	routePath := generateRoutePath(resourcePath, pathMatchType)
@@ -1213,10 +1212,7 @@ func CreateAPIDefinitionEndpoint(adapterInternalAPI *model.AdapterInternalAPI, v
 		matchPath = basePathWithoutVersion + endpoint
 	}
 
-	conf := config.ReadConfigs()
-	if conf.Envoy.EnableIntelligentRouting && strings.HasPrefix(version, "v") {
-		matchPath = strings.Replace(matchPath, basePath, regexp.QuoteMeta(basePath), 1)
-	}
+	matchPath = strings.Replace(matchPath, basePath, regexp.QuoteMeta(basePath), 1)
 	routePath := generateRoutePath(matchPath, gwapiv1b1.PathMatchRegularExpression)
 
 	match = &routev3.RouteMatch{
@@ -1390,7 +1386,7 @@ func generateRoutePath(resourcePath string, pathMatchType gwapiv1b1.PathMatchTyp
 	case gwapiv1b1.PathMatchPathPrefix:
 		fallthrough
 	default:
-		return fmt.Sprintf("^%s((?:/.*)*)", regexp.QuoteMeta(newPath))
+		return fmt.Sprintf("^%s((?:/.*)*)", newPath)
 	}
 }
 

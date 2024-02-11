@@ -368,11 +368,14 @@ func getRoutesForAPIIdentifier(organizationID, apiIdentifier string) []*routev3.
 func isSemanticVersioningEnabled(apiName, apiVersion string) bool {
 
 	conf := config.ReadConfigs()
-	apiSemVersion, err := semantic_version.ValidateAndGetVersionComponents(apiVersion, apiName)
+	if !conf.Envoy.EnableIntelligentRouting {
+		return false
+	}
 
+	apiSemVersion, err := semantic_version.ValidateAndGetVersionComponents(apiVersion, apiName)
 	if err != nil && apiSemVersion == nil {
 		return false
 	}
 
-	return conf.Envoy.EnableIntelligentRouting
+	return true
 }
