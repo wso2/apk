@@ -55,7 +55,6 @@ type Agent struct {
 var (
 	subsriptionList        *SubscriptionList
 	applicationList        *ApplicationList
-	appKeyMappingList      *ApplicationKeyMappingList
 	appMappingList         *ApplicationMappingList
 	connectionFaultChannel chan bool
 	eventStreamingClient   apkmgt.EventStreamService_StreamEventsClient
@@ -67,10 +66,6 @@ var (
 		{
 			endpoint:     "/applications",
 			responseType: applicationList,
-		},
-		{
-			endpoint:     "/applicationkeymappings",
-			responseType: appKeyMappingList,
 		},
 		{endpoint: "/applicationmappings",
 			responseType: appMappingList,
@@ -440,11 +435,8 @@ func (controlPlaneGrpcClient *Agent) retrieveDataFromResponseChannel(response re
 			loggers.LoggerAPI.Infof("Received Application information.")
 			appList := newResponse.(*ApplicationList)
 			resolvedApplicationList := marshalMultipleApplications(appList)
+			resolvedApplicationKeyMappingList := marshalMultipleApplicationKeyMappings(appList)
 			controlPlaneGrpcClient.artifactDeployer.DeployAllApplications(resolvedApplicationList)
-		case *ApplicationKeyMappingList:
-			loggers.LoggerAPI.Infof("Received Application Key Mapping information.")
-			appKeyMappingList := newResponse.(*ApplicationKeyMappingList)
-			resolvedApplicationKeyMappingList := marshalMultipleApplicationKeyMappings(appKeyMappingList)
 			controlPlaneGrpcClient.artifactDeployer.DeployAllKeyMappings(resolvedApplicationKeyMappingList)
 		case *ApplicationMappingList:
 			loggers.LoggerAPI.Infof("Received Application Mapping information.")
@@ -472,11 +464,13 @@ func marshalMultipleApplications(appList *ApplicationList) server.ApplicationLis
 	}
 	return applicationList
 }
-func marshalMultipleApplicationKeyMappings(appKeyMappingList *ApplicationKeyMappingList) server.ApplicationKeyMappingList {
+func marshalMultipleApplicationKeyMappings(appList *ApplicationList) server.ApplicationKeyMappingList {
 	applicationKeyMappingList := server.ApplicationKeyMappingList{List: []server.ApplicationKeyMapping{}}
-	for _, applicationKeyMapping := range appKeyMappingList.List {
-		loggers.LoggerAPI.Debugf("ApplicationKeyMapping: %v", applicationKeyMapping)
-		applicationKeyMappingList.List = append(applicationKeyMappingList.List, server.ApplicationKeyMapping{ApplicationUUID: applicationKeyMapping.ApplicationUUID, SecurityScheme: applicationKeyMapping.SecurityScheme, ApplicationIdentifier: applicationKeyMapping.ApplicationIdentifier, KeyType: applicationKeyMapping.KeyType, EnvID: applicationKeyMapping.EnvID, OrganizationID: applicationKeyMapping.Organization})
+	for _, application := range appList.List {
+		loggers.LoggerAPI.Debugf("Application: %v", application)
+		for _, securityScheme := range application.SecuritySchemes {
+			applicationKeyMappingList.List = append(applicationKeyMappingList.List, server.ApplicationKeyMapping{ApplicationUUID: application.UUID, SecurityScheme: securityScheme.SecurityScheme, ApplicationIdentifier: securityScheme.ApplicationIdentifier, KeyType: securityScheme.KeyType, EnvID: securityScheme.EnvID, OrganizationID: application.Organization})
+		}
 	}
 	return applicationKeyMappingList
 }

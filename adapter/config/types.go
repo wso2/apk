@@ -160,6 +160,7 @@ type enforcer struct {
 	Filters                       []filter
 	Metrics                       metrics
 	MandateSubscriptionValidation bool
+	Client                        httpClient
 }
 
 type consul struct {
@@ -411,7 +412,12 @@ type filter struct {
 }
 
 type httpClient struct {
-	RequestTimeOut time.Duration
+	SkipSSL              bool
+	HostnameVerifier     string
+	MaxTotalConnectins   int
+	MaxPerHostConnectins int
+	ConnectionTimeout    time.Duration
+	SocketTimeout        time.Duration
 }
 
 type mutualSSL struct {

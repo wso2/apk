@@ -395,6 +395,12 @@ func (k8sArtifactDeployer K8sArtifactDeployer) DeployAllApplications(application
 
 // DeployAllKeyMappings deploys all key mappings
 func (k8sArtifactDeployer K8sArtifactDeployer) DeployAllKeyMappings(keyMappings server.ApplicationKeyMappingList) error {
+	for _, keyMapping := range keyMappings.List {
+		err := k8sArtifactDeployer.DeployKeyMappings(keyMapping)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 

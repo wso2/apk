@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package wso2.discovery.config.enforcer;
+
+option go_package = "github.com/envoyproxy/go-control-plane/wso2/discovery/config/enforcer;enforcer";
+option java_package = "org.wso2.apk.enforcer.discovery.config.enforcer";
+option java_outer_classname = "HttpClientProto";
+option java_multiple_files = true;
+
+// [#protodoc-title: SSL]
+
+// Model for enforcer management user
+message HttpClient {
+  // Disable SSL Verification
+  bool skipSSl  = 1;
+
+  // Hostname Verifier
+  string hostnameVerifier = 2;
+
+  // MaxtotalConnections
+  int32 maxTotalConnections = 3;
+  // MaxConnectionsPerRoute
+  int32 maxConnectionsPerRoute = 4;
+  // ConnectTimeout
+  int32 connectTimeout = 5;
+  // SocketTimeout
+  int32 socketTimeout = 6;
+
+}

@@ -201,4 +201,19 @@ public interface ConfigOrBuilder extends
    * @return The mandateSubscriptionValidation.
    */
   boolean getMandateSubscriptionValidation();
+
+  /**
+   * <code>.wso2.discovery.config.enforcer.HttpClient httpClient = 14;</code>
+   * @return Whether the httpClient field is set.
+   */
+  boolean hasHttpClient();
+  /**
+   * <code>.wso2.discovery.config.enforcer.HttpClient httpClient = 14;</code>
+   * @return The httpClient.
+   */
+  org.wso2.apk.enforcer.discovery.config.enforcer.HttpClient getHttpClient();
+  /**
+   * <code>.wso2.discovery.config.enforcer.HttpClient httpClient = 14;</code>
+   */
+  org.wso2.apk.enforcer.discovery.config.enforcer.HttpClientOrBuilder getHttpClientOrBuilder();
 }

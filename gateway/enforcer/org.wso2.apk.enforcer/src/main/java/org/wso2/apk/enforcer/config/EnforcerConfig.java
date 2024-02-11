@@ -25,6 +25,7 @@ import org.wso2.apk.enforcer.config.dto.APIKeyIssuerDto;
 import org.wso2.apk.enforcer.config.dto.AnalyticsDTO;
 import org.wso2.apk.enforcer.config.dto.AuthServiceConfigurationDto;
 import org.wso2.apk.enforcer.config.dto.CacheDto;
+import org.wso2.apk.enforcer.config.dto.ClientConfigDto;
 import org.wso2.apk.enforcer.config.dto.FilterDTO;
 import org.wso2.apk.enforcer.config.dto.ManagementCredentialsDto;
 import org.wso2.apk.enforcer.config.dto.MetricsDTO;
@@ -60,6 +61,17 @@ public class EnforcerConfig {
 
     private SoapErrorResponseConfigDto soapErrorResponseConfigDto;
     private boolean mandateSubscriptionValidation;
+    private ClientConfigDto httpClientConfigDto;
+
+    public ClientConfigDto getHttpClientConfigDto() {
+
+        return httpClientConfigDto;
+    }
+
+    public void setHttpClientConfigDto(ClientConfigDto httpClientConfigDto) {
+
+        this.httpClientConfigDto = httpClientConfigDto;
+    }
 
     public AuthServiceConfigurationDto getAuthService() {
         return authService;

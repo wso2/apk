@@ -35,6 +35,7 @@ import org.wso2.apk.enforcer.config.dto.AnalyticsPublisherConfigDTO;
 import org.wso2.apk.enforcer.config.dto.AnalyticsReceiverConfigDTO;
 import org.wso2.apk.enforcer.config.dto.AuthServiceConfigurationDto;
 import org.wso2.apk.enforcer.config.dto.CacheDto;
+import org.wso2.apk.enforcer.config.dto.ClientConfigDto;
 import org.wso2.apk.enforcer.config.dto.FilterDTO;
 import org.wso2.apk.enforcer.config.dto.ManagementCredentialsDto;
 import org.wso2.apk.enforcer.config.dto.MetricsDTO;
@@ -50,6 +51,7 @@ import org.wso2.apk.enforcer.discovery.config.enforcer.AnalyticsPublisher;
 import org.wso2.apk.enforcer.discovery.config.enforcer.Cache;
 import org.wso2.apk.enforcer.discovery.config.enforcer.Config;
 import org.wso2.apk.enforcer.discovery.config.enforcer.Filter;
+import org.wso2.apk.enforcer.discovery.config.enforcer.HttpClient;
 import org.wso2.apk.enforcer.discovery.config.enforcer.JWTGenerator;
 import org.wso2.apk.enforcer.discovery.config.enforcer.Keypair;
 import org.wso2.apk.enforcer.discovery.config.enforcer.Management;
@@ -171,8 +173,21 @@ public class ConfigHolder {
         populateAPIKeyIssuer(config.getSecurity().getApiKey());
         populateInternalTokenIssuer(config.getSecurity().getRuntimeToken());
         populateMandateSubscriptionValidationConfig(config.getMandateSubscriptionValidation());
+        populateHttpClientConfig(config.getHttpClient());
         // resolve string variables provided as environment variables.
         resolveConfigsWithEnvs(this.config);
+    }
+
+    private void populateHttpClientConfig(HttpClient httpClient) {
+
+        ClientConfigDto clientConfigDto = new ClientConfigDto();
+        clientConfigDto.setEnableSslVerification(httpClient.getSkipSSl());
+        clientConfigDto.setHostnameVerifier(httpClient.getHostnameVerifier());
+        clientConfigDto.setConnectionTimeout(httpClient.getConnectTimeout());
+        clientConfigDto.setSocketTimeout(httpClient.getSocketTimeout());
+        clientConfigDto.setMaxConnections(httpClient.getMaxTotalConnections());
+        clientConfigDto.setMaxConnectionsPerRoute(httpClient.getMaxConnectionsPerRoute());
+        config.setHttpClientConfigDto(clientConfigDto);
     }
 
     private void populateInternalTokenIssuer(APIKeyEnforcer runtimeToken) {

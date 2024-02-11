@@ -39,12 +39,13 @@ type SubscribedAPI struct {
 
 // Application for struct application
 type Application struct {
-	UUID         string            `json:"uuid,omitempty"`
-	Name         string            `json:"name,omitempty"`
-	Owner        string            `json:"owner,omitempty"`
-	Organization string            `json:"organization,omitempty"`
-	Attributes   map[string]string `json:"attributes,omitempty"`
-	TimeStamp    int64             `json:"timeStamp,omitempty"`
+	UUID            string            `json:"uuid,omitempty"`
+	Name            string            `json:"name,omitempty"`
+	Owner           string            `json:"owner,omitempty"`
+	Organization    string            `json:"organization,omitempty"`
+	Attributes      map[string]string `json:"attributes,omitempty"`
+	TimeStamp       int64             `json:"timeStamp,omitempty"`
+	SecuritySchemes []SecurityScheme  `json:"securitySchemes,omitempty"`
 }
 
 // ApplicationList for struct list of application
@@ -52,20 +53,12 @@ type ApplicationList struct {
 	List []Application `json:"list"`
 }
 
-// ApplicationKeyMapping for struct applicationKeyMapping
-type ApplicationKeyMapping struct {
-	ApplicationUUID       string `json:"applicationUUID,omitempty"`
+// SecurityScheme for struct securityScheme
+type SecurityScheme struct {
 	SecurityScheme        string `json:"securityScheme,omitempty"`
 	ApplicationIdentifier string `json:"applicationIdentifier,omitempty"`
 	KeyType               string `json:"keyType,omitempty"`
 	EnvID                 string `json:"envID,omitempty"`
-	Timestamp             int64  `json:"timestamp,omitempty"`
-	Organization          string `json:"organization,omitempty"`
-}
-
-// ApplicationKeyMappingList for struct list of applicationKeyMapping
-type ApplicationKeyMappingList struct {
-	List []ApplicationKeyMapping `json:"list"`
 }
 
 // ApplicationMapping for struct applicationMapping
