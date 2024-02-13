@@ -31,3 +31,22 @@ Feature: Basic auth
     Examples:
       | apiID                 | expectedStatusCode  |
       | basic-auth-api-test          | 202                 |
+
+  Scenario: Testing undeployed API
+    Given The system is ready
+    And I have a valid subscription
+    Then I set headers
+      | Authorization | bearer ${accessToken} |
+    And I send "GET" request to "https://default.gw.wso2.com:9095/basic-auth/3.14/employee/" with body ""
+    And I eventually receive 404 response code, not accepting
+      | 429 |
+
+  Scenario Outline: Undeploy API finally
+    Given The system is ready
+    And I have a valid subscription
+    When I undeploy the API whose ID is "<apiID>"
+    Then the response status code should be <expectedStatusCode>
+
+    Examples:
+      | apiID               | expectedStatusCode |
+      | basic-auth-api-test | 202                |
