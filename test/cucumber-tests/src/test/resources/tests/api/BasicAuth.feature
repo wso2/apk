@@ -39,7 +39,7 @@ Feature: Basic auth
       | Authorization | bearer ${accessToken} |
     And I send "GET" request to "https://default.gw.wso2.com:9095/basic-auth/3.14/employee/" with body ""
     And I eventually receive 404 response code, not accepting
-      | 429 |
+      | 200 |
 
   Scenario Outline: Undeploy API finally
     Given The system is ready
