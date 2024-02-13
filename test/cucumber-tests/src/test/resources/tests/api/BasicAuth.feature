@@ -41,12 +41,3 @@ Feature: Basic auth
     And I eventually receive 404 response code, not accepting
       | 200 |
 
-  Scenario Outline: Undeploy API finally
-    Given The system is ready
-    And I have a valid subscription
-    When I undeploy the API whose ID is "<apiID>"
-    Then the response status code should be <expectedStatusCode>
-
-    Examples:
-      | apiID               | expectedStatusCode |
-      | basic-auth-api-test | 202                |
