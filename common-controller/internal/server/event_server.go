@@ -2,7 +2,7 @@ package server
 
 import (
 	"github.com/wso2/apk/common-controller/internal/loggers"
-	utils "github.com/wso2/apk/common-controller/internal/utils"
+	"github.com/wso2/apk/common-controller/internal/utils"
 	apkmgt "github.com/wso2/apk/common-go-libs/pkg/discovery/api/wso2/discovery/service/apkmgt"
 	"google.golang.org/grpc/metadata"
 )

@@ -121,7 +121,8 @@ func (r *ApplicationMappingReconciler) Reconcile(ctx context.Context, req ctrl.R
 			applicationMapping, found := r.ods.GetApplicationMappingFromStore(applicationMappingKey)
 			if found {
 				loggers.LoggerAPKOperator.Debugf("Application mapping %s/%s found in operator data store. Deleting from operator data store and sending delete event to server", applicationMappingKey.Namespace, applicationMappingKey.Name)
-				utils.SendDeleteApplicationMappingEvent(applicationMappingKey.Name, applicationMapping)
+				resolvedApplicationMapping := server.GetApplicationMappingFromStore(applicationMappingKey.Name)
+				utils.SendDeleteApplicationMappingEvent(applicationMappingKey.Name, applicationMapping, resolvedApplicationMapping.OrganizationID)
 				r.ods.DeleteApplicationMappingFromStore(applicationMappingKey)
 				server.DeleteApplicationMapping(applicationMappingKey.Name)
 			} else {

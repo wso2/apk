@@ -28,11 +28,11 @@ import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.conn.ssl.SSLContextBuilder;
-import org.apache.http.conn.ssl.SSLContexts;
 import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.conn.ssl.TrustAllStrategy;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.wso2.apk.enforcer.commons.constants.JWTConstants;
@@ -45,6 +45,7 @@ import org.wso2.apk.enforcer.commons.logging.LoggingConstants;
 import org.wso2.apk.enforcer.commons.model.AuthenticationContext;
 import org.wso2.apk.enforcer.commons.model.RequestContext;
 import org.wso2.apk.enforcer.config.ConfigHolder;
+import org.wso2.apk.enforcer.config.dto.ClientConfigDto;
 import org.wso2.apk.enforcer.config.dto.MutualSSLDto;
 import org.wso2.apk.enforcer.constants.APIConstants;
 import org.wso2.apk.enforcer.constants.APISecurityConstants;
@@ -66,7 +67,6 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -74,7 +74,6 @@ import java.util.UUID;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
 
 /**
  * Common set of utility methods used by the filter core component.
@@ -82,7 +81,7 @@ import javax.net.ssl.SSLSession;
 public class FilterUtils {
 
     private static final Logger log = LogManager.getLogger(FilterUtils.class);
-    public static final String HOST_NAME_VERIFIER = "httpclient.hostnameVerifier";
+
     public static final String STRICT = "Strict";
     public static final String ALLOW_ALL = "AllowAll";
     public static final List<String> SKIPPED_FAULT_CODES = new ArrayList<>();
@@ -127,9 +126,15 @@ public class FilterUtils {
 
         int maxTotal = 100; //TODO : Read from config
         int defaultMaxPerRoute = 10; //TODO : Read from config
-
+        ClientConfigDto httpClientConfigDto = ConfigHolder.getInstance().getConfig().getHttpClientConfigDto();
         if (options == null) {
-            options = Collections.emptyMap();
+            options = new HashMap<>();
+            options.put(HTTPClientOptions.CONNECT_TIMEOUT, httpClientConfigDto.getConnectionTimeout());
+            options.put(HTTPClientOptions.SOCKET_TIMEOUT, httpClientConfigDto.getSocketTimeout());
+            options.put(HTTPClientOptions.MAX_OPEN_CONNECTIONS, httpClientConfigDto.getMaxConnections());
+            options.put(HTTPClientOptions.MAX_PER_ROUTE, httpClientConfigDto.getMaxConnectionsPerRoute());
+            options.put(HTTPClientOptions.ENABLE_SSL_VERIFICATION, httpClientConfigDto.isEnableSslVerification());
+            options.put(HTTPClientOptions.HOSTNAME_VERIFIER, httpClientConfigDto.getHostnameVerifier());
         }
 
         PoolingHttpClientConnectionManager pool = null;
@@ -141,7 +146,6 @@ public class FilterUtils {
         } catch (EnforcerException e) {
             log.error("Error while getting http client connection manager", e);
         }
-
         RequestConfig.Builder pramsBuilder = RequestConfig.custom();
         if (options.containsKey(HTTPClientOptions.CONNECT_TIMEOUT)) {
             pramsBuilder.setConnectTimeout((Integer) options.get(HTTPClientOptions.CONNECT_TIMEOUT));
@@ -193,31 +197,33 @@ public class FilterUtils {
                                                                   Map<String, Object> options) throws EnforcerException {
 
         SSLContext sslContext;
+        String hostnameVerifierOption = (String) options.getOrDefault(HTTPClientOptions.HOSTNAME_VERIFIER, null);
+        boolean enableSSLValidation = (boolean) options.getOrDefault(HTTPClientOptions.ENABLE_SSL_VERIFICATION, true);
         try {
             KeyStore trustStore = ConfigHolder.getInstance().getTrustStore();
             if (clientTrustStore != null) {
                 trustStore = clientTrustStore;
             }
-            SSLContextBuilder sslContextBuilder = SSLContexts.custom().loadTrustMaterial(trustStore);
+            SSLContextBuilder sslContextBuilder;
+            if (enableSSLValidation) {
+                sslContextBuilder = SSLContextBuilder.create().loadTrustMaterial(trustStore, null);
+            } else {
+                sslContextBuilder = SSLContextBuilder.create().loadTrustMaterial(trustStore, new TrustAllStrategy());
+            }
             if (clientKeyStore != null) {
                 sslContextBuilder.loadKeyMaterial(clientKeyStore, null);
             }
             sslContext = sslContextBuilder.build();
 
             HostnameVerifier hostnameVerifier;
-            String hostnameVerifierOption = System.getProperty(HOST_NAME_VERIFIER);
             Object hostnames = options.get("HOSTNAMES");
             if (hostnames instanceof List) {
-                hostnameVerifier = new HostnameVerifier() {
+                hostnameVerifier = (hostname, session) -> {
 
-                    @Override
-                    public boolean verify(String hostname, SSLSession session) {
-
-                        if (hostnames != null && ((List) hostnames).contains(hostname)) {
-                            return true;
-                        }
-                        return false;
+                    if (hostnames != null && ((List) hostnames).contains(hostname)) {
+                        return true;
                     }
+                    return false;
                 };
             }
             if (ALLOW_ALL.equalsIgnoreCase(hostnameVerifierOption)) {
@@ -626,5 +632,8 @@ public class FilterUtils {
         public static final String SOCKET_TIMEOUT = "SOCKET_TIMEOUT";
         public static final String MAX_OPEN_CONNECTIONS = "MAX_OPEN_CONNECTIONS";
         public static final String MAX_PER_ROUTE = "MAX_PER_ROUTE";
+        public static final String ENABLE_SSL_VERIFICATION = "ENABLE_SSL_VERIFICATION";
+
+        public static final String HOSTNAME_VERIFIER = "HOSTNAME_VERIFIER";
     }
 }

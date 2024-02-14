@@ -36,7 +36,7 @@ var defaultConfig = &Config{
 		Environment:       "Default",
 		InternalAPIServer: internalAPIServer{Port: 18003},
 		ControlPlane: controlplane{
-			Enabled:       false,
+			Enabled:       true,
 			Host:          "localhost",
 			EventPort:     18000,
 			RestPort:      18001,

@@ -119,6 +119,14 @@ func MarshalConfig(config *config.Config) *enforcer.Config {
 		}
 		filters = append(filters, filter)
 	}
+	httpClient := &enforcer.HttpClient{
+		SkipSSl:                config.Enforcer.Client.SkipSSL,
+		HostnameVerifier:       config.Enforcer.Client.HostnameVerifier,
+		MaxTotalConnections:    int32(config.Enforcer.Client.MaxTotalConnectins),
+		MaxConnectionsPerRoute: int32(config.Enforcer.Client.MaxPerHostConnectins),
+		ConnectTimeout:         int32(config.Enforcer.Client.ConnectionTimeout),
+		SocketTimeout:          int32(config.Enforcer.Client.SocketTimeout),
+	}
 
 	return &enforcer.Config{
 		JwtGenerator: &enforcer.JWTGenerator{
@@ -151,6 +159,7 @@ func MarshalConfig(config *config.Config) *enforcer.Config {
 		Filters:                       filters,
 		Soap:                          soap,
 		MandateSubscriptionValidation: mandateSubscriptionValidation,
+		HttpClient:                    httpClient,
 	}
 }
 

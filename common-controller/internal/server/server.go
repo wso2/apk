@@ -94,3 +94,8 @@ func DeleteSubscription(subscriptionUUID string) {
 func DeleteApplicationMapping(applicationMappingUUID string) {
 	delete(applicationMappingMap, applicationMappingUUID)
 }
+
+// GetApplicationMappingFromStore returns an application mapping from the application mapping list
+func GetApplicationMappingFromStore(applicationMappingUUID string) ApplicationMapping {
+	return applicationMappingMap[applicationMappingUUID]
+}

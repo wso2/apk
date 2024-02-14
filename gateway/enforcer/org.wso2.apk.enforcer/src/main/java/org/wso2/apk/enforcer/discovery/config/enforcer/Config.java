@@ -211,6 +211,19 @@ private static final long serialVersionUID = 0L;
             mandateSubscriptionValidation_ = input.readBool();
             break;
           }
+          case 114: {
+            org.wso2.apk.enforcer.discovery.config.enforcer.HttpClient.Builder subBuilder = null;
+            if (httpClient_ != null) {
+              subBuilder = httpClient_.toBuilder();
+            }
+            httpClient_ = input.readMessage(org.wso2.apk.enforcer.discovery.config.enforcer.HttpClient.parser(), extensionRegistry);
+            if (subBuilder != null) {
+              subBuilder.mergeFrom(httpClient_);
+              httpClient_ = subBuilder.buildPartial();
+            }
+
+            break;
+          }
           default: {
             if (!parseUnknownField(
                 input, unknownFields, extensionRegistry, tag)) {
@@ -583,6 +596,32 @@ private static final long serialVersionUID = 0L;
     return mandateSubscriptionValidation_;
   }
 
+  public static final int HTTPCLIENT_FIELD_NUMBER = 14;
+  private org.wso2.apk.enforcer.discovery.config.enforcer.HttpClient httpClient_;
+  /**
+   * <code>.wso2.discovery.config.enforcer.HttpClient httpClient = 14;</code>
+   * @return Whether the httpClient field is set.
+   */
+  @java.lang.Override
+  public boolean hasHttpClient() {
+    return httpClient_ != null;
+  }
+  /**
+   * <code>.wso2.discovery.config.enforcer.HttpClient httpClient = 14;</code>
+   * @return The httpClient.
+   */
+  @java.lang.Override
+  public org.wso2.apk.enforcer.discovery.config.enforcer.HttpClient getHttpClient() {
+    return httpClient_ == null ? org.wso2.apk.enforcer.discovery.config.enforcer.HttpClient.getDefaultInstance() : httpClient_;
+  }
+  /**
+   * <code>.wso2.discovery.config.enforcer.HttpClient httpClient = 14;</code>
+   */
+  @java.lang.Override
+  public org.wso2.apk.enforcer.discovery.config.enforcer.HttpClientOrBuilder getHttpClientOrBuilder() {
+    return getHttpClient();
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -635,6 +674,9 @@ private static final long serialVersionUID = 0L;
     }
     if (mandateSubscriptionValidation_ != false) {
       output.writeBool(13, mandateSubscriptionValidation_);
+    }
+    if (httpClient_ != null) {
+      output.writeMessage(14, getHttpClient());
     }
     unknownFields.writeTo(output);
   }
@@ -696,6 +738,10 @@ private static final long serialVersionUID = 0L;
     if (mandateSubscriptionValidation_ != false) {
       size += com.google.protobuf.CodedOutputStream
         .computeBoolSize(13, mandateSubscriptionValidation_);
+    }
+    if (httpClient_ != null) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(14, getHttpClient());
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -771,6 +817,11 @@ private static final long serialVersionUID = 0L;
     }
     if (getMandateSubscriptionValidation()
         != other.getMandateSubscriptionValidation()) return false;
+    if (hasHttpClient() != other.hasHttpClient()) return false;
+    if (hasHttpClient()) {
+      if (!getHttpClient()
+          .equals(other.getHttpClient())) return false;
+    }
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -833,6 +884,10 @@ private static final long serialVersionUID = 0L;
     hash = (37 * hash) + MANDATESUBSCRIPTIONVALIDATION_FIELD_NUMBER;
     hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
         getMandateSubscriptionValidation());
+    if (hasHttpClient()) {
+      hash = (37 * hash) + HTTPCLIENT_FIELD_NUMBER;
+      hash = (53 * hash) + getHttpClient().hashCode();
+    }
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -1045,6 +1100,12 @@ private static final long serialVersionUID = 0L;
       }
       mandateSubscriptionValidation_ = false;
 
+      if (httpClientBuilder_ == null) {
+        httpClient_ = null;
+      } else {
+        httpClient_ = null;
+        httpClientBuilder_ = null;
+      }
       return this;
     }
 
@@ -1137,6 +1198,11 @@ private static final long serialVersionUID = 0L;
         result.soap_ = soapBuilder_.build();
       }
       result.mandateSubscriptionValidation_ = mandateSubscriptionValidation_;
+      if (httpClientBuilder_ == null) {
+        result.httpClient_ = httpClient_;
+      } else {
+        result.httpClient_ = httpClientBuilder_.build();
+      }
       onBuilt();
       return result;
     }
@@ -1246,6 +1312,9 @@ private static final long serialVersionUID = 0L;
       }
       if (other.getMandateSubscriptionValidation() != false) {
         setMandateSubscriptionValidation(other.getMandateSubscriptionValidation());
+      }
+      if (other.hasHttpClient()) {
+        mergeHttpClient(other.getHttpClient());
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -2855,6 +2924,125 @@ private static final long serialVersionUID = 0L;
       mandateSubscriptionValidation_ = false;
       onChanged();
       return this;
+    }
+
+    private org.wso2.apk.enforcer.discovery.config.enforcer.HttpClient httpClient_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+        org.wso2.apk.enforcer.discovery.config.enforcer.HttpClient, org.wso2.apk.enforcer.discovery.config.enforcer.HttpClient.Builder, org.wso2.apk.enforcer.discovery.config.enforcer.HttpClientOrBuilder> httpClientBuilder_;
+    /**
+     * <code>.wso2.discovery.config.enforcer.HttpClient httpClient = 14;</code>
+     * @return Whether the httpClient field is set.
+     */
+    public boolean hasHttpClient() {
+      return httpClientBuilder_ != null || httpClient_ != null;
+    }
+    /**
+     * <code>.wso2.discovery.config.enforcer.HttpClient httpClient = 14;</code>
+     * @return The httpClient.
+     */
+    public org.wso2.apk.enforcer.discovery.config.enforcer.HttpClient getHttpClient() {
+      if (httpClientBuilder_ == null) {
+        return httpClient_ == null ? org.wso2.apk.enforcer.discovery.config.enforcer.HttpClient.getDefaultInstance() : httpClient_;
+      } else {
+        return httpClientBuilder_.getMessage();
+      }
+    }
+    /**
+     * <code>.wso2.discovery.config.enforcer.HttpClient httpClient = 14;</code>
+     */
+    public Builder setHttpClient(org.wso2.apk.enforcer.discovery.config.enforcer.HttpClient value) {
+      if (httpClientBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        httpClient_ = value;
+        onChanged();
+      } else {
+        httpClientBuilder_.setMessage(value);
+      }
+
+      return this;
+    }
+    /**
+     * <code>.wso2.discovery.config.enforcer.HttpClient httpClient = 14;</code>
+     */
+    public Builder setHttpClient(
+        org.wso2.apk.enforcer.discovery.config.enforcer.HttpClient.Builder builderForValue) {
+      if (httpClientBuilder_ == null) {
+        httpClient_ = builderForValue.build();
+        onChanged();
+      } else {
+        httpClientBuilder_.setMessage(builderForValue.build());
+      }
+
+      return this;
+    }
+    /**
+     * <code>.wso2.discovery.config.enforcer.HttpClient httpClient = 14;</code>
+     */
+    public Builder mergeHttpClient(org.wso2.apk.enforcer.discovery.config.enforcer.HttpClient value) {
+      if (httpClientBuilder_ == null) {
+        if (httpClient_ != null) {
+          httpClient_ =
+            org.wso2.apk.enforcer.discovery.config.enforcer.HttpClient.newBuilder(httpClient_).mergeFrom(value).buildPartial();
+        } else {
+          httpClient_ = value;
+        }
+        onChanged();
+      } else {
+        httpClientBuilder_.mergeFrom(value);
+      }
+
+      return this;
+    }
+    /**
+     * <code>.wso2.discovery.config.enforcer.HttpClient httpClient = 14;</code>
+     */
+    public Builder clearHttpClient() {
+      if (httpClientBuilder_ == null) {
+        httpClient_ = null;
+        onChanged();
+      } else {
+        httpClient_ = null;
+        httpClientBuilder_ = null;
+      }
+
+      return this;
+    }
+    /**
+     * <code>.wso2.discovery.config.enforcer.HttpClient httpClient = 14;</code>
+     */
+    public org.wso2.apk.enforcer.discovery.config.enforcer.HttpClient.Builder getHttpClientBuilder() {
+      
+      onChanged();
+      return getHttpClientFieldBuilder().getBuilder();
+    }
+    /**
+     * <code>.wso2.discovery.config.enforcer.HttpClient httpClient = 14;</code>
+     */
+    public org.wso2.apk.enforcer.discovery.config.enforcer.HttpClientOrBuilder getHttpClientOrBuilder() {
+      if (httpClientBuilder_ != null) {
+        return httpClientBuilder_.getMessageOrBuilder();
+      } else {
+        return httpClient_ == null ?
+            org.wso2.apk.enforcer.discovery.config.enforcer.HttpClient.getDefaultInstance() : httpClient_;
+      }
+    }
+    /**
+     * <code>.wso2.discovery.config.enforcer.HttpClient httpClient = 14;</code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+        org.wso2.apk.enforcer.discovery.config.enforcer.HttpClient, org.wso2.apk.enforcer.discovery.config.enforcer.HttpClient.Builder, org.wso2.apk.enforcer.discovery.config.enforcer.HttpClientOrBuilder> 
+        getHttpClientFieldBuilder() {
+      if (httpClientBuilder_ == null) {
+        httpClientBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+            org.wso2.apk.enforcer.discovery.config.enforcer.HttpClient, org.wso2.apk.enforcer.discovery.config.enforcer.HttpClient.Builder, org.wso2.apk.enforcer.discovery.config.enforcer.HttpClientOrBuilder>(
+                getHttpClient(),
+                getParentForChildren(),
+                isClean());
+        httpClient_ = null;
+      }
+      return httpClientBuilder_;
     }
     @java.lang.Override
     public final Builder setUnknownFields(

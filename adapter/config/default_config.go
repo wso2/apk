@@ -145,6 +145,14 @@ var defaultConfig = &Config{
 			Username: "admin",
 			Password: "admin",
 		},
+		Client: httpClient{
+			SkipSSL:              false,
+			HostnameVerifier:     "BROWSER_COMPATIBLE",
+			MaxTotalConnectins:   100,
+			MaxPerHostConnectins: 10,
+			ConnectionTimeout:    10000,
+			SocketTimeout:        10000,
+		},
 		Security: security{
 			APIkey: apiKey{
 				Enabled:             true,
