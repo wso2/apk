@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2024, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -18,12 +18,10 @@
 
 package org.wso2.apk.enforcer.commons.model;
 
-import java.util.ArrayList;
-
-public class JWTAuthenticationConfig {
+public class Oauth2AuthenticationConfig {
     private String Header;
     private boolean sendTokenToUpstream;
-    private ArrayList<String> audience;
+
     public String getHeader() {
         return Header;
     }
@@ -38,13 +36,5 @@ public class JWTAuthenticationConfig {
 
     public void setSendTokenToUpstream(boolean sendTokenToUpstream) {
         this.sendTokenToUpstream = sendTokenToUpstream;
-    }
-
-    public ArrayList<String> getAudience() {
-        return audience;
-    }
-
-    public void setAudience(ArrayList<String> audience) {
-        this.audience = audience;
     }
 }

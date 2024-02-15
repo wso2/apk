@@ -32,8 +32,8 @@ import org.wso2.apk.enforcer.config.dto.MutualSSLDto;
 import org.wso2.apk.enforcer.constants.APIConstants;
 import org.wso2.apk.enforcer.constants.InterceptorConstants;
 import org.wso2.apk.enforcer.security.jwt.APIKeyAuthenticator;
-import org.wso2.apk.enforcer.security.jwt.InternalAPIKeyAuthenticator;
 import org.wso2.apk.enforcer.security.jwt.JWTAuthenticator;
+import org.wso2.apk.enforcer.security.jwt.Oauth2Authenticator;
 import org.wso2.apk.enforcer.security.jwt.UnsecuredAPIAuthenticator;
 import org.wso2.apk.enforcer.security.mtls.MTLSAuthenticator;
 import org.wso2.apk.enforcer.util.FilterUtils;
@@ -91,13 +91,13 @@ public class AuthFilter implements Filter {
         boolean isGatewayTokenCacheEnabled = enforcerConfig.getCacheDto().isEnabled();
         JWTConfigurationDto jwtConfigurationDto = apiConfig.getJwtConfigurationDto();
 
-        Authenticator jwtAuthenticator = new JWTAuthenticator(jwtConfigurationDto, isGatewayTokenCacheEnabled);
-        authenticators.add(jwtAuthenticator);
+        Authenticator oauthAuthenticator = new Oauth2Authenticator(jwtConfigurationDto, isGatewayTokenCacheEnabled);
+        authenticators.add(oauthAuthenticator);
         APIKeyAuthenticator apiKeyAuthenticator = new APIKeyAuthenticator(jwtConfigurationDto);
         authenticators.add(apiKeyAuthenticator);
 
-        Authenticator authenticator = new InternalAPIKeyAuthenticator(jwtConfigurationDto);
-        authenticators.add(authenticator);
+        Authenticator jwtAuthenticator = new JWTAuthenticator(jwtConfigurationDto, isGatewayTokenCacheEnabled);
+        authenticators.add(jwtAuthenticator);
 
         Authenticator unsecuredAPIAuthenticator = new UnsecuredAPIAuthenticator();
         authenticators.add(unsecuredAPIAuthenticator);
@@ -263,16 +263,17 @@ public class AuthFilter implements Filter {
 
     private void populateRemoveAndProtectedAuthHeaders(RequestContext requestContext) {
         requestContext.getMatchedResourcePaths().forEach(resourcePath -> {
+            Oauth2AuthenticationConfig oauth2AuthenticationConfig = resourcePath.getAuthenticationConfig()
+                    .getOauth2AuthenticationConfig();
             JWTAuthenticationConfig jwtAuthenticationConfig = resourcePath.getAuthenticationConfig()
                     .getJwtAuthenticationConfig();
-            InternalKeyConfig internalKeyConfig = resourcePath.getAuthenticationConfig().getInternalKeyConfig();
             List<APIKeyAuthenticationConfig> apiKeyAuthenticationConfig = resourcePath.getAuthenticationConfig()
                     .getApiKeyAuthenticationConfigs();
+            if (oauth2AuthenticationConfig != null && !oauth2AuthenticationConfig.isSendTokenToUpstream()) {
+                requestContext.getRemoveHeaders().add(oauth2AuthenticationConfig.getHeader());
+            }
             if (jwtAuthenticationConfig != null && !jwtAuthenticationConfig.isSendTokenToUpstream()) {
                 requestContext.getRemoveHeaders().add(jwtAuthenticationConfig.getHeader());
-            }
-            if (internalKeyConfig != null && !internalKeyConfig.isSendTokenToUpstream()) {
-                requestContext.getRemoveHeaders().add(internalKeyConfig.getHeader());
             }
             if (apiKeyAuthenticationConfig != null && !apiKeyAuthenticationConfig.isEmpty()) {
                 requestContext.getQueryParamsToRemove().addAll(apiKeyAuthenticationConfig.stream()

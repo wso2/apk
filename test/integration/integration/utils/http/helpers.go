@@ -34,3 +34,12 @@ func AddCustomBearerTokenHeader(headerName string, token string, headers map[str
 	headers[headerName] = fmt.Sprintf("Bearer %s", token)
 	return headers
 }
+
+// AddInternalTokenHeader adds a internal token to the request with specified auth header name.
+func AddInternalTokenHeader(headerName string, token string, headers map[string]string) map[string]string {
+	if headers == nil {
+		headers = make(map[string]string)
+	}
+	headers[headerName] = token
+	return headers
+}

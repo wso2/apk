@@ -19,8 +19,8 @@ package org.wso2.apk.enforcer.api;
 
 import org.wso2.apk.enforcer.commons.model.APIKeyAuthenticationConfig;
 import org.wso2.apk.enforcer.commons.model.AuthenticationConfig;
-import org.wso2.apk.enforcer.commons.model.InternalKeyConfig;
 import org.wso2.apk.enforcer.commons.model.JWTAuthenticationConfig;
+import org.wso2.apk.enforcer.commons.model.Oauth2AuthenticationConfig;
 import org.wso2.apk.enforcer.discovery.api.APIKey;
 import org.wso2.apk.enforcer.discovery.api.EndpointClusterConfig;
 import org.wso2.apk.enforcer.discovery.api.Operation;
@@ -92,33 +92,48 @@ public class Utils {
         AuthenticationConfig authenticationConfig = new AuthenticationConfig();
         if (operation.hasApiAuthentication()) {
             authenticationConfig.setDisabled(operation.getApiAuthentication().getDisabled());
-            if (operation.getApiAuthentication().hasJwt()) {
-                JWTAuthenticationConfig jwtAuthenticationConfig = new JWTAuthenticationConfig();
-                jwtAuthenticationConfig.setHeader(operation.getApiAuthentication().getJwt().getHeader());
-                jwtAuthenticationConfig.setSendTokenToUpstream(operation.getApiAuthentication().getJwt()
+            if (operation.getApiAuthentication().hasOauth2()) {
+                Oauth2AuthenticationConfig oAuth2AuthenticationConfig = new Oauth2AuthenticationConfig();
+                oAuth2AuthenticationConfig.setHeader(operation.getApiAuthentication().getOauth2().getHeader());
+                oAuth2AuthenticationConfig.setSendTokenToUpstream(operation.getApiAuthentication().getOauth2()
                         .getSendTokenToUpstream());
+                authenticationConfig.setOauth2AuthenticationConfig(oAuth2AuthenticationConfig);
+            }
+            if (operation.getApiAuthentication().hasJwt()) {
+                JWTAuthenticationConfig jwtAuthenticationConfig = getJwtAuthenticationConfig(operation);
                 authenticationConfig.setJwtAuthenticationConfig(jwtAuthenticationConfig);
             }
-            List<APIKeyAuthenticationConfig> apiKeyAuthenticationConfigs = new ArrayList<>();
-            for (APIKey apiKey : operation.getApiAuthentication().getApikeyList()) {
-                APIKeyAuthenticationConfig apiKeyAuthenticationConfig = new APIKeyAuthenticationConfig();
-                apiKeyAuthenticationConfig.setIn(apiKey.getIn());
-                apiKeyAuthenticationConfig.setName(apiKey.getName());
-                apiKeyAuthenticationConfig.setSendTokenToUpstream(apiKey.getSendTokenToUpstream());
-                apiKeyAuthenticationConfigs.add(apiKeyAuthenticationConfig);
-            }
+            List<APIKeyAuthenticationConfig> apiKeyAuthenticationConfigs = getApiKeyAuthenticationConfigs(operation);
             authenticationConfig.setApiKeyAuthenticationConfigs(apiKeyAuthenticationConfigs);
-            if(operation.getApiAuthentication().hasTestConsoleKey()) {
-                InternalKeyConfig internalKeyConfig = new InternalKeyConfig();
-                internalKeyConfig.setSendTokenToUpstream(operation.getApiAuthentication().getTestConsoleKey()
-                        .getSendTokenToUpstream());
-                internalKeyConfig.setHeader(operation.getApiAuthentication().getTestConsoleKey().getHeader());
-                authenticationConfig.setInternalKeyConfig(internalKeyConfig);
-            }
         }
         resource.setAuthenticationConfig(authenticationConfig);
         resource.setScopes(operation.getScopesList().toArray(new String[0]));
         return resource;
+    }
+
+    private static List<APIKeyAuthenticationConfig> getApiKeyAuthenticationConfigs(Operation operation) {
+        List<APIKeyAuthenticationConfig> apiKeyAuthenticationConfigs = new ArrayList<>();
+        for (APIKey apiKey : operation.getApiAuthentication().getApikeyList()) {
+            APIKeyAuthenticationConfig apiKeyAuthenticationConfig = new APIKeyAuthenticationConfig();
+            apiKeyAuthenticationConfig.setIn(apiKey.getIn());
+            apiKeyAuthenticationConfig.setName(apiKey.getName());
+            apiKeyAuthenticationConfig.setSendTokenToUpstream(apiKey.getSendTokenToUpstream());
+            apiKeyAuthenticationConfigs.add(apiKeyAuthenticationConfig);
+        }
+        return apiKeyAuthenticationConfigs;
+    }
+
+    private static JWTAuthenticationConfig getJwtAuthenticationConfig(Operation operation) {
+        JWTAuthenticationConfig jwtAuthenticationConfig = new JWTAuthenticationConfig();
+        jwtAuthenticationConfig.setHeader(operation.getApiAuthentication().getJwt().getHeader());
+        jwtAuthenticationConfig.setSendTokenToUpstream(operation.getApiAuthentication().getJwt()
+                .getSendTokenToUpstream());
+        ArrayList<String> audience = new ArrayList<>();
+        for (int i = 0; i < operation.getApiAuthentication().getJwt().getAudienceCount(); i++) {
+            audience.add(operation.getApiAuthentication().getJwt().getAudience(i));
+        }
+        jwtAuthenticationConfig.setAudience(audience);
+        return jwtAuthenticationConfig;
     }
 
     public static PolicyConfig genPolicyConfig(OperationPolicies operationPolicies) {

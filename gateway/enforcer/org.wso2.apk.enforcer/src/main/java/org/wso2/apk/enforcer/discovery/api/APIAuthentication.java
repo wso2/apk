@@ -78,14 +78,14 @@ private static final long serialVersionUID = 0L;
             break;
           }
           case 34: {
-            org.wso2.apk.enforcer.discovery.api.TestConsoleKey.Builder subBuilder = null;
-            if (testConsoleKey_ != null) {
-              subBuilder = testConsoleKey_.toBuilder();
+            org.wso2.apk.enforcer.discovery.api.Oauth2.Builder subBuilder = null;
+            if (oauth2_ != null) {
+              subBuilder = oauth2_.toBuilder();
             }
-            testConsoleKey_ = input.readMessage(org.wso2.apk.enforcer.discovery.api.TestConsoleKey.parser(), extensionRegistry);
+            oauth2_ = input.readMessage(org.wso2.apk.enforcer.discovery.api.Oauth2.parser(), extensionRegistry);
             if (subBuilder != null) {
-              subBuilder.mergeFrom(testConsoleKey_);
-              testConsoleKey_ = subBuilder.buildPartial();
+              subBuilder.mergeFrom(oauth2_);
+              oauth2_ = subBuilder.buildPartial();
             }
 
             break;
@@ -206,30 +206,30 @@ private static final long serialVersionUID = 0L;
     return apikey_.get(index);
   }
 
-  public static final int TESTCONSOLEKEY_FIELD_NUMBER = 4;
-  private org.wso2.apk.enforcer.discovery.api.TestConsoleKey testConsoleKey_;
+  public static final int OAUTH2_FIELD_NUMBER = 4;
+  private org.wso2.apk.enforcer.discovery.api.Oauth2 oauth2_;
   /**
-   * <code>.wso2.discovery.api.TestConsoleKey testConsoleKey = 4;</code>
-   * @return Whether the testConsoleKey field is set.
+   * <code>.wso2.discovery.api.Oauth2 Oauth2 = 4;</code>
+   * @return Whether the oauth2 field is set.
    */
   @java.lang.Override
-  public boolean hasTestConsoleKey() {
-    return testConsoleKey_ != null;
+  public boolean hasOauth2() {
+    return oauth2_ != null;
   }
   /**
-   * <code>.wso2.discovery.api.TestConsoleKey testConsoleKey = 4;</code>
-   * @return The testConsoleKey.
+   * <code>.wso2.discovery.api.Oauth2 Oauth2 = 4;</code>
+   * @return The oauth2.
    */
   @java.lang.Override
-  public org.wso2.apk.enforcer.discovery.api.TestConsoleKey getTestConsoleKey() {
-    return testConsoleKey_ == null ? org.wso2.apk.enforcer.discovery.api.TestConsoleKey.getDefaultInstance() : testConsoleKey_;
+  public org.wso2.apk.enforcer.discovery.api.Oauth2 getOauth2() {
+    return oauth2_ == null ? org.wso2.apk.enforcer.discovery.api.Oauth2.getDefaultInstance() : oauth2_;
   }
   /**
-   * <code>.wso2.discovery.api.TestConsoleKey testConsoleKey = 4;</code>
+   * <code>.wso2.discovery.api.Oauth2 Oauth2 = 4;</code>
    */
   @java.lang.Override
-  public org.wso2.apk.enforcer.discovery.api.TestConsoleKeyOrBuilder getTestConsoleKeyOrBuilder() {
-    return getTestConsoleKey();
+  public org.wso2.apk.enforcer.discovery.api.Oauth2OrBuilder getOauth2OrBuilder() {
+    return getOauth2();
   }
 
   private byte memoizedIsInitialized = -1;
@@ -255,8 +255,8 @@ private static final long serialVersionUID = 0L;
     for (int i = 0; i < apikey_.size(); i++) {
       output.writeMessage(3, apikey_.get(i));
     }
-    if (testConsoleKey_ != null) {
-      output.writeMessage(4, getTestConsoleKey());
+    if (oauth2_ != null) {
+      output.writeMessage(4, getOauth2());
     }
     unknownFields.writeTo(output);
   }
@@ -279,9 +279,9 @@ private static final long serialVersionUID = 0L;
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(3, apikey_.get(i));
     }
-    if (testConsoleKey_ != null) {
+    if (oauth2_ != null) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(4, getTestConsoleKey());
+        .computeMessageSize(4, getOauth2());
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -307,10 +307,10 @@ private static final long serialVersionUID = 0L;
     }
     if (!getApikeyList()
         .equals(other.getApikeyList())) return false;
-    if (hasTestConsoleKey() != other.hasTestConsoleKey()) return false;
-    if (hasTestConsoleKey()) {
-      if (!getTestConsoleKey()
-          .equals(other.getTestConsoleKey())) return false;
+    if (hasOauth2() != other.hasOauth2()) return false;
+    if (hasOauth2()) {
+      if (!getOauth2()
+          .equals(other.getOauth2())) return false;
     }
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
@@ -334,9 +334,9 @@ private static final long serialVersionUID = 0L;
       hash = (37 * hash) + APIKEY_FIELD_NUMBER;
       hash = (53 * hash) + getApikeyList().hashCode();
     }
-    if (hasTestConsoleKey()) {
-      hash = (37 * hash) + TESTCONSOLEKEY_FIELD_NUMBER;
-      hash = (53 * hash) + getTestConsoleKey().hashCode();
+    if (hasOauth2()) {
+      hash = (37 * hash) + OAUTH2_FIELD_NUMBER;
+      hash = (53 * hash) + getOauth2().hashCode();
     }
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
@@ -486,11 +486,11 @@ private static final long serialVersionUID = 0L;
       } else {
         apikeyBuilder_.clear();
       }
-      if (testConsoleKeyBuilder_ == null) {
-        testConsoleKey_ = null;
+      if (oauth2Builder_ == null) {
+        oauth2_ = null;
       } else {
-        testConsoleKey_ = null;
-        testConsoleKeyBuilder_ = null;
+        oauth2_ = null;
+        oauth2Builder_ = null;
       }
       return this;
     }
@@ -534,10 +534,10 @@ private static final long serialVersionUID = 0L;
       } else {
         result.apikey_ = apikeyBuilder_.build();
       }
-      if (testConsoleKeyBuilder_ == null) {
-        result.testConsoleKey_ = testConsoleKey_;
+      if (oauth2Builder_ == null) {
+        result.oauth2_ = oauth2_;
       } else {
-        result.testConsoleKey_ = testConsoleKeyBuilder_.build();
+        result.oauth2_ = oauth2Builder_.build();
       }
       onBuilt();
       return result;
@@ -619,8 +619,8 @@ private static final long serialVersionUID = 0L;
           }
         }
       }
-      if (other.hasTestConsoleKey()) {
-        mergeTestConsoleKey(other.getTestConsoleKey());
+      if (other.hasOauth2()) {
+        mergeOauth2(other.getOauth2());
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -1054,123 +1054,123 @@ private static final long serialVersionUID = 0L;
       return apikeyBuilder_;
     }
 
-    private org.wso2.apk.enforcer.discovery.api.TestConsoleKey testConsoleKey_;
+    private org.wso2.apk.enforcer.discovery.api.Oauth2 oauth2_;
     private com.google.protobuf.SingleFieldBuilderV3<
-        org.wso2.apk.enforcer.discovery.api.TestConsoleKey, org.wso2.apk.enforcer.discovery.api.TestConsoleKey.Builder, org.wso2.apk.enforcer.discovery.api.TestConsoleKeyOrBuilder> testConsoleKeyBuilder_;
+        org.wso2.apk.enforcer.discovery.api.Oauth2, org.wso2.apk.enforcer.discovery.api.Oauth2.Builder, org.wso2.apk.enforcer.discovery.api.Oauth2OrBuilder> oauth2Builder_;
     /**
-     * <code>.wso2.discovery.api.TestConsoleKey testConsoleKey = 4;</code>
-     * @return Whether the testConsoleKey field is set.
+     * <code>.wso2.discovery.api.Oauth2 Oauth2 = 4;</code>
+     * @return Whether the oauth2 field is set.
      */
-    public boolean hasTestConsoleKey() {
-      return testConsoleKeyBuilder_ != null || testConsoleKey_ != null;
+    public boolean hasOauth2() {
+      return oauth2Builder_ != null || oauth2_ != null;
     }
     /**
-     * <code>.wso2.discovery.api.TestConsoleKey testConsoleKey = 4;</code>
-     * @return The testConsoleKey.
+     * <code>.wso2.discovery.api.Oauth2 Oauth2 = 4;</code>
+     * @return The oauth2.
      */
-    public org.wso2.apk.enforcer.discovery.api.TestConsoleKey getTestConsoleKey() {
-      if (testConsoleKeyBuilder_ == null) {
-        return testConsoleKey_ == null ? org.wso2.apk.enforcer.discovery.api.TestConsoleKey.getDefaultInstance() : testConsoleKey_;
+    public org.wso2.apk.enforcer.discovery.api.Oauth2 getOauth2() {
+      if (oauth2Builder_ == null) {
+        return oauth2_ == null ? org.wso2.apk.enforcer.discovery.api.Oauth2.getDefaultInstance() : oauth2_;
       } else {
-        return testConsoleKeyBuilder_.getMessage();
+        return oauth2Builder_.getMessage();
       }
     }
     /**
-     * <code>.wso2.discovery.api.TestConsoleKey testConsoleKey = 4;</code>
+     * <code>.wso2.discovery.api.Oauth2 Oauth2 = 4;</code>
      */
-    public Builder setTestConsoleKey(org.wso2.apk.enforcer.discovery.api.TestConsoleKey value) {
-      if (testConsoleKeyBuilder_ == null) {
+    public Builder setOauth2(org.wso2.apk.enforcer.discovery.api.Oauth2 value) {
+      if (oauth2Builder_ == null) {
         if (value == null) {
           throw new NullPointerException();
         }
-        testConsoleKey_ = value;
+        oauth2_ = value;
         onChanged();
       } else {
-        testConsoleKeyBuilder_.setMessage(value);
+        oauth2Builder_.setMessage(value);
       }
 
       return this;
     }
     /**
-     * <code>.wso2.discovery.api.TestConsoleKey testConsoleKey = 4;</code>
+     * <code>.wso2.discovery.api.Oauth2 Oauth2 = 4;</code>
      */
-    public Builder setTestConsoleKey(
-        org.wso2.apk.enforcer.discovery.api.TestConsoleKey.Builder builderForValue) {
-      if (testConsoleKeyBuilder_ == null) {
-        testConsoleKey_ = builderForValue.build();
+    public Builder setOauth2(
+        org.wso2.apk.enforcer.discovery.api.Oauth2.Builder builderForValue) {
+      if (oauth2Builder_ == null) {
+        oauth2_ = builderForValue.build();
         onChanged();
       } else {
-        testConsoleKeyBuilder_.setMessage(builderForValue.build());
+        oauth2Builder_.setMessage(builderForValue.build());
       }
 
       return this;
     }
     /**
-     * <code>.wso2.discovery.api.TestConsoleKey testConsoleKey = 4;</code>
+     * <code>.wso2.discovery.api.Oauth2 Oauth2 = 4;</code>
      */
-    public Builder mergeTestConsoleKey(org.wso2.apk.enforcer.discovery.api.TestConsoleKey value) {
-      if (testConsoleKeyBuilder_ == null) {
-        if (testConsoleKey_ != null) {
-          testConsoleKey_ =
-            org.wso2.apk.enforcer.discovery.api.TestConsoleKey.newBuilder(testConsoleKey_).mergeFrom(value).buildPartial();
+    public Builder mergeOauth2(org.wso2.apk.enforcer.discovery.api.Oauth2 value) {
+      if (oauth2Builder_ == null) {
+        if (oauth2_ != null) {
+          oauth2_ =
+            org.wso2.apk.enforcer.discovery.api.Oauth2.newBuilder(oauth2_).mergeFrom(value).buildPartial();
         } else {
-          testConsoleKey_ = value;
+          oauth2_ = value;
         }
         onChanged();
       } else {
-        testConsoleKeyBuilder_.mergeFrom(value);
+        oauth2Builder_.mergeFrom(value);
       }
 
       return this;
     }
     /**
-     * <code>.wso2.discovery.api.TestConsoleKey testConsoleKey = 4;</code>
+     * <code>.wso2.discovery.api.Oauth2 Oauth2 = 4;</code>
      */
-    public Builder clearTestConsoleKey() {
-      if (testConsoleKeyBuilder_ == null) {
-        testConsoleKey_ = null;
+    public Builder clearOauth2() {
+      if (oauth2Builder_ == null) {
+        oauth2_ = null;
         onChanged();
       } else {
-        testConsoleKey_ = null;
-        testConsoleKeyBuilder_ = null;
+        oauth2_ = null;
+        oauth2Builder_ = null;
       }
 
       return this;
     }
     /**
-     * <code>.wso2.discovery.api.TestConsoleKey testConsoleKey = 4;</code>
+     * <code>.wso2.discovery.api.Oauth2 Oauth2 = 4;</code>
      */
-    public org.wso2.apk.enforcer.discovery.api.TestConsoleKey.Builder getTestConsoleKeyBuilder() {
+    public org.wso2.apk.enforcer.discovery.api.Oauth2.Builder getOauth2Builder() {
       
       onChanged();
-      return getTestConsoleKeyFieldBuilder().getBuilder();
+      return getOauth2FieldBuilder().getBuilder();
     }
     /**
-     * <code>.wso2.discovery.api.TestConsoleKey testConsoleKey = 4;</code>
+     * <code>.wso2.discovery.api.Oauth2 Oauth2 = 4;</code>
      */
-    public org.wso2.apk.enforcer.discovery.api.TestConsoleKeyOrBuilder getTestConsoleKeyOrBuilder() {
-      if (testConsoleKeyBuilder_ != null) {
-        return testConsoleKeyBuilder_.getMessageOrBuilder();
+    public org.wso2.apk.enforcer.discovery.api.Oauth2OrBuilder getOauth2OrBuilder() {
+      if (oauth2Builder_ != null) {
+        return oauth2Builder_.getMessageOrBuilder();
       } else {
-        return testConsoleKey_ == null ?
-            org.wso2.apk.enforcer.discovery.api.TestConsoleKey.getDefaultInstance() : testConsoleKey_;
+        return oauth2_ == null ?
+            org.wso2.apk.enforcer.discovery.api.Oauth2.getDefaultInstance() : oauth2_;
       }
     }
     /**
-     * <code>.wso2.discovery.api.TestConsoleKey testConsoleKey = 4;</code>
+     * <code>.wso2.discovery.api.Oauth2 Oauth2 = 4;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
-        org.wso2.apk.enforcer.discovery.api.TestConsoleKey, org.wso2.apk.enforcer.discovery.api.TestConsoleKey.Builder, org.wso2.apk.enforcer.discovery.api.TestConsoleKeyOrBuilder> 
-        getTestConsoleKeyFieldBuilder() {
-      if (testConsoleKeyBuilder_ == null) {
-        testConsoleKeyBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-            org.wso2.apk.enforcer.discovery.api.TestConsoleKey, org.wso2.apk.enforcer.discovery.api.TestConsoleKey.Builder, org.wso2.apk.enforcer.discovery.api.TestConsoleKeyOrBuilder>(
-                getTestConsoleKey(),
+        org.wso2.apk.enforcer.discovery.api.Oauth2, org.wso2.apk.enforcer.discovery.api.Oauth2.Builder, org.wso2.apk.enforcer.discovery.api.Oauth2OrBuilder> 
+        getOauth2FieldBuilder() {
+      if (oauth2Builder_ == null) {
+        oauth2Builder_ = new com.google.protobuf.SingleFieldBuilderV3<
+            org.wso2.apk.enforcer.discovery.api.Oauth2, org.wso2.apk.enforcer.discovery.api.Oauth2.Builder, org.wso2.apk.enforcer.discovery.api.Oauth2OrBuilder>(
+                getOauth2(),
                 getParentForChildren(),
                 isClean());
-        testConsoleKey_ = null;
+        oauth2_ = null;
       }
-      return testConsoleKeyBuilder_;
+      return oauth2Builder_;
     }
     @java.lang.Override
     public final Builder setUnknownFields(

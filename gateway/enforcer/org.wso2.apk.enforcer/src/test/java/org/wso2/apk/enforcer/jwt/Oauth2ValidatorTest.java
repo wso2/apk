@@ -39,7 +39,7 @@ import org.wso2.apk.enforcer.commons.jwttransformer.JWTTransformer;
 import org.wso2.apk.enforcer.commons.model.APIConfig;
 import org.wso2.apk.enforcer.commons.model.AuthenticationConfig;
 import org.wso2.apk.enforcer.commons.model.AuthenticationContext;
-import org.wso2.apk.enforcer.commons.model.JWTAuthenticationConfig;
+import org.wso2.apk.enforcer.commons.model.Oauth2AuthenticationConfig;
 import org.wso2.apk.enforcer.commons.model.RequestContext;
 import org.wso2.apk.enforcer.commons.model.ResourceConfig;
 import org.wso2.apk.enforcer.config.ConfigHolder;
@@ -47,7 +47,7 @@ import org.wso2.apk.enforcer.config.EnforcerConfig;
 import org.wso2.apk.enforcer.config.dto.ExtendedTokenIssuerDto;
 import org.wso2.apk.enforcer.constants.APISecurityConstants;
 import org.wso2.apk.enforcer.security.KeyValidator;
-import org.wso2.apk.enforcer.security.jwt.JWTAuthenticator;
+import org.wso2.apk.enforcer.security.jwt.Oauth2Authenticator;
 import org.wso2.apk.enforcer.security.jwt.validator.JWTValidator;
 import org.wso2.apk.enforcer.server.RevokedTokenRedisClient;
 import org.wso2.apk.enforcer.subscription.SubscriptionDataHolder;
@@ -59,7 +59,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.UUID;
 
-public class JWTValidatorTest {
+public class Oauth2ValidatorTest {
 
     @Before
     public void setup() {
@@ -95,15 +95,15 @@ public class JWTValidatorTest {
         jwtValidationInfo.setKeyManager("Default");
 
         JWTConfigurationDto jwtConfigurationDto = new JWTConfigurationDto();
-        JWTAuthenticator jwtAuthenticator = new JWTAuthenticator(jwtConfigurationDto, true);
+        Oauth2Authenticator oauth2Authenticator = new Oauth2Authenticator(jwtConfigurationDto, true);
         RequestContext requestContext = Mockito.mock(RequestContext.class);
 
         ArrayList<ResourceConfig> resourceConfigs = new ArrayList<>();
         ResourceConfig resourceConfig = Mockito.mock(ResourceConfig.class);
         AuthenticationConfig authenticationConfig = new AuthenticationConfig();
-        JWTAuthenticationConfig jwtAuthenticationConfig = new JWTAuthenticationConfig();
-        jwtAuthenticationConfig.setHeader("Authorization");
-        authenticationConfig.setJwtAuthenticationConfig(jwtAuthenticationConfig);
+        Oauth2AuthenticationConfig oauth2AuthenticationConfig = new Oauth2AuthenticationConfig();
+        oauth2AuthenticationConfig.setHeader("Authorization");
+        authenticationConfig.setOauth2AuthenticationConfig(oauth2AuthenticationConfig);
         Mockito.when(resourceConfig.getAuthenticationConfig()).thenReturn(authenticationConfig);
         Mockito.when(resourceConfig.getMethod()).thenReturn(ResourceConfig.HttpMethods.GET);
         resourceConfigs.add(resourceConfig);
@@ -134,7 +134,7 @@ public class JWTValidatorTest {
             subscriptionDataHolderMockedStatic.when(SubscriptionDataHolder::getInstance).thenReturn(subscriptionDataHolder);
             Mockito.when(subscriptionDataHolder.getSubscriptionDataStore(organization)).thenReturn(subscriptionDataStore);
             Logger logger = Mockito.mock(Logger.class);
-            logManagerDummy.when(() -> LogManager.getLogger(JWTAuthenticator.class)).thenReturn(logger);
+            logManagerDummy.when(() -> LogManager.getLogger(Oauth2Authenticator.class)).thenReturn(logger);
             Log logger2 = Mockito.mock(Log.class);
             logFactoryDummy.when(() -> LogFactory.getLog(AbstractAPIMgtGatewayJWTGenerator.class)).thenReturn(logger2);
             cacheProviderUtilDummy.when(() -> CacheProviderUtil.getOrganizationCache(organization))
@@ -156,7 +156,7 @@ public class JWTValidatorTest {
             Mockito.when(subscriptionDataStore.getJWTValidatorByIssuer(issuer, environment)).thenReturn(jwtValidator);
             Mockito.when(jwtValidator.validateToken(Mockito.eq(jwt), Mockito.any())).thenReturn(jwtValidationInfo);
             keyValidaterDummy.when(() -> KeyValidator.validateScopes(Mockito.any())).thenReturn(true);
-            AuthenticationContext authenticate = jwtAuthenticator.authenticate(requestContext);
+            AuthenticationContext authenticate = oauth2Authenticator.authenticate(requestContext);
             Assert.assertNotNull(authenticate);
             Mockito.verify(gatewayKeyCache, Mockito.atLeast(1)).put(signature, jwtValidationInfo);
         }
@@ -194,15 +194,15 @@ public class JWTValidatorTest {
         jwtValidationInfo.setIdentifier(revokedTokenJTI);
 
         JWTConfigurationDto jwtConfigurationDto = new JWTConfigurationDto();
-        JWTAuthenticator jwtAuthenticator = new JWTAuthenticator(jwtConfigurationDto, true);
+        Oauth2Authenticator oauth2Authenticator = new Oauth2Authenticator(jwtConfigurationDto, true);
         RequestContext requestContext = Mockito.mock(RequestContext.class);
 
         ArrayList<ResourceConfig> resourceConfigs = new ArrayList<>();
         ResourceConfig resourceConfig = Mockito.mock(ResourceConfig.class);
         AuthenticationConfig authenticationConfig = new AuthenticationConfig();
-        JWTAuthenticationConfig jwtAuthenticationConfig = new JWTAuthenticationConfig();
-        jwtAuthenticationConfig.setHeader("Authorization");
-        authenticationConfig.setJwtAuthenticationConfig(jwtAuthenticationConfig);
+        Oauth2AuthenticationConfig oauth2AuthenticationConfig = new Oauth2AuthenticationConfig();
+        oauth2AuthenticationConfig.setHeader("Authorization");
+        authenticationConfig.setOauth2AuthenticationConfig(oauth2AuthenticationConfig);
         Mockito.when(resourceConfig.getAuthenticationConfig()).thenReturn(authenticationConfig);
         Mockito.when(resourceConfig.getMethod()).thenReturn(ResourceConfig.HttpMethods.GET);
         resourceConfigs.add(resourceConfig);
@@ -234,7 +234,7 @@ public class JWTValidatorTest {
             subscriptionDataHolderMockedStatic.when(SubscriptionDataHolder::getInstance).thenReturn(subscriptionDataHolder);
             Mockito.when(subscriptionDataHolder.getSubscriptionDataStore(organization)).thenReturn(subscriptionDataStore);
             Logger logger = Mockito.mock(Logger.class);
-            logManagerDummy.when(() -> LogManager.getLogger(JWTAuthenticator.class)).thenReturn(logger);
+            logManagerDummy.when(() -> LogManager.getLogger(Oauth2Authenticator.class)).thenReturn(logger);
             Log logger2 = Mockito.mock(Log.class);
             logFactoryDummy.when(() -> LogFactory.getLog(AbstractAPIMgtGatewayJWTGenerator.class)).thenReturn(logger2);
             cacheProviderUtilDummy.when(() -> CacheProviderUtil.getOrganizationCache(organization))
@@ -255,7 +255,7 @@ public class JWTValidatorTest {
             Mockito.when(jwtValidator.validateToken(Mockito.eq(jwt), Mockito.any())).thenReturn(jwtValidationInfo);
             keyValidaterDummy.when(() -> KeyValidator.validateScopes(Mockito.any())).thenReturn(true);
             try {
-                jwtAuthenticator.authenticate(requestContext);
+                oauth2Authenticator.authenticate(requestContext);
                 Assert.fail("Authentication should fail for revoked tokens");
             } catch (APISecurityException e) {
                 Assert.assertEquals(e.getMessage(), e.getMessage(),
@@ -299,15 +299,15 @@ public class JWTValidatorTest {
         jwtValidationInfo.setIdentifier(signature);
 
         JWTConfigurationDto jwtConfigurationDto = new JWTConfigurationDto();
-        JWTAuthenticator jwtAuthenticator = new JWTAuthenticator(jwtConfigurationDto, true);
+        Oauth2Authenticator oauth2Authenticator = new Oauth2Authenticator(jwtConfigurationDto, true);
         RequestContext requestContext = Mockito.mock(RequestContext.class);
 
         ArrayList<ResourceConfig> resourceConfigs = new ArrayList<>();
         ResourceConfig resourceConfig = Mockito.mock(ResourceConfig.class);
         AuthenticationConfig authenticationConfig = new AuthenticationConfig();
-        JWTAuthenticationConfig jwtAuthenticationConfig = new JWTAuthenticationConfig();
-        jwtAuthenticationConfig.setHeader("Authorization");
-        authenticationConfig.setJwtAuthenticationConfig(jwtAuthenticationConfig);
+        Oauth2AuthenticationConfig oauth2AuthenticationConfig = new Oauth2AuthenticationConfig();
+        oauth2AuthenticationConfig.setHeader("Authorization");
+        authenticationConfig.setOauth2AuthenticationConfig(oauth2AuthenticationConfig);
         Mockito.when(resourceConfig.getAuthenticationConfig()).thenReturn(authenticationConfig);
         Mockito.when(resourceConfig.getMethod()).thenReturn(ResourceConfig.HttpMethods.GET);
         resourceConfigs.add(resourceConfig);
@@ -338,7 +338,7 @@ public class JWTValidatorTest {
             Mockito.when(subscriptionDataStore.getJWTValidatorByIssuer(issuer, environment)).thenReturn(jwtValidator);
             Mockito.when(jwtValidator.validateToken(Mockito.eq(jwt), Mockito.any())).thenReturn(jwtValidationInfo);
             keyValidatorDummy.when(() -> KeyValidator.validateScopes(Mockito.any())).thenReturn(true);
-            AuthenticationContext authenticate = jwtAuthenticator.authenticate(requestContext);
+            AuthenticationContext authenticate = oauth2Authenticator.authenticate(requestContext);
             Assert.assertNotNull(authenticate);
             Assert.assertEquals(authenticate.getConsumerKey(), jwtValidationInfo.getConsumerKey());
             Mockito.verify(gatewayKeyCache, Mockito.atLeast(1)).getIfPresent(signature);
@@ -367,15 +367,15 @@ public class JWTValidatorTest {
         jwtValidationInfo.setIdentifier(signature);
 
         JWTConfigurationDto jwtConfigurationDto = new JWTConfigurationDto();
-        JWTAuthenticator jwtAuthenticator = new JWTAuthenticator(jwtConfigurationDto, true);
+        Oauth2Authenticator oauth2Authenticator = new Oauth2Authenticator(jwtConfigurationDto, true);
         RequestContext requestContext = Mockito.mock(RequestContext.class);
 
         ArrayList<ResourceConfig> resourceConfigs = new ArrayList<>();
         ResourceConfig resourceConfig = Mockito.mock(ResourceConfig.class);
         AuthenticationConfig authenticationConfig = new AuthenticationConfig();
-        JWTAuthenticationConfig jwtAuthenticationConfig = new JWTAuthenticationConfig();
-        jwtAuthenticationConfig.setHeader("Authorization");
-        authenticationConfig.setJwtAuthenticationConfig(jwtAuthenticationConfig);
+        Oauth2AuthenticationConfig oauth2AuthenticationConfig = new Oauth2AuthenticationConfig();
+        oauth2AuthenticationConfig.setHeader("Authorization");
+        authenticationConfig.setOauth2AuthenticationConfig(oauth2AuthenticationConfig);
         Mockito.when(resourceConfig.getAuthenticationConfig()).thenReturn(authenticationConfig);
         Mockito.when(resourceConfig.getMethod()).thenReturn(ResourceConfig.HttpMethods.GET);
         resourceConfigs.add(resourceConfig);
@@ -407,7 +407,7 @@ public class JWTValidatorTest {
                     .thenReturn(jwtValidator);
             Mockito.when(jwtValidator.validateToken(Mockito.eq(jwt), Mockito.any())).thenReturn(jwtValidationInfo);
             keyValidatorDummy.when(() -> KeyValidator.validateScopes(Mockito.any())).thenReturn(true);
-            AuthenticationContext authenticate = jwtAuthenticator.authenticate(requestContext);
+            AuthenticationContext authenticate = oauth2Authenticator.authenticate(requestContext);
             Assert.assertNotNull(authenticate);
             Assert.assertEquals(authenticate.getConsumerKey(), jwtValidationInfo.getConsumerKey());
             Mockito.verify(gatewayKeyCache, Mockito.atLeast(1)).getIfPresent(signature);
@@ -442,15 +442,15 @@ public class JWTValidatorTest {
         jwtValidationInfo.setIdentifier(signature);
 
         JWTConfigurationDto jwtConfigurationDto = new JWTConfigurationDto();
-        JWTAuthenticator jwtAuthenticator = new JWTAuthenticator(jwtConfigurationDto, true);
+        Oauth2Authenticator oauth2Authenticator = new Oauth2Authenticator(jwtConfigurationDto, true);
         RequestContext requestContext = Mockito.mock(RequestContext.class);
 
         ArrayList<ResourceConfig> resourceConfigs = new ArrayList<>();
         ResourceConfig resourceConfig = Mockito.mock(ResourceConfig.class);
         AuthenticationConfig authenticationConfig = new AuthenticationConfig();
-        JWTAuthenticationConfig jwtAuthenticationConfig = new JWTAuthenticationConfig();
-        jwtAuthenticationConfig.setHeader("Authorization");
-        authenticationConfig.setJwtAuthenticationConfig(jwtAuthenticationConfig);
+        Oauth2AuthenticationConfig oauth2AuthenticationConfig = new Oauth2AuthenticationConfig();
+        oauth2AuthenticationConfig.setHeader("Authorization");
+        authenticationConfig.setOauth2AuthenticationConfig(oauth2AuthenticationConfig);
         Mockito.when(resourceConfig.getAuthenticationConfig()).thenReturn(authenticationConfig);
         Mockito.when(resourceConfig.getMethod()).thenReturn(ResourceConfig.HttpMethods.GET);
         resourceConfigs.add(resourceConfig);
@@ -475,7 +475,7 @@ public class JWTValidatorTest {
             cacheProviderUtilDummy.when(() -> CacheProviderUtil.getOrganizationCache(organization)).thenReturn(cacheProvider);
             keyValidatorDummy.when(() -> KeyValidator.validateScopes(Mockito.any())).thenReturn(true);
             try {
-                jwtAuthenticator.authenticate(requestContext);
+                oauth2Authenticator.authenticate(requestContext);
                 Assert.fail("Authentication should fail for expired tokens");
             } catch (APISecurityException e) {
                 Assert.assertEquals(e.getMessage(), e.getMessage(),
@@ -517,15 +517,15 @@ public class JWTValidatorTest {
         jwtValidationInfo.setIdentifier(signature);
 
         JWTConfigurationDto jwtConfigurationDto = new JWTConfigurationDto();
-        JWTAuthenticator jwtAuthenticator = new JWTAuthenticator(jwtConfigurationDto, true);
+        Oauth2Authenticator oauth2Authenticator = new Oauth2Authenticator(jwtConfigurationDto, true);
         RequestContext requestContext = Mockito.mock(RequestContext.class);
 
         ArrayList<ResourceConfig> resourceConfigs = new ArrayList<>();
         ResourceConfig resourceConfig = Mockito.mock(ResourceConfig.class);
         AuthenticationConfig authenticationConfig = new AuthenticationConfig();
-        JWTAuthenticationConfig jwtAuthenticationConfig = new JWTAuthenticationConfig();
-        jwtAuthenticationConfig.setHeader("Authorization");
-        authenticationConfig.setJwtAuthenticationConfig(jwtAuthenticationConfig);
+        Oauth2AuthenticationConfig oauth2AuthenticationConfig = new Oauth2AuthenticationConfig();
+        oauth2AuthenticationConfig.setHeader("Authorization");
+        authenticationConfig.setOauth2AuthenticationConfig(oauth2AuthenticationConfig);
         Mockito.when(resourceConfig.getAuthenticationConfig()).thenReturn(authenticationConfig);
         Mockito.when(resourceConfig.getMethod()).thenReturn(ResourceConfig.HttpMethods.GET);
         resourceConfigs.add(resourceConfig);
@@ -563,7 +563,7 @@ public class JWTValidatorTest {
             keyValidatorDummy.when(() -> KeyValidator.validateScopes(Mockito.any())).thenReturn(true);
 
             try {
-                jwtAuthenticator.authenticate(requestContext);
+                oauth2Authenticator.authenticate(requestContext);
                 Assert.fail("Authentication should fail for expired tokens");
             } catch (APISecurityException e) {
                 Assert.assertEquals(e.getMessage(), APISecurityConstants.API_AUTH_ACCESS_TOKEN_EXPIRED_MESSAGE);
@@ -617,15 +617,15 @@ public class JWTValidatorTest {
         jwtValidationInfo.setIdentifier(signature);
 
         JWTConfigurationDto jwtConfigurationDto = new JWTConfigurationDto();
-        JWTAuthenticator jwtAuthenticator = new JWTAuthenticator(jwtConfigurationDto, true);
+        Oauth2Authenticator oauth2Authenticator = new Oauth2Authenticator(jwtConfigurationDto, true);
         RequestContext requestContext = Mockito.mock(RequestContext.class);
 
         ArrayList<ResourceConfig> resourceConfigs = new ArrayList<>();
         ResourceConfig resourceConfig = Mockito.mock(ResourceConfig.class);
         AuthenticationConfig authenticationConfig = new AuthenticationConfig();
-        JWTAuthenticationConfig jwtAuthenticationConfig = new JWTAuthenticationConfig();
-        jwtAuthenticationConfig.setHeader("Authorization");
-        authenticationConfig.setJwtAuthenticationConfig(jwtAuthenticationConfig);
+        Oauth2AuthenticationConfig oauth2AuthenticationConfig = new Oauth2AuthenticationConfig();
+        oauth2AuthenticationConfig.setHeader("Authorization");
+        authenticationConfig.setOauth2AuthenticationConfig(oauth2AuthenticationConfig);
         Mockito.when(resourceConfig.getAuthenticationConfig()).thenReturn(authenticationConfig);
         Mockito.when(resourceConfig.getMethod()).thenReturn(ResourceConfig.HttpMethods.GET);
         resourceConfigs.add(resourceConfig);
@@ -664,7 +664,7 @@ public class JWTValidatorTest {
             Mockito.when(jwtValidator.validateToken(Mockito.eq(jwt), Mockito.any())).thenReturn(jwtValidationInfo);
             keyValidatorDummy.when(() -> KeyValidator.validateScopes(Mockito.any())).thenReturn(true);
             try {
-                jwtAuthenticator.authenticate(requestContext);
+                oauth2Authenticator.authenticate(requestContext);
                 Assert.fail("Authentication should fail for tampered tokens");
             } catch (APISecurityException e) {
                 Assert.assertEquals(e.getMessage(), "Invalid JWT token");
