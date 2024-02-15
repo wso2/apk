@@ -50,13 +50,13 @@ data:
     testQuery = "{{ .Values.idp.database.validationQuery }}"
     driver = "{{ .Values.idp.database.driver }}"
     [wso2.idp_domain_service.idpConfiguration]
-    hostname = "{{ .Values.idp.idpds.config.hostname }}"
-    loginPageURl = "{{ .Values.idp.idpds.config.loginPageURl }}"
-    loginErrorPageUrl = "{{ .Values.idp.idpds.config.loginErrorPageUrl }}"
-    loginCallBackURl = "{{ .Values.idp.idpds.config.loginCallBackURl }}"
+    hostname = "{{ .Values.idp.idpds.configs.hostname }}"
+    loginPageURl = "{{ .Values.idp.idpds.configs.loginPageURl }}"
+    loginErrorPageUrl = "{{ .Values.idp.idpds.configs.loginErrorPageUrl }}"
+    loginCallBackURl = "{{ .Values.idp.idpds.configs.loginCallBackURl }}"
     [wso2.idp_domain_service.idpConfiguration.tokenIssuerConfiguration]
-    issuer = "{{ .Values.idp.idpds.config.issuer }}"
-    keyId="{{ .Values.idp.idpds.config.keyId }}"
+    issuer = "{{ .Values.idp.idpds.configs.issuer }}"
+    keyId="{{ .Values.idp.idpds.configs.keyId }}"
     [[wso2.idp_domain_service.idpConfiguration.fileBaseApp]]
     clientId = "45f1c5c8-a92e-11ed-afa1-0242ac120002"
     clientSecret = "4fbd62ec-a92e-11ed-afa1-0242ac120002"

@@ -18,9 +18,9 @@ data:
     {{ end}}  
     [commoncontroller.server]
       label = "ratelimiter"
-    {{ if and .Values.wso2.apk.dp.commonController.configs .Values.wso2.apk.dp.commonController.configs.apiNamespaces }}
+    {{ if and .Values.wso2.apk.dp.commonController.deployment.configs .Values.wso2.apk.dp.commonController.deployment.configs.apiNamespaces }}
     [commoncontroller.operator]
-      namespaces = [{{ include "commaJoinedQuotedList" .Values.wso2.apk.dp.commonController.configs.apiNamespaces}}]
+      namespaces = [{{ include "commaJoinedQuotedList" .Values.wso2.apk.dp.commonController.deployment.configs.apiNamespaces}}]
     {{ end}}  
     [commoncontroller.keystore]
       certPath = "/home/wso2/security/keystore/commoncontroller.crt"

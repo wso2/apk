@@ -174,7 +174,7 @@ wso2:
           image: wso2/apk-config-deployer-service:1.0.0
           configs:
             # -- Enable authorization for runtime api.
-            authrorization: true
+            authorization: true
             # -- Baseurl for runtime api.
             baseUrl: "https://api.am.wso2.com:9095/api/runtime"
             tls:

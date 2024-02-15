@@ -81,7 +81,7 @@ A Helm chart for APK components
 | wso2.apk.dp.configdeployer.deployment.replicas | int | `1` | Number of replicas |
 | wso2.apk.dp.configdeployer.deployment.imagePullPolicy | string | `"Always"` | Image pull policy |
 | wso2.apk.dp.configdeployer.deployment.image | string | `"wso2/apk-config-deployer-service:1.1.0-m2"` | Image |
-| wso2.apk.dp.configdeployer.deployment.configs.authrorization | bool | `true` | Enable authorization for runtime api. |
+| wso2.apk.dp.configdeployer.deployment.configs.authorization | bool | `true` | Enable authorization for runtime api. |
 | wso2.apk.dp.configdeployer.deployment.configs.baseUrl | string | `"https://api.am.wso2.com:9095/api/runtime"` | Baseurl for runtime api. |
 | wso2.apk.dp.configdeployer.deployment.configs.tls.secretName | string | `""` | TLS secret name for runtime public certificate. |
 | wso2.apk.dp.configdeployer.deployment.configs.tls.certKeyFilename | string | `""` | TLS certificate file name. |
@@ -102,10 +102,10 @@ A Helm chart for APK components
 | wso2.apk.dp.adapter.deployment.imagePullPolicy | string | `"Always"` | Image pull policy |
 | wso2.apk.dp.adapter.deployment.image | string | `"wso2/apk-adapter:1.1.0-m2"` | Image |
 | wso2.apk.dp.adapter.deployment.security.sslHostname | string | `"adapter"` | Enable security for adapter. |
-| wso2.apk.dp.adapter.configs.apiNamespaces | string | `nil` | Optionally configure namespaces to watch for apis. |
-| wso2.apk.dp.adapter.configs.tls.secretName | string | `""` | TLS secret name for adapter public certificate. |
-| wso2.apk.dp.adapter.configs.tls.certKeyFilename | string | `""` | TLS certificate file name. |
-| wso2.apk.dp.adapter.configs.tls.certFilename | string | `""` | TLS certificate file name. |
+| wso2.apk.dp.adapter.deployment.configs.apiNamespaces | string | `nil` | Optionally configure namespaces to watch for apis. |
+| wso2.apk.dp.adapter.deployment.configs.tls.secretName | string | `""` | TLS secret name for adapter public certificate. |
+| wso2.apk.dp.adapter.deployment.configs.tls.certKeyFilename | string | `""` | TLS certificate file name. |
+| wso2.apk.dp.adapter.deployment.configs.tls.certFilename | string | `""` | TLS certificate file name. |
 | wso2.apk.dp.adapter.logging.level | string | `"INFO"` | Optionally configure logging for adapter. LogLevels can be "DEBG", "FATL", "ERRO", "WARN", "INFO", "PANC" |
 | wso2.apk.dp.adapter.logging.logFile | string | `"logs/adapter.log"` | Log file name |
 | wso2.apk.dp.adapter.logging.logFormat | string | `"TEXT"` | Log format can be "JSON", "TEXT" |
