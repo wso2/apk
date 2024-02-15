@@ -25,15 +25,15 @@ public final class APIAuthenticationProto {
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_wso2_discovery_api_JWT_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_wso2_discovery_api_Oauth2_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_wso2_discovery_api_Oauth2_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
     internal_static_wso2_discovery_api_APIAuthentication_descriptor;
   static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_wso2_discovery_api_APIAuthentication_fieldAccessorTable;
-  static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_wso2_discovery_api_TestConsoleKey_descriptor;
-  static final 
-    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_wso2_discovery_api_TestConsoleKey_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -46,18 +46,17 @@ public final class APIAuthenticationProto {
       "\n+wso2/discovery/api/api_authentication." +
       "proto\022\022wso2.discovery.api\"?\n\006APIKey\022\014\n\004n" +
       "ame\030\001 \001(\t\022\n\n\002in\030\002 \001(\t\022\033\n\023sendTokenToUpst" +
-      "ream\030\003 \001(\010\"2\n\003JWT\022\016\n\006header\030\001 \001(\t\022\033\n\023sen" +
-      "dTokenToUpstream\030\002 \001(\010\"\263\001\n\021APIAuthentica" +
-      "tion\022\020\n\010disabled\030\001 \001(\010\022$\n\003jwt\030\002 \001(\0132\027.ws" +
-      "o2.discovery.api.JWT\022*\n\006apikey\030\003 \003(\0132\032.w" +
-      "so2.discovery.api.APIKey\022:\n\016testConsoleK" +
-      "ey\030\004 \001(\0132\".wso2.discovery.api.TestConsol" +
-      "eKey\"=\n\016TestConsoleKey\022\016\n\006header\030\001 \001(\t\022\033" +
-      "\n\023sendTokenToUpstream\030\002 \001(\010B~\n#org.wso2." +
-      "apk.enforcer.discovery.apiB\026APIAuthentic" +
-      "ationProtoP\001Z=github.com/envoyproxy/go-c" +
-      "ontrol-plane/wso2/discovery/api;apib\006pro" +
-      "to3"
+      "ream\030\003 \001(\010\"D\n\003JWT\022\016\n\006header\030\001 \001(\t\022\033\n\023sen" +
+      "dTokenToUpstream\030\002 \001(\010\022\020\n\010audience\030\003 \003(\t" +
+      "\"5\n\006Oauth2\022\016\n\006header\030\001 \001(\t\022\033\n\023sendTokenT" +
+      "oUpstream\030\002 \001(\010\"\243\001\n\021APIAuthentication\022\020\n" +
+      "\010disabled\030\001 \001(\010\022$\n\003jwt\030\002 \001(\0132\027.wso2.disc" +
+      "overy.api.JWT\022*\n\006apikey\030\003 \003(\0132\032.wso2.dis" +
+      "covery.api.APIKey\022*\n\006Oauth2\030\004 \001(\0132\032.wso2" +
+      ".discovery.api.Oauth2B~\n#org.wso2.apk.en" +
+      "forcer.discovery.apiB\026APIAuthenticationP" +
+      "rotoP\001Z=github.com/envoyproxy/go-control" +
+      "-plane/wso2/discovery/api;apib\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -74,19 +73,19 @@ public final class APIAuthenticationProto {
     internal_static_wso2_discovery_api_JWT_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_wso2_discovery_api_JWT_descriptor,
+        new java.lang.String[] { "Header", "SendTokenToUpstream", "Audience", });
+    internal_static_wso2_discovery_api_Oauth2_descriptor =
+      getDescriptor().getMessageTypes().get(2);
+    internal_static_wso2_discovery_api_Oauth2_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_wso2_discovery_api_Oauth2_descriptor,
         new java.lang.String[] { "Header", "SendTokenToUpstream", });
     internal_static_wso2_discovery_api_APIAuthentication_descriptor =
-      getDescriptor().getMessageTypes().get(2);
+      getDescriptor().getMessageTypes().get(3);
     internal_static_wso2_discovery_api_APIAuthentication_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_wso2_discovery_api_APIAuthentication_descriptor,
-        new java.lang.String[] { "Disabled", "Jwt", "Apikey", "TestConsoleKey", });
-    internal_static_wso2_discovery_api_TestConsoleKey_descriptor =
-      getDescriptor().getMessageTypes().get(3);
-    internal_static_wso2_discovery_api_TestConsoleKey_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_wso2_discovery_api_TestConsoleKey_descriptor,
-        new java.lang.String[] { "Header", "SendTokenToUpstream", });
+        new java.lang.String[] { "Disabled", "Jwt", "Apikey", "Oauth2", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)

@@ -258,6 +258,7 @@ func castAPIAuthenticationsToEnforcerAPIAuthentications(authentication *model.Au
 		enforcerAuthentication.Jwt = &api.JWT{
 			Header:              strings.ToLower(authentication.JWT.Header),
 			SendTokenToUpstream: authentication.JWT.SendTokenToUpstream,
+			Audience: authentication.JWT.Audience,
 		}
 	}
 	var apiKeys []*api.APIKey
@@ -273,19 +274,12 @@ func castAPIAuthenticationsToEnforcerAPIAuthentications(authentication *model.Au
 		})
 	}
 	enforcerAuthentication.Apikey = apiKeys
-	if authentication.TestConsoleKey != nil {
-		enforcerAuthentication.TestConsoleKey = &api.TestConsoleKey{
-			Header:              strings.ToLower(authentication.TestConsoleKey.Header),
-			SendTokenToUpstream: authentication.TestConsoleKey.SendTokenToUpstream,
+	if authentication.Oauth2 != nil {
+		enforcerAuthentication.Oauth2 = &api.Oauth2{
+			Header:              strings.ToLower(authentication.Oauth2.Header),
+			SendTokenToUpstream: authentication.Oauth2.SendTokenToUpstream,
 		}
 	}
-	if authentication.TestConsoleKey != nil {
-		enforcerAuthentication.TestConsoleKey = &api.TestConsoleKey{
-			Header:              strings.ToLower(authentication.TestConsoleKey.Header),
-			SendTokenToUpstream: authentication.TestConsoleKey.SendTokenToUpstream,
-		}
-	}
-
 	return enforcerAuthentication
 }
 

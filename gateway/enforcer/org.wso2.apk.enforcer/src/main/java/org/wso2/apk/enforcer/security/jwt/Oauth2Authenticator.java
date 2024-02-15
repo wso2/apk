@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2023, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -30,9 +30,9 @@ import org.wso2.apk.enforcer.commons.dto.ClaimValueDTO;
 import org.wso2.apk.enforcer.commons.dto.JWTConfigurationDto;
 import org.wso2.apk.enforcer.commons.dto.JWTInfoDto;
 import org.wso2.apk.enforcer.commons.dto.JWTValidationInfo;
+import org.wso2.apk.enforcer.commons.jwtgenerator.AbstractAPIMgtGatewayJWTGenerator;
 import org.wso2.apk.enforcer.commons.exception.APISecurityException;
 import org.wso2.apk.enforcer.commons.exception.EnforcerException;
-import org.wso2.apk.enforcer.commons.jwtgenerator.AbstractAPIMgtGatewayJWTGenerator;
 import org.wso2.apk.enforcer.commons.model.APIConfig;
 import org.wso2.apk.enforcer.commons.model.AuthenticationContext;
 import org.wso2.apk.enforcer.commons.model.RequestContext;
@@ -44,10 +44,11 @@ import org.wso2.apk.enforcer.dto.APIKeyValidationInfoDTO;
 import org.wso2.apk.enforcer.security.Authenticator;
 import org.wso2.apk.enforcer.security.KeyValidator;
 import org.wso2.apk.enforcer.security.TokenValidationContext;
+import org.wso2.apk.enforcer.security.jwt.validator.JWTConstants;
 import org.wso2.apk.enforcer.security.jwt.validator.JWTValidator;
 import org.wso2.apk.enforcer.security.jwt.validator.RevokedJWTDataHolder;
-import org.wso2.apk.enforcer.server.RevokedTokenRedisClient;
 import org.wso2.apk.enforcer.subscription.SubscriptionDataHolder;
+import org.wso2.apk.enforcer.server.RevokedTokenRedisClient;
 import org.wso2.apk.enforcer.tracing.TracingConstants;
 import org.wso2.apk.enforcer.tracing.TracingSpan;
 import org.wso2.apk.enforcer.tracing.TracingTracer;
@@ -61,20 +62,19 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 /**
  * Implements the authenticator interface to authenticate request using a JWT token.
  */
-public class JWTAuthenticator implements Authenticator {
+public class Oauth2Authenticator implements Authenticator {
 
-    private static final Logger log = LogManager.getLogger(JWTAuthenticator.class);
+    private static final Logger log = LogManager.getLogger(Oauth2Authenticator.class);
     private final boolean isGatewayTokenCacheEnabled;
     private AbstractAPIMgtGatewayJWTGenerator jwtGenerator;
 
-    public JWTAuthenticator(final JWTConfigurationDto jwtConfigurationDto, final boolean isGatewayTokenCacheEnabled) {
+    public Oauth2Authenticator(final JWTConfigurationDto jwtConfigurationDto, final boolean isGatewayTokenCacheEnabled) {
 
         this.isGatewayTokenCacheEnabled = isGatewayTokenCacheEnabled;
         if (jwtConfigurationDto.isEnabled()) {
@@ -89,7 +89,15 @@ public class JWTAuthenticator implements Authenticator {
 
         if (!StringUtils.equals(authHeader, "")) {
             String authHeaderValue = retrieveAuthHeaderValue(requestContext, authHeader);
-            return authHeaderValue != null && !StringUtils.containsWhitespace(authHeaderValue) && authHeaderValue.split("\\.").length == 3;
+
+            // Check keyword bearer in header to prevent conflicts with custom authentication
+            // (that maybe added with custom filters / interceptors / opa)
+            // which also includes a jwt in the auth header yet with a scheme other than 'bearer'.
+            //
+            // StringUtils.startsWithIgnoreCase(null, "bearer")         = false
+            // StringUtils.startsWithIgnoreCase("abc", "bearer")        = false
+            // StringUtils.startsWithIgnoreCase("Bearer abc", "bearer") = true
+            return StringUtils.startsWithIgnoreCase(authHeaderValue, JWTConstants.BEARER) && authHeaderValue.trim().split("\\s+").length == 2 && authHeaderValue.split("\\.").length == 3;
         }
         return false;
     }
@@ -113,6 +121,11 @@ public class JWTAuthenticator implements Authenticator {
             }
             String authHeader = getTokenHeader(requestContext.getMatchedResourcePaths());
             String jwtToken = retrieveAuthHeaderValue(requestContext, authHeader);
+            String[] splitToken = jwtToken.split("\\s");
+            // Extract the token when it is sent as bearer token. i.e Authorization: Bearer <token>
+            if (splitToken.length > 1) {
+                jwtToken = splitToken[1];
+            }
             String context = requestContext.getMatchedAPI().getBasePath();
             String name = requestContext.getMatchedAPI().getName();
             String envType = requestContext.getMatchedAPI().getEnvType();
@@ -129,12 +142,6 @@ public class JWTAuthenticator implements Authenticator {
             }
             if (validationInfo != null) {
                 if (validationInfo.isValid()) {
-                    List<String> audFromAPI = getAudience(requestContext.getMatchedResourcePaths());
-                    List<String> audFromToken = validationInfo.getAudience();
-                    if (!checkAllExist(audFromAPI, audFromToken)) {
-                        throw new APISecurityException(APIConstants.StatusCodes.UNAUTHENTICATED.getCode(),
-                                APISecurityConstants.API_AUTH_INVALID_CREDENTIALS, "Required audience not available in the JWT aud.");
-                    }
                     Map<String, Object> claims = validationInfo.getClaims();
                     // Validate token type
                     Object keyType = claims.get("keytype");
@@ -170,7 +177,7 @@ public class JWTAuthenticator implements Authenticator {
                             if (consumerKey != null) {
                                 validateSubscriptionUsingConsumerKey(apiKeyValidationInfoDTO, name, version, context,
                                         consumerKey, envType, organization,
-                                        "", requestContext.getMatchedAPI());
+                                        splitToken, requestContext.getMatchedAPI());
                             } else {
                                 log.error("Error while extracting consumer key from token");
                                 throw new APISecurityException(APIConstants.StatusCodes.UNAUTHENTICATED.getCode(),
@@ -260,34 +267,23 @@ public class JWTAuthenticator implements Authenticator {
     private String getTokenHeader(ArrayList<ResourceConfig> matchedResourceConfigs) {
         for (ResourceConfig resourceConfig : matchedResourceConfigs) {
             if (resourceConfig.getAuthenticationConfig() != null &&
-                    resourceConfig.getAuthenticationConfig().getJwtAuthenticationConfig() != null) {
-                return resourceConfig.getAuthenticationConfig().getJwtAuthenticationConfig().getHeader();
+                    resourceConfig.getAuthenticationConfig().getOauth2AuthenticationConfig() != null) {
+                return resourceConfig.getAuthenticationConfig().getOauth2AuthenticationConfig().getHeader();
             }
         }
         return "";
     }
 
-    private ArrayList<String> getAudience(ArrayList<ResourceConfig> matchedResourceConfigs) {
-        ArrayList<String> audience = new ArrayList<>();
-        for (ResourceConfig resourceConfig : matchedResourceConfigs) {
-            if (resourceConfig.getAuthenticationConfig() != null &&
-                    resourceConfig.getAuthenticationConfig().getJwtAuthenticationConfig() != null) {
-                return resourceConfig.getAuthenticationConfig().getJwtAuthenticationConfig().getAudience();
-            }
-        }
-        return audience;
-    }
-
     @Override
     public String getChallengeString() {
 
-        return "JWT realm=\"APK\"";
+        return "Bearer realm=\"APK\"";
     }
 
     @Override
     public String getName() {
 
-        return "JWT";
+        return "Oauth2";
     }
 
     @Override
@@ -348,13 +344,13 @@ public class JWTAuthenticator implements Authenticator {
      * @param consumerKey    Consumer key extracted from the jwt token claim set
      * @param envType        The environment type, i.e. PRODUCTION or SANDBOX
      * @param organization   Organization extracted from the request context
-     * @param tokenPrefix     The split token
+     * @param splitToken     The split token
      * @param matchedAPI
      * @throws APISecurityException if the user is not subscribed to the API
      */
     private void validateSubscriptionUsingConsumerKey(APIKeyValidationInfoDTO validationInfo, String name,
                                                       String version, String context, String consumerKey,
-                                                      String envType, String organization, String tokenPrefix,
+                                                      String envType, String organization, String[] splitToken,
                                                       APIConfig matchedAPI) throws APISecurityException {
 
         validationInfo.setApiName(name);
@@ -374,12 +370,12 @@ public class JWTAuthenticator implements Authenticator {
         if (validationInfo.isAuthorized()) {
             if (log.isDebugEnabled()) {
                 log.debug("User is subscribed to the API: " + name + ", " + "version: " + version + ". Token:" + " " +
-                        FilterUtils.getMaskedToken(tokenPrefix));
+                        FilterUtils.getMaskedToken(splitToken[0]));
             }
         } else {
             if (log.isDebugEnabled()) {
                 log.debug("User is not subscribed to access the API: " + name + ", version: " + version + ". " +
-                        "Token: " + FilterUtils.getMaskedToken(tokenPrefix));
+                        "Token: " + FilterUtils.getMaskedToken(splitToken[0]));
             }
             throw new APISecurityException(APIConstants.StatusCodes.UNAUTHORIZED.getCode(),
                     APISecurityConstants.API_AUTH_FORBIDDEN, APISecurityConstants.API_AUTH_FORBIDDEN_MESSAGE);
@@ -476,14 +472,8 @@ public class JWTAuthenticator implements Authenticator {
         try {
             // Get issuer
             String issuer = jwtClaimsSet.getIssuer();
-            SubscriptionDataStore subscriptionDataStore = SubscriptionDataHolder.getInstance()
-                    .getSubscriptionDataStore(organization);
-            if (subscriptionDataStore == null) {
-                throw new APISecurityException(APIConstants.StatusCodes.UNAUTHENTICATED.getCode(),
-                        APISecurityConstants.API_AUTH_INVALID_CREDENTIALS,
-                        APISecurityConstants.API_AUTH_INVALID_CREDENTIALS_MESSAGE);
-            }
-            JWTValidator jwtValidator = subscriptionDataStore.getJWTValidatorByIssuer(issuer, environment);
+            JWTValidator jwtValidator = SubscriptionDataHolder.getInstance().getSubscriptionDataStore(organization)
+                    .getJWTValidatorByIssuer(issuer, environment);
             // If no validator found for the issuer, we are not caching the token.
             if (jwtValidator == null) {
                 throw new APISecurityException(APIConstants.StatusCodes.UNAUTHENTICATED.getCode(),
@@ -522,15 +512,5 @@ public class JWTAuthenticator implements Authenticator {
         Date now = new Date();
         Date exp = new Date(payload.getExpiryTime());
         return !DateUtils.isAfter(exp, now, timestampSkew);
-    }
-
-    /**
-     * Checks if all elements in the first list are present in the second list.
-     * @param list1 The list of elements to check.
-     * @param list2 The list in which to check for the elements.
-     * @return True if all elements in list1 are present in list2, false otherwise.
-     */
-    public static boolean checkAllExist(List<String> list1, List<String> list2) {
-        return list1.stream().allMatch(list2::contains);
     }
 }

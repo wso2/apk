@@ -71,6 +71,22 @@ func (src *Authentication) ConvertTo(dstRaw conversion.Hub) error {
 		dst.Spec.Override.AuthTypes.APIKey = append(dst.Spec.Override.AuthTypes.APIKey, convertedAPIKeyAuth)
 	}
 
+	// Convert testConsoleKey Override to v1alpha2.JWT
+	if src.Spec.Override.AuthTypes.TestConsoleKey != (TestConsoleKeyAuth{}) {
+		dst.Spec.Override.AuthTypes.JWT = v1alpha2.JWT{
+			Header:              src.Spec.Override.AuthTypes.TestConsoleKey.Header,
+			SendTokenToUpstream: src.Spec.Override.AuthTypes.TestConsoleKey.SendTokenToUpstream,
+		}
+	}
+
+	// Convert testConsoleKey Default to v1alpha2.JWT
+	if src.Spec.Default.AuthTypes.TestConsoleKey != (TestConsoleKeyAuth{}) {
+		dst.Spec.Default.AuthTypes.JWT = v1alpha2.JWT{
+			Header:              src.Spec.Default.AuthTypes.TestConsoleKey.Header,
+			SendTokenToUpstream: src.Spec.Default.AuthTypes.TestConsoleKey.SendTokenToUpstream,
+		}
+	}
+
 	// Status
 	dst.Status = v1alpha2.AuthenticationStatus(src.Status)
 
@@ -116,6 +132,18 @@ func (src *Authentication) ConvertFrom(srcRaw conversion.Hub) error {
 			SendTokenToUpstream: apiKeyAuth.SendTokenToUpstream,
 		}
 		src.Spec.Override.AuthTypes.APIKey = append(src.Spec.Override.AuthTypes.APIKey, convertedAPIKeyAuth)
+	}
+
+	// Convert testConsoleKey Override to v1alpha1.TestConsoleKey
+	src.Spec.Override.AuthTypes.TestConsoleKey = TestConsoleKeyAuth{
+		Header:              dst.Spec.Override.AuthTypes.JWT.Header,
+		SendTokenToUpstream: dst.Spec.Override.AuthTypes.JWT.SendTokenToUpstream,
+	}
+
+	// Convert testConsoleKey Default to v1alpha1.TestConsoleKey
+	src.Spec.Default.AuthTypes.TestConsoleKey = TestConsoleKeyAuth{
+		Header:              dst.Spec.Default.AuthTypes.JWT.Header,
+		SendTokenToUpstream: dst.Spec.Default.AuthTypes.JWT.SendTokenToUpstream,
 	}
 
 	// Status

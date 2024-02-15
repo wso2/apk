@@ -1,4 +1,4 @@
-# Copyright (c) 2023, WSO2 LLC. (https://www.wso2.com) All Rights Reserved.
+# Copyright (c) 2024, WSO2 LLC. (https://www.wso2.com) All Rights Reserved.
 #
 # WSO2 LLC. licenses this file to you under the Apache License,
 # Version 2.0 (the "License"); you may not use this file except
@@ -17,24 +17,24 @@
 apiVersion: dp.wso2.com/v1alpha2
 kind: API
 metadata:
-  name: custom-auth-header
+  name: resource-level-jwt
   namespace: gateway-integration-test-infra
 spec:
   apiName: API with Backend Base Path
   apiType: REST
   apiVersion: v1.0.0
-  basePath: /custom-auth-header/v1.0.0
+  basePath: /resource-level-jwt/v1.0.0
   isDefaultVersion: true
   #definitionFileRef: definition-file
   production:
     - httpRouteRefs:
-      - custom-auth-header-httproute
+      - resource-level-jwt-httproute
   organization: wso2-org
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
 kind: HTTPRoute
 metadata:
-  name: custom-auth-header-httproute
+  name: resource-level-jwt-httproute
   namespace: gateway-integration-test-infra
 spec:
   parentRefs:
@@ -44,7 +44,7 @@ spec:
     namespace: apk-integration-test
     sectionName: httpslistener
   hostnames:
-  - custom-auth-header.test.gw.wso2.com
+  - resource-level-jwt.test.gw.wso2.com
   rules:
   - matches:
     - path:
@@ -54,27 +54,29 @@ spec:
     - group: dp.wso2.com
       kind: Backend
       name: infra-backend-v1
+    filters:
+    - type: ExtensionRef
+      extensionRef:
+        group: dp.wso2.com
+        kind: Authentication
+        name: resource-level-jwt-authentication
 ---
 apiVersion: dp.wso2.com/v1alpha2
 kind: Authentication
 metadata:
-  name: custom-auth-header-authentication
+  name: resource-level-jwt-authentication
   namespace: gateway-integration-test-infra
 spec:
   override:
-    disabled: false    
+    disabled: false
     authTypes:
-      oauth2:
-        disabled: false
-        header: testAuth   
       jwt:
         disabled: false
-        header: testJwt   
   targetRef:
+    kind: Resource
+    name: resource-level-jwt
     group: gateway.networking.k8s.io
-    kind: API
     namespace: gateway-integration-test-infra
-    name: custom-auth-header
 ---
 apiVersion: dp.wso2.com/v1alpha1
 kind: Backend
