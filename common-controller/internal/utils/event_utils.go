@@ -194,6 +194,7 @@ func sendApplicationKeyMappingEvent(applicationUUID string, applicationSpec cpv1
 					ApplicationIdentifier: env.AppID,
 					KeyType:               env.KeyType,
 					EnvID:                 env.EnvID,
+					Organization:          applicationSpec.Organization,
 				},
 			}
 			sendEvent(&event)

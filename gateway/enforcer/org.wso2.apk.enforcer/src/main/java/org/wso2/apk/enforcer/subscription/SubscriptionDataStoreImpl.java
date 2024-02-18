@@ -308,10 +308,11 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
         resolvedApplicationMapping.setUuid(applicationMapping.getUuid());
         resolvedApplicationMapping.setApplicationUUID(applicationMapping.getApplicationRef());
         resolvedApplicationMapping.setSubscriptionUUID(applicationMapping.getSubscriptionRef());
-        if (applicationMappingMap.containsKey(resolvedApplicationMapping.getUuid())) {
-            applicationMappingMap.replace(resolvedApplicationMapping.getUuid(), resolvedApplicationMapping);
+        resolvedApplicationMapping.setOrganization(applicationMapping.getOrganization());
+        if (applicationMappingMap.containsKey(resolvedApplicationMapping.getCacheKey())) {
+            applicationMappingMap.replace(resolvedApplicationMapping.getCacheKey(), resolvedApplicationMapping);
         } else {
-            applicationMappingMap.put(resolvedApplicationMapping.getUuid(), resolvedApplicationMapping);
+            applicationMappingMap.put(resolvedApplicationMapping.getCacheKey(), resolvedApplicationMapping);
         }
     }
 
@@ -342,7 +343,8 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
         resolvedApplicationMapping.setUuid(applicationMapping.getUuid());
         resolvedApplicationMapping.setApplicationUUID(applicationMapping.getApplicationRef());
         resolvedApplicationMapping.setSubscriptionUUID(applicationMapping.getSubscriptionRef());
-        applicationMappingMap.remove(resolvedApplicationMapping.getUuid());
+        resolvedApplicationMapping.setOrganization(applicationMapping.getOrganization());
+        applicationMappingMap.remove(resolvedApplicationMapping.getCacheKey());
     }
 
     @Override
