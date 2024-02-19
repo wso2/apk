@@ -80,6 +80,7 @@ opentelemetry-extension-trace-propagators = {module = "io.opentelemetry:opentele
 opentelemetry-sdk = {module = "io.opentelemetry:opentelemetry-sdk", version.ref = "opentelemetry"}
 opentelemetry-semconv = {module = "io.opentelemetry:opentelemetry-semconv", version.ref = "opentelemetry-semconv"}
 postgresql = {module = "org.postgresql:postgresql", version.ref = "postgresql"}
+prometheus = {module = "io.prometheus.jmx:jmx_prometheus_javaagent", version.ref = "prometheus"}
 snakeyaml = {module = "org.yaml:snakeyaml", version.ref = "snakeyaml"}
 sun-saaj-impl = {module = "com.sun.xml.messaging.saaj:saaj-impl", version.ref = "sun"}
 swagger-annotations = {module = "io.swagger:swagger-annotations", version.ref = "io-swagger"}
@@ -165,6 +166,7 @@ opentelemetry-jaeger-thrift = "1.24.0"
 opentelemetry-semconv = "1.24.0-alpha"
 org-json = "20231013"
 postgresql = "42.5.0"
+prometheus = "0.20.0"
 snakeyaml = "2.0"
 sun = "1.5.3"
 swagger-codegen = "2.4.11"

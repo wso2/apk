@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-jmx-config
+data:
+  prometheus-jmx-config.yml: |
+    lowercaseOutputName: true
+    lowercaseOutputLabelNames: true
+    rules:
+      # WSO2 APK related metrics
+      - pattern: 'org.wso2.apk.enforcer<type=ExtAuthMetrics><>total_request_count: (.*)'
+        name: org_wso2_apk_enforcer_request_count_total
+        help: "WSO2 APK enforcer total request count."
+        attrNameSnakeCase: true
+        type: COUNTER
+      - pattern: 'org.wso2.apk.enforcer<type=ExtAuthMetrics><>(average_response_time_millis|max_response_time_millis|min_response_time_millis|request_count_in_last_five_minute_window|request_count_window_start_time_millis): (.*)'
+        name: org_wso2_apk_enforcer_$1
+        help: "WSO2 APK enforcer $1."
+        attrNameSnakeCase: true
+        type: GAUGE
+      - pattern: 'org.wso2.apk.enforcer<type=ThreadPoolConfig><>(\w+): (.*)'
+        name: org_wso2_apk_enforcer_thread_pool_$1
+        help: "WSO2 APK enforcer thread pool $1."
+        attrNameSnakeCase: true
+        type: GAUGE
+      # OS related metrics
+      - pattern: 'java.lang<type=OperatingSystem><>(\w+): (.*)'
+        name: os_$1
+        help: Operating System $1
+        attrNameSnakeCase: true
+        type: GAUGE

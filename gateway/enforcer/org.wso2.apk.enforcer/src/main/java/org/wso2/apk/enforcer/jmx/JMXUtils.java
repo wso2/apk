@@ -21,7 +21,7 @@ package org.wso2.apk.enforcer.jmx;
  */
 public class JMXUtils {
 
-    private static final String CHOREO_CONNECT_JMX_METRICS_ENABLE = "choreo.connect.jmx.metrics.enabled";
+    private static final String APK_JMX_METRICS_ENABLE = "apk.jmx.metrics.enabled";
 
     /**
      * Returns true if jmx metrics enabled as a system property, otherwise false.
@@ -29,6 +29,6 @@ public class JMXUtils {
      * @return boolean
      */
     public static boolean isJMXMetricsEnabled() {
-        return Boolean.getBoolean(CHOREO_CONNECT_JMX_METRICS_ENABLE);
+        return Boolean.getBoolean(APK_JMX_METRICS_ENABLE);
     }
 }

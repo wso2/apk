@@ -1,4 +1,4 @@
-# Copyright (c) 2022, WSO2 LLC. (https://www.wso2.com) All Rights Reserved.
+# Copyright (c) 2024, WSO2 LLC. (https://www.wso2.com) All Rights Reserved.
 #
 # WSO2 LLC. licenses this file to you under the Apache License,
 # Version 2.0 (the "License"); you may not use this file except
@@ -14,23 +14,18 @@
 # specific language governing permissions and limitations
 # under the License.
 
-{{- if .Values.wso2.apk.dp.enabled }}
+{{- if and .Values.wso2.apk.dp.enabled .Values.wso2.apk.metrics .Values.wso2.apk.metrics.enabled}}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ template "apk-helm.resource.prefix" . }}-enforcer-service
+  name: {{ template "apk-helm.resource.prefix" . }}-router-service
   namespace : {{ .Release.Namespace }}
 spec:
   # label keys and values that must match in order to receive traffic for this service
   selector:
 {{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" "gateway" ) | indent 4}}
   ports:
-    - name: servlet-https
+    - name: prometheus-router-port
       protocol: TCP
-      port: 9092
-    {{- if and .Values.wso2.apk.metrics .Values.wso2.apk.metrics.enabled }}
-    - name: prometheus-enforcer-port
-      protocol: TCP
-      port: 18007    
-    {{- end }}
+      port: 9000    
 {{- end -}}
