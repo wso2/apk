@@ -14,7 +14,6 @@
  *  limitations under the License.
  *
  */
-//Todo task 3 dupliate for grpc
 package synchronizer
 
 import (
