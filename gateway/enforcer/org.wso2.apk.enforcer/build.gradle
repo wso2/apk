@@ -71,6 +71,7 @@ dependencies {
     implementation libs.opentelemetry.extension.trace.propagators
     implementation libs.opentelemetry.sdk
     implementation libs.opentelemetry.semconv
+    implementation libs.prometheus
     implementation libs.snakeyaml
     implementation libs.sun.saaj.impl
     implementation libs.swagger.core.v3

@@ -20,6 +20,7 @@ package adapter
 
 import (
 	"crypto/tls"
+	"strings"
 	"time"
 
 	discoveryv3 "github.com/envoyproxy/go-control-plane/envoy/service/discovery/v3"
@@ -33,6 +34,7 @@ import (
 	wso2_server "github.com/wso2/apk/adapter/pkg/discovery/protocol/server/v3"
 	"github.com/wso2/apk/adapter/pkg/health"
 	healthservice "github.com/wso2/apk/adapter/pkg/health/api/wso2/health/service"
+	metrics "github.com/wso2/apk/adapter/pkg/metrics"
 	"github.com/wso2/apk/adapter/pkg/utils/tlsutils"
 
 	"context"
@@ -154,6 +156,13 @@ func Run(conf *config.Config) {
 	}
 
 	logger.LoggerAPK.Info("Starting adapter ....")
+
+	// Start the metrics server
+	if conf.Adapter.Metrics.Enabled && strings.EqualFold(conf.Adapter.Metrics.Type, metrics.PrometheusMetricType) {
+		logger.LoggerAPK.Info("Starting Prometheus Metrics Server ....")
+		go metrics.StartPrometheusMetricsServer(conf.Adapter.Metrics.Port, conf.Adapter.Metrics.CollectionInterval)
+	}
+
 	cache := xds.GetXdsCache()
 	enforcerCache := xds.GetEnforcerCache()
 	enforcerAPICache := xds.GetEnforcerAPICache()
