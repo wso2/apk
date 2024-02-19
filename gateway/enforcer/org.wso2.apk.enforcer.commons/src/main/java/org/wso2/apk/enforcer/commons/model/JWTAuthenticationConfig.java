@@ -18,18 +18,21 @@
 
 package org.wso2.apk.enforcer.commons.model;
 
-import java.util.ArrayList;
+import java.util.List;
 
+/**
+ * Defines JWT authentication config structure.
+ */
 public class JWTAuthenticationConfig {
-    private String Header;
+    private String header;
     private boolean sendTokenToUpstream;
-    private ArrayList<String> audience;
+    private List<String> audience;
     public String getHeader() {
-        return Header;
+        return header;
     }
 
     public void setHeader(String header) {
-        Header = header;
+        this.header = header;
     }
 
     public boolean isSendTokenToUpstream() {
@@ -40,11 +43,11 @@ public class JWTAuthenticationConfig {
         this.sendTokenToUpstream = sendTokenToUpstream;
     }
 
-    public ArrayList<String> getAudience() {
+    public List<String> getAudience() {
         return audience;
     }
 
-    public void setAudience(ArrayList<String> audience) {
+    public void setAudience(List<String> audience) {
         this.audience = audience;
     }
 }
