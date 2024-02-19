@@ -78,6 +78,12 @@ public class APIFactory {
                 graphQLAPI.init(api);
                 String apiKey = getApiKey(graphQLAPI);
                 newApis.put(apiKey, graphQLAPI);
+             } else if (APIConstants.ApiType.GRPC.equals(api.getApiType())) {
+                 GRPCAPI grpcAPI = new GRPCAPI();
+                 grpcAPI.init(api);
+                 String apiKey = getApiKey(grpcAPI);
+                 newApis.put(apiKey, grpcAPI);
+                logger.error("GRPC API is not supported Yet");
             } else {
                 RestAPI enforcerApi = new RestAPI();
                 enforcerApi.init(api);
