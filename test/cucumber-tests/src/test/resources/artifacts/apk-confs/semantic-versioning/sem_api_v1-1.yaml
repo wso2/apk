@@ -1,0 +1,28 @@
+---
+name: "Semantic Versioning API"
+basePath: "/sem-api"
+version: "v1.1"
+id: "sem-api-v1-1"
+type: "REST"
+defaultVersion: false
+subscriptionValidation: true
+endpointConfigurations:
+  production:
+    endpoint: "http://dynamic-backend-service:8080/sem-api/v1.1"
+operations:
+  - target: "/employee"
+    verb: "GET"
+    secured: true
+    scopes: []
+  - target: "/employee"
+    verb: "POST"
+    secured: true
+    scopes: []
+  - target: "/employee/{employeeId}"
+    verb: "PUT"
+    secured: true
+    scopes: []
+  - target: "/employee/{employeeId}"
+    verb: "DELETE"
+    secured: true
+    scopes: []

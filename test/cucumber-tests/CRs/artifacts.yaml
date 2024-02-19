@@ -491,6 +491,61 @@ data:
               "body": "{\n   \"keys\":[\n      {\n         \"kty\":\"RSA\",\n         \"n\":\"m0YNpM5MVYToWZMZ9wL4KQOygvG0f6y0dw4wZ02T4C3SxiC1zEBCZLh2clj7bncyA3EV2bFrTIBNeq-1pFEfbNDMZB88Jcg0S9QyYujr6GM0AqLA7WjZQ6lLxLpeQdEQroEZI-c8rnGmzU8Qb25aiPbRf6Vh7vFYGQz5FnZ8E0LcEMYQ-4KPMkAqnMon1UKWDkqszTY5a-DGMAi5w7imKzXaU4qiEKVKIcezv9nLUVC5Od0T4FkUQi462ZA9SoHx1HNhcVAj8Nf9TG_C65GbsMMFJVcRXwZR99cVzVxVqEtxGlK7Qr0woYKQ3S5kHZPRFcMFXI6WHhEQXqyOMBdUfQ\",\n         \"e\":\"AQAB\",\n         \"alg\":\"RS256\",\n         \"kid\":\"123-456\",\n         \"use\":\"sig\"\n      }\n   ]\n}"
           }
         }
+  sem-versioning.json: | 
+        {"mappings": [
+          {
+            "request": {
+                "method": "GET",
+                "url": "/sem-api/v1.0/employee"
+            },
+            "response": {
+                "status": 200,
+                "headers": {
+                    "Content-Type": "application/json"
+                },
+                "body": "{\n \"version\":\"v1.0\" \n}"
+            }
+          },
+          {
+            "request": {
+                "method": "GET",
+                "url": "/sem-api/v1.1/employee"
+            },
+            "response": {
+                "status": 200,
+                "headers": {
+                    "Content-Type": "application/json"
+                },
+                "body": "{\n \"version\":\"v1.1\" \n}"
+            }
+          },
+          {
+            "request": {
+                "method": "GET",
+                "url": "/sem-api/v1.5/employee"
+            },
+            "response": {
+                "status": 200,
+                "headers": {
+                    "Content-Type": "application/json"
+                },
+                "body": "{\n \"version\":\"v1.5\" \n}"
+            }
+          },
+          {
+            "request": {
+                "method": "GET",
+                "url": "/sem-api/v2.1/employee"
+            },
+            "response": {
+                "status": 200,
+                "headers": {
+                    "Content-Type": "application/json"
+                },
+                "body": "{\n \"version\":\"v2.1\" \n}"
+            }
+          }
+        ]}
 ---
 kind: TokenIssuer
 apiVersion: dp.wso2.com/v1alpha1
@@ -818,3 +873,24 @@ data:
     y5Oi4A4+id+xO0XnHIkkqCfPtFzxl3hwytcy8EqISynzzHWNJ8bFZIYX4tgX+PLq
     u0/ITEw=
     -----END CERTIFICATE-----
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: semantic-versioning-subscription
+  namespace: apk-integration-test
+spec:
+  organization: "default"
+  subscriptionStatus: "ACTIVE"
+  api:
+    name: "Semantic Versioning API"
+    version: "v\\d+(\\.\\d+)?"
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: semantic-versioning-app-mapping
+  namespace: apk-integration-test
+spec:
+  applicationRef: 583e4146-7ef5-11ee-b962-0242ac120003
+  subscriptionRef: semantic-versioning-subscription
