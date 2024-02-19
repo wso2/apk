@@ -92,7 +92,47 @@ var ResourceLevelJWT = suite.IntegrationTest{
 				},
 				Backend:   "infra-backend-v1",
 				Namespace: ns,
-				Response: http.Response{StatusCode: 401},
+				Response:  http.Response{StatusCode: 401},
+			},
+			// Test wrong audience
+			{
+				Request: http.Request{
+					Host: "resource-level-jwt.test.gw.wso2.com",
+					Path: "/resource-level-jwt/v1.0.0/v2/echo-1",
+					Headers: map[string]string{
+						"content-type": "application/json",
+						"internal-key": token,
+					},
+					Method: "GET",
+				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Path: "/v2/echo-1",
+					},
+				},
+				Backend:   "infra-backend-v1",
+				Namespace: ns,
+				Response:  http.Response{StatusCode: 401},
+			},
+			// Test correct audience
+			{
+				Request: http.Request{
+					Host: "resource-level-jwt.test.gw.wso2.com",
+					Path: "/resource-level-jwt/v1.0.0/v2/echo-2",
+					Headers: map[string]string{
+						"content-type": "application/json",
+						"internal-key": token,
+					},
+					Method: "GET",
+				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Path: "/v2/echo-2",
+					},
+				},
+				Backend:   "infra-backend-v1",
+				Namespace: ns,
+				Response:  http.Response{StatusCode: 200},
 			},
 		}
 		for i := range testCases {

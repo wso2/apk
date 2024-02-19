@@ -60,6 +60,34 @@ spec:
         group: dp.wso2.com
         kind: Authentication
         name: resource-level-jwt-authentication
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /v2/echo-1
+    backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: infra-backend-v1
+    filters:
+    - type: ExtensionRef
+      extensionRef:
+        group: dp.wso2.com
+        kind: Authentication
+        name: resource-level-jwt-authentication-1
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /v2/echo-2
+    backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: infra-backend-v1
+    filters:
+    - type: ExtensionRef
+      extensionRef:
+        group: dp.wso2.com
+        kind: Authentication
+        name: resource-level-jwt-authentication-2
 ---
 apiVersion: dp.wso2.com/v1alpha2
 kind: Authentication
@@ -72,6 +100,44 @@ spec:
     authTypes:
       jwt:
         disabled: false
+  targetRef:
+    kind: Resource
+    name: resource-level-jwt
+    group: gateway.networking.k8s.io
+    namespace: gateway-integration-test-infra
+---
+apiVersion: dp.wso2.com/v1alpha2
+kind: Authentication
+metadata:
+  name: resource-level-jwt-authentication-1
+  namespace: gateway-integration-test-infra
+spec:
+  override:
+    disabled: false
+    authTypes:
+      jwt:
+        disabled: false
+        audience:
+          - "test"
+  targetRef:
+    kind: Resource
+    name: resource-level-jwt
+    group: gateway.networking.k8s.io
+    namespace: gateway-integration-test-infra
+---
+apiVersion: dp.wso2.com/v1alpha2
+kind: Authentication
+metadata:
+  name: resource-level-jwt-authentication-2
+  namespace: gateway-integration-test-infra
+spec:
+  override:
+    disabled: false
+    authTypes:
+      jwt:
+        disabled: false
+        audience:
+          - "aud1"
   targetRef:
     kind: Resource
     name: resource-level-jwt
