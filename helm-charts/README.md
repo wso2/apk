@@ -168,6 +168,7 @@ A Helm chart for APK components
 | wso2.apk.dp.gatewayRuntime.deployment.router.configs.upstream.tls.disableSslVerification | bool | `false` | Disable SSL verification |
 | wso2.apk.dp.gatewayRuntime.deployment.router.configs.upstream.dns.dnsRefreshRate | int | `5000` | DNS refresh rate in miliseconds |
 | wso2.apk.dp.gatewayRuntime.deployment.router.configs.upstream.dns.respectDNSTtl | bool | `false` | set cluster’s DNS refresh rate to resource record’s TTL which comes from DNS resolution |
+| wso2.apk.dp.gatewayRuntime.deployment.router.configs.enableIntelligentRouting | bool | `false` | Enable/Disable Semantic Versioning based Intelligent Routing |
 | wso2.apk.dp.gatewayRuntime.deployment.router.logging.wireLogs | object | `{"enable":true}` | Optionally configure logging for router. |
 | wso2.apk.dp.gatewayRuntime.deployment.router.logging.wireLogs.enable | bool | `true` | Enable wire logs for router. |
 | wso2.apk.dp.gatewayRuntime.deployment.router.logging.accessLogs.enable | bool | `true` | Enable access logs for router. |

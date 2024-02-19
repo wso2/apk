@@ -761,8 +761,7 @@ func UpdateAPICache(vHosts []string, newLabels []string, listener string, sectio
 		apiVersion := adapterInternalAPI.GetVersion()
 		apiName := adapterInternalAPI.GetTitle()
 		if isSemanticVersioningEnabled(apiName, apiVersion) {
-			envType := adapterInternalAPI.EnvType
-			updateRoutingRulesOnAPIUpdate(adapterInternalAPI.OrganizationID, apiIdentifier, apiName, apiVersion, vHost, envType)
+			updateRoutingRulesOnAPIUpdate(adapterInternalAPI.OrganizationID, apiIdentifier, apiName, apiVersion, vHost)
 		}
 	}
 

@@ -67,7 +67,7 @@ func GetMinorVersionRange(semVersion semantic_version.SemVersion) string {
 	return "v" + strconv.Itoa(semVersion.Major) + "." + strconv.Itoa(semVersion.Minor)
 }
 
-func updateRoutingRulesOnAPIUpdate(organizationID, apiIdentifier, apiName, apiVersion, vHost, envType string) {
+func updateRoutingRulesOnAPIUpdate(organizationID, apiIdentifier, apiName, apiVersion, vHost string) {
 
 	apiSemVersion, err := semantic_version.ValidateAndGetVersionComponents(apiVersion, apiName)
 	// If the version validation is not success, we just proceed without intelligent version
@@ -90,9 +90,10 @@ func updateRoutingRulesOnAPIUpdate(organizationID, apiIdentifier, apiName, apiVe
 	// Remove the existing regexes from the path specifier when latest major and/or minor version is available
 	if (isMajorRangeRegexAvailable || isMinorRangeRegexAvailable) && (isLatestMajorVersion || isLatestMinorVersion) {
 		// Organization's all apis
-		for apiUUID, envoyInternalAPI := range orgAPIMap[organizationID] {
+		for _, envoyInternalAPI := range orgAPIMap[organizationID] {
 			// API's all versions in the same vHost
-			if envoyInternalAPI.adapterInternalAPI.GetTitle() == apiName && isVHostMatched(organizationID, apiUUID, vHost, envType) {
+			if envoyInternalAPI.adapterInternalAPI.GetTitle() == apiName && isVHostMatched(organizationID, vHost) {
+
 				if (isMajorRangeRegexAvailable && envoyInternalAPI.adapterInternalAPI.GetVersion() == existingMajorRangeLatestSemVersion.Version) ||
 					(isMinorRangeRegexAvailable && envoyInternalAPI.adapterInternalAPI.GetVersion() == existingMinorRangeLatestSemVersion.Version) {
 
@@ -221,7 +222,7 @@ func updateRoutingRulesOnAPIDelete(organizationID, apiIdentifier string, api mod
 			}
 			if newLatestMajorRangeAPIIdentifier != "" {
 				orgIDLatestAPIVersionMap[organizationID][apiRangeIdentifier][majorVersionRange] = *newLatestMajorRangeAPI
-				apiRoutes := getRoutesForAPIIdentifier(organizationID, apiIdentifier)
+				apiRoutes := getRoutesForAPIIdentifier(organizationID, newLatestMajorRangeAPIIdentifier)
 				for _, route := range apiRoutes {
 					regex := route.GetMatch().GetSafeRegex().GetRegex()
 					regexRewritePattern := route.GetRoute().GetRegexRewrite().GetPattern().GetRegex()
@@ -339,14 +340,15 @@ func updateRoutingRulesOnAPIDelete(organizationID, apiIdentifier string, api mod
 
 }
 
-func isVHostMatched(organizationID, apiUUID, vHost, envType string) bool {
+func isVHostMatched(organizationID, vHost string) bool {
 
-	if _, ok := orgIDAPIvHostsMap[organizationID]; ok {
-		vHosts := orgIDAPIvHostsMap[organizationID][GetvHostsIdentifier(apiUUID, envType)]
+	if apis, ok := orgIDAPIvHostsMap[organizationID]; ok {
 
-		for _, vHostEntry := range vHosts {
-			if vHostEntry == vHost {
-				return true
+		for _, vHosts := range apis {
+			for _, vHostEntry := range vHosts {
+				if vHostEntry == vHost {
+					return true
+				}
 			}
 		}
 	}
