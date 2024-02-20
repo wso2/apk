@@ -19,7 +19,7 @@ Feature: Generating APK conf for GraphQL API
         When I use the APK Conf file "artifacts/apk-confs/graphql/graphql_conf_with_sub.apk-conf"
         And the definition file "artifacts/definitions/graphql_sample_api.graphql"
         And make the API deployment request
-        Then the response status code should be 500
+        Then the response status code should be 200
 
     Scenario: Generating APK conf using an invalid GraphQL API definition
         Given The system is ready

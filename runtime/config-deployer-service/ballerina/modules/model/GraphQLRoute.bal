@@ -34,7 +34,7 @@ public type GQLRouteMatch record {
     string path;
 };
 
-public type GQLType "QUERY"|"MUTATION";
+public type GQLType "QUERY"|"MUTATION"|"SUBSCRIPTION";
 
 public isolated function getGQLRouteMatch(string routeMatch) returns GQLType? {
     match routeMatch {
@@ -43,7 +43,10 @@ public isolated function getGQLRouteMatch(string routeMatch) returns GQLType? {
         }
         "MUTATION" => {
             return "MUTATION";
-        } //TODO: add SUBSCRIPTION when support is added
+        }
+        "SUBSCRIPTION" => {
+            return "SUBSCRIPTION";
+        }
         _ => {
             return; // Returns `nil` for unmatched cases
         }
