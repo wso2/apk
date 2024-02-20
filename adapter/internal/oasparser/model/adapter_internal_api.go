@@ -43,7 +43,6 @@ import (
 // AdapterInternalAPI represents the object structure holding the information related to the
 // adapter internal representation. The values are populated from the operator. The pathItem level information is represented
 // by the resources array which contains the Resource entries.
-// TODO task 1
 type AdapterInternalAPI struct {
 	UUID                     string
 	apiType                  string
@@ -1081,7 +1080,7 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoGRPCRouteCR(grpcRoute *gwap
 			endPoints = append(endPoints, GetEndpoints(backendName, resourceParams.BackendMapping)...)
 			resource := &Resource{path: resourcePath,
 				methods: []*Operation{{iD: uuid.New().String(), method: string(*match.Method.Type), policies: policies,
-					auth: apiAuth, RateLimitPolicy: parseRateLimitPolicyToInternal(resourceRatelimitPolicy), scopes: scopes}},
+					auth: apiAuth, rateLimitPolicy: parseRateLimitPolicyToInternal(resourceRatelimitPolicy), scopes: scopes}},
 				iD: uuid.New().String(),
 			}
 			endpoints := GetEndpoints(backendName, resourceParams.BackendMapping)
