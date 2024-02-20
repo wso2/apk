@@ -206,7 +206,7 @@ func CreateRoutesWithClusters(adapterInternalAPI *model.AdapterInternalAPI, inte
 		endpoints = append(endpoints, address...)
 
 		resource := model.CreateMinimalResource(adapterInternalAPI.GetXWso2Basepath(), []*model.Operation{}, "", adapterInternalAPI.Endpoints, true, gwapiv1b1.PathMatchExact)
-		routesP, err := createRoutes(genRouteCreateParams(&adapterInternalAPI, &resource, vHost, basePath, clusterName, nil,
+		routesP, err := createRoutes(genRouteCreateParams(adapterInternalAPI, &resource, vHost, basePath, clusterName, nil,
 			nil, organizationID, false, false))
 		if err != nil {
 			logger.LoggerXds.ErrorC(logging.PrintError(logging.Error2231, logging.MAJOR,
