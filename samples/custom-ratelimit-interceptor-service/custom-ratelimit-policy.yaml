@@ -27,5 +27,5 @@ spec:
       organization: a3b58ccf-6ecc-4557-b5bb-0a35cce38256
   targetRef:
     kind: Gateway
-    name: default
+    name: wso2-apk-default
     group: gateway.networking.k8s.io

@@ -46,6 +46,7 @@ const (
 
 var (
 	setReadiness sync.Once
+	wso2APKDefaultControllerName = "wso2.com/apk-gateway-default"
 )
 
 // GatewayClassReconciler reconciles a Gateway object
@@ -102,7 +103,11 @@ func (gatewayClassReconciler *GatewayClassReconciler) Reconcile(ctx context.Cont
 			RequeueAfter: time.Duration(1 * time.Second),
 		}, nil
 	}
-	gatewayClassReconciler.handleGatewayClassStatus(req.NamespacedName, constants.Create, []string{})
+	// Check whether the gateway class controller name refers to wso2 apk and update the status as accepted, if it is.
+	controllerName := string(gatewayClassDef.Spec.ControllerName)
+	if (controllerName == wso2APKDefaultControllerName) {
+		gatewayClassReconciler.handleGatewayClassStatus(req.NamespacedName, constants.Create, []string{})
+	}
 	return ctrl.Result{}, nil
 }
 

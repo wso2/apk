@@ -62,6 +62,6 @@ spec:
     {{ end }}
   targetRef:
     kind: Gateway
-    name: default
+    name: {{ .Values.wso2.apk.dp.gateway.name | default "wso2-apk-default" }}
     group: gateway.networking.k8s.io
 {{- end -}}

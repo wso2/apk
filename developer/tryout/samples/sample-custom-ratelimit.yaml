@@ -28,7 +28,7 @@
 #     organization: default
 #   targetRef:
 #     kind: Gateway
-#     name: default
+#     name: wso2-apk-default
 #     group: gateway.networking.k8s.io
 # ---
 # apiVersion: dp.wso2.com/v1alpha1
@@ -45,5 +45,5 @@
 #     organization: default
 #   targetRef:
 #     kind: Gateway
-#     name: default
+#     name: wso2-apk-default
 #     group: gateway.networking.k8s.io

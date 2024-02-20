@@ -41,7 +41,7 @@ spec:
   parentRefs:
   - group: gateway.networking.k8s.io
     kind: Gateway
-    name: default
+    name: wso2-apk-default
     namespace: apk-integration-test
     sectionName: httpslistener
   rules:

@@ -74,7 +74,12 @@ wso2:
       environment: 
         # -- Environment Name of the Data Plane
         name: "Development"
+      # -- GatewayClass custom resource name
+      gatewayClass: 
+        name: "wso2-apk-default"
       gateway:
+        # -- Gateway custom resource name
+        name: "wso2-apk-default"
         listener:
           # -- Gateway Listener Hostname
           hostname: "gw.wso2.com"

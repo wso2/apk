@@ -95,7 +95,7 @@ spec:
   targetRef:
     group: gateway.networking.k8s.io
     kind: Gateway
-    name: default
+    name: wso2-apk-default
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -236,7 +236,7 @@ spec:
   targetRef:
     group: gateway.networking.k8s.io
     kind: Gateway
-    name: default
+    name: wso2-apk-default
 ---
 apiVersion: dp.wso2.com/v1alpha1
 kind: Backend
@@ -319,7 +319,7 @@ spec:
       organization: default
   targetRef:
     kind: Gateway
-    name: default
+    name: wso2-apk-default
     group: gateway.networking.k8s.io
 ---
 apiVersion: dp.wso2.com/v1alpha1
@@ -337,7 +337,7 @@ spec:
       organization: default
   targetRef:
     kind: Gateway
-    name: default
+    name: wso2-apk-default
     group: gateway.networking.k8s.io
 
 ---
@@ -565,7 +565,7 @@ spec:
   targetRef:
     group: gateway.networking.k8s.io
     kind: Gateway
-    name: default
+    name: wso2-apk-default
 ---
 kind: TokenIssuer
 apiVersion: dp.wso2.com/v1alpha1
@@ -587,7 +587,7 @@ spec:
   targetRef:
     group: gateway.networking.k8s.io
     kind: Gateway
-    name: default
+    name: wso2-apk-default
 ---
 kind: TokenIssuer
 apiVersion: dp.wso2.com/v1alpha1
@@ -609,7 +609,7 @@ spec:
   targetRef:
     group: gateway.networking.k8s.io
     kind: Gateway
-    name: default
+    name: wso2-apk-default
 ---
 kind: TokenIssuer
 apiVersion: dp.wso2.com/v1alpha1
@@ -631,7 +631,7 @@ spec:
   targetRef:
     group: gateway.networking.k8s.io
     kind: Gateway
-    name: default
+    name: wso2-apk-default
 ---
 kind: TokenIssuer
 apiVersion: dp.wso2.com/v1alpha2
@@ -655,7 +655,7 @@ spec:
   targetRef:
     group: gateway.networking.k8s.io
     kind: Gateway
-    name: default
+    name: wso2-apk-default
 ---
 kind: TokenIssuer
 apiVersion: dp.wso2.com/v1alpha2
@@ -679,7 +679,7 @@ spec:
   targetRef:
     group: gateway.networking.k8s.io
     kind: Gateway
-    name: default
+    name: wso2-apk-default
 ---
 # We have removed the Envoy admin interface port from our helm gateway service yaml. So we need this one here.
 apiVersion: v1
