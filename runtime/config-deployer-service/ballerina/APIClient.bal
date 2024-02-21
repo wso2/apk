@@ -659,8 +659,8 @@ public class APIClient {
                         model:APIPolicy? apiPolicyCR = check self.generateAPIPolicyAndBackendCR(apiArtifact, apkConf, operation, operation.operationPolicies, organization, apiArtifact.uniqueId);
                         if apiPolicyCR != () {
                             apiArtifact.apiPolicies[apiPolicyCR.metadata.name] = apiPolicyCR;
-                            model:HTTPRouteFilter apiPolicyFilter = {'type: "ExtensionRef", extensionRef: {group: "dp.wso2.com", kind: "APIPolicy", name: apiPolicyCR.metadata.name}};
-                            (<model:HTTPRouteFilter[]>filters).push(apiPolicyFilter);
+                            model:GQLRouteFilter apiPolicyFilter = {extensionRef: {group: "dp.wso2.com", kind: apiPolicyCR.kind, name: apiPolicyCR.metadata.name}};
+                            (<model:GQLRouteFilter[]>filters).push(apiPolicyFilter);
                         }
                     }
                     gqlRouteRules.push(routeRule);
@@ -762,7 +762,7 @@ public class APIClient {
                         model:GQLRouteRule gqlRouteRule = {matches: routeMatches};
                         return gqlRouteRule;
                     } else {
-                        return e909022("Subscription type currently not supported for GraphQL APIs.", error("Subscription type currently not supported for GraphQL APIs."));
+                        return e909022("Provided Type currently not supported for GraphQL APIs.", error("Provided Type currently not supported for GraphQL APIs."));
                     }
                 } else {
                     model:HTTPRouteRule httpRouteRule = {matches: self.retrieveHTTPMatches(apkConf, operation, organization), backendRefs: self.retrieveGeneratedBackend(apkConf, endpointToUse, endpointType), filters: self.generateFilters(apiArtifact, apkConf, endpointToUse, operation, endpointType, organization)};
