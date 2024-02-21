@@ -76,7 +76,7 @@ func updateRoutingRulesOnAPIUpdate(organizationID, apiIdentifier, apiName, apiVe
 		return
 	}
 
-	apiRangeIdentifier := GenerateIdentifierForAPIWithoutVersion(vHost, apiName)
+	apiRangeIdentifier := generateIdentifierForAPIWithoutVersion(vHost, apiName)
 	// Check the major and minor version ranges of the current API
 	existingMajorRangeLatestSemVersion, isMajorRangeRegexAvailable :=
 		orgIDLatestAPIVersionMap[organizationID][apiRangeIdentifier][GetMajorVersionRange(*apiSemVersion)]
@@ -185,7 +185,7 @@ func updateRoutingRulesOnAPIDelete(organizationID, apiIdentifier string, api mod
 			"Error extracting vhost from API identifier: %v for Organization %v. Ignore deploying the API, error: %v",
 			apiIdentifier, organizationID, err))
 	}
-	apiRangeIdentifier := GenerateIdentifierForAPIWithoutVersion(vhost, api.GetTitle())
+	apiRangeIdentifier := generateIdentifierForAPIWithoutVersion(vhost, api.GetTitle())
 
 	latestAPIVersionMap, latestAPIVersionMapExists := orgIDLatestAPIVersionMap[organizationID][apiRangeIdentifier]
 	if !latestAPIVersionMapExists {

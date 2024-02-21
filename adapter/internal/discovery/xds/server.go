@@ -626,7 +626,7 @@ func GenerateHashedAPINameVersionIDWithoutVhost(name, version string) string {
 }
 
 // GenerateIdentifierForAPIWithoutVersion generates an identifier unique to the API despite of the version
-func GenerateIdentifierForAPIWithoutVersion(vhost, name string) string {
+func generateIdentifierForAPIWithoutVersion(vhost, name string) string {
 	return fmt.Sprint(vhost, apiKeyFieldSeparator, name)
 }
 
