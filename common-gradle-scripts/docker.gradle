@@ -22,7 +22,7 @@ imageName = docker_image_name + ':' + image_version
 if (project.hasProperty("docker_organization")) {
     imageName = docker_organization+'/'+imageName
 }
-def platforms = 'linux/amd64,linux/arm64'
+def platforms = 'linux/arm64'
 
 
 
@@ -68,7 +68,7 @@ tasks.register('docker_push', Exec) {
 tasks.register('setup_arch', Exec) {
     group 'docker'
     description 'Setup QEMU for buildx'
-    commandLine 'docker', 'run', '--rm', '--privileged', 'multiarch/qemu-user-static', '--reset', '-p', 'yes'
+    commandLine 'docker', 'run', '--rm', '--privileged', 'tonistiigi/binfmt:latest', '--install', 'all'
 }
 
 tasks.register('setup_buildx', Exec) {
