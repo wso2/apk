@@ -43,11 +43,11 @@ import (
 	cache "github.com/wso2/apk/common-controller/internal/cache"
 	"github.com/wso2/apk/common-controller/internal/config"
 	loggers "github.com/wso2/apk/common-controller/internal/loggers"
-	constants "github.com/wso2/apk/common-controller/internal/operator/constant"
 	"github.com/wso2/apk/common-controller/internal/utils"
 	xds "github.com/wso2/apk/common-controller/internal/xds"
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
+	"github.com/wso2/apk/common-go-libs/constants"
 )
 
 // RateLimitPolicyReconciler reconciles a RateLimitPolicy object
@@ -381,7 +381,6 @@ func getCustomRateLimitPolicy(customRateLimitPolicy *dpv1alpha1.RateLimitPolicy)
 }
 
 func addIndexes(ctx context.Context, mgr manager.Manager) error {
-	//todo(amali)
 	if err := mgr.GetFieldIndexer().IndexField(ctx, &gwapiv1b1.HTTPRoute{}, httprouteRateLimitIndex,
 		func(rawObj k8client.Object) []string {
 			httpRoute := rawObj.(*gwapiv1b1.HTTPRoute)

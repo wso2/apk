@@ -23,6 +23,7 @@ const (
 	ApplicationController        string = "ApplicationController"
 	SubscriptionController       string = "SubscriptionController"
 	ApplicationMappingController string = "ApplicationMappingController"
+	GatewayClassController       string = "GatewayClassController"
 )
 
 // API events related constants
@@ -46,7 +47,7 @@ const (
 	ApplicationKeyMappingCreated string = "APPLICATION_KEY_MAPPING_CREATED"
 	ApplicationKeyMappingUpdated string = "APPLICATION_KEY_MAPPING_UPDATED"
 	ApplicationKeyMappingDeleted string = "APPLICATION_KEY_MAPPING_DELETED"
-	AllEvnts                     string = "ALL_EVENTS"
+	AllEvents                    string = "ALL_EVENTS"
 )
 
 // Environment variable names and default values

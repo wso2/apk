@@ -20,6 +20,7 @@ package database
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -30,6 +31,7 @@ import (
 
 var dbPool *pgxpool.Pool
 
+// ConnectToDB connects to the database
 func ConnectToDB() {
 	conf := config.ReadConfigs()
 	var err error
@@ -56,21 +58,72 @@ func ConnectToDB() {
 	}
 }
 
-func ExecDBQuery(query string, args ...interface{}) (pgx.Rows, error) {
-	rows, err := dbPool.Query(context.Background(), query, args...)
-	if err != nil {
-		return nil, err
-	}
-	return rows, nil
+// ExecDBQuery executes a database query
+func ExecDBQuery(tx pgx.Tx, query string, args ...interface{}) error {
+	_, err := tx.Exec(context.Background(), query, args...)
+	return err
 }
 
+// ExecDBQueryRows executes a database query and returns a row
+func ExecDBQueryRows(tx pgx.Tx, query string, args ...interface{}) (pgx.Rows, error) {
+	return tx.Query(context.Background(), query, args...)
+}
+
+// IsAliveConn checks if the database connection is alive
 func IsAliveConn(ctx context.Context) (isAlive bool) {
-	if err := dbPool.Ping(ctx); err != nil {
-		return true
-	}
-	return isAlive
+	err := dbPool.Ping(ctx)
+	return err == nil
 }
 
+// CloseDBConn closes the database connection
 func CloseDBConn() {
-	dbPool.Close()
+	conf := config.ReadConfigs()
+	if conf.CommonController.Database.Enabled {
+		dbPool.Close()
+	}
+}
+
+// PrepareQueries prepares the queries
+func PrepareQueries(tx pgx.Tx, queries ...string) {
+	for _, query := range queries {
+		_, err := tx.Prepare(context.Background(), query, query)
+		if err != nil {
+			loggers.LoggerAPI.Errorf("Error while preparing query: %s, %s", query, err.Error())
+		}
+	}
+}
+
+// performTransaction performs a transaction
+func performTransaction(fn func(tx pgx.Tx) error) error {
+	con := context.Background()
+	tx, err := dbPool.BeginTx(con, pgx.TxOptions{})
+	if err != nil {
+		return fmt.Errorf("error while begining the transaction %v", err)
+	}
+	defer func() {
+		if err != nil {
+			loggers.LoggerAPI.Error("Rollback due to error: ", err)
+			err = tx.Rollback(con)
+		} else {
+			err = tx.Commit(con)
+		}
+		if err != nil {
+			loggers.LoggerAPI.Error("Error while commiting the transaction ", err)
+		}
+	}()
+	err = fn(tx)
+	return err
+}
+
+// retryTransaction retries a transaction
+func retryUntilTransaction(fn func(tx pgx.Tx) error) error {
+	if err := performTransaction(fn); err != nil {
+		loggers.LoggerAPI.Warn("Retrying because of the error: ", err)
+		if strings.Contains(err.Error(), "conn closed") {
+			loggers.LoggerAPI.Info("Reconnecting to DB...")
+			ConnectToDB()
+		}
+		return performTransaction(fn)
+	}
+	return nil
 }

@@ -33,15 +33,9 @@ func main() {
 	go server.StartInternalServer()
 	if conf.CommonController.Database.Enabled {
 		logger.Info("Starting the Database connection")
-		go startDB()
+		database.ConnectToDB()
 	}
+	defer database.CloseDBConn()
 	logger.Info("Starting the Common Controller")
 	commoncontroller.InitCommonControllerServer(conf)
-
-}
-
-func startDB() {
-	database.ConnectToDB()
-	database.GetApplicationByUUID()
-	defer database.CloseDBConn()
 }

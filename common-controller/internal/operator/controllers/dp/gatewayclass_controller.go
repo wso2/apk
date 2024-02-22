@@ -25,8 +25,8 @@ import (
 
 	"github.com/wso2/apk/adapter/pkg/logging"
 	loggers "github.com/wso2/apk/common-controller/internal/loggers"
-	constants "github.com/wso2/apk/common-controller/internal/operator/constant"
 	"github.com/wso2/apk/common-controller/internal/operator/status"
+	"github.com/wso2/apk/common-go-libs/constants"
 	k8error "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -45,7 +45,7 @@ const (
 )
 
 var (
-	setReadiness sync.Once
+	setReadiness                 sync.Once
 	wso2APKDefaultControllerName = "wso2.com/apk-gateway-default"
 )
 
@@ -105,11 +105,11 @@ func (gatewayClassReconciler *GatewayClassReconciler) Reconcile(ctx context.Cont
 	}
 	// Check whether the gateway class controller name refers to wso2 apk and update the status as accepted, if it is.
 	controllerName := string(gatewayClassDef.Spec.ControllerName)
-	if (controllerName == wso2APKDefaultControllerName) {
+	if controllerName == wso2APKDefaultControllerName {
 		gatewayClassReconciler.handleGatewayClassStatus(req.NamespacedName, constants.Create, []string{})
 	} else {
-		loggers.LoggerAPKOperator.Warnf("Gateway class's controllerName: %s does not match any supported implemenation in WSO2 APK. Hence ignoring the GatewayClass: %s/%s. Supported controller name : %s", 
-		gatewayClassDef.Name, gatewayClassDef.Namespace, controllerName, wso2APKDefaultControllerName)
+		loggers.LoggerAPKOperator.Warnf("Gateway class's controllerName: %s does not match any supported implemenation in WSO2 APK. Hence ignoring the GatewayClass: %s/%s. Supported controller name : %s",
+			gatewayClassDef.Name, gatewayClassDef.Namespace, controllerName, wso2APKDefaultControllerName)
 	}
 	return ctrl.Result{}, nil
 }

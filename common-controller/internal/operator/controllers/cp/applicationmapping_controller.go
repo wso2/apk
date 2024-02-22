@@ -39,9 +39,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	constants "github.com/wso2/apk/common-controller/internal/operator/constant"
 	"github.com/wso2/apk/common-controller/internal/utils"
 	cpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/cp/v1alpha2"
+	"github.com/wso2/apk/common-go-libs/constants"
 )
 
 // ApplicationMappingReconciler reconciles a ApplicationMapping object

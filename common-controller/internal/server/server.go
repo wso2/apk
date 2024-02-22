@@ -59,6 +59,26 @@ func AddApplication(application Application) {
 	applicationMap[application.UUID] = application
 }
 
+// DeleteAllApplications deletes all applications from the application list
+func DeleteAllApplications() {
+	applicationMap = make(map[string]Application)
+}
+
+// DeleteAllSubscriptions deletes all subscriptions from the subscription list
+func DeleteAllSubscriptions() {
+	subscriptionMap = make(map[string]Subscription)
+}
+
+// DeleteAllApplicationMappings deletes all application mappings from the application mapping list
+func DeleteAllApplicationMappings() {
+	applicationMappingMap = make(map[string]ApplicationMapping)
+}
+
+// DeleteAllApplicationKeyMappings deletes all application key mappings from the application key mapping list
+func DeleteAllApplicationKeyMappings() {
+	applicationKeyMappingMap = make(map[string]ApplicationKeyMapping)
+}
+
 // AddSubscription adds a subscription to the subscription list
 func AddSubscription(subscription Subscription) {
 	subscriptionMap[subscription.UUID] = subscription
@@ -73,6 +93,12 @@ func AddApplicationMapping(applicationMapping ApplicationMapping) {
 func AddApplicationKeyMapping(applicationKeyMapping ApplicationKeyMapping) {
 	applicationMappingKey := strings.Join([]string{applicationKeyMapping.ApplicationUUID, applicationKeyMapping.EnvID, applicationKeyMapping.SecurityScheme, applicationKeyMapping.KeyType}, ":")
 	applicationKeyMappingMap[applicationMappingKey] = applicationKeyMapping
+}
+
+// DeleteApplicationKeyMapping deletes an application key mapping from the application key mapping list
+func DeleteApplicationKeyMapping(applicationKeyMapping ApplicationKeyMapping) {
+	applicationMappingKey := strings.Join([]string{applicationKeyMapping.ApplicationUUID, applicationKeyMapping.EnvID, applicationKeyMapping.SecurityScheme, applicationKeyMapping.KeyType}, ":")
+	delete(applicationKeyMappingMap, applicationMappingKey)
 }
 
 // DeleteApplication deletes an application from the application list

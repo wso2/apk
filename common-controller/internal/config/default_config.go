@@ -49,7 +49,7 @@ var defaultConfig = &Config{
 			Port:    18006,
 		},
 		Database: database{
-			Enabled:  true,
+			Enabled:  false,
 			Name:     "DATAPLANE",
 			Username: "wso2carbon",
 			Password: "wso2carbon",

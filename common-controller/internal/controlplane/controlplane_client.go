@@ -167,7 +167,7 @@ func (controlPlaneGrpcClient *Agent) initializeGrpcStreaming() *grpc.ClientConn 
 }
 func (controlPlaneGrpcClient *Agent) handleEvents(event *subscription.Event) {
 	loggers.LoggerAPKOperator.Infof("Received event %s", event.Type)
-	if event.Type == constants.AllEvnts {
+	if event.Type == constants.AllEvents {
 		go controlPlaneGrpcClient.retrieveAllData()
 	} else if event.Type == constants.ApplicationCreated {
 		loggers.LoggerAPKOperator.Infof("Received APPLICATION_CREATED event.")
@@ -296,7 +296,19 @@ func (controlPlaneGrpcClient *Agent) handleEvents(event *subscription.Event) {
 			loggers.LoggerAPKOperator.Infof("Received ApplicationMapping %s", applicationMapping.UUID)
 			controlPlaneGrpcClient.artifactDeployer.UpdateApplicationMappings(applicationMapping)
 		}
-
+	} else if event.Type == constants.ApplicationKeyMappingUpdated {
+		loggers.LoggerAPKOperator.Infof("Received APPLICATION_KEY_MAPPING_UPDATED event.")
+		if event.ApplicationKeyMapping != nil {
+			applicationKeyMapping := server.ApplicationKeyMapping{ApplicationUUID: event.ApplicationKeyMapping.ApplicationUUID,
+				SecurityScheme:        event.ApplicationKeyMapping.SecurityScheme,
+				ApplicationIdentifier: event.ApplicationKeyMapping.ApplicationIdentifier,
+				KeyType:               event.ApplicationKeyMapping.KeyType,
+				EnvID:                 event.ApplicationKeyMapping.EnvID,
+				OrganizationID:        event.ApplicationKeyMapping.Organization,
+			}
+			loggers.LoggerAPKOperator.Infof("Received ApplicationKeyMapping %s", applicationKeyMapping.ApplicationUUID)
+			controlPlaneGrpcClient.artifactDeployer.UpdateKeyMappings(applicationKeyMapping)
+		}
 	}
 }
 func (controlPlaneGrpcClient *Agent) retrieveAllData() {
@@ -429,20 +441,28 @@ func (controlPlaneGrpcClient *Agent) retrieveDataFromResponseChannel(response re
 			loggers.LoggerAPI.Infof("Received Subscription information.")
 			subList := newResponse.(*SubscriptionList)
 			resolvedSubscriptionList := marshalMultipleSubscriptions(subList)
-			controlPlaneGrpcClient.artifactDeployer.DeployAllSubscriptions(resolvedSubscriptionList)
+			if len(resolvedSubscriptionList.List) > 0 {
+				controlPlaneGrpcClient.artifactDeployer.DeployAllSubscriptions(resolvedSubscriptionList)
+			}
 
 		case *ApplicationList:
 			loggers.LoggerAPI.Infof("Received Application information.")
 			appList := newResponse.(*ApplicationList)
 			resolvedApplicationList := marshalMultipleApplications(appList)
 			resolvedApplicationKeyMappingList := marshalMultipleApplicationKeyMappings(appList)
-			controlPlaneGrpcClient.artifactDeployer.DeployAllApplications(resolvedApplicationList)
-			controlPlaneGrpcClient.artifactDeployer.DeployAllKeyMappings(resolvedApplicationKeyMappingList)
+			if len(resolvedApplicationList.List) > 0 {
+				controlPlaneGrpcClient.artifactDeployer.DeployAllApplications(resolvedApplicationList)
+			}
+			if len(resolvedApplicationKeyMappingList.List) > 0 {
+				controlPlaneGrpcClient.artifactDeployer.DeployAllKeyMappings(resolvedApplicationKeyMappingList)
+			}
 		case *ApplicationMappingList:
 			loggers.LoggerAPI.Infof("Received Application Mapping information.")
 			appMappingList := newResponse.(*ApplicationMappingList)
 			resolvedApplicationMappingList := marshalMultipleApplicationMappings(appMappingList)
-			controlPlaneGrpcClient.artifactDeployer.DeployAllApplicationMappings(resolvedApplicationMappingList)
+			if len(resolvedApplicationMappingList.List) > 0 {
+				controlPlaneGrpcClient.artifactDeployer.DeployAllApplicationMappings(resolvedApplicationMappingList)
+			}
 		default:
 			loggers.LoggerAPI.Debugf("Unknown type %T", t)
 		}

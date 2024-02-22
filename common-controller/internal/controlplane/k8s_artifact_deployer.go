@@ -24,6 +24,7 @@ import (
 	"github.com/wso2/apk/common-controller/internal/loggers"
 	"github.com/wso2/apk/common-controller/internal/server"
 	cpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/cp/v1alpha2"
+	"github.com/wso2/apk/common-go-libs/constants"
 	"github.com/wso2/apk/common-go-libs/utils"
 	k8error "k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -96,6 +97,11 @@ func (k8sArtifactDeployer K8sArtifactDeployer) UpdateApplication(application ser
 	return nil
 }
 
+// UpdateKeyMappings updates a key mapping
+func (k8sArtifactDeployer K8sArtifactDeployer) UpdateKeyMappings(keyMapping server.ApplicationKeyMapping) error {
+	return nil
+}
+
 // DeploySubscription deploys a subscription
 func (k8sArtifactDeployer K8sArtifactDeployer) DeploySubscription(subscription server.Subscription) error {
 	crSubscription := cpv1alpha2.Subscription{ObjectMeta: v1.ObjectMeta{Name: subscription.UUID, Namespace: utils.GetOperatorPodNamespace()},
@@ -151,7 +157,7 @@ func (k8sArtifactDeployer K8sArtifactDeployer) DeployKeyMappings(keyMapping serv
 	if crApplication.Spec.SecuritySchemes != nil {
 		securitySchemes = *crApplication.Spec.SecuritySchemes
 	}
-	if keyMapping.SecurityScheme == "OAuth2" {
+	if keyMapping.SecurityScheme == constants.OAuth2 {
 		if securitySchemes.OAuth2 == nil {
 			securitySchemes.OAuth2 = &cpv1alpha2.SecurityScheme{Environments: []cpv1alpha2.Environment{generateSecurityScheme(keyMapping)}}
 		} else {
@@ -257,7 +263,7 @@ func (k8sArtifactDeployer K8sArtifactDeployer) DeleteKeyMappings(keyMapping serv
 	}
 	if crApplication.Spec.SecuritySchemes != nil {
 		securitySchemes := *crApplication.Spec.SecuritySchemes
-		if keyMapping.SecurityScheme == "OAuth2" && securitySchemes.OAuth2 != nil {
+		if keyMapping.SecurityScheme == constants.OAuth2 && securitySchemes.OAuth2 != nil {
 			if securitySchemes.OAuth2.Environments != nil && len(securitySchemes.OAuth2.Environments) > 0 {
 				environments := make([]cpv1alpha2.Environment, 0)
 				for _, environment := range securitySchemes.OAuth2.Environments {
