@@ -1,0 +1,31 @@
+---
+name: "EmployeeServiceAPI"
+basePath: "/test"
+version: "3.14"
+type: "REST"
+defaultVersion: false
+id: "modify-api-test"
+endpointConfigurations:
+  production:
+    endpoint: "http://backend:80/anything"
+operations:
+  - target: "/employee"
+    verb: "GET"
+    secured: true
+    scopes: []
+  - target: "/employee1"
+    verb: "GET"
+    secured: true
+    scopes: []
+  - target: "/employee"
+    verb: "POST"
+    secured: true
+    scopes: []
+  - target: "/employee/{employeeId}"
+    verb: "PUT"
+    secured: true
+    scopes: []
+  - target: "/employee/{employeeId}"
+    verb: "DELETE"
+    secured: true
+    scopes: []
