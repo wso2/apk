@@ -571,3 +571,8 @@ func (ods *OperatorDataStore) DeleteCachedGateway(gatewayName types.NamespacedNa
 	defer ods.mu.Unlock()
 	delete(ods.gatewayStore, gatewayName)
 }
+
+// GetAPICount gets API count
+func (ods *OperatorDataStore) GetAPICount() int {
+	return len(ods.apiStore)
+}

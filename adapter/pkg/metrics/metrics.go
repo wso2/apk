@@ -35,7 +35,9 @@ import (
 	"github.com/shirou/gopsutil/v3/host"
 	"github.com/shirou/gopsutil/v3/load"
 	"github.com/shirou/gopsutil/v3/mem"
+	xds "github.com/wso2/apk/adapter/internal/discovery/xds"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
+	synchronizer "github.com/wso2/apk/adapter/internal/operator/synchronizer"
 	"github.com/wso2/apk/adapter/pkg/logging"
 )
 
@@ -85,6 +87,26 @@ var (
 		Name: "process_open_fds",
 		Help: "Number of open file descriptors.",
 	})
+
+	apis = prometheus.NewGauge(prometheus.GaugeOpts{
+		Name: "api_count",
+		Help: "Number of APIs created.",
+	})
+
+	internalClusterCount = prometheus.NewGauge(prometheus.GaugeOpts{
+		Name: "internal_cluster_count",
+		Help: "Number of internal clusters created.",
+	})
+
+	gwClusterCount = prometheus.NewGauge(prometheus.GaugeOpts{
+		Name: "gw_cluster_count",
+		Help: "Number of gw clusters created.",
+	})
+
+	internalRouteCount = prometheus.NewGauge(prometheus.GaugeOpts{
+		Name: "internal_route_count",
+		Help: "Number of internal routes created.",
+	})
 )
 
 func init() {
@@ -94,12 +116,23 @@ func init() {
 
 	// Register other metrics
 	prometheusMetricRegistry.MustRegister(hostInfo, availableCPUs, freePhysicalMemory, usedVirtualMemory, totalVirtualMemory,
-		systemCPULoad, loadAvg, processStartTime, processOpenFDs)
+		systemCPULoad, loadAvg, processStartTime, processOpenFDs, apis, internalClusterCount, internalRouteCount, gwClusterCount)
 }
 
 // recordMetrics record custom golang metrics
 var recordMetrics = func(collectionInterval int32) {
 	for {
+		envoyInternalAPIClusterCount := xds.GetEnvoyInternalAPIClusters()
+		internalClusterCount.Set(float64(envoyInternalAPIClusterCount))
+
+		envoyInternalAPIRouteCount := xds.GetEnvoyInternalAPIRoutes()
+		internalRouteCount.Set(float64(envoyInternalAPIRouteCount))
+
+		gwClusterCount.Set(float64(xds.GetEnvoyGatewayConfigClusters()))
+
+		apiCount := synchronizer.GetOperatorDataStore().GetAPICount()
+		apis.Set(float64(apiCount))
+
 		host, err := host.Info()
 		if handleError(err, "Failed to get host info") {
 			return

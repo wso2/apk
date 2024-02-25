@@ -142,7 +142,7 @@ public class ExtAuthService extends AuthorizationGrpc.AuthorizationImplBase {
             }
 
             addMetadata(metadataStructBuilder, "correlationID", responseObject.getCorrelationID());
-            addMetadata(metadataStructBuilder, MetadataConstants.CHOREO_CONNECT_ENFORCER_REPLY, "Ok");
+            addMetadata(metadataStructBuilder, MetadataConstants.APK_ENFORCER_REPLY, "Ok");
 
             return checkResponseBuilder
                     .setDynamicMetadata(metadataStructBuilder.build())
@@ -189,7 +189,7 @@ public class ExtAuthService extends AuthorizationGrpc.AuthorizationImplBase {
                     responseObject.getRequestPath().split("\\?")[0]);
             // adding org level ratelimit key to metadata
             addMetadata(structBuilder, MetadataConstants.RATELIMIT_WSO2_ORG_PREFIX, responseObject.getOrganizationId());
-            addMetadata(structBuilder, MetadataConstants.CHOREO_CONNECT_ENFORCER_REPLY, "Ok");
+            addMetadata(structBuilder, MetadataConstants.APK_ENFORCER_REPLY, "Ok");
 
             return CheckResponse.newBuilder().setStatus(Status.newBuilder().setCode(Code.OK_VALUE).build())
                     .setOkResponse(okResponseBuilder.build())
