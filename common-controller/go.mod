@@ -7,7 +7,7 @@ require (
 	github.com/onsi/ginkgo/v2 v2.11.0
 	github.com/onsi/gomega v1.27.10
 	github.com/prometheus/client_golang v1.18.0
-	github.com/prometheus/procfs v0.12.0 // indirect
+	github.com/prometheus/procfs v0.12.0
 	github.com/sirupsen/logrus v1.9.0
 	k8s.io/apimachinery v0.28.3
 	k8s.io/client-go v0.28.3
@@ -23,6 +23,7 @@ require (
 	github.com/redis/go-redis/v9 v9.2.1
 	github.com/wso2/apk/adapter v0.0.0-20231214082511-af2c8b8a19f1
 	github.com/wso2/apk/common-go-libs v0.0.0-20240304050809-a382bc6b0d82
+	github.com/shirou/gopsutil/v3 v3.24.1
 	google.golang.org/grpc v1.62.0
 )
 

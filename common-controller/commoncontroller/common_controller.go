@@ -214,6 +214,12 @@ func InitCommonControllerServer(conf *config.Config) {
 
 	loggers.LoggerAPKOperator.Info("Starting common controller ....")
 
+	// Start the metrics server
+	if conf.CommonController.Metrics.Enabled && strings.EqualFold(conf.CommonController.Metrics.Type, metrics.PrometheusMetricType) {
+		loggers.LoggerAPKOperator.Info("Starting Prometheus Metrics Server ....")
+		go metrics.StartPrometheusMetricsServer(conf.CommonController.Metrics.Port, conf.CommonController.Metrics.CollectionInterval)
+	}
+
 	rateLimiterCache := xds.GetRateLimiterCache()
 	rlsSrv := xdsv3.NewServer(ctx, rateLimiterCache, &xds.Callbacks{})
 
