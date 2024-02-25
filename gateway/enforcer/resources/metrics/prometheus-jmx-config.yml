@@ -21,12 +21,12 @@ lowercaseOutputName: true
 lowercaseOutputLabelNames: true
 rules:
   # WSO2 APK related metrics
-  - pattern: 'org.wso2.apk.enforcer<type=ExtAuthMetrics><>total_request_count: (.*)'
+  - pattern: "org.wso2.apk.enforcer<type=ExtAuthMetrics><>total_request_count: (.*)"
     name: org_wso2_apk_enforcer_request_count_total
     help: "WSO2 APK enforcer total request count."
     attrNameSnakeCase: true
     type: COUNTER
-  - pattern: 'org.wso2.apk.enforcer<type=ExtAuthMetrics><>(average_response_time_millis|max_response_time_millis|min_response_time_millis|request_count_in_last_five_minute_window|request_count_window_start_time_millis): (.*)'
+  - pattern: "org.wso2.apk.enforcer<type=ExtAuthMetrics><>(average_response_time_millis|max_response_time_millis|min_response_time_millis|request_count_in_last_five_minute_window|request_count_window_start_time_millis|token_issuer_count|subscription_count): (.*)"
     name: org_wso2_apk_enforcer_$1
     help: "WSO2 APK enforcer $1."
     attrNameSnakeCase: true

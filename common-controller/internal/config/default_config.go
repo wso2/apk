@@ -41,6 +41,13 @@ var defaultConfig = &Config{
 			EventPort:     18000,
 			RestPort:      18001,
 			RetryInterval: 5,
-			Persistence:   persistence{Type: "K8s"}},
+			Persistence:   persistence{Type: "K8s"},
+		},
+		Metrics: metrics{
+			Enabled:            true,
+			Type:               "prometheus",
+			Port:               18009,
+			CollectionInterval: 5,
+		},
 	},
 }

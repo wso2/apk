@@ -66,7 +66,7 @@ public class ExtAuthService extends AuthorizationGrpc.AuthorizationImplBase {
     public void check(CheckRequest request, StreamObserver<CheckResponse> responseObserver) {
         TracingSpan extAuthServiceSpan = null;
         Scope extAuthServiceSpanScope = null;
-        long starTimestamp = System.currentTimeMillis();
+        long startTimestamp = System.currentTimeMillis();
         try {
             String traceId = request.getAttributes().getRequest().getHttp()
                     .getHeadersOrDefault(HttpConstants.X_REQUEST_ID_HEADER,
@@ -94,10 +94,10 @@ public class ExtAuthService extends AuthorizationGrpc.AuthorizationImplBase {
             }
             if (MetricsManager.isMetricsEnabled()) {
                 MetricsExporter metricsExporter = MetricsManager.getInstance();
-                metricsExporter.trackMetric("enforcerLatency", System.currentTimeMillis() - starTimestamp);
+                metricsExporter.trackMetric("enforcerLatency", System.currentTimeMillis() - startTimestamp);
             }
             if (JMXUtils.isJMXMetricsEnabled()) {
-                ExtAuthMetrics.getInstance().recordMetric(System.currentTimeMillis() - starTimestamp);
+                ExtAuthMetrics.getInstance().recordMetric(System.currentTimeMillis() - startTimestamp);
             }
         }
     }

@@ -29,10 +29,11 @@ public class ExtAuthMetrics extends TimerTask implements ExtAuthMetricsMXBean {
 
     private static final long REQUEST_COUNT_INTERVAL_MILLIS = 5 * 60 * 1000;
     private static ExtAuthMetrics extAuthMetricsMBean = null;
-
     private long requestCountInLastFiveMinuteWindow = 0;
+    private int jwtIssuerCount = 0;
     private long requestCountWindowStartTimeMillis = System.currentTimeMillis();
     private long totalRequestCount = 0;
+    private int subscriptionCount = 0;
     private double averageResponseTimeMillis = 0;
     private double maxResponseTimeMillis = Double.MIN_VALUE;
     private double minResponseTimeMillis = Double.MAX_VALUE;
@@ -89,6 +90,14 @@ public static ExtAuthMetrics getInstance() {
         this.maxResponseTimeMillis = Math.max(this.maxResponseTimeMillis, responseTimeMillis);
     }
 
+    public synchronized void recordJWTIssuerMetrics(int jwtIssuers) {
+        this.jwtIssuerCount = jwtIssuers;
+    }
+
+    public synchronized void recordSubscriptionMetrics(int subscriptionCount) {
+        this.subscriptionCount = subscriptionCount;
+    }
+
     @Override
     public synchronized void resetExtAuthMetrics() {
         this.totalRequestCount = 0;
@@ -111,5 +120,15 @@ public static ExtAuthMetrics getInstance() {
     @Override
     public long getRequestCountWindowStartTimeMillis() {
         return requestCountWindowStartTimeMillis;
+    }
+
+    @Override
+    public int getTokenIssuerCount() {
+        return jwtIssuerCount;
+    }
+
+    @Override
+    public int getSubscriptionCount() {
+        return subscriptionCount;
     }
 }

@@ -29,6 +29,8 @@ import org.wso2.apk.enforcer.discovery.subscription.Application;
 import org.wso2.apk.enforcer.discovery.subscription.ApplicationKeyMapping;
 import org.wso2.apk.enforcer.discovery.subscription.ApplicationMapping;
 import org.wso2.apk.enforcer.discovery.subscription.Subscription;
+import org.wso2.apk.enforcer.jmx.JMXUtils;
+import org.wso2.apk.enforcer.metrics.jmx.impl.ExtAuthMetrics;
 import org.wso2.apk.enforcer.util.ApacheFeignHttpClient;
 import org.wso2.apk.enforcer.util.FilterUtils;
 
@@ -157,6 +159,9 @@ public class SubscriptionDataStoreUtil {
         new Thread(() -> {
             SubscriptionListDto subscriptions = subscriptionValidationDataRetrievalRestClient.getAllSubscriptions();
             List<SubscriptionDto> list = subscriptions.getList();
+            if (JMXUtils.isJMXMetricsEnabled()) {
+                ExtAuthMetrics.getInstance().recordSubscriptionMetrics(list.size());
+            }
             Map<String, List<SubscriptionDto>> orgWizeMAp = new HashMap<>();
             for (SubscriptionDto subscriptionDto : list) {
                 String organization = subscriptionDto.getOrganization();
