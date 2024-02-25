@@ -94,7 +94,7 @@ spec:
             {{- if and .Values.wso2.apk.metrics .Values.wso2.apk.metrics.enabled }}
               value: -Dhttpclient.hostnameVerifier=AllowAll -Xms512m -Xmx512m -XX:MaxRAMFraction=2 -Dapk.jmx.metrics.enabled=true -javaagent:/home/wso2/lib/jmx_prometheus_javaagent-0.20.0.jar=18007:/tmp/metrics/prometheus-jmx-config.yml
             {{- else }}
-              value: -Dhttpclient.hostnameVerifier=AllowAll -Xms512m -Xmx512m -XX:MaxRAMFraction=2 
+              value: -Dhttpclient.hostnameVerifier=AllowAll -Xms512m -Xmx512m -XX:MaxRAMFraction=2
             {{- end }}
             {{- if .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.redis }}
             - name: REDIS_USERNAME

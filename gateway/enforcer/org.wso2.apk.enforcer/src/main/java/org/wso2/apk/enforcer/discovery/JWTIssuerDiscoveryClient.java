@@ -36,6 +36,8 @@ import org.wso2.apk.enforcer.discovery.scheduler.XdsSchedulerManager;
 import org.wso2.apk.enforcer.discovery.service.subscription.JWTIssuerDiscoveryServiceGrpc;
 import org.wso2.apk.enforcer.discovery.subscription.JWTIssuer;
 import org.wso2.apk.enforcer.discovery.subscription.JWTIssuerList;
+import org.wso2.apk.enforcer.jmx.JMXUtils;
+import org.wso2.apk.enforcer.metrics.jmx.impl.ExtAuthMetrics;
 import org.wso2.apk.enforcer.subscription.SubscriptionDataHolder;
 import org.wso2.apk.enforcer.subscription.SubscriptionDataStore;
 import org.wso2.apk.enforcer.util.GRPCUtils;
@@ -160,6 +162,10 @@ public class JWTIssuerDiscoveryClient implements Runnable {
                         }
                         subscriptionDataStore.addJWTIssuers(v);
                     });
+
+                    if (JMXUtils.isJMXMetricsEnabled()) {
+                        ExtAuthMetrics.getInstance().recordJWTIssuerMetrics(jwtIssuers.size());
+                    }
                     logger.info("Number of jwt issuers received : " + jwtIssuers.size());
                     ack();
                 } catch (Exception e) {

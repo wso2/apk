@@ -48,6 +48,7 @@ type commoncontroller struct {
 	WebServer         webServer
 	InternalAPIServer internalAPIServer
 	ControlPlane      controlplane
+	Metrics           metrics
 }
 type controlplane struct {
 	Enabled             bool
@@ -101,4 +102,11 @@ type sts struct {
 
 type webServer struct {
 	Port int64
+}
+
+type metrics struct {
+	Enabled            bool
+	Type               string
+	Port               int32
+	CollectionInterval int32
 }
