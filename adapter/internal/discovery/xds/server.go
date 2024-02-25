@@ -779,3 +779,37 @@ func SanitizeGateway(gatewayName string, create bool) error {
 	}
 	return nil
 }
+
+// GetEnvoyGatewayConfigClusters method gets the number of clusters in envoy gateway config
+func GetEnvoyGatewayConfigClusters() int {
+	totalClusters := 0
+	for _, config := range gatewayLabelConfigMap {
+		// Add the number of clusters in this EnvoyGatewayConfig instance to the total
+		totalClusters += len(config.clusters)
+	}
+	return totalClusters
+}
+
+// GetEnvoyInternalAPIRoutes method gets the number of routes in envoy internal API
+func GetEnvoyInternalAPIRoutes() int {
+	totalRoutes := 0
+	for _, orgMap := range orgAPIMap {
+		for _, api := range orgMap {
+			// Add the number of routes in this EnvoyInternalAPI instance to the total
+			totalRoutes += len(api.routes)
+		}
+	}
+	return totalRoutes
+}
+
+// GetEnvoyInternalAPIClusters method gets the number of clusters in envoy internal API
+func GetEnvoyInternalAPIClusters() int {
+	totalClusters := 0
+	for _, orgMap := range orgAPIMap {
+		for _, api := range orgMap {
+			// Add the number of clusters in this EnvoyInternalAPI instance to the total
+			totalClusters += len(api.clusters)
+		}
+	}
+	return totalClusters
+}
