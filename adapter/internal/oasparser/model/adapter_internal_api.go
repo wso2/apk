@@ -1087,7 +1087,7 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoGRPCRouteCR(grpcRoute *gwap
 		apiAuth := getSecurity(resourceAuthScheme)
 
 		for _, match := range rule.Matches {
-			resourcePath := *match.Method.Service
+			resourcePath := *match.Method.Service + "/" + *match.Method.Method
 			endPoints = append(endPoints, GetEndpoints(backendName, resourceParams.BackendMapping)...)
 			resource := &Resource{path: resourcePath,
 				methods: []*Operation{{iD: uuid.New().String(), method: string(*match.Method.Type), policies: policies,

@@ -204,18 +204,18 @@ func CreateRoutesWithClusters(adapterInternalAPI *model.AdapterInternalAPI, inte
 		}
 		clusters = append(clusters, cluster)
 		endpoints = append(endpoints, address...)
-
-		resource := model.CreateMinimalResource(adapterInternalAPI.GetXWso2Basepath(), []*model.Operation{}, "", adapterInternalAPI.Endpoints, true, gwapiv1b1.PathMatchExact)
-		routesP, err := createRoutes(genRouteCreateParams(adapterInternalAPI, &resource, vHost, basePath, clusterName, nil,
-			nil, organizationID, false, false))
-		if err != nil {
-			logger.LoggerXds.ErrorC(logging.PrintError(logging.Error2231, logging.MAJOR,
-				"Error while creating routes for GRPC API %s %s Error: %s", adapterInternalAPI.GetTitle(),
-				adapterInternalAPI.GetVersion(), err.Error()))
-			return nil, nil, nil, fmt.Errorf("error while creating routes. %v", err)
-		}
-		routes = append(routes, routesP...)
-		return routes, clusters, endpoints, nil
+		//TODO check if creating  a minimal resource and appeding this to routes is necessary
+		//resource := model.CreateMinimalResource(adapterInternalAPI.GetXWso2Basepath(), []*model.Operation{}, "", adapterInternalAPI.Endpoints, false, gwapiv1b1.PathMatchExact)
+		//routesP, err := createRoutes(genRouteCreateParams(adapterInternalAPI, &resource, vHost, basePath, clusterName, nil,
+		//	nil, organizationID, false, false))
+		//if err != nil {
+		//	logger.LoggerXds.ErrorC(logging.PrintError(logging.Error2231, logging.MAJOR,
+		//		"Error while creating routes for GRPC API %s %s Error: %s", adapterInternalAPI.GetTitle(),
+		//		adapterInternalAPI.GetVersion(), err.Error()))
+		//	return nil, nil, nil, fmt.Errorf("error while creating routes. %v", err)
+		//}
+		//routes = append(routes, routesP...)
+		//return routes, clusters, endpoints, nil
 	}
 	for _, resource := range adapterInternalAPI.GetResources() {
 		var clusterName string
