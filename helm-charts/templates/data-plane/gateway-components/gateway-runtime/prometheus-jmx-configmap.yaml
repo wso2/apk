@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: prometheus-jmx-config
+  name: prometheus-jmx-config-enforcer
 data:
-  prometheus-jmx-config.yml: |
+  prometheus-jmx-config-enforcer.yml: |
     lowercaseOutputName: true
     lowercaseOutputLabelNames: true
     rules:

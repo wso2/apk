@@ -92,7 +92,7 @@ spec:
               value: admin
             - name: JAVA_OPTS
             {{- if and .Values.wso2.apk.metrics .Values.wso2.apk.metrics.enabled }}
-              value: -Dhttpclient.hostnameVerifier=AllowAll -Xms512m -Xmx512m -XX:MaxRAMFraction=2 -Dapk.jmx.metrics.enabled=true -javaagent:/home/wso2/lib/jmx_prometheus_javaagent-0.20.0.jar=18007:/tmp/metrics/prometheus-jmx-config.yml
+              value: -Dhttpclient.hostnameVerifier=AllowAll -Xms512m -Xmx512m -XX:MaxRAMFraction=2 -Dapk.jmx.metrics.enabled=true -javaagent:/home/wso2/lib/jmx_prometheus_javaagent-0.20.0.jar=18007:/tmp/metrics/prometheus-jmx-config-enforcer.yml
             {{- else }}
               value: -Dhttpclient.hostnameVerifier=AllowAll -Xms512m -Xmx512m -XX:MaxRAMFraction=2
             {{- end }}
@@ -163,8 +163,8 @@ spec:
             {{- end }}
             {{- if and .Values.wso2.apk.metrics .Values.wso2.apk.metrics.enabled }}
             - name: prometheus-jmx-config-volume
-              mountPath: /tmp/metrics/prometheus-jmx-config.yml
-              subPath: prometheus-jmx-config.yml
+              mountPath: /tmp/metrics/prometheus-jmx-config-enforcer.yml
+              subPath: prometheus-jmx-config-enforcer.yml
             {{- end }}
             - name: enforcer-keystore-secret-volume
               mountPath: /home/wso2/security/keystore/enforcer.crt
@@ -398,7 +398,7 @@ spec:
         {{- if and .Values.wso2.apk.metrics .Values.wso2.apk.metrics.enabled }}
         - name: prometheus-jmx-config-volume
           configMap: 
-            name: prometheus-jmx-config
+            name: prometheus-jmx-config-enforcer
         {{- end }}
         - name: enforcer-keystore-secret-volume
           secret: 
