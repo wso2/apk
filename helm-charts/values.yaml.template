@@ -400,6 +400,8 @@ wso2:
               useRemoteAddress: false
               # -- System hostname for system API resources (eg: /testkey and /health)
               systemHost: "localhost"
+              # -- Enable Semantic Versioning based Intelligent Routing for Gateway
+              enableIntelligentRouting: false
               tls:
                 # -- TLS secret name for router public certificate.
                 secretName: "router-cert"

@@ -44,7 +44,8 @@ import (
 	upstreams "github.com/envoyproxy/go-control-plane/envoy/extensions/upstreams/http/v3"
 	envoy_type_matcherv3 "github.com/envoyproxy/go-control-plane/envoy/type/matcher/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/wellknown"
-
+	"github.com/golang/protobuf/ptypes/any"
+	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/interceptor"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
@@ -53,9 +54,6 @@ import (
 	"github.com/wso2/apk/adapter/internal/oasparser/model"
 	"github.com/wso2/apk/adapter/internal/svcdiscovery"
 	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
-
-	"github.com/golang/protobuf/ptypes/any"
-	"github.com/golang/protobuf/ptypes/wrappers"
 	"google.golang.org/protobuf/proto"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
@@ -124,10 +122,10 @@ func CreateRoutesWithClusters(adapterInternalAPI *model.AdapterInternalAPI, inte
 	} else {
 		methods = append(methods, "GET")
 	}
-	routeP := CreateAPIDefinitionEndpoint(adapterInternalAPI.GetXWso2Basepath(), vHost, methods, false, adapterInternalAPI.GetVersion(), adapterInternalAPI.GetAPIDefinitionEndpoint())
+	routeP := CreateAPIDefinitionEndpoint(adapterInternalAPI, vHost, methods, false)
 	routes = append(routes, routeP)
 	if (adapterInternalAPI).IsDefaultVersion {
-		defaultDefRoutes := CreateAPIDefinitionEndpoint(adapterInternalAPI.GetXWso2Basepath(), vHost, methods, true, adapterInternalAPI.GetVersion(), adapterInternalAPI.GetAPIDefinitionEndpoint())
+		defaultDefRoutes := CreateAPIDefinitionEndpoint(adapterInternalAPI, vHost, methods, true)
 		routes = append(routes, defaultDefRoutes)
 	}
 	var endpointForAPIDefinitions []model.Endpoint
@@ -864,7 +862,12 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 		xWso2Basepath = removeFirstOccurrence(xWso2Basepath, "/"+version)
 		resourcePath = removeFirstOccurrence(resource.GetPath(), "/"+version)
 	}
+
+	if pathMatchType != gwapiv1b1.PathMatchExact {
+		resourcePath = strings.Replace(resourcePath, basePath, regexp.QuoteMeta(basePath), 1)
+	}
 	routePath := generateRoutePath(resourcePath, pathMatchType)
+
 	// route path could be empty only if there is no basePath for API or the endpoint available,
 	// and resourcePath is also an empty string.
 	// Empty check is added to run the gateway in failsafe mode, as if the decorator string is
@@ -1186,7 +1189,11 @@ func CreateAPIDefinitionRoute(basePath string, vHost string, methods []string, i
 }
 
 // CreateAPIDefinitionEndpoint generates a route for the api defition endpoint
-func CreateAPIDefinitionEndpoint(basePath string, vHost string, methods []string, isDefaultversion bool, version string, providedAPIDefinitionPath string) *routev3.Route {
+func CreateAPIDefinitionEndpoint(adapterInternalAPI *model.AdapterInternalAPI, vHost string, methods []string, isDefaultversion bool) *routev3.Route {
+
+	basePath := adapterInternalAPI.GetXWso2Basepath()
+	version := adapterInternalAPI.GetVersion()
+	providedAPIDefinitionPath := adapterInternalAPI.GetAPIDefinitionEndpoint()
 	endpoint := providedAPIDefinitionPath
 	rewritePath := basePath + "/" + vHost + "?" + apiDefinitionQueryParam
 	basePath = strings.TrimSuffix(basePath, "/")
@@ -1205,9 +1212,14 @@ func CreateAPIDefinitionEndpoint(basePath string, vHost string, methods []string
 		matchPath = basePathWithoutVersion + endpoint
 	}
 
+	matchPath = strings.Replace(matchPath, basePath, regexp.QuoteMeta(basePath), 1)
+	routePath := generateRoutePath(matchPath, gwapiv1b1.PathMatchRegularExpression)
+
 	match = &routev3.RouteMatch{
-		PathSpecifier: &routev3.RouteMatch_Path{
-			Path: matchPath,
+		PathSpecifier: &routev3.RouteMatch_SafeRegex{
+			SafeRegex: &envoy_type_matcherv3.RegexMatcher{
+				Regex: routePath,
+			},
 		},
 		Headers: generateHTTPMethodMatcher(methodRegex, apiDefinitionClusterName),
 	}
@@ -1240,7 +1252,7 @@ func CreateAPIDefinitionEndpoint(basePath string, vHost string, methods []string
 				},
 			},
 			ClusterSpecifier: directClusterSpecifier,
-			PrefixRewrite:    rewritePath,
+			RegexRewrite:     generateRegexMatchAndSubstitute(routePath, rewritePath, gwapiv1b1.PathMatchExact),
 		},
 	}
 
@@ -1374,7 +1386,7 @@ func generateRoutePath(resourcePath string, pathMatchType gwapiv1b1.PathMatchTyp
 	case gwapiv1b1.PathMatchPathPrefix:
 		fallthrough
 	default:
-		return fmt.Sprintf("^%s((?:/.*)*)", regexp.QuoteMeta(newPath))
+		return fmt.Sprintf("^%s((?:/.*)*)", newPath)
 	}
 }
 

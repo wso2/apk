@@ -53,6 +53,7 @@ import (
 	wso2_cache "github.com/wso2/apk/adapter/pkg/discovery/protocol/cache/v3"
 	wso2_resource "github.com/wso2/apk/adapter/pkg/discovery/protocol/resource/v3"
 	eventhubTypes "github.com/wso2/apk/adapter/pkg/eventhub/types"
+	semantic_version "github.com/wso2/apk/adapter/pkg/semanticversion"
 	"github.com/wso2/apk/adapter/pkg/utils/stringutils"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
@@ -101,8 +102,9 @@ var (
 	orgAPIMap map[string]map[string]*EnvoyInternalAPI // organizationID -> Vhost:API_UUID -> EnvoyInternalAPI struct map
 
 	orgIDvHostBasepathMap map[string]map[string]string   // organizationID -> Vhost:basepath -> Vhost:API_UUID
-	orgIDAPIvHostsMap     map[string]map[string][]string // organizationID -> UUID -> prod/sand -> Envoy Vhost Array map
+	orgIDAPIvHostsMap     map[string]map[string][]string // organizationID -> API_UUID-prod/sand -> Envoy Vhost Array map
 
+	orgIDLatestAPIVersionMap map[string]map[string]map[string]semantic_version.SemVersion // organizationID -> Vhost:APIName -> Version Range -> Latest API Version
 	// Envoy Label as map key
 	gatewayLabelConfigMap map[string]*EnvoyGatewayConfig // GW-Label -> EnvoyGatewayConfig struct map
 
@@ -159,6 +161,7 @@ func init() {
 	orgAPIMap = make(map[string]map[string]*EnvoyInternalAPI)
 	orgIDAPIvHostsMap = make(map[string]map[string][]string) // organizationID -> UUID-prod/sand -> Envoy Vhost Array map
 	orgIDvHostBasepathMap = make(map[string]map[string]string)
+	orgIDLatestAPIVersionMap = make(map[string]map[string]map[string]semantic_version.SemVersion)
 
 	enforcerLabelMap = make(map[string]*EnforcerInternalAPI)
 	// currently subscriptions, configs, applications, applicationPolicies, subscriptionPolicies,
@@ -243,11 +246,16 @@ func DeleteAPICREvent(labels []string, apiUUID string, organizationID string) er
 // deleteAPI deletes an API, its resources and updates the caches of given environments
 func deleteAPI(apiIdentifier string, environments []string, organizationID string) error {
 	apiUUID, _ := ExtractUUIDFromAPIIdentifier(apiIdentifier)
+	var api *EnvoyInternalAPI
+
 	if _, orgExists := orgAPIMap[organizationID]; orgExists {
-		if _, apiExists := orgAPIMap[organizationID][apiIdentifier]; !apiExists {
+		if oldAPI, apiExists := orgAPIMap[organizationID][apiIdentifier]; apiExists {
+			api = oldAPI
+		} else {
 			logger.LoggerXds.Infof("Unable to delete API: %v from Organization: %v. API Does not exist. API_UUID: %v", apiIdentifier, organizationID, apiUUID)
 			return errors.New(constants.NotFound)
 		}
+
 	} else {
 		logger.LoggerXds.Infof("Unable to delete API: %v from Organization: %v. Organization Does not exist. API_UUID: %v", apiIdentifier, organizationID, apiUUID)
 		return errors.New(constants.NotFound)
@@ -255,6 +263,10 @@ func deleteAPI(apiIdentifier string, environments []string, organizationID strin
 
 	existingLabels := orgAPIMap[organizationID][apiIdentifier].envoyLabels
 	toBeDelEnvs, toBeKeptEnvs := getEnvironmentsToBeDeleted(existingLabels, environments)
+
+	if isSemanticVersioningEnabled(api.adapterInternalAPI.GetTitle(), api.adapterInternalAPI.GetVersion()) {
+		updateRoutingRulesOnAPIDelete(organizationID, apiIdentifier, api.adapterInternalAPI)
+	}
 
 	var isAllowedToDelete bool
 	updatedLabelsMap := make(map[string]struct{})
@@ -613,6 +625,11 @@ func GenerateHashedAPINameVersionIDWithoutVhost(name, version string) string {
 	return generateHashValue(name, version)
 }
 
+// GenerateIdentifierForAPIWithoutVersion generates an identifier unique to the API despite of the version
+func generateIdentifierForAPIWithoutVersion(vhost, name string) string {
+	return fmt.Sprint(vhost, apiKeyFieldSeparator, name)
+}
+
 func generateHashValue(apiName string, apiVersion string) string {
 	apiNameVersionHash := sha1.New()
 	apiNameVersionHash.Write([]byte(apiName + ":" + apiVersion))
@@ -689,7 +706,7 @@ func UpdateAPICache(vHosts []string, newLabels []string, listener string, sectio
 
 	updatedLabelsMap := make(map[string]struct{}, 0)
 
-	// Remove internal mappigs for old vHosts
+	// Remove internal mappings for old vHosts
 	for _, oldvhost := range oldvHosts {
 		apiIdentifier := GenerateIdentifierForAPIWithUUID(oldvhost, adapterInternalAPI.UUID)
 		if orgMap, orgExists := orgAPIMap[adapterInternalAPI.GetOrganizationID()]; orgExists {
@@ -740,7 +757,14 @@ func UpdateAPICache(vHosts []string, newLabels []string, listener string, sectio
 			endpointAddresses:  endpoints,
 			enforcerAPI:        oasParser.GetEnforcerAPI(adapterInternalAPI, vHost),
 		}
+
+		apiVersion := adapterInternalAPI.GetVersion()
+		apiName := adapterInternalAPI.GetTitle()
+		if isSemanticVersioningEnabled(apiName, apiVersion) {
+			updateRoutingRulesOnAPIUpdate(adapterInternalAPI.OrganizationID, apiIdentifier, apiName, apiVersion, vHost)
+		}
 	}
+
 	return updatedLabelsMap, nil
 }
 

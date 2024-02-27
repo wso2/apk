@@ -26,6 +26,9 @@ data:
       {{ if .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.enforcerResponseTimeoutInSeconds }}
       enforcerResponseTimeoutInSeconds = {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.enforcerResponseTimeoutInSeconds }}
       {{end}}
+      {{ if .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.enableIntelligentRouting }}
+      enableIntelligentRouting = {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.enableIntelligentRouting }}
+      {{ end }}
 
     {{ if .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.upstream }}
     {{ if .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.upstream.tls }}
