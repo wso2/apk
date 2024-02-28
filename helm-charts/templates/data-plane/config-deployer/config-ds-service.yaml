@@ -28,4 +28,12 @@ spec:
     - name: servlet-https
       protocol: TCP
       port: 9443
+    {{ if and .Values.wso2.apk.metrics .Values.wso2.apk.metrics.enabled }}
+    - name: prometheus-config-ds-port-lang
+      protocol: TCP
+      port: 18008
+    - name: prometheus-config-ds-port-system
+      protocol: TCP
+      port: 18010
+    {{ end }}
 {{- end -}}
