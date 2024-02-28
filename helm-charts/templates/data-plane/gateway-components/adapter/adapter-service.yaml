@@ -41,9 +41,4 @@ spec:
     - name: profile-port
       protocol: TCP
       port: 6060
-    {{ if and .Values.wso2.apk.metrics .Values.wso2.apk.metrics.enabled}}
-    - name: prometheus-adapter-port
-      port: 18006
-      protocol: "TCP"
-    {{ end }}
 {{- end -}}

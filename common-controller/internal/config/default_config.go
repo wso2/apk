@@ -46,7 +46,7 @@ var defaultConfig = &Config{
 		Metrics: metrics{
 			Enabled:            true,
 			Type:               "prometheus",
-			Port:               18009,
+			Port:               18010,
 			CollectionInterval: 5,
 		},
 	},
