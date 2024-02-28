@@ -233,7 +233,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: apk-integration-test-go-logs
-        path: apk-repo/test/integration/podlogs
+        path: 'apk-repo/test/integration/podlogs/*.log'
   runs_cucumber_integration_tests_on_pull_request:
     if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
     needs: [build_adapter, build_common_controller, build_enforcer, build_router, build_config,build_idpds,build_idpui,build_ratelimiter]
@@ -359,5 +359,5 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: apk-integration-test-cucmber-logs
-        path: apk-repo/test/integration/podlogs
+        path: 'apk-repo/test/integration/podlogs/*.log'
  
