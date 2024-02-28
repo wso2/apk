@@ -27,10 +27,9 @@ import ballerina/uuid;
 import ballerina/crypto;
 import config_deployer_service.java.io as javaio;
 import wso2/apk_common_lib as commons;
-
-#
+import ballerinax/prometheus as _;
 public class APIClient {
-
+    
     # This function used to convert APKInternalAPI model to APKConf.
     #
     # + api - APKInternalAPI model

@@ -98,9 +98,10 @@ fi
 echo "Using Java memory options: $JVM_MEM_OPTS"
 
 $JAVACMD \
-    $JVM_MEM_OPTS \
-    $JAVA_OPTS \
-    -classpath "$CLASSPATH" \
-    -Djava.io.tmpdir="$RUNTIME_HOME/tmp" \
-    -jar config_deployer_service.jar $*
-    status=$?
+  $JVM_MEM_OPTS \
+  $JAVA_OPTS \
+  -classpath "$CLASSPATH" \
+  -Djava.io.tmpdir="$RUNTIME_HOME/tmp" \
+  -Dapk.jmx.metrics.enabled=true -javaagent:/home/wso2apk/lib/jmx_prometheus_javaagent-0.20.0.jar=18010:/tmp/metrics/prometheus-jmx-config-configds.yml \
+  -jar config_deployer_service.jar $*
+status=$?
