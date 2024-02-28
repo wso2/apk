@@ -33,7 +33,7 @@ Feature: API Deployment and invocation
     And I send "GET" request to "https://default.gw.wso2.com:9095/test/3.14/employee/" with body ""
     And I eventually receive 404 response code, not accepting
       | 429 |
-    And I send "POST" request to "https://default.gw.wso2.com:9095/test/3.14/employee1/" with body ""
+    And I send "GET" request to "https://default.gw.wso2.com:9095/test/3.14/employee1/" with body ""
     And the response status code should be 200
 
   Scenario Outline: Undeploy API
