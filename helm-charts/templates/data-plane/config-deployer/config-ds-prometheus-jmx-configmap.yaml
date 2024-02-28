@@ -23,22 +23,6 @@ data:
     lowercaseOutputName: true
     lowercaseOutputLabelNames: true
     rules:
-      # WSO2 APK related metrics
-      - pattern: 'org.wso2.apk.config<type=ExtAuthMetrics><>total_request_count: (.*)'
-        name: org_wso2_apk_config_request_count_total
-        help: "WSO2 APK config total request count."
-        attrNameSnakeCase: true
-        type: COUNTER
-      - pattern: 'org.wso2.apk.config<type=ExtAuthMetrics><>(average_response_time_millis|max_response_time_millis|min_response_time_millis|request_count_in_last_five_minute_window|request_count_window_start_time_millis): (.*)'
-        name: org_wso2_apk_config_$1
-        help: "WSO2 APK config $1."
-        attrNameSnakeCase: true
-        type: GAUGE
-      - pattern: 'org.wso2.apk.config<type=ThreadPoolConfig><>(\w+): (.*)'
-        name: org_wso2_apk_config_thread_pool_$1
-        help: "WSO2 APK config thread pool $1."
-        attrNameSnakeCase: true
-        type: GAUGE
       # OS related metrics
       - pattern: 'java.lang<type=OperatingSystem><>(\w+): (.*)'
         name: os_$1

@@ -49,7 +49,7 @@ spec:
             - containerPort: 18003
               protocol: TCP
             {{ if and .Values.wso2.apk.metrics .Values.wso2.apk.metrics.enabled }}
-            - containerPort: 18009
+            - containerPort: 18010
               protocol: "TCP"
             {{ end }}
 {{ include "apk-helm.deployment.resources" .Values.wso2.apk.dp.commonController.deployment.resources | indent 10 }}
