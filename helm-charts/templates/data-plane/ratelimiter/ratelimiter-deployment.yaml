@@ -77,9 +77,9 @@ spec:
               value: "0"
             {{ if and .Values.wso2.apk.dp.redis .Values.wso2.apk.dp.redis.tls }}
             - name: REDIS_TLS
-              value: true
+              value: "true"
             - name: REDIS_PERSECOND_TLS
-              value: true
+              value: "true"
             - name: REDIS_TLS_CLIENT_CERT
               value: "/home/wso2/security/truststore/redis.crt"
             - name: REDIS_TLS_CLIENT_KEY
