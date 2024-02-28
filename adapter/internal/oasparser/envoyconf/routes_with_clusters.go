@@ -334,10 +334,13 @@ func CreateRateLimitCluster() (*clusterv3.Cluster, []*corev3.Address, error) {
 	upstreamTLSContext.CommonTlsContext.ValidationContextType = &tlsv3.CommonTlsContext_ValidationContext{
 		ValidationContext: &tlsv3.CertificateValidationContext{
 			TrustedCa: trustedCASrc,
-			MatchSubjectAltNames: []*envoy_type_matcherv3.StringMatcher{
+			MatchTypedSubjectAltNames: []*tlsv3.SubjectAltNameMatcher{
 				{
-					MatchPattern: &envoy_type_matcherv3.StringMatcher_Exact{
-						Exact: sslCertSanHostName,
+					SanType: tlsv3.SubjectAltNameMatcher_DNS,
+					Matcher: &envoy_type_matcherv3.StringMatcher{
+						MatchPattern: &envoy_type_matcherv3.StringMatcher_Exact{
+							Exact: sslCertSanHostName,
+						},
 					},
 				},
 			},
