@@ -22,7 +22,7 @@ Feature: API Deployment and invocation
     And I send "GET" request to "https://default.gw.wso2.com:9095/test/3.14/employee/" with body ""
     And I eventually receive 200 response code, not accepting
       | 429 |
-    And I send "POST" request to "https://default.gw.wso2.com:9095/test/3.14/employee1/" with body ""
+    And I send "GET" request to "https://default.gw.wso2.com:9095/test/3.14/employee1/" with body ""
     And the response status code should be 200
     When I use the APK Conf file "artifacts/apk-confs/modifyAPI/aResourceRemovedAPI.yaml"
     And the definition file "artifacts/definitions/employees_api.json"
