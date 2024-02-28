@@ -213,18 +213,6 @@ func CreateRoutesWithClusters(adapterInternalAPI *model.AdapterInternalAPI, inte
 		}
 		clusters = append(clusters, cluster)
 		endpoints = append(endpoints, address...)
-		//TODO check if creating  a minimal resource and appeding this to routes is necessary
-		//resource := model.CreateMinimalResource(adapterInternalAPI.GetXWso2Basepath(), []*model.Operation{}, "", adapterInternalAPI.Endpoints, false, gwapiv1b1.PathMatchExact)
-		//routesP, err := createRoutes(genRouteCreateParams(adapterInternalAPI, &resource, vHost, basePath, clusterName, nil,
-		//	nil, organizationID, false, false))
-		//if err != nil {
-		//	logger.LoggerXds.ErrorC(logging.PrintError(logging.Error2231, logging.MAJOR,
-		//		"Error while creating routes for GRPC API %s %s Error: %s", adapterInternalAPI.GetTitle(),
-		//		adapterInternalAPI.GetVersion(), err.Error()))
-		//	return nil, nil, nil, fmt.Errorf("error while creating routes. %v", err)
-		//}
-		//routes = append(routes, routesP...)
-		//return routes, clusters, endpoints, nil
 	}
 	for _, resource := range adapterInternalAPI.GetResources() {
 		var clusterName string
@@ -1074,6 +1062,35 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 				routes = append(routes, route)
 			}
 		}
+	} else if apiType == "GRPC" {
+		//TODO this is only a temporary measure, gets triggered by grpc api
+		logger.LoggerOasparser.Debugf("Creating routes for resource : %s that has no policies", resourcePath)
+		// No policies defined for the resource. Therefore, create one route for all operations.
+		methodRegex := strings.Join(resourceMethods, "|")
+		if !strings.Contains(methodRegex, "OPTIONS") {
+			methodRegex = methodRegex + "|OPTIONS"
+		}
+		match := generateRouteMatch(routePath)
+		//match.Headers = generateHTTPMethodMatcher(methodRegex, clusterName)
+		action := generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria)
+		rewritePath := generateRoutePathForReWrite(basePath, resourcePath, pathMatchType)
+		action.Route.RegexRewrite = generateRegexMatchAndSubstitute(rewritePath, resourcePath, pathMatchType)
+
+		//TODO think of a better way to do this
+		//remove xws2basepaath from resourcepath
+		suffix := strings.TrimPrefix(resourcePath, xWso2Basepath)
+		action.Route.RegexRewrite.Substitution = suffix
+		action.Route.RegexRewrite.Pattern.EngineType = &envoy_type_matcherv3.RegexMatcher_GoogleRe2{}
+		action.Route.UpgradeConfigs = []*routev3.RouteAction_UpgradeConfig{}
+		action.Route.ClusterSpecifier = &routev3.RouteAction_Cluster{Cluster: clusterName}
+		//remove autohostrewrite value
+		action.Route.HostRewriteSpecifier = nil
+		decorator = nil
+		perRouteFilterConfigs = nil
+		// general headers to add and remove are included in this methods
+		route := generateRouteConfig(xWso2Basepath, match, action, nil, decorator, perRouteFilterConfigs, nil, nil, nil, nil)
+
+		routes = append(routes, route)
 	} else {
 		logger.LoggerOasparser.Debugf("Creating routes for resource : %s that has no policies", resourcePath)
 		// No policies defined for the resource. Therefore, create one route for all operations.
