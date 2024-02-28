@@ -252,6 +252,7 @@ wso2:
 
     metrics:
       enabled: true
+      # configDSBalPort: 0.0.0.0
 idp:
   enabled: true
   listener:
