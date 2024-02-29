@@ -26,7 +26,7 @@ import (
 // This data should not be utilized by operator thread as its not designed for parallel access.
 var (
 	// This variable in the structure of gateway's namespaced name -> gateway
-	gatewayMap       map[string]gwapiv1b1.Gateway
+	gatewayMap map[string]gwapiv1b1.Gateway
 )
 
 func init() {
@@ -48,21 +48,18 @@ func RemoveGateway(gateway gwapiv1b1.Gateway) {
 	delete(gatewayMap, k8types.NamespacedName{Name: gateway.Name, Namespace: gateway.Namespace}.String())
 }
 
-// GetAllGatewayListeners return the list of all the listeners that stored in the gateway cache
-func GetAllGatewayListeners() []gwapiv1b1.Listener {
+// GetAllGatewayListenerSections return the list of all the listeners that stored in the gateway cache
+func GetAllGatewayListenerSections() []gwapiv1b1.Listener {
 	listeners := make([]gwapiv1b1.Listener, 0)
 	for _, gateway := range gatewayMap {
-		for _, listener := range gateway.Spec.Listeners {
-			listeners = append(listeners, listener)
-		}
+		listeners = append(listeners, gateway.Spec.Listeners...)
 	}
 	return listeners
 }
 
-
 // GetListenersAsPortalPortMap returns a map that have a structure protocol -> port -> list of listeners for that port and protocol combination
 // Data is derived based on the current status of the gatwayMap cache
-func GetListenersAsPortalPortMap() map[string]map[uint32][]gwapiv1b1.Listener{
+func GetListenersAsPortalPortMap() map[string]map[uint32][]gwapiv1b1.Listener {
 	listenersAsPortalPortMap := make(map[string]map[uint32][]gwapiv1b1.Listener)
 	for _, gateway := range gatewayMap {
 		for _, listener := range gateway.Spec.Listeners {
@@ -70,7 +67,7 @@ func GetListenersAsPortalPortMap() map[string]map[uint32][]gwapiv1b1.Listener{
 			port := uint32(listener.Port)
 			if portMap, portFound := listenersAsPortalPortMap[protocol]; portFound {
 				if listenersList, listenerListFound := portMap[port]; listenerListFound {
-					if (listenersList == nil) {
+					if listenersList == nil {
 						listenersList = []gwapiv1b1.Listener{listener}
 					} else {
 						listenersList = append(listenersList, listener)
