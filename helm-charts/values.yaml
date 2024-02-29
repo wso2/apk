@@ -251,8 +251,10 @@ wso2:
 #                hostnameVerifier: "AllowAll"
 
     metrics:
-      enabled: true
-      # configDSBalPort: 0.0.0.0
+      enabled: false
+      # configDSBalHost: 0.0.0.0
+      # idpDSBalHost: 0.0.0.0
+
 idp:
   enabled: true
   listener:

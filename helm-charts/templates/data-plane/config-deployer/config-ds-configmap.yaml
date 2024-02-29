@@ -32,8 +32,8 @@ data:
     metricsReporter="prometheus"
     [ballerinax.prometheus]
     port=18008
-  {{if .Values.wso2.apk.metrics.configDSBalPort}}
-    host="{{ .Values.wso2.apk.metrics.configDSBalPort}}"
+  {{if .Values.wso2.apk.metrics.configDSBalHost}}
+    host="{{ .Values.wso2.apk.metrics.configDSBalHost}}"
   {{else}} 
     host="0.0.0.0"
   {{end}} 
