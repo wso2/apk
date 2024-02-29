@@ -2,7 +2,7 @@
 org = "wso2"
 name = "apk_common_lib"
 version = "0.0.1-SNAPSHOT"
-distribution = "2201.8.0"
+distribution = "2201.8.5"
 
 [[platform.java11.dependency]]
 groupId = "org.wso2.apk"
@@ -56,7 +56,7 @@ version = "2.14.2"
 [[platform.java11.dependency]]
 groupId = "org.json"
 artifactId = "json"
-version = "20230227"
+version = "20231013"
 
 # transitive dependency of org.wso2.apk:org.wso2.apk.common:0.0.1-SNAPSHOT
 [[platform.java11.dependency]]

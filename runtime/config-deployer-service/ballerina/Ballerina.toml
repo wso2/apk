@@ -367,11 +367,12 @@ groupId = "joda-time"
 artifactId = "joda-time"
 version = "2.10.2"
 
-# transitive dependency of org.wso2.apk:org.wso2.apk.config:1.0.0-SNAPSHOT
+
+# transitive dependency of org.wso2.apk:org.wso2.apk.config:1.1.0-SNAPSHOT
 [[platform.java11.dependency]]
 groupId = "org.json"
 artifactId = "json"
-version = "20230227"
+version = "20231013"
 
 # transitive dependency of org.wso2.apk:org.wso2.apk.config:1.0.0-SNAPSHOT
 [[platform.java11.dependency]]
