@@ -32,20 +32,22 @@ When you add a new logger instance add the related package name as a constant
 
 // package name constants
 const (
-	pkgAuth      = "github.com/wso2/apk/adapter/pkg/auth"
-	pkgSync      = "github.com/wso2/apk/adapter/pkg/synchronizer"
-	pkgTLSUtils  = "github.com/wso2/apk/adapter/pkg/utils/tlsutils"
-	pkgHealth    = "github.com/wso2/apk/adapter/pkg/health"
-	pkgSoapUtils = "github.com/wso2/apk/adapter/pkg/utils/soaputils"
+	pkgAuth            = "github.com/wso2/apk/adapter/pkg/auth"
+	pkgSync            = "github.com/wso2/apk/adapter/pkg/synchronizer"
+	pkgTLSUtils        = "github.com/wso2/apk/adapter/pkg/utils/tlsutils"
+	pkgHealth          = "github.com/wso2/apk/adapter/pkg/health"
+	pkgSoapUtils       = "github.com/wso2/apk/adapter/pkg/utils/soaputils"
+	pkgSemanticVersion = "github.com/wso2/product-microgateway/adapter/pkg/semanticversion"
 )
 
 // logger package references
 var (
-	LoggerAuth      logging.Log
-	LoggerSync      logging.Log
-	LoggerTLSUtils  logging.Log
-	LoggerHealth    logging.Log
-	LoggerSoapUtils logging.Log
+	LoggerAuth            logging.Log
+	LoggerSync            logging.Log
+	LoggerTLSUtils        logging.Log
+	LoggerHealth          logging.Log
+	LoggerSoapUtils       logging.Log
+	LoggerSemanticVersion logging.Log
 )
 
 func init() {
@@ -59,5 +61,6 @@ func UpdateLoggers() {
 	LoggerTLSUtils = logging.InitPackageLogger(pkgTLSUtils)
 	LoggerHealth = logging.InitPackageLogger(pkgHealth)
 	LoggerSoapUtils = logging.InitPackageLogger(pkgSoapUtils)
+	LoggerSemanticVersion = logging.InitPackageLogger(pkgSemanticVersion)
 	logrus.Info("Updated loggers")
 }

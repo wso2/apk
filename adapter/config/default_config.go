@@ -139,6 +139,7 @@ var defaultConfig = &Config{
 			CaCertFilePath:         "/home/wso2/security/truststore/ratelimiter.crt",
 			SSLCertSANHostname:     "",
 		},
+		EnableIntelligentRouting: false,
 	},
 	Enforcer: enforcer{
 		Management: management{
