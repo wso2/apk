@@ -110,7 +110,7 @@ func GetRouteConfigs(vhostToRouteArrayMap map[string][]*routev3.Route, routeConf
 //
 // The returned resources are listeners, clusters, routeConfigurations, endpoints
 func GetCacheResources(endpoints []*corev3.Address, clusters []*clusterv3.Cluster,
-	listeners []*listenerv3.Listener, routeConfigs []*routev3.RouteConfiguration) (
+	listeners []*listenerv3.Listener, routeConfigs map[string]*routev3.RouteConfiguration) (
 	listenerRes []types.Resource, clusterRes []types.Resource, routeConfigRes []types.Resource,
 	endpointRes []types.Resource) {
 
