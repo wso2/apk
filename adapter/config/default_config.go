@@ -20,17 +20,6 @@ package config
 // Configuration object which is populated with default values.
 var defaultConfig = &Config{
 	Adapter: adapter{
-		Consul: consul{
-			Enabled:            false,
-			URL:                "https://169.254.1.1:8501",
-			PollInterval:       5,
-			ACLToken:           "d3a2a719-4221-8c65-5212-58d4727427ac",
-			ApkServiceName:     "wso2",
-			ServiceMeshEnabled: false,
-			CaCertFile:         "/home/wso2/security/truststore/consul/consul-agent-ca.pem",
-			CertFile:           "/home/wso2/security/truststore/consul/local-dc-client-consul-0.pem",
-			KeyFile:            "/home/wso2/security/truststore/consul/local-dc-client-consul-0-key.pem",
-		},
 		Keystore: keystore{
 			KeyPath:  "/home/wso2/security/keystore/adapter.key",
 			CertPath: "/home/wso2/security/keystore/adapter.crt",

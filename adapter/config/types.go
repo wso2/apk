@@ -83,8 +83,6 @@ type Config struct {
 
 // Adapter related Configurations
 type adapter struct {
-	// Consul represents the configuration required to connect to consul service discovery
-	Consul consul
 	// Keystore contains the keyFile and Cert File of the adapter
 	Keystore keystore
 	// Trusted Certificates
@@ -162,27 +160,6 @@ type enforcer struct {
 	Metrics                       metrics
 	MandateSubscriptionValidation bool
 	Client                        httpClient
-}
-
-type consul struct {
-	// Enabled whether consul service discovery should be enabled
-	Enabled bool
-	// URL url of the consul client in format: http(s)://host:port
-	URL string
-	// PollInterval how frequently consul API should be polled to get updates (in seconds)
-	PollInterval int
-	// ACLToken Access Control Token required to invoke HTTP API
-	ACLToken string
-	// ApkServiceName service name that Microgateway registered in Consul Service Mesh
-	ApkServiceName string
-	// ServiceMeshEnabled whether Consul service mesh is enabled
-	ServiceMeshEnabled bool
-	// CaCertFile path to the CA cert file(PEM encoded) required for tls connection between adapter and a consul client
-	CaCertFile string
-	// CertFile path to the cert file(PEM encoded) required for tls connection between adapter and a consul client
-	CertFile string
-	// KeyFile path to the key file(PEM encoded) required for tls connection between adapter and a consul client
-	KeyFile string
 }
 
 // Router to enforcer request body passing configurations
