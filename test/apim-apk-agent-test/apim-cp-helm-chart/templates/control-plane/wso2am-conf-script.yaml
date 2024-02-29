@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "apim-helm-cp.fullname" . }}-conf-sh
+  namespace : {{ .Release.Namespace }}
+data:
+  api-manager.sh: {{ tpl (.Files.Get "confs/api-manager.sh") . | quote}}

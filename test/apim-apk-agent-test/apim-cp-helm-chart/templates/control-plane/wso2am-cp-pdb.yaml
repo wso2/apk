@@ -1,0 +1,20 @@
+# -------------------------------------------------------------------------------------
+#
+# Copyright (c) 2023, WSO2 LLC. (http://www.wso2.com). All Rights Reserved.
+#
+# This software is the property of WSO2 LLC. and its suppliers, if any.
+# Dissemination of any information or reproduction of any material contained 
+# herein is strictly forbidden, unless permitted by WSO2 in accordance with the 
+# WSO2 Commercial License available at https://wso2.com/licenses/eula/3.2
+#
+# --------------------------------------------------------------------------------------
+
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ template "apim-helm-cp.fullname" . }}-pdb
+spec:
+  minAvailable: {{ .Values.wso2.deployment.minAvailable | quote }}
+  selector:
+    matchLabels:
+      deployment: {{ template "apim-helm-cp.fullname" . }}-deployment

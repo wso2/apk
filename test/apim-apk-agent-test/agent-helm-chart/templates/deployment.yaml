@@ -1,0 +1,87 @@
+# Copyright (c) 2023, WSO2 LLC. (https://www.wso2.com) All Rights Reserved.
+#
+# WSO2 LLC. licenses this file to you under the Apache License,
+# Version 2.0 (the "License"); you may not use this file except
+# in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Chart.Name }}
+  labels:
+    app.kubernetes.io/app: "apim-apk-agent"
+    helm.sh/chart: {{ .Chart.Name }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/app: "apim-apk-agent"
+      app.kubernetes.io/name: {{ .Chart.Name }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/app: "apim-apk-agent"
+        app.kubernetes.io/name: {{ .Chart.Name }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      serviceAccountName: wso2agent-platform
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: grpc-port
+              containerPort: 18000
+            - name: rest-port
+              containerPort: 18001
+          env:
+            - name: APIM_APK_AGENT_PRIVATE_KEY_PATH
+              value: /home/wso2/security/keystore/apk-agent.key
+            - name: APIM_APK_AGENT_PUBLIC_CERT_PATH
+              value: /home/wso2/security/keystore/apk-agent.crt
+            - name: APIM_APK_AGENT_SERVER_NAME
+              value: apim-apk-agent-service.{{ .Release.Namespace }}.svc
+            - name: APIM_APK_AGENT_GRPC_PORT
+              value: "18000"
+          volumeMounts:
+            - name: log-conf-volume
+              mountPath: /home/wso2/conf/
+            - name: apk-agent-certificates
+              mountPath: /home/wso2/security/keystore/apk-agent.key
+              subPath: tls.key
+            - name: apk-agent-certificates
+              mountPath: /home/wso2/security/keystore/apk-agent.crt
+              subPath: tls.crt
+            - name: apk-agent-certificates
+              mountPath: /home/wso2/security/truststore/apk-agent-ca.crt
+              subPath: ca.crt
+          readinessProbe:
+            exec:
+              command: [ "sh", "check_health.sh" ]
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            failureThreshold: 5
+          livenessProbe:
+            exec:
+              command: [ "sh", "check_health.sh" ]
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            failureThreshold: 5
+      volumes:
+        - name: log-conf-volume
+          configMap:
+            name: {{ .Release.Name }}-log-conf
+        - name: apk-agent-certificates
+          secret:
+            secretName: apk-agent-server-cert

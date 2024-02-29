@@ -1,0 +1,19 @@
+{
+  "name":"SwaggerPetstore",
+  "version":"1.0.0",
+  "context":"/petstore",
+  "gatewayType":"wso2/apk",
+  "endpointConfig":{
+    "endpoint_type":"http",
+    "sandbox_endpoints":{
+      "url":"https://petstore3.swagger.io/api/v3"
+    },
+    "production_endpoints": {
+      "url":"https://petstore3.swagger.io/api/v3"
+    }
+  },
+  "policies": [
+    "Gold",
+    "Unlimited"
+  ]
+}
