@@ -37,7 +37,7 @@ If you have setup `Kind` and wish to run the integration tests using Gradle, the
 3. Port forward router-service to use localhost.
 
     ```bash
-    kubectl port-forward svc/apk-test-setup-wso2-apk-router-service -n apk-integration-test 9095:9095
+    kubectl port-forward svc/apk-test-setup-wso2-apk-gateway-service -n apk-integration-test 9095:9095
     ```
 
 4. Add all DNS mappings to `/etc/hosts` file. Refer to `scripts/run-tests.sh` file for the domain names.
