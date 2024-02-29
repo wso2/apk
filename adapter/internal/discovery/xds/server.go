@@ -71,7 +71,7 @@ type EnvoyInternalAPI struct {
 // EnvoyGatewayConfig struct use to hold envoy gateway resources
 type EnvoyGatewayConfig struct {
 	listeners               []*listenerv3.Listener
-	routeConfigs            []*routev3.RouteConfiguration
+	routeConfigs            map[string]*routev3.RouteConfiguration
 	clusters                []*clusterv3.Cluster
 	endpoints               []*corev3.Address
 	customRateLimitPolicies []*model.CustomRateLimitPolicy
@@ -99,13 +99,13 @@ var (
 	enforcerRevokedTokensCache      wso2_cache.SnapshotCache
 	enforcerThrottleDataCache       wso2_cache.SnapshotCache
 
-	orgAPIMap map[string]map[string]*EnvoyInternalAPI // organizationID -> Vhost:API_UUID -> EnvoyInternalAPI struct map
-
-	orgIDvHostBasepathMap map[string]map[string]string   // organizationID -> Vhost:basepath -> Vhost:API_UUID
-	orgIDAPIvHostsMap     map[string]map[string][]string // organizationID -> API_UUID-prod/sand -> Envoy Vhost Array map
+	orgAPIMap             map[string]map[string]*EnvoyInternalAPI // organizationID -> Vhost:API_UUID -> EnvoyInternalAPI struct map
+	orgIDvHostBasepathMap map[string]map[string]string            // organizationID -> Vhost:basepath -> Vhost:API_UUID
+	orgIDAPIvHostsMap     map[string]map[string][]string          // organizationID -> UUID -> prod/sand -> Envoy Vhost Array map
 
 	orgIDLatestAPIVersionMap map[string]map[string]map[string]semantic_version.SemVersion // organizationID -> Vhost:APIName -> Version Range -> Latest API Version
 	// Envoy Label as map key
+	// TODO(amali) use this without generating all again.
 	gatewayLabelConfigMap map[string]*EnvoyGatewayConfig // GW-Label -> EnvoyGatewayConfig struct map
 
 	// Common Enforcer Label as map key
@@ -125,10 +125,6 @@ const (
 	gatewayController    string = "GatewayController"
 	apiController        string = "APIController"
 )
-
-type envoyRoutesWithSectionName struct {
-	routes []*routev3.Route
-}
 
 func maxRandomBigInt() *big.Int {
 	return big.NewInt(int64(maxRandomInt))
@@ -401,56 +397,61 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 	}
 
 	envoyGatewayConfig, gwFound := gatewayLabelConfigMap[gatewayName]
-	// gwFound means that the gateway is configured in the gateway cr.
+	// gwFound means that the gateway is configured in the envoy config.
 	listeners := envoyGatewayConfig.listeners
 	if !gwFound || listeners == nil || len(listeners) == 0 {
 		return nil, nil, nil, nil, nil
 	}
-	routeConfigs := make([]*routev3.RouteConfiguration, 0)
+
+	routeConfigs := make(map[string]*routev3.RouteConfiguration, 0)
+	for _, route := range envoyGatewayConfig.routeConfigs {
+		route.VirtualHosts = []*routev3.VirtualHost{}
+	}
 	// TODO(amali) Revisit the following
 	// Find the matching listener for each vhost and then only add the routes to the routeConfigs
 	for _, listener := range listeners {
 		for vhost, routes := range vhostToRouteArrayMap {
-			// listener match pass in the following cases
-			// 1. vhost matches to a hostname in gateway
-			// 2. listener name matches
-			matchedListener, found := common.FindElement(dataholder.GetAllGatewayListeners(), func(listenerLocal gwapiv1b1.Listener) bool {
-				if listenerLocal.Hostname != nil && common.MatchesHostname(vhost, string(*listenerLocal.Hostname)) {
-					if listener.Name == common.GetEnvoyListenerName(string(listenerLocal.Protocol), uint32(listenerLocal.Port)) {
-						return true
+			// todo(amali) without going through all this pain just to get the listener section name,
+			// let the api decide which gateway section it refers to.
+			// because it was already there in httproute cr
+			listenerSection, found := common.FindElement(dataholder.GetAllGatewayListenerSections(),
+				func(listenerSection gwapiv1b1.Listener) bool {
+					if listenerSection.Hostname != nil && common.MatchesHostname(vhost, string(*listenerSection.Hostname)) {
+						// if the envoy side vhost matches to a hostname in gateway, then it is a match
+						if listener.Name == common.GetEnvoyListenerName(string(listenerSection.Protocol), uint32(listenerSection.Port)) {
+							return true
+						}
 					}
-				}
-				return false
-			})
+					return false
+				})
 			if found {
 				// Prepare the route config name based on the gateway listener section name.
-				routeConfigName := common.GetEnvoyRouteConfigName(listener.Name, string(matchedListener.Name))
+				routeConfigName := common.GetEnvoyRouteConfigName(listener.Name, string(listenerSection.Name))
 				routesConfig := oasParser.GetRouteConfigs(map[string][]*routev3.Route{vhost: routes}, routeConfigName, envoyGatewayConfig.customRateLimitPolicies)
 
-				routeConfigMatched, alreadyExistsInRouteConfigList := common.FindElement(routeConfigs, func(routeConf *routev3.RouteConfiguration) bool {
-					return routeConf.Name == routesConfig.Name
-				})
+				routeConfigMatched, alreadyExistsInRouteConfigList := routeConfigs[routeConfigName]
 				if alreadyExistsInRouteConfigList {
-					logger.LoggerAPKOperator.Debugf("Route already exists. %v", routesConfig.Name)
+					logger.LoggerAPKOperator.Debugf("Route already exists. %v", routeConfigName)
 					routeConfigMatched.VirtualHosts = append(routeConfigMatched.VirtualHosts, routesConfig.VirtualHosts...)
 				} else {
-					routeConfigs = append(routeConfigs, routesConfig)
+					logger.LoggerAPKOperator.Debugf("Route does not exist, Hence adding a new config. %v", routeConfigName)
+					routeConfigs[routeConfigName] = routesConfig
 				}
 			} else {
-				logger.LoggerAPKOperator.Errorf("Failed to find a matching gateway listener for this vhost: %s in %v", vhost, listener.Name)
+				logger.LoggerAPKOperator.Errorf("Failed to find a matching gateway listener section in gateway CR for this vhost: %s in %v", vhost, listener.Name)
 			}
 		}
 	}
 
 	// Find gateway listeners that has $systemHost as its hostname and add the system routeConfig referencing those listeners
-	gatewayListeners := dataholder.GetAllGatewayListeners()
+	gatewayListeners := dataholder.GetAllGatewayListenerSections()
 	for _, listener := range gatewayListeners {
 		if systemHost == string(*listener.Hostname) {
 			var vhostToRouteArrayFilteredMapForSystemEndpoints = make(map[string][]*routev3.Route)
 			vhostToRouteArrayFilteredMapForSystemEndpoints[systemHost] = vhostToRouteArrayMap[systemHost]
 			routeConfigName := common.GetEnvoyRouteConfigName(common.GetEnvoyListenerName(string(listener.Protocol), uint32(listener.Port)), string(listener.Name))
 			systemRoutesConfig := oasParser.GetRouteConfigs(vhostToRouteArrayFilteredMapForSystemEndpoints, routeConfigName, envoyGatewayConfig.customRateLimitPolicies)
-			routeConfigs = append(routeConfigs, systemRoutesConfig)
+			routeConfigs[routeConfigName] = systemRoutesConfig
 		}
 	}
 
@@ -459,22 +460,6 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 	endpointArray = append(endpointArray, envoyGatewayConfig.endpoints...)
 	generatedListeners, clusters, generatedRouteConfigs, endpoints := oasParser.GetCacheResources(endpointArray, clusterArray, listeners, routeConfigs)
 	return generatedListeners, clusters, generatedRouteConfigs, endpoints, apis
-}
-
-// function to check routes []*routev3.Route equlas routes []*routev3.Route
-func checkRoutes(routes []*routev3.Route, routesFromListener []*routev3.Route) bool {
-	for i := range routes {
-		flag := false
-		for j := range routesFromListener {
-			if routes[i].Name == routesFromListener[j].Name {
-				flag = true
-			}
-		}
-		if !flag {
-			return false
-		}
-	}
-	return true
 }
 
 // GenerateGlobalClusters generates the globally available clusters and endpoints.
