@@ -97,7 +97,7 @@ func (baseVersion SemVersion) Compare(version SemVersion) bool {
 
 	// Compare patch version
 	if baseVersion.Patch != nil && version.Patch != nil {
-		return *baseVersion.Patch < *version.Patch
+		return *baseVersion.Patch <= *version.Patch
 	} else if baseVersion.Patch != nil {
 		return false
 	} else if version.Patch != nil {
