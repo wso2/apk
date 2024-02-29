@@ -138,10 +138,8 @@ type Endpoint struct {
 	// Port of the endpoint.
 	// If the port is not specified, 80 is assigned if URLType is http
 	// 443 is assigned if URLType is https
-	Port uint32
-	//ServiceDiscoveryQuery consul query for service discovery
-	ServiceDiscoveryString string
-	RawURL                 string
+	Port   uint32
+	RawURL string
 	// Trusted CA Cerificate for the endpoint
 	Certificate []byte
 	// Subject Alternative Names to verify in the public certificate
@@ -953,9 +951,6 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoGQLRouteCR(gqlRoute *dpv1al
 }
 
 func (endpoint *Endpoint) validateEndpoint() error {
-	if len(endpoint.ServiceDiscoveryString) > 0 {
-		return nil
-	}
 	if endpoint.Port == 0 || endpoint.Port > 65535 {
 		return errors.New("endpoint port value should be between 0 and 65535")
 	}

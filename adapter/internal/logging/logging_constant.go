@@ -47,7 +47,6 @@ const (
 const (
 	Error1400 = 1400
 	Error1401 = 1401
-	Error1402 = 1402
 	Error1403 = 1403
 	Error1410 = 1410
 	Error1411 = 1411
@@ -168,10 +167,6 @@ var Mapper = map[int]logging.ErrorDetails{
 	Error1401: {
 		ErrorCode: Error1401,
 		Message:   "Error in Stream request type.",
-	},
-	Error1402: {
-		ErrorCode: Error1402,
-		Message:   "Consul syntax parse error.",
 	},
 	Error1403: {
 		ErrorCode: Error1403,
