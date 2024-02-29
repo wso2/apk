@@ -62,7 +62,7 @@ jobs:
         helm dependency build
         helm install apim -n apk . --debug --wait --timeout 5m0s \
         --set deployment.image.respository=sampathrajapakse/wso2am \
-        --set deployment.image.tag=4.3.0 \
+        --set deployment.image.tag=4.3.0 
         kubectl get pods -n apk
         kubectl get svc -n apk
 
@@ -70,9 +70,9 @@ jobs:
       if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
       shell: sh
       run: |
-        cd /helm-charts
+        cd apk-repo/helm-charts
         helm dependency build
-        helm install apk-test-setup -n apk . --debug --wait --timeout 15m0s \
+        helm install apk-test-setup -n apk . --debug --wait --timeout 15m0s 
         kubectl get pods -n apk
         kubectl get svc -n apk
 
@@ -85,7 +85,7 @@ jobs:
         helm install apim-apk-agent -n apk . --debug --wait --timeout 2m0s \
         --set controlPlane.serviceURL=https://apim-wso2am-cp-1-service:9443/ \
         --set controlPlane.eventListeningEndpoints=amqp://admin:admin@apim-wso2am-cp-1-service:5673?retries='10'&connectdelay='30' \
-        --set dataPlane.k8ResourceEndpoint=https://apk-wso2-apk-config-ds-service.apk.svc.cluster.local:9443/api/configurator/apis/generate-k8s-resources \
+        --set dataPlane.k8ResourceEndpoint=https://apk-wso2-apk-config-ds-service.apk.svc.cluster.local:9443/api/configurator/apis/generate-k8s-resources 
         kubectl get pods -n apk
         kubectl get svc -n apk
     - name: Run test cases
@@ -102,7 +102,7 @@ jobs:
         kubectl describe pods -n apk
         kubectl get pods -n apk
         kubectl get svc -n apk
-        helm uninstall apim-apk-agent -n apk
+        helm uninstall apk-test-setup -n apk
         cd apk-repo/test/apim-apk-agent-test/apim-cp-helm-chart
         helm uninstall apim -n apk
         cd apk-repo/test/apim-apk-agent-test/agent-helm-chart
