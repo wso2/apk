@@ -1,4 +1,4 @@
-FROM node:16-alpine
+FROM node:20-alpine
 
 ARG USER=wso2apk
 ARG USER_ID=10001
@@ -12,6 +12,8 @@ ARG MOTD='printf "\n\
  which is under the Apache License, Version 2.0. \n\
  Read more about Apache License, Version 2.0 here @ http://www.apache.org/licenses/LICENSE-2.0.\n"'
 ENV ENV=${USER_HOME}"/.ashrc"
+RUN apk update && apk upgrade --no-cache \
+    && apk add  --no-cache tzdata && apk upgrade libssl3 libcrypto3
 RUN \
     addgroup -S -g ${USER_GROUP_ID} ${USER_GROUP} \
     && adduser -S -u ${USER_ID} -h ${USER_HOME} -G ${USER_GROUP} ${USER} \
