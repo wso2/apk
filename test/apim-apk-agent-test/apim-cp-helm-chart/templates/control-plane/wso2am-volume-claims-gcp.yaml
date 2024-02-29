@@ -1,0 +1,85 @@
+# -------------------------------------------------------------------------------------
+#
+# Copyright (c) 2023, WSO2 LLC. (http://www.wso2.com). All Rights Reserved.
+#
+# This software is the property of WSO2 LLC. and its suppliers, if any.
+# Dissemination of any information or reproduction of any material contained 
+# herein is strictly forbidden, unless permitted by WSO2 in accordance with the 
+# WSO2 Commercial License available at https://wso2.com/licenses/eula/3.2
+#
+# --------------------------------------------------------------------------------------
+
+{{ if and .Values.wso2.deployment.persistence.solrIndexing.enabled .Values.gcp.enabled }}
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ template "apim-helm-cp.fullname" . }}-local-carbon-database-1
+  namespace : {{ .Release.Namespace }}
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: {{ .Values.wso2.deployment.persistence.solrIndexing.capacity.carbonDatabase }}
+  selector:
+    matchLabels:
+      purpose: am-carbondb-1
+  storageClassName: {{ template "apim-helm-cp.fullname" . }}-sc
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ template "apim-helm-cp.fullname" . }}-solr-indexed-data-1
+  namespace : {{ .Release.Namespace }}
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: {{ .Values.wso2.deployment.persistence.solrIndexing.capacity.solrIndexedData }}
+  selector:
+    matchLabels:
+      purpose: am-solr-1
+  storageClassName: {{ template "apim-helm-cp.fullname" . }}-sc
+
+---
+{{ if .Values.wso2.deployment.highAvailability }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ template "apim-helm-cp.fullname" . }}-local-carbon-database-2
+  namespace : {{ .Release.Namespace }}
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: {{ .Values.wso2.deployment.persistence.solrIndexing.capacity.carbonDatabase }}
+  selector:
+    matchLabels:
+      purpose: am-carbondb-2
+  storageClassName: {{ template "apim-helm-cp.fullname" . }}-sc
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ template "apim-helm-cp.fullname" . }}-solr-indexed-data-2
+  namespace : {{ .Release.Namespace }}
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: {{ .Values.wso2.deployment.persistence.solrIndexing.capacity.solrIndexedData }}
+  selector:
+    matchLabels:
+      purpose: am-solr-2
+  storageClassName: {{ template "apim-helm-cp.fullname" . }}-sc
+
+{{- end }}
+{{- end }}

@@ -1,0 +1,40 @@
+# Copyright (c) 2022, WSO2 LLC. (https://www.wso2.com) All Rights Reserved.
+#
+# WSO2 LLC. licenses this file to you under the Apache License,
+# Version 2.0 (the "License"); you may not use this file except
+# in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# The following manifests contain a self-signed issuer CR and a certificate CR.
+# More document can be found at https://docs.cert-manager.io
+
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: apim-apk-agent-server-cert
+  namespace: {{ .Release.Namespace }}
+spec:
+  commonName: apim-apk-agent-service
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS8
+    size: 2048
+  
+  dnsNames:
+  - apim-apk-agent-service.{{ .Release.Namespace }}.svc
+  - apim-apk-agent-service.{{ .Release.Namespace }}.svc.cluster.local
+  issuerRef:
+    kind: "ClusterIssuer"
+    name: "apk-agent-selfsigned-issuer"
+  secretName: apk-agent-server-cert
+
+

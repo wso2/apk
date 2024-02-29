@@ -1,0 +1,17 @@
+# -------------------------------------------------------------------------------------
+#
+# Copyright (c) 2023, WSO2 LLC. (http://www.wso2.com). All Rights Reserved.
+#
+# This software is the property of WSO2 LLC. and its suppliers, if any.
+# Dissemination of any information or reproduction of any material contained 
+# herein is strictly forbidden, unless permitted by WSO2 in accordance with the 
+# WSO2 Commercial License available at https://wso2.com/licenses/eula/3.2
+#
+# --------------------------------------------------------------------------------------
+
+apiVersion: v1
+appVersion: "4.2.0"
+description: A Helm chart for the deployment of WSO2 API Management Control Plane profile
+name: wso2am-cp
+version: 4.2.0-0
+icon: https://wso2.cachefly.net/wso2/sites/all/images/wso2logo.svg
