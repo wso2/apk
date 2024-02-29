@@ -14,9 +14,7 @@
 # limitations under the License.
 
 [libraries]
-amazonaws-awslambda = {module = "org.wso2.orbit.com.amazonaws:awslambda", version.ref = "awslambda"}
 apicurio-data-models = {module = "io.apicurio:apicurio-data-models", version.ref = "apicurio"}
-aspectjrt = {module = "org.aspectj:aspectjrt", version.ref = "aspectj"}
 azure-applicationinsights = {module = "com.microsoft.azure:applicationinsights-core", version.ref = "azure-applicationinsights"}
 azure-messaging = {module = "com.azure:azure-messaging-eventhubs", version.ref = "azure-messaging"}
 azure-monitor-opentelemetry = {module = "com.azure:azure-monitor-opentelemetry-exporter", version.ref = "azure-monitor-opentelemetry"}
@@ -81,7 +79,6 @@ opentelemetry-exporter-zipkin = {module = "io.opentelemetry:opentelemetry-export
 opentelemetry-extension-trace-propagators = {module = "io.opentelemetry:opentelemetry-extension-trace-propagators", version.ref = "opentelemetry"}
 opentelemetry-sdk = {module = "io.opentelemetry:opentelemetry-sdk", version.ref = "opentelemetry"}
 opentelemetry-semconv = {module = "io.opentelemetry:opentelemetry-semconv", version.ref = "opentelemetry-semconv"}
-pdfbox = {module = "org.apache.pdfbox:pdfbox", version.ref = "apache-pdfbox"}
 postgresql = {module = "org.postgresql:postgresql", version.ref = "postgresql"}
 snakeyaml = {module = "org.yaml:snakeyaml", version.ref = "snakeyaml"}
 sun-saaj-impl = {module = "com.sun.xml.messaging.saaj:saaj-impl", version.ref = "sun"}
