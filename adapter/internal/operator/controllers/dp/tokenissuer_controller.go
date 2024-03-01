@@ -74,6 +74,7 @@ func (r *TokenssuerReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	if err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2660, logging.CRITICAL,
 			"Unable to resolve JWTIssuers after updating %s : %s", req.NamespacedName.String(), err.Error()))
+		return ctrl.Result{}, nil
 	}
 	UpdateEnforcerJWTIssuers(jwtIssuerMapping)
 	return ctrl.Result{}, nil
@@ -233,7 +234,7 @@ func getJWTIssuers(ctx context.Context, client k8client.Client, namespace types.
 			if err != nil {
 				loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2659, logging.MAJOR,
 					"Error resolving certificate for JWKS for issuer %s in CR %s, %v", resolvedJwtIssuer.Issuer, utils.NamespacedName(&jwtIssuer).String(), err.Error()))
-				return nil, err
+				continue
 			}
 			signatureValidation.Certificate = &dpv1alpha1.ResolvedTLSConfig{ResolvedCertificate: tlsCertificate}
 		}
