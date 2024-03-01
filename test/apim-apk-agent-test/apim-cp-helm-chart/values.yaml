@@ -167,7 +167,7 @@ kubernetes:
 
   securityContext:
     # -- User ID of the container
-    runAsUser: 802
+    runAsUser: 10001
   # -- Enable AppArmor profiles for the deployment
   enableAppArmor: false
 
@@ -363,11 +363,11 @@ wso2:
     # Container image configurations
     image:
       # -- Container registry hostname
-      registry: ""
+      registry: "docker.io"
       # -- Azure ACR repository name consisting the image
-      repository: "sampathrajapakse/wso2am"
+      repository: "rakhitharr/wso2am"
       # -- Docker image digest
-      digest: ""
+      digest: "sha256:6f647d64753462736bb1bc22b6fe675413278a02623a9c12609b3bc4d1f4a0ef"
       # -- Refer to the Kubernetes documentation on updating images (https://kubernetes.io/docs/concepts/containers/images/#updating-images)
       imagePullPolicy: Always
 

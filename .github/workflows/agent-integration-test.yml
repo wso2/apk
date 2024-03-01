@@ -61,8 +61,9 @@ jobs:
         helm repo add jetstack https://charts.jetstack.io
         helm dependency build
         helm install apim -n apk . --debug --wait --timeout 5m0s \
-        --set deployment.image.respository=sampathrajapakse/wso2am \
-        --set deployment.image.tag=4.3.0 
+        --set wso2.deployment.image.registry=docker.io \
+        --set wso2.deployment.image.respository=rakhitharr/wso2am \
+        --set wso2.deployment.image.digest=sha256:6f647d64753462736bb1bc22b6fe675413278a02623a9c12609b3bc4d1f4a0ef
         kubectl get pods -n apk
         kubectl get svc -n apk
 
@@ -113,7 +114,7 @@ jobs:
       with:
         azcliversion: 2.44.1
         inlineScript: |
-          az aks delete --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} --name go-integ-${{ secrets.AKS_CLUSTER_NAME }}-${{ github.event.number || github.run_id }} --yes
+          az aks delete --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} --name agent-integ-${{ secrets.AKS_CLUSTER_NAME }}-${{ github.event.number || github.run_id }} --yes
     - name: Logout from azure
       if: always()
       uses: azure/CLI@v1
