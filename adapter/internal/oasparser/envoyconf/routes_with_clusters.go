@@ -1080,13 +1080,6 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 		//remove xws2basepaath from resourcepath
 		suffix := strings.TrimPrefix(resourcePath, xWso2Basepath)
 		action.Route.RegexRewrite.Substitution = suffix
-		action.Route.RegexRewrite.Pattern.EngineType = &envoy_type_matcherv3.RegexMatcher_GoogleRe2{}
-		action.Route.UpgradeConfigs = []*routev3.RouteAction_UpgradeConfig{}
-		action.Route.ClusterSpecifier = &routev3.RouteAction_Cluster{Cluster: clusterName}
-		//remove autohostrewrite value
-		action.Route.HostRewriteSpecifier = nil
-		decorator = nil
-		perRouteFilterConfigs = nil
 		// general headers to add and remove are included in this methods
 		route := generateRouteConfig(xWso2Basepath, match, action, nil, decorator, perRouteFilterConfigs, nil, nil, nil, nil)
 
