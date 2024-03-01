@@ -177,7 +177,7 @@ damnhandy = "2.1.8"
 wso2-uri-templates = "1.6.5"
 xerces = "2.8.1.wso2v2"
 #Added as direct dependency for transitive dependency version upgrades
-reactor-netty-http = "1.0.34"
+reactor-netty-http = "1.0.39"
 protobuf-java = "3.21.7"
 #Test dependencies
 hamcrest = "1.3"
