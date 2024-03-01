@@ -138,6 +138,12 @@ public class APIFactory {
 
     public ResourceConfig getMatchedResource(API api, String matchedResourcePath, String method) {
         List<ResourceConfig> resourceConfigList = api.getAPIConfig().getResources();
+        if (APIConstants.ApiType.GRPC.equals(api.getAPIConfig().getApiType())) {
+            //TODO check if there's another way to do this, perhaps in the adapter side by setting the method
+            return resourceConfigList.stream()
+                    .filter(resourceConfig -> resourceConfig.getPath().equals(matchedResourcePath))
+                    .findFirst().orElse(null);
+        }
         return resourceConfigList.stream()
                 .filter(resourceConfig -> resourceConfig.getPath().equals(matchedResourcePath)).
                 filter(resourceConfig -> (method == null) || resourceConfig.getMethod()
