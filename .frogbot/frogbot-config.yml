@@ -39,7 +39,7 @@
       # emailAuthor: ""
 
     # Frogbot scanning parameters
-    #scan:
+    scan:
       # [Default: false]
       # Frogbot displays all existing vulnerabilities, including the ones that were not added by the pull request
       # includeAllVulnerabilities: true
@@ -68,7 +68,7 @@
       # - user@company.com
 
       # List of subprojects / project dirs inside the Git repository
-      #projects:
+      projects:
       # [Mandatory if the two conditions below are met]
       # 1. The project uses yarn 2, NuGet or .NET Core to download its dependencies
       # 2. The `installCommand` variable isn't set in your frogbot-config.yml file.
@@ -78,8 +78,8 @@
 
       # [Default: root directory]
       # List of relative path's to the projects directories in the git repository. If left empty (without providing "." yourself as the root directory's path), a recursive scan is triggered from the root directory of the project.
-      #   workingDirs:
-      #     - "."
+        - workingDirs:
+          - adapter
 
       # [Default: ["*.git*", "*node_modules*", "*target*", "*venv*", "*test*"]]
       # List of exclusion patterns (utilizing wildcards) for excluding paths in the source code of the Git repository during SCA scans.
