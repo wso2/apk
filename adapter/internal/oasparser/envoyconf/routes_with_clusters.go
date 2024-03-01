@@ -204,7 +204,6 @@ func CreateRoutesWithClusters(adapterInternalAPI *model.AdapterInternalAPI, inte
 			adapterInternalAPI.GetTitle(), apiVersion, "")
 		adapterInternalAPI.Endpoints.HTTP2BackendEnabled = true
 		cluster, address, err := processEndpoints(clusterName, adapterInternalAPI.Endpoints, timeout, basePath)
-
 		if err != nil {
 			logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2239, logging.MAJOR,
 				"Error while adding grpc endpoints for %s:%v. %v", apiTitle, apiVersion, err.Error()))
@@ -218,12 +217,16 @@ func CreateRoutesWithClusters(adapterInternalAPI *model.AdapterInternalAPI, inte
 		var clusterName string
 		resourcePath := resource.GetPath()
 		endpoint := resource.GetEndpoints()
+		//TODO see if I can configure this elsewhere
+		endpoint.HTTP2BackendEnabled = true
 		basePath := strings.TrimSuffix(endpoint.Endpoints[0].Basepath, "/")
 		existingClusterName := getExistingClusterName(*endpoint, processedEndpoints)
 
 		if existingClusterName == "" {
 			clusterName = getClusterName(endpoint.EndpointPrefix, organizationID, vHost, adapterInternalAPI.GetTitle(), apiVersion, resource.GetID())
 			cluster, address, err := processEndpoints(clusterName, endpoint, timeout, basePath)
+			//TODO see if I can configure this elsewhere
+			cluster.TransportSocketMatches = nil
 			if err != nil {
 				logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2239, logging.MAJOR, "Error while adding resource level endpoints for %s:%v-%v. %v", apiTitle, apiVersion, resourcePath, err.Error()))
 			} else {
