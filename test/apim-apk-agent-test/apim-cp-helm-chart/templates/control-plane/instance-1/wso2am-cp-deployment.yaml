@@ -62,7 +62,7 @@ spec:
           type: RuntimeDefault
       containers:
       - name: wso2am-control-plane
-        image: sampathrajapakse/wso2am:4.3.0
+        image: {{ .Values.wso2.deployment.image.registry }}/{{ .Values.wso2.deployment.image.repository }}@{{ .Values.wso2.deployment.image.digest }}
         imagePullPolicy: {{ .Values.wso2.deployment.imagePullPolicy }}
         env:
         - name: PROFILE_NAME
