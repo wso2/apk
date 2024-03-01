@@ -361,5 +361,5 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: apk-integration-test-cucmber-logs
-        path: 'apk-repo/test/integration/podlogs/*.log'
+        path: apk-repo/test/integration/podlogs/*.log
  
