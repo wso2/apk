@@ -15,32 +15,41 @@ jobs:
       - name: Scan config-deployer-service
         shell: sh
         run: |
+          docker pull wso2/apk-config-deployer-service:latest
           jf docker scan wso2/apk-config-deployer-service:latest
       - name: Scan IDP Domain Service
         shell: sh
         run: |
+          docker pull wso2/apk-idp-domain-service:latest
           jf docker scan wso2/apk-idp-domain-service:latest
       - name: Scan IDP UI Service
         shell: sh
         run: |
+          docker pull wso2/apk-idp-ui:latest
           jf docker scan wso2/apk-idp-ui:latest
       - name: Scan Adapter
         shell: sh
         run: |
+          docker pull wso2/apk-adapter:latest
           jf docker scan wso2/apk-adapter:latest
       - name: Scan Common-controller
         shell: sh
         run: |
+          docker pull wso2/apk-common-controller:latest
           jf docker scan wso2/apk-common-controller:latest
       - name: Scan Enforcer
         shell: sh
         run: |
+          docker pull wso2/apk-enforcer:latest
           jf docker scan wso2/apk-enforcer:latest
       - name: Scan Router
         shell: sh
         run: |
+          docker pull wso2/apk-router:latest
           jf docker scan wso2/apk-router:latest
       - name: Scan ratelimitter
         shell: sh
         run: |
+          docker pull wso2/apk-ratelimitter:latest
           jf docker scan wso2/apk-ratelimitter:latest
+          
