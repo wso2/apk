@@ -1,0 +1,48 @@
+name: Jfrog Scan
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 20 * * *"
+jobs:
+  scan-images:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup JFrog CLI
+        uses: jfrog/setup-jfrog-cli@v4
+        env:
+            JF_URL: ${{ secrets.JF_URL }}
+            JF_ACCESS_TOKEN: ${{ secrets.JF_ACCESS_TOKEN }}
+        with:
+            download-repository: jfrog-cli-remote
+      - name: Scan config-deployer-service
+        shell: sh
+        run: |
+          jf docker scan wso2/apk-config-deployer-service:latest
+      - nam: Scan IDP Domain Service
+        shell: sh
+        run: |
+          jf docker scan wso2/apk-idp-domain-service:latest
+      - name: Scan IDP UI Service
+        shell: sh
+        run: |
+          jf docker scan wso2/apk-idp-ui:latest
+      - name: Scan Adapter
+        shell: sh
+        run: |
+          jf docker scan wso2/apk-adapter:latest
+      - name: Scan Common-controller
+        shell: sh
+        run: |
+          jf docker scan wso2/apk-common-controller:latest
+      - name: Scan Enforcer
+        shell: sh
+        run: |
+          jf docker scan wso2/apk-enforcer:latest
+      - name: Scan Router
+        shell: sh
+        run: |
+          jf docker scan wso2/apk-router:latest
+      - name: Scan ratelimitter
+        shell: sh
+        run: |
+          jf docker scan wso2/apk-ratelimitter:latest
