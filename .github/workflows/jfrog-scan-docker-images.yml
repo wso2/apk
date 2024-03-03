@@ -12,8 +12,6 @@ jobs:
         env:
             JF_URL: ${{ secrets.JF_URL }}
             JF_ACCESS_TOKEN: ${{ secrets.JF_ACCESS_TOKEN }}
-        with:
-            download-repository: jfrog-cli-remote
       - name: Scan config-deployer-service
         shell: sh
         run: |
