@@ -160,7 +160,7 @@ public class SubscriptionDataStoreUtil {
             SubscriptionListDto subscriptions = subscriptionValidationDataRetrievalRestClient.getAllSubscriptions();
             List<SubscriptionDto> list = subscriptions.getList();
             if (JMXUtils.isJMXMetricsEnabled()) {
-                ExtAuthMetrics.getInstance().recordSubscriptionMetrics(list.size());
+                ExtAuthMetrics.getInstance().recordSubscriptionMetrics(SubscriptionDataHolder.getInstance().getTotalSubscriptionCount());
             }
             Map<String, List<SubscriptionDto>> orgWizeMAp = new HashMap<>();
             for (SubscriptionDto subscriptionDto : list) {
@@ -193,6 +193,9 @@ public class SubscriptionDataStoreUtil {
 
         SubscriptionDataStore subscriptionDataStore = getSubscriptionDataStore(subscription.getOrganization());
         subscriptionDataStore.addSubscription(subscription);
+        if (JMXUtils.isJMXMetricsEnabled()) {
+            ExtAuthMetrics.getInstance().recordSubscriptionMetrics(SubscriptionDataHolder.getInstance().getTotalSubscriptionCount());
+        }
 
     }
 
@@ -245,8 +248,10 @@ public class SubscriptionDataStoreUtil {
     public static void removeSubscription(Subscription subscription) {
 
         SubscriptionDataStore subscriptionDataStore = getSubscriptionDataStore(subscription.getOrganization());
-
         subscriptionDataStore.removeSubscription(subscription);
+        if (JMXUtils.isJMXMetricsEnabled()) {
+            ExtAuthMetrics.getInstance().recordSubscriptionMetrics(SubscriptionDataHolder.getInstance().getTotalSubscriptionCount());
+        }
 
     }
 

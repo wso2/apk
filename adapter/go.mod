@@ -10,9 +10,7 @@ require (
 	github.com/onsi/ginkgo/v2 v2.11.0
 	github.com/onsi/gomega v1.27.10
 	github.com/pelletier/go-toml v1.9.5
-	github.com/prometheus/client_golang v1.18.0
-	github.com/prometheus/procfs v0.12.0
-	github.com/shirou/gopsutil/v3 v3.24.1
+	github.com/prometheus/client_golang v1.17.0
 	github.com/sirupsen/logrus v1.9.0
 	github.com/wso2/apk/common-go-libs v0.0.0-20231208100153-24bee7b4bd81
 	golang.org/x/exp v0.0.0-20231206192017-f3f8817b8deb
@@ -62,12 +60,14 @@ require (
 	github.com/power-devops/perfstat v0.0.0-20210106213030-5aafc221ea8c // indirect
 	github.com/prometheus/client_model v0.5.0 // indirect
 	github.com/prometheus/common v0.45.0 // indirect
+	github.com/prometheus/procfs v0.12.0 // indirect
+	github.com/shirou/gopsutil/v3 v3.24.2 // indirect
 	github.com/shoenig/go-m1cpu v0.1.6 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/tklauser/go-sysconf v0.3.12 // indirect
 	github.com/tklauser/numcpus v0.6.1 // indirect
 	github.com/vektah/gqlparser v1.3.1 // indirect
-	github.com/yusufpapurcu/wmi v1.2.3 // indirect
+	github.com/yusufpapurcu/wmi v1.2.4 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.26.0 // indirect
 	golang.org/x/net v0.21.0 // indirect

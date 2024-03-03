@@ -601,7 +601,6 @@ wso2:
       # idpDSBalHost: 0.0.0.0
       # -- Statsd is required to expose metrics from ratelimiter
       # statsd:
-      #   enabled: true
       #   image:
       #     repository: prom/statsd-exporter
       #     tag: v0.26.0

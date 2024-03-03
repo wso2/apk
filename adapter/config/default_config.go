@@ -33,10 +33,9 @@ var defaultConfig = &Config{
 		},
 		Environment: "Default",
 		Metrics: metrics{
-			Enabled:            true,
-			Type:               "prometheus",
-			Port:               18006,
-			CollectionInterval: 5,
+			Enabled: false,
+			Type:    "prometheus",
+			Port:    18006,
 		},
 	},
 	Envoy: envoy{

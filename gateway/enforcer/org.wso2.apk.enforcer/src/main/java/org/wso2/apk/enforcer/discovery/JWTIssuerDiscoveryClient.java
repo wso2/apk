@@ -162,9 +162,8 @@ public class JWTIssuerDiscoveryClient implements Runnable {
                         }
                         subscriptionDataStore.addJWTIssuers(v);
                     });
-
                     if (JMXUtils.isJMXMetricsEnabled()) {
-                        ExtAuthMetrics.getInstance().recordJWTIssuerMetrics(jwtIssuers.size());
+                        ExtAuthMetrics.getInstance().recordJWTIssuerMetrics(SubscriptionDataHolder.getInstance().getTotalJWTIssuerCount());
                     }
                     logger.info("Number of jwt issuers received : " + jwtIssuers.size());
                     ack();

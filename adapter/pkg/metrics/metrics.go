@@ -22,227 +22,89 @@ package metrics
 import (
 	"fmt"
 	"net/http"
-	"os"
-	"runtime"
 	"strconv"
-	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/prometheus/procfs"
-	"github.com/shirou/gopsutil/v3/cpu"
-	"github.com/shirou/gopsutil/v3/host"
-	"github.com/shirou/gopsutil/v3/load"
-	"github.com/shirou/gopsutil/v3/mem"
 	xds "github.com/wso2/apk/adapter/internal/discovery/xds"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
-	synchronizer "github.com/wso2/apk/adapter/internal/operator/synchronizer"
 	"github.com/wso2/apk/adapter/pkg/logging"
+	commonmetrics "github.com/wso2/apk/common-go-libs/pkg/metrics"
 )
 
 var (
 	prometheusMetricRegistry = prometheus.NewRegistry()
-
-	hostInfo = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "host_info",
-		Help: "Host Info",
-	}, []string{"os"})
-
-	availableCPUs = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: "os_available_cpu_total",
-		Help: "Number of available CPUs.",
-	})
-
-	freePhysicalMemory = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: "os_free_physical_memory_bytes",
-		Help: "Amount of free physical memory.",
-	})
-
-	totalVirtualMemory = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: "os_total_virtual_memory_bytes",
-		Help: "Amount of total virtual memory.",
-	})
-	usedVirtualMemory = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: "os_used_virtual_memory_bytes",
-		Help: "Amount of used virtual memory.",
-	})
-
-	systemCPULoad = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: "os_system_cpu_load_percentage",
-		Help: "System-wide CPU usage as a percentage.",
-	})
-
-	loadAvg = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "os_system_load_average",
-		Help: "Current load of CPU in the host system for the last {x} minutes",
-	}, []string{"duration"})
-
-	processStartTime = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: "process_start_time_seconds",
-		Help: "Start time of the process since unix epoch in seconds.",
-	})
-
-	processOpenFDs = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: "process_open_fds",
-		Help: "Number of open file descriptors.",
-	})
-
-	apis = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: "api_count",
-		Help: "Number of APIs created.",
-	})
-
-	internalClusterCount = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: "internal_cluster_count",
-		Help: "Number of internal clusters created.",
-	})
-
-	gwClusterCount = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: "gw_cluster_count",
-		Help: "Number of gw clusters created.",
-	})
-
-	internalRouteCount = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: "internal_route_count",
-		Help: "Number of internal routes created.",
-	})
 )
 
-func init() {
-	// Register the Go collector with the registry
-	goCollector := collectors.NewGoCollector()
-	prometheusMetricRegistry.MustRegister(goCollector)
-
-	// Register other metrics
-	prometheusMetricRegistry.MustRegister(hostInfo, availableCPUs, freePhysicalMemory, usedVirtualMemory, totalVirtualMemory,
-		systemCPULoad, loadAvg, processStartTime, processOpenFDs, apis, internalClusterCount, internalRouteCount, gwClusterCount)
+// AdapterCollector contains the descriptions of the custom metrics exposed by the adapter.
+// It also uses the metrics defined in common-go-libs
+type AdapterCollector struct {
+	commonmetrics.Collector
+	apis                 *prometheus.Desc
+	internalClusterCount *prometheus.Desc
+	internalRouteCount   *prometheus.Desc
 }
 
-// recordMetrics record custom golang metrics
-var recordMetrics = func(collectionInterval int32) {
-	for {
-		envoyInternalAPIClusterCount := xds.GetEnvoyInternalAPIClusters()
-		internalClusterCount.Set(float64(envoyInternalAPIClusterCount))
-
-		envoyInternalAPIRouteCount := xds.GetEnvoyInternalAPIRoutes()
-		internalRouteCount.Set(float64(envoyInternalAPIRouteCount))
-
-		gwClusterCount.Set(float64(xds.GetEnvoyGatewayConfigClusters()))
-
-		apiCount := synchronizer.GetOperatorDataStore().GetAPICount()
-		apis.Set(float64(apiCount))
-
-		host, err := host.Info()
-		if handleError(err, "Failed to get host info") {
-			return
-		}
-		hostInfo.WithLabelValues(host.OS).Set(1)
-		availableCPUs.Set(float64(runtime.NumCPU()))
-
-		v, err := mem.VirtualMemory()
-		if handleError(err, "Failed to read virtual memory metrics") {
-			return
-		}
-		freePhysicalMemory.Set(float64(v.Free))
-		usedVirtualMemory.Set(float64(v.Used))
-		totalVirtualMemory.Set(float64(v.Total))
-
-		percentages, err := cpu.Percent(0, false)
-		if handleError(err, "Failed to read cpu usage metrics") || len(percentages) == 0 {
-			return
-		}
-		totalPercentage := 0.0
-		for _, p := range percentages {
-			totalPercentage += p
-		}
-		averagePercentage := totalPercentage / float64(len(percentages))
-		systemCPULoad.Set(averagePercentage)
-
-		pid := os.Getpid()
-		p, err := procfs.NewProc(pid)
-		if handleError(err, "Failed to get current process") {
-			return
-		}
-		stat, err := p.Stat()
-		if handleError(err, "Failed to get process stats") {
-			return
-		}
-		t, err := stat.StartTime()
-		if handleError(err, "Failed to read process start time") {
-			return
-		}
-		processStartTime.Set(t)
-		fds, err := p.FileDescriptorsLen()
-		if handleError(err, "Failed to read file descriptor count") {
-			return
-		}
-		processOpenFDs.Set(float64(fds))
-
-		avg, err := load.Avg()
-		if handleError(err, "Failed to read cpu load averages") {
-			return
-		}
-		loadAvg.WithLabelValues("1m").Set(avg.Load1)
-		loadAvg.WithLabelValues("5m").Set(avg.Load5)
-		loadAvg.WithLabelValues("15m").Set(avg.Load15)
-
-		// Sleep before the next measurement
-		time.Sleep(time.Duration(collectionInterval) * time.Second)
+func adapterMetricsCollector() *AdapterCollector {
+	return &AdapterCollector{
+		Collector: *commonmetrics.CustomMetricsCollector(),
+		apis: prometheus.NewDesc(
+			"api_count",
+			"Number of APIs created.",
+			nil, nil,
+		),
+		internalClusterCount: prometheus.NewDesc(
+			"internal_cluster_count",
+			"Number of internal clusters created.",
+			nil, nil,
+		),
+		internalRouteCount: prometheus.NewDesc(
+			"internal_route_count",
+			"Number of internal routes created.",
+			nil, nil,
+		),
 	}
-
 }
 
-func handleError(err error, message string) bool {
-	if err != nil {
-		logger.LoggerAPK.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf(message, err.Error()),
-			Severity:  logging.MINOR,
-			ErrorCode: 1109,
-		})
-		return true
-	}
-	return false
+// Describe sends all the descriptors of the metrics collected by this Collector
+// to the provided channel.
+func (collector *AdapterCollector) Describe(ch chan<- *prometheus.Desc) {
+	collector.Collector.Describe(ch)
+	ch <- collector.apis
+	ch <- collector.internalClusterCount
+	ch <- collector.internalRouteCount
+}
+
+// Collect collects all the relevant Prometheus metrics.
+func (collector *AdapterCollector) Collect(ch chan<- prometheus.Metric) {
+	collector.Collector.Collect(ch)
+	var apisCount float64
+	var internalClusterCount float64
+	var internalRouteCount float64
+
+	apiCount := xds.GetEnvoyInternalAPICount()
+	apisCount = float64(apiCount)
+
+	internalRouteCount = float64(xds.GetEnvoyInternalAPIRoutes())
+	internalClusterCount = float64(xds.GetEnvoyInternalAPIClusters())
+
+	ch <- prometheus.MustNewConstMetric(collector.apis, prometheus.GaugeValue, apisCount)
+	ch <- prometheus.MustNewConstMetric(collector.internalRouteCount, prometheus.GaugeValue, internalRouteCount)
+	ch <- prometheus.MustNewConstMetric(collector.internalClusterCount, prometheus.GaugeValue, internalClusterCount)
 }
 
 // StartPrometheusMetricsServer initializes and starts the metrics server to expose metrics to prometheus.
-func StartPrometheusMetricsServer(port int32, collectionInterval int32) {
-	done := make(chan struct{}) // Channel to indicate recordMetrics routine exit
+func StartPrometheusMetricsServer(port int32) {
 
-	// Start the Prometheus metrics server
-	go func() {
-		http.Handle("/metrics", promhttp.HandlerFor(prometheusMetricRegistry, promhttp.HandlerOpts{}))
-		err := http.ListenAndServe(":"+strconv.Itoa(int(port)), nil)
-		if err != nil {
-			logger.LoggerAPK.ErrorC(logging.ErrorDetails{
-				Message:   fmt.Sprintln("Prometheus metrics server error:", err),
-				Severity:  logging.MAJOR,
-				ErrorCode: 1110,
-			})
-		}
-	}()
-
-	for {
-		// Start the recordMetrics goroutine
-		go func() {
-			defer func() {
-				if r := recover(); r != nil {
-					logger.LoggerAPK.ErrorC(logging.ErrorDetails{
-						Message:   fmt.Sprintln("recordMetrics goroutine exited with error:", r),
-						Severity:  logging.MAJOR,
-						ErrorCode: 1111,
-					})
-				}
-			}()
-			recordMetrics(collectionInterval)
-			done <- struct{}{} // Signal that the goroutine has completed
-		}()
-
-		// Wait for the previous recordMetrics goroutine to complete
-		<-done
-
-		// Log and restart the goroutine
-		logger.LoggerAPK.Info("Restarting recordMetrics goroutine...")
-		time.Sleep(3 * time.Second)
+	collector := adapterMetricsCollector()
+	prometheus.MustRegister(collector)
+	http.Handle("/metrics", promhttp.Handler())
+	err := http.ListenAndServe(":"+strconv.Itoa(int(port)), nil)
+	if err != nil {
+		logger.LoggerAPK.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprintln("Prometheus metrics server error:", err),
+			Severity:  logging.MAJOR,
+			ErrorCode: 1110,
+		})
 	}
 }

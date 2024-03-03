@@ -44,10 +44,9 @@ var defaultConfig = &Config{
 			Persistence:   persistence{Type: "K8s"},
 		},
 		Metrics: metrics{
-			Enabled:            true,
-			Type:               "prometheus",
-			Port:               18010,
-			CollectionInterval: 5,
+			Enabled: false,
+			Type:    "prometheus",
+			Port:    18010,
 		},
 	},
 }
