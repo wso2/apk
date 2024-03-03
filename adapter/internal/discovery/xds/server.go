@@ -813,3 +813,14 @@ func GetEnvoyInternalAPIClusters() int {
 	}
 	return totalClusters
 }
+
+// GetEnvoyInternalAPICount method gets the number of APIs deployed in Envoy
+func GetEnvoyInternalAPICount() int {
+	totalCount := 0
+	for _, apiMap := range orgAPIMap {
+		for range apiMap {
+			totalCount++
+		}
+	}
+	return totalCount
+}

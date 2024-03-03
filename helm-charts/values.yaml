@@ -255,7 +255,6 @@ wso2:
       # configDSBalHost: 0.0.0.0
       # idpDSBalHost: 0.0.0.0
       # statsd:
-      #   enabled: true
       #   image:
       #     repository: prom/statsd-exporter
       #     tag: v0.26.0

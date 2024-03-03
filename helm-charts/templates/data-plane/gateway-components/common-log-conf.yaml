@@ -10,6 +10,12 @@ data:
       {{- if and .Values.wso2.apk.dp.environment .Values.wso2.apk.dp.environment.name }}
       environment = "{{ .Values.wso2.apk.dp.environment.name }}"
       {{- end }}
+    {{if and .Values.wso2.apk.metrics .Values.wso2.apk.metrics.enabled}}
+    [commoncontroller.metrics]
+      enabled = {{.Values.wso2.apk.metrics.enabled}}
+      type = "{{.Values.wso2.apk.metrics.type| default "prometheus" }}"
+      port = 18010
+    {{ end}}  
     [commoncontroller.server]
       label = "ratelimiter"
     {{ if and .Values.wso2.apk.dp.commonController.configs .Values.wso2.apk.dp.commonController.configs.apiNamespaces }}
