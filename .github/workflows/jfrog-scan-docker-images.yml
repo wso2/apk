@@ -18,7 +18,7 @@ jobs:
         shell: sh
         run: |
           jf docker scan wso2/apk-config-deployer-service:latest
-      - nam: Scan IDP Domain Service
+      - name: Scan IDP Domain Service
         shell: sh
         run: |
           jf docker scan wso2/apk-idp-domain-service:latest
