@@ -73,7 +73,12 @@ jobs:
       run: |
         cd apk-repo/helm-charts
         helm dependency build
-        helm install apk-test-setup -n apk . --debug --wait --timeout 15m0s 
+        helm install apk-test-setup -n apk . --debug --wait --timeout 15m0s \
+        --set wso2.apk.dp.commonController.deployment.controlplane.enabled=true \
+        --set wso2.apk.dp.commonController.deployment.controlplane.host="apim-apk-agent-service.apk.svc.cluster.local" \
+        --set wso2.apk.dp.commonController.deployment.controlplane.skipSSLVerification=true \
+        --set wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.JWKSClient.skipSSLVerification=false \
+        --set wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.JWKSClient.hostnameVerifier="AllowAll" 
         kubectl get pods -n apk
         kubectl get svc -n apk
 

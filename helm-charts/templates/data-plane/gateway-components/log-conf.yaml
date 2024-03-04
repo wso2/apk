@@ -110,6 +110,12 @@ data:
     [enforcer.metrics]
       enabled = false
     
+    {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.JWKSClient }}
+    [enforcer.client]
+       skipSSL = {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.JWKSClient.skipSSLVerification | default false }}
+       hostnameVerifier = "{{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.JWKSClient.hostnameVerifier | default "AllowAll" }}"
+    {{- end }}
+    
     {{ if and .Values.wso2.apk.dp.gatewayRuntime.tracing .Values.wso2.apk.dp.gatewayRuntime.tracing.enabled }}
     [tracing]
       enabled = true
