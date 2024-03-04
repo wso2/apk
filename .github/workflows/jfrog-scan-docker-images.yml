@@ -50,6 +50,6 @@ jobs:
       - name: Scan ratelimitter
         shell: sh
         run: |
-          docker pull wso2/apk-ratelimitter:latest
-          jf docker scan wso2/apk-ratelimitter:latest
+          docker pull wso2/apk-ratelimiter:latest
+          jf docker scan wso2/apk-ratelimiter:latest
           
