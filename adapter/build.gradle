@@ -17,6 +17,7 @@
 
 plugins {
     id 'net.researchgate.release' version '2.8.0'
+    id 'com.jfrog.GradleDepTree' version '3.0.3'
 }
 
 apply from: "$rootDir/../common-gradle-scripts/docker.gradle"
@@ -79,13 +80,12 @@ task build{
     dependsOn docker_build
 }
 
-task clean(type: Delete) {
+task buildClean(type: Delete) {
     delete rootProject.buildDir
 }
 
 tasks.named('clean').configure {
-    dependsOn clean
+    dependsOn buildClean
 }
-
 
 afterReleaseBuild.dependsOn "docker_push"
