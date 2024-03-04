@@ -75,7 +75,7 @@ public class SimpleHTTPClient {
     protected Log log = LogFactory.getLog(getClass());
     private CloseableHttpClient client;
     private HttpUriRequest lastRequest;
-    private static final int EVENTUAL_SUCCESS_RESPONSE_TIMEOUT_IN_SECONDS = 10;
+    private static final int EVENTUAL_SUCCESS_RESPONSE_TIMEOUT_IN_SECONDS = 20;
 
     public SimpleHTTPClient() throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
 

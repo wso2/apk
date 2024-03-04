@@ -33,12 +33,17 @@ public class SharedContext {
     private SimpleHTTPClient httpClient;
     private String publisherAccessToken;
     private String devportalAccessToken;
-    private String publisherBasicAuthToken;
-    private String devportalBasicAuthToken;
+    private String basicAuthToken;
     private HttpResponse response;
     private String responseBody;
     private String apiUUID;
     private String revisionUUID;
+    private String applicationUUID;
+    private String keyManagerUUID;
+    private String oauthKeyUUID;
+    private String consumerSecret;
+    private String consumerKey;
+    private String apiAccessToken;
     private HashMap<String, Object> valueStore = new HashMap<>();
     private HashMap<String, String> headers = new HashMap<>();
 
@@ -69,24 +74,14 @@ public class SharedContext {
         this.devportalAccessToken = accessToken;
     }
 
-    public String getPublisherBasicAuthToken() {
+    public String getBasicAuthToken() {
 
-        return publisherBasicAuthToken;
+        return basicAuthToken;
     }
 
-    public void setPublisherBasicAuthToken(String basicAuthToken) {
+    public void setBasicAuthToken(String basicAuthToken) {
 
-        this.publisherBasicAuthToken = basicAuthToken;
-    }
-
-    public String getDevportalBasicAuthToken() {
-
-        return devportalBasicAuthToken;
-    }
-
-    public void setDevportalBasicAuthToken(String basicAuthToken) {
-
-        this.devportalBasicAuthToken = basicAuthToken;
+        this.basicAuthToken = basicAuthToken;
     }
 
     public HttpResponse getResponse() {
@@ -147,5 +142,65 @@ public class SharedContext {
     public void setRevisionUUID(String revisionUUID) {
 
         this.revisionUUID = revisionUUID;
+    }
+
+    public String getApplicationUUID() {
+
+        return applicationUUID;
+    }
+
+    public void setApplicationUUID(String applicationUUID) {
+
+        this.applicationUUID = applicationUUID;
+    }
+
+    public String getKeyManagerUUID() {
+
+        return keyManagerUUID;
+    }
+
+    public void setKeyManagerUUID(String keyManagerUUID) {
+
+        this.keyManagerUUID = keyManagerUUID;
+    }
+
+    public String getOauthKeyUUID() {
+
+        return oauthKeyUUID;
+    }
+
+    public void setOauthKeyUUID(String oauthKeyUUID) {
+
+        this.oauthKeyUUID = oauthKeyUUID;
+    }
+
+    public String getConsumerSecret() {
+
+        return consumerSecret;
+    }
+
+    public void setConsumerSecret(String consumerSecret) {
+
+        this.consumerSecret = consumerSecret;
+    }
+
+    public String getConsumerKey() {
+
+        return consumerKey;
+    }
+
+    public void setConsumerKey(String consumerKey) {
+
+        this.consumerKey = consumerKey;
+    }
+
+    public String getApiAccessToken() {
+
+        return apiAccessToken;
+    }
+
+    public void setApiAccessToken(String apiAccessToken) {
+
+        this.apiAccessToken = apiAccessToken;
     }
 }

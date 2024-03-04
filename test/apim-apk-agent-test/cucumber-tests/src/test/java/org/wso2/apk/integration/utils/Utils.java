@@ -36,6 +36,7 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -78,6 +79,41 @@ public class Utils {
                 + Constants.DEFAULT_API_DEPLOYER + "apis/" + apiUUID + "/revisions";
     }
 
+    public static String getAPIChangeLifecycleURL(String apiUUID) {
+        return "https://" + Constants.DEFAULT_API_HOST + ":" + Constants.DEFAULT_GW_PORT + "/"
+                + Constants.DEFAULT_API_DEPLOYER + "apis/change-lifecycle?action=Publish&apiId=" + apiUUID;
+    }
+
+    public static String getApplicationCreateURL() {
+        return "https://" + Constants.DEFAULT_API_HOST + ":" + Constants.DEFAULT_GW_PORT + "/"
+                + Constants.DEFAULT_DEVPORTAL + "applications";
+    }
+
+    public static String getGenerateKeysURL(String applicationId) {
+        return "https://" + Constants.DEFAULT_API_HOST + ":" + Constants.DEFAULT_GW_PORT + "/"
+                + Constants.DEFAULT_DEVPORTAL + "applications/" + applicationId + "/generate-keys";
+    }
+
+    public static String getOauthKeysURL(String applicationId) {
+        return "https://" + Constants.DEFAULT_API_HOST + ":" + Constants.DEFAULT_GW_PORT + "/"
+                + Constants.DEFAULT_DEVPORTAL + "applications/" + applicationId + "/oauth-keys";
+    }
+
+    public static String getKeyManagerURL() {
+        return "https://" + Constants.DEFAULT_API_HOST + ":" + Constants.DEFAULT_GW_PORT + "/"
+                + Constants.DEFAULT_DEVPORTAL+ "key-managers";
+    }
+
+    public static String getSubscriptionURL() {
+        return "https://" + Constants.DEFAULT_API_HOST + ":" + Constants.DEFAULT_GW_PORT + "/"
+                + Constants.DEFAULT_DEVPORTAL + "subscriptions";
+    }
+
+    public static String getAccessTokenGenerationURL(String applicationId, String oauthKeyId) {
+        return "https://" + Constants.DEFAULT_API_HOST + ":" + Constants.DEFAULT_GW_PORT + "/"
+                + Constants.DEFAULT_DEVPORTAL + "applications/" + applicationId + "/oauth-keys/" + oauthKeyId + "/generate-token";
+    }
+
     public static String getAPIRevisionDeploymentURL(String apiUUID, String revisionId) {
 
         return "https://" + Constants.DEFAULT_API_HOST + ":" + Constants.DEFAULT_GW_PORT + "/"
@@ -104,6 +140,72 @@ public class Utils {
             throw new IOException("Error while parsing the JSON payload: " + e.getMessage());
         }
     }
+
+    public static String extractApplicationID(String payload) throws IOException {
+
+        JSONParser parser = new JSONParser();
+        try {
+            // Parse the JSON string
+            JSONObject jsonObject = (JSONObject) parser.parse(payload);
+
+            // Get the value of the "applicationId" attribute
+            String idValue = (String) jsonObject.get("applicationId");
+            return idValue;
+        } catch (ParseException e) {
+            throw new IOException("Error while parsing the JSON payload: " + e.getMessage());
+        }
+    }
+
+    public static String extractKeyManagerID(String payload) throws IOException {
+
+        JSONParser parser = new JSONParser();
+        try {
+            // Parse the JSON string
+            JSONObject jsonObject = (JSONObject) parser.parse(payload);
+
+            // Get the value of the "id" attribute
+            JSONArray idValue = (JSONArray)jsonObject.get("list");
+            JSONObject keyManager = (JSONObject) idValue.get(0);
+            String keyManagerId = (String) keyManager.get("id");
+            return keyManagerId;
+        } catch (ParseException e) {
+            throw new IOException("Error while parsing the JSON payload: " + e.getMessage());
+        }
+    }
+
+    public static String extractOAuthMappingID(String payload) throws IOException {
+
+        JSONParser parser = new JSONParser();
+        try {
+            // Parse the JSON string
+            JSONObject jsonObject = (JSONObject) parser.parse(payload);
+
+            // Get the value of the "id" attribute
+            JSONArray idValue = (JSONArray)jsonObject.get("list");
+            JSONObject keyManager = (JSONObject) idValue.get(0);
+            String keyManagerId = (String) keyManager.get("keyMappingId");
+            return keyManagerId;
+        } catch (ParseException e) {
+            throw new IOException("Error while parsing the JSON payload: " + e.getMessage());
+        }
+    }
+
+    public static String extractKeys(String payload, String key) throws IOException {
+
+        JSONParser parser = new JSONParser();
+        try {
+            // Parse the JSON string
+            JSONObject jsonObject = (JSONObject) parser.parse(payload);
+
+            // Get the value of the "applicationId" attribute
+            String idValue = (String) jsonObject.get(key);
+            return idValue;
+        } catch (ParseException e) {
+            throw new IOException("Error while parsing the JSON payload: " + e.getMessage());
+        }
+    }
+
+
 
     public static String extractToken(HttpResponse response) throws IOException {
 

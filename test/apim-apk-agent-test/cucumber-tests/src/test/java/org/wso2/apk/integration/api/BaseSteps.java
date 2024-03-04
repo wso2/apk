@@ -113,11 +113,13 @@ public class BaseSteps {
     public void theResponseStatusCodeShouldBe(int expectedStatusCode) throws IOException {
 
         int actualStatusCode = sharedContext.getResponse().getStatusLine().getStatusCode();
+        ((CloseableHttpResponse)sharedContext.getResponse()).close();
         Assert.assertEquals(actualStatusCode, expectedStatusCode);
     }
 
     @Then("I send {string} request to {string} with body {string}")
     public void sendHttpRequest(String httpMethod, String url, String body) throws IOException {
+        sharedContext.addHeader("Authorization", "Bearer " + sharedContext.getApiAccessToken());
         body = Utils.resolveVariables(body, sharedContext.getValueStore());
         if (sharedContext.getResponse() instanceof CloseableHttpResponse) {
             ((CloseableHttpResponse) sharedContext.getResponse()).close();
@@ -316,8 +318,8 @@ public class BaseSteps {
         }
     }
 
-    @Given("I have a DCR application for Publisher")
-    public void iHaveADCRApplicationForPublisher() throws Exception {
+    @Given("I have a DCR application")
+    public void iHaveADCRApplication() throws Exception {
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.HOST, Constants.DEFAULT_IDP_HOST);
@@ -331,39 +333,21 @@ public class BaseSteps {
                         "  \"saasApp\":true\n" +
                         "  }",
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
-        sharedContext.setPublisherBasicAuthToken(Utils.extractBasicToken(httpResponse));
-        sharedContext.addStoreValue("publisherBasicAuthToken", sharedContext.getPublisherBasicAuthToken());
+        sharedContext.setBasicAuthToken(Utils.extractBasicToken(httpResponse));
+        sharedContext.addStoreValue("publisherBasicAuthToken", sharedContext.getBasicAuthToken());
     }
 
-    @Given("I have a DCR application for Devportal")
-    public void iHaveADCRApplicationForDevportal() throws Exception {
-
-        Map<String, String> headers = new HashMap<>();
-        headers.put(Constants.REQUEST_HEADERS.HOST, Constants.DEFAULT_IDP_HOST);
-        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Basic YWRtaW46YWRtaW4=");
-
-        HttpResponse httpResponse = httpClient.doPost(Utils.getDCREndpointURL(), headers, "{\n" +
-                        "  \"callbackUrl\":\"www.google.lk\",\n" +
-                        "  \"clientName\":\"rest_api_publisher\",\n" +
-                        "  \"owner\":\"admin\",\n" +
-                        "  \"grantType\":\"client_credentials password refresh_token\",\n" +
-                        "  \"saasApp\":true\n" +
-                        "  }",
-                Constants.CONTENT_TYPES.APPLICATION_JSON);
-        sharedContext.setDevportalBasicAuthToken(Utils.extractBasicToken(httpResponse));
-        sharedContext.addStoreValue("devportalBasicAuthToken", sharedContext.getDevportalBasicAuthToken());
-    }
 
     @Given("I have a valid Publisher access token")
     public void iHaveValidPublisherAccessToken() throws Exception {
 
         Map<String, String> headers = new HashMap<>();
-        String basicAuthHeader = "Basic " + sharedContext.getPublisherBasicAuthToken();
+        String basicAuthHeader = "Basic " + sharedContext.getBasicAuthToken();
         logger.info("Basic Auth Header: " + basicAuthHeader);
         headers.put(Constants.REQUEST_HEADERS.HOST, Constants.DEFAULT_IDP_HOST);
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, basicAuthHeader);
 
-        HttpResponse httpResponse = httpClient.doPost(Utils.getTokenEndpointURL(), headers, "grant_type=password&username=admin&password=admin&scope=apim:api_view apim:api_create",
+        HttpResponse httpResponse = httpClient.doPost(Utils.getTokenEndpointURL(), headers, "grant_type=password&username=admin&password=admin&scope=apim:api_view apim:api_create apim:api_publish",
                 Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
         logger.info("Response: " + httpResponse);
         sharedContext.setPublisherAccessToken(Utils.extractToken(httpResponse));
@@ -372,16 +356,18 @@ public class BaseSteps {
 
     @Given("I have a valid Devportal access token")
     public void iHaveValidDevportalAccessToken() throws Exception {
+        logger.info("Basic Auth Header: " + sharedContext.getBasicAuthToken());
 
         Map<String, String> headers = new HashMap<>();
-        String basicAuthHeader = "Basic " + sharedContext.getDevportalBasicAuthToken();
+        String basicAuthHeader = "Basic " + sharedContext.getBasicAuthToken();
         headers.put(Constants.REQUEST_HEADERS.HOST, Constants.DEFAULT_IDP_HOST);
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, basicAuthHeader);
 
-        HttpResponse httpResponse = httpClient.doPost(Utils.getTokenEndpointURL(), headers, "grant_type=password&username=admin&password=admin&scope=apim:api_view apim:api_create",
-                Constants.CONTENT_TYPES.APPLICATION_JSON);
+        HttpResponse httpResponse = httpClient.doPost(Utils.getTokenEndpointURL(), headers, "grant_type=password&username=admin&password=admin&scope=apim:app_manage apim:sub_manage apim:subscribe",
+                Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
         sharedContext.setDevportalAccessToken(Utils.extractToken(httpResponse));
         sharedContext.addStoreValue("devportalAccessToken", sharedContext.getDevportalAccessToken());
+        logger.info("Devportal Access Token: " + sharedContext.getDevportalAccessToken());
     }
 
 //    @Given("I have a valid subscription without api deploy permission")
