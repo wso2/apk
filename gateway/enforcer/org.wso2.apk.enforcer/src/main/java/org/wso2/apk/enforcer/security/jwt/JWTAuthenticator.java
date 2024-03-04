@@ -48,6 +48,7 @@ import org.wso2.apk.enforcer.security.jwt.validator.JWTValidator;
 import org.wso2.apk.enforcer.security.jwt.validator.RevokedJWTDataHolder;
 import org.wso2.apk.enforcer.server.RevokedTokenRedisClient;
 import org.wso2.apk.enforcer.subscription.SubscriptionDataHolder;
+import org.wso2.apk.enforcer.subscription.SubscriptionDataStore;
 import org.wso2.apk.enforcer.tracing.TracingConstants;
 import org.wso2.apk.enforcer.tracing.TracingSpan;
 import org.wso2.apk.enforcer.tracing.TracingTracer;
@@ -131,9 +132,9 @@ public class JWTAuthenticator implements Authenticator {
                 if (validationInfo.isValid()) {
                     List<String> audFromAPI = getAudience(requestContext.getMatchedResourcePaths());
                     List<String> audFromToken = validationInfo.getAudience();
-                    if (!checkAllExist(audFromAPI, audFromToken)) {
+                    if (!checkAnyExist(audFromAPI, audFromToken)) {
                         throw new APISecurityException(APIConstants.StatusCodes.UNAUTHENTICATED.getCode(),
-                                APISecurityConstants.API_AUTH_INVALID_CREDENTIALS, "Required audience not available in the JWT aud.");
+                                APISecurityConstants.API_AUTH_INVALID_CREDENTIALS, APISecurityConstants.API_AUTH_INVALID_CREDENTIALS_MESSAGE);
                     }
                     Map<String, Object> claims = validationInfo.getClaims();
                     // Validate token type
@@ -267,8 +268,8 @@ public class JWTAuthenticator implements Authenticator {
         return "";
     }
 
-    private ArrayList<String> getAudience(ArrayList<ResourceConfig> matchedResourceConfigs) {
-        ArrayList<String> audience = new ArrayList<>();
+    private List<String> getAudience(ArrayList<ResourceConfig> matchedResourceConfigs) {
+        List<String> audience = new ArrayList<>();
         for (ResourceConfig resourceConfig : matchedResourceConfigs) {
             if (resourceConfig.getAuthenticationConfig() != null &&
                     resourceConfig.getAuthenticationConfig().getJwtAuthenticationConfig() != null) {
@@ -525,12 +526,13 @@ public class JWTAuthenticator implements Authenticator {
     }
 
     /**
-     * Checks if all elements in the first list are present in the second list.
-     * @param list1 The list of elements to check.
-     * @param list2 The list in which to check for the elements.
-     * @return True if all elements in list1 are present in list2, false otherwise.
+     * Checks if at least one element from list1 exists in list2.
+     *
+     * @param list1 The first list to check.
+     * @param list2 The second list to check against.
+     * @return true if at least one element from list1 exists in list2, otherwise false.
      */
-    public static boolean checkAllExist(List<String> list1, List<String> list2) {
-        return list1.stream().allMatch(list2::contains);
+    public static boolean checkAnyExist(List<String> list1, List<String> list2) {
+        return list1.stream().anyMatch(list2::contains);
     }
 }
