@@ -34,7 +34,7 @@ To create a new feature, follow these steps:
     kubectl create namespace apk
     ```
 
-2. Go to the `product-apim-tooling/apim-apk-agent-test/apk-helm-chart` directory and run following commands to install the APK components.
+2. Go to the `helm-charts/` directory and run following commands to install the APK components.
 
     ```bash
     helm repo add bitnami https://charts.bitnami.com/bitnami
@@ -59,12 +59,21 @@ To create a new feature, follow these steps:
     sudo echo "$IP default.sandbox.gw.wso2.com" | sudo tee -a /etc/hosts
     ```
    
-5. Go to the `product-apim-tooling/apim-apk-agent-test/apim-cp-helm-chart` directory and run following commands to install the APIM CP component.
+5. Go to the `test/apim-apk-agent-test/apim-cp-helm-chart` directory and run following commands to install the APIM CP component.
 
-    ```bash
+(Optional)If you are on a Mac, need to add following changes to values.yaml file in apim-cp-helm-chart directory.
+```bash
+   runAsUser: 802
+   registry: "docker.io"
+   repository: "sampathrajapakse/wso2am"
+   digest: "sha256:9b269e0f3b9b23f48320d16235624acbbfa455aeda6592aa4d51631c85652c2a"
+```
+Then do the following command to deploy APIM CP component.
+
+```bash
     helm dependency build
     helm install apim . -n apk
-    ``
+```
 
 6. Port forward router-service to use localhost.
 
@@ -72,7 +81,7 @@ To create a new feature, follow these steps:
     kubectl port-forward svc/apim-wso2am-cp-1-service -n apk 9443:9443
     ```
    
-7. Go to the `product-apim-tooling/helm-charts` directory and run following commands to install the APIM APK Agent components.
+7. Go to the `test/apim-apk-agent-test/agent-helm-chart` directory and run following commands to install the APIM APK Agent components.
 
     ```bash
     helm dependency build
@@ -81,11 +90,11 @@ To create a new feature, follow these steps:
 
 8. Run or debug integration tests.
 
-   - Run following command from `product-apim-tooling/apim-apk-agent-test/cucumber-tests` directory to run the integration tests.
+   - Run following command from `test/apim-apk-agent-test/cucumber-tests` directory to run the integration tests.
 
        ```bash
        gradle runTests
        ```
-   - To run a single test, update the `product-apim-tooling/apim-apk-agent-test/cucumber-tests/src/resources/testng.xml` file with the required feature file and run the above command.
+   - To run a single test, update the `test/apim-apk-agent-test/cucumber-tests/src/resources/testng.xml` file with the required feature file and run the above command.
 
    - Run the `gradle runTests --debug-jvm` command and attach the debugger in the IDE to debug the integration tests.
