@@ -107,6 +107,9 @@ func (gatewayClassReconciler *GatewayClassReconciler) Reconcile(ctx context.Cont
 	controllerName := string(gatewayClassDef.Spec.ControllerName)
 	if (controllerName == wso2APKDefaultControllerName) {
 		gatewayClassReconciler.handleGatewayClassStatus(req.NamespacedName, constants.Create, []string{})
+	} else {
+		loggers.LoggerAPKOperator.Warnf("Gateway class's controllerName: %s does not match any supported implemenation in WSO2 APK. Hence ignoring the GatewayClass: %s/%s. Supported controller name : %s", 
+		gatewayClassDef.Name, gatewayClassDef.Namespace, controllerName, wso2APKDefaultControllerName)
 	}
 	return ctrl.Result{}, nil
 }
