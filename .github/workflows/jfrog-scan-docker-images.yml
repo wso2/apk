@@ -52,4 +52,9 @@ jobs:
         run: |
           docker pull wso2/apk-ratelimiter:latest
           jf docker scan wso2/apk-ratelimiter:latest
+      - name: Scan APIM APK Agent
+        shell: sh
+        run: |
+          docker pull wso2/apim-apk-agent:latest
+          jf docker scan wso2/apim-apk-agent:latest
           

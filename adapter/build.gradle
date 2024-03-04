@@ -79,12 +79,4 @@ task build{
     dependsOn docker_build
 }
 
-task buildClean(type: Delete) {
-    delete rootProject.buildDir
-}
-
-tasks.named('clean').configure {
-    dependsOn buildClean
-}
-
 afterReleaseBuild.dependsOn "docker_push"
