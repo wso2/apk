@@ -26,6 +26,7 @@ public class Constants {
     public static final String DEFAULT_DCR_EP = "client-registration/v0.17/register";
     public static final String DEFAULT_API_CONFIGURATOR = "api/configurator/1.0.0/";
     public static final String DEFAULT_API_DEPLOYER = "api/am/publisher/v4/";
+    public static final String DEFAULT_DEVPORTAL = "api/am/devportal/v3/";
     public static final String ACCESS_TOKEN = "accessToken";
     public static final String EMPTY_STRING = "";
     public static final String API_CREATE_SCOPE = "apk:api_create";

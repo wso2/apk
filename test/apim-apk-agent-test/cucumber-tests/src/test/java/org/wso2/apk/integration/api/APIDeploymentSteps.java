@@ -136,6 +136,149 @@ public class APIDeploymentSteps {
         Thread.sleep(3000);
     }
 
+    @When("make the Change Lifecycle request")
+    public void make_a_change_lifecycle_request() throws Exception {
+        String apiUUID = sharedContext.getApiUUID();
+        String payload = "";
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + sharedContext.getPublisherAccessToken());
+        headers.put(Constants.REQUEST_HEADERS.HOST, Constants.DEFAULT_API_HOST);
+
+        HttpResponse response = sharedContext.getHttpClient().doPost(Utils.getAPIChangeLifecycleURL(apiUUID),
+                headers, payload, Constants.CONTENT_TYPES.APPLICATION_JSON);
+
+        sharedContext.setResponse(response);
+        Thread.sleep(3000);
+    }
+
+    @When("make the Application Creation request")
+    public void make_application_creation_request() throws Exception {
+        logger.info("Creating an application");
+        String payload = "{\"name\":\"PetstoreApp\",\"throttlingPolicy\":\"10PerMin\",\"description\":\"test app\",\"tokenType\":\"JWT\",\"groups\":null,\"attributes\":{}}";
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + sharedContext.getDevportalAccessToken());
+        headers.put(Constants.REQUEST_HEADERS.HOST, Constants.DEFAULT_API_HOST);
+
+        HttpResponse response = sharedContext.getHttpClient().doPost(Utils.getApplicationCreateURL(),
+                headers, payload, Constants.CONTENT_TYPES.APPLICATION_JSON);
+
+        sharedContext.setResponse(response);
+        sharedContext.setResponseBody(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()));
+        logger.info("Response: " + sharedContext.getResponseBody());
+        sharedContext.setApplicationUUID(Utils.extractApplicationID(sharedContext.getResponseBody()));
+        Thread.sleep(3000);
+    }
+
+    @When("I have a KeyManager")
+    public void i_have_a_key_manager() throws Exception {
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + sharedContext.getDevportalAccessToken());
+        headers.put(Constants.REQUEST_HEADERS.HOST, Constants.DEFAULT_API_HOST);
+
+        HttpResponse response = sharedContext.getHttpClient().doGet(Utils.getKeyManagerURL(),
+                headers);
+
+        sharedContext.setResponse(response);
+        sharedContext.setResponseBody(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()));
+        sharedContext.setKeyManagerUUID(Utils.extractKeyManagerID(sharedContext.getResponseBody()));
+        Thread.sleep(3000);
+    }
+
+    @When("make the Generate Keys request")
+    public void make_generate_keys_request() throws Exception {
+        String applicationUUID = sharedContext.getApplicationUUID();
+        String keyManagerUUID = sharedContext.getKeyManagerUUID();
+        logger.info("Key Manager UUID: " + keyManagerUUID);
+        logger.info("Application UUID: " + applicationUUID);
+        String payload = "{\"keyType\":\"PRODUCTION\",\"grantTypesToBeSupported\":[\"password\",\"client_credentials\"]," +
+                "\"callbackUrl\":\"\",\"additionalProperties\":{\"application_access_token_expiry_time\":\"N/A\"," +
+                "\"user_access_token_expiry_time\":\"N/A\",\"refresh_token_expiry_time\":\"N/A\"," +
+                "\"id_token_expiry_time\":\"N/A\",\"pkceMandatory\":\"false\",\"pkceSupportPlain\":\"false\"," +
+                "\"bypassClientCredentials\":\"false\"},\"keyManager\":\"" + keyManagerUUID +"\"," +
+                "\"validityTime\":3600,\"scopes\":[\"default\"]}";
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + sharedContext.getDevportalAccessToken());
+        headers.put(Constants.REQUEST_HEADERS.HOST, Constants.DEFAULT_API_HOST);
+
+        logger.info("Payload: " + payload);
+
+        HttpResponse response = sharedContext.getHttpClient().doPost(Utils.getGenerateKeysURL(applicationUUID),
+                headers, payload, Constants.CONTENT_TYPES.APPLICATION_JSON);
+
+        sharedContext.setResponse(response);
+        sharedContext.setResponseBody(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()));
+        sharedContext.setConsumerSecret(Utils.extractKeys(sharedContext.getResponseBody(), "consumerSecret"));
+        sharedContext.setConsumerKey(Utils.extractKeys(sharedContext.getResponseBody(), "consumerKey"));
+        Thread.sleep(3000);
+    }
+
+    @When("make the Subscription request")
+    public void make_subscription_request() throws Exception {
+        String applicationUUID = sharedContext.getApplicationUUID();
+        String apiUUID = sharedContext.getApiUUID();
+        logger.info("API UUID: " + apiUUID);
+        logger.info("Application UUID: " + applicationUUID);
+        String payload = "{\"apiId\":\"" + apiUUID + "\",\"applicationId\":\"" + applicationUUID + "\",\"throttlingPolicy\":\"Gold\"}";
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + sharedContext.getDevportalAccessToken());
+        headers.put(Constants.REQUEST_HEADERS.HOST, Constants.DEFAULT_API_HOST);
+
+        HttpResponse response = sharedContext.getHttpClient().doPost(Utils.getSubscriptionURL(),
+                headers, payload, Constants.CONTENT_TYPES.APPLICATION_JSON);
+
+        sharedContext.setResponse(response);
+        sharedContext.setResponseBody(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()));
+        Thread.sleep(3000);
+    }
+
+    @When("I get oauth keys for application")
+    public void get_oauth_keys_for_application() throws Exception {
+        String applicationUUID = sharedContext.getApplicationUUID();
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + sharedContext.getDevportalAccessToken());
+        headers.put(Constants.REQUEST_HEADERS.HOST, Constants.DEFAULT_API_HOST);
+
+        HttpResponse response = sharedContext.getHttpClient().doGet(Utils.getOauthKeysURL(applicationUUID),
+                headers);
+
+        sharedContext.setResponse(response);
+        sharedContext.setResponseBody(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()));
+        sharedContext.setOauthKeyUUID(Utils.extractOAuthMappingID(sharedContext.getResponseBody()));
+        Thread.sleep(3000);
+    }
+
+    @When("make the Access Token Generation request")
+    public void make_access_token_generation_request() throws Exception {
+        String applicationUUID = sharedContext.getApplicationUUID();
+        String oauthKeyUUID = sharedContext.getOauthKeyUUID();
+        String consumerKey = sharedContext.getConsumerKey();
+        String consumerSecret = sharedContext.getConsumerSecret();
+        logger.info("Oauth Key UUID: " + oauthKeyUUID);
+        logger.info("Application UUID: " + applicationUUID);
+        String payload = "{\"consumerSecret\":\"" + consumerSecret + "\",\"validityPeriod\":3600,\"revokeToken\":null," +
+                "\"scopes\":[\"write:pets\",\"read:pets\"],\"additionalProperties\":{\"id_token_expiry_time\":3600," +
+                "\"application_access_token_expiry_time\":3600,\"user_access_token_expiry_time\":3600,\"bypassClientCredentials\":false," +
+                "\"pkceMandatory\":false,\"pkceSupportPlain\":false,\"refresh_token_expiry_time\":86400}}";
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + sharedContext.getDevportalAccessToken());
+        headers.put(Constants.REQUEST_HEADERS.HOST, Constants.DEFAULT_API_HOST);
+
+        HttpResponse response = sharedContext.getHttpClient().doPost(Utils.getAccessTokenGenerationURL(applicationUUID, oauthKeyUUID),
+                headers, payload, Constants.CONTENT_TYPES.APPLICATION_JSON);
+
+        sharedContext.setResponse(response);
+        sharedContext.setResponseBody(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()));
+        sharedContext.setApiAccessToken(Utils.extractKeys(sharedContext.getResponseBody(), "accessToken"));
+        logger.info("Access Token: " + sharedContext.getApiAccessToken());
+        Thread.sleep(3000);
+    }
+
     @When("make the API Deployment request")
     public void make_a_api_deployment_request() throws Exception {
 

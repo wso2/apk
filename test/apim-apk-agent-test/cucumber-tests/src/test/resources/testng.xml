@@ -17,7 +17,7 @@
   -->
 
 <!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
-<suite name="APK Integration Suite">
+<suite name="APIM APK Agent Integration Suite">
     <test name="API Deployment Tests" preserve-order="true">
         <parameter name="cucumber.features" value="src/test/resources/tests/api"/>
         <parameter name="cucumber.glue" value="org.wso2.apk.integration.api"/>
