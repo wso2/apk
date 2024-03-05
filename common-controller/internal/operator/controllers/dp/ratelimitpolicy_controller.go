@@ -19,6 +19,7 @@ package dp
 import (
 	"context"
 	"fmt"
+	"time"
 
 	logger "github.com/sirupsen/logrus"
 	k8error "k8s.io/apimachinery/pkg/api/errors"
@@ -148,7 +149,12 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) Reconcile(ctx context.Cont
 			xds.DeleteCustomRateLimitPolicies(resolveCustomRateLimitPolicy)
 			xds.UpdateRateLimiterPolicies(conf.CommonController.Server.Label)
 		}
-		return ctrl.Result{}, nil
+		if (k8error.IsNotFound(err)) {
+			return ctrl.Result{}, nil
+		}
+		return ctrl.Result{
+			RequeueAfter: time.Duration(1 * time.Second),
+		}, nil
 	}
 
 	if ratelimitPolicy.Spec.Override != nil && ratelimitPolicy.Spec.Override.Custom != nil {

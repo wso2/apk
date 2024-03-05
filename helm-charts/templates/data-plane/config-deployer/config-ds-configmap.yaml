@@ -30,7 +30,7 @@ data:
     keyFilePath = "/home/wso2apk/config-deployer/security/config.key"
     certFilePath = "/home/wso2apk/config-deployer/security/config.pem"
     [wso2.config_deployer_service.gatewayConfiguration]
-    name = "default"
+    name = "{{ .Values.wso2.apk.dp.gateway.name | default "wso2-apk-default" }}"
     listenerName = "httpslistener"
 {{ include "generateVhosts" .Values.wso2.apk.dp.configdeployer.vhosts | indent 4 }}
 {{if and .Values.wso2.apk.dp.partitionServer .Values.wso2.apk.dp.partitionServer.enabled}}

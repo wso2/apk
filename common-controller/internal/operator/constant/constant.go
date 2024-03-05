@@ -23,6 +23,7 @@ const (
 	ApplicationController        string = "ApplicationController"
 	SubscriptionController       string = "SubscriptionController"
 	ApplicationMappingController string = "ApplicationMappingController"
+	GatewayClassController       string = "GatewayClassController"
 )
 
 // API events related constants

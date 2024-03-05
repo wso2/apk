@@ -137,7 +137,7 @@ spec:
   parentRefs:
     - group: gateway.networking.k8s.io
       kind: Gateway
-      name: Default
+      name: wso2-apk-default
   rules:
     - backendRefs:
         - group: ""

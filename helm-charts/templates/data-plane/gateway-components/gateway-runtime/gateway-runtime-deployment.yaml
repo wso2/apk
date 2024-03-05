@@ -77,7 +77,7 @@ spec:
             - name: COMMON_CONTROLLER_REST_PORT
               value : "18003"
             - name: ENFORCER_LABEL
-              value : default
+              value : {{ .Values.wso2.apk.dp.gateway.name | default "wso2-apk-default" }}
             - name: ENFORCER_REGION
               value: UNKNOWN
             - name: XDS_MAX_MSG_SIZE
@@ -269,7 +269,7 @@ spec:
             - name: ROUTER_CLUSTER
               value: "apk_router_cluster"
             - name: ROUTER_LABEL
-              value: "default"
+              value: {{ .Values.wso2.apk.dp.gateway.name | default "wso2-apk-default" }}
             - name: ROUTER_PRIVATE_KEY_PATH
               value: "/home/wso2/security/keystore/router.key"
             - name: ROUTER_PUBLIC_CERT_PATH

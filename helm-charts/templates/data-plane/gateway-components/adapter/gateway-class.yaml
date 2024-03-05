@@ -1,0 +1,10 @@
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: GatewayClass
+metadata:
+  {{- if .Values.wso2.apk.dp.gatewayClass }}
+  name: {{ .Values.wso2.apk.dp.gatewayClass.name | default "wso2-apk-default" }}
+  {{- else }}
+  name: "wso2-apk-default"
+  {{- end }}
+spec:
+  controllerName: "wso2.com/apk-gateway-default"
