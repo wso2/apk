@@ -22,6 +22,19 @@ data:
 
     [commoncontroller.truststore]
       location = "/home/wso2/security/truststore"
+    
+     {{- if .Values.wso2.apk.dp.commonController.deployment.controlplane }}
+    [commoncontroller.controlplane]
+       enabled = {{ .Values.wso2.apk.dp.commonController.deployment.controlplane.enabled | default true }}
+       host = "{{ .Values.wso2.apk.dp.commonController.deployment.controlplane.host | default "apim-apk-agent-service.apk.svc.cluster.local" }}"
+       port = "{{ .Values.wso2.apk.dp.commonController.deployment.controlplane.port | default "18000" }}"
+       skipSSLVerification = {{ .Values.wso2.apk.dp.commonController.deployment.controlplane.skipSSLVerification | default false }}
+    {{- else }}
+    [commoncontroller.controlplane]
+       enabled = false
+       host = "apim-apk-agent-service.apk.svc.cluster.local"
+       skipSSLVerification = true
+    {{- end }}
 
     [commoncontroller.redis]
     {{- if .Values.wso2.apk.dp.commonController.deployment.redis }}
@@ -51,9 +64,7 @@ data:
     
     [commoncontroller.webServer]
       port = 9543
-    # [commoncontroller.controlplane]
-    #   host= "apim-apk-agent-service.apk-agent.svc.cluster.local"
-    #   port= 18000
+
   log_config.toml: |
     # The logging configuration for Adapter
 
