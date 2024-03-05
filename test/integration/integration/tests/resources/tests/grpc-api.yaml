@@ -22,7 +22,7 @@ metadata:
   labels:
     api-name: "dineth-grpc-api"
     api-version: "v1"
-    organization: "7505d64a54e061b7acd54ccd58b49dc43500b635"
+    organization: wso2-org
     managed-by: "apk"
 spec:
   apiName: Dineth GRPC API
@@ -33,7 +33,7 @@ spec:
   production:
     - httpRouteRefs:
         - dineth-grpc-route
-  organization: apk-org
+  organization: wso2-org
 
 ---
 
@@ -45,16 +45,16 @@ metadata:
   labels:
     api-name: "dineth-grpc-api"
     api-version: "v1"
-    organization: "7505d64a54e061b7acd54ccd58b49dc43500b635"
+    organization: "wso2-org"
     managed-by: "apk"
 spec:
   hostnames:
     - grpc.test.gw.wso2.com
   parentRefs:
-    - group: "gateway.networking.k8s.io"
-      kind: "Gateway"
-      name: "default"
-      sectionName: "httpslistener"
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: default
+      sectionName: httpslistener
   rules:
     - matches:
         - method:
@@ -120,11 +120,11 @@ metadata:
   labels:
     api-name: "dineth-grpc-api"
     api-version: "v1"
-    organization: "7505d64a54e061b7acd54ccd58b49dc43500b635"
+    organization: wso2-org
     managed-by: "apk"
 spec:
   services:
-    - host: grpc-backend
+    - host: grpc-backend.gateway-integration-test-infra
       port: 6565
   basePath: ""
   protocol: https
