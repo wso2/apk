@@ -43,7 +43,6 @@ import (
 // adapter internal representation. The values are populated from the operator. The pathItem level information is represented
 // by the resources array which contains the Resource entries.
 type AdapterInternalAPI struct {
-	id                       string
 	UUID                     string
 	apiType                  string
 	description              string
@@ -315,11 +314,6 @@ func (adapterInternalAPI *AdapterInternalAPI) GetDisableMtls() bool {
 	return adapterInternalAPI.disableMtls
 }
 
-// GetID returns the Id of the API
-func (adapterInternalAPI *AdapterInternalAPI) GetID() string {
-	return adapterInternalAPI.id
-}
-
 // GetXWso2RequestBodyPass returns boolean value to indicate
 // whether it is allowed to pass request body to the enforcer or not.
 func (adapterInternalAPI *AdapterInternalAPI) GetXWso2RequestBodyPass() bool {
@@ -348,11 +342,6 @@ func (adapterInternalAPI *AdapterInternalAPI) SetClientCerts(apiName string, cer
 		clientCerts = append(clientCerts, clientCert)
 	}
 	adapterInternalAPI.clientCertificates = clientCerts
-}
-
-// SetID set the Id of the API
-func (adapterInternalAPI *AdapterInternalAPI) SetID(id string) {
-	adapterInternalAPI.id = id
 }
 
 // SetAPIDefinitionFile sets the API Definition File.

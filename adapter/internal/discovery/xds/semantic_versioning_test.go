@@ -264,68 +264,6 @@ func TestIsSemanticVersioningEnabled(t *testing.T) {
 	}
 }
 
-func TestIsVHostMatched(t *testing.T) {
-	// Mock orgIDAPIvHostsMap for testing
-	orgIDAPIvHostsMap = map[string]map[string][]string{
-		"org1": {
-			"api1": {"example.com", "api.example.com"},
-			"api2": {"test.com"},
-		},
-		"org2": {
-			"api3": {"example.org"},
-			"api4": {"test.org"},
-		},
-	}
-
-	tests := []struct {
-		name           string
-		organizationID string
-		vHost          string
-		expectedResult bool
-	}{
-		{
-			name:           "Matching vHost in org1",
-			organizationID: "org1",
-			vHost:          "example.com",
-			expectedResult: true,
-		},
-		{
-			name:           "Matching vHost in org2",
-			organizationID: "org2",
-			vHost:          "example.org",
-			expectedResult: true,
-		},
-		{
-			name:           "Non-matching vHost in org1",
-			organizationID: "org1",
-			vHost:          "nonexistent.com",
-			expectedResult: false,
-		},
-		{
-			name:           "Non-matching vHost in org2",
-			organizationID: "org2",
-			vHost:          "nonexistent.org",
-			expectedResult: false,
-		},
-		{
-			name:           "VHost not found for organization",
-			organizationID: "org3",
-			vHost:          "example.com",
-			expectedResult: false,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			result := isVHostMatched(tt.organizationID, tt.vHost)
-
-			if result != tt.expectedResult {
-				t.Errorf("Expected result: %v, Got: %v", tt.expectedResult, result)
-			}
-		})
-	}
-}
-
 func TestGetRoutesForAPIIdentifier(t *testing.T) {
 
 	orgAPIMap = map[string]map[string]*EnvoyInternalAPI{
@@ -433,24 +371,17 @@ func TestUpdateRoutingRulesOnAPIUpdate(t *testing.T) {
 	orgAPIMap = map[string]map[string]*EnvoyInternalAPI{
 		"org1": {
 			"gw.com:apiID1": &EnvoyInternalAPI{
-				adapterInternalAPI: apiID1,
+				adapterInternalAPI: &apiID1,
 				routes:             generateRoutes(apiID1ResourcePath),
 			},
 			"gw.com:apiID2": &EnvoyInternalAPI{
-				adapterInternalAPI: apiID2,
+				adapterInternalAPI: &apiID2,
 				routes:             generateRoutes(apiID2ResourcePath),
 			},
 			"gw.com:apiID3": &EnvoyInternalAPI{
-				adapterInternalAPI: apiID3,
+				adapterInternalAPI: &apiID3,
 				routes:             generateRoutes(apiID3ResourcePath),
 			},
-		},
-	}
-
-	orgIDAPIvHostsMap = map[string]map[string][]string{
-		"org1": {
-			"api1": {"gw.com", "api.example.com"},
-			"api2": {"test.com"},
 		},
 	}
 
@@ -624,17 +555,17 @@ func TestUpdateRoutingRulesOnAPIDelete(t *testing.T) {
 	orgAPIMap = map[string]map[string]*EnvoyInternalAPI{
 		"org3": {
 			"gw.com:apiID1": &EnvoyInternalAPI{
-				adapterInternalAPI: apiID1,
+				adapterInternalAPI: &apiID1,
 				routes:             generateRoutes(apiID1ResourcePath),
 			},
 		},
 		"org4": {
 			"gw.com:apiID2": &EnvoyInternalAPI{
-				adapterInternalAPI: apiID2,
+				adapterInternalAPI: &apiID2,
 				routes:             generateRoutes(apiID2ResourcePath),
 			},
 			"gw.com:apiID3": &EnvoyInternalAPI{
-				adapterInternalAPI: apiID3,
+				adapterInternalAPI: &apiID3,
 				routes:             generateRoutes(apiID3ResourcePath),
 			},
 		},
@@ -644,29 +575,28 @@ func TestUpdateRoutingRulesOnAPIDelete(t *testing.T) {
 		name           string
 		organizationID string
 		apiIdentifier  string
-		api            model.AdapterInternalAPI
+		api            *model.AdapterInternalAPI
 		deleteVersion  string
 	}{
 		{
 			name:           "Delete latest major version",
 			organizationID: "org3",
 			apiIdentifier:  "gw.com:apiID1",
-			api:            apiID1,
+			api:            &apiID1,
 			deleteVersion:  "v1.0",
 		},
 		{
 			name:           "Delete latest minor version",
 			organizationID: "org4",
 			apiIdentifier:  "gw.com:apiID3",
-			api:            apiID3,
+			api:            &apiID3,
 			deleteVersion:  "v1.5",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			updateRoutingRulesOnAPIDelete(tt.organizationID, tt.apiIdentifier, tt.api)
-
+			updateSemanticVersioning(tt.organizationID, map[string]struct{}{tt.apiIdentifier: {}})
 			if _, ok := orgIDLatestAPIVersionMap[tt.organizationID]; ok {
 				if _, ok := orgIDLatestAPIVersionMap[tt.organizationID][tt.apiIdentifier]; ok {
 					if _, ok := orgIDLatestAPIVersionMap[tt.organizationID][tt.apiIdentifier][tt.deleteVersion]; ok {

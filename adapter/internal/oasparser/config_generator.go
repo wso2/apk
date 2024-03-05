@@ -141,7 +141,7 @@ func UpdateRoutesConfig(routeConfig *routev3.RouteConfiguration, vhostToRouteArr
 
 // GetEnforcerAPI retrieves the ApiDS object model for a given swagger definition
 // along with the vhost to deploy the API.
-func GetEnforcerAPI(adapterInternalAPI model.AdapterInternalAPI, vhost string) *api.Api {
+func GetEnforcerAPI(adapterInternalAPI *model.AdapterInternalAPI, vhost string) *api.Api {
 	resources := []*api.Resource{}
 	isMockedAPI := false
 	clientCertificates := []*api.Certificate{}

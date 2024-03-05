@@ -41,7 +41,6 @@ type APIState struct {
 	InterceptorServiceMapping map[string]v1alpha1.InterceptorService
 	BackendJWTMapping         map[string]v1alpha1.BackendJWT
 	APIDefinitionFile         []byte
-	OldOrganizationID         string
 	SubscriptionValidation    bool
 	MutualSSL                 *v1alpha2.MutualSSL
 }

@@ -19,30 +19,7 @@ package xds
 
 import (
 	"fmt"
-
-	"github.com/wso2/apk/adapter/pkg/utils/stringutils"
 )
-
-// getEnvironmentsToBeDeleted returns an slice of environments APIs to be u-deployed from
-// by considering existing environments list and environments that APIs are wished to be un-deployed
-func getEnvironmentsToBeDeleted(existingEnvs, deleteEnvs []string) (toBeDel []string, toBeKept []string) {
-	toBeDel = make([]string, 0, len(deleteEnvs))
-	toBeKept = make([]string, 0, len(deleteEnvs))
-
-	// if deleteEnvs is empty (deleteEnvs wished to be deleted), delete all environments
-	if len(deleteEnvs) == 0 {
-		return existingEnvs, []string{}
-	}
-	// otherwise delete env if it wished to
-	for _, existingEnv := range existingEnvs {
-		if stringutils.StringInSlice(existingEnv, deleteEnvs) {
-			toBeDel = append(toBeDel, existingEnv)
-		} else {
-			toBeKept = append(toBeKept, existingEnv)
-		}
-	}
-	return
-}
 
 // GetvHostsIdentifier creates a identifier for vHosts for a API considering prod
 // and sand env

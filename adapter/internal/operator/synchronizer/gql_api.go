@@ -85,22 +85,18 @@ func generateGQLAdapterInternalAPI(apiState APIState, gqlRoute *GQLRouteState, e
 		return nil, nil, errors.New("failed to find matching listener name for the provided gql route")
 	}
 
-	updatedLabelsMap := make(map[string]struct{})
 	listenerName := listeners[0]
 	sectionName := relativeSectionNames[0]
 	if len(listeners) != 0 {
-		updatedLabels, err := xds.UpdateAPICache(vHosts, labels, listenerName, sectionName, adapterInternalAPI)
+		err := xds.UpdateAPICache(vHosts, labels, listenerName, sectionName, &adapterInternalAPI)
 		if err != nil {
 			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2633, logging.MAJOR, "Error updating the API : %s:%s in vhosts: %s, API_UUID: %v. %v",
 				adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), vHosts, adapterInternalAPI.UUID, err))
 			return nil, nil, err
 		}
-		for newLabel := range updatedLabels {
-			updatedLabelsMap[newLabel] = struct{}{}
-		}
 	}
 
-	return &adapterInternalAPI, updatedLabelsMap, nil
+	return &adapterInternalAPI, labels, nil
 }
 
 // getVhostForAPI returns the vHosts related to an API.
@@ -113,15 +109,14 @@ func getVhostsForGQLAPI(gqlRoute *v1alpha2.GQLRoute) []string {
 }
 
 // getLabelsForAPI returns the labels related to an API.
-func getLabelsForGQLAPI(gqlRoute *v1alpha2.GQLRoute) []string {
-	var labels []string
-	var err error
+func getLabelsForGQLAPI(gqlRoute *v1alpha2.GQLRoute) map[string]struct{} {
+	labels := make(map[string]struct{})
 	for _, parentRef := range gqlRoute.Spec.ParentRefs {
-		err = xds.SanitizeGateway(string(parentRef.Name), false)
+		err := xds.SanitizeGateway(string(parentRef.Name), false)
 		if err != nil {
 			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2653, logging.CRITICAL, "Gateway Label is invalid: %s", string(parentRef.Name)))
 		} else {
-			labels = append(labels, string(parentRef.Name))
+			labels[string(parentRef.Name)] = struct{}{}
 		}
 	}
 	return labels
@@ -143,10 +138,7 @@ func getListenersForGQLAPI(gqlRoute *v1alpha2.GQLRoute, apiUUID string) ([]strin
 		if found {
 			// find the matching listener
 			matchedListener, listenerFound := common.FindElement(gateway.Spec.Listeners, func(listener gwapiv1b1.Listener) bool {
-				if string(listener.Name) == string(*parentRef.SectionName) {
-					return true
-				}
-				return false
+				return string(listener.Name) == string(*parentRef.SectionName)
 			})
 			if listenerFound {
 				sectionNames = append(sectionNames, string(matchedListener.Name))
@@ -161,9 +153,8 @@ func getListenersForGQLAPI(gqlRoute *v1alpha2.GQLRoute, apiUUID string) ([]strin
 
 func deleteGQLAPIFromEnv(gqlRoute *v1alpha2.GQLRoute, apiState APIState) error {
 	labels := getLabelsForGQLAPI(gqlRoute)
-	org := apiState.APIDefinition.Spec.Organization
 	uuid := string(apiState.APIDefinition.ObjectMeta.UID)
-	return xds.DeleteAPICREvent(labels, uuid, org)
+	return xds.DeleteAPI(uuid, labels)
 }
 
 // undeployGQLAPIInGateway undeploys the related API in CREATE and UPDATE events.

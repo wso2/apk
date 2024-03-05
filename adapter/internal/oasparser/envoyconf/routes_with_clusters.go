@@ -1619,7 +1619,7 @@ func createInterceptorAPIClusters(adapterInternalAPI *model.AdapterInternalAPI, 
 	apiResponseInterceptor = adapterInternalAPI.GetInterceptor(adapterInternalAPI.GetVendorExtensions(), xWso2responseInterceptor, APILevelInterceptor)
 	// if lua filter exists on api level, add cluster
 	if apiResponseInterceptor.Enable {
-		logger.LoggerOasparser.Debugln("API level response interceptors found for " + adapterInternalAPI.GetID())
+		logger.LoggerOasparser.Debugln("API level response interceptors found for " + apiTitle)
 		apiResponseInterceptor.ClusterName = getClusterName(responseInterceptClustersNamePrefix, organizationID, vHost,
 			apiTitle, apiVersion, "")
 		cluster, addresses, err := CreateLuaCluster(interceptorCerts, apiResponseInterceptor)
