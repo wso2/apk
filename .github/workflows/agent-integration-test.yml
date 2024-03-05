@@ -108,6 +108,11 @@ jobs:
         kubectl describe pods -n apk
         kubectl get pods -n apk
         kubectl get svc -n apk
+        kubectl get apis -n apk
+        kubectl get applications -n apk
+        kubectl get subscriptions -n apk
+        kubectl get tokenissuers -n apk
+        kubectl get httproutes -n apk
         helm uninstall apk-test-setup -n apk
         cd ../test/apim-apk-agent-test/apim-cp-helm-chart
         helm uninstall apim -n apk
