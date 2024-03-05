@@ -18,19 +18,16 @@
 
 package org.wso2.apk.enforcer.commons.model;
 
-/**
- * Defines OAuth2 authentication config structure.
- */
 public class Oauth2AuthenticationConfig {
-    private String header;
+    private String Header;
     private boolean sendTokenToUpstream;
 
     public String getHeader() {
-        return header;
+        return Header;
     }
 
     public void setHeader(String header) {
-        this.header = header;
+        Header = header;
     }
 
     public boolean isSendTokenToUpstream() {

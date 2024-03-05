@@ -128,7 +128,7 @@ public class Utils {
         jwtAuthenticationConfig.setHeader(operation.getApiAuthentication().getJwt().getHeader());
         jwtAuthenticationConfig.setSendTokenToUpstream(operation.getApiAuthentication().getJwt()
                 .getSendTokenToUpstream());
-        List<String> audience = new ArrayList<>();
+        ArrayList<String> audience = new ArrayList<>();
         for (int i = 0; i < operation.getApiAuthentication().getJwt().getAudienceCount(); i++) {
             audience.add(operation.getApiAuthentication().getJwt().getAudience(i));
         }
