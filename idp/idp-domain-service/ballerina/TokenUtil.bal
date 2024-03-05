@@ -114,8 +114,7 @@ public class TokenUtil {
             keyId: issuerConfiguration.keyId,
             signatureConfig: {
                 config: {keyFile: idpConfiguration.keyStores.signing.keyFile}
-            }, 
-            audience: "aud1"
+            }
         };
         if username is string {
             issuerConfig.username = username;
