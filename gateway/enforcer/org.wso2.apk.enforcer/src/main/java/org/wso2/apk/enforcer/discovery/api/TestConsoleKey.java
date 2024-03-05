@@ -4,18 +4,18 @@
 package org.wso2.apk.enforcer.discovery.api;
 
 /**
- * Protobuf type {@code wso2.discovery.api.Oauth2}
+ * Protobuf type {@code wso2.discovery.api.TestConsoleKey}
  */
-public final class Oauth2 extends
+public final class TestConsoleKey extends
     com.google.protobuf.GeneratedMessageV3 implements
-    // @@protoc_insertion_point(message_implements:wso2.discovery.api.Oauth2)
-    Oauth2OrBuilder {
+    // @@protoc_insertion_point(message_implements:wso2.discovery.api.TestConsoleKey)
+    TestConsoleKeyOrBuilder {
 private static final long serialVersionUID = 0L;
-  // Use Oauth2.newBuilder() to construct.
-  private Oauth2(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+  // Use TestConsoleKey.newBuilder() to construct.
+  private TestConsoleKey(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
   }
-  private Oauth2() {
+  private TestConsoleKey() {
     header_ = "";
   }
 
@@ -23,7 +23,7 @@ private static final long serialVersionUID = 0L;
   @SuppressWarnings({"unused"})
   protected java.lang.Object newInstance(
       UnusedPrivateParameter unused) {
-    return new Oauth2();
+    return new TestConsoleKey();
   }
 
   @java.lang.Override
@@ -31,7 +31,7 @@ private static final long serialVersionUID = 0L;
   getUnknownFields() {
     return this.unknownFields;
   }
-  private Oauth2(
+  private TestConsoleKey(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
@@ -81,22 +81,22 @@ private static final long serialVersionUID = 0L;
   }
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return org.wso2.apk.enforcer.discovery.api.APIAuthenticationProto.internal_static_wso2_discovery_api_Oauth2_descriptor;
+    return org.wso2.apk.enforcer.discovery.api.APIAuthenticationProto.internal_static_wso2_discovery_api_TestConsoleKey_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return org.wso2.apk.enforcer.discovery.api.APIAuthenticationProto.internal_static_wso2_discovery_api_Oauth2_fieldAccessorTable
+    return org.wso2.apk.enforcer.discovery.api.APIAuthenticationProto.internal_static_wso2_discovery_api_TestConsoleKey_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
-            org.wso2.apk.enforcer.discovery.api.Oauth2.class, org.wso2.apk.enforcer.discovery.api.Oauth2.Builder.class);
+            org.wso2.apk.enforcer.discovery.api.TestConsoleKey.class, org.wso2.apk.enforcer.discovery.api.TestConsoleKey.Builder.class);
   }
 
   public static final int HEADER_FIELD_NUMBER = 1;
   private volatile java.lang.Object header_;
   /**
    * <pre>
-   * name of the header containing the JWT
+   * name of the header containing the test key
    * </pre>
    *
    * <code>string header = 1;</code>
@@ -117,7 +117,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * name of the header containing the JWT
+   * name of the header containing the test key
    * </pre>
    *
    * <code>string header = 1;</code>
@@ -199,10 +199,10 @@ private static final long serialVersionUID = 0L;
     if (obj == this) {
      return true;
     }
-    if (!(obj instanceof org.wso2.apk.enforcer.discovery.api.Oauth2)) {
+    if (!(obj instanceof org.wso2.apk.enforcer.discovery.api.TestConsoleKey)) {
       return super.equals(obj);
     }
-    org.wso2.apk.enforcer.discovery.api.Oauth2 other = (org.wso2.apk.enforcer.discovery.api.Oauth2) obj;
+    org.wso2.apk.enforcer.discovery.api.TestConsoleKey other = (org.wso2.apk.enforcer.discovery.api.TestConsoleKey) obj;
 
     if (!getHeader()
         .equals(other.getHeader())) return false;
@@ -229,69 +229,69 @@ private static final long serialVersionUID = 0L;
     return hash;
   }
 
-  public static org.wso2.apk.enforcer.discovery.api.Oauth2 parseFrom(
+  public static org.wso2.apk.enforcer.discovery.api.TestConsoleKey parseFrom(
       java.nio.ByteBuffer data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static org.wso2.apk.enforcer.discovery.api.Oauth2 parseFrom(
+  public static org.wso2.apk.enforcer.discovery.api.TestConsoleKey parseFrom(
       java.nio.ByteBuffer data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static org.wso2.apk.enforcer.discovery.api.Oauth2 parseFrom(
+  public static org.wso2.apk.enforcer.discovery.api.TestConsoleKey parseFrom(
       com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static org.wso2.apk.enforcer.discovery.api.Oauth2 parseFrom(
+  public static org.wso2.apk.enforcer.discovery.api.TestConsoleKey parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static org.wso2.apk.enforcer.discovery.api.Oauth2 parseFrom(byte[] data)
+  public static org.wso2.apk.enforcer.discovery.api.TestConsoleKey parseFrom(byte[] data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static org.wso2.apk.enforcer.discovery.api.Oauth2 parseFrom(
+  public static org.wso2.apk.enforcer.discovery.api.TestConsoleKey parseFrom(
       byte[] data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static org.wso2.apk.enforcer.discovery.api.Oauth2 parseFrom(java.io.InputStream input)
+  public static org.wso2.apk.enforcer.discovery.api.TestConsoleKey parseFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static org.wso2.apk.enforcer.discovery.api.Oauth2 parseFrom(
+  public static org.wso2.apk.enforcer.discovery.api.TestConsoleKey parseFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input, extensionRegistry);
   }
-  public static org.wso2.apk.enforcer.discovery.api.Oauth2 parseDelimitedFrom(java.io.InputStream input)
+  public static org.wso2.apk.enforcer.discovery.api.TestConsoleKey parseDelimitedFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input);
   }
-  public static org.wso2.apk.enforcer.discovery.api.Oauth2 parseDelimitedFrom(
+  public static org.wso2.apk.enforcer.discovery.api.TestConsoleKey parseDelimitedFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
   }
-  public static org.wso2.apk.enforcer.discovery.api.Oauth2 parseFrom(
+  public static org.wso2.apk.enforcer.discovery.api.TestConsoleKey parseFrom(
       com.google.protobuf.CodedInputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static org.wso2.apk.enforcer.discovery.api.Oauth2 parseFrom(
+  public static org.wso2.apk.enforcer.discovery.api.TestConsoleKey parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -304,7 +304,7 @@ private static final long serialVersionUID = 0L;
   public static Builder newBuilder() {
     return DEFAULT_INSTANCE.toBuilder();
   }
-  public static Builder newBuilder(org.wso2.apk.enforcer.discovery.api.Oauth2 prototype) {
+  public static Builder newBuilder(org.wso2.apk.enforcer.discovery.api.TestConsoleKey prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
   @java.lang.Override
@@ -320,26 +320,26 @@ private static final long serialVersionUID = 0L;
     return builder;
   }
   /**
-   * Protobuf type {@code wso2.discovery.api.Oauth2}
+   * Protobuf type {@code wso2.discovery.api.TestConsoleKey}
    */
   public static final class Builder extends
       com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-      // @@protoc_insertion_point(builder_implements:wso2.discovery.api.Oauth2)
-      org.wso2.apk.enforcer.discovery.api.Oauth2OrBuilder {
+      // @@protoc_insertion_point(builder_implements:wso2.discovery.api.TestConsoleKey)
+      org.wso2.apk.enforcer.discovery.api.TestConsoleKeyOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.wso2.apk.enforcer.discovery.api.APIAuthenticationProto.internal_static_wso2_discovery_api_Oauth2_descriptor;
+      return org.wso2.apk.enforcer.discovery.api.APIAuthenticationProto.internal_static_wso2_discovery_api_TestConsoleKey_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.wso2.apk.enforcer.discovery.api.APIAuthenticationProto.internal_static_wso2_discovery_api_Oauth2_fieldAccessorTable
+      return org.wso2.apk.enforcer.discovery.api.APIAuthenticationProto.internal_static_wso2_discovery_api_TestConsoleKey_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              org.wso2.apk.enforcer.discovery.api.Oauth2.class, org.wso2.apk.enforcer.discovery.api.Oauth2.Builder.class);
+              org.wso2.apk.enforcer.discovery.api.TestConsoleKey.class, org.wso2.apk.enforcer.discovery.api.TestConsoleKey.Builder.class);
     }
 
-    // Construct using org.wso2.apk.enforcer.discovery.api.Oauth2.newBuilder()
+    // Construct using org.wso2.apk.enforcer.discovery.api.TestConsoleKey.newBuilder()
     private Builder() {
       maybeForceBuilderInitialization();
     }
@@ -367,17 +367,17 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return org.wso2.apk.enforcer.discovery.api.APIAuthenticationProto.internal_static_wso2_discovery_api_Oauth2_descriptor;
+      return org.wso2.apk.enforcer.discovery.api.APIAuthenticationProto.internal_static_wso2_discovery_api_TestConsoleKey_descriptor;
     }
 
     @java.lang.Override
-    public org.wso2.apk.enforcer.discovery.api.Oauth2 getDefaultInstanceForType() {
-      return org.wso2.apk.enforcer.discovery.api.Oauth2.getDefaultInstance();
+    public org.wso2.apk.enforcer.discovery.api.TestConsoleKey getDefaultInstanceForType() {
+      return org.wso2.apk.enforcer.discovery.api.TestConsoleKey.getDefaultInstance();
     }
 
     @java.lang.Override
-    public org.wso2.apk.enforcer.discovery.api.Oauth2 build() {
-      org.wso2.apk.enforcer.discovery.api.Oauth2 result = buildPartial();
+    public org.wso2.apk.enforcer.discovery.api.TestConsoleKey build() {
+      org.wso2.apk.enforcer.discovery.api.TestConsoleKey result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
       }
@@ -385,8 +385,8 @@ private static final long serialVersionUID = 0L;
     }
 
     @java.lang.Override
-    public org.wso2.apk.enforcer.discovery.api.Oauth2 buildPartial() {
-      org.wso2.apk.enforcer.discovery.api.Oauth2 result = new org.wso2.apk.enforcer.discovery.api.Oauth2(this);
+    public org.wso2.apk.enforcer.discovery.api.TestConsoleKey buildPartial() {
+      org.wso2.apk.enforcer.discovery.api.TestConsoleKey result = new org.wso2.apk.enforcer.discovery.api.TestConsoleKey(this);
       result.header_ = header_;
       result.sendTokenToUpstream_ = sendTokenToUpstream_;
       onBuilt();
@@ -427,16 +427,16 @@ private static final long serialVersionUID = 0L;
     }
     @java.lang.Override
     public Builder mergeFrom(com.google.protobuf.Message other) {
-      if (other instanceof org.wso2.apk.enforcer.discovery.api.Oauth2) {
-        return mergeFrom((org.wso2.apk.enforcer.discovery.api.Oauth2)other);
+      if (other instanceof org.wso2.apk.enforcer.discovery.api.TestConsoleKey) {
+        return mergeFrom((org.wso2.apk.enforcer.discovery.api.TestConsoleKey)other);
       } else {
         super.mergeFrom(other);
         return this;
       }
     }
 
-    public Builder mergeFrom(org.wso2.apk.enforcer.discovery.api.Oauth2 other) {
-      if (other == org.wso2.apk.enforcer.discovery.api.Oauth2.getDefaultInstance()) return this;
+    public Builder mergeFrom(org.wso2.apk.enforcer.discovery.api.TestConsoleKey other) {
+      if (other == org.wso2.apk.enforcer.discovery.api.TestConsoleKey.getDefaultInstance()) return this;
       if (!other.getHeader().isEmpty()) {
         header_ = other.header_;
         onChanged();
@@ -459,11 +459,11 @@ private static final long serialVersionUID = 0L;
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      org.wso2.apk.enforcer.discovery.api.Oauth2 parsedMessage = null;
+      org.wso2.apk.enforcer.discovery.api.TestConsoleKey parsedMessage = null;
       try {
         parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (org.wso2.apk.enforcer.discovery.api.Oauth2) e.getUnfinishedMessage();
+        parsedMessage = (org.wso2.apk.enforcer.discovery.api.TestConsoleKey) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
         if (parsedMessage != null) {
@@ -476,7 +476,7 @@ private static final long serialVersionUID = 0L;
     private java.lang.Object header_ = "";
     /**
      * <pre>
-     * name of the header containing the JWT
+     * name of the header containing the test key
      * </pre>
      *
      * <code>string header = 1;</code>
@@ -496,7 +496,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * name of the header containing the JWT
+     * name of the header containing the test key
      * </pre>
      *
      * <code>string header = 1;</code>
@@ -517,7 +517,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * name of the header containing the JWT
+     * name of the header containing the test key
      * </pre>
      *
      * <code>string header = 1;</code>
@@ -536,7 +536,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * name of the header containing the JWT
+     * name of the header containing the test key
      * </pre>
      *
      * <code>string header = 1;</code>
@@ -550,7 +550,7 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * name of the header containing the JWT
+     * name of the header containing the test key
      * </pre>
      *
      * <code>string header = 1;</code>
@@ -624,41 +624,41 @@ private static final long serialVersionUID = 0L;
     }
 
 
-    // @@protoc_insertion_point(builder_scope:wso2.discovery.api.Oauth2)
+    // @@protoc_insertion_point(builder_scope:wso2.discovery.api.TestConsoleKey)
   }
 
-  // @@protoc_insertion_point(class_scope:wso2.discovery.api.Oauth2)
-  private static final org.wso2.apk.enforcer.discovery.api.Oauth2 DEFAULT_INSTANCE;
+  // @@protoc_insertion_point(class_scope:wso2.discovery.api.TestConsoleKey)
+  private static final org.wso2.apk.enforcer.discovery.api.TestConsoleKey DEFAULT_INSTANCE;
   static {
-    DEFAULT_INSTANCE = new org.wso2.apk.enforcer.discovery.api.Oauth2();
+    DEFAULT_INSTANCE = new org.wso2.apk.enforcer.discovery.api.TestConsoleKey();
   }
 
-  public static org.wso2.apk.enforcer.discovery.api.Oauth2 getDefaultInstance() {
+  public static org.wso2.apk.enforcer.discovery.api.TestConsoleKey getDefaultInstance() {
     return DEFAULT_INSTANCE;
   }
 
-  private static final com.google.protobuf.Parser<Oauth2>
-      PARSER = new com.google.protobuf.AbstractParser<Oauth2>() {
+  private static final com.google.protobuf.Parser<TestConsoleKey>
+      PARSER = new com.google.protobuf.AbstractParser<TestConsoleKey>() {
     @java.lang.Override
-    public Oauth2 parsePartialFrom(
+    public TestConsoleKey parsePartialFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
-      return new Oauth2(input, extensionRegistry);
+      return new TestConsoleKey(input, extensionRegistry);
     }
   };
 
-  public static com.google.protobuf.Parser<Oauth2> parser() {
+  public static com.google.protobuf.Parser<TestConsoleKey> parser() {
     return PARSER;
   }
 
   @java.lang.Override
-  public com.google.protobuf.Parser<Oauth2> getParserForType() {
+  public com.google.protobuf.Parser<TestConsoleKey> getParserForType() {
     return PARSER;
   }
 
   @java.lang.Override
-  public org.wso2.apk.enforcer.discovery.api.Oauth2 getDefaultInstanceForType() {
+  public org.wso2.apk.enforcer.discovery.api.TestConsoleKey getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 

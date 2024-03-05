@@ -24,7 +24,6 @@ public class AuthenticationConfig {
     private JWTAuthenticationConfig jwtAuthenticationConfig;
     private List<APIKeyAuthenticationConfig> apiKeyAuthenticationConfigs;
     private InternalKeyConfig internalKeyConfig;
-    private Oauth2AuthenticationConfig oauth2AuthenticationConfig;
     private boolean Disabled;
 
     public JWTAuthenticationConfig getJwtAuthenticationConfig() {
@@ -57,15 +56,5 @@ public class AuthenticationConfig {
 
     public void setInternalKeyConfig(InternalKeyConfig internalKeyConfig) {
         this.internalKeyConfig = internalKeyConfig;
-    }
-
-    public Oauth2AuthenticationConfig getOauth2AuthenticationConfig() {
-
-        return oauth2AuthenticationConfig;
-    }
-
-    public void setOauth2AuthenticationConfig(Oauth2AuthenticationConfig oauth2AuthenticationConfig) {
-
-        this.oauth2AuthenticationConfig = oauth2AuthenticationConfig;
     }
 }

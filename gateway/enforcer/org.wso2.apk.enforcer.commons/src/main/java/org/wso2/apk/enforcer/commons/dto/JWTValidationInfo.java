@@ -42,7 +42,6 @@ public class JWTValidationInfo implements Serializable {
     private String identifier;
     private JWTClaimsSet jwtClaimsSet;
     private String token;
-    private List<String> audience = new ArrayList<>();
 
     public JWTValidationInfo() {
 
@@ -58,15 +57,6 @@ public class JWTValidationInfo implements Serializable {
         this.claims = jwtValidationInfo.getClaims();
         this.validationCode = jwtValidationInfo.getValidationCode();
         this.keyManager = jwtValidationInfo.getKeyManager();
-        this.audience = jwtValidationInfo.audience;
-    }
-
-    public List<String> getAudience() {
-        return audience;
-    }
-
-    public void setAudience(List<String> audience) {
-        this.audience = audience;
     }
 
     public String getToken() {

@@ -38,8 +38,6 @@ sudo echo "$IP ratelimit-priority.test.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "$IP different-endpoint-with-same-route.test.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "$IP custom-auth-header.test.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "$IP gql.test.gw.wso2.com" | sudo tee -a /etc/hosts
-sudo echo "$IP api-level-jwt.test.gw.wso2.com" | sudo tee -a /etc/hosts
-sudo echo "$IP resource-level-jwt.test.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "255.255.255.255 broadcasthost" | sudo tee -a /etc/hosts
 sudo echo "::1 localhost" | sudo tee -a /etc/hosts
 

@@ -18,12 +18,10 @@
 
 package org.wso2.apk.enforcer.commons.model;
 
-import java.util.ArrayList;
-
 public class JWTAuthenticationConfig {
     private String Header;
     private boolean sendTokenToUpstream;
-    private ArrayList<String> audience;
+
     public String getHeader() {
         return Header;
     }
@@ -38,13 +36,5 @@ public class JWTAuthenticationConfig {
 
     public void setSendTokenToUpstream(boolean sendTokenToUpstream) {
         this.sendTokenToUpstream = sendTokenToUpstream;
-    }
-
-    public ArrayList<String> getAudience() {
-        return audience;
-    }
-
-    public void setAudience(ArrayList<String> audience) {
-        this.audience = audience;
     }
 }

@@ -19,6 +19,7 @@ package model
 
 import (
 	"github.com/google/uuid"
+	"github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/internal/oasparser/constants"
 	"github.com/wso2/apk/adapter/internal/operator/utils"
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
@@ -233,28 +234,19 @@ func getSecurity(authScheme *dpv1alpha2.Authentication) *Authentication {
 		sendTokenToUpstream = authScheme.Spec.Override.AuthTypes.Oauth2.SendTokenToUpstream
 	}
 	auth := &Authentication{Disabled: false,
-		Oauth2: &Oauth2{Header: authHeader, SendTokenToUpstream: sendTokenToUpstream},
+		TestConsoleKey: &TestConsoleKey{Header: constants.TestConsoleKeyHeader},
+		JWT:            &JWT{Header: authHeader, SendTokenToUpstream: sendTokenToUpstream},
 	}
 	if authScheme != nil && authScheme.Spec.Override != nil {
 		if authScheme.Spec.Override.Disabled != nil && *authScheme.Spec.Override.Disabled {
 			return &Authentication{Disabled: true}
 		}
 		authFound := false
-		if authScheme.Spec.Override.AuthTypes != nil && !authScheme.Spec.Override.AuthTypes.Oauth2.Disabled {
-			authFound = true
+		if authScheme.Spec.Override.AuthTypes != nil && authScheme.Spec.Override.AuthTypes.Oauth2.Disabled {
+			auth = &Authentication{Disabled: false,
+				TestConsoleKey: &TestConsoleKey{Header: constants.TestConsoleKeyHeader},
+			}
 		} else {
-			auth = &Authentication{Disabled: false}
-		}
-		if authScheme.Spec.Override.AuthTypes != nil && authScheme.Spec.Override.AuthTypes.JWT.Disabled != nil && !*authScheme.Spec.Override.AuthTypes.JWT.Disabled {
-			audience := make([]string, 0)
-			if len(authScheme.Spec.Override.AuthTypes.JWT.Audience) > 0 {
-				audience = authScheme.Spec.Override.AuthTypes.JWT.Audience
-			}
-			jwtHeader := constants.TestConsoleKeyHeader
-			if len(authScheme.Spec.Override.AuthTypes.JWT.Header) > 0 {
-				jwtHeader = authScheme.Spec.Override.AuthTypes.JWT.Header
-			}
-			auth.JWT = &JWT{Header: jwtHeader, SendTokenToUpstream: sendTokenToUpstream, Audience: audience}
 			authFound = true
 		}
 		if authScheme.Spec.Override.AuthTypes != nil && authScheme.Spec.Override.AuthTypes.APIKey != nil {
@@ -270,6 +262,7 @@ func getSecurity(authScheme *dpv1alpha2.Authentication) *Authentication {
 			auth.APIKey = apiKeys
 		}
 		if !authFound {
+			loggers.LoggerOasparser.Debug("Disabled security.")
 			return &Authentication{Disabled: true}
 		}
 	}

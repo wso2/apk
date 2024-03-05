@@ -93,7 +93,6 @@ public class JWTValidator {
                     jwtValidationInfo.setIdentifier(JWTUtils.getJWTTokenIdentifier(signedJWTInfo));
                     jwtValidationInfo.setJwtClaimsSet(signedJWTInfo.getJwtClaimsSet());
                     jwtValidationInfo.setToken(token);
-                    jwtValidationInfo.setAudience(jwtClaimsSet.getAudience());
                     return jwtValidationInfo;
                 }
                 jwtValidationInfo.setValidationCode(APISecurityConstants.API_AUTH_ACCESS_TOKEN_EXPIRED);

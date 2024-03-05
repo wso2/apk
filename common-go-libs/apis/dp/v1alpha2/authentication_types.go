@@ -55,10 +55,10 @@ type APIAuth struct {
 	// +nullable
 	APIKey []APIKeyAuth `json:"apiKey,omitempty"`
 
-	// JWT is to specify the JWT authentication scheme details
+	// TestConsoleKey is to specify the Test Console Key authentication scheme details
 	//
 	// +optional
-	JWT JWT `json:"jwt,omitempty"`
+	TestConsoleKey TestConsoleKeyAuth `json:"testConsoleKey,omitempty"`
 
 	// MutualSSL is to specify the features and certificates for mutual SSL
 	//
@@ -91,31 +91,19 @@ type MutualSSLConfig struct {
 	ConfigMapRefs []*RefConfig `json:"configMapRefs,omitempty"`
 }
 
-// JWT Json Web Token Authentication scheme details
-type JWT struct {
-
-	// Disabled is to disable JWT authentication
-	//
-	// +kubebuilder:default=true
-	// +optional
-	Disabled *bool `json:"disabled"`
-
-	// Header is the header name used to pass the JWT
+// TestConsoleKeyAuth Test Console Key Authentication scheme details
+type TestConsoleKeyAuth struct {
+	// Header is the header name used to pass the Test Console Key
 	//
 	// +kubebuilder:default:=internal-key
 	// +optional
 	// +kubebuilder:validation:MinLength=1
 	Header string `json:"header,omitempty"`
 
-	// SendTokenToUpstream is to specify whether the JWT should be sent to the upstream
+	// SendTokenToUpstream is to specify whether the Test Console Key should be sent to the upstream
 	//
 	// +optional
 	SendTokenToUpstream bool `json:"sendTokenToUpstream,omitempty"`
-
-	// Audience who can invoke a corresponding API
-	//
-	// +optional
-	Audience []string `json:"audience,omitempty"`
 }
 
 // Oauth2Auth OAuth2 Authentication scheme details

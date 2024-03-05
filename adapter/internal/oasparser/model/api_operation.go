@@ -50,18 +50,17 @@ type Authentication struct {
 	Disabled       bool
 	JWT            *JWT
 	APIKey         []APIKey
-	Oauth2         *Oauth2
+	TestConsoleKey *TestConsoleKey
 }
 
 // JWT holds JWT related configurations
 type JWT struct {
 	Header              string
 	SendTokenToUpstream bool
-	Audience []string
 }
 
-// Oauth2 holds Oauth2 related configurations
-type Oauth2 struct {
+// TestConsoleKey holds testkey related configurations
+type TestConsoleKey struct {
 	Header              string
 	SendTokenToUpstream bool
 }

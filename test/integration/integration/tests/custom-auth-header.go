@@ -99,45 +99,12 @@ var CustomAuthHeader = suite.IntegrationTest{
 				Namespace: ns,
 				Response:  http.Response{StatusCode: 200},
 			},
-			{
-				Request: http.Request{
-					Host:   "custom-auth-header.test.gw.wso2.com",
-					Path:   "/custom-auth-header/v1.0.0/v2/echo-full/",
-					Method: "GET",
-				},
-				ExpectedRequest: &http.ExpectedRequest{
-					Request: http.Request{
-						Path: "/v2/echo-full/",
-					},
-				},
-				Backend:   "infra-backend-v1",
-				Namespace: ns,
-				Response:  http.Response{StatusCode: 200},
-			},
-			{
-				Request: http.Request{
-					Host:   "custom-auth-header.test.gw.wso2.com",
-					Path:   "/custom-auth-header/v2/echo-full/",
-					Method: "GET",
-				},
-				ExpectedRequest: &http.ExpectedRequest{
-					Request: http.Request{
-						Path: "/v2/echo-full/",
-					},
-				},
-				Backend:   "infra-backend-v1",
-				Namespace: ns,
-				Response:  http.Response{StatusCode: 200},
-			},
 		}
 		for i := range testCases {
 			tc := testCases[i]
+			tc.Request.Headers = http.AddBearerTokenToHeader(token, tc.Request.Headers)
 			if (i == 2 || i == 3) {
 				tc.Request.Headers = http.AddCustomBearerTokenHeader("testAuth", token, tc.Request.Headers)
-			} else if (i == 4 || i == 5) {
-				tc.Request.Headers = http.AddInternalTokenHeader("testJwt", token, tc.Request.Headers)
-			} else {
-				tc.Request.Headers = http.AddBearerTokenToHeader(token, tc.Request.Headers)
 			}
 			t.Run(tc.GetTestCaseName(i), func(t *testing.T) {
 				t.Parallel()

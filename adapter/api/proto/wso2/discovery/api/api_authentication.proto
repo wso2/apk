@@ -35,17 +35,16 @@ message APIKey {
 message JWT {
   string header         = 1; // name of the header containing the JWT
   bool sendTokenToUpstream  = 2; // send the token to upstream
-  repeated string audience = 3;
-}
-
-message Oauth2 {
-  string header         = 1; // name of the header containing the JWT
-  bool sendTokenToUpstream  = 2; // send the token to upstream
 }
 
 message APIAuthentication {
   bool disabled          = 1; // disable authentication
   JWT jwt = 2;
   repeated APIKey apikey = 3;
-  Oauth2 Oauth2 = 4;
+  TestConsoleKey testConsoleKey = 4;
+}
+
+message TestConsoleKey {
+  string header         = 1; // name of the header containing the test key
+  bool sendTokenToUpstream  = 2; // send the token to upstream
 }

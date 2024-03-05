@@ -57,17 +57,17 @@ public interface APIAuthenticationOrBuilder extends
       int index);
 
   /**
-   * <code>.wso2.discovery.api.Oauth2 Oauth2 = 4;</code>
-   * @return Whether the oauth2 field is set.
+   * <code>.wso2.discovery.api.TestConsoleKey testConsoleKey = 4;</code>
+   * @return Whether the testConsoleKey field is set.
    */
-  boolean hasOauth2();
+  boolean hasTestConsoleKey();
   /**
-   * <code>.wso2.discovery.api.Oauth2 Oauth2 = 4;</code>
-   * @return The oauth2.
+   * <code>.wso2.discovery.api.TestConsoleKey testConsoleKey = 4;</code>
+   * @return The testConsoleKey.
    */
-  org.wso2.apk.enforcer.discovery.api.Oauth2 getOauth2();
+  org.wso2.apk.enforcer.discovery.api.TestConsoleKey getTestConsoleKey();
   /**
-   * <code>.wso2.discovery.api.Oauth2 Oauth2 = 4;</code>
+   * <code>.wso2.discovery.api.TestConsoleKey testConsoleKey = 4;</code>
    */
-  org.wso2.apk.enforcer.discovery.api.Oauth2OrBuilder getOauth2OrBuilder();
+  org.wso2.apk.enforcer.discovery.api.TestConsoleKeyOrBuilder getTestConsoleKeyOrBuilder();
 }
