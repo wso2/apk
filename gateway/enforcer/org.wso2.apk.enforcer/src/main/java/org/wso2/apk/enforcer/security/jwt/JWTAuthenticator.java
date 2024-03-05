@@ -530,12 +530,9 @@ public class JWTAuthenticator implements Authenticator {
      *
      * @param list1 The first list to check.
      * @param list2 The second list to check against.
-     * @return true if list1 is empty else if at least one element from list1 exists in list2, otherwise false.
+     * @return true if at least one element from list1 exists in list2, otherwise false.
      */
     public static boolean checkAnyExist(List<String> list1, List<String> list2) {
-        if (list1.size() == 0) {
-            return true;
-        }
         return list1.stream().anyMatch(list2::contains);
     }
 }
