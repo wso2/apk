@@ -91,7 +91,7 @@ jobs:
         helm install apim-apk-agent -n apk . --debug --wait --timeout 2m0s \
         --set controlPlane.serviceURL=https://apim-wso2am-cp-1-service.apk.svc.cluster.local:9443/ \
         --set controlPlane.eventListeningEndpoints="amqp://admin:admin@apim-wso2am-cp-1-service.apk.svc.cluster.local:5672?retries='10'&connectdelay='30'" \
-        --set dataPlane.k8ResourceEndpoint=https://apk-wso2-apk-config-ds-service.apk.svc.cluster.local:9443/api/configurator/apis/generate-k8s-resources 
+        --set dataPlane.k8ResourceEndpoint=https://apk-test-setup-wso2-apk-config-ds-service.apk.svc.cluster.local:9443/api/configurator/apis/generate-k8s-resources 
         kubectl get pods -n apk
         kubectl get svc -n apk
     - name: Run test cases
