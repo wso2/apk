@@ -224,7 +224,7 @@ func deployMultipleAPIsInGateway(event *APIEvent, successChannel *chan SuccessEv
 
 	updated := xds.UpdateXdsCacheOnAPIChange(updatedLabelsMap)
 	if updated {
-		loggers.LoggerAPKOperator.Info("XDS cache updated for apis: %+v", updatedAPIs)
+		loggers.LoggerAPKOperator.Infof("XDS cache updated for apis: %+v", updatedAPIs)
 		*successChannel <- SuccessEvent{
 			APINamespacedName: updatedAPIs,
 			State:             event.EventType,
@@ -234,7 +234,7 @@ func deployMultipleAPIsInGateway(event *APIEvent, successChannel *chan SuccessEv
 			paritionCh <- event
 		}
 	} else {
-		loggers.LoggerAPKOperator.Info("XDS cache not updated for APIs : %+v", updatedAPIs)
+		loggers.LoggerAPKOperator.Infof("XDS cache not updated for APIs : %+v", updatedAPIs)
 	}
 }
 
