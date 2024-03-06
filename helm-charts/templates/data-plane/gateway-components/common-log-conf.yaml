@@ -29,17 +29,37 @@ data:
     [commoncontroller.truststore]
       location = "/home/wso2/security/truststore"
     
-     {{- if .Values.wso2.apk.dp.commonController.deployment.controlplane }}
+    {{- if .Values.wso2.apk.dp.commonController.deployment.controlplane }}
     [commoncontroller.controlplane]
-       enabled = {{ .Values.wso2.apk.dp.commonController.deployment.controlplane.enabled | default true }}
+       enabled = {{ .Values.wso2.apk.dp.commonController.deployment.controlplane.enabled | default false }}
        host = "{{ .Values.wso2.apk.dp.commonController.deployment.controlplane.host | default "apim-apk-agent-service.apk.svc.cluster.local" }}"
-       port = "{{ .Values.wso2.apk.dp.commonController.deployment.controlplane.port | default "18000" }}"
+       eventPort = "{{ .Values.wso2.apk.dp.commonController.deployment.controlplane.port | default "18000" }}"
        skipSSLVerification = {{ .Values.wso2.apk.dp.commonController.deployment.controlplane.skipSSLVerification | default false }}
-    {{- else }}
-    [commoncontroller.controlplane]
-       enabled = false
-       host = "apim-apk-agent-service.apk.svc.cluster.local"
-       skipSSLVerification = true
+    {{- if .Values.wso2.apk.dp.commonController.deployment.controlplane.persistence }}
+    [commoncontroller.controlplane.persistence] 
+      type = "{{ .Values.wso2.apk.dp.commonController.deployment.controlplane.persistence.type | default "K8s" }}"
+    {{- end }}
+    {{- end }}
+
+    {{- if .Values.wso2.apk.dp.commonController.deployment.database }}
+    [commoncontroller.database]
+      enabled = {{ .Values.wso2.apk.dp.commonController.deployment.database.enabled | default false }}
+      name = "{{ .Values.wso2.apk.dp.commonController.deployment.database.name | default "DATAPLANE" }}"
+      host = "{{ .Values.wso2.apk.dp.commonController.deployment.database.host | default "wso2apk-db-service.apk" }}"
+      port = "{{ .Values.wso2.apk.dp.commonController.deployment.database.port | default "5432" }}"
+      username = "{{ .Values.wso2.apk.dp.commonController.deployment.database.username | default "wso2carbon" }}"
+      password = "{{ .Values.wso2.apk.dp.commonController.deployment.database.password | default "wso2carbon" }}"
+
+      {{- if .Values.wso2.apk.dp.commonController.deployment.database.poolOptions }}
+      [commoncontroller.database.poolOptions]
+        poolMaxConns = {{ .Values.wso2.apk.dp.commonController.deployment.database.poolOptions.poolMaxConns | default 4 }}
+        poolMinConns = {{ .Values.wso2.apk.dp.commonController.deployment.database.poolOptions.poolMinConns | default 0 }}
+        poolMaxConnLifetime = "{{ .Values.wso2.apk.dp.commonController.deployment.database.poolOptions.poolMaxConnLifetime | default "1h" }}"
+        poolMaxConnIdleTime = "{{ .Values.wso2.apk.dp.commonController.deployment.database.poolOptions.poolMaxConnIdleTime | default "1h" }}"
+        poolHealthCheckPeriod = "{{ .Values.wso2.apk.dp.commonController.deployment.database.poolOptions.poolHealthCheckPeriod | default "1m" }}"
+        poolMaxConnLifetimeJitter = "{{ .Values.wso2.apk.dp.commonController.deployment.database.poolOptions.poolMaxConnLifetimeJitter | default "1s" }}"
+      {{- end }}
+
     {{- end }}
 
     [commoncontroller.redis]
