@@ -36,7 +36,7 @@ release {
 unSnapshotVersion.finalizedBy ":ballerina:commit_toml_files"
 afterReleaseBuild.dependsOn ":docker:docker_push"
 task build{
- dependsOn("docker:build")
+ dependsOn("docker:buildDockerImage")
 }
 build.configure {
     dependsOn(":docker:build")

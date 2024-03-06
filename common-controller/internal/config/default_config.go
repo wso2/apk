@@ -46,7 +46,7 @@ var defaultConfig = &Config{
 		Metrics: metrics{
 			Enabled: false,
 			Type:    "prometheus",
-			Port:    18010,
+			Port:    18006,
 		},
 	},
 }

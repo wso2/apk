@@ -52,9 +52,9 @@ spec:
             - containerPort: 9443
               protocol: "TCP"
             {{ if and .Values.wso2.apk.metrics .Values.wso2.apk.metrics.enabled }}
-            - containerPort: 18011
+            - containerPort: 18006
               protocol: "TCP"
-            - containerPort: 18012
+            - containerPort: 18007
               protocol: "TCP"
             {{ end }}
           readinessProbe:
