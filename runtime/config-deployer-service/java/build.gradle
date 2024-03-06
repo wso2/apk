@@ -17,8 +17,6 @@
 
 apply from: "$projectDir/../../../common-gradle-scripts/java.gradle"
 
-
-
 dependencies {
     implementation libs.commons.logging
     implementation libs.gson
@@ -34,4 +32,35 @@ dependencies {
     implementation libs.handy.uri.templates
     implementation libs.json
     implementation libs.commons.lang
+    implementation libs.prometheus
+}
+
+tasks.register('copy_dependencies', Copy) {
+    dependsOn create_lib
+    from configurations.default
+    into "$projectDir/../docker/lib"
+    finalizedBy build
+}
+
+tasks.register('create_lib') {
+    dependsOn delete_lib
+    finalizedBy copy_dependencies
+}
+
+tasks.register('delete_lib', Delete) {
+    delete "$projectDir/lib"
+    finalizedBy create_lib
+}
+
+tasks.named('build').configure {
+    dependsOn copy_dependencies
+}
+
+configurations.implementation {
+    exclude group: 'jline'
+    exclude group: 'org.slf4j', module: 'slf4j-log4j12'
+    exclude group: 'org.apache.logging'
+    exclude group: 'log4j'
+    exclude group: 'org.ops4j.pax.logging'
+    exclude group: 'com.google.guava'
 }

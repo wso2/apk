@@ -25,7 +25,19 @@ data:
     [ballerina.log]
     level = "DEBUG"
     [ballerina.http]
-    traceLogConsole = true
+    traceLogConsole = false
+    {{if and .Values.wso2.apk.metrics .Values.wso2.apk.metrics.enabled}}
+    [ballerina.observe]
+    metricsEnabled=true
+    metricsReporter="prometheus"
+    [ballerinax.prometheus]
+    port=18006
+    {{if .Values.wso2.apk.metrics.idpDSBalHost}}
+    host="{{ .Values.wso2.apk.metrics.idpDSBalHost}}"
+    {{else}} 
+    host="0.0.0.0"
+    {{end}} 
+    {{end}} 
     # Sample configurations      
     [wso2.idp_domain_service.datasourceConfiguration]
     description = "Database for idp"

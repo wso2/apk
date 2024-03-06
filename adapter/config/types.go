@@ -93,6 +93,8 @@ type adapter struct {
 	Operator operator
 	// Environment of the Adapter
 	Environment string
+	// Metric represents configurations to expose/export go metrics
+	Metrics metrics
 }
 
 // Envoy Listener Component related configurations.
@@ -299,8 +301,10 @@ type tracing struct {
 }
 
 type metrics struct {
-	Enabled bool
-	Type    string
+	Enabled            bool
+	Type               string
+	Port               int32
+	CollectionInterval int32
 }
 
 type analyticsAdapter struct {

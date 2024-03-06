@@ -66,7 +66,7 @@ public class ExtAuthService extends AuthorizationGrpc.AuthorizationImplBase {
     public void check(CheckRequest request, StreamObserver<CheckResponse> responseObserver) {
         TracingSpan extAuthServiceSpan = null;
         Scope extAuthServiceSpanScope = null;
-        long starTimestamp = System.currentTimeMillis();
+        long startTimestamp = System.currentTimeMillis();
         try {
             String traceId = request.getAttributes().getRequest().getHttp()
                     .getHeadersOrDefault(HttpConstants.X_REQUEST_ID_HEADER,
@@ -94,10 +94,10 @@ public class ExtAuthService extends AuthorizationGrpc.AuthorizationImplBase {
             }
             if (MetricsManager.isMetricsEnabled()) {
                 MetricsExporter metricsExporter = MetricsManager.getInstance();
-                metricsExporter.trackMetric("enforcerLatency", System.currentTimeMillis() - starTimestamp);
+                metricsExporter.trackMetric("enforcerLatency", System.currentTimeMillis() - startTimestamp);
             }
             if (JMXUtils.isJMXMetricsEnabled()) {
-                ExtAuthMetrics.getInstance().recordMetric(System.currentTimeMillis() - starTimestamp);
+                ExtAuthMetrics.getInstance().recordMetric(System.currentTimeMillis() - startTimestamp);
             }
         }
     }
@@ -142,7 +142,7 @@ public class ExtAuthService extends AuthorizationGrpc.AuthorizationImplBase {
             }
 
             addMetadata(metadataStructBuilder, "correlationID", responseObject.getCorrelationID());
-            addMetadata(metadataStructBuilder, MetadataConstants.CHOREO_CONNECT_ENFORCER_REPLY, "Ok");
+            addMetadata(metadataStructBuilder, MetadataConstants.APK_ENFORCER_REPLY, "Ok");
 
             return checkResponseBuilder
                     .setDynamicMetadata(metadataStructBuilder.build())
@@ -189,7 +189,7 @@ public class ExtAuthService extends AuthorizationGrpc.AuthorizationImplBase {
                     responseObject.getRequestPath().split("\\?")[0]);
             // adding org level ratelimit key to metadata
             addMetadata(structBuilder, MetadataConstants.RATELIMIT_WSO2_ORG_PREFIX, responseObject.getOrganizationId());
-            addMetadata(structBuilder, MetadataConstants.CHOREO_CONNECT_ENFORCER_REPLY, "Ok");
+            addMetadata(structBuilder, MetadataConstants.APK_ENFORCER_REPLY, "Ok");
 
             return CheckResponse.newBuilder().setStatus(Status.newBuilder().setCode(Code.OK_VALUE).build())
                     .setOkResponse(okResponseBuilder.build())

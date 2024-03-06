@@ -51,7 +51,6 @@ public interface SubscriptionDataStore {
 
     void addApplications(List<ApplicationDto> applicationList);
 
-
     void addApplicationKeyMappings(
             List<ApplicationKeyMappingDTO> applicationKeyMappingList);
 
@@ -73,7 +72,7 @@ public interface SubscriptionDataStore {
      * @return ApplicationKeyMapping which match the given parameters
      */
     ApplicationKeyMapping getMatchingApplicationKeyMapping(String applicationIdentifier, String keyType,
-                                                           String securityScheme, String envType);
+            String securityScheme, String envType);
 
     /**
      * Filter the applications map based on the provided parameters.
@@ -108,11 +107,13 @@ public interface SubscriptionDataStore {
 
     void addApplicationMapping(org.wso2.apk.enforcer.discovery.subscription.ApplicationMapping applicationMapping);
 
-    void addApplicationKeyMapping(org.wso2.apk.enforcer.discovery.subscription.ApplicationKeyMapping applicationKeyMapping);
+    void addApplicationKeyMapping(
+            org.wso2.apk.enforcer.discovery.subscription.ApplicationKeyMapping applicationKeyMapping);
 
     void removeApplicationMapping(org.wso2.apk.enforcer.discovery.subscription.ApplicationMapping applicationMapping);
 
-    void removeApplicationKeyMapping(org.wso2.apk.enforcer.discovery.subscription.ApplicationKeyMapping applicationKeyMapping);
+    void removeApplicationKeyMapping(
+            org.wso2.apk.enforcer.discovery.subscription.ApplicationKeyMapping applicationKeyMapping);
 
     void removeSubscription(org.wso2.apk.enforcer.discovery.subscription.Subscription subscription);
 
@@ -120,4 +121,7 @@ public interface SubscriptionDataStore {
 
     public void addApplicationMappings(List<ApplicationMappingDto> applicationMappingList);
 
+     int getSubscriptionCount();
+
+     int getJWTIssuerCount();
 }

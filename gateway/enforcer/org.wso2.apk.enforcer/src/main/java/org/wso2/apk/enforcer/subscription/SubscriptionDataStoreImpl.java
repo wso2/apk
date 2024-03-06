@@ -370,6 +370,7 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
     public void removeSubscription(org.wso2.apk.enforcer.discovery.subscription.Subscription subscription) {
 
         subscriptionMap.remove(subscription.getUuid());
+
     }
 
     @Override
@@ -396,6 +397,18 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
     private String getMapKey(String environment, String issuer) {
 
         return environment + DELEM_PERIOD + issuer;
+    }
+
+    @Override
+    public int getSubscriptionCount() {
+
+        return subscriptionMap.size();
+    }
+
+    @Override
+    public int getJWTIssuerCount() {
+
+        return jwtValidatorMap.size();
     }
 
 }

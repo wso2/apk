@@ -14,6 +14,12 @@ data:
     [adapter.operator]
       namespaces = [{{ include "commaJoinedQuotedList" .Values.wso2.apk.dp.adapter.configs.apiNamespaces}}]
     {{ end}}    
+    {{if and .Values.wso2.apk.metrics .Values.wso2.apk.metrics.enabled}}
+    [adapter.metrics]
+      enabled = {{.Values.wso2.apk.metrics.enabled}}
+      type = "{{.Values.wso2.apk.metrics.type| default "prometheus" }}"
+      port = 18006
+    {{ end}}    
 
     {{ if and .Values.wso2.apk.dp.gatewayRuntime.deployment .Values.wso2.apk.dp.gatewayRuntime.deployment.router .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs }}
     [router]

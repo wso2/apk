@@ -98,9 +98,10 @@ fi
 echo "Using Java memory options: $JVM_MEM_OPTS"
 
 $JAVACMD \
-    $JVM_MEM_OPTS \
-    $JAVA_OPTS \
-    -classpath "$CLASSPATH" \
-    -Djava.io.tmpdir="$IDP_HOME/tmp" \
-    -jar idp_domain_service.jar $*
-    status=$?
+  $JVM_MEM_OPTS \
+  $JAVA_OPTS \
+  -classpath "$CLASSPATH" \
+  -Djava.io.tmpdir="$IDP_HOME/tmp" \
+  -javaagent:/home/wso2apk/lib/jmx_prometheus_javaagent-0.20.0.jar=18007:/tmp/metrics/prometheus-jmx-config-idpds.yml \
+  -jar idp_domain_service.jar $*
+status=$?

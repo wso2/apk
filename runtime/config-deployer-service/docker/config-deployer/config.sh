@@ -2,23 +2,26 @@
 PRG="$0"
 
 while [ -h "$PRG" ]; do
-  ls=`ls -ld "$PRG"`
-  link=`expr "$ls" : '.*-> \(.*\)$'`
-  if expr "$link" : '.*/.*' > /dev/null; then
+  ls=$(ls -ld "$PRG")
+  link=$(expr "$ls" : '.*-> \(.*\)$')
+  if expr "$link" : '.*/.*' >/dev/null; then
     PRG="$link"
   else
-    PRG=`dirname "$PRG"`/"$link"
+    PRG=$(dirname "$PRG")/"$link"
   fi
 done
 
 # Get standard environment variables
-PRGDIR=`dirname "$PRG"`
+PRGDIR=$(dirname "$PRG")
 
-[ -z "$RUNTIME_HOME" ] && RUNTIME_HOME=`cd "$PRGDIR" ; pwd`
+[ -z "$RUNTIME_HOME" ] && RUNTIME_HOME=$(
+  cd "$PRGDIR"
+  pwd
+)
 
-if [ -z "$JAVACMD" ] ; then
-  if [ -n "$JAVA_HOME"  ] ; then
-    if [ -x "$JAVA_HOME/jre/sh/java" ] ; then
+if [ -z "$JAVACMD" ]; then
+  if [ -n "$JAVA_HOME" ]; then
+    if [ -x "$JAVA_HOME/jre/sh/java" ]; then
       # IBM's JDK on AIX uses strange locations for the executables
       JAVACMD="$JAVA_HOME/jre/sh/java"
     else
@@ -29,7 +32,7 @@ if [ -z "$JAVACMD" ] ; then
   fi
 fi
 
-if [ ! -x "$JAVACMD" ] ; then
+if [ ! -x "$JAVACMD" ]; then
   echo "Error: JAVA_HOME is not defined correctly."
   echo " Admin cannot execute $JAVACMD"
   exit 1
@@ -42,16 +45,15 @@ if [ -z "$JAVA_HOME" ]; then
 fi
 # ----- Process the input command ----------------------------------------------
 args=""
-for c in $*
-do
-    if [ "$c" = "--debug" ] || [ "$c" = "-debug" ] || [ "$c" = "debug" ]; then
-          CMD="--debug"
-          continue
-    elif [ "$CMD" = "--debug" ]; then
-          if [ -z "$PORT" ]; then
-                PORT=$c
-          fi
+for c in $*; do
+  if [ "$c" = "--debug" ] || [ "$c" = "-debug" ] || [ "$c" = "debug" ]; then
+    CMD="--debug"
+    continue
+  elif [ "$CMD" = "--debug" ]; then
+    if [ -z "$PORT" ]; then
+      PORT=$c
     fi
+  fi
 done
 
 if [ "$CMD" = "--debug" ]; then
@@ -69,11 +71,10 @@ fi
 
 CLASSPATH=""
 if [ -e "$JAVA_HOME/lib/tools.jar" ]; then
-    CLASSPATH="$JAVA_HOME/lib/tools.jar"
+  CLASSPATH="$JAVA_HOME/lib/tools.jar"
 fi
-for t in "$RUNTIME_HOME"/lib/*.jar
-do
-    CLASSPATH="$CLASSPATH":$t
+for t in "$RUNTIME_HOME"/lib/*.jar; do
+  CLASSPATH="$CLASSPATH":$t
 done
 
 # ----- Execute The Requested Command -----------------------------------------
@@ -85,22 +86,23 @@ cd "$RUNTIME_HOME"
 
 TMP_DIR="$RUNTIME_HOME"/tmp
 if [ -d "$TMP_DIR" ]; then
-rm -rf "$TMP_DIR"/*
+  rm -rf "$TMP_DIR"/*
 fi
 
 START_EXIT_STATUS=121
 status=$START_EXIT_STATUS
 
 if [ -z "$JVM_MEM_OPTS" ]; then
-   java_version=$("$JAVACMD" -version 2>&1 | awk -F '"' '/version/ {print $2}')
-   JVM_MEM_OPTS="-Xms256m -Xmx1024m"
+  java_version=$("$JAVACMD" -version 2>&1 | awk -F '"' '/version/ {print $2}')
+  JVM_MEM_OPTS="-Xms256m -Xmx1024m"
 fi
 echo "Using Java memory options: $JVM_MEM_OPTS"
 
 $JAVACMD \
-    $JVM_MEM_OPTS \
-    $JAVA_OPTS \
-    -classpath "$CLASSPATH" \
-    -Djava.io.tmpdir="$RUNTIME_HOME/tmp" \
-    -jar config_deployer_service.jar $*
-    status=$?
+  $JVM_MEM_OPTS \
+  $JAVA_OPTS \
+  -classpath "$CLASSPATH" \
+  -Djava.io.tmpdir="$RUNTIME_HOME/tmp" \
+  -javaagent:/home/wso2apk/lib/jmx_prometheus_javaagent-0.20.0.jar=18007:/tmp/metrics/prometheus-jmx-config-configds.yml \
+  -jar config_deployer_service.jar $*
+status=$?

@@ -23,40 +23,63 @@ public interface ExtAuthMetricsMXBean {
 
     /**
      * Getter for total request count.
-     * 
+     *
      * @return long
      */
     public long getTotalRequestCount();
 
     /**
      * Getter for average response time in milli seconds.
-     * 
-     * @return long
+     *
+     * @return double
      */
-    public long getAverageResponseTimeMillis();
+    public double getAverageResponseTimeMillis();
 
     /**
      * Getter for maximum response time in milliseconds.
-     * 
-     * @return long
+     *
+     * @return double
      */
-    public long getMaxResponseTimeMillis();
+    public double getMaxResponseTimeMillis();
 
     /**
      * Getter for mimnimum response time in milliseconds.
-     * 
-     * @return long
+     *
+     * @return double
      */
-    public long getMinResponseTimeMillis();
+    public double getMinResponseTimeMillis();
 
     /**
-     * Resets all the metrics to thier initial values.
+     * Resets all the metrics to their initial values.
      */
     public void resetExtAuthMetrics();
 
     /**
-     * Resets all the metrics to thier initial values.
+     * Get request count in last five minutes window
+     *
+     * @return long
      */
-    public long getRequestCountInLastFiveMinutes();
+    public long getRequestCountInLastFiveMinuteWindow();
+
+    /**
+     * Get the start time of request count window
+     *
+     * @return
+     */
+    public long getRequestCountWindowStartTimeMillis();
+
+    /**
+     * Get the number of token issuers
+     *
+     * @return
+     */
+    public int getTokenIssuerCount();
+
+    /**
+     * Get the number of subscriptions
+     *
+     * @return
+     */
+    public int getSubscriptionCount();
 
 }

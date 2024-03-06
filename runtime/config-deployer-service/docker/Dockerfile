@@ -53,6 +53,8 @@ RUN groupadd --system -g ${USER_GROUP_ID} ${USER_GROUP} \
 
 ADD config-deployer ${USER_HOME}/config-deployer
 COPY docker-entrypoint.sh ${USER_HOME}
+COPY /lib/jmx_prometheus_javaagent-0.20.0.jar /home/${USER}/lib/
+
 RUN chown -R ${USER} ${USER_HOME}/config-deployer \
     && chown ${USER} /home/${USER}/docker-entrypoint.sh \
     && chgrp -R 0 ${USER_HOME} \

@@ -20,6 +20,7 @@ import ballerina/log;
 import ballerina/sql;
 import ballerina/http;
 import ballerina/jwt;
+import ballerinax/prometheus as _;
 
 configurable IDPConfiguration & readonly idpConfiguration = ?;
 final postgresql:Client|sql:Error dbClient;

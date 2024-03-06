@@ -592,6 +592,26 @@ wso2:
               keepAliveTime: 600
               # -- Queue size of the worker threads
               queueSize: 1000
+    metrics:
+      # -- Enable Prometheus metrics
+      enabled: false
+      # -- Configure the host for exposing the config ds ballerina metrics
+      # configDSBalHost: 0.0.0.0
+      # -- Configure the host for exposing the idp ds ballerina metrics.
+      # idpDSBalHost: 0.0.0.0
+      # -- Statsd is required to expose metrics from ratelimiter
+      # statsd:
+      #   image:
+      #     repository: prom/statsd-exporter
+      #     tag: v0.26.0
+      #   imagePullPolicy: IfNotPresent
+      #   resources:
+      #     limits:
+      #       memory: 128Mi
+      #     requests:
+      #       cpu: 0.1
+      #       memory: 64Mi
+
 idp:
   # -- Enable Non production identity server
   enabled: true

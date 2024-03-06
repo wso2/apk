@@ -35,6 +35,14 @@ spec:
       automountServiceAccountToken: false
       serviceAccountName: {{ .Values.wso2.apk.auth.serviceAccountName }}
       containers:
+        {{if and .Values.wso2.apk.metrics.enabled .Values.wso2.apk.metrics.statsd }}
+        - name: statsd
+          image: {{ .Values.wso2.apk.metrics.statsd.image.repository }}:{{ .Values.wso2.apk.metrics.statsd.image.tag }}
+          imagePullPolicy: {{ .Values.wso2.apk.metrics.statsd.imagePullPolicy }}
+          ports:
+            - name: statsd-metrics
+              containerPort: 9102
+        {{ end }}
         - name: ratelimiter
           image: {{ .Values.wso2.apk.dp.ratelimiter.deployment.image }}
           imagePullPolicy: {{ .Values.wso2.apk.dp.ratelimiter.deployment.imagePullPolicy }}
@@ -51,8 +59,17 @@ spec:
               value: "0.0.0.0"
             - name: PORT
               value: "8090"
+            {{if and .Values.wso2.apk.metrics.enabled .Values.wso2.apk.metrics.statsd}}
+            - name: USE_STATSD
+              value: "true"
+            - name: STATSD_HOST
+              value: "0.0.0.0"
+            - name: STATSD_PORT
+              value: "9125"
+            {{ else }}
             - name: USE_STATSD
               value: "false"
+            {{ end }}
             - name: LOG_LEVEL
               value: "DEBUG"
             - name: LIMIT_RESPONSE_HEADERS_ENABLED

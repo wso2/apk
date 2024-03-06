@@ -18,20 +18,45 @@
 
 apply from: "$projectDir/../../../common-gradle-scripts/docker.gradle"
 apply from: "$rootDir/../../common-gradle-scripts/copy.gradle"
+apply from: "$projectDir/../../../common-gradle-scripts/java.gradle"
 
+dependencies {
+    implementation libs.prometheus
+}
+
+tasks.register('copy_dependencies', Copy) {
+    dependsOn create_lib
+    from configurations.default
+    into "$projectDir/../docker/lib"
+    finalizedBy build
+}
+
+tasks.register('create_lib') {
+    dependsOn delete_lib
+    finalizedBy copy_dependencies
+}
+
+tasks.register('delete_lib', Delete) {
+    delete "$projectDir/lib"
+    finalizedBy create_lib
+}
+
+tasks.named('build').configure {
+    dependsOn copy_dependencies
+}
 
 tasks.named('copy_dist').configure{
     finalizedBy docker_build
 }
 
-task build{
+task buildDockerImage{
     group 'build'
     description 'Build docker image'
     dependsOn 'copy_dist'
     dependsOn 'docker_build'
 }
 
-build.configure{
+buildDockerImage.configure{
     mustRunAfter(":ballerina:build")
     dependsOn(":ballerina:build")
-    }
+}

@@ -249,6 +249,23 @@ wso2:
 #              JWKSClient:
 #                skipSSLVerification: false
 #                hostnameVerifier: "AllowAll"
+
+    metrics:
+      enabled: false
+      # configDSBalHost: 0.0.0.0
+      # idpDSBalHost: 0.0.0.0
+      # statsd:
+      #   image:
+      #     repository: prom/statsd-exporter
+      #     tag: v0.26.0
+      #   imagePullPolicy: IfNotPresent
+      #   resources:
+      #     limits:
+      #       memory: 128Mi
+      #     requests:
+      #       cpu: 0.1
+      #       memory: 64Mi
+
 idp:
   enabled: true
   listener:

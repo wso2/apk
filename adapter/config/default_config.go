@@ -32,6 +32,11 @@ var defaultConfig = &Config{
 			Namespaces: nil,
 		},
 		Environment: "Default",
+		Metrics: metrics{
+			Enabled: false,
+			Type:    "prometheus",
+			Port:    18006,
+		},
 	},
 	Envoy: envoy{
 		ListenerCodecType: "AUTO",

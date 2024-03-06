@@ -48,6 +48,10 @@ spec:
               protocol: TCP
             - containerPort: 18003
               protocol: TCP
+            {{ if and .Values.wso2.apk.metrics .Values.wso2.apk.metrics.enabled }}
+            - containerPort: 18006
+              protocol: "TCP"
+            {{ end }}
 {{ include "apk-helm.deployment.resources" .Values.wso2.apk.dp.commonController.deployment.resources | indent 10 }}
 {{ include "apk-helm.deployment.env" .Values.wso2.apk.dp.commonController.deployment.env | indent 10 }}
           - name: OPERATOR_POD_NAMESPACE

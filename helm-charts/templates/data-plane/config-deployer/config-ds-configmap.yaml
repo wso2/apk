@@ -25,7 +25,19 @@ data:
     [ballerina.log]
     level = "DEBUG"
     [ballerina.http]
-    traceLogConsole = true
+    traceLogConsole = false
+  {{if and .Values.wso2.apk.metrics .Values.wso2.apk.metrics.enabled}}
+    [ballerina.observe]
+    metricsEnabled=true
+    metricsReporter="prometheus"
+    [ballerinax.prometheus]
+    port=18006
+  {{if .Values.wso2.apk.metrics.configDSBalHost}}
+    host="{{ .Values.wso2.apk.metrics.configDSBalHost}}"
+  {{else}} 
+    host="0.0.0.0"
+  {{end}} 
+  {{end}} 
     [wso2.config_deployer_service.keyStores.tls]
     keyFilePath = "/home/wso2apk/config-deployer/security/config.key"
     certFilePath = "/home/wso2apk/config-deployer/security/config.pem"
