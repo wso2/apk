@@ -14,7 +14,7 @@
 # limitations under the License.
 # -----------------------------------------------------------------------
 
-apiVersion: dp.wso2.com/v1alpha1
+apiVersion: dp.wso2.com/v1alpha2
 kind: API
 metadata:
   name: interceptor-api
@@ -31,7 +31,7 @@ spec:
     - name: propertyName2
       value: "propertyValue2"
   production:
-    - httpRouteRefs:
+    - routeRefs:
       - interceptor-route
 ---
 apiVersion: dp.wso2.com/v1alpha1

@@ -15,7 +15,7 @@
 # under the License.
 {{- if .Values.idp.enabled }}
 kind: "API"
-apiVersion: "dp.wso2.com/v1alpha1"
+apiVersion: "dp.wso2.com/v1alpha2"
 metadata:
   name: {{ template "apk-helm.resource.prefix" . }}-commonoauth-api
   namespace: {{ .Release.Namespace }}
@@ -30,7 +30,7 @@ spec:
   isDefaultVersion: true
   organization: "apk-system"
   production:
-    - httpRouteRefs:
+    - routeRefs:
       - {{ template "apk-helm.resource.prefix" . }}-commonoauth-ds-httproute
   systemAPI: true
 {{- end -}}
