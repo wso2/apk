@@ -53,7 +53,7 @@ spec:
             - containerPort: 18002
               protocol: "TCP"
             {{- if and .Values.wso2.apk.metrics .Values.wso2.apk.metrics.enabled}}
-            - containerPort: 18007
+            - containerPort: 18006
               protocol: "TCP"
             {{- end }}
 {{ include "apk-helm.deployment.resources" .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.resources | indent 10 }}
@@ -92,7 +92,7 @@ spec:
               value: admin
             - name: JAVA_OPTS
             {{- if and .Values.wso2.apk.metrics .Values.wso2.apk.metrics.enabled }}
-              value: -Dhttpclient.hostnameVerifier=AllowAll -Xms512m -Xmx512m -XX:MaxRAMFraction=2 -Dapk.jmx.metrics.enabled=true -javaagent:/home/wso2/lib/jmx_prometheus_javaagent-0.20.0.jar=18007:/tmp/metrics/prometheus-jmx-config-enforcer.yml
+              value: -Dhttpclient.hostnameVerifier=AllowAll -Xms512m -Xmx512m -XX:MaxRAMFraction=2 -Dapk.jmx.metrics.enabled=true -javaagent:/home/wso2/lib/jmx_prometheus_javaagent-0.20.0.jar=18006:/tmp/metrics/prometheus-jmx-config-enforcer.yml
             {{- else }}
               value: -Dhttpclient.hostnameVerifier=AllowAll -Xms512m -Xmx512m -XX:MaxRAMFraction=2
             {{- end }}

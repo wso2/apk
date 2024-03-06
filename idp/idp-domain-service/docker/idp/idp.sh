@@ -102,6 +102,6 @@ $JAVACMD \
   $JAVA_OPTS \
   -classpath "$CLASSPATH" \
   -Djava.io.tmpdir="$IDP_HOME/tmp" \
-  -javaagent:/home/wso2apk/jmx_prometheus_javaagent-0.20.0.jar=18012:/tmp/metrics/prometheus-jmx-config-idpds.yml \
+  -javaagent:/home/wso2apk/lib/jmx_prometheus_javaagent-0.20.0.jar=18007:/tmp/metrics/prometheus-jmx-config-idpds.yml \
   -jar idp_domain_service.jar $*
 status=$?

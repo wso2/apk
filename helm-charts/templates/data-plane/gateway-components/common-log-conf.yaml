@@ -14,7 +14,7 @@ data:
     [commoncontroller.metrics]
       enabled = {{.Values.wso2.apk.metrics.enabled}}
       type = "{{.Values.wso2.apk.metrics.type| default "prometheus" }}"
-      port = 18010
+      port = 18006
     {{ end}}  
     [commoncontroller.server]
       label = "ratelimiter"

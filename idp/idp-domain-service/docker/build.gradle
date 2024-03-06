@@ -59,4 +59,4 @@ task buildDockerImage{
 buildDockerImage.configure{
     mustRunAfter(":ballerina:build")
     dependsOn(":ballerina:build")
-    }
+}
