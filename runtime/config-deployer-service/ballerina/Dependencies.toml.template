@@ -5,7 +5,7 @@
 
 [ballerina]
 dependencies-toml-version = "2"
-distribution-version = "2201.8.0"
+distribution-version = "2201.8.5"
 
 [[package]]
 org = "ballerina"
@@ -33,7 +33,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "constraint"
-version = "1.4.0"
+version = "1.5.0"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
 ]
@@ -44,7 +44,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "crypto"
-version = "2.5.0"
+version = "2.6.2"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "time"}
@@ -70,7 +70,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "http"
-version = "2.10.7"
+version = "2.10.8"
 dependencies = [
 	{org = "ballerina", name = "auth"},
 	{org = "ballerina", name = "cache"},
@@ -368,7 +368,7 @@ modules = [
 [[package]]
 org = "ballerinax"
 name = "postgresql"
-version = "1.10.0"
+version = "1.11.0"
 dependencies = [
 	{org = "ballerina", name = "crypto"},
 	{org = "ballerina", name = "io"},
@@ -397,7 +397,8 @@ dependencies = [
 modules = [
 	{org = "wso2", packageName = "apk_common_lib", moduleName = "apk_common_lib"},
 	{org = "wso2", packageName = "apk_common_lib", moduleName = "apk_common_lib.java.io"},
-	{org = "wso2", packageName = "apk_common_lib", moduleName = "apk_common_lib.java.lang"}
+	{org = "wso2", packageName = "apk_common_lib", moduleName = "apk_common_lib.java.lang"},
+	{org = "wso2", packageName = "apk_common_lib", moduleName = "apk_common_lib.org.wso2.apk.common"}
 ]
 
 [[package]]

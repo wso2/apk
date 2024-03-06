@@ -15,7 +15,7 @@
 # under the License.
 {{- if and .Values.wso2.apk.dp.enabled .Values.wso2.apk.dp.configdeployer.enabled }}
 kind: "API"
-apiVersion: "dp.wso2.com/v1alpha1"
+apiVersion: "dp.wso2.com/v1alpha2"
 metadata:
   name: "{{ template "apk-helm.resource.prefix" . }}-wso2-apk-config-deployer-api"
   namespace: {{ .Release.Namespace }}
@@ -30,7 +30,7 @@ spec:
   organization: "apk-system"
   definitionFileRef: "{{ template "apk-helm.resource.prefix" . }}-wso2-apk-config-deployer-api-definition"
   production:
-  - httpRouteRefs:
+  - routeRefs:
     - "{{ template "apk-helm.resource.prefix" . }}-config-deploy-api-route"
   systemAPI: true
 {{- end -}}
