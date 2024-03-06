@@ -236,6 +236,8 @@ func isSemanticVersioningEnabled(apiName, apiVersion string) bool {
 
 	apiSemVersion, err := semantic_version.ValidateAndGetVersionComponents(apiVersion)
 	if err != nil && apiSemVersion == nil {
+		logger.LoggerXds.ErrorC(logging.PrintError(logging.Error1411, logging.MAJOR,
+			"Error validating the version of the API: %v. Intelligent routing is disabled for the API", apiName))
 		return false
 	}
 
