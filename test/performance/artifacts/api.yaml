@@ -1,6 +1,6 @@
 ---
 kind: "API"
-apiVersion: "dp.wso2.com/v1alpha1"
+apiVersion: "dp.wso2.com/v1alpha2"
 metadata:
   name: "default-api-definition-endpoint-test"
   labels:
@@ -18,7 +18,7 @@ spec:
   organization: "default"
   definitionFileRef: "default-api-definition-endpoint-test-definition"
   production:
-  - httpRouteRefs:
+  - routeRefs:
     - "01ee3d7a-36d0-176e-aee2-6b601948eb64"
   sandbox: null
   apiProperties: []

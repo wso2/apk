@@ -15,7 +15,7 @@
 # under the License.
 {{- if .Values.idp.enabled }}
 kind: "API"
-apiVersion: "dp.wso2.com/v1alpha1"
+apiVersion: "dp.wso2.com/v1alpha2"
 metadata:
   name: {{ template "apk-helm.resource.prefix" . }}-jwks-endpoint-ds-api
   namespace: {{ .Release.Namespace }}
@@ -30,7 +30,7 @@ spec:
   organization: "apk-system"
   isDefaultVersion: true
   production:
-    - httpRouteRefs:
+    - routeRefs:
       - {{ template "apk-helm.resource.prefix" . }}-jwks-endpoint-ds-httproute
   systemAPI: true
 {{- end -}}
