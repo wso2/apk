@@ -21,6 +21,7 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/discovery/xds"
 	"github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/internal/operator/constants"
@@ -38,6 +39,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/source"
+	corev1 "k8s.io/api/core/v1"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"k8s.io/apimachinery/pkg/fields"
 )
 
 const (
@@ -97,14 +101,87 @@ func NewTokenIssuerReconciler(mgr manager.Manager) error {
 		return err
 	}
 
+	conf := config.ReadConfigs()
+	predicates := []predicate.Predicate{predicate.NewPredicateFuncs(utils.FilterByNamespaces(conf.Adapter.Operator.Namespaces))}
+
 	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha1.TokenIssuer{}), &handler.EnqueueRequestForObject{},
-		predicate.NewPredicateFuncs(utils.FilterByNamespaces([]string{utils.GetOperatorPodNamespace()}))); err != nil {
+		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2656, logging.BLOCKER, "Error watching TokenIssuer resources: %v", err.Error()))
+		return err
+	}
+
+	if err := c.Watch(source.Kind(mgr.GetCache(), &corev1.ConfigMap{}), handler.EnqueueRequestsFromMapFunc(r.populateTokenReconcileRequestsForConfigMap),
+		predicates...); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2644, logging.BLOCKER, "Error watching ConfigMap resources: %v", err))
+		return err
+	}
+
+	if err := c.Watch(source.Kind(mgr.GetCache(), &corev1.Secret{}), handler.EnqueueRequestsFromMapFunc(r.populateTokenReconcileRequestsForSecret),
+		predicates...); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2645, logging.BLOCKER, "Error watching Secret resources: %v", err))
 		return err
 	}
 
 	loggers.LoggerAPKOperator.Debug("TokenIssuer Controller successfully started. Watching TokenIssuer Objects...")
 	return nil
+}
+
+func (r *TokenssuerReconciler) populateTokenReconcileRequestsForConfigMap(ctx context.Context, obj k8client.Object) []reconcile.Request {
+	configMap, ok := obj.(*corev1.ConfigMap)
+	if !ok {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL,
+			"Unexpected object type, bypassing reconciliation: %v", configMap))
+		return []reconcile.Request{}
+	}
+	tokenIssuerList := &dpv1alpha1.TokenIssuerList{}
+	err := r.client.List(ctx, tokenIssuerList, &k8client.ListOptions{
+		FieldSelector: fields.OneTermEqualSelector(configmapIssuerIndex, utils.NamespacedName(configMap).String()),
+	})
+	requests := []reconcile.Request{}
+	if err == nil && len(tokenIssuerList.Items) > 0 {
+		
+		for _, tokenIssuer := range tokenIssuerList.Items {
+			req := reconcile.Request{
+				NamespacedName: types.NamespacedName{
+					Name:      tokenIssuer.Name,
+					Namespace: tokenIssuer.Namespace},
+			}
+			requests = append(requests, req)
+			loggers.LoggerAPKOperator.Infof("Adding reconcile request for TokenIssuer: %s/%s due to configmap change: %v",
+				tokenIssuer.Namespace, tokenIssuer.Name, utils.NamespacedName(configMap).String())
+		}
+		return requests
+	}
+	return requests
+}
+
+func (r *TokenssuerReconciler) populateTokenReconcileRequestsForSecret(ctx context.Context, obj k8client.Object) []reconcile.Request {
+	secret, ok := obj.(*corev1.Secret)
+	if !ok {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL,
+			"Unexpected object type, bypassing reconciliation: %v", secret))
+		return []reconcile.Request{}
+	}
+	tokenIssuerList := &dpv1alpha1.TokenIssuerList{}
+	err := r.client.List(ctx, tokenIssuerList, &k8client.ListOptions{
+		FieldSelector: fields.OneTermEqualSelector(secretTokenIssuerIndex, utils.NamespacedName(secret).String()),
+	})
+	requests := []reconcile.Request{}
+	if err == nil && len(tokenIssuerList.Items) > 0 {
+		
+		for _, tokenIssuer := range tokenIssuerList.Items {
+			req := reconcile.Request{
+				NamespacedName: types.NamespacedName{
+					Name:      tokenIssuer.Name,
+					Namespace: tokenIssuer.Namespace},
+			}
+			requests = append(requests, req)
+			loggers.LoggerAPKOperator.Infof("Adding reconcile request for TokenIssuer: %s/%s due to secret change: %v",
+				tokenIssuer.Namespace, tokenIssuer.Name, utils.NamespacedName(secret).String())
+		}
+		return requests
+	}
+	return requests
 }
 
 // addTokenIssuerIndexes adds indexers related to Gateways
