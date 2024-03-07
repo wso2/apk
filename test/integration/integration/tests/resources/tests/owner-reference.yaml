@@ -132,7 +132,7 @@ spec:
   organization: "default"
   isDefaultVersion: true
   production:
-  - httpRouteRefs:
+  - routeRefs:
     - "hr1"
     - "hr2"
   apiProperties: []
@@ -151,7 +151,7 @@ spec:
   organization: "default"
   isDefaultVersion: true
   production:
-  - httpRouteRefs:
+  - routeRefs:
     - "hr2"
   apiProperties: []
 status: null

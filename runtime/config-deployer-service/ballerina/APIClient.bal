@@ -449,10 +449,10 @@ public class APIClient {
         }
 
         if productionRoutes.length() > 0 {
-            k8sAPI.spec.production = [{routeRef: productionRoutes}];
+            k8sAPI.spec.production = [{routeRefs: productionRoutes}];
         }
         if sandboxRoutes.length() > 0 {
-            k8sAPI.spec.sandbox = [{routeRef: sandboxRoutes}];
+            k8sAPI.spec.sandbox = [{routeRefs: sandboxRoutes}];
         }
         if apkConf.id != () {
             k8sAPI.metadata["annotations"] = {[API_UUID_ANNOTATION] : <string>apkConf.id};

@@ -27,7 +27,7 @@ spec:
   isDefaultVersion: true
   #definitionFileRef: definition-file
   production:
-    - httpRouteRefs:
+    - routeRefs:
       - api-level-jwt-httproute
   organization: wso2-org
 ---
