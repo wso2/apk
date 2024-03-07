@@ -77,9 +77,6 @@ spec:
             {{- else }}
               subPath: tls.key
             {{- end }}
-            - name: prometheus-jmx-config-volume
-              mountPath: /tmp/metrics/prometheus-jmx-config-configds.yml
-              subPath: prometheus-jmx-config-configds.yml
             - name: config-ds-tls-volume
               mountPath: /home/wso2apk/config-deployer/security/config.pem
             {{- if and .Values.wso2.apk.dp.configdeployer.configs .Values.wso2.apk.dp.configdeployer.configs.tls }}
