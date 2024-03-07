@@ -24,7 +24,7 @@ func (s EventServer) StreamEvents(req *apkmgt.Request, srv apkmgt.EventStreamSer
 	enforcerID := md.Get("enforcer-uuid")
 	loggers.LoggerAPKOperator.Debugf("Enforcer ID : %v", enforcerID[0])
 	utils.AddClientConnection(enforcerID[0], srv)
-	utils.SendInitialEvent(srv)
+	utils.SendResetEvent()
 	<-srv.Context().Done()
 	loggers.LoggerAPKOperator.Infof("Connection closed by the client : %v", enforcerID[0])
 	utils.DeleteClientConnection(enforcerID[0])

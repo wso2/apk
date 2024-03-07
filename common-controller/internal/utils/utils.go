@@ -25,7 +25,7 @@ import (
 	"github.com/wso2/apk/adapter/pkg/utils/envutils"
 	"github.com/wso2/apk/adapter/pkg/utils/stringutils"
 	"github.com/wso2/apk/common-controller/internal/config"
-	constants "github.com/wso2/apk/common-controller/internal/operator/constant"
+	"github.com/wso2/apk/common-go-libs/constants"
 	"k8s.io/apimachinery/pkg/types"
 	k8client "sigs.k8s.io/controller-runtime/pkg/client"
 )

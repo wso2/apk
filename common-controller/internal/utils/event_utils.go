@@ -5,49 +5,41 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/wso2/apk/common-controller/internal/loggers"
-	constants "github.com/wso2/apk/common-controller/internal/operator/constant"
 	cpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/cp/v1alpha2"
-	apkmgt "github.com/wso2/apk/common-go-libs/pkg/discovery/api/wso2/discovery/service/apkmgt"
+	"github.com/wso2/apk/common-go-libs/constants"
 	"github.com/wso2/apk/common-go-libs/pkg/discovery/api/wso2/discovery/subscription"
 )
 
 // SendAppDeletionEvent sends an application creation event to the enforcer
 func SendAppDeletionEvent(applicationUUID string, applicationSpec cpv1alpha2.ApplicationSpec) {
+	SendApplicationEvent(constants.ApplicationDeleted, applicationUUID, applicationSpec.Name, applicationSpec.Owner,
+		applicationSpec.Organization, applicationSpec.Attributes)
+}
+
+// SendApplicationEvent sends an application deletion event to the enforcer
+func SendApplicationEvent(eventType, applicationUUID, applicationName, applicationOwner, organization string, appAttribute map[string]string) {
 	currentTime := time.Now()
 	milliseconds := currentTime.UnixNano() / int64(time.Millisecond)
 	event := subscription.Event{
-		Uuid:      uuid.New().String(),
-		Type:      constants.ApplicationDeleted,
+		Uuid:      applicationUUID,
+		Type:      eventType,
 		TimeStamp: milliseconds,
 		Application: &subscription.Application{
 			Uuid:         applicationUUID,
-			Name:         applicationSpec.Name,
-			Owner:        applicationSpec.Owner,
-			Organization: applicationSpec.Organization,
-			Attributes:   applicationSpec.Attributes,
+			Name:         applicationName,
+			Owner:        applicationOwner,
+			Attributes:   appAttribute,
+			Organization: organization,
 		},
 	}
+	loggers.LoggerAPKOperator.Debugf("Sending event to all clients: %v", &event)
 	sendEvent(&event)
 }
 
 // SendAppUpdateEvent sends an application update event to the enforcer
 func SendAppUpdateEvent(applicationUUID string, oldApplicationSpec cpv1alpha2.ApplicationSpec, newApplicationSpec cpv1alpha2.ApplicationSpec) {
-	currentTime := time.Now()
-	milliseconds := currentTime.UnixNano() / int64(time.Millisecond)
-	event := subscription.Event{
-		Uuid:      uuid.New().String(),
-		Type:      constants.ApplicationUpdated,
-		TimeStamp: milliseconds,
-		Application: &subscription.Application{
-			Uuid:         applicationUUID,
-			Name:         newApplicationSpec.Name,
-			Owner:        newApplicationSpec.Owner,
-			Organization: newApplicationSpec.Organization,
-			Attributes:   newApplicationSpec.Attributes,
-		},
-	}
-	loggers.LoggerAPKOperator.Debugf("Sending event to all clients: %v", &event)
-	sendEvent(&event)
+	SendApplicationEvent(constants.ApplicationUpdated, applicationUUID, oldApplicationSpec.Name, oldApplicationSpec.Owner,
+		oldApplicationSpec.Organization, oldApplicationSpec.Attributes)
 	if oldApplicationSpec.SecuritySchemes != nil {
 		sendDeleteApplicationKeyMappingEvent(applicationUUID, oldApplicationSpec)
 	}
@@ -58,21 +50,8 @@ func SendAppUpdateEvent(applicationUUID string, oldApplicationSpec cpv1alpha2.Ap
 
 // SendAddApplicationEvent sends an application creation event to the enforcer
 func SendAddApplicationEvent(application cpv1alpha2.Application) {
-	currentTime := time.Now()
-	milliseconds := currentTime.UnixNano() / int64(time.Millisecond)
-	event := subscription.Event{
-		Uuid:      uuid.New().String(),
-		Type:      constants.ApplicationCreated,
-		TimeStamp: milliseconds,
-		Application: &subscription.Application{
-			Uuid:         application.ObjectMeta.Name,
-			Name:         application.Spec.Name,
-			Owner:        application.Spec.Owner,
-			Organization: application.Spec.Organization,
-			Attributes:   application.Spec.Attributes,
-		},
-	}
-	sendEvent(&event)
+	SendApplicationEvent(constants.ApplicationCreated, application.ObjectMeta.Name, application.Spec.Name, application.Spec.Owner,
+		application.Spec.Organization, application.Spec.Attributes)
 	if application.Spec.SecuritySchemes != nil {
 		sendApplicationKeyMappingEvent(application.ObjectMeta.Name, application.Spec)
 	}
@@ -80,19 +59,25 @@ func SendAddApplicationEvent(application cpv1alpha2.Application) {
 
 // SendAddSubscriptionEvent sends an subscription creation event to the enforcer
 func SendAddSubscriptionEvent(sub cpv1alpha2.Subscription) {
+	SendSubscriptionEvent(constants.SubscriptionCreated, sub.ObjectMeta.Name, sub.Spec.SubscriptionStatus,
+		sub.Spec.Organization, sub.Spec.API.Name, sub.Spec.API.Version)
+}
+
+// SendSubscriptionEvent sends an subscription creation event to the enforcer
+func SendSubscriptionEvent(eventType, subscriptionID, subscriptionStatus, organization, apiName, apiVersion string) {
 	currentTime := time.Now()
 	milliseconds := currentTime.UnixNano() / int64(time.Millisecond)
 	event := subscription.Event{
 		Uuid:      uuid.New().String(),
-		Type:      constants.SubscriptionCreated,
+		Type:      eventType,
 		TimeStamp: milliseconds,
 		Subscription: &subscription.Subscription{
-			Uuid:         sub.ObjectMeta.Name,
-			SubStatus:    sub.Spec.SubscriptionStatus,
-			Organization: sub.Spec.Organization,
+			Uuid:         subscriptionID,
+			SubStatus:    subscriptionStatus,
+			Organization: organization,
 			SubscribedApi: &subscription.SubscribedAPI{
-				Name:    sub.Spec.API.Name,
-				Version: sub.Spec.API.Version,
+				Name:    apiName,
+				Version: apiVersion,
 			},
 		},
 	}
@@ -101,106 +86,82 @@ func SendAddSubscriptionEvent(sub cpv1alpha2.Subscription) {
 
 // SendDeleteSubscriptionEvent sends an subscription deletion event to the enforcer
 func SendDeleteSubscriptionEvent(subscriptionUUID string, subscriptionSpec cpv1alpha2.SubscriptionSpec) {
-	currentTime := time.Now()
-	milliseconds := currentTime.UnixNano() / int64(time.Millisecond)
-	event := subscription.Event{
-		Uuid:      subscriptionUUID,
-		Type:      constants.SubscriptionDeleted,
-		TimeStamp: milliseconds,
-		Subscription: &subscription.Subscription{
-			Uuid:         subscriptionUUID,
-			SubStatus:    subscriptionSpec.SubscriptionStatus,
-			Organization: subscriptionSpec.Organization,
-			SubscribedApi: &subscription.SubscribedAPI{
-				Name:    subscriptionSpec.API.Name,
-				Version: subscriptionSpec.API.Version,
-			},
-		},
-	}
-	sendEvent(&event)
+	SendSubscriptionEvent(constants.SubscriptionDeleted, subscriptionUUID, subscriptionSpec.SubscriptionStatus,
+		subscriptionSpec.Organization, subscriptionSpec.API.Name, subscriptionSpec.API.Version)
 }
 
 // SendCreateApplicationMappingEvent sends an application mapping event to the enforcer
 func SendCreateApplicationMappingEvent(applicationMapping cpv1alpha2.ApplicationMapping, application cpv1alpha2.Application, subscriptionCr cpv1alpha2.Subscription) {
+	SendApplicationMappingEvent(constants.ApplicationMappingCreated, applicationMapping.ObjectMeta.Name, applicationMapping.Spec.ApplicationRef,
+		applicationMapping.Spec.SubscriptionRef, application.Spec.Organization)
+}
+
+// SendApplicationMappingEvent sends an application mapping event to the enforcer
+func SendApplicationMappingEvent(eventType, id, applicationRef, subscriptionRef, organization string) {
 	currentTime := time.Now()
 	milliseconds := currentTime.UnixNano() / int64(time.Millisecond)
 	event := subscription.Event{
 		Uuid:      uuid.New().String(),
-		Type:      constants.ApplicationMappingCreated,
+		Type:      eventType,
 		TimeStamp: milliseconds,
 		ApplicationMapping: &subscription.ApplicationMapping{
-			Uuid:            applicationMapping.ObjectMeta.Name,
-			ApplicationRef:  applicationMapping.Spec.ApplicationRef,
-			SubscriptionRef: applicationMapping.Spec.SubscriptionRef,
-			Organization:    application.Spec.Organization,
+			Uuid:            id,
+			ApplicationRef:  applicationRef,
+			SubscriptionRef: subscriptionRef,
+			Organization:    organization,
 		},
 	}
 	sendEvent(&event)
 }
 
 // SendDeleteApplicationMappingEvent sends an application mapping deletion event to the enforcer
-func SendDeleteApplicationMappingEvent(applicationMappingUUID string, applicationMappingSpec cpv1alpha2.ApplicationMappingSpec, organization string) {
+func SendDeleteApplicationMappingEvent(applicationMappingUUID string,
+	applicationMappingSpec cpv1alpha2.ApplicationMappingSpec, organization string) {
+	SendApplicationMappingEvent(constants.ApplicationMappingDeleted, applicationMappingUUID,
+		applicationMappingSpec.ApplicationRef, applicationMappingSpec.SubscriptionRef, organization)
+}
+
+func sendDeleteApplicationKeyMappingEvent(applicationUUID string, applicationKeyMapping cpv1alpha2.ApplicationSpec) {
+	var oauth2SecurityScheme = applicationKeyMapping.SecuritySchemes.OAuth2
+	if oauth2SecurityScheme != nil {
+		for _, env := range oauth2SecurityScheme.Environments {
+			SendApplicationKeyMappingEvent(constants.ApplicationKeyMappingDeleted, applicationUUID, constants.OAuth2,
+				env.AppID, env.KeyType, env.EnvID, applicationKeyMapping.Organization)
+		}
+	}
+}
+
+func sendApplicationKeyMappingEvent(applicationUUID string, applicationSpec cpv1alpha2.ApplicationSpec) {
+	var oauth2SecurityScheme = applicationSpec.SecuritySchemes.OAuth2
+	if oauth2SecurityScheme != nil {
+		for _, env := range oauth2SecurityScheme.Environments {
+			SendApplicationKeyMappingEvent(constants.ApplicationKeyMappingCreated, applicationUUID, constants.OAuth2,
+				env.AppID, env.KeyType, env.EnvID, applicationSpec.Organization)
+		}
+	}
+}
+
+// SendApplicationKeyMappingEvent sends an application key mapping event to the enforcer
+func SendApplicationKeyMappingEvent(eventType, applicationUUID, securityScheme, applicationIdentifier, keyType, envID,
+	organization string) {
 	currentTime := time.Now()
 	milliseconds := currentTime.UnixNano() / int64(time.Millisecond)
 	event := subscription.Event{
 		Uuid:      uuid.New().String(),
-		Type:      constants.ApplicationMappingDeleted,
+		Type:      eventType,
 		TimeStamp: milliseconds,
-		ApplicationMapping: &subscription.ApplicationMapping{
-			Uuid:            applicationMappingUUID,
-			ApplicationRef:  applicationMappingSpec.ApplicationRef,
-			SubscriptionRef: applicationMappingSpec.SubscriptionRef,
-			Organization:    organization,
+		ApplicationKeyMapping: &subscription.ApplicationKeyMapping{
+			ApplicationUUID:       applicationUUID,
+			SecurityScheme:        securityScheme,
+			ApplicationIdentifier: applicationIdentifier,
+			KeyType:               keyType,
+			EnvID:                 envID,
+			Organization:          organization,
 		},
 	}
 	sendEvent(&event)
 }
-func sendDeleteApplicationKeyMappingEvent(applicationUUID string, applicationKeyMapping cpv1alpha2.ApplicationSpec) {
-	currentTime := time.Now()
-	milliseconds := currentTime.UnixNano() / int64(time.Millisecond)
-	var oauth2SecurityScheme = applicationKeyMapping.SecuritySchemes.OAuth2
-	if oauth2SecurityScheme != nil {
-		for _, env := range oauth2SecurityScheme.Environments {
-			event := subscription.Event{
-				Uuid:      uuid.New().String(),
-				Type:      constants.ApplicationKeyMappingDeleted,
-				TimeStamp: milliseconds,
-				ApplicationKeyMapping: &subscription.ApplicationKeyMapping{
-					ApplicationUUID:       applicationUUID,
-					SecurityScheme:        constants.OAuth2,
-					ApplicationIdentifier: env.AppID,
-					KeyType:               env.KeyType,
-					EnvID:                 env.EnvID,
-					Organization:          applicationKeyMapping.Organization,
-				},
-			}
-			sendEvent(&event)
-		}
-	}
-}
-func sendApplicationKeyMappingEvent(applicationUUID string, applicationSpec cpv1alpha2.ApplicationSpec) {
-	currentTime := time.Now()
-	milliseconds := currentTime.UnixNano() / int64(time.Millisecond)
-	var oauth2SecurityScheme = applicationSpec.SecuritySchemes.OAuth2
-	if oauth2SecurityScheme != nil {
-		for _, env := range oauth2SecurityScheme.Environments {
-			event := subscription.Event{
-				Uuid:      uuid.New().String(),
-				Type:      constants.ApplicationKeyMappingCreated,
-				TimeStamp: milliseconds,
-				ApplicationKeyMapping: &subscription.ApplicationKeyMapping{
-					ApplicationUUID:       applicationUUID,
-					SecurityScheme:        constants.OAuth2,
-					ApplicationIdentifier: env.AppID,
-					KeyType:               env.KeyType,
-					EnvID:                 env.EnvID,
-					Organization:          applicationSpec.Organization,
-				},
-			}
-			sendEvent(&event)
-		}
-	}
-}
+
 func sendEvent(event *subscription.Event) {
 	loggers.LoggerAPKOperator.Debugf("Sending event to all clients: %v", event)
 	for clientID, stream := range GetAllClientConnections() {
@@ -213,16 +174,21 @@ func sendEvent(event *subscription.Event) {
 	}
 }
 
-// SendInitialEvent sends initial event to the enforcer
-func SendInitialEvent(srv apkmgt.EventStreamService_StreamEventsServer) {
+// SendResetEvent sends initial event to the enforcer
+func SendResetEvent() {
 	currentTime := time.Now()
 	milliseconds := currentTime.UnixNano() / int64(time.Millisecond)
-
-	event := subscription.Event{
+	event := &subscription.Event{
 		Uuid:      uuid.New().String(),
-		Type:      constants.AllEvnts,
+		Type:      constants.AllEvents,
 		TimeStamp: milliseconds,
 	}
-	loggers.LoggerAPKOperator.Debugf("Sending initial event to client: %v", &event)
-	srv.Send(&event)
+	for clientID, stream := range GetAllClientConnections() {
+		err := stream.Send(event)
+		if err != nil {
+			loggers.LoggerAPKOperator.Errorf("Error sending reset event to client %s: %v", clientID, err)
+		} else {
+			loggers.LoggerAPKOperator.Debugf("Reset event sent to client %s", clientID)
+		}
+	}
 }

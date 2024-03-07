@@ -27,6 +27,7 @@ type ArtifactDeployer interface {
 	DeployApplicationMappings(applicationMapping server.ApplicationMapping) error
 	UpdateApplicationMappings(applicationMapping server.ApplicationMapping) error
 	DeployKeyMappings(keyMapping server.ApplicationKeyMapping) error
+	UpdateKeyMappings(keyMapping server.ApplicationKeyMapping) error
 	GetApplication(applicationID string) (server.Application, error)
 	GetSubscription(subscriptionID string) (server.Subscription, error)
 	GetApplicationMappings(applicationID string) (server.ApplicationMapping, error)

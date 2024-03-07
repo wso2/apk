@@ -872,7 +872,6 @@ spec:
                             enum:
                             - QUERY
                             - MUTATION
-                            - SUBSCRIPTION
                             type: string
                         type: object
                       type: array

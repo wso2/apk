@@ -309,6 +309,35 @@ wso2:
               cACertPath: "/home/wso2/security/keystore/commoncontroller.crt"
               # -- Token revocation subscription channel name
               channelName: "wso2-apk-revoked-tokens-channel"
+          controlplane:
+            # -- Enable controlplane connection
+            enabled: false
+            # -- Hostname of the APK agent service
+            host: "apim-apk-agent-service.apk.svc.cluster.local"
+            # -- Port of the APK agent service for events
+            eventPort: 18000
+            # -- Skip SSL verification
+            skipSSLVerification: false
+            # -- Provide persistence mode DB/K8s
+            persistence:
+              type: "K8s"
+          database:
+            # -- Enable Database mode for persistence
+            enabled: false
+            # -- name of the database containing controlplane data for the use of dataplane
+            name: "DATAPLANE"
+            host: "wso2apk-db-service.apk"
+            port: 5432
+            username: "wso2carbon"
+            password: "wso2carbon"
+            poolOptions:
+              poolMaxConns: 4
+              poolMinConns: 0
+              poolMaxConnLifetime: "1h"
+              poolMaxConnIdleTime: "1h"
+              poolHealthCheckPeriod: "1m"
+              poolMaxConnLifetimeJitter: "1s"
+      type
       ratelimiter:
         # -- Enable the deployment of the Rate Limiter
         enabled: true

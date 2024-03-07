@@ -44,6 +44,7 @@ const (
 	pkgAPI                     = "github.com/wso2/apk/adapter/internal/api"
 	pkgAPK                     = "github.com/wso2/apk/adapter/internal/adapter"
 	pkgRateLimiterXdsCallbacks = "github.com/wso2/apk/adapter/internal/discovery/xds/ratelimitercallbacks"
+	pkgDatabase                = "github.com/wso2/apk/adapter/internal/database"
 )
 
 // logger package references
@@ -60,6 +61,7 @@ var (
 	LoggerAPI                     logging.Log
 	LoggerAPK                     logging.Log
 	LoggerRateLimiterXdsCallbacks logging.Log
+	LoggerDatabase                logging.Log
 )
 
 func init() {
@@ -80,5 +82,6 @@ func UpdateLoggers() {
 	LoggerNotifier = logging.InitPackageLogger(pkgNotifier)
 	LoggerAPI = logging.InitPackageLogger(pkgAPI)
 	LoggerAPK = logging.InitPackageLogger(pkgAPK)
+	LoggerDatabase = logging.InitPackageLogger(pkgDatabase)
 	logrus.Info("Updated loggers")
 }
