@@ -171,7 +171,7 @@ wso2:
           # -- Image pull policy
           imagePullPolicy: Always
           # -- Image
-          image: wso2/apk-config-deployer-service:1.0.0
+          image: wso2/apk-config-deployer-service:1.1.0-alpha
           configs:
             # -- Enable authorization for runtime api.
             authorization: true
@@ -226,7 +226,7 @@ wso2:
           # -- Image pull policy
           imagePullPolicy: Always
           # -- Image
-          image: wso2/apk-adapter:1.0.0
+          image: wso2/apk-adapter:1.1.0-alpha
           security:
             # -- Enable security for adapter.
             sslHostname: "adapter"
@@ -282,7 +282,7 @@ wso2:
           # -- Image pull policy
           imagePullPolicy: Always
           # -- Image
-          image: wso2/apk-common-controller:1.0.0
+          image: wso2/apk-common-controller:1.1.0-alpha
           security:
             # -- hostname for the common controller
             sslHostname: "commoncontroller"
@@ -374,7 +374,7 @@ wso2:
           # -- Image pull policy
           imagePullPolicy: Always
           # -- Image
-          image: wso2/apk-ratelimiter:1.0.0
+          image: wso2/apk-ratelimiter:1.1.0-alpha
           security:
             # -- hostname for the rate limiter
             sslHostname: "ratelimiter"
@@ -426,7 +426,7 @@ wso2:
             # -- Image pull policy
             imagePullPolicy: Always
             # -- Image
-            image: wso2/apk-router:1.0.0
+            image: wso2/apk-router:1.1.0-alpha
             configs:
               # -- The timeout for response coming from enforcer to route per API request
               enforcerResponseTimeoutInSeconds: 20
@@ -495,7 +495,7 @@ wso2:
             # -- Image pull policy
             imagePullPolicy: Always
             # -- Image
-            image: wso2/apk-enforcer:1.0.0
+            image: wso2/apk-enforcer:1.1.0-alpha
             security:
               # -- hostname for the enforcer
               sslHostname: "enforcer"
@@ -717,7 +717,7 @@ idp:
       # -- Image pull policy
       imagePullPolicy: Always
       # -- Image
-      image: wso2/apk-idp-domain-service:1.0.0
+      image: wso2/apk-idp-domain-service:1.1.0-alpha
   idpui:
     deployment:
       resources:
@@ -752,7 +752,7 @@ idp:
       # -- Image pull policy
       imagePullPolicy: Always
       # -- Image
-      image: wso2/apk-idp-ui:1.0.0
+      image: wso2/apk-idp-ui:1.1.0-alpha
     configs:
       # -- identity server Login URL
       idpLoginUrl: "https://idp.am.wso2.com:9095/commonauth/login"
