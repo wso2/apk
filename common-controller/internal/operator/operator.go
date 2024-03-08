@@ -147,7 +147,7 @@ func InitOperator() {
 	}
 
 	config := config.ReadConfigs()
-	if config.CommonController.ControlPlane.Enabled && config.CommonController.ControlPlane.Persistence.Type == "K8s" {
+	if !(config.CommonController.ControlPlane.Enabled && config.CommonController.ControlPlane.Persistence.Type == "DB") {
 		if err := cpcontrollers.NewApplicationController(mgr, subscriptionStore); err != nil {
 			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3115, logging.MAJOR,
 				"Error creating Application controller, error: %v", err))
