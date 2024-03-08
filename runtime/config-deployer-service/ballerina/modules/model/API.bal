@@ -58,7 +58,7 @@ public type APIStatus record {
 };
 
 public type EnvConfig record {
-    string[] httpRouteRefs;
+    string[] routeRefs;
 };
 
 public type APIList record {

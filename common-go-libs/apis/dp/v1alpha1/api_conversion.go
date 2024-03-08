@@ -39,6 +39,22 @@ func (src *API) ConvertTo(dstRaw conversion.Hub) error {
 	dst.Spec.BasePath = src.Spec.BasePath
 	dst.Spec.Organization = src.Spec.Organization
 	dst.Spec.SystemAPI = src.Spec.SystemAPI
+	if src.Spec.Production != nil {
+		src.Spec.Production = []EnvConfig{}
+		for _, productionRef := range src.Spec.Production {
+			dst.Spec.Production = append(dst.Spec.Production, v1alpha2.EnvConfig{
+				RouteRefs: productionRef.HTTPRouteRefs,
+			})
+		}
+	}
+	if src.Spec.Sandbox != nil {
+		src.Spec.Sandbox = []EnvConfig{}
+		for _, sandboxRef := range src.Spec.Sandbox {
+			dst.Spec.Sandbox = append(dst.Spec.Sandbox, v1alpha2.EnvConfig{
+				RouteRefs: sandboxRef.HTTPRouteRefs,
+			})
+		}
+	}
 
 	// Convert []Property to []v1alpha2.Property
 	var properties []v1alpha2.Property
@@ -46,19 +62,6 @@ func (src *API) ConvertTo(dstRaw conversion.Hub) error {
 		properties = append(properties, v1alpha2.Property(p))
 	}
 	dst.Spec.APIProperties = properties
-
-	// Convert []EnvConfig to []v1alpha2.EnvConfig
-	var production []v1alpha2.EnvConfig
-	for _, p := range src.Spec.Production {
-		production = append(production, v1alpha2.EnvConfig(p))
-	}
-	dst.Spec.Production = production
-
-	var sandbox []v1alpha2.EnvConfig
-	for _, s := range src.Spec.Sandbox {
-		sandbox = append(sandbox, v1alpha2.EnvConfig(s))
-	}
-	dst.Spec.Sandbox = sandbox
 
 	// Status
 	dst.Status.DeploymentStatus = v1alpha2.DeploymentStatus(src.Status.DeploymentStatus)
@@ -90,19 +93,6 @@ func (src *API) ConvertFrom(srcRaw conversion.Hub) error {
 		properties = append(properties, Property(p))
 	}
 	src.Spec.APIProperties = properties
-
-	// Convert []EnvConfig to []v1alpha1.EnvConfig
-	var production []EnvConfig
-	for _, p := range dst.Spec.Production {
-		production = append(production, EnvConfig(p))
-	}
-	src.Spec.Production = production
-
-	var sandbox []EnvConfig
-	for _, s := range dst.Spec.Sandbox {
-		sandbox = append(sandbox, EnvConfig(s))
-	}
-	src.Spec.Sandbox = sandbox
 
 	// Status
 	src.Status.DeploymentStatus = DeploymentStatus(dst.Status.DeploymentStatus)

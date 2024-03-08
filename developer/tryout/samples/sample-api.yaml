@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # -----------------------------------------------------------------------
-apiVersion: dp.wso2.com/v1alpha1
+apiVersion: dp.wso2.com/v1alpha2
 kind: API
 metadata:
   name: http-bin-api
@@ -24,11 +24,11 @@ spec:
   basePath: /http-bin-api/1.0.8
   definitionFileRef: swagger-definition-http-bin-api
   production:
-    - httpRouteRefs:
+    - routeRefs:
       - prod-http-route-http-bin-api-p1
       - prod-http-route-http-bin-api-p2
   sandbox:
-    - httpRouteRefs:
+    - routeRefs:
       - sand-http-route-http-bin-api
   organization: a3b58ccf-6ecc-4557-b5bb-0a35cce38256
 ---

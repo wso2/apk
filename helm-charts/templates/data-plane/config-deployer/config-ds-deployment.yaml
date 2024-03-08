@@ -114,8 +114,8 @@ spec:
         - name: config-toml-volume
           configMap:
             name: {{ template "apk-helm.resource.prefix" . }}-config-ds-configmap
-        - name: prometheus-jmx-config-volume	
-          configMap: 	
+        - name: prometheus-jmx-config-volume
+          configMap:
             name: prometheus-jmx-config-configds
         - name: config-ds-tls-volume
           secret:

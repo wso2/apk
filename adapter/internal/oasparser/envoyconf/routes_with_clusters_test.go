@@ -48,7 +48,7 @@ func TestCreateRoutesWithClustersWithExactAndRegularExpressionRules(t *testing.T
 			BasePath:   "/test-api/2.0.0",
 			Production: []v1alpha2.EnvConfig{
 				{
-					HTTPRouteRefs: []string{
+					RouteRefs: []string{
 						"test-api-2-prod-http-route",
 					},
 				},
@@ -218,7 +218,7 @@ func generateSampleAPI(apiName string, apiVersion string, basePath string) synch
 			BasePath:   basePath,
 			Production: []v1alpha2.EnvConfig{
 				{
-					HTTPRouteRefs: []string{
+					RouteRefs: []string{
 						apiName + "-prod-http-route",
 					},
 				},
@@ -281,7 +281,7 @@ func TestCreateRoutesWithClustersWithMultiplePathPrefixRules(t *testing.T) {
 			BasePath:   "/test-api/1.0.0",
 			Production: []v1alpha2.EnvConfig{
 				{
-					HTTPRouteRefs: []string{
+					RouteRefs: []string{
 						"test-api-1-prod-http-route",
 					},
 				},
@@ -430,7 +430,7 @@ func TestCreateRoutesWithClustersWithBackendTLSConfigs(t *testing.T) {
 			BasePath:   "/test-api-3/1.0.0",
 			Production: []v1alpha2.EnvConfig{
 				{
-					HTTPRouteRefs: []string{
+					RouteRefs: []string{
 						"test-api-3-prod-http-route",
 					},
 				},
@@ -553,7 +553,7 @@ func TestCreateRoutesWithClustersDifferentBackendRefs(t *testing.T) {
 			BasePath:   "/test-api-different-backendrefs/1.0.0",
 			Production: []v1alpha2.EnvConfig{
 				{
-					HTTPRouteRefs: []string{
+					RouteRefs: []string{
 						"test-api-different-backendrefs-prod-http-route",
 					},
 				},
@@ -645,7 +645,7 @@ func TestCreateRoutesWithClustersSameBackendRefs(t *testing.T) {
 			BasePath:   "/test-api-same-backendrefs/1.0.0",
 			Production: []v1alpha2.EnvConfig{
 				{
-					HTTPRouteRefs: []string{
+					RouteRefs: []string{
 						"test-api-same-backendrefs-prod-http-route",
 					},
 				},

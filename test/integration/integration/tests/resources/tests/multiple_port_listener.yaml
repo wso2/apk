@@ -26,7 +26,7 @@ spec:
   basePath: /test-api-with-multiple-port-listener/v1.0.0
   #definitionFileRef: definition-file
   production:
-    - httpRouteRefs:
+    - routeRefs:
       - test-api-with-multiple-port-listener-httproute
   organization: wso2-org
 ---
@@ -42,7 +42,7 @@ spec:
   basePath: /test-api-with-multiple-port-listener-1/v1.0.0
   #definitionFileRef: definition-file
   production:
-    - httpRouteRefs:
+    - routeRefs:
       - test-api-with-multiple-port-listener-httproute
   organization: wso2-org
 ---
