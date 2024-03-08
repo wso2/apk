@@ -376,6 +376,21 @@ modules = [
 ]
 
 [[package]]
+org = "ballerinax"
+name = "prometheus"
+version = "0.2.0"
+dependencies = [
+	{org = "ballerina", name = "http"},
+	{org = "ballerina", name = "io"},
+	{org = "ballerina", name = "lang.string"},
+	{org = "ballerina", name = "observe"},
+	{org = "ballerina", name = "regex"}
+]
+modules = [
+	{org = "ballerinax", packageName = "prometheus", moduleName = "prometheus"}
+]
+
+[[package]]
 org = "wso2"
 name = "idp_domain_service"
 version = "PROJECT_VERSION"
@@ -392,7 +407,8 @@ dependencies = [
 	{org = "ballerina", name = "url"},
 	{org = "ballerina", name = "uuid"},
 	{org = "ballerinai", name = "observe"},
-	{org = "ballerinax", name = "postgresql"}
+	{org = "ballerinax", name = "postgresql"},
+	{org = "ballerinax", name = "prometheus"}
 ]
 modules = [
 	{org = "wso2", packageName = "idp_domain_service", moduleName = "idp_domain_service"}

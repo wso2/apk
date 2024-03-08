@@ -9,5 +9,10 @@ groupId = "org.postgresql"
 artifactId = "postgresql"
 version = "42.2.20"
 
+[[platform.java11.dependency]]
+groupId = "io.prometheus.jmx"
+artifactId = "jmx_prometheus_javaagent"
+version = "0.20.0"
+
 [build-options]
 observabilityIncluded = true
