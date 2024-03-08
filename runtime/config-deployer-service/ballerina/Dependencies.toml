@@ -424,8 +424,7 @@ dependencies = [
 modules = [
 	{org = "wso2", packageName = "apk_common_lib", moduleName = "apk_common_lib"},
 	{org = "wso2", packageName = "apk_common_lib", moduleName = "apk_common_lib.java.io"},
-	{org = "wso2", packageName = "apk_common_lib", moduleName = "apk_common_lib.java.lang"},
-	{org = "wso2", packageName = "apk_common_lib", moduleName = "apk_common_lib.org.wso2.apk.common"}
+	{org = "wso2", packageName = "apk_common_lib", moduleName = "apk_common_lib.java.lang"}
 ]
 
 [[package]]
@@ -461,7 +460,6 @@ modules = [
 	{org = "wso2", packageName = "config_deployer_service", moduleName = "config_deployer_service.model"},
 	{org = "wso2", packageName = "config_deployer_service", moduleName = "config_deployer_service.org.wso2.apk.config"},
 	{org = "wso2", packageName = "config_deployer_service", moduleName = "config_deployer_service.org.wso2.apk.config.api"},
-	{org = "wso2", packageName = "config_deployer_service", moduleName = "config_deployer_service.org.wso2.apk.config.definitions"},
 	{org = "wso2", packageName = "config_deployer_service", moduleName = "config_deployer_service.org.wso2.apk.config.model"},
 	{org = "wso2", packageName = "config_deployer_service", moduleName = "config_deployer_service.partitionClient"}
 ]
