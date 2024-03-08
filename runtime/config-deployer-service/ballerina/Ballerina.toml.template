@@ -49,6 +49,12 @@ groupId = "io.swagger"
 artifactId = "swagger-core"
 version = "1.6.10"
 
+# transitive dependency of io.prometheus.jmx:jmx_prometheus_javaagent:0.20.0
+[[platform.java11.dependency]]
+groupId = "io.prometheus.jmx"
+artifactId = "jmx_prometheus_javaagent"
+version = "0.20.0"
+
 # transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.13
 [[platform.java11.dependency]]
 groupId = "io.swagger"
