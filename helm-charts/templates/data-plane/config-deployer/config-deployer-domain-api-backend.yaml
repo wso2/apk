@@ -29,9 +29,9 @@ spec:
   allowedSANs:
    - {{ template "apk-helm.resource.prefix" . }}-config-ds-service.{{ .Release.Namespace }}.svc
   secretRef:
-  {{- if and .Values.wso2.apk.dp.configdeployer.configs .Values.wso2.apk.dp.configdeployer.configs.tls }}
-    name: {{.Values.wso2.apk.dp.configdeployer.configs.tls.secretName}}
-    key: {{.Values.wso2.apk.dp.configdeployer.configs.tls.certFilename}}
+  {{- if and .Values.wso2.apk.dp.configdeployer.deployment.configs .Values.wso2.apk.dp.configdeployer.deployment.configs.tls }}
+    name: {{.Values.wso2.apk.dp.configdeployer.deployment.configs.tls.secretName}}
+    key: {{.Values.wso2.apk.dp.configdeployer.deployment.configs.tls.certFilename}}
   {{- else }}
     name: {{ template "apk-helm.resource.prefix" . }}-config-ds-server-cert
     key: tls.crt

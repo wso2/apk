@@ -17,11 +17,11 @@
 wso2:
   subscription:
     imagePullSecrets: ""
-    
+
   apk:
     webhooks:
-      validatingwebhookconfigurations : true
-      mutatingwebhookconfigurations : true
+      validatingwebhookconfigurations: true
+      mutatingwebhookconfigurations: true
     auth:
       enabled: true
       enableServiceAccountCreation: true
@@ -114,9 +114,9 @@ wso2:
           image: wso2/apk-adapter:latest
           security:
             sslHostname: "adapter"
-#        logging:
-#          level: "INFO" # LogLevels can be "DEBG", "FATL", "ERRO", "WARN", "INFO", "PANC"
-#          logFormat: "TEXT" # Values can be "JSON", "TEXT"
+        #     logging:
+        #       level: "INFO" # LogLevels can be "DEBG", "FATL", "ERRO", "WARN", "INFO", "PANC"
+        # #          logFormat: "TEXT" # Values can be "JSON", "TEXT"
         # configs:
         #   apiNamespaces:
         #     - "apk-v12"
@@ -211,13 +211,13 @@ wso2:
             #     secretName: "router-cert"
             #     certKeyFilename: ""
             #     certFilename: ""
-#            logging:
-#              wireLogs:
-#                enable: true
-#              accessLogs:
-#                enable: true
-#            env:
-#              TRAILING_ARGS: "--log-level trace"
+            #     logging:
+            #       wireLogs:
+            #         enable: true
+            #       accessLogs:
+            #         enable: true
+            #     env:
+            #       TRAILING_ARGS: "--log-level trace"
           enforcer:
             resources:
               requests:
@@ -282,7 +282,7 @@ idp:
     validationQuery: "SELECT 1"
     validationTimeout: 250
   idpds:
-    config:
+    configs:
       issuer: "https://idp.am.wso2.com/token"
       keyId: "gateway_certificate_alias"
       hostname: "idp.am.wso2.com"
@@ -340,13 +340,12 @@ gatewaySystem:
   enableClusterRoleCreation: true
   serviceAccountName: gateway-api-admission
 
-
 certmanager:
   enabled: true
   enableClusterIssuer: true
   enableRootCa: true
   rootCaSecretName: "apk-root-certificate"
-  
+
 postgresql:
   enabled: true
   fullnameOverride: "wso2apk-db-service"
