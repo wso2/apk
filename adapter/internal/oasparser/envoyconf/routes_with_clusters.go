@@ -212,21 +212,73 @@ func CreateRoutesWithClusters(adapterInternalAPI *model.AdapterInternalAPI, inte
 		}
 		clusters = append(clusters, cluster)
 		endpoints = append(endpoints, address...)
+
+		//TODO factor out common code  (Dineth)
+		for _, resource := range adapterInternalAPI.GetResources() {
+			var clusterName string
+			resourcePath := resource.GetPath()
+			endpoint := resource.GetEndpoints()
+			//TODO see if this should be configured elsewhere (Dineth)
+			endpoint.HTTP2BackendEnabled = true
+			basePath := strings.TrimSuffix(endpoint.Endpoints[0].Basepath, "/")
+			existingClusterName := getExistingClusterName(*endpoint, processedEndpoints)
+
+			if existingClusterName == "" {
+				clusterName = getClusterName(endpoint.EndpointPrefix, organizationID, vHost, adapterInternalAPI.GetTitle(), apiVersion, resource.GetID())
+				cluster, address, err := processEndpoints(clusterName, endpoint, timeout, basePath)
+				//TODO see if this should be configured elsewhere (Dineth)
+				cluster.TransportSocketMatches = nil
+				if err != nil {
+					logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2239, logging.MAJOR, "Error while adding resource level endpoints for %s:%v-%v. %v", apiTitle, apiVersion, resourcePath, err.Error()))
+				} else {
+					clusters = append(clusters, cluster)
+					endpoints = append(endpoints, address...)
+					processedEndpoints[clusterName] = *endpoint
+				}
+			} else {
+				clusterName = existingClusterName
+			}
+			// Create resource level interceptor clusters if required
+			//TODO remove this if no interceptor needed for grpc (Dineth)
+			clustersI, endpointsI, operationalReqInterceptors, operationalRespInterceptorVal := createInterceptorResourceClusters(adapterInternalAPI,
+				interceptorCerts, vHost, organizationID, apiRequestInterceptor, apiResponseInterceptor, resource)
+			clusters = append(clusters, clustersI...)
+			endpoints = append(endpoints, endpointsI...)
+			routeParams := genRouteCreateParams(adapterInternalAPI, resource, vHost, basePath, clusterName, *operationalReqInterceptors, *operationalRespInterceptorVal, organizationID,
+				false, false)
+
+			routeP, err := createRoutes(routeParams)
+			if err != nil {
+				logger.LoggerXds.ErrorC(logging.PrintError(logging.Error2231, logging.MAJOR,
+					"Error while creating routes for GRPC API %s %s for path: %s Error: %s", adapterInternalAPI.GetTitle(),
+					adapterInternalAPI.GetVersion(), resource.GetPath(), err.Error()))
+				return nil, nil, nil, fmt.Errorf("error while creating routes. %v", err)
+			}
+			routes = append(routes, routeP...)
+			if adapterInternalAPI.IsDefaultVersion {
+				defaultRoutes, errDefaultPath := createRoutes(genRouteCreateParams(adapterInternalAPI, resource, vHost, basePath, clusterName, *operationalReqInterceptors, *operationalRespInterceptorVal, organizationID,
+					false, true))
+				if errDefaultPath != nil {
+					logger.LoggerXds.ErrorC(logging.PrintError(logging.Error2231, logging.MAJOR, "Error while creating routes for GRPC API %s %s for path: %s Error: %s", adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), removeFirstOccurrence(resource.GetPath(), adapterInternalAPI.GetVersion()), errDefaultPath.Error()))
+					return nil, nil, nil, fmt.Errorf("error while creating routes. %v", errDefaultPath)
+				}
+				routes = append(routes, defaultRoutes...)
+			}
+
+		}
+
+		return routes, clusters, endpoints, nil
 	}
 	for _, resource := range adapterInternalAPI.GetResources() {
 		var clusterName string
 		resourcePath := resource.GetPath()
 		endpoint := resource.GetEndpoints()
-		//TODO see if I can configure this elsewhere
-		endpoint.HTTP2BackendEnabled = true
 		basePath := strings.TrimSuffix(endpoint.Endpoints[0].Basepath, "/")
 		existingClusterName := getExistingClusterName(*endpoint, processedEndpoints)
 
 		if existingClusterName == "" {
 			clusterName = getClusterName(endpoint.EndpointPrefix, organizationID, vHost, adapterInternalAPI.GetTitle(), apiVersion, resource.GetID())
 			cluster, address, err := processEndpoints(clusterName, endpoint, timeout, basePath)
-			//TODO see if I can configure this elsewhere
-			cluster.TransportSocketMatches = nil
 			if err != nil {
 				logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2239, logging.MAJOR, "Error while adding resource level endpoints for %s:%v-%v. %v", apiTitle, apiVersion, resourcePath, err.Error()))
 			} else {
