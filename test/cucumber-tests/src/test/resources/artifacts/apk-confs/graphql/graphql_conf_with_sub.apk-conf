@@ -3,6 +3,7 @@ name: "GraphQL API"
 basePath: "/graphql"
 version: "3.14"
 type: "GRAPHQL"
+id: "graphql-with-sub"
 defaultVersion: false
 subscriptionValidation: false
 endpointConfigurations:
