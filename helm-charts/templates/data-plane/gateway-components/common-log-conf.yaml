@@ -33,7 +33,7 @@ data:
     [commoncontroller.controlplane]
        enabled = {{ .Values.wso2.apk.dp.commonController.deployment.controlplane.enabled | default false }}
        host = "{{ .Values.wso2.apk.dp.commonController.deployment.controlplane.host | default "apim-apk-agent-service.apk.svc.cluster.local" }}"
-       eventPort = {{ .Values.wso2.apk.dp.commonController.deployment.controlplane.port | default 18000 }}
+       eventPort = "{{ .Values.wso2.apk.dp.commonController.deployment.controlplane.port | default "18000" }}"
        skipSSLVerification = {{ .Values.wso2.apk.dp.commonController.deployment.controlplane.skipSSLVerification | default false }}
     {{- if .Values.wso2.apk.dp.commonController.deployment.controlplane.persistence }}
     [commoncontroller.controlplane.persistence] 
