@@ -2,7 +2,7 @@
 org = "wso2"
 name = "config_deployer_service"
 version = "1.1.0-SNAPSHOT"
-distribution = "2201.8.0"
+distribution = "2201.8.5"
 
 [build-options]
 observabilityIncluded = true
