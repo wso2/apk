@@ -31,7 +31,7 @@ spec:
   basePath: /dineth-grpc-api/v1
   isDefaultVersion: true
   production:
-    - httpRouteRefs:
+    - routeRefs:
         - dineth-grpc-route
   organization: wso2-org
 
@@ -58,7 +58,7 @@ spec:
   rules:
     - matches:
         - method:
-            service: StudentService
+            service: student.StudentService
             method: GetStudent
       backendRefs:
         - name: dineth-grpc-backend
@@ -66,16 +66,24 @@ spec:
           port: 6565
     - matches:
         - method:
-            service: StudentService
-            method: SendStudent
+            service: student.StudentService
+            method: SendStudentStream
       backendRefs:
         - name: dineth-grpc-backend
           kind: Backend
           port: 6565
     - matches:
         - method:
-            service: TeacherService
-            method: GetTeacher
+            service: student.StudentService
+            method: GetStudentStream
+      backendRefs:
+        - name: dineth-grpc-backend
+          kind: Backend
+          port: 6565
+    - matches:
+        - method:
+            service: student.StudentService
+            method: SendAndGetStudentStream
       backendRefs:
         - name: dineth-grpc-backend
           kind: Backend
@@ -83,20 +91,6 @@ spec:
 
 ---
 
-#apiVersion: "dp.wso2.com/v1alpha1"
-#kind: "Authentication"
-#metadata:
-#  name: dineth-grpc-api-auth
-#  namespace: gateway-integration-test-infra
-#  spec:
-#  default:
-#    authTypes:
-#    disabled: true
-#  targetRef:
-#    group: "gateway.networking.k8s.io"
-#    kind: Resource
-#    namespace: gateway-integration-test-infra
-#    name: dineth-grpc-api
 apiVersion: dp.wso2.com/v1alpha1
 kind: Authentication
 metadata:
