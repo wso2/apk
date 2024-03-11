@@ -114,6 +114,53 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
+  name: dineth-grpc-demo-server
+  namespace: gateway-integration-test-infra
+spec:
+  selector:
+    app: dineth-grpc-demo-server
+  ports:
+    - protocol: TCP
+      port: 6565
+      targetPort: 6565
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dineth-grpc-demo-server
+  namespace: gateway-integration-test-infra
+  labels:
+    app: dineth-grpc-demo-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dineth-grpc-demo-server
+  template:
+    metadata:
+      labels:
+        app: dineth-grpc-demo-server
+    spec:
+      containers:
+        - name: dineth-grpc-demo-server
+          image: ddh13/dineth-grpc-demo-server:1.0.0
+          imagePullPolicy: Always
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          resources:
+            requests:
+              cpu: 10m
+---
+apiVersion: v1
+kind: Service
+metadata:
   name: infra-backend-v2
   namespace: gateway-integration-test-infra
 spec:
