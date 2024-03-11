@@ -144,7 +144,7 @@ public class KeyValidator {
             if (keyMapping != null) {
                 // Get application and application mapping using application UUID
                 String applicationUUID = keyMapping.getApplicationUUID();
-                app = datastore.getMatchingApplication(applicationUUID);
+                app = datastore.getApplicationById(applicationUUID);
                 appMappings = datastore.getMatchingApplicationMappings(applicationUUID);
 
                 if (appMappings != null && app != null) {
