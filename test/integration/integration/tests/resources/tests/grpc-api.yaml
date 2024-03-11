@@ -1,0 +1,124 @@
+# Copyright (c) 2023, WSO2 LLC. (https://www.wso2.com) All Rights Reserved.
+#
+# WSO2 LLC. licenses this file to you under the Apache License,
+# Version 2.0 (the "License"); you may not use this file except
+# in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+apiVersion: dp.wso2.com/v1alpha2
+kind: API
+metadata:
+  name: dineth-grpc-api
+  namespace: gateway-integration-test-infra
+  labels:
+    api-name: "dineth-grpc-api"
+    api-version: "v1"
+    organization: wso2-org
+    managed-by: "apk"
+spec:
+  apiName: Dineth GRPC API
+  apiType: GRPC
+  apiVersion: v1
+  basePath: /dineth-grpc-api/v1
+  isDefaultVersion: false
+  production:
+    - routeRefs:
+        - dineth-grpc-route
+  organization: wso2-org
+
+---
+
+apiVersion: gateway.networking.k8s.io/v1alpha2
+kind: GRPCRoute
+metadata:
+  name: dineth-grpc-route
+  namespace: gateway-integration-test-infra
+  labels:
+    api-name: "dineth-grpc-api"
+    api-version: "v1"
+    organization: "wso2-org"
+    managed-by: "apk"
+spec:
+  hostnames:
+    - grpc.test.gw.wso2.com
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: default
+      sectionName: httpslistener
+  rules:
+    - matches:
+        - method:
+            service: student.StudentService
+            method: GetStudent
+      backendRefs:
+        - name: dineth-grpc-backend
+          kind: Backend
+          port: 6565
+    - matches:
+        - method:
+            service: student.StudentService
+            method: SendStudentStream
+      backendRefs:
+        - name: dineth-grpc-backend
+          kind: Backend
+          port: 6565
+    - matches:
+        - method:
+            service: student.StudentService
+            method: GetStudentStream
+      backendRefs:
+        - name: dineth-grpc-backend
+          kind: Backend
+          port: 6565
+    - matches:
+        - method:
+            service: student.StudentService
+            method: SendAndGetStudentStream
+      backendRefs:
+        - name: dineth-grpc-backend
+          kind: Backend
+          port: 6565
+
+---
+
+apiVersion: dp.wso2.com/v1alpha1
+kind: Authentication
+metadata:
+  name: disable-grpc-api-security
+  namespace: gateway-integration-test-infra
+spec:
+  override:
+    disabled: true
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: API
+    namespace: gateway-integration-test-infra
+    name: dineth-grpc-api
+---
+
+apiVersion: dp.wso2.com/v1alpha1
+kind: Backend
+metadata:
+  name: dineth-grpc-backend
+  namespace: gateway-integration-test-infra
+  labels:
+    api-name: "dineth-grpc-api"
+    api-version: "v1"
+    organization: wso2-org
+    managed-by: "apk"
+spec:
+  services:
+    - host: grpc-backend.gateway-integration-test-infra
+      port: 6565
+  basePath: ""
+  protocol: https
