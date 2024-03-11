@@ -77,7 +77,7 @@ spec:
     spec:
       containers:
         - name: webhook
-          image: gcr.io/k8s-staging-gateway-api/admission-server:v0.6.1
+          image: registry.k8s.io/gateway-api/admission-server:v1.0.0
           imagePullPolicy: Always
           args:
             - -logtostderr
@@ -101,13 +101,15 @@ spec:
               readOnly: true
           securityContext:
             allowPrivilegeEscalation: false
-            capabilities:
-              drop: ["ALL"]
             readOnlyRootFilesystem: true
-      securityContext:
-        runAsNonRoot: true
-        seccompProfile:
-          type: "RuntimeDefault"
+            runAsNonRoot: true
+            runAsUser: 65532
+            runAsGroup: 65532
+            capabilities:
+              drop:
+              - "ALL"
+            seccompProfile:
+              type: RuntimeDefault
       volumes:
         - name: webhook-certs
           secret:
@@ -221,8 +223,15 @@ spec:
                   fieldPath: metadata.namespace
           securityContext:
             allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 2000
+            runAsGroup: 2000
             capabilities:
-              drop: ["ALL"]
+              drop:
+              - "ALL"
+            seccompProfile:
+              type: RuntimeDefault
       restartPolicy: OnFailure
       {{ if and .Values.gatewaySystem .Values.gatewaySystem.serviceAccountName}}
       serviceAccountName: {{ .Values.gatewaySystem.serviceAccountName}}
@@ -262,8 +271,15 @@ spec:
             - --patch-failure-policy=Fail
           securityContext:
             allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 2000
+            runAsGroup: 2000
             capabilities:
-              drop: ["ALL"]
+              drop:
+              - "ALL"
+            seccompProfile:
+              type: RuntimeDefault
           env:
             - name: POD_NAMESPACE
               valueFrom:
@@ -277,6 +293,6 @@ spec:
       {{ end }}
       securityContext:
         runAsNonRoot: true
-        seccompProfile:
-          type: "RuntimeDefault"
+        runAsUser: 2000
+        runAsGroup: 2000
 {{- end -}}
