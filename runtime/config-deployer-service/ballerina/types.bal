@@ -112,7 +112,7 @@ public type CircuitBreaker record {
     int maxRetries?;
 };
 
-public type AuthenticationRequest OAuth2Authentication|APIKeyAuthentication|MTLSAuthentication;
+public type AuthenticationRequest OAuth2Authentication|APIKeyAuthentication|MTLSAuthentication|JWTAuthentication;
 
 public type EndpointConfigurations record {
     EndpointConfiguration production?;
@@ -125,6 +125,15 @@ public type OAuth2Authentication record {|
     boolean sendTokenToUpstream = false;
     string headerName = "Authorization";
     boolean headerEnable = true;
+|};
+
+public type JWTAuthentication record {|
+    *Authentication;
+    string required = "mandatory";
+    boolean sendTokenToUpstream = false;
+    string headerName = "Authorization";
+    boolean headerEnable = true;
+    string[] audience = [];
 |};
 
 public type Timeout record {

@@ -85,12 +85,14 @@ components:
         - $ref: "#/components/schemas/OAuth2Authentication"
         - $ref: "#/components/schemas/APIKeyAuthentication"
         - $ref: "#/components/schemas/MTLSAuthentication"
+        - $ref: "#/components/schemas/JWTAuthentication"
       discriminator:
         propertyName: authType
         mapping:
           OAuth2: "#/components/schemas/OAuth2Authentication"
           APIKey: "#/components/schemas/APIKeyAuthentication"
           mTLS: "#/components/schemas/MTLSAuthentication"
+          JWT: "#/components/schemas/JWTAuthentication"
     Authentication:
       type: object
       discriminator:
@@ -125,6 +127,34 @@ components:
             headerEnable:
               type: boolean
               default: true
+          additionalProperties: false
+    JWTAuthentication:
+      allOf:
+        - $ref: "#/components/schemas/Authentication"
+        - type: object
+          properties:
+            required:
+              type: string
+              default: mandatory
+              enum:
+                - mandatory
+                - optional
+              description: Specifies whether JWT is mandatory or optional
+            sendTokenToUpstream:
+              type: boolean
+              default: false
+            headerName:
+              type: string
+              example: Authorization
+              default: Authorization
+            headerEnable:
+              type: boolean
+              default: true
+            audience: 
+              type: array
+              default: []
+              items:
+                type: integer
           additionalProperties: false
     APIKeyAuthentication:
       allOf:

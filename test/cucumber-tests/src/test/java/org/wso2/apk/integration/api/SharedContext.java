@@ -84,6 +84,10 @@ public class SharedContext {
         headers.put(key, value);
     }
 
+    public void removeHeader(String key) {
+        headers.remove(key);
+    }
+
     public String getResponseBody() {
 
         return responseBody;

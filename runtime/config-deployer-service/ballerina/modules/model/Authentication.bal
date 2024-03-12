@@ -38,6 +38,7 @@ public type AuthenticationExtensionType record {
     OAuth2Authentication oauth2?;
     APIKey[] apiKey = [];
     MutualSSL mtls?;
+    JWTAuthentication jwt?;
 };
 
 public type MutualSSL record {
@@ -53,6 +54,13 @@ public type OAuth2Authentication record {
     string header?;
     boolean sendTokenToUpstream?;
     boolean disabled;
+};
+
+public type JWTAuthentication record {
+    string header?;
+    boolean sendTokenToUpstream?;
+    boolean disabled = true;
+    string[] audience = [];
 };
 
 public type InternalKey record {

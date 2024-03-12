@@ -31,3 +31,9 @@ authentication:
    sendTokenToUpstream: true
    headerName: Authorization
    headerEnable: true
+ - authType: JWT
+   enabled: true
+   sendTokenToUpstream: true
+   headerName: custom-jwt
+   headerEnable: true
+   audience: ["aud1"]
