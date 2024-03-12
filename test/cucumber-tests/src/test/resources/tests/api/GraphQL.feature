@@ -12,6 +12,12 @@ Feature: Generating APK conf for GraphQL API
         And the definition file "artifacts/definitions/graphql_sample_api.graphql"
         And make the API deployment request
         Then the response status code should be 200
+        Then I set headers
+            | Authorization | bearer ${accessToken} |
+        And I send "POST" request to "https://default.gw.wso2.com:9095/graphql/3.14" with body "{\"query\":\"{ allHumans { name } }\"}"
+        And I eventually receive 200 response code, not accepting
+            | 429 |
+            | 500 |
 
     Scenario: Deploying APK conf using a valid GraphQL API definition containing a subscription resource
         Given The system is ready

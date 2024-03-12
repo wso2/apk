@@ -408,9 +408,6 @@ public class DeployerClient {
                     }
                 }
             }
-        } else {
-            log:printError("Error occured while deploying routes");
-            return e909022("Error occured while deploying routes", error("Error occured while deploying routes"));
         }
     }
 
