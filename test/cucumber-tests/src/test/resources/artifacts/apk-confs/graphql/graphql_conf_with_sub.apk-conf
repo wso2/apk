@@ -1,8 +1,9 @@
 ---
 name: "GraphQL API"
-basePath: "/graphql"
+basePath: "/graphql2"
 version: "3.14"
 type: "GRAPHQL"
+id: "graphql-with-sub"
 defaultVersion: false
 subscriptionValidation: false
 endpointConfigurations:

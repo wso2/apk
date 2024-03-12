@@ -26,3 +26,14 @@ Feature: Generating APK conf for GraphQL API
         When I use the definition file "artifacts/definitions/invalid_graphql_api.graphql" in resources
         And generate the APK conf file for a "GRAPHQL" API
         Then the response status code should be 400
+
+    Scenario Outline: Undeploy API
+        Given The system is ready
+        And I have a valid subscription
+        When I undeploy the API whose ID is "<apiID>"
+        Then the response status code should be <expectedStatusCode>
+
+        Examples:
+            | apiID               | expectedStatusCode |
+            | graphql-with-sub    | 202                |
+            | graphql-without-sub | 202                |

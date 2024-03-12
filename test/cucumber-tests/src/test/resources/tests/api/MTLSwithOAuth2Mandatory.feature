@@ -14,6 +14,10 @@ Feature: Test mTLS between client and gateway with client certificate sent in he
         And I send "GET" request to "https://default.gw.wso2.com:9095/mtls/3.14/employee/" with body ""
         And I eventually receive 200 response code, not accepting
             | 401 |
+
+    Scenario: Undeploy API
+        Given The system is ready
+        And I have a valid subscription
         When I undeploy the API whose ID is "mtls-mandatory-oauth2-enabled"
         Then the response status code should be 202
 
@@ -30,6 +34,10 @@ Feature: Test mTLS between client and gateway with client certificate sent in he
         And I send "GET" request to "https://default.gw.wso2.com:9095/mtls/3.14/employee/" with body ""
         And I eventually receive 401 response code, not accepting
             | 200 |
+
+    Scenario: Undeploy API
+        Given The system is ready
+        And I have a valid subscription
         When I undeploy the API whose ID is "mtls-mandatory-oauth2-enabled"
         Then the response status code should be 202
 
@@ -45,6 +53,10 @@ Feature: Test mTLS between client and gateway with client certificate sent in he
         And I send "GET" request to "https://default.gw.wso2.com:9095/mtls/3.14/employee/" with body ""
         And I eventually receive 401 response code, not accepting
             | 200 |
+
+    Scenario: Undeploy API
+        Given The system is ready
+        And I have a valid subscription
         When I undeploy the API whose ID is "mtls-mandatory-oauth2-enabled"
         Then the response status code should be 202
 
@@ -62,6 +74,10 @@ Feature: Test mTLS between client and gateway with client certificate sent in he
         And I send "GET" request to "https://default.gw.wso2.com:9095/mtls/3.14/employee/" with body ""
         And I eventually receive 200 response code, not accepting
             | 401 |
+
+    Scenario: Undeploy API
+        Given The system is ready
+        And I have a valid subscription
         When I undeploy the API whose ID is "mtls-optional-oauth2-enabled"
         Then the response status code should be 202
 
@@ -77,6 +93,10 @@ Feature: Test mTLS between client and gateway with client certificate sent in he
         And I send "GET" request to "https://default.gw.wso2.com:9095/mtls/3.14/employee/" with body ""
         And I eventually receive 401 response code, not accepting
             | 200 |
+
+    Scenario: Undeploy API
+        Given The system is ready
+        And I have a valid subscription
         When I undeploy the API whose ID is "mtls-optional-oauth2-enabled"
         Then the response status code should be 202
 
@@ -92,6 +112,10 @@ Feature: Test mTLS between client and gateway with client certificate sent in he
         And I send "GET" request to "https://default.gw.wso2.com:9095/mtls/3.14/employee/" with body ""
         And I eventually receive 401 response code, not accepting
             | 200 |
+
+    Scenario: Undeploy API
+        Given The system is ready
+        And I have a valid subscription
         When I undeploy the API whose ID is "mtls-optional-oauth2-enabled"
         Then the response status code should be 202
 
@@ -136,6 +160,10 @@ Feature: Test mTLS between client and gateway with client certificate sent in he
         And I send "GET" request to "https://default.gw.wso2.com:9095/mtls/3.14/employee/" with body ""
         And I eventually receive 200 response code, not accepting
             | 401 |
+
+    Scenario: Undeploy API
+        Given The system is ready
+        And I have a valid subscription
         When I undeploy the API whose ID is "mtls-mandatory-oauth2-disabled"
         Then the response status code should be 202
 
@@ -151,6 +179,10 @@ Feature: Test mTLS between client and gateway with client certificate sent in he
         And I send "GET" request to "https://default.gw.wso2.com:9095/mtls/3.14/employee/" with body ""
         And I eventually receive 401 response code, not accepting
             | 200 |
+
+    Scenario: Undeploy API
+        Given The system is ready
+        And I have a valid subscription
         When I undeploy the API whose ID is "mtls-mandatory-oauth2-disabled"
         Then the response status code should be 202
 
@@ -164,6 +196,10 @@ Feature: Test mTLS between client and gateway with client certificate sent in he
         And I send "GET" request to "https://default.gw.wso2.com:9095/mtls/3.14/employee/" with body ""
         And I eventually receive 401 response code, not accepting
             | 200 |
+
+    Scenario: Undeploy API
+        Given The system is ready
+        And I have a valid subscription
         When I undeploy the API whose ID is "mtls-mandatory-oauth2-disabled"
         Then the response status code should be 202
 
@@ -185,6 +221,10 @@ Feature: Test mTLS between client and gateway with client certificate sent in he
         And I send "GET" request to "https://default.gw.wso2.com:9095/mtls/3.14/employee/" with body ""
         And I eventually receive 401 response code, not accepting
             | 200 |
+
+    Scenario: Undeploy API
+        Given The system is ready
+        And I have a valid subscription
         When I undeploy the API whose ID is "mtls-disabled-oauth2-enabled"
         Then the response status code should be 202
 
@@ -216,6 +256,10 @@ Feature: Test mTLS between client and gateway with client certificate sent in he
         And I send "GET" request to "https://default.gw.wso2.com:9095/mtls/3.14/employee/" with body ""
         And I eventually receive 401 response code, not accepting
             | 200 |
+
+    Scenario: Undeploy API
+        Given The system is ready
+        And I have a valid subscription
         When I undeploy the API whose ID is "mtls-mandatory-oauth2-enabled"
         Then the response status code should be 202
 
@@ -246,6 +290,9 @@ Feature: Test mTLS between client and gateway with client certificate sent in he
         And I send "GET" request to "https://default.gw.wso2.com:9095/mtls/3.14/employee/" with body ""
         And I eventually receive 401 response code, not accepting
             | 200 |
-        When I undeploy the API whose ID is "mtls-multiple-certs"
-        Then the response status code should be 202
 
+    Scenario: Undeploy API
+        Given The system is ready
+        And I have a valid subscription
+        When I undeploy the API whose ID is "mtls-multiple-certs "
+        Then the response status code should be 202
