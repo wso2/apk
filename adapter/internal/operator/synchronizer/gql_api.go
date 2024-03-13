@@ -61,10 +61,20 @@ func generateGQLAdapterInternalAPI(apiState APIState, gqlRoute *GQLRouteState, e
 		RateLimitPolicies:         apiState.RateLimitPolicies,
 		ResourceRateLimitPolicies: apiState.ResourceRateLimitPolicies,
 	}
+
 	if err := adapterInternalAPI.SetInfoGQLRouteCR(gqlRoute.GQLRouteCombined, resourceParams); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2631, logging.MAJOR, "Error setting GQLRoute CR info to adapterInternalAPI. %v", err))
 		return nil, nil, err
 	}
+
+	if apiState.MutualSSL != nil && apiState.MutualSSL.Required != "" && !adapterInternalAPI.GetDisableAuthentications() {
+		adapterInternalAPI.SetDisableMtls(apiState.MutualSSL.Disabled)
+		adapterInternalAPI.SetMutualSSL(apiState.MutualSSL.Required)
+		adapterInternalAPI.SetClientCerts(apiState.APIDefinition.Name, apiState.MutualSSL.ClientCertificates)
+	} else {
+		adapterInternalAPI.SetDisableMtls(true)
+	}
+
 	vHosts := getVhostsForGQLAPI(gqlRoute.GQLRouteCombined)
 	labels := getLabelsForGQLAPI(gqlRoute.GQLRouteCombined)
 	listeners, relativeSectionNames := getListenersForGQLAPI(gqlRoute.GQLRouteCombined, adapterInternalAPI.UUID)
