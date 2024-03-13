@@ -8,7 +8,7 @@ defaultVersion: false
 subscriptionValidation: false
 endpointConfigurations:
   production:
-    endpoint: "https://run.mocky.io/v3/85516819-1edd-412b-a32b-a9284705a0b4"
+    endpoint: "http://graphql-faker-service:9002/graphql"
 operations:
   - target: "hero"
     verb: "QUERY"

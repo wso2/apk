@@ -5,6 +5,7 @@ kubectl wait deployment/httpbin -n apk-integration-test --for=condition=availabl
 kubectl wait deployment/backend-retry-deployment -n apk-integration-test --for=condition=available --timeout=600s
 kubectl wait deployment/dynamic-backend -n apk-integration-test --for=condition=available --timeout=600s
 kubectl wait deployment/interceptor-service-deployment -n apk-integration-test --for=condition=available --timeout=600s
+kubectl wait deployment/graphql-faker -n apk-integration-test --for=condition=available --timeout=600s
 kubectl wait --timeout=5m -n apk-integration-test deployment/apk-test-setup-wso2-apk-adapter-deployment --for=condition=Available
 kubectl wait --timeout=15m -n apk-integration-test deployment/apk-test-setup-wso2-apk-gateway-runtime-deployment --for=condition=Available
 IP=$(kubectl get svc apk-test-setup-wso2-apk-gateway-service -n apk-integration-test --output jsonpath='{.status.loadBalancer.ingress[0].ip}')

@@ -350,7 +350,7 @@ public class DeployerClient {
         }
     }
     private isolated function deployRoutes(model:HTTPRoute[]? httproutes, model:GQLRoute[]? gqlroutes, string namespace, model:OwnerReference ownerReference) returns error? {
-        if httproutes is model:HTTPRoute[] {
+        if httproutes is model:HTTPRoute[] && httproutes.length() > 0 {
             model:HTTPRoute[] deployReadyHttproutes = httproutes;
             model:HTTPRoute[]|commons:APKError orderedHttproutes = self.createHttpRoutesOrder(httproutes);
             if orderedHttproutes is model:HTTPRoute[] {
@@ -379,7 +379,7 @@ public class DeployerClient {
                     }
                 }
             }
-        } else if gqlroutes is model:GQLRoute[] {
+        } else if gqlroutes is model:GQLRoute[] && gqlroutes.length() > 0 {
             model:GQLRoute[] deployReadyGqlRoutes = gqlroutes;
             model:GQLRoute[]|commons:APKError orderedGqlRoutes = self.createGqlRoutesOrder(gqlroutes);
             if orderedGqlRoutes is model:GQLRoute[] {
@@ -409,7 +409,6 @@ public class DeployerClient {
                 }
             }
         }
-
     }
 
     public isolated function createHttpRoutesOrder(model:HTTPRoute[] httproutes) returns model:HTTPRoute[]|commons:APKError {

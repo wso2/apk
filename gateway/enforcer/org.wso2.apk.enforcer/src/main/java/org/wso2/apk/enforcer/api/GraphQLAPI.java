@@ -80,7 +80,6 @@ public class GraphQLAPI implements API {
         String version = api.getVersion();
         String apiType = api.getApiType();
         List<ResourceConfig> resources = new ArrayList<>();
-        Map<String, String> mtlsCertificateTiers = new HashMap<>();
         String mutualSSL = api.getMutualSSL();
         boolean applicationSecurity = api.getApplicationSecurity();
 
@@ -145,7 +144,7 @@ public class GraphQLAPI implements API {
                 .resources(resources).apiType(apiType).apiLifeCycleState(apiLifeCycleState).tier(api.getTier())
                 .envType(api.getEnvType()).disableAuthentication(api.getDisableAuthentications())
                 .disableScopes(api.getDisableScopes()).trustStore(trustStore).organizationId(api.getOrganizationId())
-                .mutualSSL(mutualSSL)
+                .mutualSSL(mutualSSL).transportSecurity(api.getTransportSecurity())
                 .applicationSecurity(applicationSecurity).jwtConfigurationDto(jwtConfigurationDto)
                 .apiDefinition(apiDefinition).environment(api.getEnvironment())
                 .subscriptionValidation(api.getSubscriptionValidation()).graphQLSchemaDTO(graphQLSchemaDTO).build();

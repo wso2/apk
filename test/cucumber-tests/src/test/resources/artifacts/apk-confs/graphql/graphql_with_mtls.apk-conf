@@ -1,9 +1,9 @@
 ---
 name: "GraphQL API"
-basePath: "/graphql2"
+basePath: "/graphql"
 version: "3.14"
 type: "GRAPHQL"
-id: "graphql-with-sub"
+id: "graphql-mtls"
 defaultVersion: false
 subscriptionValidation: false
 endpointConfigurations:
@@ -38,23 +38,13 @@ operations:
     verb: "QUERY"
     secured: true
     scopes: []
-  - target: "allDroids"
-    verb: "QUERY"
-    secured: true
-    scopes: []
-  - target: "allCharacters"
-    verb: "QUERY"
-    secured: true
-    scopes: []
-  - target: "starship"
-    verb: "QUERY"
-    secured: true
-    scopes: []
-  - target: "createReview"
-    verb: "MUTATION"
-    secured: true
-    scopes: []
-  - target: "reviewAdded"
-    verb: "SUBSCRIPTION"
-    secured: true
-    scopes: []
+authentication:
+  - authType: OAuth2
+    required: mandatory
+    enabled: true
+  - authType: mTLS
+    enabled: true
+    required: mandatory
+    certificates:
+      - name: mtls-test-configmap
+        key: tls.crt

@@ -916,7 +916,6 @@ public class APIClient {
     private isolated function retrieveGQLRouteMatch(APKOperations apiOperation) returns model:GQLRouteMatch|error {
         model:GQLType? routeMatch = model:getGQLRouteMatch(<string>apiOperation.verb);
         if routeMatch is model:GQLType {
-            log:printInfo(routeMatch);
             return {'type: routeMatch, path: <string>apiOperation.target};
         } else {
             return e909052(error("Error occured retrieving GQL route match", message = "Internal Server Error", code = 909000, description = "Internal Server Error", statusCode = 500));

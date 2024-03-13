@@ -12,6 +12,113 @@ Feature: Generating APK conf for GraphQL API
         And the definition file "artifacts/definitions/graphql_sample_api.graphql"
         And make the API deployment request
         Then the response status code should be 200
+        Then I set headers
+            | Authorization | bearer ${accessToken} |
+        And I send "POST" request to "https://default.gw.wso2.com:9095/graphql/3.14" with body "{\"query\":\"{ allHumans { name } }\"}"
+        And I eventually receive 200 response code, not accepting
+            | 429 |
+            | 500 |
+
+    Scenario: Undeploy API
+        Given The system is ready
+        And I have a valid subscription
+        When I undeploy the API whose ID is "graphql-without-sub"
+        Then the response status code should be 202
+
+    Scenario: Deploying APK conf using a valid GraphQL API definition with mTLS mandatory and valid certificate
+        Given The system is ready
+        And I have a valid token with a client certificate "config-map-1.txt"
+        When I use the APK Conf file "artifacts/apk-confs/graphql/graphql_with_mtls.apk-conf"
+        And the definition file "artifacts/definitions/graphql_sample_api.graphql"
+        And make the API deployment request
+        Then the response status code should be 200
+        Then I set headers
+            | Authorization             | bearer ${accessToken} |
+            | X-WSO2-CLIENT-CERTIFICATE | ${clientCertificate}  |
+        And I send "POST" request to "https://default.gw.wso2.com:9095/graphql/3.14" with body "{\"query\":\"{ allHumans { name } }\"}"
+        And I eventually receive 200 response code, not accepting
+            | 429 |
+            | 500 |
+
+    Scenario: Undeploy API
+        Given The system is ready
+        And I have a valid subscription
+        When I undeploy the API whose ID is "graphql-mtls"
+        Then the response status code should be 202
+
+    Scenario: Deploying APK conf using a valid GraphQL API definition with mTLS mandatory and no certificate
+        Given The system is ready
+        And I have a valid subscription
+        When I use the APK Conf file "artifacts/apk-confs/graphql/graphql_with_mtls.apk-conf"
+        And the definition file "artifacts/definitions/graphql_sample_api.graphql"
+        And make the API deployment request
+        Then the response status code should be 200
+        Then I set headers
+            | Authorization | bearer ${accessToken} |
+        And I send "POST" request to "https://default.gw.wso2.com:9095/graphql/3.14" with body "{\"query\":\"{ allHumans { name } }\"}"
+        And I eventually receive 401 response code, not accepting
+            | 200 |
+            | 429 |
+            | 500 |
+
+    Scenario: Undeploy API
+        Given The system is ready
+        And I have a valid subscription
+        When I undeploy the API whose ID is "graphql-mtls"
+        Then the response status code should be 202
+
+    Scenario: Deploying APK conf using a valid GraphQL API definition with OAuth2 mandatory mTLS optional
+        Given The system is ready
+        And I have a valid token with a client certificate "config-map-1.txt"
+        When I use the APK Conf file "artifacts/apk-confs/graphql/graphql_with_mtls_optional_oauth2_mandatory.apk-conf"
+        And the definition file "artifacts/definitions/graphql_sample_api.graphql"
+        And make the API deployment request
+        Then the response status code should be 200
+        Then I set headers
+            | Authorization             | bearer ${accessToken} |
+            | X-WSO2-CLIENT-CERTIFICATE | ${clientCertificate}  |
+        And I send "POST" request to "https://default.gw.wso2.com:9095/graphql/3.14" with body "{\"query\":\"{ allHumans { name } }\"}"
+        And I eventually receive 200 response code, not accepting
+            | 429 |
+            | 500 |
+        Then I set headers
+            | Authorization | bearer ${accessToken} |
+        And I send "POST" request to "https://default.gw.wso2.com:9095/graphql/3.14" with body "{\"query\":\"{ allHumans { name } }\"}"
+        And I eventually receive 200 response code, not accepting
+            | 429 |
+            | 500 |
+        And I have a valid token with a client certificate "invalid-cert.txt"
+        Then I set headers
+            | Authorization             | bearer ${accessToken} |
+            | X-WSO2-CLIENT-CERTIFICATE | ${clientCertificate}  |
+        And I send "POST" request to "https://default.gw.wso2.com:9095/graphql/3.14" with body "{\"query\":\"{ allHumans { name } }\"}"
+        And I eventually receive 401 response code, not accepting
+            | 429 |
+            | 500 |
+
+    Scenario: Undeploy API
+        Given The system is ready
+        And I have a valid subscription
+        When I undeploy the API whose ID is "graphql-mtls-optional"
+        Then the response status code should be 202
+
+    Scenario: Deploying GraphQL API with OAuth2 disabled
+        Given The system is ready
+        And I have a valid subscription
+        When I use the APK Conf file "artifacts/apk-confs/graphql/graphql_with_disabled_auth.apk-conf"
+        And the definition file "artifacts/definitions/graphql_sample_api.graphql"
+        And make the API deployment request
+        Then the response status code should be 200
+        And I send "POST" request to "https://default.gw.wso2.com:9095/graphql/3.14" with body "{\"query\":\"{ allHumans { name } }\"}"
+        And I eventually receive 200 response code, not accepting
+            | 429 |
+            | 500 |
+
+    Scenario: Undeploy API
+        Given The system is ready
+        And I have a valid subscription
+        When I undeploy the API whose ID is "graphql-auth-disabled"
+        Then the response status code should be 202
 
     Scenario: Deploying APK conf using a valid GraphQL API definition containing a subscription resource
         Given The system is ready
@@ -30,10 +137,5 @@ Feature: Generating APK conf for GraphQL API
     Scenario Outline: Undeploy API
         Given The system is ready
         And I have a valid subscription
-        When I undeploy the API whose ID is "<apiID>"
-        Then the response status code should be <expectedStatusCode>
-
-        Examples:
-            | apiID               | expectedStatusCode |
-            | graphql-with-sub    | 202                |
-            | graphql-without-sub | 202                |
+        When I undeploy the API whose ID is "graphql-with-sub"
+        Then the response status code should be 202
