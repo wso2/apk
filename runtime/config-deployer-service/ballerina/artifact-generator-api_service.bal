@@ -16,17 +16,21 @@ isolated service /api/configurator on ep0 {
     }
     # Generate K8s Resources
     #
+    # + organization - **Organization ID** of the organization the API belongs to. 
     # + request - parameter description 
     # + return - returns can be any of following types
     # BadRequestError (Bad Request. Invalid request or validation error.)
     # InternalServerErrorError (Internal Server Error.)
-    isolated resource function post apis/'generate\-k8s\-resources(http:Request request) returns http:Response|BadRequestError|InternalServerErrorError|commons:APKError {
+    isolated resource function post apis/'generate\-k8s\-resources(string? organization, http:Request request) returns http:Response|BadRequestError|InternalServerErrorError|commons:APKError {
         ConfigGeneratorClient apiclient = new ;
-        commons:Organization organization  = {displayName: "default",
+        commons:Organization organizationObj  = {displayName: "default",
         name: "wso2-apk-default",
         organizationClaimValue: "default",
         uuid: "",
         enabled: true};
-        return check apiclient.getGeneratedK8sResources(request,organization);
+        if (organization is string) {
+            organizationObj.name = organization;
+        }
+        return check apiclient.getGeneratedK8sResources(request,organizationObj);
     }
 }

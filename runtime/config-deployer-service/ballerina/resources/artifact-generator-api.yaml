@@ -49,6 +49,8 @@ paths:
       summary: Generate K8s Resources
       description: | 
       operationId: generateK8sResources
+      parameters:
+        - $ref: "#/components/parameters/organizationId"
       requestBody:
         content:
           multipart/form-data:
@@ -123,11 +125,11 @@ components:
       schema:
         type: string
     organizationId:
-      name: X-WSO2-Organization
-      in: header
+      name: organization
+      in: query
       description: |
         **Organization ID** of the organization the API belongs to.
-      required: true
+      required: false
       style: simple
       explode: false
       schema:
