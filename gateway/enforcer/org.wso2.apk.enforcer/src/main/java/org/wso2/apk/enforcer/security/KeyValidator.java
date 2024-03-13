@@ -155,9 +155,8 @@ public class KeyValidator {
 
                         if (validationInfo.getApiName().equals(subscription.getSubscribedApi().getName())) {
                             // Validate API version
-                            String versionRegex = subscription.getSubscribedApi().getVersion();
+                            Pattern pattern = subscription.getSubscribedApi().getVersionRegexPattern();
                             String versionToMatch = validationInfo.getApiVersion();
-                            Pattern pattern = Pattern.compile(versionRegex);
                             Matcher matcher = pattern.matcher(versionToMatch);
                             if (matcher.matches()) {
                                 sub = subscription;

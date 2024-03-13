@@ -23,3 +23,16 @@ spec:
   sandbox: null
   apiProperties: []
 status: null
+
+--- 
+apiVersion: dp.wso2.com/v1alpha2
+kind: APIPolicy
+metadata:
+  name: default-api-policy
+spec:
+  default:
+    subscriptionValidation: true
+  targetRef:
+    group: dp.wso2.com
+    kind: API
+    name: default-api-definition-endpoint-test

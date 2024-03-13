@@ -59,7 +59,7 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
 
     // Maps for keeping Subscription related details.
     private Map<String, ApplicationKeyMapping> applicationKeyMappingMap = new ConcurrentHashMap<>();
-    private Map<String, ApplicationMapping> applicationMappingMap = new ConcurrentHashMap<>();
+    private Map<String, Map<String, ApplicationMapping>> applicationMappingMap = new ConcurrentHashMap<>();
     private Map<String, Application> applicationMap = new ConcurrentHashMap<>();
     private Map<String, Subscription> subscriptionMap = new ConcurrentHashMap<>();
 
@@ -91,10 +91,9 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
         Map<String, Subscription> newSubscriptionMap = new ConcurrentHashMap<>();
 
         for (SubscriptionDto subscription : subscriptionList) {
-            SubscribedAPI subscribedAPI = new SubscribedAPI();
+            SubscribedAPI subscribedAPI = new SubscribedAPI(subscription.getSubscribedApi());
             subscribedAPI.setName(subscription.getSubscribedApi().getName());
             subscribedAPI.setVersion(subscription.getSubscribedApi().getVersion());
-
             Subscription newSubscription = new Subscription();
             newSubscription.setSubscriptionId(subscription.getUuid());
             newSubscription.setSubscriptionStatus(subscription.getSubStatus());
@@ -149,14 +148,19 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
 
     public void addApplicationMappings(List<ApplicationMappingDto> applicationMappingList) {
 
-        Map<String, ApplicationMapping> newApplicationMappingMap = new ConcurrentHashMap<>();
+        Map<String, Map<String, ApplicationMapping>> newApplicationMappingMap = new ConcurrentHashMap<>();
         for (ApplicationMappingDto applicationMapping : applicationMappingList) {
             ApplicationMapping appMapping = new ApplicationMapping();
             appMapping.setUuid(applicationMapping.getUuid());
             appMapping.setApplicationUUID(applicationMapping.getApplicationRef());
             appMapping.setSubscriptionUUID(applicationMapping.getSubscriptionRef());
             appMapping.setOrganization(applicationMapping.getOrganizationId());
-            newApplicationMappingMap.put(appMapping.getCacheKey(), appMapping);
+            Map<String, ApplicationMapping> applicationMappings = new HashMap<>();
+            if (newApplicationMappingMap.containsKey(appMapping.getApplicationUUID())) {
+                applicationMappings = newApplicationMappingMap.get(appMapping.getApplicationUUID());
+            }
+            applicationMappings.put(appMapping.getCacheKey(), appMapping);
+            newApplicationMappingMap.put(appMapping.getApplicationUUID(), applicationMappings);
         }
         if (log.isDebugEnabled()) {
             log.debug("Total Application Mappings in new cache: {}", newApplicationMappingMap.size());
@@ -176,15 +180,12 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
     @Override
     public Set<ApplicationMapping> getMatchingApplicationMappings(String uuid) {
 
-        Set<ApplicationMapping> applicationMappings = new HashSet<>();
         if (StringUtils.isNotEmpty(uuid)) {
-            for (ApplicationMapping applicationMapping : applicationMappingMap.values()) {
-                if (applicationMapping.getApplicationUUID().equals(uuid)) {
-                    applicationMappings.add(applicationMapping);
-                }
+            if (applicationMappingMap.containsKey(uuid)) {
+                return new HashSet<>(applicationMappingMap.get(uuid).values());
             }
         }
-        return applicationMappings;
+        return new HashSet<>();
     }
 
     @Override
@@ -203,12 +204,8 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
     @Override
     public Subscription getMatchingSubscription(String uuid) {
 
-        for (Subscription subscription : subscriptionMap.values()) {
-            if (StringUtils.isNotEmpty(uuid)) {
-                if (subscription.getSubscriptionId().equals(uuid)) {
-                    return subscription;
-                }
-            }
+        if (StringUtils.isNotEmpty(uuid)) {
+            return subscriptionMap.get(uuid);
         }
         return null;
     }
@@ -309,11 +306,12 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
         resolvedApplicationMapping.setApplicationUUID(applicationMapping.getApplicationRef());
         resolvedApplicationMapping.setSubscriptionUUID(applicationMapping.getSubscriptionRef());
         resolvedApplicationMapping.setOrganization(applicationMapping.getOrganization());
-        if (applicationMappingMap.containsKey(resolvedApplicationMapping.getCacheKey())) {
-            applicationMappingMap.replace(resolvedApplicationMapping.getCacheKey(), resolvedApplicationMapping);
-        } else {
-            applicationMappingMap.put(resolvedApplicationMapping.getCacheKey(), resolvedApplicationMapping);
+        Map<String, ApplicationMapping> applicationMappings = new HashMap<>();
+        if (applicationMappingMap.containsKey(resolvedApplicationMapping.getApplicationUUID())) {
+            applicationMappings = applicationMappingMap.get(resolvedApplicationMapping.getApplicationUUID());
         }
+        applicationMappings.put(resolvedApplicationMapping.getCacheKey(), resolvedApplicationMapping);
+        applicationMappingMap.put(resolvedApplicationMapping.getApplicationUUID(), applicationMappings);
     }
 
     @Override
@@ -344,7 +342,11 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
         resolvedApplicationMapping.setApplicationUUID(applicationMapping.getApplicationRef());
         resolvedApplicationMapping.setSubscriptionUUID(applicationMapping.getSubscriptionRef());
         resolvedApplicationMapping.setOrganization(applicationMapping.getOrganization());
-        applicationMappingMap.remove(resolvedApplicationMapping.getCacheKey());
+        Map<String, ApplicationMapping> applicationMappings =
+                applicationMappingMap.get(applicationMapping.getApplicationRef());
+        if (applicationMappings != null) {
+            applicationMappings.remove(resolvedApplicationMapping.getCacheKey());
+        }
     }
 
     @Override
