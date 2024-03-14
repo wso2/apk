@@ -42,6 +42,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
+	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -568,7 +569,7 @@ func (apiReconciler *APIReconciler) getScopesForHTTPRoute(ctx context.Context,
 	scopes := make(map[string]dpv1alpha1.Scope)
 	for _, rule := range httpRoute.Spec.Rules {
 		for _, filter := range rule.Filters {
-			if filter.Type == gwapiv1b1.HTTPRouteFilterExtensionRef && filter.ExtensionRef != nil &&
+			if filter.Type == gwapiv1.HTTPRouteFilterExtensionRef && filter.ExtensionRef != nil &&
 				filter.ExtensionRef.Kind == constants.KindScope {
 				scope := &dpv1alpha1.Scope{}
 				if err := utils.ResolveRef(ctx, apiReconciler.client, &api,
@@ -1563,7 +1564,7 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 			var scopes []string
 			for _, rule := range httpRoute.Spec.Rules {
 				for _, filter := range rule.Filters {
-					if filter.Type == gwapiv1b1.HTTPRouteFilterExtensionRef {
+					if filter.Type == gwapiv1.HTTPRouteFilterExtensionRef {
 						if filter.ExtensionRef != nil && filter.ExtensionRef.Kind == constants.KindScope {
 							scopes = append(scopes, types.NamespacedName{
 								Namespace: httpRoute.Namespace,
@@ -1789,7 +1790,7 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 			var apis []string
 			if ratelimitPolicy.Spec.TargetRef.Kind == constants.KindAPI {
 
-				namespace, err := utils.ValidateAndRetrieveNamespace((*gwapiv1b1.Namespace)(ratelimitPolicy.Spec.TargetRef.Namespace), ratelimitPolicy.Namespace)
+				namespace, err := utils.ValidateAndRetrieveNamespace((*gwapiv1.Namespace)(ratelimitPolicy.Spec.TargetRef.Namespace), ratelimitPolicy.Namespace)
 
 				if err != nil {
 					loggers.LoggerAPKOperator.Errorf("Namespace mismatch. TargetRef %s needs to be in the same namespace as the RatelimitPolicy %s. Expected: %s, Given: %s",

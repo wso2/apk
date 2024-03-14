@@ -40,6 +40,7 @@ import (
 	"github.com/wso2/apk/adapter/internal/oasparser/model"
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/durationpb"
+	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
@@ -76,14 +77,14 @@ func CreateListenerByGateway(gateway *gwapiv1b1.Gateway, resolvedListenerCerts m
 	conf := config.ReadConfigs()
 	// Prepare a map that contains all the listerners identified in all of the gateways that reconciled so far.
 	// This map contains port - listeners per protocol with port
-	protocolListenerMap := make(map[gwapiv1b1.ProtocolType]map[uint32][]gwapiv1b1.Listener)
+	protocolListenerMap := make(map[gwapiv1.ProtocolType]map[uint32][]gwapiv1.Listener)
 	for _, listener := range gateway.Spec.Listeners {
 		port := uint32(listener.Port)
 		if protocolListenerMap[listener.Protocol] == nil {
-			protocolListenerMap[listener.Protocol] = make(map[uint32][]gwapiv1b1.Listener)
+			protocolListenerMap[listener.Protocol] = make(map[uint32][]gwapiv1.Listener)
 		}
 		if protocolListenerMap[listener.Protocol][port] == nil {
-			protocolListenerMap[listener.Protocol][port] = []gwapiv1b1.Listener{}
+			protocolListenerMap[listener.Protocol][port] = []gwapiv1.Listener{}
 		}
 		protocolListenerMap[listener.Protocol][port] = append(protocolListenerMap[listener.Protocol][port], listener)
 	}
@@ -113,7 +114,7 @@ func CreateListenerByGateway(gateway *gwapiv1b1.Gateway, resolvedListenerCerts m
 					ServerNames: []string{string(*listenerObj.Hostname)},
 				}
 				var transportSocket *corev3.TransportSocket
-				if protocol == gwapiv1b1.HTTPSProtocolType {
+				if protocol == gwapiv1.HTTPSProtocolType {
 					publicCertData := resolvedListenerCerts[string(listenerObj.Name)]["tls.crt"]
 					privateKeyData := resolvedListenerCerts[string(listenerObj.Name)]["tls.key"]
 					var tlsFilter *tlsv3.DownstreamTlsContext
@@ -240,7 +241,7 @@ func CreateListenerByGateway(gateway *gwapiv1b1.Gateway, resolvedListenerCerts m
 
 				// add filters
 				filters = append(filters, &connectionManagerFilterP)
-				if protocol == gwapiv1b1.HTTPSProtocolType {
+				if protocol == gwapiv1.HTTPSProtocolType {
 					filterChains = append(filterChains, &listenerv3.FilterChain{
 						FilterChainMatch: filterChainMatch,
 						Filters:          filters,
@@ -254,7 +255,7 @@ func CreateListenerByGateway(gateway *gwapiv1b1.Gateway, resolvedListenerCerts m
 
 			}
 
-			if protocol == gwapiv1b1.HTTPSProtocolType {
+			if protocol == gwapiv1.HTTPSProtocolType {
 				listenerHostAddress := defaultListenerHostAddress
 				securedListenerAddress := &corev3.Address_SocketAddress{
 					SocketAddress: &corev3.SocketAddress{
@@ -296,7 +297,7 @@ func CreateListenerByGateway(gateway *gwapiv1b1.Gateway, resolvedListenerCerts m
 				loggers.LoggerOasparser.Info("No SecuredListenerPort is included.")
 			}
 
-			if protocol == gwapiv1b1.HTTPProtocolType {
+			if protocol == gwapiv1.HTTPProtocolType {
 				listenerHostAddress := defaultListenerHostAddress
 				listenerAddress := &corev3.Address_SocketAddress{
 					SocketAddress: &corev3.SocketAddress{

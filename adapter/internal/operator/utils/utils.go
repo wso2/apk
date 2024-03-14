@@ -41,6 +41,7 @@ import (
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/types"
 	k8client "sigs.k8s.io/controller-runtime/pkg/client"
+	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
@@ -73,7 +74,7 @@ func GetNamespace(namespace *gwapiv1b1.Namespace, defaultNamespace string) strin
 }
 
 // ValidateAndRetrieveNamespace checks if the child resource's namespace is the same as the parent resource's namespace
-func ValidateAndRetrieveNamespace(namespace *gwapiv1b1.Namespace, defaultNamespace string) (string, error) {
+func ValidateAndRetrieveNamespace(namespace *gwapiv1.Namespace, defaultNamespace string) (string, error) {
 	if namespace != nil && *namespace != "" {
 		if string(*namespace) == defaultNamespace {
 			return string(*namespace), nil
