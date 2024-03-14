@@ -18,7 +18,6 @@
 package config
 
 // Configuration object which is populated with default values.
-// Default values
 var defaultConfig = &Config{
 	CommonController: commoncontroller{
 		Server: server{
