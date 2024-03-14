@@ -85,7 +85,7 @@ wso2:
           strategy: RollingUpdate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/apk-config-deployer-service:1.1.0-alpha
+          image: wso2/apk-config-deployer-service:latest
           # configs:
           #   tls:
           #     secretName: "my-secret"
@@ -111,7 +111,7 @@ wso2:
           strategy: RollingUpdate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/apk-adapter:1.1.0-alpha
+          image: wso2/apk-adapter:latest
           security:
             sslHostname: "adapter"
         #     logging:
@@ -236,7 +236,7 @@ wso2:
               failureThreshold: 5
             strategy: RollingUpdate
             imagePullPolicy: Always
-            image: wso2/apk-enforcer:1.1.0-alpha
+            image: wso2/apk-enforcer:latest
             security:
               sslHostname: "enforcer"
 #            logging:
