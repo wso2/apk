@@ -1,0 +1,34 @@
+wso2:
+  apk:
+    dp:
+      adapter:
+        deployment:
+          resources:
+          requests:
+            memory: 500Mi
+            cpu: 500m
+          limits:
+            memory: 500Mi
+            cpu: 500m
+      gatewayRuntime:
+        deployment:
+          enforcer:
+            resources:
+              requests:
+                memory: 1000Mi
+                cpu: 1000m
+              limits:
+                memory: 1000Mi
+                cpu: 1000m
+          router:
+            resources:
+              requests:
+                memory: 500Mi
+                cpu: 1000m
+              limites:
+                memory: 500Mi
+                cpu: 1000m
+        service:
+          annotations:
+             "service.beta.kubernetes.io/azure-load-balancer-internal": "true"
+             "service.beta.kubernetes.io/azure-load-balancer-internal-subnet": "default"

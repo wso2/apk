@@ -1,0 +1,3400 @@
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-600
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-601
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-602
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-603
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-604
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-605
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-606
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-607
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-608
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-609
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-610
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-611
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-612
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-613
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-614
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-615
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-616
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-617
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-618
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-619
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-620
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-621
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-622
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-623
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-624
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-625
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-626
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-627
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-628
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-629
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-630
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-631
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-632
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-633
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-634
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-635
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-636
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-637
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-638
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-639
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-640
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-641
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-642
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-643
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-644
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-645
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-646
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-647
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-648
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-649
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-650
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-651
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-652
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-653
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-654
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-655
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-656
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-657
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-658
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-659
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-660
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-661
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-662
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-663
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-664
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-665
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-666
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-667
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-668
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-669
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-670
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-671
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-672
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-673
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-674
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-675
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-676
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-677
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-678
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-679
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-680
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-681
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-682
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-683
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-684
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-685
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-686
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-687
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-688
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-689
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-690
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-691
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-692
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-693
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-694
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-695
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-696
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-697
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-698
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription-699
+spec:
+  api:
+    name: APIDefinitionEndpointDefault
+    version: "3.14"
+  organization: default
+  subscriptionStatus: UNBLOCKED
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-600
+spec:
+  name: application-600
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 7b1912ab-c5c5-4b94-9ee1-1a99def417fa
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-601
+spec:
+  name: application-601
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 0d3040d1-6b79-414e-b806-4c53b5fb4edf
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-602
+spec:
+  name: application-602
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 0b68b7c4-a391-4ac1-9b45-5a01e65532ad
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-603
+spec:
+  name: application-603
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 76f73beb-4d36-4c8d-8867-1f25038964ac
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-604
+spec:
+  name: application-604
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 06efca6e-1c12-432f-b970-894680ea774f
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-605
+spec:
+  name: application-605
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 0c5564c5-0ba3-41ee-b383-80d07e83b933
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-606
+spec:
+  name: application-606
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: c8065f03-624a-48fe-b0eb-c3a369686c01
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-607
+spec:
+  name: application-607
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 1223d896-8a1e-4bd3-8388-36cf6b11487a
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-608
+spec:
+  name: application-608
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 3078417a-b5e5-4ea3-8b6c-93bcf671aae1
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-609
+spec:
+  name: application-609
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 3f0a0fe5-c99c-464a-91e6-5c8815ce143e
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-610
+spec:
+  name: application-610
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 5ee875f3-5c7e-4869-88aa-63abc52aae82
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-611
+spec:
+  name: application-611
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: efde661f-6082-4b55-877b-9a6be87ab3a4
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-612
+spec:
+  name: application-612
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: c44660fe-b2bf-42bc-8b60-8d601cae819e
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-613
+spec:
+  name: application-613
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 8dcf26ba-a002-4168-95a1-ff187d95eccc
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-614
+spec:
+  name: application-614
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 44e2f454-c451-4b5c-871b-391674281976
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-615
+spec:
+  name: application-615
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: d663a808-094d-4d21-8bc8-c8d330a2c6d4
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-616
+spec:
+  name: application-616
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: fe4435a1-9ff6-44bb-a92b-d5cea479b3ec
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-617
+spec:
+  name: application-617
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 860d4fd0-3241-4f0b-9788-bdc35227550f
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-618
+spec:
+  name: application-618
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 56c71b57-c2a6-4966-8144-8ee67ce806e6
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-619
+spec:
+  name: application-619
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: dbdd4560-99ac-4f48-9a33-c8ba276e4f68
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-620
+spec:
+  name: application-620
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: b6404b17-cbc2-4c8d-bb85-b69b3563a111
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-621
+spec:
+  name: application-621
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 95fed0f2-b435-4b0d-90cf-005a875f813f
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-622
+spec:
+  name: application-622
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: c0ef1da2-1ab2-44b4-a4ef-48f8f0944b2d
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-623
+spec:
+  name: application-623
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 5105e15f-e9be-49e5-ba40-40d2764d2065
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-624
+spec:
+  name: application-624
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: fdea00f4-25d9-4e38-8976-fac1a53878c6
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-625
+spec:
+  name: application-625
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: c5f9dba4-8aaa-4074-956b-a6195ebd24bd
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-626
+spec:
+  name: application-626
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: cb634f33-3666-4b2c-b0c5-2095a05898e4
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-627
+spec:
+  name: application-627
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: b784d233-6a7e-4adb-9288-71dd77efa825
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-628
+spec:
+  name: application-628
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 2284dcd8-2374-48d4-9d9f-0b3040516602
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-629
+spec:
+  name: application-629
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: b690f912-62a3-47e2-9af6-779c511cd50f
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-630
+spec:
+  name: application-630
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: aedd68a3-2abc-4aec-b186-bda9231ab606
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-631
+spec:
+  name: application-631
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 8f70090f-6033-4c32-9aa8-31cfe981d849
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-632
+spec:
+  name: application-632
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 351cea9a-7be6-4c8c-8773-02948989687d
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-633
+spec:
+  name: application-633
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 85026c11-03ef-4e2b-8871-5b14c31f9a8d
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-634
+spec:
+  name: application-634
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: d4bde498-9fde-41a4-ad54-d119a520176d
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-635
+spec:
+  name: application-635
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 64582cf4-5984-4402-be8e-2f2df370ed4e
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-636
+spec:
+  name: application-636
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 999d8dc5-0b0e-4b3e-875e-773199a984b5
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-637
+spec:
+  name: application-637
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 5de2aeb9-3910-4c55-80df-698fa75bd48a
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-638
+spec:
+  name: application-638
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 8d33bb39-10b6-450d-b205-0274df5cac94
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-639
+spec:
+  name: application-639
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 7ef7e3ef-4a2a-4190-aab4-aa54c7ee9378
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-640
+spec:
+  name: application-640
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: d1d8b45d-81e6-4307-ab2f-7e74cb9df0b1
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-641
+spec:
+  name: application-641
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 5999b79e-45fa-4366-ae1c-5b342db9512b
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-642
+spec:
+  name: application-642
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: b375ed19-214a-46c7-b5b5-84b259cab9bb
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-643
+spec:
+  name: application-643
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: d1f0533f-79ed-4fc2-b449-d669aa324d20
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-644
+spec:
+  name: application-644
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 2e12db53-6a46-4c06-b861-96ba085cacef
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-645
+spec:
+  name: application-645
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 5878d9f0-79ff-42a2-8306-77671b0ca7d4
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-646
+spec:
+  name: application-646
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: c2c5bf35-5881-4dfa-a7ab-6bbeb9c90fce
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-647
+spec:
+  name: application-647
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: fa2a067f-acf3-4686-a4d4-fe60032bdd06
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-648
+spec:
+  name: application-648
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 7d078ae0-0eaf-4077-85dd-67f9584d78cf
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-649
+spec:
+  name: application-649
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: de92340f-be2e-4878-a6b6-afb742f4ff2e
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-650
+spec:
+  name: application-650
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: b5bd5cc3-a5ae-4382-887f-c13a5c197699
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-651
+spec:
+  name: application-651
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 11c9a7ab-2b59-4fa0-bf6b-b48562450494
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-652
+spec:
+  name: application-652
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: a3f206a1-744d-4dfc-972e-5b834e5cc2f0
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-653
+spec:
+  name: application-653
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 95782e38-b6de-4a49-87c1-7790e3a6b8c6
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-654
+spec:
+  name: application-654
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 67930b74-f7b9-4999-aba9-79887f0b7ad0
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-655
+spec:
+  name: application-655
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: a24c259a-1f32-4b83-90a9-d866c8196a2a
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-656
+spec:
+  name: application-656
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 54c6062d-015c-48a9-9767-f0752d332540
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-657
+spec:
+  name: application-657
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 742eb9e6-0016-46d4-98d9-548769966843
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-658
+spec:
+  name: application-658
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: cecd114a-49c1-4d6f-9f57-b023667ce646
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-659
+spec:
+  name: application-659
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 00b81dc3-d752-4423-b4f6-d92baf6412e5
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-660
+spec:
+  name: application-660
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: f1530089-cad3-454a-a54c-88536343b90e
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-661
+spec:
+  name: application-661
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: c5575791-73cb-46a0-9ee6-2d0ac5fb5f17
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-662
+spec:
+  name: application-662
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 3ac4b127-bac4-48c1-a98f-ed12fc5582e2
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-663
+spec:
+  name: application-663
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: f0409cac-f1a7-4402-a52a-020aa90c648d
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-664
+spec:
+  name: application-664
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: f5f2efb6-3524-4ca7-af82-e2cd7bf6f617
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-665
+spec:
+  name: application-665
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 41670056-50bc-4cfd-922c-01f1701e06bf
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-666
+spec:
+  name: application-666
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 77e1ca54-7754-4df7-9253-183559fb940c
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-667
+spec:
+  name: application-667
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 2867ad8e-4e2e-4622-afa7-63274eda5380
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-668
+spec:
+  name: application-668
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 63c0a2f0-97a7-48d4-9bd7-1a51ce585533
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-669
+spec:
+  name: application-669
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 01d31ce8-33a3-4296-9c62-4318f94ecdb6
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-670
+spec:
+  name: application-670
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 9f6a387f-1b75-4436-8601-42f153a69101
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-671
+spec:
+  name: application-671
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 9ec96c87-067f-42b7-9b4e-ac5be32489e1
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-672
+spec:
+  name: application-672
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 48fc6d7a-edcd-4403-9941-97ec8db08610
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-673
+spec:
+  name: application-673
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: e161c72b-6f44-4b46-82c9-8729a1082619
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-674
+spec:
+  name: application-674
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: bbead6b3-8de9-4e13-a76a-58a923dd90b7
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-675
+spec:
+  name: application-675
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: ec88dce9-fd8f-495c-bdfb-e2aa60c4ada7
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-676
+spec:
+  name: application-676
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: abbc6e76-5fd7-4983-9388-441f9e5d970d
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-677
+spec:
+  name: application-677
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 53d91815-dbb9-4764-98f8-f5ac4af1a279
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-678
+spec:
+  name: application-678
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 9946166e-e1c1-4d37-a0cb-96b6cac96f33
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-679
+spec:
+  name: application-679
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 5a73cfd3-80ab-4bb7-bfba-56ae5e2c8515
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-680
+spec:
+  name: application-680
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 66c5387c-5296-45a2-b319-c593f5f8fed8
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-681
+spec:
+  name: application-681
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 68f9d551-e696-4dcd-b7d4-546bf609539f
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-682
+spec:
+  name: application-682
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: a2d1fb64-aa2a-4d0f-b25f-34fb0cc23550
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-683
+spec:
+  name: application-683
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 390cd012-6d02-435d-9f4e-70316ef75296
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-684
+spec:
+  name: application-684
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: e03c5d02-8359-459a-b515-9f59168a78e3
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-685
+spec:
+  name: application-685
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 64d0056e-5015-45ac-9a88-47df70047cf4
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-686
+spec:
+  name: application-686
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: f96e2810-32b9-4342-96d4-d2002dc675ca
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-687
+spec:
+  name: application-687
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: a79bd033-2922-4620-82ed-196d6c248b7a
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-688
+spec:
+  name: application-688
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 9fae1ed6-19f2-4ad3-aba6-b1ccf7ecaa7b
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-689
+spec:
+  name: application-689
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 703cf58d-06ac-4a0a-bef3-3ea0ab7114b1
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-690
+spec:
+  name: application-690
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 141d7c63-807c-4379-8477-bc2732dabb0c
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-691
+spec:
+  name: application-691
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 924defe4-a041-428c-b0d0-cece98609448
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-692
+spec:
+  name: application-692
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: d66bb374-1712-45c2-b072-085e310f9297
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-693
+spec:
+  name: application-693
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 7228e94b-87b9-486d-b8fa-2c792eb0ec3a
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-694
+spec:
+  name: application-694
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: b072ec9f-de45-4e8e-825e-7165e652186f
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-695
+spec:
+  name: application-695
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 7030bd53-9c21-40f0-ac38-9b84b009d23e
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-696
+spec:
+  name: application-696
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: fde0742a-c290-479c-b387-956052333ac9
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-697
+spec:
+  name: application-697
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 5c92caf4-2004-45bd-8ba7-b3807310c48c
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-698
+spec:
+  name: application-698
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: aa39edb5-2d1a-4819-9f5f-716f306fcb1a
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application-699
+spec:
+  name: application-699
+  organization: default
+  owner: admin
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: 4476fa44-0a75-4343-8383-f71b4f038846
+          envId: Default
+          keyType: PRODUCTION
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-600
+spec:
+  applicationRef: perf-test-application-600
+  subscriptionRef: perf-test-subscription-600
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-601
+spec:
+  applicationRef: perf-test-application-601
+  subscriptionRef: perf-test-subscription-601
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-602
+spec:
+  applicationRef: perf-test-application-602
+  subscriptionRef: perf-test-subscription-602
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-603
+spec:
+  applicationRef: perf-test-application-603
+  subscriptionRef: perf-test-subscription-603
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-604
+spec:
+  applicationRef: perf-test-application-604
+  subscriptionRef: perf-test-subscription-604
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-605
+spec:
+  applicationRef: perf-test-application-605
+  subscriptionRef: perf-test-subscription-605
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-606
+spec:
+  applicationRef: perf-test-application-606
+  subscriptionRef: perf-test-subscription-606
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-607
+spec:
+  applicationRef: perf-test-application-607
+  subscriptionRef: perf-test-subscription-607
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-608
+spec:
+  applicationRef: perf-test-application-608
+  subscriptionRef: perf-test-subscription-608
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-609
+spec:
+  applicationRef: perf-test-application-609
+  subscriptionRef: perf-test-subscription-609
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-610
+spec:
+  applicationRef: perf-test-application-610
+  subscriptionRef: perf-test-subscription-610
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-611
+spec:
+  applicationRef: perf-test-application-611
+  subscriptionRef: perf-test-subscription-611
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-612
+spec:
+  applicationRef: perf-test-application-612
+  subscriptionRef: perf-test-subscription-612
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-613
+spec:
+  applicationRef: perf-test-application-613
+  subscriptionRef: perf-test-subscription-613
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-614
+spec:
+  applicationRef: perf-test-application-614
+  subscriptionRef: perf-test-subscription-614
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-615
+spec:
+  applicationRef: perf-test-application-615
+  subscriptionRef: perf-test-subscription-615
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-616
+spec:
+  applicationRef: perf-test-application-616
+  subscriptionRef: perf-test-subscription-616
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-617
+spec:
+  applicationRef: perf-test-application-617
+  subscriptionRef: perf-test-subscription-617
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-618
+spec:
+  applicationRef: perf-test-application-618
+  subscriptionRef: perf-test-subscription-618
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-619
+spec:
+  applicationRef: perf-test-application-619
+  subscriptionRef: perf-test-subscription-619
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-620
+spec:
+  applicationRef: perf-test-application-620
+  subscriptionRef: perf-test-subscription-620
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-621
+spec:
+  applicationRef: perf-test-application-621
+  subscriptionRef: perf-test-subscription-621
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-622
+spec:
+  applicationRef: perf-test-application-622
+  subscriptionRef: perf-test-subscription-622
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-623
+spec:
+  applicationRef: perf-test-application-623
+  subscriptionRef: perf-test-subscription-623
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-624
+spec:
+  applicationRef: perf-test-application-624
+  subscriptionRef: perf-test-subscription-624
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-625
+spec:
+  applicationRef: perf-test-application-625
+  subscriptionRef: perf-test-subscription-625
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-626
+spec:
+  applicationRef: perf-test-application-626
+  subscriptionRef: perf-test-subscription-626
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-627
+spec:
+  applicationRef: perf-test-application-627
+  subscriptionRef: perf-test-subscription-627
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-628
+spec:
+  applicationRef: perf-test-application-628
+  subscriptionRef: perf-test-subscription-628
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-629
+spec:
+  applicationRef: perf-test-application-629
+  subscriptionRef: perf-test-subscription-629
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-630
+spec:
+  applicationRef: perf-test-application-630
+  subscriptionRef: perf-test-subscription-630
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-631
+spec:
+  applicationRef: perf-test-application-631
+  subscriptionRef: perf-test-subscription-631
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-632
+spec:
+  applicationRef: perf-test-application-632
+  subscriptionRef: perf-test-subscription-632
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-633
+spec:
+  applicationRef: perf-test-application-633
+  subscriptionRef: perf-test-subscription-633
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-634
+spec:
+  applicationRef: perf-test-application-634
+  subscriptionRef: perf-test-subscription-634
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-635
+spec:
+  applicationRef: perf-test-application-635
+  subscriptionRef: perf-test-subscription-635
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-636
+spec:
+  applicationRef: perf-test-application-636
+  subscriptionRef: perf-test-subscription-636
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-637
+spec:
+  applicationRef: perf-test-application-637
+  subscriptionRef: perf-test-subscription-637
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-638
+spec:
+  applicationRef: perf-test-application-638
+  subscriptionRef: perf-test-subscription-638
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-639
+spec:
+  applicationRef: perf-test-application-639
+  subscriptionRef: perf-test-subscription-639
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-640
+spec:
+  applicationRef: perf-test-application-640
+  subscriptionRef: perf-test-subscription-640
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-641
+spec:
+  applicationRef: perf-test-application-641
+  subscriptionRef: perf-test-subscription-641
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-642
+spec:
+  applicationRef: perf-test-application-642
+  subscriptionRef: perf-test-subscription-642
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-643
+spec:
+  applicationRef: perf-test-application-643
+  subscriptionRef: perf-test-subscription-643
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-644
+spec:
+  applicationRef: perf-test-application-644
+  subscriptionRef: perf-test-subscription-644
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-645
+spec:
+  applicationRef: perf-test-application-645
+  subscriptionRef: perf-test-subscription-645
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-646
+spec:
+  applicationRef: perf-test-application-646
+  subscriptionRef: perf-test-subscription-646
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-647
+spec:
+  applicationRef: perf-test-application-647
+  subscriptionRef: perf-test-subscription-647
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-648
+spec:
+  applicationRef: perf-test-application-648
+  subscriptionRef: perf-test-subscription-648
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-649
+spec:
+  applicationRef: perf-test-application-649
+  subscriptionRef: perf-test-subscription-649
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-650
+spec:
+  applicationRef: perf-test-application-650
+  subscriptionRef: perf-test-subscription-650
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-651
+spec:
+  applicationRef: perf-test-application-651
+  subscriptionRef: perf-test-subscription-651
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-652
+spec:
+  applicationRef: perf-test-application-652
+  subscriptionRef: perf-test-subscription-652
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-653
+spec:
+  applicationRef: perf-test-application-653
+  subscriptionRef: perf-test-subscription-653
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-654
+spec:
+  applicationRef: perf-test-application-654
+  subscriptionRef: perf-test-subscription-654
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-655
+spec:
+  applicationRef: perf-test-application-655
+  subscriptionRef: perf-test-subscription-655
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-656
+spec:
+  applicationRef: perf-test-application-656
+  subscriptionRef: perf-test-subscription-656
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-657
+spec:
+  applicationRef: perf-test-application-657
+  subscriptionRef: perf-test-subscription-657
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-658
+spec:
+  applicationRef: perf-test-application-658
+  subscriptionRef: perf-test-subscription-658
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-659
+spec:
+  applicationRef: perf-test-application-659
+  subscriptionRef: perf-test-subscription-659
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-660
+spec:
+  applicationRef: perf-test-application-660
+  subscriptionRef: perf-test-subscription-660
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-661
+spec:
+  applicationRef: perf-test-application-661
+  subscriptionRef: perf-test-subscription-661
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-662
+spec:
+  applicationRef: perf-test-application-662
+  subscriptionRef: perf-test-subscription-662
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-663
+spec:
+  applicationRef: perf-test-application-663
+  subscriptionRef: perf-test-subscription-663
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-664
+spec:
+  applicationRef: perf-test-application-664
+  subscriptionRef: perf-test-subscription-664
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-665
+spec:
+  applicationRef: perf-test-application-665
+  subscriptionRef: perf-test-subscription-665
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-666
+spec:
+  applicationRef: perf-test-application-666
+  subscriptionRef: perf-test-subscription-666
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-667
+spec:
+  applicationRef: perf-test-application-667
+  subscriptionRef: perf-test-subscription-667
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-668
+spec:
+  applicationRef: perf-test-application-668
+  subscriptionRef: perf-test-subscription-668
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-669
+spec:
+  applicationRef: perf-test-application-669
+  subscriptionRef: perf-test-subscription-669
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-670
+spec:
+  applicationRef: perf-test-application-670
+  subscriptionRef: perf-test-subscription-670
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-671
+spec:
+  applicationRef: perf-test-application-671
+  subscriptionRef: perf-test-subscription-671
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-672
+spec:
+  applicationRef: perf-test-application-672
+  subscriptionRef: perf-test-subscription-672
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-673
+spec:
+  applicationRef: perf-test-application-673
+  subscriptionRef: perf-test-subscription-673
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-674
+spec:
+  applicationRef: perf-test-application-674
+  subscriptionRef: perf-test-subscription-674
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-675
+spec:
+  applicationRef: perf-test-application-675
+  subscriptionRef: perf-test-subscription-675
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-676
+spec:
+  applicationRef: perf-test-application-676
+  subscriptionRef: perf-test-subscription-676
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-677
+spec:
+  applicationRef: perf-test-application-677
+  subscriptionRef: perf-test-subscription-677
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-678
+spec:
+  applicationRef: perf-test-application-678
+  subscriptionRef: perf-test-subscription-678
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-679
+spec:
+  applicationRef: perf-test-application-679
+  subscriptionRef: perf-test-subscription-679
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-680
+spec:
+  applicationRef: perf-test-application-680
+  subscriptionRef: perf-test-subscription-680
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-681
+spec:
+  applicationRef: perf-test-application-681
+  subscriptionRef: perf-test-subscription-681
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-682
+spec:
+  applicationRef: perf-test-application-682
+  subscriptionRef: perf-test-subscription-682
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-683
+spec:
+  applicationRef: perf-test-application-683
+  subscriptionRef: perf-test-subscription-683
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-684
+spec:
+  applicationRef: perf-test-application-684
+  subscriptionRef: perf-test-subscription-684
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-685
+spec:
+  applicationRef: perf-test-application-685
+  subscriptionRef: perf-test-subscription-685
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-686
+spec:
+  applicationRef: perf-test-application-686
+  subscriptionRef: perf-test-subscription-686
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-687
+spec:
+  applicationRef: perf-test-application-687
+  subscriptionRef: perf-test-subscription-687
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-688
+spec:
+  applicationRef: perf-test-application-688
+  subscriptionRef: perf-test-subscription-688
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-689
+spec:
+  applicationRef: perf-test-application-689
+  subscriptionRef: perf-test-subscription-689
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-690
+spec:
+  applicationRef: perf-test-application-690
+  subscriptionRef: perf-test-subscription-690
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-691
+spec:
+  applicationRef: perf-test-application-691
+  subscriptionRef: perf-test-subscription-691
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-692
+spec:
+  applicationRef: perf-test-application-692
+  subscriptionRef: perf-test-subscription-692
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-693
+spec:
+  applicationRef: perf-test-application-693
+  subscriptionRef: perf-test-subscription-693
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-694
+spec:
+  applicationRef: perf-test-application-694
+  subscriptionRef: perf-test-subscription-694
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-695
+spec:
+  applicationRef: perf-test-application-695
+  subscriptionRef: perf-test-subscription-695
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-696
+spec:
+  applicationRef: perf-test-application-696
+  subscriptionRef: perf-test-subscription-696
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-697
+spec:
+  applicationRef: perf-test-application-697
+  subscriptionRef: perf-test-subscription-697
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-698
+spec:
+  applicationRef: perf-test-application-698
+  subscriptionRef: perf-test-subscription-698
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping-699
+spec:
+  applicationRef: perf-test-application-699
+  subscriptionRef: perf-test-subscription-699
+---

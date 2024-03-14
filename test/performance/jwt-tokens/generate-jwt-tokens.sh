@@ -71,6 +71,6 @@ fi
 
 generate_tokens_command="java -Xms128m -Xmx128m -jar $script_dir/jwt-generator-0.1.1-SNAPSHOT.jar \
         --key-store-file $script_dir/keystore.jks --consumer-key $consumer_key\
-        --tokens-count $tokens_count --output-file $tokens_file"
+        --tokens-count $tokens_count --output-file $tokens_file --issuer "https://idp1.com""
 echo "Generating Tokens: $generate_tokens_command"
 $generate_tokens_command

@@ -105,7 +105,7 @@ sudo apt install openjdk-11-jre-headless
 sudo snap install kubectl --classic
 wget https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-5.5.tgz
 tar -xvzf  apache-jmeter-5.5.tgz apache-jmeter-5.5
-sudo apt  install jq
+sudo snap install jq
 
 cd apache-jmeter-5.5/bin/
 mkdir payloads

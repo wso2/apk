@@ -1,0 +1,19 @@
+kind: TokenIssuer
+apiVersion: dp.wso2.com/v1alpha1
+metadata:
+  name: perf-test-token-issuer
+spec:
+  consumerKeyClaim: azp
+  issuer: https://idp1.com
+  name: idp-1
+  organization: default
+  scopesClaim: scope
+  signatureValidation:
+    certificate:
+      configMapRef:
+        name: custom-jwt-cm
+        key: "wso2carboncustom.pem"
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: wso2-apk-default

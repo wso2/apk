@@ -1,0 +1,35 @@
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: perf-test-subscription
+spec:
+  api:
+    name: "APIDefinitionEndpointDefault"
+    version: "3.14"
+  organization: "default"
+  subscriptionStatus: "UNBLOCKED"
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Application
+metadata:
+  name: perf-test-application
+spec:
+  name: "application1"
+  organization: "default"
+  owner: "admin"
+  securitySchemes:
+    oauth2:
+      environments:
+        - appId: "123-456-789"
+          envId: "Default"
+          keyType: "PRODUCTION"
+
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: perf-test-application-mapping
+spec:
+  applicationRef: "perf-test-application"
+  subscriptionRef: "perf-test-subscription"
+---

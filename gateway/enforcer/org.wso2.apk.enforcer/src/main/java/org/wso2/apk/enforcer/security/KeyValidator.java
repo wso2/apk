@@ -144,7 +144,7 @@ public class KeyValidator {
             if (keyMapping != null) {
                 // Get application and application mapping using application UUID
                 String applicationUUID = keyMapping.getApplicationUUID();
-                app = datastore.getMatchingApplication(applicationUUID);
+                app = datastore.getApplicationById(applicationUUID);
                 appMappings = datastore.getMatchingApplicationMappings(applicationUUID);
 
                 if (appMappings != null && app != null) {
@@ -155,9 +155,8 @@ public class KeyValidator {
 
                         if (validationInfo.getApiName().equals(subscription.getSubscribedApi().getName())) {
                             // Validate API version
-                            String versionRegex = subscription.getSubscribedApi().getVersion();
+                            Pattern pattern = subscription.getSubscribedApi().getVersionRegexPattern();
                             String versionToMatch = validationInfo.getApiVersion();
-                            Pattern pattern = Pattern.compile(versionRegex);
                             Matcher matcher = pattern.matcher(versionToMatch);
                             if (matcher.matches()) {
                                 sub = subscription;
