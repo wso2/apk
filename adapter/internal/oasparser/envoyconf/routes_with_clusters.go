@@ -1108,28 +1108,6 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 				routes = append(routes, route)
 			}
 		}
-	} else if apiType == "GRPC" {
-		//TODO this is only a temporary measure, gets triggered by grpc api
-		logger.LoggerOasparser.Debugf("Creating routes for resource : %s that has no policies", resourcePath)
-		// No policies defined for the resource. Therefore, create one route for all operations.
-		methodRegex := strings.Join(resourceMethods, "|")
-		if !strings.Contains(methodRegex, "OPTIONS") {
-			methodRegex = methodRegex + "|OPTIONS"
-		}
-		match := generateRouteMatch(routePath)
-		//match.Headers = generateHTTPMethodMatcher(methodRegex, clusterName)
-		action := generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria)
-		rewritePath := generateRoutePathForReWrite(basePath, resourcePath, pathMatchType)
-		action.Route.RegexRewrite = generateRegexMatchAndSubstitute(rewritePath, resourcePath, pathMatchType)
-
-		//TODO think of a better way to do this
-		//remove xws2basepaath from resourcepath
-		suffix := strings.TrimPrefix(resourcePath, xWso2Basepath)
-		action.Route.RegexRewrite.Substitution = suffix
-		// general headers to add and remove are included in this methods
-		route := generateRouteConfig(xWso2Basepath, match, action, nil, decorator, perRouteFilterConfigs, nil, nil, nil, nil)
-
-		routes = append(routes, route)
 	} else {
 		logger.LoggerOasparser.Debugf("Creating routes for resource : %s that has no policies", resourcePath)
 		// No policies defined for the resource. Therefore, create one route for all operations.
@@ -1142,6 +1120,12 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 		action := generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria)
 		rewritePath := generateRoutePathForReWrite(basePath, resourcePath, pathMatchType)
 		action.Route.RegexRewrite = generateRegexMatchAndSubstitute(rewritePath, resourcePath, pathMatchType)
+
+		if apiType == "GRPC" {
+			match.Headers = nil
+			newRoutePath := "/" + strings.TrimPrefix(resourcePath, basePath+".")
+			action.Route.RegexRewrite = generateRegexMatchAndSubstitute(rewritePath, newRoutePath, pathMatchType)
+		}
 
 		route := generateRouteConfig(xWso2Basepath, match, action, nil, decorator, perRouteFilterConfigs,
 			nil, nil, nil, nil) // general headers to add and remove are included in this methods
