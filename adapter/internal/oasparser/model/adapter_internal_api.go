@@ -966,7 +966,6 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoGRPCRouteCR(grpcRoute *gwap
 	}
 
 	//We are only supporting one backend for now
-	//TODO fix this later (Dineth)
 	backend := grpcRoute.Spec.Rules[0].BackendRefs[0]
 	backendName := types.NamespacedName{
 		Name:      string(backend.Name),
@@ -1033,7 +1032,6 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoGRPCRouteCR(grpcRoute *gwap
 		resourceAuthScheme := authScheme
 		resourceRatelimitPolicy := ratelimitPolicy
 		var scopes []string
-		//TODO remove policies
 		for _, filter := range rule.Filters {
 			if filter.ExtensionRef != nil && filter.ExtensionRef.Kind == constants.KindAuthentication {
 				if ref, found := resourceParams.ResourceAuthSchemes[types.NamespacedName{
@@ -1075,10 +1073,11 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoGRPCRouteCR(grpcRoute *gwap
 		loggers.LoggerOasparser.Debugf("Calculating auths for API ..., API_UUID = %v", adapterInternalAPI.UUID)
 		apiAuth := getSecurity(resourceAuthScheme)
 
+		//TODO Add path match type (Dineth)
 		for _, match := range rule.Matches {
-			resourcePath := adapterInternalAPI.GetXWso2Basepath() + "/" + *match.Method.Service + "/" + *match.Method.Method
+			resourcePath := adapterInternalAPI.GetXWso2Basepath() + "." + *match.Method.Service + "/" + *match.Method.Method
 			endPoints = append(endPoints, GetEndpoints(backendName, resourceParams.BackendMapping)...)
-			resource := &Resource{path: resourcePath, pathMatchType: "PathPrefix",
+			resource := &Resource{path: resourcePath, pathMatchType: "Exact",
 				methods: []*Operation{{iD: uuid.New().String(), method: string(*match.Method.Type), policies: policies,
 					auth: apiAuth, rateLimitPolicy: parseRateLimitPolicyToInternal(resourceRatelimitPolicy), scopes: scopes}},
 				iD: uuid.New().String(),
