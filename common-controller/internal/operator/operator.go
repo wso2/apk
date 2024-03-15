@@ -20,6 +20,7 @@ package operator
 import (
 	"flag"
 	"os"
+	"strconv"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
@@ -64,12 +65,13 @@ func init() {
 }
 
 // InitOperator initializes the operator
-func InitOperator() {
+func InitOperator(prometheusPort int32) {
 	var metricsAddr string
 	var enableLeaderElection bool
 	var probeAddr string
 	controlPlaneID := uuid.New().String()
-	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
+	port := strconv.FormatInt(int64(prometheusPort), 10)
+	flag.StringVar(&metricsAddr, "metrics-bind-address", ":"+port, "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. "+

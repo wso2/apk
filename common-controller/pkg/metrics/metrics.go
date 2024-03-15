@@ -20,29 +20,13 @@
 package metrics
 
 import (
-	"fmt"
-	"net/http"
-	"strconv"
-
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/wso2/apk/adapter/pkg/logging"
-	logger "github.com/wso2/apk/common-controller/internal/loggers"
 	metrics "github.com/wso2/apk/common-go-libs/pkg/metrics"
+	k8smetrics "sigs.k8s.io/controller-runtime/pkg/metrics"
 )
 
 // StartPrometheusMetricsServer initializes and starts the metrics server to expose metrics to prometheus.
-func StartPrometheusMetricsServer(port int32) {
+func StartPrometheusMetricsServer() {
 
 	collector := metrics.CustomMetricsCollector()
-	prometheus.MustRegister(collector)
-	http.Handle("/metrics", promhttp.Handler())
-	err := http.ListenAndServe(":"+strconv.Itoa(int(port)), nil)
-	if err != nil {
-		logger.LoggerAPK.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintln("Prometheus metrics server error:", err),
-			Severity:  logging.MAJOR,
-			ErrorCode: 1110,
-		})
-	}
+	k8smetrics.Registry.MustRegister(collector)
 }

@@ -27,6 +27,7 @@ import (
 	xdsv3 "github.com/envoyproxy/go-control-plane/pkg/server/v3"
 	enforcerCallbacks "github.com/wso2/apk/adapter/internal/discovery/xds/enforcercallbacks"
 	routercb "github.com/wso2/apk/adapter/internal/discovery/xds/routercallbacks"
+	"github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/internal/operator"
 	apiservice "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/api"
 	configservice "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/config"
@@ -34,7 +35,7 @@ import (
 	wso2_server "github.com/wso2/apk/adapter/pkg/discovery/protocol/server/v3"
 	"github.com/wso2/apk/adapter/pkg/health"
 	healthservice "github.com/wso2/apk/adapter/pkg/health/api/wso2/health/service"
-	metrics "github.com/wso2/apk/adapter/pkg/metrics"
+	"github.com/wso2/apk/adapter/pkg/metrics"
 	"github.com/wso2/apk/adapter/pkg/utils/tlsutils"
 
 	"context"
@@ -157,12 +158,6 @@ func Run(conf *config.Config) {
 
 	logger.LoggerAPK.Info("Starting adapter ....")
 
-	// Start the metrics server
-	if conf.Adapter.Metrics.Enabled && strings.EqualFold(conf.Adapter.Metrics.Type, metrics.PrometheusMetricType) {
-		logger.LoggerAPK.Info("Starting Prometheus Metrics Server ....")
-		go metrics.StartPrometheusMetricsServer(conf.Adapter.Metrics.Port)
-	}
-
 	cache := xds.GetXdsCache()
 	enforcerCache := xds.GetEnforcerCache()
 	enforcerAPICache := xds.GetEnforcerAPICache()
@@ -188,7 +183,13 @@ func Run(conf *config.Config) {
 	// Set enforcer startup configs
 	xds.UpdateEnforcerConfig(conf)
 
-	go operator.InitOperator()
+	go operator.InitOperator(conf.Adapter.Metrics.Port)
+
+	// Start the metrics server
+	if conf.Adapter.Metrics.Enabled && strings.EqualFold(conf.Adapter.Metrics.Type, metrics.PrometheusMetricType) {
+		loggers.LoggerAPKOperator.Info("Starting Prometheus Metrics Server ....")
+		go metrics.StartPrometheusMetricsServer()
+	}
 
 OUTER:
 	for {

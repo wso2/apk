@@ -19,6 +19,7 @@ package operator
 
 import (
 	"flag"
+	"strconv"
 
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/loggers"
@@ -67,11 +68,12 @@ func init() {
 }
 
 // InitOperator starts the Kubernetes gateway operator
-func InitOperator() {
+func InitOperator(prometheusPort int32) {
 	var metricsAddr string
 	var enableLeaderElection bool
 	var probeAddr string
-	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
+	port := strconv.FormatInt(int64(prometheusPort), 10)
+	flag.StringVar(&metricsAddr, "metrics-bind-address", ":"+port, "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. "+
@@ -103,6 +105,7 @@ func InitOperator() {
 		// after the manager stops then its usage might be unsafe.
 		// LeaderElectionReleaseOnCancel: true,
 	})
+
 	if err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2600, logging.BLOCKER, "Unable to start manager: %v", err))
 	}
