@@ -208,7 +208,7 @@ func InitOperator(metricsConfig config.Metrics) {
 
 	// Register the metrics collector
 	if metricsConfig.Enabled && strings.EqualFold(metricsConfig.Type, metrics.PrometheusMetricType) {
-		loggers.LoggerAPKOperator.Info("Starting Prometheus Metrics Server ....")
+		loggers.LoggerAPKOperator.Info("Registering Prometheus metrics collector.")
 		go metrics.RegisterPrometheusCollector()
 	}
 
