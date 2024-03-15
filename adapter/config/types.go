@@ -94,7 +94,7 @@ type adapter struct {
 	// Environment of the Adapter
 	Environment string
 	// Metric represents configurations to expose/export go metrics
-	Metrics metrics
+	Metrics Metrics
 }
 
 // Envoy Listener Component related configurations.
@@ -159,7 +159,7 @@ type enforcer struct {
 	Management                    management
 	RestServer                    restServer
 	Filters                       []filter
-	Metrics                       metrics
+	Metrics                       Metrics
 	MandateSubscriptionValidation bool
 	Client                        httpClient
 }
@@ -300,7 +300,8 @@ type tracing struct {
 	ConfigProperties map[string]string
 }
 
-type metrics struct {
+// Metrics defines the configuration for metrics collection.
+type Metrics struct {
 	Enabled            bool
 	Type               string
 	Port               int32

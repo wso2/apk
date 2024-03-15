@@ -43,7 +43,7 @@ var defaultConfig = &Config{
 			RetryInterval: 5,
 			Persistence:   persistence{Type: "K8s"},
 		},
-		Metrics: metrics{
+		Metrics: Metrics{
 			Enabled: false,
 			Type:    "prometheus",
 			Port:    18006,

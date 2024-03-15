@@ -48,7 +48,7 @@ type commoncontroller struct {
 	WebServer         webServer
 	InternalAPIServer internalAPIServer
 	ControlPlane      controlplane
-	Metrics           metrics
+	Metrics           Metrics
 	Database          database
 }
 type controlplane struct {
@@ -105,7 +105,8 @@ type webServer struct {
 	Port int64
 }
 
-type metrics struct {
+// Metrics defines the configuration for metrics collection.
+type Metrics struct {
 	Enabled            bool
 	Type               string
 	Port               int32

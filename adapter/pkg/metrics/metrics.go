@@ -87,8 +87,8 @@ func (collector *AdapterCollector) Collect(ch chan<- prometheus.Metric) {
 	ch <- prometheus.MustNewConstMetric(collector.internalClusterCount, prometheus.GaugeValue, internalClusterCount)
 }
 
-// StartPrometheusMetricsServer initializes and starts the metrics server to expose metrics to prometheus.
-func StartPrometheusMetricsServer() {
+// RegisterPrometheusCollector registers the Prometheus collector for metrics.
+func RegisterPrometheusCollector() {
 
 	collector := adapterMetricsCollector()
 	k8smetrics.Registry.MustRegister(collector)

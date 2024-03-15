@@ -20,14 +20,12 @@ package adapter
 
 import (
 	"crypto/tls"
-	"strings"
 	"time"
 
 	discoveryv3 "github.com/envoyproxy/go-control-plane/envoy/service/discovery/v3"
 	xdsv3 "github.com/envoyproxy/go-control-plane/pkg/server/v3"
 	enforcerCallbacks "github.com/wso2/apk/adapter/internal/discovery/xds/enforcercallbacks"
 	routercb "github.com/wso2/apk/adapter/internal/discovery/xds/routercallbacks"
-	"github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/internal/operator"
 	apiservice "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/api"
 	configservice "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/config"
@@ -35,7 +33,6 @@ import (
 	wso2_server "github.com/wso2/apk/adapter/pkg/discovery/protocol/server/v3"
 	"github.com/wso2/apk/adapter/pkg/health"
 	healthservice "github.com/wso2/apk/adapter/pkg/health/api/wso2/health/service"
-	"github.com/wso2/apk/adapter/pkg/metrics"
 	"github.com/wso2/apk/adapter/pkg/utils/tlsutils"
 
 	"context"
@@ -183,13 +180,7 @@ func Run(conf *config.Config) {
 	// Set enforcer startup configs
 	xds.UpdateEnforcerConfig(conf)
 
-	go operator.InitOperator(conf.Adapter.Metrics.Port)
-
-	// Start the metrics server
-	if conf.Adapter.Metrics.Enabled && strings.EqualFold(conf.Adapter.Metrics.Type, metrics.PrometheusMetricType) {
-		loggers.LoggerAPKOperator.Info("Starting Prometheus Metrics Server ....")
-		go metrics.StartPrometheusMetricsServer()
-	}
+	go operator.InitOperator(conf.Adapter.Metrics)
 
 OUTER:
 	for {

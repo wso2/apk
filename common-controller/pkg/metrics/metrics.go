@@ -24,8 +24,8 @@ import (
 	k8smetrics "sigs.k8s.io/controller-runtime/pkg/metrics"
 )
 
-// StartPrometheusMetricsServer initializes and starts the metrics server to expose metrics to prometheus.
-func StartPrometheusMetricsServer() {
+// RegisterPrometheusCollector registers the Prometheus collector for metrics.
+func RegisterPrometheusCollector() {
 
 	collector := metrics.CustomMetricsCollector()
 	k8smetrics.Registry.MustRegister(collector)

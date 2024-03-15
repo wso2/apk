@@ -19,8 +19,9 @@ package operator
 
 import (
 	"flag"
+	"fmt"
 	"os"
-	"strconv"
+	"strings"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
@@ -34,6 +35,7 @@ import (
 	"github.com/wso2/apk/common-controller/internal/loggers"
 	cpcontrollers "github.com/wso2/apk/common-controller/internal/operator/controllers/cp"
 	dpcontrollers "github.com/wso2/apk/common-controller/internal/operator/controllers/dp"
+	"github.com/wso2/apk/common-controller/pkg/metrics"
 	cpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/cp/v1alpha2"
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
@@ -65,13 +67,11 @@ func init() {
 }
 
 // InitOperator initializes the operator
-func InitOperator(prometheusPort int32) {
-	var metricsAddr string
+// func InitOperator(prometheusPort int32, metricsEnabled bool) {
+func InitOperator(metricsConfig config.Metrics) {
 	var enableLeaderElection bool
 	var probeAddr string
 	controlPlaneID := uuid.New().String()
-	port := strconv.FormatInt(int64(prometheusPort), 10)
-	flag.StringVar(&metricsAddr, "metrics-bind-address", ":"+port, "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. "+
@@ -85,7 +85,8 @@ func InitOperator(prometheusPort int32) {
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
 	ratelimitStore := cache.CreateNewOperatorDataStore()
 	subscriptionStore := cache.CreateNewSubscriptionDataStore()
-	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
+
+	options := ctrl.Options{
 		Scheme:                 scheme,
 		HealthProbeBindAddress: probeAddr,
 		// LeaderElection:         true,
@@ -101,7 +102,13 @@ func InitOperator(prometheusPort int32) {
 		// if you are doing or is intended to do any operation such as perform cleanups
 		// after the manager stops then its usage might be unsafe.
 		// LeaderElectionReleaseOnCancel: true,
-	})
+	}
+
+	if metricsConfig.Enabled {
+		options.MetricsBindAddress = fmt.Sprintf(":%d", metricsConfig.Port)
+	}
+
+	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), options)
 	if err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2600, logging.BLOCKER, "Unable to start manager: %v", err))
 		os.Exit(1)
@@ -197,6 +204,12 @@ func InitOperator(prometheusPort int32) {
 				grpcClient.StartEventStreaming()
 			}
 		}()
+	}
+
+	// Register the metrics collector
+	if metricsConfig.Enabled && strings.EqualFold(metricsConfig.Type, metrics.PrometheusMetricType) {
+		loggers.LoggerAPKOperator.Info("Starting Prometheus Metrics Server ....")
+		go metrics.RegisterPrometheusCollector()
 	}
 
 	setupLog.Info("starting manager")

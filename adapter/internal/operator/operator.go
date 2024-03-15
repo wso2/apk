@@ -19,12 +19,14 @@ package operator
 
 import (
 	"flag"
-	"strconv"
+	"fmt"
+	"strings"
 
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/loggers"
 
 	"github.com/wso2/apk/adapter/pkg/logging"
+	"github.com/wso2/apk/adapter/pkg/metrics"
 	gwapiv1a2 "sigs.k8s.io/gateway-api/apis/v1alpha2"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 
@@ -68,12 +70,9 @@ func init() {
 }
 
 // InitOperator starts the Kubernetes gateway operator
-func InitOperator(prometheusPort int32) {
-	var metricsAddr string
+func InitOperator(metricsConfig config.Metrics) {
 	var enableLeaderElection bool
 	var probeAddr string
-	port := strconv.FormatInt(int64(prometheusPort), 10)
-	flag.StringVar(&metricsAddr, "metrics-bind-address", ":"+port, "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. "+
@@ -87,7 +86,7 @@ func InitOperator(prometheusPort int32) {
 
 	operatorDataStore := synchronizer.GetOperatorDataStore()
 
-	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
+	options := ctrl.Options{
 		Scheme:                  scheme,
 		HealthProbeBindAddress:  probeAddr,
 		LeaderElection:          true,
@@ -104,7 +103,13 @@ func InitOperator(prometheusPort int32) {
 		// if you are doing or is intended to do any operation such as perform cleanups
 		// after the manager stops then its usage might be unsafe.
 		// LeaderElectionReleaseOnCancel: true,
-	})
+	}
+
+	if metricsConfig.Enabled {
+		options.MetricsBindAddress = fmt.Sprintf(":%d", metricsConfig.Port)
+	}
+
+	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), options)
 
 	if err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2600, logging.BLOCKER, "Unable to start manager: %v", err))
@@ -136,6 +141,12 @@ func InitOperator(prometheusPort int32) {
 	}
 	if err := mgr.AddReadyzCheck("readyz", healthz.Ping); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2603, logging.BLOCKER, "Unable to set up ready check: %v", err))
+	}
+
+	// Register the metrics collector
+	if metricsConfig.Enabled && strings.EqualFold(metricsConfig.Type, metrics.PrometheusMetricType) {
+		loggers.LoggerAPKOperator.Info("Starting Prometheus Metrics Server ....")
+		go metrics.RegisterPrometheusCollector()
 	}
 
 	go synchronizer.HandleAPILifeCycleEvents(&ch, &successChannel)
