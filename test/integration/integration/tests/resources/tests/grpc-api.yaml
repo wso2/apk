@@ -28,7 +28,7 @@ spec:
   apiName: Dineth GRPC API
   apiType: GRPC
   apiVersion: v1
-  basePath: /dineth-grpc-api/v1
+  basePath: /dineth.grpc.api.v1
   isDefaultVersion: false
   production:
     - routeRefs:
