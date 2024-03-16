@@ -24,6 +24,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"regexp"
 	"strings"
 
 	gqlparser "github.com/vektah/gqlparser"
@@ -103,6 +104,8 @@ func (r *API) validateAPI() error {
 
 	if r.Spec.BasePath == "" {
 		allErrs = append(allErrs, field.Required(field.NewPath("spec").Child("basePath"), "API basePath is required"))
+	} else if errMsg := validateAPIBasePathRegex(r.Spec.BasePath, r.Spec.APIType); errMsg != "" {
+		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("basePath"), r.Spec.BasePath, errMsg))
 	} else if errMsg := validateAPIBasePathFormat(r.Spec.BasePath, r.Spec.APIVersion); errMsg != "" {
 		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("basePath"), r.Spec.BasePath, errMsg))
 	} else if err := r.validateAPIBasePathExistsAndDefaultVersion(); err != nil {
@@ -246,6 +249,23 @@ func retrieveAPIList() ([]API, error) {
 func validateAPIBasePathFormat(basePath string, apiVersion string) string {
 	if !strings.HasSuffix("/"+basePath, apiVersion) {
 		return "API basePath value should contain the /{APIVersion} at end."
+	}
+	return ""
+}
+
+func validateAPIBasePathRegex(basePath, apiType string) string {
+	var pattern string
+	if apiType == "GRPC" {
+		pattern = `^[/][a-zA-Z][a-zA-Z0-9_.]*$`
+	} else {
+		pattern = `^[/][a-zA-Z0-9~/_.-]*$`
+	}
+	re, err := regexp.Compile(pattern)
+	if err != nil {
+		return "Failed to compile basePath regex pattern"
+	}
+	if !re.MatchString(basePath) {
+		return "API basePath is not in a valid format for the specified API type"
 	}
 	return ""
 }
