@@ -35,6 +35,7 @@ import (
 	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	"golang.org/x/exp/maps"
 	"k8s.io/apimachinery/pkg/types"
+	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
@@ -554,25 +555,25 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 		}
 		for _, filter := range rule.Filters {
 			switch filter.Type {
-			case gwapiv1b1.HTTPRouteFilterURLRewrite:
+			case gwapiv1.HTTPRouteFilterURLRewrite:
 				policyParameters := make(map[string]interface{})
 				policyParameters[constants.RewritePathType] = filter.URLRewrite.Path.Type
 				policyParameters[constants.IncludeQueryParams] = true
 
 				switch filter.URLRewrite.Path.Type {
-				case gwapiv1b1.FullPathHTTPPathModifier:
+				case gwapiv1.FullPathHTTPPathModifier:
 					policyParameters[constants.RewritePathResourcePath] = backendBasePath + *filter.URLRewrite.Path.ReplaceFullPath
-				case gwapiv1b1.PrefixMatchHTTPPathModifier:
+				case gwapiv1.PrefixMatchHTTPPathModifier:
 					policyParameters[constants.RewritePathResourcePath] = backendBasePath + *filter.URLRewrite.Path.ReplacePrefixMatch
 				}
 
 				policies.Request = append(policies.Request, Policy{
-					PolicyName: string(gwapiv1b1.HTTPRouteFilterURLRewrite),
+					PolicyName: string(gwapiv1.HTTPRouteFilterURLRewrite),
 					Action:     constants.ActionRewritePath,
 					Parameters: policyParameters,
 				})
 				hasURLRewritePolicy = true
-			case gwapiv1b1.HTTPRouteFilterExtensionRef:
+			case gwapiv1.HTTPRouteFilterExtensionRef:
 				if filter.ExtensionRef.Kind == constants.KindAuthentication {
 					if ref, found := resourceParams.ResourceAuthSchemes[types.NamespacedName{
 						Name:      string(filter.ExtensionRef.Name),
@@ -617,14 +618,14 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 						'Resource' in resource level RateLimitPolicies`, filter.ExtensionRef.Name)
 					}
 				}
-			case gwapiv1b1.HTTPRouteFilterRequestHeaderModifier:
+			case gwapiv1.HTTPRouteFilterRequestHeaderModifier:
 				for _, header := range filter.RequestHeaderModifier.Add {
 					policyParameters := make(map[string]interface{})
 					policyParameters[constants.HeaderName] = string(header.Name)
 					policyParameters[constants.HeaderValue] = string(header.Value)
 
 					policies.Request = append(policies.Request, Policy{
-						PolicyName: string(gwapiv1b1.HTTPRouteFilterRequestHeaderModifier),
+						PolicyName: string(gwapiv1.HTTPRouteFilterRequestHeaderModifier),
 						Action:     constants.ActionHeaderAdd,
 						Parameters: policyParameters,
 					})
@@ -634,7 +635,7 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 					policyParameters[constants.HeaderName] = string(header)
 
 					policies.Request = append(policies.Request, Policy{
-						PolicyName: string(gwapiv1b1.HTTPRouteFilterRequestHeaderModifier),
+						PolicyName: string(gwapiv1.HTTPRouteFilterRequestHeaderModifier),
 						Action:     constants.ActionHeaderRemove,
 						Parameters: policyParameters,
 					})
@@ -645,19 +646,19 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 					policyParameters[constants.HeaderValue] = string(header.Value)
 
 					policies.Request = append(policies.Request, Policy{
-						PolicyName: string(gwapiv1b1.HTTPRouteFilterRequestHeaderModifier),
+						PolicyName: string(gwapiv1.HTTPRouteFilterRequestHeaderModifier),
 						Action:     constants.ActionHeaderAdd,
 						Parameters: policyParameters,
 					})
 				}
-			case gwapiv1b1.HTTPRouteFilterResponseHeaderModifier:
+			case gwapiv1.HTTPRouteFilterResponseHeaderModifier:
 				for _, header := range filter.ResponseHeaderModifier.Add {
 					policyParameters := make(map[string]interface{})
 					policyParameters[constants.HeaderName] = string(header.Name)
 					policyParameters[constants.HeaderValue] = string(header.Value)
 
 					policies.Response = append(policies.Response, Policy{
-						PolicyName: string(gwapiv1b1.HTTPRouteFilterResponseHeaderModifier),
+						PolicyName: string(gwapiv1.HTTPRouteFilterResponseHeaderModifier),
 						Action:     constants.ActionHeaderAdd,
 						Parameters: policyParameters,
 					})
@@ -667,7 +668,7 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 					policyParameters[constants.HeaderName] = string(header)
 
 					policies.Response = append(policies.Response, Policy{
-						PolicyName: string(gwapiv1b1.HTTPRouteFilterResponseHeaderModifier),
+						PolicyName: string(gwapiv1.HTTPRouteFilterResponseHeaderModifier),
 						Action:     constants.ActionHeaderRemove,
 						Parameters: policyParameters,
 					})
@@ -678,7 +679,7 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 					policyParameters[constants.HeaderValue] = string(header.Value)
 
 					policies.Response = append(policies.Response, Policy{
-						PolicyName: string(gwapiv1b1.HTTPRouteFilterResponseHeaderModifier),
+						PolicyName: string(gwapiv1.HTTPRouteFilterResponseHeaderModifier),
 						Action:     constants.ActionHeaderAdd,
 						Parameters: policyParameters,
 					})
@@ -699,15 +700,15 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 		for _, match := range rule.Matches {
 			if !hasURLRewritePolicy {
 				policyParameters := make(map[string]interface{})
-				if *match.Path.Type == gwapiv1b1.PathMatchPathPrefix {
-					policyParameters[constants.RewritePathType] = gwapiv1b1.PrefixMatchHTTPPathModifier
+				if *match.Path.Type == gwapiv1.PathMatchPathPrefix {
+					policyParameters[constants.RewritePathType] = gwapiv1.PrefixMatchHTTPPathModifier
 				} else {
-					policyParameters[constants.RewritePathType] = gwapiv1b1.FullPathHTTPPathModifier
+					policyParameters[constants.RewritePathType] = gwapiv1.FullPathHTTPPathModifier
 				}
 				policyParameters[constants.IncludeQueryParams] = true
 				policyParameters[constants.RewritePathResourcePath] = strings.TrimSuffix(backendBasePath, "/") + *match.Path.Value
 				policies.Request = append(policies.Request, Policy{
-					PolicyName: string(gwapiv1b1.HTTPRouteFilterURLRewrite),
+					PolicyName: string(gwapiv1.HTTPRouteFilterURLRewrite),
 					Action:     constants.ActionRewritePath,
 					Parameters: policyParameters,
 				})

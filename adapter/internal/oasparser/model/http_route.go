@@ -24,7 +24,7 @@ import (
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	"k8s.io/apimachinery/pkg/types"
-	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
+	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 )
 
 // ResourceParams contains httproute related parameters
@@ -277,25 +277,25 @@ func getSecurity(authScheme *dpv1alpha2.Authentication) *Authentication {
 }
 
 // getAllowedOperations retuns a list of allowed operatons, if httpMethod is not specified then all methods are allowed.
-func getAllowedOperations(httpMethod *gwapiv1b1.HTTPMethod, policies OperationPolicies, auth *Authentication,
+func getAllowedOperations(httpMethod *gwapiv1.HTTPMethod, policies OperationPolicies, auth *Authentication,
 	ratelimitPolicy *RateLimitPolicy, scopes []string) []*Operation {
 	if httpMethod != nil {
 		return []*Operation{{iD: uuid.New().String(), method: string(*httpMethod), policies: policies,
 			auth: auth, rateLimitPolicy: ratelimitPolicy, scopes: scopes}}
 	}
-	return []*Operation{{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodGet), policies: policies,
+	return []*Operation{{iD: uuid.New().String(), method: string(gwapiv1.HTTPMethodGet), policies: policies,
 		auth: auth, rateLimitPolicy: ratelimitPolicy, scopes: scopes},
-		{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodPost), policies: policies,
+		{iD: uuid.New().String(), method: string(gwapiv1.HTTPMethodPost), policies: policies,
 			auth: auth, rateLimitPolicy: ratelimitPolicy, scopes: scopes},
-		{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodDelete), policies: policies,
+		{iD: uuid.New().String(), method: string(gwapiv1.HTTPMethodDelete), policies: policies,
 			auth: auth, rateLimitPolicy: ratelimitPolicy, scopes: scopes},
-		{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodPatch), policies: policies,
+		{iD: uuid.New().String(), method: string(gwapiv1.HTTPMethodPatch), policies: policies,
 			auth: auth, rateLimitPolicy: ratelimitPolicy, scopes: scopes},
-		{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodPut), policies: policies,
+		{iD: uuid.New().String(), method: string(gwapiv1.HTTPMethodPut), policies: policies,
 			auth: auth, rateLimitPolicy: ratelimitPolicy, scopes: scopes},
-		{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodHead), policies: policies,
+		{iD: uuid.New().String(), method: string(gwapiv1.HTTPMethodHead), policies: policies,
 			auth: auth, rateLimitPolicy: ratelimitPolicy, scopes: scopes},
-		{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodOptions), policies: policies,
+		{iD: uuid.New().String(), method: string(gwapiv1.HTTPMethodOptions), policies: policies,
 			auth: auth, rateLimitPolicy: ratelimitPolicy, scopes: scopes}}
 }
 

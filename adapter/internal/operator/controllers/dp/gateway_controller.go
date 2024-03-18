@@ -47,6 +47,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
+	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
@@ -224,7 +225,7 @@ func (gatewayReconciler *GatewayReconciler) resolveGatewayState(ctx context.Cont
 	namespace := gwapiv1b1.Namespace(gateway.Namespace)
 	// Retireve listener Certificates
 	for _, listener := range gateway.Spec.Listeners {
-		if listener.Protocol == gwapiv1b1.HTTPProtocolType {
+		if listener.Protocol == gwapiv1.HTTPProtocolType {
 			continue
 		}
 		data, err := gatewayReconciler.resolveListenerSecretRefs(ctx, &listener.TLS.CertificateRefs[0], string(namespace))

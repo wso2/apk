@@ -1,5 +1,5 @@
 {{- if or .Values.wso2.apk.dp.enabled .Values.wso2.apk.cp.enabled }}
-apiVersion: gateway.networking.k8s.io/v1beta1
+apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
   name: {{ .Values.wso2.apk.dp.gateway.name | default "wso2-apk-default" }}

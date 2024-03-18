@@ -54,7 +54,7 @@ import (
 	"github.com/wso2/apk/adapter/internal/oasparser/model"
 	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	"google.golang.org/protobuf/proto"
-	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
+	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 )
 
 // WireLogValues holds debug logging related template values
@@ -163,20 +163,20 @@ func CreateRoutesWithClusters(adapterInternalAPI *model.AdapterInternalAPI, inte
 
 		// The current code requires to create policy for all routes to support backend endpoint.
 		policyParameters := make(map[string]interface{})
-		policyParameters[constants.RewritePathType] = gwapiv1b1.FullPathHTTPPathModifier
+		policyParameters[constants.RewritePathType] = gwapiv1.FullPathHTTPPathModifier
 		policyParameters[constants.IncludeQueryParams] = true
 		policyParameters[constants.RewritePathResourcePath] = basePath
 		var policies = model.OperationPolicies{
 			Request: []model.Policy{
 				{
-					PolicyName: string(gwapiv1b1.HTTPRouteFilterURLRewrite),
+					PolicyName: string(gwapiv1.HTTPRouteFilterURLRewrite),
 					Action:     constants.ActionRewritePath,
 					Parameters: policyParameters,
 				},
 			},
 		}
 		gqlop := model.NewOperationWithPolicies("POST", policies)
-		resource := model.CreateMinimalResource(adapterInternalAPI.GetXWso2Basepath(), []*model.Operation{gqlop}, "", adapterInternalAPI.Endpoints, true, gwapiv1b1.PathMatchExact)
+		resource := model.CreateMinimalResource(adapterInternalAPI.GetXWso2Basepath(), []*model.Operation{gqlop}, "", adapterInternalAPI.Endpoints, true, gwapiv1.PathMatchExact)
 		routesP, err := createRoutes(genRouteCreateParams(adapterInternalAPI, &resource, vHost, basePath, clusterName, nil,
 			nil, organizationID, false, false))
 		if err != nil {
@@ -855,7 +855,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 		resourcePath = removeFirstOccurrence(resource.GetPath(), "/"+version)
 	}
 
-	if pathMatchType != gwapiv1b1.PathMatchExact {
+	if pathMatchType != gwapiv1.PathMatchExact {
 		resourcePath = strings.Replace(resourcePath, basePath, regexp.QuoteMeta(basePath), 1)
 	}
 	routePath := generateRoutePath(resourcePath, pathMatchType)
@@ -1205,7 +1205,7 @@ func CreateAPIDefinitionEndpoint(adapterInternalAPI *model.AdapterInternalAPI, v
 	}
 
 	matchPath = strings.Replace(matchPath, basePath, regexp.QuoteMeta(basePath), 1)
-	routePath := generateRoutePath(matchPath, gwapiv1b1.PathMatchRegularExpression)
+	routePath := generateRoutePath(matchPath, gwapiv1.PathMatchRegularExpression)
 
 	match = &routev3.RouteMatch{
 		PathSpecifier: &routev3.RouteMatch_SafeRegex{
@@ -1244,7 +1244,7 @@ func CreateAPIDefinitionEndpoint(adapterInternalAPI *model.AdapterInternalAPI, v
 				},
 			},
 			ClusterSpecifier: directClusterSpecifier,
-			RegexRewrite:     generateRegexMatchAndSubstitute(routePath, rewritePath, gwapiv1b1.PathMatchExact),
+			RegexRewrite:     generateRegexMatchAndSubstitute(routePath, rewritePath, gwapiv1.PathMatchExact),
 		},
 	}
 
@@ -1368,14 +1368,14 @@ func CreateReadyEndpoint() *routev3.Route {
 }
 
 // generateRoutePath generates route paths for the api resources.
-func generateRoutePath(resourcePath string, pathMatchType gwapiv1b1.PathMatchType) string {
+func generateRoutePath(resourcePath string, pathMatchType gwapiv1.PathMatchType) string {
 	newPath := strings.TrimSuffix(resourcePath, "/")
 	switch pathMatchType {
-	case gwapiv1b1.PathMatchExact:
+	case gwapiv1.PathMatchExact:
 		return fmt.Sprintf("^%s([/]{0,1})", regexp.QuoteMeta(newPath))
-	case gwapiv1b1.PathMatchRegularExpression:
+	case gwapiv1.PathMatchRegularExpression:
 		return fmt.Sprintf("^%s([/]{0,1})", newPath)
-	case gwapiv1b1.PathMatchPathPrefix:
+	case gwapiv1.PathMatchPathPrefix:
 		fallthrough
 	default:
 		return fmt.Sprintf("^%s((?:/.*)*)", newPath)
@@ -1383,28 +1383,28 @@ func generateRoutePath(resourcePath string, pathMatchType gwapiv1b1.PathMatchTyp
 }
 
 // generateRoutePath generates route paths for path rewrite matching.
-func generateRoutePathForReWrite(basePath, resourcePath string, pathMatchType gwapiv1b1.PathMatchType) string {
+func generateRoutePathForReWrite(basePath, resourcePath string, pathMatchType gwapiv1.PathMatchType) string {
 	switch pathMatchType {
-	case gwapiv1b1.PathMatchExact:
+	case gwapiv1.PathMatchExact:
 		fallthrough
-	case gwapiv1b1.PathMatchPathPrefix:
+	case gwapiv1.PathMatchPathPrefix:
 		fallthrough
 	default:
 		return generateRoutePath(resourcePath, pathMatchType)
-	case gwapiv1b1.PathMatchRegularExpression:
+	case gwapiv1.PathMatchRegularExpression:
 		return fmt.Sprintf("^(%s)", strings.TrimSuffix(resourcePath, "/"))
 	}
 }
 
 // generateSubstitutionString returns a regex that has indexes to place the path variables extracted by capture groups
-func generateSubstitutionString(resourcePath string, pathMatchType gwapiv1b1.PathMatchType) string {
+func generateSubstitutionString(resourcePath string, pathMatchType gwapiv1.PathMatchType) string {
 	var resourceRegex string
 	switch pathMatchType {
-	case gwapiv1b1.PathMatchExact:
+	case gwapiv1.PathMatchExact:
 		resourceRegex = resourcePath
-	case gwapiv1b1.PathMatchPathPrefix:
+	case gwapiv1.PathMatchPathPrefix:
 		resourceRegex = fmt.Sprintf("%s\\1", strings.TrimSuffix(resourcePath, "/"))
-	case gwapiv1b1.PathMatchRegularExpression:
+	case gwapiv1.PathMatchRegularExpression:
 		resourceRegex = "\\1"
 	}
 	return resourceRegex

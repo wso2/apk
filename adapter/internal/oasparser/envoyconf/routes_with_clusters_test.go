@@ -32,6 +32,7 @@ import (
 	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8types "k8s.io/apimachinery/pkg/types"
+	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
@@ -58,8 +59,8 @@ func TestCreateRoutesWithClustersWithExactAndRegularExpressionRules(t *testing.T
 	apiState.APIDefinition = &apiDefinition
 	httpRouteState := synchronizer.HTTPRouteState{}
 
-	methodTypeGet := gwapiv1b1.HTTPMethodGet
-	methodTypePost := gwapiv1b1.HTTPMethodPost
+	methodTypeGet := gwapiv1.HTTPMethodGet
+	methodTypePost := gwapiv1.HTTPMethodPost
 
 	httpRoute := gwapiv1b1.HTTPRoute{
 		ObjectMeta: metav1.ObjectMeta{
@@ -74,7 +75,7 @@ func TestCreateRoutesWithClustersWithExactAndRegularExpressionRules(t *testing.T
 					Matches: []gwapiv1b1.HTTPRouteMatch{
 						{
 							Path: &gwapiv1b1.HTTPPathMatch{
-								Type:  operatorutils.PathMatchTypePtr(gwapiv1b1.PathMatchExact),
+								Type:  operatorutils.PathMatchTypePtr(gwapiv1.PathMatchExact),
 								Value: operatorutils.StringPtr("/exact-path-api/2.0.0/(.*)/exact-path"),
 							},
 							Method: &methodTypeGet,
@@ -88,7 +89,7 @@ func TestCreateRoutesWithClustersWithExactAndRegularExpressionRules(t *testing.T
 					Matches: []gwapiv1b1.HTTPRouteMatch{
 						{
 							Path: &gwapiv1b1.HTTPPathMatch{
-								Type:  operatorutils.PathMatchTypePtr(gwapiv1b1.PathMatchRegularExpression),
+								Type:  operatorutils.PathMatchTypePtr(gwapiv1.PathMatchRegularExpression),
 								Value: operatorutils.StringPtr("/regex-path/2.0.0/userId/([^/]+)/orderId/([^/]+)"),
 							},
 							Method: &methodTypePost,
@@ -112,7 +113,7 @@ func TestCreateRoutesWithClustersWithExactAndRegularExpressionRules(t *testing.T
 				{
 					Name:     "httpslistener",
 					Hostname: &hostName,
-					Protocol: gwapiv1b1.HTTPSProtocolType,
+					Protocol: gwapiv1.HTTPSProtocolType,
 				},
 			},
 		},
@@ -227,7 +228,7 @@ func generateSampleAPI(apiName string, apiVersion string, basePath string) synch
 	}
 	apiState.APIDefinition = &apiDefinition
 	httpRouteState := synchronizer.HTTPRouteState{}
-	methodTypeGet := gwapiv1b1.HTTPMethodGet
+	methodTypeGet := gwapiv1.HTTPMethodGet
 
 	httpRoute := gwapiv1b1.HTTPRoute{
 		ObjectMeta: metav1.ObjectMeta{
@@ -242,7 +243,7 @@ func generateSampleAPI(apiName string, apiVersion string, basePath string) synch
 					Matches: []gwapiv1b1.HTTPRouteMatch{
 						{
 							Path: &gwapiv1b1.HTTPPathMatch{
-								Type:  operatorutils.PathMatchTypePtr(gwapiv1b1.PathMatchExact),
+								Type:  operatorutils.PathMatchTypePtr(gwapiv1.PathMatchExact),
 								Value: operatorutils.StringPtr("/exact-path-api/2.0.0/(.*)/exact-path"),
 							},
 							Method: &methodTypeGet,
@@ -304,7 +305,7 @@ func TestCreateRoutesWithClustersWithMultiplePathPrefixRules(t *testing.T) {
 					Matches: []gwapiv1b1.HTTPRouteMatch{
 						{
 							Path: &gwapiv1b1.HTTPPathMatch{
-								Type:  operatorutils.PathMatchTypePtr(gwapiv1b1.PathMatchPathPrefix),
+								Type:  operatorutils.PathMatchTypePtr(gwapiv1.PathMatchPathPrefix),
 								Value: operatorutils.StringPtr("/orders"),
 							},
 						},
@@ -317,7 +318,7 @@ func TestCreateRoutesWithClustersWithMultiplePathPrefixRules(t *testing.T) {
 					Matches: []gwapiv1b1.HTTPRouteMatch{
 						{
 							Path: &gwapiv1b1.HTTPPathMatch{
-								Type:  operatorutils.PathMatchTypePtr(gwapiv1b1.PathMatchPathPrefix),
+								Type:  operatorutils.PathMatchTypePtr(gwapiv1.PathMatchPathPrefix),
 								Value: operatorutils.StringPtr("/users"),
 							},
 						},
@@ -439,7 +440,7 @@ func TestCreateRoutesWithClustersWithBackendTLSConfigs(t *testing.T) {
 	}
 	apiState.APIDefinition = &apiDefinition
 	httpRouteState := synchronizer.HTTPRouteState{}
-	methodTypeGet := gwapiv1b1.HTTPMethodGet
+	methodTypeGet := gwapiv1.HTTPMethodGet
 
 	httpRoute := gwapiv1b1.HTTPRoute{
 		ObjectMeta: metav1.ObjectMeta{
@@ -454,7 +455,7 @@ func TestCreateRoutesWithClustersWithBackendTLSConfigs(t *testing.T) {
 					Matches: []gwapiv1b1.HTTPRouteMatch{
 						{
 							Path: &gwapiv1b1.HTTPPathMatch{
-								Type:  operatorutils.PathMatchTypePtr(gwapiv1b1.PathMatchExact),
+								Type:  operatorutils.PathMatchTypePtr(gwapiv1.PathMatchExact),
 								Value: operatorutils.StringPtr("/resource-path"),
 							},
 							Method: &methodTypeGet,
@@ -562,7 +563,7 @@ func TestCreateRoutesWithClustersDifferentBackendRefs(t *testing.T) {
 	}
 	apiState.APIDefinition = &apiDefinition
 	httpRouteState := synchronizer.HTTPRouteState{}
-	methodTypeGet := gwapiv1b1.HTTPMethodGet
+	methodTypeGet := gwapiv1.HTTPMethodGet
 
 	httpRoute := gwapiv1b1.HTTPRoute{
 		ObjectMeta: metav1.ObjectMeta{
@@ -577,7 +578,7 @@ func TestCreateRoutesWithClustersDifferentBackendRefs(t *testing.T) {
 					Matches: []gwapiv1b1.HTTPRouteMatch{
 						{
 							Path: &gwapiv1b1.HTTPPathMatch{
-								Type:  operatorutils.PathMatchTypePtr(gwapiv1b1.PathMatchExact),
+								Type:  operatorutils.PathMatchTypePtr(gwapiv1.PathMatchExact),
 								Value: operatorutils.StringPtr("/resource-path-1"),
 							},
 							Method: &methodTypeGet,
@@ -591,7 +592,7 @@ func TestCreateRoutesWithClustersDifferentBackendRefs(t *testing.T) {
 					Matches: []gwapiv1b1.HTTPRouteMatch{
 						{
 							Path: &gwapiv1b1.HTTPPathMatch{
-								Type:  operatorutils.PathMatchTypePtr(gwapiv1b1.PathMatchExact),
+								Type:  operatorutils.PathMatchTypePtr(gwapiv1.PathMatchExact),
 								Value: operatorutils.StringPtr("/resource-path-2"),
 							},
 							Method: &methodTypeGet,
@@ -654,7 +655,7 @@ func TestCreateRoutesWithClustersSameBackendRefs(t *testing.T) {
 	}
 	apiState.APIDefinition = &apiDefinition
 	httpRouteState := synchronizer.HTTPRouteState{}
-	methodTypeGet := gwapiv1b1.HTTPMethodGet
+	methodTypeGet := gwapiv1.HTTPMethodGet
 
 	httpRoute := gwapiv1b1.HTTPRoute{
 		ObjectMeta: metav1.ObjectMeta{
@@ -669,7 +670,7 @@ func TestCreateRoutesWithClustersSameBackendRefs(t *testing.T) {
 					Matches: []gwapiv1b1.HTTPRouteMatch{
 						{
 							Path: &gwapiv1b1.HTTPPathMatch{
-								Type:  operatorutils.PathMatchTypePtr(gwapiv1b1.PathMatchExact),
+								Type:  operatorutils.PathMatchTypePtr(gwapiv1.PathMatchExact),
 								Value: operatorutils.StringPtr("/resource-path-1"),
 							},
 							Method: &methodTypeGet,
@@ -683,7 +684,7 @@ func TestCreateRoutesWithClustersSameBackendRefs(t *testing.T) {
 					Matches: []gwapiv1b1.HTTPRouteMatch{
 						{
 							Path: &gwapiv1b1.HTTPPathMatch{
-								Type:  operatorutils.PathMatchTypePtr(gwapiv1b1.PathMatchExact),
+								Type:  operatorutils.PathMatchTypePtr(gwapiv1.PathMatchExact),
 								Value: operatorutils.StringPtr("/resource-path-2"),
 							},
 							Method: &methodTypeGet,

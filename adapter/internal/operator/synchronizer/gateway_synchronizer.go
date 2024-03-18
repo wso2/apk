@@ -34,6 +34,7 @@ import (
 	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	"golang.org/x/exp/maps"
 	"k8s.io/apimachinery/pkg/types"
+	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
@@ -146,10 +147,10 @@ func generateGlobalInterceptorResource(gatewayAPIPolicies map[string]dpv1alpha2.
 	if len(gatewayAPIPolicies) > 0 && len(gatewayBackendMapping) > 0 {
 		gwReqI, gwResI := createInterceptors(gatewayAPIPolicies, gatewayInterceptorServiceMapping, gatewayBackendMapping)
 		if len(gwReqI) > 0 {
-			gwReqICluster, gwReqIAddresses, _ = envoyconf.CreateLuaCluster(nil, gwReqI[string(gwapiv1b1.HTTPMethodPost)])
+			gwReqICluster, gwReqIAddresses, _ = envoyconf.CreateLuaCluster(nil, gwReqI[string(gwapiv1.HTTPMethodPost)])
 		}
 		if len(gwResI) > 0 {
-			gwResICluster, gwResIAddresses, _ = envoyconf.CreateLuaCluster(nil, gwResI[string(gwapiv1b1.HTTPMethodPost)])
+			gwResICluster, gwResIAddresses, _ = envoyconf.CreateLuaCluster(nil, gwResI[string(gwapiv1.HTTPMethodPost)])
 		}
 		gwLuaScript = getGlobalInterceptorScript(gatewayAPIPolicies, gatewayInterceptorServiceMapping, gatewayBackendMapping)
 	}
@@ -199,26 +200,26 @@ func createInterceptors(gatewayAPIPolicies map[string]dpv1alpha2.APIPolicy,
 				reqIEp := getInterceptorEndpoint(apiPolicy.Namespace, &resolvedPolicySpec.RequestInterceptors[0], gatewayInterceptorServiceMapping,
 					gatewayBackendMapping, true)
 				if reqIEp != nil {
-					requestInterceptorMap[string(gwapiv1b1.HTTPMethodPost)] = *reqIEp
-					requestInterceptorMap[string(gwapiv1b1.HTTPMethodGet)] = *reqIEp
-					requestInterceptorMap[string(gwapiv1b1.HTTPMethodDelete)] = *reqIEp
-					requestInterceptorMap[string(gwapiv1b1.HTTPMethodPatch)] = *reqIEp
-					requestInterceptorMap[string(gwapiv1b1.HTTPMethodPut)] = *reqIEp
-					requestInterceptorMap[string(gwapiv1b1.HTTPMethodHead)] = *reqIEp
-					requestInterceptorMap[string(gwapiv1b1.HTTPMethodOptions)] = *reqIEp
+					requestInterceptorMap[string(gwapiv1.HTTPMethodPost)] = *reqIEp
+					requestInterceptorMap[string(gwapiv1.HTTPMethodGet)] = *reqIEp
+					requestInterceptorMap[string(gwapiv1.HTTPMethodDelete)] = *reqIEp
+					requestInterceptorMap[string(gwapiv1.HTTPMethodPatch)] = *reqIEp
+					requestInterceptorMap[string(gwapiv1.HTTPMethodPut)] = *reqIEp
+					requestInterceptorMap[string(gwapiv1.HTTPMethodHead)] = *reqIEp
+					requestInterceptorMap[string(gwapiv1.HTTPMethodOptions)] = *reqIEp
 				}
 			}
 			if len(resolvedPolicySpec.ResponseInterceptors) > 0 {
 				resIEp := getInterceptorEndpoint(apiPolicy.Namespace, &resolvedPolicySpec.ResponseInterceptors[0], gatewayInterceptorServiceMapping,
 					gatewayBackendMapping, false)
 				if resIEp != nil {
-					responseInterceptorMap[string(gwapiv1b1.HTTPMethodPost)] = *resIEp
-					responseInterceptorMap[string(gwapiv1b1.HTTPMethodGet)] = *resIEp
-					responseInterceptorMap[string(gwapiv1b1.HTTPMethodDelete)] = *resIEp
-					responseInterceptorMap[string(gwapiv1b1.HTTPMethodPatch)] = *resIEp
-					responseInterceptorMap[string(gwapiv1b1.HTTPMethodPut)] = *resIEp
-					responseInterceptorMap[string(gwapiv1b1.HTTPMethodHead)] = *resIEp
-					responseInterceptorMap[string(gwapiv1b1.HTTPMethodOptions)] = *resIEp
+					responseInterceptorMap[string(gwapiv1.HTTPMethodPost)] = *resIEp
+					responseInterceptorMap[string(gwapiv1.HTTPMethodGet)] = *resIEp
+					responseInterceptorMap[string(gwapiv1.HTTPMethodDelete)] = *resIEp
+					responseInterceptorMap[string(gwapiv1.HTTPMethodPatch)] = *resIEp
+					responseInterceptorMap[string(gwapiv1.HTTPMethodPut)] = *resIEp
+					responseInterceptorMap[string(gwapiv1.HTTPMethodHead)] = *resIEp
+					responseInterceptorMap[string(gwapiv1.HTTPMethodOptions)] = *resIEp
 				}
 			}
 		}

@@ -19,7 +19,7 @@ package v1alpha2
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/gateway-api/apis/v1beta1"
+	v1 "sigs.k8s.io/gateway-api/apis/v1"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
@@ -27,17 +27,17 @@ import (
 
 // GQLRouteSpec defines the desired state of GQLRoute
 type GQLRouteSpec struct {
-	v1beta1.CommonRouteSpec `json:",inline"`
+	v1.CommonRouteSpec `json:",inline"`
 
 	// Hostnames defines a set of hostname that should match against the HTTP Host
 	// header to select a GQLRoute used to process the request.
 	// +optional
 	// +kubebuilder:validation:MaxItems=16
-	Hostnames []v1beta1.Hostname `json:"hostnames,omitempty"`
+	Hostnames []v1.Hostname `json:"hostnames,omitempty"`
 
 	// BackendRefs defines the backend(s) where matching requests should be
 	// sent.
-	BackendRefs []v1beta1.HTTPBackendRef `json:"backendRefs,omitempty"`
+	BackendRefs []v1.HTTPBackendRef `json:"backendRefs,omitempty"`
 
 	// Rules are a list of GraphQL resources, filters and actions.
 	//
@@ -73,7 +73,7 @@ type GQLRouteFilter struct {
 	// Support: Implementation-specific
 	//
 	// +optional
-	ExtensionRef *v1beta1.LocalObjectReference `json:"extensionRef,omitempty"`
+	ExtensionRef *v1.LocalObjectReference `json:"extensionRef,omitempty"`
 }
 
 // GQLRouteMatch defines the predicate used to match requests to a given
