@@ -1,0 +1,40 @@
+---
+name: "GraphQL API"
+basePath: "/graphql"
+version: "4.0.0"
+type: "GRAPHQL"
+id: "graphql-v4"
+defaultVersion: false
+subscriptionValidation: false
+endpointConfigurations:
+  production:
+    endpoint: "http://graphql-faker-service:9002/graphql"
+operations:
+  - target: "hero"
+    verb: "QUERY"
+    secured: true
+    scopes: []
+  - target: "reviews"
+    verb: "QUERY"
+    secured: true
+    scopes: []
+  - target: "search"
+    verb: "QUERY"
+    secured: true
+    scopes: []
+  - target: "character"
+    verb: "QUERY"
+    secured: true
+    scopes: []
+  - target: "droid"
+    verb: "QUERY"
+    secured: true
+    scopes: []
+  - target: "human"
+    verb: "QUERY"
+    secured: true
+    scopes: []
+  - target: "allHumans"
+    verb: "QUERY"
+    secured: true
+    scopes: []
