@@ -40,6 +40,8 @@ public class APIClient {
         string encodedString = "/" + data.toBase64();
         if (encodedString.endsWith("==")) {
             encodedString = encodedString.substring(0, encodedString.length() - 2);
+        } else if (encodedString.endsWith("=")) {
+            encodedString = encodedString.substring(0, encodedString.length() - 1);
         }
         APKConf apkConf = {
             name: api.getName(),
