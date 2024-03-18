@@ -114,11 +114,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: dineth-grpc-demo-server
+  name: grpc-backend-v1
   namespace: gateway-integration-test-infra
 spec:
   selector:
-    app: dineth-grpc-demo-server
+    app: grpc-backend-v1
   ports:
     - protocol: TCP
       port: 6565
@@ -127,22 +127,22 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: dineth-grpc-demo-server
+  name: grpc-backend-v1
   namespace: gateway-integration-test-infra
   labels:
-    app: dineth-grpc-demo-server
+    app: grpc-backend-v1
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: dineth-grpc-demo-server
+      app: grpc-backend-v1
   template:
     metadata:
       labels:
-        app: dineth-grpc-demo-server
+        app: grpc-backend-v1
     spec:
       containers:
-        - name: dineth-grpc-demo-server
+        - name: grpc-backend-v1
           image: ddh13/dineth-grpc-demo-server:1.0.0
           imagePullPolicy: Always
           env:
