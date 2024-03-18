@@ -17,22 +17,17 @@
 apiVersion: dp.wso2.com/v1alpha2
 kind: API
 metadata:
-  name: dineth-grpc-api
+  name: grpc-api
   namespace: gateway-integration-test-infra
-  labels:
-    api-name: "dineth-grpc-api"
-    api-version: "v1"
-    organization: wso2-org
-    managed-by: "apk"
 spec:
-  apiName: Dineth GRPC API
+  apiName: GRPC API
   apiType: GRPC
   apiVersion: v1
   basePath: /dineth.grpc.api.v1
   isDefaultVersion: false
   production:
     - routeRefs:
-        - dineth-grpc-route
+        - grpc-api-grpcroute
   organization: wso2-org
 
 ---
@@ -40,28 +35,24 @@ spec:
 apiVersion: gateway.networking.k8s.io/v1alpha2
 kind: GRPCRoute
 metadata:
-  name: dineth-grpc-route
+  name: grpc-api-grpcroute
   namespace: gateway-integration-test-infra
-  labels:
-    api-name: "dineth-grpc-api"
-    api-version: "v1"
-    organization: "wso2-org"
-    managed-by: "apk"
 spec:
-  hostnames:
-    - grpc.test.gw.wso2.com
   parentRefs:
     - group: gateway.networking.k8s.io
       kind: Gateway
-      name: default
+      name: wso2-apk-default
+      namespace: apk-integration-test
       sectionName: httpslistener
+  hostnames:
+    - grpc.test.gw.wso2.com
   rules:
     - matches:
         - method:
             service: student.StudentService
             method: GetStudent
       backendRefs:
-        - name: dineth-grpc-backend
+        - name: grpc-backend-v1
           kind: Backend
           port: 6565
     - matches:
@@ -69,7 +60,7 @@ spec:
             service: student.StudentService
             method: SendStudentStream
       backendRefs:
-        - name: dineth-grpc-backend
+        - name: grpc-backend-v1
           kind: Backend
           port: 6565
     - matches:
@@ -77,7 +68,7 @@ spec:
             service: student.StudentService
             method: GetStudentStream
       backendRefs:
-        - name: dineth-grpc-backend
+        - name: grpc-backend-v1
           kind: Backend
           port: 6565
     - matches:
@@ -85,7 +76,7 @@ spec:
             service: student.StudentService
             method: SendAndGetStudentStream
       backendRefs:
-        - name: dineth-grpc-backend
+        - name: grpc-backend-v1
           kind: Backend
           port: 6565
 
@@ -103,22 +94,16 @@ spec:
     group: gateway.networking.k8s.io
     kind: API
     namespace: gateway-integration-test-infra
-    name: dineth-grpc-api
+    name: grpc-api
 ---
-
 apiVersion: dp.wso2.com/v1alpha1
 kind: Backend
 metadata:
-  name: dineth-grpc-backend
+  name: grpc-backend-v1
   namespace: gateway-integration-test-infra
-  labels:
-    api-name: "dineth-grpc-api"
-    api-version: "v1"
-    organization: wso2-org
-    managed-by: "apk"
 spec:
   services:
-    - host: grpc-backend.gateway-integration-test-infra
+    - host: grpc-backend-v1.gateway-integration-test-infra
       port: 6565
   basePath: ""
   protocol: https
