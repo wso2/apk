@@ -44,6 +44,7 @@ public class SharedContext {
     private String consumerSecret;
     private String consumerKey;
     private String apiAccessToken;
+    private Boolean definitionValidStatus;
     private HashMap<String, Object> valueStore = new HashMap<>();
     private HashMap<String, String> headers = new HashMap<>();
 
@@ -202,5 +203,13 @@ public class SharedContext {
     public void setApiAccessToken(String apiAccessToken) {
 
         this.apiAccessToken = apiAccessToken;
+    }
+
+    public void setAPIDefinitionValidStatus(Boolean definitionValidStatus){
+        this.definitionValidStatus = definitionValidStatus;
+    }
+
+    public Boolean getDefinitionValidStatus(){
+        return definitionValidStatus;
     }
 }

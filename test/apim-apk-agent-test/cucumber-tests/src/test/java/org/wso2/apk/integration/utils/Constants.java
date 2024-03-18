@@ -33,6 +33,7 @@ public class Constants {
     public static final String SPACE_STRING = " ";
     public static final String SUBSCRIPTION_BASIC_AUTH_TOKEN =
             "Basic NDVmMWM1YzgtYTkyZS0xMWVkLWFmYTEtMDI0MmFjMTIwMDAyOjRmYmQ2MmVjLWE5MmUtMTFlZC1hZmExLTAyNDJhYzEyMDAwMg==";
+    public static final String DEFAULT_APIM_HOST = "apim.wso2.com";
 
     public class REQUEST_HEADERS {
 

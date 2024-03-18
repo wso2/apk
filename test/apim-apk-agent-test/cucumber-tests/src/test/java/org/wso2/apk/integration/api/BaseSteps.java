@@ -43,6 +43,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.Header;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -50,6 +51,9 @@ import org.testng.Assert;
 import org.wso2.apk.integration.utils.Constants;
 import org.wso2.apk.integration.utils.Utils;
 import org.wso2.apk.integration.utils.clients.SimpleHTTPClient;
+import org.apache.http.entity.mime.HttpMultipartMode;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.entity.ContentType;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -130,6 +134,8 @@ public class BaseSteps {
         } else if (CurlOption.HttpMethod.POST.toString().toLowerCase().equals(httpMethod.toLowerCase())) {
             sharedContext.setResponse(httpClient.doPost(url, sharedContext.getHeaders(), body, null));
             sharedContext.setResponseBody(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()));
+            logger.info("Post Response: " +  sharedContext.getResponse());
+            logger.info("Post Response Body: " + sharedContext.getResponseBody());
         } else if (CurlOption.HttpMethod.PUT.toString().toLowerCase().equals(httpMethod.toLowerCase())) {
             sharedContext.setResponse(httpClient.doPut(url, sharedContext.getHeaders(), body, null));
             sharedContext.setResponseBody(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()));
@@ -347,7 +353,7 @@ public class BaseSteps {
         headers.put(Constants.REQUEST_HEADERS.HOST, Constants.DEFAULT_IDP_HOST);
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, basicAuthHeader);
 
-        HttpResponse httpResponse = httpClient.doPost(Utils.getTokenEndpointURL(), headers, "grant_type=password&username=admin&password=admin&scope=apim:api_view apim:api_create apim:api_publish",
+        HttpResponse httpResponse = httpClient.doPost(Utils.getTokenEndpointURL(), headers, "grant_type=password&username=admin&password=admin&scope=apim:api_view apim:api_create apim:api_publish apim:api_delete apim:api_manage apim:api_import_export",
                 Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
         logger.info("Response: " + httpResponse);
         sharedContext.setPublisherAccessToken(Utils.extractToken(httpResponse));
@@ -368,6 +374,12 @@ public class BaseSteps {
         sharedContext.setDevportalAccessToken(Utils.extractToken(httpResponse));
         sharedContext.addStoreValue("devportalAccessToken", sharedContext.getDevportalAccessToken());
         logger.info("Devportal Access Token: " + sharedContext.getDevportalAccessToken());
+    }
+
+    @Then("the response should be given as valid")
+    public void theResponseShouldBeGivenAs() throws IOException {
+        Boolean status = sharedContext.getDefinitionValidStatus();
+        Assert.assertEquals(true, status,"Actual definition validation status: "+ status);
     }
 
 //    @Given("I have a valid subscription without api deploy permission")
