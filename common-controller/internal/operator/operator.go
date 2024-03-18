@@ -105,7 +105,9 @@ func InitOperator(metricsConfig config.Metrics) {
 	}
 
 	if metricsConfig.Enabled {
-		options.MetricsBindAddress = fmt.Sprintf(":%d", metricsConfig.Port)
+		options.Metrics.BindAddress = fmt.Sprintf(":%d", metricsConfig.Port)
+	} else {
+		options.Metrics.BindAddress = "0"
 	}
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), options)
