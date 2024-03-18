@@ -107,10 +107,9 @@ type webServer struct {
 
 // Metrics defines the configuration for metrics collection.
 type Metrics struct {
-	Enabled            bool
-	Type               string
-	Port               int32
-	CollectionInterval int32
+	Enabled bool
+	Type    string
+	Port    int32
 }
 
 type database struct {

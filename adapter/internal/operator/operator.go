@@ -107,6 +107,11 @@ func InitOperator(metricsConfig config.Metrics) {
 
 	if metricsConfig.Enabled {
 		options.Metrics.BindAddress = fmt.Sprintf(":%d", metricsConfig.Port)
+		// Register the metrics collector
+		if strings.EqualFold(metricsConfig.Type, metrics.PrometheusMetricType) {
+			loggers.LoggerAPKOperator.Info("Registering Prometheus metrics collector.")
+			metrics.RegisterPrometheusCollector()
+		}
 	} else {
 		options.Metrics.BindAddress = "0"
 	}
@@ -143,12 +148,6 @@ func InitOperator(metricsConfig config.Metrics) {
 	}
 	if err := mgr.AddReadyzCheck("readyz", healthz.Ping); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2603, logging.BLOCKER, "Unable to set up ready check: %v", err))
-	}
-
-	// Register the metrics collector
-	if metricsConfig.Enabled && strings.EqualFold(metricsConfig.Type, metrics.PrometheusMetricType) {
-		loggers.LoggerAPKOperator.Info("Registering Prometheus metrics collector.")
-		go metrics.RegisterPrometheusCollector()
 	}
 
 	go synchronizer.HandleAPILifeCycleEvents(&ch, &successChannel)
