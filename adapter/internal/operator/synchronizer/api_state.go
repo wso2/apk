@@ -20,6 +20,7 @@ package synchronizer
 import (
 	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
+	gwapiv1a2 "sigs.k8s.io/gateway-api/apis/v1alpha2"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
@@ -32,6 +33,8 @@ type APIState struct {
 	SandHTTPRoute             *HTTPRouteState
 	ProdGQLRoute              *GQLRouteState
 	SandGQLRoute              *GQLRouteState
+	ProdGRPCRoute             *GRPCRouteState
+	SandGRPCRoute             *GRPCRouteState
 	Authentications           map[string]v1alpha2.Authentication
 	RateLimitPolicies         map[string]v1alpha1.RateLimitPolicy
 	ResourceAuthentications   map[string]v1alpha2.Authentication
@@ -64,4 +67,14 @@ type GQLRouteState struct {
 	GQLRoutePartitions map[string]*v1alpha2.GQLRoute
 	BackendMapping     map[string]*v1alpha1.ResolvedBackend
 	Scopes             map[string]v1alpha1.Scope
+}
+
+// GRPCRouteState holds the state of the deployed grpcRoutes. This state is compared with
+// the state of the Kubernetes controller cache to detect updates.
+// +k8s:deepcopy-gen=true
+type GRPCRouteState struct {
+	GRPCRouteCombined   *gwapiv1a2.GRPCRoute
+	GRPCRoutePartitions map[string]*gwapiv1a2.GRPCRoute
+	BackendMapping      map[string]*v1alpha1.ResolvedBackend
+	Scopes              map[string]v1alpha1.Scope
 }

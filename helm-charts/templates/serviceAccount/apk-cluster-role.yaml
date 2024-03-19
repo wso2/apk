@@ -24,7 +24,7 @@ rules:
     resources: ["services","configmaps","secrets"]
     verbs: ["get","list","watch","update","delete","create"]
   - apiGroups: ["gateway.networking.k8s.io"]
-    resources: ["httproutes","gateways","gatewayclasses"]
+    resources: ["httproutes","gateways","grpcroutes","gatewayclasses"]
     verbs: ["get","list","watch","update","delete","create"]
   - apiGroups: [ "gateway.networking.k8s.io" ]
     resources: [ "gateways/status","gatewayclasses/status","httproutes/status" ]
