@@ -89,7 +89,6 @@ type APISpec struct {
 	// e.g: /pet-store-api/1.0.6
 	//
 	// +kubectl:validation:MaxLength=232
-	// +kubebuilder:validation:Pattern=^[/][a-zA-Z0-9~/_.-]*$
 	BasePath string `json:"basePath"`
 
 	// Organization denotes the organization.
