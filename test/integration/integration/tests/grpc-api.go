@@ -21,8 +21,10 @@ import (
 	"context"
 	"crypto/tls"
 	"github.com/wso2/apk/test/integration/integration/utils/generatedcode/student"
+	"github.com/wso2/apk/test/integration/integration/utils/grpcutils"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	"sigs.k8s.io/gateway-api/conformance/utils/config"
 	"testing"
 	"time"
 
@@ -37,7 +39,7 @@ func init() {
 var GRPCAPI = suite.IntegrationTest{
 	ShortName:   "GRPCAPI",
 	Description: "Tests gRPC API",
-	//Manifests:   []string{"tests/grpc-api.yaml"},
+	Manifests:   []string{"tests/grpc-api.yaml"},
 	Test: func(t *testing.T, suite *suite.IntegrationTestSuite) {
 		gwAddr := "grpc.test.gw.wso2.com:9095"
 		//token := http.GetTestToken(t)
@@ -60,13 +62,18 @@ var GRPCAPI = suite.IntegrationTest{
 		//	Response: http.Response{StatusCode: 200},
 		//},
 		//}
-		testCases := []ExpectedResponse{
+
+		testCases := []grpcutils.GRPCTestCase{
 			{
-				out: &student.StudentResponse{
-					Name: "Dineth",
-					Age:  10,
+				ExpectedResponse: grpcutils.ExpectedResponse{
+					Out: &student.StudentResponse{
+						Name: "Dineth",
+						Age:  10,
+					},
+					Err: nil,
 				},
-				err: nil,
+				ActualResponse: &student.StudentResponse{},
+				Name:           "Get Student Details",
 			},
 		}
 		for i := range testCases {
@@ -76,17 +83,8 @@ var GRPCAPI = suite.IntegrationTest{
 			//	http.MakeRequestAndExpectEventuallyConsistentResponse(t, suite.RoundTripper, suite.TimeoutConfig, gwAddr, tc)
 			//})
 			t.Run("Invoke gRPC API", func(t *testing.T) {
-				out, err := invokeGRPCClientUntilSatisfied(gwAddr, t)
-				if err != nil {
-					if tc.err != nil {
-						t.Errorf("Err -> \nWant: %q\nGot: %q\n", tc.err, err)
-					}
-				} else {
-					if tc.out.Name != out.Name ||
-						tc.out.Age != out.Age {
-						t.Errorf("Out -> \nWant: %q\nGot : %q", tc.out, out)
-					}
-				}
+				t.Parallel()
+				invokeGRPCClientUntilSatisfied(gwAddr, t, tc, suite.TimeoutConfig)
 
 			})
 		}
@@ -97,8 +95,6 @@ func invokeGRPCClient(gwAddr string, t *testing.T) (*student.StudentResponse, er
 
 	t.Logf("Starting gRPC client...")
 
-	// Set up TLS credentials for the connection without enforcing server certificate validation.
-	t.Logf("Setting up TLS credentials without server certificate validation...")
 	config := &tls.Config{
 		InsecureSkipVerify: true, // CAUTION: This disables SSL certificate verification.
 	}
@@ -110,10 +106,10 @@ func invokeGRPCClient(gwAddr string, t *testing.T) (*student.StudentResponse, er
 	t.Logf("Dialing to server at %s with timeout...", gwAddr)
 	conn, err := grpc.DialContext(dialCtx, gwAddr, grpc.WithTransportCredentials(creds), grpc.WithBlock())
 	if err != nil {
-		t.Fatalf("Failed to connect: %v", err)
+		t.Logf("Failed to connect: %v", err)
 	}
 	defer conn.Close()
-	t.Log("Successfully connected to the server.")
+	//t.Log("Successfully connected to the server.")
 
 	c := student.NewStudentServiceClient(conn)
 
@@ -123,28 +119,23 @@ func invokeGRPCClient(gwAddr string, t *testing.T) (*student.StudentResponse, er
 
 	t.Log("Sending request to the server...")
 	// Create a StudentRequest message
-	r := &student.StudentRequest{Id: 1234} // Adjust the ID according to your actual implementation
+	r := &student.StudentRequest{Id: 1234}
 	response, err := c.GetStudent(ctx, r)
 	if err != nil {
 		t.Logf("Could not fetch student: %v", err)
 	}
-
 	t.Logf("Received response from server: %v\n", response)
-	t.Logf("Student Details: %v\n", response)
 	return response, nil
 }
 
-type ExpectedResponse struct {
-	out *student.StudentResponse
-	err error
-}
-
-func invokeGRPCClientUntilSatisfied(gwAddr string, t *testing.T) (*student.StudentResponse, error) {
+func invokeGRPCClientUntilSatisfied(gwAddr string, t *testing.T, testCase grpcutils.GRPCTestCase, timeout config.TimeoutConfig) {
 	var out *student.StudentResponse
 	var err error
 	attempt := 0
 	maxAttempts := 4
-
+	expected := testCase.ExpectedResponse
+	//timeoutDuration := timeout.RequestTimeout * time.Second
+	timeoutDuration := 10 * time.Second
 	for attempt < maxAttempts {
 		t.Logf("Attempt %d to invoke gRPC client...", attempt+1)
 		out, err = invokeGRPCClient(gwAddr, t)
@@ -152,28 +143,26 @@ func invokeGRPCClientUntilSatisfied(gwAddr string, t *testing.T) (*student.Stude
 		if err != nil {
 			t.Logf("Error on attempt %d: %v", attempt+1, err)
 		} else {
-			// Check if the response is satisfactory. This condition needs to be defined.
-			// For example, assuming a satisfactory condition is when out.Satisfied is true.
-			// This is a placeholder condition and should be replaced with your actual success criteria.
-			if out != nil && isResponseSatisfactory(out) {
+			if out != nil && isResponseSatisfactory(out, expected) {
 				t.Logf("Satisfactory response received: %+v", out)
-				return out, nil
+				return
 			}
 		}
 
 		if attempt < maxAttempts-1 {
-			t.Logf("Waiting 20 seconds before next attempt...")
-			time.Sleep(20 * time.Second)
+			t.Logf("Waiting %s seconds before next attempt...", timeoutDuration)
+			time.Sleep(timeoutDuration)
 		}
 		attempt++
 	}
 
 	t.Logf("Failed to receive a satisfactory response after %d attempts", maxAttempts)
-	return out, err // Returning the last response and error, might need adjustment based on requirements.
+	t.Fail()
 }
 
-func isResponseSatisfactory(response *student.StudentResponse) bool {
-	// Define the condition for a response to be considered satisfactory.
-	// This is a placeholder function and should contain actual logic to evaluate the response.
-	return false // Placeholder: assume every response is satisfactory.
+func isResponseSatisfactory(response *student.StudentResponse, expectedResponse grpcutils.ExpectedResponse) bool {
+	if response.Name == expectedResponse.Out.Name && response.Age == expectedResponse.Out.Age {
+		return true
+	}
+	return false
 }
