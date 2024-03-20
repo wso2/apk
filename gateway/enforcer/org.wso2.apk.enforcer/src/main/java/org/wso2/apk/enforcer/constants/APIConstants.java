@@ -114,6 +114,11 @@ public class APIConstants {
         public static final int API_AUTH_RESOURCE_FORBIDDEN = 900908;
         public static final int SUBSCRIPTION_INACTIVE = 900909;
         public static final int INVALID_SCOPE = 900910;
+        public static final int SUBSCRIPTION_ON_HOLD = 900911;
+        public static final int SUBSCRIPTION_REJECTED = 900912;
+        public static final int SUBSCRIPTION_BLOCKED = 900913;
+        public static final int SUBSCRIPTION_PROD_BLOCKED = 900914;
+
 
         private KeyValidationStatus() {
 
