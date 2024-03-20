@@ -356,6 +356,9 @@ public class APIClient {
                 isOAuthDisabled = !oauth2Authentication.enabled;
                 isOAuthOptional = oauth2Authentication.required == "optional";
                 authTypes.oauth2 = {header: <string>oauth2Authentication.headerName, sendTokenToUpstream: <boolean>oauth2Authentication.sendTokenToUpstream, disabled: !oauth2Authentication.enabled, required: oauth2Authentication.required};
+            } else if authentication.authType == "JWT" {
+                JWTAuthentication jwtAuthentication = check authentication.cloneWithType(JWTAuthentication);
+                authTypes.jwt = {header: <string>jwtAuthentication.headerName, sendTokenToUpstream: <boolean>jwtAuthentication.sendTokenToUpstream, disabled: !jwtAuthentication.enabled, audience: jwtAuthentication.audience};
             } else if authentication.authType == "APIKey" && authentication is APIKeyAuthentication {
                 APIKeyAuthentication apiKeyAuthentication = check authentication.cloneWithType(APIKeyAuthentication);
                 authTypes.apiKey = [];

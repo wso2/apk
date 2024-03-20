@@ -78,6 +78,9 @@
             "$ref": "#/schemas/OAuth2Authentication"
           },
           {
+            "$ref": "#/schemas/JWTAuthentication"
+          },
+          {
             "$ref": "#/schemas/MTLSAuthentication"
           },
           {
@@ -143,6 +146,43 @@
         },
         "queryParamEnable": {
           "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "JWTAuthentication": {
+      "type": "object",
+      "properties": {
+        "required": {
+          "type": "string",
+          "default": "mandatory",
+          "enum": ["mandatory", "optional"]
+        },
+        "authType": {
+          "type": "string",
+          "enum": ["JWT"]
+        },
+        "sendTokenToUpstream": {
+          "type": "boolean",
+          "default": false
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "headerName": {
+          "type": "string"
+        },
+        "queryParamName": {
+          "type": "string"
+        },
+        "headerEnable": {
+          "type": "boolean"
+        },
+        "queryParamEnable": {
+          "type": "boolean"
+        },
+        "audience": {
+          "type": "array"
         }
       },
       "additionalProperties": false

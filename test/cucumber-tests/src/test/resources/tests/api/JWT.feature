@@ -16,6 +16,11 @@ Feature: Test JWT related functionalities
       |Authorization|bearer invalidToken|
     And I send "GET" request to "https://default.gw.wso2.com:9095/jwt-basic/3.14/employee/" with body ""
     And the response status code should be 401
+    Then I remove header "Authorization"
+    Then I set headers
+      | custom-jwt | ${accessToken} |
+    And I send "GET" request to "https://default.gw.wso2.com:9095/jwt-basic/3.14/employee/" with body ""
+    And the response status code should be 200
   Scenario: Test JWT Token from different issuer with JWKS
     Given The system is ready
     Then I generate JWT token from idp1 with kid "123-456"

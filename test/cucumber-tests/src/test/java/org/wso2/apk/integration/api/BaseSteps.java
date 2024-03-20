@@ -179,6 +179,12 @@ public class BaseSteps {
         }
     }
 
+    @Then("I remove header {string}")
+    public void setHeaders(String headerName) {
+        String resolvedHeaderName = Utils.resolveVariables(headerName, sharedContext.getValueStore());
+        sharedContext.removeHeader(resolvedHeaderName);
+    }
+
     @Then("the response headers should contain")
     public void theResponseHeadersShouldContain(DataTable dataTable) {
         List<List<String>> rows = dataTable.asLists(String.class);
