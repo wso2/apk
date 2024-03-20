@@ -20,6 +20,7 @@ package org.wso2.apk.integration.api;
 import com.google.common.io.Resources;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import io.cucumber.java.en.Given;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -152,24 +153,25 @@ public class APIDeploymentSteps {
         Thread.sleep(3000);
     }
 
-    @When("make the Application Creation request")
-    public void make_application_creation_request() throws Exception {
+    @When("make the Application Creation request with the name {string}")
+    public void make_application_creation_request(String applicationName) throws Exception {
         logger.info("Creating an application");
-        String payload = "{\"name\":\"PetstoreApp\",\"throttlingPolicy\":\"10PerMin\",\"description\":\"test app\",\"tokenType\":\"JWT\",\"groups\":null,\"attributes\":{}}";
-
+        String payload = "{\"name\":\"" + applicationName + "\",\"throttlingPolicy\":\"10PerMin\",\"description\":\"test app\",\"tokenType\":\"JWT\",\"groups\":null,\"attributes\":{}}";
+    
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + sharedContext.getDevportalAccessToken());
         headers.put(Constants.REQUEST_HEADERS.HOST, Constants.DEFAULT_API_HOST);
-
+    
         HttpResponse response = sharedContext.getHttpClient().doPost(Utils.getApplicationCreateURL(),
                 headers, payload, Constants.CONTENT_TYPES.APPLICATION_JSON);
-
+    
         sharedContext.setResponse(response);
         sharedContext.setResponseBody(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()));
         logger.info("Response: " + sharedContext.getResponseBody());
         sharedContext.setApplicationUUID(Utils.extractApplicationID(sharedContext.getResponseBody()));
         Thread.sleep(3000);
     }
+    
 
     @When("I have a KeyManager")
     public void i_have_a_key_manager() throws Exception {
@@ -221,7 +223,7 @@ public class APIDeploymentSteps {
         String apiUUID = sharedContext.getApiUUID();
         logger.info("API UUID: " + apiUUID);
         logger.info("Application UUID: " + applicationUUID);
-        String payload = "{\"apiId\":\"" + apiUUID + "\",\"applicationId\":\"" + applicationUUID + "\",\"throttlingPolicy\":\"Gold\"}";
+        String payload = "{\"apiId\":\"" + apiUUID + "\",\"applicationId\":\"" + applicationUUID + "\",\"throttlingPolicy\":\"Unlimited\"}";
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + sharedContext.getDevportalAccessToken());
@@ -261,7 +263,7 @@ public class APIDeploymentSteps {
         logger.info("Oauth Key UUID: " + oauthKeyUUID);
         logger.info("Application UUID: " + applicationUUID);
         String payload = "{\"consumerSecret\":\"" + consumerSecret + "\",\"validityPeriod\":3600,\"revokeToken\":null," +
-                "\"scopes\":[\"write:pets\",\"read:pets\"],\"additionalProperties\":{\"id_token_expiry_time\":3600," +
+                "\"scopes\":[\"write:pets\",\"read:pets\",\"query:hero\"],\"additionalProperties\":{\"id_token_expiry_time\":3600," +
                 "\"application_access_token_expiry_time\":3600,\"user_access_token_expiry_time\":3600,\"bypassClientCredentials\":false," +
                 "\"pkceMandatory\":false,\"pkceSupportPlain\":false,\"refresh_token_expiry_time\":86400}}";
 
@@ -276,6 +278,33 @@ public class APIDeploymentSteps {
         sharedContext.setResponseBody(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()));
         sharedContext.setApiAccessToken(Utils.extractKeys(sharedContext.getResponseBody(), "accessToken"));
         logger.info("Access Token: " + sharedContext.getApiAccessToken());
+        Thread.sleep(3000);
+    }
+
+    @When("I make Access Token Generation request without scopes")
+    public void make_access_token_generation_request_without_scopes() throws Exception {
+        String applicationUUID = sharedContext.getApplicationUUID();
+        String oauthKeyUUID = sharedContext.getOauthKeyUUID();
+        String consumerKey = sharedContext.getConsumerKey();
+        String consumerSecret = sharedContext.getConsumerSecret();
+        logger.info("Oauth Key UUID: " + oauthKeyUUID);
+        logger.info("Application UUID: " + applicationUUID);
+        String payload = "{\"consumerSecret\":\"" + consumerSecret + "\",\"validityPeriod\":3600,\"revokeToken\":null," +
+                "\"scopes\":[],\"additionalProperties\":{\"id_token_expiry_time\":3600," +
+                "\"application_access_token_expiry_time\":3600,\"user_access_token_expiry_time\":3600,\"bypassClientCredentials\":false," +
+                "\"pkceMandatory\":false,\"pkceSupportPlain\":false,\"refresh_token_expiry_time\":86400}}";
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + sharedContext.getDevportalAccessToken());
+        headers.put(Constants.REQUEST_HEADERS.HOST, Constants.DEFAULT_API_HOST);
+
+        HttpResponse response = sharedContext.getHttpClient().doPost(Utils.getAccessTokenGenerationURL(applicationUUID, oauthKeyUUID),
+                headers, payload, Constants.CONTENT_TYPES.APPLICATION_JSON);
+
+        sharedContext.setResponse(response);
+        sharedContext.setResponseBody(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()));
+        sharedContext.setApiAccessToken(Utils.extractKeys(sharedContext.getResponseBody(), "accessToken"));
+        logger.info("Access Token without scopes: " + sharedContext.getApiAccessToken());
         Thread.sleep(3000);
     }
 
@@ -328,44 +357,148 @@ public class APIDeploymentSteps {
 
 
 
-    @When("I undeploy the API whose ID is {string}")
-    public void i_undeploy_the_api_whose_id_is(String apiID) throws Exception {
+    // @When("I undeploy the API whose ID is {string}")
+    // public void i_undeploy_the_api_whose_id_is(String apiID) throws Exception {
 
-        // Create query parameters
-        List<NameValuePair> queryParams = new ArrayList<>();
-        queryParams.add(new BasicNameValuePair("apiId", apiID));
+    //     // Create query parameters
+    //     List<NameValuePair> queryParams = new ArrayList<>();
+    //     queryParams.add(new BasicNameValuePair("apiId", apiID));
 
-        URI uri = new URIBuilder(Utils.getAPIUnDeployerURL()).addParameters(queryParams).build();
+    //     URI uri = new URIBuilder(Utils.getAPIUnDeployerURL()).addParameters(queryParams).build();
 
-        Map<String, String> headers = new HashMap<>();
-        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + sharedContext.getPublisherAccessToken());
-        headers.put(Constants.REQUEST_HEADERS.HOST, Constants.DEFAULT_API_HOST);
+    //     Map<String, String> headers = new HashMap<>();
+    //     headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + sharedContext.getPublisherAccessToken());
+    //     headers.put(Constants.REQUEST_HEADERS.HOST, Constants.DEFAULT_API_HOST);
 
-        HttpResponse response = sharedContext.getHttpClient().doPost(uri.toString(), headers, "",
-                Constants.CONTENT_TYPES.APPLICATION_JSON);
+    //     HttpResponse response = sharedContext.getHttpClient().doPost(uri.toString(), headers, "",
+    //             Constants.CONTENT_TYPES.APPLICATION_JSON);
 
-        sharedContext.setResponse(response);
-        sharedContext.setResponseBody(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()));
-    }
+    //     sharedContext.setResponse(response);
+    //     sharedContext.setResponseBody(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()));
+    // }
 
-    @When("I undeploy the API whose ID is {string} and organization {string}")
-    public void undeployAPIByIdAndOrganization(String apiID,String organization) throws Exception {
+    // @When("I undeploy the API whose ID is {string} and organization {string}")
+    // public void undeployAPIByIdAndOrganization(String apiID,String organization) throws Exception {
 
-        // Create query parameters
-        List<NameValuePair> queryParams = new ArrayList<>();
-        queryParams.add(new BasicNameValuePair("apiId", apiID));
+    //     // Create query parameters
+    //     List<NameValuePair> queryParams = new ArrayList<>();
+    //     queryParams.add(new BasicNameValuePair("apiId", apiID));
 
-        URI uri = new URIBuilder(Utils.getAPIUnDeployerURL()).addParameters(queryParams).build();
+    //     URI uri = new URIBuilder(Utils.getAPIUnDeployerURL()).addParameters(queryParams).build();
 
-        Map<String, String> headers = new HashMap<>();
-        Object header = sharedContext.getStoreValue(organization);
-        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + header);
-        headers.put(Constants.REQUEST_HEADERS.HOST, Constants.DEFAULT_API_HOST);
+    //     Map<String, String> headers = new HashMap<>();
+    //     Object header = sharedContext.getStoreValue(organization);
+    //     headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + header);
+    //     headers.put(Constants.REQUEST_HEADERS.HOST, Constants.DEFAULT_API_HOST);
 
-        HttpResponse response = sharedContext.getHttpClient().doPost(uri.toString(), headers, "",
-                Constants.CONTENT_TYPES.APPLICATION_JSON);
+    //     HttpResponse response = sharedContext.getHttpClient().doPost(uri.toString(), headers, "",
+    //             Constants.CONTENT_TYPES.APPLICATION_JSON);
 
-        sharedContext.setResponse(response);
-        sharedContext.setResponseBody(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()));
-    }
+    //     sharedContext.setResponse(response);
+    //     sharedContext.setResponseBody(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()));
+    // }
+
+        //New steps
+        @Given("a valid graphql definition file")
+        public void iHaveValidGraphQLDefinition() throws Exception {
+    
+            // Create a MultipartEntityBuilder to build the request entity
+            MultipartEntityBuilder builder = MultipartEntityBuilder.create()
+                    .setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
+                    .addPart("file", new FileBody(definitionFile));
+    
+            logger.info("Definition File: "+ new FileBody(definitionFile));
+    
+            Map<String, String> headers = new HashMap<>();
+            headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + sharedContext.getPublisherAccessToken());
+            headers.put(Constants.REQUEST_HEADERS.HOST, Constants.DEFAULT_APIM_HOST);
+    
+            HttpEntity multipartEntity = builder.build();
+    
+            HttpResponse response = sharedContext.getHttpClient().doPostWithMultipart(Utils.getGQLSchemaValidatorURL(),
+                    multipartEntity, headers);
+    
+            sharedContext.setResponse(response);
+            sharedContext.setResponseBody(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()));
+            sharedContext.setAPIDefinitionValidStatus(Utils.extractValidStatus(sharedContext.getResponseBody()));
+            Thread.sleep(3000);
+        }
+    
+        @Then("I make the import GraphQLAPI Creation request")
+        public void make_import_gqlapi_creation_request() throws Exception {
+    
+            // Create a MultipartEntityBuilder to build the request entity
+            MultipartEntityBuilder builder = MultipartEntityBuilder.create()
+                    .setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
+                    .addPart("additionalProperties", new FileBody(payloadFile))
+                    .addPart("file", new FileBody(definitionFile));
+    
+    
+            Map<String, String> headers = new HashMap<>();
+            headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + sharedContext.getPublisherAccessToken());
+            headers.put(Constants.REQUEST_HEADERS.HOST, Constants.DEFAULT_API_HOST);
+    
+            HttpEntity multipartEntity = builder.build();
+    
+            HttpResponse response = sharedContext.getHttpClient().doPostWithMultipart(Utils.getGQLImportAPIURL(),
+                    multipartEntity, headers);
+    
+            sharedContext.setResponse(response);
+            sharedContext.setResponseBody(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()));
+            sharedContext.setApiUUID(Utils.extractID(sharedContext.getResponseBody()));
+            Thread.sleep(3000);
+        }
+
+        @Then("I delete the application {string} from devportal")
+        public void make_application_deletion_request(String applicationName) throws Exception {
+            logger.info("Fetching the applications");
+        
+            Map<String, String> headers = new HashMap<>();
+            headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + sharedContext.getDevportalAccessToken());
+            headers.put(Constants.REQUEST_HEADERS.HOST, Constants.DEFAULT_API_HOST);
+
+            List<NameValuePair> queryParams = new ArrayList<>();
+            queryParams.add(new BasicNameValuePair("query", applicationName));
+
+            URI uri = new URIBuilder(Utils.getApplicationCreateURL()).addParameters(queryParams).build();
+            HttpResponse appSearchResponse = sharedContext.getHttpClient().doGet(uri.toString(), headers);
+        
+            sharedContext.setResponse(appSearchResponse);
+            sharedContext.setResponseBody(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()));
+            sharedContext.setApplicationUUID(Utils.extractApplicationUUID(sharedContext.getResponseBody()));
+            HttpResponse deleteResponse = sharedContext.getHttpClient().doDelete(Utils.getApplicationCreateURL() + "/" + sharedContext.getApplicationUUID(), headers);
+        
+            sharedContext.setResponse(deleteResponse);
+            sharedContext.setResponseBody(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()));
+            Thread.sleep(3000);
+        }
+
+        @Then("I find the apiUUID of the API created with the name {string}")
+        public void find_api_uuid_using_name(String apiName) throws Exception {
+            logger.info("Fetching the APIs");
+        
+            Map<String, String> headers = new HashMap<>();
+            headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + sharedContext.getPublisherAccessToken());
+            headers.put(Constants.REQUEST_HEADERS.HOST, Constants.DEFAULT_API_HOST);
+            
+            HttpResponse appSearchResponse = sharedContext.getHttpClient().doGet(Utils.getAPISearchEndpoint(apiName), headers);
+        
+            sharedContext.setResponse(appSearchResponse);
+            sharedContext.setResponseBody(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()));
+            sharedContext.setApiUUID(Utils.extractAPIUUID(sharedContext.getResponseBody()));
+            Thread.sleep(3000);
+        }
+
+        @When("I undeploy the selected API")
+        public void i_undeploy_the_api() throws Exception {
+            Map<String, String> headers = new HashMap<>();
+            headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + sharedContext.getPublisherAccessToken());
+            headers.put(Constants.REQUEST_HEADERS.HOST, Constants.DEFAULT_API_HOST);
+    
+            HttpResponse response = sharedContext.getHttpClient().doDelete(Utils.getAPIUnDeployerURL(sharedContext.getApiUUID()), headers);
+    
+            sharedContext.setResponse(response);
+            sharedContext.setResponseBody(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()));
+            Thread.sleep(3000);
+        }
 }

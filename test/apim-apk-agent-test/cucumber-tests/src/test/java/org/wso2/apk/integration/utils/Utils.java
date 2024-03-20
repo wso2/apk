@@ -120,10 +120,24 @@ public class Utils {
                 + Constants.DEFAULT_API_DEPLOYER + "apis/" + apiUUID + "/deploy-revision?revisionId=" + revisionId;
     }
 
-    public static String getAPIUnDeployerURL() {
-
+    public static String getAPIUnDeployerURL(String apiID) {
         return "https://" + Constants.DEFAULT_API_HOST + ":" + Constants.DEFAULT_GW_PORT + "/"
-                + Constants.DEFAULT_API_DEPLOYER + "apis/undeploy";
+                + Constants.DEFAULT_API_DEPLOYER + "apis/" + apiID;
+    }
+
+    public static String getGQLSchemaValidatorURL() {
+        return "https://" + Constants.DEFAULT_API_HOST + ":" + Constants.DEFAULT_GW_PORT + "/"
+                + Constants.DEFAULT_API_DEPLOYER + "apis/validate-graphql-schema";
+    }
+
+    public static String getGQLImportAPIURL() {
+        return "https://" + Constants.DEFAULT_API_HOST + ":" + Constants.DEFAULT_GW_PORT + "/"
+                + Constants.DEFAULT_API_DEPLOYER + "apis/import-graphql-schema";
+    }
+
+    public static String getAPISearchEndpoint(String queryValue) {
+        return "https://" + Constants.DEFAULT_API_HOST + ":" + Constants.DEFAULT_GW_PORT + "/"
+                + Constants.DEFAULT_API_DEPLOYER + "search?query=content:" + queryValue;
     }
 
     public static String extractID(String payload) throws IOException {
@@ -297,5 +311,53 @@ public class Utils {
 
         matcher.appendTail(resolvedString);
         return resolvedString.toString();
+    }
+
+    public static Boolean extractValidStatus(String payload) throws IOException {
+        JSONParser parser = new JSONParser();
+        try {
+            // Parse the JSON string
+            JSONObject jsonObject = (JSONObject) parser.parse(payload);
+
+            // Get the value of the "isValid" attribute
+            Boolean validStatus = (Boolean) jsonObject.get("isValid");
+            return validStatus;
+        } catch (ParseException e) {
+            throw new IOException("Error while parsing the JSON payload: " + e.getMessage());
+        }
+    }
+
+    public static String extractApplicationUUID(String payload) throws IOException {
+        JSONParser parser = new JSONParser();
+        try {
+            JSONObject jsonObject = (JSONObject) parser.parse(payload);
+            long count = (long) jsonObject.get("count");
+            if (count == 1) {
+                JSONArray list = (JSONArray) jsonObject.get("list");
+                JSONObject applicationObj = (JSONObject) list.get(0);
+                String applicationId = (String) applicationObj.get("applicationId");
+                return applicationId;
+            }
+        } catch (ParseException e) {
+            throw new IOException("Error while parsing the JSON payload: " + e.getMessage());
+        }
+        return null; // Return null if count is not 1
+    }
+
+    public static String extractAPIUUID(String payload) throws IOException {
+        JSONParser parser = new JSONParser();
+        try {
+            JSONObject jsonObject = (JSONObject) parser.parse(payload);
+            long count = (long) jsonObject.get("count");
+            if (count == 1) {
+                JSONArray list = (JSONArray) jsonObject.get("list");
+                JSONObject apiObj = (JSONObject) list.get(0);
+                String apiId = (String) apiObj.get("id");
+                return apiId;
+            }
+        } catch (ParseException e) {
+            throw new IOException("Error while parsing the JSON payload: " + e.getMessage());
+        }
+        return null; // Return null if count is not 1
     }
 }

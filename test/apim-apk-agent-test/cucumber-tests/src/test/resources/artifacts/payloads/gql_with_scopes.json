@@ -1,0 +1,370 @@
+{
+    "id": "6f742614-4547-471e-97f5-5cd3f724543f",
+    "name": "StarWarsAPI",
+    "description": null,
+    "context": "/graphql",
+    "version": "3.14",
+    "provider": "admin",
+    "lifeCycleStatus": "CREATED",
+    "wsdlInfo": null,
+    "wsdlUrl": null,
+    "responseCachingEnabled": false,
+    "cacheTimeout": 300,
+    "hasThumbnail": false,
+    "isDefaultVersion": false,
+    "isRevision": false,
+    "revisionedApiId": null,
+    "revisionId": 0,
+    "enableSchemaValidation": false,
+    "enableSubscriberVerification": false,
+    "type": "GRAPHQL",
+    "audience": null,
+    "transport": [
+        "http",
+        "https"
+    ],
+    "tags": [],
+    "policies": [
+        "Unlimited"
+    ],
+    "apiThrottlingPolicy": null,
+    "authorizationHeader": "Authorization",
+    "apiKeyHeader": "ApiKey",
+    "securityScheme": [
+        "oauth_basic_auth_api_key_mandatory",
+        "oauth2"
+    ],
+    "maxTps": null,
+    "visibility": "PUBLIC",
+    "visibleRoles": [],
+    "visibleTenants": [],
+    "mediationPolicies": [],
+    "apiPolicies": null,
+    "subscriptionAvailability": "CURRENT_TENANT",
+    "subscriptionAvailableTenants": [],
+    "additionalProperties": [],
+    "additionalPropertiesMap": {},
+    "monetization": null,
+    "accessControl": "NONE",
+    "accessControlRoles": [],
+    "businessInformation": {
+        "businessOwner": null,
+        "businessOwnerEmail": null,
+        "technicalOwner": null,
+        "technicalOwnerEmail": null
+    },
+    "corsConfiguration": {
+        "corsConfigurationEnabled": false,
+        "accessControlAllowOrigins": [
+            "*"
+        ],
+        "accessControlAllowCredentials": false,
+        "accessControlAllowHeaders": [
+            "authorization",
+            "Access-Control-Allow-Origin",
+            "Content-Type",
+            "SOAPAction"
+        ],
+        "accessControlAllowMethods": [
+            "GET",
+            "PUT",
+            "POST",
+            "DELETE",
+            "PATCH",
+            "OPTIONS"
+        ]
+    },
+    "websubSubscriptionConfiguration": {
+        "enable": false,
+        "secret": "",
+        "signingAlgorithm": "SHA1",
+        "signatureHeader": "x-hub-signature"
+    },
+    "workflowStatus": null,
+    "createdTime": "1710911652000",
+    "lastUpdatedTimestamp": "1710912171000",
+    "lastUpdatedTime": "2024-03-20 05:22:51.0",
+    "endpointConfig": {
+        "endpoint_type": "http",
+        "sandbox_endpoints": {
+            "url": "http://graphql-faker-service:9002/graphql"
+        },
+        "production_endpoints": {
+            "url": "http://graphql-faker-service:9002/graphql"
+        }
+    },
+    "endpointImplementationType": "ENDPOINT",
+    "scopes": [
+        {
+            "scope": {
+                "id": null,
+                "name": "query:hero",
+                "displayName": "query:hero",
+                "description": "Query your favorite starwars hero",
+                "bindings": [],
+                "usageCount": null
+            },
+            "shared": false
+        },
+        {
+            "scope": {
+                "id": null,
+                "name": "query:human",
+                "displayName": "query:human",
+                "description": "Query the human characters featured in startwars",
+                "bindings": [],
+                "usageCount": null
+            },
+            "shared": false
+        }
+    ],
+    "operations": [
+        {
+            "id": "",
+            "target": "allCharacters",
+            "verb": "QUERY",
+            "authType": "Application & Application User",
+            "throttlingPolicy": "Unlimited",
+            "scopes": [],
+            "usedProductIds": [],
+            "amznResourceName": null,
+            "amznResourceTimeout": null,
+            "amznResourceContentEncode": null,
+            "payloadSchema": null,
+            "uriMapping": null,
+            "operationPolicies": {
+                "request": [],
+                "response": [],
+                "fault": []
+            }
+        },
+        {
+            "id": "",
+            "target": "allDroids",
+            "verb": "QUERY",
+            "authType": "Application & Application User",
+            "throttlingPolicy": "Unlimited",
+            "scopes": [],
+            "usedProductIds": [],
+            "amznResourceName": null,
+            "amznResourceTimeout": null,
+            "amznResourceContentEncode": null,
+            "payloadSchema": null,
+            "uriMapping": null,
+            "operationPolicies": {
+                "request": [],
+                "response": [],
+                "fault": []
+            }
+        },
+        {
+            "id": "",
+            "target": "allHumans",
+            "verb": "QUERY",
+            "authType": "Application & Application User",
+            "throttlingPolicy": "Unlimited",
+            "scopes": [],
+            "usedProductIds": [],
+            "amznResourceName": null,
+            "amznResourceTimeout": null,
+            "amznResourceContentEncode": null,
+            "payloadSchema": null,
+            "uriMapping": null,
+            "operationPolicies": {
+                "request": [],
+                "response": [],
+                "fault": []
+            }
+        },
+        {
+            "id": "",
+            "target": "character",
+            "verb": "QUERY",
+            "authType": "Application & Application User",
+            "throttlingPolicy": "Unlimited",
+            "scopes": [],
+            "usedProductIds": [],
+            "amznResourceName": null,
+            "amznResourceTimeout": null,
+            "amznResourceContentEncode": null,
+            "payloadSchema": null,
+            "uriMapping": null,
+            "operationPolicies": {
+                "request": [],
+                "response": [],
+                "fault": []
+            }
+        },
+        {
+            "id": "",
+            "target": "createReview",
+            "verb": "MUTATION",
+            "authType": "Application & Application User",
+            "throttlingPolicy": "Unlimited",
+            "scopes": [],
+            "usedProductIds": [],
+            "amznResourceName": null,
+            "amznResourceTimeout": null,
+            "amznResourceContentEncode": null,
+            "payloadSchema": null,
+            "uriMapping": null,
+            "operationPolicies": {
+                "request": [],
+                "response": [],
+                "fault": []
+            }
+        },
+        {
+            "id": "",
+            "target": "droid",
+            "verb": "QUERY",
+            "authType": "Application & Application User",
+            "throttlingPolicy": "Unlimited",
+            "scopes": [],
+            "usedProductIds": [],
+            "amznResourceName": null,
+            "amznResourceTimeout": null,
+            "amznResourceContentEncode": null,
+            "payloadSchema": null,
+            "uriMapping": null,
+            "operationPolicies": {
+                "request": [],
+                "response": [],
+                "fault": []
+            }
+        },
+        {
+            "id": "",
+            "target": "hero",
+            "verb": "QUERY",
+            "authType": "Application & Application User",
+            "throttlingPolicy": "Unlimited",
+            "scopes": [
+                "query:hero"
+            ],
+            "usedProductIds": [],
+            "amznResourceName": null,
+            "amznResourceTimeout": null,
+            "amznResourceContentEncode": null,
+            "payloadSchema": null,
+            "uriMapping": null,
+            "operationPolicies": {
+                "request": [],
+                "response": [],
+                "fault": []
+            }
+        },
+        {
+            "id": "",
+            "target": "human",
+            "verb": "QUERY",
+            "authType": "Application & Application User",
+            "throttlingPolicy": "Unlimited",
+            "scopes": [],
+            "usedProductIds": [],
+            "amznResourceName": null,
+            "amznResourceTimeout": null,
+            "amznResourceContentEncode": null,
+            "payloadSchema": null,
+            "uriMapping": null,
+            "operationPolicies": {
+                "request": [],
+                "response": [],
+                "fault": []
+            }
+        },
+        {
+            "id": "",
+            "target": "reviewAdded",
+            "verb": "SUBSCRIPTION",
+            "authType": "Application & Application User",
+            "throttlingPolicy": "Unlimited",
+            "scopes": [],
+            "usedProductIds": [],
+            "amznResourceName": null,
+            "amznResourceTimeout": null,
+            "amznResourceContentEncode": null,
+            "payloadSchema": null,
+            "uriMapping": null,
+            "operationPolicies": {
+                "request": [],
+                "response": [],
+                "fault": []
+            }
+        },
+        {
+            "id": "",
+            "target": "reviews",
+            "verb": "QUERY",
+            "authType": "Application & Application User",
+            "throttlingPolicy": "Unlimited",
+            "scopes": [],
+            "usedProductIds": [],
+            "amznResourceName": null,
+            "amznResourceTimeout": null,
+            "amznResourceContentEncode": null,
+            "payloadSchema": null,
+            "uriMapping": null,
+            "operationPolicies": {
+                "request": [],
+                "response": [],
+                "fault": []
+            }
+        },
+        {
+            "id": "",
+            "target": "search",
+            "verb": "QUERY",
+            "authType": "Application & Application User",
+            "throttlingPolicy": "Unlimited",
+            "scopes": [],
+            "usedProductIds": [],
+            "amznResourceName": null,
+            "amznResourceTimeout": null,
+            "amznResourceContentEncode": null,
+            "payloadSchema": null,
+            "uriMapping": null,
+            "operationPolicies": {
+                "request": [],
+                "response": [],
+                "fault": []
+            }
+        },
+        {
+            "id": "",
+            "target": "starship",
+            "verb": "QUERY",
+            "authType": "Application & Application User",
+            "throttlingPolicy": "Unlimited",
+            "scopes": [],
+            "usedProductIds": [],
+            "amznResourceName": null,
+            "amznResourceTimeout": null,
+            "amznResourceContentEncode": null,
+            "payloadSchema": null,
+            "uriMapping": null,
+            "operationPolicies": {
+                "request": [],
+                "response": [],
+                "fault": []
+            }
+        }
+    ],
+    "threatProtectionPolicies": null,
+    "categories": [],
+    "keyManagers": [
+        "all"
+    ],
+    "serviceInfo": null,
+    "advertiseInfo": {
+        "advertised": false,
+        "apiExternalProductionEndpoint": null,
+        "apiExternalSandboxEndpoint": null,
+        "originalDevPortalUrl": null,
+        "apiOwner": "admin",
+        "vendor": "WSO2"
+    },
+    "gatewayVendor": "wso2",
+    "gatewayType": "wso2/synapse",
+    "asyncTransportProtocols": []
+}
