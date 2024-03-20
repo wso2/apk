@@ -659,6 +659,14 @@ public class APIClient {
                             (<model:GQLRouteFilter[]>filters).push(scopeFilter);
                         }
                     }
+                    if operation.rateLimit != () {
+                        model:RateLimitPolicy? rateLimitPolicyCR = self.generateRateLimitPolicyCR(apkConf, operation.rateLimit, apiArtifact.uniqueId, operation, organization);
+                        if rateLimitPolicyCR != () {
+                            apiArtifact.rateLimitPolicies[rateLimitPolicyCR.metadata.name] = rateLimitPolicyCR;
+                            model:GQLRouteFilter rateLimitPolicyFilter = {extensionRef: {group: "dp.wso2.com", kind: "RateLimitPolicy", name: rateLimitPolicyCR.metadata.name}};
+                            (<model:GQLRouteFilter[]>filters).push(rateLimitPolicyFilter);
+                        }
+                    }
                     if operation.operationPolicies != () {
                         model:APIPolicy? apiPolicyCR = check self.generateAPIPolicyAndBackendCR(apiArtifact, apkConf, operation, operation.operationPolicies, organization, apiArtifact.uniqueId);
                         if apiPolicyCR != () {
