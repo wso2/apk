@@ -80,16 +80,15 @@ type APISpec struct {
 	Sandbox []EnvConfig `json:"sandbox"`
 
 	// APIType denotes the type of the API.
-	// Possible values could be REST, GraphQL, Async
+	// Possible values could be REST, GraphQL, Async, GRPC etc.
 	//
-	// +kubebuilder:validation:Enum=REST;GraphQL
+	// +kubebuilder:validation:Enum=REST;GraphQL;GRPC
 	APIType string `json:"apiType"`
 
 	// BasePath denotes the basepath of the API.
 	// e.g: /pet-store-api/1.0.6
 	//
 	// +kubectl:validation:MaxLength=232
-	// +kubebuilder:validation:Pattern=^[/][a-zA-Z0-9~/_.-]*$
 	BasePath string `json:"basePath"`
 
 	// Organization denotes the organization.
