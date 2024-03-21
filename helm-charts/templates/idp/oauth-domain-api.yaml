@@ -22,6 +22,8 @@ metadata:
   labels:
     api-name: "idp-domain-service"
     api-version: "1.0.0"
+  annotations:
+    "helm.sh/hook": post-install
 spec:
   apiName: "oauth-api"
   apiType: "REST"

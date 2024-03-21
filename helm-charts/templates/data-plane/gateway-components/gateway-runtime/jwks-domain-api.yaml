@@ -22,6 +22,8 @@ metadata:
   labels:
     api-name: "jwks-endpoint"
     api-version: "1.0.0"
+  annotations:
+    "helm.sh/hook": post-install
 spec:
   apiName: "jwks-domain-service"
   apiType: "REST"

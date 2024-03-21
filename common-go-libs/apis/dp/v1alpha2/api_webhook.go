@@ -261,7 +261,9 @@ func getBasePathWithoutVersion(basePath string) string {
 
 func validateGzip(name, namespace string) (string, string) {
 	configMap := &corev1.ConfigMap{}
-	if err := c.Get(context.Background(), types.NamespacedName{Name: string(name), Namespace: namespace}, configMap); err == nil {
+	var err error
+
+	if err = c.Get(context.Background(), types.NamespacedName{Name: string(name), Namespace: namespace}, configMap); err == nil {
 		var apiDef []byte
 		for _, val := range configMap.BinaryData {
 			// config map data key is "swagger.yaml"
@@ -274,9 +276,10 @@ func validateGzip(name, namespace string) (string, string) {
 			return "", "invalid gzipped content"
 		}
 		return schemaString, ""
-	} else {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2600, logging.MINOR, "ConfigMap for sdl not found: %v", err))
 	}
+
+	loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2600, logging.MINOR, "ConfigMap for sdl not found: %v", err))
+
 	return "", ""
 }
 

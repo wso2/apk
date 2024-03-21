@@ -21,6 +21,8 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     managed-by: "apk"
+  annotations:
+    "helm.sh/hook": post-install
 spec:
   apiName: "WSO2 APK Config Generator API"
   apiType: "REST"

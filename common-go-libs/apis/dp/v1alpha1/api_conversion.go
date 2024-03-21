@@ -39,8 +39,9 @@ func (src *API) ConvertTo(dstRaw conversion.Hub) error {
 	dst.Spec.BasePath = src.Spec.BasePath
 	dst.Spec.Organization = src.Spec.Organization
 	dst.Spec.SystemAPI = src.Spec.SystemAPI
+
 	if src.Spec.Production != nil {
-		src.Spec.Production = []EnvConfig{}
+		dst.Spec.Production = []v1alpha2.EnvConfig{}
 		for _, productionRef := range src.Spec.Production {
 			dst.Spec.Production = append(dst.Spec.Production, v1alpha2.EnvConfig{
 				RouteRefs: productionRef.HTTPRouteRefs,
@@ -48,7 +49,7 @@ func (src *API) ConvertTo(dstRaw conversion.Hub) error {
 		}
 	}
 	if src.Spec.Sandbox != nil {
-		src.Spec.Sandbox = []EnvConfig{}
+		dst.Spec.Sandbox = []v1alpha2.EnvConfig{}
 		for _, sandboxRef := range src.Spec.Sandbox {
 			dst.Spec.Sandbox = append(dst.Spec.Sandbox, v1alpha2.EnvConfig{
 				RouteRefs: sandboxRef.HTTPRouteRefs,
@@ -86,6 +87,24 @@ func (src *API) ConvertFrom(srcRaw conversion.Hub) error {
 	src.Spec.BasePath = dst.Spec.BasePath
 	src.Spec.Organization = dst.Spec.Organization
 	src.Spec.SystemAPI = dst.Spec.SystemAPI
+
+	if dst.Spec.Production != nil {
+		src.Spec.Production = []EnvConfig{}
+		for _, productionRef := range dst.Spec.Production {
+			src.Spec.Production = append(src.Spec.Production, EnvConfig{
+				HTTPRouteRefs: productionRef.RouteRefs,
+			})
+		}
+	}
+
+	if dst.Spec.Sandbox != nil {
+		src.Spec.Sandbox = []EnvConfig{}
+		for _, sandboxRef := range dst.Spec.Sandbox {
+			src.Spec.Sandbox = append(src.Spec.Sandbox, EnvConfig{
+				HTTPRouteRefs: sandboxRef.RouteRefs,
+			})
+		}
+	}
 
 	// Convert []Property to []v1alpha1.Property
 	var properties []Property
