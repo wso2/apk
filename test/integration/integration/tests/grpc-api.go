@@ -91,7 +91,7 @@ var GRPCAPI = suite.IntegrationTest{
 	},
 }
 
-func invokeGRPCClient(gwAddr string, t *testing.T) (*student.StudentResponse, error) {
+func invokeGRPCClient(gwAddr string, t *testing.T, timeout config.TimeoutConfig) (*student.StudentResponse, error) {
 
 	t.Logf("Starting gRPC client...")
 
@@ -129,16 +129,18 @@ func invokeGRPCClient(gwAddr string, t *testing.T) (*student.StudentResponse, er
 }
 
 func invokeGRPCClientUntilSatisfied(gwAddr string, t *testing.T, testCase grpcutils.GRPCTestCase, timeout config.TimeoutConfig) {
+	//(delay to allow CRs to be applied)
+	time.Sleep(5 * time.Second)
 	var out *student.StudentResponse
 	var err error
 	attempt := 0
 	maxAttempts := 4
 	expected := testCase.ExpectedResponse
 	//timeoutDuration := timeout.RequestTimeout * time.Second
-	timeoutDuration := 10 * time.Second
+	timeoutDuration := 50 * time.Second
 	for attempt < maxAttempts {
 		t.Logf("Attempt %d to invoke gRPC client...", attempt+1)
-		out, err = invokeGRPCClient(gwAddr, t)
+		out, err = invokeGRPCClient(gwAddr, t, timeout)
 
 		if err != nil {
 			t.Logf("Error on attempt %d: %v", attempt+1, err)
