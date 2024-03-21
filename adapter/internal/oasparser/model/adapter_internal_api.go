@@ -1111,7 +1111,21 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoGRPCRouteCR(grpcRoute *gwap
 	if authScheme.Spec.Override != nil && authScheme.Spec.Override.Disabled != nil {
 		adapterInternalAPI.disableAuthentications = *authScheme.Spec.Override.Disabled
 	}
+	authSpec := utils.SelectPolicy(&authScheme.Spec.Override, &authScheme.Spec.Default, nil, nil)
+	if authSpec != nil && authSpec.AuthTypes != nil && authSpec.AuthTypes.Oauth2.Required != "" {
+		adapterInternalAPI.SetXWSO2ApplicationSecurity(authSpec.AuthTypes.Oauth2.Required == "mandatory")
+	} else {
+		adapterInternalAPI.SetXWSO2ApplicationSecurity(true)
+	}
 	adapterInternalAPI.disableScopes = disableScopes
+	// Check whether the API has a backend JWT token
+	if apiPolicy != nil && apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.BackendJWTPolicy != nil {
+		backendJWTPolicy := resourceParams.BackendJWTMapping[types.NamespacedName{
+			Name:      apiPolicy.Spec.Override.BackendJWTPolicy.Name,
+			Namespace: grpcRoute.Namespace,
+		}.String()].Spec
+		adapterInternalAPI.backendJWTTokenInfo = parseBackendJWTTokenToInternal(backendJWTPolicy)
+	}
 	return nil
 }
 
