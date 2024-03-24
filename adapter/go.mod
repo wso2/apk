@@ -2,8 +2,6 @@ module github.com/wso2/apk/adapter
 
 go 1.21
 
-toolchain go1.22.1
-
 require (
 	github.com/envoyproxy/go-control-plane v0.12.0
 	github.com/fsnotify/fsnotify v1.7.0
