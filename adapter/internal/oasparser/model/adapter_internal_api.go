@@ -618,6 +618,7 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 						'Resource' in resource level RateLimitPolicies`, filter.ExtensionRef.Name)
 					}
 				}
+			}
 		}
 		resourceAPIPolicy = concatAPIPolicies(resourceAPIPolicy, nil)
 		resourceAuthScheme = concatAuthSchemes(resourceAuthScheme, nil)
