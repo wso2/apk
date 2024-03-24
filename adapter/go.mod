@@ -1,6 +1,8 @@
 module github.com/wso2/apk/adapter
 
-go 1.20
+go 1.21
+
+toolchain go1.22.1
 
 require (
 	github.com/envoyproxy/go-control-plane v0.12.0
@@ -16,7 +18,6 @@ require (
 	golang.org/x/exp v0.0.0-20231206192017-f3f8817b8deb
 	google.golang.org/grpc v1.62.0
 	google.golang.org/protobuf v1.32.0
-	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.29.2
 	k8s.io/apimachinery v0.29.2
 	k8s.io/client-go v0.29.2
@@ -82,6 +83,7 @@ require (
 	google.golang.org/genproto/googleapis/api v0.0.0-20240123012728-ef4313101c80 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240123012728-ef4313101c80 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
+	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/apiextensions-apiserver v0.29.2 // indirect
 	k8s.io/component-base v0.29.2 // indirect

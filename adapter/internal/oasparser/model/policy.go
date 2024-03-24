@@ -17,10 +17,6 @@
 
 package model
 
-import (
-	"fmt"
-)
-
 // OperationPolicies holds policies of the APIM operations
 type OperationPolicies struct {
 	Request  PolicyList `json:"request,omitempty"`
@@ -38,10 +34,4 @@ type Policy struct {
 	Action           string      `json:"-"` // This is a meta value used in APK, not included in API YAML
 	IsPassToEnforcer bool        `json:"-"` // This is a meta value used in APK, not included in API YAML
 	Parameters       interface{} `json:"parameters,omitempty"`
-}
-
-// GetFullName returns the fully qualified name of the policy
-// This should be equal to the policy spec/def file name
-func (p *Policy) GetFullName() string {
-	return fmt.Sprintf("%s_%s", p.PolicyName, p.PolicyVersion)
 }

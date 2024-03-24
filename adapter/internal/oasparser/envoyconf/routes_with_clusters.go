@@ -896,34 +896,10 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 			var responseHeadersToRemove []string
 			var pathRewriteConfig *envoy_type_matcherv3.RegexMatchAndSubstitute
 
-			hasMethodRewritePolicy := false
-			var newMethod string
-
 			// Policies - for request flow
 			for _, requestPolicy := range operation.GetPolicies().Request {
 				logger.LoggerOasparser.Debug("Adding request flow policies for ", resourcePath, operation.GetMethod())
 				switch requestPolicy.Action {
-
-				case constants.ActionHeaderAdd:
-					logger.LoggerOasparser.Debugf("Adding %s policy to request flow for %s %s",
-						constants.ActionHeaderAdd, resourcePath, operation.GetMethod())
-					requestHeaderToAdd, err := generateHeaderToAddRouteConfig(requestPolicy.Parameters)
-					if err != nil {
-						return nil, fmt.Errorf("error adding request policy %s to operation %s of resource %s."+
-							" %v", requestPolicy.Action, operation.GetMethod(), resourcePath, err)
-					}
-					requestHeadersToAdd = append(requestHeadersToAdd, requestHeaderToAdd)
-
-				case constants.ActionHeaderRemove:
-					logger.LoggerOasparser.Debugf("Adding %s policy to request flow for %s %s",
-						constants.ActionHeaderRemove, resourcePath, operation.GetMethod())
-					requestHeaderToRemove, err := generateHeaderToRemoveString(requestPolicy.Parameters)
-					if err != nil {
-						return nil, fmt.Errorf("error adding request policy %s to operation %s of resource %s."+
-							" %v", requestPolicy.Action, operation.GetMethod(), resourcePath, err)
-					}
-					requestHeadersToRemove = append(requestHeadersToRemove, requestHeaderToRemove)
-
 				case constants.ActionRewritePath:
 					logger.LoggerOasparser.Debugf("Adding %s policy to request flow for %s %s",
 						constants.ActionRewritePath, resourcePath, operation.GetMethod())
@@ -936,105 +912,23 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 						return nil, errors.New(errMsg)
 					}
 					pathRewriteConfig = regexRewrite
-
-				case constants.ActionRewriteMethod:
-					logger.LoggerOasparser.Debugf("Adding %s policy to request flow for %s %s",
-						constants.ActionRewriteMethod, resourcePath, operation.GetMethod())
-					hasMethodRewritePolicy, err = isMethodRewrite(resourcePath, operation.GetMethod(), requestPolicy.Parameters)
-					if err != nil {
-						return nil, err
-					}
-					if !hasMethodRewritePolicy {
-						continue
-					}
-					newMethod, err = getRewriteMethod(resourcePath, operation.GetMethod(), requestPolicy.Parameters)
-					if err != nil {
-						return nil, err
-					}
 				}
 			}
 
-			// Policies - for response flow
-			for _, responsePolicy := range operation.GetPolicies().Response {
-				logger.LoggerOasparser.Debug("Adding response flow policies for ", resourcePath, operation.GetMethod())
-				switch responsePolicy.Action {
-
-				case constants.ActionHeaderAdd:
-					logger.LoggerOasparser.Debugf("Adding %s policy to response flow for %s %s",
-						constants.ActionHeaderAdd, resourcePath, operation.GetMethod())
-					responseHeaderToAdd, err := generateHeaderToAddRouteConfig(responsePolicy.Parameters)
-					if err != nil {
-						return nil, fmt.Errorf("error adding response policy %s to operation %s of resource %s."+
-							" %v", responsePolicy.Action, operation.GetMethod(), resourcePath, err)
-					}
-					responseHeadersToAdd = append(responseHeadersToAdd, responseHeaderToAdd)
-
-				case constants.ActionHeaderRemove:
-					logger.LoggerOasparser.Debugf("Adding %s policy to response flow for %s %s",
-						constants.ActionHeaderRemove, resourcePath, operation.GetMethod())
-					responseHeaderToRemove, err := generateHeaderToRemoveString(responsePolicy.Parameters)
-					if err != nil {
-						return nil, fmt.Errorf("error adding response policy %s to operation %s of resource %s."+
-							" %v", responsePolicy.Action, operation.GetMethod(), resourcePath, err)
-					}
-					responseHeadersToRemove = append(responseHeadersToRemove, responseHeaderToRemove)
-				}
-			}
-
-			// TODO: (suksw) preserve header key case?
-			if hasMethodRewritePolicy {
-				logger.LoggerOasparser.Debugf("Creating two routes to support method rewrite for %s %s. New method: %s",
-					resourcePath, operation.GetMethod(), newMethod)
-				match1 := generateRouteMatch(routePath)
-				match1.Headers = generateHTTPMethodMatcher(operation.GetMethod(), clusterName)
-				match2 := generateRouteMatch(routePath)
-				match2.Headers = generateHTTPMethodMatcher(newMethod, clusterName)
-
-				//- external routes only accept requests if metadata "method-rewrite" is null
-				//- external routes adds the metadata "method-rewrite"
-				//- internal routes only accept requests if metadata "method-rewrite" matches
-				//  metadataValue <old_method>_to_<new_method>
-				match1.DynamicMetadata = generateMetadataMatcherForExternalRoutes()
-				metadataValue := operation.GetMethod() + "_to_" + newMethod
-				match2.DynamicMetadata = generateMetadataMatcherForInternalRoutes(metadataValue)
-
-				action1 := generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria)
-				action2 := generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria)
-
-				// Create route1 for current method.
-				// Do not add policies to route config. Send via enforcer
-				route1 := generateRouteConfig(xWso2Basepath+operation.GetMethod(), match1, action1, nil, decorator, perRouteFilterConfigs,
-					nil, nil, nil, nil)
-
-				// Create route2 for new method.
-				// Add all policies to route config. Do not send via enforcer.
-				if pathRewriteConfig != nil {
-					action2.Route.RegexRewrite = pathRewriteConfig
-				} else {
-					action2.Route.RegexRewrite = generateRegexMatchAndSubstitute(routePath, resourcePath, pathMatchType)
-				}
-				configToSkipEnforcer := generateFilterConfigToSkipEnforcer()
-				route2 := generateRouteConfig(xWso2Basepath, match2, action2, nil, decorator, configToSkipEnforcer,
-					requestHeadersToAdd, requestHeadersToRemove, responseHeadersToAdd, responseHeadersToRemove)
-
-				routes = append(routes, route1)
-				routes = append(routes, route2)
+			logger.LoggerOasparser.Debug("Creating routes for resource with policies", resourcePath, operation.GetMethod())
+			// create route for current method. Add policies to route config. Send via enforcer
+			action := generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria)
+			match := generateRouteMatch(routePath)
+			match.Headers = generateHTTPMethodMatcher(operation.GetMethod(), clusterName)
+			match.DynamicMetadata = generateMetadataMatcherForExternalRoutes()
+			if pathRewriteConfig != nil {
+				action.Route.RegexRewrite = pathRewriteConfig
 			} else {
-				logger.LoggerOasparser.Debug("Creating routes for resource with policies", resourcePath, operation.GetMethod())
-				// create route for current method. Add policies to route config. Send via enforcer
-				action := generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria)
-				match := generateRouteMatch(routePath)
-				match.Headers = generateHTTPMethodMatcher(operation.GetMethod(), clusterName)
-				match.DynamicMetadata = generateMetadataMatcherForExternalRoutes()
-				if pathRewriteConfig != nil {
-					action.Route.RegexRewrite = pathRewriteConfig
-				} else {
-					action.Route.RegexRewrite = generateRegexMatchAndSubstitute(routePath, resourcePath, pathMatchType)
-				}
-				route := generateRouteConfig(xWso2Basepath, match, action, nil, decorator, perRouteFilterConfigs,
-					requestHeadersToAdd, requestHeadersToRemove, responseHeadersToAdd, responseHeadersToRemove)
-				routes = append(routes, route)
+				action.Route.RegexRewrite = generateRegexMatchAndSubstitute(routePath, resourcePath, pathMatchType)
 			}
+			route := generateRouteConfig(xWso2Basepath, match, action, nil, decorator, perRouteFilterConfigs,
+				requestHeadersToAdd, requestHeadersToRemove, responseHeadersToAdd, responseHeadersToRemove)
+			routes = append(routes, route)
 		}
 	} else {
 		logger.LoggerOasparser.Debugf("Creating routes for resource : %s that has no policies", resourcePath)
@@ -1408,55 +1302,6 @@ func generateSubstitutionString(resourcePath string, pathMatchType gwapiv1.PathM
 		resourceRegex = "\\1"
 	}
 	return resourceRegex
-}
-
-func isMethodRewrite(resourcePath, method string, policyParams interface{}) (isMethodRewrite bool, err error) {
-	var paramsToRewriteMethod map[string]interface{}
-	var ok bool
-	if paramsToRewriteMethod, ok = policyParams.(map[string]interface{}); !ok {
-		return false, fmt.Errorf("error while processing policy parameter map for "+
-			"request policy %s to operation %s of resource %s. Map: %v",
-			constants.ActionRewriteMethod, method, resourcePath, policyParams)
-	}
-
-	currentMethod, exists := paramsToRewriteMethod[constants.CurrentMethod]
-	if !exists {
-		return true, nil
-	}
-	currentMethodString, _ := currentMethod.(string)
-
-	if currentMethodString == "<no value>" { // the package text/template return this for keys that does not exist
-		return true, nil
-	}
-
-	if currentMethodString != method {
-		return false, nil
-	}
-	return true, nil // currentMethodString == method
-}
-
-func getRewriteMethod(resourcePath, method string, policyParams interface{}) (rewriteMethod string, err error) {
-	var paramsToRewriteMethod map[string]interface{}
-	var ok bool
-	if paramsToRewriteMethod, ok = policyParams.(map[string]interface{}); !ok {
-		return "", fmt.Errorf("error while processing policy parameter map for "+
-			"request policy %s to operation %s of resource %s. Map: %v",
-			constants.ActionRewriteMethod, method, resourcePath, policyParams)
-	}
-
-	updatedMethod, exists := paramsToRewriteMethod[constants.UpdatedMethod]
-	if !exists {
-		return "", fmt.Errorf("error adding request policy %s to operation %s of resource %s."+
-			" Policy parameter updatedMethod not found",
-			constants.ActionRewriteMethod, method, resourcePath)
-	}
-	updatedMethodString, isString := updatedMethod.(string)
-	if !isString {
-		return "", fmt.Errorf("error adding request policy %s to operation %s of resource %s."+
-			" Policy parameter updatedMethod is in incorrect format", constants.ActionRewriteMethod,
-			method, resourcePath)
-	}
-	return updatedMethodString, nil
 }
 
 func getUpgradeConfig(apiType string) []*routev3.RouteAction_UpgradeConfig {
