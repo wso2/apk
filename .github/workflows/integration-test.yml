@@ -183,17 +183,16 @@ jobs:
     - name: Archieve Logs
       shell: sh
       run: |
-        cd apk-repo
-        mkdir -p apk-repo/test/integration/podlogs
-        kubectl logs -n apk-integration-test -l app.kubernetes.io/app=adapter -f > apk-repo/test/integration/podlogs/adapter.log &
-        kubectl logs -n apk-integration-test -l app.kubernetes.io/app=commoncontroller -f > apk-repo/test/integration/podlogs/common-controller.log &
-        kubectl logs -n apk-integration-test -l app.kubernetes.io/app=gateway -c enforcer -f > apk-repo/test/integration/podlogs/enforcer.log &
-        kubectl logs -n apk-integration-test -l app.kubernetes.io/app=gateway -c router -f > apk-repo/test/integration/podlogs/router.log &
-        kubectl logs -n apk-integration-test -l app.kubernetes.io/app=configdeployer-ds -f> apk-repo/test/integration/podlogs/config-deployer.log &
-        kubectl logs -n apk-integration-test -l app.kubernetes.io/app=idp-ds -f > apk-repo/test/integration/podlogs/idpds.log &
-        kubectl logs -n apk-integration-test -l app.kubernetes.io/app=idp-ui -f> apk-repo/test/integration/podlogs/idpui.log &
-        kubectl logs -n apk-integration-test -l app.kubernetes.io/app=ratelimiter -f> apk-repo/test/integration/podlogs/ratelimiter.log &
-        ls -l apk-repo/test/integration/podlogs
+        mkdir -p podlogs
+        kubectl logs -n apk-integration-test -l app.kubernetes.io/app=adapter -f > podlogs/adapter.log &
+        kubectl logs -n apk-integration-test -l app.kubernetes.io/app=commoncontroller -f > podlogs/common-controller.log &
+        kubectl logs -n apk-integration-test -l app.kubernetes.io/app=gateway -c enforcer -f > podlogs/enforcer.log &
+        kubectl logs -n apk-integration-test -l app.kubernetes.io/app=gateway -c router -f > podlogs/router.log &
+        kubectl logs -n apk-integration-test -l app.kubernetes.io/app=configdeployer-ds -f> podlogs/config-deployer.log &
+        kubectl logs -n apk-integration-test -l app.kubernetes.io/app=idp-ds -c idpds -f > podlogs/idpds.log &
+        kubectl logs -n apk-integration-test -l app.kubernetes.io/app=idp-ui -f> podlogs/idpui.log &
+        kubectl logs -n apk-integration-test -l app.kubernetes.io/app=ratelimiter -f> podlogs/ratelimiter.log &
+        ls -l podlogs
     - name: Run test cases
       shell: sh
       run: |
@@ -234,7 +233,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: apk-integration-test-go-logs
-        path: 'apk-repo/test/integration/podlogs/*.log'
+        path: 'podlogs/*.log'
   runs_cucumber_integration_tests_on_pull_request:
     if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
     needs: [build_adapter, build_common_controller, build_enforcer, build_router, build_config,build_idpds,build_idpui,build_ratelimiter]
@@ -310,17 +309,16 @@ jobs:
     - name: Archieve Logs
       shell: sh
       run: |
-          cd apk-repo
-          mkdir -p apk-repo/test/integration/podlogs
-          kubectl logs -n apk-integration-test -l app.kubernetes.io/app=adapter -f > apk-repo/test/integration/podlogs/adapter.log &
-          kubectl logs -n apk-integration-test -l app.kubernetes.io/app=commoncontroller -f > apk-repo/test/integration/podlogs/common-controller.log &
-          kubectl logs -n apk-integration-test -l app.kubernetes.io/app=gateway -c enforcer -f > apk-repo/test/integration/podlogs/enforcer.log &
-          kubectl logs -n apk-integration-test -l app.kubernetes.io/app=gateway -c router -f > apk-repo/test/integration/podlogs/router.log &
-          kubectl logs -n apk-integration-test -l app.kubernetes.io/app=configdeployer-ds -f> apk-repo/test/integration/podlogs/config-deployer.log &
-          kubectl logs -n apk-integration-test -l app.kubernetes.io/app=idp-ds -f > apk-repo/test/integration/podlogs/idpds.log &
-          kubectl logs -n apk-integration-test -l app.kubernetes.io/app=idp-ui -f> apk-repo/test/integration/podlogs/idpui.log &
-          kubectl logs -n apk-integration-test -l app.kubernetes.io/app=ratelimiter -f> apk-repo/test/integration/podlogs/ratelimiter.log &
-          ls -l apk-repo/test/integration/podlogs
+          mkdir -p podlogs
+          kubectl logs -n apk-integration-test -l app.kubernetes.io/app=adapter -f > podlogs/adapter.log &
+          kubectl logs -n apk-integration-test -l app.kubernetes.io/app=commoncontroller -f > podlogs/common-controller.log &
+          kubectl logs -n apk-integration-test -l app.kubernetes.io/app=gateway -c enforcer -f > podlogs/enforcer.log &
+          kubectl logs -n apk-integration-test -l app.kubernetes.io/app=gateway -c router -f > podlogs/router.log &
+          kubectl logs -n apk-integration-test -l app.kubernetes.io/app=configdeployer-ds -f> podlogs/config-deployer.log &
+          kubectl logs -n apk-integration-test -l app.kubernetes.io/app=idp-ds -c idpds -f > podlogs/idpds.log &
+          kubectl logs -n apk-integration-test -l app.kubernetes.io/app=idp-ui -f> podlogs/idpui.log &
+          kubectl logs -n apk-integration-test -l app.kubernetes.io/app=ratelimiter -f> podlogs/ratelimiter.log &
+          ls -l podlogs
     - name: Run test cases
       shell: sh
       run: |
@@ -356,10 +354,14 @@ jobs:
       with:
        report_paths: 'apk-repo/test/cucumber-tests/build/test-output/junitreports/*.xml'
        fail_on_test_failures: true
+    - name: Retrieve Logs
+      shell: sh
+      run: |
+           ls -l podlogs
     - name: Archieve Logs
       if: always()
       uses: actions/upload-artifact@v2
       with:
         name: apk-integration-test-cucmber-logs
-        path: apk-repo/test/integration/podlogs/*.log
+        path: podlogs/*.log
  
