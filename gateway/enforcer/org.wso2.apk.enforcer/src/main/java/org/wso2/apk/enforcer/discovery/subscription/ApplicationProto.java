@@ -40,10 +40,11 @@ public final class ApplicationProto {
       "\nattributes\030\005 \003(\01328.wso2.discovery.subsc" +
       "ription.Application.AttributesEntry\0321\n\017A" +
       "ttributesEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001" +
-      "(\t:\0028\001B\215\001\n,org.wso2.apk.enforcer.discove" +
-      "ry.subscriptionB\020ApplicationProtoP\001ZIgit" +
-      "hub.com/wso2/apk/adapter/pkg/discovery/a" +
-      "pi/wso2/discovery/subscriptionb\006proto3"
+      "(\t:\0028\001B\224\001\n,org.wso2.apk.enforcer.discove" +
+      "ry.subscriptionB\020ApplicationProtoP\001ZPgit" +
+      "hub.com/wso2/apk/common-go-libs/pkg/disc" +
+      "overy/api/wso2/discovery/subscriptionb\006p" +
+      "roto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,

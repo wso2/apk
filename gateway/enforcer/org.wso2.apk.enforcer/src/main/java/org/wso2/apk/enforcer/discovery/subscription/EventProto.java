@@ -43,11 +43,11 @@ public final class EventProto {
       "pplicationKeyMapping\030\006 \001(\01322.wso2.discov" +
       "ery.subscription.ApplicationKeyMapping\022?" +
       "\n\014subscription\030\007 \001(\0132).wso2.discovery.su" +
-      "bscription.SubscriptionB\207\001\n,org.wso2.apk" +
+      "bscription.SubscriptionB\216\001\n,org.wso2.apk" +
       ".enforcer.discovery.subscriptionB\nEventP" +
-      "rotoP\001ZIgithub.com/wso2/apk/adapter/pkg/" +
-      "discovery/api/wso2/discovery/subscriptio" +
-      "nb\006proto3"
+      "rotoP\001ZPgithub.com/wso2/apk/common-go-li" +
+      "bs/pkg/discovery/api/wso2/discovery/subs" +
+      "criptionb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,

@@ -34,11 +34,11 @@ public final class EventServiceProto {
       "est\022\r\n\005event\030\001 \001(\t2o\n\022EventStreamService" +
       "\022Y\n\014StreamEvents\022!.discovery.service.apk" +
       "mgt.Request\032\".wso2.discovery.subscriptio" +
-      "n.Event\"\0000\001B\225\001\n.org.wso2.apk.enforcer.di" +
+      "n.Event\"\0000\001B\234\001\n.org.wso2.apk.enforcer.di" +
       "scovery.service.apkmgtB\021EventServiceProt" +
-      "oP\001ZKgithub.com/wso2/apk/adapter/pkg/dis" +
-      "covery/api/wso2/discovery/service/apkmgt" +
-      "\210\001\001b\006proto3"
+      "oP\001ZRgithub.com/wso2/apk/common-go-libs/" +
+      "pkg/discovery/api/wso2/discovery/service" +
+      "/apkmgt\210\001\001b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
