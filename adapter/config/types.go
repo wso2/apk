@@ -95,6 +95,8 @@ type adapter struct {
 	Environment string
 	// Metric represents configurations to expose/export go metrics
 	Metrics Metrics
+	// ControlPlane represents the connection configuration of ControlPlane
+	ControlPlane controlplane
 }
 
 // Envoy Listener Component related configurations.
@@ -442,4 +444,19 @@ type responseDirection struct {
 
 type operator struct {
 	Namespaces []string
+}
+
+type controlplane struct {
+	EnableAPIPropagation bool
+	Host                 string
+	EventPort            uint16
+	RestPort             uint16
+	RetryInterval        time.Duration
+	Persistence          persistence
+	SkipSSLVerification  bool
+	APIsRestPath         string
+}
+
+type persistence struct {
+	Type string
 }

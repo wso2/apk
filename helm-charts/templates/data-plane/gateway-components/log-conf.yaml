@@ -19,7 +19,16 @@ data:
       enabled = {{.Values.wso2.apk.metrics.enabled}}
       type = "{{.Values.wso2.apk.metrics.type| default "prometheus" }}"
       port = 18006
-    {{ end}}    
+    {{ end}}  
+
+    {{- if and .Values.wso2.apk.cp .Values.wso2.apk.cp.controlplane }}
+    [adapter.controlplane]
+      enableApiPropagation = {{ .Values.wso2.apk.cp.controlplane.enableApiPropagation | default false }}
+      host = "{{ .Values.wso2.apk.cp.controlplane.host | default "apim-apk-agent-service.apk.svc.cluster.local" }}"
+      eventPort = {{ .Values.wso2.apk.cp.controlplane.port | default 18000 }}
+      restPort = {{ .Values.wso2.apk.cp.controlplane.restPort | default 18001 }}
+      skipSSLVerification = {{ .Values.wso2.apk.cp.controlplane.skipSSLVerification | default false }}
+    {{- end }}  
 
     {{ if and .Values.wso2.apk.dp.gatewayRuntime.deployment .Values.wso2.apk.dp.gatewayRuntime.deployment.router .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs }}
     [router]

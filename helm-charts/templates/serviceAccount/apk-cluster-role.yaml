@@ -31,7 +31,7 @@ rules:
     verbs: [ "get","patch","update" ]
   - apiGroups: ["dp.wso2.com"]
     resources: ["apis"]
-    verbs: ["get","list","watch","update","delete","create"]
+    verbs: ["get","list","watch","update","delete","create", "patch"]
   - apiGroups: ["dp.wso2.com"]
     resources: ["apis/finalizers"]
     verbs: ["update"]
