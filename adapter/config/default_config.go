@@ -32,7 +32,7 @@ var defaultConfig = &Config{
 			Namespaces: nil,
 		},
 		Environment: "Default",
-		Metrics: metrics{
+		Metrics: Metrics{
 			Enabled: false,
 			Type:    "prometheus",
 			Port:    18006,
@@ -192,7 +192,7 @@ var defaultConfig = &Config{
 			MaximumSize: 10000,
 			ExpiryTime:  15,
 		},
-		Metrics: metrics{
+		Metrics: Metrics{
 			Enabled: false,
 			Type:    "azure",
 		},

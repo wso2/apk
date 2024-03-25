@@ -39,7 +39,6 @@ var (
 
 // Collector contains the descriptions of the custom metrics exposed
 type Collector struct {
-	internalRouteCount *prometheus.Desc
 	hostInfo           *prometheus.Desc
 	availableCPUs      *prometheus.Desc
 	freePhysicalMemory *prometheus.Desc
@@ -52,11 +51,6 @@ type Collector struct {
 // CustomMetricsCollector contains the descriptions of the custom metrics exposed
 func CustomMetricsCollector() *Collector {
 	return &Collector{
-		internalRouteCount: prometheus.NewDesc(
-			"internal_route_count",
-			"Number of internal routes created.",
-			nil, nil,
-		),
 		hostInfo: prometheus.NewDesc(
 			"host_info",
 			"Host Info",
@@ -98,7 +92,6 @@ func CustomMetricsCollector() *Collector {
 // Describe sends all the descriptors of the metrics collected by this Collector
 // to the provided channel.
 func (collector *Collector) Describe(ch chan<- *prometheus.Desc) {
-	ch <- collector.internalRouteCount
 	ch <- collector.hostInfo
 	ch <- collector.availableCPUs
 	ch <- collector.freePhysicalMemory

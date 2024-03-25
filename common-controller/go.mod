@@ -6,7 +6,7 @@ require (
 	github.com/jackc/pgx/v5 v5.5.2
 	github.com/onsi/ginkgo/v2 v2.14.0
 	github.com/onsi/gomega v1.30.0
-	github.com/prometheus/client_golang v1.18.0
+	github.com/prometheus/client_golang v1.18.0 // indirect
 	github.com/prometheus/procfs v0.12.0 // indirect
 	github.com/sirupsen/logrus v1.9.0
 	k8s.io/apimachinery v0.29.2

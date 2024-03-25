@@ -25,7 +25,6 @@ import (
 	"net"
 	"os"
 	"os/signal"
-	"strings"
 	"time"
 
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
@@ -41,7 +40,6 @@ import (
 	"github.com/wso2/apk/common-controller/internal/server"
 	utils "github.com/wso2/apk/common-controller/internal/utils"
 	xds "github.com/wso2/apk/common-controller/internal/xds"
-	"github.com/wso2/apk/common-controller/pkg/metrics"
 	apkmgt "github.com/wso2/apk/common-go-libs/pkg/discovery/api/wso2/discovery/service/apkmgt"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -206,12 +204,6 @@ func InitCommonControllerServer(conf *config.Config) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	// Start the metrics server
-	if conf.CommonController.Metrics.Enabled && strings.EqualFold(conf.CommonController.Metrics.Type, metrics.PrometheusMetricType) {
-		loggers.LoggerAPKOperator.Info("Starting Prometheus Metrics Server ....")
-		go metrics.StartPrometheusMetricsServer(conf.CommonController.Metrics.Port)
-	}
-
 	loggers.LoggerAPKOperator.Info("Starting common controller ....")
 
 	rateLimiterCache := xds.GetRateLimiterCache()
@@ -225,7 +217,7 @@ func InitCommonControllerServer(conf *config.Config) {
 	// Start Enforcer xDS gRPC server
 	runCommonEnforcerServer(port)
 
-	go operator.InitOperator()
+	go operator.InitOperator(conf.CommonController.Metrics)
 
 OUTER:
 	for {

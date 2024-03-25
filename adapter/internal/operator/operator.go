@@ -19,11 +19,14 @@ package operator
 
 import (
 	"flag"
+	"fmt"
+	"strings"
 
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/loggers"
 
 	"github.com/wso2/apk/adapter/pkg/logging"
+	"github.com/wso2/apk/adapter/pkg/metrics"
 	gwapiv1a2 "sigs.k8s.io/gateway-api/apis/v1alpha2"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 
@@ -67,11 +70,9 @@ func init() {
 }
 
 // InitOperator starts the Kubernetes gateway operator
-func InitOperator() {
-	var metricsAddr string
+func InitOperator(metricsConfig config.Metrics) {
 	var enableLeaderElection bool
 	var probeAddr string
-	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. "+
@@ -85,7 +86,7 @@ func InitOperator() {
 
 	operatorDataStore := synchronizer.GetOperatorDataStore()
 
-	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
+	options := ctrl.Options{
 		Scheme:                  scheme,
 		HealthProbeBindAddress:  probeAddr,
 		LeaderElection:          true,
@@ -102,7 +103,21 @@ func InitOperator() {
 		// if you are doing or is intended to do any operation such as perform cleanups
 		// after the manager stops then its usage might be unsafe.
 		// LeaderElectionReleaseOnCancel: true,
-	})
+	}
+
+	if metricsConfig.Enabled {
+		options.Metrics.BindAddress = fmt.Sprintf(":%d", metricsConfig.Port)
+		// Register the metrics collector
+		if strings.EqualFold(metricsConfig.Type, metrics.PrometheusMetricType) {
+			loggers.LoggerAPKOperator.Info("Registering Prometheus metrics collector.")
+			metrics.RegisterPrometheusCollector()
+		}
+	} else {
+		options.Metrics.BindAddress = "0"
+	}
+
+	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), options)
+
 	if err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2600, logging.BLOCKER, "Unable to start manager: %v", err))
 	}
