@@ -22,6 +22,8 @@ metadata:
   namespace : {{ .Release.Namespace }}
   annotations:
     cert-manager.io/inject-ca-from: {{ .Release.Namespace }}/{{ template "apk-helm.resource.prefix" . }}-webhook-server-cert
+    "helm.sh/hook": post-install
+    "helm.sh/hook-weight": "1"
 webhooks:
 - admissionReviewVersions:
   - v1

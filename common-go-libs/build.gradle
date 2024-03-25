@@ -35,6 +35,21 @@ allprojects {
     version = project.version
 }
 
+tasks.register('go_test', Exec) {
+    group 'go'
+    commandLine 'sh', '-c', "go test -race -coverprofile=coverage.out -covermode=atomic ./..."
+}
+
+tasks.named('go_revive_run').configure { 
+    finalizedBy go_tidy
+    finalizedBy go_test
+}
+
+tasks.named('go_build').configure {
+    dependsOn go_revive_run
+    dependsOn go_vet
+    println("Running go build")
+}
 
 tasks.register('make_generates', Exec) {
     println("Running make -C $rootDir/../common-go-libs")
@@ -52,4 +67,5 @@ tasks.register('make_manifests', Exec) {
 
 task build{
     dependsOn make_generates
+    dependsOn go_build
 }
