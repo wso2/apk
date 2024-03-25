@@ -1,3 +1,5 @@
+{{- if or .Values.wso2.apk.dp.enabled .Values.wso2.apk.cp.enabled }}
+
 # Copyright (c) 2023, WSO2 LLC. (https://www.wso2.com) All Rights Reserved.
 #
 # WSO2 LLC. licenses this file to you under the Apache License,
@@ -22,3 +24,4 @@ metadata:
   name: {{ template "apk-helm.resource.prefix" . }}-sts-shared-auth-key
   namespace: {{ .Release.Namespace }}
 type: Opaque
+{{- end -}}
