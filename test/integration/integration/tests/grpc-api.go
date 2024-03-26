@@ -42,26 +42,6 @@ var GRPCAPI = suite.IntegrationTest{
 	Manifests:   []string{"tests/grpc-api.yaml"},
 	Test: func(t *testing.T, suite *suite.IntegrationTestSuite) {
 		gwAddr := "grpc.test.gw.wso2.com:9095"
-		//token := http.GetTestToken(t)
-
-		//testCases := []http.ExpectedResponse{
-		//{
-		//	Request: http.Request{
-		//		Host:   "gql.test.gw.wso2.com",
-		//		Path:   "/gql/v1",
-		//		Method: "POST",
-		//		Headers: map[string]string{
-		//			"Content-Type": "application/json",
-		//		},
-		//		Body: `{"query":"query{\n    human(id:1000){\n        id\n        name\n    }\n}","variables":{}}`,
-		//	},
-		//	ExpectedRequest: &http.ExpectedRequest{
-		//		Request: http.Request{
-		//			Method: ""},
-		//	},
-		//	Response: http.Response{StatusCode: 200},
-		//},
-		//}
 
 		testCases := []grpcutils.GRPCTestCase{
 			{
@@ -78,10 +58,6 @@ var GRPCAPI = suite.IntegrationTest{
 		}
 		for i := range testCases {
 			tc := testCases[i]
-			//t.Run(tc.GetTestCaseName(i), func(t *testing.T) {
-			//	t.Parallel()
-			//	http.MakeRequestAndExpectEventuallyConsistentResponse(t, suite.RoundTripper, suite.TimeoutConfig, gwAddr, tc)
-			//})
 			t.Run("Invoke gRPC API", func(t *testing.T) {
 				t.Parallel()
 				invokeGRPCClientUntilSatisfied(gwAddr, t, tc, suite.TimeoutConfig)
@@ -96,12 +72,12 @@ func invokeGRPCClient(gwAddr string, t *testing.T, timeout config.TimeoutConfig)
 	t.Logf("Starting gRPC client...")
 
 	config := &tls.Config{
-		InsecureSkipVerify: true, // CAUTION: This disables SSL certificate verification.
+		InsecureSkipVerify: true,
 	}
 	creds := credentials.NewTLS(config)
 
 	// Dial the server with the TLS credentials and a dial timeout.
-	dialCtx, dialCancel := context.WithTimeout(context.Background(), 10*time.Second)
+	dialCtx, dialCancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer dialCancel()
 	t.Logf("Dialing to server at %s with timeout...", gwAddr)
 	conn, err := grpc.DialContext(dialCtx, gwAddr, grpc.WithTransportCredentials(creds), grpc.WithBlock())
@@ -114,7 +90,7 @@ func invokeGRPCClient(gwAddr string, t *testing.T, timeout config.TimeoutConfig)
 	c := student.NewStudentServiceClient(conn)
 
 	// Prepare the context with a timeout for the request.
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), timeout.RequestTimeout)
 	defer cancel()
 
 	t.Log("Sending request to the server...")
@@ -123,8 +99,9 @@ func invokeGRPCClient(gwAddr string, t *testing.T, timeout config.TimeoutConfig)
 	response, err := c.GetStudent(ctx, r)
 	if err != nil {
 		t.Logf("Could not fetch student: %v", err)
+		t.Logf("Error: %v\n", response)
 	}
-	t.Logf("Received response from server: %v\n", response)
+
 	return response, nil
 }
 
@@ -136,7 +113,6 @@ func invokeGRPCClientUntilSatisfied(gwAddr string, t *testing.T, testCase grpcut
 	attempt := 0
 	maxAttempts := 4
 	expected := testCase.ExpectedResponse
-	//timeoutDuration := timeout.RequestTimeout * time.Second
 	timeoutDuration := 50 * time.Second
 	for attempt < maxAttempts {
 		t.Logf("Attempt %d to invoke gRPC client...", attempt+1)
