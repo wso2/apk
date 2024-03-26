@@ -6,7 +6,7 @@ id: "mtls-mandatory-oauth2-enabled"
 defaultVersion: false
 endpointConfigurations:
   production:
-    endpoint: "https://run.mocky.io/v3/0c5173b2-9d99-459c-946b-b6b67c7f0139"
+    endpoint: "http://backend:80/anything"
 operations:
   - target: "/employee"
     verb: "GET"
