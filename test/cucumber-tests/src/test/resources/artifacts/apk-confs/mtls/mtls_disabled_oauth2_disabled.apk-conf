@@ -6,7 +6,7 @@ id: "mtls-disabled-oauth2-disabled"
 defaultVersion: false
 endpointConfigurations:
   production:
-    endpoint: "https://webhook.site/1e73a7f6-6187-46ff-aac9-f060d7460c93"
+    endpoint: "http://backend:80/anything"
 operations:
   - target: "/employee"
     verb: "GET"
