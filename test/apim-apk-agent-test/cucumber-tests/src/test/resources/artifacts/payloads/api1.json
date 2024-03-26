@@ -6,10 +6,10 @@
   "endpointConfig":{
     "endpoint_type":"http",
     "sandbox_endpoints":{
-      "url":"https://petstore3.swagger.io/api/v3"
+      "url":"http://backend:80/anything"
     },
     "production_endpoints": {
-      "url":"https://petstore3.swagger.io/api/v3"
+      "url":"http://backend:80/anything"
     }
   },
   "policies": [

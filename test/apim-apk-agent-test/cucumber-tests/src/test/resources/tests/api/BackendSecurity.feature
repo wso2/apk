@@ -1,12 +1,12 @@
-Feature: Invoking APIs with scopes enabled
+Feature: Backend Security for APIs
   Background:
     Given The system is ready
-  Scenario: Create API and enable scopes for resources and invoke them using keys with and without proper scopes
+  Scenario: Enable basic auth for endpoint and verfy the authorization for REST API
     And I have a DCR application
     And I have a valid Publisher access token
-    When I use the Payload file "artifacts/payloads/api1.json"
+    When I use the Payload file "artifacts/payloads/api_with_basic_auth.json"
     And I use the OAS URL "https://petstore3.swagger.io/api/v3/openapi.json"
-    And make the import API Creation request
+    And make the import API Creation request using OAS "URL"
     Then the response status code should be 201
     And the response body should contain "SwaggerPetstore"
     And make the API Revision Deployment request
@@ -25,21 +25,16 @@ Feature: Invoking APIs with scopes enabled
     And make the Subscription request
     Then the response status code should be 201
     And the response body should contain "Unlimited"
-    And I get oauth keys for application
+    And I get "production" oauth keys for application
     Then the response status code should be 200
-    And make the Access Token Generation request
-    Then the response status code should be 200
-    And the response body should contain "accessToken"
-    And I send "GET" request to "https://default.gw.wso2.com:9095/petstore/1.0.0/pet/5" with body ""
-    And I eventually receive 200 response code, not accepting
-      |429|
-    Then I make Access Token Generation request without scopes
+    And make the Access Token Generation request for "production"
     Then the response status code should be 200
     And the response body should contain "accessToken"
     And I send "GET" request to "https://default.gw.wso2.com:9095/petstore/1.0.0/pet/5" with body ""
-    Then the response status code should be 403
-  
-  Scenario: Undeploy the created REST API
+    Then the response status code should be 200
+    And the response body should contain "\"Authorization\": \"Basic YWRtaW46YWRtaW4=\""
+
+  Scenario: Undeploying an already existing REST API
     And I have a DCR application
     And I have a valid Devportal access token
     Then I delete the application "SampleApp" from devportal
@@ -48,16 +43,23 @@ Feature: Invoking APIs with scopes enabled
     Then I find the apiUUID of the API created with the name "SwaggerPetstore"
     Then I undeploy the selected API
     Then the response status code should be 200
-  
-  Scenario: Deploying a GraphQL API with scopes and invoking it with and without scopes
+    And I send "GET" request to "https://default.gw.wso2.com:9095/basic-auth/3.14/employee/" with body ""
+    And I eventually receive 404 response code, not accepting
+      |200|
+
+  Scenario: Enable basic auth for endpoint and verfy the authorization for REST API for a GraphQL API
     And I have a DCR application
     And I have a valid Publisher access token
     When the definition file "artifacts/definitions/schema_graphql.graphql"
     Given a valid graphql definition file
     Then the response should be given as valid
-    When I use the Payload file "artifacts/payloads/gql_with_scopes.json"
+    When I use the Payload file "artifacts/payloads/gql_with_basic_auth.json"
     Then I make the import GraphQLAPI Creation request
     Then the response status code should be 201
+    And the response body should contain "StarWarsAPI"
+    Then I use the Payload file "artifacts/payloads/gql_with_basic_auth2.json"
+    And I update the GQL API settings
+    Then the response status code should be 200
     And the response body should contain "StarWarsAPI"
     And make the API Revision Deployment request
     Then the response status code should be 201
@@ -75,22 +77,15 @@ Feature: Invoking APIs with scopes enabled
     And make the Subscription request
     Then the response status code should be 201
     And the response body should contain "Unlimited"
-    And I get oauth keys for application
+    And I get "production" oauth keys for application
     Then the response status code should be 200
-    And make the Access Token Generation request
-    Then the response status code should be 200
-    And the response body should contain "accessToken"
-    And I send "POST" request to "https://default.gw.wso2.com:9095/graphql/3.14" with body "{\"query\":\"{ hero { name } }\"}"
-    Then the response status code should be 200
-    And I eventually receive 200 response code, not accepting
-      | 404 |
-      | 401 |
-    Then I make Access Token Generation request without scopes
+    And make the Access Token Generation request for "production"
     Then the response status code should be 200
     And the response body should contain "accessToken"
-    And I send "POST" request to "https://default.gw.wso2.com:9095/graphql/3.14" with body "{\"query\":\"{ hero { name } }\"}"
-    Then the response status code should be 403
-
+    And I send "POST" request to "https://default.gw.wso2.com:9095/gql_basic_auth/2.0.0/" with body "{\"query\":\"{ hero { id } }\"}"
+    Then the response status code should be 200
+    And the response body should contain "\"Authorization\": \"Basic YWRtaW46YWRtaW4=\""
+  
   Scenario: Undeploying an already existing GraphQL API
     And I have a DCR application
     And I have a valid Devportal access token
@@ -100,6 +95,6 @@ Feature: Invoking APIs with scopes enabled
     Then I find the apiUUID of the API created with the name "StarWarsAPI"
     Then I undeploy the selected API
     Then the response status code should be 200
-    And I send "POST" request to "https://default.gw.wso2.com:9095/graphql/3.14" with body "{\"query\":\"{ hero { name } }\"}"
+    And I send "POST" request to "https://default.gw.wso2.com:9095/gql_basic_auth/2.0.0/" with body "{\"query\":\"{ hero { id } }\"}"
     And I eventually receive 404 response code, not accepting
       |200|

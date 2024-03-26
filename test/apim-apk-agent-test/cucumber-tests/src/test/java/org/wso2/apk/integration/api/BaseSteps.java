@@ -134,8 +134,6 @@ public class BaseSteps {
         } else if (CurlOption.HttpMethod.POST.toString().toLowerCase().equals(httpMethod.toLowerCase())) {
             sharedContext.setResponse(httpClient.doPost(url, sharedContext.getHeaders(), body, null));
             sharedContext.setResponseBody(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()));
-            logger.info("Post Response: " +  sharedContext.getResponse());
-            logger.info("Post Response Body: " + sharedContext.getResponseBody());
         } else if (CurlOption.HttpMethod.PUT.toString().toLowerCase().equals(httpMethod.toLowerCase())) {
             sharedContext.setResponse(httpClient.doPut(url, sharedContext.getHeaders(), body, null));
             sharedContext.setResponseBody(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()));

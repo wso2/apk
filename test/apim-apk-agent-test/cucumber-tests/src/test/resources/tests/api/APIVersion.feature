@@ -1,7 +1,7 @@
-Feature: API Deployment
+Feature: Creating new versions of the APIs
   Background:
     Given The system is ready
-  Scenario: Import an API, Create Application, Generate Keys, Subscribe to an API
+  Scenario: Create a new version of a REST API and try to invoke both old and newer versions
     And I have a DCR application
     And I have a valid Publisher access token
     When I use the Payload file "artifacts/payloads/api1.json"
@@ -33,30 +33,49 @@ Feature: API Deployment
     And I send "GET" request to "https://default.gw.wso2.com:9095/petstore/1.0.0/pet/4" with body ""
     And I eventually receive 200 response code, not accepting
       |429|
+    And I create the new version "2.0.0" of the same API with default version set to "false"
+    Then the response status code should be 201
+    And the response body should contain "SwaggerPetstore"
+    And the response body should contain "2.0.0"
+    And make the API Revision Deployment request
+    Then the response status code should be 201
+    And make the Change Lifecycle request
+    Then the response status code should be 200
+    # And make the Subscription request
+    # Then the response status code should be 201
+    # And the response body should contain "Unlimited"
+    And I send "GET" request to "https://default.gw.wso2.com:9095/petstore/2.0.0/pet/4" with body ""
+    And I eventually receive 200 response code, not accepting
+      |429|
   
-  Scenario: Undeploying an already existing REST API
+  Scenario: Undeploy the created REST APIs
     And I have a DCR application
     And I have a valid Devportal access token
     Then I delete the application "SampleApp" from devportal
     Then the response status code should be 200
     And I have a valid Publisher access token
-    Then I find the apiUUID of the API created with the name "SwaggerPetstore"
+    Then I find the apiUUID of the API created with the name "1.0.0"
     Then I undeploy the selected API
     Then the response status code should be 200
     And I send "GET" request to "https://default.gw.wso2.com:9095/petstore/1.0.0/pet/4" with body ""
-    And I eventually receive 404 response code, not accepting
-      |200|
+    And the response status code should be 404
+    Then I find the apiUUID of the API created with the name "2.0.0"
+    Then I undeploy the selected API
+    Then the response status code should be 200
+    And I send "GET" request to "https://default.gw.wso2.com:9095/petstore/2.0.0/pet/4" with body ""
+    And the response status code should be 404
 
-  Scenario: Deploying a GraphQL API
+  
+  Scenario: Create a new version of a GraphQL API and try to invoke both old and newer versions
     And I have a DCR application
     And I have a valid Publisher access token
     When the definition file "artifacts/definitions/schema_graphql.graphql"
     Given a valid graphql definition file
     Then the response should be given as valid
-    When I use the Payload file "artifacts/payloads/gqlPayload.json"
+    When I use the Payload file "artifacts/payloads/gql_with_scopes.json"
     Then I make the import GraphQLAPI Creation request
     Then the response status code should be 201
-    And the response body should contain "StarwarsAPI"
+    And the response body should contain "StarWarsAPI"
     And make the API Revision Deployment request
     Then the response status code should be 201
     And make the Change Lifecycle request
@@ -83,16 +102,36 @@ Feature: API Deployment
     And I eventually receive 200 response code, not accepting
       | 404 |
       | 401 |
+    And I create the new version "3.2" of the same API with default version set to "true"
+    Then the response status code should be 201
+    And the response body should contain "StarWarsAPI"
+    And the response body should contain "3.2"
+    And make the API Revision Deployment request
+    Then the response status code should be 201
+    And make the Change Lifecycle request
+    Then the response status code should be 200
+    And make the Subscription request
+    Then the response status code should be 201
+    And the response body should contain "Unlimited"
+    And I send "POST" request to "https://default.gw.wso2.com:9095/graphql/3.2" with body "{\"query\":\"{ hero { name } }\"}"
+    And I eventually receive 200 response code, not accepting
+      |429|
 
-  Scenario: Undeploying an already existing GraphQL API
+  Scenario: Undeploying the created GraphQL APIs
     And I have a DCR application
     And I have a valid Devportal access token
     Then I delete the application "TestApp" from devportal
     Then the response status code should be 200
     And I have a valid Publisher access token
-    Then I find the apiUUID of the API created with the name "StarwarsAPI"
+    Then I find the apiUUID of the API created with the name "3.14"
     Then I undeploy the selected API
     Then the response status code should be 200
     And I send "POST" request to "https://default.gw.wso2.com:9095/graphql/3.14" with body "{\"query\":\"{ hero { name } }\"}"
+    And I eventually receive 404 response code, not accepting
+      |200|
+    Then I find the apiUUID of the API created with the name "3.2"
+    Then I undeploy the selected API
+    Then the response status code should be 200
+    And I send "POST" request to "https://default.gw.wso2.com:9095/graphql/3.2" with body "{\"query\":\"{ hero { name } }\"}"
     And I eventually receive 404 response code, not accepting
       |200|

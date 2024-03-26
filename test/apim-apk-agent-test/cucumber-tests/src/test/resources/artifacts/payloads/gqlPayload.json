@@ -2,7 +2,7 @@
   "name": "StarwarsAPI",
   "version": "3.14",
   "context": "/graphql",
-  "gatewayType": "Regular",
+  "gatewayType":"wso2/apk",
   "policies": ["Unlimited"],
   "operations": [
     {

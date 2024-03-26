@@ -1,0 +1,31 @@
+{
+    "name": "StarwarsAPI",
+    "version": "3.14",
+    "context": "/graphql",
+    "gatewayType":"wso2/apk",
+    "policies": ["Unlimited"],
+    "isDefaultVersion": true,
+    "operations": [
+      {
+        "id": "0",
+        "target": "hero",
+        "verb": "QUERY",
+        "authType": "Any",
+        "throttlingPolicy": null,
+        "scopes": [],
+        "usedProductIds": [],
+        "amznResourceName": null,
+        "amznResourceTimeout": null,
+        "amznResourceContentEncode": null,
+        "payloadSchema": null,
+        "uriMapping": null,
+        "operationPolicies": null
+      }
+    ],
+    "endpointConfig": {
+      "endpoint_type": "http",
+      "sandbox_endpoints": { "url": "http://graphql-faker-service:9002/graphql" },
+      "production_endpoints": { "url": "http://graphql-faker-service:9002/graphql" }
+    }
+  }
+  
