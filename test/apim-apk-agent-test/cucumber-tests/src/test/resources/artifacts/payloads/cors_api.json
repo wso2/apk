@@ -1,0 +1,58 @@
+ {
+    "name": "test-cors",
+    "context": "/test_cors",
+    "version": "2.0.0",
+    "type": "HTTP",
+    "transport": [
+        "http",
+        "https"
+    ],
+    "policies": [
+        "Unlimited",
+        "Gold"
+    ],
+    "corsConfiguration": {
+        "corsConfigurationEnabled": true,
+        "accessControlAllowOrigins": [
+            "abc.com"
+        ],
+        "accessControlAllowCredentials": true,
+        "accessControlAllowHeaders": [
+            "authorization",
+            "Content-Type"
+        ],
+        "accessControlAllowMethods": [
+            "GET",
+            "PUT",
+            "POST",
+            "DELETE"
+        ]
+    },
+    "endpointConfig": {
+        "endpoint_type": "http",
+        "sandbox_endpoints": {
+            "url": "https://httpbin.org"
+        },
+        "production_endpoints": {
+            "url": "https://httpbin.org"
+        }
+    },
+    "endpointImplementationType": "ENDPOINT",
+    "scopes": [],
+    "operations": [
+        {
+            "id": "",
+            "target": "/anything",
+            "verb": "GET",
+            "authType": "Application \u0026 Application User",
+            "throttlingPolicy": "Unlimited",
+            "scopes": [],
+            "usedProductIds": [],
+            "operationPolicies": {
+                "request": [],
+                "response": [],
+                "fault": []
+            }
+        }
+    ]
+}

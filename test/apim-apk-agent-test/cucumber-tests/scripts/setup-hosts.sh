@@ -14,6 +14,7 @@ sudo echo "127.0.0.1 am.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "$IP api.am.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "$IP default.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "$IP default.sandbox.gw.wso2.com" | sudo tee -a /etc/hosts
+sudo echo "$IP sandbox.default.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "255.255.255.255 broadcasthost" | sudo tee -a /etc/hosts
 sudo echo "::1 localhost" | sudo tee -a /etc/hosts
 kubectl port-forward svc/apim-wso2am-cp-1-service -n apk 9443:9443 &

@@ -258,3 +258,66 @@ spec:
       protocol: TCP
   selector:
     app: graphql-faker
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: apk
+spec:
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+  selector:
+    app: httpbin
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: httpbin
+  namespace: apk
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: httpbin
+  template:
+    metadata:
+      labels:
+        app: httpbin
+    spec:
+      containers:
+        - image: docker.io/kennethreitz/httpbin:latest
+          imagePullPolicy: IfNotPresent
+          name: httpbin
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              memory: "200Mi"
+              cpu: "300m"
+            limits:
+              memory: "200Mi"
+              cpu: "300m"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: backend-creds
+  namespace: apk
+data:
+  username: YWRtaW4=
+  password: YWRtaW4=
+type: Opaque
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: backend-creds-1
+  namespace: apk
+data:
+  username: ZHNmZHNmc2Rmc2Rm
+  password: YWRtaW4=
+type: Opaque
