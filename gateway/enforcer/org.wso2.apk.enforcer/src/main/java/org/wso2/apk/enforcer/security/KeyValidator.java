@@ -20,6 +20,7 @@ package org.wso2.apk.enforcer.security;
 
 import com.nimbusds.jwt.JWTClaimsSet;
 import net.minidev.json.JSONObject;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.wso2.apk.enforcer.commons.exception.APISecurityException;
@@ -268,6 +269,27 @@ public class KeyValidator {
         String subscriptionStatus = sub.getSubscriptionStatus();
         if (APIConstants.SubscriptionStatus.INACTIVE.equals(subscriptionStatus)) {
             infoDTO.setValidationStatus(APIConstants.KeyValidationStatus.SUBSCRIPTION_INACTIVE);
+            infoDTO.setAuthorized(false);
+            return;
+        }
+        if (APIConstants.SubscriptionStatus.ON_HOLD.equals(subscriptionStatus)) {
+            infoDTO.setValidationStatus(APIConstants.KeyValidationStatus.SUBSCRIPTION_ON_HOLD);
+            infoDTO.setAuthorized(false);
+            return;
+        }
+        if (APIConstants.SubscriptionStatus.PROD_ONLY_BLOCKED.equals(subscriptionStatus) &&
+                StringUtils.equals(infoDTO.getEnvType(), APIConstants.API_KEY_TYPE_PRODUCTION)  ) {
+            infoDTO.setValidationStatus(APIConstants.KeyValidationStatus.SUBSCRIPTION_PROD_BLOCKED);
+            infoDTO.setAuthorized(false);
+            return;
+        }
+        if (APIConstants.SubscriptionStatus.BLOCKED.equals(subscriptionStatus)) {
+            infoDTO.setValidationStatus(APIConstants.KeyValidationStatus.SUBSCRIPTION_BLOCKED);
+            infoDTO.setAuthorized(false);
+            return;
+        }
+        if (APIConstants.SubscriptionStatus.REJECTED.equals(subscriptionStatus)) {
+            infoDTO.setValidationStatus(APIConstants.KeyValidationStatus.SUBSCRIPTION_REJECTED);
             infoDTO.setAuthorized(false);
             return;
         }
