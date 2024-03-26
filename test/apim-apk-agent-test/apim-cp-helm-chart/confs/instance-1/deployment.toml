@@ -51,6 +51,9 @@ password = {{ .Values.wso2.apim.configurations.databases.shared_db.password | qu
 {{ $key }} = "{{ $value }}"
 {{- end }}
 
+[apim]
+gateway_type = "Regular,APK"
+
 {{- if .Values.wso2.apim.configurations.security.keystores.primary.enabled }}
 [keystore.primary]
 type = "JKS"
