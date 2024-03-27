@@ -63,7 +63,7 @@ jobs:
         helm install apim -n apk . --debug --wait --timeout 5m0s \
         --set wso2.deployment.image.registry=docker.io \
         --set wso2.deployment.image.respository=rakhitharr/wso2am \
-        --set wso2.deployment.image.digest=sha256:6f647d64753462736bb1bc22b6fe675413278a02623a9c12609b3bc4d1f4a0ef
+        --set wso2.deployment.image.digest=sha256:56c6625d60a01cba73cd8836d25f1469f6fec1e933e530d954064eeab4ef70b3
         kubectl get pods -n apk
         kubectl get svc -n apk
 
