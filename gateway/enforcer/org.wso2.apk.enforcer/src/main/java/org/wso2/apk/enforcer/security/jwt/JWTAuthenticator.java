@@ -101,7 +101,6 @@ public class JWTAuthenticator implements Authenticator {
         TracingTracer tracer = null;
         TracingSpan jwtAuthenticatorInfoSpan = null;
         Scope jwtAuthenticatorInfoSpanScope = null;
-        TracingSpan validateSubscriptionSpan = null;
         TracingSpan validateScopesSpan = null;
 
         try {
@@ -115,8 +114,6 @@ public class JWTAuthenticator implements Authenticator {
             String authHeader = getTokenHeader(requestContext.getMatchedResourcePaths());
             String jwtToken = retrieveAuthHeaderValue(requestContext, authHeader);
             String context = requestContext.getMatchedAPI().getBasePath();
-            String name = requestContext.getMatchedAPI().getName();
-            String envType = requestContext.getMatchedAPI().getEnvType();
             String version = requestContext.getMatchedAPI().getVersion();
             String organization = requestContext.getMatchedAPI().getOrganizationId();
             String environment = requestContext.getMatchedAPI().getEnvironment();
@@ -144,80 +141,34 @@ public class JWTAuthenticator implements Authenticator {
                                 APISecurityConstants.API_AUTH_INVALID_CREDENTIALS, "Invalid key type.");
                     }
 
-                    // Validate subscriptions
-                    APIKeyValidationInfoDTO apiKeyValidationInfoDTO = new APIKeyValidationInfoDTO();
-                    Scope validateSubscriptionSpanScope = null;
-                    boolean isSystemAPI = requestContext.getMatchedAPI().isSystemAPI();
-                    boolean isGatewayLevelSubscriptionValidationEnabled = ConfigHolder.getInstance().getConfig()
-                            .getMandateSubscriptionValidation();
-                    try {
-                        // If subscription validation is mandated at Gateway level, all API invocations should undergo
-                        // subscription validation. When not mandated, we check whether the API has enabled
-                        // subscription validation.
-                        if (!isSystemAPI && (isGatewayLevelSubscriptionValidationEnabled || requestContext.getMatchedAPI()
-                                .isSubscriptionValidation())) {
+                    // Scope validation is only done for tokens that are not of type InternalKey
+                    Object tokenType = claims.get(APIConstants.JwtTokenConstants.TOKEN_TYPE);
+                    if (!isInternalKey(tokenType)) {
+                        // Validate scopes
+                        Scope validateScopesSpanScope = null;
+                        try {
                             if (Utils.tracingEnabled()) {
-                                validateSubscriptionSpan =
-                                        Utils.startSpan(TracingConstants.SUBSCRIPTION_VALIDATION_SPAN, tracer);
-                                validateSubscriptionSpanScope = validateSubscriptionSpan.getSpan().makeCurrent();
-                                Utils.setTag(validateSubscriptionSpan, APIConstants.LOG_TRACE_ID,
+                                validateScopesSpan = Utils.startSpan(TracingConstants.SCOPES_VALIDATION_SPAN, tracer);
+                                validateScopesSpanScope = validateScopesSpan.getSpan().makeCurrent();
+                                Utils.setTag(validateScopesSpan, APIConstants.LOG_TRACE_ID,
                                         ThreadContext.get(APIConstants.LOG_TRACE_ID));
                             }
-
-                            // Get consumer key from the JWT token claim set
-                            String consumerKey = validationInfo.getConsumerKey();
-
-                            // Subscription validation using consumer key
-                            if (consumerKey != null) {
-                                validateSubscriptionUsingConsumerKey(apiKeyValidationInfoDTO, name, version, context,
-                                        consumerKey, envType, organization,
-                                        "", requestContext.getMatchedAPI());
-                            } else {
-                                log.error("Error while extracting consumer key from token");
-                                throw new APISecurityException(APIConstants.StatusCodes.UNAUTHENTICATED.getCode(),
-                                        APISecurityConstants.API_AUTH_INVALID_CREDENTIALS,
-                                        "Invalid JWT token. Error while extracting consumer key from token");
-                            }
-                        } else {
-                            // In this case, the application related properties are populated so that analytics
-                            // could provide much better insights.
-                            // Since application notion becomes less meaningful with subscription validation disabled,
-                            // the application name would be populated under the convention "anon:<KM Reference>"
-                            JWTUtils.updateApplicationNameForSubscriptionDisabledFlow(apiKeyValidationInfoDTO,
-                                    APIConstants.KeyManager.DEFAULT_KEY_MANAGER);
-                        }
-                    } finally {
-                        if (Utils.tracingEnabled()) {
-                            if (validateSubscriptionSpan != null) {
-                                validateSubscriptionSpanScope.close();
-                                Utils.finishSpan(validateSubscriptionSpan);
+                            validateScopes(context, version, requestContext.getMatchedResourcePaths(), validationInfo,
+                                    jwtToken);
+                        } finally {
+                            if (Utils.tracingEnabled()) {
+                                validateScopesSpanScope.close();
+                                Utils.finishSpan(validateScopesSpan);
                             }
                         }
                     }
 
-                    // Validate scopes
-                    Scope validateScopesSpanScope = null;
-                    try {
-                        if (Utils.tracingEnabled()) {
-                            validateScopesSpan = Utils.startSpan(TracingConstants.SCOPES_VALIDATION_SPAN, tracer);
-                            validateScopesSpanScope = validateScopesSpan.getSpan().makeCurrent();
-                            Utils.setTag(validateScopesSpan, APIConstants.LOG_TRACE_ID,
-                                    ThreadContext.get(APIConstants.LOG_TRACE_ID));
-                        }
-                        validateScopes(context, version, requestContext.getMatchedResourcePaths(), validationInfo,
-                                jwtToken);
-                    } finally {
-                        if (Utils.tracingEnabled()) {
-                            validateScopesSpanScope.close();
-                            Utils.finishSpan(validateScopesSpan);
-                        }
-                    }
                     log.debug("JWT authentication successful.");
 
                     // Generate or get backend JWT
                     String endUserToken = null;
 
-                    // jwt generator is only set if the backend jwt is enabled
+                    // JWT generator is only set if the backend JWT is enabled
                     if (this.jwtGenerator != null) {
                         JWTConfigurationDto configurationDto = this.jwtGenerator.getJWTConfigurationDto();
                         Map<String, ClaimValueDTO> claimMap = new HashMap<>();
@@ -225,7 +176,7 @@ public class JWTAuthenticator implements Authenticator {
                             claimMap = configurationDto.getCustomClaims();
                         }
                         JWTInfoDto jwtInfoDto = FilterUtils.generateJWTInfoDto(null, validationInfo,
-                                apiKeyValidationInfoDTO, requestContext);
+                                null, requestContext);
 
                         // set custom claims get from the CR
                         jwtInfoDto.setClaims(claimMap);
@@ -238,7 +189,7 @@ public class JWTAuthenticator implements Authenticator {
                     }
 
                     return FilterUtils.generateAuthenticationContext(requestContext, validationInfo.getIdentifier(),
-                            validationInfo, apiKeyValidationInfoDTO, endUserToken, jwtToken, true);
+                            validationInfo, null, endUserToken, jwtToken, true);
                 } else {
                     throw new APISecurityException(APIConstants.StatusCodes.UNAUTHENTICATED.getCode(),
                             validationInfo.getValidationCode(),
@@ -256,6 +207,10 @@ public class JWTAuthenticator implements Authenticator {
             }
         }
 
+    }
+
+    public boolean isInternalKey(Object tokenType) {
+        return tokenType != null && tokenType.toString().equalsIgnoreCase(APIConstants.JwtTokenConstants.INTERNAL_KEY_TOKEN_TYPE);
     }
 
     private String getTokenHeader(ArrayList<ResourceConfig> matchedResourceConfigs) {
