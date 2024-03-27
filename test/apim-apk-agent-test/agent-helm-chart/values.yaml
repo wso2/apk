@@ -34,3 +34,7 @@ dataPlane:
   enabled: true
   k8ResourceEndpoint: https://apk-wso2-apk-config-ds-service.apk.svc.cluster.local:9443/api/configurator/apis/generate-k8s-resources
   namespace: apk
+metrics:
+  enabled: false
+agent:
+  mode: CPtoDP
