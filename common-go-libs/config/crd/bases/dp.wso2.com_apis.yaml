@@ -243,10 +243,11 @@ spec:
                 type: array
               apiType:
                 description: APIType denotes the type of the API. Possible values
-                  could be REST, GraphQL, Async
+                  could be REST, GraphQL, Async, GRPC etc.
                 enum:
                 - REST
                 - GraphQL
+                - GRPC
                 type: string
               apiVersion:
                 description: APIVersion is the version number of the API.
@@ -256,7 +257,6 @@ spec:
                 type: string
               basePath:
                 description: 'BasePath denotes the basepath of the API. e.g: /pet-store-api/1.0.6'
-                pattern: ^[/][a-zA-Z0-9~/_.-]*$
                 type: string
               definitionFileRef:
                 description: DefinitionFileRef contains the definition of the API
