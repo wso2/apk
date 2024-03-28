@@ -43,6 +43,10 @@ public class SharedContext {
     private String oauthKeyUUID;
     private String consumerSecret;
     private String consumerKey;
+    private String sandboxConsumerSecret;
+    private String sandboxConsumerKey;
+    private String prodKeyMappingID;
+    private String sandboxKeyMappingID;
     private String apiAccessToken;
     private Boolean definitionValidStatus;
     private HashMap<String, Object> valueStore = new HashMap<>();
@@ -175,24 +179,49 @@ public class SharedContext {
         this.oauthKeyUUID = oauthKeyUUID;
     }
 
-    public String getConsumerSecret() {
-
-        return consumerSecret;
+    public String getConsumerSecret(String keyType) {
+        if ("production".equals(keyType)) 
+            return consumerSecret;
+        else if ("sandbox".equals(keyType))
+            return sandboxConsumerSecret;
+        return "";
     }
 
-    public void setConsumerSecret(String consumerSecret) {
-
-        this.consumerSecret = consumerSecret;
+    public void setConsumerSecret(String consumerSecret, String keyType) {
+        if ("production".equals(keyType)) 
+            this.consumerSecret = consumerSecret;
+        else if ("sandbox".equals(keyType))
+            this.sandboxConsumerSecret = consumerSecret;
     }
 
-    public String getConsumerKey() {
-
-        return consumerKey;
+    public String getConsumerKey(String keyType) {
+        if ("production".equals(keyType)) 
+            return consumerKey;
+        else if ("sandbox".equals(keyType))
+            return sandboxConsumerKey;
+        return "";
     }
 
-    public void setConsumerKey(String consumerKey) {
+    public void setConsumerKey(String consumerKey, String keyType) {
+        if ("production".equals(keyType)) 
+            this.consumerKey = consumerKey;
+        else if ("sandbox".equals(keyType))
+            this.sandboxConsumerKey = consumerKey;
+    }
 
-        this.consumerKey = consumerKey;
+    public void setKeyMappingID(String keyMappingID, String keyType){
+        if ("production".equals(keyType)) 
+            this.prodKeyMappingID = keyMappingID;
+        else if ("sandbox".equals(keyType))
+            this.sandboxKeyMappingID = keyMappingID;
+    }
+
+    public String getKeyMappingID(String keyType){
+        if ("production".equals(keyType)) 
+            return prodKeyMappingID;
+        else if ("sandbox".equals(keyType))
+            return sandboxKeyMappingID;
+        return "";        
     }
 
     public String getApiAccessToken() {

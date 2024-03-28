@@ -365,6 +365,6 @@
         "vendor": "WSO2"
     },
     "gatewayVendor": "wso2",
-    "gatewayType": "wso2/synapse",
+    "gatewayType":"wso2/apk",
     "asyncTransportProtocols": []
 }

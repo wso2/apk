@@ -1,7 +1,7 @@
-Feature: API Deployment
+Feature: Backend Support for APIs
   Background:
     Given The system is ready
-  Scenario: Import an API, Create Application, Generate Keys, Subscribe to an API
+  Scenario: Make endpoint alterations in the REST API deployment and verfy the functionality
     And I have a DCR application
     And I have a valid Publisher access token
     When I use the Payload file "artifacts/payloads/api1.json"
@@ -30,10 +30,16 @@ Feature: API Deployment
     And make the Access Token Generation request for "production"
     Then the response status code should be 200
     And the response body should contain "accessToken"
-    And I send "GET" request to "https://default.gw.wso2.com:9095/petstore/1.0.0/pet/4" with body ""
-    And I eventually receive 200 response code, not accepting
-      |429|
-  
+    And I send "GET" request to "https://default.gw.wso2.com:9095/petstore/1.0.0/pet/5" with body ""
+    Then the response status code should be 200
+    And I get "sandbox" oauth keys for application
+    Then the response status code should be 200
+    And make the Access Token Generation request for "sandbox"
+    Then the response status code should be 200
+    And the response body should contain "accessToken"
+    And I send "GET" request to "https://sandbox.default.gw.wso2.com:9095/petstore/1.0.0/pet/5" with body ""
+    Then the response status code should be 200
+
   Scenario: Undeploying an already existing REST API
     And I have a DCR application
     And I have a valid Devportal access token
@@ -43,11 +49,11 @@ Feature: API Deployment
     Then I find the apiUUID of the API created with the name "SwaggerPetstore"
     Then I undeploy the selected API
     Then the response status code should be 200
-    And I send "GET" request to "https://default.gw.wso2.com:9095/petstore/1.0.0/pet/4" with body ""
+    And I send "GET" request to "https://sandbox.default.gw.wso2.com:9095/petstore/1.0.0/pet/5" with body ""
     And I eventually receive 404 response code, not accepting
       |200|
 
-  Scenario: Deploying a GraphQL API
+  Scenario: Make endpoint alterations in the GRaphQL API deployment and verfy the functionality
     And I have a DCR application
     And I have a valid Publisher access token
     When the definition file "artifacts/definitions/schema_graphql.graphql"
@@ -80,9 +86,13 @@ Feature: API Deployment
     And the response body should contain "accessToken"
     And I send "POST" request to "https://default.gw.wso2.com:9095/graphql/3.14" with body "{\"query\":\"{ hero { name } }\"}"
     Then the response status code should be 200
-    And I eventually receive 200 response code, not accepting
-      | 404 |
-      | 401 |
+    And I get "sandbox" oauth keys for application
+    Then the response status code should be 200
+    And make the Access Token Generation request for "sandbox"
+    Then the response status code should be 200
+    And the response body should contain "accessToken"
+    And I send "POST" request to "https://sandbox.default.gw.wso2.com:9095/graphql/3.14" with body "{\"query\":\"{ hero { name } }\"}"
+    Then the response status code should be 200
 
   Scenario: Undeploying an already existing GraphQL API
     And I have a DCR application
@@ -93,6 +103,6 @@ Feature: API Deployment
     Then I find the apiUUID of the API created with the name "StarwarsAPI"
     Then I undeploy the selected API
     Then the response status code should be 200
-    And I send "POST" request to "https://default.gw.wso2.com:9095/graphql/3.14" with body "{\"query\":\"{ hero { name } }\"}"
+    And I send "POST" request to "https://sandbox.default.gw.wso2.com:9095/graphql/3.14" with body "{\"query\":\"{ hero { name } }\"}"
     And I eventually receive 404 response code, not accepting
       |200|

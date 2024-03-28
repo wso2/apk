@@ -140,6 +140,11 @@ public class Utils {
                 + Constants.DEFAULT_API_DEPLOYER + "search?query=content:" + queryValue;
     }
 
+    public static String getAPINewVersionCreationURL() {
+        return "https://" + Constants.DEFAULT_API_HOST + ":" + Constants.DEFAULT_GW_PORT + "/"
+                + Constants.DEFAULT_API_DEPLOYER + "apis/copy-api";
+    }
+
     public static String extractID(String payload) throws IOException {
 
         JSONParser parser = new JSONParser();
@@ -187,18 +192,21 @@ public class Utils {
         }
     }
 
-    public static String extractOAuthMappingID(String payload) throws IOException {
-
+    public static String extractOAuthMappingID(String payload, String keyMappingID) throws IOException {
         JSONParser parser = new JSONParser();
         try {
-            // Parse the JSON string
             JSONObject jsonObject = (JSONObject) parser.parse(payload);
+            JSONArray list = (JSONArray) jsonObject.get("list");
 
-            // Get the value of the "id" attribute
-            JSONArray idValue = (JSONArray)jsonObject.get("list");
-            JSONObject keyManager = (JSONObject) idValue.get(0);
-            String keyManagerId = (String) keyManager.get("keyMappingId");
-            return keyManagerId;
+            for (Object obj : list) {
+                JSONObject keyManager = (JSONObject) obj;
+                String currentKeyMappingId = (String) keyManager.get("keyMappingId");
+                if (keyMappingID.equals(currentKeyMappingId)) {
+                    return currentKeyMappingId;
+                }
+            }
+            return null;
+    
         } catch (ParseException e) {
             throw new IOException("Error while parsing the JSON payload: " + e.getMessage());
         }
