@@ -1190,7 +1190,7 @@ func CreateAPIDefinitionEndpoint(adapterInternalAPI *model.AdapterInternalAPI, v
 	rewritePath := basePath + "/" + vHost + "?" + apiDefinitionQueryParam
 	basePath = strings.TrimSuffix(basePath, "/")
 	var (
-		router    routev3.Route
+		router    *routev3.Route
 		action    *routev3.Route_Route
 		match     *routev3.RouteMatch
 		decorator *routev3.Decorator
@@ -1248,7 +1248,7 @@ func CreateAPIDefinitionEndpoint(adapterInternalAPI *model.AdapterInternalAPI, v
 		},
 	}
 
-	router = routev3.Route{
+	router = &routev3.Route{
 		Name:      endpoint, //Categorize routes with same base path
 		Match:     match,
 		Action:    action,
@@ -1258,7 +1258,7 @@ func CreateAPIDefinitionEndpoint(adapterInternalAPI *model.AdapterInternalAPI, v
 			wellknown.HTTPExternalAuthorization: filter,
 		},
 	}
-	return &router
+	return router
 }
 
 // CreateHealthEndpoint generates a route for the jwt /health endpoint

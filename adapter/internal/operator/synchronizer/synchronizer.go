@@ -132,7 +132,6 @@ func deployMultipleAPIsInGateway(event *APIEvent, successChannel *chan SuccessEv
 	var updatedAPIs []types.NamespacedName
 	for i, apiState := range event.Events {
 		loggers.LoggerAPKOperator.Infof("%s event received for %s", event.EventType, apiState.APIDefinition.Name)
-		// TODO(amali) move this inside updateAPI method
 		// Remove the API from the internal maps before adding it again
 		oldGatewayNames := xds.RemoveAPIFromAllInternalMaps(string((*apiState.APIDefinition).ObjectMeta.UID))
 		for label := range oldGatewayNames {
@@ -140,7 +139,7 @@ func deployMultipleAPIsInGateway(event *APIEvent, successChannel *chan SuccessEv
 		}
 		if apiState.APIDefinition.Spec.APIType == "REST" {
 			if apiState.ProdHTTPRoute != nil {
-				_, updatedLabels, err := GenerateAdapterInternalAPI(apiState, apiState.ProdHTTPRoute, constants.Production)
+				_, updatedLabels, err := UpdateInternalMapsFromHTTPRoute(apiState, apiState.ProdHTTPRoute, constants.Production)
 				if err != nil {
 					loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2665, logging.CRITICAL,
 						"Error deploying prod httpRoute of API : %v in Organization %v from environments %v. Error: %v",
@@ -156,7 +155,7 @@ func deployMultipleAPIsInGateway(event *APIEvent, successChannel *chan SuccessEv
 			}
 
 			if apiState.SandHTTPRoute != nil {
-				_, updatedLabels, err := GenerateAdapterInternalAPI(apiState, apiState.SandHTTPRoute, constants.Sandbox)
+				_, updatedLabels, err := UpdateInternalMapsFromHTTPRoute(apiState, apiState.SandHTTPRoute, constants.Sandbox)
 				if err != nil {
 					loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2666, logging.CRITICAL,
 						"Error deploying sand httpRoute of API : %v in Organization %v from environments %v. Error: %v",
@@ -174,7 +173,7 @@ func deployMultipleAPIsInGateway(event *APIEvent, successChannel *chan SuccessEv
 
 		if apiState.APIDefinition.Spec.APIType == "GraphQL" {
 			if apiState.ProdGQLRoute != nil {
-				_, updatedLabels, err := generateGQLAdapterInternalAPI(apiState, apiState.ProdGQLRoute, constants.Production)
+				_, updatedLabels, err := updateInternalMapsFromGQLRoute(apiState, apiState.ProdGQLRoute, constants.Production)
 				if err != nil {
 					loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2665, logging.CRITICAL,
 						"Error deploying prod gqlRoute of API : %v in Organization %v from environments %v. Error: %v",
@@ -187,7 +186,7 @@ func deployMultipleAPIsInGateway(event *APIEvent, successChannel *chan SuccessEv
 				}
 			}
 			if apiState.SandGQLRoute != nil {
-				_, updatedLabels, err := generateGQLAdapterInternalAPI(apiState, apiState.SandGQLRoute, constants.Sandbox)
+				_, updatedLabels, err := updateInternalMapsFromGQLRoute(apiState, apiState.SandGQLRoute, constants.Sandbox)
 				if err != nil {
 					loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2665, logging.CRITICAL,
 						"Error deploying sand gqlRoute of API : %v in Organization %v from environments %v. Error: %v",

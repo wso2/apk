@@ -298,8 +298,11 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 
 	envoyGatewayConfig, gwFound := gatewayLabelConfigMap[gatewayName]
 	// gwFound means that the gateway is configured in the envoy config.
+	if !gwFound {
+		return nil, nil, nil, nil, nil
+	}
 	listeners := envoyGatewayConfig.listeners
-	if !gwFound || listeners == nil || len(listeners) == 0 {
+	if len(listeners) < 1 {
 		return nil, nil, nil, nil, nil
 	}
 
@@ -511,7 +514,7 @@ func GenerateHashedAPINameVersionIDWithoutVhost(name, version string) string {
 }
 
 // GenerateIdentifierForAPIWithoutVersion generates an identifier unique to the API despite of the version
-func generateIdentifierForAPIWithoutVersion(vhost, name string) string {
+func GenerateIdentifierForAPIWithoutVersion(vhost, name string) string {
 	return fmt.Sprint(vhost, apiKeyFieldSeparator, name)
 }
 
@@ -541,6 +544,32 @@ func ExtractUUIDFromAPIIdentifier(id string) (string, error) {
 	return "", err
 }
 
+// PopulateInternalMaps populates the internal maps from the GQLRoute.
+func PopulateInternalMaps(adapterInternalAPI *model.AdapterInternalAPI, labels, vHosts map[string]struct{}, sectionName, listenerName string) error {
+	mutexForInternalMapUpdate.Lock()
+	defer mutexForInternalMapUpdate.Unlock()
+	apiVersion := adapterInternalAPI.GetVersion()
+	apiName := adapterInternalAPI.GetTitle()
+	if IsSemanticVersioningEnabled(apiName, apiVersion) {
+		logger.LoggerXds.Debugf("Semantic versioning is enabled for API: %v", apiName)
+		tobeUpdatedAPIRangeIdentifiers := make(map[string]struct{})
+		for vHost := range vHosts {
+			tobeUpdatedAPIRangeIdentifiers[GenerateIdentifierForAPIWithoutVersion(vHost, apiName)] = struct{}{}
+		}
+		logger.LoggerXds.Errorf("Updating semantic versioning for API: %v", tobeUpdatedAPIRangeIdentifiers)
+		updateSemanticVersioningInMapForUpdateAPI(adapterInternalAPI.OrganizationID, tobeUpdatedAPIRangeIdentifiers, adapterInternalAPI)
+	}
+
+	err := UpdateOrgAPIMap(vHosts, labels, listenerName, sectionName, adapterInternalAPI)
+	if err != nil {
+		logger.LoggerXds.ErrorC(logging.PrintError(logging.Error1415, logging.MAJOR,
+			"Error updating the API : %s:%s in vhosts: %s, API_UUID: %v. %v",
+			adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), vHosts, adapterInternalAPI.UUID, err))
+		return err
+	}
+	return nil
+}
+
 // RemoveAPIFromAllInternalMaps removes api from all maps
 func RemoveAPIFromAllInternalMaps(uuid string) map[string]struct{} {
 	mutexForInternalMapUpdate.Lock()
@@ -548,7 +577,6 @@ func RemoveAPIFromAllInternalMaps(uuid string) map[string]struct{} {
 
 	tobeUpdatedAPIRangeIdentifiers := make(map[string]struct{}, 0)
 	updatedLabelsMap := make(map[string]struct{}, 0)
-	logger.LoggerAPI.Error(orgIDLatestAPIVersionMap)
 	for orgID, orgAPI := range orgAPIMap {
 		for apiIdentifier, envoyInternalAPI := range orgAPI {
 			if strings.HasSuffix(apiIdentifier, ":"+uuid) {
@@ -558,7 +586,7 @@ func RemoveAPIFromAllInternalMaps(uuid string) map[string]struct{} {
 				delete(orgAPIMap[orgID], apiIdentifier)
 				// get vhost from the apiIdentifier
 				vhost, _ := ExtractVhostFromAPIIdentifier(apiIdentifier)
-				apiRangeID := generateIdentifierForAPIWithoutVersion(vhost, envoyInternalAPI.adapterInternalAPI.GetTitle())
+				apiRangeID := GenerateIdentifierForAPIWithoutVersion(vhost, envoyInternalAPI.adapterInternalAPI.GetTitle())
 				if _, exists := orgIDLatestAPIVersionMap[orgID]; exists {
 					if apiVersionMap, exists := orgIDLatestAPIVersionMap[orgID][apiRangeID]; exists {
 						for versionRange, latestVersion := range apiVersionMap {
@@ -576,26 +604,23 @@ func RemoveAPIFromAllInternalMaps(uuid string) map[string]struct{} {
 			delete(orgIDLatestAPIVersionMap, orgID)
 		}
 		if len(tobeUpdatedAPIRangeIdentifiers) > 0 {
-			updateSemanticVersioning(orgID, tobeUpdatedAPIRangeIdentifiers)
+			updateSemanticVersioningInMap(orgID, tobeUpdatedAPIRangeIdentifiers)
 		}
 	}
 
 	return updatedLabelsMap
 }
 
-// UpdateAPICache updates the xDS cache related to the API Lifecycle event.
-func UpdateAPICache(vHosts []string, newLabels map[string]struct{}, listener string, sectionName string,
+// UpdateOrgAPIMap updates the xDS cache related to the API Lifecycle event.
+func UpdateOrgAPIMap(vHosts, newLabels map[string]struct{}, listener string, sectionName string,
 	adapterInternalAPI *model.AdapterInternalAPI) error {
-	mutexForInternalMapUpdate.Lock()
-	defer mutexForInternalMapUpdate.Unlock()
 
 	// Create internal mappings for new vHosts
-	for _, vHost := range vHosts {
+	for vHost := range vHosts {
 		logger.LoggerAPKOperator.Debugf("Creating internal mapping for vhost: %s", vHost)
 		apiUUID := adapterInternalAPI.UUID
 		apiIdentifier := GenerateIdentifierForAPIWithUUID(vHost, apiUUID)
-
-		routes, clusters, endpoints, err := oasParser.GetRoutesClustersEndpoints(adapterInternalAPI, nil,
+		routes, clusters, endpoints, err := envoyconf.CreateRoutesWithClusters(adapterInternalAPI, nil,
 			vHost, adapterInternalAPI.GetOrganizationID())
 
 		if err != nil {
@@ -603,6 +628,11 @@ func UpdateAPICache(vHosts []string, newLabels map[string]struct{}, listener str
 				adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), adapterInternalAPI.GetOrganizationID(),
 				apiUUID, err.Error())
 		}
+
+		if IsSemanticVersioningEnabled(adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion()) {
+			updateSemRegexForNewAPI(*adapterInternalAPI, routes, vHost)
+		}
+
 		if _, orgExists := orgAPIMap[adapterInternalAPI.GetOrganizationID()]; !orgExists {
 			orgAPIMap[adapterInternalAPI.GetOrganizationID()] = make(map[string]*EnvoyInternalAPI)
 		}
@@ -614,13 +644,6 @@ func UpdateAPICache(vHosts []string, newLabels map[string]struct{}, listener str
 			clusters:           clusters,
 			endpointAddresses:  endpoints,
 			enforcerAPI:        oasParser.GetEnforcerAPI(adapterInternalAPI, vHost),
-		}
-
-		apiVersion := adapterInternalAPI.GetVersion()
-		apiName := adapterInternalAPI.GetTitle()
-		if isSemanticVersioningEnabled(apiName, apiVersion) {
-			logger.LoggerAPI.Errorf("Semantic versioning is enabled for API: %v", apiName)
-			updateRoutingRulesOnAPIUpdate(adapterInternalAPI.OrganizationID, apiIdentifier, apiName, apiVersion, vHost)
 		}
 	}
 	return nil

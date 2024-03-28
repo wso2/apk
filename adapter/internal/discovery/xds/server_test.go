@@ -54,11 +54,20 @@ func TestOrgMapUpdates(t *testing.T) {
 	}
 	api2uuid.SetName("api-2")
 	api2uuid.SetVersion("v0.0.1")
+	api21uuid := &model.AdapterInternalAPI{
+		UUID:           "api-21-uuid",
+		EnvType:        "prod",
+		OrganizationID: "org-1",
+	}
+	api21uuid.SetName("api-2")
+	api21uuid.SetVersion("v0.0.2")
 	ptrOne := new(int)
 	*ptrOne = 1
+	ptrTwo := new(int)
+	*ptrTwo = 2
 	tests := []struct {
 		name                             string
-		vHosts                           []string
+		vHosts                           map[string]struct{}
 		labels                           map[string]struct{}
 		listeners                        []string
 		adapterInternalAPI               *model.AdapterInternalAPI
@@ -70,7 +79,7 @@ func TestOrgMapUpdates(t *testing.T) {
 	}{
 		{
 			name:               "Test creating first prod api",
-			vHosts:             []string{"prod1.gw.abc.com", "prod2.gw.abc.com"},
+			vHosts:             map[string]struct{}{"prod1.gw.abc.com": {}, "prod2.gw.abc.com": {}},
 			labels:             map[string]struct{}{"default": {}},
 			listeners:          []string{"httpslistener"},
 			adapterInternalAPI: api1uuid,
@@ -123,7 +132,7 @@ func TestOrgMapUpdates(t *testing.T) {
 		},
 		{
 			name:               "Test creating first sand api",
-			vHosts:             []string{"sand3.gw.abc.com", "sand4.gw.abc.com"},
+			vHosts:             map[string]struct{}{"sand3.gw.abc.com": {}, "sand4.gw.abc.com": {}},
 			labels:             map[string]struct{}{"default": {}},
 			listeners:          []string{"httpslistener"},
 			adapterInternalAPI: api1sanduuid,
@@ -212,7 +221,7 @@ func TestOrgMapUpdates(t *testing.T) {
 		},
 		{
 			name:               "Test creating second prod api",
-			vHosts:             []string{"prod1.gw.pqr.com", "prod2.gw.pqr.com"},
+			vHosts:             map[string]struct{}{"prod1.gw.pqr.com": {}, "prod2.gw.pqr.com": {}},
 			labels:             map[string]struct{}{"default": {}},
 			listeners:          []string{"httpslistener"},
 			adapterInternalAPI: api2uuid,
@@ -335,61 +344,292 @@ func TestOrgMapUpdates(t *testing.T) {
 				},
 			},
 		},
-		// {
-		// 	name:               "Test updating first prod api 1 with new vhosts",
-		// 	vHosts:             []string{"prod3.gw.abc.com", "prod4.gw.abc.com"},
-		// 	labels:             map[string]struct{}{"default": {}},
-		// 	listeners:          []string{"httpslistener"},
-		// 	adapterInternalAPI: api1uuid,
-		// 	action:             "UPDATE",
-		// 	expectedOrgAPIMap: map[string]map[string]*EnvoyInternalAPI{
-		// 		"org-1": {
-		// 			"prod3.gw.abc.com:api-1-uuid": &EnvoyInternalAPI{
-		// 				envoyLabels:        map[string]struct{}{"default": {}},
-		// 				adapterInternalAPI: api1uuid,
-		// 			},
-		// 			"prod4.gw.abc.com:api-1-uuid": &EnvoyInternalAPI{
-		// 				envoyLabels:        map[string]struct{}{"default": {}},
-		// 				adapterInternalAPI: api1uuid,
-		// 			},
-		// 			"sand3.gw.abc.com:api-1-uuid": &EnvoyInternalAPI{
-		// 				envoyLabels:        map[string]struct{}{"default": {}},
-		// 				adapterInternalAPI: api1sanduuid,
-		// 			},
-		// 			"sand4.gw.abc.com:api-1-uuid": &EnvoyInternalAPI{
-		// 				envoyLabels:        map[string]struct{}{"default": {}},
-		// 				adapterInternalAPI: api1sanduuid,
-		// 			},
-		// 			"prod1.gw.pqr.com:api-2-uuid": &EnvoyInternalAPI{
-		// 				envoyLabels:        map[string]struct{}{"default": {}},
-		// 				adapterInternalAPI: api2uuid,
-		// 			},
-		// 			"prod2.gw.pqr.com:api-2-uuid": &EnvoyInternalAPI{
-		// 				envoyLabels:        map[string]struct{}{"default": {}},
-		// 				adapterInternalAPI: api2uuid,
-		// 			},
-		// 		},
-		// 	},
-		// },
-		// {
-		// 	name:               "Test deleting api 1 both prod and sand",
-		// 	labels:             map[string]struct{}{"default": {}},
-		// 	listeners:          []string{"httpslistener"},
-		// 	adapterInternalAPI: api1uuid,
-		// 	action:             "DELETE",
-		// 	expectedOrgAPIMap: map[string]map[string]*EnvoyInternalAPI{
-		// 		"org-1": {
-		// 			"prod1.gw.pqr.com:api-2-uuid": &EnvoyInternalAPI{
-		// 				envoyLabels:        map[string]struct{}{"default": {}},
-		// 				adapterInternalAPI: api2uuid,
-		// 			},
-		// 			"prod2.gw.pqr.com:api-2-uuid": &EnvoyInternalAPI{
-		// 				envoyLabels:        map[string]struct{}{"default": {}},
-		// 				adapterInternalAPI: api2uuid,
-		// 			},
-		// 		},
-		// 	},
-		// },
+		{
+			name:               "Test updating first prod api 1 with new vhosts",
+			vHosts:             map[string]struct{}{"prod3.gw.abc.com": {}, "prod4.gw.abc.com": {}},
+			labels:             map[string]struct{}{"default": {}},
+			listeners:          []string{"httpslistener"},
+			adapterInternalAPI: api1uuid,
+			action:             "UPDATE",
+			expectedOrgAPIMap: map[string]map[string]*EnvoyInternalAPI{
+				"org-1": {
+					"prod3.gw.abc.com:api-1-uuid": &EnvoyInternalAPI{
+						envoyLabels:        map[string]struct{}{"default": {}},
+						adapterInternalAPI: api1uuid,
+					},
+					"prod4.gw.abc.com:api-1-uuid": &EnvoyInternalAPI{
+						envoyLabels:        map[string]struct{}{"default": {}},
+						adapterInternalAPI: api1uuid,
+					},
+					"sand3.gw.abc.com:api-1-uuid": &EnvoyInternalAPI{
+						envoyLabels:        map[string]struct{}{"default": {}},
+						adapterInternalAPI: api1sanduuid,
+					},
+					"sand4.gw.abc.com:api-1-uuid": &EnvoyInternalAPI{
+						envoyLabels:        map[string]struct{}{"default": {}},
+						adapterInternalAPI: api1sanduuid,
+					},
+					"prod1.gw.pqr.com:api-2-uuid": &EnvoyInternalAPI{
+						envoyLabels:        map[string]struct{}{"default": {}},
+						adapterInternalAPI: api2uuid,
+					},
+					"prod2.gw.pqr.com:api-2-uuid": &EnvoyInternalAPI{
+						envoyLabels:        map[string]struct{}{"default": {}},
+						adapterInternalAPI: api2uuid,
+					},
+				},
+			},
+			expectedOrgIDLatestAPIVersionMap: map[string]map[string]map[string]semantic_version.SemVersion{
+				"org-1": {
+					"prod3.gw.abc.com:api-1": {
+						"v1": semantic_version.SemVersion{
+							Version: "v1.0.0", // fix it should still be v1.0.0
+							Major:   1,
+							Minor:   0,
+							Patch:   new(int),
+						},
+						"v1.0": semantic_version.SemVersion{
+							Version: "v1.0.0",
+							Major:   1,
+							Minor:   0,
+							Patch:   new(int),
+						},
+					},
+					"prod4.gw.abc.com:api-1": {
+						"v1": semantic_version.SemVersion{
+							Version: "v1.0.0",
+							Major:   1,
+							Minor:   0,
+							Patch:   new(int),
+						},
+						"v1.0": semantic_version.SemVersion{
+							Version: "v1.0.0",
+							Major:   1,
+							Minor:   0,
+							Patch:   new(int),
+						},
+					},
+					"sand3.gw.abc.com:api-1": {
+						"v1": semantic_version.SemVersion{
+							Version: "v1.0.1",
+							Major:   1,
+							Minor:   0,
+							Patch:   ptrOne,
+						},
+						"v1.0": semantic_version.SemVersion{
+							Version: "v1.0.1",
+							Major:   1,
+							Minor:   0,
+							Patch:   ptrOne,
+						},
+					},
+					"sand4.gw.abc.com:api-1": {
+						"v1": semantic_version.SemVersion{
+							Version: "v1.0.1",
+							Major:   1,
+							Minor:   0,
+							Patch:   ptrOne,
+						},
+						"v1.0": semantic_version.SemVersion{
+							Version: "v1.0.1",
+							Major:   1,
+							Minor:   0,
+							Patch:   ptrOne,
+						},
+					},
+					"prod1.gw.pqr.com:api-2": {
+						"v0": semantic_version.SemVersion{
+							Version: "v0.0.1",
+							Major:   0,
+							Minor:   0,
+							Patch:   ptrOne,
+						},
+						"v0.0": semantic_version.SemVersion{
+							Version: "v0.0.1",
+							Major:   0,
+							Minor:   0,
+							Patch:   ptrOne,
+						},
+					},
+					"prod2.gw.pqr.com:api-2": {
+						"v0": semantic_version.SemVersion{
+							Version: "v0.0.1",
+							Major:   0,
+							Minor:   0,
+							Patch:   ptrOne,
+						},
+						"v0.0": semantic_version.SemVersion{
+							Version: "v0.0.1",
+							Major:   0,
+							Minor:   0,
+							Patch:   ptrOne,
+						},
+					},
+				},
+			},
+		},
+		{
+			name:               "Test deleting api 1 both prod and sand",
+			labels:             map[string]struct{}{"default": {}},
+			listeners:          []string{"httpslistener"},
+			adapterInternalAPI: api1uuid,
+			action:             "DELETE",
+			expectedOrgAPIMap: map[string]map[string]*EnvoyInternalAPI{
+				"org-1": {
+					"prod1.gw.pqr.com:api-2-uuid": &EnvoyInternalAPI{
+						envoyLabels:        map[string]struct{}{"default": {}},
+						adapterInternalAPI: api2uuid,
+					},
+					"prod2.gw.pqr.com:api-2-uuid": &EnvoyInternalAPI{
+						envoyLabels:        map[string]struct{}{"default": {}},
+						adapterInternalAPI: api2uuid,
+					},
+				},
+			},
+			expectedOrgIDLatestAPIVersionMap: map[string]map[string]map[string]semantic_version.SemVersion{
+				"org-1": {
+					"prod1.gw.pqr.com:api-2": {
+						"v0": semantic_version.SemVersion{
+							Version: "v0.0.1",
+							Major:   0,
+							Minor:   0,
+							Patch:   ptrOne,
+						},
+						"v0.0": semantic_version.SemVersion{
+							Version: "v0.0.1",
+							Major:   0,
+							Minor:   0,
+							Patch:   ptrOne,
+						},
+					},
+					"prod2.gw.pqr.com:api-2": {
+						"v0": semantic_version.SemVersion{
+							Version: "v0.0.1",
+							Major:   0,
+							Minor:   0,
+							Patch:   ptrOne,
+						},
+						"v0.0": semantic_version.SemVersion{
+							Version: "v0.0.1",
+							Major:   0,
+							Minor:   0,
+							Patch:   ptrOne,
+						},
+					},
+				},
+			},
+		},
+		{
+			name:               "Test adding new api 2 version",
+			vHosts:             map[string]struct{}{"prod1.gw.pqr.com": {}, "prod2.gw.pqr.com": {}},
+			labels:             map[string]struct{}{"default": {}},
+			listeners:          []string{"httpslistener"},
+			adapterInternalAPI: api21uuid,
+			action:             "CREATE",
+			expectedOrgAPIMap: map[string]map[string]*EnvoyInternalAPI{
+				"org-1": {
+					"prod1.gw.pqr.com:api-2-uuid": &EnvoyInternalAPI{
+						envoyLabels:        map[string]struct{}{"default": {}},
+						adapterInternalAPI: api2uuid,
+					},
+					"prod2.gw.pqr.com:api-2-uuid": &EnvoyInternalAPI{
+						envoyLabels:        map[string]struct{}{"default": {}},
+						adapterInternalAPI: api2uuid,
+					},
+					"prod1.gw.pqr.com:api-21-uuid": &EnvoyInternalAPI{
+						envoyLabels:        map[string]struct{}{"default": {}},
+						adapterInternalAPI: api21uuid,
+					},
+					"prod2.gw.pqr.com:api-21-uuid": &EnvoyInternalAPI{
+						envoyLabels:        map[string]struct{}{"default": {}},
+						adapterInternalAPI: api21uuid,
+					},
+				},
+			},
+			expectedOrgIDLatestAPIVersionMap: map[string]map[string]map[string]semantic_version.SemVersion{
+				"org-1": {
+					"prod1.gw.pqr.com:api-2": {
+						"v0": semantic_version.SemVersion{
+							Version: "v0.0.2",
+							Major:   0,
+							Minor:   0,
+							Patch:   ptrTwo,
+						},
+						"v0.0": semantic_version.SemVersion{
+							Version: "v0.0.2",
+							Major:   0,
+							Minor:   0,
+							Patch:   ptrTwo,
+						},
+					},
+					"prod2.gw.pqr.com:api-2": {
+						"v0": semantic_version.SemVersion{
+							Version: "v0.0.2",
+							Major:   0,
+							Minor:   0,
+							Patch:   ptrTwo,
+						},
+						"v0.0": semantic_version.SemVersion{
+							Version: "v0.0.2",
+							Major:   0,
+							Minor:   0,
+							Patch:   ptrTwo,
+						},
+					},
+				},
+			},
+		},
+		{
+			name:               "Test deleting api 2 latest version",
+			labels:             map[string]struct{}{"default": {}},
+			listeners:          []string{"httpslistener"},
+			adapterInternalAPI: api21uuid,
+			action:             "DELETE",
+			expectedOrgAPIMap: map[string]map[string]*EnvoyInternalAPI{
+				"org-1": {
+					"prod1.gw.pqr.com:api-2-uuid": &EnvoyInternalAPI{
+						envoyLabels:        map[string]struct{}{"default": {}},
+						adapterInternalAPI: api2uuid,
+					},
+					"prod2.gw.pqr.com:api-2-uuid": &EnvoyInternalAPI{
+						envoyLabels:        map[string]struct{}{"default": {}},
+						adapterInternalAPI: api2uuid,
+					},
+				},
+			},
+			expectedOrgIDLatestAPIVersionMap: map[string]map[string]map[string]semantic_version.SemVersion{
+				"org-1": {
+					"prod1.gw.pqr.com:api-2": {
+						"v0": semantic_version.SemVersion{
+							Version: "v0.0.1",
+							Major:   0,
+							Minor:   0,
+							Patch:   ptrOne,
+						},
+						"v0.0": semantic_version.SemVersion{
+							Version: "v0.0.1",
+							Major:   0,
+							Minor:   0,
+							Patch:   ptrOne,
+						},
+					},
+					"prod2.gw.pqr.com:api-2": {
+						"v0": semantic_version.SemVersion{
+							Version: "v0.0.1",
+							Major:   0,
+							Minor:   0,
+							Patch:   ptrOne,
+						},
+						"v0.0": semantic_version.SemVersion{
+							Version: "v0.0.1",
+							Major:   0,
+							Minor:   0,
+							Patch:   ptrOne,
+						},
+					},
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -401,13 +641,13 @@ func TestOrgMapUpdates(t *testing.T) {
 					SanitizeGateway(label, true)
 				}
 				RemoveAPIFromAllInternalMaps(test.adapterInternalAPI.UUID)
-				UpdateAPICache(test.vHosts, test.labels, test.listeners[0], "httpslistener", test.adapterInternalAPI)
+				PopulateInternalMaps(test.adapterInternalAPI, test.labels, test.vHosts, test.listeners[0], test.EnvType)
 			case "UPDATE":
 				loggers.LoggerAPI.Infof("Updating API: %v", test.adapterInternalAPI.UUID)
 				for label := range test.labels {
 					SanitizeGateway(label, true)
 				}
-				UpdateAPICache(test.vHosts, test.labels, test.listeners[0], "httpslistener", test.adapterInternalAPI)
+				PopulateInternalMaps(test.adapterInternalAPI, test.labels, test.vHosts, test.listeners[0], test.EnvType)
 			case "DELETE":
 				loggers.LoggerAPI.Infof("Deleting API: %v", test.adapterInternalAPI.UUID)
 				DeleteAPI(test.adapterInternalAPI.UUID, test.labels)

@@ -21,12 +21,20 @@ import (
 	"strings"
 
 	routev3 "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
-	envoy_type_matcherv3 "github.com/envoyproxy/go-control-plane/envoy/type/matcher/v3"
+	matcherv3 "github.com/envoyproxy/go-control-plane/envoy/type/matcher/v3"
 	"github.com/wso2/apk/adapter/config"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
 	logging "github.com/wso2/apk/adapter/internal/logging"
+	"github.com/wso2/apk/adapter/internal/oasparser/model"
 	semantic_version "github.com/wso2/apk/adapter/pkg/semanticversion"
 )
+
+type oldSemVersion struct {
+	Vhost              string
+	APIName            string
+	OldMajorSemVersion *semantic_version.SemVersion
+	OldMinorSemVersion *semantic_version.SemVersion
+}
 
 // GetVersionMatchRegex returns the regex to match the full version string
 func GetVersionMatchRegex(version string) string {
@@ -35,7 +43,7 @@ func GetVersionMatchRegex(version string) string {
 }
 
 // GetMajorMinorVersionRangeRegex generates major and minor version compatible range regex for the given version
-func GetMajorMinorVersionRangeRegex(semVersion semantic_version.SemVersion) string {
+func GetMajorMinorVersionRangeRegex(semVersion *semantic_version.SemVersion) string {
 	majorVersion := strconv.Itoa(semVersion.Major)
 	minorVersion := strconv.Itoa(semVersion.Minor)
 	if semVersion.Patch == nil {
@@ -46,7 +54,7 @@ func GetMajorMinorVersionRangeRegex(semVersion semantic_version.SemVersion) stri
 }
 
 // GetMinorVersionRangeRegex generates minor version compatible range regex for the given version
-func GetMinorVersionRangeRegex(semVersion semantic_version.SemVersion) string {
+func GetMinorVersionRangeRegex(semVersion *semantic_version.SemVersion) string {
 	if semVersion.Patch == nil {
 		return GetVersionMatchRegex(semVersion.Version)
 	}
@@ -66,120 +74,133 @@ func GetMinorVersionRange(semVersion semantic_version.SemVersion) string {
 	return "v" + strconv.Itoa(semVersion.Major) + "." + strconv.Itoa(semVersion.Minor)
 }
 
-func updateRoutingRulesOnAPIUpdate(organizationID, apiIdentifier, apiName, apiVersion, vHost string) {
-	apiSemVersion, err := semantic_version.ValidateAndGetVersionComponents(apiVersion)
-	// If the version validation is not success, we just proceed without intelligent version
-	// Valid version pattern: vx.y.z or vx.y where x, y and z are non-negative integers and v is a prefix
-	if err != nil && apiSemVersion == nil {
-		return
+// updateSemanticVersioningInMapForUpdateAPI updates the latest version ranges of the APIs in the organization
+func updateSemanticVersioningInMapForUpdateAPI(org string, apiRangeIdentifiers map[string]struct{},
+	adapterInternalAPI *model.AdapterInternalAPI) {
+	oldSemVersions := make([]oldSemVersion, 0)
+	if _, exist := orgIDLatestAPIVersionMap[org]; !exist {
+		orgIDLatestAPIVersionMap[org] = make(map[string]map[string]semantic_version.SemVersion)
 	}
+	semVersion, _ := semantic_version.ValidateAndGetVersionComponents(adapterInternalAPI.GetVersion())
 
-	apiRangeIdentifier := generateIdentifierForAPIWithoutVersion(vHost, apiName)
-	// Check the major and minor version ranges of the current API
-	existingMajorRangeLatestSemVersion, isMajorRangeRegexAvailable :=
-		orgIDLatestAPIVersionMap[organizationID][apiRangeIdentifier][GetMajorVersionRange(*apiSemVersion)]
-	existingMinorRangeLatestSemVersion, isMinorRangeRegexAvailable :=
-		orgIDLatestAPIVersionMap[organizationID][apiRangeIdentifier][GetMinorVersionRange(*apiSemVersion)]
-
-	// Check whether the current API is the latest version in the major and minor version ranges
-	isLatestMajorVersion := !isMajorRangeRegexAvailable || existingMajorRangeLatestSemVersion.Compare(*apiSemVersion)
-	isLatestMinorVersion := !isMinorRangeRegexAvailable || existingMinorRangeLatestSemVersion.Compare(*apiSemVersion)
-
-	// Remove the existing regexes from the path specifier when latest major and/or minor version is available
-	if (isMajorRangeRegexAvailable || isMinorRangeRegexAvailable) && (isLatestMajorVersion || isLatestMinorVersion) {
-		// Organization's all apis
-		for vuuid, envoyInternalAPI := range orgAPIMap[organizationID] {
-			// API's all versions in the same vHost
-			if envoyInternalAPI.adapterInternalAPI.GetTitle() == apiName && strings.HasPrefix(vuuid+":", vHost) {
-
-				if (isMajorRangeRegexAvailable && envoyInternalAPI.adapterInternalAPI.GetVersion() == existingMajorRangeLatestSemVersion.Version) ||
-					(isMinorRangeRegexAvailable && envoyInternalAPI.adapterInternalAPI.GetVersion() == existingMinorRangeLatestSemVersion.Version) {
-
-					for _, route := range envoyInternalAPI.routes {
-						regex := route.GetMatch().GetSafeRegex().GetRegex()
-						regexRewritePattern := route.GetRoute().GetRegexRewrite().GetPattern().GetRegex()
-						existingMinorRangeLatestVersionRegex := GetVersionMatchRegex(existingMinorRangeLatestSemVersion.Version)
-						existingMajorRangeLatestVersionRegex := GetVersionMatchRegex(existingMajorRangeLatestSemVersion.Version)
-						if isMinorRangeRegexAvailable && envoyInternalAPI.adapterInternalAPI.GetVersion() == existingMinorRangeLatestSemVersion.Version && isLatestMinorVersion {
-							regex = strings.Replace(regex, GetMinorVersionRangeRegex(existingMinorRangeLatestSemVersion), existingMinorRangeLatestVersionRegex, 1)
-							regex = strings.Replace(regex, GetMajorMinorVersionRangeRegex(existingMajorRangeLatestSemVersion), existingMajorRangeLatestVersionRegex, 1)
-							regexRewritePattern = strings.Replace(regexRewritePattern, GetMinorVersionRangeRegex(existingMinorRangeLatestSemVersion), existingMinorRangeLatestVersionRegex, 1)
-							regexRewritePattern = strings.Replace(regexRewritePattern, GetMajorMinorVersionRangeRegex(existingMajorRangeLatestSemVersion), existingMajorRangeLatestVersionRegex, 1)
-						}
-						if isMajorRangeRegexAvailable && envoyInternalAPI.adapterInternalAPI.GetVersion() == existingMajorRangeLatestSemVersion.Version && isLatestMajorVersion {
-							regex = strings.Replace(regex, GetMajorMinorVersionRangeRegex(existingMajorRangeLatestSemVersion), GetMinorVersionRangeRegex(existingMajorRangeLatestSemVersion), 1)
-							regexRewritePattern = strings.Replace(regexRewritePattern, GetMajorMinorVersionRangeRegex(existingMajorRangeLatestSemVersion), GetMinorVersionRangeRegex(existingMajorRangeLatestSemVersion), 1)
-						}
-						pathSpecifier := &routev3.RouteMatch_SafeRegex{
-							SafeRegex: &envoy_type_matcherv3.RegexMatcher{
-								Regex: regex,
-							},
-						}
-						route.Match.PathSpecifier = pathSpecifier
-						action := route.Action.(*routev3.Route_Route)
-						action.Route.RegexRewrite.Pattern.Regex = regexRewritePattern
-						route.Action = action
+	for apiRangeIdentifier := range apiRangeIdentifiers {
+		if currentAPISemVersion, exist := orgIDLatestAPIVersionMap[org][apiRangeIdentifier]; !exist {
+			orgIDLatestAPIVersionMap[org][apiRangeIdentifier] = make(map[string]semantic_version.SemVersion)
+			orgIDLatestAPIVersionMap[org][apiRangeIdentifier][GetMajorVersionRange(*semVersion)] = *semVersion
+			orgIDLatestAPIVersionMap[org][apiRangeIdentifier][GetMinorVersionRange(*semVersion)] = *semVersion
+		} else {
+			var oldVersion *oldSemVersion
+			vhost, _ := ExtractVhostFromAPIIdentifier(apiRangeIdentifier)
+			if _, ok := currentAPISemVersion[GetMajorVersionRange(*semVersion)]; !ok {
+				currentAPISemVersion[GetMajorVersionRange(*semVersion)] = *semVersion
+			} else if currentAPISemVersion[GetMajorVersionRange(*semVersion)].Compare(*semVersion) {
+				version := currentAPISemVersion[GetMajorVersionRange(*semVersion)]
+				currentAPISemVersion[GetMajorVersionRange(*semVersion)] = *semVersion
+				oldVersion = &oldSemVersion{
+					Vhost:              vhost,
+					APIName:            adapterInternalAPI.GetTitle(),
+					OldMajorSemVersion: &version,
+				}
+			}
+			if _, ok := currentAPISemVersion[GetMinorVersionRange(*semVersion)]; !ok {
+				currentAPISemVersion[GetMinorVersionRange(*semVersion)] = *semVersion
+			} else if currentAPISemVersion[GetMinorVersionRange(*semVersion)].Compare(*semVersion) {
+				version := currentAPISemVersion[GetMinorVersionRange(*semVersion)]
+				currentAPISemVersion[GetMinorVersionRange(*semVersion)] = *semVersion
+				if oldVersion != nil {
+					oldVersion.OldMinorSemVersion = &version
+				} else {
+					oldVersion = &oldSemVersion{
+						Vhost:              vhost,
+						APIName:            adapterInternalAPI.GetTitle(),
+						OldMinorSemVersion: &version,
 					}
 				}
 			}
+			if oldVersion != nil {
+				oldSemVersions = append(oldSemVersions, *oldVersion)
+			}
 		}
 	}
+	updateOldRegex(org, oldSemVersions)
+}
 
-	if isLatestMajorVersion || isLatestMinorVersion {
-		// Update local memory map with the latest version ranges
-		majorVersionRange := GetMajorVersionRange(*apiSemVersion)
-		minorVersionRange := GetMinorVersionRange(*apiSemVersion)
-		if _, orgExists := orgIDLatestAPIVersionMap[organizationID]; !orgExists {
-			orgIDLatestAPIVersionMap[organizationID] = make(map[string]map[string]semantic_version.SemVersion)
+func updateOldRegex(org string, oldSemVersions []oldSemVersion) {
+	if len(oldSemVersions) < 1 {
+		return
+	}
+	for vuuid, api := range orgAPIMap[org] {
+		// get vhost from the api identifier
+		vhost, _ := ExtractVhostFromAPIIdentifier(vuuid)
+		var oldSelectedSemVersion *oldSemVersion
+		for _, oldSemVersion := range oldSemVersions {
+			if oldSemVersion.Vhost == vhost && oldSemVersion.APIName == api.adapterInternalAPI.GetTitle() {
+				if oldSemVersion.OldMajorSemVersion != nil && oldSemVersion.OldMajorSemVersion.Version ==
+					api.adapterInternalAPI.GetVersion() {
+					oldSelectedSemVersion = &oldSemVersion
+					break
+				}
+				if oldSemVersion.OldMinorSemVersion != nil &&
+					oldSemVersion.OldMinorSemVersion.Version == api.adapterInternalAPI.GetVersion() {
+					oldSelectedSemVersion = &oldSemVersion
+					break
+				}
+			}
 		}
-		if _, apiRangeExists := orgIDLatestAPIVersionMap[organizationID][apiRangeIdentifier]; !apiRangeExists {
-			orgIDLatestAPIVersionMap[organizationID][apiRangeIdentifier] = make(map[string]semantic_version.SemVersion)
+		logger.LoggerAPI.Error(oldSelectedSemVersion)
+		if oldSelectedSemVersion == nil {
+			continue
 		}
 
-		latestVersions := orgIDLatestAPIVersionMap[organizationID][apiRangeIdentifier]
-		latestVersions[minorVersionRange] = *apiSemVersion
-		if isLatestMajorVersion {
-			latestVersions[majorVersionRange] = *apiSemVersion
-		}
+		updateMajor := oldSelectedSemVersion.OldMajorSemVersion != nil && api.adapterInternalAPI.GetVersion() ==
+			oldSelectedSemVersion.OldMajorSemVersion.Version
+		updateMinor := oldSelectedSemVersion.OldMinorSemVersion != nil && api.adapterInternalAPI.GetVersion() ==
+			oldSelectedSemVersion.OldMinorSemVersion.Version
 
-		// Add the major and/or minor version range matching regexes to the path specifier when
-		// latest major and/or minor version is available
-		apiRoutes := getRoutesForAPIIdentifier(organizationID, apiIdentifier)
-
-		for _, route := range apiRoutes {
+		// apiSemVersion, _ := semantic_version.ValidateAndGetVersionComponents(api.adapterInternalAPI.GetVersion())
+		for _, route := range api.routes {
 			regex := route.GetMatch().GetSafeRegex().GetRegex()
 			regexRewritePattern := route.GetRoute().GetRegexRewrite().GetPattern().GetRegex()
-			apiVersionRegex := GetVersionMatchRegex(apiVersion)
-
-			if isLatestMajorVersion {
-				regex = strings.Replace(regex, apiVersionRegex, GetMajorMinorVersionRangeRegex(*apiSemVersion), 1)
-				regexRewritePattern = strings.Replace(regexRewritePattern, apiVersionRegex, GetMajorMinorVersionRangeRegex(*apiSemVersion), 1)
-			} else if isLatestMinorVersion {
-				regex = strings.Replace(regex, apiVersionRegex, GetMinorVersionRangeRegex(*apiSemVersion), 1)
-				regexRewritePattern = strings.Replace(regexRewritePattern, apiVersionRegex, GetMinorVersionRangeRegex(*apiSemVersion), 1)
+			if updateMajor {
+				logger.LoggerAPI.Error(166, regex)
+				regex = strings.Replace(regex, GetMajorMinorVersionRangeRegex(oldSelectedSemVersion.OldMajorSemVersion),
+					GetMinorVersionRangeRegex(oldSelectedSemVersion.OldMajorSemVersion), 1)
+				regexRewritePattern = strings.Replace(regexRewritePattern,
+					GetMajorMinorVersionRangeRegex(oldSelectedSemVersion.OldMajorSemVersion),
+					GetMinorVersionRangeRegex(oldSelectedSemVersion.OldMajorSemVersion), 1)
+				logger.LoggerAPI.Error(166, regex)
+			}
+			if updateMinor {
+				logger.LoggerAPI.Error(175, regex)
+				regex = strings.Replace(regex, GetMinorVersionRangeRegex(oldSelectedSemVersion.OldMinorSemVersion),
+					GetVersionMatchRegex(oldSelectedSemVersion.OldMinorSemVersion.Version), 1)
+				regexRewritePattern = strings.Replace(regexRewritePattern,
+					GetMinorVersionRangeRegex(oldSelectedSemVersion.OldMinorSemVersion),
+					GetVersionMatchRegex(oldSelectedSemVersion.OldMinorSemVersion.Version), 1)
+				logger.LoggerAPI.Error(180, regex)
 			}
 			pathSpecifier := &routev3.RouteMatch_SafeRegex{
-				SafeRegex: &envoy_type_matcherv3.RegexMatcher{
+				SafeRegex: &matcherv3.RegexMatcher{
 					Regex: regex,
 				},
 			}
-
 			route.Match.PathSpecifier = pathSpecifier
 			action := route.Action.(*routev3.Route_Route)
 			action.Route.RegexRewrite.Pattern.Regex = regexRewritePattern
 			route.Action = action
 		}
-
 	}
 }
 
-func updateSemanticVersioning(org string, apiRangeIdentifiers map[string]struct{}) {
+// updateSemanticVersioningInMap updates the latest version ranges of the APIs in the organization
+func updateSemanticVersioningInMap(org string, apiRangeIdentifiers map[string]struct{}) {
+	oldSemVersions := make([]oldSemVersion, 0)
 	// Iterate all the APIs in the API range
 	for vuuid, api := range orgAPIMap[org] {
 		// get vhost from the api identifier
 		vhost, _ := ExtractVhostFromAPIIdentifier(vuuid)
 		apiName := api.adapterInternalAPI.GetTitle()
-		apiRangeIdentifier := generateIdentifierForAPIWithoutVersion(vhost, apiName)
+		apiRangeIdentifier := GenerateIdentifierForAPIWithoutVersion(vhost, apiName)
 		if _, ok := apiRangeIdentifiers[apiRangeIdentifier]; !ok {
 			continue
 		}
@@ -191,53 +212,109 @@ func updateSemanticVersioning(org string, apiRangeIdentifiers map[string]struct{
 				vuuid, org, err))
 			continue
 		}
+		if _, exist := orgIDLatestAPIVersionMap[org]; !exist {
+			orgIDLatestAPIVersionMap[org] = make(map[string]map[string]semantic_version.SemVersion)
+		}
 		if currentAPISemVersion, exist := orgIDLatestAPIVersionMap[org][apiRangeIdentifier]; !exist {
 			orgIDLatestAPIVersionMap[org][apiRangeIdentifier] = make(map[string]semantic_version.SemVersion)
 			orgIDLatestAPIVersionMap[org][apiRangeIdentifier][GetMajorVersionRange(*semVersion)] = *semVersion
 			orgIDLatestAPIVersionMap[org][apiRangeIdentifier][GetMinorVersionRange(*semVersion)] = *semVersion
-
 		} else {
+			var oldVersion *oldSemVersion
 			if _, ok := currentAPISemVersion[GetMajorVersionRange(*semVersion)]; !ok {
 				currentAPISemVersion[GetMajorVersionRange(*semVersion)] = *semVersion
-			} else {
-				if currentAPISemVersion[GetMajorVersionRange(*semVersion)].Compare(*semVersion) {
-					currentAPISemVersion[GetMajorVersionRange(*semVersion)] = *semVersion
+			} else if currentAPISemVersion[GetMajorVersionRange(*semVersion)].Compare(*semVersion) {
+				version := currentAPISemVersion[GetMajorVersionRange(*semVersion)]
+				oldVersion = &oldSemVersion{
+					Vhost:              vhost,
+					APIName:            apiName,
+					OldMajorSemVersion: &version,
 				}
+				currentAPISemVersion[GetMajorVersionRange(*semVersion)] = *semVersion
 			}
 			if _, ok := currentAPISemVersion[GetMinorVersionRange(*semVersion)]; !ok {
 				currentAPISemVersion[GetMinorVersionRange(*semVersion)] = *semVersion
-			} else {
-				if currentAPISemVersion[GetMinorVersionRange(*semVersion)].Compare(*semVersion) {
-					currentAPISemVersion[GetMinorVersionRange(*semVersion)] = *semVersion
+			} else if currentAPISemVersion[GetMinorVersionRange(*semVersion)].Compare(*semVersion) {
+				version := currentAPISemVersion[GetMinorVersionRange(*semVersion)]
+				if oldVersion != nil {
+					oldVersion.OldMinorSemVersion = &version
+				} else {
+					oldVersion = &oldSemVersion{
+						Vhost:              vhost,
+						APIName:            apiName,
+						OldMinorSemVersion: &version,
+					}
 				}
+				currentAPISemVersion[GetMinorVersionRange(*semVersion)] = *semVersion
+			}
+			if oldVersion != nil {
+				oldSemVersions = append(oldSemVersions, *oldVersion)
+			}
+		}
+	}
+	updateOldRegex(org, oldSemVersions)
+}
+
+func updateSemRegexForNewAPI(adapterInternalAPI model.AdapterInternalAPI, routes []*routev3.Route, vhost string) {
+	apiIdentifier := GenerateIdentifierForAPIWithoutVersion(vhost, adapterInternalAPI.GetTitle())
+
+	if orgIDLatestAPIVersionMap[adapterInternalAPI.GetOrganizationID()] != nil &&
+		orgIDLatestAPIVersionMap[adapterInternalAPI.GetOrganizationID()][apiIdentifier] != nil {
+		// get version list for the API
+		apiVersionMap := orgIDLatestAPIVersionMap[adapterInternalAPI.GetOrganizationID()][apiIdentifier]
+		// get the latest version of the API
+		isMajorVersion := false
+		update := false
+		for versionRange, latestVersion := range apiVersionMap {
+			if latestVersion.Version == adapterInternalAPI.GetVersion() {
+				update = true
+				versionArray := strings.Split(versionRange, ".")
+				if len(versionArray) == 1 {
+					isMajorVersion = true
+					break
+				}
+			}
+		}
+		if update {
+			// update regex
+			for _, route := range routes {
+				regex := route.GetMatch().GetSafeRegex().GetRegex()
+				regexRewritePattern := route.GetRoute().GetRegexRewrite().GetPattern().GetRegex()
+				apiVersionRegex := GetVersionMatchRegex(adapterInternalAPI.GetVersion())
+				apiSemVersion, _ := semantic_version.ValidateAndGetVersionComponents(adapterInternalAPI.GetVersion())
+				if isMajorVersion {
+					regex = strings.Replace(regex, apiVersionRegex, GetMajorMinorVersionRangeRegex(apiSemVersion), 1)
+					regexRewritePattern = strings.Replace(regexRewritePattern, apiVersionRegex, GetMajorMinorVersionRangeRegex(apiSemVersion), 1)
+				} else {
+					regex = strings.Replace(regex, apiVersionRegex, GetMinorVersionRangeRegex(apiSemVersion), 1)
+					regexRewritePattern = strings.Replace(regexRewritePattern, apiVersionRegex, GetMinorVersionRangeRegex(apiSemVersion), 1)
+				}
+				pathSpecifier := &routev3.RouteMatch_SafeRegex{
+					SafeRegex: &matcherv3.RegexMatcher{
+						Regex: regex,
+					},
+				}
+
+				route.Match.PathSpecifier = pathSpecifier
+				action := route.Action.(*routev3.Route_Route)
+				action.Route.RegexRewrite.Pattern.Regex = regexRewritePattern
+				route.Action = action
 			}
 		}
 	}
 }
 
-func getRoutesForAPIIdentifier(organizationID, apiIdentifier string) []*routev3.Route {
-
-	var routes []*routev3.Route
-	if _, ok := orgAPIMap[organizationID]; ok {
-		if _, ok := orgAPIMap[organizationID][apiIdentifier]; ok {
-			routes = orgAPIMap[organizationID][apiIdentifier].routes
-		}
-	}
-
-	return routes
-}
-
-func isSemanticVersioningEnabled(apiName, apiVersion string) bool {
-
+// IsSemanticVersioningEnabled checks whether semantic versioning is enabled for the given API
+func IsSemanticVersioningEnabled(apiName, apiVersion string) bool {
 	conf := config.ReadConfigs()
 	if !conf.Envoy.EnableIntelligentRouting {
 		return false
 	}
 
 	apiSemVersion, err := semantic_version.ValidateAndGetVersionComponents(apiVersion)
-	if err != nil && apiSemVersion == nil {
+	if err != nil || apiSemVersion == nil {
 		logger.LoggerXds.ErrorC(logging.PrintError(logging.Error1411, logging.MAJOR,
-			"Error validating the version of the API: %v. Intelligent routing is disabled for the API", apiName))
+			"Error validating the version of the API: %v:%s. Intelligent routing is disabled for the API, %v", apiName, apiVersion, err))
 		return false
 	}
 

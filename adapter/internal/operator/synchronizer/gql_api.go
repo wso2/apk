@@ -32,8 +32,36 @@ import (
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
+// extract APIDetails from the GQLRoute
+func updateInternalMapsFromGQLRoute(apiState APIState, gqlRoute *GQLRouteState, envType string) (*model.AdapterInternalAPI, map[string]struct{}, error) {
+	adapterInternalAPI, err := generateGQLAdapterInternalAPI(apiState, gqlRoute, envType)
+	if err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2632, logging.MAJOR, "Error generating AdapterInternalAPI for GQLRoute: %v. %v", gqlRoute.GQLRouteCombined.Name, err))
+		return nil, nil, err
+	}
+
+	vHosts := getVhostsForGQLAPI(gqlRoute.GQLRouteCombined)
+	labels := getLabelsForGQLAPI(gqlRoute.GQLRouteCombined)
+	listeners, relativeSectionNames := getListenersForGQLAPI(gqlRoute.GQLRouteCombined, adapterInternalAPI.UUID)
+	// We dont have a use case where a perticular API's two different gql routes refer to two different gateway. Hence get the first listener name for the list for processing.
+	if len(listeners) == 0 || len(relativeSectionNames) == 0 {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2633, logging.MINOR, "Failed to find a matching listener for gql route: %v. ",
+			gqlRoute.GQLRouteCombined.Name))
+		return nil, nil, errors.New("failed to find matching listener name for the provided gql route")
+	}
+	listenerName := listeners[0]
+	sectionName := relativeSectionNames[0]
+
+	if len(listeners) > 0 {
+		if err := xds.PopulateInternalMaps(adapterInternalAPI, labels, vHosts, sectionName, listenerName); err != nil {
+			return nil, nil, err
+		}
+	}
+	return adapterInternalAPI, labels, nil
+}
+
 // generateGQLAdapterInternalAPI this will populate a AdapterInternalAPI representation for an GQLRoute
-func generateGQLAdapterInternalAPI(apiState APIState, gqlRoute *GQLRouteState, envType string) (*model.AdapterInternalAPI, map[string]struct{}, error) {
+func generateGQLAdapterInternalAPI(apiState APIState, gqlRoute *GQLRouteState, envType string) (*model.AdapterInternalAPI, error) {
 	var adapterInternalAPI model.AdapterInternalAPI
 	adapterInternalAPI.SetIsDefaultVersion(apiState.APIDefinition.Spec.IsDefaultVersion)
 	adapterInternalAPI.SetInfoAPICR(*apiState.APIDefinition)
@@ -64,7 +92,7 @@ func generateGQLAdapterInternalAPI(apiState APIState, gqlRoute *GQLRouteState, e
 
 	if err := adapterInternalAPI.SetInfoGQLRouteCR(gqlRoute.GQLRouteCombined, resourceParams); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2631, logging.MAJOR, "Error setting GQLRoute CR info to adapterInternalAPI. %v", err))
-		return nil, nil, err
+		return nil, err
 	}
 
 	if apiState.MutualSSL != nil && apiState.MutualSSL.Required != "" && !adapterInternalAPI.GetDisableAuthentications() {
@@ -75,35 +103,14 @@ func generateGQLAdapterInternalAPI(apiState APIState, gqlRoute *GQLRouteState, e
 		adapterInternalAPI.SetDisableMtls(true)
 	}
 
-	vHosts := getVhostsForGQLAPI(gqlRoute.GQLRouteCombined)
-	labels := getLabelsForGQLAPI(gqlRoute.GQLRouteCombined)
-	listeners, relativeSectionNames := getListenersForGQLAPI(gqlRoute.GQLRouteCombined, adapterInternalAPI.UUID)
-	// We dont have a use case where a perticular API's two different gql routes refer to two different gateway. Hence get the first listener name for the list for processing.
-	if len(listeners) == 0 || len(relativeSectionNames) == 0 {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2633, logging.MINOR, "Failed to find a matching listener for gql route: %v. ",
-			gqlRoute.GQLRouteCombined.Name))
-		return nil, nil, errors.New("failed to find matching listener name for the provided gql route")
-	}
-
-	listenerName := listeners[0]
-	sectionName := relativeSectionNames[0]
-	if len(listeners) != 0 {
-		err := xds.UpdateAPICache(vHosts, labels, listenerName, sectionName, &adapterInternalAPI)
-		if err != nil {
-			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2633, logging.MAJOR, "Error updating the API : %s:%s in vhosts: %s, API_UUID: %v. %v",
-				adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), vHosts, adapterInternalAPI.UUID, err))
-			return nil, nil, err
-		}
-	}
-
-	return &adapterInternalAPI, labels, nil
+	return &adapterInternalAPI, nil
 }
 
 // getVhostForAPI returns the vHosts related to an API.
-func getVhostsForGQLAPI(gqlRoute *v1alpha2.GQLRoute) []string {
-	var vHosts []string
+func getVhostsForGQLAPI(gqlRoute *v1alpha2.GQLRoute) map[string]struct{} {
+	var vHosts map[string]struct{}
 	for _, hostName := range gqlRoute.Spec.Hostnames {
-		vHosts = append(vHosts, string(hostName))
+		vHosts[string(hostName)] = struct{}{}
 	}
 	return vHosts
 }
