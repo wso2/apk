@@ -147,6 +147,7 @@ iat_validity_period = "1h"
 oauth2_jwks_url = "https://apim-wso2am-cp-1-service:9443/oauth2/jwks"
 
 #[apim.publisher]
+#internal_key_issuer = "http://am.wso2.com:443/token"
 #{{- if .Values.wso2.apim.configurations.publisher.supportedDocumentTypes }}
 #supported_document_types = {{ toJson .Values.wso2.apim.configurations.publisher.supportedDocumentTypes }}
 #{{- end }}

@@ -30,6 +30,7 @@ controlPlane:
   environmentLabels: Default
   skipSSLVerification: true
   eventListeningEndpoints: amqp://admin:admin@apim-wso2am-cp-1-service.apk.svc.cluster.local:5672?retries='10'&connectdelay='30'
+  # internalKeyIssuer: http://am.wso2.com:443/token
 dataPlane:
   enabled: true
   k8ResourceEndpoint: https://apk-wso2-apk-config-ds-service.apk.svc.cluster.local:9443/api/configurator/apis/generate-k8s-resources
