@@ -94,7 +94,7 @@ spec:
             {{- if and .Values.wso2.apk.metrics .Values.wso2.apk.metrics.enabled }}
               value: -Dhttpclient.hostnameVerifier=AllowAll -Xms512m -Xmx512m -XX:MaxRAMFraction=2 -Dapk.jmx.metrics.enabled=true -javaagent:/home/wso2/lib/jmx_prometheus_javaagent-0.20.0.jar=18006:/tmp/metrics/prometheus-jmx-config-enforcer.yml
             {{- else }}
-              value: -Dhttpclient.hostnameVerifier=AllowAll -Xms512m -Xmx512m -XX:MaxRAMFraction=2
+              value: -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5006 -Dhttpclient.hostnameVerifier=AllowAll -Xms512m -Xmx512m -XX:MaxRAMFraction=2
             {{- end }}
             {{- if .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.redis }}
             - name: REDIS_USERNAME
@@ -217,6 +217,9 @@ spec:
             - name: enforcer-trusted-certs
               mountPath: /home/wso2/security/truststore/wso2carbon.pem
               subPath: wso2carbon.pem
+            - name: enforcer-apikey-cert
+              mountPath: /home/wso2/security/truststore/wso2-apim-carbon.pem
+              subPath: wso2-apim-carbon.pem
             - name: idp-certificate-secret-volume
               mountPath: /home/wso2/security/truststore/idp.pem
             {{ if and .Values.wso2.apk.idp.signing .Values.wso2.apk.idp.signing.fileName }}
@@ -428,6 +431,9 @@ spec:
           secret: 
             secretName: {{ template "apk-helm.resource.prefix" . }}-enforcer-keystore-secret
         - name: enforcer-trusted-certs
+          secret: 
+            secretName: {{ template "apk-helm.resource.prefix" . }}-enforcer-truststore-secret 
+        - name: enforcer-apikey-cert
           secret: 
             secretName: {{ template "apk-helm.resource.prefix" . }}-enforcer-truststore-secret 
         - name: idp-certificate-secret-volume
