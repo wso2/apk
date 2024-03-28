@@ -78,7 +78,10 @@ jobs:
         --set wso2.apk.dp.commonController.deployment.controlplane.host="apim-apk-agent-service.apk.svc.cluster.local" \
         --set wso2.apk.dp.commonController.deployment.controlplane.skipSSLVerification=true \
         --set wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.JWKSClient.skipSSLVerification=false \
-        --set wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.JWKSClient.hostnameVerifier="AllowAll" 
+        --set wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.JWKSClient.hostnameVerifier="AllowAll" \
+        --set wso2.apk.cp.controlplane.enableApiPropagation=true \
+        --set wso2.apk.cp.controlplane.host="apim-apk-agent-service.apk.svc.cluster.local" \
+        --set wso2.apk.cp.controlplane.skipSSLVerification=true
         kubectl get pods -n apk
         kubectl get svc -n apk
 
