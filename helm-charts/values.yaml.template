@@ -230,6 +230,15 @@ wso2:
           security:
             # -- Enable security for adapter.
             sslHostname: "adapter"
+          controlplane:
+            # -- Enable controlplane connection
+            enabled: false
+            # -- Hostname of the APK agent service
+            host: "apim-apk-agent-service.apk.svc.cluster.local"
+            # -- Port of the APK agent service for events
+            restPort: 18001
+            # -- Skip SSL verification
+            skipSSLVerification: false
         configs:
           # -- Optionally configure namespaces to watch for apis.
           apiNamespaces:

@@ -37,6 +37,15 @@ var defaultConfig = &Config{
 			Type:    "prometheus",
 			Port:    18006,
 		},
+		ControlPlane: controlplane{
+			EnableAPIPropagation: false,
+			Host:                 "localhost",
+			EventPort:            18000,
+			RestPort:             18001,
+			RetryInterval:        5,
+			APIsRestPath:         "/apis",
+			SkipSSLVerification:  false,
+		},
 	},
 	Envoy: envoy{
 		ListenerCodecType: "AUTO",

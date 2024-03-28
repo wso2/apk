@@ -18,12 +18,17 @@
 package dp
 
 import (
+	"bytes"
+	"compress/gzip"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"sync"
 
 	"github.com/wso2/apk/adapter/config"
+	"github.com/wso2/apk/adapter/internal/controlplane"
 	"github.com/wso2/apk/adapter/internal/discovery/xds"
 	"github.com/wso2/apk/adapter/internal/discovery/xds/common"
 	"github.com/wso2/apk/adapter/internal/loggers"
@@ -90,12 +95,13 @@ var (
 
 // APIReconciler reconciles a API object
 type APIReconciler struct {
-	client         k8client.Client
-	ods            *synchronizer.OperatorDataStore
-	ch             *chan *synchronizer.APIEvent
-	successChannel *chan synchronizer.SuccessEvent
-	statusUpdater  *status.UpdateHandler
-	mgr            manager.Manager
+	client              k8client.Client
+	ods                 *synchronizer.OperatorDataStore
+	ch                  *chan *synchronizer.APIEvent
+	successChannel      *chan synchronizer.SuccessEvent
+	statusUpdater       *status.UpdateHandler
+	mgr                 manager.Manager
+	apiPropagationEnabled bool
 }
 
 // NewAPIController creates a new API controller instance. API Controllers watches for dpv1alpha2.API and gwapiv1b1.HTTPRoute.
@@ -110,7 +116,6 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 		mgr:            mgr,
 	}
 	ctx := context.Background()
-
 	c, err := controller.New(constants.APIController, mgr, controller.Options{Reconciler: apiReconciler})
 	if err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2619, logging.BLOCKER, "Error applying startup APIs: %v", err.Error()))
@@ -118,6 +123,7 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 	}
 
 	conf := config.ReadConfigs()
+	apiReconciler.apiPropagationEnabled = conf.Adapter.ControlPlane.EnableAPIPropagation
 	predicates := []predicate.Predicate{predicate.NewPredicateFuncs(utils.FilterByNamespaces(conf.Adapter.Operator.Namespaces))}
 
 	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha2.API{}), &handler.EnqueueRequestForObject{},
@@ -204,6 +210,7 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 
 	loggers.LoggerAPKOperator.Info("API Controller successfully started. Watching API Objects....")
 	go apiReconciler.handleStatus()
+	go apiReconciler.handleLabels(ctx)
 	return nil
 }
 
@@ -242,6 +249,13 @@ func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	if err := apiReconciler.client.Get(ctx, req.NamespacedName, &apiCR); err != nil {
 		apiState, found := apiReconciler.ods.GetCachedAPI(req.NamespacedName)
 		if found && k8error.IsNotFound(err) {
+			if apiReconciler.apiPropagationEnabled {
+				// Convert api state to api cp data
+				loggers.LoggerAPKOperator.Info("Sending API deletion event to agent")
+				apiCpData := apiReconciler.convertAPIStateToAPICp(ctx, apiState)
+				apiCpData.Event = controlplane.EventTypeDelete
+				controlplane.AddToEventQueue(apiCpData)
+			}
 			// The api doesn't exist in the api Cache, remove it
 			apiReconciler.ods.DeleteCachedAPI(req.NamespacedName)
 			loggers.LoggerAPKOperator.Infof("Delete event received for API : %s with API UUID : %v, hence deleted from API cache",
@@ -416,11 +430,24 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 	loggers.LoggerAPKOperator.Debugf("Child references are retrieved successfully for API CR %s", apiRef.String())
 
 	if !api.Status.DeploymentStatus.Accepted {
+		if apiReconciler.apiPropagationEnabled {
+			// Publish the api data to CP
+			apiCpData := apiReconciler.convertAPIStateToAPICp(ctx, *apiState)
+			apiCpData.Event = controlplane.EventTypeCreate
+			controlplane.AddToEventQueue(apiCpData)
+		}
+
 		apiReconciler.ods.AddAPIState(apiRef, apiState)
 		apiReconciler.traverseAPIStateAndUpdateOwnerReferences(ctx, *apiState)
 		return &synchronizer.APIEvent{EventType: constants.Create, Events: []synchronizer.APIState{*apiState}, UpdatedEvents: []string{}}, nil
 	} else if cachedAPI, events, updated :=
 		apiReconciler.ods.UpdateAPIState(apiRef, apiState); updated {
+		if apiReconciler.apiPropagationEnabled {
+			// Publish the api data to CP
+			apiCpData := apiReconciler.convertAPIStateToAPICp(ctx, *apiState)
+			apiCpData.Event = controlplane.EventTypeUpdate
+			controlplane.AddToEventQueue(apiCpData)
+		}
 		apiReconciler.traverseAPIStateAndUpdateOwnerReferences(ctx, *apiState)
 		loggers.LoggerAPKOperator.Infof("API CR %s with API UUID : %v is updated on %v", apiRef.String(),
 			string(api.ObjectMeta.UID), events)
@@ -2011,6 +2038,40 @@ func (apiReconciler *APIReconciler) handleStatus() {
 	}
 }
 
+func (apiReconciler *APIReconciler) handleLabels(ctx context.Context) {
+	type patchStringValue struct {
+		Op    string `json:"op"`
+		Path  string `json:"path"`
+		Value string `json:"value"`
+	}
+
+	loggers.LoggerAPKOperator.Info("A thread assigned to handle label updates to API CR.")
+	for labelUpdate := range *controlplane.GetLabelQueue() {
+		loggers.LoggerAPKOperator.Infof("Starting to process label update for API %s/%s. Labels: %+v", labelUpdate.Namespace, labelUpdate.Name, labelUpdate.Labels)
+
+		patchOps := []patchStringValue{}
+		for key, value := range labelUpdate.Labels {
+			patchOps = append(patchOps, patchStringValue{
+				Op:    "replace",
+				Path:  fmt.Sprintf("/metadata/labels/%s", key),
+				Value: value,
+			})
+		}
+		payloadBytes, _ := json.Marshal(patchOps)
+		apiCR := dpv1alpha2.API{
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace: labelUpdate.Namespace,
+				Name:      labelUpdate.Name,
+			},
+		}
+
+		err := apiReconciler.client.Patch(ctx, &apiCR, k8client.RawPatch(types.JSONPatchType, payloadBytes))
+		if err != nil {
+			loggers.LoggerAPKOperator.Errorf("Failed to patch api %s/%s with patch: %+v, error: %+v", labelUpdate.Name, labelUpdate.Namespace, patchOps, err)
+		}
+	}
+}
+
 func (apiReconciler *APIReconciler) handleOwnerReference(ctx context.Context, obj k8client.Object, apiRequests *[]reconcile.Request) {
 	apis := []dpv1alpha2.API{}
 	for _, req := range *apiRequests {
@@ -2059,4 +2120,60 @@ func prepareOwnerReference(apiItems []dpv1alpha2.API) []metav1.OwnerReference {
 		}
 	}
 	return ownerReferences
+}
+
+func (apiReconciler *APIReconciler) convertAPIStateToAPICp(ctx context.Context, apiState synchronizer.APIState) controlplane.APICPEvent {
+	apiCPEvent := controlplane.APICPEvent{}
+	spec := apiState.APIDefinition.Spec
+	configMap := &corev1.ConfigMap{}
+	apiDef := ""
+	if spec.DefinitionFileRef != "" {
+		err := apiReconciler.client.Get(ctx, types.NamespacedName{Namespace: apiState.APIDefinition.Namespace, Name: spec.DefinitionFileRef}, configMap)
+		if err != nil {
+			loggers.LoggerAPKOperator.Errorf("Error while loading config map for the api definition: %+v, Error: %v", types.NamespacedName{Namespace: apiState.APIDefinition.Namespace, Name: spec.DefinitionFileRef}, err)
+		} else {
+			for _, val := range configMap.BinaryData {
+				buf := bytes.NewReader(val)
+				r, err := gzip.NewReader(buf)
+				if err != nil {
+					loggers.LoggerAPKOperator.Errorf("Error creating gzip reader. Error: %+v", err)
+					continue
+				}
+				defer r.Close()
+				decompressed, err := ioutil.ReadAll(r)
+				if err != nil {
+					loggers.LoggerAPKOperator.Errorf("Error reading decompressed data. Error: %+v", err)
+					continue
+				}
+				apiDef = string(decompressed)
+			}
+		}
+	}
+	apiUUID, apiUUIDExists := apiState.APIDefinition.ObjectMeta.Labels["apiUUID"]
+	if !apiUUIDExists {
+		apiUUID = spec.APIName
+	}
+	revisionID, revisionIDExists := apiState.APIDefinition.ObjectMeta.Labels["revisionID"]
+	if !revisionIDExists {
+		revisionID = "0"
+	}
+
+	api := controlplane.API{
+		APIName:          spec.APIName,
+		APIVersion:       spec.APIVersion,
+		IsDefaultVersion: spec.IsDefaultVersion,
+		APIType:          spec.APIType,
+		BasePath:         spec.BasePath,
+		Organization:     spec.Organization,
+		Environment:      spec.Environment,
+		SystemAPI:        spec.SystemAPI,
+		Definition:       apiDef,
+		APIUUID:          apiUUID,
+		RevisionID:       revisionID,
+	}
+	apiCPEvent.API = api
+	apiCPEvent.CRName = apiState.APIDefinition.ObjectMeta.Name
+	apiCPEvent.CRNamespace = apiState.APIDefinition.ObjectMeta.Namespace
+	return apiCPEvent
+
 }
