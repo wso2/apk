@@ -30,7 +30,7 @@ spec:
   sandbox:
     - routeRefs:
       - sand-http-route-http-bin-api
-  organization: a3b58ccf-6ecc-4557-b5bb-0a35cce38256
+  organization: default
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
 kind: HTTPRoute

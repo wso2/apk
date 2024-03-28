@@ -17,12 +17,9 @@
 package semanticversion
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
 	"strings"
-
-	logger "github.com/wso2/apk/adapter/pkg/loggers"
 )
 
 // SemVersion is the struct to store the version components of an API
@@ -34,16 +31,13 @@ type SemVersion struct {
 }
 
 // ValidateAndGetVersionComponents validates version string and extracts version components
-func ValidateAndGetVersionComponents(version string, apiName string) (*SemVersion, error) {
+func ValidateAndGetVersionComponents(version string) (*SemVersion, error) {
 	versionComponents := strings.Split(version, ".")
 
 	// If the versionComponents length is less than 2, return error
 	if len(versionComponents) < 2 || !strings.HasPrefix(versionComponents[0], "v") {
-		logger.LoggerSemanticVersion.Errorf("API version validation failed for API: %v. API Version: %v", apiName, version)
-		errMessage := "Invalid version: " + version + " for API: " + apiName +
-			". API version should be in the format x.y.z, x.y, vx.y.z or vx.y where x,y,z are non-negative integers" +
-			" and v is version prefix"
-		return nil, errors.New(errMessage)
+		return nil, fmt.Errorf("invalid version: %v. API version should be in the format x.y.z, x.y, vx.y.z or vx.y where x,y,z are non-negative integers"+
+			" and v is version prefix", version)
 	}
 
 	majorVersionStr := strings.TrimPrefix(versionComponents[0], "v")
@@ -51,13 +45,11 @@ func ValidateAndGetVersionComponents(version string, apiName string) (*SemVersio
 	majorVersion, majorVersionConvErr := strconv.Atoi(majorVersionStr)
 	minorVersion, minorVersionConvErr := strconv.Atoi(versionComponents[1])
 	if majorVersionConvErr != nil || majorVersion < 0 {
-		logger.LoggerSemanticVersion.Errorf(fmt.Sprintf("API major version should be a non-negative integer in API: %v. API Version: %v", apiName, version), majorVersionConvErr)
-		return nil, errors.New("invalid version format")
+		return nil, fmt.Errorf("invalid version format. API major version should be a non-negative integer in API Version: %v, %v", version, majorVersionConvErr)
 	}
 
 	if minorVersionConvErr != nil || minorVersion < 0 {
-		logger.LoggerSemanticVersion.Errorf(fmt.Sprintf("API minor version should be a non-negative integer in API: %v. API Version: %v", apiName, version), minorVersionConvErr)
-		return nil, errors.New("invalid version format")
+		return nil, fmt.Errorf("invalid version format. API minor version should be a non-negative integer in API Version: %v, %v", version, minorVersionConvErr)
 	}
 
 	if len(versionComponents) == 2 {
@@ -71,8 +63,7 @@ func ValidateAndGetVersionComponents(version string, apiName string) (*SemVersio
 
 	patchVersion, patchVersionConvErr := strconv.Atoi(versionComponents[2])
 	if patchVersionConvErr != nil {
-		logger.LoggerSemanticVersion.Errorf(fmt.Sprintf("API patch version should be an integer in API: %v. API Version: %v", apiName, version), patchVersionConvErr)
-		return nil, errors.New("invalid version format")
+		return nil, fmt.Errorf("invalid version format. API patch version should be an integer in API Version: %v, %v", version, patchVersionConvErr)
 	}
 	return &SemVersion{
 		Version: version,

@@ -18,7 +18,6 @@
 package xds
 
 import (
-	"reflect"
 	"regexp"
 	"testing"
 
@@ -75,22 +74,22 @@ func TestGetVersionMatchRegex(t *testing.T) {
 func TestGetMajorMinorVersionRangeRegex(t *testing.T) {
 	tests := []struct {
 		name           string
-		semVersion     semantic_version.SemVersion
+		semVersion     *semantic_version.SemVersion
 		expectedResult string
 	}{
 		{
 			name:           "Major and minor version only",
-			semVersion:     semantic_version.SemVersion{Major: 1, Minor: 2},
+			semVersion:     &semantic_version.SemVersion{Major: 1, Minor: 2},
 			expectedResult: "v1(?:\\.2)?",
 		},
 		{
 			name:           "Major, minor, and patch version",
-			semVersion:     semantic_version.SemVersion{Major: 1, Minor: 2, Patch: PtrInt(3)},
+			semVersion:     &semantic_version.SemVersion{Major: 1, Minor: 2, Patch: PtrInt(3)},
 			expectedResult: "v1(?:\\.2(?:\\.3)?)?",
 		},
 		{
 			name:           "Major version only",
-			semVersion:     semantic_version.SemVersion{Major: 1},
+			semVersion:     &semantic_version.SemVersion{Major: 1},
 			expectedResult: "v1(?:\\.0)?",
 		},
 	}
@@ -109,22 +108,22 @@ func TestGetMajorMinorVersionRangeRegex(t *testing.T) {
 func TestGetMinorVersionRangeRegex(t *testing.T) {
 	tests := []struct {
 		name           string
-		semVersion     semantic_version.SemVersion
+		semVersion     *semantic_version.SemVersion
 		expectedResult string
 	}{
 		{
 			name:           "Major, minor, and patch version",
-			semVersion:     semantic_version.SemVersion{Version: "v1.2.3", Major: 1, Minor: 2, Patch: PtrInt(3)},
+			semVersion:     &semantic_version.SemVersion{Version: "v1.2.3", Major: 1, Minor: 2, Patch: PtrInt(3)},
 			expectedResult: "v1\\.2(?:\\.3)?",
 		},
 		{
 			name:           "Major and minor version only",
-			semVersion:     semantic_version.SemVersion{Version: "v1.2", Major: 1, Minor: 2},
+			semVersion:     &semantic_version.SemVersion{Version: "v1.2", Major: 1, Minor: 2},
 			expectedResult: "v1\\.2",
 		},
 		{
 			name:           "Major version only",
-			semVersion:     semantic_version.SemVersion{Version: "v1", Major: 1},
+			semVersion:     &semantic_version.SemVersion{Version: "v1", Major: 1},
 			expectedResult: "v1",
 		},
 	}
@@ -255,159 +254,10 @@ func TestIsSemanticVersioningEnabled(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			conf.Envoy.EnableIntelligentRouting = tt.intelligentRoutingEnabled
-			result := isSemanticVersioningEnabled(tt.apiName, tt.apiVersion)
+			result := IsSemanticVersioningEnabled(tt.apiName, tt.apiVersion)
 
 			if result != tt.expectedResult {
 				t.Errorf("Expected result: %v, Got: %v", tt.expectedResult, result)
-			}
-		})
-	}
-}
-
-func TestIsVHostMatched(t *testing.T) {
-	// Mock orgIDAPIvHostsMap for testing
-	orgIDAPIvHostsMap = map[string]map[string][]string{
-		"org1": {
-			"api1": {"example.com", "api.example.com"},
-			"api2": {"test.com"},
-		},
-		"org2": {
-			"api3": {"example.org"},
-			"api4": {"test.org"},
-		},
-	}
-
-	tests := []struct {
-		name           string
-		organizationID string
-		vHost          string
-		expectedResult bool
-	}{
-		{
-			name:           "Matching vHost in org1",
-			organizationID: "org1",
-			vHost:          "example.com",
-			expectedResult: true,
-		},
-		{
-			name:           "Matching vHost in org2",
-			organizationID: "org2",
-			vHost:          "example.org",
-			expectedResult: true,
-		},
-		{
-			name:           "Non-matching vHost in org1",
-			organizationID: "org1",
-			vHost:          "nonexistent.com",
-			expectedResult: false,
-		},
-		{
-			name:           "Non-matching vHost in org2",
-			organizationID: "org2",
-			vHost:          "nonexistent.org",
-			expectedResult: false,
-		},
-		{
-			name:           "VHost not found for organization",
-			organizationID: "org3",
-			vHost:          "example.com",
-			expectedResult: false,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			result := isVHostMatched(tt.organizationID, tt.vHost)
-
-			if result != tt.expectedResult {
-				t.Errorf("Expected result: %v, Got: %v", tt.expectedResult, result)
-			}
-		})
-	}
-}
-
-func TestGetRoutesForAPIIdentifier(t *testing.T) {
-
-	orgAPIMap = map[string]map[string]*EnvoyInternalAPI{
-		"org1": {
-			"gw.com:apiID1": &EnvoyInternalAPI{
-				routes: []*routev3.Route{
-					{
-						Name: "route1",
-					},
-					{
-						Name: "route2",
-					},
-				},
-			},
-			"gw.com:apiID2": &EnvoyInternalAPI{
-				routes: []*routev3.Route{
-					{
-						Name: "route3",
-					},
-				},
-			},
-		},
-		"org2": {
-			"test.gw.com:apiID1": &EnvoyInternalAPI{
-				routes: []*routev3.Route{
-					{
-						Name: "route4",
-					},
-				},
-			},
-		},
-	}
-
-	tests := []struct {
-		name             string
-		organizationID   string
-		apiIdentifier    string
-		expectedRoutes   []*routev3.Route
-		expectedNumRoute int
-	}{
-		{
-			name:           "Existing organization and API identifier",
-			organizationID: "org1",
-			apiIdentifier:  "gw.com:apiID1",
-			expectedRoutes: []*routev3.Route{
-				{
-					Name: "route1",
-				},
-				{
-					Name: "route2",
-				},
-			},
-			expectedNumRoute: 2,
-		},
-		{
-			name:             "Non-existing organization",
-			organizationID:   "org3",
-			apiIdentifier:    "dev.gw.com:apiID1",
-			expectedRoutes:   []*routev3.Route{},
-			expectedNumRoute: 0,
-		},
-		{
-			name:             "Non-existing API identifier",
-			organizationID:   "org1",
-			apiIdentifier:    "api3",
-			expectedRoutes:   []*routev3.Route{},
-			expectedNumRoute: 0,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			result := getRoutesForAPIIdentifier(tt.organizationID, tt.apiIdentifier)
-
-			if len(result) != tt.expectedNumRoute {
-				t.Errorf("Expected number of routes: %d, Got: %d", tt.expectedNumRoute, len(result))
-			}
-
-			if len(result) > 0 {
-				if !reflect.DeepEqual(result, tt.expectedRoutes) {
-					t.Errorf("Expected routes: %v, Got: %v", tt.expectedRoutes, result)
-				}
 			}
 		})
 	}
@@ -417,97 +267,98 @@ func TestUpdateRoutingRulesOnAPIUpdate(t *testing.T) {
 
 	var apiID1 model.AdapterInternalAPI
 	apiID1.SetName("Test API")
+	apiID1.UUID = "apiID1"
+	apiID1.OrganizationID = "org1"
 	apiID1.SetVersion("v1.0")
 	apiID1ResourcePath := "^/test-api/v1\\.0/orders([/]{0,1})"
 
 	var apiID2 model.AdapterInternalAPI
 	apiID2.SetName("Mock API")
+	apiID2.UUID = "apiID2"
+	apiID2.OrganizationID = "org1"
 	apiID2.SetVersion("v1.1")
 	apiID2ResourcePath := "^/mock-api/v1\\.1/orders([/]{0,1})"
 
 	var apiID3 model.AdapterInternalAPI
 	apiID3.SetName("Test API")
 	apiID3.SetVersion("v1.1")
+	apiID3.OrganizationID = "org1"
+	apiID3.UUID = "apiID3"
 	apiID3ResourcePath := "^/test-api/v1\\.1/orders([/]{0,1})"
 
 	orgAPIMap = map[string]map[string]*EnvoyInternalAPI{
 		"org1": {
 			"gw.com:apiID1": &EnvoyInternalAPI{
-				adapterInternalAPI: apiID1,
+				adapterInternalAPI: &apiID1,
 				routes:             generateRoutes(apiID1ResourcePath),
 			},
 			"gw.com:apiID2": &EnvoyInternalAPI{
-				adapterInternalAPI: apiID2,
+				adapterInternalAPI: &apiID2,
 				routes:             generateRoutes(apiID2ResourcePath),
 			},
 			"gw.com:apiID3": &EnvoyInternalAPI{
-				adapterInternalAPI: apiID3,
+				adapterInternalAPI: &apiID3,
 				routes:             generateRoutes(apiID3ResourcePath),
 			},
 		},
 	}
 
-	orgIDAPIvHostsMap = map[string]map[string][]string{
-		"org1": {
-			"api1": {"gw.com", "api.example.com"},
-			"api2": {"test.com"},
-		},
-	}
-
 	tests := []struct {
-		name            string
-		organizationID  string
-		apiIdentifier   string
-		apiName         string
-		apiVersion      string
-		vHost           string
-		expectedRegex   string
-		expectedRewrite string
-		finalRegex      string
-		finalRewrite    string
+		name               string
+		api                model.AdapterInternalAPI
+		organizationID     string
+		apiRangeIdentifier string
+		apiIdentifier      string
+		vhost              string
+		expectedRegex      string
+		expectedRewrite    string
+		finalRegex         string
+		finalRewrite       string
 	}{
 		{
-			name:            "Create an API with major version",
-			organizationID:  "org1",
-			apiIdentifier:   "gw.com:apiID1",
-			apiName:         "Test API",
-			apiVersion:      "v1.0",
-			vHost:           "gw.com",
-			expectedRegex:   "^/test-api/v1(?:\\.0)?/orders([/]{0,1})",
-			expectedRewrite: "^/test-api/v1(?:\\.0)?/orders([/]{0,1})",
-			finalRegex:      apiID1ResourcePath,
-			finalRewrite:    apiID1ResourcePath,
+			name:               "Create an API with major version",
+			organizationID:     "org1",
+			apiRangeIdentifier: "gw.com:Test API",
+			apiIdentifier:      "gw.com:apiID1",
+			vhost:              "gw.com",
+			api:                apiID1,
+			expectedRegex:      "^/test-api/v1(?:\\.0)?/orders([/]{0,1})",
+			expectedRewrite:    "^/test-api/v1(?:\\.0)?/orders([/]{0,1})",
+			finalRegex:         apiID1ResourcePath,
+			finalRewrite:       apiID1ResourcePath,
+		},
+		// Expected final regex: ^/test-api/v1\.0/orders([/]{0,1}), Got: ^/test-api/v1(?:\.0)?/orders([/]{0,1})
+		{
+			name:               "Create an API with major and minor version",
+			organizationID:     "org1",
+			apiRangeIdentifier: "gw.com:Mock API",
+			apiIdentifier:      "gw.com:apiID2",
+			vhost:              "gw.com",
+			api:                apiID2,
+			expectedRegex:      "^/mock-api/v1(?:\\.1)?/orders([/]{0,1})",
+			expectedRewrite:    "^/mock-api/v1(?:\\.1)?/orders([/]{0,1})",
+			finalRegex:         "^/mock-api/v1(?:\\.1)?/orders([/]{0,1})",
+			finalRewrite:       "^/mock-api/v1(?:\\.1)?/orders([/]{0,1})",
 		},
 		{
-			name:            "Create an API with major and minor version",
-			organizationID:  "org1",
-			apiIdentifier:   "gw.com:apiID2",
-			apiName:         "Mock API",
-			apiVersion:      "v1.1",
-			vHost:           "gw.com",
-			expectedRegex:   "^/mock-api/v1(?:\\.1)?/orders([/]{0,1})",
-			expectedRewrite: "^/mock-api/v1(?:\\.1)?/orders([/]{0,1})",
-			finalRegex:      "^/mock-api/v1(?:\\.1)?/orders([/]{0,1})",
-			finalRewrite:    "^/mock-api/v1(?:\\.1)?/orders([/]{0,1})",
-		},
-		{
-			name:            "Create an API with major and minor version",
-			organizationID:  "org1",
-			apiIdentifier:   "gw.com:apiID3",
-			apiName:         "Test API",
-			apiVersion:      "v1.1",
-			vHost:           "gw.com",
-			expectedRegex:   "^/test-api/v1(?:\\.1)?/orders([/]{0,1})",
-			expectedRewrite: "^/test-api/v1(?:\\.1)?/orders([/]{0,1})",
-			finalRegex:      "^/test-api/v1(?:\\.1)?/orders([/]{0,1})",
-			finalRewrite:    "^/test-api/v1(?:\\.1)?/orders([/]{0,1})",
+			name:               "Create an API with major and minor version",
+			organizationID:     "org1",
+			apiRangeIdentifier: "gw.com:Test API",
+			apiIdentifier:      "gw.com:apiID3",
+			vhost:              "gw.com",
+			api:                apiID3,
+			expectedRegex:      "^/test-api/v1(?:\\.1)?/orders([/]{0,1})",
+			expectedRewrite:    "^/test-api/v1(?:\\.1)?/orders([/]{0,1})",
+			finalRegex:         "^/test-api/v1(?:\\.1)?/orders([/]{0,1})",
+			finalRewrite:       "^/test-api/v1(?:\\.1)?/orders([/]{0,1})",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
-			updateRoutingRulesOnAPIUpdate(tt.organizationID, tt.apiIdentifier, tt.apiName, tt.apiVersion, tt.vHost)
+			updateSemanticVersioningInMapForUpdateAPI(tt.organizationID,
+				map[string]struct{}{tt.apiRangeIdentifier: {}}, &tt.api)
+			updateSemRegexForNewAPI(tt.api, orgAPIMap[tt.organizationID][tt.apiIdentifier].routes, tt.vhost)
 			api1 := orgAPIMap[tt.organizationID][tt.apiIdentifier]
 			routes := api1.routes
 
@@ -608,33 +459,36 @@ func TestUpdateRoutingRulesOnAPIDelete(t *testing.T) {
 
 	var apiID1 model.AdapterInternalAPI
 	apiID1.SetName("Test API")
+	apiID1.UUID = "apiID1"
 	apiID1.SetVersion("v1.0")
 	apiID1ResourcePath := "^/test-api/v1\\.0/orders([/]{0,1})"
 
 	var apiID2 model.AdapterInternalAPI
 	apiID2.SetName("Mock API")
+	apiID2.UUID = "apiID2"
 	apiID2.SetVersion("v1.0")
 	apiID2ResourcePath := "^/mock-api/v1\\.0/orders([/]{0,1})"
 
 	var apiID3 model.AdapterInternalAPI
 	apiID3.SetName("Mock API")
+	apiID3.UUID = "apiID3"
 	apiID3.SetVersion("v1.5")
 	apiID3ResourcePath := "^/mock-api/v1(?:\\.5)?/orders([/]{0,1})"
 
 	orgAPIMap = map[string]map[string]*EnvoyInternalAPI{
 		"org3": {
 			"gw.com:apiID1": &EnvoyInternalAPI{
-				adapterInternalAPI: apiID1,
+				adapterInternalAPI: &apiID1,
 				routes:             generateRoutes(apiID1ResourcePath),
 			},
 		},
 		"org4": {
 			"gw.com:apiID2": &EnvoyInternalAPI{
-				adapterInternalAPI: apiID2,
+				adapterInternalAPI: &apiID2,
 				routes:             generateRoutes(apiID2ResourcePath),
 			},
 			"gw.com:apiID3": &EnvoyInternalAPI{
-				adapterInternalAPI: apiID3,
+				adapterInternalAPI: &apiID3,
 				routes:             generateRoutes(apiID3ResourcePath),
 			},
 		},
@@ -644,29 +498,28 @@ func TestUpdateRoutingRulesOnAPIDelete(t *testing.T) {
 		name           string
 		organizationID string
 		apiIdentifier  string
-		api            model.AdapterInternalAPI
+		api            *model.AdapterInternalAPI
 		deleteVersion  string
 	}{
 		{
 			name:           "Delete latest major version",
 			organizationID: "org3",
-			apiIdentifier:  "gw.com:apiID1",
-			api:            apiID1,
+			apiIdentifier:  "gw.com:Test API",
+			api:            &apiID1,
 			deleteVersion:  "v1.0",
 		},
 		{
 			name:           "Delete latest minor version",
 			organizationID: "org4",
-			apiIdentifier:  "gw.com:apiID3",
-			api:            apiID3,
+			apiIdentifier:  "gw.com:Mock API",
+			api:            &apiID3,
 			deleteVersion:  "v1.5",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			updateRoutingRulesOnAPIDelete(tt.organizationID, tt.apiIdentifier, tt.api)
-
+			RemoveAPIFromAllInternalMaps(tt.api.UUID)
 			if _, ok := orgIDLatestAPIVersionMap[tt.organizationID]; ok {
 				if _, ok := orgIDLatestAPIVersionMap[tt.organizationID][tt.apiIdentifier]; ok {
 					if _, ok := orgIDLatestAPIVersionMap[tt.organizationID][tt.apiIdentifier][tt.deleteVersion]; ok {

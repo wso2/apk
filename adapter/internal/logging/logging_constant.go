@@ -52,6 +52,7 @@ const (
 	Error1411 = 1411
 	Error1413 = 1413
 	Error1414 = 1414
+	Error1415 = 1415
 )
 
 // Error Log Internal XDS(1700-1799) Config Constants

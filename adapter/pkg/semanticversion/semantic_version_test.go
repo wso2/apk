@@ -128,34 +128,34 @@ func TestValidateAndGetVersionComponents(t *testing.T) {
 			version:        "1.2.3",
 			apiName:        "TestAPI",
 			expectedResult: nil,
-			expectedError:  errors.New("Invalid version: 1.2.3 for API: TestAPI. API version should be in the format x.y.z, x.y, vx.y.z or vx.y where x,y,z are non-negative integers and v is version prefix"),
+			expectedError:  errors.New("invalid version: 1.2.3. API version should be in the format x.y.z, x.y, vx.y.z or vx.y where x,y,z are non-negative integers and v is version prefix"),
 		},
 		{
 			name:           "Invalid version format - negative major version",
 			version:        "v-1.2.3",
 			apiName:        "TestAPI",
 			expectedResult: nil,
-			expectedError:  errors.New("invalid version format"),
+			expectedError:  errors.New("invalid version format. API major version should be a non-negative integer in API Version: v-1.2.3, <nil>"),
 		},
 		{
 			name:           "Invalid version format - negative minor version",
 			version:        "v1.-2.3",
 			apiName:        "TestAPI",
 			expectedResult: nil,
-			expectedError:  errors.New("invalid version format"),
+			expectedError:  errors.New("invalid version format. API minor version should be a non-negative integer in API Version: v1.-2.3, <nil>"),
 		},
 		{
 			name:           "Invalid version format - patch version not an integer",
 			version:        "v1.2.three",
 			apiName:        "TestAPI",
 			expectedResult: nil,
-			expectedError:  errors.New("invalid version format"),
+			expectedError:  errors.New("invalid version format. API patch version should be an integer in API Version: v1.2.three, strconv.Atoi: parsing \"three\": invalid syntax"),
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := ValidateAndGetVersionComponents(tt.version, tt.apiName)
+			result, err := ValidateAndGetVersionComponents(tt.version)
 
 			// Check for errors
 			if (err != nil && tt.expectedError == nil) || (err == nil && tt.expectedError != nil) || (err != nil && tt.expectedError != nil && err.Error() != tt.expectedError.Error()) {

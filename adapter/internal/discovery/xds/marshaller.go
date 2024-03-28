@@ -34,8 +34,6 @@ const (
 	DeleteEvent
 )
 
-const blockedStatus string = "BLOCKED"
-
 // MarshalConfig will marshal a Config struct - read from the config toml - to
 // enfocer's CDS resource representation.
 func MarshalConfig(config *config.Config) *enforcer.Config {

@@ -18,7 +18,6 @@
 package oasparser
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -35,19 +34,6 @@ import (
 	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/api"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
-
-// GetRoutesClustersEndpoints generates the routes, clusters and endpoints (envoy)
-// when the openAPI Json is provided. For websockets apiJsn created from api.yaml file is considered.
-func GetRoutesClustersEndpoints(adapterInternalAPI *model.AdapterInternalAPI, interceptorCerts map[string][]byte,
-	vHost string, organizationID string) ([]*routev3.Route, []*clusterv3.Cluster, []*corev3.Address, error) {
-
-	routes, clusters, endpoints, err := envoy.CreateRoutesWithClusters(adapterInternalAPI, interceptorCerts,
-		vHost, organizationID)
-	if err != nil {
-		return nil, nil, nil, fmt.Errorf("error while creating routes, clusters and endpoints. %v", err)
-	}
-	return routes, clusters, endpoints, nil
-}
 
 // GetGlobalClusters generates initial internal clusters for given environment.
 func GetGlobalClusters() ([]*clusterv3.Cluster, []*corev3.Address) {
@@ -141,7 +127,7 @@ func UpdateRoutesConfig(routeConfig *routev3.RouteConfiguration, vhostToRouteArr
 
 // GetEnforcerAPI retrieves the ApiDS object model for a given swagger definition
 // along with the vhost to deploy the API.
-func GetEnforcerAPI(adapterInternalAPI model.AdapterInternalAPI, vhost string) *api.Api {
+func GetEnforcerAPI(adapterInternalAPI *model.AdapterInternalAPI, vhost string) *api.Api {
 	resources := []*api.Resource{}
 	isMockedAPI := false
 	clientCertificates := []*api.Certificate{}
@@ -258,7 +244,7 @@ func castAPIAuthenticationsToEnforcerAPIAuthentications(authentication *model.Au
 		enforcerAuthentication.Jwt = &api.JWT{
 			Header:              strings.ToLower(authentication.JWT.Header),
 			SendTokenToUpstream: authentication.JWT.SendTokenToUpstream,
-			Audience: authentication.JWT.Audience,
+			Audience:            authentication.JWT.Audience,
 		}
 	}
 	var apiKeys []*api.APIKey
