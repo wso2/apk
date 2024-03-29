@@ -131,7 +131,6 @@ func generateAdapterInternalAPI(apiState APIState, httpRoute *HTTPRouteState, en
 // getVhostForAPI returns the vHosts related to an API.
 func getVhostsForAPI(httpRoute *gwapiv1b1.HTTPRoute) map[string]struct{} {
 	vHosts := make(map[string]struct{})
-	loggers.LoggerAPI.Error("httpRoute.Spec.Hostnames: ", httpRoute.Spec.Hostnames)
 	for _, hostName := range httpRoute.Spec.Hostnames {
 		vHosts[string(hostName)] = struct{}{}
 	}

@@ -327,7 +327,6 @@ func TestUpdateRoutingRulesOnAPIUpdate(t *testing.T) {
 			finalRegex:         apiID1ResourcePath,
 			finalRewrite:       apiID1ResourcePath,
 		},
-		// Expected final regex: ^/test-api/v1\.0/orders([/]{0,1}), Got: ^/test-api/v1(?:\.0)?/orders([/]{0,1})
 		{
 			name:               "Create an API with major and minor version",
 			organizationID:     "org1",

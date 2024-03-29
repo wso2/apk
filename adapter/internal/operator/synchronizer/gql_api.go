@@ -108,7 +108,7 @@ func generateGQLAdapterInternalAPI(apiState APIState, gqlRoute *GQLRouteState, e
 
 // getVhostForAPI returns the vHosts related to an API.
 func getVhostsForGQLAPI(gqlRoute *v1alpha2.GQLRoute) map[string]struct{} {
-	var vHosts map[string]struct{}
+	vHosts := make(map[string]struct{})
 	for _, hostName := range gqlRoute.Spec.Hostnames {
 		vHosts[string(hostName)] = struct{}{}
 	}

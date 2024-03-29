@@ -147,7 +147,6 @@ func updateOldRegex(org string, oldSemVersions []oldSemVersion) {
 				}
 			}
 		}
-		logger.LoggerAPI.Error(oldSelectedSemVersion)
 		if oldSelectedSemVersion == nil {
 			continue
 		}
@@ -157,27 +156,22 @@ func updateOldRegex(org string, oldSemVersions []oldSemVersion) {
 		updateMinor := oldSelectedSemVersion.OldMinorSemVersion != nil && api.adapterInternalAPI.GetVersion() ==
 			oldSelectedSemVersion.OldMinorSemVersion.Version
 
-		// apiSemVersion, _ := semantic_version.ValidateAndGetVersionComponents(api.adapterInternalAPI.GetVersion())
 		for _, route := range api.routes {
 			regex := route.GetMatch().GetSafeRegex().GetRegex()
 			regexRewritePattern := route.GetRoute().GetRegexRewrite().GetPattern().GetRegex()
 			if updateMajor {
-				logger.LoggerAPI.Error(166, regex)
 				regex = strings.Replace(regex, GetMajorMinorVersionRangeRegex(oldSelectedSemVersion.OldMajorSemVersion),
 					GetMinorVersionRangeRegex(oldSelectedSemVersion.OldMajorSemVersion), 1)
 				regexRewritePattern = strings.Replace(regexRewritePattern,
 					GetMajorMinorVersionRangeRegex(oldSelectedSemVersion.OldMajorSemVersion),
 					GetMinorVersionRangeRegex(oldSelectedSemVersion.OldMajorSemVersion), 1)
-				logger.LoggerAPI.Error(166, regex)
 			}
 			if updateMinor {
-				logger.LoggerAPI.Error(175, regex)
 				regex = strings.Replace(regex, GetMinorVersionRangeRegex(oldSelectedSemVersion.OldMinorSemVersion),
 					GetVersionMatchRegex(oldSelectedSemVersion.OldMinorSemVersion.Version), 1)
 				regexRewritePattern = strings.Replace(regexRewritePattern,
 					GetMinorVersionRangeRegex(oldSelectedSemVersion.OldMinorSemVersion),
 					GetVersionMatchRegex(oldSelectedSemVersion.OldMinorSemVersion.Version), 1)
-				logger.LoggerAPI.Error(180, regex)
 			}
 			pathSpecifier := &routev3.RouteMatch_SafeRegex{
 				SafeRegex: &matcherv3.RegexMatcher{
