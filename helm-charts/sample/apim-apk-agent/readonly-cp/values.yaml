@@ -17,7 +17,7 @@
 replicaCount: 1
 image:
   repository: wso2/apim-apk-agent
-  tag: latest
+  tag: alpha2
   pullPolicy: Always
 service:
   name: apim-apk-agent-service
