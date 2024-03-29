@@ -26,7 +26,12 @@ import (
 	"fmt"
 	"io/ioutil"
 	"sync"
-
+	"reflect"
+	"strings"
+  "sort"
+	"strconv"
+	"crypto/sha256"
+  "encoding/hex"
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/controlplane"
 	"github.com/wso2/apk/adapter/internal/discovery/xds"
@@ -102,11 +107,13 @@ type APIReconciler struct {
 	statusUpdater       *status.UpdateHandler
 	mgr                 manager.Manager
 	apiPropagationEnabled bool
+	apiHashes             map[string]string
 }
 
 // NewAPIController creates a new API controller instance. API Controllers watches for dpv1alpha2.API and gwapiv1b1.HTTPRoute.
 func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.OperatorDataStore, statusUpdater *status.UpdateHandler,
 	ch *chan *synchronizer.APIEvent, successChannel *chan synchronizer.SuccessEvent) error {
+	apiHash := make(map[string]string)
 	apiReconciler := &APIReconciler{
 		client:         mgr.GetClient(),
 		ods:            operatorDataStore,
@@ -114,6 +121,7 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 		successChannel: successChannel,
 		statusUpdater:  statusUpdater,
 		mgr:            mgr,
+		apiHashes:        apiHash,
 	}
 	ctx := context.Background()
 	c, err := controller.New(constants.APIController, mgr, controller.Options{Reconciler: apiReconciler})
@@ -248,6 +256,8 @@ func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	var apiCR dpv1alpha2.API
 	if err := apiReconciler.client.Get(ctx, req.NamespacedName, &apiCR); err != nil {
 		apiState, found := apiReconciler.ods.GetCachedAPI(req.NamespacedName)
+		// remove the hash from the api hashes map if presents
+		delete(apiReconciler.apiHashes, req.NamespacedName.String())
 		if found && k8error.IsNotFound(err) {
 			if apiReconciler.apiPropagationEnabled {
 				// Convert api state to api cp data
@@ -428,13 +438,19 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 	}
 
 	loggers.LoggerAPKOperator.Debugf("Child references are retrieved successfully for API CR %s", apiRef.String())
-
+  apiNamespacedName := utils.NamespacedName(apiState.APIDefinition).String()
 	if !api.Status.DeploymentStatus.Accepted {
 		if apiReconciler.apiPropagationEnabled {
-			// Publish the api data to CP
-			apiCpData := apiReconciler.convertAPIStateToAPICp(ctx, *apiState)
-			apiCpData.Event = controlplane.EventTypeCreate
-			controlplane.AddToEventQueue(apiCpData)
+			value, ok := apiReconciler.apiHashes[apiNamespacedName]
+			apiHash := apiReconciler.getAPIHash(apiState)
+			if !ok || value != apiHash {
+				loggers.LoggerAPKOperator.Infof("API hash changed sending the API to agent")
+				apiReconciler.apiHashes[apiNamespacedName] = apiHash
+				// Publish the api data to CP
+				apiCpData := apiReconciler.convertAPIStateToAPICp(ctx, *apiState)
+				apiCpData.Event = controlplane.EventTypeCreate
+				controlplane.AddToEventQueue(apiCpData)
+			}
 		}
 
 		apiReconciler.ods.AddAPIState(apiRef, apiState)
@@ -443,10 +459,17 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 	} else if cachedAPI, events, updated :=
 		apiReconciler.ods.UpdateAPIState(apiRef, apiState); updated {
 		if apiReconciler.apiPropagationEnabled {
-			// Publish the api data to CP
-			apiCpData := apiReconciler.convertAPIStateToAPICp(ctx, *apiState)
-			apiCpData.Event = controlplane.EventTypeUpdate
-			controlplane.AddToEventQueue(apiCpData)
+			value, ok := apiReconciler.apiHashes[apiNamespacedName]
+			apiHash := apiReconciler.getAPIHash(apiState)
+			if !ok || value != apiHash {
+				loggers.LoggerAPK.Infof("Ok: %+v, value: %+v nam: %+v", ok, value, apiNamespacedName)
+				loggers.LoggerAPKOperator.Infof("API hash changed sending the API to agent")
+				apiReconciler.apiHashes[apiNamespacedName] = apiHash
+				// Publish the api data to CP
+				apiCpData := apiReconciler.convertAPIStateToAPICp(ctx, *apiState)
+				apiCpData.Event = controlplane.EventTypeUpdate
+				controlplane.AddToEventQueue(apiCpData)
+			}
 		}
 		apiReconciler.traverseAPIStateAndUpdateOwnerReferences(ctx, *apiState)
 		loggers.LoggerAPKOperator.Infof("API CR %s with API UUID : %v is updated on %v", apiRef.String(),
@@ -2157,7 +2180,10 @@ func (apiReconciler *APIReconciler) convertAPIStateToAPICp(ctx context.Context, 
 	if !revisionIDExists {
 		revisionID = "0"
 	}
-
+	properties := make(map[string]string)
+	for _, val := range spec.APIProperties {
+		properties[val.Name] = val.Value
+	}
 	api := controlplane.API{
 		APIName:          spec.APIName,
 		APIVersion:       spec.APIVersion,
@@ -2170,10 +2196,120 @@ func (apiReconciler *APIReconciler) convertAPIStateToAPICp(ctx context.Context, 
 		Definition:       apiDef,
 		APIUUID:          apiUUID,
 		RevisionID:       revisionID,
+		APIProperties:    properties,
 	}
 	apiCPEvent.API = api
 	apiCPEvent.CRName = apiState.APIDefinition.ObjectMeta.Name
 	apiCPEvent.CRNamespace = apiState.APIDefinition.ObjectMeta.Namespace
 	return apiCPEvent
 
+}
+
+func (apiReconciler *APIReconciler) getAPIHash(apiState *synchronizer.APIState) string {
+	
+	getUniqueId := func(obj interface{}, fields ...string) string {
+		loggers.LoggerAPK.Infof("Type of obj: %T", obj)
+		var sb strings.Builder
+    objValue := reflect.ValueOf(obj)
+    for _, field := range fields {
+			fieldNames := strings.Split(field, ".")
+			name1 := fieldNames[0]
+			name2 := fieldNames[1]
+			if objValue.IsValid() && objValue.Elem().FieldByName(name1).IsValid() {
+				if (objValue.Elem().FieldByName(name1).FieldByName(name2).IsValid()) {
+					v := objValue.Elem().FieldByName(name1).FieldByName(name2)
+					switch v.Kind() {
+					case reflect.String:
+							sb.WriteString(v.String())
+					case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+							sb.WriteString(strconv.FormatInt(v.Int(), 10))
+					}
+				} 
+			} 
+
+			// if objValue.IsValid() {
+			// 	loggers.LoggerAPK.Infof("valid")
+			// 	// Print fields if objValue is a struct
+			// 	if objValue.Elem().Kind() == reflect.Struct {
+			// 			for i := 0; i < objValue.Elem().NumField(); i++ {
+			// 					fieldName := objValue.Elem().Type().Field(i).Name
+			// 					loggers.LoggerAPK.Infof("Field: %s", fieldName)
+			// 					field1 := objValue.Elem().Field(i)
+			// 					if field1.Kind() == reflect.Struct {
+			// 						for j := 0; j < field1.NumField(); j++ {
+			// 								childFieldName := field1.Type().Field(j).Name
+			// 								loggers.LoggerAPK.Infof("    Child Field: %s", childFieldName)
+			// 						}
+			// 					}
+			// 			}
+						
+			// 	}
+			// 	if objValue.IsValid() && objValue.Elem().FieldByName(field).IsValid() {
+			// 		loggers.LoggerAPK.Infof("valid valid")
+			// 	}
+			// }
+    }
+    return sb.String()
+	}
+
+	uniqueIds := make([]string, 0)
+	uniqueIds = append(uniqueIds, getUniqueId(apiState.APIDefinition, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
+	for _, auth := range apiState.Authentications {
+		uniqueIds = append(uniqueIds, getUniqueId(auth, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
+	}
+	for _, arl := range apiState.RateLimitPolicies {
+		uniqueIds = append(uniqueIds, getUniqueId(arl, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
+	}
+	for _, ra := range apiState.ResourceAuthentications {
+		uniqueIds = append(uniqueIds, getUniqueId(ra, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
+	}
+	for _, rrl := range apiState.ResourceRateLimitPolicies {
+		uniqueIds = append(uniqueIds, getUniqueId(rrl, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
+	}
+	for _, ral := range apiState.ResourceAPIPolicies {
+		uniqueIds = append(uniqueIds, getUniqueId(ral, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
+	}
+	for _, ap := range apiState.APIPolicies {
+		uniqueIds = append(uniqueIds, getUniqueId(ap, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
+	}
+	for _, ism := range apiState.InterceptorServiceMapping {
+		uniqueIds = append(uniqueIds, getUniqueId(ism, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
+	}
+	for _, bjm := range apiState.BackendJWTMapping {
+		uniqueIds = append(uniqueIds, getUniqueId(bjm, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
+	}
+	if apiState.ProdHTTPRoute!= nil {
+		for _, phr := range apiState.ProdHTTPRoute.HTTPRoutePartitions {
+			uniqueIds = append(uniqueIds, getUniqueId(phr, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
+		}
+	}
+	if apiState.SandHTTPRoute!= nil {
+		for _, shr := range apiState.SandHTTPRoute.HTTPRoutePartitions {
+			uniqueIds = append(uniqueIds, getUniqueId(shr, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
+		}
+	}
+	if apiState.ProdGQLRoute!= nil {
+		for _, pgqr := range apiState.ProdGQLRoute.GQLRoutePartitions {
+			uniqueIds = append(uniqueIds, getUniqueId(pgqr, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
+		}
+	}
+	if apiState.SandGQLRoute!= nil {
+		for _, sgqr := range apiState.SandGQLRoute.GQLRoutePartitions {
+			uniqueIds = append(uniqueIds, getUniqueId(sgqr, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
+		}
+	}
+
+
+	sort.Strings(uniqueIds)
+	joinedUniqueIds := strings.Join(uniqueIds, "")
+	mutualSSLUniqueId := ""
+	if (apiState.MutualSSL != nil) {
+		mutualSSLUniqueId += strconv.FormatBool(apiState.MutualSSL.Disabled) + apiState.MutualSSL.Required + strings.Join(apiState.MutualSSL.ClientCertificates, "")
+	}
+	joinedUniqueIds  = joinedUniqueIds + strconv.FormatBool(apiState.SubscriptionValidation) + mutualSSLUniqueId
+	loggers.LoggerAPK.Infof("Prepared unique string: %s", joinedUniqueIds)
+	hash := sha256.Sum256([]byte(joinedUniqueIds))
+	hashedString := hex.EncodeToString(hash[:])
+	loggers.LoggerAPK.Infof("Prepared hash: %s", hashedString)
+	return hashedString
 }

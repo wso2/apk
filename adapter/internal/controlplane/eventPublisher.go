@@ -84,15 +84,9 @@ type API struct {
 	BasePath         string     `json:"basePath"`
 	Organization     string     `json:"organization"`
 	SystemAPI        bool       `json:"systemAPI"`
-	APIProperties    []Property `json:"apiProperties,omitempty"`
+	APIProperties    map[string]string `json:"apiProperties,omitempty"`
 	Environment      string     `json:"environment,omitempty"`
 	RevisionID       string     `json:"revisionID"`
-}
-
-// Property holds key value pair of APIProperties
-type Property struct {
-	Name  string `json:"name,omitempty"`
-	Value string `json:"value,omitempty"`
 }
 
 // init reads the configuration and starts the worker to send data.
@@ -191,6 +185,7 @@ func sendData() {
 
 // AddToEventQueue adds the api event to queue
 func AddToEventQueue(data APICPEvent) {
+	loggers.LoggerAPK.Infof("Event added to queue : %+v", data)
 	eventQueue <- data
 }
 
