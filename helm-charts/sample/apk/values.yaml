@@ -152,10 +152,10 @@ wso2:
           image: wso2/apk-common-controller:1.1.0-alpha2
           security:
             sslHostname: "commoncontroller"
-          #          controlplane:
-          #            enabled: true
-          #            host: "apim-apk-agent-service.apk.svc.cluster.local"
-          #            skipSSLVerification: true
+          controlplane:
+            enabled: true
+            host: "apim-apk-agent-service.apk.svc.cluster.local"
+            skipSSLVerification: true
           # configs:
           #   apiNamespaces:
           #     - "apk-v12"
@@ -246,14 +246,14 @@ wso2:
               sslHostname: "enforcer"
     #            logging:
     #              level: DEBUG
-    #            configs:
+            configs:
     #              tls:
     #                secretName: "router-cert"
     #                certKeyFilename: ""
     #                certFilename: ""
-    #              JWKSClient:
-    #                skipSSLVerification: false
-    #                hostnameVerifier: "AllowAll"
+              JWKSClient:
+                skipSSLVerification: false
+                hostnameVerifier: "AllowAll"
 
     metrics:
       enabled: false
