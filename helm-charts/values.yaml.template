@@ -68,6 +68,16 @@ wso2:
         secretName: ""
         # -- IDP jwt signing certificate file name
         fileName: ""
+    cp:
+      controlplane:
+        # -- Enable controlplane connection
+        enableApiPropagation: false
+        # -- Hostname of the APK agent service
+        host: "apim-apk-agent-service.apk.svc.cluster.local"
+        # -- Port of the APK agent service for events
+        restPort: 18001
+        # -- Skip SSL verification
+        skipSSLVerification: false
     dp:
      # -- Enable the deployment of the Data Plane
       enabled: true
