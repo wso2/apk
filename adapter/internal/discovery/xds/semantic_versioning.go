@@ -93,7 +93,7 @@ func updateSemanticVersioningInMapForUpdateAPI(org string, apiRangeIdentifiers m
 			vhost, _ := ExtractVhostFromAPIIdentifier(apiRangeIdentifier)
 			if _, ok := currentAPISemVersion[GetMajorVersionRange(*semVersion)]; !ok {
 				currentAPISemVersion[GetMajorVersionRange(*semVersion)] = *semVersion
-			} else if currentAPISemVersion[GetMajorVersionRange(*semVersion)].Compare(*semVersion) {
+			} else if !semVersion.Compare(currentAPISemVersion[GetMajorVersionRange(*semVersion)]) {
 				version := currentAPISemVersion[GetMajorVersionRange(*semVersion)]
 				currentAPISemVersion[GetMajorVersionRange(*semVersion)] = *semVersion
 				oldVersion = &oldSemVersion{
@@ -104,7 +104,7 @@ func updateSemanticVersioningInMapForUpdateAPI(org string, apiRangeIdentifiers m
 			}
 			if _, ok := currentAPISemVersion[GetMinorVersionRange(*semVersion)]; !ok {
 				currentAPISemVersion[GetMinorVersionRange(*semVersion)] = *semVersion
-			} else if currentAPISemVersion[GetMinorVersionRange(*semVersion)].Compare(*semVersion) {
+			} else if !semVersion.Compare(currentAPISemVersion[GetMinorVersionRange(*semVersion)]) {
 				version := currentAPISemVersion[GetMinorVersionRange(*semVersion)]
 				currentAPISemVersion[GetMinorVersionRange(*semVersion)] = *semVersion
 				if oldVersion != nil {
@@ -122,10 +122,10 @@ func updateSemanticVersioningInMapForUpdateAPI(org string, apiRangeIdentifiers m
 			}
 		}
 	}
-	updateOldRegex(org, oldSemVersions)
+	updateOldRegex(org, oldSemVersions, true)
 }
 
-func updateOldRegex(org string, oldSemVersions []oldSemVersion) {
+func updateOldRegex(org string, oldSemVersions []oldSemVersion, remove bool) {
 	if len(oldSemVersions) < 1 {
 		return
 	}
@@ -159,19 +159,37 @@ func updateOldRegex(org string, oldSemVersions []oldSemVersion) {
 		for _, route := range api.routes {
 			regex := route.GetMatch().GetSafeRegex().GetRegex()
 			regexRewritePattern := route.GetRoute().GetRegexRewrite().GetPattern().GetRegex()
-			if updateMajor {
+			if remove && updateMajor {
 				regex = strings.Replace(regex, GetMajorMinorVersionRangeRegex(oldSelectedSemVersion.OldMajorSemVersion),
 					GetMinorVersionRangeRegex(oldSelectedSemVersion.OldMajorSemVersion), 1)
 				regexRewritePattern = strings.Replace(regexRewritePattern,
 					GetMajorMinorVersionRangeRegex(oldSelectedSemVersion.OldMajorSemVersion),
 					GetMinorVersionRangeRegex(oldSelectedSemVersion.OldMajorSemVersion), 1)
 			}
-			if updateMinor {
+			if remove && updateMinor {
 				regex = strings.Replace(regex, GetMinorVersionRangeRegex(oldSelectedSemVersion.OldMinorSemVersion),
 					GetVersionMatchRegex(oldSelectedSemVersion.OldMinorSemVersion.Version), 1)
 				regexRewritePattern = strings.Replace(regexRewritePattern,
 					GetMinorVersionRangeRegex(oldSelectedSemVersion.OldMinorSemVersion),
 					GetVersionMatchRegex(oldSelectedSemVersion.OldMinorSemVersion.Version), 1)
+			}
+			if !remove && updateMajor {
+				regex = strings.Replace(regex, GetMinorVersionRangeRegex(oldSelectedSemVersion.OldMajorSemVersion),
+					GetMajorMinorVersionRangeRegex(oldSelectedSemVersion.OldMajorSemVersion), 1)
+				regex = strings.Replace(regex, GetVersionMatchRegex(oldSelectedSemVersion.OldMajorSemVersion.Version),
+					GetMajorMinorVersionRangeRegex(oldSelectedSemVersion.OldMajorSemVersion), 1)
+				regexRewritePattern = strings.Replace(regexRewritePattern,
+					GetMinorVersionRangeRegex(oldSelectedSemVersion.OldMajorSemVersion),
+					GetMajorMinorVersionRangeRegex(oldSelectedSemVersion.OldMajorSemVersion), 1)
+				regexRewritePattern = strings.Replace(regexRewritePattern,
+					GetVersionMatchRegex(oldSelectedSemVersion.OldMajorSemVersion.Version),
+					GetMajorMinorVersionRangeRegex(oldSelectedSemVersion.OldMajorSemVersion), 1)
+			}
+			if !remove && updateMinor {
+				regex = strings.Replace(regex, GetVersionMatchRegex(oldSelectedSemVersion.OldMinorSemVersion.Version),
+					GetMinorVersionRangeRegex(oldSelectedSemVersion.OldMinorSemVersion), 1)
+				regexRewritePattern = strings.Replace(regexRewritePattern, GetVersionMatchRegex(oldSelectedSemVersion.OldMinorSemVersion.Version),
+					GetMinorVersionRangeRegex(oldSelectedSemVersion.OldMinorSemVersion), 1)
 			}
 			pathSpecifier := &routev3.RouteMatch_SafeRegex{
 				SafeRegex: &matcherv3.RegexMatcher{
@@ -188,6 +206,7 @@ func updateOldRegex(org string, oldSemVersions []oldSemVersion) {
 
 // updateSemanticVersioningInMap updates the latest version ranges of the APIs in the organization
 func updateSemanticVersioningInMap(org string, apiRangeIdentifiers map[string]struct{}) {
+	oldSemVersionsMap := make(map[string]*oldSemVersion)
 	oldSemVersions := make([]oldSemVersion, 0)
 	// Iterate all the APIs in the API range
 	for vuuid, api := range orgAPIMap[org] {
@@ -213,40 +232,46 @@ func updateSemanticVersioningInMap(org string, apiRangeIdentifiers map[string]st
 			orgIDLatestAPIVersionMap[org][apiRangeIdentifier] = make(map[string]semantic_version.SemVersion)
 			orgIDLatestAPIVersionMap[org][apiRangeIdentifier][GetMajorVersionRange(*semVersion)] = *semVersion
 			orgIDLatestAPIVersionMap[org][apiRangeIdentifier][GetMinorVersionRange(*semVersion)] = *semVersion
+			oldSemVersionsMap[GetMajorVersionRange(*semVersion)] = &oldSemVersion{
+				Vhost:              vhost,
+				APIName:            apiName,
+				OldMajorSemVersion: semVersion,
+				OldMinorSemVersion: semVersion,
+			}
 		} else {
-			var oldVersion *oldSemVersion
+			var newVersion *oldSemVersion
 			if _, ok := currentAPISemVersion[GetMajorVersionRange(*semVersion)]; !ok {
 				currentAPISemVersion[GetMajorVersionRange(*semVersion)] = *semVersion
-			} else if currentAPISemVersion[GetMajorVersionRange(*semVersion)].Compare(*semVersion) {
-				version := currentAPISemVersion[GetMajorVersionRange(*semVersion)]
-				oldVersion = &oldSemVersion{
+			} else if !semVersion.Compare(currentAPISemVersion[GetMajorVersionRange(*semVersion)]) {
+				newVersion = &oldSemVersion{
 					Vhost:              vhost,
 					APIName:            apiName,
-					OldMajorSemVersion: &version,
+					OldMajorSemVersion: semVersion,
 				}
 				currentAPISemVersion[GetMajorVersionRange(*semVersion)] = *semVersion
+				oldSemVersionsMap[GetMajorVersionRange(*semVersion)] = newVersion
 			}
 			if _, ok := currentAPISemVersion[GetMinorVersionRange(*semVersion)]; !ok {
 				currentAPISemVersion[GetMinorVersionRange(*semVersion)] = *semVersion
-			} else if currentAPISemVersion[GetMinorVersionRange(*semVersion)].Compare(*semVersion) {
-				version := currentAPISemVersion[GetMinorVersionRange(*semVersion)]
-				if oldVersion != nil {
-					oldVersion.OldMinorSemVersion = &version
+			} else if !semVersion.Compare(currentAPISemVersion[GetMinorVersionRange(*semVersion)]) {
+				if newVersion != nil {
+					newVersion.OldMinorSemVersion = semVersion
 				} else {
-					oldVersion = &oldSemVersion{
+					newVersion = &oldSemVersion{
 						Vhost:              vhost,
 						APIName:            apiName,
-						OldMinorSemVersion: &version,
+						OldMinorSemVersion: semVersion,
 					}
+					oldSemVersionsMap[GetMinorVersionRange(*semVersion)] = newVersion
 				}
 				currentAPISemVersion[GetMinorVersionRange(*semVersion)] = *semVersion
 			}
-			if oldVersion != nil {
-				oldSemVersions = append(oldSemVersions, *oldVersion)
-			}
 		}
 	}
-	updateOldRegex(org, oldSemVersions)
+	for _, sem := range oldSemVersionsMap {
+		oldSemVersions = append(oldSemVersions, *sem)
+	}
+	updateOldRegex(org, oldSemVersions, false)
 }
 
 func updateSemRegexForNewAPI(adapterInternalAPI model.AdapterInternalAPI, routes []*routev3.Route, vhost string) {

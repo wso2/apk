@@ -23,6 +23,7 @@ import (
 
 	routev3 "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
 	envoy_type_matcherv3 "github.com/envoyproxy/go-control-plane/envoy/type/matcher/v3"
+	"github.com/stretchr/testify/assert"
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/oasparser/model"
 	semantic_version "github.com/wso2/apk/adapter/pkg/semanticversion"
@@ -468,11 +469,17 @@ func TestUpdateRoutingRulesOnAPIDelete(t *testing.T) {
 	apiID2.SetVersion("v1.0")
 	apiID2ResourcePath := "^/mock-api/v1\\.0/orders([/]{0,1})"
 
-	var apiID3 model.AdapterInternalAPI
-	apiID3.SetName("Mock API")
-	apiID3.UUID = "apiID3"
-	apiID3.SetVersion("v1.5")
-	apiID3ResourcePath := "^/mock-api/v1(?:\\.5)?/orders([/]{0,1})"
+	var apiID21 model.AdapterInternalAPI
+	apiID21.SetName("Mock API")
+	apiID21.UUID = "apiID21"
+	apiID21.SetVersion("v1.1")
+	apiID21ResourcePath := "^/mock-api/v1\\.1/orders([/]{0,1})"
+
+	var apiID25 model.AdapterInternalAPI
+	apiID25.SetName("Mock API")
+	apiID25.UUID = "apiID25"
+	apiID25.SetVersion("v1.5")
+	apiID25ResourcePath := "^/mock-api/v1(?:\\.5)?/orders([/]{0,1})"
 
 	orgAPIMap = map[string]map[string]*EnvoyInternalAPI{
 		"org3": {
@@ -486,9 +493,13 @@ func TestUpdateRoutingRulesOnAPIDelete(t *testing.T) {
 				adapterInternalAPI: &apiID2,
 				routes:             generateRoutes(apiID2ResourcePath),
 			},
-			"gw.com:apiID3": &EnvoyInternalAPI{
-				adapterInternalAPI: &apiID3,
-				routes:             generateRoutes(apiID3ResourcePath),
+			"gw.com:apiID21": &EnvoyInternalAPI{
+				adapterInternalAPI: &apiID21,
+				routes:             generateRoutes(apiID21ResourcePath),
+			},
+			"gw.com:apiID25": &EnvoyInternalAPI{
+				adapterInternalAPI: &apiID25,
+				routes:             generateRoutes(apiID25ResourcePath),
 			},
 		},
 	}
@@ -497,6 +508,8 @@ func TestUpdateRoutingRulesOnAPIDelete(t *testing.T) {
 		name           string
 		organizationID string
 		apiIdentifier  string
+		apiCheck       string
+		expectedRegex  string
 		api            *model.AdapterInternalAPI
 		deleteVersion  string
 	}{
@@ -506,13 +519,26 @@ func TestUpdateRoutingRulesOnAPIDelete(t *testing.T) {
 			apiIdentifier:  "gw.com:Test API",
 			api:            &apiID1,
 			deleteVersion:  "v1.0",
+			apiCheck:       "gw.com:apiID25",
+			expectedRegex:  "^/mock-api/v1(?:\\.5)?/orders([/]{0,1})",
 		},
 		{
-			name:           "Delete latest minor version",
+			name:           "Delete latest minor version v1.5",
 			organizationID: "org4",
 			apiIdentifier:  "gw.com:Mock API",
-			api:            &apiID3,
+			api:            &apiID25,
 			deleteVersion:  "v1.5",
+			apiCheck:       "gw.com:apiID21",
+			expectedRegex:  "^/mock-api/v1(?:\\.1)?/orders([/]{0,1})",
+		},
+		{
+			name:           "Delete latest minor version v1.1",
+			organizationID: "org4",
+			apiIdentifier:  "gw.com:Mock API",
+			api:            &apiID21,
+			deleteVersion:  "v1.1",
+			apiCheck:       "gw.com:apiID2",
+			expectedRegex:  "^/mock-api/v1(?:\\.0)?/orders([/]{0,1})",
 		},
 	}
 
@@ -525,6 +551,12 @@ func TestUpdateRoutingRulesOnAPIDelete(t *testing.T) {
 						t.Errorf("API deletion is not successful: %s", tt.deleteVersion)
 					}
 				}
+			}
+			if tt.apiCheck != "" {
+				routes := orgAPIMap["org4"][tt.apiCheck].routes
+				assert.Equal(t, tt.expectedRegex, routes[0].GetMatch().GetSafeRegex().GetRegex(),
+					"Expected regex: %s, Got: %s",
+				)
 			}
 		})
 	}

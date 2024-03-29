@@ -556,7 +556,6 @@ func PopulateInternalMaps(adapterInternalAPI *model.AdapterInternalAPI, labels, 
 		for vHost := range vHosts {
 			tobeUpdatedAPIRangeIdentifiers[GenerateIdentifierForAPIWithoutVersion(vHost, apiName)] = struct{}{}
 		}
-		logger.LoggerXds.Errorf("Updating semantic versioning for API: %v", tobeUpdatedAPIRangeIdentifiers)
 		updateSemanticVersioningInMapForUpdateAPI(adapterInternalAPI.OrganizationID, tobeUpdatedAPIRangeIdentifiers, adapterInternalAPI)
 	}
 
@@ -589,9 +588,9 @@ func RemoveAPIFromAllInternalMaps(uuid string) map[string]struct{} {
 				apiRangeID := GenerateIdentifierForAPIWithoutVersion(vhost, envoyInternalAPI.adapterInternalAPI.GetTitle())
 				if _, exists := orgIDLatestAPIVersionMap[orgID]; exists {
 					if apiVersionMap, exists := orgIDLatestAPIVersionMap[orgID][apiRangeID]; exists {
-						for versionRange, latestVersion := range apiVersionMap {
+						for _, latestVersion := range apiVersionMap {
 							if latestVersion.Version == envoyInternalAPI.adapterInternalAPI.GetVersion() {
-								delete(orgIDLatestAPIVersionMap[orgID][apiRangeID], versionRange)
+								delete(orgIDLatestAPIVersionMap[orgID], apiRangeID)
 								tobeUpdatedAPIRangeIdentifiers[apiRangeID] = struct{}{}
 							}
 						}
