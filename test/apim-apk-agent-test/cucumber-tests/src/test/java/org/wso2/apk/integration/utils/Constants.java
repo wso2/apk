@@ -24,7 +24,7 @@ public class Constants {
     public static final String DEFAULT_GW_PORT = "9443";
     public static final String DEFAULT_TOKEN_EP = "oauth2/token";
     public static final String DEFAULT_DCR_EP = "client-registration/v0.17/register";
-    public static final String DEFAULT_API_CONFIGURATOR = "api/configurator/1.0.0/";
+    public static final String DEFAULT_API_CONFIGURATOR = "api/configurator/1.1.0/";
     public static final String DEFAULT_API_DEPLOYER = "api/am/publisher/v4/";
     public static final String DEFAULT_DEVPORTAL = "api/am/devportal/v3/";
     public static final String ACCESS_TOKEN = "accessToken";
