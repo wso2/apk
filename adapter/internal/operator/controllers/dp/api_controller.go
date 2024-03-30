@@ -442,7 +442,7 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 	loggers.LoggerAPK.Infof("label section of the api : %+v", apiState.APIDefinition.ObjectMeta.Labels)
 	storedHash, hashFound := apiState.APIDefinition.ObjectMeta.Labels["apiHash"]
 	if !api.Status.DeploymentStatus.Accepted {
-		if apiReconciler.apiPropagationEnabled {
+		if apiReconciler.apiPropagationEnabled && !apiState.APIDefinition.Spec.SystemAPI {
 			apiHash := apiReconciler.getAPIHash(apiState)
 			if !hashFound || storedHash != apiHash {
 				apiReconciler.patchAPIHash(ctx, apiHash, apiState.APIDefinition.ObjectMeta.Name, apiState.APIDefinition.ObjectMeta.Namespace)
@@ -460,8 +460,7 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 		return &synchronizer.APIEvent{EventType: constants.Create, Events: []synchronizer.APIState{*apiState}, UpdatedEvents: []string{}}, nil
 	} else if cachedAPI, events, updated :=
 		apiReconciler.ods.UpdateAPIState(apiRef, apiState); updated {
-		if apiReconciler.apiPropagationEnabled {
-			
+		if apiReconciler.apiPropagationEnabled  && !apiState.APIDefinition.Spec.SystemAPI{
 			apiHash := apiReconciler.getAPIHash(apiState)
 			if !hashFound || storedHash != apiHash {
 				apiReconciler.patchAPIHash(ctx, apiHash, apiState.APIDefinition.ObjectMeta.Name, apiState.APIDefinition.ObjectMeta.Namespace)
