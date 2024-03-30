@@ -439,11 +439,13 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 
 	loggers.LoggerAPKOperator.Debugf("Child references are retrieved successfully for API CR %s", apiRef.String())
   apiNamespacedName := utils.NamespacedName(apiState.APIDefinition).String()
+	loggers.LoggerAPK.Infof("label section of the api : %+v", apiState.APIDefinition.ObjectMeta.Labels)
+	storedHash, hashFound := apiState.APIDefinition.ObjectMeta.Labels["apiHash"]
 	if !api.Status.DeploymentStatus.Accepted {
 		if apiReconciler.apiPropagationEnabled {
-			value, ok := apiReconciler.apiHashes[apiNamespacedName]
 			apiHash := apiReconciler.getAPIHash(apiState)
-			if !ok || value != apiHash {
+			if !hashFound || storedHash != apiHash {
+				apiReconciler.patchAPIHash(ctx, apiHash, apiState.APIDefinition.ObjectMeta.Name, apiState.APIDefinition.ObjectMeta.Namespace)
 				loggers.LoggerAPKOperator.Infof("API hash changed sending the API to agent")
 				apiReconciler.apiHashes[apiNamespacedName] = apiHash
 				// Publish the api data to CP
@@ -459,10 +461,11 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 	} else if cachedAPI, events, updated :=
 		apiReconciler.ods.UpdateAPIState(apiRef, apiState); updated {
 		if apiReconciler.apiPropagationEnabled {
-			value, ok := apiReconciler.apiHashes[apiNamespacedName]
+			
 			apiHash := apiReconciler.getAPIHash(apiState)
-			if !ok || value != apiHash {
-				loggers.LoggerAPK.Infof("Ok: %+v, value: %+v nam: %+v", ok, value, apiNamespacedName)
+			if !hashFound || storedHash != apiHash {
+				apiReconciler.patchAPIHash(ctx, apiHash, apiState.APIDefinition.ObjectMeta.Name, apiState.APIDefinition.ObjectMeta.Namespace)
+				loggers.LoggerAPK.Infof("Ok: %+v, value: %+v nam: %+v", hashFound, storedHash, apiNamespacedName)
 				loggers.LoggerAPKOperator.Infof("API hash changed sending the API to agent")
 				apiReconciler.apiHashes[apiNamespacedName] = apiHash
 				// Publish the api data to CP
@@ -2061,13 +2064,13 @@ func (apiReconciler *APIReconciler) handleStatus() {
 	}
 }
 
-func (apiReconciler *APIReconciler) handleLabels(ctx context.Context) {
-	type patchStringValue struct {
-		Op    string `json:"op"`
-		Path  string `json:"path"`
-		Value string `json:"value"`
-	}
+type patchStringValue struct {
+	Op    string `json:"op"`
+	Path  string `json:"path"`
+	Value string `json:"value"`
+}
 
+func (apiReconciler *APIReconciler) handleLabels(ctx context.Context) {
 	loggers.LoggerAPKOperator.Info("A thread assigned to handle label updates to API CR.")
 	for labelUpdate := range *controlplane.GetLabelQueue() {
 		loggers.LoggerAPKOperator.Infof("Starting to process label update for API %s/%s. Labels: %+v", labelUpdate.Namespace, labelUpdate.Name, labelUpdate.Labels)
@@ -2091,8 +2094,61 @@ func (apiReconciler *APIReconciler) handleLabels(ctx context.Context) {
 		err := apiReconciler.client.Patch(ctx, &apiCR, k8client.RawPatch(types.JSONPatchType, payloadBytes))
 		if err != nil {
 			loggers.LoggerAPKOperator.Errorf("Failed to patch api %s/%s with patch: %+v, error: %+v", labelUpdate.Name, labelUpdate.Namespace, patchOps, err)
+			// Patch did not work it could be due to labels field does not exists. Lets try to update the CR with labels field.
+			var apiCR dpv1alpha2.API
+			if err := apiReconciler.client.Get(ctx, types.NamespacedName{Namespace: labelUpdate.Namespace, Name: labelUpdate.Name}, &apiCR); err == nil {
+				if apiCR.ObjectMeta.Labels == nil {
+					apiCR.ObjectMeta.Labels = map[string]string{}
+				}
+				for key, value := range labelUpdate.Labels {
+					apiCR.ObjectMeta.Labels[key] = value
+				}
+				crUpdateError := apiReconciler.client.Update(ctx, &apiCR)
+				if crUpdateError != nil {
+					loggers.LoggerAPKOperator.Errorf("Error while updating the API CR for api labels. Error: %+v", crUpdateError)
+				}
+			} else {
+				loggers.LoggerAPKOperator.Errorf("Error while loading api: %s/%s, Error: %v", labelUpdate.Name, labelUpdate.Namespace, err)
+			}
 		}
 	}
+}
+
+
+
+func (apiReconciler *APIReconciler) patchAPIHash(ctx context.Context, hash string, name string, namespace string) {
+	apiCR := dpv1alpha2.API{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: namespace,
+			Name:      name,
+		},
+	}
+	hashKey := "apiHash"
+	patchOps := []patchStringValue{}
+	patchOps = append(patchOps, patchStringValue{
+		Op:    "replace",
+		Path:  fmt.Sprintf("/metadata/labels/%s", hashKey),
+		Value: hash,
+	})
+	payloadBytes, _ := json.Marshal(patchOps)
+	err := apiReconciler.client.Patch(ctx, &apiCR, k8client.RawPatch(types.JSONPatchType, payloadBytes))
+	if err != nil {
+		loggers.LoggerAPKOperator.Errorf("Failed to patch api %s/%s with patch: %+v, error: %+v", name, namespace, patchOps, err)
+		// Patch did not work it could be due to labels field does not exists. Lets try to update the CR with labels field.
+		var apiCR dpv1alpha2.API
+		if err := apiReconciler.client.Get(ctx, types.NamespacedName{Namespace: namespace, Name: name}, &apiCR); err == nil {
+			if apiCR.ObjectMeta.Labels == nil {
+				apiCR.ObjectMeta.Labels = map[string]string{}
+			}
+			apiCR.ObjectMeta.Labels["apiHash"] = hash
+			crUpdateError := apiReconciler.client.Update(ctx, &apiCR)
+			if crUpdateError != nil {
+				loggers.LoggerAPKOperator.Errorf("Error while updating the API CR for api hash. Error: %+v", crUpdateError)
+			}
+		} else {
+			loggers.LoggerAPKOperator.Errorf("Error while loading api: %s/%s, Error: %v", name, namespace, err)
+		}
+	}	
 }
 
 func (apiReconciler *APIReconciler) handleOwnerReference(ctx context.Context, obj k8client.Object, apiRequests *[]reconcile.Request) {
@@ -2184,6 +2240,7 @@ func (apiReconciler *APIReconciler) convertAPIStateToAPICp(ctx context.Context, 
 	for _, val := range spec.APIProperties {
 		properties[val.Name] = val.Value
 	}
+	prodEndpoint, sandEndpoint, endpointProtocol := findProdSandEndpoints(&apiState);
 	api := controlplane.API{
 		APIName:          spec.APIName,
 		APIVersion:       spec.APIVersion,
@@ -2197,6 +2254,9 @@ func (apiReconciler *APIReconciler) convertAPIStateToAPICp(ctx context.Context, 
 		APIUUID:          apiUUID,
 		RevisionID:       revisionID,
 		APIProperties:    properties,
+		ProdEndpoint:     prodEndpoint,
+		SandEndpoint:     sandEndpoint,
+		EndpointProtocol: endpointProtocol,
 	}
 	apiCPEvent.API = api
 	apiCPEvent.CRName = apiState.APIDefinition.ObjectMeta.Name
@@ -2211,13 +2271,16 @@ func (apiReconciler *APIReconciler) getAPIHash(apiState *synchronizer.APIState) 
 		loggers.LoggerAPK.Infof("Type of obj: %T", obj)
 		var sb strings.Builder
     objValue := reflect.ValueOf(obj)
+		if objValue.Kind() == reflect.Ptr {
+			objValue = objValue.Elem()
+		}
     for _, field := range fields {
 			fieldNames := strings.Split(field, ".")
 			name1 := fieldNames[0]
 			name2 := fieldNames[1]
-			if objValue.IsValid() && objValue.Elem().FieldByName(name1).IsValid() {
-				if (objValue.Elem().FieldByName(name1).FieldByName(name2).IsValid()) {
-					v := objValue.Elem().FieldByName(name1).FieldByName(name2)
+			if objValue.IsValid() && objValue.FieldByName(name1).IsValid() {
+				if (objValue.FieldByName(name1).FieldByName(name2).IsValid()) {
+					v := objValue.FieldByName(name1).FieldByName(name2)
 					switch v.Kind() {
 					case reflect.String:
 							sb.WriteString(v.String())
@@ -2226,28 +2289,6 @@ func (apiReconciler *APIReconciler) getAPIHash(apiState *synchronizer.APIState) 
 					}
 				} 
 			} 
-
-			// if objValue.IsValid() {
-			// 	loggers.LoggerAPK.Infof("valid")
-			// 	// Print fields if objValue is a struct
-			// 	if objValue.Elem().Kind() == reflect.Struct {
-			// 			for i := 0; i < objValue.Elem().NumField(); i++ {
-			// 					fieldName := objValue.Elem().Type().Field(i).Name
-			// 					loggers.LoggerAPK.Infof("Field: %s", fieldName)
-			// 					field1 := objValue.Elem().Field(i)
-			// 					if field1.Kind() == reflect.Struct {
-			// 						for j := 0; j < field1.NumField(); j++ {
-			// 								childFieldName := field1.Type().Field(j).Name
-			// 								loggers.LoggerAPK.Infof("    Child Field: %s", childFieldName)
-			// 						}
-			// 					}
-			// 			}
-						
-			// 	}
-			// 	if objValue.IsValid() && objValue.Elem().FieldByName(field).IsValid() {
-			// 		loggers.LoggerAPK.Infof("valid valid")
-			// 	}
-			// }
     }
     return sb.String()
 	}
@@ -2310,6 +2351,31 @@ func (apiReconciler *APIReconciler) getAPIHash(apiState *synchronizer.APIState) 
 	loggers.LoggerAPK.Infof("Prepared unique string: %s", joinedUniqueIds)
 	hash := sha256.Sum256([]byte(joinedUniqueIds))
 	hashedString := hex.EncodeToString(hash[:])
-	loggers.LoggerAPK.Infof("Prepared hash: %s", hashedString)
-	return hashedString
+	truncatedHash := hashedString[:62]
+	loggers.LoggerAPK.Infof("Prepared hash: %s, truncated hash: %s", hashedString, truncatedHash)
+	return truncatedHash
+}
+
+func findProdSandEndpoints(apiState *synchronizer.APIState) (string, string, string) {
+	prodEndpoint := ""
+	sandEndpoint := ""
+	endpointProtocol := ""
+	if apiState.ProdHTTPRoute != nil {
+		for _, backend := range apiState.ProdHTTPRoute.BackendMapping {
+			if (len(backend.Backend.Spec.Services) > 0) {
+				sandEndpoint = fmt.Sprintf("%s:%d", backend.Backend.Spec.Services[0].Host, backend.Backend.Spec.Services[0].Port) 
+				endpointProtocol = string(backend.Backend.Spec.Protocol)
+			}
+		}
+	}
+	if apiState.SandHTTPRoute != nil {
+		for _, backend := range apiState.SandHTTPRoute.BackendMapping {
+			if (len(backend.Backend.Spec.Services) > 0) {
+				prodEndpoint = fmt.Sprintf("%s:%d", backend.Backend.Spec.Services[0].Host, backend.Backend.Spec.Services[0].Port) 
+				endpointProtocol = string(backend.Backend.Spec.Protocol)
+			}
+		}
+	}
+	loggers.LoggerAPK.Infof("Returning endpoints: %s, %s", prodEndpoint, sandEndpoint)
+	return prodEndpoint, sandEndpoint, endpointProtocol
 }

@@ -87,6 +87,9 @@ type API struct {
 	APIProperties    map[string]string `json:"apiProperties,omitempty"`
 	Environment      string     `json:"environment,omitempty"`
 	RevisionID       string     `json:"revisionID"`
+	SandEndpoint     string     `json:"sandEndpoint"`
+	ProdEndpoint     string     `json:"prodEndpoint"`
+	EndpointProtocol string     `json:"endpointProtocol"`
 }
 
 // init reads the configuration and starts the worker to send data.
