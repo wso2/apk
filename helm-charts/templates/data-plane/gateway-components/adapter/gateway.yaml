@@ -5,7 +5,7 @@ metadata:
   name: {{ .Values.wso2.apk.dp.gateway.name | default "wso2-apk-default" }}
   namespace: {{ .Release.Namespace }}
   annotations:
-    cert-manager.io/issuer: selfsigned-issuer
+    cert-manager.io/issuer: {{ template "apk-helm.resource.prefix" . }}-selfsigned-issuer
 spec:
   {{- if .Values.wso2.apk.dp.gatewayClass }}
   gatewayClassName: {{ .Values.wso2.apk.dp.gatewayClass.name | default "wso2-apk-default" }}

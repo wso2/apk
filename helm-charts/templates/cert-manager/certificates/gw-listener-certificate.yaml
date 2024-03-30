@@ -31,7 +31,7 @@ spec:
     {{ if .Values.certmanager.listeners -}}
     name: {{  .Values.certmanager.listeners.issuerName | default "selfsigned-issuer" }}
     {{- else -}}
-    name: "selfsigned-issuer"
+    name: {{ template "apk-helm.resource.prefix" . }}-selfsigned-issuer
     {{- end }}
   secretName: {{ template "apk-helm.resource.prefix" . }}-gw-listener-cert
 {{- end -}}

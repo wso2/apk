@@ -35,6 +35,7 @@ gatewaySystem:
   enabled: false
   enableServiceAccountCreation: false
   enableClusterRoleCreation: false
+  applyGatewayWehbhookJobs: false
 
 certmanager:
   enabled: false

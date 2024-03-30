@@ -780,7 +780,7 @@ gatewaySystem:
   enableServiceAccountCreation: true
   enableClusterRoleCreation: true
   serviceAccountName: gateway-api-admission
-
+  applyGatewayWehbhookJobs: true
 
 certmanager:
   # -- Enable certificate manager to generate certificates

@@ -317,6 +317,7 @@ A Helm chart for APK components
 | gatewaySystem.enableServiceAccountCreation | bool | `true` |  |
 | gatewaySystem.enableClusterRoleCreation | bool | `true` |  |
 | gatewaySystem.serviceAccountName | string | `"gateway-api-admission"` |  |
+| gatewaySystem.applyGatewayWehbhookJobs | bool | `true` |  |
 | certmanager.enabled | bool | `true` | Enable certificate manager to generate certificates |
 | certmanager.enableClusterIssuer | bool | `true` | Enable cluster issuer to generate certificates |
 | certmanager.enableRootCa | bool | `true` | Enable root CA to generate certificates |
