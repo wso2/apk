@@ -36,6 +36,8 @@ import org.testng.Assert;
 import org.wso2.apk.integration.utils.Constants;
 import org.wso2.apk.integration.utils.Utils;
 import org.wso2.apk.integration.utils.clients.SimpleHTTPClient;
+import java.nio.file.Files;
+import java.nio.charset.StandardCharsets;
 
 import java.io.File;
 import java.io.IOException;
@@ -83,17 +85,28 @@ public class APIDeploymentSteps {
         definitionFile = new File(url.getPath());
     }
 
-    @When("make the import API Creation request")
-    public void make_import_api_creation_request() throws Exception {
-        logger.info("OAS URL: " + OASURL);
+    @When("make the import API Creation request using OAS {string}")
+    public void make_import_api_creation_request(String definitionType) throws Exception {
+        MultipartEntityBuilder builder = null;
+        if(definitionType.equals("URL")){
+                logger.info("OAS URL: " + OASURL);
+                builder = MultipartEntityBuilder.create()
+                        .setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
+                        .addTextBody("url", OASURL, ContentType.TEXT_PLAIN)
+                        .addPart("additionalProperties", new FileBody(payloadFile));
 
-        // Create a MultipartEntityBuilder to build the request entity
-        MultipartEntityBuilder builder = MultipartEntityBuilder.create()
-                .setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
-                .addTextBody("url", OASURL, ContentType.TEXT_PLAIN)
-                .addPart("additionalProperties", new FileBody(payloadFile));
+                logger.info("Payload File: "+ new FileBody(payloadFile));
+        }
+        if(definitionType.equals("File")){
+                logger.info("OAS File: " + definitionFile.getName());
+                builder = MultipartEntityBuilder.create()
+                        .setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
+                        .addPart("file", new FileBody(definitionFile))
+                        .addPart("additionalProperties", new FileBody(payloadFile));
 
-        logger.info("Payload File: "+ new FileBody(payloadFile));
+                logger.info("Payload File: "+ new FileBody(payloadFile));
+        }
+
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + sharedContext.getPublisherAccessToken());
@@ -194,26 +207,44 @@ public class APIDeploymentSteps {
         String keyManagerUUID = sharedContext.getKeyManagerUUID();
         logger.info("Key Manager UUID: " + keyManagerUUID);
         logger.info("Application UUID: " + applicationUUID);
-        String payload = "{\"keyType\":\"PRODUCTION\",\"grantTypesToBeSupported\":[\"password\",\"client_credentials\"]," +
+        String payloadForProdKeys = "{\"keyType\":\"PRODUCTION\",\"grantTypesToBeSupported\":[\"password\",\"client_credentials\"]," +
                 "\"callbackUrl\":\"\",\"additionalProperties\":{\"application_access_token_expiry_time\":\"N/A\"," +
                 "\"user_access_token_expiry_time\":\"N/A\",\"refresh_token_expiry_time\":\"N/A\"," +
                 "\"id_token_expiry_time\":\"N/A\",\"pkceMandatory\":\"false\",\"pkceSupportPlain\":\"false\"," +
                 "\"bypassClientCredentials\":\"false\"},\"keyManager\":\"" + keyManagerUUID +"\"," +
                 "\"validityTime\":3600,\"scopes\":[\"default\"]}";
 
+        
+        String payloadForSandboxKeys = "{\"keyType\":\"SANDBOX\",\"grantTypesToBeSupported\":[\"password\",\"client_credentials\"]," +
+                "\"callbackUrl\":\"\",\"additionalProperties\":{\"application_access_token_expiry_time\":\"N/A\"," +
+                "\"user_access_token_expiry_time\":\"N/A\",\"refresh_token_expiry_time\":\"N/A\"," +
+                "\"id_token_expiry_time\":\"N/A\",\"pkceMandatory\":\"false\",\"pkceSupportPlain\":\"false\"," +
+                "\"bypassClientCredentials\":\"false\"},\"keyManager\":\"" + keyManagerUUID +"\"," +
+                "\"validityTime\":3600,\"scopes\":[\"default\"]}";
+
+       
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + sharedContext.getDevportalAccessToken());
         headers.put(Constants.REQUEST_HEADERS.HOST, Constants.DEFAULT_API_HOST);
 
-        logger.info("Payload: " + payload);
-
         HttpResponse response = sharedContext.getHttpClient().doPost(Utils.getGenerateKeysURL(applicationUUID),
-                headers, payload, Constants.CONTENT_TYPES.APPLICATION_JSON);
+                headers, payloadForProdKeys, Constants.CONTENT_TYPES.APPLICATION_JSON);
 
         sharedContext.setResponse(response);
         sharedContext.setResponseBody(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()));
-        sharedContext.setConsumerSecret(Utils.extractKeys(sharedContext.getResponseBody(), "consumerSecret"));
-        sharedContext.setConsumerKey(Utils.extractKeys(sharedContext.getResponseBody(), "consumerKey"));
+        sharedContext.setConsumerSecret(Utils.extractKeys(sharedContext.getResponseBody(), "consumerSecret"), "production");
+        sharedContext.setConsumerKey(Utils.extractKeys(sharedContext.getResponseBody(), "consumerKey"), "production");
+        sharedContext.setKeyMappingID(Utils.extractKeys(sharedContext.getResponseBody(), "keyMappingId"), "production");
+        Thread.sleep(3000);
+
+        HttpResponse response2 = sharedContext.getHttpClient().doPost(Utils.getGenerateKeysURL(applicationUUID),
+                headers, payloadForSandboxKeys, Constants.CONTENT_TYPES.APPLICATION_JSON);
+
+        sharedContext.setResponse(response2);
+        sharedContext.setResponseBody(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()));
+        sharedContext.setConsumerSecret(Utils.extractKeys(sharedContext.getResponseBody(), "consumerSecret"), "sandbox");
+        sharedContext.setConsumerKey(Utils.extractKeys(sharedContext.getResponseBody(), "consumerKey"), "sandbox");
+        sharedContext.setKeyMappingID(Utils.extractKeys(sharedContext.getResponseBody(), "keyMappingId"), "sandbox");
         Thread.sleep(3000);
     }
 
@@ -237,10 +268,10 @@ public class APIDeploymentSteps {
         Thread.sleep(3000);
     }
 
-    @When("I get oauth keys for application")
-    public void get_oauth_keys_for_application() throws Exception {
+    @When("I get {string} oauth keys for application")
+    public void get_oauth_keys_for_application(String type) throws Exception {
         String applicationUUID = sharedContext.getApplicationUUID();
-
+        String keyType = (type.equals("production")) ? "production" : "sandbox";
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + sharedContext.getDevportalAccessToken());
         headers.put(Constants.REQUEST_HEADERS.HOST, Constants.DEFAULT_API_HOST);
@@ -250,18 +281,22 @@ public class APIDeploymentSteps {
 
         sharedContext.setResponse(response);
         sharedContext.setResponseBody(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()));
-        sharedContext.setOauthKeyUUID(Utils.extractOAuthMappingID(sharedContext.getResponseBody()));
+        sharedContext.setOauthKeyUUID(Utils.extractOAuthMappingID(sharedContext.getResponseBody(), sharedContext.getKeyMappingID(keyType)));
         Thread.sleep(3000);
     }
 
-    @When("make the Access Token Generation request")
-    public void make_access_token_generation_request() throws Exception {
+    @When("make the Access Token Generation request for {string}")
+    public void make_access_token_generation_request(String type) throws Exception {
         String applicationUUID = sharedContext.getApplicationUUID();
         String oauthKeyUUID = sharedContext.getOauthKeyUUID();
-        String consumerKey = sharedContext.getConsumerKey();
-        String consumerSecret = sharedContext.getConsumerSecret();
-        logger.info("Oauth Key UUID: " + oauthKeyUUID);
+        String keyType = (type.equals("production")) ? "production" : "sandbox";
+        logger.info("Generating keys for: " + keyType);
+        String consumerKey = sharedContext.getConsumerKey(keyType);
+        String consumerSecret = sharedContext.getConsumerSecret(keyType);
+        
         logger.info("Application UUID: " + applicationUUID);
+        logger.info("Oauth Key UUID: " + oauthKeyUUID);
+        
         String payload = "{\"consumerSecret\":\"" + consumerSecret + "\",\"validityPeriod\":3600,\"revokeToken\":null," +
                 "\"scopes\":[\"write:pets\",\"read:pets\",\"query:hero\"],\"additionalProperties\":{\"id_token_expiry_time\":3600," +
                 "\"application_access_token_expiry_time\":3600,\"user_access_token_expiry_time\":3600,\"bypassClientCredentials\":false," +
@@ -285,10 +320,13 @@ public class APIDeploymentSteps {
     public void make_access_token_generation_request_without_scopes() throws Exception {
         String applicationUUID = sharedContext.getApplicationUUID();
         String oauthKeyUUID = sharedContext.getOauthKeyUUID();
-        String consumerKey = sharedContext.getConsumerKey();
-        String consumerSecret = sharedContext.getConsumerSecret();
-        logger.info("Oauth Key UUID: " + oauthKeyUUID);
+        String keyType = "production"; //Use the same ternary logic above if both sandbox and production routes need to be tested
+        String consumerKey = sharedContext.getConsumerKey(keyType);
+        String consumerSecret = sharedContext.getConsumerSecret(keyType);
+        
         logger.info("Application UUID: " + applicationUUID);
+        logger.info("Oauth Key UUID: " + oauthKeyUUID);
+
         String payload = "{\"consumerSecret\":\"" + consumerSecret + "\",\"validityPeriod\":3600,\"revokeToken\":null," +
                 "\"scopes\":[],\"additionalProperties\":{\"id_token_expiry_time\":3600," +
                 "\"application_access_token_expiry_time\":3600,\"user_access_token_expiry_time\":3600,\"bypassClientCredentials\":false," +
@@ -355,8 +393,6 @@ public class APIDeploymentSteps {
         Thread.sleep(3000);
     }
 
-
-
     // @When("I undeploy the API whose ID is {string}")
     // public void i_undeploy_the_api_whose_id_is(String apiID) throws Exception {
 
@@ -398,7 +434,6 @@ public class APIDeploymentSteps {
     //     sharedContext.setResponseBody(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()));
     // }
 
-        //New steps
         @Given("a valid graphql definition file")
         public void iHaveValidGraphQLDefinition() throws Exception {
     
@@ -449,6 +484,21 @@ public class APIDeploymentSteps {
             Thread.sleep(3000);
         }
 
+        @Then("I update the GQL API settings")
+        public void make_update_gql_request() throws Exception {
+            String fileContent = new String(Files.readAllBytes(payloadFile.toPath()), StandardCharsets.UTF_8);
+            Map<String, String> headers = new HashMap<>();
+            headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + sharedContext.getPublisherAccessToken());
+            headers.put(Constants.REQUEST_HEADERS.HOST, Constants.DEFAULT_API_HOST);
+    
+            HttpResponse response = sharedContext.getHttpClient().doPut(Utils.getAPIUnDeployerURL(sharedContext.getApiUUID()), headers, fileContent ,Constants.CONTENT_TYPES.APPLICATION_JSON);
+    
+            sharedContext.setResponse(response);
+            sharedContext.setResponseBody(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()));
+            sharedContext.setApiUUID(Utils.extractID(sharedContext.getResponseBody()));
+            Thread.sleep(3000);
+        }
+
         @Then("I delete the application {string} from devportal")
         public void make_application_deletion_request(String applicationName) throws Exception {
             logger.info("Fetching the applications");
@@ -491,14 +541,39 @@ public class APIDeploymentSteps {
 
         @When("I undeploy the selected API")
         public void i_undeploy_the_api() throws Exception {
+            logger.info("API UUID to be deleted: " + sharedContext.getApiUUID());
             Map<String, String> headers = new HashMap<>();
             headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + sharedContext.getPublisherAccessToken());
             headers.put(Constants.REQUEST_HEADERS.HOST, Constants.DEFAULT_API_HOST);
-    
+
             HttpResponse response = sharedContext.getHttpClient().doDelete(Utils.getAPIUnDeployerURL(sharedContext.getApiUUID()), headers);
     
             sharedContext.setResponse(response);
             sharedContext.setResponseBody(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()));
+            Thread.sleep(3000);
+        }
+
+        @When("I create the new version {string} of the same API with default version set to {string}")
+        public void create_new_version_of_the_api(String newVersion, String isDefaultVersion) throws Exception {
+            String apiUUID = sharedContext.getApiUUID();
+
+            Map<String, String> headers = new HashMap<>();
+            headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + sharedContext.getPublisherAccessToken());
+            headers.put(Constants.REQUEST_HEADERS.HOST, Constants.DEFAULT_API_HOST);
+
+                    // Create query parameters
+            List<NameValuePair> queryParams = new ArrayList<>();
+            queryParams.add(new BasicNameValuePair("newVersion", newVersion));
+            queryParams.add(new BasicNameValuePair("defaultVersion", isDefaultVersion));
+            queryParams.add(new BasicNameValuePair("apiId", apiUUID));
+
+            URI uri = new URIBuilder(Utils.getAPINewVersionCreationURL()).addParameters(queryParams).build();
+    
+            HttpResponse response = sharedContext.getHttpClient().doPost(uri.toString(), headers,"",Constants.CONTENT_TYPES.APPLICATION_JSON);
+    
+            sharedContext.setResponse(response);
+            sharedContext.setResponseBody(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()));
+            sharedContext.setApiUUID(Utils.extractID(sharedContext.getResponseBody()));
             Thread.sleep(3000);
         }
 }

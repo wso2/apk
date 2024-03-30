@@ -1,0 +1,72 @@
+{
+    "name": "StarWarsAPI",
+    "context": "/test_cors",
+    "version": "2.0.0",
+    "provider": "admin",
+    "type": "GRAPHQL",
+    "audience": null,
+    "transport": [
+        "http",
+        "https"
+    ],
+    "tags": [],
+    "policies": [
+        "Unlimited"
+    ],
+    "apiThrottlingPolicy": null,
+    "authorizationHeader": "Authorization",
+    "apiKeyHeader": "ApiKey",
+    "securityScheme": [
+        "oauth_basic_auth_api_key_mandatory",
+        "oauth2"
+    ],
+    "corsConfiguration": {
+        "corsConfigurationEnabled": true,
+        "accessControlAllowOrigins": [
+            "abc.com"
+        ],
+        "accessControlAllowCredentials": true,
+        "accessControlAllowHeaders": [
+            "authorization",
+            "Access-Control-Allow-Origin"
+        ],
+        "accessControlAllowMethods": [
+            "GET",
+            "PUT",
+            "POST",
+            "DELETE"
+        ]
+    },
+    "endpointConfig": {
+        "endpoint_type": "http",
+        "sandbox_endpoints": {
+            "url": "http://backend:80/anything"
+        },
+        "production_endpoints": {
+            "url": "http://backend:80/anything"
+        }
+    },
+    "endpointImplementationType": "ENDPOINT",
+    "scopes": [],
+    "operations": [
+        {
+            "id": "",
+            "target": "anything",
+            "verb": "QUERY",
+            "authType": "Application & Application User",
+            "throttlingPolicy": "Unlimited",
+            "scopes": [],
+            "usedProductIds": [],
+            "amznResourceName": null,
+            "amznResourceTimeout": null,
+            "amznResourceContentEncode": null,
+            "payloadSchema": null,
+            "uriMapping": null,
+            "operationPolicies": {
+                "request": [],
+                "response": [],
+                "fault": []
+            }
+        }
+    ]
+}
