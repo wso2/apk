@@ -347,6 +347,13 @@ wso2:
               poolMaxConnIdleTime: "1h"
               poolHealthCheckPeriod: "1m"
               poolMaxConnLifetimeJitter: "1s"
+        logging:
+          # -- Optionally configure logging for common controller.
+          # LogLevels can be "DEBG", "FATL", "ERRO", "WARN", "INFO", "PANC"
+          level: "INFO"
+          # -- Log format can be "JSON", "TEXT"
+          logFormat: "TEXT"
+      
       type
       ratelimiter:
         # -- Enable the deployment of the Rate Limiter
