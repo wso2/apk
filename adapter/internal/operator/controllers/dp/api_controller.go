@@ -437,6 +437,12 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 		}
 	}
 
+	// Validate resource level extension refs resolved
+	extRefValErr := apiReconciler.validateHttpRouteExtRefs(apiState)
+	if extRefValErr != nil {
+		return nil, extRefValErr
+	}
+
 	loggers.LoggerAPKOperator.Debugf("Child references are retrieved successfully for API CR %s", apiRef.String())
   apiNamespacedName := utils.NamespacedName(apiState.APIDefinition).String()
 	loggers.LoggerAPK.Infof("label section of the api : %+v", apiState.APIDefinition.ObjectMeta.Labels)
@@ -454,7 +460,6 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 				controlplane.AddToEventQueue(apiCpData)
 			}
 		}
-
 		apiReconciler.ods.AddAPIState(apiRef, apiState)
 		apiReconciler.traverseAPIStateAndUpdateOwnerReferences(ctx, *apiState)
 		return &synchronizer.APIEvent{EventType: constants.Create, Events: []synchronizer.APIState{*apiState}, UpdatedEvents: []string{}}, nil
@@ -504,6 +509,7 @@ func (apiReconciler *APIReconciler) resolveHTTPRouteRefs(ctx context.Context, ht
 	}
 	httpRouteState.BackendMapping = apiReconciler.getResolvedBackendsMapping(ctx, httpRouteState, interceptorServiceMapping, api)
 	httpRouteState.Scopes, err = apiReconciler.getScopesForHTTPRoute(ctx, httpRouteState.HTTPRouteCombined, api)
+
 	return httpRouteState, err
 }
 
@@ -2262,6 +2268,53 @@ func (apiReconciler *APIReconciler) convertAPIStateToAPICp(ctx context.Context, 
 	apiCPEvent.CRNamespace = apiState.APIDefinition.ObjectMeta.Namespace
 	return apiCPEvent
 
+}
+
+func (apiReconciler *APIReconciler) validateHttpRouteExtRefs(apiState *synchronizer.APIState) error {
+	extRefs := []*gwapiv1b1.LocalObjectReference{}
+	if apiState.ProdHTTPRoute != nil {
+		for _, httpRoute := range apiState.ProdHTTPRoute.HTTPRoutePartitions {
+			for _, rule := range httpRoute.Spec.Rules {
+				for _, filter := range rule.Filters {
+					extRefs = append(extRefs, filter.ExtensionRef)
+				}
+			}
+		}
+	}
+	if apiState.SandHTTPRoute != nil {
+		for _, httpRoute := range apiState.SandHTTPRoute.HTTPRoutePartitions {
+			for _, rule := range httpRoute.Spec.Rules {
+				for _, filter := range rule.Filters {
+					extRefs = append(extRefs, filter.ExtensionRef)
+				}
+			}
+		}
+	}
+	for _, extRef := range extRefs {
+		if extRef != nil {
+			extKind := string(extRef.Kind)
+			key := types.NamespacedName{Namespace: string(apiState.APIDefinition.Namespace), Name: string(extRef.Name)}.String()
+			if (extKind == "APIPolicy") {
+				_, found := apiState.ResourceAPIPolicies[key]
+				if !found {
+					return fmt.Errorf("apipolicy not added to the ResourceAPIPolicies map yet. Key: %s", key)
+				}
+			}
+			if (extKind == "RateLimitPolicy") {
+				_, found := apiState.ResourceRateLimitPolicies[key]
+				if !found {
+					return fmt.Errorf("ratelimitPolicy not added to the ResourceRateLimitPolicies map yet. Key: %s", key)
+				}
+			}
+			if (extKind == "Authentication") {
+				_, found := apiState.ResourceAuthentications[key]
+				if !found {
+					return fmt.Errorf("authentication not added to the resourse Authentication map yet. Key: %s", key)
+				}
+			}
+		}
+	}
+	return nil
 }
 
 func (apiReconciler *APIReconciler) getAPIHash(apiState *synchronizer.APIState) string {
