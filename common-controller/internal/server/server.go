@@ -16,6 +16,8 @@ var applicationKeyMappingMap = make(map[string]ApplicationKeyMapping)
 
 // StartInternalServer starts the internal server
 func StartInternalServer() {
+
+	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
 
 	r.GET("/applications", func(c *gin.Context) {
@@ -46,7 +48,6 @@ func StartInternalServer() {
 		}
 		c.JSON(http.StatusOK, ApplicationKeyMappingList{List: applicationKeyMappingList})
 	})
-	gin.SetMode(gin.ReleaseMode)
 	conf := config.ReadConfigs()
 	certPath := conf.CommonController.Keystore.CertPath
 	keyPath := conf.CommonController.Keystore.KeyPath
