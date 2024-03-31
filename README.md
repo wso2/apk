@@ -163,7 +163,7 @@ Follow the instruction below to deploy an API using the `kubectl`.
 ### Pre-requisites
 1. Install Java JDK 11.
 2. Install Gradle(7.5.1).
-3. Install Ballerina Ballerina version: 2201.3.1 (Swan Lake Update 3).
+3. Install Ballerina Ballerina version: 2201.8.5 (Swan Lake Update 8).
 4. Install Go.
 5. Install Lua.
 6. Docker Runtime Up and Running.
