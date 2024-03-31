@@ -21,17 +21,18 @@ import (
 	"bytes"
 	"compress/gzip"
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"sync"
 	"reflect"
-	"strings"
-  "sort"
+	"sort"
 	"strconv"
-	"crypto/sha256"
-  "encoding/hex"
+	"strings"
+	"sync"
+
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/controlplane"
 	"github.com/wso2/apk/adapter/internal/discovery/xds"
@@ -59,6 +60,7 @@ import (
 	k8client "sigs.k8s.io/controller-runtime/pkg/client"
 
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
+	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -100,20 +102,18 @@ var (
 
 // APIReconciler reconciles a API object
 type APIReconciler struct {
-	client              k8client.Client
-	ods                 *synchronizer.OperatorDataStore
-	ch                  *chan *synchronizer.APIEvent
-	successChannel      *chan synchronizer.SuccessEvent
-	statusUpdater       *status.UpdateHandler
-	mgr                 manager.Manager
+	client                k8client.Client
+	ods                   *synchronizer.OperatorDataStore
+	ch                    *chan *synchronizer.APIEvent
+	successChannel        *chan synchronizer.SuccessEvent
+	statusUpdater         *status.UpdateHandler
+	mgr                   manager.Manager
 	apiPropagationEnabled bool
-	apiHashes             map[string]string
 }
 
 // NewAPIController creates a new API controller instance. API Controllers watches for dpv1alpha2.API and gwapiv1b1.HTTPRoute.
 func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.OperatorDataStore, statusUpdater *status.UpdateHandler,
 	ch *chan *synchronizer.APIEvent, successChannel *chan synchronizer.SuccessEvent) error {
-	apiHash := make(map[string]string)
 	apiReconciler := &APIReconciler{
 		client:         mgr.GetClient(),
 		ods:            operatorDataStore,
@@ -121,7 +121,6 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 		successChannel: successChannel,
 		statusUpdater:  statusUpdater,
 		mgr:            mgr,
-		apiHashes:        apiHash,
 	}
 	ctx := context.Background()
 	c, err := controller.New(constants.APIController, mgr, controller.Options{Reconciler: apiReconciler})
@@ -256,8 +255,6 @@ func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	var apiCR dpv1alpha2.API
 	if err := apiReconciler.client.Get(ctx, req.NamespacedName, &apiCR); err != nil {
 		apiState, found := apiReconciler.ods.GetCachedAPI(req.NamespacedName)
-		// remove the hash from the api hashes map if presents
-		delete(apiReconciler.apiHashes, req.NamespacedName.String())
 		if found && k8error.IsNotFound(err) {
 			if apiReconciler.apiPropagationEnabled {
 				// Convert api state to api cp data
@@ -438,14 +435,12 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 	}
 
 	// Validate resource level extension refs resolved
-	extRefValErr := apiReconciler.validateHttpRouteExtRefs(apiState)
+	extRefValErr := apiReconciler.validateHTTPRouteExtRefs(apiState)
 	if extRefValErr != nil {
 		return nil, extRefValErr
 	}
 
 	loggers.LoggerAPKOperator.Debugf("Child references are retrieved successfully for API CR %s", apiRef.String())
-  apiNamespacedName := utils.NamespacedName(apiState.APIDefinition).String()
-	loggers.LoggerAPK.Infof("label section of the api : %+v", apiState.APIDefinition.ObjectMeta.Labels)
 	storedHash, hashFound := apiState.APIDefinition.ObjectMeta.Labels["apiHash"]
 	if !api.Status.DeploymentStatus.Accepted {
 		if apiReconciler.apiPropagationEnabled && !apiState.APIDefinition.Spec.SystemAPI {
@@ -453,7 +448,6 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 			if !hashFound || storedHash != apiHash {
 				apiReconciler.patchAPIHash(ctx, apiHash, apiState.APIDefinition.ObjectMeta.Name, apiState.APIDefinition.ObjectMeta.Namespace)
 				loggers.LoggerAPKOperator.Infof("API hash changed sending the API to agent")
-				apiReconciler.apiHashes[apiNamespacedName] = apiHash
 				// Publish the api data to CP
 				apiCpData := apiReconciler.convertAPIStateToAPICp(ctx, *apiState)
 				apiCpData.Event = controlplane.EventTypeCreate
@@ -465,13 +459,11 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 		return &synchronizer.APIEvent{EventType: constants.Create, Events: []synchronizer.APIState{*apiState}, UpdatedEvents: []string{}}, nil
 	} else if cachedAPI, events, updated :=
 		apiReconciler.ods.UpdateAPIState(apiRef, apiState); updated {
-		if apiReconciler.apiPropagationEnabled  && !apiState.APIDefinition.Spec.SystemAPI{
+				if apiReconciler.apiPropagationEnabled && !apiState.APIDefinition.Spec.SystemAPI {
 			apiHash := apiReconciler.getAPIHash(apiState)
 			if !hashFound || storedHash != apiHash {
 				apiReconciler.patchAPIHash(ctx, apiHash, apiState.APIDefinition.ObjectMeta.Name, apiState.APIDefinition.ObjectMeta.Namespace)
-				loggers.LoggerAPK.Infof("Ok: %+v, value: %+v nam: %+v", hashFound, storedHash, apiNamespacedName)
 				loggers.LoggerAPKOperator.Infof("API hash changed sending the API to agent")
-				apiReconciler.apiHashes[apiNamespacedName] = apiHash
 				// Publish the api data to CP
 				apiCpData := apiReconciler.convertAPIStateToAPICp(ctx, *apiState)
 				apiCpData.Event = controlplane.EventTypeUpdate
@@ -2119,8 +2111,6 @@ func (apiReconciler *APIReconciler) handleLabels(ctx context.Context) {
 	}
 }
 
-
-
 func (apiReconciler *APIReconciler) patchAPIHash(ctx context.Context, hash string, name string, namespace string) {
 	apiCR := dpv1alpha2.API{
 		ObjectMeta: metav1.ObjectMeta{
@@ -2153,7 +2143,7 @@ func (apiReconciler *APIReconciler) patchAPIHash(ctx context.Context, hash strin
 		} else {
 			loggers.LoggerAPKOperator.Errorf("Error while loading api: %s/%s, Error: %v", name, namespace, err)
 		}
-	}	
+	}
 }
 
 func (apiReconciler *APIReconciler) handleOwnerReference(ctx context.Context, obj k8client.Object, apiRequests *[]reconcile.Request) {
@@ -2245,7 +2235,10 @@ func (apiReconciler *APIReconciler) convertAPIStateToAPICp(ctx context.Context, 
 	for _, val := range spec.APIProperties {
 		properties[val.Name] = val.Value
 	}
-	prodEndpoint, sandEndpoint, endpointProtocol := findProdSandEndpoints(&apiState);
+	prodEndpoint, sandEndpoint, endpointProtocol := findProdSandEndpoints(&apiState)
+	corsPolicy := pickOneCorsForCP(&apiState)
+	vhost := getProdVhost(&apiState)
+	securityScheme, authHeader := prepareSecuritySchemeForCP(&apiState)
 	api := controlplane.API{
 		APIName:          spec.APIName,
 		APIVersion:       spec.APIVersion,
@@ -2262,6 +2255,10 @@ func (apiReconciler *APIReconciler) convertAPIStateToAPICp(ctx context.Context, 
 		ProdEndpoint:     prodEndpoint,
 		SandEndpoint:     sandEndpoint,
 		EndpointProtocol: endpointProtocol,
+		CORSPolicy:       corsPolicy,
+		Vhost:            vhost,
+		SecurityScheme:   securityScheme,
+		AuthHeader:       authHeader,
 	}
 	apiCPEvent.API = api
 	apiCPEvent.CRName = apiState.APIDefinition.ObjectMeta.Name
@@ -2270,7 +2267,7 @@ func (apiReconciler *APIReconciler) convertAPIStateToAPICp(ctx context.Context, 
 
 }
 
-func (apiReconciler *APIReconciler) validateHttpRouteExtRefs(apiState *synchronizer.APIState) error {
+func (apiReconciler *APIReconciler) validateHTTPRouteExtRefs(apiState *synchronizer.APIState) error {
 	extRefs := []*gwapiv1b1.LocalObjectReference{}
 	if apiState.ProdHTTPRoute != nil {
 		for _, httpRoute := range apiState.ProdHTTPRoute.HTTPRoutePartitions {
@@ -2294,19 +2291,19 @@ func (apiReconciler *APIReconciler) validateHttpRouteExtRefs(apiState *synchroni
 		if extRef != nil {
 			extKind := string(extRef.Kind)
 			key := types.NamespacedName{Namespace: string(apiState.APIDefinition.Namespace), Name: string(extRef.Name)}.String()
-			if (extKind == "APIPolicy") {
+			if extKind == "APIPolicy" {
 				_, found := apiState.ResourceAPIPolicies[key]
 				if !found {
 					return fmt.Errorf("apipolicy not added to the ResourceAPIPolicies map yet. Key: %s", key)
 				}
 			}
-			if (extKind == "RateLimitPolicy") {
+			if extKind == "RateLimitPolicy" {
 				_, found := apiState.ResourceRateLimitPolicies[key]
 				if !found {
 					return fmt.Errorf("ratelimitPolicy not added to the ResourceRateLimitPolicies map yet. Key: %s", key)
 				}
 			}
-			if (extKind == "Authentication") {
+			if extKind == "Authentication" {
 				_, found := apiState.ResourceAuthentications[key]
 				if !found {
 					return fmt.Errorf("authentication not added to the resourse Authentication map yet. Key: %s", key)
@@ -2318,93 +2315,95 @@ func (apiReconciler *APIReconciler) validateHttpRouteExtRefs(apiState *synchroni
 }
 
 func (apiReconciler *APIReconciler) getAPIHash(apiState *synchronizer.APIState) string {
-	
-	getUniqueId := func(obj interface{}, fields ...string) string {
-		loggers.LoggerAPK.Infof("Type of obj: %T", obj)
+	getUniqueID := func(obj interface{}, fields ...string) string {
+		defer func() {
+			if r := recover(); r != nil {
+				loggers.LoggerAPK.Infof("Error occured while extracting values using reflection. Error: %+v", r)
+			}
+		}()
 		var sb strings.Builder
-    objValue := reflect.ValueOf(obj)
+		objValue := reflect.ValueOf(obj)
 		if objValue.Kind() == reflect.Ptr {
 			objValue = objValue.Elem()
 		}
-    for _, field := range fields {
+		for _, field := range fields {
 			fieldNames := strings.Split(field, ".")
 			name1 := fieldNames[0]
 			name2 := fieldNames[1]
 			if objValue.IsValid() && objValue.FieldByName(name1).IsValid() {
-				if (objValue.FieldByName(name1).FieldByName(name2).IsValid()) {
+				if objValue.FieldByName(name1).FieldByName(name2).IsValid() {
 					v := objValue.FieldByName(name1).FieldByName(name2)
 					switch v.Kind() {
 					case reflect.String:
-							sb.WriteString(v.String())
+						sb.WriteString(v.String())
 					case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-							sb.WriteString(strconv.FormatInt(v.Int(), 10))
+						sb.WriteString(strconv.FormatInt(v.Int(), 10))
 					}
-				} 
-			} 
-    }
-    return sb.String()
+				}
+			}
+		}
+		return sb.String()
 	}
 
-	uniqueIds := make([]string, 0)
-	uniqueIds = append(uniqueIds, getUniqueId(apiState.APIDefinition, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
+	uniqueIDs := make([]string, 0)
+	uniqueIDs = append(uniqueIDs, getUniqueID(apiState.APIDefinition, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
 	for _, auth := range apiState.Authentications {
-		uniqueIds = append(uniqueIds, getUniqueId(auth, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
+		uniqueIDs = append(uniqueIDs, getUniqueID(auth, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
 	}
 	for _, arl := range apiState.RateLimitPolicies {
-		uniqueIds = append(uniqueIds, getUniqueId(arl, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
+		uniqueIDs = append(uniqueIDs, getUniqueID(arl, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
 	}
 	for _, ra := range apiState.ResourceAuthentications {
-		uniqueIds = append(uniqueIds, getUniqueId(ra, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
+		uniqueIDs = append(uniqueIDs, getUniqueID(ra, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
 	}
 	for _, rrl := range apiState.ResourceRateLimitPolicies {
-		uniqueIds = append(uniqueIds, getUniqueId(rrl, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
+		uniqueIDs = append(uniqueIDs, getUniqueID(rrl, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
 	}
 	for _, ral := range apiState.ResourceAPIPolicies {
-		uniqueIds = append(uniqueIds, getUniqueId(ral, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
+		uniqueIDs = append(uniqueIDs, getUniqueID(ral, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
 	}
 	for _, ap := range apiState.APIPolicies {
-		uniqueIds = append(uniqueIds, getUniqueId(ap, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
+		uniqueIDs = append(uniqueIDs, getUniqueID(ap, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
 	}
 	for _, ism := range apiState.InterceptorServiceMapping {
-		uniqueIds = append(uniqueIds, getUniqueId(ism, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
+		uniqueIDs = append(uniqueIDs, getUniqueID(ism, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
 	}
 	for _, bjm := range apiState.BackendJWTMapping {
-		uniqueIds = append(uniqueIds, getUniqueId(bjm, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
+		uniqueIDs = append(uniqueIDs, getUniqueID(bjm, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
 	}
-	if apiState.ProdHTTPRoute!= nil {
+	if apiState.ProdHTTPRoute != nil {
 		for _, phr := range apiState.ProdHTTPRoute.HTTPRoutePartitions {
-			uniqueIds = append(uniqueIds, getUniqueId(phr, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
+			uniqueIDs = append(uniqueIDs, getUniqueID(phr, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
 		}
 	}
-	if apiState.SandHTTPRoute!= nil {
+	if apiState.SandHTTPRoute != nil {
 		for _, shr := range apiState.SandHTTPRoute.HTTPRoutePartitions {
-			uniqueIds = append(uniqueIds, getUniqueId(shr, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
+			uniqueIDs = append(uniqueIDs, getUniqueID(shr, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
 		}
 	}
-	if apiState.ProdGQLRoute!= nil {
+	if apiState.ProdGQLRoute != nil {
 		for _, pgqr := range apiState.ProdGQLRoute.GQLRoutePartitions {
-			uniqueIds = append(uniqueIds, getUniqueId(pgqr, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
+			uniqueIDs = append(uniqueIDs, getUniqueID(pgqr, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
 		}
 	}
-	if apiState.SandGQLRoute!= nil {
+	if apiState.SandGQLRoute != nil {
 		for _, sgqr := range apiState.SandGQLRoute.GQLRoutePartitions {
-			uniqueIds = append(uniqueIds, getUniqueId(sgqr, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
+			uniqueIDs = append(uniqueIDs, getUniqueID(sgqr, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
 		}
 	}
 
-
-	sort.Strings(uniqueIds)
-	joinedUniqueIds := strings.Join(uniqueIds, "")
-	mutualSSLUniqueId := ""
-	if (apiState.MutualSSL != nil) {
-		mutualSSLUniqueId += strconv.FormatBool(apiState.MutualSSL.Disabled) + apiState.MutualSSL.Required + strings.Join(apiState.MutualSSL.ClientCertificates, "")
+	sort.Strings(uniqueIDs)
+	joinedUniqueIDs := strings.Join(uniqueIDs, "")
+	mutualSSLUniqueID := ""
+	if apiState.MutualSSL != nil {
+		mutualSSLUniqueID += strconv.FormatBool(apiState.MutualSSL.Disabled) + apiState.MutualSSL.Required + strings.Join(apiState.MutualSSL.ClientCertificates, "")
 	}
-	joinedUniqueIds  = joinedUniqueIds + strconv.FormatBool(apiState.SubscriptionValidation) + mutualSSLUniqueId
-	loggers.LoggerAPK.Infof("Prepared unique string: %s", joinedUniqueIds)
-	hash := sha256.Sum256([]byte(joinedUniqueIds))
+	joinedUniqueIDs = joinedUniqueIDs + strconv.FormatBool(apiState.SubscriptionValidation) + mutualSSLUniqueID
+	hash := sha256.Sum256([]byte(joinedUniqueIDs))
 	hashedString := hex.EncodeToString(hash[:])
 	truncatedHash := hashedString[:62]
-	loggers.LoggerAPK.Infof("Prepared hash: %s, truncated hash: %s", hashedString, truncatedHash)
+	loggers.LoggerAPK.Debugf("Prepared unique string for api %s/%s: %s, Prepared hash: %s, Truncatd hash to store: %s", apiState.APIDefinition.ObjectMeta.Name,
+		apiState.APIDefinition.ObjectMeta.Namespace, joinedUniqueIDs, hashedString, truncatedHash)
 	return truncatedHash
 }
 
@@ -2414,20 +2413,112 @@ func findProdSandEndpoints(apiState *synchronizer.APIState) (string, string, str
 	endpointProtocol := ""
 	if apiState.ProdHTTPRoute != nil {
 		for _, backend := range apiState.ProdHTTPRoute.BackendMapping {
-			if (len(backend.Backend.Spec.Services) > 0) {
-				sandEndpoint = fmt.Sprintf("%s:%d", backend.Backend.Spec.Services[0].Host, backend.Backend.Spec.Services[0].Port) 
+			if len(backend.Backend.Spec.Services) > 0 {
+				sandEndpoint = fmt.Sprintf("%s:%d", backend.Backend.Spec.Services[0].Host, backend.Backend.Spec.Services[0].Port)
 				endpointProtocol = string(backend.Backend.Spec.Protocol)
 			}
 		}
 	}
 	if apiState.SandHTTPRoute != nil {
 		for _, backend := range apiState.SandHTTPRoute.BackendMapping {
-			if (len(backend.Backend.Spec.Services) > 0) {
-				prodEndpoint = fmt.Sprintf("%s:%d", backend.Backend.Spec.Services[0].Host, backend.Backend.Spec.Services[0].Port) 
+			if len(backend.Backend.Spec.Services) > 0 {
+				prodEndpoint = fmt.Sprintf("%s:%d", backend.Backend.Spec.Services[0].Host, backend.Backend.Spec.Services[0].Port)
 				endpointProtocol = string(backend.Backend.Spec.Protocol)
 			}
 		}
 	}
-	loggers.LoggerAPK.Infof("Returning endpoints: %s, %s", prodEndpoint, sandEndpoint)
 	return prodEndpoint, sandEndpoint, endpointProtocol
+}
+
+func pickOneCorsForCP(apiState *synchronizer.APIState) *controlplane.CORSPolicy {
+	apiPolicies := []v1alpha2.APIPolicy{}
+	for _, apiPolicy := range apiState.APIPolicies {
+		apiPolicies = append(apiPolicies, apiPolicy)
+	}
+	for _, apiPolicy := range apiState.ResourceAPIPolicies {
+		apiPolicies = append(apiPolicies, apiPolicy)
+	}
+	for _, apiPolicy := range apiPolicies {
+		corsPolicy := v1alpha2.CORSPolicy{}
+		found := false
+		if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.CORSPolicy != nil {
+			corsPolicy = *apiPolicy.Spec.Override.CORSPolicy
+			found = true
+		} else if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.CORSPolicy != nil {
+			corsPolicy = *apiPolicy.Spec.Default.CORSPolicy
+			found = true
+		}
+		if found {
+			modifiedCors := controlplane.CORSPolicy{}
+			modifiedCors.AccessControlAllowCredentials = corsPolicy.AccessControlAllowCredentials
+			modifiedCors.AccessControlAllowHeaders = corsPolicy.AccessControlAllowHeaders
+			modifiedCors.AccessControlAllowOrigins = corsPolicy.AccessControlAllowOrigins
+			modifiedCors.AccessControlExposeHeaders = corsPolicy.AccessControlExposeHeaders
+			modifiedCors.AccessControlMaxAge = corsPolicy.AccessControlMaxAge
+			modifiedCors.AccessControlAllowMethods = corsPolicy.AccessControlAllowMethods
+			return &modifiedCors
+		}
+	}
+	return nil
+}
+
+func getProdVhost(apiState *synchronizer.APIState) string {
+	if apiState.ProdHTTPRoute != nil {
+		for _, httpRoute := range apiState.ProdHTTPRoute.HTTPRoutePartitions {
+			if len(httpRoute.Spec.Hostnames) > 0 {
+				return string(httpRoute.Spec.Hostnames[0])
+			}
+		}
+	}
+	return "default.gw.wso2.com"
+}
+
+func prepareSecuritySchemeForCP(apiState *synchronizer.APIState) ([]string, string) {
+	var pickedAuth *v1alpha2.Authentication
+	authHeader := "Authorization"
+	for _, auth := range apiState.Authentications {
+		pickedAuth = &auth
+		break
+	}
+	if pickedAuth != nil {
+		var authSpec *v1alpha2.AuthSpec
+		if pickedAuth.Spec.Override != nil {
+			authSpec = pickedAuth.Spec.Override
+		} else {
+			authSpec = pickedAuth.Spec.Default
+		}
+		if authSpec != nil {
+			if authSpec.AuthTypes != nil {
+				authSchemes := []string{}
+				isAuthMandatory := false
+				isMTLSMandatory := false
+				if authSpec.AuthTypes.Oauth2.Required == "mandatory" {
+					isAuthMandatory = true
+				}
+				if !authSpec.AuthTypes.Oauth2.Disabled {
+					authSchemes = append(authSchemes, "oauth2")
+					if authSpec.AuthTypes.Oauth2.Header != "" {
+						authHeader = authSpec.AuthTypes.Oauth2.Header
+					}
+				}
+				if authSpec.AuthTypes.MutualSSL.Required == "mandatory" {
+					isMTLSMandatory = true
+				}
+				if !authSpec.AuthTypes.MutualSSL.Disabled {
+					authSchemes = append(authSchemes, "mutualssl")
+				}
+				if len(authSpec.AuthTypes.APIKey) > 0 {
+					authSchemes = append(authSchemes, "api_key")
+				}
+				if isAuthMandatory {
+					authSchemes = append(authSchemes, "oauth_basic_auth_api_key_mandatory")
+				}
+				if isMTLSMandatory {
+					authSchemes = append(authSchemes, "mutualssl_mandatory")
+				}
+				return authSchemes, authHeader
+			}
+		}
+	}
+	return []string{"oauth2", "oauth_basic_auth_api_key_mandatory"}, authHeader
 }

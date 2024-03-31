@@ -75,21 +75,35 @@ type APICPEvent struct {
 
 // API holds the data that needs to be sent to agent
 type API struct {
-	APIUUID          string     `json:"apiUUID"`
-	APIName          string     `json:"apiName"`
-	APIVersion       string     `json:"apiVersion"`
-	IsDefaultVersion bool       `json:"isDefaultVersion"`
-	Definition       string     `json:"definition"`
-	APIType          string     `json:"apiType"`
-	BasePath         string     `json:"basePath"`
-	Organization     string     `json:"organization"`
-	SystemAPI        bool       `json:"systemAPI"`
+	APIUUID          string            `json:"apiUUID"`
+	APIName          string            `json:"apiName"`
+	APIVersion       string            `json:"apiVersion"`
+	IsDefaultVersion bool              `json:"isDefaultVersion"`
+	Definition       string            `json:"definition"`
+	APIType          string            `json:"apiType"`
+	BasePath         string            `json:"basePath"`
+	Organization     string            `json:"organization"`
+	SystemAPI        bool              `json:"systemAPI"`
 	APIProperties    map[string]string `json:"apiProperties,omitempty"`
-	Environment      string     `json:"environment,omitempty"`
-	RevisionID       string     `json:"revisionID"`
-	SandEndpoint     string     `json:"sandEndpoint"`
-	ProdEndpoint     string     `json:"prodEndpoint"`
-	EndpointProtocol string     `json:"endpointProtocol"`
+	Environment      string            `json:"environment,omitempty"`
+	RevisionID       string            `json:"revisionID"`
+	SandEndpoint     string            `json:"sandEndpoint"`
+	ProdEndpoint     string            `json:"prodEndpoint"`
+	EndpointProtocol string            `json:"endpointProtocol"`
+	CORSPolicy       *CORSPolicy       `json:"cORSPolicy,omitempty"`
+	Vhost            string            `json:"vhost"`
+	SecurityScheme   []string          `json:"securityScheme"`
+	AuthHeader       string            `json:"authHeader"`
+}
+
+// CORSPolicy hold cors configs
+type CORSPolicy struct {
+	AccessControlAllowCredentials bool     `json:"accessControlAllowCredentials,omitempty"`
+	AccessControlAllowHeaders     []string `json:"accessControlAllowHeaders,omitempty"`
+	AccessControlAllowOrigins     []string `json:"accessControlAllowOrigins,omitempty"`
+	AccessControlExposeHeaders    []string `json:"accessControlExposeHeaders,omitempty"`
+	AccessControlMaxAge           *int     `json:"accessControlMaxAge,omitempty"`
+	AccessControlAllowMethods     []string `json:"accessControlAllowMethods,omitempty"`
 }
 
 // init reads the configuration and starts the worker to send data.
@@ -152,7 +166,7 @@ func sendData() {
 				continue
 			}
 			defer resp.Body.Close()
-			if resp.StatusCode != http.StatusOK {
+			if resp.StatusCode == http.StatusServiceUnavailable {
 				body, _ := ioutil.ReadAll(resp.Body)
 				loggers.LoggerAPK.Errorf("Error: Unexpected status code: %d, received message: %s, retrying after %d seconds", resp.StatusCode, string(body), retryInterval)
 				// Sleep for some time before retrying
@@ -171,15 +185,18 @@ func sendData() {
 			}
 			// Assuming the response contains an ID field, you can extract it like this:
 			id, ok := responseMap["id"].(string)
-			if !ok {
-				loggers.LoggerAPK.Errorf("Id field not present in response body. encoded body: %+v", responseMap)
-				break
+			revisionID, revisionOk := responseMap["revisionID"].(string)
+			if !ok || !revisionOk {
+				loggers.LoggerAPK.Errorf("Id or/both revision Id field not present in response body. encoded body: %+v", responseMap)
+				id = ""
+				revisionID = ""
+				// break
 			}
 			loggers.LoggerAPK.Infof("Adding label update to API %s/%s, Lebels: apiUUID: %s", event.CRNamespace, event.CRName, id)
 			labelsQueue <- APICRLabelsUpdate{
 				Namespace: event.CRNamespace,
 				Name:      event.CRName,
-				Labels:    map[string]string{"apiUUID": id},
+				Labels:    map[string]string{"apiUUID": id, "revisionID": revisionID},
 			}
 			break
 		}
@@ -188,7 +205,7 @@ func sendData() {
 
 // AddToEventQueue adds the api event to queue
 func AddToEventQueue(data APICPEvent) {
-	loggers.LoggerAPK.Infof("Event added to queue : %+v", data)
+	loggers.LoggerAPK.Debugf("Event added to CP Event queue : %+v", data)
 	eventQueue <- data
 }
 
