@@ -56,6 +56,11 @@ spec:
               protocol: "TCP"
             - containerPort: 18007
               protocol: "TCP"
+            {{ end }}            
+{{ include "apk-helm.deployment.env" .Values.idp.idpds.deployment.env | indent 10 }}
+            {{ if and .Values.wso2.apk.metrics .Values.wso2.apk.metrics.enabled }}
+            - name: METRICS_ENABLED
+              value: "true"
             {{ end }}
           readinessProbe:
             httpGet:
@@ -82,9 +87,11 @@ spec:
             - mountPath: /home/wso2apk/idp/security/wso2carbon.pem
               name: idp-signing-keystore-volume
               subPath: wso2carbon.pem
+            {{- if and .Values.wso2.apk.metrics .Values.wso2.apk.metrics.enabled }}
             - name: prometheus-jmx-config-volume	
               mountPath: /tmp/metrics/prometheus-jmx-config-idpds.yml	
               subPath: prometheus-jmx-config-idpds.yml
+            {{- end }}
             - name: idp-ds-tls-volume
               mountPath: /home/wso2apk/idp/security/idp.key
             {{- if and .Values.idp.idpds.configs .Values.idp.idpds.configs.tls }}
@@ -120,9 +127,11 @@ spec:
         - name: config-toml-volume
           configMap:
             name: {{ template "apk-helm.resource.prefix" . }}-idp-ds-configmap
+        {{- if and .Values.wso2.apk.metrics .Values.wso2.apk.metrics.enabled }}
         - name: prometheus-jmx-config-volume	
           configMap: 	
             name: prometheus-jmx-config-idpds
+        {{- end }}
         - name: idp-signing-keystore-volume
           secret: 
             secretName: {{ template "apk-helm.resource.prefix" . }}-idp-signing-keystore-secret

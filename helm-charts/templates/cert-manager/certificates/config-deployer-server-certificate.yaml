@@ -37,7 +37,7 @@ spec:
     {{ if .Values.certmanager.servers -}}
     name: {{  .Values.certmanager.servers.issuerName | default "selfsigned-issuer" }}
     {{- else -}}
-    name: "selfsigned-issuer"
+    name: {{ template "apk-helm.resource.prefix" . }}-selfsigned-issuer
     {{- end }}
   secretName: {{ template "apk-helm.resource.prefix" . }}-config-ds-server-cert
 {{- end -}}

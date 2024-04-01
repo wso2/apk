@@ -1,4 +1,3 @@
-{{- if or .Values.wso2.apk.dp.enabled .Values.wso2.apk.cp.enabled }}
 # Copyright (c) 2024, WSO2 LLC. (https://www.wso2.com) All Rights Reserved.
 #
 # WSO2 LLC. licenses this file to you under the Apache License,
@@ -15,14 +14,36 @@
 # specific language governing permissions and limitations
 # under the License.
 
-apiVersion: gateway.networking.k8s.io/v1
-kind: GatewayClass
-metadata:
-  {{- if .Values.wso2.apk.dp.gatewayClass }}
-  name: {{ .Values.wso2.apk.dp.gatewayClass.name | default "wso2-apk-default" }}
-  {{- else }}
-  name: "wso2-apk-default"
-  {{- end }}
-spec:
-  controllerName: "wso2.com/apk-gateway-default"
-{{- end -}}
+wso2:
+  apk:
+    cp:
+      enabled: false
+    webhooks:
+      validatingwebhookconfigurations: false
+      mutatingwebhookconfigurations: false
+    auth:
+      enabled: false
+      enableServiceAccountCreation: false
+      enableClusterRoleCreation: false
+    dp:
+      enabled: false        
+      
+idp:
+  enabled: false
+
+gatewaySystem:
+  enabled: false
+  enableServiceAccountCreation: false
+  enableClusterRoleCreation: false
+  applyGatewayWehbhookJobs: false
+
+certmanager:
+  enabled: false
+  enableClusterIssuer: false
+  enableRootCa: false
+
+postgresql:
+  enabled: false
+
+redis:
+  enabled: false

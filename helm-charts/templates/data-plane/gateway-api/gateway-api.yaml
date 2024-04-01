@@ -192,6 +192,7 @@ subjects:
     name: gateway-api-admission
     namespace: {{ .Release.Namespace }}
 ---
+{{ if and .Values.gatewaySystem .Values.gatewaySystem.applyGatewayWehbhookJobs}}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -242,7 +243,9 @@ spec:
         runAsNonRoot: true
         seccompProfile:
           type: "RuntimeDefault"
+{{ end }}
 ---
+{{ if and .Values.gatewaySystem .Values.gatewaySystem.applyGatewayWehbhookJobs}}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -295,4 +298,5 @@ spec:
         runAsNonRoot: true
         runAsUser: 2000
         runAsGroup: 2000
+{{ end }}
 {{- end -}}

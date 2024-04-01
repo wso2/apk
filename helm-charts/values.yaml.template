@@ -353,8 +353,6 @@ wso2:
           level: "INFO"
           # -- Log format can be "JSON", "TEXT"
           logFormat: "TEXT"
-      
-      type
       ratelimiter:
         # -- Enable the deployment of the Rate Limiter
         enabled: true
@@ -782,7 +780,7 @@ gatewaySystem:
   enableServiceAccountCreation: true
   enableClusterRoleCreation: true
   serviceAccountName: gateway-api-admission
-
+  applyGatewayWehbhookJobs: true
 
 certmanager:
   # -- Enable certificate manager to generate certificates
@@ -889,3 +887,6 @@ redis:
   auth:
     # -- Enable password authentication	
     enabled: false
+
+# -- Skip generate of CRD templates
+skipCrds: false

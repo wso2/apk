@@ -17,7 +17,7 @@
 apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
 metadata:
-  name: selfsigned-issuer
+  name: {{ template "apk-helm.resource.prefix" . }}-selfsigned-issuer
 spec:
   ca:
     secretName: {{.Values.certmanager.rootCaSecretName}}

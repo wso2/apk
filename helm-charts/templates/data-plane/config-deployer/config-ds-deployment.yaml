@@ -48,6 +48,11 @@ spec:
             - containerPort: 18007
               protocol: "TCP"
             {{ end }}
+{{ include "apk-helm.deployment.env" .Values.wso2.apk.dp.configdeployer.deployment.env | indent 10 }}
+            {{ if and .Values.wso2.apk.metrics .Values.wso2.apk.metrics.enabled }}
+            - name: METRICS_ENABLED
+              value: "true"
+            {{ end }}
           readinessProbe:
             httpGet:
               path: /health
@@ -67,9 +72,11 @@ spec:
             - mountPath: /home/wso2apk/config-deployer/conf/Config.toml
               name: config-toml-volume
               subPath: Config.toml
+            {{- if and .Values.wso2.apk.metrics .Values.wso2.apk.metrics.enabled }}
             - name: prometheus-jmx-config-volume	
               mountPath: /tmp/metrics/prometheus-jmx-config-configds.yml	
               subPath: prometheus-jmx-config-configds.yml
+            {{- end }}
             - name: config-ds-tls-volume
               mountPath: /home/wso2apk/config-deployer/security/config.key
             {{- if and .Values.wso2.apk.dp.configdeployer.deployment.configs .Values.wso2.apk.dp.configdeployer.deployment.configs.tls }}
@@ -114,9 +121,11 @@ spec:
         - name: config-toml-volume
           configMap:
             name: {{ template "apk-helm.resource.prefix" . }}-config-ds-configmap
+        {{- if and .Values.wso2.apk.metrics .Values.wso2.apk.metrics.enabled }}
         - name: prometheus-jmx-config-volume
           configMap:
             name: prometheus-jmx-config-configds
+        {{- end }}
         - name: config-ds-tls-volume
           secret:
        {{ if and .Values.wso2.apk.dp.configdeployer.deployment.configs .Values.wso2.apk.dp.configdeployer.deployment.configs.tls }}

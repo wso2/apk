@@ -60,6 +60,7 @@ RUN set -eux; \
 
 ENV JAVA_HOME=/opt/java/openjdk \
     PATH="/opt/java/openjdk/bin:$PATH"
+ENV METRICS_ENABLED=false
 
 ARG USER=wso2apk
 ARG USER_ID=10001

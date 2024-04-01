@@ -18,7 +18,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: postgres-initdb-scripts-configmap
+  name: {{ .Values.postgresql.primary.initdb.scriptsConfigMap }}
   namespace: {{ .Release.Namespace }}
 data:
   setup1.sql: |

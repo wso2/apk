@@ -48,6 +48,7 @@ import org.wso2.apk.enforcer.security.jwt.validator.JWTConstants;
 import org.wso2.apk.enforcer.security.jwt.validator.JWTValidator;
 import org.wso2.apk.enforcer.security.jwt.validator.RevokedJWTDataHolder;
 import org.wso2.apk.enforcer.subscription.SubscriptionDataHolder;
+import org.wso2.apk.enforcer.subscription.SubscriptionDataStore;
 import org.wso2.apk.enforcer.server.RevokedTokenRedisClient;
 import org.wso2.apk.enforcer.tracing.TracingConstants;
 import org.wso2.apk.enforcer.tracing.TracingSpan;
@@ -472,8 +473,21 @@ public class Oauth2Authenticator implements Authenticator {
         try {
             // Get issuer
             String issuer = jwtClaimsSet.getIssuer();
-            JWTValidator jwtValidator = SubscriptionDataHolder.getInstance().getSubscriptionDataStore(organization)
-                    .getJWTValidatorByIssuer(issuer, environment);
+            SubscriptionDataStore subscriptionDataStore = SubscriptionDataHolder.getInstance()
+                    .getSubscriptionDataStore(organization);
+            if (subscriptionDataStore == null) {
+                throw new APISecurityException(APIConstants.StatusCodes.UNAUTHENTICATED.getCode(),
+                        APISecurityConstants.API_AUTH_INVALID_CREDENTIALS,
+                        APISecurityConstants.API_AUTH_INVALID_CREDENTIALS_MESSAGE);
+            }
+            JWTValidator jwtValidator = subscriptionDataStore.getJWTValidatorByIssuer(issuer, environment);
+            // If no validator found for the issuer, we are not caching the token.
+            if (jwtValidator == null) {
+                throw new APISecurityException(APIConstants.StatusCodes.UNAUTHENTICATED.getCode(),
+                        APISecurityConstants.API_AUTH_INVALID_CREDENTIALS,
+                        APISecurityConstants.API_AUTH_INVALID_CREDENTIALS_MESSAGE);
+            }
+
             // If no validator found for the issuer, we are not caching the token.
             if (jwtValidator == null) {
                 throw new APISecurityException(APIConstants.StatusCodes.UNAUTHENTICATED.getCode(),
