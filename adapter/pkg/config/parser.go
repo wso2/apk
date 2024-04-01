@@ -22,7 +22,6 @@ package config
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -107,7 +106,7 @@ func ReadLogConfigs() *LogConfig {
 		adapterLogConfig = getDefaultLogConfig()
 		path, err := GetLogConfigPath()
 		if err == nil {
-			content, readErr := ioutil.ReadFile(filepath.Clean(path))
+			content, readErr := os.ReadFile(filepath.Clean(path))
 			if readErr != nil {
 				logger.Error("Proceeding with default log configuration as error occured while reading log configurations ", readErr)
 			} else {

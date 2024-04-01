@@ -94,11 +94,15 @@ data:
   log_config.toml: |
     # The logging configuration for Adapter
 
-    ## Adapter root Level configurations
+    ## Common Controller root Level configurations
 
-    logfile = "adapter.log" # This file will be created inside adapter container.
+    {{- if .Values.wso2.apk.dp.commonController.logging }}
+    logLevel = "{{ .Values.wso2.apk.dp.commonController.logging.level | default "INFO" }}" # LogLevels can be "DEBG", "FATL", "ERRO", "WARN", "INFO", "PANC"
+    LogFormat = "{{ .Values.wso2.apk.dp.commonController.logging.logFormat | default "TEXT" }}" # Values can be "JSON", "TEXT"
+    {{- else }}
     logLevel = "INFO" # LogLevels can be "DEBG", "FATL", "ERRO", "WARN", "INFO", "PANC"
     LogFormat = "TEXT" # Values can be "JSON", "TEXT"
+    {{- end }}
 
     [rotation]
     MaxSize = 10    # In MegaBytes (MB)
