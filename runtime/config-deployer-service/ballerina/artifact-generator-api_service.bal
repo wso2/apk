@@ -24,7 +24,7 @@ isolated service /api/configurator on ep0 {
     isolated resource function post apis/'generate\-k8s\-resources(string? organization, http:Request request) returns http:Response|BadRequestError|InternalServerErrorError|commons:APKError {
         ConfigGeneratorClient apiclient = new ;
         commons:Organization organizationObj  = {displayName: "default",
-        name: "wso2-apk-default",
+        name: "default",
         organizationClaimValue: "default",
         uuid: "",
         enabled: true};
