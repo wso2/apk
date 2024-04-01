@@ -19,6 +19,13 @@ Feature: Generating APK conf for GraphQL API
             | 429 |
             | 500 |
         And the response body should contain "\"name\":\"string\""
+        Then I set headers
+            | Authorization | bearer ${accessToken} |
+        And I send "POST" request to "https://default.gw.wso2.com:9095/graphql" with body "{\"query\":\"{ allHumans { name } }\"}"
+        And I eventually receive 200 response code, not accepting
+            | 429 |
+            | 500 |
+        And the response body should contain "\"name\":\"string\""
 
     Scenario: Undeploy API
         Given The system is ready
