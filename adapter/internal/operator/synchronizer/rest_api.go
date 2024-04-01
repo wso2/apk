@@ -40,7 +40,7 @@ func undeployRestAPIInGateway(apiState APIState) error {
 	if err != nil {
 		loggers.LoggerXds.ErrorC(logging.PrintError(logging.Error2630, logging.MAJOR, "Error undeploying prod httpRoute of API : %v in Organization %v from environments %v."+
 			" Hence not checking on deleting the sand httpRoute of the API", string(apiState.APIDefinition.ObjectMeta.UID), apiState.APIDefinition.Spec.Organization,
-			getLabelsForAPI(apiState.ProdHTTPRoute.HTTPRouteCombined)))
+			getGatewayNameForAPI(apiState.ProdHTTPRoute.HTTPRouteCombined)))
 		return err
 	}
 	if apiState.SandHTTPRoute != nil {
@@ -49,8 +49,36 @@ func undeployRestAPIInGateway(apiState APIState) error {
 	return err
 }
 
-// GenerateAdapterInternalAPI this will populate a AdapterInternalAPI representation for an HTTPRoute
-func GenerateAdapterInternalAPI(apiState APIState, httpRoute *HTTPRouteState, envType string) (*model.AdapterInternalAPI, map[string]struct{}, error) {
+// UpdateInternalMapsFromHTTPRoute extracts the API details from the HTTPRoute.
+func UpdateInternalMapsFromHTTPRoute(apiState APIState, httpRoute *HTTPRouteState, envType string) (*model.AdapterInternalAPI, map[string]struct{}, error) {
+	adapterInternalAPI, err := generateAdapterInternalAPI(apiState, httpRoute, envType)
+	if err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2632, logging.MAJOR, "Error generating AdapterInternalAPI for HTTPRoute: %v. %v", httpRoute.HTTPRouteCombined.Name, err))
+		return nil, nil, err
+	}
+
+	vHosts := getVhostsForAPI(httpRoute.HTTPRouteCombined)
+	labels := getGatewayNameForAPI(httpRoute.HTTPRouteCombined)
+	listeners, relativeSectionNames := getListenersForAPI(httpRoute.HTTPRouteCombined, adapterInternalAPI.UUID)
+	// We dont have a use case where a perticular API's two different http routes refer to two different gateway. Hence get the first listener name for the list for processing.
+	if len(listeners) == 0 || len(relativeSectionNames) == 0 {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2633, logging.MINOR, "Failed to find a matching listener for http route: %v. ",
+			httpRoute.HTTPRouteCombined.Name))
+		return nil, nil, errors.New("failed to find matching listener name for the provided http route")
+	}
+
+	listenerName := listeners[0]
+	sectionName := relativeSectionNames[0]
+	if len(listeners) > 0 {
+		if err := xds.PopulateInternalMaps(adapterInternalAPI, labels, vHosts, sectionName, listenerName); err != nil {
+			return nil, nil, err
+		}
+	}
+	return adapterInternalAPI, labels, nil
+}
+
+// generateAdapterInternalAPI this will populate a AdapterInternalAPI representation for an HTTPRoute
+func generateAdapterInternalAPI(apiState APIState, httpRoute *HTTPRouteState, envType string) (*model.AdapterInternalAPI, error) {
 	var adapterInternalAPI model.AdapterInternalAPI
 	adapterInternalAPI.SetIsDefaultVersion(apiState.APIDefinition.Spec.IsDefaultVersion)
 	adapterInternalAPI.SetInfoAPICR(*apiState.APIDefinition)
@@ -81,7 +109,7 @@ func GenerateAdapterInternalAPI(apiState APIState, httpRoute *HTTPRouteState, en
 	}
 	if err := adapterInternalAPI.SetInfoHTTPRouteCR(httpRoute.HTTPRouteCombined, resourceParams); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2631, logging.MAJOR, "Error setting HttpRoute CR info to adapterInternalAPI. %v", err))
-		return nil, nil, err
+		return nil, err
 	}
 
 	if apiState.MutualSSL != nil && apiState.MutualSSL.Required != "" && !adapterInternalAPI.GetDisableAuthentications() {
@@ -94,55 +122,31 @@ func GenerateAdapterInternalAPI(apiState APIState, httpRoute *HTTPRouteState, en
 
 	if err := adapterInternalAPI.Validate(); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2632, logging.MAJOR, "Error validating adapterInternalAPI intermediate representation. %v", err))
-		return nil, nil, err
-	}
-	vHosts := getVhostsForAPI(httpRoute.HTTPRouteCombined)
-	labels := getLabelsForAPI(httpRoute.HTTPRouteCombined)
-	listeners, relativeSectionNames := getListenersForAPI(httpRoute.HTTPRouteCombined, adapterInternalAPI.UUID)
-	// We dont have a use case where a perticular API's two different http routes refer to two different gateway. Hence get the first listener name for the list for processing.
-	if len(listeners) == 0 || len(relativeSectionNames) == 0 {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2633, logging.MINOR, "Failed to find a matching listener for http route: %v. ",
-			httpRoute.HTTPRouteCombined.Name))
-		return nil, nil, errors.New("failed to find matching listener name for the provided http route")
+		return nil, err
 	}
 
-	updatedLabelsMap := make(map[string]struct{})
-	listenerName := listeners[0]
-	sectionName := relativeSectionNames[0]
-	if len(listeners) != 0 {
-		updatedLabels, err := xds.UpdateAPICache(vHosts, labels, listenerName, sectionName, adapterInternalAPI)
-		if err != nil {
-			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2633, logging.MAJOR, "Error updating the API : %s:%s in vhosts: %s, API_UUID: %v. %v",
-				adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), vHosts, adapterInternalAPI.UUID, err))
-			return nil, nil, err
-		}
-		for newLabel := range updatedLabels {
-			updatedLabelsMap[newLabel] = struct{}{}
-		}
-	}
-
-	return &adapterInternalAPI, updatedLabelsMap, nil
+	return &adapterInternalAPI, nil
 }
 
 // getVhostForAPI returns the vHosts related to an API.
-func getVhostsForAPI(httpRoute *gwapiv1b1.HTTPRoute) []string {
-	var vHosts []string
+func getVhostsForAPI(httpRoute *gwapiv1b1.HTTPRoute) map[string]struct{} {
+	vHosts := make(map[string]struct{})
 	for _, hostName := range httpRoute.Spec.Hostnames {
-		vHosts = append(vHosts, string(hostName))
+		vHosts[string(hostName)] = struct{}{}
 	}
 	return vHosts
 }
 
-// getLabelsForAPI returns the labels related to an API.
-func getLabelsForAPI(httpRoute *gwapiv1b1.HTTPRoute) []string {
-	var labels []string
+// getGatewayNameForAPI returns the labels related to an API.
+func getGatewayNameForAPI(httpRoute *gwapiv1b1.HTTPRoute) map[string]struct{} {
+	labels := make(map[string]struct{})
 	var err error
 	for _, parentRef := range httpRoute.Spec.ParentRefs {
 		err = xds.SanitizeGateway(string(parentRef.Name), false)
 		if err != nil {
 			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2653, logging.CRITICAL, "Gateway Label is invalid: %s", string(parentRef.Name)))
 		} else {
-			labels = append(labels, string(parentRef.Name))
+			labels[string(parentRef.Name)] = struct{}{}
 		}
 	}
 	return labels
@@ -178,8 +182,7 @@ func getListenersForAPI(httpRoute *gwapiv1b1.HTTPRoute, apiUUID string) ([]strin
 }
 
 func deleteAPIFromEnv(httpRoute *gwapiv1b1.HTTPRoute, apiState APIState) error {
-	labels := getLabelsForAPI(httpRoute)
-	org := apiState.APIDefinition.Spec.Organization
+	labels := getGatewayNameForAPI(httpRoute)
 	uuid := string(apiState.APIDefinition.ObjectMeta.UID)
-	return xds.DeleteAPICREvent(labels, uuid, org)
+	return xds.DeleteAPI(uuid, labels)
 }
