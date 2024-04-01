@@ -48,6 +48,12 @@ public class HttpRequestHandler implements RequestHandler<CheckRequest, Response
     private static final Logger logger = LogManager.getLogger(RequestHandler.class);
 
     public ResponseObject process(CheckRequest request) {
+
+        // Handle the '/ready' request separately.
+        if (APIConstants.ReadinessCheck.ENDPOINT.equals(request.getAttributes().getRequest().getHttp().getPath())) {
+            return processReadyRequest();
+        }
+
         API matchedAPI = APIFactory.getInstance().getMatchedAPI(request);
         if (matchedAPI == null) {
             ResponseObject responseObject = new ResponseObject();
@@ -145,5 +151,18 @@ public class HttpRequestHandler implements RequestHandler<CheckRequest, Response
                 .address(address).clusterHeader(cluster)
                 .requestTimeStamp(requestTimeInMillis).pathTemplate(pathTemplate).requestPayload(requestPayload)
                 .build();
+    }
+
+    /**
+     * This method handles the processing of '/ready' request sent by router.
+     * 
+     * @return ResponseObject with status 200
+     */
+    private ResponseObject processReadyRequest() {
+        ResponseObject responseObject = new ResponseObject();
+        responseObject.setStatusCode(APIConstants.StatusCodes.OK.getCode());
+        responseObject.setRequestPath(APIConstants.ReadinessCheck.ENDPOINT);
+        responseObject.setDirectResponse(true);
+        return responseObject;
     }
 }

@@ -1342,36 +1342,18 @@ func CreateReadyEndpoint() *routev3.Route {
 		Operation: readyPath,
 	}
 
-	perFilterConfig := extAuthService.ExtAuthzPerRoute{
-		Override: &extAuthService.ExtAuthzPerRoute_Disabled{
-			Disabled: true,
-		},
-	}
-
-	data, _ := proto.Marshal(&perFilterConfig)
-	filter := &any.Any{
-		TypeUrl: extAuthzPerRouteName,
-		Value:   data,
-	}
-
 	router = routev3.Route{
 		Name:  readyPath, //Categorize routes with same base path
 		Match: match,
-		Action: &routev3.Route_DirectResponse{
-			DirectResponse: &routev3.DirectResponseAction{
-				Status: 200,
-				Body: &corev3.DataSource{
-					Specifier: &corev3.DataSource_InlineString{
-						InlineString: readyEndpointResponse,
-					},
+		Action: &routev3.Route_Route{
+			Route: &routev3.RouteAction{
+				ClusterSpecifier: &routev3.RouteAction_Cluster{
+					Cluster: extAuthzClusterName,
 				},
 			},
 		},
 		Metadata:  nil,
 		Decorator: decorator,
-		TypedPerFilterConfig: map[string]*any.Any{
-			wellknown.HTTPExternalAuthorization: filter,
-		},
 	}
 	return &router
 }

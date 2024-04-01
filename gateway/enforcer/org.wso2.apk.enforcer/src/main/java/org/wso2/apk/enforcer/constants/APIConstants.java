@@ -280,4 +280,13 @@ public class APIConstants {
         public static final String OPTIONAL = "optional";
     }
 
+    /**
+     * Holds values related to readiness check.
+     */
+    public static class ReadinessCheck {
+        public static final String ENDPOINT = "/ready";
+        public static final String RESPONSE_KEY = "status";
+        public static final String RESPONSE_VALUE = "ready";
+    }
+
 }

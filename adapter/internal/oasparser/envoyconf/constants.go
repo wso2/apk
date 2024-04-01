@@ -94,7 +94,6 @@ const (
 const (
 	// healthEndpointResponse - response from the health endpoint
 	healthEndpointResponse = "{\"status\": \"healthy\"}"
-	readyEndpointResponse  = "{\"status\": \"ready\"}"
 )
 
 const (

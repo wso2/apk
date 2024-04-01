@@ -33,6 +33,7 @@ import io.envoyproxy.envoy.type.v3.HttpStatus;
 import io.grpc.stub.StreamObserver;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
+import org.json.JSONObject;
 import org.apache.logging.log4j.ThreadContext;
 import org.wso2.apk.enforcer.api.ResponseObject;
 import org.wso2.apk.enforcer.constants.APIConstants;
@@ -120,6 +121,11 @@ public class ExtAuthService extends AuthorizationGrpc.AuthorizationImplBase {
             // set status code
             HttpStatus status = HttpStatus.newBuilder().setCodeValue(responseObject.getStatusCode()).build();
             deniedResponsePreparer.setStatus(status);
+
+            // handle the response of the '/ready' request
+            if (APIConstants.ReadinessCheck.ENDPOINT.equals(responseObject.getRequestPath())) {
+                return buildReadyCheckResponse(checkResponseBuilder, status);
+            }
 
             // set body content
             if (responseObject.getResponsePayload() != null) {
@@ -260,5 +266,41 @@ public class ExtAuthService extends AuthorizationGrpc.AuthorizationImplBase {
      */
     private void addMetadata(Struct.Builder structBuilder, String key, String value) {
         structBuilder.putFields(key, Value.newBuilder().setStringValue(value).build());
+    }
+
+    /**
+     * This method builds the CheckResponse to be returned as response to '/ready'
+     * request of router
+     * 
+     * @param responseBuilder CheckResponse.Builder object
+     * @param status          HttpStatus object
+     * @return CheckResponse with body {"status":"ready"} and status code 200 OK.
+     */
+    private CheckResponse buildReadyCheckResponse(CheckResponse.Builder responseBuilder, HttpStatus status) {
+        /*
+         * The DeniedResponsePreparer.Builder is used to send a direct response from
+         * ext-authz
+         * with status 200 and body {"status":"ready"}
+         */
+
+        JSONObject responseJson = new JSONObject();
+        responseJson.put(APIConstants.ReadinessCheck.RESPONSE_KEY, APIConstants.ReadinessCheck.RESPONSE_VALUE);
+        HeaderValueOption headerValueOption = HeaderValueOption.newBuilder().setHeader(HeaderValue.newBuilder()
+                .setKey(APIConstants.CONTENT_TYPE_HEADER).setValue(APIConstants.APPLICATION_JSON).build())
+                .build();
+
+        DeniedResponsePreparer deniedResponsePreparer = new DeniedResponsePreparer(DeniedHttpResponse.newBuilder());
+        deniedResponsePreparer.addHeaders(headerValueOption);
+        deniedResponsePreparer.setStatus(status);
+        deniedResponsePreparer.setBody(responseJson.toString());
+
+        Struct.Builder metadataStructBuilder = Struct.newBuilder();
+        addMetadata(metadataStructBuilder, MetadataConstants.APK_ENFORCER_REPLY, "Ok");
+
+        return CheckResponse.newBuilder()
+                .setDynamicMetadata(metadataStructBuilder.build())
+                .setStatus(Status.newBuilder().setCode(Code.INTERNAL_VALUE).build())
+                .setDeniedResponse(deniedResponsePreparer.build())
+                .build();
     }
 }
