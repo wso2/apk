@@ -217,6 +217,9 @@ spec:
             - name: enforcer-trusted-certs
               mountPath: /home/wso2/security/truststore/wso2carbon.pem
               subPath: wso2carbon.pem
+            - name: enforcer-apikey-cert
+              mountPath: /home/wso2/security/truststore/wso2-apim-carbon.pem
+              subPath: wso2-apim-carbon.pem
             - name: idp-certificate-secret-volume
               mountPath: /home/wso2/security/truststore/idp.pem
             {{ if and .Values.wso2.apk.idp.signing .Values.wso2.apk.idp.signing.fileName }}
@@ -428,6 +431,9 @@ spec:
           secret: 
             secretName: {{ template "apk-helm.resource.prefix" . }}-enforcer-keystore-secret
         - name: enforcer-trusted-certs
+          secret: 
+            secretName: {{ template "apk-helm.resource.prefix" . }}-enforcer-truststore-secret 
+        - name: enforcer-apikey-cert
           secret: 
             secretName: {{ template "apk-helm.resource.prefix" . }}-enforcer-truststore-secret 
         - name: idp-certificate-secret-volume
