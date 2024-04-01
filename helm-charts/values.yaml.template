@@ -24,6 +24,7 @@ wso2:
     webhooks:
       validatingwebhookconfigurations : true
       mutatingwebhookconfigurations : true
+      conversionwebhookconfigurations : true
     auth:
       # -- Enable Service Account Creation
       enabled: true
