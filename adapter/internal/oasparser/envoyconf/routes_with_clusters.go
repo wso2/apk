@@ -186,6 +186,15 @@ func CreateRoutesWithClusters(adapterInternalAPI *model.AdapterInternalAPI, inte
 			return nil, nil, nil, fmt.Errorf("error while creating routes. %v", err)
 		}
 		routes = append(routes, routesP...)
+		if adapterInternalAPI.IsDefaultVersion {
+			defaultRoutes, errDefaultPath := createRoutes(genRouteCreateParams(adapterInternalAPI, &resource, vHost, basePath, clusterName, nil, nil, organizationID,
+				false, true))
+			if errDefaultPath != nil {
+				logger.LoggerXds.ErrorC(logging.PrintError(logging.Error2231, logging.MAJOR, "Error while creating routes for API %s %s for path: %s Error: %s", adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), removeFirstOccurrence(resource.GetPath(), adapterInternalAPI.GetVersion()), errDefaultPath.Error()))
+				return nil, nil, nil, fmt.Errorf("error while creating routes. %v", errDefaultPath)
+			}
+			routes = append(routes, defaultRoutes...)
+		}
 		return routes, clusters, endpoints, nil
 	}
 	for _, resource := range adapterInternalAPI.GetResources() {
