@@ -325,7 +325,7 @@ func (ods *OperatorDataStore) processAPIState(apiNamespacedName types.Namespaced
 			}
 		}
 	}
-
+	cachedAPI.APIDefinition = apiState.APIDefinition
 	return *cachedAPI, events, updated
 }
 

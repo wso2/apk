@@ -21,10 +21,16 @@ import (
 	"bytes"
 	"compress/gzip"
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"reflect"
+	"sort"
+	"strconv"
+	"strings"
 	"sync"
 
 	"github.com/wso2/apk/adapter/config"
@@ -54,6 +60,7 @@ import (
 	k8client "sigs.k8s.io/controller-runtime/pkg/client"
 
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
+	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -95,12 +102,12 @@ var (
 
 // APIReconciler reconciles a API object
 type APIReconciler struct {
-	client              k8client.Client
-	ods                 *synchronizer.OperatorDataStore
-	ch                  *chan *synchronizer.APIEvent
-	successChannel      *chan synchronizer.SuccessEvent
-	statusUpdater       *status.UpdateHandler
-	mgr                 manager.Manager
+	client                k8client.Client
+	ods                   *synchronizer.OperatorDataStore
+	ch                    *chan *synchronizer.APIEvent
+	successChannel        *chan synchronizer.SuccessEvent
+	statusUpdater         *status.UpdateHandler
+	mgr                   manager.Manager
 	apiPropagationEnabled bool
 }
 
@@ -427,26 +434,41 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 		}
 	}
 
+	// Validate resource level extension refs resolved
+	extRefValErr := apiReconciler.validateHTTPRouteExtRefs(apiState)
+	if extRefValErr != nil {
+		return nil, extRefValErr
+	}
+
 	loggers.LoggerAPKOperator.Debugf("Child references are retrieved successfully for API CR %s", apiRef.String())
-
+	storedHash, hashFound := apiState.APIDefinition.ObjectMeta.Labels["apiHash"]
 	if !api.Status.DeploymentStatus.Accepted {
-		if apiReconciler.apiPropagationEnabled {
-			// Publish the api data to CP
-			apiCpData := apiReconciler.convertAPIStateToAPICp(ctx, *apiState)
-			apiCpData.Event = controlplane.EventTypeCreate
-			controlplane.AddToEventQueue(apiCpData)
+		if apiReconciler.apiPropagationEnabled && !apiState.APIDefinition.Spec.SystemAPI {
+			apiHash := apiReconciler.getAPIHash(apiState)
+			if !hashFound || storedHash != apiHash {
+				apiReconciler.patchAPIHash(ctx, apiHash, apiState.APIDefinition.ObjectMeta.Name, apiState.APIDefinition.ObjectMeta.Namespace)
+				loggers.LoggerAPKOperator.Infof("API hash changed sending the API to agent")
+				// Publish the api data to CP
+				apiCpData := apiReconciler.convertAPIStateToAPICp(ctx, *apiState)
+				apiCpData.Event = controlplane.EventTypeCreate
+				controlplane.AddToEventQueue(apiCpData)
+			}
 		}
-
 		apiReconciler.ods.AddAPIState(apiRef, apiState)
 		apiReconciler.traverseAPIStateAndUpdateOwnerReferences(ctx, *apiState)
 		return &synchronizer.APIEvent{EventType: constants.Create, Events: []synchronizer.APIState{*apiState}, UpdatedEvents: []string{}}, nil
 	} else if cachedAPI, events, updated :=
 		apiReconciler.ods.UpdateAPIState(apiRef, apiState); updated {
-		if apiReconciler.apiPropagationEnabled {
-			// Publish the api data to CP
-			apiCpData := apiReconciler.convertAPIStateToAPICp(ctx, *apiState)
-			apiCpData.Event = controlplane.EventTypeUpdate
-			controlplane.AddToEventQueue(apiCpData)
+				if apiReconciler.apiPropagationEnabled && !apiState.APIDefinition.Spec.SystemAPI {
+			apiHash := apiReconciler.getAPIHash(apiState)
+			if !hashFound || storedHash != apiHash {
+				apiReconciler.patchAPIHash(ctx, apiHash, apiState.APIDefinition.ObjectMeta.Name, apiState.APIDefinition.ObjectMeta.Namespace)
+				loggers.LoggerAPKOperator.Infof("API hash changed sending the API to agent")
+				// Publish the api data to CP
+				apiCpData := apiReconciler.convertAPIStateToAPICp(ctx, *apiState)
+				apiCpData.Event = controlplane.EventTypeUpdate
+				controlplane.AddToEventQueue(apiCpData)
+			}
 		}
 		apiReconciler.traverseAPIStateAndUpdateOwnerReferences(ctx, *apiState)
 		loggers.LoggerAPKOperator.Infof("API CR %s with API UUID : %v is updated on %v", apiRef.String(),
@@ -479,6 +501,7 @@ func (apiReconciler *APIReconciler) resolveHTTPRouteRefs(ctx context.Context, ht
 	}
 	httpRouteState.BackendMapping = apiReconciler.getResolvedBackendsMapping(ctx, httpRouteState, interceptorServiceMapping, api)
 	httpRouteState.Scopes, err = apiReconciler.getScopesForHTTPRoute(ctx, httpRouteState.HTTPRouteCombined, api)
+
 	return httpRouteState, err
 }
 
@@ -2038,13 +2061,13 @@ func (apiReconciler *APIReconciler) handleStatus() {
 	}
 }
 
-func (apiReconciler *APIReconciler) handleLabels(ctx context.Context) {
-	type patchStringValue struct {
-		Op    string `json:"op"`
-		Path  string `json:"path"`
-		Value string `json:"value"`
-	}
+type patchStringValue struct {
+	Op    string `json:"op"`
+	Path  string `json:"path"`
+	Value string `json:"value"`
+}
 
+func (apiReconciler *APIReconciler) handleLabels(ctx context.Context) {
 	loggers.LoggerAPKOperator.Info("A thread assigned to handle label updates to API CR.")
 	for labelUpdate := range *controlplane.GetLabelQueue() {
 		loggers.LoggerAPKOperator.Infof("Starting to process label update for API %s/%s. Labels: %+v", labelUpdate.Namespace, labelUpdate.Name, labelUpdate.Labels)
@@ -2068,6 +2091,57 @@ func (apiReconciler *APIReconciler) handleLabels(ctx context.Context) {
 		err := apiReconciler.client.Patch(ctx, &apiCR, k8client.RawPatch(types.JSONPatchType, payloadBytes))
 		if err != nil {
 			loggers.LoggerAPKOperator.Errorf("Failed to patch api %s/%s with patch: %+v, error: %+v", labelUpdate.Name, labelUpdate.Namespace, patchOps, err)
+			// Patch did not work it could be due to labels field does not exists. Lets try to update the CR with labels field.
+			var apiCR dpv1alpha2.API
+			if err := apiReconciler.client.Get(ctx, types.NamespacedName{Namespace: labelUpdate.Namespace, Name: labelUpdate.Name}, &apiCR); err == nil {
+				if apiCR.ObjectMeta.Labels == nil {
+					apiCR.ObjectMeta.Labels = map[string]string{}
+				}
+				for key, value := range labelUpdate.Labels {
+					apiCR.ObjectMeta.Labels[key] = value
+				}
+				crUpdateError := apiReconciler.client.Update(ctx, &apiCR)
+				if crUpdateError != nil {
+					loggers.LoggerAPKOperator.Errorf("Error while updating the API CR for api labels. Error: %+v", crUpdateError)
+				}
+			} else {
+				loggers.LoggerAPKOperator.Errorf("Error while loading api: %s/%s, Error: %v", labelUpdate.Name, labelUpdate.Namespace, err)
+			}
+		}
+	}
+}
+
+func (apiReconciler *APIReconciler) patchAPIHash(ctx context.Context, hash string, name string, namespace string) {
+	apiCR := dpv1alpha2.API{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: namespace,
+			Name:      name,
+		},
+	}
+	hashKey := "apiHash"
+	patchOps := []patchStringValue{}
+	patchOps = append(patchOps, patchStringValue{
+		Op:    "replace",
+		Path:  fmt.Sprintf("/metadata/labels/%s", hashKey),
+		Value: hash,
+	})
+	payloadBytes, _ := json.Marshal(patchOps)
+	err := apiReconciler.client.Patch(ctx, &apiCR, k8client.RawPatch(types.JSONPatchType, payloadBytes))
+	if err != nil {
+		loggers.LoggerAPKOperator.Errorf("Failed to patch api %s/%s with patch: %+v, error: %+v", name, namespace, patchOps, err)
+		// Patch did not work it could be due to labels field does not exists. Lets try to update the CR with labels field.
+		var apiCR dpv1alpha2.API
+		if err := apiReconciler.client.Get(ctx, types.NamespacedName{Namespace: namespace, Name: name}, &apiCR); err == nil {
+			if apiCR.ObjectMeta.Labels == nil {
+				apiCR.ObjectMeta.Labels = map[string]string{}
+			}
+			apiCR.ObjectMeta.Labels["apiHash"] = hash
+			crUpdateError := apiReconciler.client.Update(ctx, &apiCR)
+			if crUpdateError != nil {
+				loggers.LoggerAPKOperator.Errorf("Error while updating the API CR for api hash. Error: %+v", crUpdateError)
+			}
+		} else {
+			loggers.LoggerAPKOperator.Errorf("Error while loading api: %s/%s, Error: %v", name, namespace, err)
 		}
 	}
 }
@@ -2157,7 +2231,14 @@ func (apiReconciler *APIReconciler) convertAPIStateToAPICp(ctx context.Context, 
 	if !revisionIDExists {
 		revisionID = "0"
 	}
-
+	properties := make(map[string]string)
+	for _, val := range spec.APIProperties {
+		properties[val.Name] = val.Value
+	}
+	prodEndpoint, sandEndpoint, endpointProtocol := findProdSandEndpoints(&apiState)
+	corsPolicy := pickOneCorsForCP(&apiState)
+	vhost := getProdVhost(&apiState)
+	securityScheme, authHeader := prepareSecuritySchemeForCP(&apiState)
 	api := controlplane.API{
 		APIName:          spec.APIName,
 		APIVersion:       spec.APIVersion,
@@ -2170,10 +2251,274 @@ func (apiReconciler *APIReconciler) convertAPIStateToAPICp(ctx context.Context, 
 		Definition:       apiDef,
 		APIUUID:          apiUUID,
 		RevisionID:       revisionID,
+		APIProperties:    properties,
+		ProdEndpoint:     prodEndpoint,
+		SandEndpoint:     sandEndpoint,
+		EndpointProtocol: endpointProtocol,
+		CORSPolicy:       corsPolicy,
+		Vhost:            vhost,
+		SecurityScheme:   securityScheme,
+		AuthHeader:       authHeader,
 	}
 	apiCPEvent.API = api
 	apiCPEvent.CRName = apiState.APIDefinition.ObjectMeta.Name
 	apiCPEvent.CRNamespace = apiState.APIDefinition.ObjectMeta.Namespace
 	return apiCPEvent
 
+}
+
+func (apiReconciler *APIReconciler) validateHTTPRouteExtRefs(apiState *synchronizer.APIState) error {
+	extRefs := []*gwapiv1b1.LocalObjectReference{}
+	if apiState.ProdHTTPRoute != nil {
+		for _, httpRoute := range apiState.ProdHTTPRoute.HTTPRoutePartitions {
+			for _, rule := range httpRoute.Spec.Rules {
+				for _, filter := range rule.Filters {
+					extRefs = append(extRefs, filter.ExtensionRef)
+				}
+			}
+		}
+	}
+	if apiState.SandHTTPRoute != nil {
+		for _, httpRoute := range apiState.SandHTTPRoute.HTTPRoutePartitions {
+			for _, rule := range httpRoute.Spec.Rules {
+				for _, filter := range rule.Filters {
+					extRefs = append(extRefs, filter.ExtensionRef)
+				}
+			}
+		}
+	}
+	for _, extRef := range extRefs {
+		if extRef != nil {
+			extKind := string(extRef.Kind)
+			key := types.NamespacedName{Namespace: string(apiState.APIDefinition.Namespace), Name: string(extRef.Name)}.String()
+			if extKind == "APIPolicy" {
+				_, found := apiState.ResourceAPIPolicies[key]
+				if !found {
+					return fmt.Errorf("apipolicy not added to the ResourceAPIPolicies map yet. Key: %s", key)
+				}
+			}
+			if extKind == "RateLimitPolicy" {
+				_, found := apiState.ResourceRateLimitPolicies[key]
+				if !found {
+					return fmt.Errorf("ratelimitPolicy not added to the ResourceRateLimitPolicies map yet. Key: %s", key)
+				}
+			}
+			if extKind == "Authentication" {
+				_, found := apiState.ResourceAuthentications[key]
+				if !found {
+					return fmt.Errorf("authentication not added to the resourse Authentication map yet. Key: %s", key)
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func (apiReconciler *APIReconciler) getAPIHash(apiState *synchronizer.APIState) string {
+	getUniqueID := func(obj interface{}, fields ...string) string {
+		defer func() {
+			if r := recover(); r != nil {
+				loggers.LoggerAPK.Infof("Error occured while extracting values using reflection. Error: %+v", r)
+			}
+		}()
+		var sb strings.Builder
+		objValue := reflect.ValueOf(obj)
+		if objValue.Kind() == reflect.Ptr {
+			objValue = objValue.Elem()
+		}
+		for _, field := range fields {
+			fieldNames := strings.Split(field, ".")
+			name1 := fieldNames[0]
+			name2 := fieldNames[1]
+			if objValue.IsValid() && objValue.FieldByName(name1).IsValid() {
+				if objValue.FieldByName(name1).FieldByName(name2).IsValid() {
+					v := objValue.FieldByName(name1).FieldByName(name2)
+					switch v.Kind() {
+					case reflect.String:
+						sb.WriteString(v.String())
+					case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+						sb.WriteString(strconv.FormatInt(v.Int(), 10))
+					}
+				}
+			}
+		}
+		return sb.String()
+	}
+
+	uniqueIDs := make([]string, 0)
+	uniqueIDs = append(uniqueIDs, getUniqueID(apiState.APIDefinition, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
+	for _, auth := range apiState.Authentications {
+		uniqueIDs = append(uniqueIDs, getUniqueID(auth, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
+	}
+	for _, arl := range apiState.RateLimitPolicies {
+		uniqueIDs = append(uniqueIDs, getUniqueID(arl, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
+	}
+	for _, ra := range apiState.ResourceAuthentications {
+		uniqueIDs = append(uniqueIDs, getUniqueID(ra, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
+	}
+	for _, rrl := range apiState.ResourceRateLimitPolicies {
+		uniqueIDs = append(uniqueIDs, getUniqueID(rrl, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
+	}
+	for _, ral := range apiState.ResourceAPIPolicies {
+		uniqueIDs = append(uniqueIDs, getUniqueID(ral, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
+	}
+	for _, ap := range apiState.APIPolicies {
+		uniqueIDs = append(uniqueIDs, getUniqueID(ap, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
+	}
+	for _, ism := range apiState.InterceptorServiceMapping {
+		uniqueIDs = append(uniqueIDs, getUniqueID(ism, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
+	}
+	for _, bjm := range apiState.BackendJWTMapping {
+		uniqueIDs = append(uniqueIDs, getUniqueID(bjm, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
+	}
+	if apiState.ProdHTTPRoute != nil {
+		for _, phr := range apiState.ProdHTTPRoute.HTTPRoutePartitions {
+			uniqueIDs = append(uniqueIDs, getUniqueID(phr, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
+		}
+	}
+	if apiState.SandHTTPRoute != nil {
+		for _, shr := range apiState.SandHTTPRoute.HTTPRoutePartitions {
+			uniqueIDs = append(uniqueIDs, getUniqueID(shr, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
+		}
+	}
+	if apiState.ProdGQLRoute != nil {
+		for _, pgqr := range apiState.ProdGQLRoute.GQLRoutePartitions {
+			uniqueIDs = append(uniqueIDs, getUniqueID(pgqr, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
+		}
+	}
+	if apiState.SandGQLRoute != nil {
+		for _, sgqr := range apiState.SandGQLRoute.GQLRoutePartitions {
+			uniqueIDs = append(uniqueIDs, getUniqueID(sgqr, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
+		}
+	}
+
+	sort.Strings(uniqueIDs)
+	joinedUniqueIDs := strings.Join(uniqueIDs, "")
+	mutualSSLUniqueID := ""
+	if apiState.MutualSSL != nil {
+		mutualSSLUniqueID += strconv.FormatBool(apiState.MutualSSL.Disabled) + apiState.MutualSSL.Required + strings.Join(apiState.MutualSSL.ClientCertificates, "")
+	}
+	joinedUniqueIDs = joinedUniqueIDs + strconv.FormatBool(apiState.SubscriptionValidation) + mutualSSLUniqueID
+	hash := sha256.Sum256([]byte(joinedUniqueIDs))
+	hashedString := hex.EncodeToString(hash[:])
+	truncatedHash := hashedString[:62]
+	loggers.LoggerAPK.Debugf("Prepared unique string for api %s/%s: %s, Prepared hash: %s, Truncatd hash to store: %s", apiState.APIDefinition.ObjectMeta.Name,
+		apiState.APIDefinition.ObjectMeta.Namespace, joinedUniqueIDs, hashedString, truncatedHash)
+	return truncatedHash
+}
+
+func findProdSandEndpoints(apiState *synchronizer.APIState) (string, string, string) {
+	prodEndpoint := ""
+	sandEndpoint := ""
+	endpointProtocol := ""
+	if apiState.ProdHTTPRoute != nil {
+		for _, backend := range apiState.ProdHTTPRoute.BackendMapping {
+			if len(backend.Backend.Spec.Services) > 0 {
+				sandEndpoint = fmt.Sprintf("%s:%d", backend.Backend.Spec.Services[0].Host, backend.Backend.Spec.Services[0].Port)
+				endpointProtocol = string(backend.Backend.Spec.Protocol)
+			}
+		}
+	}
+	if apiState.SandHTTPRoute != nil {
+		for _, backend := range apiState.SandHTTPRoute.BackendMapping {
+			if len(backend.Backend.Spec.Services) > 0 {
+				prodEndpoint = fmt.Sprintf("%s:%d", backend.Backend.Spec.Services[0].Host, backend.Backend.Spec.Services[0].Port)
+				endpointProtocol = string(backend.Backend.Spec.Protocol)
+			}
+		}
+	}
+	return prodEndpoint, sandEndpoint, endpointProtocol
+}
+
+func pickOneCorsForCP(apiState *synchronizer.APIState) *controlplane.CORSPolicy {
+	apiPolicies := []v1alpha2.APIPolicy{}
+	for _, apiPolicy := range apiState.APIPolicies {
+		apiPolicies = append(apiPolicies, apiPolicy)
+	}
+	for _, apiPolicy := range apiState.ResourceAPIPolicies {
+		apiPolicies = append(apiPolicies, apiPolicy)
+	}
+	for _, apiPolicy := range apiPolicies {
+		corsPolicy := v1alpha2.CORSPolicy{}
+		found := false
+		if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.CORSPolicy != nil {
+			corsPolicy = *apiPolicy.Spec.Override.CORSPolicy
+			found = true
+		} else if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.CORSPolicy != nil {
+			corsPolicy = *apiPolicy.Spec.Default.CORSPolicy
+			found = true
+		}
+		if found {
+			modifiedCors := controlplane.CORSPolicy{}
+			modifiedCors.AccessControlAllowCredentials = corsPolicy.AccessControlAllowCredentials
+			modifiedCors.AccessControlAllowHeaders = corsPolicy.AccessControlAllowHeaders
+			modifiedCors.AccessControlAllowOrigins = corsPolicy.AccessControlAllowOrigins
+			modifiedCors.AccessControlExposeHeaders = corsPolicy.AccessControlExposeHeaders
+			modifiedCors.AccessControlMaxAge = corsPolicy.AccessControlMaxAge
+			modifiedCors.AccessControlAllowMethods = corsPolicy.AccessControlAllowMethods
+			return &modifiedCors
+		}
+	}
+	return nil
+}
+
+func getProdVhost(apiState *synchronizer.APIState) string {
+	if apiState.ProdHTTPRoute != nil {
+		for _, httpRoute := range apiState.ProdHTTPRoute.HTTPRoutePartitions {
+			if len(httpRoute.Spec.Hostnames) > 0 {
+				return string(httpRoute.Spec.Hostnames[0])
+			}
+		}
+	}
+	return "default.gw.wso2.com"
+}
+
+func prepareSecuritySchemeForCP(apiState *synchronizer.APIState) ([]string, string) {
+	var pickedAuth *v1alpha2.Authentication
+	authHeader := "Authorization"
+	for _, auth := range apiState.Authentications {
+		pickedAuth = &auth
+		break
+	}
+	if pickedAuth != nil {
+		var authSpec *v1alpha2.AuthSpec
+		if pickedAuth.Spec.Override != nil {
+			authSpec = pickedAuth.Spec.Override
+		} else {
+			authSpec = pickedAuth.Spec.Default
+		}
+		if authSpec != nil {
+			if authSpec.AuthTypes != nil {
+				authSchemes := []string{}
+				isAuthMandatory := false
+				isMTLSMandatory := false
+				if authSpec.AuthTypes.Oauth2.Required == "mandatory" {
+					isAuthMandatory = true
+				}
+				if !authSpec.AuthTypes.Oauth2.Disabled {
+					authSchemes = append(authSchemes, "oauth2")
+					if authSpec.AuthTypes.Oauth2.Header != "" {
+						authHeader = authSpec.AuthTypes.Oauth2.Header
+					}
+				}
+				if authSpec.AuthTypes.MutualSSL.Required == "mandatory" {
+					isMTLSMandatory = true
+				}
+				if !authSpec.AuthTypes.MutualSSL.Disabled {
+					authSchemes = append(authSchemes, "mutualssl")
+				}
+				if len(authSpec.AuthTypes.APIKey) > 0 {
+					authSchemes = append(authSchemes, "api_key")
+				}
+				if isAuthMandatory {
+					authSchemes = append(authSchemes, "oauth_basic_auth_api_key_mandatory")
+				}
+				if isMTLSMandatory {
+					authSchemes = append(authSchemes, "mutualssl_mandatory")
+				}
+				return authSchemes, authHeader
+			}
+		}
+	}
+	return []string{"oauth2", "oauth_basic_auth_api_key_mandatory"}, authHeader
 }
