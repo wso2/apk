@@ -435,7 +435,7 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 	}
 
 	// Validate resource level extension refs resolved
-	extRefValErr := apiReconciler.validateHTTPRouteExtRefs(apiState)
+	extRefValErr := apiReconciler.validateRouteExtRefs(apiState)
 	if extRefValErr != nil {
 		return nil, extRefValErr
 	}
@@ -459,7 +459,7 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 		return &synchronizer.APIEvent{EventType: constants.Create, Events: []synchronizer.APIState{*apiState}, UpdatedEvents: []string{}}, nil
 	} else if cachedAPI, events, updated :=
 		apiReconciler.ods.UpdateAPIState(apiRef, apiState); updated {
-				if apiReconciler.apiPropagationEnabled && !apiState.APIDefinition.Spec.SystemAPI {
+		if apiReconciler.apiPropagationEnabled && !apiState.APIDefinition.Spec.SystemAPI {
 			apiHash := apiReconciler.getAPIHash(apiState)
 			if !hashFound || storedHash != apiHash {
 				apiReconciler.patchAPIHash(ctx, apiHash, apiState.APIDefinition.ObjectMeta.Name, apiState.APIDefinition.ObjectMeta.Namespace)
@@ -1449,7 +1449,7 @@ func (apiReconciler *APIReconciler) getAPIsForBackend(ctx context.Context, obj k
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL, "Unexpected object type, bypassing reconciliation: %v", backend))
 		return []reconcile.Request{}
 	}
-
+	
 	httpRouteList := &gwapiv1b1.HTTPRouteList{}
 	if err := apiReconciler.client.List(ctx, httpRouteList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(backendHTTPRouteIndex, utils.NamespacedName(backend).String()),
@@ -2239,6 +2239,7 @@ func (apiReconciler *APIReconciler) convertAPIStateToAPICp(ctx context.Context, 
 	corsPolicy := pickOneCorsForCP(&apiState)
 	vhost := getProdVhost(&apiState)
 	securityScheme, authHeader := prepareSecuritySchemeForCP(&apiState)
+	operations := prepareOperations(&apiState)
 	api := controlplane.API{
 		APIName:          spec.APIName,
 		APIVersion:       spec.APIVersion,
@@ -2259,6 +2260,7 @@ func (apiReconciler *APIReconciler) convertAPIStateToAPICp(ctx context.Context, 
 		Vhost:            vhost,
 		SecurityScheme:   securityScheme,
 		AuthHeader:       authHeader,
+		Operations:       operations,
 	}
 	apiCPEvent.API = api
 	apiCPEvent.CRName = apiState.APIDefinition.ObjectMeta.Name
@@ -2267,7 +2269,7 @@ func (apiReconciler *APIReconciler) convertAPIStateToAPICp(ctx context.Context, 
 
 }
 
-func (apiReconciler *APIReconciler) validateHTTPRouteExtRefs(apiState *synchronizer.APIState) error {
+func (apiReconciler *APIReconciler) validateRouteExtRefs(apiState *synchronizer.APIState) error {
 	extRefs := []*gwapiv1b1.LocalObjectReference{}
 	if apiState.ProdHTTPRoute != nil {
 		for _, httpRoute := range apiState.ProdHTTPRoute.HTTPRoutePartitions {
@@ -2281,6 +2283,24 @@ func (apiReconciler *APIReconciler) validateHTTPRouteExtRefs(apiState *synchroni
 	if apiState.SandHTTPRoute != nil {
 		for _, httpRoute := range apiState.SandHTTPRoute.HTTPRoutePartitions {
 			for _, rule := range httpRoute.Spec.Rules {
+				for _, filter := range rule.Filters {
+					extRefs = append(extRefs, filter.ExtensionRef)
+				}
+			}
+		}
+	}
+	if apiState.ProdGQLRoute != nil {
+		for _, gql := range apiState.ProdGQLRoute.GQLRoutePartitions {
+			for _, rule := range gql.Spec.Rules {
+				for _, filter := range rule.Filters {
+					extRefs = append(extRefs, filter.ExtensionRef)
+				}
+			}
+		}
+	}
+	if apiState.SandGQLRoute != nil {
+		for _, gql := range apiState.SandGQLRoute.GQLRoutePartitions {
+			for _, rule := range gql.Spec.Rules {
 				for _, filter := range rule.Filters {
 					extRefs = append(extRefs, filter.ExtensionRef)
 				}
@@ -2414,7 +2434,7 @@ func findProdSandEndpoints(apiState *synchronizer.APIState) (string, string, str
 	if apiState.ProdHTTPRoute != nil {
 		for _, backend := range apiState.ProdHTTPRoute.BackendMapping {
 			if len(backend.Backend.Spec.Services) > 0 {
-				sandEndpoint = fmt.Sprintf("%s:%d", backend.Backend.Spec.Services[0].Host, backend.Backend.Spec.Services[0].Port)
+				prodEndpoint = fmt.Sprintf("%s:%d", backend.Backend.Spec.Services[0].Host, backend.Backend.Spec.Services[0].Port)
 				endpointProtocol = string(backend.Backend.Spec.Protocol)
 			}
 		}
@@ -2422,7 +2442,23 @@ func findProdSandEndpoints(apiState *synchronizer.APIState) (string, string, str
 	if apiState.SandHTTPRoute != nil {
 		for _, backend := range apiState.SandHTTPRoute.BackendMapping {
 			if len(backend.Backend.Spec.Services) > 0 {
+				sandEndpoint = fmt.Sprintf("%s:%d", backend.Backend.Spec.Services[0].Host, backend.Backend.Spec.Services[0].Port)
+				endpointProtocol = string(backend.Backend.Spec.Protocol)
+			}
+		}
+	}
+	if apiState.ProdGQLRoute != nil {
+		for _, backend := range apiState.ProdGQLRoute.BackendMapping {
+			if len(backend.Backend.Spec.Services) > 0 {
 				prodEndpoint = fmt.Sprintf("%s:%d", backend.Backend.Spec.Services[0].Host, backend.Backend.Spec.Services[0].Port)
+				endpointProtocol = string(backend.Backend.Spec.Protocol)
+			}
+		}
+	}
+	if apiState.SandGQLRoute != nil {
+		for _, backend := range apiState.SandGQLRoute.BackendMapping {
+			if len(backend.Backend.Spec.Services) > 0 {
+				sandEndpoint = fmt.Sprintf("%s:%d", backend.Backend.Spec.Services[0].Host, backend.Backend.Spec.Services[0].Port)
 				endpointProtocol = string(backend.Backend.Spec.Protocol)
 			}
 		}
@@ -2467,6 +2503,13 @@ func getProdVhost(apiState *synchronizer.APIState) string {
 		for _, httpRoute := range apiState.ProdHTTPRoute.HTTPRoutePartitions {
 			if len(httpRoute.Spec.Hostnames) > 0 {
 				return string(httpRoute.Spec.Hostnames[0])
+			}
+		}
+	}
+	if apiState.ProdGQLRoute != nil {
+		for _, gql := range apiState.ProdGQLRoute.GQLRoutePartitions {
+			if len(gql.Spec.Hostnames) > 0 {
+				return string(gql.Spec.Hostnames[0])
 			}
 		}
 	}
@@ -2521,4 +2564,40 @@ func prepareSecuritySchemeForCP(apiState *synchronizer.APIState) ([]string, stri
 		}
 	}
 	return []string{"oauth2", "oauth_basic_auth_api_key_mandatory"}, authHeader
+}
+
+func prepareOperations(apiState *synchronizer.APIState) []controlplane.Operation {
+	operations := []controlplane.Operation{}
+	if apiState.ProdHTTPRoute != nil && apiState.ProdHTTPRoute.HTTPRouteCombined != nil {
+		for _, rule := range apiState.ProdHTTPRoute.HTTPRouteCombined.Spec.Rules {
+			for _, match := range rule.Matches {
+				path := "/"
+				verb := "GET"
+				if match.Path != nil && match.Path.Value != nil {
+					path = *match.Path.Value
+				}
+				if match.Method != nil {
+					verb = string(*match.Method)
+				}
+				operations = append(operations, controlplane.Operation{Path: path, Verb: verb})
+			}
+		}
+	}
+	if apiState.ProdGQLRoute != nil && apiState.ProdGQLRoute.GQLRouteCombined != nil {
+		for _, rule := range apiState.ProdGQLRoute.GQLRouteCombined.Spec.Rules {
+			for _, match := range rule.Matches {
+				path := ""
+				verb := "QUERY"
+				if match.Path != nil {
+					path = *match.Path
+				}
+				if match.Type != nil {
+					verb = string(*match.Type)
+				}
+				operations = append(operations, controlplane.Operation{Path: path, Verb: verb})
+			}
+		}
+	}
+
+	return operations
 }

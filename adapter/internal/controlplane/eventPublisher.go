@@ -94,6 +94,13 @@ type API struct {
 	Vhost            string            `json:"vhost"`
 	SecurityScheme   []string          `json:"securityScheme"`
 	AuthHeader       string            `json:"authHeader"`
+	Operations       []Operation       `json:"operations"`
+}
+
+// Operation holds the path, verb, throttling and interceptor policy
+type Operation struct {
+	Path    string    `json:"path"`
+	Verb string    `json:"verb"`
 }
 
 // CORSPolicy hold cors configs
