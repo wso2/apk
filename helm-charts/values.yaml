@@ -22,6 +22,7 @@ wso2:
     webhooks:
       validatingwebhookconfigurations: true
       mutatingwebhookconfigurations: true
+      conversionwebhookconfigurations: true
     auth:
       enabled: true
       enableServiceAccountCreation: true
@@ -249,6 +250,9 @@ wso2:
 #              JWKSClient:
 #                skipSSLVerification: false
 #                hostnameVerifier: "AllowAll"
+
+    cp:
+      enabled: false
 
     metrics:
       enabled: false

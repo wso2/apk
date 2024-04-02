@@ -7,6 +7,7 @@ metadata:
     cert-manager.io/inject-ca-from: {{ .Release.Namespace }}/{{ template "apk-helm.resource.prefix" . }}-common-controller-server-cert
   name: apis.dp.wso2.com
 spec:
+  {{- if .Values.wso2.apk.webhooks.conversionwebhookconfigurations }}
   conversion:
       strategy: Webhook
       webhook:
@@ -17,6 +18,7 @@ spec:
             path: /convert
         conversionReviewVersions:
         - v1
+  {{- end }}
   group: dp.wso2.com
   names:
     kind: API
