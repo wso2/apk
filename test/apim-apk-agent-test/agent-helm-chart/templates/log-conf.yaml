@@ -10,6 +10,9 @@ data:
       serviceURL = "{{ .Values.controlPlane.serviceURL }}"
       username = "{{ .Values.controlPlane.username }}"
       password = "{{ .Values.controlPlane.password }}"
+      clientID = "{{ .Values.controlPlane.clientID }}"
+      clientSecret = "{{ .Values.controlPlane.clientSecret }}"
+      provider = "{{ .Values.controlPlane.provider | default "admin" }}"
       environmentLabels = ["{{ .Values.controlPlane.environmentLabels }}"]
       skipSSLVerification = {{ .Values.controlPlane.skipSSLVerification }}
       internalKeyIssuer = {{ .Values.controlPlane.internalKeyIssuer | default "http://am.wso2.com:443/token" }}
