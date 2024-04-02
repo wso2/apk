@@ -326,6 +326,7 @@ wso2:
         # This should be used only if there are additional document types to be supported.
         supportedDocumentTypes: ""
         enablePortalConfigurationOnlyMode: false
+        internalKeyIssuer: "http://am.wso2.com:443/token"
 
       devportal:
         enableApplicationSharing:
@@ -350,6 +351,7 @@ wso2:
         enableTokenHashing: false
         # -- List of allow-listed scopes
         allowedScopes: ["^device_.*,openid"]
+        oauth2JWKSUrl: "https://apim-wso2am-cp-1-service:9443/oauth2/jwks"
 
       # APIM Open Tracing configurations
       # https://apim.docs.wso2.com/en/latest/observe/api-manager/traces/monitoring-with-opentracing/
@@ -380,9 +382,9 @@ wso2:
       # -- Container registry hostname
       registry: "docker.io"
       # -- Azure ACR repository name consisting the image
-      repository: "rakhitharr/wso2am"
+      repository: "wso2/wso2am"
       # -- Docker image digest
-      digest: "sha256:56c6625d60a01cba73cd8836d25f1469f6fec1e933e530d954064eeab4ef70b3"
+      digest: "sha256:f2e0a687ea3961c000a591b6ed712415dfa64a8fc105759a4824be036a1fc85c"
       # -- Refer to the Kubernetes documentation on updating images (https://kubernetes.io/docs/concepts/containers/images/#updating-images)
       imagePullPolicy: Always
 
