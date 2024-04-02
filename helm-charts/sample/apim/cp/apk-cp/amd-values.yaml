@@ -167,7 +167,7 @@ kubernetes:
 
   securityContext:
     # -- User ID of the container
-    runAsUser: 10001
+    runAsUser: 802
   # -- Enable AppArmor profiles for the deployment
   enableAppArmor: false
 
