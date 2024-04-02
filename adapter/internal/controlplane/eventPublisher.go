@@ -97,7 +97,7 @@ type API struct {
 	Operations       []Operation       `json:"operations"`
 }
 
-// Operations holds the path, verb, throttling and interceptor policy
+// Operation holds the path, verb, throttling and interceptor policy
 type Operation struct {
 	Path    string    `json:"path"`
 	Verb string    `json:"verb"`
