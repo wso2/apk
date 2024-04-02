@@ -175,8 +175,8 @@ kubernetes:
       annotations:
   securityContext:
     # -- User ID of the container
-    runAsUser: 10001
-    runAsGroup: 10001
+    runAsUser: 802
+    runAsGroup: 802
 
 
 wso2:
