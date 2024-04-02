@@ -1,0 +1,83 @@
+{
+    "name": "SimpleRateLimitResourceLevelAPI",
+    "context": "/simple-rl-r",
+    "version": "3.14",
+    "type": "HTTP",
+    "transport": [
+        "http",
+        "https"
+    ],
+    "policies": [
+        "Unlimited",
+        "Gold"
+    ],
+    "endpointConfig": {
+        "endpoint_type": "http",
+        "sandbox_endpoints": {
+            "url": "http://backend:80/anything"
+        },
+        "production_endpoints": {
+            "url": "http://backend:80/anything"
+        }
+    },
+    "endpointImplementationType": "ENDPOINT",
+    "scopes": [],
+    "operations": [
+        {
+            "id": "",
+            "target": "/employee",
+            "verb": "GET",
+            "authType": "Application \u0026 Application User",
+            "throttlingPolicy": "Unlimited",
+            "scopes": [],
+            "usedProductIds": [],
+            "operationPolicies": {
+                "request": [],
+                "response": [],
+                "fault": []
+            }
+        },
+        {
+            "id": "",
+            "target": "/employee",
+            "verb": "POST",
+            "authType": "Application \u0026 Application User",
+            "throttlingPolicy": "Unlimited",
+            "scopes": [],
+            "usedProductIds": [],
+            "operationPolicies": {
+                "request": [],
+                "response": [],
+                "fault": []
+            }
+        },
+        {
+            "id": "",
+            "target": "/employee/{employeeId}",
+            "verb": "PUT",
+            "authType": "Application \u0026 Application User",
+            "throttlingPolicy": "Unlimited",
+            "scopes": [],
+            "usedProductIds": [],
+            "operationPolicies": {
+                "request": [],
+                "response": [],
+                "fault": []
+            }
+        },
+        {
+            "id": "",
+            "target": "/employee/{employeeId}",
+            "verb": "DELETE",
+            "authType": "Application \u0026 Application User",
+            "throttlingPolicy": "Unlimited",
+            "scopes": [],
+            "usedProductIds": [],
+            "operationPolicies": {
+                "request": [],
+                "response": [],
+                "fault": []
+            }
+        }
+    ]
+}

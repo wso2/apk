@@ -33,6 +33,7 @@ public class SharedContext {
     private SimpleHTTPClient httpClient;
     private String publisherAccessToken;
     private String devportalAccessToken;
+    private String adminportalAccessToken;
     private String basicAuthToken;
     private HttpResponse response;
     private String responseBody;
@@ -77,6 +78,16 @@ public class SharedContext {
     public void setDevportalAccessToken(String accessToken) {
 
         this.devportalAccessToken = accessToken;
+    }
+
+    public String getAdminAccessToken() {
+
+        return adminportalAccessToken;
+    }
+
+    public void setAdminAccessToken(String accessToken) {
+
+        this.adminportalAccessToken = accessToken;
     }
 
     public String getBasicAuthToken() {

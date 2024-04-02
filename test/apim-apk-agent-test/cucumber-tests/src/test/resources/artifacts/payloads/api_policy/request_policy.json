@@ -1,0 +1,108 @@
+{
+    "name": "EmployeeAPI",
+    "context": "/api-policy",
+    "version": "1.0.0",
+    "type": "HTTP",
+    "audience": null,
+    "transport": ["http", "https"],
+    "policies": ["Unlimited, Gold"],
+    "authorizationHeader": "Authorization",
+    "apiKeyHeader": "ApiKey",
+    "securityScheme": ["oauth_basic_auth_api_key_mandatory", "oauth2"],
+    "apiPolicies": {
+      "request": [
+        {
+          "policyName": "addLogMessage",
+          "policyId": "e64c0cf0-8df0-4659-a299-099d390de6d0",
+          "policyVersion": "v1",
+          "parameters": {}
+        },
+        {
+          "policyName": "jsonValidator",
+          "policyId": "f11983f9-6429-415f-880a-b407192f137f",
+          "policyVersion": "v1",
+          "parameters": {
+            "maxPropertyCount": "100",
+            "maxStringLength": "100",
+            "maxArrayElementCount": "100",
+            "maxKeyLength": "100",
+            "maxJsonDepth": "100",
+            "requestMessageBufferSize": "1024",
+            "jsonSchemaValidator": "org.wso2.carbon.apimgt.gateway.mediators.JsonSchemaValidator"
+          }
+        }
+      ],
+      "response": [],
+      "fault": []
+    },
+    "endpointConfig": {
+      "endpoint_type": "http",
+      "sandbox_endpoints": {"url": "http://backend:80/anything"},
+      "production_endpoints": {"url": "http://backend:80/anything"}
+    },
+    "endpointImplementationType": "ENDPOINT",
+    "operations": [
+      {
+        "id": "",
+        "target": "/employee",
+        "verb": "GET",
+        "authType": "Application & Application User",
+        "throttlingPolicy": "10KPerMin",
+        "scopes": [],
+        "usedProductIds": [],
+        "amznResourceName": null,
+        "amznResourceTimeout": null,
+        "amznResourceContentEncode": null,
+        "payloadSchema": null,
+        "uriMapping": null,
+        "operationPolicies": {"request": [], "response": [], "fault": []}
+      },
+      {
+        "id": "",
+        "target": "/employee",
+        "verb": "POST",
+        "authType": "Application & Application User",
+        "throttlingPolicy": "20KPerMin",
+        "scopes": [],
+        "usedProductIds": [],
+        "amznResourceName": null,
+        "amznResourceTimeout": null,
+        "amznResourceContentEncode": null,
+        "payloadSchema": null,
+        "uriMapping": null,
+        "operationPolicies": {"request": [], "response": [], "fault": []}
+      },
+      {
+        "id": "",
+        "target": "/employee/{employeeId}",
+        "verb": "PUT",
+        "authType": "Application & Application User",
+        "throttlingPolicy": "Unlimited",
+        "scopes": [],
+        "usedProductIds": [],
+        "amznResourceName": null,
+        "amznResourceTimeout": null,
+        "amznResourceContentEncode": null,
+        "payloadSchema": null,
+        "uriMapping": null,
+        "operationPolicies": {"request": [], "response": [], "fault": []}
+      },
+      {
+        "id": "",
+        "target": "/employee/{employeeId}",
+        "verb": "DELETE",
+        "authType": "Application & Application User",
+        "throttlingPolicy": "Unlimited",
+        "scopes": [],
+        "usedProductIds": [],
+        "amznResourceName": null,
+        "amznResourceTimeout": null,
+        "amznResourceContentEncode": null,
+        "payloadSchema": null,
+        "uriMapping": null,
+        "operationPolicies": {"request": [], "response": [], "fault": []}
+      }
+    ],
+    "gatewayVendor": "wso2",
+    "gatewayType":"wso2/apk"
+  }

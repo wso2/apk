@@ -576,4 +576,20 @@ public class APIDeploymentSteps {
             sharedContext.setApiUUID(Utils.extractID(sharedContext.getResponseBody()));
             Thread.sleep(3000);
         }
+
+        @Then("I set new API throttling policy allowing {string} requests per every {string} minute") 
+        public void add_new_custom_throttling_policy(String requestCount, String unitTime) throws Exception {
+        //  {"policyName":"TestRatelimit","description":"Test descroption","conditionalGroups":[],"defaultLimit":{"requestCount":{"timeUnit":"min","unitTime":"1","requestCount":"3"},"type":"REQUESTCOUNTLIMIT","bandwidth":null}}
+                String payload = "{\"policyName\":\"TestRatelimit\",\"description\":\"Test descroption\",\"conditionalGroups\":[],\"defaultLimit\":{\"requestCount\":{\"timeUnit\":\"min\",\"unitTime\":"+ unitTime + ",\"requestCount\":" + requestCount + "},\"type\":\"REQUESTCOUNTLIMIT\",\"bandwidth\":null}}";
+                
+                Map<String, String> headers = new HashMap<>();
+                headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + sharedContext.getAdminAccessToken());
+                headers.put(Constants.REQUEST_HEADERS.HOST, Constants.DEFAULT_API_HOST);
+                //https://am.wso2.com/api/am/admin/v4/throttling/policies/advanced
+                // https:// + DEFAULT_API_HOST + "/" + DEFAULT_ADMINPORTAL + "throttling/policies/advanced"
+                HttpResponse httpResponse = sharedContext.getHttpClient().doPost(Utils.getAPIThrottlingConfigEndpoint(), headers, payload, Constants.CONTENT_TYPES.APPLICATION_JSON);
+                sharedContext.setResponse(httpResponse);
+                sharedContext.setResponseBody(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()));
+                Thread.sleep(3000);
+        }
 }

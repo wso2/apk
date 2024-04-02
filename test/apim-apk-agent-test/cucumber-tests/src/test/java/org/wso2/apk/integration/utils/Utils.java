@@ -145,6 +145,11 @@ public class Utils {
                 + Constants.DEFAULT_API_DEPLOYER + "apis/copy-api";
     }
 
+    public static String getAPIThrottlingConfigEndpoint() {
+        return "https://" + Constants.DEFAULT_API_HOST + ":" + Constants.DEFAULT_GW_PORT + "/"
+                + Constants.DEFAULT_ADMINPORTAL+ "throttling/policies/advanced";
+    }
+
     public static String extractID(String payload) throws IOException {
 
         JSONParser parser = new JSONParser();
