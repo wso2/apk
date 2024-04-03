@@ -498,7 +498,6 @@ func isAPIPropagatable(apiState *synchronizer.APIState) bool {
 		return false
 	}
 	// Only valid organization's APIs can be propagated to CP
-	loggers.LoggerAPKOperator.Infof("org:::: %s, %+v", apiState.APIDefinition.Spec.Organization,  utils.ContainsString(validOrgs, apiState.APIDefinition.Spec.Organization) )
 	return utils.ContainsString(validOrgs, apiState.APIDefinition.Spec.Organization) 
 }
 
