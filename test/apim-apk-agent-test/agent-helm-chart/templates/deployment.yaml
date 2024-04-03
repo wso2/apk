@@ -45,6 +45,10 @@ spec:
               containerPort: 18000
             - name: rest-port
               containerPort: 18001
+            {{ if and .Values.metrics .Values.metrics.enabled}}
+            - containerPort: 18006
+              protocol: "TCP"
+            {{ end }}
           env:
             - name: APIM_APK_AGENT_PRIVATE_KEY_PATH
               value: /home/wso2/security/keystore/apk-agent.key

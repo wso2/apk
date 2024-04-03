@@ -40,13 +40,13 @@ To create a new feature, follow these steps:
     helm repo add bitnami https://charts.bitnami.com/bitnami
     helm repo add jetstack https://charts.jetstack.io
     helm dependency build
-    helm install apk-test-setup . -n apk
+    helm install apk . -n apk
     ```
 
 3. Port forward router-service to use localhost.
 
     ```bash
-    kubectl port-forward svc/apk-test-setup-wso2-apk-router-service -n apk 9095:9095
+    kubectl port-forward svc/apk-wso2-apk-router-service -n apk 9095:9095
     ```
 
 4. Add the following DNS mappings to `/etc/hosts` file.
