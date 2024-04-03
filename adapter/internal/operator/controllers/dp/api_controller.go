@@ -84,6 +84,7 @@ const (
 	configMapAuthentication          = "configMapAuthentication"
 	secretAuthentication             = "secretAuthentication"
 	backendHTTPRouteIndex            = "backendHTTPRouteIndex"
+	backendGQLRouteIndex             = "backendGQLRouteIndex"
 	interceptorServiceAPIPolicyIndex = "interceptorServiceAPIPolicyIndex"
 	backendInterceptorServiceIndex   = "backendInterceptorServiceIndex"
 	backendJWTAPIPolicyIndex         = "backendJWTAPIPolicyIndex"
@@ -95,12 +96,12 @@ var (
 
 // APIReconciler reconciles a API object
 type APIReconciler struct {
-	client              k8client.Client
-	ods                 *synchronizer.OperatorDataStore
-	ch                  *chan *synchronizer.APIEvent
-	successChannel      *chan synchronizer.SuccessEvent
-	statusUpdater       *status.UpdateHandler
-	mgr                 manager.Manager
+	client                k8client.Client
+	ods                   *synchronizer.OperatorDataStore
+	ch                    *chan *synchronizer.APIEvent
+	successChannel        *chan synchronizer.SuccessEvent
+	statusUpdater         *status.UpdateHandler
+	mgr                   manager.Manager
 	apiPropagationEnabled bool
 }
 
@@ -1445,6 +1446,22 @@ func (apiReconciler *APIReconciler) getAPIsForBackend(ctx context.Context, obj k
 		requests = append(requests, apiReconciler.getAPIForHTTPRoute(ctx, &httpRoute)...)
 	}
 
+	gqlRouteList := &dpv1alpha2.GQLRouteList{}
+	if err := apiReconciler.client.List(ctx, gqlRouteList, &k8client.ListOptions{
+		FieldSelector: fields.OneTermEqualSelector(backendGQLRouteIndex, utils.NamespacedName(backend).String()),
+	}); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2625, logging.CRITICAL, "Unable to find associated HTTPRoutes: %s", utils.NamespacedName(backend).String()))
+		return []reconcile.Request{}
+	}
+
+	if len(gqlRouteList.Items) == 0 {
+		loggers.LoggerAPKOperator.Debugf("GQLRoutes for Backend not found: %s", utils.NamespacedName(backend).String())
+	}
+	for item := range gqlRouteList.Items {
+		gqlRoute := gqlRouteList.Items[item]
+		requests = append(requests, apiReconciler.getAPIForGQLRoute(ctx, &gqlRoute)...)
+	}
+
 	// Create API reconcile events when Backend reffered from InterceptorService
 	interceptorServiceList := &dpv1alpha1.InterceptorServiceList{}
 	if err := apiReconciler.client.List(ctx, interceptorServiceList, &k8client.ListOptions{
@@ -1622,6 +1639,26 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 					}
 				}
 			}
+			return backends
+		}); err != nil {
+		return err
+	}
+
+	// Backend to GQLRoute indexer
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha2.GQLRoute{}, backendGQLRouteIndex,
+		func(rawObj k8client.Object) []string {
+			gqlRoute := rawObj.(*dpv1alpha2.GQLRoute)
+			var backends []string
+			for _, backendRef := range gqlRoute.Spec.BackendRefs {
+				if backendRef.Kind != nil && *backendRef.Kind == constants.KindBackend {
+					backends = append(backends, types.NamespacedName{
+						Namespace: utils.GetNamespace(backendRef.Namespace,
+							gqlRoute.ObjectMeta.Namespace),
+						Name: string(backendRef.Name),
+					}.String())
+				}
+			}
+
 			return backends
 		}); err != nil {
 		return err
