@@ -257,10 +257,10 @@ func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	if err := apiReconciler.client.Get(ctx, req.NamespacedName, &apiCR); err != nil {
 		apiState, found := apiReconciler.ods.GetCachedAPI(req.NamespacedName)
 		if found && k8error.IsNotFound(err) {
-			if apiReconciler.apiPropagationEnabled {
+			if apiReconciler.apiPropagationEnabled && isAPIPropagatable(&apiState) {
 				// Convert api state to api cp data
 				loggers.LoggerAPKOperator.Info("Sending API deletion event to agent")
-				apiCpData := apiReconciler.convertAPIStateToAPICp(ctx, apiState)
+				apiCpData := apiReconciler.convertAPIStateToAPICp(ctx, apiState, "")
 				apiCpData.Event = controlplane.EventTypeDelete
 				controlplane.AddToEventQueue(apiCpData)
 			}
@@ -444,13 +444,19 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 	loggers.LoggerAPKOperator.Debugf("Child references are retrieved successfully for API CR %s", apiRef.String())
 	storedHash, hashFound := apiState.APIDefinition.ObjectMeta.Labels["apiHash"]
 	if !api.Status.DeploymentStatus.Accepted {
-		if apiReconciler.apiPropagationEnabled && !apiState.APIDefinition.Spec.SystemAPI {
+		if apiReconciler.apiPropagationEnabled && isAPIPropagatable(apiState) {
 			apiHash := apiReconciler.getAPIHash(apiState)
+			push := false
 			if !hashFound || storedHash != apiHash {
-				apiReconciler.patchAPIHash(ctx, apiHash, apiState.APIDefinition.ObjectMeta.Name, apiState.APIDefinition.ObjectMeta.Namespace)
+				// Check whether apiHash in the controlplane queue
+				if !controlplane.IsAPIHashQueued(apiHash) {
+					push = true
+				}
+			}
+			if push {
 				loggers.LoggerAPKOperator.Infof("API hash changed sending the API to agent")
 				// Publish the api data to CP
-				apiCpData := apiReconciler.convertAPIStateToAPICp(ctx, *apiState)
+				apiCpData := apiReconciler.convertAPIStateToAPICp(ctx, *apiState, apiHash)
 				apiCpData.Event = controlplane.EventTypeCreate
 				controlplane.AddToEventQueue(apiCpData)
 			}
@@ -460,13 +466,19 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 		return &synchronizer.APIEvent{EventType: constants.Create, Events: []synchronizer.APIState{*apiState}, UpdatedEvents: []string{}}, nil
 	} else if cachedAPI, events, updated :=
 		apiReconciler.ods.UpdateAPIState(apiRef, apiState); updated {
-		if apiReconciler.apiPropagationEnabled && !apiState.APIDefinition.Spec.SystemAPI {
+		if apiReconciler.apiPropagationEnabled && isAPIPropagatable(apiState) {
 			apiHash := apiReconciler.getAPIHash(apiState)
+			push := false
 			if !hashFound || storedHash != apiHash {
-				apiReconciler.patchAPIHash(ctx, apiHash, apiState.APIDefinition.ObjectMeta.Name, apiState.APIDefinition.ObjectMeta.Namespace)
+				// Check whether apiHash in the controlplane queue
+				if !controlplane.IsAPIHashQueued(apiHash) {
+					push = true
+				}
+			}
+			if push {
 				loggers.LoggerAPKOperator.Infof("API hash changed sending the API to agent")
 				// Publish the api data to CP
-				apiCpData := apiReconciler.convertAPIStateToAPICp(ctx, *apiState)
+				apiCpData := apiReconciler.convertAPIStateToAPICp(ctx, *apiState, apiHash)
 				apiCpData.Event = controlplane.EventTypeUpdate
 				controlplane.AddToEventQueue(apiCpData)
 			}
@@ -478,6 +490,16 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 	}
 
 	return nil, nil
+}
+
+func isAPIPropagatable(apiState *synchronizer.APIState) bool {
+	validOrgs := []string{"carbon.super"}
+	// System APIs should not be propagated to CP
+	if apiState.APIDefinition.Spec.SystemAPI {
+		return false
+	}
+	// Only valid organization's APIs can be propagated to CP
+	return utils.ContainsString(validOrgs, apiState.APIDefinition.Spec.Organization) 
 }
 
 func (apiReconciler *APIReconciler) resolveGQLRouteRefs(ctx context.Context, gqlRouteRefs []string,
@@ -2148,41 +2170,6 @@ func (apiReconciler *APIReconciler) handleLabels(ctx context.Context) {
 	}
 }
 
-func (apiReconciler *APIReconciler) patchAPIHash(ctx context.Context, hash string, name string, namespace string) {
-	apiCR := dpv1alpha2.API{
-		ObjectMeta: metav1.ObjectMeta{
-			Namespace: namespace,
-			Name:      name,
-		},
-	}
-	hashKey := "apiHash"
-	patchOps := []patchStringValue{}
-	patchOps = append(patchOps, patchStringValue{
-		Op:    "replace",
-		Path:  fmt.Sprintf("/metadata/labels/%s", hashKey),
-		Value: hash,
-	})
-	payloadBytes, _ := json.Marshal(patchOps)
-	err := apiReconciler.client.Patch(ctx, &apiCR, k8client.RawPatch(types.JSONPatchType, payloadBytes))
-	if err != nil {
-		loggers.LoggerAPKOperator.Errorf("Failed to patch api %s/%s with patch: %+v, error: %+v", name, namespace, patchOps, err)
-		// Patch did not work it could be due to labels field does not exists. Lets try to update the CR with labels field.
-		var apiCR dpv1alpha2.API
-		if err := apiReconciler.client.Get(ctx, types.NamespacedName{Namespace: namespace, Name: name}, &apiCR); err == nil {
-			if apiCR.ObjectMeta.Labels == nil {
-				apiCR.ObjectMeta.Labels = map[string]string{}
-			}
-			apiCR.ObjectMeta.Labels["apiHash"] = hash
-			crUpdateError := apiReconciler.client.Update(ctx, &apiCR)
-			if crUpdateError != nil {
-				loggers.LoggerAPKOperator.Errorf("Error while updating the API CR for api hash. Error: %+v", crUpdateError)
-			}
-		} else {
-			loggers.LoggerAPKOperator.Errorf("Error while loading api: %s/%s, Error: %v", name, namespace, err)
-		}
-	}
-}
-
 func (apiReconciler *APIReconciler) handleOwnerReference(ctx context.Context, obj k8client.Object, apiRequests *[]reconcile.Request) {
 	apis := []dpv1alpha2.API{}
 	for _, req := range *apiRequests {
@@ -2233,7 +2220,7 @@ func prepareOwnerReference(apiItems []dpv1alpha2.API) []metav1.OwnerReference {
 	return ownerReferences
 }
 
-func (apiReconciler *APIReconciler) convertAPIStateToAPICp(ctx context.Context, apiState synchronizer.APIState) controlplane.APICPEvent {
+func (apiReconciler *APIReconciler) convertAPIStateToAPICp(ctx context.Context, apiState synchronizer.APIState, apiHash string) controlplane.APICPEvent {
 	apiCPEvent := controlplane.APICPEvent{}
 	spec := apiState.APIDefinition.Spec
 	configMap := &corev1.ConfigMap{}
@@ -2298,6 +2285,7 @@ func (apiReconciler *APIReconciler) convertAPIStateToAPICp(ctx context.Context, 
 		SecurityScheme:   securityScheme,
 		AuthHeader:       authHeader,
 		Operations:       operations,
+		APIHash:          apiHash,
 	}
 	apiCPEvent.API = api
 	apiCPEvent.CRName = apiState.APIDefinition.ObjectMeta.Name

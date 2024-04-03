@@ -42,6 +42,7 @@ var (
 	wg           sync.WaitGroup
 	apisRestPath string
 	skipSSL      bool
+	apiHashMap    map[string]interface{}
 )
 
 // EventType represents the type of event.
@@ -95,6 +96,7 @@ type API struct {
 	SecurityScheme   []string          `json:"securityScheme"`
 	AuthHeader       string            `json:"authHeader"`
 	Operations       []Operation       `json:"operations"`
+	APIHash          string            `json:"-"`
 }
 
 // Operation holds the path, verb, throttling and interceptor policy
@@ -127,6 +129,7 @@ func init() {
 		skipSSL = conf.Adapter.ControlPlane.SkipSSLVerification
 		eventQueue = make(chan APICPEvent, 1000)
 		labelsQueue = make(chan APICRLabelsUpdate, 1000)
+		apiHashMap = make(map[string]interface{})
 		wg.Add(1)
 		go sendData()
 	})
@@ -184,6 +187,7 @@ func sendData() {
 				// If its a delete event that got propagated to CP then we do not need to update CR.
 				break
 			}
+			delete(apiHashMap, event.API.APIHash)
 			var responseMap map[string]interface{}
 			err = json.NewDecoder(resp.Body).Decode(&responseMap)
 			if err != nil {
@@ -203,7 +207,7 @@ func sendData() {
 			labelsQueue <- APICRLabelsUpdate{
 				Namespace: event.CRNamespace,
 				Name:      event.CRName,
-				Labels:    map[string]string{"apiUUID": id, "revisionID": revisionID},
+				Labels:    map[string]string{"apiUUID": id, "revisionID": revisionID, "apiHash": event.API.APIHash},
 			}
 			break
 		}
@@ -214,9 +218,16 @@ func sendData() {
 func AddToEventQueue(data APICPEvent) {
 	loggers.LoggerAPK.Debugf("Event added to CP Event queue : %+v", data)
 	eventQueue <- data
+	apiHashMap[data.API.APIHash] = nil
 }
 
 // GetLabelQueue adds the label change to queue
 func GetLabelQueue() *chan APICRLabelsUpdate {
 	return &labelsQueue
+}
+
+// IsAPIHashQueued check whether the API related to the dpHash already in the queue for the update
+func IsAPIHashQueued(dpHash string) bool {
+	_, found := apiHashMap[dpHash]
+	return found
 }

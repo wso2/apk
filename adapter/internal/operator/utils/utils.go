@@ -583,3 +583,14 @@ func ConvertRefConfigsV1ToV2(refConfig *dpv1alpha1.RefConfig) *dpv1alpha2.RefCon
 	}
 	return nil
 }
+
+// ContainsString checks whether a list contains a specific string.
+// It returns true if the string is found in the list, otherwise false.
+func ContainsString(list []string, target string) bool {
+    for _, item := range list {
+        if item == target {
+            return true
+        }
+    }
+    return false
+}
