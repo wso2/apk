@@ -96,14 +96,14 @@ To tryout APK please refer to this [document](https://apk.docs.wso2.com/en/lates
 
 ### To Access Deployment through local machine
 
-- You can either, identify the router-service external IP address to invoke the API through the APK gateway
+- You can either, identify the gateway-service external IP address to invoke the API through the APK gateway
     ```bash
-    kubectl get svc | grep router-service
+    kubectl get svc | grep gateway-service
     ```
 
 - or, port forward to router-service to use localhost.
     ```bash
-    kubectl port-forward svc/apk-test-wso2-apk-router-service 9095:9095
+    kubectl port-forward svc/apk-test-wso2-apk-gateway-service 9095:9095
     ```
 
 ## Quick Start APK with Kubernetes client
