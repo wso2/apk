@@ -442,20 +442,17 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 
 	loggers.LoggerAPKOperator.Debugf("Child references are retrieved successfully for API CR %s", apiRef.String())
 	storedHash, hashFound := apiState.APIDefinition.ObjectMeta.Labels["apiHash"]
-	// TODO probably we can use the same apiHash instead of using dpHash
-	dpHash, dpHashFound := apiState.APIDefinition.ObjectMeta.Labels["dpHash"]
 	if !api.Status.DeploymentStatus.Accepted {
 		if apiReconciler.apiPropagationEnabled && isAPIPropagatable(apiState) {
 			apiHash := apiReconciler.getAPIHash(apiState)
 			push := false
-			if !dpHashFound || dpHash != apiHash {
+			if !hashFound || storedHash != apiHash {
 				// Check whether apiHash in the controlplane queue
 				if !controlplane.IsAPIHashQueued(apiHash) {
 					push = true
 				}
 			}
-			if !hashFound || storedHash != apiHash || push {
-				apiReconciler.patchAPIHash(ctx, apiHash, apiState.APIDefinition.ObjectMeta.Name, apiState.APIDefinition.ObjectMeta.Namespace)
+			if push {
 				loggers.LoggerAPKOperator.Infof("API hash changed sending the API to agent")
 				// Publish the api data to CP
 				apiCpData := apiReconciler.convertAPIStateToAPICp(ctx, *apiState, apiHash)
@@ -471,14 +468,13 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 		if apiReconciler.apiPropagationEnabled && isAPIPropagatable(apiState) {
 			apiHash := apiReconciler.getAPIHash(apiState)
 			push := false
-			if !dpHashFound || dpHash != apiHash {
+			if !hashFound || storedHash != apiHash {
 				// Check whether apiHash in the controlplane queue
 				if !controlplane.IsAPIHashQueued(apiHash) {
 					push = true
 				}
 			}
-			if !hashFound || storedHash != apiHash || push {
-				apiReconciler.patchAPIHash(ctx, apiHash, apiState.APIDefinition.ObjectMeta.Name, apiState.APIDefinition.ObjectMeta.Namespace)
+			if push {
 				loggers.LoggerAPKOperator.Infof("API hash changed sending the API to agent")
 				// Publish the api data to CP
 				apiCpData := apiReconciler.convertAPIStateToAPICp(ctx, *apiState, apiHash)
@@ -2134,41 +2130,6 @@ func (apiReconciler *APIReconciler) handleLabels(ctx context.Context) {
 			} else {
 				loggers.LoggerAPKOperator.Errorf("Error while loading api: %s/%s, Error: %v", labelUpdate.Name, labelUpdate.Namespace, err)
 			}
-		}
-	}
-}
-
-func (apiReconciler *APIReconciler) patchAPIHash(ctx context.Context, hash string, name string, namespace string) {
-	apiCR := dpv1alpha2.API{
-		ObjectMeta: metav1.ObjectMeta{
-			Namespace: namespace,
-			Name:      name,
-		},
-	}
-	hashKey := "apiHash"
-	patchOps := []patchStringValue{}
-	patchOps = append(patchOps, patchStringValue{
-		Op:    "replace",
-		Path:  fmt.Sprintf("/metadata/labels/%s", hashKey),
-		Value: hash,
-	})
-	payloadBytes, _ := json.Marshal(patchOps)
-	err := apiReconciler.client.Patch(ctx, &apiCR, k8client.RawPatch(types.JSONPatchType, payloadBytes))
-	if err != nil {
-		loggers.LoggerAPKOperator.Errorf("Failed to patch api %s/%s with patch: %+v, error: %+v", name, namespace, patchOps, err)
-		// Patch did not work it could be due to labels field does not exists. Lets try to update the CR with labels field.
-		var apiCR dpv1alpha2.API
-		if err := apiReconciler.client.Get(ctx, types.NamespacedName{Namespace: namespace, Name: name}, &apiCR); err == nil {
-			if apiCR.ObjectMeta.Labels == nil {
-				apiCR.ObjectMeta.Labels = map[string]string{}
-			}
-			apiCR.ObjectMeta.Labels["apiHash"] = hash
-			crUpdateError := apiReconciler.client.Update(ctx, &apiCR)
-			if crUpdateError != nil {
-				loggers.LoggerAPKOperator.Errorf("Error while updating the API CR for api hash. Error: %+v", crUpdateError)
-			}
-		} else {
-			loggers.LoggerAPKOperator.Errorf("Error while loading api: %s/%s, Error: %v", name, namespace, err)
 		}
 	}
 }

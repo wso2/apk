@@ -207,7 +207,7 @@ func sendData() {
 			labelsQueue <- APICRLabelsUpdate{
 				Namespace: event.CRNamespace,
 				Name:      event.CRName,
-				Labels:    map[string]string{"apiUUID": id, "revisionID": revisionID, "dpHash": event.API.APIHash},
+				Labels:    map[string]string{"apiUUID": id, "revisionID": revisionID, "apiHash": event.API.APIHash},
 			}
 			break
 		}
