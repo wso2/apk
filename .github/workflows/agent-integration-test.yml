@@ -21,7 +21,7 @@ jobs:
       with:
         azcliversion: 2.44.1
         inlineScript: |
-          az aks create --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" --name "agent-integ-${{ secrets.AKS_CLUSTER_NAME }}-${{ github.event.number || github.run_id }}" --enable-cluster-autoscaler --min-count 1 --max-count 3 --location "southeastasia" --node-vm-size Standard_DS3_v2 --generate-ssh-keys
+          az aks create --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" --name "agent-integ-${{ secrets.AKS_CLUSTER_NAME }}-${{ github.event.number || github.run_id }}" --enable-cluster-autoscaler --min-count 1 --max-count 3 --location "southeastasia" --node-vm-size Standard_DS4_v2 --generate-ssh-keys
     - uses: azure/aks-set-context@v3
       with:
          resource-group: '${{ secrets.AZURE_RESOURCE_GROUP }}'
