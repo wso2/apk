@@ -59,21 +59,11 @@ To create a new feature, follow these steps:
     sudo echo "$IP default.sandbox.gw.wso2.com" | sudo tee -a /etc/hosts
     ```
    
-5. Go to the `test/apim-apk-agent-test/apim-cp-helm-chart` directory and run following commands to install the APIM CP component.
+5. Run following commands to deploy the APIM CP component.
 
-(Optional)If you are on a Mac, need to add following changes to values.yaml file in apim-cp-helm-chart directory.
-```bash
-   runAsUser: 802
-   registry: "docker.io"
-   repository: "sampathrajapakse/wso2am"
-   digest: "sha256:9b269e0f3b9b23f48320d16235624acbbfa455aeda6592aa4d51631c85652c2a"
-```
-Then do the following command to deploy APIM CP component.
-
-```bash
-    helm dependency build
-    helm install apim . -n apk
-```
+helm repo add wso2apim https://github.com/wso2/helm-apim/releases/download/cp-4.3.0-beta
+helm repo update
+helm install apim wso2apim/wso2am-cp --version 4.3.0-beta -f https://raw.githubusercontent.com/wso2/apk/main/helm-charts/sample/apim/cp/amd-values.yaml -n apk --debug --wait --timeout 5m0s
 
 6. Port forward router-service to use localhost.
 
