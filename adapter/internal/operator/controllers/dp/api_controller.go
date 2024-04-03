@@ -256,10 +256,10 @@ func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	if err := apiReconciler.client.Get(ctx, req.NamespacedName, &apiCR); err != nil {
 		apiState, found := apiReconciler.ods.GetCachedAPI(req.NamespacedName)
 		if found && k8error.IsNotFound(err) {
-			if apiReconciler.apiPropagationEnabled {
+			if apiReconciler.apiPropagationEnabled && isAPIPropagatable(&apiState) {
 				// Convert api state to api cp data
 				loggers.LoggerAPKOperator.Info("Sending API deletion event to agent")
-				apiCpData := apiReconciler.convertAPIStateToAPICp(ctx, apiState)
+				apiCpData := apiReconciler.convertAPIStateToAPICp(ctx, apiState, "")
 				apiCpData.Event = controlplane.EventTypeDelete
 				controlplane.AddToEventQueue(apiCpData)
 			}
@@ -442,14 +442,23 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 
 	loggers.LoggerAPKOperator.Debugf("Child references are retrieved successfully for API CR %s", apiRef.String())
 	storedHash, hashFound := apiState.APIDefinition.ObjectMeta.Labels["apiHash"]
+	// TODO probably we can use the same apiHash instead of using dpHash
+	dpHash, dpHashFound := apiState.APIDefinition.ObjectMeta.Labels["dpHash"]
 	if !api.Status.DeploymentStatus.Accepted {
-		if apiReconciler.apiPropagationEnabled && !apiState.APIDefinition.Spec.SystemAPI {
+		if apiReconciler.apiPropagationEnabled && isAPIPropagatable(apiState) {
 			apiHash := apiReconciler.getAPIHash(apiState)
-			if !hashFound || storedHash != apiHash {
+			push := false
+			if !dpHashFound || dpHash != apiHash {
+				// Check whether apiHash in the controlplane queue
+				if !controlplane.IsAPIHashQueued(apiHash) {
+					push = true
+				}
+			}
+			if !hashFound || storedHash != apiHash || push {
 				apiReconciler.patchAPIHash(ctx, apiHash, apiState.APIDefinition.ObjectMeta.Name, apiState.APIDefinition.ObjectMeta.Namespace)
 				loggers.LoggerAPKOperator.Infof("API hash changed sending the API to agent")
 				// Publish the api data to CP
-				apiCpData := apiReconciler.convertAPIStateToAPICp(ctx, *apiState)
+				apiCpData := apiReconciler.convertAPIStateToAPICp(ctx, *apiState, apiHash)
 				apiCpData.Event = controlplane.EventTypeCreate
 				controlplane.AddToEventQueue(apiCpData)
 			}
@@ -459,13 +468,20 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 		return &synchronizer.APIEvent{EventType: constants.Create, Events: []synchronizer.APIState{*apiState}, UpdatedEvents: []string{}}, nil
 	} else if cachedAPI, events, updated :=
 		apiReconciler.ods.UpdateAPIState(apiRef, apiState); updated {
-		if apiReconciler.apiPropagationEnabled && !apiState.APIDefinition.Spec.SystemAPI {
+		if apiReconciler.apiPropagationEnabled && isAPIPropagatable(apiState) {
 			apiHash := apiReconciler.getAPIHash(apiState)
-			if !hashFound || storedHash != apiHash {
+			push := false
+			if !dpHashFound || dpHash != apiHash {
+				// Check whether apiHash in the controlplane queue
+				if !controlplane.IsAPIHashQueued(apiHash) {
+					push = true
+				}
+			}
+			if !hashFound || storedHash != apiHash || push {
 				apiReconciler.patchAPIHash(ctx, apiHash, apiState.APIDefinition.ObjectMeta.Name, apiState.APIDefinition.ObjectMeta.Namespace)
 				loggers.LoggerAPKOperator.Infof("API hash changed sending the API to agent")
 				// Publish the api data to CP
-				apiCpData := apiReconciler.convertAPIStateToAPICp(ctx, *apiState)
+				apiCpData := apiReconciler.convertAPIStateToAPICp(ctx, *apiState, apiHash)
 				apiCpData.Event = controlplane.EventTypeUpdate
 				controlplane.AddToEventQueue(apiCpData)
 			}
@@ -477,6 +493,17 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 	}
 
 	return nil, nil
+}
+
+func isAPIPropagatable(apiState *synchronizer.APIState) bool {
+	validOrgs := []string{"carbon.super"}
+	// System APIs should not be propagated to CP
+	if apiState.APIDefinition.Spec.SystemAPI {
+		return false
+	}
+	// Only valid organization's APIs can be propagated to CP
+	loggers.LoggerAPKOperator.Infof("org:::: %s, %+v", apiState.APIDefinition.Spec.Organization,  utils.ContainsString(validOrgs, apiState.APIDefinition.Spec.Organization) )
+	return utils.ContainsString(validOrgs, apiState.APIDefinition.Spec.Organization) 
 }
 
 func (apiReconciler *APIReconciler) resolveGQLRouteRefs(ctx context.Context, gqlRouteRefs []string,
@@ -2196,7 +2223,7 @@ func prepareOwnerReference(apiItems []dpv1alpha2.API) []metav1.OwnerReference {
 	return ownerReferences
 }
 
-func (apiReconciler *APIReconciler) convertAPIStateToAPICp(ctx context.Context, apiState synchronizer.APIState) controlplane.APICPEvent {
+func (apiReconciler *APIReconciler) convertAPIStateToAPICp(ctx context.Context, apiState synchronizer.APIState, apiHash string) controlplane.APICPEvent {
 	apiCPEvent := controlplane.APICPEvent{}
 	spec := apiState.APIDefinition.Spec
 	configMap := &corev1.ConfigMap{}
@@ -2261,6 +2288,7 @@ func (apiReconciler *APIReconciler) convertAPIStateToAPICp(ctx context.Context, 
 		SecurityScheme:   securityScheme,
 		AuthHeader:       authHeader,
 		Operations:       operations,
+		APIHash:          apiHash,
 	}
 	apiCPEvent.API = api
 	apiCPEvent.CRName = apiState.APIDefinition.ObjectMeta.Name
