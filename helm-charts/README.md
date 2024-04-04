@@ -39,11 +39,11 @@ A Helm chart for APK components
 | wso2.apk.idp.signing.configMapName | string | `""` | IDP jwt signing certificate configmap name |
 | wso2.apk.idp.signing.secretName | string | `""` | IDP jwt signing certificate secret name |
 | wso2.apk.idp.signing.fileName | string | `""` | IDP jwt signing certificate file name |
-| wso2.apk.cp.controlplane.enableApiPropagation | bool | `false` | Enable controlplane connection |
-| wso2.apk.cp.controlplane.enabledSubscription | bool | `false` | Enable controlplane connection |
-| wso2.apk.cp.controlplane.host | string | `"apim-apk-agent-service.apk.svc.cluster.local"` | Hostname of the APK agent service |
-| wso2.apk.cp.controlplane.skipSSLVerification | bool | `false` | Skip SSL verification |
-| wso2.apk.cp.controlplane.persistence | object | `{"type":"K8s"}` | Provide persistence mode DB/K8s |
+| wso2.apk.cp.enableApiPropagation | bool | `false` | Enable controlplane connection |
+| wso2.apk.cp.enabledSubscription | bool | `false` | Enable controlplane connection |
+| wso2.apk.cp.host | string | `"apim-apk-agent-service.apk.svc.cluster.local"` | Hostname of the APK agent service |
+| wso2.apk.cp.skipSSLVerification | bool | `false` | Skip SSL verification |
+| wso2.apk.cp.persistence | object | `{"type":"K8s"}` | Provide persistence mode DB/K8s |
 | wso2.apk.dp.enabled | bool | `true` | Enable the deployment of the Data Plane |
 | wso2.apk.dp.environment.name | string | `"Development"` | Environment Name of the Data Plane |
 | wso2.apk.dp.gatewayClass | object | `{"name":"wso2-apk-default"}` | GatewayClass custom resource name |
