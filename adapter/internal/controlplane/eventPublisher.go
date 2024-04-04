@@ -42,7 +42,7 @@ var (
 	wg           sync.WaitGroup
 	apisRestPath string
 	skipSSL      bool
-	apiHashMap    map[string]interface{}
+	apiHashMap   map[string]interface{}
 )
 
 // EventType represents the type of event.
@@ -101,8 +101,9 @@ type API struct {
 
 // Operation holds the path, verb, throttling and interceptor policy
 type Operation struct {
-	Path    string    `json:"path"`
-	Verb string    `json:"verb"`
+	Path   string   `json:"path"`
+	Verb   string   `json:"verb"`
+	Scopes []string `json:"scopes"`
 }
 
 // CORSPolicy hold cors configs
@@ -196,7 +197,7 @@ func sendData() {
 			// Assuming the response contains an ID field, you can extract it like this:
 			id, ok := responseMap["id"].(string)
 			revisionID, revisionOk := responseMap["revisionID"].(string)
-			if !ok  {
+			if !ok {
 				loggers.LoggerAPK.Errorf("Id field not present in response body. encoded body: %+v", responseMap)
 				id = ""
 				// break
