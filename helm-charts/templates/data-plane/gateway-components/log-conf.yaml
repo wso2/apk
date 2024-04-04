@@ -21,13 +21,13 @@ data:
       port = 18006
     {{ end}}  
 
-    {{- if and .Values.wso2.apk.cp .Values.wso2.apk.cp.controlplane }}
+    {{- if .Values.wso2.apk.cp }}
     [adapter.controlplane]
-      enableAPIPropagation = {{ .Values.wso2.apk.cp.controlplane.enableApiPropagation | default false }}
-      host = "{{ .Values.wso2.apk.cp.controlplane.host | default "apim-apk-agent-service.apk.svc.cluster.local" }}"
+      enableAPIPropagation = {{ .Values.wso2.apk.cp.enableApiPropagation | default false }}
+      host = "{{ .Values.wso2.apk.cp.host | default "apim-apk-agent-service.apk.svc.cluster.local" }}"
       eventPort = 18000
       restPort = 18001
-      skipSSLVerification = {{ .Values.wso2.apk.cp.controlplane.skipSSLVerification | default false }}
+      skipSSLVerification = {{ .Values.wso2.apk.cp.skipSSLVerification | default false }}
     {{- end }}  
 
     {{ if and .Values.wso2.apk.dp.gatewayRuntime.deployment .Values.wso2.apk.dp.gatewayRuntime.deployment.router .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs }}

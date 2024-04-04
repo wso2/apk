@@ -29,15 +29,15 @@ data:
     [commoncontroller.truststore]
       location = "/home/wso2/security/truststore"
     
-    {{- if and .Values.wso2.apk.cp .Values.wso2.apk.cp.controlplane }}
+    {{- if .Values.wso2.apk.cp }}
     [commoncontroller.controlplane]
-       enabled = {{ .Values.wso2.apk.cp.controlplane.enabledSubscription | default false }}
-       host = "{{ .Values.wso2.apk.cp.controlplane.host | default "apim-apk-agent-service.apk.svc.cluster.local" }}"
+       enabled = {{ .Values.wso2.apk.cp.enabledSubscription | default false }}
+       host = "{{ .Values.wso2.apk.cp.host | default "apim-apk-agent-service.apk.svc.cluster.local" }}"
        eventPort = 18000
-       skipSSLVerification = {{ .Values.wso2.apk.cp.controlplane.skipSSLVerification | default false }}
-    {{- if and .Values.wso2.apk.cp .Values.wso2.apk.cp.controlplane.persistence }}
+       skipSSLVerification = {{ .Values.wso2.apk.cp.skipSSLVerification | default false }}
+    {{- if and .Values.wso2.apk.cp .Values.wso2.apk.cp.persistence }}
     [commoncontroller.controlplane.persistence] 
-      type = "{{ .Values.wso2.apk.cp.controlplane.persistence.type | default "K8s" }}"
+      type = "{{ .Values.wso2.apk.cp.persistence.type | default "K8s" }}"
     {{- end }}
     {{- end }}
 
