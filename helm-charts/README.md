@@ -1,6 +1,6 @@
 # apk-helm
 
-![Version: 1.1.0-alpha2](https://img.shields.io/badge/Version-1.1.0--alpha2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.16.0](https://img.shields.io/badge/AppVersion-1.16.0-informational?style=flat-square)
+![Version: 1.1.0-beta](https://img.shields.io/badge/Version-1.1.0--beta-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.16.0](https://img.shields.io/badge/AppVersion-1.16.0-informational?style=flat-square)
 
 A Helm chart for APK components
 
@@ -41,7 +41,7 @@ A Helm chart for APK components
 | wso2.apk.idp.signing.secretName | string | `""` | IDP jwt signing certificate secret name |
 | wso2.apk.idp.signing.fileName | string | `""` | IDP jwt signing certificate file name |
 | wso2.apk.cp.enableApiPropagation | bool | `false` | Enable controlplane connection |
-| wso2.apk.cp.enabledSubscription | bool | `false` | Enable controlplane connection |
+| wso2.apk.cp.enabledSubscription | bool | `false` | Enable controlplane connection for subscription |
 | wso2.apk.cp.host | string | `"apim-apk-agent-service.apk.svc.cluster.local"` | Hostname of the APK agent service |
 | wso2.apk.cp.skipSSLVerification | bool | `false` | Skip SSL verification |
 | wso2.apk.cp.persistence | object | `{"type":"K8s"}` | Provide persistence mode DB/K8s |
@@ -86,7 +86,7 @@ A Helm chart for APK components
 | wso2.apk.dp.configdeployer.deployment.strategy | string | `"RollingUpdate"` | Deployment strategy |
 | wso2.apk.dp.configdeployer.deployment.replicas | int | `1` | Number of replicas |
 | wso2.apk.dp.configdeployer.deployment.imagePullPolicy | string | `"Always"` | Image pull policy |
-| wso2.apk.dp.configdeployer.deployment.image | string | `"wso2/apk-config-deployer-service:1.1.0-alpha2"` | Image |
+| wso2.apk.dp.configdeployer.deployment.image | string | `"wso2/apk-config-deployer-service:1.1.0-beta"` | Image |
 | wso2.apk.dp.configdeployer.deployment.configs.authorization | bool | `true` | Enable authorization for runtime api. |
 | wso2.apk.dp.configdeployer.deployment.configs.baseUrl | string | `"https://api.am.wso2.com:9095/api/runtime"` | Baseurl for runtime api. |
 | wso2.apk.dp.configdeployer.deployment.configs.tls.secretName | string | `""` | TLS secret name for runtime public certificate. |
@@ -106,7 +106,7 @@ A Helm chart for APK components
 | wso2.apk.dp.adapter.deployment.strategy | string | `"RollingUpdate"` | Deployment strategy |
 | wso2.apk.dp.adapter.deployment.replicas | int | `1` | Number of replicas |
 | wso2.apk.dp.adapter.deployment.imagePullPolicy | string | `"Always"` | Image pull policy |
-| wso2.apk.dp.adapter.deployment.image | string | `"wso2/apk-adapter:1.1.0-alpha2"` | Image |
+| wso2.apk.dp.adapter.deployment.image | string | `"wso2/apk-adapter:1.1.0-beta"` | Image |
 | wso2.apk.dp.adapter.deployment.security.sslHostname | string | `"adapter"` | Enable security for adapter. |
 | wso2.apk.dp.adapter.configs.apiNamespaces | string | `nil` | Optionally configure namespaces to watch for apis. |
 | wso2.apk.dp.adapter.configs.tls.secretName | string | `""` | TLS secret name for adapter public certificate. |
@@ -128,7 +128,7 @@ A Helm chart for APK components
 | wso2.apk.dp.commonController.deployment.strategy | string | `"RollingUpdate"` | Deployment strategy |
 | wso2.apk.dp.commonController.deployment.replicas | int | `1` | Number of replicas |
 | wso2.apk.dp.commonController.deployment.imagePullPolicy | string | `"Always"` | Image pull policy |
-| wso2.apk.dp.commonController.deployment.image | string | `"wso2/apk-common-controller:1.1.0-alpha2"` | Image |
+| wso2.apk.dp.commonController.deployment.image | string | `"wso2/apk-common-controller:1.1.0-beta"` | Image |
 | wso2.apk.dp.commonController.deployment.security.sslHostname | string | `"commoncontroller"` | hostname for the common controller |
 | wso2.apk.dp.commonController.deployment.configs.apiNamespaces | list | `["apk-v12"]` | Optionally configure namespaces to watch for apis,ratelimitpolicies,etc. |
 | wso2.apk.dp.commonController.deployment.redis.host | string | `"redis-master"` | Redis host |
@@ -140,6 +140,8 @@ A Helm chart for APK components
 | wso2.apk.dp.commonController.deployment.redis.userKeyPath | string | `"/home/wso2/security/keystore/commoncontroller.key"` | Redis user key to use for redis connections |
 | wso2.apk.dp.commonController.deployment.redis.cACertPath | string | `"/home/wso2/security/keystore/commoncontroller.crt"` | Redis CA cert to use for redis connections |
 | wso2.apk.dp.commonController.deployment.redis.channelName | string | `"wso2-apk-revoked-tokens-channel"` | Token revocation subscription channel name |
+| wso2.apk.dp.commonController.deployment.database.enabled | bool | `false` | Enable Database mode for persistence |
+| wso2.apk.dp.commonController.deployment.database.name | string | `"DATAPLANE"` | name of the database containing controlplane data for the use of dataplane |
 | wso2.apk.dp.commonController.deployment.database.host | string | `"wso2apk-db-service.apk"` |  |
 | wso2.apk.dp.commonController.deployment.database.port | int | `5432` |  |
 | wso2.apk.dp.commonController.deployment.database.username | string | `"wso2carbon"` |  |
@@ -166,7 +168,7 @@ A Helm chart for APK components
 | wso2.apk.dp.ratelimiter.deployment.strategy | string | `"RollingUpdate"` | Deployment strategy |
 | wso2.apk.dp.ratelimiter.deployment.replicas | int | `1` | Number of replicas |
 | wso2.apk.dp.ratelimiter.deployment.imagePullPolicy | string | `"Always"` | Image pull policy |
-| wso2.apk.dp.ratelimiter.deployment.image | string | `"wso2/apk-ratelimiter:1.1.0-alpha2"` | Image |
+| wso2.apk.dp.ratelimiter.deployment.image | string | `"wso2/apk-ratelimiter:1.1.0-beta"` | Image |
 | wso2.apk.dp.ratelimiter.deployment.security.sslHostname | string | `"ratelimiter"` | hostname for the rate limiter |
 | wso2.apk.dp.ratelimiter.deployment.configs.tls.secretName | string | `"ratelimiter-cert"` | TLS secret name for rate limiter public certificate. |
 | wso2.apk.dp.ratelimiter.deployment.configs.tls.certKeyFilename | string | `""` | TLS certificate file name. |
@@ -186,7 +188,7 @@ A Helm chart for APK components
 | wso2.apk.dp.gatewayRuntime.deployment.router.livenessProbe.failureThreshold | int | `5` | Minimum consecutive failures for the probe to be considered failed after having succeeded. |
 | wso2.apk.dp.gatewayRuntime.deployment.router.strategy | string | `"RollingUpdate"` | Deployment strategy |
 | wso2.apk.dp.gatewayRuntime.deployment.router.imagePullPolicy | string | `"Always"` | Image pull policy |
-| wso2.apk.dp.gatewayRuntime.deployment.router.image | string | `"wso2/apk-router:1.1.0-alpha2"` | Image |
+| wso2.apk.dp.gatewayRuntime.deployment.router.image | string | `"wso2/apk-router:1.1.0-beta"` | Image |
 | wso2.apk.dp.gatewayRuntime.deployment.router.configs.enforcerResponseTimeoutInSeconds | int | `20` | The timeout for response coming from enforcer to route per API request |
 | wso2.apk.dp.gatewayRuntime.deployment.router.configs.useRemoteAddress | bool | `false` | If configured true, router appends the immediate downstream ip address to the x-forward-for header |
 | wso2.apk.dp.gatewayRuntime.deployment.router.configs.systemHost | string | `"localhost"` | System hostname for system API resources (eg: /testkey and /health) |
@@ -214,7 +216,7 @@ A Helm chart for APK components
 | wso2.apk.dp.gatewayRuntime.deployment.enforcer.livenessProbe.failureThreshold | int | `5` | Minimum consecutive failures for the probe to be considered failed after having succeeded. |
 | wso2.apk.dp.gatewayRuntime.deployment.enforcer.strategy | string | `"RollingUpdate"` | Deployment strategy |
 | wso2.apk.dp.gatewayRuntime.deployment.enforcer.imagePullPolicy | string | `"Always"` | Image pull policy |
-| wso2.apk.dp.gatewayRuntime.deployment.enforcer.image | string | `"wso2/apk-enforcer:1.1.0-alpha2"` | Image |
+| wso2.apk.dp.gatewayRuntime.deployment.enforcer.image | string | `"wso2/apk-enforcer:1.1.0-beta"` | Image |
 | wso2.apk.dp.gatewayRuntime.deployment.enforcer.security.sslHostname | string | `"enforcer"` | hostname for the enforcer |
 | wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.tls.secretName | string | `""` | TLS secret name for enforcer public certificate. |
 | wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.tls.certKeyFilename | string | `""` | TLS certificate file name. |
@@ -298,7 +300,7 @@ A Helm chart for APK components
 | idp.idpds.deployment.strategy | string | `"RollingUpdate"` | Deployment strategy |
 | idp.idpds.deployment.replicas | int | `1` | Number of replicas |
 | idp.idpds.deployment.imagePullPolicy | string | `"Always"` | Image pull policy |
-| idp.idpds.deployment.image | string | `"wso2/apk-idp-domain-service:1.1.0-alpha2"` | Image |
+| idp.idpds.deployment.image | string | `"wso2/apk-idp-domain-service:1.1.0-beta"` | Image |
 | idp.idpui.deployment.resources.requests.memory | string | `"128Mi"` | CPU request for the container |
 | idp.idpui.deployment.resources.requests.cpu | string | `"100m"` | Memory request for the container |
 | idp.idpui.deployment.resources.limits.memory | string | `"1028Mi"` | CPU limit for the container |
@@ -312,7 +314,7 @@ A Helm chart for APK components
 | idp.idpui.deployment.strategy | string | `"RollingUpdate"` | Deployment strategy |
 | idp.idpui.deployment.replicas | int | `1` | Number of replicas |
 | idp.idpui.deployment.imagePullPolicy | string | `"Always"` | Image pull policy |
-| idp.idpui.deployment.image | string | `"wso2/apk-idp-ui:1.1.0-alpha2"` | Image |
+| idp.idpui.deployment.image | string | `"wso2/apk-idp-ui:1.1.0-beta"` | Image |
 | idp.idpui.configs.idpLoginUrl | string | `"https://idp.am.wso2.com:9095/commonauth/login"` | identity server Login URL |
 | idp.idpui.configs.idpAuthCallBackUrl | string | `"https://idp.am.wso2.com:9095/oauth2/auth-callback"` | identity server authCallBackUrl |
 | gatewaySystem.enabled | bool | `true` | Enable gateway system to install gateway system components |
