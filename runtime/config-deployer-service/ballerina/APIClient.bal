@@ -1169,7 +1169,9 @@ public class APIClient {
         model:APIPolicy? apiPolicyCR = ();
         string optype = "api";
         if operation is APKOperations {
-            optype = "resource";
+            byte[] hexBytes = string:toBytes(<string>operation.target + <string>operation.verb);
+            string operationTargetHash = crypto:hashSha1(hexBytes).toBase16();
+            optype = operationTargetHash + "-resource";
         }
         apiPolicyCR = {
             metadata: {
@@ -1204,7 +1206,7 @@ public class APIClient {
                             apiArtifact.backendServices[backendService.metadata.name] = (backendService);
                             backendServiceName = backendService.metadata.name;
                         }
-                        model:InterceptorService? interceptorService = self.generateInterceptorServiceCR(parameters, backendServiceName, flow, apkConf, organization);
+                        model:InterceptorService? interceptorService = self.generateInterceptorServiceCR(parameters, backendServiceName, flow, apkConf, operations, organization);
                         model:InterceptorReference? interceptorReference = ();
                         if interceptorService is model:InterceptorService {
                             apiArtifact.interceptorServices[interceptorService.metadata.name] = (interceptorService);
@@ -1215,7 +1217,7 @@ public class APIClient {
                         policyReferences.push(interceptorReference);
                     } else if (policyName == "BackendJwt") {
                         BackendJWTPolicy backendJWTPolicy = check policy.cloneWithType(BackendJWTPolicy);
-                        model:BackendJWT backendJwt = self.retrieveBackendJWTPolicy(apkConf, apiArtifact, backendJWTPolicy, organization);
+                        model:BackendJWT backendJwt = self.retrieveBackendJWTPolicy(apkConf, apiArtifact, backendJWTPolicy, operations, organization);
                         apiArtifact.backendJwt = backendJwt;
                         policyReferences.push(<model:BackendJwtReference>{name: backendJwt.metadata.name});
                     } else {
@@ -1227,11 +1229,11 @@ public class APIClient {
         return policyReferences;
     }
 
-    private isolated function retrieveBackendJWTPolicy(APKConf apkConf, model:APIArtifact apiArtifact, BackendJWTPolicy backendJWTPolicy, commons:Organization organization) returns model:BackendJWT {
+    private isolated function retrieveBackendJWTPolicy(APKConf apkConf, model:APIArtifact apiArtifact, BackendJWTPolicy backendJWTPolicy, APKOperations? operation, commons:Organization organization) returns model:BackendJWT {
         BackendJWTPolicy_parameters parameters = backendJWTPolicy.parameters ?: {};
         model:BackendJWT backendJwt = {
             metadata: {
-                name: self.getBackendJWTPolicyUid(apkConf, organization),
+                name: self.getBackendJWTPolicyUid(apkConf, operation,  organization),
                 labels: self.getLabels(apkConf, organization)
             },
             spec: {}
@@ -1285,11 +1287,11 @@ public class APIClient {
         return corsPolicy;
     }
 
-    isolated function generateInterceptorServiceCR(InterceptorPolicy_parameters parameters, string interceptorBackend, string flow, APKConf apkConf, commons:Organization organization) returns model:InterceptorService? {
+    isolated function generateInterceptorServiceCR(InterceptorPolicy_parameters parameters, string interceptorBackend, string flow, APKConf apkConf, APKOperations? apiOperation, commons:Organization organization) returns model:InterceptorService? {
         model:InterceptorService? interceptorServiceCR = ();
         interceptorServiceCR = {
             metadata: {
-                name: self.getInterceptorServiceUid(apkConf, organization, flow, 0),
+                name: self.getInterceptorServiceUid(apkConf, apiOperation, organization, flow, 0),
                 labels: self.getLabels(apkConf, organization)
             },
             spec: {
@@ -1480,11 +1482,20 @@ public class APIClient {
         return "backend-" + concatanatedString + "-interceptor";
     }
 
-    public isolated function getBackendJWTPolicyUid(APKConf apkConf, commons:Organization organization) returns string {
+    public isolated function getBackendJWTPolicyUid(APKConf apkConf, APKOperations? apiOperation, commons:Organization organization) returns string {
         string concatanatedString = string:'join("-", organization.name, apkConf.name, 'apkConf.'version);
         byte[] hashedValue = crypto:hashSha1(concatanatedString.toBytes());
         concatanatedString = hashedValue.toBase16();
-        return string:'join("-", concatanatedString, "backend-jwt-policy");
+        if (apiOperation is APKOperations) {
+            if (apiOperation.target is string) {
+                byte[] hexBytes = string:toBytes(<string>apiOperation.target + <string>apiOperation.verb);
+                string operationTargetHash = crypto:hashSha1(hexBytes).toBase16();
+                concatanatedString = concatanatedString + "-" + operationTargetHash;
+            }
+            return string:'join("-", concatanatedString, "-resource-backend-jwt-policy");
+        } else {
+            return string:'join("-", concatanatedString, "-api-backend-jwt-policy");   
+        }
     }
 
     public isolated function getBackendServiceUid(APKConf apkConf, APKOperations? apiOperation, string endpointType, commons:Organization organization) returns string {
@@ -1499,11 +1510,20 @@ public class APIClient {
         }
     }
 
-    public isolated function getInterceptorServiceUid(APKConf apkConf, commons:Organization organization, string flow, int interceptorIndex) returns string {
+    public isolated function getInterceptorServiceUid(APKConf apkConf, APKOperations? apiOperation, commons:Organization organization, string flow, int interceptorIndex) returns string {
         string concatanatedString = string:'join("-", organization.name, apkConf.name, 'apkConf.'version);
         byte[] hashedValue = crypto:hashSha1(concatanatedString.toBytes());
         concatanatedString = hashedValue.toBase16();
-        return flow + "-interceptor-service-" + interceptorIndex.toString() + "-" + concatanatedString + "-resource";
+        if (apiOperation is APKOperations) {
+            if (apiOperation.target is string) {
+                byte[] hexBytes = string:toBytes(<string>apiOperation.target + <string>apiOperation.verb);
+                string operationTargetHash = crypto:hashSha1(hexBytes).toBase16();
+                concatanatedString = concatanatedString + "-" + operationTargetHash;
+            }
+            return flow + "-interceptor-service-" + interceptorIndex.toString() + "-" + concatanatedString + "-resource";
+        } else {
+            return flow + "-interceptor-service-" + interceptorIndex.toString() + "-" + concatanatedString + "-api";
+        }
     }
 
     public isolated function getBackendPolicyUid(APKConf api, string endpointType, commons:Organization organization) returns string {
@@ -1535,10 +1555,16 @@ public class APIClient {
     }
 
     public isolated function retrieveRateLimitPolicyRefName(APKOperations? operation, string targetRef) returns string {
+        string concatanatedString = "0";
         if operation is APKOperations {
-            return "resource-" + targetRef;
+            if (operation.target is string) {
+                byte[] hexBytes = string:toBytes(<string>operation.target + <string>operation.verb);
+                string operationTargetHash = crypto:hashSha1(hexBytes).toBase16();
+                concatanatedString = concatanatedString + "-" + operationTargetHash;
+            }
+            return "resource-" + concatanatedString + "-" +  targetRef;
         } else {
-            return "api-" + targetRef;
+            return "api-" + concatanatedString + "-" + targetRef;
         }
     }
 
