@@ -1,4 +1,4 @@
-{{- if or .Values.wso2.apk.dp.enabled .Values.wso2.apk.cp.enabled }}
+{{- if .Values.wso2.apk.dp.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -29,15 +29,15 @@ data:
     [commoncontroller.truststore]
       location = "/home/wso2/security/truststore"
     
-    {{- if .Values.wso2.apk.dp.commonController.deployment.controlplane }}
+    {{- if .Values.wso2.apk.cp }}
     [commoncontroller.controlplane]
-       enabled = {{ .Values.wso2.apk.dp.commonController.deployment.controlplane.enabled | default false }}
-       host = "{{ .Values.wso2.apk.dp.commonController.deployment.controlplane.host | default "apim-apk-agent-service.apk.svc.cluster.local" }}"
-       eventPort = {{ .Values.wso2.apk.dp.commonController.deployment.controlplane.port | default 18000 }}
-       skipSSLVerification = {{ .Values.wso2.apk.dp.commonController.deployment.controlplane.skipSSLVerification | default false }}
-    {{- if .Values.wso2.apk.dp.commonController.deployment.controlplane.persistence }}
+       enabled = {{ .Values.wso2.apk.cp.enabledSubscription | default false }}
+       host = "{{ .Values.wso2.apk.cp.host | default "apim-apk-agent-service.apk.svc.cluster.local" }}"
+       eventPort = 18000
+       skipSSLVerification = {{ .Values.wso2.apk.cp.skipSSLVerification | default false }}
+    {{- if and .Values.wso2.apk.cp .Values.wso2.apk.cp.persistence }}
     [commoncontroller.controlplane.persistence] 
-      type = "{{ .Values.wso2.apk.dp.commonController.deployment.controlplane.persistence.type | default "K8s" }}"
+      type = "{{ .Values.wso2.apk.cp.persistence.type | default "K8s" }}"
     {{- end }}
     {{- end }}
 

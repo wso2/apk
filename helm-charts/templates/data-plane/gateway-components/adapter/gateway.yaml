@@ -1,4 +1,4 @@
-{{- if or .Values.wso2.apk.dp.enabled .Values.wso2.apk.cp.enabled }}
+{{- if .Values.wso2.apk.dp.enabled }}
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
@@ -19,7 +19,7 @@ spec:
       port: {{ .Values.wso2.apk.dp.gateway.httpListener.port | default 9080}}
       protocol: HTTP
     {{ end }}
-    {{ if or .Values.wso2.apk.dp.enabled .Values.wso2.apk.cp.enabled }}
+    {{- if .Values.wso2.apk.dp.enabled }}
     - name: httpslistener
       hostname: "{{ .Values.wso2.apk.listener.hostname | default "api.am.wso2.com"}}"
       port: 9095

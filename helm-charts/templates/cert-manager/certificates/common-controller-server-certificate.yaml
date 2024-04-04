@@ -17,7 +17,7 @@
 # The following manifests contain a self-signed issuer CR and a certificate CR.
 # More document can be found at https://docs.cert-manager.io
 
-{{- if or .Values.wso2.apk.dp.enabled .Values.wso2.apk.cp.enabled }}
+{{- if .Values.wso2.apk.dp.enabled }}
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:

@@ -39,6 +39,11 @@ A Helm chart for APK components
 | wso2.apk.idp.signing.configMapName | string | `""` | IDP jwt signing certificate configmap name |
 | wso2.apk.idp.signing.secretName | string | `""` | IDP jwt signing certificate secret name |
 | wso2.apk.idp.signing.fileName | string | `""` | IDP jwt signing certificate file name |
+| wso2.apk.cp.enableApiPropagation | bool | `false` | Enable controlplane connection |
+| wso2.apk.cp.enabledSubscription | bool | `false` | Enable controlplane connection |
+| wso2.apk.cp.host | string | `"apim-apk-agent-service.apk.svc.cluster.local"` | Hostname of the APK agent service |
+| wso2.apk.cp.skipSSLVerification | bool | `false` | Skip SSL verification |
+| wso2.apk.cp.persistence | object | `{"type":"K8s"}` | Provide persistence mode DB/K8s |
 | wso2.apk.dp.enabled | bool | `true` | Enable the deployment of the Data Plane |
 | wso2.apk.dp.environment.name | string | `"Development"` | Environment Name of the Data Plane |
 | wso2.apk.dp.gatewayClass | object | `{"name":"wso2-apk-default"}` | GatewayClass custom resource name |
@@ -134,13 +139,6 @@ A Helm chart for APK components
 | wso2.apk.dp.commonController.deployment.redis.userKeyPath | string | `"/home/wso2/security/keystore/commoncontroller.key"` | Redis user key to use for redis connections |
 | wso2.apk.dp.commonController.deployment.redis.cACertPath | string | `"/home/wso2/security/keystore/commoncontroller.crt"` | Redis CA cert to use for redis connections |
 | wso2.apk.dp.commonController.deployment.redis.channelName | string | `"wso2-apk-revoked-tokens-channel"` | Token revocation subscription channel name |
-| wso2.apk.dp.commonController.deployment.controlplane.enabled | bool | `false` | Enable controlplane connection |
-| wso2.apk.dp.commonController.deployment.controlplane.host | string | `"apim-apk-agent-service.apk.svc.cluster.local"` | Hostname of the APK agent service |
-| wso2.apk.dp.commonController.deployment.controlplane.eventPort | int | `18000` | Port of the APK agent service for events |
-| wso2.apk.dp.commonController.deployment.controlplane.skipSSLVerification | bool | `false` | Skip SSL verification |
-| wso2.apk.dp.commonController.deployment.controlplane.persistence | object | `{"type":"K8s"}` | Provide persistence mode DB/K8s |
-| wso2.apk.dp.commonController.deployment.database.enabled | bool | `false` | Enable Database mode for persistence |
-| wso2.apk.dp.commonController.deployment.database.name | string | `"DATAPLANE"` | name of the database containing controlplane data for the use of dataplane |
 | wso2.apk.dp.commonController.deployment.database.host | string | `"wso2apk-db-service.apk"` |  |
 | wso2.apk.dp.commonController.deployment.database.port | int | `5432` |  |
 | wso2.apk.dp.commonController.deployment.database.username | string | `"wso2carbon"` |  |

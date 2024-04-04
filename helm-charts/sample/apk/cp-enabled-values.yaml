@@ -46,6 +46,10 @@ wso2:
       #   jwksEndpoint: "https://idp.am.wso2.com:9095/oauth2/jwks"
       #   secretName: "wso2apk-idp-signing"
       #   fileName: "idp.crt"
+    cp:
+      enabledSubscription: true
+      host: "apim-apk-agent-service.apk.svc.cluster.local"
+      skipSSLVerification: false
     dp:
       enabled: true
       gateway:
@@ -147,10 +151,6 @@ wso2:
           image: wso2/apk-common-controller:1.1.0-beta
           security:
             sslHostname: "commoncontroller"
-          controlplane:
-            enabled: true
-            host: "apim-apk-agent-service.apk.svc.cluster.local"
-            skipSSLVerification: true
           # configs:
           #   apiNamespaces:
           #     - "apk-v12"
