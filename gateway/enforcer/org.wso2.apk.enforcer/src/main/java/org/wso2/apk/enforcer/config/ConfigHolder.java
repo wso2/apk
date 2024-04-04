@@ -173,6 +173,7 @@ public class ConfigHolder {
         populateAPIKeyIssuer(config.getSecurity().getApiKey());
         populateInternalTokenIssuer(config.getSecurity().getRuntimeToken());
         populateMandateSubscriptionValidationConfig(config.getMandateSubscriptionValidation());
+        populateMandateInternalKeyValidationConfig(config.getMandateInternalKeyValidation());
         populateHttpClientConfig(config.getHttpClient());
         // resolve string variables provided as environment variables.
         resolveConfigsWithEnvs(this.config);
@@ -223,6 +224,10 @@ public class ConfigHolder {
 
     private void populateMandateSubscriptionValidationConfig(boolean mandateSubscriptionValidation) {
         config.setMandateSubscriptionValidation(mandateSubscriptionValidation);
+    }
+
+    private void populateMandateInternalKeyValidationConfig(boolean mandateInternalKeyValidation) {
+        config.setMandateInternalKeyValidation(mandateInternalKeyValidation);
     }
 
     private void populateManagementCredentials(Management management) {

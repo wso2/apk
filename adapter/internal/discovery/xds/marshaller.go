@@ -80,6 +80,8 @@ func MarshalConfig(config *config.Config) *enforcer.Config {
 		Type:    config.Enforcer.Metrics.Type,
 	}
 	mandateSubscriptionValidation := config.Enforcer.MandateSubscriptionValidation
+	mandateInternalKeyValidation := config.Enforcer.MandateInternalKeyValidation
+
 	analytics := &enforcer.Analytics{
 		Enabled:            config.Analytics.Enabled,
 		Properties:         config.Analytics.Properties,
@@ -157,6 +159,7 @@ func MarshalConfig(config *config.Config) *enforcer.Config {
 		Filters:                       filters,
 		Soap:                          soap,
 		MandateSubscriptionValidation: mandateSubscriptionValidation,
+		MandateInternalKeyValidation:  mandateInternalKeyValidation,
 		HttpClient:                    httpClient,
 	}
 }

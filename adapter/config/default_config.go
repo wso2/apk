@@ -206,6 +206,7 @@ var defaultConfig = &Config{
 			Type:    "azure",
 		},
 		MandateSubscriptionValidation: false,
+		MandateInternalKeyValidation:  false,
 	},
 	ManagementServer: managementServer{
 		Enabled:   false,

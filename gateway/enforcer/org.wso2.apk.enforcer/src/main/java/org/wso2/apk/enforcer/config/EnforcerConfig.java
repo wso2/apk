@@ -61,6 +61,7 @@ public class EnforcerConfig {
 
     private SoapErrorResponseConfigDto soapErrorResponseConfigDto;
     private boolean mandateSubscriptionValidation;
+    private boolean mandateInternalKeyValidation;
     private ClientConfigDto httpClientConfigDto;
 
     public ClientConfigDto getHttpClientConfigDto() {
@@ -223,6 +224,14 @@ public class EnforcerConfig {
 
     public void setMandateSubscriptionValidation(boolean mandateSubscriptionValidation) {
         this.mandateSubscriptionValidation = mandateSubscriptionValidation;
+    }
+
+    public boolean getMandateInternalKeyValidation() {
+        return mandateInternalKeyValidation;
+    }
+
+    public void setMandateInternalKeyValidation(boolean mandateInternalKeyValidation) {
+        this.mandateInternalKeyValidation = mandateInternalKeyValidation;
     }
 }
 

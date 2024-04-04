@@ -525,6 +525,8 @@ wso2:
                   queueSize: 2000
               # -- Specifies whether subscription validation is mandated for all APIs.
               mandateSubscriptionValidation: false
+              # -- Specifies whether Internal-Key validation is mandated for all APIs.
+              mandateInternalKeyValidation: false
             logging:
               # -- Optionally configure logging for enforcer.
               # -- Log level can be one of DEBUG, INFO, WARN, ERROR, OFF
