@@ -176,8 +176,8 @@ func sendData() {
 				continue
 			}
 			defer resp.Body.Close()
+			body, _ := ioutil.ReadAll(resp.Body)
 			if resp.StatusCode == http.StatusServiceUnavailable {
-				body, _ := ioutil.ReadAll(resp.Body)
 				loggers.LoggerAPK.Errorf("Error: Unexpected status code: %d, received message: %s, retrying after %d seconds", resp.StatusCode, string(body), retryInterval)
 				// Sleep for some time before retrying
 				time.Sleep(time.Second * retryInterval)
@@ -189,17 +189,20 @@ func sendData() {
 			}
 			delete(apiHashMap, event.API.APIHash)
 			var responseMap map[string]interface{}
-			err = json.NewDecoder(resp.Body).Decode(&responseMap)
-			if err != nil {
+			if err := json.Unmarshal([]byte(body), &responseMap); err != nil {
 				loggers.LoggerAPK.Errorf("Could not decode response body as json. body: %+v", resp.Body)
 				break
 			}
 			// Assuming the response contains an ID field, you can extract it like this:
 			id, ok := responseMap["id"].(string)
 			revisionID, revisionOk := responseMap["revisionID"].(string)
-			if !ok || !revisionOk {
-				loggers.LoggerAPK.Errorf("Id or/both revision Id field not present in response body. encoded body: %+v", responseMap)
+			if !ok  {
+				loggers.LoggerAPK.Errorf("Id field not present in response body. encoded body: %+v", responseMap)
 				id = ""
+				// break
+			}
+			if !revisionOk {
+				loggers.LoggerAPK.Errorf("Revision field not present in response body. encoded body: %+v", responseMap)
 				revisionID = ""
 				// break
 			}
