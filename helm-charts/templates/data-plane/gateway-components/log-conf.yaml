@@ -1,4 +1,4 @@
-{{- if or .Values.wso2.apk.dp.enabled .Values.wso2.apk.cp.enabled }}
+{{- if .Values.wso2.apk.dp.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -25,8 +25,8 @@ data:
     [adapter.controlplane]
       enableAPIPropagation = {{ .Values.wso2.apk.cp.controlplane.enableApiPropagation | default false }}
       host = "{{ .Values.wso2.apk.cp.controlplane.host | default "apim-apk-agent-service.apk.svc.cluster.local" }}"
-      eventPort = {{ .Values.wso2.apk.cp.controlplane.port | default 18000 }}
-      restPort = {{ .Values.wso2.apk.cp.controlplane.restPort | default 18001 }}
+      eventPort = 18000
+      restPort = 18001
       skipSSLVerification = {{ .Values.wso2.apk.cp.controlplane.skipSSLVerification | default false }}
     {{- end }}  
 

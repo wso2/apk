@@ -70,15 +70,17 @@ wso2:
         # -- IDP jwt signing certificate file name
         fileName: ""
     cp:
-      controlplane:
-        # -- Enable controlplane connection
-        enableApiPropagation: false
-        # -- Hostname of the APK agent service
-        host: "apim-apk-agent-service.apk.svc.cluster.local"
-        # -- Port of the APK agent service for events
-        restPort: 18001
-        # -- Skip SSL verification
-        skipSSLVerification: false
+      # -- Enable controlplane connection
+      enableApiPropagation: false
+      # -- Enable controlplane connection for subscription
+      enabledSubscription: false
+      # -- Hostname of the APK agent service
+      host: "apim-apk-agent-service.apk.svc.cluster.local"
+      # -- Skip SSL verification
+      skipSSLVerification: false
+      # -- Provide persistence mode DB/K8s
+      persistence:
+        type: "K8s"
     dp:
      # -- Enable the deployment of the Data Plane
       enabled: true
@@ -320,18 +322,6 @@ wso2:
               cACertPath: "/home/wso2/security/keystore/commoncontroller.crt"
               # -- Token revocation subscription channel name
               channelName: "wso2-apk-revoked-tokens-channel"
-          controlplane:
-            # -- Enable controlplane connection
-            enabled: false
-            # -- Hostname of the APK agent service
-            host: "apim-apk-agent-service.apk.svc.cluster.local"
-            # -- Port of the APK agent service for events
-            eventPort: 18000
-            # -- Skip SSL verification
-            skipSSLVerification: false
-            # -- Provide persistence mode DB/K8s
-            persistence:
-              type: "K8s"
           database:
             # -- Enable Database mode for persistence
             enabled: false

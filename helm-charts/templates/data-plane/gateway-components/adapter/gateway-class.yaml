@@ -1,4 +1,3 @@
-{{- if or .Values.wso2.apk.dp.enabled .Values.wso2.apk.cp.enabled }}
 # Copyright (c) 2024, WSO2 LLC. (https://www.wso2.com) All Rights Reserved.
 #
 # WSO2 LLC. licenses this file to you under the Apache License,
@@ -14,7 +13,7 @@
 # KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations
 # under the License.
-
+{{- if .Values.wso2.apk.dp.enabled }}
 apiVersion: gateway.networking.k8s.io/v1
 kind: GatewayClass
 metadata:
