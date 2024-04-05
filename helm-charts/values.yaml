@@ -254,9 +254,6 @@ wso2:
 #                skipSSLVerification: false
 #                hostnameVerifier: "AllowAll"
 
-    cp:
-      enabled: false
-
     metrics:
       enabled: false
       # configDSBalHost: 0.0.0.0
