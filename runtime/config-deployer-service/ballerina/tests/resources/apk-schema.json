@@ -568,6 +568,10 @@
           }
         }
       },
+      "required": [
+        "target",
+        "verb"
+      ],
       "additionalProperties": false
     },
     "K8sService": {

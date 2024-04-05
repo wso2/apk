@@ -399,6 +399,9 @@ components:
     APKOperations:
       title: Operation
       type: object
+      required:
+        - target
+        - verb
       properties:
         target:
           type: string
