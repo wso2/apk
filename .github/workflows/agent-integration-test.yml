@@ -56,9 +56,9 @@ jobs:
       if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
       shell: sh
       run: |
-        helm repo add wso2apim https://github.com/wso2/helm-apim/releases/download/cp-4.3.0-beta
+        helm repo add wso2apim https://github.com/wso2/helm-apim/releases/download/cp-4.3.0-rc
         helm repo update
-        helm install apim wso2apim/wso2am-cp --version 4.3.0-beta -f https://raw.githubusercontent.com/wso2/apk/main/helm-charts/samples/apim/cp/amd-values.yaml -n apk --debug --wait --timeout 5m0s
+        helm install apim wso2apim/wso2am-cp --version 4.3.0-rc -f https://raw.githubusercontent.com/wso2/apk/main/helm-charts/samples/apim/cp/amd-values.yaml -n apk --debug --wait --timeout 5m0s
         kubectl get pods -n apk
         kubectl get svc -n apk
     - name: Helm release deploy APK DP
