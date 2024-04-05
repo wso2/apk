@@ -216,4 +216,10 @@ public interface ConfigOrBuilder extends
    * <code>.wso2.discovery.config.enforcer.HttpClient httpClient = 14;</code>
    */
   org.wso2.apk.enforcer.discovery.config.enforcer.HttpClientOrBuilder getHttpClientOrBuilder();
+
+  /**
+   * <code>bool mandateInternalKeyValidation = 15;</code>
+   * @return The mandateInternalKeyValidation.
+   */
+  boolean getMandateInternalKeyValidation();
 }

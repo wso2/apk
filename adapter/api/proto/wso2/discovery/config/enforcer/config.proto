@@ -50,4 +50,7 @@ message Config {
     bool mandateSubscriptionValidation = 13;
 
     HttpClient httpClient = 14;
+
+    bool mandateInternalKeyValidation = 15;
+
 }

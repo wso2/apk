@@ -85,8 +85,9 @@ data:
     {{end}}
 
     [enforcer]
-    {{ if and .Values.wso2.apk.dp.gatewayRuntime.deployment .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.mandateSubscriptionValidation }}
-    mandateSubscriptionValidation = {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.mandateSubscriptionValidation }}
+    {{ if and .Values.wso2.apk.dp.gatewayRuntime.deployment .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs }}
+    mandateSubscriptionValidation = {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.mandateSubscriptionValidation | default false }}
+    mandateInternalKeyValidation = {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.mandateInternalKeyValidation | default false }}
     {{ end }}
 
     {{ if and .Values.wso2.apk.dp.gatewayRuntime.deployment .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.authService }}

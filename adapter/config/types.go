@@ -163,6 +163,7 @@ type enforcer struct {
 	Filters                       []filter
 	Metrics                       Metrics
 	MandateSubscriptionValidation bool
+	MandateInternalKeyValidation  bool
 	Client                        httpClient
 }
 

@@ -32,6 +32,8 @@ import org.wso2.apk.enforcer.commons.model.PolicyConfig;
 import org.wso2.apk.enforcer.commons.model.RequestContext;
 import org.wso2.apk.enforcer.commons.model.ResourceConfig;
 import org.wso2.apk.enforcer.commons.model.RetryConfig;
+import org.wso2.apk.enforcer.config.ConfigHolder;
+import org.wso2.apk.enforcer.constants.APIConstants;
 import org.wso2.apk.enforcer.constants.AdapterConstants;
 
 import java.util.ArrayList;
@@ -90,6 +92,13 @@ public class Utils {
         resource.setTier(operation.getTier());
         resource.setEndpointSecurity(endpointSecurity);
         AuthenticationConfig authenticationConfig = new AuthenticationConfig();
+
+        if (ConfigHolder.getInstance().getConfig()
+                .getMandateInternalKeyValidation()) {
+            JWTAuthenticationConfig jwtAuthenticationConfig = getDefaultJwtAuthenticationConfig();
+            authenticationConfig.setJwtAuthenticationConfig(jwtAuthenticationConfig);
+        }
+        
         if (operation.hasApiAuthentication()) {
             authenticationConfig.setDisabled(operation.getApiAuthentication().getDisabled());
             if (operation.getApiAuthentication().hasOauth2()) {
@@ -133,6 +142,13 @@ public class Utils {
             audience.add(operation.getApiAuthentication().getJwt().getAudience(i));
         }
         jwtAuthenticationConfig.setAudience(audience);
+        return jwtAuthenticationConfig;
+    }
+
+    private static JWTAuthenticationConfig getDefaultJwtAuthenticationConfig() {
+        JWTAuthenticationConfig jwtAuthenticationConfig = new JWTAuthenticationConfig();
+        jwtAuthenticationConfig.setHeader(APIConstants.TEST_CONSOLE_KEY_HEADER);
+        jwtAuthenticationConfig.setSendTokenToUpstream(false);
         return jwtAuthenticationConfig;
     }
 

@@ -224,6 +224,11 @@ private static final long serialVersionUID = 0L;
 
             break;
           }
+          case 120: {
+
+            mandateInternalKeyValidation_ = input.readBool();
+            break;
+          }
           default: {
             if (!parseUnknownField(
                 input, unknownFields, extensionRegistry, tag)) {
@@ -622,6 +627,17 @@ private static final long serialVersionUID = 0L;
     return getHttpClient();
   }
 
+  public static final int MANDATEINTERNALKEYVALIDATION_FIELD_NUMBER = 15;
+  private boolean mandateInternalKeyValidation_;
+  /**
+   * <code>bool mandateInternalKeyValidation = 15;</code>
+   * @return The mandateInternalKeyValidation.
+   */
+  @java.lang.Override
+  public boolean getMandateInternalKeyValidation() {
+    return mandateInternalKeyValidation_;
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -677,6 +693,9 @@ private static final long serialVersionUID = 0L;
     }
     if (httpClient_ != null) {
       output.writeMessage(14, getHttpClient());
+    }
+    if (mandateInternalKeyValidation_ != false) {
+      output.writeBool(15, mandateInternalKeyValidation_);
     }
     unknownFields.writeTo(output);
   }
@@ -742,6 +761,10 @@ private static final long serialVersionUID = 0L;
     if (httpClient_ != null) {
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(14, getHttpClient());
+    }
+    if (mandateInternalKeyValidation_ != false) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeBoolSize(15, mandateInternalKeyValidation_);
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -822,6 +845,8 @@ private static final long serialVersionUID = 0L;
       if (!getHttpClient()
           .equals(other.getHttpClient())) return false;
     }
+    if (getMandateInternalKeyValidation()
+        != other.getMandateInternalKeyValidation()) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -888,6 +913,9 @@ private static final long serialVersionUID = 0L;
       hash = (37 * hash) + HTTPCLIENT_FIELD_NUMBER;
       hash = (53 * hash) + getHttpClient().hashCode();
     }
+    hash = (37 * hash) + MANDATEINTERNALKEYVALIDATION_FIELD_NUMBER;
+    hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+        getMandateInternalKeyValidation());
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -1106,6 +1134,8 @@ private static final long serialVersionUID = 0L;
         httpClient_ = null;
         httpClientBuilder_ = null;
       }
+      mandateInternalKeyValidation_ = false;
+
       return this;
     }
 
@@ -1203,6 +1233,7 @@ private static final long serialVersionUID = 0L;
       } else {
         result.httpClient_ = httpClientBuilder_.build();
       }
+      result.mandateInternalKeyValidation_ = mandateInternalKeyValidation_;
       onBuilt();
       return result;
     }
@@ -1315,6 +1346,9 @@ private static final long serialVersionUID = 0L;
       }
       if (other.hasHttpClient()) {
         mergeHttpClient(other.getHttpClient());
+      }
+      if (other.getMandateInternalKeyValidation() != false) {
+        setMandateInternalKeyValidation(other.getMandateInternalKeyValidation());
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -3043,6 +3077,37 @@ private static final long serialVersionUID = 0L;
         httpClient_ = null;
       }
       return httpClientBuilder_;
+    }
+
+    private boolean mandateInternalKeyValidation_ ;
+    /**
+     * <code>bool mandateInternalKeyValidation = 15;</code>
+     * @return The mandateInternalKeyValidation.
+     */
+    @java.lang.Override
+    public boolean getMandateInternalKeyValidation() {
+      return mandateInternalKeyValidation_;
+    }
+    /**
+     * <code>bool mandateInternalKeyValidation = 15;</code>
+     * @param value The mandateInternalKeyValidation to set.
+     * @return This builder for chaining.
+     */
+    public Builder setMandateInternalKeyValidation(boolean value) {
+      
+      mandateInternalKeyValidation_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>bool mandateInternalKeyValidation = 15;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearMandateInternalKeyValidation() {
+      
+      mandateInternalKeyValidation_ = false;
+      onChanged();
+      return this;
     }
     @java.lang.Override
     public final Builder setUnknownFields(

@@ -57,6 +57,7 @@ public class APIConstants {
     public static final String API_SECURITY_MUTUAL_SSL_NAME = "mtls";
     public static final String CLIENT_CERTIFICATE_HEADER_DEFAULT = "X-WSO2-CLIENT-CERTIFICATE";
     public static final String WWW_AUTHENTICATE = "WWW-Authenticate";
+    public static final String TEST_CONSOLE_KEY_HEADER = "internal-key";
 
     public static final String BEGIN_CERTIFICATE_STRING = "-----BEGIN CERTIFICATE-----";
     public static final String END_CERTIFICATE_STRING = "-----END CERTIFICATE-----";
