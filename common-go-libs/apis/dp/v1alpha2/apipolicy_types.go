@@ -71,6 +71,13 @@ type BackendJWTToken struct {
 
 // CORSPolicy holds CORS policy information
 type CORSPolicy struct {
+
+	// Enabled is to enable CORs policy for the API.
+	//
+	// +kubebuilder:default=true
+	// +optional
+	Enabled bool `json:"enabled,omitempty"`
+
 	// AllowCredentials indicates whether the request can include user credentials like
 	// cookies, HTTP authentication or client side SSL certificates.
 	//
