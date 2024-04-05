@@ -424,8 +424,7 @@ dependencies = [
 modules = [
 	{org = "wso2", packageName = "apk_common_lib", moduleName = "apk_common_lib"},
 	{org = "wso2", packageName = "apk_common_lib", moduleName = "apk_common_lib.java.io"},
-	{org = "wso2", packageName = "apk_common_lib", moduleName = "apk_common_lib.java.lang"},
-	{org = "wso2", packageName = "apk_common_lib", moduleName = "apk_common_lib.org.wso2.apk.common"}
+	{org = "wso2", packageName = "apk_common_lib", moduleName = "apk_common_lib.java.lang"}
 ]
 
 [[package]]
