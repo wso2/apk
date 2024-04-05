@@ -320,6 +320,10 @@ spec:
                           of a preflight request can be cached in a preflight result
                           cache.
                         type: integer
+                      enabled:
+                        default: true
+                        description: Enabled is to enable CORs policy for the API.
+                        type: boolean
                     type: object
                   requestInterceptors:
                     description: RequestInterceptors referenced to intercetor services
@@ -410,6 +414,10 @@ spec:
                           of a preflight request can be cached in a preflight result
                           cache.
                         type: integer
+                      enabled:
+                        default: true
+                        description: Enabled is to enable CORs policy for the API.
+                        type: boolean
                     type: object
                   requestInterceptors:
                     description: RequestInterceptors referenced to intercetor services
