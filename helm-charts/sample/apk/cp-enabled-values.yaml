@@ -22,6 +22,7 @@ wso2:
     webhooks:
       validatingwebhookconfigurations: true
       mutatingwebhookconfigurations: true
+      conversionwebhookconfigurations: true
     auth:
       enabled: true
       enableServiceAccountCreation: true
@@ -49,7 +50,7 @@ wso2:
     cp:
       enabledSubscription: true
       host: "apim-apk-agent-service.apk.svc.cluster.local"
-      skipSSLVerification: false
+      skipSSLVerification: true
     dp:
       enabled: true
       gateway:
@@ -339,6 +340,7 @@ gatewaySystem:
   enableServiceAccountCreation: true
   enableClusterRoleCreation: true
   serviceAccountName: gateway-api-admission
+  applyGatewayWehbhookJobs: true
 
 certmanager:
   enabled: true

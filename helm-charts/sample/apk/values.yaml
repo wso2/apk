@@ -22,6 +22,7 @@ wso2:
     webhooks:
       validatingwebhookconfigurations: true
       mutatingwebhookconfigurations: true
+      conversionwebhookconfigurations: true
     auth:
       enabled: true
       enableServiceAccountCreation: true
@@ -247,6 +248,8 @@ wso2:
     #                secretName: "router-cert"
     #                certKeyFilename: ""
     #                certFilename: ""
+              mandateSubscriptionValidation: true
+              mandateInternalKeyValidation: true
               JWKSClient:
                 skipSSLVerification: false
                 hostnameVerifier: "AllowAll"
@@ -340,6 +343,7 @@ gatewaySystem:
   enableServiceAccountCreation: true
   enableClusterRoleCreation: true
   serviceAccountName: gateway-api-admission
+  applyGatewayWehbhookJobs: true
 
 certmanager:
   enabled: true
