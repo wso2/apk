@@ -19,29 +19,29 @@ wso2:
     dp:
       configdeployer:
         deployment:
-          image: docker.wso2.com/config-deployer-service:1.0.0-arm64
+          image: docker.wso2.com/config-deployer-service:1.1.0-arm64
       adapter:
         deployment:
-          image: docker.wso2.com/adapter:1.0.0-arm64
+          image: docker.wso2.com/adapter:1.1.0-arm64
       commonController:
         deployment:
-          image: docker.wso2.com/common-controller:1.0.0-arm64
+          image: docker.wso2.com/common-controller:1.1.0-arm64
       ratelimiter:
         deployment:
-          image: docker.wso2.com/ratelimiter:1.0.0-arm64
+          image: docker.wso2.com/ratelimiter:1.1.0-arm64
       gatewayRuntime:
         deployment:
           router:
-            image: docker.wso2.com/router:1.0.0-arm64
+            image: docker.wso2.com/router:1.1.0-arm64
           enforcer:
-            image: docker.wso2.com/enforcer:1.0.0-arm64
+            image: docker.wso2.com/enforcer:1.1.0-arm64
     podMetrics:
       deployment:
-        image: docker.wso2.com/pod-metrics-collector:1.0.0-arm64
+        image: docker.wso2.com/pod-metrics-collector:1.1.0-arm64
 idp:
   idpds:
     deployment:
-      image: docker.wso2.com/idp-domain-service:1.0.0-arm64
+      image: docker.wso2.com/idp-domain-service:1.1.0-arm64
   idpui:
     deployment:
-      image: docker.wso2.com/idp-ui:1.0.0-arm64
+      image: docker.wso2.com/idp-ui:1.1.0-arm64
