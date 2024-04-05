@@ -424,13 +424,14 @@ dependencies = [
 modules = [
 	{org = "wso2", packageName = "apk_common_lib", moduleName = "apk_common_lib"},
 	{org = "wso2", packageName = "apk_common_lib", moduleName = "apk_common_lib.java.io"},
-	{org = "wso2", packageName = "apk_common_lib", moduleName = "apk_common_lib.java.lang"}
+	{org = "wso2", packageName = "apk_common_lib", moduleName = "apk_common_lib.java.lang"},
+	{org = "wso2", packageName = "apk_common_lib", moduleName = "apk_common_lib.org.wso2.apk.common"}
 ]
 
 [[package]]
 org = "wso2"
 name = "config_deployer_service"
-version = "1.1.0-rc"
+version = "1.1.0-SNAPSHOT"
 dependencies = [
 	{org = "ballerina", name = "constraint"},
 	{org = "ballerina", name = "crypto"},
