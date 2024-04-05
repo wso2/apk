@@ -70,9 +70,9 @@ jobs:
         helm repo add jetstack https://charts.jetstack.io
         helm dependency build
         helm install apk -n apk . --debug --wait --timeout 15m0s \
-        --set wso2.apk.dp.commonController.deployment.controlplane.enabled=true \
-        --set wso2.apk.dp.commonController.deployment.controlplane.host="apim-apk-agent-service.apk.svc.cluster.local" \
-        --set wso2.apk.dp.commonController.deployment.controlplane.skipSSLVerification=true \
+        --set wso2.apk.cp.enabledSubscription=true \
+        --set wso2.apk.cp.host="apim-apk-agent-service.apk.svc.cluster.local" \
+        --set wso2.apk.cp.skipSSLVerification=true \
         --set wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.JWKSClient.skipSSLVerification=false \
         --set wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.JWKSClient.hostnameVerifier="AllowAll" 
         kubectl get pods -n apk
