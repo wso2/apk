@@ -1,7 +1,7 @@
 [package]
 org = "wso2"
 name = "config_deployer_service"
-version = "1.1.0-SNAPSHOT"
+version = "1.1.0-rc"
 distribution = "2201.8.5"
 
 [build-options]
@@ -16,8 +16,8 @@ repository = "local"
 [[platform.java11.dependency]]
 groupId = "org.wso2.apk"
 artifactId = "org.wso2.apk.config"
-version = "1.1.0-SNAPSHOT"
-path = "../java/build/libs/org.wso2.apk.config-1.1.0-SNAPSHOT.jar"
+version = "1.1.0-rc"
+path = "../java/build/libs/org.wso2.apk.config-1.1.0-rc.jar"
 
 # transitive dependency of org.wso2.apk:org.wso2.apk.config:1.0.0-SNAPSHOT
 [[platform.java11.dependency]]
