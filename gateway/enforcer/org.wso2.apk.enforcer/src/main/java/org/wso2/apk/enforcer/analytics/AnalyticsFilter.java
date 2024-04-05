@@ -144,8 +144,7 @@ public class AnalyticsFilter {
             requestContext.addMetadataToMap(MetadataConstants.API_TYPE_KEY, apiType);
             requestContext.addMetadataToMap(MetadataConstants.IS_MOCK_API, String.valueOf(isMockAPI));
 
-            String tenantDomain = FilterUtils.getTenantDomainFromRequestURL(
-                    requestContext.getMatchedAPI().getBasePath());
+            String tenantDomain = requestContext.getMatchedAPI().getOrganizationId();
             requestContext.addMetadataToMap(MetadataConstants.API_CREATOR_TENANT_DOMAIN_KEY,
                     tenantDomain == null ? APIConstants.SUPER_TENANT_DOMAIN_NAME : tenantDomain);
 
