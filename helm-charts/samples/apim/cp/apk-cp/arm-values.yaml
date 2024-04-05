@@ -298,7 +298,7 @@ wso2:
             serviceName: "wso2am-gateway-service"
             servicePort: 9443
             wsHostname: "websocket.wso2.com"
-            httpHostname: "default.gw.wso2.com:9095"
+            httpHostname: "carbon.super.gw.wso2.com:9095"
             websubHostname: "websub.wso2.com"
 
       iskm:
