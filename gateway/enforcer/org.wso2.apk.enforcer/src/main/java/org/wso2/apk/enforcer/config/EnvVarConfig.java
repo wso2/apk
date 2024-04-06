@@ -55,6 +55,8 @@ public class EnvVarConfig {
     public static final String REDIS_CERT_FILE = "REDIS_CERT_FILE";
     public static final String REDIS_CA_CERT_FILE = "REDIS_CA_CERT_FILE";
     public static final String REVOKED_TOKEN_CLEANUP_INTERVAL = "REVOKED_TOKEN_CLEANUP_INTERVAL";
+    public static final String CHOREO_ANALYTICS_AUTH_TOKEN = "CHOREO_ANALYTICS_AUTH_TOKEN";
+    public static final String CHOREO_ANALYTICS_AUTH_URL = "CHOREO_ANALYTICS_AUTH_URL";
 
 
     // Since the container is running in linux container, path separator is not needed.
@@ -85,6 +87,10 @@ public class EnvVarConfig {
     public static final String DEFAULT_REDIS_CERT_FILE = "/home/wso2/security/redis/redis.crt";
     public static final String DEFAULT_REDIS_CA_CERT_FILE = "/home/wso2/security/redis/ca.crt";
     public static final int DEFAULT_REVOKED_TOKEN_CLEANUP_INTERVAL = 60*60; // In seconds
+
+    public static final String DEFAULT_CHOREO_ANALYTICS_AUTH_TOKEN = "";
+    public static final String DEFAULT_CHOREO_ANALYTICS_AUTH_URL = "";
+
     private static EnvVarConfig instance;
     private final String trustedAdapterCertsPath;
     private final String trustDefaultCerts;
@@ -116,6 +122,9 @@ public class EnvVarConfig {
     private final String redisKeyFile;
     private final String redisCertFile;
     private final String redisCaCertFile;
+
+    private final String choreoAnalyticsAuthToken;
+    private final String choreoAnalyticsAuthUrl;
     private final int revokedTokenCleanupInterval;
 
     private EnvVarConfig() {
@@ -160,6 +169,8 @@ public class EnvVarConfig {
         redisCertFile = retrieveEnvVarOrDefault(REDIS_CERT_FILE, DEFAULT_REDIS_CERT_FILE);
         redisCaCertFile = retrieveEnvVarOrDefault(REDIS_CA_CERT_FILE, DEFAULT_REDIS_CA_CERT_FILE);
         revokedTokenCleanupInterval = getRevokedTokenCleanupIntervalFromEnv();
+        choreoAnalyticsAuthToken = retrieveEnvVarOrDefault(CHOREO_ANALYTICS_AUTH_TOKEN, DEFAULT_CHOREO_ANALYTICS_AUTH_TOKEN);
+        choreoAnalyticsAuthUrl = retrieveEnvVarOrDefault(CHOREO_ANALYTICS_AUTH_URL, DEFAULT_CHOREO_ANALYTICS_AUTH_URL);
     }
 
     public static EnvVarConfig getInstance() {
@@ -318,6 +329,14 @@ public class EnvVarConfig {
     public String getCommonControllerRestPort() {
 
         return commonControllerRestPort;
+    }
+
+    public String getChoreoAnalyticsAuthToken() {
+        return choreoAnalyticsAuthToken;
+    }
+
+    public String getChoreoAnalyticsAuthUrl() {
+        return choreoAnalyticsAuthUrl;
     }
 }
 

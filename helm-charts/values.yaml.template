@@ -591,20 +591,11 @@ wso2:
         analytics:
           # -- Enable/Disable analytics in gateway runtime.
           enabled: true
-          # -- Type of analytics data publisher. Can be "Choreo" or "ELK".
-          type: "Choreo"
-          # -- Choreo analytics secret.
-          secretName: "choreo-analytics-secret"
-          # -- Property values for the analytics.
-          properties:
-            property_name : property_value
           # -- Analytics Publishers
           publishers:
           - enabled: true
             type: "default"
-            configProperties:
-              auth.api.url: "$env{analytics_authURL}"
-              auth.api.token: "$env{analytics_authToken}"
+            secretName: "choreo-analytics-secret" # user created secret name
           - enabled: true
             type: "elk"
           # -- Optional: File name of the log file.

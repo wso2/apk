@@ -96,6 +96,26 @@ spec:
             {{- else }}
               value: -Dhttpclient.hostnameVerifier=AllowAll -Xms512m -Xmx512m -XX:MaxRAMFraction=2
             {{- end }}
+            {{- if and .Values.wso2.apk.dp.gatewayRuntime.analytics .Values.wso2.apk.dp.gatewayRuntime.analytics.publishers }}
+            {{- $defaultPublisherSecretName := "" }}
+            {{- range .Values.wso2.apk.dp.gatewayRuntime.analytics.publishers }}
+              {{- if eq .type "default" }}
+                {{- $defaultPublisherSecretName = .secretName }}
+              {{- end }}
+            {{- end }}
+            {{- if $defaultPublisherSecretName }}
+            - name: CHOREO_ANALYTICS_AUTH_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $defaultPublisherSecretName }}
+                  key: "authToken"
+            - name: CHOREO_ANALYTICS_AUTH_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $defaultPublisherSecretName }}
+                  key: "authURL"
+            {{- end }}
+            {{- end }}
             {{- if .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.redis }}
             - name: REDIS_USERNAME
               value: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.redis.username | default "default" }}
@@ -139,18 +159,6 @@ spec:
             - name: REVOKED_TOKEN_CLEANUP_INTERVAL
               value: "3600"
             {{- end }}
-        {{- if and .Values.wso2.apk.dp.gatewayRuntime.analytics .Values.wso2.apk.dp.gatewayRuntime.analytics.secretName }}
-            - name: analytics_authToken
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.wso2.apk.dp.gatewayRuntime.analytics.secretName }}
-                  key: "analytics_authToken"
-            - name: analytics_authURL
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.wso2.apk.dp.gatewayRuntime.analytics.secretName }}
-                  key: "analytics_authURL"
-        {{- end }}
           volumeMounts:
             - name: tmp
               mountPath: /tmp

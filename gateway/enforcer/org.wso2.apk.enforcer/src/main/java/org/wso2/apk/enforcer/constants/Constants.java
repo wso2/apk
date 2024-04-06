@@ -81,4 +81,7 @@ public class Constants {
 
     // multi-env constants
     public static final String DEFAULT_ALL_ENVIRONMENTS_TOKEN_ISSUER = "*";
+    public static final String AUTH_URL_CONFIG_KEY = "authURL";
+    public static final String AUTH_URL_CONFIG_TOKEN = "authToken";
+    public static final String DEFAULT_ANALYTICS_PUBLISHER = "default";
 }
