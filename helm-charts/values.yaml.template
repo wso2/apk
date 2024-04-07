@@ -121,6 +121,8 @@ wso2:
           targetMemory: 80
           # -- Target CPU utilization percentage for Gateway
           targetCPU: 80
+        service: 
+          type: "LoadBalancer"
       redis: 
         # -- Redis type
         type: "single"

@@ -25,7 +25,7 @@ metadata:
 {{ toYaml .Values.wso2.apk.dp.gatewayRuntime.service.annotations | indent 4 }}
 {{ end }}
 spec:
-  type: LoadBalancer
+  type: {{ .Values.wso2.apk.dp.gateway.service.type | default "LoadBalancer" }}
   # label keys and values that must match in order to receive traffic for this service
   selector:
 {{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" "gateway" ) | indent 4}}
