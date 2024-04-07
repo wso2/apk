@@ -60,7 +60,7 @@ A Helm chart for APK components
 | wso2.apk.dp.gateway.autoscaling.maxReplicas | int | `2` | Maximum number of replicas for Gateway |
 | wso2.apk.dp.gateway.autoscaling.targetMemory | int | `80` | Target memory utilization percentage for Gateway |
 | wso2.apk.dp.gateway.autoscaling.targetCPU | int | `80` | Target CPU utilization percentage for Gateway |
-| wso2.apk.dp.gateway.service.type | string | `"LoadBalancer"` |  |
+| wso2.apk.dp.gateway.service | object | `{"type":"LoadBalancer"}` | Kubernetes service type for Gateway |
 | wso2.apk.dp.redis.type | string | `"single"` | Redis type |
 | wso2.apk.dp.redis.url | string | `"redis-master:6379"` | Redis URL |
 | wso2.apk.dp.redis.tls | bool | `false` | TLS enabled  |
