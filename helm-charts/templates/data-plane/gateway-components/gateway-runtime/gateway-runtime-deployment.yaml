@@ -98,9 +98,13 @@ spec:
             {{- end }}
             {{- if and .Values.wso2.apk.dp.gatewayRuntime.analytics .Values.wso2.apk.dp.gatewayRuntime.analytics.publishers }}
             {{- $defaultPublisherSecretName := "" }}
+            {{- $moesifPublisherSecretName := "" }}
             {{- range .Values.wso2.apk.dp.gatewayRuntime.analytics.publishers }}
               {{- if eq .type "default" }}
                 {{- $defaultPublisherSecretName = .secretName }}
+              {{- end }}
+              {{- if eq .type "moesif" }}
+                {{- $moesifPublisherSecretName = .secretName }}
               {{- end }}
             {{- end }}
             {{- if $defaultPublisherSecretName }}
@@ -114,6 +118,13 @@ spec:
                 secretKeyRef:
                   name: {{ $defaultPublisherSecretName }}
                   key: "authURL"
+            {{- end }}
+            {{- if $moesifPublisherSecretName }}
+            - name: MOESIF_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $moesifPublisherSecretName }}
+                  key: "moesifToken"
             {{- end }}
             {{- end }}
             {{- if .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.redis }}

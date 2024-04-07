@@ -68,6 +68,7 @@ public class Constants {
     //Reporter config properties
     public static final String AUTH_API_URL = "authURL";
     public static final String AUTH_API_TOKEN = "authToken";
+    public static final String MOESIF_TOKEN = "moesifToken";
 
     //Proxy configs
     public static final String PROXY_ENABLE = "proxy_config_enable";

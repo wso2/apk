@@ -436,11 +436,14 @@ public class ConfigHolder {
             }
             String authURL = envVarConfig.getChoreoAnalyticsAuthUrl();
             String authToken = envVarConfig.getChoreoAnalyticsAuthToken();
+            String moesifToken = envVarConfig.getMoesifToken();
 
             // if the analytics publisher is of default type, retrieve authURL and authToken
             if (analyticsPublisher.getType().equalsIgnoreCase(Constants.DEFAULT_ANALYTICS_PUBLISHER)){
                 resolvedConfigMap.put(Constants.AUTH_URL_CONFIG_KEY, authURL);
                 resolvedConfigMap.put(Constants.AUTH_URL_CONFIG_TOKEN, authToken);
+            } else if (analyticsPublisher.getType().equalsIgnoreCase(Constants.MOESIF_ANALYTICS_PUBLISHER)){
+                resolvedConfigMap.put(Constants.MOESIF_TOKEN, moesifToken);
             }
             analyticsDTO.addAnalyticsPublisherConfig(new AnalyticsPublisherConfigDTO(analyticsPublisher.getEnabled(),
                     analyticsPublisher.getType(), resolvedConfigMap));

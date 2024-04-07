@@ -598,6 +598,9 @@ wso2:
             secretName: "choreo-analytics-secret" # user created secret name
           - enabled: true
             type: "elk"
+          - enabled: true
+            type: "moesif"
+            secretName: "moesif-secret"
           # -- Optional: File name of the log file.
           logFileName: "logs/enforcer_analytics.log"
           # -- Optional: Log level the analytics data. Can be one of DEBUG, INFO, WARN, ERROR, OFF.
