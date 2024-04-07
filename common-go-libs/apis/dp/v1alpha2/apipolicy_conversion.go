@@ -15,15 +15,9 @@
  *
  */
 
-package v1alpha1
+package v1alpha2
 
-import (
-	ctrl "sigs.k8s.io/controller-runtime"
-)
+// Hub marks this type as a conversion hub.
+func (*APIPolicy) Hub() {}
 
-// SetupWebhookWithManager creates a new webhook builder for Authentication
-func (r *Authentication) SetupWebhookWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewWebhookManagedBy(mgr).
-		For(r).
-		Complete()
-}
+// TODO(user): EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!

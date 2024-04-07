@@ -116,7 +116,7 @@ func CreateRoutesWithClusters(adapterInternalAPI *model.AdapterInternalAPI, inte
 
 	corsConfig := adapterInternalAPI.GetCorsConfig()
 	var methods []string
-	if corsConfig != nil {
+	if corsConfig != nil && corsConfig.Enabled {
 		methods = append(methods, "GET", "OPTIONS")
 	} else {
 		methods = append(methods, "GET")

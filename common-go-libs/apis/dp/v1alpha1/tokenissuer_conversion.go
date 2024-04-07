@@ -36,48 +36,63 @@ func (src *TokenIssuer) ConvertTo(dstRaw conversion.Hub) error {
 	dst.Spec.ConsumerKeyClaim = src.Spec.ConsumerKeyClaim
 	dst.Spec.ScopesClaim = src.Spec.ScopesClaim
 
-	sig := *src.Spec.SignatureValidation
-	jwks := *sig.JWKS
-	certificate := *sig.Certificate
-
-	jwksv2 := v1alpha2.JWKS{
-		URL: jwks.URL,
-		TLS: &v1alpha2.CERTConfig{
-			CertificateInline: jwks.TLS.CertificateInline,
-			SecretRef: &v1alpha2.RefConfig{
-				Name: jwks.TLS.SecretRef.Name,
-				Key:  jwks.TLS.SecretRef.Key,
-			},
-			ConfigMapRef: &v1alpha2.RefConfig{
-				Name: jwks.TLS.ConfigMapRef.Name,
-				Key:  jwks.TLS.ConfigMapRef.Key,
-			},
-		},
+	if src.Spec.SignatureValidation != nil {
+		dstSignatureValidation := v1alpha2.SignatureValidation{}
+		sig := *src.Spec.SignatureValidation
+		if sig.JWKS != nil {
+			jwks := *sig.JWKS
+			jwksv2 := v1alpha2.JWKS{
+				URL: jwks.URL,
+			}
+			if jwks.TLS != nil {
+				tlsConfig := v1alpha2.CERTConfig{}
+				if jwks.TLS.CertificateInline != nil {
+					tlsConfig.CertificateInline = jwks.TLS.CertificateInline
+				}
+				if jwks.TLS.SecretRef != nil {
+					tlsConfig.SecretRef = &v1alpha2.RefConfig{
+						Name: jwks.TLS.SecretRef.Name,
+						Key:  jwks.TLS.SecretRef.Key,
+					}
+				}
+				if jwks.TLS.ConfigMapRef != nil {
+					tlsConfig.ConfigMapRef = &v1alpha2.RefConfig{
+						Name: jwks.TLS.ConfigMapRef.Name,
+						Key:  jwks.TLS.ConfigMapRef.Key,
+					}
+				}
+			}
+			dstSignatureValidation.JWKS = &jwksv2
+		}
+		if sig.Certificate != nil {
+			certificate := *sig.Certificate
+			certv2 := v1alpha2.CERTConfig{
+				CertificateInline: certificate.CertificateInline,
+			}
+			if certificate.SecretRef != nil {
+				certv2.SecretRef = &v1alpha2.RefConfig{
+					Name: certificate.SecretRef.Name,
+					Key:  certificate.SecretRef.Key,
+				}
+			}
+			if certificate.ConfigMapRef != nil {
+				certv2.ConfigMapRef = &v1alpha2.RefConfig{
+					Name: certificate.ConfigMapRef.Name,
+					Key:  certificate.ConfigMapRef.Key,
+				}
+			}
+			dstSignatureValidation.Certificate = &certv2
+		}
+		dst.Spec.SignatureValidation = &dstSignatureValidation
 	}
+	if src.Spec.ClaimMappings != nil {
 
-	certv2 := v1alpha2.CERTConfig{
-		CertificateInline: certificate.CertificateInline,
-		SecretRef: &v1alpha2.RefConfig{
-			Name: certificate.SecretRef.Name,
-			Key:  certificate.SecretRef.Key,
-		},
-		ConfigMapRef: &v1alpha2.RefConfig{
-			Name: certificate.ConfigMapRef.Name,
-			Key:  certificate.ConfigMapRef.Key,
-		},
+		var claimMappings []v1alpha2.ClaimMapping
+		for _, p := range *src.Spec.ClaimMappings {
+			claimMappings = append(claimMappings, v1alpha2.ClaimMapping(p))
+		}
+		dst.Spec.ClaimMappings = &claimMappings
 	}
-
-	dst.Spec.SignatureValidation = &v1alpha2.SignatureValidation{
-		JWKS:        &jwksv2,
-		Certificate: &certv2,
-	}
-
-	var claimMappings []v1alpha2.ClaimMapping
-	for _, p := range *src.Spec.ClaimMappings {
-		claimMappings = append(claimMappings, v1alpha2.ClaimMapping(p))
-	}
-	dst.Spec.ClaimMappings = &claimMappings
-
 	dst.Spec.TargetRef = src.Spec.TargetRef
 	return nil
 }
@@ -96,49 +111,63 @@ func (src *TokenIssuer) ConvertFrom(srcRaw conversion.Hub) error {
 	src.Spec.ConsumerKeyClaim = dst.Spec.ConsumerKeyClaim
 	src.Spec.ScopesClaim = dst.Spec.ScopesClaim
 
-	sig := *dst.Spec.SignatureValidation
-	jwks := *sig.JWKS
-	certificate := *sig.Certificate
-
-	jwksv1 := JWKS{
-		URL: jwks.URL,
-		TLS: &CERTConfig{
-			CertificateInline: jwks.TLS.CertificateInline,
-			SecretRef: &RefConfig{
-				Name: jwks.TLS.SecretRef.Name,
-				Key:  jwks.TLS.SecretRef.Key,
-			},
-			ConfigMapRef: &RefConfig{
-				Name: jwks.TLS.ConfigMapRef.Name,
-				Key:  jwks.TLS.ConfigMapRef.Key,
-			},
-		},
+	if dst.Spec.SignatureValidation != nil {
+		dstSignatureValidation := SignatureValidation{}
+		sig := *dst.Spec.SignatureValidation
+		if sig.JWKS != nil {
+			jwks := *sig.JWKS
+			jwksv1 := JWKS{
+				URL: jwks.URL,
+			}
+			if jwks.TLS != nil {
+				tlsConfig := CERTConfig{}
+				if jwks.TLS.CertificateInline != nil {
+					tlsConfig.CertificateInline = jwks.TLS.CertificateInline
+				}
+				if jwks.TLS.SecretRef != nil {
+					tlsConfig.SecretRef = &RefConfig{
+						Name: jwks.TLS.SecretRef.Name,
+						Key:  jwks.TLS.SecretRef.Key,
+					}
+				}
+				if jwks.TLS.ConfigMapRef != nil {
+					tlsConfig.ConfigMapRef = &RefConfig{
+						Name: jwks.TLS.ConfigMapRef.Name,
+						Key:  jwks.TLS.ConfigMapRef.Key,
+					}
+				}
+			}
+			dstSignatureValidation.JWKS = &jwksv1
+		}
+		if sig.Certificate != nil {
+			certificate := *sig.Certificate
+			certv1 := CERTConfig{
+				CertificateInline: certificate.CertificateInline,
+			}
+			if certificate.SecretRef != nil {
+				certv1.SecretRef = &RefConfig{
+					Name: certificate.SecretRef.Name,
+					Key:  certificate.SecretRef.Key,
+				}
+			}
+			if certificate.ConfigMapRef != nil {
+				certv1.ConfigMapRef = &RefConfig{
+					Name: certificate.ConfigMapRef.Name,
+					Key:  certificate.ConfigMapRef.Key,
+				}
+			}
+			dstSignatureValidation.Certificate = &certv1
+		}
+		src.Spec.SignatureValidation = &dstSignatureValidation
 	}
+	if dst.Spec.ClaimMappings != nil {
 
-	certv1 := CERTConfig{
-		CertificateInline: certificate.CertificateInline,
-		SecretRef: &RefConfig{
-			Name: certificate.SecretRef.Name,
-			Key:  certificate.SecretRef.Key,
-		},
-		ConfigMapRef: &RefConfig{
-			Name: certificate.ConfigMapRef.Name,
-			Key:  certificate.ConfigMapRef.Key,
-		},
+		var claimMappings []ClaimMapping
+		for _, p := range *dst.Spec.ClaimMappings {
+			claimMappings = append(claimMappings, ClaimMapping(p))
+		}
+		src.Spec.ClaimMappings = &claimMappings
 	}
-
-	src.Spec.SignatureValidation = &SignatureValidation{
-		JWKS:        &jwksv1,
-		Certificate: &certv1,
-	}
-
-	var claimMappings []ClaimMapping
-	for _, p := range *dst.Spec.ClaimMappings {
-		claimMappings = append(claimMappings, ClaimMapping(p))
-	}
-	src.Spec.ClaimMappings = &claimMappings
-
 	src.Spec.TargetRef = dst.Spec.TargetRef
-
 	return nil
 }

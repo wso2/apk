@@ -19,6 +19,7 @@ package model
 
 import (
 	"github.com/google/uuid"
+	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/oasparser/constants"
 	"github.com/wso2/apk/adapter/internal/operator/utils"
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
@@ -68,23 +69,31 @@ func parseBackendJWTTokenToInternal(backendJWTToken dpv1alpha1.BackendJWTSpec) *
 }
 
 func getCorsConfigFromAPIPolicy(apiPolicy *dpv1alpha2.APIPolicy) *CorsConfig {
-	var corsConfig *CorsConfig
+	globalCorsConfig := config.ReadConfigs().Enforcer.Cors
+
+	var corsConfig = CorsConfig{
+		Enabled:                       globalCorsConfig.Enabled,
+		AccessControlAllowCredentials: globalCorsConfig.AccessControlAllowCredentials,
+		AccessControlAllowHeaders:     globalCorsConfig.AccessControlAllowHeaders,
+		AccessControlAllowMethods:     globalCorsConfig.AccessControlAllowMethods,
+		AccessControlAllowOrigins:     globalCorsConfig.AccessControlAllowOrigins,
+		AccessControlExposeHeaders:    globalCorsConfig.AccessControlExposeHeaders,
+		AccessControlMaxAge:           globalCorsConfig.AccessControlMaxAge,
+	}
 	if apiPolicy != nil && apiPolicy.Spec.Override != nil {
 		if apiPolicy.Spec.Override.CORSPolicy != nil {
-			corsConfig = &CorsConfig{
-				Enabled:                       true,
-				AccessControlAllowCredentials: apiPolicy.Spec.Override.CORSPolicy.AccessControlAllowCredentials,
-				AccessControlAllowHeaders:     apiPolicy.Spec.Override.CORSPolicy.AccessControlAllowHeaders,
-				AccessControlAllowMethods:     apiPolicy.Spec.Override.CORSPolicy.AccessControlAllowMethods,
-				AccessControlAllowOrigins:     apiPolicy.Spec.Override.CORSPolicy.AccessControlAllowOrigins,
-				AccessControlExposeHeaders:    apiPolicy.Spec.Override.CORSPolicy.AccessControlExposeHeaders,
-			}
+			corsConfig.Enabled = apiPolicy.Spec.Override.CORSPolicy.Enabled
+			corsConfig.AccessControlAllowCredentials = apiPolicy.Spec.Override.CORSPolicy.AccessControlAllowCredentials
+			corsConfig.AccessControlAllowHeaders = apiPolicy.Spec.Override.CORSPolicy.AccessControlAllowHeaders
+			corsConfig.AccessControlAllowMethods = apiPolicy.Spec.Override.CORSPolicy.AccessControlAllowMethods
+			corsConfig.AccessControlAllowOrigins = apiPolicy.Spec.Override.CORSPolicy.AccessControlAllowOrigins
+			corsConfig.AccessControlExposeHeaders = apiPolicy.Spec.Override.CORSPolicy.AccessControlExposeHeaders
 			if apiPolicy.Spec.Override.CORSPolicy.AccessControlMaxAge != nil {
 				corsConfig.AccessControlMaxAge = apiPolicy.Spec.Override.CORSPolicy.AccessControlMaxAge
 			}
 		}
 	}
-	return corsConfig
+	return &corsConfig
 }
 
 func parseRateLimitPolicyToInternal(ratelimitPolicy *dpv1alpha1.RateLimitPolicy) *RateLimitPolicy {

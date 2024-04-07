@@ -22,10 +22,12 @@ metadata:
   namespace: {{ .Release.Namespace }}
 data:
   Config.toml: |
+  {{- if .Values.wso2.apk.dp.configdeployer.debug}}
     [ballerina.log]
-    level = "INFO"
+    level = "DEBUG"
     [ballerina.http]
-    traceLogConsole = false
+    traceLogConsole = true
+  {{end}}
   {{if and .Values.wso2.apk.metrics .Values.wso2.apk.metrics.enabled}}
     [ballerina.observe]
     metricsEnabled = true

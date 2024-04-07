@@ -14,7 +14,7 @@
 # specific language governing permissions and limitations
 # under the License.
 {{- if .Values.idp.enabled }}
-apiVersion: "dp.wso2.com/v1alpha1"
+apiVersion: "dp.wso2.com/v1alpha2"
 kind: "Authentication"
 metadata:
   name: {{ template "apk-helm.resource.prefix" . }}-oauth-ds-authentication
@@ -22,6 +22,8 @@ metadata:
   labels:
     api-name: "idp-domain-service"
     api-version: "1.0.0"
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
 spec:
   override:
     disabled: true

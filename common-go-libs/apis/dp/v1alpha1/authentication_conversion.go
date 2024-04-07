@@ -31,65 +31,72 @@ func (src *Authentication) ConvertTo(dstRaw conversion.Hub) error {
 
 	// Spec
 	dst.Spec.TargetRef = src.Spec.TargetRef
-
-	dst.Spec.Default.Disabled = src.Spec.Default.Disabled
-	dst.Spec.Override.Disabled = src.Spec.Override.Disabled
-
-	// Convert Oauth2Auth default to v1alpha2.Oauth2Auth : Required field added as mandatory for OAuth2
-	dst.Spec.Default.AuthTypes.Oauth2 = v1alpha2.Oauth2Auth{
-		Required:            "mandatory",
-		Disabled:            src.Spec.Default.AuthTypes.Oauth2.Disabled,
-		Header:              src.Spec.Default.AuthTypes.Oauth2.Header,
-		SendTokenToUpstream: src.Spec.Default.AuthTypes.Oauth2.SendTokenToUpstream,
-	}
-
-	// Convert Oauth2Auth override to v1alpha2.Oauth2Auth : Required field added as mandatory for OAuth2
-	dst.Spec.Override.AuthTypes.Oauth2 = v1alpha2.Oauth2Auth{
-		Required:            "mandatory",
-		Disabled:            src.Spec.Default.AuthTypes.Oauth2.Disabled,
-		Header:              src.Spec.Default.AuthTypes.Oauth2.Header,
-		SendTokenToUpstream: src.Spec.Default.AuthTypes.Oauth2.SendTokenToUpstream,
-	}
-
-	// Convert Oauth2Auth Default to v1alpha2.APIKey : Required field added as optional for APIKey
-	for _, apiKeyAuth := range src.Spec.Default.AuthTypes.APIKey {
-		convertedAPIKeyAuth := v1alpha2.APIKeyAuth{
-			In:                  apiKeyAuth.In,
-			Name:                apiKeyAuth.Name,
-			SendTokenToUpstream: apiKeyAuth.SendTokenToUpstream,
+	if src.Spec.Default != nil {
+		defaultAuthv1Spec := src.Spec.Default
+		defaultAuthenticationSpec := v1alpha2.AuthSpec{}
+		defaultAuthenticationSpec.Disabled = defaultAuthv1Spec.Disabled
+		if defaultAuthv1Spec.AuthTypes != nil {
+			v1alpha2authTypes := v1alpha2.APIAuth{}
+			v1alpha2authTypes.Oauth2 = v1alpha2.Oauth2Auth{
+				Required:            "mandatory",
+				Disabled:            defaultAuthv1Spec.AuthTypes.Oauth2.Disabled,
+				Header:              defaultAuthv1Spec.AuthTypes.Oauth2.Header,
+				SendTokenToUpstream: defaultAuthv1Spec.AuthTypes.Oauth2.SendTokenToUpstream,
+			}
+			// Convert Oauth2Auth Default to v1alpha2.APIKey : Required field added as optional for APIKey
+			for _, apiKeyAuth := range defaultAuthv1Spec.AuthTypes.APIKey {
+				convertedAPIKeyAuth := v1alpha2.APIKeyAuth{
+					In:                  apiKeyAuth.In,
+					Name:                apiKeyAuth.Name,
+					SendTokenToUpstream: apiKeyAuth.SendTokenToUpstream,
+				}
+				v1alpha2authTypes.APIKey = append(v1alpha2authTypes.APIKey, convertedAPIKeyAuth)
+			}
+			if defaultAuthv1Spec.AuthTypes.TestConsoleKey != (TestConsoleKeyAuth{}) {
+				v1alpha2authTypes.JWT = v1alpha2.JWT{
+					Header:              defaultAuthv1Spec.AuthTypes.TestConsoleKey.Header,
+					SendTokenToUpstream: defaultAuthv1Spec.AuthTypes.TestConsoleKey.SendTokenToUpstream,
+				}
+			}
+			defaultAuthenticationSpec.AuthTypes = &v1alpha2authTypes
 		}
-		dst.Spec.Default.AuthTypes.APIKey = append(dst.Spec.Default.AuthTypes.APIKey, convertedAPIKeyAuth)
+		dst.Spec.Default = &defaultAuthenticationSpec
 	}
 
-	// Convert Oauth2Auth Override to v1alpha2.APIKey : Required field added as optional for APIKey
-	for _, apiKeyAuth := range src.Spec.Override.AuthTypes.APIKey {
-		convertedAPIKeyAuth := v1alpha2.APIKeyAuth{
-			In:                  apiKeyAuth.In,
-			Name:                apiKeyAuth.Name,
-			SendTokenToUpstream: apiKeyAuth.SendTokenToUpstream,
+	if src.Spec.Override != nil {
+		overrideAuthv1Spec := src.Spec.Override
+		overrideAuthenticationSpec := v1alpha2.AuthSpec{}
+		overrideAuthenticationSpec.Disabled = overrideAuthv1Spec.Disabled
+		if overrideAuthv1Spec.AuthTypes != nil {
+			v1alpha2authTypes := v1alpha2.APIAuth{}
+			v1alpha2authTypes.Oauth2 = v1alpha2.Oauth2Auth{
+				Required:            "mandatory",
+				Disabled:            overrideAuthv1Spec.AuthTypes.Oauth2.Disabled,
+				Header:              overrideAuthv1Spec.AuthTypes.Oauth2.Header,
+				SendTokenToUpstream: overrideAuthv1Spec.AuthTypes.Oauth2.SendTokenToUpstream,
+			}
+			// Convert Oauth2Auth Default to v1alpha2.APIKey : Required field added as optional for APIKey
+			for _, apiKeyAuth := range overrideAuthv1Spec.AuthTypes.APIKey {
+				convertedAPIKeyAuth := v1alpha2.APIKeyAuth{
+					In:                  apiKeyAuth.In,
+					Name:                apiKeyAuth.Name,
+					SendTokenToUpstream: apiKeyAuth.SendTokenToUpstream,
+				}
+				v1alpha2authTypes.APIKey = append(v1alpha2authTypes.APIKey, convertedAPIKeyAuth)
+			}
+			if overrideAuthv1Spec.AuthTypes.TestConsoleKey != (TestConsoleKeyAuth{}) {
+				v1alpha2authTypes.JWT = v1alpha2.JWT{
+					Header:              overrideAuthv1Spec.AuthTypes.TestConsoleKey.Header,
+					SendTokenToUpstream: overrideAuthv1Spec.AuthTypes.TestConsoleKey.SendTokenToUpstream,
+				}
+			}
+			overrideAuthenticationSpec.AuthTypes = &v1alpha2authTypes
 		}
-		dst.Spec.Override.AuthTypes.APIKey = append(dst.Spec.Override.AuthTypes.APIKey, convertedAPIKeyAuth)
-	}
-
-	// Convert testConsoleKey Override to v1alpha2.JWT
-	if src.Spec.Override.AuthTypes.TestConsoleKey != (TestConsoleKeyAuth{}) {
-		dst.Spec.Override.AuthTypes.JWT = v1alpha2.JWT{
-			Header:              src.Spec.Override.AuthTypes.TestConsoleKey.Header,
-			SendTokenToUpstream: src.Spec.Override.AuthTypes.TestConsoleKey.SendTokenToUpstream,
-		}
-	}
-
-	// Convert testConsoleKey Default to v1alpha2.JWT
-	if src.Spec.Default.AuthTypes.TestConsoleKey != (TestConsoleKeyAuth{}) {
-		dst.Spec.Default.AuthTypes.JWT = v1alpha2.JWT{
-			Header:              src.Spec.Default.AuthTypes.TestConsoleKey.Header,
-			SendTokenToUpstream: src.Spec.Default.AuthTypes.TestConsoleKey.SendTokenToUpstream,
-		}
+		dst.Spec.Override = &overrideAuthenticationSpec
 	}
 
 	// Status
 	dst.Status = v1alpha2.AuthenticationStatus(src.Status)
-
 	return nil
 }
 
@@ -102,51 +109,65 @@ func (src *Authentication) ConvertFrom(srcRaw conversion.Hub) error {
 
 	// Spec
 	src.Spec.TargetRef = dst.Spec.TargetRef
-
-	src.Spec.Default.Disabled = dst.Spec.Default.Disabled
-	src.Spec.Override.Disabled = dst.Spec.Override.Disabled
-	src.Spec.Default.AuthTypes.Oauth2 = Oauth2Auth{
-		Disabled:            src.Spec.Default.AuthTypes.Oauth2.Disabled,
-		Header:              src.Spec.Default.AuthTypes.Oauth2.Header,
-		SendTokenToUpstream: src.Spec.Default.AuthTypes.Oauth2.SendTokenToUpstream,
-	}
-	src.Spec.Override.AuthTypes.Oauth2 = Oauth2Auth{
-		Disabled:            src.Spec.Override.AuthTypes.Oauth2.Disabled,
-		Header:              src.Spec.Override.AuthTypes.Oauth2.Header,
-		SendTokenToUpstream: src.Spec.Override.AuthTypes.Oauth2.SendTokenToUpstream,
-	}
-
-	for _, apiKeyAuth := range dst.Spec.Default.AuthTypes.APIKey {
-		convertedAPIKeyAuth := APIKeyAuth{
-			In:                  apiKeyAuth.In,
-			Name:                apiKeyAuth.Name,
-			SendTokenToUpstream: apiKeyAuth.SendTokenToUpstream,
+	if dst.Spec.Default != nil {
+		defaultAuthv2Spec := dst.Spec.Default
+		defaultAuthenticationSpec := AuthSpec{}
+		defaultAuthenticationSpec.Disabled = defaultAuthv2Spec.Disabled
+		if defaultAuthv2Spec.AuthTypes != nil {
+			v1alpha1authTypes := APIAuth{}
+			v1alpha1authTypes.Oauth2 = Oauth2Auth{
+				Disabled:            defaultAuthv2Spec.AuthTypes.Oauth2.Disabled,
+				Header:              defaultAuthv2Spec.AuthTypes.Oauth2.Header,
+				SendTokenToUpstream: defaultAuthv2Spec.AuthTypes.Oauth2.SendTokenToUpstream,
+			}
+			// Convert Oauth2Auth Default to v1alpha2.APIKey : Required field added as optional for APIKey
+			for _, apiKeyAuth := range defaultAuthv2Spec.AuthTypes.APIKey {
+				convertedAPIKeyAuth := APIKeyAuth{
+					In:                  apiKeyAuth.In,
+					Name:                apiKeyAuth.Name,
+					SendTokenToUpstream: apiKeyAuth.SendTokenToUpstream,
+				}
+				v1alpha1authTypes.APIKey = append(v1alpha1authTypes.APIKey, convertedAPIKeyAuth)
+			}
+			v1alpha1authTypes.TestConsoleKey = TestConsoleKeyAuth{
+				Header:              defaultAuthv2Spec.AuthTypes.JWT.Header,
+				SendTokenToUpstream: defaultAuthv2Spec.AuthTypes.JWT.SendTokenToUpstream,
+			}
+			defaultAuthenticationSpec.AuthTypes = &v1alpha1authTypes
 		}
-		src.Spec.Default.AuthTypes.APIKey = append(src.Spec.Default.AuthTypes.APIKey, convertedAPIKeyAuth)
+		src.Spec.Default = &defaultAuthenticationSpec
 	}
 
-	for _, apiKeyAuth := range dst.Spec.Override.AuthTypes.APIKey {
-		convertedAPIKeyAuth := APIKeyAuth{
-			In:                  apiKeyAuth.In,
-			Name:                apiKeyAuth.Name,
-			SendTokenToUpstream: apiKeyAuth.SendTokenToUpstream,
+	if dst.Spec.Override != nil {
+		overrideAuthv2Spec := dst.Spec.Override
+		overrideAuthenticationSpec := AuthSpec{}
+		overrideAuthenticationSpec.Disabled = overrideAuthv2Spec.Disabled
+		if overrideAuthv2Spec.AuthTypes != nil {
+			v1alpha1authTypes := APIAuth{}
+			v1alpha1authTypes.Oauth2 = Oauth2Auth{
+				Disabled:            overrideAuthv2Spec.AuthTypes.Oauth2.Disabled,
+				Header:              overrideAuthv2Spec.AuthTypes.Oauth2.Header,
+				SendTokenToUpstream: overrideAuthv2Spec.AuthTypes.Oauth2.SendTokenToUpstream,
+			}
+			// Convert Oauth2Auth Default to v1alpha2.APIKey : Required field added as optional for APIKey
+			for _, apiKeyAuth := range overrideAuthv2Spec.AuthTypes.APIKey {
+				convertedAPIKeyAuth := APIKeyAuth{
+					In:                  apiKeyAuth.In,
+					Name:                apiKeyAuth.Name,
+					SendTokenToUpstream: apiKeyAuth.SendTokenToUpstream,
+				}
+				v1alpha1authTypes.APIKey = append(v1alpha1authTypes.APIKey, convertedAPIKeyAuth)
+			}
+			v1alpha1authTypes.TestConsoleKey = TestConsoleKeyAuth{
+				Header:              overrideAuthv2Spec.AuthTypes.JWT.Header,
+				SendTokenToUpstream: overrideAuthv2Spec.AuthTypes.JWT.SendTokenToUpstream,
+			}
+			overrideAuthenticationSpec.AuthTypes = &v1alpha1authTypes
 		}
-		src.Spec.Override.AuthTypes.APIKey = append(src.Spec.Override.AuthTypes.APIKey, convertedAPIKeyAuth)
+		src.Spec.Override = &overrideAuthenticationSpec
 	}
-
-	// Convert testConsoleKey Override to v1alpha1.TestConsoleKey
-	src.Spec.Override.AuthTypes.TestConsoleKey = TestConsoleKeyAuth{
-		Header:              dst.Spec.Override.AuthTypes.JWT.Header,
-		SendTokenToUpstream: dst.Spec.Override.AuthTypes.JWT.SendTokenToUpstream,
-	}
-
-	// Convert testConsoleKey Default to v1alpha1.TestConsoleKey
-	src.Spec.Default.AuthTypes.TestConsoleKey = TestConsoleKeyAuth{
-		Header:              dst.Spec.Default.AuthTypes.JWT.Header,
-		SendTokenToUpstream: dst.Spec.Default.AuthTypes.JWT.SendTokenToUpstream,
-	}
-
 	// Status
 	src.Status = AuthenticationStatus(dst.Status)
+
 	return nil
 }

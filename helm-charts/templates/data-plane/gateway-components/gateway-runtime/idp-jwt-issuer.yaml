@@ -1,9 +1,11 @@
 {{- if .Values.wso2.apk.dp.enabled }}
 kind: TokenIssuer
-apiVersion: dp.wso2.com/v1alpha1
+apiVersion: dp.wso2.com/v1alpha2
 metadata:
   name: {{ template "apk-helm.resource.prefix" . }}-idp-jwt-issuer
   namespace: {{ .Release.Namespace }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
 spec:
   name: "Domain-service-idp"
   consumerKeyClaim: {{ .Values.wso2.apk.idp.consumerKeyClaim | default "azp" }}
