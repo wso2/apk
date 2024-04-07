@@ -12,12 +12,12 @@ Feature: Token revocation
     And I eventually receive 200 response code, not accepting
       |429|
       |401|
-    Then I set headers
-      |stsAuthKey|2jrmypak391zsqz974ugdddebf812ofx1b9t1oq27530ir02tc815eemrx435qvcp41ucgy7v5uuawzi4qcmjrx0k1zgox2s28cr|
     And I send "GET" request to "https://default.gw.wso2.com:9095/jwt-basic/3.14/employee/" with body ""
     And the response status code should be 200
     # Revoke the token
-    And I send "POST" request to "https://apk-test-setup-wso2-apk-common-controller-service.apk-integration-test.svc:9543/notify?type=TOKEN_REVOCATION" with body "{\"token\": \"${accessToken}\"}"
+    Then I set headers
+      |stsAuthKey|2jrmypak391zsqz974ugdddebf812ofx1b9t1oq27530ir02tc815eemrx435qvcp41ucgy7v5uuawzi4qcmjrx0k1zgox2s28cr|
+    And I send "POST" request to "https://api.am.wso2.com:9095/api/notification/1.0.0/notify?type=TOKEN_REVOCATION" with body "{\"token\": \"${accessToken}\"}"
     And the response status code should be 200
     And I wait for 5 seconds
     And I send "GET" request to "https://default.gw.wso2.com:9095/jwt-basic/3.14/employee/" with body ""
