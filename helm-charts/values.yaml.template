@@ -163,6 +163,8 @@ wso2:
                       operator: In
                       values:
                       - config-ds
+          # -- Configure Node Selector for the deployment. 
+          nodeSelector: {}
           resources:
             requests:
               # -- CPU request for the container
@@ -267,7 +269,8 @@ wso2:
                       - adapter
                      # - "{{ .Template.Name }}"
                      # - "{{ .Values.somevalue }}"
-        
+          # -- Configure Node Selector for the deployment. 
+          nodeSelector: {}
         configs:
           # -- Optionally configure namespaces to watch for apis.
           apiNamespaces:
@@ -339,6 +342,8 @@ wso2:
                       operator: In
                       values:
                       - common-controller
+          # -- Configure Node Selector for the deployment. 
+          nodeSelector: {}
           redis:
               # -- Redis host
               host: "redis-master"
@@ -441,6 +446,8 @@ wso2:
                       operator: In
                       values:
                       - rate-limiter
+          # -- Configure Node Selector for the deployment. 
+          nodeSelector: {}
       gatewayRuntime:
         service:
           # -- Gateway service related annotations.
@@ -448,6 +455,8 @@ wso2:
         deployment:
           # -- Number of replicas
           replicas: 1
+          # -- Configure Node Selector for the deployment. 
+          nodeSelector: {}
           # -- Configure Affinity for the deployment. 
           affinity:
             podAntiAffinity:
@@ -846,6 +855,8 @@ gatewaySystem:
                 operator: In
                 values:
                 - gateway-api-ad-server
+    # -- Configure Node Selector for the deployment. 
+    nodeSelector: {}
 certmanager:
   # -- Enable certificate manager to generate certificates
   enabled: true
