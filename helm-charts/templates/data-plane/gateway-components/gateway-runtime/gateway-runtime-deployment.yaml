@@ -34,6 +34,7 @@ spec:
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/data-plane/gateway-components/log-conf.yaml") . | sha256sum }}
     spec:
+      affinity: {{- include "apk-helm.deployment.affinity" ( dict "value" .Values.wso2.apk.dp.gatewayRuntime.deployment.affinity "app" "gateway-runtime" "context" $) | nindent 8 }}
       automountServiceAccountToken: false
       containers:
         - name: enforcer

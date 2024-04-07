@@ -25,6 +25,26 @@ app.kubernetes.io/release: {{ .root.Release.Name }}
 {{- end }}
 
 
+{{- define "apk-helm.deployment.affinity" -}}
+{{- $value := typeIs "string" .value | ternary .value (.value | toYaml) }}
+{{- if  (not .value) }}
+    podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app.kubernetes.io/app
+                  operator: In
+                  values:
+                  - {{ .app }}
+              topologyKey: "topology.kubernetes.io/zone"
+            weight: 100
+{{- else if contains "{{" (toJson .value) }}
+    {{- tpl $value .context }}
+{{- else }}
+    {{- $value }}
+{{- end }}
+{{- end -}}
 
 {{- define "apk-helm.deployment.readinessProbe.http" -}}
 readinessProbe:

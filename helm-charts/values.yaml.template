@@ -152,6 +152,17 @@ wso2:
       configdeployer:
         enabled: true
         deployment:
+          # -- Configure Affinity for the deployment. 
+          affinity:
+            podAntiAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+              - podAffinityTerm:
+                  labelSelector:
+                    matchExpressions:
+                    - key: app.kubernetes.io/app
+                      operator: In
+                      values:
+                      - config-ds
           resources:
             requests:
               # -- CPU request for the container
@@ -243,6 +254,20 @@ wso2:
           security:
             # -- Enable security for adapter.
             sslHostname: "adapter"
+          # -- Configure Affinity for the deployment. 
+          affinity:
+            podAntiAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+              - podAffinityTerm:
+                  labelSelector:
+                    matchExpressions:
+                    - key: app.kubernetes.io/app
+                      operator: In
+                      values:
+                      - adapter
+                     # - "{{ .Template.Name }}"
+                     # - "{{ .Values.somevalue }}"
+        
         configs:
           # -- Optionally configure namespaces to watch for apis.
           apiNamespaces:
@@ -303,6 +328,17 @@ wso2:
              # -- Optionally configure namespaces to watch for apis,ratelimitpolicies,etc.
              apiNamespaces:
                - "apk-v12"
+          # -- Configure Affinity for the deployment. 
+          affinity:
+            podAntiAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+              - podAffinityTerm:
+                  labelSelector:
+                    matchExpressions:
+                    - key: app.kubernetes.io/app
+                      operator: In
+                      values:
+                      - common-controller
           redis:
               # -- Redis host
               host: "redis-master"
@@ -394,6 +430,17 @@ wso2:
               certFilename: ""
               # -- TLS CA certificate file name.
               certCAFilename: ""
+          # -- Configure Affinity for the deployment. 
+          affinity:
+            podAntiAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+              - podAffinityTerm:
+                  labelSelector:
+                    matchExpressions:
+                    - key: app.kubernetes.io/app
+                      operator: In
+                      values:
+                      - rate-limiter
       gatewayRuntime:
         service:
           # -- Gateway service related annotations.
@@ -401,6 +448,17 @@ wso2:
         deployment:
           # -- Number of replicas
           replicas: 1
+          # -- Configure Affinity for the deployment. 
+          affinity:
+            podAntiAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+              - podAffinityTerm:
+                  labelSelector:
+                    matchExpressions:
+                    - key: app.kubernetes.io/app
+                      operator: In
+                      values:
+                      - gateway-runtime
           router:
             resources:
               requests:
@@ -774,7 +832,20 @@ gatewaySystem:
   enableClusterRoleCreation: true
   serviceAccountName: gateway-api-admission
   applyGatewayWehbhookJobs: true
-
+  deployment:
+    image: registry.k8s.io/gateway-api/admission-server:v1.0.0
+    imagePullPolicy: Always
+    # -- Configure Affinity for the deployment. 
+    affinity:
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+        - podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+              - key: app.kubernetes.io/app
+                operator: In
+                values:
+                - gateway-api-ad-server
 certmanager:
   # -- Enable certificate manager to generate certificates
   enabled: true

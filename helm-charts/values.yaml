@@ -344,7 +344,10 @@ gatewaySystem:
   enableClusterRoleCreation: true
   serviceAccountName: gateway-api-admission
   applyGatewayWehbhookJobs: true
-  
+  deployment:
+    image: registry.k8s.io/gateway-api/admission-server:v1.0.0
+    imagePullPolicy: Always
+
 certmanager:
   enabled: true
   enableClusterIssuer: true
