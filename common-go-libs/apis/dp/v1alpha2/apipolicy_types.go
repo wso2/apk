@@ -60,7 +60,7 @@ type PolicySpec struct {
 	//
 	// +kubebuilder:default:=false
 	// +optional
-	SubscriptionValidation bool `json:"subscriptionValidation,omitempty"`
+	SubscriptionValidation bool `json:"subscriptionValidation"`
 }
 
 // BackendJWTToken holds backend JWT token information
@@ -76,7 +76,7 @@ type CORSPolicy struct {
 	//
 	// +kubebuilder:default=true
 	// +optional
-	Enabled bool `json:"enabled,omitempty"`
+	Enabled bool `json:"enabled"`
 
 	// AllowCredentials indicates whether the request can include user credentials like
 	// cookies, HTTP authentication or client side SSL certificates.
