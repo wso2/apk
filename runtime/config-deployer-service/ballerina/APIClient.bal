@@ -361,7 +361,7 @@ public class APIClient {
             } else if authentication.authType == "JWT" {
                 JWTAuthentication jwtAuthentication = check authentication.cloneWithType(JWTAuthentication);
                 authTypes.jwt = {header: <string>jwtAuthentication.headerName, sendTokenToUpstream: <boolean>jwtAuthentication.sendTokenToUpstream, disabled: !jwtAuthentication.enabled, audience: jwtAuthentication.audience};
-            } else if authentication.authType == "APIKey" && authentication is APIKeyAuthentication {
+            } else if authentication.authType == "APIKey" {
                 APIKeyAuthentication apiKeyAuthentication = check authentication.cloneWithType(APIKeyAuthentication);
                 model:APIKey[] apiKeys = [];
                 boolean|() headerEnabled = apiKeyAuthentication.headerEnable;
