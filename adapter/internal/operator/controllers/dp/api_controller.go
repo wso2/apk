@@ -2637,6 +2637,33 @@ func prepareOperations(apiState *synchronizer.APIState) []controlplane.Operation
 				operations = append(operations, controlplane.Operation{Path: path, Verb: verb, Scopes: scopes})
 			}
 		}
+	} else if apiState.SandHTTPRoute != nil && apiState.SandHTTPRoute.HTTPRouteCombined != nil {
+		for _, rule := range apiState.SandHTTPRoute.HTTPRouteCombined.Spec.Rules {
+			scopes := []string{}
+			for _, filter := range rule.Filters {
+				if filter.ExtensionRef != nil && filter.ExtensionRef.Kind == "Scope" {
+					scope, found := apiState.SandHTTPRoute.Scopes[types.NamespacedName{Namespace: apiState.APIDefinition.ObjectMeta.Namespace, Name: string(filter.ExtensionRef.Name)}.String()]
+					if found {
+						scopes = append(scopes, scope.Spec.Names...)
+					}
+				}
+			}
+			for _, match := range rule.Matches {
+				path := "/"
+				verb := "GET"
+				if match.Path != nil && match.Path.Value != nil {
+					path = *match.Path.Value
+				}
+				if match.Method != nil {
+					verb = string(*match.Method)
+				}
+				if match.Path.Type == nil || *match.Path.Type == gwapiv1.PathMatchPathPrefix {
+					path = path + "*"
+				}
+				path = "^" + path + "$"
+				operations = append(operations, controlplane.Operation{Path: path, Verb: verb, Scopes: scopes})
+			}
+		}
 	}
 	if apiState.ProdGQLRoute != nil && apiState.ProdGQLRoute.GQLRouteCombined != nil {
 		for _, rule := range apiState.ProdGQLRoute.GQLRouteCombined.Spec.Rules {
@@ -2644,6 +2671,29 @@ func prepareOperations(apiState *synchronizer.APIState) []controlplane.Operation
 			for _, filter := range rule.Filters {
 				if filter.ExtensionRef.Kind == "Scope" {
 					scope, found := apiState.ProdGQLRoute.Scopes[types.NamespacedName{Namespace: apiState.APIDefinition.ObjectMeta.Namespace, Name: string(filter.ExtensionRef.Name)}.String()]
+					if found {
+						scopes = append(scopes, scope.Spec.Names...)
+					}
+				}
+			}
+			for _, match := range rule.Matches {
+				path := ""
+				verb := "QUERY"
+				if match.Path != nil {
+					path = *match.Path
+				}
+				if match.Type != nil {
+					verb = string(*match.Type)
+				}
+				operations = append(operations, controlplane.Operation{Path: path, Verb: verb, Scopes: scopes})
+			}
+		}
+	} else if apiState.SandGQLRoute != nil && apiState.SandGQLRoute.GQLRouteCombined != nil {
+		for _, rule := range apiState.SandGQLRoute.GQLRouteCombined.Spec.Rules {
+			scopes := []string{}
+			for _, filter := range rule.Filters {
+				if filter.ExtensionRef.Kind == "Scope" {
+					scope, found := apiState.SandGQLRoute.Scopes[types.NamespacedName{Namespace: apiState.APIDefinition.ObjectMeta.Namespace, Name: string(filter.ExtensionRef.Name)}.String()]
 					if found {
 						scopes = append(scopes, scope.Spec.Names...)
 					}
