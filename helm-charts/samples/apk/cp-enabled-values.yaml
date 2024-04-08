@@ -56,6 +56,7 @@ wso2:
       gateway:
         listener:
           hostname: "gw.wso2.com"
+        service: {}
           # secretName: "idp-tls"
       # partitionServer:
       #   enabled: false
@@ -90,7 +91,7 @@ wso2:
           strategy: RollingUpdate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/apk-config-deployer-service:1.1.0-rc
+          image: wso2/apk-config-deployer-service:1.1.0-rc2
           # configs:
           #   tls:
           #     secretName: "my-secret"
@@ -116,7 +117,7 @@ wso2:
           strategy: RollingUpdate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/apk-adapter:1.1.0-rc
+          image: wso2/apk-adapter:1.1.0-rc2
           security:
             sslHostname: "adapter"
         #     logging:
@@ -149,7 +150,7 @@ wso2:
           strategy: RollingUpdate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/apk-common-controller:1.1.0-rc
+          image: wso2/apk-common-controller:1.1.0-rc2
           security:
             sslHostname: "commoncontroller"
           # configs:
@@ -176,7 +177,7 @@ wso2:
           strategy: RollingUpdate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/apk-ratelimiter:1.1.0-rc
+          image: wso2/apk-ratelimiter:1.1.0-rc2
           security:
             sslHostname: "ratelimiter"
           # configs:
@@ -206,7 +207,7 @@ wso2:
               failureThreshold: 5
             strategy: RollingUpdate
             imagePullPolicy: Always
-            image: wso2/apk-router:1.1.0-rc
+            image: wso2/apk-router:1.1.0-rc2
             # configs:
             #   tls:
             #     secretName: "router-cert"
@@ -237,7 +238,7 @@ wso2:
               failureThreshold: 5
             strategy: RollingUpdate
             imagePullPolicy: Always
-            image: wso2/apk-enforcer:1.1.0-rc
+            image: wso2/apk-enforcer:1.1.0-rc2
             security:
               sslHostname: "enforcer"
             #            logging:
@@ -309,7 +310,7 @@ idp:
       strategy: RollingUpdate
       replicas: 1
       imagePullPolicy: Always
-      image: wso2/apk-idp-domain-service:1.1.0-rc
+      image: wso2/apk-idp-domain-service:1.1.0-rc2
   idpui:
     deployment:
       resources:
@@ -330,7 +331,7 @@ idp:
       strategy: RollingUpdate
       replicas: 1
       imagePullPolicy: Always
-      image: wso2/apk-idp-ui:1.1.0-rc
+      image: wso2/apk-idp-ui:1.1.0-rc2
     configs:
       idpLoginUrl: "https://idp.am.wso2.com:9095/commonauth/login"
       idpAuthCallBackUrl: "https://idp.am.wso2.com:9095/oauth2/auth-callback"
@@ -341,6 +342,9 @@ gatewaySystem:
   enableClusterRoleCreation: true
   serviceAccountName: gateway-api-admission
   applyGatewayWehbhookJobs: true
+  deployment:
+    image: registry.k8s.io/gateway-api/admission-server:v1.0.0
+    imagePullPolicy: Always
 
 certmanager:
   enabled: true
