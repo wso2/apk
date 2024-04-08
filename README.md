@@ -42,7 +42,6 @@ ___
 
 ___
 
-
 <!---
    - **Runtime Manager** - Responsible for configuring the runtime aspects of API including API endpoints, discovering Kubernetes services, and converting them into APIs, etc. The backend component was developed using **Ballerina**
   
