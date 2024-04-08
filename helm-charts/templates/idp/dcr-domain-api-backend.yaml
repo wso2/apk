@@ -19,6 +19,8 @@ apiVersion: "dp.wso2.com/v1alpha1"
 metadata:
   name: {{ template "apk-helm.resource.prefix" . }}-dcr-ds-backend
   namespace: {{ .Release.Namespace }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
 spec:
  basePath: /dcr
  services:

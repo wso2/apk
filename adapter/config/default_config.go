@@ -175,6 +175,15 @@ var defaultConfig = &Config{
 				EnableOutboundCertificateHeader: false,
 			},
 		},
+		Cors: cors{
+			Enabled:                       true,
+			AccessControlAllowOrigins:     []string{"*"},
+			AccessControlAllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"},
+			AccessControlAllowHeaders:     []string{"authorization", "Access-Control-Allow-Origin", "Content-Type", "Internal-key"},
+			AccessControlAllowCredentials: false,
+			AccessControlExposeHeaders:    []string{"*"},
+		},
+
 		AuthService: authService{
 			Port:           8081,
 			MaxMessageSize: 1000000000,

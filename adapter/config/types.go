@@ -165,6 +165,18 @@ type enforcer struct {
 	MandateSubscriptionValidation bool
 	MandateInternalKeyValidation  bool
 	Client                        httpClient
+	Cors                          cors
+}
+
+// Cors represents the configurations related to Cross-Origin Resource Sharing
+type cors struct {
+	Enabled                       bool
+	AccessControlAllowOrigins     []string
+	AccessControlAllowMethods     []string
+	AccessControlAllowHeaders     []string
+	AccessControlMaxAge           *int
+	AccessControlAllowCredentials bool
+	AccessControlExposeHeaders    []string
 }
 
 // Router to enforcer request body passing configurations

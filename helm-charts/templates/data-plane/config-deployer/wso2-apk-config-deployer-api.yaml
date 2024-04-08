@@ -22,7 +22,7 @@ metadata:
   labels:
     managed-by: "apk"
   annotations:
-    "helm.sh/hook": post-install
+    "helm.sh/hook": post-install,post-upgrade
 spec:
   apiName: "WSO2 APK Config Deployer API"
   apiType: "REST"

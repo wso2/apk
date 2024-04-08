@@ -174,13 +174,15 @@ public type DefinitionBody record {
 
 # CORS Configuration of API
 #
+# + corsConfigurationEnabled - field description  
 # + accessControlAllowOrigins - Field Description  
 # + accessControlAllowCredentials - Field Description  
 # + accessControlAllowHeaders - Field Description  
 # + accessControlAllowMethods - Field Description  
+# + accessControlAllowMaxAge - Field Description  
 # + accessControlExposeHeaders - Field Description
-# + accessControlAllowMaxAge - Field Description
 public type CORSConfiguration record {
+    boolean corsConfigurationEnabled = false;
     string[] accessControlAllowOrigins?;
     boolean accessControlAllowCredentials?;
     string[] accessControlAllowHeaders?;

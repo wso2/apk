@@ -17,11 +17,17 @@
 replicaCount: 1
 image:
   repository: wso2/apim-apk-agent
-  tag: 1.1.0-rc
+  tag: 1.1.0-rc2
   pullPolicy: Always
 service:
   name: apim-apk-agent-service
-resources: {}
+resources:
+  requests:
+    memory: "128Mi"
+    cpu: "100m"
+  limits:
+    memory: "256Mi"
+    cpu: "200m"
 controlPlane:
   enabled: true
   serviceURL: https://apim-wso2am-cp-1-service.apk.svc.cluster.local:9443/
@@ -40,4 +46,9 @@ metrics:
 agent:
   mode: CPtoDP
 certmanager:
-  enabled: true
+  enabled: false
+serviceAccount:
+  enableServiceAccountCreation: true
+  enableClusterRoleCreation: true
+  serviceAccountName: wso2agent-platform
+  roleName: wso2agent-role

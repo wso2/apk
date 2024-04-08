@@ -217,7 +217,6 @@ components:
       properties:
         corsConfigurationEnabled:
           type: boolean
-          default: false
         accessControlAllowOrigins:
           type: array
           items:

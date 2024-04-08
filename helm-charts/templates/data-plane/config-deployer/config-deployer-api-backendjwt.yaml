@@ -6,6 +6,8 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     managed-by: "apk"
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
 spec:
     header: "X-JWT-Assertion"
     encoding: "Base64"

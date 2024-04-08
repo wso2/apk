@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2023, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
+ *  Copyright (c) 2024, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -15,15 +15,9 @@
  *
  */
 
-package v1alpha1
+package v1alpha2
 
-import (
-	ctrl "sigs.k8s.io/controller-runtime"
-)
+// Hub marks this type as a conversion hub.
+func (*APIPolicy) Hub() {}
 
-// SetupWebhookWithManager creates a new webhook builder for Authentication
-func (r *Authentication) SetupWebhookWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewWebhookManagedBy(mgr).
-		For(r).
-		Complete()
-}
+// TODO(user): EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!

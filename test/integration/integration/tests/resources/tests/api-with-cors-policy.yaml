@@ -139,4 +139,17 @@ spec:
   services:
   - host: infra-backend-v1.gateway-integration-test-infra
     port: 8080
-    
+---
+apiVersion: dp.wso2.com/v1alpha2
+kind: APIPolicy
+metadata:
+  name: no-cors-policy
+  namespace: gateway-integration-test-infra
+spec:
+  override:
+    cORSPolicy:
+      enabled: false
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: API
+    name: no-cors-policy-api
