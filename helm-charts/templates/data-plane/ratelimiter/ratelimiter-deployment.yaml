@@ -32,6 +32,10 @@ spec:
       labels:
 {{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" "ratelimiter" ) | indent 8}}
     spec:
+      affinity: {{- include "apk-helm.deployment.affinity" ( dict "value" .Values.wso2.apk.dp.ratelimiter.deployment.affinity "app" "rate-limiter" "context" $) | nindent 8 }}
+      {{- if .Values.wso2.apk.dp.ratelimiter.deployment.nodeSelector }}
+      nodeSelector: {{- include "apk-helm.deployment.nodeSelector" ( dict "value" .Values.wso2.apk.dp.ratelimiter.deployment.nodeSelector "context" $) | nindent 8 }}
+      {{- end }}
       automountServiceAccountToken: false
       serviceAccountName: {{ .Values.wso2.apk.auth.serviceAccountName }}
       containers:

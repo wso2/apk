@@ -75,10 +75,14 @@ spec:
       labels:
         name: gateway-api-admission-server
     spec:
+      affinity: {{- include "apk-helm.deployment.affinity" ( dict "value" .Values.gatewaySystem.deployment.affinity "app" "gateway-api-ad-server" "context" $) | nindent 8 }}
+      {{- if .Values.gatewaySystem.deployment.nodeSelector }}
+      nodeSelector: {{- include "apk-helm.deployment.nodeSelector" ( dict "value" .Values.gatewaySystem.deployment.nodeSelector "context" $) | nindent 8 }}
+      {{- end }}
       containers:
         - name: webhook
-          image: registry.k8s.io/gateway-api/admission-server:v1.0.0
-          imagePullPolicy: Always
+          image: {{ .Values.gatewaySystem.deployment.image }}
+          imagePullPolicy: {{ .Values.gatewaySystem.deployment.imagePullPolicy }}
           args:
             - -logtostderr
             - --tlsCertFile=/etc/certs/cert

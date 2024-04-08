@@ -34,6 +34,10 @@ spec:
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/data-plane/config-deployer/config-ds-configmap.yaml") . | sha256sum }}
     spec:
+      affinity: {{- include "apk-helm.deployment.affinity" ( dict "value" .Values.wso2.apk.dp.configdeployer.deployment.affinity "app" "config-ds" "context" $) | nindent 8 }}
+      {{- if .Values.wso2.apk.dp.configdeployer.deployment.nodeSelector }}
+      nodeSelector: {{- include "apk-helm.deployment.nodeSelector" ( dict "value" .Values.wso2.apk.dp.configdeployer.deployment.nodeSelector "context" $) | nindent 8 }}
+      {{- end }}
       serviceAccountName: {{ .Values.wso2.apk.auth.serviceAccountName }}
       containers:
         - name: config-ds
