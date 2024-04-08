@@ -14,13 +14,15 @@
 # specific language governing permissions and limitations
 # under the License.
 {{- if and .Values.wso2.apk.dp.enabled .Values.wso2.apk.dp.configdeployer.enabled }}
-apiVersion: "dp.wso2.com/v1alpha1"
+apiVersion: "dp.wso2.com/v1alpha2"
 kind: "Authentication"
 metadata:
   name: "{{ template "apk-helm.resource.prefix" . }}-configurator-api-no-authentication-policy"
   namespace: {{ .Release.Namespace }}
   labels:
     managed-by: "apk"
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
 spec:
   override:
     disabled: true

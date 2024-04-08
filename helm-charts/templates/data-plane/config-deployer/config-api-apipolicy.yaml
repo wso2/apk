@@ -4,6 +4,8 @@ kind: APIPolicy
 metadata:
   name: "{{ template "apk-helm.resource.prefix" . }}-config-api-api-policy"
   namespace: {{ .Release.Namespace }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
 spec:
   override:
     backendJwtPolicy:

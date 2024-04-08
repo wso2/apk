@@ -1,3 +1,11 @@
+import config_deployer_service.java.io as javaio;
+import config_deployer_service.model;
+import config_deployer_service.org.wso2.apk.config as runtimeUtil;
+import config_deployer_service.org.wso2.apk.config.api as runtimeapi;
+import config_deployer_service.org.wso2.apk.config.model as runtimeModels;
+
+import ballerina/crypto;
+import ballerina/lang.value;
 //
 // Copyright (c) 2022, WSO2 LLC. (http://www.wso2.com).
 //
@@ -15,21 +23,15 @@
 // specific language governing permissions and limitations
 // under the License.
 //
-
 import ballerina/log;
-import config_deployer_service.model;
-import config_deployer_service.org.wso2.apk.config.model as runtimeModels;
 import ballerina/regex;
-import config_deployer_service.org.wso2.apk.config as runtimeUtil;
-import ballerina/lang.value;
-import config_deployer_service.org.wso2.apk.config.api as runtimeapi;
 import ballerina/uuid;
-import ballerina/crypto;
-import config_deployer_service.java.io as javaio;
-import wso2/apk_common_lib as commons;
 import ballerinax/prometheus as _;
+
+import wso2/apk_common_lib as commons;
+
 public class APIClient {
-    
+
     # This function used to convert APKInternalAPI model to APKConf.
     #
     # + api - APKInternalAPI model
@@ -1233,7 +1235,7 @@ public class APIClient {
         BackendJWTPolicy_parameters parameters = backendJWTPolicy.parameters ?: {};
         model:BackendJWT backendJwt = {
             metadata: {
-                name: self.getBackendJWTPolicyUid(apkConf, operation,  organization),
+                name: self.getBackendJWTPolicyUid(apkConf, operation, organization),
                 labels: self.getLabels(apkConf, organization)
             },
             spec: {}
@@ -1266,6 +1268,9 @@ public class APIClient {
 
     private isolated function retrieveCORSPolicyDetails(model:APIArtifact apiArtifact, APKConf apkConf, CORSConfiguration corsConfiguration, commons:Organization organization) returns model:CORSPolicy? {
         model:CORSPolicy corsPolicy = {};
+        if corsConfiguration.corsConfigurationEnabled is boolean {
+            corsPolicy.enabled = <boolean>corsConfiguration.corsConfigurationEnabled;
+        }
         if corsConfiguration.accessControlAllowCredentials is boolean {
             corsPolicy.accessControlAllowCredentials = <boolean>corsConfiguration.accessControlAllowCredentials;
         }
@@ -1494,7 +1499,7 @@ public class APIClient {
             }
             return string:'join("-", concatanatedString, "-resource-backend-jwt-policy");
         } else {
-            return string:'join("-", concatanatedString, "-api-backend-jwt-policy");   
+            return string:'join("-", concatanatedString, "-api-backend-jwt-policy");
         }
     }
 
@@ -1562,7 +1567,7 @@ public class APIClient {
                 string operationTargetHash = crypto:hashSha1(hexBytes).toBase16();
                 concatanatedString = concatanatedString + "-" + operationTargetHash;
             }
-            return "resource-" + concatanatedString + "-" +  targetRef;
+            return "resource-" + concatanatedString + "-" + targetRef;
         } else {
             return "api-" + concatanatedString + "-" + targetRef;
         }

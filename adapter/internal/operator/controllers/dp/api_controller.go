@@ -1070,8 +1070,8 @@ func (apiReconciler *APIReconciler) retriveParentAPIsAndUpdateOwnerReferene(ctx 
 		}
 		requests = apiReconciler.getAPIsForInterceptorService(ctx, &interceptorService)
 		apiReconciler.handleOwnerReference(ctx, &interceptorService, &requests)
-	case *dpv1alpha1.APIPolicy:
-		var apiPolicy dpv1alpha1.APIPolicy
+	case *dpv1alpha2.APIPolicy:
+		var apiPolicy dpv1alpha2.APIPolicy
 		namesapcedName := types.NamespacedName{
 			Name:      string(obj.GetName()),
 			Namespace: string(obj.GetNamespace()),

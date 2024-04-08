@@ -4,8 +4,21 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.12.0
+    cert-manager.io/inject-ca-from: {{ .Release.Namespace }}/{{ template "apk-helm.resource.prefix" . }}-common-controller-server-cert
   name: apipolicies.dp.wso2.com
 spec:
+  {{- if .Values.wso2.apk.webhooks.conversionwebhookconfigurations }}
+  conversion:
+      strategy: Webhook
+      webhook:
+        clientConfig:
+          service:
+            name: {{ template "apk-helm.resource.prefix" . }}-common-controller-service
+            namespace: {{ .Release.Namespace }}
+            path: /convert
+        conversionReviewVersions:
+        - v1
+  {{- end }}
   group: dp.wso2.com
   names:
     kind: APIPolicy

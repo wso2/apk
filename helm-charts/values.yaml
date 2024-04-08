@@ -95,6 +95,7 @@ wso2:
           replicas: 1
           imagePullPolicy: Always
           image: wso2/apk-config-deployer-service:1.1.0-rc
+        # debug: true
           # configs:
           #   tls:
           #     secretName: "my-secret"

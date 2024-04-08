@@ -23,7 +23,7 @@ metadata:
     api-name: "idp-domain-service"
     api-version: "1.0.0"
   annotations:
-    "helm.sh/hook": post-install
+    "helm.sh/hook": post-install,post-upgrade
 spec:
   apiName: "authenticationEndpoint-domain-service"
   apiType: "REST"

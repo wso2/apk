@@ -44,8 +44,6 @@ public type BackendJwtReference record {
     string name?;
 };
 
-
-
 public type APIPolicyList record {
     string apiVersion = "dp.wso2.com/v1alpha2";
     string kind = "APIPolicyList";
@@ -54,6 +52,7 @@ public type APIPolicyList record {
 };
 
 public type CORSPolicy record {
+    boolean enabled = true;
     boolean accessControlAllowCredentials = false;
     string[] accessControlAllowOrigins = [];
     string[] accessControlAllowHeaders = [];
