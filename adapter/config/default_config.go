@@ -166,7 +166,7 @@ var defaultConfig = &Config{
 			InternalKey: internalKey{
 				Enabled:             true,
 				Issuer:              "https://apim.wso2.com/publisher",
-				CertificateFilePath: "/home/wso2/security/truststore/wso2carbon.pem",
+				CertificateFilePath: "/home/wso2/security/truststore/wso2-apim-carbon.pem",
 			},
 			MutualSSL: mutualSSL{
 				CertificateHeader:               "X-WSO2-CLIENT-CERTIFICATE",
