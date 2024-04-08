@@ -23,8 +23,6 @@ package org.wso2.apk.enforcer.constants;
  */
 public class AnalyticsConstants {
 
-    public static final String AUTH_URL_CONFIG_KEY = "authURL";
-    public static final String AUTH_TOKEN_CONFIG_KEY = "authToken";
     public static final String UPSTREAM_SUCCESS_RESPONSE_DETAIL = "via_upstream";
     public static final String EXT_AUTH_DENIED_RESPONSE_DETAIL = "ext_authz_denied";
     public static final String EXT_AUTH_ERROR_RESPONSE_DETAIL = "ext_authz_error";

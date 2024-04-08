@@ -66,8 +66,9 @@ public class Constants {
     public static final String FAULT_EVENT_TYPE = "fault";
 
     //Reporter config properties
-    public static final String AUTH_API_URL = "auth.api.url";
-    public static final String AUTH_API_TOKEN = "auth.api.token";
+    public static final String AUTH_API_URL = "authURL";
+    public static final String AUTH_API_TOKEN = "authToken";
+    public static final String MOESIF_TOKEN = "moesifToken";
 
     //Proxy configs
     public static final String PROXY_ENABLE = "proxy_config_enable";
