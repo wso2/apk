@@ -17,7 +17,6 @@ Some characteristics of APK
 - APK aims to provide API marketplace capabilities, enabling sharing, discovery, and reusability of APIs while focusing on efficient governance and administration.
 - With its Kubernetes-native approach, exceptional characteristics, microservices architecture, and commitment to collaboration and innovation, APK sets a new standard for API management.
 
-
 For more information about APK release planning and project management information, visit [APK Project Dashboard](https://github.com/orgs/wso2/projects/80/)
 
 For in-depth information about WSO2 API Management Platform, visit [WSO2 API Management](https://wso2.com/api-manager/)

@@ -38,4 +38,8 @@ spec:
     - name: https-internal-api
       protocol: TCP
       port: 18003
+    - name: web-server
+      protocol: TCP
+      port: 9543
+      targetPort: 9543
 {{- end -}}
