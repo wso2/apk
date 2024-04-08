@@ -2609,10 +2609,10 @@ func prepareSecuritySchemeForCP(apiState *synchronizer.APIState) ([]string, stri
 						authHeader = authSpec.AuthTypes.Oauth2.Header
 					}
 				}
-				if authSpec.AuthTypes.MutualSSL.Required == "mandatory" {
+				if authSpec.AuthTypes.MutualSSL != nil && authSpec.AuthTypes.MutualSSL.Required == "mandatory" {
 					isMTLSMandatory = true
 				}
-				if !authSpec.AuthTypes.MutualSSL.Disabled {
+				if authSpec.AuthTypes.MutualSSL != nil && !authSpec.AuthTypes.MutualSSL.Disabled {
 					authSchemes = append(authSchemes, "mutualssl")
 				}
 				if len(authSpec.AuthTypes.APIKey) > 0 {
