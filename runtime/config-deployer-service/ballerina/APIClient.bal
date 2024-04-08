@@ -363,9 +363,17 @@ public class APIClient {
                 authTypes.jwt = {header: <string>jwtAuthentication.headerName, sendTokenToUpstream: <boolean>jwtAuthentication.sendTokenToUpstream, disabled: !jwtAuthentication.enabled, audience: jwtAuthentication.audience};
             } else if authentication.authType == "APIKey" && authentication is APIKeyAuthentication {
                 APIKeyAuthentication apiKeyAuthentication = check authentication.cloneWithType(APIKeyAuthentication);
-                authTypes.apiKey = [];
-                authTypes.apiKey.push({'in: "Header", name: apiKeyAuthentication.headerName, sendTokenToUpstream: apiKeyAuthentication.sendTokenToUpstream});
-                authTypes.apiKey.push({'in: "Query", name: apiKeyAuthentication.queryParamName, sendTokenToUpstream: apiKeyAuthentication.sendTokenToUpstream});
+                model:APIKey[] apiKeys = [];
+                boolean|() headerEnabled = apiKeyAuthentication.headerEnable;
+                boolean|() queryEnabled = apiKeyAuthentication.queryParamEnable;
+
+                if headerEnabled is boolean && headerEnabled {
+                    apiKeys.push({'in: "Header", name: <string>apiKeyAuthentication.headerName, sendTokenToUpstream: apiKeyAuthentication.sendTokenToUpstream});
+                }
+                if queryEnabled is boolean && queryEnabled {
+                    apiKeys.push({'in: "Query", name: <string>apiKeyAuthentication.queryParamName, sendTokenToUpstream: apiKeyAuthentication.sendTokenToUpstream});
+                }
+                authTypes.apiKey = apiKeys;
             } else if authentication.authType == "mTLS" {
                 MTLSAuthentication mtlsAuthentication = check authentication.cloneWithType(MTLSAuthentication);
                 isMTLSMandatory = mtlsAuthentication.required == "mandatory";
