@@ -102,7 +102,7 @@ metadata:
 binaryData:
   definition: "H4sIAAAAAAAA/31TTW/bMAz9K4LOi5N028W3dsghCJYUa7rLUhSqTc/qrI9KdFYv8H8fKTtrgwTzxTb5RL73SB2k82CV1zKXH7NZNpcfhNS2cjI/SNTYACXWDnWlC4XaWXF9u2RMCbEI2nOIENtaR84IH9xeU04oYaColdXRiMoFEcGW2v6kuH1fDR0dW2U7yzX3EOJQb05UZrKnWITAYZn/OMg2NJSrEX3Mp1MincGrMr6BrHBmup+f87oNrmyL1GkoJPuHVLRog8YuVS2hUm2D9P2Qkl5hHVn+NDHt+NO7iPyOrTEqdEdPOiZ/3nXwi0zAGkTsIoIZFXoVlAE8CrL0Q3jsPAy+089LC9TggsMgGCdcdeJgJr62EcUTiJ3cblaL9eO3xffNl+vtcrPeyYwLBXhpdYBS5hhaYPnYpbnSXAwD4NU3roS3fFGDUWkDmFlOBwLNTvbJHy4HEW9cmawpnEWwyR3lfTPSmj5Hpn04r+WenqHAZEag3QtIRqW0+wX2Us8+MUxzfoeTnWvDRBUFxDhJsUkNAUb8qeQhEr2zceh1NZvx69ThzSot3KdLuRtVilH3CJqfg+6tarF2Qf+hxoz6fKnUkuwKVjXiLi2kWITgaC37/67loIq2nDSQ2UnEEX3HDg+6/p15c5spXbHbVeN+J5A2PCU9TGwknGZ2f3K9kLTyvZJpIWhSfLgfnr9aQ7ylNgQAAA=="
 ---
-apiVersion: "dp.wso2.com/v1alpha1"
+apiVersion: "dp.wso2.com/v1alpha2"
 kind: "Authentication"
 metadata:
   name: "{{ template "apk-helm.resource.prefix" . }}-notification-api-no-authentication-policy"
