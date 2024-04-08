@@ -34,6 +34,7 @@ on:
       - closed
     paths:
       - '**/common-controller/**'
+      - '**/common-go-libs/**'
     branches:
       - 'main'
 env:
