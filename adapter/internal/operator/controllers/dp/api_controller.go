@@ -85,6 +85,7 @@ const (
 	apiAPIPolicyResourceIndex        = "apiAPIPolicyResourceIndex"
 	serviceHTTPRouteIndex            = "serviceHTTPRouteIndex"
 	httprouteScopeIndex              = "httprouteScopeIndex"
+	gqlRouteScopeIndex               = "gqlRouteScopeIndex"
 	configMapBackend                 = "configMapBackend"
 	configMapAPIDefinition           = "configMapAPIDefinition"
 	secretBackend                    = "secretBackend"
@@ -499,7 +500,7 @@ func isAPIPropagatable(apiState *synchronizer.APIState) bool {
 		return false
 	}
 	// Only valid organization's APIs can be propagated to CP
-	return utils.ContainsString(validOrgs, apiState.APIDefinition.Spec.Organization) 
+	return utils.ContainsString(validOrgs, apiState.APIDefinition.Spec.Organization)
 }
 
 func (apiReconciler *APIReconciler) resolveGQLRouteRefs(ctx context.Context, gqlRouteRefs []string,
@@ -1461,6 +1462,23 @@ func (apiReconciler *APIReconciler) getAPIsForScope(ctx context.Context, obj k8c
 		httpRoute := httpRouteList.Items[item]
 		requests = append(requests, apiReconciler.getAPIForHTTPRoute(ctx, &httpRoute)...)
 	}
+
+	gqlRouteList := &dpv1alpha2.GQLRouteList{}
+	if err := apiReconciler.client.List(ctx, gqlRouteList, &k8client.ListOptions{
+		FieldSelector: fields.OneTermEqualSelector(gqlRouteScopeIndex, utils.NamespacedName(scope).String()),
+	}); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2625, logging.CRITICAL, "Unable to find associated GQLRoute: %s", utils.NamespacedName(scope).String()))
+		return []reconcile.Request{}
+	}
+
+	if len(gqlRouteList.Items) == 0 {
+		loggers.LoggerAPKOperator.Debugf("GQLRoutes for scope not found: %s", utils.NamespacedName(scope).String())
+	}
+	for item := range gqlRouteList.Items {
+		httpRoute := gqlRouteList.Items[item]
+		requests = append(requests, apiReconciler.getAPIForGQLRoute(ctx, &httpRoute)...)
+	}
+
 	return requests
 }
 
@@ -1472,7 +1490,7 @@ func (apiReconciler *APIReconciler) getAPIsForBackend(ctx context.Context, obj k
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL, "Unexpected object type, bypassing reconciliation: %v", backend))
 		return []reconcile.Request{}
 	}
-	
+
 	httpRouteList := &gwapiv1b1.HTTPRouteList{}
 	if err := apiReconciler.client.List(ctx, httpRouteList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(backendHTTPRouteIndex, utils.NamespacedName(backend).String()),
@@ -1660,6 +1678,25 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 								Name:      string(filter.ExtensionRef.Name),
 							}.String())
 						}
+					}
+				}
+			}
+			return scopes
+		}); err != nil {
+		return err
+	}
+
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha2.GQLRoute{}, gqlRouteAPIIndex,
+		func(rawObj k8client.Object) []string {
+			gqlRoute := rawObj.(*dpv1alpha2.GQLRoute)
+			var scopes []string
+			for _, rule := range gqlRoute.Spec.Rules {
+				for _, filter := range rule.Filters {
+					if filter.ExtensionRef != nil && filter.ExtensionRef.Kind == constants.KindScope {
+						scopes = append(scopes, types.NamespacedName{
+							Namespace: gqlRoute.Namespace,
+							Name:      string(filter.ExtensionRef.Name),
+						}.String())
 					}
 				}
 			}
