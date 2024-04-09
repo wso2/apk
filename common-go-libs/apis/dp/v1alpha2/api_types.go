@@ -95,6 +95,7 @@ type APISpec struct {
 	// Organization denotes the organization.
 	// related to the API
 	//
+	// +kubebuilder:default:=default
 	// +optional
 	Organization string `json:"organization"`
 

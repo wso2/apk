@@ -276,6 +276,7 @@ spec:
                   be used as a default API
                 type: boolean
               organization:
+                default: default
                 description: Organization denotes the organization. related to the
                   API
                 type: string
