@@ -268,8 +268,7 @@ func generateRewritePathRouteConfig(routePath string, policyParams interface{}, 
 	if paramsToSetHeader, ok = policyParams.(map[string]interface{}); !ok {
 		return nil, fmt.Errorf("error while processing policy parameter map. Map: %v", policyParams)
 	}
-	if rewritePath, ok = paramsToSetHeader[constants.RewritePathResourcePath].(string); !ok ||
-		strings.TrimSpace(rewritePath) == "" {
+	if rewritePath, ok = paramsToSetHeader[constants.RewritePathResourcePath].(string); !ok {
 		return nil, errors.New("policy parameter map must include rewritePath")
 	}
 	if rewritePathType, ok = paramsToSetHeader[constants.RewritePathType].(gwapiv1.HTTPPathModifierType); !ok ||
