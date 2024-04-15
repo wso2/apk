@@ -41,7 +41,7 @@ public class ResourceConfig {
      */
     public enum HttpMethods {
         GET("get"), POST("post"), PUT("put"), DELETE("delete"), HEAD("head"),
-        PATCH("patch"), OPTIONS("options"), QUERY("query"), MUTATION("mutation"), EXACT("Exact"),
+        PATCH("patch"), OPTIONS("options"), QUERY("query"), MUTATION("mutation"),
         SUBSCRIPTION("subscription");
 
         private String value;
