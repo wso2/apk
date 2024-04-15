@@ -204,18 +204,8 @@ func deployMultipleAPIsInGateway(event *APIEvent, successChannel *chan SuccessEv
 			}
 		}
 		if apiState.APIDefinition.Spec.APIType == "GRPC" {
-			if apiState.ProdGRPCRoute == nil {
-				var adapterInternalAPI model.AdapterInternalAPI
-				adapterInternalAPI.SetInfoAPICR(*apiState.APIDefinition)
-				xds.RemoveAPICacheForEnv(adapterInternalAPI, constants.Production)
-			}
-			if apiState.SandGRPCRoute == nil {
-				var adapterInternalAPI model.AdapterInternalAPI
-				adapterInternalAPI.SetInfoAPICR(*apiState.APIDefinition)
-				xds.RemoveAPICacheForEnv(adapterInternalAPI, constants.Sandbox)
-			}
 			if apiState.ProdGRPCRoute != nil {
-				_, updatedLabels, err := generateGRPCAdapterInternalAPI(apiState, apiState.ProdGRPCRoute, constants.Production)
+				_, updatedLabels, err := updateInternalMapsFromGRPCRoute(apiState, apiState.ProdGRPCRoute, constants.Production)
 				if err != nil {
 					loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2665, logging.CRITICAL,
 						"Error deploying prod grpcRoute of API : %v in Organization %v from environments %v. Error: %v",
@@ -228,7 +218,7 @@ func deployMultipleAPIsInGateway(event *APIEvent, successChannel *chan SuccessEv
 				}
 			}
 			if apiState.SandGRPCRoute != nil {
-				_, updatedLabels, err := generateGRPCAdapterInternalAPI(apiState, apiState.SandGRPCRoute, constants.Sandbox)
+				_, updatedLabels, err := updateInternalMapsFromGRPCRoute(apiState, apiState.SandGRPCRoute, constants.Sandbox)
 				if err != nil {
 					loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2665, logging.CRITICAL,
 						"Error deploying sand grpcRoute of API : %v in Organization %v from environments %v. Error: %v",
