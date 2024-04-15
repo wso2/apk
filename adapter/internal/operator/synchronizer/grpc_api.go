@@ -18,7 +18,6 @@ package synchronizer
 
 import (
 	"errors"
-	"fmt"
 	gwapiv1a2 "sigs.k8s.io/gateway-api/apis/v1alpha2"
 
 	"github.com/wso2/apk/adapter/config"
@@ -32,8 +31,36 @@ import (
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
+// extract APIDetails from the GQLRoute
+func updateInternalMapsFromGRPCRoute(apiState APIState, grpcRoute *GRPCRouteState, envType string) (*model.AdapterInternalAPI, map[string]struct{}, error) {
+	adapterInternalAPI, err := generateGRPCAdapterInternalAPI(apiState, grpcRoute, envType)
+	if err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2632, logging.MAJOR, "Error generating AdapterInternalAPI for GRPCRoute: %v. %v", grpcRoute.GRPCRouteCombined.Name, err))
+		return nil, nil, err
+	}
+
+	vHosts := getVhostsForGRPCAPI(grpcRoute.GRPCRouteCombined)
+	labels := getLabelsForGRPCAPI(grpcRoute.GRPCRouteCombined)
+	listeners, relativeSectionNames := getListenersForGRPCAPI(grpcRoute.GRPCRouteCombined, adapterInternalAPI.UUID)
+	// We dont have a use case where a perticular API's two different grpc routes refer to two different gateway. Hence get the first listener name for the list for processing.
+	if len(listeners) == 0 || len(relativeSectionNames) == 0 {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2633, logging.MINOR, "Failed to find a matching listener for grpc route: %v. ",
+			grpcRoute.GRPCRouteCombined.Name))
+		return nil, nil, errors.New("failed to find matching listener name for the provided grpc route")
+	}
+	listenerName := listeners[0]
+	sectionName := relativeSectionNames[0]
+
+	if len(listeners) > 0 {
+		if err := xds.PopulateInternalMaps(adapterInternalAPI, labels, vHosts, sectionName, listenerName); err != nil {
+			return nil, nil, err
+		}
+	}
+	return adapterInternalAPI, labels, nil
+}
+
 // generateGRPCAdapterInternalAPI this will populate a AdapterInternalAPI representation for an GRPCRoute
-func generateGRPCAdapterInternalAPI(apiState APIState, grpcRoute *GRPCRouteState, envType string) (*model.AdapterInternalAPI, map[string]struct{}, error) {
+func generateGRPCAdapterInternalAPI(apiState APIState, grpcRoute *GRPCRouteState, envType string) (*model.AdapterInternalAPI, error) {
 	var adapterInternalAPI model.AdapterInternalAPI
 	adapterInternalAPI.SetIsDefaultVersion(apiState.APIDefinition.Spec.IsDefaultVersion)
 	adapterInternalAPI.SetInfoAPICR(*apiState.APIDefinition)
@@ -48,6 +75,7 @@ func generateGRPCAdapterInternalAPI(apiState APIState, grpcRoute *GRPCRouteState
 		environment = conf.Adapter.Environment
 	}
 	adapterInternalAPI.SetEnvironment(environment)
+	adapterInternalAPI.SetXWso2RequestBodyPass(true)
 
 	resourceParams := model.ResourceParams{
 		AuthSchemes:               apiState.Authentications,
@@ -63,60 +91,38 @@ func generateGRPCAdapterInternalAPI(apiState APIState, grpcRoute *GRPCRouteState
 	}
 	if err := adapterInternalAPI.SetInfoGRPCRouteCR(grpcRoute.GRPCRouteCombined, resourceParams); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2631, logging.MAJOR, "Error setting GRPCRoute CR info to adapterInternalAPI. %v", err))
-		return nil, nil, err
+		return nil, err
 	}
-	if err := adapterInternalAPI.Validate(); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2632, logging.MAJOR, "Error validating adapterInternalAPI intermediate representation. %v", err))
-		return nil, nil, err
-	}
-	vHosts := getVhostsForGRPCAPI(grpcRoute.GRPCRouteCombined)
-	labels := getLabelsForGRPCAPI(grpcRoute.GRPCRouteCombined)
-	listeners, relativeSectionNames := getListenersForGRPCAPI(grpcRoute.GRPCRouteCombined, adapterInternalAPI.UUID)
-	// We don't have a use case where a perticular API's two different grpc routes refer to two different gateway. Hence get the first listener name for the list for processing.
-	if len(listeners) == 0 || len(relativeSectionNames) == 0 {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2633, logging.MINOR, "Failed to find a matching listener for grpc route: %v. ",
-			grpcRoute.GRPCRouteCombined.Name))
-		return nil, nil, errors.New("failed to find matching listener name for the provided grpc route")
+	if apiState.MutualSSL != nil && apiState.MutualSSL.Required != "" && !adapterInternalAPI.GetDisableAuthentications() {
+		adapterInternalAPI.SetDisableMtls(apiState.MutualSSL.Disabled)
+		adapterInternalAPI.SetMutualSSL(apiState.MutualSSL.Required)
+		adapterInternalAPI.SetClientCerts(apiState.APIDefinition.Name, apiState.MutualSSL.ClientCertificates)
+	} else {
+		adapterInternalAPI.SetDisableMtls(true)
 	}
 
-	updatedLabelsMap := make(map[string]struct{})
-	listenerName := listeners[0]
-	sectionName := relativeSectionNames[0]
-	if len(listeners) != 0 {
-		updatedLabels, err := xds.UpdateAPICache(vHosts, labels, listenerName, sectionName, adapterInternalAPI)
-		if err != nil {
-			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2633, logging.MAJOR, "Error updating the API : %s:%s in vhosts: %s, API_UUID: %v. %v",
-				adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), vHosts, adapterInternalAPI.UUID, err))
-			return nil, nil, err
-		}
-		for newLabel := range updatedLabels {
-			updatedLabelsMap[newLabel] = struct{}{}
-		}
-	}
+	return &adapterInternalAPI, nil
 
-	return &adapterInternalAPI, updatedLabelsMap, nil
 }
 
 // getVhostForAPI returns the vHosts related to an API.
-func getVhostsForGRPCAPI(grpcRoute *gwapiv1a2.GRPCRoute) []string {
-	var vHosts []string
+func getVhostsForGRPCAPI(grpcRoute *gwapiv1a2.GRPCRoute) map[string]struct{} {
+	vHosts := make(map[string]struct{})
 	for _, hostName := range grpcRoute.Spec.Hostnames {
-		vHosts = append(vHosts, string(hostName))
+		vHosts[string(hostName)] = struct{}{}
 	}
-	fmt.Println("vhosts size: ", len(vHosts))
 	return vHosts
 }
 
 // getLabelsForAPI returns the labels related to an API.
-func getLabelsForGRPCAPI(grpcRoute *gwapiv1a2.GRPCRoute) []string {
-	var labels []string
-	var err error
+func getLabelsForGRPCAPI(grpcRoute *gwapiv1a2.GRPCRoute) map[string]struct{} {
+	labels := make(map[string]struct{})
 	for _, parentRef := range grpcRoute.Spec.ParentRefs {
-		err = xds.SanitizeGateway(string(parentRef.Name), false)
+		err := xds.SanitizeGateway(string(parentRef.Name), false)
 		if err != nil {
 			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2653, logging.CRITICAL, "Gateway Label is invalid: %s", string(parentRef.Name)))
 		} else {
-			labels = append(labels, string(parentRef.Name))
+			labels[string(parentRef.Name)] = struct{}{}
 		}
 	}
 	return labels
@@ -156,9 +162,8 @@ func getListenersForGRPCAPI(grpcRoute *gwapiv1a2.GRPCRoute, apiUUID string) ([]s
 
 func deleteGRPCAPIFromEnv(grpcRoute *gwapiv1a2.GRPCRoute, apiState APIState) error {
 	labels := getLabelsForGRPCAPI(grpcRoute)
-	org := apiState.APIDefinition.Spec.Organization
 	uuid := string(apiState.APIDefinition.ObjectMeta.UID)
-	return xds.DeleteAPICREvent(labels, uuid, org)
+	return xds.DeleteAPI(uuid, labels)
 }
 
 // undeployGRPCAPIInGateway undeploys the related API in CREATE and UPDATE events.
