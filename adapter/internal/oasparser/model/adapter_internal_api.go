@@ -1078,7 +1078,7 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoGRPCRouteCR(grpcRoute *gwap
 			resourcePath := adapterInternalAPI.GetXWso2Basepath() + "." + *match.Method.Service + "/" + *match.Method.Method
 			endPoints = append(endPoints, GetEndpoints(backendName, resourceParams.BackendMapping)...)
 			resource := &Resource{path: resourcePath, pathMatchType: "Exact",
-				methods: []*Operation{{iD: uuid.New().String(), method: string(*match.Method.Type), policies: policies,
+				methods: []*Operation{{iD: uuid.New().String(), method: "post", policies: policies,
 					auth: apiAuth, rateLimitPolicy: parseRateLimitPolicyToInternal(resourceRatelimitPolicy), scopes: scopes}},
 				iD: uuid.New().String(),
 			}
