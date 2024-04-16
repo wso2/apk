@@ -106,4 +106,4 @@ spec:
     - host: grpc-backend-v1.gateway-integration-test-infra
       port: 6565
   basePath: ""
-  protocol: https
+  protocol: http
