@@ -60,7 +60,7 @@ var GRPCAPI = suite.IntegrationTest{
 			tc := testCases[i]
 			t.Run("Invoke gRPC API", func(t *testing.T) {
 				t.Parallel()
-				invokeGRPCClientUntilSatisfied(gwAddr, t, tc, suite.TimeoutConfig)
+				invokeGRPCClientUntilSatisfied(gwAddr, t, tc, suite.TimeoutConfig, grpcutils.StudentResponseSatisfier{})
 
 			})
 		}
@@ -105,7 +105,7 @@ func invokeGRPCClient(gwAddr string, t *testing.T, timeout config.TimeoutConfig)
 	return response, nil
 }
 
-func invokeGRPCClientUntilSatisfied(gwAddr string, t *testing.T, testCase grpcutils.GRPCTestCase, timeout config.TimeoutConfig) {
+func invokeGRPCClientUntilSatisfied(gwAddr string, t *testing.T, testCase grpcutils.GRPCTestCase, timeout config.TimeoutConfig, satisfier grpcutils.ResponseSatisfier) {
 	//(delay to allow CRs to be applied)
 	time.Sleep(5 * time.Second)
 	var out *student.StudentResponse
@@ -121,7 +121,7 @@ func invokeGRPCClientUntilSatisfied(gwAddr string, t *testing.T, testCase grpcut
 		if err != nil {
 			t.Logf("Error on attempt %d: %v", attempt+1, err)
 		} else {
-			if out != nil && isResponseSatisfactory(out, expected) {
+			if satisfier.IsSatisfactory(out, expected) {
 				t.Logf("Satisfactory response received: %+v", out)
 				return
 			}
@@ -136,11 +136,4 @@ func invokeGRPCClientUntilSatisfied(gwAddr string, t *testing.T, testCase grpcut
 
 	t.Logf("Failed to receive a satisfactory response after %d attempts", maxAttempts)
 	t.Fail()
-}
-
-func isResponseSatisfactory(response *student.StudentResponse, expectedResponse grpcutils.ExpectedResponse) bool {
-	if response.Name == expectedResponse.Out.Name && response.Age == expectedResponse.Out.Age {
-		return true
-	}
-	return false
 }
