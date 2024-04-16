@@ -18,7 +18,6 @@ authentication:
   - authType: "APIKey"
     enabled: true
     queryParamEnable: true
-    headerEnable: true
 corsConfiguration:
   corsConfigurationEnabled: false
   accessControlAllowOrigins:

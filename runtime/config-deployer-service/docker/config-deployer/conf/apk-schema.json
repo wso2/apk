@@ -156,11 +156,16 @@
         "required": {
           "type": "string",
           "default": "mandatory",
-          "enum": ["mandatory", "optional"]
+          "enum": [
+            "mandatory",
+            "optional"
+          ]
         },
         "authType": {
           "type": "string",
-          "enum": ["JWT"]
+          "enum": [
+            "JWT"
+          ]
         },
         "sendTokenToUpstream": {
           "type": "boolean",
@@ -253,7 +258,7 @@
         },
         "headerName": {
           "type": "string",
-          "example": "Authorization",
+          "example": "apikey",
           "default": "apikey"
         },
         "queryParamName": {
@@ -608,7 +613,7 @@
           }
         }
       },
-      "required":[
+      "required": [
         "target",
         "verb"
       ],

@@ -277,8 +277,8 @@ public type APIKeyAuthentication record {|
     boolean sendTokenToUpstream = false;
     string headerName = "apiKey";
     string queryParamName = "apiKey";
-    boolean headerEnable?;
-    boolean queryParamEnable?;
+    boolean headerEnable = true;
+    boolean queryParamEnable = false;
 |};
 
 # Mutual SSL configuration of this API

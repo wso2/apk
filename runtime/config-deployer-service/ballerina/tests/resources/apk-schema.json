@@ -213,7 +213,7 @@
         },
         "headerName": {
           "type": "string",
-          "example": "Authorization",
+          "example": "apikey",
           "default": "apikey"
         },
         "queryParamName": {
