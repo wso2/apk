@@ -213,12 +213,10 @@ func CreateRoutesWithClusters(adapterInternalAPI *model.AdapterInternalAPI, inte
 		clusters = append(clusters, cluster)
 		endpoints = append(endpoints, address...)
 
-		//TODO factor out common code  (Dineth)
 		for _, resource := range adapterInternalAPI.GetResources() {
 			var clusterName string
 			resourcePath := resource.GetPath()
 			endpoint := resource.GetEndpoints()
-			//TODO see if this should be configured elsewhere (Dineth)
 			endpoint.HTTP2BackendEnabled = true
 			basePath := strings.TrimSuffix(endpoint.Endpoints[0].Basepath, "/")
 			existingClusterName := getExistingClusterName(*endpoint, processedEndpoints)
