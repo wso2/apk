@@ -49,6 +49,18 @@ var GRPCAPI = suite.IntegrationTest{
 				Name:           "Get Student Details",
 				Method:         student.GetStudent,
 			},
+			//{
+			//	ExpectedResponse: grpcutils.ExpectedResponse{
+			//		Out: &student_default_version.StudentResponse{
+			//			Name: "Dineth",
+			//			Age:  10,
+			//		},
+			//		Err: nil,
+			//	},
+			//	ActualResponse: &student_default_version.StudentResponse{},
+			//	Name:           "Get Student Details (Default API Version)",
+			//	Method:         student_default_version.GetStudent,
+			//},
 		}
 		for i := range testCases {
 			tc := testCases[i]

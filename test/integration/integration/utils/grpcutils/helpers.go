@@ -57,7 +57,6 @@ func InvokeGRPCClientUntilSatisfied(gwAddr string, t *testing.T, testCase GRPCTe
 			t.Logf("Error on attempt %d: %v", attempt+1, err)
 		} else {
 			if satisfier.IsSatisfactory(out, expected) {
-				t.Logf("Satisfactory response received: %+v", out)
 				return
 			}
 		}
