@@ -19,6 +19,7 @@ package tests
 
 import (
 	"github.com/wso2/apk/test/integration/integration/utils/grpc-code/student"
+	"github.com/wso2/apk/test/integration/integration/utils/grpc-code/student_default_version"
 	"github.com/wso2/apk/test/integration/integration/utils/grpcutils"
 	"github.com/wso2/apk/test/integration/integration/utils/suite"
 	"testing"
@@ -48,25 +49,27 @@ var GRPCAPI = suite.IntegrationTest{
 				ActualResponse: &student.StudentResponse{},
 				Name:           "Get Student Details",
 				Method:         student.GetStudent,
+				Satisfier:      student.StudentResponseSatisfier{},
 			},
-			//{
-			//	ExpectedResponse: grpcutils.ExpectedResponse{
-			//		Out: &student_default_version.StudentResponse{
-			//			Name: "Dineth",
-			//			Age:  10,
-			//		},
-			//		Err: nil,
-			//	},
-			//	ActualResponse: &student_default_version.StudentResponse{},
-			//	Name:           "Get Student Details (Default API Version)",
-			//	Method:         student_default_version.GetStudent,
-			//},
+			{
+				ExpectedResponse: grpcutils.ExpectedResponse{
+					Out: &student_default_version.StudentResponse{
+						Name: "Dineth",
+						Age:  10,
+					},
+					Err: nil,
+				},
+				ActualResponse: &student_default_version.StudentResponse{},
+				Name:           "Get Student Details (Default API Version)",
+				Method:         student_default_version.GetStudent,
+				Satisfier:      student_default_version.StudentResponseSatisfier{},
+			},
 		}
 		for i := range testCases {
 			tc := testCases[i]
 			t.Run("Invoke gRPC API", func(t *testing.T) {
 				t.Parallel()
-				grpcutils.InvokeGRPCClientUntilSatisfied(gwAddr, t, tc, student.StudentResponseSatisfier{}, tc.Method)
+				grpcutils.InvokeGRPCClientUntilSatisfied(gwAddr, t, tc, tc.Satisfier, tc.Method)
 			})
 		}
 	},

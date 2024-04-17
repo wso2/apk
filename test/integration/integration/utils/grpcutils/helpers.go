@@ -24,6 +24,7 @@ type GRPCTestCase struct {
 	ActualResponse   any
 	Name             string
 	Method           func(conn *grpc.ClientConn) (any, error)
+	Satisfier        ResponseSatisfier
 }
 type ResponseSatisfier interface {
 	IsSatisfactory(response interface{}, expectedResponse ExpectedResponse) bool
