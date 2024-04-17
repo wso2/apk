@@ -928,8 +928,14 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 		decorator *routev3.Decorator
 	)
 	if params.createDefaultPath {
-		xWso2Basepath = removeFirstOccurrence(xWso2Basepath, "/"+version)
-		resourcePath = removeFirstOccurrence(resource.GetPath(), "/"+version)
+		//check if basepath is separated from version by a . or /
+		if strings.Contains(basePath, "."+version) {
+			xWso2Basepath = removeFirstOccurrence(basePath, "."+version)
+			resourcePath = removeFirstOccurrence(resource.GetPath(), "."+version)
+		} else {
+			xWso2Basepath = removeFirstOccurrence(xWso2Basepath, "/"+version)
+			resourcePath = removeFirstOccurrence(resource.GetPath(), "/"+version)
+		}
 	}
 
 	if pathMatchType != gwapiv1.PathMatchExact {
@@ -1129,6 +1135,10 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 		if apiType == "GRPC" {
 			match.Headers = nil
 			newRoutePath := "/" + strings.TrimPrefix(resourcePath, basePath+".")
+			if newRoutePath == "/"+resourcePath {
+				temp := removeFirstOccurrence(basePath, "."+version)
+				newRoutePath = "/" + strings.TrimPrefix(resourcePath, temp+".")
+			}
 			action.Route.RegexRewrite = generateRegexMatchAndSubstitute(rewritePath, newRoutePath, pathMatchType)
 		}
 
@@ -1283,8 +1293,14 @@ func CreateAPIDefinitionEndpoint(adapterInternalAPI *model.AdapterInternalAPI, v
 
 	matchPath := basePath + endpoint
 	if isDefaultversion {
-		basePathWithoutVersion := removeLastOccurrence(basePath, "/"+version)
-		matchPath = basePathWithoutVersion + endpoint
+		if adapterInternalAPI.GetAPIType() == "GRPC" {
+			basePathWithoutVersion := removeLastOccurrence(basePath, "."+version)
+			matchPath = basePathWithoutVersion + "/" + vHost + endpoint
+		} else {
+			basePathWithoutVersion := removeLastOccurrence(basePath, "/"+version)
+			matchPath = basePathWithoutVersion + endpoint
+
+		}
 	}
 
 	matchPath = strings.Replace(matchPath, basePath, regexp.QuoteMeta(basePath), 1)
