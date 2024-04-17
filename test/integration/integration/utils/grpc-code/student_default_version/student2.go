@@ -1,4 +1,4 @@
-package student
+package student_default_version
 
 import (
 	"context"
