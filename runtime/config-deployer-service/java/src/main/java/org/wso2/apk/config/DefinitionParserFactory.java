@@ -25,6 +25,8 @@ public class DefinitionParserFactory {
             return new OAS3Parser();
         } else if (APIConstants.ParserType.ASYNC.name().equals(api.getType())) {
             return new AsyncApiParser();
+        } else if (APIConstants.ParserType.GRPC.name().equals(api.getType())) {
+            return new OAS3Parser();
         }
         return null;
     }
