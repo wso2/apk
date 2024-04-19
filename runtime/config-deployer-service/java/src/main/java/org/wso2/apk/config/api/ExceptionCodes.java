@@ -361,6 +361,10 @@ public enum ExceptionCodes implements ErrorHandler {
     UNSUPPORTED_GRAPHQL_FILE_EXTENSION(900802, "Unsupported GraphQL Schema File Extension", 400,
             "Unsupported extension. Only supported extensions are .graphql, .txt and .sdl"),
 
+    //GRPC API related codes
+    GRPC_PROTO_DEFINTION_CANNOT_BE_NULL(900803, "gRPC Proto Definition cannot be empty or null", 400,
+            "gRPC Proto Definition cannot be empty or null"),
+
     // Oauth related codes
     AUTH_GENERAL_ERROR(900900, "Authorization Error", 403, " Error in authorization"),
     INVALID_CREDENTIALS(900901, "Invalid Credentials", 401, " Invalid username or password"),
