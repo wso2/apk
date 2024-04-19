@@ -448,6 +448,18 @@ public class APIClient {
                     sandboxRoutes.push(gqlRoute.metadata.name);
                 }
             }
+        } else if apkConf.'type == API_TYPE_GRPC{
+            foreach model:GRPCRoute grpcRoute in apiArtifact.productionGrpcRoutes {
+                if grpcRoute.spec.rules.length() > 0 {
+                    productionRoutes.push(grpcRoute.metadata.name);
+                }
+            }
+            foreach model:GRPCRoute grpcRoute in apiArtifact.sandboxGrpcRoutes {
+                if grpcRoute.spec.rules.length() > 0 {
+                    sandboxRoutes.push(grpcRoute.metadata.name);
+                }
+            }
+
         } else {
             foreach model:HTTPRoute httpRoute in apiArtifact.productionHttpRoutes {
                 if httpRoute.spec.rules.length() > 0 {
@@ -538,6 +550,28 @@ public class APIClient {
                     apiArtifact.sandboxGqlRoutes.push(gqlRoute);
                 }
             }
+        } else if apkConf.'type == API_TYPE_GRPC {
+            model:GRPCRoute grpcRoute = {
+                metadata:
+                {
+                    name: uniqueId + "-" + endpointType + "-grpcroute-" + count.toString(),
+                    labels: self.getLabels(apkConf, organization)
+                },
+                spec: {
+                    parentRefs: self.generateAndRetrieveParentRefs(apkConf, uniqueId),
+                    rules: check self.generateGRPCRouteRules(apiArtifact, apkConf, endpoint, endpointType, organization),
+                    hostnames: self.getHostNames(apkConf, uniqueId, endpointType, organization)
+                }
+            };
+            if endpoint is model:Endpoint {
+                grpcRoute.spec.backendRefs = self.retrieveGeneratedBackend(apkConf, endpoint, endpointType);
+            }
+            if grpcRoute.spec.rules.length() > 0 {
+                if endpointType == PRODUCTION_TYPE {
+                    apiArtifact.productionGrpcRoutes.push(grpcRoute);
+                } else {
+                    apiArtifact.sandboxGrpcRoutes.push(grpcRoute);
+                }
         } else {
             model:HTTPRoute httpRoute = {
                 metadata:
@@ -561,6 +595,7 @@ public class APIClient {
         }
 
         return;
+        }
     }
 
     private isolated function generateAndRetrieveParentRefs(APKConf apkConf, string uniqueId) returns model:ParentReference[] {
@@ -577,7 +612,7 @@ public class APIClient {
         APKOperations[]? operations = apkConf.operations;
         if operations is APKOperations[] {
             foreach APKOperations operation in operations {
-                model:HTTPRouteRule|model:GQLRouteRule|() routeRule = check self.generateRouteRule(apiArtifact, apkConf, endpoint, operation, endpointType, organization);
+                model:HTTPRouteRule|model:GQLRouteRule|model:GRPCRouteRule|() routeRule = check self.generateRouteRule(apiArtifact, apkConf, endpoint, operation, endpointType, organization);
                 if routeRule is model:HTTPRouteRule {
                     model:HTTPRouteFilter[]? filters = routeRule.filters;
                     if filters is () {
@@ -631,12 +666,72 @@ public class APIClient {
         return httpRouteRules;
     }
 
+    private isolated function generateGRPCRouteRules(model:APIArtifact apiArtifact, APKConf apkConf, model:Endpoint? endpoint, string endpointType, commons:Organization organization) returns model:GRPCRouteRule[]|commons:APKError|error {
+        model:GRPCRouteRule[] grpcRouteRules = [];
+        APKOperations[]? operations = apkConf.operations;
+        if operations is APKOperations[] {
+            foreach APKOperations operation in operations {
+                model:HTTPRouteRule|model:GQLRouteRule|model:GRPCRouteRule|() routeRule = check self.generateRouteRule(apiArtifact, apkConf, endpoint, operation, endpointType, organization);
+                if routeRule is model:GRPCRouteRule {
+                    model:GRPCRouteFilter[]? filters = routeRule.filters;
+                    if filters is () {
+                        filters = [];
+                        routeRule.filters = filters;
+                    }
+                    string disableAuthenticationRefName = self.retrieveDisableAuthenticationRefName(apkConf, endpointType, organization);
+                    if !(operation.secured ?: true) {
+                        if !apiArtifact.authenticationMap.hasKey(disableAuthenticationRefName) {
+                            model:Authentication generateDisableAuthenticationCR = self.generateDisableAuthenticationCR(apiArtifact, apkConf, endpointType, organization);
+                            apiArtifact.authenticationMap[disableAuthenticationRefName] = generateDisableAuthenticationCR;
+                        }
+                        model:GRPCRouteFilter disableAuthenticationFilter = {'type: "ExtensionRef", extensionRef: {group: "dp.wso2.com", kind: "Authentication", name: disableAuthenticationRefName}};
+                        (<model:GRPCRouteFilter[]>filters).push(disableAuthenticationFilter);
+                    }
+                    string[]? scopes = operation.scopes;
+                    if scopes is string[] {
+                        int count = 1;
+                        foreach string scope in scopes {
+                            model:Scope scopeCr;
+                            if apiArtifact.scopes.hasKey(scope) {
+                                scopeCr = apiArtifact.scopes.get(scope);
+                            } else {
+                                scopeCr = self.generateScopeCR(apiArtifact, apkConf, organization, scope, count);
+                                count = count + 1;
+                            }
+                            model:GRPCRouteFilter scopeFilter = {'type: "ExtensionRef", extensionRef: {group: "dp.wso2.com", kind: scopeCr.kind, name: scopeCr.metadata.name}};
+                            (<model:GRPCRouteFilter[]>filters).push(scopeFilter);
+                        }
+                    }
+                    if operation.rateLimit != () {
+                        model:RateLimitPolicy? rateLimitPolicyCR = self.generateRateLimitPolicyCR(apkConf, operation.rateLimit, apiArtifact.uniqueId, operation, organization);
+                        if rateLimitPolicyCR != () {
+                            apiArtifact.rateLimitPolicies[rateLimitPolicyCR.metadata.name] = rateLimitPolicyCR;
+                            model:GRPCRouteFilter rateLimitPolicyFilter = {'type: "ExtensionRef", extensionRef: {group: "dp.wso2.com", kind: "RateLimitPolicy", name: rateLimitPolicyCR.metadata.name}};
+                            (<model:GRPCRouteFilter[]>filters).push(rateLimitPolicyFilter);
+                        }
+                    }
+                    if operation.operationPolicies != () {
+                        model:APIPolicy? apiPolicyCR = check self.generateAPIPolicyAndBackendCR(apiArtifact, apkConf, operation, operation.operationPolicies, organization, apiArtifact.uniqueId);
+                        if apiPolicyCR != () {
+                            apiArtifact.apiPolicies[apiPolicyCR.metadata.name] = apiPolicyCR;
+                            model:GRPCRouteFilter apiPolicyFilter = {'type: "ExtensionRef", extensionRef: {group: "dp.wso2.com", kind: "APIPolicy", name: apiPolicyCR.metadata.name}};
+                            (<model:GRPCRouteFilter[]>filters).push(apiPolicyFilter);
+                        }
+                    }
+                    grpcRouteRules.push(routeRule);
+                }
+            }
+        }
+        return grpcRouteRules;
+    }
+    
+
     private isolated function generateGQLRouteRules(model:APIArtifact apiArtifact, APKConf apkConf, model:Endpoint? endpoint, string endpointType, commons:Organization organization) returns model:GQLRouteRule[]|commons:APKError|error {
         model:GQLRouteRule[] gqlRouteRules = [];
         APKOperations[]? operations = apkConf.operations;
         if operations is APKOperations[] {
             foreach APKOperations operation in operations {
-                model:HTTPRouteRule|model:GQLRouteRule|() routeRule = check self.generateRouteRule(apiArtifact, apkConf, endpoint, operation, endpointType, organization);
+                model:HTTPRouteRule|model:GQLRouteRule|model:GRPCRouteRule|() routeRule = check self.generateRouteRule(apiArtifact, apkConf, endpoint, operation, endpointType, organization);
                 if routeRule is model:GQLRouteRule {
                     model:GQLRouteFilter[]? filters = routeRule.filters;
                     if filters is () {
