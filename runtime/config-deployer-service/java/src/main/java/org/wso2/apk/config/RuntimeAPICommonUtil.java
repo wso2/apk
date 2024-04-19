@@ -6,6 +6,7 @@ import org.wso2.apk.config.api.APIManagementException;
 import org.wso2.apk.config.api.ExceptionCodes;
 import org.wso2.apk.config.definitions.GraphQLSchemaDefinition;
 import org.wso2.apk.config.definitions.OASParserUtil;
+import org.wso2.apk.config.definitions.ProtoParser;
 import org.wso2.apk.config.model.API;
 import org.wso2.apk.config.model.URITemplate;
 
@@ -66,7 +67,18 @@ public class RuntimeAPICommonUtil {
                 OASParserUtil.addErrorToValidationResponse(validationResponse,
                         "Invalid definition file type provided.");
             }
+        } else if (APIConstants.ParserType.GRPC.name().equals(type.toUpperCase())) {
+            if (fileName.endsWith(".proto")) {
+                validationResponse = OASParserUtil.validateProtoDefinition(
+                        new String(inputByteArray, StandardCharsets.UTF_8),
+                        returnContent);
+            } else {
+                OASParserUtil.addErrorToValidationResponse(validationResponse,
+                        "Invalid definition file type provided.");
+            }
         }
+
+
         return validationResponse;
     }
 
@@ -99,6 +111,8 @@ public class RuntimeAPICommonUtil {
 
         if (apiType.toUpperCase().equals(APIConstants.GRAPHQL_API)) {
             return getGQLAPIFromDefinition(definition);
+        } else if (apiType.toUpperCase().equals(APIConstants.GRPC_API)) {
+            return getGRPCAPIFromProtoDefinition(definition);
         } else {
             APIDefinition parser = DefinitionParserFactory.getParser(apiType);
             if (parser != null) {
@@ -125,6 +139,25 @@ public class RuntimeAPICommonUtil {
         API api = new API();
         api.setUriTemplates(combinedUriTemplates.toArray(new URITemplate[0]));
         api.setGraphQLSchema(definition);
+        return api;
+    }
+
+    private static API getGRPCAPIFromProtoDefinition(String definition) {
+        ProtoParser protoParser = new ProtoParser(definition);
+        List<URITemplate> uriTemplates = new ArrayList<>();
+        API api = new API();
+        api.setBasePath(protoParser.protoFile.basePath);
+        api.setVersion(protoParser.protoFile.version);
+        for (ProtoParser.Service service : protoParser.getServices()) {
+            for (String method : service.methods) {
+                URITemplate uriTemplate = new URITemplate();
+                uriTemplate.setUriTemplate("/" + protoParser.protoFile.packageName + "." + service.name);
+                uriTemplate.setVerb(method);
+                uriTemplates.add(uriTemplate);
+            }
+        }
+        api.setUriTemplates(uriTemplates.toArray(new URITemplate[uriTemplates.size()]));
+
         return api;
     }
 
