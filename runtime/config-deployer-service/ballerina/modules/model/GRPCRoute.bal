@@ -20,7 +20,6 @@ public type GRPCRouteSpec record {
     *CommonRouteSpec;
     string[] hostnames?;
     GRPCRouteRule[] rules = [];
-    BackendRef[] backendRefs?;
 };
 
 public type GRPCRouteRule record {
