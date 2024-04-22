@@ -187,6 +187,14 @@ public class ConfigGeneratorClient {
             string yamlString = check self.convertJsonToYaml(gqlRoute.toJsonString());
             _ = check self.storeFile(yamlString, gqlRoute.metadata.name, zipDir);
         }
+        foreach model:GRPCRoute grpcRoute in apiArtifact.productionGrpcRoutes {
+            string yamlString = check self.convertJsonToYaml(grpcRoute.toJsonString());
+            _ = check self.storeFile(yamlString, grpcRoute.metadata.name, zipDir);
+        }
+        foreach model:GRPCRoute grpcRoute in apiArtifact.sandboxGrpcRoutes {
+            string yamlString = check self.convertJsonToYaml(grpcRoute.toJsonString());
+            _ = check self.storeFile(yamlString, grpcRoute.metadata.name, zipDir);
+        }
         foreach model:Backend backend in apiArtifact.backendServices {
             string yamlString = check self.convertJsonToYaml(backend.toJsonString());
             _ = check self.storeFile(yamlString, backend.metadata.name, zipDir);
