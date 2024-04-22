@@ -29,7 +29,7 @@ public type GRPCRouteRule record {
     GRPCBackendRef[] backendRefs?;
 };
 public type GRPCRouteMatch record {
-    GRPCMethodMatch path?;
+    GRPCMethodMatch method?;
     GRPCHeaderMatch[] headers?;
 };
 

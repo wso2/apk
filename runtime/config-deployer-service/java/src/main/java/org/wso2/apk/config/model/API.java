@@ -79,6 +79,9 @@ public class API {
         this.graphQLSchema = graphQLSchema;
     }
 
+    public void setProtoDefinition(String protoDefinition) {
+        this.swaggerDefinition = protoDefinition;
+    }
     public String getSwaggerDefinition() {
         return swaggerDefinition;
     }
