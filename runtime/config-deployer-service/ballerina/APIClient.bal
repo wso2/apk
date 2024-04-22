@@ -280,6 +280,14 @@ public class APIClient {
         return fullBasePath;
     }
 
+    isolated function returnFullGRPCBasePath(string basePath, string 'version) returns string {
+        string fullBasePath = basePath;
+        if (!string:endsWith(basePath, 'version)) {
+            fullBasePath = string:'join(".", basePath, 'version);
+        }
+        return fullBasePath;
+    }
+
     private isolated function constructURlFromK8sService(K8sService 'k8sService) returns string {
         return <string>k8sService.protocol + "://" + string:'join(".", <string>k8sService.name, <string>k8sService.namespace, "svc.cluster.local") + ":" + k8sService.port.toString();
     }
@@ -443,6 +451,7 @@ public class APIClient {
                 }
             }
         } else if apkConf.'type == API_TYPE_GRPC{
+            k8sAPI.spec.basePath =  self.returnFullGRPCBasePath(apkConf.basePath, apkConf.'version);
             foreach model:GRPCRoute grpcRoute in apiArtifact.productionGrpcRoutes {
                 if grpcRoute.spec.rules.length() > 0 {
                     productionRoutes.push(grpcRoute.metadata.name);
@@ -849,7 +858,7 @@ public class APIClient {
         return authentication;
     }
 
-    private isolated function generateRouteRule(model:APIArtifact apiArtifact, APKConf apkConf, model:Endpoint? endpoint, APKOperations operation, string endpointType, commons:Organization organization) returns model:HTTPRouteRule|model:GQLRouteRule|()|commons:APKError {
+    private isolated function generateRouteRule(model:APIArtifact apiArtifact, APKConf apkConf, model:Endpoint? endpoint, APKOperations operation, string endpointType, commons:Organization organization) returns model:HTTPRouteRule|model:GQLRouteRule|model:GRPCRouteRule|()|commons:APKError {
         do {
             EndpointConfigurations? endpointConfig = operation.endpointConfigurations;
             model:Endpoint? endpointToUse = ();
@@ -873,7 +882,16 @@ public class APIClient {
                     } else {
                         return e909022("Provided Type currently not supported for GraphQL APIs.", error("Provided Type currently not supported for GraphQL APIs."));
                     }
-                } else {
+                } else if apkConf.'type == API_TYPE_GRPC {
+                    model:GRPCRouteMatch[]|error routeMatches = self.retrieveGRPCMatches(apkConf, operation, organization);
+                    if routeMatches is model:GRPCRouteMatch[] && routeMatches.length() > 0 {
+                        model:GRPCRouteRule grpcRouteRule = {matches: routeMatches, backendRefs: self.retrieveGeneratedBackend(apkConf, endpointToUse, endpointType)};
+                        return grpcRouteRule;
+                    } else {
+                        return e909022("Provided Type currently not supported for GRPC APIs.", error("Provided Type currently not supported for GRPC APIs."));
+                    }
+                }
+                else {
                     model:HTTPRouteRule httpRouteRule = {matches: self.retrieveHTTPMatches(apkConf, operation, organization), backendRefs: self.retrieveGeneratedBackend(apkConf, endpointToUse, endpointType), filters: self.generateFilters(apiArtifact, apkConf, endpointToUse, operation, endpointType, organization)};
                     return httpRouteRule;
                 }
@@ -1018,6 +1036,13 @@ public class APIClient {
         return gqlRouteMatch;
 
     }
+    
+    private isolated function retrieveGRPCMatches(APKConf apkConf, APKOperations apiOperation, commons:Organization organization) returns model:GRPCRouteMatch[] {
+        model:GRPCRouteMatch[] grpcRouteMatch = [];
+        model:GRPCRouteMatch grpcRoute = self.retrieveGRPCRouteMatch(apiOperation);
+        grpcRouteMatch.push(grpcRoute);
+        return grpcRouteMatch;
+    }
 
     private isolated function retrieveHttpRouteMatch(APKConf apkConf, APKOperations apiOperation, commons:Organization organization) returns model:HTTPRouteMatch {
         return {method: <string>apiOperation.verb, path: {'type: "RegularExpression", value: self.retrievePathPrefix(apkConf.basePath, apkConf.'version, apiOperation.target ?: "/*", organization)}};
@@ -1030,6 +1055,17 @@ public class APIClient {
         } else {
             return e909052(error("Error occured retrieving GQL route match", message = "Internal Server Error", code = 909000, description = "Internal Server Error", statusCode = 500));
         }
+    }
+
+    private isolated function retrieveGRPCRouteMatch(APKOperations apiOperation) returns model:GRPCRouteMatch {
+        model:GRPCRouteMatch grpcRouteMatch = {
+            method: {
+                'type: "RegularExpression",
+                'service:  <string>apiOperation.target,
+                method: <string>apiOperation.verb
+            }
+        };
+        return grpcRouteMatch;
     }
 
     isolated function retrieveGeneratedSwaggerDefinition(APKConf apkConf, string? definition) returns string|json|commons:APKError|error {
@@ -1066,6 +1102,11 @@ public class APIClient {
         string?|runtimeapi:APIManagementException retrievedDefinition = "";
         if apkConf.'type == API_TYPE_GRAPHQL && definition is string {
             api1.setGraphQLSchema(definition);
+            return definition;
+        }
+        if apkConf.'type == API_TYPE_GRPC && definition is string {
+            // TODO (Dineth) fix this 
+            // api1.setProtoDefinition(definition);
             return definition;
         }
         if definition is string && definition.toString().trim().length() > 0 {
@@ -1739,7 +1780,7 @@ public class APIClient {
                 } else if definitionFile.fileName.endsWith(".json") {
                     apiDefinition = definitionFileContent;
                 }
-            } else if apiType == API_TYPE_GRAPHQL {
+            } else if apiType == API_TYPE_GRAPHQL || apiType == API_TYPE_GRPC {
                 apiDefinition = definitionFileContent;
             }
             if apkConf is () {

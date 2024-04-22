@@ -442,6 +442,22 @@ public class DeployerClient {
             return e909022("Error occured while sorting gqlRoutes", e);
         }
     }
+    public isolated function createGrpcRoutesOrder(model:GRPCRoute[] grpcRoutes) returns model:GRPCRoute[]|commons:APKError {
+        do {
+            foreach model:GRPCRoute route in grpcRoutes {
+                model:GRPCRouteRule[] routeRules = route.spec.rules;
+                // TODO (Dineth) order the routes
+                // model:GRPCRouteRule[] sortedRouteRules = from var routeRule in routeRules
+                    // order by <string>((<model:GRPCRouteMatch[]>routeRule.matches)[0]).path descending
+                    // select routeRule;
+                route.spec.rules = routeRules;
+            }
+            return grpcRoutes;
+        } on fail var e {
+            log:printError("Error occured while sorting grpcRoutes", e);
+            return e909022("Error occured while sorting grpcRoutes", e);
+        }
+    }
 
     private isolated function deployAuthenticationCRs(model:APIArtifact apiArtifact, model:OwnerReference ownerReference) returns error? {
         string[] keys = apiArtifact.authenticationMap.keys();
