@@ -183,6 +183,13 @@ public distinct class API {
         org_wso2_apk_config_model_API_setGraphQLSchema(self.jObj, java:fromString(arg0));
     }
 
+    # The function that maps to the `setProtoDefinition` method of `org.wso2.apk.config.model.API`.
+    #
+    // # + arg0 - The `string` value required to map with the Java method parameter.
+    public isolated function setProtoDefinition(string arg0) {
+        org_wso2_apk_config_model_API_setProtoDefinition(self.jObj, java:fromString(arg0));
+    }
+
     # The function that maps to the `setName` method of `org.wso2.apk.config.model.API`.
     #
     # + arg0 - The `string` value required to map with the Java method parameter.
@@ -328,6 +335,13 @@ isolated function org_wso2_apk_config_model_API_getGraphQLSchema(handle receiver
     paramTypes: []
 } external;
 
+
+isolated function org_wso2_apk_config_model_API_getProtoDefinition(handle receiver) returns handle = @java:Method {
+    name: "getProtoDefinition",
+    'class: "org.wso2.apk.config.model.API",
+    paramTypes: []
+} external;
+
 isolated function org_wso2_apk_config_model_API_getName(handle receiver) returns handle = @java:Method {
     name: "getName",
     'class: "org.wso2.apk.config.model.API",
@@ -408,6 +422,12 @@ function org_wso2_apk_config_model_API_setEnvironment(handle receiver, handle ar
 
 isolated function org_wso2_apk_config_model_API_setGraphQLSchema(handle receiver, handle arg0) = @java:Method {
     name: "setGraphQLSchema",
+    'class: "org.wso2.apk.config.model.API",
+    paramTypes: ["java.lang.String"]
+} external;
+
+isolated function org_wso2_apk_config_model_API_setProtoDefinition(handle receiver, handle arg0) = @java:Method {
+    name: "setProtoDefinition",
     'class: "org.wso2.apk.config.model.API",
     paramTypes: ["java.lang.String"]
 } external;

@@ -1102,8 +1102,7 @@ public class APIClient {
             return definition;
         }
         if apkConf.'type == API_TYPE_GRPC && definition is string {
-            // TODO (Dineth) fix this 
-            // api1.setProtoDefinition(definition);
+            api1.setProtoDefinition(definition);
             return definition;
         }
         if definition is string && definition.toString().trim().length() > 0 {

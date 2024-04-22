@@ -446,11 +446,10 @@ public class DeployerClient {
         do {
             foreach model:GRPCRoute route in grpcRoutes {
                 model:GRPCRouteRule[] routeRules = route.spec.rules;
-                // TODO (Dineth) order the routes
-                // model:GRPCRouteRule[] sortedRouteRules = from var routeRule in routeRules
-                    // order by <string>((<model:GRPCRouteMatch[]>routeRule.matches)[0]).path descending
-                    // select routeRule;
-                route.spec.rules = routeRules;
+                model:GRPCRouteRule[] sortedRouteRules = from var routeRule in routeRules
+                    order by <string>(routeRule.matches[0].method.'service) descending
+                    select routeRule;
+                route.spec.rules = sortedRouteRules;
             }
             return grpcRoutes;
         } on fail var e {
