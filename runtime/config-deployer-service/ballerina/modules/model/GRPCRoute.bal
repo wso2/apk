@@ -23,12 +23,12 @@ public type GRPCRouteSpec record {
 };
 
 public type GRPCRouteRule record {
-    GRPCRouteMatch[] matches?;
+    GRPCRouteMatch[] matches;
     GRPCRouteFilter[] filters?;
     GRPCBackendRef[] backendRefs?;
 };
 public type GRPCRouteMatch record {
-    GRPCMethodMatch method?;
+    GRPCMethodMatch method;
     GRPCHeaderMatch[] headers?;
 };
 
