@@ -566,9 +566,6 @@ public class APIClient {
                     hostnames: self.getHostNames(apkConf, uniqueId, endpointType, organization)
                 }
             };
-            if endpoint is model:Endpoint {
-                grpcRoute.spec.backendRefs = self.retrieveGeneratedBackend(apkConf, endpoint, endpointType);
-            }
             if grpcRoute.spec.rules.length() > 0 {
                 if endpointType == PRODUCTION_TYPE {
                     apiArtifact.productionGrpcRoutes.push(grpcRoute);
