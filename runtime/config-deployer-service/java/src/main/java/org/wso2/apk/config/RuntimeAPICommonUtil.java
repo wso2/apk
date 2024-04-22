@@ -146,12 +146,12 @@ public class RuntimeAPICommonUtil {
         ProtoParser protoParser = new ProtoParser(definition);
         List<URITemplate> uriTemplates = new ArrayList<>();
         API api = new API();
-        api.setBasePath(protoParser.protoFile.basePath);
+        api.setBasePath("/"+protoParser.protoFile.basePath);
         api.setVersion(protoParser.protoFile.version);
         for (ProtoParser.Service service : protoParser.getServices()) {
             for (String method : service.methods) {
                 URITemplate uriTemplate = new URITemplate();
-                uriTemplate.setUriTemplate("/" + protoParser.protoFile.packageName + "." + service.name);
+                uriTemplate.setUriTemplate(protoParser.protoFile.packageName + "." + service.name);
                 uriTemplate.setVerb(method);
                 uriTemplates.add(uriTemplate);
             }
