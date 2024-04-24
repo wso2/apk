@@ -8,14 +8,21 @@ import org.wso2.apk.enforcer.analytics.AnalyticsFilter;
 import org.wso2.apk.enforcer.commons.Filter;
 import org.wso2.apk.enforcer.commons.dto.ClaimValueDTO;
 import org.wso2.apk.enforcer.commons.dto.JWTConfigurationDto;
-import org.wso2.apk.enforcer.commons.model.*;
+import org.wso2.apk.enforcer.commons.model.APIConfig;
+import org.wso2.apk.enforcer.commons.model.ResourceConfig;
+import org.wso2.apk.enforcer.commons.model.EndpointSecurity;
+import org.wso2.apk.enforcer.commons.model.RequestContext;
 import org.wso2.apk.enforcer.commons.model.EndpointCluster;
 import org.wso2.apk.enforcer.config.ConfigHolder;
 import org.wso2.apk.enforcer.config.EnforcerConfig;
 import org.wso2.apk.enforcer.constants.APIConstants;
 import org.wso2.apk.enforcer.constants.HttpConstants;
 import org.wso2.apk.enforcer.cors.CorsFilter;
-import org.wso2.apk.enforcer.discovery.api.*;
+import org.wso2.apk.enforcer.discovery.api.Api;
+import org.wso2.apk.enforcer.discovery.api.Resource;
+import org.wso2.apk.enforcer.discovery.api.Operation;
+import org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo;
+import org.wso2.apk.enforcer.discovery.api.Claim;
 import org.wso2.apk.enforcer.security.AuthFilter;
 import org.wso2.apk.enforcer.security.mtls.MtlsUtils;
 import org.wso2.apk.enforcer.server.swagger.APIDefinitionUtils;
@@ -94,24 +101,11 @@ public class GRPCAPI implements  API{
         }
 
 
-
         SchemaParser schemaParser = new SchemaParser();
 
         byte[] apiDefinition = api.getApiDefinitionFile().toByteArray();
         TypeDefinitionRegistry registry;
 
-        //TODO fix this
-//        try {
-//            String scheme = APIDefinitionUtils.ReadGzip(apiDefinition);
-//            registry = schemaParser.parse(scheme);
-//        } catch (IOException e) {
-//            logger.error("Error while parsing the GRPC schema definition of the API: " + name, e);
-//            throw new RuntimeException(e);
-//        }
-//        GraphQLSchema schema = UnExecutableSchemaGenerator.makeUnExecutableSchema(registry);
-
-//        GraphQLSchemaDTO graphQLSchemaDTO = new GraphQLSchemaDTO(schema, registry,
-//                GraphQLPayloadUtils.parseComplexityDTO(api.getGraphqlComplexityInfoList()));
 
         String apiLifeCycleState = api.getApiLifeCycleState();
         this.apiConfig = new APIConfig.Builder(name).uuid(api.getId()).vhost(vhost).basePath(basePath).version(version)
@@ -120,9 +114,8 @@ public class GRPCAPI implements  API{
                 .disableScopes(api.getDisableScopes()).trustStore(trustStore).organizationId(api.getOrganizationId())
                 .mutualSSL(mutualSSL)
                 .applicationSecurity(applicationSecurity).jwtConfigurationDto(jwtConfigurationDto)
-//                .apiDefinition(apiDefinition).environment(api.getEnvironment())
+                .apiDefinition(apiDefinition).environment(api.getEnvironment())
                 .environment(api.getEnvironment())
-//                .subscriptionValidation(api.getSubscriptionValidation()).graphQLSchemaDTO(graphQLSchemaDTO).build();
                 .subscriptionValidation(api.getSubscriptionValidation()).build();
         initFilters();
         logger.info("APIConfig: " + this.apiConfig);
@@ -211,10 +204,6 @@ public class GRPCAPI implements  API{
         AuthFilter authFilter = new AuthFilter();
         authFilter.init(apiConfig, null);
         this.filters.add(authFilter);
-
-//        GraphQLQueryAnalysisFilter queryAnalysisFilter = new GraphQLQueryAnalysisFilter();
-//        queryAnalysisFilter.init(apiConfig, null);
-//        this.filters.add(queryAnalysisFilter);
 
         // CORS filter is added as the first filter, and it is not customizable.
         CorsFilter corsFilter = new CorsFilter();
