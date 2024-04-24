@@ -50,6 +50,7 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.testng.Assert;
 import org.wso2.apk.integration.utils.Constants;
 import org.wso2.apk.integration.utils.Utils;
+import org.wso2.apk.integration.utils.clients.SimpleGRPCStudentClient;
 import org.wso2.apk.integration.utils.clients.SimpleHTTPClient;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
@@ -142,6 +143,12 @@ public class BaseSteps {
         } else if (CurlOption.HttpMethod.OPTIONS.toString().toLowerCase().equals(httpMethod.toLowerCase())) {
             sharedContext.setResponse(httpClient.doOptions(url, sharedContext.getHeaders(), null, null));
         }
+    }
+
+    @Then("I make grpc request")
+    public void sendGrpcRequest() throws IOException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+        SimpleGRPCStudentClient grpcStudentClient = new SimpleGRPCStudentClient();
+        sharedContext.setStudentResponse(grpcStudentClient.GetStudent());
     }
 
     // It will send request using a new thread and forget about the response
