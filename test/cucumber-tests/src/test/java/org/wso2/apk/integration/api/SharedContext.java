@@ -18,7 +18,9 @@
 package org.wso2.apk.integration.api;
 
 import org.apache.http.HttpResponse;
+import org.wso2.apk.integration.utils.clients.SimpleGRPCStudentClient;
 import org.wso2.apk.integration.utils.clients.SimpleHTTPClient;
+import org.wso2.apk.integration.utils.clients.studentGrpcClient.StudentResponse;
 
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
@@ -31,6 +33,8 @@ import java.util.Map;
 public class SharedContext {
 
     private SimpleHTTPClient httpClient;
+    private SimpleGRPCStudentClient grpcStudentClient;
+    private StudentResponse studentResponse;
     private String accessToken;
     private HttpResponse response;
     private String responseBody;
@@ -42,6 +46,12 @@ public class SharedContext {
             httpClient = new SimpleHTTPClient();
         }
         return httpClient;
+    }
+    public SimpleGRPCStudentClient getGrpcStudentClient()throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+        if (grpcStudentClient == null) {
+            grpcStudentClient = new SimpleGRPCStudentClient();
+        }
+        return grpcStudentClient;
     }
 
     public String getAccessToken() {
@@ -57,6 +67,16 @@ public class SharedContext {
     public HttpResponse getResponse() {
 
         return response;
+    }
+
+    public StudentResponse getStudentResponse() {
+
+        return studentResponse;
+    }
+
+    public void setStudentResponse(StudentResponse studentResponse) {
+
+        this.studentResponse = studentResponse;
     }
 
     public void setResponse(HttpResponse response) {
