@@ -25,7 +25,6 @@ import org.wso2.apk.integration.utils.clients.studentGrpcClient.StudentResponse;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;

@@ -4,11 +4,11 @@
 package org.wso2.apk.integration.utils.clients.studentGrpcClient;
 
 /**
- * Protobuf type {@code student.StudentResponse}
+ * Protobuf type {@code dineth.grpc.v1.student.StudentResponse}
  */
 public final class StudentResponse extends
     com.google.protobuf.GeneratedMessageV3 implements
-    // @@protoc_insertion_point(message_implements:student.StudentResponse)
+    // @@protoc_insertion_point(message_implements:dineth.grpc.v1.student.StudentResponse)
     StudentResponseOrBuilder {
 private static final long serialVersionUID = 0L;
   // Use StudentResponse.newBuilder() to construct.
@@ -81,15 +81,15 @@ private static final long serialVersionUID = 0L;
   }
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return Student.internal_static_student_StudentResponse_descriptor;
+    return Student.internal_static_dineth_grpc_v1_student_StudentResponse_descriptor;
   }
 
   @Override
   protected FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return Student.internal_static_student_StudentResponse_fieldAccessorTable
+    return Student.internal_static_dineth_grpc_v1_student_StudentResponse_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
-            StudentResponse.class, StudentResponse.Builder.class);
+            StudentResponse.class, Builder.class);
   }
 
   public static final int NAME_FIELD_NUMBER = 1;
@@ -307,26 +307,26 @@ private static final long serialVersionUID = 0L;
     return builder;
   }
   /**
-   * Protobuf type {@code student.StudentResponse}
+   * Protobuf type {@code dineth.grpc.v1.student.StudentResponse}
    */
   public static final class Builder extends
       com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-      // @@protoc_insertion_point(builder_implements:student.StudentResponse)
+      // @@protoc_insertion_point(builder_implements:dineth.grpc.v1.student.StudentResponse)
       StudentResponseOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return Student.internal_static_student_StudentResponse_descriptor;
+      return Student.internal_static_dineth_grpc_v1_student_StudentResponse_descriptor;
     }
 
     @Override
     protected FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return Student.internal_static_student_StudentResponse_fieldAccessorTable
+      return Student.internal_static_dineth_grpc_v1_student_StudentResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              StudentResponse.class, StudentResponse.Builder.class);
+              StudentResponse.class, Builder.class);
     }
 
-    // Construct using StudentResponse.newBuilder()
+    // Construct using org.wso2.apk.integration.utils.clients.studentGrpcClient.StudentResponse.newBuilder()
     private Builder() {
       maybeForceBuilderInitialization();
     }
@@ -354,7 +354,7 @@ private static final long serialVersionUID = 0L;
     @Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return Student.internal_static_student_StudentResponse_descriptor;
+      return Student.internal_static_dineth_grpc_v1_student_StudentResponse_descriptor;
     }
 
     @Override
@@ -579,10 +579,10 @@ private static final long serialVersionUID = 0L;
     }
 
 
-    // @@protoc_insertion_point(builder_scope:student.StudentResponse)
+    // @@protoc_insertion_point(builder_scope:dineth.grpc.v1.student.StudentResponse)
   }
 
-  // @@protoc_insertion_point(class_scope:student.StudentResponse)
+  // @@protoc_insertion_point(class_scope:dineth.grpc.v1.student.StudentResponse)
   private static final StudentResponse DEFAULT_INSTANCE;
   static {
     DEFAULT_INSTANCE = new StudentResponse();
