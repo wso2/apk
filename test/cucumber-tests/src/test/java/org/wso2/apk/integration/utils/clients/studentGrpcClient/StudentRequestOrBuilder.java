@@ -4,7 +4,7 @@
 package org.wso2.apk.integration.utils.clients.studentGrpcClient;
 
 public interface StudentRequestOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:student.StudentRequest)
+    // @@protoc_insertion_point(interface_extends:dineth.grpc.v1.student.StudentRequest)
     com.google.protobuf.MessageOrBuilder {
 
   /**
