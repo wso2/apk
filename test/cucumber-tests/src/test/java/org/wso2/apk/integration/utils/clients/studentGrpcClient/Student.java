@@ -15,15 +15,15 @@ public final class Student {
         (com.google.protobuf.ExtensionRegistryLite) registry);
   }
   static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_student_StudentRequest_descriptor;
+    internal_static_dineth_grpc_v1_student_StudentRequest_descriptor;
   static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_student_StudentRequest_fieldAccessorTable;
+      internal_static_dineth_grpc_v1_student_StudentRequest_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_student_StudentResponse_descriptor;
+    internal_static_dineth_grpc_v1_student_StudentResponse_descriptor;
   static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_student_StudentResponse_fieldAccessorTable;
+      internal_static_dineth_grpc_v1_student_StudentResponse_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -33,34 +33,38 @@ public final class Student {
       descriptor;
   static {
     String[] descriptorData = {
-      "\n\rstudent.proto\022\007student\"\034\n\016StudentReque" +
-      "st\022\n\n\002id\030\003 \001(\005\",\n\017StudentResponse\022\014\n\004nam" +
-      "e\030\001 \001(\t\022\013\n\003age\030\002 \001(\0052\276\002\n\016StudentService\022" +
-      "A\n\nGetStudent\022\027.student.StudentRequest\032\030" +
-      ".student.StudentResponse\"\000\022I\n\020GetStudent" +
-      "Stream\022\027.student.StudentRequest\032\030.studen" +
-      "t.StudentResponse\"\0000\001\022J\n\021SendStudentStre" +
-      "am\022\027.student.StudentRequest\032\030.student.St" +
-      "udentResponse\"\000(\001\022R\n\027SendAndGetStudentSt" +
-      "ream\022\027.student.StudentRequest\032\030.student." +
-      "StudentResponse\"\000(\0010\001B\017\n\013org.exampleP\001b\006" +
-      "proto3"
+      "\n\rstudent.proto\022\026dineth.grpc.v1.student\"" +
+      "\034\n\016StudentRequest\022\n\n\002id\030\003 \001(\005\",\n\017Student" +
+      "Response\022\014\n\004name\030\001 \001(\t\022\013\n\003age\030\002 \001(\0052\266\003\n\016" +
+      "StudentService\022_\n\nGetStudent\022&.dineth.gr" +
+      "pc.v1.student.StudentRequest\032\'.dineth.gr" +
+      "pc.v1.student.StudentResponse\"\000\022g\n\020GetSt" +
+      "udentStream\022&.dineth.grpc.v1.student.Stu" +
+      "dentRequest\032\'.dineth.grpc.v1.student.Stu" +
+      "dentResponse\"\0000\001\022h\n\021SendStudentStream\022&." +
+      "dineth.grpc.v1.student.StudentRequest\032\'." +
+      "dineth.grpc.v1.student.StudentResponse\"\000" +
+      "(\001\022p\n\027SendAndGetStudentStream\022&.dineth.g" +
+      "rpc.v1.student.StudentRequest\032\'.dineth.g" +
+      "rpc.v1.student.StudentResponse\"\000(\0010\001B<\n8" +
+      "org.wso2.apk.integration.utils.clients.s" +
+      "tudentGrpcClientP\001b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
         });
-    internal_static_student_StudentRequest_descriptor =
+    internal_static_dineth_grpc_v1_student_StudentRequest_descriptor =
       getDescriptor().getMessageTypes().get(0);
-    internal_static_student_StudentRequest_fieldAccessorTable = new
+    internal_static_dineth_grpc_v1_student_StudentRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_student_StudentRequest_descriptor,
+        internal_static_dineth_grpc_v1_student_StudentRequest_descriptor,
         new String[] { "Id", });
-    internal_static_student_StudentResponse_descriptor =
+    internal_static_dineth_grpc_v1_student_StudentResponse_descriptor =
       getDescriptor().getMessageTypes().get(1);
-    internal_static_student_StudentResponse_fieldAccessorTable = new
+    internal_static_dineth_grpc_v1_student_StudentResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_student_StudentResponse_descriptor,
+        internal_static_dineth_grpc_v1_student_StudentResponse_descriptor,
         new String[] { "Name", "Age", });
   }
 

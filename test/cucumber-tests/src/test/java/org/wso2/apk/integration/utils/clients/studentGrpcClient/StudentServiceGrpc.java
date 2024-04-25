@@ -4,14 +4,14 @@ import static io.grpc.MethodDescriptor.generateFullMethodName;
 
 /**
  */
-//@javax.annotation.Generated(
-//    value = "by gRPC proto compiler (version 1.39.0)",
-//    comments = "Source: student.proto")
+@javax.annotation.Generated(
+    value = "by gRPC proto compiler (version 1.39.0)",
+    comments = "Source: student.proto")
 public final class StudentServiceGrpc {
 
   private StudentServiceGrpc() {}
 
-  public static final String SERVICE_NAME = "student.StudentService";
+  public static final String SERVICE_NAME = "dineth.grpc.api.v1.student.StudentService";
 
   // Static method descriptors that strictly reflect the proto.
   private static volatile io.grpc.MethodDescriptor<StudentRequest,
@@ -189,14 +189,14 @@ public final class StudentServiceGrpc {
     /**
      */
     public void getStudent(StudentRequest request,
-        io.grpc.stub.StreamObserver<StudentResponse> responseObserver) {
+                           io.grpc.stub.StreamObserver<StudentResponse> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getGetStudentMethod(), responseObserver);
     }
 
     /**
      */
     public void getStudentStream(StudentRequest request,
-        io.grpc.stub.StreamObserver<StudentResponse> responseObserver) {
+                                 io.grpc.stub.StreamObserver<StudentResponse> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getGetStudentStreamMethod(), responseObserver);
     }
 
@@ -265,7 +265,7 @@ public final class StudentServiceGrpc {
     /**
      */
     public void getStudent(StudentRequest request,
-        io.grpc.stub.StreamObserver<StudentResponse> responseObserver) {
+                           io.grpc.stub.StreamObserver<StudentResponse> responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getGetStudentMethod(), getCallOptions()), request, responseObserver);
     }
@@ -273,7 +273,7 @@ public final class StudentServiceGrpc {
     /**
      */
     public void getStudentStream(StudentRequest request,
-        io.grpc.stub.StreamObserver<StudentResponse> responseObserver) {
+                                 io.grpc.stub.StreamObserver<StudentResponse> responseObserver) {
       io.grpc.stub.ClientCalls.asyncServerStreamingCall(
           getChannel().newCall(getGetStudentStreamMethod(), getCallOptions()), request, responseObserver);
     }
