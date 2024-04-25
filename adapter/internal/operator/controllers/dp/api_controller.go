@@ -90,6 +90,7 @@ const (
 	serviceHTTPRouteIndex            = "serviceHTTPRouteIndex"
 	httprouteScopeIndex              = "httprouteScopeIndex"
 	gqlRouteScopeIndex               = "gqlRouteScopeIndex"
+	grpcRouteScopeIndex              = "grpcRouteScopeIndex"
 	configMapBackend                 = "configMapBackend"
 	configMapAPIDefinition           = "configMapAPIDefinition"
 	secretBackend                    = "secretBackend"
@@ -1658,6 +1659,22 @@ func (apiReconciler *APIReconciler) getAPIsForScope(ctx context.Context, obj k8c
 	for item := range gqlRouteList.Items {
 		httpRoute := gqlRouteList.Items[item]
 		requests = append(requests, apiReconciler.getAPIForGQLRoute(ctx, &httpRoute)...)
+	}
+
+	grpcRouteList := &gwapiv1a2.GRPCRouteList{}
+	if err := apiReconciler.client.List(ctx, grpcRouteList, &k8client.ListOptions{
+		FieldSelector: fields.OneTermEqualSelector(grpcRouteScopeIndex, utils.NamespacedName(scope).String()),
+	}); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2625, logging.CRITICAL, "Unable to find associated GRPCRoutes: %s", utils.NamespacedName(scope).String()))
+		return []reconcile.Request{}
+	}
+
+	if len(grpcRouteList.Items) == 0 {
+		loggers.LoggerAPKOperator.Debugf("GRPCRoutes for scope not found: %s", utils.NamespacedName(scope).String())
+	}
+	for item := range grpcRouteList.Items {
+		grpcRoute := grpcRouteList.Items[item]
+		requests = append(requests, apiReconciler.getAPIForGRPCRoute(ctx, &grpcRoute)...)
 	}
 
 	return requests
