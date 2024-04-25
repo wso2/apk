@@ -46,12 +46,6 @@ public class SharedContext {
         }
         return httpClient;
     }
-    public SimpleGRPCStudentClient getGrpcStudentClient()throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
-        if (grpcStudentClient == null) {
-            grpcStudentClient = new SimpleGRPCStudentClient();
-        }
-        return grpcStudentClient;
-    }
 
     public String getAccessToken() {
 
