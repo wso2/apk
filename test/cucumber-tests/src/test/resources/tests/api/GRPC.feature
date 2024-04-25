@@ -14,18 +14,13 @@ Feature: Generating APK conf for gRPC API
         Then the response status code should be 200
         Then I set headers
             | Authorization | bearer ${accessToken} |
-        And I make grpc request
+        And I make grpc request GetStudent with token to "default.gw.wso2.com" with port 9095
         And I eventually receive 200 response code, not accepting
             | 429 |
             | 500 |
-        And the response body should contain "\"name\":\"string\""
-        Then I set headers
-            | Authorization | bearer ${accessToken} |
-        And I send "POST" request to "https://default.gw.wso2.com:9095/grpc"
-        And I eventually receive 200 response code, not accepting
-            | 429 |
-            | 500 |
-        And the response body should contain "\"name\":\"string\""
+        And the student response body should contain name: "Dineth" age: 10
+
+
 
     Scenario: Undeploy API
         Given The system is ready

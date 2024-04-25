@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, WSO2 LLC (http://www.wso2.com).
+ * Copyright (c) 2024, WSO2 LLC (http://www.wso2.com).
  *
  * WSO2 LLC licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -97,6 +97,14 @@ public class BaseSteps {
 
     }
 
+    @Then("the student response body should contain name: {string} age: {int}")
+    public void theStudentResponseBodyShouldContainNameAndAge(String arg0, int arg1) {
+    int age = sharedContext.getStudentResponse().getAge();
+        String name = sharedContext.getStudentResponse().getName();
+        Assert.assertEquals(name, arg0);
+        Assert.assertEquals(age, arg1);
+    }
+
     @Then("the response body should contain {string}")
     public void theResponseBodyShouldContain(String expectedText) throws IOException {
         Assert.assertTrue(sharedContext.getResponseBody().contains(expectedText), "Actual response body: " + sharedContext.getResponseBody());
@@ -145,10 +153,16 @@ public class BaseSteps {
         }
     }
 
-    @Then("I make grpc request")
-    public void sendGrpcRequest() throws IOException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
-        SimpleGRPCStudentClient grpcStudentClient = new SimpleGRPCStudentClient();
+    @Then("I make grpc request to GetStudent to {string} with port {int}")
+    public void GetStudent(String arg0, int arg1) {
+        SimpleGRPCStudentClient grpcStudentClient = new SimpleGRPCStudentClient(arg0,arg1);
         sharedContext.setStudentResponse(grpcStudentClient.GetStudent());
+    }
+
+    @Then("I make grpc request GetStudent with token to {string} with port {int}")
+    public void GetStudentWithToken(String arg0, int arg1 ) {
+        SimpleGRPCStudentClient grpcStudentClient = new SimpleGRPCStudentClient(arg0,arg1);
+        sharedContext.setStudentResponse(grpcStudentClient.GetStudent(sharedContext.getAccessToken()));
     }
 
     // It will send request using a new thread and forget about the response
