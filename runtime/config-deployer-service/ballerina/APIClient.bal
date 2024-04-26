@@ -578,6 +578,7 @@ public class APIClient {
                 } else {
                     apiArtifact.sandboxGrpcRoutes.push(grpcRoute);
                 }
+            }
         } else {
             model:HTTPRoute httpRoute = {
                 metadata:
@@ -599,10 +600,9 @@ public class APIClient {
                 }
             }
         }
-
         return;
-        }
     }
+
 
     private isolated function generateAndRetrieveParentRefs(APKConf apkConf, string uniqueId) returns model:ParentReference[] {
         string gatewayName = gatewayConfiguration.name;
