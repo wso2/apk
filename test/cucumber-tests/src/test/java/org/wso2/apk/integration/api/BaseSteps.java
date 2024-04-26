@@ -148,16 +148,10 @@ public class BaseSteps {
         }
     }
 
-    @Then("I make grpc request to GetStudent to {string} with port {int}")
-    public void GetStudent(String arg0, int arg1) {
+    @Then("I make grpc request GetStudent to {string} with port {int}")
+    public void GetStudent(String arg0, int arg1 ) {
         SimpleGRPCStudentClient grpcStudentClient = new SimpleGRPCStudentClient(arg0,arg1);
-        sharedContext.setStudentResponse(grpcStudentClient.GetStudent());
-    }
-
-    @Then("I make grpc request GetStudent with token to {string} with port {int}")
-    public void GetStudentWithToken(String arg0, int arg1 ) {
-        SimpleGRPCStudentClient grpcStudentClient = new SimpleGRPCStudentClient(arg0,arg1);
-        sharedContext.setStudentResponse(grpcStudentClient.GetStudent(sharedContext.getAccessToken()));
+        sharedContext.setStudentResponse(grpcStudentClient.GetStudent(sharedContext.getHeaders()));
     }
 
     // It will send request using a new thread and forget about the response
