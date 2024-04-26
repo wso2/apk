@@ -32,11 +32,11 @@ import java.util.Map;
 public class SharedContext {
 
     private SimpleHTTPClient httpClient;
-    private SimpleGRPCStudentClient grpcStudentClient;
     private StudentResponse studentResponse;
     private String accessToken;
     private HttpResponse response;
     private String responseBody;
+    private int grpcErrorCode;
     private HashMap<String, Object> valueStore = new HashMap<>();
     private HashMap<String, String> headers = new HashMap<>();
 
@@ -55,6 +55,12 @@ public class SharedContext {
     public void setAccessToken(String accessToken) {
 
         this.accessToken = accessToken;
+    }
+    public int getGrpcErrorCode() {
+        return grpcErrorCode;
+    }
+    public void setGrpcErrorCode(int grpcErrorCode) {
+        this.grpcErrorCode = grpcErrorCode;
     }
 
     public HttpResponse getResponse() {
