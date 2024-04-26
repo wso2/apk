@@ -1073,7 +1073,6 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoGRPCRouteCR(grpcRoute *gwap
 		loggers.LoggerOasparser.Debugf("Calculating auths for API ..., API_UUID = %v", adapterInternalAPI.UUID)
 		apiAuth := getSecurity(resourceAuthScheme)
 
-		//TODO Add path match type (Dineth)
 		for _, match := range rule.Matches {
 			resourcePath := adapterInternalAPI.GetXWso2Basepath() + "." + *match.Method.Service + "/" + *match.Method.Method
 			endPoints = append(endPoints, GetEndpoints(backendName, resourceParams.BackendMapping)...)
