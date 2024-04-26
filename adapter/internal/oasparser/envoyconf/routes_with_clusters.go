@@ -235,7 +235,6 @@ func CreateRoutesWithClusters(adapterInternalAPI *model.AdapterInternalAPI, inte
 				clusterName = existingClusterName
 			}
 			// Create resource level interceptor clusters if required
-			//TODO remove this if no interceptor needed for grpc (Dineth)
 			clustersI, endpointsI, operationalReqInterceptors, operationalRespInterceptorVal := createInterceptorResourceClusters(adapterInternalAPI,
 				interceptorCerts, vHost, organizationID, apiRequestInterceptor, apiResponseInterceptor, resource)
 			clusters = append(clusters, clustersI...)
