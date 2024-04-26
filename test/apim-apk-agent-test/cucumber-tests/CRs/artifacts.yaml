@@ -1,3 +1,902 @@
+# --------------------------------------------------------------------
+
+# Copyright (c) 2024, WSO2 LLC (http://www.wso2.com).
+
+# WSO2 LLC licenses this file to you under the Apache License,
+# Version 2.0 (the "License"); you may not use this file except
+# in compliance with the License.
+# You may obtain a copy of the License at
+
+# http://www.apache.org/licenses/LICENSE-2.0
+
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# -----------------------------------------------------------------------
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: apk
+spec:
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+  selector:
+    app: httpbin
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: httpbin
+  namespace: apk
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: httpbin
+  template:
+    metadata:
+      labels:
+        app: httpbin
+    spec:
+      containers:
+        - image: docker.io/kennethreitz/httpbin:latest
+          imagePullPolicy: IfNotPresent
+          name: httpbin
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              memory: "200Mi"
+              cpu: "300m"
+            limits:
+              memory: "200Mi"
+              cpu: "300m"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: backend-creds
+  namespace: apk
+data:
+  username: YWRtaW4=
+  password: YWRtaW4=
+type: Opaque
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: backend-creds-1
+  namespace: apk
+data:
+  username: ZHNmZHNmc2Rmc2Rm
+  password: YWRtaW4=
+type: Opaque
+---
+apiVersion: dp.wso2.com/v1alpha1
+kind: TokenIssuer
+metadata:
+  name: jwtissuer-1
+  namespace: apk
+spec:
+  consumerKeyClaim: azp
+  issuer: https://idp.am.wso2.com/token
+  name: Domain-service-idp
+  organization: default
+  scopesClaim: scope
+  signatureValidation:
+    certificate:
+      secretRef:
+        key: wso2carbon.pem
+        name: apk-test-setup-wso2-apk-enforcer-truststore-secret
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: wso2-apk-default
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: interceptor-service-config-toml
+  namespace: apk
+data:
+  Config.toml: |
+        [ballerina.log]
+        level = "DEBUG"
+        [ballerina.http]
+        traceLogConsole = true  
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: interceptor-service-configmap
+  namespace: "apk"
+binaryData:
+  tls.key: LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlFcEFJQkFBS0NBUUVBcHl4OGhtYW0yWkduNTR3bndnb1VWblY1QnMwRHhFZm9HckVUWENsMEhDdWYyYmoxCkZ6VXdQOWRza2IzZE9VbHU4b0lramUrMmZFa1pGOXRBWEM4akpGTFlETXVYYjVXMVpHVlZJQkYyVlZQY2RLVkgKRjA3WkU2V1VDVWdJUHZtN0RJbFBFMUI0RkhXREhkakY2V2w2WVpZU1AzcmEwRmgrdFR5YUJoQkcyL3R5MENXagpRZ3VzUEs1ZVhIN0tQVEx2citnTUcwenFLc0xyaGg2Z1Q1TGlnZ2VjNjdkR01XUEkwdWN1dHFxL25KN3RoQ2d5Ck9rZGdrcWt6V2hiZU1FYWlPS084TXRCeWRlU1BFbkd3RDgzSmtSQmN1bXArRE5wSExoSVg2eHlYNTVob215ZFQKb3RQcllFY0R0bzFJdk83cmF5cHNDZVVXZHJHdFliOVJDMkViUHdJREFRQUJBb0lCQUVpUG1LVkZuUnBHakppRwpUeU43K0lQbWpWZVVXUlF6R2Qyc0Nua3dUUU9GTStidXp3TDV4UzJRdGNFMHBmY2RscGlRUUltVENLUTlualNxCnArN2JUdWVQUmRPWDh1MHVFQU81c0E4eFJTbVlNdEkyZ3ZyczhIQUVxSksydjAyR1c5Zi9LV0Y2eGdRclZYUDUKQ1Q1YzJBL1BjYkE0QlEzMXUxbXpLaStEbFI0Wi9CS3ZDWks5UjBEdENrbDU4U1phSDJZMjVRWEZLVDBCcmhZbApyNGduSWlZTk4wRXVWZDFGbHlsVGpXcFlVUCtHVTluVHUxMUwySDlpV1dqNmVWaUlsRmxuekE3WVdCR1Nza1EwCklkd01BRXRRV3R3RXlmWUQ3MElrcm5WOGxjUlFSNlh0RjgwMHU5VFhvQ0UxNmlYODYraFYrL2NHMVR4elIwTlEKTmZ3YVRVRUNnWUVBM3E3RXhENG9GYWFreGZnWHJDUmJGdzVBczRxbnY5R2ZsRi9OaTN5S25aZnp2cVZLQnk5RQpSTlRZOGxYWXJMb0Z2TWlpdzBQb2tBcnlQZ00yV2RWb2lLczJidzlqQ1U2VWI2THk0ZWJWTmgyYmh4MXdGbjkzCmRoeWRNa2lVRjlZUC9QVzdSUk53aklZTy9DbGpVNHFtNFRQdTBpb3ovYVY0TnVhcE5PL29qUThDZ1lFQXdDK2IKQ3FveE45SEdDTGdyREpsdlJqQTlQNlg5aUJGTHM4OW15b0lEUTBRSzIyUkYxajFUcDZQa1lhZTBBTm9BUFlkRwpHaWptbFQrUkp6MGFmU29PRHlyS2dVc3ptNUhPWjhQMkRGaFQ0Y1ZZbDZnL3FqYWh0amFFWTRTOFJhdnRrMGMxClpYVG9JOUhJUHpKayszcWNIVDlWVmtLcFE5ZGt2Q3JzYVpKKzd0RUNnWUVBakl3YVBSSk9FbncvZTRQK3pQT1YKV3BQd1dtR2xSdmh6bEI1emlScHVFdEdaVWpiWTVuZjZ5c2JjdHZkZjdvVHFvaUN3T2paZVRxdmFBVEhkMkExTwpFUlNmSXJHL2ZGeFFhN1daUHVPR3BzVkJLS0ozNEh0TFZ3endXcEJjaUQ3ZmtIVTRZWHpIaUtvRVF6dU1LV3BWCnNjWXBjaFNaQS9xd1NWYUViWmtPV2hrQ2dZQkxFazE5M1AxYzBKU0swMlg5aGZIeGVPWno5bU1TdzY3T2pqV1kKNVRCaEZqTW5nQVBIckMwQlR3UG5JWnN1dWZsZUQzbFN2cWRUcFlFTjB0Q0dFK2RxQlUwVk5FcjBlZ0FtaUdXVQpiT3hYUkw5V2ZtSmdHdmNRTmp1QXBGam0za0h2UmVHVndCVHQ2UVJQcTEvRzNCNGZUcDRIRkFNS2ZSamNaK2Z4ClZVaEFBUUtCZ1FDVGhVd3Bsaisrd0U4SjlDY1JTVHdqWWVuVTMvN2R5RUpFMmU2ZWJiMTVJbXdyTTErL1daZUEKWG9LQ29KQ05wZVBnTUxsdjIrcHVoZzJmWVFLUE9MTGQrMGNqWnMwRERMVVZtNzBIdzBOSk8vYngxa3VNSkdBbwpvaFp1TzJCOEFteWp6MFY1SDFpMjhsbzIvSVQ0MjltSzUyaDNubGhxTmFWbGswSVJpYVltTGc9PQotLS0tLUVORCBSU0EgUFJJVkFURSBLRVktLS0tLQ==
+  tls.pem: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUR4akNDQXE2Z0F3SUJBZ0lFWk1PUHlUQU5CZ2txaGtpRzl3MEJBUXNGQURCMU1Rc3dDUVlEVlFRR0V3SlYKVXpFTE1Ba0dBMVVFQ0F3Q1EwRXhGakFVQmdOVkJBY01EVTF2ZFc1MFlXbHVJRlpwWlhjeERUQUxCZ05WQkFvTQpCRmRUVHpJeEZEQVNCZ05WQkFzTUMwVnVaMmx1WldWeWFXNW5NUnd3R2dZRFZRUUREQk5wYm5SbGNtTmxjSFJ2CmNpMXpaWEoyYVdObE1CNFhEVEl6TURjeU9EQTVOVEl3T1ZvWERUTXpNRGN5T0RBNU5USXdPVm93ZFRFTE1Ba0cKQTFVRUJoTUNWVk14Q3pBSkJnTlZCQWdNQWtOQk1SWXdGQVlEVlFRSERBMU5iM1Z1ZEdGcGJpQldhV1YzTVEwdwpDd1lEVlFRS0RBUlhVMDh5TVJRd0VnWURWUVFMREF0RmJtZHBibVZsY21sdVp6RWNNQm9HQTFVRUF3d1RhVzUwClpYSmpaWEIwYjNJdGMyVnlkbWxqWlRDQ0FTSXdEUVlKS29aSWh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUIKQUtjc2ZJWm1wdG1ScCtlTUo4SUtGRloxZVFiTkE4Ukg2QnF4RTF3cGRCd3JuOW00OVJjMU1EL1hiSkc5M1RsSgpidktDSkkzdnRueEpHUmZiUUZ3dkl5UlMyQXpMbDIrVnRXUmxWU0FSZGxWVDNIU2xSeGRPMlJPbGxBbElDRDc1CnV3eUpUeE5RZUJSMWd4M1l4ZWxwZW1HV0VqOTYydEJZZnJVOG1nWVFSdHY3Y3RBbG8wSUxyRHl1WGx4K3lqMHkKNzYvb0RCdE02aXJDNjRZZW9FK1M0b0lIbk91M1JqRmp5TkxuTHJhcXY1eWU3WVFvTWpwSFlKS3BNMW9XM2pCRwpvamlqdkRMUWNuWGtqeEp4c0EvTnlaRVFYTHBxZmd6YVJ5NFNGK3NjbCtlWWFKc25VNkxUNjJCSEE3YU5TTHp1CjYyc3FiQW5sRm5heHJXRy9VUXRoR3o4Q0F3RUFBYU5lTUZ3d1dnWURWUjBSQkZNd1VZSVRhVzUwWlhKalpYQjAKYjNJdGMyVnlkbWxqWllJNmFXNTBaWEpqWlhCMGIzSXRjMlZ5ZG1salpTNWhjR3N0YVc1MFpXZHlZWFJwYjI0dApkR1Z6ZEM1emRtTXVZMngxYzNSbGNpNXNiMk5oYkRBTkJna3Foa2lHOXcwQkFRc0ZBQU9DQVFFQU9UTGVJSzZTCkU1Q0VFZEpXVVZPOUk3QUFNRkZxYmtWazU5NmlVZlYzSXlYZmN2dG8vUVhoS3dZOHpRU0VxU28za2dJejZrK1oKdllTcVBjWnIyTHJyTVZjNWh4NEoyZWxqUGZQSnhwUUtSbllSRUhrNDRFSDhwR1o4c0RoUVYrNHVtS2w3SjFNbgp0dEx6VmNFY1hzWmZncTA3bUVsTHplOXJ2eUg3Um02WjdSMGNhaXpUL016SjFNSllYbmlXV1FjQmxOTzk0TGtCCjRvalFMaUpuVHRLTEFCVzZEQVNhdFhydEpqRmdWVnZPLyt3Y2dhSnlTVm42RldrTzl6ODNJWTNsLzRXQU5kN0sKaVpwbmFaeXVoSy8zMXVSMDYrK05JKzU5MmtFWGRUREtaN2NQUmFzOXZQQUJzNUs2dGl3ZmY0ZE55cHlvRi9NLwpEbFUzYkxLektEM1ZBUT09Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0=
+---
+apiVersion: "v1"
+kind: "Service"
+metadata:
+  labels:
+    app: "interceptor_service"
+  name: "interceptor-service"
+  namespace: "apk"
+spec:
+  ports:
+  - name: "port-1-intercep"
+    port: 8443
+    protocol: "TCP"
+    targetPort: 8443
+  - name: "port-2-intercep"
+    port: 8444
+    protocol: "TCP"
+    targetPort: 8444
+  - name: "port-3-intercep"
+    port: 8445
+    protocol: "TCP"
+    targetPort: 8445
+  selector:
+    app: "interceptor_service"
+  type: "ClusterIP"
+---
+apiVersion: "apps/v1"
+kind: "Deployment"
+metadata:
+  labels:
+    app: "interceptor_service"
+  name: "interceptor-service-deployment"
+  namespace: "apk"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: "interceptor_service"
+  template:
+    metadata:
+      labels:
+        app: "interceptor_service"
+    spec:
+      containers:
+      - image: "tharindu1st/interceptor_service:latest"
+        imagePullPolicy: "Always"
+        name: "interceptor-service-deployment"
+        ports:
+        - containerPort: 8443
+          name: "port-1-intercep"
+          protocol: "TCP"
+        - containerPort: 8444
+          name: "port-2-intercep"
+          protocol: "TCP"
+        - containerPort: 8445
+          name: "port-3-intercep"
+          protocol: "TCP"
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "1000m"
+          requests:
+            memory: "100Mi"
+            cpu: "200m"
+        volumeMounts:
+        - mountPath: "/home/ineterceptor/tls.pem"
+          name: "service-certs"
+          subPath: "tls.pem"
+        - mountPath: "/home/ineterceptor/tls.key"
+          name: "service-certs"
+          subPath: "tls.key"
+        - mountPath: "/home/ineterceptor/Config.toml"
+          name: "config-toml"
+          subPath: "Config.toml"
+        readinessProbe:
+          httpGet:
+            path: /api/v1/health
+            port: 8443
+            scheme: HTTP
+            httpHeaders:
+            - name: "Connection"
+              value: "keep-alive"
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /api/v1/health
+            port: 8443
+            scheme: HTTP
+            httpHeaders:
+            - name: "Connection"
+              value: "keep-alive"
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        env:
+        - name: "BAL_CONFIG_FILES"
+          value: "/home/ineterceptor/Config.toml"
+      volumes:
+        - name: "service-certs"
+          configMap:
+            name: "interceptor-service-configmap"
+        - name: "config-toml"
+          configMap:
+            name: "interceptor-service-config-toml" 
+---
+apiVersion: dp.wso2.com/v1alpha2
+kind: APIPolicy
+metadata:
+  name: interceptor-policy-gateway-level
+  namespace: apk
+spec:
+  override:
+    requestInterceptors:
+    - name: interceptor-service-gateway-level-req
+    responseInterceptors:
+      - name: interceptor-service-gateway-level-res
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: wso2-apk-default
+---
+apiVersion: dp.wso2.com/v1alpha1
+kind: Backend
+metadata:
+  name: interceptor-backend-v1
+  namespace: apk
+spec:
+  services:
+    - host: interceptor-service.apk.svc.cluster.local
+      port: 8445
+  protocol: https
+  # Uncomment following to validate certificate via a given ca cert (this should be a root level cert)
+  tls:
+    certificateInline: |
+      -----BEGIN CERTIFICATE-----
+      MIIDxjCCAq6gAwIBAgIEZMOPyTANBgkqhkiG9w0BAQsFADB1MQswCQYDVQQGEwJV
+      UzELMAkGA1UECAwCQ0ExFjAUBgNVBAcMDU1vdW50YWluIFZpZXcxDTALBgNVBAoM
+      BFdTTzIxFDASBgNVBAsMC0VuZ2luZWVyaW5nMRwwGgYDVQQDDBNpbnRlcmNlcHRv
+      ci1zZXJ2aWNlMB4XDTIzMDcyODA5NTIwOVoXDTMzMDcyODA5NTIwOVowdTELMAkG
+      A1UEBhMCVVMxCzAJBgNVBAgMAkNBMRYwFAYDVQQHDA1Nb3VudGFpbiBWaWV3MQ0w
+      CwYDVQQKDARXU08yMRQwEgYDVQQLDAtFbmdpbmVlcmluZzEcMBoGA1UEAwwTaW50
+      ZXJjZXB0b3Itc2VydmljZTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEB
+      AKcsfIZmptmRp+eMJ8IKFFZ1eQbNA8RH6BqxE1wpdBwrn9m49Rc1MD/XbJG93TlJ
+      bvKCJI3vtnxJGRfbQFwvIyRS2AzLl2+VtWRlVSARdlVT3HSlRxdO2ROllAlICD75
+      uwyJTxNQeBR1gx3YxelpemGWEj962tBYfrU8mgYQRtv7ctAlo0ILrDyuXlx+yj0y
+      76/oDBtM6irC64YeoE+S4oIHnOu3RjFjyNLnLraqv5ye7YQoMjpHYJKpM1oW3jBG
+      ojijvDLQcnXkjxJxsA/NyZEQXLpqfgzaRy4SF+scl+eYaJsnU6LT62BHA7aNSLzu
+      62sqbAnlFnaxrWG/UQthGz8CAwEAAaNeMFwwWgYDVR0RBFMwUYITaW50ZXJjZXB0
+      b3Itc2VydmljZYI6aW50ZXJjZXB0b3Itc2VydmljZS5hcGstaW50ZWdyYXRpb24t
+      dGVzdC5zdmMuY2x1c3Rlci5sb2NhbDANBgkqhkiG9w0BAQsFAAOCAQEAOTLeIK6S
+      E5CEEdJWUVO9I7AAMFFqbkVk596iUfV3IyXfcvto/QXhKwY8zQSEqSo3kgIz6k+Z
+      vYSqPcZr2LrrMVc5hx4J2eljPfPJxpQKRnYREHk44EH8pGZ8sDhQV+4umKl7J1Mn
+      ttLzVcEcXsZfgq07mElLze9rvyH7Rm6Z7R0caizT/MzJ1MJYXniWWQcBlNO94LkB
+      4ojQLiJnTtKLABW6DASatXrtJjFgVVvO/+wcgaJySVn6FWkO9z83IY3l/4WANd7K
+      iZpnaZyuhK/31uR06++NI+592kEXdTDKZ7cPRas9vPABs5K6tiwff4dNypyoF/M/
+      DlU3bLKzKD3VAQ==
+      -----END CERTIFICATE-----
+    allowedSANs:
+      - "interceptor-service"
+
+---
+apiVersion: dp.wso2.com/v1alpha1
+kind: InterceptorService
+metadata:
+  name: interceptor-service-gateway-level-req
+  namespace: apk
+spec:
+  backendRef:
+    name: interceptor-backend-v1
+  includes:
+    - request_body
+    - request_headers
+    - invocation_context
+---
+apiVersion: dp.wso2.com/v1alpha1
+kind: InterceptorService
+metadata:
+  name: interceptor-service-gateway-level-res
+  namespace: apk
+spec:
+  backendRef:
+    name: interceptor-backend-v1
+  includes:
+    - response_body
+    - response_headers
+    - invocation_context
+---
+apiVersion: dp.wso2.com/v1alpha1
+kind: RateLimitPolicy
+metadata:
+  name: gw-ratelimit-user
+  namespace: apk
+spec:
+  override:
+    custom:
+      key: user_key
+      value: bob
+      requestsPerUnit: 4
+      unit: Minute
+      organization: default
+  targetRef:
+    kind: Gateway
+    name: wso2-apk-default
+    group: gateway.networking.k8s.io
+---
+apiVersion: dp.wso2.com/v1alpha1
+kind: RateLimitPolicy
+metadata:
+  name: gw-ratelimit-org
+  namespace: apk
+spec:
+  override:
+    custom:
+      key: org_key
+      value: wso2
+      requestsPerUnit: 10
+      unit: Minute
+      organization: default
+  targetRef:
+    kind: Gateway
+    name: wso2-apk-default
+    group: gateway.networking.k8s.io
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: interceptor-service-secret
+  namespace: "apk"
+data:
+    tls.pem: |
+      -----BEGIN CERTIFICATE-----
+      MIIDxjCCAq6gAwIBAgIEZMOPyTANBgkqhkiG9w0BAQsFADB1MQswCQYDVQQGEwJV
+      UzELMAkGA1UECAwCQ0ExFjAUBgNVBAcMDU1vdW50YWluIFZpZXcxDTALBgNVBAoM
+      BFdTTzIxFDASBgNVBAsMC0VuZ2luZWVyaW5nMRwwGgYDVQQDDBNpbnRlcmNlcHRv
+      ci1zZXJ2aWNlMB4XDTIzMDcyODA5NTIwOVoXDTMzMDcyODA5NTIwOVowdTELMAkG
+      A1UEBhMCVVMxCzAJBgNVBAgMAkNBMRYwFAYDVQQHDA1Nb3VudGFpbiBWaWV3MQ0w
+      CwYDVQQKDARXU08yMRQwEgYDVQQLDAtFbmdpbmVlcmluZzEcMBoGA1UEAwwTaW50
+      ZXJjZXB0b3Itc2VydmljZTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEB
+      AKcsfIZmptmRp+eMJ8IKFFZ1eQbNA8RH6BqxE1wpdBwrn9m49Rc1MD/XbJG93TlJ
+      bvKCJI3vtnxJGRfbQFwvIyRS2AzLl2+VtWRlVSARdlVT3HSlRxdO2ROllAlICD75
+      uwyJTxNQeBR1gx3YxelpemGWEj962tBYfrU8mgYQRtv7ctAlo0ILrDyuXlx+yj0y
+      76/oDBtM6irC64YeoE+S4oIHnOu3RjFjyNLnLraqv5ye7YQoMjpHYJKpM1oW3jBG
+      ojijvDLQcnXkjxJxsA/NyZEQXLpqfgzaRy4SF+scl+eYaJsnU6LT62BHA7aNSLzu
+      62sqbAnlFnaxrWG/UQthGz8CAwEAAaNeMFwwWgYDVR0RBFMwUYITaW50ZXJjZXB0
+      b3Itc2VydmljZYI6aW50ZXJjZXB0b3Itc2VydmljZS5hcGstaW50ZWdyYXRpb24t
+      dGVzdC5zdmMuY2x1c3Rlci5sb2NhbDANBgkqhkiG9w0BAQsFAAOCAQEAOTLeIK6S
+      E5CEEdJWUVO9I7AAMFFqbkVk596iUfV3IyXfcvto/QXhKwY8zQSEqSo3kgIz6k+Z
+      vYSqPcZr2LrrMVc5hx4J2eljPfPJxpQKRnYREHk44EH8pGZ8sDhQV+4umKl7J1Mn
+      ttLzVcEcXsZfgq07mElLze9rvyH7Rm6Z7R0caizT/MzJ1MJYXniWWQcBlNO94LkB
+      4ojQLiJnTtKLABW6DASatXrtJjFgVVvO/+wcgaJySVn6FWkO9z83IY3l/4WANd7K
+      iZpnaZyuhK/31uR06++NI+592kEXdTDKZ7cPRas9vPABs5K6tiwff4dNypyoF/M/
+      DlU3bLKzKD3VAQ==
+      -----END CERTIFICATE-----
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-retry-deployment
+  namespace: apk
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend-retry
+  template:
+    metadata:
+      labels:
+        app: backend-retry
+    spec:
+      containers:
+        - name: your-container-name
+          image: tharsanan/retry-backend:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-retry
+  namespace: apk
+spec:
+  selector:
+    app: backend-retry
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: dynamic-backend
+  name: dynamic-backend
+  namespace: apk
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dynamic-backend
+  template:
+    metadata:
+      labels:
+        app: dynamic-backend
+    spec:
+      containers:
+      - image: wiremock/wiremock
+        name: wiremock
+        imagePullPolicy: IfNotPresent
+        ports:
+          - containerPort: 8080
+          - containerPort: 8443
+        resources:
+          limits:
+            cpu: 100m
+            memory: 128Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+        volumeMounts:
+          - name: wiremock-mappings
+            mountPath: /home/wiremock/mappings
+      volumes:
+        - name: wiremock-mappings
+          configMap:
+            name: wiremock-mappings
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dynamic-backend-service
+  namespace: apk
+spec:
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+    - name: https
+      port: 8443
+      targetPort: 8443
+  type: LoadBalancer
+  selector:
+      app: dynamic-backend
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: wiremock-mappings
+  namespace: apk
+data:
+  jwks-endpoint.json: | 
+        {
+          "request": {
+              "method": "GET",
+              "url": "/idp1/jwks"
+          },
+          "response": {
+              "status": 200,
+              "headers": {
+                  "Content-Type": "application/json"
+              },
+              "body": "{\n   \"keys\":[\n      {\n         \"kty\":\"RSA\",\n         \"n\":\"m0YNpM5MVYToWZMZ9wL4KQOygvG0f6y0dw4wZ02T4C3SxiC1zEBCZLh2clj7bncyA3EV2bFrTIBNeq-1pFEfbNDMZB88Jcg0S9QyYujr6GM0AqLA7WjZQ6lLxLpeQdEQroEZI-c8rnGmzU8Qb25aiPbRf6Vh7vFYGQz5FnZ8E0LcEMYQ-4KPMkAqnMon1UKWDkqszTY5a-DGMAi5w7imKzXaU4qiEKVKIcezv9nLUVC5Od0T4FkUQi462ZA9SoHx1HNhcVAj8Nf9TG_C65GbsMMFJVcRXwZR99cVzVxVqEtxGlK7Qr0woYKQ3S5kHZPRFcMFXI6WHhEQXqyOMBdUfQ\",\n         \"e\":\"AQAB\",\n         \"alg\":\"RS256\",\n         \"kid\":\"123-456\",\n         \"use\":\"sig\"\n      }\n   ]\n}"
+          }
+        }
+  sem-versioning.json: | 
+        {"mappings": [
+          {
+            "request": {
+                "method": "GET",
+                "url": "/sem-api/v1.0/employee"
+            },
+            "response": {
+                "status": 200,
+                "headers": {
+                    "Content-Type": "application/json"
+                },
+                "body": "{\n \"version\":\"v1.0\" \n}"
+            }
+          },
+          {
+            "request": {
+                "method": "GET",
+                "url": "/sem-api/v1.1/employee"
+            },
+            "response": {
+                "status": 200,
+                "headers": {
+                    "Content-Type": "application/json"
+                },
+                "body": "{\n \"version\":\"v1.1\" \n}"
+            }
+          },
+          {
+            "request": {
+                "method": "GET",
+                "url": "/sem-api/v1.5/employee"
+            },
+            "response": {
+                "status": 200,
+                "headers": {
+                    "Content-Type": "application/json"
+                },
+                "body": "{\n \"version\":\"v1.5\" \n}"
+            }
+          },
+          {
+            "request": {
+                "method": "GET",
+                "url": "/sem-api/v2.1/employee"
+            },
+            "response": {
+                "status": 200,
+                "headers": {
+                    "Content-Type": "application/json"
+                },
+                "body": "{\n \"version\":\"v2.1\" \n}"
+            }
+          }
+        ]}
+---
+kind: TokenIssuer
+apiVersion: dp.wso2.com/v1alpha1
+metadata:
+  name: jwt-issuer-idp-1
+  namespace: apk
+spec:
+  consumerKeyClaim: azp
+  issuer: https://idp1.com
+  name: idp-1
+  organization: default
+  scopesClaim: scope
+  signatureValidation:
+    jwks:
+      url: "http://dynamic-backend-service:8080/idp1/jwks"
+
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: wso2-apk-default
+---
+kind: TokenIssuer
+apiVersion: dp.wso2.com/v1alpha1
+metadata:
+  name: jwt-issuer-idp-2
+  namespace: apk
+spec:
+  consumerKeyClaim: azp
+  issuer: https://idp1.com
+  name: idp-6
+  organization: apk-system
+  scopesClaim: scope
+  signatureValidation:
+    jwks:
+      url: "http://dynamic-backend-service:8080/idp1/jwks"
+  claimMappings:
+    - remoteClaim: "organization"
+      localClaim:  "x-wso2-organization"
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: wso2-apk-default
+---
+kind: TokenIssuer
+apiVersion: dp.wso2.com/v1alpha1
+metadata:
+  name: jwt-issuer-idp-3
+  namespace: apk
+spec:
+  consumerKeyClaim: azp
+  issuer: https://idp1.com
+  name: idp-7
+  organization: org1
+  scopesClaim: scope
+  signatureValidation:
+    jwks:
+      url: "http://dynamic-backend-service:8080/idp1/jwks"
+  claimMappings:
+    - remoteClaim: "organization"
+      localClaim:  "x-wso2-organization"
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: wso2-apk-default
+---
+kind: TokenIssuer
+apiVersion: dp.wso2.com/v1alpha1
+metadata:
+  name: jwt-issuer-idp-4
+  namespace: apk
+spec:
+  consumerKeyClaim: azp
+  issuer: https://idp1.com
+  name: idp-8
+  organization: org2
+  scopesClaim: scope
+  signatureValidation:
+    jwks:
+      url: "http://dynamic-backend-service:8080/idp1/jwks"
+  claimMappings:
+    - remoteClaim: "organization"
+      localClaim:  "x-wso2-organization"
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: wso2-apk-default
+---
+kind: TokenIssuer
+apiVersion: dp.wso2.com/v1alpha2
+metadata:
+  name: multi-env-token-issuer-all-envs
+  namespace: apk
+spec:
+  consumerKeyClaim: azp
+  issuer: https://idp1.com
+  name: idp-all-env
+  organization: org3
+  scopesClaim: scope
+  environments:
+  - "*"
+  signatureValidation:
+    jwks:
+      url: "http://dynamic-backend-service:8080/idp1/jwks"
+  claimMappings:
+    - remoteClaim: "organization"
+      localClaim:  "x-wso2-organization"
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: wso2-apk-default
+---
+kind: TokenIssuer
+apiVersion: dp.wso2.com/v1alpha2
+metadata:
+  name: multi-env-token-issuer-dev-env
+  namespace: apk
+spec:
+  consumerKeyClaim: azp
+  issuer: https://idp1.com
+  name: idp-dev-only
+  organization: org4
+  scopesClaim: scope
+  environments:
+  - "dev"
+  signatureValidation:
+    jwks:
+      url: "http://dynamic-backend-service:8080/idp1/jwks"
+  claimMappings:
+    - remoteClaim: "organization"
+      localClaim:  "x-wso2-organization"
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: wso2-apk-default
+---
+# We have removed the Envoy admin interface port from our helm gateway service yaml. So we need this one here.
+apiVersion: v1
+kind: Service
+metadata:
+  name: apk-test-setup-wso2-apk-gateway-service
+  namespace : apk
+
+spec:
+  type: LoadBalancer
+  # label keys and values that must match in order to receive traffic for this service
+  selector:
+    app.kubernetes.io/app: gateway
+    app.kubernetes.io/release: apk-test-setup
+  ports:
+    - name: endpoint1
+      protocol: TCP
+      port: 9095
+    - name: endpoint3
+      protocol: TCP
+      port: 9000
+---
+kind: Application
+apiVersion: cp.wso2.com/v1alpha2
+metadata:
+  name: 583e4146-7ef5-11ee-b962-0242ac120003
+  namespace : apk
+spec:
+  name: sample-app
+  owner: admin
+  organization: default
+  securitySchemes:
+    oauth2:
+      environments:
+        - envId: Default
+          appId: 45f1c5c8-a92e-11ed-afa1-0242ac120005
+          keyType: PRODUCTION
+---
+kind: Application
+apiVersion: cp.wso2.com/v1alpha2
+metadata:
+  name: 583e4146-7ef5-11ee-b962-0242ac120004
+  namespace : apk
+spec:
+  name: sample-app1
+  owner: admin
+  organization: default
+  securitySchemes:
+    oauth2:
+      environments:
+        - envId: Default
+          appId: 45f1c5c8-a92e-11ed-afa1-0242ac120006
+          keyType: PRODUCTION
+        - envId: Default
+          appId: 45f1c5c8-a92e-11ed-afa1-0242ac120007
+          keyType: SANDBOX
+---
+kind: Application
+apiVersion: cp.wso2.com/v1alpha2
+metadata:
+  name: 583e4146-7ef5-11ee-b962-0242ac120005
+  namespace : apk
+spec:
+  name: sample-app1
+  owner: admin
+  organization: default
+  securitySchemes:
+    oauth2:
+      environments:
+        - envId: Default
+          appId: 45f1c5c8-a92e-11ed-afa1-0242ac120008
+          keyType: PRODUCTION
+        - envId: Default
+          appId: 45f1c5c8-a92e-11ed-afa1-0242ac120009
+          keyType: SANDBOX
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: 583e4146-7ef6-11ee-b962-0242ac120003
+  namespace: apk
+spec:
+  organization: "default"
+  subscriptionStatus: "ACTIVE"
+  api:
+    name: "subscription-api"
+    version: "1.0.0"
+
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: 583e4146-7ef5-11ee-b964-0242ac120002
+  namespace: apk
+spec:
+  applicationRef: 583e4146-7ef5-11ee-b962-0242ac120003
+  subscriptionRef: 583e4146-7ef6-11ee-b962-0242ac120003
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: 583e4146-7ef5-11ee-b964-0242ac120004
+  namespace: apk
+spec:
+  applicationRef: 583e4146-7ef5-11ee-b962-0242ac120004
+  subscriptionRef: 583e4146-7ef6-11ee-b962-0242ac120003
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mtls-test-configmap
+  namespace: apk
+data:
+  tls.crt: |
+    -----BEGIN CERTIFICATE-----
+    MIIDGTCCAgECFANIkLQBkd76qiTXzSXjBS2scPJsMA0GCSqGSIb3DQEBCwUAME0x
+    CzAJBgNVBAYTAkxLMRMwEQYDVQQIDApTb21lLVN0YXRlMQ0wCwYDVQQKDAR3c28y
+    MQwwCgYDVQQLDANhcGsxDDAKBgNVBAMMA2FwazAeFw0yMzEyMDYxMDEyNDhaFw0y
+    NTA0MTkxMDEyNDhaMEUxCzAJBgNVBAYTAkxLMRMwEQYDVQQIDApTb21lLVN0YXRl
+    MSEwHwYDVQQKDBhJbnRlcm5ldCBXaWRnaXRzIFB0eSBMdGQwggEiMA0GCSqGSIb3
+    DQEBAQUAA4IBDwAwggEKAoIBAQCdG90W/Tlk4u9awHPteD5zpVcThUKwMLvAKw9i
+    vVQBC0AG6GzPbakol5gKVm+kBUDFzzzF6eayEXKWbyaZDty66A2+7HLLcKBop5M/
+    a57Q9XtU3lRYvotgutLWuHcI7mLCScZDrjA3rnb/KjjbhZ602ZS1pp5jtyUz6DwL
+    m7w4wQ/RProqCdBj8QqoAvnDDLSPeDfsx14J5VeNJVGJV2wax65jWRjRkj6wE7z2
+    qzWAlP5vDeED6bogYYVDpC8DtgayQ+vKAQLi1uj+I9Yqb/nPUrdUh9IlxudlqiFQ
+    QxyvsXMJEzbWWmlbD0kXYkHmHzetJNPK9ayOS/fJcAcfAb01AgMBAAEwDQYJKoZI
+    hvcNAQELBQADggEBAFmUc7+cI8d0Dl4wTdq+gfyWdqjQb7AYVO9DvJi3XGxdc5Kp
+    1nCSsKzKUz9gvxXHeaYKrBNYf4SSU+Pkdf/BWePqi7UX/SIxNXby2da8zWg+W6Uh
+    xZfKlLYGMp3mCjueZpZTJ7SKOOGFA8IIgEzjJD9Ln1gl3ywMaCwlNrG9RpiD1McT
+    COKvyWNKnSRVr/RvCklLVrAMTJr50kce2czcdFl/xF4Hm66vp7cP/bYJKWAL8hBG
+    zUa9aQBKncOoAO+zQ/SGy7uJxTDUF8SverDsmjOc6AU6IhBGVUyX/JQbYyJfZinB
+    YlviYxVzIm6IaNJHx4sihw4U1/jMFWRXT470zcQ=
+    -----END CERTIFICATE-----
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mtls-test-configmap2
+  namespace: apk
+data:
+  tls.crt: |
+    -----BEGIN CERTIFICATE-----
+    MIIDkTCCAnmgAwIBAgIUJitjysknJ0nHeLH/mjT1JIpOz4YwDQYJKoZIhvcNAQEL
+    BQAwYDELMAkGA1UEBhMCVVMxEjAQBgNVBAgMCVlvdXJTdGF0ZTERMA8GA1UEBwwI
+    WW91ckNpdHkxGTAXBgNVBAoMEFlvdXJPcmdhbml6YXRpb24xDzANBgNVBAMMBllv
+    dXJDQTAeFw0yNDAxMDUwNDAwMjNaFw0yNTAxMDQwNDAwMjNaMGExCzAJBgNVBAYT
+    AlVTMRIwEAYDVQQIDAlZb3VyU3RhdGUxETAPBgNVBAcMCFlvdXJDaXR5MRkwFwYD
+    VQQKDBBZb3VyT3JnYW5pemF0aW9uMRAwDgYDVQQDDAdjbGllbnQxMIIBIjANBgkq
+    hkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuJhFZmCVnj6N+/+HHuMvb4vyWqWcorUf
+    pAWO7a3YVsHp3BX+lbGGzh67jbPcFK6K7RqejenFw7sQK8duZlqXmik/JvZMLxY3
+    l/6e8LIAhN7PaX1zg58OU61baQ5VNBhUXkoYN77xqb87Yo7IFyyQ/tyWfRVFEzNj
+    V1+q2MpEinuscViieIQHEpB4i6fsRxomYkR+FwdfCB65MYCYveIB1z9NkmR6Pm6V
+    7zSPp+QYwc6WX4/61fbRje4BJh3j+FGYboJJg1o9O/MkD70RW6mdMV1l5bT9T98W
+    B+hJtN+5dEpSfAwXqlWWxzhDxNsEvdSwuoLz9e58gteR1LSLaJXMjQIDAQABo0Iw
+    QDAdBgNVHQ4EFgQULaoslUgyglywztd95CkL6sU5wa4wHwYDVR0jBBgwFoAUGUkK
+    +QXBjeGMy7XVnrXfrvVJUNswDQYJKoZIhvcNAQELBQADggEBABodQ1Y7zt7kvDI8
+    jQUfLLkZZAPnVpjYpG7P1dLjOzUxqDNmyZAzoBMENXy/Zu81sRQt+Bs5NKsx1pu5
+    z2TRk9ddxhszD1FKu9Hb6hqLcGHF7GnwPGVXJlHctkMp4QYvXc942VDk7c59/knC
+    PXAul7832cPTUMvFHdzRxBwJruK9xuvNLj2I24+Fji1ELPO7M/e8KZ1NrIS0Fdwn
+    DuDDw3kMkl0BlSrmvMBreSaIOU4mFhmepC97awZ/wZZ+4mpIdWIagZf01txue8o0
+    +8kdGkFsmoCpnJjNjpoQFAYLEdif00iLcRpwwW/saUuxqZC0aDnQCIeo0GSNet8t
+    HOXCkvQ=
+    -----END CERTIFICATE-----
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mtls-test-configmap3
+  namespace: apk
+data:
+  tls.crt: |
+    -----BEGIN CERTIFICATE-----
+    MIIDkTCCAnmgAwIBAgIUJitjysknJ0nHeLH/mjT1JIpOz4cwDQYJKoZIhvcNAQEL
+    BQAwYDELMAkGA1UEBhMCVVMxEjAQBgNVBAgMCVlvdXJTdGF0ZTERMA8GA1UEBwwI
+    WW91ckNpdHkxGTAXBgNVBAoMEFlvdXJPcmdhbml6YXRpb24xDzANBgNVBAMMBllv
+    dXJDQTAeFw0yNDAxMDUwNDE0MTlaFw0yNTAxMDQwNDE0MTlaMGExCzAJBgNVBAYT
+    AlVTMRIwEAYDVQQIDAlZb3VyU3RhdGUxETAPBgNVBAcMCFlvdXJDaXR5MRkwFwYD
+    VQQKDBBZb3VyT3JnYW5pemF0aW9uMRAwDgYDVQQDDAdjbGllbnQyMIIBIjANBgkq
+    hkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA2JQ8LITwayvjrrHUmFT44lH3IF3fdPhr
+    pQgKx7Z295QD9Ocka2rOFu47tuIeNcLiBTSyRLOFDRwjW9WXfWk9ALtxbedJfDyy
+    us/kLxY+SdzHW7/5dFbupGOcs58A/sxMyGTJgiCBxsgsRFfhet7ekq/ypmj5B8L3
+    5FlGg5NS0mbZlTM6aapLnkqU907RcsmzpFQBfWOHlDdWJocKEHECBXcxiTQk72C7
+    s2tndES5ltX/Wc8U/kX/M9LDXhn1Ew+roeFf0HCpdg6BlnTknhYU9S1c4aYKB2Yx
+    LNx74CsKsnxPPcePTXPqZEtZ4EsjF4PSToVFyceMBKvD6C6WPQoRNwIDAQABo0Iw
+    QDAdBgNVHQ4EFgQUWE8btMihi5eZXLJOeiNfh7XHaI0wHwYDVR0jBBgwFoAUGUkK
+    +QXBjeGMy7XVnrXfrvVJUNswDQYJKoZIhvcNAQELBQADggEBAJmXn/gefez7mq1b
+    iKpPLPeHUncIgVaru03v8YCX14pHFAsVuLgZ1lANelSrq+PR/HBJbQj8iloV938o
+    YFppe/fb96D8a2u90dnGwWipMRSDo3wgcInL38xfcH5UEPBVJVLa3IUkfwDjjEqK
+    3O0GXVSpjyv3RW+E9wfPfGSysRX66cTo5Uh3z3hTAloDc8uhCYRPcxG7S9eKD6jW
+    Z3MlFlw4U8CdO90L0nB1KFhz1Et0Sl9u/LDsUYq6mE+XhTngPs8qwR/o43s1DUID
+    y5Oi4A4+id+xO0XnHIkkqCfPtFzxl3hwytcy8EqISynzzHWNJ8bFZIYX4tgX+PLq
+    u0/ITEw=
+    -----END CERTIFICATE-----
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: semantic-versioning-subscription
+  namespace: apk
+spec:
+  organization: "default"
+  subscriptionStatus: "ACTIVE"
+  api:
+    name: "Semantic Versioning API"
+    version: "v\\d+(\\.\\d+)?"
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: semantic-versioning-app-mapping
+  namespace: apk
+spec:
+  applicationRef: 583e4146-7ef5-11ee-b962-0242ac120003
+  subscriptionRef: semantic-versioning-subscription
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -258,66 +1157,3 @@ spec:
       protocol: TCP
   selector:
     app: graphql-faker
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: backend
-  namespace: apk
-spec:
-  ports:
-    - name: http
-      port: 80
-      targetPort: 80
-  selector:
-    app: httpbin
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: httpbin
-  namespace: apk
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: httpbin
-  template:
-    metadata:
-      labels:
-        app: httpbin
-    spec:
-      containers:
-        - image: docker.io/kennethreitz/httpbin:latest
-          imagePullPolicy: IfNotPresent
-          name: httpbin
-          ports:
-            - containerPort: 80
-          resources:
-            requests:
-              memory: "200Mi"
-              cpu: "300m"
-            limits:
-              memory: "200Mi"
-              cpu: "300m"
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: backend-creds
-  namespace: apk
-data:
-  username: YWRtaW4=
-  password: YWRtaW4=
-type: Opaque
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: backend-creds-1
-  namespace: apk
-data:
-  username: ZHNmZHNmc2Rmc2Rm
-  password: YWRtaW4=
-type: Opaque

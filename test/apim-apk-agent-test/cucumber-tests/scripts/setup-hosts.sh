@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-helm upgrade --install ingress-nginx ingress-nginx --repo https://kubernetes.github.io/ingress-nginx --namespace ingress-nginx --create-namespace
 kubectl apply -f ./CRs/artifacts.yaml
 kubectl wait deployment/apim-wso2am-cp-deployment-1 -n apk --for=condition=available --timeout=600s
 kubectl wait --timeout=5m -n apk deployment/apk-wso2-apk-adapter-deployment --for=condition=Available
