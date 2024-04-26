@@ -8,12 +8,13 @@ import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import io.grpc.ManagedChannel;
-import org.wso2.apk.integration.utils.JWTClientInterceptor;
+import org.wso2.apk.integration.utils.GenericClientInterceptor;
 import org.wso2.apk.integration.utils.clients.studentGrpcClient.StudentRequest;
 import org.wso2.apk.integration.utils.clients.studentGrpcClient.StudentResponse;
 import org.wso2.apk.integration.utils.clients.studentGrpcClient.StudentServiceGrpc;
 
 import javax.net.ssl.SSLException;
+import java.util.Map;
 
 
 public class SimpleGRPCStudentClient {
@@ -27,34 +28,15 @@ public class SimpleGRPCStudentClient {
         this.port = port;
     }
 
-    public StudentResponse GetStudent() {
+    public StudentResponse GetStudent(Map<String,String> headers) {
         try {
             SslContext sslContext = GrpcSslContexts.forClient()
                     .trustManager(InsecureTrustManagerFactory.INSTANCE)
                     .build();
-
+            GenericClientInterceptor interceptor = new GenericClientInterceptor(headers);
             ManagedChannel managedChannel = NettyChannelBuilder.forAddress(host, port)
                     .sslContext(sslContext)
-                    .build();
-            StudentServiceGrpc.StudentServiceBlockingStub blockingStub = StudentServiceGrpc.newBlockingStub(managedChannel);
-
-            return blockingStub.getStudent(StudentRequest.newBuilder().setId(1).build());
-        } catch (StatusRuntimeException e) {
-            log.error("Failed to retrieve student: " + e.getStatus().getDescription());
-            throw e;
-        } catch (SSLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-    public StudentResponse GetStudent(String token) {
-        try {
-            SslContext sslContext = GrpcSslContexts.forClient()
-                    .trustManager(InsecureTrustManagerFactory.INSTANCE)
-                    .build();
-
-            ManagedChannel managedChannel = NettyChannelBuilder.forAddress(host, port)
-                    .sslContext(sslContext)
-                    .intercept(new JWTClientInterceptor(token)) // replace "your-jwt-token" with your actual JWT token
+                    .intercept(interceptor)
                     .build();
             StudentServiceGrpc.StudentServiceBlockingStub blockingStub = StudentServiceGrpc.newBlockingStub(managedChannel);
 
