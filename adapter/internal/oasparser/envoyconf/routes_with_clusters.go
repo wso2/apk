@@ -197,6 +197,73 @@ func CreateRoutesWithClusters(adapterInternalAPI *model.AdapterInternalAPI, inte
 		}
 		return routes, clusters, endpoints, nil
 	}
+	if adapterInternalAPI.GetAPIType() == constants.GRPC {
+		basePath := strings.TrimSuffix(adapterInternalAPI.Endpoints.Endpoints[0].Basepath, "/")
+
+		clusterName := getClusterName(adapterInternalAPI.Endpoints.EndpointPrefix, organizationID, vHost,
+			adapterInternalAPI.GetTitle(), apiVersion, "")
+		adapterInternalAPI.Endpoints.HTTP2BackendEnabled = true
+		cluster, address, err := processEndpoints(clusterName, adapterInternalAPI.Endpoints, timeout, basePath)
+		if err != nil {
+			logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2239, logging.MAJOR,
+				"Error while adding grpc endpoints for %s:%v. %v", apiTitle, apiVersion, err.Error()))
+			return nil, nil, nil, fmt.Errorf("error while adding grpc endpoints for %s:%v. %v", apiTitle, apiVersion,
+				err.Error())
+		}
+		clusters = append(clusters, cluster)
+		endpoints = append(endpoints, address...)
+
+		for _, resource := range adapterInternalAPI.GetResources() {
+			var clusterName string
+			resourcePath := resource.GetPath()
+			endpoint := resource.GetEndpoints()
+			endpoint.HTTP2BackendEnabled = true
+			basePath := strings.TrimSuffix(endpoint.Endpoints[0].Basepath, "/")
+			existingClusterName := getExistingClusterName(*endpoint, processedEndpoints)
+
+			if existingClusterName == "" {
+				clusterName = getClusterName(endpoint.EndpointPrefix, organizationID, vHost, adapterInternalAPI.GetTitle(), apiVersion, resource.GetID())
+				cluster, address, err := processEndpoints(clusterName, endpoint, timeout, basePath)
+				if err != nil {
+					logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2239, logging.MAJOR, "Error while adding resource level endpoints for %s:%v-%v. %v", apiTitle, apiVersion, resourcePath, err.Error()))
+				} else {
+					clusters = append(clusters, cluster)
+					endpoints = append(endpoints, address...)
+					processedEndpoints[clusterName] = *endpoint
+				}
+			} else {
+				clusterName = existingClusterName
+			}
+			// Create resource level interceptor clusters if required
+			clustersI, endpointsI, operationalReqInterceptors, operationalRespInterceptorVal := createInterceptorResourceClusters(adapterInternalAPI,
+				interceptorCerts, vHost, organizationID, apiRequestInterceptor, apiResponseInterceptor, resource)
+			clusters = append(clusters, clustersI...)
+			endpoints = append(endpoints, endpointsI...)
+			routeParams := genRouteCreateParams(adapterInternalAPI, resource, vHost, basePath, clusterName, *operationalReqInterceptors, *operationalRespInterceptorVal, organizationID,
+				false, false)
+
+			routeP, err := createRoutes(routeParams)
+			if err != nil {
+				logger.LoggerXds.ErrorC(logging.PrintError(logging.Error2231, logging.MAJOR,
+					"Error while creating routes for GRPC API %s %s for path: %s Error: %s", adapterInternalAPI.GetTitle(),
+					adapterInternalAPI.GetVersion(), resource.GetPath(), err.Error()))
+				return nil, nil, nil, fmt.Errorf("error while creating routes. %v", err)
+			}
+			routes = append(routes, routeP...)
+			if adapterInternalAPI.IsDefaultVersion {
+				defaultRoutes, errDefaultPath := createRoutes(genRouteCreateParams(adapterInternalAPI, resource, vHost, basePath, clusterName, *operationalReqInterceptors, *operationalRespInterceptorVal, organizationID,
+					false, true))
+				if errDefaultPath != nil {
+					logger.LoggerXds.ErrorC(logging.PrintError(logging.Error2231, logging.MAJOR, "Error while creating routes for GRPC API %s %s for path: %s Error: %s", adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), removeFirstOccurrence(resource.GetPath(), adapterInternalAPI.GetVersion()), errDefaultPath.Error()))
+					return nil, nil, nil, fmt.Errorf("error while creating routes. %v", errDefaultPath)
+				}
+				routes = append(routes, defaultRoutes...)
+			}
+
+		}
+
+		return routes, clusters, endpoints, nil
+	}
 	for _, resource := range adapterInternalAPI.GetResources() {
 		var clusterName string
 		resourcePath := resource.GetPath()
@@ -860,8 +927,14 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 		decorator *routev3.Decorator
 	)
 	if params.createDefaultPath {
-		xWso2Basepath = removeFirstOccurrence(xWso2Basepath, "/"+version)
-		resourcePath = removeFirstOccurrence(resource.GetPath(), "/"+version)
+		//check if basepath is separated from version by a . or /
+		if strings.Contains(basePath, "."+version) {
+			xWso2Basepath = removeFirstOccurrence(basePath, "."+version)
+			resourcePath = removeFirstOccurrence(resource.GetPath(), "."+version)
+		} else {
+			xWso2Basepath = removeFirstOccurrence(xWso2Basepath, "/"+version)
+			resourcePath = removeFirstOccurrence(resource.GetPath(), "/"+version)
+		}
 	}
 
 	if pathMatchType != gwapiv1.PathMatchExact {
@@ -1058,6 +1131,16 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 		rewritePath := generateRoutePathForReWrite(basePath, resourcePath, pathMatchType)
 		action.Route.RegexRewrite = generateRegexMatchAndSubstitute(rewritePath, resourcePath, pathMatchType)
 
+		if apiType == "GRPC" {
+			match.Headers = nil
+			newRoutePath := "/" + strings.TrimPrefix(resourcePath, basePath+".")
+			if newRoutePath == "/"+resourcePath {
+				temp := removeFirstOccurrence(basePath, "."+version)
+				newRoutePath = "/" + strings.TrimPrefix(resourcePath, temp+".")
+			}
+			action.Route.RegexRewrite = generateRegexMatchAndSubstitute(rewritePath, newRoutePath, pathMatchType)
+		}
+
 		route := generateRouteConfig(xWso2Basepath, match, action, nil, decorator, perRouteFilterConfigs,
 			nil, nil, nil, nil) // general headers to add and remove are included in this methods
 		routes = append(routes, route)
@@ -1209,8 +1292,14 @@ func CreateAPIDefinitionEndpoint(adapterInternalAPI *model.AdapterInternalAPI, v
 
 	matchPath := basePath + endpoint
 	if isDefaultversion {
-		basePathWithoutVersion := removeLastOccurrence(basePath, "/"+version)
-		matchPath = basePathWithoutVersion + endpoint
+		if adapterInternalAPI.GetAPIType() == "GRPC" {
+			basePathWithoutVersion := removeLastOccurrence(basePath, "."+version)
+			matchPath = basePathWithoutVersion + "/" + vHost + endpoint
+		} else {
+			basePathWithoutVersion := removeLastOccurrence(basePath, "/"+version)
+			matchPath = basePathWithoutVersion + endpoint
+
+		}
 	}
 
 	matchPath = strings.Replace(matchPath, basePath, regexp.QuoteMeta(basePath), 1)
