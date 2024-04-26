@@ -37,6 +37,7 @@ public class SharedContext {
     private String accessToken;
     private HttpResponse response;
     private String responseBody;
+    private int grpcErrorCode;
     private String publisherAccessToken;
     private String devportalAccessToken;
     private String adminportalAccessToken;
@@ -75,6 +76,12 @@ public class SharedContext {
     public void setAccessToken(String accessToken) {
 
         this.accessToken = accessToken;
+    }
+    public int getGrpcErrorCode() {
+        return grpcErrorCode;
+    }
+    public void setGrpcErrorCode(int grpcErrorCode) {
+        this.grpcErrorCode = grpcErrorCode;
     }
 
     public HttpResponse getResponse() {
@@ -230,7 +237,7 @@ public class SharedContext {
     }
 
     public String getConsumerSecret(String keyType) {
-        if ("production".equals(keyType)) 
+        if ("production".equals(keyType))
             return consumerSecret;
         else if ("sandbox".equals(keyType))
             return sandboxConsumerSecret;
@@ -238,14 +245,14 @@ public class SharedContext {
     }
 
     public void setConsumerSecret(String consumerSecret, String keyType) {
-        if ("production".equals(keyType)) 
+        if ("production".equals(keyType))
             this.consumerSecret = consumerSecret;
         else if ("sandbox".equals(keyType))
             this.sandboxConsumerSecret = consumerSecret;
     }
 
     public String getConsumerKey(String keyType) {
-        if ("production".equals(keyType)) 
+        if ("production".equals(keyType))
             return consumerKey;
         else if ("sandbox".equals(keyType))
             return sandboxConsumerKey;
@@ -253,25 +260,25 @@ public class SharedContext {
     }
 
     public void setConsumerKey(String consumerKey, String keyType) {
-        if ("production".equals(keyType)) 
+        if ("production".equals(keyType))
             this.consumerKey = consumerKey;
         else if ("sandbox".equals(keyType))
             this.sandboxConsumerKey = consumerKey;
     }
 
     public void setKeyMappingID(String keyMappingID, String keyType){
-        if ("production".equals(keyType)) 
+        if ("production".equals(keyType))
             this.prodKeyMappingID = keyMappingID;
         else if ("sandbox".equals(keyType))
             this.sandboxKeyMappingID = keyMappingID;
     }
 
     public String getKeyMappingID(String keyType){
-        if ("production".equals(keyType)) 
+        if ("production".equals(keyType))
             return prodKeyMappingID;
         else if ("sandbox".equals(keyType))
             return sandboxKeyMappingID;
-        return "";        
+        return "";
     }
 
     public String getApiAccessToken() {
