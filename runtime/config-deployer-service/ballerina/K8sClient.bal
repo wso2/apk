@@ -265,7 +265,7 @@ public isolated function getGqlRoutesForAPIs(string apiName, string apiVersion, 
     return k8sApiServerEp->get(endpoint, targetType = model:GQLRouteList);
 }
 public isolated function getGrpcRoutesForAPIs(string apiName, string apiVersion, string namespace, string organization) returns model:GRPCRouteList|http:ClientError|error {
-    string endpoint = "/apis/dp.wso2.com/v1alpha2/namespaces/" + namespace + "/grpcroutes/?labelSelector=" + check generateUrlEncodedLabelSelector(apiName, apiVersion, organization);
+    string endpoint = "/apis/gateway.networking.k8s.io/v1alpha2/namespaces/" + namespace + "/grpcroutes/?labelSelector=" + check generateUrlEncodedLabelSelector(apiName, apiVersion, organization);
     return k8sApiServerEp->get(endpoint, targetType = model:GRPCRouteList);
 }
 isolated function deployRateLimitPolicyCR(model:RateLimitPolicy rateLimitPolicy, string namespace) returns http:Response|http:ClientError {
