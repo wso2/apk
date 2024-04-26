@@ -39,6 +39,8 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -130,6 +132,13 @@ public class BaseSteps {
         Assert.assertEquals(actualStatusCode, expectedStatusCode);
     }
 
+    @Then("the grpc error response status code should be {int}")
+    public void theGrpcErrorResponseStatusCodeShouldBe(int expectedStatusCode) throws IOException {
+
+        int actualStatusCode = sharedContext.getGrpcErrorCode();
+        Assert.assertEquals(actualStatusCode, expectedStatusCode);
+    }
+
     @Then("I send {string} request to {string} with body {string}")
     public void sendHttpRequest(String httpMethod, String url, String body) throws IOException {
         body = Utils.resolveVariables(body, sharedContext.getValueStore());
@@ -154,9 +163,15 @@ public class BaseSteps {
     }
 
     @Then("I make grpc request GetStudent to {string} with port {int}")
-    public void GetStudent(String arg0, int arg1 ) {
-        SimpleGRPCStudentClient grpcStudentClient = new SimpleGRPCStudentClient(arg0,arg1);
-        sharedContext.setStudentResponse(grpcStudentClient.GetStudent(sharedContext.getHeaders()));
+    public void GetStudent(String arg0, int arg1) throws StatusRuntimeException {
+        try {
+            SimpleGRPCStudentClient grpcStudentClient = new SimpleGRPCStudentClient(arg0, arg1);
+            sharedContext.setStudentResponse(grpcStudentClient.GetStudent(sharedContext.getHeaders()));
+        } catch (StatusRuntimeException e) {
+            if (e.getStatus().getCode()== Status.Code.PERMISSION_DENIED){
+                sharedContext.setGrpcErrorCode(403);
+            }
+        }
     }
 
     // It will send request using a new thread and forget about the response

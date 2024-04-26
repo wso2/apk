@@ -15,6 +15,7 @@ import org.wso2.apk.integration.utils.clients.studentGrpcClient.StudentServiceGr
 
 import javax.net.ssl.SSLException;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 
 public class SimpleGRPCStudentClient {
@@ -28,24 +29,35 @@ public class SimpleGRPCStudentClient {
         this.port = port;
     }
 
-    public StudentResponse GetStudent(Map<String,String> headers) {
+    public StudentResponse GetStudent(Map<String, String> headers) throws StatusRuntimeException{
+        ManagedChannel managedChannel = null;
         try {
             SslContext sslContext = GrpcSslContexts.forClient()
                     .trustManager(InsecureTrustManagerFactory.INSTANCE)
                     .build();
+
             GenericClientInterceptor interceptor = new GenericClientInterceptor(headers);
-            ManagedChannel managedChannel = NettyChannelBuilder.forAddress(host, port)
+            managedChannel = NettyChannelBuilder.forAddress(host, port)
                     .sslContext(sslContext)
                     .intercept(interceptor)
                     .build();
             StudentServiceGrpc.StudentServiceBlockingStub blockingStub = StudentServiceGrpc.newBlockingStub(managedChannel);
-
             return blockingStub.getStudent(StudentRequest.newBuilder().setId(1).build());
-        } catch (StatusRuntimeException e) {
-            log.error("Failed to retrieve student: " + e.getStatus().getDescription());
-            throw e;
-        } catch (SSLException e) {
-            throw new RuntimeException(e);
+        }catch (SSLException e) {
+            throw new RuntimeException("Failed to create SSL context", e);
+        } finally {
+            // Shut down the channel to release resources
+            if (managedChannel != null) {
+                managedChannel.shutdown(); // Initiates a graceful shutdown
+                try {
+                    // Wait at most 5 seconds for the channel to terminate
+                    if (!managedChannel.awaitTermination(5, TimeUnit.SECONDS)) {
+                        managedChannel.shutdownNow(); // Force shutdown if it does not complete within the timeout
+                    }
+                } catch (InterruptedException ie) {
+                    managedChannel.shutdownNow(); // Force shutdown if the thread is interrupted
+                }
+            }
         }
     }
 
