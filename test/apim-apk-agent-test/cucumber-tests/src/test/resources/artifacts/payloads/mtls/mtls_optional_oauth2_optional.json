@@ -1,44 +1,30 @@
 {
-    "name": "ReqandResIntercepterServiceAPI",
-    "context": "/intercepter",
-    "version": "1.0.0",
+    "name": "EmployeeServiceAPI",
+    "context": "/mtls",
+    "version": "3.14",
     "provider": "admin",
-    "isDefaultVersion": false,
     "type": "HTTP",
-    "audience": null,
-    "transport": ["http", "https"],
+    "transport": ["https"],
     "tags": [],
     "policies": ["Unlimited"],
+    "apiThrottlingPolicy": null,
     "authorizationHeader": "Authorization",
     "apiKeyHeader": "ApiKey",
-    "securityScheme": ["oauth_basic_auth_api_key_mandatory", "oauth2"],
+    "securityScheme": [
+        "mutualssl",
+        "oauth2",
+        "oauth_basic_auth_api_key_optional",
+        "mutualssl_optional"
+    ],
     "apiPolicies": {
-      "request": [
-        {
-          "policyName": "ccCallInterceptorService",
-          "policyVersion": "v1",
-          "parameters": {
-            "interceptorServiceURL": "http://interceptor-service.apk.svc.cluster.local:8443",
-            "includes": "request_header,request_body"
-          }
-        }
-      ],
-      "response": [
-        {
-          "policyName": "ccCallInterceptorService",
-          "policyVersion": "v1",
-          "parameters": {
-            "interceptorServiceURL": "http://interceptor-service.apk.svc.cluster.local:8443",
-            "includes": "response_header,response_body"
-          }
-        }
-      ],
+      "request": [],
+      "response": [],
       "fault": []
     },
     "corsConfiguration": {
       "corsConfigurationEnabled": false,
-      "accessControlAllowOrigins": ["*"],
       "accessControlAllowCredentials": false,
+      "accessControlAllowOrigins": ["*"],
       "accessControlAllowHeaders": [
         "authorization",
         "Access-Control-Allow-Origin",
@@ -56,15 +42,15 @@
     },
     "endpointConfig": {
       "endpoint_type": "http",
-      "sandbox_endpoints": { "url": "http://backend.apk.svc.cluster.local" },
-      "production_endpoints": { "url": "http://backend.apk.svc.cluster.local" }
+      "sandbox_endpoints": { "url": "http://backend:80/anything" },
+      "production_endpoints": { "url": "http://backend:80/anything" }
     },
     "endpointImplementationType": "ENDPOINT",
     "scopes": [],
     "operations": [
       {
         "id": "",
-        "target": "/*",
+        "target": "/employee",
         "verb": "GET",
         "authType": "Application & Application User",
         "throttlingPolicy": "Unlimited",
@@ -79,7 +65,7 @@
       },
       {
         "id": "",
-        "target": "/*",
+        "target": "/employee/{employeeId}",
         "verb": "PUT",
         "authType": "Application & Application User",
         "throttlingPolicy": "Unlimited",
@@ -94,7 +80,7 @@
       },
       {
         "id": "",
-        "target": "/*",
+        "target": "/employee",
         "verb": "POST",
         "authType": "Application & Application User",
         "throttlingPolicy": "Unlimited",
@@ -109,38 +95,8 @@
       },
       {
         "id": "",
-        "target": "/*",
+        "target": "/employee{employeeId}",
         "verb": "DELETE",
-        "authType": "Application & Application User",
-        "throttlingPolicy": "Unlimited",
-        "scopes": [],
-        "usedProductIds": [],
-        "amznResourceName": null,
-        "amznResourceTimeout": null,
-        "amznResourceContentEncode": null,
-        "payloadSchema": null,
-        "uriMapping": null,
-        "operationPolicies": { "request": [], "response": [], "fault": [] }
-      },
-      {
-        "id": "",
-        "target": "/*",
-        "verb": "PATCH",
-        "authType": "Application & Application User",
-        "throttlingPolicy": "Unlimited",
-        "scopes": [],
-        "usedProductIds": [],
-        "amznResourceName": null,
-        "amznResourceTimeout": null,
-        "amznResourceContentEncode": null,
-        "payloadSchema": null,
-        "uriMapping": null,
-        "operationPolicies": { "request": [], "response": [], "fault": [] }
-      },
-      {
-        "id": "",
-        "target": "/get",
-        "verb": "GET",
         "authType": "Application & Application User",
         "throttlingPolicy": "Unlimited",
         "scopes": [],

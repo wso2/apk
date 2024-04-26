@@ -8,8 +8,8 @@
         "https"
     ],
     "policies": [
-        "Unlimited",
-        "Gold"
+        "Gold",
+        "Unlimited"
     ],
     "apiThrottlingPolicy": "TestRatelimit",
     "endpointConfig": {
@@ -80,5 +80,6 @@
                 "fault": []
             }
         }
-    ]
+    ],
+    "gatewayType":"wso2/apk"
 }

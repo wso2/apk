@@ -79,5 +79,6 @@
                 "fault": []
             }
         }
-    ]
+    ],
+    "gatewayType":"wso2/apk"
 }

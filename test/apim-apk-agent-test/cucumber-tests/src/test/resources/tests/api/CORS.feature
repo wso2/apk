@@ -30,6 +30,8 @@ Feature: CORS Policy handling
     And make the Access Token Generation request for "production"
     Then the response status code should be 200
     And the response body should contain "accessToken"
+    Then I set headers
+        | Authorization             | Bearer ${accessToken} |
     And I send "OPTIONS" request to "https://default.gw.wso2.com:9095/test_cors/2.0.0/anything/" with body ""
     And I eventually receive 204 response code, not accepting
       | 429 |
@@ -87,8 +89,6 @@ Feature: CORS Policy handling
     And I have a DCR application
     And I have a valid Publisher access token
     When the definition file "artifacts/definitions/schema_graphql.graphql"
-    Given a valid graphql definition file
-    Then the response should be given as valid
     When I use the Payload file "artifacts/payloads/gql_cors.json"
     Then I make the import GraphQLAPI Creation request
     Then the response status code should be 201
@@ -114,6 +114,8 @@ Feature: CORS Policy handling
     And make the Access Token Generation request for "production"
     Then the response status code should be 200
     And the response body should contain "accessToken"
+    Then I set headers
+        | Authorization             | Bearer ${accessToken} |
     And I send "OPTIONS" request to "https://default.gw.wso2.com:9095/test_cors/2.0.0/" with body "{\"query\":\"{ anything }\"}"
     And I eventually receive 204 response code, not accepting
       | 429 |

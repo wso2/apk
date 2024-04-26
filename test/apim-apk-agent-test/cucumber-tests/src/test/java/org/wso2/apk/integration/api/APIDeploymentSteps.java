@@ -38,7 +38,8 @@ import org.wso2.apk.integration.utils.Utils;
 import org.wso2.apk.integration.utils.clients.SimpleHTTPClient;
 import java.nio.file.Files;
 import java.nio.charset.StandardCharsets;
-
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -56,6 +57,7 @@ public class APIDeploymentSteps {
     private final SharedContext sharedContext;
     private File payloadFile;
     private File definitionFile;
+    private File certificateFile;
 
     private String OASURL;
 
@@ -265,6 +267,8 @@ public class APIDeploymentSteps {
 
         sharedContext.setResponse(response);
         sharedContext.setResponseBody(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()));
+        sharedContext.setSubscriptionID(Utils.extractKeys(sharedContext.getResponseBody(), "subscriptionId"));
+        logger.info("Extracted subscription ID: " + sharedContext.getSubscriptionID());
         Thread.sleep(3000);
     }
 
@@ -312,6 +316,7 @@ public class APIDeploymentSteps {
         sharedContext.setResponse(response);
         sharedContext.setResponseBody(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()));
         sharedContext.setApiAccessToken(Utils.extractKeys(sharedContext.getResponseBody(), "accessToken"));
+        sharedContext.addStoreValue("accessToken",sharedContext.getApiAccessToken());
         logger.info("Access Token: " + sharedContext.getApiAccessToken());
         Thread.sleep(3000);
     }
@@ -342,6 +347,7 @@ public class APIDeploymentSteps {
         sharedContext.setResponse(response);
         sharedContext.setResponseBody(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()));
         sharedContext.setApiAccessToken(Utils.extractKeys(sharedContext.getResponseBody(), "accessToken"));
+        sharedContext.addStoreValue("accessToken",sharedContext.getApiAccessToken());
         logger.info("Access Token without scopes: " + sharedContext.getApiAccessToken());
         Thread.sleep(3000);
     }
@@ -449,12 +455,24 @@ public class APIDeploymentSteps {
             headers.put(Constants.REQUEST_HEADERS.HOST, Constants.DEFAULT_APIM_HOST);
     
             HttpEntity multipartEntity = builder.build();
-    
+
+            // Convert the multipart form entity to a string representation
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            multipartEntity.writeTo(outputStream);
+            String multipartForm = new String(outputStream.toByteArray(), StandardCharsets.UTF_8);
+
+            // Log the multipart form
+            logger.info("Multipart Form Data:\n{}"+ multipartForm);
+            logger.info("Validator URL: " + Utils.getGQLSchemaValidatorURL());
+             logger.info("Publisher Token: " + sharedContext.getPublisherAccessToken());
+
             HttpResponse response = sharedContext.getHttpClient().doPostWithMultipart(Utils.getGQLSchemaValidatorURL(),
                     multipartEntity, headers);
     
             sharedContext.setResponse(response);
+            logger.info("Full Res:" + response);
             sharedContext.setResponseBody(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()));
+            logger.info("GQL validation res: "+ sharedContext.getResponseBody());
             sharedContext.setAPIDefinitionValidStatus(Utils.extractValidStatus(sharedContext.getResponseBody()));
             Thread.sleep(3000);
         }
@@ -484,7 +502,7 @@ public class APIDeploymentSteps {
             Thread.sleep(3000);
         }
 
-        @Then("I update the GQL API settings")
+        @Then("I update the API settings")
         public void make_update_gql_request() throws Exception {
             String fileContent = new String(Files.readAllBytes(payloadFile.toPath()), StandardCharsets.UTF_8);
             Map<String, String> headers = new HashMap<>();
@@ -579,17 +597,91 @@ public class APIDeploymentSteps {
 
         @Then("I set new API throttling policy allowing {string} requests per every {string} minute") 
         public void add_new_custom_throttling_policy(String requestCount, String unitTime) throws Exception {
-        //  {"policyName":"TestRatelimit","description":"Test descroption","conditionalGroups":[],"defaultLimit":{"requestCount":{"timeUnit":"min","unitTime":"1","requestCount":"3"},"type":"REQUESTCOUNTLIMIT","bandwidth":null}}
                 String payload = "{\"policyName\":\"TestRatelimit\",\"description\":\"Test descroption\",\"conditionalGroups\":[],\"defaultLimit\":{\"requestCount\":{\"timeUnit\":\"min\",\"unitTime\":"+ unitTime + ",\"requestCount\":" + requestCount + "},\"type\":\"REQUESTCOUNTLIMIT\",\"bandwidth\":null}}";
                 
                 Map<String, String> headers = new HashMap<>();
                 headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + sharedContext.getAdminAccessToken());
                 headers.put(Constants.REQUEST_HEADERS.HOST, Constants.DEFAULT_API_HOST);
-                //https://am.wso2.com/api/am/admin/v4/throttling/policies/advanced
-                // https:// + DEFAULT_API_HOST + "/" + DEFAULT_ADMINPORTAL + "throttling/policies/advanced"
                 HttpResponse httpResponse = sharedContext.getHttpClient().doPost(Utils.getAPIThrottlingConfigEndpoint(), headers, payload, Constants.CONTENT_TYPES.APPLICATION_JSON);
+                
+                sharedContext.setResponse(httpResponse);
+                sharedContext.setResponseBody(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()));
+                sharedContext.setPolicyID(Utils.extractKeys(sharedContext.getResponseBody(), "policyId"));
+                Thread.sleep(3000);
+        }
+
+        @Then("I send the subcription blocking request") 
+        public void send_subscription_blocking() throws Exception {    
+                Map<String, String> headers = new HashMap<>();
+                headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + sharedContext.getPublisherAccessToken());
+                headers.put(Constants.REQUEST_HEADERS.HOST, Constants.DEFAULT_API_HOST);           
+                HttpResponse httpResponse = sharedContext.getHttpClient().doPost(Utils.getSubscriptionBlockingURL(sharedContext.getSubscriptionID()), headers, "", Constants.CONTENT_TYPES.APPLICATION_JSON);
+                sharedContext.setResponse(httpResponse);
+                sharedContext.setResponseBody(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()));
+                Thread.sleep(3000);
+        }   
+        
+        @Then("I make an internal key generation request") 
+        public void generate_internal_key() throws Exception {    
+                Map<String, String> headers = new HashMap<>();
+                headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + sharedContext.getPublisherAccessToken());
+                headers.put(Constants.REQUEST_HEADERS.HOST, Constants.DEFAULT_API_HOST);
+                
+                HttpResponse httpResponse = sharedContext.getHttpClient().doPost(Utils.getInternalKeyGenerationEndpoint(sharedContext.getApiUUID()), headers, "", Constants.CONTENT_TYPES.APPLICATION_JSON);
+                
+                sharedContext.setResponse(httpResponse);
+                sharedContext.setResponseBody(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()));
+                sharedContext.setAPIInternalKey(Utils.extractKeys(sharedContext.getResponseBody(), "apikey"));
+                sharedContext.addStoreValue("internalKey",Utils.extractKeys(sharedContext.getResponseBody(), "apikey"));
+                logger.info("Internal Key: " + sharedContext.getAPIInternalKey());
+                Thread.sleep(3000);
+        }
+
+        @Then("I have a client certificate {string}")
+        public void get_valid_client_cert_for_mtls(String clientCertificatePath) throws Exception {
+                URL url = Resources.getResource("artifacts/certificates/" + clientCertificatePath);
+
+                certificateFile = new File(url.getPath());
+                String clientCertificate = Resources.toString(url, StandardCharsets.UTF_8);
+                sharedContext.addStoreValue("clientCertificate", clientCertificate);
+
+        }
+
+        @When("I update the API with mtls certificate data with the alias {string}")
+        public void update_api_with_mtls_cert_data(String alias) throws Exception {
+
+                MultipartEntityBuilder builder = MultipartEntityBuilder.create()
+                .setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
+                .addBinaryBody("certificate", certificateFile, ContentType.create("application/x-x509-ca-cert"), "tls.crt")
+                .addTextBody("alias", alias, ContentType.TEXT_PLAIN)
+                .addTextBody("tier", "", ContentType.TEXT_PLAIN); 
+
+                Map<String, String> headers = new HashMap<>();
+                headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + sharedContext.getPublisherAccessToken());
+                headers.put(Constants.REQUEST_HEADERS.HOST, Constants.DEFAULT_API_HOST);
+
+                HttpEntity multipartEntity = builder.build();
+
+                HttpResponse response = sharedContext.getHttpClient().doPostWithMultipart(Utils.getClientCertUpdateEndpoint(sharedContext.getApiUUID()),
+                        multipartEntity, headers);
+                
+                sharedContext.setResponse(response);
+                sharedContext.setResponseBody(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()));
+                Thread.sleep(3000);
+        }
+
+        @Then("I delete the created API throttling policy")
+        public void delete_throtlling_policy() throws Exception {
+                Map<String, String> headers = new HashMap<>();
+                headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + sharedContext.getAdminAccessToken());
+                headers.put(Constants.REQUEST_HEADERS.HOST, Constants.DEFAULT_API_HOST);
+
+                logger.info("PolicyID to be deleted: " + sharedContext.getPolicyID());
+                String URI = Utils.getAPIThrottlingConfigEndpoint() + "/" + sharedContext.getPolicyID();
+                HttpResponse httpResponse = sharedContext.getHttpClient().doDelete(URI, headers);
                 sharedContext.setResponse(httpResponse);
                 sharedContext.setResponseBody(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()));
                 Thread.sleep(3000);
         }
+
 }

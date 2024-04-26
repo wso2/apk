@@ -55,5 +55,7 @@ public class Constants {
         public static final String APPLICATION_ZIP = "application/zip";
 
         public static final String TEXT_PLAIN = "text/plain";
+
+        public static final String APPLICATION_CA_CERT = "application/x-x509-ca-cert";
     }
 }

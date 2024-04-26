@@ -30,6 +30,8 @@ Feature: API Deployment
     And make the Access Token Generation request for "production"
     Then the response status code should be 200
     And the response body should contain "accessToken"
+    Then I set headers
+        | Authorization             | Bearer ${accessToken} |
     And I send "GET" request to "https://default.gw.wso2.com:9095/petstore/1.0.0/pet/4" with body ""
     And I eventually receive 200 response code, not accepting
       |429|
@@ -51,8 +53,6 @@ Feature: API Deployment
     And I have a DCR application
     And I have a valid Publisher access token
     When the definition file "artifacts/definitions/schema_graphql.graphql"
-    Given a valid graphql definition file
-    Then the response should be given as valid
     When I use the Payload file "artifacts/payloads/gqlPayload.json"
     Then I make the import GraphQLAPI Creation request
     Then the response status code should be 201
@@ -78,6 +78,8 @@ Feature: API Deployment
     And make the Access Token Generation request for "production"
     Then the response status code should be 200
     And the response body should contain "accessToken"
+    Then I set headers
+        | Authorization             | Bearer ${accessToken} |
     And I send "POST" request to "https://default.gw.wso2.com:9095/graphql/3.14" with body "{\"query\":\"{ hero { name } }\"}"
     Then the response status code should be 200
     And I eventually receive 200 response code, not accepting

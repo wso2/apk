@@ -126,7 +126,7 @@ public class Utils {
     }
 
     public static String getGQLSchemaValidatorURL() {
-        return "https://" + Constants.DEFAULT_API_HOST + ":" + Constants.DEFAULT_GW_PORT + "/"
+        return "https://" + Constants.DEFAULT_API_HOST + "/"
                 + Constants.DEFAULT_API_DEPLOYER + "apis/validate-graphql-schema";
     }
 
@@ -148,6 +148,21 @@ public class Utils {
     public static String getAPIThrottlingConfigEndpoint() {
         return "https://" + Constants.DEFAULT_API_HOST + ":" + Constants.DEFAULT_GW_PORT + "/"
                 + Constants.DEFAULT_ADMINPORTAL+ "throttling/policies/advanced";
+    }
+
+    public static String getSubscriptionBlockingURL(String subscriptionID) {
+        return "https://" + Constants.DEFAULT_API_HOST + ":" + Constants.DEFAULT_GW_PORT + "/"
+                + Constants.DEFAULT_API_DEPLOYER+ "subscriptions/block-subscription?subscriptionId=" + subscriptionID+ "&blockState=BLOCKED";
+    }
+
+    public static String getInternalKeyGenerationEndpoint(String APIUUID) {
+        return "https://" + Constants.DEFAULT_API_HOST + ":" + Constants.DEFAULT_GW_PORT + "/"
+                + Constants.DEFAULT_API_DEPLOYER+ "apis/" + APIUUID+ "/generate-key";
+    }
+
+    public static String getClientCertUpdateEndpoint(String APIUUID) {
+        return "https://" + Constants.DEFAULT_API_HOST + "/"
+                + Constants.DEFAULT_API_DEPLOYER+ "apis/" + APIUUID+ "/client-certificates";
     }
 
     public static String extractID(String payload) throws IOException {

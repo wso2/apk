@@ -1,67 +1,73 @@
 {
-    "name": "EmployeeAPI",
-    "context": "/api-policy",
-    "version": "3.14",
+    "name": "ParamVarIntercepterServiceAPI",
+    "context": "/intercepter",
+    "version": "1.0.0",
+    "provider": "admin",
+    "isDefaultVersion": false,
     "type": "HTTP",
     "audience": null,
     "transport": ["http", "https"],
-    "policies": ["Unlimited, Gold"],
+    "tags": [],
+    "policies": ["Unlimited"],
     "authorizationHeader": "Authorization",
     "apiKeyHeader": "ApiKey",
     "securityScheme": ["oauth_basic_auth_api_key_mandatory", "oauth2"],
     "apiPolicies": {
       "request": [
         {
-          "policyName": "addLogMessage",
-          "policyId": "e64c0cf0-8df0-4659-a299-099d390de6d0",
-          "policyVersion": "v1",
-          "parameters": {}
-        },
-        {
-          "policyName": "jsonValidator",
-          "policyId": "f11983f9-6429-415f-880a-b407192f137f",
+          "policyName": "ccCallInterceptorService",
           "policyVersion": "v1",
           "parameters": {
-            "maxPropertyCount": "100",
-            "maxStringLength": "100",
-            "maxArrayElementCount": "100",
-            "maxKeyLength": "100",
-            "maxJsonDepth": "100",
-            "requestMessageBufferSize": "1024",
-            "jsonSchemaValidator": "org.wso2.carbon.apimgt.gateway.mediators.JsonSchemaValidator"
+            "interceptorServiceURL": "http://interceptor-service.apk.svc.cluster.local:8443",
+            "includes": "request_header,request_body,response_header,response_body"
           }
         }
       ],
       "response": [
         {
-          "policyName": "addLogMessage",
-          "policyId": "e64c0cf0-8df0-4659-a299-099d390de6d0",
+          "policyName": "ccCallInterceptorService",
           "policyVersion": "v1",
-          "parameters": {}
+          "parameters": {
+            "interceptorServiceURL": "http://interceptor-service.apk.svc.cluster.local:8443",
+            "includes": "response_header,response_body"
+          }
         }
       ],
-      "fault": [
-        {
-          "policyName": "jsonFault",
-          "policyId": "cba00e78-34a3-4380-8a76-766b99147f18",
-          "policyVersion": "v1",
-          "parameters": {}
-        }
+      "fault": []
+    },
+    "corsConfiguration": {
+      "corsConfigurationEnabled": false,
+      "accessControlAllowOrigins": ["*"],
+      "accessControlAllowCredentials": false,
+      "accessControlAllowHeaders": [
+        "authorization",
+        "Access-Control-Allow-Origin",
+        "Content-Type",
+        "SOAPAction"
+      ],
+      "accessControlAllowMethods": [
+        "GET",
+        "PUT",
+        "POST",
+        "DELETE",
+        "PATCH",
+        "OPTIONS"
       ]
     },
     "endpointConfig": {
       "endpoint_type": "http",
-      "sandbox_endpoints": {"url": "http://backend:80/anything"},
-      "production_endpoints": {"url": "http://backend:80/anything"}
+      "sandbox_endpoints": { "url": "http://backend.apk.svc.cluster.local" },
+      "production_endpoints": { "url": "http://backend.apk.svc.cluster.local" }
     },
     "endpointImplementationType": "ENDPOINT",
+    "scopes": [],
     "operations": [
       {
         "id": "",
-        "target": "/employee",
+        "target": "/*",
         "verb": "GET",
         "authType": "Application & Application User",
-        "throttlingPolicy": "10KPerMin",
+        "throttlingPolicy": "Unlimited",
         "scopes": [],
         "usedProductIds": [],
         "amznResourceName": null,
@@ -69,14 +75,14 @@
         "amznResourceContentEncode": null,
         "payloadSchema": null,
         "uriMapping": null,
-        "operationPolicies": {"request": [], "response": [], "fault": []}
+        "operationPolicies": { "request": [], "response": [], "fault": [] }
       },
       {
         "id": "",
-        "target": "/employee",
-        "verb": "POST",
+        "target": "/get",
+        "verb": "GET",
         "authType": "Application & Application User",
-        "throttlingPolicy": "20KPerMin",
+        "throttlingPolicy": "Unlimited",
         "scopes": [],
         "usedProductIds": [],
         "amznResourceName": null,
@@ -84,11 +90,11 @@
         "amznResourceContentEncode": null,
         "payloadSchema": null,
         "uriMapping": null,
-        "operationPolicies": {"request": [], "response": [], "fault": []}
+        "operationPolicies": { "request": [], "response": [], "fault": [] }
       },
       {
         "id": "",
-        "target": "/employee/{employeeId}",
+        "target": "/*",
         "verb": "PUT",
         "authType": "Application & Application User",
         "throttlingPolicy": "Unlimited",
@@ -99,11 +105,26 @@
         "amznResourceContentEncode": null,
         "payloadSchema": null,
         "uriMapping": null,
-        "operationPolicies": {"request": [], "response": [], "fault": []}
+        "operationPolicies": { "request": [], "response": [], "fault": [] }
       },
       {
         "id": "",
-        "target": "/employee/{employeeId}",
+        "target": "/*",
+        "verb": "POST",
+        "authType": "Application & Application User",
+        "throttlingPolicy": "Unlimited",
+        "scopes": [],
+        "usedProductIds": [],
+        "amznResourceName": null,
+        "amznResourceTimeout": null,
+        "amznResourceContentEncode": null,
+        "payloadSchema": null,
+        "uriMapping": null,
+        "operationPolicies": { "request": [], "response": [], "fault": [] }
+      },
+      {
+        "id": "",
+        "target": "/*",
         "verb": "DELETE",
         "authType": "Application & Application User",
         "throttlingPolicy": "Unlimited",
@@ -114,9 +135,25 @@
         "amznResourceContentEncode": null,
         "payloadSchema": null,
         "uriMapping": null,
-        "operationPolicies": {"request": [], "response": [], "fault": []}
+        "operationPolicies": { "request": [], "response": [], "fault": [] }
+      },
+      {
+        "id": "",
+        "target": "/*",
+        "verb": "PATCH",
+        "authType": "Application & Application User",
+        "throttlingPolicy": "Unlimited",
+        "scopes": [],
+        "usedProductIds": [],
+        "amznResourceName": null,
+        "amznResourceTimeout": null,
+        "amznResourceContentEncode": null,
+        "payloadSchema": null,
+        "uriMapping": null,
+        "operationPolicies": { "request": [], "response": [], "fault": [] }
       }
     ],
     "gatewayVendor": "wso2",
-    "gatewayType":"wso2/apk"
+    "gatewayType": "wso2/apk"
   }
+  

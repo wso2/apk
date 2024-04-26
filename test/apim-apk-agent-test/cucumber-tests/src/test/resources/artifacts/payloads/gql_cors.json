@@ -5,6 +5,7 @@
     "provider": "admin",
     "type": "GRAPHQL",
     "audience": null,
+    "gatewayType":"wso2/apk",
     "transport": [
         "http",
         "https"

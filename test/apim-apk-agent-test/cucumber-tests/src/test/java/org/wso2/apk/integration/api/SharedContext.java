@@ -50,6 +50,9 @@ public class SharedContext {
     private String sandboxKeyMappingID;
     private String apiAccessToken;
     private Boolean definitionValidStatus;
+    private String subscriptionID;
+    private String internalKey;
+    private static String policyID;
     private HashMap<String, Object> valueStore = new HashMap<>();
     private HashMap<String, String> headers = new HashMap<>();
 
@@ -130,6 +133,10 @@ public class SharedContext {
         headers.put(key, value);
     }
 
+    public void removeHeader(String key) {
+        headers.remove(key);
+    }    
+
     public String getResponseBody() {
 
         return responseBody;
@@ -188,6 +195,14 @@ public class SharedContext {
     public void setOauthKeyUUID(String oauthKeyUUID) {
 
         this.oauthKeyUUID = oauthKeyUUID;
+    }
+
+    public void setAPIInternalKey(String internalKey){
+        this.internalKey = internalKey;
+    }
+
+    public String getAPIInternalKey(){
+        return internalKey;
     }
 
     public String getConsumerSecret(String keyType) {
@@ -251,5 +266,25 @@ public class SharedContext {
 
     public Boolean getDefinitionValidStatus(){
         return definitionValidStatus;
+    }
+
+    public String getSubscriptionID() {
+
+        return subscriptionID;
+    }
+
+    public void setSubscriptionID(String subID) {
+
+        this.subscriptionID = subID;
+    }
+
+    public String getPolicyID() {
+
+        return policyID;
+    }
+
+    public void setPolicyID(String policyId) {
+
+        this.policyID = policyId;
     }
 }
