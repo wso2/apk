@@ -174,6 +174,18 @@ public class BaseSteps {
         }
     }
 
+    @Then("I make grpc request GetStudent default version to {string} with port {int}")
+    public void GetStudentDefaultVersion(String arg0, int arg1) throws StatusRuntimeException {
+        try {
+            SimpleGRPCStudentClient grpcStudentClient = new SimpleGRPCStudentClient(arg0, arg1);
+            sharedContext.setStudentResponse(grpcStudentClient.GetStudent(sharedContext.getHeaders()));
+        } catch (StatusRuntimeException e) {
+            if (e.getStatus().getCode()== Status.Code.PERMISSION_DENIED){
+                sharedContext.setGrpcErrorCode(403);
+            }
+        }
+    }
+
     // It will send request using a new thread and forget about the response
     @Then("I send {string} async request to {string} with body {string}")
     public void sendAsyncHttpRequest(String httpMethod, String url, String body) throws IOException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
