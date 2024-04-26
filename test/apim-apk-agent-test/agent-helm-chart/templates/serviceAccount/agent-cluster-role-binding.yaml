@@ -13,7 +13,7 @@
 # KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations
 # under the License.
-
+{{- if .Values.serviceAccount.enableServiceAccountCreation }}
 apiVersion: rbac.authorization.k8s.io/v1
 # This cluster role binding allows anyone in the "manager" group to read secrets in any namespace.
 kind: ClusterRoleBinding
@@ -22,10 +22,11 @@ metadata:
   namespace: {{ .Release.Namespace }}
 roleRef:
   kind: ClusterRole
-  name: wso2agent-role
+  name: {{ .Values.serviceAccount.roleName | default "wso2agent-role" }}
   apiGroup: rbac.authorization.k8s.io
 subjects:
   # You can specify more than one "subject"
   - kind: ServiceAccount
-    name: wso2agent-platform
+    name: {{ .Values.serviceAccount.serviceAccountName | default "wso2agent-platform" }}
     namespace: {{ .Release.Namespace }}
+{{- end }}

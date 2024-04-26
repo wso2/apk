@@ -123,7 +123,6 @@ public class BaseSteps {
 
     @Then("I send {string} request to {string} with body {string}")
     public void sendHttpRequest(String httpMethod, String url, String body) throws IOException {
-        sharedContext.addHeader("Authorization", "Bearer " + sharedContext.getApiAccessToken());
         body = Utils.resolveVariables(body, sharedContext.getValueStore());
         if (sharedContext.getResponse() instanceof CloseableHttpResponse) {
             ((CloseableHttpResponse) sharedContext.getResponse()).close();
@@ -183,6 +182,11 @@ public class BaseSteps {
             value = Utils.resolveVariables(value, sharedContext.getValueStore());
             sharedContext.addHeader(key, value);
         }
+    }
+
+    @Then("I remove the header {string}")
+    public void removeHeader(String key) {
+        sharedContext.removeHeader(key);
     }
 
     @Then("the response headers should contain")
@@ -351,7 +355,7 @@ public class BaseSteps {
         headers.put(Constants.REQUEST_HEADERS.HOST, Constants.DEFAULT_IDP_HOST);
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, basicAuthHeader);
 
-        HttpResponse httpResponse = httpClient.doPost(Utils.getTokenEndpointURL(), headers, "grant_type=password&username=admin&password=admin&scope=apim:api_view apim:api_create apim:api_publish apim:api_delete apim:api_manage apim:api_import_export",
+        HttpResponse httpResponse = httpClient.doPost(Utils.getTokenEndpointURL(), headers, "grant_type=password&username=admin&password=admin&scope=apim:api_view apim:api_create apim:api_publish apim:api_delete apim:api_manage apim:api_import_export apim:subscription_manage apim:client_certificates_add apim:client_certificates_update",
                 Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
         logger.info("Response: " + httpResponse);
         sharedContext.setPublisherAccessToken(Utils.extractToken(httpResponse));
@@ -372,6 +376,22 @@ public class BaseSteps {
         sharedContext.setDevportalAccessToken(Utils.extractToken(httpResponse));
         sharedContext.addStoreValue("devportalAccessToken", sharedContext.getDevportalAccessToken());
         logger.info("Devportal Access Token: " + sharedContext.getDevportalAccessToken());
+    }
+
+    @Given("I have a valid Adminportal access token")
+    public void iHaveValidAdminportalAccessToken() throws Exception {
+        logger.info("Basic Auth Header: " + sharedContext.getBasicAuthToken());
+
+        Map<String, String> headers = new HashMap<>();
+        String basicAuthHeader = "Basic " + sharedContext.getBasicAuthToken();
+        headers.put(Constants.REQUEST_HEADERS.HOST, Constants.DEFAULT_IDP_HOST);
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, basicAuthHeader);
+
+        HttpResponse httpResponse = httpClient.doPost(Utils.getTokenEndpointURL(), headers, "grant_type=password&username=admin&password=admin&scope=apim:app_manage apim:admin_tier_view apim:admin_tier_manage",
+                Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
+        sharedContext.setAdminAccessToken(Utils.extractToken(httpResponse));
+        sharedContext.addStoreValue("adminportalAccessToken", sharedContext.getAdminAccessToken());
+        logger.info("Admin Access Token: " + sharedContext.getAdminAccessToken());
     }
 
     @Then("the response should be given as valid")
@@ -411,4 +431,10 @@ public class BaseSteps {
 //        sharedContext.setAccessToken(Utils.extractToken(httpResponse));
 //        sharedContext.addStoreValue(Constants.ACCESS_TOKEN, sharedContext.getAccessToken());
 //    }
+
+        @Then("I set {string} as the new access token")
+        public void set_invalid_access_token(String newToken) throws Exception {
+                sharedContext.setApiAccessToken(newToken);
+                sharedContext.addStoreValue("accessToken",sharedContext.getApiAccessToken());
+        }
 }

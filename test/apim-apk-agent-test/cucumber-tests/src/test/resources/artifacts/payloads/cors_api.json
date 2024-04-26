@@ -3,6 +3,7 @@
     "context": "/test_cors",
     "version": "2.0.0",
     "type": "HTTP",
+    "gatewayType":"wso2/apk",
     "transport": [
         "http",
         "https"

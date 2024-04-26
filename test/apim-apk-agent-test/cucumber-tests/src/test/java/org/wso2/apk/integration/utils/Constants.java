@@ -27,6 +27,7 @@ public class Constants {
     public static final String DEFAULT_API_CONFIGURATOR = "api/configurator/1.1.0/";
     public static final String DEFAULT_API_DEPLOYER = "api/am/publisher/v4/";
     public static final String DEFAULT_DEVPORTAL = "api/am/devportal/v3/";
+    public static final String DEFAULT_ADMINPORTAL = "api/am/admin/v4/";
     public static final String ACCESS_TOKEN = "accessToken";
     public static final String EMPTY_STRING = "";
     public static final String API_CREATE_SCOPE = "apk:api_create";
@@ -54,5 +55,7 @@ public class Constants {
         public static final String APPLICATION_ZIP = "application/zip";
 
         public static final String TEXT_PLAIN = "text/plain";
+
+        public static final String APPLICATION_CA_CERT = "application/x-x509-ca-cert";
     }
 }
