@@ -56,7 +56,7 @@ jobs:
       if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
       shell: sh
       run: |
-        helm upgrade --install ingress-nginx ingress-nginx --repo https://kubernetes.github.io/ingress-nginx --namespace ingress-nginx --create-namespace
+        kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.10.0/deploy/static/provider/cloud/deploy.yaml
         helm repo add wso2apim https://github.com/wso2/helm-apim/releases/download/cp-4.3.0
         helm repo update
         helm install apim wso2apim/wso2am-cp --version 4.3.0 -f https://raw.githubusercontent.com/wso2/apk/main/helm-charts/samples/apim/cp/values.yaml -n apk --debug --wait --timeout 5m0s
