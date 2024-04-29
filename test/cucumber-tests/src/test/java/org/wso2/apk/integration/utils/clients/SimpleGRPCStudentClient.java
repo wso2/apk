@@ -43,7 +43,14 @@ public class SimpleGRPCStudentClient {
                     .intercept(interceptor)
                     .build();
             StudentServiceGrpc.StudentServiceBlockingStub blockingStub = StudentServiceGrpc.newBlockingStub(managedChannel);
-            return blockingStub.getStudent(StudentRequest.newBuilder().setId(1).build());
+            if (blockingStub == null) {
+                throw new RuntimeException("Failed to create blocking stub");
+            }
+            StudentResponse response = blockingStub.getStudent(StudentRequest.newBuilder().setId(1).build());
+            if (response == null) {
+                throw new RuntimeException("Failed to get student");
+            }
+            return response;
         }catch (SSLException e) {
             throw new RuntimeException("Failed to create SSL context", e);
         } finally {
@@ -74,7 +81,14 @@ public class SimpleGRPCStudentClient {
                     .intercept(interceptor)
                     .build();
             StudentServiceDefaultVersionGrpc.StudentServiceBlockingStub blockingStub = StudentServiceDefaultVersionGrpc.newBlockingStub(managedChannel);
-            return blockingStub.getStudent(StudentRequest.newBuilder().setId(1).build());
+            if (blockingStub == null) {
+                throw new RuntimeException("Failed to create blocking stub");
+            }
+            StudentResponse response = blockingStub.getStudent(StudentRequest.newBuilder().setId(1).build());
+            if (response == null) {
+                throw new RuntimeException("Failed to get student");
+            }
+            return response;
         }catch (SSLException e) {
             throw new RuntimeException("Failed to create SSL context", e);
         } finally {

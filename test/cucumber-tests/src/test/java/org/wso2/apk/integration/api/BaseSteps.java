@@ -53,6 +53,7 @@ import org.wso2.apk.integration.utils.Constants;
 import org.wso2.apk.integration.utils.Utils;
 import org.wso2.apk.integration.utils.clients.SimpleGRPCStudentClient;
 import org.wso2.apk.integration.utils.clients.SimpleHTTPClient;
+import org.wso2.apk.integration.utils.clients.studentGrpcClient.StudentResponse;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -97,8 +98,12 @@ public class BaseSteps {
 
     @Then("the student response body should contain name: {string} age: {int}")
     public void theStudentResponseBodyShouldContainNameAndAge(String arg0, int arg1) {
-    int age = sharedContext.getStudentResponse().getAge();
-        String name = sharedContext.getStudentResponse().getName();
+        StudentResponse studentResponse = sharedContext.getStudentResponse();
+        if (studentResponse == null) {
+            Assert.fail("Student response is null.");
+        }
+        int age = studentResponse.getAge();
+        String name = studentResponse.getName();
         Assert.assertEquals(name, arg0);
         Assert.assertEquals(age, arg1);
     }
@@ -165,6 +170,8 @@ public class BaseSteps {
         } catch (StatusRuntimeException e) {
             if (e.getStatus().getCode()== Status.Code.PERMISSION_DENIED){
                 sharedContext.setGrpcErrorCode(403);
+            } else {
+                logger.error(e.getMessage());
             }
         }
     }
@@ -177,6 +184,8 @@ public class BaseSteps {
         } catch (StatusRuntimeException e) {
             if (e.getStatus().getCode()== Status.Code.PERMISSION_DENIED){
                 sharedContext.setGrpcErrorCode(403);
+            } else {
+                logger.error(e.getMessage());
             }
         }
     }
