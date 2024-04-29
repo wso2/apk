@@ -1158,11 +1158,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: grpc-backend-v1
+  name: grpc-backend
   namespace: apk-integration-test
 spec:
   selector:
-    app: grpc-backend-v1
+    app: grpc-backend
   ports:
     - protocol: TCP
       port: 6565
@@ -1171,22 +1171,22 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: grpc-backend-v1
+  name: grpc-backend
   namespace: apk-integration-test
   labels:
-    app: grpc-backend-v1
+    app: grpc-backend
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: grpc-backend-v1
+      app: grpc-backend
   template:
     metadata:
       labels:
-        app: grpc-backend-v1
+        app: grpc-backend
     spec:
       containers:
-        - name: grpc-backend-v1
+        - name: grpc-backend
           image: ddh13/dineth-grpc-demo-server:1.0.0
           imagePullPolicy: Always
           env:
