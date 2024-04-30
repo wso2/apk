@@ -44,10 +44,12 @@ public class SimpleGRPCStudentClient {
                     .build();
             StudentServiceGrpc.StudentServiceBlockingStub blockingStub = StudentServiceGrpc.newBlockingStub(managedChannel);
             if (blockingStub == null) {
+                log.error("Failed to create blocking stub");
                 throw new RuntimeException("Failed to create blocking stub");
             }
             StudentResponse response = blockingStub.getStudent(StudentRequest.newBuilder().setId(1).build());
             if (response == null) {
+                log.error("Failed to get student");
                 throw new RuntimeException("Failed to get student");
             }
             return response;
@@ -82,10 +84,12 @@ public class SimpleGRPCStudentClient {
                     .build();
             StudentServiceDefaultVersionGrpc.StudentServiceBlockingStub blockingStub = StudentServiceDefaultVersionGrpc.newBlockingStub(managedChannel);
             if (blockingStub == null) {
+                log.error("Failed to create blocking stub");
                 throw new RuntimeException("Failed to create blocking stub");
             }
             StudentResponse response = blockingStub.getStudent(StudentRequest.newBuilder().setId(1).build());
             if (response == null) {
+                log.error("Failed to get student");
                 throw new RuntimeException("Failed to get student");
             }
             return response;
