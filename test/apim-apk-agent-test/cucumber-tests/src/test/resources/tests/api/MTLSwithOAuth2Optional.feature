@@ -15,6 +15,7 @@ Feature: Test mTLS between client and gateway with client certificate sent in he
         Then the response status code should be 201
         And make the API Revision Deployment request
         Then the response status code should be 201
+        Then I wait for 40 seconds
         And make the Change Lifecycle request
         Then the response status code should be 200
         And I have a valid Devportal access token
@@ -71,6 +72,7 @@ Feature: Test mTLS between client and gateway with client certificate sent in he
         Then the response status code should be 201
         And make the API Revision Deployment request
         Then the response status code should be 201
+        Then I wait for 40 seconds
         And make the Change Lifecycle request
         Then the response status code should be 200
         And I have a valid Devportal access token
@@ -134,6 +136,7 @@ Feature: Test mTLS between client and gateway with client certificate sent in he
         Then the response status code should be 201
         And make the API Revision Deployment request
         Then the response status code should be 201
+        Then I wait for 40 seconds
         And make the Change Lifecycle request
         Then the response status code should be 200
         And I have a valid Devportal access token
@@ -186,6 +189,7 @@ Feature: Test mTLS between client and gateway with client certificate sent in he
         Then the response status code should be 201
         And make the API Revision Deployment request
         Then the response status code should be 201
+        Then I wait for 40 seconds
         And make the Change Lifecycle request
         Then the response status code should be 200
         And I have a valid Devportal access token
@@ -242,6 +246,7 @@ Feature: Test mTLS between client and gateway with client certificate sent in he
         Then the response status code should be 201
         And make the API Revision Deployment request
         Then the response status code should be 201
+        Then I wait for 40 seconds
         And make the Change Lifecycle request
         Then the response status code should be 200
         Then I set "invalidToken" as the new access token
@@ -276,6 +281,7 @@ Feature: Test mTLS between client and gateway with client certificate sent in he
         Then the response status code should be 201
         And make the API Revision Deployment request
         Then the response status code should be 201
+        Then I wait for 40 seconds
         And make the Change Lifecycle request
         Then the response status code should be 200
         And I have a valid Devportal access token
@@ -333,6 +339,7 @@ Feature: Test mTLS between client and gateway with client certificate sent in he
         Then the response status code should be 201
         And make the API Revision Deployment request
         Then the response status code should be 201
+        Then I wait for 40 seconds
         And make the Change Lifecycle request
         Then the response status code should be 200
         Then I set "invalidToken" as the new access token
@@ -365,6 +372,7 @@ Feature: Test mTLS between client and gateway with client certificate sent in he
         Then the response status code should be 201
         And make the API Revision Deployment request
         Then the response status code should be 201
+        Then I wait for 40 seconds
         And make the Change Lifecycle request
         Then the response status code should be 200
         And I send "GET" request to "https://default.gw.wso2.com:9095/mtls/3.14/employee/" with body ""

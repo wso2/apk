@@ -14,6 +14,7 @@ Feature: API Policy Addition(Interceptor Service)
     Then the response status code should be 200
     And make the API Revision Deployment request
     Then the response status code should be 201
+    Then I wait for 40 seconds
     And make the Change Lifecycle request
     Then the response status code should be 200
     And I have a valid Devportal access token

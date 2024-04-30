@@ -1,7 +1,7 @@
 Feature: Test mTLS between client and gateway with client certificate sent in header
     Background:
         Given The system is ready
-    Scenario: Deploying APK conf using a valid GraphQL API definition with mTLS mandatory and valid certificate
+    Scenario: Deploying GraphQL API with mTLS mandatory and valid certificate
         And I have a DCR application
         And I have a valid Publisher access token
         When the definition file "artifacts/definitions/schema_graphql.graphql"
@@ -14,6 +14,7 @@ Feature: Test mTLS between client and gateway with client certificate sent in he
         Then the response status code should be 201
         And make the API Revision Deployment request
         Then the response status code should be 201
+        Then I wait for 40 seconds
         And make the Change Lifecycle request
         Then the response status code should be 200  
         And I have a valid Devportal access token
@@ -56,7 +57,7 @@ Feature: Test mTLS between client and gateway with client certificate sent in he
         |200|
 
 
-    Scenario: Deploying APK conf using a valid GraphQL API definition with mTLS mandatory and no certificate
+    Scenario: Deploying GraphQL API with mTLS mandatory and no certificate
         And I have a DCR application
         And I have a valid Publisher access token
         When the definition file "artifacts/definitions/schema_graphql.graphql"
@@ -69,6 +70,7 @@ Feature: Test mTLS between client and gateway with client certificate sent in he
         Then the response status code should be 201
         And make the API Revision Deployment request
         Then the response status code should be 201
+        Then I wait for 40 seconds
         And make the Change Lifecycle request
         Then the response status code should be 200  
         And I have a valid Devportal access token
@@ -109,7 +111,7 @@ Feature: Test mTLS between client and gateway with client certificate sent in he
         And I eventually receive 404 response code, not accepting
         |200|
 
-    Scenario: Deploying APK conf using a valid GraphQL API definition with OAuth2 mandatory mTLS optional
+    Scenario: Deploying GraphQL API with OAuth2 mandatory mTLS optional
         And I have a DCR application
         And I have a valid Publisher access token
         When the definition file "artifacts/definitions/schema_graphql.graphql"
@@ -122,6 +124,7 @@ Feature: Test mTLS between client and gateway with client certificate sent in he
         Then the response status code should be 201
         And make the API Revision Deployment request
         Then the response status code should be 201
+        Then I wait for 40 seconds
         And make the Change Lifecycle request
         Then the response status code should be 200  
         And I have a valid Devportal access token
