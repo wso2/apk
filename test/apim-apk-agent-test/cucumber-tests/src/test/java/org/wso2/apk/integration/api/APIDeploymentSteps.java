@@ -462,9 +462,9 @@ public class APIDeploymentSteps {
             String multipartForm = new String(outputStream.toByteArray(), StandardCharsets.UTF_8);
 
             // Log the multipart form
-            logger.info("Multipart Form Data:\n{}"+ multipartForm);
-            logger.info("Validator URL: " + Utils.getGQLSchemaValidatorURL());
-             logger.info("Publisher Token: " + sharedContext.getPublisherAccessToken());
+             logger.debug("Multipart Form Data:\n{}"+ multipartForm);
+             logger.debug("Validator URL: " + Utils.getGQLSchemaValidatorURL());
+             logger.debug("Publisher Token: " + sharedContext.getPublisherAccessToken());
 
             HttpResponse response = sharedContext.getHttpClient().doPostWithMultipart(Utils.getGQLSchemaValidatorURL(),
                     multipartEntity, headers);

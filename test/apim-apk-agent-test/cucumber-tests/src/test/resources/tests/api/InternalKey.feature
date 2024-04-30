@@ -11,6 +11,7 @@ Feature: Testing the internal-key generation and invocation
     And the response body should contain "SwaggerPetstore"
     And make the API Revision Deployment request
     Then the response status code should be 201
+    Then I wait for 40 seconds
     And make the Change Lifecycle request
     Then the response status code should be 200
     Then I make an internal key generation request
@@ -42,6 +43,7 @@ Feature: Testing the internal-key generation and invocation
     And the response body should contain "StarwarsAPI"
     And make the API Revision Deployment request
     Then the response status code should be 201
+    Then I wait for 40 seconds
     And make the Change Lifecycle request
     Then the response status code should be 200  
     Then I make an internal key generation request
