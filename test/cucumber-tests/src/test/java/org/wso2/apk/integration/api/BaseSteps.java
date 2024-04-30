@@ -185,7 +185,7 @@ public class BaseSteps {
     public void GetStudentDefaultVersion(String arg0, int arg1) throws StatusRuntimeException {
         try {
             SimpleGRPCStudentClient grpcStudentClient = new SimpleGRPCStudentClient(arg0, arg1);
-            sharedContext.setStudentResponse(grpcStudentClient.GetStudent(sharedContext.getHeaders()));
+            sharedContext.setStudentResponse(grpcStudentClient.GetStudentDefaultVersion(sharedContext.getHeaders()));
         } catch (StatusRuntimeException e) {
             if (e.getStatus().getCode()== Status.Code.PERMISSION_DENIED){
                 sharedContext.setGrpcErrorCode(403);
