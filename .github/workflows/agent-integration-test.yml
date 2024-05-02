@@ -134,5 +134,5 @@ jobs:
       if: always()
       uses: malinthaprasan/action-surefire-report@v1
       with:
-       report_paths: 'apk-agent-repo/test/postman-tests/build/*.xml'
+       report_paths: 'apk-repo/test/apim-apk-agent-test/cucumber-tests/build/test-output/junitreports/*.xml'
        fail_on_test_failures: true
