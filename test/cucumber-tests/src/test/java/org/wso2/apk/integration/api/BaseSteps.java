@@ -112,6 +112,11 @@ public class BaseSteps {
     public void theResponseBodyShouldContain(String expectedText) throws IOException {
         Assert.assertTrue(sharedContext.getResponseBody().contains(expectedText), "Actual response body: " + sharedContext.getResponseBody());
     }
+    @Then("the response body should contain endpoint definition for student.proto")
+    public void theResponseBodyShouldContainEndpointDefinition() throws IOException {
+        String expectedText = "{\"apiDefinition\":\"syntax = \\\"proto3\\\";\\n\\noption java_multiple_files = true;\\noption java_package = \\\"org.example\\\";\\npackage dineth.grpc.api.v1.student;\\n\\nservice StudentService {\\n  rpc GetStudent(StudentRequest) returns (StudentResponse) {};\\n  rpc GetStudentStream(StudentRequest) returns (stream StudentResponse) {};\\n  rpc SendStudentStream(stream StudentRequest) returns (StudentResponse) {};\\n  rpc SendAndGetStudentStream(stream StudentRequest) returns (stream StudentResponse) {}\\n}\\n\\nmessage StudentRequest {\\n  int32 id = 3;\\n}\\n\\nmessage StudentResponse {\\n  string name = 1;\\n  int32 age = 2;\\n}\\n\"}";
+        Assert.assertTrue(sharedContext.getResponseBody().contains(expectedText), "Actual response body: " + sharedContext.getResponseBody());
+    }
     @Then("the response body should not contain {string}")
     public void theResponseBodyShouldNotContain(String expectedText) throws IOException {
         Assert.assertFalse(sharedContext.getResponseBody().contains(expectedText), "Actual response body: " + sharedContext.getResponseBody());
@@ -134,7 +139,6 @@ public class BaseSteps {
 
     @Then("the grpc error response status code should be {int}")
     public void theGrpcErrorResponseStatusCodeShouldBe(int expectedStatusCode) throws IOException {
-
         int actualStatusCode = sharedContext.getGrpcErrorCode();
         Assert.assertEquals(actualStatusCode, expectedStatusCode);
     }
