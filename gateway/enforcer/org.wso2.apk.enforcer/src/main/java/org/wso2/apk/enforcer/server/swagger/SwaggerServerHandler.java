@@ -53,7 +53,9 @@ public class SwaggerServerHandler extends SimpleChannelInboundHandler<HttpObject
         final String vHost;
         final String queryParam;
         final String version;
-        if (header != null && header.equals("GRPC")) {
+        //if len params is 3, then it's a GRPC request else other
+        final String type = params.length == 3 ? "GRPC" : "REST";
+        if (type.equals("GRPC")) {
             basePath = "/" + params[1];
             vHost = params[2].split("\\?")[0];
             queryParam = params[2].split("\\?")[1];
