@@ -1057,7 +1057,7 @@ public class APIClient {
     private isolated function retrieveGRPCRouteMatch(APKOperations apiOperation) returns model:GRPCRouteMatch {
         model:GRPCRouteMatch grpcRouteMatch = {
             method: {
-                'type: "RegularExpression",
+                'type: "Exact",
                 'service:  <string>apiOperation.target,
                 method: <string>apiOperation.verb
             }
