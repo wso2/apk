@@ -46,7 +46,7 @@ public class APIClient {
             encodedString = encodedString.substring(0, encodedString.length() - 1);
         }
         APKConf apkConf = {
-            name: api.getName(),
+            name:  api.getType() == API_TYPE_GRPC ? self.getUniqueNameForGrpcApi(api.getName()) : api.getName(),
             basePath: api.getBasePath().length() > 0 ? api.getBasePath() : encodedString,
             version: api.getVersion(),
             'type: api.getType() == "" ? API_TYPE_REST : api.getType().toUpperAscii()
@@ -1676,6 +1676,11 @@ public class APIClient {
     public isolated function getUniqueIdForAPI(string name, string 'version, commons:Organization organization) returns string {
         string concatanatedString = string:'join("-", organization.name, name, 'version);
         byte[] hashedValue = crypto:hashSha1(concatanatedString.toBytes());
+        return hashedValue.toBase16();
+    }
+
+    public isolated function getUniqueNameForGrpcApi(string concatanatedServices) returns string {
+        byte[] hashedValue = crypto:hashSha1(concatanatedServices.toBytes());
         return hashedValue.toBase16();
     }
 
