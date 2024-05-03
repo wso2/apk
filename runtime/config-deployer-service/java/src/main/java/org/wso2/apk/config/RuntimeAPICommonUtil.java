@@ -148,7 +148,11 @@ public class RuntimeAPICommonUtil {
         API api = new API();
         api.setBasePath("/"+protoParser.protoFile.basePath);
         api.setVersion(protoParser.protoFile.version);
+        StringBuilder apiName = new StringBuilder();
+        List<String> sortedServices = new ArrayList<>();
+
         for (ProtoParser.Service service : protoParser.getServices()) {
+            sortedServices.add(service.name);
             for (String method : service.methods) {
                 URITemplate uriTemplate = new URITemplate();
                 uriTemplate.setUriTemplate(protoParser.protoFile.packageName + "." + service.name);
@@ -156,6 +160,12 @@ public class RuntimeAPICommonUtil {
                 uriTemplates.add(uriTemplate);
             }
         }
+        sortedServices.sort(String::compareTo);
+        for (String service : sortedServices) {
+            apiName.append(service).append("-");
+        }
+        apiName.deleteCharAt(apiName.length() - 1);
+        api.setName(apiName.toString());
         api.setUriTemplates(uriTemplates.toArray(new URITemplate[uriTemplates.size()]));
 
         return api;
