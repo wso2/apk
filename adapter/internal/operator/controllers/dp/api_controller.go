@@ -529,6 +529,9 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 
 func isAPIPropagatable(apiState *synchronizer.APIState) bool {
 	validOrgs := []string{"carbon.super"}
+	if apiState.APIDefinition.Spec.APIType == "GRPC" {
+		return false
+	}
 	// System APIs should not be propagated to CP
 	if apiState.APIDefinition.Spec.SystemAPI {
 		return false
