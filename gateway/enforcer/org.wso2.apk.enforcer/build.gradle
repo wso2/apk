@@ -15,6 +15,10 @@
  *
  */
 
+plugins {
+    id 'com.github.johnrengelman.shadow' version '7.1.0'
+}
+
 description = 'WSO2 APK Enforcer'
 
 sourceSets {
@@ -94,4 +98,22 @@ dependencies {
         implementation libs.junit
         implementation libs.mockito.inline
     }
+}
+shadowJar {
+    baseName = 'enforcer'
+    version = project.version
+    classifier = ''
+
+    manifest {
+        attributes 'Main-Class': 'org.wso2.apk.enforcer.server.AuthServer'
+    }
+    mergeServiceFiles()
+}
+tasks.register("copyJar", Copy) {
+    from shadowJar.archivePath
+    into "../resources/lib"
+}
+tasks.register("build_enforcer"){
+    dependsOn("shadowJar")
+    finalizedBy("copyJar")
 }
