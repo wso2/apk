@@ -20,7 +20,6 @@
 // apply plugin: 'com.github.spotbugs'
 apply plugin: 'jacoco'
 apply plugin: 'java'
-apply plugin: 'maven-publish'
 java.sourceCompatibility = JavaVersion.VERSION_11
 
 repositories {
@@ -31,34 +30,3 @@ repositories {
     }
 }
 
-jar {
-    into("META-INF/maven/$project.group/$project.name") {
-        from { generatePomFileForMavenPublication }
-        rename ".*", "pom.xml"
-    }
-}
-
-publishing {
-    publications {
-        maven(MavenPublication) {
-            from components.java
-        }
-    }
-
-    repositories {
-        maven {
-            name 'nexus'
-            // TODO: define public nexus repositories
-            url = "https://maven.wso2.org/nexus/service/local/staging/deploy/maven2/"
-            credentials {
-                username rootProject.hasProperty("nexus_username") ? nexus_username : System.getenv("NEXUS_USERNAME")
-                password rootProject.hasProperty("nexus_password") ? nexus_password : System.getenv("NEXUS_PASSWORD")
-            }
-            allowInsecureProtocol = false
-        }
-    }
-}
-
-tasks.named('build').configure {
-    finalizedBy publishToMavenLocal
-}
