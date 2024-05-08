@@ -179,8 +179,16 @@ public class BaseSteps {
         } catch (StatusRuntimeException e) {
             if (e.getStatus().getCode()== Status.Code.PERMISSION_DENIED){
                 sharedContext.setGrpcErrorCode(403);
+            } else if (e.getStatus().getCode()== Status.Code.UNIMPLEMENTED){
+                sharedContext.setGrpcErrorCode(501);
+            } else if (e.getStatus().getCode()== Status.Code.UNAVAILABLE){
+                sharedContext.setGrpcErrorCode(503);
+            } else if (e.getStatus().getCode()== Status.Code.NOT_FOUND){
+                sharedContext.setGrpcErrorCode(404);
+            } else if (e.getStatus().getCode()== Status.Code.UNAUTHENTICATED){
+                sharedContext.setGrpcErrorCode(401);
             } else {
-                logger.error(e.getMessage());
+                logger.error(e.getMessage() + "code: " + e.getStatus().getCode());
             }
         }
     }
