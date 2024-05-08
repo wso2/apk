@@ -18,16 +18,8 @@
 
 <!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
 <suite name="APK Integration Suite">
-    <test name="APK Conf Tests" preserve-order="true">
-        <parameter name="cucumber.features" value="src/test/resources/tests/config"/>
-        <parameter name="cucumber.glue" value="org.wso2.apk.integration.api"/>
-        <parameter name="cucumber.plugin" value="pretty"/>
-        <classes>
-            <class name="org.wso2.apk.integration.APKIntegrationTestSuite"/>
-        </classes>
-    </test>
-    <test name="API Deployment Tests" preserve-order="true">
-        <parameter name="cucumber.features" value="src/test/resources/tests/api"/>
+    <test name="APK Tests" preserve-order="true">
+        <!-- <parameter name="cucumber.features" value="src/test/resources/tests/config"/> -->
         <parameter name="cucumber.glue" value="org.wso2.apk.integration.api"/>
         <parameter name="cucumber.plugin" value="pretty"/>
         <classes>

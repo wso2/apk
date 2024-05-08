@@ -23,6 +23,11 @@ repositories {
     mavenCentral()
 }
 
+def AgentCpToDpTestFeatures = 'src/test/resources/tests/agent-cptodp'
+def AgentDpToCpTestFeatures = 'src/test/resources/tests/agent-dptocp'
+def APKConfigTestFeatures = 'src/test/resources/tests/config'
+def APKTestFeatures = 'src/test/resources/tests/api'
+
 dependencies {
     testImplementation 'io.cucumber:cucumber-picocontainer:7.2.3'
     testImplementation 'io.cucumber:cucumber-core:7.2.3'
@@ -35,6 +40,7 @@ dependencies {
     testImplementation 'io.cucumber:cucumber-testng:7.13.0'
     testImplementation 'commons-io:commons-io:2.13.0'
     testImplementation 'com.nimbusds:nimbus-jose-jwt:9.31'
+    testImplementation 'com.googlecode.json-simple:json-simple:1.1.1'
 }
 
 test {
@@ -52,5 +58,32 @@ task runTests(type: JavaExec, dependsOn: 'classes') {
             project.sourceSets.test.compileClasspath,
             project.sourceSets.main.runtimeClasspath,
             project.sourceSets.test.runtimeClasspath)
+    systemProperty 'cucumber.features', "$APKConfigTestFeatures,$APKTestFeatures"
+    systemProperty 'http.client.setup', 'apk'
+    args = ["-d", "./build/test-output", "./src/test/resources/testng.xml"]
+}
+
+
+task runCpToDpTests(type: JavaExec, dependsOn: 'classes') {
+    main = 'org.testng.TestNG'
+    classpath = files("./src/test/resources",
+            project.sourceSets.main.compileClasspath,
+            project.sourceSets.test.compileClasspath,
+            project.sourceSets.main.runtimeClasspath,
+            project.sourceSets.test.runtimeClasspath)
+    systemProperty 'cucumber.features', AgentCpToDpTestFeatures
+    systemProperty 'http.client.setup', 'apim-apk'
+    args = ["-d", "./build/test-output", "./src/test/resources/testng.xml"]
+}
+
+task runDpToCpTests(type: JavaExec, dependsOn: 'classes') {
+    main = 'org.testng.TestNG'
+    classpath = files("./src/test/resources",
+            project.sourceSets.main.compileClasspath,
+            project.sourceSets.test.compileClasspath,
+            project.sourceSets.main.runtimeClasspath,
+            project.sourceSets.test.runtimeClasspath)
+    systemProperty 'cucumber.features', AgentDpToCpTestFeatures
+    systemProperty 'http.client.setup', 'apim-apk'
     args = ["-d", "./build/test-output", "./src/test/resources/testng.xml"]
 }
