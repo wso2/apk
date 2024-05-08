@@ -23,6 +23,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpHeaders;
+import javax.net.ssl.TrustManager;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -35,6 +36,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.conn.HttpClientConnectionManager;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustAllStrategy;
 import org.apache.http.entity.ContentProducer;
@@ -44,6 +46,7 @@ import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.ssl.SSLContexts;
@@ -60,32 +63,72 @@ import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
+import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPOutputStream;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.X509TrustManager;
 
 public class SimpleHTTPClient {
 
     protected Log log = LogFactory.getLog(getClass());
     private CloseableHttpClient client;
     private HttpUriRequest lastRequest;
-    private static final int EVENTUAL_SUCCESS_RESPONSE_TIMEOUT_IN_SECONDS = 10;
+    private static final int EVENTUAL_SUCCESS_RESPONSE_TIMEOUT_IN_SECONDS = 15;
 
     public SimpleHTTPClient() throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+        String httpClientSetup = System.getProperty("http.client.setup", "apk");
+        log.info(httpClientSetup);
 
-        final SSLContext sslcontext = SSLContexts.custom()
-                .loadTrustMaterial(null, new TrustAllStrategy())
-                .build();
+        if ("apk".equals(httpClientSetup)) {
+            final SSLContext sslcontext = SSLContexts.custom()
+            .loadTrustMaterial(null, new TrustAllStrategy())
+            .build();
 
-        final SSLConnectionSocketFactory csf = new SSLConnectionSocketFactory(sslcontext);
-        this.client = HttpClients.custom()
-                .setSSLSocketFactory(csf)
-                .evictExpiredConnections()
-                .setMaxConnPerRoute(100)
-                .setMaxConnTotal(1000)
-                .build();
-        this.lastRequest = null;
+            final SSLConnectionSocketFactory csf = new SSLConnectionSocketFactory(sslcontext);
+            this.client = HttpClients.custom()
+                    .setSSLSocketFactory(csf)
+                    .evictExpiredConnections()
+                    .setMaxConnPerRoute(100)
+                    .setMaxConnTotal(1000)
+                    .build();
+            this.lastRequest = null;
+        }
+        else if ("apim-apk".equals(httpClientSetup)) {
+            // Create SSL context that trusts all certificates
+            SSLContext sslContext = createAcceptAllSSLContext();
+
+            // Create a socket factory with custom SSL context and hostname verifier that accepts all hostnames
+            SSLConnectionSocketFactory sslSocketFactory = new SSLConnectionSocketFactory(sslContext,
+                    NoopHostnameVerifier.INSTANCE);
+
+            // Create HttpClient with custom SSL socket factory
+            this.client = HttpClientBuilder.create().setSSLSocketFactory(sslSocketFactory).build();
+            this.lastRequest = null;
+            }
+    }
+
+    private SSLContext createAcceptAllSSLContext() throws NoSuchAlgorithmException, KeyManagementException {
+        // Create a TrustManager that trusts all certificates
+        TrustManager[] trustAllCerts = new TrustManager[]{
+                new X509TrustManager() {
+                    public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                        return null;
+                    }
+
+                    public void checkClientTrusted(X509Certificate[] certs, String authType) {
+                    }
+
+                    public void checkServerTrusted(X509Certificate[] certs, String authType) {
+                    }
+                }
+        };
+
+        // Create SSL context with the TrustManager that trusts all certificates
+        SSLContext sslContext = SSLContext.getInstance("TLS");
+        sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
+        return sslContext;
     }
 
     /**
@@ -141,7 +184,6 @@ public class SimpleHTTPClient {
 
         EntityTemplate ent = new EntityTemplate(new ContentProducer() {
             public void writeTo(OutputStream outputStream) throws IOException {
-
                 OutputStream out = outputStream;
                 if (zip) {
                     out = new GZIPOutputStream(outputStream);
@@ -161,6 +203,7 @@ public class SimpleHTTPClient {
         }
         entityEncReq.setEntity(ent);
         this.lastRequest = request;
+        log.info("Request: " + request);
         return client.execute(request);
     }
 

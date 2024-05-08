@@ -27,10 +27,15 @@ import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.FileBody;
 import org.testng.Assert;
 import org.wso2.apk.integration.utils.Utils;
+import org.wso2.apk.integration.utils.clients.SimpleHTTPClient;
 
 import java.io.File;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * This class contains the step definitions for APK generation.
@@ -38,6 +43,7 @@ import java.nio.charset.StandardCharsets;
 public class APKGenerationSteps {
 
     private final SharedContext sharedContext;
+    private static final Log logger = LogFactory.getLog(BaseSteps.class);
     private File definitionFile;
 
     public APKGenerationSteps(SharedContext sharedContext) {
@@ -65,6 +71,7 @@ public class APKGenerationSteps {
                 HttpResponse httpResponse = sharedContext.getHttpClient().doPostWithMultipart(Utils.getConfigGeneratorURL(),
                 multipartEntity);
         sharedContext.setResponse(httpResponse);
+        sharedContext.setResponseBody(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()));
     }
 
     @Then("the response body should be {string} in resources")
@@ -72,7 +79,6 @@ public class APKGenerationSteps {
 
         URL url = Resources.getResource(expectedAPKConfFilePath);
         String text = Resources.toString(url, StandardCharsets.UTF_8);
-
-        Assert.assertEquals(sharedContext.getHttpClient().getResponsePayload(sharedContext.getResponse()), text);
+        Assert.assertEquals(sharedContext.getResponseBody(), text);
     }
 }

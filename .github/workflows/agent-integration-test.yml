@@ -95,9 +95,9 @@ jobs:
     - name: Run test cases
       shell: sh
       run: |
-        cd apk-repo/test/apim-apk-agent-test/cucumber-tests
-        sh ./scripts/setup-hosts.sh
-        ./gradlew runTests
+        cd apk-repo/test/cucumber-tests
+        sh ./scripts/agent-setup-hosts.sh
+        ./gradlew runCpToDpTests
     - name: Helm release undeploy
       if: always()
       shell: sh
@@ -134,5 +134,5 @@ jobs:
       if: always()
       uses: malinthaprasan/action-surefire-report@v1
       with:
-       report_paths: 'apk-repo/test/apim-apk-agent-test/cucumber-tests/build/test-output/junitreports/*.xml'
+       report_paths: 'apk-repo/test/cucumber-tests/build/test-output/junitreports/*.xml'
        fail_on_test_failures: true
