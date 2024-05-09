@@ -18,7 +18,6 @@
 package org.wso2.apk.integration.api;
 
 import org.apache.http.HttpResponse;
-import org.wso2.apk.integration.utils.clients.SimpleGRPCStudentClient;
 import org.wso2.apk.integration.utils.clients.SimpleHTTPClient;
 import org.wso2.apk.integration.utils.clients.studentGrpcClient.StudentResponse;
 
@@ -36,7 +35,7 @@ public class SharedContext {
     private String accessToken;
     private HttpResponse response;
     private String responseBody;
-    private int grpcErrorCode;
+    private int grpcStatusCode;
     private HashMap<String, Object> valueStore = new HashMap<>();
     private HashMap<String, String> headers = new HashMap<>();
 
@@ -56,11 +55,11 @@ public class SharedContext {
 
         this.accessToken = accessToken;
     }
-    public int getGrpcErrorCode() {
-        return grpcErrorCode;
+    public int getGrpcStatusCode() {
+        return grpcStatusCode;
     }
-    public void setGrpcErrorCode(int grpcErrorCode) {
-        this.grpcErrorCode = grpcErrorCode;
+    public void setGrpcStatusCode(int grpcStatusCode) {
+        this.grpcStatusCode = grpcStatusCode;
     }
 
     public HttpResponse getResponse() {

@@ -9,8 +9,7 @@ Feature: Test mTLS between client and gateway with client certificate sent in he
         Then I set headers
             | X-WSO2-CLIENT-CERTIFICATE | ${clientCertificate} |
         And I make grpc request GetStudent to "default.gw.wso2.com" with port 9095
-        And I eventually receive 200 response code, not accepting
-            | 401 |
+        And the gRPC response status code should be 0
         And the student response body should contain name: "Dineth" age: 10
 
     Scenario: Undeploy API
@@ -30,7 +29,7 @@ Feature: Test mTLS between client and gateway with client certificate sent in he
             | X-WSO2-CLIENT-CERTIFICATE | ${clientCertificate} |
             | Authorization             | bearer {accessToken} |
         And I make grpc request GetStudent to "default.gw.wso2.com" with port 9095
-        And the grpc error response status code should be 401
+        And the gRPC response status code should be 16
 
     Scenario: Undeploy API
         Given The system is ready
