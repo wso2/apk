@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, WSO2 LLC (http://www.wso2.com).
+ * Copyright (c) 2024, WSO2 LLC (http://www.wso2.com).
  *
  * WSO2 LLC licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -39,6 +39,8 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -49,7 +51,9 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.testng.Assert;
 import org.wso2.apk.integration.utils.Constants;
 import org.wso2.apk.integration.utils.Utils;
+import org.wso2.apk.integration.utils.clients.SimpleGRPCStudentClient;
 import org.wso2.apk.integration.utils.clients.SimpleHTTPClient;
+import org.wso2.apk.integration.utils.clients.studentGrpcClient.StudentResponse;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -92,8 +96,25 @@ public class BaseSteps {
 
     }
 
+    @Then("the student response body should contain name: {string} age: {int}")
+    public void theStudentResponseBodyShouldContainNameAndAge(String arg0, int arg1) {
+        StudentResponse studentResponse = sharedContext.getStudentResponse();
+        if (studentResponse == null) {
+            Assert.fail("Student response is null.");
+        }
+        int age = studentResponse.getAge();
+        String name = studentResponse.getName();
+        Assert.assertEquals(name, arg0);
+        Assert.assertEquals(age, arg1);
+    }
+
     @Then("the response body should contain {string}")
     public void theResponseBodyShouldContain(String expectedText) throws IOException {
+        Assert.assertTrue(sharedContext.getResponseBody().contains(expectedText), "Actual response body: " + sharedContext.getResponseBody());
+    }
+    @Then("the response body should contain endpoint definition for student.proto")
+    public void theResponseBodyShouldContainEndpointDefinition() throws IOException {
+        String expectedText = "{\"apiDefinition\":\"syntax = \\\"proto3\\\";\\n\\noption java_multiple_files = true;\\noption java_package = \\\"org.example\\\";\\npackage dineth.grpc.api.v1.student;\\n\\nservice StudentService {\\n  rpc GetStudent(StudentRequest) returns (StudentResponse) {};\\n  rpc GetStudentStream(StudentRequest) returns (stream StudentResponse) {};\\n  rpc SendStudentStream(stream StudentRequest) returns (StudentResponse) {};\\n  rpc SendAndGetStudentStream(stream StudentRequest) returns (stream StudentResponse) {}\\n}\\n\\nmessage StudentRequest {\\n  int32 id = 3;\\n}\\n\\nmessage StudentResponse {\\n  string name = 1;\\n  int32 age = 2;\\n}\\n\"}";
         Assert.assertTrue(sharedContext.getResponseBody().contains(expectedText), "Actual response body: " + sharedContext.getResponseBody());
     }
     @Then("the response body should not contain {string}")
@@ -113,6 +134,12 @@ public class BaseSteps {
     public void theResponseStatusCodeShouldBe(int expectedStatusCode) throws IOException {
 
         int actualStatusCode = sharedContext.getResponse().getStatusLine().getStatusCode();
+        Assert.assertEquals(actualStatusCode, expectedStatusCode);
+    }
+
+    @Then("the gRPC response status code should be {int}")
+    public void theGrpcResponseStatusCodeShouldBe(int expectedStatusCode) throws IOException {
+        int actualStatusCode = sharedContext.getGrpcStatusCode();
         Assert.assertEquals(actualStatusCode, expectedStatusCode);
     }
 
@@ -136,6 +163,30 @@ public class BaseSteps {
             sharedContext.setResponseBody(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()));
         } else if (CurlOption.HttpMethod.OPTIONS.toString().toLowerCase().equals(httpMethod.toLowerCase())) {
             sharedContext.setResponse(httpClient.doOptions(url, sharedContext.getHeaders(), null, null));
+        }
+    }
+
+    @Then("I make grpc request GetStudent to {string} with port {int}")
+    public void GetStudent(String arg0, int arg1) throws StatusRuntimeException {
+        try {
+            SimpleGRPCStudentClient grpcStudentClient = new SimpleGRPCStudentClient(arg0, arg1);
+            sharedContext.setStudentResponse(grpcStudentClient.GetStudent(sharedContext.getHeaders()));
+            sharedContext.setGrpcStatusCode(0);
+        } catch (StatusRuntimeException e) {
+                sharedContext.setGrpcStatusCode(e.getStatus().getCode().value());
+                logger.error(e.getMessage() + " Status code: " + e.getStatus().getCode().value()) ;
+        }
+    }
+
+    @Then("I make grpc request GetStudent default version to {string} with port {int}")
+    public void GetStudentDefaultVersion(String arg0, int arg1) throws StatusRuntimeException {
+        try {
+            SimpleGRPCStudentClient grpcStudentClient = new SimpleGRPCStudentClient(arg0, arg1);
+            sharedContext.setStudentResponse(grpcStudentClient.GetStudentDefaultVersion(sharedContext.getHeaders()));
+            sharedContext.setGrpcStatusCode(0);
+        } catch (StatusRuntimeException e) {
+            sharedContext.setGrpcStatusCode(e.getStatus().getCode().value());
+            logger.error(e.getMessage() + " Status code: " + e.getStatus().getCode().value()) ;
         }
     }
 

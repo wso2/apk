@@ -669,6 +669,34 @@ public class OASParserUtil {
     }
 
     /**
+     * Validate gRPC proto definition
+     *
+     * @return Validation response
+     */
+    public static APIDefinitionValidationResponse validateProtoDefinition(String apiDefinition,
+                                                                          boolean returnContent) {
+        APIDefinitionValidationResponse validationResponse = new APIDefinitionValidationResponse();
+        ArrayList<ErrorHandler> errors = new ArrayList<>();
+        try {
+            if (apiDefinition.isBlank()) {
+                validationResponse.setValid(false);
+                errors.add(ExceptionCodes.GRPC_PROTO_DEFINTION_CANNOT_BE_NULL);
+                validationResponse.setErrorItems(errors);
+            } else {
+                validationResponse.setValid(true);
+                validationResponse.setContent(apiDefinition);
+            }
+        } catch (Exception e) {
+            OASParserUtil.addErrorToValidationResponse(validationResponse, e.getMessage());
+            validationResponse.setValid(false);
+            errors.add(new ErrorItem("API Definition Validation Error", "API Definition is invalid", 400, 400));
+            validationResponse.setErrorItems(errors);
+        }
+        return validationResponse;
+
+    }
+
+    /**
      * This method removes the unsupported json blocks from the given json string.
      *
      * @param jsonString Open api specification from which unsupported blocks must be removed.

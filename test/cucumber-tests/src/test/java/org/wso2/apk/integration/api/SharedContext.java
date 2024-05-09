@@ -19,11 +19,11 @@ package org.wso2.apk.integration.api;
 
 import org.apache.http.HttpResponse;
 import org.wso2.apk.integration.utils.clients.SimpleHTTPClient;
+import org.wso2.apk.integration.utils.clients.studentGrpcClient.StudentResponse;
 
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,9 +31,11 @@ import java.util.Map;
 public class SharedContext {
 
     private SimpleHTTPClient httpClient;
+    private StudentResponse studentResponse;
     private String accessToken;
     private HttpResponse response;
     private String responseBody;
+    private int grpcStatusCode;
     private HashMap<String, Object> valueStore = new HashMap<>();
     private HashMap<String, String> headers = new HashMap<>();
 
@@ -53,10 +55,26 @@ public class SharedContext {
 
         this.accessToken = accessToken;
     }
+    public int getGrpcStatusCode() {
+        return grpcStatusCode;
+    }
+    public void setGrpcStatusCode(int grpcStatusCode) {
+        this.grpcStatusCode = grpcStatusCode;
+    }
 
     public HttpResponse getResponse() {
 
         return response;
+    }
+
+    public StudentResponse getStudentResponse() {
+
+        return studentResponse;
+    }
+
+    public void setStudentResponse(StudentResponse studentResponse) {
+
+        this.studentResponse = studentResponse;
     }
 
     public void setResponse(HttpResponse response) {
