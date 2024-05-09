@@ -142,9 +142,9 @@ public class BaseSteps {
         Assert.assertEquals(actualStatusCode, expectedStatusCode);
     }
 
-    @Then("the grpc error response status code should be {int}")
-    public void theGrpcErrorResponseStatusCodeShouldBe(int expectedStatusCode) throws IOException {
-        int actualStatusCode = sharedContext.getGrpcErrorCode();
+    @Then("the gRPC response status code should be {int}")
+    public void theGrpcResponseStatusCodeShouldBe(int expectedStatusCode) throws IOException {
+        int actualStatusCode = sharedContext.getGrpcStatusCode();
         Assert.assertEquals(actualStatusCode, expectedStatusCode);
     }
 
@@ -176,20 +176,10 @@ public class BaseSteps {
         try {
             SimpleGRPCStudentClient grpcStudentClient = new SimpleGRPCStudentClient(arg0, arg1);
             sharedContext.setStudentResponse(grpcStudentClient.GetStudent(sharedContext.getHeaders()));
+            sharedContext.setGrpcStatusCode(0);
         } catch (StatusRuntimeException e) {
-            if (e.getStatus().getCode()== Status.Code.PERMISSION_DENIED){
-                sharedContext.setGrpcErrorCode(403);
-            } else if (e.getStatus().getCode()== Status.Code.UNIMPLEMENTED){
-                sharedContext.setGrpcErrorCode(501);
-            } else if (e.getStatus().getCode()== Status.Code.UNAVAILABLE){
-                sharedContext.setGrpcErrorCode(503);
-            } else if (e.getStatus().getCode()== Status.Code.NOT_FOUND){
-                sharedContext.setGrpcErrorCode(404);
-            } else if (e.getStatus().getCode()== Status.Code.UNAUTHENTICATED){
-                sharedContext.setGrpcErrorCode(401);
-            } else {
-                logger.error(e.getMessage() + "code: " + e.getStatus().getCode());
-            }
+                sharedContext.setGrpcStatusCode(e.getStatus().getCode().value());
+                logger.error(e.getMessage() + " Status code: " + e.getStatus().getCode().value()) ;
         }
     }
 
@@ -198,12 +188,10 @@ public class BaseSteps {
         try {
             SimpleGRPCStudentClient grpcStudentClient = new SimpleGRPCStudentClient(arg0, arg1);
             sharedContext.setStudentResponse(grpcStudentClient.GetStudentDefaultVersion(sharedContext.getHeaders()));
+            sharedContext.setGrpcStatusCode(0);
         } catch (StatusRuntimeException e) {
-            if (e.getStatus().getCode()== Status.Code.PERMISSION_DENIED){
-                sharedContext.setGrpcErrorCode(403);
-            } else {
-                logger.error(e.getMessage());
-            }
+            sharedContext.setGrpcStatusCode(e.getStatus().getCode().value());
+            logger.error(e.getMessage() + " Status code: " + e.getStatus().getCode().value()) ;
         }
     }
 

@@ -37,7 +37,7 @@ public class SharedContext {
     private String accessToken;
     private HttpResponse response;
     private String responseBody;
-    private int grpcErrorCode;
+    private int grpcStatusCode;
     private String publisherAccessToken;
     private String devportalAccessToken;
     private String adminportalAccessToken;
@@ -77,11 +77,11 @@ public class SharedContext {
 
         this.accessToken = accessToken;
     }
-    public int getGrpcErrorCode() {
-        return grpcErrorCode;
+    public int getGrpcStatusCode() {
+        return grpcStatusCode;
     }
-    public void setGrpcErrorCode(int grpcErrorCode) {
-        this.grpcErrorCode = grpcErrorCode;
+    public void setGrpcStatusCode(int grpcStatusCode) {
+        this.grpcStatusCode = grpcStatusCode;
     }
 
     public HttpResponse getResponse() {
