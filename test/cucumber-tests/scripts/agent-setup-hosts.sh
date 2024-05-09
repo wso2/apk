@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-kubectl apply -f ./CRs/artifacts.yaml
+kubectl apply -f ./CRs/agent-artifacts.yaml
 kubectl wait deployment/apim-wso2am-cp-deployment-1 -n apk --for=condition=available --timeout=600s
 kubectl wait --timeout=5m -n apk deployment/apk-wso2-apk-adapter-deployment --for=condition=Available
 kubectl wait --timeout=15m -n apk deployment/apk-wso2-apk-gateway-runtime-deployment --for=condition=Available
