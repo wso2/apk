@@ -148,6 +148,12 @@ public class BaseSteps {
         Assert.assertEquals(actualStatusCode, expectedStatusCode);
     }
 
+    @Then("the gRPC response status code should be {int}")
+    public void theGrpcResponseStatusCodeShouldBe(int expectedStatusCode) throws IOException {
+        int actualStatusCode = sharedContext.getGrpcStatusCode();
+        Assert.assertEquals(actualStatusCode, expectedStatusCode);
+    }
+
     @Then("I send {string} request to {string} with body {string}")
     public void sendHttpRequest(String httpMethod, String url, String body) throws IOException {
         body = Utils.resolveVariables(body, sharedContext.getValueStore());
