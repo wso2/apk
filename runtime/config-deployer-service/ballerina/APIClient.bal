@@ -701,7 +701,7 @@ public class APIClient {
                             if apiArtifact.scopes.hasKey(scope) {
                                 scopeCr = apiArtifact.scopes.get(scope);
                             } else {
-                                scopeCr = self.generateScopeCR(apiArtifact, apkConf, organization, scope, count);
+                                scopeCr = self.generateScopeCR(operation, apiArtifact, apkConf, organization, scope, count);
                                 count = count + 1;
                             }
                             model:GRPCRouteFilter scopeFilter = {'type: "ExtensionRef", extensionRef: {group: "dp.wso2.com", kind: scopeCr.kind, name: scopeCr.metadata.name}};
