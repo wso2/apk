@@ -150,7 +150,7 @@ components:
             headerEnable:
               type: boolean
               default: true
-            audience: 
+            audience:
               type: array
               default: []
               items:
@@ -173,7 +173,7 @@ components:
               default: false
             headerName:
               type: string
-              example: Authorization
+              example: apikey
               default: apikey
             queryParamName:
               type: string

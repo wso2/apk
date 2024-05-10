@@ -32,6 +32,17 @@ public class Constants {
     public static final String SUBSCRIPTION_BASIC_AUTH_TOKEN =
             "Basic NDVmMWM1YzgtYTkyZS0xMWVkLWFmYTEtMDI0MmFjMTIwMDAyOjRmYmQ2MmVjLWE5MmUtMTFlZC1hZmExLTAyNDJhYzEyMDAwMg==";
 
+    public static final String DEFAULT_APIM_IDP_HOST = "am.wso2.com";
+    public static final String DEFAULT_APIM_API_HOST = "am.wso2.com";
+    public static final String DEFAULT_APIM_GW_PORT = "";
+    public static final String DEFAULT_APIM_TOKEN_EP = "oauth2/token";
+    public static final String DEFAULT_DCR_EP = "client-registration/v0.17/register";
+    public static final String DEFAULT_APIM_API_CONFIGURATOR = "api/configurator/1.1.0/";
+    public static final String DEFAULT_APIM_API_DEPLOYER = "api/am/publisher/v4/";
+    public static final String DEFAULT_DEVPORTAL = "api/am/devportal/v3/";
+    public static final String DEFAULT_ADMINPORTAL = "api/am/admin/v4/";
+    public static final String DEFAULT_APIM_HOST = "apim.wso2.com";
+
     public class REQUEST_HEADERS {
 
         public static final String HOST = "Host";
@@ -43,5 +54,15 @@ public class Constants {
 
         public static final String APPLICATION_JSON = "application/json";
         public static final String APPLICATION_X_WWW_FORM_URLENCODED = "application/x-www-form-urlencoded";
+
+        public static final String MULTIPART_FORM_DATA = "multipart/form-data";
+
+        public static final String APPLICATION_OCTET_STREAM = "application/octet-stream";
+
+        public static final String APPLICATION_ZIP = "application/zip";
+
+        public static final String TEXT_PLAIN = "text/plain";
+
+        public static final String APPLICATION_CA_CERT = "application/x-x509-ca-cert";
     }
 }

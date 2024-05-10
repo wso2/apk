@@ -12,7 +12,14 @@ operations:
   - target: "/employeewithoutscope"
     verb: "GET"
     scopes: []
-  - target: "/employeewithscope"
+  - target: "/employeewithscope1"
     verb: "GET"
     scopes:
-      - "wso2"
+      - "scope1"
+  - target: "/employeewithscope2"
+    verb: "GET"
+    scopes:
+      - "scope2"
+  - target: "/employeewithscopes"
+    verb: "GET"
+    scopes: ["scope1", "scope2"]

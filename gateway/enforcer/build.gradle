@@ -34,7 +34,7 @@ release {
 }
 
 task build{
-    dependsOn("resources:build")
+    dependsOn("org.wso2.apk.enforcer:build_enforcer")
     finalizedBy docker_build
 }
 
@@ -45,7 +45,6 @@ allprojects {
 
 subprojects {
     apply from: "$rootDir/../../common-gradle-scripts/java.gradle"
-    afterReleaseBuild.dependsOn publish
 }
 
 tasks.named("afterReleaseBuild").configure {

@@ -33,6 +33,7 @@ public class SharedContext {
     private SimpleHTTPClient httpClient;
     private String publisherAccessToken;
     private String devportalAccessToken;
+    private String adminportalAccessToken;
     private String basicAuthToken;
     private HttpResponse response;
     private String responseBody;
@@ -49,6 +50,9 @@ public class SharedContext {
     private String sandboxKeyMappingID;
     private String apiAccessToken;
     private Boolean definitionValidStatus;
+    private String subscriptionID;
+    private String internalKey;
+    private static String policyID;
     private HashMap<String, Object> valueStore = new HashMap<>();
     private HashMap<String, String> headers = new HashMap<>();
 
@@ -77,6 +81,16 @@ public class SharedContext {
     public void setDevportalAccessToken(String accessToken) {
 
         this.devportalAccessToken = accessToken;
+    }
+
+    public String getAdminAccessToken() {
+
+        return adminportalAccessToken;
+    }
+
+    public void setAdminAccessToken(String accessToken) {
+
+        this.adminportalAccessToken = accessToken;
     }
 
     public String getBasicAuthToken() {
@@ -118,6 +132,10 @@ public class SharedContext {
     public void addHeader(String key, String value) {
         headers.put(key, value);
     }
+
+    public void removeHeader(String key) {
+        headers.remove(key);
+    }    
 
     public String getResponseBody() {
 
@@ -177,6 +195,14 @@ public class SharedContext {
     public void setOauthKeyUUID(String oauthKeyUUID) {
 
         this.oauthKeyUUID = oauthKeyUUID;
+    }
+
+    public void setAPIInternalKey(String internalKey){
+        this.internalKey = internalKey;
+    }
+
+    public String getAPIInternalKey(){
+        return internalKey;
     }
 
     public String getConsumerSecret(String keyType) {
@@ -240,5 +266,25 @@ public class SharedContext {
 
     public Boolean getDefinitionValidStatus(){
         return definitionValidStatus;
+    }
+
+    public String getSubscriptionID() {
+
+        return subscriptionID;
+    }
+
+    public void setSubscriptionID(String subID) {
+
+        this.subscriptionID = subID;
+    }
+
+    public String getPolicyID() {
+
+        return policyID;
+    }
+
+    public void setPolicyID(String policyId) {
+
+        this.policyID = policyId;
     }
 }

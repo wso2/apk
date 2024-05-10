@@ -1,4 +1,4 @@
-# Copyright (c) 2024, WSO2 LLC. (https://www.wso2.com) All Rights Reserved.
+# Copyright (c) 2023, WSO2 LLC. (https://www.wso2.com) All Rights Reserved.
 #
 # WSO2 LLC. licenses this file to you under the Apache License,
 # Version 2.0 (the "License"); you may not use this file except
@@ -21,7 +21,13 @@ image:
   pullPolicy: Always
 service:
   name: apim-apk-agent-service
-resources: {}
+resources:
+  requests:
+    memory: "128Mi"
+    cpu: "100m"
+  limits:
+    memory: "256Mi"
+    cpu: "200m"
 controlPlane:
   enabled: true
   serviceURL: https://apim-wso2am-cp-1-service.apk.svc.cluster.local:9443/
@@ -40,4 +46,9 @@ metrics:
 agent:
   mode: CPtoDP
 certmanager:
-  enabled: true
+  enabled: false
+serviceAccount:
+  enableServiceAccountCreation: true
+  enableClusterRoleCreation: true
+  serviceAccountName: wso2agent-platform
+  roleName: wso2agent-role

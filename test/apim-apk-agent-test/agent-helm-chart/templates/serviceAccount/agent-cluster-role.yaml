@@ -14,10 +14,11 @@
 # specific language governing permissions and limitations
 # under the License.
 
+{{- if .Values.serviceAccount.enableServiceAccountCreation }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: wso2agent-role
+  name: {{ .Values.serviceAccount.roleName | default "wso2agent-role" }}
 rules:
   - apiGroups: [""]
     resources: ["services","configmaps","secrets"]
@@ -121,3 +122,4 @@ rules:
   - apiGroups: ["dp.wso2.com"]
     resources: ["gqlroutes/status"]
     verbs: ["get","patch","update"]
+{{- end }}

@@ -371,9 +371,15 @@ public class APIClient {
                 authTypes.jwt = {header: <string>jwtAuthentication.headerName, sendTokenToUpstream: <boolean>jwtAuthentication.sendTokenToUpstream, disabled: !jwtAuthentication.enabled, audience: jwtAuthentication.audience};
             } else if authentication.authType == "APIKey" && authentication is APIKeyAuthentication {
                 APIKeyAuthentication apiKeyAuthentication = check authentication.cloneWithType(APIKeyAuthentication);
-                authTypes.apiKey = [];
-                authTypes.apiKey.push({'in: "Header", name: apiKeyAuthentication.headerName, sendTokenToUpstream: apiKeyAuthentication.sendTokenToUpstream});
-                authTypes.apiKey.push({'in: "Query", name: apiKeyAuthentication.queryParamName, sendTokenToUpstream: apiKeyAuthentication.sendTokenToUpstream});
+                model:APIKey[] apiKeys = [];
+
+                if apiKeyAuthentication.headerEnable {
+                    apiKeys.push({'in: "Header", name: <string>apiKeyAuthentication.headerName, sendTokenToUpstream: apiKeyAuthentication.sendTokenToUpstream});
+                }
+                if apiKeyAuthentication.queryParamEnable {
+                    apiKeys.push({'in: "Query", name: <string>apiKeyAuthentication.queryParamName, sendTokenToUpstream: apiKeyAuthentication.sendTokenToUpstream});
+                }
+                authTypes.apiKey = apiKeys;
             } else if authentication.authType == "mTLS" {
                 MTLSAuthentication mtlsAuthentication = check authentication.cloneWithType(MTLSAuthentication);
                 isMTLSMandatory = mtlsAuthentication.required == "mandatory";
@@ -636,7 +642,7 @@ public class APIClient {
                             if apiArtifact.scopes.hasKey(scope) {
                                 scopeCr = apiArtifact.scopes.get(scope);
                             } else {
-                                scopeCr = self.generateScopeCR(apiArtifact, apkConf, organization, scope, count);
+                                scopeCr = self.generateScopeCR(operation, apiArtifact, apkConf, organization, scope, count);
                                 count = count + 1;
                             }
                             model:HTTPRouteFilter scopeFilter = {'type: "ExtensionRef", extensionRef: {group: "dp.wso2.com", kind: scopeCr.kind, name: scopeCr.metadata.name}};
@@ -695,7 +701,7 @@ public class APIClient {
                             if apiArtifact.scopes.hasKey(scope) {
                                 scopeCr = apiArtifact.scopes.get(scope);
                             } else {
-                                scopeCr = self.generateScopeCR(apiArtifact, apkConf, organization, scope, count);
+                                scopeCr = self.generateScopeCR(operation, apiArtifact, apkConf, organization, scope, count);
                                 count = count + 1;
                             }
                             model:GRPCRouteFilter scopeFilter = {'type: "ExtensionRef", extensionRef: {group: "dp.wso2.com", kind: scopeCr.kind, name: scopeCr.metadata.name}};
@@ -755,7 +761,7 @@ public class APIClient {
                             if apiArtifact.scopes.hasKey(scope) {
                                 scopeCr = apiArtifact.scopes.get(scope);
                             } else {
-                                scopeCr = self.generateScopeCR(apiArtifact, apkConf, organization, scope, count);
+                                scopeCr = self.generateScopeCR(operation, apiArtifact, apkConf, organization, scope, count);
                                 count = count + 1;
                             }
                             model:GQLRouteFilter scopeFilter = {extensionRef: {group: "dp.wso2.com", kind: scopeCr.kind, name: scopeCr.metadata.name}};
@@ -823,10 +829,10 @@ public class APIClient {
         return ();
     }
 
-    private isolated function generateScopeCR(model:APIArtifact apiArtifact, APKConf apkConf, commons:Organization organization, string scope, int count) returns model:Scope {
+    private isolated function generateScopeCR(APKOperations operation, model:APIArtifact apiArtifact, APKConf apkConf, commons:Organization organization, string scope, int count) returns model:Scope {
         model:Scope scopeCr = {
             metadata: {
-                name: apiArtifact.uniqueId + "-scope-" + count.toString(),
+                name: self.getScopeUid(apiArtifact, operation, count),
                 labels: self.getLabels(apkConf, organization)
             },
             spec: {
@@ -1661,6 +1667,17 @@ public class APIClient {
         } else {
             return flow + "-interceptor-service-" + interceptorIndex.toString() + "-" + concatanatedString + "-api";
         }
+    }
+
+    public isolated function getScopeUid(model:APIArtifact apiArtifact, APKOperations? apiOperation, int count) returns string {
+        string scopeUid = apiArtifact.uniqueId;
+        if (apiOperation is APKOperations) {
+            if (apiOperation.target is string) {
+                byte[] hexBytes = string:toBytes(<string>apiArtifact.uniqueId + <string>apiOperation.target + <string>apiOperation.verb);
+                scopeUid = crypto:hashSha1(hexBytes).toBase16();
+            }
+        }
+        return scopeUid + "-scope-" + count.toString();
     }
 
     public isolated function getBackendPolicyUid(APKConf api, string endpointType, commons:Organization organization) returns string {

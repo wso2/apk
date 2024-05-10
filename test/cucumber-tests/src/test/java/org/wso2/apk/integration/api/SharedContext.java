@@ -36,6 +36,27 @@ public class SharedContext {
     private HttpResponse response;
     private String responseBody;
     private int grpcStatusCode;
+    private int grpcErrorCode;
+    private String publisherAccessToken;
+    private String devportalAccessToken;
+    private String adminportalAccessToken;
+    private String basicAuthToken;
+    private String apiUUID;
+    private String revisionUUID;
+    private String applicationUUID;
+    private String keyManagerUUID;
+    private String oauthKeyUUID;
+    private String consumerSecret;
+    private String consumerKey;
+    private String sandboxConsumerSecret;
+    private String sandboxConsumerKey;
+    private String prodKeyMappingID;
+    private String sandboxKeyMappingID;
+    private String apiAccessToken;
+    private Boolean definitionValidStatus;
+    private String subscriptionID;
+    private String internalKey;
+    private static String policyID;
     private HashMap<String, Object> valueStore = new HashMap<>();
     private HashMap<String, String> headers = new HashMap<>();
 
@@ -114,5 +135,186 @@ public class SharedContext {
     public void setResponseBody(String responseBody) {
 
         this.responseBody = responseBody;
+    }
+
+    public String getPublisherAccessToken() {
+
+        return publisherAccessToken;
+    }
+
+    public void setPublisherAccessToken(String accessToken) {
+
+        this.publisherAccessToken = accessToken;
+    }
+
+    public String getDevportalAccessToken() {
+
+        return devportalAccessToken;
+    }
+
+    public void setDevportalAccessToken(String accessToken) {
+
+        this.devportalAccessToken = accessToken;
+    }
+
+    public String getAdminAccessToken() {
+
+        return adminportalAccessToken;
+    }
+
+    public void setAdminAccessToken(String accessToken) {
+
+        this.adminportalAccessToken = accessToken;
+    }
+
+    public String getBasicAuthToken() {
+
+        return basicAuthToken;
+    }
+
+    public void setBasicAuthToken(String basicAuthToken) {
+
+        this.basicAuthToken = basicAuthToken;
+    }
+
+    public String getApiUUID() {
+
+        return apiUUID;
+    }
+
+    public void setApiUUID(String apiUUID) {
+
+        this.apiUUID = apiUUID;
+    }
+
+    public String getRevisionUUID() {
+
+        return revisionUUID;
+    }
+
+    public void setRevisionUUID(String revisionUUID) {
+
+        this.revisionUUID = revisionUUID;
+    }
+
+    public String getApplicationUUID() {
+
+        return applicationUUID;
+    }
+
+    public void setApplicationUUID(String applicationUUID) {
+
+        this.applicationUUID = applicationUUID;
+    }
+
+    public String getKeyManagerUUID() {
+
+        return keyManagerUUID;
+    }
+
+    public void setKeyManagerUUID(String keyManagerUUID) {
+
+        this.keyManagerUUID = keyManagerUUID;
+    }
+
+    public String getOauthKeyUUID() {
+
+        return oauthKeyUUID;
+    }
+
+    public void setOauthKeyUUID(String oauthKeyUUID) {
+
+        this.oauthKeyUUID = oauthKeyUUID;
+    }
+
+    public void setAPIInternalKey(String internalKey){
+        this.internalKey = internalKey;
+    }
+
+    public String getAPIInternalKey(){
+        return internalKey;
+    }
+
+    public String getConsumerSecret(String keyType) {
+        if ("production".equals(keyType))
+            return consumerSecret;
+        else if ("sandbox".equals(keyType))
+            return sandboxConsumerSecret;
+        return "";
+    }
+
+    public void setConsumerSecret(String consumerSecret, String keyType) {
+        if ("production".equals(keyType))
+            this.consumerSecret = consumerSecret;
+        else if ("sandbox".equals(keyType))
+            this.sandboxConsumerSecret = consumerSecret;
+    }
+
+    public String getConsumerKey(String keyType) {
+        if ("production".equals(keyType))
+            return consumerKey;
+        else if ("sandbox".equals(keyType))
+            return sandboxConsumerKey;
+        return "";
+    }
+
+    public void setConsumerKey(String consumerKey, String keyType) {
+        if ("production".equals(keyType))
+            this.consumerKey = consumerKey;
+        else if ("sandbox".equals(keyType))
+            this.sandboxConsumerKey = consumerKey;
+    }
+
+    public void setKeyMappingID(String keyMappingID, String keyType){
+        if ("production".equals(keyType))
+            this.prodKeyMappingID = keyMappingID;
+        else if ("sandbox".equals(keyType))
+            this.sandboxKeyMappingID = keyMappingID;
+    }
+
+    public String getKeyMappingID(String keyType){
+        if ("production".equals(keyType))
+            return prodKeyMappingID;
+        else if ("sandbox".equals(keyType))
+            return sandboxKeyMappingID;
+        return "";
+    }
+
+    public String getApiAccessToken() {
+
+        return apiAccessToken;
+    }
+
+    public void setApiAccessToken(String apiAccessToken) {
+
+        this.apiAccessToken = apiAccessToken;
+    }
+
+    public void setAPIDefinitionValidStatus(Boolean definitionValidStatus){
+        this.definitionValidStatus = definitionValidStatus;
+    }
+
+    public Boolean getDefinitionValidStatus(){
+        return definitionValidStatus;
+    }
+
+    public String getSubscriptionID() {
+
+        return subscriptionID;
+    }
+
+    public void setSubscriptionID(String subID) {
+
+        this.subscriptionID = subID;
+    }
+
+    public String getPolicyID() {
+
+        return policyID;
+    }
+
+    public void setPolicyID(String policyId) {
+
+        this.policyID = policyId;
     }
 }

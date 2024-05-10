@@ -45,6 +45,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.Header;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -53,6 +54,9 @@ import org.wso2.apk.integration.utils.Constants;
 import org.wso2.apk.integration.utils.Utils;
 import org.wso2.apk.integration.utils.clients.SimpleGRPCStudentClient;
 import org.wso2.apk.integration.utils.clients.SimpleHTTPClient;
+import org.apache.http.entity.mime.HttpMultipartMode;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.entity.ContentType;
 import org.wso2.apk.integration.utils.clients.studentGrpcClient.StudentResponse;
 
 import java.io.IOException;
@@ -134,6 +138,13 @@ public class BaseSteps {
     public void theResponseStatusCodeShouldBe(int expectedStatusCode) throws IOException {
 
         int actualStatusCode = sharedContext.getResponse().getStatusLine().getStatusCode();
+        ((CloseableHttpResponse)sharedContext.getResponse()).close();
+        Assert.assertEquals(actualStatusCode, expectedStatusCode);
+    }
+
+    @Then("the gRPC response status code should be {int}")
+    public void theGrpcResponseStatusCodeShouldBe(int expectedStatusCode) throws IOException {
+        int actualStatusCode = sharedContext.getGrpcStatusCode();
         Assert.assertEquals(actualStatusCode, expectedStatusCode);
     }
 
@@ -384,6 +395,7 @@ public class BaseSteps {
                 Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
         sharedContext.setAccessToken(Utils.extractToken(httpResponse));
         sharedContext.addStoreValue("accessToken", sharedContext.getAccessToken());
+        logger.info("Access Token: " + sharedContext.getAccessToken());
     }
 
     @Given("I have a valid subscription without api deploy permission")
@@ -416,5 +428,91 @@ public class BaseSteps {
                                                       Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
         sharedContext.setAccessToken(Utils.extractToken(httpResponse));
         sharedContext.addStoreValue(Constants.ACCESS_TOKEN, sharedContext.getAccessToken());
+    }
+
+    @Then("I remove the header {string}")
+    public void removeHeader(String key) {
+        sharedContext.removeHeader(key);
+    }
+
+    @Given("I have a DCR application")
+    public void iHaveADCRApplication() throws Exception {
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.HOST, Constants.DEFAULT_APIM_IDP_HOST);
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Basic YWRtaW46YWRtaW4=");
+
+        HttpResponse httpResponse = httpClient.doPost(Utils.getDCREndpointURL(), headers, "{\n" +
+                        "  \"callbackUrl\":\"www.google.lk\",\n" +
+                        "  \"clientName\":\"rest_api_publisher\",\n" +
+                        "  \"owner\":\"admin\",\n" +
+                        "  \"grantType\":\"client_credentials password refresh_token\",\n" +
+                        "  \"saasApp\":true\n" +
+                        "  }",
+                Constants.CONTENT_TYPES.APPLICATION_JSON);
+        sharedContext.setBasicAuthToken(Utils.extractBasicToken(httpResponse));
+        sharedContext.addStoreValue("publisherBasicAuthToken", sharedContext.getBasicAuthToken());
+    }
+
+
+    @Given("I have a valid Publisher access token")
+    public void iHaveValidPublisherAccessToken() throws Exception {
+
+        Map<String, String> headers = new HashMap<>();
+        String basicAuthHeader = "Basic " + sharedContext.getBasicAuthToken();
+        logger.info("Basic Auth Header: " + basicAuthHeader);
+        headers.put(Constants.REQUEST_HEADERS.HOST, Constants.DEFAULT_APIM_IDP_HOST);
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, basicAuthHeader);
+
+        HttpResponse httpResponse = httpClient.doPost(Utils.getAPIMTokenEndpointURL(), headers, "grant_type=password&username=admin&password=admin&scope=apim:api_view apim:api_create apim:api_publish apim:api_delete apim:api_manage apim:api_import_export apim:subscription_manage apim:client_certificates_add apim:client_certificates_update",
+                Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
+
+        sharedContext.setPublisherAccessToken(Utils.extractToken(httpResponse));
+        sharedContext.addStoreValue("publisherAccessToken", sharedContext.getPublisherAccessToken());
+    }
+
+    @Given("I have a valid Devportal access token")
+    public void iHaveValidDevportalAccessToken() throws Exception {
+        logger.info("Basic Auth Header: " + sharedContext.getBasicAuthToken());
+
+        Map<String, String> headers = new HashMap<>();
+        String basicAuthHeader = "Basic " + sharedContext.getBasicAuthToken();
+        headers.put(Constants.REQUEST_HEADERS.HOST, Constants.DEFAULT_APIM_IDP_HOST);
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, basicAuthHeader);
+
+        HttpResponse httpResponse = httpClient.doPost(Utils.getAPIMTokenEndpointURL(), headers, "grant_type=password&username=admin&password=admin&scope=apim:app_manage apim:sub_manage apim:subscribe",
+                Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
+
+        sharedContext.setDevportalAccessToken(Utils.extractToken(httpResponse));
+        sharedContext.addStoreValue("devportalAccessToken", sharedContext.getDevportalAccessToken());
+        logger.info("Devportal Access Token: " + sharedContext.getDevportalAccessToken());
+    }
+
+    @Given("I have a valid Adminportal access token")
+    public void iHaveValidAdminportalAccessToken() throws Exception {
+        logger.info("Basic Auth Header: " + sharedContext.getBasicAuthToken());
+
+        Map<String, String> headers = new HashMap<>();
+        String basicAuthHeader = "Basic " + sharedContext.getBasicAuthToken();
+        headers.put(Constants.REQUEST_HEADERS.HOST, Constants.DEFAULT_APIM_IDP_HOST);
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, basicAuthHeader);
+
+        HttpResponse httpResponse = httpClient.doPost(Utils.getAPIMTokenEndpointURL(), headers, "grant_type=password&username=admin&password=admin&scope=apim:app_manage apim:admin_tier_view apim:admin_tier_manage",
+                Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
+        sharedContext.setAdminAccessToken(Utils.extractToken(httpResponse));
+        sharedContext.addStoreValue("adminportalAccessToken", sharedContext.getAdminAccessToken());
+        logger.info("Admin Access Token: " + sharedContext.getAdminAccessToken());
+    }
+
+    @Then("the response should be given as valid")
+    public void theResponseShouldBeGivenAs() throws IOException {
+        Boolean status = sharedContext.getDefinitionValidStatus();
+        Assert.assertEquals(true, status,"Actual definition validation status: "+ status);
+    }
+
+    @Then("I set {string} as the new access token")
+    public void set_invalid_access_token(String newToken) throws Exception {
+            sharedContext.setApiAccessToken(newToken);
+            sharedContext.addStoreValue("accessToken",sharedContext.getApiAccessToken());
     }
 }
