@@ -49,6 +49,11 @@ public class Utils {
                 + Constants.DEFAULT_API_CONFIGURATOR + "apis/generate-configuration";
     }
 
+    public static String getK8ResourceGeneratorURL() {
+        return "https://" + Constants.DEFAULT_API_HOST + ":" + Constants.DEFAULT_GW_PORT + "/"
+                + Constants.DEFAULT_API_CONFIGURATOR + "apis/generate-k8s-resources?organization=carbon.super";
+    }
+
     public static String getTokenEndpointURL() {
 
         return "https://" + Constants.DEFAULT_IDP_HOST + ":" + Constants.DEFAULT_GW_PORT + "/"
