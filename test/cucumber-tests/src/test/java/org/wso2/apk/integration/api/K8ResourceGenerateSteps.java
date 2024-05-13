@@ -27,6 +27,10 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+
+/**
+ * This class contains the step definitions for generating the CRs using APK-Conf and API Defintiion.
+ */
 public class K8ResourceGenerateSteps {
     
     private final SharedContext sharedContext;
