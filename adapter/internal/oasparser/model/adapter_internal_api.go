@@ -34,6 +34,7 @@ import (
 	"github.com/wso2/apk/adapter/internal/operator/utils"
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
+	dpv1beta1 "github.com/wso2/apk/common-go-libs/apis/dp/v1beta1"
 	"golang.org/x/exp/maps"
 	"k8s.io/apimachinery/pkg/types"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
@@ -73,7 +74,7 @@ type AdapterInternalAPI struct {
 	apiDefinitionFile        []byte
 	apiDefinitionEndpoint    string
 	subscriptionValidation   bool
-	APIProperties            []dpv1alpha2.Property
+	APIProperties            []dpv1beta1.Property
 	// GraphQLSchema              string
 	// GraphQLComplexities        GraphQLComplexityYaml
 	IsSystemAPI      bool

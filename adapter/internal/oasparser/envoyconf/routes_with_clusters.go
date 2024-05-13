@@ -52,7 +52,7 @@ import (
 	logging "github.com/wso2/apk/adapter/internal/logging"
 	"github.com/wso2/apk/adapter/internal/oasparser/constants"
 	"github.com/wso2/apk/adapter/internal/oasparser/model"
-	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
+	dpv1beta1 "github.com/wso2/apk/common-go-libs/apis/dp/v1beta1"
 	"google.golang.org/protobuf/proto"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 )
@@ -1555,7 +1555,7 @@ func getUpgradeConfig(apiType string) []*routev3.RouteAction_UpgradeConfig {
 	return upgradeConfig
 }
 
-func getAPIProperties(apiPropertiesConfig []dpv1alpha2.Property) string {
+func getAPIProperties(apiPropertiesConfig []dpv1beta1.Property) string {
 	var apiProperties = make(map[string]string)
 	for _, val := range apiPropertiesConfig {
 		apiProperties[val.Name] = val.Value
