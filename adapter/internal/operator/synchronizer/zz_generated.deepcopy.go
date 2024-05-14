@@ -25,6 +25,7 @@ package synchronizer
 import (
 	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
+	dpv1beta1 "github.com/wso2/apk/common-go-libs/apis/dp/v1beta1"
 	"sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
@@ -33,7 +34,7 @@ func (in *APIState) DeepCopyInto(out *APIState) {
 	*out = *in
 	if in.APIDefinition != nil {
 		in, out := &in.APIDefinition, &out.APIDefinition
-		*out = new(v1alpha2.API)
+		*out = new(dpv1beta1.API)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.ProdHTTPRoute != nil {

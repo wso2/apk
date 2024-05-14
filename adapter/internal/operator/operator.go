@@ -20,6 +20,7 @@ package operator
 import (
 	"flag"
 	"fmt"
+	dpv1beta1 "github.com/wso2/apk/common-go-libs/apis/dp/v1beta1"
 	"strings"
 
 	"github.com/wso2/apk/adapter/config"
@@ -66,6 +67,8 @@ func init() {
 	utilruntime.Must(gwapiv1a2.AddToScheme(scheme))
 
 	utilruntime.Must(dpv1alpha2.AddToScheme(scheme))
+	utilruntime.Must(dpv1beta1.AddToScheme(scheme))
+
 	//+kubebuilder:scaffold:scheme
 }
 

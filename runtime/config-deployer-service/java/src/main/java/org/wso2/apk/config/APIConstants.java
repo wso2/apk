@@ -49,6 +49,7 @@ public final class APIConstants {
     public static final String OBJECT = "object";
 
     public static final String GRAPHQL_API = "GRAPHQL";
+    public static final String GRPC_API = "GRPC";
     public static final String APPLICATION_JSON_MEDIA_TYPE = "application/json";
 
     // registry location for OpenAPI files
@@ -90,7 +91,7 @@ public final class APIConstants {
     public static final String GRAPHQL_QUERY = "QUERY";
 
     public enum ParserType {
-        REST, ASYNC, GRAPHQL
+        REST, ASYNC, GRAPHQL, GRPC
     }
 
     public static class OperationParameter {

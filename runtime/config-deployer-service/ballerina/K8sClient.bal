@@ -56,7 +56,7 @@ isolated function getConfigMapValueFromNameAndNamespace(string name, string name
 }
 
 isolated function deleteAPICR(string name, string namespace) returns http:Response|http:ClientError {
-    string endpoint = "/apis/dp.wso2.com/v1alpha2/namespaces/" + namespace + "/apis/" + name;
+    string endpoint = "/apis/dp.wso2.com/v1beta1/namespaces/" + namespace + "/apis/" + name;
     return k8sApiServerEp->delete(endpoint, targetType = http:Response);
 }
 
@@ -100,6 +100,16 @@ isolated function deleteGqlRoute(string name, string namespace) returns http:Res
     return k8sApiServerEp->delete(endpoint, targetType = http:Response);
 }
 
+isolated function getGrpcRoute(string name, string namespace) returns model:GRPCRoute|http:ClientError {
+    string endpoint = "/apis/gateway.networking.k8s.io/v1alpha2/namespaces/" + namespace + "/grpcroutes/" + name;
+    return k8sApiServerEp->get(endpoint, targetType = model:GRPCRoute);
+}
+
+isolated function deleteGrpcRoute(string name, string namespace) returns http:Response|http:ClientError {
+    string endpoint = "/apis/gateway.networking.k8s.io/v1alpha2/namespaces/" + namespace + "/grpcroutes/" + name;
+    return k8sApiServerEp->delete(endpoint, targetType = http:Response);
+}
+
 isolated function getConfigMap(string name, string namespace) returns model:ConfigMap|http:ClientError {
     string endpoint = "/api/v1/namespaces/" + namespace + "/configmaps/" + name;
     return k8sApiServerEp->get(endpoint, targetType = model:ConfigMap);
@@ -111,12 +121,12 @@ isolated function deleteConfigMap(string name, string namespace) returns http:Re
 }
 
 isolated function deployAPICR(model:API api, string namespace) returns http:Response|http:ClientError {
-    string endpoint = "/apis/dp.wso2.com/v1alpha2/namespaces/" + namespace + "/apis";
+    string endpoint = "/apis/dp.wso2.com/v1beta1/namespaces/" + namespace + "/apis";
     return k8sApiServerEp->post(endpoint, api, targetType = http:Response);
 }
 
 isolated function updateAPICR(model:API api, string namespace) returns http:Response|http:ClientError {
-    string endpoint = "/apis/dp.wso2.com/v1alpha2/namespaces/" + namespace + "/apis/" + api.metadata.name;
+    string endpoint = "/apis/dp.wso2.com/v1beta1/namespaces/" + namespace + "/apis/" + api.metadata.name;
     return k8sApiServerEp->put(endpoint, api, targetType = http:Response);
 }
 
@@ -150,8 +160,18 @@ isolated function updateGqlRoute(model:GQLRoute gqlroute, string namespace) retu
     return k8sApiServerEp->put(endpoint, gqlroute, targetType = http:Response);
 }
 
+isolated function deployGrpcRoute(model:GRPCRoute grpcRoute, string namespace) returns http:Response|http:ClientError {
+    string endpoint = "/apis/gateway.networking.k8s.io/v1alpha2/namespaces/" + namespace + "/grpcroutes";
+    return k8sApiServerEp->post(endpoint, grpcRoute, targetType = http:Response);
+}
+
+isolated function updateGrpcRoute(model:GRPCRoute grpcRoute, string namespace) returns http:Response|http:ClientError {
+    string endpoint = "/apis/gateway.networking.k8s.io/v1alpha2/namespaces/" + namespace + "/grpcroutes/" + grpcRoute.metadata.name;
+    return k8sApiServerEp->put(endpoint, grpcRoute, targetType = http:Response);
+}
+
 public isolated function getK8sAPIByNameAndNamespace(string name, string namespace) returns model:API?|commons:APKError {
-    string endpoint = "/apis/dp.wso2.com/v1alpha2/namespaces/" + namespace + "/apis/" + name;
+    string endpoint = "/apis/dp.wso2.com/v1beta1/namespaces/" + namespace + "/apis/" + name;
     do {
         http:Response response = check k8sApiServerEp->get(endpoint);
         if response.statusCode == 200 {
@@ -244,7 +264,10 @@ public isolated function getGqlRoutesForAPIs(string apiName, string apiVersion, 
     string endpoint = "/apis/dp.wso2.com/v1alpha2/namespaces/" + namespace + "/gqlroutes/?labelSelector=" + check generateUrlEncodedLabelSelector(apiName, apiVersion, organization);
     return k8sApiServerEp->get(endpoint, targetType = model:GQLRouteList);
 }
-
+public isolated function getGrpcRoutesForAPIs(string apiName, string apiVersion, string namespace, string organization) returns model:GRPCRouteList|http:ClientError|error {
+    string endpoint = "/apis/gateway.networking.k8s.io/v1alpha2/namespaces/" + namespace + "/grpcroutes/?labelSelector=" + check generateUrlEncodedLabelSelector(apiName, apiVersion, organization);
+    return k8sApiServerEp->get(endpoint, targetType = model:GRPCRouteList);
+}
 isolated function deployRateLimitPolicyCR(model:RateLimitPolicy rateLimitPolicy, string namespace) returns http:Response|http:ClientError {
     string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/ratelimitpolicies";
     return k8sApiServerEp->post(endpoint, rateLimitPolicy, targetType = http:Response);

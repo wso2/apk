@@ -95,6 +95,7 @@ public class DeployerClient {
             apiArtifact.namespace = apiPartition.namespace;
             if existingAPI is model:API {
                 check self.deleteHttpRoutes(existingAPI, <string>apiArtifact?.organization);
+                check self.deleteGrpcRoutes(existingAPI, <string>apiArtifact?.organization);
                 check self.deleteAuthenticationCRs(existingAPI, <string>apiArtifact?.organization);
                 _ = check self.deleteScopeCrsForAPI(existingAPI, <string>apiArtifact?.organization);
                 check self.deleteBackends(existingAPI, <string>apiArtifact?.organization);
@@ -122,8 +123,8 @@ public class DeployerClient {
                     check self.deployBackendJWTConfigs(apiArtifact, ownerReference);
                     check self.deployAPIPolicyCRs(apiArtifact, ownerReference);
 
-                    check self.deployRoutes(apiArtifact.productionHttpRoutes, apiArtifact.productionGqlRoutes, <string>apiArtifact?.namespace, ownerReference);
-                    check self.deployRoutes(apiArtifact.sandboxHttpRoutes, apiArtifact.sandboxGqlRoutes, <string>apiArtifact?.namespace, ownerReference);
+                    check self.deployRoutes(apiArtifact.productionHttpRoutes, apiArtifact.productionGqlRoutes,apiArtifact.productionGrpcRoutes, <string>apiArtifact?.namespace, ownerReference);
+                    check self.deployRoutes(apiArtifact.sandboxHttpRoutes, apiArtifact.sandboxGqlRoutes,apiArtifact.sandboxGrpcRoutes, <string>apiArtifact?.namespace, ownerReference);
 
                     return deployK8sAPICrResult;
                 } on fail var e {
@@ -170,6 +171,30 @@ public class DeployerClient {
                 model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
                 check self.handleK8sTimeout(statusResponse);
             }
+        }
+    }
+
+    private isolated function deleteGrpcRoutes(model:API api, string organization) returns commons:APKError? {
+        do {
+            model:GRPCRouteList|http:ClientError grpcRouteListResponse = check getGrpcRoutesForAPIs(api.spec.apiName, api.spec.apiVersion, <string>api.metadata?.namespace, organization);
+            if grpcRouteListResponse is model:GRPCRouteList {
+                foreach model:GRPCRoute item in grpcRouteListResponse.items {
+                    http:Response|http:ClientError grpcRouteDeletionResponse = deleteGrpcRoute(item.metadata.name, <string>api.metadata?.namespace);
+                    if grpcRouteDeletionResponse is http:Response {
+                        if grpcRouteDeletionResponse.statusCode != http:STATUS_OK {
+                            json responsePayLoad = check grpcRouteDeletionResponse.getJsonPayload();
+                            model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+                            check self.handleK8sTimeout(statusResponse);
+                        }
+                    } else {
+                        log:printError("Error occured while deleting GrpcRoute", grpcRouteDeletionResponse);
+                    }
+                }
+                return;
+            }
+        } on fail var e {
+            log:printError("Error occured deleting grpcRoutes", e);
+            return e909022("Error occured deleting grpcRoutes", e);
         }
     }
 
@@ -312,8 +337,10 @@ public class DeployerClient {
                         model:StatusCause[] 'causes = details.'causes;
                         foreach model:StatusCause 'cause in 'causes {
                             if 'cause.'field == "spec.basePath" {
+                                log:printError("Error occured while updating K8sAPI due to basePath ", e909015(k8sAPI.spec.basePath));
                                 return e909015(k8sAPI.spec.basePath);
                             } else if 'cause.'field == "spec.apiName" {
+                                log:printError("Error occured while updating K8sAPI due to apiName ", e909016(k8sAPI.spec.apiName));
                                 return e909016(k8sAPI.spec.apiName);
                             }
                         }
@@ -349,7 +376,7 @@ public class DeployerClient {
             return e909022("Internal error occured", e = error("Internal error occured"));
         }
     }
-    private isolated function deployRoutes(model:HTTPRoute[]? httproutes, model:GQLRoute[]? gqlroutes, string namespace, model:OwnerReference ownerReference) returns error? {
+    private isolated function deployRoutes(model:HTTPRoute[]? httproutes, model:GQLRoute[]? gqlroutes,model:GRPCRoute[]? grpcroutes, string namespace, model:OwnerReference ownerReference) returns error? {
         if httproutes is model:HTTPRoute[] && httproutes.length() > 0 {
             model:HTTPRoute[] deployReadyHttproutes = httproutes;
             model:HTTPRoute[]|commons:APKError orderedHttproutes = self.createHttpRoutesOrder(httproutes);
@@ -408,6 +435,35 @@ public class DeployerClient {
                     }
                 }
             }
+        } else if grpcroutes is model:GRPCRoute[] && grpcroutes.length() > 0 {
+            model:GRPCRoute[] deployReadyGrpcRoutes = grpcroutes;
+            model:GRPCRoute[]|commons:APKError orderedGrpcRoutes = self.createGrpcRoutesOrder(grpcroutes);
+            if orderedGrpcRoutes is model:GRPCRoute[] {
+                deployReadyGrpcRoutes = orderedGrpcRoutes;
+            }
+            foreach model:GRPCRoute grpcRoute in deployReadyGrpcRoutes {
+                grpcRoute.metadata.ownerReferences = [ownerReference];
+                if grpcRoute.spec.rules.length() > 0 {
+                    http:Response deployGrpcRouteResult = check deployGrpcRoute(grpcRoute, namespace);
+                    if deployGrpcRouteResult.statusCode == http:STATUS_CREATED {
+                        log:printDebug("Deployed GrpcRoute Successfully" + grpcRoute.toString());
+                    } else if deployGrpcRouteResult.statusCode == http:STATUS_CONFLICT {
+                        log:printDebug("GrpcRoute already exists" + grpcRoute.toString());
+                        model:GRPCRoute grpcRouteFromK8s = check getGrpcRoute(grpcRoute.metadata.name, namespace);
+                        grpcRoute.metadata.resourceVersion = grpcRouteFromK8s.metadata.resourceVersion;
+                        http:Response grpcRouteCR = check updateGrpcRoute(grpcRoute, namespace);
+                        if grpcRouteCR.statusCode != http:STATUS_OK {
+                            json responsePayLoad = check grpcRouteCR.getJsonPayload();
+                            model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+                            check self.handleK8sTimeout(statusResponse);
+                        }
+                    } else {
+                        json responsePayLoad = check deployGrpcRouteResult.getJsonPayload();
+                        model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+                        check self.handleK8sTimeout(statusResponse);
+                    }
+                }
+            }
         }
     }
 
@@ -440,6 +496,21 @@ public class DeployerClient {
         } on fail var e {
             log:printError("Error occured while sorting gqlRoutes", e);
             return e909022("Error occured while sorting gqlRoutes", e);
+        }
+    }
+    public isolated function createGrpcRoutesOrder(model:GRPCRoute[] grpcRoutes) returns model:GRPCRoute[]|commons:APKError {
+        do {
+            foreach model:GRPCRoute route in grpcRoutes {
+                model:GRPCRouteRule[] routeRules = route.spec.rules;
+                model:GRPCRouteRule[] sortedRouteRules = from var routeRule in routeRules
+                    order by <string>(routeRule.matches[0].method.'service) descending
+                    select routeRule;
+                route.spec.rules = sortedRouteRules;
+            }
+            return grpcRoutes;
+        } on fail var e {
+            log:printError("Error occured while sorting grpcRoutes", e);
+            return e909022("Error occured while sorting grpcRoutes", e);
         }
     }
 

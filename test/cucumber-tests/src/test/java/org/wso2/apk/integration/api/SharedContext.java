@@ -19,11 +19,11 @@ package org.wso2.apk.integration.api;
 
 import org.apache.http.HttpResponse;
 import org.wso2.apk.integration.utils.clients.SimpleHTTPClient;
+import org.wso2.apk.integration.utils.clients.studentGrpcClient.StudentResponse;
 
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,9 +31,12 @@ import java.util.Map;
 public class SharedContext {
 
     private SimpleHTTPClient httpClient;
+    private StudentResponse studentResponse;
     private String accessToken;
     private HttpResponse response;
     private String responseBody;
+    private int grpcStatusCode;
+    private int grpcErrorCode;
     private String publisherAccessToken;
     private String devportalAccessToken;
     private String adminportalAccessToken;
@@ -73,10 +76,26 @@ public class SharedContext {
 
         this.accessToken = accessToken;
     }
+    public int getGrpcStatusCode() {
+        return grpcStatusCode;
+    }
+    public void setGrpcStatusCode(int grpcStatusCode) {
+        this.grpcStatusCode = grpcStatusCode;
+    }
 
     public HttpResponse getResponse() {
 
         return response;
+    }
+
+    public StudentResponse getStudentResponse() {
+
+        return studentResponse;
+    }
+
+    public void setStudentResponse(StudentResponse studentResponse) {
+
+        this.studentResponse = studentResponse;
     }
 
     public void setResponse(HttpResponse response) {
@@ -217,7 +236,7 @@ public class SharedContext {
     }
 
     public String getConsumerSecret(String keyType) {
-        if ("production".equals(keyType)) 
+        if ("production".equals(keyType))
             return consumerSecret;
         else if ("sandbox".equals(keyType))
             return sandboxConsumerSecret;
@@ -225,14 +244,14 @@ public class SharedContext {
     }
 
     public void setConsumerSecret(String consumerSecret, String keyType) {
-        if ("production".equals(keyType)) 
+        if ("production".equals(keyType))
             this.consumerSecret = consumerSecret;
         else if ("sandbox".equals(keyType))
             this.sandboxConsumerSecret = consumerSecret;
     }
 
     public String getConsumerKey(String keyType) {
-        if ("production".equals(keyType)) 
+        if ("production".equals(keyType))
             return consumerKey;
         else if ("sandbox".equals(keyType))
             return sandboxConsumerKey;
@@ -240,25 +259,25 @@ public class SharedContext {
     }
 
     public void setConsumerKey(String consumerKey, String keyType) {
-        if ("production".equals(keyType)) 
+        if ("production".equals(keyType))
             this.consumerKey = consumerKey;
         else if ("sandbox".equals(keyType))
             this.sandboxConsumerKey = consumerKey;
     }
 
     public void setKeyMappingID(String keyMappingID, String keyType){
-        if ("production".equals(keyType)) 
+        if ("production".equals(keyType))
             this.prodKeyMappingID = keyMappingID;
         else if ("sandbox".equals(keyType))
             this.sandboxKeyMappingID = keyMappingID;
     }
 
     public String getKeyMappingID(String keyType){
-        if ("production".equals(keyType)) 
+        if ("production".equals(keyType))
             return prodKeyMappingID;
         else if ("sandbox".equals(keyType))
             return sandboxKeyMappingID;
-        return "";        
+        return "";
     }
 
     public String getApiAccessToken() {

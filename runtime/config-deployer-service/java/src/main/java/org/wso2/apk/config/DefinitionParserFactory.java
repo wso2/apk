@@ -21,7 +21,8 @@ public class DefinitionParserFactory {
 
     public static APIDefinition getParser(API api) {
         if (APIConstants.ParserType.REST.name().equals(api.getType())
-                || APIConstants.ParserType.GRAPHQL.name().equals(api.getType())) {
+                || APIConstants.ParserType.GRAPHQL.name().equals(api.getType())
+                || APIConstants.ParserType.GRPC.name().equals(api.getType())) {
             return new OAS3Parser();
         } else if (APIConstants.ParserType.ASYNC.name().equals(api.getType())) {
             return new AsyncApiParser();

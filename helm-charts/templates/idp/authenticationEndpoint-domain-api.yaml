@@ -15,7 +15,7 @@
 # under the License.
 {{- if .Values.idp.enabled }}
 kind: "API"
-apiVersion: "dp.wso2.com/v1alpha2"
+apiVersion: "dp.wso2.com/v1beta1"
 metadata:
   name: {{ template "apk-helm.resource.prefix" . }}-authentication-endpoint-ds-api
   namespace: {{ .Release.Namespace }}

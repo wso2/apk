@@ -1,0 +1,36 @@
+---
+name: "demo-grpc-api"
+basePath: "/dineth.grpc.api"
+version: "v1"
+type: "GRPC"
+id: "grpc-mtls-optional-oauth2-optional"
+endpointConfigurations:
+  production:
+    endpoint: "http://grpc-backend:6565"
+defaultVersion: false
+subscriptionValidation: false
+operations:
+- target: "student.StudentService"
+  verb: "GetStudent"
+  secured: true
+  scopes: []
+- target: "student.StudentService"
+  verb: "GetStudentStream"
+  secured: true
+  scopes: []
+- target: "student.StudentService"
+  verb: "SendStudentStream"
+  secured: true
+  scopes: []
+- target: "student.StudentService"
+  verb: "SendAndGetStudentStream"
+  secured: true
+  scopes: []
+authentication:
+  - authType: OAuth2
+    required: optional
+  - authType: mTLS
+    required: optional
+    certificates:
+      - name: mtls-test-configmap
+        key: tls.crt

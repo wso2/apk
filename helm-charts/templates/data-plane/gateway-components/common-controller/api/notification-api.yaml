@@ -16,7 +16,7 @@
 
 {{- if and .Values.wso2.apk.dp.enabled .Values.wso2.apk.dp.commonController }}
 kind: "API"
-apiVersion: "dp.wso2.com/v1alpha2"
+apiVersion: "dp.wso2.com/v1beta1"
 metadata:
   name: "{{ template "apk-helm.resource.prefix" . }}-wso2-apk-notification-api"
   namespace: {{ .Release.Namespace }}
