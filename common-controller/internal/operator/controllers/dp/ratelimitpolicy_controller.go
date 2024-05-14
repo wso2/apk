@@ -19,6 +19,7 @@ package dp
 import (
 	"context"
 	"fmt"
+	dpv1beta1 "github.com/wso2/apk/common-go-libs/apis/dp/v1beta1"
 	"time"
 
 	logger "github.com/sirupsen/logrus"
@@ -46,7 +47,6 @@ import (
 	"github.com/wso2/apk/common-controller/internal/utils"
 	xds "github.com/wso2/apk/common-controller/internal/xds"
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
-	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	"github.com/wso2/apk/common-go-libs/constants"
 )
 
@@ -87,7 +87,7 @@ func NewratelimitController(mgr manager.Manager, ratelimitStore *cache.Ratelimit
 	conf := config.ReadConfigs()
 	predicates := []predicate.Predicate{predicate.NewPredicateFuncs(utils.FilterByNamespaces(conf.CommonController.Operator.Namespaces))}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha2.API{}),
+	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1beta1.API{}),
 		handler.EnqueueRequestsFromMapFunc(ratelimitReconsiler.getRatelimitForAPI), predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2611, logging.BLOCKER,
 			"Error watching API resources: %v", err))
@@ -149,7 +149,7 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) Reconcile(ctx context.Cont
 			xds.DeleteCustomRateLimitPolicies(resolveCustomRateLimitPolicy)
 			xds.UpdateRateLimiterPolicies(conf.CommonController.Server.Label)
 		}
-		if (k8error.IsNotFound(err)) {
+		if k8error.IsNotFound(err) {
 			return ctrl.Result{}, nil
 		}
 		return ctrl.Result{
@@ -177,7 +177,7 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) Reconcile(ctx context.Cont
 }
 
 func (ratelimitReconsiler *RateLimitPolicyReconciler) getRatelimitForAPI(ctx context.Context, obj k8client.Object) []reconcile.Request {
-	api, ok := obj.(*dpv1alpha2.API)
+	api, ok := obj.(*dpv1beta1.API)
 	if !ok {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL,
 			"Unexpected object type, bypassing reconciliation: %v", api))
@@ -246,7 +246,7 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) marshelRateLimit(ctx conte
 	ratelimitPolicy dpv1alpha1.RateLimitPolicy) ([]dpv1alpha1.ResolveRateLimitAPIPolicy, error) {
 
 	policyList := []dpv1alpha1.ResolveRateLimitAPIPolicy{}
-	var api dpv1alpha2.API
+	var api dpv1beta1.API
 
 	if err := ratelimitReconsiler.client.Get(ctx, types.NamespacedName{
 		Namespace: ratelimitKey.Namespace,

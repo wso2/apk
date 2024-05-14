@@ -30,7 +30,7 @@ import (
 	"github.com/wso2/apk/adapter/internal/operator/synchronizer"
 	operatorutils "github.com/wso2/apk/adapter/internal/operator/utils"
 	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
-	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
+	"github.com/wso2/apk/common-go-libs/apis/dp/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8types "k8s.io/apimachinery/pkg/types"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
@@ -39,16 +39,16 @@ import (
 
 func TestCreateRoutesWithClustersWithExactAndRegularExpressionRules(t *testing.T) {
 	apiState := synchronizer.APIState{}
-	apiDefinition := v1alpha2.API{
+	apiDefinition := v1beta1.API{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: "default",
 			Name:      "test-api-2",
 		},
-		Spec: v1alpha2.APISpec{
+		Spec: v1beta1.APISpec{
 			APIName:    "test-api-2",
 			APIVersion: "2.0.0",
 			BasePath:   "/test-api/2.0.0",
-			Production: []v1alpha2.EnvConfig{
+			Production: []v1beta1.EnvConfig{
 				{
 					RouteRefs: []string{
 						"test-api-2-prod-http-route",
@@ -211,16 +211,16 @@ func TestExtractAPIDetailsFromHTTPRouteForSpecificEnvironment(t *testing.T) {
 func generateSampleAPI(apiName string, apiVersion string, basePath string) synchronizer.APIState {
 
 	apiState := synchronizer.APIState{}
-	apiDefinition := v1alpha2.API{
+	apiDefinition := v1beta1.API{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: "default",
 			Name:      apiName,
 		},
-		Spec: v1alpha2.APISpec{
+		Spec: v1beta1.APISpec{
 			APIName:    apiName,
 			APIVersion: apiVersion,
 			BasePath:   basePath,
-			Production: []v1alpha2.EnvConfig{
+			Production: []v1beta1.EnvConfig{
 				{
 					RouteRefs: []string{
 						apiName + "-prod-http-route",
@@ -274,16 +274,16 @@ func generateSampleAPI(apiName string, apiVersion string, basePath string) synch
 // TODO: Fix this test case
 func TestCreateRoutesWithClustersWithMultiplePathPrefixRules(t *testing.T) {
 	apiState := synchronizer.APIState{}
-	apiDefinition := v1alpha2.API{
+	apiDefinition := v1beta1.API{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: "default",
 			Name:      "test-api-1",
 		},
-		Spec: v1alpha2.APISpec{
+		Spec: v1beta1.APISpec{
 			APIName:    "test-api",
 			APIVersion: "1.0.0",
 			BasePath:   "/test-api/1.0.0",
-			Production: []v1alpha2.EnvConfig{
+			Production: []v1beta1.EnvConfig{
 				{
 					RouteRefs: []string{
 						"test-api-1-prod-http-route",
@@ -423,16 +423,16 @@ func TestCreateRoutesWithClustersWithMultiplePathPrefixRules(t *testing.T) {
 
 func TestCreateRoutesWithClustersWithBackendTLSConfigs(t *testing.T) {
 	apiState := synchronizer.APIState{}
-	apiDefinition := v1alpha2.API{
+	apiDefinition := v1beta1.API{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: "default",
 			Name:      "test-api-3",
 		},
-		Spec: v1alpha2.APISpec{
+		Spec: v1beta1.APISpec{
 			APIName:    "test-api-3",
 			APIVersion: "1.0.0",
 			BasePath:   "/test-api-3/1.0.0",
-			Production: []v1alpha2.EnvConfig{
+			Production: []v1beta1.EnvConfig{
 				{
 					RouteRefs: []string{
 						"test-api-3-prod-http-route",
@@ -546,16 +546,16 @@ func TestCreateHealthEndpoint(t *testing.T) {
 
 func TestCreateRoutesWithClustersDifferentBackendRefs(t *testing.T) {
 	apiState := synchronizer.APIState{}
-	apiDefinition := v1alpha2.API{
+	apiDefinition := v1beta1.API{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: "default",
 			Name:      "test-api-different-backendrefs",
 		},
-		Spec: v1alpha2.APISpec{
+		Spec: v1beta1.APISpec{
 			APIName:    "test-api-different-backendrefs",
 			APIVersion: "1.0.0",
 			BasePath:   "/test-api-different-backendrefs/1.0.0",
-			Production: []v1alpha2.EnvConfig{
+			Production: []v1beta1.EnvConfig{
 				{
 					RouteRefs: []string{
 						"test-api-different-backendrefs-prod-http-route",
@@ -638,16 +638,16 @@ func TestCreateRoutesWithClustersDifferentBackendRefs(t *testing.T) {
 
 func TestCreateRoutesWithClustersSameBackendRefs(t *testing.T) {
 	apiState := synchronizer.APIState{}
-	apiDefinition := v1alpha2.API{
+	apiDefinition := v1beta1.API{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: "default",
 			Name:      "test-api-same-backendrefs",
 		},
-		Spec: v1alpha2.APISpec{
+		Spec: v1beta1.APISpec{
 			APIName:    "test-api-same-backendrefs",
 			APIVersion: "1.0.0",
 			BasePath:   "/test-api-same-backendrefs/1.0.0",
-			Production: []v1alpha2.EnvConfig{
+			Production: []v1beta1.EnvConfig{
 				{
 					RouteRefs: []string{
 						"test-api-same-backendrefs-prod-http-route",
