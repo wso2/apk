@@ -99,7 +99,6 @@ jobs:
         sh ./scripts/agent-setup-hosts.sh
         ./gradlew runCpToDpTests
     - name: Helm release undeploy
-      if: always()
       shell: sh
       run: |
         cd apk-repo/helm-charts
@@ -118,7 +117,6 @@ jobs:
         helm uninstall apim-apk-agent -n apk
         kubectl delete namespace apk
     - name: Publish Test Report(CP to DP Flow)
-      if: always()
       uses: malinthaprasan/action-surefire-report@v1
       with:
        report_paths: 'apk-repo/test/cucumber-tests/build/test-output/junitreports/*.xml'
