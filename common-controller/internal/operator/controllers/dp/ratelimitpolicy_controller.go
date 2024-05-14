@@ -19,6 +19,7 @@ package dp
 import (
 	"context"
 	"fmt"
+	gwapiv1a2 "sigs.k8s.io/gateway-api/apis/v1alpha2"
 	"time"
 
 	logger "github.com/sirupsen/logrus"
@@ -62,6 +63,7 @@ const (
 	apiRateLimitIndex = "apiRateLimitIndex"
 	// apiRateLimitResourceIndex Index for resource level ratelimits
 	httprouteRateLimitIndex = "httprouteRateLimitIndex"
+	grpcrouteRateLimitIndex = "grpcrouteRateLimitIndex"
 )
 
 // NewratelimitController creates a new ratelimitcontroller instance.
@@ -101,6 +103,13 @@ func NewratelimitController(mgr manager.Manager, ratelimitStore *cache.Ratelimit
 		return err
 	}
 
+	if err := c.Watch(source.Kind(mgr.GetCache(), &gwapiv1a2.GRPCRoute{}),
+		handler.EnqueueRequestsFromMapFunc(ratelimitReconsiler.getRatelimitForGRPCRoute), predicates...); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2613, logging.BLOCKER,
+			"Error watching GRPCRoute resources: %v", err))
+		return err
+	}
+
 	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha1.RateLimitPolicy{}), &handler.EnqueueRequestForObject{}, predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2639, logging.BLOCKER,
 			"Error watching Ratelimit resources: %v", err.Error()))
@@ -127,7 +136,6 @@ func NewratelimitController(mgr manager.Manager, ratelimitStore *cache.Ratelimit
 func (ratelimitReconsiler *RateLimitPolicyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = log.FromContext(ctx)
 	// Check whether the Ratelimit CR exist, if not consider as a DELETE event.
-	loggers.LoggerAPKOperator.Infof("Reconciling ratelimit...")
 	conf := config.ReadConfigs()
 	ratelimitKey := req.NamespacedName
 	var ratelimitPolicy dpv1alpha1.RateLimitPolicy
@@ -149,7 +157,7 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) Reconcile(ctx context.Cont
 			xds.DeleteCustomRateLimitPolicies(resolveCustomRateLimitPolicy)
 			xds.UpdateRateLimiterPolicies(conf.CommonController.Server.Label)
 		}
-		if (k8error.IsNotFound(err)) {
+		if k8error.IsNotFound(err) {
 			return ctrl.Result{}, nil
 		}
 		return ctrl.Result{
@@ -238,6 +246,29 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) getRatelimitForHTTPRoute(c
 		ratelimitPolicy := ratelimitPolicyList.Items[item]
 		requests = append(requests, ratelimitReconsiler.AddRatelimitRequest(&ratelimitPolicy)...)
 	}
+	return requests
+}
+
+func (ratelimitReconsiler *RateLimitPolicyReconciler) getRatelimitForGRPCRoute(ctx context.Context, obj k8client.Object) []reconcile.Request {
+	grpcRoute, ok := obj.(*gwapiv1a2.GRPCRoute)
+	if !ok {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL,
+			"Unexpected object type, bypassing reconciliation: %v", grpcRoute))
+		return []reconcile.Request{}
+	}
+
+	requests := []reconcile.Request{}
+
+	ratelimitPolicyList := &dpv1alpha1.RateLimitPolicyList{}
+	if err := ratelimitReconsiler.client.List(ctx, ratelimitPolicyList, &k8client.ListOptions{
+		FieldSelector: fields.OneTermEqualSelector(grpcrouteRateLimitIndex, NamespacedName(grpcRoute).String()),
+	}); err != nil {
+		return []reconcile.Request{}
+	}
+	for item := range ratelimitPolicyList.Items {
+		ratelimitPolicy := ratelimitPolicyList.Items[item]
+		requests = append(requests, ratelimitReconsiler.AddRatelimitRequest(&ratelimitPolicy)...)
+	}
 
 	return requests
 }
@@ -311,6 +342,32 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) marshelRateLimit(ctx conte
 				policyList = append(policyList, resolveRatelimit)
 			}
 		}
+
+		if len(api.Spec.Production) > 0 && api.Spec.APIType == "GRPC" {
+			resolveResourceList, err := ratelimitReconsiler.getGRPCRouteResourceList(ctx, ratelimitKey, ratelimitPolicy,
+				api.Spec.Production[0].RouteRefs)
+			if err != nil {
+				return nil, err
+			}
+			if len(resolveResourceList) > 0 {
+				resolveRatelimit.Resources = resolveResourceList
+				policyList = append(policyList, resolveRatelimit)
+			}
+		}
+
+		if len(api.Spec.Sandbox) > 0 && api.Spec.APIType == "GRPC" {
+			resolveResourceList, err := ratelimitReconsiler.getGRPCRouteResourceList(ctx, ratelimitKey, ratelimitPolicy,
+				api.Spec.Sandbox[0].RouteRefs)
+			if err != nil {
+				return nil, err
+			}
+			if len(resolveResourceList) > 0 {
+				resolveRatelimit.Resources = resolveResourceList
+				resolveRatelimit.Environment += "_sandbox"
+				policyList = append(policyList, resolveRatelimit)
+			}
+
+		}
 	}
 
 	return policyList, nil
@@ -362,6 +419,45 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) getHTTPRouteResourceList(c
 	return resolveResourceList, nil
 }
 
+func (ratelimitReconsiler *RateLimitPolicyReconciler) getGRPCRouteResourceList(ctx context.Context, ratelimitKey types.NamespacedName,
+	ratelimitPolicy dpv1alpha1.RateLimitPolicy, grpcRefs []string) ([]dpv1alpha1.ResolveResource, error) {
+	var resolveResourceList []dpv1alpha1.ResolveResource
+	var grpcRoute gwapiv1a2.GRPCRoute
+
+	for _, ref := range grpcRefs {
+		if ref != "" {
+			if err := ratelimitReconsiler.client.Get(ctx, types.NamespacedName{
+				Namespace: ratelimitKey.Namespace,
+				Name:      ref},
+				&grpcRoute); err != nil {
+				return nil, fmt.Errorf("error while getting GRPCRoute : %v for API : %v, %s", string(ref),
+					string(ratelimitPolicy.Spec.TargetRef.Name), err.Error())
+			}
+			for _, rule := range grpcRoute.Spec.Rules {
+				for _, filter := range rule.Filters {
+					if filter.ExtensionRef != nil {
+						if filter.ExtensionRef.Kind == constants.KindRateLimitPolicy && string(filter.ExtensionRef.Name) == ratelimitPolicy.Name {
+							var resolveResource dpv1alpha1.ResolveResource
+							resolveResource.Path = "/" + *rule.Matches[0].Method.Service + "/" + *rule.Matches[0].Method.Method
+							resolveResource.PathMatchType = "Exact"
+							if ratelimitPolicy.Spec.Override != nil {
+								resolveResource.ResourceRatelimit.RequestsPerUnit = ratelimitPolicy.Spec.Override.API.RequestsPerUnit
+								resolveResource.ResourceRatelimit.Unit = ratelimitPolicy.Spec.Override.API.Unit
+							} else {
+								resolveResource.ResourceRatelimit.RequestsPerUnit = ratelimitPolicy.Spec.Default.API.RequestsPerUnit
+								resolveResource.ResourceRatelimit.Unit = ratelimitPolicy.Spec.Default.API.Unit
+							}
+							resolveResourceList = append(resolveResourceList, resolveResource)
+						}
+					}
+				}
+
+			}
+		}
+	}
+	return resolveResourceList, nil
+}
+
 func (ratelimitReconsiler *RateLimitPolicyReconciler) marshelCustomRateLimit(ctx context.Context, ratelimitKey types.NamespacedName,
 	ratelimitPolicy dpv1alpha1.RateLimitPolicy) dpv1alpha1.CustomRateLimitPolicyDef {
 	var customRateLimitPolicy dpv1alpha1.CustomRateLimitPolicyDef
@@ -392,6 +488,28 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 							ratelimitPolicy = append(ratelimitPolicy,
 								types.NamespacedName{
 									Namespace: httpRoute.Namespace,
+									Name:      string(filter.ExtensionRef.Name),
+								}.String())
+						}
+					}
+				}
+			}
+			return ratelimitPolicy
+		}); err != nil {
+		return err
+	}
+
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &gwapiv1a2.GRPCRoute{}, grpcrouteRateLimitIndex,
+		func(rawObj k8client.Object) []string {
+			grpcRoute := rawObj.(*gwapiv1a2.GRPCRoute)
+			var ratelimitPolicy []string
+			for _, rule := range grpcRoute.Spec.Rules {
+				for _, filter := range rule.Filters {
+					if filter.ExtensionRef != nil {
+						if filter.ExtensionRef.Kind == constants.KindRateLimitPolicy {
+							ratelimitPolicy = append(ratelimitPolicy,
+								types.NamespacedName{
+									Namespace: grpcRoute.Namespace,
 									Name:      string(filter.ExtensionRef.Name),
 								}.String())
 						}
