@@ -1,5 +1,4 @@
 Feature: Test mTLS between client and gateway with client certificate sent in header with OAuth2 optional
-
     # mTLS mandatory OAuth2 optional
     Scenario: Test mandatory mTLS and optional OAuth2 with a valid client certificate in header
         Given The system is ready
