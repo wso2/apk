@@ -37,7 +37,7 @@ import (
 
 	k8client "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/source"
-	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
+	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 
 	"github.com/wso2/apk/adapter/pkg/logging"
 	cache "github.com/wso2/apk/common-controller/internal/cache"
@@ -94,7 +94,7 @@ func NewratelimitController(mgr manager.Manager, ratelimitStore *cache.Ratelimit
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &gwapiv1b1.HTTPRoute{}),
+	if err := c.Watch(source.Kind(mgr.GetCache(), &gwapiv1.HTTPRoute{}),
 		handler.EnqueueRequestsFromMapFunc(ratelimitReconsiler.getRatelimitForHTTPRoute), predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2613, logging.BLOCKER,
 			"Error watching HTTPRoute resources: %v", err))
@@ -149,7 +149,7 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) Reconcile(ctx context.Cont
 			xds.DeleteCustomRateLimitPolicies(resolveCustomRateLimitPolicy)
 			xds.UpdateRateLimiterPolicies(conf.CommonController.Server.Label)
 		}
-		if (k8error.IsNotFound(err)) {
+		if k8error.IsNotFound(err) {
 			return ctrl.Result{}, nil
 		}
 		return ctrl.Result{
@@ -219,7 +219,7 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) AddRatelimitRequest(obj k8
 }
 
 func (ratelimitReconsiler *RateLimitPolicyReconciler) getRatelimitForHTTPRoute(ctx context.Context, obj k8client.Object) []reconcile.Request {
-	httpRoute, ok := obj.(*gwapiv1b1.HTTPRoute)
+	httpRoute, ok := obj.(*gwapiv1.HTTPRoute)
 	if !ok {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL,
 			"Unexpected object type, bypassing reconciliation: %v", httpRoute))
@@ -320,7 +320,7 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) getHTTPRouteResourceList(c
 	ratelimitPolicy dpv1alpha1.RateLimitPolicy, httpRefs []string) ([]dpv1alpha1.ResolveResource, error) {
 
 	var resolveResourceList []dpv1alpha1.ResolveResource
-	var httpRoute gwapiv1b1.HTTPRoute
+	var httpRoute gwapiv1.HTTPRoute
 
 	for _, ref := range httpRefs {
 		if ref != "" {
@@ -381,9 +381,9 @@ func getCustomRateLimitPolicy(customRateLimitPolicy *dpv1alpha1.RateLimitPolicy)
 }
 
 func addIndexes(ctx context.Context, mgr manager.Manager) error {
-	if err := mgr.GetFieldIndexer().IndexField(ctx, &gwapiv1b1.HTTPRoute{}, httprouteRateLimitIndex,
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &gwapiv1.HTTPRoute{}, httprouteRateLimitIndex,
 		func(rawObj k8client.Object) []string {
-			httpRoute := rawObj.(*gwapiv1b1.HTTPRoute)
+			httpRoute := rawObj.(*gwapiv1.HTTPRoute)
 			var ratelimitPolicy []string
 			for _, rule := range httpRoute.Spec.Rules {
 				for _, filter := range rule.Filters {
@@ -427,7 +427,7 @@ func NamespacedName(obj client.Object) types.NamespacedName {
 }
 
 // GetNamespace reads namespace with a default value
-func GetNamespace(namespace *gwapiv1b1.Namespace, defaultNamespace string) string {
+func GetNamespace(namespace *gwapiv1.Namespace, defaultNamespace string) string {
 	if namespace != nil && *namespace != "" {
 		return string(*namespace)
 	}

@@ -27,8 +27,8 @@ import (
 
 	"github.com/wso2/apk/adapter/pkg/logging"
 	"github.com/wso2/apk/adapter/pkg/metrics"
+	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 	gwapiv1a2 "sigs.k8s.io/gateway-api/apis/v1alpha2"
-	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 
 	dpcontrollers "github.com/wso2/apk/adapter/internal/operator/controllers/dp"
 	"github.com/wso2/apk/adapter/internal/operator/status"
@@ -61,7 +61,7 @@ func init() {
 
 	utilruntime.Must(dpv1alpha1.AddToScheme(scheme))
 
-	utilruntime.Must(gwapiv1b1.AddToScheme(scheme))
+	utilruntime.Must(gwapiv1.AddToScheme(scheme))
 
 	utilruntime.Must(gwapiv1a2.AddToScheme(scheme))
 

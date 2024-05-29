@@ -36,7 +36,6 @@ import (
 	"golang.org/x/exp/maps"
 	"k8s.io/apimachinery/pkg/types"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
-	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
 // AdapterInternalAPI represents the object structure holding the information related to the
@@ -447,7 +446,7 @@ func (adapterInternalAPI *AdapterInternalAPI) Validate() error {
 
 // SetInfoHTTPRouteCR populates resources and endpoints of adapterInternalAPI. httpRoute.Spec.Rules.Matches
 // are used to create resources and httpRoute.Spec.Rules.BackendRefs are used to create EndpointClusters.
-func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, resourceParams ResourceParams) error {
+func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1.HTTPRoute, resourceParams ResourceParams) error {
 	var resources []*Resource
 	outputAuthScheme := utils.TieBreaker(utils.GetPtrSlice(maps.Values(resourceParams.AuthSchemes)))
 	outputAPIPolicy := utils.TieBreaker(utils.GetPtrSlice(maps.Values(resourceParams.APIPolicies)))

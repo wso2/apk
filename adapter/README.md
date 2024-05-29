@@ -169,10 +169,10 @@ Following are some tasks with the steps that a developer might do in operator de
             return []reconcile.Request{}
         }
 
-        httpRoute := &gwapiv1b1.HTTPRoute{}
+        httpRoute := &gwapiv1.HTTPRoute{}
         if err := apiReconciler.client.Get(ctx, types.NamespacedName{
             Name: string(apiPolicy.Spec.TargetRef.Name),
-            Namespace: utils.GetNamespace((*gwapiv1b1.Namespace)(apiPolicy.Spec.TargetRef.Namespace),
+            Namespace: utils.GetNamespace((*gwapiv1.Namespace)(apiPolicy.Spec.TargetRef.Namespace),
                 apiPolicy.Namespace),
         }, httpRoute); err != nil {
             loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{

@@ -54,7 +54,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
-	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 
 	ctrl "sigs.k8s.io/controller-runtime"
 	k8client "sigs.k8s.io/controller-runtime/pkg/client"
@@ -113,7 +112,7 @@ type APIReconciler struct {
 	apiPropagationEnabled bool
 }
 
-// NewAPIController creates a new API controller instance. API Controllers watches for dpv1alpha2.API and gwapiv1b1.HTTPRoute.
+// NewAPIController creates a new API controller instance. API Controllers watches for dpv1alpha2.API and gwapiv1.HTTPRoute.
 func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.OperatorDataStore, statusUpdater *status.UpdateHandler,
 	ch *chan *synchronizer.APIEvent, successChannel *chan synchronizer.SuccessEvent) error {
 	apiReconciler := &APIReconciler{
@@ -145,7 +144,7 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &gwapiv1b1.HTTPRoute{}), handler.EnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForHTTPRoute),
+	if err := c.Watch(source.Kind(mgr.GetCache(), &gwapiv1.HTTPRoute{}), handler.EnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForHTTPRoute),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2613, logging.BLOCKER, "Error watching HTTPRoute resources: %v", err))
 		return err
@@ -157,7 +156,7 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &gwapiv1b1.Gateway{}), handler.EnqueueRequestsFromMapFunc(apiReconciler.getAPIsForGateway),
+	if err := c.Watch(source.Kind(mgr.GetCache(), &gwapiv1.Gateway{}), handler.EnqueueRequestsFromMapFunc(apiReconciler.getAPIsForGateway),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2611, logging.BLOCKER, "Error watching API resources: %v", err))
 		return err
@@ -570,11 +569,11 @@ func (apiReconciler *APIReconciler) concatGQLRoutes(ctx context.Context, gqlRout
 }
 
 func (apiReconciler *APIReconciler) concatHTTPRoutes(ctx context.Context, httpRouteRefs []string,
-	namespace string, api dpv1alpha2.API) (*gwapiv1b1.HTTPRoute, map[string]*gwapiv1b1.HTTPRoute, error) {
-	var combinedHTTPRoute *gwapiv1b1.HTTPRoute
-	httpRoutePartitions := make(map[string]*gwapiv1b1.HTTPRoute)
+	namespace string, api dpv1alpha2.API) (*gwapiv1.HTTPRoute, map[string]*gwapiv1.HTTPRoute, error) {
+	var combinedHTTPRoute *gwapiv1.HTTPRoute
+	httpRoutePartitions := make(map[string]*gwapiv1.HTTPRoute)
 	for _, httpRouteRef := range httpRouteRefs {
-		var httpRoute gwapiv1b1.HTTPRoute
+		var httpRoute gwapiv1.HTTPRoute
 		namespacedName := types.NamespacedName{Namespace: namespace, Name: httpRouteRef}
 		if err := utils.ResolveRef(ctx, apiReconciler.client, &api,
 			namespacedName, true, &httpRoute); err != nil {
@@ -645,7 +644,7 @@ func (apiReconciler *APIReconciler) getScopesForGQLRoute(ctx context.Context,
 }
 
 func (apiReconciler *APIReconciler) getScopesForHTTPRoute(ctx context.Context,
-	httpRoute *gwapiv1b1.HTTPRoute, api dpv1alpha2.API) (map[string]dpv1alpha1.Scope, error) {
+	httpRoute *gwapiv1.HTTPRoute, api dpv1alpha2.API) (map[string]dpv1alpha1.Scope, error) {
 	scopes := make(map[string]dpv1alpha1.Scope)
 	for _, rule := range httpRoute.Spec.Rules {
 		for _, filter := range rule.Filters {
@@ -1118,8 +1117,8 @@ func (apiReconciler *APIReconciler) retriveParentAPIsAndUpdateOwnerReferene(ctx 
 		}
 		requests = apiReconciler.getAPIsForConfigMap(ctx, &cm)
 		apiReconciler.handleOwnerReference(ctx, &cm, &requests)
-	case *gwapiv1b1.HTTPRoute:
-		var httpRoute gwapiv1b1.HTTPRoute
+	case *gwapiv1.HTTPRoute:
+		var httpRoute gwapiv1.HTTPRoute
 		namesapcedName := types.NamespacedName{
 			Name:      string(obj.GetName()),
 			Namespace: string(obj.GetNamespace()),
@@ -1186,7 +1185,7 @@ func (apiReconciler *APIReconciler) getAPIForGQLRoute(ctx context.Context, obj k
 // from HTTPRoute objects. If the changes are done for an API stored in the Operator Data store,
 // a new reconcile event will be created and added to the reconcile event queue.
 func (apiReconciler *APIReconciler) getAPIForHTTPRoute(ctx context.Context, obj k8client.Object) []reconcile.Request {
-	httpRoute, ok := obj.(*gwapiv1b1.HTTPRoute)
+	httpRoute, ok := obj.(*gwapiv1.HTTPRoute)
 	if !ok {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL, "Unexpected object type, bypassing reconciliation: %v", httpRoute))
 		return []reconcile.Request{}
@@ -1303,7 +1302,7 @@ func (apiReconciler *APIReconciler) getAPIsForAuthentication(ctx context.Context
 
 	requests := []reconcile.Request{}
 
-	namespace, err := utils.ValidateAndRetrieveNamespace((*gwapiv1b1.Namespace)(authentication.Spec.TargetRef.Namespace), authentication.Namespace)
+	namespace, err := utils.ValidateAndRetrieveNamespace((*gwapiv1.Namespace)(authentication.Spec.TargetRef.Namespace), authentication.Namespace)
 
 	if err != nil {
 		loggers.LoggerAPKOperator.Errorf("Namespace mismatch. TargetRef %s needs to be in the same namespace as the Athentication %s. Expected: %s, Actual: %s",
@@ -1339,7 +1338,7 @@ func (apiReconciler *APIReconciler) getAPIsForAPIPolicy(ctx context.Context, obj
 		return requests
 	}
 
-	namespace, err := utils.ValidateAndRetrieveNamespace((*gwapiv1b1.Namespace)(apiPolicy.Spec.TargetRef.Namespace), apiPolicy.Namespace)
+	namespace, err := utils.ValidateAndRetrieveNamespace((*gwapiv1.Namespace)(apiPolicy.Spec.TargetRef.Namespace), apiPolicy.Namespace)
 
 	if err != nil {
 		loggers.LoggerAPKOperator.Errorf("Namespace mismatch. TargetRef %s needs to be in the same namespace as the ApiPolicy %s. Expected: %s, Actual: %s",
@@ -1424,7 +1423,7 @@ func (apiReconciler *APIReconciler) getAPIsForRateLimitPolicy(ctx context.Contex
 		return requests
 	}
 
-	namespace, err := utils.ValidateAndRetrieveNamespace((*gwapiv1b1.Namespace)(ratelimitPolicy.Spec.TargetRef.Namespace), ratelimitPolicy.Namespace)
+	namespace, err := utils.ValidateAndRetrieveNamespace((*gwapiv1.Namespace)(ratelimitPolicy.Spec.TargetRef.Namespace), ratelimitPolicy.Namespace)
 
 	if err != nil {
 		loggers.LoggerAPKOperator.Errorf("Namespace mismatch. TargetRef %s needs to be in the same namespace as the RatelimitPolicy %s. Expected: %s, Actual: %s",
@@ -1454,7 +1453,7 @@ func (apiReconciler *APIReconciler) getAPIsForScope(ctx context.Context, obj k8c
 		return []reconcile.Request{}
 	}
 
-	httpRouteList := &gwapiv1b1.HTTPRouteList{}
+	httpRouteList := &gwapiv1.HTTPRouteList{}
 	if err := apiReconciler.client.List(ctx, httpRouteList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(httprouteScopeIndex, utils.NamespacedName(scope).String()),
 	}); err != nil {
@@ -1499,7 +1498,7 @@ func (apiReconciler *APIReconciler) getAPIsForBackend(ctx context.Context, obj k
 		return []reconcile.Request{}
 	}
 
-	httpRouteList := &gwapiv1b1.HTTPRouteList{}
+	httpRouteList := &gwapiv1.HTTPRouteList{}
 	if err := apiReconciler.client.List(ctx, httpRouteList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(backendHTTPRouteIndex, utils.NamespacedName(backend).String()),
 	}); err != nil {
@@ -1557,13 +1556,13 @@ func (apiReconciler *APIReconciler) getAPIsForBackend(ctx context.Context, obj k
 // getAPIsForGateway triggers the API controller reconcile method based on the changes detected
 // in gateway resources.
 func (apiReconciler *APIReconciler) getAPIsForGateway(ctx context.Context, obj k8client.Object) []reconcile.Request {
-	gateway, ok := obj.(*gwapiv1b1.Gateway)
+	gateway, ok := obj.(*gwapiv1.Gateway)
 	if !ok {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL, "Unexpected object type, bypassing reconciliation: %v", gateway))
 		return []reconcile.Request{}
 	}
 
-	httpRouteList := &gwapiv1b1.HTTPRouteList{}
+	httpRouteList := &gwapiv1.HTTPRouteList{}
 	if err := apiReconciler.client.List(ctx, httpRouteList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(gatewayHTTPRouteIndex, utils.NamespacedName(gateway).String()),
 	}); err != nil {
@@ -1673,9 +1672,9 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 		return err
 	}
 
-	if err := mgr.GetFieldIndexer().IndexField(ctx, &gwapiv1b1.HTTPRoute{}, httprouteScopeIndex,
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &gwapiv1.HTTPRoute{}, httprouteScopeIndex,
 		func(rawObj k8client.Object) []string {
-			httpRoute := rawObj.(*gwapiv1b1.HTTPRoute)
+			httpRoute := rawObj.(*gwapiv1.HTTPRoute)
 			var scopes []string
 			for _, rule := range httpRoute.Spec.Rules {
 				for _, filter := range rule.Filters {
@@ -1714,9 +1713,9 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 	}
 
 	// Backend to HTTPRoute indexer
-	if err := mgr.GetFieldIndexer().IndexField(ctx, &gwapiv1b1.HTTPRoute{}, backendHTTPRouteIndex,
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &gwapiv1.HTTPRoute{}, backendHTTPRouteIndex,
 		func(rawObj k8client.Object) []string {
-			httpRoute := rawObj.(*gwapiv1b1.HTTPRoute)
+			httpRoute := rawObj.(*gwapiv1.HTTPRoute)
 			var backends []string
 			for _, rule := range httpRoute.Spec.Rules {
 				for _, backendRef := range rule.BackendRefs {
@@ -1755,9 +1754,9 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 	}
 
 	// Gateway to HTTPRoute indexer
-	if err := mgr.GetFieldIndexer().IndexField(ctx, &gwapiv1b1.HTTPRoute{}, gatewayHTTPRouteIndex,
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &gwapiv1.HTTPRoute{}, gatewayHTTPRouteIndex,
 		func(rawObj k8client.Object) []string {
-			httpRoute := rawObj.(*gwapiv1b1.HTTPRoute)
+			httpRoute := rawObj.(*gwapiv1.HTTPRoute)
 			var gateways []string
 			for _, parentRef := range httpRoute.Spec.ParentRefs {
 				gateways = append(gateways, types.NamespacedName{
@@ -1821,7 +1820,7 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 			var apis []string
 			if authentication.Spec.TargetRef.Kind == constants.KindAPI {
 
-				namespace, err := utils.ValidateAndRetrieveNamespace((*gwapiv1b1.Namespace)(authentication.Spec.TargetRef.Namespace), authentication.Namespace)
+				namespace, err := utils.ValidateAndRetrieveNamespace((*gwapiv1.Namespace)(authentication.Spec.TargetRef.Namespace), authentication.Namespace)
 
 				if err != nil {
 					loggers.LoggerAPKOperator.Errorf("Namespace mismatch. TargetRef %s needs to be in the same namespace as the Athentication %s. Expected: %s, Actual: %s",
@@ -1918,7 +1917,7 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 			var apis []string
 			if authentication.Spec.TargetRef.Kind == constants.KindResource {
 
-				namespace, err := utils.ValidateAndRetrieveNamespace((*gwapiv1b1.Namespace)(authentication.Spec.TargetRef.Namespace), authentication.Namespace)
+				namespace, err := utils.ValidateAndRetrieveNamespace((*gwapiv1.Namespace)(authentication.Spec.TargetRef.Namespace), authentication.Namespace)
 
 				if err != nil {
 					loggers.LoggerAPKOperator.Errorf("Namespace mismatch. TargetRef %s needs to be in the same namespace as the Athentication %s. Expected: %s, Actual: %s",
@@ -1973,7 +1972,7 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 			var apis []string
 			if ratelimitPolicy.Spec.TargetRef.Kind == constants.KindResource {
 
-				namespace, err := utils.ValidateAndRetrieveNamespace((*gwapiv1b1.Namespace)(ratelimitPolicy.Spec.TargetRef.Namespace), ratelimitPolicy.Namespace)
+				namespace, err := utils.ValidateAndRetrieveNamespace((*gwapiv1.Namespace)(ratelimitPolicy.Spec.TargetRef.Namespace), ratelimitPolicy.Namespace)
 
 				if err != nil {
 					loggers.LoggerAPKOperator.Errorf("Namespace mismatch. TargetRef %s needs to be in the same namespace as the RatelimitPolicy %s. Expected: %s, Given: %s",
@@ -2076,7 +2075,7 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 			var apis []string
 			if apiPolicy.Spec.TargetRef.Kind == constants.KindAPI {
 
-				namespace, err := utils.ValidateAndRetrieveNamespace((*gwapiv1b1.Namespace)(apiPolicy.Spec.TargetRef.Namespace), apiPolicy.Namespace)
+				namespace, err := utils.ValidateAndRetrieveNamespace((*gwapiv1.Namespace)(apiPolicy.Spec.TargetRef.Namespace), apiPolicy.Namespace)
 
 				if err != nil {
 					loggers.LoggerAPKOperator.Errorf("Namespace mismatch. TargetRef %s needs to be in the same namespace as the ApiPolicy %s. Expected: %s, Actual: %s",
@@ -2106,7 +2105,7 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 			var apis []string
 			if apiPolicy.Spec.TargetRef.Kind == constants.KindResource {
 
-				namespace, err := utils.ValidateAndRetrieveNamespace((*gwapiv1b1.Namespace)(apiPolicy.Spec.TargetRef.Namespace), apiPolicy.Namespace)
+				namespace, err := utils.ValidateAndRetrieveNamespace((*gwapiv1.Namespace)(apiPolicy.Spec.TargetRef.Namespace), apiPolicy.Namespace)
 
 				if err != nil {
 					loggers.LoggerAPKOperator.Errorf("Namespace mismatch. TargetRef %s needs to be in the same namespace as the ApiPolicy %s. Expected: %s, Actual: %s",
@@ -2342,7 +2341,7 @@ func (apiReconciler *APIReconciler) convertAPIStateToAPICp(ctx context.Context, 
 }
 
 func (apiReconciler *APIReconciler) validateRouteExtRefs(apiState *synchronizer.APIState) error {
-	extRefs := []*gwapiv1b1.LocalObjectReference{}
+	extRefs := []*gwapiv1.LocalObjectReference{}
 	if apiState.ProdHTTPRoute != nil {
 		for _, httpRoute := range apiState.ProdHTTPRoute.HTTPRoutePartitions {
 			for _, rule := range httpRoute.Spec.Rules {

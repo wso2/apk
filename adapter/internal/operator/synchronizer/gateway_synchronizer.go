@@ -35,7 +35,6 @@ import (
 	"golang.org/x/exp/maps"
 	"k8s.io/apimachinery/pkg/types"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
-	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
 // GatewayEvent holds the data structure used for passing Gateway
@@ -120,7 +119,7 @@ func AddOrUpdateGateway(gatewayState GatewayState, state string) (string, error)
 }
 
 // DeleteGateway deletes a Gateway from the XDS server.
-func DeleteGateway(gateway *gwapiv1b1.Gateway) (string, error) {
+func DeleteGateway(gateway *gwapiv1.Gateway) (string, error) {
 	xds.UpdateXdsCacheWithLock(gateway.Name, nil, nil, nil, nil)
 	xds.UpdateEnforcerApis(gateway.Name, nil, "")
 	return "", nil

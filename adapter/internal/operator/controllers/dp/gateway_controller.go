@@ -48,7 +48,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
-	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
 const (
@@ -69,7 +68,7 @@ type GatewayReconciler struct {
 	mgr           manager.Manager
 }
 
-// NewGatewayController creates a new Gateway controller instance. Gateway Controllers watches for gwapiv1b1.Gateway.
+// NewGatewayController creates a new Gateway controller instance. Gateway Controllers watches for gwapiv1.Gateway.
 func NewGatewayController(mgr manager.Manager, operatorDataStore *synchronizer.OperatorDataStore, statusUpdater *status.UpdateHandler,
 	ch *chan synchronizer.GatewayEvent) error {
 	r := &GatewayReconciler{
@@ -94,7 +93,7 @@ func NewGatewayController(mgr manager.Manager, operatorDataStore *synchronizer.O
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &gwapiv1b1.Gateway{}), &handler.EnqueueRequestForObject{},
+	if err := c.Watch(source.Kind(mgr.GetCache(), &gwapiv1.Gateway{}), &handler.EnqueueRequestForObject{},
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3100, logging.BLOCKER, "Error watching Gateway resources: %v", err))
 		return err
@@ -162,7 +161,7 @@ func NewGatewayController(mgr manager.Manager, operatorDataStore *synchronizer.O
 func (gatewayReconciler *GatewayReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	// Check whether the Gateway CR exist, if not consider as a DELETE event.
 	loggers.LoggerAPKOperator.Infof("Reconciling gateway...")
-	var gatewayDef gwapiv1b1.Gateway
+	var gatewayDef gwapiv1.Gateway
 	if err := gatewayReconciler.client.Get(ctx, req.NamespacedName, &gatewayDef); err != nil {
 		gatewayState, found := gatewayReconciler.ods.GetCachedGateway(req.NamespacedName)
 		if found && k8error.IsNotFound(err) {
@@ -205,9 +204,9 @@ func (gatewayReconciler *GatewayReconciler) setGatewayReadiness() {
 }
 
 // resolveListenerSecretRefs resolves the certificate secret references in the related listeners in Gateway CR
-func (gatewayReconciler *GatewayReconciler) resolveListenerSecretRefs(ctx context.Context, secretRef *gwapiv1b1.SecretObjectReference, gatewayNamespace string) (map[string][]byte, error) {
+func (gatewayReconciler *GatewayReconciler) resolveListenerSecretRefs(ctx context.Context, secretRef *gwapiv1.SecretObjectReference, gatewayNamespace string) (map[string][]byte, error) {
 	var secret corev1.Secret
-	namespace := gwapiv1b1.Namespace(string(*secretRef.Namespace))
+	namespace := gwapiv1.Namespace(string(*secretRef.Namespace))
 	if err := gatewayReconciler.client.Get(ctx, types.NamespacedName{Name: string(secretRef.Name),
 		Namespace: utils.GetNamespace(&namespace, gatewayNamespace)}, &secret); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3123, logging.BLOCKER, "Unable to find associated secret %s in %s: %v", secretRef.Name, string(*secretRef.Namespace), err))
@@ -216,13 +215,13 @@ func (gatewayReconciler *GatewayReconciler) resolveListenerSecretRefs(ctx contex
 	return secret.Data, nil
 }
 
-// resolveGatewayState resolves the GatewayState struct using gwapiv1b1.Gateway and resource indexes
+// resolveGatewayState resolves the GatewayState struct using gwapiv1.Gateway and resource indexes
 func (gatewayReconciler *GatewayReconciler) resolveGatewayState(ctx context.Context,
-	gateway gwapiv1b1.Gateway) (*synchronizer.GatewayStateData, error) {
+	gateway gwapiv1.Gateway) (*synchronizer.GatewayStateData, error) {
 	gatewayState := &synchronizer.GatewayStateData{}
 	var err error
 	resolvedListenerCerts := make(map[string]map[string][]byte)
-	namespace := gwapiv1b1.Namespace(gateway.Namespace)
+	namespace := gwapiv1.Namespace(gateway.Namespace)
 	// Retireve listener Certificates
 	for _, listener := range gateway.Spec.Listeners {
 		if listener.Protocol == gwapiv1.HTTPProtocolType {
@@ -252,7 +251,7 @@ func (gatewayReconciler *GatewayReconciler) resolveGatewayState(ctx context.Cont
 }
 
 func (gatewayReconciler *GatewayReconciler) getAPIPoliciesForGateway(ctx context.Context,
-	gateway *gwapiv1b1.Gateway) (map[string]dpv1alpha2.APIPolicy, error) {
+	gateway *gwapiv1.Gateway) (map[string]dpv1alpha2.APIPolicy, error) {
 	apiPolicies := make(map[string]dpv1alpha2.APIPolicy)
 	apiPolicyList := &dpv1alpha2.APIPolicyList{}
 	if err := gatewayReconciler.client.List(ctx, apiPolicyList, &k8client.ListOptions{
@@ -468,9 +467,9 @@ func (gatewayReconciler *GatewayReconciler) handleGatewayStatus(gatewayKey types
 
 	gatewayReconciler.statusUpdater.Send(status.Update{
 		NamespacedName: gatewayKey,
-		Resource:       new(gwapiv1b1.Gateway),
+		Resource:       new(gwapiv1.Gateway),
 		UpdateStatus: func(obj k8client.Object) k8client.Object {
-			h, ok := obj.(*gwapiv1b1.Gateway)
+			h, ok := obj.(*gwapiv1.Gateway)
 			if !ok {
 				loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3109, logging.BLOCKER, "Error while updating Gateway status %v", obj))
 			}
@@ -503,7 +502,7 @@ func (gatewayReconciler *GatewayReconciler) handleCustomRateLimitPolicies(ctx co
 	requests := []reconcile.Request{}
 	if ratelimitPolicy.Spec.TargetRef.Kind == constants.KindGateway {
 
-		namespace, err := utils.ValidateAndRetrieveNamespace((*gwapiv1b1.Namespace)(ratelimitPolicy.Spec.TargetRef.Namespace), ratelimitPolicy.Namespace)
+		namespace, err := utils.ValidateAndRetrieveNamespace((*gwapiv1.Namespace)(ratelimitPolicy.Spec.TargetRef.Namespace), ratelimitPolicy.Namespace)
 
 		if err != nil {
 			loggers.LoggerAPKOperator.Errorf("Namespace mismatch. TargetRef %s needs to be in the same namespace as the RatelimitPolicy %s. Expected: %s, Actual: %s",
@@ -551,7 +550,7 @@ func (gatewayReconciler *GatewayReconciler) getGatewaysForAPIPolicy(ctx context.
 		return nil
 	}
 
-	namespace, err := utils.ValidateAndRetrieveNamespace((*gwapiv1b1.Namespace)(apiPolicy.Spec.TargetRef.Namespace), apiPolicy.Namespace)
+	namespace, err := utils.ValidateAndRetrieveNamespace((*gwapiv1.Namespace)(apiPolicy.Spec.TargetRef.Namespace), apiPolicy.Namespace)
 
 	if err != nil {
 		loggers.LoggerAPKOperator.Errorf("Namespace mismatch. TargetRef %s needs to be in the same namespace as the ApiPolicy %s. Expected: %s, Actual: %s",
@@ -576,7 +575,7 @@ func addGatewayIndexes(ctx context.Context, mgr manager.Manager) error {
 			var gateways []string
 			if ratelimitPolicy.Spec.TargetRef.Kind == constants.KindGateway {
 
-				namespace, err := utils.ValidateAndRetrieveNamespace((*gwapiv1b1.Namespace)(ratelimitPolicy.Spec.TargetRef.Namespace), ratelimitPolicy.Namespace)
+				namespace, err := utils.ValidateAndRetrieveNamespace((*gwapiv1.Namespace)(ratelimitPolicy.Spec.TargetRef.Namespace), ratelimitPolicy.Namespace)
 
 				if err != nil {
 					loggers.LoggerAPKOperator.Errorf("Namespace mismatch. TargetRef %s needs to be in the same namespace as the RatelimitPolicy %s. Expected: %s, Actual: %s",
@@ -602,7 +601,7 @@ func addGatewayIndexes(ctx context.Context, mgr manager.Manager) error {
 			var httpRoutes []string
 			if apiPolicy.Spec.TargetRef.Kind == constants.KindGateway {
 
-				namespace, err := utils.ValidateAndRetrieveNamespace((*gwapiv1b1.Namespace)(apiPolicy.Spec.TargetRef.Namespace), apiPolicy.Namespace)
+				namespace, err := utils.ValidateAndRetrieveNamespace((*gwapiv1.Namespace)(apiPolicy.Spec.TargetRef.Namespace), apiPolicy.Namespace)
 
 				if err != nil {
 					loggers.LoggerAPKOperator.Errorf("Namespace mismatch. TargetRef %s needs to be in the same namespace as the ApiPolicy %s. Expected: %s, Actual: %s",

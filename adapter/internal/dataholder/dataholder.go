@@ -19,38 +19,38 @@ package dataholder
 
 import (
 	k8types "k8s.io/apimachinery/pkg/types"
-	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
+	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 )
 
 // The following variables will be used to store the state of the apk.
 // This data should not be utilized by operator thread as its not designed for parallel access.
 var (
 	// This variable in the structure of gateway's namespaced name -> gateway
-	gatewayMap map[string]gwapiv1b1.Gateway
+	gatewayMap map[string]gwapiv1.Gateway
 )
 
 func init() {
-	gatewayMap = make(map[string]gwapiv1b1.Gateway)
+	gatewayMap = make(map[string]gwapiv1.Gateway)
 }
 
 // GetGatewayMap returns list of cached gateways
-func GetGatewayMap() map[string]gwapiv1b1.Gateway {
+func GetGatewayMap() map[string]gwapiv1.Gateway {
 	return gatewayMap
 }
 
 // UpdateGateway caches the gateway
-func UpdateGateway(gateway gwapiv1b1.Gateway) {
+func UpdateGateway(gateway gwapiv1.Gateway) {
 	gatewayMap[k8types.NamespacedName{Name: gateway.Name, Namespace: gateway.Namespace}.String()] = gateway
 }
 
 // RemoveGateway removes the gateway from the cache
-func RemoveGateway(gateway gwapiv1b1.Gateway) {
+func RemoveGateway(gateway gwapiv1.Gateway) {
 	delete(gatewayMap, k8types.NamespacedName{Name: gateway.Name, Namespace: gateway.Namespace}.String())
 }
 
 // GetAllGatewayListenerSections return the list of all the listeners that stored in the gateway cache
-func GetAllGatewayListenerSections() []gwapiv1b1.Listener {
-	listeners := make([]gwapiv1b1.Listener, 0)
+func GetAllGatewayListenerSections() []gwapiv1.Listener {
+	listeners := make([]gwapiv1.Listener, 0)
 	for _, gateway := range gatewayMap {
 		listeners = append(listeners, gateway.Spec.Listeners...)
 	}
@@ -59,8 +59,8 @@ func GetAllGatewayListenerSections() []gwapiv1b1.Listener {
 
 // GetListenersAsPortalPortMap returns a map that have a structure protocol -> port -> list of listeners for that port and protocol combination
 // Data is derived based on the current status of the gatwayMap cache
-func GetListenersAsPortalPortMap() map[string]map[uint32][]gwapiv1b1.Listener {
-	listenersAsPortalPortMap := make(map[string]map[uint32][]gwapiv1b1.Listener)
+func GetListenersAsPortalPortMap() map[string]map[uint32][]gwapiv1.Listener {
+	listenersAsPortalPortMap := make(map[string]map[uint32][]gwapiv1.Listener)
 	for _, gateway := range gatewayMap {
 		for _, listener := range gateway.Spec.Listeners {
 			protocol := string(listener.Protocol)
@@ -68,18 +68,18 @@ func GetListenersAsPortalPortMap() map[string]map[uint32][]gwapiv1b1.Listener {
 			if portMap, portFound := listenersAsPortalPortMap[protocol]; portFound {
 				if listenersList, listenerListFound := portMap[port]; listenerListFound {
 					if listenersList == nil {
-						listenersList = []gwapiv1b1.Listener{listener}
+						listenersList = []gwapiv1.Listener{listener}
 					} else {
 						listenersList = append(listenersList, listener)
 					}
 					listenersAsPortalPortMap[protocol][port] = listenersList
 				} else {
-					listenerList := []gwapiv1b1.Listener{listener}
+					listenerList := []gwapiv1.Listener{listener}
 					listenersAsPortalPortMap[protocol][port] = listenerList
 				}
 			} else {
-				listenersAsPortalPortMap[protocol] = make(map[uint32][]gwapiv1b1.Listener)
-				listenerList := []gwapiv1b1.Listener{listener}
+				listenersAsPortalPortMap[protocol] = make(map[uint32][]gwapiv1.Listener)
+				listenerList := []gwapiv1.Listener{listener}
 				listenersAsPortalPortMap[protocol][port] = listenerList
 			}
 		}

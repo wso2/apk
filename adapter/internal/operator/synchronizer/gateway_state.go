@@ -20,14 +20,14 @@ package synchronizer
 import (
 	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
-	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
+	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 )
 
 // GatewayState holds the state of the deployed Gateways. This state is compared with
 // the state of the Kubernetes controller cache to detect updates.
 // +k8s:deepcopy-gen=true
 type GatewayState struct {
-	GatewayDefinition *gwapiv1b1.Gateway
+	GatewayDefinition *gwapiv1.Gateway
 	GatewayStateData  *GatewayStateData
 }
 

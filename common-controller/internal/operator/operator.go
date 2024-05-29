@@ -45,7 +45,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
-	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
+	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 
 	//+kubebuilder:scaffold:imports
 	"github.com/wso2/apk/common-controller/internal/operator/status"
@@ -58,7 +58,7 @@ var (
 
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
-	utilruntime.Must(gwapiv1b1.AddToScheme(scheme))
+	utilruntime.Must(gwapiv1.AddToScheme(scheme))
 	utilruntime.Must(dpv1alpha1.AddToScheme(scheme))
 	utilruntime.Must(dpv1alpha2.AddToScheme(scheme))
 	utilruntime.Must(cpv1alpha2.AddToScheme(scheme))

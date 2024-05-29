@@ -16,7 +16,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
+	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 )
 
 // ResolveRateLimitAPIPolicy defines the desired state of Policy
@@ -43,8 +43,8 @@ type ResolveRateLimit struct {
 
 // ResolveResource defines the desired state of Resource
 type ResolveResource struct {
-	ResourceRatelimit ResolveRateLimit        `json:"resourceRatelimit,omitempty"`
-	Path              string                  `json:"path,omitempty"`
-	PathMatchType     gwapiv1b1.PathMatchType `json:"pathMatchType,omitempty"`
-	Method            string                  `json:"method,omitempty"`
+	ResourceRatelimit ResolveRateLimit      `json:"resourceRatelimit,omitempty"`
+	Path              string                `json:"path,omitempty"`
+	PathMatchType     gwapiv1.PathMatchType `json:"pathMatchType,omitempty"`
+	Method            string                `json:"method,omitempty"`
 }

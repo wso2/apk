@@ -62,7 +62,7 @@ func (resource *Resource) GetPath() string {
 }
 
 // GetPathMatchType returns the path match type of the resource.
-// https://gateway-api.sigs.k8s.io/references/spec/#gateway.networking.k8s.io/v1beta1.PathMatchType
+// https://gateway-api.sigs.k8s.io/references/spec/#gateway.networking.k8s.io/v1.PathMatchType
 func (resource *Resource) GetPathMatchType() gwapiv1.PathMatchType {
 	return resource.pathMatchType
 }

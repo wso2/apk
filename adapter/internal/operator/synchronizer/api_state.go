@@ -20,7 +20,7 @@ package synchronizer
 import (
 	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
-	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
+	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 )
 
 // APIState holds the state of the deployed APIs. This state is compared with
@@ -49,8 +49,8 @@ type APIState struct {
 // the state of the Kubernetes controller cache to detect updates.
 // +k8s:deepcopy-gen=true
 type HTTPRouteState struct {
-	HTTPRouteCombined   *gwapiv1b1.HTTPRoute
-	HTTPRoutePartitions map[string]*gwapiv1b1.HTTPRoute
+	HTTPRouteCombined   *gwapiv1.HTTPRoute
+	HTTPRoutePartitions map[string]*gwapiv1.HTTPRoute
 	BackendMapping      map[string]*v1alpha1.ResolvedBackend
 	Scopes              map[string]v1alpha1.Scope
 }
