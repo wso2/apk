@@ -29,7 +29,7 @@ import (
 	"github.com/wso2/apk/adapter/pkg/logging"
 	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	"k8s.io/apimachinery/pkg/types"
-	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
+	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 )
 
 // extract APIDetails from the GQLRoute
@@ -144,7 +144,7 @@ func getListenersForGQLAPI(gqlRoute *v1alpha2.GQLRoute, apiUUID string) ([]strin
 		}.String()]
 		if found {
 			// find the matching listener
-			matchedListener, listenerFound := common.FindElement(gateway.Spec.Listeners, func(listener gwapiv1b1.Listener) bool {
+			matchedListener, listenerFound := common.FindElement(gateway.Spec.Listeners, func(listener gwapiv1.Listener) bool {
 				return string(listener.Name) == string(*parentRef.SectionName)
 			})
 			if listenerFound {

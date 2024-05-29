@@ -41,7 +41,6 @@ import (
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/durationpb"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
-	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
 // CreateRoutesConfigForRds generates the default RouteConfiguration.
@@ -73,7 +72,7 @@ func CreateRoutesConfigForRds(vHosts []*routev3.VirtualHost, httpListeners strin
 // The relevant private keys and certificates (for securedListener) are fetched from the filepath
 // mentioned in the adapter configuration. These certificate, key values are added
 // as inline records (base64 encoded).
-func CreateListenerByGateway(gateway *gwapiv1b1.Gateway, resolvedListenerCerts map[string]map[string][]byte, gwLuaScript string) []*listenerv3.Listener {
+func CreateListenerByGateway(gateway *gwapiv1.Gateway, resolvedListenerCerts map[string]map[string][]byte, gwLuaScript string) []*listenerv3.Listener {
 	conf := config.ReadConfigs()
 	// Prepare a map that contains all the listerners identified in all of the gateways that reconciled so far.
 	// This map contains port - listeners per protocol with port

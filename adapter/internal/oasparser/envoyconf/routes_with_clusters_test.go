@@ -34,7 +34,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8types "k8s.io/apimachinery/pkg/types"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
-	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
 func TestCreateRoutesWithClustersWithExactAndRegularExpressionRules(t *testing.T) {
@@ -63,54 +62,54 @@ func TestCreateRoutesWithClustersWithExactAndRegularExpressionRules(t *testing.T
 	methodTypeGet := gwapiv1.HTTPMethodGet
 	methodTypePost := gwapiv1.HTTPMethodPost
 
-	httpRoute := gwapiv1b1.HTTPRoute{
+	httpRoute := gwapiv1.HTTPRoute{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: "default",
 			Name:      "test-api-2-prod-http-route",
 		},
-		Spec: gwapiv1b1.HTTPRouteSpec{
-			Hostnames:       []gwapiv1b1.Hostname{"prod.gw.wso2.com"},
+		Spec: gwapiv1.HTTPRouteSpec{
+			Hostnames:       []gwapiv1.Hostname{"prod.gw.wso2.com"},
 			CommonRouteSpec: createDefaultCommonRouteSpec(),
-			Rules: []gwapiv1b1.HTTPRouteRule{
+			Rules: []gwapiv1.HTTPRouteRule{
 				{
-					Matches: []gwapiv1b1.HTTPRouteMatch{
+					Matches: []gwapiv1.HTTPRouteMatch{
 						{
-							Path: &gwapiv1b1.HTTPPathMatch{
+							Path: &gwapiv1.HTTPPathMatch{
 								Type:  operatorutils.PathMatchTypePtr(gwapiv1.PathMatchExact),
 								Value: operatorutils.StringPtr("/exact-path-api/2.0.0/(.*)/exact-path"),
 							},
 							Method: &methodTypeGet,
 						},
 					},
-					BackendRefs: []gwapiv1b1.HTTPBackendRef{
+					BackendRefs: []gwapiv1.HTTPBackendRef{
 						createDefaultBackendRef("backend-1"),
 					},
 				},
 				{
-					Matches: []gwapiv1b1.HTTPRouteMatch{
+					Matches: []gwapiv1.HTTPRouteMatch{
 						{
-							Path: &gwapiv1b1.HTTPPathMatch{
+							Path: &gwapiv1.HTTPPathMatch{
 								Type:  operatorutils.PathMatchTypePtr(gwapiv1.PathMatchRegularExpression),
 								Value: operatorutils.StringPtr("/regex-path/2.0.0/userId/([^/]+)/orderId/([^/]+)"),
 							},
 							Method: &methodTypePost,
 						},
 					},
-					BackendRefs: []gwapiv1b1.HTTPBackendRef{
+					BackendRefs: []gwapiv1.HTTPBackendRef{
 						createDefaultBackendRef("backend-2"),
 					},
 				},
 			},
 		},
 	}
-	hostName := gwapiv1b1.Hostname("prod.gw.wso2.com")
-	gateway := gwapiv1b1.Gateway{
+	hostName := gwapiv1.Hostname("prod.gw.wso2.com")
+	gateway := gwapiv1.Gateway{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: "default",
 			Name:      "default-gateway",
 		},
-		Spec: gwapiv1b1.GatewaySpec{
-			Listeners: []gwapiv1b1.Listener{
+		Spec: gwapiv1.GatewaySpec{
+			Listeners: []gwapiv1.Listener{
 				{
 					Name:     "httpslistener",
 					Hostname: &hostName,
@@ -233,26 +232,26 @@ func generateSampleAPI(apiName string, apiVersion string, basePath string) synch
 	httpRouteState := synchronizer.HTTPRouteState{}
 	methodTypeGet := gwapiv1.HTTPMethodGet
 
-	httpRoute := gwapiv1b1.HTTPRoute{
+	httpRoute := gwapiv1.HTTPRoute{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: "default",
 			Name:      apiName + "-prod-http-route",
 		},
-		Spec: gwapiv1b1.HTTPRouteSpec{
-			Hostnames:       []gwapiv1b1.Hostname{"prod.gw.wso2.com"},
+		Spec: gwapiv1.HTTPRouteSpec{
+			Hostnames:       []gwapiv1.Hostname{"prod.gw.wso2.com"},
 			CommonRouteSpec: createDefaultCommonRouteSpec(),
-			Rules: []gwapiv1b1.HTTPRouteRule{
+			Rules: []gwapiv1.HTTPRouteRule{
 				{
-					Matches: []gwapiv1b1.HTTPRouteMatch{
+					Matches: []gwapiv1.HTTPRouteMatch{
 						{
-							Path: &gwapiv1b1.HTTPPathMatch{
+							Path: &gwapiv1.HTTPPathMatch{
 								Type:  operatorutils.PathMatchTypePtr(gwapiv1.PathMatchExact),
 								Value: operatorutils.StringPtr("/exact-path-api/2.0.0/(.*)/exact-path"),
 							},
 							Method: &methodTypeGet,
 						},
 					},
-					BackendRefs: []gwapiv1b1.HTTPBackendRef{
+					BackendRefs: []gwapiv1.HTTPBackendRef{
 						createDefaultBackendRef(apiName + "backend-1"),
 					},
 				},
@@ -295,38 +294,38 @@ func TestCreateRoutesWithClustersWithMultiplePathPrefixRules(t *testing.T) {
 	apiState.APIDefinition = &apiDefinition
 	httpRouteState := synchronizer.HTTPRouteState{}
 
-	httpRoute := gwapiv1b1.HTTPRoute{
+	httpRoute := gwapiv1.HTTPRoute{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: "default",
 			Name:      "test-api-1-prod-http-route",
 		},
-		Spec: gwapiv1b1.HTTPRouteSpec{
-			Hostnames:       []gwapiv1b1.Hostname{"prod.gw.wso2.com"},
+		Spec: gwapiv1.HTTPRouteSpec{
+			Hostnames:       []gwapiv1.Hostname{"prod.gw.wso2.com"},
 			CommonRouteSpec: createDefaultCommonRouteSpec(),
-			Rules: []gwapiv1b1.HTTPRouteRule{
+			Rules: []gwapiv1.HTTPRouteRule{
 				{
-					Matches: []gwapiv1b1.HTTPRouteMatch{
+					Matches: []gwapiv1.HTTPRouteMatch{
 						{
-							Path: &gwapiv1b1.HTTPPathMatch{
+							Path: &gwapiv1.HTTPPathMatch{
 								Type:  operatorutils.PathMatchTypePtr(gwapiv1.PathMatchPathPrefix),
 								Value: operatorutils.StringPtr("/orders"),
 							},
 						},
 					},
-					BackendRefs: []gwapiv1b1.HTTPBackendRef{
+					BackendRefs: []gwapiv1.HTTPBackendRef{
 						createDefaultBackendRef("order-backend"),
 					},
 				},
 				{
-					Matches: []gwapiv1b1.HTTPRouteMatch{
+					Matches: []gwapiv1.HTTPRouteMatch{
 						{
-							Path: &gwapiv1b1.HTTPPathMatch{
+							Path: &gwapiv1.HTTPPathMatch{
 								Type:  operatorutils.PathMatchTypePtr(gwapiv1.PathMatchPathPrefix),
 								Value: operatorutils.StringPtr("/users"),
 							},
 						},
 					},
-					BackendRefs: []gwapiv1b1.HTTPBackendRef{
+					BackendRefs: []gwapiv1.HTTPBackendRef{
 						createDefaultBackendRef("user-backend"),
 					},
 				},
@@ -445,26 +444,26 @@ func TestCreateRoutesWithClustersWithBackendTLSConfigs(t *testing.T) {
 	httpRouteState := synchronizer.HTTPRouteState{}
 	methodTypeGet := gwapiv1.HTTPMethodGet
 
-	httpRoute := gwapiv1b1.HTTPRoute{
+	httpRoute := gwapiv1.HTTPRoute{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: "default",
 			Name:      "test-api-3-prod-http-route",
 		},
-		Spec: gwapiv1b1.HTTPRouteSpec{
-			Hostnames:       []gwapiv1b1.Hostname{"prod.gw.wso2.com"},
+		Spec: gwapiv1.HTTPRouteSpec{
+			Hostnames:       []gwapiv1.Hostname{"prod.gw.wso2.com"},
 			CommonRouteSpec: createDefaultCommonRouteSpec(),
-			Rules: []gwapiv1b1.HTTPRouteRule{
+			Rules: []gwapiv1.HTTPRouteRule{
 				{
-					Matches: []gwapiv1b1.HTTPRouteMatch{
+					Matches: []gwapiv1.HTTPRouteMatch{
 						{
-							Path: &gwapiv1b1.HTTPPathMatch{
+							Path: &gwapiv1.HTTPPathMatch{
 								Type:  operatorutils.PathMatchTypePtr(gwapiv1.PathMatchExact),
 								Value: operatorutils.StringPtr("/resource-path"),
 							},
 							Method: &methodTypeGet,
 						},
 					},
-					BackendRefs: []gwapiv1b1.HTTPBackendRef{
+					BackendRefs: []gwapiv1.HTTPBackendRef{
 						createDefaultBackendRef("test-backend-3"),
 					},
 				},
@@ -510,26 +509,26 @@ func TestCreateRoutesWithClustersWithBackendTLSConfigs(t *testing.T) {
 	assert.Equal(t, uint32(0), exactPathClusterPriority, "Exact path cluster's assigned Priority is incorrect.")
 }
 
-func createDefaultCommonRouteSpec() gwapiv1b1.CommonRouteSpec {
-	return gwapiv1b1.CommonRouteSpec{
-		ParentRefs: []gwapiv1b1.ParentReference{
+func createDefaultCommonRouteSpec() gwapiv1.CommonRouteSpec {
+	return gwapiv1.CommonRouteSpec{
+		ParentRefs: []gwapiv1.ParentReference{
 			{
 				Group:       operatorutils.GroupPtr("gateway.networking.k8s.io"),
 				Kind:        operatorutils.KindPtr("Gateway"),
-				Name:        gwapiv1b1.ObjectName("default-gateway"),
-				SectionName: (*gwapiv1b1.SectionName)(operatorutils.StringPtr("httpslistener")),
+				Name:        gwapiv1.ObjectName("default-gateway"),
+				SectionName: (*gwapiv1.SectionName)(operatorutils.StringPtr("httpslistener")),
 			},
 		},
 	}
 }
 
-func createDefaultBackendRef(backendName string) gwapiv1b1.HTTPBackendRef {
-	return gwapiv1b1.HTTPBackendRef{
-		BackendRef: gwapiv1b1.BackendRef{
-			BackendObjectReference: gwapiv1b1.BackendObjectReference{
-				Group: (*gwapiv1b1.Group)(&v1alpha1.GroupVersion.Group),
+func createDefaultBackendRef(backendName string) gwapiv1.HTTPBackendRef {
+	return gwapiv1.HTTPBackendRef{
+		BackendRef: gwapiv1.BackendRef{
+			BackendObjectReference: gwapiv1.BackendObjectReference{
+				Group: (*gwapiv1.Group)(&v1alpha1.GroupVersion.Group),
 				Kind:  operatorutils.KindPtr("Backend"),
-				Name:  gwapiv1b1.ObjectName(backendName),
+				Name:  gwapiv1.ObjectName(backendName),
 			},
 		},
 	}
@@ -568,40 +567,40 @@ func TestCreateRoutesWithClustersDifferentBackendRefs(t *testing.T) {
 	httpRouteState := synchronizer.HTTPRouteState{}
 	methodTypeGet := gwapiv1.HTTPMethodGet
 
-	httpRoute := gwapiv1b1.HTTPRoute{
+	httpRoute := gwapiv1.HTTPRoute{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: "default",
 			Name:      "test-api-different-backendrefs-prod-http-route",
 		},
-		Spec: gwapiv1b1.HTTPRouteSpec{
-			Hostnames:       []gwapiv1b1.Hostname{"prod.gw.wso2.com"},
+		Spec: gwapiv1.HTTPRouteSpec{
+			Hostnames:       []gwapiv1.Hostname{"prod.gw.wso2.com"},
 			CommonRouteSpec: createDefaultCommonRouteSpec(),
-			Rules: []gwapiv1b1.HTTPRouteRule{
+			Rules: []gwapiv1.HTTPRouteRule{
 				{
-					Matches: []gwapiv1b1.HTTPRouteMatch{
+					Matches: []gwapiv1.HTTPRouteMatch{
 						{
-							Path: &gwapiv1b1.HTTPPathMatch{
+							Path: &gwapiv1.HTTPPathMatch{
 								Type:  operatorutils.PathMatchTypePtr(gwapiv1.PathMatchExact),
 								Value: operatorutils.StringPtr("/resource-path-1"),
 							},
 							Method: &methodTypeGet,
 						},
 					},
-					BackendRefs: []gwapiv1b1.HTTPBackendRef{
+					BackendRefs: []gwapiv1.HTTPBackendRef{
 						createDefaultBackendRef("test-backend-1"),
 					},
 				},
 				{
-					Matches: []gwapiv1b1.HTTPRouteMatch{
+					Matches: []gwapiv1.HTTPRouteMatch{
 						{
-							Path: &gwapiv1b1.HTTPPathMatch{
+							Path: &gwapiv1.HTTPPathMatch{
 								Type:  operatorutils.PathMatchTypePtr(gwapiv1.PathMatchExact),
 								Value: operatorutils.StringPtr("/resource-path-2"),
 							},
 							Method: &methodTypeGet,
 						},
 					},
-					BackendRefs: []gwapiv1b1.HTTPBackendRef{
+					BackendRefs: []gwapiv1.HTTPBackendRef{
 						createDefaultBackendRef("test-backend-2"),
 					},
 				},
@@ -660,40 +659,40 @@ func TestCreateRoutesWithClustersSameBackendRefs(t *testing.T) {
 	httpRouteState := synchronizer.HTTPRouteState{}
 	methodTypeGet := gwapiv1.HTTPMethodGet
 
-	httpRoute := gwapiv1b1.HTTPRoute{
+	httpRoute := gwapiv1.HTTPRoute{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: "default",
 			Name:      "test-api-same-backendrefs-prod-http-route",
 		},
-		Spec: gwapiv1b1.HTTPRouteSpec{
-			Hostnames:       []gwapiv1b1.Hostname{"prod.gw.wso2.com"},
+		Spec: gwapiv1.HTTPRouteSpec{
+			Hostnames:       []gwapiv1.Hostname{"prod.gw.wso2.com"},
 			CommonRouteSpec: createDefaultCommonRouteSpec(),
-			Rules: []gwapiv1b1.HTTPRouteRule{
+			Rules: []gwapiv1.HTTPRouteRule{
 				{
-					Matches: []gwapiv1b1.HTTPRouteMatch{
+					Matches: []gwapiv1.HTTPRouteMatch{
 						{
-							Path: &gwapiv1b1.HTTPPathMatch{
+							Path: &gwapiv1.HTTPPathMatch{
 								Type:  operatorutils.PathMatchTypePtr(gwapiv1.PathMatchExact),
 								Value: operatorutils.StringPtr("/resource-path-1"),
 							},
 							Method: &methodTypeGet,
 						},
 					},
-					BackendRefs: []gwapiv1b1.HTTPBackendRef{
+					BackendRefs: []gwapiv1.HTTPBackendRef{
 						createDefaultBackendRef("test-backend-1"),
 					},
 				},
 				{
-					Matches: []gwapiv1b1.HTTPRouteMatch{
+					Matches: []gwapiv1.HTTPRouteMatch{
 						{
-							Path: &gwapiv1b1.HTTPPathMatch{
+							Path: &gwapiv1.HTTPPathMatch{
 								Type:  operatorutils.PathMatchTypePtr(gwapiv1.PathMatchExact),
 								Value: operatorutils.StringPtr("/resource-path-2"),
 							},
 							Method: &methodTypeGet,
 						},
 					},
-					BackendRefs: []gwapiv1b1.HTTPBackendRef{
+					BackendRefs: []gwapiv1.HTTPBackendRef{
 						createDefaultBackendRef("test-backend-1"),
 					},
 				},

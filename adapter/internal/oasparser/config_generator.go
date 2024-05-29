@@ -32,7 +32,7 @@ import (
 	envoy "github.com/wso2/apk/adapter/internal/oasparser/envoyconf"
 	"github.com/wso2/apk/adapter/internal/oasparser/model"
 	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/api"
-	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
+	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 )
 
 // GetGlobalClusters generates initial internal clusters for given environment.
@@ -73,7 +73,7 @@ func GetGlobalClusters() ([]*clusterv3.Cluster, []*corev3.Address) {
 // The provided set of envoy routes will be assigned under the virtual host
 //
 // The RouteConfiguration is named as "default"
-func GetProductionListener(gateway *gwapiv1b1.Gateway, resolvedListenerCerts map[string]map[string][]byte, gwLuaScript string) []*listenerv3.Listener {
+func GetProductionListener(gateway *gwapiv1.Gateway, resolvedListenerCerts map[string]map[string][]byte, gwLuaScript string) []*listenerv3.Listener {
 	listeners := envoy.CreateListenerByGateway(gateway, resolvedListenerCerts, gwLuaScript)
 	return listeners
 }

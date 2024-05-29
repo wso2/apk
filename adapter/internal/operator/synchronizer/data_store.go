@@ -25,7 +25,7 @@ import (
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	"k8s.io/apimachinery/pkg/types"
-	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
+	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 )
 
 // OperatorDataStore holds the APIStore and API, HttpRoute mappings
@@ -443,7 +443,7 @@ func updateGQLRoute(gqlRoute *GQLRouteState, cachedGQLRoute *GQLRouteState, endp
 	return events, updated
 }
 
-func isEqualHTTPRoutes(cachedHTTPRoutes, newHTTPRoutes map[string]*gwapiv1b1.HTTPRoute) bool {
+func isEqualHTTPRoutes(cachedHTTPRoutes, newHTTPRoutes map[string]*gwapiv1.HTTPRoute) bool {
 	for key, cachedHTTPRoute := range cachedHTTPRoutes {
 		if newHTTPRoutes[key] == nil {
 			return false
@@ -485,7 +485,7 @@ func (ods *OperatorDataStore) DeleteCachedAPI(apiName types.NamespacedName) {
 }
 
 // AddGatewayState stores a new Gateway in the OperatorDataStore.
-func (ods *OperatorDataStore) AddGatewayState(gateway gwapiv1b1.Gateway,
+func (ods *OperatorDataStore) AddGatewayState(gateway gwapiv1.Gateway,
 	gatewayStateData *GatewayStateData) GatewayState {
 	ods.mu.Lock()
 	defer ods.mu.Unlock()
@@ -499,7 +499,7 @@ func (ods *OperatorDataStore) AddGatewayState(gateway gwapiv1b1.Gateway,
 }
 
 // UpdateGatewayState update/create the GatewayState on ref updates
-func (ods *OperatorDataStore) UpdateGatewayState(gatewayDef *gwapiv1b1.Gateway,
+func (ods *OperatorDataStore) UpdateGatewayState(gatewayDef *gwapiv1.Gateway,
 	gatewayStateData *GatewayStateData) (GatewayState, []string, bool) {
 	_, found := ods.gatewayStore[utils.NamespacedName(gatewayDef)]
 	if !found {
@@ -511,7 +511,7 @@ func (ods *OperatorDataStore) UpdateGatewayState(gatewayDef *gwapiv1b1.Gateway,
 }
 
 // processGatewayState process and update the GatewayState on ref updates
-func (ods *OperatorDataStore) processGatewayState(gatewayDef *gwapiv1b1.Gateway,
+func (ods *OperatorDataStore) processGatewayState(gatewayDef *gwapiv1.Gateway,
 	customRateLimitPolicies map[string]*dpv1alpha1.RateLimitPolicy) (GatewayState, []string, bool) {
 	ods.mu.Lock()
 	defer ods.mu.Unlock()

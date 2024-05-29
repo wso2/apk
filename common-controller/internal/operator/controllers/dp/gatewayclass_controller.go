@@ -36,7 +36,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/source"
-	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
+	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 )
 
 const (
@@ -56,7 +56,7 @@ type GatewayClassReconciler struct {
 	mgr           manager.Manager
 }
 
-// NewGatewayClassController creates a new GatewayClass controller instance. GatewayClass Controllers watches for gwapiv1b1.GatewayClass.
+// NewGatewayClassController creates a new GatewayClass controller instance. GatewayClass Controllers watches for gwapiv1.GatewayClass.
 func NewGatewayClassController(mgr manager.Manager, statusUpdater *status.UpdateHandler) error {
 	r := &GatewayClassReconciler{
 		client:        mgr.GetClient(),
@@ -71,7 +71,7 @@ func NewGatewayClassController(mgr manager.Manager, statusUpdater *status.Update
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &gwapiv1b1.GatewayClass{}), &handler.EnqueueRequestForObject{}); err != nil {
+	if err := c.Watch(source.Kind(mgr.GetCache(), &gwapiv1.GatewayClass{}), &handler.EnqueueRequestForObject{}); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2639, logging.BLOCKER,
 			"Error watching GatewayClass resources: %v", err.Error()))
 		return err
@@ -93,7 +93,7 @@ func NewGatewayClassController(mgr manager.Manager, statusUpdater *status.Update
 func (gatewayClassReconciler *GatewayClassReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	// Check whether the Gateway CR exist, if not consider as a DELETE event.
 	loggers.LoggerAPKOperator.Info("Reconciling gateway class...")
-	var gatewayClassDef gwapiv1b1.GatewayClass
+	var gatewayClassDef gwapiv1.GatewayClass
 	if err := gatewayClassReconciler.client.Get(ctx, req.NamespacedName, &gatewayClassDef); err != nil {
 		if k8error.IsNotFound(err) {
 			// Gateway deleted. We dont have to handle this
@@ -130,9 +130,9 @@ func (gatewayClassReconciler *GatewayClassReconciler) handleGatewayClassStatus(g
 	timeNow := metav1.Now()
 	gatewayClassReconciler.statusUpdater.Send(status.Update{
 		NamespacedName: gatewayKey,
-		Resource:       new(gwapiv1b1.GatewayClass),
+		Resource:       new(gwapiv1.GatewayClass),
 		UpdateStatus: func(obj k8client.Object) k8client.Object {
-			h, ok := obj.(*gwapiv1b1.GatewayClass)
+			h, ok := obj.(*gwapiv1.GatewayClass)
 			if !ok {
 				loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3109, logging.BLOCKER, "Error while updating GatewayClass status %v", obj))
 			}

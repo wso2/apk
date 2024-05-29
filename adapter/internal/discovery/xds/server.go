@@ -51,7 +51,7 @@ import (
 	wso2_resource "github.com/wso2/apk/adapter/pkg/discovery/protocol/resource/v3"
 	eventhubTypes "github.com/wso2/apk/adapter/pkg/eventhub/types"
 	semantic_version "github.com/wso2/apk/adapter/pkg/semanticversion"
-	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
+	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 )
 
 // EnvoyInternalAPI struct use to hold envoy resources and adapter internal resources
@@ -318,7 +318,7 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 			// let the api decide which gateway section it refers to.
 			// because it was already there in httproute cr
 			listenerSection, found := common.FindElement(dataholder.GetAllGatewayListenerSections(),
-				func(listenerSection gwapiv1b1.Listener) bool {
+				func(listenerSection gwapiv1.Listener) bool {
 					if listenerSection.Hostname != nil && common.MatchesHostname(vhost, string(*listenerSection.Hostname)) {
 						// if the envoy side vhost matches to a hostname in gateway, then it is a match
 						if listener.Name == common.GetEnvoyListenerName(string(listenerSection.Protocol), uint32(listenerSection.Port)) {
@@ -649,7 +649,7 @@ func UpdateOrgAPIMap(vHosts, newLabels map[string]struct{}, listener string, sec
 }
 
 // UpdateGatewayCache updates the xDS cache related to the Gateway Lifecycle event.
-func UpdateGatewayCache(gateway *gwapiv1b1.Gateway, resolvedListenerCerts map[string]map[string][]byte,
+func UpdateGatewayCache(gateway *gwapiv1.Gateway, resolvedListenerCerts map[string]map[string][]byte,
 	gwLuaScript string, customRateLimitPolicies []*model.CustomRateLimitPolicy) error {
 	listeners := oasParser.GetProductionListener(gateway, resolvedListenerCerts, gwLuaScript)
 	gatewayLabelConfigMap[gateway.Name].listeners = listeners

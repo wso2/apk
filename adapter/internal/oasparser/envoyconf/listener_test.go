@@ -27,16 +27,16 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/oasparser/model"
-	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
+	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 )
 
 func TestCreateListenerWithRds(t *testing.T) {
 	// TODO: (Vajira) Add more test scenarios
-	gateway := new(gwapiv1b1.Gateway)
+	gateway := new(gwapiv1.Gateway)
 	gateway.Name = "default"
-	listenerObj := new(gwapiv1b1.Listener)
+	listenerObj := new(gwapiv1.Listener)
 	listenerObj.Name = "httpslistener"
-	var hostname gwapiv1b1.Hostname
+	var hostname gwapiv1.Hostname
 	hostname = "0.0.0.0"
 	listenerObj.Hostname = &hostname
 	listenerObj.Port = 9095

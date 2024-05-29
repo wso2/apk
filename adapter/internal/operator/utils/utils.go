@@ -42,7 +42,6 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	k8client "sigs.k8s.io/controller-runtime/pkg/client"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
-	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
 // NamespacedName generates namespaced name for Kubernetes objects
@@ -66,7 +65,7 @@ func FilterByNamespaces(namespaces []string) func(object k8client.Object) bool {
 }
 
 // GetNamespace reads namespace with a default value
-func GetNamespace(namespace *gwapiv1b1.Namespace, defaultNamespace string) string {
+func GetNamespace(namespace *gwapiv1.Namespace, defaultNamespace string) string {
 	if namespace != nil && *namespace != "" {
 		return string(*namespace)
 	}
@@ -91,19 +90,19 @@ func GetOperatorPodNamespace() string {
 }
 
 // GroupPtr returns pointer to created v1beta1.Group object
-func GroupPtr(name string) *gwapiv1b1.Group {
-	group := gwapiv1b1.Group(name)
+func GroupPtr(name string) *gwapiv1.Group {
+	group := gwapiv1.Group(name)
 	return &group
 }
 
 // KindPtr returns a pointer to created v1beta1.Kind object
-func KindPtr(name string) *gwapiv1b1.Kind {
-	kind := gwapiv1b1.Kind(name)
+func KindPtr(name string) *gwapiv1.Kind {
+	kind := gwapiv1.Kind(name)
 	return &kind
 }
 
 // PathMatchTypePtr returns a pointer to created v1beta1.PathMatchType object
-func PathMatchTypePtr(pType gwapiv1b1.PathMatchType) *gwapiv1b1.PathMatchType {
+func PathMatchTypePtr(pType gwapiv1.PathMatchType) *gwapiv1.PathMatchType {
 	return &pType
 }
 
@@ -113,7 +112,7 @@ func StringPtr(val string) *string {
 }
 
 // GetDefaultHostNameForBackend returns the host in <backend.name>.<namespace> format
-func GetDefaultHostNameForBackend(backend gwapiv1b1.HTTPBackendRef,
+func GetDefaultHostNameForBackend(backend gwapiv1.HTTPBackendRef,
 	defaultNamespace string) string {
 	return fmt.Sprintf("%s.%s", backend.Name,
 		GetNamespace(backend.Namespace, defaultNamespace))
@@ -587,10 +586,10 @@ func ConvertRefConfigsV1ToV2(refConfig *dpv1alpha1.RefConfig) *dpv1alpha2.RefCon
 // ContainsString checks whether a list contains a specific string.
 // It returns true if the string is found in the list, otherwise false.
 func ContainsString(list []string, target string) bool {
-    for _, item := range list {
-        if item == target {
-            return true
-        }
-    }
-    return false
+	for _, item := range list {
+		if item == target {
+			return true
+		}
+	}
+	return false
 }

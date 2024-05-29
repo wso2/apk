@@ -28,7 +28,7 @@ import (
 	"github.com/wso2/apk/adapter/internal/oasparser/model"
 	"github.com/wso2/apk/adapter/pkg/logging"
 	"k8s.io/apimachinery/pkg/types"
-	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
+	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 )
 
 // undeployAPIInGateway undeploys the related API in CREATE and UPDATE events.
@@ -129,7 +129,7 @@ func generateAdapterInternalAPI(apiState APIState, httpRoute *HTTPRouteState, en
 }
 
 // getVhostForAPI returns the vHosts related to an API.
-func getVhostsForAPI(httpRoute *gwapiv1b1.HTTPRoute) map[string]struct{} {
+func getVhostsForAPI(httpRoute *gwapiv1.HTTPRoute) map[string]struct{} {
 	vHosts := make(map[string]struct{})
 	for _, hostName := range httpRoute.Spec.Hostnames {
 		vHosts[string(hostName)] = struct{}{}
@@ -138,7 +138,7 @@ func getVhostsForAPI(httpRoute *gwapiv1b1.HTTPRoute) map[string]struct{} {
 }
 
 // getGatewayNameForAPI returns the labels related to an API.
-func getGatewayNameForAPI(httpRoute *gwapiv1b1.HTTPRoute) map[string]struct{} {
+func getGatewayNameForAPI(httpRoute *gwapiv1.HTTPRoute) map[string]struct{} {
 	labels := make(map[string]struct{})
 	var err error
 	for _, parentRef := range httpRoute.Spec.ParentRefs {
@@ -153,7 +153,7 @@ func getGatewayNameForAPI(httpRoute *gwapiv1b1.HTTPRoute) map[string]struct{} {
 }
 
 // getListenersForAPI returns the listeners related to an API.
-func getListenersForAPI(httpRoute *gwapiv1b1.HTTPRoute, apiUUID string) ([]string, []string) {
+func getListenersForAPI(httpRoute *gwapiv1.HTTPRoute, apiUUID string) ([]string, []string) {
 	var listeners []string
 	var sectionNames []string
 	for _, parentRef := range httpRoute.Spec.ParentRefs {
@@ -167,7 +167,7 @@ func getListenersForAPI(httpRoute *gwapiv1b1.HTTPRoute, apiUUID string) ([]strin
 		}.String()]
 		if found {
 			// find the matching listener
-			matchedListener, listenerFound := common.FindElement(gateway.Spec.Listeners, func(listener gwapiv1b1.Listener) bool {
+			matchedListener, listenerFound := common.FindElement(gateway.Spec.Listeners, func(listener gwapiv1.Listener) bool {
 				return string(listener.Name) == string(*parentRef.SectionName)
 			})
 			if listenerFound {
@@ -181,7 +181,7 @@ func getListenersForAPI(httpRoute *gwapiv1b1.HTTPRoute, apiUUID string) ([]strin
 	return listeners, sectionNames
 }
 
-func deleteAPIFromEnv(httpRoute *gwapiv1b1.HTTPRoute, apiState APIState) error {
+func deleteAPIFromEnv(httpRoute *gwapiv1.HTTPRoute, apiState APIState) error {
 	labels := getGatewayNameForAPI(httpRoute)
 	uuid := string(apiState.APIDefinition.ObjectMeta.UID)
 	return xds.DeleteAPI(uuid, labels)
