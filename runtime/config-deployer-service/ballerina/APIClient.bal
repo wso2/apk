@@ -785,7 +785,11 @@ public class APIClient {
                         return e909022("Provided Type currently not supported for GraphQL APIs.", error("Provided Type currently not supported for GraphQL APIs."));
                     }
                 } else {
-                    model:HTTPRouteRule httpRouteRule = {matches: self.retrieveHTTPMatches(apkConf, operation, organization), backendRefs: self.retrieveGeneratedBackend(apkConf, endpointToUse, endpointType), filters: self.generateFilters(apiArtifact, apkConf, endpointToUse, operation, endpointType, organization)};
+                    model:HTTPRouteRule httpRouteRule = {
+                        matches: self.retrieveHTTPMatches(apkConf, operation, organization),
+                        backendRefs: self.retrieveGeneratedBackend(apkConf, endpointToUse, endpointType),
+                        filters: self.generateFilters(apiArtifact, apkConf, endpointToUse, operation, endpointType, organization)
+                    };
                     return httpRouteRule;
                 }
             } else {
@@ -800,7 +804,15 @@ public class APIClient {
     private isolated function generateFilters(model:APIArtifact apiArtifact, APKConf apkConf, model:Endpoint endpoint, APKOperations operation, string endpointType, commons:Organization organization) returns model:HTTPRouteFilter[] {
         model:HTTPRouteFilter[] routeFilters = [];
         string generatedPath = self.generatePrefixMatch(endpoint, operation);
-        model:HTTPRouteFilter replacePathFilter = {'type: "URLRewrite", urlRewrite: {path: {'type: "ReplaceFullPath", replaceFullPath: generatedPath}}};
+        model:HTTPRouteFilter replacePathFilter = {
+            'type: "URLRewrite",
+            urlRewrite: {
+                path: {
+                    'type: "ReplaceFullPath",
+                    replaceFullPath: generatedPath
+                }
+            }
+        };
         routeFilters.push(replacePathFilter);
         APIOperationPolicies? operationPoliciesToUse = ();
         if (apkConf.apiPolicies is APIOperationPolicies) {
@@ -809,33 +821,53 @@ public class APIClient {
             operationPoliciesToUse = operation.operationPolicies;
         }
         if operationPoliciesToUse is APIOperationPolicies {
-            APKOperationPolicy[]? request = operationPoliciesToUse.request;
+            APKOperationPolicy[]? requestPolicies = operationPoliciesToUse.request;
+            APKOperationPolicy[]? responsePolicies = operationPoliciesToUse.response;
+            if requestPolicies is APKOperationPolicy[] && requestPolicies.length() > 0 {
+                model:HTTPRouteFilter headerModifierFilter = {'type: "RequestHeaderModifier"};
+                headerModifierFilter.requestHeaderModifier = self.extractHttpHeaderFilterData(requestPolicies, organization);
+                routeFilters.push(headerModifierFilter);
+            }
+            if responsePolicies is APKOperationPolicy[] && responsePolicies.length() > 0 {
+                model:HTTPRouteFilter headerModifierFilter = {'type: "ResponseHeaderModifier"};
+                headerModifierFilter.responseHeaderModifier = self.extractHttpHeaderFilterData(responsePolicies, organization);
+                routeFilters.push(headerModifierFilter);
+            }
         }
         return routeFilters;
     }
 
     isolated function extractHttpHeaderFilterData(APKOperationPolicy[] operationPolicy, commons:Organization organization) returns model:HTTPHeaderFilter {
+        model:HTTPHeader[] addPolicies = [];
         model:HTTPHeader[] setPolicies = [];
         string[] removePolicies = [];
         foreach APKOperationPolicy policy in operationPolicy {
-            string policyName = policy.policyName;
-
-            record {}? policyParameters = policy.parameters;
-            if (policyParameters is record {}) {
-                if (policyName == "addHeader") {
-                    model:HTTPHeader httpHeader = {
-                        name: <string>policyParameters.get("headerName"),
-                        value: <string>policyParameters.get("headerValue")
-                    };
-                    setPolicies.push(httpHeader);
+            if policy is HeaderModifierPolicy {
+                HeaderModifierPolicyParameters policyParameters = policy.parameters;
+                if policy.policyName == "AddHeaders" {
+                    ModifierHeader[] addHeaders = <ModifierHeader[]>policyParameters.headers;
+                    foreach ModifierHeader header in addHeaders {
+                        addPolicies.push(header);
+                    }
                 }
-                if (policyName == "removeHeader") {
-                    string httpHeader = <string>policyParameters.get("headerName");
-                    removePolicies.push(httpHeader);
+                if policy.policyName == "SetHeaders" {
+                    ModifierHeader[] setHeaders = <ModifierHeader[]>policyParameters.headers;
+                    foreach ModifierHeader header in setHeaders {
+                        setPolicies.push(header);
+                    }
+                }
+                if policy.policyName == "RemoveHeaders" {
+                    string[] removeHeaders = <string[]>policyParameters.headers;
+                    foreach string header in removeHeaders {
+                        removePolicies.push(header);
+                    }
                 }
             }
         }
         model:HTTPHeaderFilter headerModifier = {};
+        if (addPolicies != []) {
+            headerModifier.add = addPolicies;
+        }
         if (setPolicies != []) {
             headerModifier.set = setPolicies;
         }
@@ -1228,6 +1260,8 @@ public class APIClient {
                         model:BackendJWT backendJwt = self.retrieveBackendJWTPolicy(apkConf, apiArtifact, backendJWTPolicy, operations, organization);
                         apiArtifact.backendJwt = backendJwt;
                         policyReferences.push(<model:BackendJwtReference>{name: backendJwt.metadata.name});
+                    } else if (policyName == "AddHeaders" || policyName == "SetHeaders" || policyName == "RemoveHeaders") {
+
                     } else {
                         return e909052(error("Incorrect API Policy name provided."));
                     }
@@ -1593,7 +1627,6 @@ public class APIClient {
     private isolated function validateAndRetrieveAPKConfiguration(json apkconfJson) returns APKConf|commons:APKError? {
         do {
             runtimeapi:APKConfValidationResponse validationResponse = check apkConfValidator.validate(apkconfJson.toJsonString());
-
             if validationResponse.isValidated() {
                 APKConf apkConf = check apkconfJson.cloneWithType(APKConf);
                 map<string> errors = {};

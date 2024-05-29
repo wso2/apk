@@ -79,7 +79,7 @@ public type APKOperations record {
     string[] scopes?;
 };
 
-public type APKOperationPolicy InterceptorPolicy|BackendJWTPolicy;
+public type APKOperationPolicy InterceptorPolicy|BackendJWTPolicy|HeaderModifierPolicy;
 
 public type DeployApiBody record {
     # apk-configuration file
@@ -202,6 +202,11 @@ public type Authentication record {|
     boolean enabled = true;
 |};
 
+public type HeaderModifierPolicy record {
+    *BaseOperationPolicy;
+    HeaderModifierPolicyParameters parameters;
+};
+
 public type InterceptorPolicy record {
     *BaseOperationPolicy;
     InterceptorPolicy_parameters parameters?;
@@ -235,6 +240,21 @@ public type APKConf record {
     # CORS Configuration of API
     CORSConfiguration corsConfiguration?;
 };
+
+public type HeaderModifierPolicyParameters record {|
+    ModifierHeader[]|string[] headers;
+|};
+
+public type HeaderModifierFilterParameters record {|
+    ModifierHeader[] addHeaders;
+    ModifierHeader[] setHeaders;
+    string[] removeHeaders;
+|};
+
+public type ModifierHeader record {|
+    string name;
+    string value;
+|};
 
 public type InterceptorPolicy_parameters record {|
     string backendUrl?;

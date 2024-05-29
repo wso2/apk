@@ -256,11 +256,15 @@ components:
       oneOf:
         - $ref: "#/components/schemas/InterceptorPolicy"
         - $ref: "#/components/schemas/BackendJWTPolicy"
+        - $ref: "#/components/schemas/HeaderModifierPolicy"
       discriminator:
         propertyName: "policyName"
         mapping:
           BackendJwt: "#/components/schemas/BackendJWTPolicy"
           Interceptor: "#/components/schemas/InterceptorPolicy"
+          AddHeaders: "#/components/schemas/HeaderModifierPolicy"
+          SetHeaders: "#/components/schemas/HeaderModifierPolicy"
+          RemoveHeadersHeaders: "#/components/schemas/HeaderModifierPolicy"
     BaseOperationPolicy:
       title: API Operation Policy
       required:
@@ -269,6 +273,12 @@ components:
       properties:
         policyName:
           type: string
+          enum:
+            - AddHeaders
+            - RemoveHeaders
+            - SetHeaders
+            - Interceptor
+            - BackendJwt
         policyVersion:
           type: string
           default: "v1"
@@ -493,6 +503,24 @@ components:
       required:
         - enabled
       additionalProperties: false
+    HeaderModifierPolicy:
+      title: Header Modifier Parameters
+      type: object
+      properties:
+        headers:
+          type: array
+          items:
+            oneOf:
+              - $ref: "#/components/schemas/Header"
+              - type: string
+      additionalProperties: false
+    Header:
+      type: object
+      properties:
+        name:
+          type: string
+        value:
+          type: string
     CustomClaims:
       type: object
       required:
