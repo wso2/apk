@@ -1,6 +1,6 @@
 module github.com/wso2/apk/common-go-libs
 
-go 1.20
+go 1.22
 
 require (
 	github.com/envoyproxy/go-control-plane v0.12.0

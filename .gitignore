@@ -52,10 +52,7 @@ adapter/arm64/main
 adapter/amd64/main
 
 # generated coverage.out files
-adapter/coverage.out
-management-server/coverage.out
-test/integration/coverage.out
-common-controller/coverage.out
+*/coverage.out
 
 management-server/arm64/main
 management-server/amd64/main

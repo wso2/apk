@@ -90,26 +90,6 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
-      path: /mutate-dp-wso2-com-v1alpha1-authentication
-  failurePolicy: Fail
-  name: mauthentication.kb.io
-  rules:
-  - apiGroups:
-    - dp.wso2.com
-    apiVersions:
-    - v1alpha1
-    operations:
-    - CREATE
-    - UPDATE
-    resources:
-    - authentications
-  sideEffects: None
-- admissionReviewVersions:
-  - v1
-  clientConfig:
-    service:
-      name: webhook-service
-      namespace: system
       path: /mutate-dp-wso2-com-v1alpha1-backend
   failurePolicy: Fail
   name: mbackend.kb.io
@@ -269,26 +249,6 @@ webhooks:
     - UPDATE
     resources:
     - apipolicies
-  sideEffects: None
-- admissionReviewVersions:
-  - v1
-  clientConfig:
-    service:
-      name: webhook-service
-      namespace: system
-      path: /validate-dp-wso2-com-v1alpha1-authentication
-  failurePolicy: Fail
-  name: vauthentication.kb.io
-  rules:
-  - apiGroups:
-    - dp.wso2.com
-    apiVersions:
-    - v1alpha1
-    operations:
-    - CREATE
-    - UPDATE
-    resources:
-    - authentications
   sideEffects: None
 - admissionReviewVersions:
   - v1
