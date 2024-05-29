@@ -139,6 +139,9 @@ func InitOperator(metricsConfig config.Metrics) {
 	if err := dpcontrollers.NewAPIController(mgr, operatorDataStore, updateHandler, &ch, &successChannel); err != nil {
 		loggers.LoggerAPKOperator.Errorf("Error creating API controller: %v", err)
 	}
+	if err := dpcontrollers.NewHTTPRouteController(mgr, operatorDataStore, updateHandler); err != nil {
+		loggers.LoggerAPKOperator.Errorf("Error creating HTTPRouteadapter/internal/operator/synchronizer/gateway_state.go controller: %v", err)
+	}
 
 	if err := dpcontrollers.NewTokenIssuerReconciler(mgr); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3114, logging.BLOCKER, "Error creating JWT Issuer controller: %v", err))

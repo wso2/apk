@@ -73,3 +73,25 @@ func generateNodeArray(length int) []string {
 	}
 	return array
 }
+
+func TestMatchDomain(t *testing.T) {
+	tests := []struct {
+		domain   string
+		pattern  string
+		expected bool
+	}{
+		{"test.google.com", "*.google.com", true},
+		{"test.google2.com", "*.google.com", false},
+		{"sub.test.google.com", "*.google.com", true},
+		{"sub.test.google2.com", "*.google.com", false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.domain, func(t *testing.T) {
+			actual := MatchesHostname(tt.domain, tt.pattern)
+			if actual != tt.expected {
+				t.Errorf("Expected %v, but got %v", tt.expected, actual)
+			}
+		})
+	}
+}

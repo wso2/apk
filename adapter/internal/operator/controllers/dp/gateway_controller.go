@@ -24,6 +24,7 @@ import (
 
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/discovery/xds"
+	"github.com/wso2/apk/adapter/internal/discovery/xds/common"
 	"github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/pkg/logging"
 	"golang.org/x/exp/maps"
@@ -56,8 +57,15 @@ const (
 )
 
 var (
-	setReadiness sync.Once
+	setReadiness   sync.Once
+	supportedKinds = []gwapiv1.Kind{gwapiv1.Kind("HTTPRoute")}
+	controllerName = "wso2.com/apk-envoy"
 )
+
+// GetControllerName returns the controller name that supported by APK
+func GetControllerName() string {
+	return controllerName
+}
 
 // GatewayReconciler reconciles a Gateway object
 type GatewayReconciler struct {
@@ -141,6 +149,12 @@ func NewGatewayController(mgr manager.Manager, operatorDataStore *synchronizer.O
 		return err
 	}
 
+	if err := c.Watch(source.Kind(mgr.GetCache(), &gwapiv1.HTTPRoute{}),
+		handler.EnqueueRequestsFromMapFunc(r.getHTTPRoutes), predicates...); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3121, logging.BLOCKER, "Error watching HttpRoutes resources: %v", err))
+		return err
+	}
+
 	loggers.LoggerAPKOperator.Info("Gateway Controller successfully started. Watching Gateway Objects....")
 	return nil
 }
@@ -160,7 +174,7 @@ func NewGatewayController(mgr manager.Manager, operatorDataStore *synchronizer.O
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.13.0/pkg/reconcile
 func (gatewayReconciler *GatewayReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	// Check whether the Gateway CR exist, if not consider as a DELETE event.
-	loggers.LoggerAPKOperator.Infof("Reconciling gateway...")
+	loggers.LoggerAPKOperator.Infof("Reconciling gateway... %s", req.NamespacedName.String())
 	var gatewayDef gwapiv1.Gateway
 	if err := gatewayReconciler.client.Get(ctx, req.NamespacedName, &gatewayDef); err != nil {
 		gatewayState, found := gatewayReconciler.ods.GetCachedGateway(req.NamespacedName)
@@ -176,20 +190,34 @@ func (gatewayReconciler *GatewayReconciler) Reconcile(ctx context.Context, req c
 	}
 	var gwCondition []metav1.Condition = gatewayDef.Status.Conditions
 
-	gatewayStateData, err := gatewayReconciler.resolveGatewayState(ctx, gatewayDef)
+	gatewayStateData, listenerStatuses, err := gatewayReconciler.resolveGatewayState(ctx, gatewayDef)
+	// Check whether the status change is needed for gateway
+	statusChanged := isStatusChanged(gatewayDef, listenerStatuses)
+	loggers.LoggerAPKOperator.Infof("Status changed ? %+v", statusChanged)
+
 	if err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3122, logging.BLOCKER, "Error resolving Gateway State %s: %v", req.NamespacedName.String(), err))
 		return ctrl.Result{}, err
 	}
+	state := constants.Update
+	var (
+		events        = make([]string, 0)
+		updated       = false
+		cachedGateway synchronizer.GatewayState
+	)
 
-	if gwCondition[0].Type != "Accepted" {
+	if gwCondition[0].Status != metav1.ConditionTrue {
 		gatewayState := gatewayReconciler.ods.AddGatewayState(gatewayDef, gatewayStateData)
 		*gatewayReconciler.ch <- synchronizer.GatewayEvent{EventType: constants.Create, Event: gatewayState}
-		gatewayReconciler.handleGatewayStatus(req.NamespacedName, constants.Create, []string{})
-	} else if cachedGateway, events, updated :=
+		state = constants.Create
+	} else if cachedGateway, events, updated =
 		gatewayReconciler.ods.UpdateGatewayState(&gatewayDef, gatewayStateData); updated {
 		*gatewayReconciler.ch <- synchronizer.GatewayEvent{EventType: constants.Update, Event: cachedGateway}
-		gatewayReconciler.handleGatewayStatus(req.NamespacedName, constants.Update, events)
+		state = constants.Update
+	}
+	if statusChanged || updated {
+		loggers.LoggerAPKOperator.Infof("Updating gateway status. Gateway: %s", utils.NamespacedName(&gatewayDef))
+		gatewayReconciler.handleGatewayStatus(req.NamespacedName, state, events, listenerStatuses)
 	}
 	setReadiness.Do(gatewayReconciler.setGatewayReadiness)
 	return ctrl.Result{}, nil
@@ -217,29 +245,100 @@ func (gatewayReconciler *GatewayReconciler) resolveListenerSecretRefs(ctx contex
 
 // resolveGatewayState resolves the GatewayState struct using gwapiv1.Gateway and resource indexes
 func (gatewayReconciler *GatewayReconciler) resolveGatewayState(ctx context.Context,
-	gateway gwapiv1.Gateway) (*synchronizer.GatewayStateData, error) {
+	gateway gwapiv1.Gateway) (*synchronizer.GatewayStateData, []gwapiv1.ListenerStatus, error) {
 	gatewayState := &synchronizer.GatewayStateData{}
 	var err error
 	resolvedListenerCerts := make(map[string]map[string][]byte)
 	namespace := gwapiv1.Namespace(gateway.Namespace)
+	listenerstatuses := make([]gwapiv1.ListenerStatus, 0)
+	if err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3124, logging.MAJOR, "Error while getting http routes: %s", err))
+	}
 	// Retireve listener Certificates
 	for _, listener := range gateway.Spec.Listeners {
+		accepted := true
+		attachedRouteCount, err := getAttachedRoutesCountForListener(ctx, gatewayReconciler.client, gateway, string(listener.Name))
+		if err != nil {
+			attachedRouteCount = 0
+		}
+		listenerStatus := gwapiv1.ListenerStatus{
+			Name:           listener.Name,
+			SupportedKinds: []gwapiv1.RouteGroupKind{},
+			Conditions:     []metav1.Condition{},
+			AttachedRoutes: attachedRouteCount,
+		}
+
+		listenerDefinedAllowedKinds := listener.AllowedRoutes.Kinds
+		actualKinds := make([]gwapiv1.Kind, len(listenerDefinedAllowedKinds))
+		for i, obj := range listenerDefinedAllowedKinds {
+			actualKinds[i] = obj.Kind
+		}
+		intersectionKinds := findIntersectionKinds(supportedKinds, actualKinds)
+		if len(intersectionKinds) == 0 {
+			// If listener does not define any supported kinds then we need to support all of the default supported kinds by the implementation
+			intersectionKinds = supportedKinds
+		}
+		for _, kind := range intersectionKinds {
+			listenerStatus.SupportedKinds = append(listenerStatus.SupportedKinds, gwapiv1.RouteGroupKind{
+				Group: (*gwapiv1.Group)(&gwapiv1.GroupVersion.Group),
+				Kind:  kind,
+			})
+		}
+
+		if len(intersectionKinds) < len(listenerDefinedAllowedKinds) {
+			accepted = false
+			listenerStatus.Conditions = append(listenerStatus.Conditions, metav1.Condition{
+				Type:               string(gwapiv1.ListenerConditionResolvedRefs),
+				Status:             metav1.ConditionFalse,
+				Reason:             string(gwapiv1.ListenerReasonInvalidRouteKinds),
+				LastTransitionTime: metav1.Now(),
+				ObservedGeneration: gateway.Generation,
+			})
+		}
+
 		if listener.Protocol == gwapiv1.HTTPProtocolType {
 			continue
 		}
 		data, err := gatewayReconciler.resolveListenerSecretRefs(ctx, &listener.TLS.CertificateRefs[0], string(namespace))
 		if err != nil {
+			accepted = false
+			listenerStatus.Conditions = append(listenerStatus.Conditions, metav1.Condition{
+				Type:               string(gwapiv1.ListenerConditionResolvedRefs),
+				Status:             metav1.ConditionFalse,
+				Reason:             string(gwapiv1.ListenerReasonInvalidCertificateRef),
+				LastTransitionTime: metav1.Now(),
+				ObservedGeneration: gateway.Generation,
+			})
 			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3105, logging.BLOCKER, "Error resolving listener certificates: %v", err))
-			return nil, err
+			return nil, listenerstatuses, err
 		}
 		resolvedListenerCerts[string(listener.Name)] = data
+		if accepted {
+			listenerStatus.Conditions = append(listenerStatus.Conditions, metav1.Condition{
+				Type:               string(gwapiv1.ListenerConditionAccepted),
+				Status:             metav1.ConditionTrue,
+				Reason:             string(gwapiv1.ListenerReasonResolvedRefs),
+				LastTransitionTime: metav1.Now(),
+				ObservedGeneration: gateway.Generation,
+			})
+			listenerStatus.Conditions = append(listenerStatus.Conditions, metav1.Condition{
+				Type:               string(gwapiv1.ListenerConditionProgrammed),
+				Status:             metav1.ConditionTrue,
+				Reason:             string(gwapiv1.ListenerReasonResolvedRefs),
+				LastTransitionTime: metav1.Now(),
+				ObservedGeneration: gateway.Generation,
+			})
+
+		}
+		listenerstatuses = append(listenerstatuses, listenerStatus)
+		loggers.LoggerAPKOperator.Debugf("A listener status is added for listener:  %s", string(listenerStatus.Name))
 	}
 	gatewayState.GatewayResolvedListenerCerts = resolvedListenerCerts
 	if gatewayState.GatewayAPIPolicies, err = gatewayReconciler.getAPIPoliciesForGateway(ctx, &gateway); err != nil {
-		return nil, fmt.Errorf("error while getting gateway apipolicy for gateway: %s, %s", utils.NamespacedName(&gateway).String(), err.Error())
+		return nil, listenerstatuses, fmt.Errorf("error while getting gateway apipolicy for gateway: %s, %s", utils.NamespacedName(&gateway).String(), err.Error())
 	}
 	if gatewayState.GatewayInterceptorServiceMapping, err = gatewayReconciler.getInterceptorServicesForGateway(ctx, gatewayState.GatewayAPIPolicies); err != nil {
-		return nil, fmt.Errorf("error while getting interceptor service for gateway: %s, %s", utils.NamespacedName(&gateway).String(), err.Error())
+		return nil, listenerstatuses, fmt.Errorf("error while getting interceptor service for gateway: %s, %s", utils.NamespacedName(&gateway).String(), err.Error())
 	}
 	customRateLimitPolicies, err := gatewayReconciler.getCustomRateLimitPoliciesForGateway(utils.NamespacedName(&gateway))
 	if err != nil {
@@ -247,7 +346,7 @@ func (gatewayReconciler *GatewayReconciler) resolveGatewayState(ctx context.Cont
 	}
 	gatewayState.GatewayCustomRateLimitPolicies = customRateLimitPolicies
 	gatewayState.GatewayBackendMapping = gatewayReconciler.getResolvedBackendsMapping(ctx, gatewayState)
-	return gatewayState, nil
+	return gatewayState, listenerstatuses, nil
 }
 
 func (gatewayReconciler *GatewayReconciler) getAPIPoliciesForGateway(ctx context.Context,
@@ -341,6 +440,34 @@ func (gatewayReconciler *GatewayReconciler) getGatewaysForBackend(ctx context.Co
 		requests = append(requests, gatewayReconciler.getAPIsForInterceptorService(ctx, &interceptorService)...)
 	}
 
+	return requests
+}
+
+// getHTTPRoutes returns the list of gateway reconcile requests
+func (gatewayReconciler *GatewayReconciler) getHTTPRoutes(ctx context.Context, obj k8client.Object) []reconcile.Request {
+	httpRoute, ok := obj.(*gwapiv1.HTTPRoute)
+	if !ok {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3107, logging.TRIVIAL, "Unexpected object type, bypassing reconciliation: %v", httpRoute))
+		return []reconcile.Request{}
+	}
+	requests := []reconcile.Request{}
+	for _, refs := range httpRoute.Spec.ParentRefs {
+		if *refs.Kind == constants.KindGateway {
+			namespace := ""
+			if refs.Namespace != nil {
+				namespace = string(*refs.Namespace)
+			}
+			if namespace == "" {
+				namespace = httpRoute.Namespace
+			}
+			requests = append(requests, reconcile.Request{
+				NamespacedName: types.NamespacedName{
+					Namespace: namespace,
+					Name:      string(refs.Name),
+				},
+			})
+		}
+	}
 	return requests
 }
 
@@ -449,17 +576,14 @@ func (gatewayReconciler *GatewayReconciler) getGatewaysForConfigMap(ctx context.
 }
 
 // handleStatus updates the Gateway CR update
-func (gatewayReconciler *GatewayReconciler) handleGatewayStatus(gatewayKey types.NamespacedName, state string, events []string) {
-	accept := false
+func (gatewayReconciler *GatewayReconciler) handleGatewayStatus(gatewayKey types.NamespacedName, state string,
+	events []string, listeners []gwapiv1.ListenerStatus) {
 	message := ""
-	//event := ""
 
 	switch state {
 	case constants.Create:
-		accept = true
 		message = "Gateway is deployed successfully"
 	case constants.Update:
-		accept = true
 		message = fmt.Sprintf("Gateway update is deployed successfully. %v Updated", events)
 	}
 	timeNow := metav1.Now()
@@ -475,18 +599,26 @@ func (gatewayReconciler *GatewayReconciler) handleGatewayStatus(gatewayKey types
 			}
 			hCopy := h.DeepCopy()
 			var gwCondition []metav1.Condition = hCopy.Status.Conditions
-			gwCondition[0].Status = "Unknown"
-			if accept {
-				gwCondition[0].Status = "True"
-			} else {
-				gwCondition[0].Status = "False"
-			}
+			generation := hCopy.ObjectMeta.Generation
+			gwCondition[0].Status = "True"
 			gwCondition[0].Message = message
 			gwCondition[0].LastTransitionTime = timeNow
 			// gwCondition[0].Reason = append(gwCondition[0].Reason, event)
 			gwCondition[0].Reason = "Reconciled"
-			gwCondition[0].Type = state
+			gwCondition[0].Type = constants.Accept
+			for i := range gwCondition {
+				// Assign generation to ObservedGeneration
+				gwCondition[i].ObservedGeneration = generation
+			}
 			hCopy.Status.Conditions = gwCondition
+			for _, listener := range hCopy.Status.Listeners {
+				for _, listener1 := range listeners {
+					if string(listener.Name) == string(listener1.Name) {
+						listener1.AttachedRoutes = listener.AttachedRoutes
+					}
+				}
+			}
+			hCopy.Status.Listeners = listeners
 			return hCopy
 		},
 	})
@@ -618,4 +750,93 @@ func addGatewayIndexes(ctx context.Context, mgr manager.Manager) error {
 			return httpRoutes
 		})
 	return err
+}
+
+func findIntersectionKinds(list1, list2 []gwapiv1.Kind) []gwapiv1.Kind {
+	intersection := []gwapiv1.Kind{}
+	set := make(map[string]bool)
+	for _, v := range list1 {
+		set[string(v)] = true
+	}
+	for _, v := range list2 {
+		if set[string(v)] {
+			intersection = append(intersection, v)
+		}
+	}
+	return intersection
+}
+
+// findDiffFromSecondListKinds return a list of elements in list2 that are not in the list1
+func findDiffFromSecondListKinds(list1, list2 []gwapiv1.Kind) []gwapiv1.Kind {
+	diff := []gwapiv1.Kind{}
+	set := make(map[string]bool)
+	for _, v := range list1 {
+		set[string(v)] = true
+	}
+	for _, v := range list2 {
+		if !set[string(v)] {
+			diff = append(diff, v)
+		}
+	}
+	return diff
+}
+
+// getAttachedRoutesForListener returns the attached route count for a specific listener in a gatway
+func getAttachedRoutesCountForListener(ctx context.Context, client k8client.Client, gateway gwapiv1.Gateway, listenerName string) (int32, error) {
+	httpRouteList := gwapiv1.HTTPRouteList{}
+	if err := client.List(ctx, &httpRouteList); err != nil {
+		return 0, err
+	}
+
+	var attachedRoutesCount int32
+	for _, httpRoute := range httpRouteList.Items {
+		_, found := common.FindElement(httpRoute.Status.Parents, func(parentStatus gwapiv1.RouteParentStatus) bool {
+			parentNamespacedName := types.NamespacedName{
+				Namespace: string(*parentStatus.ParentRef.Namespace),
+				Name:      string(parentStatus.ParentRef.Name),
+			}.String()
+			gatewayNamespacedName := utils.NamespacedName(&gateway).String()
+			if parentNamespacedName == gatewayNamespacedName {
+				if len(parentStatus.Conditions) >= 1 && parentStatus.Conditions[0].Status == metav1.ConditionTrue {
+					// Check whether the listername matches
+					_, matched := common.FindElement(httpRoute.Spec.ParentRefs, func(parentRef gwapiv1.ParentReference) bool {
+						if string(*parentRef.SectionName) == listenerName {
+							return true
+						}
+						return false
+					})
+					return matched
+				}
+			}
+			return false
+		})
+		if found {
+			attachedRoutesCount++
+		}
+	}
+	return attachedRoutesCount, nil
+}
+
+func isStatusChanged(gateway gwapiv1.Gateway, statuses []gwapiv1.ListenerStatus) bool {
+	if len(gateway.Status.Listeners) != len(statuses) {
+		return true
+	}
+	for _, status1 := range gateway.Status.Listeners {
+		flag := false
+		for _, status2 := range statuses {
+			if status1.Name == status2.Name &&
+				status1.AttachedRoutes == status2.AttachedRoutes &&
+				len(status1.Conditions) == len(status2.Conditions) &&
+				len(status1.SupportedKinds) == len(status2.SupportedKinds) {
+				flag = common.BothListContainsSameConditions(status1.Conditions, status2.Conditions)
+				if flag {
+					continue
+				}
+			}
+		}
+		if !flag {
+			return true
+		}
+	}
+	return false
 }

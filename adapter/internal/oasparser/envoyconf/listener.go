@@ -87,7 +87,7 @@ func CreateListenerByGateway(gateway *gwapiv1.Gateway, resolvedListenerCerts map
 		}
 		protocolListenerMap[listener.Protocol][port] = append(protocolListenerMap[listener.Protocol][port], listener)
 	}
-	loggers.LoggerAPKOperator.Infof("CreateListenerByGateway is called. ProtocolListenerMap: %+v", protocolListenerMap)
+	loggers.LoggerAPKOperator.Debugf("CreateListenerByGateway is called. ProtocolListenerMap: %+v, gateway %+v", protocolListenerMap, gateway.Spec.Listeners)
 	listenerList := make([]*listenerv3.Listener, 0)
 	for protocol, protocolPort := range protocolListenerMap {
 		for port, listeners := range protocolPort {
@@ -109,9 +109,13 @@ func CreateListenerByGateway(gateway *gwapiv1.Gateway, resolvedListenerCerts map
 		end`)
 				}
 				listenerName = common.GetEnvoyListenerName(string(protocol), port)
-				filterChainMatch := &listenerv3.FilterChainMatch{
-					ServerNames: []string{string(*listenerObj.Hostname)},
+				var filterChainMatch *listenerv3.FilterChainMatch
+				if listenerObj.Hostname != nil {
+					filterChainMatch = &listenerv3.FilterChainMatch{
+						ServerNames: []string{string(*listenerObj.Hostname)},
+					}
 				}
+
 				var transportSocket *corev3.TransportSocket
 				if protocol == gwapiv1.HTTPSProtocolType {
 					publicCertData := resolvedListenerCerts[string(listenerObj.Name)]["tls.crt"]
