@@ -193,10 +193,10 @@ func (gatewayReconciler *GatewayReconciler) Reconcile(ctx context.Context, req c
 	gatewayStateData, listenerStatuses, err := gatewayReconciler.resolveGatewayState(ctx, gatewayDef)
 	// Check whether the status change is needed for gateway
 	statusChanged := isStatusChanged(gatewayDef, listenerStatuses)
-	loggers.LoggerAPKOperator.Infof("Status changed ? %+v", statusChanged)
+	loggers.LoggerAPKOperator.Debugf("Gateway Status changed ? %+v", statusChanged)
 
 	if err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3122, logging.BLOCKER, "Error resolving Gateway State %s: %v", req.NamespacedName.String(), err))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3122, logging.MAJOR, "Error resolving Gateway State %s: %v", req.NamespacedName.String(), err))
 		return ctrl.Result{}, err
 	}
 	state := constants.Update
@@ -237,7 +237,7 @@ func (gatewayReconciler *GatewayReconciler) resolveListenerSecretRefs(ctx contex
 	namespace := gwapiv1.Namespace(string(*secretRef.Namespace))
 	if err := gatewayReconciler.client.Get(ctx, types.NamespacedName{Name: string(secretRef.Name),
 		Namespace: utils.GetNamespace(&namespace, gatewayNamespace)}, &secret); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3123, logging.BLOCKER, "Unable to find associated secret %s in %s: %v", secretRef.Name, string(*secretRef.Namespace), err))
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3123, logging.MAJOR, "Unable to find associated secret %s in %s: %v", secretRef.Name, string(*secretRef.Namespace), err))
 		return nil, err
 	}
 	return secret.Data, nil
@@ -309,7 +309,7 @@ func (gatewayReconciler *GatewayReconciler) resolveGatewayState(ctx context.Cont
 				LastTransitionTime: metav1.Now(),
 				ObservedGeneration: gateway.Generation,
 			})
-			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3105, logging.BLOCKER, "Error resolving listener certificates: %v", err))
+			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3105, logging.MAJOR, "Error resolving listener certificates: %v", err))
 			return nil, listenerstatuses, err
 		}
 		resolvedListenerCerts[string(listener.Name)] = data
@@ -595,22 +595,22 @@ func (gatewayReconciler *GatewayReconciler) handleGatewayStatus(gatewayKey types
 		UpdateStatus: func(obj k8client.Object) k8client.Object {
 			h, ok := obj.(*gwapiv1.Gateway)
 			if !ok {
-				loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3109, logging.BLOCKER, "Error while updating Gateway status %v", obj))
+				loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3109, logging.MAJOR, "Error while updating Gateway status %v", obj))
 			}
 			hCopy := h.DeepCopy()
-			var gwCondition []metav1.Condition = hCopy.Status.Conditions
+			var gwConditions []metav1.Condition
 			generation := hCopy.ObjectMeta.Generation
-			gwCondition[0].Status = "True"
-			gwCondition[0].Message = message
-			gwCondition[0].LastTransitionTime = timeNow
-			// gwCondition[0].Reason = append(gwCondition[0].Reason, event)
-			gwCondition[0].Reason = "Reconciled"
-			gwCondition[0].Type = constants.Accept
-			for i := range gwCondition {
-				// Assign generation to ObservedGeneration
-				gwCondition[i].ObservedGeneration = generation
+			for _, gwCondition := range hCopy.Status.Conditions {
+				gwCondition.Status = "True"
+				gwCondition.Message = message
+				gwCondition.LastTransitionTime = timeNow
+				// gwCondition[0].Reason = append(gwCondition[0].Reason, event)
+				gwCondition.Reason = "Reconciled"
+				// gwCondition.Type = constants.Accept
+				gwCondition.ObservedGeneration = generation
+				gwConditions = append(gwConditions, gwCondition)
 			}
-			hCopy.Status.Conditions = gwCondition
+			hCopy.Status.Conditions = gwConditions
 			for _, listener := range hCopy.Status.Listeners {
 				for _, listener1 := range listeners {
 					if string(listener.Name) == string(listener1.Name) {
