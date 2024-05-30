@@ -1,0 +1,6 @@
+[
+    {
+      "interfaces":["org.wso2.apk.enforcer.subscription.SubscriptionValidationDataRetrievalRestClient"]
+    }
+  ]
+  

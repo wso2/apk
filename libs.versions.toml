@@ -110,6 +110,7 @@ mockito-core = {module = "org.mockito:mockito-core", version.ref = "mockito"}
 xml-apis = {module = "xml-apis:xml-apis", version.ref = "xml-apis"}
 mock-server-netty = {module = "org.mock-server:mockserver-netty", version.ref = "mock-server-netty"}
 mockito-inline = {module = "org.mockito:mockito-inline", version.ref = "mockito-inline"}
+bouncycastle = {module = "org.bouncycastle:bcpkix-jdk18on", version = "1.78.1"}
 [plugins]
 openapi-generator-plugin = {id = "org.openapi.generator", version.ref = "openapi-generator-plugin"}
 

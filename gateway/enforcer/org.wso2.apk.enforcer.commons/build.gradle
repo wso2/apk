@@ -30,6 +30,11 @@ dependencies {
     implementation libs.json.simple
     implementation libs.commons.lang3
     implementation libs.gson
+    implementation group: 'org.bouncycastle', name: 'bcpkix-jdk18on', version: "1.78"
+    implementation group: 'org.bouncycastle', name: 'bcprov-jdk18on', version: "1.78"
+    implementation group: 'org.bouncycastle', name: 'bcutil-jdk18on', version: "1.78"
+    implementation group: 'org.bouncycastle', name: 'bctls-jdk18on', version: "1.78"
+    compileOnly group: 'org.graalvm.nativeimage', name: 'svm', version: "22.2.0"
     implementation project(':org.wso2.apk.enforcer.analytics.publishers')
     annotationProcessor('org.apache.logging.log4j:log4j-core:2.19.0')
 }

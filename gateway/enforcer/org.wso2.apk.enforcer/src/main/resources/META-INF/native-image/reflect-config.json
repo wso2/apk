@@ -1,0 +1,1294 @@
+[
+  {
+    "name":"[B"
+  },
+  {
+    "name":"[C"
+  },
+  {
+    "name":"[D"
+  },
+  {
+    "name":"[F"
+  },
+  {
+    "name":"[I"
+  },
+  {
+    "name":"[J"
+  },
+  {
+    "name":"[Ljava.lang.String;"
+  },
+  {
+    "name":"[Ljavax.management.openmbean.CompositeData;"
+  },
+  {
+    "name":"[Lsun.security.pkcs.SignerInfo;"
+  },
+  {
+    "name":"[S"
+  },
+  {
+    "name":"[Z"
+  },
+  {
+    "name":"android.app.Application"
+  },
+  {
+    "name":"com.google.common.util.concurrent.AbstractFuture",
+    "fields":[{"name":"listeners"}, {"name":"value"}, {"name":"waiters"}]
+  },
+  {
+    "name":"com.google.common.util.concurrent.AbstractFuture$Waiter",
+    "fields":[{"name":"next"}, {"name":"thread"}]
+  },
+  {
+    "name":"com.google.protobuf.Any",
+    "methods":[{"name":"getTypeUrl","parameterTypes":[] }, {"name":"getTypeUrlBytes","parameterTypes":[] }, {"name":"getValue","parameterTypes":[] }, {"name":"newBuilder","parameterTypes":[] }]
+  },
+  {
+    "name":"com.google.protobuf.Any$Builder",
+    "methods":[{"name":"clearTypeUrl","parameterTypes":[] }, {"name":"clearValue","parameterTypes":[] }, {"name":"getTypeUrl","parameterTypes":[] }, {"name":"getTypeUrlBytes","parameterTypes":[] }, {"name":"getValue","parameterTypes":[] }, {"name":"setTypeUrl","parameterTypes":["java.lang.String"] }, {"name":"setTypeUrlBytes","parameterTypes":["com.google.protobuf.ByteString"] }, {"name":"setValue","parameterTypes":["com.google.protobuf.ByteString"] }]
+  },
+  {
+    "name":"com.google.protobuf.ExtensionRegistry",
+    "methods":[{"name":"getEmptyRegistry","parameterTypes":[] }]
+  },
+  {
+    "name":"com.sun.crypto.provider.AESCipher$General",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.sun.crypto.provider.AESKeyGenerator",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.sun.crypto.provider.ARCFOURCipher",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.sun.crypto.provider.ChaCha20Cipher$ChaCha20Poly1305",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.sun.crypto.provider.DESCipher",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.sun.crypto.provider.DESedeCipher",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.sun.crypto.provider.DHParameters",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.sun.crypto.provider.GaloisCounterMode$AESGCM",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.sun.crypto.provider.HmacCore$HmacSHA256",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.sun.crypto.provider.PBEKeyFactory$PBEWithMD5AndDES",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.sun.crypto.provider.PBES2Core$HmacSHA256AndAES_256",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.sun.crypto.provider.PBES2Parameters$General",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.sun.crypto.provider.PBES2Parameters$HmacSHA256AndAES_256",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.sun.crypto.provider.TlsKeyMaterialGenerator",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.sun.crypto.provider.TlsMasterSecretGenerator",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.sun.crypto.provider.TlsPrfGenerator$V12",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.sun.jndi.dns.DnsContextFactory"
+  },
+  {
+    "name":"com.sun.management.GarbageCollectorMXBean",
+    "queryAllPublicMethods":true
+  },
+  {
+    "name":"com.sun.management.GcInfo",
+    "queryAllPublicMethods":true
+  },
+  {
+    "name":"com.sun.management.HotSpotDiagnosticMXBean",
+    "queryAllPublicMethods":true
+  },
+  {
+    "name":"com.sun.management.ThreadMXBean",
+    "queryAllPublicMethods":true
+  },
+  {
+    "name":"com.sun.management.UnixOperatingSystemMXBean",
+    "queryAllPublicMethods":true
+  },
+  {
+    "name":"com.sun.management.VMOption",
+    "queryAllPublicMethods":true
+  },
+  {
+    "name":"com.sun.management.internal.GarbageCollectorExtImpl",
+    "queryAllPublicConstructors":true
+  },
+  {
+    "name":"com.sun.management.internal.HotSpotDiagnostic",
+    "queryAllPublicConstructors":true
+  },
+  {
+    "name":"com.sun.management.internal.HotSpotThreadImpl",
+    "queryAllPublicConstructors":true
+  },
+  {
+    "name":"com.sun.management.internal.OperatingSystemImpl",
+    "queryAllPublicConstructors":true
+  },
+  {
+    "name":"io.envoyproxy.envoy.config.core.v3.ControlPlane",
+    "methods":[{"name":"newBuilder","parameterTypes":[] }]
+  },
+  {
+    "name":"io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse",
+    "methods":[{"name":"getCanary","parameterTypes":[] }, {"name":"getControlPlane","parameterTypes":[] }, {"name":"getNonce","parameterTypes":[] }, {"name":"getNonceBytes","parameterTypes":[] }, {"name":"getResources","parameterTypes":["int"] }, {"name":"getResourcesCount","parameterTypes":[] }, {"name":"getResourcesList","parameterTypes":[] }, {"name":"getTypeUrl","parameterTypes":[] }, {"name":"getTypeUrlBytes","parameterTypes":[] }, {"name":"getVersionInfo","parameterTypes":[] }, {"name":"getVersionInfoBytes","parameterTypes":[] }, {"name":"hasControlPlane","parameterTypes":[] }]
+  },
+  {
+    "name":"io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse$Builder",
+    "methods":[{"name":"addResources","parameterTypes":["com.google.protobuf.Any"] }, {"name":"clearCanary","parameterTypes":[] }, {"name":"clearControlPlane","parameterTypes":[] }, {"name":"clearNonce","parameterTypes":[] }, {"name":"clearResources","parameterTypes":[] }, {"name":"clearTypeUrl","parameterTypes":[] }, {"name":"clearVersionInfo","parameterTypes":[] }, {"name":"getCanary","parameterTypes":[] }, {"name":"getControlPlane","parameterTypes":[] }, {"name":"getControlPlaneBuilder","parameterTypes":[] }, {"name":"getNonce","parameterTypes":[] }, {"name":"getNonceBytes","parameterTypes":[] }, {"name":"getResources","parameterTypes":["int"] }, {"name":"getResourcesBuilder","parameterTypes":["int"] }, {"name":"getResourcesCount","parameterTypes":[] }, {"name":"getResourcesList","parameterTypes":[] }, {"name":"getTypeUrl","parameterTypes":[] }, {"name":"getTypeUrlBytes","parameterTypes":[] }, {"name":"getVersionInfo","parameterTypes":[] }, {"name":"getVersionInfoBytes","parameterTypes":[] }, {"name":"hasControlPlane","parameterTypes":[] }, {"name":"setCanary","parameterTypes":["boolean"] }, {"name":"setControlPlane","parameterTypes":["io.envoyproxy.envoy.config.core.v3.ControlPlane"] }, {"name":"setNonce","parameterTypes":["java.lang.String"] }, {"name":"setNonceBytes","parameterTypes":["com.google.protobuf.ByteString"] }, {"name":"setResources","parameterTypes":["int","com.google.protobuf.Any"] }, {"name":"setTypeUrl","parameterTypes":["java.lang.String"] }, {"name":"setTypeUrlBytes","parameterTypes":["com.google.protobuf.ByteString"] }, {"name":"setVersionInfo","parameterTypes":["java.lang.String"] }, {"name":"setVersionInfoBytes","parameterTypes":["com.google.protobuf.ByteString"] }]
+  },
+  {
+    "name":"io.grpc.census.InternalCensusStatsAccessor"
+  },
+  {
+    "name":"io.grpc.census.InternalCensusTracingAccessor"
+  },
+  {
+    "name":"io.grpc.internal.DnsNameResolver"
+  },
+  {
+    "name":"io.grpc.internal.DnsNameResolver$JdkAddressResolver"
+  },
+  {
+    "name":"io.grpc.internal.DnsNameResolver$Resolve"
+  },
+  {
+    "name":"io.grpc.internal.DnsNameResolverProvider"
+  },
+  {
+    "name":"io.grpc.internal.JndiResourceResolverFactory",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"io.grpc.internal.PickFirstLoadBalancerProvider"
+  },
+  {
+    "name":"io.grpc.internal.SerializingExecutor",
+    "fields":[{"name":"runState"}]
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.grpc.netty.AbstractNettyHandler",
+    "methods":[{"name":"channelActive","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext"] }, {"name":"exceptionCaught","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","java.lang.Throwable"] }]
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.grpc.netty.NettyClientHandler",
+    "methods":[{"name":"channelInactive","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext"] }, {"name":"close","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","io.grpc.netty.shaded.io.netty.channel.ChannelPromise"] }, {"name":"write","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","java.lang.Object","io.grpc.netty.shaded.io.netty.channel.ChannelPromise"] }]
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.grpc.netty.NettyServer$1"
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.grpc.netty.NettyServerHandler",
+    "methods":[{"name":"channelInactive","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext"] }, {"name":"close","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","io.grpc.netty.shaded.io.netty.channel.ChannelPromise"] }, {"name":"write","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","java.lang.Object","io.grpc.netty.shaded.io.netty.channel.ChannelPromise"] }]
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.grpc.netty.ProtocolNegotiators$ClientTlsHandler"
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.grpc.netty.ProtocolNegotiators$GrpcNegotiationHandler",
+    "methods":[{"name":"userEventTriggered","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","java.lang.Object"] }]
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.grpc.netty.ProtocolNegotiators$ProtocolNegotiationHandler",
+    "methods":[{"name":"userEventTriggered","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","java.lang.Object"] }]
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.grpc.netty.ProtocolNegotiators$ServerTlsHandler",
+    "methods":[{"name":"userEventTriggered","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","java.lang.Object"] }]
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.grpc.netty.ProtocolNegotiators$WaitUntilActiveHandler",
+    "methods":[{"name":"channelActive","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext"] }]
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.grpc.netty.WriteBufferingAndExceptionHandler",
+    "methods":[{"name":"channelInactive","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext"] }, {"name":"channelRead","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","java.lang.Object"] }, {"name":"close","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","io.grpc.netty.shaded.io.netty.channel.ChannelPromise"] }, {"name":"connect","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","java.net.SocketAddress","java.net.SocketAddress","io.grpc.netty.shaded.io.netty.channel.ChannelPromise"] }, {"name":"exceptionCaught","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","java.lang.Throwable"] }, {"name":"flush","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext"] }, {"name":"write","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","java.lang.Object","io.grpc.netty.shaded.io.netty.channel.ChannelPromise"] }]
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.bootstrap.ServerBootstrap$1"
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.bootstrap.ServerBootstrap$ServerBootstrapAcceptor",
+    "methods":[{"name":"channelRead","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","java.lang.Object"] }, {"name":"exceptionCaught","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","java.lang.Throwable"] }]
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.buffer.AbstractByteBufAllocator",
+    "queryAllDeclaredMethods":true
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.buffer.AbstractReferenceCountedByteBuf",
+    "fields":[{"name":"refCnt"}]
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.channel.AbstractChannelHandlerContext",
+    "fields":[{"name":"handlerState"}]
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.channel.ChannelDuplexHandler",
+    "methods":[{"name":"bind","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","java.net.SocketAddress","io.grpc.netty.shaded.io.netty.channel.ChannelPromise"] }, {"name":"close","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","io.grpc.netty.shaded.io.netty.channel.ChannelPromise"] }, {"name":"connect","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","java.net.SocketAddress","java.net.SocketAddress","io.grpc.netty.shaded.io.netty.channel.ChannelPromise"] }, {"name":"deregister","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","io.grpc.netty.shaded.io.netty.channel.ChannelPromise"] }, {"name":"disconnect","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","io.grpc.netty.shaded.io.netty.channel.ChannelPromise"] }, {"name":"flush","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext"] }, {"name":"read","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext"] }, {"name":"write","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","java.lang.Object","io.grpc.netty.shaded.io.netty.channel.ChannelPromise"] }]
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.channel.ChannelInboundHandlerAdapter",
+    "methods":[{"name":"channelActive","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext"] }, {"name":"channelInactive","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext"] }, {"name":"channelRead","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","java.lang.Object"] }, {"name":"channelReadComplete","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext"] }, {"name":"channelRegistered","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext"] }, {"name":"channelUnregistered","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext"] }, {"name":"channelWritabilityChanged","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext"] }, {"name":"exceptionCaught","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","java.lang.Throwable"] }, {"name":"userEventTriggered","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","java.lang.Object"] }]
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.channel.ChannelInitializer",
+    "methods":[{"name":"channelRegistered","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext"] }, {"name":"exceptionCaught","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","java.lang.Throwable"] }]
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.channel.ChannelOutboundBuffer",
+    "fields":[{"name":"totalPendingSize"}, {"name":"unwritable"}]
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.channel.DefaultChannelConfig",
+    "fields":[{"name":"autoRead"}, {"name":"writeBufferWaterMark"}]
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.channel.DefaultChannelPipeline",
+    "fields":[{"name":"estimatorHandle"}]
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.channel.DefaultChannelPipeline$HeadContext",
+    "methods":[{"name":"bind","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","java.net.SocketAddress","io.grpc.netty.shaded.io.netty.channel.ChannelPromise"] }, {"name":"channelActive","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext"] }, {"name":"channelInactive","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext"] }, {"name":"channelRead","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","java.lang.Object"] }, {"name":"channelReadComplete","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext"] }, {"name":"channelRegistered","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext"] }, {"name":"channelUnregistered","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext"] }, {"name":"channelWritabilityChanged","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext"] }, {"name":"close","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","io.grpc.netty.shaded.io.netty.channel.ChannelPromise"] }, {"name":"connect","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","java.net.SocketAddress","java.net.SocketAddress","io.grpc.netty.shaded.io.netty.channel.ChannelPromise"] }, {"name":"deregister","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","io.grpc.netty.shaded.io.netty.channel.ChannelPromise"] }, {"name":"disconnect","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","io.grpc.netty.shaded.io.netty.channel.ChannelPromise"] }, {"name":"exceptionCaught","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","java.lang.Throwable"] }, {"name":"flush","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext"] }, {"name":"read","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext"] }, {"name":"userEventTriggered","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","java.lang.Object"] }, {"name":"write","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","java.lang.Object","io.grpc.netty.shaded.io.netty.channel.ChannelPromise"] }]
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.channel.DefaultChannelPipeline$TailContext",
+    "methods":[{"name":"channelActive","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext"] }, {"name":"channelInactive","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext"] }, {"name":"channelRead","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","java.lang.Object"] }, {"name":"channelReadComplete","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext"] }, {"name":"channelRegistered","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext"] }, {"name":"channelUnregistered","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext"] }, {"name":"channelWritabilityChanged","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext"] }, {"name":"exceptionCaught","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","java.lang.Throwable"] }, {"name":"userEventTriggered","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","java.lang.Object"] }]
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.channel.DefaultFileRegion"
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.channel.SimpleChannelInboundHandler",
+    "methods":[{"name":"channelRead","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","java.lang.Object"] }]
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.channel.epoll.AbstractEpollChannel$AbstractEpollUnsafe"
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.channel.epoll.Epoll",
+    "methods":[{"name":"isAvailable","parameterTypes":[] }]
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.channel.epoll.EpollDomainSocketChannel"
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.channel.epoll.EpollEventLoop"
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.channel.epoll.EpollEventLoopGroup",
+    "methods":[{"name":"<init>","parameterTypes":["int","java.util.concurrent.ThreadFactory"] }]
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.channel.epoll.EpollServerSocketChannel",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.channel.epoll.EpollSocketChannel",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.channel.epoll.NativeDatagramPacketArray$NativeDatagramPacket"
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.channel.socket.nio.NioServerSocketChannel",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.channel.unix.DatagramSocketAddress"
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.channel.unix.DomainDatagramSocketAddress"
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.channel.unix.Errors"
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.channel.unix.FileDescriptor",
+    "fields":[{"name":"state"}]
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.channel.unix.PeerCredentials"
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.channel.unix.Socket"
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.handler.codec.ByteToMessageDecoder",
+    "methods":[{"name":"channelRead","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","java.lang.Object"] }, {"name":"userEventTriggered","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","java.lang.Object"] }]
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.handler.codec.http2.Http2ConnectionHandler",
+    "methods":[{"name":"bind","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","java.net.SocketAddress","io.grpc.netty.shaded.io.netty.channel.ChannelPromise"] }, {"name":"channelReadComplete","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext"] }, {"name":"channelWritabilityChanged","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext"] }, {"name":"connect","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","java.net.SocketAddress","java.net.SocketAddress","io.grpc.netty.shaded.io.netty.channel.ChannelPromise"] }, {"name":"deregister","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","io.grpc.netty.shaded.io.netty.channel.ChannelPromise"] }, {"name":"disconnect","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","io.grpc.netty.shaded.io.netty.channel.ChannelPromise"] }, {"name":"flush","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext"] }, {"name":"read","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext"] }]
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.handler.logging.LoggingHandler",
+    "methods":[{"name":"bind","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","java.net.SocketAddress","io.grpc.netty.shaded.io.netty.channel.ChannelPromise"] }, {"name":"channelActive","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext"] }, {"name":"channelInactive","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext"] }, {"name":"channelRead","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","java.lang.Object"] }, {"name":"channelReadComplete","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext"] }, {"name":"channelRegistered","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext"] }, {"name":"channelUnregistered","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext"] }, {"name":"channelWritabilityChanged","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext"] }, {"name":"close","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","io.grpc.netty.shaded.io.netty.channel.ChannelPromise"] }, {"name":"connect","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","java.net.SocketAddress","java.net.SocketAddress","io.grpc.netty.shaded.io.netty.channel.ChannelPromise"] }, {"name":"deregister","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","io.grpc.netty.shaded.io.netty.channel.ChannelPromise"] }, {"name":"disconnect","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","io.grpc.netty.shaded.io.netty.channel.ChannelPromise"] }, {"name":"exceptionCaught","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","java.lang.Throwable"] }, {"name":"flush","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext"] }, {"name":"userEventTriggered","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","java.lang.Object"] }, {"name":"write","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","java.lang.Object","io.grpc.netty.shaded.io.netty.channel.ChannelPromise"] }]
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.handler.ssl.SslHandler",
+    "methods":[{"name":"bind","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","java.net.SocketAddress","io.grpc.netty.shaded.io.netty.channel.ChannelPromise"] }, {"name":"channelActive","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext"] }, {"name":"channelInactive","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext"] }, {"name":"channelReadComplete","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext"] }, {"name":"close","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","io.grpc.netty.shaded.io.netty.channel.ChannelPromise"] }, {"name":"connect","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","java.net.SocketAddress","java.net.SocketAddress","io.grpc.netty.shaded.io.netty.channel.ChannelPromise"] }, {"name":"deregister","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","io.grpc.netty.shaded.io.netty.channel.ChannelPromise"] }, {"name":"disconnect","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","io.grpc.netty.shaded.io.netty.channel.ChannelPromise"] }, {"name":"exceptionCaught","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","java.lang.Throwable"] }, {"name":"flush","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext"] }, {"name":"read","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext"] }, {"name":"write","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext","java.lang.Object","io.grpc.netty.shaded.io.netty.channel.ChannelPromise"] }]
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.internal.tcnative.CertificateCallback"
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.internal.tcnative.CertificateCallbackTask"
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.internal.tcnative.SSLContext"
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.internal.tcnative.SSLPrivateKeyMethodDecryptTask"
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.internal.tcnative.SSLPrivateKeyMethodSignTask"
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.internal.tcnative.SSLPrivateKeyMethodTask"
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.internal.tcnative.SSLTask"
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.util.AbstractReferenceCounted",
+    "fields":[{"name":"refCnt"}]
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.util.DefaultAttributeMap",
+    "fields":[{"name":"attributes"}]
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.util.Recycler$DefaultHandle",
+    "fields":[{"name":"state"}]
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.util.ReferenceCountUtil",
+    "queryAllDeclaredMethods":true
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.util.ResourceLeakDetector$DefaultResourceLeak",
+    "fields":[{"name":"droppedRecords"}, {"name":"head"}]
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.util.concurrent.DefaultPromise",
+    "fields":[{"name":"result"}]
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.util.concurrent.FastThreadLocalRunnable"
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.util.concurrent.SingleThreadEventExecutor",
+    "fields":[{"name":"state"}, {"name":"threadProperties"}]
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.util.concurrent.SingleThreadEventExecutor$4"
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.util.internal.NativeLibraryUtil",
+    "methods":[{"name":"loadLibrary","parameterTypes":["java.lang.String","boolean"] }]
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.util.internal.ThreadExecutorMap$2"
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueueColdProducerFields",
+    "fields":[{"name":"producerLimit"}]
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueueConsumerFields",
+    "fields":[{"name":"consumerIndex"}]
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueueProducerFields",
+    "fields":[{"name":"producerIndex"}]
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.util.internal.shaded.org.jctools.queues.MpscArrayQueueConsumerIndexField",
+    "fields":[{"name":"consumerIndex"}]
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.util.internal.shaded.org.jctools.queues.MpscArrayQueueProducerIndexField",
+    "fields":[{"name":"producerIndex"}]
+  },
+  {
+    "name":"io.grpc.netty.shaded.io.netty.util.internal.shaded.org.jctools.queues.MpscArrayQueueProducerLimitField",
+    "fields":[{"name":"producerLimit"}]
+  },
+  {
+    "name":"io.grpc.override.ContextStorageOverride"
+  },
+  {
+    "name":"io.grpc.stub.ClientCalls"
+  },
+  {
+    "name":"io.grpc.util.SecretRoundRobinLoadBalancerProvider$Provider"
+  },
+  {
+    "name":"io.perfmark.impl.SecretPerfMarkImpl$PerfMarkImpl"
+  },
+  {
+    "name":"jakarta.servlet.Servlet"
+  },
+  {
+    "name":"java.io.FileDescriptor"
+  },
+  {
+    "name":"java.io.IOException"
+  },
+  {
+    "name":"java.io.ObjectInputStream",
+    "queryAllPublicMethods":true
+  },
+  {
+    "name":"java.lang.Boolean",
+    "fields":[{"name":"TYPE"}]
+  },
+  {
+    "name":"java.lang.Byte",
+    "fields":[{"name":"TYPE"}]
+  },
+  {
+    "name":"java.lang.Character",
+    "fields":[{"name":"TYPE"}]
+  },
+  {
+    "name":"java.lang.Class",
+    "methods":[{"name":"getRecordComponents","parameterTypes":[] }, {"name":"isRecord","parameterTypes":[] }]
+  },
+  {
+    "name":"java.lang.Deprecated",
+    "queryAllPublicMethods":true
+  },
+  {
+    "name":"java.lang.Double",
+    "fields":[{"name":"TYPE"}]
+  },
+  {
+    "name":"java.lang.Exception"
+  },
+  {
+    "name":"java.lang.Float",
+    "fields":[{"name":"TYPE"}]
+  },
+  {
+    "name":"java.lang.IllegalArgumentException"
+  },
+  {
+    "name":"java.lang.Integer",
+    "fields":[{"name":"TYPE"}]
+  },
+  {
+    "name":"java.lang.Long",
+    "fields":[{"name":"TYPE"}]
+  },
+  {
+    "name":"java.lang.NullPointerException"
+  },
+  {
+    "name":"java.lang.OutOfMemoryError"
+  },
+  {
+    "name":"java.lang.ProcessHandle",
+    "methods":[{"name":"current","parameterTypes":[] }, {"name":"pid","parameterTypes":[] }]
+  },
+  {
+    "name":"java.lang.RuntimeException"
+  },
+  {
+    "name":"java.lang.Short",
+    "fields":[{"name":"TYPE"}]
+  },
+  {
+    "name":"java.lang.StackTraceElement",
+    "queryAllPublicMethods":true
+  },
+  {
+    "name":"java.lang.String",
+    "fields":[{"name":"TYPE"}]
+  },
+  {
+    "name":"java.lang.Thread",
+    "fields":[{"name":"threadLocalRandomProbe"}]
+  },
+  {
+    "name":"java.lang.Void",
+    "fields":[{"name":"TYPE"}]
+  },
+  {
+    "name":"java.lang.management.BufferPoolMXBean",
+    "queryAllPublicMethods":true
+  },
+  {
+    "name":"java.lang.management.ClassLoadingMXBean",
+    "queryAllPublicMethods":true
+  },
+  {
+    "name":"java.lang.management.CompilationMXBean",
+    "queryAllPublicMethods":true
+  },
+  {
+    "name":"java.lang.management.LockInfo",
+    "queryAllPublicMethods":true
+  },
+  {
+    "name":"java.lang.management.ManagementFactory",
+    "methods":[{"name":"getRuntimeMXBean","parameterTypes":[] }]
+  },
+  {
+    "name":"java.lang.management.ManagementPermission",
+    "methods":[{"name":"<init>","parameterTypes":["java.lang.String"] }]
+  },
+  {
+    "name":"java.lang.management.MemoryMXBean",
+    "queryAllPublicMethods":true
+  },
+  {
+    "name":"java.lang.management.MemoryManagerMXBean",
+    "queryAllPublicMethods":true
+  },
+  {
+    "name":"java.lang.management.MemoryPoolMXBean",
+    "queryAllPublicMethods":true
+  },
+  {
+    "name":"java.lang.management.MemoryUsage",
+    "queryAllPublicMethods":true
+  },
+  {
+    "name":"java.lang.management.MonitorInfo",
+    "queryAllPublicMethods":true
+  },
+  {
+    "name":"java.lang.management.PlatformLoggingMXBean",
+    "queryAllPublicMethods":true,
+    "methods":[{"name":"getLoggerLevel","parameterTypes":["java.lang.String"] }, {"name":"getLoggerNames","parameterTypes":[] }, {"name":"getParentLoggerName","parameterTypes":["java.lang.String"] }, {"name":"setLoggerLevel","parameterTypes":["java.lang.String","java.lang.String"] }]
+  },
+  {
+    "name":"java.lang.management.RuntimeMXBean",
+    "queryAllPublicMethods":true,
+    "methods":[{"name":"getInputArguments","parameterTypes":[] }]
+  },
+  {
+    "name":"java.lang.management.ThreadInfo",
+    "queryAllPublicMethods":true
+  },
+  {
+    "name":"java.lang.reflect.RecordComponent",
+    "methods":[{"name":"getName","parameterTypes":[] }, {"name":"getType","parameterTypes":[] }]
+  },
+  {
+    "name":"java.math.BigDecimal"
+  },
+  {
+    "name":"java.math.BigInteger"
+  },
+  {
+    "name":"java.net.Inet4AddressImpl"
+  },
+  {
+    "name":"java.net.InetAddress"
+  },
+  {
+    "name":"java.net.InetAddress$CachedAddresses"
+  },
+  {
+    "name":"java.net.InetAddress$NameServiceAddresses"
+  },
+  {
+    "name":"java.net.InetAddress$PlatformNameService"
+  },
+  {
+    "name":"java.net.InetSocketAddress",
+    "methods":[{"name":"getHostString","parameterTypes":[] }]
+  },
+  {
+    "name":"java.net.PortUnreachableException"
+  },
+  {
+    "name":"java.nio.Bits",
+    "fields":[{"name":"UNALIGNED"}]
+  },
+  {
+    "name":"java.nio.Buffer",
+    "fields":[{"name":"address"}]
+  },
+  {
+    "name":"java.nio.ByteBuffer",
+    "methods":[{"name":"alignedSlice","parameterTypes":["int"] }]
+  },
+  {
+    "name":"java.nio.DirectByteBuffer",
+    "methods":[{"name":"<init>","parameterTypes":["long","int"] }]
+  },
+  {
+    "name":"java.nio.channels.ClosedChannelException"
+  },
+  {
+    "name":"java.nio.channels.FileChannel"
+  },
+  {
+    "name":"java.nio.channels.spi.SelectorProvider",
+    "methods":[{"name":"openServerSocketChannel","parameterTypes":["java.net.ProtocolFamily"] }, {"name":"openSocketChannel","parameterTypes":["java.net.ProtocolFamily"] }]
+  },
+  {
+    "name":"java.security.AlgorithmParametersSpi"
+  },
+  {
+    "name":"java.security.KeyStoreSpi"
+  },
+  {
+    "name":"java.security.SecureRandomParameters"
+  },
+  {
+    "name":"java.security.interfaces.RSAPrivateKey"
+  },
+  {
+    "name":"java.security.interfaces.RSAPublicKey"
+  },
+  {
+    "name":"java.sql.Date"
+  },
+  {
+    "name":"java.util.Date"
+  },
+  {
+    "name":"java.util.PropertyPermission",
+    "methods":[{"name":"<init>","parameterTypes":["java.lang.String","java.lang.String"] }]
+  },
+  {
+    "name":"java.util.ServiceLoader",
+    "methods":[{"name":"load","parameterTypes":["java.lang.Class","java.lang.ClassLoader"] }]
+  },
+  {
+    "name":"java.util.concurrent.Executors$RunnableAdapter"
+  },
+  {
+    "name":"java.util.concurrent.FutureTask"
+  },
+  {
+    "name":"java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask"
+  },
+  {
+    "name":"java.util.concurrent.ThreadPoolExecutor"
+  },
+  {
+    "name":"java.util.concurrent.ThreadPoolExecutor$Worker"
+  },
+  {
+    "name":"java.util.concurrent.atomic.AtomicBoolean",
+    "fields":[{"name":"value"}]
+  },
+  {
+    "name":"java.util.concurrent.atomic.AtomicMarkableReference",
+    "fields":[{"name":"pair"}]
+  },
+  {
+    "name":"java.util.concurrent.atomic.AtomicReference",
+    "fields":[{"name":"value"}]
+  },
+  {
+    "name":"java.util.concurrent.atomic.LongAdder",
+    "queryAllPublicConstructors":true,
+    "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"add","parameterTypes":["long"] }, {"name":"sum","parameterTypes":[] }]
+  },
+  {
+    "name":"java.util.concurrent.atomic.Striped64",
+    "fields":[{"name":"base"}, {"name":"cellsBusy"}]
+  },
+  {
+    "name":"java.util.logging.LogManager",
+    "methods":[{"name":"getLoggingMXBean","parameterTypes":[] }]
+  },
+  {
+    "name":"java.util.logging.LoggingMXBean",
+    "queryAllPublicMethods":true
+  },
+  {
+    "name":"javax.management.MBeanOperationInfo",
+    "queryAllPublicMethods":true,
+    "methods":[{"name":"getSignature","parameterTypes":[] }]
+  },
+  {
+    "name":"javax.management.MBeanServerBuilder",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"javax.management.ObjectName"
+  },
+  {
+    "name":"javax.management.StandardEmitterMBean",
+    "methods":[{"name":"cacheMBeanInfo","parameterTypes":["javax.management.MBeanInfo"] }, {"name":"getCachedMBeanInfo","parameterTypes":[] }, {"name":"getMBeanInfo","parameterTypes":[] }]
+  },
+  {
+    "name":"javax.management.openmbean.CompositeData"
+  },
+  {
+    "name":"javax.management.openmbean.OpenMBeanOperationInfoSupport"
+  },
+  {
+    "name":"javax.management.openmbean.TabularData"
+  },
+  {
+    "name":"javax.naming.directory.InitialDirContext"
+  },
+  {
+    "name":"javax.net.ssl.SSLEngine",
+    "methods":[{"name":"getApplicationProtocol","parameterTypes":[] }, {"name":"getHandshakeApplicationProtocol","parameterTypes":[] }, {"name":"getHandshakeApplicationProtocolSelector","parameterTypes":[] }, {"name":"setHandshakeApplicationProtocolSelector","parameterTypes":["java.util.function.BiFunction"] }]
+  },
+  {
+    "name":"javax.net.ssl.SSLParameters",
+    "methods":[{"name":"setApplicationProtocols","parameterTypes":["java.lang.String[]"] }]
+  },
+  {
+    "name":"javax.security.auth.x500.X500Principal",
+    "fields":[{"name":"thisX500Name"}],
+    "methods":[{"name":"<init>","parameterTypes":["sun.security.x509.X500Name"] }]
+  },
+  {
+    "name":"javax.servlet.Servlet"
+  },
+  {
+    "name":"jdk.internal.misc.Unsafe",
+    "methods":[{"name":"getUnsafe","parameterTypes":[] }]
+  },
+  {
+    "name":"jdk.management.jfr.ConfigurationInfo",
+    "queryAllPublicMethods":true
+  },
+  {
+    "name":"jdk.management.jfr.EventTypeInfo",
+    "queryAllPublicMethods":true
+  },
+  {
+    "name":"jdk.management.jfr.FlightRecorderMXBean",
+    "queryAllPublicMethods":true
+  },
+  {
+    "name":"jdk.management.jfr.FlightRecorderMXBeanImpl",
+    "queryAllPublicConstructors":true,
+    "methods":[{"name":"cacheMBeanInfo","parameterTypes":["javax.management.MBeanInfo"] }, {"name":"getCachedMBeanInfo","parameterTypes":[] }, {"name":"getMBeanInfo","parameterTypes":[] }, {"name":"getNotificationInfo","parameterTypes":[] }]
+  },
+  {
+    "name":"jdk.management.jfr.RecordingInfo",
+    "queryAllPublicMethods":true
+  },
+  {
+    "name":"jdk.management.jfr.SettingDescriptorInfo",
+    "queryAllPublicMethods":true
+  },
+  {
+    "name":"libcore.io.Memory"
+  },
+  {
+    "name":"org.apache.commons.logging.LogFactory"
+  },
+  {
+    "name":"org.apache.commons.logging.impl.WeakHashtable",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"org.apache.commons.pool2.impl.DefaultEvictionPolicy",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"org.apache.commons.pool2.impl.DefaultPooledObjectInfo",
+    "queryAllPublicMethods":true
+  },
+  {
+    "name":"org.apache.commons.pool2.impl.GenericObjectPoolMXBean",
+    "queryAllPublicMethods":true
+  },
+  {
+    "name":"org.apache.logging.log4j.core.config.AppenderControlArraySet",
+    "fields":[{"name":"appenderArray"}]
+  },
+  {
+    "name":"org.apache.logging.log4j.core.impl.Log4jContextFactory",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"org.apache.logging.log4j.jcl.LogFactoryImpl",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"org.apache.logging.log4j.message.DefaultFlowMessageFactory",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"org.apache.logging.log4j.message.ReusableMessageFactory",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"org.apache.logging.log4j.util.internal.DefaultObjectInputFilter"
+  },
+  {
+    "name":"org.bouncycastle.jsse.provider.BouncyCastleJsseProvider"
+  },
+  {
+    "name":"org.eclipse.jetty.alpn.ALPN"
+  },
+  {
+    "name":"org.eclipse.jetty.npn.NextProtoNego"
+  },
+  {
+    "name":"org.osgi.framework.Bundle"
+  },
+  {
+    "name":"org.robolectric.Robolectric"
+  },
+  {
+    "name":"org.wso2.apk.enforcer.commons.logging.CustomJsonLayout"
+  },
+  {
+    "name":"org.wso2.apk.enforcer.commons.logging.ErrorLogPatternConverter"
+  },
+  {
+    "name":"org.wso2.apk.enforcer.config.EnforcerConfig",
+    "allDeclaredFields":true
+  },
+  {
+    "name":"org.wso2.apk.enforcer.config.dto.APIKeyIssuerDto",
+    "allDeclaredFields":true
+  },
+  {
+    "name":"org.wso2.apk.enforcer.config.dto.AnalyticsDTO",
+    "allDeclaredFields":true
+  },
+  {
+    "name":"org.wso2.apk.enforcer.config.dto.AnalyticsReceiverConfigDTO",
+    "allDeclaredFields":true
+  },
+  {
+    "name":"org.wso2.apk.enforcer.config.dto.AuthServiceConfigurationDto",
+    "allDeclaredFields":true
+  },
+  {
+    "name":"org.wso2.apk.enforcer.config.dto.CacheDto",
+    "allDeclaredFields":true
+  },
+  {
+    "name":"org.wso2.apk.enforcer.config.dto.ClientConfigDto",
+    "allDeclaredFields":true
+  },
+  {
+    "name":"org.wso2.apk.enforcer.config.dto.ManagementCredentialsDto",
+    "allDeclaredFields":true
+  },
+  {
+    "name":"org.wso2.apk.enforcer.config.dto.MetricsDTO",
+    "allDeclaredFields":true
+  },
+  {
+    "name":"org.wso2.apk.enforcer.config.dto.MutualSSLDto",
+    "allDeclaredFields":true
+  },
+  {
+    "name":"org.wso2.apk.enforcer.config.dto.SoapErrorResponseConfigDto",
+    "allDeclaredFields":true
+  },
+  {
+    "name":"org.wso2.apk.enforcer.config.dto.ThreadPoolConfig",
+    "allDeclaredFields":true
+  },
+  {
+    "name":"org.wso2.apk.enforcer.config.dto.TracingDTO",
+    "allDeclaredFields":true
+  },
+  {
+    "name":"org.wso2.apk.enforcer.discovery.ConfigDiscoveryClient"
+  },
+  {
+    "name":"org.wso2.apk.enforcer.discovery.api.Api",
+    "methods":[{"name":"getApiDefinitionFile","parameterTypes":[] }, {"name":"getApiLifeCycleState","parameterTypes":[] }, {"name":"getApiLifeCycleStateBytes","parameterTypes":[] }, {"name":"getApiType","parameterTypes":[] }, {"name":"getApiTypeBytes","parameterTypes":[] }, {"name":"getApplicationSecurity","parameterTypes":[] }, {"name":"getBackendJWTTokenInfo","parameterTypes":[] }, {"name":"getBasePath","parameterTypes":[] }, {"name":"getBasePathBytes","parameterTypes":[] }, {"name":"getClientCertificates","parameterTypes":["int"] }, {"name":"getClientCertificatesCount","parameterTypes":[] }, {"name":"getClientCertificatesList","parameterTypes":[] }, {"name":"getDefaultInstance","parameterTypes":[] }, {"name":"getDisableAuthentications","parameterTypes":[] }, {"name":"getDisableScopes","parameterTypes":[] }, {"name":"getEndpointSecurity","parameterTypes":["int"] }, {"name":"getEndpointSecurityCount","parameterTypes":[] }, {"name":"getEndpointSecurityList","parameterTypes":[] }, {"name":"getEndpoints","parameterTypes":[] }, {"name":"getEnvType","parameterTypes":[] }, {"name":"getEnvTypeBytes","parameterTypes":[] }, {"name":"getEnvironment","parameterTypes":[] }, {"name":"getEnvironmentBytes","parameterTypes":[] }, {"name":"getGraphqlComplexityInfo","parameterTypes":["int"] }, {"name":"getGraphqlComplexityInfoCount","parameterTypes":[] }, {"name":"getGraphqlComplexityInfoList","parameterTypes":[] }, {"name":"getId","parameterTypes":[] }, {"name":"getIdBytes","parameterTypes":[] }, {"name":"getMutualSSL","parameterTypes":[] }, {"name":"getMutualSSLBytes","parameterTypes":[] }, {"name":"getOrganizationId","parameterTypes":[] }, {"name":"getOrganizationIdBytes","parameterTypes":[] }, {"name":"getResources","parameterTypes":["int"] }, {"name":"getResourcesCount","parameterTypes":[] }, {"name":"getResourcesList","parameterTypes":[] }, {"name":"getSubscriptionValidation","parameterTypes":[] }, {"name":"getSystemAPI","parameterTypes":[] }, {"name":"getTier","parameterTypes":[] }, {"name":"getTierBytes","parameterTypes":[] }, {"name":"getTitle","parameterTypes":[] }, {"name":"getTitleBytes","parameterTypes":[] }, {"name":"getTransportSecurity","parameterTypes":[] }, {"name":"getVersion","parameterTypes":[] }, {"name":"getVersionBytes","parameterTypes":[] }, {"name":"getVhost","parameterTypes":[] }, {"name":"getVhostBytes","parameterTypes":[] }, {"name":"hasBackendJWTTokenInfo","parameterTypes":[] }, {"name":"hasEndpoints","parameterTypes":[] }]
+  },
+  {
+    "name":"org.wso2.apk.enforcer.discovery.api.Api$Builder",
+    "methods":[{"name":"addClientCertificates","parameterTypes":["org.wso2.apk.enforcer.discovery.api.Certificate"] }, {"name":"addEndpointSecurity","parameterTypes":["org.wso2.apk.enforcer.discovery.api.SecurityInfo"] }, {"name":"addGraphqlComplexityInfo","parameterTypes":["org.wso2.apk.enforcer.discovery.api.GraphqlComplexity"] }, {"name":"addResources","parameterTypes":["org.wso2.apk.enforcer.discovery.api.Resource"] }, {"name":"clearApiDefinitionFile","parameterTypes":[] }, {"name":"clearApiLifeCycleState","parameterTypes":[] }, {"name":"clearApiType","parameterTypes":[] }, {"name":"clearApplicationSecurity","parameterTypes":[] }, {"name":"clearBackendJWTTokenInfo","parameterTypes":[] }, {"name":"clearBasePath","parameterTypes":[] }, {"name":"clearClientCertificates","parameterTypes":[] }, {"name":"clearDisableAuthentications","parameterTypes":[] }, {"name":"clearDisableScopes","parameterTypes":[] }, {"name":"clearEndpointSecurity","parameterTypes":[] }, {"name":"clearEndpoints","parameterTypes":[] }, {"name":"clearEnvType","parameterTypes":[] }, {"name":"clearEnvironment","parameterTypes":[] }, {"name":"clearGraphqlComplexityInfo","parameterTypes":[] }, {"name":"clearId","parameterTypes":[] }, {"name":"clearMutualSSL","parameterTypes":[] }, {"name":"clearOrganizationId","parameterTypes":[] }, {"name":"clearResources","parameterTypes":[] }, {"name":"clearSubscriptionValidation","parameterTypes":[] }, {"name":"clearSystemAPI","parameterTypes":[] }, {"name":"clearTier","parameterTypes":[] }, {"name":"clearTitle","parameterTypes":[] }, {"name":"clearTransportSecurity","parameterTypes":[] }, {"name":"clearVersion","parameterTypes":[] }, {"name":"clearVhost","parameterTypes":[] }, {"name":"getApiDefinitionFile","parameterTypes":[] }, {"name":"getApiLifeCycleState","parameterTypes":[] }, {"name":"getApiLifeCycleStateBytes","parameterTypes":[] }, {"name":"getApiType","parameterTypes":[] }, {"name":"getApiTypeBytes","parameterTypes":[] }, {"name":"getApplicationSecurity","parameterTypes":[] }, {"name":"getBackendJWTTokenInfo","parameterTypes":[] }, {"name":"getBackendJWTTokenInfoBuilder","parameterTypes":[] }, {"name":"getBasePath","parameterTypes":[] }, {"name":"getBasePathBytes","parameterTypes":[] }, {"name":"getClientCertificates","parameterTypes":["int"] }, {"name":"getClientCertificatesBuilder","parameterTypes":["int"] }, {"name":"getClientCertificatesCount","parameterTypes":[] }, {"name":"getClientCertificatesList","parameterTypes":[] }, {"name":"getDisableAuthentications","parameterTypes":[] }, {"name":"getDisableScopes","parameterTypes":[] }, {"name":"getEndpointSecurity","parameterTypes":["int"] }, {"name":"getEndpointSecurityBuilder","parameterTypes":["int"] }, {"name":"getEndpointSecurityCount","parameterTypes":[] }, {"name":"getEndpointSecurityList","parameterTypes":[] }, {"name":"getEndpoints","parameterTypes":[] }, {"name":"getEndpointsBuilder","parameterTypes":[] }, {"name":"getEnvType","parameterTypes":[] }, {"name":"getEnvTypeBytes","parameterTypes":[] }, {"name":"getEnvironment","parameterTypes":[] }, {"name":"getEnvironmentBytes","parameterTypes":[] }, {"name":"getGraphqlComplexityInfo","parameterTypes":["int"] }, {"name":"getGraphqlComplexityInfoBuilder","parameterTypes":["int"] }, {"name":"getGraphqlComplexityInfoCount","parameterTypes":[] }, {"name":"getGraphqlComplexityInfoList","parameterTypes":[] }, {"name":"getId","parameterTypes":[] }, {"name":"getIdBytes","parameterTypes":[] }, {"name":"getMutualSSL","parameterTypes":[] }, {"name":"getMutualSSLBytes","parameterTypes":[] }, {"name":"getOrganizationId","parameterTypes":[] }, {"name":"getOrganizationIdBytes","parameterTypes":[] }, {"name":"getResources","parameterTypes":["int"] }, {"name":"getResourcesBuilder","parameterTypes":["int"] }, {"name":"getResourcesCount","parameterTypes":[] }, {"name":"getResourcesList","parameterTypes":[] }, {"name":"getSubscriptionValidation","parameterTypes":[] }, {"name":"getSystemAPI","parameterTypes":[] }, {"name":"getTier","parameterTypes":[] }, {"name":"getTierBytes","parameterTypes":[] }, {"name":"getTitle","parameterTypes":[] }, {"name":"getTitleBytes","parameterTypes":[] }, {"name":"getTransportSecurity","parameterTypes":[] }, {"name":"getVersion","parameterTypes":[] }, {"name":"getVersionBytes","parameterTypes":[] }, {"name":"getVhost","parameterTypes":[] }, {"name":"getVhostBytes","parameterTypes":[] }, {"name":"hasBackendJWTTokenInfo","parameterTypes":[] }, {"name":"hasEndpoints","parameterTypes":[] }, {"name":"setApiDefinitionFile","parameterTypes":["com.google.protobuf.ByteString"] }, {"name":"setApiLifeCycleState","parameterTypes":["java.lang.String"] }, {"name":"setApiLifeCycleStateBytes","parameterTypes":["com.google.protobuf.ByteString"] }, {"name":"setApiType","parameterTypes":["java.lang.String"] }, {"name":"setApiTypeBytes","parameterTypes":["com.google.protobuf.ByteString"] }, {"name":"setApplicationSecurity","parameterTypes":["boolean"] }, {"name":"setBackendJWTTokenInfo","parameterTypes":["org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo"] }, {"name":"setBasePath","parameterTypes":["java.lang.String"] }, {"name":"setBasePathBytes","parameterTypes":["com.google.protobuf.ByteString"] }, {"name":"setClientCertificates","parameterTypes":["int","org.wso2.apk.enforcer.discovery.api.Certificate"] }, {"name":"setDisableAuthentications","parameterTypes":["boolean"] }, {"name":"setDisableScopes","parameterTypes":["boolean"] }, {"name":"setEndpointSecurity","parameterTypes":["int","org.wso2.apk.enforcer.discovery.api.SecurityInfo"] }, {"name":"setEndpoints","parameterTypes":["org.wso2.apk.enforcer.discovery.api.EndpointCluster"] }, {"name":"setEnvType","parameterTypes":["java.lang.String"] }, {"name":"setEnvTypeBytes","parameterTypes":["com.google.protobuf.ByteString"] }, {"name":"setEnvironment","parameterTypes":["java.lang.String"] }, {"name":"setEnvironmentBytes","parameterTypes":["com.google.protobuf.ByteString"] }, {"name":"setGraphqlComplexityInfo","parameterTypes":["int","org.wso2.apk.enforcer.discovery.api.GraphqlComplexity"] }, {"name":"setId","parameterTypes":["java.lang.String"] }, {"name":"setIdBytes","parameterTypes":["com.google.protobuf.ByteString"] }, {"name":"setMutualSSL","parameterTypes":["java.lang.String"] }, {"name":"setMutualSSLBytes","parameterTypes":["com.google.protobuf.ByteString"] }, {"name":"setOrganizationId","parameterTypes":["java.lang.String"] }, {"name":"setOrganizationIdBytes","parameterTypes":["com.google.protobuf.ByteString"] }, {"name":"setResources","parameterTypes":["int","org.wso2.apk.enforcer.discovery.api.Resource"] }, {"name":"setSubscriptionValidation","parameterTypes":["boolean"] }, {"name":"setSystemAPI","parameterTypes":["boolean"] }, {"name":"setTier","parameterTypes":["java.lang.String"] }, {"name":"setTierBytes","parameterTypes":["com.google.protobuf.ByteString"] }, {"name":"setTitle","parameterTypes":["java.lang.String"] }, {"name":"setTitleBytes","parameterTypes":["com.google.protobuf.ByteString"] }, {"name":"setTransportSecurity","parameterTypes":["boolean"] }, {"name":"setVersion","parameterTypes":["java.lang.String"] }, {"name":"setVersionBytes","parameterTypes":["com.google.protobuf.ByteString"] }, {"name":"setVhost","parameterTypes":["java.lang.String"] }, {"name":"setVhostBytes","parameterTypes":["com.google.protobuf.ByteString"] }]
+  },
+  {
+    "name":"org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo",
+    "methods":[{"name":"newBuilder","parameterTypes":[] }]
+  },
+  {
+    "name":"org.wso2.apk.enforcer.discovery.api.Certificate",
+    "methods":[{"name":"newBuilder","parameterTypes":[] }]
+  },
+  {
+    "name":"org.wso2.apk.enforcer.discovery.api.EndpointCluster",
+    "methods":[{"name":"newBuilder","parameterTypes":[] }]
+  },
+  {
+    "name":"org.wso2.apk.enforcer.discovery.api.GraphqlComplexity",
+    "methods":[{"name":"newBuilder","parameterTypes":[] }]
+  },
+  {
+    "name":"org.wso2.apk.enforcer.discovery.api.Resource",
+    "methods":[{"name":"newBuilder","parameterTypes":[] }]
+  },
+  {
+    "name":"org.wso2.apk.enforcer.discovery.api.SecurityInfo",
+    "methods":[{"name":"newBuilder","parameterTypes":[] }]
+  },
+  {
+    "name":"org.wso2.apk.enforcer.discovery.config.enforcer.Analytics",
+    "methods":[{"name":"newBuilder","parameterTypes":[] }]
+  },
+  {
+    "name":"org.wso2.apk.enforcer.discovery.config.enforcer.Cache",
+    "methods":[{"name":"newBuilder","parameterTypes":[] }]
+  },
+  {
+    "name":"org.wso2.apk.enforcer.discovery.config.enforcer.CertStore",
+    "methods":[{"name":"newBuilder","parameterTypes":[] }]
+  },
+  {
+    "name":"org.wso2.apk.enforcer.discovery.config.enforcer.Config",
+    "methods":[{"name":"getAnalytics","parameterTypes":[] }, {"name":"getAuthService","parameterTypes":[] }, {"name":"getCache","parameterTypes":[] }, {"name":"getDefaultInstance","parameterTypes":[] }, {"name":"getFilters","parameterTypes":["int"] }, {"name":"getFiltersCount","parameterTypes":[] }, {"name":"getFiltersList","parameterTypes":[] }, {"name":"getHttpClient","parameterTypes":[] }, {"name":"getJwtGenerator","parameterTypes":[] }, {"name":"getKeystore","parameterTypes":[] }, {"name":"getManagement","parameterTypes":[] }, {"name":"getMandateInternalKeyValidation","parameterTypes":[] }, {"name":"getMandateSubscriptionValidation","parameterTypes":[] }, {"name":"getMetrics","parameterTypes":[] }, {"name":"getSecurity","parameterTypes":[] }, {"name":"getSoap","parameterTypes":[] }, {"name":"getTracing","parameterTypes":[] }, {"name":"getTruststore","parameterTypes":[] }, {"name":"hasAnalytics","parameterTypes":[] }, {"name":"hasAuthService","parameterTypes":[] }, {"name":"hasCache","parameterTypes":[] }, {"name":"hasHttpClient","parameterTypes":[] }, {"name":"hasJwtGenerator","parameterTypes":[] }, {"name":"hasKeystore","parameterTypes":[] }, {"name":"hasManagement","parameterTypes":[] }, {"name":"hasMetrics","parameterTypes":[] }, {"name":"hasSecurity","parameterTypes":[] }, {"name":"hasSoap","parameterTypes":[] }, {"name":"hasTracing","parameterTypes":[] }, {"name":"hasTruststore","parameterTypes":[] }]
+  },
+  {
+    "name":"org.wso2.apk.enforcer.discovery.config.enforcer.Config$Builder",
+    "methods":[{"name":"addFilters","parameterTypes":["org.wso2.apk.enforcer.discovery.config.enforcer.Filter"] }, {"name":"clearAnalytics","parameterTypes":[] }, {"name":"clearAuthService","parameterTypes":[] }, {"name":"clearCache","parameterTypes":[] }, {"name":"clearFilters","parameterTypes":[] }, {"name":"clearHttpClient","parameterTypes":[] }, {"name":"clearJwtGenerator","parameterTypes":[] }, {"name":"clearKeystore","parameterTypes":[] }, {"name":"clearManagement","parameterTypes":[] }, {"name":"clearMandateInternalKeyValidation","parameterTypes":[] }, {"name":"clearMandateSubscriptionValidation","parameterTypes":[] }, {"name":"clearMetrics","parameterTypes":[] }, {"name":"clearSecurity","parameterTypes":[] }, {"name":"clearSoap","parameterTypes":[] }, {"name":"clearTracing","parameterTypes":[] }, {"name":"clearTruststore","parameterTypes":[] }, {"name":"getAnalytics","parameterTypes":[] }, {"name":"getAnalyticsBuilder","parameterTypes":[] }, {"name":"getAuthService","parameterTypes":[] }, {"name":"getAuthServiceBuilder","parameterTypes":[] }, {"name":"getCache","parameterTypes":[] }, {"name":"getCacheBuilder","parameterTypes":[] }, {"name":"getFilters","parameterTypes":["int"] }, {"name":"getFiltersBuilder","parameterTypes":["int"] }, {"name":"getFiltersCount","parameterTypes":[] }, {"name":"getFiltersList","parameterTypes":[] }, {"name":"getHttpClient","parameterTypes":[] }, {"name":"getHttpClientBuilder","parameterTypes":[] }, {"name":"getJwtGenerator","parameterTypes":[] }, {"name":"getJwtGeneratorBuilder","parameterTypes":[] }, {"name":"getKeystore","parameterTypes":[] }, {"name":"getKeystoreBuilder","parameterTypes":[] }, {"name":"getManagement","parameterTypes":[] }, {"name":"getManagementBuilder","parameterTypes":[] }, {"name":"getMandateInternalKeyValidation","parameterTypes":[] }, {"name":"getMandateSubscriptionValidation","parameterTypes":[] }, {"name":"getMetrics","parameterTypes":[] }, {"name":"getMetricsBuilder","parameterTypes":[] }, {"name":"getSecurity","parameterTypes":[] }, {"name":"getSecurityBuilder","parameterTypes":[] }, {"name":"getSoap","parameterTypes":[] }, {"name":"getSoapBuilder","parameterTypes":[] }, {"name":"getTracing","parameterTypes":[] }, {"name":"getTracingBuilder","parameterTypes":[] }, {"name":"getTruststore","parameterTypes":[] }, {"name":"getTruststoreBuilder","parameterTypes":[] }, {"name":"hasAnalytics","parameterTypes":[] }, {"name":"hasAuthService","parameterTypes":[] }, {"name":"hasCache","parameterTypes":[] }, {"name":"hasHttpClient","parameterTypes":[] }, {"name":"hasJwtGenerator","parameterTypes":[] }, {"name":"hasKeystore","parameterTypes":[] }, {"name":"hasManagement","parameterTypes":[] }, {"name":"hasMetrics","parameterTypes":[] }, {"name":"hasSecurity","parameterTypes":[] }, {"name":"hasSoap","parameterTypes":[] }, {"name":"hasTracing","parameterTypes":[] }, {"name":"hasTruststore","parameterTypes":[] }, {"name":"setAnalytics","parameterTypes":["org.wso2.apk.enforcer.discovery.config.enforcer.Analytics"] }, {"name":"setAuthService","parameterTypes":["org.wso2.apk.enforcer.discovery.config.enforcer.Service"] }, {"name":"setCache","parameterTypes":["org.wso2.apk.enforcer.discovery.config.enforcer.Cache"] }, {"name":"setFilters","parameterTypes":["int","org.wso2.apk.enforcer.discovery.config.enforcer.Filter"] }, {"name":"setHttpClient","parameterTypes":["org.wso2.apk.enforcer.discovery.config.enforcer.HttpClient"] }, {"name":"setJwtGenerator","parameterTypes":["org.wso2.apk.enforcer.discovery.config.enforcer.JWTGenerator"] }, {"name":"setKeystore","parameterTypes":["org.wso2.apk.enforcer.discovery.config.enforcer.CertStore"] }, {"name":"setManagement","parameterTypes":["org.wso2.apk.enforcer.discovery.config.enforcer.Management"] }, {"name":"setMandateInternalKeyValidation","parameterTypes":["boolean"] }, {"name":"setMandateSubscriptionValidation","parameterTypes":["boolean"] }, {"name":"setMetrics","parameterTypes":["org.wso2.apk.enforcer.discovery.config.enforcer.Metrics"] }, {"name":"setSecurity","parameterTypes":["org.wso2.apk.enforcer.discovery.config.enforcer.Security"] }, {"name":"setSoap","parameterTypes":["org.wso2.apk.enforcer.discovery.config.enforcer.Soap"] }, {"name":"setTracing","parameterTypes":["org.wso2.apk.enforcer.discovery.config.enforcer.Tracing"] }, {"name":"setTruststore","parameterTypes":["org.wso2.apk.enforcer.discovery.config.enforcer.CertStore"] }]
+  },
+  {
+    "name":"org.wso2.apk.enforcer.discovery.config.enforcer.Filter",
+    "methods":[{"name":"newBuilder","parameterTypes":[] }]
+  },
+  {
+    "name":"org.wso2.apk.enforcer.discovery.config.enforcer.HttpClient",
+    "methods":[{"name":"newBuilder","parameterTypes":[] }]
+  },
+  {
+    "name":"org.wso2.apk.enforcer.discovery.config.enforcer.JWTGenerator",
+    "methods":[{"name":"newBuilder","parameterTypes":[] }]
+  },
+  {
+    "name":"org.wso2.apk.enforcer.discovery.config.enforcer.Management",
+    "methods":[{"name":"newBuilder","parameterTypes":[] }]
+  },
+  {
+    "name":"org.wso2.apk.enforcer.discovery.config.enforcer.Metrics",
+    "methods":[{"name":"newBuilder","parameterTypes":[] }]
+  },
+  {
+    "name":"org.wso2.apk.enforcer.discovery.config.enforcer.Security",
+    "methods":[{"name":"newBuilder","parameterTypes":[] }]
+  },
+  {
+    "name":"org.wso2.apk.enforcer.discovery.config.enforcer.Service",
+    "methods":[{"name":"newBuilder","parameterTypes":[] }]
+  },
+  {
+    "name":"org.wso2.apk.enforcer.discovery.config.enforcer.Soap",
+    "methods":[{"name":"newBuilder","parameterTypes":[] }]
+  },
+  {
+    "name":"org.wso2.apk.enforcer.discovery.config.enforcer.Tracing",
+    "methods":[{"name":"newBuilder","parameterTypes":[] }]
+  },
+  {
+    "name":"org.wso2.apk.enforcer.discovery.service.config.ConfigDiscoveryServiceGrpc$ConfigDiscoveryServiceBlockingStub"
+  },
+  {
+    "name":"org.wso2.apk.enforcer.discovery.subscription.JWTIssuer",
+    "methods":[{"name":"newBuilder","parameterTypes":[] }]
+  },
+  {
+    "name":"org.wso2.apk.enforcer.discovery.subscription.JWTIssuerList",
+    "methods":[{"name":"getDefaultInstance","parameterTypes":[] }, {"name":"getList","parameterTypes":["int"] }, {"name":"getListCount","parameterTypes":[] }, {"name":"getListList","parameterTypes":[] }]
+  },
+  {
+    "name":"org.wso2.apk.enforcer.discovery.subscription.JWTIssuerList$Builder",
+    "methods":[{"name":"addList","parameterTypes":["org.wso2.apk.enforcer.discovery.subscription.JWTIssuer"] }, {"name":"clearList","parameterTypes":[] }, {"name":"getList","parameterTypes":["int"] }, {"name":"getListBuilder","parameterTypes":["int"] }, {"name":"getListCount","parameterTypes":[] }, {"name":"getListList","parameterTypes":[] }, {"name":"setList","parameterTypes":["int","org.wso2.apk.enforcer.discovery.subscription.JWTIssuer"] }]
+  },
+  {
+    "name":"org.wso2.apk.enforcer.jwks.JWKSRequestHandler",
+    "methods":[{"name":"channelReadComplete","parameterTypes":["io.grpc.netty.shaded.io.netty.channel.ChannelHandlerContext"] }]
+  },
+  {
+    "name":"org.wso2.apk.enforcer.server.AuthServer"
+  },
+  {
+    "name":"org.wso2.apk.enforcer.subscription.ApplicationDto",
+    "allDeclaredFields":true,
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"org.wso2.apk.enforcer.subscription.ApplicationKeyMappingDTO",
+    "allDeclaredFields":true,
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"org.wso2.apk.enforcer.subscription.ApplicationKeyMappingDtoList",
+    "allDeclaredFields":true,
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"org.wso2.apk.enforcer.subscription.ApplicationListDto",
+    "allDeclaredFields":true,
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"org.wso2.apk.enforcer.subscription.ApplicationMappingDto",
+    "allDeclaredFields":true,
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"org.wso2.apk.enforcer.subscription.ApplicationMappingDtoList",
+    "allDeclaredFields":true,
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"org.wso2.apk.enforcer.subscription.SubscribedAPIDto",
+    "allDeclaredFields":true,
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"org.wso2.apk.enforcer.subscription.SubscriptionDto",
+    "allDeclaredFields":true,
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"org.wso2.apk.enforcer.subscription.SubscriptionListDto",
+    "allDeclaredFields":true,
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"org.wso2.apk.enforcer.subscription.SubscriptionValidationDataRetrievalRestClient",
+    "queryAllPublicMethods":true
+  },
+  {
+    "name":"redis.clients.jedis.JedisPool",
+    "queryAllPublicConstructors":true
+  },
+  {
+    "name":"sun.management.ClassLoadingImpl",
+    "queryAllPublicConstructors":true
+  },
+  {
+    "name":"sun.management.CompilationImpl",
+    "queryAllPublicConstructors":true
+  },
+  {
+    "name":"sun.management.ManagementFactoryHelper$1",
+    "queryAllPublicConstructors":true
+  },
+  {
+    "name":"sun.management.ManagementFactoryHelper$PlatformLoggingImpl",
+    "queryAllPublicConstructors":true
+  },
+  {
+    "name":"sun.management.MemoryImpl",
+    "queryAllPublicConstructors":true
+  },
+  {
+    "name":"sun.management.MemoryManagerImpl",
+    "queryAllPublicConstructors":true
+  },
+  {
+    "name":"sun.management.MemoryPoolImpl",
+    "queryAllPublicConstructors":true
+  },
+  {
+    "name":"sun.management.RuntimeImpl",
+    "queryAllPublicConstructors":true
+  },
+  {
+    "name":"sun.misc.SharedSecrets"
+  },
+  {
+    "name":"sun.misc.Unsafe",
+    "allDeclaredFields":true,
+    "methods":[{"name":"arrayBaseOffset","parameterTypes":["java.lang.Class"] }, {"name":"arrayIndexScale","parameterTypes":["java.lang.Class"] }, {"name":"copyMemory","parameterTypes":["long","long","long"] }, {"name":"copyMemory","parameterTypes":["java.lang.Object","long","java.lang.Object","long","long"] }, {"name":"getAndAddLong","parameterTypes":["java.lang.Object","long","long"] }, {"name":"getAndSetObject","parameterTypes":["java.lang.Object","long","java.lang.Object"] }, {"name":"getBoolean","parameterTypes":["java.lang.Object","long"] }, {"name":"getByte","parameterTypes":["long"] }, {"name":"getByte","parameterTypes":["java.lang.Object","long"] }, {"name":"getDouble","parameterTypes":["java.lang.Object","long"] }, {"name":"getFloat","parameterTypes":["java.lang.Object","long"] }, {"name":"getInt","parameterTypes":["long"] }, {"name":"getInt","parameterTypes":["java.lang.Object","long"] }, {"name":"getLong","parameterTypes":["long"] }, {"name":"getLong","parameterTypes":["java.lang.Object","long"] }, {"name":"getObject","parameterTypes":["java.lang.Object","long"] }, {"name":"invokeCleaner","parameterTypes":["java.nio.ByteBuffer"] }, {"name":"objectFieldOffset","parameterTypes":["java.lang.reflect.Field"] }, {"name":"putBoolean","parameterTypes":["java.lang.Object","long","boolean"] }, {"name":"putByte","parameterTypes":["long","byte"] }, {"name":"putByte","parameterTypes":["java.lang.Object","long","byte"] }, {"name":"putDouble","parameterTypes":["java.lang.Object","long","double"] }, {"name":"putFloat","parameterTypes":["java.lang.Object","long","float"] }, {"name":"putInt","parameterTypes":["long","int"] }, {"name":"putInt","parameterTypes":["java.lang.Object","long","int"] }, {"name":"putLong","parameterTypes":["long","long"] }, {"name":"putLong","parameterTypes":["java.lang.Object","long","long"] }, {"name":"putObject","parameterTypes":["java.lang.Object","long","java.lang.Object"] }, {"name":"storeFence","parameterTypes":[] }]
+  },
+  {
+    "name":"sun.misc.VM"
+  },
+  {
+    "name":"sun.nio.ch.SelectorImpl",
+    "fields":[{"name":"publicSelectedKeys"}, {"name":"selectedKeys"}]
+  },
+  {
+    "name":"sun.reflect.Reflection"
+  },
+  {
+    "name":"sun.security.pkcs12.PKCS12KeyStore",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"sun.security.pkcs12.PKCS12KeyStore$DualFormatPKCS12",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"sun.security.provider.DSA$SHA224withDSA",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"sun.security.provider.DSA$SHA256withDSA",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"sun.security.provider.JavaKeyStore$DualFormatJKS",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"sun.security.provider.JavaKeyStore$JKS",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"sun.security.provider.NativePRNG",
+    "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"<init>","parameterTypes":["java.security.SecureRandomParameters"] }]
+  },
+  {
+    "name":"sun.security.provider.SHA",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"sun.security.provider.SHA2$SHA224",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"sun.security.provider.SHA2$SHA256",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"sun.security.provider.SHA5$SHA384",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"sun.security.provider.SHA5$SHA512",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"sun.security.provider.X509Factory",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"sun.security.provider.certpath.PKIXCertPathValidator",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"sun.security.rsa.PSSParameters",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"sun.security.rsa.RSAKeyFactory$Legacy",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"sun.security.rsa.RSAPSSSignature",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"sun.security.rsa.RSASignature$SHA224withRSA",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"sun.security.rsa.RSASignature$SHA256withRSA",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"sun.security.ssl.KeyManagerFactoryImpl$SunX509",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"sun.security.ssl.SSLContextImpl$TLSContext",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"sun.security.ssl.TrustManagerFactoryImpl$PKIXFactory",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"sun.security.util.ObjectIdentifier"
+  },
+  {
+    "name":"sun.security.x509.AuthorityInfoAccessExtension",
+    "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+  },
+  {
+    "name":"sun.security.x509.AuthorityKeyIdentifierExtension",
+    "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+  },
+  {
+    "name":"sun.security.x509.BasicConstraintsExtension",
+    "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+  },
+  {
+    "name":"sun.security.x509.CRLDistributionPointsExtension",
+    "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+  },
+  {
+    "name":"sun.security.x509.CertificateExtensions"
+  },
+  {
+    "name":"sun.security.x509.CertificatePoliciesExtension",
+    "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+  },
+  {
+    "name":"sun.security.x509.ExtendedKeyUsageExtension",
+    "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+  },
+  {
+    "name":"sun.security.x509.IssuerAlternativeNameExtension",
+    "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+  },
+  {
+    "name":"sun.security.x509.KeyUsageExtension",
+    "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+  },
+  {
+    "name":"sun.security.x509.NetscapeCertTypeExtension",
+    "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+  },
+  {
+    "name":"sun.security.x509.PrivateKeyUsageExtension",
+    "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+  },
+  {
+    "name":"sun.security.x509.SubjectAlternativeNameExtension",
+    "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+  },
+  {
+    "name":"sun.security.x509.SubjectKeyIdentifierExtension",
+    "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+  }
+  ]
+  
