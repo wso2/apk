@@ -94,7 +94,6 @@ dependencies {
     implementation libs.openfeign.feign.gson
     implementation libs.openfeign.feign.slf4j
     implementation 'org.bouncycastle:bcprov-jdk18on:1.78.1'
-    implementation 'org.bouncycastle:bctls-jdk18on:1.78.1'
     test {
         implementation libs.junit
         implementation libs.mockito.inline

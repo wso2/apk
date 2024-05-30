@@ -35,7 +35,7 @@
     
     COPY resources/lib/enforcer-${VERSION}.jar .
     
-    RUN native-image -jar enforcer-${VERSION}.jar -H:TraceClassInitialization=false -H:Name=enforcer --no-fallback
+    RUN native-image -jar enforcer-${VERSION}.jar -H:Name=enforcer --no-fallback
     
     FROM ubuntu:22.04
     
