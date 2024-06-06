@@ -822,8 +822,11 @@ public class APIClient {
         };
         routeFilters.push(replacePathFilter);
         APIOperationPolicies? operationPoliciesToUse = ();
-        if (apkConf.apiPolicies is APIOperationPolicies) {
-            operationPoliciesToUse = apkConf.apiPolicies;
+        APIOperationPolicies? operationPolicies = apkConf.apiPolicies;
+        if (operationPolicies is APIOperationPolicies && operationPolicies != {}) {
+            if operationPolicies.request is APKOperationPolicy[] || operationPolicies.response is APKOperationPolicy[] {
+                operationPoliciesToUse = apkConf.apiPolicies;
+            }
         } else {
             operationPoliciesToUse = operation.operationPolicies;
         }
