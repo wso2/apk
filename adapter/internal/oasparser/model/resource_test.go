@@ -57,7 +57,7 @@ func getResources() []*Resource {
 	resources := make([]*Resource, len(paths))
 	for index := range paths {
 		res := CreateMinimalDummyResourceForTests(paths[index], make([]*Operation, 0), "",
-			make([]Endpoint, 0), false)
+			make([]Endpoint, 0), false, false)
 		resources[index] = &res
 	}
 	return resources

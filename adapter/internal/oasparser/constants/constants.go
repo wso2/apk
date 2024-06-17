@@ -76,6 +76,8 @@ const (
 	ActionRewriteMethod      string = "REWRITE_RESOURCE_METHOD"
 	ActionInterceptorService string = "CALL_INTERCEPTOR_SERVICE"
 	ActionRewritePath        string = "REWRITE_RESOURCE_PATH"
+	ActionRedirectRequest    string = "REDIRECT_REQUEST"
+	ActionMirrorRequest      string = "MIRROR_REQUEST"
 
 	PolicyRequestInterceptor  string = "PolicyRequestInterceptor"
 	PolicyResponseInterceptor string = "PolicyResponseInterceptor"
@@ -90,6 +92,11 @@ const (
 	HeaderValue                string = "headerValue"
 	CurrentMethod              string = "currentMethod"
 	UpdatedMethod              string = "updatedMethod"
+	RedirectScheme             string = "scheme"
+	RedirectHostname           string = "hostname"
+	RedirectPath               string = "path"
+	RedirectPort               string = "port"
+	RedirectStatusCode         string = "statusCode"
 )
 
 // API Type Constants

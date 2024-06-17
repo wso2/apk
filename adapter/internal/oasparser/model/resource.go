@@ -36,14 +36,15 @@ import (
 // These values are populated from extensions/properties
 // mentioned under pathItem.
 type Resource struct {
-	path             string
-	pathMatchType    gwapiv1.PathMatchType
-	methods          []*Operation
-	iD               string
-	endpoints        *EndpointCluster
-	endpointSecurity []*EndpointSecurity
-	vendorExtensions map[string]interface{}
-	hasPolicies      bool
+	path                     string
+	pathMatchType            gwapiv1.PathMatchType
+	methods                  []*Operation
+	iD                       string
+	endpoints                *EndpointCluster
+	endpointSecurity         []*EndpointSecurity
+	vendorExtensions         map[string]interface{}
+	hasPolicies              bool
+	hasRequestRedirectFilter bool
 }
 
 // GetEndpointSecurity returns the endpoint security object of a given resource.
@@ -107,21 +108,22 @@ func (resource *Resource) HasPolicies() bool {
 
 // CreateMinimalDummyResourceForTests create a resource object with minimal required set of values
 // which could be used for unit tests.
-func CreateMinimalDummyResourceForTests(path string, methods []*Operation, id string, urls []Endpoint, hasPolicies bool) Resource {
+func CreateMinimalDummyResourceForTests(path string, methods []*Operation, id string, urls []Endpoint, hasPolicies bool, hasRequestRedirectPolicy bool) Resource {
 
 	endpoints := generateEndpointCluster(urls, constants.LoadBalance)
-	return CreateMinimalResource(path, methods, id, endpoints, hasPolicies, gwapiv1.PathMatchPathPrefix)
+	return CreateMinimalResource(path, methods, id, endpoints, hasPolicies, hasRequestRedirectPolicy, gwapiv1.PathMatchPathPrefix)
 }
 
 // CreateMinimalResource create a resource object with minimal required set of values
-func CreateMinimalResource(path string, methods []*Operation, id string, endpoints *EndpointCluster, hasPolicies bool, pathMatchType gwapiv1.PathMatchType) Resource {
+func CreateMinimalResource(path string, methods []*Operation, id string, endpoints *EndpointCluster, hasPolicies bool, hasRequestRedirectPolicy bool, pathMatchType gwapiv1.PathMatchType) Resource {
 	return Resource{
-		path:          path,
-		methods:       methods,
-		iD:            id,
-		endpoints:     endpoints,
-		pathMatchType: pathMatchType,
-		hasPolicies:   hasPolicies,
+		path:                     path,
+		methods:                  methods,
+		iD:                       id,
+		endpoints:                endpoints,
+		pathMatchType:            pathMatchType,
+		hasPolicies:              hasPolicies,
+		hasRequestRedirectFilter: hasRequestRedirectPolicy,
 	}
 }
 
