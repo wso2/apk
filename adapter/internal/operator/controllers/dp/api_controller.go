@@ -847,6 +847,26 @@ func (apiReconciler *APIReconciler) getResolvedBackendsMapping(ctx context.Conte
 				}
 			}
 		}
+
+		for _, filter := range rule.Filters {
+			if filter.RequestMirror != nil {
+				mirrorBackend := filter.RequestMirror.BackendRef
+
+				mirrorBackendNamespacedName := types.NamespacedName{
+					Name:      string(mirrorBackend.Name),
+					Namespace: utils.GetNamespace(mirrorBackend.Namespace, httpRoute.Namespace),
+				}
+				if _, exists := backendMapping[mirrorBackendNamespacedName.String()]; !exists {
+					resolvedMirrorBackend := utils.GetResolvedBackend(ctx, apiReconciler.client, mirrorBackendNamespacedName, &api)
+					if resolvedMirrorBackend != nil {
+						backendMapping[mirrorBackendNamespacedName.String()] = resolvedMirrorBackend
+					} else {
+						return nil, fmt.Errorf("unable to find backend %s", mirrorBackendNamespacedName.String())
+					}
+				}
+			}
+
+		}
 	}
 
 	// Resolve backends in InterceptorServices

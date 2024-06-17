@@ -287,25 +287,26 @@ func getSecurity(authScheme *dpv1alpha2.Authentication) *Authentication {
 
 // getAllowedOperations retuns a list of allowed operatons, if httpMethod is not specified then all methods are allowed.
 func getAllowedOperations(httpMethod *gwapiv1.HTTPMethod, policies OperationPolicies, auth *Authentication,
-	ratelimitPolicy *RateLimitPolicy, scopes []string) []*Operation {
+	ratelimitPolicy *RateLimitPolicy, scopes []string, mirrorEndpoints *EndpointCluster) []*Operation {
 	if httpMethod != nil {
 		return []*Operation{{iD: uuid.New().String(), method: string(*httpMethod), policies: policies,
-			auth: auth, rateLimitPolicy: ratelimitPolicy, scopes: scopes}}
+			auth: auth, rateLimitPolicy: ratelimitPolicy, scopes: scopes, mirrorEndpoints: mirrorEndpoints}}
+
 	}
 	return []*Operation{{iD: uuid.New().String(), method: string(gwapiv1.HTTPMethodGet), policies: policies,
 		auth: auth, rateLimitPolicy: ratelimitPolicy, scopes: scopes},
 		{iD: uuid.New().String(), method: string(gwapiv1.HTTPMethodPost), policies: policies,
-			auth: auth, rateLimitPolicy: ratelimitPolicy, scopes: scopes},
+			auth: auth, rateLimitPolicy: ratelimitPolicy, scopes: scopes, mirrorEndpoints: mirrorEndpoints},
 		{iD: uuid.New().String(), method: string(gwapiv1.HTTPMethodDelete), policies: policies,
-			auth: auth, rateLimitPolicy: ratelimitPolicy, scopes: scopes},
+			auth: auth, rateLimitPolicy: ratelimitPolicy, scopes: scopes, mirrorEndpoints: mirrorEndpoints},
 		{iD: uuid.New().String(), method: string(gwapiv1.HTTPMethodPatch), policies: policies,
-			auth: auth, rateLimitPolicy: ratelimitPolicy, scopes: scopes},
+			auth: auth, rateLimitPolicy: ratelimitPolicy, scopes: scopes, mirrorEndpoints: mirrorEndpoints},
 		{iD: uuid.New().String(), method: string(gwapiv1.HTTPMethodPut), policies: policies,
-			auth: auth, rateLimitPolicy: ratelimitPolicy, scopes: scopes},
+			auth: auth, rateLimitPolicy: ratelimitPolicy, scopes: scopes, mirrorEndpoints: mirrorEndpoints},
 		{iD: uuid.New().String(), method: string(gwapiv1.HTTPMethodHead), policies: policies,
-			auth: auth, rateLimitPolicy: ratelimitPolicy, scopes: scopes},
+			auth: auth, rateLimitPolicy: ratelimitPolicy, scopes: scopes, mirrorEndpoints: mirrorEndpoints},
 		{iD: uuid.New().String(), method: string(gwapiv1.HTTPMethodOptions), policies: policies,
-			auth: auth, rateLimitPolicy: ratelimitPolicy, scopes: scopes}}
+			auth: auth, rateLimitPolicy: ratelimitPolicy, scopes: scopes, mirrorEndpoints: mirrorEndpoints}}
 }
 
 // SetInfoAPICR populates ID, ApiType, Version and XWso2BasePath of adapterInternalAPI.

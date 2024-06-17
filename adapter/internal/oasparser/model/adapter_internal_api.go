@@ -429,7 +429,7 @@ func (adapterInternalAPI *AdapterInternalAPI) GetEnvironment() string {
 // This needs to be checked prior to generate router/enforcer related resources.
 func (adapterInternalAPI *AdapterInternalAPI) Validate() error {
 	for _, res := range adapterInternalAPI.resources {
-		if res.endpoints == nil || len(res.endpoints.Endpoints) == 0 {
+		if res.endpoints == nil || (len(res.endpoints.Endpoints) == 0 && !res.hasRequestRedirectFilter) {
 			loggers.LoggerOasparser.Errorf("No Endpoints are provided for the resources in %s:%s, API_UUID: %v",
 				adapterInternalAPI.title, adapterInternalAPI.version, adapterInternalAPI.UUID)
 			return errors.New("no endpoints are provided for the API")
@@ -486,6 +486,8 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 		statusCodes = append(statusCodes, config.Envoy.Upstream.Retry.StatusCodes...)
 		var baseIntervalInMillis uint32
 		hasURLRewritePolicy := false
+		hasRequestRedirectPolicy := false
+		var mirrorEndpointsList []Endpoint
 		var securityConfig []EndpointSecurity
 		backendBasePath := ""
 		for _, backend := range rule.BackendRefs {
@@ -672,6 +674,54 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 						Parameters: policyParameters,
 					})
 				}
+			case gwapiv1.HTTPRouteFilterRequestRedirect:
+				hasRequestRedirectPolicy = true
+				policyParameters := make(map[string]interface{})
+
+				policyParameters[constants.RedirectScheme] = *filter.RequestRedirect.Scheme
+				policyParameters[constants.RedirectHostname] = string(*filter.RequestRedirect.Hostname)
+				if filter.RequestRedirect.Port != nil {
+					policyParameters[constants.RedirectPort] = strconv.Itoa(int(*filter.RequestRedirect.Port))
+				}
+
+				if filter.RequestRedirect.StatusCode != nil {
+					policyParameters[constants.RedirectStatusCode] = *filter.RequestRedirect.StatusCode
+				}
+
+				switch filter.RequestRedirect.Path.Type {
+				case gwapiv1.FullPathHTTPPathModifier:
+					policyParameters[constants.RedirectPath] = backendBasePath + *filter.RequestRedirect.Path.ReplaceFullPath
+				case gwapiv1.PrefixMatchHTTPPathModifier:
+					policyParameters[constants.RedirectPath] = backendBasePath + *filter.RequestRedirect.Path.ReplacePrefixMatch
+				}
+
+				policies.Request = append(policies.Request, Policy{
+					PolicyName: string(gwapiv1.HTTPRouteFilterRequestRedirect),
+					Action:     constants.ActionRedirectRequest,
+					Parameters: policyParameters,
+				})
+
+			case gwapiv1.HTTPRouteFilterRequestMirror:
+				policyParameters := make(map[string]interface{})
+				backend := &filter.RequestMirror.BackendRef
+				backendName := types.NamespacedName{
+					Name:      string(backend.Name),
+					Namespace: utils.GetNamespace(backend.Namespace, httpRoute.Namespace),
+				}
+				_, ok := resourceParams.BackendMapping[backendName.String()]
+				if !ok {
+					return fmt.Errorf("backend: %s has not been resolved", backendName)
+				}
+				mirrorEndpoints := GetEndpoints(backendName, resourceParams.BackendMapping)
+				if len(mirrorEndpoints) > 0 {
+					policyParameters["endpoints"] = mirrorEndpoints
+				}
+				mirrorEndpointsList = append(mirrorEndpointsList, mirrorEndpoints...)
+				policies.Request = append(policies.Request, Policy{
+					PolicyName: string(gwapiv1.HTTPRouteFilterRequestMirror),
+					Action:     constants.ActionMirrorRequest,
+					Parameters: policyParameters,
+				})
 			}
 		}
 		resourceAPIPolicy = concatAPIPolicies(resourceAPIPolicy, nil)
@@ -681,11 +731,15 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 
 		loggers.LoggerOasparser.Debugf("Calculating auths for API ..., API_UUID = %v", adapterInternalAPI.UUID)
 		apiAuth := getSecurity(resourceAuthScheme)
-		if len(rule.BackendRefs) < 1 {
+
+		if !hasRequestRedirectPolicy && len(rule.BackendRefs) < 1 {
 			return fmt.Errorf("no backendref were provided")
 		}
 
 		for _, match := range rule.Matches {
+			if hasURLRewritePolicy && hasRequestRedirectPolicy {
+				return fmt.Errorf("cannot have URL Rewrite and Request Redirect under the same rule")
+			}
 			if !hasURLRewritePolicy {
 				policyParameters := make(map[string]interface{})
 				if *match.Path.Type == gwapiv1.PathMatchPathPrefix {
@@ -702,12 +756,20 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 				})
 			}
 			resourcePath := adapterInternalAPI.xWso2Basepath + *match.Path.Value
+			var mirrorEndpointCluster *EndpointCluster
+			if len(mirrorEndpointsList) > 0 {
+				mirrorEndpointCluster = &EndpointCluster{
+					Endpoints: mirrorEndpointsList,
+				}
+			}
+			operations := getAllowedOperations(match.Method, policies, apiAuth,
+				parseRateLimitPolicyToInternal(resourceRatelimitPolicy), scopes, mirrorEndpointCluster)
 			resource := &Resource{path: resourcePath,
-				methods: getAllowedOperations(match.Method, policies, apiAuth,
-					parseRateLimitPolicyToInternal(resourceRatelimitPolicy), scopes),
-				pathMatchType: *match.Path.Type,
-				hasPolicies:   true,
-				iD:            uuid.New().String(),
+				methods:                  operations,
+				pathMatchType:            *match.Path.Type,
+				hasPolicies:              true,
+				iD:                       uuid.New().String(),
+				hasRequestRedirectFilter: hasRequestRedirectPolicy,
 			}
 
 			resource.endpoints = &EndpointCluster{
