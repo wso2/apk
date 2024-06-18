@@ -2672,6 +2672,10 @@ func prepareOperations(apiState *synchronizer.APIState) []controlplane.Operation
 	if apiState.ProdHTTPRoute != nil && apiState.ProdHTTPRoute.HTTPRouteCombined != nil {
 		for _, rule := range apiState.ProdHTTPRoute.HTTPRouteCombined.Spec.Rules {
 			scopes := []string{}
+			requestAddHeaders := []controlplane.Header{}
+			responseAddHeaders := []controlplane.Header{}
+			requestRemoveHeaders := []string{}
+			responseRemoveHeaders := []string{}
 			for _, filter := range rule.Filters {
 				if filter.ExtensionRef != nil && filter.ExtensionRef.Kind == "Scope" {
 					scope, found := apiState.ProdHTTPRoute.Scopes[types.NamespacedName{Namespace: apiState.APIDefinition.ObjectMeta.Namespace, Name: string(filter.ExtensionRef.Name)}.String()]
@@ -2679,7 +2683,34 @@ func prepareOperations(apiState *synchronizer.APIState) []controlplane.Operation
 						scopes = append(scopes, scope.Spec.Names...)
 					}
 				}
+
+				if filter.RequestHeaderModifier != nil {
+					requestHeaderModifier := filter.RequestHeaderModifier
+					for _, addHeader := range requestHeaderModifier.Add {
+						requestAddHeaders = append(requestAddHeaders, controlplane.Header{Name: string(addHeader.Name), Value: string(addHeader.Value)})
+					}
+					for _, setHeader := range requestHeaderModifier.Set {
+						requestAddHeaders = append(requestAddHeaders, controlplane.Header{Name: string(setHeader.Name), Value: string(setHeader.Value)})
+					}
+					for _, removeHeader := range requestHeaderModifier.Remove {
+						requestRemoveHeaders = append(requestRemoveHeaders, removeHeader)
+					}
+				}
+
+				if filter.ResponseHeaderModifier != nil {
+					responseHeaderModifier := filter.ResponseHeaderModifier
+					for _, addHeader := range responseHeaderModifier.Add {
+						responseAddHeaders = append(responseAddHeaders, controlplane.Header{Name: string(addHeader.Name), Value: string(addHeader.Value)})
+					}
+					for _, setHeader := range responseHeaderModifier.Set {
+						responseAddHeaders = append(responseAddHeaders, controlplane.Header{Name: string(setHeader.Name), Value: string(setHeader.Value)})
+					}
+					for _, removeHeader := range responseHeaderModifier.Remove {
+						responseRemoveHeaders = append(responseRemoveHeaders, removeHeader)
+					}
+				}
 			}
+
 			for _, match := range rule.Matches {
 				path := "/"
 				verb := "GET"
@@ -2693,7 +2724,21 @@ func prepareOperations(apiState *synchronizer.APIState) []controlplane.Operation
 					path = path + "*"
 				}
 				path = "^" + path + "$"
-				operations = append(operations, controlplane.Operation{Path: path, Verb: verb, Scopes: scopes})
+				operations = append(operations, controlplane.Operation{
+					Path:   path,
+					Verb:   verb,
+					Scopes: scopes,
+					Headers: controlplane.Headers{
+						RequestHeaders: controlplane.HeaderModifier{
+							AddHeaders:    requestAddHeaders,
+							RemoveHeaders: requestRemoveHeaders,
+						},
+						ResponseHeaders: controlplane.HeaderModifier{
+							AddHeaders:    responseAddHeaders,
+							RemoveHeaders: responseRemoveHeaders,
+						},
+					},
+				})
 			}
 		}
 	}

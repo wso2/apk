@@ -356,7 +356,14 @@
       "properties": {
         "policyName": {
           "type": "string",
-          "description": "The name of the operation policy."
+          "description": "The name of the operation policy.",
+          "enum": [
+            "AddHeaders",
+            "RemoveHeaders",
+            "SetHeaders",
+            "Interceptor",
+            "BackendJwt"
+          ]
         },
         "policyVersion": {
           "type": "string",
@@ -375,6 +382,9 @@
             },
             {
               "$ref": "#/schemas/BackendJWTProperties"
+            },
+            {
+              "$ref": "#/schemas/HeaderModifierProperties"
             }
           ]
         }
@@ -696,6 +706,35 @@
         }
       },
       "additionalProperties": false
+    },
+    "HeaderModifierProperties": {
+      "title": "Header Modifier Parameters",
+      "type": "object",
+      "properties": {
+        "headers": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "$ref": "#/schemas/Header"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "Header": {
+      "type": "object",
+      "name": {
+        "type": "string"
+      },
+      "value": {
+        "type": "string"
+      }
     },
     "CustomClaims": {
       "type": "object",

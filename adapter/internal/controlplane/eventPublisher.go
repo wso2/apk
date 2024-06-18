@@ -100,11 +100,30 @@ type API struct {
 	APIHash          string            `json:"-"`
 }
 
+// Headers contains the request and response header modifier information
+type Headers struct {
+	RequestHeaders  HeaderModifier `json:"requestHeaders"`
+	ResponseHeaders HeaderModifier `json:"responseHeaders"`
+}
+
+// HeaderModifier contains header modifier values
+type HeaderModifier struct {
+	AddHeaders    []Header `json:"addHeaders"`
+	RemoveHeaders []string `json:"removeHeaders"`
+}
+
+// Header contains the header information
+type Header struct {
+	Name  string `json:"headerName"`
+	Value string `json:"headerValue,omitempty"`
+}
+
 // Operation holds the path, verb, throttling and interceptor policy
 type Operation struct {
-	Path   string   `json:"path"`
-	Verb   string   `json:"verb"`
-	Scopes []string `json:"scopes"`
+	Path    string   `json:"path"`
+	Verb    string   `json:"verb"`
+	Scopes  []string `json:"scopes"`
+	Headers Headers  `json:"headers"`
 }
 
 // CORSPolicy hold cors configs
