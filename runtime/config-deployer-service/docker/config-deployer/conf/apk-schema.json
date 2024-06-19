@@ -362,7 +362,9 @@
             "RemoveHeaders",
             "SetHeaders",
             "Interceptor",
-            "BackendJwt"
+            "BackendJwt",
+            "RequestMirror",
+            "RequestRedirect"
           ]
         },
         "policyVersion": {
@@ -385,6 +387,12 @@
             },
             {
               "$ref": "#/schemas/HeaderModifierProperties"
+            },
+            {
+              "$ref": "#/schemas/RequestMirrorProperties"
+            },
+            {
+              "$ref": "#/schemas/RequestRedirectProperties"
             }
           ]
         }
@@ -735,6 +743,42 @@
       "value": {
         "type": "string"
       }
+    },
+    "RequestMirrorProperties": {
+      "title": "Request Mirror Parameters",
+      "type": "object",
+      "properties": {
+        "urls": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "RequestRedirectProperties": {
+      "title": "Request Redirect Parameters",
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string",
+          "description": "The URL to redirect the request to."
+        },
+        "statusCode": {
+          "type": "integer",
+          "description": "The status code to show upon redirecting the request.",
+          "default": 301,
+          "enum": [
+            301,
+            302,
+            303,
+            307,
+            308
+          ]
+        }
+      },
+      "additionalProperties": false
     },
     "CustomClaims": {
       "type": "object",
