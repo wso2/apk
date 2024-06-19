@@ -787,14 +787,17 @@ public class APIClient {
                         return e909022("Provided Type currently not supported for GraphQL APIs.", error("Provided Type currently not supported for GraphQL APIs."));
                     }
                 } else if apkConf.'type == API_TYPE_REST {
-                    {
-                        model:HTTPRouteRule httpRouteRule = {
-                            matches: self.retrieveHTTPMatches(apkConf, operation, organization),
-                            backendRefs: self.retrieveGeneratedBackend(apkConf, endpointToUse, endpointType),
-                            filters: self.generateFilters(apiArtifact, apkConf, endpointToUse, operation, endpointType, organization)
-                        };
-                        return httpRouteRule;
+                    model:HTTPRouteFilter[] filters = [];
+                    boolean hasRedirectPolicy = false;
+                    [filters, hasRedirectPolicy] = self.generateFilters(apiArtifact, apkConf, endpointToUse, operation, endpointType, organization);
+                    model:HTTPRouteRule httpRouteRule = {
+                        matches: self.retrieveHTTPMatches(apkConf, operation, organization),
+                        filters: filters
+                    };
+                    if !hasRedirectPolicy {
+                        httpRouteRule.backendRefs = self.retrieveGeneratedBackend(apkConf, endpointToUse, endpointType);
                     }
+                    return httpRouteRule;
                 } else {
                     return e909018("Invalid API Type specified");
                 }
@@ -808,19 +811,9 @@ public class APIClient {
         }
     }
 
-    private isolated function generateFilters(model:APIArtifact apiArtifact, APKConf apkConf, model:Endpoint endpoint, APKOperations operation, string endpointType, commons:Organization organization) returns model:HTTPRouteFilter[] {
+    private isolated function generateFilters(model:APIArtifact apiArtifact, APKConf apkConf, model:Endpoint endpoint, APKOperations operation, string endpointType, commons:Organization organization) returns [model:HTTPRouteFilter[], boolean] {
         model:HTTPRouteFilter[] routeFilters = [];
-        string generatedPath = self.generatePrefixMatch(endpoint, operation);
-        model:HTTPRouteFilter replacePathFilter = {
-            'type: "URLRewrite",
-            urlRewrite: {
-                path: {
-                    'type: "ReplaceFullPath",
-                    replaceFullPath: generatedPath
-                }
-            }
-        };
-        routeFilters.push(replacePathFilter);
+        boolean hasRedirectPolicy = false;
         APIOperationPolicies? operationPoliciesToUse = ();
         APIOperationPolicies? operationPolicies = apkConf.apiPolicies;
         if (operationPolicies is APIOperationPolicies && operationPolicies != {}) {
@@ -833,61 +826,151 @@ public class APIClient {
         if operationPoliciesToUse is APIOperationPolicies {
             APKOperationPolicy[]? requestPolicies = operationPoliciesToUse.request;
             APKOperationPolicy[]? responsePolicies = operationPoliciesToUse.response;
-
             if requestPolicies is APKOperationPolicy[] && requestPolicies.length() > 0 {
-                model:HTTPRouteFilter headerModifierFilter = {'type: "RequestHeaderModifier"};
-                headerModifierFilter.requestHeaderModifier = self.extractHttpHeaderFilterData(requestPolicies, organization);
-                routeFilters.push(headerModifierFilter);
+                model:HTTPRouteFilter[] requestHttpRouteFilters = [];
+                [requestHttpRouteFilters, hasRedirectPolicy] = self.extractHttpRouteFilter(apiArtifact, apkConf, operation, endpoint, requestPolicies, organization, true);
+                routeFilters.push(...requestHttpRouteFilters);
             }
             if responsePolicies is APKOperationPolicy[] && responsePolicies.length() > 0 {
-                model:HTTPRouteFilter headerModifierFilter = {'type: "ResponseHeaderModifier"};
-                headerModifierFilter.responseHeaderModifier = self.extractHttpHeaderFilterData(responsePolicies, organization);
-                routeFilters.push(headerModifierFilter);
+                model:HTTPRouteFilter[] responseHttpRouteFilters = [];
+                [responseHttpRouteFilters, _] = self.extractHttpRouteFilter(apiArtifact, apkConf, operation, endpoint, responsePolicies, organization, false);
+                routeFilters.push(...responseHttpRouteFilters);
             }
         }
-        return routeFilters;
+
+        if !hasRedirectPolicy {
+            string generatedPath = self.generatePrefixMatch(endpoint, operation);
+            model:HTTPRouteFilter replacePathFilter = {
+                'type: "URLRewrite",
+                urlRewrite: {
+                    path: {
+                        'type: "ReplaceFullPath",
+                        replaceFullPath: generatedPath
+                    }
+                }
+            };
+            routeFilters.push(replacePathFilter);
+        }
+        return [routeFilters, hasRedirectPolicy];
     }
 
-    isolated function extractHttpHeaderFilterData(APKOperationPolicy[] operationPolicy, commons:Organization organization) returns model:HTTPHeaderFilter {
-        model:HTTPHeader[] addPolicies = [];
-        model:HTTPHeader[] setPolicies = [];
-        string[] removePolicies = [];
-        foreach APKOperationPolicy policy in operationPolicy {
+    isolated function extractHttpRouteFilter(model:APIArtifact apiArtifact, APKConf apkConf, APKOperations apiOperation, model:Endpoint endpoint, APKOperationPolicy[] operationPolicies, commons:Organization organization, boolean isRequest) returns [model:HTTPRouteFilter[], boolean] {
+        model:HTTPRouteFilter[] httpRouteFilters = [];
+        model:HTTPHeader[] addHeaders = [];
+        model:HTTPHeader[] setHeaders = [];
+        string[] removeHeaders = [];
+        boolean hasRedirectPolicy = false;
+        model:HTTPRouteFilter headerModifierFilter = {'type: "RequestHeaderModifier"};
+        if !isRequest {
+            headerModifierFilter.'type = "ResponseHeaderModifier";
+        }
+        foreach APKOperationPolicy policy in operationPolicies {
             if policy is HeaderModifierPolicy {
                 HeaderModifierPolicyParameters policyParameters = policy.parameters;
                 match policy.policyName {
                     AddHeaders => {
-                        ModifierHeader[] addHeaders = <ModifierHeader[]>policyParameters.headers;
-                        foreach ModifierHeader header in addHeaders {
-                            addPolicies.push(header);
+                        ModifierHeader[] headers = <ModifierHeader[]>policyParameters.headers;
+                        foreach ModifierHeader header in headers {
+                            headers.push(header);
                         }
                     }
                     SetHeaders => {
-                        ModifierHeader[] setHeaders = <ModifierHeader[]>policyParameters.headers;
-                        foreach ModifierHeader header in setHeaders {
-                            setPolicies.push(header);
+                        ModifierHeader[] headers = <ModifierHeader[]>policyParameters.headers;
+                        foreach ModifierHeader header in headers {
+                            headers.push(header);
                         }
                     }
                     RemoveHeaders => {
-                        string[] removeHeaders = <string[]>policyParameters.headers;
-                        foreach string header in removeHeaders {
-                            removePolicies.push(header);
+                        string[] headers = <string[]>policyParameters.headers;
+                        foreach string header in headers {
+                            headers.push(header);
                         }
                     }
                 }
+            } else if policy is RequestMirrorPolicy {
+                RequestMirrorPolicyParameters policyParameters = policy.parameters;
+                string[] urls = <string[]>policyParameters.urls;
+                foreach string url in urls {
+                    model:HTTPRouteFilter mirrorFilter = {'type: "RequestMirror"};
+                    if !isRequest {
+                        log:printError("Mirror filter cannot be appended as a response policy.");
+                    }
+                    string host = self.getHost(url);
+                    int|error port = self.getPort(url);
+                    if port is int {
+                        model:Backend backendService = {
+                            metadata: {
+                                name: self.getBackendServiceUid(apkConf, apiOperation, "", organization),
+                                labels: self.getLabels(apkConf, organization)
+                            },
+                            spec: {
+                                services: [
+                                    {
+                                        host: host,
+                                        port: port
+                                    }
+                                ],
+                                basePath: getPath(url),
+                                protocol: self.getProtocol(url)
+                            }
+                        };
+                        apiArtifact.backendServices[backendService.metadata.name] = backendService;
+                        model:Endpoint mirrorEndpoint = {
+                            url: url,
+                            name: backendService.metadata.name
+                        };
+                        model:BackendRef backendRef = self.retrieveGeneratedBackend(apkConf, mirrorEndpoint, "")[0];
+                        mirrorFilter.requestMirror = {
+                            backendRef: {
+                                name: backendRef.name,
+                                namespace: backendRef.namespace,
+                                group: backendRef.group,
+                                kind: backendRef.kind,
+                                port: backendRef.port
+                            }
+                        };
+                    }
+                    httpRouteFilters.push(mirrorFilter);
+                }
+            } else if policy is RequestRedirectPolicy {
+                hasRedirectPolicy = true;
+                if !isRequest {
+                    log:printError("Redirect filter cannot be appended as a response policy.");
+                }
+                RequestRedirectPolicyParameters policyParameters = policy.parameters;
+                string url = <string>policyParameters.url;
+                int statusCode = <int>policyParameters.statusCode;
+                model:HTTPRouteFilter redirectFilter = {'type: "RequestRedirect"};
+                int|error port = self.getPort(url);
+                if port is int {
+                    redirectFilter.requestRedirect = {
+                        hostname: self.getHost(url),
+                        scheme: self.getProtocol(url),
+                        statusCode: statusCode,
+                        path: {
+                            'type: "ReplaceFullPath",
+                            replaceFullPath: self.getPath(url)
+                        }
+                    };
+                }
+                httpRouteFilters.push(redirectFilter);
             }
         }
-        model:HTTPHeaderFilter headerModifier = {};
-        if addPolicies != [] {
-            headerModifier.add = addPolicies;
+
+        if addHeaders != [] {
+            headerModifierFilter.requestHeaderModifier.add = addHeaders;
         }
-        if setPolicies != [] {
-            headerModifier.set = setPolicies;
+        if setHeaders != [] {
+            headerModifierFilter.requestHeaderModifier.set = setHeaders;
         }
-        if removePolicies != [] {
-            headerModifier.remove = removePolicies;
+        if removeHeaders != [] {
+            headerModifierFilter.requestHeaderModifier.remove = removeHeaders;
         }
-        return headerModifier;
+        if addHeaders.length() > 0 || setHeaders.length() > 0 || removeHeaders.length() > 0 {
+            httpRouteFilters.push(headerModifierFilter);
+        }
+
+        return [httpRouteFilters, hasRedirectPolicy];
     }
 
     isolated function generatePrefixMatch(model:Endpoint endpoint, APKOperations operation) returns string {
@@ -921,6 +1004,23 @@ public class APIClient {
             return generatedPath.trim();
         }
         return generatedPath;
+    }
+
+    isolated function getPath(string url) returns string {
+        string host = "";
+        if url.startsWith("https://") {
+            host = url.substring(8, url.length());
+        } else if url.startsWith("http://") {
+            host = url.substring(7, url.length());
+        } else {
+            return "";
+        }
+        int? indexOfSlash = host.indexOf("/", 0);
+        if indexOfSlash is int {
+            return host.substring(indexOfSlash);
+        } else {
+            return "";
+        }
     }
 
     public isolated function retrievePathPrefix(string basePath, string 'version, string operation, commons:Organization organization) returns string {
@@ -980,7 +1080,8 @@ public class APIClient {
     }
 
     private isolated function retrieveGQLRouteMatch(APKOperations apiOperation) returns model:GQLRouteMatch|error {
-        model:GQLType? routeMatch = model:getGQLRouteMatch(<string>apiOperation.verb);
+        model:GQLType
+        ? routeMatch = model:getGQLRouteMatch(<string>apiOperation.verb);
         if routeMatch is model:GQLType {
             return {'type: routeMatch, path: <string>apiOperation.target};
         } else {
@@ -1273,7 +1374,7 @@ public class APIClient {
                         model:BackendJWT backendJwt = self.retrieveBackendJWTPolicy(apkConf, apiArtifact, backendJWTPolicy, operations, organization);
                         apiArtifact.backendJwt = backendJwt;
                         policyReferences.push(<model:BackendJwtReference>{name: backendJwt.metadata.name});
-                    } else if policyName != AddHeaders && policyName != SetHeaders && policyName != RemoveHeaders {
+                    } else if policyName != AddHeaders && policyName != SetHeaders && policyName != RemoveHeaders && policyName != RequestMirror && policyName != RequestRedirect {
                         return e909052(error("Incorrect API Policy name provided."));
                     }
                 }

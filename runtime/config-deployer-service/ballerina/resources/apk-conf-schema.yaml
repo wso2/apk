@@ -257,6 +257,8 @@ components:
         - $ref: "#/components/schemas/InterceptorPolicy"
         - $ref: "#/components/schemas/BackendJWTPolicy"
         - $ref: "#/components/schemas/HeaderModifierPolicy"
+        - $ref: "#/components/schemas/RequestMirrorPolicy"
+        - $ref: "#/components/schemas/RequestRedirectPolicy"
       discriminator:
         propertyName: "policyName"
         mapping:
@@ -264,7 +266,9 @@ components:
           Interceptor: "#/components/schemas/InterceptorPolicy"
           AddHeaders: "#/components/schemas/HeaderModifierPolicy"
           SetHeaders: "#/components/schemas/HeaderModifierPolicy"
-          RemoveHeadersHeaders: "#/components/schemas/HeaderModifierPolicy"
+          RemoveHeaders: "#/components/schemas/HeaderModifierPolicy"
+          RequestMirror: "#/components/schemas/RequestMirrorPolicy"
+          RequstRedirect: "#/components/schemas/RequestRedirectPolicy"
     BaseOperationPolicy:
       title: API Operation Policy
       required:
@@ -521,6 +525,33 @@ components:
           type: string
         value:
           type: string
+    RequestMirrorPolicy:
+      title: Request Mirror Parameters
+      type: object
+      properties:
+        urls:
+          type: array
+          items:
+            - type: string
+      additionalProperties: false
+    RequestRedirectPolicy:
+      title: Request Redirect Parameters
+      type: object
+      properties:
+        url:
+          type: string
+          description: The URL to redirect the request to.
+        statusCode:
+          type: integer
+          description: The status code to show upon redirecting the request.
+          default: 301
+          enum:
+            - 301
+            - 302
+            - 303
+            - 307
+            - 308
+      additionalProperties: false
     CustomClaims:
       type: object
       required:

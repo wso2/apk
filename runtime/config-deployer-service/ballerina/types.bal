@@ -127,7 +127,63 @@ public type APKOperations record {
 };
 
 # Common type for operation policies.
-public type APKOperationPolicy InterceptorPolicy|BackendJWTPolicy|HeaderModifierPolicy;
+public type APKOperationPolicy InterceptorPolicy|BackendJWTPolicy|HeaderModifierPolicy|RequestMirrorPolicy|RequestRedirectPolicy;
+
+# Header modification configuration for an operation.
+#
+# + parameters - Contains header name and value of the header.
+public type HeaderModifierPolicy record {
+    *BaseOperationPolicy;
+    HeaderModifierPolicyParameters parameters;
+};
+
+# Configuration for header modifiers as received from the apk-conf file.
+#
+# + headers - Headers to be added, set or removed.
+public type HeaderModifierPolicyParameters record {|
+    ModifierHeader[]|string[] headers;
+|};
+
+# Configuration for headers.
+#
+# + name - The name of the header.
+# + value - The value of the header.
+public type ModifierHeader record {|
+    string name;
+    string value;
+|};
+
+# Request mirror configuration for an operation.
+#
+# + parameters - Contains the urls to request the mirror to.
+public type RequestMirrorPolicy record {
+    *BaseOperationPolicy;
+    RequestMirrorPolicyParameters parameters;
+};
+
+# Configuration containing the different headers.
+#
+# + urls - The urls to mirror the filters to.
+public type RequestMirrorPolicyParameters record {|
+    string[] urls;
+|};
+
+# Request redirect configuration for an operation.
+#
+# + parameters - Contains the url to redirect the request to.
+public type RequestRedirectPolicy record {
+    *BaseOperationPolicy;
+    RequestRedirectPolicyParameters parameters;
+};
+
+# Configuration containing the different headers.
+#
+# + url - The url to redirect the filters to.
+# + statusCode - The status code to be sent as response to the client.
+public type RequestRedirectPolicyParameters record {|
+    string url;
+    int statusCode;
+|};
 
 # Configuration for API deployment using the apk-conf file.
 #
@@ -319,7 +375,9 @@ public enum PolicyName {
     Interceptor,
     AddHeaders,
     SetHeaders,
-    RemoveHeaders
+    RemoveHeaders,
+    RequestMirror,
+    RequestRedirect
 }
 
 # Configuration for authentication types.
@@ -330,14 +388,6 @@ public type Authentication record {|
     string authType?;
     boolean enabled = true;
 |};
-
-# Header modification configuration for an operation.
-#
-# + parameters - Contains header name and value of the header.
-public type HeaderModifierPolicy record {
-    *BaseOperationPolicy;
-    HeaderModifierPolicyParameters parameters;
-};
 
 # Interceptor policy configuration for an operation.
 #
@@ -386,33 +436,6 @@ public type APKConf record {
     APKConf_additionalProperties[] additionalProperties?;
     CORSConfiguration corsConfiguration?;
 };
-
-# Configuration for header modifiers as received from the apk-conf file.
-#
-# + headers - Headers to be added, set or removed.
-public type HeaderModifierPolicyParameters record {|
-    ModifierHeader[]|string[] headers;
-|};
-
-# Configuration containing the different headers.
-#
-# + addHeaders - Headers to be added.
-# + setHeaders - Headers to be set.
-# + removeHeaders - Headers to be removed.
-public type HeaderModifierFilterParameters record {|
-    ModifierHeader[] addHeaders;
-    ModifierHeader[] setHeaders;
-    string[] removeHeaders;
-|};
-
-# Configuration for headers.
-#
-# + name - The name of the header.
-# + value - The value of the header.
-public type ModifierHeader record {|
-    string name;
-    string value;
-|};
 
 # Configuration for Interceptor Policy parameters.
 #

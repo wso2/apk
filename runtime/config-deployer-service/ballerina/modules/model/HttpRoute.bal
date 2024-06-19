@@ -38,7 +38,6 @@ public type HTTPQueryParamMatch record {
 };
 
 public type HTTPRouteMatch record {
-
     HTTPPathMatch path?;
     HTTPHeaderMatch headers?;
     HTTPQueryParamMatch queryParams?;
@@ -79,14 +78,13 @@ public type HTTPRequestRedirectFilter record {
     string scheme?;
     string hostname?;
     HTTPPathModifier path?;
-    string port?;
+    int port?;
     int statusCode?;
 };
 
 public type HTTPURLRewriteFilter record {
     string hostname?;
     HTTPPathModifier path?;
-
 };
 
 public type LocalObjectReference record {
