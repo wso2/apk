@@ -768,13 +768,10 @@
         "statusCode": {
           "type": "integer",
           "description": "The status code to show upon redirecting the request.",
-          "default": 301,
+          "default": 302,
           "enum": [
             301,
-            302,
-            303,
-            307,
-            308
+            302
           ]
         }
       },

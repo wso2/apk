@@ -26,6 +26,7 @@ import org.apache.http.HttpHeaders;
 import javax.net.ssl.TrustManager;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
@@ -87,7 +88,11 @@ public class SimpleHTTPClient {
             .build();
 
             final SSLConnectionSocketFactory csf = new SSLConnectionSocketFactory(sslcontext);
+            RequestConfig requestConfig = RequestConfig.custom()
+                    .setRedirectsEnabled(false) // Disable redirects
+                    .build();
             this.client = HttpClients.custom()
+                    .setDefaultRequestConfig(requestConfig)
                     .setSSLSocketFactory(csf)
                     .evictExpiredConnections()
                     .setMaxConnPerRoute(100)

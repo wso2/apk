@@ -182,7 +182,7 @@ public type RequestRedirectPolicy record {
 # + statusCode - The status code to be sent as response to the client.
 public type RequestRedirectPolicyParameters record {|
     string url;
-    int statusCode;
+    int statusCode?;
 |};
 
 # Configuration for API deployment using the apk-conf file.
