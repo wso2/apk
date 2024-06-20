@@ -268,7 +268,7 @@ components:
           SetHeaders: "#/components/schemas/HeaderModifierPolicy"
           RemoveHeaders: "#/components/schemas/HeaderModifierPolicy"
           RequestMirror: "#/components/schemas/RequestMirrorPolicy"
-          RequstRedirect: "#/components/schemas/RequestRedirectPolicy"
+          RequestRedirect: "#/components/schemas/RequestRedirectPolicy"
     BaseOperationPolicy:
       title: API Operation Policy
       required:
@@ -544,13 +544,10 @@ components:
         statusCode:
           type: integer
           description: The status code to show upon redirecting the request.
-          default: 301
+          default: 302
           enum:
             - 301
             - 302
-            - 303
-            - 307
-            - 308
       additionalProperties: false
     CustomClaims:
       type: object
