@@ -43,21 +43,22 @@ type Operation struct {
 	policies         OperationPolicies
 	mockedAPIConfig  *api.MockedApiConfig
 	rateLimitPolicy  *RateLimitPolicy
+	mirrorEndpoints  *EndpointCluster
 }
 
 // Authentication holds authentication related configurations
 type Authentication struct {
-	Disabled       bool
-	JWT            *JWT
-	APIKey         []APIKey
-	Oauth2         *Oauth2
+	Disabled bool
+	JWT      *JWT
+	APIKey   []APIKey
+	Oauth2   *Oauth2
 }
 
 // JWT holds JWT related configurations
 type JWT struct {
 	Header              string
 	SendTokenToUpstream bool
-	Audience []string
+	Audience            []string
 }
 
 // Oauth2 holds Oauth2 related configurations
@@ -125,6 +126,11 @@ func (operation *Operation) GetID() string {
 	return operation.iD
 }
 
+// GetMirrorEndpoints returns the endpoints if a mirror filter has been applied.
+func (operation *Operation) GetMirrorEndpoints() *EndpointCluster {
+	return operation.mirrorEndpoints
+}
+
 // GetCallInterceptorService returns the interceptor configs for a given operation.
 func (operation *Operation) GetCallInterceptorService(isIn bool) InterceptEndpoint {
 	var policies []Policy
@@ -174,7 +180,7 @@ func NewOperation(method string, security []string, extensions map[string]interf
 	tier := ResolveThrottlingTier(extensions)
 	disableSecurity := ResolveDisableSecurity(extensions)
 	id := uuid.New().String()
-	return &Operation{id, method, security, nil, tier, disableSecurity, extensions, OperationPolicies{}, &api.MockedApiConfig{}, nil}
+	return &Operation{id, method, security, nil, tier, disableSecurity, extensions, OperationPolicies{}, &api.MockedApiConfig{}, nil, nil}
 }
 
 // NewOperationWithPolicies Creates and returns operation with given method and policies

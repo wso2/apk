@@ -176,9 +176,9 @@ func CreateRoutesWithClusters(adapterInternalAPI *model.AdapterInternalAPI, inte
 			},
 		}
 		gqlop := model.NewOperationWithPolicies("POST", policies)
-		resource := model.CreateMinimalResource(adapterInternalAPI.GetXWso2Basepath(), []*model.Operation{gqlop}, "", adapterInternalAPI.Endpoints, true, gwapiv1.PathMatchExact)
+		resource := model.CreateMinimalResource(adapterInternalAPI.GetXWso2Basepath(), []*model.Operation{gqlop}, "", adapterInternalAPI.Endpoints, true, false, gwapiv1.PathMatchExact)
 		routesP, err := createRoutes(genRouteCreateParams(adapterInternalAPI, &resource, vHost, basePath, clusterName, nil,
-			nil, organizationID, false, false))
+			nil, organizationID, false, false, nil))
 		if err != nil {
 			logger.LoggerXds.ErrorC(logging.PrintError(logging.Error2231, logging.MAJOR,
 				"Error while creating routes for GQL API %s %s Error: %s", adapterInternalAPI.GetTitle(),
@@ -188,7 +188,7 @@ func CreateRoutesWithClusters(adapterInternalAPI *model.AdapterInternalAPI, inte
 		routes = append(routes, routesP...)
 		if adapterInternalAPI.IsDefaultVersion {
 			defaultRoutes, errDefaultPath := createRoutes(genRouteCreateParams(adapterInternalAPI, &resource, vHost, basePath, clusterName, nil, nil, organizationID,
-				false, true))
+				false, true, nil))
 			if errDefaultPath != nil {
 				logger.LoggerXds.ErrorC(logging.PrintError(logging.Error2231, logging.MAJOR, "Error while creating routes for API %s %s for path: %s Error: %s", adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), removeFirstOccurrence(resource.GetPath(), adapterInternalAPI.GetVersion()), errDefaultPath.Error()))
 				return nil, nil, nil, fmt.Errorf("error while creating routes. %v", errDefaultPath)
@@ -199,9 +199,13 @@ func CreateRoutesWithClusters(adapterInternalAPI *model.AdapterInternalAPI, inte
 	}
 	for _, resource := range adapterInternalAPI.GetResources() {
 		var clusterName string
+		mirrorClusterNames := map[string][]string{}
 		resourcePath := resource.GetPath()
 		endpoint := resource.GetEndpoints()
-		basePath := strings.TrimSuffix(endpoint.Endpoints[0].Basepath, "/")
+		basePath := ""
+		if len(endpoint.Endpoints) > 0 {
+			basePath = strings.TrimSuffix(endpoint.Endpoints[0].Basepath, "/")
+		}
 		existingClusterName := getExistingClusterName(*endpoint, processedEndpoints)
 
 		if existingClusterName == "" {
@@ -217,13 +221,43 @@ func CreateRoutesWithClusters(adapterInternalAPI *model.AdapterInternalAPI, inte
 		} else {
 			clusterName = existingClusterName
 		}
+
+		// Creating clusters for request mirroring endpoints
+		for _, op := range resource.GetOperations() {
+			if op.GetMirrorEndpoints() != nil && len(op.GetMirrorEndpoints().Endpoints) > 0 {
+				mirrorEndpointCluster := op.GetMirrorEndpoints()
+				for _, mirrorEndpoint := range mirrorEndpointCluster.Endpoints {
+					mirrorBasepath := strings.TrimSuffix(mirrorEndpoint.Basepath, "/")
+					existingMirrorClusterName := getExistingClusterName(*mirrorEndpointCluster, processedEndpoints)
+					var mirrorClusterName string
+					if existingMirrorClusterName == "" {
+						mirrorClusterName = getClusterName(mirrorEndpointCluster.EndpointPrefix, organizationID, vHost, adapterInternalAPI.GetTitle(), apiVersion, resource.GetID())
+						mirrorCluster, mirrorAddress, err := processEndpoints(mirrorClusterName, mirrorEndpointCluster, timeout, mirrorBasepath)
+						if err != nil {
+							logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2239, logging.MAJOR, "Error while adding resource level mirror filter endpoints for %s:%v-%v. %v", apiTitle, apiVersion, resourcePath, err.Error()))
+						} else {
+							clusters = append(clusters, mirrorCluster)
+							endpoints = append(endpoints, mirrorAddress...)
+							processedEndpoints[mirrorClusterName] = *mirrorEndpointCluster
+						}
+					} else {
+						mirrorClusterName = existingMirrorClusterName
+					}
+					if _, exists := mirrorClusterNames[op.GetID()]; !exists {
+						mirrorClusterNames[op.GetID()] = []string{}
+					}
+					mirrorClusterNames[op.GetID()] = append(mirrorClusterNames[op.GetID()], mirrorClusterName)
+				}
+			}
+		}
+
 		// Create resource level interceptor clusters if required
 		clustersI, endpointsI, operationalReqInterceptors, operationalRespInterceptorVal := createInterceptorResourceClusters(adapterInternalAPI,
 			interceptorCerts, vHost, organizationID, apiRequestInterceptor, apiResponseInterceptor, resource)
 		clusters = append(clusters, clustersI...)
 		endpoints = append(endpoints, endpointsI...)
 		routeParams := genRouteCreateParams(adapterInternalAPI, resource, vHost, basePath, clusterName, *operationalReqInterceptors, *operationalRespInterceptorVal, organizationID,
-			false, false)
+			false, false, mirrorClusterNames)
 
 		routeP, err := createRoutes(routeParams)
 		if err != nil {
@@ -235,7 +269,7 @@ func CreateRoutesWithClusters(adapterInternalAPI *model.AdapterInternalAPI, inte
 		routes = append(routes, routeP...)
 		if adapterInternalAPI.IsDefaultVersion {
 			defaultRoutes, errDefaultPath := createRoutes(genRouteCreateParams(adapterInternalAPI, resource, vHost, basePath, clusterName, *operationalReqInterceptors, *operationalRespInterceptorVal, organizationID,
-				false, true))
+				false, true, mirrorClusterNames))
 			if errDefaultPath != nil {
 				logger.LoggerXds.ErrorC(logging.PrintError(logging.Error2231, logging.MAJOR, "Error while creating routes for API %s %s for path: %s Error: %s", adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), removeFirstOccurrence(resource.GetPath(), adapterInternalAPI.GetVersion()), errDefaultPath.Error()))
 				return nil, nil, nil, fmt.Errorf("error while creating routes. %v", errDefaultPath)
@@ -701,6 +735,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 	vHost := params.vHost
 	xWso2Basepath := params.xWSO2BasePath
 	apiType := params.apiType
+	mirrorClusterNames := params.mirrorClusterNames
 
 	// cors policy
 	corsPolicy := getCorsPolicy(params.corsPolicy)
@@ -904,7 +939,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 			var responseHeadersToAdd []*corev3.HeaderValueOption
 			var responseHeadersToRemove []string
 			var pathRewriteConfig *envoy_type_matcherv3.RegexMatchAndSubstitute
-
+			var requestRedirectAction *routev3.Route_Redirect
 			hasMethodRewritePolicy := false
 			var newMethod string
 
@@ -960,6 +995,10 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 					if err != nil {
 						return nil, err
 					}
+				case constants.ActionRedirectRequest:
+					logger.LoggerOasparser.Debugf("Adding %s policy to request flow for %s %s",
+						constants.ActionRedirectRequest, resourcePath, operation.GetMethod())
+					requestRedirectAction = generateRequestRedirectRoute(resourcePath, requestPolicy.Parameters)
 				}
 			}
 
@@ -977,7 +1016,6 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 							" %v", responsePolicy.Action, operation.GetMethod(), resourcePath, err)
 					}
 					responseHeadersToAdd = append(responseHeadersToAdd, responseHeaderToAdd)
-
 				case constants.ActionHeaderRemove:
 					logger.LoggerOasparser.Debugf("Adding %s policy to response flow for %s %s",
 						constants.ActionHeaderRemove, resourcePath, operation.GetMethod())
@@ -1007,12 +1045,12 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 				metadataValue := operation.GetMethod() + "_to_" + newMethod
 				match2.DynamicMetadata = generateMetadataMatcherForInternalRoutes(metadataValue)
 
-				action1 := generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria)
-				action2 := generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria)
+				action1 := generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria, mirrorClusterNames[operation.GetID()])
+				action2 := generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria, mirrorClusterNames[operation.GetID()])
 
 				// Create route1 for current method.
 				// Do not add policies to route config. Send via enforcer
-				route1 := generateRouteConfig(xWso2Basepath+operation.GetMethod(), match1, action1, nil, decorator, perRouteFilterConfigs,
+				route1 := generateRouteConfig(xWso2Basepath+operation.GetMethod(), match1, action1, requestRedirectAction, nil, decorator, perRouteFilterConfigs,
 					nil, nil, nil, nil)
 
 				// Create route2 for new method.
@@ -1023,24 +1061,27 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 					action2.Route.RegexRewrite = generateRegexMatchAndSubstitute(routePath, resourcePath, pathMatchType)
 				}
 				configToSkipEnforcer := generateFilterConfigToSkipEnforcer()
-				route2 := generateRouteConfig(xWso2Basepath, match2, action2, nil, decorator, configToSkipEnforcer,
+				route2 := generateRouteConfig(xWso2Basepath, match2, action2, requestRedirectAction, nil, decorator, configToSkipEnforcer,
 					requestHeadersToAdd, requestHeadersToRemove, responseHeadersToAdd, responseHeadersToRemove)
 
 				routes = append(routes, route1)
 				routes = append(routes, route2)
 			} else {
+				var action *routev3.Route_Route
+				if requestRedirectAction == nil {
+					action = generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria, mirrorClusterNames[operation.GetID()])
+				}
 				logger.LoggerOasparser.Debug("Creating routes for resource with policies", resourcePath, operation.GetMethod())
 				// create route for current method. Add policies to route config. Send via enforcer
-				action := generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria)
 				match := generateRouteMatch(routePath)
 				match.Headers = generateHTTPMethodMatcher(operation.GetMethod(), clusterName)
 				match.DynamicMetadata = generateMetadataMatcherForExternalRoutes()
-				if pathRewriteConfig != nil {
+				if pathRewriteConfig != nil && requestRedirectAction == nil {
 					action.Route.RegexRewrite = pathRewriteConfig
-				} else {
+				} else if requestRedirectAction == nil {
 					action.Route.RegexRewrite = generateRegexMatchAndSubstitute(routePath, resourcePath, pathMatchType)
 				}
-				route := generateRouteConfig(xWso2Basepath, match, action, nil, decorator, perRouteFilterConfigs,
+				route := generateRouteConfig(xWso2Basepath, match, action, requestRedirectAction, nil, decorator, perRouteFilterConfigs,
 					requestHeadersToAdd, requestHeadersToRemove, responseHeadersToAdd, responseHeadersToRemove)
 				routes = append(routes, route)
 			}
@@ -1054,11 +1095,11 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 		}
 		match := generateRouteMatch(routePath)
 		match.Headers = generateHTTPMethodMatcher(methodRegex, clusterName)
-		action := generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria)
+		action := generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria, nil)
 		rewritePath := generateRoutePathForReWrite(basePath, resourcePath, pathMatchType)
 		action.Route.RegexRewrite = generateRegexMatchAndSubstitute(rewritePath, resourcePath, pathMatchType)
 
-		route := generateRouteConfig(xWso2Basepath, match, action, nil, decorator, perRouteFilterConfigs,
+		route := generateRouteConfig(xWso2Basepath, match, action, nil, nil, decorator, perRouteFilterConfigs,
 			nil, nil, nil, nil) // general headers to add and remove are included in this methods
 		routes = append(routes, route)
 	}
@@ -1525,7 +1566,8 @@ func getCorsPolicy(corsConfig *model.CorsConfig) *cors_filter_v3.CorsPolicy {
 
 func genRouteCreateParams(swagger *model.AdapterInternalAPI, resource *model.Resource, vHost, endpointBasePath string,
 	clusterName string, requestInterceptor map[string]model.InterceptEndpoint,
-	responseInterceptor map[string]model.InterceptEndpoint, organizationID string, isSandbox bool, createDefaultPath bool) *routeCreateParams {
+	responseInterceptor map[string]model.InterceptEndpoint, organizationID string, isSandbox bool, createDefaultPath bool,
+	mirrorClusterNames map[string][]string) *routeCreateParams {
 
 	params := &routeCreateParams{
 		organizationID:               organizationID,
@@ -1548,6 +1590,7 @@ func genRouteCreateParams(swagger *model.AdapterInternalAPI, resource *model.Res
 		createDefaultPath:            createDefaultPath,
 		environment:                  swagger.GetEnvironment(),
 		envType:                      swagger.EnvType,
+		mirrorClusterNames:           mirrorClusterNames,
 	}
 	return params
 }

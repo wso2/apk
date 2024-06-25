@@ -41,7 +41,7 @@ import (
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 )
 
-func generateRouteConfig(routeName string, match *routev3.RouteMatch, action *routev3.Route_Route,
+func generateRouteConfig(routeName string, match *routev3.RouteMatch, action *routev3.Route_Route, redirectAction *routev3.Route_Redirect,
 	metadata *corev3.Metadata, decorator *routev3.Decorator, typedPerFilterConfig map[string]*anypb.Any,
 	requestHeadersToAdd []*corev3.HeaderValueOption, requestHeadersToRemove []string,
 	responseHeadersToAdd []*corev3.HeaderValueOption, responseHeadersToRemove []string) *routev3.Route {
@@ -49,7 +49,6 @@ func generateRouteConfig(routeName string, match *routev3.RouteMatch, action *ro
 	route := &routev3.Route{
 		Name:                 routeName,
 		Match:                match,
-		Action:               action,
 		Metadata:             metadata,
 		Decorator:            decorator,
 		TypedPerFilterConfig: typedPerFilterConfig,
@@ -60,6 +59,12 @@ func generateRouteConfig(routeName string, match *routev3.RouteMatch, action *ro
 		RequestHeadersToRemove:  requestHeadersToRemove,
 		ResponseHeadersToAdd:    responseHeadersToAdd,
 		ResponseHeadersToRemove: responseHeadersToRemove,
+	}
+
+	if redirectAction != nil {
+		route.Action = redirectAction
+	} else if action != nil {
+		route.Action = action
 	}
 
 	return route
@@ -76,7 +81,7 @@ func generateRouteMatch(routeRegex string) *routev3.RouteMatch {
 	return match
 }
 
-func generateRouteAction(apiType string, routeConfig *model.EndpointConfig, ratelimitCriteria *ratelimitCriteria) (action *routev3.Route_Route) {
+func generateRouteAction(apiType string, routeConfig *model.EndpointConfig, ratelimitCriteria *ratelimitCriteria, mirrorClusterNames []string) (action *routev3.Route_Route) {
 	action = &routev3.Route_Route{
 		Route: &routev3.RouteAction{
 			HostRewriteSpecifier: &routev3.RouteAction_AutoHostRewrite{
@@ -108,7 +113,64 @@ func generateRouteAction(apiType string, routeConfig *model.EndpointConfig, rate
 		action.Route.RateLimits = generateRateLimitPolicy(ratelimitCriteria)
 	}
 
+	// Add request mirroring configurations
+	if mirrorClusterNames != nil && len(mirrorClusterNames) > 0 {
+		mirrorPolicies := []*routev3.RouteAction_RequestMirrorPolicy{}
+		for _, clusterName := range mirrorClusterNames {
+			mirrorPolicy := &routev3.RouteAction_RequestMirrorPolicy{
+				Cluster: clusterName,
+			}
+			mirrorPolicies = append(mirrorPolicies, mirrorPolicy)
+		}
+		action.Route.RequestMirrorPolicies = mirrorPolicies
+	}
+
 	return action
+}
+
+func generateRequestRedirectRoute(route string, policyParams interface{}) (action *routev3.Route_Redirect) {
+	policyParameters, _ := policyParams.(map[string]interface{})
+	scheme, _ := policyParameters[constants.RedirectScheme].(string)
+	hostname, _ := policyParameters[constants.RedirectHostname].(string)
+	port, _ := policyParameters[constants.RedirectPort].(int)
+	statusCode, _ := policyParameters[constants.RedirectStatusCode].(int)
+	replaceFullPath, _ := policyParameters[constants.RedirectPath].(string)
+	redirectActionStatusCode := mapStatusCodeToEnum(statusCode)
+	if redirectActionStatusCode == -1 {
+		_ = fmt.Errorf("Invalid status code provided")
+	}
+
+	action = &routev3.Route_Redirect{
+		Redirect: &routev3.RedirectAction{
+			SchemeRewriteSpecifier: &routev3.RedirectAction_HttpsRedirect{
+				HttpsRedirect: scheme == "https",
+			},
+			HostRedirect: hostname,
+			PortRedirect: uint32(port),
+			PathRewriteSpecifier: &routev3.RedirectAction_PathRedirect{
+				PathRedirect: replaceFullPath,
+			},
+			ResponseCode: routev3.RedirectAction_RedirectResponseCode(redirectActionStatusCode),
+		},
+	}
+	return action
+}
+
+func mapStatusCodeToEnum(statusCode int) int {
+	switch statusCode {
+	case 301:
+		return 0
+	case 302:
+		return 1
+	case 303:
+		return 2
+	case 307:
+		return 3
+	case 308:
+		return 4
+	default:
+		return -1
+	}
 }
 
 func generateRateLimitPolicy(ratelimitCriteria *ratelimitCriteria) []*routev3.RateLimit {

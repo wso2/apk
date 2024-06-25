@@ -200,13 +200,13 @@ func testCreateRoutesForUnitTests(t *testing.T) []*routev3.Route {
 	operationPost := model.NewOperation("POST", nil, nil)
 	operationPut := model.NewOperation("PUT", nil, nil)
 	resourceWithGet := model.CreateMinimalDummyResourceForTests("/resourcePath", []*model.Operation{operationGet},
-		"resource_operation_id", []model.Endpoint{endpoint}, false)
+		"resource_operation_id", []model.Endpoint{endpoint}, false, false)
 	resourceWithPost := model.CreateMinimalDummyResourceForTests("/resourcePath", []*model.Operation{operationPost},
-		"resource_operation_id", []model.Endpoint{endpoint}, false)
+		"resource_operation_id", []model.Endpoint{endpoint}, false, false)
 	resourceWithPut := model.CreateMinimalDummyResourceForTests("/resourcePath", []*model.Operation{operationPut},
-		"resource_operation_id", []model.Endpoint{endpoint}, false)
+		"resource_operation_id", []model.Endpoint{endpoint}, false, false)
 	resourceWithMultipleOperations := model.CreateMinimalDummyResourceForTests("/resourcePath", []*model.Operation{operationGet, operationPut},
-		"resource_operation_id", []model.Endpoint{endpoint}, false)
+		"resource_operation_id", []model.Endpoint{endpoint}, false, false)
 
 	route1, err := createRoutes(generateRouteCreateParamsForUnitTests("test", "HTTP", "localhost", "/test", "1.0.0", "/test",
 		&resourceWithGet, "test-cluster", corsConfigModel3, false))

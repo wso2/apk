@@ -44,6 +44,7 @@ type routeCreateParams struct {
 	apiProperties                []dpv1alpha2.Property
 	environment                  string
 	envType                      string
+	mirrorClusterNames           map[string][]string
 }
 
 // RatelimitCriteria criterias of rate limiting
