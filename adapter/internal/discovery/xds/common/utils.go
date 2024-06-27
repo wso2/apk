@@ -19,11 +19,13 @@
 package common
 
 import (
-	"sync"
 	"fmt"
 	"regexp"
 	"strings"
+	"sync"
+
 	discovery "github.com/envoyproxy/go-control-plane/envoy/service/discovery/v3"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const nodeIDArrayMaxLength int = 20
@@ -38,12 +40,13 @@ type NodeQueue struct {
 // CheckEntryAndSwapToEnd function does the following. Recently accessed entry is removed last.
 // Array should have a maximum length. If the the provided nodeId may or may not be within the array.
 //
-// 1. If the array's maximum length is not reached after adding the new element and the element is not inside the array,
-// 		append the element to the end.
-// 2. If the array is at maximum length and element is not within the array, the new entry should be appended to the end
-//		and the 0th element should be removed.
-// 3. If the array is at the maximum length and element is inside the array, the new element should be appended and the already
-// 		existing entry should be removed from the position.
+//  1. If the array's maximum length is not reached after adding the new element and the element is not inside the array,
+//     append the element to the end.
+//  2. If the array is at maximum length and element is not within the array, the new entry should be appended to the end
+//     and the 0th element should be removed.
+//  3. If the array is at the maximum length and element is inside the array, the new element should be appended and the already
+//     existing entry should be removed from the position.
+//
 // Returns the modified array and true if the entry is a new addition.
 func (nodeQueue *NodeQueue) checkEntryAndMoveToEnd(nodeID string) (isNewAddition bool) {
 	matchedIndex := -1
@@ -130,4 +133,38 @@ func MatchesHostname(domain, pattern string) bool {
 	}
 
 	return matched
+}
+
+// PointerCopy returns a pointer to a new memory location containing a copy of the input value.
+func PointerCopy[T any](x T) *T {
+	return &x
+}
+
+// AreConditionsSame checks if two metav1.Condition objects have the same attributes.
+// It returns true if all the attributes (Type, Status, Reason, Message, ObservedGeneration)
+// are equal, otherwise it returns false.
+func AreConditionsSame(condition1 metav1.Condition, condition2 metav1.Condition) bool {
+	return condition1.Type == condition2.Type &&
+		condition1.Status == condition2.Status &&
+		condition1.Reason == condition2.Reason &&
+		condition1.Message == condition2.Message &&
+		condition1.ObservedGeneration == condition2.ObservedGeneration
+}
+
+// BothListContainsSameConditions checks if two lists of metav1.Conditions contain the same conditions.
+// It returns true if all conditions in conditionList1 are found in conditionList2.
+func BothListContainsSameConditions(conditionList1 []metav1.Condition, conditionList2 []metav1.Condition) bool {
+	for _, condition1 := range conditionList1 {
+		flag := false
+		for _, condition2 := range conditionList2 {
+			flag = AreConditionsSame(condition1, condition2)
+			if flag {
+				continue
+			}
+		}
+		if !flag {
+			return false
+		}
+	}
+	return true
 }
