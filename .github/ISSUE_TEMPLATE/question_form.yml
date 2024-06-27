@@ -1,0 +1,53 @@
+name: "🙋 Ask a Question"
+description: Ask a question about the product suite.
+labels: ["Type/Question"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Describe the question.
+    validations:
+      required: true
+  - type: dropdown
+    id: component
+    attributes:
+      label: Affected Component
+      description: Select affected component.
+      options:
+        - Adapter
+        - Common-controller
+        - Router
+        - Enforcer
+        - IDP-DS
+        - Config-DS
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Enter component version.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment Details (with versions)
+      description: Mention the environment details (OS, Client, etc.) that the product is running on.
+    validations:
+      required: true
+  - type: textarea
+    id: related
+    attributes:
+      label: Related Issues
+      description: Mention if any related issues.
+    validations:
+      required: false
+  - type: input
+    id: suggested
+    attributes:
+      label: Suggested Labels
+      description: Mention if any suggested labels.
+    validations:
+      required: false
