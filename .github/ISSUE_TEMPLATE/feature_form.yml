@@ -1,0 +1,60 @@
+name: "💡 Feature Request"
+description: Suggest new functionality and features for the product suite.
+labels: ["Type/New Feature"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: Describe why you think the product suite needs this feature.
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Solution
+      description: Describe the feature you suggest.
+    validations:
+      required: true
+  - type: dropdown
+    id: component
+    attributes:
+      label: Affected Component
+      description: Select affected component.
+      options:
+        - Adapter
+        - Common-controller
+        - Router
+        - Enforcer
+        - IDP-DS
+        - Config-DS
+    validations:
+      required: false
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Enter component version.
+    validations:
+      required: false
+  - type: textarea
+    id: implementation
+    attributes:
+      label: Implementation
+      description: Suggest an approach or a design for the feature.
+    validations:
+      required: false
+  - type: textarea
+    id: related
+    attributes:
+      label: Related Issues
+      description: Mention if any related issues.
+    validations:
+      required: false
+  - type: input
+    id: suggested
+    attributes:
+      label: Suggested Labels
+      description: Mention if any suggested labels.
+    validations:
+      required: false
