@@ -25,7 +25,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
 spec:
   dnsNames:
-  - "locahost"
+  - "localhost"
   issuerRef:
     kind: {{ .Values.certmanager.issuerKind | default "ClusterIssuer" }}
     {{ if .Values.certmanager.servers -}}
