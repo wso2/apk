@@ -2,8 +2,8 @@ blank_issues_enabled: false
 contact_links:
 - name: '📚 Documentation Issue'
   about: Report an issue if something is missing or incorrect in the official documentation.
-  url: https://github.com/wso2/docs-apim/issues/new/choose
-- name: '💬 Slack Channel'
-  url: 'https://apim-slack.wso2.com/'
+  url: https://github.com/wso2/docs-apk/issues/new/choose
+- name: '💬 Developer Community'
+  url: 'https://wso2.com/community/'
   about: |
     Chat with the community to get quick clarifications for your questions.
