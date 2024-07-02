@@ -128,7 +128,7 @@ func generateRouteAction(apiType string, routeConfig *model.EndpointConfig, rate
 	return action
 }
 
-func generateRequestRedirectRoute(route string, policyParams interface{}) (action *routev3.Route_Redirect) {
+func generateRequestRedirectRoute(route string, policyParams interface{}) (*routev3.Route_Redirect, error) {
 	policyParameters, _ := policyParams.(map[string]interface{})
 	scheme, _ := policyParameters[constants.RedirectScheme].(string)
 	hostname, _ := policyParameters[constants.RedirectHostname].(string)
@@ -137,10 +137,10 @@ func generateRequestRedirectRoute(route string, policyParams interface{}) (actio
 	replaceFullPath, _ := policyParameters[constants.RedirectPath].(string)
 	redirectActionStatusCode := mapStatusCodeToEnum(statusCode)
 	if redirectActionStatusCode == -1 {
-		_ = fmt.Errorf("Invalid status code provided")
+		return nil, fmt.Errorf("Invalid status code provided")
 	}
 
-	action = &routev3.Route_Redirect{
+	action := &routev3.Route_Redirect{
 		Redirect: &routev3.RedirectAction{
 			SchemeRewriteSpecifier: &routev3.RedirectAction_HttpsRedirect{
 				HttpsRedirect: scheme == "https",
@@ -153,7 +153,7 @@ func generateRequestRedirectRoute(route string, policyParams interface{}) (actio
 			ResponseCode: routev3.RedirectAction_RedirectResponseCode(redirectActionStatusCode),
 		},
 	}
-	return action
+	return action, nil
 }
 
 func mapStatusCodeToEnum(statusCode int) int {
@@ -162,12 +162,6 @@ func mapStatusCodeToEnum(statusCode int) int {
 		return 0
 	case 302:
 		return 1
-	case 303:
-		return 2
-	case 307:
-		return 3
-	case 308:
-		return 4
 	default:
 		return -1
 	}

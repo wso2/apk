@@ -998,7 +998,10 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 				case constants.ActionRedirectRequest:
 					logger.LoggerOasparser.Debugf("Adding %s policy to request flow for %s %s",
 						constants.ActionRedirectRequest, resourcePath, operation.GetMethod())
-					requestRedirectAction = generateRequestRedirectRoute(resourcePath, requestPolicy.Parameters)
+					requestRedirectAction, err = generateRequestRedirectRoute(resourcePath, requestPolicy.Parameters)
+					if err != nil {
+						return nil, err
+					}
 				}
 			}
 
