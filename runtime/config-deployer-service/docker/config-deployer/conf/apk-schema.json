@@ -333,21 +333,21 @@
         "request": {
           "type": "array",
           "items": {
-            "$ref": "#/schemas/APKOperationPolicy"
+            "$ref": "#/schemas/APKRequestOperationPolicy"
           },
           "description": "Policies applied to request operations."
         },
         "response": {
           "type": "array",
           "items": {
-            "$ref": "#/schemas/APKOperationPolicy"
+            "$ref": "#/schemas/APKResponseOperationPolicy"
           },
           "description": "Policies applied to response operations."
         }
       },
       "additionalProperties": false
     },
-    "APKOperationPolicy": {
+    "APKRequestOperationPolicy": {
       "title": "API Operation Policy",
       "required": [
         "policyName"
@@ -358,9 +358,9 @@
           "type": "string",
           "description": "The name of the operation policy.",
           "enum": [
-            "AddHeaders",
-            "RemoveHeaders",
-            "SetHeaders",
+            "AddHeader",
+            "RemoveHeader",
+            "SetHeader",
             "Interceptor",
             "BackendJwt",
             "RequestMirror",
@@ -393,6 +393,50 @@
             },
             {
               "$ref": "#/schemas/RequestRedirectProperties"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "APKResponseOperationPolicy": {
+      "title": "API Operation Policy",
+      "required": [
+        "policyName"
+      ],
+      "type": "object",
+      "properties": {
+        "policyName": {
+          "type": "string",
+          "description": "The name of the operation policy.",
+          "enum": [
+            "AddHeader",
+            "RemoveHeader",
+            "SetHeader",
+            "Interceptor",
+            "BackendJwt"
+          ]
+        },
+        "policyVersion": {
+          "type": "string",
+          "default": "v1",
+          "description": "The version of the operation policy."
+        },
+        "policyId": {
+          "type": "string",
+          "description": "The ID of the operation policy."
+        },
+        "parameters": {
+          "type": "object",
+          "oneOf": [
+            {
+              "$ref": "#/schemas/InterceptorProperties"
+            },
+            {
+              "$ref": "#/schemas/BackendJWTProperties"
+            },
+            {
+              "$ref": "#/schemas/HeaderModifierProperties"
             }
           ]
         }
@@ -719,30 +763,19 @@
       "title": "Header Modifier Parameters",
       "type": "object",
       "properties": {
-        "headers": {
-          "type": "array",
-          "items": {
-            "oneOf": [
-              {
-                "$ref": "#/schemas/Header"
-              },
-              {
-                "type": "string"
-              }
-            ]
-          }
+        "headerName": {
+          "type": "string",
+          "description": "The name of the header."
+        },
+        "headerValue": {
+          "type": "string",
+          "description": "The value of the header."
         }
       },
+      "required": [
+        "headerName"
+      ],
       "additionalProperties": false
-    },
-    "Header": {
-      "type": "object",
-      "name": {
-        "type": "string"
-      },
-      "value": {
-        "type": "string"
-      }
     },
     "RequestMirrorProperties": {
       "title": "Request Mirror Parameters",

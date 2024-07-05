@@ -185,14 +185,14 @@ public class APIClient {
     }
     isolated function isPolicyEmpty(APIOperationPolicies? policies) returns boolean {
         if policies is APIOperationPolicies {
-            APKOperationPolicy[]? request = policies.request;
-            if request is APKOperationPolicy[] {
+            APKRequestOperationPolicy[]? request = policies.request;
+            if request is APKRequestOperationPolicy[] {
                 if (request.length() > 0) {
                     return false;
                 }
             }
-            APKOperationPolicy[]? response = policies.response;
-            if response is APKOperationPolicy[] {
+            APKResponseOperationPolicy[]? response = policies.response;
+            if response is APKResponseOperationPolicy[] {
                 if (response.length() > 0) {
                     return false;
                 }
@@ -694,7 +694,7 @@ public class APIClient {
 
     private isolated function generateAPIPolicyAndBackendCR(model:APIArtifact apiArtifact, APKConf apkConf, APKOperations? operations, APIOperationPolicies? policies, commons:Organization organization, string targetRefName) returns model:APIPolicy?|error {
         model:APIPolicyData defaultSpecData = {};
-        APKOperationPolicy[]? request = policies?.request;
+        APKRequestOperationPolicy[]? request = policies?.request;
         any[] requestPolicy = check self.retrieveAPIPolicyDetails(apiArtifact, apkConf, operations, organization, request, "request");
         foreach any item in requestPolicy {
             if item is model:InterceptorReference {
@@ -703,7 +703,7 @@ public class APIClient {
                 defaultSpecData.backendJwtPolicy = item;
             }
         }
-        APKOperationPolicy[]? response = policies?.response;
+        APKResponseOperationPolicy[]? response = policies?.response;
         any[] responseInterceptor = check self.retrieveAPIPolicyDetails(apiArtifact, apkConf, operations, organization, response, "response");
         foreach any item in responseInterceptor {
             if item is model:InterceptorReference {
@@ -817,21 +817,21 @@ public class APIClient {
         APIOperationPolicies? operationPoliciesToUse = ();
         APIOperationPolicies? operationPolicies = apkConf.apiPolicies;
         if (operationPolicies is APIOperationPolicies && operationPolicies != {}) {
-            if operationPolicies.request is APKOperationPolicy[] || operationPolicies.response is APKOperationPolicy[] {
+            if operationPolicies.request is APKRequestOperationPolicy[] || operationPolicies.response is APKResponseOperationPolicy[] {
                 operationPoliciesToUse = apkConf.apiPolicies;
             }
         } else {
             operationPoliciesToUse = operation.operationPolicies;
         }
         if operationPoliciesToUse is APIOperationPolicies {
-            APKOperationPolicy[]? requestPolicies = operationPoliciesToUse.request;
-            APKOperationPolicy[]? responsePolicies = operationPoliciesToUse.response;
-            if requestPolicies is APKOperationPolicy[] && requestPolicies.length() > 0 {
+            APKRequestOperationPolicy[]? requestPolicies = operationPoliciesToUse.request;
+            APKResponseOperationPolicy[]? responsePolicies = operationPoliciesToUse.response;
+            if requestPolicies is APKRequestOperationPolicy[] && requestPolicies.length() > 0 {
                 model:HTTPRouteFilter[] requestHttpRouteFilters = [];
                 [requestHttpRouteFilters, hasRedirectPolicy] = self.extractHttpRouteFilter(apiArtifact, apkConf, operation, endpoint, requestPolicies, organization, true);
                 routeFilters.push(...requestHttpRouteFilters);
             }
-            if responsePolicies is APKOperationPolicy[] && responsePolicies.length() > 0 {
+            if responsePolicies is APKResponseOperationPolicy[] && responsePolicies.length() > 0 {
                 model:HTTPRouteFilter[] responseHttpRouteFilters = [];
                 [responseHttpRouteFilters, _] = self.extractHttpRouteFilter(apiArtifact, apkConf, operation, endpoint, responsePolicies, organization, false);
                 routeFilters.push(...responseHttpRouteFilters);
@@ -865,23 +865,22 @@ public class APIClient {
             if policy is HeaderModifierPolicy {
                 HeaderModifierPolicyParameters policyParameters = policy.parameters;
                 match policy.policyName {
-                    AddHeaders => {
-                        ModifierHeader[] headers = <ModifierHeader[]>policyParameters.headers;
-                        foreach ModifierHeader header in headers {
-                            addHeaders.push(header);
-                        }
+                    AddHeader => {
+                        model:HTTPHeader addHeader = {
+                            name: policyParameters.headerName,
+                            value: <string>policyParameters.headerValue
+                        };
+                        addHeaders.push(addHeader);
                     }
-                    SetHeaders => {
-                        ModifierHeader[] headers = <ModifierHeader[]>policyParameters.headers;
-                        foreach ModifierHeader header in headers {
-                            setHeaders.push(header);
-                        }
+                    SetHeader => {
+                        model:HTTPHeader setHeader = {
+                            name: policyParameters.headerName,
+                            value: <string>policyParameters.headerValue
+                        };
+                        setHeaders.push(setHeader);
                     }
-                    RemoveHeaders => {
-                        string[] headers = <string[]>policyParameters.headers;
-                        foreach string header in headers {
-                            removeHeaders.push(header);
-                        }
+                    RemoveHeader => {
+                        removeHeaders.push(policyParameters.headerName);
                     }
                 }
             } else if policy is RequestMirrorPolicy {
@@ -1400,7 +1399,7 @@ public class APIClient {
                         model:BackendJWT backendJwt = self.retrieveBackendJWTPolicy(apkConf, apiArtifact, backendJWTPolicy, operations, organization);
                         apiArtifact.backendJwt = backendJwt;
                         policyReferences.push(<model:BackendJwtReference>{name: backendJwt.metadata.name});
-                    } else if policyName != AddHeaders && policyName != SetHeaders && policyName != RemoveHeaders && policyName != RequestMirror && policyName != RequestRedirect {
+                    } else if policyName != AddHeader && policyName != SetHeader && policyName != RemoveHeader && policyName != RequestMirror && policyName != RequestRedirect {
                         return e909052(error("Incorrect API Policy name provided."));
                     }
                 }

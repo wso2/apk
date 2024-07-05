@@ -245,13 +245,13 @@ components:
         request:
           type: array
           items:
-            $ref: "#/components/schemas/APKOperationPolicy"
+            $ref: "#/components/schemas/APKRequestOperationPolicy"
         response:
           type: array
           items:
-            $ref: "#/components/schemas/APKOperationPolicy"
+            $ref: "#/components/schemas/APKResponseOperationPolicy"
       additionalProperties: false
-    APKOperationPolicy:
+    APKRequestOperationPolicy:
       title: API Operation Policy
       oneOf:
         - $ref: "#/components/schemas/InterceptorPolicy"
@@ -264,11 +264,25 @@ components:
         mapping:
           BackendJwt: "#/components/schemas/BackendJWTPolicy"
           Interceptor: "#/components/schemas/InterceptorPolicy"
-          AddHeaders: "#/components/schemas/HeaderModifierPolicy"
-          SetHeaders: "#/components/schemas/HeaderModifierPolicy"
-          RemoveHeaders: "#/components/schemas/HeaderModifierPolicy"
+          AddHeader: "#/components/schemas/HeaderModifierPolicy"
+          SetHeader: "#/components/schemas/HeaderModifierPolicy"
+          RemoveHeader: "#/components/schemas/HeaderModifierPolicy"
           RequestMirror: "#/components/schemas/RequestMirrorPolicy"
           RequestRedirect: "#/components/schemas/RequestRedirectPolicy"
+    APKResponseOperationPolicy:
+      title: API Operation Policy
+      oneOf:
+        - $ref: "#/components/schemas/InterceptorPolicy"
+        - $ref: "#/components/schemas/BackendJWTPolicy"
+        - $ref: "#/components/schemas/HeaderModifierPolicy"
+      discriminator:
+        propertyName: "policyName"
+        mapping:
+          BackendJwt: "#/components/schemas/BackendJWTPolicy"
+          Interceptor: "#/components/schemas/InterceptorPolicy"
+          AddHeader: "#/components/schemas/HeaderModifierPolicy"
+          SetHeader: "#/components/schemas/HeaderModifierPolicy"
+          RemoveHeader: "#/components/schemas/HeaderModifierPolicy"
     BaseOperationPolicy:
       title: API Operation Policy
       required:
@@ -278,9 +292,9 @@ components:
         policyName:
           type: string
           enum:
-            - AddHeaders
-            - RemoveHeaders
-            - SetHeaders
+            - AddHeader
+            - RemoveHeader
+            - SetHeader
             - Interceptor
             - BackendJwt
         policyVersion:
@@ -511,20 +525,13 @@ components:
       title: Header Modifier Parameters
       type: object
       properties:
-        headers:
-          type: array
-          items:
-            oneOf:
-              - $ref: "#/components/schemas/Header"
-              - type: string
+        headerName:
+          type: string
+        headerValue:
+          type: string
+        required:
+          - headerName
       additionalProperties: false
-    Header:
-      type: object
-      properties:
-        name:
-          type: string
-        value:
-          type: string
     RequestMirrorPolicy:
       title: Request Mirror Parameters
       type: object

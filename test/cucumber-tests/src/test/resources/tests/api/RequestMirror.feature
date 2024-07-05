@@ -2,7 +2,7 @@ Feature: Test HTTPRoute Filter Request Mirror functionality
     Scenario: Test request mirror functionality
         Given The system is ready
         And I have a valid subscription
-        When I use the APK Conf file "artifacts/apk-confs/request-mirror-filter.apk-conf"
+        When I use the APK Conf file "artifacts/apk-confs/httproute-filters/request-mirror-filter.apk-conf"
         And the definition file "artifacts/definitions/employees_api.json"
         And make the API deployment request
         Then the response status code should be 200

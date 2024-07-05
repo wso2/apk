@@ -126,8 +126,13 @@ public type APKOperations record {
     string[] scopes?;
 };
 
-# Common type for operation policies.
-public type APKOperationPolicy InterceptorPolicy|BackendJWTPolicy|HeaderModifierPolicy|RequestMirrorPolicy|RequestRedirectPolicy;
+public type APKOperationPolicy APKRequestOperationPolicy|APKResponseOperationPolicy;
+
+# Common type for request operation policies.
+public type APKRequestOperationPolicy InterceptorPolicy|BackendJWTPolicy|HeaderModifierPolicy|RequestMirrorPolicy|RequestRedirectPolicy;
+
+# Common type for response operation policies.
+public type APKResponseOperationPolicy InterceptorPolicy|BackendJWTPolicy|HeaderModifierPolicy;
 
 # Header modification configuration for an operation.
 #
@@ -139,18 +144,11 @@ public type HeaderModifierPolicy record {
 
 # Configuration for header modifiers as received from the apk-conf file.
 #
-# + headers - Headers to be added, set or removed.
+# + headerName - Header name to be added, set or removed.
+# + headerValue - Header value to be added, set or removed.
 public type HeaderModifierPolicyParameters record {|
-    ModifierHeader[]|string[] headers;
-|};
-
-# Configuration for headers.
-#
-# + name - The name of the header.
-# + value - The value of the header.
-public type ModifierHeader record {|
-    string name;
-    string value;
+    string headerName;
+    string headerValue?;
 |};
 
 # Request mirror configuration for an operation.
@@ -199,8 +197,8 @@ public type DeployApiBody record {
 # + request - List of policies to be applied on the request.
 # + response - List of policies to be applied on the response.
 public type APIOperationPolicies record {
-    APKOperationPolicy[] request?;
-    APKOperationPolicy[] response?;
+    APKRequestOperationPolicy[] request?;
+    APKResponseOperationPolicy[] response?;
 };
 
 # Additional properties for APK configuration.
@@ -373,9 +371,9 @@ public type BaseOperationPolicy record {
 public enum PolicyName {
     BackendJwt,
     Interceptor,
-    AddHeaders,
-    SetHeaders,
-    RemoveHeaders,
+    AddHeader,
+    SetHeader,
+    RemoveHeader,
     RequestMirror,
     RequestRedirect
 }
