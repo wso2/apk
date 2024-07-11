@@ -851,21 +851,31 @@ func (apiReconciler *APIReconciler) getResolvedBackendsMapping(ctx context.Conte
 		for _, filter := range rule.Filters {
 			if filter.RequestMirror != nil {
 				mirrorBackend := filter.RequestMirror.BackendRef
-
 				mirrorBackendNamespacedName := types.NamespacedName{
 					Name:      string(mirrorBackend.Name),
 					Namespace: utils.GetNamespace(mirrorBackend.Namespace, httpRoute.Namespace),
 				}
-				if _, exists := backendMapping[mirrorBackendNamespacedName.String()]; !exists {
-					resolvedMirrorBackend := utils.GetResolvedBackend(ctx, apiReconciler.client, mirrorBackendNamespacedName, &api)
-					if resolvedMirrorBackend != nil {
-						backendMapping[mirrorBackendNamespacedName.String()] = resolvedMirrorBackend
-					} else {
-						return nil, fmt.Errorf("unable to find backend %s", mirrorBackendNamespacedName.String())
+				if string(*mirrorBackend.Kind) == constants.KindBackend {
+					if _, exists := backendMapping[mirrorBackendNamespacedName.String()]; !exists {
+						resolvedMirrorBackend := utils.GetResolvedBackend(ctx, apiReconciler.client, mirrorBackendNamespacedName, &api)
+						if resolvedMirrorBackend != nil {
+							backendMapping[mirrorBackendNamespacedName.String()] = resolvedMirrorBackend
+						} else {
+							return nil, fmt.Errorf("unable to find backend %s", mirrorBackendNamespacedName.String())
+						}
+					}
+				} else if string(*mirrorBackend.Kind) == constants.KindService {
+					var err error
+					service, err := utils.GetService(ctx, apiReconciler.client, utils.GetNamespace(mirrorBackend.Namespace, httpRoute.Namespace), string(mirrorBackend.Name))
+					if err != nil {
+						return nil, fmt.Errorf("unable to find service %s", mirrorBackendNamespacedName.String())
+					}
+					backendMapping[mirrorBackendNamespacedName.String()], err = utils.GetResolvedBackendFromService(service, int(*mirrorBackend.Port))
+					if err != nil {
+						return nil, fmt.Errorf("error in getting service information %s", service)
 					}
 				}
 			}
-
 		}
 	}
 
@@ -1839,9 +1849,7 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 			authentication := rawObj.(*dpv1alpha2.Authentication)
 			var apis []string
 			if authentication.Spec.TargetRef.Kind == constants.KindAPI {
-
 				namespace, err := utils.ValidateAndRetrieveNamespace((*gwapiv1.Namespace)(authentication.Spec.TargetRef.Namespace), authentication.Namespace)
-
 				if err != nil {
 					loggers.LoggerAPKOperator.Errorf("Namespace mismatch. TargetRef %s needs to be in the same namespace as the Athentication %s. Expected: %s, Actual: %s",
 						string(authentication.Spec.TargetRef.Name), authentication.Name, authentication.Namespace, string(*authentication.Spec.TargetRef.Namespace))
@@ -1956,7 +1964,7 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 		return err
 	}
 
-	// ratelimite policy to API indexer
+	// ratelimit policy to API indexer
 	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.RateLimitPolicy{}, apiRateLimitIndex,
 		func(rawObj k8client.Object) []string {
 			ratelimitPolicy := rawObj.(*dpv1alpha1.RateLimitPolicy)

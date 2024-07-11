@@ -35,15 +35,15 @@ type Operation struct {
 	iD     string
 	method string
 	//security map of security scheme names -> list of scopes
-	scopes           []string
-	auth             *Authentication
-	tier             string
-	disableSecurity  bool
-	vendorExtensions map[string]interface{}
-	policies         OperationPolicies
-	mockedAPIConfig  *api.MockedApiConfig
-	rateLimitPolicy  *RateLimitPolicy
-	mirrorEndpoints  *EndpointCluster
+	scopes                 []string
+	auth                   *Authentication
+	tier                   string
+	disableSecurity        bool
+	vendorExtensions       map[string]interface{}
+	policies               OperationPolicies
+	mockedAPIConfig        *api.MockedApiConfig
+	rateLimitPolicy        *RateLimitPolicy
+	mirrorEndpointClusters []*EndpointCluster
 }
 
 // Authentication holds authentication related configurations
@@ -126,9 +126,9 @@ func (operation *Operation) GetID() string {
 	return operation.iD
 }
 
-// GetMirrorEndpoints returns the endpoints if a mirror filter has been applied.
-func (operation *Operation) GetMirrorEndpoints() *EndpointCluster {
-	return operation.mirrorEndpoints
+// GetMirrorEndpointClusters returns the endpoints if a mirror filter has been applied.
+func (operation *Operation) GetMirrorEndpointClusters() []*EndpointCluster {
+	return operation.mirrorEndpointClusters
 }
 
 // GetCallInterceptorService returns the interceptor configs for a given operation.

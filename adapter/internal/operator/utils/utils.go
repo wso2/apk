@@ -33,6 +33,7 @@ import (
 	"github.com/wso2/apk/adapter/pkg/logging"
 	"github.com/wso2/apk/adapter/pkg/utils/envutils"
 	"github.com/wso2/apk/adapter/pkg/utils/stringutils"
+	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	corev1 "k8s.io/api/core/v1"
@@ -291,6 +292,58 @@ func getSecretValue(ctx context.Context, client k8client.Client,
 		return "", err
 	}
 	return string(secret.Data[key]), nil
+}
+
+// GetService retrieves the Service object and returns its details.
+func GetService(ctx context.Context, client k8client.Client, namespace, serviceName string) (*corev1.Service, error) {
+	service := &corev1.Service{}
+	err := client.Get(ctx, types.NamespacedName{
+		Name:      serviceName,
+		Namespace: namespace,
+	}, service)
+	if err != nil {
+		return nil, err
+	}
+	return service, nil
+}
+
+// GetResolvedBackendFromService converts a Kubernetes Service to a Resolved Backend.
+func GetResolvedBackendFromService(k8sService *corev1.Service, svcPort int) (*v1alpha1.ResolvedBackend, error) {
+
+	var host string
+	var port uint32
+
+	if len(k8sService.Spec.Ports) == 0 {
+		port = uint32(svcPort)
+	} else {
+		servicePort := k8sService.Spec.Ports[0]
+		port = uint32(servicePort.Port)
+	}
+
+	switch k8sService.Spec.Type {
+	case corev1.ServiceTypeClusterIP, corev1.ServiceTypeNodePort:
+		// Use the internal DNS name for clusterip and nodeport
+		host = fmt.Sprintf("%s.%s.svc.cluster.local", k8sService.Name, k8sService.Namespace)
+	case corev1.ServiceTypeLoadBalancer:
+		// Use the external IP or hostname for LB services
+		if len(k8sService.Status.LoadBalancer.Ingress) > 0 {
+			ingress := k8sService.Status.LoadBalancer.Ingress[0]
+			if ingress.IP != "" {
+				host = ingress.IP
+			} else if ingress.Hostname != "" {
+				host = ingress.Hostname
+			} else {
+				return nil, fmt.Errorf("no valid ingress found for LoadBalancer service %s", k8sService.Name)
+			}
+		} else {
+			return nil, fmt.Errorf("no load balancer ingress found for service %s", k8sService.Name)
+		}
+	default:
+		return nil, fmt.Errorf("unsupported service type %s", k8sService.Spec.Type)
+	}
+
+	backend := &v1alpha1.ResolvedBackend{Services: []v1alpha1.Service{{Host: host, Port: port}}, Protocol: v1alpha1.HTTPProtocol}
+	return backend, nil
 }
 
 // ResolveAndAddBackendToMapping resolves backend from reference and adds it to the backendMapping.

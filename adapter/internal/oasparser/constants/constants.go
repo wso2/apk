@@ -137,6 +137,8 @@ const (
 	KindAPIPolicy       = "APIPolicy"
 	KindScope           = "Scope"
 	KindRateLimitPolicy = "RateLimitPolicy"
+	KindService         = "Service"
+	KindBackend         = "Backend"
 )
 
 // API environment types
