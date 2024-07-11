@@ -885,67 +885,89 @@ func (apiReconciler *APIReconciler) getResolvedBackendsMapping(ctx context.Conte
 // By employing these proxies, we prevent redundant owner reference updates for the same object due to the hierarchical structure of these functions.
 func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForGQLRoute(ctx context.Context, obj k8client.Object) []reconcile.Request {
 	requests := apiReconciler.getAPIForGQLRoute(ctx, obj)
-	apiReconciler.handleOwnerReference(ctx, obj, &requests)
+	if len(requests) > 0 {
+		apiReconciler.handleOwnerReference(ctx, obj, &requests)
+	}
 	return requests
 }
 
 func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForHTTPRoute(ctx context.Context, obj k8client.Object) []reconcile.Request {
 	requests := apiReconciler.getAPIForHTTPRoute(ctx, obj)
-	apiReconciler.handleOwnerReference(ctx, obj, &requests)
+	if len(requests) > 0 {
+		apiReconciler.handleOwnerReference(ctx, obj, &requests)
+	}
 	return requests
 }
 
 func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForConfigMap(ctx context.Context, obj k8client.Object) []reconcile.Request {
 	requests := apiReconciler.getAPIsForConfigMap(ctx, obj)
-	apiReconciler.handleOwnerReference(ctx, obj, &requests)
+	if len(requests) > 0 {
+		apiReconciler.handleOwnerReference(ctx, obj, &requests)
+	}
 	return requests
 }
 
 func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForSecret(ctx context.Context, obj k8client.Object) []reconcile.Request {
 	requests := apiReconciler.getAPIsForSecret(ctx, obj)
-	apiReconciler.handleOwnerReference(ctx, obj, &requests)
+	if len(requests) > 0 {
+		apiReconciler.handleOwnerReference(ctx, obj, &requests)
+	}
 	return requests
 }
 
 func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForAuthentication(ctx context.Context, obj k8client.Object) []reconcile.Request {
 	requests := apiReconciler.getAPIsForAuthentication(ctx, obj)
-	apiReconciler.handleOwnerReference(ctx, obj, &requests)
+	if len(requests) > 0 {
+		apiReconciler.handleOwnerReference(ctx, obj, &requests)
+	}
 	return requests
 }
 
 func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForAPIPolicy(ctx context.Context, obj k8client.Object) []reconcile.Request {
 	requests := apiReconciler.getAPIsForAPIPolicy(ctx, obj)
-	apiReconciler.handleOwnerReference(ctx, obj, &requests)
+	if len(requests) > 0 {
+		apiReconciler.handleOwnerReference(ctx, obj, &requests)
+	}
 	return requests
 }
 
 func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForInterceptorService(ctx context.Context, obj k8client.Object) []reconcile.Request {
 	requests := apiReconciler.getAPIsForInterceptorService(ctx, obj)
-	apiReconciler.handleOwnerReference(ctx, obj, &requests)
+	if len(requests) > 0 {
+		apiReconciler.handleOwnerReference(ctx, obj, &requests)
+	}
 	return requests
 }
 
 func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForBackendJWT(ctx context.Context, obj k8client.Object) []reconcile.Request {
 	requests := apiReconciler.getAPIsForBackendJWT(ctx, obj)
-	apiReconciler.handleOwnerReference(ctx, obj, &requests)
+	if len(requests) > 0 {
+		apiReconciler.handleOwnerReference(ctx, obj, &requests)
+	}
 	return requests
 }
 
 func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForRateLimitPolicy(ctx context.Context, obj k8client.Object) []reconcile.Request {
 	requests := apiReconciler.getAPIsForRateLimitPolicy(ctx, obj)
-	apiReconciler.handleOwnerReference(ctx, obj, &requests)
+	if len(requests) > 0 {
+		apiReconciler.handleOwnerReference(ctx, obj, &requests)
+	}
 	return requests
 }
 
 func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForScope(ctx context.Context, obj k8client.Object) []reconcile.Request {
 	requests := apiReconciler.getAPIsForScope(ctx, obj)
-	apiReconciler.handleOwnerReference(ctx, obj, &requests)
+	if len(requests) > 0 {
+		apiReconciler.handleOwnerReference(ctx, obj, &requests)
+	}
 	return requests
 }
 
 func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForBackend(ctx context.Context, obj k8client.Object) []reconcile.Request {
 	requests := apiReconciler.getAPIsForBackend(ctx, obj)
-	apiReconciler.handleOwnerReference(ctx, obj, &requests)
+	if len(requests) > 0 {
+		apiReconciler.handleOwnerReference(ctx, obj, &requests)
+	}
 	return requests
 }
 
