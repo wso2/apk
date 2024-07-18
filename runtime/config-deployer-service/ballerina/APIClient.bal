@@ -361,17 +361,29 @@ public class APIClient {
             } else if authentication.authType == "JWT" {
                 JWTAuthentication jwtAuthentication = check authentication.cloneWithType(JWTAuthentication);
                 authTypes.jwt = {header: <string>jwtAuthentication.headerName, sendTokenToUpstream: <boolean>jwtAuthentication.sendTokenToUpstream, disabled: !jwtAuthentication.enabled, audience: jwtAuthentication.audience};
-            } else if authentication.authType == "APIKey" && authentication is APIKeyAuthentication {
-                APIKeyAuthentication apiKeyAuthentication = check authentication.cloneWithType(APIKeyAuthentication);
+            } else if authentication.authType == "APIKey" {
+                APIKeyAuthentication apiKeyAuthentication;
+                if authentication is OAuth2Authentication {
+                    apiKeyAuthentication = {
+                        required: authentication.required,
+                        sendTokenToUpstream: authentication.sendTokenToUpstream,
+                        headerName: authentication.headerName,
+                        headerEnable: authentication.headerEnable
+                    };
+                } else {
+                    apiKeyAuthentication = check authentication.cloneWithType(APIKeyAuthentication);
+                }
                 model:APIKey[] apiKeys = [];
-
                 if apiKeyAuthentication.headerEnable {
                     apiKeys.push({'in: "Header", name: <string>apiKeyAuthentication.headerName, sendTokenToUpstream: apiKeyAuthentication.sendTokenToUpstream});
                 }
                 if apiKeyAuthentication.queryParamEnable {
                     apiKeys.push({'in: "Query", name: <string>apiKeyAuthentication.queryParamName, sendTokenToUpstream: apiKeyAuthentication.sendTokenToUpstream});
                 }
-                authTypes.apiKey = apiKeys;
+                authTypes.apiKey = {
+                    required: <string>apiKeyAuthentication.required,
+                    keys: apiKeys
+                };
             } else if authentication.authType == "mTLS" {
                 MTLSAuthentication mtlsAuthentication = check authentication.cloneWithType(MTLSAuthentication);
                 isMTLSMandatory = mtlsAuthentication.required == "mandatory";
