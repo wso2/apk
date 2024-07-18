@@ -220,10 +220,38 @@ public interface ApiOrBuilder extends
       getMutualSSLBytes();
 
   /**
-   * <code>bool applicationSecurity = 16;</code>
-   * @return The applicationSecurity.
+   * <code>map&lt;string, bool&gt; applicationSecurity = 16;</code>
    */
-  boolean getApplicationSecurity();
+  int getApplicationSecurityCount();
+  /**
+   * <code>map&lt;string, bool&gt; applicationSecurity = 16;</code>
+   */
+  boolean containsApplicationSecurity(
+      java.lang.String key);
+  /**
+   * Use {@link #getApplicationSecurityMap()} instead.
+   */
+  @java.lang.Deprecated
+  java.util.Map<java.lang.String, java.lang.Boolean>
+  getApplicationSecurity();
+  /**
+   * <code>map&lt;string, bool&gt; applicationSecurity = 16;</code>
+   */
+  java.util.Map<java.lang.String, java.lang.Boolean>
+  getApplicationSecurityMap();
+  /**
+   * <code>map&lt;string, bool&gt; applicationSecurity = 16;</code>
+   */
+
+  boolean getApplicationSecurityOrDefault(
+      java.lang.String key,
+      boolean defaultValue);
+  /**
+   * <code>map&lt;string, bool&gt; applicationSecurity = 16;</code>
+   */
+
+  boolean getApplicationSecurityOrThrow(
+      java.lang.String key);
 
   /**
    * <code>bool transportSecurity = 17;</code>

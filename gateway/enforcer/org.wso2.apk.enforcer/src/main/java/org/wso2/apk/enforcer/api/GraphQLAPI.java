@@ -81,7 +81,7 @@ public class GraphQLAPI implements API {
         String apiType = api.getApiType();
         List<ResourceConfig> resources = new ArrayList<>();
         String mutualSSL = api.getMutualSSL();
-        boolean applicationSecurity = api.getApplicationSecurity();
+        Map<String, Boolean> applicationSecurity = api.getApplicationSecurityMap();
 
         EndpointCluster endpoints = Utils.processEndpoints(api.getEndpoints());
         EndpointSecurity[] endpointSecurity = APIProcessUtils.convertProtoEndpointSecurity(

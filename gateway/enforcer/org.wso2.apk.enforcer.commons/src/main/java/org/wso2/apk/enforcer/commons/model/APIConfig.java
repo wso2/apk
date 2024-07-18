@@ -48,7 +48,7 @@ public class APIConfig {
     private KeyStore trustStore;
     private String mutualSSL;
     private boolean transportSecurity;
-    private boolean applicationSecurity;
+    private Map<String, Boolean> applicationSecurity;
     private GraphQLSchemaDTO graphQLSchemaDTO;
     private JWTConfigurationDto jwtConfigurationDto;
     private boolean systemAPI;
@@ -229,7 +229,7 @@ public class APIConfig {
      *
      * @return application security optionality
      */
-    public boolean getApplicationSecurity() {
+    public Map<String, Boolean> getApplicationSecurity() {
         return applicationSecurity;
     }
 
@@ -295,7 +295,7 @@ public class APIConfig {
         private boolean isMockedApi;
         private KeyStore trustStore;
         private String mutualSSL;
-        private boolean applicationSecurity;
+        private Map<String,Boolean> applicationSecurity;
         private GraphQLSchemaDTO graphQLSchemaDTO;
         private boolean systemAPI;
         private byte[] apiDefinition;
@@ -395,7 +395,7 @@ public class APIConfig {
             return this;
         }
 
-        public Builder applicationSecurity(boolean applicationSecurity) {
+        public Builder applicationSecurity(Map<String,Boolean> applicationSecurity) {
             this.applicationSecurity = applicationSecurity;
             return this;
         }
