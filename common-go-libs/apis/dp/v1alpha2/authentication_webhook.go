@@ -77,7 +77,7 @@ func (r *Authentication) ValidateAuthentication() error {
 	}
 
 	var mutualSSL *MutualSSLConfig
-	var oauth2Auth Oauth2Auth
+	var oauth2Auth OAuth2Auth
 
 	isOAuthDisabled := false
 	isOAuthOptional := false
@@ -86,7 +86,7 @@ func (r *Authentication) ValidateAuthentication() error {
 	isMTLSMandatory := false
 
 	if r.Spec.Default != nil && r.Spec.Default.AuthTypes != nil && r.Spec.Default.AuthTypes.MutualSSL != nil {
-		oauth2Auth = r.Spec.Default.AuthTypes.Oauth2
+		oauth2Auth = r.Spec.Default.AuthTypes.OAuth2
 		mutualSSL = r.Spec.Default.AuthTypes.MutualSSL
 
 		isOAuthDisabled = oauth2Auth.Disabled
@@ -110,15 +110,15 @@ func (r *Authentication) ValidateAuthentication() error {
 				"invalid authentication configuration - security not enforced for API"))
 		}
 
-		if mutualSSL != nil && len(mutualSSL.CertificatesInline) == 0 && len(mutualSSL.ConfigMapRefs) == 0 && len(mutualSSL.SecretRefs) == 0 {
+		if (mutualSSL != nil || !isMTLSDisabled) && len(mutualSSL.CertificatesInline) == 0 && len(mutualSSL.ConfigMapRefs) == 0 && len(mutualSSL.SecretRefs) == 0 {
 			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("default").Child("authTypes").Child("mtls"), r.Spec.Default.AuthTypes.MutualSSL,
 				"invalid mTLS configuration - certificates not provided"))
 		}
 	} else if r.Spec.Override != nil && r.Spec.Override.AuthTypes != nil && r.Spec.Override.AuthTypes.MutualSSL != nil {
-		oauth2Auth := r.Spec.Override.AuthTypes.Oauth2
+		oauth2Auth := r.Spec.Override.AuthTypes.OAuth2
 		mutualSSL = r.Spec.Override.AuthTypes.MutualSSL
 
-		isOAuthDisabled = r.Spec.Override.AuthTypes.Oauth2.Disabled
+		isOAuthDisabled = r.Spec.Override.AuthTypes.OAuth2.Disabled
 		isOAuthOptional = oauth2Auth.Required == "optional"
 
 		isMTLSMandatory = strings.ToLower(mutualSSL.Required) == "mandatory"
