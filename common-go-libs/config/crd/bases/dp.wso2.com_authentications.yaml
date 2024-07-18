@@ -253,29 +253,39 @@ spec:
                       apiKey:
                         description: APIKey is to specify the APIKey authentication
                           scheme details
-                        items:
-                          description: APIKeyAuth APIKey Authentication scheme details
-                          properties:
-                            in:
-                              description: In is to specify how the APIKey is passed
-                                to the request
-                              enum:
-                              - Header
-                              - Query
-                              minLength: 1
-                              type: string
-                            name:
-                              description: Name is the name of the header or query
-                                parameter to be used
-                              minLength: 1
-                              type: string
-                            sendTokenToUpstream:
-                              description: SendTokenToUpstream is to specify whether
-                                the APIKey should be sent to the upstream
-                              type: boolean
-                          type: object
                         nullable: true
-                        type: array
+                        properties:
+                          keys:
+                            description: APIKeys lists the values for the API Key
+                              authentication
+                            items:
+                              description: APIKey APIKey details
+                              properties:
+                                in:
+                                  description: In is to specify how the APIKey is
+                                    passed to the request
+                                  enum:
+                                  - Header
+                                  - Query
+                                  minLength: 1
+                                  type: string
+                                name:
+                                  description: Name is the name of the header or query
+                                    parameter to be used
+                                  minLength: 1
+                                  type: string
+                                sendTokenToUpstream:
+                                  description: SendTokenToUpstream is to specify whether
+                                    the APIKey should be sent to the upstream
+                                  type: boolean
+                              type: object
+                            type: array
+                          required:
+                            default: optional
+                            description: Required indicates if this authentication
+                              is optional or mandatory
+                            type: string
+                        type: object
                       jwt:
                         description: JWT is to specify the JWT authentication scheme
                           details
@@ -364,7 +374,7 @@ spec:
                             type: array
                         type: object
                       oauth2:
-                        description: Oauth2 is to specify the Oauth2 authentication
+                        description: OAuth2 is to specify the OAuth2 authentication
                           scheme details
                         properties:
                           disabled:
@@ -404,29 +414,39 @@ spec:
                       apiKey:
                         description: APIKey is to specify the APIKey authentication
                           scheme details
-                        items:
-                          description: APIKeyAuth APIKey Authentication scheme details
-                          properties:
-                            in:
-                              description: In is to specify how the APIKey is passed
-                                to the request
-                              enum:
-                              - Header
-                              - Query
-                              minLength: 1
-                              type: string
-                            name:
-                              description: Name is the name of the header or query
-                                parameter to be used
-                              minLength: 1
-                              type: string
-                            sendTokenToUpstream:
-                              description: SendTokenToUpstream is to specify whether
-                                the APIKey should be sent to the upstream
-                              type: boolean
-                          type: object
                         nullable: true
-                        type: array
+                        properties:
+                          keys:
+                            description: APIKeys lists the values for the API Key
+                              authentication
+                            items:
+                              description: APIKey APIKey details
+                              properties:
+                                in:
+                                  description: In is to specify how the APIKey is
+                                    passed to the request
+                                  enum:
+                                  - Header
+                                  - Query
+                                  minLength: 1
+                                  type: string
+                                name:
+                                  description: Name is the name of the header or query
+                                    parameter to be used
+                                  minLength: 1
+                                  type: string
+                                sendTokenToUpstream:
+                                  description: SendTokenToUpstream is to specify whether
+                                    the APIKey should be sent to the upstream
+                                  type: boolean
+                              type: object
+                            type: array
+                          required:
+                            default: optional
+                            description: Required indicates if this authentication
+                              is optional or mandatory
+                            type: string
+                        type: object
                       jwt:
                         description: JWT is to specify the JWT authentication scheme
                           details
@@ -515,7 +535,7 @@ spec:
                             type: array
                         type: object
                       oauth2:
-                        description: Oauth2 is to specify the Oauth2 authentication
+                        description: OAuth2 is to specify the OAuth2 authentication
                           scheme details
                         properties:
                           disabled:

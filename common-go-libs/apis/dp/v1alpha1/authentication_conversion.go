@@ -37,20 +37,28 @@ func (src *Authentication) ConvertTo(dstRaw conversion.Hub) error {
 		defaultAuthenticationSpec.Disabled = defaultAuthv1Spec.Disabled
 		if defaultAuthv1Spec.AuthTypes != nil {
 			v1alpha2authTypes := v1alpha2.APIAuth{}
-			v1alpha2authTypes.Oauth2 = v1alpha2.Oauth2Auth{
+			v1alpha2authTypes.OAuth2 = v1alpha2.OAuth2Auth{
 				Required:            "mandatory",
 				Disabled:            defaultAuthv1Spec.AuthTypes.Oauth2.Disabled,
 				Header:              defaultAuthv1Spec.AuthTypes.Oauth2.Header,
 				SendTokenToUpstream: defaultAuthv1Spec.AuthTypes.Oauth2.SendTokenToUpstream,
 			}
-			// Convert Oauth2Auth Default to v1alpha2.APIKey : Required field added as optional for APIKey
+			var apiKeys []v1alpha2.APIKey
+			// Convert APIKeyAuth Default to v1alpha2.APIKey : Required field added as optional for APIKey
 			for _, apiKeyAuth := range defaultAuthv1Spec.AuthTypes.APIKey {
-				convertedAPIKeyAuth := v1alpha2.APIKeyAuth{
+				convertedAPIKeyAuth := v1alpha2.APIKey{
 					In:                  apiKeyAuth.In,
 					Name:                apiKeyAuth.Name,
 					SendTokenToUpstream: apiKeyAuth.SendTokenToUpstream,
 				}
-				v1alpha2authTypes.APIKey = append(v1alpha2authTypes.APIKey, convertedAPIKeyAuth)
+				apiKeys = append(apiKeys, convertedAPIKeyAuth)
+			}
+
+			if len(apiKeys) > 0 {
+				v1alpha2authTypes.APIKey = &v1alpha2.APIKeyAuth{
+					Required: "optional",
+					Keys:     apiKeys,
+				}
 			}
 			if defaultAuthv1Spec.AuthTypes.TestConsoleKey != (TestConsoleKeyAuth{}) {
 				v1alpha2authTypes.JWT = v1alpha2.JWT{
@@ -69,20 +77,28 @@ func (src *Authentication) ConvertTo(dstRaw conversion.Hub) error {
 		overrideAuthenticationSpec.Disabled = overrideAuthv1Spec.Disabled
 		if overrideAuthv1Spec.AuthTypes != nil {
 			v1alpha2authTypes := v1alpha2.APIAuth{}
-			v1alpha2authTypes.Oauth2 = v1alpha2.Oauth2Auth{
+			v1alpha2authTypes.OAuth2 = v1alpha2.OAuth2Auth{
 				Required:            "mandatory",
 				Disabled:            overrideAuthv1Spec.AuthTypes.Oauth2.Disabled,
 				Header:              overrideAuthv1Spec.AuthTypes.Oauth2.Header,
 				SendTokenToUpstream: overrideAuthv1Spec.AuthTypes.Oauth2.SendTokenToUpstream,
 			}
-			// Convert Oauth2Auth Default to v1alpha2.APIKey : Required field added as optional for APIKey
+			var apiKeys []v1alpha2.APIKey
+			// Convert Oauth2Auth Override to v1alpha2.APIKey : Required field added as optional for APIKey
 			for _, apiKeyAuth := range overrideAuthv1Spec.AuthTypes.APIKey {
-				convertedAPIKeyAuth := v1alpha2.APIKeyAuth{
+				convertedAPIKeyAuth := v1alpha2.APIKey{
 					In:                  apiKeyAuth.In,
 					Name:                apiKeyAuth.Name,
 					SendTokenToUpstream: apiKeyAuth.SendTokenToUpstream,
 				}
-				v1alpha2authTypes.APIKey = append(v1alpha2authTypes.APIKey, convertedAPIKeyAuth)
+				apiKeys = append(apiKeys, convertedAPIKeyAuth)
+			}
+
+			if len(apiKeys) > 0 {
+				v1alpha2authTypes.APIKey = &v1alpha2.APIKeyAuth{
+					Required: "optional",
+					Keys:     apiKeys,
+				}
 			}
 			if overrideAuthv1Spec.AuthTypes.TestConsoleKey != (TestConsoleKeyAuth{}) {
 				v1alpha2authTypes.JWT = v1alpha2.JWT{
@@ -116,12 +132,12 @@ func (src *Authentication) ConvertFrom(srcRaw conversion.Hub) error {
 		if defaultAuthv2Spec.AuthTypes != nil {
 			v1alpha1authTypes := APIAuth{}
 			v1alpha1authTypes.Oauth2 = Oauth2Auth{
-				Disabled:            defaultAuthv2Spec.AuthTypes.Oauth2.Disabled,
-				Header:              defaultAuthv2Spec.AuthTypes.Oauth2.Header,
-				SendTokenToUpstream: defaultAuthv2Spec.AuthTypes.Oauth2.SendTokenToUpstream,
+				Disabled:            defaultAuthv2Spec.AuthTypes.OAuth2.Disabled,
+				Header:              defaultAuthv2Spec.AuthTypes.OAuth2.Header,
+				SendTokenToUpstream: defaultAuthv2Spec.AuthTypes.OAuth2.SendTokenToUpstream,
 			}
-			// Convert Oauth2Auth Default to v1alpha2.APIKey : Required field added as optional for APIKey
-			for _, apiKeyAuth := range defaultAuthv2Spec.AuthTypes.APIKey {
+			// Convert APIKeyAuth Default to v1alpha2.APIKey : Required field added as optional for APIKey
+			for _, apiKeyAuth := range defaultAuthv2Spec.AuthTypes.APIKey.Keys {
 				convertedAPIKeyAuth := APIKeyAuth{
 					In:                  apiKeyAuth.In,
 					Name:                apiKeyAuth.Name,
@@ -145,12 +161,12 @@ func (src *Authentication) ConvertFrom(srcRaw conversion.Hub) error {
 		if overrideAuthv2Spec.AuthTypes != nil {
 			v1alpha1authTypes := APIAuth{}
 			v1alpha1authTypes.Oauth2 = Oauth2Auth{
-				Disabled:            overrideAuthv2Spec.AuthTypes.Oauth2.Disabled,
-				Header:              overrideAuthv2Spec.AuthTypes.Oauth2.Header,
-				SendTokenToUpstream: overrideAuthv2Spec.AuthTypes.Oauth2.SendTokenToUpstream,
+				Disabled:            overrideAuthv2Spec.AuthTypes.OAuth2.Disabled,
+				Header:              overrideAuthv2Spec.AuthTypes.OAuth2.Header,
+				SendTokenToUpstream: overrideAuthv2Spec.AuthTypes.OAuth2.SendTokenToUpstream,
 			}
 			// Convert Oauth2Auth Default to v1alpha2.APIKey : Required field added as optional for APIKey
-			for _, apiKeyAuth := range overrideAuthv2Spec.AuthTypes.APIKey {
+			for _, apiKeyAuth := range overrideAuthv2Spec.AuthTypes.APIKey.Keys {
 				convertedAPIKeyAuth := APIKeyAuth{
 					In:                  apiKeyAuth.In,
 					Name:                apiKeyAuth.Name,
