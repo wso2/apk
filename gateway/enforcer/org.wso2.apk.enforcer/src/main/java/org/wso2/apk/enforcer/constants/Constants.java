@@ -86,4 +86,5 @@ public class Constants {
     public static final String MOESIF_TOKEN = "moesifToken";
     public static final String DEFAULT_ANALYTICS_PUBLISHER = "default";
     public static final String MOESIF_ANALYTICS_PUBLISHER = "moesif";
+    public static final String PROMETHEUS_ANALYTICS_PUBLISHER = "prometheus";
 }

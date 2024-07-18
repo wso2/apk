@@ -191,6 +191,16 @@ wso2:
           #     certFilename: ""
           #     certCAFilename: ""
       gatewayRuntime:
+        analytics:
+          enabled: true
+          publishers:
+            - enabled: true
+              type: "default"
+              secretName: choreo-analytics-secret
+            - enabled: true
+              type: "elk"
+            - enabled: true
+              type: "prometheus"
         deployment:
           replicas: 1
           router:
@@ -241,8 +251,8 @@ wso2:
               periodSeconds: 20
               failureThreshold: 5
             strategy: RollingUpdate
-            imagePullPolicy: Always
-            image: wso2/apk-enforcer:1.1.0
+            imagePullPolicy: IfNotPresent
+            image: apk-enforcer:1.1.0-SNAPSHOT
             security:
               sslHostname: "enforcer"
 #            logging:
@@ -257,20 +267,20 @@ wso2:
 #                hostnameVerifier: "AllowAll"
 
     metrics:
-      enabled: false
-      # configDSBalHost: 0.0.0.0
-      # idpDSBalHost: 0.0.0.0
-      # statsd:
-      #   image:
-      #     repository: prom/statsd-exporter
-      #     tag: v0.26.0
-      #   imagePullPolicy: IfNotPresent
-      #   resources:
-      #     limits:
-      #       memory: 128Mi
-      #     requests:
-      #       cpu: 0.1
-      #       memory: 64Mi
+      enabled: true
+      configDSBalHost: 0.0.0.0
+      idpDSBalHost: 0.0.0.0
+      statsd:
+        image:
+          repository: prom/statsd-exporter
+          tag: v0.26.0
+        imagePullPolicy: IfNotPresent
+        resources:
+          limits:
+            memory: 128Mi
+            requests:
+              cpu: 0.1
+              memory: 64Mi
 idp:
   enabled: true
   listener:

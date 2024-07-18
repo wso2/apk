@@ -444,6 +444,8 @@ public class ConfigHolder {
                 resolvedConfigMap.put(Constants.AUTH_URL_CONFIG_TOKEN, authToken);
             } else if (analyticsPublisher.getType().equalsIgnoreCase(Constants.MOESIF_ANALYTICS_PUBLISHER)){
                 resolvedConfigMap.put(Constants.MOESIF_TOKEN, moesifToken);
+            } else if (analyticsPublisher.getType().equalsIgnoreCase(Constants.PROMETHEUS_ANALYTICS_PUBLISHER)){
+                //resolvedConfigMap.put(Constants.PROMETHEUS_ANALYTICS_PUBLISHER, Constants.PROMETHEUS_ANALYTICS_PUBLISHER);
             }
             analyticsDTO.addAnalyticsPublisherConfig(new AnalyticsPublisherConfigDTO(analyticsPublisher.getEnabled(),
                     analyticsPublisher.getType(), resolvedConfigMap));
