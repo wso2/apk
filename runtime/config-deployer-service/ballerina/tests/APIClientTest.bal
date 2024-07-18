@@ -1,8 +1,10 @@
-import ballerina/test;
 import config_deployer_service.model;
 import config_deployer_service.org.wso2.apk.config.model as runtimeModels;
-import wso2/apk_common_lib;
+
 import ballerina/io;
+import ballerina/test;
+
+import wso2/apk_common_lib;
 import wso2/apk_common_lib as commons;
 
 commons:Organization organization = {
@@ -505,18 +507,21 @@ public function testAPIKeyOnlyEnable() returns error? {
     model:AuthenticationData expectedAuthenticationData = {
         disabled: false,
         authTypes: {
-            apiKey: [
-                {
-                    'in: "Header",
-                    name: "apiKey",
-                    sendTokenToUpstream: false
-                },
-                {
-                    'in: "Query",
-                    name: "apiKey",
-                    sendTokenToUpstream: false
-                }
-            ]
+            apiKey: {
+                required: "optional",
+                keys: [
+                    {
+                        'in: "Header",
+                        name: "apiKey",
+                        sendTokenToUpstream: false
+                    },
+                    {
+                        'in: "Query",
+                        name: "apiKey",
+                        sendTokenToUpstream: false
+                    }
+                ]
+            }
         }
     };
 
@@ -545,18 +550,22 @@ public function testAPIKeyAndJWTEnable() returns error? {
     model:AuthenticationData expectedAuthenticationData = {
         disabled: false,
         authTypes: {
-            apiKey: [
-                {
-                    'in: "Header",
-                    name: "apiKey",
-                    sendTokenToUpstream: false
-                },
-                {
-                    'in: "Query",
-                    name: "apiKey",
-                    sendTokenToUpstream: false
-                }
-            ],
+            apiKey: {
+                required: "optional",
+                keys:
+                [
+                    {
+                        'in: "Header",
+                        name: "apiKey",
+                        sendTokenToUpstream: false
+                    },
+                    {
+                        'in: "Query",
+                        name: "apiKey",
+                        sendTokenToUpstream: false
+                    }
+                ]
+            },
             oauth2: {
                 required: "mandatory",
                 disabled: false,
