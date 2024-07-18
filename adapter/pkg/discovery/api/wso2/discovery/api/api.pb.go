@@ -56,10 +56,10 @@ type Api struct {
 	Vhost                  string      `protobuf:"bytes,12,opt,name=vhost,proto3" json:"vhost,omitempty"`
 	OrganizationId         string      `protobuf:"bytes,13,opt,name=organizationId,proto3" json:"organizationId,omitempty"`
 	// bool isMockedApi = 18;
-	ClientCertificates  []*Certificate `protobuf:"bytes,14,rep,name=clientCertificates,proto3" json:"clientCertificates,omitempty"`
-	MutualSSL           string         `protobuf:"bytes,15,opt,name=mutualSSL,proto3" json:"mutualSSL,omitempty"`
-	ApplicationSecurity bool           `protobuf:"varint,16,opt,name=applicationSecurity,proto3" json:"applicationSecurity,omitempty"`
-	TransportSecurity   bool           `protobuf:"varint,17,opt,name=transportSecurity,proto3" json:"transportSecurity,omitempty"`
+	ClientCertificates  []*Certificate  `protobuf:"bytes,14,rep,name=clientCertificates,proto3" json:"clientCertificates,omitempty"`
+	MutualSSL           string          `protobuf:"bytes,15,opt,name=mutualSSL,proto3" json:"mutualSSL,omitempty"`
+	ApplicationSecurity map[string]bool `protobuf:"bytes,16,rep,name=applicationSecurity,proto3" json:"applicationSecurity,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"varint,2,opt,name=value,proto3"`
+	TransportSecurity   bool            `protobuf:"varint,17,opt,name=transportSecurity,proto3" json:"transportSecurity,omitempty"`
 	/// string graphQLSchema = 22;
 	GraphqlComplexityInfo  []*GraphqlComplexity `protobuf:"bytes,23,rep,name=graphqlComplexityInfo,proto3" json:"graphqlComplexityInfo,omitempty"`
 	SystemAPI              bool                 `protobuf:"varint,24,opt,name=systemAPI,proto3" json:"systemAPI,omitempty"`
@@ -209,11 +209,11 @@ func (x *Api) GetMutualSSL() string {
 	return ""
 }
 
-func (x *Api) GetApplicationSecurity() bool {
+func (x *Api) GetApplicationSecurity() map[string]bool {
 	if x != nil {
 		return x.ApplicationSecurity
 	}
-	return false
+	return nil
 }
 
 func (x *Api) GetTransportSecurity() bool {
@@ -406,7 +406,7 @@ func file_wso2_discovery_api_api_proto_rawDescGZIP() []byte {
 	return file_wso2_discovery_api_api_proto_rawDescData
 }
 
-var file_wso2_discovery_api_api_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
+var file_wso2_discovery_api_api_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_wso2_discovery_api_api_proto_goTypes = []interface{}{
 	(*Api)(nil),                 // 0: wso2.discovery.api.Api
 	(*Resource)(nil),            // 1: wso2.discovery.api.Resource
@@ -464,7 +464,7 @@ func file_wso2_discovery_api_api_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_wso2_discovery_api_api_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   1,
+			NumMessages:   2,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

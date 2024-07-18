@@ -66,7 +66,7 @@ type AdapterInternalAPI struct {
 	IsDefaultVersion         bool
 	clientCertificates       []Certificate
 	mutualSSL                string
-	xWso2ApplicationSecurity bool
+	applicationSecurity      map[string]bool
 	EnvType                  string
 	backendJWTTokenInfo      *BackendJWTTokenInfo
 	apiDefinitionFile        []byte
@@ -420,14 +420,18 @@ func (adapterInternalAPI *AdapterInternalAPI) SetDisableMtls(disableMtls bool) {
 	adapterInternalAPI.disableMtls = disableMtls
 }
 
-// SetXWSO2ApplicationSecurity sets the optional or mandatory application security
-func (adapterInternalAPI *AdapterInternalAPI) SetXWSO2ApplicationSecurity(applicationSecurity bool) {
-	adapterInternalAPI.xWso2ApplicationSecurity = applicationSecurity
+// SetApplicationSecurity sets the optional or mandatory application security for each security type
+// true means mandatory
+func (adapterInternalAPI *AdapterInternalAPI) SetApplicationSecurity(key string, value bool) {
+	if adapterInternalAPI.applicationSecurity == nil {
+		adapterInternalAPI.applicationSecurity = make(map[string]bool)
+	}
+	adapterInternalAPI.applicationSecurity[key] = value
 }
 
-// GetXWSO2ApplicationSecurity returns true if application security is mandatory, and false if optional
-func (adapterInternalAPI *AdapterInternalAPI) GetXWSO2ApplicationSecurity() bool {
-	return adapterInternalAPI.xWso2ApplicationSecurity
+// GetApplicationSecurity returns true if application security is mandatory, and false if optional
+func (adapterInternalAPI *AdapterInternalAPI) GetApplicationSecurity() map[string]bool {
+	return adapterInternalAPI.applicationSecurity
 }
 
 // GetOrganizationID returns OrganizationID
@@ -959,10 +963,20 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 	}
 
 	authSpec := utils.SelectPolicy(&authScheme.Spec.Override, &authScheme.Spec.Default, nil, nil)
-	if authSpec != nil && authSpec.AuthTypes != nil && authSpec.AuthTypes.Oauth2.Required != "" {
-		adapterInternalAPI.SetXWSO2ApplicationSecurity(authSpec.AuthTypes.Oauth2.Required == "mandatory")
+	if authSpec != nil && authSpec.AuthTypes != nil {
+		if authSpec.AuthTypes.OAuth2.Required != "" {
+			adapterInternalAPI.SetApplicationSecurity(constants.OAuth2, authSpec.AuthTypes.OAuth2.Required == "mandatory")
+		} else {
+			adapterInternalAPI.SetApplicationSecurity(constants.OAuth2, true)
+		}
+
+		if authSpec.AuthTypes.APIKey != nil {
+			adapterInternalAPI.SetApplicationSecurity(constants.APIKey, authSpec.AuthTypes.APIKey.Required == "mandatory")
+		} else {
+			adapterInternalAPI.SetApplicationSecurity(constants.APIKey, false)
+		}
 	} else {
-		adapterInternalAPI.SetXWSO2ApplicationSecurity(true)
+		adapterInternalAPI.SetApplicationSecurity(constants.OAuth2, true)
 	}
 
 	adapterInternalAPI.disableScopes = disableScopes

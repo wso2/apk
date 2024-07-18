@@ -2786,13 +2786,13 @@ func prepareSecuritySchemeForCP(apiState *synchronizer.APIState) ([]string, stri
 				authSchemes := []string{}
 				isAuthMandatory := false
 				isMTLSMandatory := false
-				if authSpec.AuthTypes.Oauth2.Required == "mandatory" {
+				if authSpec.AuthTypes.OAuth2.Required == "mandatory" {
 					isAuthMandatory = true
 				}
-				if !authSpec.AuthTypes.Oauth2.Disabled {
+				if !authSpec.AuthTypes.OAuth2.Disabled {
 					authSchemes = append(authSchemes, "oauth2")
-					if authSpec.AuthTypes.Oauth2.Header != "" {
-						authHeader = authSpec.AuthTypes.Oauth2.Header
+					if authSpec.AuthTypes.OAuth2.Header != "" {
+						authHeader = authSpec.AuthTypes.OAuth2.Header
 					}
 				}
 				if authSpec.AuthTypes.MutualSSL != nil && authSpec.AuthTypes.MutualSSL.Required == "mandatory" {
@@ -2801,7 +2801,7 @@ func prepareSecuritySchemeForCP(apiState *synchronizer.APIState) ([]string, stri
 				if authSpec.AuthTypes.MutualSSL != nil && !authSpec.AuthTypes.MutualSSL.Disabled {
 					authSchemes = append(authSchemes, "mutualssl")
 				}
-				if len(authSpec.AuthTypes.APIKey) > 0 {
+				if len(authSpec.AuthTypes.APIKey.Keys) > 0 {
 					authSchemes = append(authSchemes, "api_key")
 				}
 				if isAuthMandatory {

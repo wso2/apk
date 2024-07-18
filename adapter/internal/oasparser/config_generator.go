@@ -233,7 +233,7 @@ func GetEnforcerAPI(adapterInternalAPI *model.AdapterInternalAPI, vhost string) 
 		// IsMockedApi:         isMockedAPI,
 		ClientCertificates:  clientCertificates,
 		MutualSSL:           adapterInternalAPI.GetMutualSSL(),
-		ApplicationSecurity: adapterInternalAPI.GetXWSO2ApplicationSecurity(),
+		ApplicationSecurity: adapterInternalAPI.GetApplicationSecurity(),
 		TransportSecurity:   !adapterInternalAPI.GetDisableMtls(),
 		// GraphQLSchema:         adapterInternalAPI.GraphQLSchema,
 		// GraphqlComplexityInfo: adapterInternalAPI.GraphQLComplexities.Data.List,
@@ -297,7 +297,9 @@ func castAPIAuthenticationsToEnforcerAPIAuthentications(authentication *model.Au
 			SendTokenToUpstream: apiKey.SendTokenToUpstream,
 		})
 	}
-	enforcerAuthentication.Apikey = apiKeys
+	if len(apiKeys) > 0 {
+		enforcerAuthentication.Apikey = apiKeys
+	}
 	if authentication.Oauth2 != nil {
 		enforcerAuthentication.Oauth2 = &api.Oauth2{
 			Header:              strings.ToLower(authentication.Oauth2.Header),
