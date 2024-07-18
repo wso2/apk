@@ -22,7 +22,7 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: {{ template "apk-helm.resource.prefix" . }}-adapter-server-cert
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ .Values.gatewaySystem.namespace  }}
 spec:
   commonName: adapter-service
   privateKey:

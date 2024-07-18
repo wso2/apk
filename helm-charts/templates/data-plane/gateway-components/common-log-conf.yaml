@@ -3,7 +3,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{ template "apk-helm.resource.prefix" . }}-common-log-conf
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ .Values.gatewaySystem.namespace }}
 data:
   config.toml: | 
     [commoncontroller]

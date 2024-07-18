@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app.kubernetes.io/name: envoy
+    app.kubernetes.io/component: proxy
+    app.kubernetes.io/managed-by: envoy-gateway
+    apk.wso2.com/owning-gateway-name: default
+    apk.wso2.com/owning-gateway-namespace: default
+  name: envoy-default-37a8eec1
+  namespace: apk

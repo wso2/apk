@@ -3,7 +3,7 @@ kind: TokenIssuer
 apiVersion: dp.wso2.com/v1alpha2
 metadata:
   name: {{ template "apk-helm.resource.prefix" . }}-idp-jwt-issuer
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ .Values.gatewaySystem.namespace }}
   annotations:
     "helm.sh/hook": post-install,post-upgrade
 spec:

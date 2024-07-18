@@ -15,7 +15,9 @@
 # limitations under the License.
 # -----------------------------------------------------------------------
 
-ADAPTER_XDS_PORT="${ADAPTER_XDS_PORT:-18000}"
+# health of enforcer xds
+
+ADAPTER_XDS_PORT="${ADAPTER_XDS_PORT:-18001}"
 ADAPTER_SERVER_NAME="${ADAPTER_SERVER_NAME:-adapter}"
 grpc_health_probe -addr "127.0.0.1:${ADAPTER_XDS_PORT}" \
     -tls \
