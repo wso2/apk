@@ -69,12 +69,16 @@ public class AuthFilter implements Filter {
     private void initializeAuthenticators(APIConfig apiConfig) {
         // TODO: Check security schema and add relevant authenticators.
         boolean isMutualSSLProtected = false;
+        boolean isAPIKeyProtected = false;
         isMutualSSLMandatory = false;
 
         // Set security conditions
         Map<String, Boolean> securityMaps = apiConfig.getApplicationSecurity();
         isOAuth2Mandatory = securityMaps.getOrDefault("OAuth2", true);
-        isAPIKeyMandatory = securityMaps.getOrDefault("APIKey", false);
+        isAPIKeyProtected = securityMaps.containsKey("APIKey");
+        if (isAPIKeyProtected) {
+            isAPIKeyMandatory = securityMaps.getOrDefault("APIKey", false);
+        }
 
         if (!Objects.isNull(apiConfig.getMutualSSL())) {
             if (apiConfig.isTransportSecurity()) {
@@ -102,8 +106,10 @@ public class AuthFilter implements Filter {
         Authenticator oauthAuthenticator = new Oauth2Authenticator(jwtConfigurationDto, isGatewayTokenCacheEnabled);
         authenticators.add(oauthAuthenticator);
 
-        APIKeyAuthenticator apiKeyAuthenticator = new APIKeyAuthenticator(jwtConfigurationDto);
-        authenticators.add(apiKeyAuthenticator);
+        if (isAPIKeyProtected){
+            APIKeyAuthenticator apiKeyAuthenticator = new APIKeyAuthenticator(jwtConfigurationDto);
+            authenticators.add(apiKeyAuthenticator);
+        }
 
         Authenticator jwtAuthenticator = new JWTAuthenticator(jwtConfigurationDto, isGatewayTokenCacheEnabled);
         authenticators.add(jwtAuthenticator);
@@ -158,7 +164,7 @@ public class AuthFilter implements Filter {
                 }
                 // Check if the failed authentication is a mandatory application level security
                 if (!authenticator.getName()
-                        .contains(APIConstants.API_SECURITY_MUTUAL_SSL_NAME) && (isAPIKeyMandatory||isOAuth2Mandatory)){
+                        .contains(APIConstants.API_SECURITY_MUTUAL_SSL_NAME) && (isAPIKeyMandatory || isOAuth2Mandatory)) {
                     authenticated = false;
                 }
 

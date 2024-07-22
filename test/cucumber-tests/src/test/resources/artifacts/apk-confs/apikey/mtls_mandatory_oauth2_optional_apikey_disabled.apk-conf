@@ -1,0 +1,40 @@
+name: "EmployeeServiceAPI"
+basePath: "/mtls"
+version: "3.14"
+type: "REST"
+id: "mtls-mandatory-oauth2-optional-apikey-disabled"
+defaultVersion: false
+endpointConfigurations:
+  production:
+    endpoint: "http://backend:80/anything"
+operations:
+  - target: "/employee"
+    verb: "GET"
+    secured: true
+    scopes: []
+  - target: "/employee"
+    verb: "POST"
+    secured: true
+    scopes: []
+  - target: "/employee/{employeeId}"
+    verb: "PUT"
+    secured: true
+    scopes: []
+  - target: "/employee/{employeeId}"
+    verb: "DELETE"
+    secured: true
+    scopes: []
+authentication:
+  - authType: OAuth2
+    required: optional
+    enabled: true
+  - authType: mTLS
+    enabled: true
+    required: mandatory
+    certificates:
+      - name: mtls-test-configmap
+        key: tls.crt
+  - authType: APIKey
+    enabled: false
+    headerEnable: true
+    headerName: APIKey

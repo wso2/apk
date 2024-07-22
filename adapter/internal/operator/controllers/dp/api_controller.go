@@ -2349,7 +2349,7 @@ func (apiReconciler *APIReconciler) convertAPIStateToAPICp(ctx context.Context, 
 	corsPolicy := pickOneCorsForCP(&apiState)
 	vhost := getProdVhost(&apiState)
 	sandVhost := geSandVhost(&apiState)
-	securityScheme, authHeader := prepareSecuritySchemeForCP(&apiState)
+	securityScheme, authHeader, apiKeyHeader := prepareSecuritySchemeForCP(&apiState)
 	operations := prepareOperations(&apiState)
 	api := controlplane.API{
 		APIName:          spec.APIName,
@@ -2374,6 +2374,7 @@ func (apiReconciler *APIReconciler) convertAPIStateToAPICp(ctx context.Context, 
 		AuthHeader:       authHeader,
 		Operations:       operations,
 		APIHash:          apiHash,
+		APIKeyHeader:     apiKeyHeader,
 	}
 	apiCPEvent.API = api
 	apiCPEvent.CRName = apiState.APIDefinition.ObjectMeta.Name
@@ -2659,9 +2660,10 @@ func geSandVhost(apiState *synchronizer.APIState) string {
 	return "sandbox.default.gw.wso2.com"
 }
 
-func prepareSecuritySchemeForCP(apiState *synchronizer.APIState) ([]string, string) {
+func prepareSecuritySchemeForCP(apiState *synchronizer.APIState) ([]string, string, string) {
 	var pickedAuth *v1alpha2.Authentication
 	authHeader := "Authorization"
+	apiKeyHeader := "ApiKey"
 	for _, auth := range apiState.Authentications {
 		pickedAuth = &auth
 		break
@@ -2692,21 +2694,30 @@ func prepareSecuritySchemeForCP(apiState *synchronizer.APIState) ([]string, stri
 				}
 				if authSpec.AuthTypes.MutualSSL != nil && !authSpec.AuthTypes.MutualSSL.Disabled {
 					authSchemes = append(authSchemes, "mutualssl")
+					if isMTLSMandatory {
+						authSchemes = append(authSchemes, "mutualssl_mandatory")
+					} else {
+						authSchemes = append(authSchemes, "mutualssl_optional")
+					}
 				}
 				if len(authSpec.AuthTypes.APIKey.Keys) > 0 {
 					authSchemes = append(authSchemes, "api_key")
+					for _, apiKey := range authSpec.AuthTypes.APIKey.Keys {
+						if apiKey.In == "Header" {
+							apiKeyHeader = apiKey.Name
+						}
+					}
 				}
 				if isAuthMandatory {
 					authSchemes = append(authSchemes, "oauth_basic_auth_api_key_mandatory")
+				} else {
+					authSchemes = append(authSchemes, "oauth_basic_auth_api_key_optional")
 				}
-				if isMTLSMandatory {
-					authSchemes = append(authSchemes, "mutualssl_mandatory")
-				}
-				return authSchemes, authHeader
+				return authSchemes, authHeader, apiKeyHeader
 			}
 		}
 	}
-	return []string{"oauth2", "oauth_basic_auth_api_key_mandatory"}, authHeader
+	return []string{"oauth2", "oauth_basic_auth_api_key_mandatory"}, authHeader, apiKeyHeader
 }
 
 func prepareOperations(apiState *synchronizer.APIState) []controlplane.Operation {
