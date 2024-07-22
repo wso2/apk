@@ -75,7 +75,6 @@ func (r *Authentication) ValidateAuthentication() error {
 	}
 
 	var mutualSSL *MutualSSLConfig
-	// var oauth2Auth OAuth2Auth
 	var authTypes *APIAuth
 
 	isOAuthEnabled := true
@@ -86,53 +85,45 @@ func (r *Authentication) ValidateAuthentication() error {
 
 	isAPIKeyEnabled := false
 	isAPIKeyMandatory := false
-	errorType := "default"
-
 	if r.Spec.Default != nil && r.Spec.Default.AuthTypes != nil {
 		authTypes = r.Spec.Default.AuthTypes
-	}
 
-	if r.Spec.Override != nil && r.Spec.Override.AuthTypes != nil {
-		authTypes = r.Spec.Override.AuthTypes
-		errorType = "override"
-	}
+		isOAuthEnabled = !authTypes.OAuth2.Disabled
+		isOAuthMandatory = authTypes.OAuth2.Required == "mandatory"
+		if authTypes.MutualSSL != nil {
+			mutualSSL = authTypes.MutualSSL
+			isMTLSEnabled = !authTypes.MutualSSL.Disabled
+			isMTLSMandatory = authTypes.MutualSSL.Required == "mandatory"
+		}
 
-	isOAuthEnabled = !authTypes.OAuth2.Disabled
-	isOAuthMandatory = authTypes.OAuth2.Required == "mandatory"
+		if authTypes.APIKey != nil {
+			isAPIKeyEnabled = true
+			isAPIKeyMandatory = authTypes.APIKey.Required == "mandatory"
+		}
 
-	if authTypes.MutualSSL != nil {
-		mutualSSL = authTypes.MutualSSL
-		isMTLSEnabled = !authTypes.MutualSSL.Disabled
-		isMTLSMandatory = authTypes.MutualSSL.Required == "mandatory"
-	}
+		if mutualSSL != nil && r.Spec.TargetRef.Kind != constants.KindAPI {
+			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("default").Child("authTypes").Child("oauth2"), r.Spec.Default.AuthTypes.MutualSSL,
+				"invalid authentication - mTLS can currently only be added for APIs"))
+		}
 
-	if authTypes.APIKey != nil {
-		isAPIKeyEnabled = true
-		isAPIKeyMandatory = authTypes.APIKey.Required == "mandatory"
-	}
+		isMTLSMandatory = isMTLSEnabled && isMTLSMandatory
+		isOAuthMandatory = isOAuthEnabled && isOAuthMandatory
+		isAPIKeyMandatory = isAPIKeyEnabled && isAPIKeyMandatory
 
-	if mutualSSL != nil && r.Spec.TargetRef.Kind != constants.KindAPI {
-		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("default").Child("authTypes").Child("oauth2"), r.Spec.Default.AuthTypes.MutualSSL,
-			"invalid authentication - mTLS can currently only be added for APIs"))
-	}
+		isMTLSOptional := isMTLSEnabled && !isMTLSMandatory
+		isOAuthOptional := isOAuthEnabled && !isOAuthMandatory
+		isAPIKeyOptional := isAPIKeyEnabled && !isAPIKeyMandatory
 
-	isMTLSMandatory = isMTLSEnabled && isMTLSMandatory       // false
-	isOAuthMandatory = isOAuthEnabled && isOAuthMandatory    // true && true
-	isAPIKeyMandatory = isAPIKeyEnabled && isAPIKeyMandatory // true && false = false
+		// valid security combinations
+		// at least one must be enabled and mandatory
+		// OR mTLS is enabled and one of OAuth2 or APIKey is optional
 
-	isMTLSOptional := isMTLSEnabled && !isMTLSMandatory
-	isOAuthOptional := isOAuthEnabled && !isOAuthMandatory
-	isAPIKeyOptional := isAPIKeyEnabled && !isAPIKeyMandatory
-
-	if !(
-	// at least one must be enabled and mandatory
-	(isMTLSMandatory || isOAuthMandatory || isAPIKeyMandatory) ||
-		// mTLS is enabled and one of OAuth2 or APIKey is optional
-		(isMTLSOptional && (isOAuthOptional || isAPIKeyOptional))) {
-		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child(errorType).Child("authTypes"), r.Spec.Default.AuthTypes,
-			"invalid authtypes provided: one of mTLS, APIKey, OAuth2 has to be enabled and mandatory "+
-				"OR mTLS and one of OAuth2 or APIKey need to be optional "+
-				"OR all three can be optional"))
+		if !((isMTLSMandatory || isOAuthMandatory || isAPIKeyMandatory) || (isMTLSOptional && (isOAuthOptional || isAPIKeyOptional))) {
+			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("default").Child("authTypes"), authTypes,
+				"invalid authtypes provided: one of mTLS, APIKey, OAuth2 has to be enabled and mandatory "+
+					"OR mTLS and one of OAuth2 or APIKey need to be optional "+
+					"OR all three can be optional"))
+		}
 	}
 
 	if len(allErrs) > 0 {
