@@ -972,8 +972,6 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 
 		if authSpec.AuthTypes.APIKey != nil {
 			adapterInternalAPI.SetApplicationSecurity(constants.APIKey, authSpec.AuthTypes.APIKey.Required == "mandatory")
-		} else {
-			adapterInternalAPI.SetApplicationSecurity(constants.APIKey, false)
 		}
 	} else {
 		adapterInternalAPI.SetApplicationSecurity(constants.OAuth2, true)

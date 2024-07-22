@@ -18,8 +18,6 @@
 package v1alpha2
 
 import (
-	"strings"
-
 	constants "github.com/wso2/apk/common-go-libs/constants"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -77,72 +75,64 @@ func (r *Authentication) ValidateAuthentication() error {
 	}
 
 	var mutualSSL *MutualSSLConfig
-	var oauth2Auth OAuth2Auth
+	// var oauth2Auth OAuth2Auth
+	var authTypes *APIAuth
 
-	isOAuthDisabled := false
-	isOAuthOptional := false
+	isOAuthEnabled := true
+	isOAuthMandatory := true
 
-	isMTLSDisabled := false
+	isMTLSEnabled := false
 	isMTLSMandatory := false
 
-	if r.Spec.Default != nil && r.Spec.Default.AuthTypes != nil && r.Spec.Default.AuthTypes.MutualSSL != nil {
-		oauth2Auth = r.Spec.Default.AuthTypes.OAuth2
-		mutualSSL = r.Spec.Default.AuthTypes.MutualSSL
+	isAPIKeyEnabled := false
+	isAPIKeyMandatory := false
+	errorType := "default"
 
-		isOAuthDisabled = oauth2Auth.Disabled
-		isOAuthOptional = oauth2Auth.Required == "optional"
+	if r.Spec.Default != nil && r.Spec.Default.AuthTypes != nil {
+		authTypes = r.Spec.Default.AuthTypes
+	}
 
-		isMTLSMandatory = strings.ToLower(mutualSSL.Required) == "mandatory"
-		isMTLSDisabled = mutualSSL.Disabled
+	if r.Spec.Override != nil && r.Spec.Override.AuthTypes != nil {
+		authTypes = r.Spec.Override.AuthTypes
+		errorType = "override"
+	}
 
-		if mutualSSL != nil && r.Spec.TargetRef.Kind != constants.KindAPI {
-			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("default").Child("authTypes").Child("oauth2"), r.Spec.Default.AuthTypes.MutualSSL,
-				"invalid authentication - mTLS can currently only be added for APIs"))
-		}
+	isOAuthEnabled = !authTypes.OAuth2.Disabled
+	isOAuthMandatory = authTypes.OAuth2.Required == "mandatory"
 
-		if (mutualSSL == nil || !isMTLSMandatory) && isOAuthDisabled {
-			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("default").Child("authTypes").Child("mtls"), r.Spec.Default.AuthTypes,
-				"invalid authentication configuration - security not enforced for API"))
-		}
+	if authTypes.MutualSSL != nil {
+		mutualSSL = authTypes.MutualSSL
+		isMTLSEnabled = !authTypes.MutualSSL.Disabled
+		isMTLSMandatory = authTypes.MutualSSL.Required == "mandatory"
+	}
 
-		if isMTLSDisabled && isOAuthOptional {
-			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("default").Child("authTypes").Child("mtls"), r.Spec.Default.AuthTypes,
-				"invalid authentication configuration - security not enforced for API"))
-		}
+	if authTypes.APIKey != nil {
+		isAPIKeyEnabled = true
+		isAPIKeyMandatory = authTypes.APIKey.Required == "mandatory"
+	}
 
-		if (mutualSSL != nil || !isMTLSDisabled) && len(mutualSSL.CertificatesInline) == 0 && len(mutualSSL.ConfigMapRefs) == 0 && len(mutualSSL.SecretRefs) == 0 {
-			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("default").Child("authTypes").Child("mtls"), r.Spec.Default.AuthTypes.MutualSSL,
-				"invalid mTLS configuration - certificates not provided"))
-		}
-	} else if r.Spec.Override != nil && r.Spec.Override.AuthTypes != nil && r.Spec.Override.AuthTypes.MutualSSL != nil {
-		oauth2Auth := r.Spec.Override.AuthTypes.OAuth2
-		mutualSSL = r.Spec.Override.AuthTypes.MutualSSL
+	if mutualSSL != nil && r.Spec.TargetRef.Kind != constants.KindAPI {
+		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("default").Child("authTypes").Child("oauth2"), r.Spec.Default.AuthTypes.MutualSSL,
+			"invalid authentication - mTLS can currently only be added for APIs"))
+	}
 
-		isOAuthDisabled = r.Spec.Override.AuthTypes.OAuth2.Disabled
-		isOAuthOptional = oauth2Auth.Required == "optional"
+	isMTLSMandatory = isMTLSEnabled && isMTLSMandatory       // false
+	isOAuthMandatory = isOAuthEnabled && isOAuthMandatory    // true && true
+	isAPIKeyMandatory = isAPIKeyEnabled && isAPIKeyMandatory // true && false = false
 
-		isMTLSMandatory = strings.ToLower(mutualSSL.Required) == "mandatory"
-		isMTLSDisabled = mutualSSL.Disabled
+	isMTLSOptional := isMTLSEnabled && !isMTLSMandatory
+	isOAuthOptional := isOAuthEnabled && !isOAuthMandatory
+	isAPIKeyOptional := isAPIKeyEnabled && !isAPIKeyMandatory
 
-		if mutualSSL != nil && r.Spec.TargetRef.Kind != constants.KindAPI {
-			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("override").Child("authTypes").Child("oauth2"), r.Spec.Override.AuthTypes.MutualSSL,
-				"invalid authentication - mTLS can currently only be added for APIs"))
-		}
-
-		if (mutualSSL == nil || !isMTLSMandatory) && isOAuthDisabled {
-			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("override").Child("authTypes").Child("mtls"), r.Spec.Override.AuthTypes,
-				"invalid authentication configuration - security not enforced for API"))
-		}
-
-		if isMTLSDisabled && isOAuthOptional {
-			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("override").Child("authTypes").Child("mtls"), r.Spec.Override.AuthTypes,
-				"invalid authentication configuration - security not enforced for API"))
-		}
-
-		if mutualSSL != nil && len(mutualSSL.CertificatesInline) == 0 && len(mutualSSL.ConfigMapRefs) == 0 && len(mutualSSL.SecretRefs) == 0 {
-			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("override").Child("authTypes").Child("mtls"), r.Spec.Override.AuthTypes.MutualSSL,
-				"invalid mTLS configuration - certificates not provided"))
-		}
+	if !(
+	// at least one must be enabled and mandatory
+	(isMTLSMandatory || isOAuthMandatory || isAPIKeyMandatory) ||
+		// mTLS is enabled and one of OAuth2 or APIKey is optional
+		(isMTLSOptional && (isOAuthOptional || isAPIKeyOptional))) {
+		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child(errorType).Child("authTypes"), r.Spec.Default.AuthTypes,
+			"invalid authtypes provided: one of mTLS, APIKey, OAuth2 has to be enabled and mandatory "+
+				"OR mTLS and one of OAuth2 or APIKey need to be optional "+
+				"OR all three can be optional"))
 	}
 
 	if len(allErrs) > 0 {
