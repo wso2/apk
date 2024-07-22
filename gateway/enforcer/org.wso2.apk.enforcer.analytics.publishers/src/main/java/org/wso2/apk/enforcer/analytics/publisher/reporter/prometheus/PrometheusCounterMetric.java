@@ -108,23 +108,6 @@ public class PrometheusCounterMetric implements CounterMetric {
         log.info("Properties String:"+propertiesString);
         if (JMXUtils.isJMXMetricsEnabled()) {
             ExtAuthMetrics.getInstance(apiInvocationEvent).recordApiMessages();
-            ExtAuthMetrics.getInstance(apiInvocationEvent).incrementTotalRequests();
-            if (apiMethod.equalsIgnoreCase("POST")) {
-                ExtAuthMetrics.getInstance(apiInvocationEvent).incrementPostRequests();
-            } else if (apiMethod.equalsIgnoreCase("GET")) {
-                ExtAuthMetrics.getInstance(apiInvocationEvent).incrementGetRequests();
-                log.info("apiMethod: " + apiMethod);
-            }
-            log.info("Proxy Response Code: " + proxyResponseCode);
-            log.info("Target Response Code: " + targetResponseCode);
-            if (proxyResponseCode == 200 || proxyResponseCode == 201 || proxyResponseCode == 202) {
-                ExtAuthMetrics.getInstance(apiInvocationEvent).incrementSuccessRequests();
-            } else {
-                ExtAuthMetrics.getInstance(apiInvocationEvent).incrementFailureRequests();
-            }
-            ExtAuthMetrics.getInstance(apiInvocationEvent).incrementResourcePath(properties.get("x-original-gw-url"));
-            ExtAuthMetrics.getInstance(apiInvocationEvent).incrementApiName(apiName);
-            ExtAuthMetrics.getInstance(apiInvocationEvent).incrementApplicationId(applicationId);
             log.info("apiName: " + apiName + ", applicationId: " + applicationId);
         }
         return 0;
