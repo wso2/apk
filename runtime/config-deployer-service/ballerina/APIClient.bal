@@ -348,17 +348,9 @@ public class APIClient {
             map<model:Endpoint|()> createdEndpointMap, commons:Organization organization) returns error? {
         map<model:Authentication> authenticationMap = {};
         model:AuthenticationExtensionType authTypes = {};
-        boolean isOAuthEnabled = true;
-        boolean isOAuthMandatory = true;
-        boolean isMTLSEnabled = false;
-        boolean isMTLSMandatory = false;
-        boolean isAPIKeyEnabled = false;
-        boolean isAPIKeyMandatory = false;
         foreach AuthenticationRequest authentication in authentications {
             if authentication.authType == "OAuth2" {
                 OAuth2Authentication oauth2Authentication = check authentication.cloneWithType(OAuth2Authentication);
-                isOAuthEnabled = oauth2Authentication.enabled;
-                isOAuthMandatory = oauth2Authentication.required == "mandatory";
                 authTypes.oauth2 = {header: <string>oauth2Authentication.headerName, sendTokenToUpstream: <boolean>oauth2Authentication.sendTokenToUpstream, disabled: !oauth2Authentication.enabled, required: oauth2Authentication.required};
             } else if authentication.authType == "JWT" {
                 JWTAuthentication jwtAuthentication = check authentication.cloneWithType(JWTAuthentication);
@@ -376,10 +368,8 @@ public class APIClient {
                 } else {
                     apiKeyAuthentication = check authentication.cloneWithType(APIKeyAuthentication);
                 }
-                isAPIKeyEnabled = apiKeyAuthentication.enabled;
-                isAPIKeyMandatory = apiKeyAuthentication.required == "mandatory";
                 model:APIKey[] apiKeys = [];
-                if isAPIKeyEnabled {
+                if apiKeyAuthentication.enabled {
                     if apiKeyAuthentication.headerEnable {
                         apiKeys.push({'in: "Header", name: <string>apiKeyAuthentication.headerName, sendTokenToUpstream: apiKeyAuthentication.sendTokenToUpstream});
                     }
@@ -393,29 +383,8 @@ public class APIClient {
                 }
             } else if authentication.authType == "mTLS" {
                 MTLSAuthentication mtlsAuthentication = check authentication.cloneWithType(MTLSAuthentication);
-                isMTLSMandatory = mtlsAuthentication.required == "mandatory";
-                isMTLSEnabled = mtlsAuthentication.enabled;
                 authTypes.mtls = {disabled: !mtlsAuthentication.enabled, configMapRefs: mtlsAuthentication.certificates, required: mtlsAuthentication.required};
             }
-        }
-
-        isOAuthMandatory = isOAuthEnabled && isOAuthMandatory;
-        boolean isOAuthOptional = isOAuthEnabled && !isOAuthMandatory;
-
-        isMTLSMandatory = isMTLSEnabled && isMTLSMandatory;
-        boolean isMTLSOptional = isMTLSEnabled && !isMTLSMandatory;
-
-        isAPIKeyMandatory = isAPIKeyEnabled && isAPIKeyMandatory;
-        boolean isAPIKeyOptional = isAPIKeyEnabled && !isAPIKeyMandatory;
-
-        if !(
-        // at least one must be enabled and mandatory
-        (isMTLSMandatory || isOAuthMandatory || isAPIKeyMandatory) ||
-        // mTLS is enabled and one of OAuth2 or APIKey is optional
-        (isMTLSOptional && (isOAuthOptional || isAPIKeyOptional))) {
-            log:printError("Invalid authtypes provided: one of mTLS, APIKey, OAuth2 has to be enabled and mandatory " +
-                "OR mTLS and one of OAuth2 or APIKey need to be optional ");
-            return e909019();
         }
 
         log:printDebug("Auth Types:" + authTypes.toString());

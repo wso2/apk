@@ -118,7 +118,6 @@ Feature: Test mTLS between client and gateway with client certificate sent in he
         When I undeploy the API whose ID is "mtls-optional-oauth2-enabled"
         Then the response status code should be 202
 
-    # Disabled scenarios
     # mTLS optional OAuth2 disabled
     Scenario: Test optional mTLS and disabled OAuth2 with a valid client certificate in header
         Given The system is ready
@@ -126,16 +125,64 @@ Feature: Test mTLS between client and gateway with client certificate sent in he
         When I use the APK Conf file "artifacts/apk-confs/mtls/mtls_optional_oauth2_disabled.apk-conf"
         And the definition file "artifacts/definitions/employees_api.json"
         And make the API deployment request
-        Then the response status code should be 406
+        Then the response status code should be 200
+        Then I set headers
+            | Authorization | bearer invalidToken |
+        And I send "GET" request to "https://default.gw.wso2.com:9095/mtls/3.14/employee/" with body ""
+        And I eventually receive 401 response code, not accepting
+            | 200 |
+        Then I set headers
+            | Authorization             | bearer ${accessToken} |
+        And I send "GET" request to "https://default.gw.wso2.com:9095/mtls/3.14/employee/" with body ""
+        And I eventually receive 401 response code, not accepting
+            | 200 |
+        Then I set headers
+            | X-WSO2-CLIENT-CERTIFICATE | ${clientCertificate}  |
+        And I send "GET" request to "https://default.gw.wso2.com:9095/mtls/3.14/employee/" with body ""
+        And I eventually receive 200 response code, not accepting
+            | 401 |
+
+    Scenario: Undeploy API
+        Given The system is ready
+        And I have a valid subscription
+        When I undeploy the API whose ID is "mtls-optional-oauth2-disabled"
+        Then the response status code should be 202
 
     # mTLS disabled OAuth2 optional
     Scenario: Test an API with mTLS disabled and OAuth2 optional
         Given The system is ready
-        And I have a valid subscription
+        And I have a valid token with a client certificate "config-map-1.txt"
         When I use the APK Conf file "artifacts/apk-confs/mtls/mtls_disabled_oauth2_optional.apk-conf"
         And the definition file "artifacts/definitions/employees_api.json"
         And make the API deployment request
-        Then the response status code should be 406
+        Then the response status code should be 200
+        Then I set headers
+            | Authorization             | bearer ${accessToken} |
+            | X-WSO2-CLIENT-CERTIFICATE | ${clientCertificate}  |
+        And I send "GET" request to "https://default.gw.wso2.com:9095/mtls/3.14/employee/" with body ""
+        And I eventually receive 200 response code, not accepting
+            | 401 |
+        Then I set headers
+            | Authorization             | bearer ${accessToken} |
+        And I send "GET" request to "https://default.gw.wso2.com:9095/mtls/3.14/employee/" with body ""
+        And I eventually receive 200 response code, not accepting
+            | 401 |
+        Then I set headers
+            | X-WSO2-CLIENT-CERTIFICATE | ${clientCertificate}  |
+        And I send "GET" request to "https://default.gw.wso2.com:9095/mtls/3.14/employee/" with body ""
+        And I eventually receive 200 response code, not accepting
+            | 401 |
+        Then I set headers
+            | Authorization             | bearer invalidToken |
+        And I send "GET" request to "https://default.gw.wso2.com:9095/mtls/3.14/employee/" with body ""
+        And I eventually receive 401 response code, not accepting
+            | 200 |
+
+    Scenario: Undeploy API
+        Given The system is ready
+        And I have a valid subscription
+        When I undeploy the API whose ID is "mtls-disabled-oauth2-optional"
+        Then the response status code should be 202
 
     # mTLS disabled OAuth2 disabled
     Scenario: Test an API with mTLS disabled and OAuth2 disabled
@@ -144,7 +191,21 @@ Feature: Test mTLS between client and gateway with client certificate sent in he
         When I use the APK Conf file "artifacts/apk-confs/mtls/mtls_disabled_oauth2_disabled.apk-conf"
         And the definition file "artifacts/definitions/employees_api.json"
         And make the API deployment request
-        Then the response status code should be 406
+        Then the response status code should be 200
+        Then I set headers
+            | Authorization | bearer invalidToken |
+        And I send "GET" request to "https://default.gw.wso2.com:9095/mtls/3.14/employee/" with body ""
+        And I eventually receive 200 response code, not accepting
+            | 401 |
+        And I send "GET" request to "https://default.gw.wso2.com:9095/mtls/3.14/employee/" with body ""
+        And I eventually receive 200 response code, not accepting
+            | 401 |
+
+    Scenario: Undeploy API
+        Given The system is ready
+        And I have a valid subscription
+        When I undeploy the API whose ID is "mtls-disabled-oauth2-disabled"
+        Then the response status code should be 202
 
     # mTLS mandatory OAuth2 disabled
     Scenario: Test mandatory mTLS and disabled OAuth2 with a valid client certificate in header

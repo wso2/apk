@@ -69,60 +69,38 @@ func (r *Authentication) ValidateAuthentication() error {
 	if r.Spec.TargetRef.Name == "" {
 		allErrs = append(allErrs, field.Required(field.NewPath("spec").Child("targetRef").Child("name"), "Name is required"))
 	}
+
 	if !(r.Spec.TargetRef.Kind == constants.KindAPI || r.Spec.TargetRef.Kind == constants.KindResource) {
 		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("targetRef").Child("kind"), r.Spec.TargetRef.Kind,
 			"Invalid Kind is provided"))
 	}
 
-	var mutualSSL *MutualSSLConfig
-	var authTypes *APIAuth
+	if r.Spec.Default != nil && r.Spec.Default.AuthTypes != nil && r.Spec.Default.AuthTypes.MutualSSL != nil {
+		if r.Spec.TargetRef.Kind != constants.KindAPI {
+			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("default").Child("authTypes").Child("mtls"), r.Spec.Default.AuthTypes.MutualSSL,
+				"invalid authentication - mTLS can only be added for APIs"))
+		}
+		mutualSSL := r.Spec.Default.AuthTypes.MutualSSL
 
-	isOAuthEnabled := true
-	isOAuthMandatory := true
+		if mutualSSL != nil && len(mutualSSL.CertificatesInline) == 0 && len(mutualSSL.ConfigMapRefs) == 0 && len(mutualSSL.SecretRefs) == 0 {
+			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("default").Child("authTypes").Child("mtls"), r.Spec.Default.AuthTypes.MutualSSL,
+				"invalid mTLS configuration - certificates not provided"))
+		}
+	}
 
-	isMTLSEnabled := false
-	isMTLSMandatory := false
-
-	isAPIKeyEnabled := false
-	isAPIKeyMandatory := false
-	if r.Spec.Default != nil && r.Spec.Default.AuthTypes != nil {
-		authTypes = r.Spec.Default.AuthTypes
-
-		isOAuthEnabled = !authTypes.OAuth2.Disabled
-		isOAuthMandatory = authTypes.OAuth2.Required == "mandatory"
-		if authTypes.MutualSSL != nil {
-			mutualSSL = authTypes.MutualSSL
-			isMTLSEnabled = !authTypes.MutualSSL.Disabled
-			isMTLSMandatory = authTypes.MutualSSL.Required == "mandatory"
+	if r.Spec.Override != nil && r.Spec.Override.AuthTypes != nil {
+		if r.Spec.Override.AuthTypes.MutualSSL != nil {
+			if r.Spec.TargetRef.Kind != constants.KindAPI {
+				allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("override").Child("authTypes").Child("mtls"), r.Spec.Override.AuthTypes.MutualSSL,
+					"invalid authentication - mTLS can currently only be added for APIs"))
+			}
 		}
 
-		if authTypes.APIKey != nil {
-			isAPIKeyEnabled = true
-			isAPIKeyMandatory = authTypes.APIKey.Required == "mandatory"
-		}
+		mutualSSL := r.Spec.Override.AuthTypes.MutualSSL
 
-		if mutualSSL != nil && r.Spec.TargetRef.Kind != constants.KindAPI {
-			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("default").Child("authTypes").Child("oauth2"), r.Spec.Default.AuthTypes.MutualSSL,
-				"invalid authentication - mTLS can currently only be added for APIs"))
-		}
-
-		isMTLSMandatory = isMTLSEnabled && isMTLSMandatory
-		isOAuthMandatory = isOAuthEnabled && isOAuthMandatory
-		isAPIKeyMandatory = isAPIKeyEnabled && isAPIKeyMandatory
-
-		isMTLSOptional := isMTLSEnabled && !isMTLSMandatory
-		isOAuthOptional := isOAuthEnabled && !isOAuthMandatory
-		isAPIKeyOptional := isAPIKeyEnabled && !isAPIKeyMandatory
-
-		// valid security combinations
-		// at least one must be enabled and mandatory
-		// OR mTLS is enabled and one of OAuth2 or APIKey is optional
-
-		if !((isMTLSMandatory || isOAuthMandatory || isAPIKeyMandatory) || (isMTLSOptional && (isOAuthOptional || isAPIKeyOptional))) {
-			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("default").Child("authTypes"), authTypes,
-				"invalid authtypes provided: one of mTLS, APIKey, OAuth2 has to be enabled and mandatory "+
-					"OR mTLS and one of OAuth2 or APIKey need to be optional "+
-					"OR all three can be optional"))
+		if mutualSSL != nil && len(mutualSSL.CertificatesInline) == 0 && len(mutualSSL.ConfigMapRefs) == 0 && len(mutualSSL.SecretRefs) == 0 {
+			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("default").Child("authTypes").Child("mtls"), r.Spec.Default.AuthTypes.MutualSSL,
+				"invalid mTLS configuration - certificates not provided"))
 		}
 	}
 
