@@ -20,7 +20,7 @@
  *
  */
 
-package provider_runner
+package runner
 
 import (
 	"context"

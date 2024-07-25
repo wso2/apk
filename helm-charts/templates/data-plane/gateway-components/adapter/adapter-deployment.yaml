@@ -114,18 +114,18 @@ spec:
               mountPath: /home/wso2/security/truststore/partition-server.crt
               subPath: {{.Values.wso2.apk.dp.partitionServer.tls.fileName | default "tls.crt"}}
             {{- end }}
-          readinessProbe:
-            exec:
-              command: [ "sh", "check_health.sh" ]
-            initialDelaySeconds: {{ .Values.wso2.apk.dp.adapter.deployment.readinessProbe.initialDelaySeconds }}
-            periodSeconds: {{ .Values.wso2.apk.dp.adapter.deployment.readinessProbe.periodSeconds }}
-            failureThreshold: {{ .Values.wso2.apk.dp.adapter.deployment.readinessProbe.failureThreshold }}
-          livenessProbe:
-            exec:
-              command: [ "sh", "check_health.sh" ]
-            initialDelaySeconds: {{ .Values.wso2.apk.dp.adapter.deployment.livenessProbe.initialDelaySeconds }}
-            periodSeconds: {{ .Values.wso2.apk.dp.adapter.deployment.livenessProbe.periodSeconds }}
-            failureThreshold: {{ .Values.wso2.apk.dp.adapter.deployment.livenessProbe.failureThreshold }}
+          # readinessProbe:
+          #   exec:
+          #     command: [ "sh", "check_health.sh" ]
+          #   initialDelaySeconds: {{ .Values.wso2.apk.dp.adapter.deployment.readinessProbe.initialDelaySeconds }}
+          #   periodSeconds: {{ .Values.wso2.apk.dp.adapter.deployment.readinessProbe.periodSeconds }}
+          #   failureThreshold: {{ .Values.wso2.apk.dp.adapter.deployment.readinessProbe.failureThreshold }}
+          # livenessProbe:
+          #   exec:
+          #     command: [ "sh", "check_health.sh" ]
+          #   initialDelaySeconds: {{ .Values.wso2.apk.dp.adapter.deployment.livenessProbe.initialDelaySeconds }}
+          #   periodSeconds: {{ .Values.wso2.apk.dp.adapter.deployment.livenessProbe.periodSeconds }}
+          #   failureThreshold: {{ .Values.wso2.apk.dp.adapter.deployment.livenessProbe.failureThreshold }}
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:

@@ -1131,7 +1131,8 @@ func (t *Translator) processDestination(backendRefContext BackendRefContext,
 
 		// Route to endpoints by default
 		if !t.EndpointRoutingDisabled {
-			endpoints, addrType = getIREndpointsFromEndpointSlices(nil, servicePort.Name, servicePort.Protocol)
+			endpointSlices := resources.GetEndpointSlicesForBackend(backendNamespace, string(backendRef.Name), KindDerefOr(backendRef.Kind, KindService))
+			endpoints, addrType = getIREndpointsFromEndpointSlices(endpointSlices, servicePort.Name, servicePort.Protocol)
 		} else {
 			// Fall back to Service ClusterIP routing
 			ep := ir.NewDestEndpoint(

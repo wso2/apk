@@ -150,3 +150,19 @@ func (c *ControllerResources) sort() {
 		return cmp.Compare(c1.GatewayClass.Name, c2.GatewayClass.Name)
 	})
 }
+
+func (r *Resources) GetEndpointSlicesForBackend(svcNamespace, svcName string, backendKind string) []*discoveryv1.EndpointSlice {
+	var endpointSlices []*discoveryv1.EndpointSlice
+	for _, endpointSlice := range r.EndpointSlices {
+		var backendSelectorLabel string
+		switch backendKind {
+		case KindService:
+			backendSelectorLabel = discoveryv1.LabelServiceName
+		}
+		if svcNamespace == endpointSlice.Namespace &&
+			endpointSlice.GetLabels()[backendSelectorLabel] == svcName {
+			endpointSlices = append(endpointSlices, endpointSlice)
+		}
+	}
+	return endpointSlices
+}

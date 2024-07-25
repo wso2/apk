@@ -50,7 +50,7 @@ func (g *GatewayContext) ResetListeners() {
 		listener := &g.Spec.Listeners[i]
 		g.Status.Listeners[i] = gwapiv1.ListenerStatus{Name: listener.Name}
 		g.listeners[i] = &ListenerContext{
-			listenerStatusId: i,
+			listenerStatusID: i,
 			Listener:         listener,
 			gateway:          g.Gateway,
 		}
@@ -64,7 +64,7 @@ type ListenerContext struct {
 	*gwapiv1.Listener
 
 	gateway           *gwapiv1.Gateway
-	listenerStatusId  int
+	listenerStatusID  int
 	namespaceSelector labels.Selector
 	tlsSecrets        []*v1.Secret
 }
@@ -80,7 +80,7 @@ func (l *ListenerContext) SetCondition(conditionType gwapiv1.ListenerConditionTy
 	}
 
 	index := -1
-	for i, existing := range l.gateway.Status.Listeners[l.listenerStatusId].Conditions {
+	for i, existing := range l.gateway.Status.Listeners[l.listenerStatusID].Conditions {
 		if existing.Type == cond.Type {
 			// return early if the condition is unchanged
 			if existing.Status == cond.Status &&
@@ -95,26 +95,26 @@ func (l *ListenerContext) SetCondition(conditionType gwapiv1.ListenerConditionTy
 	}
 
 	if index > -1 {
-		l.gateway.Status.Listeners[l.listenerStatusId].Conditions[index] = cond
+		l.gateway.Status.Listeners[l.listenerStatusID].Conditions[index] = cond
 	} else {
-		l.gateway.Status.Listeners[l.listenerStatusId].Conditions = append(l.gateway.Status.Listeners[l.listenerStatusId].Conditions, cond)
+		l.gateway.Status.Listeners[l.listenerStatusID].Conditions = append(l.gateway.Status.Listeners[l.listenerStatusID].Conditions, cond)
 	}
 }
 
 func (l *ListenerContext) SetSupportedKinds(kinds ...gwapiv1.RouteGroupKind) {
-	l.gateway.Status.Listeners[l.listenerStatusId].SupportedKinds = kinds
+	l.gateway.Status.Listeners[l.listenerStatusID].SupportedKinds = kinds
 }
 
 func (l *ListenerContext) IncrementAttachedRoutes() {
-	l.gateway.Status.Listeners[l.listenerStatusId].AttachedRoutes++
+	l.gateway.Status.Listeners[l.listenerStatusID].AttachedRoutes++
 }
 
 func (l *ListenerContext) AttachedRoutes() int32 {
-	return l.gateway.Status.Listeners[l.listenerStatusId].AttachedRoutes
+	return l.gateway.Status.Listeners[l.listenerStatusID].AttachedRoutes
 }
 
 func (l *ListenerContext) AllowsKind(kind gwapiv1.RouteGroupKind) bool {
-	for _, allowed := range l.gateway.Status.Listeners[l.listenerStatusId].SupportedKinds {
+	for _, allowed := range l.gateway.Status.Listeners[l.listenerStatusID].SupportedKinds {
 		if GroupDerefOr(allowed.Group, "") == GroupDerefOr(kind.Group, "") &&
 			allowed.Kind == kind.Kind {
 			return true
@@ -148,7 +148,7 @@ func (l *ListenerContext) AllowsNamespace(namespace *v1.Namespace) bool {
 }
 
 func (l *ListenerContext) IsReady() bool {
-	for _, cond := range l.gateway.Status.Listeners[l.listenerStatusId].Conditions {
+	for _, cond := range l.gateway.Status.Listeners[l.listenerStatusID].Conditions {
 		if cond.Type == string(gwapiv1.ListenerConditionProgrammed) && cond.Status == metav1.ConditionTrue {
 			return true
 		}
@@ -158,7 +158,7 @@ func (l *ListenerContext) IsReady() bool {
 }
 
 func (l *ListenerContext) GetConditions() []metav1.Condition {
-	return l.gateway.Status.Listeners[l.listenerStatusId].Conditions
+	return l.gateway.Status.Listeners[l.listenerStatusID].Conditions
 }
 
 func (l *ListenerContext) SetTLSSecrets(tlsSecrets []*v1.Secret) {
