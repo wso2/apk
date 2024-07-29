@@ -1,0 +1,10 @@
+udp:
+- name: "udp-route"
+  port: 10080
+  destination:
+    name: "udp-reoute-dest"
+    settings:
+    - endpoints:
+      - host: ""
+      - host: "5.6.7.8"
+        port: 50001

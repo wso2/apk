@@ -1,0 +1,30 @@
+http:
+- name: "first-listener"
+  address: "0.0.0.0"
+  port: 10080
+  hostnames:
+  - "*"
+  isHTTP2: true
+  path:
+    mergeSlashes: true
+    escapedSlashesAction: UnescapeAndRedirect
+  routes:
+  - name: "first-route"
+    hostname: "*"
+    pathMatch:
+      name: "test"
+      exact: "foo/bar"
+    headerMatches:
+    - name: user
+      stringMatch:
+      exact: "jason"
+    queryParamMatches:
+    - name: "debug"
+      exact: "yes"
+    destination:
+      name: "first-route-dest"
+      settings:
+      - endpoints:
+        - host: "1.2.3.4"
+          port: 50000
+        protocol: GRPC
