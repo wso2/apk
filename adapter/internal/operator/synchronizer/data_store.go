@@ -81,7 +81,7 @@ func (ods *OperatorDataStore) processAPIState(apiNamespacedName types.Namespaced
 		cachedAPI.AIProvider = apiState.AIProvider
 		updated = true
 		events = append(events, "API provider")
-	} else if cachedAPI.AIProvider != nil && apiState.AIProvider == nil{
+	} else if cachedAPI.AIProvider != nil && apiState.AIProvider == nil {
 		cachedAPI.AIProvider = nil
 		updated = true
 		events = append(events, "API provider")
@@ -112,7 +112,7 @@ func (ods *OperatorDataStore) processAPIState(apiNamespacedName types.Namespaced
 					if utils.NamespacedName(cachedAIRl).String() != utils.NamespacedName(aiRl).String() || cachedAIRl.Generation != aiRl.Generation {
 						updated = true
 						break
-					} 
+					}
 				} else {
 					updated = true
 					break
@@ -183,7 +183,7 @@ func (ods *OperatorDataStore) processAPIState(apiNamespacedName types.Namespaced
 					if utils.NamespacedName(cachedAIRl).String() != utils.NamespacedName(aiRl).String() || cachedAIRl.Generation != aiRl.Generation {
 						updated = true
 						break
-					} 
+					}
 				} else {
 					updated = true
 					break

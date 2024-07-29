@@ -31,6 +31,7 @@ var defaultConfig = &Config{
 		Operator: operator{
 			Namespaces: nil,
 		},
+		Namespace:   "apk",
 		Environment: "Default",
 		Metrics: Metrics{
 			Enabled: false,
@@ -48,6 +49,7 @@ var defaultConfig = &Config{
 		},
 	},
 	Envoy: envoy{
+		Namespace:         "apk",
 		ListenerCodecType: "AUTO",
 		// todo(amali) move connect timeout to crd
 		ClusterTimeoutInSeconds:          20,
