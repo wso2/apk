@@ -1,0 +1,67 @@
+gateways:
+- apiVersion: gateway.networking.k8s.io/v1
+  kind: Gateway
+  metadata:
+    creationTimestamp: null
+    name: gateway-1
+    namespace: envoy-gateway
+  spec:
+    addresses:
+    - type: IPAddress
+      value: 1.2.3.4
+    - type: IPAddress
+      value: 5.6.7.8
+    - type: Hostname
+      value: foo.bar
+    gatewayClassName: envoy-gateway-class
+    listeners:
+    - name: tcp
+      port: 80
+      protocol: TCP
+  status:
+    listeners:
+    - attachedRoutes: 0
+      conditions:
+      - lastTransitionTime: null
+        message: Sending translated listener configuration to the data plane
+        reason: Programmed
+        status: "True"
+        type: Programmed
+      - lastTransitionTime: null
+        message: Listener has been successfully translated
+        reason: Accepted
+        status: "True"
+        type: Accepted
+      - lastTransitionTime: null
+        message: Listener references have been resolved
+        reason: ResolvedRefs
+        status: "True"
+        type: ResolvedRefs
+      name: tcp
+      supportedKinds:
+      - group: gateway.networking.k8s.io
+        kind: TCPRoute
+infraIR:
+  envoy-gateway/gateway-1:
+    proxy:
+      addresses:
+      - 1.2.3.4
+      - 5.6.7.8
+      listeners:
+      - address: null
+        name: envoy-gateway/gateway-1/tcp
+        ports:
+        - containerPort: 10080
+          name: tcp
+          protocol: TCP
+          servicePort: 80
+      metadata:
+        labels:
+          apk.wso2.com/owning-gateway-name: gateway-1
+          apk.wso2.com/owning-gateway-namespace: envoy-gateway
+      name: envoy-gateway/gateway-1
+xdsIR:
+  envoy-gateway/gateway-1:
+    accessLog:
+      text:
+      - path: /dev/stdout

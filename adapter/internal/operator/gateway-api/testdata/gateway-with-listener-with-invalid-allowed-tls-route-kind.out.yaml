@@ -1,0 +1,83 @@
+gateways:
+- apiVersion: gateway.networking.k8s.io/v1
+  kind: Gateway
+  metadata:
+    creationTimestamp: null
+    name: gateway-1
+    namespace: envoy-gateway
+  spec:
+    gatewayClassName: envoy-gateway-class
+    listeners:
+    - allowedRoutes:
+        kinds:
+        - group: gateway.networking.k8s.io
+          kind: HTTPRoute
+        namespaces:
+          from: All
+      hostname: foo.com
+      name: tls
+      port: 80
+      protocol: TLS
+      tls:
+        mode: Passthrough
+  status:
+    listeners:
+    - attachedRoutes: 0
+      conditions:
+      - lastTransitionTime: null
+        message: HTTPRoute is not supported, kind must be one of [TLSRoute]
+        reason: InvalidRouteKinds
+        status: "False"
+        type: ResolvedRefs
+      - lastTransitionTime: null
+        message: Listener is invalid, see other Conditions for details.
+        reason: Invalid
+        status: "False"
+        type: Programmed
+      name: tls
+      supportedKinds: []
+infraIR:
+  envoy-gateway/gateway-1:
+    proxy:
+      metadata:
+        labels:
+          apk.wso2.com/owning-gateway-name: gateway-1
+          apk.wso2.com/owning-gateway-namespace: envoy-gateway
+      name: envoy-gateway/gateway-1
+tlsRoutes:
+- apiVersion: gateway.networking.k8s.io/v1alpha2
+  kind: TLSRoute
+  metadata:
+    creationTimestamp: null
+    name: tlsroute-1
+    namespace: default
+  spec:
+    parentRefs:
+    - name: gateway-1
+      namespace: envoy-gateway
+    rules:
+    - backendRefs:
+      - name: service-1
+        port: 8080
+  status:
+    parents:
+    - conditions:
+      - lastTransitionTime: null
+        message: No listeners included by this parent ref allowed this attachment.
+        reason: NotAllowedByListeners
+        status: "False"
+        type: Accepted
+      - lastTransitionTime: null
+        message: Resolved all the Object references for the Route
+        reason: ResolvedRefs
+        status: "True"
+        type: ResolvedRefs
+      controllerName: apk.wso2.com/gatewayclass-controller
+      parentRef:
+        name: gateway-1
+        namespace: envoy-gateway
+xdsIR:
+  envoy-gateway/gateway-1:
+    accessLog:
+      text:
+      - path: /dev/stdout
