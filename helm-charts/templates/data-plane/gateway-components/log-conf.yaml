@@ -10,6 +10,7 @@ data:
       {{- if and .Values.wso2.apk.dp.environment .Values.wso2.apk.dp.environment.name }}
       environment = "{{ .Values.wso2.apk.dp.environment.name }}"
       {{- end }}
+      namespace = "{{ .Release.Namespace }}"
     {{ if and .Values.wso2.apk.dp.adapter.deployment.configs .Values.wso2.apk.dp.adapter.deployment.configs.apiNamespaces }}
     [adapter.operator]
       namespaces = [{{ include "commaJoinedQuotedList" .Values.wso2.apk.dp.adapter.deployment.configs.apiNamespaces}}]
@@ -32,6 +33,7 @@ data:
 
     {{ if and .Values.wso2.apk.dp.gatewayRuntime.deployment .Values.wso2.apk.dp.gatewayRuntime.deployment.router .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs }}
     [router]
+      namespace = "{{ .Release.Namespace }}"
       {{ if .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.systemHost }}
       systemHost = "{{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.systemHost }}"
       {{ end }}
