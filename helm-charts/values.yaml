@@ -121,7 +121,7 @@ wso2:
           strategy: RollingUpdate
           replicas: 1
           imagePullPolicy: IfNotPresent
-          image: apk-adapter:1.1.0-SNAPSHOT
+          image: wso2/apk-adapter:1.1.0
           security:
             sslHostname: "adapter"
         #     logging:
@@ -154,7 +154,7 @@ wso2:
           strategy: RollingUpdate
           replicas: 1
           imagePullPolicy: IfNotPresent
-          image: apk-common-controller:1.1.0-SNAPSHOT
+          image: wso2/apk-common-controller:1.1.0
           security:
             sslHostname: "commoncontroller"
           # configs:
