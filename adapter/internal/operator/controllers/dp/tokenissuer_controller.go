@@ -30,6 +30,8 @@ import (
 	"github.com/wso2/apk/adapter/pkg/logging"
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -38,10 +40,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
-	"sigs.k8s.io/controller-runtime/pkg/source"
-	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"k8s.io/apimachinery/pkg/fields"
+	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
 const (
@@ -139,7 +139,7 @@ func (r *TokenssuerReconciler) populateTokenReconcileRequestsForConfigMap(ctx co
 	})
 	requests := []reconcile.Request{}
 	if err == nil && len(tokenIssuerList.Items) > 0 {
-		
+
 		for _, tokenIssuer := range tokenIssuerList.Items {
 			req := reconcile.Request{
 				NamespacedName: types.NamespacedName{
@@ -168,7 +168,7 @@ func (r *TokenssuerReconciler) populateTokenReconcileRequestsForSecret(ctx conte
 	})
 	requests := []reconcile.Request{}
 	if err == nil && len(tokenIssuerList.Items) > 0 {
-		
+
 		for _, tokenIssuer := range tokenIssuerList.Items {
 			req := reconcile.Request{
 				NamespacedName: types.NamespacedName{

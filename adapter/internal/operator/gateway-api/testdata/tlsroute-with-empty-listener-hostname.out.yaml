@@ -1,0 +1,113 @@
+gateways:
+- apiVersion: gateway.networking.k8s.io/v1
+  kind: Gateway
+  metadata:
+    creationTimestamp: null
+    name: gateway-1
+    namespace: envoy-gateway
+  spec:
+    gatewayClassName: envoy-gateway-class
+    listeners:
+    - allowedRoutes:
+        namespaces:
+          from: All
+      name: tls
+      port: 91
+      protocol: TLS
+      tls:
+        mode: Passthrough
+  status:
+    listeners:
+    - attachedRoutes: 1
+      conditions:
+      - lastTransitionTime: null
+        message: Sending translated listener configuration to the data plane
+        reason: Programmed
+        status: "True"
+        type: Programmed
+      - lastTransitionTime: null
+        message: Listener has been successfully translated
+        reason: Accepted
+        status: "True"
+        type: Accepted
+      - lastTransitionTime: null
+        message: Listener references have been resolved
+        reason: ResolvedRefs
+        status: "True"
+        type: ResolvedRefs
+      name: tls
+      supportedKinds:
+      - group: gateway.networking.k8s.io
+        kind: TLSRoute
+infraIR:
+  envoy-gateway/gateway-1:
+    proxy:
+      listeners:
+      - address: null
+        name: envoy-gateway/gateway-1/tls
+        ports:
+        - containerPort: 10091
+          name: tls
+          protocol: TLS
+          servicePort: 91
+      metadata:
+        labels:
+          apk.wso2.com/owning-gateway-name: gateway-1
+          apk.wso2.com/owning-gateway-namespace: envoy-gateway
+      name: envoy-gateway/gateway-1
+tlsRoutes:
+- apiVersion: gateway.networking.k8s.io/v1alpha2
+  kind: TLSRoute
+  metadata:
+    creationTimestamp: null
+    name: tlsroute-1
+    namespace: default
+  spec:
+    hostnames:
+    - foo.com
+    parentRefs:
+    - name: gateway-1
+      namespace: envoy-gateway
+    rules:
+    - backendRefs:
+      - name: service-1
+        port: 8080
+  status:
+    parents:
+    - conditions:
+      - lastTransitionTime: null
+        message: Route is accepted
+        reason: Accepted
+        status: "True"
+        type: Accepted
+      - lastTransitionTime: null
+        message: Resolved all the Object references for the Route
+        reason: ResolvedRefs
+        status: "True"
+        type: ResolvedRefs
+      controllerName: apk.wso2.com/gatewayclass-controller
+      parentRef:
+        name: gateway-1
+        namespace: envoy-gateway
+xdsIR:
+  envoy-gateway/gateway-1:
+    accessLog:
+      text:
+      - path: /dev/stdout
+    tcp:
+    - address: 0.0.0.0
+      destination:
+        name: tlsroute/default/tlsroute-1/rule/-1
+        settings:
+        - addressType: IP
+          endpoints:
+          - host: 7.7.7.7
+            port: 8080
+          protocol: HTTPS
+          weight: 1
+      name: envoy-gateway/gateway-1/tls/tlsroute-1
+      port: 10091
+      tls:
+        passthrough:
+          snis:
+          - foo.com

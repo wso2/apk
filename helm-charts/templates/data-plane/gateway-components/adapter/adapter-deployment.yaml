@@ -88,7 +88,7 @@ spec:
             {{- else }}
               subPath: ca.crt
             {{- end }}
-            - name: router-truststore-secret-volume
+            - name: envoy-truststore-secret-volume
               mountPath: /home/wso2/security/truststore/router.crt
             {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls }}
               subPath: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls.certFilename | default "tls.crt" }}
@@ -158,13 +158,9 @@ spec:
         #   secret:
         #     secretName: {{ template "apk-helm.resource.prefix" . }}-webhook-server-cert
         #     defaultMode: 420
-        - name: router-truststore-secret-volume
+        - name: envoy-truststore-secret-volume
           secret: 
-            {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls }}
-            secretName: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls.secretName | default (printf "%s-gateway-server-cert" (include "apk-helm.resource.prefix" .)) }}
-          {{- else }}
-            secretName: {{ template "apk-helm.resource.prefix" . }}-gateway-server-cert
-          {{- end }}
+            secretName: envoy-cert
         - name: enforcer-truststore-secret-volume
           secret: 
             {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.tls }}
