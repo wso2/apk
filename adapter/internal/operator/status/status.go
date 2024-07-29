@@ -65,7 +65,8 @@ func (updateHandler *UpdateHandler) applyUpdate(update Update) {
 	})
 
 	if err != nil {
-		loggers.LoggerAPKOperator.Errorf("Unable to update status for %s, Error : %v ", update.NamespacedName.String(), err)
+		loggers.LoggerAPKOperator.Errorf("Unable to update status for %s, Resource Kind : %+v, Error : %v ",
+			update.NamespacedName.String(), update.Resource.GetObjectKind(), err)
 	}
 }
 

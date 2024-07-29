@@ -67,3 +67,16 @@ func ToStringArray[T any](array []T) []string {
 	}
 	return vHosts
 }
+
+// RemoveString returns a newly created []string that contains all items from slice that
+// are not equal to s.
+func RemoveString(slice []string, s string) []string {
+	var newSlice []string
+	for _, item := range slice {
+		if item == s {
+			continue
+		}
+		newSlice = append(newSlice, item)
+	}
+	return newSlice
+}

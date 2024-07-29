@@ -93,6 +93,8 @@ type adapter struct {
 	Operator operator
 	// Environment of the Adapter
 	Environment string
+	// Namespace of the Adapter
+	Namespace string
 	// Metric represents configurations to expose/export go metrics
 	Metrics Metrics
 	// ControlPlane represents the connection configuration of ControlPlane
@@ -101,7 +103,8 @@ type adapter struct {
 
 // Envoy Listener Component related configurations.
 type envoy struct {
-
+	// Namespace of the envoyproxy gateway
+	Namespace string
 	// ListenerCodecType Default to AUTO where both http1 and http2 connections are handled
 	// It can be specifically set to either HTTP1 or HTTP2
 	ListenerCodecType string

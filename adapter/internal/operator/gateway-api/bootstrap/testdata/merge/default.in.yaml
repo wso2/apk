@@ -1,0 +1,13 @@
+admin:
+  address:
+    socket_address:
+      address: 0.0.0.0
+      port_value: 20000
+layered_runtime:
+  layers:
+  - name: runtime-0
+    rtds_layer:
+      rtds_config:
+        ads: {}
+        resource_api_version: V3
+      name: runtime-0
