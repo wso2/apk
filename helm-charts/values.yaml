@@ -153,7 +153,7 @@ wso2:
             failureThreshold: 5
           strategy: RollingUpdate
           replicas: 1
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           image: wso2/apk-common-controller:latest
           security:
             sslHostname: "commoncontroller"
