@@ -27,13 +27,13 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"errors"
+	"fmt"
 	"net"
-	"strconv"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/require"
-	"github.com/wso2/apk/adapter/internal/operator/gateway-api/bootstrap"
+	"github.com/wso2/apk/adapter/config"
 )
 
 // func TestTLSConfig(t *testing.T) {
@@ -189,9 +189,9 @@ func peekError(conn net.Conn) error {
 }
 
 func TestServeXdsServerListenFailed(t *testing.T) {
+	conf := config.ReadConfigs()
 	// Occupy the address to make listening failed
-	addr := net.JoinHostPort(XdsServerAddress, strconv.Itoa(bootstrap.DefaultXdsServerPort))
-	l, err := net.Listen("tcp", addr)
+	l, err := net.Listen("tcp", fmt.Sprintf(":%s", conf.Deployment.Gateway.AdapterXDSPort))
 	require.NoError(t, err)
 	defer l.Close()
 

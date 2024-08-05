@@ -273,7 +273,7 @@ func (r *ResourceRender) Deployment() (*appsv1.Deployment, error) {
 					SecurityContext:               deploymentConfig.Pod.SecurityContext,
 					Affinity:                      deploymentConfig.Pod.Affinity,
 					Tolerations:                   deploymentConfig.Pod.Tolerations,
-					Volumes:                       expectedDeploymentVolumes(r.infra.Name, deploymentConfig),
+					Volumes:                       expectedDeploymentVolumes(deploymentConfig),
 					ImagePullSecrets:              deploymentConfig.Pod.ImagePullSecrets,
 					NodeSelector:                  deploymentConfig.Pod.NodeSelector,
 					TopologySpreadConstraints:     deploymentConfig.Pod.TopologySpreadConstraints,
