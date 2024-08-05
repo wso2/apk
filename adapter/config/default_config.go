@@ -31,7 +31,6 @@ var defaultConfig = &Config{
 		Operator: operator{
 			Namespaces: nil,
 		},
-		Namespace:   "apk",
 		Environment: "Default",
 		Metrics: Metrics{
 			Enabled: false,
@@ -49,7 +48,6 @@ var defaultConfig = &Config{
 		},
 	},
 	Envoy: envoy{
-		Namespace:         "apk",
 		ListenerCodecType: "AUTO",
 		// todo(amali) move connect timeout to crd
 		ClusterTimeoutInSeconds:          20,
@@ -273,6 +271,38 @@ var defaultConfig = &Config{
 			"host":                   "jaeger",
 			"port":                   "9411",
 			"endpoint":               "/api/v2/spans",
+		},
+	},
+	Deployment: deployment{
+		//todo(amali) add validation
+		Gateway: gateway{
+			Namespace:                "apk",
+			AdapterHostName:          "",
+			AdapterHost:              "",
+			CommonControllerHostName: "",
+			CommonControllerHost:     "",
+			EnforcerPrivateKeyPath:   "/home/wso2/security/keystore/enforcer.key",
+			EnforcerPublicCertPath:   "/home/wso2/security/keystore/enforcer.crt",
+			EnforcerServerName:       "",
+			AdapterTrustedCAPath:     "/home/wso2/security/truststore",
+			AdapterXDSPort:           "18000",
+			CommonControllerXDSPort:  "18002",
+			CommonControllerRestPort: "18003",
+			EnforcerLabel:            "wso2-apk-default",
+			EnforcerRegion:           "UNKNOWN",
+			EnforcerXDSMaxMsgSize:    "4194304",
+			EnforcerXDSMaxRetries:    "3",
+			JavaOpts:                 "-Dhttpclient.hostnameVerifier=AllowAll -Xms512m -Xmx512m -XX:MaxRAMFraction=2",
+			Volumes: volumes{
+				RatelimiterTruststoreSecretVolume: "",
+				EnforcerKeystoreSecretVolume:      "",
+				RouterKeystoreSecretVolume:        "",
+				AdapterTruststoreSecretVolume:     "",
+				EnforcerJwtSecretVolume:           "",
+				EnforcerTrustedCerts:              "",
+				EnforcerApikeyCert:                "",
+				IDPCertificateSecretVolume:        "",
+			},
 		},
 	},
 }

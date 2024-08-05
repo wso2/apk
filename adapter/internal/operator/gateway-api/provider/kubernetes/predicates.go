@@ -166,9 +166,6 @@ func (r *gatewayReconcilerNew) envoyDeploymentForGateway(ctx context.Context, ga
 	}
 	deployment := new(appsv1.Deployment)
 	if err := r.client.Get(ctx, key, deployment); err != nil {
-		if k8errors.IsNotFound(err) {
-			return nil, nil
-		}
 		return nil, err
 	}
 	return deployment, nil

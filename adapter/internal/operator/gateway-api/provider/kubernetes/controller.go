@@ -88,7 +88,7 @@ func InitGatewayController(mgr manager.Manager, pResourses *message.ProviderReso
 		statusUpdater: statusUpdater,
 		mgr:           mgr,
 		resources:     pResourses,
-		namespace:     conf.Envoy.Namespace,
+		namespace:     conf.Deployment.Gateway.Namespace,
 		store:         newProviderStore(),
 	}
 	c, err := controller.New(constants.GatewayControllerNew, mgr, controller.Options{Reconciler: r})

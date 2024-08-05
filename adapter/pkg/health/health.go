@@ -58,8 +58,8 @@ type Server struct {
 
 // Check responds the health check client with health status of the Adapter
 func (s Server) Check(ctx context.Context, request *healthservice.HealthCheckRequest) (*healthservice.HealthCheckResponse, error) {
-	logger.LoggerHealth.Debugf("Querying health state for Adapter service \"%s\"", request.Service)
-	logger.LoggerHealth.Debugf("Internal health state map: %v", serviceHealthStatus)
+	// logger.LoggerHealth.Debugf("Querying health state for Adapter service \"%s\"", request.Service)
+	// logger.LoggerHealth.Debugf("Internal health state map: %v", serviceHealthStatus)
 
 	if request.Service == "" {
 		// overall health of the server

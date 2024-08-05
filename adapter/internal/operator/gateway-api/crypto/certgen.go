@@ -109,7 +109,7 @@ type certificateRequest struct {
 // and Envoy returning them as a *Certificates struct or error if encountered.
 func GenerateCerts() (*Certificates, error) {
 	conf := config.ReadConfigs()
-	gatewayNs := conf.Envoy.Namespace
+	gatewayNs := conf.Deployment.Gateway.Namespace
 	certCfg := new(Configuration)
 
 	certCfg.getProvider()
