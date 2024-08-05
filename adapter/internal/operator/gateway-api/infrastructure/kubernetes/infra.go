@@ -58,7 +58,7 @@ type Infra struct {
 func NewInfra(cli client.Client) *Infra {
 	conf := config.ReadConfigs()
 	return &Infra{
-		Namespace: conf.Envoy.Namespace,
+		Namespace: conf.Deployment.Gateway.Namespace,
 		Client:    New(cli),
 	}
 }
@@ -67,32 +67,9 @@ func NewInfra(cli client.Client) *Infra {
 // provided ResourceRender, if it doesn't exist and updates it if it does.
 func (i *Infra) createOrUpdate(ctx context.Context, r ResourceRender) error {
 
-	// certs, err := crypto.GenerateCerts()
-	// if err != nil {
-	// 	return fmt.Errorf("failed to generate certificates: %w", err)
-	// }
-	// secrets, err := gatewayapi.CreateOrUpdateSecrets(ctx, i.Client.Client, gatewayapi.CertsToSecret(i.Namespace, certs), true)
-
-	// if err != nil {
-	// 	if errors.Is(err, gatewayapi.ErrSecretExists) {
-	// 		loggers.LoggerAPKOperator.Info(err.Error())
-	// 	} else {
-	// 		return fmt.Errorf("failed to create or update secrets: %w", err)
-	// 	}
-	// } else {
-	// 	for i := range secrets {
-	// 		s := secrets[i]
-	// 		loggers.LoggerAPKOperator.Info("created secret", "namespace", s.Namespace, "name", s.Name)
-	// 	}
-	// }
-
 	if err := i.createOrUpdateServiceAccount(ctx, r); err != nil {
 		return fmt.Errorf("failed to create or update serviceaccount %s/%s: %w", i.Namespace, r.Name(), err)
 	}
-
-	// if err := i.createOrUpdateConfigMap(ctx, r); err != nil {
-	// 	return fmt.Errorf("failed to create or update configmap %s/%s: %w", i.Namespace, r.Name(), err)
-	// }
 
 	if err := i.createOrUpdateDeployment(ctx, r); err != nil {
 		return fmt.Errorf("failed to create or update deployment %s/%s: %w", i.Namespace, r.Name(), err)
