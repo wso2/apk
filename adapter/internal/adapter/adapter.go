@@ -140,67 +140,67 @@ func runManagementServer(conf *config.Config, server xdsv3.Server, enforcerServe
 
 func SetupRunners(conf *config.Config) {
 	ctx := ctrl.SetupSignalHandler()
-	// start the operator
-	pResources := new(message.ProviderResources)
-	// Start the Provider Service
-	// It fetches the resources from the configured provider type
+
+	// Step 1: Start the Kubernetes Provider Service
+	// It fetches the resources from the kubernetes
 	// and publishes it
 	// It also subscribes to status resources and once it receives
 	// a status resource back, it writes it out.
+	// Final processed crs will be stored in following pResources.
+	pResources := new(message.ProviderResources)
 	providerRunner := providerrunner.New(&providerrunner.Config{
 		ProviderResources: pResources,
 	})
 	if err := providerRunner.Start(ctx); err != nil {
-		logger.LoggerAPKOperator.Error("Error while starting provider service", err)
+		logger.LoggerAPKOperator.Error("Error while starting provider service ", err)
 	}
 
-	xdsIR := new(message.XdsIR)
-	infraIR := new(message.InfraIR)
-	// Start the GatewayAPI Translator Runner
+	// Step 2: Start the GatewayAPI Translator Runner
 	// It subscribes to the provider resources, translates it to xDS IR
 	// and infra IR resources and publishes them.
+	// Final processed structs will be in pResources, xdsIR, and infraIR
+	xdsIR := new(message.XdsIR)
+	infraIR := new(message.InfraIR)
 	gwRunner := runner.New(&runner.Config{
 		ProviderResources: pResources,
 		XdsIR:             xdsIR,
 		InfraIR:           infraIR,
 	})
 	if err := gwRunner.Start(ctx); err != nil {
-		logger.LoggerAPKOperator.Error("Error while starting translation service", err)
+		logger.LoggerAPKOperator.Error("Error while starting translation service ", err)
 	}
 
-	xds := new(message.Xds)
-	// Start the Xds Translator Service
+	// Step 3: Start the Xds Translator Service
 	// It subscribes to the xdsIR, translates it into xds Resources and publishes it.
+	// Final xds configs are in xds.
+	xds := new(message.Xds)
 	xdsTranslatorRunner := xdstranslatorrunner.New(&xdstranslatorrunner.Config{
-		// Server:            *cfg,
-		XdsIR: xdsIR,
-		Xds:   xds,
-		// ExtensionManager:  extMgr,
+		XdsIR:             xdsIR,
+		Xds:               xds,
 		ProviderResources: pResources,
 	})
 	if err := xdsTranslatorRunner.Start(ctx); err != nil {
-		logger.LoggerAPKOperator.Error("Error while starting xds translator service", err)
+		logger.LoggerAPKOperator.Error("Error while starting xds translator service ", err)
 	}
 
-	// Start the Infra Manager Runner
+	// Step 4: Start the Infra Manager Runner
 	// It subscribes to the infraIR, translates it into Envoy Proxy infrastructure
 	// resources such as K8s deployment and services.
 	infraRunner := infrarunner.New(&infrarunner.Config{
 		InfraIR: infraIR,
 	})
 	if err := infraRunner.Start(ctx); err != nil {
-		logger.LoggerAPKOperator.Error("Error while starting infrastructure service", err)
+		logger.LoggerAPKOperator.Error("Error while starting infrastructure service ", err)
 	}
 
-	// Start the xDS Server
+	// Step 5: Start the xDS Server
 	// It subscribes to the xds Resources and configures the remote Envoy Proxy
 	// via the xDS Protocol.
 	xdsServerRunner := xdsserverrunner.New(&xdsserverrunner.Config{
-		// Server: *cfg,
 		Xds: xds,
 	})
 	if err := xdsServerRunner.Start(ctx); err != nil {
-		logger.LoggerAPKOperator.Error("Error while starting xds service", err)
+		logger.LoggerAPKOperator.Error("Error while starting xds service ", err)
 	}
 }
 

@@ -59,7 +59,8 @@ wso2:
       gateway:
         listener:
           hostname: "gw.wso2.com"
-        service: {}
+        service: 
+          type: "NodePort"
           # secretName: "idp-tls"
       # partitionServer:
       #   enabled: false
@@ -124,8 +125,8 @@ wso2:
           image: wso2/apk-adapter:1.2.0-m1
           security:
             sslHostname: "adapter"
-        #     logging:
-        #       level: "INFO" # LogLevels can be "DEBG", "FATL", "ERRO", "WARN", "INFO", "PANC"
+          logging:
+            level: "DEBG" # LogLevels can be "DEBG", "FATL", "ERRO", "WARN", "INFO", "PANC"
         # #          logFormat: "TEXT" # Values can be "JSON", "TEXT"
         # configs:
         #   apiNamespaces:
@@ -247,7 +248,8 @@ wso2:
               sslHostname: "enforcer"
 #            logging:
 #              level: DEBUG
-#            configs:
+            configs:
+              javaOpts: "-Dhttpclient.hostnameVerifier=AllowAll -Xms512m -Xmx512m -XX:MaxRAMFraction=2"
 #              tls:
 #                secretName: "router-cert"
 #                certKeyFilename: ""

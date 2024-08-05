@@ -6,11 +6,21 @@ metadata:
   namespace: {{ .Release.Namespace }}
 data:
   config.toml: | 
+
+    [deployment.gateway.volumes]
+      ratelimiterTruststoreSecretVolume = "{{ template "apk-helm.resource.prefix" . }}-ratelimiter-server-cert"
+			enforcerKeystoreSecretVolume = "{{ template "apk-helm.resource.prefix" . }}-enforcer-server-cert"
+			routerKeystoreSecretVolume = "envoy-cert"
+			adapterTruststoreSecretVolume = "{{ template "apk-helm.resource.prefix" . }}-adapter-server-cert"
+			enforcerJwtSecretVolume = "{{ template "apk-helm.resource.prefix" . }}-enforcer-keystore-secret"
+			enforcerTrustedCerts = "{{ template "apk-helm.resource.prefix" . }}-enforcer-truststore-secret"
+			enforcerApikeyCert = "{{ template "apk-helm.resource.prefix" . }}-enforcer-truststore-secret"
+			idpCertificateSecretVolume = "{{ template "apk-helm.resource.prefix" . }}-enforcer-truststore-secret"
+
     [adapter]
       {{- if and .Values.wso2.apk.dp.environment .Values.wso2.apk.dp.environment.name }}
       environment = "{{ .Values.wso2.apk.dp.environment.name }}"
       {{- end }}
-      namespace = "{{ .Release.Namespace }}"
     {{ if and .Values.wso2.apk.dp.adapter.deployment.configs .Values.wso2.apk.dp.adapter.deployment.configs.apiNamespaces }}
     [adapter.operator]
       namespaces = [{{ include "commaJoinedQuotedList" .Values.wso2.apk.dp.adapter.deployment.configs.apiNamespaces}}]

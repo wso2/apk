@@ -492,44 +492,14 @@ func expectedEnforcerVolumeMounts(containerSpec *egv1a1.KubernetesContainerSpec)
 }
 
 // expectedDeploymentVolumes returns expected proxy deployment volumes.
-func expectedDeploymentVolumes(name string, deploymentSpec *egv1a1.KubernetesDeploymentSpec) []corev1.Volume {
+func expectedDeploymentVolumes(deploymentSpec *egv1a1.KubernetesDeploymentSpec) []corev1.Volume {
+	conf := config.ReadConfigs()
 	volumes := []corev1.Volume{
-		// {
-		// 	Name: "certs",
-		// 	VolumeSource: corev1.VolumeSource{
-		// 		Secret: &corev1.SecretVolumeSource{
-		// 			SecretName:  "envoy",
-		// 			DefaultMode: ptr.To[int32](420),
-		// 		},
-		// 	},
-		// },
-		// {
-		// 	Name: "sds",
-		// 	VolumeSource: corev1.VolumeSource{
-		// 		ConfigMap: &corev1.ConfigMapVolumeSource{
-		// 			LocalObjectReference: corev1.LocalObjectReference{
-		// 				Name: ExpectedResourceHashedName(name),
-		// 			},
-		// 			Items: []corev1.KeyToPath{
-		// 				{
-		// 					Key:  SdsCAFilename,
-		// 					Path: SdsCAFilename,
-		// 				},
-		// 				{
-		// 					Key:  SdsCertFilename,
-		// 					Path: SdsCertFilename,
-		// 				},
-		// 			},
-		// 			DefaultMode: ptr.To[int32](420),
-		// 			Optional:    ptr.To(false),
-		// 		},
-		// 	},
-		// },
 		{
 			Name: "ratelimiter-truststore-secret-volume",
 			VolumeSource: corev1.VolumeSource{
 				Secret: &corev1.SecretVolumeSource{
-					SecretName:  "apk-test-wso2-apk-ratelimiter-server-cert",
+					SecretName:  conf.Deployment.Gateway.Volumes.RatelimiterTruststoreSecretVolume,
 					DefaultMode: ptr.To[int32](420),
 				},
 			},
@@ -539,7 +509,7 @@ func expectedDeploymentVolumes(name string, deploymentSpec *egv1a1.KubernetesDep
 			VolumeSource: corev1.VolumeSource{
 				Secret: &corev1.SecretVolumeSource{
 					DefaultMode: ptr.To[int32](420),
-					SecretName:  "apk-test-wso2-apk-enforcer-server-cert",
+					SecretName:  conf.Deployment.Gateway.Volumes.EnforcerKeystoreSecretVolume,
 				},
 			},
 		},
@@ -559,7 +529,7 @@ func expectedDeploymentVolumes(name string, deploymentSpec *egv1a1.KubernetesDep
 			VolumeSource: corev1.VolumeSource{
 				Secret: &corev1.SecretVolumeSource{
 					DefaultMode: ptr.To[int32](420),
-					SecretName:  "envoy-cert",
+					SecretName:  conf.Deployment.Gateway.Volumes.RouterKeystoreSecretVolume,
 				},
 			},
 		},
@@ -568,7 +538,7 @@ func expectedDeploymentVolumes(name string, deploymentSpec *egv1a1.KubernetesDep
 			VolumeSource: corev1.VolumeSource{
 				Secret: &corev1.SecretVolumeSource{
 					DefaultMode: ptr.To[int32](420),
-					SecretName:  "apk-test-wso2-apk-adapter-server-cert",
+					SecretName:  conf.Deployment.Gateway.Volumes.AdapterTruststoreSecretVolume,
 				},
 			},
 		},
@@ -577,7 +547,7 @@ func expectedDeploymentVolumes(name string, deploymentSpec *egv1a1.KubernetesDep
 			VolumeSource: corev1.VolumeSource{
 				Secret: &corev1.SecretVolumeSource{
 					DefaultMode: ptr.To[int32](420),
-					SecretName:  "apk-test-wso2-apk-enforcer-keystore-secret",
+					SecretName:  conf.Deployment.Gateway.Volumes.EnforcerJwtSecretVolume,
 				},
 			},
 		},
@@ -586,7 +556,7 @@ func expectedDeploymentVolumes(name string, deploymentSpec *egv1a1.KubernetesDep
 			VolumeSource: corev1.VolumeSource{
 				Secret: &corev1.SecretVolumeSource{
 					DefaultMode: ptr.To[int32](420),
-					SecretName:  "apk-test-wso2-apk-enforcer-truststore-secret",
+					SecretName:  conf.Deployment.Gateway.Volumes.EnforcerTrustedCerts,
 				},
 			},
 		},
@@ -595,7 +565,7 @@ func expectedDeploymentVolumes(name string, deploymentSpec *egv1a1.KubernetesDep
 			VolumeSource: corev1.VolumeSource{
 				Secret: &corev1.SecretVolumeSource{
 					DefaultMode: ptr.To[int32](420),
-					SecretName:  "apk-test-wso2-apk-enforcer-truststore-secret",
+					SecretName:  conf.Deployment.Gateway.Volumes.EnforcerApikeyCert,
 				},
 			},
 		},
@@ -604,7 +574,7 @@ func expectedDeploymentVolumes(name string, deploymentSpec *egv1a1.KubernetesDep
 			VolumeSource: corev1.VolumeSource{
 				Secret: &corev1.SecretVolumeSource{
 					DefaultMode: ptr.To[int32](420),
-					SecretName:  "apk-test-wso2-apk-enforcer-truststore-secret",
+					SecretName:  conf.Deployment.Gateway.Volumes.IDPCertificateSecretVolume,
 				},
 			},
 		},
@@ -651,72 +621,70 @@ func expectedContainerEnv(containerSpec *egv1a1.KubernetesContainerSpec) []corev
 
 func expectedEnforcerEnv(containerSpec *egv1a1.KubernetesContainerSpec) []corev1.EnvVar {
 	conf := config.ReadConfigs()
-	adapterNs := conf.Adapter.Namespace
-	gatewayNs := conf.Envoy.Namespace
 	env := []corev1.EnvVar{
 		{
 			Name:  "ADAPTER_HOST_NAME",
-			Value: fmt.Sprintf("apk-test-wso2-apk-adapter-service.%s.svc", adapterNs),
+			Value: conf.Deployment.Gateway.AdapterHostName,
 		},
 		{
 			Name:  "ADAPTER_HOST",
-			Value: fmt.Sprintf("apk-test-wso2-apk-adapter-service.%s.svc", adapterNs),
+			Value: conf.Deployment.Gateway.AdapterHost,
 		},
 		{
 			Name:  "COMMON_CONTROLLER_HOST_NAME",
-			Value: fmt.Sprintf("apk-test-wso2-apk-common-controller-service.%s.svc", adapterNs),
+			Value: conf.Deployment.Gateway.CommonControllerHostName,
 		},
 		{
 			Name:  "COMMON_CONTROLLER_HOST",
-			Value: fmt.Sprintf("apk-test-wso2-apk-common-controller-service.%s.svc", adapterNs),
+			Value: conf.Deployment.Gateway.CommonControllerHost,
 		},
 		{
 			Name:  "ENFORCER_PRIVATE_KEY_PATH",
-			Value: "/home/wso2/security/keystore/enforcer.key",
+			Value: conf.Deployment.Gateway.EnforcerPrivateKeyPath,
 		},
 		{
 			Name:  "ENFORCER_PUBLIC_CERT_PATH",
-			Value: "/home/wso2/security/keystore/enforcer.crt",
+			Value: conf.Deployment.Gateway.EnforcerPublicCertPath,
 		},
 		{
 			Name:  "ENFORCER_SERVER_NAME",
-			Value: fmt.Sprintf("apk-test-wso2-apk-enforcer-service.%s.svc", gatewayNs),
+			Value: conf.Deployment.Gateway.EnforcerServerName,
 		},
 		{
 			Name:  "TRUSTED_CA_CERTS_PATH",
-			Value: "/home/wso2/security/truststore",
+			Value: conf.Deployment.Gateway.AdapterTrustedCAPath,
 		},
 		{
 			Name:  "ADAPTER_XDS_PORT",
-			Value: "18000",
+			Value: conf.Deployment.Gateway.AdapterXDSPort,
 		},
 		{
 			Name:  "COMMON_CONTROLLER_XDS_PORT",
-			Value: "18002",
+			Value: conf.Deployment.Gateway.CommonControllerXDSPort,
 		},
 		{
 			Name:  "COMMON_CONTROLLER_REST_PORT",
-			Value: "18003",
+			Value: conf.Deployment.Gateway.CommonControllerRestPort,
 		},
 		{
 			Name:  "ENFORCER_LABEL",
-			Value: "wso2-apk-default",
+			Value: conf.Deployment.Gateway.EnforcerLabel,
 		},
 		{
 			Name:  "ENFORCER_REGION",
-			Value: "UNKNOWN",
+			Value: conf.Deployment.Gateway.EnforcerRegion,
 		},
 		{
 			Name:  "XDS_MAX_MSG_SIZE",
-			Value: "4194304",
+			Value: conf.Deployment.Gateway.EnforcerXDSMaxMsgSize,
 		},
 		{
 			Name:  "XDS_MAX_RETRIES",
-			Value: "3",
+			Value: conf.Deployment.Gateway.EnforcerXDSMaxRetries,
 		},
 		{
 			Name:  "JAVA_OPTS",
-			Value: "-Dhttpclient.hostnameVerifier=AllowAll -Xms512m -Xmx512m -XX:MaxRAMFraction=2",
+			Value: conf.Deployment.Gateway.JavaOpts,
 		},
 	}
 
