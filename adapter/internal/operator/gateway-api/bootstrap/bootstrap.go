@@ -26,9 +26,11 @@ import (
 	// Register embed
 	_ "embed"
 	"fmt"
+	"strconv"
 	"strings"
 	"text/template"
 
+	"github.com/wso2/apk/adapter/config"
 	egv1a1 "github.com/wso2/apk/adapter/internal/operator/gateway-api/v1alpha1"
 	"github.com/wso2/apk/adapter/pkg/utils/regex"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -37,18 +39,12 @@ import (
 const (
 	// envoyCfgFileName is the name of the Envoy configuration file.
 	envoyCfgFileName = "bootstrap.yaml"
-	// envoyGatewayXdsServerHost is the DNS name of the Xds Server within Envoy Gateway.
-	// It defaults to the Envoy Gateway Kubernetes service.
-	envoyGatewayXdsServerHost = "envoy-gateway"
 	// EnvoyAdminAddress is the listening address of the envoy admin interface.
 	EnvoyAdminAddress = "0.0.0.0"
 	// EnvoyAdminPort is the port used to expose admin interface.
 	EnvoyAdminPort = 19000
 	// envoyAdminAccessLogPath is the path used to expose admin access log.
 	envoyAdminAccessLogPath = "/dev/null"
-
-	// DefaultXdsServerPort is the default listening port of the xds-server.
-	DefaultXdsServerPort = 18000
 
 	envoyReadinessAddress = "0.0.0.0"
 	EnvoyReadinessPort    = 19001
@@ -193,12 +189,13 @@ func GetRenderedBootstrapConfig(proxyMetrics *egv1a1.ProxyMetrics) (string, erro
 			}
 		}
 	}
-
+	conf := config.ReadConfigs()
+	xdsport, _ := strconv.Atoi(conf.Deployment.Gateway.AdapterXDSPort)
 	cfg := &bootstrapConfig{
 		parameters: bootstrapParameters{
 			XdsServer: xdsServerParameters{
-				Address: envoyGatewayXdsServerHost,
-				Port:    DefaultXdsServerPort,
+				Address: conf.Deployment.Gateway.AdapterHost,
+				Port:    int32(xdsport),
 			},
 			AdminServer: adminServerParameters{
 				Address:       EnvoyAdminAddress,

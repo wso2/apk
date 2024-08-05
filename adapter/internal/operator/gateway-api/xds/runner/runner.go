@@ -25,8 +25,8 @@ package runner
 import (
 	"context"
 	"crypto/tls"
+	"fmt"
 	"net"
-	"strconv"
 	"time"
 
 	"google.golang.org/grpc/keepalive"
@@ -39,8 +39,8 @@ import (
 	runtimev3 "github.com/envoyproxy/go-control-plane/envoy/service/runtime/v3"
 	secretv3 "github.com/envoyproxy/go-control-plane/envoy/service/secret/v3"
 	serverv3 "github.com/envoyproxy/go-control-plane/pkg/server/v3"
+	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/loggers"
-	"github.com/wso2/apk/adapter/internal/operator/gateway-api/bootstrap"
 	"github.com/wso2/apk/adapter/internal/operator/gateway-api/xds/cache"
 	"github.com/wso2/apk/adapter/internal/operator/message"
 	"github.com/wso2/apk/adapter/internal/types"
@@ -106,10 +106,10 @@ func (r *Runner) Start(ctx context.Context) (err error) {
 }
 
 func (r *Runner) serveXdsServer(ctx context.Context) {
-	addr := net.JoinHostPort(XdsServerAddress, strconv.Itoa(bootstrap.DefaultXdsServerPort))
-	l, err := net.Listen("tcp", addr)
+	conf := config.ReadConfigs()
+	l, err := net.Listen("tcp", fmt.Sprintf(":%s", conf.Deployment.Gateway.AdapterXDSPort))
 	if err != nil {
-		loggers.LoggerAPKOperator.Error(err, "failed to listen on port", "address", bootstrap.DefaultXdsServerPort)
+		loggers.LoggerAPKOperator.Error(err, "failed to listen on port", "address", conf.Deployment.Gateway.AdapterXDSPort)
 		return
 	}
 
