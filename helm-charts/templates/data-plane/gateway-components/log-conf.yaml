@@ -6,16 +6,26 @@ metadata:
   namespace: {{ .Release.Namespace }}
 data:
   config.toml: | 
+    [deployment.gateway]
+      namespace = "{{ .Release.Namespace }}"
+      adapterHostName = "{{ template "apk-helm.resource.prefix" . }}-adapter-service.{{ .Release.Namespace }}.svc"
+      adapterHost = "{{ template "apk-helm.resource.prefix" . }}-adapter-service.{{ .Release.Namespace }}.svc"
+      commonControllerHostName = "{{ template "apk-helm.resource.prefix" . }}-common-controller-service.{{ .Release.Namespace }}.svc"
+      commonControllerHost = "{{ template "apk-helm.resource.prefix" . }}-common-controller-service.{{ .Release.Namespace }}.svc"
+      enforcerServerName = "{{ template "apk-helm.resource.prefix" . }}-enforcer-service.{{ .Release.Namespace }}.svc"
+      {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.javaOpts }}
+        javaOpts = "{{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.javaOpts }}"
+      {{- end }}
 
     [deployment.gateway.volumes]
       ratelimiterTruststoreSecretVolume = "{{ template "apk-helm.resource.prefix" . }}-ratelimiter-server-cert"
-			enforcerKeystoreSecretVolume = "{{ template "apk-helm.resource.prefix" . }}-enforcer-server-cert"
-			routerKeystoreSecretVolume = "envoy-cert"
-			adapterTruststoreSecretVolume = "{{ template "apk-helm.resource.prefix" . }}-adapter-server-cert"
-			enforcerJwtSecretVolume = "{{ template "apk-helm.resource.prefix" . }}-enforcer-keystore-secret"
-			enforcerTrustedCerts = "{{ template "apk-helm.resource.prefix" . }}-enforcer-truststore-secret"
-			enforcerApikeyCert = "{{ template "apk-helm.resource.prefix" . }}-enforcer-truststore-secret"
-			idpCertificateSecretVolume = "{{ template "apk-helm.resource.prefix" . }}-enforcer-truststore-secret"
+      enforcerKeystoreSecretVolume = "{{ template "apk-helm.resource.prefix" . }}-enforcer-server-cert"
+      routerKeystoreSecretVolume = "envoy-cert"
+      adapterTruststoreSecretVolume = "{{ template "apk-helm.resource.prefix" . }}-adapter-server-cert"
+      enforcerJwtSecretVolume = "{{ template "apk-helm.resource.prefix" . }}-enforcer-keystore-secret"
+      enforcerTrustedCerts = "{{ template "apk-helm.resource.prefix" . }}-enforcer-truststore-secret"
+      enforcerApikeyCert = "{{ template "apk-helm.resource.prefix" . }}-enforcer-truststore-secret"
+      idpCertificateSecretVolume = "{{ template "apk-helm.resource.prefix" . }}-enforcer-truststore-secret"
 
     [adapter]
       {{- if and .Values.wso2.apk.dp.environment .Values.wso2.apk.dp.environment.name }}
