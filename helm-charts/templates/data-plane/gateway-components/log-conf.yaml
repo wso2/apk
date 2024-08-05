@@ -25,7 +25,7 @@ data:
       enforcerJwtSecretVolume = "{{ template "apk-helm.resource.prefix" . }}-enforcer-keystore-secret"
       enforcerTrustedCerts = "{{ template "apk-helm.resource.prefix" . }}-enforcer-truststore-secret"
       enforcerApikeyCert = "{{ template "apk-helm.resource.prefix" . }}-enforcer-truststore-secret"
-      idpCertificateSecretVolume = "{{ template "apk-helm.resource.prefix" . }}-enforcer-truststore-secret"
+      iDPCertificateSecretVolume = "{{ template "apk-helm.resource.prefix" . }}-enforcer-truststore-secret"
 
     [adapter]
       {{- if and .Values.wso2.apk.dp.environment .Values.wso2.apk.dp.environment.name }}
