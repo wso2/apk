@@ -26,6 +26,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"strings"
 
 	"github.com/wso2/apk/adapter/internal/operator/gateway-api/provider"
 	"github.com/wso2/apk/adapter/internal/operator/message"
@@ -37,6 +38,14 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+	"github.com/wso2/apk/adapter/config"	
+	"github.com/wso2/apk/adapter/pkg/metrics"
+	"github.com/wso2/apk/adapter/internal/loggers"
+	"github.com/wso2/apk/adapter/pkg/logging"
+	"github.com/wso2/apk/adapter/internal/operator/synchronizer"
+	dpcontrollers "github.com/wso2/apk/adapter/internal/operator/controllers/dp"
+
+
 )
 
 // Provider is the scaffolding for the Kubernetes provider. It sets up dependencies
@@ -64,7 +73,22 @@ func New(cfg *rest.Config, resources *message.ProviderResources) (*Provider, err
 		LeaderElectionID:       "operator-lease.apk.wso2.com",
 	}
 
+	
+	conf := config.ReadConfigs()
+	metricsConfig := conf.Adapter.Metrics
+	if metricsConfig.Enabled {
+		mgrOpts.Metrics.BindAddress = fmt.Sprintf(":%d", metricsConfig.Port)
+		// Register the metrics collector
+		if strings.EqualFold(metricsConfig.Type, metrics.PrometheusMetricType) {
+			loggers.LoggerAPKOperator.Info("Registering Prometheus metrics collector.")
+			metrics.RegisterPrometheusCollector()
+		}
+	} else {
+		mgrOpts.Metrics.BindAddress = "0"
+	}
+
 	mgr, err := ctrl.NewManager(cfg, mgrOpts)
+
 	if err != nil {
 		return nil, fmt.Errorf("failed to create manager: %w", err)
 	}
@@ -88,6 +112,47 @@ func New(cfg *rest.Config, resources *message.ProviderResources) (*Provider, err
 	if err := mgr.AddReadyzCheck("readyz", healthz.Ping); err != nil {
 		return nil, fmt.Errorf("unable to set up ready check: %w", err)
 	}
+
+	if err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2600, logging.BLOCKER, "Unable to start manager: %v", err))
+	}
+
+	// TODO: Decide on a buffer size and add to config.
+	ch := make(chan *synchronizer.APIEvent, 10)
+	successChannel := make(chan synchronizer.SuccessEvent, 10)
+
+	gatewaych := make(chan synchronizer.GatewayEvent, 10)
+	if err := mgr.Add(updateHandler); err != nil {
+		loggers.LoggerAPKOperator.Errorf("Failed to add status update handler %v", err)
+	}
+	operatorDataStore := synchronizer.GetOperatorDataStore()
+	if err := dpcontrollers.NewGatewayController(mgr, operatorDataStore, updateHandler, &gatewaych); err != nil {
+		loggers.LoggerAPKOperator.Errorf("Error creating Gateway controller: %v", err)
+	}
+
+	if err := dpcontrollers.NewAPIController(mgr, operatorDataStore, updateHandler, &ch, &successChannel); err != nil {
+		loggers.LoggerAPKOperator.Errorf("Error creating API controller: %v", err)
+	}
+
+	if err := dpcontrollers.NewTokenIssuerReconciler(mgr); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3114, logging.BLOCKER, "Error creating JWT Issuer controller: %v", err))
+	}
+	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2602, logging.BLOCKER, "Unable to set up health check: %v", err))
+	}
+	if err := mgr.AddReadyzCheck("readyz", healthz.Ping); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2603, logging.BLOCKER, "Unable to set up ready check: %v", err))
+	}
+
+	go synchronizer.HandleAPILifeCycleEvents(&ch, &successChannel)
+	go synchronizer.HandleGatewayLifeCycleEvents(&gatewaych)
+	if config.ReadConfigs().PartitionServer.Enabled {
+		go synchronizer.SendEventToPartitionServer()
+	}
+
+	// if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
+	// 	loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2604, logging.BLOCKER, "Problem running manager: %v", err))
+	// }
 
 	return &Provider{
 		manager: mgr,
