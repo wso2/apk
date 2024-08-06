@@ -21,6 +21,7 @@ package constants
 const (
 	APIController          string = "APIController"
 	GatewayController      string = "GatewayController"
+	GatewayControllerNew   string = "GatewayControllerNew"
 	ApplicationController  string = "ApplicationController"
 	SubscriptionController string = "SubscriptionController"
 	TokenIssuerController  string = "TokenIssuerController"
@@ -39,8 +40,10 @@ const (
 	OperatorPodNamespaceDefaultValue string = "default"
 )
 
+// todo(amali) move to translators
 // CRD Kinds
 const (
+	GroupName          = "dp.wso2.com"
 	KindAuthentication = "Authentication"
 	KindAPI            = "API"
 	KindService        = "Service"

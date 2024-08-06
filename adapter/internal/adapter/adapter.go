@@ -26,7 +26,12 @@ import (
 	xdsv3 "github.com/envoyproxy/go-control-plane/pkg/server/v3"
 	enforcerCallbacks "github.com/wso2/apk/adapter/internal/discovery/xds/enforcercallbacks"
 	routercb "github.com/wso2/apk/adapter/internal/discovery/xds/routercallbacks"
-	"github.com/wso2/apk/adapter/internal/operator"
+	xdstranslatorrunner "github.com/wso2/apk/adapter/internal/operator/gateway-api/translator/runner"
+	xdsserverrunner "github.com/wso2/apk/adapter/internal/operator/gateway-api/xds/runner"
+	infrarunner "github.com/wso2/apk/adapter/internal/operator/infrastructure/runner"
+	"github.com/wso2/apk/adapter/internal/operator/message"
+	"github.com/wso2/apk/adapter/internal/operator/provider-resources/runner"
+	providerrunner "github.com/wso2/apk/adapter/internal/operator/provider/runner"
 	apiservice "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/api"
 	configservice "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/config"
 	subscriptionservice "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/subscription"
@@ -50,6 +55,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/keepalive"
+	ctrl "sigs.k8s.io/controller-runtime"
 )
 
 var (
@@ -70,7 +76,7 @@ const (
 func init() {
 	flag.BoolVar(&debug, "debug", true, "Use debug logging")
 	flag.BoolVar(&onlyLogging, "onlyLogging", false, "Only demo AccessLogging Service")
-	flag.UintVar(&port, "port", 18000, "Management server port")
+	flag.UintVar(&port, "port", 18001, "Management server port")
 	flag.UintVar(&alsPort, "als", 18090, "Accesslog server port")
 	flag.StringVar(&mode, "ads", ads, "Management server type (ads, xds, rest)")
 }
@@ -132,6 +138,72 @@ func runManagementServer(conf *config.Config, server xdsv3.Server, enforcerServe
 
 }
 
+func SetupRunners(conf *config.Config) {
+	ctx := ctrl.SetupSignalHandler()
+
+	// Step 1: Start the Kubernetes Provider Service
+	// It fetches the resources from the kubernetes
+	// and publishes it
+	// It also subscribes to status resources and once it receives
+	// a status resource back, it writes it out.
+	// Final processed crs will be stored in following pResources.
+	pResources := new(message.ProviderResources)
+	providerRunner := providerrunner.New(&providerrunner.Config{
+		ProviderResources: pResources,
+	})
+	if err := providerRunner.Start(ctx); err != nil {
+		logger.LoggerAPKOperator.Error("Error while starting provider service ", err)
+	}
+
+	// Step 2: Start the GatewayAPI Translator Runner
+	// It subscribes to the provider resources, translates it to xDS IR
+	// and infra IR resources and publishes them.
+	// Final processed structs will be in pResources, xdsIR, and infraIR
+	xdsIR := new(message.XdsIR)
+	infraIR := new(message.InfraIR)
+	gwRunner := runner.New(&runner.Config{
+		ProviderResources: pResources,
+		XdsIR:             xdsIR,
+		InfraIR:           infraIR,
+	})
+	if err := gwRunner.Start(ctx); err != nil {
+		logger.LoggerAPKOperator.Error("Error while starting translation service ", err)
+	}
+
+	// Step 3: Start the Xds Translator Service
+	// It subscribes to the xdsIR, translates it into xds Resources and publishes it.
+	// Final xds configs are in xds.
+	xds := new(message.Xds)
+	xdsTranslatorRunner := xdstranslatorrunner.New(&xdstranslatorrunner.Config{
+		XdsIR:             xdsIR,
+		Xds:               xds,
+		ProviderResources: pResources,
+	})
+	if err := xdsTranslatorRunner.Start(ctx); err != nil {
+		logger.LoggerAPKOperator.Error("Error while starting xds translator service ", err)
+	}
+
+	// Step 4: Start the Infra Manager Runner
+	// It subscribes to the infraIR, translates it into Envoy Proxy infrastructure
+	// resources such as K8s deployment and services.
+	infraRunner := infrarunner.New(&infrarunner.Config{
+		InfraIR: infraIR,
+	})
+	if err := infraRunner.Start(ctx); err != nil {
+		logger.LoggerAPKOperator.Error("Error while starting infrastructure service ", err)
+	}
+
+	// Step 5: Start the xDS Server
+	// It subscribes to the xds Resources and configures the remote Envoy Proxy
+	// via the xDS Protocol.
+	xdsServerRunner := xdsserverrunner.New(&xdsserverrunner.Config{
+		Xds: xds,
+	})
+	if err := xdsServerRunner.Start(ctx); err != nil {
+		logger.LoggerAPKOperator.Error("Error while starting xds service ", err)
+	}
+}
+
 // Run starts the XDS server and Rest API server.
 func Run(conf *config.Config) {
 	sig := make(chan os.Signal, 2)
@@ -180,7 +252,8 @@ func Run(conf *config.Config) {
 	// Set enforcer startup configs
 	xds.UpdateEnforcerConfig(conf)
 
-	go operator.InitOperator(conf.Adapter.Metrics)
+	// go operator.InitOperator(conf.Adapter.Metrics)
+	SetupRunners(conf)
 
 OUTER:
 	for {

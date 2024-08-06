@@ -1,0 +1,186 @@
+gateways:
+- apiVersion: gateway.networking.k8s.io/v1
+  kind: Gateway
+  metadata:
+    creationTimestamp: null
+    name: gateway-1
+    namespace: envoy-gateway
+  spec:
+    gatewayClassName: envoy-gateway-class
+    listeners:
+    - allowedRoutes:
+        namespaces:
+          from: All
+      name: udp1
+      port: 162
+      protocol: UDP
+    - allowedRoutes:
+        namespaces:
+          from: All
+      name: udp2
+      port: 163
+      protocol: UDP
+  status:
+    listeners:
+    - attachedRoutes: 1
+      conditions:
+      - lastTransitionTime: null
+        message: Sending translated listener configuration to the data plane
+        reason: Programmed
+        status: "True"
+        type: Programmed
+      - lastTransitionTime: null
+        message: Listener has been successfully translated
+        reason: Accepted
+        status: "True"
+        type: Accepted
+      - lastTransitionTime: null
+        message: Listener references have been resolved
+        reason: ResolvedRefs
+        status: "True"
+        type: ResolvedRefs
+      name: udp1
+      supportedKinds:
+      - group: gateway.networking.k8s.io
+        kind: UDPRoute
+    - attachedRoutes: 1
+      conditions:
+      - lastTransitionTime: null
+        message: Sending translated listener configuration to the data plane
+        reason: Programmed
+        status: "True"
+        type: Programmed
+      - lastTransitionTime: null
+        message: Listener has been successfully translated
+        reason: Accepted
+        status: "True"
+        type: Accepted
+      - lastTransitionTime: null
+        message: Listener references have been resolved
+        reason: ResolvedRefs
+        status: "True"
+        type: ResolvedRefs
+      name: udp2
+      supportedKinds:
+      - group: gateway.networking.k8s.io
+        kind: UDPRoute
+infraIR:
+  envoy-gateway/gateway-1:
+    proxy:
+      listeners:
+      - address: null
+        name: envoy-gateway/gateway-1/udp1
+        ports:
+        - containerPort: 10162
+          name: udp1
+          protocol: UDP
+          servicePort: 162
+      - address: null
+        name: envoy-gateway/gateway-1/udp2
+        ports:
+        - containerPort: 10163
+          name: udp2
+          protocol: UDP
+          servicePort: 163
+      metadata:
+        labels:
+          apk.wso2.com/owning-gateway-name: gateway-1
+          apk.wso2.com/owning-gateway-namespace: envoy-gateway
+      name: envoy-gateway/gateway-1
+udpRoutes:
+- apiVersion: gateway.networking.k8s.io/v1alpha2
+  kind: UDPRoute
+  metadata:
+    creationTimestamp: null
+    name: udproute-1
+    namespace: default
+  spec:
+    parentRefs:
+    - name: gateway-1
+      namespace: envoy-gateway
+      sectionName: udp1
+    rules:
+    - backendRefs:
+      - name: service-1
+        port: 8162
+  status:
+    parents:
+    - conditions:
+      - lastTransitionTime: null
+        message: Route is accepted
+        reason: Accepted
+        status: "True"
+        type: Accepted
+      - lastTransitionTime: null
+        message: Resolved all the Object references for the Route
+        reason: ResolvedRefs
+        status: "True"
+        type: ResolvedRefs
+      controllerName: apk.wso2.com/gatewayclass-controller
+      parentRef:
+        name: gateway-1
+        namespace: envoy-gateway
+        sectionName: udp1
+- apiVersion: gateway.networking.k8s.io/v1alpha2
+  kind: UDPRoute
+  metadata:
+    creationTimestamp: null
+    name: udproute-2
+    namespace: default
+  spec:
+    parentRefs:
+    - name: gateway-1
+      namespace: envoy-gateway
+      sectionName: udp2
+    rules:
+    - backendRefs:
+      - name: service-2
+        port: 8162
+  status:
+    parents:
+    - conditions:
+      - lastTransitionTime: null
+        message: Route is accepted
+        reason: Accepted
+        status: "True"
+        type: Accepted
+      - lastTransitionTime: null
+        message: Resolved all the Object references for the Route
+        reason: ResolvedRefs
+        status: "True"
+        type: ResolvedRefs
+      controllerName: apk.wso2.com/gatewayclass-controller
+      parentRef:
+        name: gateway-1
+        namespace: envoy-gateway
+        sectionName: udp2
+xdsIR:
+  envoy-gateway/gateway-1:
+    accessLog:
+      text:
+      - path: /dev/stdout
+    udp:
+    - address: 0.0.0.0
+      destination:
+        name: udproute/default/udproute-1/rule/-1
+        settings:
+        - addressType: IP
+          endpoints:
+          - host: 7.7.7.7
+            port: 8162
+          protocol: UDP
+          weight: 1
+      name: envoy-gateway/gateway-1/udp1/udproute-1
+      port: 10162
+    - address: 0.0.0.0
+      destination:
+        name: udproute/default/udproute-2/rule/-1
+        settings:
+        - addressType: IP
+          endpoints:
+          - host: 7.7.7.7
+            port: 8162
+          protocol: UDP
+          weight: 1
+      name: envoy-gateway/gateway-1/udp2/udproute-2
+      port: 10163
