@@ -67,40 +67,39 @@ import (
 )
 
 const (
-	httpRouteAPIIndex = "httpRouteAPIIndex"
-	gqlRouteAPIIndex  = "gqlRouteAPIIndex"
+	httpRouteAPIIndex = "httpRouteAPIIndexApiController"
+	gqlRouteAPIIndex  = "gqlRouteAPIIndexApiController"
 	grpcRouteAPIIndex = "grpcRouteAPIIndex"
 	// apiAuthenticationIndex Index for API level authentications
-	apiAuthenticationIndex = "apiAuthenticationIndex"
+	apiAuthenticationIndex = "apiAuthenticationIndexApiController"
 	// apiAuthenticationResourceIndex Index for resource level authentications
-	apiAuthenticationResourceIndex = "apiAuthenticationResourceIndex"
+	apiAuthenticationResourceIndex = "apiAuthenticationResourceIndexApiController"
 	// apiRateLimitIndex Index for API level ratelimits
-	apiRateLimitIndex = "apiRateLimitIndex"
+	apiRateLimitIndex = "apiRateLimitIndexApiController"
 	// apiRateLimitResourceIndex Index for resource level ratelimits
-	apiRateLimitResourceIndex = "apiRateLimitResourceIndex"
+	apiRateLimitResourceIndex = "apiRateLimitResourceIndexApiController"
 	// gatewayHTTPRouteIndex Index for gateway httproutes
-	gatewayHTTPRouteIndex = "gatewayHTTPRouteIndex"
-	// gatewayGRPCRouteIndex Index for gateway grpcroutes
+	gatewayHTTPRouteIndex = "gatewayHTTPRouteIndexApiController"
 	gatewayGRPCRouteIndex = "gatewayGRPCRouteIndex"
 	// apiAPIPolicyIndex Index for API level apipolicies
-	apiAPIPolicyIndex = "apiAPIPolicyIndex"
+	apiAPIPolicyIndex = "apiAPIPolicyIndexApiController"
 	// apiAPIPolicyResourceIndex Index for resource level apipolicies
-	apiAPIPolicyResourceIndex        = "apiAPIPolicyResourceIndex"
-	serviceHTTPRouteIndex            = "serviceHTTPRouteIndex"
-	httprouteScopeIndex              = "httprouteScopeIndex"
+	apiAPIPolicyResourceIndex        = "apiAPIPolicyResourceIndexApiController"
+	serviceHTTPRouteIndex            = "serviceHTTPRouteIndexApiController"
+	httprouteScopeIndex              = "httprouteScopeIndexApiController"
 	grpcRouteScopeIndex              = "grpcRouteScopeIndex"
-	gqlRouteScopeIndex               = "gqlRouteScopeIndex"
+	gqlRouteScopeIndex               = "gqlRouteScopeIndexApiController"
 	configMapBackend                 = "configMapBackend"
 	configMapAPIDefinition           = "configMapAPIDefinition"
 	secretBackend                    = "secretBackend"
 	configMapAuthentication          = "configMapAuthentication"
 	secretAuthentication             = "secretAuthentication"
-	backendHTTPRouteIndex            = "backendHTTPRouteIndex"
-	backendGQLRouteIndex             = "backendGQLRouteIndex"
+	backendHTTPRouteIndex            = "backendHTTPRouteIndexApiController"
+	backendGQLRouteIndex             = "backendGQLRouteIndexApiController"
+	interceptorServiceAPIPolicyIndex = "interceptorServiceAPIPolicyIndexApiController"
+	backendInterceptorServiceIndex   = "backendInterceptorServiceIndexApiController"
+	backendJWTAPIPolicyIndex         = "backendJWTAPIPolicyIndexApiController"
 	backendGRPCRouteIndex            = "backendGRPCRouteIndex"
-	interceptorServiceAPIPolicyIndex = "interceptorServiceAPIPolicyIndex"
-	backendInterceptorServiceIndex   = "backendInterceptorServiceIndex"
-	backendJWTAPIPolicyIndex         = "backendJWTAPIPolicyIndex"
 	aiRatelimitPolicyToBackendIndex  = "aiRatelimitPolicyToBackendIndex"
 	subscriptionToAPIIndex           = "subscriptionToAPIIndex"
 	apiToSubscriptionIndex           = "apiToSubscriptionIndex"

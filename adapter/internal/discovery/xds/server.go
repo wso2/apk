@@ -227,16 +227,16 @@ func UpdateXdsCacheOnAPIChange(labels map[string]struct{}) bool {
 	revisionStatus := false
 	// TODO: (VirajSalaka) check possible optimizations, Since the number of labels are low by design it should not be an issue
 	for newLabel := range labels {
-		listeners, clusters, routes, endpoints, apis := GenerateEnvoyResoucesForGateway(newLabel)
+		_, _, _, _, apis := GenerateEnvoyResoucesForGateway(newLabel)
 		UpdateEnforcerApis(newLabel, apis, "")
-		success := UpdateXdsCacheWithLock(newLabel, endpoints, clusters, routes, listeners)
+		// success := UpdateXdsCacheWithLock(newLabel, endpoints, clusters, routes, listeners)
 		logger.LoggerXds.Debugf("Xds Cache is updated for the label : %v", newLabel)
-		if success {
-			// if even one label was updated with latest revision, we take the revision as deployed.
-			// (other labels also will get updated successfully)
-			revisionStatus = success
-			continue
-		}
+		// if success {
+		// 	// if even one label was updated with latest revision, we take the revision as deployed.
+		// 	// (other labels also will get updated successfully)
+		// 	revisionStatus = success
+		// 	continue
+		// }
 	}
 	return revisionStatus
 }
