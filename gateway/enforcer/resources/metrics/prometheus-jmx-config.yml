@@ -31,6 +31,11 @@ rules:
     help: "WSO2 APK enforcer $1."
     attrNameSnakeCase: true
     type: GAUGE
+  - pattern: 'org.wso2.apk.enforcer.analytics<type=ExtAuthMetrics><>(subscription_count|api_messages): (.*)'
+    name: org_wso2_apk_enforcer_analytics_$1
+    help: "WSO2 APK enforcer analytics $1."
+    attrNameSnakeCase: true
+    type: GAUGE
   - pattern: 'org.wso2.apk.enforcer<type=ThreadPoolConfig><>(\w+): (.*)'
     name: org_wso2_apk_enforcer_thread_pool_$1
     help: "WSO2 APK enforcer thread pool $1."
@@ -42,3 +47,43 @@ rules:
     help: Operating System $1
     attrNameSnakeCase: true
     type: GAUGE
+  - pattern: 'org.wso2.apk.enforcer.analytics<type=ExtAuthMetrics><>(total_requests): (.*)'
+    name: "api_http_requests_total"
+    attrNameSnakeCase: true
+    labels:
+      method: "ALL"
+  - pattern: 'org.wso2.apk.enforcer.analytics<type=ExtAuthMetrics><>(post_requests): (.*)'
+    name: "api_http_requests_total"
+    attrNameSnakeCase: true
+    labels:
+      method: "POST"
+  - pattern: 'org.wso2.apk.enforcer.analytics<type=ExtAuthMetrics><>(get_requests): (.*)'
+    name: "api_http_requests_total"
+    attrNameSnakeCase: true
+    labels:
+      method: "GET"
+  - pattern: 'org.wso2.apk.enforcer.analytics<type=ExtAuthMetrics><>(resource_paths): (.*)'
+    name: "api_http_requests_total"
+    attrNameSnakeCase: true
+    labels:
+      resource_paths: "$1"
+  - pattern: 'org.wso2.apk.enforcer.analytics<type=ExtAuthMetrics><>(api_name): (.*)'
+    name: "api_http_requests_total"
+    attrNameSnakeCase: true
+    labels:
+      api_name: "$1"
+  - pattern: 'org.wso2.apk.enforcer.analytics<type=ExtAuthMetrics><>(application_id): (.*)'
+    name: "api_http_requests_total"
+    attrNameSnakeCase: true
+    labels:
+      application_id: "$1"
+  - pattern: 'org.wso2.apk.enforcer.analytics<type=ExtAuthMetrics><>(success_requests): (.*)'
+    name: "api_http_requests_total"
+    attrNameSnakeCase: true
+    labels:
+      request_status: "SUCCESS"
+  - pattern: 'org.wso2.apk.enforcer.analytics<type=ExtAuthMetrics><>(failure_requests): (.*)'
+    name: "api_http_requests_total"
+    attrNameSnakeCase: true
+    labels:
+      request_status: "FAILURE"

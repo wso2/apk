@@ -24,6 +24,7 @@ import org.wso2.apk.enforcer.analytics.publisher.exception.MetricCreationExcepti
 import org.wso2.apk.enforcer.analytics.publisher.reporter.cloud.DefaultAnalyticsMetricReporter;
 import org.wso2.apk.enforcer.analytics.publisher.reporter.elk.ELKMetricReporter;
 import org.wso2.apk.enforcer.analytics.publisher.reporter.moesif.MoesifReporter;
+import org.wso2.apk.enforcer.analytics.publisher.reporter.prometheus.PrometheusMetricReporter;
 import org.wso2.apk.enforcer.analytics.publisher.util.Constants;
 
 import java.lang.reflect.Constructor;
@@ -125,6 +126,8 @@ public class MetricReporterFactory {
             fullyQualifiedClassName = DefaultAnalyticsMetricReporter.class.getName();
         } else if (Constants.MOESIF_REPORTER.equals(type)) {
             fullyQualifiedClassName = MoesifReporter.class.getName();
+        } else if (Constants.PROMETHEUS_REPORTER.equals(type)) {
+            fullyQualifiedClassName = PrometheusMetricReporter.class.getName();
         }
         return createMetricReporter(fullyQualifiedClassName , properties);
     }
