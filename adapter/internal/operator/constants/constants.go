@@ -24,6 +24,8 @@ const (
 	ApplicationController  string = "ApplicationController"
 	SubscriptionController string = "SubscriptionController"
 	TokenIssuerController  string = "TokenIssuerController"
+	HTTPRouteController    string = "HttpRouteController"
+	GatewayClassController string = "GatewayClassController"
 )
 
 // API events related constants
@@ -31,6 +33,7 @@ const (
 	Create string = "CREATED"
 	Update string = "UPDATED"
 	Delete string = "DELETED"
+	Accept string = "Accepted"
 )
 
 // Environment variable names and default values

@@ -246,7 +246,7 @@ data:
     logLevel = "{{ .Values.wso2.apk.dp.adapter.logging.level | default "INFO" }}" # LogLevels can be "DEBG", "FATL", "ERRO", "WARN", "INFO", "PANC"
     LogFormat = "{{ .Values.wso2.apk.dp.adapter.logging.logFormat | default "TEXT" }}" # Values can be "JSON", "TEXT"
     {{- else }}
-    logLevel = "INFO" # LogLevels can be "DEBG", "FATL", "ERRO", "WARN", "INFO", "PANC"
+    logLevel = "DEBG" # LogLevels can be "DEBG", "FATL", "ERRO", "WARN", "INFO", "PANC"
     LogFormat = "TEXT" # Values can be "JSON", "TEXT"
     {{- end }}
 
