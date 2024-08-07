@@ -19,6 +19,11 @@ public final class ApiProto {
   static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_wso2_discovery_api_Api_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_wso2_discovery_api_Api_ApplicationSecurityEntry_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_wso2_discovery_api_Api_ApplicationSecurityEntry_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -35,7 +40,7 @@ public final class ApiProto {
       "nfo.proto\032)wso2/discovery/api/endpoint_c" +
       "luster.proto\032&wso2/discovery/api/securit" +
       "y_info.proto\032 wso2/discovery/api/graphql" +
-      ".proto\"\210\006\n\003Api\022\n\n\002id\030\001 \001(\t\022\r\n\005title\030\002 \001(" +
+      ".proto\"\366\006\n\003Api\022\n\n\002id\030\001 \001(\t\022\r\n\005title\030\002 \001(" +
       "\t\022\017\n\007version\030\003 \001(\t\022\017\n\007apiType\030\004 \001(\t\022\036\n\026d" +
       "isableAuthentications\030\005 \001(\010\022\025\n\rdisableSc" +
       "opes\030\006 \001(\010\022\017\n\007envType\030\007 \001(\t\022/\n\tresources" +
@@ -44,20 +49,23 @@ public final class ApiProto {
       "ycleState\030\013 \001(\t\022\r\n\005vhost\030\014 \001(\t\022\026\n\016organi" +
       "zationId\030\r \001(\t\022;\n\022clientCertificates\030\016 \003" +
       "(\0132\037.wso2.discovery.api.Certificate\022\021\n\tm" +
-      "utualSSL\030\017 \001(\t\022\033\n\023applicationSecurity\030\020 " +
-      "\001(\010\022\031\n\021transportSecurity\030\021 \001(\010\022D\n\025graphq" +
-      "lComplexityInfo\030\027 \003(\0132%.wso2.discovery.a" +
-      "pi.GraphqlComplexity\022\021\n\tsystemAPI\030\030 \001(\010\022" +
-      "D\n\023backendJWTTokenInfo\030\031 \001(\0132\'.wso2.disc" +
-      "overy.api.BackendJWTTokenInfo\022\031\n\021apiDefi" +
-      "nitionFile\030\032 \001(\014\022\023\n\013environment\030\033 \001(\t\022\036\n" +
-      "\026subscriptionValidation\030\034 \001(\010\0226\n\tendpoin" +
-      "ts\030\035 \001(\0132#.wso2.discovery.api.EndpointCl" +
-      "uster\022:\n\020endpointSecurity\030\036 \003(\0132 .wso2.d" +
-      "iscovery.api.SecurityInfoBp\n#org.wso2.ap" +
-      "k.enforcer.discovery.apiB\010ApiProtoP\001Z=gi" +
-      "thub.com/envoyproxy/go-control-plane/wso" +
-      "2/discovery/api;apib\006proto3"
+      "utualSSL\030\017 \001(\t\022M\n\023applicationSecurity\030\020 " +
+      "\003(\01320.wso2.discovery.api.Api.Application" +
+      "SecurityEntry\022\031\n\021transportSecurity\030\021 \001(\010" +
+      "\022D\n\025graphqlComplexityInfo\030\027 \003(\0132%.wso2.d" +
+      "iscovery.api.GraphqlComplexity\022\021\n\tsystem" +
+      "API\030\030 \001(\010\022D\n\023backendJWTTokenInfo\030\031 \001(\0132\'" +
+      ".wso2.discovery.api.BackendJWTTokenInfo\022" +
+      "\031\n\021apiDefinitionFile\030\032 \001(\014\022\023\n\013environmen" +
+      "t\030\033 \001(\t\022\036\n\026subscriptionValidation\030\034 \001(\010\022" +
+      "6\n\tendpoints\030\035 \001(\0132#.wso2.discovery.api." +
+      "EndpointCluster\022:\n\020endpointSecurity\030\036 \003(" +
+      "\0132 .wso2.discovery.api.SecurityInfo\032:\n\030A" +
+      "pplicationSecurityEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005" +
+      "value\030\002 \001(\010:\0028\001Bp\n#org.wso2.apk.enforcer" +
+      ".discovery.apiB\010ApiProtoP\001Z=github.com/e" +
+      "nvoyproxy/go-control-plane/wso2/discover" +
+      "y/api;apib\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -75,6 +83,12 @@ public final class ApiProto {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_wso2_discovery_api_Api_descriptor,
         new java.lang.String[] { "Id", "Title", "Version", "ApiType", "DisableAuthentications", "DisableScopes", "EnvType", "Resources", "BasePath", "Tier", "ApiLifeCycleState", "Vhost", "OrganizationId", "ClientCertificates", "MutualSSL", "ApplicationSecurity", "TransportSecurity", "GraphqlComplexityInfo", "SystemAPI", "BackendJWTTokenInfo", "ApiDefinitionFile", "Environment", "SubscriptionValidation", "Endpoints", "EndpointSecurity", });
+    internal_static_wso2_discovery_api_Api_ApplicationSecurityEntry_descriptor =
+      internal_static_wso2_discovery_api_Api_descriptor.getNestedTypes().get(0);
+    internal_static_wso2_discovery_api_Api_ApplicationSecurityEntry_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_wso2_discovery_api_Api_ApplicationSecurityEntry_descriptor,
+        new java.lang.String[] { "Key", "Value", });
     org.wso2.apk.enforcer.discovery.api.ResourceProto.getDescriptor();
     org.wso2.apk.enforcer.discovery.api.CertificateProto.getDescriptor();
     org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfoProto.getDescriptor();

@@ -44,16 +44,16 @@ type AuthSpec struct {
 // APIAuth Authentication scheme type and details
 type APIAuth struct {
 
-	// Oauth2 is to specify the Oauth2 authentication scheme details
+	// OAuth2 is to specify the OAuth2 authentication scheme details
 	//
 	// +optional
-	Oauth2 Oauth2Auth `json:"oauth2,omitempty"`
+	OAuth2 OAuth2Auth `json:"oauth2,omitempty"`
 
 	// APIKey is to specify the APIKey authentication scheme details
 	//
 	// +optional
 	// +nullable
-	APIKey []APIKeyAuth `json:"apiKey,omitempty"`
+	APIKey *APIKeyAuth `json:"apiKey,omitempty"`
 
 	// JWT is to specify the JWT authentication scheme details
 	//
@@ -118,8 +118,8 @@ type JWT struct {
 	Audience []string `json:"audience,omitempty"`
 }
 
-// Oauth2Auth OAuth2 Authentication scheme details
-type Oauth2Auth struct {
+// OAuth2Auth OAuth2 Authentication scheme details
+type OAuth2Auth struct {
 
 	// Required indicates whether OAuth2 is mandatory or optional
 	// +kubebuilder:validation:Enum=mandatory;optional
@@ -147,7 +147,18 @@ type Oauth2Auth struct {
 
 // APIKeyAuth APIKey Authentication scheme details
 type APIKeyAuth struct {
+	// Required indicates if this authentication is optional or mandatory
+	//
+	// +kubebuilder:default:=optional
+	Required string `json:"required,omitempty"`
 
+	// APIKeys lists the values for the API Key authentication
+	//
+	Keys []APIKey `json:"keys,omitempty"`
+}
+
+// APIKey APIKey details
+type APIKey struct {
 	//  In is to specify how the APIKey is passed to the request
 	//
 	// +kubebuilder:validation:Enum=Header;Query

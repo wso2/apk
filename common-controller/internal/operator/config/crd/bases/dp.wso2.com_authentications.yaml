@@ -178,10 +178,11 @@ spec:
                 type: object
               targetRef:
                 description: PolicyTargetReference identifies an API object to apply
-                  policy to. This should be used as part of Policy resources that
-                  can target Gateway API resources. For more information on how this
-                  policy attachment model works, and a sample Policy resource, refer
-                  to the policy attachment documentation for Gateway API.
+                  a direct or inherited policy to. This should be used as part of
+                  Policy resources that can target Gateway API resources. For more
+                  information on how this policy attachment model works, and a sample
+                  Policy resource, refer to the policy attachment documentation for
+                  Gateway API.
                 properties:
                   group:
                     description: Group is the group of the target resource.
@@ -252,29 +253,63 @@ spec:
                       apiKey:
                         description: APIKey is to specify the APIKey authentication
                           scheme details
-                        items:
-                          description: APIKeyAuth APIKey Authentication scheme details
-                          properties:
-                            in:
-                              description: In is to specify how the APIKey is passed
-                                to the request
-                              enum:
-                              - Header
-                              - Query
-                              minLength: 1
-                              type: string
-                            name:
-                              description: Name is the name of the header or query
-                                parameter to be used
-                              minLength: 1
-                              type: string
-                            sendTokenToUpstream:
-                              description: SendTokenToUpstream is to specify whether
-                                the APIKey should be sent to the upstream
-                              type: boolean
-                          type: object
                         nullable: true
-                        type: array
+                        properties:
+                          keys:
+                            description: APIKeys lists the values for the API Key
+                              authentication
+                            items:
+                              description: APIKey APIKey details
+                              properties:
+                                in:
+                                  description: In is to specify how the APIKey is
+                                    passed to the request
+                                  enum:
+                                  - Header
+                                  - Query
+                                  minLength: 1
+                                  type: string
+                                name:
+                                  description: Name is the name of the header or query
+                                    parameter to be used
+                                  minLength: 1
+                                  type: string
+                                sendTokenToUpstream:
+                                  description: SendTokenToUpstream is to specify whether
+                                    the APIKey should be sent to the upstream
+                                  type: boolean
+                              type: object
+                            type: array
+                          required:
+                            default: optional
+                            description: Required indicates if this authentication
+                              is optional or mandatory
+                            type: string
+                        type: object
+                      jwt:
+                        description: JWT is to specify the JWT authentication scheme
+                          details
+                        properties:
+                          audience:
+                            description: Audience who can invoke a corresponding API
+                            items:
+                              type: string
+                            type: array
+                          disabled:
+                            default: true
+                            description: Disabled is to disable JWT authentication
+                            type: boolean
+                          header:
+                            default: internal-key
+                            description: Header is the header name used to pass the
+                              JWT
+                            minLength: 1
+                            type: string
+                          sendTokenToUpstream:
+                            description: SendTokenToUpstream is to specify whether
+                              the JWT should be sent to the upstream
+                            type: boolean
+                        type: object
                       mtls:
                         description: MutualSSL is to specify the features and certificates
                           for mutual SSL
@@ -339,7 +374,7 @@ spec:
                             type: array
                         type: object
                       oauth2:
-                        description: Oauth2 is to specify the Oauth2 authentication
+                        description: OAuth2 is to specify the OAuth2 authentication
                           scheme details
                         properties:
                           disabled:
@@ -351,24 +386,17 @@ spec:
                             description: Header is the header name used to pass the
                               OAuth2 token
                             type: string
-                          sendTokenToUpstream:
-                            description: SendTokenToUpstream is to specify whether
-                              the OAuth2 token should be sent to the upstream
-                            type: boolean
-                        type: object
-                      testConsoleKey:
-                        description: TestConsoleKey is to specify the Test Console
-                          Key authentication scheme details
-                        properties:
-                          header:
-                            default: internal-key
-                            description: Header is the header name used to pass the
-                              Test Console Key
-                            minLength: 1
+                          required:
+                            default: mandatory
+                            description: Required indicates whether OAuth2 is mandatory
+                              or optional
+                            enum:
+                            - mandatory
+                            - optional
                             type: string
                           sendTokenToUpstream:
                             description: SendTokenToUpstream is to specify whether
-                              the Test Console Key should be sent to the upstream
+                              the OAuth2 token should be sent to the upstream
                             type: boolean
                         type: object
                     type: object
@@ -386,29 +414,63 @@ spec:
                       apiKey:
                         description: APIKey is to specify the APIKey authentication
                           scheme details
-                        items:
-                          description: APIKeyAuth APIKey Authentication scheme details
-                          properties:
-                            in:
-                              description: In is to specify how the APIKey is passed
-                                to the request
-                              enum:
-                              - Header
-                              - Query
-                              minLength: 1
-                              type: string
-                            name:
-                              description: Name is the name of the header or query
-                                parameter to be used
-                              minLength: 1
-                              type: string
-                            sendTokenToUpstream:
-                              description: SendTokenToUpstream is to specify whether
-                                the APIKey should be sent to the upstream
-                              type: boolean
-                          type: object
                         nullable: true
-                        type: array
+                        properties:
+                          keys:
+                            description: APIKeys lists the values for the API Key
+                              authentication
+                            items:
+                              description: APIKey APIKey details
+                              properties:
+                                in:
+                                  description: In is to specify how the APIKey is
+                                    passed to the request
+                                  enum:
+                                  - Header
+                                  - Query
+                                  minLength: 1
+                                  type: string
+                                name:
+                                  description: Name is the name of the header or query
+                                    parameter to be used
+                                  minLength: 1
+                                  type: string
+                                sendTokenToUpstream:
+                                  description: SendTokenToUpstream is to specify whether
+                                    the APIKey should be sent to the upstream
+                                  type: boolean
+                              type: object
+                            type: array
+                          required:
+                            default: optional
+                            description: Required indicates if this authentication
+                              is optional or mandatory
+                            type: string
+                        type: object
+                      jwt:
+                        description: JWT is to specify the JWT authentication scheme
+                          details
+                        properties:
+                          audience:
+                            description: Audience who can invoke a corresponding API
+                            items:
+                              type: string
+                            type: array
+                          disabled:
+                            default: true
+                            description: Disabled is to disable JWT authentication
+                            type: boolean
+                          header:
+                            default: internal-key
+                            description: Header is the header name used to pass the
+                              JWT
+                            minLength: 1
+                            type: string
+                          sendTokenToUpstream:
+                            description: SendTokenToUpstream is to specify whether
+                              the JWT should be sent to the upstream
+                            type: boolean
+                        type: object
                       mtls:
                         description: MutualSSL is to specify the features and certificates
                           for mutual SSL
@@ -473,7 +535,7 @@ spec:
                             type: array
                         type: object
                       oauth2:
-                        description: Oauth2 is to specify the Oauth2 authentication
+                        description: OAuth2 is to specify the OAuth2 authentication
                           scheme details
                         properties:
                           disabled:
@@ -485,24 +547,17 @@ spec:
                             description: Header is the header name used to pass the
                               OAuth2 token
                             type: string
-                          sendTokenToUpstream:
-                            description: SendTokenToUpstream is to specify whether
-                              the OAuth2 token should be sent to the upstream
-                            type: boolean
-                        type: object
-                      testConsoleKey:
-                        description: TestConsoleKey is to specify the Test Console
-                          Key authentication scheme details
-                        properties:
-                          header:
-                            default: internal-key
-                            description: Header is the header name used to pass the
-                              Test Console Key
-                            minLength: 1
+                          required:
+                            default: mandatory
+                            description: Required indicates whether OAuth2 is mandatory
+                              or optional
+                            enum:
+                            - mandatory
+                            - optional
                             type: string
                           sendTokenToUpstream:
                             description: SendTokenToUpstream is to specify whether
-                              the Test Console Key should be sent to the upstream
+                              the OAuth2 token should be sent to the upstream
                             type: boolean
                         type: object
                     type: object
@@ -512,10 +567,11 @@ spec:
                 type: object
               targetRef:
                 description: PolicyTargetReference identifies an API object to apply
-                  policy to. This should be used as part of Policy resources that
-                  can target Gateway API resources. For more information on how this
-                  policy attachment model works, and a sample Policy resource, refer
-                  to the policy attachment documentation for Gateway API.
+                  a direct or inherited policy to. This should be used as part of
+                  Policy resources that can target Gateway API resources. For more
+                  information on how this policy attachment model works, and a sample
+                  Policy resource, refer to the policy attachment documentation for
+                  Gateway API.
                 properties:
                   group:
                     description: Group is the group of the target resource.

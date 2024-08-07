@@ -18,6 +18,7 @@
 package org.wso2.apk.enforcer.security;
 
 import java.util.stream.Collectors;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.wso2.apk.enforcer.commons.Filter;
@@ -57,7 +58,8 @@ public class AuthFilter implements Filter {
     private List<Authenticator> authenticators = new ArrayList<>();
     private static final Logger log = LogManager.getLogger(AuthFilter.class);
     private boolean isMutualSSLMandatory;
-    private boolean isOAuthBasicAuthMandatory;
+    private boolean isOAuth2Mandatory;
+    private boolean isAPIKeyMandatory;
 
     @Override
     public void init(APIConfig apiConfig, Map<String, String> configProperties) {
@@ -67,10 +69,16 @@ public class AuthFilter implements Filter {
     private void initializeAuthenticators(APIConfig apiConfig) {
         // TODO: Check security schema and add relevant authenticators.
         boolean isMutualSSLProtected = false;
+        boolean isAPIKeyProtected = false;
         isMutualSSLMandatory = false;
 
         // Set security conditions
-        isOAuthBasicAuthMandatory = apiConfig.getApplicationSecurity();
+        Map<String, Boolean> securityMaps = apiConfig.getApplicationSecurity();
+        isOAuth2Mandatory = securityMaps.getOrDefault("OAuth2", true);
+        isAPIKeyProtected = securityMaps.containsKey("APIKey");
+        if (isAPIKeyProtected) {
+            isAPIKeyMandatory = securityMaps.getOrDefault("APIKey", false);
+        }
 
         if (!Objects.isNull(apiConfig.getMutualSSL())) {
             if (apiConfig.isTransportSecurity()) {
@@ -85,7 +93,6 @@ public class AuthFilter implements Filter {
             }
         }
 
-        // TODO: Set authenticator for isBasicAuthProtected
         if (isMutualSSLProtected) {
             Authenticator mtlsAuthenticator = new MTLSAuthenticator();
             authenticators.add(mtlsAuthenticator);
@@ -98,8 +105,11 @@ public class AuthFilter implements Filter {
 
         Authenticator oauthAuthenticator = new Oauth2Authenticator(jwtConfigurationDto, isGatewayTokenCacheEnabled);
         authenticators.add(oauthAuthenticator);
-        APIKeyAuthenticator apiKeyAuthenticator = new APIKeyAuthenticator(jwtConfigurationDto);
-        authenticators.add(apiKeyAuthenticator);
+
+        if (isAPIKeyProtected){
+            APIKeyAuthenticator apiKeyAuthenticator = new APIKeyAuthenticator(jwtConfigurationDto);
+            authenticators.add(apiKeyAuthenticator);
+        }
 
         Authenticator jwtAuthenticator = new JWTAuthenticator(jwtConfigurationDto, isGatewayTokenCacheEnabled);
         authenticators.add(jwtAuthenticator);
@@ -153,10 +163,11 @@ public class AuthFilter implements Filter {
                     break;
                 }
                 // Check if the failed authentication is a mandatory application level security
-                if (isOAuthBasicAuthMandatory && !authenticator.getName()
-                        .contains(APIConstants.API_SECURITY_MUTUAL_SSL_NAME)) {
+                if (!authenticator.getName()
+                        .contains(APIConstants.API_SECURITY_MUTUAL_SSL_NAME) && (isAPIKeyMandatory || isOAuth2Mandatory)) {
                     authenticated = false;
                 }
+
             }
         }
         if (authenticated) {
@@ -190,19 +201,19 @@ public class AuthFilter implements Filter {
                     boolean isApplicationSecurityDisabled = requestContext.getMatchedResourcePaths().get(0)
                             .getAuthenticationConfig().isDisabled();
                     // proceed to the next authenticator only if application security is enabled and
-                    // if OAuth2 is mandatory
+                    // is mandatory
                     return new AuthenticationResponse(true, isMutualSSLMandatory,
-                            !isApplicationSecurityDisabled && isOAuthBasicAuthMandatory);
+                            !isApplicationSecurityDisabled && (isOAuth2Mandatory || isAPIKeyMandatory));
                 } else {
                     if (isMutualSSLMandatory) {
                         log.debug("Mandatory mTLS authentication was failed for the request: {} , API: {}:{}, " +
-                                "APIUUID: {} ",
+                                        "APIUUID: {} ",
                                 requestContext.getMatchedResourcePaths().get(0).getPath(),
                                 requestContext.getMatchedAPI().getName(), requestContext.getMatchedAPI().getVersion(),
                                 requestContext.getMatchedAPI().getUuid());
                     } else {
                         log.debug("Optional mTLS authentication was failed for the request: {} , API: {}:{}, " +
-                                "APIUUID: {} ",
+                                        "APIUUID: {} ",
                                 requestContext.getMatchedResourcePaths().get(0).getPath(),
                                 requestContext.getMatchedAPI().getName(), requestContext.getMatchedAPI().getVersion(),
                                 requestContext.getMatchedAPI().getUuid());
@@ -212,7 +223,7 @@ public class AuthFilter implements Filter {
                 }
                 // for all authenticators other than mTLS
             } else if (authenticate.isAuthenticated()) {
-                return new AuthenticationResponse(true, isOAuthBasicAuthMandatory, false);
+                return new AuthenticationResponse(true, isOAuth2Mandatory && isAPIKeyMandatory, false);
             }
         } catch (APISecurityException e) {
             // TODO: (VirajSalaka) provide the error code properly based on exception (401,
@@ -224,7 +235,7 @@ public class AuthFilter implements Filter {
             continueToNextAuth = false;
         }
         return new AuthenticationResponse(false,
-                isOAuthBasicAuthMandatory || isMutualSSLMandatory, continueToNextAuth);
+                isOAuth2Mandatory || isMutualSSLMandatory, continueToNextAuth);
     }
 
     private String getAuthenticatorsChallengeString() {

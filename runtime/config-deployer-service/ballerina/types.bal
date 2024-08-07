@@ -490,6 +490,7 @@ public type RetryPolicy record {
 
 # Configuration for API Key Auth Type
 #
+# + required - If APIKey is optional or mandatory
 # + sendTokenToUpstream - Enables sending the API Key to upstream.
 # + headerName - Name of APIKey header.
 # + queryParamName - Name of APIKey query parameter.
@@ -497,6 +498,7 @@ public type RetryPolicy record {
 # + queryParamEnable - Enable sending API Key as a query param.
 public type APIKeyAuthentication record {|
     *Authentication;
+    string required = "optional";
     boolean sendTokenToUpstream = false;
     string headerName = "apiKey";
     string queryParamName = "apiKey";
