@@ -333,21 +333,21 @@
         "request": {
           "type": "array",
           "items": {
-            "$ref": "#/schemas/APKOperationPolicy"
+            "$ref": "#/schemas/APKRequestOperationPolicy"
           },
           "description": "Policies applied to request operations."
         },
         "response": {
           "type": "array",
           "items": {
-            "$ref": "#/schemas/APKOperationPolicy"
+            "$ref": "#/schemas/APKResponseOperationPolicy"
           },
           "description": "Policies applied to response operations."
         }
       },
       "additionalProperties": false
     },
-    "APKOperationPolicy": {
+    "APKRequestOperationPolicy": {
       "title": "API Operation Policy",
       "required": [
         "policyName"
@@ -358,9 +358,61 @@
           "type": "string",
           "description": "The name of the operation policy.",
           "enum": [
-            "AddHeaders",
-            "RemoveHeaders",
-            "SetHeaders",
+            "AddHeader",
+            "RemoveHeader",
+            "SetHeader",
+            "Interceptor",
+            "BackendJwt",
+            "RequestMirror",
+            "RequestRedirect"
+          ]
+        },
+        "policyVersion": {
+          "type": "string",
+          "default": "v1",
+          "description": "The version of the operation policy."
+        },
+        "policyId": {
+          "type": "string",
+          "description": "The ID of the operation policy."
+        },
+        "parameters": {
+          "type": "object",
+          "oneOf": [
+            {
+              "$ref": "#/schemas/InterceptorProperties"
+            },
+            {
+              "$ref": "#/schemas/BackendJWTProperties"
+            },
+            {
+              "$ref": "#/schemas/HeaderModifierProperties"
+            },
+            {
+              "$ref": "#/schemas/RequestMirrorProperties"
+            },
+            {
+              "$ref": "#/schemas/RequestRedirectProperties"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "APKResponseOperationPolicy": {
+      "title": "API Operation Policy",
+      "required": [
+        "policyName"
+      ],
+      "type": "object",
+      "properties": {
+        "policyName": {
+          "type": "string",
+          "description": "The name of the operation policy.",
+          "enum": [
+            "AddHeader",
+            "RemoveHeader",
+            "SetHeader",
             "Interceptor",
             "BackendJwt"
           ]
@@ -711,30 +763,52 @@
       "title": "Header Modifier Parameters",
       "type": "object",
       "properties": {
-        "headers": {
+        "headerName": {
+          "type": "string",
+          "description": "The name of the header."
+        },
+        "headerValue": {
+          "type": "string",
+          "description": "The value of the header."
+        }
+      },
+      "required": [
+        "headerName"
+      ],
+      "additionalProperties": false
+    },
+    "RequestMirrorProperties": {
+      "title": "Request Mirror Parameters",
+      "type": "object",
+      "properties": {
+        "urls": {
           "type": "array",
           "items": {
-            "oneOf": [
-              {
-                "$ref": "#/schemas/Header"
-              },
-              {
-                "type": "string"
-              }
-            ]
+            "type": "string"
           }
         }
       },
       "additionalProperties": false
     },
-    "Header": {
+    "RequestRedirectProperties": {
+      "title": "Request Redirect Parameters",
       "type": "object",
-      "name": {
-        "type": "string"
+      "properties": {
+        "url": {
+          "type": "string",
+          "description": "The URL to redirect the request to."
+        },
+        "statusCode": {
+          "type": "integer",
+          "description": "The status code to show upon redirecting the request.",
+          "default": 302,
+          "enum": [
+            301,
+            302
+          ]
+        }
       },
-      "value": {
-        "type": "string"
-      }
+      "additionalProperties": false
     },
     "CustomClaims": {
       "type": "object",

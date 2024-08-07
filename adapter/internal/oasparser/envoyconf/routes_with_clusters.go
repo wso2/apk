@@ -224,29 +224,31 @@ func CreateRoutesWithClusters(adapterInternalAPI *model.AdapterInternalAPI, inte
 
 		// Creating clusters for request mirroring endpoints
 		for _, op := range resource.GetOperations() {
-			if op.GetMirrorEndpoints() != nil && len(op.GetMirrorEndpoints().Endpoints) > 0 {
-				mirrorEndpointCluster := op.GetMirrorEndpoints()
-				for _, mirrorEndpoint := range mirrorEndpointCluster.Endpoints {
-					mirrorBasepath := strings.TrimSuffix(mirrorEndpoint.Basepath, "/")
-					existingMirrorClusterName := getExistingClusterName(*mirrorEndpointCluster, processedEndpoints)
-					var mirrorClusterName string
-					if existingMirrorClusterName == "" {
-						mirrorClusterName = getClusterName(mirrorEndpointCluster.EndpointPrefix, organizationID, vHost, adapterInternalAPI.GetTitle(), apiVersion, resource.GetID())
-						mirrorCluster, mirrorAddress, err := processEndpoints(mirrorClusterName, mirrorEndpointCluster, timeout, mirrorBasepath)
-						if err != nil {
-							logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2239, logging.MAJOR, "Error while adding resource level mirror filter endpoints for %s:%v-%v. %v", apiTitle, apiVersion, resourcePath, err.Error()))
+			if op.GetMirrorEndpointClusters() != nil && len(op.GetMirrorEndpointClusters()) > 0 {
+				mirrorEndpointClusters := op.GetMirrorEndpointClusters()
+				for _, mirrorEndpointCluster := range mirrorEndpointClusters {
+					for _, mirrorEndpoint := range mirrorEndpointCluster.Endpoints {
+						mirrorBasepath := strings.TrimSuffix(mirrorEndpoint.Basepath, "/")
+						existingMirrorClusterName := getExistingClusterName(*mirrorEndpointCluster, processedEndpoints)
+						var mirrorClusterName string
+						if existingMirrorClusterName == "" {
+							mirrorClusterName = getClusterName(mirrorEndpointCluster.EndpointPrefix, organizationID, vHost, adapterInternalAPI.GetTitle(), apiVersion, op.GetID())
+							mirrorCluster, mirrorAddress, err := processEndpoints(mirrorClusterName, mirrorEndpointCluster, timeout, mirrorBasepath)
+							if err != nil {
+								logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2239, logging.MAJOR, "Error while adding resource level mirror filter endpoints for %s:%v-%v. %v", apiTitle, apiVersion, resourcePath, err.Error()))
+							} else {
+								clusters = append(clusters, mirrorCluster)
+								endpoints = append(endpoints, mirrorAddress...)
+								processedEndpoints[mirrorClusterName] = *mirrorEndpointCluster
+							}
 						} else {
-							clusters = append(clusters, mirrorCluster)
-							endpoints = append(endpoints, mirrorAddress...)
-							processedEndpoints[mirrorClusterName] = *mirrorEndpointCluster
+							mirrorClusterName = existingMirrorClusterName
 						}
-					} else {
-						mirrorClusterName = existingMirrorClusterName
+						if _, exists := mirrorClusterNames[op.GetID()]; !exists {
+							mirrorClusterNames[op.GetID()] = []string{}
+						}
+						mirrorClusterNames[op.GetID()] = append(mirrorClusterNames[op.GetID()], mirrorClusterName)
 					}
-					if _, exists := mirrorClusterNames[op.GetID()]; !exists {
-						mirrorClusterNames[op.GetID()] = []string{}
-					}
-					mirrorClusterNames[op.GetID()] = append(mirrorClusterNames[op.GetID()], mirrorClusterName)
 				}
 			}
 		}
@@ -998,7 +1000,10 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 				case constants.ActionRedirectRequest:
 					logger.LoggerOasparser.Debugf("Adding %s policy to request flow for %s %s",
 						constants.ActionRedirectRequest, resourcePath, operation.GetMethod())
-					requestRedirectAction = generateRequestRedirectRoute(resourcePath, requestPolicy.Parameters)
+					requestRedirectAction, err = generateRequestRedirectRoute(resourcePath, requestPolicy.Parameters)
+					if err != nil {
+						return nil, err
+					}
 				}
 			}
 

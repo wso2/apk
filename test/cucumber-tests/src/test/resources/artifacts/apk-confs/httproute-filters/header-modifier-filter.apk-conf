@@ -1,7 +1,7 @@
 ---
-id: "api-with-request-and-response-filters"
+id: "api-with-header-modifier-filters"
 name: "EmployeeServiceAPI"
-basePath: "/request-and-response-filters"
+basePath: "/header-modifier-filters"
 version: "3.14"
 type: "REST"
 defaultVersion: false
@@ -15,41 +15,35 @@ operations:
     scopes: []
     operationPolicies:
       request:
-        - policyName: AddHeaders
+        - policyName: AddHeader
           policyVersion: v1
           parameters:
-            headers:
-              - name: "Test-Request-Header"
-                value: "Test-Value"
-        - policyName: SetHeaders
+            headerName: "Test-Request-Header"
+            headerValue: "Test-Value"
+        - policyName: SetHeader
           policyVersion: v1
           parameters:
-            headers:
-              - name: "Set-Request-Header"
-                value: "Test-Value"
-        - policyName: RemoveHeaders
+            headerName: "Set-Request-Header"
+            headerValue: "Test-Value"
+        - policyName: RemoveHeader
           policyVersion: v1
           parameters:
-            headers:
-              - "Authorization"
+            headerName: "Authorization"
       response:
-        - policyName: AddHeaders
+        - policyName: AddHeader
           policyVersion: v1
           parameters:
-            headers:
-              - name: "Test-Response-Header"
-                value: "Test-Value"
-        - policyName: SetHeaders
+            headerName: "Test-Response-Header"
+            headerValue: "Test-Value"
+        - policyName: SetHeader
           policyVersion: v1
           parameters:
-            headers:
-              - name: "Set-Response-Header"
-                value: "Test-Value"
-        - policyName: RemoveHeaders
+            headerName: "Set-Response-Header"
+            headerValue: "Test-Value"
+        - policyName: RemoveHeader
           policyVersion: v1
           parameters:
-            headers:
-              - "content-type"
+            headerName: "content-type"
   - target: "/employee"
     verb: "POST"
     secured: true

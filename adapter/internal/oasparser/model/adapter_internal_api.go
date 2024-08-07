@@ -487,8 +487,9 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 		var baseIntervalInMillis uint32
 		hasURLRewritePolicy := false
 		hasRequestRedirectPolicy := false
-		var mirrorEndpointsList []Endpoint
 		var securityConfig []EndpointSecurity
+		var mirrorEndpointClusters []*EndpointCluster
+
 		backendBasePath := ""
 		for _, backend := range rule.BackendRefs {
 			backendName := types.NamespacedName{
@@ -702,21 +703,101 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 				})
 
 			case gwapiv1.HTTPRouteFilterRequestMirror:
+				var mirrorTimeoutInMillis uint32
+				var mirrorIdleTimeoutInSeconds uint32
+				var mirrorCircuitBreaker *dpv1alpha1.CircuitBreaker
+				var mirrorHealthCheck *dpv1alpha1.HealthCheck
+				isMirrorRetryConfig := false
+				isMirrorRouteTimeout := false
+				var mirrorBackendRetryCount uint32
+				var mirrorStatusCodes []uint32
+				mirrorStatusCodes = append(mirrorStatusCodes, config.Envoy.Upstream.Retry.StatusCodes...)
+				var mirrorBaseIntervalInMillis uint32
 				policyParameters := make(map[string]interface{})
-				backend := &filter.RequestMirror.BackendRef
-				backendName := types.NamespacedName{
-					Name:      string(backend.Name),
-					Namespace: utils.GetNamespace(backend.Namespace, httpRoute.Namespace),
+				mirrorBackend := &filter.RequestMirror.BackendRef
+				mirrorBackendName := types.NamespacedName{
+					Name:      string(mirrorBackend.Name),
+					Namespace: utils.GetNamespace(mirrorBackend.Namespace, httpRoute.Namespace),
 				}
-				_, ok := resourceParams.BackendMapping[backendName.String()]
-				if !ok {
-					return fmt.Errorf("backend: %s has not been resolved", backendName)
+				resolvedMirrorBackend, ok := resourceParams.BackendMapping[mirrorBackendName.String()]
+
+				if ok {
+					if resolvedMirrorBackend.CircuitBreaker != nil {
+						mirrorCircuitBreaker = &dpv1alpha1.CircuitBreaker{
+							MaxConnections:     resolvedMirrorBackend.CircuitBreaker.MaxConnections,
+							MaxPendingRequests: resolvedMirrorBackend.CircuitBreaker.MaxPendingRequests,
+							MaxRequests:        resolvedMirrorBackend.CircuitBreaker.MaxRequests,
+							MaxRetries:         resolvedMirrorBackend.CircuitBreaker.MaxRetries,
+							MaxConnectionPools: resolvedMirrorBackend.CircuitBreaker.MaxConnectionPools,
+						}
+					}
+
+					if resolvedMirrorBackend.Timeout != nil {
+						isMirrorRouteTimeout = true
+						mirrorTimeoutInMillis = resolvedMirrorBackend.Timeout.UpstreamResponseTimeout * 1000
+						mirrorIdleTimeoutInSeconds = resolvedMirrorBackend.Timeout.DownstreamRequestIdleTimeout
+					}
+
+					if resolvedMirrorBackend.Retry != nil {
+						isMirrorRetryConfig = true
+						mirrorBackendRetryCount = resolvedMirrorBackend.Retry.Count
+						mirrorBaseIntervalInMillis = resolvedMirrorBackend.Retry.BaseIntervalMillis
+						if len(resolvedMirrorBackend.Retry.StatusCodes) > 0 {
+							mirrorStatusCodes = resolvedMirrorBackend.Retry.StatusCodes
+						}
+					}
+
+					if resolvedMirrorBackend.HealthCheck != nil {
+						mirrorHealthCheck = &dpv1alpha1.HealthCheck{
+							Interval:           resolvedMirrorBackend.HealthCheck.Interval,
+							Timeout:            resolvedMirrorBackend.HealthCheck.Timeout,
+							UnhealthyThreshold: resolvedMirrorBackend.HealthCheck.UnhealthyThreshold,
+							HealthyThreshold:   resolvedMirrorBackend.HealthCheck.HealthyThreshold,
+						}
+					}
+				} else {
+					return fmt.Errorf("backend: %s has not been resolved", mirrorBackendName)
 				}
-				mirrorEndpoints := GetEndpoints(backendName, resourceParams.BackendMapping)
+
+				mirrorEndpoints := GetEndpoints(mirrorBackendName, resourceParams.BackendMapping)
 				if len(mirrorEndpoints) > 0 {
-					policyParameters["endpoints"] = mirrorEndpoints
+					mirrorEndpointCluster := &EndpointCluster{
+						Endpoints: mirrorEndpoints,
+					}
+					mirrorEndpointConfig := &EndpointConfig{}
+					if isMirrorRouteTimeout {
+						mirrorEndpointConfig.TimeoutInMillis = mirrorTimeoutInMillis
+						mirrorEndpointConfig.IdleTimeoutInSeconds = mirrorIdleTimeoutInSeconds
+					}
+					if mirrorCircuitBreaker != nil {
+						mirrorEndpointConfig.CircuitBreakers = &CircuitBreakers{
+							MaxConnections:     int32(mirrorCircuitBreaker.MaxConnections),
+							MaxRequests:        int32(mirrorCircuitBreaker.MaxRequests),
+							MaxPendingRequests: int32(mirrorCircuitBreaker.MaxPendingRequests),
+							MaxRetries:         int32(mirrorCircuitBreaker.MaxRetries),
+							MaxConnectionPools: int32(mirrorCircuitBreaker.MaxConnectionPools),
+						}
+					}
+					if isMirrorRetryConfig {
+						mirrorEndpointConfig.RetryConfig = &RetryConfig{
+							Count:                int32(mirrorBackendRetryCount),
+							StatusCodes:          mirrorStatusCodes,
+							BaseIntervalInMillis: int32(mirrorBaseIntervalInMillis),
+						}
+					}
+					if mirrorHealthCheck != nil {
+						mirrorEndpointCluster.HealthCheck = &HealthCheck{
+							Interval:           mirrorHealthCheck.Interval,
+							Timeout:            mirrorHealthCheck.Timeout,
+							UnhealthyThreshold: mirrorHealthCheck.UnhealthyThreshold,
+							HealthyThreshold:   mirrorHealthCheck.HealthyThreshold,
+						}
+					}
+					if isMirrorRouteTimeout || mirrorCircuitBreaker != nil || mirrorHealthCheck != nil || isMirrorRetryConfig {
+						mirrorEndpointCluster.Config = mirrorEndpointConfig
+					}
+					mirrorEndpointClusters = append(mirrorEndpointClusters, mirrorEndpointCluster)
 				}
-				mirrorEndpointsList = append(mirrorEndpointsList, mirrorEndpoints...)
 				policies.Request = append(policies.Request, Policy{
 					PolicyName: string(gwapiv1.HTTPRouteFilterRequestMirror),
 					Action:     constants.ActionMirrorRequest,
@@ -731,10 +812,6 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 
 		loggers.LoggerOasparser.Debugf("Calculating auths for API ..., API_UUID = %v", adapterInternalAPI.UUID)
 		apiAuth := getSecurity(resourceAuthScheme)
-
-		if !hasRequestRedirectPolicy && len(rule.BackendRefs) < 1 {
-			return fmt.Errorf("no backendref were provided")
-		}
 
 		for _, match := range rule.Matches {
 			if hasURLRewritePolicy && hasRequestRedirectPolicy {
@@ -756,14 +833,9 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 				})
 			}
 			resourcePath := adapterInternalAPI.xWso2Basepath + *match.Path.Value
-			var mirrorEndpointCluster *EndpointCluster
-			if len(mirrorEndpointsList) > 0 {
-				mirrorEndpointCluster = &EndpointCluster{
-					Endpoints: mirrorEndpointsList,
-				}
-			}
+
 			operations := getAllowedOperations(match.Method, policies, apiAuth,
-				parseRateLimitPolicyToInternal(resourceRatelimitPolicy), scopes, mirrorEndpointCluster)
+				parseRateLimitPolicyToInternal(resourceRatelimitPolicy), scopes, mirrorEndpointClusters)
 			resource := &Resource{path: resourcePath,
 				methods:                  operations,
 				pathMatchType:            *match.Path.Type,
