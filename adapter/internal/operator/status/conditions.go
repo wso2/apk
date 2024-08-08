@@ -80,11 +80,11 @@ func computeGatewayAcceptedCondition(gw *gwapiv1.Gateway, accepted bool) metav1.
 	case true:
 		return newCondition(string(gwapiv1.GatewayReasonAccepted), metav1.ConditionTrue,
 			string(gwapiv1.GatewayReasonAccepted),
-			"The Gateway has been scheduled by Envoy Gateway", time.Now(), gw.Generation)
+			"The Gateway has been scheduled by APK Gateway", time.Now(), gw.Generation)
 	default:
 		return newCondition(string(gwapiv1.GatewayReasonAccepted), metav1.ConditionFalse,
 			string(gwapiv1.GatewayReasonAccepted),
-			"The Gateway has not been scheduled by Envoy Gateway", time.Now(), gw.Generation)
+			"The Gateway has not been scheduled by APK Gateway", time.Now(), gw.Generation)
 	}
 }
 

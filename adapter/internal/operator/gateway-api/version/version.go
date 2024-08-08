@@ -73,7 +73,7 @@ func init() {
 	}
 }
 
-// Print shows the versions of the Envoy Gateway.
+// Print shows the versions of the APK Gateway.
 func Print(w io.Writer, format string) error {
 	v := Get()
 	switch format {
