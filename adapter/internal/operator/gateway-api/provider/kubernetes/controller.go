@@ -202,7 +202,7 @@ func (r *gatewayReconcilerNew) Reconcile(ctx context.Context, req ctrl.Request) 
 	return ctrl.Result{}, nil
 }
 
-// managedGatewayClasses returns a list of GatewayClass objects that are managed by the Envoy Gateway Controller.
+// managedGatewayClasses returns a list of GatewayClass objects that are managed by the APK Gateway Controller.
 func (r *gatewayReconcilerNew) managedGatewayClasses(ctx context.Context) ([]*gwapiv1.GatewayClass, error) {
 	var gatewayClasses gwapiv1.GatewayClassList
 	if err := r.client.List(ctx, &gatewayClasses); err != nil {

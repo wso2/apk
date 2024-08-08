@@ -75,7 +75,7 @@ type ObjectKindNamespacedName struct {
 }
 
 // validateParentRefs validates the provided routeParentReferences, returning the
-// referenced Gateways managed by Envoy Gateway. The only supported parentRef
+// referenced Gateways managed by APK Gateway. The only supported parentRef
 // is a Gateway.
 func validateParentRefs(ctx context.Context, client client.Client, namespace string,
 	gatewayClassController gwapiv1.GatewayController,
