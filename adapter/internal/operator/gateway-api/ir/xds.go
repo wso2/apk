@@ -485,7 +485,7 @@ type HTTPRoute struct {
 }
 
 // UnstructuredRef holds unstructured data for an arbitrary k8s resource introduced by an extension
-// Envoy Gateway does not need to know about the resource types in order to store and pass the data for these objects
+// APK Gateway does not need to know about the resource types in order to store and pass the data for these objects
 // to an extension.
 //
 // +k8s:deepcopy-gen=true
