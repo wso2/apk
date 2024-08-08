@@ -62,7 +62,7 @@ type GroupVersionKind struct {
 	Kind    string `json:"kind"`
 }
 
-// ProviderType defines the types of providers supported by Envoy Gateway.
+// ProviderType defines the types of providers supported by APK Gateway.
 //
 // +kubebuilder:validation:Enum=Kubernetes
 type ProviderType string
@@ -303,7 +303,7 @@ type KubernetesServiceSpec struct {
 }
 
 // +k8s:deepcopy-gen=true
-// LogLevel defines a log level for Envoy Gateway and EnvoyProxy system logs.
+// LogLevel defines a log level for APK Gateway and EnvoyProxy system logs.
 // +kubebuilder:validation:Enum=debug;info;error;warn
 type LogLevel string
 
@@ -322,7 +322,7 @@ const (
 )
 
 // +k8s:deepcopy-gen=true
-// XDSTranslatorHook defines the types of hooks that an Envoy Gateway extension may support
+// XDSTranslatorHook defines the types of hooks that an APK Gateway extension may support
 // for the xds-translator
 //
 // +kubebuilder:validation:Enum=VirtualHost;Route;HTTPListener;Translation
@@ -380,7 +380,7 @@ const (
 // +k8s:deepcopy-gen=true
 // KubernetesHorizontalPodAutoscalerSpec defines Kubernetes Horizontal Pod Autoscaler settings of Envoy Proxy Deployment.
 // When HPA is enabled, it is recommended that the value in `KubernetesDeploymentSpec.replicas` be removed, otherwise
-// Envoy Gateway will revert back to this value every time reconciliation occurs.
+// APK Gateway will revert back to this value every time reconciliation occurs.
 // See k8s.io.autoscaling.v2.HorizontalPodAutoScalerSpec.
 //
 // +kubebuilder:validation:XValidation:message="maxReplicas cannot be less than minReplicas",rule="!has(self.minReplicas) || self.maxReplicas >= self.minReplicas"
