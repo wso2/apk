@@ -25,7 +25,6 @@ package runner
 import (
 	"context"
 	"crypto/tls"
-	"fmt"
 	"net"
 	"time"
 
@@ -107,7 +106,8 @@ func (r *Runner) Start(ctx context.Context) (err error) {
 
 func (r *Runner) serveXdsServer(ctx context.Context) {
 	conf := config.ReadConfigs()
-	l, err := net.Listen("tcp", fmt.Sprintf(":%s", conf.Deployment.Gateway.AdapterXDSPort))
+	addr := net.JoinHostPort(XdsServerAddress, conf.Deployment.Gateway.AdapterXDSPort)
+	l, err := net.Listen("tcp", addr)
 	if err != nil {
 		loggers.LoggerAPKOperator.Error(err, "failed to listen on port", "address", conf.Deployment.Gateway.AdapterXDSPort)
 		return

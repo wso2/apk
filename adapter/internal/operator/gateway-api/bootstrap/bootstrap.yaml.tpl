@@ -128,7 +128,7 @@ static_resources:
           endpoint:
             address:
               socket_address:
-                address: apk-test-wso2-apk-adapter-service.apk.svc
+                address: {{ .XdsServer.Address }}
                 port_value: {{ .XdsServer.Port }}
     typed_extension_protocol_options:
       envoy.extensions.upstreams.http.v3.HttpProtocolOptions:

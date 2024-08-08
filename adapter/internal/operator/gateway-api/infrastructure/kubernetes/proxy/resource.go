@@ -58,7 +58,7 @@ const (
 	// envoyContainerName is the name of the Envoy container.
 	envoyContainerName    = "envoy"
 	enforcerContainerName = "enforcer"
-	// envoyNsEnvVar is the name of the Envoy Gateway namespace environment variable.
+	// envoyNsEnvVar is the name of the APK Gateway namespace environment variable.
 	envoyNsEnvVar = "ENVOY_GATEWAY_NAMESPACE"
 	// envoyPodEnvVar is the name of the Envoy pod name environment variable.
 	envoyPodEnvVar = "ENVOY_POD_NAME"
