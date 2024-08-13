@@ -186,6 +186,6 @@ static_resources:
             - endpoint:
                 address:
                   socket_address:
-                    address: enforcer
+                    address: 127.0.0.1
                     port_value: 8081
   
