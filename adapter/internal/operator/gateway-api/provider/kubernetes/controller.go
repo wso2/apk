@@ -52,6 +52,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
+	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 )
 
 type gatewayReconcilerNew struct {
@@ -69,6 +70,8 @@ type resourceMappings struct {
 	allAssociatedNamespaces map[string]struct{}
 	// Map for storing backendRefs' NamespaceNames referred by various Route objects.
 	allAssociatedBackendRefs map[gwapiv1.BackendObjectReference]struct{}
+	// Map for storing APIs NamespaceNames
+	allAssociatedAPIs map[*dpv1alpha1.API]struct{}
 	// extensionRefFilters is a map of filters managed by an extension.
 	// The key is the namespaced name of the filter and the value is the
 	// unstructured form of the resource.
@@ -405,6 +408,19 @@ func (r *gatewayReconcilerNew) watchResources(ctx context.Context, mgr manager.M
 		return err
 	}
 
+	// Watch API CRUDs and process affected Gateways.
+	apiPredicates := []predicate.Predicate{predicate.GenerationChangedPredicate{}}
+	if err := c.Watch(
+		source.Kind(mgr.GetCache(), &dpv1alpha2.API{}),
+		handler.EnqueueRequestsFromMapFunc(r.enqueueClass),
+		apiPredicates...,
+	); err != nil {
+		return err
+	}
+	if err := addAPIIndexers(ctx, mgr); err != nil {
+		return err
+	}
+
 	// // Watch GRPCRoute CRUDs and process affected Gateways.
 	// grpcrPredicates := []predicate.Predicate{predicate.GenerationChangedPredicate{}}
 	// if err := c.Watch(
@@ -612,6 +628,8 @@ func (r *gatewayReconcilerNew) watchResources(ctx context.Context, mgr manager.M
 	// 	}
 	// 	loggers.LoggerAPKOperator.Info("Watching additional resource", "resource", gvk.String())
 	// }
+
+	
 	return nil
 }
 

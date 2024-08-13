@@ -111,6 +111,10 @@ func KindDerefOr(kind *gwapiv1.Kind, defaultKind string) string {
 	return defaultKind
 }
 
+func irListenerName(listener *ListenerContext) string {
+	return fmt.Sprintf("%s/%s/%s", listener.gateway.Namespace, listener.gateway.Name, listener.Name)
+}
+
 // IsRefToGateway returns whether the provided parent ref is a reference
 // to a Gateway with the given namespace/name, irrespective of whether a
 // section/listener name has been specified (i.e. a parent ref to a listener
@@ -374,6 +378,13 @@ func irRoutePrefix(route RouteContext) string {
 	return fmt.Sprintf("%s/%s/%s/", strings.ToLower(string(GetRouteType(route))), route.GetNamespace(), route.GetName())
 }
 
+func GetNamespacedName(route RouteContext) string {
+	return types.NamespacedName{
+		Namespace: route.GetNamespace(),
+		Name: route.GetName(),
+	}.String()
+}
+
 func irRouteName(route RouteContext, ruleIdx, matchIdx int) string {
 	return fmt.Sprintf("%srule/%d/match/%d", irRoutePrefix(route), ruleIdx, matchIdx)
 }
@@ -458,4 +469,15 @@ func listenersWithSameHTTPPort(xdsIR *ir.Xds, listener *ir.HTTPListener) []strin
 		}
 	}
 	return res
+}
+
+// contains checks if a specific string exists in the provided slice of strings.
+// It returns true if the string is found, and false otherwise.
+func Contains(slice []string, item string) bool {
+    for _, v := range slice {
+        if v == item {
+            return true
+        }
+    }
+    return false
 }
