@@ -140,7 +140,13 @@ func expectedProxyContainers(infra *ir.ProxyInfra,
 			ports = append(ports, port)
 		}
 	}
-
+	port := corev1.ContainerPort{
+		// hashed container port name including up to the 6 characters of the port name and the maximum of 15 characters.
+		Name:          "admin",
+		ContainerPort: 9000,
+		Protocol:      "TCP",
+	}
+	ports = append(ports, port)
 	if enablePrometheus(infra) {
 		ports = append(ports, corev1.ContainerPort{
 			Name:          "metrics",

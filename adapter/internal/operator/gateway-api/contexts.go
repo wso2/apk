@@ -57,6 +57,25 @@ func (g *GatewayContext) ResetListeners() {
 	}
 }
 
+
+
+func (g *GatewayContext) attachEnvoyProxy(resources *Resources) {
+	// if g.Spec.Infrastructure != nil && g.Spec.Infrastructure.ParametersRef != nil && !IsMergeGatewaysEnabled(resources) {
+	// 	ref := g.Spec.Infrastructure.ParametersRef
+	// 	if string(ref.Group) == egv1a1.GroupVersion.Group && ref.Kind == egv1a1.KindEnvoyProxy {
+	// 		ep := resources.GetEnvoyProxy(g.Namespace, ref.Name)
+	// 		if ep != nil {
+	// 			g.envoyProxy = ep
+	// 			return
+	// 		}
+	// 	}
+	// 	// not found, fallthrough to use envoyProxy attached to gatewayclass
+	// }
+
+	// g.envoyProxy = resources.EnvoyProxyForGatewayClass
+}
+
+
 // ListenerContext wraps a Listener and provides helper methods for
 // setting conditions and other status information on the associated
 // Gateway, etc.
@@ -377,6 +396,17 @@ type RouteParentContext struct {
 
 	routeParentStatusIdx int
 	listeners            []*ListenerContext
+}
+
+// GetGateway returns the GatewayContext if parent resource is a gateway.
+func (r *RouteParentContext) GetGateway() *GatewayContext {
+	if r == nil || len(r.listeners) == 0 {
+		return nil
+	}
+	gwc := &GatewayContext{
+		Gateway: r.listeners[0].gateway,
+	}
+	return gwc
 }
 
 func (r *RouteParentContext) SetListeners(listeners ...*ListenerContext) {
