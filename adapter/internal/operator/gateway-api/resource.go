@@ -28,6 +28,7 @@ import (
 
 	"github.com/wso2/apk/adapter/internal/operator/gateway-api/ir"
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
+	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	"golang.org/x/exp/slices"
 	v1 "k8s.io/api/core/v1"
 	discoveryv1 "k8s.io/api/discovery/v1"
@@ -62,6 +63,7 @@ type Resources struct {
 	ConfigMaps          []*v1.ConfigMap               `json:"configMaps,omitempty" yaml:"configMaps,omitempty"`
 	ExtensionRefFilters []unstructured.Unstructured   `json:"extensionRefFilters,omitempty" yaml:"extensionRefFilters,omitempty"`
 	BackendTLSPolicies  []*gwapiv1a2.BackendTLSPolicy `json:"backendTLSPolicies,omitempty" yaml:"backendTLSPolicies,omitempty"`
+	APIs                []*dpv1alpha2.API             `json:"apis,omitempty" yaml:"apis,omitempty"`
 }
 
 func NewResources() *Resources {
@@ -78,6 +80,7 @@ func NewResources() *Resources {
 		Namespaces:          []*v1.Namespace{},
 		ExtensionRefFilters: []unstructured.Unstructured{},
 		BackendTLSPolicies:  []*gwapiv1a2.BackendTLSPolicy{},
+		APIs:                []*dpv1alpha2.API{},
 	}
 }
 
@@ -165,4 +168,18 @@ func (r *Resources) GetEndpointSlicesForBackend(svcNamespace, svcName string, ba
 		}
 	}
 	return endpointSlices
+}
+
+// RemoveDuplicates removes duplicate APIs from the list
+func RemoveDuplicates(apis []*dpv1alpha2.API) []*dpv1alpha2.API {
+	uniqueAPIs := make(map[*dpv1alpha2.API]struct{})
+	result := []*dpv1alpha2.API{}
+
+	for _, api := range apis {
+			if _, exists := uniqueAPIs[api]; !exists {
+					uniqueAPIs[api] = struct{}{}
+					result = append(result, api)
+			}
+	}
+	return result
 }

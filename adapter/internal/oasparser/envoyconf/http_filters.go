@@ -49,7 +49,7 @@ import (
 
 // getHTTPFilters generates httpFilter configuration
 func getHTTPFilters(globalLuaScript string) []*hcmv3.HttpFilter {
-	extAuth := getExtAuthzHTTPFilter()
+	extAuth := GetExtAuthzHTTPFilter()
 	router := getRouterHTTPFilter()
 	luaLocal := getLuaFilter(LuaLocal, `
 function envoy_on_request(request_handle)
@@ -127,7 +127,7 @@ func getCorsHTTPFilter() *hcmv3.HttpFilter {
 func getUpgradeFilters() []*hcmv3.HttpFilter {
 
 	cors := getCorsHTTPFilter()
-	extAauth := getExtAuthzHTTPFilter()
+	extAauth := GetExtAuthzHTTPFilter()
 	apkWebSocketWASM := getAPKWebSocketWASMFilter()
 	router := getRouterHTTPFilter()
 	upgradeFilters := []*hcmv3.HttpFilter{
@@ -190,8 +190,8 @@ func getRateLimitFilter() *hcmv3.HttpFilter {
 	return &rlFilter
 }
 
-// getExtAuthzHTTPFilter gets ExtAauthz http filter.
-func getExtAuthzHTTPFilter() *hcmv3.HttpFilter {
+// GetExtAuthzHTTPFilter gets ExtAauthz http filter.
+func GetExtAuthzHTTPFilter() *hcmv3.HttpFilter {
 	conf := config.ReadConfigs()
 	extAuthzConfig := &ext_authv3.ExtAuthz{
 		// This would clear the route cache only if there is a header added/removed or changed
