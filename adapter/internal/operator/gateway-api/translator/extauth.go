@@ -104,10 +104,11 @@ func buildHCMExtAuthFilter(extAuth *ir.ExtAuth) (*hcmv3.HttpFilter, error) {
 
 	return &hcmv3.HttpFilter{
 		Name:     extAuthFilterName(extAuth),
-		Disabled: true,
+		Disabled: false,
 		ConfigType: &hcmv3.HttpFilter_TypedConfig{
 			TypedConfig: extAuthAny,
 		},
+
 	}, nil
 }
 
@@ -119,6 +120,11 @@ func extAuthConfig(extAuth *ir.ExtAuth) *extauthv3.ExtAuthz {
 	config := &extauthv3.ExtAuthz{
 		TransportApiVersion: corev3.ApiVersion_V3,
 		FailureModeAllow:    false,
+		ClearRouteCache: true,
+		IncludePeerCertificate: true,
+		WithRequestBody: &extauthv3.BufferSettings{
+			MaxRequestBytes: 102400,
+		},
 	}
 
 	var headersToExtAuth []*matcherv3.StringMatcher
@@ -149,6 +155,12 @@ func extAuthConfig(extAuth *ir.ExtAuth) *extauthv3.ExtAuthz {
 				Timeout: &duration.Duration{
 					Seconds: defaultExtServiceRequestTimeout,
 				},	
+				InitialMetadata: []*corev3.HeaderValue{
+					&corev3.HeaderValue{
+						Key: "x-request-id",
+						Value: "%REQ(x-request-id)%",
+					},
+				},
 			},
 		}
 	}
