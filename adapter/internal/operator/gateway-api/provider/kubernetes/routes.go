@@ -27,6 +27,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
+	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 )
 
 // processHTTPRoutes finds HTTPRoutes corresponding to a gatewayNamespaceName, further checks for
@@ -183,7 +184,23 @@ func (r *gatewayReconcilerNew) processHTTPRoutes(ctx context.Context, gatewayNam
 		// It will be recomputed by the gateway-api layer
 		httpRoute.Status = gwapiv1.HTTPRouteStatus{}
 		resourceTree.HTTPRoutes = append(resourceTree.HTTPRoutes, &httpRoute)
-	}
 
+		// Add APIs to resource tree
+		apiList := &dpv1alpha2.APIList{}
+		if err := r.client.List(ctx, apiList, &client.ListOptions{
+			FieldSelector: fields.OneTermEqualSelector(httpRouteAPIIndex, types.NamespacedName{
+				Namespace: httpRoute.GetNamespace(),
+				Name:      httpRoute.GetName(),
+			}.String()),
+		}); err != nil {
+			loggers.LoggerAPKOperator.Error("Failed to list APIs", err)
+			return err
+		}
+
+		for _, api := range apiList.Items {
+			resourceTree.APIs = append(resourceTree.APIs, &api)
+		}
+	}
+	resourceTree.APIs = gatewayapi.RemoveDuplicates(resourceTree.APIs)
 	return nil
 }
