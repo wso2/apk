@@ -370,10 +370,10 @@ func expectedContainerVolumeMounts(containerSpec *egv1a1.KubernetesContainerSpec
 			MountPath: "/home/wso2/security/truststore/ratelimiter.crt",
 			SubPath:   "tls.crt",
 		},
-		// {
-		// 	Name:      "log-conf-volume",
-		// 	MountPath: "/home/wso2/conf/",
-		// },
+		{
+			Name:      "log-conf-volume",
+			MountPath: "/home/wso2/conf/",
+		},
 		{
 			Name:      "enforcer-keystore-secret-volume",
 			MountPath: "/home/wso2/security/truststore/enforcer.crt",
@@ -465,9 +465,9 @@ func expectedEnforcerVolumeMounts(containerSpec *egv1a1.KubernetesContainerSpec)
 			Name:    "router-keystore-secret-volume",
 			SubPath: "tls.crt",
 		},
-		// {MountPath: "/home/wso2/conf/",
-		// 	Name: "log-conf-volume",
-		// },
+		{MountPath: "/home/wso2/conf/",
+			Name: "log-conf-volume",
+		},
 		{MountPath: "/home/wso2/security/keystore/mg.pem",
 			Name:    "enforcer-jwt-secret-volume",
 			SubPath: "mg.pem",
@@ -519,17 +519,17 @@ func expectedDeploymentVolumes(deploymentSpec *egv1a1.KubernetesDeploymentSpec) 
 				},
 			},
 		},
-		// {
-		// 	Name: "log-conf-volume",
-		// 	VolumeSource: corev1.VolumeSource{
-		// 		ConfigMap: &corev1.ConfigMapVolumeSource{
-		// 			DefaultMode: ptr.To[int32](420),
-		// 			LocalObjectReference: corev1.LocalObjectReference{
-		// 				Name: "apk-test-wso2-apk-log-conf",
-		// 			},
-		// 		},
-		// 	},
-		// },
+		{
+			Name: "log-conf-volume",
+			VolumeSource: corev1.VolumeSource{
+				ConfigMap: &corev1.ConfigMapVolumeSource{
+					DefaultMode: ptr.To[int32](420),
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: "apk-test-wso2-apk-log-conf",
+					},
+				},
+			},
+		},
 		{
 			Name: "router-keystore-secret-volume",
 			VolumeSource: corev1.VolumeSource{
@@ -662,7 +662,7 @@ func expectedEnforcerEnv(containerSpec *egv1a1.KubernetesContainerSpec) []corev1
 		},
 		{
 			Name:  "ADAPTER_XDS_PORT",
-			Value: conf.Deployment.Gateway.AdapterXDSPort,
+			Value: "18001",
 		},
 		{
 			Name:  "COMMON_CONTROLLER_XDS_PORT",
@@ -690,7 +690,7 @@ func expectedEnforcerEnv(containerSpec *egv1a1.KubernetesContainerSpec) []corev1
 		},
 		{
 			Name:  "JAVA_OPTS",
-			Value: conf.Deployment.Gateway.JavaOpts,
+			Value: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5006 -Dhttpclient.hostnameVerifier=AllowAll -Xms512m -Xmx512m -XX:MaxRAMFraction=2",
 		},
 	}
 
