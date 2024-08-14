@@ -128,7 +128,8 @@ wso2:
           logging:
             level: "DEBG" # LogLevels can be "DEBG", "FATL", "ERRO", "WARN", "INFO", "PANC"
         # #          logFormat: "TEXT" # Values can be "JSON", "TEXT"
-        # configs:
+          configs: 
+            enableGatewayClassController: true
         #   apiNamespaces:
         #     - "apk-v12"
         #   tls:

@@ -85,15 +85,6 @@ static_resources:
               - name: ":path"
                 string_match:
                   exact: {{ .ReadyServer.ReadinessPath }}
-          - name: envoy.filters.http.ext_authz
-            typed_config:
-              "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthz
-              clear_route_cache: true
-              include_peer_certificate: true
-              transport_api_version: 2
-              grpc_service: 
-                  envoy_grpc: 
-                    cluster_name: ext-authz
           - name: envoy.filters.http.router
             typed_config:
               "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
@@ -155,7 +146,7 @@ static_resources:
           validation_context:
             trusted_ca:
               filename: '/home/wso2/security/truststore/adapter.crt'
-  - name: ext-authz
+              - name: ext-authz
     type: STRICT_DNS
     connect_timeout: 20s
     typed_extension_protocol_options:
@@ -188,4 +179,4 @@ static_resources:
                   socket_address:
                     address: 127.0.0.1
                     port_value: 8081
-  
+                      
