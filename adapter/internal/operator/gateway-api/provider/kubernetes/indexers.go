@@ -27,6 +27,7 @@ import (
 
 	"github.com/wso2/apk/adapter/internal/loggers"
 	gatewayapi "github.com/wso2/apk/adapter/internal/operator/gateway-api"
+	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -39,6 +40,7 @@ const (
 	classGatewayIndex          = "classGatewayIndex"
 	gatewayTLSRouteIndex       = "gatewayTLSRouteIndex"
 	gatewayHTTPRouteIndex      = "gatewayHTTPRouteIndex"
+	httpRouteAPIIndex          = "httpRouteAPIIndex"
 	gatewayGRPCRouteIndex      = "gatewayGRPCRouteIndex"
 	gatewayTCPRouteIndex       = "gatewayTCPRouteIndex"
 	gatewayUDPRouteIndex       = "gatewayUDPRouteIndex"
@@ -83,6 +85,16 @@ func addHTTPRouteIndexers(ctx context.Context, mgr manager.Manager) error {
 	return mgr.GetFieldIndexer().IndexField(ctx, &gwapiv1.HTTPRoute{}, serviceHTTPRouteIndex, serviceHTTPRouteIndexFunc)
 }
 
+// addAPIIndexers adds indexing on API.
+//   - For Service, ServiceImports objects that are referenced in HTTPRoute objects via `.spec.rules.backendRefs`.
+//     This helps in querying for HTTPRoutes that are affected by a particular Service CRUD.
+func addAPIIndexers(ctx context.Context, mgr manager.Manager) error {
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha2.API{}, httpRouteAPIIndex, httpRouteAPIIndexFunc); err != nil {
+		return err
+	}
+	return nil
+}
+
 func gatewayHTTPRouteIndexFunc(rawObj client.Object) []string {
 	httproute := rawObj.(*gwapiv1.HTTPRoute)
 	var gateways []string
@@ -99,6 +111,34 @@ func gatewayHTTPRouteIndexFunc(rawObj client.Object) []string {
 		}
 	}
 	return gateways
+}
+
+func httpRouteAPIIndexFunc(rawObj client.Object) []string {
+	api := rawObj.(*dpv1alpha2.API)
+	var httpRoutes []string
+	if len(api.Spec.Production) > 0 {
+		for _, ref := range api.Spec.Production[0].RouteRefs {
+			if ref != "" {
+				httpRoutes = append(httpRoutes,
+					types.NamespacedName{
+						Namespace: api.Namespace,
+						Name:      ref,
+					}.String())
+			}
+		}
+	}
+	if len(api.Spec.Sandbox) > 0 {
+		for _, ref := range api.Spec.Sandbox[0].RouteRefs {
+			if ref != "" {
+				httpRoutes = append(httpRoutes,
+					types.NamespacedName{
+						Namespace: api.Namespace,
+						Name:      ref,
+					}.String())
+			}
+		}
+	}
+	return httpRoutes
 }
 
 func serviceHTTPRouteIndexFunc(rawObj client.Object) []string {

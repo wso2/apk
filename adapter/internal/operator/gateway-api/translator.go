@@ -177,11 +177,10 @@ func (t *Translator) Translate(resources *Resources) *TranslateResult {
 	// // Process all relevant UDPRoutes.
 	// udpRoutes := t.ProcessUDPRoutes(resources.UDPRoutes, gateways, resources, xdsIR)
 
-	// Process BackendTrafficPolicies
-	// routes := []RouteContext{}
-	// for _, h := range httpRoutes {
-	// 	routes = append(routes, h)
-	// }
+	routes := []RouteContext{}
+	for _, h := range httpRoutes {
+		routes = append(routes, h)
+	}
 	// for _, g := range grpcRoutes {
 	// 	routes = append(routes, g)
 	// }
@@ -202,6 +201,8 @@ func (t *Translator) Translate(resources *Resources) *TranslateResult {
 	// // Process SecurityPolicies
 	// securityPolicies := t.ProcessSecurityPolicies(
 	// 	resources.SecurityPolicies, gateways, routes, resources, xdsIR)
+
+	t.ProcessAPIs(resources.APIs, resources.HTTPRoutes, gateways, httpRoutes, resources, xdsIR)
 
 	// Sort xdsIR based on the Gateway API spec
 	sortXdsIRMap(xdsIR)

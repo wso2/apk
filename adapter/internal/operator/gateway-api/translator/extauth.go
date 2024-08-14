@@ -71,7 +71,14 @@ func (*extAuth) patchHCM(mgr *hcmv3.HttpConnectionManager, irListener *ir.HTTPLi
 			continue
 		}
 
-		filter, err := buildHCMExtAuthFilter(route)
+		// Only generates one OAuth2 Envoy filter for each unique name.
+		// For example, if there are two routes under the same gateway with the
+		// same OIDC config, only one OAuth2 filter will be generated.
+		if hcmContainsFilter(mgr, extAuthFilterName(route.ExtAuth)) {
+			continue
+		}
+
+		filter, err := buildHCMExtAuthFilter(route.ExtAuth)
 		if err != nil {
 			errs = errors.Join(errs, err)
 			continue
@@ -84,8 +91,8 @@ func (*extAuth) patchHCM(mgr *hcmv3.HttpConnectionManager, irListener *ir.HTTPLi
 }
 
 // buildHCMExtAuthFilter returns an ext_authz HTTP filter from the provided IR HTTPRoute.
-func buildHCMExtAuthFilter(route *ir.HTTPRoute) (*hcmv3.HttpFilter, error) {
-	extAuthProto := extAuthConfig(route.ExtAuth)
+func buildHCMExtAuthFilter(extAuth *ir.ExtAuth) (*hcmv3.HttpFilter, error) {
+	extAuthProto := extAuthConfig(extAuth)
 	if err := extAuthProto.ValidateAll(); err != nil {
 		return nil, err
 	}
@@ -96,22 +103,28 @@ func buildHCMExtAuthFilter(route *ir.HTTPRoute) (*hcmv3.HttpFilter, error) {
 	}
 
 	return &hcmv3.HttpFilter{
-		Name:     extAuthFilterName(route),
-		Disabled: true,
+		Name:     extAuthFilterName(extAuth),
+		Disabled: false,
 		ConfigType: &hcmv3.HttpFilter_TypedConfig{
 			TypedConfig: extAuthAny,
 		},
+
 	}, nil
 }
 
-func extAuthFilterName(route *ir.HTTPRoute) string {
-	return perRouteFilterName(extAuthFilter, route.Name)
+func extAuthFilterName(extAuth *ir.ExtAuth) string {
+	return perRouteFilterName(extAuthFilter, extAuth.Name)
 }
 
 func extAuthConfig(extAuth *ir.ExtAuth) *extauthv3.ExtAuthz {
 	config := &extauthv3.ExtAuthz{
 		TransportApiVersion: corev3.ApiVersion_V3,
 		FailureModeAllow:    false,
+		ClearRouteCache: true,
+		IncludePeerCertificate: true,
+		WithRequestBody: &extauthv3.BufferSettings{
+			MaxRequestBytes: 102400,
+		},
 	}
 
 	var headersToExtAuth []*matcherv3.StringMatcher
@@ -141,6 +154,12 @@ func extAuthConfig(extAuth *ir.ExtAuth) *extauthv3.ExtAuthz {
 				},
 				Timeout: &duration.Duration{
 					Seconds: defaultExtServiceRequestTimeout,
+				},	
+				InitialMetadata: []*corev3.HeaderValue{
+					&corev3.HeaderValue{
+						Key: "x-request-id",
+						Value: "%REQ(x-request-id)%",
+					},
 				},
 			},
 		}
@@ -229,7 +248,10 @@ func (*extAuth) patchResources(tCtx *types.ResourceVersionTable,
 
 	var errs error
 	for _, route := range routes {
-		if !routeContainsExtAuth(route) {
+		if !routeContainsExtAuth(route)  {
+			continue
+		}
+		if route.ExtAuth.UseBootstrapCluster != nil && *route.ExtAuth.UseBootstrapCluster {
 			continue
 		}
 		if route.ExtAuth.HTTP != nil {
@@ -296,5 +318,9 @@ func (*extAuth) patchRoute(route *routev3.Route, irRoute *ir.HTTPRoute) error {
 	if irRoute.ExtAuth == nil {
 		return nil
 	}
-	return enableFilterOnRoute(extAuthFilter, route, irRoute)
+	// filterName := extAuthFilterName(irRoute.ExtAuth)
+	if err := enableExtAuthFilterOnRoute(route, extAuthFilter); err != nil {
+		return err
+	}
+	return nil
 }
