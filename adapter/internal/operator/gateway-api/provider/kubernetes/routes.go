@@ -198,7 +198,42 @@ func (r *gatewayReconcilerNew) processHTTPRoutes(ctx context.Context, gatewayNam
 		}
 
 		for _, api := range apiList.Items {
+			ns := api.GetNamespace()
 			resourceTree.APIs = append(resourceTree.APIs, &api)
+			for _, hr := range resourceTree.HTTPRoutes {
+				for _, prods := range api.Spec.Production {
+					for _, routeName := range prods.RouteRefs {
+						expectedRouteNamespacedName := types.NamespacedName{
+							Namespace: ns,
+							Name:      routeName,
+						}.String()
+						routeNamespacedName := types.NamespacedName{
+							Namespace: hr.GetNamespace(),
+							Name:      hr.GetName(),
+						}.String()
+						if expectedRouteNamespacedName == routeNamespacedName {
+							rules := hr.Spec.Rules
+							newRules := make([]gwapiv1.HTTPRouteRule, 0)
+							for _, rule := range rules {
+								newMatches := make([]gwapiv1.HTTPRouteMatch, 0)
+								for _, match := range rule.Matches {
+									if match.Path.Value != nil {
+										newPath := api.Spec.BasePath  +  *match.Path.Value
+										match.Path.Value = &newPath
+									} else {
+										newPath := api.Spec.BasePath
+										match.Path.Value = &newPath
+									}
+									newMatches = append(newMatches, match)
+								}
+								rule.Matches = newMatches
+								newRules = append(newRules, rule)
+							}
+							hr.Spec.Rules = newRules
+						}
+					}
+				}
+			}
 		}
 	}
 	resourceTree.APIs = gatewayapi.RemoveDuplicates(resourceTree.APIs)
