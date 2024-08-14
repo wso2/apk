@@ -20,6 +20,8 @@ package kubernetes
 import (
 	"context"
 	"errors"
+	"fmt"
+	"strings"
 
 	"github.com/wso2/apk/adapter/internal/loggers"
 	gatewayapi "github.com/wso2/apk/adapter/internal/operator/gateway-api"
@@ -230,6 +232,29 @@ func (r *gatewayReconcilerNew) processHTTPRoutes(ctx context.Context, gatewayNam
 								newRules = append(newRules, rule)
 							}
 							hr.Spec.Rules = newRules
+
+							// Manipulate for default version feature
+							if api.Spec.IsDefaultVersion {
+								newRulesForDefaultVersion := make([]gwapiv1.HTTPRouteRule, 0)
+								for _, rule := range rules {
+									newMatches := make([]gwapiv1.HTTPRouteMatch, 0)
+									for _, match := range rule.Matches {
+										matchCopied := match.DeepCopy()
+										if match.Path.Value != nil {
+											newPath := removeFirstSubstring(*match.Path.Value, fmt.Sprintf("/%s",api.Spec.APIVersion)) 
+											matchCopied.Path.Value = &newPath
+										} else {
+											newPath := removeSuffix(api.Spec.BasePath, api.Spec.APIVersion)
+											matchCopied.Path.Value = &newPath
+										}
+										newMatches = append(newMatches, *matchCopied)
+									}
+									ruleCopied := rule.DeepCopy()
+									ruleCopied.Matches = newMatches
+									newRulesForDefaultVersion = append(newRulesForDefaultVersion, *ruleCopied)
+								}
+								hr.Spec.Rules = append(hr.Spec.Rules, newRulesForDefaultVersion...)
+							}
 						}
 					}
 				}
@@ -238,4 +263,20 @@ func (r *gatewayReconcilerNew) processHTTPRoutes(ctx context.Context, gatewayNam
 	}
 	resourceTree.APIs = gatewayapi.RemoveDuplicates(resourceTree.APIs)
 	return nil
+}
+
+
+func removeSuffix(str, suffix string) string {
+	if strings.HasSuffix(str, suffix) {
+		return str[:len(str)-len(suffix)]
+	}
+	return str
+}
+
+func removeFirstSubstring(str, substr string) string {
+	index := strings.Index(str, substr)
+	if index == -1 {
+		return str // Substring not found, return the original string
+	}
+	return str[:index] + str[index+len(substr):]
 }
