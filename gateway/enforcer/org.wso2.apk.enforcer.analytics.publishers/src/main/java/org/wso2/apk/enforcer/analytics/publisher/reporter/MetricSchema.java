@@ -28,6 +28,8 @@ public enum MetricSchema {
     CHOREO_ERROR,
     ELK_RESPONSE,
     ELK_ERROR,
+    PROMETHEUS_RESPONSE,
+    PROMETHEUS_ERROR,
     LATENCY,
     PAYLOAD
 }
