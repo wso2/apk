@@ -59,7 +59,7 @@ var (
 // 					Labels: map[string]string{
 // 						"app.kubernetes.io/name":               "envoy",
 // 						"app.kubernetes.io/component":          "proxy",
-// 						"app.kubernetes.io/managed-by":         "envoy-gateway",
+// 						"app.kubernetes.io/managed-by":         "apk-gateway",
 // 						gatewayapi.OwningGatewayNamespaceLabel: "default",
 // 						gatewayapi.OwningGatewayNameLabel:      "test",
 // 					},
@@ -79,7 +79,7 @@ var (
 // 					Labels: map[string]string{
 // 						"app.kubernetes.io/name":               "envoy",
 // 						"app.kubernetes.io/component":          "proxy",
-// 						"app.kubernetes.io/managed-by":         "envoy-gateway",
+// 						"app.kubernetes.io/managed-by":         "apk-gateway",
 // 						gatewayapi.OwningGatewayNamespaceLabel: "default",
 // 						gatewayapi.OwningGatewayNameLabel:      "test",
 // 					},
@@ -93,7 +93,7 @@ var (
 // 					Labels: map[string]string{
 // 						"app.kubernetes.io/name":               "envoy",
 // 						"app.kubernetes.io/component":          "proxy",
-// 						"app.kubernetes.io/managed-by":         "envoy-gateway",
+// 						"app.kubernetes.io/managed-by":         "apk-gateway",
 // 						gatewayapi.OwningGatewayNamespaceLabel: "default",
 // 						gatewayapi.OwningGatewayNameLabel:      "test",
 // 					},

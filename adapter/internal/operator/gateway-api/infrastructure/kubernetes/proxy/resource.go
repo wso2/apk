@@ -85,7 +85,7 @@ func EnvoyAppLabel() map[string]string {
 	return map[string]string{
 		"app.kubernetes.io/name":       "envoy",
 		"app.kubernetes.io/component":  "proxy",
-		"app.kubernetes.io/managed-by": "envoy-gateway",
+		"app.kubernetes.io/managed-by": "apk-gateway",
 	}
 }
 
@@ -94,7 +94,7 @@ func EnvoyAppLabelSelector() []string {
 	return []string{
 		"app.kubernetes.io/name=envoy",
 		"app.kubernetes.io/component=proxy",
-		"app.kubernetes.io/managed-by=envoy-gateway",
+		"app.kubernetes.io/managed-by=apk-gateway",
 	}
 }
 
@@ -407,16 +407,6 @@ func expectedEnforcerPorts() []corev1.ContainerPort {
 			Protocol:      corev1.ProtocolTCP,
 		},
 		{
-			// Name:          "ExtAuthServer",
-			ContainerPort: int32(9001),
-			Protocol:      corev1.ProtocolTCP,
-		},
-		{
-			Name:          "debug",
-			ContainerPort: int32(5006),
-			Protocol:      corev1.ProtocolTCP,
-		},
-		{
 			Name:          "jwks",
 			ContainerPort: int32(9092),
 			Protocol:      corev1.ProtocolTCP,
@@ -426,6 +416,16 @@ func expectedEnforcerPorts() []corev1.ContainerPort {
 			ContainerPort: int32(18002),
 			Protocol:      corev1.ProtocolTCP,
 		},
+	}
+
+	for _, port := range config.ReadConfigs().Deployment.Gateway.EnforcerPorts {
+		ports = append(ports,
+			corev1.ContainerPort{
+				Name:          port.Name,
+				ContainerPort: port.ContainerPort,
+				Protocol:      corev1.ProtocolTCP,
+			},
+		)
 	}
 
 	return ports
