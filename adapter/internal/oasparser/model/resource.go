@@ -39,12 +39,30 @@ type Resource struct {
 	path                     string
 	pathMatchType            gwapiv1.PathMatchType
 	methods                  []*Operation
+	headerMatchType          gwapiv1.HeaderMatchType
+	key                      gwapiv1.HTTPHeaderName
+	value                    string
 	iD                       string
 	endpoints                *EndpointCluster
 	endpointSecurity         []*EndpointSecurity
 	vendorExtensions         map[string]interface{}
 	hasPolicies              bool
 	hasRequestRedirectFilter bool
+}
+
+// GetHeaderMatchType returns the header match type of the resource.
+func (resource *Resource) GetHeaderMatchType() gwapiv1.HeaderMatchType {
+	return resource.headerMatchType
+}
+
+// GetKey returns the key of the resource.
+func (resource *Resource) GetKey() gwapiv1.HTTPHeaderName {
+	return resource.key
+}
+
+// GetValue returns the value of the resource.
+func (resource *Resource) GetValue() string {
+	return resource.value
 }
 
 // GetEndpointSecurity returns the endpoint security object of a given resource.

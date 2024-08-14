@@ -232,6 +232,11 @@ func generateHTTPMethodMatcher(methodRegex string, sandClusterName string) []*ro
 	return headerMatcherArray
 }
 
+func generateHTTPMethodExactMatcher(headername, value string) *routev3.HeaderMatcher {
+	headerMatcher := generateHeaderExactMatch(headername, value)
+	return headerMatcher
+}
+
 func generateQueryParamMatcher(queryParamName, value string) []*routev3.QueryParameterMatcher {
 	queryParamMatcher := &routev3.QueryParameterMatcher{
 		Name: queryParamName,
@@ -258,6 +263,19 @@ func generateHeaderMatcher(headerName, valueRegex string) *routev3.HeaderMatcher
 					},
 				},
 			},
+		},
+	}
+	return headerMatcherArray
+}
+
+func generateHeaderExactMatch(headerName, value string) *routev3.HeaderMatcher {
+	if len(headerName) == 0 {
+		return nil
+	}
+	headerMatcherArray := &routev3.HeaderMatcher{
+		Name: headerName,
+		HeaderMatchSpecifier: &routev3.HeaderMatcher_ExactMatch{
+			ExactMatch: value,
 		},
 	}
 	return headerMatcherArray

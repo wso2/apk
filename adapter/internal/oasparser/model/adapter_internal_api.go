@@ -836,12 +836,32 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 
 			operations := getAllowedOperations(match.Method, policies, apiAuth,
 				parseRateLimitPolicyToInternal(resourceRatelimitPolicy), scopes, mirrorEndpointClusters)
-			resource := &Resource{path: resourcePath,
-				methods:                  operations,
-				pathMatchType:            *match.Path.Type,
-				hasPolicies:              true,
-				iD:                       uuid.New().String(),
-				hasRequestRedirectFilter: hasRequestRedirectPolicy,
+			var resource *Resource
+			if match.Headers != nil && len(match.Headers) > 0 {
+				for _, header := range match.Headers {
+					loggers.LoggerAPI.Info("Inside Header Match")
+					loggers.LoggerAPI.Info("Header Name: ", header.Name)
+					loggers.LoggerAPI.Info("Header Value: ", header.Value)
+					resource = &Resource{path: resourcePath,
+						methods:                  operations,
+						pathMatchType:            *match.Path.Type,
+						headerMatchType:          *header.Type,
+						key:                      header.Name,
+						value:                    header.Value,
+						hasPolicies:              true,
+						iD:                       uuid.New().String(),
+						hasRequestRedirectFilter: hasRequestRedirectPolicy,
+					}
+				}
+			} else {
+				loggers.LoggerAPI.Info("Inside Not Header Match")
+				resource = &Resource{path: resourcePath,
+					methods:                  operations,
+					pathMatchType:            *match.Path.Type,
+					hasPolicies:              true,
+					iD:                       uuid.New().String(),
+					hasRequestRedirectFilter: hasRequestRedirectPolicy,
+				}
 			}
 
 			resource.endpoints = &EndpointCluster{
@@ -882,7 +902,10 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 				resource.endpoints.Config = endpointConfig
 			}
 			resource.endpointSecurity = utils.GetPtrSlice(securityConfig)
+			loggers.LoggerAPI.Info("Resource Key: ", resource.GetKey())
+			loggers.LoggerAPI.Info("Resource Value: ", resource.GetValue())
 			resources = append(resources, resource)
+
 		}
 	}
 
