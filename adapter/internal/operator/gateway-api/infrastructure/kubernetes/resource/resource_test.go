@@ -136,12 +136,12 @@ func TestGetSelector(t *testing.T) {
 			in: map[string]string{
 				"app.kubernetes.io/name":       "envoy",
 				"app.kubernetes.io/component":  "proxy",
-				"app.kubernetes.io/managed-by": "envoy-gateway",
+				"app.kubernetes.io/managed-by": " apk-gateway",
 			},
 			expected: map[string]string{
 				"app.kubernetes.io/name":       "envoy",
 				"app.kubernetes.io/component":  "proxy",
-				"app.kubernetes.io/managed-by": "envoy-gateway",
+				"app.kubernetes.io/managed-by": " apk-gateway",
 			},
 		},
 		{
@@ -149,12 +149,12 @@ func TestGetSelector(t *testing.T) {
 			in: map[string]string{
 				"app.kubernetes.io/name":       "envoy-ratelimit",
 				"app.kubernetes.io/component":  "ratelimit",
-				"app.kubernetes.io/managed-by": "envoy-gateway",
+				"app.kubernetes.io/managed-by": " apk-gateway",
 			},
 			expected: map[string]string{
 				"app.kubernetes.io/name":       "envoy-ratelimit",
 				"app.kubernetes.io/component":  "ratelimit",
-				"app.kubernetes.io/managed-by": "envoy-gateway",
+				"app.kubernetes.io/managed-by": " apk-gateway",
 			},
 		},
 	}

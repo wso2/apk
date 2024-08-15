@@ -97,7 +97,8 @@ type adapter struct {
 	// Metric represents configurations to expose/export go metrics
 	Metrics Metrics
 	// ControlPlane represents the connection configuration of ControlPlane
-	ControlPlane controlplane
+	ControlPlane                 controlplane
+	EnableGatewayClassController bool
 }
 
 // Envoy Listener Component related configurations.
@@ -338,6 +339,12 @@ type gateway struct {
 	EnforcerXDSMaxRetries    string
 	JavaOpts                 string
 	Volumes                  volumes
+	EnforcerPorts            []enforcerPorts
+}
+
+type enforcerPorts struct {
+	Name          string
+	ContainerPort int32
 }
 
 type volumes struct {

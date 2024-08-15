@@ -41,7 +41,7 @@ func TestEnvoyPodSelector(t *testing.T) {
 				"foo":                          "bar",
 				"app.kubernetes.io/name":       "envoy",
 				"app.kubernetes.io/component":  "proxy",
-				"app.kubernetes.io/managed-by": "envoy-gateway",
+				"app.kubernetes.io/managed-by": "apk-gateway",
 			},
 		},
 	}
