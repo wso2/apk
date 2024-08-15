@@ -39,6 +39,7 @@ import (
 	"github.com/wso2/apk/adapter/pkg/health"
 	healthservice "github.com/wso2/apk/adapter/pkg/health/api/wso2/health/service"
 	"github.com/wso2/apk/adapter/pkg/utils/tlsutils"
+	"github.com/wso2/apk/adapter/internal/operator"
 
 	"context"
 	"flag"
@@ -251,9 +252,13 @@ func Run(conf *config.Config) {
 
 	// Set enforcer startup configs
 	xds.UpdateEnforcerConfig(conf)
+	if !conf.Adapter.EnableGatewayClassController {
+		go operator.InitOperator(conf.Adapter.Metrics)
+	}
 
-	// go operator.InitOperator(conf.Adapter.Metrics)
-	SetupRunners(conf)
+	if conf.Adapter.EnableGatewayClassController {
+		SetupRunners(conf)
+	}
 
 OUTER:
 	for {
