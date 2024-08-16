@@ -320,8 +320,5 @@ func (*extAuth) patchRoute(route *routev3.Route, irRoute *ir.HTTPRoute) error {
 		return nil
 	}
 	// filterName := extAuthFilterName(irRoute.ExtAuth)
-	if err := enableExtAuthFilterOnRoute(route, extAuthFilter); err != nil {
-		return err
-	}
-	return nil
+	return enableExtAuthFilterOnRoute(route, extAuthFilter)
 }
