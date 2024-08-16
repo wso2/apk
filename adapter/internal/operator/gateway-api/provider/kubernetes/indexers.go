@@ -89,10 +89,7 @@ func addHTTPRouteIndexers(ctx context.Context, mgr manager.Manager) error {
 //   - For Service, ServiceImports objects that are referenced in HTTPRoute objects via `.spec.rules.backendRefs`.
 //     This helps in querying for HTTPRoutes that are affected by a particular Service CRUD.
 func addAPIIndexers(ctx context.Context, mgr manager.Manager) error {
-	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha2.API{}, httpRouteAPIIndex, httpRouteAPIIndexFunc); err != nil {
-		return err
-	}
-	return nil
+	return mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha2.API{}, httpRouteAPIIndex, httpRouteAPIIndexFunc)
 }
 
 func gatewayHTTPRouteIndexFunc(rawObj client.Object) []string {
