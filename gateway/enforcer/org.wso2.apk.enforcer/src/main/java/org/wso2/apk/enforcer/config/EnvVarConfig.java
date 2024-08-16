@@ -68,7 +68,7 @@ public class EnvVarConfig {
     private static final String DEFAULT_ENFORCER_PUBLIC_CERT_PATH = "/home/wso2/security/keystore/mg.pem";
     private static final String DEFAULT_ENFORCER_REGION_ID = "UNKNOWN";
     private static final String DEFAULT_ADAPTER_HOST = "adapter";
-    private static final String DEFAULT_ADAPTER_XDS_PORT = "18000";
+    private static final String DEFAULT_ADAPTER_XDS_PORT = "18001";
     private static final String DEFAULT_COMMON_CONTROLLER_HOST = "common-controller";
     private static final String DEFAULT_COMMON_CONTROLLER_XDS_PORT = "18002";
     private static final String DEFAULT_COMMON_CONTROLLER_REST_PORT = "18003";
