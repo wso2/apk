@@ -84,12 +84,12 @@ func (t *Translator) ProcessAPIs(apis []*dpv1alpha2.API, httpRoutes []*gwapiv1.H
 func buildExtAuth() *ir.ExtAuth {
 	grpcExtAuthService := ir.GRPCExtAuthService{
 		Destination: ir.RouteDestination{
-			Name: EXT_AUTH_CLUSTER_NAME,
+			Name: ExtAuthClusterName,
 		},
 	}
 	flag := true
 	extAuth := &ir.ExtAuth{
-		Name:                EXT_AUTH_NAME,
+		Name:                ExtAuthName,
 		GRPC:                &grpcExtAuthService,
 		UseBootstrapCluster: &flag,
 	}
