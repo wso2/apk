@@ -71,14 +71,7 @@ func (*extAuth) patchHCM(mgr *hcmv3.HttpConnectionManager, irListener *ir.HTTPLi
 			continue
 		}
 
-		// Only generates one OAuth2 Envoy filter for each unique name.
-		// For example, if there are two routes under the same gateway with the
-		// same OIDC config, only one OAuth2 filter will be generated.
-		if hcmContainsFilter(mgr, extAuthFilterName(route.ExtAuth)) {
-			continue
-		}
-
-		filter, err := buildHCMExtAuthFilter(route.ExtAuth)
+		filter, err := buildHCMExtAuthFilter(route)
 		if err != nil {
 			errs = errors.Join(errs, err)
 			continue
@@ -91,8 +84,8 @@ func (*extAuth) patchHCM(mgr *hcmv3.HttpConnectionManager, irListener *ir.HTTPLi
 }
 
 // buildHCMExtAuthFilter returns an ext_authz HTTP filter from the provided IR HTTPRoute.
-func buildHCMExtAuthFilter(extAuth *ir.ExtAuth) (*hcmv3.HttpFilter, error) {
-	extAuthProto := extAuthConfig(extAuth)
+func buildHCMExtAuthFilter(route *ir.HTTPRoute) (*hcmv3.HttpFilter, error) {
+	extAuthProto := extAuthConfig(route.ExtAuth)
 	if err := extAuthProto.ValidateAll(); err != nil {
 		return nil, err
 	}
@@ -103,29 +96,72 @@ func buildHCMExtAuthFilter(extAuth *ir.ExtAuth) (*hcmv3.HttpFilter, error) {
 	}
 
 	return &hcmv3.HttpFilter{
-		Name:     extAuthFilterName(extAuth),
-		// TODO make it false after fixing the ext auth
-		Disabled: true,   
+		Name:     extAuthFilterName(route),
+		Disabled: true,
 		ConfigType: &hcmv3.HttpFilter_TypedConfig{
 			TypedConfig: extAuthAny,
 		},
-
 	}, nil
 }
 
-func extAuthFilterName(extAuth *ir.ExtAuth) string {
-	return perRouteFilterName(extAuthFilter, extAuth.Name)
+func extAuthFilterName(route *ir.HTTPRoute) string {
+	return perRouteFilterName(extAuthFilter, route.Name)
 }
 
 func extAuthConfig(extAuth *ir.ExtAuth) *extauthv3.ExtAuthz {
+	if extAuth.UseBootstrapCluster != nil && *extAuth.UseBootstrapCluster {
+		config := &extauthv3.ExtAuthz{
+			TransportApiVersion: corev3.ApiVersion_V3,
+			FailureModeAllow:    false,
+			ClearRouteCache: true,
+			IncludePeerCertificate: true,
+			WithRequestBody: &extauthv3.BufferSettings{
+				MaxRequestBytes: 102400,
+			},
+		}
+
+		var headersToExtAuth []*matcherv3.StringMatcher
+		for _, header := range extAuth.HeadersToExtAuth {
+			headersToExtAuth = append(headersToExtAuth, &matcherv3.StringMatcher{
+				MatchPattern: &matcherv3.StringMatcher_Exact{
+					Exact: header,
+				},
+			})
+		}
+
+		if len(headersToExtAuth) > 0 {
+			config.AllowedHeaders = &matcherv3.ListStringMatcher{
+				Patterns: headersToExtAuth,
+			}
+		}
+
+		if extAuth.HTTP != nil {
+			config.Services = &extauthv3.ExtAuthz_HttpService{
+				HttpService: httpService(extAuth.HTTP),
+			}
+		} else if extAuth.GRPC != nil {
+			config.Services = &extauthv3.ExtAuthz_GrpcService{
+				GrpcService: &corev3.GrpcService{
+					TargetSpecifier: &corev3.GrpcService_EnvoyGrpc_{
+						EnvoyGrpc: grpcService(extAuth.GRPC),
+					},
+					Timeout: &duration.Duration{
+						Seconds: defaultExtServiceRequestTimeout,
+					},	
+					InitialMetadata: []*corev3.HeaderValue{
+						&corev3.HeaderValue{
+							Key: "x-request-id",
+							Value: "%REQ(x-request-id)%",
+						},
+					},
+				},
+			}
+		}
+		return config
+	}
 	config := &extauthv3.ExtAuthz{
 		TransportApiVersion: corev3.ApiVersion_V3,
 		FailureModeAllow:    false,
-		ClearRouteCache: true,
-		IncludePeerCertificate: true,
-		WithRequestBody: &extauthv3.BufferSettings{
-			MaxRequestBytes: 102400,
-		},
 	}
 
 	var headersToExtAuth []*matcherv3.StringMatcher
@@ -136,13 +172,11 @@ func extAuthConfig(extAuth *ir.ExtAuth) *extauthv3.ExtAuthz {
 			},
 		})
 	}
-
 	if len(headersToExtAuth) > 0 {
 		config.AllowedHeaders = &matcherv3.ListStringMatcher{
 			Patterns: headersToExtAuth,
 		}
 	}
-
 	if extAuth.HTTP != nil {
 		config.Services = &extauthv3.ExtAuthz_HttpService{
 			HttpService: httpService(extAuth.HTTP),
@@ -156,16 +190,9 @@ func extAuthConfig(extAuth *ir.ExtAuth) *extauthv3.ExtAuthz {
 				Timeout: &duration.Duration{
 					Seconds: defaultExtServiceRequestTimeout,
 				},	
-				InitialMetadata: []*corev3.HeaderValue{
-					&corev3.HeaderValue{
-						Key: "x-request-id",
-						Value: "%REQ(x-request-id)%",
-					},
-				},
 			},
 		}
 	}
-
 	return config
 }
 
@@ -319,6 +346,5 @@ func (*extAuth) patchRoute(route *routev3.Route, irRoute *ir.HTTPRoute) error {
 	if irRoute.ExtAuth == nil {
 		return nil
 	}
-	// filterName := extAuthFilterName(irRoute.ExtAuth)
-	return enableExtAuthFilterOnRoute(route, extAuthFilter)
+	return enableFilterOnRoute(extAuthFilter, route, irRoute)
 }
