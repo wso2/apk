@@ -662,7 +662,7 @@ func expectedEnforcerEnv(containerSpec *egv1a1.KubernetesContainerSpec) []corev1
 		},
 		{
 			Name:  "ADAPTER_XDS_PORT",
-			Value: "18001",
+			Value: "18000",
 		},
 		{
 			Name:  "COMMON_CONTROLLER_XDS_PORT",
