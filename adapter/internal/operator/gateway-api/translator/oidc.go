@@ -112,7 +112,7 @@ func buildHCMOAuth2Filter(route *ir.HTTPRoute) (*hcmv3.HttpFilter, error) {
 }
 
 func oauth2FilterName(route *ir.HTTPRoute) string {
-	return perRouteFilterName(oauth2Filter, route.Name)
+	return fmt.Sprintf("%s_%s", oauth2Filter, route.Name)
 }
 
 func oauth2Config(route *ir.HTTPRoute) (*oauth2v3.OAuth2, error) {
@@ -356,8 +356,7 @@ func (*oidc) patchRoute(route *routev3.Route, irRoute *ir.HTTPRoute) error {
 		return nil
 	}
 
-	filterName := oauth2FilterName(irRoute)
-	return enableFilterOnRoute(route, filterName)
+	return enableFilterOnRoute(oauth2Filter, route, irRoute)
 }
 
 // buildXdsUpstreamTLSSocket returns an xDS TransportSocket that uses envoyTrustBundle
