@@ -29,7 +29,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
-
+  "github.com/wso2/apk/adapter/internal/operator/gateway-api/ir"
 	routev3 "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
 	extAuthService "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/ext_authz/v3"
 	"google.golang.org/protobuf/types/known/anypb"
@@ -110,18 +110,21 @@ func clusterName(host string, port uint32) string {
 	return fmt.Sprintf("%s_%d", strings.ReplaceAll(host, ".", "_"), port)
 }
 
-// enableFilterOnRoute enables a filterType on the provided route.
-func enableFilterOnRoute(route *routev3.Route, filterName string) error {
+func enableFilterOnRoute(filterType string, route *routev3.Route, irRoute *ir.HTTPRoute) error {
 	if route == nil {
 		return errors.New("xds route is nil")
 	}
+	if irRoute == nil {
+		return errors.New("ir route is nil")
+	}
 
+	filterName := perRouteFilterName(filterType, irRoute.Name)
 	filterCfg := route.GetTypedPerFilterConfig()
 	if _, ok := filterCfg[filterName]; ok {
 		// This should not happen since this is the only place where the filter
 		// config is added in a route.
 		return fmt.Errorf("route already contains filter config: %s, %+v",
-			filterName, route)
+			filterType, route)
 	}
 
 	// Enable the corresponding filter for this route.
@@ -131,9 +134,11 @@ func enableFilterOnRoute(route *routev3.Route, filterName string) error {
 	if err != nil {
 		return err
 	}
+
 	if filterCfg == nil {
 		route.TypedPerFilterConfig = make(map[string]*anypb.Any)
 	}
+
 	route.TypedPerFilterConfig[filterName] = routeCfgAny
 	return nil
 }
