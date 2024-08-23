@@ -41,6 +41,7 @@ import (
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
+	dpv1beta1 "github.com/wso2/apk/common-go-libs/apis/dp/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
@@ -68,6 +69,7 @@ func init() {
 	utilruntime.Must(cpv1alpha2.AddToScheme(scheme))
 	utilruntime.Must(cpv1alpha3.AddToScheme(scheme))
 	utilruntime.Must(dpv1alpha3.AddToScheme(scheme))
+	utilruntime.Must(dpv1beta1.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
 
@@ -133,6 +135,11 @@ func InitOperator(metricsConfig config.Metrics) {
 	}
 
 	if err = (&dpv1alpha2.API{}).SetupWebhookWithManager(mgr); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2601, logging.MAJOR,
+			"Unable to create webhook API, error: %v", err))
+	}
+
+	if err = (&dpv1beta1.API{}).SetupWebhookWithManager(mgr); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2601, logging.MAJOR,
 			"Unable to create webhook API, error: %v", err))
 	}
