@@ -525,7 +525,7 @@ func expectedDeploymentVolumes(deploymentSpec *egv1a1.KubernetesDeploymentSpec) 
 				ConfigMap: &corev1.ConfigMapVolumeSource{
 					DefaultMode: ptr.To[int32](420),
 					LocalObjectReference: corev1.LocalObjectReference{
-						Name: "apk-test-wso2-apk-log-conf",
+						Name: conf.Deployment.Gateway.Volumes.LogConfVolume,
 					},
 				},
 			},
@@ -662,7 +662,7 @@ func expectedEnforcerEnv(containerSpec *egv1a1.KubernetesContainerSpec) []corev1
 		},
 		{
 			Name:  "ADAPTER_XDS_PORT",
-			Value: "18001",
+			Value: conf.Deployment.Gateway.AdapterXDSPort,
 		},
 		{
 			Name:  "COMMON_CONTROLLER_XDS_PORT",
