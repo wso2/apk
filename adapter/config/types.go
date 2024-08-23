@@ -356,6 +356,7 @@ type volumes struct {
 	EnforcerTrustedCerts              string
 	EnforcerApikeyCert                string
 	IDPCertificateSecretVolume        string
+	LogConfVolume                     string
 }
 
 // Metrics defines the configuration for metrics collection.

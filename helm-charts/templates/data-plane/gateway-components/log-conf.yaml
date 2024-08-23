@@ -33,6 +33,7 @@ data:
       enforcerTrustedCerts = "{{ template "apk-helm.resource.prefix" . }}-enforcer-truststore-secret"
       enforcerApikeyCert = "{{ template "apk-helm.resource.prefix" . }}-enforcer-truststore-secret"
       iDPCertificateSecretVolume = "{{ template "apk-helm.resource.prefix" . }}-enforcer-truststore-secret"
+      LogConfVolume = "{{ template "apk-helm.resource.prefix" . }}-log-conf"
 
     [adapter]
       {{- if and .Values.wso2.apk.dp.environment .Values.wso2.apk.dp.environment.name }}

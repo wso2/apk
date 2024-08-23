@@ -302,6 +302,7 @@ var defaultConfig = &Config{
 				EnforcerTrustedCerts:              "",
 				EnforcerApikeyCert:                "",
 				IDPCertificateSecretVolume:        "",
+				LogConfVolume:                     "",
 			},
 		},
 	},
