@@ -25,6 +25,7 @@ import (
 	"github.com/wso2/apk/adapter/internal/loggers"
 	gatewayapi "github.com/wso2/apk/adapter/internal/operator/gateway-api"
 	"github.com/wso2/apk/adapter/internal/operator/utils"
+	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	k8errors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/fields"
@@ -99,6 +100,20 @@ func (r *gatewayReconcilerNew) validateServiceForReconcile(obj client.Object) bo
 	}
 
 	nsName := utils.NamespacedName(svc)
+	return r.isRouteReferencingService(&nsName)
+
+}
+
+// validateBackendForReconcile tries finding the owning Gateway of the Service
+// if it exists, finds the Gateway's Deployment, and further updates the Gateway
+// status Ready condition. All Services are pushed for reconciliation.
+func (r *gatewayReconcilerNew) validateBackendForReconcile(obj client.Object) bool {
+	backend, ok := obj.(*dpv1alpha1.Backend)
+	if !ok {
+		loggers.LoggerAPKOperator.Info("unexpected object type, bypassing reconciliation for object", obj)
+		return false
+	}
+	nsName := utils.NamespacedName(backend)
 	return r.isRouteReferencingBackend(&nsName)
 
 }
@@ -124,13 +139,31 @@ func (r *gatewayReconcilerNew) findOwningGateway(ctx context.Context, labels map
 	return gtw
 }
 
+// isRouteReferencingService returns true if the backend(service and serviceImport) is referenced by any of the xRoutes
+// in the system, else returns false.
+func (r *gatewayReconcilerNew) isRouteReferencingService(nsName *types.NamespacedName) bool {
+	ctx := context.Background()
+	httpRouteList := &gwapiv1.HTTPRouteList{}
+	if err := r.client.List(ctx, httpRouteList, &client.ListOptions{
+		FieldSelector: fields.OneTermEqualSelector(serviceHTTPRouteIndex, nsName.String()),
+	}); err != nil {
+		loggers.LoggerAPKOperator.Error("unable to find associated HTTPRoutes for the service ", err)
+		return false
+	}
+
+	// Check how many Route objects refer this Backend
+	allAssociatedRoutes := len(httpRouteList.Items)
+
+	return allAssociatedRoutes != 0
+}
+
 // isRouteReferencingBackend returns true if the backend(service and serviceImport) is referenced by any of the xRoutes
 // in the system, else returns false.
 func (r *gatewayReconcilerNew) isRouteReferencingBackend(nsName *types.NamespacedName) bool {
 	ctx := context.Background()
 	httpRouteList := &gwapiv1.HTTPRouteList{}
 	if err := r.client.List(ctx, httpRouteList, &client.ListOptions{
-		FieldSelector: fields.OneTermEqualSelector(serviceHTTPRouteIndex, nsName.String()),
+		FieldSelector: fields.OneTermEqualSelector(backendHTTPRouteIndex, nsName.String()),
 	}); err != nil {
 		loggers.LoggerAPKOperator.Error("unable to find associated HTTPRoutes for the service ", err)
 		return false

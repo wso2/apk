@@ -492,6 +492,16 @@ func (r *gatewayReconcilerNew) watchResources(ctx context.Context, mgr manager.M
 		return err
 	}
 
+	// Watch Service CRUDs and process affected *Route objects and services belongs to gateways
+	backendPredicates := []predicate.Predicate{predicate.NewPredicateFuncs(r.validateBackendForReconcile)}
+	if err := c.Watch(
+		source.Kind(mgr.GetCache(), &dpv1alpha1.Backend{}),
+		handler.EnqueueRequestsFromMapFunc(r.enqueueClass),
+		backendPredicates...,
+	); err != nil {
+		return err
+	}
+
 	// serviceImportCRDExists := r.serviceImportCRDExists(mgr)
 	// if !serviceImportCRDExists {
 	// 	loggers.LoggerAPKOperator.Info("ServiceImport CRD not found, skipping ServiceImport watch")
