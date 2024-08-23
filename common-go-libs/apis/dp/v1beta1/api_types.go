@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2023, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
+ *  Copyright (c) 2024, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  *
  */
 
-package v1alpha2
+package v1beta1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -80,9 +80,9 @@ type APISpec struct {
 	Sandbox []EnvConfig `json:"sandbox"`
 
 	// APIType denotes the type of the API.
-	// Possible values could be REST, GraphQL, Async
+	// Possible values could be REST, GraphQL, gRPC
 	//
-	// +kubebuilder:validation:Enum=REST;GraphQL
+	// +kubebuilder:validation:Enum=REST;GraphQL;gRPC
 	APIType string `json:"apiType"`
 
 	// BasePath denotes the basepath of the API.
@@ -170,13 +170,14 @@ type DeploymentStatus struct {
 }
 
 // +genclient
-//+kubebuilder:object:root=true
-//+kubebuilder:subresource:status
-//+kubebuilder:printcolumn:name="API Name",type="string",JSONPath=".spec.apiName"
-//+kubebuilder:printcolumn:name="Version",type="string",JSONPath=".spec.apiVersion"
-//+kubebuilder:printcolumn:name="BasePath",type="string",JSONPath=".spec.basePath"
-//+kubebuilder:printcolumn:name="Organization",type="string",JSONPath=".spec.organization"
-//+kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
+// +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
+// +kubebuilder:storageversion
+// +kubebuilder:printcolumn:name="API Name",type="string",JSONPath=".spec.apiName"
+// +kubebuilder:printcolumn:name="Version",type="string",JSONPath=".spec.apiVersion"
+// +kubebuilder:printcolumn:name="BasePath",type="string",JSONPath=".spec.basePath"
+// +kubebuilder:printcolumn:name="Organization",type="string",JSONPath=".spec.organization"
+// +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 
 // API is the Schema for the apis API
 type API struct {

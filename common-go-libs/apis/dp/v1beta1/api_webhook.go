@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2023, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
+ *  Copyright (c) 2024, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  *
  */
 
-package v1alpha2
+package v1beta1
 
 import (
 	"bytes"
@@ -24,16 +24,17 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"regexp"
 	"strings"
 
-	gqlparser "github.com/vektah/gqlparser"
+	"github.com/sirupsen/logrus"
+	"github.com/vektah/gqlparser"
 	"github.com/vektah/gqlparser/ast"
 	"github.com/wso2/apk/adapter/pkg/logging"
 	config "github.com/wso2/apk/common-go-libs/configs"
-	loggers "github.com/wso2/apk/common-go-libs/loggers"
-	utils "github.com/wso2/apk/common-go-libs/utils"
+	"github.com/wso2/apk/common-go-libs/loggers"
+	"github.com/wso2/apk/common-go-libs/utils"
 	"golang.org/x/exp/slices"
+
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -42,15 +43,17 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
+// log is for logging in this package.
+var apilog = logf.Log.WithName("api-resource")
 var c client.Client
 
 // SetupWebhookWithManager creates a new webhook builder for API
 func (r *API) SetupWebhookWithManager(mgr ctrl.Manager) error {
-
 	c = mgr.GetClient()
 	return ctrl.NewWebhookManagedBy(mgr).
 		For(r).
@@ -59,17 +62,19 @@ func (r *API) SetupWebhookWithManager(mgr ctrl.Manager) error {
 
 // TODO(user): EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 
-//+kubebuilder:webhook:path=/mutate-dp-wso2-com-v1alpha2-api,mutating=true,failurePolicy=fail,sideEffects=None,groups=dp.wso2.com,resources=apis,verbs=create;update,versions=v1alpha2,name=mapi.kb.io,admissionReviewVersions=v1
+//+kubebuilder:webhook:path=/mutate-dp-wso2-com-v1beta1-api,mutating=true,failurePolicy=fail,sideEffects=None,groups=dp.wso2.com,resources=apis,verbs=create;update,versions=v1beta1,name=mapi.kb.io,admissionReviewVersions=v1
 
 var _ webhook.Defaulter = &API{}
 
 // Default implements webhook.Defaulter so a webhook will be registered for the type
 func (r *API) Default() {
+	apilog.Info("default", "name", r.Name)
+
 	// TODO(user): fill in your defaulting logic.
 }
 
 // TODO(user): change verbs to "verbs=create;update;delete" if you want to enable deletion validation.
-//+kubebuilder:webhook:path=/validate-dp-wso2-com-v1alpha2-api,mutating=false,failurePolicy=fail,sideEffects=None,groups=dp.wso2.com,resources=apis,verbs=create;update,versions=v1alpha2,name=vapi.kb.io,admissionReviewVersions=v1
+//+kubebuilder:webhook:path=/validate-dp-wso2-com-v1beta1-api,mutating=false,failurePolicy=fail,sideEffects=None,groups=dp.wso2.com,resources=apis,verbs=create;update,versions=v1beta1,name=vapi.kb.io,admissionReviewVersions=v1
 
 var _ webhook.Validator = &API{}
 
@@ -104,8 +109,6 @@ func (r *API) validateAPI() error {
 
 	if r.Spec.BasePath == "" {
 		allErrs = append(allErrs, field.Required(field.NewPath("spec").Child("basePath"), "API basePath is required"))
-	} else if errMsg := validateAPIBasePathRegex(r.Spec.BasePath, r.Spec.APIType); errMsg != "" {
-		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("basePath"), r.Spec.BasePath, errMsg))
 	} else if errMsg := validateAPIBasePathFormat(r.Spec.BasePath, r.Spec.APIVersion); errMsg != "" {
 		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("basePath"), r.Spec.BasePath, errMsg))
 	} else if err := r.validateAPIBasePathExistsAndDefaultVersion(); err != nil {
@@ -135,20 +138,20 @@ func (r *API) validateAPI() error {
 			"both API production and sandbox endpoint references cannot be empty"))
 	}
 
-	var prodHTTPRoute1, sandHTTPRoute1 []string
+	var prodHTTPRoute, sandHTTPRoute []string
 	if len(r.Spec.Production) > 0 {
-		prodHTTPRoute1 = r.Spec.Production[0].RouteRefs
+		prodHTTPRoute = r.Spec.Production[0].RouteRefs
 	}
 	if len(r.Spec.Sandbox) > 0 {
-		sandHTTPRoute1 = r.Spec.Sandbox[0].RouteRefs
+		sandHTTPRoute = r.Spec.Sandbox[0].RouteRefs
 	}
 
-	if isEmptyStringsInArray(prodHTTPRoute1) {
+	if isEmptyStringsInArray(prodHTTPRoute) {
 		allErrs = append(allErrs, field.Required(field.NewPath("spec").Child("production").Child("httpRouteRefs"),
 			"API production endpoint reference cannot be empty"))
 	}
 
-	if isEmptyStringsInArray(sandHTTPRoute1) {
+	if isEmptyStringsInArray(sandHTTPRoute) {
 		allErrs = append(allErrs, field.Required(field.NewPath("spec").Child("sandbox").Child("httpRouteRefs"),
 			"API sandbox endpoint reference cannot be empty"))
 	}
@@ -160,23 +163,6 @@ func (r *API) validateAPI() error {
 	}
 
 	return nil
-}
-
-func validateAPIBasePathRegex(basePath, apiType string) string {
-	var pattern string
-	if apiType == "GRPC" {
-		pattern = `^[/][a-zA-Z][a-zA-Z0-9_.]*$`
-	} else {
-		pattern = `^[/][a-zA-Z0-9~/_.-]*$`
-	}
-	re, err := regexp.Compile(pattern)
-	if err != nil {
-		return "Failed to compile basePath regex pattern"
-	}
-	if !re.MatchString(basePath) {
-		return "API basePath is not in a valid format for the specified API type"
-	}
-	return ""
 }
 
 func isEmptyStringsInArray(strings []string) bool {
@@ -307,6 +293,7 @@ func validateGzip(name, namespace string) (string, string) {
 func unzip(compressedData []byte) (string, error) {
 	reader, err := gzip.NewReader(bytes.NewBuffer(compressedData))
 	if err != nil {
+		logrus.Info(err)
 		return "", fmt.Errorf("error creating gzip reader: %v", err)
 	}
 	defer reader.Close()
