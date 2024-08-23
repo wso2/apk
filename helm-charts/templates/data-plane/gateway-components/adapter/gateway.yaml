@@ -21,6 +21,21 @@ spec:
     {{ end }}
     {{- if .Values.wso2.apk.dp.enabled }}
     - name: httpslistener
+      hostname: "*.{{ .Values.wso2.apk.dp.gateway.listener.hostname }}"
+      port: 9095
+      protocol: "HTTPS"
+      allowedRoutes:
+        namespaces: 
+          from: "All"
+      tls:  
+        mode: Terminate
+        certificateRefs:
+          - kind: Secret
+            group: ""
+            name: {{ .Values.wso2.apk.dp.gateway.listener.secretName | default (printf "%s-gw-listener-cert" (include "apk-helm.resource.prefix" .)) }}
+            namespace: {{ .Release.Namespace }}
+    {{ end }}
+    - name: apilistener
       hostname: "{{ .Values.wso2.apk.listener.hostname | default "api.am.wso2.com"}}"
       port: 9095
       protocol: "HTTPS"
@@ -46,18 +61,6 @@ spec:
             namespace: {{ .Release.Namespace }}
     {{ end }}
     {{ if .Values.wso2.apk.dp.enabled }}
-    - name: gatewaylistener
-      hostname: "*.{{ .Values.wso2.apk.dp.gateway.listener.hostname }}"
-      port: 9095
-      protocol: "HTTPS"
-      tls:  
-        mode: Terminate
-        certificateRefs:
-          - kind: Secret
-            group: ""
-            name: {{ .Values.wso2.apk.dp.gateway.listener.secretName | default (printf "%s-gw-listener-cert" (include "apk-helm.resource.prefix" .)) }}
-            namespace: {{ .Release.Namespace }}
-    {{ end }}
     - name: systemlistener
       hostname: "localhost"
       port: 9095
