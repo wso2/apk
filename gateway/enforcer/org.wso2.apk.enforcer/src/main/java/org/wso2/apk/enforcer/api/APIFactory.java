@@ -73,11 +73,17 @@ public class APIFactory {
 //                String apiKey = getApiKey(webSocketAPI);
 //                newApis.put(apiKey, webSocketAPI);
 //            } else
+            System.out.println(api.getApiType());
             if (APIConstants.ApiType.GRAPHQL.equals(api.getApiType())) {
                 GraphQLAPI graphQLAPI = new GraphQLAPI();
                 graphQLAPI.init(api);
                 String apiKey = getApiKey(graphQLAPI);
                 newApis.put(apiKey, graphQLAPI);
+            } else if (APIConstants.ApiType.GRPC.equals(api.getApiType())) {
+                GRPCAPI grpcAPI = new GRPCAPI();
+                grpcAPI.init(api);
+                String apiKey = getApiKey(grpcAPI);
+                newApis.put(apiKey, grpcAPI);
             } else {
                 RestAPI enforcerApi = new RestAPI();
                 enforcerApi.init(api);
@@ -133,10 +139,17 @@ public class APIFactory {
 
     public ResourceConfig getMatchedResource(API api, String matchedResourcePath, String method) {
         List<ResourceConfig> resourceConfigList = api.getAPIConfig().getResources();
+        System.out.println(APIConstants.ApiType.GRPC);
+        if (APIConstants.ApiType.GRPC.equals(api.getAPIConfig().getApiType())) {
+            return resourceConfigList.stream()
+                    .filter(resourceConfig -> resourceConfig.getPath().equals(matchedResourcePath))
+                    .findFirst().orElse(null);
+        }
         return resourceConfigList.stream()
-                .filter(resourceConfig -> resourceConfig.getPath().equals(matchedResourcePath)).
-                filter(resourceConfig -> (method == null) || resourceConfig.getMethod()
-                        .equals(ResourceConfig.HttpMethods.valueOf(method))).findFirst().orElse(null);
+                .filter(resourceConfig -> resourceConfig.getPath().equals(matchedResourcePath))
+                .filter(resourceConfig -> (method == null) || resourceConfig.getMethod()
+                        .equals(ResourceConfig.HttpMethods.valueOf(method)))
+                .findFirst().orElse(null);
     }
 
 //    // For WebSocket APIs since there are no resources in WebSocket APIs.
