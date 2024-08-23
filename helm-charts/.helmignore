@@ -22,3 +22,8 @@
 .idea/
 *.tmproj
 .vscode/
+instructions.md
+README.md
+apk-crds.md
+Version-Upgrade.md
+samples/

@@ -48,9 +48,9 @@ wso2:
       #   secretName: "wso2apk-idp-signing"
       #   fileName: "idp.crt"
     # cp:
-      # enabledSubscription: true
-      # host: "apim-apk-agent-service.apk.svc.cluster.local"
-      # skipSSLVerification: true
+    # enabledSubscription: true
+    # host: "apim-apk-agent-service.apk.svc.cluster.local"
+    # skipSSLVerification: true
     #   skipSSLVerification: false
     #   persistence:
     #     type: "K8s"
@@ -59,7 +59,8 @@ wso2:
       gateway:
         listener:
           hostname: "gw.wso2.com"
-        service: {}
+        service:
+          {}
           # secretName: "idp-tls"
       # partitionServer:
       #   enabled: false
@@ -245,16 +246,16 @@ wso2:
             image: wso2/apk-enforcer:1.2.0-m1
             security:
               sslHostname: "enforcer"
-#            logging:
-#              level: DEBUG
-            configs:
-#              tls:
-#                secretName: "router-cert"
-#                certKeyFilename: ""
-#                certFilename: ""
-              # JWKSClient:
-                # skipSSLVerification: false
-                # hostnameVerifier: "AllowAll"
+    #            logging:
+    #              level: DEBUG
+    #            configs:
+    #              tls:
+    #                secretName: "router-cert"
+    #                certKeyFilename: ""
+    #                certFilename: ""
+    #              JWKSClient:
+    #                skipSSLVerification: false
+    #                hostnameVerifier: "AllowAll"
 
     metrics:
       enabled: false
