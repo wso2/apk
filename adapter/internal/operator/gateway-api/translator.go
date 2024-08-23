@@ -45,6 +45,7 @@ const (
 	KindSecret           = "Secret"
 	KindBackend          = "Backend"
 
+	DpGroupName              = "dp.wso2.com"
 	GroupMultiClusterService = "multicluster.x-k8s.io"
 	// OwningGatewayNamespaceLabel is the owner reference label used for managed infra.
 	// The value should be the namespace of the accepted Envoy Gateway.
