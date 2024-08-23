@@ -11,6 +11,7 @@ public class API {
     private String apiSecurity;
     private String[] scopes;
     private String graphQLSchema;
+    private String protoDefinition;
     private String swaggerDefinition;
     private String environment;
 
@@ -85,6 +86,14 @@ public class API {
 
     public void setSwaggerDefinition(String swaggerDefinition) {
         this.swaggerDefinition = swaggerDefinition;
+    }
+
+    public void setProtoDefinition(String protoDefinition) {
+        this.protoDefinition = protoDefinition;
+    }
+
+    public String getProtoDefinition() {
+        return protoDefinition;
     }
 
     public String getBasePath() {

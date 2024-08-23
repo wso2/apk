@@ -11,6 +11,8 @@ public final string[] WS_SUPPORTED_METHODS = ["subscribe", "publish"];
 
 const string API_TYPE_REST = "REST";
 const string API_TYPE_GRAPHQL = "GRAPHQL";
+const string API_TYPE_GRPC = "GRPC";
+const string API_TYPE_ASYNC = "ASYNC";
 const string API_TYPE_SOAP = "SOAP";
 const string API_TYPE_SSE = "SSE";
 const string API_TYPE_WS = "WS";
@@ -52,7 +54,7 @@ const string ENDPOINT_SECURITY_PASSWORD = "password";
 const string ZIP_FILE_EXTENSTION = ".zip";
 const string PROTOCOL_HTTP = "http";
 const string PROTOCOL_HTTPS = "https";
-final string[] & readonly ALLOWED_API_TYPES = [API_TYPE_REST, API_TYPE_GRAPHQL];
+final string[] & readonly ALLOWED_API_TYPES = [API_TYPE_REST, API_TYPE_GRAPHQL, API_TYPE_GRPC];
 
 const string MEDIATION_POLICY_TYPE_REQUEST_HEADER_MODIFIER = "RequestHeaderModifier";
 const string MEDIATION_POLICY_TYPE_RESPONSE_HEADER_MODIFIER = "ResponseHeaderModifier";

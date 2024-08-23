@@ -1,16 +1,18 @@
-import wso2/apk_common_lib as commons;
-import ballerina/http;
+import config_deployer_service.java.util as utilapis;
+import config_deployer_service.model;
+import config_deployer_service.org.wso2.apk.config as runtimeUtil;
 import config_deployer_service.org.wso2.apk.config.api as runtimeapi;
 import config_deployer_service.org.wso2.apk.config.model as runtimeModels;
-import config_deployer_service.java.util as utilapis;
-import config_deployer_service.org.wso2.apk.config as runtimeUtil;
-import ballerina/mime;
-import ballerina/jballerina.java;
-import config_deployer_service.model;
-import ballerina/io;
+
 import ballerina/file;
+import ballerina/http;
+import ballerina/io;
+import ballerina/jballerina.java;
 import ballerina/log;
+import ballerina/mime;
 import ballerina/uuid;
+
+import wso2/apk_common_lib as commons;
 
 public class ConfigGeneratorClient {
 
@@ -93,7 +95,7 @@ public class ConfigGeneratorClient {
     private isolated function validateAndRetrieveDefinition(string 'type, string? url, byte[]? content, string? fileName) returns runtimeapi:APIDefinitionValidationResponse|runtimeapi:APIManagementException|error|commons:APKError {
         runtimeapi:APIDefinitionValidationResponse|runtimeapi:APIManagementException|error validationResponse;
         boolean typeAvailable = 'type.length() > 0;
-        string[] ALLOWED_API_DEFINITION_TYPES = [API_TYPE_REST, API_TYPE_GRAPHQL, "ASYNC"];
+        string[] ALLOWED_API_DEFINITION_TYPES = [API_TYPE_REST, API_TYPE_GRAPHQL, API_TYPE_GRPC, API_TYPE_ASYNC];
         if !typeAvailable {
             return e909005("type");
         }

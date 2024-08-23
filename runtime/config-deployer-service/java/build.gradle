@@ -33,6 +33,7 @@ dependencies {
     implementation libs.json
     implementation libs.commons.lang
     implementation libs.prometheus
+    implementation libs.protobuf.java
 }
 
 tasks.register('copy_dependencies', Copy) {

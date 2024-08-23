@@ -6,6 +6,8 @@ import org.wso2.apk.config.api.APIManagementException;
 import org.wso2.apk.config.api.ExceptionCodes;
 import org.wso2.apk.config.definitions.GraphQLSchemaDefinition;
 import org.wso2.apk.config.definitions.OASParserUtil;
+import org.wso2.apk.config.definitions.ProtoParser;
+import org.wso2.apk.config.definitions.ProtoParserUtil;
 import org.wso2.apk.config.model.API;
 import org.wso2.apk.config.model.URITemplate;
 
@@ -20,31 +22,28 @@ import java.util.Set;
 public class RuntimeAPICommonUtil {
 
     public static String generateDefinition(API api) throws APIManagementException {
-
         APIDefinition parser = DefinitionParserFactory.getParser(api);
         return parser.generateAPIDefinition(api);
     }
 
     /**
-     * @param inputByteArray OpenAPI definition file
-     * @param apiDefinition  OpenAPI definition
+     * @param inputByteArray API definition file
+     * @param apiDefinition  API definition
      * @param fileName       Filename of the definition file
      * @param returnContent  Whether to return json or not
      * @return APIDefinitionValidationResponse
      * @throws APIManagementException when file parsing fails
      */
     public static APIDefinitionValidationResponse validateOpenAPIDefinition(String type, byte[] inputByteArray,
-                                                                            String apiDefinition, String fileName,
-                                                                            boolean returnContent)
-            throws APIManagementException {
+            String apiDefinition, String fileName, boolean returnContent) throws APIManagementException {
 
         APIDefinitionValidationResponse validationResponse = new APIDefinitionValidationResponse();
         if (APIConstants.ParserType.REST.name().equals(type)) {
             if (inputByteArray != null && inputByteArray.length > 0) {
                 if (fileName != null) {
                     if (fileName.endsWith(".zip")) {
-                        validationResponse =
-                                OASParserUtil.extractAndValidateOpenAPIArchive(inputByteArray, returnContent);
+                        validationResponse = OASParserUtil.extractAndValidateOpenAPIArchive(inputByteArray,
+                                returnContent);
                     } else {
                         String openAPIContent = new String(inputByteArray, StandardCharsets.UTF_8);
                         validationResponse = OASParserUtil.validateAPIDefinition(openAPIContent, returnContent);
@@ -66,8 +65,48 @@ public class RuntimeAPICommonUtil {
                 OASParserUtil.addErrorToValidationResponse(validationResponse,
                         "Invalid definition file type provided.");
             }
+        } else if (APIConstants.ParserType.GRPC.name().equals(type.toUpperCase())) {
+            if (fileName.endsWith(".proto")) {
+                validationResponse = ProtoParserUtil.validateGRPCAPIDefinition(
+                        new String(inputByteArray, StandardCharsets.UTF_8),
+                        returnContent);
+            } else {
+                ProtoParserUtil.addErrorToValidationResponse(validationResponse,
+                        "Invalid definition file type provided.");
+            }
         }
         return validationResponse;
+    }
+
+    public static API getGRPCAPIFromProtoDefinition(String definition) {
+        System.out.println("GETTING API FROM PROTO");
+        ProtoParser protoParser = new ProtoParser();
+        protoParser.setContent(definition);
+        List<URITemplate> uriTemplates = new ArrayList<>();
+        API api = new API();
+        api.setBasePath("/" + protoParser.protoFile.basePath);
+        api.setVersion(protoParser.protoFile.version);
+        StringBuilder apiName = new StringBuilder();
+        List<String> sortedServices = new ArrayList<>();
+
+        for (ProtoParser.Service service : protoParser.getServices()) {
+            sortedServices.add(service.name);
+            for (String method : service.methods) {
+                URITemplate uriTemplate = new URITemplate();
+                uriTemplate.setUriTemplate(protoParser.protoFile.packageName + "." + service.name);
+                uriTemplate.setVerb(method);
+                uriTemplates.add(uriTemplate);
+            }
+        }
+        sortedServices.sort(String::compareTo);
+        for (String service : sortedServices) {
+            apiName.append(service).append("-");
+        }
+        apiName.deleteCharAt(apiName.length() - 1);
+        api.setName(apiName.toString());
+        api.setUriTemplates(uriTemplates.toArray(new URITemplate[uriTemplates.size()]));
+
+        return api;
     }
 
     public static Set<URITemplate> generateUriTemplatesFromAPIDefinition(String apiType, String content)
@@ -99,6 +138,8 @@ public class RuntimeAPICommonUtil {
 
         if (apiType.toUpperCase().equals(APIConstants.GRAPHQL_API)) {
             return getGQLAPIFromDefinition(definition);
+        } else if (apiType.toUpperCase().equals(APIConstants.GRPC_API)) {
+            return getGRPCAPIFromProtoDefinition(definition);
         } else {
             APIDefinition parser = DefinitionParserFactory.getParser(apiType);
             if (parser != null) {

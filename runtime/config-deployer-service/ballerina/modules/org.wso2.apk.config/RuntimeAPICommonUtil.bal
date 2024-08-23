@@ -1,9 +1,10 @@
-import ballerina/jballerina.java;
-import ballerina/jballerina.java.arrays as jarrays;
 import config_deployer_service.java.lang as javalang;
 import config_deployer_service.java.util as javautil;
-import config_deployer_service.org.wso2.apk.config.model as orgwso2apkconfigmodel;
 import config_deployer_service.org.wso2.apk.config.api as orgwso2apkconfigapi;
+import config_deployer_service.org.wso2.apk.config.model as orgwso2apkconfigmodel;
+
+import ballerina/jballerina.java;
+import ballerina/jballerina.java.arrays as jarrays;
 
 # Ballerina class mapping for the Java `org.wso2.apk.config.RuntimeAPICommonUtil` class.
 @java:Binding {'class: "org.wso2.apk.config.RuntimeAPICommonUtil"}

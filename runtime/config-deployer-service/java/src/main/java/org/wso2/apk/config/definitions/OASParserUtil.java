@@ -94,7 +94,7 @@ import java.util.zip.ZipInputStream;
 public class OASParserUtil {
     private static final Log log = LogFactory.getLog(OASParserUtil.class);
     private static final String OPENAPI_RESOURCE_KEY = "paths";
-    private static final String[] UNSUPPORTED_RESOURCE_BLOCKS = new String[]{"servers"};
+    private static final String[] UNSUPPORTED_RESOURCE_BLOCKS = new String[] { "servers" };
     private static final APIDefinition oas3Parser = new OAS3Parser();
 
     public enum SwaggerVersion {
@@ -122,7 +122,6 @@ public class OASParserUtil {
             referenceObjectMap.put(RESPONSES, new HashSet<>());
             referenceObjectMap.put(HEADERS, new HashSet<>());
         }
-
 
         Paths getPaths() {
             return paths;
@@ -236,9 +235,11 @@ public class OASParserUtil {
     }
 
     /**
-     * Update the APIDefinitionValidationResponse object with success state using the values given
+     * Update the APIDefinitionValidationResponse object with success state using
+     * the values given
      *
-     * @param validationResponse    APIDefinitionValidationResponse object to be updated
+     * @param validationResponse    APIDefinitionValidationResponse object to be
+     *                              updated
      * @param originalAPIDefinition original API Definition
      * @param openAPIVersion        version of OpenAPI Spec (2.0 or 3.0.0)
      * @param title                 title of the OpenAPI Definition
@@ -262,7 +263,8 @@ public class OASParserUtil {
     }
 
     /**
-     * Add error item with the provided message to the provided validation response object
+     * Add error item with the provided message to the provided validation response
+     * object
      *
      * @param validationResponse APIDefinitionValidationResponse object
      * @param errMessage         error message
@@ -290,14 +292,14 @@ public class OASParserUtil {
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
 
-        //this is to ignore "originalRef" in schema objects
+        // this is to ignore "originalRef" in schema objects
         mapper.addMixIn(RefModel.class, IgnoreOriginalRefMixin.class);
         mapper.addMixIn(RefProperty.class, IgnoreOriginalRefMixin.class);
         mapper.addMixIn(RefPath.class, IgnoreOriginalRefMixin.class);
         mapper.addMixIn(RefParameter.class, IgnoreOriginalRefMixin.class);
         mapper.addMixIn(RefResponse.class, IgnoreOriginalRefMixin.class);
 
-        //this is to ignore "responseSchema" in response schema objects
+        // this is to ignore "responseSchema" in response schema objects
         mapper.addMixIn(Response.class, ResponseSchemaMixin.class);
         try {
             return new String(mapper.writeValueAsBytes(swaggerObj));
@@ -309,9 +311,9 @@ public class OASParserUtil {
     /**
      * Sets the scopes to the URL template object using the given list of scopes
      *
-     * @param template URL template
-     * @param resourceScopes   list of scopes of the resource
-     * @param apiScopes set of scopes defined for the API
+     * @param template       URL template
+     * @param resourceScopes list of scopes of the resource
+     * @param apiScopes      set of scopes defined for the API
      * @return URL template after setting the scopes
      */
     public static URITemplate setScopesToTemplate(URITemplate template, List<String> resourceScopes,
@@ -379,35 +381,39 @@ public class OASParserUtil {
                     .get(APIConstants.SWAGGER_X_AMZN_RESOURCE_TIMEOUT));
         }
     }
+
     /**
      * Extract the archive file and validates the openAPI definition
      *
-     * @param inputByteArray   file as input stream
-     * @param returnContent whether to return the content of the definition in the response DTO
+     * @param inputByteArray file as input stream
+     * @param returnContent  whether to return the content of the definition in the
+     *                       response DTO
      * @return APIDefinitionValidationResponse
      * @throws APIManagementException if error occurred while parsing definition
      */
     public static APIDefinitionValidationResponse extractAndValidateOpenAPIArchive(byte[] inputByteArray,
-                                                                                   boolean returnContent) throws APIManagementException {
+            boolean returnContent) throws APIManagementException {
         String path = System.getProperty(APIConstants.JAVA_IO_TMPDIR) + File.separator +
                 APIConstants.OPENAPI_ARCHIVES_TEMP_FOLDER + File.separator + UUID.randomUUID();
         String archivePath = path + File.separator + APIConstants.OPENAPI_ARCHIVE_ZIP_FILE;
-        String extractedLocation = OASParserUtil.extractUploadedArchive(inputByteArray, APIConstants.OPENAPI_EXTRACTED_DIRECTORY, archivePath, path);
+        String extractedLocation = OASParserUtil.extractUploadedArchive(inputByteArray,
+                APIConstants.OPENAPI_EXTRACTED_DIRECTORY, archivePath, path);
         File[] listOfFiles = new File(extractedLocation).listFiles();
         File archiveDirectory = null;
         if (listOfFiles != null) {
             if (listOfFiles.length > 1) {
                 throw new APIManagementException("Swagger Definitions should be placed under one root folder.");
             }
-            for (File file: listOfFiles) {
+            for (File file : listOfFiles) {
                 if (file.isDirectory()) {
                     archiveDirectory = file.getAbsoluteFile();
                     break;
                 }
             }
         }
-        //Verify whether the zipped input is archive or file.
-        //If it is a single  swagger file without remote references it can be imported directly, without zipping.
+        // Verify whether the zipped input is archive or file.
+        // If it is a single swagger file without remote references it can be imported
+        // directly, without zipping.
         if (archiveDirectory == null) {
             throw new APIManagementException("Could not find an archive in the given ZIP file.");
         }
@@ -442,8 +448,9 @@ public class OASParserUtil {
         apiDefinitionValidationResponse = OASParserUtil.validateAPIDefinition(openAPIContent, returnContent);
         return apiDefinitionValidationResponse;
     }
+
     public static String extractUploadedArchive(byte[] byteArray, String importedDirectoryName,
-                                                String apiArchiveLocation, String extractLocation) throws APIManagementException {
+            String apiArchiveLocation, String extractLocation) throws APIManagementException {
         String archiveExtractLocation;
 
         try (ByteArrayInputStream uploadedApiArchiveInputStream = new ByteArrayInputStream(byteArray)) {
@@ -463,6 +470,7 @@ public class OASParserUtil {
         }
         return archiveExtractLocation;
     }
+
     /**
      * Delete a given directory
      *
@@ -485,7 +493,8 @@ public class OASParserUtil {
      * @param archiveFilePath path of the zip archive
      * @param destination     extract location
      * @return name of the extracted zip archive
-     * @throws APIManagementException if an error occurs while extracting the archive
+     * @throws APIManagementException if an error occurs while extracting the
+     *                                archive
      */
     public static String extractArchive(String archiveFilePath, String destination)
             throws APIManagementException {
@@ -505,7 +514,8 @@ public class OASParserUtil {
             while ((entry = zis.getNextEntry()) != null) {
                 String currentEntry = entry.getName();
                 int index = 0;
-                //This index variable is used to get the extracted folder name; that is root directory
+                // This index variable is used to get the extracted folder name; that is root
+                // directory
                 if (index == 0 && currentEntry.indexOf('/') != -1) {
                     archiveName = currentEntry.substring(0, currentEntry.indexOf('/'));
                     --index;
@@ -558,6 +568,7 @@ public class OASParserUtil {
             throw new APIManagementException(errorMsg, e);
         }
     }
+
     /**
      * Creates a zip archive from the given {@link InputStream} inputStream
      *
@@ -575,11 +586,13 @@ public class OASParserUtil {
             throw new APIManagementException(errorMsg, e);
         }
     }
+
     /**
      * Creates a directory
      *
      * @param path path of the directory to create
-     * @throws APIManagementException if an error occurs while creating the directory
+     * @throws APIManagementException if an error occurs while creating the
+     *                                directory
      */
     public static void createDirectory(String path) throws APIManagementException {
         try {
@@ -590,7 +603,6 @@ public class OASParserUtil {
             throw new APIManagementException(msg, e);
         }
     }
-
 
     /**
      * Try to validate a give openAPI definition using OpenAPI 3 parser
@@ -605,7 +617,8 @@ public class OASParserUtil {
         String apiDefinitionProcessed = apiDefinition;
         if (!apiDefinition.trim().startsWith("{")) {
             try {
-                JsonNode jsonNode = DeserializationUtils.readYamlTree(apiDefinition, new SwaggerDeserializationResult());
+                JsonNode jsonNode = DeserializationUtils.readYamlTree(apiDefinition,
+                        new SwaggerDeserializationResult());
                 apiDefinitionProcessed = jsonNode.toString();
             } catch (IOException e) {
                 throw new APIManagementException("Error while reading API definition yaml", e);
@@ -615,14 +628,15 @@ public class OASParserUtil {
         if (apiDefinitionProcessed != null) {
             apiDefinition = apiDefinitionProcessed;
         }
-        APIDefinitionValidationResponse validationResponse =
-                oas3Parser.validateAPIDefinition(apiDefinition, returnJsonContent);
+        APIDefinitionValidationResponse validationResponse = oas3Parser.validateAPIDefinition(apiDefinition,
+                returnJsonContent);
         if (!validationResponse.isValid()) {
-//            for (ErrorHandler handler : validationResponse.getErrorItems()) {
-//                if (ExceptionCodes.INVALID_OAS3_FOUND.getErrorCode() == handler.getErrorCode()) {
-//                    return tryOAS2Validation(apiDefinition, returnJsonContent);
-//                }
-//            }
+            // for (ErrorHandler handler : validationResponse.getErrorItems()) {
+            // if (ExceptionCodes.INVALID_OAS3_FOUND.getErrorCode() ==
+            // handler.getErrorCode()) {
+            // return tryOAS2Validation(apiDefinition, returnJsonContent);
+            // }
+            // }
         }
         return validationResponse;
     }
@@ -671,18 +685,20 @@ public class OASParserUtil {
     /**
      * This method removes the unsupported json blocks from the given json string.
      *
-     * @param jsonString Open api specification from which unsupported blocks must be removed.
-     * @return String open api specification without unsupported blocks. Null value if there is no unsupported blocks.
+     * @param jsonString Open api specification from which unsupported blocks must
+     *                   be removed.
+     * @return String open api specification without unsupported blocks. Null value
+     *         if there is no unsupported blocks.
      */
     public static String removeUnsupportedBlocksFromResources(String jsonString) {
         JSONObject jsonObject = new JSONObject(jsonString);
         boolean definitionUpdated = false;
         if (jsonObject.has(OPENAPI_RESOURCE_KEY)) {
             JSONObject paths = jsonObject.optJSONObject(OPENAPI_RESOURCE_KEY);
-            if (paths != null ) {
+            if (paths != null) {
                 for (String unsupportedBlockKey : UNSUPPORTED_RESOURCE_BLOCKS) {
                     boolean result = removeBlocksRecursivelyFromJsonObject(unsupportedBlockKey, paths, false);
-                    definitionUpdated = definitionUpdated  || result;
+                    definitionUpdated = definitionUpdated || result;
                 }
             }
         }
@@ -700,13 +716,15 @@ public class OASParserUtil {
             return null;
         }
     }
+
     /**
      * This method removes provided key from the json object recursively.
      *
      * @param keyToBeRemoved, Key to remove from open api spec.
-     * @param jsonObject, Open api spec as json object.
+     * @param jsonObject,     Open api spec as json object.
      */
-    private static boolean removeBlocksRecursivelyFromJsonObject(String keyToBeRemoved, JSONObject jsonObject, boolean definitionUpdated) {
+    private static boolean removeBlocksRecursivelyFromJsonObject(String keyToBeRemoved, JSONObject jsonObject,
+            boolean definitionUpdated) {
         if (jsonObject == null) {
             return definitionUpdated;
         }
@@ -722,5 +740,33 @@ public class OASParserUtil {
             }
         }
         return definitionUpdated;
+    }
+
+    /**
+     * Validate gRPC proto definition
+     *
+     * @return Validation response
+     */
+    public static APIDefinitionValidationResponse validateProtoDefinition(String apiDefinition,
+            boolean returnContent) {
+        APIDefinitionValidationResponse validationResponse = new APIDefinitionValidationResponse();
+        ArrayList<ErrorHandler> errors = new ArrayList<>();
+        try {
+            if (apiDefinition.isBlank()) {
+                validationResponse.setValid(false);
+                errors.add(ExceptionCodes.GRPC_PROTO_DEFINTION_CANNOT_BE_NULL);
+                validationResponse.setErrorItems(errors);
+            } else {
+                validationResponse.setValid(true);
+                validationResponse.setContent(apiDefinition);
+            }
+        } catch (Exception e) {
+            OASParserUtil.addErrorToValidationResponse(validationResponse, e.getMessage());
+            validationResponse.setValid(false);
+            errors.add(new ErrorItem("API Definition Validation Error", "API Definition is invalid", 400, 400));
+            validationResponse.setErrorItems(errors);
+        }
+        return validationResponse;
+
     }
 }

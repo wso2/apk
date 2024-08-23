@@ -373,6 +373,11 @@ groupId = "joda-time"
 artifactId = "joda-time"
 version = "2.10.2"
 
+# transitive dependency of com.google.protobuf:protobuf-java:3.21.7
+[[platform.java11.dependency]]
+groupId = "com.google.protobuf"
+artifactId = "protobuf-java"
+version = "3.21.7"
 
 # transitive dependency of org.wso2.apk:org.wso2.apk.config:1.2.0-SNAPSHOT
 [[platform.java11.dependency]]
@@ -385,3 +390,8 @@ version = "20231013"
 groupId = "commons-lang"
 artifactId = "commons-lang"
 version = "2.4"
+
+[[platform.java11.dependency]]
+groupId = "org.wso2.apk"
+artifactId = "org.wso2.apk.config"
+version = "1.1.0-SNAPSHOT"

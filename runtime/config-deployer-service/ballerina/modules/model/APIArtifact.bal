@@ -6,6 +6,8 @@ public type APIArtifact record {|
     HTTPRoute[] sandboxHttpRoutes = [];
     GQLRoute[] productionGqlRoutes = [];
     GQLRoute[] sandboxGqlRoutes = [];
+    GRPCRoute[] productionGrpcRoutes = [];
+    GRPCRoute[] sandboxGrpcRoutes = [];
     ConfigMap definition?;
     map<ConfigMap> endpointCertificates = {};
     map<string> certificateMap = {};
