@@ -105,6 +105,7 @@ const (
 	SOAP                  string = "SOAP"
 	WS                    string = "WS"
 	GRAPHQL               string = "GraphQL"
+	GRPC                  string = "gRPC"
 	WEBHOOK               string = "WEBHOOK"
 	SSE                   string = "SSE"
 	Prototyped            string = "prototyped"

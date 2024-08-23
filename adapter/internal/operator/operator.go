@@ -47,11 +47,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
+	cpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/cp/v1alpha2"
+	cpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/cp/v1alpha3"
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
-	cpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/cp/v1alpha2"
-	cpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/cp/v1alpha3"
+	dpv1beta1 "github.com/wso2/apk/common-go-libs/apis/dp/v1beta1"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -74,6 +75,7 @@ func init() {
 
 	utilruntime.Must(cpv1alpha2.AddToScheme(scheme))
 	utilruntime.Must(cpv1alpha3.AddToScheme(scheme))
+	utilruntime.Must(dpv1beta1.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
 

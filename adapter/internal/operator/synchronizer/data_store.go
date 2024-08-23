@@ -26,6 +26,7 @@ import (
 	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
 	"k8s.io/apimachinery/pkg/types"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
+	gwapiv1a2 "sigs.k8s.io/gateway-api/apis/v1alpha2"
 )
 
 // OperatorDataStore holds the APIStore and API, HttpRoute mappings
@@ -148,6 +149,25 @@ func (ods *OperatorDataStore) processAPIState(apiNamespacedName types.Namespaced
 		}
 		cachedAPI.ProdGQLRoute = nil
 	}
+
+	if apiState.ProdGRPCRoute != nil {
+		if cachedAPI.ProdGRPCRoute == nil {
+			cachedAPI.ProdGRPCRoute = apiState.ProdGRPCRoute
+			updated = true
+			events = append(events, "Production")
+		} else if routeEvents, routesUpdated := updateGRPCRoute(apiState.ProdGRPCRoute, cachedAPI.ProdGRPCRoute,
+			"Production"); routesUpdated {
+			updated = true
+			events = append(events, routeEvents...)
+		}
+	} else {
+		if cachedAPI.ProdGRPCRoute != nil {
+			updated = true
+			events = append(events, "Production")
+		}
+		cachedAPI.ProdGRPCRoute = nil
+	}
+
 	if apiState.SandHTTPRoute != nil {
 		if cachedAPI.SandHTTPRoute == nil {
 			cachedAPI.SandHTTPRoute = apiState.SandHTTPRoute
@@ -197,6 +217,24 @@ func (ods *OperatorDataStore) processAPIState(apiNamespacedName types.Namespaced
 		}
 		cachedAPI.SandGQLRoute = nil
 	}
+
+	if apiState.SandGRPCRoute != nil {
+		if cachedAPI.SandGRPCRoute == nil {
+			cachedAPI.SandGRPCRoute = apiState.SandGRPCRoute
+			updated = true
+			events = append(events, "Sandbox")
+		} else if routeEvents, routesUpdated := updateGRPCRoute(apiState.SandGRPCRoute, cachedAPI.SandGRPCRoute, "Sandbox"); routesUpdated {
+			updated = true
+			events = append(events, routeEvents...)
+		}
+	} else {
+		if cachedAPI.SandGRPCRoute != nil {
+			updated = true
+			events = append(events, "Sandbox")
+		}
+		cachedAPI.SandGRPCRoute = nil
+	}
+
 	if len(apiState.Authentications) != len(cachedAPI.Authentications) {
 		cachedAPI.Authentications = apiState.Authentications
 		cachedAPI.MutualSSL = apiState.MutualSSL
@@ -493,6 +531,62 @@ func updateGQLRoute(gqlRoute *GQLRouteState, cachedGQLRoute *GQLRouteState, endp
 	return events, updated
 }
 
+func updateGRPCRoute(grpcRoute *GRPCRouteState, cachedGRPCRoute *GRPCRouteState, endpointType string) ([]string, bool) {
+	var updated bool
+	events := []string{}
+	if cachedGRPCRoute.GRPCRouteCombined == nil || !isEqualGRPCRoutes(cachedGRPCRoute.GRPCRoutePartitions, grpcRoute.GRPCRoutePartitions) {
+		cachedGRPCRoute.GRPCRouteCombined = grpcRoute.GRPCRouteCombined
+		cachedGRPCRoute.GRPCRoutePartitions = grpcRoute.GRPCRoutePartitions
+		updated = true
+		events = append(events, endpointType+" Endpoint")
+	}
+
+	if len(grpcRoute.Scopes) != len(cachedGRPCRoute.Scopes) {
+		cachedGRPCRoute.Scopes = grpcRoute.Scopes
+		updated = true
+		events = append(events, "Resource Scopes")
+	} else {
+		for key, scope := range grpcRoute.Scopes {
+			if existingScope, found := cachedGRPCRoute.Scopes[key]; found {
+				if scope.UID != existingScope.UID || scope.Generation > existingScope.Generation {
+					cachedGRPCRoute.Scopes = grpcRoute.Scopes
+					updated = true
+					events = append(events, "Resource Scopes")
+					break
+				}
+			} else {
+				cachedGRPCRoute.Scopes = grpcRoute.Scopes
+				updated = true
+				events = append(events, "Resource Scopes")
+				break
+			}
+		}
+	}
+
+	if len(grpcRoute.BackendMapping) != len(cachedGRPCRoute.BackendMapping) {
+		cachedGRPCRoute.BackendMapping = grpcRoute.BackendMapping
+		updated = true
+		events = append(events, endpointType+" Backend Properties")
+	} else {
+		for key, backend := range grpcRoute.BackendMapping {
+			if existingBackend, found := cachedGRPCRoute.BackendMapping[key]; found {
+				if backend.Backend.UID != existingBackend.Backend.UID || backend.Backend.Generation > existingBackend.Backend.Generation {
+					cachedGRPCRoute.BackendMapping = grpcRoute.BackendMapping
+					updated = true
+					events = append(events, endpointType+" Backend Properties")
+					break
+				}
+			} else {
+				cachedGRPCRoute.BackendMapping = grpcRoute.BackendMapping
+				updated = true
+				events = append(events, endpointType+" Backend Properties")
+				break
+			}
+		}
+	}
+	return events, updated
+}
+
 func isEqualHTTPRoutes(cachedHTTPRoutes, newHTTPRoutes map[string]*gwapiv1.HTTPRoute) bool {
 	for key, cachedHTTPRoute := range cachedHTTPRoutes {
 		if newHTTPRoutes[key] == nil {
@@ -606,6 +700,19 @@ func (ods *OperatorDataStore) GetCachedGateway(gatewayName types.NamespacedName)
 		return *cachedGateway, true
 	}
 	return GatewayState{}, false
+}
+
+func isEqualGRPCRoutes(cachedGRPCRoutes, newGRPCRoutes map[string]*gwapiv1a2.GRPCRoute) bool {
+	for key, cachedGRPCRoute := range cachedGRPCRoutes {
+		if newGRPCRoutes[key] == nil {
+			return false
+		}
+		if newGRPCRoutes[key].UID == cachedGRPCRoute.UID &&
+			newGRPCRoutes[key].Generation > cachedGRPCRoute.Generation {
+			return false
+		}
+	}
+	return true
 }
 
 // IsGatewayAvailable get cached gatewaystate

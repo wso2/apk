@@ -117,6 +117,10 @@ func undeployAPIInGateway(apiEvent *APIEvent) error {
 	if apiState.APIDefinition.Spec.APIType == "GraphQL" {
 		err = undeployGQLAPIInGateway(apiState)
 	}
+
+	if apiState.APIDefinition.Spec.APIType == constants.GRPC {
+		return undeployGRPCAPIInGateway(apiState)
+	}
 	if err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2629, logging.CRITICAL,
 			"API deployment failed for %s event : %v, %v", apiEvent.EventType, apiState.APIDefinition.Name, err))
@@ -199,6 +203,36 @@ func deployMultipleAPIsInGateway(event *APIEvent, successChannel *chan SuccessEv
 				}
 			}
 		}
+
+		if apiState.APIDefinition.Spec.APIType == "gRPC" {
+			if apiState.ProdGRPCRoute != nil {
+				_, updatedLabels, err := updateInternalMapsFromGRPCRoute(apiState, apiState.ProdGRPCRoute, constants.Production)
+				if err != nil {
+					loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2665, logging.CRITICAL,
+						"Error deploying prod grpcRoute of API : %v in Organization %v from environments %v. Error: %v",
+						string(apiState.APIDefinition.Spec.APIName), apiState.APIDefinition.Spec.Organization,
+						getLabelsForGRPCAPI(apiState.ProdGRPCRoute.GRPCRouteCombined), err))
+					continue
+				}
+				for label := range updatedLabels {
+					updatedLabelsMap[label] = struct{}{}
+				}
+			}
+
+			if apiState.SandGRPCRoute != nil {
+				_, updatedLabels, err := updateInternalMapsFromGRPCRoute(apiState, apiState.SandGRPCRoute, constants.Sandbox)
+				if err != nil {
+					loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2665, logging.CRITICAL,
+						"Error deploying sand grpcRoute of API : %v in Organization %v from environments %v. Error: %v",
+						string(apiState.APIDefinition.Spec.APIName), apiState.APIDefinition.Spec.Organization,
+						getLabelsForGRPCAPI(apiState.SandGRPCRoute.GRPCRouteCombined), err))
+					continue
+				}
+				for label := range updatedLabels {
+					updatedLabelsMap[label] = struct{}{}
+				}
+			}
+		}
 		updatedAPIs = append(updatedAPIs, utils.NamespacedName(apiState.APIDefinition))
 	}
 
@@ -252,6 +286,13 @@ func SendEventToPartitionServer() {
 					httpRoute = api.SandHTTPRoute
 				}
 				for _, hostName := range httpRoute.HTTPRouteCombined.Spec.Hostnames {
+					hostNames = append(hostNames, string(hostName))
+				}
+				grpcRoute := api.ProdGRPCRoute
+				if grpcRoute == nil {
+					grpcRoute = api.SandGRPCRoute
+				}
+				for _, hostName := range grpcRoute.GRPCRouteCombined.Spec.Hostnames {
 					hostNames = append(hostNames, string(hostName))
 				}
 				data := PartitionEvent{
