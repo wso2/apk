@@ -40,6 +40,7 @@ import (
 	"github.com/wso2/apk/adapter/internal/operator/status"
 	"github.com/wso2/apk/adapter/internal/operator/utils"
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
+	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	discoveryv1 "k8s.io/api/discovery/v1"
 	k8errors "k8s.io/apimachinery/pkg/api/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -52,7 +53,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
-	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 )
 
 type gatewayReconcilerNew struct {
@@ -492,6 +492,16 @@ func (r *gatewayReconcilerNew) watchResources(ctx context.Context, mgr manager.M
 		return err
 	}
 
+	// Watch Service CRUDs and process affected *Route objects and services belongs to gateways
+	backendPredicates := []predicate.Predicate{predicate.NewPredicateFuncs(r.validateBackendForReconcile)}
+	if err := c.Watch(
+		source.Kind(mgr.GetCache(), &dpv1alpha1.Backend{}),
+		handler.EnqueueRequestsFromMapFunc(r.enqueueClass),
+		backendPredicates...,
+	); err != nil {
+		return err
+	}
+
 	// serviceImportCRDExists := r.serviceImportCRDExists(mgr)
 	// if !serviceImportCRDExists {
 	// 	loggers.LoggerAPKOperator.Info("ServiceImport CRD not found, skipping ServiceImport watch")
@@ -629,7 +639,6 @@ func (r *gatewayReconcilerNew) watchResources(ctx context.Context, mgr manager.M
 	// 	loggers.LoggerAPKOperator.Info("Watching additional resource", "resource", gvk.String())
 	// }
 
-	
 	return nil
 }
 

@@ -71,6 +71,10 @@ func (t *Translator) validateBackendRef(backendRefContext BackendRefContext, par
 }
 
 func (t *Translator) validateBackendRefGroup(backendRef *gwapiv1a2.BackendRef, parentRef *RouteParentContext, route RouteContext) bool {
+	if backendRef.Kind != nil && backendRef.Group != nil && *backendRef.Kind == KindBackend && *backendRef.Group == DpGroupName {
+		return true
+	}
+
 	if backendRef.Group != nil && *backendRef.Group != "" && *backendRef.Group != GroupMultiClusterService {
 		parentRef.SetCondition(route,
 			gwapiv1.RouteConditionResolvedRefs,
@@ -84,12 +88,13 @@ func (t *Translator) validateBackendRefGroup(backendRef *gwapiv1a2.BackendRef, p
 }
 
 func (t *Translator) validateBackendRefKind(backendRef *gwapiv1a2.BackendRef, parentRef *RouteParentContext, route RouteContext) bool {
-	if backendRef.Kind != nil && *backendRef.Kind != KindService && *backendRef.Kind != KindServiceImport {
+	if backendRef.Kind != nil && *backendRef.Kind != KindService && *backendRef.Kind != KindServiceImport &&
+		*backendRef.Kind != KindBackend {
 		parentRef.SetCondition(route,
 			gwapiv1.RouteConditionResolvedRefs,
 			metav1.ConditionFalse,
 			gwapiv1.RouteReasonInvalidKind,
-			"Kind is invalid, only Service and MCS ServiceImport are supported",
+			"Kind is invalid, only Service, Backend and MCS ServiceImport are supported",
 		)
 		return false
 	}
@@ -152,6 +157,9 @@ func (t *Translator) validateBackendNamespace(backendRef *gwapiv1a2.BackendRef, 
 }
 
 func (t *Translator) validateBackendPort(backendRef *gwapiv1a2.BackendRef, parentRef *RouteParentContext, route RouteContext) bool {
+	if backendRef.Kind != nil && *backendRef.Kind == KindBackend {
+		return true
+	}
 	if backendRef.Port == nil {
 		parentRef.SetCondition(route,
 			gwapiv1.RouteConditionResolvedRefs,
