@@ -190,7 +190,7 @@ func GetRenderedBootstrapConfig(proxyMetrics *egv1a1.ProxyMetrics) (string, erro
 		}
 	}
 	conf := config.ReadConfigs()
-	xdsport, _ := strconv.Atoi(conf.Deployment.Gateway.AdapterXDSPort)
+	xdsport, _ := strconv.Atoi(conf.Deployment.Gateway.AdapterEnvoyXDSPort)
 	cfg := &bootstrapConfig{
 		parameters: bootstrapParameters{
 			XdsServer: xdsServerParameters{
