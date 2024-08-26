@@ -34,6 +34,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/utils/ptr"
 
+	"github.com/wso2/apk/adapter/config"
 	gatewayapi "github.com/wso2/apk/adapter/internal/operator/gateway-api"
 	"github.com/wso2/apk/adapter/internal/operator/gateway-api/bootstrap"
 	"github.com/wso2/apk/adapter/internal/operator/gateway-api/infrastructure/kubernetes/resource"
@@ -112,6 +113,16 @@ func (r *ResourceRender) Service() (*corev1.Service, error) {
 				}
 			}
 		}
+	}
+
+	for _, port := range config.ReadConfigs().Deployment.Gateway.EnforcerPorts {
+		p := corev1.ServicePort{
+			Name:       ExpectedResourceHashedName(port.Name),
+			Protocol:   corev1.ProtocolTCP,
+			Port:       port.ContainerPort,
+			TargetPort: intstr.IntOrString{IntVal: port.ContainerPort},
+		}
+		ports = append(ports, p)
 	}
 
 	// Set the labels based on the owning gatewayclass name.

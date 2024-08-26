@@ -330,7 +330,8 @@ type gateway struct {
 	EnforcerPublicCertPath   string
 	EnforcerServerName       string
 	AdapterTrustedCAPath     string
-	AdapterXDSPort           string
+	AdapterEnvoyXDSPort      string
+	AdapterEnforcerXDSPort   string
 	CommonControllerXDSPort  string
 	CommonControllerRestPort string
 	EnforcerLabel            string
@@ -345,6 +346,7 @@ type gateway struct {
 type enforcerPorts struct {
 	Name          string
 	ContainerPort int32
+	Expose        bool
 }
 
 type volumes struct {
