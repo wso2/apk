@@ -137,7 +137,7 @@ func getCustomRateLimitPolicies(customRateLimitPoliciesDef map[string]*dpv1alpha
 
 func generateGlobalInterceptorResource(gatewayAPIPolicies map[string]dpv1alpha2.APIPolicy,
 	gatewayInterceptorServiceMapping map[string]dpv1alpha1.InterceptorService,
-	gatewayBackendMapping map[string]*dpv1alpha1.ResolvedBackend) (string, *clusterv3.Cluster, []*corev3.Address,
+	gatewayBackendMapping map[string]*dpv1alpha2.ResolvedBackend) (string, *clusterv3.Cluster, []*corev3.Address,
 	*clusterv3.Cluster, []*corev3.Address) {
 	var gwLuaScript string
 	var gwReqICluster, gwResICluster *clusterv3.Cluster
@@ -158,7 +158,7 @@ func generateGlobalInterceptorResource(gatewayAPIPolicies map[string]dpv1alpha2.
 
 func getGlobalInterceptorScript(gatewayAPIPolicies map[string]dpv1alpha2.APIPolicy,
 	gatewayInterceptorServiceMapping map[string]dpv1alpha1.InterceptorService,
-	gatewayBackendMapping map[string]*dpv1alpha1.ResolvedBackend) string {
+	gatewayBackendMapping map[string]*dpv1alpha2.ResolvedBackend) string {
 	iInvCtx := &interceptor.InvocationContext{
 		OrganizationID:   "",
 		BasePath:         "",
@@ -185,7 +185,7 @@ end
 
 func createInterceptors(gatewayAPIPolicies map[string]dpv1alpha2.APIPolicy,
 	gatewayInterceptorServiceMapping map[string]dpv1alpha1.InterceptorService,
-	gatewayBackendMapping map[string]*dpv1alpha1.ResolvedBackend) (requestInterceptor map[string]model.InterceptEndpoint, responseInterceptor map[string]model.InterceptEndpoint) {
+	gatewayBackendMapping map[string]*dpv1alpha2.ResolvedBackend) (requestInterceptor map[string]model.InterceptEndpoint, responseInterceptor map[string]model.InterceptEndpoint) {
 	requestInterceptorMap := make(map[string]model.InterceptEndpoint)
 	responseInterceptorMap := make(map[string]model.InterceptEndpoint)
 
@@ -227,7 +227,7 @@ func createInterceptors(gatewayAPIPolicies map[string]dpv1alpha2.APIPolicy,
 }
 
 func getInterceptorEndpoint(namespace string, interceptorRef *dpv1alpha2.InterceptorReference,
-	gatewayInterceptorServiceMapping map[string]dpv1alpha1.InterceptorService, gatewayBackendMapping map[string]*dpv1alpha1.ResolvedBackend, isReq bool) *model.InterceptEndpoint {
+	gatewayInterceptorServiceMapping map[string]dpv1alpha1.InterceptorService, gatewayBackendMapping map[string]*dpv1alpha2.ResolvedBackend, isReq bool) *model.InterceptEndpoint {
 	interceptor := gatewayInterceptorServiceMapping[types.NamespacedName{
 		Namespace: namespace,
 		Name:      interceptorRef.Name}.String()].Spec

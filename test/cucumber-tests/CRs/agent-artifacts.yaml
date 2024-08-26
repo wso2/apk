@@ -238,7 +238,7 @@ spec:
     kind: Gateway
     name: wso2-apk-default
 ---
-apiVersion: dp.wso2.com/v1alpha1
+apiVersion: dp.wso2.com/v1alpha2
 kind: Backend
 metadata:
   name: interceptor-backend-v1

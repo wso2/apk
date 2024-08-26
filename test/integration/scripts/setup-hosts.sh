@@ -36,6 +36,7 @@ sudo echo "$IP disable-resource-level-jwt2.test.gw.wso2.com" | sudo tee -a /etc/
 sudo echo "$IP default-api-version-ratelimit-resource-level.test.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "$IP ratelimit-priority.test.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "$IP different-endpoint-with-same-route.test.gw.wso2.com" | sudo tee -a /etc/hosts
+sudo echo "$IP backend-api-key-security.test.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "$IP custom-auth-header.test.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "$IP gql.test.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "$IP api-level-jwt.test.gw.wso2.com" | sudo tee -a /etc/hosts

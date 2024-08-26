@@ -33,7 +33,6 @@ import (
 	"github.com/wso2/apk/adapter/pkg/logging"
 	"github.com/wso2/apk/adapter/pkg/utils/envutils"
 	"github.com/wso2/apk/adapter/pkg/utils/stringutils"
-	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	corev1 "k8s.io/api/core/v1"
@@ -308,7 +307,7 @@ func GetService(ctx context.Context, client k8client.Client, namespace, serviceN
 }
 
 // GetResolvedBackendFromService converts a Kubernetes Service to a Resolved Backend.
-func GetResolvedBackendFromService(k8sService *corev1.Service, svcPort int) (*v1alpha1.ResolvedBackend, error) {
+func GetResolvedBackendFromService(k8sService *corev1.Service, svcPort int) (*dpv1alpha2.ResolvedBackend, error) {
 
 	var host string
 	var port uint32
@@ -342,13 +341,13 @@ func GetResolvedBackendFromService(k8sService *corev1.Service, svcPort int) (*v1
 		return nil, fmt.Errorf("unsupported service type %s", k8sService.Spec.Type)
 	}
 
-	backend := &v1alpha1.ResolvedBackend{Services: []v1alpha1.Service{{Host: host, Port: port}}, Protocol: v1alpha1.HTTPProtocol}
+	backend := &dpv1alpha2.ResolvedBackend{Services: []dpv1alpha2.Service{{Host: host, Port: port}}, Protocol: dpv1alpha2.HTTPProtocol}
 	return backend, nil
 }
 
 // ResolveAndAddBackendToMapping resolves backend from reference and adds it to the backendMapping.
 func ResolveAndAddBackendToMapping(ctx context.Context, client k8client.Client,
-	backendMapping map[string]*dpv1alpha1.ResolvedBackend,
+	backendMapping map[string]*dpv1alpha2.ResolvedBackend,
 	backendRef dpv1alpha1.BackendReference, interceptorServiceNamespace string, api *dpv1alpha2.API) {
 	backendName := types.NamespacedName{
 		Name:      backendRef.Name,
@@ -369,10 +368,10 @@ func ResolveRef(ctx context.Context, client k8client.Client, api *dpv1alpha2.API
 
 // GetResolvedBackend resolves backend TLS configurations.
 func GetResolvedBackend(ctx context.Context, client k8client.Client,
-	backendNamespacedName types.NamespacedName, api *dpv1alpha2.API) *dpv1alpha1.ResolvedBackend {
-	resolvedBackend := dpv1alpha1.ResolvedBackend{}
-	resolvedTLSConfig := dpv1alpha1.ResolvedTLSConfig{}
-	var backend dpv1alpha1.Backend
+	backendNamespacedName types.NamespacedName, api *dpv1alpha2.API) *dpv1alpha2.ResolvedBackend {
+	resolvedBackend := dpv1alpha2.ResolvedBackend{}
+	resolvedTLSConfig := dpv1alpha2.ResolvedTLSConfig{}
+	var backend dpv1alpha2.Backend
 	if err := ResolveRef(ctx, client, api, backendNamespacedName, false, &backend); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2646, logging.CRITICAL, "Error while getting backend: %v, error: %v", backendNamespacedName, err.Error()))
 		return nil
@@ -382,7 +381,7 @@ func GetResolvedBackend(ctx context.Context, client k8client.Client,
 	resolvedBackend.Protocol = backend.Spec.Protocol
 	resolvedBackend.BasePath = backend.Spec.BasePath
 	if backend.Spec.CircuitBreaker != nil {
-		resolvedBackend.CircuitBreaker = &dpv1alpha1.CircuitBreaker{
+		resolvedBackend.CircuitBreaker = &dpv1alpha2.CircuitBreaker{
 			MaxConnections:     backend.Spec.CircuitBreaker.MaxConnections,
 			MaxRequests:        backend.Spec.CircuitBreaker.MaxRequests,
 			MaxRetries:         backend.Spec.CircuitBreaker.MaxRetries,
@@ -391,20 +390,20 @@ func GetResolvedBackend(ctx context.Context, client k8client.Client,
 		}
 	}
 	if backend.Spec.Timeout != nil {
-		resolvedBackend.Timeout = &dpv1alpha1.Timeout{
+		resolvedBackend.Timeout = &dpv1alpha2.Timeout{
 			UpstreamResponseTimeout:      backend.Spec.Timeout.UpstreamResponseTimeout,
 			DownstreamRequestIdleTimeout: backend.Spec.Timeout.DownstreamRequestIdleTimeout,
 		}
 	}
 	if backend.Spec.Retry != nil {
-		resolvedBackend.Retry = &dpv1alpha1.RetryConfig{
+		resolvedBackend.Retry = &dpv1alpha2.RetryConfig{
 			Count:              backend.Spec.Retry.Count,
 			BaseIntervalMillis: backend.Spec.Retry.BaseIntervalMillis,
 			StatusCodes:        backend.Spec.Retry.StatusCodes,
 		}
 	}
 	if backend.Spec.HealthCheck != nil {
-		resolvedBackend.HealthCheck = &dpv1alpha1.HealthCheck{
+		resolvedBackend.HealthCheck = &dpv1alpha2.HealthCheck{
 			Timeout:            backend.Spec.HealthCheck.Timeout,
 			Interval:           backend.Spec.HealthCheck.Interval,
 			UnhealthyThreshold: backend.Spec.HealthCheck.UnhealthyThreshold,
@@ -449,8 +448,8 @@ func UpdateCR(ctx context.Context, client k8client.Client, child metav1.Object) 
 
 // getResolvedBackendSecurity resolves backend security configurations.
 func getResolvedBackendSecurity(ctx context.Context, client k8client.Client,
-	namespace string, security dpv1alpha1.SecurityConfig) dpv1alpha1.ResolvedSecurityConfig {
-	resolvedSecurity := dpv1alpha1.ResolvedSecurityConfig{}
+	namespace string, security dpv1alpha2.SecurityConfig) dpv1alpha2.ResolvedSecurityConfig {
+	resolvedSecurity := dpv1alpha2.ResolvedSecurityConfig{}
 	if security.Basic != nil {
 		var err error
 		var username string
@@ -462,14 +461,39 @@ func getResolvedBackendSecurity(ctx context.Context, client k8client.Client,
 		if err != nil || username == "" || password == "" {
 			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2648, logging.CRITICAL, "Error while reading key from secretRef: %s", security.Basic.SecretRef))
 		}
-		resolvedSecurity = dpv1alpha1.ResolvedSecurityConfig{
+		resolvedSecurity = dpv1alpha2.ResolvedSecurityConfig{
 			Type: "Basic",
-			Basic: dpv1alpha1.ResolvedBasicSecurityConfig{
+			Basic: dpv1alpha2.ResolvedBasicSecurityConfig{
 				Username: username,
 				Password: password,
 			},
 		}
+	} else if security.APIKey != nil {
+		var err error
+		var in string
+		var keyName string
+		var keyValue string
+		in = security.APIKey.In
+		keyName = security.APIKey.Name
+		if security.APIKey.ValueFrom.Name != "" {
+			keyValue, err = getSecretValue(ctx, client,
+				namespace, security.APIKey.ValueFrom.Name, security.APIKey.ValueFrom.ValueKey)
+			if err != nil || keyValue == "" {
+				loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2649, logging.CRITICAL, "Error while reading key from secretRef: %s", security.APIKey.ValueFrom))
+			}
+		} else {
+			keyValue = security.APIKey.ValueFrom.ValueKey
+		}
+		resolvedSecurity = dpv1alpha2.ResolvedSecurityConfig{
+			Type: "APIKey",
+			APIKey: dpv1alpha2.ResolvedAPIKeySecurityConfig{
+				In:    in,
+				Name:  keyName,
+				Value: keyValue,
+			},
+		}
 	}
+	loggers.LoggerAPKOperator.Debugf("Resolved Security %v", resolvedSecurity)
 	return resolvedSecurity
 }
 
@@ -626,7 +650,7 @@ func RetrieveAPIList(k8sclient k8client.Client) ([]dpv1alpha2.API, error) {
 }
 
 // ConvertRefConfigsV1ToV2 converts RefConfig v2 to v1
-func ConvertRefConfigsV1ToV2(refConfig *dpv1alpha1.RefConfig) *dpv1alpha2.RefConfig {
+func ConvertRefConfigsV1ToV2(refConfig *dpv1alpha2.RefConfig) *dpv1alpha2.RefConfig {
 	if refConfig != nil {
 		return &dpv1alpha2.RefConfig{
 			Name: refConfig.Name,

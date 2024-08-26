@@ -51,7 +51,7 @@ type APIState struct {
 type HTTPRouteState struct {
 	HTTPRouteCombined   *gwapiv1.HTTPRoute
 	HTTPRoutePartitions map[string]*gwapiv1.HTTPRoute
-	BackendMapping      map[string]*v1alpha1.ResolvedBackend
+	BackendMapping      map[string]*v1alpha2.ResolvedBackend
 	Scopes              map[string]v1alpha1.Scope
 }
 
@@ -61,6 +61,6 @@ type HTTPRouteState struct {
 type GQLRouteState struct {
 	GQLRouteCombined   *v1alpha2.GQLRoute
 	GQLRoutePartitions map[string]*v1alpha2.GQLRoute
-	BackendMapping     map[string]*v1alpha1.ResolvedBackend
+	BackendMapping     map[string]*v1alpha2.ResolvedBackend
 	Scopes             map[string]v1alpha1.Scope
 }

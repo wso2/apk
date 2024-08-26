@@ -36,7 +36,7 @@ type GatewayState struct {
 type GatewayStateData struct {
 	GatewayResolvedListenerCerts     map[string]map[string][]byte
 	GatewayAPIPolicies               map[string]v1alpha2.APIPolicy
-	GatewayBackendMapping            map[string]*v1alpha1.ResolvedBackend
+	GatewayBackendMapping            map[string]*v1alpha2.ResolvedBackend
 	GatewayInterceptorServiceMapping map[string]v1alpha1.InterceptorService
 	GatewayCustomRateLimitPolicies   map[string]*v1alpha1.RateLimitPolicy
 }

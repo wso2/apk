@@ -123,11 +123,11 @@ func TestCreateRoutesWithClustersWithExactAndRegularExpressionRules(t *testing.T
 	xds.SanitizeGateway("default-gateway", true)
 	httpRouteState.HTTPRouteCombined = &httpRoute
 
-	backendMapping := make(map[string]*v1alpha1.ResolvedBackend)
+	backendMapping := make(map[string]*v1alpha2.ResolvedBackend)
 	backendMapping[k8types.NamespacedName{Namespace: "default", Name: "backend-1"}.String()] =
-		&v1alpha1.ResolvedBackend{Services: []v1alpha1.Service{{Host: "test-service-1.default", Port: 7001}}, Protocol: v1alpha1.HTTPProtocol}
+		&v1alpha2.ResolvedBackend{Services: []v1alpha2.Service{{Host: "test-service-1.default", Port: 7001}}, Protocol: v1alpha2.HTTPProtocol}
 	backendMapping[k8types.NamespacedName{Namespace: "default", Name: "backend-2"}.String()] =
-		&v1alpha1.ResolvedBackend{Services: []v1alpha1.Service{{Host: "test-service-2.default", Port: 7002}}, Protocol: v1alpha1.HTTPProtocol}
+		&v1alpha2.ResolvedBackend{Services: []v1alpha2.Service{{Host: "test-service-2.default", Port: 7002}}, Protocol: v1alpha2.HTTPProtocol}
 	httpRouteState.BackendMapping = backendMapping
 
 	apiState.ProdHTTPRoute = &httpRouteState
@@ -261,9 +261,9 @@ func generateSampleAPI(apiName string, apiVersion string, basePath string) synch
 
 	httpRouteState.HTTPRouteCombined = &httpRoute
 
-	backendMapping := make(map[string]*v1alpha1.ResolvedBackend)
+	backendMapping := make(map[string]*v1alpha2.ResolvedBackend)
 	backendMapping[k8types.NamespacedName{Namespace: "default", Name: apiName + "backend-1"}.String()] =
-		&v1alpha1.ResolvedBackend{Services: []v1alpha1.Service{{Host: "test-service-1.default", Port: 7001}}, Protocol: v1alpha1.HTTPProtocol}
+		&v1alpha2.ResolvedBackend{Services: []v1alpha2.Service{{Host: "test-service-1.default", Port: 7001}}, Protocol: v1alpha2.HTTPProtocol}
 	httpRouteState.BackendMapping = backendMapping
 
 	apiState.ProdHTTPRoute = &httpRouteState
@@ -335,17 +335,17 @@ func TestCreateRoutesWithClustersWithMultiplePathPrefixRules(t *testing.T) {
 
 	httpRouteState.HTTPRouteCombined = &httpRoute
 
-	backendMapping := make(map[string]*v1alpha1.ResolvedBackend)
+	backendMapping := make(map[string]*v1alpha2.ResolvedBackend)
 	backendMapping[k8types.NamespacedName{Namespace: "default", Name: "order-backend"}.String()] =
-		&v1alpha1.ResolvedBackend{Services: []v1alpha1.Service{
+		&v1alpha2.ResolvedBackend{Services: []v1alpha2.Service{
 			{Host: "order-service.default", Port: 80},
 			{Host: "order-service-2.default", Port: 8080}},
-			Protocol: v1alpha1.HTTPProtocol}
+			Protocol: v1alpha2.HTTPProtocol}
 	backendMapping[k8types.NamespacedName{Namespace: "default", Name: "user-backend"}.String()] =
-		&v1alpha1.ResolvedBackend{Services: []v1alpha1.Service{
+		&v1alpha2.ResolvedBackend{Services: []v1alpha2.Service{
 			{Host: "user-service.default", Port: 8081},
 			{Host: "user-service-2.default", Port: 8081}},
-			Protocol: v1alpha1.HTTPProtocol}
+			Protocol: v1alpha2.HTTPProtocol}
 	httpRouteState.BackendMapping = backendMapping
 
 	apiState.ProdHTTPRoute = &httpRouteState
@@ -473,11 +473,11 @@ func TestCreateRoutesWithClustersWithBackendTLSConfigs(t *testing.T) {
 
 	httpRouteState.HTTPRouteCombined = &httpRoute
 
-	backendMapping := make(map[string]*v1alpha1.ResolvedBackend)
+	backendMapping := make(map[string]*v1alpha2.ResolvedBackend)
 	backendMapping[k8types.NamespacedName{Namespace: "default", Name: "test-backend-3"}.String()] =
-		&v1alpha1.ResolvedBackend{Services: []v1alpha1.Service{{Host: "webhook.site", Port: 443}},
-			Protocol: v1alpha1.HTTPSProtocol,
-			TLS: v1alpha1.ResolvedTLSConfig{
+		&v1alpha2.ResolvedBackend{Services: []v1alpha2.Service{{Host: "webhook.site", Port: 443}},
+			Protocol: v1alpha2.HTTPSProtocol,
+			TLS: v1alpha2.ResolvedTLSConfig{
 				ResolvedCertificate: `-----BEGIN CERTIFICATE-----test-cert-data-----END CERTIFICATE-----`,
 			}}
 	httpRouteState.BackendMapping = backendMapping
@@ -610,17 +610,17 @@ func TestCreateRoutesWithClustersDifferentBackendRefs(t *testing.T) {
 
 	httpRouteState.HTTPRouteCombined = &httpRoute
 
-	backendMapping := make(map[string]*v1alpha1.ResolvedBackend)
+	backendMapping := make(map[string]*v1alpha2.ResolvedBackend)
 	backendMapping[k8types.NamespacedName{Namespace: "default", Name: "test-backend-1"}.String()] =
-		&v1alpha1.ResolvedBackend{Services: []v1alpha1.Service{{Host: "webhook.site.1", Port: 443}},
-			Protocol: v1alpha1.HTTPSProtocol,
-			TLS: v1alpha1.ResolvedTLSConfig{
+		&v1alpha2.ResolvedBackend{Services: []v1alpha2.Service{{Host: "webhook.site.1", Port: 443}},
+			Protocol: v1alpha2.HTTPSProtocol,
+			TLS: v1alpha2.ResolvedTLSConfig{
 				ResolvedCertificate: `-----BEGIN CERTIFICATE-----test-cert-data-----END CERTIFICATE-----`,
 			}}
 	backendMapping[k8types.NamespacedName{Namespace: "default", Name: "test-backend-2"}.String()] =
-		&v1alpha1.ResolvedBackend{Services: []v1alpha1.Service{{Host: "webhook.site.2", Port: 443}},
-			Protocol: v1alpha1.HTTPSProtocol,
-			TLS: v1alpha1.ResolvedTLSConfig{
+		&v1alpha2.ResolvedBackend{Services: []v1alpha2.Service{{Host: "webhook.site.2", Port: 443}},
+			Protocol: v1alpha2.HTTPSProtocol,
+			TLS: v1alpha2.ResolvedTLSConfig{
 				ResolvedCertificate: `-----BEGIN CERTIFICATE-----test-cert-data-----END CERTIFICATE-----`,
 			}}
 	httpRouteState.BackendMapping = backendMapping
@@ -702,11 +702,11 @@ func TestCreateRoutesWithClustersSameBackendRefs(t *testing.T) {
 
 	httpRouteState.HTTPRouteCombined = &httpRoute
 
-	backendMapping := make(map[string]*v1alpha1.ResolvedBackend)
+	backendMapping := make(map[string]*v1alpha2.ResolvedBackend)
 	backendMapping[k8types.NamespacedName{Namespace: "default", Name: "test-backend-1"}.String()] =
-		&v1alpha1.ResolvedBackend{Services: []v1alpha1.Service{{Host: "webhook.site", Port: 443}},
-			Protocol: v1alpha1.HTTPSProtocol,
-			TLS: v1alpha1.ResolvedTLSConfig{
+		&v1alpha2.ResolvedBackend{Services: []v1alpha2.Service{{Host: "webhook.site", Port: 443}},
+			Protocol: v1alpha2.HTTPSProtocol,
+			TLS: v1alpha2.ResolvedTLSConfig{
 				ResolvedCertificate: `-----BEGIN CERTIFICATE-----test-cert-data-----END CERTIFICATE-----`,
 			}}
 	httpRouteState.BackendMapping = backendMapping

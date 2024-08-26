@@ -162,7 +162,7 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha1.Backend{}), handler.EnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForBackend),
+	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha2.Backend{}), handler.EnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForBackend),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2615, logging.BLOCKER, "Error watching Backend resources: %v", err))
 		return err
@@ -560,7 +560,7 @@ func (apiReconciler *APIReconciler) concatGQLRoutes(ctx context.Context, gqlRout
 	}
 	resolvedBackend := utils.GetResolvedBackend(ctx, apiReconciler.client, backendNamespacedName, &api)
 	if resolvedBackend != nil {
-		gqlRouteState.BackendMapping = map[string]*dpv1alpha1.ResolvedBackend{
+		gqlRouteState.BackendMapping = map[string]*dpv1alpha2.ResolvedBackend{
 			backendNamespacedName.String(): resolvedBackend,
 		}
 		return gqlRouteState, nil
@@ -827,8 +827,8 @@ func (apiReconciler *APIReconciler) resolveAuthentications(ctx context.Context,
 
 func (apiReconciler *APIReconciler) getResolvedBackendsMapping(ctx context.Context,
 	httpRouteState *synchronizer.HTTPRouteState, interceptorServiceMapping map[string]dpv1alpha1.InterceptorService,
-	api dpv1alpha2.API) (map[string]*dpv1alpha1.ResolvedBackend, error) {
-	backendMapping := make(map[string]*dpv1alpha1.ResolvedBackend)
+	api dpv1alpha2.API) (map[string]*dpv1alpha2.ResolvedBackend, error) {
+	backendMapping := make(map[string]*dpv1alpha2.ResolvedBackend)
 
 	// Resolve backends in HTTPRoute
 	httpRoute := httpRouteState.HTTPRouteCombined
@@ -1061,8 +1061,8 @@ func (apiReconciler *APIReconciler) traverseAPIStateAndUpdateOwnerReferences(ctx
 func (apiReconciler *APIReconciler) retriveParentAPIsAndUpdateOwnerReferene(ctx context.Context, obj k8client.Object) {
 	var requests []reconcile.Request
 	switch obj.(type) {
-	case *dpv1alpha1.Backend:
-		var backend dpv1alpha1.Backend
+	case *dpv1alpha2.Backend:
+		var backend dpv1alpha2.Backend
 		namesapcedName := types.NamespacedName{
 			Name:      string(obj.GetName()),
 			Namespace: string(obj.GetNamespace()),
@@ -1544,7 +1544,7 @@ func (apiReconciler *APIReconciler) getAPIsForScope(ctx context.Context, obj k8c
 // getAPIsForBackend triggers the API controller reconcile method based on the changes detected
 // in backend resources.
 func (apiReconciler *APIReconciler) getAPIsForBackend(ctx context.Context, obj k8client.Object) []reconcile.Request {
-	backend, ok := obj.(*dpv1alpha1.Backend)
+	backend, ok := obj.(*dpv1alpha2.Backend)
 	if !ok {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL, "Unexpected object type, bypassing reconciliation: %v", backend))
 		return []reconcile.Request{}
@@ -1823,9 +1823,9 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 	}
 
 	// ConfigMap to Backend indexer
-	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.Backend{}, configMapBackend,
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha2.Backend{}, configMapBackend,
 		func(rawObj k8client.Object) []string {
-			backend := rawObj.(*dpv1alpha1.Backend)
+			backend := rawObj.(*dpv1alpha2.Backend)
 			var configMaps []string
 			if backend.Spec.TLS != nil && backend.Spec.TLS.ConfigMapRef != nil && len(backend.Spec.TLS.ConfigMapRef.Name) > 0 {
 				configMaps = append(configMaps,
@@ -1840,9 +1840,9 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 	}
 
 	// Secret to Backend indexer
-	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.Backend{}, secretBackend,
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha2.Backend{}, secretBackend,
 		func(rawObj k8client.Object) []string {
-			backend := rawObj.(*dpv1alpha1.Backend)
+			backend := rawObj.(*dpv1alpha2.Backend)
 			var secrets []string
 			if backend.Spec.TLS != nil && backend.Spec.TLS.SecretRef != nil && len(backend.Spec.TLS.SecretRef.Name) > 0 {
 				secrets = append(secrets,
@@ -1856,6 +1856,13 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 					secrets = append(secrets,
 						types.NamespacedName{
 							Name:      string(backend.Spec.Security.Basic.SecretRef.Name),
+							Namespace: backend.Namespace,
+						}.String())
+				}
+				if backend.Spec.Security.APIKey != nil {
+					secrets = append(secrets,
+						types.NamespacedName{
+							Name:      string(backend.Spec.Security.APIKey.ValueFrom.Name),
 							Namespace: backend.Namespace,
 						}.String())
 				}

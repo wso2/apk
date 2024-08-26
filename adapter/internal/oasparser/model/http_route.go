@@ -36,7 +36,7 @@ type ResourceParams struct {
 	ResourceAPIPolicies       map[string]dpv1alpha2.APIPolicy
 	InterceptorServiceMapping map[string]dpv1alpha1.InterceptorService
 	BackendJWTMapping         map[string]dpv1alpha1.BackendJWT
-	BackendMapping            map[string]*dpv1alpha1.ResolvedBackend
+	BackendMapping            map[string]*dpv1alpha2.ResolvedBackend
 	ResourceScopes            map[string]dpv1alpha1.Scope
 	RateLimitPolicies         map[string]dpv1alpha1.RateLimitPolicy
 	ResourceRateLimitPolicies map[string]dpv1alpha1.RateLimitPolicy
@@ -112,7 +112,7 @@ func parseRateLimitPolicyToInternal(ratelimitPolicy *dpv1alpha1.RateLimitPolicy)
 // addOperationLevelInterceptors add the operation level interceptor policy to the policies
 func addOperationLevelInterceptors(policies *OperationPolicies, apiPolicy *dpv1alpha2.APIPolicy,
 	interceptorServicesMapping map[string]dpv1alpha1.InterceptorService,
-	backendMapping map[string]*dpv1alpha1.ResolvedBackend, namespace string) {
+	backendMapping map[string]*dpv1alpha2.ResolvedBackend, namespace string) {
 	if apiPolicy != nil && apiPolicy.Spec.Override != nil {
 		if len(apiPolicy.Spec.Override.RequestInterceptors) > 0 {
 			requestInterceptor := interceptorServicesMapping[types.NamespacedName{
@@ -160,7 +160,7 @@ func addOperationLevelInterceptors(policies *OperationPolicies, apiPolicy *dpv1a
 }
 
 // GetEndpoints creates endpoints using resolved backends in backendMapping
-func GetEndpoints(backendName types.NamespacedName, backendMapping map[string]*dpv1alpha1.ResolvedBackend) []Endpoint {
+func GetEndpoints(backendName types.NamespacedName, backendMapping map[string]*dpv1alpha2.ResolvedBackend) []Endpoint {
 	endpoints := []Endpoint{}
 	backend, ok := backendMapping[backendName.String()]
 	if ok && backend != nil {
@@ -181,7 +181,7 @@ func GetEndpoints(backendName types.NamespacedName, backendMapping map[string]*d
 }
 
 // GetBackendBasePath gets basePath of the the Backend
-func GetBackendBasePath(backendName types.NamespacedName, backendMapping map[string]*dpv1alpha1.ResolvedBackend) string {
+func GetBackendBasePath(backendName types.NamespacedName, backendMapping map[string]*dpv1alpha2.ResolvedBackend) string {
 	backend, ok := backendMapping[backendName.String()]
 	if ok && backend != nil {
 		if len(backend.Services) > 0 {
