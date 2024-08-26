@@ -106,10 +106,10 @@ func (r *Runner) Start(ctx context.Context) (err error) {
 
 func (r *Runner) serveXdsServer(ctx context.Context) {
 	conf := config.ReadConfigs()
-	addr := net.JoinHostPort(XdsServerAddress, conf.Deployment.Gateway.AdapterXDSPort)
+	addr := net.JoinHostPort(XdsServerAddress, conf.Deployment.Gateway.AdapterEnvoyXDSPort)
 	l, err := net.Listen("tcp", addr)
 	if err != nil {
-		loggers.LoggerAPKOperator.Error(err, "failed to listen on port", "address", conf.Deployment.Gateway.AdapterXDSPort)
+		loggers.LoggerAPKOperator.Error(err, "failed to listen on port", "address", conf.Deployment.Gateway.AdapterEnvoyXDSPort)
 		return
 	}
 
