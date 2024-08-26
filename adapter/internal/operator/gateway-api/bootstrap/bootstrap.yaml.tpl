@@ -146,7 +146,7 @@ static_resources:
           validation_context:
             trusted_ca:
               filename: '/home/wso2/security/truststore/adapter.crt'
-              - name: ext-authz
+  - name: ext-authz
     type: STRICT_DNS
     connect_timeout: 20s
     typed_extension_protocol_options:
@@ -179,4 +179,3 @@ static_resources:
                   socket_address:
                     address: 127.0.0.1
                     port_value: 8081
-                      
