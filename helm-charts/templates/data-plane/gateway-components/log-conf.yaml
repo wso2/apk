@@ -20,7 +20,8 @@ data:
       {{- range .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.ports}}
       [[deployment.gateway.enforcerPorts]]
         name = "{{ .name }}"
-        containerPort = {{ .value }}     
+        containerPort = {{ .value }} 
+        expose = {{ .expose | default false }}    
       {{- end }} 
       {{- end }} 
 

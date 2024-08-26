@@ -191,7 +191,7 @@ func peekError(conn net.Conn) error {
 func TestServeXdsServerListenFailed(t *testing.T) {
 	conf := config.ReadConfigs()
 	// Occupy the address to make listening failed
-	l, err := net.Listen("tcp", fmt.Sprintf(":%s", conf.Deployment.Gateway.AdapterXDSPort))
+	l, err := net.Listen("tcp", fmt.Sprintf(":%s", conf.Deployment.Gateway.AdapterEnvoyXDSPort))
 	require.NoError(t, err)
 	defer l.Close()
 

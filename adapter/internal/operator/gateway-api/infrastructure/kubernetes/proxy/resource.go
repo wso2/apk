@@ -662,7 +662,7 @@ func expectedEnforcerEnv(containerSpec *egv1a1.KubernetesContainerSpec) []corev1
 		},
 		{
 			Name:  "ADAPTER_XDS_PORT",
-			Value: conf.Deployment.Gateway.AdapterXDSPort,
+			Value: conf.Deployment.Gateway.AdapterEnforcerXDSPort,
 		},
 		{
 			Name:  "COMMON_CONTROLLER_XDS_PORT",
@@ -690,7 +690,7 @@ func expectedEnforcerEnv(containerSpec *egv1a1.KubernetesContainerSpec) []corev1
 		},
 		{
 			Name:  "JAVA_OPTS",
-			Value: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5006 -Dhttpclient.hostnameVerifier=AllowAll -Xms512m -Xmx512m -XX:MaxRAMFraction=2",
+			Value: conf.Deployment.Gateway.JavaOpts,
 		},
 	}
 
