@@ -71,5 +71,7 @@ const (
 
 // API Types
 const (
-	GRPC = "gRPC"
+	GRAPHQL = "GraphQL"
+	REST    = "REST"
+	GRPC    = "GRPC"
 )

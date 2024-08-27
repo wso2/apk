@@ -270,7 +270,7 @@ public class APIConstants {
 
         public static final String WEB_SOCKET = "WS";
         public static final String GRAPHQL = "GraphQL";
-        public static final String GRPC = "gRPC";
+        public static final String GRPC = "GRPC";
     }
 
     /**

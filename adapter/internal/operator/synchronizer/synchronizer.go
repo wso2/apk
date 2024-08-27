@@ -111,10 +111,10 @@ func HandleAPILifeCycleEvents(ch *chan *APIEvent, successChannel *chan SuccessEv
 func undeployAPIInGateway(apiEvent *APIEvent) error {
 	var err error
 	apiState := apiEvent.Events[0]
-	if apiState.APIDefinition.Spec.APIType == "REST" {
+	if apiState.APIDefinition.Spec.APIType == constants.REST {
 		err = undeployRestAPIInGateway(apiState)
 	}
-	if apiState.APIDefinition.Spec.APIType == "GraphQL" {
+	if apiState.APIDefinition.Spec.APIType == constants.GRAPHQL {
 		err = undeployGQLAPIInGateway(apiState)
 	}
 
@@ -204,7 +204,7 @@ func deployMultipleAPIsInGateway(event *APIEvent, successChannel *chan SuccessEv
 			}
 		}
 
-		if apiState.APIDefinition.Spec.APIType == "gRPC" {
+		if apiState.APIDefinition.Spec.APIType == constants.GRPC {
 			if apiState.ProdGRPCRoute != nil {
 				_, updatedLabels, err := updateInternalMapsFromGRPCRoute(apiState, apiState.ProdGRPCRoute, constants.Production)
 				if err != nil {

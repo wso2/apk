@@ -138,11 +138,6 @@ public class APIClient {
             _ = check self.setRoute(apiArtifact, apkConf, createdEndpoints.hasKey(PRODUCTION_TYPE) ? createdEndpoints.get(PRODUCTION_TYPE) : (), uniqueId, PRODUCTION_TYPE, organization);
             _ = check self.setRoute(apiArtifact, apkConf, createdEndpoints.hasKey(SANDBOX_TYPE) ? createdEndpoints.get(SANDBOX_TYPE) : (), uniqueId, SANDBOX_TYPE, organization);
             string|json generatedSwagger = check self.retrieveGeneratedSwaggerDefinition(apkConf, definition);
-            if generatedSwagger is string {
-                log:printInfo(generatedSwagger);
-            } else {
-                log:printInfo(generatedSwagger.toJsonString());
-            }
             check self.retrieveGeneratedConfigmapForDefinition(apiArtifact, apkConf, generatedSwagger, uniqueId, organization);
             self.generateAndSetAPICRArtifact(apiArtifact, apkConf, organization);
             _ = check self.generateAndSetPolicyCRArtifact(apiArtifact, apkConf, organization);
@@ -516,8 +511,6 @@ public class APIClient {
     private isolated function getAPIType(string apiType) returns string {
         if apiType.toUpperAscii() == "GRAPHQL" {
             return "GraphQL";
-        } else if apiType.toUpperAscii() == "GRPC" {
-            return "gRPC";
         }
         return apiType;
     }

@@ -73,7 +73,6 @@ public class APIFactory {
 //                String apiKey = getApiKey(webSocketAPI);
 //                newApis.put(apiKey, webSocketAPI);
 //            } else
-            System.out.println(api.getApiType());
             if (APIConstants.ApiType.GRAPHQL.equals(api.getApiType())) {
                 GraphQLAPI graphQLAPI = new GraphQLAPI();
                 graphQLAPI.init(api);

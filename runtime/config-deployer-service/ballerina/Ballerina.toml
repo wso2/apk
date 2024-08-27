@@ -390,8 +390,3 @@ version = "20231013"
 groupId = "commons-lang"
 artifactId = "commons-lang"
 version = "2.4"
-
-[[platform.java11.dependency]]
-groupId = "org.wso2.apk"
-artifactId = "org.wso2.apk.config"
-version = "1.1.0-SNAPSHOT"

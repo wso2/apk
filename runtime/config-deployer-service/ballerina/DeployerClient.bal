@@ -84,7 +84,6 @@ public class DeployerClient {
 
     private isolated function deployAPIToK8s(model:APIArtifact apiArtifact) returns commons:APKError|model:API {
         do {
-            log:printInfo("DEPLOYING API TO K8s");
             model:Partition apiPartition;
             model:API? existingAPI;
             model:Partition|() availablePartitionForAPI = check partitionResolver.getAvailablePartitionForAPI(apiArtifact.uniqueId, apiArtifact.organization);
@@ -125,7 +124,6 @@ public class DeployerClient {
                     check self.deployInterceptorServiceCRs(apiArtifact, ownerReference);
                     check self.deployBackendJWTConfigs(apiArtifact, ownerReference);
                     check self.deployAPIPolicyCRs(apiArtifact, ownerReference);
-                    log:printInfo("REACHED THE POINT OF DEPLOYING ROUTES");
                     check self.deployRoutes(apiArtifact.productionHttpRoutes, apiArtifact.productionGqlRoutes, apiArtifact.productionGrpcRoutes, <string>apiArtifact?.namespace, ownerReference);
                     check self.deployRoutes(apiArtifact.sandboxHttpRoutes, apiArtifact.sandboxGqlRoutes, apiArtifact.sandboxGrpcRoutes, <string>apiArtifact?.namespace, ownerReference);
 
@@ -142,15 +140,12 @@ public class DeployerClient {
                     return e909028();
                 }
             } else {
-                log:printInfo("NOT AN API??");
                 return e909028();
             }
         } on fail var e {
             if e is commons:APKError {
                 return e;
             }
-            log:printInfo("DEPLOYMENT FAAAAILED");
-
             log:printError("Internal Error occured while deploying API", e);
             return e909028();
         }
@@ -331,7 +326,6 @@ public class DeployerClient {
             if k8sAPIByNameAndNamespace is model:API {
                 k8sAPI.metadata.resourceVersion = k8sAPIByNameAndNamespace.metadata.resourceVersion;
                 http:Response deployAPICRResult = check updateAPICR(k8sAPI, <string>apiArtifact?.namespace);
-                log:printInfo(deployAPICRResult.statusCode.toString());
                 if deployAPICRResult.statusCode == http:STATUS_OK {
                     json responsePayLoad = check deployAPICRResult.getJsonPayload();
                     log:printDebug("Updated K8sAPI Successfully" + responsePayLoad.toJsonString());

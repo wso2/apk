@@ -80,9 +80,9 @@ type APISpec struct {
 	Sandbox []EnvConfig `json:"sandbox"`
 
 	// APIType denotes the type of the API.
-	// Possible values could be REST, GraphQL, gRPC
+	// Possible values could be REST, GraphQL, GRPC
 	//
-	// +kubebuilder:validation:Enum=REST;GraphQL;gRPC
+	// +kubebuilder:validation:Enum=REST;GraphQL;GRPC
 	APIType string `json:"apiType"`
 
 	// BasePath denotes the basepath of the API.

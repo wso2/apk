@@ -20,7 +20,6 @@ import ballerina/http;
 // under the License.
 //
 import ballerina/io;
-import ballerina/log;
 import ballerina/url;
 
 import wso2/apk_common_lib as commons;
@@ -119,7 +118,6 @@ isolated function deployAPICR(model:API api, string namespace) returns http:Resp
 
 isolated function updateAPICR(model:API api, string namespace) returns http:Response|http:ClientError {
     string endpoint = "/apis/dp.wso2.com/v1beta1/namespaces/" + namespace + "/apis/" + api.metadata.name;
-    log:printInfo("UPDATING API CR");
     return k8sApiServerEp->put(endpoint, api, targetType = http:Response);
 }
 

@@ -25,7 +25,7 @@ public class DefinitionParserFactory {
         if (APIConstants.ParserType.REST.name().equals(api.getType())
                 || APIConstants.ParserType.GRAPHQL.name().equals(api.getType())) {
             return new OAS3Parser();
-        } else if (APIConstants.ParserType.GRPC.name().equals(api.getType())) {
+        } else if (APIConstants.ParserType.GRPC.name().equals(api.getType().toUpperCase())) {
             return new ProtoParser();
         } else if (APIConstants.ParserType.ASYNC.name().equals(api.getType())) {
             return new AsyncApiParser();
@@ -37,7 +37,7 @@ public class DefinitionParserFactory {
         if (APIConstants.ParserType.REST.name().equals(apiType)
                 || APIConstants.ParserType.GRAPHQL.name().equals(apiType)) {
             return new OAS3Parser();
-        } else if (APIConstants.ParserType.GRPC.name().equals(apiType)) {
+        } else if (APIConstants.ParserType.GRPC.name().equals(apiType.toUpperCase())) {
             return new ProtoParser();
         } else if ("ASYNC".equals(apiType)) {
             return new AsyncApiParser();
