@@ -9,6 +9,7 @@ resources:
 - bases/cp.wso2.com_subscriptions.yaml
 - bases/dp.wso2.com_scopes.yaml
 - bases/dp.wso2.com_ratelimitpolicies.yaml
+- bases/dp.wso2.com_airatelimitpolicies.yaml
 - bases/dp.wso2.com_backends.yaml
 - bases/dp.wso2.com_interceptorservices.yaml
 - bases/dp.wso2.com_jwtissuers.yaml

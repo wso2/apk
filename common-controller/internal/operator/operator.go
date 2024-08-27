@@ -63,6 +63,7 @@ func init() {
 	utilruntime.Must(gwapiv1.AddToScheme(scheme))
 	utilruntime.Must(dpv1alpha1.AddToScheme(scheme))
 	utilruntime.Must(dpv1alpha2.AddToScheme(scheme))
+	utilruntime.Must(dpv1alpha3.AddToScheme(scheme))
 	utilruntime.Must(cpv1alpha2.AddToScheme(scheme))
 	utilruntime.Must(cpv1alpha2.AddToScheme(scheme))
 	utilruntime.Must(cpv1alpha3.AddToScheme(scheme))
@@ -161,6 +162,10 @@ func InitOperator(metricsConfig config.Metrics) {
 			"Unable to create webhook for Backend, error: %v", err))
 	}
 	if err := dpcontrollers.NewratelimitController(mgr, ratelimitStore); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3114, logging.MAJOR,
+			"Error creating JWT Issuer controller, error: %v", err))
+	}
+	if err := dpcontrollers.NewAIRatelimitController(mgr, ratelimitStore); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3114, logging.MAJOR,
 			"Error creating JWT Issuer controller, error: %v", err))
 	}

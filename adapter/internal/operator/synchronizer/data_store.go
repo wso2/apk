@@ -90,7 +90,28 @@ func (ods *OperatorDataStore) processAPIState(apiNamespacedName types.Namespaced
 			"Production"); routesUpdated {
 			updated = true
 			events = append(events, routeEvents...)
+		} else {
+			// Check whether AIRatelimitPolicy is updated
+			for key, aiRl := range apiState.ProdHTTPRoute.RuleIdxToAiRatelimitPolicyMapping {
+				if cachedAIRl, exists := cachedAPI.ProdHTTPRoute.RuleIdxToAiRatelimitPolicyMapping[key]; exists {
+					if utils.NamespacedName(cachedAIRl).String() != utils.NamespacedName(aiRl).String() || cachedAIRl.Generation != aiRl.Generation {
+						loggers.LoggerAPI.Infof("Returning true * %s %s %d %d", utils.NamespacedName(cachedAIRl).String(), utils.NamespacedName(aiRl).String(), cachedAIRl.Generation, aiRl.Generation)
+						updated = true
+						break
+					} 
+				} else {
+					loggers.LoggerAPI.Info("Returning true&&")
+					updated = true
+					break
+				}
+			}
+			if len(cachedAPI.ProdHTTPRoute.RuleIdxToAiRatelimitPolicyMapping) != len(apiState.ProdHTTPRoute.RuleIdxToAiRatelimitPolicyMapping) {
+				loggers.LoggerAPI.Info("Returning true ***")
+				updated = true
+			}
 		}
+		cachedAPI.ProdHTTPRoute.RuleIdxToAiRatelimitPolicyMapping = apiState.ProdHTTPRoute.RuleIdxToAiRatelimitPolicyMapping
+
 	} else {
 		if cachedAPI.ProdHTTPRoute != nil {
 			updated = true
@@ -98,6 +119,7 @@ func (ods *OperatorDataStore) processAPIState(apiNamespacedName types.Namespaced
 		}
 		cachedAPI.ProdHTTPRoute = nil
 	}
+
 	if apiState.ProdGQLRoute != nil {
 		if cachedAPI.ProdGQLRoute == nil {
 			cachedAPI.ProdGQLRoute = apiState.ProdGQLRoute
@@ -123,7 +145,27 @@ func (ods *OperatorDataStore) processAPIState(apiNamespacedName types.Namespaced
 		} else if routeEvents, routesUpdated := updateHTTPRoute(apiState.SandHTTPRoute, cachedAPI.SandHTTPRoute, "Sandbox"); routesUpdated {
 			updated = true
 			events = append(events, routeEvents...)
+		} else {
+			// Check whether AIRatelimitPolicy is updated
+			for key, aiRl := range apiState.SandHTTPRoute.RuleIdxToAiRatelimitPolicyMapping {
+				if cachedAIRl, exists := cachedAPI.SandHTTPRoute.RuleIdxToAiRatelimitPolicyMapping[key]; exists {
+					if utils.NamespacedName(cachedAIRl).String() != utils.NamespacedName(aiRl).String() || cachedAIRl.Generation != aiRl.Generation {
+						loggers.LoggerAPI.Info("Returning true")
+						updated = true
+						break
+					} 
+				} else {
+					loggers.LoggerAPI.Info("Returning true")
+					updated = true
+					break
+				}
+			}
+			if len(cachedAPI.ProdHTTPRoute.RuleIdxToAiRatelimitPolicyMapping) != len(apiState.ProdHTTPRoute.RuleIdxToAiRatelimitPolicyMapping) {
+				loggers.LoggerAPI.Info("Returning true")
+				updated = true
+			}
 		}
+		cachedAPI.SandHTTPRoute.RuleIdxToAiRatelimitPolicyMapping = apiState.SandHTTPRoute.RuleIdxToAiRatelimitPolicyMapping
 	} else {
 		if cachedAPI.SandHTTPRoute != nil {
 			updated = true

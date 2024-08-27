@@ -36,15 +36,18 @@ import (
 // These values are populated from extensions/properties
 // mentioned under pathItem.
 type Resource struct {
-	path                     string
-	pathMatchType            gwapiv1.PathMatchType
-	methods                  []*Operation
-	iD                       string
-	endpoints                *EndpointCluster
-	endpointSecurity         []*EndpointSecurity
-	vendorExtensions         map[string]interface{}
-	hasPolicies              bool
-	hasRequestRedirectFilter bool
+	path                                   string
+	pathMatchType                          gwapiv1.PathMatchType
+	methods                                []*Operation
+	iD                                     string
+	endpoints                              *EndpointCluster
+	endpointSecurity                       []*EndpointSecurity
+	vendorExtensions                       map[string]interface{}
+	hasPolicies                            bool
+	hasRequestRedirectFilter               bool
+	enableSubscriptionBasedAIRatelimit     bool
+	enableBackendBasedAIRatelimit          bool
+	backendBasedAIRatelimitDescriptorValue string
 }
 
 // GetEndpointSecurity returns the endpoint security object of a given resource.
@@ -188,4 +191,19 @@ func (a byPath) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
 func SortResources(resources []*Resource) []*Resource {
 	sort.Sort(byPath(resources))
 	return resources
+}
+
+// GetEnableSubscriptionBasedAIRatelimit returns the value of enableSubscriptionBasedAIRatelimit.
+func (resource *Resource) GetEnableSubscriptionBasedAIRatelimit() bool {
+	return resource.enableSubscriptionBasedAIRatelimit
+}
+
+// GetEnableBackendBasedAIRatelimit returns the value of enableBackendBasedAIRatelimit.
+func (resource *Resource) GetEnableBackendBasedAIRatelimit() bool {
+	return resource.enableBackendBasedAIRatelimit
+}
+
+// GetBackendBasedAIRatelimitDescriptorValue returns the value of backendBasedAIRatelimitDescriptorValue.
+func (resource *Resource) GetBackendBasedAIRatelimitDescriptorValue() string {
+	return resource.backendBasedAIRatelimitDescriptorValue
 }

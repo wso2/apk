@@ -28,6 +28,7 @@ import (
 	envoy_config_ratelimit_v3 "github.com/envoyproxy/go-control-plane/envoy/config/ratelimit/v3"
 	cors_filter_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/cors/v3"
 	ext_authv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/ext_authz/v3"
+	ext_process "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/ext_proc/v3"
 	luav3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/lua/v3"
 	ratelimit "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/ratelimit/v3"
 	routerv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/router/v3"
@@ -47,9 +48,14 @@ import (
 	"github.com/golang/protobuf/ptypes/any"
 )
 
+
+// HTTPExternalProcessor HTTP filter
+const HTTPExternalProcessor = "envoy.filters.http.ext_proc"
+
 // getHTTPFilters generates httpFilter configuration
 func getHTTPFilters(globalLuaScript string) []*hcmv3.HttpFilter {
 	extAuth := getExtAuthzHTTPFilter()
+	extProcessor := getExtProcessHTTPFilter()
 	router := getRouterHTTPFilter()
 	luaLocal := getLuaFilter(LuaLocal, `
 function envoy_on_request(request_handle)
@@ -64,6 +70,7 @@ end`)
 		extAuth,
 		luaLocal,
 		luaGlobal,
+		extProcessor,
 	}
 	conf := config.ReadConfigs()
 	if conf.Envoy.RateLimit.Enabled {
@@ -188,6 +195,43 @@ func getRateLimitFilter() *hcmv3.HttpFilter {
 		},
 	}
 	return &rlFilter
+}
+
+// getExtProcessHTTPFilter gets ExtAauthz http filter.
+func getExtProcessHTTPFilter() *hcmv3.HttpFilter {
+	// conf := config.ReadConfigs()
+	externalProcessor := &ext_process.ExternalProcessor{
+		GrpcService: &corev3.GrpcService{
+			TargetSpecifier: &corev3.GrpcService_EnvoyGrpc_{
+				EnvoyGrpc: &corev3.GrpcService_EnvoyGrpc{
+					ClusterName: extAuthzClusterName,
+				},
+			},
+		},
+		ProcessingMode: &ext_process.ProcessingMode{
+			ResponseBodyMode: ext_process.ProcessingMode_BUFFERED,
+			RequestHeaderMode: ext_process.ProcessingMode_SKIP,
+			ResponseHeaderMode: ext_process.ProcessingMode_SKIP,
+		},
+		MetadataOptions: &ext_process.MetadataOptions{
+			ForwardingNamespaces: &ext_process.MetadataOptions_MetadataNamespaces{
+				Untyped: []string{"envoy.filters.http.ext_authz", "envoy.filters.http.ext_proc"},
+			},
+		},
+		RequestAttributes: []string{"xds.route_metadata"},
+		ResponseAttributes: []string{"xds.route_metadata"},
+	}
+	ext, err2 := anypb.New(externalProcessor)
+	if err2 != nil {
+		logger.LoggerOasparser.Error(err2)
+	}
+	extProcessFilter := hcmv3.HttpFilter{
+		Name: HTTPExternalProcessor,
+		ConfigType: &hcmv3.HttpFilter_TypedConfig{
+			TypedConfig: ext,
+		},
+	}
+	return &extProcessFilter
 }
 
 // getExtAuthzHTTPFilter gets ExtAauthz http filter.

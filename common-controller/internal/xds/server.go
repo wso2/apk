@@ -33,8 +33,10 @@ import (
 
 	wso2_cache "github.com/wso2/apk/adapter/pkg/discovery/protocol/cache/v3"
 	eventhubTypes "github.com/wso2/apk/adapter/pkg/eventhub/types"
+	"github.com/wso2/apk/common-controller/internal/loggers"
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
+	apimachiner_types "k8s.io/apimachinery/pkg/types"
 )
 
 // EnvoyInternalAPI struct use to hold envoy resources and adapter internal resources
@@ -160,6 +162,15 @@ func UpdateRateLimitXDSCache(resolveRatelimitPolicyList []dpv1alpha1.ResolveRate
 func UpdateRateLimitXDSCacheForCustomPolicies(customRateLimitPolicies dpv1alpha1.CustomRateLimitPolicyDef) {
 	if customRateLimitPolicies.Key != "" {
 		rlsPolicyCache.AddCustomRateLimitPolicies(customRateLimitPolicies)
+	}
+}
+
+// UpdateRateLimitXDSCacheForAIRatelimitPolicies updates the xDS cache of the RateLimiter for AI ratelimit policies.
+func UpdateRateLimitXDSCacheForAIRatelimitPolicies(aiRatelimitPolicySpecs map[apimachiner_types.NamespacedName]*dpv1alpha3.AIRateLimitPolicySpec) {
+	loggers.LoggerAPKOperator.Infof("000000")
+	if len(aiRatelimitPolicySpecs) != 0 {
+		loggers.LoggerAPKOperator.Infof("1111111")
+		rlsPolicyCache.ProcessAIRatelimitPolicySpecsAndUpdateCache(aiRatelimitPolicySpecs)
 	}
 }
 

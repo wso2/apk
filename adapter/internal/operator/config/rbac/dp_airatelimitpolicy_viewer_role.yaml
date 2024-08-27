@@ -1,0 +1,27 @@
+# permissions for end users to view airatelimitpolicies.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: clusterrole
+    app.kubernetes.io/instance: airatelimitpolicy-viewer-role
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: operator
+    app.kubernetes.io/part-of: operator
+    app.kubernetes.io/managed-by: kustomize
+  name: airatelimitpolicy-viewer-role
+rules:
+- apiGroups:
+  - dp.wso2.com
+  resources:
+  - airatelimitpolicies
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - dp.wso2.com
+  resources:
+  - airatelimitpolicies/status
+  verbs:
+  - get

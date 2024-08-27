@@ -50,6 +50,7 @@ import (
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
+	cpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/cp/v1alpha2"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -69,6 +70,8 @@ func init() {
 	utilruntime.Must(dpv1alpha2.AddToScheme(scheme))
 
 	utilruntime.Must(dpv1alpha3.AddToScheme(scheme))
+
+	utilruntime.Must(cpv1alpha2.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
 

@@ -1,0 +1,12 @@
+apiVersion: dp.wso2.com/v1alpha3
+kind: AIRateLimitPolicy
+metadata:
+  labels:
+    app.kubernetes.io/name: airatelimitpolicy
+    app.kubernetes.io/instance: airatelimitpolicy-sample
+    app.kubernetes.io/part-of: operator
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: operator
+  name: airatelimitpolicy-sample
+spec:
+  # TODO(user): Add fields here

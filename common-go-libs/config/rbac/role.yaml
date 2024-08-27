@@ -1,0 +1,32 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: manager-role
+rules:
+- apiGroups:
+  - dp.wso2.com
+  resources:
+  - airatelimitpolicies
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - dp.wso2.com
+  resources:
+  - airatelimitpolicies/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - dp.wso2.com
+  resources:
+  - airatelimitpolicies/status
+  verbs:
+  - get
+  - patch
+  - update

@@ -33,20 +33,25 @@ import (
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
 	"github.com/wso2/apk/common-go-libs/constants"
+	"k8s.io/apimachinery/pkg/types"
 )
 
 // Constants relevant to the route related ratelimit configurations
 const (
-	DescriptorKeyForOrg                = "org"
-	OrgMetadataKey                     = "customorg"
-	DescriptorKeyForEnvironment        = "environment"
-	DescriptorKeyForPath               = "path"
-	DescriptorKeyForMethod             = "method"
-	DescriptorValueForAPIMethod        = "ALL"
-	DescriptorValueForOperationMethod  = ":method"
-	MetadataNamespaceForCustomPolicies = "apk.ratelimit.metadata"
-	MetadataNamespaceForWSO2Policies   = "envoy.filters.http.ext_authz"
-	apiDefinitionClusterName           = "api_definition_cluster"
+	DescriptorKeyForOrg                  = "org"
+	OrgMetadataKey                       = "customorg"
+	DescriptorKeyForEnvironment          = "environment"
+	DescriptorKeyForPath                 = "path"
+	DescriptorKeyForMethod               = "method"
+	DescriptorValueForAPIMethod          = "ALL"
+	DescriptorValueForOperationMethod    = ":method"
+	MetadataNamespaceForCustomPolicies   = "apk.ratelimit.metadata"
+	MetadataNamespaceForWSO2Policies     = "envoy.filters.http.ext_authz"
+	apiDefinitionClusterName             = "api_definition_cluster"
+	DescriptorKeyForAIRequestTokenCount  = "airequesttokencount"
+	DescriptorKeyForAIResponseTokenCount = "airesponsetokencount"
+	DescriptorKeyForAITotalTokenCount    = "aitotaltokencount"
+	DescriptorKeyForAIRequestCount       = "airequestcount"
 )
 
 const (
@@ -80,6 +85,8 @@ type rateLimitPolicyCache struct {
 
 	// org -> Custom Rate Limit Configs
 	customRateLimitPolicies map[string]map[string]*rls_config.RateLimitDescriptor
+
+	aiRatelimitDescriptors []*rls_config.RateLimitDescriptor
 
 	// mutex for API level
 	apiLevelMu sync.RWMutex
@@ -282,6 +289,8 @@ func (r *rateLimitPolicyCache) generateRateLimitConfig() *rls_config.RateLimitCo
 	}
 	orgDescriptors = append(orgDescriptors, metadataDescriptors...)
 
+	// Add AI ratelimit descriptors
+	orgDescriptors = append(orgDescriptors, r.aiRatelimitDescriptors...)
 	return &rls_config.RateLimitConfig{
 		Name:        RateLimiterDomain,
 		Domain:      RateLimiterDomain,
@@ -311,6 +320,61 @@ func (r *rateLimitPolicyCache) AddCustomRateLimitPolicies(customRateLimitPolicy 
 			},
 		}
 	}
+}
+
+// ProcessAIratelimitPolicySpecsAndUpdateCache process the specs and update the cache
+func (r *rateLimitPolicyCache) ProcessAIRatelimitPolicySpecsAndUpdateCache(aiRateLimitPolicySpecs map[types.NamespacedName]*dpv1alpha3.AIRateLimitPolicySpec) {
+	aiRlDescriptors := make([]*rls_config.RateLimitDescriptor, 0)
+	loggers.LoggerAPKOperator.Infof("222222")
+	for namespacedName, spec := range aiRateLimitPolicySpecs {
+		logger.Infof("Adding : %s, %s", DescriptorKeyForAIRequestCount, prepareAIRatelimitIdentifier(spec.Override.Organization, namespacedName, spec))
+		logger.Infof("For airl: %s", namespacedName)
+		// Add descriptor for RequestTokenCount
+		aiRlDescriptors = append(aiRlDescriptors, &rls_config.RateLimitDescriptor{
+			Key:   DescriptorKeyForAIRequestTokenCount,
+			Value: prepareAIRatelimitIdentifier(spec.Override.Organization, namespacedName, spec),
+			RateLimit: &rls_config.RateLimitPolicy{
+				Unit:            getRateLimitUnit(spec.Override.TokenCount.Unit),
+				RequestsPerUnit: uint32(spec.Override.TokenCount.RequestTokenCount),
+			},
+		})
+		// Add descriptor for ResponseTokenCount
+		aiRlDescriptors = append(aiRlDescriptors, &rls_config.RateLimitDescriptor{
+			Key:   DescriptorKeyForAIResponseTokenCount,
+			Value: prepareAIRatelimitIdentifier(spec.Override.Organization, namespacedName, spec),
+			RateLimit: &rls_config.RateLimitPolicy{
+				Unit:            getRateLimitUnit(spec.Override.TokenCount.Unit),
+				RequestsPerUnit: uint32(spec.Override.TokenCount.ResponseTokenCount),
+			},
+		})
+		// Add descriptor for TotalTokenCount
+		aiRlDescriptors = append(aiRlDescriptors, &rls_config.RateLimitDescriptor{
+			Key:   DescriptorKeyForAITotalTokenCount,
+			Value: prepareAIRatelimitIdentifier(spec.Override.Organization, namespacedName, spec),
+			RateLimit: &rls_config.RateLimitPolicy{
+				Unit:            getRateLimitUnit(spec.Override.TokenCount.Unit),
+				RequestsPerUnit: uint32(spec.Override.TokenCount.TotalTokenCount),
+			},
+		})
+		// Add descriptor for RequestCount
+		aiRlDescriptors = append(aiRlDescriptors, &rls_config.RateLimitDescriptor{
+			Key:   DescriptorKeyForAIRequestCount,
+			Value: prepareAIRatelimitIdentifier(spec.Override.Organization, namespacedName, spec),
+			RateLimit: &rls_config.RateLimitPolicy{
+				Unit:            getRateLimitUnit(spec.Override.RequestCount.Unit),
+				RequestsPerUnit: uint32(spec.Override.RequestCount.RequestsPerUnit),
+			},
+		})
+	}
+	r.aiRatelimitDescriptors = aiRlDescriptors
+}
+
+func prepareAIRatelimitIdentifier(org string, namespacedName types.NamespacedName, spec *dpv1alpha3.AIRateLimitPolicySpec) string {
+	targetNamespace := string(namespacedName.Namespace)
+	if spec.TargetRef.Namespace != nil && string(*spec.TargetRef.Namespace) != "" {
+		targetNamespace = string(*spec.TargetRef.Namespace)
+	}
+	return fmt.Sprintf("%s-%s-%s-%s-%s", org, string(namespacedName.Namespace), string(namespacedName.Name), targetNamespace, string(spec.TargetRef.Name))
 }
 
 func (r *rateLimitPolicyCache) updateXdsCache(label string) bool {

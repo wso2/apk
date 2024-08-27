@@ -501,7 +501,7 @@ func (adapterInternalAPI *AdapterInternalAPI) Validate() error {
 
 // SetInfoHTTPRouteCR populates resources and endpoints of adapterInternalAPI. httpRoute.Spec.Rules.Matches
 // are used to create resources and httpRoute.Spec.Rules.BackendRefs are used to create EndpointClusters.
-func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1.HTTPRoute, resourceParams ResourceParams) error {
+func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1.HTTPRoute, resourceParams ResourceParams, isAiSubscriptionRatelimitEnabled bool, ruleIdxToAiRatelimitPolicyMapping map[int]*dpv1alpha3.AIRateLimitPolicy) error {
 	var resources []*Resource
 	outputAuthScheme := utils.TieBreaker(utils.GetPtrSlice(maps.Values(resourceParams.AuthSchemes)))
 	outputAPIPolicy := utils.TieBreaker(utils.GetPtrSlice(maps.Values(resourceParams.APIPolicies)))
@@ -523,7 +523,7 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 		ratelimitPolicy = *outputRatelimitPolicy
 	}
 
-	for _, rule := range httpRoute.Spec.Rules {
+	for ruleID, rule := range httpRoute.Spec.Rules {
 		var endPoints []Endpoint
 		var policies = OperationPolicies{}
 		var circuitBreaker *dpv1alpha2.CircuitBreaker
@@ -544,6 +544,16 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 		hasRequestRedirectPolicy := false
 		var securityConfig []EndpointSecurity
 		var mirrorEndpointClusters []*EndpointCluster
+
+		enableBackendBasedAIRatelimit := false
+		descriptorValue := ""
+		if aiRatelimitPolicy, exists := ruleIdxToAiRatelimitPolicyMapping[ruleID]; exists {
+			loggers.LoggerAPI.Infof("Found AI ratelimit mapping for ruleId: %d, related api: %s", ruleID, adapterInternalAPI.UUID)
+			enableBackendBasedAIRatelimit = true
+			descriptorValue = prepareAIRatelimitIdentifier(adapterInternalAPI.OrganizationID, utils.NamespacedName(aiRatelimitPolicy), &aiRatelimitPolicy.Spec)
+		} else {
+			loggers.LoggerAPI.Infof("Could not find AIratelimit for ruleId: %d, len of map: %d, related api: %s", ruleID, len(ruleIdxToAiRatelimitPolicyMapping), adapterInternalAPI.UUID)
+		}
 
 		backendBasePath := ""
 		for _, backend := range rule.BackendRefs {
@@ -901,12 +911,17 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 
 			operations := getAllowedOperations(match.Method, policies, apiAuth,
 				parseRateLimitPolicyToInternal(resourceRatelimitPolicy), scopes, mirrorEndpointClusters)
-			resource := &Resource{path: resourcePath,
+			
+			resource := &Resource{
+				path: resourcePath,
 				methods:                  operations,
 				pathMatchType:            *match.Path.Type,
 				hasPolicies:              true,
 				iD:                       uuid.New().String(),
 				hasRequestRedirectFilter: hasRequestRedirectPolicy,
+				enableSubscriptionBasedAIRatelimit: isAiSubscriptionRatelimitEnabled,
+				enableBackendBasedAIRatelimit: enableBackendBasedAIRatelimit,
+				backendBasedAIRatelimitDescriptorValue: descriptorValue,
 			}
 
 			resource.endpoints = &EndpointCluster{
@@ -1363,4 +1378,12 @@ func CreateDummyAdapterInternalAPIForTests(title, version, basePath string, reso
 		xWso2Basepath: basePath,
 		resources:     resources,
 	}
+}
+
+func prepareAIRatelimitIdentifier(org string, namespacedName types.NamespacedName, spec *dpv1alpha3.AIRateLimitPolicySpec) string {
+	targetNamespace := string(namespacedName.Namespace)
+	if spec.TargetRef.Namespace != nil && string(*spec.TargetRef.Namespace) != "" {
+		targetNamespace = string(*spec.TargetRef.Namespace)
+	}
+	return fmt.Sprintf("%s-%s-%s-%s-%s", org, string(namespacedName.Namespace), string(namespacedName.Name), targetNamespace, string(spec.TargetRef.Name))
 }

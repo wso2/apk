@@ -36,6 +36,7 @@ import org.wso2.apk.enforcer.config.dto.AuthServiceConfigurationDto;
 import org.wso2.apk.enforcer.config.dto.ThreadPoolConfig;
 import org.wso2.apk.enforcer.discovery.ConfigDiscoveryClient;
 import org.wso2.apk.enforcer.grpc.ExtAuthService;
+ import org.wso2.apk.enforcer.grpc.ExternalProcessorService;
 import org.wso2.apk.enforcer.grpc.HealthService;
 import org.wso2.apk.enforcer.grpc.interceptors.AccessLogInterceptor;
 import org.wso2.apk.enforcer.grpc.interceptors.OpenTelemetryInterceptor;
@@ -158,12 +159,14 @@ public class AuthServer {
         EnforcerWorkerPool enforcerWorkerPool = new EnforcerWorkerPool(threadPoolConfig.getCoreSize(),
                 threadPoolConfig.getMaxSize(), threadPoolConfig.getKeepAliveTime(), threadPoolConfig.getQueueSize(),
                 Constants.EXTERNAL_AUTHZ_THREAD_GROUP, Constants.EXTERNAL_AUTHZ_THREAD_ID);
+        System.out.println("test");
         return NettyServerBuilder.forPort(authServerConfig.getPort())
                 .keepAliveTime(authServerConfig.getKeepAliveTime(), TimeUnit.SECONDS).bossEventLoopGroup(bossGroup)
                 .workerEventLoopGroup(workerGroup)
                 .addService(ServerInterceptors.intercept(new ExtAuthService(), new OpenTelemetryInterceptor(),
                         new AccessLogInterceptor()))
                 .addService(new HealthService())
+                .addService(new ExternalProcessorService())
 //                .addService(ServerInterceptors.intercept(new WebSocketFrameService(), new AccessLogInterceptor()))
                 .maxInboundMessageSize(authServerConfig.getMaxMessageSize())
                 .maxInboundMetadataSize(authServerConfig.getMaxHeaderLimit()).channelType(NioServerSocketChannel.class)

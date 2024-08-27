@@ -1,0 +1,201 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.12.0
+  name: airatelimitpolicies.dp.wso2.com
+spec:
+  group: dp.wso2.com
+  names:
+    kind: AIRateLimitPolicy
+    listKind: AIRateLimitPolicyList
+    plural: airatelimitpolicies
+    singular: airatelimitpolicy
+  scope: Namespaced
+  versions:
+  - name: v1alpha3
+    schema:
+      openAPIV3Schema:
+        description: AIRateLimitPolicy is the Schema for the airatelimitpolicies API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: AIRateLimitPolicySpec defines the desired state of AIRateLimitPolicy
+            properties:
+              default:
+                description: AIRateLimit defines the AI ratelimit configuration
+                properties:
+                  organization:
+                    type: string
+                  requestCount:
+                    description: RequestCount defines the request based ratelimit
+                      configuration
+                    properties:
+                      requestsPerUnit:
+                        description: RequestPerUnit is the number of requests allowed
+                          per unit time
+                        format: int32
+                        type: integer
+                      unit:
+                        description: Unit is the unit of the requestsPerUnit
+                        enum:
+                        - Minute
+                        - Hour
+                        - Day
+                        type: string
+                    type: object
+                  tokenCount:
+                    description: TokenCount defines the Token based ratelimit configuration
+                    properties:
+                      requestTokenCount:
+                        description: RequestTokenCount specifies the maximum number
+                          of tokens allowed in AI requests within a given unit of
+                          time. This value limits the token count sent by the client
+                          to the AI service over the defined period.
+                        format: int32
+                        minimum: 1
+                        type: integer
+                      responseTokenCount:
+                        description: ResponseTokenCount specifies the maximum number
+                          of tokens allowed in AI responses within a given unit of
+                          time. This value limits the token count received by the
+                          client from the AI service over the defined period.
+                        format: int32
+                        minimum: 1
+                        type: integer
+                      totalTokenCount:
+                        description: TotalTokenCount represents the maximum allowable
+                          total token count for both AI requests and responses within
+                          a specified unit of time. This value sets the limit for
+                          the number of tokens exchanged between the client and AI
+                          service during the defined period.
+                        format: int32
+                        minimum: 1
+                        type: integer
+                      unit:
+                        description: Unit is the unit of the requestsPerUnit
+                        enum:
+                        - Minute
+                        - Hour
+                        - Day
+                        type: string
+                    type: object
+                type: object
+              override:
+                description: AIRateLimit defines the AI ratelimit configuration
+                properties:
+                  organization:
+                    type: string
+                  requestCount:
+                    description: RequestCount defines the request based ratelimit
+                      configuration
+                    properties:
+                      requestsPerUnit:
+                        description: RequestPerUnit is the number of requests allowed
+                          per unit time
+                        format: int32
+                        type: integer
+                      unit:
+                        description: Unit is the unit of the requestsPerUnit
+                        enum:
+                        - Minute
+                        - Hour
+                        - Day
+                        type: string
+                    type: object
+                  tokenCount:
+                    description: TokenCount defines the Token based ratelimit configuration
+                    properties:
+                      requestTokenCount:
+                        description: RequestTokenCount specifies the maximum number
+                          of tokens allowed in AI requests within a given unit of
+                          time. This value limits the token count sent by the client
+                          to the AI service over the defined period.
+                        format: int32
+                        minimum: 1
+                        type: integer
+                      responseTokenCount:
+                        description: ResponseTokenCount specifies the maximum number
+                          of tokens allowed in AI responses within a given unit of
+                          time. This value limits the token count received by the
+                          client from the AI service over the defined period.
+                        format: int32
+                        minimum: 1
+                        type: integer
+                      totalTokenCount:
+                        description: TotalTokenCount represents the maximum allowable
+                          total token count for both AI requests and responses within
+                          a specified unit of time. This value sets the limit for
+                          the number of tokens exchanged between the client and AI
+                          service during the defined period.
+                        format: int32
+                        minimum: 1
+                        type: integer
+                      unit:
+                        description: Unit is the unit of the requestsPerUnit
+                        enum:
+                        - Minute
+                        - Hour
+                        - Day
+                        type: string
+                    type: object
+                type: object
+              targetRef:
+                description: PolicyTargetReference identifies an API object to apply
+                  a direct or inherited policy to. This should be used as part of
+                  Policy resources that can target Gateway API resources. For more
+                  information on how this policy attachment model works, and a sample
+                  Policy resource, refer to the policy attachment documentation for
+                  Gateway API.
+                properties:
+                  group:
+                    description: Group is the group of the target resource.
+                    maxLength: 253
+                    pattern: ^$|^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                    type: string
+                  kind:
+                    description: Kind is kind of the target resource.
+                    maxLength: 63
+                    minLength: 1
+                    pattern: ^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$
+                    type: string
+                  name:
+                    description: Name is the name of the target resource.
+                    maxLength: 253
+                    minLength: 1
+                    type: string
+                  namespace:
+                    description: Namespace is the namespace of the referent. When
+                      unspecified, the local namespace is inferred. Even when policy
+                      targets a resource in a different namespace, it MUST only apply
+                      to traffic originating from the same namespace as the policy.
+                    maxLength: 63
+                    minLength: 1
+                    pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
+                    type: string
+                required:
+                - group
+                - kind
+                - name
+                type: object
+            type: object
+          status:
+            description: AIRateLimitPolicyStatus defines the observed state of AIRateLimitPolicy
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

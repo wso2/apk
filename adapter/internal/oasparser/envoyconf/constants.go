@@ -29,6 +29,7 @@ const (
 const (
 	httpConManagerStartPrefix  string = "ingress_http"
 	extAuthzPerRouteName       string = "type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute"
+	extProcPerRouteName        string = "type.googleapis.com/envoy.extensions.filters.http.ext_proc.v3.ExtProcPerRoute"
 	luaPerRouteName            string = "type.googleapis.com/envoy.extensions.filters.http.lua.v3.LuaPerRoute"
 	corsFilterName             string = "type.googleapis.com/envoy.extensions.filters.http.cors.v3.Cors"
 	localRateLimitPerRouteName string = "type.googleapis.com/envoy.extensions.filters.http.local_ratelimit.v3.LocalRateLimit"

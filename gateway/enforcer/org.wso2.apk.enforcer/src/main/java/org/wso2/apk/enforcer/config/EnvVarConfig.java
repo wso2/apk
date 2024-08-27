@@ -34,6 +34,8 @@ public class EnvVarConfig {
     private static final String OPA_CLIENT_PRIVATE_KEY_PATH = "OPA_CLIENT_PRIVATE_KEY_PATH";
     private static final String OPA_CLIENT_PUBLIC_CERT_PATH = "OPA_CLIENT_PUBLIC_CERT_PATH";
     private static final String ADAPTER_HOST = "ADAPTER_HOST";
+    private static final String RATELIMITER_HOST = "RATELIMITER_HOST";
+    private static final String RATELIMITER_PORT = "RATELIMITER_PORT";
     private static final String ADAPTER_XDS_PORT = "ADAPTER_XDS_PORT";
     private static final String COMMON_CONTROLLER_HOST = "COMMON_CONTROLLER_HOST";
     private static final String COMMON_CONTROLLER_XDS_PORT = "COMMON_CONTROLLER_XDS_PORT";
@@ -68,6 +70,8 @@ public class EnvVarConfig {
     private static final String DEFAULT_ENFORCER_PUBLIC_CERT_PATH = "/home/wso2/security/keystore/mg.pem";
     private static final String DEFAULT_ENFORCER_REGION_ID = "UNKNOWN";
     private static final String DEFAULT_ADAPTER_HOST = "adapter";
+    private static final String DEFAULT_RATELIMITER_HOST = "apk-test-wso2-apk-ratelimiter-service.apk.svc";
+    private static final String DEFAULT_RATELIMITER_PORT = "8091";
     private static final String DEFAULT_ADAPTER_XDS_PORT = "18000";
     private static final String DEFAULT_COMMON_CONTROLLER_HOST = "common-controller";
     private static final String DEFAULT_COMMON_CONTROLLER_XDS_PORT = "18002";
@@ -100,6 +104,8 @@ public class EnvVarConfig {
     private final String opaClientPrivateKeyPath;
     private final String opaClientPublicKeyPath;
     private final String adapterHost;
+    private final String ratelimiterHost;
+    private final String ratelimiterPort;
     private final String commonControllerHost;
     private final String enforcerLabel;
     private final String adapterXdsPort;
@@ -144,6 +150,8 @@ public class EnvVarConfig {
                 DEFAULT_ENFORCER_PUBLIC_CERT_PATH);
         enforcerLabel = retrieveEnvVarOrDefault(ENFORCER_LABEL, DEFAULT_ENFORCER_LABEL);
         adapterHost = retrieveEnvVarOrDefault(ADAPTER_HOST, DEFAULT_ADAPTER_HOST);
+        ratelimiterHost = retrieveEnvVarOrDefault(RATELIMITER_HOST, DEFAULT_RATELIMITER_HOST);
+        ratelimiterPort = retrieveEnvVarOrDefault(RATELIMITER_PORT, DEFAULT_RATELIMITER_PORT);
         adapterHostname = retrieveEnvVarOrDefault(ADAPTER_HOST_NAME, DEFAULT_ADAPTER_HOST_NAME);
         adapterXdsPort = retrieveEnvVarOrDefault(ADAPTER_XDS_PORT, DEFAULT_ADAPTER_XDS_PORT);
         commonControllerHost = retrieveEnvVarOrDefault(COMMON_CONTROLLER_HOST, DEFAULT_COMMON_CONTROLLER_HOST);
@@ -238,6 +246,19 @@ public class EnvVarConfig {
 
     public String getAdapterHost() {
         return adapterHost;
+    }
+
+    public String getRatelimiterHost() {
+        return ratelimiterHost;
+    }
+
+    public int getRatelimiterPort() {
+        try {
+            int port = Integer.parseInt(ratelimiterPort);
+            return port;
+        } catch (NumberFormatException e) {
+            return Integer.parseInt(DEFAULT_RATELIMITER_PORT);
+        }
     }
 
     public String getCommonControllerHost() {
