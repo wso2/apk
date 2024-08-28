@@ -137,35 +137,35 @@ func buildXdsRoute(httpRoute *ir.HTTPRoute) (*routev3.Route, error) {
 }
 
 func buildXdsRouteMatch(pathMatch *ir.StringMatch, headerMatches []*ir.StringMatch, queryParamMatches []*ir.StringMatch) *routev3.RouteMatch {
-	outMatch := &routev3.RouteMatch{}
+	routeMatch := &routev3.RouteMatch{}
 
 	// Add a prefix match to '/' if no matches are specified
 	if pathMatch == nil {
 		// Setup default path specifier. It may be overwritten by :host:.
-		outMatch.PathSpecifier = &routev3.RouteMatch_Prefix{
+		routeMatch.PathSpecifier = &routev3.RouteMatch_Prefix{
 			Prefix: "/",
 		}
 	} else {
 		// Path match
 		//nolint:gocritic
 		if pathMatch.Exact != nil {
-			outMatch.PathSpecifier = &routev3.RouteMatch_Path{
+			routeMatch.PathSpecifier = &routev3.RouteMatch_Path{
 				Path: *pathMatch.Exact,
 			}
 		} else if pathMatch.Prefix != nil {
 			if *pathMatch.Prefix == "/" {
-				outMatch.PathSpecifier = &routev3.RouteMatch_Prefix{
+				routeMatch.PathSpecifier = &routev3.RouteMatch_Prefix{
 					Prefix: "/",
 				}
 			} else {
 				// Remove trailing /
 				trimmedPrefix := strings.TrimSuffix(*pathMatch.Prefix, "/")
-				outMatch.PathSpecifier = &routev3.RouteMatch_PathSeparatedPrefix{
+				routeMatch.PathSpecifier = &routev3.RouteMatch_PathSeparatedPrefix{
 					PathSeparatedPrefix: trimmedPrefix,
 				}
 			}
 		} else if pathMatch.SafeRegex != nil {
-			outMatch.PathSpecifier = &routev3.RouteMatch_SafeRegex{
+			routeMatch.PathSpecifier = &routev3.RouteMatch_SafeRegex{
 				SafeRegex: &matcherv3.RegexMatcher{
 					Regex: *pathMatch.SafeRegex,
 				},
@@ -182,7 +182,7 @@ func buildXdsRouteMatch(pathMatch *ir.StringMatch, headerMatches []*ir.StringMat
 				StringMatch: stringMatcher,
 			},
 		}
-		outMatch.Headers = append(outMatch.Headers, headerMatcher)
+		routeMatch.Headers = append(routeMatch.Headers, headerMatcher)
 	}
 
 	// Query param matches
@@ -195,10 +195,10 @@ func buildXdsRouteMatch(pathMatch *ir.StringMatch, headerMatches []*ir.StringMat
 				StringMatch: stringMatcher,
 			},
 		}
-		outMatch.QueryParameters = append(outMatch.QueryParameters, queryParamMatcher)
+		routeMatch.QueryParameters = append(routeMatch.QueryParameters, queryParamMatcher)
 	}
 
-	return outMatch
+	return routeMatch
 }
 
 func buildXdsStringMatcher(irMatch *ir.StringMatch) *matcherv3.StringMatcher {
