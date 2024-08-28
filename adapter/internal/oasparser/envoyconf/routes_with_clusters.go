@@ -756,6 +756,9 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 	resourceMethods := resource.GetMethodList()
 	pathMatchType := resource.GetPathMatchType()
 
+	headerKey := resource.GetKey()
+	headerValue := resource.GetValue()
+
 	contextExtensions := make(map[string]string)
 	contextExtensions[pathContextExtension] = resourcePath
 	contextExtensions[vHostContextExtension] = vHost
@@ -1079,7 +1082,14 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 				logger.LoggerOasparser.Debug("Creating routes for resource with policies", resourcePath, operation.GetMethod())
 				// create route for current method. Add policies to route config. Send via enforcer
 				match := generateRouteMatch(routePath)
+				logger.LoggerAPK.Info("Header key: ", headerKey)
+				logger.LoggerAPK.Info("Header value: ", headerValue)
 				match.Headers = generateHTTPMethodMatcher(operation.GetMethod(), clusterName)
+				if headerKey != "" && headerValue != "" {
+					match.Headers = append(match.Headers, generateHTTPMethodExactMatcher(string(headerKey), headerValue))
+				}
+				//match.Headers = append(match.Headers, generateHeaderMatcher(string(headerKey), headerValue))
+				logger.LoggerAPK.Info("Header keyx: ")
 				match.DynamicMetadata = generateMetadataMatcherForExternalRoutes()
 				if pathRewriteConfig != nil && requestRedirectAction == nil {
 					action.Route.RegexRewrite = pathRewriteConfig
@@ -1100,6 +1110,9 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 		}
 		match := generateRouteMatch(routePath)
 		match.Headers = generateHTTPMethodMatcher(methodRegex, clusterName)
+		if headerKey != "" && headerValue != "" {
+			match.Headers = append(match.Headers, generateHTTPMethodExactMatcher(string(headerKey), headerValue))
+		}
 		action := generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria, nil)
 		rewritePath := generateRoutePathForReWrite(basePath, resourcePath, pathMatchType)
 		action.Route.RegexRewrite = generateRegexMatchAndSubstitute(rewritePath, resourcePath, pathMatchType)
