@@ -196,9 +196,9 @@ func testCreateRoutesForUnitTests(t *testing.T) []*routev3.Route {
 		RawURL:  "http://abc.com",
 	}
 
-	operationGet := model.NewOperation("GET", nil, nil)
-	operationPost := model.NewOperation("POST", nil, nil)
-	operationPut := model.NewOperation("PUT", nil, nil)
+	operationGet := model.NewOperation("GET", nil, nil, "")
+	operationPost := model.NewOperation("POST", nil, nil, "")
+	operationPut := model.NewOperation("PUT", nil, nil, "")
 	resourceWithGet := model.CreateMinimalDummyResourceForTests("/resourcePath", []*model.Operation{operationGet},
 		"resource_operation_id", []model.Endpoint{endpoint}, false, false)
 	resourceWithPost := model.CreateMinimalDummyResourceForTests("/resourcePath", []*model.Operation{operationPost},

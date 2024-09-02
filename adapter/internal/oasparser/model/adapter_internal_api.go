@@ -82,6 +82,7 @@ type AdapterInternalAPI struct {
 	Endpoints        *EndpointCluster
 	EndpointSecurity []*EndpointSecurity
 	AIProvider       InternalAIProvider
+	HTTPRouteIDs     []string
 }
 
 // BackendJWTTokenInfo represents the object structure holding the information related to the JWT Generator
@@ -889,7 +890,11 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 		loggers.LoggerOasparser.Debugf("Calculating auths for API ..., API_UUID = %v", adapterInternalAPI.UUID)
 		apiAuth := getSecurity(resourceAuthScheme)
 
-		for _, match := range rule.Matches {
+		if !hasRequestRedirectPolicy && len(rule.BackendRefs) < 1 {
+			return fmt.Errorf("no backendref were provided")
+		}
+
+		for matchID, match := range rule.Matches {
 			if hasURLRewritePolicy && hasRequestRedirectPolicy {
 				return fmt.Errorf("cannot have URL Rewrite and Request Redirect under the same rule")
 			}
@@ -909,8 +914,8 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 				})
 			}
 			resourcePath := adapterInternalAPI.xWso2Basepath + *match.Path.Value
-
-			operations := getAllowedOperations(match.Method, policies, apiAuth,
+			matchID := getMatchID(httpRoute.Namespace, httpRoute.Name, ruleID, matchID)
+			operations := getAllowedOperations(matchID, match.Method, policies, apiAuth,
 				parseRateLimitPolicyToInternal(resourceRatelimitPolicy), scopes, mirrorEndpointClusters)
 			
 			resource := &Resource{

@@ -21,6 +21,7 @@ import org.wso2.apk.enforcer.commons.model.APIKeyAuthenticationConfig;
 import org.wso2.apk.enforcer.commons.model.AuthenticationConfig;
 import org.wso2.apk.enforcer.commons.model.JWTAuthenticationConfig;
 import org.wso2.apk.enforcer.commons.model.Oauth2AuthenticationConfig;
+import org.wso2.apk.enforcer.config.EnforcerConfig;
 import org.wso2.apk.enforcer.discovery.api.APIKey;
 import org.wso2.apk.enforcer.discovery.api.EndpointClusterConfig;
 import org.wso2.apk.enforcer.discovery.api.Operation;
@@ -87,6 +88,7 @@ public class Utils {
 
     public static ResourceConfig buildResource(Operation operation, String resPath, EndpointSecurity[] endpointSecurity) {
         ResourceConfig resource = new ResourceConfig();
+        resource.setMatchID(operation.getMatchID());
         resource.setPath(resPath);
         resource.setMethod(ResourceConfig.HttpMethods.valueOf(operation.getMethod().toUpperCase()));
         resource.setTier(operation.getTier());
@@ -98,7 +100,7 @@ public class Utils {
             JWTAuthenticationConfig jwtAuthenticationConfig = getDefaultJwtAuthenticationConfig();
             authenticationConfig.setJwtAuthenticationConfig(jwtAuthenticationConfig);
         }
-        
+
         if (operation.hasApiAuthentication()) {
             authenticationConfig.setDisabled(operation.getApiAuthentication().getDisabled());
             if (operation.getApiAuthentication().hasOauth2()) {

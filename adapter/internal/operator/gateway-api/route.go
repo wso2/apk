@@ -1145,7 +1145,6 @@ func (t *Translator) processDestination(backendRefContext BackendRefContext,
 			endpoints = append(endpoints, ep)
 		}
 	case KindBackend:
-		loggers.LoggerAPI.Error("amalii")
 		backend := resources.GetBackend(backendNamespace, string(backendRef.Name))
 		ep := ir.NewDestEndpoint(
 			backend.Spec.Services[0].Host,

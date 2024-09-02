@@ -63,7 +63,17 @@ public class EnforcerConfig {
     private boolean mandateSubscriptionValidation;
     private boolean mandateInternalKeyValidation;
     private ClientConfigDto httpClientConfigDto;
+    private boolean enableGatewayClassController;
 
+    public void setEnableGatewayClassController(Boolean enableGatewayClassController) {
+
+        this.enableGatewayClassController = enableGatewayClassController;
+    }
+
+    public Boolean  getEnableGatewayClassController() {
+
+        return enableGatewayClassController;
+    }
     public ClientConfigDto getHttpClientConfigDto() {
 
         return httpClientConfigDto;

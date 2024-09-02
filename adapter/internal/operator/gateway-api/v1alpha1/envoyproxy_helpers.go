@@ -27,6 +27,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/wso2/apk/adapter/config"
 	autoscalingv2 "k8s.io/api/autoscaling/v2"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -54,7 +55,7 @@ func (e *EnvoyProxy) GetEnvoyProxyProvider() *EnvoyProxyProvider {
 // DefaultEnvoyProxyKubeProvider returns a new EnvoyProxyKubernetesProvider with default settings.
 func DefaultEnvoyProxyKubeProvider() *EnvoyProxyKubernetesProvider {
 	return &EnvoyProxyKubernetesProvider{
-		EnvoyDeployment: DefaultKubernetesDeployment(DefaultEnvoyProxyImage, DefaultEnforcerImage),
+		EnvoyDeployment: DefaultKubernetesDeployment(DefaultEnvoyProxyImage, config.ReadConfigs().Deployment.Gateway.EnforcerImage),
 		EnvoyService:    DefaultKubernetesService(),
 	}
 }
@@ -88,10 +89,10 @@ func (r *EnvoyProxyProvider) GetEnvoyProxyKubeProvider() *EnvoyProxyKubernetesPr
 	}
 
 	if r.Kubernetes.EnvoyDeployment == nil {
-		r.Kubernetes.EnvoyDeployment = DefaultKubernetesDeployment(DefaultEnvoyProxyImage, DefaultEnforcerImage)
+		r.Kubernetes.EnvoyDeployment = DefaultKubernetesDeployment(DefaultEnvoyProxyImage, config.ReadConfigs().Deployment.Gateway.EnforcerImage)
 	}
 
-	r.Kubernetes.EnvoyDeployment.defaultKubernetesDeploymentSpec(DefaultEnvoyProxyImage, DefaultEnforcerImage)
+	r.Kubernetes.EnvoyDeployment.defaultKubernetesDeploymentSpec(DefaultEnvoyProxyImage, config.ReadConfigs().Deployment.Gateway.EnforcerImage)
 
 	if r.Kubernetes.EnvoyService == nil {
 		r.Kubernetes.EnvoyService = DefaultKubernetesService()
