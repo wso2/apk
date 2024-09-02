@@ -260,6 +260,31 @@ public interface ApiOrBuilder extends
   boolean getTransportSecurity();
 
   /**
+   * <code>repeated string httpRouteIDs = 19;</code>
+   * @return A list containing the httpRouteIDs.
+   */
+  java.util.List<java.lang.String>
+      getHttpRouteIDsList();
+  /**
+   * <code>repeated string httpRouteIDs = 19;</code>
+   * @return The count of httpRouteIDs.
+   */
+  int getHttpRouteIDsCount();
+  /**
+   * <code>repeated string httpRouteIDs = 19;</code>
+   * @param index The index of the element to return.
+   * @return The httpRouteIDs at the given index.
+   */
+  java.lang.String getHttpRouteIDs(int index);
+  /**
+   * <code>repeated string httpRouteIDs = 19;</code>
+   * @param index The index of the value to return.
+   * @return The bytes of the httpRouteIDs at the given index.
+   */
+  com.google.protobuf.ByteString
+      getHttpRouteIDsBytes(int index);
+
+  /**
    * <pre>
    *&#47; string graphQLSchema = 22;
    * </pre>

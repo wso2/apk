@@ -178,7 +178,7 @@ func CreateRoutesWithClusters(adapterInternalAPI *model.AdapterInternalAPI, inte
 				},
 			},
 		}
-		gqlop := model.NewOperationWithPolicies("POST", policies)
+		gqlop := model.NewOperationWithPolicies("POST", policies, "")
 		resource := model.CreateMinimalResource(adapterInternalAPI.GetXWso2Basepath(), []*model.Operation{gqlop}, "", adapterInternalAPI.Endpoints, true, false, gwapiv1.PathMatchExact)
 		routesP, err := createRoutes(genRouteCreateParams(adapterInternalAPI, &resource, vHost, basePath, clusterName, nil,
 			nil, organizationID, false, false, nil))
@@ -1074,7 +1074,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 				}
 			}
 			if !hasOptions {
-				operations = append(operations, model.NewOperation("OPTIONS", nil, nil))
+				operations = append(operations, model.NewOperation("OPTIONS", nil, nil, ""))
 			}
 		}
 

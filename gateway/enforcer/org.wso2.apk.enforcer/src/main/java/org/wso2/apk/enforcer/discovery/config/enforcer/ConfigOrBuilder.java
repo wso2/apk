@@ -222,4 +222,10 @@ public interface ConfigOrBuilder extends
    * @return The mandateInternalKeyValidation.
    */
   boolean getMandateInternalKeyValidation();
+
+  /**
+   * <code>bool enableGatewayClassController = 16;</code>
+   * @return The enableGatewayClassController.
+   */
+  boolean getEnableGatewayClassController();
 }

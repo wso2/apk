@@ -32,6 +32,8 @@ import org.json.JSONObject;
 import org.wso2.apk.enforcer.commons.constants.GraphQLConstants;
 import org.wso2.apk.enforcer.commons.graphql.GraphQLProcessorUtil;
 import org.wso2.apk.enforcer.commons.graphql.QueryValidator;
+import org.wso2.apk.enforcer.config.ConfigHolder;
+import org.wso2.apk.enforcer.config.EnforcerConfig;
 import org.wso2.apk.enforcer.discovery.api.GraphqlComplexity;
 import org.wso2.apk.enforcer.api.API;
 import org.wso2.apk.enforcer.api.APIFactory;
@@ -62,7 +64,7 @@ public class GraphQLPayloadUtils {
      * @return matching resource configs for the request
      * @throws EnforcerException use for error response handling
      */
-    public static ArrayList<ResourceConfig> buildGQLRequestContext(API api, String queryBody) throws EnforcerException {
+    public static ArrayList<ResourceConfig> buildGQLRequestContext(API api, String queryBody, String routeName) throws EnforcerException {
         GraphQLSchemaDTO graphQLSchemaDTO = api.getAPIConfig().getGraphQLSchemaDTO();
         try {
             // Validate payload with graphQLSchema
@@ -89,7 +91,14 @@ public class GraphQLPayloadUtils {
                 }
                 ArrayList<ResourceConfig> resourceConfigs = new ArrayList<>();
                 for (String op : operationList) {
-                    ResourceConfig resourceConfig = APIFactory.getInstance().getMatchedResource(api, op, method);
+                    EnforcerConfig enforcerConfig = ConfigHolder.getInstance().getConfig();
+                    ResourceConfig resourceConfig;
+                    if (enforcerConfig.getEnableGatewayClassController()) {
+                        resourceConfig = APIFactory.getInstance().getMatchedResource(api, routeName);
+                    } else {
+                        resourceConfig = APIFactory.getInstance().getMatchedResource(api, op, method);
+                    }
+
                     if (resourceConfig != null) {
                         resourceConfigs.add(resourceConfig);
                     } else {

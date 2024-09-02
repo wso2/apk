@@ -53,4 +53,6 @@ message Config {
 
     bool mandateInternalKeyValidation = 15;
 
+    bool enableGatewayClassController = 16;
+
 }
