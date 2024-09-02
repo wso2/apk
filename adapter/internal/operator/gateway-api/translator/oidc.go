@@ -356,7 +356,7 @@ func (*oidc) patchRoute(route *routev3.Route, irRoute *ir.HTTPRoute) error {
 		return nil
 	}
 
-	return enableFilterOnRoute(oauth2Filter, route, irRoute)
+	return enableFilterOnRoute(oauth2Filter, oauth2FilterName(irRoute), route)
 }
 
 // buildXdsUpstreamTLSSocket returns an xDS TransportSocket that uses envoyTrustBundle
