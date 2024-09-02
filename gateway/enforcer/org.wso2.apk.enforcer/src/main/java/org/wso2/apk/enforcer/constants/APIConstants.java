@@ -26,6 +26,7 @@ public class APIConstants {
 
     public static final String DEFAULT = "default";
     public static final String GW_VHOST_PARAM = "vHost";
+    public static final String ROUTE_NAME_PARAM = "route-name";
     public static final String GW_BASE_PATH_PARAM = "basePath";
     public static final String GW_RES_PATH_PARAM = "path";
     public static final String GW_VERSION_PARAM = "version";

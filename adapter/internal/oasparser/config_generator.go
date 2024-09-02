@@ -247,6 +247,7 @@ func GetEnforcerAPI(adapterInternalAPI *model.AdapterInternalAPI, vhost string) 
 			}
 			return nil
 		}(),
+		HttpRouteIDs: adapterInternalAPI.HTTPRouteIDs,
 	}
 }
 
@@ -269,6 +270,7 @@ func GetEnforcerAPIOperation(operation model.Operation, isMockedAPI bool) *api.O
 		ApiAuthentication: castAPIAuthenticationsToEnforcerAPIAuthentications(operation.GetAuthentication()),
 		Tier:              operation.GetTier(),
 		Policies:          policies,
+		MatchID:           operation.GetMatchID(),
 		// MockedApiConfig: mockedAPIConfig,
 	}
 	return &apiOperation

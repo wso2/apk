@@ -287,26 +287,26 @@ func getSecurity(authScheme *dpv1alpha2.Authentication) *Authentication {
 }
 
 // getAllowedOperations retuns a list of allowed operatons, if httpMethod is not specified then all methods are allowed.
-func getAllowedOperations(httpMethod *gwapiv1.HTTPMethod, policies OperationPolicies, auth *Authentication,
+func getAllowedOperations(matchID string, httpMethod *gwapiv1.HTTPMethod, policies OperationPolicies, auth *Authentication,
 	ratelimitPolicy *RateLimitPolicy, scopes []string, mirrorEndpointClusters []*EndpointCluster) []*Operation {
 	if httpMethod != nil {
 		return []*Operation{{iD: uuid.New().String(), method: string(*httpMethod), policies: policies,
-			auth: auth, rateLimitPolicy: ratelimitPolicy, scopes: scopes, mirrorEndpointClusters: mirrorEndpointClusters}}
+			auth: auth, rateLimitPolicy: ratelimitPolicy, scopes: scopes, mirrorEndpointClusters: mirrorEndpointClusters, matchID: matchID}}
 	}
 	return []*Operation{{iD: uuid.New().String(), method: string(gwapiv1.HTTPMethodGet), policies: policies,
-		auth: auth, rateLimitPolicy: ratelimitPolicy, scopes: scopes},
+		auth: auth, rateLimitPolicy: ratelimitPolicy, scopes: scopes, matchID: matchID},
 		{iD: uuid.New().String(), method: string(gwapiv1.HTTPMethodPost), policies: policies,
-			auth: auth, rateLimitPolicy: ratelimitPolicy, scopes: scopes, mirrorEndpointClusters: mirrorEndpointClusters},
+			auth: auth, rateLimitPolicy: ratelimitPolicy, scopes: scopes, mirrorEndpointClusters: mirrorEndpointClusters, matchID: matchID},
 		{iD: uuid.New().String(), method: string(gwapiv1.HTTPMethodDelete), policies: policies,
-			auth: auth, rateLimitPolicy: ratelimitPolicy, scopes: scopes, mirrorEndpointClusters: mirrorEndpointClusters},
+			auth: auth, rateLimitPolicy: ratelimitPolicy, scopes: scopes, mirrorEndpointClusters: mirrorEndpointClusters, matchID: matchID},
 		{iD: uuid.New().String(), method: string(gwapiv1.HTTPMethodPatch), policies: policies,
-			auth: auth, rateLimitPolicy: ratelimitPolicy, scopes: scopes, mirrorEndpointClusters: mirrorEndpointClusters},
+			auth: auth, rateLimitPolicy: ratelimitPolicy, scopes: scopes, mirrorEndpointClusters: mirrorEndpointClusters, matchID: matchID},
 		{iD: uuid.New().String(), method: string(gwapiv1.HTTPMethodPut), policies: policies,
-			auth: auth, rateLimitPolicy: ratelimitPolicy, scopes: scopes, mirrorEndpointClusters: mirrorEndpointClusters},
+			auth: auth, rateLimitPolicy: ratelimitPolicy, scopes: scopes, mirrorEndpointClusters: mirrorEndpointClusters, matchID: matchID},
 		{iD: uuid.New().String(), method: string(gwapiv1.HTTPMethodHead), policies: policies,
-			auth: auth, rateLimitPolicy: ratelimitPolicy, scopes: scopes, mirrorEndpointClusters: mirrorEndpointClusters},
+			auth: auth, rateLimitPolicy: ratelimitPolicy, scopes: scopes, mirrorEndpointClusters: mirrorEndpointClusters, matchID: matchID},
 		{iD: uuid.New().String(), method: string(gwapiv1.HTTPMethodOptions), policies: policies,
-			auth: auth, rateLimitPolicy: ratelimitPolicy, scopes: scopes, mirrorEndpointClusters: mirrorEndpointClusters}}
+			auth: auth, rateLimitPolicy: ratelimitPolicy, scopes: scopes, mirrorEndpointClusters: mirrorEndpointClusters, matchID: matchID}}
 }
 
 // SetInfoAPICR populates ID, ApiType, Version and XWso2BasePath of adapterInternalAPI.
@@ -319,4 +319,16 @@ func (swagger *AdapterInternalAPI) SetInfoAPICR(api dpv1alpha2.API) {
 	swagger.OrganizationID = api.Spec.Organization
 	swagger.IsSystemAPI = api.Spec.SystemAPI
 	swagger.APIProperties = api.Spec.APIProperties
+	httpRouteIDs := []string{}
+	for _, route := range api.Spec.Production {
+		for _, routeRef := range route.RouteRefs {
+			httpRouteIDs = append(httpRouteIDs, getRouteID(api.Namespace, routeRef))
+		}
+	}
+	for _, route := range api.Spec.Sandbox {
+		for _, routeRef := range route.RouteRefs {
+			httpRouteIDs = append(httpRouteIDs, getRouteID(api.Namespace, routeRef))
+		}
+	}
+	swagger.HTTPRouteIDs = httpRouteIDs
 }

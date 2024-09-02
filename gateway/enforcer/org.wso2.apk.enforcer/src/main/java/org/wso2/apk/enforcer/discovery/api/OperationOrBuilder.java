@@ -62,43 +62,47 @@ public interface OperationOrBuilder extends
   org.wso2.apk.enforcer.discovery.api.OperationPoliciesOrBuilder getPoliciesOrBuilder();
 
   /**
-   * <pre>
-   * MockedApiConfig mockedApiConfig = 6;
-   * </pre>
-   *
    * <code>repeated string scopes = 5;</code>
    * @return A list containing the scopes.
    */
   java.util.List<java.lang.String>
       getScopesList();
   /**
-   * <pre>
-   * MockedApiConfig mockedApiConfig = 6;
-   * </pre>
-   *
    * <code>repeated string scopes = 5;</code>
    * @return The count of scopes.
    */
   int getScopesCount();
   /**
-   * <pre>
-   * MockedApiConfig mockedApiConfig = 6;
-   * </pre>
-   *
    * <code>repeated string scopes = 5;</code>
    * @param index The index of the element to return.
    * @return The scopes at the given index.
    */
   java.lang.String getScopes(int index);
   /**
-   * <pre>
-   * MockedApiConfig mockedApiConfig = 6;
-   * </pre>
-   *
    * <code>repeated string scopes = 5;</code>
    * @param index The index of the value to return.
    * @return The bytes of the scopes at the given index.
    */
   com.google.protobuf.ByteString
       getScopesBytes(int index);
+
+  /**
+   * <pre>
+   * MockedApiConfig mockedApiConfig = 6;
+   * </pre>
+   *
+   * <code>string matchID = 6;</code>
+   * @return The matchID.
+   */
+  java.lang.String getMatchID();
+  /**
+   * <pre>
+   * MockedApiConfig mockedApiConfig = 6;
+   * </pre>
+   *
+   * <code>string matchID = 6;</code>
+   * @return The bytes for matchID.
+   */
+  com.google.protobuf.ByteString
+      getMatchIDBytes();
 }

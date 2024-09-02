@@ -23,6 +23,7 @@ private static final long serialVersionUID = 0L;
     method_ = "";
     tier_ = "";
     scopes_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+    matchID_ = "";
   }
 
   @java.lang.Override
@@ -101,6 +102,12 @@ private static final long serialVersionUID = 0L;
               mutable_bitField0_ |= 0x00000001;
             }
             scopes_.add(s);
+            break;
+          }
+          case 50: {
+            java.lang.String s = input.readStringRequireUtf8();
+
+            matchID_ = s;
             break;
           }
           default: {
@@ -269,10 +276,6 @@ private static final long serialVersionUID = 0L;
   public static final int SCOPES_FIELD_NUMBER = 5;
   private com.google.protobuf.LazyStringList scopes_;
   /**
-   * <pre>
-   * MockedApiConfig mockedApiConfig = 6;
-   * </pre>
-   *
    * <code>repeated string scopes = 5;</code>
    * @return A list containing the scopes.
    */
@@ -281,10 +284,6 @@ private static final long serialVersionUID = 0L;
     return scopes_;
   }
   /**
-   * <pre>
-   * MockedApiConfig mockedApiConfig = 6;
-   * </pre>
-   *
    * <code>repeated string scopes = 5;</code>
    * @return The count of scopes.
    */
@@ -292,10 +291,6 @@ private static final long serialVersionUID = 0L;
     return scopes_.size();
   }
   /**
-   * <pre>
-   * MockedApiConfig mockedApiConfig = 6;
-   * </pre>
-   *
    * <code>repeated string scopes = 5;</code>
    * @param index The index of the element to return.
    * @return The scopes at the given index.
@@ -304,10 +299,6 @@ private static final long serialVersionUID = 0L;
     return scopes_.get(index);
   }
   /**
-   * <pre>
-   * MockedApiConfig mockedApiConfig = 6;
-   * </pre>
-   *
    * <code>repeated string scopes = 5;</code>
    * @param index The index of the value to return.
    * @return The bytes of the scopes at the given index.
@@ -315,6 +306,52 @@ private static final long serialVersionUID = 0L;
   public com.google.protobuf.ByteString
       getScopesBytes(int index) {
     return scopes_.getByteString(index);
+  }
+
+  public static final int MATCHID_FIELD_NUMBER = 6;
+  private volatile java.lang.Object matchID_;
+  /**
+   * <pre>
+   * MockedApiConfig mockedApiConfig = 6;
+   * </pre>
+   *
+   * <code>string matchID = 6;</code>
+   * @return The matchID.
+   */
+  @java.lang.Override
+  public java.lang.String getMatchID() {
+    java.lang.Object ref = matchID_;
+    if (ref instanceof java.lang.String) {
+      return (java.lang.String) ref;
+    } else {
+      com.google.protobuf.ByteString bs = 
+          (com.google.protobuf.ByteString) ref;
+      java.lang.String s = bs.toStringUtf8();
+      matchID_ = s;
+      return s;
+    }
+  }
+  /**
+   * <pre>
+   * MockedApiConfig mockedApiConfig = 6;
+   * </pre>
+   *
+   * <code>string matchID = 6;</code>
+   * @return The bytes for matchID.
+   */
+  @java.lang.Override
+  public com.google.protobuf.ByteString
+      getMatchIDBytes() {
+    java.lang.Object ref = matchID_;
+    if (ref instanceof java.lang.String) {
+      com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString.copyFromUtf8(
+              (java.lang.String) ref);
+      matchID_ = b;
+      return b;
+    } else {
+      return (com.google.protobuf.ByteString) ref;
+    }
   }
 
   private byte memoizedIsInitialized = -1;
@@ -345,6 +382,9 @@ private static final long serialVersionUID = 0L;
     }
     for (int i = 0; i < scopes_.size(); i++) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 5, scopes_.getRaw(i));
+    }
+    if (!getMatchIDBytes().isEmpty()) {
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 6, matchID_);
     }
     unknownFields.writeTo(output);
   }
@@ -377,6 +417,9 @@ private static final long serialVersionUID = 0L;
       size += dataSize;
       size += 1 * getScopesList().size();
     }
+    if (!getMatchIDBytes().isEmpty()) {
+      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(6, matchID_);
+    }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
     return size;
@@ -408,6 +451,8 @@ private static final long serialVersionUID = 0L;
     }
     if (!getScopesList()
         .equals(other.getScopesList())) return false;
+    if (!getMatchID()
+        .equals(other.getMatchID())) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -435,6 +480,8 @@ private static final long serialVersionUID = 0L;
       hash = (37 * hash) + SCOPES_FIELD_NUMBER;
       hash = (53 * hash) + getScopesList().hashCode();
     }
+    hash = (37 * hash) + MATCHID_FIELD_NUMBER;
+    hash = (53 * hash) + getMatchID().hashCode();
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -590,6 +637,8 @@ private static final long serialVersionUID = 0L;
       }
       scopes_ = com.google.protobuf.LazyStringArrayList.EMPTY;
       bitField0_ = (bitField0_ & ~0x00000001);
+      matchID_ = "";
+
       return this;
     }
 
@@ -634,6 +683,7 @@ private static final long serialVersionUID = 0L;
         bitField0_ = (bitField0_ & ~0x00000001);
       }
       result.scopes_ = scopes_;
+      result.matchID_ = matchID_;
       onBuilt();
       return result;
     }
@@ -704,6 +754,10 @@ private static final long serialVersionUID = 0L;
           ensureScopesIsMutable();
           scopes_.addAll(other.scopes_);
         }
+        onChanged();
+      }
+      if (!other.getMatchID().isEmpty()) {
+        matchID_ = other.matchID_;
         onChanged();
       }
       this.mergeUnknownFields(other.unknownFields);
@@ -1134,10 +1188,6 @@ private static final long serialVersionUID = 0L;
        }
     }
     /**
-     * <pre>
-     * MockedApiConfig mockedApiConfig = 6;
-     * </pre>
-     *
      * <code>repeated string scopes = 5;</code>
      * @return A list containing the scopes.
      */
@@ -1146,10 +1196,6 @@ private static final long serialVersionUID = 0L;
       return scopes_.getUnmodifiableView();
     }
     /**
-     * <pre>
-     * MockedApiConfig mockedApiConfig = 6;
-     * </pre>
-     *
      * <code>repeated string scopes = 5;</code>
      * @return The count of scopes.
      */
@@ -1157,10 +1203,6 @@ private static final long serialVersionUID = 0L;
       return scopes_.size();
     }
     /**
-     * <pre>
-     * MockedApiConfig mockedApiConfig = 6;
-     * </pre>
-     *
      * <code>repeated string scopes = 5;</code>
      * @param index The index of the element to return.
      * @return The scopes at the given index.
@@ -1169,10 +1211,6 @@ private static final long serialVersionUID = 0L;
       return scopes_.get(index);
     }
     /**
-     * <pre>
-     * MockedApiConfig mockedApiConfig = 6;
-     * </pre>
-     *
      * <code>repeated string scopes = 5;</code>
      * @param index The index of the value to return.
      * @return The bytes of the scopes at the given index.
@@ -1182,10 +1220,6 @@ private static final long serialVersionUID = 0L;
       return scopes_.getByteString(index);
     }
     /**
-     * <pre>
-     * MockedApiConfig mockedApiConfig = 6;
-     * </pre>
-     *
      * <code>repeated string scopes = 5;</code>
      * @param index The index to set the value at.
      * @param value The scopes to set.
@@ -1202,10 +1236,6 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <pre>
-     * MockedApiConfig mockedApiConfig = 6;
-     * </pre>
-     *
      * <code>repeated string scopes = 5;</code>
      * @param value The scopes to add.
      * @return This builder for chaining.
@@ -1221,10 +1251,6 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <pre>
-     * MockedApiConfig mockedApiConfig = 6;
-     * </pre>
-     *
      * <code>repeated string scopes = 5;</code>
      * @param values The scopes to add.
      * @return This builder for chaining.
@@ -1238,10 +1264,6 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <pre>
-     * MockedApiConfig mockedApiConfig = 6;
-     * </pre>
-     *
      * <code>repeated string scopes = 5;</code>
      * @return This builder for chaining.
      */
@@ -1252,10 +1274,6 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <pre>
-     * MockedApiConfig mockedApiConfig = 6;
-     * </pre>
-     *
      * <code>repeated string scopes = 5;</code>
      * @param value The bytes of the scopes to add.
      * @return This builder for chaining.
@@ -1268,6 +1286,102 @@ private static final long serialVersionUID = 0L;
   checkByteStringIsUtf8(value);
       ensureScopesIsMutable();
       scopes_.add(value);
+      onChanged();
+      return this;
+    }
+
+    private java.lang.Object matchID_ = "";
+    /**
+     * <pre>
+     * MockedApiConfig mockedApiConfig = 6;
+     * </pre>
+     *
+     * <code>string matchID = 6;</code>
+     * @return The matchID.
+     */
+    public java.lang.String getMatchID() {
+      java.lang.Object ref = matchID_;
+      if (!(ref instanceof java.lang.String)) {
+        com.google.protobuf.ByteString bs =
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        matchID_ = s;
+        return s;
+      } else {
+        return (java.lang.String) ref;
+      }
+    }
+    /**
+     * <pre>
+     * MockedApiConfig mockedApiConfig = 6;
+     * </pre>
+     *
+     * <code>string matchID = 6;</code>
+     * @return The bytes for matchID.
+     */
+    public com.google.protobuf.ByteString
+        getMatchIDBytes() {
+      java.lang.Object ref = matchID_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        matchID_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+    /**
+     * <pre>
+     * MockedApiConfig mockedApiConfig = 6;
+     * </pre>
+     *
+     * <code>string matchID = 6;</code>
+     * @param value The matchID to set.
+     * @return This builder for chaining.
+     */
+    public Builder setMatchID(
+        java.lang.String value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  
+      matchID_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * MockedApiConfig mockedApiConfig = 6;
+     * </pre>
+     *
+     * <code>string matchID = 6;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearMatchID() {
+      
+      matchID_ = getDefaultInstance().getMatchID();
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * MockedApiConfig mockedApiConfig = 6;
+     * </pre>
+     *
+     * <code>string matchID = 6;</code>
+     * @param value The bytes for matchID to set.
+     * @return This builder for chaining.
+     */
+    public Builder setMatchIDBytes(
+        com.google.protobuf.ByteString value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+      
+      matchID_ = value;
       onChanged();
       return this;
     }
