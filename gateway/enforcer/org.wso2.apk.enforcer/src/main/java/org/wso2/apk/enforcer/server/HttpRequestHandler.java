@@ -32,6 +32,8 @@ import org.wso2.apk.enforcer.commons.logging.LoggingConstants;
 import org.wso2.apk.enforcer.commons.model.APIConfig;
 import org.wso2.apk.enforcer.commons.model.RequestContext;
 import org.wso2.apk.enforcer.commons.model.ResourceConfig;
+import org.wso2.apk.enforcer.config.ConfigHolder;
+import org.wso2.apk.enforcer.config.EnforcerConfig;
 import org.wso2.apk.enforcer.constants.APIConstants;
 import org.wso2.apk.enforcer.constants.AdapterConstants;
 import org.wso2.apk.enforcer.constants.HttpConstants;
@@ -87,6 +89,7 @@ public class HttpRequestHandler implements RequestHandler<CheckRequest, Response
         String certificate = request.getAttributes().getSource().getCertificate();
         Map<String, String> headers = request.getAttributes().getRequest().getHttp().getHeadersMap();
         String pathTemplate = request.getAttributes().getContextExtensionsMap().get(APIConstants.GW_RES_PATH_PARAM);
+        String routeName = request.getAttributes().getContextExtensionsMap().get(APIConstants.ROUTE_NAME_PARAM);
         String cluster = request.getAttributes().getContextExtensionsMap()
                 .get(AdapterConstants.CLUSTER_HEADER_KEY);
         long requestTimeInMillis = request.getAttributes().getRequest().getTime().getSeconds() * 1000 +
@@ -116,11 +119,12 @@ public class HttpRequestHandler implements RequestHandler<CheckRequest, Response
         ResourceConfig resourceConfig = null;
         ArrayList<ResourceConfig> resourceConfigs = null;
         boolean isGraphQLAPI = api.getAPIConfig().getApiType().equals(APIConstants.ApiType.GRAPHQL);
+        EnforcerConfig enforcerConfig = ConfigHolder.getInstance().getConfig();
         if (isGraphQLAPI && !HttpConstants.OPTIONS.equals(method)) {
             // need to decode the payload if request is graphql and a non option call.
             try {
                 requestPayload = GraphQLPayloadUtils.getGQLRequestPayload(requestPayload, headers);
-                resourceConfigs = GraphQLPayloadUtils.buildGQLRequestContext(api, requestPayload);
+                resourceConfigs = GraphQLPayloadUtils.buildGQLRequestContext(api, requestPayload, routeName);
             } catch (EnforcerException exception) {
                 logger.error("Error while processing the graphql api request for {}",
                         api.getAPIConfig().getName(),
@@ -139,8 +143,15 @@ public class HttpRequestHandler implements RequestHandler<CheckRequest, Response
                         exception.getMessage());
                 return requestContext;
             }
-        } else if (!isGraphQLAPI) {
+        } else if (!isGraphQLAPI && !enforcerConfig.getEnableGatewayClassController()) {
             resourceConfig = APIFactory.getInstance().getMatchedResource(api, pathTemplate, method);
+            if (resourceConfig != null) {
+                resourceConfigs = new ArrayList<>();
+                resourceConfigs.add(resourceConfig);
+            }
+        } else if (!isGraphQLAPI && enforcerConfig.getEnableGatewayClassController()) {
+            resourceConfig = APIFactory.getInstance().getMatchedResource(api,
+                    request.getAttributes().getContextExtensionsMap().get(APIConstants.ROUTE_NAME_PARAM));
             if (resourceConfig != null) {
                 resourceConfigs = new ArrayList<>();
                 resourceConfigs.add(resourceConfig);

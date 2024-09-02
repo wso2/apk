@@ -29,6 +29,7 @@ import (
 	"runtime/debug"
 	"strings"
 
+	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/operator/gateway-api/v1alpha1"
 	"sigs.k8s.io/yaml"
 )
@@ -57,7 +58,7 @@ var (
 	envoyGatewayVersion    string
 	gatewayAPIVersion      string
 	envoyProxyVersion      = strings.Split(v1alpha1.DefaultEnvoyProxyImage, ":")[1]
-	enforcerVersion        = strings.Split(v1alpha1.DefaultEnforcerImage, ":")[1]
+	enforcerVersion        = strings.Split(config.ReadConfigs().Deployment.Gateway.EnforcerImage, ":")[1]
 	shutdownManagerVersion string
 	gitCommitID            string
 )

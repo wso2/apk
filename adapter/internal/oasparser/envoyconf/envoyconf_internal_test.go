@@ -72,7 +72,7 @@ func TestCreateRoute(t *testing.T) {
 	})
 
 	resourceWithGet := model.CreateMinimalDummyResourceForTests("/xWso2BasePath/resourcePath",
-		[]*model.Operation{model.NewOperationWithPolicies("GET", policies)},
+		[]*model.Operation{model.NewOperationWithPolicies("GET", policies, "")},
 		"resource_operation_id", []model.Endpoint{endpoint}, true, false)
 	clusterName := "resource_operation_id"
 	hostRewriteSpecifier := &routev3.RouteAction_AutoHostRewrite{
@@ -142,7 +142,7 @@ func TestCreateRouteClusterSpecifier(t *testing.T) {
 		Port:    80,
 		RawURL:  "http://abc.com",
 	}
-	resourceWithGet := model.CreateMinimalDummyResourceForTests("/resourcePath", []*model.Operation{model.NewOperation("GET", nil, nil)},
+	resourceWithGet := model.CreateMinimalDummyResourceForTests("/resourcePath", []*model.Operation{model.NewOperation("GET", nil, nil, "")},
 		"resource_operation_id", []model.Endpoint{endpoint}, false, false)
 
 	route, err := createRoutes(generateRouteCreateParamsForUnitTests(title, apiType, vHost, xWso2BasePath, version, endpointBasePath,
@@ -173,7 +173,7 @@ func TestCreateRouteExtAuthzContext(t *testing.T) {
 		Port:    80,
 		RawURL:  "http://abc.com",
 	}
-	resourceWithGet := model.CreateMinimalDummyResourceForTests("/resourcePath", []*model.Operation{model.NewOperation("GET", nil, nil)},
+	resourceWithGet := model.CreateMinimalDummyResourceForTests("/resourcePath", []*model.Operation{model.NewOperation("GET", nil, nil, "")},
 		"resource_operation_id", []model.Endpoint{endpoint}, false, false)
 
 	route, err := createRoutes(generateRouteCreateParamsForUnitTests(title, apiType, vHost, xWso2BasePath, version,
@@ -570,7 +570,7 @@ func TestGetCorsPolicy(t *testing.T) {
 		"Cors Allowed Origin Header mismatch")
 	assert.Empty(t, corsPolicy3.GetAllowCredentials(), "Allow Credential property should not be assigned.")
 
-	resourceWithGet := model.CreateMinimalDummyResourceForTests("/resourcePath", []*model.Operation{model.NewOperation("GET", nil, nil)},
+	resourceWithGet := model.CreateMinimalDummyResourceForTests("/resourcePath", []*model.Operation{model.NewOperation("GET", nil, nil, "")},
 		"resource_operation_id", []model.Endpoint{endpoint}, false, false)
 
 	// Route without CORS configuration

@@ -41,7 +41,7 @@ public final class ApiProto {
       "luster.proto\032&wso2/discovery/api/securit" +
       "y_info.proto\032 wso2/discovery/api/graphql" +
       ".proto\032$wso2/discovery/api/ai_provider.p" +
-      "roto\"\252\007\n\003Api\022\n\n\002id\030\001 \001(\t\022\r\n\005title\030\002 \001(\t\022" +
+      "roto\"\300\007\n\003Api\022\n\n\002id\030\001 \001(\t\022\r\n\005title\030\002 \001(\t\022" +
       "\017\n\007version\030\003 \001(\t\022\017\n\007apiType\030\004 \001(\t\022\036\n\026dis" +
       "ableAuthentications\030\005 \001(\010\022\025\n\rdisableScop" +
       "es\030\006 \001(\010\022\017\n\007envType\030\007 \001(\t\022/\n\tresources\030\010" +
@@ -52,22 +52,23 @@ public final class ApiProto {
       "2\037.wso2.discovery.api.Certificate\022\021\n\tmut" +
       "ualSSL\030\017 \001(\t\022M\n\023applicationSecurity\030\020 \003(" +
       "\01320.wso2.discovery.api.Api.ApplicationSe" +
-      "curityEntry\022\031\n\021transportSecurity\030\021 \001(\010\022D" +
-      "\n\025graphqlComplexityInfo\030\027 \003(\0132%.wso2.dis" +
-      "covery.api.GraphqlComplexity\022\021\n\tsystemAP" +
-      "I\030\030 \001(\010\022D\n\023backendJWTTokenInfo\030\031 \001(\0132\'.w" +
-      "so2.discovery.api.BackendJWTTokenInfo\022\031\n" +
-      "\021apiDefinitionFile\030\032 \001(\014\022\023\n\013environment\030" +
-      "\033 \001(\t\022\036\n\026subscriptionValidation\030\034 \001(\010\0226\n" +
-      "\tendpoints\030\035 \001(\0132#.wso2.discovery.api.En" +
-      "dpointCluster\022:\n\020endpointSecurity\030\036 \003(\0132" +
-      " .wso2.discovery.api.SecurityInfo\0222\n\naip" +
-      "rovider\030\037 \001(\0132\036.wso2.discovery.api.AIPro" +
-      "vider\032:\n\030ApplicationSecurityEntry\022\013\n\003key" +
-      "\030\001 \001(\t\022\r\n\005value\030\002 \001(\010:\0028\001Bp\n#org.wso2.ap" +
-      "k.enforcer.discovery.apiB\010ApiProtoP\001Z=gi" +
-      "thub.com/envoyproxy/go-control-plane/wso" +
-      "2/discovery/api;apib\006proto3"
+      "curityEntry\022\031\n\021transportSecurity\030\021 \001(\010\022\024" +
+      "\n\014httpRouteIDs\030\023 \003(\t\022D\n\025graphqlComplexit" +
+      "yInfo\030\027 \003(\0132%.wso2.discovery.api.Graphql" +
+      "Complexity\022\021\n\tsystemAPI\030\030 \001(\010\022D\n\023backend" +
+      "JWTTokenInfo\030\031 \001(\0132\'.wso2.discovery.api." +
+      "BackendJWTTokenInfo\022\031\n\021apiDefinitionFile" +
+      "\030\032 \001(\014\022\023\n\013environment\030\033 \001(\t\022\036\n\026subscript" +
+      "ionValidation\030\034 \001(\010\0226\n\tendpoints\030\035 \001(\0132#" +
+      ".wso2.discovery.api.EndpointCluster\022:\n\020e" +
+      "ndpointSecurity\030\036 \003(\0132 .wso2.discovery.a" +
+      "pi.SecurityInfo\0222\n\naiprovider\030\037 \001(\0132\036.ws" +
+      "o2.discovery.api.AIProvider\032:\n\030Applicati" +
+      "onSecurityEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 " +
+      "\001(\010:\0028\001Bp\n#org.wso2.apk.enforcer.discove" +
+      "ry.apiB\010ApiProtoP\001Z=github.com/envoyprox" +
+      "y/go-control-plane/wso2/discovery/api;ap" +
+      "ib\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -85,7 +86,7 @@ public final class ApiProto {
     internal_static_wso2_discovery_api_Api_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_wso2_discovery_api_Api_descriptor,
-        new java.lang.String[] { "Id", "Title", "Version", "ApiType", "DisableAuthentications", "DisableScopes", "EnvType", "Resources", "BasePath", "Tier", "ApiLifeCycleState", "Vhost", "OrganizationId", "ClientCertificates", "MutualSSL", "ApplicationSecurity", "TransportSecurity", "GraphqlComplexityInfo", "SystemAPI", "BackendJWTTokenInfo", "ApiDefinitionFile", "Environment", "SubscriptionValidation", "Endpoints", "EndpointSecurity", "Aiprovider", });
+        new java.lang.String[] { "Id", "Title", "Version", "ApiType", "DisableAuthentications", "DisableScopes", "EnvType", "Resources", "BasePath", "Tier", "ApiLifeCycleState", "Vhost", "OrganizationId", "ClientCertificates", "MutualSSL", "ApplicationSecurity", "TransportSecurity", "HttpRouteIDs", "GraphqlComplexityInfo", "SystemAPI", "BackendJWTTokenInfo", "ApiDefinitionFile", "Environment", "SubscriptionValidation", "Endpoints", "EndpointSecurity", "Aiprovider", });
     internal_static_wso2_discovery_api_Api_ApplicationSecurityEntry_descriptor =
       internal_static_wso2_discovery_api_Api_descriptor.getNestedTypes().get(0);
     internal_static_wso2_discovery_api_Api_ApplicationSecurityEntry_fieldAccessorTable = new

@@ -336,6 +336,8 @@ type gateway struct {
 	CommonControllerRestPort string
 	EnforcerLabel            string
 	EnforcerRegion           string
+	EnforcerImage            string
+	EnforcerImagePullPolicy  string
 	EnforcerXDSMaxMsgSize    string
 	EnforcerXDSMaxRetries    string
 	JavaOpts                 string
