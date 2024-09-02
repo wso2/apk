@@ -35,7 +35,7 @@ public final class ApiProto {
       "nfo.proto\032)wso2/discovery/api/endpoint_c" +
       "luster.proto\032&wso2/discovery/api/securit" +
       "y_info.proto\032 wso2/discovery/api/graphql" +
-      ".proto\"\210\006\n\003Api\022\n\n\002id\030\001 \001(\t\022\r\n\005title\030\002 \001(" +
+      ".proto\"\236\006\n\003Api\022\n\n\002id\030\001 \001(\t\022\r\n\005title\030\002 \001(" +
       "\t\022\017\n\007version\030\003 \001(\t\022\017\n\007apiType\030\004 \001(\t\022\036\n\026d" +
       "isableAuthentications\030\005 \001(\010\022\025\n\rdisableSc" +
       "opes\030\006 \001(\010\022\017\n\007envType\030\007 \001(\t\022/\n\tresources" +
@@ -45,19 +45,20 @@ public final class ApiProto {
       "zationId\030\r \001(\t\022;\n\022clientCertificates\030\016 \003" +
       "(\0132\037.wso2.discovery.api.Certificate\022\021\n\tm" +
       "utualSSL\030\017 \001(\t\022\033\n\023applicationSecurity\030\020 " +
-      "\001(\010\022\031\n\021transportSecurity\030\021 \001(\010\022D\n\025graphq" +
-      "lComplexityInfo\030\027 \003(\0132%.wso2.discovery.a" +
-      "pi.GraphqlComplexity\022\021\n\tsystemAPI\030\030 \001(\010\022" +
-      "D\n\023backendJWTTokenInfo\030\031 \001(\0132\'.wso2.disc" +
-      "overy.api.BackendJWTTokenInfo\022\031\n\021apiDefi" +
-      "nitionFile\030\032 \001(\014\022\023\n\013environment\030\033 \001(\t\022\036\n" +
-      "\026subscriptionValidation\030\034 \001(\010\0226\n\tendpoin" +
-      "ts\030\035 \001(\0132#.wso2.discovery.api.EndpointCl" +
-      "uster\022:\n\020endpointSecurity\030\036 \003(\0132 .wso2.d" +
-      "iscovery.api.SecurityInfoBp\n#org.wso2.ap" +
-      "k.enforcer.discovery.apiB\010ApiProtoP\001Z=gi" +
-      "thub.com/envoyproxy/go-control-plane/wso" +
-      "2/discovery/api;apib\006proto3"
+      "\001(\010\022\031\n\021transportSecurity\030\021 \001(\010\022\024\n\014httpRo" +
+      "uteIDs\030\023 \003(\t\022D\n\025graphqlComplexityInfo\030\027 " +
+      "\003(\0132%.wso2.discovery.api.GraphqlComplexi" +
+      "ty\022\021\n\tsystemAPI\030\030 \001(\010\022D\n\023backendJWTToken" +
+      "Info\030\031 \001(\0132\'.wso2.discovery.api.BackendJ" +
+      "WTTokenInfo\022\031\n\021apiDefinitionFile\030\032 \001(\014\022\023" +
+      "\n\013environment\030\033 \001(\t\022\036\n\026subscriptionValid" +
+      "ation\030\034 \001(\010\0226\n\tendpoints\030\035 \001(\0132#.wso2.di" +
+      "scovery.api.EndpointCluster\022:\n\020endpointS" +
+      "ecurity\030\036 \003(\0132 .wso2.discovery.api.Secur" +
+      "ityInfoBp\n#org.wso2.apk.enforcer.discove" +
+      "ry.apiB\010ApiProtoP\001Z=github.com/envoyprox" +
+      "y/go-control-plane/wso2/discovery/api;ap" +
+      "ib\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -74,7 +75,7 @@ public final class ApiProto {
     internal_static_wso2_discovery_api_Api_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_wso2_discovery_api_Api_descriptor,
-        new java.lang.String[] { "Id", "Title", "Version", "ApiType", "DisableAuthentications", "DisableScopes", "EnvType", "Resources", "BasePath", "Tier", "ApiLifeCycleState", "Vhost", "OrganizationId", "ClientCertificates", "MutualSSL", "ApplicationSecurity", "TransportSecurity", "GraphqlComplexityInfo", "SystemAPI", "BackendJWTTokenInfo", "ApiDefinitionFile", "Environment", "SubscriptionValidation", "Endpoints", "EndpointSecurity", });
+        new java.lang.String[] { "Id", "Title", "Version", "ApiType", "DisableAuthentications", "DisableScopes", "EnvType", "Resources", "BasePath", "Tier", "ApiLifeCycleState", "Vhost", "OrganizationId", "ClientCertificates", "MutualSSL", "ApplicationSecurity", "TransportSecurity", "HttpRouteIDs", "GraphqlComplexityInfo", "SystemAPI", "BackendJWTTokenInfo", "ApiDefinitionFile", "Environment", "SubscriptionValidation", "Endpoints", "EndpointSecurity", });
     org.wso2.apk.enforcer.discovery.api.ResourceProto.getDescriptor();
     org.wso2.apk.enforcer.discovery.api.CertificateProto.getDescriptor();
     org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfoProto.getDescriptor();

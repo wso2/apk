@@ -21,6 +21,8 @@ import io.envoyproxy.envoy.service.auth.v3.CheckRequest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.wso2.apk.enforcer.common.CacheProviderUtil;
+import org.wso2.apk.enforcer.config.ConfigHolder;
+import org.wso2.apk.enforcer.config.EnforcerConfig;
 import org.wso2.apk.enforcer.discovery.api.Api;
 import org.wso2.apk.enforcer.commons.model.APIConfig;
 import org.wso2.apk.enforcer.commons.model.ResourceConfig;
@@ -65,7 +67,7 @@ public class APIFactory {
     public void addApis(List<Api> apis) {
         //TODO: (Praminda) Use apiId as the map key. Need to add the apiId to envoy context meta
         Map<String, API> newApis = new ConcurrentHashMap<>();
-
+        EnforcerConfig enforcerConfig = ConfigHolder.getInstance().getConfig();
         for (Api api : apis) {
 //            if (APIConstants.ApiType.WEB_SOCKET.equals(api.getApiType())) {
 //                WebSocketAPI webSocketAPI = new WebSocketAPI();
@@ -76,13 +78,25 @@ public class APIFactory {
             if (APIConstants.ApiType.GRAPHQL.equals(api.getApiType())) {
                 GraphQLAPI graphQLAPI = new GraphQLAPI();
                 graphQLAPI.init(api);
-                String apiKey = getApiKey(graphQLAPI);
-                newApis.put(apiKey, graphQLAPI);
+                if (enforcerConfig.getEnableGatewayClassController()) {
+                    for (String httpRouteID : api.getHttpRouteIDsList()) {
+                        newApis.put(httpRouteID, graphQLAPI);
+                    }
+                } else {
+                    String apiKey = getApiKey(graphQLAPI);
+                    newApis.put(apiKey, graphQLAPI);
+                }
             } else {
                 RestAPI enforcerApi = new RestAPI();
                 enforcerApi.init(api);
-                String apiKey = getApiKey(enforcerApi);
-                newApis.put(apiKey, enforcerApi);
+                if (enforcerConfig.getEnableGatewayClassController()) {
+                    for (String httpRouteID : api.getHttpRouteIDsList()) {
+                        newApis.put(httpRouteID, enforcerApi);
+                    }
+                } else {
+                    String apiKey = getApiKey(enforcerApi);
+                    newApis.put(apiKey, enforcerApi);
+                }
             }
         }
 
@@ -99,6 +113,12 @@ public class APIFactory {
     }
 
     public API getMatchedAPI(CheckRequest request) {
+        EnforcerConfig enforcerConfig = ConfigHolder.getInstance().getConfig();
+        if (enforcerConfig.getEnableGatewayClassController()) {
+            String routeName = request.getAttributes().getContextExtensionsMap().get(APIConstants.ROUTE_NAME_PARAM);
+            String apikey = routeName.split("rule/")[0];
+            return apis.get(apikey);
+        }
         String vHost = request.getAttributes().getContextExtensionsMap().get(APIConstants.GW_VHOST_PARAM);
         String basePath = request.getAttributes().getContextExtensionsMap().get(APIConstants.GW_BASE_PATH_PARAM);
         String version = request.getAttributes().getContextExtensionsMap().get(APIConstants.GW_VERSION_PARAM);
@@ -130,6 +150,12 @@ public class APIFactory {
 //        }
 //        return (WebSocketAPI) apis.get(apiKey);
 //    }
+
+    public ResourceConfig getMatchedResource(API api, String routeName) {
+        List<ResourceConfig> resourceConfigList = api.getAPIConfig().getResources();
+        return resourceConfigList.stream()
+                .filter(resourceConfig -> routeName.startsWith(resourceConfig.getMatchID()+"/")).findFirst().orElse(null);
+    }
 
     public ResourceConfig getMatchedResource(API api, String matchedResourcePath, String method) {
         List<ResourceConfig> resourceConfigList = api.getAPIConfig().getResources();

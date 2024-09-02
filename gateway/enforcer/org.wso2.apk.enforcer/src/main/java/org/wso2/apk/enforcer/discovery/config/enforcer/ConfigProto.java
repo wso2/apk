@@ -43,7 +43,7 @@ public final class ConfigProto {
       "cer/tracing.proto\032,wso2/discovery/config" +
       "/enforcer/metrics.proto\032)wso2/discovery/" +
       "config/enforcer/soap.proto\032+wso2/discove" +
-      "ry/config/enforcer/client.proto\"\344\006\n\006Conf" +
+      "ry/config/enforcer/client.proto\"\212\007\n\006Conf" +
       "ig\022:\n\010security\030\001 \001(\0132(.wso2.discovery.co" +
       "nfig.enforcer.Security\022;\n\010keystore\030\002 \001(\013" +
       "2).wso2.discovery.config.enforcer.CertSt" +
@@ -65,11 +65,12 @@ public final class ConfigProto {
       "p\022%\n\035mandateSubscriptionValidation\030\r \001(\010" +
       "\022>\n\nhttpClient\030\016 \001(\0132*.wso2.discovery.co" +
       "nfig.enforcer.HttpClient\022$\n\034mandateInter" +
-      "nalKeyValidation\030\017 \001(\010B\220\001\n/org.wso2.apk." +
-      "enforcer.discovery.config.enforcerB\013Conf" +
-      "igProtoP\001ZNgithub.com/envoyproxy/go-cont" +
-      "rol-plane/wso2/discovery/config/enforcer" +
-      ";enforcerb\006proto3"
+      "nalKeyValidation\030\017 \001(\010\022$\n\034enableGatewayC" +
+      "lassController\030\020 \001(\010B\220\001\n/org.wso2.apk.en" +
+      "forcer.discovery.config.enforcerB\013Config" +
+      "ProtoP\001ZNgithub.com/envoyproxy/go-contro" +
+      "l-plane/wso2/discovery/config/enforcer;e" +
+      "nforcerb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -92,7 +93,7 @@ public final class ConfigProto {
     internal_static_wso2_discovery_config_enforcer_Config_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_wso2_discovery_config_enforcer_Config_descriptor,
-        new java.lang.String[] { "Security", "Keystore", "Truststore", "AuthService", "JwtGenerator", "Cache", "Analytics", "Management", "Tracing", "Metrics", "Filters", "Soap", "MandateSubscriptionValidation", "HttpClient", "MandateInternalKeyValidation", });
+        new java.lang.String[] { "Security", "Keystore", "Truststore", "AuthService", "JwtGenerator", "Cache", "Analytics", "Management", "Tracing", "Metrics", "Filters", "Soap", "MandateSubscriptionValidation", "HttpClient", "MandateInternalKeyValidation", "EnableGatewayClassController", });
     org.wso2.apk.enforcer.discovery.config.enforcer.CertStoreProto.getDescriptor();
     org.wso2.apk.enforcer.discovery.config.enforcer.ServiceProto.getDescriptor();
     org.wso2.apk.enforcer.discovery.config.enforcer.JWTGeneratorProto.getDescriptor();

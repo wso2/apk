@@ -52,6 +52,7 @@ message Api {
 	string mutualSSL = 15;
 	bool applicationSecurity = 16;
 	bool transportSecurity = 17;
+	repeated string httpRouteIDs = 19;
 	/// string graphQLSchema = 22;
 	repeated GraphqlComplexity graphqlComplexityInfo = 23;
 	bool systemAPI = 24;

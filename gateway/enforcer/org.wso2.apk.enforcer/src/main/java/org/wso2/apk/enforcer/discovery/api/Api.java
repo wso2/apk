@@ -33,6 +33,7 @@ private static final long serialVersionUID = 0L;
     organizationId_ = "";
     clientCertificates_ = java.util.Collections.emptyList();
     mutualSSL_ = "";
+    httpRouteIDs_ = com.google.protobuf.LazyStringArrayList.EMPTY;
     graphqlComplexityInfo_ = java.util.Collections.emptyList();
     apiDefinitionFile_ = com.google.protobuf.ByteString.EMPTY;
     environment_ = "";
@@ -174,10 +175,19 @@ private static final long serialVersionUID = 0L;
             transportSecurity_ = input.readBool();
             break;
           }
-          case 186: {
+          case 154: {
+            java.lang.String s = input.readStringRequireUtf8();
             if (!((mutable_bitField0_ & 0x00000004) != 0)) {
-              graphqlComplexityInfo_ = new java.util.ArrayList<org.wso2.apk.enforcer.discovery.api.GraphqlComplexity>();
+              httpRouteIDs_ = new com.google.protobuf.LazyStringArrayList();
               mutable_bitField0_ |= 0x00000004;
+            }
+            httpRouteIDs_.add(s);
+            break;
+          }
+          case 186: {
+            if (!((mutable_bitField0_ & 0x00000008) != 0)) {
+              graphqlComplexityInfo_ = new java.util.ArrayList<org.wso2.apk.enforcer.discovery.api.GraphqlComplexity>();
+              mutable_bitField0_ |= 0x00000008;
             }
             graphqlComplexityInfo_.add(
                 input.readMessage(org.wso2.apk.enforcer.discovery.api.GraphqlComplexity.parser(), extensionRegistry));
@@ -231,9 +241,9 @@ private static final long serialVersionUID = 0L;
             break;
           }
           case 242: {
-            if (!((mutable_bitField0_ & 0x00000008) != 0)) {
+            if (!((mutable_bitField0_ & 0x00000010) != 0)) {
               endpointSecurity_ = new java.util.ArrayList<org.wso2.apk.enforcer.discovery.api.SecurityInfo>();
-              mutable_bitField0_ |= 0x00000008;
+              mutable_bitField0_ |= 0x00000010;
             }
             endpointSecurity_.add(
                 input.readMessage(org.wso2.apk.enforcer.discovery.api.SecurityInfo.parser(), extensionRegistry));
@@ -261,9 +271,12 @@ private static final long serialVersionUID = 0L;
         clientCertificates_ = java.util.Collections.unmodifiableList(clientCertificates_);
       }
       if (((mutable_bitField0_ & 0x00000004) != 0)) {
-        graphqlComplexityInfo_ = java.util.Collections.unmodifiableList(graphqlComplexityInfo_);
+        httpRouteIDs_ = httpRouteIDs_.getUnmodifiableView();
       }
       if (((mutable_bitField0_ & 0x00000008) != 0)) {
+        graphqlComplexityInfo_ = java.util.Collections.unmodifiableList(graphqlComplexityInfo_);
+      }
+      if (((mutable_bitField0_ & 0x00000010) != 0)) {
         endpointSecurity_ = java.util.Collections.unmodifiableList(endpointSecurity_);
       }
       this.unknownFields = unknownFields.build();
@@ -845,6 +858,41 @@ private static final long serialVersionUID = 0L;
     return transportSecurity_;
   }
 
+  public static final int HTTPROUTEIDS_FIELD_NUMBER = 19;
+  private com.google.protobuf.LazyStringList httpRouteIDs_;
+  /**
+   * <code>repeated string httpRouteIDs = 19;</code>
+   * @return A list containing the httpRouteIDs.
+   */
+  public com.google.protobuf.ProtocolStringList
+      getHttpRouteIDsList() {
+    return httpRouteIDs_;
+  }
+  /**
+   * <code>repeated string httpRouteIDs = 19;</code>
+   * @return The count of httpRouteIDs.
+   */
+  public int getHttpRouteIDsCount() {
+    return httpRouteIDs_.size();
+  }
+  /**
+   * <code>repeated string httpRouteIDs = 19;</code>
+   * @param index The index of the element to return.
+   * @return The httpRouteIDs at the given index.
+   */
+  public java.lang.String getHttpRouteIDs(int index) {
+    return httpRouteIDs_.get(index);
+  }
+  /**
+   * <code>repeated string httpRouteIDs = 19;</code>
+   * @param index The index of the value to return.
+   * @return The bytes of the httpRouteIDs at the given index.
+   */
+  public com.google.protobuf.ByteString
+      getHttpRouteIDsBytes(int index) {
+    return httpRouteIDs_.getByteString(index);
+  }
+
   public static final int GRAPHQLCOMPLEXITYINFO_FIELD_NUMBER = 23;
   private java.util.List<org.wso2.apk.enforcer.discovery.api.GraphqlComplexity> graphqlComplexityInfo_;
   /**
@@ -1133,6 +1181,9 @@ private static final long serialVersionUID = 0L;
     if (transportSecurity_ != false) {
       output.writeBool(17, transportSecurity_);
     }
+    for (int i = 0; i < httpRouteIDs_.size(); i++) {
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 19, httpRouteIDs_.getRaw(i));
+    }
     for (int i = 0; i < graphqlComplexityInfo_.size(); i++) {
       output.writeMessage(23, graphqlComplexityInfo_.get(i));
     }
@@ -1223,6 +1274,14 @@ private static final long serialVersionUID = 0L;
       size += com.google.protobuf.CodedOutputStream
         .computeBoolSize(17, transportSecurity_);
     }
+    {
+      int dataSize = 0;
+      for (int i = 0; i < httpRouteIDs_.size(); i++) {
+        dataSize += computeStringSizeNoTag(httpRouteIDs_.getRaw(i));
+      }
+      size += dataSize;
+      size += 2 * getHttpRouteIDsList().size();
+    }
     for (int i = 0; i < graphqlComplexityInfo_.size(); i++) {
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(23, graphqlComplexityInfo_.get(i));
@@ -1303,6 +1362,8 @@ private static final long serialVersionUID = 0L;
         != other.getApplicationSecurity()) return false;
     if (getTransportSecurity()
         != other.getTransportSecurity()) return false;
+    if (!getHttpRouteIDsList()
+        .equals(other.getHttpRouteIDsList())) return false;
     if (!getGraphqlComplexityInfoList()
         .equals(other.getGraphqlComplexityInfoList())) return false;
     if (getSystemAPI()
@@ -1378,6 +1439,10 @@ private static final long serialVersionUID = 0L;
     hash = (37 * hash) + TRANSPORTSECURITY_FIELD_NUMBER;
     hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
         getTransportSecurity());
+    if (getHttpRouteIDsCount() > 0) {
+      hash = (37 * hash) + HTTPROUTEIDS_FIELD_NUMBER;
+      hash = (53 * hash) + getHttpRouteIDsList().hashCode();
+    }
     if (getGraphqlComplexityInfoCount() > 0) {
       hash = (37 * hash) + GRAPHQLCOMPLEXITYINFO_FIELD_NUMBER;
       hash = (53 * hash) + getGraphqlComplexityInfoList().hashCode();
@@ -1587,9 +1652,11 @@ private static final long serialVersionUID = 0L;
 
       transportSecurity_ = false;
 
+      httpRouteIDs_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      bitField0_ = (bitField0_ & ~0x00000004);
       if (graphqlComplexityInfoBuilder_ == null) {
         graphqlComplexityInfo_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000004);
+        bitField0_ = (bitField0_ & ~0x00000008);
       } else {
         graphqlComplexityInfoBuilder_.clear();
       }
@@ -1615,7 +1682,7 @@ private static final long serialVersionUID = 0L;
       }
       if (endpointSecurityBuilder_ == null) {
         endpointSecurity_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000008);
+        bitField0_ = (bitField0_ & ~0x00000010);
       } else {
         endpointSecurityBuilder_.clear();
       }
@@ -1679,10 +1746,15 @@ private static final long serialVersionUID = 0L;
       result.mutualSSL_ = mutualSSL_;
       result.applicationSecurity_ = applicationSecurity_;
       result.transportSecurity_ = transportSecurity_;
+      if (((bitField0_ & 0x00000004) != 0)) {
+        httpRouteIDs_ = httpRouteIDs_.getUnmodifiableView();
+        bitField0_ = (bitField0_ & ~0x00000004);
+      }
+      result.httpRouteIDs_ = httpRouteIDs_;
       if (graphqlComplexityInfoBuilder_ == null) {
-        if (((bitField0_ & 0x00000004) != 0)) {
+        if (((bitField0_ & 0x00000008) != 0)) {
           graphqlComplexityInfo_ = java.util.Collections.unmodifiableList(graphqlComplexityInfo_);
-          bitField0_ = (bitField0_ & ~0x00000004);
+          bitField0_ = (bitField0_ & ~0x00000008);
         }
         result.graphqlComplexityInfo_ = graphqlComplexityInfo_;
       } else {
@@ -1703,9 +1775,9 @@ private static final long serialVersionUID = 0L;
         result.endpoints_ = endpointsBuilder_.build();
       }
       if (endpointSecurityBuilder_ == null) {
-        if (((bitField0_ & 0x00000008) != 0)) {
+        if (((bitField0_ & 0x00000010) != 0)) {
           endpointSecurity_ = java.util.Collections.unmodifiableList(endpointSecurity_);
-          bitField0_ = (bitField0_ & ~0x00000008);
+          bitField0_ = (bitField0_ & ~0x00000010);
         }
         result.endpointSecurity_ = endpointSecurity_;
       } else {
@@ -1867,11 +1939,21 @@ private static final long serialVersionUID = 0L;
       if (other.getTransportSecurity() != false) {
         setTransportSecurity(other.getTransportSecurity());
       }
+      if (!other.httpRouteIDs_.isEmpty()) {
+        if (httpRouteIDs_.isEmpty()) {
+          httpRouteIDs_ = other.httpRouteIDs_;
+          bitField0_ = (bitField0_ & ~0x00000004);
+        } else {
+          ensureHttpRouteIDsIsMutable();
+          httpRouteIDs_.addAll(other.httpRouteIDs_);
+        }
+        onChanged();
+      }
       if (graphqlComplexityInfoBuilder_ == null) {
         if (!other.graphqlComplexityInfo_.isEmpty()) {
           if (graphqlComplexityInfo_.isEmpty()) {
             graphqlComplexityInfo_ = other.graphqlComplexityInfo_;
-            bitField0_ = (bitField0_ & ~0x00000004);
+            bitField0_ = (bitField0_ & ~0x00000008);
           } else {
             ensureGraphqlComplexityInfoIsMutable();
             graphqlComplexityInfo_.addAll(other.graphqlComplexityInfo_);
@@ -1884,7 +1966,7 @@ private static final long serialVersionUID = 0L;
             graphqlComplexityInfoBuilder_.dispose();
             graphqlComplexityInfoBuilder_ = null;
             graphqlComplexityInfo_ = other.graphqlComplexityInfo_;
-            bitField0_ = (bitField0_ & ~0x00000004);
+            bitField0_ = (bitField0_ & ~0x00000008);
             graphqlComplexityInfoBuilder_ = 
               com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                  getGraphqlComplexityInfoFieldBuilder() : null;
@@ -1916,7 +1998,7 @@ private static final long serialVersionUID = 0L;
         if (!other.endpointSecurity_.isEmpty()) {
           if (endpointSecurity_.isEmpty()) {
             endpointSecurity_ = other.endpointSecurity_;
-            bitField0_ = (bitField0_ & ~0x00000008);
+            bitField0_ = (bitField0_ & ~0x00000010);
           } else {
             ensureEndpointSecurityIsMutable();
             endpointSecurity_.addAll(other.endpointSecurity_);
@@ -1929,7 +2011,7 @@ private static final long serialVersionUID = 0L;
             endpointSecurityBuilder_.dispose();
             endpointSecurityBuilder_ = null;
             endpointSecurity_ = other.endpointSecurity_;
-            bitField0_ = (bitField0_ & ~0x00000008);
+            bitField0_ = (bitField0_ & ~0x00000010);
             endpointSecurityBuilder_ = 
               com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                  getEndpointSecurityFieldBuilder() : null;
@@ -3480,12 +3562,122 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
+    private com.google.protobuf.LazyStringList httpRouteIDs_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+    private void ensureHttpRouteIDsIsMutable() {
+      if (!((bitField0_ & 0x00000004) != 0)) {
+        httpRouteIDs_ = new com.google.protobuf.LazyStringArrayList(httpRouteIDs_);
+        bitField0_ |= 0x00000004;
+       }
+    }
+    /**
+     * <code>repeated string httpRouteIDs = 19;</code>
+     * @return A list containing the httpRouteIDs.
+     */
+    public com.google.protobuf.ProtocolStringList
+        getHttpRouteIDsList() {
+      return httpRouteIDs_.getUnmodifiableView();
+    }
+    /**
+     * <code>repeated string httpRouteIDs = 19;</code>
+     * @return The count of httpRouteIDs.
+     */
+    public int getHttpRouteIDsCount() {
+      return httpRouteIDs_.size();
+    }
+    /**
+     * <code>repeated string httpRouteIDs = 19;</code>
+     * @param index The index of the element to return.
+     * @return The httpRouteIDs at the given index.
+     */
+    public java.lang.String getHttpRouteIDs(int index) {
+      return httpRouteIDs_.get(index);
+    }
+    /**
+     * <code>repeated string httpRouteIDs = 19;</code>
+     * @param index The index of the value to return.
+     * @return The bytes of the httpRouteIDs at the given index.
+     */
+    public com.google.protobuf.ByteString
+        getHttpRouteIDsBytes(int index) {
+      return httpRouteIDs_.getByteString(index);
+    }
+    /**
+     * <code>repeated string httpRouteIDs = 19;</code>
+     * @param index The index to set the value at.
+     * @param value The httpRouteIDs to set.
+     * @return This builder for chaining.
+     */
+    public Builder setHttpRouteIDs(
+        int index, java.lang.String value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureHttpRouteIDsIsMutable();
+      httpRouteIDs_.set(index, value);
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>repeated string httpRouteIDs = 19;</code>
+     * @param value The httpRouteIDs to add.
+     * @return This builder for chaining.
+     */
+    public Builder addHttpRouteIDs(
+        java.lang.String value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureHttpRouteIDsIsMutable();
+      httpRouteIDs_.add(value);
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>repeated string httpRouteIDs = 19;</code>
+     * @param values The httpRouteIDs to add.
+     * @return This builder for chaining.
+     */
+    public Builder addAllHttpRouteIDs(
+        java.lang.Iterable<java.lang.String> values) {
+      ensureHttpRouteIDsIsMutable();
+      com.google.protobuf.AbstractMessageLite.Builder.addAll(
+          values, httpRouteIDs_);
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>repeated string httpRouteIDs = 19;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearHttpRouteIDs() {
+      httpRouteIDs_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      bitField0_ = (bitField0_ & ~0x00000004);
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>repeated string httpRouteIDs = 19;</code>
+     * @param value The bytes of the httpRouteIDs to add.
+     * @return This builder for chaining.
+     */
+    public Builder addHttpRouteIDsBytes(
+        com.google.protobuf.ByteString value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+      ensureHttpRouteIDsIsMutable();
+      httpRouteIDs_.add(value);
+      onChanged();
+      return this;
+    }
+
     private java.util.List<org.wso2.apk.enforcer.discovery.api.GraphqlComplexity> graphqlComplexityInfo_ =
       java.util.Collections.emptyList();
     private void ensureGraphqlComplexityInfoIsMutable() {
-      if (!((bitField0_ & 0x00000004) != 0)) {
+      if (!((bitField0_ & 0x00000008) != 0)) {
         graphqlComplexityInfo_ = new java.util.ArrayList<org.wso2.apk.enforcer.discovery.api.GraphqlComplexity>(graphqlComplexityInfo_);
-        bitField0_ |= 0x00000004;
+        bitField0_ |= 0x00000008;
        }
     }
 
@@ -3679,7 +3871,7 @@ private static final long serialVersionUID = 0L;
     public Builder clearGraphqlComplexityInfo() {
       if (graphqlComplexityInfoBuilder_ == null) {
         graphqlComplexityInfo_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000004);
+        bitField0_ = (bitField0_ & ~0x00000008);
         onChanged();
       } else {
         graphqlComplexityInfoBuilder_.clear();
@@ -3784,7 +3976,7 @@ private static final long serialVersionUID = 0L;
         graphqlComplexityInfoBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
             org.wso2.apk.enforcer.discovery.api.GraphqlComplexity, org.wso2.apk.enforcer.discovery.api.GraphqlComplexity.Builder, org.wso2.apk.enforcer.discovery.api.GraphqlComplexityOrBuilder>(
                 graphqlComplexityInfo_,
-                ((bitField0_ & 0x00000004) != 0),
+                ((bitField0_ & 0x00000008) != 0),
                 getParentForChildren(),
                 isClean());
         graphqlComplexityInfo_ = null;
@@ -4205,9 +4397,9 @@ private static final long serialVersionUID = 0L;
     private java.util.List<org.wso2.apk.enforcer.discovery.api.SecurityInfo> endpointSecurity_ =
       java.util.Collections.emptyList();
     private void ensureEndpointSecurityIsMutable() {
-      if (!((bitField0_ & 0x00000008) != 0)) {
+      if (!((bitField0_ & 0x00000010) != 0)) {
         endpointSecurity_ = new java.util.ArrayList<org.wso2.apk.enforcer.discovery.api.SecurityInfo>(endpointSecurity_);
-        bitField0_ |= 0x00000008;
+        bitField0_ |= 0x00000010;
        }
     }
 
@@ -4357,7 +4549,7 @@ private static final long serialVersionUID = 0L;
     public Builder clearEndpointSecurity() {
       if (endpointSecurityBuilder_ == null) {
         endpointSecurity_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000008);
+        bitField0_ = (bitField0_ & ~0x00000010);
         onChanged();
       } else {
         endpointSecurityBuilder_.clear();
@@ -4434,7 +4626,7 @@ private static final long serialVersionUID = 0L;
         endpointSecurityBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
             org.wso2.apk.enforcer.discovery.api.SecurityInfo, org.wso2.apk.enforcer.discovery.api.SecurityInfo.Builder, org.wso2.apk.enforcer.discovery.api.SecurityInfoOrBuilder>(
                 endpointSecurity_,
-                ((bitField0_ & 0x00000008) != 0),
+                ((bitField0_ & 0x00000010) != 0),
                 getParentForChildren(),
                 isClean());
         endpointSecurity_ = null;

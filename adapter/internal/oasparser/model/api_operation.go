@@ -44,6 +44,7 @@ type Operation struct {
 	mockedAPIConfig  *api.MockedApiConfig
 	rateLimitPolicy  *RateLimitPolicy
 	mirrorEndpoints  *EndpointCluster
+	matchID          string
 }
 
 // Authentication holds authentication related configurations
@@ -107,6 +108,10 @@ func (operation *Operation) GetScopes() []string {
 // GetTier returns the operation level throttling tier
 func (operation *Operation) GetTier() string {
 	return operation.tier
+}
+
+func (operation *Operation) GetMatchID() string {
+	return operation.matchID
 }
 
 // GetMockedAPIConfig returns the operation level mocked API implementation configs
@@ -176,14 +181,14 @@ func (operation *Operation) GetCallInterceptorService(isIn bool) InterceptEndpoi
 }
 
 // NewOperation Creates and returns operation type object
-func NewOperation(method string, security []string, extensions map[string]interface{}) *Operation {
+func NewOperation(method string, security []string, extensions map[string]interface{}, matchID string) *Operation {
 	tier := ResolveThrottlingTier(extensions)
 	disableSecurity := ResolveDisableSecurity(extensions)
 	id := uuid.New().String()
-	return &Operation{id, method, security, nil, tier, disableSecurity, extensions, OperationPolicies{}, &api.MockedApiConfig{}, nil, nil}
+	return &Operation{id, method, security, nil, tier, disableSecurity, extensions, OperationPolicies{}, &api.MockedApiConfig{}, nil, nil, matchID}
 }
 
 // NewOperationWithPolicies Creates and returns operation with given method and policies
-func NewOperationWithPolicies(method string, policies OperationPolicies) *Operation {
-	return &Operation{iD: uuid.New().String(), method: method, policies: policies}
+func NewOperationWithPolicies(method string, policies OperationPolicies, matchID string) *Operation {
+	return &Operation{iD: uuid.New().String(), method: method, policies: policies, matchID: matchID}
 }

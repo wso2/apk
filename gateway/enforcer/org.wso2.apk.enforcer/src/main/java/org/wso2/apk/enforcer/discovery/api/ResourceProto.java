@@ -57,22 +57,23 @@ public final class ResourceProto {
       "\035.wso2.discovery.api.Operation\0226\n\tendpoi" +
       "nts\030\004 \001(\0132#.wso2.discovery.api.EndpointC" +
       "luster\022:\n\020endpointSecurity\030\005 \003(\0132 .wso2." +
-      "discovery.api.SecurityInfo\"\264\001\n\tOperation" +
+      "discovery.api.SecurityInfo\"\305\001\n\tOperation" +
       "\022\016\n\006method\030\001 \001(\t\022@\n\021apiAuthentication\030\002 " +
       "\001(\0132%.wso2.discovery.api.APIAuthenticati" +
       "on\022\014\n\004tier\030\003 \001(\t\0227\n\010policies\030\004 \001(\0132%.wso" +
       "2.discovery.api.OperationPolicies\022\016\n\006sco" +
-      "pes\030\005 \003(\t\"\231\001\n\021OperationPolicies\022+\n\007reque" +
-      "st\030\001 \003(\0132\032.wso2.discovery.api.Policy\022,\n\010" +
-      "response\030\002 \003(\0132\032.wso2.discovery.api.Poli" +
-      "cy\022)\n\005fault\030\003 \003(\0132\032.wso2.discovery.api.P" +
-      "olicy\"\213\001\n\006Policy\022\016\n\006action\030\001 \001(\t\022>\n\npara" +
-      "meters\030\002 \003(\0132*.wso2.discovery.api.Policy" +
-      ".ParametersEntry\0321\n\017ParametersEntry\022\013\n\003k" +
-      "ey\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001Bu\n#org.wso2." +
-      "apk.enforcer.discovery.apiB\rResourceProt" +
-      "oP\001Z=github.com/envoyproxy/go-control-pl" +
-      "ane/wso2/discovery/api;apib\006proto3"
+      "pes\030\005 \003(\t\022\017\n\007matchID\030\006 \001(\t\"\231\001\n\021Operation" +
+      "Policies\022+\n\007request\030\001 \003(\0132\032.wso2.discove" +
+      "ry.api.Policy\022,\n\010response\030\002 \003(\0132\032.wso2.d" +
+      "iscovery.api.Policy\022)\n\005fault\030\003 \003(\0132\032.wso" +
+      "2.discovery.api.Policy\"\213\001\n\006Policy\022\016\n\006act" +
+      "ion\030\001 \001(\t\022>\n\nparameters\030\002 \003(\0132*.wso2.dis" +
+      "covery.api.Policy.ParametersEntry\0321\n\017Par" +
+      "ametersEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t" +
+      ":\0028\001Bu\n#org.wso2.apk.enforcer.discovery." +
+      "apiB\rResourceProtoP\001Z=github.com/envoypr" +
+      "oxy/go-control-plane/wso2/discovery/api;" +
+      "apib\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -92,7 +93,7 @@ public final class ResourceProto {
     internal_static_wso2_discovery_api_Operation_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_wso2_discovery_api_Operation_descriptor,
-        new java.lang.String[] { "Method", "ApiAuthentication", "Tier", "Policies", "Scopes", });
+        new java.lang.String[] { "Method", "ApiAuthentication", "Tier", "Policies", "Scopes", "MatchID", });
     internal_static_wso2_discovery_api_OperationPolicies_descriptor =
       getDescriptor().getMessageTypes().get(2);
     internal_static_wso2_discovery_api_OperationPolicies_fieldAccessorTable = new

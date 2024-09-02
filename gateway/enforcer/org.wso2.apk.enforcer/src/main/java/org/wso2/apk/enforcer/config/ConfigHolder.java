@@ -175,6 +175,7 @@ public class ConfigHolder {
         populateMandateSubscriptionValidationConfig(config.getMandateSubscriptionValidation());
         populateMandateInternalKeyValidationConfig(config.getMandateInternalKeyValidation());
         populateHttpClientConfig(config.getHttpClient());
+        this.config.setEnableGatewayClassController(config.getEnableGatewayClassController());
         // resolve string variables provided as environment variables.
         resolveConfigsWithEnvs(this.config);
     }

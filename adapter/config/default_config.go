@@ -290,6 +290,8 @@ var defaultConfig = &Config{
 			CommonControllerXDSPort:  "18002",
 			CommonControllerRestPort: "18003",
 			EnforcerLabel:            "wso2-apk-default",
+			EnforcerImage:            "wso2/apk-enforcer:1.1.0",
+			EnforcerImagePullPolicy:  "Always",
 			EnforcerRegion:           "UNKNOWN",
 			EnforcerXDSMaxMsgSize:    "4194304",
 			EnforcerXDSMaxRetries:    "3",

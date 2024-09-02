@@ -38,8 +38,6 @@ const (
 	DefaultDeploymentMemoryResourceRequests = "512Mi"
 	// DefaultEnvoyProxyImage is the default image used by envoyproxy
 	DefaultEnvoyProxyImage = "envoyproxy/envoy:distroless-v1.29.3"
-	// DefaultEnforcerImage default image used by enforcer
-	DefaultEnforcerImage = "wso2/apk-enforcer:1.1.0"
 	// DefaultShutdownManagerCPUResourceRequests for shutdown manager cpu resource
 	DefaultShutdownManagerCPUResourceRequests = "10m"
 	// DefaultShutdownManagerMemoryResourceRequests for shutdown manager memory resource

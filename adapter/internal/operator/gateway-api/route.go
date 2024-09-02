@@ -1140,6 +1140,15 @@ func (t *Translator) processDestination(backendRefContext BackendRefContext,
 				uint32(*backendRef.Port))
 			endpoints = append(endpoints, ep)
 		}
+	case KindBackend:
+		backend := resources.GetBackend(backendNamespace, string(backendRef.Name))
+		service := backend.Spec.Services[0]
+
+		// Fall back to Service ClusterIP routing
+		ep := ir.NewDestEndpoint(
+			service.Host,
+			uint32(service.Port))
+		endpoints = append(endpoints, ep)
 	}
 
 	// TODO: support mixed endpointslice address type for the same backendRef

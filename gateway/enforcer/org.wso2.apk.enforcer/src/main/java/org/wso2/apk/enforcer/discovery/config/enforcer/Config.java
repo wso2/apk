@@ -229,6 +229,11 @@ private static final long serialVersionUID = 0L;
             mandateInternalKeyValidation_ = input.readBool();
             break;
           }
+          case 128: {
+
+            enableGatewayClassController_ = input.readBool();
+            break;
+          }
           default: {
             if (!parseUnknownField(
                 input, unknownFields, extensionRegistry, tag)) {
@@ -638,6 +643,17 @@ private static final long serialVersionUID = 0L;
     return mandateInternalKeyValidation_;
   }
 
+  public static final int ENABLEGATEWAYCLASSCONTROLLER_FIELD_NUMBER = 16;
+  private boolean enableGatewayClassController_;
+  /**
+   * <code>bool enableGatewayClassController = 16;</code>
+   * @return The enableGatewayClassController.
+   */
+  @java.lang.Override
+  public boolean getEnableGatewayClassController() {
+    return enableGatewayClassController_;
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -696,6 +712,9 @@ private static final long serialVersionUID = 0L;
     }
     if (mandateInternalKeyValidation_ != false) {
       output.writeBool(15, mandateInternalKeyValidation_);
+    }
+    if (enableGatewayClassController_ != false) {
+      output.writeBool(16, enableGatewayClassController_);
     }
     unknownFields.writeTo(output);
   }
@@ -765,6 +784,10 @@ private static final long serialVersionUID = 0L;
     if (mandateInternalKeyValidation_ != false) {
       size += com.google.protobuf.CodedOutputStream
         .computeBoolSize(15, mandateInternalKeyValidation_);
+    }
+    if (enableGatewayClassController_ != false) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeBoolSize(16, enableGatewayClassController_);
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -847,6 +870,8 @@ private static final long serialVersionUID = 0L;
     }
     if (getMandateInternalKeyValidation()
         != other.getMandateInternalKeyValidation()) return false;
+    if (getEnableGatewayClassController()
+        != other.getEnableGatewayClassController()) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -916,6 +941,9 @@ private static final long serialVersionUID = 0L;
     hash = (37 * hash) + MANDATEINTERNALKEYVALIDATION_FIELD_NUMBER;
     hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
         getMandateInternalKeyValidation());
+    hash = (37 * hash) + ENABLEGATEWAYCLASSCONTROLLER_FIELD_NUMBER;
+    hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+        getEnableGatewayClassController());
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -1136,6 +1164,8 @@ private static final long serialVersionUID = 0L;
       }
       mandateInternalKeyValidation_ = false;
 
+      enableGatewayClassController_ = false;
+
       return this;
     }
 
@@ -1234,6 +1264,7 @@ private static final long serialVersionUID = 0L;
         result.httpClient_ = httpClientBuilder_.build();
       }
       result.mandateInternalKeyValidation_ = mandateInternalKeyValidation_;
+      result.enableGatewayClassController_ = enableGatewayClassController_;
       onBuilt();
       return result;
     }
@@ -1349,6 +1380,9 @@ private static final long serialVersionUID = 0L;
       }
       if (other.getMandateInternalKeyValidation() != false) {
         setMandateInternalKeyValidation(other.getMandateInternalKeyValidation());
+      }
+      if (other.getEnableGatewayClassController() != false) {
+        setEnableGatewayClassController(other.getEnableGatewayClassController());
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -3106,6 +3140,37 @@ private static final long serialVersionUID = 0L;
     public Builder clearMandateInternalKeyValidation() {
       
       mandateInternalKeyValidation_ = false;
+      onChanged();
+      return this;
+    }
+
+    private boolean enableGatewayClassController_ ;
+    /**
+     * <code>bool enableGatewayClassController = 16;</code>
+     * @return The enableGatewayClassController.
+     */
+    @java.lang.Override
+    public boolean getEnableGatewayClassController() {
+      return enableGatewayClassController_;
+    }
+    /**
+     * <code>bool enableGatewayClassController = 16;</code>
+     * @param value The enableGatewayClassController to set.
+     * @return This builder for chaining.
+     */
+    public Builder setEnableGatewayClassController(boolean value) {
+      
+      enableGatewayClassController_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>bool enableGatewayClassController = 16;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearEnableGatewayClassController() {
+      
+      enableGatewayClassController_ = false;
       onChanged();
       return this;
     }

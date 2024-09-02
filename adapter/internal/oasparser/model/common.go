@@ -22,6 +22,7 @@ package model
 
 import (
 	"errors"
+	"fmt"
 	"net/url"
 	"regexp"
 	"strconv"
@@ -154,4 +155,12 @@ func getHostandBasepathandPort(apiType string, rawURL string) (*Endpoint, error)
 	}
 
 	return &Endpoint{Host: host, Basepath: basepath, Port: port, URLType: urlType, RawURL: rawURL}, nil
+}
+
+func getRouteID(namespace, name string) string {
+	return fmt.Sprintf("httproute/%s/%s/", namespace, name)
+}
+
+func getMatchID(namespace, name string, ruleID, matchID int) string {
+	return fmt.Sprintf("%srule/%d/match/%d", getRouteID(namespace, name), ruleID, matchID)
 }

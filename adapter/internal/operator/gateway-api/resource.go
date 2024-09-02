@@ -104,6 +104,16 @@ func (r *Resources) GetService(namespace, name string) *v1.Service {
 	return nil
 }
 
+func (r *Resources) GetBackend(namespace, name string) *dpv1alpha1.Backend {
+	for _, backend := range r.Backends {
+		if backend.Namespace == namespace && backend.Name == name {
+			return backend
+		}
+	}
+
+	return nil
+}
+
 func (r *Resources) GetSecret(namespace, name string) *v1.Secret {
 	for _, secret := range r.Secrets {
 		if secret.Namespace == namespace && secret.Name == name {
@@ -176,10 +186,10 @@ func RemoveDuplicates(apis []*dpv1alpha2.API) []*dpv1alpha2.API {
 	result := []*dpv1alpha2.API{}
 
 	for _, api := range apis {
-			if _, exists := uniqueAPIs[api]; !exists {
-					uniqueAPIs[api] = struct{}{}
-					result = append(result, api)
-			}
+		if _, exists := uniqueAPIs[api]; !exists {
+			uniqueAPIs[api] = struct{}{}
+			result = append(result, api)
+		}
 	}
 	return result
 }

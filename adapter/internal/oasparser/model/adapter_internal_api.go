@@ -79,6 +79,7 @@ type AdapterInternalAPI struct {
 	environment      string
 	Endpoints        *EndpointCluster
 	EndpointSecurity []*EndpointSecurity
+	HTTPRouteIDs     []string
 }
 
 // BackendJWTTokenInfo represents the object structure holding the information related to the JWT Generator
@@ -468,7 +469,7 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 		ratelimitPolicy = *outputRatelimitPolicy
 	}
 
-	for _, rule := range httpRoute.Spec.Rules {
+	for ruleID, rule := range httpRoute.Spec.Rules {
 		var endPoints []Endpoint
 		var policies = OperationPolicies{}
 		var circuitBreaker *dpv1alpha1.CircuitBreaker
@@ -736,7 +737,7 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 			return fmt.Errorf("no backendref were provided")
 		}
 
-		for _, match := range rule.Matches {
+		for matchID, match := range rule.Matches {
 			if hasURLRewritePolicy && hasRequestRedirectPolicy {
 				return fmt.Errorf("cannot have URL Rewrite and Request Redirect under the same rule")
 			}
@@ -762,7 +763,8 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 					Endpoints: mirrorEndpointsList,
 				}
 			}
-			operations := getAllowedOperations(match.Method, policies, apiAuth,
+			matchID := getMatchID(httpRoute.Namespace, httpRoute.Name, ruleID, matchID)
+			operations := getAllowedOperations(matchID, match.Method, policies, apiAuth,
 				parseRateLimitPolicyToInternal(resourceRatelimitPolicy), scopes, mirrorEndpointCluster)
 			resource := &Resource{path: resourcePath,
 				methods:                  operations,

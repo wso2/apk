@@ -24,6 +24,8 @@ import org.wso2.apk.enforcer.commons.model.EndpointSecurity;
 import org.wso2.apk.enforcer.commons.model.RequestContext;
 import org.wso2.apk.enforcer.commons.model.ResourceConfig;
 import org.wso2.apk.enforcer.commons.model.RetryConfig;
+import org.wso2.apk.enforcer.config.ConfigHolder;
+import org.wso2.apk.enforcer.config.EnforcerConfig;
 import org.wso2.apk.enforcer.constants.APIConstants;
 
 import java.util.Base64;
@@ -68,7 +70,10 @@ public class EndpointUtils {
      * @param requestContext request Context
      */
     public static void updateClusterHeaderAndCheckEnv(RequestContext requestContext) {
-        requestContext.addOrModifyHeaders(AdapterConstants.CLUSTER_HEADER, requestContext.getClusterHeader());
+        EnforcerConfig enforcerConfig = ConfigHolder.getInstance().getConfig();
+        if (!enforcerConfig.getEnableGatewayClassController()) {
+            requestContext.addOrModifyHeaders(AdapterConstants.CLUSTER_HEADER, requestContext.getClusterHeader());
+        }
         requestContext.getRemoveHeaders().remove(AdapterConstants.CLUSTER_HEADER);
         addRouterHttpHeaders(requestContext);
         addEndpointSecurity(requestContext);
