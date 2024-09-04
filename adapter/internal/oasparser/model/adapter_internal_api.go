@@ -471,8 +471,8 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 	for _, rule := range httpRoute.Spec.Rules {
 		var endPoints []Endpoint
 		var policies = OperationPolicies{}
-		var circuitBreaker *dpv1alpha1.CircuitBreaker
-		var healthCheck *dpv1alpha1.HealthCheck
+		var circuitBreaker *dpv1alpha2.CircuitBreaker
+		var healthCheck *dpv1alpha2.HealthCheck
 		resourceAuthScheme := authScheme
 		resourceAPIPolicy := apiPolicy
 		resourceRatelimitPolicy := ratelimitPolicy
@@ -499,7 +499,7 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 			resolvedBackend, ok := resourceParams.BackendMapping[backendName.String()]
 			if ok {
 				if resolvedBackend.CircuitBreaker != nil {
-					circuitBreaker = &dpv1alpha1.CircuitBreaker{
+					circuitBreaker = &dpv1alpha2.CircuitBreaker{
 						MaxConnections:     resolvedBackend.CircuitBreaker.MaxConnections,
 						MaxPendingRequests: resolvedBackend.CircuitBreaker.MaxPendingRequests,
 						MaxRequests:        resolvedBackend.CircuitBreaker.MaxRequests,
@@ -522,7 +522,7 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 					}
 				}
 				if resolvedBackend.HealthCheck != nil {
-					healthCheck = &dpv1alpha1.HealthCheck{
+					healthCheck = &dpv1alpha2.HealthCheck{
 						Interval:           resolvedBackend.HealthCheck.Interval,
 						Timeout:            resolvedBackend.HealthCheck.Timeout,
 						UnhealthyThreshold: resolvedBackend.HealthCheck.UnhealthyThreshold,
@@ -538,6 +538,16 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 						Username: string(resolvedBackend.Security.Basic.Username),
 						Type:     string(resolvedBackend.Security.Type),
 						Enabled:  true,
+					})
+				case "APIKey":
+					securityConfig = append(securityConfig, EndpointSecurity{
+						Type:    string(resolvedBackend.Security.Type),
+						Enabled: true,
+						CustomParameters: map[string]string{
+							"in":    string(resolvedBackend.Security.APIKey.In),
+							"key":   string(resolvedBackend.Security.APIKey.Name),
+							"value": string(resolvedBackend.Security.APIKey.Value),
+						},
 					})
 				}
 			} else {
@@ -995,6 +1005,16 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoGQLRouteCR(gqlRoute *dpv1al
 				Username: string(resolvedBackend.Security.Basic.Username),
 				Type:     string(resolvedBackend.Security.Type),
 				Enabled:  true,
+			})
+		case "APIKey":
+			securityConfig = append(securityConfig, EndpointSecurity{
+				Type:    string(resolvedBackend.Security.Type),
+				Enabled: true,
+				CustomParameters: map[string]string{
+					"in":    string(resolvedBackend.Security.APIKey.In),
+					"key":   string(resolvedBackend.Security.APIKey.Name),
+					"value": string(resolvedBackend.Security.APIKey.Value),
+				},
 			})
 		}
 		adapterInternalAPI.EndpointSecurity = utils.GetPtrSlice(securityConfig)

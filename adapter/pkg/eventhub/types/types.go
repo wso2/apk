@@ -78,8 +78,8 @@ type APIPolicy struct {
 	PolicyName               string `json:"policyName"`
 	QuotaType                string `json:"quotaType"`
 	PolicyType               string `json:"policyType"`
-	AddedConditionGroupIds   string `json:"addedConditionGroupIds"`
-	DeletedConditionGroupIds string `json:"deletedConditionGroupIds"`
+	AddedConditionGroupIDs   string `json:"addedConditionGroupIDs"`
+	DeletedConditionGroupIDs string `json:"deletedConditionGroupIDs"`
 	TimeStamp                int64  `json:"timeStamp,omitempty"`
 }
 

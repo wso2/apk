@@ -95,7 +95,7 @@ spec:
     namespace: gateway-integration-test-infra
     name: prod-and-sand-apis
 ---
-apiVersion: dp.wso2.com/v1alpha1
+apiVersion: dp.wso2.com/v1alpha2
 kind: Backend
 metadata:
   name: infra-backend-v1
@@ -105,7 +105,7 @@ spec:
   - host: infra-backend-v1.gateway-integration-test-infra
     port: 8080
 ---
-apiVersion: dp.wso2.com/v1alpha1
+apiVersion: dp.wso2.com/v1alpha2
 kind: Backend
 metadata:
   name: infra-backend-v2

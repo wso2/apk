@@ -17,60 +17,59 @@
 apiVersion: dp.wso2.com/v1alpha2
 kind: API
 metadata:
-  name: api-level-jwt
+  name: test-api-with-api-key-backend-security
   namespace: gateway-integration-test-infra
 spec:
-  apiName: API with Backend Base Path
+  apiName: API with API Key Backend Security
   apiType: REST
-  apiVersion: v1.0.0
-  basePath: /api-level-jwt/v1.0.0
+  apiVersion: 1.0.0
+  basePath: /apikey-security-backend/1.0.0
   isDefaultVersion: true
-  #definitionFileRef: definition-file
+  #definitionFileRef: swagger-definition-webhook
   production:
     - routeRefs:
-      - api-level-jwt-httproute
+        - test-api-with-api-key-backend-security-httproute
   organization: wso2-org
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
 kind: HTTPRoute
 metadata:
-  name: api-level-jwt-httproute
+  name: test-api-with-api-key-backend-security-httproute
   namespace: gateway-integration-test-infra
 spec:
   parentRefs:
-  - group: gateway.networking.k8s.io
-    kind: Gateway
-    name: wso2-apk-default
-    namespace: apk-integration-test
-    sectionName: httpslistener
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: wso2-apk-default
+      namespace: apk-integration-test
+      sectionName: httpslistener
   hostnames:
-  - api-level-jwt.test.gw.wso2.com
+    - backend-api-key-security.test.gw.wso2.com
   rules:
-  - matches:
-    - path:
-        type: PathPrefix
-        value: /v2/echo-full
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: infra-backend-v1
+    - matches:
+        - path:
+            type: RegularExpression
+            value: /chat/completions
+          method: GET
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplaceFullPath
+              replaceFullPath: /chat/completions
+      backendRefs:
+        - group: dp.wso2.com
+          kind: Backend
+          name: infra-backend-v1
 ---
-apiVersion: dp.wso2.com/v1alpha2
-kind: Authentication
+apiVersion: v1
+kind: Secret
 metadata:
-  name: api-level-jwt-authentication
+  name: mysecret
   namespace: gateway-integration-test-infra
-spec:
-  override:
-    disabled: false    
-    authTypes:
-      jwt:
-        disabled: false     
-  targetRef:
-    group: gateway.networking.k8s.io
-    kind: API
-    namespace: gateway-integration-test-infra
-    name: api-level-jwt
+type: Opaque
+data:
+  apiKey: c2FtcGF0aA==
 ---
 apiVersion: dp.wso2.com/v1alpha2
 kind: Backend
@@ -79,5 +78,12 @@ metadata:
   namespace: gateway-integration-test-infra
 spec:
   services:
-  - host: infra-backend-v1.gateway-integration-test-infra
-    port: 8080
+    - host: infra-backend-v1.gateway-integration-test-infra
+      port: 8080
+  security:
+    apiKey:
+      in: Header
+      name: api-key
+      valueFrom:
+          name: mysecret
+          valueKey: apiKey

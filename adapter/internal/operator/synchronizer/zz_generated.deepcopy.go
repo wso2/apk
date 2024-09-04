@@ -159,14 +159,14 @@ func (in *GQLRouteState) DeepCopyInto(out *GQLRouteState) {
 	}
 	if in.BackendMapping != nil {
 		in, out := &in.BackendMapping, &out.BackendMapping
-		*out = make(map[string]*v1alpha1.ResolvedBackend, len(*in))
+		*out = make(map[string]*v1alpha2.ResolvedBackend, len(*in))
 		for key, val := range *in {
-			var outVal *v1alpha1.ResolvedBackend
+			var outVal *v1alpha2.ResolvedBackend
 			if val == nil {
 				(*out)[key] = nil
 			} else {
 				in, out := &val, &outVal
-				*out = new(v1alpha1.ResolvedBackend)
+				*out = new(v1alpha2.ResolvedBackend)
 				(*in).DeepCopyInto(*out)
 			}
 			(*out)[key] = outVal
@@ -253,14 +253,14 @@ func (in *GatewayStateData) DeepCopyInto(out *GatewayStateData) {
 	}
 	if in.GatewayBackendMapping != nil {
 		in, out := &in.GatewayBackendMapping, &out.GatewayBackendMapping
-		*out = make(map[string]*v1alpha1.ResolvedBackend, len(*in))
+		*out = make(map[string]*v1alpha2.ResolvedBackend, len(*in))
 		for key, val := range *in {
-			var outVal *v1alpha1.ResolvedBackend
+			var outVal *v1alpha2.ResolvedBackend
 			if val == nil {
 				(*out)[key] = nil
 			} else {
 				in, out := &val, &outVal
-				*out = new(v1alpha1.ResolvedBackend)
+				*out = new(v1alpha2.ResolvedBackend)
 				(*in).DeepCopyInto(*out)
 			}
 			(*out)[key] = outVal
@@ -325,14 +325,14 @@ func (in *HTTPRouteState) DeepCopyInto(out *HTTPRouteState) {
 	}
 	if in.BackendMapping != nil {
 		in, out := &in.BackendMapping, &out.BackendMapping
-		*out = make(map[string]*v1alpha1.ResolvedBackend, len(*in))
+		*out = make(map[string]*v1alpha2.ResolvedBackend, len(*in))
 		for key, val := range *in {
-			var outVal *v1alpha1.ResolvedBackend
+			var outVal *v1alpha2.ResolvedBackend
 			if val == nil {
 				(*out)[key] = nil
 			} else {
 				in, out := &val, &outVal
-				*out = new(v1alpha1.ResolvedBackend)
+				*out = new(v1alpha2.ResolvedBackend)
 				(*in).DeepCopyInto(*out)
 			}
 			(*out)[key] = outVal

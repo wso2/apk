@@ -27,6 +27,8 @@ import org.wso2.apk.enforcer.commons.model.RetryConfig;
 import org.wso2.apk.enforcer.constants.APIConstants;
 
 import java.util.Base64;
+import java.util.Map;
+
 import org.wso2.apk.enforcer.constants.AdapterConstants;
 
 /**
@@ -55,6 +57,20 @@ public class EndpointUtils {
                                 APIConstants.AUTHORIZATION_HEADER_BASIC + ' ' +
                                         Base64.getEncoder().encodeToString((securityInfo.getUsername() +
                                                 ':' + String.valueOf(securityInfo.getPassword())).getBytes()));
+                    }
+                    // Add APIKey header if the security type is APIKey
+                    if (securityInfo != null && securityInfo.isEnabled() &&
+                            "APIKey".equalsIgnoreCase(securityInfo.getSecurityType())) {
+                        if ("Header".equalsIgnoreCase(securityInfo.getCustomParameters().get("in"))) {
+                            requestContext.getRemoveHeaders().remove(APIConstants.AUTHORIZATION_HEADER_DEFAULT
+                                    .toLowerCase());
+                            requestContext.addOrModifyHeaders(securityInfo.getCustomParameters().get("key"),
+                                    securityInfo.getCustomParameters().get("value"));
+                        } else if ("Query".equalsIgnoreCase(securityInfo.getCustomParameters().get("in"))) {
+                            Map<String, String> queryParamsToAdd = requestContext.getQueryParamsToAdd();
+                            queryParamsToAdd.put(securityInfo.getCustomParameters().get("key"),
+                                    securityInfo.getCustomParameters().get("value"));
+                        }
                     }
                 }
             }

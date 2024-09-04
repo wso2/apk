@@ -15,7 +15,7 @@
 # under the License.
 {{- if .Values.idp.enabled }}
 kind: "Backend"
-apiVersion: "dp.wso2.com/v1alpha1"
+apiVersion: "dp.wso2.com/v1alpha2"
 metadata:
   name: {{ template "apk-helm.resource.prefix" . }}-idp-ui-backend
   namespace: {{ .Release.Namespace }}

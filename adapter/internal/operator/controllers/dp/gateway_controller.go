@@ -305,8 +305,8 @@ func (gatewayReconciler *GatewayReconciler) getInterceptorServicesForGateway(ctx
 }
 
 func (gatewayReconciler *GatewayReconciler) getResolvedBackendsMapping(ctx context.Context,
-	gatewayStateData *synchronizer.GatewayStateData) map[string]*dpv1alpha1.ResolvedBackend {
-	backendMapping := make(map[string]*dpv1alpha1.ResolvedBackend)
+	gatewayStateData *synchronizer.GatewayStateData) map[string]*dpv1alpha2.ResolvedBackend {
+	backendMapping := make(map[string]*dpv1alpha2.ResolvedBackend)
 	if gatewayStateData.GatewayInterceptorServiceMapping != nil {
 		interceptorServices := maps.Values(gatewayStateData.GatewayInterceptorServiceMapping)
 		for _, interceptorService := range interceptorServices {

@@ -79,7 +79,7 @@ spec:
   signingAlgorithm: "SHA256withRSA"
   header: "X-JWT-Assertion"
 ---
-apiVersion: dp.wso2.com/v1alpha1
+apiVersion: dp.wso2.com/v1alpha2
 kind: Backend
 metadata:
   name: infra-backend-v1
