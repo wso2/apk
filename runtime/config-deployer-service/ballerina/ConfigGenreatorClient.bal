@@ -43,7 +43,17 @@ public class ConfigGeneratorClient {
             }
             if validateAndRetrieveDefinitionResult is runtimeapi:APIDefinitionValidationResponse {
                 if validateAndRetrieveDefinitionResult.isValid() {
-                    runtimeModels:API apiFromDefinition = check runtimeUtil:RuntimeAPICommonUtil_getAPIFromDefinition(validateAndRetrieveDefinitionResult.getContent(), apiType);
+                    runtimeModels:API apiFromDefinition;
+                    if apiType == API_TYPE_GRPC {
+                        string fileName = "";
+                        if definitionBody.definition is record {|byte[] fileContent; string fileName; anydata...;|} {
+                            record {|byte[] fileContent; string fileName; anydata...;|} definition = <record {|byte[] fileContent; string fileName; anydata...;|}>definitionBody.definition;
+                            fileName = <string>definition.fileName;
+                        }
+                        apiFromDefinition = check runtimeUtil:RuntimeAPICommonUtil_getGRPCAPIFromProtoDefinition(check validateAndRetrieveDefinitionResult.getProtoContent(), fileName);
+                    } else {
+                        apiFromDefinition = check runtimeUtil:RuntimeAPICommonUtil_getAPIFromDefinition(validateAndRetrieveDefinitionResult.getContent(), apiType);
+                    }
                     apiFromDefinition.setType(apiType);
                     APIClient apiclient = new ();
                     APKConf generatedAPKConf = check apiclient.fromAPIModelToAPKConf(apiFromDefinition);
@@ -121,7 +131,7 @@ public class ConfigGeneratorClient {
             if response.statusCode == 200 {
                 return response.getTextPayload();
             } else {
-                log:printError("Error occured while retrieving the definition from the url: " + url, statusCode = response.statusCode);
+                log:printError("Error occurred while retrieving the definition from the url: " + url, statusCode = response.statusCode);
             }
         }
         return e909044();

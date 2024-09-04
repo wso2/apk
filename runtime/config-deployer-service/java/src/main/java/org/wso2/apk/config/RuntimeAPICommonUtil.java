@@ -13,7 +13,6 @@ import org.wso2.apk.config.model.URITemplate;
 
 import graphql.schema.idl.SchemaParser;
 import graphql.schema.idl.TypeDefinitionRegistry;
-
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -66,10 +65,14 @@ public class RuntimeAPICommonUtil {
                         "Invalid definition file type provided.");
             }
         } else if (APIConstants.ParserType.GRPC.name().equals(type.toUpperCase())) {
-            if (fileName.endsWith(".proto")) {
-                validationResponse = ProtoParserUtil.validateGRPCAPIDefinition(
-                        new String(inputByteArray, StandardCharsets.UTF_8),
-                        returnContent);
+            if (inputByteArray != null && inputByteArray.length > 0) {
+                if (fileName.endsWith(".zip") || fileName.endsWith(".desc")) {
+                    validationResponse = ProtoParserUtil.validateGRPCAPIDefinition(
+                            inputByteArray, fileName, returnContent);
+                } else {
+                    ProtoParserUtil.addErrorToValidationResponse(validationResponse,
+                            "Invalid definition file type provided.");
+                }
             } else {
                 ProtoParserUtil.addErrorToValidationResponse(validationResponse,
                         "Invalid definition file type provided.");
@@ -78,35 +81,13 @@ public class RuntimeAPICommonUtil {
         return validationResponse;
     }
 
-    public static API getGRPCAPIFromProtoDefinition(String definition) {
-        System.out.println("GETTING API FROM PROTO");
+    public static API getGRPCAPIFromProtoDefinition(byte[] definition, String fileName) {
         ProtoParser protoParser = new ProtoParser();
-        protoParser.setContent(definition);
-        List<URITemplate> uriTemplates = new ArrayList<>();
-        API api = new API();
-        api.setBasePath("/" + protoParser.protoFile.basePath);
-        api.setVersion(protoParser.protoFile.version);
-        StringBuilder apiName = new StringBuilder();
-        List<String> sortedServices = new ArrayList<>();
-
-        for (ProtoParser.Service service : protoParser.getServices()) {
-            sortedServices.add(service.name);
-            for (String method : service.methods) {
-                URITemplate uriTemplate = new URITemplate();
-                uriTemplate.setUriTemplate(protoParser.protoFile.packageName + "." + service.name);
-                uriTemplate.setVerb(method);
-                uriTemplates.add(uriTemplate);
-            }
+        try {
+            return protoParser.getAPIFromProtoFile(definition, fileName);
+        } catch (APIManagementException e) {
+            throw new RuntimeException(e);
         }
-        sortedServices.sort(String::compareTo);
-        for (String service : sortedServices) {
-            apiName.append(service).append("-");
-        }
-        apiName.deleteCharAt(apiName.length() - 1);
-        api.setName(apiName.toString());
-        api.setUriTemplates(uriTemplates.toArray(new URITemplate[uriTemplates.size()]));
-
-        return api;
     }
 
     public static Set<URITemplate> generateUriTemplatesFromAPIDefinition(String apiType, String content)
@@ -134,12 +115,10 @@ public class RuntimeAPICommonUtil {
         return parser.generateAPIDefinition(api, definition);
     }
 
-    public static API getAPIFromDefinition(String definition, String apiType) throws APIManagementException {
-
-        if (apiType.toUpperCase().equals(APIConstants.GRAPHQL_API)) {
+    public static API getAPIFromDefinition(String definition, String apiType)
+            throws APIManagementException {
+        if (apiType.equalsIgnoreCase(APIConstants.GRAPHQL_API)) {
             return getGQLAPIFromDefinition(definition);
-        } else if (apiType.toUpperCase().equals(APIConstants.GRPC_API)) {
-            return getGRPCAPIFromProtoDefinition(definition);
         } else {
             APIDefinition parser = DefinitionParserFactory.getParser(apiType);
             if (parser != null) {

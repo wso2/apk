@@ -12,8 +12,7 @@ import java.util.List;
 public class DefinitionParserFactory {
     private static final List<APIDefinition> parsers = new ArrayList<>();
 
-    private DefinitionParserFactory() {
-    }
+    private DefinitionParserFactory() { }
 
     static {
         parsers.add(new AsyncApiParser());

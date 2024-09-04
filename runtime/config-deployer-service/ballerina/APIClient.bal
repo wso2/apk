@@ -290,7 +290,7 @@ public class APIClient {
 
     isolated function returnFullGRPCBasePath(string basePath, string 'version) returns string {
         string fullBasePath = basePath;
-        if (!string:endsWith(basePath, 'version)) {
+        if !string:endsWith(basePath, 'version) {
             fullBasePath = string:'join(".", basePath, 'version);
         }
         return fullBasePath;

@@ -162,6 +162,17 @@ public isolated function RuntimeAPICommonUtil_getAPIFromDefinition(string arg0, 
     }
 }
 
+# The function that maps to the `getGRPCAPIFromProtoDefinition` method of `org.wso2.apk.config.RuntimeAPICommonUtil`.
+#
+# + arg0 - The `byte[]` value required to map with the Java method parameter.
+# + arg1 - The `string` value required to map with the Java method parameter.
+# + return - The `orgwso2apkconfigmodel:API` value returning from the Java mapping.
+public isolated function RuntimeAPICommonUtil_getGRPCAPIFromProtoDefinition(byte[] arg0, string arg1) returns orgwso2apkconfigmodel:API|error {
+    handle externalObj = org_wso2_apk_config_RuntimeAPICommonUtil_getGRPCAPIFromProtoDefinition(check jarrays:toHandle(arg0, "byte"), java:fromString(arg1));
+    orgwso2apkconfigmodel:API newObj = new (externalObj);
+    return newObj;
+}
+
 # The function that maps to the `validateOpenAPIDefinition` method of `org.wso2.apk.config.RuntimeAPICommonUtil`.
 #
 # + arg0 - The `string` value required to map with the Java method parameter.
@@ -211,10 +222,16 @@ isolated function org_wso2_apk_config_RuntimeAPICommonUtil_getAPIFromDefinition(
     paramTypes: ["java.lang.String", "java.lang.String"]
 } external;
 
-function org_wso2_apk_config_RuntimeAPICommonUtil_getClass(handle receiver) returns handle = @java:Method {
+isolated function org_wso2_apk_config_RuntimeAPICommonUtil_getClass(handle receiver) returns handle = @java:Method {
     name: "getClass",
     'class: "org.wso2.apk.config.RuntimeAPICommonUtil",
     paramTypes: []
+} external;
+
+isolated function org_wso2_apk_config_RuntimeAPICommonUtil_getGRPCAPIFromProtoDefinition(handle arg0, handle arg1) returns handle = @java:Method {
+    name: "getGRPCAPIFromProtoDefinition",
+    'class: "org.wso2.apk.config.RuntimeAPICommonUtil",
+    paramTypes: ["[B", "java.lang.String"]
 } external;
 
 function org_wso2_apk_config_RuntimeAPICommonUtil_hashCode(handle receiver) returns int = @java:Method {

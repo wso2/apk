@@ -138,7 +138,6 @@ public class APIFactory {
 
     public ResourceConfig getMatchedResource(API api, String matchedResourcePath, String method) {
         List<ResourceConfig> resourceConfigList = api.getAPIConfig().getResources();
-        System.out.println(APIConstants.ApiType.GRPC);
         if (APIConstants.ApiType.GRPC.equals(api.getAPIConfig().getApiType())) {
             return resourceConfigList.stream()
                     .filter(resourceConfig -> resourceConfig.getPath().equals(matchedResourcePath))
