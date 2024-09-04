@@ -60,11 +60,11 @@ func SendAddApplicationEvent(application cpv1alpha2.Application) {
 // SendAddSubscriptionEvent sends an subscription creation event to the enforcer
 func SendAddSubscriptionEvent(sub cpv1alpha2.Subscription) {
 	SendSubscriptionEvent(constants.SubscriptionCreated, sub.ObjectMeta.Name, sub.Spec.SubscriptionStatus,
-		sub.Spec.Organization, sub.Spec.API.Name, sub.Spec.API.Version)
+		sub.Spec.Organization, sub.Spec.API.Name, sub.Spec.API.Version, sub.Spec.RatelimitRef.Name)
 }
 
 // SendSubscriptionEvent sends an subscription creation event to the enforcer
-func SendSubscriptionEvent(eventType, subscriptionID, subscriptionStatus, organization, apiName, apiVersion string) {
+func SendSubscriptionEvent(eventType, subscriptionID, subscriptionStatus, organization, apiName, apiVersion string, ratelimit string) {
 	currentTime := time.Now()
 	milliseconds := currentTime.UnixNano() / int64(time.Millisecond)
 	event := subscription.Event{
@@ -79,15 +79,16 @@ func SendSubscriptionEvent(eventType, subscriptionID, subscriptionStatus, organi
 				Name:    apiName,
 				Version: apiVersion,
 			},
+			RatelimitTier: ratelimit,
 		},
 	}
 	sendEvent(&event)
 }
 
 // SendDeleteSubscriptionEvent sends an subscription deletion event to the enforcer
-func SendDeleteSubscriptionEvent(subscriptionUUID string, subscriptionSpec cpv1alpha2.SubscriptionSpec) {
-	SendSubscriptionEvent(constants.SubscriptionDeleted, subscriptionUUID, subscriptionSpec.SubscriptionStatus,
-		subscriptionSpec.Organization, subscriptionSpec.API.Name, subscriptionSpec.API.Version)
+func SendDeleteSubscriptionEvent(subscriptionUUID string, sub cpv1alpha2.Subscription) {
+	SendSubscriptionEvent(constants.SubscriptionDeleted, subscriptionUUID, sub.Spec.SubscriptionStatus,
+		sub.Spec.Organization, sub.Spec.API.Name, sub.Spec.API.Version, sub.Spec.RatelimitRef.Name)
 }
 
 // SendCreateApplicationMappingEvent sends an application mapping event to the enforcer

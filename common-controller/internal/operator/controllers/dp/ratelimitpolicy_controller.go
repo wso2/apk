@@ -149,6 +149,14 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) Reconcile(ctx context.Cont
 			xds.DeleteCustomRateLimitPolicies(resolveCustomRateLimitPolicy)
 			xds.UpdateRateLimiterPolicies(conf.CommonController.Server.Label)
 		}
+		resolveSubscriptionRatelimitPolicy, foundSubscription := ratelimitReconsiler.ods.GetResolveSubscriptionRatelimitPolicy(req.NamespacedName)
+		if foundSubscription && k8error.IsNotFound(err) {
+			ratelimitReconsiler.ods.DeleteSubscriptionRatelimitPolicy(req.NamespacedName)
+			logger.Debug("Deleting SubscriptionRateLimitPolicy : ", resolveSubscriptionRatelimitPolicy)
+			xds.DeleteSubscriptionRateLimitPolicies(resolveSubscriptionRatelimitPolicy)
+			xds.UpdateRateLimiterPolicies(conf.CommonController.Server.Label)
+		}
+
 		if k8error.IsNotFound(err) {
 			return ctrl.Result{}, nil
 		}
@@ -162,8 +170,12 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) Reconcile(ctx context.Cont
 		ratelimitReconsiler.ods.AddorUpdateCustomRatelimitToStore(ratelimitKey, customRateLimitPolicy)
 		xds.UpdateRateLimitXDSCacheForCustomPolicies(customRateLimitPolicy)
 		xds.UpdateRateLimiterPolicies(conf.CommonController.Server.Label)
+	} else if ratelimitPolicy.Spec.Override != nil && ratelimitPolicy.Spec.Override.Subscription != nil {
+		var resolveSubscriptionRatelimitPolicy = ratelimitReconsiler.marshelSubscriptionRateLimit(ratelimitPolicy)
+		ratelimitReconsiler.ods.AddorUpdateResolveSubscriptionRatelimitToStore(ratelimitKey, resolveSubscriptionRatelimitPolicy)
+		xds.UpdateRateLimitXDSCacheForSubscriptionPolicies(resolveSubscriptionRatelimitPolicy)
+		xds.UpdateRateLimiterPolicies(conf.CommonController.Server.Label)
 	} else {
-
 		if resolveRatelimitPolicyList, err := ratelimitReconsiler.marshelRateLimit(ctx, ratelimitKey, ratelimitPolicy); err != nil {
 			return ctrl.Result{}, err
 		} else if len(resolveRatelimitPolicyList) > 0 {
@@ -240,6 +252,22 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) getRatelimitForHTTPRoute(c
 	}
 
 	return requests
+}
+
+func (ratelimitReconsiler *RateLimitPolicyReconciler) marshelSubscriptionRateLimit(
+	ratelimitPolicy dpv1alpha1.RateLimitPolicy) dpv1alpha1.ResolveSubscriptionRatelimitPolicy {
+
+	var resolveSubscriptionRatelimit dpv1alpha1.ResolveSubscriptionRatelimitPolicy
+	resolveSubscriptionRatelimit.Name = ratelimitPolicy.Name
+	resolveSubscriptionRatelimit.RequestCount.RequestsPerUnit = ratelimitPolicy.Spec.Override.Subscription.RequestCount.RequestsPerUnit
+	resolveSubscriptionRatelimit.RequestCount.Unit = ratelimitPolicy.Spec.Override.Subscription.RequestCount.Unit
+	if ratelimitPolicy.Spec.Override.Subscription.BurstControl != nil {
+		resolveSubscriptionRatelimit.BurstControl.RequestsPerUnit = ratelimitPolicy.Spec.Override.Subscription.BurstControl.RequestsPerUnit
+		resolveSubscriptionRatelimit.BurstControl.Unit = ratelimitPolicy.Spec.Override.Subscription.BurstControl.Unit
+	}
+	resolveSubscriptionRatelimit.StopOnQuotaReach = ratelimitPolicy.Spec.Override.Subscription.StopOnQuotaReach
+	resolveSubscriptionRatelimit.Organization = ratelimitPolicy.Spec.Override.Subscription.Organization
+	return resolveSubscriptionRatelimit
 }
 
 func (ratelimitReconsiler *RateLimitPolicyReconciler) marshelRateLimit(ctx context.Context, ratelimitKey types.NamespacedName,

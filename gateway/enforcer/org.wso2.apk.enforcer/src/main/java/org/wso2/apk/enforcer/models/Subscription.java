@@ -29,6 +29,7 @@ public class Subscription implements CacheableEntity<String> {
     private String subscriptionStatus = null;
     private String organization = null;
     private SubscribedAPI subscribedApi = null;
+    private String ratelimitTier = null;
     private long timeStamp;
 
     public String getSubscriptionId() {
@@ -85,6 +86,14 @@ public class Subscription implements CacheableEntity<String> {
     public String getCacheKey() {
 
         return subscriptionId;
+    }
+
+    public String getRatelimitTier() {
+        return ratelimitTier;
+    }
+
+    public void setRatelimitTier(String ratelimitTier) {
+        this.ratelimitTier = ratelimitTier;
     }
 
     @Override

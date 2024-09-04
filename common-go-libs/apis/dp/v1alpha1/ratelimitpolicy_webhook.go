@@ -81,7 +81,7 @@ func (r *RateLimitPolicy) ValidatePolicies() error {
 			"Name is required"))
 	}
 	if !(r.Spec.TargetRef.Kind == constants.KindAPI || r.Spec.TargetRef.Kind == constants.KindResource ||
-		r.Spec.TargetRef.Kind == constants.KindGateway) {
+		r.Spec.TargetRef.Kind == constants.KindGateway || r.Spec.TargetRef.Kind == "Subscription") {
 		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("targetRef").Child("kind"),
 			r.Spec.TargetRef.Kind, "Invalid Kind is provided"))
 	}

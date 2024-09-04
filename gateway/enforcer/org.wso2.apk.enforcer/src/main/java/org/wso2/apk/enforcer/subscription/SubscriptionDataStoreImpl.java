@@ -62,7 +62,6 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
     private Map<String, Map<String, ApplicationMapping>> applicationMappingMap = new ConcurrentHashMap<>();
     private Map<String, Application> applicationMap = new ConcurrentHashMap<>();
     private Map<String, Subscription> subscriptionMap = new ConcurrentHashMap<>();
-
     private Map<String, JWTValidator> jwtValidatorMap = new ConcurrentHashMap<>();
 
     SubscriptionDataStoreImpl() {
@@ -291,6 +290,8 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
         resolvedSubscription.setSubscriptionStatus(subscription.getSubStatus());
         resolvedSubscription.setOrganization(subscription.getOrganization());
         resolvedSubscription.setSubscribedApi(new SubscribedAPI(subscription.getSubscribedApi()));
+        resolvedSubscription.setRatelimitTier(subscription.getRatelimitTier());
+        System.out.println(subscription.getRatelimitTier());
         if (subscriptionMap.containsKey(resolvedSubscription.getSubscriptionId())) {
             subscriptionMap.replace(resolvedSubscription.getSubscriptionId(), resolvedSubscription);
         } else {

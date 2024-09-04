@@ -79,6 +79,37 @@ spec:
                         description: Value is the value of the custom policy
                         type: string
                     type: object
+                  subscription:
+                    description: Subscription level ratelimit policy
+                    properties:
+                      burstControl:
+                        description: BurstControl defines the rule for token count
+                          quota.
+                        properties:
+                          requestsPerUnit:
+                            format: int32
+                            type: integer
+                          unit:
+                            type: string
+                        type: object
+                      organization:
+                        type: string
+                      requestCount:
+                        description: RequestCount defines the rule for request count
+                          quota.
+                        properties:
+                          requestsPerUnit:
+                            format: int32
+                            type: integer
+                          unit:
+                            type: string
+                        type: object
+                      stopOnQuotaReach:
+                        type: boolean
+                    required:
+                    - organization
+                    - stopOnQuotaReach
+                    type: object
                 type: object
               override:
                 description: RateLimitAPIPolicy defines the desired state of Policy
@@ -124,6 +155,37 @@ spec:
                       value:
                         description: Value is the value of the custom policy
                         type: string
+                    type: object
+                  subscription:
+                    description: Subscription level ratelimit policy
+                    properties:
+                      burstControl:
+                        description: BurstControl defines the rule for token count
+                          quota.
+                        properties:
+                          requestsPerUnit:
+                            format: int32
+                            type: integer
+                          unit:
+                            type: string
+                        type: object
+                      organization:
+                        type: string
+                      requestCount:
+                        description: RequestCount defines the rule for request count
+                          quota.
+                        properties:
+                          requestsPerUnit:
+                            format: int32
+                            type: integer
+                          unit:
+                            type: string
+                        type: object
+                      stopOnQuotaReach:
+                        type: boolean
+                    required:
+                    - organization
+                    - stopOnQuotaReach
                     type: object
                 type: object
               targetRef:

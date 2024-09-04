@@ -190,6 +190,16 @@ func DeleteResourceLevelRateLimitPolicies(resolveRatelimitPolicyList []dpv1alpha
 	}
 }
 
+// DeleteSubscriptionRateLimitPolicies delete the ratelimit xds cache
+func DeleteSubscriptionRateLimitPolicies(resolveSubscriptionRatelimit dpv1alpha1.ResolveSubscriptionRatelimitPolicy) {
+	rlsPolicyCache.RemoveSubscriptionRateLimitPolicy(resolveSubscriptionRatelimit)
+}
+
+// UpdateRateLimitXDSCacheForSubscriptionPolicies updates the xDS cache of the RateLimiter for subscription policies.
+func UpdateRateLimitXDSCacheForSubscriptionPolicies(resolveSubscriptionRatelimit dpv1alpha1.ResolveSubscriptionRatelimitPolicy) {
+	rlsPolicyCache.AddSubscriptionLevelRateLimitPolicy(resolveSubscriptionRatelimit)
+}
+
 // DeleteCustomRateLimitPolicies delete the ratelimit xds cache
 func DeleteCustomRateLimitPolicies(customRateLimitPolicy dpv1alpha1.CustomRateLimitPolicyDef) {
 	rlsPolicyCache.DeleteCustomRateLimitPolicies(customRateLimitPolicy)

@@ -22,6 +22,7 @@ type Subscription struct {
 	SubStatus     string         `json:"subStatus,omitempty"`
 	UUID          string         `json:"uuid,omitempty"`
 	Organization  string         `json:"organization,omitempty"`
+	RatelimitTier string         `json:"ratelimitTier,omitempty"`
 	SubscribedAPI *SubscribedAPI `json:"subscribedApi,omitempty"`
 }
 

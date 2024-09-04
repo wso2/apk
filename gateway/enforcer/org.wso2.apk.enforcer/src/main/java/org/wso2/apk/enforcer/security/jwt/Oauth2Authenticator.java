@@ -41,6 +41,9 @@ import org.wso2.apk.enforcer.config.ConfigHolder;
 import org.wso2.apk.enforcer.constants.APIConstants;
 import org.wso2.apk.enforcer.constants.APISecurityConstants;
 import org.wso2.apk.enforcer.dto.APIKeyValidationInfoDTO;
+import org.wso2.apk.enforcer.models.ApplicationKeyMapping;
+import org.wso2.apk.enforcer.models.ApplicationMapping;
+import org.wso2.apk.enforcer.models.Subscription;
 import org.wso2.apk.enforcer.security.Authenticator;
 import org.wso2.apk.enforcer.security.KeyValidator;
 import org.wso2.apk.enforcer.security.TokenValidationContext;
@@ -244,8 +247,29 @@ public class Oauth2Authenticator implements Authenticator {
                                 endUserToken);
                     }
 
-                    return FilterUtils.generateAuthenticationContext(requestContext, validationInfo.getIdentifier(),
+                    AuthenticationContext authenticationContext = FilterUtils.generateAuthenticationContext(requestContext, validationInfo.getIdentifier(),
                             validationInfo, apiKeyValidationInfoDTO, endUserToken, jwtToken, true);
+
+                    // For subscription rate limiting, it is required to populate dynamic metadata
+                    SubscriptionDataStore datastore = SubscriptionDataHolder.getInstance().
+                            getSubscriptionDataStore(organization);
+                    ApplicationKeyMapping keyMapping = datastore.getMatchingApplicationKeyMapping(validationInfo.getConsumerKey(), requestContext.getMatchedAPI().getEnvType(), APIConstants.API_SECURITY_OAUTH2,
+                            requestContext.getMatchedAPI().getEnvironment());
+
+                    if(keyMapping != null) {
+                        String applicationId = keyMapping.getApplicationUUID();
+                        Set<ApplicationMapping> appMappings = datastore.getMatchingApplicationMappings(applicationId);
+                        for (ApplicationMapping appMapping : appMappings) {
+                            String subscriptionUUID = appMapping.getSubscriptionUUID();
+                            Subscription subscription = datastore.getMatchingSubscription(subscriptionUUID);
+                            String subscriptionId = subscription.getSubscribedApi().getName() + ":" +
+                                    applicationId;
+                            requestContext.addMetadataToMap("ratelimit:subscription", subscriptionId);
+                            requestContext.addMetadataToMap("ratelimit:usage-policy", subscription.getRatelimitTier());
+                            requestContext.addMetadataToMap("ratelimit:organization", subscription.getOrganization());
+                        }
+                    }
+                    return authenticationContext;
                 } else {
                     throw new APISecurityException(APIConstants.StatusCodes.UNAUTHENTICATED.getCode(),
                             validationInfo.getValidationCode(),

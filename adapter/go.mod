@@ -15,7 +15,7 @@ require (
 	github.com/wso2/apk/common-go-libs v0.0.0-20231208100153-24bee7b4bd81
 	golang.org/x/exp v0.0.0-20231206192017-f3f8817b8deb
 	google.golang.org/grpc v1.62.0
-	google.golang.org/protobuf v1.33.0
+	google.golang.org/protobuf v1.34.1
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.29.2
 	k8s.io/apimachinery v0.29.2
