@@ -262,11 +262,13 @@ public class Oauth2Authenticator implements Authenticator {
                         for (ApplicationMapping appMapping : appMappings) {
                             String subscriptionUUID = appMapping.getSubscriptionUUID();
                             Subscription subscription = datastore.getMatchingSubscription(subscriptionUUID);
-                            String subscriptionId = subscription.getSubscribedApi().getName() + ":" +
-                                    applicationId;
-                            requestContext.addMetadataToMap("ratelimit:subscription", subscriptionId);
-                            requestContext.addMetadataToMap("ratelimit:usage-policy", subscription.getRatelimitTier());
-                            requestContext.addMetadataToMap("ratelimit:organization", subscription.getOrganization());
+                            if (!"Unlimited".equals(subscription.getRatelimitTier())) {
+                                String subscriptionId = subscription.getSubscribedApi().getName() + ":" +
+                                        applicationId;
+                                requestContext.addMetadataToMap("ratelimit:subscription", subscriptionId);
+                                requestContext.addMetadataToMap("ratelimit:usage-policy", subscription.getRatelimitTier());
+                                requestContext.addMetadataToMap("ratelimit:organization", subscription.getOrganization());
+                            }
                         }
                     }
                     return authenticationContext;
