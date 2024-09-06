@@ -66,9 +66,8 @@ public class RuntimeAPICommonUtil {
             }
         } else if (APIConstants.ParserType.GRPC.name().equals(type.toUpperCase())) {
             if (inputByteArray != null && inputByteArray.length > 0) {
-                if (fileName.endsWith(".zip") || fileName.endsWith(".desc")) {
-                    validationResponse = ProtoParserUtil.validateGRPCAPIDefinition(
-                            inputByteArray, fileName, returnContent);
+                if (fileName.endsWith(".zip") || fileName.endsWith(".proto")) {
+                    validationResponse = ProtoParserUtil.validateGRPCAPIDefinition(inputByteArray);
                 } else {
                     ProtoParserUtil.addErrorToValidationResponse(validationResponse,
                             "Invalid definition file type provided.");

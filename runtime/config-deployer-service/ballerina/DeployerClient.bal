@@ -338,10 +338,10 @@ public class DeployerClient {
                         model:StatusCause[] 'causes = details.'causes;
                         foreach model:StatusCause 'cause in 'causes {
                             if 'cause.'field == "spec.basePath" {
-                                log:printError("Error occured while updating K8sAPI due to base path ", e909015(k8sAPI.spec.basePath));
+                                log:printError("Error occurred while updating K8sAPI due to base path ", e909015(k8sAPI.spec.basePath));
                                 return e909015(k8sAPI.spec.basePath);
                             } else if 'cause.'field == "spec.apiName" {
-                                log:printError("Error occured while updating K8sAPI due to base path ", e909015(k8sAPI.spec.basePath));
+                                log:printError("Error occurred while updating K8sAPI due to base path ", e909015(k8sAPI.spec.basePath));
                                 return e909016(k8sAPI.spec.apiName);
                             }
                         }

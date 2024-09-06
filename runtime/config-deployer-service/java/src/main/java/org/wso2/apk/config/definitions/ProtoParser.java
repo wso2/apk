@@ -1,9 +1,11 @@
 package org.wso2.apk.config.definitions;
 
-import java.io.ByteArrayInputStream;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -144,40 +146,98 @@ public class ProtoParser extends APIDefinition {
         return null;
     }
 
-    public API getAPIFromProtoFile(byte[] definition, String fileName) throws APIManagementException {
-        API api = new API();
-        ProtoFile protoFile = getProtoFileFromDefinition(definition, fileName);
-        StringBuilder apiName = new StringBuilder();
-        List<String> sortedServices = new ArrayList<>();
-        List<URITemplate> uriTemplates = new ArrayList<>();
-
-        if (protoFile == null) {
-            throw new APIManagementException("Error in validating API definition");
+    public API getAPIFromProtoFile(byte[] content, String fileName) throws APIManagementException {
+        try {
+            API api = new API();
+            ProtoFile protoFile = new ProtoFile();
+            List<URITemplate> uriTemplates = new ArrayList<>();
+            if (fileName.endsWith(".zip")) {
+                List<byte[]> protoContents = extractProtoFilesFromZip(content);
+                for (byte[] protoContent : protoContents) {
+                    uriTemplates.addAll(processProtoFile(protoContent, protoFile));
+                }
+            } else {
+                uriTemplates = processProtoFile(content, protoFile);
+            }
+            api.setBasePath(protoFile.getBasePath());
+            api.setProtoDefinition(new String(content, java.nio.charset.StandardCharsets.UTF_8));
+            api.setVersion(protoFile.getVersion());
+            api.setName(protoFile.getApiName());
+            api.setUriTemplates(uriTemplates.toArray(new URITemplate[0]));
+            return api;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new APIManagementException(e);
         }
+    }
 
-        System.out.println("Printing services");
-        for (Service service : protoFile.getServices()) {
-            sortedServices.add(service.getServiceName());
+    private List<URITemplate> processProtoFile(byte[] definition, ProtoFile protoFile) throws APIManagementException {
+        String content = new String(definition, java.nio.charset.StandardCharsets.UTF_8);
+        String packageString = getPackageString(content);
+        List<URITemplate> uriTemplates = new ArrayList<>();
+        StringBuilder apiName = new StringBuilder().append(protoFile.getApiName());
+        String packageName = getPackageName(packageString);
+        List<Service> services = new ArrayList<>();
+        protoFile.setVersion(getVersion(packageString));
+        protoFile.setBasePath(getBasePath(packageString));
+        List<String> serviceBlocks = extractServiceBlocks(content);
+
+        for (String serviceBlock : serviceBlocks) {
+            String serviceName = getServiceName(serviceBlock);
+            List<String> methodNames = extractMethodNames(serviceBlock);
+            Service service = new Service(serviceName, methodNames);
+            services.add(service);
             for (String method : service.getMethods()) {
-                System.out.println("Method " + method + "of service " + service.getServiceName());
                 URITemplate uriTemplate = new URITemplate();
-                uriTemplate.setUriTemplate(protoFile.getPackageName() + "." + service.getServiceName());
+                uriTemplate.setUriTemplate(packageName + "." + service.getServiceName());
                 uriTemplate.setVerb(method);
                 uriTemplates.add(uriTemplate);
             }
         }
-        sortedServices.sort(String::compareTo);
-        for (String service : sortedServices) {
-            apiName.append(service).append("-");
-        }
 
-        api.setBasePath(protoFile.getBasePath());
-        System.out.println("Basepath " + protoFile.getBasePath());
-        api.setProtoDefinition(definition);
-        api.setVersion(protoFile.getVersion());
-        api.setName(apiName.toString());
-        api.setUriTemplates(uriTemplates.toArray(new URITemplate[0]));
-        return api;
+        for (Service service : services) {
+            apiName.append(service.getServiceName()).append("-");
+        }
+        protoFile.setApiName(apiName.toString());
+        return uriTemplates;
+    }
+
+    private List<byte[]> extractProtoFilesFromZip(byte[] zipContent) throws APIManagementException {
+        List<byte[]> protoFiles = new ArrayList<>();
+        try (ByteArrayInputStream bais = new ByteArrayInputStream(zipContent);
+                ZipInputStream zis = new ZipInputStream(bais)) {
+
+            ZipEntry zipEntry;
+            while ((zipEntry = zis.getNextEntry()) != null) {
+                if (zipEntry.getName().endsWith(".proto")) {
+                    protoFiles.add(readProtoFileBytesFromZip(zis));
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new APIManagementException("Failed to process zip file", e);
+        }
+        return protoFiles;
+    }
+
+    private String readProtoFileFromZip(InputStream zis) throws IOException {
+        StringBuilder protoContent = new StringBuilder();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(zis));
+        String line;
+        while ((line = reader.readLine()) != null) {
+            protoContent.append(line).append("\n");
+        }
+        return protoContent.toString();
+    }
+
+    private byte[] readProtoFileBytesFromZip(ZipInputStream zis) throws IOException {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        byte[] buffer = new byte[1024];
+        int bytesRead;
+        while ((bytesRead = zis.read(buffer)) != -1) {
+            byteArrayOutputStream.write(buffer, 0, bytesRead);
+        }
+        return byteArrayOutputStream.toByteArray();
     }
 
     ProtoFile getProtoFileFromDefinition(byte[] fileContent, String fileName) {
@@ -208,7 +268,6 @@ public class ProtoParser extends APIDefinition {
             tempProtoFile.setPackageName(info[info.length - 1]);
             StringBuilder basePath = new StringBuilder("/").append(info[0]);
             for (int i = 1; i < info.length - 2; i++) {
-                System.out.println(info[i]);
                 basePath.append(".").append(info[i]);
             }
             tempProtoFile.setBasePath(basePath.toString());
@@ -221,7 +280,8 @@ public class ProtoParser extends APIDefinition {
     }
 
     /**
-     * @param fileName            - The name of the .desc file provided as input for the config generator
+     * @param fileName            - The name of the .desc file provided as input for
+     *                            the config generator
      * @param descriptorMap
      * @param protoMap
      * @param services
@@ -262,7 +322,8 @@ public class ProtoParser extends APIDefinition {
                     dependency = resolveWellKnownType(descriptorName);
                     wellKnownTypesMap.put(descriptorName, dependency);
                 } else {
-                    // if the dependency is on another file that was imported, we resolve it and add it to the
+                    // if the dependency is on another file that was imported, we resolve it and add
+                    // it to the
                     // descriptor map
                     dependency = buildAndCacheDescriptor(descriptorName, protoMap, descriptorMap, wellKnownTypesMap);
                 }
@@ -280,22 +341,24 @@ public class ProtoParser extends APIDefinition {
             Map<String, DescriptorProtos.FileDescriptorProto> protoMap,
             Map<String, Descriptors.FileDescriptor> descriptorMap,
             Map<String, Descriptors.FileDescriptor> wellKnownTypesMap) {
-        // this scenario is when you have an import in your proto file but that file hasnt been built yet
+        // this scenario is when you have an import in your proto file but that file
+        // hasnt been built yet
         // in that scenario, it needs to have its dependencies resolved as well
         DescriptorProtos.FileDescriptorProto dependencyProto = protoMap.get(descriptorName);
         if (dependencyProto != null) {
-            //            Descriptors.FileDescriptor dependency = resolveDependency(descriptorMap, protoMap, wellKnownTypesMap,
-            //                    descriptorName);
-            //            descriptorMap.put(dependency.getName(), dependency);
-            //            return dependency;
+            // Descriptors.FileDescriptor dependency = resolveDependency(descriptorMap,
+            // protoMap, wellKnownTypesMap,
+            // descriptorName);
+            // descriptorMap.put(dependency.getName(), dependency);
+            // return dependency;
         }
         return null;
     }
 
     boolean validateProtoContent(byte[] fileContent, String fileName) {
         try {
-            ProtoFile protoFile = getProtoFileFromDefinition(fileContent, fileName);
-            return protoFile != null;
+            // ProtoFile protoFile = getProtoFileFromDefinition(fileContent, fileName);
+            return true;
         } catch (Exception e) {
             log.error("Proto definition validation failed for " + fileName + ": " + e.getMessage());
             return false;
@@ -311,7 +374,7 @@ public class ProtoParser extends APIDefinition {
             for (Descriptors.MethodDescriptor methodDescriptor : methodDescriptors) {
                 methods.add(methodDescriptor.getName());
             }
-            services.add(new Service(serviceDescriptor.getName(), methods, packageName));
+            services.add(new Service(serviceDescriptor.getName(), methods));
         }
         return services;
     }
@@ -319,22 +382,22 @@ public class ProtoParser extends APIDefinition {
     public void validateGRPCAPIDefinition(byte[] inputByteArray, String fileName,
             APIDefinitionValidationResponse validationResponse, ArrayList<ErrorHandler> errors) {
         try {
-            //            if (fileName.endsWith(".zip")) {
-            //                try (ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(inputByteArray))) {
-            //                    ZipEntry zipEntry;
-            //                    while ((zipEntry = zis.getNextEntry()) != null) {
-            //                        if (!zipEntry.isDirectory() && zipEntry.getName().endsWith(".desc")) {
-            //                            byte[] protoFileContentBytes = zis.readAllBytes();
-            //                            boolean validated = validateProtoContent(protoFileContentBytes, fileName);
-            //                            if (!validated) {
-            //                                throw new APIManagementException(
-            //                                        "Invalid definition file provided. " + "Please provide a valid .zip or .proto file.");
-            //                            }
-            //                        }
-            //                    }
-            //                }
-            //            } else
-            if (fileName.endsWith(".desc")) {
+            if (fileName.endsWith(".zip")) {
+                try (ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(inputByteArray))) {
+                    ZipEntry zipEntry;
+                    while ((zipEntry = zis.getNextEntry()) != null) {
+                        if (!zipEntry.isDirectory() && zipEntry.getName().endsWith(".proto")) {
+                            byte[] protoFileContentBytes = zis.readAllBytes();
+                            boolean validated = validateProtoContent(protoFileContentBytes, fileName);
+                            if (!validated) {
+                                throw new APIManagementException(
+                                        "Invalid definition file provided. "
+                                                + "Please provide a valid .zip or .proto file.");
+                            }
+                        }
+                    }
+                }
+            } else if (fileName.endsWith(".proto")) {
                 boolean validated = validateProtoContent(inputByteArray, fileName);
                 validationResponse.setValid(validated);
                 validationResponse.setProtoContent(inputByteArray);
@@ -352,5 +415,97 @@ public class ProtoParser extends APIDefinition {
             errors.add(new ErrorItem("API Definition Validation Error", "API Definition is invalid", 400, 400));
             validationResponse.setErrorItems(errors);
         }
+    }
+
+    // Method to extract service blocks from a given text
+    public List<String> extractServiceBlocks(String text) {
+        // Regular expression pattern to match the service blocks
+        String patternString = "service\\s+\\w+\\s*\\{[^{}]*(?:\\{[^{}]*\\}[^{}]*)*\\}";
+
+        // Compile the regular expression
+        Pattern pattern = Pattern.compile(patternString, Pattern.DOTALL);
+        Matcher matcher = pattern.matcher(text);
+
+        // Find all matches and append them to the result
+        List<String> result = new ArrayList<>();
+        while (matcher.find()) {
+            result.add(matcher.group());
+        }
+        return result;
+    }
+
+    public List<String> extractMethodNames(String serviceBlock) {
+        // Regular expression pattern to match the method names
+        String patternString = "(?<=rpc\\s)\\w+";
+
+        // Compile the regular expression
+        Pattern pattern = Pattern.compile(patternString);
+        Matcher matcher = pattern.matcher(serviceBlock);
+
+        // Find all matches and append them to the result
+        List<String> result = new ArrayList<>();
+        while (matcher.find()) {
+            result.add(matcher.group());
+        }
+        return result;
+    }
+
+    public String getServiceName(String serviceBlock) {
+        // Regular expression pattern to match the service name
+        String patternString = "(?<=service\\s)\\w+";
+
+        // Compile the regular expression
+        Pattern pattern = Pattern.compile(patternString);
+        Matcher matcher = pattern.matcher(serviceBlock);
+
+        // Find the first match and return it
+        if (matcher.find()) {
+            return matcher.group();
+        }
+        return null;
+    }
+
+    public String getPackageString(String content) {
+        Pattern packagePattern = Pattern.compile("package\\s+([\\w\\.]+);");
+        Matcher packageMatcher = packagePattern.matcher(content);
+        if (packageMatcher.find()) {
+            return packageMatcher.group(1);
+        }
+        log.error("Package has not been defined in the proto file");
+        return null;
+    }
+
+    public String getVersion(String packageString) {
+        Pattern versionPattern = Pattern.compile("v\\d+(\\.\\d+)*");
+        Matcher versionMatcher = versionPattern.matcher(packageString);
+        if (versionMatcher.find()) {
+            return versionMatcher.group(0);
+        }
+        log.error("Version not found in proto file");
+        return null;
+    }
+
+    public String getPackageName(String packageString) {
+        Pattern namePattern = Pattern.compile("v\\d+(\\.\\d+)*\\.(\\w+)$");
+        Matcher nameMatcher = namePattern.matcher(packageString);
+        if (nameMatcher.find()) {
+            return nameMatcher.group(2);
+        }
+        log.error("Package name not found in proto file.");
+        return null;
+    }
+
+    public String getBasePath(String packageString) {
+        Pattern basePathPattern = Pattern.compile("^(.*?)v\\d");
+        Matcher basePathMatcher = basePathPattern.matcher(packageString);
+        if (basePathMatcher.find()) {
+            String basePath = basePathMatcher.group(1);
+            if (basePath.charAt(basePath.length() - 1) == '.') {
+                basePath = basePath.substring(0, basePath.length() - 1);
+            }
+            return "/" + basePath;
+        }
+        log.error("Base path not found in proto file");
+        return null;
     }
 }

@@ -1304,6 +1304,10 @@ public class APIClient {
             api1.setGraphQLSchema(definition);
             return definition;
         }
+        if apkConf.'type == API_TYPE_GRPC && definition is string {
+            api1.setProtoDefinition(definition);
+            return definition;
+        }
         if definition is string && definition.toString().trim().length() > 0 {
             retrievedDefinition = runtimeUtil:RuntimeAPICommonUtil_generateDefinition2(api1, definition);
         } else {
@@ -1991,16 +1995,22 @@ public class APIClient {
                 apkConf = check self.validateAndRetrieveAPKConfiguration(apkConfJson);
             }
             string? apiDefinition = ();
-            string definitionFileContent = check string:fromBytes(definitionFile.fileContent);
             string apiType = <string>apkConf?.'type;
             if apiType == API_TYPE_REST {
+                string definitionFileContent = check string:fromBytes(definitionFile.fileContent);
                 if definitionFile.fileName.endsWith(".yaml") {
                     apiDefinition = check commons:newYamlUtil1().fromYamlStringToJson(definitionFileContent);
                 } else if definitionFile.fileName.endsWith(".json") {
                     apiDefinition = definitionFileContent;
                 }
-            } else if apiType == API_TYPE_GRAPHQL || apiType == API_TYPE_GRPC {
-                apiDefinition = definitionFileContent;
+            } else if apiType == API_TYPE_GRAPHQL {
+                apiDefinition = check string:fromBytes(definitionFile.fileContent);
+            } else if apiType == API_TYPE_GRPC {
+                if definitionFile.fileName.endsWith(".zip") {
+                    apiDefinition = definitionFile.fileContent.toBase64();
+                } else if definitionFile.fileName.endsWith(".proto") {
+                    apiDefinition = check string:fromBytes(definitionFile.fileContent);
+                }
             }
             if apkConf is () {
                 return e909022("apkConfiguration is not provided", ());

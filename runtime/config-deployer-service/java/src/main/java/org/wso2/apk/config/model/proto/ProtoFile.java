@@ -4,10 +4,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ProtoFile {
+
+    String apiName;
      String packageName;
      String basePath;
      String version;
      List<Service> services;
+
+    public String getApiName() {
+        if (apiName == null) {
+            return "";
+        }
+        return apiName;
+    }
+
+    public void setApiName(String apiName) {
+        this.apiName = apiName;
+    }
 
     public List<Service> getServices() {
         return services;
@@ -34,6 +47,13 @@ public class ProtoFile {
             this.services = new ArrayList<>();
         }
         this.services.addAll(services);
+    }
+
+    public void addService(Service service) {
+        if (this.services == null){
+            this.services = new ArrayList<>();
+        }
+        this.services.add(service);
     }
 
     public String getBasePath() {

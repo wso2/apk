@@ -14,31 +14,30 @@ public class ProtoParserUtil {
      * Provide common functions related to OAS
      */
     private static final Log log = LogFactory.getLog(ProtoParserUtil.class);
-    private static final ProtoParser protoParser = new ProtoParser();
-
 
     /**
      * Validate graphQL Schema
-     * 
+     *
      * @return Validation response
      */
-    public static APIDefinitionValidationResponse validateGRPCAPIDefinition(byte[] inputByteArray, String fileName,
-            boolean returnGRPCContent) {
+    public static APIDefinitionValidationResponse validateGRPCAPIDefinition(byte[] content) {
         APIDefinitionValidationResponse validationResponse = new APIDefinitionValidationResponse();
         ArrayList<ErrorHandler> errors = new ArrayList<>();
 
-        if (inputByteArray.length == 0) {
+        if (content == null || content.length == 0) {
             validationResponse.setValid(false);
             errors.add(ExceptionCodes.GRPC_PROTO_DEFINTION_CANNOT_BE_NULL);
             validationResponse.setErrorItems(errors);
         } else {
-            protoParser.validateGRPCAPIDefinition(inputByteArray, fileName, validationResponse, errors);
+            validationResponse.setValid(true);
+            validationResponse.setProtoContent(content);
         }
         return validationResponse;
     }
 
     /**
-     * Add error item with the provided message to the provided validation response object
+     * Add error item with the provided message to the provided validation response
+     * object
      *
      * @param validationResponse APIDefinitionValidationResponse object
      * @param errMessage         error message

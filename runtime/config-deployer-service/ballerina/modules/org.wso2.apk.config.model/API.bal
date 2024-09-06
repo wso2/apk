@@ -1,6 +1,7 @@
+import config_deployer_service.java.lang as javalang;
+
 import ballerina/jballerina.java;
 import ballerina/jballerina.java.arrays as jarrays;
-import config_deployer_service.java.lang as javalang;
 
 # Ballerina class mapping for the Java `org.wso2.apk.config.model.API` class.
 @java:Binding {'class: "org.wso2.apk.config.model.API"}
@@ -40,6 +41,13 @@ public distinct class API {
         return java:toString(org_wso2_apk_config_model_API_getApiSecurity(self.jObj)) ?: "";
     }
 
+    # The function that maps to the `getBasePath` method of `org.wso2.apk.config.model.API`.
+    #
+    # + return - The `string` value returning from the Java mapping.
+    public isolated function getBasePath() returns string {
+        return java:toString(org_wso2_apk_config_model_API_getBasePath(self.jObj)) ?: "";
+    }
+
     # The function that maps to the `getClass` method of `org.wso2.apk.config.model.API`.
     #
     # + return - The `javalang:Class` value returning from the Java mapping.
@@ -47,13 +55,6 @@ public distinct class API {
         handle externalObj = org_wso2_apk_config_model_API_getClass(self.jObj);
         javalang:Class newObj = new (externalObj);
         return newObj;
-    }
-
-    # The function that maps to the `getBasePath` method of `org.wso2.apk.config.model.API`.
-    #
-    # + return - The `string` value returning from the Java mapping.
-    public isolated function getBasePath() returns string {
-        return java:toString(org_wso2_apk_config_model_API_getBasePath(self.jObj)) ?: "";
     }
 
     # The function that maps to the `getEndpoint` method of `org.wso2.apk.config.model.API`.
@@ -82,6 +83,13 @@ public distinct class API {
     # + return - The `string` value returning from the Java mapping.
     public isolated function getName() returns string {
         return java:toString(org_wso2_apk_config_model_API_getName(self.jObj)) ?: "";
+    }
+
+    # The function that maps to the `getProtoDefinition` method of `org.wso2.apk.config.model.API`.
+    #
+    # + return - The `string` value returning from the Java mapping.
+    public isolated function getProtoDefinition() returns string {
+        return java:toString(org_wso2_apk_config_model_API_getProtoDefinition(self.jObj)) ?: "";
     }
 
     # The function that maps to the `getScopes` method of `org.wso2.apk.config.model.API`.
@@ -188,6 +196,13 @@ public distinct class API {
     # + arg0 - The `string` value required to map with the Java method parameter.
     public isolated function setName(string arg0) {
         org_wso2_apk_config_model_API_setName(self.jObj, java:fromString(arg0));
+    }
+
+    # The function that maps to the `setProtoDefinition` method of `org.wso2.apk.config.model.API`.
+    #
+    # + arg0 - The `string` value required to map with the Java method parameter.
+    public isolated function setProtoDefinition(string arg0) {
+        org_wso2_apk_config_model_API_setProtoDefinition(self.jObj, java:fromString(arg0));
     }
 
     # The function that maps to the `setScopes` method of `org.wso2.apk.config.model.API`.
@@ -334,6 +349,12 @@ isolated function org_wso2_apk_config_model_API_getName(handle receiver) returns
     paramTypes: []
 } external;
 
+isolated function org_wso2_apk_config_model_API_getProtoDefinition(handle receiver) returns handle = @java:Method {
+    name: "getProtoDefinition",
+    'class: "org.wso2.apk.config.model.API",
+    paramTypes: []
+} external;
+
 isolated function org_wso2_apk_config_model_API_getScopes(handle receiver) returns handle = @java:Method {
     name: "getScopes",
     'class: "org.wso2.apk.config.model.API",
@@ -414,6 +435,12 @@ isolated function org_wso2_apk_config_model_API_setGraphQLSchema(handle receiver
 
 isolated function org_wso2_apk_config_model_API_setName(handle receiver, handle arg0) = @java:Method {
     name: "setName",
+    'class: "org.wso2.apk.config.model.API",
+    paramTypes: ["java.lang.String"]
+} external;
+
+isolated function org_wso2_apk_config_model_API_setProtoDefinition(handle receiver, handle arg0) = @java:Method {
+    name: "setProtoDefinition",
     'class: "org.wso2.apk.config.model.API",
     paramTypes: ["java.lang.String"]
 } external;
