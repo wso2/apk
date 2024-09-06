@@ -767,6 +767,32 @@ spec:
   api:
     name: "subscription-api"
     version: "1.0.0"
+  ratelimitRef: 
+   name : api-subscription-ratelimit
+   level: application
+
+
+---
+apiVersion: "dp.wso2.com/v1alpha1"
+kind: "RateLimitPolicy"
+metadata:
+  name: "api-subscription-ratelimit"
+spec:
+  override:
+    subscription:
+      stopOnQuotaReach: true
+      organization: "default"
+      requestCount:
+        requestsPerUnit: 4
+        unit: "Minute" 
+      burstControl:
+        requestsPerUnit: 4
+        unit: "Minute"
+  targetRef:
+    kind: Subscription
+    name: "7416c241a121b844392d447f00ff6709cb9c932b"
+    group: gateway.networking.k8s.io
+
 
 ---
 apiVersion: cp.wso2.com/v1alpha2
