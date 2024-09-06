@@ -911,6 +911,10 @@ spec:
   api:
     name: "Semantic Versioning API"
     version: "v\\d+(\\.\\d+)?"
+  ratelimitRef:
+    name: api-subscription-ratelimit
+    level: application
+
 ---
 apiVersion: cp.wso2.com/v1alpha2
 kind: ApplicationMapping
